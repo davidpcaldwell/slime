@@ -31,12 +31,6 @@ END LICENSE
 		</ul>
 	</div>
 	<div>
-		<script type="application/x.jsapi#initialize"><![CDATA[
-			scope.isRhino = typeof(Packages.org.mozilla.javascript.Context) == "function"
-				&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null);
-
-			scope.api = { java: scope.module };
-		]]></script>
 		<h1>Exports</h1>
 		<ul>
 			<li class="function" jsapi:id="getClass">
@@ -156,58 +150,6 @@ END LICENSE
 					var _v2 = Packages.java.lang.System.gc();
 					verify(_v2).is.type("undefined");
 				</script>
-			</li>
-			<li class="object">
-				<div class="name">Array</div>
-				<span>Contains methods that operate on Java arrays.</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">adapt</div>
-						<span>Creates a JavaScript array with the same contents as the given Java array.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">java.lang.Object[]</span>
-									<span>A Java array.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">Array</span>
-							<span>
-								<!--	TODO	what if null?	-->
-							</span>
-						</div>
-					</li>
-				</ul>
-				<script type="application/x.jsapi#tests" jsapi:id="toJsArray"><![CDATA[
-					var StringClass = (isRhino) ? Packages.java.lang.String : Packages.java.lang.String.class;
-					var javaArray = Packages.java.lang.reflect.Array.newInstance( StringClass, 3 );
-					javaArray[0] = "Hello";
-					javaArray[1] = "World";
-					javaArray[2] = "David";
-
-					var isWord = function(s) { return s + " is a word."; }
-					var stringLength = function(s) { return s.length(); }
-
-					var words = module.Array.adapt( javaArray ).map( isWord );
-					var lengths = module.Array.adapt( javaArray ).map( stringLength );
-					var scriptStrings = module.Array.adapt( javaArray ).map( function(s) { return String(s); } );
-
-					test( words[1] == "World is a word." );
-					test( lengths[1] == 5 );
-					test( typeof(scriptStrings[0]) == "string" && scriptStrings[0] == "Hello" );
-
-					var array = module.Array.create({ type: Packages.java.lang.Number, array: [1,2,3] });
-					verify(array).evaluate(function() { return this.length; }).is(3);
-					verify(array).evaluate(function() { return module.isJavaObject(array); }).is(true);
-
-					var bytes = module.Array.create({ type: Packages.java.lang.Byte.TYPE, array: [1,2,3,4] });
-					verify(bytes).evaluate(function() { return this.length; }).is(4);
-				]]></script>
 			</li>
 			<li class="function">
 				<div class="name">addShutdownHook</div>

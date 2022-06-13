@@ -478,5 +478,32 @@ namespace slime.jsh.script {
 		Application: any
 		loader: slime.Loader
 		Loader?: any
+		world: {
+			file: slime.jrunscript.file.world.Pathname
+		}
+	}
+}
+
+namespace slime.jsh.script.internal {
+	export interface Source {
+		file: slime.jrunscript.file.File
+		uri: string
+		packaged: {
+			file: slime.jrunscript.file.File
+			loader: slime.jrunscript.runtime.Loader
+		}
+	}
+
+	export interface Context extends Source {
+		api: {
+			js: any
+			web: slime.web.Exports
+			file: slime.jrunscript.file.Exports
+			http: () => slime.jsh.Global["http"]
+			addClasses: (pathname: slime.jrunscript.file.Pathname) => void
+			parser: slime.jsh.script.Exports["cli"]["parser"]
+		}
+		directory: slime.jrunscript.file.Directory
+		arguments: string[]
 	}
 }

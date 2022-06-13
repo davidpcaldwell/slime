@@ -16,7 +16,10 @@
 	 * @param { slime.Loader } $loader
 	 */
 	function(Packages,plugin,$slime,$api,jsh,$loader) {
-		/** @returns { slime.jsh.script.Exports } */
+		/**
+		 * @param { slime.jsh.script.internal.Context } $context
+		 * @returns { slime.jsh.script.Exports }
+		 */
 		var load = function($context) {
 			/** @type { Partial<slime.jsh.script.Exports> } */
 			var $exports = {};
@@ -28,7 +31,7 @@
 				$exports.pathname = $context.file.pathname;
 				$api.deprecate($exports,"pathname");
 				$exports.getRelativePath = function(path) {
-					return $context.file.getRelativePath(path);
+					return $context.file.parent.getRelativePath(path);
 				}
 				$api.deprecate($exports,"getRelativePath");
 			} else if ($context.packaged) {
@@ -73,7 +76,7 @@
 
 			if ($context.file) {
 				$exports.Loader = function(path) {
-					var base = $context.file.getRelativePath(path).directory;
+					var base = $context.file.parent.getRelativePath(path).directory;
 					return new $context.api.file.Loader({ directory: base });
 				};
 			} else if ($context.uri) {
@@ -97,6 +100,13 @@
 				getopts: $exports.getopts
 			}).Application;
 
+			$exports.world = {
+				file: {
+					filesystem: $context.api.file.world.filesystems.os,
+					pathname: $context.file.toString()
+				}
+			}
+
 			/** @returns {slime.jsh.script.Exports} */
 			var finished = function(partial) { return partial; }
 
@@ -109,6 +119,7 @@
 				return Boolean(jsh.js && jsh.web && jsh.java && jsh.file && jsh.http && jsh.shell);
 			},
 			load: function() {
+				/** @type { slime.jsh.script.internal.Source } */
 				var source = (function() {
 					var _script = $slime.getInvocation().getScript();
 					var _uri = _script.getUri();
@@ -163,20 +174,25 @@
 					}
 				})(jsh.file.filesystem, jsh.shell.PWD);
 
-				jsh.script = load($api.Object.compose({
-					api: {
-						js: jsh.js,
-						web: jsh.web,
-						file: jsh.file,
-						http: function() {
-							return jsh.http;
+				jsh.script = load(
+					$api.Object.compose(
+						{
+							api: {
+								js: jsh.js,
+								web: jsh.web,
+								file: jsh.file,
+								http: function() {
+									return jsh.http;
+								},
+								addClasses: jsh.loader.java.add,
+								parser: parser
+							},
+							directory: jsh.shell.PWD,
+							arguments: jsh.java.Array.adapt($slime.getInvocation().getArguments()).map(function(s) { return String(s); }),
 						},
-						addClasses: jsh.loader.java.add,
-						parser: parser
-					},
-					directory: jsh.shell.PWD,
-					arguments: jsh.java.Array.adapt($slime.getInvocation().getArguments()).map(function(s) { return String(s); }),
-				}, source));
+						source
+					)
+				);
 
 				var option = function(parse) {
 					return function(o) {

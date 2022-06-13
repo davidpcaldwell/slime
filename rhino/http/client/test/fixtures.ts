@@ -169,12 +169,23 @@ namespace slime.jrunscript.http.client.test {
 						verify(message).is(message);
 					};
 					scope.getServerRequestCookies = function(request) {
+						type Cookie = {
+							getName(): slime.jrunscript.native.java.lang.String
+							getValue(): slime.jrunscript.native.java.lang.String
+						}
 						if (request.getCookies() === null) return [];
-						return jsh.java.Array.adapt(request.getCookies()).filter(function(_cookie) {
-							return String(_cookie.getName()) != "JSESSIONID";
-						}).map(function(_cookie) {
-							return { name: String(_cookie.getName()), value: String(_cookie.getValue()) }
-						});
+						return jsh.java.Array.adapt(request.getCookies())
+							.filter(
+								function(_cookie: Cookie) {
+									return String(_cookie.getName()) != "JSESSIONID";
+								}
+							)
+							.map(
+								function(_cookie: Cookie) {
+									return { name: String(_cookie.getName()), value: String(_cookie.getValue()) }
+								}
+							)
+						;
 					};
 					scope.hasDefaultCookieHandler = Boolean(Packages.java.net.CookieHandler.getDefault());
 				}

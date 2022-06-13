@@ -136,8 +136,8 @@ namespace slime.fifty {
 					relative: (path: string) => slime.jrunscript.file.world.Pathname
 
 					temporary: {
-						location: () => slime.jrunscript.file.world.Pathname
-						directory: () => slime.jrunscript.file.world.Pathname
+						location: () => slime.jrunscript.file.world.object.Pathname
+						directory: () => slime.jrunscript.file.world.object.Pathname
 					}
 
 					object: {

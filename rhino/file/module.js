@@ -90,7 +90,7 @@
 			/**
 			 *
 			 * @param { string } pathname
-			 * @returns { slime.jrunscript.file.world.Pathname }
+			 * @returns { slime.jrunscript.file.world.object.Pathname }
 			 */
 			function pathname_create(pathname) {
 				return {
@@ -141,6 +141,12 @@
 				}
 			}
 
+			/**
+			 *
+			 * @param { string } parent
+			 * @param { string } relative
+			 * @returns
+			 */
 			function pathname_relative(parent, relative) {
 				if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
 				var peer = was.relative(parent, relative);
@@ -249,11 +255,11 @@
 								})
 							}
 						},
-						string: function(pathname) {
-							return $api.Function.impure.ask(function(events) {
-								var stream = openInputStream(pathname,events);
+						string: function(p) {
+							return function(events) {
+								var stream = openInputStream(p.pathname,events);
 								return (stream) ? stream.character().asString() : null;
-							});
+							};
 						}
 					},
 					copy: function(p) {
@@ -640,6 +646,20 @@
 							world: {
 								filesystems: {
 									os: toWorldFilesystem(providers.os)
+								},
+								Pathname: {
+									relative: function(path) {
+										return function(pathname) {
+											var absolute = pathname.filesystem.Pathname.relative(pathname.pathname, path);
+											return {
+												filesystem: pathname.filesystem,
+												pathname: absolute
+											}
+										}
+									},
+									parent: function() {
+										return rv.world.Pathname.relative("../");
+									}
 								}
 							},
 							object: {
