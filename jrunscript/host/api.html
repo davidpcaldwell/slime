@@ -13,7 +13,7 @@ END LICENSE
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
 <body>
-	<script type="application/x.jsapi#initialize">
+	<script type="application/x.jsapi#initialize"><![CDATA[
 		scope.module = $jsapi.environment.module;
 		if (!scope.module) {
 			//	Compatibility with old test structure
@@ -24,7 +24,7 @@ END LICENSE
 			&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null);
 		//	'api' seems to be used in the invoked files
 		scope.api = { java: scope.module };
-	</script>
+	]]></script>
 	<div>
 		<h1>Context</h1>
 		<ul>
