@@ -479,7 +479,7 @@ namespace slime.jsh.script {
 		loader: slime.Loader
 		Loader?: any
 		world: {
-			file: slime.jrunscript.file.world.Pathname
+			file: slime.jrunscript.file.world.Location
 		}
 	}
 }

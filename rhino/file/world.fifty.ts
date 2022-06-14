@@ -19,7 +19,7 @@ namespace slime.jrunscript.file {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Pathname {
+		export interface Location {
 			readonly filesystem: Filesystem
 			readonly pathname: string
 		}
@@ -34,7 +34,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export namespace object {
-			export interface Pathname extends world.Pathname{
+			export interface Pathname extends world.Location {
 				/**
 				 * @deprecated Not world-oriented.
 				 */
@@ -144,7 +144,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Directory {
-			list: () => slime.$api.fp.impure.Ask<void,Pathname[]>
+			list: () => slime.$api.fp.impure.Ask<void,Location[]>
 		}
 
 		(
@@ -165,7 +165,7 @@ namespace slime.jrunscript.file {
 					TMPDIR.relative("b").directory.require()();
 					verify(TMPDIR).directory.evaluate(function(i) { return i.list()(); }).length.is(2);
 
-					function matches(a: slime.jrunscript.file.world.Pathname, b: slime.jrunscript.file.world.Pathname): boolean {
+					function matches(a: slime.jrunscript.file.world.Location, b: slime.jrunscript.file.world.Location): boolean {
 						return a.pathname == b.pathname;
 					}
 
@@ -235,7 +235,7 @@ namespace slime.jrunscript.file {
 				fifty.tests.sandbox.filesystem.pathname.file.write = {};
 				fifty.tests.sandbox.filesystem.pathname.file.write.string = function() {
 					var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					var read = function(at: Pathname): string {
+					var read = function(at: Location): string {
 						var file = jsh.file.Pathname(at.pathname).file;
 						return (file) ? file.read(String) : null;
 					}
@@ -313,22 +313,22 @@ namespace slime.jrunscript.file {
 			/** @deprecated Not really world-oriented; use the methods of `Pathname`, `File`, and `Directory`. */
 			pathname: (pathname: string) => object.Pathname
 
-			/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+			/** @deprecated Use .pathname() to obtain a {@link Location}. */
 			Pathname: {
-				/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+				/** @deprecated Use .pathname() to obtain a {@link Location}. */
 				relative: (parent: string, relative: string) => string
 
-				/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+				/** @deprecated Use .pathname() to obtain a {@link Location}. */
 				isDirectory: (pathname: string) => boolean
 			}
 
-			/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+			/** @deprecated Use .pathname() to obtain a {@link Location}. */
 			File: {
-				/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+				/** @deprecated Use .pathname() to obtain a {@link Location}. */
 				read: {
-					/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+					/** @deprecated Use .pathname() to obtain a {@link Location}. */
 					stream: {
-						/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+						/** @deprecated Use .pathname() to obtain a {@link Location}. */
 						bytes: (pathname: string) => slime.$api.fp.impure.Ask<{
 							notFound: void
 						},slime.jrunscript.runtime.io.InputStream>
@@ -350,23 +350,23 @@ namespace slime.jrunscript.file {
 					>
 				}
 
-				/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+				/** @deprecated Use .pathname() to obtain a {@link Location}. */
 				copy: (p: {
 					from: string
 					to: string
 				}) => slime.$api.fp.impure.Tell<void>
 			}
 
-			/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+			/** @deprecated Use .pathname() to obtain a {@link Location}. */
 			Directory: {
-				/** @deprecated Use .pathname() to obtain a {@link Pathname}. */
+				/** @deprecated Use .pathname() to obtain a {@link Location}. */
 				require: (p: {
 					pathname: string
 					recursive?: boolean
 				}) => slime.$api.fp.impure.Tell<void>
 
 				/**
-				 * @deprecated Use .pathname() to obtain a {@link Pathname}.
+				 * @deprecated Use .pathname() to obtain a {@link Location}.
 				 *
 				 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
 				 * event and return.
@@ -534,9 +534,9 @@ namespace slime.jrunscript.file {
 			os: world.Filesystem
 		}
 
-		Pathname: {
-			relative: (path: string) => (p: world.Pathname) => world.Pathname
-			parent: () => (p: world.Pathname) => world.Pathname
+		Location: {
+			relative: (path: string) => (p: world.Location) => world.Location
+			parent: () => (p: world.Location) => world.Location
 		}
 	}
 
