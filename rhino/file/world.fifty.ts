@@ -310,6 +310,12 @@ namespace slime.jrunscript.file {
 		}
 
 		export interface Filesystem {
+			openInputStream: slime.$api.fp.world.Question<{
+				pathname: string
+			},{
+				notFound: void
+			},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
+
 			/** @deprecated Not really world-oriented; use the methods of `Pathname`, `File`, and `Directory`. */
 			pathname: (pathname: string) => object.Pathname
 
@@ -537,6 +543,14 @@ namespace slime.jrunscript.file {
 		Location: {
 			relative: (path: string) => (p: world.Location) => world.Location
 			parent: () => (p: world.Location) => world.Location
+
+			file: {
+				read: {
+					string: slime.$api.fp.world.Question<world.Location, {
+						notFound: void
+					}, slime.$api.fp.Maybe<string>>
+				}
+			}
 		}
 	}
 
@@ -550,4 +564,17 @@ namespace slime.jrunscript.file {
 		}
 	//@ts-ignore
 	)(fifty);
+}
+
+namespace slime.jrunscript.file.internal.world {
+	export interface Context {
+		library: {
+			io: slime.jrunscript.io.Exports
+		}
+		providers: {
+			os: slime.jrunscript.file.internal.java.FilesystemProvider
+		}
+	}
+
+	export type Script = slime.loader.Script<Context,slime.jrunscript.file.World>
 }
