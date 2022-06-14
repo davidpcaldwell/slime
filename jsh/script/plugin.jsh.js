@@ -100,12 +100,13 @@
 				getopts: $exports.getopts
 			}).Application;
 
-			$exports.world = {
+			//	TODO	think this through, what about packaged shells etc.?
+			$exports.world = ($context.file) ? {
 				file: {
 					filesystem: $context.api.file.world.filesystems.os,
 					pathname: $context.file.toString()
 				}
-			}
+			} : void(0)
 
 			/** @returns {slime.jsh.script.Exports} */
 			var finished = function(partial) { return partial; }
