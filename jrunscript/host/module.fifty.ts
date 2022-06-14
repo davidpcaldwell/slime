@@ -13,15 +13,11 @@ namespace slime.jrunscript.host {
 		}
 	}
 
-	export interface Environment {
-		readonly [x: string]: string
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.exports = {};
+			fifty.tests.exports = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
@@ -52,6 +48,10 @@ namespace slime.jrunscript.host {
 		export interface Exports {
 			log: any
 		}
+	}
+
+	export interface Environment {
+		readonly [x: string]: string
 	}
 
 	export interface Exports {
@@ -114,8 +114,76 @@ namespace slime.jrunscript.host {
 		isJavaObject: any
 		isJavaType: any
 		toNativeClass: any
-		Array: any
 	}
+
+	export interface Exports {
+		/**
+		 * Contains methods that operate on Java arrays.
+		 */
+		Array: {
+			/**
+			 * Creates a JavaScript array with the same contents as the given Java array or `java.util.List`.
+			 */
+			adapt: {
+				<T>(p: slime.jrunscript.Array<T>): T[]
+				<T>(p: slime.jrunscript.native.java.util.List<T>): T[]
+			}
+
+			/**
+			 * Creates a native Java array from a JavaScript array containing Java objects.
+			 */
+			create: <T>(p: {
+				type?: JavaClass
+				array: T[]
+			}) => slime.jrunscript.Array
+		}
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const module = internal.test.subject;
+
+			const isRhino = typeof(Packages.org.mozilla.javascript.Context) == "function"
+				&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null)
+			;
+
+			function test(b) {
+				verify(b).is(true);
+			}
+
+			fifty.tests.exports.Array = function() {
+				var StringClass = (isRhino) ? Packages.java.lang.String : Packages.java.lang.String.class;
+				var javaArray = Packages.java.lang.reflect.Array.newInstance( StringClass, 3 );
+				javaArray[0] = "Hello";
+				javaArray[1] = "World";
+				javaArray[2] = "David";
+
+				var isWord = function(s) { return s + " is a word."; }
+				var stringLength = function(s) { return s.length(); }
+
+				var words = module.Array.adapt( javaArray ).map( isWord );
+				var lengths = module.Array.adapt( javaArray ).map( stringLength );
+				var scriptStrings = module.Array.adapt( javaArray ).map( function(s) { return String(s); } );
+
+				test( words[1] == "World is a word." );
+				test( lengths[1] == 5 );
+				test( typeof(scriptStrings[0]) == "string" && scriptStrings[0] == "Hello" );
+
+				var array = module.Array.create({ type: Packages.java.lang.Number, array: [1,2,3] });
+				verify(array).evaluate(function(p) { return p.length; }).is(3);
+				verify(array).evaluate(function(p) { return module.isJavaObject(array); }).is(true);
+
+				var bytes = module.Array.create({ type: Packages.java.lang.Byte.TYPE, array: [1,2,3,4] });
+				verify(bytes).evaluate(function(p) { return p.length; }).is(4);
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
 
 	export interface Exports {
 		/**
@@ -206,9 +274,7 @@ namespace slime.jrunscript.host {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.exports.Environment);
-				fifty.run(fifty.tests.exports.Map);
-				fifty.run(fifty.tests.exports.log);
+				fifty.run(fifty.tests.exports);
 			}
 		}
 	//@ts-ignore
