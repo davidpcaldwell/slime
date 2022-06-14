@@ -190,6 +190,7 @@
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["newPeer"] } */
 				this.newPeer = function(string) {
+					if (typeof(string) == "undefined") throw new TypeError("'string' must not be undefined.");
 					return newPeer(string);
 				};
 
