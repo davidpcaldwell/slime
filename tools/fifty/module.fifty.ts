@@ -133,7 +133,7 @@ namespace slime.fifty {
 					 * Returns a filesystem pathname corresponding to the given relative path, relative to the currently executing
 					 * file.
 					 */
-					relative: (path: string) => slime.jrunscript.file.world.Pathname
+					relative: (path: string) => slime.jrunscript.file.world.Location
 
 					temporary: {
 						location: () => slime.jrunscript.file.world.object.Pathname

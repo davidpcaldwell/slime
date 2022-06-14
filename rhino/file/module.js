@@ -647,7 +647,7 @@
 								filesystems: {
 									os: toWorldFilesystem(providers.os)
 								},
-								Pathname: {
+								Location: {
 									relative: function(path) {
 										return function(pathname) {
 											var absolute = pathname.filesystem.Pathname.relative(pathname.pathname, path);
@@ -658,7 +658,7 @@
 										}
 									},
 									parent: function() {
-										return rv.world.Pathname.relative("../");
+										return rv.world.Location.relative("../");
 									}
 								}
 							},

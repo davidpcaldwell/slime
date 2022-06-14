@@ -12,7 +12,7 @@ namespace slime.jsh.wf.test {
 
 	export interface Fixtures {
 		clone: (p: {
-			src: slime.jrunscript.file.world.Pathname
+			src: slime.jrunscript.file.world.Location
 			commit?: {
 				message: string
 			}
