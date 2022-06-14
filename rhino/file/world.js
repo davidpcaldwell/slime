@@ -229,6 +229,7 @@
 						},
 						string: function(p) {
 							return function(events) {
+								if (typeof(p.pathname) == "undefined") throw new TypeError("p.pathname must not be undefined.");
 								var stream = openInputStream(p.pathname,events);
 								return (stream) ? stream.character().asString() : null;
 							};
