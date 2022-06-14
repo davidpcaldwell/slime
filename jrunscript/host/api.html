@@ -19,6 +19,9 @@ END LICENSE
 			//	Compatibility with old test structure
 			scope.module = $jsapi.loader.module("module.js", { $slime: jsh.unit.$slime });
 		}
+		//	'isRhino' seems to be used in the invoked files
+		scope.isRhino = typeof(Packages.org.mozilla.javascript.Context) == "function"
+			&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null);
 		//	'api' seems to be used in the invoked files
 		scope.api = { java: scope.module };
 	</script>
