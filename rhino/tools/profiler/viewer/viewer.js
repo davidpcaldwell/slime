@@ -6,10 +6,11 @@
 
 //@ts-check
 (
-	function() {
-		/** @type { slime.jrunscript.tools.profiler.Profile[] } */
-		var profiles = window["profiles"];
-
+	/**
+	 *
+	 * @param { Window & { profiles: slime.jrunscript.tools.profiler.rhino.Profile[] } } window
+	 */
+	function(window) {
 		//	TODO	requires relatively advanced JavaScript implementation for Array.prototype.forEach
 		var div = function(className,parent) {
 			var rv = document.createElement("div");
@@ -20,7 +21,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.tools.profiler.Profile[] } profiles
+		 * @param { slime.jrunscript.tools.profiler.rhino.Profile[] } profiles
 		 */
 		var calculate = function(profiles) {
 			profiles.forEach(function(profile) {
@@ -52,7 +53,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.tools.profiler.Profile[] } profiles
+		 * @param { slime.jrunscript.tools.profiler.rhino.Profile[] } profiles
 		 * @param { slime.jrunscript.tools.profiler.viewer.Settings } [settings]
 		 */
 		var render = function(profiles,settings) {
@@ -82,24 +83,24 @@
 				div_tree.appendChild(heading);
 				div_profile.appendChild(div_tree);
 
-				/** @type { (code: slime.jrunscript.tools.profiler.Code) => code is slime.jrunscript.tools.profiler.JavaCode } */
+				/** @type { (code: slime.jrunscript.tools.profiler.rhino.Code) => code is slime.jrunscript.tools.profiler.rhino.JavaCode } */
 				var isJavaCode = function(code) {
 					return code["className"] && code["methodName"];
 				}
 
-				/** @type { (code: slime.jrunscript.tools.profiler.Code) => code is slime.jrunscript.tools.profiler.JavascriptCode } */
+				/** @type { (code: slime.jrunscript.tools.profiler.rhino.Code) => code is slime.jrunscript.tools.profiler.rhino.JavascriptCode } */
 				var isJavascriptCode = function(code) {
 					return code["sourceName"];
 				}
 
-				/** @type { (code: slime.jrunscript.tools.profiler.Code) => code is slime.jrunscript.tools.profiler.SelfCode } */
+				/** @type { (code: slime.jrunscript.tools.profiler.rhino.Code) => code is slime.jrunscript.tools.profiler.rhino.SelfCode } */
 				var isSelfCode = function(code) {
 					return code["self"];
 				}
 
 				/**
 				 *
-				 * @param { slime.jrunscript.tools.profiler.Code } code
+				 * @param { slime.jrunscript.tools.profiler.rhino.Code } code
 				 * @returns
 				 */
 				var nodeName = function(code) {
@@ -119,7 +120,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.tools.profiler.Node } node
+				 * @param { slime.jrunscript.tools.profiler.rhino.Node } node
 				 * @returns
 				 */
 				var renderNode = function(node) {
@@ -158,7 +159,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.tools.profiler.Node } node
+				 * @param { slime.jrunscript.tools.profiler.rhino.Node } node
 				 */
 				var addToHotspots = function(node) {
 					var key = (function() {
@@ -211,20 +212,39 @@
 			});
 		}
 
-		window.addEventListener("load", function() {
-			calculate(profiles);
-			render(profiles);
-			document.getElementById("refresh").addEventListener("click", function() {
-				/** @type { slime.js.Cast<HTMLInputElement> } */
-				var asInputElement = function(v) { return v; };
 
-				/** @type { HTMLInputElement } */
-				var threshold = asInputElement(document.getElementById("threshold"));
-				var settings = {
-					threshold: Number(threshold.value) * 1000
-				};
-				render(profiles,settings);
+
+		window.addEventListener("load", function() {
+			/** @type { Promise<slime.jrunscript.tools.profiler.rhino.Profile[]> } */
+			var getProfiles = (window.profiles) ? Promise.resolve(window.profiles) : (function() {
+				var query = window.location.search.substring(1).split("&").reduce(function(rv,pair) {
+					var tokens = pair.split("=");
+					rv[tokens[0]] = tokens[1];
+					return rv;
+				}, {
+					profiles: void(0)
+				});
+				return window.fetch(query.profiles).then(function(response) {
+					return response.json();
+				});
+			})();
+
+			getProfiles.then(function(profiles) {
+				calculate(profiles);
+				render(profiles);
+				document.getElementById("refresh").addEventListener("click", function() {
+					/** @type { slime.js.Cast<HTMLInputElement> } */
+					var asInputElement = function(v) { return v; };
+
+					/** @type { HTMLInputElement } */
+					var threshold = asInputElement(document.getElementById("threshold"));
+					var settings = {
+						threshold: Number(threshold.value) * 1000
+					};
+					render(profiles,settings);
+				});
 			});
 		});
 	}
-)();
+//@ts-ignore
+)(window);

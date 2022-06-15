@@ -8,7 +8,7 @@
 (
 	/**
 	 *
-	 * @param { slime.jrunscript.tools.profiler.Context } $context
+	 * @param { slime.jrunscript.tools.profiler.rhino.viewer.Context } $context
 	 * @param { slime.Loader } $loader
 	 */
 	function($context,$loader) {
@@ -38,7 +38,7 @@
 			}
 
 			if ($context.to.html.inline.json) {
-				html = html.replace("<script type=\"text/javascript\" src=\"profiles.js\"></script>", scriptElement("var profiles = " + json));
+				html = html.replace("<!-- INLINE PROFILES -->", scriptElement("var profiles = " + json));
 			} else {
 				directory.getRelativePath("profiles.json").write(json, { append: false, recursive: true });
 			}
