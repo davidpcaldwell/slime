@@ -20,7 +20,8 @@
 		var options = {
 			listener: void(0),
 			html: void(0),
-			json: void(0)
+			json: void(0),
+			exclude: void(0)
 		};
 		//	TODO	currently does not contemplate repeated options
 		for (var i=0; i<_args.length; i++) {
