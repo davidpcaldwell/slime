@@ -9,81 +9,19 @@ interface Function {
 }
 
 namespace slime.$api {
+	(
+		function(fifty: slime.fifty.test.Kit) {
+			fifty.tests.exports = fifty.test.Parent();
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Global {
 		debug: {
 			disableBreakOnExceptionsFor: <T extends slime.external.lib.es5.Function>(f: T) => T
 		}
-		Object: {
-			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
-			compose: {
-				<T>(t: T): T
-				<T,U>(t: T, u: U): T & U
-				<T,U,V>(t: T, u: U, v: V): T & U & V
-				<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
-			}
-			properties: slime.external.lib.es5.Function
-			property: any
-			optional: any
-			values: {
-				/**
-				 * @experimental Completely untested.
-				 */
-				map: <O,T,R>(f: (t: T) => R) => (o: { [x in keyof O]: T } ) => { [x in keyof O]: R }
-			}
-		},
-		Value: any,
-		events: {
-			create: (p?: {
-				source?: any
-				parent?: slime.$api.Events<any>
-				getParent?: () => slime.$api.Events<any>
-				on?: { [x: string]: any }
-			}) => slime.$api.Events<any>
 
-			//	TODO	could probably use parameterized types to improve accuracy
-			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.events.Function.Receiver) => R
-
-			toHandler: <D>(handler: slime.$api.events.Handler<D>) => {
-				emitter: slime.$api.Events<D>
-				attach: () => void
-				detach: () => void
-			}
-
-			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.events.Handler<E>) => R
-		}
-		/** @deprecated Replaced by {@link slime.$api.Global["events"] } */
-		Events: {
-			/** @deprecated Replaced by {@link slime.$api.Global["events"]["create"]} */
-			(p?: {
-				source?: any
-				parent?: slime.$api.Events<any>
-				getParent?: () => slime.$api.Events<any>
-				on?: { [x: string]: any }
-			}): slime.$api.Events<any>
-
-			/** @deprecated Replaced by {@link slime.$api.Global["events"]["Function"]} */
-			Function: $api.Global["events"]["Function"]
-			/** @deprecated Replaced by {@link slime.$api.Global["events"]["toHandler"]} */
-			toHandler: $api.Global["events"]["toHandler"]
-			/** @deprecated Replaced by {@link slime.$api.Global["events"]["action"]} */
-			action: $api.Global["events"]["action"]
-		},
-		Array: {
-			/**
-			 * Creates an array by creating an empty array and passing it to the given function to populate.
-			 */
-			build: <T>(f: (p: T[]) => void) => T[]
-		}
-		deprecate: {
-			(o: object, property: string): void
-			<T extends slime.external.lib.es5.Function>(f: T): T
-			warning: any
-		}
-		experimental: {
-			(o: object, property: string): void
-			<T extends slime.external.lib.es5.Function>(f: T): T
-		}
-		debugger: any
 		Filter: {
 			/**
 			 * @deprecated Use {@link slime.$api.Global["filter"]["and"]}. }
@@ -102,39 +40,18 @@ namespace slime.$api {
 				equals: any
 			}
 		}
+
 		Map: any
+
 		Reduce: any
+
 		Method: any
+
 		Constructor: any
+
 		Key: any
-		Properties: any
-		threads: any
 	}
 
-	export namespace events {
-		/**
-		 * An object whose methods process events; events of a type are mapped to a method with the same name as that type.
-		 */
-		export type Handler<D> = {
-			[k in keyof D]?: event.Handler<D[k]>
-		}
-	}
-
-	export namespace events.Function {
-		//	TODO	it appears this duplicates the events.Handler concept above
-		export type Receiver = { [x: string]: (e: Event<any>) => void } | Events<any>
-	}
-}
-
-(
-	function(fifty: slime.fifty.test.Kit) {
-		fifty.tests.exports = fifty.test.Parent();
-		fifty.tests.manual = {};
-	}
-//@ts-ignore
-)(fifty);
-
-namespace slime.$api {
 	export interface Global {
 		Iterable: {
 			/**
@@ -208,76 +125,114 @@ namespace slime.$api {
 			}
 		}
 	}
-}
 
+	(
+		function(
+			$api: slime.$api.Global,
+			fifty: slime.fifty.test.Kit
+		) {
+			var verify = fifty.verify;
 
-(
-	function(
-		$api: slime.$api.Global,
-		fifty: slime.fifty.test.Kit
-	) {
-		var verify = fifty.verify;
+			fifty.tests.exports.Iterable = function() {
+				var groups = [
+					{ id: "A" },
+					{ id: "B" },
+					{ id: "C" }
+				];
 
-		fifty.tests.exports.Iterable = function() {
-			var groups = [
-				{ id: "A" },
-				{ id: "B" },
-				{ id: "C" }
-			];
+				var findGroup = function(letter) {
+					return groups.filter(function(group) {
+						return group.id == letter;
+					})[0];
+				};
 
-			var findGroup = function(letter) {
-				return groups.filter(function(group) {
-					return group.id == letter;
-				})[0];
-			};
+				var group = function(s) {
+					return findGroup(s.substring(0,1).toUpperCase());
+				};
 
-			var group = function(s) {
-				return findGroup(s.substring(0,1).toUpperCase());
-			};
+				var codec = {
+					encode: function(group) {
+						return group.id;
+					},
+					decode: function(string) {
+						return findGroup(string)
+					}
+				};
 
-			var codec = {
-				encode: function(group) {
-					return group.id;
-				},
-				decode: function(string) {
-					return findGroup(string)
-				}
-			};
+				var words = ["ant", "ancillary", "cord"];
 
-			var words = ["ant", "ancillary", "cord"];
+				var grouped = $api.Iterable.groupBy({
+					array: words,
+					group: group,
+					groups: groups,
+					codec: codec,
+					count: false
+				}).array();
 
-			var grouped = $api.Iterable.groupBy({
-				array: words,
-				group: group,
-				groups: groups,
-				codec: codec,
-				count: false
-			}).array();
+				verify(grouped).length.is(3);
+				verify(grouped)[0].array.length.is(2);
+				verify(grouped)[1].array.length.is(0);
+				verify(grouped)[2].array.length.is(1);
 
-			verify(grouped).length.is(3);
-			verify(grouped)[0].array.length.is(2);
-			verify(grouped)[1].array.length.is(0);
-			verify(grouped)[2].array.length.is(1);
+				var counted = $api.Iterable.groupBy({
+					array: words,
+					group: group,
+					groups: groups,
+					codec: codec,
+					count: true
+				}).array();
 
-			var counted = $api.Iterable.groupBy({
-				array: words,
-				group: group,
-				groups: groups,
-				codec: codec,
-				count: true
-			}).array();
+				verify(counted).length.is(3);
+				verify(counted)[0].count.is(2);
+				verify(counted)[1].count.is(0);
+				verify(counted)[2].count.is(1);
+			}
+		}
+	//@ts-ignore
+	)($api,fifty);
 
-			verify(counted).length.is(3);
-			verify(counted)[0].count.is(2);
-			verify(counted)[1].count.is(0);
-			verify(counted)[2].count.is(1);
+	export interface Global {
+		Properties: any
+
+		Object: {
+			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
+			compose: {
+				<T>(t: T): T
+				<T,U>(t: T, u: U): T & U
+				<T,U,V>(t: T, u: U, v: V): T & U & V
+				<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
+			}
+			properties: slime.external.lib.es5.Function
+			property: any
+			optional: any
+			values: {
+				/**
+				 * @experimental Completely untested.
+				 */
+				map: <O,T,R>(f: (t: T) => R) => (o: { [x in keyof O]: T } ) => { [x in keyof O]: R }
+			}
+		}
+
+		Array: {
+			/**
+			 * Creates an array by creating an empty array and passing it to the given function to populate.
+			 */
+			build: <T>(f: (p: T[]) => void) => T[]
+		}
+
+		Value: (value: any, name: string) => {
+			/**
+			 * A method that throws a `TypeError` if the value is falsy.
+			 */
+			require: () => void
+
+			/**
+			 * A method that creates a `Value` representing a property or subproperty of this `Value`.
+			 */
+			property: (...names: string[]) => ReturnType<Global["Value"]>
 		}
 	}
-//@ts-ignore
-)($api,fifty);
 
-
-namespace slime.$api {
 	export namespace error {
 		export type Instance<N extends string, P extends {}> = {
 			name: N
@@ -400,15 +355,72 @@ namespace slime.$api {
 		}
 	//@ts-ignore
 	)(fifty);
-}
 
-(
-	function(
-		fifty: slime.fifty.test.Kit,
-	) {
-		fifty.tests.suite = function() {
-			fifty.run(fifty.tests.exports);
+	export namespace events {
+		/**
+		 * An object whose methods process events; events of a type are mapped to a method with the same name as that type.
+		 */
+		export type Handler<D> = {
+			[k in keyof D]?: event.Handler<D[k]>
 		}
 	}
-//@ts-ignore
-)(fifty)
+
+	export namespace events.Function {
+		//	TODO	it appears this duplicates the events.Handler concept above
+		export type Receiver = { [x: string]: (e: Event<any>) => void } | Events<any>
+	}
+
+	export interface Global {
+		events: {
+			create: (p?: {
+				source?: any
+				parent?: slime.$api.Events<any>
+				getParent?: () => slime.$api.Events<any>
+				on?: { [x: string]: any }
+			}) => slime.$api.Events<any>
+
+			//	TODO	could probably use parameterized types to improve accuracy
+			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.events.Function.Receiver) => R
+
+			toHandler: <D>(handler: slime.$api.events.Handler<D>) => {
+				emitter: slime.$api.Events<D>
+				attach: () => void
+				detach: () => void
+			}
+
+			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.events.Handler<E>) => R
+		}
+		/** @deprecated Replaced by {@link slime.$api.Global["events"] } */
+		Events: {
+			/** @deprecated Replaced by {@link slime.$api.Global["events"]["create"]} */
+			(p?: {
+				source?: any
+				parent?: slime.$api.Events<any>
+				getParent?: () => slime.$api.Events<any>
+				on?: { [x: string]: any }
+			}): slime.$api.Events<any>
+
+			/** @deprecated Replaced by {@link slime.$api.Global["events"]["Function"]} */
+			Function: $api.Global["events"]["Function"]
+			/** @deprecated Replaced by {@link slime.$api.Global["events"]["toHandler"]} */
+			toHandler: $api.Global["events"]["toHandler"]
+			/** @deprecated Replaced by {@link slime.$api.Global["events"]["action"]} */
+			action: $api.Global["events"]["action"]
+		}
+	}
+
+	export interface Global {
+		threads: any
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit,
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
+			}
+		}
+	//@ts-ignore
+	)(fifty)
+}
