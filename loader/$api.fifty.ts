@@ -128,10 +128,10 @@ namespace slime.$api {
 
 	(
 		function(
-			$api: slime.$api.Global,
 			fifty: slime.fifty.test.Kit
 		) {
-			var verify = fifty.verify;
+			var { verify } = fifty;
+			var { $api } = fifty.global;
 
 			fifty.tests.exports.Iterable = function() {
 				var groups = [
@@ -189,7 +189,7 @@ namespace slime.$api {
 			}
 		}
 	//@ts-ignore
-	)($api,fifty);
+	)(fifty);
 
 	export interface Global {
 		Properties: any
