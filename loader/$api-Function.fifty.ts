@@ -719,11 +719,11 @@ namespace slime.$api.fp {
 	)(fifty, $api, tests, verify);
 
 	export namespace world {
-		export type Ask<E,T> = (events: slime.$api.Events<E>) => T
-		export type Tell<E> = (events: slime.$api.Events<E>) => void
-
 		export type Question<P,E,A> = (p?: P) => Ask<E,A>
 		export type Action<P,E> = (p?: P) => Tell<E>
+
+		export type Ask<E,T> = (events: slime.$api.Events<E>) => T
+		export type Tell<E> = (events: slime.$api.Events<E>) => void
 
 		export type Process = () => void
 		export type Input<T> = () => T

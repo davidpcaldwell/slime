@@ -526,17 +526,19 @@
 		}
 
 		$exports.Value = function(v,name) {
-			return new function() {
-				this.property = function() {
-					return $exports.Value($exports.Object.property.apply(v,arguments),((name)?name:"") + "." + Array.prototype.join.call(arguments,"."))
-				};
-
-				this.require = function() {
+			return {
+				require: function() {
 					if (!v) {
 						throw new TypeError(name + " is required");
 					}
-				}
-			}
+				},
+				property: function() {
+					return $exports.Value(
+						$exports.Object.property.apply(v,arguments),
+						( name || "" ) + "." + Array.prototype.join.call(arguments,".")
+					)
+				},
+			};
 		};
 
 		/**
@@ -618,13 +620,10 @@
 			return $exports;
 		})($exports);
 
-		/** @type { slime.$api.mime.Export } */
-		var mime = code.mime({
+		$exports.mime = code.mime({
 			Function: $exports.Function,
 			deprecate: $exports.deprecate
 		});
-
-		$exports.mime = mime;
 
 		//	TODO	we can refactor typechecking another day; for now we know this works
 		//@ts-ignore
