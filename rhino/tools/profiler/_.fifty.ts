@@ -115,11 +115,11 @@ namespace slime.jrunscript.tools.profiler.rhino {
 	/**
 	 * An object representing a call stack within an application and data surrounding its execution.
 	 */
-	export interface Node {
+	export interface Node<C extends Code = Code> {
 		/**
 		 * The unit of code on top of the stack at this point in the call tree.
 		 */
-		code: Code
+		code: C
 
 		/**
 		 * The numbers collected for this node during execution.
@@ -131,7 +131,7 @@ namespace slime.jrunscript.tools.profiler.rhino {
 		 */
 		children: Node[]
 
-		self: SelfCode
+		self?: Node<SelfCode>
 	}
 
 	/**
