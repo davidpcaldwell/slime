@@ -38,7 +38,13 @@ namespace slime.jsh {
  * enables authors to provide a {@link slime.jsh.wf.standard.Interface | standard set} of `wf` commands given a
  * {@link slime.jsh.wf.standard.Project | Project} definition that provides implementations for a few basic operations.
  *
+ * This standard project implementation also provides implementations for `git` hooks, which can be used if they are enabled; see
+ * below.
+ *
  * If a project provides an `initialize` command, it is executed prior to every `wf` command (and should thus be idempotent).
+ *
+ * The `jsh.wf.project.git.installHooks()` call from within `initialize` will install `git` hooks that piggyback off the standard
+ * implementation operations.
  */
 namespace slime.jsh.wf {
 	/**
