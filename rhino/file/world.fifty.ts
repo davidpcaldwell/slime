@@ -546,7 +546,7 @@ namespace slime.jrunscript.file {
 
 			file: {
 				read: {
-					string: slime.$api.fp.world.Question<world.Location, {
+					string: () => slime.$api.fp.world.Question<world.Location, {
 						notFound: void
 					}, slime.$api.fp.Maybe<string>>
 				}
