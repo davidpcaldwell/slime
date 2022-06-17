@@ -75,43 +75,42 @@
 
 		/**
 		 *
+		 * @param { slime.jrunscript.tools.profiler.rhino.Node } node
+		 */
+		var addSelfNodeTo = function(node) {
+			if (node.children.length) {
+				node.children.forEach(function(child) {
+					addSelfNodeTo(child);
+				});
+				var self = node.statistics.elapsed;
+				node.children.forEach(function(child) {
+					self -= child.statistics.elapsed;
+				});
+				//	TODO	in theory should not have to check for this, but we are working around bug in which main(String[]) and (top) have 0 elapsed
+				node.self = {
+					code: { self: node.code },
+					statistics: {
+						elapsed: self,
+						count: node.statistics.count
+					},
+					children: []
+				};
+				node.children.push(node.self);
+			}
+		};
+
+		/**
+		 *
 		 * @param { slime.jrunscript.tools.profiler.rhino.Profile[] } profiles
 		 */
 		var addSelfNodes = function(profiles) {
 			profiles.forEach(function(profile) {
-
-				/**
-				 *
-				 * @param { slime.jrunscript.tools.profiler.rhino.Node } node
-				 */
-				var addSelfNodeTo = function(node) {
-					if (node.children.length) {
-						node.children.forEach(function(child) {
-							addSelfNodeTo(child);
-						});
-						var self = node.statistics.elapsed;
-						node.children.forEach(function(child) {
-							self -= child.statistics.elapsed;
-						});
-						//	TODO	in theory should not have to check for this, but we are working around bug in which main(String[]) and (top) have 0 elapsed
-						node.self = {
-							code: { self: node.code },
-							statistics: {
-								elapsed: self,
-								count: node.statistics.count
-							},
-							children: []
-						};
-						node.children.push(node.self);
-					}
-				};
-
 				addSelfNodeTo(profile.timing.root);
 			});
 		};
 
 		/**
-		 *
+		 * @param { slime.jrunscript.tools.profiler.rhino.Hotspots } map
 		 * @param { slime.jrunscript.tools.profiler.rhino.Node } node
 		 */
 		var addToHotspots = function(map,node) {
@@ -140,6 +139,29 @@
 
 		/**
 		 *
+		 * @param { slime.jrunscript.tools.profiler.rhino.Profile } profile
+		 */
+		var getHotspots = function(profile) {
+			/** @type { slime.jrunscript.tools.profiler.rhino.Hotspots } */
+			var map = {};
+			addToHotspots(map,profile.timing.root);
+			return map;
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.profiler.rhino.Statistics } statistics
+		 * @param { string } name
+		 * @returns
+		 */
+		var createNodeText = function(statistics,name) {
+			return document.createTextNode(
+				(statistics.elapsed/1000).toFixed(3) + " " + statistics.count + " " + name
+			)
+		};
+
+		/**
+		 *
 		 * @param { slime.jrunscript.tools.profiler.rhino.Profile[] } profiles
 		 * @param { slime.jrunscript.tools.profiler.viewer.Settings } [settings]
 		 */
@@ -154,6 +176,8 @@
 			var top = divUnder(document.getElementById("data"));
 
 			profiles.forEach(function(profile) {
+				if (profile.timing.root.statistics.elapsed < settings.threshold) return;
+
 				var div_profile = divUnder(top, "profile");
 
 				var div_thread = under(div_profile, "h2", "thread");
@@ -171,8 +195,7 @@
 					var top = document.createElement("div");
 					top.className = "node";
 					var total = divUnder(top, "total");
-					var name = nodeName(node.code);
-					total.innerHTML = (node.statistics.elapsed/1000).toFixed(3) + " " + node.statistics.count + " " + name.replace(/\</g, "&lt;");
+					total.appendChild(createNodeText(node.statistics, nodeName(node.code)));
 					node.children.filter(function(child) {
 						//	Work around problem with top level
 						var children = 0;
@@ -197,32 +220,16 @@
 				var div_hotspots = divUnder(div_profile, "hotspots");
 				under(div_hotspots, "h3").innerHTML = "Hot Spots";
 
-				var map = {};
-				addToHotspots(map,profile.timing.root);
-
-				var list = [];
-				for (var x in map) {
-					list.push({ key: x, count: map[x].count, elapsed: map[x].elapsed });
-				}
-				list.sort(function(a,b) {
+				Object.entries(getHotspots(profile)).map(function(entry) {
+					return { key: entry[0], count: entry[1].count, elapsed: entry[1].elapsed };
+				}).sort(function(a,b) {
 					return b.elapsed - a.elapsed;
-				});
-				if (false) {
-					var total = { count: 1, elapsed: 0 };
-					list.forEach(function(item) {
-						//	TODO	this check is to work around the negative-self-time bug
-						if (item.elapsed > 0) {
-							total.elapsed += item.elapsed;
-						}
-					});
-					list.push({ key: "TOTAL", count: total.count, elapsed: total.elapsed });
-				}
-				list.forEach(function(item) {
+				}).forEach(function(item) {
 					if ( item.elapsed >= settings.threshold ) {
 						var hotspotdiv = divUnder(div_hotspots, "hotspot");
-						hotspotdiv.innerHTML = (item.elapsed / 1000).toFixed(3) + " " + item.count + " " + item.key.replace(/\</g, "&lt;");
+						hotspotdiv.appendChild(createNodeText(item, item.key));
 					}
-				})
+				});
 			});
 		}
 

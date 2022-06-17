@@ -389,6 +389,7 @@ namespace slime.jsh.wf {
 							command: getSlimePath("jsh.bash").pathname,
 							arguments: $api.Array.build(function(rv) {
 								rv.push(getSlimePath("jsh/tools/profile.jsh.js").pathname);
+								rv.push("--profiler:output:json", fifty.jsh.file.relative("../../local/wf/profile.json").pathname);
 								rv.push(getSlimePath("tools/wf.jsh.js").pathname);
 								rv.push("initialize");
 								rv.push("--test-skip-git-identity-requirement");
@@ -396,6 +397,8 @@ namespace slime.jsh.wf {
 							directory: getSlimePath(".").pathname
 						})
 					)();
+					var url = "http://documentation.slime/rhino/tools/profiler/viewer/viewer.html?profiles=../../../../local/wf/profile.json";
+					jsh.shell.console("Open " + url + " in documentation browser.");
 				}
 			}
 		//@ts-ignore

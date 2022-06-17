@@ -157,4 +157,8 @@ namespace slime.jrunscript.tools.profiler.rhino {
 			root: Node
 		}
 	}
+
+	export type Hotspots = {
+		[key: string]: Statistics
+	}
 }
