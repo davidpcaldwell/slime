@@ -67,6 +67,9 @@ namespace slime.jrunscript.shell.browser {
 		}
 
 		installed: {
+			/**
+			 * An object representing the global Chrome installation, or `undefined` if it is not installed or not detected.
+			 */
 			chrome: Chrome
 		}
 

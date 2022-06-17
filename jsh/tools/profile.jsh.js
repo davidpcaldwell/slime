@@ -24,6 +24,19 @@
 			jsh.script.cli.option.string({ longname: "profiler:property" })
 		);
 
+		/**
+		 *
+		 * @param { slime.jrunscript.file.Pathname } pathname
+		 */
+		var isUnderSlime = function(pathname) {
+			return $api.Function.string.startsWith(jsh.shell.jsh.src.toString())(pathname.toString());
+		};
+
+		var pathUnderSlime = function(pathname) {
+			if (!isUnderSlime(pathname)) throw new Error();
+			return pathname.toString().substring(jsh.shell.jsh.src.toString().length);
+		}
+
 		jsh.script.cli.run(
 			$api.Function.pipe(
 				options,
@@ -122,6 +135,35 @@
 
 					if (output.html && jsh.shell.browser.chrome && !parameters.options["profiler:nobrowser"]) {
 						jsh.shell.browser.chrome.instance.open( { uri: String(output.html.java.adapt().toURL().toExternalForm()) } );
+					} else if (output.json && isUnderSlime(output.json) && jsh.httpd.Tomcat && jsh.shell.browser.installed.chrome && !parameters.options["profiler:nobrowser"]) {
+						jsh.shell.console("profiler: Serving JSON to browser ...");
+						var server = new jsh.httpd.Tomcat();
+						server.servlet({
+							load: function(scope) {
+								scope.$exports.handle = scope.httpd.Handler.Loader({
+									loader: new jsh.file.Loader({ directory: jsh.shell.jsh.src })
+								})
+							}
+						});
+						server.start();
+
+						//	TODO	this somewhat awkward series of API calls is caused by using the unit testing browser implementation,
+						//			which has a simpler API, rather than using the Chrome API directly. Should revisit.
+						var browser = jsh.unit.browser.local.Chrome({
+							program: jsh.shell.browser.installed.chrome.program,
+							user: jsh.shell.jsh.src.getRelativePath("local/chrome/profiler").toString(),
+							devtools: false,
+							debugPort: 9222
+						});
+
+						browser.open({
+							uri: "http://127.0.0.1:" + server.port + "/rhino/tools/profiler/viewer/viewer.html?profiles=../../../../" + pathUnderSlime(output.json)
+						});
+						server.run();
+					} else if (output.json && !isUnderSlime(output.json)) {
+						jsh.shell.console("Not under SLIME at " + jsh.shell.jsh.src + ": " + output.json);
+					} else if (output.json && !jsh.httpd.Tomcat) {
+						jsh.shell.console("Tomcat not installed.");
 					}
 				}
 			)

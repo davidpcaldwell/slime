@@ -383,13 +383,23 @@ namespace slime.jsh.wf {
 							directory: getSlimePath(".").pathname
 						})
 					)();
+					//	Needed for profile viewer, to serve UI and JSON data
+					jsh.shell.world.run(
+						jsh.shell.Invocation.create({
+							command: getSlimePath("jsh.bash").pathname,
+							arguments: $api.Array.build(function(rv) {
+								rv.push(getSlimePath("jsh/tools/install/tomcat.jsh.js").pathname);
+							}),
+							directory: getSlimePath(".").pathname
+						})
+					)();
 					jsh.shell.world.run(
 						jsh.shell.Invocation.create({
 							//	TODO	perhaps should accept world Pathname
 							command: getSlimePath("jsh.bash").pathname,
 							arguments: $api.Array.build(function(rv) {
 								rv.push(getSlimePath("jsh/tools/profile.jsh.js").pathname);
-								rv.push("--profiler:output:json", fifty.jsh.file.relative("../../local/wf/profile.json").pathname);
+								rv.push("--profiler:output:json", getSlimePath("local/wf/profile.json").pathname);
 								rv.push(getSlimePath("tools/wf.jsh.js").pathname);
 								rv.push("initialize");
 								rv.push("--test-skip-git-identity-requirement");
@@ -397,8 +407,6 @@ namespace slime.jsh.wf {
 							directory: getSlimePath(".").pathname
 						})
 					)();
-					var url = "http://documentation.slime/rhino/tools/profiler/viewer/viewer.html?profiles=../../../../local/wf/profile.json";
-					jsh.shell.console("Open " + url + " in documentation browser.");
 				}
 			}
 		//@ts-ignore
