@@ -119,6 +119,13 @@
 					return string.match(regexp);
 				}
 			},
+			startsWith: function(searchString, startPosition) {
+				startPosition = startPosition || 0;
+				return function(string) {
+					var target = string.substring(startPosition);
+					return target.substring(0, searchString.length) == searchString;
+				}
+			},
 			endsWith: function(searchString, endPosition) {
 				return function(string) {
 					if (typeof(string) == "undefined") throw new TypeError("Cannot test whether undefined ends with search string.");

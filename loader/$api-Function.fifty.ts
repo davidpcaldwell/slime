@@ -293,6 +293,7 @@ namespace slime.$api.fp {
 			toUpperCase: (string: string) => string
 			match: (pattern: RegExp) => (string: string) => RegExpMatchArray
 
+			startsWith: (searchString: string, startPosition?: number) => Predicate<string>
 			endsWith: (searchString: string, endPosition?: number) => Predicate<string>
 		}
 
