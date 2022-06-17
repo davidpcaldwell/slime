@@ -96,7 +96,7 @@ namespace slime.jsh.ui.application {
 
 	export type BrowserConfiguration = BrowserSpecification | BrowserFunction
 
-	interface ClientSpecification {
+	export interface ClientSpecification {
 		browser: BrowserConfiguration
 
 		url?: string
@@ -107,15 +107,15 @@ namespace slime.jsh.ui.application {
 		path?: string
 	}
 
-	interface EventsConfiguration {
+	export interface EventsConfiguration {
 		close: () => void
 	}
 
-	interface EventsSpecification {
+	export interface EventsSpecification {
 		on?: EventsConfiguration
 	}
 
-	interface Deprecated {
+	export interface Deprecated {
 		/** @deprecated */
 		zoom?: any
 		/** @deprecated */
