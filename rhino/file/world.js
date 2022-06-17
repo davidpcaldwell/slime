@@ -277,20 +277,22 @@
 				},
 				file: {
 					read: {
-						string: function(location) {
-							return function(events) {
-								var ask = location.filesystem.openInputStream({
-									pathname: location.pathname
-								});
-								var maybe = ask(events);
-								return $api.Function.result(
-									maybe,
-									$api.Function.Maybe.map(
-										function(it) {
-											return it.character().asString()
-										}
+						string: function() {
+							return function(location) {
+								return function(events) {
+									var ask = location.filesystem.openInputStream({
+										pathname: location.pathname
+									});
+									var maybe = ask(events);
+									return $api.Function.result(
+										maybe,
+										$api.Function.Maybe.map(
+											function(it) {
+												return it.character().asString()
+											}
+										)
 									)
-								)
+								}
 							}
 						}
 					}
