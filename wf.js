@@ -216,7 +216,7 @@
 				}
 
 				//	Required for old loader/document implementation
-				(
+				if (false) (
 					function jsoup() {
 						jsh.shell.tools.jsoup.require();
 					}
