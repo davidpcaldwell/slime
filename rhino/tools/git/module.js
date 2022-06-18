@@ -17,7 +17,9 @@
 	function($api,$context,$loader,$exports) {
 		var scripts = {
 			/** @type { slime.jrunscript.tools.git.internal.log.Script } */
-			log: $loader.script("log.js")
+			log: $loader.script("log.js"),
+			/** @type { slime.jrunscript.tools.git.internal.commands.Script } */
+			commands: $loader.script("commands.js")
 		};
 
 		var library = {
@@ -25,85 +27,9 @@
 				library: {
 					time: $context.api.time
 				}
-			})
+			}),
+			commands: scripts.commands()
 		}
-
-		/**
-		 * @type { slime.jrunscript.tools.git.Exports["commands"]["status"] }
-		 */
-		var status = {
-			invocation: function() {
-				return {
-					command: "status",
-					arguments: [
-						"--porcelain", "-b"
-					]
-				}
-			},
-			result: function(output) {
-				//	TODO	This ignores renamed files; see git help status
-				var parser = /(..) (\S+)/;
-				var rv = {
-					branch: void(0)
-				};
-				output.split("\n").forEach(function(line) {
-					if (line.substring(0,2) == "##") {
-						var branchName = line.substring(3);
-						if (branchName.indexOf("...") != -1) {
-							branchName = branchName.substring(0,branchName.indexOf("..."));
-						}
-						var detached = Boolean(branchName == "HEAD (no branch)")
-						rv.branch = (detached) ? null : branchName;
-					} else {
-						var match = parser.exec(line);
-						if (match) {
-							if (!rv.paths) rv.paths = {};
-							rv.paths[match[2]] = match[1];
-						} else if (line == "") {
-							//	do nothing
-						} else {
-							throw new Error("Unexpected line: [" + line + "]");
-						}
-					}
-				});
-				return rv;
-			}
-		}
-
-		/**
-		 * @type { slime.jrunscript.tools.git.Exports["commands"]["fetch"] }
-		 */
-		var fetch = {
-			invocation: function() {
-				return {
-					command: "fetch"
-				}
-			}
-		}
-
-		/** @type { slime.jrunscript.tools.git.Command<{ name: string }, void> } */
-		var merge = {
-			invocation: function(p) {
-				return {
-					command: "merge",
-					arguments: $api.Array.build(function(rv) {
-						rv.push(p.name);
-					})
-				}
-			}
-		}
-
-		/** @type { slime.jrunscript.tools.git.Commands["submodule"] } */
-		var submodule = {
-			update: {
-				invocation: function() {
-					return {
-						command: "submodule",
-						arguments: ["update", "--init", "--recursive"]
-					}
-				}
-			}
-		};
 
 		/** @type { new (environment: Parameters<slime.jrunscript.tools.git.Exports["Installation"]>[0] ) => slime.jrunscript.tools.git.Installation } */
 		var Installation = function(environment) {
@@ -766,7 +692,7 @@
 				/** @type { slime.jrunscript.tools.git.repository.Local["status"] } */
 				this.status = function() {
 					var self = this;
-					var input = status.invocation();
+					var input = library.commands.status.invocation();
 					return execute({
 						command: input.command,
 						arguments: input.arguments,
@@ -780,7 +706,7 @@
 						 */
 						evaluate: function(result) {
 							//	TODO	This ignores renamed files; see git help status
-							var parsed = status.result(result.stdio.output);
+							var parsed = library.commands.status.result(result.stdio.output);
 							return {
 								branch: {
 									name: parsed.branch,
@@ -1419,12 +1345,7 @@
 			}
 		};
 
-		$exports.commands = {
-			status: status,
-			fetch: fetch,
-			merge: merge,
-			submodule: submodule
-		};
+		$exports.commands = library.commands;
 
 		/**
 		 * @param { slime.jrunscript.tools.git.Program } program

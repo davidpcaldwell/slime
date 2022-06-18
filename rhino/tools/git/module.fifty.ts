@@ -766,24 +766,6 @@ namespace slime.jrunscript.tools.git {
 		}
 	}
 
-	export interface Commands {
-		status: Command<void,command.status.Result>
-	}
-
-	export interface Commands {
-		fetch: Command<void,void>
-	}
-
-	export interface Commands {
-		merge: Command<{ name: string }, void>
-	}
-
-	export interface Commands {
-		submodule: {
-			update: Command<void,void>
-		}
-	}
-
 	export interface Exports {
 		/**
 		 * An opinionated object that provides a set of {@link Command} implementations deemed to be useful for `git` automation.
