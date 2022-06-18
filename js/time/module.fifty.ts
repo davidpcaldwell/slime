@@ -254,4 +254,6 @@ namespace slime.time {
 		}
 	//@ts-ignore
 	)(fifty,$loader,verify,tests)
+
+	export type Script = slime.loader.Script<Context,Exports>
 }
