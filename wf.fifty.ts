@@ -21,7 +21,7 @@ namespace slime {
 				return {
 					clone: function() {
 						return fixtures.clone({
-							src: fifty.jsh.file.relative(".")
+							src: jsh.file.world.filesystems.os.pathname(fifty.jsh.file.relative(".").pathname)
 						});
 					},
 					configure: fixtures.configure,
@@ -45,6 +45,23 @@ namespace slime {
 		}
 
 		type Options = {}
+
+		export interface Interface extends slime.jsh.wf.standard.Interface {
+			git: slime.jsh.wf.standard.Interface["git"] & {
+				/**
+				 * Creates a branch based on the current `master` from `origin` and checks it out. The first argument is used as
+				 * the branch name.
+				 */
+				branch: slime.jsh.script.cli.Command<Options>
+
+				trunk: slime.jsh.script.cli.Command<Options>
+
+				branches: {
+					list: slime.jsh.script.cli.Command<Options>
+					prune: slime.jsh.script.cli.Command<Options>
+				}
+			}
+		}
 
 		export interface Interface extends slime.jsh.wf.standard.Interface {
 			/**
@@ -73,21 +90,6 @@ namespace slime {
 			check: slime.jsh.script.cli.Command<Options & {
 				docker: boolean
 			}>
-
-			git: slime.jsh.wf.standard.Interface["git"] & {
-				/**
-				 * Creates a branch based on the current `master` from `origin` and checks it out. The first argument is used as
-				 * the branch name.
-				 */
-				branch: slime.jsh.script.cli.Command<Options>
-
-				trunk: slime.jsh.script.cli.Command<Options>
-
-				branches: {
-					list: slime.jsh.script.cli.Command<Options>
-					prune: slime.jsh.script.cli.Command<Options>
-				}
-			}
 
 			merge: slime.jsh.script.cli.Command<Options>
 

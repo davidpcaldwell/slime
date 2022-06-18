@@ -11,12 +11,20 @@ namespace slime.jsh.wf.test {
 	}
 
 	export interface Fixtures {
+		/**
+		 * Clones the repository given by p.src to a temporary directory. If p.commit is given and files are modified,
+		 * commits changes with the given p.commit.message.
+		 */
 		clone: (p: {
-			src: slime.jrunscript.file.world.Location
+			src: slime.jrunscript.file.world.object.Pathname
 			commit?: {
 				message: string
 			}
 		}) => slime.jrunscript.tools.git.repository.Local
+
+		/**
+		 * Sets an arbitrary `user.name` and `user.email` on the repository configuration for the given repository.
+		 */
 		configure: (repository: slime.jrunscript.tools.git.repository.Local) => void
 	}
 
