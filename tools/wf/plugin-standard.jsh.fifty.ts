@@ -23,6 +23,12 @@ namespace slime.jsh.wf {
 
 					var src: slime.jrunscript.file.Directory = fifty.jsh.file.object.getRelativePath("../..").directory;
 
+					/**
+					 * Creates a project based on the project configuration in the `tools/wf/test/data/plugin-standard` directory,
+					 * with user.name and user.email configured, and adds a `slime` subrepository to it at `slime/`.
+					 *
+					 * @returns The repository for the new project.
+					 */
 					function fixture() {
 						var project = fifty.jsh.file.object.temporary.location();
 						fifty.jsh.file.object.getRelativePath("test/data/plugin-standard").directory.copy(project);
@@ -182,7 +188,7 @@ namespace slime.jsh.wf {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
-				fifty.tests.interface = {};
+				fifty.tests.interface = fifty.test.Parent();
 			}
 		//@ts-ignore
 		)(fifty);
@@ -363,8 +369,7 @@ namespace slime.jsh.wf {
 				const { $api, jsh } = fifty.global;
 
 				fifty.tests.suite = function() {
-					fifty.run(fifty.tests.interface.tsc);
-					fifty.run(fifty.tests.interface.commit);
+					fifty.run(fifty.tests.interface);
 				}
 
 				fifty.tests.manual = {};
