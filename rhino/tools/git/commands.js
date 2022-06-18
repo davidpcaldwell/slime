@@ -27,12 +27,14 @@
 			},
 			result: function(output) {
 				//	TODO	This ignores renamed files; see git help status
-				var parser = /(..) (\S+)/;
 				var rv = {
 					branch: void(0)
 				};
 				output.split("\n").forEach(function(line) {
-					if (line.substring(0,2) == "##") {
+					var NO_COMMITS_PREFIX = "## No commits yet on ";
+					if ($api.Function.string.startsWith(NO_COMMITS_PREFIX)(line)) {
+						rv.branch = line.substring(NO_COMMITS_PREFIX.length);
+					} else if (line.substring(0,2) == "##") {
 						var branchName = line.substring(3);
 						if (branchName.indexOf("...") != -1) {
 							branchName = branchName.substring(0,branchName.indexOf("..."));
@@ -40,6 +42,7 @@
 						var detached = Boolean(branchName == "HEAD (no branch)")
 						rv.branch = (detached) ? null : branchName;
 					} else {
+						var parser = /(..) (\S+)/;
 						var match = parser.exec(line);
 						if (match) {
 							if (!rv.paths) rv.paths = {};
