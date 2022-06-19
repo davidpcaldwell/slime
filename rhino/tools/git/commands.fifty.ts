@@ -5,9 +5,24 @@
 //	END LICENSE
 
 namespace slime.jrunscript.tools.git.internal.commands {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+			fifty.tests.world = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace test {
+		export type Repository = {
+			location: slime.jrunscript.file.world.Location
+			api: ReturnType<ReturnType<slime.jrunscript.tools.git.Exports["program"]>["repository"]>
+		};
+
 		export const fixtures = (function(fifty: slime.fifty.test.Kit) {
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			var program = jsh.tools.git.program({ command: "git" });
 
@@ -19,32 +34,55 @@ namespace slime.jrunscript.tools.git.internal.commands {
 				}
 			}
 
-			function empty() {
+			function empty(): Repository {
 				var tmp = fifty.jsh.file.temporary.directory();
 				var repository = jsh.tools.git.program({ command: "git" }).repository(tmp.pathname);
 				repository.command(init).argument().run();
-				repository.toString = function() {
-					return tmp.pathname;
-				};
-				return repository;
+				return {
+					location: tmp,
+					api: repository
+				}
+			}
+
+			function edit(repository: Repository, path: string, change: (before: string) => string) {
+				var target = $api.Function.result(
+					repository.location,
+					jsh.file.world.Location.relative(path)
+				);
+
+				var before = $api.Function.result(
+					target,
+					$api.Function.pipe(
+						jsh.file.world.Location.file.read.string(),
+						$api.Function.world.handler.ask(),
+						$api.Function.world.input,
+						$api.Function.Maybe.else(function() {
+							return null as string;
+						})
+					)
+				);
+
+				var edited = change(before);
+
+				var process = $api.Function.result(
+					target,
+					$api.Function.pipe(
+						jsh.file.world.Location.file.write.string({ value: edited }),
+						$api.Function.world.handler.tell()
+					)
+				);
+
+				$api.Function.world.process(process);
 			}
 
 			return {
 				program,
-				empty
+				empty,
+				edit
 			};
 		//@ts-ignore
 		})(fifty);
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports = fifty.test.Parent();
-		}
-	//@ts-ignore
-	)(fifty);
 }
 
 namespace slime.jrunscript.tools.git {
@@ -57,9 +95,18 @@ namespace slime.jrunscript.tools.git {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 			const subject = jsh.tools.git.commands;
 			const fixtures = internal.commands.test.fixtures;
+
+			const add: slime.jrunscript.tools.git.Command<string,void> = {
+				invocation: function(p) {
+					return {
+						command: "add",
+						arguments: [p]
+					}
+				}
+			};
 
 			fifty.tests.exports.status = {};
 
@@ -74,9 +121,66 @@ namespace slime.jrunscript.tools.git {
 				var it = fixtures.empty();
 				jsh.shell.console(it.toString());
 
-				var status = it.command(subject.status).argument().run();
+				var status = it.api.command(subject.status).argument().run();
 				verify(status).branch.is("master");
 				verify(status).evaluate.property("paths").is(void(0));
+			};
+
+			/**
+			 * Verifies the behavior of various operations that affect the git staging area.
+			 */
+			fifty.tests.world.staging = function() {
+				var commit: slime.jrunscript.tools.git.Command<{
+					message: string
+				},void> = {
+					invocation: function(p) {
+						return {
+							command: "commit",
+							arguments: $api.Array.build(function(rv) {
+								rv.push("--message", p.message);
+							})
+						}
+					}
+				};
+
+				var reset: slime.jrunscript.tools.git.Command<void,void> = {
+					invocation: function(p) {
+						return {
+							command: "reset"
+						}
+					}
+				};
+
+				function status() {
+					return it.api.command(jsh.tools.git.commands.status).argument().run();
+				}
+
+				var it = fixtures.empty();
+				fixtures.edit(it, "a", $api.Function.returning("a"));
+				fixtures.edit(it, "b", $api.Function.returning("b"));
+				it.api.command(add).argument("a").run();
+				verify(status(), "status", function(it) {
+					it.paths.a.is("A ");
+					it.paths.b.is("??");
+				});
+				it.api.command(add).argument("b").run();
+				it.api.command(commit).argument({ message: "1" }).run();
+				fixtures.edit(it, "a", $api.Function.returning("aa"));
+				fixtures.edit(it, "b", $api.Function.returning("bb"));
+				verify(status(), "status_after_edits", function(it) {
+					it.paths.a.is(" M");
+					it.paths.b.is(" M");
+				});
+				it.api.command(add).argument("a").run();
+				verify(status(), "status_after_add_a", function(it) {
+					it.paths.a.is("M ");
+					it.paths.b.is(" M");
+				});
+				it.api.command(reset).argument().run();
+				verify(status(), "status_after_reset", function(it) {
+					it.paths.a.is(" M");
+					it.paths.b.is(" M");
+				});
 			}
 		}
 	//@ts-ignore

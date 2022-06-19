@@ -14,6 +14,15 @@ namespace slime.$api {
  * The {@link Exports} member of this namespace is available as `$api.Function` in all scripts loaded by the SLIME loader.
  */
 namespace slime.$api.fp {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export type Predicate<T> = (t: T) => boolean
 	/** @deprecated Use {@link Predicate}. */
 	export type Filter<T> = (t: T) => boolean
@@ -47,7 +56,7 @@ namespace slime.$api.fp {
 		) {
 			const { verify } = fifty;
 
-			fifty.tests.memoized = function() {
+			fifty.tests.exports.memoized = function() {
 				var calls: number;
 
 				var counter = function() {
@@ -730,24 +739,35 @@ namespace slime.$api.fp {
 		export type Input<T> = () => T
 	}
 
-	export interface Exports {
-		world: {
-			question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => (p: P) => A
-			action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => (p?: P) => void
+	export interface World {
+		question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => (p: P) => A
+		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => (p?: P) => void
 
-			ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => world.Input<A>
-			tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => world.Process
-
-			Process: {
-				compose: (processes: world.Process[]) => world.Process
+		handler: {
+			ask: {
+				<E,A>(handler?: slime.$api.events.Handler<E>): (p: world.Ask<E,A>) => world.Input<A>
 			}
-
-			input: <T>(input: world.Input<T>) => T
-			process: (process: world.Process) => void
-
-			/** @experimental May not be needed. Should be able to use tell() to turn into {@link world.Process}, then process that. */
-			execute: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => void
+			tell: {
+				<E>(handler?: slime.$api.events.Handler<E>): (p: world.Tell<E>) => world.Process
+			}
 		}
+
+		ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => world.Input<A>
+		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => world.Process
+
+		Process: {
+			compose: (processes: world.Process[]) => world.Process
+		}
+
+		input: <T>(input: world.Input<T>) => T
+		process: (process: world.Process) => void
+
+		/** @experimental May not be needed. Should be able to use tell() to turn into {@link world.Process}, then process that. */
+		execute: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => void
+	}
+
+	export interface Exports {
+		world: World
 	}
 
 	export namespace impure {
@@ -1011,11 +1031,11 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
 				fifty.run(fifty.tests.string);
 				fifty.run(fifty.tests.RegExp);
 				fifty.run(fifty.tests.impure);
 				fifty.run(fifty.tests.compare);
-				fifty.run(fifty.tests.memoized);
 				fifty.run(fifty.tests.is);
 				fifty.run(fifty.tests.result);
 				fifty.run(fifty.tests.Object);

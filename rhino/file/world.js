@@ -35,6 +35,17 @@
 			};
 
 			/**
+			 * @type { slime.jrunscript.file.world.Filesystem["openOutputStream"] }
+			 */
+			var maybeOutputStream = function(p) {
+				return function(events) {
+					var peer = was.newPeer(p.pathname);
+					var binary = peer.writeBinary(p.append || false);
+					return $api.Function.Maybe.value($context.library.io.Streams.java.adapt(binary));
+				}
+			}
+
+			/**
 			 *
 			 * @param { string } pathname
 			 * @param { slime.$api.Events<{ notFound: void }> } events
@@ -210,6 +221,7 @@
 						return maybeInputStream(p.pathname, events);
 					}
 				},
+				openOutputStream: maybeOutputStream,
 				pathname: pathname_create,
 				Pathname: {
 					relative: pathname_relative,
@@ -255,7 +267,7 @@
 			return filesystem;
 		}
 
-		/** @type { slime.jrunscript.file.World["Location"]["relative"] } */
+		/** @type { slime.jrunscript.file.world.Locations["relative"] } */
 		var Location_relative = function(path) {
 			return function(pathname) {
 				var absolute = pathname.filesystem.Pathname.relative(pathname.pathname, path);
@@ -292,6 +304,32 @@
 											}
 										)
 									)
+								}
+							}
+						}
+					},
+					write: {
+						string: function(p) {
+							return function(location) {
+								return function(events) {
+									var ask = location.filesystem.openOutputStream({
+										pathname: location.pathname
+									});
+									var output = ask(events);
+									var rv = $api.Function.result(
+										output,
+										$api.Function.pipe(
+											$api.Function.Maybe.map(function(stream) {
+												var writer = stream.character();
+												writer.write(p.value);
+												writer.close();
+											}),
+											$api.Function.Maybe.else(function() {
+												throw new Error("Could not write to location " + location.pathname);
+											})
+										)
+									);
+									return rv;
 								}
 							}
 						}
