@@ -24,6 +24,33 @@ namespace slime.jrunscript.file {
 			readonly pathname: string
 		}
 
+		export interface Locations {
+			relative: (path: string) => (p: world.Location) => world.Location
+			parent: () => (p: world.Location) => world.Location
+
+			file: {
+				read: {
+					string: () => slime.$api.fp.world.Question<world.Location, {
+						notFound: void
+					}, slime.$api.fp.Maybe<string>>
+				}
+
+				write: {
+					string: (p: {
+						value: string
+					}) => slime.$api.fp.world.Action<world.Location, {
+					}>
+				}
+			}
+		}
+	}
+
+	export interface World {
+		Location: world.Locations
+	}
+
+	export namespace world {
+
 		(
 			function(
 				fifty: slime.fifty.test.Kit
@@ -316,6 +343,12 @@ namespace slime.jrunscript.file {
 				notFound: void
 			},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
 
+			openOutputStream: slime.$api.fp.world.Question<{
+				pathname: string
+				append?: boolean
+			},{
+			},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.OutputStream>>
+
 			/** @deprecated Not really world-oriented; use the methods of `Pathname`, `File`, and `Directory`. */
 			pathname: (pathname: string) => object.Pathname
 
@@ -538,19 +571,6 @@ namespace slime.jrunscript.file {
 	export interface World {
 		filesystems: {
 			os: world.Filesystem
-		}
-
-		Location: {
-			relative: (path: string) => (p: world.Location) => world.Location
-			parent: () => (p: world.Location) => world.Location
-
-			file: {
-				read: {
-					string: () => slime.$api.fp.world.Question<world.Location, {
-						notFound: void
-					}, slime.$api.fp.Maybe<string>>
-				}
-			}
 		}
 	}
 
