@@ -24,6 +24,16 @@ namespace slime.jrunscript.file {
 			readonly pathname: string
 		}
 
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.sandbox.locations = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export interface Locations {
 			relative: (path: string) => (p: world.Location) => world.Location
 			parent: () => (p: world.Location) => world.Location
@@ -43,6 +53,45 @@ namespace slime.jrunscript.file {
 				}
 			}
 		}
+
+		export interface Locations {
+			directory: {
+				exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
+
+				require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Action<world.Location, {
+				}>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+				const subject = jsh.file.world;
+
+				fifty.tests.sandbox.locations.directory = function() {
+					var at = fifty.jsh.file.temporary.location();
+
+					var exists = $api.Function.pipe(
+						subject.Location.directory.exists(),
+						$api.Function.world.handler.ask(),
+						$api.Function.world.input
+					);
+
+					verify(exists(at)).is(false);
+
+					$api.Function.world.tell(subject.Location.directory.require()(at))();
+					verify(exists(at)).is(true);
+
+					$api.Function.world.tell(subject.Location.directory.require()(at))();
+					verify(exists(at)).is(true);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 	}
 
 	export interface World {
@@ -61,11 +110,11 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export namespace object {
-			export interface Pathname extends world.Location {
+			export interface Location extends world.Location {
 				/**
 				 * @deprecated Not world-oriented.
 				 */
-				relative: (relative: string) => object.Pathname
+				relative: (relative: string) => object.Location
 			}
 		}
 
@@ -312,7 +361,7 @@ namespace slime.jrunscript.file {
 
 				fifty.tests.sandbox.filesystem.pathname.file.read = {};
 				fifty.tests.sandbox.filesystem.pathname.file.read.string = function() {
-					const readString = function(p: slime.jrunscript.file.world.object.Pathname): string {
+					const readString = function(p: slime.jrunscript.file.world.object.Location): string {
 						return p.file.read.string()();
 					}
 					verify(here).relative("module.fifty.ts").evaluate(readString).is.type("string");
@@ -323,7 +372,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export namespace object {
-			export interface Pathname {
+			export interface Location {
 				/**
 				 * @deprecated Not world-oriented.
 				 */
@@ -349,8 +398,17 @@ namespace slime.jrunscript.file {
 			},{
 			},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.OutputStream>>
 
+			directoryExists: slime.$api.fp.world.Question<{
+				pathname: string
+			},void,slime.$api.fp.Maybe<boolean>>
+
+			createDirectory: slime.$api.fp.world.Action<{
+				pathname: string
+				recursive: boolean
+			},void>
+
 			/** @deprecated Not really world-oriented; use the methods of `Pathname`, `File`, and `Directory`. */
-			pathname: (pathname: string) => object.Pathname
+			pathname: (pathname: string) => object.Location
 
 			/** @deprecated Use .pathname() to obtain a {@link Location}. */
 			Pathname: {
