@@ -45,7 +45,8 @@ namespace slime.jrunscript.tools.homebrew {
 
 	export interface Exports {
 		/**
-		 * Returns a Homebrew installation at the given location, creating the directory and installing Homebrew if necessary.
+		 * Returns a Homebrew installation at the given location, creating the directory (and ancestors, if necessay), and
+		 * installing Homebrew if necessary.
 		 */
 		get: (p: { location: slime.jrunscript.file.Pathname }) => Installation
 
