@@ -13,9 +13,13 @@ namespace slime.jrunscript.file {
 		 * present on Microsoft Windows systems.
 		 */
 		pathext: string[]
+
 		api: {
-			js: any
-			java: any
+			/**
+			 * @deprecated
+			 */
+			js: slime.js.old.Exports
+			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 		}
 

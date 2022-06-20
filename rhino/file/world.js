@@ -68,7 +68,7 @@
 			/**
 			 *
 			 * @param { string } pathname
-			 * @returns { slime.jrunscript.file.world.object.Pathname }
+			 * @returns { slime.jrunscript.file.world.object.Location }
 			 */
 			function pathname_create(pathname) {
 				return {
@@ -102,15 +102,15 @@
 						exists: file_exists(pathname)
 					},
 					directory: {
-						exists: directory_exists(pathname),
+						exists: directory_exists_impure(pathname),
 						require: function(p) {
-							return directory_require({
+							return directory_require_impure({
 								pathname: pathname,
 								recursive: Boolean(p && p.recursive)
 							});
 						},
 						remove: function() {
-							return directory_remove({
+							return directory_remove_impure({
 								pathname: pathname
 							})
 						},
@@ -131,7 +131,26 @@
 				return was.peerToString(peer);
 			}
 
-			function directory_require(p) {
+			/**
+			 * @param { string } pathname
+			 */
+			function directory_exists(pathname) {
+				var peer = was.newPeer(pathname);
+				return peer.exists() && peer.isDirectory();
+			}
+
+			/**
+			 *
+			 * @param { { pathname: string, recursive: boolean } } p
+			 */
+			function createDirectory(p) {
+				var peer = was.newPeer(p.pathname);
+				var parent = was.getParent(peer);
+				if (!parent.exists() && !p.recursive) throw new Error("Parent " + parent.getScriptPath() + " does not exist; specify recursive: true to override.");
+				was.createDirectoryAt(peer);
+			}
+
+			function directory_require_impure(p) {
 				return $api.Function.impure.tell(function() {
 					var peer = was.newPeer(p.pathname);
 					var parent = was.getParent(peer);
@@ -142,7 +161,7 @@
 				});
 			}
 
-			function directory_remove(p) {
+			function directory_remove_impure(p) {
 				return $api.Function.impure.tell(function() {
 					var peer = was.newPeer(p.pathname);
 					peer.delete();
@@ -153,11 +172,10 @@
 			 *
 			 * @param { string } pathname
 			 */
-			function directory_exists(pathname) {
+			function directory_exists_impure(pathname) {
 				return function() {
 					return $api.Function.impure.ask(function(events) {
-						var peer = was.newPeer(pathname);
-						return peer.exists() && peer.isDirectory();
+						return directory_exists(pathname);
 					});
 				}
 			}
@@ -222,6 +240,19 @@
 					}
 				},
 				openOutputStream: maybeOutputStream,
+				directoryExists: function(p) {
+					return function(events) {
+						return $api.Function.Maybe.value(directory_exists(p.pathname));
+					}
+				},
+				createDirectory: function(p) {
+					return function(events) {
+						createDirectory({
+							pathname: p.pathname,
+							recursive: p.recursive
+						});
+					}
+				},
 				pathname: pathname_create,
 				Pathname: {
 					relative: pathname_relative,
@@ -252,7 +283,7 @@
 					}
 				},
 				Directory: {
-					require: directory_require,
+					require: directory_require_impure,
 					remove: function(p) {
 						return $api.Function.impure.tell(function(e) {
 							var peer = was.newPeer(p.pathname);
@@ -330,6 +361,40 @@
 										)
 									);
 									return rv;
+								}
+							}
+						}
+					}
+				},
+				directory: {
+					/** @type { slime.jrunscript.file.World["Location"]["directory"]["exists"] } */
+					exists: function() {
+						return function(location) {
+							return function(events) {
+								var rv = location.filesystem.directoryExists({
+									pathname: location.pathname
+								})(events);
+								if (rv.present) return rv.value;
+								throw new Error("Error determining whether directory is present at " + location.pathname);
+							}
+						}
+					},
+					require: function(p) {
+						return function(location) {
+							return function(events) {
+								var exists = location.filesystem.directoryExists({
+									pathname: location.pathname
+								})(events);
+								if (exists.present) {
+									if (!exists.value) {
+										var tell = location.filesystem.createDirectory({
+											pathname: location.pathname,
+											recursive: Boolean(p && p.recursive)
+										});
+										tell(events);
+									}
+								} else {
+									throw new Error("Error determining whether directory is present at " + location.pathname);
 								}
 							}
 						}

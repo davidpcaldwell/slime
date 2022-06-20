@@ -16,7 +16,7 @@ namespace slime.jsh.wf.test {
 		 * commits changes with the given p.commit.message.
 		 */
 		clone: (p: {
-			src: slime.jrunscript.file.world.object.Pathname
+			src: slime.jrunscript.file.world.object.Location
 			commit?: {
 				message: string
 			}
