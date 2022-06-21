@@ -735,8 +735,8 @@ namespace slime.$api.fp {
 		export type Ask<E,T> = (events: slime.$api.Events<E>) => T
 		export type Tell<E> = (events: slime.$api.Events<E>) => void
 
-		export type Process = () => void
 		export type Input<T> = () => T
+		export type Process = () => void
 	}
 
 	export interface World {

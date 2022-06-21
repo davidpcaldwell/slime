@@ -52,6 +52,11 @@ namespace slime.jrunscript.file {
 						value: string
 					}) => slime.$api.fp.world.Action<world.Location, {
 					}>
+
+					stream: (p: {
+						input: slime.jrunscript.runtime.io.InputStream
+					}) => slime.$api.fp.world.Action<world.Location, {
+					}>
 				}
 			}
 		}
@@ -65,20 +70,48 @@ namespace slime.jrunscript.file {
 				const subject = jsh.file.world;
 
 				fifty.tests.sandbox.locations.file = function() {
-					var at = fifty.jsh.file.temporary.location();
+					fifty.run(function exists() {
+						var at = fifty.jsh.file.temporary.location();
 
-					var exists = $api.Function.pipe(
-						subject.Location.file.exists(),
-						$api.Function.world.handler.ask(),
-						$api.Function.world.input
-					);
+						var exists = $api.Function.pipe(
+							subject.Location.file.exists(),
+							$api.Function.world.handler.ask(),
+							$api.Function.world.input
+						);
 
-					verify(exists(at)).is(false);
+						verify(exists(at)).is(false);
 
-					var process = $api.Function.world.tell(subject.Location.file.write.string({ value: "a" })(at));
-					process();
+						var process = $api.Function.world.tell(subject.Location.file.write.string({ value: "a" })(at));
+						process();
 
-					verify(exists(at)).is(true);
+						verify(exists(at)).is(true);
+					});
+
+					fifty.run(function binary() {
+						var at = fifty.jsh.file.temporary.location();
+
+						var buffer = new jsh.io.Buffer();
+						buffer.writeText().write("text");
+						buffer.close();
+
+						var process = $api.Function.world.tell(
+							subject.Location.file.write.stream({ input: buffer.readBinary() })(at)
+						);
+
+						process();
+
+						var getText = $api.Function.world.ask(
+							subject.Location.file.read.string()(at)
+						);
+
+						var maybeText = getText();
+
+						if (maybeText.present) {
+							verify(maybeText.value).is("text");
+						} else {
+							verify(false).is(true);
+						}
+					});
 				}
 			}
 		//@ts-ignore
