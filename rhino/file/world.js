@@ -99,7 +99,7 @@
 						copy: function(p) {
 							return copy(pathname, p.to);
 						},
-						exists: file_exists(pathname)
+						exists: file_exists_impure(pathname)
 					},
 					directory: {
 						exists: directory_exists_impure(pathname),
@@ -137,6 +137,14 @@
 			function directory_exists(pathname) {
 				var peer = was.newPeer(pathname);
 				return peer.exists() && peer.isDirectory();
+			}
+
+			/**
+			 * @param { string } pathname
+			 */
+			function file_exists(pathname) {
+				var peer = was.newPeer(pathname);
+				return peer.exists() && !peer.isDirectory();
 			}
 
 			/**
@@ -199,7 +207,7 @@
 			 *
 			 * @param { string } pathname
 			 */
-			function file_exists(pathname) {
+			function file_exists_impure(pathname) {
 				return function() {
 					return $api.Function.impure.ask(function(events) {
 						var peer = was.newPeer(pathname);
@@ -240,6 +248,11 @@
 					}
 				},
 				openOutputStream: maybeOutputStream,
+				fileExists: function(p) {
+					return function(events) {
+						return $api.Function.Maybe.value(file_exists(p.pathname));
+					}
+				},
 				directoryExists: function(p) {
 					return function(events) {
 						return $api.Function.Maybe.value(directory_exists(p.pathname));
@@ -319,6 +332,19 @@
 					return Location_relative("../");
 				},
 				file: {
+					exists: function() {
+						return function(location) {
+							return function(events) {
+								var ask = location.filesystem.fileExists({ pathname: location.pathname });
+								var rv = ask(events);
+								if (rv.present) {
+									return rv.value;
+								} else {
+									throw new Error("Error determining whether file is present at " + location.pathname);
+								}
+							}
+						}
+					},
 					read: {
 						string: function() {
 							return function(location) {

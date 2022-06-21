@@ -39,6 +39,8 @@ namespace slime.jrunscript.file {
 			parent: () => (p: world.Location) => world.Location
 
 			file: {
+				exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
+
 				read: {
 					string: () => slime.$api.fp.world.Question<world.Location, {
 						notFound: void
@@ -53,6 +55,34 @@ namespace slime.jrunscript.file {
 				}
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+				const subject = jsh.file.world;
+
+				fifty.tests.sandbox.locations.file = function() {
+					var at = fifty.jsh.file.temporary.location();
+
+					var exists = $api.Function.pipe(
+						subject.Location.file.exists(),
+						$api.Function.world.handler.ask(),
+						$api.Function.world.input
+					);
+
+					verify(exists(at)).is(false);
+
+					var process = $api.Function.world.tell(subject.Location.file.write.string({ value: "a" })(at));
+					process();
+
+					verify(exists(at)).is(true);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 
 		export interface Locations {
 			directory: {
@@ -386,6 +416,10 @@ namespace slime.jrunscript.file {
 		}
 
 		export interface Filesystem {
+			fileExists: slime.$api.fp.world.Question<{
+				pathname: string
+			},void,slime.$api.fp.Maybe<boolean>>
+
 			openInputStream: slime.$api.fp.world.Question<{
 				pathname: string
 			},{
