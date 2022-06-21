@@ -13,6 +13,7 @@
 	 * @param { slime.jsh.wf.standard.Interface } $exports
 	 */
 	function(jsh,$context,$exports) {
+		jsh.wf.project.git.installHooks();
 		jsh.wf.project.initialize(
 			$context,
 			{
