@@ -51,6 +51,7 @@ namespace slime.jsh.wf {
 								message: "Local modifications"
 							}
 						});
+						fixtures.configure(slime);
 						repository.submodule.add({
 							repository: slime,
 							path: "slime"
@@ -71,6 +72,9 @@ namespace slime.jsh.wf {
 
 					return {
 						wf: fifty.jsh.file.object.getRelativePath("../wf.bash").file,
+						test: {
+							fixture: fixture
+						},
 						project: function project(p?: { noInitialize?: boolean }) {
 							if (!p) p = {};
 							var origin = fixture();
@@ -282,7 +286,6 @@ namespace slime.jsh.wf {
 		//@ts-ignore
 		)(fifty);
 
-
 		export interface Interface {
 			/**
 			 * Attempts to commit the current local changes.
@@ -314,6 +317,7 @@ namespace slime.jsh.wf {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				const { verify } = fifty;
 				var jsh = fifty.global.jsh;
 
 				fifty.tests.interface.commit = function() {
@@ -358,6 +362,50 @@ namespace slime.jsh.wf {
 						return stdio.error.indexOf("Found untracked files:\nb") != -1;
 					}).is(true);
 				}
+
+				function toGitFixturesRepository(p: slime.jrunscript.tools.git.repository.Local): slime.jrunscript.tools.git.test.fixtures.Repository {
+					return {
+						location: {
+							filesystem: jsh.file.world.filesystems.os,
+							pathname: p.directory.toString()
+						},
+						api: jsh.tools.git.program({ command: "git" }).repository(p.directory.toString())
+					}
+				}
+
+				fifty.tests.wip = function() {
+					var fixtures = {
+						git: (
+							function() {
+								var script: slime.jrunscript.tools.git.test.fixtures.Script = fifty.$loader.script("../../rhino/tools/git/fixtures.ts");
+								var setup = script();
+								return setup(fifty);
+							}
+						)(),
+						subject: test.fixtures
+					};
+					var cloned = fixtures.subject.project();
+					var repository = toGitFixturesRepository(cloned);
+					fixtures.git.edit(repository, "wf.js", function(before) {
+						return before + "\n";
+					});
+					var result = jsh.shell.run({
+						command: test.fixtures.wf,
+						arguments: ["commit", "--message", "test"],
+						directory: cloned.directory,
+						//	TODO	add access to $api.Object in Fifty tests
+						environment: Object.assign({},
+							jsh.shell.environment,
+							{ PROJECT: cloned.directory.toString() }
+						),
+						// stdio: {
+						// 	output: String,
+						// 	error: String
+						// },
+						evaluate: function(result) { return result; }
+					});
+					verify(result).status.is(1);
+				}
 			}
 		//@ts-ignore
 		)(fifty);
@@ -373,6 +421,10 @@ namespace slime.jsh.wf {
 				}
 
 				fifty.tests.manual = {};
+				fifty.tests.manual.fixture = function() {
+					var project = test.fixtures.test.fixture();
+					jsh.shell.console("cd " + project.directory);
+				}
 				fifty.tests.manual.profile = function() {
 					var project = test.fixtures.project({ noInitialize: true });
 					var getSlimePath = function(relative) {
@@ -416,6 +468,5 @@ namespace slime.jsh.wf {
 			}
 		//@ts-ignore
 		)(fifty);
-
 	}
 }

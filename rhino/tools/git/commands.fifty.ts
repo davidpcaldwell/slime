@@ -22,64 +22,9 @@ namespace slime.jrunscript.tools.git.internal.commands {
 		};
 
 		export const fixtures = (function(fifty: slime.fifty.test.Kit) {
-			const { $api, jsh } = fifty.global;
-
-			var program = jsh.tools.git.program({ command: "git" });
-
-			var init: slime.jrunscript.tools.git.Command<void,void> = {
-				invocation: function(p) {
-					return {
-						command: "init"
-					}
-				}
-			}
-
-			function empty(): Repository {
-				var tmp = fifty.jsh.file.temporary.directory();
-				var repository = jsh.tools.git.program({ command: "git" }).repository(tmp.pathname);
-				repository.command(init).argument().run();
-				return {
-					location: tmp,
-					api: repository
-				}
-			}
-
-			function edit(repository: Repository, path: string, change: (before: string) => string) {
-				var target = $api.Function.result(
-					repository.location,
-					jsh.file.world.Location.relative(path)
-				);
-
-				var before = $api.Function.result(
-					target,
-					$api.Function.pipe(
-						jsh.file.world.Location.file.read.string(),
-						$api.Function.world.handler.ask(),
-						$api.Function.world.input,
-						$api.Function.Maybe.else(function() {
-							return null as string;
-						})
-					)
-				);
-
-				var edited = change(before);
-
-				var process = $api.Function.result(
-					target,
-					$api.Function.pipe(
-						jsh.file.world.Location.file.write.string({ value: edited }),
-						$api.Function.world.handler.tell()
-					)
-				);
-
-				$api.Function.world.process(process);
-			}
-
-			return {
-				program,
-				empty,
-				edit
-			};
+			const script: slime.jrunscript.tools.git.test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+			var setup = script();
+			return setup(fifty);
 		//@ts-ignore
 		})(fifty);
 	}
