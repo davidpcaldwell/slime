@@ -97,7 +97,7 @@
 							}
 						},
 						copy: function(p) {
-							return copy(pathname, p.to);
+							return copy_impure(pathname, p.to);
 						},
 						exists: file_exists_impure(pathname)
 					},
@@ -222,7 +222,7 @@
 			 * @param { string } destination
 			 * @returns { slime.$api.fp.impure.Tell<void> }
 			 */
-			function copy(file,destination) {
+			function copy_impure(file,destination) {
 				return $api.Function.impure.tell(function(events) {
 					var from = was.newPeer(file);
 					var to = was.newPeer(destination);
@@ -292,7 +292,7 @@
 						}
 					},
 					copy: function(p) {
-						return copy(p.from,p.to);
+						return copy_impure(p.from,p.to);
 					}
 				},
 				Directory: {
@@ -320,6 +320,28 @@
 					pathname: absolute
 				}
 			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.file.world.Location } location
+		 * @param { slime.$api.Events<{}> } events
+		 * @param { (to: slime.jrunscript.runtime.io.OutputStream) => void } write
+		 */
+		var Location_write = function(location,events,write) {
+			var ask = location.filesystem.openOutputStream({
+				pathname: location.pathname
+			});
+			var output = ask(events);
+			$api.Function.result(
+				output,
+				$api.Function.pipe(
+					$api.Function.Maybe.map(write),
+					$api.Function.Maybe.else(function() {
+						throw new Error("Could not write to location " + location.pathname);
+					})
+				)
+			);
 		}
 
 		$export({
@@ -369,24 +391,31 @@
 						string: function(p) {
 							return function(location) {
 								return function(events) {
-									var ask = location.filesystem.openOutputStream({
-										pathname: location.pathname
-									});
-									var output = ask(events);
-									var rv = $api.Function.result(
-										output,
-										$api.Function.pipe(
-											$api.Function.Maybe.map(function(stream) {
-												var writer = stream.character();
-												writer.write(p.value);
-												writer.close();
-											}),
-											$api.Function.Maybe.else(function() {
-												throw new Error("Could not write to location " + location.pathname);
-											})
-										)
+									Location_write(
+										location,
+										events,
+										function(stream) {
+											var writer = stream.character();
+											writer.write(p.value);
+											writer.close();
+										}
 									);
-									return rv;
+								}
+							}
+						},
+						stream: function(p) {
+							return function(location) {
+								return function(events) {
+									Location_write(
+										location,
+										events,
+										function(output) {
+											$context.library.io.Streams.binary.copy(
+												p.input,
+												output
+											)
+										}
+									)
 								}
 							}
 						}
