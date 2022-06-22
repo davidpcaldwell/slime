@@ -131,12 +131,12 @@
 					if (typeof(string) == "undefined") throw new TypeError("Cannot test whether undefined ends with search string.");
 					return string.endsWith(searchString, endPosition);
 				}
+			},
+			replace: function(searchValue, replaceValue) {
+				return function(string) {
+					return string.replace(searchValue, replaceValue);
+				}
 			}
-		};
-
-		$exports.Function.String = {
-			split: $context.deprecate($exports.Function.string.split),
-			toUpperCase: $context.deprecate($exports.Function.string.toUpperCase)
 		};
 
 		$exports.Function.Object = {
