@@ -292,34 +292,55 @@ namespace slime.$api.fp {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.string = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	export interface Strings {
+		split: (delimiter: string) => (string: string) => string[]
+		repeat: (count: number) => (string: string) => string
+		toUpperCase: (string: string) => string
+		match: (pattern: RegExp) => (string: string) => RegExpMatchArray
+
+		startsWith: (searchString: string, startPosition?: number) => Predicate<string>
+		endsWith: (searchString: string, endPosition?: number) => Predicate<string>
+	}
+
+	export interface Strings {
+		replace: {
+			(searchValue: RegExp, replaceValue: string): (p: string) => string;
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.string.replace = function() {
+				var replacer = $api.Function.string.replace(/xmas/i, "Christmas");
+				var input = "Twas the night before Xmas...";
+				var output = "Twas the night before Christmas...";
+				verify(replacer(input)).is(output);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+
 	/**
 	 * This object is available as `$api.Function` in all scripts loaded by the SLIME loader.
 	 */
 	export interface Exports {
-		string: {
-			split: (delimiter: string) => (string: string) => string[]
-			repeat: (count: number) => (string: string) => string
-			toUpperCase: (string: string) => string
-			match: (pattern: RegExp) => (string: string) => RegExpMatchArray
-
-			startsWith: (searchString: string, startPosition?: number) => Predicate<string>
-			endsWith: (searchString: string, endPosition?: number) => Predicate<string>
-		}
-
-		/**
-		 * @deprecated
-		 */
-		String: {
-			/**
-			 * @deprecated
-			 */
-			split: Exports["string"]["split"]
-
-			/**
-			 * @deprecated
-			 */
-			toUpperCase: Exports["string"]["toUpperCase"]
-		}
+		string: Strings
 	}
 
 	(
