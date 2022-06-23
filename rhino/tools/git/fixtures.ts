@@ -55,9 +55,7 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 					var before = $api.Function.result(
 						target,
 						$api.Function.pipe(
-							jsh.file.world.Location.file.read.string(),
-							$api.Function.world.handler.ask(),
-							$api.Function.world.input,
+							$api.Function.world.question(jsh.file.world.Location.file.read.string()),
 							$api.Function.Maybe.else(function() {
 								return null as string;
 							})
@@ -66,15 +64,9 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 
 					var edited = change(before);
 
-					var process = $api.Function.result(
-						target,
-						$api.Function.pipe(
-							jsh.file.world.Location.file.write.string({ value: edited }),
-							$api.Function.world.handler.tell()
-						)
-					);
+					var writeEdited = $api.Function.world.action(jsh.file.world.Location.file.write.string({ value: edited }));
 
-					$api.Function.world.process(process);
+					$api.Function.world.output(target, writeEdited);
 				}
 
 				return {

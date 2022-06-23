@@ -445,19 +445,6 @@
 					adapted(handler);
 				}
 			},
-			/** @type { slime.$api.fp.World["handler"] } */
-			handler: {
-				ask: function(handler) {
-					return function(ask) {
-						return $exports.Function.world.ask(ask, handler);
-					}
-				},
-				tell: function(handler) {
-					return function(tell) {
-						return $exports.Function.world.tell(tell, handler);
-					}
-				}
-			},
 			execute: function(tell, handler) {
 				var adapted = $context.events.tell(tell);
 				adapted(handler);
@@ -469,10 +456,18 @@
 							process();
 						});
 					}
+				},
+				output: function(p,f) {
+					return function() {
+						f(p);
+					}
 				}
 			},
 			input: function(input) {
 				return input();
+			},
+			output: function(p, f) {
+				f(p);
 			},
 			process: function(process) {
 				process();

@@ -441,6 +441,12 @@ namespace slime.jrunscript.shell {
 			 * Creates a fully-specified {@link old.Invocation} from a given {@link invocation.old.Argument} and the surrounding context.
 			 */
 			old: (p: invocation.old.Argument) => old.Invocation
+
+			stdio: {
+				handler: {
+					line: (f: (e: slime.$api.Event<slime.jrunscript.shell.run.Line>) => void) => (e: slime.$api.Event<slime.jrunscript.shell.run.Line>) => void
+				}
+			}
 		}
 	}
 
