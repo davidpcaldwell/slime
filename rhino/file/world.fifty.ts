@@ -29,7 +29,7 @@ namespace slime.jrunscript.file {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
-				fifty.tests.sandbox.locations = {};
+				fifty.tests.sandbox.locations = fifty.test.Parent();
 			}
 		//@ts-ignore
 		)(fifty);
@@ -73,16 +73,13 @@ namespace slime.jrunscript.file {
 					fifty.run(function exists() {
 						var at = fifty.jsh.file.temporary.location();
 
-						var exists = $api.Function.pipe(
-							subject.Location.file.exists(),
-							$api.Function.world.handler.ask(),
-							$api.Function.world.input
-						);
+						var exists = $api.Function.world.question(subject.Location.file.exists());
 
 						verify(exists(at)).is(false);
 
-						var process = $api.Function.world.tell(subject.Location.file.write.string({ value: "a" })(at));
-						process();
+						var writeA = $api.Function.world.action(subject.Location.file.write.string({ value: "a" }));
+
+						$api.Function.world.output(at, writeA);
 
 						verify(exists(at)).is(true);
 					});
@@ -137,11 +134,7 @@ namespace slime.jrunscript.file {
 				fifty.tests.sandbox.locations.directory = function() {
 					var at = fifty.jsh.file.temporary.location();
 
-					var exists = $api.Function.pipe(
-						subject.Location.directory.exists(),
-						$api.Function.world.handler.ask(),
-						$api.Function.world.input
-					);
+					var exists = $api.Function.world.question(subject.Location.directory.exists());
 
 					verify(exists(at)).is(false);
 

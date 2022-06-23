@@ -757,6 +757,7 @@ namespace slime.$api.fp {
 		export type Tell<E> = (events: slime.$api.Events<E>) => void
 
 		export type Input<T> = () => T
+		export type Output<T> = (t: T) => void
 		export type Process = () => void
 	}
 
@@ -764,23 +765,16 @@ namespace slime.$api.fp {
 		question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => (p: P) => A
 		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => (p?: P) => void
 
-		handler: {
-			ask: {
-				<E,A>(handler?: slime.$api.events.Handler<E>): (p: world.Ask<E,A>) => world.Input<A>
-			}
-			tell: {
-				<E>(handler?: slime.$api.events.Handler<E>): (p: world.Tell<E>) => world.Process
-			}
-		}
-
 		ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => world.Input<A>
 		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => world.Process
 
 		Process: {
 			compose: (processes: world.Process[]) => world.Process
+			output: <P>(p: P, f: $api.fp.world.Output<P>) => slime.$api.fp.world.Process
 		}
 
 		input: <T>(input: world.Input<T>) => T
+		output: <P>(p: P, f: world.Output<P>) => void
 		process: (process: world.Process) => void
 
 		/** @experimental May not be needed. Should be able to use tell() to turn into {@link world.Process}, then process that. */
