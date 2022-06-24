@@ -240,6 +240,30 @@
 				});
 			}
 
+			/**
+			 *
+			 * @param { string } source
+			 * @param { string } destination
+			 * @returns { slime.$api.fp.world.Tell<void> }
+			 */
+			function copy(source,destination) {
+				return function() {
+					var from = was.newPeer(source);
+					var to = was.newPeer(destination);
+					$context.library.io.Streams.binary.copy(
+						was.read.binary(from),
+						was.write.binary(to, false)
+					);
+					var _from = from.getHostFile().toPath();
+					var _to = to.getHostFile().toPath();
+					var _Files = Packages.java.nio.file.Files;
+					if (_from.getFileSystem().supportedFileAttributeViews().contains("posix") && _to.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+						var _fpermissions = _Files.getPosixFilePermissions(_from);
+						_Files.setPosixFilePermissions(_to, _fpermissions);
+					}
+				}
+			}
+
 			/** @type { slime.jrunscript.file.world.Filesystem } */
 			var filesystem = {
 				openInputStream: function(p) {
@@ -265,6 +289,9 @@
 							recursive: p.recursive
 						});
 					}
+				},
+				copy: function(p) {
+					return copy(p.from, p.to);
 				},
 				pathname: pathname_create,
 				Pathname: {
@@ -417,6 +444,17 @@
 										}
 									)
 								}
+							}
+						}
+					},
+					copy: function(p) {
+						return function(location) {
+							return function(events) {
+								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
+								p.to.filesystem.copy({
+									from: location.pathname,
+									to: p.to.pathname
+								})(events);
 							}
 						}
 					}
