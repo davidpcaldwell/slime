@@ -144,6 +144,12 @@ namespace slime.jrunscript.tools.git {
 			update: Command<void,void>
 		}
 	}
+
+	export interface Commands {
+		remote: {
+			show: slime.jrunscript.tools.git.Command<string,{ head: string }>
+		}
+	}
 }
 
 namespace slime.jrunscript.tools.git.internal.commands {

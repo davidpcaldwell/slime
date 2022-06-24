@@ -93,11 +93,34 @@
 			}
 		};
 
+		/**
+		 * @type { slime.jrunscript.tools.git.Command<string,{ head: string }> }
+		 */
+		var remoteShow = {
+			invocation: function(name) {
+				return {
+					command: "remote",
+					arguments: ["show", name]
+				};
+			},
+			result: function(output) {
+				var lines = output.split("\n");
+				var parser = /HEAD branch\: (.*)/;
+				var branch = parser.exec(lines[3])[1];
+				return {
+					head: branch
+				}
+			}
+		};
+
 		$export({
 			status: status,
 			fetch: fetch,
 			merge: merge,
-			submodule: submodule
+			submodule: submodule,
+			remote: {
+				show: remoteShow
+			}
 		})
 	}
 //@ts-ignore
