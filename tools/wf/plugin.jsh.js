@@ -359,25 +359,7 @@
 
 				jsh.wf.git = {
 					commands: {
-						/**
-						 * @type { slime.jrunscript.tools.git.Command<string,{ head: string }> }
-						 */
-						remoteShow: {
-							invocation: function(name) {
-								return {
-									command: "remote",
-									arguments: ["show", name]
-								};
-							},
-							result: function(output) {
-								var lines = output.split("\n");
-								var parser = /HEAD branch\: (.*)/;
-								var branch = parser.exec(lines[3])[1];
-								return {
-									head: branch
-								}
-							}
-						},
+						remoteShow: jsh.tools.git.commands.remote.show,
 						/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
 						getBranches: {
 							invocation: function() {
