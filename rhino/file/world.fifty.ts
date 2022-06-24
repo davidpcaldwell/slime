@@ -58,6 +58,10 @@ namespace slime.jrunscript.file {
 					}) => slime.$api.fp.world.Action<world.Location, {
 					}>
 				}
+
+				copy: (p: {
+					to: world.Location
+				}) => slime.$api.fp.world.Action<world.Location, {}>
 			}
 		}
 
@@ -108,6 +112,40 @@ namespace slime.jrunscript.file {
 						} else {
 							verify(false).is(true);
 						}
+					});
+
+					fifty.run(function copy() {
+						var from = fifty.jsh.file.temporary.location();
+						var to = fifty.jsh.file.temporary.location();
+
+						var writeText = $api.Function.world.action(
+							jsh.file.world.Location.file.write.string({ value: "tocopy" })
+						);
+
+						var readText = $api.Function.pipe(
+							$api.Function.world.question(
+								jsh.file.world.Location.file.read.string()
+							),
+							$api.Function.Maybe.map(function(s) { return s; }),
+							$api.Function.Maybe.else(function(): string { return null; })
+						);
+
+						var exists = $api.Function.world.question(
+							jsh.file.world.Location.file.exists()
+						);
+
+						verify(readText(from)).is(null);
+						writeText(from);
+						verify(readText(from)).is("tocopy");
+
+						verify(exists(to)).is(false);
+						verify(readText(to)).is(null);
+
+						var copy = $api.Function.world.action(jsh.file.world.Location.file.copy({ to: to }));
+						copy(from);
+
+						verify(exists(to)).is(true);
+						verify(readText(to)).is("tocopy");
 					});
 				}
 			}
@@ -465,6 +503,11 @@ namespace slime.jrunscript.file {
 			createDirectory: slime.$api.fp.world.Action<{
 				pathname: string
 				recursive: boolean
+			},void>
+
+			copy: slime.$api.fp.world.Action<{
+				from: string
+				to: string
 			},void>
 
 			/** @deprecated Not really world-oriented; use the methods of `Pathname`, `File`, and `Directory`. */
