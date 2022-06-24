@@ -318,7 +318,7 @@ namespace slime.jsh.wf {
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
-				var jsh = fifty.global.jsh;
+				const { $api, jsh } = fifty.global;
 
 				fifty.tests.interface.commit = function() {
 					var repository = test.fixtures.project();
@@ -382,7 +382,16 @@ namespace slime.jsh.wf {
 					}
 				}
 
-				fifty.tests.wip = function() {
+				var commit: slime.jrunscript.tools.git.Command<{ message: string }, void> = {
+					invocation: function(p) {
+						return {
+							command: "commit",
+							arguments: ["--message", p.message]
+						}
+					}
+				};
+
+				fifty.tests.issue485 = function() {
 					var fixtures = {
 						git: (
 							function() {
@@ -395,28 +404,44 @@ namespace slime.jsh.wf {
 					};
 					var cloned = fixtures.subject.project();
 					var repository = toGitFixturesRepository(cloned);
+					jsh.shell.world.run(
+						jsh.shell.Invocation.create({
+							command: repository.location.pathname + "/" + "wf",
+							arguments: ["initialize"],
+							directory: repository.location.pathname
+						})
+					)({
+					})
 					fixtures.git.edit(repository, "wf.js", function(before) {
 						return before + "\n";
 					});
 					repository.api.command(addAll).argument().run();
 					var before = repository.api.command(jsh.tools.git.commands.status).argument().run();
 					verify(before).paths["wf.js"].is("M ");
-					var result = jsh.shell.run({
-						command: cloned.directory.getRelativePath("slime/tools/wf.bash").toString(),
-						arguments: ["commit", "--message", "test"],
-						directory: cloned.directory,
-						//	TODO	add access to $api.Object in Fifty tests
-						environment: Object.assign({},
-							jsh.shell.environment,
-							{ PROJECT: cloned.directory.toString() }
-						),
-						// stdio: {
-						// 	output: String,
-						// 	error: String
-						// },
-						evaluate: function(result) { return result; }
-					});
-					verify(result).status.is(1);
+					var success: boolean;
+					try {
+						repository.api.command(commit).argument({ message: "test" }).run();
+						success = true;
+					} catch (e) {
+						success = false;
+					}
+					// var result = jsh.shell.run({
+					// 	command: cloned.directory.getRelativePath("slime/tools/wf.bash").toString(),
+					// 	arguments: ["commit", "--message", "test"],
+					// 	directory: cloned.directory,
+					// 	//	TODO	add access to $api.Object in Fifty tests
+					// 	environment: Object.assign({},
+					// 		jsh.shell.environment,
+					// 		{ PROJECT: cloned.directory.toString() }
+					// 	),
+					// 	// stdio: {
+					// 	// 	output: String,
+					// 	// 	error: String
+					// 	// },
+					// 	evaluate: function(result) { return result; }
+					// });
+					// verify(result).status.is(1);
+					verify(success).is(false);
 					var after = repository.api.command(jsh.tools.git.commands.status).argument().run();
 					verify(after).paths["wf.js"].is(" M");
 				}

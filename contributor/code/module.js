@@ -54,6 +54,7 @@
 				var isText = $api.Function.series(
 					function(entry) {
 						if (entry.path == "contributor/docker-compose-run") return true;
+						if (entry.path == "tools/wf/test/data/plugin-standard/wf") return true;
 					},
 					function wasFromWf(entry) {
 						if (/\.def$/.test(entry.path)) return true;

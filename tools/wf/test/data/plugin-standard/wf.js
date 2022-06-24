@@ -10,16 +10,20 @@
 	 *
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.wf.cli.Context } $context
-	 * @param { slime.jsh.wf.standard.Interface } $exports
+	 * @param { slime.jsh.wf.standard.Interface & { initialize: any } } $exports
 	 */
 	function(jsh,$context,$exports) {
-		jsh.wf.project.git.installHooks();
+		$exports.initialize = function() {
+			jsh.wf.project.git.installHooks();
+		}
+
 		jsh.wf.project.initialize(
 			$context,
 			{
 				lint: jsh.wf.checks.lint({
 					isText: function(entry) {
 						if (entry.path == ".gitmodules") return true;
+						if (entry.path == "wf") return true;
 						if (/^slime\//.test(entry.path)) {
 							return jsh.project.code.files.isText({
 								path: entry.path.substring("slime/".length),

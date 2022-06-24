@@ -378,14 +378,28 @@
 					hooks: {}
 				};
 
+				/** @type { slime.jrunscript.tools.git.Command<void,void> } */
+				var unstage = {
+					invocation: function(p) {
+						return {
+							command: "reset",
+							arguments: []
+						}
+					}
+				};
+
 				if (project.precommit) {
 					$exports.precommit = function() {
+						var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
 						var success = project.precommit({
 							console: function(e) {
 								jsh.shell.console(e.detail);
 							}
 						});
 						jsh.shell.console("Checks: " + ( (success) ? "passed." : "FAILED!") );
+						if (!success) {
+							repository.command(unstage).argument().run();
+						}
 						return (success) ? 0 : 1;
 					};
 
