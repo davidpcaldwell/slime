@@ -17,6 +17,18 @@
 		jsh.wf.project.initialize(
 			$context,
 			{
+				lint: jsh.wf.checks.lint({
+					isText: function(entry) {
+						if (entry.path == ".gitmodules") return true;
+						if (/^slime\//.test(entry.path)) {
+							return jsh.project.code.files.isText({
+								path: entry.path.substring("slime/".length),
+								file: entry.file
+							});
+						}
+						return jsh.project.code.files.isText(entry);
+					}
+				}),
 				test: function() {
 					return true;
 				}

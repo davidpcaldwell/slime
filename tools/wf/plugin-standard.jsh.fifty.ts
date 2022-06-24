@@ -373,6 +373,15 @@ namespace slime.jsh.wf {
 					}
 				}
 
+				var addAll: slime.jrunscript.tools.git.Command<void,void> = {
+					invocation: function(p) {
+						return {
+							command: "add",
+							arguments: ["."]
+						}
+					}
+				}
+
 				fifty.tests.wip = function() {
 					var fixtures = {
 						git: (
@@ -389,8 +398,11 @@ namespace slime.jsh.wf {
 					fixtures.git.edit(repository, "wf.js", function(before) {
 						return before + "\n";
 					});
+					repository.api.command(addAll).argument().run();
+					var before = repository.api.command(jsh.tools.git.commands.status).argument().run();
+					verify(before).paths["wf.js"].is("M ");
 					var result = jsh.shell.run({
-						command: test.fixtures.wf,
+						command: cloned.directory.getRelativePath("slime/tools/wf.bash").toString(),
 						arguments: ["commit", "--message", "test"],
 						directory: cloned.directory,
 						//	TODO	add access to $api.Object in Fifty tests
@@ -405,6 +417,8 @@ namespace slime.jsh.wf {
 						evaluate: function(result) { return result; }
 					});
 					verify(result).status.is(1);
+					var after = repository.api.command(jsh.tools.git.commands.status).argument().run();
+					verify(after).paths["wf.js"].is(" M");
 				}
 			}
 		//@ts-ignore
