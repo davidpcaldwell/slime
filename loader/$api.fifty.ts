@@ -307,6 +307,8 @@ namespace slime.$api {
 
 				var ChildError = $api.Error.Type({
 					name: "Child",
+					//	TODO	regression seemingly caused by TypeScript update to 4.7.3
+					//@ts-ignore
 					extends: ParentError
 				});
 

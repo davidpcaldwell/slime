@@ -94,7 +94,7 @@ namespace slime.jsh.shell.tools {
 				mock?: {
 					lib?: slime.jrunscript.file.Directory
 					getLatestVersion?: () => string
-					findApache?: typeof slime.jsh.Global["tools"]["install"]["apache"]["find"]
+					findApache?: slime.jsh.Global["tools"]["install"]["apache"]["find"]
 				}
 				to?: slime.jrunscript.file.Pathname
 				replace?: boolean
