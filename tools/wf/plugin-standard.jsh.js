@@ -195,26 +195,32 @@
 
 				$exports.status = function(p) {
 					//	TODO	add option for offline
-					var repository = jsh.wf.git.fetch();
+					var oRepository = jsh.wf.git.fetch();
+					var fRepository = jsh.tools.git.program({ command: "git" }).repository(oRepository.directory.toString());
 					var remote = "origin";
-					var status = repository.status();
-					var branch = status.branch.name;
+					var status = fRepository.command(jsh.tools.git.commands.status).argument().run();
+					var branch = status.branch;
 					var base = remote + "/" + branch;
-					if (!branchExists(repository.directory.toString(), base)) {
+					if (!branchExists(oRepository.directory.toString(), base)) {
 						base = "origin/master";
 					}
-					var vsRemote = (branch) ? jsh.wf.git.compareTo(base)(repository) : null;
-					jsh.shell.console("Current branch: " + displayBranchName(status.branch.name));
+					var vsRemote = (branch) ? jsh.wf.git.compareTo(base)(oRepository) : null;
+					jsh.shell.console("Current branch: " + displayBranchName(status.branch));
 					if (vsRemote && vsRemote.ahead.length) jsh.shell.console("ahead of " + base + ": " + vsRemote.ahead.length);
 					if (vsRemote && vsRemote.behind.length) jsh.shell.console("behind " + base + ": " + vsRemote.behind.length);
 					var output = $api.Function.result(
-						status.paths,
+						status.entries,
 						$api.Function.conditional({
-							condition: Boolean,
+							condition: function(entries) {
+								return entries.length > 0;
+							},
 							true: $api.Function.pipe(
-								Object.entries,
 								$api.Function.Array.map(function(entry) {
-									return entry[1] + " " + entry[0];
+									if (entry.orig_path) {
+										return entry.code + " " + entry.path + " (was: " + entry.orig_path + ")";
+									} else {
+										return entry.code + " " + entry.path;
+									}
 								}),
 								$api.Function.Array.join("\n")
 							),
@@ -224,15 +230,15 @@
 					if (output) jsh.shell.console(output);
 					if (vsRemote && vsRemote.behind.length && !vsRemote.ahead.length && !vsRemote.paths) {
 						jsh.shell.console("Fast-forwarding ...");
-						repository.merge({ ffOnly: true, name: base });
+						oRepository.merge({ ffOnly: true, name: base });
 					}
-					var branches = repository.branch({ remote: true, all: true });
+					var branches = oRepository.branch({ remote: true, all: true });
 					var first = true;
 					branches.forEach(function findUnmergedBranches(branch) {
 						if (branch.name === null) {
 							return;
 						} else {
-							var compared = jsh.wf.git.compareTo(branch.name)(repository);
+							var compared = jsh.wf.git.compareTo(branch.name)(oRepository);
 							if (compared.behind.length) {
 								if (first) {
 									jsh.shell.console("");
@@ -245,7 +251,7 @@
 					if (!first) {
 						jsh.shell.console("");
 					}
-					if (repository.submodule().length) {
+					if (oRepository.submodule().length) {
 						jsh.shell.console("");
 						jsh.shell.console("Submodules:");
 						var submodules = jsh.wf.project.submodule.status();
@@ -482,7 +488,7 @@
 						}
 					) : void(0),
 					remove: $api.Function.pipe(
-						$api.Function.impure.revise(jsh.script.cli.option.string({ longname: "path" })),
+						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
 							var path = p.options.path;
 							jsh.wf.project.submodule.remove({ path: path });

@@ -71,31 +71,57 @@ namespace slime.jrunscript.tools.git {
 				verify(status).evaluate.property("paths").is(void(0));
 			};
 
+			var commit: slime.jrunscript.tools.git.Command<{
+				message: string
+			},void> = {
+				invocation: function(p) {
+					return {
+						command: "commit",
+						arguments: $api.Array.build(function(rv) {
+							rv.push("--message", p.message);
+						})
+					}
+				}
+			};
+
+			var reset: slime.jrunscript.tools.git.Command<void,void> = {
+				invocation: function(p) {
+					return {
+						command: "reset"
+					}
+				}
+			};
+
+			var rename: slime.jrunscript.tools.git.Command<{ from: string, to: string },void> = {
+				invocation: function(p) {
+					return {
+						command: "mv",
+						arguments: [p.from, p.to]
+					}
+				}
+			};
+
+			fifty.tests.exports.status.rename = function() {
+				var it = fixtures.empty();
+
+				fixtures.edit(it, "a", function(before) { return "a"; });
+				it.api.command(add).argument("a").run();
+				it.api.command(commit).argument({ message: "a" }).run();
+
+				it.api.command(rename).argument({ from: "a", to: "b" }).run();
+
+				var status = it.api.command(jsh.tools.git.commands.status).argument().run();
+				verify(status).entries.length.is(1);
+				verify(status).entries[0].code.is("R ");
+				verify(status).entries[0].path.is("b");
+				verify(status).entries[0].orig_path.is("a");
+				jsh.shell.console(JSON.stringify(status));
+			};
+
 			/**
 			 * Verifies the behavior of various operations that affect the git staging area.
 			 */
 			fifty.tests.world.staging = function() {
-				var commit: slime.jrunscript.tools.git.Command<{
-					message: string
-				},void> = {
-					invocation: function(p) {
-						return {
-							command: "commit",
-							arguments: $api.Array.build(function(rv) {
-								rv.push("--message", p.message);
-							})
-						}
-					}
-				};
-
-				var reset: slime.jrunscript.tools.git.Command<void,void> = {
-					invocation: function(p) {
-						return {
-							command: "reset"
-						}
-					}
-				};
-
 				function status() {
 					return it.api.command(jsh.tools.git.commands.status).argument().run();
 				}

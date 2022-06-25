@@ -27,8 +27,13 @@
 			},
 			result: function(output) {
 				//	TODO	This ignores renamed files; see git help status
+				/**
+				 * @type { slime.jrunscript.tools.git.command.status.Result }
+				 */
 				var rv = {
-					branch: void(0)
+					branch: void(0),
+					entries: [],
+					paths: void(0)
 				};
 				output.split("\n").forEach(function(line) {
 					var NO_COMMITS_PREFIX = "## No commits yet on ";
@@ -42,11 +47,21 @@
 						var detached = Boolean(branchName == "HEAD (no branch)")
 						rv.branch = (detached) ? null : branchName;
 					} else {
-						var parser = /(..) (\S+)/;
+						var parser = /(..) (\S+)(?: -> (\S+))?/;
 						var match = parser.exec(line);
 						if (match) {
-							if (!rv.paths) rv.paths = {};
-							rv.paths[match[2]] = match[1];
+							if (match[3]) {
+								rv.entries.push({
+									code: match[1],
+									path: match[3],
+									orig_path: match[2]
+								});
+							} else {
+								rv.entries.push({
+									code: match[1],
+									path: match[2]
+								});
+							}
 						} else if (line == "") {
 							//	do nothing
 						} else {
@@ -54,6 +69,13 @@
 						}
 					}
 				});
+				rv.paths = rv.entries.reduce(function(rv,entry) {
+					if (typeof(rv) == "undefined") {
+						rv = {};
+					}
+					rv[entry.path] = entry.code;
+					return rv;
+				}, rv.paths);
 				return rv;
 			}
 		}

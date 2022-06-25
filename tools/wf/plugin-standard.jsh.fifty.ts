@@ -32,6 +32,10 @@ namespace slime.jsh.wf {
 					function fixture() {
 						var project = fifty.jsh.file.object.temporary.location();
 						fifty.jsh.file.object.getRelativePath("test/data/plugin-standard").directory.copy(project);
+
+						//	Add a sample file to the fixture
+						project.directory.getRelativePath("a.js").write("", { append: false });
+
 						var repository = jsh.tools.git.init({
 							pathname: project
 						});
@@ -391,17 +395,18 @@ namespace slime.jsh.wf {
 					}
 				};
 
+				var fixtures = {
+					git: (
+						function() {
+							var script: slime.jrunscript.tools.git.test.fixtures.Script = fifty.$loader.script("../../rhino/tools/git/fixtures.ts");
+							var setup = script();
+							return setup(fifty);
+						}
+					)(),
+					subject: test.fixtures
+				};
+
 				fifty.tests.issue485 = function() {
-					var fixtures = {
-						git: (
-							function() {
-								var script: slime.jrunscript.tools.git.test.fixtures.Script = fifty.$loader.script("../../rhino/tools/git/fixtures.ts");
-								var setup = script();
-								return setup(fifty);
-							}
-						)(),
-						subject: test.fixtures
-					};
 					var cloned = fixtures.subject.project();
 					var repository = toGitFixturesRepository(cloned);
 					jsh.shell.world.run(
@@ -425,25 +430,41 @@ namespace slime.jsh.wf {
 					} catch (e) {
 						success = false;
 					}
-					// var result = jsh.shell.run({
-					// 	command: cloned.directory.getRelativePath("slime/tools/wf.bash").toString(),
-					// 	arguments: ["commit", "--message", "test"],
-					// 	directory: cloned.directory,
-					// 	//	TODO	add access to $api.Object in Fifty tests
-					// 	environment: Object.assign({},
-					// 		jsh.shell.environment,
-					// 		{ PROJECT: cloned.directory.toString() }
-					// 	),
-					// 	// stdio: {
-					// 	// 	output: String,
-					// 	// 	error: String
-					// 	// },
-					// 	evaluate: function(result) { return result; }
-					// });
-					// verify(result).status.is(1);
 					verify(success).is(false);
 					var after = repository.api.command(jsh.tools.git.commands.status).argument().run();
 					verify(after).paths["wf.js"].is(" M");
+				}
+
+				fifty.tests.issue174 = function() {
+					var mv: slime.jrunscript.tools.git.Command<{ from: string, to: string },void> = {
+						invocation: function(p) {
+							return {
+								command: "mv",
+								arguments: [p.from, p.to]
+							}
+						}
+					};
+
+					var project = toGitFixturesRepository(fixtures.subject.project());
+
+					jsh.shell.world.run(
+						jsh.shell.Invocation.create({
+							command: $api.Function.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
+							arguments: ["status"]
+						})
+					)({
+					});
+
+					fixtures.git.edit(project, "new.js", () => "new");
+					project.api.command(mv).argument({ from: "a.js", to: "b.js" }).run();
+
+					jsh.shell.world.run(
+						jsh.shell.Invocation.create({
+							command: $api.Function.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
+							arguments: ["status"]
+						})
+					)({
+					});
 				}
 			}
 		//@ts-ignore
