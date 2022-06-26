@@ -194,22 +194,24 @@
 				}
 
 				$exports.status = function(p) {
-					// /** @type { slime.jrunscript.tools.git.Command<void,{ stash: string }> } */
-					// var stashList = {
-					// 	invocation: function() {
-					// 		return {
-					// 			command: "stash",
-					// 			arguments: ["list"]
-					// 		}
-					// 	},
-					// 	result: $api.Function.pipe(
-					// 		$api.Function.string.split("\n"),
-					// 		$api.Function.Array.map($api.Function.RegExp.exec(/^(.*)\:/)),
-					// 		function(p) {
-					// 			//	will use flatMap when complete
-					// 		}
-					// 	)
-					// }
+					/** @type { slime.jrunscript.tools.git.Command<void,{ stash: string }[]> } */
+					var stashList = {
+						invocation: function() {
+							return {
+								command: "stash",
+								arguments: ["list"]
+							}
+						},
+						result: $api.Function.pipe(
+							$api.Function.string.split("\n"),
+							$api.Function.Array.map($api.Function.RegExp.exec(/^([^\:]+)(?:.*)$/)),
+							$api.Function.Array.filter($api.Function.Maybe.present),
+							$api.Function.Array.map($api.Function.property("value")),
+							$api.Function.Array.map(function(p) {
+								return { stash: p[1] };
+							})
+						)
+					};
 
 					//	TODO	add option for offline
 					var oRepository = jsh.wf.git.fetch();
@@ -245,7 +247,18 @@
 						})
 					);
 					if (output) jsh.shell.console(output);
+
+					var stashes = fRepository.command(stashList).argument().run();
+					if (stashes.length) {
+						jsh.shell.console("");
+						jsh.shell.console("Stashes:");
+						stashes.forEach(function(stash) {
+							jsh.shell.console(stash.stash);
+						});
+					}
+
 					if (vsRemote && vsRemote.behind.length && !vsRemote.ahead.length && !vsRemote.paths) {
+						jsh.shell.console("");
 						jsh.shell.console("Fast-forwarding ...");
 						oRepository.merge({ ffOnly: true, name: base });
 					}

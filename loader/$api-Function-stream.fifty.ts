@@ -19,8 +19,6 @@ namespace slime.$api.fp {
 				array: <T>(ts: T[]) => Stream<T>
 			}
 
-			//flatMap: <T,R>(map: (t: T) => R) => (stream: Stream<Maybe<T>>) => Stream<R>
-
 			first: <T>(ts: Stream<T>) => Maybe<T>
 
 			find: {
