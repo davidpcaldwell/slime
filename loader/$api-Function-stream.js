@@ -101,10 +101,7 @@
 					$f.Stream.filter(predicate),
 					$f.Stream.first
 				)
-			}//,
-			// flatMap: function(map) {
-			// 	throw new Error("Unimplemented");
-			// }
+			}
 		});
 	}
 //@ts-ignore

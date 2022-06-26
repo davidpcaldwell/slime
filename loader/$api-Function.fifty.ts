@@ -418,11 +418,15 @@ namespace slime.$api.fp {
 			from: <T>(t: T) => Maybe<T>
 			map: <T,R>(f: (t: T) => R) => (m: Maybe<T>) => Maybe<R>
 			else: <T>(f: () => T) => (m: Maybe<T>) => T
+			present: <T>(m: Maybe<T>) => m is Some<T>
 		}
 	}
 	export interface Exports {
 		Array: {
-			filter: <T>(f: fp.Predicate<T>) => (ts: T[]) => T[]
+			filter: {
+				<T,S extends T>(f: (t: T) => t is S): (ts: T[]) => S[]
+				<T>(f: fp.Predicate<T>): (ts: T[]) => T[]
+			}
 			find: <T>(f: fp.Predicate<T>) => (ts: T[]) => T | undefined
 			map: <T,R>(f: (t: T) => R) => (ts: T[]) => R[]
 			join: (s: string) => (elements: any[]) => string

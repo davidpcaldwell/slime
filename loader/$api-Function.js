@@ -170,6 +170,10 @@
 					if (maybe.present) return maybe.value;
 					return f();
 				}
+			},
+			/** @type { slime.$api.fp.Exports["Maybe"]["present"] } */
+			present: function(m) {
+				return m.present;
 			}
 		}
 
