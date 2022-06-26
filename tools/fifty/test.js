@@ -381,7 +381,6 @@
 				$loader: loader,
 				promises: $context.promises,
 				$api: {
-					Function: $api.Function,
 					Events: {
 						Captor: function(template) {
 							var events = [];

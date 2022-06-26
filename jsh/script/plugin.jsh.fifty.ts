@@ -338,7 +338,7 @@ namespace slime.jsh.script {
 			fifty.tests.cli.invocation = function() {
 				const subject = test.subject;
 
-				var parser = fifty.$api.Function.pipe(
+				var parser = fifty.global.$api.Function.pipe(
 					subject.cli.option.string({ longname: "foo" })
 				);
 				var was = fifty.global.jsh.unit.$slime;
@@ -365,7 +365,7 @@ namespace slime.jsh.script {
 			};
 
 			fifty.tests.cli.run = function() {
-				const $api = fifty.$api;
+				const $api = fifty.global.$api;
 				const subject = test.subject;
 
 				var was: cli.Invocation<any>;
@@ -423,7 +423,7 @@ namespace slime.jsh.script {
 			};
 
 			fifty.tests.cli.wrap = function() {
-				const $api = fifty.$api;
+				const $api = fifty.global.$api;
 				var result: { status: number } = fifty.global.jsh.shell.jsh({
 					shell: fifty.global.jsh.shell.jsh.src,
 					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,

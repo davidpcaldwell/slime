@@ -194,6 +194,23 @@
 				}
 
 				$exports.status = function(p) {
+					// /** @type { slime.jrunscript.tools.git.Command<void,{ stash: string }> } */
+					// var stashList = {
+					// 	invocation: function() {
+					// 		return {
+					// 			command: "stash",
+					// 			arguments: ["list"]
+					// 		}
+					// 	},
+					// 	result: $api.Function.pipe(
+					// 		$api.Function.string.split("\n"),
+					// 		$api.Function.Array.map($api.Function.RegExp.exec(/^(.*)\:/)),
+					// 		function(p) {
+					// 			//	will use flatMap when complete
+					// 		}
+					// 	)
+					// }
+
 					//	TODO	add option for offline
 					var oRepository = jsh.wf.git.fetch();
 					var fRepository = jsh.tools.git.program({ command: "git" }).repository(oRepository.directory.toString());
