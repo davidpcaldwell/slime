@@ -173,95 +173,15 @@
 			}
 		}
 
-		$exports.Function.Stream = {
-			from: {
-				empty: function() {
-					return {
-						iterate: function() {
-							return {
-								next: $exports.Function.Maybe.nothing(),
-								remaining: $exports.Function.Stream.from.empty()
-							}
-						}
-					}
-				},
-				array: function(array) {
-					/**
-					 * @template { any } T
-					 * @param { T[] } array
-					 * @param { number } index
-					 * @returns { slime.$api.fp.Stream<T> }
-					 */
-					var ArrayStream = function recurse(array,index) {
-						return {
-							iterate: function() {
-								if (index < array.length) {
-									return {
-										next: $exports.Function.Maybe.value(array[index]),
-										remaining: recurse(array, index+1)
-									}
-								} else {
-									return {
-										next: $exports.Function.Maybe.nothing(),
-										remaining: $exports.Function.Stream.from.empty()
-									}
-								}
-							}
-						}
-					}
+		var code = {
+			/** @type { slime.$api.fp.internal.stream.Script } */
+			Stream: $context.script("$api-Function-stream.js")
+		};
 
-					return ArrayStream(array, 0);
-				}
-			},
-			first: function(stream) {
-				return stream.iterate().next;
-			},
-			collect: function(stream) {
-				var rv = [];
-				var more = true;
-				while(more) {
-					var current = stream.iterate();
-					if (current.next.present) {
-						rv.push(current.next.value);
-						stream = current.remaining;
-					} else {
-						more = false;
-					}
-				}
-				return rv;
-			},
-			filter: function filter(predicate) {
-				return function(stream) {
-					return {
-						iterate: function() {
-							while(true) {
-								var current = stream.iterate();
-								if (!current.next.present) {
-									return {
-										next: $exports.Function.Maybe.nothing(),
-										remaining: $exports.Function.Stream.from.empty()
-									}
-								}
-								if (current.next.present && predicate(current.next.value)) {
-									return {
-										next: current.next,
-										remaining: filter(predicate)(current.remaining)
-									}
-								} else {
-									stream = current.remaining;
-								}
-							}
-						}
-					}
-				}
-			},
-			find: function find(predicate) {
-				return $exports.Function.pipe(
-					$exports.Function.Stream.filter(predicate),
-					$exports.Function.Stream.first
-				)
-			}
-		}
+		$exports.Function.Stream = code.Stream({
+			//@ts-ignore
+			$f: $exports.Function
+		})
 
 		$exports.Function.Array = {
 			filter: function(f) {
@@ -386,6 +306,13 @@
 			modify: function(modifier) {
 				return function(regexp) {
 					return new RegExp( modifier(regexp.source) );
+				}
+			},
+			exec: function(regexp) {
+				return function(string) {
+					//	We copy the RegExp to deal with possibilities of multithreaded access
+					var copy = new RegExp(regexp.source);
+					return $exports.Function.Maybe.from(copy.exec(string));
 				}
 			}
 		}

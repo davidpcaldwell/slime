@@ -426,3 +426,7 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty)
 }
+
+namespace slime.$api.internal {
+	export type script = <C,E>(name: string) => slime.loader.Script<C,E>
+}

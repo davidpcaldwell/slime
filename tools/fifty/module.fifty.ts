@@ -115,7 +115,6 @@ namespace slime.fifty {
 			},
 			promises: slime.definition.test.promises.Export
 			$api: {
-				Function: slime.$api.Global["Function"]
 				Events: {
 					/**
 					 * Creates a {@link slime.$api.events.Handler} that captures and stores all received {@link slime.$api.Event}s for querying.

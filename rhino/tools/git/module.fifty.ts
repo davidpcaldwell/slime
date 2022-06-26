@@ -366,7 +366,7 @@ namespace slime.jrunscript.tools.git {
 				});
 
 				fifty.run(function worksWithEmptyDirectory() {
-					const $api = fifty.$api;
+					const $api = fifty.global.$api;
 					var directory = fifty.jsh.file.object.temporary.directory();
 
 					fixture.write({

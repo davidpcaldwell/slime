@@ -66,7 +66,7 @@ namespace slime.$api.fp {
 				};
 
 				verify(calls).is(void(0));
-				var memoized = fifty.$api.Function.memoized(counter);
+				var memoized = fifty.global.$api.Function.memoized(counter);
 				verify(calls).is(void(0));
 				var result = memoized();
 				verify(result).is(42);
@@ -221,9 +221,9 @@ namespace slime.$api.fp {
 					}
 				};
 
-				var x = fifty.$api.Function.result(
+				var x = fifty.global.$api.Function.result(
 					2,
-					fifty.$api.Function.pipe(
+					fifty.global.$api.Function.pipe(
 						times(3),
 						plus(4)
 					)
@@ -266,7 +266,7 @@ namespace slime.$api.fp {
 			const { verify } = fifty;
 
 			fifty.tests.is = function() {
-				var is2 = fifty.$api.Function.is(2);
+				var is2 = fifty.global.$api.Function.is(2);
 
 				verify(is2(2)).is(true);
 				//@ts-ignore
@@ -348,14 +348,14 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.string = function() {
-				var subject = fifty.$api.Function.string;
+				var subject = fifty.global.$api.Function.string;
 
 				fifty.run(function repeat() {
-					var one = fifty.$api.Function.string.repeat(1)("foo");
+					var one = fifty.global.$api.Function.string.repeat(1)("foo");
 					fifty.verify(one).is("foo");
-					var three = fifty.$api.Function.string.repeat(3)("foo");
+					var three = fifty.global.$api.Function.string.repeat(3)("foo");
 					fifty.verify(three).is("foofoofoo");
-					var zero = fifty.$api.Function.string.repeat(0)("foo");
+					var zero = fifty.global.$api.Function.string.repeat(0)("foo");
 					fifty.verify(zero).is("");
 				});
 
@@ -393,7 +393,7 @@ namespace slime.$api.fp {
 			fifty.tests.Object = function() {
 				run(function fromEntries() {
 					var array = [ ["a", 2], ["b", 3] ];
-					var result: { a: number, b: number } = fifty.$api.Function.result(
+					var result: { a: number, b: number } = fifty.global.$api.Function.result(
 						array,
 						Object.fromEntries
 					) as { a: number, b: number };
@@ -420,137 +420,6 @@ namespace slime.$api.fp {
 			else: <T>(f: () => T) => (m: Maybe<T>) => T
 		}
 	}
-
-	export interface Stream<T> {
-		iterate: () => {
-			next: Maybe<T>,
-			remaining: Stream<T>
-		}
-	}
-
-	export interface Exports {
-		Stream: {
-			from: {
-				empty: <T>() => Stream<T>
-				array: <T>(ts: T[]) => Stream<T>
-			}
-
-			first: <T>(ts: Stream<T>) => Maybe<T>
-
-			collect: <T>(ts: Stream<T>) => T[]
-
-			filter: {
-				<W,N extends W>(predicate: (w: W) => w is N): (ws: Stream<W>) => Stream<N>
-				<T>(predicate: Predicate<T>): (ts: Stream<T>) => Stream<T>
-			}
-
-			find: {
-				<W,N extends W>(predicate: (w: W) => w is N): (ws: Stream<W>) => Maybe<N>
-				<T>(predicate: Predicate<T>): (ts: Stream<T>) => Maybe<T>
-			}
-		}
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api } = fifty.global;
-
-			fifty.tests.Stream = function() {
-				fifty.run(function testEmptyStream() {
-					var stream = $api.Function.Stream.from.empty();
-					var first = $api.Function.Stream.first(stream);
-					verify(first).present.is(false);
-					var collected = $api.Function.Stream.collect(stream);
-					verify(collected).length.is(0);
-				});
-
-				fifty.run(function testArrayStream() {
-					var array = [1,2,3,4];
-					var stream = $api.Function.Stream.from.array(array);
-					var first = $api.Function.Stream.first(stream);
-					verify(first).present.is(true);
-					verify(first).evaluate.property("value").is(1);
-					var collected = $api.Function.Stream.collect(stream);
-					verify(collected).length.is(4);
-					verify(collected)[0].is(1);
-					verify(collected)[1].is(2);
-					verify(collected)[2].is(3);
-					verify(collected)[3].is(4);
-				});
-
-				function streamRange(start: number, limit: number): Stream<number> {
-					function emptyStream(): Stream<number> {
-						return {
-							iterate: function() {
-								return {
-									next: null,
-									remaining: emptyStream()
-								}
-							}
-						}
-					}
-
-					return {
-						iterate: function() {
-							if (start < limit) {
-								return {
-									next: $api.Function.Maybe.value(start),
-									remaining: streamRange(start+1, limit)
-								}
-							} else {
-								return {
-									next: $api.Function.Maybe.nothing(),
-									remaining: emptyStream()
-								}
-							}
-						}
-					}
-				}
-
-				function streamTo(limit: number): Stream<number> {
-					return streamRange(0, limit);
-				}
-
-				var isOdd: Predicate<number> = (n: number) => n % 2 == 1;
-
-				fifty.run(function testStream() {
-					var rv = $api.Function.Stream.collect(streamTo(10));
-					verify(rv.join(",")).is("0,1,2,3,4,5,6,7,8,9")
-				});
-
-				fifty.run(function testFilter() {
-					var rv = $api.Function.result(
-						streamTo(10),
-						$api.Function.pipe(
-							$api.Function.Stream.filter(isOdd),
-							$api.Function.Stream.collect
-						)
-					);
-					verify(rv.join(",")).is("1,3,5,7,9");
-				});
-
-				fifty.run(function testFind() {
-					var firstOdd = $api.Function.result(
-						streamTo(10),
-						$api.Function.Stream.find(isOdd)
-					);
-					verify(firstOdd).present.is(true);
-					verify(firstOdd).evaluate.property("value").is(1);
-
-					var firstOver10 = $api.Function.result(
-						streamTo(10),
-						$api.Function.Stream.find(function(v) { return v > 10; })
-					);
-					verify(firstOver10).present.is(false);
-				});
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export interface Exports {
 		Array: {
 			filter: <T>(f: fp.Predicate<T>) => (ts: T[]) => T[]
@@ -604,8 +473,8 @@ namespace slime.$api.fp {
 						{ a: 2, b: "b" }
 					]
 
-					const f1: Predicate<T> = fifty.$api.Function.Predicate.property("a", function(v) { return v == 1; });
-					const f2: Predicate<T> = fifty.$api.Function.Predicate.property("b", function(v) { return v == "b"; });
+					const f1: Predicate<T> = fifty.global.$api.Function.Predicate.property("a", function(v) { return v == 1; });
+					const f2: Predicate<T> = fifty.global.$api.Function.Predicate.property("b", function(v) { return v == "b"; });
 
 					verify(ts).evaluate(function(ts) { return ts.filter(f1); }).length.is(1);
 					verify(ts.filter(f1))[0].a.is(1);
@@ -639,17 +508,23 @@ namespace slime.$api.fp {
 			 * @param modifier A function that receives the pattern of the original RegExp as an argumentt and returns a new pattern.
 			 */
 			modify: (modifier: (pattern: string) => string) => (original: RegExp) => RegExp
+
+			exec: (regexp: RegExp) => (string: string) => Maybe<RegExpExecArray>
 		}
 	}
 
 	(
 		function(
-			$api: slime.$api.Global,
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.RegExp = function() {
+			const { verify } = fifty;
+			const subject = fifty.global.$api.Function.RegExp;
+
+			fifty.tests.exports.RegExp = fifty.test.Parent();
+
+			fifty.tests.exports.RegExp.modify = function() {
 				var foo = /^(.*)foo$/;
-				var bar = fifty.$api.Function.RegExp.modify(
+				var bar = subject.modify(
 					function(pattern) { return pattern.replace(/foo/g, "bar"); }
 				)(foo);
 
@@ -664,10 +539,26 @@ namespace slime.$api.fp {
 				verify(foo).evaluate(test("bar")).is(false);
 				verify(bar).evaluate(test("foo")).is(false);
 				verify(bar).evaluate(test("bar")).is(true);
+			};
+
+			fifty.tests.exports.RegExp.exec = function() {
+				var pattern = /a(b+)c/;
+
+				var matcher = subject.exec(pattern);
+
+				var one = matcher("abbc");
+				verify(one).present.is(true);
+				if (one.present) {
+					verify(one).value[0].is("abbc");
+					verify(one).value[1].is("bb");
+				}
+
+				var two = matcher("ac");
+				verify(two).present.is(false);
 			}
 		}
 	//@ts-ignore
-	)($api,fifty);
+	)(fifty);
 
 	export type Comparator<T> = (t1: T, t2: T) => number
 
@@ -710,27 +601,27 @@ namespace slime.$api.fp {
 					{ name: "b", value: 0 },
 					{ name: "c", value: 2 }
 				];
-				var comparator: slime.$api.fp.Comparator<{ name: string, value: number }> = fifty.$api.Function.comparator.create(
-					fifty.$api.Function.property("value"),
-					fifty.$api.Function.comparator.operators
+				var comparator: slime.$api.fp.Comparator<{ name: string, value: number }> = fifty.global.$api.Function.comparator.create(
+					fifty.global.$api.Function.property("value"),
+					fifty.global.$api.Function.comparator.operators
 				);
 				array.sort(comparator);
 				verify(array)[0].name.is("b");
 				verify(array)[1].name.is("a");
 				verify(array)[2].name.is("c");
-				array.sort(fifty.$api.Function.comparator.reverse(comparator));
+				array.sort(fifty.global.$api.Function.comparator.reverse(comparator));
 				verify(array)[0].name.is("c");
 				verify(array)[1].name.is("a");
 				verify(array)[2].name.is("b");
 
-				var tiebreaking: slime.$api.fp.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.$api.Function.comparator.create(
-					fifty.$api.Function.property("tiebreaker"),
-					fifty.$api.Function.comparator.operators
+				var tiebreaking: slime.$api.fp.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.global.$api.Function.comparator.create(
+					fifty.global.$api.Function.property("tiebreaker"),
+					fifty.global.$api.Function.comparator.operators
 				);
 
-				var multicomparator: slime.$api.fp.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.$api.Function.comparator.compose(
-					fifty.$api.Function.comparator.reverse(comparator),
-					fifty.$api.Function.comparator.reverse(tiebreaking)
+				var multicomparator: slime.$api.fp.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.global.$api.Function.comparator.compose(
+					fifty.global.$api.Function.comparator.reverse(comparator),
+					fifty.global.$api.Function.comparator.reverse(tiebreaking)
 				);
 
 				var multi = [
@@ -848,7 +739,7 @@ namespace slime.$api.fp {
 				var f3 = function(p: { number: number }) {
 					p.number -= 3;
 				}
-				var f = fifty.$api.Function.impure.compose(f1, f2, f3);
+				var f = fifty.global.$api.Function.impure.compose(f1, f2, f3);
 				var input = { number: 4 };
 				var output = f(input);
 				verify(output).number.is(7);
@@ -857,14 +748,14 @@ namespace slime.$api.fp {
 					return { number: 9 };
 				};
 
-				var r = fifty.$api.Function.impure.compose(f1, r1, f3);
+				var r = fifty.global.$api.Function.impure.compose(f1, r1, f3);
 				var rinput = { number: 4 };
 				var routput = r(rinput);
 				verify(routput).number.is(6);
 
 				fifty.run(function() {
-					var nullRevision = fifty.$api.Function.impure.revise(null);
-					var undefinedRevision = fifty.$api.Function.impure.revise(void(0));
+					var nullRevision = fifty.global.$api.Function.impure.revise(null);
+					var undefinedRevision = fifty.global.$api.Function.impure.revise(void(0));
 
 					var two = { number: 2 }
 
@@ -880,7 +771,7 @@ namespace slime.$api.fp {
 						function(a: A) { a.b++ },
 						function(a: A) { a.c = 0 }
 					];
-					var update = fifty.$api.Function.impure.Update.compose(updates);
+					var update = fifty.global.$api.Function.impure.Update.compose(updates);
 					update(a);
 					verify(a).a.is(2);
 					verify(a).b.is(3);
@@ -1024,7 +915,7 @@ namespace slime.$api.fp {
 			const { verify } = fifty;
 
 			fifty.tests.deprecated = function() {
-				var check = fifty.$api.Function.argument.check;
+				var check = fifty.global.$api.Function.argument.check;
 
 				var tester = {
 					invoke: function(argument,array) {
@@ -1048,7 +939,6 @@ namespace slime.$api.fp {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
 				fifty.run(fifty.tests.string);
-				fifty.run(fifty.tests.RegExp);
 				fifty.run(fifty.tests.impure);
 				fifty.run(fifty.tests.compare);
 				fifty.run(fifty.tests.is);
@@ -1056,7 +946,8 @@ namespace slime.$api.fp {
 				fifty.run(fifty.tests.Object);
 				fifty.run(fifty.tests.deprecated);
 				fifty.run(fifty.tests.series);
-				fifty.run(fifty.tests.Stream);
+
+				fifty.load("$api-Function-stream.fifty.ts");
 			}
 		}
 	//@ts-ignore
@@ -1076,6 +967,8 @@ namespace slime.$api.fp.internal {
 		events: slime.runtime.internal.events.Exports
 
 		deprecate: slime.$api.Global["deprecate"]
+
+		script: slime.$api.internal.script
 	}
 
 	export interface Exports {
