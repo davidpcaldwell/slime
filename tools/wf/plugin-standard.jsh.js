@@ -13,6 +13,43 @@
 	 * @param { slime.loader.Export<slime.jsh.wf.Exports["project"]["initialize"]> } $export
 	 */
 	function($api,jsh,$export) {
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.git.repository.Local } repository
+		 * @param { string } path
+		 */
+		var isSubmodulePath = function(repository,path) {
+			var submodules = repository.submodule();
+			return submodules.some(function(submodule) {
+				return submodule.path == path;
+			});
+		}
+
+		/**
+		 * @param { slime.jrunscript.file.Directory } project
+		 */
+		function getDefaultCommitMessage(project) {
+			var repository = jsh.tools.git.Repository({ directory: project });
+			var status = repository.status();
+			if (status.paths) {
+				var modified = $api.Function.result(
+					status.paths,
+					Object.entries
+				);
+				if (
+					modified.length &&
+					modified.every(function(entry) {
+						return isSubmodulePath(repository,entry[0])
+					})
+				) {
+					return "Update "
+						+ ( (modified.length > 1) ? "submodules" : "submodule" )
+						+ " " + modified.map(function(entry) { return entry[0]; }).join(", ");
+				}
+			}
+			return null;
+		}
+
 		$export(
 			function($context,project,$exports) {
 				if (arguments.length == 2) {
@@ -63,18 +100,6 @@
 							return branch.name;
 						});
 					return Boolean(allBranches.find(function(branch) { return branch == base; }));
-				}
-
-				/**
-				 *
-				 * @param { slime.jrunscript.tools.git.repository.Local } repository
-				 * @param { string } path
-				 */
-				var isSubmodulePath = function(repository,path) {
-					var submodules = repository.submodule();
-					return submodules.some(function(submodule) {
-						return submodule.path == path;
-					});
 				}
 
 				if ( (project.lint || project.test) && !project.precommit ) {
@@ -424,6 +449,22 @@
 					}
 				};
 
+				$exports.git.hooks["post-checkout"] = function() {
+					var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+					var origin = repository.command(jsh.wf.git.commands.remoteShow).argument("origin").run();
+					var trunk = origin.head;
+					var status = repository.command(jsh.tools.git.commands.status).argument().run();
+					if (status.branch == trunk) {
+						repository.command(jsh.tools.git.commands.fetch).argument().run();
+						repository.command(jsh.tools.git.commands.merge).argument({ name: "origin/" + trunk }).run();
+						//	TODO	below is implemented in top-level wf.js, and is used in git.branches.prune
+						// cleanGitBranches()();
+					}
+					if ($context.base.getFile(".gitmodules")) {
+						repository.command(jsh.tools.git.commands.submodule.update).argument().run();
+					}
+				}
+
 				if (project.precommit) {
 					$exports.precommit = function() {
 						var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
@@ -445,21 +486,28 @@
 							arguments: []
 						});
 					}
-				}
 
-				$exports.git.hooks["post-checkout"] = function() {
-					var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
-					var origin = repository.command(jsh.wf.git.commands.remoteShow).argument("origin").run();
-					var trunk = origin.head;
-					var status = repository.command(jsh.tools.git.commands.status).argument().run();
-					if (status.branch == trunk) {
-						repository.command(jsh.tools.git.commands.fetch).argument().run();
-						repository.command(jsh.tools.git.commands.merge).argument({ name: "origin/" + trunk }).run();
-						//	TODO	below is implemented in top-level wf.js, and is used in git.branches.prune
-						// cleanGitBranches()();
-					}
-					if ($context.base.getFile(".gitmodules")) {
-						repository.command(jsh.tools.git.commands.submodule.update).argument().run();
+					$exports.git.hooks["prepare-commit-msg"] = function(p) {
+						var messageFile = p.arguments[0];
+						var messageSource = p.arguments[1];
+						var commitObjectName = p.arguments[2];
+						// jsh.shell.console(JSON.stringify({
+						// 	messageFile: messageFile,
+						// 	messageSource: messageSource,
+						// 	commitObjectName: commitObjectName
+						// }, void(0), 4));
+						// jsh.shell.console("Contents:");
+						// jsh.shell.console(
+						// 	jsh.file.Pathname(messageFile).file.read(String)
+						// )
+						// jsh.shell.console("===");
+						var defaultMessage = getDefaultCommitMessage($context.base);
+						if (defaultMessage) {
+							var location = jsh.file.Pathname(messageFile);
+							var now = location.file.read(String);
+							var after = defaultMessage + "\n" + now;
+							location.write(after, { append: false });
+						}
 					}
 				}
 
@@ -582,31 +630,14 @@
 					jsh.script.cli.option.string({ longname: "message" }),
 					jsh.script.cli.option.boolean({ longname: "notest" }),
 					function(p) {
-						//	Leave redundant check for message for now, in case there are existing implementations of
-						//	operations.commit that do not check. But going forward they should check themselves.
-						var repository = jsh.tools.git.Repository({ directory: $context.base });
-						var status = repository.status();
-						var defaultCommitMessage = null;
-						if (status.paths) {
-							var modified = $api.Function.result(
-								status.paths,
-								Object.entries
-							);
-							if (
-								modified.length &&
-								modified.every(function(entry) {
-									return isSubmodulePath(repository,entry[0])
-								})
-							) {
-								defaultCommitMessage = "Update "
-									+ ( (modified.length > 1) ? "submodules" : "submodule" )
-									+ " " + modified.map(function(entry) { return entry[0]; }).join(", ");
-							}
-						}
+						var defaultCommitMessage = getDefaultCommitMessage($context.base);
+
 						if (!p.options.message && defaultCommitMessage) {
 							p.options.message = defaultCommitMessage;
 						}
 
+						//	Leave redundant check for message for now, in case there are existing implementations of
+						//	operations.commit that do not check. But going forward they should check themselves.
 						if (!p.options.message) throw new Error("No default commit message, and no message given.");
 
 						//	TODO	removed a notest option that could be used here

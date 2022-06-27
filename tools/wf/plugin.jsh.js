@@ -103,8 +103,9 @@
 					git: {
 						installHooks: function(p) {
 							var ALL_GIT_HOOKS = [
-								"pre-commit",
 								"post-checkout",
+								"pre-commit",
+								"prepare-commit-msg",
 								"post-merge",
 								"post-commit"
 							];
