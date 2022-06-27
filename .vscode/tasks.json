@@ -36,7 +36,7 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "Git: Switch to trunk",
+			"label": "Git: Switch to and/or update trunk",
 			"type": "shell",
 			"command": "./wf git.trunk",
 			"problemMatcher": []
