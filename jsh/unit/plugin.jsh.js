@@ -83,6 +83,7 @@ plugin({
 		};
 
 		var html = $loader.file("html.js", {
+			jsh: jsh,
 			html: jsh.unit.html,
 			$slime: jsh.unit.$slime
 		});

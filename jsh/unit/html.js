@@ -4,8 +4,18 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { { test: any, html: any, $slime: any, jsdom: any, jsh: any } } $context
+	 * @param { { test: any, PartDescriptor: any, Scenario: any, doc: any, documentation: any } } $exports
+	 */
+	function(Packages,$api,$context,$exports) {
+		var jsh = $context.jsh;
+
 		var getApiHtml = function(moduleMainPathname) {
 			//	TODO	logic for this is largely duplicated in loader/api/api.html.js getApiHtmlPath method, which is string based while
 			//			this is pathname- and directory- and file- based
@@ -29,34 +39,39 @@
 			}
 		}
 
-		var loadApiHtml = function(file,document) {
-			var DISABLE_CACHE = !Boolean(jsh.shell.environment.JSH_UNIT_USE_API_CACHE);
-			if (!arguments.callee.cache) {
-				arguments.callee.cache = {};
-			}
-			if (DISABLE_CACHE || !arguments.callee.cache[file.pathname.toString()]) {
-				arguments.callee.cache[file.pathname.toString()] = (function() {
-					jsh.shell.console("Loading API file: " + file.pathname);
-					if (!document) {
-						var doc = new jsh.document.Document({
-							stream: file.read(jsh.io.Streams.binary)
-						});
-						return new JsapiHtml(file.parent,doc);
-					} else {
-						var doc = (function() {
-							return jsh.document.load({
-								//	TODO	there is a loader/path version of this instead of string
-								string: file.read(String)
-							});
-						})();
-						return new jsh.unit.jsapi.Html(file.parent,doc);
+		var loadApiHtml = (
+			function() {
+				var cache;
+				return function(file,document) {
+					var DISABLE_CACHE = !Boolean(jsh.shell.environment.JSH_UNIT_USE_API_CACHE);
+					if (!cache) {
+						cache = {};
 					}
-				})();
-			} else {
-				jsh.shell.console("Returning cached api.html: " + file.pathname);
+					if (DISABLE_CACHE || !cache[file.pathname.toString()]) {
+						cache[file.pathname.toString()] = (function() {
+							jsh.shell.console("Loading API file: " + file.pathname);
+							if (!document) {
+								var doc = new jsh.document.Document({
+									stream: file.read(jsh.io.Streams.binary)
+								});
+								return new JsapiHtml(file.parent,doc);
+							} else {
+								var doc = (function() {
+									return jsh.document.load({
+										//	TODO	there is a loader/path version of this instead of string
+										string: file.read(String)
+									});
+								})();
+								return new jsh.unit.jsapi.Html(file.parent,doc);
+							}
+						})();
+					} else {
+						jsh.shell.console("Returning cached api.html: " + file.pathname);
+					}
+					return cache[file.pathname.toString()];
+				}
 			}
-			return arguments.callee.cache[file.pathname.toString()];
-		};
+		)();
 
 		var JsapiHtml = function(base,dom) {
 			this.toString = function() {
@@ -213,6 +228,7 @@
 					var code = this.get(name).read(String);
 					if (!code) throw new Error("No file at " + code + " path=" + name);
 					var scope = (scope) ? scope : {};
+					//@ts-ignore
 					with(scope) {
 						return eval(code);
 					}
@@ -275,7 +291,7 @@
 					//			files. As of this writing, the only known use is to support the jsh/unit/api.html tests which test HTML
 					//			tests themselves.
 					var pageEnvironment = jsh.js.Object.set({}, environment, { file: apifile });
-					var subscope = new Scope(new Suite({ pathname: suite.getRelativePath(path) }),pageEnvironment);
+					var subscope = new Scope(Suite({ pathname: suite.getRelativePath(path) }),pageEnvironment);
 					var rv = tests.getSuiteDescriptor(subscope);
 					return rv;
 				};
@@ -291,7 +307,7 @@
 				delegate.fifty = function(p) {
 					var slime = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
 
-					/** @type { slime.fifty.test.internal.test.Export } */
+					/** @type { slime.fifty.test.internal.test.Exports } */
 					var run = slime.module("tools/fifty/test.js", {
 						library: {
 							Verify: slime.file("loader/api/verify.js")
@@ -318,7 +334,7 @@
 						}
 					})(p.path);
 
-					var promise = run(
+					var promise = run.run(
 						(path.folder) ? delegate.Child(path.folder) : delegate,
 						{
 							jsh: {
@@ -339,7 +355,7 @@
 
 			this.$jsapi = {
 				environment: environment,
-				loader: new Loader(suite),
+				loader: Loader(suite),
 				debug: {
 					disableBreakOnExceptions: function(f) {
 						return jsh.debug.disableBreakOnExceptionsFor(f);
@@ -392,7 +408,7 @@
 		};
 
 		var PartDescriptor = function(p) {
-			var suite = new Suite(p);
+			var suite = Suite(p);
 			if (p.name) suite.name = p.name;
 			var scope = new Scope(suite,(p.environment) ? p.environment : {});
 			return suite.getSuiteDescriptor(scope);
@@ -403,7 +419,7 @@
 				var rv = {
 					name: p.name,
 					execute: function() {
-						var part = new PartDescriptor(p);
+						var part = PartDescriptor(p);
 						var suite = new jsh.unit.Suite(part);
 						var fire = (function(e) {
 							this.fire(e.type,e.detail);
@@ -413,12 +429,12 @@
 						suite.run();
 					},
 					getPath: function(ids) {
-						return new PartDescriptor(p).getPath(ids);
+						return PartDescriptor(p).getPath(ids);
 					}
 				}
 				return rv;
 			} else {
-				return new PartDescriptor(p);
+				return PartDescriptor(p);
 			}
 		};
 
@@ -461,9 +477,9 @@
 							debugger;
 							var error = new EvalError("Error evaluating reference: " + reference + " in " + p.file);
 							var string = String(reference);
-							error.string = string;
+							error["string"] = string;
 							error.toString = function() {
-								return this.message + "\n" + this.string;
+								return this.message + "\n" + this["string"];
 							}
 							//	Below appears to decide whether to halt on incorrect reference
 							if (true) {
@@ -736,4 +752,5 @@
 			};
 		})();
 	}
-)();
+//@ts-ignore
+)(Packages,$api,$context,$exports);

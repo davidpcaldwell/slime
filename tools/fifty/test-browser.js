@@ -184,7 +184,7 @@
 					}
 				);
 
-				return implementation(
+				return implementation.run(
 					loader,
 					{},
 					path.file,
