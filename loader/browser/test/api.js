@@ -8,8 +8,15 @@
 // it is essentially an adapter layer that translates both browser DOMs and other document formats into a common representation
 // for processing by the test execution framework
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { any } inonit
+	 * @param { { api: { ui: any, apiHtmlScript: any }, old: any } } $context
+	 * @param { { getPartDescriptor: any, suite: any, setPath: any } } $exports
+	 */
+	function(inonit,$context,$exports) {
 		var api = new function() {
 			var loader;
 
@@ -132,21 +139,33 @@
 
 		var getLoaderApiDom = function(location) {
 			var unparsed = inonit.loader.$sdk.fetch(location);
+			var root;
 			if (false) {
-				var div = document.createElement("div");
-				//	TODO	there may be a more complex, robust, standards-compliant way of doing this
-				//			maybe with DocumentObjectModel or whatever
-				div.innerHTML = unparsed;
-				var root = (function() {
-					for (var i=0; i<div.childNodes.length; i++) {
-						if (div.childNodes[i].tagName == "html") {
-							return div.childNodes[i];
-						}
+				(
+					function dead() {
+						var div = document.createElement("div");
+						//	TODO	there may be a more complex, robust, standards-compliant way of doing this
+						//			maybe with DocumentObjectModel or whatever
+						div.innerHTML = unparsed;
+						var root = (function() {
+							/** @type { (p: Node) => Element } */
+							var asElement = function(v) {
+								/** @type { (p: Node) => p is Element } } */
+								var isElement = function(p) { return true; }
+								if (isElement(v)) return v;
+								throw new TypeError();
+							};
+							for (var i=0; i<div.childNodes.length; i++) {
+								if ( asElement(div.childNodes[i]).tagName == "html") {
+									return div.childNodes[i];
+								}
+							}
+							//	browser does not preserve html element under div, at least in Chrome, rather putting title
+							//	and other body content under div
+							return div;
+						})();
 					}
-					//	browser does not preserve html element under div, at least in Chrome, rather putting title
-					//	and other body content under div
-					return div;
-				})();
+				)();
 			} else {
 				//	TODO	below copied to loader/document/module.js
 				var doc = document.implementation.createHTMLDocument("");
@@ -164,8 +183,8 @@
 				if (!didDocWriteWork) {
 					doc.documentElement.innerHTML = unparsed;
 				}
-				var root = doc;
-		//								var root = doc.documentElement;
+				root = doc;
+				// var root = doc.documentElement;
 			}
 			var base = (function() {
 				if (location.substring(location.length-1) == "/") return location;
@@ -179,15 +198,13 @@
 			return new api.apiHtmlScript.ApiHtmlTests(loaderApiDom,definitionLocation);
 		};
 
-		var Scope = function(definition,environment) {
+		/** @constructor */
+		var Scope = function Self(definition,environment) {
 			var base = (function() {
 				var tokens = definition.split("/");
 				if (tokens[tokens.length-1].length == 0) return tokens.join("/");
 				return tokens.slice(0,tokens.length-1).join("/") + "/";
 			})();
-
-			var self = this;
-			var Self = arguments.callee;
 
 			this.$relative = function(getRelativePath) {
 				//	TODO	since this ignores getRelativePath, it almost certainly does not work. It is currently used somewhere;
@@ -237,6 +254,7 @@
 					//	TODO	can the below eval and string be replaced by a form of loader.get() or something?
 					this.eval = function(path,scope) {
 						if (!scope) scope = {};
+						//@ts-ignore
 						with(scope) {
 							return eval(inonit.loader.Loader.getCode(base + path));
 						}
@@ -245,7 +263,7 @@
 						return inonit.loader.Loader.getCode(base + path);
 					};
 
-					this.coffee = window.CoffeeScript;
+					this.coffee = window["CoffeeScript"];
 
 					this.get = function(path) {
 						return inonit.loader.get(base+path);
@@ -258,7 +276,7 @@
 
 						var verify = slime.file("loader/api/verify.js")
 
-						/** @type { slime.fifty.test.internal.test.Export } */
+						/** @type { slime.fifty.test.internal.test.Exports } */
 						var run = slime.module("tools/fifty/test.js", {
 							library: {
 								Verify: verify
@@ -288,7 +306,7 @@
 						var relative = inonit.loader.nugget.page.relative(base)
 						var delegate = new inonit.loader.Loader(relative);
 
-						run(
+						run.run(
 							(path.folder) ? delegate.Child(path.folder) : delegate,
 							{},
 							path.file
@@ -325,4 +343,5 @@
 			}
 		}
 	}
-)();
+//@ts-ignore
+)(inonit, $context, $exports);
