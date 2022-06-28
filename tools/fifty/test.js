@@ -10,7 +10,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.fifty.test.internal.test.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.loader.Export<slime.fifty.test.internal.test.Export> } $export
+	 * @param { slime.loader.Export<slime.fifty.test.internal.test.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
 		//	This file has four callers:
@@ -353,16 +353,13 @@
 		 *
 		 * @param { slime.fifty.test.internal.test.AsynchronousScopes } ascopes
 		 * @param { slime.Loader } loader
-		 * @param { Parameters<slime.fifty.test.internal.test.Export>[1] } contexts
+		 * @param { Parameters<slime.fifty.test.internal.test.Exports["run"]>[1] } contexts
 		 * @param { string } path
-		 * @param { string } part - the part to execute. If `undefined`, the default value `"suite"` will be used.
 		 * @param { any } [argument]
-		 * @returns { slime.fifty.test.internal.test.Result }
+		 * @returns { { run: (part: string) => slime.fifty.test.internal.test.Result, list: () => slime.fifty.test.internal.test.Manifest } }
 		 */
-		var load = function recurse(ascopes,loader,contexts,path,part,argument) {
+		var load = function recurse(ascopes,loader,contexts,path,argument) {
 			//	TODO	it appears loader and contexts.jsh.loader may be redundant?
-
-			if (!part) part = "suite";
 
 			//	TODO	this should probably be completely empty
 			var tests = {
@@ -438,7 +435,6 @@
 									: void(0)
 							},
 							path.file,
-							part,
 							argument
 						);
 						if (controlled) controlled.resolve(void(0));
@@ -527,41 +523,81 @@
 				loaderError = e;
 			}
 
-			if (!loaderError) {
-				/** @type { any } */
-				var target = scope.tests;
-				part.split(".").forEach(function(token) {
-					target = $api.Function.result(target, $api.Function.optionalChain(token))
-				});
-				if (typeof(target) == "function") {
-					/** @type { (argument: any) => void } */
-					var callable = target;
-					var createRunner = function() {
-						return runner(tests)( (ascopes) ? ascopes.current() : void(0), callable, path + ":" + part, argument);
-					}
-					if ($context.promises) {
-						return createRunner();
+			return {
+				/**
+				 *
+				 * @param { string } part - the part to execute. If `undefined`, the default value `"suite"` will be used.
+				 * @returns
+				 */
+				run: function(part) {
+					if (!part) part = "suite";
+
+					if (!loaderError) {
+						/** @type { any } */
+						var target = scope.tests;
+						part.split(".").forEach(function(token) {
+							target = $api.Function.result(target, $api.Function.optionalChain(token))
+						});
+						if (typeof(target) == "function") {
+							/** @type { (argument: any) => void } */
+							var callable = target;
+							var createRunner = function() {
+								return runner(tests)( (ascopes) ? ascopes.current() : void(0), callable, path + ":" + part, argument);
+							}
+							if ($context.promises) {
+								return createRunner();
+							} else {
+								return createRunner();
+							}
+						} else {
+							throw new TypeError("Not a function: " + part);
+						}
 					} else {
-						return createRunner();
+						error(path, loaderError);
+						//	TODO	no test coverage
+						return toResult(false);
 					}
-				} else {
-					throw new TypeError("Not a function: " + part);
+				},
+				list: function() {
+					function update(target, rv) {
+						for (var x in target) {
+							rv[x] = {
+								test: typeof(target[x]) == "function",
+								children: {}
+							};
+							update(target[x], rv[x].children);
+						}
+					}
+
+					var rv = {
+						test: false,
+						children: {}
+					};
+
+					update(
+						scope.tests,
+						rv.children
+					);
+
+					return rv;
 				}
-			} else {
-				error(path, loaderError);
-				//	TODO	no test coverage
-				return toResult(false);
 			}
 		}
 
-		$export(
-			function(loader,scopes,path,part) {
+		$export({
+			run: function(loader,scopes,path,part) {
 				var ascopes = ($context.promises) ? AsynchronousScopes(
 					AsynchronousScope({ name: "(top)" })
 				) : void(0);
-				return load(ascopes,loader,scopes,path,part);
+				return load(ascopes,loader,scopes,path).run(part);
+			},
+			list: function(loader,scopes,path) {
+				var ascopes = ($context.promises) ? AsynchronousScopes(
+					AsynchronousScope({ name: "(top)" })
+				) : void(0);
+				return load(ascopes,loader,scopes,path).list();
 			}
-		)
+		})
 	}
 //@ts-ignore
 )($api,$context,$loader,$export);

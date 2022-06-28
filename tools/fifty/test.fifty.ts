@@ -16,7 +16,7 @@ namespace slime.fifty.test.internal {
 		end: (name: string, result: boolean) => void
 	}
 
-	export type run = slime.fifty.test.internal.test.Export
+	export type run = slime.fifty.test.internal.test.Exports["run"]
 }
 
 namespace slime.fifty.test.internal.test {
@@ -31,6 +31,13 @@ namespace slime.fifty.test.internal.test {
 
 	export type Result = {
 		then: (f: (success: boolean) => any) => any
+	}
+
+	export interface Manifest {
+		test: boolean
+		children: {
+			[x: string]: Manifest
+		}
 	}
 
 	export interface AsynchronousScope {
@@ -56,18 +63,30 @@ namespace slime.fifty.test.internal.test {
 	/**
 	 * Executes a Fifty page at the given path from the given loader, optionally limiting the test to a single part.
 	 */
-	export type Export = (
-		/** A loader. */
-		loader: slime.Loader,
-		scopes: {
-			jsh?: {
-				directory: slime.jrunscript.file.Directory
-				loader: slime.Loader
-			}
-		},
-		path: string,
-		part?: string
-	) => Result
+	export interface Exports {
+		run: (
+			loader: slime.Loader,
+			scopes: {
+				jsh?: {
+					directory: slime.jrunscript.file.Directory
+					loader: slime.Loader
+				}
+			},
+			path: string,
+			part?: string
+		) => Result
 
-	export type Script = slime.loader.Script<Context,Export>
+		list: (
+			loader: slime.Loader,
+			scopes: {
+				jsh?: {
+					directory: slime.jrunscript.file.Directory
+					loader: slime.Loader
+				}
+			},
+			path: string
+		) => Manifest
+	}
+
+	export type Script = slime.loader.Script<Context,Exports>
 }
