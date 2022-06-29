@@ -658,7 +658,7 @@ namespace slime.$api.fp {
 
 	export interface World {
 		question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => (p: P) => A
-		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => (p?: P) => void
+		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => world.Output<P>
 
 		ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => world.Input<A>
 		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => world.Process
