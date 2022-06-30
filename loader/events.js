@@ -138,13 +138,13 @@
 
 			this.attach = function() {
 				for (var x in on) {
-					source.listeners.add(x,on[x]);
+					events.listeners.add(x,on[x]);
 				}
 			};
 
 			this.detach = function() {
 				for (var x in on) {
-					source.listeners.remove(x,on[x]);
+					events.listeners.add(x,on[x]);
 				}
 			};
 
