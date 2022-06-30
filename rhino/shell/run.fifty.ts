@@ -41,6 +41,22 @@ namespace slime.jrunscript.shell.run {
 		exit: Exit
 	}
 
+	export namespace world {
+		export interface Subprocess {
+			pid: number
+			kill: () => void
+			run: () => Exit
+		}
+	}
+
+	export interface World {
+		start: (p: {
+			context: slime.jrunscript.shell.run.Context
+			configuration: slime.jrunscript.shell.run.Configuration
+			events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>
+		}) => world.Subprocess
+	}
+
 	/**
 	 * Represents the result of a mock shell invocation. Currently, if line-based output is provided for a stream, the
 	 * string given as part of `exit` is ignored.
@@ -80,11 +96,6 @@ namespace slime.jrunscript.shell.internal.run {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
-	}
-
-	export interface Result {
-		status: number
-		stdio: slime.jrunscript.shell.run.Output
 	}
 
 	export interface OutputDestination {
@@ -248,7 +259,7 @@ namespace slime.jrunscript.shell.internal.run {
 				p: slime.jrunscript.shell.run.old.Argument,
 				invocation: slime.jrunscript.shell.run.old.Argument,
 				isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
-			) => Result
+			) => slime.jrunscript.shell.run.Exit
 		}
 	}
 
