@@ -229,6 +229,59 @@
 			);
 		};
 
+		/** @type { slime.jrunscript.shell.run.World } */
+		var realWorld = {
+			start: function(p) {
+				var context = p.context;
+				var configuration = p.configuration;
+				var events = p.events;
+
+				var stdio = buildStdio(context.stdio)(events);
+
+				//	TODO	could throw exception on launch; should deal with it
+				var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
+					createJavaCommandContext({
+						directory: (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory,
+						environment: context.environment,
+						stdio: stdio
+					}),
+					createJavaCommandConfiguration(configuration)
+				);
+
+				return {
+					pid: Number(_subprocess.getPid()),
+					kill: function() {
+						_subprocess.terminate();
+					},
+					run: function() {
+						var listener = new function() {
+							this.status = void(0);
+
+							this.finished = function(status) {
+								this.status = status;
+							};
+
+							this.interrupted = function(_exception) {
+								//	who knows what we should do here. Kill the process?
+								throw new Error("Unhandled Java thread interruption.");
+							};
+						};
+
+						//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
+						_subprocess.wait(new JavaAdapter(
+							Packages.inonit.system.Subprocess.Listener,
+							listener
+						));
+
+						return {
+							status: listener.status,
+							stdio: stdio.close()
+						}
+					}
+				};
+			}
+		}
+
 		/**
 		 *
 		 * @param { slime.jrunscript.shell.run.Context } context
@@ -241,47 +294,20 @@
 			 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
 			 */
 			return function(events) {
-				var stdio = buildStdio(context.stdio)(events);
-				//	TODO	could throw exception on launch; should deal with it
-				var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
-					createJavaCommandContext({
-						directory: (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory,
-						environment: context.environment,
-						stdio: stdio
-					}),
-					createJavaCommandConfiguration(configuration)
-				);
+				var subprocess = realWorld.start({
+					context: context,
+					configuration: configuration,
+					events: events
+				});
 
 				events.fire("start", {
-					pid: Number(_subprocess.getPid()),
-					kill: function() {
-						_subprocess.terminate();
-					}
+					pid: subprocess.pid,
+					kill: subprocess.kill
 				});
 
-				var listener = new function() {
-					this.status = void(0);
+				var exit = subprocess.run();
 
-					this.finished = function(status) {
-						this.status = status;
-					};
-
-					this.interrupted = function(_exception) {
-						//	who knows what we should do here. Kill the process?
-						throw new Error("Unhandled Java thread interruption.");
-					};
-				};
-
-				//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
-				_subprocess.wait(new JavaAdapter(
-					Packages.inonit.system.Subprocess.Listener,
-					listener
-				));
-
-				events.fire("exit", {
-					status: listener.status,
-					stdio: stdio.close()
-				});
+				events.fire("exit", exit);
 			}
 		};
 
@@ -453,20 +479,23 @@
 					/** @type { slime.jrunscript.shell.run.Exit } */
 					var rv;
 					$api.Function.world.process(
-						$api.Function.world.tell(tell(invocation.context, invocation.configuration), {
-							start: function(e) {
-								events.fire("start", e.detail);
-							},
-							stdout: function(e) {
-								events.fire("stdout", e.detail);
-							},
-							stderr: function(e) {
-								events.fire("stderr", e.detail);
-							},
-							exit: function(e) {
-								rv = e.detail;
+						$api.Function.world.tell(
+							tell(invocation.context, invocation.configuration),
+							{
+								start: function(e) {
+									events.fire("start", e.detail);
+								},
+								stdout: function(e) {
+									events.fire("stdout", e.detail);
+								},
+								stderr: function(e) {
+									events.fire("stderr", e.detail);
+								},
+								exit: function(e) {
+									rv = e.detail;
+								}
 							}
-						})
+						)
 					);
 					return rv;
 				}
