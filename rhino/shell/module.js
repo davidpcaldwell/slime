@@ -97,7 +97,8 @@
 					java: $context.api.java,
 					io: $context.api.io,
 					file: $context.api.file
-				}
+				},
+				world: ($context.world && $context.world.run)
 			});
 			var invocation = code.invocation({
 				library: {

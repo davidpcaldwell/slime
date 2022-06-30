@@ -13,7 +13,7 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.gcloud.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var run = ($context.mock && $context.mock.shell) ? $context.library.shell.world.mock($context.mock.shell.run) : $context.library.shell.world.run;
+		var run = $context.library.shell.world.run;
 
 		/**
 		 *

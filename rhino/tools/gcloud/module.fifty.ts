@@ -45,11 +45,6 @@ namespace slime.jrunscript.tools.gcloud {
 			shell: slime.jrunscript.shell.Exports
 			install: slime.jrunscript.tools.install.Exports
 		}
-		mock?: {
-			shell?: {
-				run: Parameters<slime.jrunscript.shell.World["mock"]>[0]
-			}
-		}
 	}
 
 	export interface Exports {
@@ -113,16 +108,48 @@ namespace slime.jrunscript.tools.gcloud {
 				}
 			)();
 
+			var code: {
+				shell: {
+					module: slime.jrunscript.shell.Script
+					fixtures: slime.jrunscript.shell.test.Script
+				}
+			} = {
+				shell: {
+					module: fifty.$loader.script("../../../rhino/shell/module.js"),
+					fixtures: fifty.$loader.script("../../../rhino/shell/fixtures.ts")
+				}
+			};
+
+			var fixtures = {
+				shell: code.shell.fixtures()
+			};
+
+			var library = {
+				shell: code.shell.module({
+					_environment: void(0),
+					_properties: void(0),
+					api: {
+						js: void(0),
+						java: jsh.java,
+						io: jsh.io,
+						file: jsh.file,
+						document: void(0),
+						httpd: void(0),
+						xml: void(0)
+					},
+					kotlin: void(0),
+					stdio: void(0),
+					world: {
+						run: fixtures.shell.run.createMockWorld(captor.mock)
+					}
+				})
+			}
+
 			const subject = script({
 				library: {
 					file: jsh.file,
-					shell: jsh.shell,
+					shell: library.shell,
 					install: jsh.tools.install
-				},
-				mock: {
-					shell: {
-						run: captor.mock
-					}
 				}
 			});
 

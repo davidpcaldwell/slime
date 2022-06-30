@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell {
-	export namespace test {
+	export namespace internal.invocation.test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			const code: slime.jrunscript.shell.internal.invocation.Script = fifty.$loader.script("invocation.js");
 			return code();
@@ -161,7 +161,7 @@ namespace slime.jrunscript.shell {
 			fifty.tests.invocation = {};
 
 			fifty.tests.invocation.sudo = function() {
-				var sudoed = test.subject.invocation.sudo()(fifty.global.jsh.shell.Invocation.old({
+				var sudoed = internal.invocation.test.subject.invocation.sudo()(fifty.global.jsh.shell.Invocation.old({
 					command: "ls"
 				}));
 
@@ -174,7 +174,7 @@ namespace slime.jrunscript.shell {
 				var parent = fifty.global.jsh.shell.environment;
 				fifty.verify(parent).evaluate.property("PATH").is.type("string");
 				fifty.verify(parent).evaluate.property("TO_BASH_SCRIPT_EXAMPLE").is(void(0));
-				var script = test.subject.invocation.toBashScript()({
+				var script = internal.invocation.test.subject.invocation.toBashScript()({
 					command: "foo",
 					arguments: ["bar", "baz"],
 					directory: "/path/to/use",
@@ -229,7 +229,7 @@ namespace slime.jrunscript.shell {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const subject = test.subject;
+			const subject = internal.invocation.test.subject;
 
 			fifty.tests.suite = function() {
 				var jsh = fifty.global.jsh;

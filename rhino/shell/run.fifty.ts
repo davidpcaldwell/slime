@@ -96,6 +96,7 @@ namespace slime.jrunscript.shell.internal.run {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
+		world?: slime.jrunscript.shell.run.World
 	}
 
 	export interface OutputDestination {
