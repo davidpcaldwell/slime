@@ -7,6 +7,7 @@
 namespace slime.jrunscript.shell {
 	export interface World {
 		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+		run: slime.$api.fp.impure.Action<run.Invocation,run.TellEvents>
 	}
 }
 
@@ -241,6 +242,201 @@ namespace slime.jrunscript.shell.internal.run {
 	//@ts-ignore
 	)(fifty);
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api } = fifty.global;
+			const subject = fifty.global.jsh.shell;
+
+			fifty.tests.world = function() {
+				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
+
+				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
+					var ls = subject.Invocation.create({
+						command: "ls",
+						directory: directory.toString(),
+						stdio: {
+							output: "line",
+							error: "line"
+						}
+					});
+					var tell = subject.world.run(ls);
+					var captor = fifty.$api.Events.Captor({
+						start: void(0),
+						stdout: void(0),
+						stderr: void(0),
+						exit: void(0)
+					});
+					tell(captor.handler);
+					fifty.global.jsh.shell.console(JSON.stringify(captor.events,void(0),4));
+
+					var killed = subject.Invocation.create({
+						command: "sleep",
+						arguments: ["1"],
+						directory: directory.toString(),
+						stdio: {
+							output: "line",
+							error: "line"
+						}
+					});
+					var events = [];
+					var subprocess;
+					var killtell = subject.world.run(killed);
+					killtell({
+						start: function(e) {
+							events.push(e);
+							subprocess = e.detail;
+							subprocess.kill();
+						},
+						stdout: function(e) {
+							events.push(e);
+						},
+						stderr: function(e) {
+							events.push(e);
+						},
+						exit: function(e) {
+							events.push(e);
+						}
+					});
+					fifty.global.jsh.shell.console(JSON.stringify(events,void(0),4));
+				}
+			}
+
+			fifty.tests.sandbox = function() {
+				fifty.run(function checkErrorForBogusInvocation() {
+					var bogus = subject.Invocation.create({
+						command: "foobarbaz"
+					});
+
+					var tell = subject.world.run(bogus);
+					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.type(Error);
+					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.evaluate.property("name").is("JavaException");
+				});
+
+				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
+
+				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
+					var ls = subject.Invocation.create({
+						command: "ls",
+						directory: directory.toString()
+					});
+					var status: number;
+					subject.world.run(ls)({
+						exit: function(e) {
+							status = e.detail.status;
+						}
+					});
+					fifty.verify(status).is(0);
+
+					var lsIllegalArgumentStatus = (function() {
+						if (fifty.global.jsh.shell.os.name == "Mac OS X") return 1;
+						if (fifty.global.jsh.shell.os.name == "Linux") return 2;
+					})();
+
+					fifty.run(function checkExitStatus() {
+						debugger;
+						var lserror = $api.Object.compose(ls, {
+							configuration: $api.Object.compose(ls.configuration, {
+								arguments: ["--foo"]
+							})
+						});
+						var status: number;
+						subject.world.run(lserror)({
+							exit: function(e) {
+								status = e.detail.status;
+							}
+						});
+						fifty.verify(status).is(lsIllegalArgumentStatus);
+					});
+
+					fifty.run(function checkErrorOnNonZero() {
+						var lserror = $api.Object.compose(ls, {
+							configuration: $api.Object.compose(ls.configuration, {
+								arguments: ["--foo"]
+							})
+						});
+						var tell = subject.world.run(lserror);
+						//	TODO	this listener functionality was previously provided by default; will want to improve API over
+						//			time so that it's harder to accidentally ignore non-zero exit status
+						var listener: slime.$api.events.Handler<slime.jrunscript.shell.run.TellEvents> = {
+							exit: function(e) {
+								if (e.detail.status != 0) {
+									throw new Error("Non-zero exit status: " + e.detail.status);
+								}
+							}
+						}
+						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.type(Error);
+						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.message.is("Non-zero exit status: " + lsIllegalArgumentStatus);
+					});
+				}
+
+				var isDirectory = function(directory) {
+					return Object.assign(function(p) {
+						return directory.toString() == p.toString();
+					}, {
+						toString: function() {
+							return "is directory " + directory;
+						}
+					})
+				};
+
+				var it = {
+					is: function(value) {
+						return function(p) {
+							return p === value;
+						}
+					}
+				}
+
+				fifty.run(function Invocation() {
+					var directory = fifty.jsh.file.object.getRelativePath(".").directory;
+
+					//	TODO	test for missing command
+
+					fifty.run(function defaults() {
+						var argument: shell.invocation.Argument = {
+							command: "ls"
+						};
+						var invocation = fifty.global.jsh.shell.Invocation.create(argument);
+						fifty.verify(invocation, "invocation", function(its) {
+							its.configuration.command.is("ls");
+							its.configuration.arguments.is.type("object");
+							its.configuration.arguments.length.is(0);
+							//	TODO	environment
+							its.context.directory.evaluate(isDirectory(fifty.global.jsh.shell.PWD)).is(true);
+							its.context.stdio.input.evaluate(it.is(null)).is(true);
+							//	TODO	appears to work in latest TypeScript
+							//@ts-ignore
+							its.context.stdio.output.evaluate(it.is(fifty.global.jsh.shell.stdio.output)).is(true);
+							//	TODO	appears to work in latest TypeScript
+							//@ts-ignore
+							its.context.stdio.error.evaluate(it.is(fifty.global.jsh.shell.stdio.error)).is(true);
+						});
+					});
+
+					fifty.run(function specified() {
+						var argument: shell.invocation.Argument = {
+							command: fifty.global.jsh.file.Pathname("/bin/ls"),
+							arguments: [directory.getRelativePath("invocation.fifty.ts")],
+							//	TODO	environment
+							directory: directory.toString()
+						};
+						var invocation = fifty.global.jsh.shell.Invocation.create(argument);
+						fifty.verify(invocation, "invocation", function(its) {
+							its.configuration.command.is("/bin/ls");
+							its.configuration.arguments.is.type("object");
+							its.configuration.arguments.length.is(1);
+							its.configuration.arguments[0].is(directory.getRelativePath("invocation.fifty.ts").toString());
+							its.context.directory.evaluate(isDirectory(directory)).is(true);
+						});
+					});
+				});
+			}
+		}
+	//@ts-ignore
+	)($fifty);
+
 	export interface Exports {
 		mock: {
 			run: shell.World["mock"]
@@ -271,7 +467,9 @@ namespace slime.jrunscript.shell.internal.run {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.question);
 				fifty.run(fifty.tests.run);
+				fifty.run(fifty.tests.sandbox);
 			}
 		}
 	//@ts-ignore

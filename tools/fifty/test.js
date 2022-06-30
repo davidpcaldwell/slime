@@ -436,7 +436,7 @@
 							},
 							path.file,
 							argument
-						);
+						).run(part);
 						if (controlled) controlled.resolve(void(0));
 						if (ascopes) ascopes.pop();
 						return rv;
