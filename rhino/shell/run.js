@@ -294,7 +294,9 @@
 			 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
 			 */
 			return function(events) {
-				var subprocess = realWorld.start({
+				var world = $context.world || realWorld;
+
+				var subprocess = world.start({
 					context: context,
 					configuration: configuration,
 					events: events
@@ -323,6 +325,7 @@
 			);
 		};
 
+		//	TODO	next two functions also copy-pasted into fixtures
 		var isLineWithProperty = function(name) {
 			return function(line) {
 				return Boolean(line[name]);

@@ -34,6 +34,9 @@ namespace slime.jrunscript.shell {
 			httpd: any
 			xml: any
 		}
+		world?: {
+			run?: slime.jrunscript.shell.run.World
+		}
 	}
 
 	export interface Exports {
@@ -422,7 +425,7 @@ namespace slime.jrunscript.shell {
 		world: World
 	}
 
-	export type Loader = slime.loader.Script<Context,Exports>;
+	export type Script = slime.loader.Script<Context,Exports>;
 
 	export namespace sudo {
 		export interface Settings {
@@ -458,6 +461,9 @@ namespace slime.jrunscript.shell {
 		run: slime.$api.fp.impure.Action<run.Invocation,run.TellEvents>
 
 		/**
+		 * @deprecated Replaced by the {@link Context} `world.run` property, which allows a mock implementation to be used when
+		 * loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
+		 *
 		 * Allows a mock implementation of the `run` action to be created using a function that receives an invocation as an
 		 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
 		 * the appropriate `Tell` and fire the appropriate events to the caller.

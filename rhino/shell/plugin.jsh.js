@@ -27,7 +27,7 @@
 				}
 
 				var code = {
-					/** @type { slime.jrunscript.shell.Loader } */
+					/** @type { slime.jrunscript.shell.Script } */
 					module: $loader.script("module.js")
 				}
 
