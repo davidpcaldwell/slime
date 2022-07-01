@@ -353,7 +353,7 @@
 										return {
 											run: function(run) {
 												var world = (run && run.world) ? run.world : $context.library.http.world;
-												return $api.Function.impure.ask(function(events) {
+												return $api.Function.world.old.ask(function(events) {
 													var response = world.request(
 														toHttpArgument(
 															api,
@@ -374,7 +374,7 @@
 										return {
 											run: function(run) {
 												var world = (run && run.world) ? run.world : $context.library.http.world;
-												return $api.Function.impure.ask(function(events) {
+												return $api.Function.world.old.ask(function(events) {
 													var request = toHttpArgument(
 														api,
 														authentication,

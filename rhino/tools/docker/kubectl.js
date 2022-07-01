@@ -77,7 +77,7 @@
 				}
 			},
 			result: function(world,invocation) {
-				return $api.Function.impure.ask(function(events) {
+				return $api.Function.world.old.ask(function(events) {
 					var tell = world.run(invocation);
 					var rv;
 					tell({

@@ -98,7 +98,7 @@
 										})
 									);
 									return {
-										run: $api.Function.impure.ask(function(events) {
+										run: $api.Function.world.old.ask(function(events) {
 											var rv;
 											tell({
 												stdout: function(e) {

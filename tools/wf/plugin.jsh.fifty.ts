@@ -253,7 +253,7 @@ namespace slime.jsh.wf {
 			requireGitIdentity: (p: {
 				repository: slime.jrunscript.tools.git.repository.Local
 				get?: GitIdentityProvider
-			}) => slime.$api.fp.impure.Ask<
+			}) => slime.$api.fp.world.old.Ask<
 				{
 					console: string
 					debug: string
@@ -362,7 +362,7 @@ namespace slime.jsh.wf {
 
 	export namespace exports {
 		export interface Checks {
-			noUntrackedFiles: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.impure.Ask<{
+			noUntrackedFiles: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.world.old.Ask<{
 				console: string
 				untracked: string[]
 			},boolean>
@@ -378,7 +378,7 @@ namespace slime.jsh.wf {
 
 	export namespace exports {
 		export interface Checks {
-			noModifiedSubmodules: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.impure.Ask<
+			noModifiedSubmodules: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.world.old.Ask<
 				{
 					console: string
 				},
@@ -473,7 +473,7 @@ namespace slime.jsh.wf {
 
 	export namespace exports {
 		export interface Checks {
-			noDetachedHead: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.impure.Ask<
+			noDetachedHead: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.world.old.Ask<
 				{
 					console: string
 				},
@@ -484,7 +484,7 @@ namespace slime.jsh.wf {
 
 	export namespace exports {
 		export interface Checks {
-			upToDateWithOrigin: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.impure.Ask<
+			upToDateWithOrigin: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.world.old.Ask<
 				{
 					console: string
 				},
@@ -495,7 +495,7 @@ namespace slime.jsh.wf {
 
 	export namespace exports {
 		export interface Checks {
-			tsc: () => slime.$api.fp.impure.Ask<
+			tsc: () => slime.$api.fp.world.old.Ask<
 				{
 					console: string
 				},
@@ -515,19 +515,19 @@ namespace slime.jsh.wf {
 	}
 
 	export type Lint = {
-		check: slime.$api.fp.impure.Ask<
+		check: slime.$api.fp.world.old.Ask<
 			{
 				console: string
 			},
 			boolean
 		>
 
-		fix: slime.$api.fp.impure.Tell<{
+		fix: slime.$api.fp.world.old.Tell<{
 			console: string
 		}>
 	}
 
-	export type Test = slime.$api.fp.impure.Ask<
+	export type Test = slime.$api.fp.world.old.Ask<
 		{
 			output: string
 			console: string
@@ -535,7 +535,7 @@ namespace slime.jsh.wf {
 		boolean
 	>
 
-	export type Precommit = slime.$api.fp.impure.Ask<
+	export type Precommit = slime.$api.fp.world.old.Ask<
 		{
 			console: string
 		},
@@ -545,7 +545,7 @@ namespace slime.jsh.wf {
 	export namespace exports {
 		export interface Checks {
 			precommit: (p?: {
-				lint?: slime.$api.fp.impure.Ask<
+				lint?: slime.$api.fp.world.old.Ask<
 					{
 						console: string
 					},

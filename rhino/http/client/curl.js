@@ -24,7 +24,7 @@
 			 * @returns { ReturnType<slime.jrunscript.http.client.World["request"]> }
 			 */
 			function implementation(argument) {
-				return $api.Function.impure.ask(function(events) {
+				return $api.Function.world.old.ask(function(events) {
 					/** @type { slime.jrunscript.http.client.spi.Response } */
 					var response;
 

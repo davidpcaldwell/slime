@@ -50,7 +50,7 @@ namespace slime.jrunscript.tools.kubernetes.cli {
 			toJson: (p: cli.Invocation) => cli.Invocation
 		}
 
-		result: (world: slime.jrunscript.shell.World, invocation: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.impure.Ask<Events,Result>
+		result: (world: slime.jrunscript.shell.World, invocation: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.world.old.Ask<Events,Result>
 	}
 
 	export namespace test {

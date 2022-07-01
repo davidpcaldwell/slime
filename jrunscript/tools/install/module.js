@@ -206,7 +206,7 @@
 
 		/** @type { slime.jrunscript.tools.install.install } */
 		var newInstall = function(p) {
-			return $api.Function.impure.tell(function(events) {
+			return $api.Function.world.old.tell(function(events) {
 				if (typeof(p.source.file) != "string" && typeof(p.source.file) != "undefined") {
 					throw new TypeError("source.file must be string.");
 				}
@@ -242,7 +242,7 @@
 			get: $exports.get,
 			//	TODO	find is completely untested
 			find: function(p) {
-				return $api.Function.impure.ask(function(events) {
+				return $api.Function.world.old.ask(function(events) {
 					get(p,events);
 					return p.file;
 				});

@@ -465,7 +465,7 @@ namespace slime.jrunscript.shell {
 		 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
 		 * the appropriate `Tell` and fire the appropriate events to the caller.
 		 */
-		mock: (delegate: (invocation: shell.run.Invocation) => shell.run.Mock) => slime.$api.fp.impure.Action<run.Invocation,run.TellEvents>
+		mock: (delegate: (invocation: shell.run.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.Invocation,run.TellEvents>
 
 		 /** @deprecated Replaced by {@link Exports | Exports Invocation.create()} because it does not rely on external state. */
 		Invocation: (p: invocation.old.Argument) => old.Invocation
@@ -473,8 +473,8 @@ namespace slime.jrunscript.shell {
 
 	export interface Exports {
 		Tell: {
-			exit: () => (tell: slime.$api.fp.impure.Tell<run.TellEvents>) => run.TellEvents["exit"]
-			mock: (stdio: Partial<Pick<slime.jrunscript.shell.run.StdioConfiguration,"output" | "error">>, result: slime.jrunscript.shell.run.Mock) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.TellEvents>
+			exit: () => (tell: slime.$api.fp.world.old.Tell<run.TellEvents>) => run.TellEvents["exit"]
+			mock: (stdio: Partial<Pick<slime.jrunscript.shell.run.StdioConfiguration,"output" | "error">>, result: slime.jrunscript.shell.run.Mock) => slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents>
 		}
 	}
 
@@ -486,7 +486,7 @@ namespace slime.jrunscript.shell {
 			const { $api, jsh } = fifty.global;
 
 			fifty.tests.exports.Tell = function() {
-				var tell: slime.$api.fp.impure.Tell<run.TellEvents> = jsh.shell.Tell.mock({
+				var tell: slime.$api.fp.world.old.Tell<run.TellEvents> = jsh.shell.Tell.mock({
 					output: "string"
 				}, {
 					exit: {

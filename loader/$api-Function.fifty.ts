@@ -644,6 +644,27 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty, $api, tests, verify);
 
+	export namespace impure {
+		export type Input<T> = () => T
+		export type Output<T> = (t: T) => void
+		export type Process = () => void
+	}
+
+	export interface Exports {
+		impure: {
+			now: {
+				input: <T>(input: impure.Input<T>) => T
+				output: <P>(p: P, f: impure.Output<P>) => void
+				process: (process: impure.Process) => void
+			}
+
+			Process: {
+				compose: (processes: impure.Process[]) => impure.Process
+				output: <P>(p: P, f: impure.Output<P>) => impure.Process
+			}
+		}
+	}
+
 	export namespace world {
 		export type Question<P,E,A> = (p?: P) => Ask<E,A>
 		export type Action<P,E> = (p?: P) => Tell<E>
@@ -651,44 +672,46 @@ namespace slime.$api.fp {
 		export type Ask<E,T> = (events: slime.$api.Events<E>) => T
 		export type Tell<E> = (events: slime.$api.Events<E>) => void
 
-		export type Input<T> = () => T
-		export type Output<T> = (t: T) => void
-		export type Process = () => void
+		/** @deprecated */
+		export namespace old {
+			/** @deprecated */
+			export type Ask<E,T> = (on?: slime.$api.events.Handler<E>) => T
+
+			/** @deprecated */
+			export type Tell<E> = (on?: slime.$api.events.Handler<E>) => void
+
+			/** @deprecated */
+			export type Action<P,E> = (p?: P) => Tell<E>
+
+			/** @deprecated Identical to {@link Ask} but has slightly different semantics (analogous to HTTP POST). */
+			export type Operation<E,R> = (on?: slime.$api.events.Handler<E>) => R
+		}
 	}
 
 	export interface World {
 		question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => (p: P) => A
-		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => world.Output<P>
+		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => impure.Output<P>
 
-		ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => world.Input<A>
-		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => world.Process
+		ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => impure.Input<A>
+		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => impure.Process
 
-		Process: {
-			compose: (processes: world.Process[]) => world.Process
-			output: <P>(p: P, f: $api.fp.world.Output<P>) => slime.$api.fp.world.Process
-		}
-
-		input: <T>(input: world.Input<T>) => T
-		output: <P>(p: P, f: world.Output<P>) => void
-		process: (process: world.Process) => void
-
-		/** @experimental May not be needed. Should be able to use tell() to turn into {@link world.Process}, then process that. */
+		/** @deprecated Used almost entirely for `jsh.shwll.tools.node.require`. After refactoring that, reassess. */
 		execute: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => void
+
+		/** @deprecated */
+		old: {
+			/** @deprecated */
+			ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => world.old.Ask<E,T>
+			/** @deprecated */
+			tell: <E>(f: (events: slime.$api.Events<E>) => void) => world.old.Tell<E>
+		}
 	}
 
 	export interface Exports {
 		world: World
 	}
 
-	export namespace impure {
-		export type Ask<E,T> = (on?: slime.$api.events.Handler<E>) => T
-		export type Tell<E> = (on?: slime.$api.events.Handler<E>) => void
-
-		export type Action<P,E> = (p?: P) => Tell<E>
-
-		/** @deprecated Replaced by {@link Ask} */
-		export type State<T> = Ask<void,T>
-
+	export namespace object {
 		export type Update<T extends Object> = (t: T) => void
 
 		/**
@@ -696,33 +719,25 @@ namespace slime.$api.fp {
 		 * `undefined`, or returns a completely new value to replace the argument.
 		 */
 		export type Revision<M> = (mutable: M) => M | void
-
-		export namespace old {
-			/** @deprecated Identical to {@link Ask} but has slightly different semantics (analogous to HTTP POST). */
-			export type Action<E,R> = (on?: slime.$api.events.Handler<E>) => R
-		}
 	}
 
 	export interface Exports {
-		impure: {
-			ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => impure.Ask<E,T>
-			tell: <E>(f: (events: slime.$api.Events<E>) => void) => impure.Tell<E>
-
+		object: {
 			/**
 			 * Converts a Revision to a function that can be used in a function pipeline; in other words, if it is an revision
 			 * that modifies its argument in place, it will be augmented to return the argument. If the argument is `undefined`
 			 * or `null`, an identity function will be returned.
 			 */
-			revise: <M>(f: impure.Revision<M>) => (mutable: M) => M
+			revise: <M>(f: object.Revision<M>) => (mutable: M) => M
 
 			/**
 			 * Creates a `Revision` that runs the given revisions in a pipeline, allowing the `Revision`s to replace the pipeline
 			 * input by returning a value.
 			 */
-			compose: <M>(...functions: impure.Revision<M>[]) => (mutable: M) => M
+			compose: <M>(...functions: object.Revision<M>[]) => (mutable: M) => M
 
 			Update: {
-				compose: <M>(functions: impure.Update<M>[]) => impure.Update<M>
+				compose: <M>(functions: object.Update<M>[]) => object.Update<M>
 			}
 		}
 	}
@@ -743,7 +758,7 @@ namespace slime.$api.fp {
 				var f3 = function(p: { number: number }) {
 					p.number -= 3;
 				}
-				var f = fifty.global.$api.Function.impure.compose(f1, f2, f3);
+				var f = fifty.global.$api.Function.object.compose(f1, f2, f3);
 				var input = { number: 4 };
 				var output = f(input);
 				verify(output).number.is(7);
@@ -752,14 +767,14 @@ namespace slime.$api.fp {
 					return { number: 9 };
 				};
 
-				var r = fifty.global.$api.Function.impure.compose(f1, r1, f3);
+				var r = fifty.global.$api.Function.object.compose(f1, r1, f3);
 				var rinput = { number: 4 };
 				var routput = r(rinput);
 				verify(routput).number.is(6);
 
 				fifty.run(function() {
-					var nullRevision = fifty.global.$api.Function.impure.revise(null);
-					var undefinedRevision = fifty.global.$api.Function.impure.revise(void(0));
+					var nullRevision = fifty.global.$api.Function.object.revise(null);
+					var undefinedRevision = fifty.global.$api.Function.object.revise(void(0));
 
 					var two = { number: 2 }
 
@@ -775,7 +790,7 @@ namespace slime.$api.fp {
 						function(a: A) { a.b++ },
 						function(a: A) { a.c = 0 }
 					];
-					var update = fifty.global.$api.Function.impure.Update.compose(updates);
+					var update = fifty.global.$api.Function.object.Update.compose(updates);
 					update(a);
 					verify(a).a.is(2);
 					verify(a).b.is(3);

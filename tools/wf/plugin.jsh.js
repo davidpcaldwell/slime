@@ -489,7 +489,7 @@
 
 				/** @type { slime.jsh.wf.exports.Checks["noUntrackedFiles"] } */
 				function noUntrackedFiles(p) {
-					return $api.Function.impure.ask(function(events) {
+					return $api.Function.world.old.ask(function(events) {
 						events.fire("console", "Verifying no untracked files ...");
 						var status = p.repository.status();
 						var untracked = (status.paths) ? $api.Object.properties(status.paths).filter(function(property) {
@@ -512,7 +512,7 @@
 						return Boolean(config["user.name"] && config["user.email"]);
 					}
 
-					return $api.Function.impure.ask(function(events) {
+					return $api.Function.world.old.ask(function(events) {
 						events.fire("debug", "Verifying git identity ...");
 						var config = p.repository.config({
 							arguments: ["--list"]
@@ -544,7 +544,7 @@
 
 				/** @type { slime.jsh.wf.exports.Checks["noModifiedSubmodules"] } */
 				function noModifiedSubmodules(p) {
-					return $api.Function.impure.ask(function(events) {
+					return $api.Function.world.old.ask(function(events) {
 						events.fire("console", "Verifying submodules unmodified ...")
 						// var success = true;
 						// p.repository.submodule().forEach(function(sub) {
@@ -615,7 +615,7 @@
 
 				/** @type { slime.jsh.wf.exports.Checks["noDetachedHead"] } */
 				function noDetachedHead(p) {
-					return $api.Function.impure.ask(function(events) {
+					return $api.Function.world.old.ask(function(events) {
 						events.fire("console", "Verifying not a detached HEAD ...");
 						var status = p.repository.status();
 						if (status.branch.name === null) {
@@ -642,7 +642,7 @@
 						return Boolean(allBranches.find(function(branch) { return branch == base; }));
 					}
 
-					return $api.Function.impure.ask(function(events) {
+					return $api.Function.world.old.ask(function(events) {
 						events.fire("console", "Verifying up to date with origin ...");
 						var remote = "origin";
 						var origin = jsh.tools.git.program({ command: "git" })
@@ -687,7 +687,7 @@
 					var handleTrailingWhitespace = (typeof(p.trailingWhitespace) == "undefined") ? true : p.trailingWhitespace;
 					var handleFinalNewlines = (typeof(p.handleFinalNewlines) == "undefined") ? true : p.handleFinalNewlines;
 					return {
-						check: $api.Function.impure.ask(function(events) {
+						check: $api.Function.world.old.ask(function(events) {
 							var success = true;
 
 							if (handleTrailingWhitespace) {
@@ -753,7 +753,7 @@
 
 							return success;
 						}),
-						fix: $api.Function.impure.tell(function(events) {
+						fix: $api.Function.world.old.tell(function(events) {
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
 								jsh.tools.code.handleTrailingWhitespace({
@@ -798,7 +798,7 @@
 
 				/** @type { slime.jsh.wf.exports.Checks["tsc"] } */
 				function tsc() {
-					return $api.Function.impure.ask(function(events) {
+					return $api.Function.world.old.ask(function(events) {
 						events.fire("console", "Verifying with TypeScript compiler ...");
 						var project = base;
 						var version = typescript.getVersion(project);
@@ -826,7 +826,7 @@
 					tsc: tsc,
 					lint: lint,
 					precommit: function(p) {
-						return $api.Function.impure.ask(function(events) {
+						return $api.Function.world.old.ask(function(events) {
 							var repository = fetch();
 
 							var success = true;

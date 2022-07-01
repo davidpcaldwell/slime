@@ -7,7 +7,7 @@
 namespace slime.jrunscript.shell {
 	export interface World {
 		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
-		run: slime.$api.fp.impure.Action<run.Invocation,run.TellEvents>
+		run: slime.$api.fp.world.old.Action<run.Invocation,run.TellEvents>
 	}
 }
 
@@ -189,7 +189,7 @@ namespace slime.jrunscript.shell.internal.run {
 	)(fifty);
 
 	export interface Exports {
-		run: slime.$api.fp.impure.Action<slime.jrunscript.shell.run.Invocation,slime.jrunscript.shell.run.TellEvents>
+		run: slime.$api.fp.world.old.Action<slime.jrunscript.shell.run.Invocation,slime.jrunscript.shell.run.TellEvents>
 	}
 
 	(

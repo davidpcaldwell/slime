@@ -262,7 +262,7 @@ namespace slime.jrunscript.tools.install {
 		}
 	}
 
-	export type install = (p: Installation) => slime.$api.fp.impure.Tell<events.Console>;
+	export type install = (p: Installation) => slime.$api.fp.world.old.Tell<events.Console>;
 
 	export interface Exports {
 		/**
@@ -350,7 +350,7 @@ namespace slime.jrunscript.tools.install {
 			gzip?: Format
 		}
 
-		find: (p: Source) => slime.$api.fp.impure.Ask<events.Console,string>
+		find: (p: Source) => slime.$api.fp.world.old.Ask<events.Console,string>
 
 		/**
 		 * Returns a file containing an installer, either using a specified local file or a specified URL.

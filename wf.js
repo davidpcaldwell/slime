@@ -260,7 +260,7 @@
 		}
 
 		/** @type { slime.jsh.wf.Lint["check"] } */
-		var lint = $api.Function.impure.ask(function(events) {
+		var lint = $api.Function.world.old.ask(function(events) {
 			var success = true;
 
 			success = success && jsh.wf.checks.lint().check({
@@ -427,7 +427,7 @@
 				};
 
 				/** @type { slime.jsh.wf.Precommit } */
-				var precommit = $api.Function.impure.ask(function(events) {
+				var precommit = $api.Function.world.old.ask(function(events) {
 					var success = true;
 
 					var trunk = git.repository.command(git.command.remoteShow).argument("origin").run().head;
