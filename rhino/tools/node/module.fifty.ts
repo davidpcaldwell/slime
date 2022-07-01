@@ -45,108 +45,173 @@ namespace slime.jrunscript.node {
 		}
 	}
 
-	/**
-	 * A particular local installation of Node.js.
-	 */
-	export interface Installation {
-		version: string
-
-		location: string
-
-		//	TODO	make the below a link?
-		/**
-		 * Executes a command or script using this Node.js installation.
-		 *
-		 * @param p Invocations are largely compatible with `rhino/shell` `run()`; differences are noted in the type definition
-		 * for this parameter.
-		 *
-		 * @returns The type returned by `evaluate`, or the `rhino/shell` return value including process status, output, etc.
-		 */
-		run: <T = ReturnType<slime.jrunscript.shell.Exports["run"]>>(p: {
-			/**
-			 * (optional; default is just to run `node`) The Node.js command to run (as located in the Node `bin` directory).
-			 */
-			command?: string
-
-			/**
-			 * Specifies the location of a Node project; if indicated, commands will also be located in `node_modules/.bin`.
-			 */
-			project?: slime.jrunscript.file.Directory
-
-			arguments?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["arguments"]
-			directory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"]
-			environment?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["environment"]
-			stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
-			evaluate?: (p: any) => T
-		}) => T
-
-		toBashScript: (p: {
-			command?: string
-			project?: string
-			arguments: string[]
-			directory: string
-			environment: {
-				inherit: boolean
-				values: { [x: string]: (string | null) }
-			}
-		}) => string
-
-		/**
-		 * An object representing the modules installed globally in this Node installation.
-		 */
-		modules: {
-			/**
-			 * An object with a property for each installed module; the name of the module is the name of the property.
-			 */
-			installed: {
-				[key: string]: {
-					version: string
-					required: {
-						version: string
-					}
-				}
-			}
-
-			install: (p: {
-				/**
-				 * The name of the module to install.
-				 */
-				name: string
-			}) => void
-
-			require: (p: { name: string, version?: string }) => void
-
-			uninstall: Function
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.world = fifty.test.Parent();
 		}
+	//@ts-ignore
+	)(fifty);
 
-		npm: {
-			run: (p: {
-				command: string
-				global?: boolean
-				arguments?: string[]
-				stdio?: any
-				evaluate?: any
-				directory?: slime.jrunscript.file.Directory
-			}) => any
+	export interface World {
+	}
+
+	export interface Exports {
+		world: World
+	}
+
+	export namespace world {
+		export interface Installation {
+			executable: string
 		}
 	}
 
-	export namespace install {
-		export interface Events {
-			installed: slime.jrunscript.node.Installation
+	export namespace world {
+		export interface Provider {
+			install: slime.$api.fp.world.Action<{ location: string, version: string }, void>
+		}
+	}
+
+	export interface World {
+		provider: world.Provider
+	}
+
+	export interface World {
+		getVersion: slime.$api.fp.world.Question<world.Installation,void,string>
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			//	TODO	add to suite, would need to specify Linux URL first
+			fifty.tests.world.installation = function() {
+				var TMPDIR = fifty.jsh.file.temporary.location();
+				var install = $api.Function.world.action(
+					test.subject.world.provider.install
+				);
+				install({
+					location: TMPDIR.pathname,
+					version: "16.15.1"
+				});
+				var installation: world.Installation = {
+					executable: TMPDIR.pathname + "/bin/node"
+				};
+				var getVersion = $api.Function.world.question(test.subject.world.getVersion);
+				verify(getVersion(installation)).is("v16.15.1");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace object {
+		/**
+		 * A particular local installation of Node.js.
+		 */
+		export interface Installation {
+			version: string
+
+			location: string
+
+			//	TODO	make the below a link?
+			/**
+			 * Executes a command or script using this Node.js installation.
+			 *
+			 * @param p Invocations are largely compatible with `rhino/shell` `run()`; differences are noted in the type definition
+			 * for this parameter.
+			 *
+			 * @returns The type returned by `evaluate`, or the `rhino/shell` return value including process status, output, etc.
+			 */
+			run: <T = ReturnType<slime.jrunscript.shell.Exports["run"]>>(p: {
+				/**
+				 * (optional; default is just to run `node`) The Node.js command to run (as located in the Node `bin` directory).
+				 */
+				command?: string
+
+				/**
+				 * Specifies the location of a Node project; if indicated, commands will also be located in `node_modules/.bin`.
+				 */
+				project?: slime.jrunscript.file.Directory
+
+				arguments?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["arguments"]
+				directory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"]
+				environment?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["environment"]
+				stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
+				evaluate?: (p: any) => T
+			}) => T
+
+			toBashScript: (p: {
+				command?: string
+				project?: string
+				arguments: string[]
+				directory: string
+				environment: {
+					inherit: boolean
+					values: { [x: string]: (string | null) }
+				}
+			}) => string
+
+			/**
+			 * An object representing the modules installed globally in this Node installation.
+			 */
+			modules: {
+				/**
+				 * An object with a property for each installed module; the name of the module is the name of the property.
+				 */
+				installed: {
+					[key: string]: {
+						version: string
+						required: {
+							version: string
+						}
+					}
+				}
+
+				install: (p: {
+					/**
+					 * The name of the module to install.
+					 */
+					name: string
+				}) => void
+
+				require: (p: { name: string, version?: string }) => void
+
+				uninstall: Function
+			}
+
+			npm: {
+				run: (p: {
+					command: string
+					global?: boolean
+					arguments?: string[]
+					stdio?: any
+					evaluate?: any
+					directory?: slime.jrunscript.file.Directory
+				}) => any
+			}
+		}
+
+		export namespace install {
+			export interface Events {
+				installed: slime.jrunscript.node.object.Installation
+			}
 		}
 	}
 
 	export interface Exports {
-		at: (p: { location: string }) => slime.jrunscript.node.Installation
+		at: (p: { location: string }) => slime.jrunscript.node.object.Installation
 
 		/** @deprecated Use `at()`. */
-		Installation: new (o: { directory: slime.jrunscript.file.Directory }) => slime.jrunscript.node.Installation
+		Installation: new (o: { directory: slime.jrunscript.file.Directory }) => slime.jrunscript.node.object.Installation
 
 		install: slime.$api.fp.world.Action<{
 			version?: string
 			location: slime.jrunscript.file.Pathname
-		},install.Events>
+		},object.install.Events>
 	}
 
 	(
@@ -181,10 +246,10 @@ namespace slime.jrunscript.node {
 namespace slime.jsh.shell.tools {
 	export interface Exports {
 		node: {
-			installed: slime.jrunscript.node.Installation
-			require: slime.$api.fp.world.Action<void,slime.jrunscript.node.install.Events & {
-				removed: slime.jrunscript.node.Installation
-				found: slime.jrunscript.node.Installation
+			installed: slime.jrunscript.node.object.Installation
+			require: slime.$api.fp.world.Action<void,slime.jrunscript.node.object.install.Events & {
+				removed: slime.jrunscript.node.object.Installation
+				found: slime.jrunscript.node.object.Installation
 			}>
 		}
 	}
@@ -196,7 +261,9 @@ namespace slime.jsh.shell.tools {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			$api.Function.world.execute(jsh.shell.tools.node.require());
+			$api.Function.impure.now.process(
+				$api.Function.world.action(jsh.shell.tools.node.require)
+			)
 
 			const api = jsh.shell.tools.node.installed;
 

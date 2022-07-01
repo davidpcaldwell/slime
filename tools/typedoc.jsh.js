@@ -29,6 +29,7 @@
 					if (tsVersion == "4.5.4") return "0.22.11";
 					if (tsVersion == "4.6.2") return "0.22.12";
 					if (tsVersion == "4.6.3") return "0.22.15";
+					if (tsVersion == "4.7.3") return "0.22.18";
 					throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
 				})(p.options["ts:version"])
 				if (false) jsh.shell.console("Require TypeDoc: " + typedocVersion);

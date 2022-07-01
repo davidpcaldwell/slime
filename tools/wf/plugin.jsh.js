@@ -427,7 +427,7 @@
 				var typescript = {
 					getVersion: function(base) {
 						if (base.getFile("tsc.version")) return base.getFile("tsc.version").read(String);
-						return "4.6.3";
+						return "4.7.3";
 					},
 					getConfig: function(base) {
 						if (base.getFile("tsconfig.json")) return base.getFile("tsconfig.json");

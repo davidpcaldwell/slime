@@ -12,6 +12,70 @@
 	 * @param {slime.jrunscript.node.Exports} $exports
 	 */
 	function($api,$context,$exports) {
+		var versions = {
+			/** @type { { [os: string]: { [version: string]: { url: string } } } } */
+			byOs: {
+				"Mac OS X": {
+					"8.16.2": { url: "https://nodejs.org/download/release/v8.16.2/node-v8.16.2-darwin-x64.tar.gz" },
+					"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" },
+					"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" },
+					"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" },
+					"12.16.1": { url: "https://nodejs.org/dist/v12.16.1/node-v12.16.1-darwin-x64.tar.gz" },
+					"12.16.2": { url: "https://nodejs.org/dist/v12.16.2/node-v12.16.2-darwin-x64.tar.gz" },
+					"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-darwin-x64.tar.gz"},
+					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-darwin-x64.tar.gz" },
+					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-darwin-x64.tar.gz" },
+					"16.15.1": { url: "https://nodejs.org/dist/v16.15.1/node-v16.15.1-darwin-x64.tar.gz" },
+				},
+				"Linux": {
+					"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-linux-x64.tar.gz" },
+					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-linux-x64.tar.gz" },
+					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-linux-x64.tar.gz" },
+					"16.15.1": { url: "https://nodejs.org/dist/v16.15.1/node-v16.15.1-linux-x64.tar.gz" }
+				}
+			},
+			default: "16.15.1"
+		};
+
+		var provider = (
+			/** @type { () => slime.jrunscript.node.world.Provider } */
+			function() {
+				return {
+					install: function(p) {
+						return function(events) {
+							var existing = $exports.at({ location: p.location.toString() });
+							if (existing) throw new Error("Node installation directory exists: " + p.location.toString());
+							var os = versions.byOs[$context.module.shell.os.name];
+							if (!os) throw new TypeError("Unsupported operating system: " + $context.module.shell.os.name);
+							var version = os[p.version];
+							$context.library.install.install({
+								url: version.url,
+								to: $context.module.file.Pathname(p.location)
+							});
+						}
+					}
+				}
+			}
+		)();
+
+		/** @type { slime.jrunscript.node.World["getVersion"] } */
+		function getVersion(installation) {
+			return function(events) {
+				var invocation = $context.module.shell.Invocation.create({
+					command: installation.executable,
+					arguments: ["--version"],
+					stdio: {
+						output: "string"
+					}
+				});
+				var getExit = $api.Function.world.question(
+					$context.module.shell.world.question
+				);
+				var exit = getExit(invocation);
+				return exit.stdio.output.split("\n")[0];
+			}
+		}
+
 		/**
 		 * @param { ConstructorParameters<slime.jrunscript.node.Exports["Installation"]>[0] } o
 		 * @constructor
@@ -61,7 +125,7 @@
 				return install.directory.getFile("bin/node");
 			};
 
-			/** @type { slime.jrunscript.node.Installation["run"] } */
+			/** @type { slime.jrunscript.node.object.Installation["run"] } */
 			this.run = function(p) {
 				var command = getCommand(o, p.project, p.command);
 				// var command = (function() {
@@ -93,7 +157,7 @@
 				});
 			};
 
-			/** @type { slime.jrunscript.node.Installation["toBashScript"] } */
+			/** @type { slime.jrunscript.node.object.Installation["toBashScript"] } */
 			this.toBashScript = function(p) {
 				var inherit = (function(environment) {
 					if (!environment) return true;
@@ -128,7 +192,7 @@
 
 			var npm = (function(run) {
 				/**
-				 * @type { slime.jrunscript.node.Installation["npm"]["run"] }
+				 * @type { slime.jrunscript.node.object.Installation["npm"]["run"] }
 				 */
 				var rv = function(p) {
 					return run($api.Object.compose(p, {
@@ -185,6 +249,7 @@
 					}
 				};
 
+				/** @type { slime.jrunscript.node.object.Installation["modules"]["require"] } */
 				this.require = $api.events.Function(function(p,events) {
 					if (p.name) {
 						if (!this.installed[p.name]) {
@@ -226,28 +291,6 @@
 			})
 		};
 
-		var versions = {
-			byOs: {
-				"Mac OS X": {
-					"8.16.2": { url: "https://nodejs.org/download/release/v8.16.2/node-v8.16.2-darwin-x64.tar.gz" },
-					"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" },
-					"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" },
-					"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" },
-					"12.16.1": { url: "https://nodejs.org/dist/v12.16.1/node-v12.16.1-darwin-x64.tar.gz" },
-					"12.16.2": { url: "https://nodejs.org/dist/v12.16.2/node-v12.16.2-darwin-x64.tar.gz" },
-					"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-darwin-x64.tar.gz"},
-					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-darwin-x64.tar.gz" },
-					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-darwin-x64.tar.gz" }
-				},
-				"Linux": {
-					"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-linux-x64.tar.gz" },
-					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-linux-x64.tar.gz" },
-					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-linux-x64.tar.gz" }
-				}
-			},
-			default: "16.13.1"
-		};
-
 		$exports.test = {
 			versions: {
 				previous: "14.18.0",
@@ -274,6 +317,11 @@
 		};
 
 		$exports.Installation = $api.deprecate(Installation);
+
+		$exports.world = {
+			provider: provider,
+			getVersion: getVersion
+		}
 	}
 	//@ts-ignore
 )($api,$context,$exports)
