@@ -75,7 +75,7 @@ namespace slime.jrunscript.tools {
 					askpass: slime.jrunscript.file.File
 				}
 				destination: slime.jrunscript.file.Pathname
-			}) => slime.$api.fp.impure.Tell<install.Events>
+			}) => slime.$api.fp.world.old.Tell<install.Events>
 		}
 
 		export interface Engine {
@@ -93,7 +93,7 @@ namespace slime.jrunscript.tools {
 					from: string
 					volume: string
 					path: string
-				}) => slime.$api.fp.impure.Tell<cli.Events>
+				}) => slime.$api.fp.world.old.Tell<cli.Events>
 
 				/**
 				 * Runs a command on busybox with the given volume mounted at `/volume`.
@@ -102,7 +102,7 @@ namespace slime.jrunscript.tools {
 					volume: string
 					command: string
 					arguments?: string[]
-				}) => slime.$api.fp.impure.Ask<cli.Events, string>
+				}) => slime.$api.fp.world.old.Ask<cli.Events, string>
 			}
 		}
 
@@ -298,19 +298,19 @@ namespace slime.jrunscript.tools {
 			command: {
 				<I,O>(command: Command<I,O>): {
 					input: (i: I) => {
-						run: slime.$api.fp.impure.Ask<Events, O>
+						run: slime.$api.fp.world.old.Ask<Events, O>
 					}
 				}
 
 				<I,O>(command: StringCommand<I,O>): {
 					input: (i: I) => {
-						run: slime.$api.fp.impure.Ask<Events, O>
+						run: slime.$api.fp.world.old.Ask<Events, O>
 					}
 				}
 
 				<I,O>(command: JsonCommand<I,O>): {
 					input: (i: I) => {
-						run: slime.$api.fp.impure.Ask<Events, O[]>
+						run: slime.$api.fp.world.old.Ask<Events, O[]>
 					}
 				}
 			}

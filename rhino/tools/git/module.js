@@ -135,11 +135,11 @@
 							args.push("-c", "credential.helper=", "-c", "credential.helper=" + p.credentialHelper);
 						}
 						args.push(c.name);
-						if (o.arguments) args = $api.Function.impure.revise(o.arguments(p))(args);
+						if (o.arguments) args = $api.Function.object.revise(o.arguments(p))(args);
 						//	TODO	this type should be in rhino/shell if it is not already
 						/** @type { slime.jrunscript.tools.git.internal.Environment } */
 						var environment = $api.Object.compose($context.environment);
-						if (o.environment) environment = $api.Function.impure.revise(o.environment(p))(environment);
+						if (o.environment) environment = $api.Function.object.revise(o.environment(p))(environment);
 
 						var output = {
 							stdout: [],

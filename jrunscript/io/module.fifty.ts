@@ -24,7 +24,7 @@ namespace slime.jrunscript.io {
 		Resource: slime.jrunscript.runtime.Exports["Resource"]
 		Loader: slime.jrunscript.runtime.Exports["Loader"]
 		InputStream: {
-			string: (stream: slime.jrunscript.runtime.io.InputStream) => slime.$api.fp.impure.Ask<void,string>
+			string: (stream: slime.jrunscript.runtime.io.InputStream) => slime.$api.fp.world.old.Ask<void,string>
 		}
 		java: {
 			adapt: {

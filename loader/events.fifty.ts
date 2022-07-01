@@ -40,7 +40,7 @@ namespace slime.runtime.internal.events {
 	export interface Exports {
 		api: slime.$api.Global["events"]
 
-		ask: slime.$api.fp.Exports["impure"]["ask"]
-		tell: slime.$api.fp.Exports["impure"]["tell"]
+		ask: slime.$api.fp.Exports["world"]["old"]["ask"]
+		tell: slime.$api.fp.Exports["world"]["old"]["tell"]
 	}
 }

@@ -13,10 +13,18 @@
 	function($api,jsh) {
 		jsh.wf.typescript.require();
 
-		/** @type { slime.jsh.script.cli.Processor<any, { definition: slime.jrunscript.file.File, part: string, view: string }> } */
+		/** @type { slime.jsh.script.cli.Processor<any, { definition: slime.jrunscript.file.File, list: boolean, part: string, view: string }> } */
 		var processor = $api.Function.pipe(
-			$api.Function.impure.revise(function(p) {
-				var path = p.arguments.shift();
+			function(p) {
+				var list = p.arguments[0];
+				if (list == "list") {
+					p.options.list = true;
+					p.arguments = p.arguments.slice(1);
+				}
+				return p;
+			},
+			function(p) {
+				var path = p.arguments[0];
 				if (typeof(path) != "undefined") {
 					var definition = jsh.script.getopts.parser.Pathname(path);
 					if (!definition.file) {
@@ -24,8 +32,10 @@
 						jsh.shell.exit(1);
 					}
 					p.options.definition = definition.file;
+					p.arguments = p.arguments.slice(1);
 				}
-			}),
+				return p;
+			},
 			jsh.script.cli.option.string({ longname: "part" }),
 			jsh.script.cli.option.string({ longname: "view", default: "console" })
 		)
@@ -123,7 +133,7 @@
 
 			var loader = new jsh.file.Loader({ directory: file.parent });
 
-			return implementation(
+			return implementation.run(
 				loader,
 				{
 					jsh: {
@@ -136,10 +146,58 @@
 			)
 		};
 
-		var promise = execute(parameters.options.definition,parameters.options.part,views[parameters.options.view]);
-		promise.then(function(success) {
-			jsh.shell.exit( (success) ? 0 : 1 )
-		});
+		var list = function(file) {
+			var fiftyLoader = jsh.script.loader;
+
+			/** @type { slime.fifty.test.internal.test.Script } */
+			var script = fiftyLoader.script("test.js");
+			var implementation = script({
+				library: {
+					Verify: verify
+				},
+				//	TODO	probably can refactor so as to avoid this
+				console: void(0)
+			});
+
+			var loader = new jsh.file.Loader({ directory: file.parent });
+
+			return implementation.list(
+				loader,
+				{
+					jsh: {
+						directory: file.parent,
+						loader: loader
+					}
+				},
+				file.pathname.basename
+			);
+		}
+
+		if (!parameters.options.list) {
+			var promise = execute(parameters.options.definition,parameters.options.part,views[parameters.options.view]);
+
+			promise.then(function(success) {
+				jsh.shell.exit( (success) ? 0 : 1 )
+			});
+		} else {
+			var listing = list(parameters.options.definition);
+
+			var addToList = function(rv,manifest,prefix) {
+				if (!prefix) prefix = "";
+				for (var x in manifest) {
+					if (manifest[x].test) {
+						rv.push(prefix + x);
+					}
+					addToList(rv, manifest[x].children, prefix + x + ".");
+				}
+			}
+
+			var array = [];
+			addToList(array,listing.children);
+			array.forEach(function(name) {
+				jsh.shell.console(name);
+			});
+		}
 	}
 //@ts-ignore
 )($api,jsh);

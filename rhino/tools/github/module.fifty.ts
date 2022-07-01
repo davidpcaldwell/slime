@@ -60,7 +60,7 @@ namespace slime.jrunscript.tools.github {
 			argument: (i: I) => {
 				run: (r: {
 					world: slime.jrunscript.http.client.World
-				}) => slime.$api.fp.impure.Ask<E,O>
+				}) => slime.$api.fp.world.old.Ask<E,O>
 			}
 		}
 

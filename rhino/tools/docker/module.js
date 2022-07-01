@@ -133,7 +133,7 @@
 						})
 					);
 					return {
-						run: $api.Function.impure.ask(function(events) {
+						run: $api.Function.world.old.ask(function(events) {
 							var rv;
 							tell({
 								stderr: function(e) {
@@ -400,7 +400,7 @@
 						}
 					}
 				}
-				return $api.Function.impure.tell(function(events) {
+				return $api.Function.world.old.tell(function(events) {
 					if (!p.destination.directory) {
 						if (p.library.shell.os.name == "Mac OS X") {
 							//	https://docs.docker.com/desktop/mac/release-notes/

@@ -31,7 +31,7 @@ namespace slime.jrunscript.tools.homebrew {
 
 		command: <P,R>(command: Command<P,R>) => {
 			parameters: (p: P) => {
-				run: slime.$api.fp.impure.Ask<Events, R>
+				run: slime.$api.fp.world.old.Ask<Events, R>
 			}
 		}
 	}

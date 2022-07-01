@@ -349,6 +349,35 @@
 			}
 		}
 
+		/** @type { slime.$api.fp.Exports["impure"] } */
+		$exports.Function.impure = {
+			now: {
+				input: function(input) {
+					return input();
+				},
+				output: function(p, f) {
+					f(p);
+				},
+				process: function(process) {
+					process();
+				}
+			},
+			Process: {
+				compose: function(processes) {
+					return function() {
+						processes.forEach(function(process) {
+							process();
+						});
+					}
+				},
+				output: function(p,f) {
+					return function() {
+						f(p);
+					}
+				}
+			}
+		};
+
 		$exports.Function.world = {
 			ask: function(ask, handler) {
 				return function() {
@@ -380,34 +409,23 @@
 				var adapted = $context.events.tell(tell);
 				adapted(handler);
 			},
-			Process: {
-				compose: function(processes) {
-					return function() {
-						processes.forEach(function(process) {
-							process();
-						});
-					}
-				},
-				output: function(p,f) {
-					return function() {
-						f(p);
+			old: {
+				ask: $context.events.ask,
+				tell: $context.events.tell
+			}
+		};
+
+		$exports.Function.object = {
+			Update: {
+				compose: function(functions) {
+					return function(m) {
+						for (var i=0; i<functions.length; i++) {
+							functions[i](m);
+						}
 					}
 				}
 			},
-			input: function(input) {
-				return input();
-			},
-			output: function(p, f) {
-				f(p);
-			},
-			process: function(process) {
-				process();
-			}
-		}
-
-		/** @type { slime.$api.fp.Exports["impure"] } */
-		$exports.Function.impure = {
-			/** @type { slime.$api.fp.Exports["impure"]["revise"] } */
+			/** @type { slime.$api.fp.Exports["object"]["revise"] } */
 			revise: function(f) {
 				if (f === null || f === void(0)) return $exports.Function.identity;
 				return function(p) {
@@ -416,24 +434,13 @@
 				}
 			},
 			compose: function() {
-				var functions = Array.prototype.slice.call(arguments).map($exports.Function.impure.revise);
+				var functions = Array.prototype.slice.call(arguments).map($exports.Function.object.revise);
 				return function(p) {
 					var rv = p;
 					for (var i=0; i<functions.length; i++) {
 						rv = functions[i].call(this,rv);
 					}
 					return rv;
-				}
-			},
-			ask: $context.events.ask,
-			tell: $context.events.tell,
-			Update: {
-				compose: function(functions) {
-					return function(m) {
-						for (var i=0; i<functions.length; i++) {
-							functions[i](m);
-						}
-					}
 				}
 			}
 		};

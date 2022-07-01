@@ -5,6 +5,12 @@
 //	END LICENSE
 
 namespace slime.jrunscript.file {
+	export interface World {
+		os: {
+			Location: (pathname: string) => world.Location
+		}
+	}
+
 	export namespace world {
 		(
 			function(
@@ -23,7 +29,6 @@ namespace slime.jrunscript.file {
 			readonly filesystem: Filesystem
 			readonly pathname: string
 		}
-
 
 		(
 			function(
@@ -83,7 +88,7 @@ namespace slime.jrunscript.file {
 
 						var writeA = $api.Function.world.action(subject.Location.file.write.string({ value: "a" }));
 
-						$api.Function.world.output(at, writeA);
+						$api.Function.impure.now.output(at, writeA);
 
 						verify(exists(at)).is(true);
 					});
@@ -250,7 +255,7 @@ namespace slime.jrunscript.file {
 		export interface Directory {
 			require: (p?: {
 				recursive?: boolean
-			}) => slime.$api.fp.impure.Tell<void>
+			}) => slime.$api.fp.world.old.Tell<void>
 		}
 
 		(
@@ -314,7 +319,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Directory {
-			list: () => slime.$api.fp.impure.Ask<void,Location[]>
+			list: () => slime.$api.fp.world.old.Ask<void,Location[]>
 		}
 
 		(
@@ -366,11 +371,11 @@ namespace slime.jrunscript.file {
 			 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
 			 * event and return.
 			 */
-			remove: () => slime.$api.fp.impure.Tell<{
+			remove: () => slime.$api.fp.world.old.Tell<{
 				notFound: void
 			}>
 
-			exists: () => slime.$api.fp.impure.Ask<void,boolean>
+			exists: () => slime.$api.fp.world.old.Ask<void,boolean>
 		}
 
 		(
@@ -384,12 +389,12 @@ namespace slime.jrunscript.file {
 
 
 		export interface File {
-			exists: () => slime.$api.fp.impure.Ask<{},boolean>
+			exists: () => slime.$api.fp.world.old.Ask<{},boolean>
 
 			write: {
 				string: (p: {
 					content: string
-				}) => slime.$api.fp.impure.Tell<{
+				}) => slime.$api.fp.world.old.Tell<{
 				}>
 			}
 		}
@@ -421,7 +426,7 @@ namespace slime.jrunscript.file {
 		export interface File {
 			read: {
 				stream: {
-					bytes: () => slime.$api.fp.impure.Ask<{
+					bytes: () => slime.$api.fp.world.old.Ask<{
 						notFound: void
 					},slime.jrunscript.runtime.io.InputStream>
 				}
@@ -431,7 +436,7 @@ namespace slime.jrunscript.file {
 				 * The `Ask` also provides a `notFound` event to allow special handling of the case in which the file does not
 				 * exist.
 				 */
-				string: () => slime.$api.fp.impure.Ask<{
+				string: () => slime.$api.fp.world.old.Ask<{
 					notFound: void
 				},string>
 			}
@@ -442,7 +447,7 @@ namespace slime.jrunscript.file {
 			 */
 			copy: (p: {
 				to: string
-			}) => slime.$api.fp.impure.Tell<void>
+			}) => slime.$api.fp.world.old.Tell<void>
 		}
 
 		(
@@ -529,7 +534,7 @@ namespace slime.jrunscript.file {
 					/** @deprecated Use .pathname() to obtain a {@link Location}. */
 					stream: {
 						/** @deprecated Use .pathname() to obtain a {@link Location}. */
-						bytes: (pathname: string) => slime.$api.fp.impure.Ask<{
+						bytes: (pathname: string) => slime.$api.fp.world.old.Ask<{
 							notFound: void
 						},slime.jrunscript.runtime.io.InputStream>
 					}
@@ -554,7 +559,7 @@ namespace slime.jrunscript.file {
 				copy: (p: {
 					from: string
 					to: string
-				}) => slime.$api.fp.impure.Tell<void>
+				}) => slime.$api.fp.world.old.Tell<void>
 			}
 
 			/** @deprecated Use .pathname() to obtain a {@link Location}. */
@@ -563,7 +568,7 @@ namespace slime.jrunscript.file {
 				require: (p: {
 					pathname: string
 					recursive?: boolean
-				}) => slime.$api.fp.impure.Tell<void>
+				}) => slime.$api.fp.world.old.Tell<void>
 
 				/**
 				 * @deprecated Use .pathname() to obtain a {@link Location}.
@@ -573,7 +578,7 @@ namespace slime.jrunscript.file {
 				 */
 				remove: (p: {
 					pathname: string
-				}) => slime.$api.fp.impure.Tell<{
+				}) => slime.$api.fp.world.old.Tell<{
 					notFound: void
 				}>
 			}
@@ -618,11 +623,11 @@ namespace slime.jrunscript.file {
 				fifty.tests.sandbox.filesystem.File.read = function() {
 					var me = filesystem.Pathname.relative(here, "module.fifty.ts");
 					var nothing = filesystem.Pathname.relative(here, "nonono");
-					var code = $api.Function.world.input(
+					var code = $api.Function.impure.now.input(
 						$api.Function.world.ask(filesystem.File.read.string({ pathname: me }))
 					);
 					verify(code,"code").is.type("string");
-					var no = $api.Function.world.input(
+					var no = $api.Function.impure.now.input(
 						$api.Function.world.ask(filesystem.File.read.string({ pathname: nothing }))
 					);
 					verify(no,"no").is.type("null");
@@ -631,12 +636,12 @@ namespace slime.jrunscript.file {
 						var pathname = function(relative: string) { return fifty.jsh.file.object.getRelativePath(relative).toString(); };
 						var thisFile = pathname("module.fifty.ts");
 						var doesNotExist = pathname("foo");
-						var thisFileContents = $api.Function.world.input(
+						var thisFileContents = $api.Function.impure.now.input(
 							$api.Function.world.ask(
 								filesystem.File.read.string({ pathname: thisFile })
 							)
 						);
-						var doesNotExistContents = $api.Function.world.input(
+						var doesNotExistContents = $api.Function.impure.now.input(
 							$api.Function.world.ask(
 								filesystem.File.read.string({ pathname: doesNotExist })
 							)
@@ -741,6 +746,35 @@ namespace slime.jrunscript.file {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.sandbox);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		world: World
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+			const { world } = jsh.file;
+
+			fifty.tests.world = function() {
+				var pathname = fifty.jsh.file.object.getRelativePath("module.fifty.ts").toString();
+				var contents = $api.Function.impure.now.input(
+					$api.Function.world.ask(
+						world.filesystems.os.File.read.string({ pathname: pathname })
+					)
+				);
+				jsh.shell.console(contents.substring(0,500));
+
+				var folder = fifty.jsh.file.object.getRelativePath(".").toString();
+				var file = "module.fifty.ts";
+				var relative = world.filesystems.os.Pathname.relative(folder, file);
+				jsh.shell.console(relative);
 			}
 		}
 	//@ts-ignore

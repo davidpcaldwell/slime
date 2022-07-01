@@ -13,7 +13,7 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.gcloud.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var run = ($context.mock && $context.mock.shell) ? $context.library.shell.world.mock($context.mock.shell.run) : $context.library.shell.world.run;
+		var run = $context.library.shell.world.run;
 
 		/**
 		 *
@@ -30,7 +30,7 @@
 					argument: function(argument) {
 						var toResult = command.result || $api.Function.identity;
 						return {
-							run: $api.Function.impure.ask(
+							run: $api.Function.world.old.ask(
 								function(events) {
 									var result;
 									var invocation = command.invocation(argument);
@@ -117,7 +117,7 @@
 						}
 					},
 					create: function create(pathname) {
-						return $api.Function.impure.tell(function(events) {
+						return $api.Function.world.old.tell(function(events) {
 							var url = $api.Function.result(INSTALLER, $api.Function.pipe(
 								$api.Function.optionalChain($context.library.shell.os.name),
 								$api.Function.optionalChain($context.library.shell.os.arch)

@@ -124,7 +124,7 @@
 		 */
 		function getSourceFiles(p) {
 			if (!p.base) throw new Error("Required: base, specifying directory.");
-			return $api.Function.impure.ask(function(on) {
+			return $api.Function.world.old.ask(function(on) {
 				return p.base.list({
 					filter: isAuthoredTextFile( (p.exclude && p.exclude.file) ? p.exclude.file : defaults.exclude.file ),
 					descendants: $api.Function.Predicate.not( (p.exclude && p.exclude.directory) ? p.exclude.directory : defaults.exclude.directory ),
@@ -199,7 +199,7 @@
 				if (!configuration) configuration = {
 					nowrite: false
 				};
-				return $api.Function.impure.tell(function(events) {
+				return $api.Function.world.old.tell(function(events) {
 					var code = entry.file.read(String);
 					var scan = findTrailingWhitespaceIn(code);
 					scan.instances.forEach(function(instance) {
@@ -228,7 +228,7 @@
 		 * @type { slime.tools.code.Exports["handleTrailingWhitespace"] }
 		 */
 		var trailingWhitespace = function(p) {
-			return $api.Function.impure.tell(function(events) {
+			return $api.Function.world.old.tell(function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
 				getSourceFiles({
 					base: p.base,
@@ -278,7 +278,7 @@
 
 		/** @type { slime.tools.code.Exports["handleFinalNewlines"] } */
 		function handleFinalNewlines(p) {
-			return $api.Function.impure.tell(function(events) {
+			return $api.Function.world.old.tell(function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
 				getSourceFiles({
 					base: p.base,

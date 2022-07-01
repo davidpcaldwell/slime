@@ -155,14 +155,14 @@ namespace slime.jrunscript.file {
 
 	export interface Exports {
 		state: {
-			list: (pathname: string) => slime.$api.fp.impure.State<{
+			list: (pathname: string) => slime.$api.fp.world.old.Ask<void, {
 				relative: string
 				absolute: string
 			}[]>
 		}
 
 		action: {
-			delete: (location: string) => slime.$api.fp.impure.old.Action<{
+			delete: (location: string) => slime.$api.fp.world.old.Operation<{
 				deleted: string
 			},void>
 
@@ -172,7 +172,7 @@ namespace slime.jrunscript.file {
 					content: string
 					createDirectory?: boolean
 					exists: "fail" | "leave" | "overwrite"
-				}): slime.$api.fp.impure.old.Action<{
+				}): slime.$api.fp.world.old.Operation<{
 					wrote: string
 				},void>
 			}
@@ -431,35 +431,6 @@ namespace slime.jrunscript.file {
 				fifty.load("module-Loader.fifty.ts");
 
 				fifty.load("file.fifty.ts");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export interface Exports {
-		world: World
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { $api, jsh } = fifty.global;
-			const { world } = jsh.file;
-
-			fifty.tests.world = function() {
-				var pathname = fifty.jsh.file.object.getRelativePath("module.fifty.ts").toString();
-				var contents = $api.Function.world.input(
-					$api.Function.world.ask(
-						world.filesystems.os.File.read.string({ pathname: pathname })
-					)
-				);
-				jsh.shell.console(contents.substring(0,500));
-
-				var folder = fifty.jsh.file.object.getRelativePath(".").toString();
-				var file = "module.fifty.ts";
-				var relative = world.filesystems.os.Pathname.relative(folder, file);
-				jsh.shell.console(relative);
 			}
 		}
 	//@ts-ignore
