@@ -5,6 +5,12 @@
 //	END LICENSE
 
 namespace slime.jrunscript.file {
+	export interface World {
+		os: {
+			Location: (pathname: string) => world.Location
+		}
+	}
+
 	export namespace world {
 		(
 			function(
@@ -23,7 +29,6 @@ namespace slime.jrunscript.file {
 			readonly filesystem: Filesystem
 			readonly pathname: string
 		}
-
 
 		(
 			function(
@@ -741,6 +746,35 @@ namespace slime.jrunscript.file {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.sandbox);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		world: World
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+			const { world } = jsh.file;
+
+			fifty.tests.world = function() {
+				var pathname = fifty.jsh.file.object.getRelativePath("module.fifty.ts").toString();
+				var contents = $api.Function.world.input(
+					$api.Function.world.ask(
+						world.filesystems.os.File.read.string({ pathname: pathname })
+					)
+				);
+				jsh.shell.console(contents.substring(0,500));
+
+				var folder = fifty.jsh.file.object.getRelativePath(".").toString();
+				var file = "module.fifty.ts";
+				var relative = world.filesystems.os.Pathname.relative(folder, file);
+				jsh.shell.console(relative);
 			}
 		}
 	//@ts-ignore

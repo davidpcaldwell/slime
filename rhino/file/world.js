@@ -369,11 +369,21 @@
 					})
 				)
 			);
-		}
+		};
+
+		var os = toWorldFilesystem($context.providers.os);
 
 		$export({
 			filesystems: {
-				os: toWorldFilesystem($context.providers.os)
+				os: os
+			},
+			os: {
+				Location: function(string) {
+					return {
+						filesystem: os,
+						pathname: string
+					}
+				}
 			},
 			Location: {
 				relative: Location_relative,

@@ -437,35 +437,6 @@ namespace slime.jrunscript.file {
 	)(fifty);
 
 	export interface Exports {
-		world: World
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { $api, jsh } = fifty.global;
-			const { world } = jsh.file;
-
-			fifty.tests.world = function() {
-				var pathname = fifty.jsh.file.object.getRelativePath("module.fifty.ts").toString();
-				var contents = $api.Function.world.input(
-					$api.Function.world.ask(
-						world.filesystems.os.File.read.string({ pathname: pathname })
-					)
-				);
-				jsh.shell.console(contents.substring(0,500));
-
-				var folder = fifty.jsh.file.object.getRelativePath(".").toString();
-				var file = "module.fifty.ts";
-				var relative = world.filesystems.os.Pathname.relative(folder, file);
-				jsh.shell.console(relative);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export interface Exports {
 		object: {
 			pathname: (pathname: slime.jrunscript.file.world.Location) => slime.jrunscript.file.Pathname
 			directory: (pathname: slime.jrunscript.file.world.Location) => slime.jrunscript.file.Directory
