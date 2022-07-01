@@ -28,7 +28,7 @@ namespace slime.project.code {
 			trailingWhitespace: (p: {
 				base: slime.jrunscript.file.Directory
 				nowrite?: boolean
-			}) => slime.$api.fp.impure.Tell<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
+			}) => slime.$api.fp.world.old.Tell<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
 
 			toHandler: (on: on) => slime.$api.events.Handler<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
 		}

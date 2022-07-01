@@ -17,7 +17,7 @@
 		/** @type { slime.jrunscript.io.Exports["InputStream"] } */
 		var InputStream = {
 			string: function(stream) {
-				return $api.Function.impure.ask(function() {
+				return $api.Function.world.old.ask(function() {
 					return stream.character().asString();
 				});
 			}

@@ -81,7 +81,7 @@
 						read: {
 							stream: void(0),
 							string: function() {
-								return $api.Function.impure.ask(function(events) {
+								return $api.Function.world.old.ask(function(events) {
 									var stream = openInputStream(pathname, events);
 									return (stream === null) ? null : stream.character().asString();
 								});
@@ -159,7 +159,7 @@
 			}
 
 			function directory_require_impure(p) {
-				return $api.Function.impure.tell(function() {
+				return $api.Function.world.old.tell(function() {
 					var peer = was.newPeer(p.pathname);
 					var parent = was.getParent(peer);
 					if (!parent.exists() && !p.recursive) throw new Error("Parent " + parent.getScriptPath() + " does not exist; specify recursive: true to override.");
@@ -170,7 +170,7 @@
 			}
 
 			function directory_remove_impure(p) {
-				return $api.Function.impure.tell(function() {
+				return $api.Function.world.old.tell(function() {
 					var peer = was.newPeer(p.pathname);
 					peer.delete();
 				});
@@ -182,7 +182,7 @@
 			 */
 			function directory_exists_impure(pathname) {
 				return function() {
-					return $api.Function.impure.ask(function(events) {
+					return $api.Function.world.old.ask(function(events) {
 						return directory_exists(pathname);
 					});
 				}
@@ -194,7 +194,7 @@
 			 */
 			function directory_list(pathname) {
 				return function() {
-					return $api.Function.impure.ask(function(events) {
+					return $api.Function.world.old.ask(function(events) {
 						var peer = was.newPeer(pathname);
 						return peer.list(null).map(function(node) {
 							return pathname_create(String(node.getScriptPath()));
@@ -209,7 +209,7 @@
 			 */
 			function file_exists_impure(pathname) {
 				return function() {
-					return $api.Function.impure.ask(function(events) {
+					return $api.Function.world.old.ask(function(events) {
 						var peer = was.newPeer(pathname);
 						return peer.exists() && !peer.isDirectory();
 					});
@@ -220,10 +220,10 @@
 			 *
 			 * @param { string } file
 			 * @param { string } destination
-			 * @returns { slime.$api.fp.impure.Tell<void> }
+			 * @returns { slime.$api.fp.world.old.Tell<void> }
 			 */
 			function copy_impure(file,destination) {
-				return $api.Function.impure.tell(function(events) {
+				return $api.Function.world.old.tell(function(events) {
 					var from = was.newPeer(file);
 					var to = was.newPeer(destination);
 					$context.library.io.Streams.binary.copy(
@@ -305,7 +305,7 @@
 					read: {
 						stream: {
 							bytes: function(pathname) {
-								return $api.Function.impure.ask(function(events) {
+								return $api.Function.world.old.ask(function(events) {
 									return openInputStream(pathname,events);
 								})
 							}
@@ -325,7 +325,7 @@
 				Directory: {
 					require: directory_require_impure,
 					remove: function(p) {
-						return $api.Function.impure.tell(function(e) {
+						return $api.Function.world.old.tell(function(e) {
 							var peer = was.newPeer(p.pathname);
 							if (!peer.exists()) e.fire("notFound");
 							if (peer.exists() && !peer.isDirectory()) throw new Error();

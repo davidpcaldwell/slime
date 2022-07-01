@@ -18,7 +18,7 @@ namespace slime.jrunscript.tools.gcloud {
 
 		export type Executor = <P,R>(command: cli.Command<P,R>) => {
 			argument: (p: P) => {
-				run: slime.$api.fp.impure.Ask<{
+				run: slime.$api.fp.world.old.Ask<{
 					console: string
 				},R>
 			}
@@ -69,7 +69,7 @@ namespace slime.jrunscript.tools.gcloud {
 					command: cli.Executor
 				}
 
-				create: (pathname: string) => slime.$api.fp.impure.Tell<{
+				create: (pathname: string) => slime.$api.fp.world.old.Tell<{
 					console: string
 				}>
 			}

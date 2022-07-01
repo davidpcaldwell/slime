@@ -222,8 +222,8 @@ namespace slime.jrunscript.tools.git {
 		}
 
 		export interface InvocationConfiguration<T> {
-			arguments?: (p: T) => $api.fp.impure.Revision<string[]>
-			environment?: (p: T) => $api.fp.impure.Revision<Environment>,
+			arguments?: (p: T) => $api.fp.object.Revision<string[]>
+			environment?: (p: T) => $api.fp.object.Revision<Environment>,
 			createReturnValue?: (p: T) => (result: Result) => any
 		}
 
@@ -823,7 +823,7 @@ namespace slime.jrunscript.tools.git {
 				 * An alternative implementation for the launching of the `git` subprocess. The most likely use case for
 				 * this is in mocking.
 				 */
-				run: (invocation: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.TellEvents>
+				run: (invocation: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents>
 			}
 		}
 	}
@@ -902,7 +902,7 @@ namespace slime.jrunscript.tools.git {
 						world: {
 							run: function(created: shell.run.Invocation) {
 								invocation = created;
-								return fifty.global.$api.Function.impure.tell(function(events) {
+								return fifty.global.$api.Function.world.old.tell(function(events) {
 									events.fire("exit", {
 										status: 0,
 										stdio: {

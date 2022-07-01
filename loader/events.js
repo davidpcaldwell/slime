@@ -180,7 +180,7 @@
 
 		/**
 		 *
-		 * @param { Parameters<slime.$api.fp.Exports["impure"]["ask"]>[0] } f
+		 * @param { Parameters<slime.$api.fp.Exports["world"]["old"]["ask"]>[0] } f
 		 */
 		function ask(f) {
 			var rv = function(on) {
@@ -197,7 +197,7 @@
 
 		/**
 		 *
-		 * @param { Parameters<slime.$api.fp.Exports["impure"]["tell"]>[0] } f
+		 * @param { Parameters<slime.$api.fp.Exports["world"]["old"]["tell"]>[0] } f
 		 */
 		function tell(f) {
 			var rv = function(on) {

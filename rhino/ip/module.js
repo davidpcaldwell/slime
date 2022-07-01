@@ -144,7 +144,7 @@
 		var world = {
 			/** @type { slime.jrunscript.ip.World["isReachable"] } */
 			isReachable: function(p) {
-				return $api.Function.impure.ask(function(events) {
+				return $api.Function.world.old.ask(function(events) {
 					try {
 						if (p.port) {
 							var _socket = new Packages.java.net.Socket();
@@ -165,7 +165,7 @@
 			/** @type { slime.jrunscript.ip.World["tcp"] } */
 			tcp: {
 				isAvailable: function(p) {
-					return $api.Function.impure.ask(function(events) {
+					return $api.Function.world.old.ask(function(events) {
 						var number = p.port.number;
 
 						var debug = function(message) {

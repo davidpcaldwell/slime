@@ -155,14 +155,14 @@ namespace slime.jrunscript.file {
 
 	export interface Exports {
 		state: {
-			list: (pathname: string) => slime.$api.fp.impure.State<{
+			list: (pathname: string) => slime.$api.fp.world.old.Ask<void, {
 				relative: string
 				absolute: string
 			}[]>
 		}
 
 		action: {
-			delete: (location: string) => slime.$api.fp.impure.old.Action<{
+			delete: (location: string) => slime.$api.fp.world.old.Operation<{
 				deleted: string
 			},void>
 
@@ -172,7 +172,7 @@ namespace slime.jrunscript.file {
 					content: string
 					createDirectory?: boolean
 					exists: "fail" | "leave" | "overwrite"
-				}): slime.$api.fp.impure.old.Action<{
+				}): slime.$api.fp.world.old.Operation<{
 					wrote: string
 				},void>
 			}

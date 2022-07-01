@@ -317,10 +317,10 @@
 		 *
 		 * @param { slime.jrunscript.shell.run.Context } context
 		 * @param { slime.jrunscript.shell.run.Configuration } configuration
-		 * @returns { slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.TellEvents> }
+		 * @returns { slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents> }
 		 */
 		var impure = function(context,configuration) {
-			return $api.Function.impure.tell(
+			return $api.Function.world.old.tell(
 				tell(context, configuration)
 			);
 		};
@@ -346,7 +346,7 @@
 		 */
 		var mockTell = function(stdio,result) {
 			var killed = false;
-			return $api.Function.impure.tell(
+			return $api.Function.world.old.tell(
 				/**
 				 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
 				 */
@@ -481,7 +481,7 @@
 				return function(events) {
 					/** @type { slime.jrunscript.shell.run.Exit } */
 					var rv;
-					$api.Function.world.process(
+					$api.Function.impure.now.process(
 						$api.Function.world.tell(
 							tell(invocation.context, invocation.configuration),
 							{

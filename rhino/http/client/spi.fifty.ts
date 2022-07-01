@@ -48,7 +48,7 @@ namespace slime.jrunscript.http.client.spi {
 		}
 	}
 
-	export type Implementation = (p: Argument) => slime.$api.fp.impure.Ask<Events,Response>
+	export type Implementation = (p: Argument) => slime.$api.fp.world.old.Ask<Events,Response>
 
 	(
 		function(

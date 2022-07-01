@@ -30,7 +30,7 @@
 					argument: function(argument) {
 						var toResult = command.result || $api.Function.identity;
 						return {
-							run: $api.Function.impure.ask(
+							run: $api.Function.world.old.ask(
 								function(events) {
 									var result;
 									var invocation = command.invocation(argument);
@@ -117,7 +117,7 @@
 						}
 					},
 					create: function create(pathname) {
-						return $api.Function.impure.tell(function(events) {
+						return $api.Function.world.old.tell(function(events) {
 							var url = $api.Function.result(INSTALLER, $api.Function.pipe(
 								$api.Function.optionalChain($context.library.shell.os.name),
 								$api.Function.optionalChain($context.library.shell.os.arch)

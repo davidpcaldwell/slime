@@ -48,7 +48,7 @@ namespace slime.jsh.shell {
 		}
 
 		world: slime.jrunscript.shell.Exports["world"] & {
-			exit: slime.$api.fp.impure.Action<number,void>
+			exit: slime.$api.fp.world.old.Action<number,void>
 		}
 
 		//	TODO	run.evaluate.wrap

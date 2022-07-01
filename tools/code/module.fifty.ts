@@ -91,28 +91,28 @@ namespace slime.tools.code {
 			base: slime.jrunscript.file.Directory
 			isText?: isText
 			exclude?: Excludes
-		}) => slime.$api.fp.impure.Ask<
+		}) => slime.$api.fp.world.old.Ask<
 			FileEvents,
 			slime.tools.code.File[]
 		>
 
 		handleFileTrailingWhitespace: (configuration?: {
 			nowrite?: boolean
-		}) => (file: slime.tools.code.File) => slime.$api.fp.impure.Tell<TrailingWhitespaceEvents>
+		}) => (file: slime.tools.code.File) => slime.$api.fp.world.old.Tell<TrailingWhitespaceEvents>
 
 		handleTrailingWhitespace: (p: {
 			base: slime.jrunscript.file.Directory
 			exclude?: Excludes
 			isText?: isText
 			nowrite?: boolean
-		}) => slime.$api.fp.impure.Tell<FileEvents & TrailingWhitespaceEvents>
+		}) => slime.$api.fp.world.old.Tell<FileEvents & TrailingWhitespaceEvents>
 
 		handleFinalNewlines: (p: {
 			base: slime.jrunscript.file.Directory
 			exclude?: Excludes
 			isText?: isText
 			nowrite?: boolean
-		}) => slime.$api.fp.impure.Tell<FileEvents & FinalNewlineEvents>
+		}) => slime.$api.fp.world.old.Tell<FileEvents & FinalNewlineEvents>
 	}
 
 	(

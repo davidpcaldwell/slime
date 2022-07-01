@@ -209,7 +209,7 @@
 							}
 							p.arguments = args;
 						};
-						return $api.Function.impure.revise(rv);
+						return $api.Function.object.revise(rv);
 					}
 				};
 
@@ -296,7 +296,7 @@
 								}
 								p.arguments = args;
 							}
-							return $api.Function.impure.revise(rv);
+							return $api.Function.object.revise(rv);
 						},
 						number: option(Number),
 						pathname: option(jsh.script.getopts.parser.Pathname),
@@ -313,7 +313,7 @@
 								}
 								p.arguments = args;
 							}
-							return $api.Function.impure.revise(rv);
+							return $api.Function.object.revise(rv);
 						}
 					},
 					error: {
