@@ -261,7 +261,7 @@ namespace slime.jsh.shell.tools {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			$api.Function.world.process(
+			$api.Function.impure.now.process(
 				$api.Function.world.action(jsh.shell.tools.node.require)
 			)
 
