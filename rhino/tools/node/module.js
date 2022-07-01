@@ -37,20 +37,20 @@
 			default: "16.15.1"
 		};
 
-		var provider = (
-			/** @type { () => slime.jrunscript.node.world.Provider } */
+		var provider = ($context.world) || (
+			/** @type { () => slime.jrunscript.node.World } */
 			function() {
 				return {
 					install: function(p) {
 						return function(events) {
 							var existing = $exports.at({ location: p.location.toString() });
 							if (existing) throw new Error("Node installation directory exists: " + p.location.toString());
-							var os = versions.byOs[$context.module.shell.os.name];
-							if (!os) throw new TypeError("Unsupported operating system: " + $context.module.shell.os.name);
+							var os = versions.byOs[$context.library.shell.os.name];
+							if (!os) throw new TypeError("Unsupported operating system: " + $context.library.shell.os.name);
 							var version = os[p.version];
 							$context.library.install.install({
 								url: version.url,
-								to: $context.module.file.Pathname(p.location)
+								to: $context.library.file.Pathname(p.location)
 							});
 						}
 					}
@@ -58,10 +58,10 @@
 			}
 		)();
 
-		/** @type { slime.jrunscript.node.World["getVersion"] } */
+		/** @type { slime.jrunscript.node.Functions["getVersion"] } */
 		function getVersion(installation) {
 			return function(events) {
-				var invocation = $context.module.shell.Invocation.create({
+				var invocation = $context.library.shell.Invocation.create({
 					command: installation.executable,
 					arguments: ["--version"],
 					stdio: {
@@ -69,7 +69,7 @@
 					}
 				});
 				var getExit = $api.Function.world.question(
-					$context.module.shell.world.question
+					$context.library.shell.world.question
 				);
 				var exit = getExit(invocation);
 				return exit.stdio.output.split("\n")[0];
@@ -90,7 +90,7 @@
 			this.version = void(0);
 			Object.defineProperty(this, "version", {
 				get: function() {
-					return $context.module.shell.run({
+					return $context.library.shell.run({
 						command: o.directory.getFile("bin/node"),
 						arguments: ["--version"],
 						stdio: {
@@ -106,9 +106,9 @@
 			this.location = o.directory.toString();
 
 			var PATH = (function() {
-				var elements = $context.module.shell.PATH.pathnames.slice();
+				var elements = $context.library.shell.PATH.pathnames.slice();
 				elements.unshift(o.directory.getRelativePath("bin"));
-				return $context.module.file.Searchpath(elements);
+				return $context.library.file.Searchpath(elements);
 			})();
 
 			/**
@@ -135,7 +135,7 @@
 				// 	}
 				// 	return o.directory.getFile("bin/node");
 				// })();
-				return $context.module.shell.run({
+				return $context.library.shell.run({
 					command: command,
 					arguments: p.arguments,
 					directory: p.directory,
@@ -166,16 +166,16 @@
 				})(p.environment);
 
 				var PATH = (function(environment) {
-					var was = (inherit) ? $context.module.shell.PATH : $context.module.file.Searchpath([]);
+					var was = (inherit) ? $context.library.shell.PATH : $context.library.file.Searchpath([]);
 					var elements = was.pathnames.slice();
 					elements.unshift(o.directory.getRelativePath("bin"));
-					return $context.module.file.Searchpath(elements);
+					return $context.library.file.Searchpath(elements);
 				})();
 
-				return $context.module.shell.invocation.toBashScript()({
+				return $context.library.shell.invocation.toBashScript()({
 					command: getCommand(
 						o,
-						(p.project) ? $context.module.file.Pathname(p.project).directory : void(0),
+						(p.project) ? $context.library.file.Pathname(p.project).directory : void(0),
 						p.command
 					),
 					arguments: p.arguments,
@@ -284,7 +284,7 @@
 		$exports.at = function(p) {
 			if (!p.location) throw new TypeError("Required: 'location' property.");
 			if (typeof(p.location) != "string") throw new TypeError("'location' property must be string.");
-			var location = $context.module.file.Pathname(p.location);
+			var location = $context.library.file.Pathname(p.location);
 			if (!location.directory) return null;
 			return new Installation({
 				directory: location.directory
@@ -295,7 +295,8 @@
 			versions: {
 				previous: "14.18.0",
 				current: versions.default
-			}
+			},
+			world: provider
 		};
 
 		$exports.install = function(p) {
@@ -305,8 +306,8 @@
 			return function(events) {
 				var existing = $exports.at({ location: p.location.toString() });
 				if (existing) throw new Error("Node instlalation directory exists: " + p.location.toString());
-				var os = versions.byOs[$context.module.shell.os.name];
-				if (!os) throw new TypeError("Unsupported operating system: " + $context.module.shell.os.name);
+				var os = versions.byOs[$context.library.shell.os.name];
+				if (!os) throw new TypeError("Unsupported operating system: " + $context.library.shell.os.name);
 				var version = os[p.version];
 				$context.library.install.install({
 					url: version.url,
@@ -319,7 +320,6 @@
 		$exports.Installation = $api.deprecate(Installation);
 
 		$exports.world = {
-			provider: provider,
 			getVersion: getVersion
 		}
 	}

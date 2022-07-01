@@ -650,14 +650,14 @@
 				return Boolean(plugins.node && jsh.file && jsh.shell && jsh.shell.tools && jsh.tools.install);
 			},
 			load: function() {
-				/** @type { slime.jrunscript.node.Exports } */
-				var node = plugins.node.module({
+				/** @type { slime.jrunscript.node.Plugin } */
+				var plugin = plugins.node;
+
+				var node = plugin.module({
 					context: {
-						module: {
-							file: jsh.file,
-							shell: jsh.shell
-						},
 						library: {
+							file: jsh.file,
+							shell: jsh.shell,
 							install: jsh.tools.install
 						}
 					}

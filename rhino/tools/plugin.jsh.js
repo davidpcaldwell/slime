@@ -49,7 +49,9 @@
 			load: function() {
 				plugins.node = {
 					module: function(p) {
-						return $loader.module("node/module.js", p.context);
+						/** @type { slime.jrunscript.node.Script } */
+						var script = $loader.script("node/module.js");
+						return script(p.context);
 					}
 				};
 			}

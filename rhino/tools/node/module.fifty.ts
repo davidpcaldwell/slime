@@ -5,15 +5,17 @@
 //	END LICENSE
 
 namespace slime.jrunscript.node {
+	export interface World {
+		install: slime.$api.fp.world.Action<{ location: string, version: string }, void>
+	}
+
 	export interface Context {
-		//	TODO	these obviously should be renamed to library
-		module: {
+		library: {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
-		},
-		library: {
 			install: slime.jrunscript.tools.install.Exports
 		}
+		world?: World
 	}
 
 	export namespace test {
@@ -21,11 +23,9 @@ namespace slime.jrunscript.node {
 			const { jsh } = fifty.global;
 			var script: Script = fifty.$loader.script("module.js");
 			return script({
-				module: {
-					file: jsh.file,
-					shell: jsh.shell
-				},
 				library: {
+					file: jsh.file,
+					shell: jsh.shell,
 					install: jsh.tools.install
 				}
 			});
@@ -42,6 +42,8 @@ namespace slime.jrunscript.node {
 				previous: string
 				current: string
 			}
+
+			world: World
 		}
 	}
 
@@ -54,11 +56,11 @@ namespace slime.jrunscript.node {
 	//@ts-ignore
 	)(fifty);
 
-	export interface World {
+	export interface Functions {
 	}
 
 	export interface Exports {
-		world: World
+		world: Functions
 	}
 
 	export namespace world {
@@ -68,16 +70,9 @@ namespace slime.jrunscript.node {
 	}
 
 	export namespace world {
-		export interface Provider {
-			install: slime.$api.fp.world.Action<{ location: string, version: string }, void>
-		}
 	}
 
-	export interface World {
-		provider: world.Provider
-	}
-
-	export interface World {
+	export interface Functions {
 		getVersion: slime.$api.fp.world.Question<world.Installation,void,string>
 	}
 
@@ -92,7 +87,7 @@ namespace slime.jrunscript.node {
 			fifty.tests.world.installation = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
 				var install = $api.Function.world.action(
-					test.subject.world.provider.install
+					test.subject.test.world.install
 				);
 				install({
 					location: TMPDIR.pathname,
@@ -241,6 +236,10 @@ namespace slime.jrunscript.node {
 	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>
+
+	export interface Plugin {
+		module: (p: { context: Context }) => Exports
+	}
 }
 
 namespace slime.jsh.shell.tools {
