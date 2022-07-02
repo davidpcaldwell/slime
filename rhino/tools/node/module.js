@@ -58,7 +58,7 @@
 			}
 		)();
 
-		/** @type { slime.jrunscript.node.Functions["getVersion"] } */
+		/** @type { slime.jrunscript.node.Functions["Installation"]["getVersion"] } */
 		function getVersion(installation) {
 			return function(events) {
 				var invocation = $context.library.shell.Invocation.create({
@@ -320,7 +320,16 @@
 		$exports.Installation = $api.deprecate(Installation);
 
 		$exports.world = {
-			getVersion: getVersion
+			Installation: {
+				from: {
+					location: function(location) {
+						return {
+							executable: $api.Function.result(location, $context.library.file.world.Location.relative("bin/node")).pathname
+						}
+					}
+				},
+				getVersion: getVersion
+			}
 		}
 	}
 	//@ts-ignore
