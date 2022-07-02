@@ -77,7 +77,7 @@
 		}
 
 		/**
-		 * @param { ConstructorParameters<slime.jrunscript.node.Exports["Installation"]>[0] } o
+		 * @param { { directory: slime.jrunscript.file.Directory } } o
 		 * @constructor
 		 */
 		var Installation = function(o) {
@@ -316,8 +316,6 @@
 				events.fire("installed", $exports.at({ location: p.location.toString() }));
 			}
 		};
-
-		$exports.Installation = $api.deprecate(Installation);
 
 		$exports.world = {
 			Installation: {

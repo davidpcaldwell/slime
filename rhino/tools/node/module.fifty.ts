@@ -202,9 +202,6 @@ namespace slime.jrunscript.node {
 	export interface Exports {
 		at: (p: { location: string }) => slime.jrunscript.node.object.Installation
 
-		/** @deprecated Use `at()`. */
-		Installation: new (o: { directory: slime.jrunscript.file.Directory }) => slime.jrunscript.node.object.Installation
-
 		install: slime.$api.fp.world.Action<{
 			version?: string
 			location: slime.jrunscript.file.Pathname
