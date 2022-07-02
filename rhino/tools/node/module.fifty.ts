@@ -51,7 +51,7 @@ namespace slime.jrunscript.node {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.world = fifty.test.Parent();
+			fifty.tests.sandbox = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
@@ -69,11 +69,13 @@ namespace slime.jrunscript.node {
 		}
 	}
 
-	export namespace world {
-	}
-
 	export interface Functions {
-		getVersion: slime.$api.fp.world.Question<world.Installation,void,string>
+		Installation: {
+			from: {
+				location: (home: slime.jrunscript.file.world.Location) => world.Installation
+			}
+			getVersion: slime.$api.fp.world.Question<world.Installation,void,string>
+		}
 	}
 
 	(
@@ -83,21 +85,21 @@ namespace slime.jrunscript.node {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			//	TODO	add to suite, would need to specify Linux URL first
-			fifty.tests.world.installation = function() {
+			//	TODO	test still directly references world object
+			fifty.tests.sandbox.installation = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
-				var install = $api.Function.world.action(
-					test.subject.test.world.install
+				$api.Function.world.now.action(
+					test.subject.test.world.install,
+					{
+						location: TMPDIR.pathname,
+						version: test.subject.test.versions.current
+					}
 				);
-				install({
-					location: TMPDIR.pathname,
-					version: "16.15.1"
-				});
-				var installation: world.Installation = {
-					executable: TMPDIR.pathname + "/bin/node"
-				};
-				var getVersion = $api.Function.world.question(test.subject.world.getVersion);
-				verify(getVersion(installation)).is("v16.15.1");
+				var version = $api.Function.world.now.question(
+					test.subject.world.Installation.getVersion,
+					test.subject.world.Installation.from.location(TMPDIR)
+				)
+				verify(version).is("v" + test.subject.test.versions.current);
 			}
 		}
 	//@ts-ignore
@@ -335,6 +337,7 @@ namespace slime.jsh.shell.tools {
 			var api = jsh.shell.tools.node.installed;
 			jsh.shell.console("version: " + api.version);
 			fifty.run(fifty.tests.installation);
+			fifty.run(fifty.tests.sandbox);
 			fifty.run(fifty.tests.jsapi);
 		}
 	}
