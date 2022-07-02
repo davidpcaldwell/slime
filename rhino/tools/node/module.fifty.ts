@@ -74,6 +74,7 @@ namespace slime.jrunscript.node {
 			from: {
 				location: (home: slime.jrunscript.file.world.Location) => world.Installation
 			}
+			exists: slime.$api.fp.world.Question<world.Installation,void,boolean>
 			getVersion: slime.$api.fp.world.Question<world.Installation,void,string>
 		}
 	}
@@ -88,6 +89,12 @@ namespace slime.jrunscript.node {
 			//	TODO	test still directly references world object
 			fifty.tests.sandbox.installation = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
+				var installation = test.subject.world.Installation.from.location(TMPDIR);
+				var before = $api.Function.world.now.question(
+					test.subject.world.Installation.exists,
+					installation
+				);
+				verify(before).is(false);
 				$api.Function.world.now.action(
 					test.subject.test.world.install,
 					{
@@ -95,9 +102,14 @@ namespace slime.jrunscript.node {
 						version: test.subject.test.versions.current
 					}
 				);
+				var after = $api.Function.world.now.question(
+					test.subject.world.Installation.exists,
+					installation
+				);
+				verify(after).is(true);
 				var version = $api.Function.world.now.question(
 					test.subject.world.Installation.getVersion,
-					test.subject.world.Installation.from.location(TMPDIR)
+					installation
 				)
 				verify(version).is("v" + test.subject.test.versions.current);
 			}
