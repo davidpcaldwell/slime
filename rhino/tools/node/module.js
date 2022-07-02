@@ -326,6 +326,18 @@
 						}
 					}
 				},
+				exists: function(installation) {
+					return function(events) {
+						return $api.Function.result(
+							installation,
+							$api.Function.pipe(
+								$api.Function.property("executable"),
+								$context.library.file.world.os.Location,
+								$api.Function.world.question($context.library.file.world.Location.file.exists())
+							)
+						)
+					}
+				},
 				getVersion: getVersion
 			}
 		}
