@@ -503,6 +503,29 @@
 					return rv;
 				}
 			},
+			action: function(invocation) {
+				return function(events) {
+					$api.Function.impure.now.process(
+						$api.Function.world.tell(
+							tell(invocation.context, invocation.configuration),
+							{
+								start: function(e) {
+									events.fire("start", e.detail);
+								},
+								stdout: function(e) {
+									events.fire("stdout", e.detail);
+								},
+								stderr: function(e) {
+									events.fire("stderr", e.detail);
+								},
+								exit: function(e) {
+									events.fire("exit", e.detail);
+								}
+							}
+						)
+					);
+				}
+			},
 			run: function(invocation) {
 				return impure(invocation.context,invocation.configuration);
 			},

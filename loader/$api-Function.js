@@ -203,6 +203,16 @@
 					return array.map(f, this);
 				}
 			},
+			concat: function(array) {
+				return function(target) {
+					return target.concat(array);
+				}
+			},
+			prepend: function(array) {
+				return function(target) {
+					return array.concat(target);
+				}
+			},
 			groupBy: function(c) {
 				return function(array) {
 					return $context.$api.Iterable.groupBy({

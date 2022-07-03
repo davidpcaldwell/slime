@@ -526,8 +526,9 @@
 		};
 
 		$exports.world = {
-			run: scripts.run.run,
 			question: scripts.run.question,
+			action: scripts.run.action,
+			run: scripts.run.run,
 			mock: scripts.run.mock.run,
 			Invocation: $api.deprecate(Invocation_old)
 		}
