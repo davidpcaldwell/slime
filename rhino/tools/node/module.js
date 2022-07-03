@@ -76,6 +76,120 @@
 			}
 		}
 
+		/** @type { (installation: slime.jrunscript.node.world.Installation) => string } */
+		var getInstallationPathEntry = $api.Function.pipe(
+			$api.Function.property("executable"),
+			//	TODO	should be Location.from.os
+			$context.library.file.world.os.Location,
+			$context.library.file.world.Location.parent(),
+			$api.Function.property("pathname")
+		);
+
+		/** @type { (project: string) => string } */
+		var getProjectBin = $api.Function.pipe(
+			$context.library.file.world.os.Location,
+			$context.library.file.world.Location.relative(".bin"),
+			$api.Function.property("pathname")
+		)
+
+		/**
+		 *
+		 * @param { string } pathname
+		 * @param { string } name
+		 */
+		var directoryContains = function(pathname,name) {
+			var directory = $context.library.file.world.os.Location(pathname);
+			var location = $api.Function.result(directory, $context.library.file.world.Location.relative(name));
+			return $api.Function.world.now.question(
+				$context.library.file.world.Location.file.exists(),
+				location
+			);
+		}
+
+		/**
+		 *
+		 * @param { string } parent
+		 * @param { string } path
+		 */
+		var getRelativePath = function(parent, path) {
+			var base = $context.library.file.world.os.Location(parent);
+			var target = $api.Function.result(base, $context.library.file.world.Location.relative(path));
+			return target.pathname;
+		}
+
+		/** @type { (installation: slime.jrunscript.node.world.Installation) => (p: slime.jrunscript.node.internal.Argument) => slime.jrunscript.shell.invocation.Argument } */
+		var node_invocation = function(installation) {
+			return function(invocation) {
+				var command = (
+					function(bin,projectBin,command) {
+						//	TODO	correct search order in project and node bin directories not known
+						if (command) {
+							if (projectBin && directoryContains(projectBin, command)) {
+								return getRelativePath(projectBin, command);
+							}
+							if (directoryContains(bin, command)) {
+								return getRelativePath(bin, command);
+							}
+						}
+						return installation.executable;
+					}
+				)(
+					getInstallationPathEntry(installation),
+					(invocation.project) ? getProjectBin(invocation.project) : void(0),
+					invocation.command
+				);
+
+				var path = (
+					function() {
+						if (invocation.environment && invocation.environment.PATH) {
+							return $context.library.file.filesystems.os.Searchpath.parse(invocation.environment.PATH);
+						}
+						return $context.library.shell.PATH
+					}
+				)();
+
+				var PATH = $api.Function.result(
+					path,
+					$api.Function.pipe(
+						$api.Function.property("pathnames"),
+						$api.Function.Array.prepend([
+							$api.Function.result(getInstallationPathEntry(installation), $context.library.file.Pathname)
+						]),
+						$context.library.file.Searchpath,
+						String
+					)
+				);
+
+				var defaultEnvironment = (
+					function(specified,process) {
+						return specified || process;
+					}
+				)(invocation.environment,$context.library.shell.environment);
+
+				return {
+					command: command,
+					arguments: invocation.arguments,
+					environment: $api.Object.compose(
+						defaultEnvironment,
+						{
+							PATH: PATH
+						}
+					),
+					directory: invocation.directory,
+					stdio: invocation.stdio
+				}
+			}
+		}
+
+		/** @type { slime.jrunscript.node.functions.Installation["modules"]["install"] } */
+		var modules_install = function(p) {
+			return function(installation) {
+				return function(events) {
+					events.fire("installed", { version: "0" });
+				}
+			}
+		};
+
 		/**
 		 * @param { { directory: slime.jrunscript.file.Directory } } o
 		 * @constructor
@@ -338,7 +452,23 @@
 						)
 					}
 				},
-				getVersion: getVersion
+				getVersion: getVersion,
+				question: function(argument) {
+					return function(installation) {
+						var shellArgument = node_invocation(installation)(argument);
+						return function(events) {
+							var ask = $context.library.shell.world.question(
+								$context.library.shell.Invocation.create(
+									shellArgument
+								)
+							);
+							return ask(events);
+						}
+					}
+				},
+				modules: {
+					install: modules_install
+				}
 			}
 		}
 	}

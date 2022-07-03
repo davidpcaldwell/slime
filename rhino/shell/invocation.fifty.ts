@@ -63,11 +63,13 @@ namespace slime.jrunscript.shell {
 		}
 
 		export interface Argument {
+			//	TODO	limit to string, maybe Location
 			/**
 			 * The command to run.
 			 */
 			command: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
 
+			//	TODO	limit to string[], maybe (string | Location)[]
 			/**
 			 * The arguments to supply to the command. If not present, an empty array will be supplied.
 			 */
@@ -76,8 +78,11 @@ namespace slime.jrunscript.shell {
 			/**
 			 * The environment to supply to the command. If `undefined`, this process's environment will be provided.
 			 */
-			environment?: slime.jrunscript.shell.old.Invocation["environment"]
+			environment?: {
+				[name: string]: string
+			}
 
+			//	TODO	possibly allow Location
 			/**
 			 * The working directory in which the command will be executed. If not specified, this process's working directory
 			 * will be provided.
@@ -212,9 +217,7 @@ namespace slime.jrunscript.shell {
 			/**
 			 * The environment to pass to the command.
 			 */
-			environment: {
-				[name: string]: string
-			}
+			environment: invocation.Argument["environment"]
 
 			/**
 			 * The working directory to use when running the command.

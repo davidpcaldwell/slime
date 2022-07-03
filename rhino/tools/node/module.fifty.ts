@@ -69,8 +69,8 @@ namespace slime.jrunscript.node {
 		}
 	}
 
-	export interface Functions {
-		Installation: {
+	export namespace functions {
+		export interface Installation {
 			from: {
 				location: (home: slime.jrunscript.file.world.Location) => world.Installation
 			}
@@ -116,6 +116,92 @@ namespace slime.jrunscript.node {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace functions {
+		export interface Installation {
+			modules: {
+				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<world.Installation,{
+					installed: { version: string }
+				}>
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.npm = {};
+
+			fifty.tests.npm.future = function() {
+				var TMPDIR = fifty.jsh.file.temporary.location();
+				$api.Function.world.now.action(
+					test.subject.test.world.install,
+					{
+						location: TMPDIR.pathname,
+						version: test.subject.test.versions.current
+					}
+				);
+				var installation = test.subject.world.Installation.from.location(TMPDIR);
+				$api.Function.world.now.action(
+					test.subject.world.Installation.modules.install({ name: "minimal-package" }),
+					installation,
+					{
+						installed: function(e) {
+							jsh.shell.console("Installed: " + e.detail.version);
+						}
+					}
+				);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace functions {
+		export interface Installation {
+			question: (argument: internal.Argument) => slime.$api.fp.world.Question<world.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.wip = function() {
+					var TMPDIR = fifty.jsh.file.temporary.location();
+					$api.Function.world.now.action(
+						test.subject.test.world.install,
+						{
+							location: TMPDIR.pathname,
+							version: test.subject.test.versions.current
+						}
+					);
+					var installation = test.subject.world.Installation.from.location(TMPDIR);
+					debugger;
+					var result = $api.Function.world.now.question(
+						test.subject.world.Installation.question({
+							arguments: [fifty.jsh.file.object.getRelativePath("test/hello.js")],
+							stdio: {
+								output: "string"
+							}
+						}),
+						installation
+					);
+					verify(result).stdio.output.is("Hello, World (Node.js)\n");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
+	export interface Functions {
+		Installation: functions.Installation
+	}
 
 	export namespace object {
 		/**
@@ -336,19 +422,30 @@ namespace slime.jsh.shell.tools {
 	)(fifty);
 }
 
-(
-	function(
-		fifty: slime.fifty.test.Kit
-	) {
-		const { jsh } = fifty.global;
-
-		fifty.tests.suite = function() {
-			var api = jsh.shell.tools.node.installed;
-			jsh.shell.console("version: " + api.version);
-			fifty.run(fifty.tests.installation);
-			fifty.run(fifty.tests.sandbox);
-			fifty.run(fifty.tests.jsapi);
-		}
+namespace slime.jrunscript.node.internal {
+	export interface Argument {
+		command?: string
+		project?: string
+		arguments?: slime.jrunscript.shell.invocation.Argument["arguments"]
+		environment?: slime.jrunscript.shell.invocation.Argument["environment"]
+		directory?: slime.jrunscript.shell.invocation.Argument["directory"]
+		stdio?: slime.jrunscript.shell.invocation.Argument["stdio"]
 	}
-//@ts-ignore
-)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+
+			fifty.tests.suite = function() {
+				var api = jsh.shell.tools.node.installed;
+				jsh.shell.console("version: " + api.version);
+				fifty.run(fifty.tests.installation);
+				fifty.run(fifty.tests.sandbox);
+				fifty.run(fifty.tests.jsapi);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+}

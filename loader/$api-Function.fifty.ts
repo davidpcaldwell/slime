@@ -301,46 +301,48 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace exports {
+		export interface String {
+			split: (delimiter: string) => (string: string) => string[]
+			repeat: (count: number) => (string: string) => string
+			toUpperCase: (string: string) => string
+			match: (pattern: RegExp) => (string: string) => RegExpMatchArray
 
-	export interface Strings {
-		split: (delimiter: string) => (string: string) => string[]
-		repeat: (count: number) => (string: string) => string
-		toUpperCase: (string: string) => string
-		match: (pattern: RegExp) => (string: string) => RegExpMatchArray
-
-		startsWith: (searchString: string, startPosition?: number) => Predicate<string>
-		endsWith: (searchString: string, endPosition?: number) => Predicate<string>
-	}
-
-	export interface Strings {
-		replace: {
-			(searchValue: RegExp, replaceValue: string): (p: string) => string;
+			startsWith: (searchString: string, startPosition?: number) => Predicate<string>
+			endsWith: (searchString: string, endPosition?: number) => Predicate<string>
 		}
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api } = fifty.global;
-
-			fifty.tests.exports.string.replace = function() {
-				var replacer = $api.Function.string.replace(/xmas/i, "Christmas");
-				var input = "Twas the night before Xmas...";
-				var output = "Twas the night before Christmas...";
-				verify(replacer(input)).is(output);
+	export namespace exports {
+		export interface String {
+			replace: {
+				(searchValue: RegExp, replaceValue: string): (p: string) => string;
 			}
 		}
-	//@ts-ignore
-	)(fifty);
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.string.replace = function() {
+					var replacer = $api.Function.string.replace(/xmas/i, "Christmas");
+					var input = "Twas the night before Xmas...";
+					var output = "Twas the night before Christmas...";
+					verify(replacer(input)).is(output);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
 	/**
 	 * This object is available as `$api.Function` in all scripts loaded by the SLIME loader.
 	 */
 	export interface Exports {
-		string: Strings
+		string: exports.String
 	}
 
 	(
@@ -421,14 +423,72 @@ namespace slime.$api.fp {
 			present: <T>(m: Maybe<T>) => m is Some<T>
 		}
 	}
-	export interface Exports {
-		Array: {
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.Array = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		export interface Array {
 			filter: {
 				<T,S extends T>(f: (t: T) => t is S): (ts: T[]) => S[]
 				<T>(f: fp.Predicate<T>): (ts: T[]) => T[]
 			}
 			find: <T>(f: fp.Predicate<T>) => (ts: T[]) => T | undefined
 			map: <T,R>(f: (t: T) => R) => (ts: T[]) => R[]
+		}
+	}
+
+	export namespace exports {
+		export interface Array {
+			concat: <T>(array: T[]) => (ts: T[]) => T[]
+			prepend: <T>(array: T[]) => (ts: T[]) => T[]
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				var n24 = [2, 4];
+
+				fifty.tests.exports.Array.concat = function() {
+					var append24 = $api.Function.Array.concat(n24);
+
+					var n0124 = append24([0,1]);
+
+					verify(n0124).length.is(4);
+					verify(n0124)[0].is(0);
+					verify(n0124)[1].is(1);
+					verify(n0124)[2].is(2);
+					verify(n0124)[3].is(4);
+				};
+
+				fifty.tests.exports.Array.prepend = function() {
+					var prepend24 = $api.Function.Array.prepend(n24);
+
+					var n2468 = prepend24([6,8]);
+					verify(n2468).length.is(4);
+					verify(n2468)[0].is(2);
+					verify(n2468)[1].is(4);
+					verify(n2468)[2].is(6);
+					verify(n2468)[3].is(8);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
+	export namespace exports {
+		export interface Array {
 			join: (s: string) => (elements: any[]) => string
 
 			groupBy: <V,G>(c: {
@@ -439,6 +499,10 @@ namespace slime.$api.fp {
 
 			sum: <T>(attribute: (t: T) => number) => (array: T[]) => number
 		}
+	}
+
+	export interface Exports {
+		Array: exports.Array
 	}
 
 	export interface Exports {
