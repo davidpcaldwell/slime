@@ -14,5 +14,8 @@
 	"java.configuration.updateBuildConfiguration": "interactive",
 	"files.associations": {
 		"*.json": "jsonc"
-	}
+	},
+	"git.branchProtection": [
+		"master"
+	]
 }
