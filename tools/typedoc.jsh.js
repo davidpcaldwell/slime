@@ -23,7 +23,10 @@
 				jsh.shell.tools.tomcat.require();
 				$api.Function.world.execute(jsh.shell.tools.node.require());
 				if (false) jsh.shell.console("Require TypeScript: " + p.options["ts:version"]);
-				jsh.shell.tools.node.installed.modules.require({ name: "typescript", version: p.options["ts:version"] });
+				$api.Function.world.now.action(
+					jsh.shell.tools.node.world.Installation.modules.require({ name: "typescript", version: p.options["ts:version"] }),
+					jsh.shell.tools.node.installation
+				);
 				var typedocVersion = (function(tsVersion) {
 					if (tsVersion == "4.0.5") return "0.19.2";
 					if (tsVersion == "4.5.4") return "0.22.11";
@@ -31,10 +34,11 @@
 					if (tsVersion == "4.6.3") return "0.22.15";
 					if (tsVersion == "4.7.3") return "0.22.18";
 					throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
-				})(p.options["ts:version"])
-				if (false) jsh.shell.console("Require TypeDoc: " + typedocVersion);
-				jsh.shell.tools.node.installed.modules.require({ name: "typedoc", version: typedocVersion });
-				if (false) jsh.shell.console("Dependencies satisfied.");
+				})(p.options["ts:version"]);
+				$api.Function.world.now.action(
+					jsh.shell.tools.node.world.Installation.modules.require({ name: "typedoc", version: typedocVersion }),
+					jsh.shell.tools.node.installation
+				);
 				var shell = jsh.script.file.parent.parent;
 				var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames.concat([shell.getRelativePath("local/jsh/lib/node/bin")]));
 				var environment = $api.Object.compose(jsh.shell.environment, {
@@ -59,7 +63,7 @@
 						rv.push("--excludeExternals");
 						rv.push("--readme", readme);
 						//	TODO	add --name
-						if (typedocVersion == "0.22.11" || typedocVersion == "0.22.12" || typedocVersion == "0.22.15") {
+						if (typedocVersion == "0.22.11" || typedocVersion == "0.22.12" || typedocVersion == "0.22.15" || typedocVersion == "0.22.18") {
 							if (!project.getFile("typedoc.json")) {
 								var entryPoint = project.getRelativePath("README.fifty.ts");
 								if (!entryPoint.file) {

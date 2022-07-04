@@ -668,20 +668,23 @@
 
 					var location = jsh.shell.jsh.lib.getRelativePath("node");
 
-					/** @type { slime.jsh.shell.tools.Exports["node"] } */
-					var rv = {
+					/** @type { slime.jsh.shell.tools.Managed } */
+					var managed = {
+						installation: node.world.Installation.from.location(
+							jsh.file.world.os.Location(location.toString())
+						),
 						installed: void(0),
 						require: void(0)
 					}
 
-					Object.defineProperty(rv, "installed", {
+					Object.defineProperty(managed, "installed", {
 						get: function() {
 							return node.at({ location: location.toString() });
 						},
 						enumerable: true
 					});
 
-					rv.require = function() {
+					managed.require = function() {
 						return function(events) {
 							var now = node.at({ location: location.toString() });
 							if (now && now.version == "v16.13.1") {
@@ -696,7 +699,9 @@
 						}
 					};
 
-					return rv;
+					var exports = Object.assign(managed, node);
+
+					return exports;
 
 					// function update() {
 					// 	jsh.shell.tools.node = Object.assign(

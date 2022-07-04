@@ -181,14 +181,114 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.node.functions.Installation["modules"]["install"] } */
-		var modules_install = function(p) {
+		/** @type { slime.jrunscript.node.functions.Installation["modules"]["list"] } */
+		var modules_list = function() {
+			return function(installation) {
+				var toShellInvocation = node_invocation(installation);
+
+				return function(events) {
+					var invocation = toShellInvocation({
+						command: "npm",
+						arguments: $api.Array.build(function(rv) {
+							rv.push("ls");
+							//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
+							//			should check whether this has always worked or whether we need to do some kind of
+							//			npm version checking here before choosing between the two forms
+							rv.push("--global");
+							rv.push("--depth", "0");
+							rv.push("--json")
+						}),
+						stdio: {
+							output: "string"
+						}
+					});
+
+					var result = $api.Function.world.now.question(
+						$context.library.shell.world.question,
+						$context.library.shell.Invocation.create(invocation)
+					);
+
+					/** @type { slime.jrunscript.node.internal.NpmLsOutput } */
+					var npmJson = JSON.parse(result.stdio.output);
+
+					return $api.Function.result(
+						npmJson,
+						$api.Function.pipe(
+							$api.Function.property("dependencies"),
+							Object.entries,
+							$api.Function.Array.map(function(entry) {
+								return { name: entry[0], version: entry[1].version }
+							})
+						)
+					);
+				}
+			}
+		}
+
+		/** @type { slime.jrunscript.node.functions.Installation["modules"]["installed"] } */
+		var modules_installed = function(p) {
 			return function(installation) {
 				return function(events) {
-					events.fire("installed", { version: "0" });
+					var ask = modules_list()(installation);
+					var list = ask(void(0));
+					var found = list.find(function(item) {
+						return item.name == p;
+					});
+					return $api.Function.Maybe.from(found);
 				}
 			}
 		};
+
+		/** @type { slime.jrunscript.node.functions.Installation["modules"]["install"] } */
+		var modules_install = function(p) {
+			return function(installation) {
+				var toShellInvocation = node_invocation(installation);
+
+				return function(events) {
+					var invocation = toShellInvocation({
+						command: "npm",
+						arguments: $api.Array.build(function(rv) {
+							rv.push("install");
+							//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
+							//			should check whether this has always worked or whether we need to do some kind of
+							//			npm version checking here before choosing between the two forms
+							rv.push("--global");
+							var package = (p.version) ? (p.name + "@" + p.version) : p.name;
+							rv.push(package);
+						})
+					});
+
+					$api.Function.world.now.action(
+						$context.library.shell.world.action,
+						$context.library.shell.Invocation.create(invocation)
+					);
+				}
+			}
+		};
+
+		/** @type { slime.jrunscript.node.functions.Installation["modules"]["install"] } */
+		var modules_require = function(p) {
+			var isSatisfied = function(version) {
+				/** @type { (installed: slime.$api.fp.Maybe<slime.jrunscript.node.world.Module>) => boolean } */
+				return function(installed) {
+					if (version) {
+						return installed.present && installed.value.version == version;
+					} else {
+						return installed.present;
+					}
+				}
+			}
+
+			return function(installation) {
+				return function(events) {
+					var installed = modules_installed(p.name)(installation)(events);
+					var satisfied = isSatisfied(p.version)(installed);
+					if (!satisfied) {
+						modules_install(p)(installation)(events);
+					}
+				}
+			}
+		}
 
 		/**
 		 * @param { { directory: slime.jrunscript.file.Directory } } o
@@ -467,7 +567,10 @@
 					}
 				},
 				modules: {
-					install: modules_install
+					list: modules_list,
+					installed: modules_installed,
+					install: modules_install,
+					require: modules_require
 				}
 			}
 		}

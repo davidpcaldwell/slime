@@ -67,6 +67,11 @@ namespace slime.jrunscript.node {
 		export interface Installation {
 			executable: string
 		}
+
+		export interface Module {
+			name: string
+			version: string
+		}
 	}
 
 	export namespace functions {
@@ -119,48 +124,6 @@ namespace slime.jrunscript.node {
 
 	export namespace functions {
 		export interface Installation {
-			modules: {
-				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<world.Installation,{
-					installed: { version: string }
-				}>
-			}
-		}
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { $api, jsh } = fifty.global;
-
-			fifty.tests.npm = {};
-
-			fifty.tests.npm.future = function() {
-				var TMPDIR = fifty.jsh.file.temporary.location();
-				$api.Function.world.now.action(
-					test.subject.test.world.install,
-					{
-						location: TMPDIR.pathname,
-						version: test.subject.test.versions.current
-					}
-				);
-				var installation = test.subject.world.Installation.from.location(TMPDIR);
-				$api.Function.world.now.action(
-					test.subject.world.Installation.modules.install({ name: "minimal-package" }),
-					installation,
-					{
-						installed: function(e) {
-							jsh.shell.console("Installed: " + e.detail.version);
-						}
-					}
-				);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export namespace functions {
-		export interface Installation {
 			question: (argument: internal.Argument) => slime.$api.fp.world.Question<world.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 		}
 
@@ -171,7 +134,7 @@ namespace slime.jrunscript.node {
 				const { verify } = fifty;
 				const { $api } = fifty.global;
 
-				fifty.tests.wip = function() {
+				fifty.tests.sandbox.question = function() {
 					var TMPDIR = fifty.jsh.file.temporary.location();
 					$api.Function.world.now.action(
 						test.subject.test.world.install,
@@ -198,6 +161,78 @@ namespace slime.jrunscript.node {
 		)(fifty);
 
 	}
+
+	export namespace functions {
+		export interface Installation {
+			modules: {
+				list: () => slime.$api.fp.world.Question<world.Installation, void, world.Module[]>
+
+				installed: (name: string) => slime.$api.fp.world.Question<world.Installation, void, slime.$api.fp.Maybe<world.Module>>
+
+				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<world.Installation,void>
+
+				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<world.Installation,void>
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.npm = {};
+
+			fifty.tests.wip = function() {
+				var TMPDIR = fifty.jsh.file.temporary.location();
+				$api.Function.world.now.action(
+					test.subject.test.world.install,
+					{
+						location: TMPDIR.pathname,
+						version: test.subject.test.versions.current
+					}
+				);
+				var installation = test.subject.world.Installation.from.location(TMPDIR);
+
+				var installedModule = $api.Function.world.question(
+					test.subject.world.Installation.modules.installed("minimal-package"),
+				)
+
+				var before = installedModule(installation);
+
+				verify(before).present.is(false);
+
+				var findInListing = function() {
+					var listing = $api.Function.world.now.question(
+						test.subject.world.Installation.modules.list(),
+						installation
+					);
+					var found = listing.find(function(module) {
+						return module.name == "minimal-package";
+					});
+					return found;
+				}
+
+				verify(findInListing()).is(void(0));
+
+				$api.Function.world.now.action(
+					test.subject.world.Installation.modules.install({ name: "minimal-package" }),
+					installation
+				);
+
+				var after = installedModule(installation);
+				verify(after).present.is(true);
+				if (after.present) {
+					verify(after).value.version.is.type("string");
+				}
+
+				verify(findInListing()).is.type("object");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Functions {
 		Installation: functions.Installation
@@ -314,7 +349,9 @@ namespace slime.jrunscript.node {
 			const { $api, jsh } = fifty.global;
 			const { subject } = test;
 
-			fifty.tests.installation = function() {
+			fifty.tests.object = {};
+
+			fifty.tests.object.installation = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
 				verify(subject).at({ location: TMPDIR.pathname }).is(null);
 				var tell = subject.install({
@@ -340,14 +377,23 @@ namespace slime.jrunscript.node {
 }
 
 namespace slime.jsh.shell.tools {
-	export interface Exports {
-		node: {
-			installed: slime.jrunscript.node.object.Installation
-			require: slime.$api.fp.world.Action<void,slime.jrunscript.node.object.install.Events & {
-				removed: slime.jrunscript.node.object.Installation
-				found: slime.jrunscript.node.object.Installation
-			}>
+	export interface Managed {
+		installation: slime.jrunscript.node.world.Installation
+
+		installed: slime.jrunscript.node.object.Installation
+		require: slime.$api.fp.world.Action<void,slime.jrunscript.node.object.install.Events & {
+			removed: slime.jrunscript.node.object.Installation
+			found: slime.jrunscript.node.object.Installation
+		}>
+	}
+
+	export namespace node {
+		export interface Exports extends slime.jrunscript.node.Exports, slime.jsh.shell.tools.Managed {
 		}
+	}
+
+	export interface Exports {
+		node: node.Exports
 	}
 
 	(
@@ -417,12 +463,35 @@ namespace slime.jsh.shell.tools {
 				});
 				verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
 			}
+
+			fifty.tests.manual = {};
+			fifty.tests.manual.jsh = function() {
+				jsh.shell.console("hello");
+				var installation = jsh.shell.tools.node.installation;
+				var modules = $api.Function.world.now.question(
+					jsh.shell.tools.node.world.Installation.modules.list(),
+					installation
+				);
+				modules.forEach(function(module) {
+					jsh.shell.console(module.name + " " + module.version);
+				});
+			}
 		}
 	//@ts-ignore
 	)(fifty);
 }
 
 namespace slime.jrunscript.node.internal {
+	//	TODO	this probably has a richer structure when --depth is not 0
+	export interface NpmLsOutput {
+		name: string
+		dependencies: {
+			[name: string]: {
+				version: string
+			}
+		}
+	}
+
 	export interface Argument {
 		command?: string
 		project?: string
@@ -441,8 +510,8 @@ namespace slime.jrunscript.node.internal {
 			fifty.tests.suite = function() {
 				var api = jsh.shell.tools.node.installed;
 				jsh.shell.console("version: " + api.version);
-				fifty.run(fifty.tests.installation);
 				fifty.run(fifty.tests.sandbox);
+				fifty.run(fifty.tests.object.installation);
 				fifty.run(fifty.tests.jsapi);
 			}
 		}

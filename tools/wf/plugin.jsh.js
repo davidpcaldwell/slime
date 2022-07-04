@@ -471,7 +471,7 @@
 									"--tsconfig", typescript.getConfig(project),
 									"--output", project.getRelativePath("local/doc/typedoc"),
 								],
-								stdio: p.stdio,
+								stdio: (p && p.stdio) ? p.stdio : void(0),
 								evaluate: function(result) { return result; }
 							});
 						}
