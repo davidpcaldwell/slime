@@ -31,7 +31,26 @@
 		}
 
 		$api.Function.world.execute(jsh.shell.tools.node.require());
-		jsh.shell.tools.node.installed.modules.require({ name: "typescript", version: parameters.options.version });
+		var typescriptVersionInstalled = $api.Function.result(
+			jsh.shell.tools.node.installation,
+			$api.Function.pipe(
+				$api.Function.world.question(
+					jsh.shell.tools.node.world.Installation.modules.installed("typescript")
+				),
+				$api.Function.Maybe.map(function(module) {
+					return module.version == parameters.options.version;
+				}),
+				$api.Function.Maybe.else(function() {
+					return false;
+				})
+			)
+		);
+		if (!typescriptVersionInstalled) {
+			$api.Function.world.now.action(
+				jsh.shell.tools.node.world.Installation.modules.install({ name: "typescript", version: parameters.options.version }),
+				jsh.shell.tools.node.installation
+			);
+		}
 
 		//	TODO	should jsh.shell.tools.node.require return an installation? does it? Should the below be part of it?
 		var nodeBin = jsh.script.file.parent.parent.getSubdirectory("local/jsh/lib/node/bin");
