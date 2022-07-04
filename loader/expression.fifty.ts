@@ -542,18 +542,6 @@ namespace slime {
 			})(fifty);
 		}
 
-		/**
-		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
-		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
-		 *
-		 * ## Loading code
-		 *
-		 * Note that although there are global `run()`, `file()`, and `value()` methods that
-		 * can be used to execute code, there is no global `module()` method. Since modules themselves load code, in
-		 * order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to
-		 * load modules via first creating a {@link slime.Loader} implementation and then using the
-		 * `module()` method of the `Loader`.
-		 */
 		export interface Exports {
 			/**
 			 * Creates a *Loader*. A Loader loads resources from a specified source.
