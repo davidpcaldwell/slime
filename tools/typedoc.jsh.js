@@ -12,6 +12,26 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		var parseTypedocVersion = $api.Function.pipe(
+			$api.Function.string.split("."),
+			$api.Function.Array.map(Number),
+			function(parsed) {
+				return {
+					major: parsed[0],
+					minor: parsed[1],
+					patch: parsed[2]
+				}
+			}
+		)
+
+		function typedocUsesEntryPoints(version) {
+			if (version.major > 0) return true;
+			if (version.minor > 22) return true;
+			//	TODO	possible this should be used for lower versions than 0.22.11, but did not investigate
+			if (version.minor == 22 && version.patch >= 11) return true;
+			return false;
+		}
+
 		$api.Function.pipe(
 			//	TODO	this default is also stored in tools/wf/plugin.jsh.js
 			jsh.script.cli.option.string({ longname: "ts:version" }),
@@ -32,7 +52,7 @@
 					if (tsVersion == "4.5.4") return "0.22.11";
 					if (tsVersion == "4.6.2") return "0.22.12";
 					if (tsVersion == "4.6.3") return "0.22.15";
-					if (tsVersion == "4.7.3") return "0.22.18";
+					if (tsVersion == "4.7.3") return "0.23.5";
 					throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
 				})(p.options["ts:version"]);
 				$api.Function.world.now.action(
@@ -53,6 +73,7 @@
 				var result = jsh.shell.run({
 					command: shell.getRelativePath("local/jsh/lib/node/bin/typedoc"),
 					arguments: $api.Array.build(function(rv) {
+						var version = parseTypedocVersion(typedocVersion);
 						//	TODO	is this relative to tsconfig or to PWD?
 						rv.push("--out", p.options.output);
 						rv.push("--tsconfig", p.options.tsconfig);
@@ -63,7 +84,7 @@
 						rv.push("--excludeExternals");
 						rv.push("--readme", readme);
 						//	TODO	add --name
-						if (typedocVersion == "0.22.11" || typedocVersion == "0.22.12" || typedocVersion == "0.22.15" || typedocVersion == "0.22.18") {
+						if (typedocUsesEntryPoints(version)) {
 							if (!project.getFile("typedoc.json")) {
 								var entryPoint = project.getRelativePath("README.fifty.ts");
 								if (!entryPoint.file) {
