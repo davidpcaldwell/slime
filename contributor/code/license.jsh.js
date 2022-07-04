@@ -210,15 +210,7 @@
 			}
 		}
 
-		function old() {
-
-
-			//jsh.shell.echo(template.original.parser.toString());
-			//jsh.shell.echo(template.introduction.parser.toString());
-			//jsh.shell.echo(template.introduction.create());
-
-		}
-		jsh.shell.exit( (updated) ? 1 : 0 );
+		jsh.shell.exit( (!invocation.options.fix && updated) ? 1 : 0 );
 	}
 //@ts-ignore
 )($api,jsh);
