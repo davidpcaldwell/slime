@@ -466,6 +466,20 @@ namespace slime.jsh.wf {
 					)({
 					});
 				}
+
+				fifty.tests.issue319 = function() {
+					var project = test.fixtures.project();
+					$api.Function.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.create({
+							command: project.directory.getRelativePath("wf"),
+							arguments: $api.Array.build(function(rv) {
+								rv.push("commit");
+								rv.push("--message", "unchanged");
+							})
+						})
+					);
+				};
 			}
 		//@ts-ignore
 		)(fifty);
