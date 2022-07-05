@@ -47,6 +47,10 @@ namespace slime.jrunscript.file {
 				exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
 
 				read: {
+					stream: () => slime.$api.fp.world.Question<world.Location, {
+						notFound: void
+					}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
+
 					string: () => slime.$api.fp.world.Question<world.Location, {
 						notFound: void
 					}, slime.$api.fp.Maybe<string>>
