@@ -630,6 +630,15 @@
 					jsh.script.cli.option.string({ longname: "message" }),
 					jsh.script.cli.option.boolean({ longname: "notest" }),
 					function(p) {
+						var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+
+						var status = repository.command(jsh.tools.git.commands.status).argument().run();
+
+						if (status.entries.length == 0) {
+							jsh.shell.console("Cannot commit; no modified files.");
+							return 1;
+						}
+
 						var defaultCommitMessage = getDefaultCommitMessage($context.base);
 
 						if (!p.options.message && defaultCommitMessage) {
