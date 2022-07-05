@@ -264,7 +264,7 @@ public class Rhino {
 				if (status != null) {
 					shell.getEnvironment().exit(status.intValue());
 				} else {
-					Thread[] threads = new Thread[Thread.activeCount()*2];
+					Set<Thread> threads = Thread.getAllStackTraces().keySet();
 					for (Thread t : threads) {
 						if (t != null && t != Thread.currentThread() && !t.isDaemon()) {
 							LOG.log(Level.FINER, "Active thread: " + t + " daemon = " + t.isDaemon());
