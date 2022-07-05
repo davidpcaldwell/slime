@@ -50,6 +50,11 @@
 						|| directory.pathname.basename == ".settings"
 				};
 
+				//	TODO	obviously this is not ideal
+				var getBasename = function(location) {
+					return $context.library.file.Pathname(location.pathname).basename;
+				}
+
 				/** @type { slime.tools.code.isText } */
 				var isText = $api.Function.series(
 					function(entry) {
@@ -98,10 +103,10 @@
 						if (entry.path == "wf") return true;
 					},
 					function(entry) {
-						return $context.library.code.filename.isText(entry.file.pathname.basename);
+						return $context.library.code.filename.isText(getBasename(entry.file));
 					},
 					function(entry) {
-						var basename = entry.file.pathname.basename;
+						var basename = getBasename(entry.file);
 						//	Project-specific extensions
 						//	TODO	should be able to rename this one and get rid of it
 						if (/\.jsh$/.test(basename)) return true;

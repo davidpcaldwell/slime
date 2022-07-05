@@ -25,7 +25,7 @@ namespace slime.tools.code {
 
 	export interface File {
 		path: string
-		file: slime.jrunscript.file.File
+		file: slime.jrunscript.file.world.Location
 	}
 
 	export type isText = (p: slime.tools.code.File) => boolean | undefined
@@ -55,6 +55,55 @@ namespace slime.tools.code {
 		file?: slime.$api.fp.Predicate<slime.jrunscript.file.File>
 		directory?: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
 	}
+
+	export interface Exports {
+		File: {
+			hasShebang: () => slime.$api.fp.world.Question<File,void,slime.$api.fp.Maybe<boolean>>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.File = {};
+			fifty.tests.File.hasShebang = function() {
+				var wf = fifty.jsh.file.relative("../../wf");
+				var jxa = fifty.jsh.file.relative("../../jxa.bash");
+				var foo = fifty.jsh.file.relative("../../foo");
+
+				var hasShebang = $api.Function.world.question(test.subject.File.hasShebang());
+
+				var wfHas = hasShebang({
+					path: "wf",
+					file: wf
+				});
+				var jxaHas = hasShebang({
+					path: "jxa.bash",
+					file: jxa
+				});
+				var fooHas = hasShebang({
+					path: "foo",
+					file: foo
+				});
+				verify(wfHas).present.is(true);
+				verify(jxaHas).present.is(true);
+				verify(fooHas).present.is(false);
+
+				if (wfHas.present) {
+					verify(wfHas).value.is(true);
+				}
+				if (jxaHas.present) {
+					verify(jxaHas).value.is(false);
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export interface Exports {
 		filename: {

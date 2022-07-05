@@ -405,6 +405,16 @@
 						}
 					},
 					read: {
+						stream: function() {
+							return function(location) {
+								return function(events) {
+									var ask = location.filesystem.openInputStream({
+										pathname: location.pathname
+									});
+									return ask(events);
+								}
+							}
+						},
 						string: function() {
 							return function(location) {
 								return function(events) {

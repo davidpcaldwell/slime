@@ -16,6 +16,11 @@
 		/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
 		var castToFile = $api.Function.cast;
 
+		/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.file.world.Location } */
+		var toLocation = function(node) {
+			return $context.library.file.world.os.Location(node.pathname.toString());
+		}
+
 		/**
 		 *
 		 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.File> } isExcludedFile
@@ -37,7 +42,7 @@
 		function toSourceFile(p) {
 			return {
 				path: p.path,
-				file: castToFile(p.node)
+				file: toLocation(castToFile(p.node))
 			}
 		}
 
@@ -190,6 +195,36 @@
 			}
 		}
 
+		/** @type { <T>(m: slime.$api.fp.Maybe<T>) => T } */
+		function Maybe_assert(m) {
+			if (m.present) return m.value;
+			throw new Error("Asserted Maybe that was Nothing.");
+		}
+
+		var readFileString = $api.Function.pipe(
+			$api.Function.world.question(
+				$context.library.file.world.Location.file.read.string()
+			),
+			Maybe_assert
+		)
+
+		/**
+		 *
+		 * @param { slime.jrunscript.file.world.Location } file
+		 * @param { string } string
+		 */
+		var writeFileString = function(file,string) {
+			$api.Function.world.now.action(
+				$context.library.file.world.Location.file.write.string({ value: string }),
+				file
+			);
+		};
+
+		//	TODO	obviously this is not ideal
+		var getBasename = function(location) {
+			return $context.library.file.Pathname(location.pathname).basename;
+		}
+
 		/**
 		 *
 		 * @type { slime.tools.code.Exports["handleFileTrailingWhitespace"] }
@@ -200,7 +235,7 @@
 					nowrite: false
 				};
 				return $api.Function.world.old.tell(function(events) {
-					var code = entry.file.read(String);
+					var code = readFileString(entry.file);
 					var scan = findTrailingWhitespaceIn(code);
 					scan.instances.forEach(function(instance) {
 						events.fire("foundAt", {
@@ -214,7 +249,7 @@
 					if (scan.instances.length) {
 						events.fire("foundIn", entry);
 						if (!configuration.nowrite) {
-							entry.file.pathname.write(scan.without, { append: false });
+							writeFileString(entry.file, scan.without);
 						}
 					} else {
 						events.fire("notFoundIn", entry);
@@ -233,7 +268,7 @@
 				getSourceFiles({
 					base: p.base,
 					isText: (p.isText) ? p.isText : function(file) {
-						return filename.isText(file.file.pathname.basename);
+						return filename.isText(getBasename(file.file));
 					},
 					exclude: p.exclude
 				})({
@@ -283,7 +318,7 @@
 				getSourceFiles({
 					base: p.base,
 					isText: (p.isText) ? p.isText : function(file) {
-						return filename.isText(file.file.pathname.basename);
+						return filename.isText(getBasename(file.file));
 					},
 					exclude: p.exclude
 				})({
@@ -291,18 +326,36 @@
 						events.fire("unknownFileType", e.detail);
 					}
 				}).forEach(function(entry) {
-					var code = entry.file.read(String);
+					var code = readFileString(entry.file);
 					var check = checkSingleFinalNewline(code);
 					if (check.missing) events.fire("missing", entry);
 					if (check.multiple) events.fire("multiple", entry);
 					if (!p.nowrite && (check.missing || check.multiple)) {
-						entry.file.pathname.write(check.fixed, { append: false });
+						writeFileString(entry.file, check.fixed);
 					}
 				});
 			});
 		}
 
 		$export({
+			File: {
+				hasShebang: function() {
+					return function(file) {
+						return function(events) {
+							var input = $api.Function.world.now.question(
+								$context.library.file.world.Location.file.read.stream(),
+								file.file
+							);
+							if (!input.present) return $api.Function.Maybe.nothing();
+							var _input = input.value.java.adapt();
+							var _1 = _input.read();
+							var _2 = _input.read();
+							_input.close();
+							return $api.Function.Maybe.value(_1 == 35 && _2 == 33);
+						}
+					}
+				}
+			},
 			filename: filename,
 			directory: directory,
 			defaults: defaults,
