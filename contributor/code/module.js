@@ -102,9 +102,14 @@
 						if (entry.path == "tools/wf") return true;
 						if (entry.path == "wf") return true;
 					},
-					function(entry) {
-						return $context.library.code.filename.isText(getBasename(entry.file));
-					},
+					$api.Function.pipe(
+						$api.Function.world.question(
+							$context.library.code.File.isText()
+						),
+						function(maybe) {
+							if (maybe.present) return maybe.value;
+						}
+					),
 					function(entry) {
 						var basename = getBasename(entry.file);
 						//	Project-specific extensions
