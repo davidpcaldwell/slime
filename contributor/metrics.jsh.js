@@ -23,7 +23,8 @@
 		var model = code.model({
 			library: {
 				document: jsh.document,
-				file: jsh.file
+				file: jsh.file,
+				project: jsh.project.code
 			}
 		})
 
@@ -77,6 +78,7 @@
 
 					var src = getSourceFiles();
 					var grouper = $api.Function.Array.groupBy({
+						/** @type { (entry: slime.project.metrics.SourceFile) => string } */
 						group: function(entry) {
 							if (/\.js$/.test(entry.path)) return "js";
 							if (/\.ts$/.test(entry.path)) return "ts";
@@ -91,7 +93,7 @@
 						return {
 							language: language.group,
 							files: language.array.map(function(entry) {
-								var code = entry.node.read(String);
+								var code = entry.file.read(String);
 								var covered = isCovered(code);
 								return {
 									path: entry.path,
@@ -148,6 +150,32 @@
 					});
 					jsh.shell.console("");
 					jsh.shell.console("Total @ts-ignore comments violating rules: " + ignores.length);
+				},
+				size: function(invocation) {
+					//	TODO	could cache by path so as not to do so much re-reading while sorting etc.
+					var getLines = function(file) {
+						//	We subtract one because we assume the linter has enforced a trailing newline
+						return file.file.read(String).split("\n").length - 1;
+					}
+
+					var files = $api.Function.result(
+						getSourceFiles(),
+						$api.Function.Array.filter($api.Function.Predicate.not(model.SourceFile.isGenerated)),
+						$api.Function.Array.filter($api.Function.Predicate.not(model.SourceFile.isJsapi)),
+						$api.Function.Array.filter(function(file) {
+							return getLines(file) > 500;
+						})
+					).sort(function(a,b) {
+						//	TODO	need fp way to do this
+						return getLines(b) - getLines(a);
+					});
+
+					files.forEach(function(file) {
+						jsh.shell.console(file.path + ": " + getLines(file));
+					});
+
+					jsh.shell.console("");
+					jsh.shell.console("Total files >500 lines: " + files.length);
 				}
 			}
 		})

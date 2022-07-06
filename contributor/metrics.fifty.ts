@@ -9,14 +9,22 @@ namespace slime.project.metrics {
 		library: {
 			document: slime.runtime.document.Exports
 			file: slime.jrunscript.file.Exports
+			project: slime.project.code.Exports
 		}
 	}
 
+	export interface SourceFile {
+		path: string
+		file: slime.jrunscript.file.File
+	}
+
 	export interface Exports {
-		getSourceFiles: (base: slime.jrunscript.file.Directory) => {
-			path: string
-			node: slime.jrunscript.file.Node
-		}[]
+		getSourceFiles: (base: slime.jrunscript.file.Directory) => SourceFile[]
+
+		SourceFile: {
+			isJsapi: slime.$api.fp.Predicate<SourceFile>
+			isGenerated: slime.$api.fp.Predicate<SourceFile>
+		}
 
 		jsapi: (base: slime.jrunscript.file.Directory) => {
 			jsapi: {
