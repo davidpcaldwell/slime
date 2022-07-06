@@ -64,6 +64,7 @@ END LICENSE
 				window.addEventListener("load", function(e) {
 					var typedoc = document.querySelector("[data-name='typedoc']");
 					var button = typedoc.querySelector("[data-name='update']");
+					button.disabled = true;
 					var output = typedoc.querySelector("[data-name='console']");
 					button.addEventListener("click", function(e) {
 						output.innerHTML = "Running TypeDoc ...";

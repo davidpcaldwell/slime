@@ -80,6 +80,10 @@
 				if (/\.dockerignore$/.test(basename)) return true;
 				if (/Dockerfile$/.test(basename)) return true;
 				if (/\.bashrc$/.test(basename)) return true;
+
+				if (basename == ".hgignore") return true;
+				if (basename == ".hgsubstate") return false;
+				if (basename == ".hgsub") return true;
 			},
 			isVcsGenerated: function(name) {
 				if (name == ".hgtags") return true;
@@ -221,6 +225,7 @@
 		};
 
 		//	TODO	obviously this is not ideal
+		/** @type { (location: slime.jrunscript.file.world.Location) => string } */
 		var getBasename = function(location) {
 			return $context.library.file.Pathname(location.pathname).basename;
 		}
@@ -337,21 +342,38 @@
 			});
 		}
 
+		/** @type { slime.tools.code.Exports["File"]["hasShebang"] } */
+		function hasShebang() {
+			return function(file) {
+				return function(events) {
+					var input = $api.Function.world.now.question(
+						$context.library.file.world.Location.file.read.stream(),
+						file.file
+					);
+					if (!input.present) return $api.Function.Maybe.nothing();
+					var _input = input.value.java.adapt();
+					var _1 = _input.read();
+					var _2 = _input.read();
+					_input.close();
+					return $api.Function.Maybe.value(_1 == 35 && _2 == 33);
+				}
+			}
+		}
+
 		$export({
 			File: {
-				hasShebang: function() {
+				hasShebang: hasShebang,
+				isText: function() {
 					return function(file) {
 						return function(events) {
-							var input = $api.Function.world.now.question(
-								$context.library.file.world.Location.file.read.stream(),
-								file.file
-							);
-							if (!input.present) return $api.Function.Maybe.nothing();
-							var _input = input.value.java.adapt();
-							var _1 = _input.read();
-							var _2 = _input.read();
-							_input.close();
-							return $api.Function.Maybe.value(_1 == 35 && _2 == 33);
+							var basename = getBasename(file.file);
+							var byExtension = filename.isText(basename);
+							if (typeof(byExtension) == "boolean") return $api.Function.Maybe.value(byExtension);
+							if (basename.indexOf(".") == -1) {
+								var rv = hasShebang()(file)(events);
+								if (rv.present) return rv;
+							}
+							return $api.Function.Maybe.nothing();
 						}
 					}
 				}

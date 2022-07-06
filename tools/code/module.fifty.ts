@@ -59,6 +59,7 @@ namespace slime.tools.code {
 	export interface Exports {
 		File: {
 			hasShebang: () => slime.$api.fp.world.Question<File,void,slime.$api.fp.Maybe<boolean>>
+			isText: () => slime.$api.fp.world.Question<File,void,slime.$api.fp.Maybe<boolean>>
 		}
 	}
 
