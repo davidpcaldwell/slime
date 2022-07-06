@@ -480,6 +480,24 @@ namespace slime.jsh.wf {
 						})
 					);
 				};
+
+				fifty.tests.issue332 = function() {
+					var project = test.fixtures.project();
+					var repository = toGitFixturesRepository(project);
+					fixtures.git.edit(repository, "wf.js", function(before) {
+						return before.replace("slime.jsh.Global", "slime.jjj.Global");
+					});
+					$api.Function.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.create({
+							command: project.directory.getRelativePath("wf"),
+							arguments: $api.Array.build(function(rv) {
+								rv.push("commit");
+								rv.push("--message", "messed up tsc, hopefully");
+							})
+						})
+					);
+				}
 			}
 		//@ts-ignore
 		)(fifty);
