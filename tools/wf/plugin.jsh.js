@@ -32,6 +32,20 @@
 					error: void(0)
 				};
 
+				var code = {
+					/** @type { slime.jsh.wf.internal.typescript.Script } */
+					typescript: $loader.script("typescript.js")
+				};
+
+				var parts = {
+					typescript: code.typescript({
+						library: {
+							file: jsh.file,
+							node: jsh.shell.tools.node
+						}
+					})
+				}
+
 				var base = (function() {
 					if (jsh.shell.environment.PROJECT) {
 						var location = jsh.file.Pathname(jsh.shell.environment.PROJECT);
@@ -462,18 +476,21 @@
 						typedoc: function(p) {
 							var project = (p && p.project) ? p.project : base;
 							var version = typescript.getVersion(project);
-							jsh.shell.console("Compiling with TypeScript " + version + " ...");
-							return jsh.shell.jsh({
-								shell: jsh.shell.jsh.src,
-								script: jsh.shell.jsh.src.getFile("tools/typedoc.jsh.js"),
-								arguments: [
-									"--ts:version", typescript.getVersion(project),
-									"--tsconfig", typescript.getConfig(project),
-									"--output", project.getRelativePath("local/doc/typedoc"),
-								],
-								stdio: (p && p.stdio) ? p.stdio : void(0),
-								evaluate: function(result) { return result; }
-							});
+							jsh.shell.console("Compiling with TypeScript " + typescript.getVersion(project) + " ...");
+							jsh.shell.tools.rhino.require();
+							jsh.shell.tools.tomcat.require();
+							var process = $api.Function.world.tell(
+								parts.typescript.typedoc.run({
+									configuration: {
+										typescript: {
+											version: version,
+											configuration: typescript.getConfig(project)
+										}
+									},
+									project: project.pathname.toString()
+								})
+							);
+							process();
 						}
 					}
 				})();
