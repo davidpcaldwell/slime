@@ -66,6 +66,7 @@
 			//	Only use of $context.pathext in the module
 			Streams: $context.api.io.Streams,
 			Resource: $context.api.io.Resource,
+			filesystems: world.filesystems,
 			isPathname: isPathname,
 			pathext: $context.pathext
 		});

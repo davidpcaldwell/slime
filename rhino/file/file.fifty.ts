@@ -54,8 +54,6 @@ namespace slime.jrunscript.file {
 
 
 	export interface Pathname {
-		directory: Directory
-
 		/**
 		 * The name of this file, excluding any path information; for example, `"ls"` if this Pathname represents `/bin/ls`.
 		 */
@@ -74,6 +72,12 @@ namespace slime.jrunscript.file {
 		 * this `Pathname` does not exist.
 		 */
 		readonly file: File
+
+		readonly directory: Directory
+
+		os: {
+			adapt: () => slime.jrunscript.file.world.Location
+		}
 
 		java: {
 			adapt: () => slime.jrunscript.native.java.io.File
@@ -404,6 +408,7 @@ namespace slime.jrunscript.file.internal.file {
 	export interface Context {
 		Resource: slime.jrunscript.io.Exports["Resource"]
 		Streams: slime.jrunscript.io.Exports["Streams"]
+		filesystems: slime.jrunscript.file.World["filesystems"]
 		isPathname: (item: any) => item is slime.jrunscript.file.Pathname
 		pathext: string[]
 	}
