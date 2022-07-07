@@ -237,6 +237,16 @@
 					$filesystem.createDirectoryAt(peer);
 				}
 				return getDirectory();
+			};
+
+			/** @type { slime.jrunscript.file.Pathname["os"] } */
+			this.os = {
+				adapt: function() {
+					return {
+						filesystem: $context.filesystems.os,
+						pathname: toString()
+					};
+				}
 			}
 
 			this.java = new function () {
