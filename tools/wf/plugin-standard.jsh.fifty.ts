@@ -497,7 +497,7 @@ namespace slime.jsh.wf {
 							})
 						})
 					);
-				}
+				};
 			}
 		//@ts-ignore
 		)(fifty);

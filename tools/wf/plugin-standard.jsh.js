@@ -115,6 +115,14 @@
 				 * @param { string } message
 				 */
 				var commit = function(repository,message) {
+					var target = jsh.tools.git.program({ command: "git" }).repository(repository.directory.toString());
+
+					var status = target.command(jsh.tools.git.commands.status).argument().run();
+
+					if (status.branch === null) {
+						throw new Error("Cannot commit on detached HEAD.");
+					}
+
 					repository.commit({
 						all: true,
 						noVerify: true,
@@ -126,7 +134,7 @@
 					//	master
 					repository.push({
 						repository: "origin",
-						refspec: "HEAD",
+						refspec: status.branch,
 						config: {
 							"credential.helper": credentialHelper
 						}
