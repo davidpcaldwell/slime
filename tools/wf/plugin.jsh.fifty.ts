@@ -124,7 +124,6 @@ namespace slime.jsh.wf {
 
 		git: {
 			commands: {
-				remoteShow: slime.jrunscript.tools.git.Command<string,{ head: string }>
 				getBranches: slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]>
 			}
 

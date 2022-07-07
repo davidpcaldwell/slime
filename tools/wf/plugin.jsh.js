@@ -374,7 +374,6 @@
 
 				jsh.wf.git = {
 					commands: {
-						remoteShow: jsh.tools.git.commands.remote.show,
 						/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
 						getBranches: {
 							invocation: function() {
@@ -664,7 +663,7 @@
 						var remote = "origin";
 						var origin = jsh.tools.git.program({ command: "git" })
 							.repository(base.pathname.toString())
-							.command(jsh.wf.git.commands.remoteShow)
+							.command(jsh.tools.git.commands.remote.show)
 							.argument(remote)
 							.run()
 						;
