@@ -89,7 +89,7 @@
 						}
 					}
 				},
-				remoteShow: jsh.wf.git.commands.remoteShow
+				remoteShow: jsh.tools.git.commands.remote.show
 			}
 		};
 
@@ -430,7 +430,7 @@
 				var precommit = $api.Function.world.old.ask(function(events) {
 					var success = true;
 
-					var trunk = git.repository.command(git.command.remoteShow).argument("origin").run().head;
+					var trunk = git.repository.command(jsh.tools.git.commands.remote.show).argument("origin").run().head;
 					var repository = jsh.tools.git.Repository({ directory: $context.base });
 					var branch = repository.status().branch.name;
 					if (branch == trunk) {

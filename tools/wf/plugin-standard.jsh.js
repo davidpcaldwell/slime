@@ -459,7 +459,7 @@
 
 				$exports.git.hooks["post-checkout"] = function() {
 					var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
-					var origin = repository.command(jsh.wf.git.commands.remoteShow).argument("origin").run();
+					var origin = repository.command(jsh.tools.git.commands.remote.show).argument("origin").run();
 					var trunk = origin.head;
 					var status = repository.command(jsh.tools.git.commands.status).argument().run();
 					if (status.branch == trunk) {
