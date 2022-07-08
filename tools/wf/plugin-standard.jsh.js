@@ -524,6 +524,18 @@
 					if ($context.base.getFile(".gitmodules")) {
 						repository.command(jsh.tools.git.commands.submodule.update).argument().run();
 					}
+
+					/** @type { slime.jrunscript.tools.git.Command<void,void> } */
+					var push = {
+						invocation: function() {
+							return {
+								command: "push",
+								arguments: ["origin", "HEAD"]
+							}
+						}
+					};
+
+					repository.command(push).argument().run();
 				}
 
 				$exports.git.hooks["post-commit"] = function() {

@@ -79,6 +79,11 @@ namespace slime.jsh.wf {
 						test: {
 							fixture: fixture
 						},
+						/**
+						 *
+						 * @param p Specifies whether to skip running `wf initialize` on the project.
+						 * @returns A repository representing a project with a SLIME submodule that has an `origin` remote.
+						 */
 						project: function project(p?: { noInitialize?: boolean }) {
 							if (!p) p = {};
 							var origin = fixture();
@@ -96,13 +101,31 @@ namespace slime.jsh.wf {
 							if (!p.noInitialize) (
 								function wfInitialize() {
 									jsh.shell.run({
-										command: slime.directory.getFile("wf"),
-										arguments: ["initialize", "--test-skip-git-identity-requirement"]
+										command: repository.directory.getFile("wf"),
+										arguments: ["initialize"]
 									});
 								}
 							)();
 
-							return repository;
+							function toGitFixturesRepository(p: slime.jrunscript.tools.git.repository.Local): slime.jrunscript.tools.git.test.fixtures.Repository {
+								return {
+									location: {
+										filesystem: jsh.file.world.filesystems.os,
+										pathname: p.directory.toString()
+									},
+									api: jsh.tools.git.program({ command: "git" }).repository(p.directory.toString())
+								}
+							}
+
+							return {
+								origin: toGitFixturesRepository(origin),
+								clone: toGitFixturesRepository(repository)
+							};
+						},
+						adapt: {
+							repository: function(repository: slime.jrunscript.tools.git.test.fixtures.Repository): slime.jrunscript.tools.git.repository.Local {
+								return jsh.tools.git.Repository({ directory: jsh.file.Pathname(repository.location.pathname).directory });
+							}
 						}
 					}
 				}
@@ -215,7 +238,7 @@ namespace slime.jsh.wf {
 				var jsh = fifty.global.jsh;
 
 				fifty.tests.interface.tsc = function() {
-					var repository = test.fixtures.project();
+					var repository = test.fixtures.adapt.repository(test.fixtures.project().clone);
 
 					var tscresult = jsh.shell.run({
 						command: test.fixtures.wf,
@@ -240,7 +263,7 @@ namespace slime.jsh.wf {
 					}).is(true);
 
 					fifty.run(function tscfail() {
-						var repository = test.fixtures.project();
+						var repository = test.fixtures.adapt.repository(test.fixtures.project().clone);
 
 						var tsc = function(environment?) {
 							var result = jsh.shell.run({
@@ -325,7 +348,7 @@ namespace slime.jsh.wf {
 				const { $api, jsh } = fifty.global;
 
 				fifty.tests.interface.commit = function() {
-					var repository = test.fixtures.project();
+					var repository = test.fixtures.adapt.repository(test.fixtures.project().clone);
 
 					var environment = {};
 
@@ -367,16 +390,6 @@ namespace slime.jsh.wf {
 					}).is(true);
 				}
 
-				function toGitFixturesRepository(p: slime.jrunscript.tools.git.repository.Local): slime.jrunscript.tools.git.test.fixtures.Repository {
-					return {
-						location: {
-							filesystem: jsh.file.world.filesystems.os,
-							pathname: p.directory.toString()
-						},
-						api: jsh.tools.git.program({ command: "git" }).repository(p.directory.toString())
-					}
-				}
-
 				var addAll: slime.jrunscript.tools.git.Command<void,void> = {
 					invocation: function(p) {
 						return {
@@ -384,13 +397,40 @@ namespace slime.jsh.wf {
 							arguments: ["."]
 						}
 					}
-				}
+				};
+
+				var branch: slime.jrunscript.tools.git.Command<{ name: string, startPoint: string },void> = {
+					invocation: function(p) {
+						return {
+							command: "branch",
+							arguments: [p.name, p.startPoint]
+						}
+					}
+				};
 
 				var commit: slime.jrunscript.tools.git.Command<{ message: string }, void> = {
 					invocation: function(p) {
 						return {
 							command: "commit",
 							arguments: ["--message", p.message]
+						}
+					}
+				};
+
+				var checkout: slime.jrunscript.tools.git.Command<{ branch: string },void> = {
+					invocation: function(p) {
+						return {
+							command: "checkout",
+							arguments: [p.branch]
+						}
+					}
+				};
+
+				var merge: slime.jrunscript.tools.git.Command<{ branch: string },void> = {
+					invocation: function(p) {
+						return {
+							command: "merge",
+							arguments: [p.branch]
 						}
 					}
 				};
@@ -407,8 +447,9 @@ namespace slime.jsh.wf {
 				};
 
 				fifty.tests.issue485 = function() {
-					var cloned = fixtures.subject.project();
-					var repository = toGitFixturesRepository(cloned);
+					var project = test.fixtures.project();
+					var cloned = test.fixtures.adapt.repository(project.clone);
+					var repository = project.clone;
 					jsh.shell.world.run(
 						jsh.shell.Invocation.create({
 							command: repository.location.pathname + "/" + "wf",
@@ -445,7 +486,7 @@ namespace slime.jsh.wf {
 						}
 					};
 
-					var project = toGitFixturesRepository(fixtures.subject.project());
+					var project = fixtures.subject.project().clone;
 
 					jsh.shell.world.run(
 						jsh.shell.Invocation.create({
@@ -468,7 +509,7 @@ namespace slime.jsh.wf {
 				}
 
 				fifty.tests.issue319 = function() {
-					var project = test.fixtures.project();
+					var project = test.fixtures.adapt.repository(test.fixtures.project().clone);
 					$api.Function.world.now.action(
 						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
@@ -482,8 +523,9 @@ namespace slime.jsh.wf {
 				};
 
 				fifty.tests.issue332 = function() {
-					var project = test.fixtures.project();
-					var repository = toGitFixturesRepository(project);
+					var x = test.fixtures.project();
+					var project = test.fixtures.adapt.repository(x.clone);
+					var repository = x.clone;
 					fixtures.git.edit(repository, "wf.js", function(before) {
 						return before.replace("slime.jsh.Global", "slime.jjj.Global");
 					});
@@ -498,6 +540,41 @@ namespace slime.jsh.wf {
 						})
 					);
 				};
+
+				fifty.tests.issue567 = function() {
+					var project = test.fixtures.project();
+					var origin = project.origin;
+					var repository = project.clone;
+					repository.api.command(branch).argument({
+						name: "feature",
+						startPoint: "master"
+					}).run();
+					repository.api.command(checkout).argument({
+						branch: "feature"
+					}).run();
+					fixtures.git.edit(repository, "f", function(before) {
+						return "f";
+					});
+					repository.api.command(addAll).argument().run();
+					repository.api.command(commit).argument({
+						message: "f"
+					}).run();
+
+					fixtures.git.edit(origin, "m", function(before) {
+						return "m";
+					});
+					origin.api.command(addAll).argument().run();
+					origin.api.command(commit).argument({
+						message: "m"
+					}).run();
+
+					repository.api.command(jsh.tools.git.commands.fetch).argument().run();
+					repository.api.command(merge).argument({
+						branch: "origin/master"
+					}).run();
+					jsh.shell.console("Repository location:");
+					jsh.shell.console(repository.location.pathname);
+				}
 			}
 		//@ts-ignore
 		)(fifty);
@@ -518,7 +595,7 @@ namespace slime.jsh.wf {
 					jsh.shell.console("cd " + project.directory);
 				}
 				fifty.tests.manual.profile = function() {
-					var project = test.fixtures.project({ noInitialize: true });
+					var project = test.fixtures.adapt.repository(test.fixtures.project({ noInitialize: true }).clone);;
 					var getSlimePath = function(relative) {
 						return jsh.file.world.filesystems.os.pathname(project.directory.toString()).relative("slime").relative(relative);
 					}
