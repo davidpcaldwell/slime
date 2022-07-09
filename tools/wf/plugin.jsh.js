@@ -16,7 +16,7 @@
 	function($api,$slime,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.file && jsh.shell && jsh.ui && jsh.tools && jsh.tools.git);
+				return Boolean(jsh.file && jsh.shell && jsh.shell.tools && jsh.ui && jsh.tools && jsh.tools.git);
 			},
 			load: function() {
 				jsh.wf = {

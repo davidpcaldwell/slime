@@ -7,6 +7,7 @@
 package inonit.script.runtime.io;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.logging.*;
 
 import inonit.system.*;
@@ -296,10 +297,28 @@ public abstract class Filesystem {
 				if (!success) throw new IOException("Failed to delete: " + this.file);
 			}
 
+			private void copy(File from, File to) throws IOException {
+				if (from.isDirectory()) {
+					File[] files = from.listFiles();
+					for (File file : files) {
+						copy(file, new File(to, file.getName()));
+					}
+				} else {
+					if (!to.getParentFile().exists()) {
+						to.getParentFile().mkdirs();
+					}
+					Files.copy(from.toPath(), to.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+				}
+			}
+
 			public void move(Node to) throws IOException {
 				NodeImpl toNode = (NodeImpl)to;
 				boolean success = file.renameTo(toNode.file);
-				if (!success) throw new IOException("Failed to move: " + this.file + " to " + toNode.file);
+				if (!success) {
+					//	TODO	this does not work for symlinks; it appears to copy them "by value"
+					copy(file, toNode.file);
+					file.delete();
+				}
 			}
 
 			public void mkdir() throws IOException {

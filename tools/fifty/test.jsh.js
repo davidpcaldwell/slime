@@ -11,7 +11,29 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		jsh.wf.typescript.require();
+		var isTypescriptInstalled = function() {
+			var installation = jsh.shell.tools.node.installation;
+			var nodeExists = $api.Function.world.ask(
+				jsh.shell.tools.node.world.Installation.exists(installation)
+			)();
+			if (!nodeExists) return false;
+			var typescript = jsh.shell.tools.node.world.Installation.modules.installed("typescript");
+			var tsInstalled = $api.Function.world.now.question(
+				typescript,
+				installation
+			);
+			//	TODO	this simply ensures that *some* version of TypeScript is installed.
+			return tsInstalled.present;
+		}
+
+		//	We need to use this method, which forks a new shell, because we need TypeScript in this running shell in order to load
+		//	the Fifty tests. May want to provide this as an API somewhere (currently there is one in jsh.wf, but it functions
+		//	slightly differently; a `jsh` script requiring TypeScript is very foreseeable, though). Could generalize to require a
+		//	specific TypeScript version, etc.
+		jsh.shell.jsh.require({
+			satisfied: isTypescriptInstalled,
+			install: function() { jsh.wf.typescript.require(); }
+		});
 
 		/** @type { slime.jsh.script.cli.Processor<any, { definition: slime.jrunscript.file.File, list: boolean, part: string, view: string }> } */
 		var processor = $api.Function.pipe(
