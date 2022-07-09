@@ -15,6 +15,10 @@
 	function(jsh,$context,$exports) {
 		$exports.initialize = function() {
 			jsh.wf.project.git.installHooks();
+			jsh.shell.run({
+				command: $context.base.getRelativePath("slime/wf"),
+				arguments: ["initialize", "--test-skip-git-identity-requirement"]
+			});
 		}
 
 		jsh.wf.project.initialize(

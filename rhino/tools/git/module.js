@@ -1396,7 +1396,10 @@
 					p.stderr(e.detail.line);
 				},
 				exit: function(e) {
-					if (e.detail.status) throw new Error("Exit status: " + e.detail.status);
+					if (e.detail.status) throw new Error(
+						"Exit status: " + e.detail.status
+						+ " running: " + shellInvocation.configuration.command + " " + shellInvocation.configuration.arguments.join(" ")
+					);
 					output = e.detail.stdio.output;
 				}
 			});
