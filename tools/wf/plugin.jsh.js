@@ -478,7 +478,7 @@
 							jsh.shell.console("Compiling with TypeScript " + typescript.getVersion(project) + " ...");
 							jsh.shell.tools.rhino.require();
 							jsh.shell.tools.tomcat.require();
-							var process = $api.Function.world.tell(
+							var ask = $api.Function.world.ask(
 								parts.typescript.typedoc.run({
 									configuration: {
 										typescript: {
@@ -489,7 +489,7 @@
 									project: project.pathname.toString()
 								})
 							);
-							process();
+							return ask();
 						}
 					}
 				})();

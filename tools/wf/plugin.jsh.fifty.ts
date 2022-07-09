@@ -159,7 +159,7 @@ namespace slime.jsh.wf {
 					project: slime.jrunscript.file.Directory
 					stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
 				}
-			) => any
+			) => boolean
 		}
 	}
 
