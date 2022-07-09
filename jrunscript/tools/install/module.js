@@ -176,6 +176,11 @@
 			//			java.io.File renameTo implementation does not (notable on our Docker setup, moving from a temporary
 			//			directory to the installation directory, as we are doing here).
 			if ($context.api.shell.PATH.getCommand("mv")) {
+				p.to.parent.createDirectory({
+					exists: function(dir) {
+						return false;
+					}
+				});
 				$context.api.shell.run({
 					command: "mv",
 					arguments: [unzippedTo.pathname.toString(), p.to.toString()]
