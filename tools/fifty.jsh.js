@@ -77,7 +77,10 @@
 								arguments: p.arguments,
 								environment: $api.Object.compose(
 									jsh.shell.environment
-								)
+								),
+								evaluate: function(result) {
+									return result;
+								}
 							})
 						},
 						function(p) {
