@@ -304,9 +304,6 @@ public abstract class Filesystem {
 						copy(file, new File(to, file.getName()));
 					}
 				} else {
-					if (!to.getParentFile().exists()) {
-						to.getParentFile().mkdirs();
-					}
 					Files.copy(from.toPath(), to.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
 				}
 			}
