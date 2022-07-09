@@ -33,13 +33,12 @@
 								error: String
 							}
 						});
-						if (result.status != 0) {
-							var body = "OUTPUT:\n" + result.stdio.output + "\nERROR:\n" + result.stdio.error;
+						if (!result) {
 							return {
 								status: { code: 500 },
 								body: {
 									type: "text/plain",
-									string: body
+									string: "TypeDoc invocation failed."
 								}
 							}
 						}
