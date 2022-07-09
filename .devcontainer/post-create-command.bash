@@ -5,4 +5,4 @@
 #	END LICENSE
 
 ./wf initialize
-./jsh.bash --add-jdk-11
+./jsh.bash --add-jdk-17

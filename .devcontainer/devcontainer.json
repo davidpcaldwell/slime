@@ -15,7 +15,7 @@
 		"dbaeumer.vscode-eslint"
 	],
 	"settings": {
-		"java.jdt.ls.java.home": "/slime/local/jdk/11"
+		"java.jdt.ls.java.home": "/slime/local/jdk/17"
 	},
 	"service": "test",
 	"workspaceFolder": "/slime",

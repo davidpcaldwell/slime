@@ -172,10 +172,25 @@
 			var unzippedTo = untardir.getSubdirectory(unzippedDestination);
 			if (!unzippedTo) throw new TypeError("Expected directory " + unzippedDestination + " not found in " + untardir);
 			events.fire("console", "Directory is: " + unzippedTo);
-			unzippedTo.move(p.to, {
-				overwrite: p.replace,
-				recursive: true
-			});
+			//	TODO	right now, we will use the mv command preferentially because it works in some situations the Java
+			//			java.io.File renameTo implementation does not (notable on our Docker setup, moving from a temporary
+			//			directory to the installation directory, as we are doing here).
+			if ($context.api.shell.PATH.getCommand("mv")) {
+				p.to.parent.createDirectory({
+					exists: function(dir) {
+						return false;
+					}
+				});
+				$context.api.shell.run({
+					command: "mv",
+					arguments: [unzippedTo.pathname.toString(), p.to.toString()]
+				});
+			} else {
+				unzippedTo.move(p.to, {
+					overwrite: p.replace,
+					recursive: true
+				});
+			}
 			return p.to.directory;
 		};
 

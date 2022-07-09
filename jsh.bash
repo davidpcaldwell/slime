@@ -164,9 +164,12 @@ install_jdk_8_corretto() {
 	install_jdk_corretto "8.332.08.1" "8" $1
 }
 
-#	TODO	a lot of copy-paste with install_jdk_8_corretto
 install_jdk_11_corretto() {
 	install_jdk_corretto "11.0.15.9.1" "11" $1
+}
+
+install_jdk_17_corretto() {
+	install_jdk_corretto "17.0.3.6.1" "17" $1
 }
 
 install_jdk_8() {
@@ -175,6 +178,10 @@ install_jdk_8() {
 
 install_jdk_11() {
 	install_jdk_11_corretto "$@"
+}
+
+install_jdk_17() {
+	install_jdk_17_corretto "$@"
 }
 
 install_jdk() {
@@ -198,6 +205,11 @@ fi
 
 if [ "$1" == "--add-jdk-11" ]; then
 	install_jdk_11 ${JSH_LOCAL_JDKS}/11
+	exit $?
+fi
+
+if [ "$1" == "--add-jdk-17" ]; then
+	install_jdk_17 ${JSH_LOCAL_JDKS}/17
 	exit $?
 fi
 
