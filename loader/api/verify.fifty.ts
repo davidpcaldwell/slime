@@ -5,14 +5,6 @@
 //	END LICENSE
 
 namespace slime.definition.verify {
-	type BooleanSubject = {
-		is: {
-			(t: boolean): void
-			type: (name: string) => void
-			not: (t: boolean) => void
-		}
-	}
-
 	/**
 	 * Allows evaluating an arbitrary function with this subject's underlying value as an argument, and returning its result as a new
 	 * {@link Subject}.
@@ -63,7 +55,7 @@ namespace slime.definition.verify {
 	type Subject<T> = (
 		(
 			T extends Boolean
-			? BooleanSubject
+			? ValueSubject<boolean>
 			: (
 				T extends (...args: any) => any
 				? MethodSubject<T>
@@ -78,7 +70,7 @@ namespace slime.definition.verify {
 	 * Practical examples can be found in the [`slime.definnition.verify` tests](../src/loader/api/verify.fifty.ts?as=text).
 	 */
 	export type Verify = {
-		<T>(value: boolean, name?: string, lambda?: (it: BooleanSubject) => void): BooleanSubject
+		<T>(value: boolean, name?: string, lambda?: (it: ValueSubject<boolean>) => void): ValueSubject<boolean>
 		<T>(value: T, name?: string, lambda?: (it: Subject<T>) => void): Subject<T>
 	}
 
