@@ -445,7 +445,8 @@ namespace slime.jsh.wf {
 								environment: {
 									PROJECT: directory.pathname.toString()
 								},
-								PATH: jsh.shell.PATH
+								PATH: jsh.shell.PATH,
+								tools: jsh.shell.tools
 							},
 							ui: {}
 						}

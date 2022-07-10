@@ -4,5 +4,8 @@
 #
 #	END LICENSE
 
-FROM debian
+FROM debian AS bare
 COPY . /slime
+
+FROM bare AS test
+RUN apt update && apt install -y git
