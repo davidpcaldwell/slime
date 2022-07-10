@@ -10,11 +10,12 @@
 	 * Script invoked to set up Rhino profiler prior to executing `jsh` scripts, if the `inonit.tools.Profiler.args`
 	 * system property is present.
 	 *
+	 * @param { slime.jrunscript.native.java.util.Properties } _properties
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(Packages,JavaAdapter,jsh) {
+	function(_properties,Packages,JavaAdapter,jsh) {
 		var _args = _properties.get("inonit.tools.Profiler.args");
 		/** @type { slime.jrunscript.tools.profiler.rhino.Options } */
 		var options = {
@@ -193,4 +194,4 @@
 		}
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,jsh);
+)(_properties,Packages,JavaAdapter,jsh);
