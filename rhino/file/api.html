@@ -1029,23 +1029,6 @@ END LICENSE
 			scope.filef = filef;
 		</script>
 		<script type="application/x.jsapi#tests"><![CDATA[
-			var toDelete = createFile(filec,"toDelete");
-			var toDeleteDir = createDirectory(dir,"toDelete.d");
-			var zz = createFile(toDeleteDir, "zz");
-
-			test(filec.list().length == 2);
-			test(filec.getFile("toDelete") != null);
-			var fileToDelete = filec.getFile("toDelete");
-			fileToDelete.remove();
-			test(filec.getFile("toDelete") == null);
-			test(filec.list().length == 1);
-
-			test(dir.getRelativePath("toDelete.d").directory != null);
-			test(dir.getRelativePath("toDelete.d").directory.list().length == 1);
-			dir.getRelativePath("toDelete.d").directory.remove();
-			test(dir.getRelativePath("toDelete.d").directory == null);
-		]]></script>
-		<script type="application/x.jsapi#tests"><![CDATA[
 			var disableBreakOnExceptions = ($jsapi.debug && $jsapi.debug.disableBreakOnExceptions) ? $jsapi.debug.disableBreakOnExceptions : function(f) { return f; };
 			var inPlace = disableBreakOnExceptions(function(ifExists) {
 				return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });

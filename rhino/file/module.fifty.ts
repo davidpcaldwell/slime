@@ -431,6 +431,8 @@ namespace slime.jrunscript.file {
 				fifty.load("module-Loader.fifty.ts");
 
 				fifty.load("file.fifty.ts");
+
+				fifty.load("module-jsapi.fifty.ts");
 			}
 		}
 	//@ts-ignore

@@ -16,8 +16,8 @@ namespace slime.jrunscript.file.test {
 		context: slime.jrunscript.file.Context & { $Context: any }
 		module: Exports
 		newTemporaryDirectory: (filesystem?: any) => slime.jrunscript.file.Directory
-		createFile: any
-		createDirectory: any
+		createFile: (base: Directory, name: string, length?: number) => File
+		createDirectory: (base: Directory, name: string) => Directory
 	}
 
 	export namespace fixtures {
