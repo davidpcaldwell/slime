@@ -113,9 +113,14 @@ namespace slime.jsh.unit {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				const { jsh } = fifty.global;
+
 				fifty.tests.https = function() {
 					fifty.verify(1).is(1);
-					if (!fifty.global.jsh.unit.mock.Web) return;
+					if (!fifty.global.jsh.unit.mock.Web) {
+						jsh.shell.console("jsh.unit.mock.Web not present; skipping test.");
+						return;
+					}
 					var web = new fifty.global.jsh.unit.mock.Web();
 					web.addHttpsHost("https.fifty.com");
 					web.add(function(request) {

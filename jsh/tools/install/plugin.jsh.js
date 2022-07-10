@@ -307,7 +307,16 @@
 						install: function(p) {
 							var destination = (p && p.destination) ? p.destination : location;
 
-							var at = jsh.tools.install.get({ url: "https://github.com/FiloSottile/mkcert/releases/download/v1.4.3/mkcert-v1.4.3-darwin-amd64" });
+							var getBinaryUrl = function() {
+								/** @type { { [os: string]: string } } */
+								var byOs = {
+									"Mac OS X": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-amd64",
+									"Linux": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64"
+								};
+								return byOs[jsh.shell.os.name];
+							}
+
+							var at = jsh.tools.install.get({ url: getBinaryUrl() });
 
 							at.copy(destination, {
 								filter: function(p) {

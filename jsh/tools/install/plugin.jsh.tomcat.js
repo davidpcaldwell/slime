@@ -176,7 +176,14 @@
 				to: to
 			});
 			events.fire("console","Installing Tomcat at " + p.to);
-			to.getSubdirectory("apache-tomcat-" + p.version).move(p.to, { overwrite: true });
+			if (jsh.shell.PATH.getCommand("mv")) {
+				jsh.shell.run({
+					command: "mv",
+					arguments: [to.getSubdirectory("apache-tomcat-" + p.version).toString(), p.to.toString()]
+				});
+			} else {
+				to.getSubdirectory("apache-tomcat-" + p.version).move(p.to, { overwrite: true });
+			}
 			events.fire("installed", { to: p.to });
 		};
 
