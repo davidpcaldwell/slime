@@ -357,24 +357,22 @@
 				}
 			}
 
-			return {
-				iterate: function() {
-					/** @type { slime.runtime.document.Node } */
-					var position = getNode(root, cursor);
-					/** @type { number[] } */
-					var next;
-					//	find the next one
-					if (source.Node.isParent(position) && position.children.length > 0) {
-						next = cursor.concat([0]);
-					} else {
-						next = checkParent(root, cursor);
-					}
-					return {
-						next: $api.Function.Maybe.value(position),
-						remaining: (next) ? NodesStream(root, next) : $api.Function.Stream.from.empty()
-					};
+			return function() {
+				/** @type { slime.runtime.document.Node } */
+				var position = getNode(root, cursor);
+				/** @type { number[] } */
+				var next;
+				//	find the next one
+				if (source.Node.isParent(position) && position.children.length > 0) {
+					next = cursor.concat([0]);
+				} else {
+					next = checkParent(root, cursor);
 				}
-			}
+				return {
+					next: $api.Function.Maybe.value(position),
+					remaining: (next) ? NodesStream(root, next) : $api.Function.Stream.from.empty()
+				};
+			};
 		}
 
 		/** @type { slime.runtime.document.Exports } */
