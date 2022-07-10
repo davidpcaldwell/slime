@@ -71,7 +71,7 @@
 				return function(stream) {
 					return function() {
 						while(true) {
-							var current = stream.iterate();
+							var current = stream();
 							if (!current.next.present) {
 								return {
 									next: $f.Maybe.nothing(),
