@@ -6,3 +6,4 @@
 
 ./wf initialize
 ./jsh.bash --add-jdk-17
+apt --yes install git
