@@ -12,14 +12,17 @@
 
 		fifty.tests.suite = function() {
 			var hasJsoup = Boolean(jsh.shell.tools.jsoup.installed);
+
 			var hasGit = Boolean(jsh.shell.PATH.getCommand("git"));
+
 			var isGitClone = (function() {
 				var SLIME = fifty.jsh.file.object.getRelativePath("..").directory;
 				return Boolean(SLIME.getSubdirectory(".git") || SLIME.getFile(".git"));
 			})();
+
 			var isMkcertImplemented = (function() {
 				if (jsh.shell.os.name == "Mac OS X") return true;
-				if (jsh.shell.os.name == "Linux") return false;
+				if (jsh.shell.os.name == "Linux") return true;
 			})();
 
 			fifty.load("../loader/expression.fifty.ts");
