@@ -6,7 +6,7 @@
 
 namespace slime.$api.fp {
 	export interface Stream<T> {
-		iterate: () => {
+		(): {
 			next: Maybe<T>,
 			remaining: Stream<T>
 		}
@@ -67,28 +67,24 @@ namespace slime.$api.fp {
 
 				function streamRange(start: number, limit: number): Stream<number> {
 					function emptyStream(): Stream<number> {
-						return {
-							iterate: function() {
-								return {
-									next: null,
-									remaining: emptyStream()
-								}
+						return function() {
+							return {
+								next: null,
+								remaining: emptyStream()
 							}
 						}
 					}
 
-					return {
-						iterate: function() {
-							if (start < limit) {
-								return {
-									next: $api.Function.Maybe.value(start),
-									remaining: streamRange(start+1, limit)
-								}
-							} else {
-								return {
-									next: $api.Function.Maybe.nothing(),
-									remaining: emptyStream()
-								}
+					return function() {
+						if (start < limit) {
+							return {
+								next: $api.Function.Maybe.value(start),
+								remaining: streamRange(start+1, limit)
+							}
+						} else {
+							return {
+								next: $api.Function.Maybe.nothing(),
+								remaining: emptyStream()
 							}
 						}
 					}

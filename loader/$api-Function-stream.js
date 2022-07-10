@@ -17,14 +17,12 @@
 		$export({
 			from: {
 				empty: function() {
-					return {
-						iterate: function() {
-							return {
-								next: $f.Maybe.nothing(),
-								remaining: $f.Stream.from.empty()
-							}
-						}
-					}
+					return function() {
+						return {
+							next: $f.Maybe.nothing(),
+							remaining: $f.Stream.from.empty()
+						};
+					};
 				},
 				array: function(array) {
 					/**
@@ -34,34 +32,32 @@
 					 * @returns { slime.$api.fp.Stream<T> }
 					 */
 					var ArrayStream = function recurse(array,index) {
-						return {
-							iterate: function() {
-								if (index < array.length) {
-									return {
-										next: $f.Maybe.value(array[index]),
-										remaining: recurse(array, index+1)
-									}
-								} else {
-									return {
-										next: $f.Maybe.nothing(),
-										remaining: $f.Stream.from.empty()
-									}
+						return function() {
+							if (index < array.length) {
+								return {
+									next: $f.Maybe.value(array[index]),
+									remaining: recurse(array, index+1)
+								}
+							} else {
+								return {
+									next: $f.Maybe.nothing(),
+									remaining: $f.Stream.from.empty()
 								}
 							}
-						}
+						};
 					}
 
 					return ArrayStream(array, 0);
 				}
 			},
 			first: function(stream) {
-				return stream.iterate().next;
+				return stream().next;
 			},
 			collect: function(stream) {
 				var rv = [];
 				var more = true;
 				while(more) {
-					var current = stream.iterate();
+					var current = stream();
 					if (current.next.present) {
 						rv.push(current.next.value);
 						stream = current.remaining;
@@ -73,24 +69,22 @@
 			},
 			filter: function filter(predicate) {
 				return function(stream) {
-					return {
-						iterate: function() {
-							while(true) {
-								var current = stream.iterate();
-								if (!current.next.present) {
-									return {
-										next: $f.Maybe.nothing(),
-										remaining: $f.Stream.from.empty()
-									}
+					return function() {
+						while(true) {
+							var current = stream();
+							if (!current.next.present) {
+								return {
+									next: $f.Maybe.nothing(),
+									remaining: $f.Stream.from.empty()
 								}
-								if (current.next.present && predicate(current.next.value)) {
-									return {
-										next: current.next,
-										remaining: filter(predicate)(current.remaining)
-									}
-								} else {
-									stream = current.remaining;
+							}
+							if (current.next.present && predicate(current.next.value)) {
+								return {
+									next: current.next,
+									remaining: filter(predicate)(current.remaining)
 								}
+							} else {
+								stream = current.remaining;
 							}
 						}
 					}
