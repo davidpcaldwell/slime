@@ -4,8 +4,45 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global & { test: any } } jsh
+	 */
+	function(Packages,$api,jsh) {
+		/**
+		 *
+		 * @param { any } parameters
+		 * @param { boolean } isRhino
+		 * @param { boolean } isUnbuilt
+		 * @param { slime.jrunscript.file.Directory } tmp
+		 * @param { slime.definition.verify.Verify } verify
+		 * @param { slime.internal.jsh.launcher.test.Result } result
+		 */
+		function verifyOutput(parameters,isRhino,isUnbuilt,tmp,verify,result) {
+			if (isUnbuilt) {
+				verify(result).src.is.not(null);
+				verify(result).home.is(null);
+			} else {
+				verify(result).src.is(null);
+				verify(result).home.is.not(null);
+			}
+			verify(result).logging.is("/foo/bar");
+			verify(result).foo1.is("bar");
+			verify(result).foo2.is("baz");
+			verify(result).rhino.running.is( isRhino );
+			if (parameters.options.rhino) {
+				verify(result).rhino.classpath.is.not(null);
+			} else {
+				//	We do not know; we could have been run inside a shell that has Rhino installed
+//							verify(result).rhino.classpath.is(null);
+			}
+			verify(result).tmp.is(tmp.toString());
+		}
+
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.script.file.parent.parent.parent.parent;
 		jsh.loader.plugins(src.getRelativePath("jsh/test"));
 		jsh.test.integration({
@@ -114,18 +151,22 @@
 				};
 				built.coffeescript = home.getFile("lib/coffee-script.js");
 
-				var addScenario = (function(o) {
-					if (!arguments.callee.index) arguments.callee.index = 0;
-					this.scenario(String(++arguments.callee.index), {
-						create: function() {
-							this.name = o.name;
+				var addScenario = (
+					function() {
+						var index = 0;
+						return function(o) {
+							this.scenario(String(++index), {
+								create: function() {
+									this.name = o.name;
 
-							this.execute = function(scope,verify) {
-								o.execute(verify);
-							};
+									this.execute = function(scope,verify) {
+										o.execute(verify);
+									};
+								}
+							});
 						}
-					});
-				}).bind(this);
+					}
+				)().bind(this);
 
 				var engines = jsh.shell.run({
 					command: "bash",
@@ -191,24 +232,14 @@
 								});
 
 								var checkOutput = function(result) {
-									if (shell == unbuilt) {
-										verify(result).evaluate.property("src").is.not(null);
-										verify(result).evaluate.property("home").is(null);
-									} else {
-										verify(result).evaluate.property("src").is(null);
-										verify(result).evaluate.property("home").is.not(null);
-									}
-									verify(result).evaluate.property("logging").is("/foo/bar");
-									verify(result).evaluate.property("foo1").is("bar");
-									verify(result).evaluate.property("foo2").is("baz");
-									verify(result).rhino.running.is( (engine == "rhino") );
-									if (parameters.options.rhino) {
-										verify(result).rhino.classpath.is.not(null);
-									} else {
-										//	We do not know; we could have been run inside a shell that has Rhino installed
-			//							verify(result).rhino.classpath.is(null);
-									}
-									verify(result).tmp.is(tmp.toString());
+									verifyOutput(
+										parameters,
+										Boolean(engine == "rhino"),
+										Boolean(shell == unbuilt),
+										tmp,
+										verify,
+										result
+									)
 								};
 
 								checkOutput(result);
@@ -292,4 +323,5 @@
 			}
 		});
 	}
-)();
+//@ts-ignore
+)(Packages,$api,jsh);
