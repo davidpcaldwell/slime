@@ -36,33 +36,33 @@ namespace slime.definition.verify {
 		}
 	}
 
-	type ValueSubject<T> = {
-		is: is<T>
-
-		evaluate: evaluate<T>
-	} & (
-		T extends Array<any> ? { length: Subject<number> } : {}
-	)
-
-	type MethodSubject<T extends (...args: any) => any> = {
+	type AssertSubject<T> = {
 		is: is<T>
 		evaluate: evaluate<T>
+	}
 
+	type TargetSubject<T> = {
+		[K in keyof T]: Subject<T[K]>
+	}
+
+	type MethodSubject<T extends (...args: any) => any> = AssertSubject<T> & {
 		//	TODO	could we build the .threw stuff into MethodSubject as well?
 		(...p: Parameters<T>): Subject<ReturnType<T>>
 	}
 
 	type Subject<T> = (
-		(
+		TargetSubject<T>
+		& (
 			T extends Boolean
-			? ValueSubject<boolean>
+			? AssertSubject<boolean>
 			: (
 				T extends (...args: any) => any
 				? MethodSubject<T>
-				: ValueSubject<T>
+				: T extends Array<any>
+					? AssertSubject<T> & { length: Subject<number> }
+					: AssertSubject<T>
 			)
 		)
-		& { [K in keyof T]: Subject<T[K]> }
 	)
 
 	/**
@@ -70,7 +70,7 @@ namespace slime.definition.verify {
 	 * Practical examples can be found in the [`slime.definnition.verify` tests](../src/loader/api/verify.fifty.ts?as=text).
 	 */
 	export type Verify = {
-		<T>(value: boolean, name?: string, lambda?: (it: ValueSubject<boolean>) => void): ValueSubject<boolean>
+		<T>(value: boolean, name?: string, lambda?: (it: AssertSubject<boolean>) => void): AssertSubject<boolean>
 		<T>(value: T, name?: string, lambda?: (it: Subject<T>) => void): Subject<T>
 	}
 
