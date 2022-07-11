@@ -43,6 +43,37 @@
 			verify(result).tmp.is(tmp.toString());
 		}
 
+		/** @type { slime.$api.fp.world.Action<slime.jrunscript.file.Directory,{ console: string }> } */
+		var buildShell = function(tmpdir) {
+			return function(events) {
+				var buildArguments = [];
+				if (parameters.options.rhino) {
+					buildArguments.push("-rhino", parameters.options.rhino);
+				}
+				jsh.shell.run({
+					command: jsh.shell.java.jrunscript,
+					arguments: [
+						jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+						"jsh",
+						jsh.shell.jsh.src.getRelativePath("jsh/etc/build.jsh.js"),
+						tmpdir,
+						"-notest",
+						"-nodoc"
+					].concat(buildArguments),
+					environment: $api.Object.compose(
+						{
+							//	TODO	next two lines duplicate logic in jsh.test plugin
+							TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+							PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+							PATH: jsh.shell.environment.PATH.toString()
+						},
+						(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
+					)
+				});
+				events.fire("console", "Build successful.");
+			}
+		};
+
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.script.file.parent.parent.parent.parent;
 		jsh.loader.plugins(src.getRelativePath("jsh/test"));
 		jsh.test.integration({
@@ -65,31 +96,15 @@
 					}
 					jsh.shell.console("Building shell in which to run launcher tests ...");
 					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					var buildArguments = [];
-					if (parameters.options.rhino) {
-						buildArguments.push("-rhino", parameters.options.rhino);
-					}
-					jsh.shell.run({
-						command: jsh.shell.java.jrunscript,
-						arguments: [
-							jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-							"jsh",
-							jsh.shell.jsh.src.getRelativePath("jsh/etc/build.jsh.js"),
-							tmpdir,
-							"-notest",
-							"-nodoc"
-						].concat(buildArguments),
-						environment: $api.Object.compose(
-							{
-								//	TODO	next two lines duplicate logic in jsh.test plugin
-								TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-								PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-								PATH: jsh.shell.environment.PATH.toString()
-							},
-							(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
-						)
-					});
-					jsh.shell.console("Build successful.");
+					$api.Function.world.now.action(
+						buildShell,
+						tmpdir,
+						{
+							console: function(e) {
+								jsh.shell.console(e.detail);
+							}
+						}
+					);
 					return tmpdir;
 				})();
 
