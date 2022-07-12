@@ -201,10 +201,10 @@
 				}
 
 				this.is.equalTo = function(value) {
-					return isEqualTo(value,false);
+					isEqualTo(value,false);
 				}
 				this.is.not.equalTo = function(value) {
-					return isEqualTo(value,true);
+					isEqualTo(value,true);
 				}
 
 				this.evaluate = Object.assign(
