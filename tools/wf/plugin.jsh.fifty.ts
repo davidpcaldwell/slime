@@ -433,8 +433,6 @@ namespace slime.jsh.wf {
 						path: "sub"
 					});
 
-					var c = fifty.global.jsh.wf
-
 					var mock = fifty.jsh.plugin.mock({
 						jsh: {
 							file: jsh.file,
