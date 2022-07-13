@@ -104,6 +104,9 @@ namespace slime.jsh.shell {
 						decode: Function
 					}
 				}
+				osx: {
+					ApplicationBundle: any
+				}
 			}
 			opendesktop: any
 		},
