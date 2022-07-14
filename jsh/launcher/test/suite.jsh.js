@@ -15,7 +15,7 @@
 	function(Packages,$api,jsh) {
 		/**
 		 *
-		 * @param { any } parameters
+		 * @param { { rhino: boolean } } parameters
 		 * @param { boolean } isRhino
 		 * @param { boolean } isUnbuilt
 		 * @param { slime.jrunscript.file.Directory } tmp
@@ -34,7 +34,7 @@
 			verify(result).foo1.is("bar");
 			verify(result).foo2.is("baz");
 			verify(result).rhino.running.is( isRhino );
-			if (parameters.options.rhino) {
+			if (parameters.rhino) {
 				verify(result).rhino.classpath.is.not(null);
 			} else {
 				//	We do not know; we could have been run inside a shell that has Rhino installed
@@ -86,14 +86,17 @@
 				}
 			},
 			scenario: function(parameters) {
-				var home = (function() {
-					if (parameters.options["shell:built"] && parameters.options["shell:built"].directory) {
-						jsh.shell.console("Launcher tests using supplied built shell at " + parameters.options["shell:built"] + " ...");
-						return parameters.options["shell:built"].directory;
+				/**
+				 *
+				 * @param { slime.jrunscript.file.Pathname } specified The location of the built shell.
+				 * @param { slime.jrunscript.file.Directory } shell The directory of built shell in which we are running.
+				 */
+				var getHome = function(specified,shell) {
+					if (specified && specified.directory) {
+						jsh.shell.console("Launcher tests using supplied built shell at " + specified + " ...");
+						return specified.directory;
 					}
-					if (jsh.shell.jsh.home)  {
-						return jsh.shell.jsh.home;
-					}
+					if (shell) return shell;
 					jsh.shell.console("Building shell in which to run launcher tests ...");
 					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					$api.Function.world.now.action(
@@ -106,7 +109,9 @@
 						}
 					);
 					return tmpdir;
-				})();
+				}
+
+				var home = getHome(parameters.options["shell:built"], jsh.shell.jsh.home);
 
 				var shell = function(p) {
 					var vm = [];
@@ -119,7 +124,7 @@
 					for (var x in p.properties) {
 						vm.push("-D" + x + "=" + p.properties[x]);
 					}
-					var shell = (p.bash) ? [home.getFile("jsh.bash")] : vm.concat(p.shell)
+					var shell = (p.bash) ? [home.getFile("jsh.bash").toString()] : vm.concat(p.shell)
 					var script = (p.script) ? p.script : jsh.script.file;
 					var environment = $api.Object.compose(
 						p.environment,
@@ -248,7 +253,7 @@
 
 								var checkOutput = function(result) {
 									verifyOutput(
-										parameters,
+										{ rhino: parameters.options.rhino },
 										Boolean(engine == "rhino"),
 										Boolean(shell == unbuilt),
 										tmp,
