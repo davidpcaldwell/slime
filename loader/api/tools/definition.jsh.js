@@ -4,54 +4,58 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		//	Path to which to emit the file
-		to: jsh.file.Pathname
-	}
-});
-
-if (!parameters.options.to) {
-	jsh.shell.console("Usage: " + jsh.script.file + " -to <destination-file>");
-	jsh.shell.exit(1);
-}
-
-var templateXml = (function() {
-	var slime = jsh.script.file.parent.parent.parent.parent;
-	var template = slime.getFile("loader/api/api.template.html").read(String);
-
-	(function() {
-		var slimepath = "__SLIME__";
-		//	TODO	maybe should log message if directory is created
-		parameters.options.to.parent.createDirectory({
-			exists: function(dir) {
-				return false;
-			},
-			recursive: true
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				//	Path to which to emit the file
+				to: jsh.file.Pathname
+			}
 		});
-		var to = {
-			slime: jsh.file.navigate({
-				from: parameters.options.to,
-				to: slime
-			})
-		};
 
-		//	TODO	to.slime.relative has trailing slash
-
-		while(template.indexOf(slimepath) != -1) {
-			template = template.replace(slimepath, to.slime.relative);
+		if (!parameters.options.to) {
+			jsh.shell.console("Usage: " + jsh.script.file + " -to <destination-file>");
+			jsh.shell.exit(1);
 		}
-	})();
 
-	return template;
-})();
+		var templateXml = (function() {
+			var slime = jsh.script.file.parent.parent.parent.parent;
+			var template = slime.getFile("loader/api/api.template.html").read(String);
 
-var document = new jsh.document.Document({
-	string: templateXml
-});
+			(function() {
+				var slimepath = "__SLIME__";
+				//	TODO	maybe should log message if directory is created
+				parameters.options.to.parent.createDirectory({
+					exists: function(dir) {
+						return false;
+					},
+					recursive: true
+				});
+				var to = {
+					slime: jsh.file.navigate({
+						from: parameters.options.to,
+						to: slime
+					})
+				};
 
-(function removeLicense() {
-	document.children.splice(0,1);
-})();
+				//	TODO	to.slime.relative has trailing slash
 
-parameters.options.to.write(document.toString(), { append: false });
+				while(template.indexOf(slimepath) != -1) {
+					template = template.replace(slimepath, to.slime.relative);
+				}
+			})();
+
+			return template;
+		})();
+
+		var document = new jsh.document.Document({
+			string: templateXml
+		});
+
+		(function removeLicense() {
+			document.children.splice(0,1);
+		})();
+
+		parameters.options.to.write(document.toString(), { append: false });
+	}
+)();

@@ -4,42 +4,46 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		api: jsh.file.Pathname,
-		"chrome:instance": jsh.file.Pathname,
-		debug: false
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				api: jsh.file.Pathname,
+				"chrome:instance": jsh.file.Pathname,
+				debug: false
+			}
+		});
+
+		//	TODO	undefined parameters.options.api should fail
+
+		jsh.ui.application({
+			servlet: {
+				file: jsh.script.file.parent.getFile("specify/servlet.js")
+			},
+			parameters: {
+				slime: jsh.script.file.parent.parent.parent,
+				api: parameters.options.api,
+				debug: parameters.options.debug
+			},
+			browser: {
+				chrome: {
+					location: parameters.options["chrome:instance"]
+				}
+			},
+			// browser: function(p) {
+			// 	return chrome.run({
+			// 		arguments: (function() {
+			// 			var rv = [];
+			// 			if (parameters.options["test:proxy"]) {
+			// 				rv.push("--proxy-pac-url=" + parameters.options["test:proxy"]);
+			// 			}
+			// 			debugger;
+			// 			return rv;
+			// 		})(),
+			// 		app: p.url
+			// 	});
+			// },
+			path: "slime/jsh/unit/specify/index.html"
+		});
 	}
-});
-
-//	TODO	undefined parameters.options.api should fail
-
-jsh.ui.application({
-	servlet: {
-		file: jsh.script.file.parent.getFile("specify/servlet.js")
-	},
-	parameters: {
-		slime: jsh.script.file.parent.parent.parent,
-		api: parameters.options.api,
-		debug: parameters.options.debug
-	},
-	browser: {
-		chrome: {
-			location: parameters.options["chrome:instance"]
-		}
-	},
-	// browser: function(p) {
-	// 	return chrome.run({
-	// 		arguments: (function() {
-	// 			var rv = [];
-	// 			if (parameters.options["test:proxy"]) {
-	// 				rv.push("--proxy-pac-url=" + parameters.options["test:proxy"]);
-	// 			}
-	// 			debugger;
-	// 			return rv;
-	// 		})(),
-	// 		app: p.url
-	// 	});
-	// },
-	path: "slime/jsh/unit/specify/index.html"
-});
+)();

@@ -15,14 +15,14 @@
 	function(Packages,$api,jsh) {
 		/**
 		 *
-		 * @param { { rhino: boolean } } parameters
+		 * @param { boolean } hasRhino
 		 * @param { boolean } isRhino
 		 * @param { boolean } isUnbuilt
 		 * @param { slime.jrunscript.file.Directory } tmp
 		 * @param { slime.definition.verify.Verify } verify
 		 * @param { slime.internal.jsh.launcher.test.Result } result
 		 */
-		function verifyOutput(parameters,isRhino,isUnbuilt,tmp,verify,result) {
+		function verifyOutput(hasRhino,isRhino,isUnbuilt,tmp,verify,result) {
 			if (isUnbuilt) {
 				verify(result).src.is.not(null);
 				verify(result).home.is(null);
@@ -34,7 +34,7 @@
 			verify(result).foo1.is("bar");
 			verify(result).foo2.is("baz");
 			verify(result).rhino.running.is( isRhino );
-			if (parameters.rhino) {
+			if (hasRhino) {
 				verify(result).rhino.classpath.is.not(null);
 			} else {
 				//	We do not know; we could have been run inside a shell that has Rhino installed
@@ -43,43 +43,50 @@
 			verify(result).tmp.is(tmp.toString());
 		}
 
-		/** @type { slime.$api.fp.world.Action<slime.jrunscript.file.Directory,{ console: string }> } */
-		var buildShell = function(tmpdir) {
-			return function(events) {
-				var buildArguments = [];
-				if (parameters.options.rhino) {
-					buildArguments.push("-rhino", parameters.options.rhino);
+		/**
+		 *
+		 * @param { slime.jrunscript.file.Pathname } rhino
+		 * @returns { slime.$api.fp.world.Action<slime.jrunscript.file.Directory,{ console: string }> }
+		 */
+		var _buildShell = function(rhino) {
+			return function(tmpdir) {
+				return function(events) {
+					var buildArguments = [];
+					if (rhino) {
+						buildArguments.push("-rhino", rhino);
+					}
+					jsh.shell.run({
+						command: jsh.shell.java.jrunscript,
+						arguments: [
+							jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
+							"jsh",
+							jsh.shell.jsh.src.getRelativePath("jsh/etc/build.jsh.js"),
+							tmpdir,
+							"-notest",
+							"-nodoc"
+						].concat(buildArguments),
+						environment: $api.Object.compose(
+							{
+								//	TODO	next two lines duplicate logic in jsh.test plugin
+								TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+								PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+								PATH: jsh.shell.environment.PATH.toString()
+							},
+							(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
+						)
+					});
+					events.fire("console", "Build successful.");
 				}
-				jsh.shell.run({
-					command: jsh.shell.java.jrunscript,
-					arguments: [
-						jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-						"jsh",
-						jsh.shell.jsh.src.getRelativePath("jsh/etc/build.jsh.js"),
-						tmpdir,
-						"-notest",
-						"-nodoc"
-					].concat(buildArguments),
-					environment: $api.Object.compose(
-						{
-							//	TODO	next two lines duplicate logic in jsh.test plugin
-							TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-							PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-							PATH: jsh.shell.environment.PATH.toString()
-						},
-						(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
-					)
-				});
-				events.fire("console", "Build successful.");
 			}
-		};
+		}
 
 		/**
 		 *
+		 * @param { slime.jrunscript.file.Pathname } rhino
 		 * @param { slime.jrunscript.file.Pathname } specified The specified location of the built shell, if any.
 		 * @param { slime.jrunscript.file.Directory } shell If running in a built shell, its location.
 		 */
-		var getHome = function(specified,shell) {
+		var getHome = function(rhino,specified,shell) {
 			if (specified && specified.directory) {
 				jsh.shell.console("Launcher tests using supplied built shell at " + specified + " ...");
 				return specified.directory;
@@ -88,7 +95,7 @@
 			jsh.shell.console("Building shell in which to run launcher tests ...");
 			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 			$api.Function.world.now.action(
-				buildShell,
+				_buildShell(rhino),
 				tmpdir,
 				{
 					console: function(e) {
@@ -142,7 +149,42 @@
 			})
 		};
 
+		/**
+		 *
+		 * @param { slime.jrunscript.file.Directory } home
+		 * @param { slime.internal.jsh.launcher.test.ShellInvocation } invocation
+		 * @param { slime.internal.jsh.launcher.test.ShellImplementation } implementation
+		 * @returns
+		 */
+		var getShellResult = function(home,invocation,implementation) {
+			/**
+			 *
+			 * @param { slime.internal.jsh.launcher.test.ShellInvocation } invocation
+			 * @param { slime.internal.jsh.launcher.test.ShellImplementation } implementation
+			 * @returns
+			 */
+			var toInvocation = function(invocation,implementation) {
+				return $api.Object.compose(invocation, {
+					shell: implementation.shell
+				})
+			};
+
+			return shell(home, toInvocation(invocation, implementation));
+		}
+
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.script.file.parent.parent.parent.parent;
+
+		var engines = jsh.shell.run({
+			command: "bash",
+			arguments: [src.getFile("jsh.bash"), "-engines"],
+			stdio: {
+				output: String
+			},
+			evaluate: function(result) {
+				return JSON.parse(result.stdio.output);
+			}
+		});
+
 		jsh.loader.plugins(src.getRelativePath("jsh/test"));
 		jsh.test.integration({
 			getopts: {
@@ -154,21 +196,9 @@
 				}
 			},
 			scenario: function(parameters) {
-				var home = getHome(parameters.options["shell:built"], jsh.shell.jsh.home);
+				var home = getHome(parameters.options.rhino, parameters.options["shell:built"], jsh.shell.jsh.home);
 
 				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-				/**
-				 *
-				 * @param { slime.internal.jsh.launcher.test.ShellInvocation } invocation
-				 * @param { slime.internal.jsh.launcher.test.ShellImplementation } implementation
-				 * @returns
-				 */
-				var toInvocation = function(invocation,implementation) {
-					return $api.Object.compose(invocation, {
-						shell: implementation.shell
-					})
-				};
 
 				/** @type { slime.internal.jsh.launcher.test.ShellImplementation } */
 				var unbuilt = {
@@ -187,16 +217,6 @@
 					coffeescript: home.getFile("lib/coffee-script.js")
 				};
 
-				/**
-				 *
-				 * @param { slime.internal.jsh.launcher.test.ShellInvocation } invocation
-				 * @param { slime.internal.jsh.launcher.test.ShellImplementation } implementation
-				 * @returns
-				 */
-				var getShellResult = function(invocation,implementation) {
-					return shell(home, toInvocation(invocation, implementation));
-				}
-
 				var addScenario = (
 					function() {
 						var index = 0;
@@ -213,17 +233,6 @@
 						}
 					}
 				)().bind(this);
-
-				var engines = jsh.shell.run({
-					command: "bash",
-					arguments: [src.getFile("jsh.bash"), "-engines"],
-					stdio: {
-						output: String
-					},
-					evaluate: function(result) {
-						return JSON.parse(result.stdio.output);
-					}
-				});
 
 				[unbuilt,built].forEach(function(implementation) {
 					var shell = (unbuilt) ? home : src;
@@ -272,7 +281,7 @@
 									//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null
 								};
 
-								var result = getShellResult({
+								var result = getShellResult(home, {
 									logging: "/foo/bar",
 									environment: environment,
 									properties: properties
@@ -280,7 +289,7 @@
 
 								var checkOutput = function(result) {
 									verifyOutput(
-										{ rhino: parameters.options.rhino },
+										Boolean(parameters.options.rhino),
 										Boolean(engine == "rhino"),
 										Boolean(shell == unbuilt),
 										tmp,
@@ -292,7 +301,7 @@
 								checkOutput(result);
 
 								if (shell == built && jsh.shell.PATH.getCommand("bash")) {
-									result = getShellResult({
+									result = getShellResult(home, {
 										bash: jsh.shell.PATH.getCommand("bash").pathname,
 										logging: "/foo/bar",
 										environment: environment,
@@ -302,7 +311,7 @@
 								}
 
 								if (engine == "rhino") {
-									var result = getShellResult({
+									var result = getShellResult(home, {
 										environment: {
 											PATH: jsh.shell.environment.PATH,
 											//	TODO	below is used for Windows temporary files
@@ -317,7 +326,7 @@
 									verify(result).rhino.optimization.is(0);
 								}
 								if (engine == "nashorn" && parameters.options.rhino) {
-									var result = getShellResult({
+									var result = getShellResult(home, {
 										environment: {
 											PATH: jsh.shell.environment.PATH,
 											//	TODO	below is used for Windows temporary files
