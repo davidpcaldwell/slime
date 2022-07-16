@@ -74,6 +74,74 @@
 			}
 		};
 
+		/**
+		 *
+		 * @param { slime.jrunscript.file.Pathname } specified The specified location of the built shell, if any.
+		 * @param { slime.jrunscript.file.Directory } shell If running in a built shell, its location.
+		 */
+		var getHome = function(specified,shell) {
+			if (specified && specified.directory) {
+				jsh.shell.console("Launcher tests using supplied built shell at " + specified + " ...");
+				return specified.directory;
+			}
+			if (shell) return shell;
+			jsh.shell.console("Building shell in which to run launcher tests ...");
+			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+			$api.Function.world.now.action(
+				buildShell,
+				tmpdir,
+				{
+					console: function(e) {
+						jsh.shell.console(e.detail);
+					}
+				}
+			);
+			return tmpdir;
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.file.Directory } home
+		 * @param { slime.internal.jsh.launcher.test.ShellInvocation } p
+		 * @returns
+		 */
+		var shell = function(home,p) {
+			/** @type { slime.jrunscript.shell.invocation.Token[] } */
+			var vm = [];
+			if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
+			if (!p.bash) {
+				if (p.logging) {
+					p.properties["jsh.log.java.properties"] = p.logging;
+				}
+			}
+			for (var x in p.properties) {
+				vm.push("-D" + x + "=" + p.properties[x]);
+			}
+			var shell = (p.bash) ? [home.getFile("jsh.bash").toString()] : vm.concat(p.shell)
+			var script = (p.script) ? p.script : jsh.script.file;
+			var environment = $api.Object.compose(
+				p.environment,
+				(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
+				(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
+			);
+			return jsh.shell.run({
+				command: (p.bash) ? p.bash : jsh.shell.java.jrunscript,
+				arguments: shell.concat([script.toString()]).concat( (p.arguments) ? p.arguments : [] ),
+				stdio: (p.stdio) ? p.stdio : {
+					output: String
+				},
+				environment: environment,
+				evaluate: (p.evaluate) ? p.evaluate : function(result) {
+					if (p.bash) {
+						jsh.shell.echo("Command: " + result.command + " " + result.arguments.join(" "));
+					}
+					if (result.status !== 0) throw new Error("Status is " + result.status);
+					jsh.shell.echo("Output: " + result.stdio.output);
+					return JSON.parse(result.stdio.output);
+				}
+			})
+		};
+
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.script.file.parent.parent.parent.parent;
 		jsh.loader.plugins(src.getRelativePath("jsh/test"));
 		jsh.test.integration({
@@ -86,73 +154,12 @@
 				}
 			},
 			scenario: function(parameters) {
-				/**
-				 *
-				 * @param { slime.jrunscript.file.Pathname } specified The location of the built shell.
-				 * @param { slime.jrunscript.file.Directory } shell The directory of built shell in which we are running.
-				 */
-				var getHome = function(specified,shell) {
-					if (specified && specified.directory) {
-						jsh.shell.console("Launcher tests using supplied built shell at " + specified + " ...");
-						return specified.directory;
-					}
-					if (shell) return shell;
-					jsh.shell.console("Building shell in which to run launcher tests ...");
-					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					$api.Function.world.now.action(
-						buildShell,
-						tmpdir,
-						{
-							console: function(e) {
-								jsh.shell.console(e.detail);
-							}
-						}
-					);
-					return tmpdir;
-				}
-
 				var home = getHome(parameters.options["shell:built"], jsh.shell.jsh.home);
-
-				var shell = function(p) {
-					var vm = [];
-					if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
-					if (!p.bash) {
-						if (p.logging) {
-							p.properties["jsh.log.java.properties"] = p.logging;
-						}
-					}
-					for (var x in p.properties) {
-						vm.push("-D" + x + "=" + p.properties[x]);
-					}
-					var shell = (p.bash) ? [home.getFile("jsh.bash").toString()] : vm.concat(p.shell)
-					var script = (p.script) ? p.script : jsh.script.file;
-					var environment = $api.Object.compose(
-						p.environment,
-						(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
-						(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
-					);
-					return jsh.shell.run({
-						command: (p.bash) ? p.bash : jsh.shell.java.jrunscript,
-						arguments: shell.concat([script.toString()]).concat( (p.arguments) ? p.arguments : [] ),
-						stdio: (p.stdio) ? p.stdio : {
-							output: String
-						},
-						environment: environment,
-						evaluate: (p.evaluate) ? p.evaluate : function(result) {
-							if (p.bash) {
-								jsh.shell.echo("Command: " + result.command + " " + result.arguments.join(" "));
-							}
-							if (result.status !== 0) throw new Error("Status is " + result.status);
-							jsh.shell.echo("Output: " + result.stdio.output);
-							return JSON.parse(result.stdio.output);
-						}
-					})
-				};
 
 				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
 				var unbuilt = function(p) {
-					return shell(jsh.js.Object.set({}, p, {
+					return shell(home, $api.Object.compose(p, {
 						shell: [
 							src.getRelativePath("rhino/jrunscript/api.js"),
 							src.getRelativePath("jsh/launcher/main.js")
@@ -163,7 +170,7 @@
 
 				var built = function(p) {
 					//	TODO	could we use built shell if we are running in built shell?
-					return shell(jsh.js.Object.set({}, p, {
+					return shell(home, $api.Object.compose(p, {
 						shell: [
 							home.getRelativePath("jsh.js")
 						]

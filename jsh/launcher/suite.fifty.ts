@@ -25,6 +25,19 @@ namespace slime.internal.jsh.launcher {
 				classpath: string
 			}
 		}
+
+		export interface ShellInvocation {
+			vmarguments: slime.jrunscript.shell.invocation.Token[]
+			bash: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Directory
+			logging: string
+			properties: { [name: string]: string }
+			shell: slime.jrunscript.shell.invocation.Token[]
+			script: slime.jrunscript.file.File
+			arguments: slime.jrunscript.shell.invocation.Token[]
+			environment: { [name: string]: string }
+			stdio: slime.jrunscript.shell.invocation.old.Stdio
+			evaluate: any
+		}
 	}
 
 	// (
