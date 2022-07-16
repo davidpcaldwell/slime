@@ -158,33 +158,44 @@
 
 				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-				var toUnbuiltInvocation = function(invocation) {
+				/**
+				 *
+				 * @param { slime.internal.jsh.launcher.test.ShellInvocation } invocation
+				 * @param { slime.internal.jsh.launcher.test.ShellImplementation } implementation
+				 * @returns
+				 */
+				var toInvocation = function(invocation,implementation) {
 					return $api.Object.compose(invocation, {
-						shell: [
-							src.getRelativePath("rhino/jrunscript/api.js"),
-							src.getRelativePath("jsh/launcher/main.js")
-						]
+						shell: implementation.shell
 					})
 				};
 
-				var toBuiltInvocation = function(invocation) {
-					return $api.Object.compose(invocation, {
-						shell: [
-							home.getRelativePath("jsh.js")
-						]
-					})
+				/** @type { slime.internal.jsh.launcher.test.ShellImplementation } */
+				var unbuilt = {
+					shell: [
+						src.getRelativePath("rhino/jrunscript/api.js"),
+						src.getRelativePath("jsh/launcher/main.js")
+					],
+					coffeescript: src.getFile("local/jsh/lib/coffee-script.js")
+				};
+
+				/** @type { slime.internal.jsh.launcher.test.ShellImplementation } */
+				var built = {
+					shell: [
+						home.getRelativePath("jsh.js")
+					],
+					coffeescript: home.getFile("lib/coffee-script.js")
+				};
+
+				/**
+				 *
+				 * @param { slime.internal.jsh.launcher.test.ShellInvocation } invocation
+				 * @param { slime.internal.jsh.launcher.test.ShellImplementation } implementation
+				 * @returns
+				 */
+				var getShellResult = function(invocation,implementation) {
+					return shell(home, toInvocation(invocation, implementation));
 				}
-
-				var unbuilt = function(p) {
-					return shell(home, toUnbuiltInvocation(p));
-				};
-				unbuilt.coffeescript = src.getFile("local/jsh/lib/coffee-script.js");
-
-				var built = function(p) {
-					//	TODO	could we use built shell if we are running in built shell?
-					return shell(home, toBuiltInvocation(p));
-				};
-				built.coffeescript = home.getFile("lib/coffee-script.js");
 
 				var addScenario = (
 					function() {
@@ -244,6 +255,7 @@
 							this.name = engine + " " + type;
 
 							this.execute = function(verify) {
+								/** @type { { [name: string]: string } } */
 								var properties = {};
 
 								var environment = {
@@ -260,11 +272,11 @@
 									//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null
 								};
 
-								var result = shell({
+								var result = getShellResult({
 									logging: "/foo/bar",
 									environment: environment,
 									properties: properties
-								});
+								}, shell);
 
 								var checkOutput = function(result) {
 									verifyOutput(
@@ -280,17 +292,17 @@
 								checkOutput(result);
 
 								if (shell == built && jsh.shell.PATH.getCommand("bash")) {
-									result = shell({
-										bash: jsh.shell.PATH.getCommand("bash"),
+									result = getShellResult({
+										bash: jsh.shell.PATH.getCommand("bash").pathname,
 										logging: "/foo/bar",
 										environment: environment,
 										properties: properties
-									});
+									}, shell);
 									checkOutput(result);
 								}
 
 								if (engine == "rhino") {
-									var result = shell({
+									var result = getShellResult({
 										environment: {
 											PATH: jsh.shell.environment.PATH,
 											//	TODO	below is used for Windows temporary files
@@ -299,13 +311,13 @@
 											PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
 											JSH_ENGINE_RHINO_CLASSPATH: String(parameters.options.rhino),
 											JSH_ENGINE: "rhino",
-											JSH_ENGINE_RHINO_OPTIMIZATION: 0
+											JSH_ENGINE_RHINO_OPTIMIZATION: String(0)
 										}
-									});
+									}, shell);
 									verify(result).rhino.optimization.is(0);
 								}
 								if (engine == "nashorn" && parameters.options.rhino) {
-									var result = shell({
+									var result = getShellResult({
 										environment: {
 											PATH: jsh.shell.environment.PATH,
 											//	TODO	below is used for Windows temporary files
@@ -315,7 +327,7 @@
 											JSH_ENGINE_RHINO_CLASSPATH: null,
 											JSH_ENGINE: engine
 										}
-									});
+									}, shell);
 									verify(result,"shell_without_rhino").rhino.running.is(false);
 								}
 							}
