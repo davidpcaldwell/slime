@@ -158,23 +158,31 @@
 
 				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-				var unbuilt = function(p) {
-					return shell(home, $api.Object.compose(p, {
+				var toUnbuiltInvocation = function(invocation) {
+					return $api.Object.compose(invocation, {
 						shell: [
 							src.getRelativePath("rhino/jrunscript/api.js"),
 							src.getRelativePath("jsh/launcher/main.js")
 						]
-					}));
+					})
+				};
+
+				var toBuiltInvocation = function(invocation) {
+					return $api.Object.compose(invocation, {
+						shell: [
+							home.getRelativePath("jsh.js")
+						]
+					})
+				}
+
+				var unbuilt = function(p) {
+					return shell(home, toUnbuiltInvocation(p));
 				};
 				unbuilt.coffeescript = src.getFile("local/jsh/lib/coffee-script.js");
 
 				var built = function(p) {
 					//	TODO	could we use built shell if we are running in built shell?
-					return shell(home, $api.Object.compose(p, {
-						shell: [
-							home.getRelativePath("jsh.js")
-						]
-					}));
+					return shell(home, toBuiltInvocation(p));
 				};
 				built.coffeescript = home.getFile("lib/coffee-script.js");
 
