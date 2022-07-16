@@ -4,26 +4,30 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		child: false
-	}
-});
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				child: false
+			}
+		});
 
-if (parameters.options.child) {
-	jsh.shell.echo("Hello, World!");
-} else {
-	jsh.shell.echo("Running " + jsh.script.url + " in subshell ...");
-	var properties = {};
-	//	TODO	would jsh.shell.properties.http work below?
-	if (Packages.java.lang.System.getProperty("http.proxyHost")) {
-		properties["http.proxyHost"] = String(Packages.java.lang.System.getProperty("http.proxyHost"));
-		properties["http.proxyPort"] = String(Packages.java.lang.System.getProperty("http.proxyPort"));
+		if (parameters.options.child) {
+			jsh.shell.echo("Hello, World!");
+		} else {
+			jsh.shell.echo("Running " + jsh.script.url + " in subshell ...");
+			var properties = {};
+			//	TODO	would jsh.shell.properties.http work below?
+			if (Packages.java.lang.System.getProperty("http.proxyHost")) {
+				properties["http.proxyHost"] = String(Packages.java.lang.System.getProperty("http.proxyHost"));
+				properties["http.proxyPort"] = String(Packages.java.lang.System.getProperty("http.proxyPort"));
+			}
+			jsh.shell.jsh({
+				fork: true,
+				properties: properties,
+				script: jsh.script.url,
+				arguments: ["-child"]
+			});
+		}
 	}
-	jsh.shell.jsh({
-		fork: true,
-		properties: properties,
-		script: jsh.script.url,
-		arguments: ["-child"]
-	});
-}
+)();

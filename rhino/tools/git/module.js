@@ -783,7 +783,8 @@
 				var currentBranch = function() {
 					return execute({
 						command: "branch",
-						arguments: args,
+						//	TODO	is this right? It used to be a global variable, and was removed during type checking
+						arguments: [],
 						stdio: {
 							output: String
 						},

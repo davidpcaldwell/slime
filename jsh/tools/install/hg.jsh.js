@@ -4,13 +4,17 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-	}
-});
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+			}
+		});
 
-jsh.tools.hg.install({}, {
-	console: function(e) {
-		jsh.shell.console(e.detail);
+		jsh.tools.hg.install({}, {
+			console: function(e) {
+				jsh.shell.console(e.detail);
+			}
+		});
 	}
-});
+)();
