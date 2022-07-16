@@ -319,7 +319,6 @@
 			}
 		);
 
-		/** @type { slime.runtime.internal.loader.Constructor } */
 		var Loader = code.Loader({
 			Resource: ResourceExport,
 			methods: scripts.methods,
