@@ -541,6 +541,7 @@
 				this.parent = void(0);
 				this.move = void(0);
 				this.copy = void(0);
+				this.modified = void(0);
 				Node.call(this, pathname, $filesystem.separators.pathname + "." + $filesystem.separators.pathname);
 
 				this.toString = (function (was) {

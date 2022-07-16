@@ -24,7 +24,7 @@ namespace slime.jrunscript.file {
 			if (!_context.dir) throw new Error("Missing context.dir");
 			var filesystem = _context.filesystem;
 
-			var dir = _context.dir.getRelativePath("filetests").createDirectory();
+			var dir: slime.jrunscript.file.Directory = _context.dir.getRelativePath("filetests").createDirectory();
 
 			var createFile = context.createFile;
 			var createDirectory = context.createDirectory;
@@ -72,25 +72,58 @@ namespace slime.jrunscript.file {
 				verify(b).is(true);
 			}
 
-			fifty.tests.suite = function() {
-				run(function() {
-					var toDelete = createFile(filec,"toDelete");
-					var toDeleteDir = createDirectory(dir,"toDelete.d");
-					var zz = createFile(toDeleteDir, "zz");
+			fifty.tests._1 = function() {
+				var toDelete = createFile(filec,"toDelete");
+				var toDeleteDir = createDirectory(dir,"toDelete.d");
+				var zz = createFile(toDeleteDir, "zz");
 
-					test(filec.list().length == 2);
-					test(filec.getFile("toDelete") != null);
-					var fileToDelete = filec.getFile("toDelete");
-					fileToDelete.remove();
-					test(filec.getFile("toDelete") == null);
-					test(filec.list().length == 1);
+				test(filec.list().length == 2);
+				test(filec.getFile("toDelete") != null);
+				var fileToDelete = filec.getFile("toDelete");
+				fileToDelete.remove();
+				test(filec.getFile("toDelete") == null);
+				test(filec.list().length == 1);
 
-					test(dir.getRelativePath("toDelete.d").directory != null);
-					test(dir.getRelativePath("toDelete.d").directory.list().length == 1);
-					dir.getRelativePath("toDelete.d").directory.remove();
-					test(dir.getRelativePath("toDelete.d").directory == null);
-				})
+				test(dir.getRelativePath("toDelete.d").directory != null);
+				test(dir.getRelativePath("toDelete.d").directory.list().length == 1);
+				dir.getRelativePath("toDelete.d").directory.remove();
+				test(dir.getRelativePath("toDelete.d").directory == null);
 			}
+
+			var disableBreakOnExceptions = function<F extends Function>(f: F): F {
+				return f;
+			}
+
+			fifty.tests._2 = function() {
+				//var disableBreakOnExceptions = ($jsapi.debug && $jsapi.debug.disableBreakOnExceptions) ? $jsapi.debug.disableBreakOnExceptions : function(f) { return f; };
+				var inPlace = disableBreakOnExceptions(function(ifExists?: any): slime.jrunscript.file.Directory {
+					return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
+				});
+				var created = inPlace();
+				verify(created).parent.evaluate(function(p) { return p.toString(); }).is(dir.toString());
+	//			test( created.parent.toString() == dir.toString() );
+				var timestamp = created.modified;
+
+				try {
+					created = inPlace();
+					verify(false,"threw exception").is(true);
+				} catch (e) {
+					verify(true,"threw exception").is(true);
+				}
+
+				var created = inPlace( function() { return false; } );
+				test( created.modified.getTime() == timestamp.getTime() );
+
+				var created = inPlace( function(existing) { existing.remove(); return true; } );
+				test( created.modified != timestamp );
+
+				created.remove();
+			}
+
+			fifty.tests.suite = function() {
+				run(fifty.tests._1);
+				run(fifty.tests._2);
+			};
 		}
 	//@ts-ignore
 	)(fifty);

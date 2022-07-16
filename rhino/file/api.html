@@ -1029,31 +1029,6 @@ END LICENSE
 			scope.filef = filef;
 		</script>
 		<script type="application/x.jsapi#tests"><![CDATA[
-			var disableBreakOnExceptions = ($jsapi.debug && $jsapi.debug.disableBreakOnExceptions) ? $jsapi.debug.disableBreakOnExceptions : function(f) { return f; };
-			var inPlace = disableBreakOnExceptions(function(ifExists) {
-				return dir.getRelativePath("created").createDirectory({ ifExists: ifExists });
-			});
-			var created = inPlace();
-			verify(created).parent.toString().is(dir.toString());
-//			test( created.parent.toString() == dir.toString() );
-			var timestamp = created.modified;
-
-			try {
-				created = inPlace();
-				verify(false,"threw exception").is(true);
-			} catch (e) {
-				verify(true,"threw exception").is(true);
-			}
-
-			var created = inPlace( function() { return false; } );
-			test( created.modified.getTime() == timestamp.getTime() );
-
-			var created = inPlace( function(existing) { existing.remove(); return true; } );
-			test( created.modified != timestamp );
-
-			created.remove();
-		]]></script>
-		<script type="application/x.jsapi#tests"><![CDATA[
 			var mydir = createDirectory(dir, "write");
 			test( (mydir != null) );
 

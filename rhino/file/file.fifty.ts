@@ -113,6 +113,7 @@ namespace slime.jrunscript.file {
 				recursive?: any
 			}
 		) => Node
+		modified: Date
 	}
 
 	export interface File extends Node {
@@ -121,7 +122,6 @@ namespace slime.jrunscript.file {
 			(p: any): any
 		}
 		length: any
-		modified: Date
 	}
 
 	export namespace directory {
