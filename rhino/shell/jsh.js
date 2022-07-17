@@ -534,7 +534,7 @@
 			});
 		});
 		/** @type { slime.jsh.shell.Exports["jsh"]["require"] } */
-		$exports.jsh.require = $api.Events.Function(
+		$exports.jsh.require = $api.events.Function(
 			function(p,events) {
 				//  TODO    should develop a strategy for preventing infinite loops
 				if (!p.satisfied()) {

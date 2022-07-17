@@ -331,7 +331,7 @@
 			};
 		};
 
-		$exports.Application = $api.Events.Function(function(p,events) {
+		$exports.Application = $api.events.Function(function(p,events) {
 			return Application(p,events);
 		});
 	}

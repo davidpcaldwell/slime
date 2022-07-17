@@ -196,7 +196,7 @@
 			}
 		);
 
-		$exports.require = $api.Events.Function(
+		$exports.require = $api.events.Function(
 			/**
 			 *
 			 * @param { Parameters<slime.jsh.shell.tools.internal.tomcat.Exports["install"]>[0] } p

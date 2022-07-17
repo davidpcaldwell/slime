@@ -215,7 +215,7 @@
 			return installLocalArchive(p,events);
 		};
 
-		var oldInstall = $api.Events.Function(function(p,events) {
+		var oldInstall = $api.events.Function(function(p,events) {
 			return install(p,events);
 		});
 
@@ -239,7 +239,7 @@
 
 		var $exports = {
 			/** @type { slime.jrunscript.tools.install.Exports["get"] } */
-			get: $api.Events.Function(
+			get: $api.events.Function(
 				/**
 				 *
 				 * @param { slime.jrunscript.tools.install.old.Source } p

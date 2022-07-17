@@ -29,7 +29,7 @@
 		};
 
 		var module = {
-			events: $api.Events({ source: $exports })
+			events: $api.events.create({ source: $exports })
 		};
 
 		$exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
@@ -147,7 +147,7 @@
 			}
 		};
 
-		var embed = $api.Events.Function(
+		var embed = $api.events.Function(
 			/**
 			 * @param { { method: Function, argument: object, started: (p: { output?: string, error?: string }) => boolean } } p
 			 */
@@ -177,7 +177,7 @@
 			}
 		);
 
-		$exports.embed = $api.Events.Function(function(p,events) {
+		$exports.embed = $api.events.Function(function(p,events) {
 			var lock = new $context.api.java.Thread.Monitor();
 			var started = false;
 			events.listeners.add("started", new lock.Waiter({
