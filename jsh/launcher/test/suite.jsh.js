@@ -170,6 +170,102 @@
 			};
 
 			return shell(home, toInvocation(invocation, implementation));
+		};
+
+		/**
+		 * @param { string } engine
+		 * @param { slime.internal.jsh.launcher.test.ShellImplementation } shell
+		 * @param { "unbuilt" | "built" } type
+		 * @param { slime.jrunscript.file.Pathname } rhino
+		 * @param { slime.jrunscript.file.Directory } home
+		 * @param { slime.jrunscript.file.Directory } tmp
+		 * @returns { slime.internal.jsh.launcher.test.Scenario }
+		 */
+		var toScenario = function(engine,shell,type,rhino,home,tmp) {
+			var name = engine + " " + type;
+
+			var execute = function(verify) {
+				/** @type { { [name: string]: string } } */
+				var properties = {};
+
+				var environment = {
+					PATH: jsh.shell.environment.PATH,
+					//	TODO	below is used for Windows temporary files
+					TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+					//	TODO	below is used for Windows command location
+					PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+					JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz",
+					JSH_ENGINE_RHINO_CLASSPATH: (rhino) ? String(rhino) : null,
+					JSH_ENGINE: engine,
+					JSH_SHELL_TMPDIR: tmp.toString()
+					//,JSH_LAUNCHER_DEBUG: "true"
+					//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null
+				};
+
+				var result = getShellResult(home, {
+					logging: "/foo/bar",
+					environment: environment,
+					properties: properties
+				}, shell);
+
+				var checkOutput = function(result) {
+					verifyOutput(
+						Boolean(rhino),
+						Boolean(engine == "rhino"),
+						Boolean(type == "unbuilt"),
+						tmp,
+						verify,
+						result
+					)
+				};
+
+				checkOutput(result);
+
+				if (type == "built" && jsh.shell.PATH.getCommand("bash")) {
+					result = getShellResult(home, {
+						bash: jsh.shell.PATH.getCommand("bash").pathname,
+						logging: "/foo/bar",
+						environment: environment,
+						properties: properties
+					}, shell);
+					checkOutput(result);
+				}
+
+				if (engine == "rhino") {
+					var result = getShellResult(home, {
+						environment: {
+							PATH: jsh.shell.environment.PATH,
+							//	TODO	below is used for Windows temporary files
+							TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+							//	TODO	below is used for Windows command location
+							PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+							JSH_ENGINE_RHINO_CLASSPATH: String(rhino),
+							JSH_ENGINE: "rhino",
+							JSH_ENGINE_RHINO_OPTIMIZATION: String(0)
+						}
+					}, shell);
+					verify(result).rhino.optimization.is(0);
+				}
+				if (engine == "nashorn" && rhino) {
+					var result = getShellResult(home, {
+						environment: {
+							PATH: jsh.shell.environment.PATH,
+							//	TODO	below is used for Windows temporary files
+							TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+							//	TODO	below is used for Windows command location
+							PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+							JSH_ENGINE_RHINO_CLASSPATH: null,
+							JSH_ENGINE: engine
+						}
+					}, shell);
+					verify(result,"shell_without_rhino").rhino.running.is(false);
+				}
+			}
+
+			return {
+				name: name,
+				execute: execute
+			}
 		}
 
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.script.file.parent.parent.parent.parent;
@@ -259,88 +355,20 @@
 
 					[unbuilt,built].forEach(function(shell) {
 						var UNSUPPORTED = (engine == "rhino" && shell.coffeescript);
-						if (!UNSUPPORTED) addScenario(new function() {
+						if (!UNSUPPORTED) {
+							/** @type { "unbuilt" | "built" } */
 							var type = (shell == unbuilt) ? "unbuilt" : "built";
-							this.name = engine + " " + type;
-
-							this.execute = function(verify) {
-								/** @type { { [name: string]: string } } */
-								var properties = {};
-
-								var environment = {
-									PATH: jsh.shell.environment.PATH,
-									//	TODO	below is used for Windows temporary files
-									TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-									//	TODO	below is used for Windows command location
-									PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-									JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz",
-									JSH_ENGINE_RHINO_CLASSPATH: (parameters.options.rhino) ? String(parameters.options.rhino) : null,
-									JSH_ENGINE: engine,
-									JSH_SHELL_TMPDIR: tmp.toString()
-									//,JSH_LAUNCHER_DEBUG: "true"
-									//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null
-								};
-
-								var result = getShellResult(home, {
-									logging: "/foo/bar",
-									environment: environment,
-									properties: properties
-								}, shell);
-
-								var checkOutput = function(result) {
-									verifyOutput(
-										Boolean(parameters.options.rhino),
-										Boolean(engine == "rhino"),
-										Boolean(shell == unbuilt),
-										tmp,
-										verify,
-										result
-									)
-								};
-
-								checkOutput(result);
-
-								if (shell == built && jsh.shell.PATH.getCommand("bash")) {
-									result = getShellResult(home, {
-										bash: jsh.shell.PATH.getCommand("bash").pathname,
-										logging: "/foo/bar",
-										environment: environment,
-										properties: properties
-									}, shell);
-									checkOutput(result);
-								}
-
-								if (engine == "rhino") {
-									var result = getShellResult(home, {
-										environment: {
-											PATH: jsh.shell.environment.PATH,
-											//	TODO	below is used for Windows temporary files
-											TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-											//	TODO	below is used for Windows command location
-											PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-											JSH_ENGINE_RHINO_CLASSPATH: String(parameters.options.rhino),
-											JSH_ENGINE: "rhino",
-											JSH_ENGINE_RHINO_OPTIMIZATION: String(0)
-										}
-									}, shell);
-									verify(result).rhino.optimization.is(0);
-								}
-								if (engine == "nashorn" && parameters.options.rhino) {
-									var result = getShellResult(home, {
-										environment: {
-											PATH: jsh.shell.environment.PATH,
-											//	TODO	below is used for Windows temporary files
-											TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-											//	TODO	below is used for Windows command location
-											PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-											JSH_ENGINE_RHINO_CLASSPATH: null,
-											JSH_ENGINE: engine
-										}
-									}, shell);
-									verify(result,"shell_without_rhino").rhino.running.is(false);
-								}
-							}
-						});
+							addScenario(
+								toScenario(
+									engine,
+									shell,
+									type,
+									parameters.options.rhino,
+									home,
+									tmp
+								)
+							);
+						}
 					});
 				},this);
 			},

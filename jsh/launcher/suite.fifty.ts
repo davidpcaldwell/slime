@@ -43,6 +43,11 @@ namespace slime.internal.jsh.launcher {
 			shell: slime.jrunscript.shell.invocation.Token[]
 			coffeescript: slime.jrunscript.file.File
 		}
+
+		export interface Scenario {
+			name: string
+			execute: (verify: slime.definition.verify.Verify) => void
+		}
 	}
 
 	// (
