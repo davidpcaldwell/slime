@@ -108,11 +108,10 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.file.Directory } home
 		 * @param { slime.internal.jsh.launcher.test.ShellInvocation } p
 		 * @returns
 		 */
-		var shell = function(home,p) {
+		var shell = function(p) {
 			/** @type { slime.jrunscript.shell.invocation.Token[] } */
 			var vm = [];
 			if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
@@ -124,7 +123,7 @@
 			for (var x in p.properties) {
 				vm.push("-D" + x + "=" + p.properties[x]);
 			}
-			var shell = (p.bash) ? [home.getFile("jsh.bash").toString()] : vm.concat(p.shell)
+			var shell = (p.bash) ? p.shell : vm.concat(p.shell)
 			var script = (p.script) ? p.script : jsh.script.file;
 			var environment = $api.Object.compose(
 				p.environment,
@@ -151,12 +150,11 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.file.Directory } home
 		 * @param { slime.internal.jsh.launcher.test.ShellInvocation } invocation
 		 * @param { slime.internal.jsh.launcher.test.ShellImplementation } implementation
 		 * @returns
 		 */
-		var getShellResult = function(home,invocation,implementation) {
+		var getShellResult = function(invocation,implementation) {
 			/**
 			 *
 			 * @param { slime.internal.jsh.launcher.test.ShellInvocation } invocation
@@ -169,7 +167,7 @@
 				})
 			};
 
-			return shell(home, toInvocation(invocation, implementation));
+			return shell(toInvocation(invocation, implementation));
 		};
 
 		/**
@@ -203,7 +201,7 @@
 					//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null
 				};
 
-				var result = getShellResult(home, {
+				var result = getShellResult({
 					logging: "/foo/bar",
 					environment: environment,
 					properties: properties
@@ -223,17 +221,22 @@
 				checkOutput(result);
 
 				if (type == "built" && jsh.shell.PATH.getCommand("bash")) {
-					result = getShellResult(home, {
+					result = getShellResult({
 						bash: jsh.shell.PATH.getCommand("bash").pathname,
 						logging: "/foo/bar",
 						environment: environment,
 						properties: properties
-					}, shell);
+					}, $api.Object.compose(
+						shell,
+						{
+							shell: [home.getFile("jsh.bash")]
+						}
+					));
 					checkOutput(result);
 				}
 
 				if (engine == "rhino") {
-					var result = getShellResult(home, {
+					var result = getShellResult({
 						environment: {
 							PATH: jsh.shell.environment.PATH,
 							//	TODO	below is used for Windows temporary files
@@ -248,7 +251,7 @@
 					verify(result).rhino.optimization.is(0);
 				}
 				if (engine == "nashorn" && rhino) {
-					var result = getShellResult(home, {
+					var result = getShellResult({
 						environment: {
 							PATH: jsh.shell.environment.PATH,
 							//	TODO	below is used for Windows temporary files
