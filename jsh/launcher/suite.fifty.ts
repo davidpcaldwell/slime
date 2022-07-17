@@ -49,6 +49,18 @@ namespace slime.internal.jsh.launcher {
 			name: string
 			execute: (verify: slime.definition.verify.Verify) => void
 		}
+
+		export interface Context {
+			library: {
+				shell: slime.jrunscript.shell.Exports
+			}
+		}
+
+		export interface Exports {
+			getEngines: (src: slime.jrunscript.file.Directory) => string[]
+		}
+
+		export type Script = slime.loader.Script<Context,Exports>
 	}
 
 	// (

@@ -13,6 +13,19 @@
 	 * @param { slime.jsh.Global & { test: any } } jsh
 	 */
 	function(Packages,$api,jsh) {
+		var code = {
+			/** @type { slime.internal.jsh.launcher.test.Script } */
+			script: jsh.script.loader.script("suite.js")
+		};
+
+		var library = {
+			script: code.script({
+				library: {
+					shell: jsh.shell
+				}
+			})
+		};
+
 		/**
 		 *
 		 * @param { boolean } hasRhino
@@ -274,16 +287,7 @@
 
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.script.file.parent.parent.parent.parent;
 
-		var engines = jsh.shell.run({
-			command: "bash",
-			arguments: [src.getFile("jsh.bash"), "-engines"],
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				return JSON.parse(result.stdio.output);
-			}
-		});
+		var engines = library.script.getEngines(src);
 
 		jsh.loader.plugins(src.getRelativePath("jsh/test"));
 		jsh.test.integration({
