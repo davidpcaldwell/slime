@@ -40,6 +40,7 @@ namespace slime.internal.jsh.launcher {
 		}
 
 		export interface ShellImplementation {
+			type: "unbuilt" | "built"
 			shell: slime.jrunscript.shell.invocation.Token[]
 			coffeescript: slime.jrunscript.file.File
 		}

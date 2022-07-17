@@ -175,13 +175,14 @@
 		/**
 		 * @param { string } engine
 		 * @param { slime.internal.jsh.launcher.test.ShellImplementation } shell
-		 * @param { "unbuilt" | "built" } type
 		 * @param { slime.jrunscript.file.Pathname } rhino
 		 * @param { slime.jrunscript.file.Directory } home
 		 * @param { slime.jrunscript.file.Directory } tmp
 		 * @returns { slime.internal.jsh.launcher.test.Scenario }
 		 */
-		var toScenario = function(engine,shell,type,rhino,home,tmp) {
+		var toScenario = function(engine,shell,rhino,home,tmp) {
+			var type = shell.type;
+
 			var name = engine + " " + type;
 
 			var execute = function(verify) {
@@ -298,6 +299,7 @@
 
 				/** @type { slime.internal.jsh.launcher.test.ShellImplementation } */
 				var unbuilt = {
+					type: "unbuilt",
 					shell: [
 						src.getRelativePath("rhino/jrunscript/api.js"),
 						src.getRelativePath("jsh/launcher/main.js")
@@ -307,6 +309,7 @@
 
 				/** @type { slime.internal.jsh.launcher.test.ShellImplementation } */
 				var built = {
+					type: "built",
 					shell: [
 						home.getRelativePath("jsh.js")
 					],
@@ -356,13 +359,10 @@
 					[unbuilt,built].forEach(function(shell) {
 						var UNSUPPORTED = (engine == "rhino" && shell.coffeescript);
 						if (!UNSUPPORTED) {
-							/** @type { "unbuilt" | "built" } */
-							var type = (shell == unbuilt) ? "unbuilt" : "built";
 							addScenario(
 								toScenario(
 									engine,
 									shell,
-									type,
 									parameters.options.rhino,
 									home,
 									tmp
