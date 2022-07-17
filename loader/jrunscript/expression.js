@@ -526,6 +526,9 @@
 							}
 						})();
 
+						/**
+						 * @returns { slime.jrunscript.runtime.io.Writer }
+						 */
 						var writeText = (function() {
 							if (p.write.text) {
 								return function(mode) {
@@ -538,6 +541,9 @@
 							}
 						})();
 
+						//	TODO	a lot of type narrowing, etc., needed here to get the type checking in order
+						/** @type { slime.jrunscript.runtime.Resource["write"]} */
+						//@ts-ignore
 						this.write = function(dataOrType,mode) {
 							if (typeof(dataOrType) == "undefined") throw new TypeError("Cannot write 'undefined'");
 							if (!mode) mode = {};
@@ -550,9 +556,9 @@
 								$exports.io.Streams.binary.copy(dataOrType,stream);
 								stream.close();
 							} else if (dataOrType.java && dataOrType.java.adapt && $exports.java.isJavaType(Packages.java.io.Reader)(dataOrType.java.adapt())) {
-								stream = writeText(mode);
-								$exports.io.Streams.text.copy(dataOrType,stream);
-								stream.close();
+								var writer = writeText(mode);
+								$exports.io.Streams.text.copy(dataOrType,writer);
+								writer.close();
 							} else if (typeof(dataOrType) == "string" && writeText) {
 								var writer = writeText(mode);
 								writer.write(dataOrType);
