@@ -920,7 +920,7 @@
 					}
 				}
 
-				jsh.wf.requireGitIdentity = Object.assign($api.Events.Function(function(p,events) {
+				jsh.wf.requireGitIdentity = Object.assign($api.events.Function(function(p,events) {
 					var get = p.get || {
 						name: function(p) {
 							throw new jsh.wf.error.Failure("Missing: user.name");
@@ -957,7 +957,7 @@
 					}
 				});
 
-				jsh.wf.prohibitUntrackedFiles = $api.Events.Function(function(p, events) {
+				jsh.wf.prohibitUntrackedFiles = $api.events.Function(function(p, events) {
 					var status = p.repository.status();
 					var untracked = (status.paths) ? $api.Object.properties(status.paths).filter(function(property) {
 						return property.value == "??"
@@ -971,7 +971,7 @@
 					}
 				});
 
-				jsh.wf.prohibitModifiedSubmodules = $api.Events.Function(function(p,events) {
+				jsh.wf.prohibitModifiedSubmodules = $api.events.Function(function(p,events) {
 					p.repository.submodule().forEach(function(sub) {
 						var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
 						var status = submodule.status();

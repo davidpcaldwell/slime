@@ -24,7 +24,7 @@
 			});
 		}
 
-		$exports.find = $api.Events.Function(
+		$exports.find = $api.events.Function(
 			function(p,events) {
 				var name = p.path.split("/").slice(-1)[0];
 				if ($context.downloads) {

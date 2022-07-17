@@ -111,7 +111,7 @@
 						});
 					}
 
-					return $api.Events.Function(commandImplementation);
+					return $api.events.Function(commandImplementation);
 				};
 
 				/**
@@ -300,7 +300,7 @@
 			//	Getting and Creating Projects
 
 			/** @type { slime.jrunscript.tools.git.Installation["init"] } */
-			var init = $api.Events.Function(function(m,events) {
+			var init = $api.events.Function(function(m,events) {
 				git({
 					command: "init",
 					arguments: [m.pathname],

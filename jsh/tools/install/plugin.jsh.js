@@ -117,7 +117,7 @@
 						}
 					});
 
-					this.install = $api.Events.Function(function(p,events) {
+					this.install = $api.events.Function(function(p,events) {
 						if (!p) p = {};
 						if (!p.version) p.version = "0.8.4";
 						if (p.replace) {
@@ -208,7 +208,7 @@
 						jdk: "8",
 						edition: "ce"
 					};
-					this.install = $api.Events.Function(function(p,events) {
+					this.install = $api.events.Function(function(p,events) {
 						if (jsh.shell.os.name == "Mac OS X") {
 							jsh.tools.install.install({
 								url: "https://github.com/graalvm/graalvm-ce-builds/releases/download/"
@@ -432,7 +432,7 @@
 				var kotlin = (jsh.shell.jsh.lib) ? new function() {
 					var location = jsh.shell.jsh.lib.getRelativePath("kotlin");
 
-					this.install = $api.Events.Function(function(p,events) {
+					this.install = $api.events.Function(function(p,events) {
 						var URL = "https://github.com/JetBrains/kotlin/releases/download/v1.5.0/kotlin-compiler-1.5.0.zip";
 
 						var existing = location.directory;
