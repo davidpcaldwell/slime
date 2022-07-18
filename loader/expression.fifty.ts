@@ -120,7 +120,7 @@ namespace slime {
 	 *
 	 * Embeddings must supply two values in the scope when executing the runtime. They must supply a value for `$engine` that is either
 	 * `undefined` or is a value of type {@link $engine} specifying information about the underlying JavaScript engine, and
-	 * they must supply a value for `$slime` of type {@link $slime.Deployment} that provides information about the SLIME installation.
+	 * they must supply a value for `$slime` of type {@link slime.runtime.$slime.Deployment | $slime.Deployment} that provides information about the SLIME installation.
 	 *
 	 * In return, the embedding will be supplied with an {@link Exports} object that provides the SLIME runtime.
 	 *

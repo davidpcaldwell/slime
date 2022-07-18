@@ -12,6 +12,7 @@ namespace slime.jrunscript.runtime {
 		}
 		length?: number
 		modified?: any
+
 		write?: {
 			(marker: slime.jrunscript.runtime.io.Exports["Streams"]["binary"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.OutputStream
 			(marker: slime.jrunscript.runtime.io.Exports["Streams"]["text"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.Writer
@@ -31,8 +32,8 @@ namespace slime.jrunscript.runtime {
 			length?: number
 			modified?: any
 			write?: {
-				binary?: any
-				text?: any
+				binary?: (mode: any) => slime.jrunscript.runtime.io.OutputStream
+				text?: (mode: any) => slime.jrunscript.runtime.io.Writer
 			}
 		}
 

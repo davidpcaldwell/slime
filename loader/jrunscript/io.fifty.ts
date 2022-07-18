@@ -16,6 +16,7 @@ namespace slime.jrunscript.runtime.io {
 
 	export interface OutputStream {
 		character(): Writer
+		close()
 		java: {
 			adapt(): slime.jrunscript.native.java.io.OutputStream
 		}
@@ -36,6 +37,9 @@ namespace slime.jrunscript.runtime.io {
 	export interface Writer {
 		write(string: string)
 		close()
+		java: {
+			adapt(): slime.jrunscript.native.java.io.Writer
+		}
 	}
 
 	export interface Buffer {
