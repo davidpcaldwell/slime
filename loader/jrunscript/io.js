@@ -20,62 +20,66 @@
 
 		var _java = $context._streams;
 
-		/**
-		 *
-		 * @param { slime.jrunscript.native.java.io.OutputStream } peer
-		 */
+		/** @type { slime.jrunscript.runtime.io.Exports["OutputStream"] } */
 		function OutputStream(peer) {
-			this.close = function() {
-				peer.close();
-			}
+			return {
+				split: function(other) {
+					var otherPeer = other.java.adapt();
 
-			this.character = function() {
-				return new Writer(new Packages.java.io.OutputStreamWriter(peer));
-			}
+					//	Handle Buffer special case, very dubious
+					if (!otherPeer && other.writeBinary) {
+						otherPeer = other.writeBinary.java.adapt();
+					}
 
-			this.split = function(other) {
-				var otherPeer = other.java.adapt();
-
-				//	Handle Buffer special case, very dubious
-				if (!otherPeer && other.writeBinary) {
-					otherPeer = other.writeBinary.java.adapt();
-				}
-
-				return new OutputStream(_java.split(peer,otherPeer))
-			}
-
-			this.java = new function() {
-				this.adapt = function() {
-					return peer;
+					return OutputStream(_java.split(peer,otherPeer))
+				},
+				character: function() {
+					return Writer(new Packages.java.io.OutputStreamWriter(peer));
+				},
+				close: function() {
+					peer.close();
+				},
+				java: {
+					adapt: function() {
+						return peer;
+					}
 				}
 			}
 		}
 
+		/** @type { slime.jrunscript.runtime.io.Exports["Writer"] } */
 		var Writer = function(peer) {
-			this.close = function() {
-				peer.close();
-			}
-
 			/** @returns { string } */
 			var getTypeof = function(value) {
 				return typeof(value);
-			}
-
-			this.write = function(string) {
-				if (getTypeof(string) == "xml") {
-					peer.write( string.toXMLString() );
-					peer.flush();
-				} else if (typeof(string) == "string") {
-					peer.write( String(string) );
-					peer.flush();
-				} else {
-					throw new TypeError("Attempt to write non-string, non-XML to writer: " + string);
-				}
 			};
 
-			this.java = new function() {
-				this.adapt = function() {
-					return peer;
+			/** @type { (value: string | slime.external.e4x.Object) => value is slime.external.e4x.Object} */
+			var isE4x = function(value) {
+				return getTypeof(value) == "xml";
+			}
+
+			return {
+				close: function() {
+					peer.close();
+				},
+				write: function(string) {
+					if ($platform.e4x && isE4x(string)) {
+						$api.deprecate(function() {
+							peer.write( string.toXMLString() );
+							peer.flush();
+						})();
+					} else if (typeof(string) == "string") {
+						peer.write( String(string) );
+						peer.flush();
+					} else {
+						throw new TypeError("Attempt to unsupported type to writer: " + string);
+					}
+				},
+				java: {
+					adapt: function() {
+						return peer;
+					}
 				}
 			};
 		};
@@ -194,7 +198,7 @@
 			}
 
 			if ($platform.e4x) {
-				this.asXml = function() {
+				this.asXml = $api.deprecate(function() {
 					var string = this.asString();
 					var resource = new $context.api.Resource({
 						read: {
@@ -202,7 +206,7 @@
 						}
 					});
 					return resource.read(XMLList);
-				}
+				});
 			}
 
 			this.java = new function() {
@@ -276,11 +280,11 @@
 						} else if ($context.api.java.isJavaObject(object) && isJavaInputStream(object)) {
 							return new InputStream(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaOutputStream(object)) {
-							return new OutputStream(object);
+							return OutputStream(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaReader(object)) {
 							return new Reader(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaWriter(object)) {
-							return new Writer(object);
+							return Writer(object);
 						} else {
 							var type = (function() {
 								if (object.getClass) {
@@ -311,7 +315,7 @@
 			//	TODO	could we name these better? in/out, read/write, ... ?
 
 			this.writeBinary = function() {
-				return new OutputStream(peer.getOutputStream());
+				return OutputStream(peer.getOutputStream());
 			}
 
 			this.writeText = function() {
