@@ -41,8 +41,9 @@ namespace slime.jrunscript {
 					close()
 				}
 				export interface Writer {
-					write(string: string)
-					close()
+					write: (string: string) => void
+					flush: () => void
+					close: () => void
 				}
 				export interface PrintStream extends OutputStream {
 				}

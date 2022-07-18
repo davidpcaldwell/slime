@@ -265,3 +265,15 @@ namespace slime.$api {
 	}
 //@ts-ignore
 )(fifty, jsh.unit["$slime"], $api, $loader, verify, tests, run);
+
+namespace slime.external.e4x {
+	export interface Object {
+		toXMLString: () => string
+	}
+
+	export interface XML extends Object {
+	}
+
+	export interface XMLList extends Object {
+	}
+}

@@ -6,48 +6,54 @@
 
 namespace slime.jrunscript.runtime.io {
 	export interface InputStream {
-		character(mode?: any): Reader
-		close()
+		character: (mode?: any) => Reader
+		close: () => void
 		java: {
-			adapt(): slime.jrunscript.native.java.io.InputStream
-			array(): any
+			adapt: () => slime.jrunscript.native.java.io.InputStream
+			array: () => any
 		}
 	}
 
 	export interface OutputStream {
-		character(): Writer
-		close()
+		character: () => Writer
+		close: () => void
 		java: {
-			adapt(): slime.jrunscript.native.java.io.OutputStream
+			adapt: () => slime.jrunscript.native.java.io.OutputStream
 		}
+		//	Possibly unused
+		split: (other: any) => OutputStream
 	}
 
 	export interface Reader {
-		close()
-		asString(): string
-		readLines(
+		close: () => void
+		asString: () => string
+		readLines: (
 			callback: (line: string) => any,
 			mode?: {
 				ending?: string
-				onEnd?()
+				onEnd?: () => void
 			}
-		)
+		) => void
 	}
 
 	export interface Writer {
-		write(string: string)
-		close()
+		write: {
+			(string: string): void
+			/** @deprecated */
+			(e4x: slime.external.e4x.Object): void
+		}
+		close: () => void
 		java: {
-			adapt(): slime.jrunscript.native.java.io.Writer
+			adapt: () => slime.jrunscript.native.java.io.Writer
 		}
 	}
 
 	export interface Buffer {
-		close()
-		readBinary(): InputStream
-		writeBinary(): OutputStream
-		readText(): Reader
-		writeText(): Writer
+		close: () => void
+		readBinary: () => InputStream
+		writeBinary: () => OutputStream
+		readText: () => Reader
+		writeText: () => Writer
 	}
 
 	export interface Context {
@@ -63,18 +69,18 @@ namespace slime.jrunscript.runtime.io {
 	}
 
 	export interface Exports {
-		OutputStream: any
-		Writer: any
+		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
+		Writer: (p: slime.jrunscript.native.java.io.Writer) => Writer
 
 		InputStream: new (p: slime.jrunscript.native.java.io.InputStream) => InputStream
 		Reader: new (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
 
 		Streams: {
 			binary: {
-				copy(from: slime.jrunscript.runtime.io.InputStream, to: slime.jrunscript.runtime.io.OutputStream, mode?: BinaryCopyMode)
+				copy: (from: slime.jrunscript.runtime.io.InputStream, to: slime.jrunscript.runtime.io.OutputStream, mode?: BinaryCopyMode) => void
 			}
 			text: {
-				copy(from: slime.jrunscript.runtime.io.Reader, to: slime.jrunscript.runtime.io.Writer)
+				copy: (from: slime.jrunscript.runtime.io.Reader, to: slime.jrunscript.runtime.io.Writer) => void
 			}
 			java: {
 				adapt: {
@@ -98,12 +104,12 @@ namespace slime.jrunscript.runtime.io {
 
 (
 	function(
-		$slime: slime.jrunscript.runtime.Exports,
-		verify: slime.fifty.test.verify,
-		tests: slime.fifty.test.tests,
-		run: slime.fifty.test.Kit["run"]
+		fifty: slime.fifty.test.Kit
 	) {
-		tests.Buffer = function() {
+		const { verify, run } = fifty;
+		const { $slime } = fifty.global.jsh.unit;
+
+		fifty.tests.Buffer = function() {
 			var b = new $slime.io.Buffer();
 			var out = b.writeText();
 			out.write("foo!");
@@ -114,10 +120,10 @@ namespace slime.jrunscript.runtime.io {
 			verify(string).is("foo!");
 		}
 
-		tests.suite = function() {
+		fifty.tests.suite = function() {
 			verify($slime).io.is.type("object");
-			run(tests.Buffer);
+			run(fifty.tests.Buffer);
 		}
 	}
 //@ts-ignore
-)(jsh.unit["$slime"], verify, tests, run);
+)(fifty);
