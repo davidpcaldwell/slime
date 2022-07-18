@@ -60,43 +60,6 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Pathname } rhino
-		 * @returns { slime.$api.fp.world.Action<slime.jrunscript.file.Directory,{ console: string }> }
-		 */
-		var _buildShell = function(rhino) {
-			return function(tmpdir) {
-				return function(events) {
-					var buildArguments = [];
-					if (rhino) {
-						buildArguments.push("-rhino", rhino);
-					}
-					jsh.shell.run({
-						command: jsh.shell.java.jrunscript,
-						arguments: [
-							jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),
-							"jsh",
-							jsh.shell.jsh.src.getRelativePath("jsh/etc/build.jsh.js"),
-							tmpdir,
-							"-notest",
-							"-nodoc"
-						].concat(buildArguments),
-						environment: $api.Object.compose(
-							{
-								//	TODO	next two lines duplicate logic in jsh.test plugin
-								TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-								PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-								PATH: jsh.shell.environment.PATH.toString()
-							},
-							(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
-						)
-					});
-					events.fire("console", "Build successful.");
-				}
-			}
-		}
-
-		/**
-		 *
-		 * @param { slime.jrunscript.file.Pathname } rhino
 		 * @param { slime.jrunscript.file.Pathname } specified The specified location of the built shell, if any.
 		 * @param { slime.jrunscript.file.Directory } shell If running in a built shell, its location.
 		 */
@@ -109,7 +72,7 @@
 			jsh.shell.console("Building shell in which to run launcher tests ...");
 			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 			$api.Function.world.now.action(
-				_buildShell(rhino),
+				library.script.buildShell(jsh.shell.jsh.src, rhino),
 				tmpdir,
 				{
 					console: function(e) {
