@@ -9,8 +9,8 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.internal.jsh.launcher.test.Context } $context
-	 * @param { slime.loader.Export<slime.internal.jsh.launcher.test.Exports> } $export
+	 * @param { slime.jsh.internal.launcher.test.Context } $context
+	 * @param { slime.loader.Export<slime.jsh.internal.launcher.test.Exports> } $export
 	 */
 	function($api,$context,$export) {
 		var getEngines = function(src) {

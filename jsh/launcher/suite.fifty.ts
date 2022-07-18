@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.internal.jsh.launcher {
+namespace slime.jsh.internal.launcher {
 	export interface Context {
 	}
 
@@ -43,6 +43,13 @@ namespace slime.internal.jsh.launcher {
 			type: "unbuilt" | "built"
 			shell: slime.jrunscript.shell.invocation.Token[]
 			coffeescript: slime.jrunscript.file.File
+		}
+
+		export interface ShellConfiguration {
+			hasRhino: boolean
+			isRhino: boolean
+			isUnbuilt: boolean
+			tmp: slime.jrunscript.file.Directory
 		}
 
 		export interface Scenario {

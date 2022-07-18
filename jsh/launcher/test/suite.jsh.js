@@ -14,7 +14,7 @@
 	 */
 	function(Packages,$api,jsh) {
 		var code = {
-			/** @type { slime.internal.jsh.launcher.test.Script } */
+			/** @type { slime.jsh.internal.launcher.test.Script } */
 			script: jsh.script.loader.script("suite.js")
 		};
 
@@ -28,32 +28,33 @@
 
 		/**
 		 *
-		 * @param { boolean } hasRhino
-		 * @param { boolean } isRhino
-		 * @param { boolean } isUnbuilt
-		 * @param { slime.jrunscript.file.Directory } tmp
-		 * @param { slime.definition.verify.Verify } verify
-		 * @param { slime.internal.jsh.launcher.test.Result } result
+		 * @param { slime.jsh.internal.launcher.test.ShellConfiguration } configuration
+		 * @returns { (verify: slime.definition.verify.Verify) => (result: slime.jsh.internal.launcher.test.Result) => void }
 		 */
-		function verifyOutput(hasRhino,isRhino,isUnbuilt,tmp,verify,result) {
-			if (isUnbuilt) {
-				verify(result).src.is.not(null);
-				verify(result).home.is(null);
-			} else {
-				verify(result).src.is(null);
-				verify(result).home.is.not(null);
+		function verifyOutput(configuration) {
+			return function(verify) {
+				return function(result) {
+					if (configuration.isUnbuilt) {
+						verify(result).src.is.not(null);
+						verify(result).home.is(null);
+					} else {
+						verify(result).src.is(null);
+						verify(result).home.is.not(null);
+					}
+					verify(result).logging.is("/foo/bar");
+					verify(result).foo1.is("bar");
+					verify(result).foo2.is("baz");
+					verify(result).rhino.running.is( configuration.isRhino );
+					if (configuration.hasRhino) {
+						verify(result).rhino.classpath.is.not(null);
+					} else {
+						//	TODO	below comment seems wrong; the whole point of .hasRhino is that we do know, right?
+						//	We do not know; we could have been run inside a shell that has Rhino installed
+						//	verify(result).rhino.classpath.is(null);
+					}
+					verify(result).tmp.is(configuration.tmp.toString());
+				}
 			}
-			verify(result).logging.is("/foo/bar");
-			verify(result).foo1.is("bar");
-			verify(result).foo2.is("baz");
-			verify(result).rhino.running.is( isRhino );
-			if (hasRhino) {
-				verify(result).rhino.classpath.is.not(null);
-			} else {
-				//	We do not know; we could have been run inside a shell that has Rhino installed
-//							verify(result).rhino.classpath.is(null);
-			}
-			verify(result).tmp.is(tmp.toString());
 		}
 
 		/**
@@ -121,7 +122,7 @@
 
 		/**
 		 *
-		 * @param { slime.internal.jsh.launcher.test.ShellInvocation } p
+		 * @param { slime.jsh.internal.launcher.test.ShellInvocation } p
 		 * @returns
 		 */
 		var shell = function(p) {
@@ -163,15 +164,15 @@
 
 		/**
 		 *
-		 * @param { slime.internal.jsh.launcher.test.ShellInvocation } invocation
-		 * @param { slime.internal.jsh.launcher.test.ShellImplementation } implementation
+		 * @param { slime.jsh.internal.launcher.test.ShellInvocation } invocation
+		 * @param { slime.jsh.internal.launcher.test.ShellImplementation } implementation
 		 * @returns
 		 */
 		var getShellResult = function(invocation,implementation) {
 			/**
 			 *
-			 * @param { slime.internal.jsh.launcher.test.ShellInvocation } invocation
-			 * @param { slime.internal.jsh.launcher.test.ShellImplementation } implementation
+			 * @param { slime.jsh.internal.launcher.test.ShellInvocation } invocation
+			 * @param { slime.jsh.internal.launcher.test.ShellImplementation } implementation
 			 * @returns
 			 */
 			var toInvocation = function(invocation,implementation) {
@@ -185,11 +186,11 @@
 
 		/**
 		 * @param { string } engine
-		 * @param { slime.internal.jsh.launcher.test.ShellImplementation } shell
+		 * @param { slime.jsh.internal.launcher.test.ShellImplementation } shell
 		 * @param { slime.jrunscript.file.Pathname } rhino
 		 * @param { slime.jrunscript.file.Directory } home
 		 * @param { slime.jrunscript.file.Directory } tmp
-		 * @returns { slime.internal.jsh.launcher.test.Scenario }
+		 * @returns { slime.jsh.internal.launcher.test.Scenario }
 		 */
 		var toScenario = function(engine,shell,rhino,home,tmp) {
 			var type = shell.type;
@@ -220,16 +221,12 @@
 					properties: properties
 				}, shell);
 
-				var checkOutput = function(result) {
-					verifyOutput(
-						Boolean(rhino),
-						Boolean(engine == "rhino"),
-						Boolean(type == "unbuilt"),
-						tmp,
-						verify,
-						result
-					)
-				};
+				var checkOutput = verifyOutput({
+					hasRhino: Boolean(rhino),
+					isRhino: Boolean(engine == "rhino"),
+					isUnbuilt: Boolean(type == "unbuilt"),
+					tmp: tmp
+				})(verify);
 
 				checkOutput(result);
 
@@ -304,7 +301,7 @@
 
 				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
-				/** @type { slime.internal.jsh.launcher.test.ShellImplementation } */
+				/** @type { slime.jsh.internal.launcher.test.ShellImplementation } */
 				var unbuilt = {
 					type: "unbuilt",
 					shell: [
@@ -314,7 +311,7 @@
 					coffeescript: src.getFile("local/jsh/lib/coffee-script.js")
 				};
 
-				/** @type { slime.internal.jsh.launcher.test.ShellImplementation } */
+				/** @type { slime.jsh.internal.launcher.test.ShellImplementation } */
 				var built = {
 					type: "built",
 					shell: [
