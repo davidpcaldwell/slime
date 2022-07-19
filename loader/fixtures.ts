@@ -4,27 +4,37 @@
 //
 //	END LICENSE
 
-(
-	function($exports: { subject: (fifty: slime.fifty.test.Kit) => slime.runtime.Exports }) {
-		$exports.subject = function(fifty: slime.fifty.test.Kit) {
-			var code = fifty.$loader.get("expression.js");
-			var js = code.read(String);
-
-			var subject: slime.runtime.Exports = (function() {
-				var scope: { $slime: slime.runtime.internal.Code, $engine: slime.runtime.$engine } = {
-					$slime: {
-						getRuntimeScript: function(path) {
-							var resource = fifty.$loader.get(path);
-							return { name: resource.name, js: resource.read(String) }
-						}
-					},
-					$engine: void(0)
-				}
-				return eval(js);
-			})();
-
-			return subject;
-		}
+namespace slime.runtime.test {
+	export interface Exports {
+		subject: (fifty: slime.fifty.test.Kit) => slime.runtime.Exports
 	}
-//@ts-ignore
-)($exports);
+
+	export type Script = slime.loader.Script<void,Exports>;
+
+	(
+		function($export: slime.loader.Export<Exports>) {
+			$export({
+				subject: function(fifty: slime.fifty.test.Kit) {
+					var code = fifty.$loader.get("expression.js");
+					var js = code.read(String);
+
+					var subject: slime.runtime.Exports = (function() {
+						var scope: { $slime: slime.runtime.internal.Code, $engine: slime.runtime.$engine } = {
+							$slime: {
+								getRuntimeScript: function(path) {
+									var resource = fifty.$loader.get(path);
+									return { name: resource.name, js: resource.read(String) }
+								}
+							},
+							$engine: void(0)
+						}
+						return eval(js);
+					})();
+
+					return subject;
+				}
+			});
+		}
+	//@ts-ignore
+	)($export);
+}
