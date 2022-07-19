@@ -446,6 +446,10 @@ namespace slime.jrunscript.shell {
 
 			stdio: {
 				handler: {
+					/**
+					 * Creates an event handler that automatically buffers trailing blank lines, so that blank lines created by the
+					 * end of a stream do not produce calls to the event handler.
+					 */
 					line: (f: (e: slime.$api.Event<slime.jrunscript.shell.run.Line>) => void) => (e: slime.$api.Event<slime.jrunscript.shell.run.Line>) => void
 				}
 			}
