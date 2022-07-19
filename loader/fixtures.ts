@@ -36,5 +36,5 @@ namespace slime.runtime.test {
 			});
 		}
 	//@ts-ignore
-	)($exports);
+	)($export);
 }
