@@ -537,7 +537,8 @@ namespace slime {
 
 		export namespace test {
 			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.Kit) {
-				return fifty.$loader.module("fixtures.ts").subject;
+				var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+				return script().subject(fifty);
 			//@ts-ignore
 			})(fifty);
 		}
