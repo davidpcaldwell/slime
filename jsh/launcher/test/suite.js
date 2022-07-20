@@ -92,11 +92,40 @@
 			}
 		}
 
+		/** @type { slime.jsh.internal.launcher.test.Exports["requireBuiltShell"] } */
+		var requireHomeDirectory = function(p) {
+			return function(events) {
+				if (p.specified && p.specified.directory) {
+					events.fire("specified", p.specified);
+					return p.specified.directory;
+				}
+				if (p.current) {
+					events.fire("current", p.current);
+					return p.current;
+				}
+				events.fire("buildStart");
+				var tmpdir = $context.library.shell.TMPDIR.createTemporary({ directory: true });
+				events.fire("buildLocation", tmpdir);
+				$api.Function.world.now.action(
+					_buildShell(p.src, p.rhino),
+					tmpdir,
+					{
+						//	TODO	Probably need to come up with event forwarding API
+						console: function(e) {
+							events.fire("buildOutput", e.detail);
+						}
+					}
+				);
+				return tmpdir;
+			}
+		}
+
 		$export({
 			getEngines: getEngines,
 			buildShell: _buildShell,
-			verifyOutput: verifyOutput
-		})
+			verifyOutput: verifyOutput,
+			requireBuiltShell: requireHomeDirectory
+		});
 	}
 //@ts-ignore
 )($api,$context,$export);
