@@ -28,37 +28,6 @@
 
 		/**
 		 *
-		 * @param { slime.jsh.internal.launcher.test.ShellConfiguration } configuration
-		 * @returns { (verify: slime.definition.verify.Verify) => (result: slime.jsh.internal.launcher.test.Result) => void }
-		 */
-		function verifyOutput(configuration) {
-			return function(verify) {
-				return function(result) {
-					if (configuration.isUnbuilt) {
-						verify(result).src.is.not(null);
-						verify(result).home.is(null);
-					} else {
-						verify(result).src.is(null);
-						verify(result).home.is.not(null);
-					}
-					verify(result).logging.is("/foo/bar");
-					verify(result).foo1.is("bar");
-					verify(result).foo2.is("baz");
-					verify(result).rhino.running.is( configuration.isRhino );
-					if (configuration.hasRhino) {
-						verify(result).rhino.classpath.is.not(null);
-					} else {
-						//	TODO	below comment seems wrong; the whole point of .hasRhino is that we do know, right?
-						//	We do not know; we could have been run inside a shell that has Rhino installed
-						//	verify(result).rhino.classpath.is(null);
-					}
-					verify(result).tmp.is(configuration.tmp.toString());
-				}
-			}
-		}
-
-		/**
-		 *
 		 * @param { slime.jrunscript.file.Pathname } rhino
 		 * @param { slime.jrunscript.file.Pathname } specified The specified location of the built shell, if any.
 		 * @param { slime.jrunscript.file.Directory } shell If running in a built shell, its location.
@@ -184,7 +153,7 @@
 					properties: properties
 				}, shell);
 
-				var checkOutput = verifyOutput({
+				var checkOutput = library.script.verifyOutput({
 					hasRhino: Boolean(rhino),
 					isRhino: Boolean(engine == "rhino"),
 					isUnbuilt: Boolean(type == "unbuilt"),
