@@ -256,48 +256,6 @@ END LICENSE
 					<span class="type"><a href="#types.Pathname">Pathname</a></span> The pathname represented by the argument.
 				</div>
 				<script type="application/x.jsapi#tests">
-					var dir = newTemporaryDirectory();
-
-					var filea = createFile(dir,"a");
-					var fileb = createFile(dir,"b");
-					var filec = createDirectory(dir,"c");
-					var filed = createFile(filec,"d");
-					var filee = createDirectory(dir,"e");
-					var filef = createFile(filee,"f");
-
-					createFile(dir,"target",1112);
-
-					test(
-						filea.pathname.toString().substring(filea.pathname.toString().length-1)
-						!= filesystem.$unit.getPathnameSeparator()
-					);
-					test(
-						filec.pathname.toString().substring(filec.pathname.toString().length-1)
-						!= filesystem.$unit.getPathnameSeparator()
-					);
-
-					test(filea.pathname.basename == "a");
-					test(filec.pathname.basename == "c");
-					test(filed.pathname.basename == "d");
-					test(filec.getRelativePath("..").directory.toString() == dir.toString());
-
-					test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
-					test( filed.getRelativePath("../b").toString() == fileb.pathname.toString() );
-					test( filed.getRelativePath("d").toString() == filed.pathname.toString() );
-					test( filed.getRelativePath("./d").toString() == filed.pathname.toString() );
-					test( filed.getRelativePath("../c/d").toString() == filed.pathname.toString() );
-
-					test( !filea.directory );
-					test( filec.directory );
-
-					test( function() {
-						if (filed.parent == null) return false;
-						return filed.parent.pathname.toString() == filec.pathname.toString();
-					} );
-					test( function() {
-							if (filec.parent == null) return false;
-							return filec.parent.pathname.toString() == dir.pathname.toString();
-					} );
 				</script>
 				<div class="type">
 					<a class="type" name="types.Pathname">Pathname</a>
@@ -1028,14 +986,6 @@ END LICENSE
 			scope.filee = filee;
 			scope.filef = filef;
 		</script>
-		<script type="application/x.jsapi#tests"><![CDATA[
-		]]></script>
-		<script type="application/x.jsapi#tests"><![CDATA[
-			var purpleRain = new Date( 1999, 0, 1 );
-			scope.test( purpleRain.getTime() != filea.modified.getTime() );
-			filea.modified = purpleRain;
-			scope.test(purpleRain.getTime() == filea.modified.getTime());
-		]]></script>
 		<div>
 			<script type="application/x.jsapi#initialize"><![CDATA[
 				var createFile = function(file,length) {

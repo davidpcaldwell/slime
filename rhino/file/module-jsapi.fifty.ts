@@ -63,14 +63,21 @@ namespace slime.jrunscript.file {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { run, verify } = fifty;
+			const { jsh } = fifty.global;
 
 			const { createFile, createDirectory } = file.test.fixtures.module;
 
-			const { filec, dir, _context } = file.test.fixtures.jsapi;
+			const { filea, filec, dir, _context } = file.test.fixtures.jsapi;
 
 			const test = function(b: boolean) {
 				verify(b).is(true);
 			}
+
+			const newTemporaryDirectory = function() {
+				return jsh.shell.TMPDIR.createTemporary({ directory: true });
+			}
+
+			const filesystem = jsh.file.filesystems.os;
 
 			fifty.tests._1 = function() {
 				var toDelete = createFile(filec,"toDelete");
@@ -155,10 +162,64 @@ namespace slime.jrunscript.file {
 				test( a.file.read(String) == "Hello World" );
 			}
 
+			fifty.tests._4 = function() {
+				var purpleRain = new Date( 1999, 0, 1 );
+				test( purpleRain.getTime() != filea.modified.getTime() );
+				filea.modified = purpleRain;
+				test(purpleRain.getTime() == filea.modified.getTime());
+			}
+
+			fifty.tests.Pathname = function() {
+				var dir = newTemporaryDirectory();
+
+				var filea = createFile(dir,"a");
+				var fileb = createFile(dir,"b");
+				var filec = createDirectory(dir,"c");
+				var filed = createFile(filec,"d");
+				var filee = createDirectory(dir,"e");
+				var filef = createFile(filee,"f");
+
+				createFile(dir,"target",1112);
+
+				test(
+					filea.pathname.toString().substring(filea.pathname.toString().length-1)
+					!= filesystem.$unit.getPathnameSeparator()
+				);
+				test(
+					filec.pathname.toString().substring(filec.pathname.toString().length-1)
+					!= filesystem.$unit.getPathnameSeparator()
+				);
+
+				test(filea.pathname.basename == "a");
+				test(filec.pathname.basename == "c");
+				test(filed.pathname.basename == "d");
+				test(filec.getRelativePath("..").directory.toString() == dir.toString());
+
+				test( filec.getRelativePath("d").toString() == filed.pathname.toString() );
+				test( filed.parent.getRelativePath("../b").toString() == fileb.pathname.toString() );
+				test( filed.parent.getRelativePath("d").toString() == filed.pathname.toString() );
+				test( filed.parent.getRelativePath("./d").toString() == filed.pathname.toString() );
+				test( filed.parent.getRelativePath("../c/d").toString() == filed.pathname.toString() );
+
+				test( !filea.directory );
+				test( filec.directory );
+
+				test( (function() {
+					if (filed.parent == null) return false;
+					return filed.parent.pathname.toString() == filec.pathname.toString();
+				})() );
+				test( (function() {
+						if (filec.parent == null) return false;
+						return filec.parent.pathname.toString() == dir.pathname.toString();
+				})() );
+			}
+
 			fifty.tests.suite = function() {
 				run(fifty.tests._1);
 				run(fifty.tests._2);
 				run(fifty.tests._3);
+				run(fifty.tests._4);
+				run(fifty.tests.Pathname);
 			};
 		}
 	//@ts-ignore
