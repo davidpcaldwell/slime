@@ -66,7 +66,11 @@ namespace slime.jsh.internal.launcher {
 		export interface Exports {
 			getEngines: (src: slime.jrunscript.file.Directory) => string[]
 
-			buildShell: (src: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.Pathname) => slime.$api.fp.world.Action<slime.jrunscript.file.Directory,{ console: string }>
+			buildShell: (src: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.Pathname)
+				=> slime.$api.fp.world.Action<slime.jrunscript.file.Directory,{ console: string }>
+
+			verifyOutput: (configuration: slime.jsh.internal.launcher.test.ShellConfiguration)
+				=> (verify: slime.definition.verify.Verify) => (result: slime.jsh.internal.launcher.test.Result) => void
 		}
 
 		export type Script = slime.loader.Script<Context,Exports>
