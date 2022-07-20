@@ -214,12 +214,40 @@ namespace slime.jrunscript.file {
 				})() );
 			}
 
+			fifty.tests.Directory = fifty.test.Parent();
+			fifty.tests.Directory._toString = function() {
+				var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var relative = tmpdir.getRelativePath("relative");
+				var endsWithSlashPattern = /\/$/;
+				var toStringMatches = function(regex) {
+					return function() {
+						var string = this.toString();
+						var rv = regex.test(string);
+						jsh.shell.console("pattern = " + regex + " path=" + string + " rv=" + rv);
+						return rv;
+					}
+				};
+				var toStringEndsWithSlash = toStringMatches(/\/$/);
+				var toStringEndsWithDoubleSlash = toStringMatches(/\/\/$/);
+				verify(relative).evaluate(toStringEndsWithSlash).is(false);
+				var directory = relative.createDirectory();
+				jsh.shell.console(directory.toString());
+				verify(relative).evaluate(toStringEndsWithSlash).is(false);
+				verify(directory).evaluate(toStringEndsWithSlash).is(true);
+				verify(directory).evaluate(toStringEndsWithDoubleSlash).is(false);
+				//	TODO	fix this and see if it breaks anything else
+				if (true) {
+					verify(directory).pathname.evaluate(toStringEndsWithSlash).is(false);
+				}
+			}
+
 			fifty.tests.suite = function() {
 				run(fifty.tests._1);
 				run(fifty.tests._2);
 				run(fifty.tests._3);
 				run(fifty.tests._4);
 				run(fifty.tests.Pathname);
+				run(fifty.tests.Directory);
 			};
 		}
 	//@ts-ignore
