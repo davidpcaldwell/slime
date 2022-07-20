@@ -52,6 +52,29 @@ namespace slime.jsh.internal.launcher {
 			tmp: slime.jrunscript.file.Directory
 		}
 
+		export interface BuiltShellContext {
+			src: slime.jrunscript.file.Directory
+			rhino: slime.jrunscript.file.Pathname
+
+			/**
+			 * The specified location of the built shell, if any.
+			 */
+			specified: slime.jrunscript.file.Pathname
+
+			/**
+			 * If running in a built shell, its location.
+			 */
+			current: slime.jrunscript.file.Directory
+		}
+
+		export interface BuiltShellEvents {
+			specified: slime.jrunscript.file.Pathname
+			current: slime.jrunscript.file.Directory
+			buildStart: void
+			buildLocation: slime.jrunscript.file.Directory
+			buildOutput: string
+		}
+
 		export interface Scenario {
 			name: string
 			execute: (verify: slime.definition.verify.Verify) => void
@@ -71,6 +94,12 @@ namespace slime.jsh.internal.launcher {
 
 			verifyOutput: (configuration: slime.jsh.internal.launcher.test.ShellConfiguration)
 				=> (verify: slime.definition.verify.Verify) => (result: slime.jsh.internal.launcher.test.Result) => void
+
+			requireBuiltShell: slime.$api.fp.world.Question<
+				slime.jsh.internal.launcher.test.BuiltShellContext,
+				slime.jsh.internal.launcher.test.BuiltShellEvents,
+				slime.jrunscript.file.Directory
+			>
 		}
 
 		export type Script = slime.loader.Script<Context,Exports>

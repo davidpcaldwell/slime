@@ -28,32 +28,6 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.file.Pathname } rhino
-		 * @param { slime.jrunscript.file.Pathname } specified The specified location of the built shell, if any.
-		 * @param { slime.jrunscript.file.Directory } shell If running in a built shell, its location.
-		 */
-		var getHome = function(rhino,specified,shell) {
-			if (specified && specified.directory) {
-				jsh.shell.console("Launcher tests using supplied built shell at " + specified + " ...");
-				return specified.directory;
-			}
-			if (shell) return shell;
-			jsh.shell.console("Building shell in which to run launcher tests ...");
-			var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-			$api.Function.world.now.action(
-				library.script.buildShell(jsh.shell.jsh.src, rhino),
-				tmpdir,
-				{
-					console: function(e) {
-						jsh.shell.console(e.detail);
-					}
-				}
-			);
-			return tmpdir;
-		}
-
-		/**
-		 *
 		 * @param { slime.jsh.internal.launcher.test.ShellInvocation } p
 		 * @returns
 		 */
@@ -229,7 +203,32 @@
 				}
 			},
 			scenario: function(parameters) {
-				var home = getHome(parameters.options.rhino, parameters.options["shell:built"], jsh.shell.jsh.home);
+				var home = $api.Function.world.now.question(
+					library.script.requireBuiltShell,
+					{
+						src: jsh.shell.jsh.src,
+						rhino: parameters.options.rhino,
+						specified: parameters.options["shell:built"],
+						current: jsh.shell.jsh.home
+					},
+					{
+						specified: function(e) {
+							jsh.shell.console("Using specified built shell at " + e.detail.toString());
+						},
+						current: function(e) {
+							jsh.shell.console("Using current built shell at " + e.detail.pathname.toString());
+						},
+						buildStart: function(e) {
+							jsh.shell.console("Building shell for tests ...");
+						},
+						buildLocation: function(e) {
+							jsh.shell.console("Building shell to " + e.detail.pathname.toString());
+						},
+						buildOutput: function(e) {
+							jsh.shell.console("BUILD OUTPUT: " + e.detail);
+						}
+					}
+				);
 
 				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
