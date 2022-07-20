@@ -189,6 +189,8 @@
 								parser: parser
 							},
 							directory: jsh.shell.PWD,
+							//	TODO	this is now redundant with code in the loader jsh.js that converts arguments to native form
+							//			for use with the new main() function API
 							arguments: jsh.java.Array.adapt($slime.getInvocation().getArguments()).map(function(s) { return String(s); }),
 						},
 						source
