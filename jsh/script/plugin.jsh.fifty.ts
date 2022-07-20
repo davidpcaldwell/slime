@@ -63,7 +63,6 @@ namespace slime.jsh.script {
 	//@ts-ignore
 	)(fifty);
 
-
 	export namespace cli {
 		export interface Exports {
 			Call: {
@@ -329,6 +328,16 @@ namespace slime.jsh.script {
 			 */
 			wrap: (descriptor: cli.Descriptor<any>) => void
 		}
+
+		export type Program = (invocation: slime.jsh.script.cli.Invocation<{}>) => number | void
+
+		/**
+		 * @experimental
+		 *
+		 * A value of this type is provided to the top-level `jsh` script's scope as `main`. It can be used to essentially declare
+		 * a main function of type {@link Program}, which can be created using functional techniques.
+		 */
+		export type main = (program: Program) => void
 	}
 
 	(

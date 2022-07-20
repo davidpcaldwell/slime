@@ -14,6 +14,13 @@
 	 * @param { slime.jrunscript.native.inonit.script.jsh.Shell } $jsh
 	 */
 	function(global,Packages,JavaAdapter,$jsh) {
+		var internal = {
+			/** @type { (status: number) => never } */
+			exit: void(0),
+			/** @type { string[] } */
+			arguments: void(0)
+		};
+
 		global.jsh = new function() {
 			var $slime = (
 				/**
@@ -23,7 +30,6 @@
 				 */
 				function($jsh) {
 					var configuration = $jsh.getEnvironment();
-					var invocation = $jsh.getInvocation();
 
 					/**
 					 * @type { slime.jsh.plugin.Stdio }
@@ -46,6 +52,17 @@
 							}
 						}
 					})();
+
+					var invocation = $jsh.getInvocation();
+
+					internal.arguments = (function(_invocation) {
+						var _arguments = _invocation.getArguments();
+						var rv = [];
+						for (var i=0; i<_arguments.length; i++) {
+							rv.push(String(_arguments[i]));
+						}
+						return rv;
+					})(invocation);
 
 					// $jsh.runtime() is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
 					return Object.assign(
@@ -101,6 +118,8 @@
 				}
 			)($jsh);
 
+			internal.exit = $slime.exit;
+
 			(function initializeDeprecation() {
 				//	TODO	The name prefix used below is duplicative of the one in js/debug/plugin.jsh.js, so not DRY currently
 				var _log = function(_logger,_level,mask) {
@@ -135,13 +154,23 @@
 				};
 			})();
 
-			var plugins = $slime.value(
-				$slime.loader.getLoaderScript("plugins.js"),
-				{
-					$slime: $slime,
-					jsh: this
+			var plugins = (
+				function(jsh) {
+					/** @type { slime.jsh.loader.internal.plugins.Export } */
+					var exported;
+					$slime.run(
+						$slime.loader.getLoaderScript("plugins.js"),
+						{
+							$slime: $slime,
+							jsh: jsh,
+							$export: function(v) {
+								exported = v;
+							}
+						}
+					);
+					return exported;
 				}
-			);
+			)(this);
 
 			$slime.plugins = {
 				mock: function(p) {
@@ -410,6 +439,9 @@
 			}
 		};
 
+		/** @type { slime.jsh.script.cli.Program } */
+		var main;
+
 		global.jsh.loader.run(
 			{
 				name: $jsh.getInvocation().getScript().getSource().getSourceName(),
@@ -423,9 +455,23 @@
 					return rv;
 				})()
 			},
-			this,
+			Object.assign({}, this, {
+				main: function(supplied) {
+					main = supplied;
+				}
+			}),
 			this
 		);
+
+		if (main) {
+			var status = main({
+				options: {},
+				arguments: internal.arguments
+			});
+			if (typeof(status) == "number") {
+				internal.exit(status);
+			}
+		}
 
 		$jsh.events();
 	}

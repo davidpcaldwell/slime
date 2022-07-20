@@ -10,9 +10,9 @@
 	 * @param { any } Packages
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.jsh.Global } jsh
-	 * @param { (v: slime.jsh.loader.internal.plugins.Export) => void } $set
+	 * @param { slime.loader.Export<slime.jsh.loader.internal.plugins.Export> } $export
 	 */
-	function(Packages,$slime,jsh,$set) {
+	function(Packages,$slime,jsh,$export) {
 		var Constructor = function() {
 			//	Loads the plugin code from a specific plugin.jsh.js at the top level of a loader and returns a list of implementations
 			//	with 'declaration' properties representing the objects provided by the implementor and 'toString' methods supplied by the
@@ -221,7 +221,7 @@
 
 		var instance = new Constructor();
 
-		$set(instance);
+		$export(instance);
 	}
 //@ts-ignore
-)(Packages,$slime,jsh,$set)
+)(Packages,$slime,jsh,$export)
