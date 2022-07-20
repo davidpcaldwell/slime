@@ -66,7 +66,7 @@ namespace slime.jrunscript.file {
 
 			const { createFile, createDirectory } = file.test.fixtures.module;
 
-			const { filec, dir } = file.test.fixtures.jsapi;
+			const { filec, dir, _context } = file.test.fixtures.jsapi;
 
 			const test = function(b: boolean) {
 				verify(b).is(true);
@@ -120,9 +120,45 @@ namespace slime.jrunscript.file {
 				created.remove();
 			}
 
+			fifty.tests._3 = function() {
+				var mydir = createDirectory(dir, "write");
+				test( (mydir != null) );
+
+				var a = mydir.getRelativePath("a");
+				var b = mydir.getRelativePath("b/c");
+
+				var checkError = function(f) {
+					try {
+						f();
+						return true;
+					} catch (e) {
+						return false;
+					}
+				}
+
+				var Streams = _context.module.Streams;
+				test( checkError( function() { a.write(Streams.binary).close(); } ) );
+				test( !checkError( function() { b.write(Streams.binary).close(); } ) );
+				test( checkError( function() { b.write(Streams.binary, { recursive: true}).close(); } ) );
+				test( !checkError( function() { b.write(Streams.binary).close(); } ) );
+				test( checkError( function() { b.write(Streams.binary, {append: false}).close(); } ) );
+
+				var writeAndClose = function(path,string,append) {
+					path.write(string, { append: append });
+				}
+
+				writeAndClose(a,"Hello",true);
+				test( a.file.read(String) == "Hello" );
+				writeAndClose(a,"Hello",false);
+				test( a.file.read(String) == "Hello" );
+				writeAndClose(a," World",true);
+				test( a.file.read(String) == "Hello World" );
+			}
+
 			fifty.tests.suite = function() {
 				run(fifty.tests._1);
 				run(fifty.tests._2);
+				run(fifty.tests._3);
 			};
 		}
 	//@ts-ignore
