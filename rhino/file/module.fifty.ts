@@ -138,7 +138,17 @@ namespace slime.jrunscript.file {
 
 	export interface Exports {
 		Pathname: {
+			/**
+			 * Creates objects that represent a path in the local file system; attempts to 'cast' an argument to a {@link Pathname}.
+			 *
+			 * @param p An argument to be converted to a Pathname.  If the argument is a `string`, the argument will be interpreted
+			 * literally as a path in the local filesystem.  If the argument is an object, its `toString` method will be invoked and
+			 * the result will be interpreted as a path in the local filesystem.
+			 *
+			 * @returns The pathname represented by the argument.
+			 */
 			(p: string): Pathname
+
 			createDirectory: {
 				exists: {
 					LEAVE: (dir: slime.jrunscript.file.Directory) => boolean
