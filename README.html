@@ -126,7 +126,7 @@ END LICENSE
 					</div>
 				</div>
 				<div>
-					<h4><code><a href="local/doc/typedoc/modules/slime.jsh.html">jsh</a></code>: a JavaScript application environment that can access the Java platform.</h4>
+					<h4><code><a href="local/doc/typedoc/modules/slime-1.jsh.html">jsh</a></code>: a JavaScript application environment that can access the Java platform.</h4>
 				</div>
 				<div>
 					<h4><a href="rhino/http/servlet/api.html">SLIME Servlets</a>: a JavaScript environment for authoring
@@ -134,17 +134,17 @@ END LICENSE
 				</div>
 			</div>
 			<div>
-				<h3><a href="local/doc/typedoc/modules/slime.browser.html">Browser</a>: a SLIME environment for the browser</h3>
+				<h3><a href="local/doc/typedoc/modules/slime-1.browser.html">Browser</a>: a SLIME environment for the browser</h3>
 				Browser support is less mature than Java support, but is currently tested in Google Chrome, Firefox and Safari.
 			</div>
 			<div>
-				<h3><a href="local/doc/typedoc/modules/slime.node.html">Node</a>: a SLIME runtime for Node.js</h3>
+				<h3><a href="local/doc/typedoc/modules/slime-1.node.html">Node</a>: a SLIME runtime for Node.js</h3>
 				Node.js support is new; currently, the Node environment simply loads the low-level SLIME runtime (providing SLIME's
 				object-oriented and functional programming APIs) and provides
 				access to it. A first-class Node embedding that adds code loading implementations, etc., is not provided yet.
 			</div>
 			<div>
-				<h3><a href="local/doc/typedoc/modules/slime.jxa.html">JXA</a>: a SLIME environment for use in macOS automation</h3>
+				<h3><a href="local/doc/typedoc/modules/slime-1.jxa.html">JXA</a>: a SLIME environment for use in macOS automation</h3>
 				JXA support is alpha quality. That said, JXA is a very difficult environment to use, so SLIME is already extremely
 				helpful, as it provides basic abilities not provided by the platform (like the ability to load code from other
 				source files).
@@ -247,11 +247,11 @@ END LICENSE
 							blocks:
 							<ul>
 								<li>
-									The <a href="local/doc/typedoc/modules/slime.tools.documentation.html">Documentation API</a>
+									The <a href="local/doc/typedoc/modules/slime-1.tools.documentation.html">Documentation API</a>
 									provides a SLIME servlet handler implementation that serves documentation.
 								</li>
 								<li>
-									The <a href="local/doc/typedoc/interfaces/slime.jsh.global.html#ui"><code>jsh.ui</code></a>
+									The <a href="local/doc/typedoc/interfaces/slime-1.jsh.global.html#ui"><code>jsh.ui</code></a>
 									API provides the ablity to launch SLIME applications with a UI, and can incorporate the
 									documentation servlet handler implementation defined above.
 								</li>
@@ -265,10 +265,10 @@ END LICENSE
 				<p>
 					SLIME provides a tool called <code>wf</code> for automating tasks in the software development lifecycle. It
 					provides standard implementations of various commands that can be added to a project with some project-specific
-					configuration; see <a href="local/doc/typedoc/interfaces/slime.jsh.wf.Exports.html#project"><code>jsh.wf.project.initialize()</code></a>.
+					configuration; see <a href="local/doc/typedoc/interfaces/slime-1.jsh.wf.Exports.html#project"><code>jsh.wf.project.initialize()</code></a>.
 					Custom <code>wf</code> commands can also be implemented, either from scratch or using a provided
-					<code>jsh</code> plugin <a href="local/doc/typedoc/interfaces/slime.jsh.wf.exports.html">API</a>.
-					See the <code>wf</code> <a href="local/doc/typedoc/modules/slime.jsh.wf.html">documentation</a>
+					<code>jsh</code> plugin <a href="local/doc/typedoc/interfaces/slime-1.jsh.wf.exports.html">API</a>.
+					See the <code>wf</code> <a href="local/doc/typedoc/modules/slime-1.jsh.wf.html">documentation</a>
 					(specifically the namespace comment in <a href="tools/wf/plugin.jsh.fifty.ts?as=text"><code>tools/wf/plugin.jsh.fifty.ts</code></a>,
 					as long as TypeDoc is <a href="https://github.com/TypeStrong/typedoc/issues/1855">struggling</a> to handle multi-file namespaces)
 					for more information on setting up
