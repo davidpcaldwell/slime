@@ -396,6 +396,21 @@
 					return adapted(handler);
 				}
 			},
+			Question: {
+				pipe: function(a,q) {
+					return function(n) {
+						return q(a(n));
+					}
+				},
+				map: function(q,m) {
+					return function(p) {
+						return function(events) {
+							var rv = q(p)(events);
+							return m(rv);
+						}
+					}
+				}
+			},
 			action: function(action, handler) {
 				return function(p) {
 					var tell = action(p);
