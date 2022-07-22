@@ -86,6 +86,15 @@ namespace slime.jsh.internal.launcher {
 			}
 		}
 
+		export type ShellResult = slime.$api.fp.world.Question<ShellInvocation,{
+			invocation: {
+				command: string
+				arguments: string[]
+				environment: { [x: string]: string }
+			}
+			output: string
+		},test.Result>
+
 		export interface Exports {
 			getEngines: (src: slime.jrunscript.file.Directory) => string[]
 

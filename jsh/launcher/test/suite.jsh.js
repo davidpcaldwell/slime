@@ -26,47 +26,55 @@
 			})
 		};
 
-		/**
-		 *
-		 * @param { slime.jsh.internal.launcher.test.ShellInvocation } p
-		 * @returns
-		 */
-		var shell = function(p) {
-			/** @type { slime.jrunscript.shell.invocation.Token[] } */
-			var vm = [];
-			if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
-			if (!p.bash) {
-				if (p.logging) {
-					p.properties["jsh.log.java.properties"] = p.logging;
-				}
-			}
-			for (var x in p.properties) {
-				vm.push("-D" + x + "=" + p.properties[x]);
-			}
-			var shell = (p.bash) ? p.shell : vm.concat(p.shell)
-			var script = (p.script) ? p.script : jsh.script.file;
-			var environment = $api.Object.compose(
-				p.environment,
-				(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
-				(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
-			);
-			return jsh.shell.run({
-				command: (p.bash) ? p.bash : jsh.shell.java.jrunscript,
-				arguments: shell.concat([script.toString()]).concat( (p.arguments) ? p.arguments : [] ),
-				stdio: (p.stdio) ? p.stdio : {
-					output: String
-				},
-				environment: environment,
-				evaluate: (p.evaluate) ? p.evaluate : function(result) {
-					if (p.bash) {
-						jsh.shell.echo("Command: " + result.command + " " + result.arguments.join(" "));
+		/** @type { slime.jsh.internal.launcher.test.ShellResult } */
+		var invocationJson = function(p) {
+			return function(events) {
+				/** @type { slime.jrunscript.shell.invocation.Token[] } */
+				var vm = [];
+				if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
+				if (!p.bash) {
+					if (p.logging) {
+						p.properties["jsh.log.java.properties"] = p.logging;
 					}
-					if (result.status !== 0) throw new Error("Status is " + result.status);
-					jsh.shell.echo("Output: " + result.stdio.output);
-					return JSON.parse(result.stdio.output);
 				}
-			})
+				for (var x in p.properties) {
+					vm.push("-D" + x + "=" + p.properties[x]);
+				}
+				var shell = (p.bash) ? p.shell : vm.concat(p.shell)
+				var script = (p.script) ? p.script : jsh.script.file;
+				var environment = $api.Object.compose(
+					p.environment,
+					(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
+					(jsh.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: jsh.shell.environment.JSH_SHELL_LIB } : {}
+				);
+				return jsh.shell.run({
+					command: (p.bash) ? p.bash : jsh.shell.java.jrunscript,
+					arguments: shell.concat([script.toString()]).concat( (p.arguments) ? p.arguments : [] ),
+					stdio: (p.stdio) ? p.stdio : {
+						output: String
+					},
+					environment: environment,
+					evaluate: (p.evaluate) ? p.evaluate : function(result) {
+						if (p.bash) {
+							events.fire("invocation", { command: result.command, arguments: result.arguments, environment: environment });
+						}
+						if (result.status !== 0) throw new Error("Status is " + result.status);
+						events.fire("output", result.stdio.output);
+						return JSON.parse(result.stdio.output);
+					}
+				});
+			}
 		};
+
+		var shell = $api.Function.world.question(invocationJson, {
+			invocation: function(e) {
+				//	TODO	can we use console for this and the next call?
+				jsh.shell.echo("Command: " + e.detail.command + " " + e.detail.arguments.join(" "));
+			},
+			output: function(e) {
+				jsh.shell.echo("Output: " + e.detail);
+			}
+		})
 
 		/**
 		 *
