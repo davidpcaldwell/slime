@@ -409,6 +409,12 @@
 							return m(rv);
 						}
 					}
+				},
+				wrap: function(a,q,m) {
+					return $exports.Function.world.Question.map(
+						$exports.Function.world.Question.pipe(a, q),
+						m
+					);
 				}
 			},
 			action: function(action, handler) {
