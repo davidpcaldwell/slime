@@ -35,27 +35,33 @@
 			world: $loader.script("world.js")
 		}
 
+		var library = (
+			function() {
+				var java = code.java({
+					api: {
+						io: $context.api.io
+					}
+				});
+
+				var world = code.world({
+					library: {
+						io: $context.api.io
+					},
+					module: {
+						java: java
+					}
+				});
+
+				return {
+					java: java,
+					world: world
+				}
+			}
+		)();
+
 		var prototypes = {
 			Searchpath: {}
 		};
-
-		var java = code.java({
-			api: {
-				io: $context.api.io
-			}
-		});
-
-		//	World-oriented filesystem implementations. No world-oriented Cygwin implementation yet.
-		var providers = {
-			os: new java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
-		};
-
-		var world = code.world({
-			library: {
-				io: $context.api.io
-			},
-			providers: providers
-		});
 
 		/** @returns { item is slime.jrunscript.file.Pathname } */
 		var isPathname = function(item) {
@@ -66,7 +72,7 @@
 			//	Only use of $context.pathext in the module
 			Streams: $context.api.io.Streams,
 			Resource: $context.api.io.Resource,
-			filesystems: world.filesystems,
+			filesystems: library.world.filesystems,
 			isPathname: isPathname,
 			pathext: $context.pathext
 		});
@@ -83,11 +89,11 @@
 		 * @type { slime.jrunscript.file.Exports["filesystems"] }
 		 */
 		var filesystems = {
-			os: new os.Filesystem(providers.os),
+			os: new os.Filesystem(library.world.providers.os),
 			cygwin: ($context.cygwin) ? $loader.file("cygwin.js", {
 				cygwin: $context.cygwin,
 				Filesystem: os.Filesystem,
-				java: java,
+				java: library.java,
 				isPathname: isPathname,
 				Searchpath: file.Searchpath,
 				addFinalizer: $context.addFinalizer
@@ -121,20 +127,17 @@
 				});
 			},
 			{
-				exists: void(0)
+				exists: {
+					LEAVE: function(dir) {
+						return false;
+					},
+					RECREATE: function(dir) {
+						dir.remove();
+						return true;
+					}
+				}
 			}
 		);
-		$exports.Pathname.createDirectory.exists = {
-			LEAVE: void(0),
-			RECREATE: void(0)
-		};
-		$exports.Pathname.createDirectory.exists.LEAVE = function(dir) {
-			return false;
-		};
-		$exports.Pathname.createDirectory.exists.RECREATE = function(dir) {
-			dir.remove();
-			return true;
-		};
 
 		/**
 		 * @type { slime.jrunscript.file.Exports["navigate"] }
@@ -317,10 +320,6 @@
 
 		$exports.Loader = Loader;
 
-		//	Possibly used for initial attempt to produce HTTP filesystem, for example
-		$exports.Filesystem = os.Filesystem;
-		$api.experimental($exports,"Filesystem");
-
 		var zip = $loader.file("zip.js", {
 			Streams: $context.api.io.Streams
 			,Pathname: file.Pathname
@@ -427,13 +426,12 @@
 							navigate: $exports.navigate,
 							Searchpath: $exports.Searchpath,
 							Loader: $exports.Loader,
-							Filesystem: $exports.Filesystem,
 							zip: $exports.zip,
 							unzip: $exports.unzip,
 							list: $exports.list,
 							state: $exports.state,
 							action: $exports.action,
-							world: world,
+							world: library.world,
 							object: {
 								pathname: function(pathname) {
 									return $exports.Pathname(pathname.pathname);

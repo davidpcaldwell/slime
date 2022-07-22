@@ -160,10 +160,6 @@ namespace slime.jrunscript.file {
 	}
 
 	export interface Exports {
-		Filesystem: any
-	}
-
-	export interface Exports {
 		state: {
 			list: (pathname: string) => slime.$api.fp.world.old.Ask<void, {
 				relative: string
