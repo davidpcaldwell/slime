@@ -722,6 +722,10 @@ namespace slime.$api.fp {
 				process: (process: impure.Process) => void
 			}
 
+			Input: {
+				value: <T>(t: T) => impure.Input<T>
+			}
+
 			Process: {
 				compose: (processes: impure.Process[]) => impure.Process
 				output: <P>(p: P, f: impure.Output<P>) => impure.Process
