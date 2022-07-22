@@ -372,6 +372,13 @@
 					process();
 				}
 			},
+			Input: {
+				value: function(v) {
+					return function() {
+						return v;
+					}
+				}
+			},
 			Process: {
 				compose: function(processes) {
 					return function() {
