@@ -756,6 +756,16 @@ namespace slime.$api.fp {
 		question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => (p: P) => A
 		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => impure.Output<P>
 
+		Question: {
+			/**
+			 * An operation equivalent to {@link Exports | pipe(argument, question)}, but limited to one argument which provides
+			 * more readable type inference, mapping the produced value to a `Question` rather than a function returning an `Ask`.
+			 */
+			pipe: <P,E,A,N>(argument: (n: N) => P, question: world.Question<P,E,A>) => world.Question<N,E,A>
+
+			map: <P,E,A,N>(question: world.Question<P,E,A>, map: (b: A) => N) => world.Question<P,E,N>
+		}
+
 		ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => impure.Input<A>
 		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => impure.Process
 
