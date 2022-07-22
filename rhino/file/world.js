@@ -14,6 +14,11 @@
 	 * @param { slime.loader.Export<slime.jrunscript.file.World> } $export
 	 */
 	function(Packages,$api,$context,$export) {
+		//	World-oriented filesystem implementations. No world-oriented Cygwin implementation yet.
+		var providers = {
+			os: new $context.module.java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
+		};
+
 		/**
 		 *
 		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } was
@@ -371,9 +376,10 @@
 			);
 		};
 
-		var os = toWorldFilesystem($context.providers.os);
+		var os = toWorldFilesystem(providers.os);
 
 		$export({
+			providers: providers,
 			filesystems: {
 				os: os
 			},

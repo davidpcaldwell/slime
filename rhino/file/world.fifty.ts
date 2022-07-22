@@ -742,6 +742,10 @@ namespace slime.jrunscript.file {
 		filesystems: {
 			os: world.Filesystem
 		}
+
+		providers: {
+			os: slime.jrunscript.file.internal.java.FilesystemProvider
+		}
 	}
 
 	(
@@ -790,8 +794,8 @@ namespace slime.jrunscript.file.internal.world {
 		library: {
 			io: slime.jrunscript.io.Exports
 		}
-		providers: {
-			os: slime.jrunscript.file.internal.java.FilesystemProvider
+		module: {
+			java: slime.jrunscript.file.internal.java.Exports
 		}
 	}
 

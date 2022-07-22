@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.file.internal.filesystem {
 	export interface Context {
-		Searchpath: any
+		Searchpath: slime.jrunscript.file.internal.file.Exports["Searchpath"]
 		Pathname: slime.jrunscript.file.internal.file.Exports["Pathname"]
 	}
 
