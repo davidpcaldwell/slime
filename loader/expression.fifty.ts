@@ -596,20 +596,41 @@ namespace slime {
 			mime: slime.$api.mime.Export
 			readonly typescript: slime.runtime.$slime.TypeScript
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.suite = function() {
+					fifty.run(fifty.tests.runtime.exports);
+					fifty.load("mime.fifty.ts");
+					fifty.load("$api-Function.fifty.ts");
+					fifty.load("$api-Function-old.fifty.ts");
+					fifty.load("Loader.fifty.ts");
+				}
+
+				if (jsh) fifty.tests.platforms = function() {
+					fifty.run(function jsh() {
+						fifty.tests.suite();
+					});
+					var runBrowser = jsh.shell.world.question(
+						jsh.shell.Invocation.create({
+							command: fifty.jsh.file.relative("../fifty").pathname,
+							arguments: [
+								"test.browser",
+								fifty.jsh.file.relative("expression.fifty.ts").pathname
+							]
+						})
+					);
+					var getBrowserResult = $api.Function.world.ask(runBrowser);
+					var result = getBrowserResult();
+					verify(result, "browserResult").status.is(0);
+				}
+			}
+		//@ts-ignore
+		)(fifty)
 	}
 }
-
-(
-	function(
-		fifty: slime.fifty.test.Kit
-	) {
-		fifty.tests.suite = function() {
-			fifty.run(fifty.tests.runtime.exports);
-			fifty.load("mime.fifty.ts");
-			fifty.load("$api-Function.fifty.ts");
-			fifty.load("$api-Function-old.fifty.ts");
-			fifty.load("Loader.fifty.ts");
-		}
-	}
-//@ts-ignore
-)(fifty)
