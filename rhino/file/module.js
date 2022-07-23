@@ -63,17 +63,14 @@
 			Searchpath: {}
 		};
 
-		/** @returns { item is slime.jrunscript.file.Pathname } */
-		var isPathname = function(item) {
-			return item && item.java && item.java.adapt() && $context.api.java.isJavaType(Packages.java.io.File)(item.java.adapt());
-		}
-
 		var file = code.file({
 			//	Only use of $context.pathext in the module
+			library: {
+				java: $context.api.java
+			},
 			Streams: $context.api.io.Streams,
 			Resource: $context.api.io.Resource,
 			filesystems: library.world.filesystems,
-			isPathname: isPathname,
 			pathext: $context.pathext
 		});
 		file.Searchpath.prototype = prototypes.Searchpath;
@@ -94,7 +91,7 @@
 				cygwin: $context.cygwin,
 				Filesystem: os.Filesystem,
 				java: library.java,
-				isPathname: isPathname,
+				isPathname: file.isPathname,
 				Searchpath: file.Searchpath,
 				addFinalizer: $context.addFinalizer
 			}) : void(0)
@@ -161,7 +158,7 @@
 
 			if (isNode(from) && !from.pathname.directory && from.parent) {
 				from = from.parent;
-			} else if (isPathname(from) && from.parent) {
+			} else if (file.isPathname(from) && from.parent) {
 				if (from.parent.directory) {
 					from = from.parent.directory;
 				} else {
@@ -396,21 +393,6 @@
 			}
 		}
 
-		//	TODO	probably does not need to use __defineGetter__ but can use function literal?
-		var workingDirectory = function() {
-			//	TODO	the call used by jsh.shell to translate OS paths to paths from this package can probably be used here
-			if ($context.$pwd) {
-				var osdir = filesystems.os.Pathname($context.$pwd);
-				if (filesystem == filesystems.cygwin) {
-					osdir = filesystems.cygwin.toUnix(osdir);
-				}
-				return osdir.directory;
-			}
-		};
-		$exports.__defineGetter__("workingDirectory", workingDirectory);
-		//	Property only makes sense in context of an execution environment, so moving to jsh.shell (other environments can provide their
-		//	own mechanisms)
-
 		$exports.Streams = $context.api.io.Streams;
 		$exports.java = $context.api.io.java;
 
@@ -441,13 +423,8 @@
 								}
 							},
 							Streams: $exports.Streams,
-							java: $exports.java,
-							workingDirectory: void(0)
+							java: $exports.java
 						}
-						Object.defineProperty(rv, "workingDirectory", {
-							get: workingDirectory,
-							enumerable: true
-						});
 						return rv;
 					}
 				)(),

@@ -11,9 +11,9 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.file.internal.file.Context } $context
-	 * @param { slime.jrunscript.file.internal.file.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.file.internal.file.Exports> } $export
 	 */
-	function (Packages, $api, $context, $exports) {
+	function (Packages, $api, $context, $export) {
 		if (!$context.Resource) throw new Error();
 
 		var constant = $api.Function.memoized;
@@ -34,7 +34,7 @@
 			return function () { }();
 		}
 
-		$exports.list = {
+		var $exports_list = {
 			NODE: {
 				create: function (d, n) {
 					return n;
@@ -375,7 +375,7 @@
 					 * @type { (target: any) => target is slime.jrunscript.file.Directory }
 					 */
 					var isDirectory = function(target) {
-						return (target.pathname && $context.isPathname(target.pathname));
+						return (target.pathname && isPathname(target.pathname));
 					}
 
 					var to = (function () {
@@ -386,7 +386,7 @@
 							} else {
 								throw new Error();
 							}
-						} else if ($context.isPathname(target)) {
+						} else if (isPathname(target)) {
 							return target;
 						} else {
 							//	TODO	need better error message here
@@ -579,7 +579,7 @@
 					}
 					if (!filter) filter = function () { return true; }
 
-					var type = (mode.type == null) ? $exports.list.NODE : mode.type;
+					var type = (mode.type == null) ? $exports_list.NODE : mode.type;
 					var toReturn = function (rv) {
 						var map = function (node) {
 							return type.create(self, node);
@@ -667,9 +667,9 @@
 					CONTENTS: {
 						contents: true
 					},
-					NODE: $exports.list.NODE,
-					ENTRY: $exports.list.ENTRY,
-					RESOURCE: $exports.list.RESOURCE
+					NODE: $exports_list.NODE,
+					ENTRY: $exports_list.ENTRY,
+					RESOURCE: $exports_list.RESOURCE
 				});
 
 				if ($filesystem.temporary) {
@@ -684,6 +684,11 @@
 				}
 			}
 			//	Directory.prototype = new Node(this,"");
+		}
+
+		/** @returns { item is slime.jrunscript.file.Pathname } */
+		var isPathname = function(item) {
+			return item && item.java && item.java.adapt() && $context.library.java.isJavaType(Packages.java.io.File)(item.java.adapt());
 		}
 
 		var Searchpath = function (parameters) {
@@ -746,8 +751,12 @@
 			return new Searchpath({ array: [] });
 		}
 
-		$exports.Searchpath = Searchpath;
-		$exports.Pathname = Pathname;
+		$export({
+			Searchpath: Searchpath,
+			Pathname: Pathname,
+			isPathname: isPathname,
+			list: $exports_list
+		});
 	}
 	//@ts-ignore
-)(Packages, $api, $context, $exports)
+)(Packages, $api, $context, $export)

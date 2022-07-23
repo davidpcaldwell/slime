@@ -461,8 +461,6 @@ namespace slime.jrunscript.file {
 		Streams: slime.jrunscript.io.Exports["Streams"]
 		/** @deprecated Use the {@link slime.jrunscript.io.Exports} provided by the platform. */
 		java: slime.jrunscript.io.Exports["java"]
-		/** @deprecated Covered by {@link slime.jrunscript.shell.Exports["PWD"]} */
-		workingDirectory: slime.jrunscript.file.Directory
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
