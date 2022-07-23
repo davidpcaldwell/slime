@@ -118,13 +118,54 @@
 				);
 				return tmpdir;
 			}
-		}
+		};
+
+		/** @type { slime.jsh.internal.launcher.test.Exports["getShellResult"] } */
+		var getShellResult = function(p) {
+			return function(events) {
+				/** @type { slime.jrunscript.shell.invocation.Token[] } */
+				var vm = [];
+				if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
+				if (!p.bash) {
+					if (p.logging) {
+						p.properties["jsh.log.java.properties"] = p.logging;
+					}
+				}
+				for (var x in p.properties) {
+					vm.push("-D" + x + "=" + p.properties[x]);
+				}
+				var shell = (p.bash) ? p.shell : vm.concat(p.shell)
+				var script = (p.script) ? p.script : $context.script;
+				var environment = $api.Object.compose(
+					p.environment,
+					(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
+					($context.library.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: $context.library.shell.environment.JSH_SHELL_LIB } : {}
+				);
+				return $context.library.shell.run({
+					command: (p.bash) ? p.bash : $context.library.shell.java.jrunscript,
+					arguments: shell.concat([script.toString()]).concat( (p.arguments) ? p.arguments : [] ),
+					stdio: (p.stdio) ? p.stdio : {
+						output: String
+					},
+					environment: environment,
+					evaluate: (p.evaluate) ? p.evaluate : function(result) {
+						if (p.bash) {
+							events.fire("invocation", { command: result.command, arguments: result.arguments, environment: environment });
+						}
+						if (result.status !== 0) throw new Error("Status is " + result.status);
+						events.fire("output", result.stdio.output);
+						return JSON.parse(result.stdio.output);
+					}
+				});
+			}
+		};
 
 		$export({
 			getEngines: getEngines,
 			buildShell: _buildShell,
 			verifyOutput: verifyOutput,
-			requireBuiltShell: requireHomeDirectory
+			requireBuiltShell: requireHomeDirectory,
+			getShellResult: getShellResult
 		});
 	}
 //@ts-ignore

@@ -84,16 +84,8 @@ namespace slime.jsh.internal.launcher {
 			library: {
 				shell: slime.jrunscript.shell.Exports
 			}
+			script: slime.jrunscript.file.File
 		}
-
-		export type ShellResult = slime.$api.fp.world.Question<ShellInvocation,{
-			invocation: {
-				command: string
-				arguments: string[]
-				environment: { [x: string]: string }
-			}
-			output: string
-		},test.Result>
 
 		export interface Exports {
 			getEngines: (src: slime.jrunscript.file.Directory) => string[]
@@ -109,6 +101,15 @@ namespace slime.jsh.internal.launcher {
 				slime.jsh.internal.launcher.test.BuiltShellEvents,
 				slime.jrunscript.file.Directory
 			>
+
+			getShellResult: slime.$api.fp.world.Question<ShellInvocation,{
+				invocation: {
+					command: string
+					arguments: string[]
+					environment: { [x: string]: string }
+				}
+				output: string
+			},test.Result>
 		}
 
 		export type Script = slime.loader.Script<Context,Exports>
