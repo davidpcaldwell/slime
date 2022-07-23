@@ -23,6 +23,7 @@ END LICENSE
 		scope.module = jsh.script;
 		scope.context = {
 			FILE: jsh.file,
+			PWD: jsh.shell.PWD,
 			$filesystem: jsh.file.filesystem
 		}
 		var mockjsh = {
@@ -601,8 +602,8 @@ END LICENSE
 						verify(pathsOptions.options.absolute).toString().is(absoluteOs);
 					}
 					jsh.shell.console("pathsOptions.options.relative=" + pathsOptions.options.relative);
-					jsh.shell.console("context.FILE.workingDirectory=" + context.FILE.workingDirectory);
-					test( pathsOptions.options.relative.toString() == context.FILE.workingDirectory.toString() + "hello" );
+					jsh.shell.console("context.FILE.workingDirectory=" + context.PWD);
+					test( pathsOptions.options.relative.toString() == context.PWD.toString() + "hello" );
 
 				]]></script>
 			</li>
