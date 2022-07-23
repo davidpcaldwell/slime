@@ -406,10 +406,12 @@ namespace slime.jrunscript.file.internal.file {
 	export type firstDefined = <T extends { [x: string]: any }>(o: T, ...names: (keyof T)[]) => any
 
 	export interface Context {
+		library: {
+			java: slime.jrunscript.host.Exports
+		}
 		Resource: slime.jrunscript.io.Exports["Resource"]
 		Streams: slime.jrunscript.io.Exports["Streams"]
 		filesystems: slime.jrunscript.file.World["filesystems"]
-		isPathname: (item: any) => item is slime.jrunscript.file.Pathname
 		pathext: string[]
 	}
 
@@ -430,6 +432,9 @@ namespace slime.jrunscript.file.internal.file {
 			$peer?: slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node
 			$path?: any
 		}) => Pathname
+
+		isPathname: (item: any) => item is slime.jrunscript.file.Pathname
+
 		list: slime.jrunscript.file.Exports["list"]
 	}
 
