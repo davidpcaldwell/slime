@@ -599,10 +599,120 @@ namespace slime {
 
 		(
 			function(
+				Packages: slime.jrunscript.Packages,
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 				const { $api, jsh } = fifty.global;
+
+				fifty.tests.jsapi = (
+					function() {
+						//	TODO	this is a problem with type definition of fifty.test.Parent
+						var rv = Object.assign(fifty.test.Parent(), { _1: void(0) });
+						var $jsapi = {
+							loader: {
+								module: fifty.$loader.module,
+								file: fifty.$loader.file,
+								//	TODO	either support this or drop support for it
+								coffee: void(0),
+								getRelativePath: (fifty.jsh) ? function(path) {
+									var rv = fifty.jsh.file.relative(path);
+									return jsh.file.Pathname(rv.pathname);
+								} : void(0)
+							}
+						};
+						rv._1 = function() {
+							var Tests = function(p: { loadTestModule: (path: string, context: object) => any }) {
+								var a = function(scope) {
+									if (!scope.verify) throw new Error("No scope.verify; scope keys = " + Object.keys(scope));
+									if (!p.loadTestModule) throw new Error("No p.loadTestModule");
+									var module = scope.verify(p.loadTestModule("test/data/a/", {
+										d: 1970
+									}), "test/data/a");
+									module.a.is(3);
+									module.b.is(4);
+									module.c.is(5);
+									module.d.is(1970);
+									module.e.is(4);
+									module.f.is(6);
+									module.fThis.is("fThis");
+									module.mThis.is("mThis");
+									module.value.is(5);
+									module.vThis.thisName.is("vThis:4");
+								};
+
+								var b = function(scope) {
+									var module = scope.verify(p.loadTestModule("test/data/b/", {
+									}), "test/data/b");
+									module.submodule.message.is("ititit");
+								}
+
+								var c = function(scope) {
+									var module = scope.verify(p.loadTestModule("test/data/c/main.js", {
+									}), "test/data/c/main");
+									module.value.is(13);
+									module.other.is(42);
+								};
+
+								var rhino = function(scope) {
+									var module = scope.verify(p.loadTestModule("jrunscript/test/data/1/", {
+									}), "rhino/test/data/1");
+									var $java = (function() {
+										if (this.jsh && this.jsh.java && this.jsh.java.getClass) return this.jsh.java.getClass("slime.Data");
+										try {
+											Packages.java.lang.Class.forName("slime.Data");
+											return true;
+										} catch (e) {
+											return false;
+										}
+									})();
+									if ($java) {
+										module.data.is("From Java");
+									} else {
+										module.data.is("No Java");
+									}
+								};
+
+								var coffee = function(scope) {
+									//	TODO	for some reason these (at least sometimes) do not run in browser
+									if ($jsapi.loader.coffee) {
+										// TODO: Below works around issue with relative path being incorrect when this file
+										// is invoked from a file which in turn is invoked from another file; happens in
+										// test suite currently. Should be refactored out as we work to run tests directly
+										// rather than via includes
+										var PREFIX = ($jsapi.loader.getRelativePath && $jsapi.loader.getRelativePath(".").basename == "jrunscript") ? "../" : "";
+										var loader = $jsapi.loader.module(PREFIX + "test/data/coffee/loader.js");
+										var coffee = $jsapi.loader.module(PREFIX + "test/data/coffee/module.coffee");
+										scope.verify(coffee,"coffee").a.is(2);
+										scope.verify(coffee,"coffee").file.b.is(3);
+										scope.verify(loader,"loader").file.b.is(3);
+										var file = $jsapi.loader.file(PREFIX + "test/data/coffee/file.coffee");
+										scope.verify(file,"file").b.is(3);
+									} else {
+										scope.verify("No CoffeeScript").is("No CoffeeScript");
+									}
+								}
+
+								this.run = function(scope) {
+									a(scope);
+									b(scope);
+									c(scope);
+									rhino(scope);
+									coffee(scope);
+								}
+							};
+							new Tests({
+								loadTestModule: function(path: string, context: object): any {
+									return fifty.$loader.module(path, context);
+								}
+							}).run({
+								test: test,
+								verify: verify
+							});
+						};
+						return rv;
+					}
+				)();
 
 				fifty.tests.suite = function() {
 					fifty.run(fifty.tests.runtime.exports);
@@ -631,6 +741,6 @@ namespace slime {
 				}
 			}
 		//@ts-ignore
-		)(fifty)
+		)( (function() { return this; })().Packages, fifty)
 	}
 }
