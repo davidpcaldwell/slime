@@ -52,6 +52,29 @@ namespace slime {
 
 		export type Export<T> = (value: T) => void
 
+		export namespace source {
+			//	TODO	this does not seem like a great design
+			/**
+			 * Either a resource or a child loader contained within a Loader.
+			 */
+			export interface Entry {
+				/**
+				 * The name of this entry. It does *not* have a trailing slash for loaders.
+				 */
+				path: string
+
+				/**
+				 * Whether this entry represents a child loader (for example, a directory or folder)
+				 */
+				loader: boolean
+
+				/**
+				 * Whether this entry represents a resource.
+				 */
+				resource: boolean
+			}
+		}
+
 		/**
 		 * An object that provides the implementation for a {@link Loader}.
 		 */
@@ -69,11 +92,13 @@ namespace slime {
 			 */
 			get?: (path: string) => resource.Descriptor
 
-			list?: (path: string) => {
-				path: string
-				loader: boolean
-				resource: boolean
-			}[]
+			/**
+			 * Returns a list of the top-level entries at a particular location in this loader.
+			 *
+			 * @param path A path under this loader to list. Currently, this will either be the empty
+			 * string, in which case the top level should be listed, or it will be a path ending in `/`.
+			 */
+			list?: (path: string) => source.Entry[]
 
 			thread?: {
 				get: (path: string) => PromiseLike<resource.Descriptor>

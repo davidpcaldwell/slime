@@ -43,60 +43,6 @@ END LICENSE
 			<ul>
 				<li class="constructor" jsapi:id="Loader">
 					<div class="name"><a name="exports.Loader">Loader</a></div>
-					<div class="type">
-						<a class="type" name="types.Loader.source">source</a>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function experimental">
-								<div class="name">list</div>
-								<span>Returns a list of the top-level entries at a particular location in this loader.</span>
-								<div class="type">
-									<a class="type" name="types.Loader.list.arguments[0].entry">entry</a>
-									<span>Either a resource or a child loader contained within a Loader.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">path</div>
-											<span class="type">string</span>
-											<span>
-												The name of this entry. It does <em>not</em> have a trailing slash for loaders.
-											</span>
-										</li>
-										<li class="value">
-											<div class="name">loader</div>
-											<span class="type">boolean</span>
-											<span>
-												Whether this entry represents a child loader (for example, a directory or
-												folder)
-											</span>
-										</li>
-										<li class="value">
-											<div class="name">resource</div>
-											<span class="type">boolean</span>
-											<span>Whether this entry represents a resource.</span>
-										</li>
-									</ul>
-								</div>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="value">
-											<span class="type">string</span>
-											<span>A path under this loader to list.
-												<span class="experimental">Currently, this will either be the empty
-												string, in which case the top level should be listed, or it will be a path
-												ending in <code>/</code>.</span>
-											</span>
-										</li>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">Array of <a href="#types.Loader.list.arguments[0].entry">entry</a></span>
-								</div>
-							</li>
-						</ul>
-					</div>
 					<div class="arguments">
 						<div class="label">Arguments</div>
 						<ol>
