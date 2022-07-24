@@ -120,8 +120,8 @@
 			}
 		};
 
-		/** @type { slime.jsh.internal.launcher.test.Exports["getShellResult"] } */
-		var getShellResult = function(p) {
+		/** @type { slime.$api.fp.world.Question<slime.jsh.internal.launcher.test.ShellInvocation,slime.jsh.internal.launcher.test.ShellInvocationEvents,slime.jsh.internal.launcher.test.Result> } */
+		var shellResultQuestion = function(p) {
 			return function(events) {
 				/** @type { slime.jrunscript.shell.invocation.Token[] } */
 				var vm = [];
@@ -159,6 +159,34 @@
 				});
 			}
 		};
+
+		/** @type { (invocation: slime.jsh.internal.launcher.test.ShellInvocation) => slime.jsh.internal.launcher.test.Result } */
+		var getShellResultFor = $api.Function.world.question(shellResultQuestion, {
+			invocation: function(e) {
+				//	TODO	can we use console for this and the next call?
+				$context.console("Command: " + e.detail.command + " " + e.detail.arguments.join(" "));
+			},
+			output: function(e) {
+				$context.console("Output: " + e.detail);
+			}
+		});
+
+		/** @type { slime.jsh.internal.launcher.test.Exports["getShellResult"] } */
+		var getShellResult = function(invocation,implementation) {
+			/**
+			 *
+			 * @param { slime.jsh.internal.launcher.test.ShellInvocation } invocation
+			 * @param { slime.jsh.internal.launcher.test.ShellImplementation } implementation
+			 * @returns
+			 */
+			var toInvocation = function(invocation,implementation) {
+				return $api.Object.compose(invocation, {
+					shell: implementation.shell
+				})
+			};
+
+			return getShellResultFor(toInvocation(invocation, implementation));
+		}
 
 		$export({
 			getEngines: getEngines,

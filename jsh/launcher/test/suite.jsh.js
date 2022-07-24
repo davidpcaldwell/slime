@@ -23,40 +23,9 @@
 				library: {
 					shell: jsh.shell
 				},
-				script: jsh.script.file
+				script: jsh.script.file,
+				console: jsh.shell.console
 			})
-		};
-
-		var shell = $api.Function.world.question(library.script.getShellResult, {
-			invocation: function(e) {
-				//	TODO	can we use console for this and the next call?
-				jsh.shell.echo("Command: " + e.detail.command + " " + e.detail.arguments.join(" "));
-			},
-			output: function(e) {
-				jsh.shell.echo("Output: " + e.detail);
-			}
-		})
-
-		/**
-		 *
-		 * @param { slime.jsh.internal.launcher.test.ShellInvocation } invocation
-		 * @param { slime.jsh.internal.launcher.test.ShellImplementation } implementation
-		 * @returns
-		 */
-		var getShellResult = function(invocation,implementation) {
-			/**
-			 *
-			 * @param { slime.jsh.internal.launcher.test.ShellInvocation } invocation
-			 * @param { slime.jsh.internal.launcher.test.ShellImplementation } implementation
-			 * @returns
-			 */
-			var toInvocation = function(invocation,implementation) {
-				return $api.Object.compose(invocation, {
-					shell: implementation.shell
-				})
-			};
-
-			return shell(toInvocation(invocation, implementation));
 		};
 
 		/**
@@ -90,7 +59,7 @@
 					//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null
 				};
 
-				var result = getShellResult({
+				var result = library.script.getShellResult({
 					logging: "/foo/bar",
 					environment: environment,
 					properties: properties
@@ -106,7 +75,7 @@
 				checkOutput(result);
 
 				if (type == "built" && jsh.shell.PATH.getCommand("bash")) {
-					result = getShellResult({
+					result = library.script.getShellResult({
 						bash: jsh.shell.PATH.getCommand("bash").pathname,
 						logging: "/foo/bar",
 						environment: environment,
@@ -121,7 +90,7 @@
 				}
 
 				if (engine == "rhino") {
-					var result = getShellResult({
+					var result = library.script.getShellResult({
 						environment: {
 							PATH: jsh.shell.environment.PATH,
 							//	TODO	below is used for Windows temporary files
@@ -136,7 +105,7 @@
 					verify(result).rhino.optimization.is(0);
 				}
 				if (engine == "nashorn" && rhino) {
-					var result = getShellResult({
+					var result = library.script.getShellResult({
 						environment: {
 							PATH: jsh.shell.environment.PATH,
 							//	TODO	below is used for Windows temporary files
