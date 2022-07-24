@@ -270,6 +270,9 @@ namespace slime {
 }
 
 namespace slime.runtime.loader {
+	/**
+	 * @param p The implementation of this `Loader`.
+	 */
 	export type Constructor = new (p: slime.loader.Source) => Loader
 
 }
