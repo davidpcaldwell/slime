@@ -19,32 +19,47 @@ namespace slime.project.jsapi {
 		)(fifty);
 	}
 
+	export namespace internal {
+		export interface InputLine {
+			prefix: string
+			section: "start" | "middle" | "end"
+			content: string
+		}
+
+		export interface VisibleForTesting {
+			prefix: (line: string) => string
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const subject = test.subject;
+
+				fifty.tests.prefix = function() {
+					verify(subject).test.prefix("\t\t\t *").is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t * dd").is("\t\t\t");
+
+					verify(subject).test.prefix("\t\t\t/**").is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t/**  ").is("\t\t\t");
+
+					verify(subject).test.prefix("\t\t\t */").is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t */  ").is("\t\t\t");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		test: internal.VisibleForTesting
+	}
+
 	export interface Format {
 		tabSize: number
 		lineLength: number
 	}
-
-	export interface Exports {
-		test: {
-			prefix: (line: string) => string
-		}
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const subject = test.subject;
-
-			fifty.tests.prefix = function() {
-				verify(subject).test.prefix("\t\t\t *").is("\t\t\t");
-				verify(subject).test.prefix("\t\t\t/**").is("\t\t\t");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
 
 	export interface Exports {
 		comment: (p: Format) => (input: string) => string
@@ -120,7 +135,10 @@ namespace slime.project.jsapi {
 			}
 
 			fifty.tests.suite = function() {
+				//	unit tests
 				fifty.run(fifty.tests.prefix);
+
+				//	functional tests
 				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
 				tests.forEach(function(test) {
 					var result = subject.comment(test.configuration)(test.input);

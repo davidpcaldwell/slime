@@ -48,9 +48,15 @@
 			return (line.length - tabs) * 1 + tabs * tabSize;
 		}
 
+		/**
+		 *
+		 * @param { string } line
+		 * @returns { slime.project.jsapi.internal.InputLine }
+		 */
 		function parseLine(line) {
 			var start = prefix(line);
 			var rest = (start) ? line.substring(start.length) : line;
+			/** @type { slime.project.jsapi.internal.InputLine["section"] } */
 			var comment = null;
 			var content = rest;
 			if (rest.substring(0,3) == "/**") {
@@ -65,9 +71,22 @@
 			}
 			return {
 				prefix: start,
-				comment: comment,
+				section: comment,
 				content: content
 			};
+		}
+
+		/**
+		 *
+		 * @param { string } tagName
+		 * @param { string } delimiter
+		 */
+		function startEndTagReplace(tagName, delimiter) {
+			var startPattern = new RegExp("\<" + tagName + "\>", "g");
+			var endPattern = new RegExp("\<\/" + tagName + "\>", "g");
+			return function(input) {
+				return input.replace(startPattern, delimiter).replace(endPattern, delimiter);
+			}
 		}
 
 		$export({
@@ -75,53 +94,57 @@
 				prefix: prefix
 			},
 			comment: function(format) {
-				return function(input) {
-					input = input.replace(/\<code\>/g, "`").replace(/\<\/code\>/g, "`");
-					input = input.replace(/\<i\>/g, "*").replace(/\<\/i\>/g, "*");
-					var lines = input.split("\n").map(parseLine);
-					/** @type { { prefix: string, content: string[], end: boolean } } */
-					var parsed = {
-						prefix: lines[0].prefix,
-						content: lines.map($api.Function.property("content")).reduce(
-							/**
-							 * @param { string[] } rv
-							 * @param { string } content
-							 */
-							function(rv,content) {
-								return rv.concat(
-									(content) ? content.split(" ") : []
-								);
-							},
-							/** @type { string[] } */
-							[]
-						),
-						end: Boolean(lines[lines.length-1].comment == "end")
-					};
-					var result = [];
-					var index = 0;
-					while(index < parsed.content.length) {
-						var currentLine = function() { return result[result.length-1] };
-						var currentWord = function() { return parsed.content[index]; }
-						if (result.length == 0) {
-							if (lines[0].comment == "start") {
-								result.push(parsed.prefix + "/**");
+				return $api.Function.pipe(
+					startEndTagReplace("code", "`"),
+					startEndTagReplace("i", "*"),
+					startEndTagReplace("em", "*"),
+					$api.Function.string.split("\n"),
+					$api.Function.Array.map(parseLine),
+					function(lines) {
+						/** @type { { prefix: string, content: string[], end: boolean } } */
+						var parsed = {
+							prefix: lines[0].prefix,
+							content: lines.map($api.Function.property("content")).reduce(
+								/**
+								 * @param { string[] } rv
+								 * @param { string } content
+								 */
+								function(rv,content) {
+									return rv.concat(
+										(content) ? content.split(" ") : []
+									);
+								},
+								/** @type { string[] } */
+								[]
+							),
+							end: Boolean(lines[lines.length-1].section == "end")
+						};
+						var result = [];
+						var index = 0;
+						while(index < parsed.content.length) {
+							var currentLine = function() { return result[result.length-1] };
+							var currentWord = function() { return parsed.content[index]; }
+							if (result.length == 0) {
+								if (lines[0].section == "start") {
+									result.push(parsed.prefix + "/**");
+								}
+								result.push(parsed.prefix + " * ");
 							}
-							result.push(parsed.prefix + " * ");
+							if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
+								var hasWord = currentLine().length > (parsed.prefix + " * ").length;
+								result[result.length-1] += (hasWord ? " " : "") + currentWord();
+							} else {
+								result.push(parsed.prefix + " * " + currentWord());
+							}
+							index++;
 						}
-						if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
-							var hasWord = currentLine().length > (parsed.prefix + " * ").length;
-							result[result.length-1] += (hasWord ? " " : "") + currentWord();
-						} else {
-							result.push(parsed.prefix + " * " + currentWord());
-						}
-						index++;
+						if (parsed.end) result.push(parsed.prefix + " */");
+						if (!lines[lines.length-1].section && !lines[lines.length-1].prefix && !lines[lines.length-1].content)
+							result.push("");
+						//input = text(input);
+						return result.join("\n");
 					}
-					if (parsed.end) result.push(parsed.prefix + " */");
-					if (!lines[lines.length-1].comment && !lines[lines.length-1].prefix && !lines[lines.length-1].content)
-						result.push("");
-					//input = text(input);
-					return result.join("\n");
-				}
+				)
 			}
 		})
 	}
