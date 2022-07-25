@@ -94,6 +94,44 @@
 				prefix: prefix
 			},
 			comment: function(format) {
+				//	TODO	make format an argument to below rather than a scope variable
+				/**
+				 *
+				 * @param { string } prefix The indent to use
+				 * @param { boolean } hasStart Whether the start of this content is the start of a comment
+				 * @param { boolean } hasEnd Whether the start of this content is the end of a comment
+				 */
+				function formatByLineLength(prefix, hasStart, hasEnd) {
+					/**
+					 * @param { string[] } content
+					 * @returns { string[] }
+					 */
+					return function(content) {
+						/** @type { string[] } */
+						var result = [];
+						var index = 0;
+						while(index < content.length) {
+							var currentLine = function() { return result[result.length-1] };
+							var currentWord = function() { return content[index]; }
+							if (result.length == 0) {
+								if (hasStart) {
+									result.push(prefix + "/**");
+								}
+								result.push(prefix + " * ");
+							}
+							if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
+								var hasWord = currentLine().length > (prefix + " * ").length;
+								result[result.length-1] += (hasWord ? " " : "") + currentWord();
+							} else {
+								result.push(prefix + " * " + currentWord());
+							}
+							index++;
+						}
+						if (hasEnd /*parsed.end*/) result.push(prefix + " */");
+						return result;
+					}
+				}
+
 				return $api.Function.pipe(
 					startEndTagReplace("code", "`"),
 					startEndTagReplace("i", "*"),
@@ -119,29 +157,19 @@
 							),
 							end: Boolean(lines[lines.length-1].section == "end")
 						};
-						var result = [];
-						var index = 0;
-						while(index < parsed.content.length) {
-							var currentLine = function() { return result[result.length-1] };
-							var currentWord = function() { return parsed.content[index]; }
-							if (result.length == 0) {
-								if (lines[0].section == "start") {
-									result.push(parsed.prefix + "/**");
-								}
-								result.push(parsed.prefix + " * ");
-							}
-							if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
-								var hasWord = currentLine().length > (parsed.prefix + " * ").length;
-								result[result.length-1] += (hasWord ? " " : "") + currentWord();
-							} else {
-								result.push(parsed.prefix + " * " + currentWord());
-							}
-							index++;
-						}
-						if (parsed.end) result.push(parsed.prefix + " */");
+
+						var result = formatByLineLength(
+							parsed.prefix,
+							lines[0].section == "start",
+							parsed.end
+						)(parsed.content);
+
+						//	TODO	figure out semantics and replace expression with named boolean variable or function
 						if (!lines[lines.length-1].section && !lines[lines.length-1].prefix && !lines[lines.length-1].content)
 							result.push("");
+
 						//input = text(input);
+
 						return result.join("\n");
 					}
 				)
