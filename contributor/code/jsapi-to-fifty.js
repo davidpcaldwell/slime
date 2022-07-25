@@ -138,11 +138,11 @@
 					startEndTagReplace("em", "*"),
 					$api.Function.string.split("\n"),
 					$api.Function.Array.map(parseLine),
-					function(lines) {
-						/** @type { { prefix: string, content: string[], end: boolean } } */
+					function(inputLines) {
+						/** @type { slime.project.jsapi.internal.Block } */
 						var parsed = {
-							prefix: lines[0].prefix,
-							content: lines.map($api.Function.property("content")).reduce(
+							prefix: inputLines[0].prefix,
+							tokens: inputLines.map($api.Function.property("content")).reduce(
 								/**
 								 * @param { string[] } rv
 								 * @param { string } content
@@ -155,22 +155,23 @@
 								/** @type { string[] } */
 								[]
 							),
-							end: Boolean(lines[lines.length-1].section == "end")
+							start: inputLines[0].section == "start",
+							end: Boolean(inputLines[inputLines.length-1].section == "end")
 						};
 
-						var result = formatByLineLength(
+						var textLines = formatByLineLength(
 							parsed.prefix,
-							lines[0].section == "start",
+							parsed.start,
 							parsed.end
-						)(parsed.content);
+						)(parsed.tokens);
 
 						//	TODO	figure out semantics and replace expression with named boolean variable or function
-						if (!lines[lines.length-1].section && !lines[lines.length-1].prefix && !lines[lines.length-1].content)
-							result.push("");
+						if (!inputLines[inputLines.length-1].section && !inputLines[inputLines.length-1].prefix && !inputLines[inputLines.length-1].content)
+							textLines.push("");
 
 						//input = text(input);
 
-						return result.join("\n");
+						return textLines.join("\n");
 					}
 				)
 			}
