@@ -26,6 +26,13 @@ namespace slime.project.jsapi {
 			content: string
 		}
 
+		export interface Block {
+			prefix: string
+			tokens: string[]
+			start: boolean
+			end: boolean
+		}
+
 		export interface VisibleForTesting {
 			prefix: (line: string) => string
 		}
