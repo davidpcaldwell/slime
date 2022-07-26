@@ -48,9 +48,15 @@
 			return (line.length - tabs) * 1 + tabs * tabSize;
 		}
 
+		/**
+		 *
+		 * @param { string } line
+		 * @returns { slime.project.jsapi.internal.InputLine }
+		 */
 		function parseLine(line) {
 			var start = prefix(line);
 			var rest = (start) ? line.substring(start.length) : line;
+			/** @type { slime.project.jsapi.internal.InputLine["section"] } */
 			var comment = null;
 			var content = rest;
 			if (rest.substring(0,3) == "/**") {
@@ -65,9 +71,22 @@
 			}
 			return {
 				prefix: start,
-				comment: comment,
+				section: comment,
 				content: content
 			};
+		}
+
+		/**
+		 *
+		 * @param { string } tagName
+		 * @param { string } delimiter
+		 */
+		function startEndTagReplace(tagName, delimiter) {
+			var startPattern = new RegExp("\<" + tagName + "\>", "g");
+			var endPattern = new RegExp("\<\/" + tagName + "\>", "g");
+			return function(input) {
+				return input.replace(startPattern, delimiter).replace(endPattern, delimiter);
+			}
 		}
 
 		$export({
@@ -75,53 +94,86 @@
 				prefix: prefix
 			},
 			comment: function(format) {
-				return function(input) {
-					input = input.replace(/\<code\>/g, "`").replace(/\<\/code\>/g, "`");
-					input = input.replace(/\<i\>/g, "*").replace(/\<\/i\>/g, "*");
-					var lines = input.split("\n").map(parseLine);
-					/** @type { { prefix: string, content: string[], end: boolean } } */
-					var parsed = {
-						prefix: lines[0].prefix,
-						content: lines.map($api.Function.property("content")).reduce(
-							/**
-							 * @param { string[] } rv
-							 * @param { string } content
-							 */
-							function(rv,content) {
-								return rv.concat(
-									(content) ? content.split(" ") : []
-								);
-							},
-							/** @type { string[] } */
-							[]
-						),
-						end: Boolean(lines[lines.length-1].comment == "end")
-					};
-					var result = [];
-					var index = 0;
-					while(index < parsed.content.length) {
-						var currentLine = function() { return result[result.length-1] };
-						var currentWord = function() { return parsed.content[index]; }
-						if (result.length == 0) {
-							if (lines[0].comment == "start") {
-								result.push(parsed.prefix + "/**");
+				//	TODO	make format an argument to below rather than a scope variable
+				/**
+				 *
+				 * @param { string } prefix The indent to use
+				 * @param { boolean } hasStart Whether the start of this content is the start of a comment
+				 * @param { boolean } hasEnd Whether the start of this content is the end of a comment
+				 */
+				function formatByLineLength(prefix, hasStart, hasEnd) {
+					/**
+					 * @param { string[] } content
+					 * @returns { string[] }
+					 */
+					return function(content) {
+						/** @type { string[] } */
+						var result = [];
+						var index = 0;
+						while(index < content.length) {
+							var currentLine = function() { return result[result.length-1] };
+							var currentWord = function() { return content[index]; }
+							if (result.length == 0) {
+								if (hasStart) {
+									result.push(prefix + "/**");
+								}
+								result.push(prefix + " * ");
 							}
-							result.push(parsed.prefix + " * ");
+							if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
+								var hasWord = currentLine().length > (prefix + " * ").length;
+								result[result.length-1] += (hasWord ? " " : "") + currentWord();
+							} else {
+								result.push(prefix + " * " + currentWord());
+							}
+							index++;
 						}
-						if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
-							var hasWord = currentLine().length > (parsed.prefix + " * ").length;
-							result[result.length-1] += (hasWord ? " " : "") + currentWord();
-						} else {
-							result.push(parsed.prefix + " * " + currentWord());
-						}
-						index++;
+						if (hasEnd /*parsed.end*/) result.push(prefix + " */");
+						return result;
 					}
-					if (parsed.end) result.push(parsed.prefix + " */");
-					if (!lines[lines.length-1].comment && !lines[lines.length-1].prefix && !lines[lines.length-1].content)
-						result.push("");
-					//input = text(input);
-					return result.join("\n");
 				}
+
+				return $api.Function.pipe(
+					startEndTagReplace("code", "`"),
+					startEndTagReplace("i", "*"),
+					startEndTagReplace("em", "*"),
+					$api.Function.string.split("\n"),
+					$api.Function.Array.map(parseLine),
+					function(inputLines) {
+						/** @type { slime.project.jsapi.internal.Block } */
+						var parsed = {
+							prefix: inputLines[0].prefix,
+							tokens: inputLines.map($api.Function.property("content")).reduce(
+								/**
+								 * @param { string[] } rv
+								 * @param { string } content
+								 */
+								function(rv,content) {
+									return rv.concat(
+										(content) ? content.split(" ") : []
+									);
+								},
+								/** @type { string[] } */
+								[]
+							),
+							start: inputLines[0].section == "start",
+							end: Boolean(inputLines[inputLines.length-1].section == "end")
+						};
+
+						var textLines = formatByLineLength(
+							parsed.prefix,
+							parsed.start,
+							parsed.end
+						)(parsed.tokens);
+
+						//	TODO	figure out semantics and replace expression with named boolean variable or function
+						if (!inputLines[inputLines.length-1].section && !inputLines[inputLines.length-1].prefix && !inputLines[inputLines.length-1].content)
+							textLines.push("");
+
+						//input = text(input);
+
+						return textLines.join("\n");
+					}
+				)
 			}
 		})
 	}
