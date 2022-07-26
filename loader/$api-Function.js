@@ -41,7 +41,13 @@
 			return function(v) {
 				var rv = v;
 				for (var i=0; i<items.length; i++) {
-					rv = items[i].call(this,rv);
+					//	If the pipeline function is called with no arguments, call the initial function with no arguments
+					//	TODO	what to do if the pipeline function is called with multiple arguments?
+					if (i == 0 && arguments.length == 0) {
+						rv = items[i].call(this);
+					} else {
+						rv = items[i].call(this,rv);
+					}
 				}
 				return rv;
 			}
