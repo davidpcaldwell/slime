@@ -19,6 +19,11 @@ namespace slime.project.jsapi {
 		)(fifty);
 	}
 
+	export namespace fp {
+		export type Case<P,R> = (p: P) => slime.$api.fp.Maybe<R>
+		export type Switch = <P,R>(...cases: Case<P,R>[]) => (p: P) => slime.$api.fp.Maybe<R>
+	}
+
 	export namespace internal {
 		export interface InputLine {
 			prefix: string
