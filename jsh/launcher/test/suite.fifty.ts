@@ -92,6 +92,8 @@ namespace slime.jsh.internal.launcher {
 			execute: (verify: slime.definition.verify.Verify) => void
 		}
 
+		export type Checks = (verify: slime.definition.verify.Verify) => (result: Result) => void
+
 		export interface Context {
 			library: {
 				shell: slime.jrunscript.shell.Exports
@@ -106,8 +108,8 @@ namespace slime.jsh.internal.launcher {
 			buildShell: (src: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.Pathname)
 				=> slime.$api.fp.world.Action<slime.jrunscript.file.Directory,{ console: string }>
 
-			verifyOutput: (configuration: slime.jsh.internal.launcher.test.ShellDescriptor)
-				=> (verify: slime.definition.verify.Verify) => (result: slime.jsh.internal.launcher.test.Result) => void
+			ensureOutputMatches: (configuration: slime.jsh.internal.launcher.test.ShellDescriptor)
+				=> Checks
 
 			requireBuiltShell: slime.$api.fp.world.Question<
 				slime.jsh.internal.launcher.test.BuiltShellContext,
