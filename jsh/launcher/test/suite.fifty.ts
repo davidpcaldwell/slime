@@ -54,7 +54,10 @@ namespace slime.jsh.internal.launcher {
 			coffeescript: slime.jrunscript.file.File
 		}
 
-		export interface ShellConfiguration {
+		/**
+		 * Describes the shell sufficiently that the correct output of the test script can be predicted.
+		 */
+		export interface ShellDescriptor {
 			hasRhino: boolean
 			isRhino: boolean
 			isUnbuilt: boolean
@@ -103,7 +106,7 @@ namespace slime.jsh.internal.launcher {
 			buildShell: (src: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.Pathname)
 				=> slime.$api.fp.world.Action<slime.jrunscript.file.Directory,{ console: string }>
 
-			verifyOutput: (configuration: slime.jsh.internal.launcher.test.ShellConfiguration)
+			verifyOutput: (configuration: slime.jsh.internal.launcher.test.ShellDescriptor)
 				=> (verify: slime.definition.verify.Verify) => (result: slime.jsh.internal.launcher.test.Result) => void
 
 			requireBuiltShell: slime.$api.fp.world.Question<
