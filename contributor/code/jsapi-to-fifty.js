@@ -48,6 +48,64 @@
 			return (line.length - tabs) * 1 + tabs * tabSize;
 		}
 
+		var $$api = {
+			Function: {
+				/** @type { slime.project.jsapi.fp.Switch } */
+				switch: function() {
+					var cases = Array.prototype.slice.call(arguments);
+					return function(p) {
+						for (var i=0; i<cases.length; i++) {
+							var r = cases[i](p);
+							if (r.present) return r;
+						}
+						return $api.Function.Maybe.nothing();
+					}
+				}
+			}
+		}
+
+		/** @typedef { { section: slime.project.jsapi.internal.InputLine["section"], content: string } } ParsedCommentLine */
+
+		var parseComment = $api.Function.pipe(
+			$$api.Function.switch(
+				/** @type { (rest: string) => slime.$api.fp.Maybe<ParsedCommentLine> } */
+				function(rest) {
+					if (rest.substring(0,3) == "/**") return $api.Function.Maybe.value({
+						section: "start",
+						content: rest.substring(3).trim()
+					});
+					return $api.Function.Maybe.nothing();
+				},
+				function(rest) {
+					if (rest.substring(0,3) == " */") return $api.Function.Maybe.value({
+						section: "end",
+						content: ""
+					});
+					return $api.Function.Maybe.nothing();
+				},
+				function(rest) {
+					if (rest.substring(0,2) == " *") return $api.Function.Maybe.value({
+						section: "middle",
+						content: rest.substring(2).trim()
+					});
+					return $api.Function.Maybe.nothing();
+				},
+				function(rest) {
+					return $api.Function.Maybe.value({
+						section: null,
+						content: rest
+					})
+				}
+			),
+			//	TODO	we have to force this else because of the inability to define the switch statement with an else currently
+			$api.Function.Maybe.else(
+				/** @returns { ParsedCommentLine } */
+				function() {
+					if (true) throw new Error("Unreachable.");
+				}
+			)
+		)
+
 		/**
 		 *
 		 * @param { string } line
@@ -56,23 +114,11 @@
 		function parseLine(line) {
 			var start = prefix(line);
 			var rest = (start) ? line.substring(start.length) : line;
-			/** @type { slime.project.jsapi.internal.InputLine["section"] } */
-			var comment = null;
-			var content = rest;
-			if (rest.substring(0,3) == "/**") {
-				comment = "start";
-				content = rest.substring(3).trim();
-			} else if (rest.substring(0,3) == " */") {
-				comment = "end";
-				content = "";
-			} else if (rest.substring(0,2) == " *") {
-				comment = "middle";
-				content = rest.substring(2).trim();
-			}
+			var parsed = parseComment(rest);
 			return {
 				prefix: start,
-				section: comment,
-				content: content
+				section: parsed.section,
+				content: parsed.content
 			};
 		}
 
@@ -132,15 +178,14 @@
 					}
 				}
 
-				return $api.Function.pipe(
-					startEndTagReplace("code", "`"),
-					startEndTagReplace("i", "*"),
-					startEndTagReplace("em", "*"),
-					$api.Function.string.split("\n"),
-					$api.Function.Array.map(parseLine),
-					function(inputLines) {
-						/** @type { slime.project.jsapi.internal.Block } */
-						var parsed = {
+				/**
+				 *
+				 * @param { slime.project.jsapi.internal.InputLine[] } inputLines
+				 * @return { slime.project.jsapi.internal.Block[] }
+				 */
+				function parseBlocks(inputLines) {
+					return [
+						{
 							prefix: inputLines[0].prefix,
 							tokens: inputLines.map($api.Function.property("content")).reduce(
 								/**
@@ -157,7 +202,18 @@
 							),
 							start: inputLines[0].section == "start",
 							end: Boolean(inputLines[inputLines.length-1].section == "end")
-						};
+						}
+					]
+				}
+
+				return $api.Function.pipe(
+					startEndTagReplace("code", "`"),
+					startEndTagReplace("i", "*"),
+					startEndTagReplace("em", "*"),
+					$api.Function.string.split("\n"),
+					$api.Function.Array.map(parseLine),
+					function(inputLines) {
+						var parsed = parseBlocks(inputLines)[0];
 
 						var textLines = formatByLineLength(
 							parsed.prefix,
