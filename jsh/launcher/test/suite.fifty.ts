@@ -92,7 +92,7 @@ namespace slime.jsh.internal.launcher {
 			execute: (verify: slime.definition.verify.Verify) => void
 		}
 
-		export type Checks = (verify: slime.definition.verify.Verify) => (result: Result) => void
+		export type Checks = (result: Result) => (verify: slime.definition.verify.Verify) => void
 
 		export interface Context {
 			library: {
