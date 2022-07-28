@@ -65,8 +65,8 @@
 			}
 		}
 
-		/** @type { slime.jsh.internal.launcher.test.Exports["ensureOutputMatches"] } */
-		function verifyOutput(configuration) {
+		/** @type { (configuration: slime.jsh.internal.launcher.test.ShellDescriptor) => slime.jsh.internal.launcher.test.Checks } */
+		function checksForDescriptor(configuration) {
 			return function(result) {
 				return function(verify) {
 					if (configuration.isUnbuilt) {
@@ -171,7 +171,7 @@
 			}
 		});
 
-		/** @type { slime.jsh.internal.launcher.test.Exports["getShellResult"] } */
+		/** @type { (invocation: slime.jsh.internal.launcher.test.ShellInvocation, implementation: slime.jsh.internal.launcher.test.ShellImplementation) => slime.jsh.internal.launcher.test.Result } */
 		var getShellResult = function(invocation,implementation) {
 			/**
 			 *
@@ -188,12 +188,157 @@
 			return getShellResultFor(toInvocation(invocation, implementation));
 		}
 
+		/**
+		 * @param { slime.jrunscript.file.Pathname } rhinoLocation
+		 * @param { slime.jrunscript.file.Directory } builtShell
+		 * @param { slime.jrunscript.file.Directory } tmp
+		 */
+		var toScenario = function(rhinoLocation,builtShell,tmp) {
+			var baseEnvironment = {
+				PATH: $context.library.shell.environment.PATH,
+				//	TODO	below is used for Windows temporary files
+				TEMP: ($context.library.shell.environment.TEMP) ? $context.library.shell.environment.TEMP : "",
+				//	TODO	below is used for Windows command location
+				PATHEXT: ($context.library.shell.environment.PATHEXT) ? $context.library.shell.environment.PATHEXT : "",
+				JSH_JVM_OPTIONS: "-Dfoo.1=bar -Dfoo.2=baz",
+				JSH_ENGINE_RHINO_CLASSPATH: (rhinoLocation) ? String(rhinoLocation) : null,
+				JSH_SHELL_TMPDIR: tmp.toString()
+			};
+			/**
+			 * @param { string } engine
+			 * @param { slime.jsh.internal.launcher.test.ShellImplementation } implementation
+			 * @returns { slime.jsh.internal.launcher.test.Scenario }
+			 */
+			return function(engine,implementation) {
+				var name = engine + " " + implementation.type;
+
+				/** @type { { [name: string]: string } } */
+				var properties = {};
+
+				var environment = $api.Object.compose(baseEnvironment, {
+					JSH_ENGINE: engine,
+					//,JSH_LAUNCHER_DEBUG: "true"
+					//,JSH_DEBUG_JDWP: (engine == "rhino" && shell == built) ? "transport=dt_socket,address=8000,server=y,suspend=y" : null
+				});
+
+				/** @type { slime.jsh.internal.launcher.test.ShellInvocation } */
+				var shellInvocation = {
+					logging: "/foo/bar",
+					environment: environment,
+					properties: properties
+				};
+
+				/** @type { slime.jsh.internal.launcher.test.ShellInvocation } */
+				var bashInvocation = ($context.library.shell.PATH.getCommand("bash")) ? {
+					bash: $context.library.shell.PATH.getCommand("bash").pathname,
+					logging: "/foo/bar",
+					environment: environment,
+					properties: properties
+				} : void(0);
+
+				/** @type { slime.jsh.internal.launcher.test.ShellDescriptor } */
+				var shellDescriptor = {
+					hasRhino: Boolean(rhinoLocation),
+					isRhino: Boolean(engine == "rhino"),
+					isUnbuilt: Boolean(implementation.type == "unbuilt"),
+					tmp: tmp
+				};
+
+				var descriptorChecks = checksForDescriptor(shellDescriptor);
+
+				/**
+				 *
+				 * @param { slime.jsh.internal.launcher.test.ShellInvocation } invocation
+				 * @param { slime.jsh.internal.launcher.test.ShellImplementation } implementation
+				 * @param { slime.jsh.internal.launcher.test.Checks } checks
+				 */
+				var checkShellOutput = function(invocation, implementation, checks) {
+					var result = getShellResult(invocation, implementation);
+					return function(verify) {
+						checks(result)(verify);
+					}
+				}
+
+				/** @type { slime.jsh.internal.launcher.test.Checks } */
+				var checkRhinoNotRunning = function(result) {
+					return function(verify) {
+						verify(result,"shell_without_rhino").rhino.running.is(false);
+					}
+				};
+
+				/** @type { (level: number) => slime.jsh.internal.launcher.test.Checks } */
+				var checkRhinoOptimizationIs = function(level) {
+					return function(result) {
+						return function(verify) {
+							verify(result).rhino.optimization.is(level);
+						}
+					}
+				}
+
+				var execute = function(verify) {
+					var checks = $api.Array.build(
+						/** @param { ((verify: slime.definition.verify.Verify) => void)[] } rv */
+						function(rv) {
+							rv.push(checkShellOutput(shellInvocation, implementation, descriptorChecks));
+							if (implementation.type == "built" && bashInvocation) {
+								rv.push(
+									checkShellOutput(
+										bashInvocation,
+										$api.Object.compose(
+											implementation,
+											{
+												shell: [builtShell.getFile("jsh.bash")]
+											}
+										),
+										descriptorChecks
+									)
+								);
+							}
+							if (engine == "rhino") {
+								rv.push(
+									checkShellOutput(
+										{
+											environment: $api.Object.compose(environment, {
+												JSH_ENGINE_RHINO_OPTIMIZATION: String(0)
+											})
+										},
+										implementation,
+										checkRhinoOptimizationIs(0)
+									)
+								);
+							}
+							if (engine == "nashorn" && rhinoLocation) {
+								rv.push(
+									checkShellOutput(
+										{
+											environment: $api.Object.compose(environment, {
+												JSH_ENGINE_RHINO_CLASSPATH: null
+											})
+										},
+										implementation,
+										checkRhinoNotRunning
+									)
+								);
+							}
+						}
+					);
+
+					checks.forEach(function(check) {
+						check(verify);
+					});
+				}
+
+				return {
+					name: name,
+					execute: execute
+				}
+			}
+		}
+
 		$export({
 			getEngines: getEngines,
-			buildShell: _buildShell,
-			ensureOutputMatches: verifyOutput,
 			requireBuiltShell: requireHomeDirectory,
-			getShellResult: getShellResult
+			toScenario: toScenario
 		});
 	}
 //@ts-ignore
