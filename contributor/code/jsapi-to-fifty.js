@@ -62,40 +62,60 @@
 					}
 				}
 			}
-		}
+		};
+
+		/** @type { slime.project.jsapi.fp.Maybeify } */
+		var maybeify = function() {
+			return function(f) {
+				return function() {
+					var result = f.apply(this,arguments);
+					return $api.Function.Maybe.from(result);
+				}
+			}
+		};
+
+		var toMaybe = maybeify();
 
 		/** @typedef { { section: slime.project.jsapi.internal.InputLine["section"], content: string } } ParsedCommentLine */
 
 		var parseComment = $api.Function.pipe(
 			$$api.Function.switch(
-				/** @type { (rest: string) => slime.$api.fp.Maybe<ParsedCommentLine> } */
-				function(rest) {
-					if (rest.substring(0,3) == "/**") return $api.Function.Maybe.value({
-						section: "start",
-						content: rest.substring(3).trim()
-					});
-					return $api.Function.Maybe.nothing();
-				},
-				function(rest) {
-					if (rest.substring(0,3) == " */") return $api.Function.Maybe.value({
-						section: "end",
-						content: ""
-					});
-					return $api.Function.Maybe.nothing();
-				},
-				function(rest) {
-					if (rest.substring(0,2) == " *") return $api.Function.Maybe.value({
-						section: "middle",
-						content: rest.substring(2).trim()
-					});
-					return $api.Function.Maybe.nothing();
-				},
-				function(rest) {
-					return $api.Function.Maybe.value({
-						section: null,
-						content: rest
-					})
-				}
+				toMaybe(
+					/** @type { (rest: string) => ParsedCommentLine } */
+					function(rest) {
+						if (rest.substring(0,3) == "/**") return {
+							section: "start",
+							content: rest.substring(3).trim()
+						}
+					}
+				),
+				toMaybe(
+					/** @type { (rest: string) => ParsedCommentLine } */
+					function(rest) {
+						if (rest.substring(0,3) == " */") return {
+							section: "end",
+							content: ""
+						};
+					}
+				),
+				toMaybe(
+					/** @type { (rest: string) => ParsedCommentLine } */
+					function(rest) {
+						if (rest.substring(0,2) == " *") return {
+							section: "middle",
+							content: rest.substring(2).trim()
+						};
+					}
+				),
+				toMaybe(
+					/** @type { (rest: string) => ParsedCommentLine } */
+					function(rest) {
+						return {
+							section: null,
+							content: rest
+						}
+					}
+				)
 			),
 			//	TODO	we have to force this else because of the inability to define the switch statement with an else currently
 			$api.Function.Maybe.else(
@@ -137,7 +157,8 @@
 
 		$export({
 			test: {
-				prefix: prefix
+				prefix: prefix,
+				maybeify: maybeify
 			},
 			comment: function(format) {
 				//	TODO	make format an argument to below rather than a scope variable
