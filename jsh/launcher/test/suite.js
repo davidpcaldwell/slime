@@ -65,7 +65,7 @@
 			}
 		}
 
-		/** @type { slime.jsh.internal.launcher.test.Exports["verifyOutput"] } */
+		/** @type { slime.jsh.internal.launcher.test.Exports["ensureOutputMatches"] } */
 		function verifyOutput(configuration) {
 			return function(verify) {
 				return function(result) {
@@ -191,7 +191,7 @@
 		$export({
 			getEngines: getEngines,
 			buildShell: _buildShell,
-			verifyOutput: verifyOutput,
+			ensureOutputMatches: verifyOutput,
 			requireBuiltShell: requireHomeDirectory,
 			getShellResult: getShellResult
 		});
