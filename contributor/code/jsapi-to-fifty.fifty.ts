@@ -22,6 +22,7 @@ namespace slime.project.jsapi {
 	export namespace fp {
 		export type Case<P,R> = (p: P) => slime.$api.fp.Maybe<R>
 		export type Switch = <P,R>(...cases: Case<P,R>[]) => (p: P) => slime.$api.fp.Maybe<R>
+		export type Maybeify = () => <T extends (...args: any[]) => any>(f: T) => (...args: Parameters<T>) => slime.$api.fp.Maybe<ReturnType<T>>
 	}
 
 	export namespace internal {
@@ -37,6 +38,33 @@ namespace slime.project.jsapi {
 			start: boolean
 			end: boolean
 		}
+
+		export interface VisibleForTesting {
+			maybeify: fp.Maybeify
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.maybeify = function() {
+					var divideByTwoEvenly = function(n: number): number {
+						if (n % 2 == 0) return n / 2;
+					}
+
+					var maybeDivideByTwo = test.subject.test.maybeify()(divideByTwoEvenly);
+
+					var forThree = maybeDivideByTwo(3);
+					verify(forThree).present.is(false);
+					var forThree = maybeDivideByTwo(4);
+					verify(forThree).present.is(true);
+					if (forThree.present) verify(forThree).value.is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 
 		export interface VisibleForTesting {
 			prefix: (line: string) => string

@@ -11,7 +11,8 @@ namespace slime.$api {
 }
 
 /**
- * The {@link Exports} member of this namespace is available as `$api.Function` in all scripts loaded by the SLIME loader.
+ * The {@link slime.$api.fp.Exports | Exports} member of this namespace is available as `$api.Function` in all scripts loaded by the
+ * SLIME loader.
  */
 namespace slime.$api.fp {
 	(
@@ -417,10 +418,13 @@ namespace slime.$api.fp {
 		Maybe: {
 			nothing: () => Nothing
 			value: <T>(t: T) => Some<T>
+
 			from: <T>(t: T) => Maybe<T>
+
+			present: <T>(m: Maybe<T>) => m is Some<T>
+
 			map: <T,R>(f: (t: T) => R) => (m: Maybe<T>) => Maybe<R>
 			else: <T>(f: () => T) => (m: Maybe<T>) => T
-			present: <T>(m: Maybe<T>) => m is Some<T>
 		}
 	}
 
