@@ -67,8 +67,8 @@
 
 		/** @type { slime.jsh.internal.launcher.test.Exports["ensureOutputMatches"] } */
 		function verifyOutput(configuration) {
-			return function(verify) {
-				return function(result) {
+			return function(result) {
+				return function(verify) {
 					if (configuration.isUnbuilt) {
 						verify(result).src.is.not(null);
 						verify(result).home.is(null);
