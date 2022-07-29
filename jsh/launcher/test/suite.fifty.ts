@@ -65,18 +65,21 @@ namespace slime.jsh.internal.launcher {
 		}
 
 		export interface BuiltShellContext {
+			/**
+			 * The location of the source code for this shell.
+			 */
 			src: slime.jrunscript.file.Directory
-			//rhino: slime.jrunscript.file.Pathname
+
+			/**
+			 * If running in a built shell, its location.
+			 */
+			home: slime.jrunscript.file.Directory
 
 			/**
 			 * The specified location of the built shell, if any.
 			 */
 			specified: slime.jrunscript.file.Pathname
 
-			/**
-			 * If running in a built shell, its location.
-			 */
-			current: slime.jrunscript.file.Directory
 		}
 
 		export interface BuiltShellEvents {

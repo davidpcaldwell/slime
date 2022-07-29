@@ -36,10 +36,7 @@
 		jsh.test.integration({
 			getopts: {
 				options: {
-					//rhino: jsh.file.Pathname,
 					"shell:built": jsh.file.Pathname,
-					//	TODO	unused
-					"shell:unbuilt": jsh.file.Pathname
 				}
 			},
 			scenario: function(parameters) {
@@ -49,7 +46,7 @@
 						src: jsh.shell.jsh.src,
 						//rhino: parameters.options.rhino,
 						specified: parameters.options["shell:built"],
-						current: jsh.shell.jsh.home
+						home: jsh.shell.jsh.home
 					},
 					{
 						specified: function(e) {
