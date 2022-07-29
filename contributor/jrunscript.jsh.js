@@ -180,7 +180,6 @@
 				script: environment.jsh.src.getFile("jsh/launcher/test/suite.jsh.js"),
 				arguments: [
 					"-scenario",
-					"-shell:unbuilt", environment.jsh.unbuilt.src,
 					"-shell:built", environment.jsh.built.home,
 					"-view", "stdio"
 				].concat(rhinoArgs)

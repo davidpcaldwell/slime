@@ -30,7 +30,8 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Directory } src
-		 * @param { slime.jrunscript.file.Pathname } rhino
+		 * @param { slime.jrunscript.file.Pathname } rhino A local location to find Rhino; if defined, this will be passed to the
+		 * build process so that it does not have to download Rhino (which is what it will do by default).
 		 * @returns { slime.$api.fp.world.Action<slime.jrunscript.file.Directory,{ console: string }> }
 		 */
 		var _buildShell = function(src,rhino) {
@@ -92,22 +93,22 @@
 			}
 		}
 
-		/** @type { slime.jsh.internal.launcher.test.Exports["requireBuiltShell"] } */
-		var requireHomeDirectory = function(p) {
+		/** @type { slime.jsh.internal.launcher.test.Exports["requireBuiltShellHomeDirectory"] } */
+		var requireBuiltShellHomeDirectory = function(p) {
 			return function(events) {
 				if (p.specified && p.specified.directory) {
 					events.fire("specified", p.specified);
 					return p.specified.directory;
 				}
-				if (p.current) {
-					events.fire("current", p.current);
-					return p.current;
+				if (p.home) {
+					events.fire("current", p.home);
+					return p.home;
 				}
 				events.fire("buildStart");
 				var tmpdir = $context.library.shell.TMPDIR.createTemporary({ directory: true });
 				events.fire("buildLocation", tmpdir);
 				$api.Function.world.now.action(
-					_buildShell(p.src, p.rhino),
+					_buildShell(p.src, void(0)),
 					tmpdir,
 					{
 						//	TODO	Probably need to come up with event forwarding API
@@ -337,7 +338,7 @@
 
 		$export({
 			getEngines: getEngines,
-			requireBuiltShell: requireHomeDirectory,
+			requireBuiltShellHomeDirectory: requireBuiltShellHomeDirectory,
 			toScenario: toScenario
 		});
 	}

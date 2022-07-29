@@ -36,23 +36,18 @@
 		jsh.test.integration({
 			getopts: {
 				options: {
-					rhino: jsh.file.Pathname,
 					"shell:built": jsh.file.Pathname,
-					//	TODO	unused
-					"shell:unbuilt": jsh.file.Pathname
 				}
 			},
 			scenario: function(parameters) {
-				var context = {
-					src: jsh.shell.jsh.src,
-					rhino: parameters.options.rhino,
-					specified: parameters.options["shell:built"],
-					current: jsh.shell.jsh.home
-				};
-
 				var home = $api.Function.world.now.question(
-					library.script.requireBuiltShell,
-					context,
+					library.script.requireBuiltShellHomeDirectory,
+					{
+						src: jsh.shell.jsh.src,
+						//rhino: parameters.options.rhino,
+						specified: parameters.options["shell:built"],
+						home: jsh.shell.jsh.home
+					},
 					{
 						specified: function(e) {
 							jsh.shell.console("Using specified built shell at " + e.detail.toString());
