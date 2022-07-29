@@ -48,6 +48,11 @@ namespace slime.jsh.script {
 			command: Command<T>
 			invocation: Invocation<T>
 		}
+
+		export type CallSearchResult<T> = Call<T>
+			| slime.jsh.script.cli.error.NoTargetProvided
+			| slime.jsh.script.cli.error.TargetNotFound
+			| slime.jsh.script.cli.error.TargetNotFunction
 	}
 
 	export interface Exports {
@@ -66,46 +71,98 @@ namespace slime.jsh.script {
 	export namespace cli {
 		export interface Exports {
 			Call: {
+				parse: <T>(p: {
+					commands: Commands<T>
+					invocation: Invocation<T>
+				}) => CallSearchResult<T>
+
 				get: <T>(p: {
 					descriptor: Descriptor<T>
 					arguments: string[]
-				}) => Call<T>
-					| slime.jsh.script.cli.error.NoTargetProvided
-					| slime.jsh.script.cli.error.TargetNotFound
-					| slime.jsh.script.cli.error.TargetNotFunction
+				}) => CallSearchResult<T>
+
+				execute: <T>(p: {
+					commands: Commands<T>
+					call: CallSearchResult<T>
+				}) => never | void
 			}
+
+			execute: <T>(p: {
+				commands: Commands<T>
+				invocation: Invocation<T>
+			}) => never | void
 		}
 
 		(
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
-				const { verify } = fifty;
+				const { verify, run } = fifty;
 				const { $api, jsh } = fifty.global;
 
 				var hello = function(p) {
 				};
 
-				fifty.tests.cli.Call = {
-					get: function() {
-						var commands: Commands<{}> = {
-							hello: hello
-						};
+				fifty.tests.cli.Call = function() {
+					var commands: Commands<{}> = {
+						hello: hello
+					};
 
-						var one = test.subject.cli.Call.get({
-							descriptor: {
-								options: $api.Function.identity,
-								commands: commands
-							},
-							arguments: ["hello"]
+					run(function parse() {
+						var one = test.subject.cli.Call.parse({
+							commands: commands,
+							invocation: {
+								options: {},
+								arguments: ["hello"]
+							}
 						}) as slime.jsh.script.cli.Call<{}>;
-
-						debugger;
 
 						verify(one).evaluate.property("command").is(hello);
 						verify(one).invocation.options.is.type("object");
 						verify(one).invocation.arguments.length.is(0);
-					}
+
+						var two = test.subject.cli.Call.parse({
+							commands: commands,
+							invocation: {
+								options: {},
+								arguments: ["hello", "world"]
+							}
+						}) as slime.jsh.script.cli.Call<{}>;
+
+						verify(two).evaluate.property("command").is(hello);
+						verify(two).invocation.options.is.type("object");
+						verify(two).invocation.arguments.length.is(1);
+						verify(two).invocation.arguments[0].is("world");
+					});
+
+					run(function get() {
+						var descriptor = {
+							commands: commands
+						};
+
+						var one = test.subject.cli.Call.get({
+							descriptor: descriptor,
+							arguments: ["hello"]
+						}) as slime.jsh.script.cli.Call<{}>;
+
+						verify(one).evaluate.property("command").is(hello);
+						verify(one).invocation.options.is.type("object");
+						verify(one).invocation.arguments.length.is(0);
+
+						var two = test.subject.cli.Call.get({
+							descriptor: descriptor,
+							arguments: ["hello", "world"]
+						}) as slime.jsh.script.cli.Call<{}>;
+
+						verify(two).evaluate.property("command").is(hello);
+						verify(two).invocation.options.is.type("object");
+						verify(two).invocation.arguments.length.is(1);
+						verify(two).invocation.arguments[0].is("world");
+					});
+				};
+
+				fifty.tests.wip = function() {
+					fifty.tests.cli.Call();
 				}
 			}
 		//@ts-ignore
