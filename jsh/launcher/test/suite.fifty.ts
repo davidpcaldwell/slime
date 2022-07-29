@@ -66,7 +66,7 @@ namespace slime.jsh.internal.launcher {
 
 		export interface BuiltShellContext {
 			src: slime.jrunscript.file.Directory
-			rhino: slime.jrunscript.file.Pathname
+			//rhino: slime.jrunscript.file.Pathname
 
 			/**
 			 * The specified location of the built shell, if any.
@@ -105,7 +105,7 @@ namespace slime.jsh.internal.launcher {
 		export interface Exports {
 			getEngines: (src: slime.jrunscript.file.Directory) => string[]
 
-			requireBuiltShell: slime.$api.fp.world.Question<
+			requireBuiltShellHomeDirectory: slime.$api.fp.world.Question<
 				slime.jsh.internal.launcher.test.BuiltShellContext,
 				slime.jsh.internal.launcher.test.BuiltShellEvents,
 				slime.jrunscript.file.Directory
