@@ -43,7 +43,7 @@
 		 *
 		 * @param { string } suiteName
 		 * @param { string } view
-		 * @returns { slime.jsh.internal.launcher.test.SuiteRunner }
+		 * @returns { slime.jsh.internal.launcher.test.SuiteRunner & { run: (part: string) => void } }
 		 */
 		var Runner = function(suiteName,view) {
 			var suite = new jsh.unit.Suite({
@@ -79,16 +79,16 @@
 			}
 		};
 
+		var runner = Runner(jsh.script.file.pathname.basename, getScriptOptions().view);
 		var suite = library.script.createTestSuite(
 			jsh,
 			{
-				part: getScriptOptions().part,
 				built: getScriptOptions()["shell:built"]
 			},
-			Runner(jsh.script.file.pathname.basename, getScriptOptions().view)
+			runner
 		);
 		//jsh.loader.plugins(suite.getSrc().getRelativePath("jsh/test"));
-		suite.run();
+		runner.run(getScriptOptions().part);
 	}
 //@ts-ignore
 )($api,jsh);

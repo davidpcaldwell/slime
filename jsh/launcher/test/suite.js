@@ -475,21 +475,12 @@
 				},this);
 
 				return {
-					getSrc: getSrc,
-					/** @type { () => void } */
-					run: function() {
-						runner.run(options.part);
-					}
+					getSrc: getSrc
 				}
 			}
 		);
 
 		$export({
-			// Context: Context,
-			// getEngines: getEngines,
-			// requireBuiltShellHomeDirectory: requireBuiltShellHomeDirectory,
-			// getBuiltShellHomeDirectory: getBuiltShellHomeDirectory,
-			// toScenario: toScenario,
 			createTestSuite: createTestSuite
 		});
 	}
