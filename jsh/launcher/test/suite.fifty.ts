@@ -101,6 +101,11 @@ namespace slime.jsh.internal.launcher {
 			execute: (verify: slime.definition.verify.Verify) => void
 		}
 
+		export interface SuiteRunner {
+			addScenario: (scenario: Scenario) => void
+			run: (part: string) => void
+		}
+
 		export type Checks = (result: Result) => (verify: slime.definition.verify.Verify) => void
 
 		export interface Context {
@@ -127,6 +132,11 @@ namespace slime.jsh.internal.launcher {
 				slime.jrunscript.file.Directory
 			>
 
+			/**
+			 * Returns the directory for a built shell, returning the directory at `built` if `built` is specified, or the `home`
+			 * property of `current` (the currently executing shell, if it is a built shell) if present, or building a shell
+			 * from the `src` property of `context` otherwise.
+			 */
 			getBuiltShellHomeDirectory: (p: {
 				context: ShellContext
 				built: slime.jrunscript.file.Pathname
@@ -139,6 +149,29 @@ namespace slime.jsh.internal.launcher {
 				tmp: slime.jrunscript.file.Directory
 			) => (engine: string, implementation: ShellImplementation) => Scenario
 		}
+
+		//	Some disabled tests; look into re-enabling
+		// [unbuilt,built].forEach(function(implementation) {
+		// 	var shell = (unbuilt) ? home : getSrc();
+		// 	var id = ["unbuilt","built"][arguments[1]];
+
+		// 	//	TODO	the below test does not pass under JDK 11; disabling it for later examination
+		// 	// this.scenario(id, jsh.test.Suite({
+		// 	// 	shell: shell,
+		// 	// 	script: jsh.script.file.parent.getFile("options.jsh.js")
+		// 	// }));
+
+		// 	//	The was already commented-out when the above comment was written
+
+		// 	// this.add({
+		// 	// 	scenario: new jsh.unit.Scenario.Integration({
+		// 	// 		shell: shell,
+		// 	// 		script: jsh.script.file.parent.getFile("options.jsh.js")
+		// 	// 	})
+		// 	// });
+		// },this);
+
+
 
 		export type Script = slime.loader.Script<Context,Exports>
 	}

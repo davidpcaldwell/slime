@@ -192,7 +192,8 @@
 		}
 
 		/**
-		 * @param { slime.jrunscript.file.Pathname } rhinoLocation
+		 * @param { slime.jrunscript.file.Pathname } rhinoLocation Currently always undefined, but probably was to help with
+		 * performance by making it possible not to download and install Rhino in Rhino shells?
 		 * @param { slime.jrunscript.file.Directory } builtShell
 		 * @param { slime.jrunscript.file.Directory } tmp
 		 */

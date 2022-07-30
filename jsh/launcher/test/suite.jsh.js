@@ -39,111 +39,137 @@
 
 		var getSrc = $api.Function.impure.Input.map(getContext, library.script.Context.src);
 
-		var getEngines = memoized($api.Function.impure.Input.map(getSrc, library.script.getEngines));
-
-		var getUnbuilt = $api.Function.impure.Input.map(getSrc, function(src) {
-			/** @type { slime.jsh.internal.launcher.test.ShellImplementation } */
-			var unbuilt = {
-				type: "unbuilt",
-				shell: [
-					src.getRelativePath("rhino/jrunscript/api.js"),
-					src.getRelativePath("jsh/launcher/main.js")
-				],
-				coffeescript: src.getFile("local/jsh/lib/coffee-script.js")
-			};
-			return unbuilt;
-		});
-
-		jsh.loader.plugins(getSrc().getRelativePath("jsh/test"));
-
-		var parameters = jsh.script.getopts({
-			options: {
-				part: String,
-				view: "console",
-				"shell:built": jsh.file.Pathname
-			}
-		});
-
-		var suite = new jsh.unit.Suite({
-			name: jsh.script.file.pathname.basename
-		});
-
-		var home = library.script.getBuiltShellHomeDirectory({
-			context: getContext(),
-			built: parameters.options["shell:built"],
-			console: jsh.shell.console
-		});
-
-		var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-		var unbuilt = getUnbuilt();
-
-		/** @type { slime.jsh.internal.launcher.test.ShellImplementation } */
-		var built = {
-			type: "built",
-			shell: [
-				home.getRelativePath("jsh.js")
-			],
-			coffeescript: home.getFile("lib/coffee-script.js")
-		};
-
-		var addScenario = (
-			function() {
-				var index = 0;
-				return function(o) {
-					suite.scenario(String(++index), {
-						create: function() {
-							this.name = o.name;
-
-							this.execute = function(scope,verify) {
-								o.execute(verify);
-							};
-						}
-					});
-				}
-			}
-		)();
-
-		[unbuilt,built].forEach(function(implementation) {
-			var shell = (unbuilt) ? home : getSrc();
-			var id = ["unbuilt","built"][arguments[1]];
-
-			//	TODO	the below test does not pass under JDK 11; disabling it for later examination
-			// this.scenario(id, jsh.test.Suite({
-			// 	shell: shell,
-			// 	script: jsh.script.file.parent.getFile("options.jsh.js")
-			// }));
-
-			//	The was already commented-out when the above comment was written
-
-			// this.add({
-			// 	scenario: new jsh.unit.Scenario.Integration({
-			// 		shell: shell,
-			// 		script: jsh.script.file.parent.getFile("options.jsh.js")
-			// 	})
-			// });
-		},this);
-
-		getEngines().forEach(function(engine) {
-			[unbuilt,built].forEach(function(shell) {
-				var UNSUPPORTED = (engine == "rhino" && shell.coffeescript);
-				if (!UNSUPPORTED) {
-					addScenario(
-						library.script.toScenario(
-							parameters.options.rhino,
-							home,
-							tmp
-						)(
-							engine,
-							shell
-						)
-					);
+		/** @type { slime.$api.fp.impure.Input<{ part: string, view: string, "shell:built": slime.jrunscript.file.Pathname }> } */
+		var getOptions = function() {
+			var parameters = jsh.script.getopts({
+				options: {
+					part: String,
+					view: "console",
+					"shell:built": jsh.file.Pathname
 				}
 			});
-		},this);
+			return parameters.options;
+		}
 
-		var path = (parameters.options.part) ? parameters.options.part.split("/") : void(0);
-		jsh.unit.interface.create(suite, { view: parameters.options.view, path: path });
+		var createTestSuite = (
+			/**
+			 *
+			 * @param { slime.jsh.internal.launcher.test.SuiteRunner } runner
+			 * @returns
+			 */
+			function(runner) {
+				var getEngines = memoized($api.Function.impure.Input.map(getSrc, library.script.getEngines));
+
+				var getUnbuilt = $api.Function.impure.Input.map(getSrc, function(src) {
+					/** @type { slime.jsh.internal.launcher.test.ShellImplementation } */
+					var unbuilt = {
+						type: "unbuilt",
+						shell: [
+							src.getRelativePath("rhino/jrunscript/api.js"),
+							src.getRelativePath("jsh/launcher/main.js")
+						],
+						coffeescript: src.getFile("local/jsh/lib/coffee-script.js")
+					};
+					return unbuilt;
+				});
+
+				/** @type { slime.$api.fp.impure.Input<slime.jrunscript.file.Directory> } */
+				var getHome = memoized(function() {
+					return library.script.getBuiltShellHomeDirectory({
+						context: getContext(),
+						built: getOptions()["shell:built"],
+						console: jsh.shell.console
+					});
+				});
+
+				var getBuilt = $api.Function.impure.Input.map(getHome, function(home) {
+					/** @type { slime.jsh.internal.launcher.test.ShellImplementation } */
+					var built = {
+						type: "built",
+						shell: [
+							home.getRelativePath("jsh.js")
+						],
+						coffeescript: home.getFile("lib/coffee-script.js")
+					};
+					return built;
+				})
+
+				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+				var getShells = function() {
+					return [getUnbuilt(), getBuilt()];
+				}
+
+				getEngines().forEach(function(engine) {
+					getShells().forEach(function(shell) {
+						var UNSUPPORTED = (engine == "rhino" && shell.coffeescript);
+						if (!UNSUPPORTED) {
+							runner.addScenario(
+								library.script.toScenario(
+									void(0),
+									getHome(),
+									tmp
+								)(
+									engine,
+									shell
+								)
+							);
+						}
+					});
+				},this);
+
+				return {
+					getSrc: getSrc,
+					/** @type { () => void } */
+					run: function() {
+						runner.run(getOptions().part);
+					}
+				}
+			}
+		);
+
+		/**
+		 *
+		 * @param { string } suiteName
+		 * @returns { slime.jsh.internal.launcher.test.SuiteRunner }
+		 */
+		var Runner = function(suiteName) {
+			var suite = new jsh.unit.Suite({
+				name: suiteName
+			});
+
+			var addScenario = (
+				function() {
+					var index = 0;
+					return function(o) {
+						suite.scenario(String(++index), {
+							create: function() {
+								this.name = o.name;
+
+								this.execute = function(scope,verify) {
+									o.execute(verify);
+								};
+							}
+						});
+					}
+				}
+			)();
+
+			function run(part) {
+				//	TODO	terser way to do this? I guess this is Maybe.map
+				var path = (part) ? part.split("/") : void(0);
+				jsh.unit.interface.create(suite, { view: getOptions().view, path: path });
+			}
+
+			return {
+				addScenario: addScenario,
+				run: run
+			}
+		};
+
+		var suite = createTestSuite(Runner(jsh.script.file.pathname.basename));
+		//jsh.loader.plugins(suite.getSrc().getRelativePath("jsh/test"));
+		suite.run();
 	}
 //@ts-ignore
 )(Packages,$api,jsh);
