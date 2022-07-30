@@ -13,7 +13,7 @@
 	 * @param { slime.loader.Export<slime.jsh.internal.launcher.test.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var getEngines = function(src) {
+		var getJavascriptEngines = function(src) {
 			var engines = $context.library.shell.run({
 				command: "bash",
 				arguments: [src.getFile("jsh.bash"), "-engines"],
@@ -95,7 +95,7 @@
 			}
 		}
 
-		/** @type { slime.jsh.internal.launcher.test.Exports["requireBuiltShellHomeDirectory"] } */
+		/** @type { slime.$api.fp.world.Question<slime.jsh.internal.launcher.test.BuiltShellContext,slime.jsh.internal.launcher.test.BuiltShellEvents,slime.jrunscript.file.Directory> } */
 		var requireBuiltShellHomeDirectory = function(p) {
 			return function(events) {
 				if (p.specified && p.specified.directory) {
@@ -339,8 +339,8 @@
 			}
 		};
 
-		/** @type { slime.jsh.internal.launcher.test.Exports["Context"]["src"] } */
-		var getSrc = function(context) {
+		/** @type { (context: slime.jsh.internal.launcher.test.ShellContext) => slime.jrunscript.file.Directory } */
+		var getContextSrc = function(context) {
 			return (context.src) ? context.src : context.main.parent.parent.parent.parent;
 		};
 
@@ -375,27 +375,122 @@
 					}
 				}
 			);
+		};
+
+		/** @type { <T>(input: slime.$api.fp.impure.Input<T>) => slime.$api.fp.impure.Input<T> } */
+		var memoized = function(input) {
+			return $api.Function.memoized(input);
 		}
 
-		$export({
-			Context: {
-				src: getSrc,
-				from: {
-					jsh: function(jsh) {
-						return {
-							main: jsh.script.file,
-							src: jsh.shell.jsh.src,
-							home: jsh.shell.jsh.home
-						};
+		var getBuiltShellHomeDirectory = function(p) {
+			return getHome(p.context, p.built, p.console);
+		};
+
+		var createTestSuite = (
+			/**
+			 *
+			 * @param { slime.jsh.Global } jsh
+			 * @param { { part: string, built: slime.jrunscript.file.Pathname } } options
+			 * @param { slime.jsh.internal.launcher.test.SuiteRunner } runner
+			 * @returns
+			 */
+			function(jsh,options,runner) {
+				var getJsh = $api.Function.impure.Input.value(jsh);
+
+				var Context = {
+					src: getContextSrc,
+					from: {
+						jsh: function(jsh) {
+							return {
+								main: jsh.script.file,
+								src: jsh.shell.jsh.src,
+								home: jsh.shell.jsh.home
+							};
+						}
+					}
+				};
+
+				var getContext = $api.Function.impure.Input.map(getJsh, Context.from.jsh);
+
+				var getSrc = $api.Function.impure.Input.map(getContext, Context.src);
+
+				var getEngines = memoized($api.Function.impure.Input.map(getSrc, getJavascriptEngines));
+
+				var getUnbuilt = $api.Function.impure.Input.map(getSrc, function(src) {
+					/** @type { slime.jsh.internal.launcher.test.ShellImplementation } */
+					var unbuilt = {
+						type: "unbuilt",
+						shell: [
+							src.getRelativePath("rhino/jrunscript/api.js"),
+							src.getRelativePath("jsh/launcher/main.js")
+						],
+						coffeescript: src.getFile("local/jsh/lib/coffee-script.js")
+					};
+					return unbuilt;
+				});
+
+				/** @type { slime.$api.fp.impure.Input<slime.jrunscript.file.Directory> } */
+				var getHome = memoized(function() {
+					return getBuiltShellHomeDirectory({
+						context: getContext(),
+						built: options.built,
+						console: jsh.shell.console
+					});
+				});
+
+				var getBuilt = $api.Function.impure.Input.map(getHome, function(home) {
+					/** @type { slime.jsh.internal.launcher.test.ShellImplementation } */
+					var built = {
+						type: "built",
+						shell: [
+							home.getRelativePath("jsh.js")
+						],
+						coffeescript: home.getFile("lib/coffee-script.js")
+					};
+					return built;
+				})
+
+				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+				var getShells = function() {
+					return [getUnbuilt(), getBuilt()];
+				}
+
+				getEngines().forEach(function(engine) {
+					getShells().forEach(function(shell) {
+						var UNSUPPORTED = (engine == "rhino" && shell.coffeescript);
+						if (!UNSUPPORTED) {
+							runner.addScenario(
+								toScenario(
+									void(0),
+									getHome(),
+									tmp
+								)(
+									engine,
+									shell
+								)
+							);
+						}
+					});
+				},this);
+
+				return {
+					getSrc: getSrc,
+					/** @type { () => void } */
+					run: function() {
+						runner.run(options.part);
 					}
 				}
-			},
-			getEngines: getEngines,
-			requireBuiltShellHomeDirectory: requireBuiltShellHomeDirectory,
-			getBuiltShellHomeDirectory: function(p) {
-				return getHome(p.context, p.built, p.console);
-			},
-			toScenario: toScenario
+			}
+		);
+
+		$export({
+			// Context: Context,
+			// getEngines: getEngines,
+			// requireBuiltShellHomeDirectory: requireBuiltShellHomeDirectory,
+			// getBuiltShellHomeDirectory: getBuiltShellHomeDirectory,
+			// toScenario: toScenario,
+			createTestSuite: createTestSuite
 		});
 	}
 //@ts-ignore
