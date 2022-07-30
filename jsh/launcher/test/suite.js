@@ -198,6 +198,9 @@
 		 * @param { slime.jrunscript.file.Directory } tmp
 		 */
 		var toScenario = function(rhinoLocation,builtShell,tmp) {
+			//	TODO	this was used to locate RHino, apparently, in the old JSAPI version of the suite:
+			//			var rhinoArgs = (jsh.shell.rhino) ? ["-rhino", jsh.shell.rhino.classpath.toString()] : [];
+
 			var baseEnvironment = {
 				PATH: $context.library.shell.environment.PATH,
 				//	TODO	below is used for Windows temporary files
@@ -214,8 +217,6 @@
 			 * @returns { slime.jsh.internal.launcher.test.Scenario }
 			 */
 			return function(engine,implementation) {
-				var name = engine + " " + implementation.type;
-
 				/** @type { { [name: string]: string } } */
 				var properties = {};
 
@@ -333,7 +334,7 @@
 				}
 
 				return {
-					name: name,
+					name: [engine, implementation.type],
 					execute: execute
 				}
 			}
