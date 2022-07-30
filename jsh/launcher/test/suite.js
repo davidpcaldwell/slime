@@ -70,6 +70,8 @@
 		function checksForDescriptor(configuration) {
 			return function(result) {
 				return function(verify) {
+					//	TODO	the loader does not really define what happens in built and unbuilt shells with src, but it is
+					//			defined here
 					if (configuration.isUnbuilt) {
 						verify(result).src.is.not(null);
 						verify(result).home.is(null);
@@ -334,11 +336,64 @@
 					execute: execute
 				}
 			}
+		};
+
+		/** @type { slime.jsh.internal.launcher.test.Exports["Context"]["src"] } */
+		var getSrc = function(context) {
+			return (context.src) ? context.src : context.main.parent.parent.parent.parent;
+		};
+
+		/**
+		 *
+		 * @param { slime.jsh.internal.launcher.test.ShellContext } context
+		 * @param { slime.jrunscript.file.Pathname } built
+		 * @param { (message: string) => void } console
+		 * @returns
+		 */
+		var getHome = function(context,built,console) {
+			return $api.Function.world.now.question(
+				requireBuiltShellHomeDirectory,
+				$api.Object.compose(context, {
+					specified: built
+				}),
+				{
+					specified: function(e) {
+						console("Using specified built shell at " + e.detail.toString());
+					},
+					current: function(e) {
+						console("Using current built shell at " + e.detail.pathname.toString());
+					},
+					buildStart: function(e) {
+						console("Building shell for tests ...");
+					},
+					buildLocation: function(e) {
+						console("Building shell to " + e.detail.pathname.toString());
+					},
+					buildOutput: function(e) {
+						console("BUILD OUTPUT: " + e.detail);
+					}
+				}
+			);
 		}
 
 		$export({
+			Context: {
+				src: getSrc,
+				from: {
+					jsh: function(jsh) {
+						return {
+							main: jsh.script.file,
+							src: jsh.shell.jsh.src,
+							home: jsh.shell.jsh.home
+						};
+					}
+				}
+			},
 			getEngines: getEngines,
 			requireBuiltShellHomeDirectory: requireBuiltShellHomeDirectory,
+			getBuiltShellHomeDirectory: function(p) {
+				return getHome(p.context, p.built, p.console);
+			},
 			toScenario: toScenario
 		});
 	}

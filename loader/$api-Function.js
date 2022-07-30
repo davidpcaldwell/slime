@@ -383,6 +383,11 @@
 					return function() {
 						return v;
 					}
+				},
+				map: function(input, map) {
+					return function() {
+						return map(input());
+					}
 				}
 			},
 			Process: {

@@ -64,22 +64,28 @@ namespace slime.jsh.internal.launcher {
 			tmp: slime.jrunscript.file.Directory
 		}
 
-		export interface BuiltShellContext {
+		export interface ShellContext {
 			/**
-			 * The location of the source code for this shell.
+			 * The file representing the main script; at the moment, the JSAPI test suite.
 			 */
-			src: slime.jrunscript.file.Directory
+			 main: slime.jrunscript.file.File
 
-			/**
-			 * If running in a built shell, its location.
-			 */
-			home: slime.jrunscript.file.Directory
+			 /**
+			  * If running in an unbuilt shell, its location.
+			  */
+			 src: slime.jrunscript.file.Directory
 
+			 /**
+			  * If running in a built shell, its location.
+			  */
+			 home: slime.jrunscript.file.Directory
+		}
+
+		export interface BuiltShellContext extends ShellContext {
 			/**
 			 * The specified location of the built shell, if any.
 			 */
 			specified: slime.jrunscript.file.Pathname
-
 		}
 
 		export interface BuiltShellEvents {
@@ -106,6 +112,13 @@ namespace slime.jsh.internal.launcher {
 		}
 
 		export interface Exports {
+			Context: {
+				from: {
+					jsh: (jsh: slime.jsh.Global) => ShellContext
+				}
+				src: (context: ShellContext) => slime.jrunscript.file.Directory
+			}
+
 			getEngines: (src: slime.jrunscript.file.Directory) => string[]
 
 			requireBuiltShellHomeDirectory: slime.$api.fp.world.Question<
@@ -113,6 +126,12 @@ namespace slime.jsh.internal.launcher {
 				slime.jsh.internal.launcher.test.BuiltShellEvents,
 				slime.jrunscript.file.Directory
 			>
+
+			getBuiltShellHomeDirectory: (p: {
+				context: ShellContext
+				built: slime.jrunscript.file.Pathname
+				console: (message: string) => void
+			}) => slime.jrunscript.file.Directory
 
 			toScenario: (
 				rhinoLocation: slime.jrunscript.file.Pathname,
