@@ -117,37 +117,45 @@ namespace slime.jsh.internal.launcher {
 		}
 
 		export interface Exports {
-			Context: {
-				from: {
-					jsh: (jsh: slime.jsh.Global) => ShellContext
-				}
-				src: (context: ShellContext) => slime.jrunscript.file.Directory
+			// Context: {
+			// 	from: {
+			// 		jsh: (jsh: slime.jsh.Global) => ShellContext
+			// 	}
+			// 	src: (context: ShellContext) => slime.jrunscript.file.Directory
+			// }
+
+			// getEngines: (src: slime.jrunscript.file.Directory) => string[]
+
+			// requireBuiltShellHomeDirectory: slime.$api.fp.world.Question<
+			// 	slime.jsh.internal.launcher.test.BuiltShellContext,
+			// 	slime.jsh.internal.launcher.test.BuiltShellEvents,
+			// 	slime.jrunscript.file.Directory
+			// >
+
+			// /**
+			//  * Returns the directory for a built shell, returning the directory at `built` if `built` is specified, or the `home`
+			//  * property of `current` (the currently executing shell, if it is a built shell) if present, or building a shell
+			//  * from the `src` property of `context` otherwise.
+			//  */
+			// getBuiltShellHomeDirectory: (p: {
+			// 	context: ShellContext
+			// 	built: slime.jrunscript.file.Pathname
+			// 	console: (message: string) => void
+			// }) => slime.jrunscript.file.Directory
+
+			// toScenario: (
+			// 	rhinoLocation: slime.jrunscript.file.Pathname,
+			// 	builtShell: slime.jrunscript.file.Directory,
+			// 	tmp: slime.jrunscript.file.Directory
+			// ) => (engine: string, implementation: ShellImplementation) => Scenario
+
+			createTestSuite: (
+				jsh: slime.jsh.Global,
+				options: { part: string, built: slime.jrunscript.file.Pathname },
+				runner: SuiteRunner
+			) => {
+				run: () => void
 			}
-
-			getEngines: (src: slime.jrunscript.file.Directory) => string[]
-
-			requireBuiltShellHomeDirectory: slime.$api.fp.world.Question<
-				slime.jsh.internal.launcher.test.BuiltShellContext,
-				slime.jsh.internal.launcher.test.BuiltShellEvents,
-				slime.jrunscript.file.Directory
-			>
-
-			/**
-			 * Returns the directory for a built shell, returning the directory at `built` if `built` is specified, or the `home`
-			 * property of `current` (the currently executing shell, if it is a built shell) if present, or building a shell
-			 * from the `src` property of `context` otherwise.
-			 */
-			getBuiltShellHomeDirectory: (p: {
-				context: ShellContext
-				built: slime.jrunscript.file.Pathname
-				console: (message: string) => void
-			}) => slime.jrunscript.file.Directory
-
-			toScenario: (
-				rhinoLocation: slime.jrunscript.file.Pathname,
-				builtShell: slime.jrunscript.file.Directory,
-				tmp: slime.jrunscript.file.Directory
-			) => (engine: string, implementation: ShellImplementation) => Scenario
 		}
 
 		//	Some disabled tests; look into re-enabling
