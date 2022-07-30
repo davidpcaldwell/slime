@@ -728,6 +728,7 @@ namespace slime.$api.fp {
 
 			Input: {
 				value: <T>(t: T) => impure.Input<T>
+				map: <I,T>(input: impure.Input<I>, map: (i: I) => T) => impure.Input<T>
 			}
 
 			Process: {
