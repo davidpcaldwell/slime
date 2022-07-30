@@ -170,23 +170,6 @@
 		}
 
 		(function jshLauncher() {
-			var rhinoArgs = (jsh.shell.rhino) ? ["-rhino", jsh.shell.rhino.classpath.toString()] : [];
-
-			//	TODO	Move these tests elsewhere; see issue #128
-			var part = jsh.unit.Suite.Fork({
-				name: "Launcher tests",
-				run: jsh.shell.jsh,
-				shell: environment.jsh.built.home,
-				script: environment.jsh.src.getFile("jsh/launcher/test/suite.jsh.js"),
-				arguments: [
-					"-scenario",
-					"-shell:built", environment.jsh.built.home,
-					"-view", "stdio"
-				].concat(rhinoArgs)
-			});
-
-			suite.add("jsh/launcher/suite", part);
-
 			suite.add("jsh/launcher/internal", new jsh.unit.html.Part({
 				pathname: environment.jsh.src.getRelativePath("jsh/launcher/internal.api.html"),
 				environment: environment

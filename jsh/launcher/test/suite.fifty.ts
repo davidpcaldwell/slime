@@ -97,7 +97,7 @@ namespace slime.jsh.internal.launcher {
 		}
 
 		export interface Scenario {
-			name: string
+			name: string[]
 			execute: (verify: slime.definition.verify.Verify) => void
 		}
 
@@ -122,6 +122,59 @@ namespace slime.jsh.internal.launcher {
 				runner: SuiteRunner
 			) => void
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
+				var code: { script: Script } = {
+					script: fifty.$loader.script("suite.js")
+				};
+
+				var library = {
+					script: code.script({
+						library: {
+							shell: jsh.shell
+						},
+						script: jsh.file.Pathname(fifty.jsh.file.relative("scenario.jsh.js").pathname).file,
+						console: jsh.shell.console
+					})
+				};
+
+				fifty.tests.issue128 = fifty.test.Parent();
+
+				var Runner = function(): slime.jsh.internal.launcher.test.SuiteRunner {
+					return {
+						addScenario: function(scenario) {
+							var target = fifty.tests.issue128;
+							for (var i=0; i<scenario.name.length; i++) {
+								if (i+1 == scenario.name.length) {
+									target[scenario.name[i]] = function() {
+										scenario.execute(verify);
+									}
+								} else {
+									if (!target[scenario.name[i]]) target[scenario.name[i]] = fifty.test.Parent();
+									target = target[scenario.name[i]];
+								}
+							}
+						}
+					}
+				}
+
+				library.script.createTestSuite(
+					jsh,
+					{
+						built: void(0)
+					},
+					Runner()
+				);
+			}
+		//@ts-ignore
+		)(fifty);
+
 
 		//	Some disabled tests; look into re-enabling
 		// [unbuilt,built].forEach(function(implementation) {
@@ -156,16 +209,16 @@ namespace slime.jsh.internal.launcher {
 	// 	}
 	// )
 
-	// (
-	// 	function(
-	// 		fifty: slime.fifty.test.Kit
-	// 	) {
-	// 		fifty.tests.suite = function() {
-
-	// 		}
-	// 	}
-	// //@ts-ignore
-	// )(fifty);
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.issue128);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
