@@ -17,7 +17,7 @@
 			directory: p.file.parent.parent.parent.parent.parent.parent
 		};
 		slime.loader = new jsh.file.Loader({ directory: slime.directory });
-		var server = new jsh.httpd.Tomcat();
+		var server = jsh.httpd.Tomcat();
 		var $loader = jsh.script.loader;
 
 		var option = {

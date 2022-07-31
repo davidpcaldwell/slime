@@ -40,7 +40,7 @@
 
 				var index = p.options.index || "README.html";
 
-				var server = new jsh.httpd.Tomcat();
+				var server = jsh.httpd.Tomcat();
 				var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
 				server.map({
 					path: "",

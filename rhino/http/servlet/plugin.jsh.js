@@ -210,8 +210,7 @@
 				if (TOMCAT_CLASS) {
 					var Tomcat = (
 						/**
-						 * @constructor
-						 * @param { ConstructorParameters<slime.jsh.httpd.Exports["Tomcat"]>[0] } p
+						 * @param { Parameters<slime.jsh.httpd.Exports["Tomcat"]>[0] } p
 						 */
 						function(p) {
 							if (!p) p = {};
@@ -224,8 +223,6 @@
 
 							var base = (p.base) ? p.base : castToDirectory(jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat" }));
 
-							this.base = base;
-
 							var getOpenPort = function() {
 								var address = new Packages.java.net.ServerSocket(0);
 								var rv = address.getLocalPort();
@@ -235,7 +232,7 @@
 
 							var port = (p.port) ? p.port : getOpenPort();
 
-							this.port = port;
+							var rv = {};
 
 							if (p.https) {
 								var _https = new Packages.org.apache.catalina.connector.Connector();
@@ -260,9 +257,11 @@
 								_https.setAttribute("clientAuth", "false");
 								_https.setAttribute("sslProtocol", "TLS");
 								tomcat.getService().addConnector(_https);
-								this.https = {
+								rv.https = {
 									port: hport
 								};
+							} else {
+								rv.https = void(0);
 							}
 
 							tomcat.setBaseDir(base.toString());
@@ -364,7 +363,7 @@
 							};
 
 							/** @type { slime.jsh.httpd.Tomcat["map"] } */
-							this.map = function(m) {
+							rv.map = function(m) {
 								if (typeof(m.path) == "string" && m.servlets) {
 									var context = addContext(m.path,base);
 									var id = 0;
@@ -379,20 +378,20 @@
 							};
 
 							/** @type { slime.jsh.httpd.Tomcat["servlet"] } */
-							this.servlet = function(declaration) {
+							rv.servlet = function(declaration) {
 								addServlet(addContext("",base),declaration.resources,"/*","slime",declaration);
 							};
 
 							var started = false;
 
-							this.start = function() {
+							rv.start = function() {
 								if (!started) {
 									tomcat.start();
 									started = true;
 								}
 							}
 
-							this.run = function() {
+							rv.run = function() {
 								if (!started) {
 									tomcat.start();
 									started = true;
@@ -409,9 +408,20 @@
 								}
 							}
 
-							this.stop = function() {
+							rv.stop = function() {
 								tomcat.stop();
 								started = false;
+							}
+
+							return {
+								base: base,
+								port: port,
+								https: rv.https,
+								map: rv.map,
+								servlet: rv.servlet,
+								start: rv.start,
+								run: rv.run,
+								stop: rv.stop
 							}
 						}
 					);
@@ -425,7 +435,7 @@
 							if (rv && rv.media == "application" && rv.subtype == "x.typescript") return "text/plain";
 							return rv;
 						}
-						var tomcat = new jsh.httpd.Tomcat(p);
+						var tomcat = jsh.httpd.Tomcat(p);
 						tomcat.map({
 							path: "",
 							servlets: {

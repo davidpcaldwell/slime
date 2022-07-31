@@ -74,7 +74,7 @@
 
 						//	TODO	https doesn't really work, as CONNECT to the real destination is attempted when requests for that
 						//			host arrive
-						tomcat = new jsh.httpd.Tomcat({
+						tomcat = jsh.httpd.Tomcat({
 							https: https
 						});
 

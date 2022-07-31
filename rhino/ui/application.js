@@ -40,7 +40,7 @@
 		 * @returns { slime.jsh.httpd.Tomcat }
 		 */
 		var Server = function(p) {
-			var server = new jsh.httpd.Tomcat({
+			var server = jsh.httpd.Tomcat({
 				port: (p.port) ? p.port : void(0),
 				https: p.https
 			});

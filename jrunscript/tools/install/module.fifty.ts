@@ -520,7 +520,7 @@ namespace slime.jrunscript.tools.install {
 					mock: void(0)
 				};
 				if (jsh.httpd.Tomcat) {
-					var mock = new jsh.httpd.Tomcat();
+					var mock = jsh.httpd.Tomcat();
 					mock.map({
 						path: "/",
 						servlets: {

@@ -16,7 +16,7 @@
 	function($api,jsh,$loader,$export) {
 		$export(
 			function(resources,serve,resultsPath) {
-				var tomcat = new jsh.httpd.Tomcat();
+				var tomcat = jsh.httpd.Tomcat();
 				tomcat.map({
 					//	TODO	make the below the default for goodness' sake if it is not already
 					path: "",

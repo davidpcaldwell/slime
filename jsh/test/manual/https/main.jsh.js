@@ -19,7 +19,7 @@
 				jsh.script.cli.option.string({ longname: "password" })
 			)
 		)
-		var tomcat = new jsh.httpd.Tomcat({
+		var tomcat = jsh.httpd.Tomcat({
 			https: {
 				port: port,
 				keystore: {
