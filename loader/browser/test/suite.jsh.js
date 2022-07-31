@@ -111,7 +111,7 @@
 
 		var $loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
 
-		var tomcat = new jsh.httpd.Tomcat();
+		var tomcat = jsh.httpd.Tomcat();
 
 		/**
 		 *

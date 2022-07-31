@@ -58,7 +58,7 @@ namespace slime.jrunscript.http.client.spi {
 			const { jsh } = fifty.global;
 
 			fifty.tests.types.Implementation = function(subject: Implementation) {
-				var server = new jsh.httpd.Tomcat();
+				var server = jsh.httpd.Tomcat();
 				server.servlet({
 					load: function(scope) {
 						scope.$exports.handle = function(request) {

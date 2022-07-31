@@ -90,9 +90,9 @@ namespace slime.jsh.httpd {
 		Tomcat?: {
 			//	TODO	figure out why constructor definition not output
 			//	TODO	convert to function
-			new (p?: tomcat.Configuration): Tomcat
+			(p?: tomcat.Configuration): Tomcat
 
-			serve: any
+			serve: (p: tomcat.Configuration & { directory: slime.jrunscript.file.Directory }) => slime.jsh.httpd.Tomcat
 		}
 		plugin: {
 			tools: () => void

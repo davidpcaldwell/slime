@@ -29,7 +29,7 @@
 					jsh.shell.console("Directory not found: " + jsh.file.Pathname(p.arguments[0]));
 					jsh.shell.exit(1);
 				}
-				var tomcat = new jsh.httpd.Tomcat();
+				var tomcat = jsh.httpd.Tomcat();
 				tomcat.map({
 					path: "",
 					servlets: {

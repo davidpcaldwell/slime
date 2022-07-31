@@ -49,7 +49,7 @@
 				var successUrl = (p.interactive) ? null : slimepath + "loader/browser/test/success";
 
 				var startServer = function(p) {
-					var tomcat = new jsh.httpd.Tomcat({
+					var tomcat = jsh.httpd.Tomcat({
 						port: p.port
 					});
 					var parameters = {

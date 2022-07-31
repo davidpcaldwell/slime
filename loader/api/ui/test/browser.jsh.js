@@ -40,7 +40,7 @@
 			}
 		};
 
-		var tomcat = new jsh.httpd.Tomcat({ port: parameters.options.port });
+		var tomcat = jsh.httpd.Tomcat({ port: parameters.options.port });
 		tomcat.map({
 			path: "/",
 			servlets: {

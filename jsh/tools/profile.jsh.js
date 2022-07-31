@@ -137,7 +137,7 @@
 						jsh.shell.browser.chrome.instance.open( { uri: String(output.html.java.adapt().toURL().toExternalForm()) } );
 					} else if (output.json && isUnderSlime(output.json) && jsh.httpd.Tomcat && jsh.shell.browser.installed.chrome && !parameters.options["profiler:nobrowser"]) {
 						jsh.shell.console("profiler: Serving JSON to browser ...");
-						var server = new jsh.httpd.Tomcat();
+						var server = jsh.httpd.Tomcat();
 						server.servlet({
 							load: function(scope) {
 								scope.$exports.handle = scope.httpd.Handler.Loader({

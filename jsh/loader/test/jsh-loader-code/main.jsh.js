@@ -10,7 +10,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
-		var server = new jsh.httpd.Tomcat();
+		var server = jsh.httpd.Tomcat();
 		server.servlet({
 			load: function(scope) {
 				scope.$exports.handle = function(request) {

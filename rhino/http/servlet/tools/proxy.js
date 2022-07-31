@@ -38,7 +38,7 @@
 			var pkcs12 = mkcert(["127.0.0.1"].concat(hosts)).pathname;
 
 			var port = $context.library.ip.getEphemeralPort().number;
-			var tomcat = new $context.library.jsh.httpd.Tomcat({
+			var tomcat = $context.library.jsh.httpd.Tomcat({
 				https: {
 					port: port,
 					keystore: {
