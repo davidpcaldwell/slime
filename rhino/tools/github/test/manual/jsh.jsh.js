@@ -12,26 +12,27 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		var base = jsh.script.file.parent.parent.parent.parent.parent.parent;
+
+		var api = jsh.script.file.parent.parent.parent;
+
+		var loader = new jsh.file.Loader({ directory: api });
+
+		jsh.loader.plugins(api);
+
+		var code = {
+			/** @type { slime.jsh.unit.mock.github.test.Script } */
+			testing: loader.script("test/module.js")
+		};
+
+		var library = {
+			testing: code.testing({
+				slime: base
+			})
+		};
+
 		var startMock = function() {
-			var web = new jsh.unit.mock.Web({ trace: true });
-			jsh.loader.plugins(jsh.script.file.parent.parent.parent);
-			//	TODO	push these kinds of declarations back into a mock object that aggregates hosts and handler
-			web.addHttpsHost("127.0.0.1");
-			web.addHttpsHost("raw.githubusercontent.com");
-			web.addHttpsHost("api.github.com");
-			web.addHttpsHost("github.com");
-			web.add(jsh.unit.mock.Web.github({
-				//	TODO	flip to true to test possibility of accessing private repositories
-				//	TODO	this should actually be per-repository, though
-				private: false,
-				src: {
-					davidpcaldwell: {
-						slime: jsh.tools.git.Repository({ directory: jsh.script.file.parent.parent.parent.parent.parent.parent })
-					}
-				}
-			}));
-			web.start();
-			return web;
+			return library.testing.startMock(jsh);
 		};
 
 		var echoJshBash = function(p) {
