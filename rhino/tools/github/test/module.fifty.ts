@@ -9,8 +9,16 @@ namespace slime.jsh.unit.mock.github.test {
 		slime: slime.jrunscript.file.Directory
 	}
 
+	export interface Settings {
+		mock?: slime.jsh.unit.mock.Web
+		optimize?: boolean
+		debug?: boolean
+		token?: string
+	}
+
 	export interface Exports {
 		startMock: (jsh: slime.jsh.Global) => slime.jsh.unit.mock.Web
+		getCommand: (PATH: slime.jrunscript.file.Searchpath, settings: Settings) => string[]
 	}
 
 	(

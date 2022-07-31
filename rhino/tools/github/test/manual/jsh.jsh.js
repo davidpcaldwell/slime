@@ -35,64 +35,9 @@
 			return library.testing.startMock(jsh);
 		};
 
-		var echoJshBash = function(p) {
-			var command = [];
-			var PROTOCOL = (p.mock) ? "http" : "https";
-			if (jsh.shell.PATH.getCommand("curl")) {
-				command.push("curl", "-v");
-				if (p.token) {
-					command.push("-u", "davidpcaldwell:" + p.token);
-				}
-				if (p.mock) {
-					command.push("--proxy", "https://127.0.0.1:" + p.mock.https.port);
-				}
-				command.push("-L");
-				command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
-				return command;
-			} else if (jsh.shell.PATH.getCommand("wget")) {
-				command.push("wget");
-				if (p.token) {
-					command.push("--http-user=" + "davidpcaldwell");
-					command.push("--http-password=" + p.token);
-				}
-				command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
-				if (p.mock) {
-					command.push("-e", "use_proxy=yes");
-					command.push("-e", "http_proxy=" + "http://127.0.0.1:" + p.mock.port);
-				}
-				command.push("-O", "-");
-				return command;
-			} else {
-				throw new TypeError("No way to download files.");
-			}
+		var getCommand = function(settings) {
+			return library.testing.getCommand(jsh.shell.PATH, settings);
 		}
-
-		var getCommand = function(p) {
-			if (!p) p = {};
-			var command = echoJshBash(p);
-			command.push("|");
-			var PROTOCOL = "https";
-			if (p.mock) {
-				command.push("env");
-				command.push("JSH_HTTP_PROXY_HOST=127.0.0.1", "JSH_HTTP_PROXY_PORT=" + p.mock.port);
-				command.push("JSH_HTTPS_PROXY_HOST=127.0.0.1", "JSH_HTTPS_PROXY_PORT=" + p.mock.https.port);
-				command.push("JSH_LAUNCHER_GITHUB_PROTOCOL=http");
-				command.push("JSH_GITHUB_API_PROTOCOL=http");
-				command.push("JSH_DISABLE_HTTPS_SECURITY=true");
-				if (p && p.optimize) command.push("JSH_OPTIMIZE_REMOTE_SHELL=true");
-				if (p && p.debug) command.push("JSH_LAUNCHER_DEBUG=true");
-				PROTOCOL = "http";
-			} else if (p && p.debug) {
-				command.push("env");
-				command.push("JSH_LAUNCHER_DEBUG=true");
-			}
-			if (p.token) {
-				command.push("JSH_GITHUB_USER=davidpcaldwell", "JSH_GITHUB_PASSWORD=" + p.token);
-			}
-			command.push("bash", "-s");
-			command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js");
-			return command;
-		};
 
 		var emit = function(command) {
 			var paste = command.join(" ");
