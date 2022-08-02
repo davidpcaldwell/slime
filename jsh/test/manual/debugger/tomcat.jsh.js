@@ -7,11 +7,12 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.script.cli.main } main
 	 */
-	function($api,jsh,main) {
+	function(Packages,$api,jsh,main) {
 		main(
 			function() {
 				var tomcat = jsh.httpd.Tomcat();
@@ -35,9 +36,15 @@
 				tomcat.start();
 				jsh.shell.console("Tomcat started on port " + tomcat.port);
 				jsh.shell.console("http://127.0.0.1:" + tomcat.port + "/");
-				tomcat.run();
+				jsh.java.Thread.start(function() {
+					tomcat.run();
+				});
+				jsh.java.Thread.start(function() {
+					Packages.java.lang.Thread.sleep(10000);
+					tomcat.stop();
+				})
 			}
 		)
 	}
 //@ts-ignore
-)($api,jsh,main);
+)(Packages,$api,jsh,main);

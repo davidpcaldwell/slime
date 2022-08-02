@@ -266,13 +266,14 @@ public class Rhino {
 				} else {
 					Set<Thread> threads = Thread.getAllStackTraces().keySet();
 					LOG.log(Level.INFO, "No exit status provided; destroying debugger (if any). JVM will exit when threads complete.", status);
-					engineConfiguration.getEngine().getDebugger().destroy();
+					java.util.function.Function<Thread,Boolean> isAwt = (t) -> t.getName().startsWith("AWT-");
 					for (Thread t : threads) {
-						if (t != null && t != Thread.currentThread() && !t.isDaemon()) {
+						if (t != null && t != Thread.currentThread() && !t.isDaemon() && !isAwt.apply(t)) {
 							LOG.log(Level.FINER, "Active thread: " + t + " daemon = " + t.isDaemon());
 							t.join();
 						}
 					}
+					engineConfiguration.getEngine().getDebugger().destroy();
 					//	JVM will exit normally when non-daemon threads complete.
 				}
 			} catch (Throwable t) {
