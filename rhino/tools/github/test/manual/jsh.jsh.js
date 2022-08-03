@@ -31,16 +31,7 @@
 			})
 		};
 
-		var startMock = function() {
-			return library.testing.startMock(jsh);
-		};
-
-		var getCommand = function(settings) {
-			return library.testing.getCommand(jsh.shell.PATH, settings);
-		}
-
-		var emit = function(command) {
-			var paste = command.join(" ");
+		var emit = function(paste) {
 			jsh.shell.console(paste);
 			if (jsh.shell.PATH.getCommand("pbcopy")) {
 				jsh.shell.run({
@@ -63,14 +54,14 @@
 					jsh.script.cli.option.boolean({ longname: "debug" }),
 
 					function(p) {
-						var web = startMock();
+						var web = library.testing.startMock(jsh);
 						jsh.shell.console("HTTP port: " + web.port + " HTTPS port: " + web.https.port);
 						var token = jsh.shell.jsh.src.getFile("local/github/tokens/davidpcaldwell");
-						var command = getCommand({
+						var command = library.testing.getCommandLine(jsh.shell.PATH, {
 							mock: web,
 							optimize: p.options.optimize,
 							debug: p.options.debug,
-							token: (token) ? token.read(String) : void(0)
+							token: (token) ? function() { return token.read(String); } : void(0)
 						});
 						emit(command);
 						web.run();
@@ -78,8 +69,8 @@
 				),
 				remote: function() {
 					//	TODO	for now, we do not fully automate this command because of the piping
-					var command = getCommand({
-						token: jsh.shell.jsh.src.getFile("local/github/tokens/davidpcaldwell").read(String)
+					var command = library.testing.getCommandLine(jsh.shell.PATH, {
+						token: function() { return jsh.shell.jsh.src.getFile("local/github/tokens/davidpcaldwell").read(String); }
 					});
 					emit(command);
 				},
@@ -87,7 +78,7 @@
 					//	turn on jsh launcher console-based debugging
 					jsh.script.cli.option.boolean({ longname: "debug" }),
 					function(p) {
-						var command = getCommand({
+						var command = library.testing.getCommandLine(jsh.shell.PATH, {
 							debug: p.options.debug
 						});
 						emit(command);

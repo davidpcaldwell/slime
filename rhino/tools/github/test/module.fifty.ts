@@ -13,12 +13,17 @@ namespace slime.jsh.unit.mock.github.test {
 		mock?: slime.jsh.unit.mock.Web
 		optimize?: boolean
 		debug?: boolean
-		token?: string
+		token?: () => string
 	}
 
 	export interface Exports {
 		startMock: (jsh: slime.jsh.Global) => slime.jsh.unit.mock.Web
-		getCommand: (PATH: slime.jrunscript.file.Searchpath, settings: Settings) => string[]
+
+		/**
+		 * Outputs a single string, suitable for use at the shell command line, that will invoke a shell with the given settings
+		 * using tools (`curl` or `wget`) found on the given search path.
+		 */
+		getCommandLine: (PATH: slime.jrunscript.file.Searchpath, settings: Settings) => string
 	}
 
 	(

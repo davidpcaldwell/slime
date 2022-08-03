@@ -42,17 +42,17 @@
 
 		/**
 		 * @param { slime.jrunscript.file.Searchpath } PATH
-		 * @param { slime.jsh.unit.mock.github.test.Settings } p
+		 * @param { Pick<slime.jsh.unit.mock.github.test.Settings,"mock" | "token"> } p
 		 * @returns
 		 */
-		var echoJshBash = function(PATH,p) {
+		var getDownloadJshBashCommand = function(PATH,p) {
 			/** @type { string[] } */
 			var command = [];
 			var PROTOCOL = (p.mock) ? "http" : "https";
 			if (PATH.getCommand("curl")) {
 				command.push("curl", "-v");
 				if (p.token) {
-					command.push("-u", "davidpcaldwell:" + p.token);
+					command.push("-u", "davidpcaldwell:" + p.token());
 				}
 				if (p.mock) {
 					command.push("--proxy", "https://127.0.0.1:" + p.mock.https.port);
@@ -64,7 +64,7 @@
 				command.push("wget");
 				if (p.token) {
 					command.push("--http-user=" + "davidpcaldwell");
-					command.push("--http-password=" + p.token);
+					command.push("--http-password=" + p.token());
 				}
 				command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
 				if (p.mock) {
@@ -83,10 +83,9 @@
 		 * @param { slime.jsh.unit.mock.github.test.Settings } p
 		 * @returns
 		 */
-		var getCommand = function(PATH,p) {
-			if (!p) p = {};
-			var command = echoJshBash(PATH,p);
-			command.push("|");
+		var getBashInvocationCommand = function(p) {
+			/** @type { string[] } */
+			var command = [];
 			var PROTOCOL = "https";
 			if (p.mock) {
 				command.push("env");
@@ -103,16 +102,29 @@
 				command.push("JSH_LAUNCHER_DEBUG=true");
 			}
 			if (p.token) {
-				command.push("JSH_GITHUB_USER=davidpcaldwell", "JSH_GITHUB_PASSWORD=" + p.token);
+				command.push("JSH_GITHUB_USER=davidpcaldwell", "JSH_GITHUB_PASSWORD=" + p.token());
 			}
 			command.push("bash", "-s");
 			command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js");
 			return command;
+		}
+
+		/**
+		 *
+		 * @param { slime.jsh.unit.mock.github.test.Settings } p
+		 * @returns
+		 */
+		var getCommand = function(PATH,p) {
+			if (!p) p = {};
+			var command = getDownloadJshBashCommand(PATH,p);
+			command.push("|");
+			command = command.concat(getBashInvocationCommand(p));
+			return command.join(" ");
 		};
 
 		$export({
 			startMock: startMock,
-			getCommand: getCommand
+			getCommandLine: getCommand
 		})
 	}
 //@ts-ignore
