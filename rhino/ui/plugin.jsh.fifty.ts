@@ -7,6 +7,10 @@
 namespace slime.jsh {
 	export interface Global {
 		ui: {
+			javafx: slime.jrunscript.ui.Exports["javafx"] & {
+				WebView: any
+			}
+
 			application: (
 				p: slime.jsh.ui.application.Argument,
 				events?: $api.events.Function.Receiver
@@ -17,7 +21,6 @@ namespace slime.jsh {
 			}
 
 			askpass: any
-			javafx: any
 			Chrome: any
 
 			/**

@@ -158,6 +158,11 @@ namespace slime.jrunscript {
 					get(key: any): any
 				}
 			}
+			export namespace awt {
+				export interface Desktop {
+					browse: (uri: slime.jrunscript.native.java.net.URI) => void
+				}
+			}
 		}
 
 		export namespace javax.mail {
@@ -354,7 +359,7 @@ namespace slime.jrunscript {
 					setProperty(name: string, value: string)
 					getProperty(name: string): slime.jrunscript.native.java.lang.String
 					getProperties(): slime.jrunscript.native.java.util.Properties
-					exit(status: number)
+					exit(status: number): never
 					getenv(name: string): string
 					getenv(): any
 					identityHashCode(o: any): number
@@ -471,7 +476,13 @@ namespace slime.jrunscript {
 				SecureRandom: any
 			}
 			awt: {
-				Desktop: any
+				Desktop: {
+					isDesktopSupported: () => boolean
+					getDesktop: () => slime.jrunscript.native.java.awt.Desktop
+				}
+				event: {
+					WindowListener: any
+				}
 			}
 			sql: {
 				Types: any
