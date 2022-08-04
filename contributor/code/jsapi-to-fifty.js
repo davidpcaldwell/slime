@@ -13,24 +13,25 @@
 	 * @param { slime.loader.Export<slime.project.jsapi.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		//	TODO	should this return Maybe?
 		/**
 		 *
-		 * @param { string } string
+		 * @param { string } line
+		 * @returns { string } The indentation of the given line, or `null` if it cannot be determined
 		 */
-		function prefix(string) {
-			var trimmed = string.trim();
-			var leadingWhitespacePattern = /^(\s+)/;
-			if (trimmed.substring(0,3) == "/**") {
-				return string.substring(0,string.indexOf("/**"));
+		function getLineIndent(line) {
+			if (line.trim().substring(0,3) == "/**") {
+				return line.substring(0,line.indexOf("/**"));
 			}
-			if (trimmed.substring(0,1) == "*") {
-				var at = string.indexOf("*");
-				if (string.substring(at-1,at) != " ") {
+			if (line.trim().substring(0,1) == "*") {
+				var at = line.indexOf("*");
+				if (line.substring(at-1,at) != " ") {
 					return null;
 				}
-				return string.substring(0,at-1);
+				return line.substring(0,at-1);
 			}
-			var leadingWhitespaceMatch = leadingWhitespacePattern.exec(string);
+			var leadingWhitespacePattern = /^(\s+)/;
+			var leadingWhitespaceMatch = leadingWhitespacePattern.exec(line);
 			if (leadingWhitespaceMatch) {
 				return leadingWhitespaceMatch[1];
 			}
@@ -40,6 +41,7 @@
 		/**
 		 *
 		 * @param { string } line
+		 * @param { number } tabSize
 		 */
 		function getDisplayLength(line,tabSize) {
 			//	TODO	this would not work with mixed spaces/tabs
@@ -132,7 +134,7 @@
 		 * @returns { slime.project.jsapi.internal.InputLine }
 		 */
 		function parseLine(line) {
-			var start = prefix(line);
+			var start = getLineIndent(line);
 			var rest = (start) ? line.substring(start.length) : line;
 			var parsed = parseComment(rest);
 			return {
@@ -140,6 +142,14 @@
 				section: parsed.section,
 				content: parsed.content
 			};
+		}
+
+		/**
+		 *
+		 * @param { slime.project.jsapi.internal.InputLine } line
+		 */
+		function isEmpty(line) {
+			return !line.section && !line.prefix && !line.content;
 		}
 
 		/**
@@ -155,49 +165,50 @@
 			}
 		}
 
+		/**
+		 * @param { slime.project.jsapi.Format } format
+		 * @param { string } prefix The indent to use
+		 * @param { boolean } hasStart Whether the start of this content is the start of a comment
+		 * @param { boolean } hasEnd Whether the start of this content is the end of a comment
+		 */
+		function formatByLineLength(format, prefix, hasStart, hasEnd) {
+			/**
+			 * @param { string[] } content
+			 * @returns { string[] }
+			 */
+			return function(content) {
+				/** @type { string[] } */
+				var result = [];
+				var index = 0;
+				while(index < content.length) {
+					var currentLine = function() { return result[result.length-1] };
+					var currentWord = function() { return content[index]; }
+					if (result.length == 0) {
+						if (hasStart) {
+							result.push(prefix + "/**");
+						}
+						result.push(prefix + " * ");
+					}
+					if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
+						var hasWord = currentLine().length > (prefix + " * ").length;
+						result[result.length-1] += (hasWord ? " " : "") + currentWord();
+					} else {
+						result.push(prefix + " * " + currentWord());
+					}
+					index++;
+				}
+				if (hasEnd /*parsed.end*/) result.push(prefix + " */");
+				return result;
+			}
+		}
+
 		$export({
 			test: {
-				prefix: prefix,
+				prefix: getLineIndent,
 				maybeify: maybeify
 			},
 			comment: function(format) {
 				//	TODO	make format an argument to below rather than a scope variable
-				/**
-				 *
-				 * @param { string } prefix The indent to use
-				 * @param { boolean } hasStart Whether the start of this content is the start of a comment
-				 * @param { boolean } hasEnd Whether the start of this content is the end of a comment
-				 */
-				function formatByLineLength(prefix, hasStart, hasEnd) {
-					/**
-					 * @param { string[] } content
-					 * @returns { string[] }
-					 */
-					return function(content) {
-						/** @type { string[] } */
-						var result = [];
-						var index = 0;
-						while(index < content.length) {
-							var currentLine = function() { return result[result.length-1] };
-							var currentWord = function() { return content[index]; }
-							if (result.length == 0) {
-								if (hasStart) {
-									result.push(prefix + "/**");
-								}
-								result.push(prefix + " * ");
-							}
-							if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
-								var hasWord = currentLine().length > (prefix + " * ").length;
-								result[result.length-1] += (hasWord ? " " : "") + currentWord();
-							} else {
-								result.push(prefix + " * " + currentWord());
-							}
-							index++;
-						}
-						if (hasEnd /*parsed.end*/) result.push(prefix + " */");
-						return result;
-					}
-				}
 
 				/**
 				 *
@@ -237,16 +248,15 @@
 						var parsed = parseBlocks(inputLines)[0];
 
 						var textLines = formatByLineLength(
+							format,
 							parsed.prefix,
 							parsed.start,
 							parsed.end
 						)(parsed.tokens);
 
-						//	TODO	figure out semantics and replace expression with named boolean variable or function
-						if (!inputLines[inputLines.length-1].section && !inputLines[inputLines.length-1].prefix && !inputLines[inputLines.length-1].content)
+						if (isEmpty(inputLines[inputLines.length-1])) {
 							textLines.push("");
-
-						//input = text(input);
+						}
 
 						return textLines.join("\n");
 					}
