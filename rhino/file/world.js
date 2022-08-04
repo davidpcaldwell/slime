@@ -471,6 +471,24 @@
 									)
 								}
 							}
+						},
+						object: {
+							text: function() {
+								return function(location) {
+									return function(events) {
+										var ask = location.filesystem.openOutputStream({
+											pathname: location.pathname
+										});
+										return $api.Function.result(
+											ask(events),
+											$api.Function.Maybe.map(function(stream) {
+												return stream.character();
+											})
+										);
+									}
+
+								}
+							}
 						}
 					},
 					copy: function(p) {
