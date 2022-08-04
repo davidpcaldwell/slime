@@ -511,6 +511,13 @@
 											recursive: Boolean(p && p.recursive)
 										});
 										tell(events);
+										//	TODO	should push this event back into implementation
+										//			this way, we could inform of recursive creations as well
+										//			probably in the implementation, payload should be pathname, translated into
+										//			location at this layer
+										events.fire("created", location);
+									} else {
+										events.fire("found", location);
 									}
 								} else {
 									throw new Error("Error determining whether directory is present at " + location.pathname);

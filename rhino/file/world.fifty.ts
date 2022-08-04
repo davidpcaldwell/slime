@@ -166,6 +166,8 @@ namespace slime.jrunscript.file {
 				exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
 
 				require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Action<world.Location, {
+					created: world.Location
+					found: world.Location
 				}>
 			}
 		}
