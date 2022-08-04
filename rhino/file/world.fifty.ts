@@ -66,6 +66,10 @@ namespace slime.jrunscript.file {
 						input: slime.jrunscript.runtime.io.InputStream
 					}) => slime.$api.fp.world.Action<world.Location, {
 					}>
+
+					object: {
+						text: () => slime.$api.fp.world.Question<world.Location, {}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>>
+					}
 				}
 
 				copy: (p: {
