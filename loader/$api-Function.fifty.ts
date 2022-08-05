@@ -93,7 +93,7 @@ namespace slime.$api.fp {
 				j: (x: X) => Y,
 				k: (y: Y) => Z,
 				l: (z: Z) => R
-			): (t?: T) => R
+			): (t: T) => R
 			<T,U,V,W,X,Y,R>(
 				f: (t: T) => U,
 				g: (u: U) => V,
@@ -101,30 +101,30 @@ namespace slime.$api.fp {
 				i: (w: W) => X,
 				j: (x: X) => Y,
 				k: (y: Y) => R
-			): (t?: T) => R
+			): (t: T) => R
 			<T,U,V,W,X,R>(
 				f: (t: T) => U,
 				g: (u: U) => V,
 				h: (v: V) => W,
 				i: (w: W) => X,
 				j: (x: X) => R
-			): (t?: T) => R
+			): (t: T) => R
 			<T,U,V,W,R>(
 				f: (t: T) => U,
 				g: (u: U) => V,
 				h: (v: V) => W,
 				i: (w: W) => R
-			): (t?: T) => R
+			): (t: T) => R
 			<T,U,V,R>(
 				f: (t: T) => U,
 				g: (u: U) => V,
 				h: (v: V) => R
-			): (t?: T) => R
+			): (t: T) => R
 			<T,U,R>(
 				f: (t: T) => U,
 				g: (u: U) => R
-			): (t?: T) => R
-			<T,R>(f: (t: T) => R): (t?: T) => R
+			): (t: T) => R
+			<T,R>(f: (t: T) => R): (t: T) => R
 		}
 	}
 
