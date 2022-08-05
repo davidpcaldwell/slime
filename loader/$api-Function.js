@@ -142,6 +142,24 @@
 				return function(string) {
 					return string.replace(searchValue, replaceValue);
 				}
+			},
+			leftPad: function(p) {
+				var padding = p.padding || " ";
+				return function(string) {
+					while(string.length < p.length) {
+						string = padding + string;
+					}
+					return string;
+				}
+			},
+			rightPad: function(p) {
+				var padding = p.padding || " ";
+				return function(string) {
+					while(string.length < p.length) {
+						string = string + padding;
+					}
+					return string;
+				}
 			}
 		};
 
