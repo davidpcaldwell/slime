@@ -20,6 +20,14 @@
 				return $api.Function.world.old.ask(function() {
 					return stream.character().asString();
 				});
+			},
+			from: {
+				string: function(value) {
+					var buffer = new $context.$slime.io.Buffer();
+					buffer.writeText().write(value);
+					buffer.close();
+					return buffer.readBinary();
+				}
 			}
 		}
 		var $$exports = {

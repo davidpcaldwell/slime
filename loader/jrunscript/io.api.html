@@ -29,53 +29,6 @@ END LICENSE
 				<ul>
 					<li class="constructor" jsapi:id="Buffer">
 						<div class="name">Buffer</div>
-						<span>Creates a buffer to which bytes can be written, and later read.</span>
-						<div class="instances">
-							<div class="label">Instances</div>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="function">
-									<div class="name">close</div>
-									<span>
-										Closes the buffer so that no additional bytes can be written to it.  Until the
-										buffer is closed, an attempt to read from it cannot reach the end of the stream, but
-										will instead block waiting for more input.
-									</span>
-								</li>
-								<li class="function">
-									<div class="name">writeBinary</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type"><a href="#types.boutput">byte output stream</a></span>
-										<span>A stream which inserts bytes written to it into this buffer.</span>
-									</div>
-								</li>
-								<li class="function">
-									<div class="name">writeText</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type"><a href="#types.boutput">character output stream</a></span>
-										<span>A stream which inserts characters written to it into this buffer.</span>
-									</div>
-								</li>
-								<li class="function">
-									<div class="name">readBinary</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type"><a href="#types.binput">byte input stream</a></span>
-										<span>A stream from which the bytes in this buffer may be read.</span>
-									</div>
-								</li>
-								<li class="function">
-									<div class="name">readText</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type"><a href="#types.cinput">character input stream</a></span>
-										<span>A stream from which the characters in this buffer may be read.</span>
-									</div>
-								</li>
-							</ul>
-						</div>
 						<script type="application/x.jsapi#tests" jsapi:id="Buffer readLines">
 							var buffer = new module.Buffer();
 							var writer = buffer.writeText();

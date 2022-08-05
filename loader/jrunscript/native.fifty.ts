@@ -78,6 +78,11 @@ namespace slime.jrunscript {
 						supportedFileAttributeViews(): slime.jrunscript.native.java.util.Set
 					}
 				}
+
+				export namespace charset {
+					export interface Charset {
+					}
+				}
 			}
 			export namespace net {
 				export interface ServerSocket {
@@ -454,6 +459,7 @@ namespace slime.jrunscript {
 				}
 				charset: {
 					Charset: any
+					StandardCharsets: any
 				}
 			}
 			util: {
