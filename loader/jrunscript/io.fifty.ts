@@ -48,12 +48,37 @@ namespace slime.jrunscript.runtime.io {
 		}
 	}
 
+	export interface Charset {
+		read: (input: InputStream) => Reader
+		write: (output: OutputStream) => Writer
+	}
+
 	export interface Buffer {
+		/**
+		 * Closes the buffer so that no additional bytes can be written to it.  Until the buffer is closed, an attempt to read from
+		 * it cannot reach the end of the stream, but will instead block waiting for more input.
+		 */
 		close: () => void
-		readBinary: () => InputStream
+
+		/**
+		 * A stream which inserts bytes written to it into this buffer.
+		 */
 		writeBinary: () => OutputStream
-		readText: () => Reader
+
+		/**
+		 * A stream which inserts characters written to it into this buffer.
+		 */
 		writeText: () => Writer
+
+		/**
+		 * A stream from which the bytes in this buffer may be read.
+		 */
+		readBinary: () => InputStream
+
+		/**
+		 * A stream from which the characters in this buffer may be read.
+		 */
+		readText: () => Reader
 	}
 
 	export interface Context {
@@ -64,16 +89,29 @@ namespace slime.jrunscript.runtime.io {
 		}
 	}
 
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			return fifty.global.jsh.unit.$slime.io;
+		//@ts-ignore
+		})(fifty);
+	}
+
 	type BinaryCopyMode = {
 		onFinish: (i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream) => void
 	}
 
 	export interface Exports {
+		InputStream: new (p: slime.jrunscript.native.java.io.InputStream) => InputStream
 		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
+
+		Reader: new (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
 		Writer: (p: slime.jrunscript.native.java.io.Writer) => Writer
 
-		InputStream: new (p: slime.jrunscript.native.java.io.InputStream) => InputStream
-		Reader: new (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
+		Charset: {
+			standard: {
+				utf8: Charset
+			}
+		}
 
 		Streams: {
 			binary: {
@@ -92,6 +130,9 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 
+		/**
+		 * Creates a buffer to which bytes can be written, and later read.
+		 */
 		Buffer: new () => Buffer
 
 		system: {
@@ -100,30 +141,63 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify, run } = fifty;
+
+			fifty.tests.Buffer = function() {
+				run(function old() {
+					var b = new test.subject.Buffer();
+					var out = b.writeText();
+					out.write("foo!");
+					out.close();
+					var bytes = b.readBinary();
+					var characters = bytes.character();
+					var string = characters.asString();
+					verify(string).is("foo!");
+				});
+
+				var utf8 = test.subject.Charset.standard.utf8;
+				var b = new test.subject.Buffer();
+				var write = b.writeBinary();
+				var writer = utf8.write(write);
+				writer.write("bar!");
+				writer.close();
+				var read = b.readBinary();
+				var text = utf8.read(read);
+				var string = text.asString();
+				verify(string).is("bar!");
+			}
+
+			fifty.tests.suite = function() {
+				verify(test.subject,"subject").is.type("object");
+				run(fifty.tests.Buffer);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+
+			fifty.tests.manual = {};
+			fifty.tests.manual.charsets = function() {
+				var _map = Packages.java.nio.charset.Charset.availableCharsets();
+				var _keys = _map.keySet().iterator();
+				while(_keys.hasNext()) {
+					jsh.shell.console(String(_keys.next()));
+				}
+				var _default = Packages.java.nio.charset.Charset.defaultCharset();
+				jsh.shell.console(String(_default));
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
 }
-
-(
-	function(
-		fifty: slime.fifty.test.Kit
-	) {
-		const { verify, run } = fifty;
-		const { $slime } = fifty.global.jsh.unit;
-
-		fifty.tests.Buffer = function() {
-			var b = new $slime.io.Buffer();
-			var out = b.writeText();
-			out.write("foo!");
-			out.close();
-			var bytes = b.readBinary();
-			var characters = bytes.character();
-			var string = characters.asString();
-			verify(string).is("foo!");
-		}
-
-		fifty.tests.suite = function() {
-			verify($slime).io.is.type("object");
-			run(fifty.tests.Buffer);
-		}
-	}
-//@ts-ignore
-)(fifty);

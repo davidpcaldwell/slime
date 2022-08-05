@@ -19,13 +19,47 @@ namespace slime.jrunscript.io {
 	 * interface for callers.
 	 */
 	export interface Exports {
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		InputStream: {
+			from: {
+				string: (value: string) => slime.jrunscript.runtime.io.InputStream
+			}
+			string: (stream: slime.jrunscript.runtime.io.InputStream) => slime.$api.fp.world.old.Ask<void,string>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			fifty.tests.exports.InputStream = function() {
+				var stream = jsh.io.InputStream.from.string("Hey");
+				var read = stream.character().asString();
+				verify(read).is("Hey");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		Streams: slime.jrunscript.runtime.io.Exports["Streams"]
 		Buffer: slime.jrunscript.runtime.io.Exports["Buffer"]
 		Resource: slime.jrunscript.runtime.Exports["Resource"]
 		Loader: slime.jrunscript.runtime.Exports["Loader"]
-		InputStream: {
-			string: (stream: slime.jrunscript.runtime.io.InputStream) => slime.$api.fp.world.old.Ask<void,string>
-		}
 		java: {
 			adapt: {
 				(native: slime.jrunscript.native.java.io.InputStream): slime.jrunscript.runtime.io.InputStream
@@ -54,6 +88,17 @@ namespace slime.jrunscript.io {
 		grid: any
 		system: slime.jrunscript.runtime.io.Exports["system"]
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>
 }

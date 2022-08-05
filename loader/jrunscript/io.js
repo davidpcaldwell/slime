@@ -20,70 +20,6 @@
 
 		var _java = $context._streams;
 
-		/** @type { slime.jrunscript.runtime.io.Exports["OutputStream"] } */
-		function OutputStream(peer) {
-			return {
-				split: function(other) {
-					var otherPeer = other.java.adapt();
-
-					//	Handle Buffer special case, very dubious
-					if (!otherPeer && other.writeBinary) {
-						otherPeer = other.writeBinary.java.adapt();
-					}
-
-					return OutputStream(_java.split(peer,otherPeer))
-				},
-				character: function() {
-					return Writer(new Packages.java.io.OutputStreamWriter(peer));
-				},
-				close: function() {
-					peer.close();
-				},
-				java: {
-					adapt: function() {
-						return peer;
-					}
-				}
-			}
-		}
-
-		/** @type { slime.jrunscript.runtime.io.Exports["Writer"] } */
-		var Writer = function(peer) {
-			/** @returns { string } */
-			var getTypeof = function(value) {
-				return typeof(value);
-			};
-
-			/** @type { (value: string | slime.external.e4x.Object) => value is slime.external.e4x.Object} */
-			var isE4x = function(value) {
-				return getTypeof(value) == "xml";
-			}
-
-			return {
-				close: function() {
-					peer.close();
-				},
-				write: function(string) {
-					if ($platform.e4x && isE4x(string)) {
-						$api.deprecate(function() {
-							peer.write( string.toXMLString() );
-							peer.flush();
-						})();
-					} else if (typeof(string) == "string") {
-						peer.write( String(string) );
-						peer.flush();
-					} else {
-						throw new TypeError("Attempt to unsupported type to writer: " + string);
-					}
-				},
-				java: {
-					adapt: function() {
-						return peer;
-					}
-				}
-			};
-		};
-
 		function InputStream(peer) {
 			this.close = function() {
 				peer.close();
@@ -109,6 +45,33 @@
 
 			this.characters = this.character;
 			$api.deprecate(this, "characters");
+		}
+
+		/** @type { slime.jrunscript.runtime.io.Exports["OutputStream"] } */
+		function OutputStream(peer) {
+			return {
+				split: function(other) {
+					var otherPeer = other.java.adapt();
+
+					//	Handle Buffer special case, very dubious
+					if (!otherPeer && other.writeBinary) {
+						otherPeer = other.writeBinary.java.adapt();
+					}
+
+					return OutputStream(_java.split(peer,otherPeer))
+				},
+				character: function() {
+					return Writer(new Packages.java.io.OutputStreamWriter(peer));
+				},
+				close: function() {
+					peer.close();
+				},
+				java: {
+					adapt: function() {
+						return peer;
+					}
+				}
+			}
 		}
 
 		/**
@@ -215,6 +178,59 @@
 				}
 			}
 		};
+
+		/** @type { slime.jrunscript.runtime.io.Exports["Writer"] } */
+		var Writer = function(peer) {
+			/** @returns { string } */
+			var getTypeof = function(value) {
+				return typeof(value);
+			};
+
+			/** @type { (value: string | slime.external.e4x.Object) => value is slime.external.e4x.Object} */
+			var isE4x = function(value) {
+				return getTypeof(value) == "xml";
+			}
+
+			return {
+				close: function() {
+					peer.close();
+				},
+				write: function(string) {
+					if ($platform.e4x && isE4x(string)) {
+						$api.deprecate(function() {
+							peer.write( string.toXMLString() );
+							peer.flush();
+						})();
+					} else if (typeof(string) == "string") {
+						peer.write( String(string) );
+						peer.flush();
+					} else {
+						throw new TypeError("Attempt to unsupported type to writer: " + string);
+					}
+				},
+				java: {
+					adapt: function() {
+						return peer;
+					}
+				}
+			};
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.native.java.nio.charset.Charset } _peer
+		 * @return { slime.jrunscript.runtime.io.Charset }
+		 */
+		function Charset(_peer) {
+			return {
+				read: function(input) {
+					return new Reader(new Packages.java.io.InputStreamReader(input.java.adapt(), _peer));
+				},
+				write: function(output) {
+					return Writer(new Packages.java.io.OutputStreamWriter(output.java.adapt(), _peer));
+				}
+			}
+		}
 
 		var Streams = (function() {
 			return {
@@ -332,10 +348,15 @@
 		};
 
 		$export({
-			OutputStream: OutputStream,
-			Writer: Writer,
 			InputStream: InputStream,
+			OutputStream: OutputStream,
 			Reader: Reader,
+			Writer: Writer,
+			Charset: {
+				standard: {
+					utf8: Charset(Packages.java.nio.charset.StandardCharsets.UTF_8)
+				}
+			},
 			Streams: Streams,
 			Buffer: Buffer,
 			system: {
