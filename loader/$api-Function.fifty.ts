@@ -297,7 +297,7 @@ namespace slime.$api.fp {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.exports.string = {};
+			fifty.tests.exports.string = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
@@ -332,11 +332,52 @@ namespace slime.$api.fp {
 					var replacer = $api.Function.string.replace(/xmas/i, "Christmas");
 					var input = "Twas the night before Xmas...";
 					var output = "Twas the night before Christmas...";
-					verify(replacer(input)).is(output);
+					verify(input).evaluate(replacer).is(output);
 				}
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface String {
+			leftPad: (p: {
+				length: number
+				padding?: string
+			}) => (original: string) => string
+
+			rightPad: (p: {
+				length: number
+				padding?: string
+			}) => (original: string) => string
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.string.leftPad = function() {
+					var lpad4 = $api.Function.string.leftPad({ length: 4 });
+					var lpad4zero = $api.Function.string.leftPad({ length: 4, padding: "0" });
+
+					verify("1").evaluate(lpad4).is("   1");
+					verify("1").evaluate(lpad4zero).is("0001");
+					verify("11111").evaluate(lpad4).is("11111");
+				}
+
+				fifty.tests.exports.string.rightPad = function() {
+					var pad4 = $api.Function.string.rightPad({ length: 4 });
+					var pad4zero = $api.Function.string.rightPad({ length: 4, padding: "0" });
+
+					verify("1").evaluate(pad4).is("1   ");
+					verify("1").evaluate(pad4zero).is("1000");
+					verify("11111").evaluate(pad4).is("11111");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 	}
 
 	/**
