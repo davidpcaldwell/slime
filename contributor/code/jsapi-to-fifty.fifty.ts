@@ -90,6 +90,32 @@ namespace slime.project.jsapi {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface VisibleForTesting {
+			split: <P,R1,R2>(fs: [(p: P) => R1, (p: P) => R2]) => (p: P) => [R1, R2]
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const subject = test.subject;
+
+				fifty.tests.split = function() {
+					var double = function(n: number) { return n*2; };
+					var stringify = function(n: number) { return String(n); };
+					var both = test.subject.test.split([double, stringify]);
+
+					var answer = both(2);
+					verify(answer).length.is(2);
+					verify(answer)[0].is(4);
+					verify(answer)[1].is("2");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 	}
 
 	export interface Exports {
