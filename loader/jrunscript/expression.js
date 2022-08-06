@@ -244,7 +244,7 @@
 							if (!_bytes) {
 								_bytes = stream.java.array();
 							}
-							return new $exports.io.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
+							return $exports.io.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
 						}
 					})(o.stream.binary)
 				}
@@ -284,7 +284,7 @@
 					if (isLoadedDescriptor(p)) {
 						if (!p.read) p.read = {};
 						p.read.binary = function() {
-							return new $exports.io.InputStream(p._loaded.resource.getInputStream());
+							return $exports.io.InputStream(p._loaded.resource.getInputStream());
 						};
 					}
 
@@ -316,7 +316,7 @@
 						}
 						if (p.read && p.read.string) {
 							return function() {
-								return new $exports.io.Reader(new Packages.java.io.StringReader(p.read.string()));
+								return $exports.io.Reader(new Packages.java.io.StringReader(p.read.string()));
 							}
 						}
 						if (isJrunscriptDescriptor(p) && p.read && p.read.binary) {

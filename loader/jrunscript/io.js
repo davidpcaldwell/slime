@@ -21,30 +21,29 @@
 		var _java = $context._streams;
 
 		function InputStream(peer) {
-			this.close = function() {
-				peer.close();
-			}
-
-			this.character = function(mode) {
+			var character = function(mode) {
 				if (!mode) mode = {};
 				if (!mode.charset) mode.charset = Packages.java.nio.charset.Charset.defaultCharset().name();
 				var separator = mode.LINE_SEPARATOR;
 				//	TODO	No unit test for this method currently; does it work?
-				return new Reader(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
-			}
-
-			this.java = new function() {
-				this.adapt = function() {
-					return peer;
-				}
-
-				this.array = function() {
-					return _java.readBytes(peer);
-				}
+				return Reader(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
 			};
 
-			this.characters = this.character;
-			$api.deprecate(this, "characters");
+			return {
+				close: function() {
+					peer.close();
+				},
+				character: character,
+				java: {
+					adapt: function() {
+						return peer;
+					},
+					array: function() {
+						return _java.readBytes(peer);
+					}
+				},
+				characters: $api.deprecate(character)
+			}
 		}
 
 		/** @type { slime.jrunscript.runtime.io.Exports["OutputStream"] } */
@@ -76,15 +75,11 @@
 
 		/**
 		 * @type { slime.jrunscript.runtime.io.Exports["Reader"] }
-		 * @param { ConstructorParameters<slime.jrunscript.runtime.io.Exports["Reader"]>[0] } peer
-		 * @param { ConstructorParameters<slime.jrunscript.runtime.io.Exports["Reader"]>[1] } properties
+		 * @param { Parameters<slime.jrunscript.runtime.io.Exports["Reader"]>[0] } peer
+		 * @param { Parameters<slime.jrunscript.runtime.io.Exports["Reader"]>[1] } properties
 		 */
 		var Reader = function(peer,properties) {
-			this.close = function() {
-				peer.close();
-			}
-
-			this.readLines = Object.assign(
+			var readLines = Object.assign(
 				/**
 				 * @type { slime.jrunscript.runtime.io.Reader["readLines"] }
 				 */
@@ -128,55 +123,42 @@
 				}
 			);
 
-			$api.deprecate(this.readLines, "UNIX");
-			$api.deprecate(this.readLines, "DOS");
+			$api.deprecate(readLines, "UNIX");
+			$api.deprecate(readLines, "DOS");
 
-			// this.read = function(callback,mode) {
-			// 	if (!mode) mode = {};
-			// 	if (!mode.onEnd) mode.onEnd = function() { peer.close(); };
-			// 	var more = true;
-			// 	var result;
-			// 	while(more) {
-			// 		var c = peer.read();
-			// 		var result = callback( String(c) );
-			// 		if (typeof(result) != "undefined") {
-			// 			break;
-			// 		}
-			// 	}
-			// 	if (typeof(result) == "undefined") {
-			// 		mode.onEnd.call(this);
-			// 	} else {
-			// 		mode.onEnd.call(this,result);
-			// 	}
-			// 	return result;
-			// }
-
-			this.asString = function() {
-				var buffer = new Packages.java.io.StringWriter();
-				_java.copy(
-					peer,
-					buffer
-				);
-				return String( buffer.toString() );
-			}
-
-			if ($platform.e4x) {
-				this.asXml = $api.deprecate(function() {
-					var string = this.asString();
-					var resource = new $context.api.Resource({
-						read: {
-							string: function() { return string; }
+			return $api.Object.compose(
+				{
+					close: function() {
+						peer.close();
+					},
+					readLines: readLines,
+					asString: function() {
+						var buffer = new Packages.java.io.StringWriter();
+						_java.copy(
+							peer,
+							buffer
+						);
+						return String( buffer.toString() );
+					},
+					java: {
+						adapt: function() {
+							return peer;
 						}
-					});
-					return resource.read(XMLList);
-				});
-			}
-
-			this.java = new function() {
-				this.adapt = function() {
-					return peer;
+					}
+				},
+				($platform.e4x) ? {
+					asXml: $api.deprecate(function() {
+						var string = this.asString();
+						var resource = new $context.api.Resource({
+							read: {
+								string: function() { return string; }
+							}
+						});
+						return resource.read(XMLList);
+					})
+				} : {
 				}
-			}
+			);
 		};
 
 		/** @type { slime.jrunscript.runtime.io.Exports["Writer"] } */
@@ -224,7 +206,7 @@
 		function Charset(_peer) {
 			return {
 				read: function(input) {
-					return new Reader(new Packages.java.io.InputStreamReader(input.java.adapt(), _peer));
+					return Reader(new Packages.java.io.InputStreamReader(input.java.adapt(), _peer));
 				},
 				write: function(output) {
 					return Writer(new Packages.java.io.OutputStreamWriter(output.java.adapt(), _peer));
@@ -294,11 +276,11 @@
 						if (false) {
 							throw new Error("Unreachable.");
 						} else if ($context.api.java.isJavaObject(object) && isJavaInputStream(object)) {
-							return new InputStream(object);
+							return InputStream(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaOutputStream(object)) {
 							return OutputStream(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaReader(object)) {
-							return new Reader(object);
+							return Reader(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaWriter(object)) {
 							return Writer(object);
 						} else {
@@ -339,7 +321,7 @@
 			}
 
 			this.readBinary = function() {
-				return new InputStream(peer.getInputStream());
+				return InputStream(peer.getInputStream());
 			}
 
 			this.readText = function() {

@@ -101,10 +101,10 @@ namespace slime.jrunscript.runtime.io {
 	}
 
 	export interface Exports {
-		InputStream: new (p: slime.jrunscript.native.java.io.InputStream) => InputStream
+		InputStream: (p: slime.jrunscript.native.java.io.InputStream) => InputStream
 		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
 
-		Reader: new (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
+		Reader: (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
 		Writer: (p: slime.jrunscript.native.java.io.Writer) => Writer
 
 		Charset: {
