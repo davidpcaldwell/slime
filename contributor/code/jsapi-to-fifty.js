@@ -202,10 +202,27 @@
 			}
 		}
 
+		/** @type { <P,R1,R2>(fs: [(p: P) => R1, (p: P) => R2]) => (p: P) => [R1, R2] } */
+		var split = function(fs) {
+			//@ts-ignore
+			return function(p) {
+				return fs.map(function(f) {
+					return f(p);
+				});
+			}
+		};
+
+		/** @type { <T>(ts: T[]) => slime.$api.fp.Maybe<T> } */
+		var last = function(array) {
+			if (array.length > 0) return $api.Function.Maybe.value(array[array.length-1]);
+			return $api.Function.Maybe.nothing();
+		}
+
 		$export({
 			test: {
 				prefix: getLineIndent,
-				maybeify: maybeify
+				maybeify: maybeify,
+				split: split
 			},
 			comment: function(format) {
 				//	TODO	make format an argument to below rather than a scope variable
@@ -250,7 +267,7 @@
 						parsed.end
 					)(parsed.tokens);
 					return textLines;
-				}
+				};
 
 				return $api.Function.pipe(
 					startEndTagReplace("code", "`"),
@@ -258,14 +275,26 @@
 					startEndTagReplace("em", "*"),
 					$api.Function.string.split("\n"),
 					$api.Function.Array.map(parseLine),
-					function(inputLines) {
-						var blockLines = $api.Function.Arrays.join(parseBlocks(inputLines).map(formatBlock));
+					split([
+						$api.Function.pipe(
+							parseBlocks,
+							$api.Function.Array.map(formatBlock),
+							$api.Function.Arrays.join
+						),
+						$api.Function.pipe(
+							last,
+							$api.Function.Maybe.map(isEmpty),
+							//	TODO	does the below make sense? Or should we simply assert?
+							$api.Function.Maybe.else(function() { return false; })
+						)
+					]),
+					function(result) {
+						var blockLines = result[0];
+						var isEmpty = result[1];
 
-						if (isEmpty(inputLines[inputLines.length-1])) {
-							blockLines.push("");
-						}
-
-						return blockLines.join("\n");
+						var rv = blockLines.slice();
+						if (isEmpty) rv.push("");
+						return rv.join("\n");
 					}
 				)
 			}
