@@ -267,6 +267,14 @@
 			}
 		};
 
+		$exports.Function.Arrays = {
+			join: function(arrays) {
+				return arrays.reduce(function(rv,array) {
+					return rv.concat(array);
+				},[]);
+			}
+		}
+
 		$exports.Function.Predicate = {
 			is: function(value) {
 				return function(p) {

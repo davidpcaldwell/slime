@@ -238,6 +238,20 @@
 					]
 				}
 
+				/**
+				 *
+				 * @param { slime.project.jsapi.internal.Block } parsed
+				 */
+				var formatBlock = function(parsed) {
+					var textLines = formatByLineLength(
+						format,
+						parsed.prefix,
+						parsed.start,
+						parsed.end
+					)(parsed.tokens);
+					return textLines;
+				}
+
 				return $api.Function.pipe(
 					startEndTagReplace("code", "`"),
 					startEndTagReplace("i", "*"),
@@ -245,20 +259,13 @@
 					$api.Function.string.split("\n"),
 					$api.Function.Array.map(parseLine),
 					function(inputLines) {
-						var parsed = parseBlocks(inputLines)[0];
-
-						var textLines = formatByLineLength(
-							format,
-							parsed.prefix,
-							parsed.start,
-							parsed.end
-						)(parsed.tokens);
+						var blockLines = $api.Function.Arrays.join(parseBlocks(inputLines).map(formatBlock));
 
 						if (isEmpty(inputLines[inputLines.length-1])) {
-							textLines.push("");
+							blockLines.push("");
 						}
 
-						return textLines.join("\n");
+						return blockLines.join("\n");
 					}
 				)
 			}
