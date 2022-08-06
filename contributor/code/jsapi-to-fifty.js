@@ -13,43 +13,6 @@
 	 * @param { slime.loader.Export<slime.project.jsapi.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		//	TODO	should this return Maybe?
-		/**
-		 *
-		 * @param { string } line
-		 * @returns { string } The indentation of the given line, or `null` if it cannot be determined
-		 */
-		function getLineIndent(line) {
-			if (line.trim().substring(0,3) == "/**") {
-				return line.substring(0,line.indexOf("/**"));
-			}
-			if (line.trim().substring(0,1) == "*") {
-				var at = line.indexOf("*");
-				if (line.substring(at-1,at) != " ") {
-					return null;
-				}
-				return line.substring(0,at-1);
-			}
-			var leadingWhitespacePattern = /^(\s+)/;
-			var leadingWhitespaceMatch = leadingWhitespacePattern.exec(line);
-			if (leadingWhitespaceMatch) {
-				return leadingWhitespaceMatch[1];
-			}
-			return null;
-		}
-
-		/**
-		 *
-		 * @param { string } line
-		 * @param { number } tabSize
-		 */
-		function getDisplayLength(line,tabSize) {
-			//	TODO	this would not work with mixed spaces/tabs
-			if (line.length == 0) return 0;
-			var tabs = line.split("\t").length - 1;
-			return (line.length - tabs) * 1 + tabs * tabSize;
-		}
-
 		var $$api = {
 			Function: {
 				/** @type { slime.project.jsapi.fp.Switch } */
@@ -60,6 +23,22 @@
 							var r = cases[i](p);
 							if (r.present) return r;
 						}
+						return $api.Function.Maybe.nothing();
+					}
+				},
+				/** @type { <P,R1,R2>(fs: [(p: P) => R1, (p: P) => R2]) => (p: P) => [R1, R2] } */
+				split: function(fs) {
+					//@ts-ignore
+					return function(p) {
+						return fs.map(function(f) {
+							return f(p);
+						});
+					}
+				},
+				Array: {
+					/** @type { <T>(ts: T[]) => slime.$api.fp.Maybe<T> } */
+					last: function(array) {
+						if (array.length > 0) return $api.Function.Maybe.value(array[array.length-1]);
 						return $api.Function.Maybe.nothing();
 					}
 				}
@@ -77,6 +56,42 @@
 		};
 
 		var toMaybe = maybeify();
+
+		/**
+		 *
+		 * @param { string } line
+		 * @returns { slime.$api.fp.Maybe<string> } The indentation of the given line, or `null` if it cannot be determined
+		 */
+		function getLineIndent(line) {
+			if (line.trim().substring(0,3) == "/**") {
+				return $api.Function.Maybe.value(line.substring(0,line.indexOf("/**")));
+			}
+			if (line.trim().substring(0,1) == "*") {
+				var at = line.indexOf("*");
+				if (line.substring(at-1,at) != " ") {
+					return $api.Function.Maybe.nothing();
+				}
+				return $api.Function.Maybe.value(line.substring(0,at-1));
+			}
+			var leadingWhitespacePattern = /^(\s+)/;
+			var leadingWhitespaceMatch = leadingWhitespacePattern.exec(line);
+			if (leadingWhitespaceMatch) {
+				return $api.Function.Maybe.value(leadingWhitespaceMatch[1]);
+			}
+			return $api.Function.Maybe.nothing();
+		}
+
+		/**
+		 *
+		 * @param { string } line
+		 * @param { number } tabSize
+		 */
+		function getDisplayLength(line,tabSize) {
+			//	TODO	this would not work with mixed spaces/tabs
+			if (line.length == 0) return 0;
+			var tabs = line.split("\t").length - 1;
+			return (line.length - tabs) * 1 + tabs * tabSize;
+		}
 
 		/** @typedef { { section: slime.project.jsapi.internal.InputLine["section"], content: string } } ParsedCommentLine */
 
@@ -135,7 +150,7 @@
 		 */
 		function parseLine(line) {
 			var start = getLineIndent(line);
-			var rest = (start) ? line.substring(start.length) : line;
+			var rest = (start.present) ? line.substring(start.value.length) : line;
 			var parsed = parseComment(rest);
 			return {
 				prefix: start,
@@ -202,87 +217,82 @@
 			}
 		}
 
-		/** @type { <P,R1,R2>(fs: [(p: P) => R1, (p: P) => R2]) => (p: P) => [R1, R2] } */
-		var split = function(fs) {
-			//@ts-ignore
-			return function(p) {
-				return fs.map(function(f) {
-					return f(p);
-				});
-			}
-		};
+		/**
+		 *
+		 * @param { slime.project.jsapi.internal.InputLine[] } inputLines
+		 * @return { slime.project.jsapi.internal.Block[] }
+		 */
+		function parseBlocks(inputLines) {
+			return [
+				{
+					//	TODO	this doesn't look quite right, but Block design is preliminary anyway so will fix as we go
+					//			along
+					prefix: (inputLines[0].prefix.present) ? inputLines[0].prefix.value : null,
+					tokens: inputLines.map($api.Function.property("content")).reduce(
+						/**
+						 * @param { string[] } rv
+						 * @param { string } content
+						 */
+						function(rv,content) {
+							return rv.concat(
+								(content) ? content.split(" ") : []
+							);
+						},
+						/** @type { string[] } */
+						[]
+					),
+					start: inputLines[0].section == "start",
+					end: Boolean(inputLines[inputLines.length-1].section == "end")
+				}
+			]
+		}
 
-		/** @type { <T>(ts: T[]) => slime.$api.fp.Maybe<T> } */
-		var last = function(array) {
-			if (array.length > 0) return $api.Function.Maybe.value(array[array.length-1]);
-			return $api.Function.Maybe.nothing();
+		/**
+		 *
+		 * @param { slime.project.jsapi.Format } format
+		 * @returns { (parsed: slime.project.jsapi.internal.Block) => string[] }
+		 */
+		var formatBlockUsing = function(format) {
+			return function(parsed) {
+				var textLines = formatByLineLength(
+					format,
+					parsed.prefix,
+					parsed.start,
+					parsed.end
+				)(parsed.tokens);
+				return textLines;
+			}
 		}
 
 		$export({
 			test: {
 				prefix: getLineIndent,
 				maybeify: maybeify,
-				split: split
+				split: $$api.Function.split
 			},
 			comment: function(format) {
-				//	TODO	make format an argument to below rather than a scope variable
-
-				/**
-				 *
-				 * @param { slime.project.jsapi.internal.InputLine[] } inputLines
-				 * @return { slime.project.jsapi.internal.Block[] }
-				 */
-				function parseBlocks(inputLines) {
-					return [
-						{
-							prefix: inputLines[0].prefix,
-							tokens: inputLines.map($api.Function.property("content")).reduce(
-								/**
-								 * @param { string[] } rv
-								 * @param { string } content
-								 */
-								function(rv,content) {
-									return rv.concat(
-										(content) ? content.split(" ") : []
-									);
-								},
-								/** @type { string[] } */
-								[]
-							),
-							start: inputLines[0].section == "start",
-							end: Boolean(inputLines[inputLines.length-1].section == "end")
-						}
-					]
-				}
-
-				/**
-				 *
-				 * @param { slime.project.jsapi.internal.Block } parsed
-				 */
-				var formatBlock = function(parsed) {
-					var textLines = formatByLineLength(
-						format,
-						parsed.prefix,
-						parsed.start,
-						parsed.end
-					)(parsed.tokens);
-					return textLines;
-				};
-
-				return $api.Function.pipe(
+				var applyInlineStyles = $api.Function.pipe(
 					startEndTagReplace("code", "`"),
 					startEndTagReplace("i", "*"),
-					startEndTagReplace("em", "*"),
+					startEndTagReplace("em", "*")
+				);
+
+				var parseLines = $api.Function.pipe(
 					$api.Function.string.split("\n"),
-					$api.Function.Array.map(parseLine),
-					split([
+					$api.Function.Array.map(parseLine)
+				);
+
+				return $api.Function.pipe(
+					applyInlineStyles,
+					parseLines,
+					$$api.Function.split([
 						$api.Function.pipe(
 							parseBlocks,
-							$api.Function.Array.map(formatBlock),
+							$api.Function.Array.map(formatBlockUsing(format)),
 							$api.Function.Arrays.join
 						),
 						$api.Function.pipe(
-							last,
+							$$api.Function.Array.last,
 							$api.Function.Maybe.map(isEmpty),
 							//	TODO	does the below make sense? Or should we simply assert?
 							$api.Function.Maybe.else(function() { return false; })

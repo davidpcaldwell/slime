@@ -27,7 +27,7 @@ namespace slime.project.jsapi {
 
 	export namespace internal {
 		export interface InputLine {
-			prefix: string
+			prefix: slime.$api.fp.Maybe<string>
 			section: "start" | "middle" | "end"
 			content: string
 		}
@@ -67,7 +67,7 @@ namespace slime.project.jsapi {
 		)(fifty);
 
 		export interface VisibleForTesting {
-			prefix: (line: string) => string
+			prefix: (line: string) => slime.$api.fp.Maybe<string>
 		}
 
 		(
@@ -78,14 +78,19 @@ namespace slime.project.jsapi {
 				const subject = test.subject;
 
 				fifty.tests.prefix = function() {
-					verify(subject).test.prefix("\t\t\t *").is("\t\t\t");
-					verify(subject).test.prefix("\t\t\t * dd").is("\t\t\t");
+					const assert = function(m: slime.$api.fp.Maybe<string>): string {
+						if (m.present) return m.value;
+						return null;
+					};
 
-					verify(subject).test.prefix("\t\t\t/**").is("\t\t\t");
-					verify(subject).test.prefix("\t\t\t/**  ").is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t *").evaluate(assert).is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t * dd").evaluate(assert).is("\t\t\t");
 
-					verify(subject).test.prefix("\t\t\t */").is("\t\t\t");
-					verify(subject).test.prefix("\t\t\t */  ").is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t/**").evaluate(assert).is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t/**  ").evaluate(assert).is("\t\t\t");
+
+					verify(subject).test.prefix("\t\t\t */").evaluate(assert).is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t */  ").evaluate(assert).is("\t\t\t");
 				}
 			}
 		//@ts-ignore
