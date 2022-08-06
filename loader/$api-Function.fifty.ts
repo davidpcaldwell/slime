@@ -525,7 +525,7 @@ namespace slime.$api.fp {
 					verify(n2468)[1].is(4);
 					verify(n2468)[2].is(6);
 					verify(n2468)[3].is(8);
-				}
+				};
 			}
 		//@ts-ignore
 		)(fifty);
@@ -548,6 +548,51 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		Array: exports.Array
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.Arrays = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		export interface Arrays {
+			join: <T>(arrays: T[][]) => T[]
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.Arrays.join = function() {
+					var arrays = [
+						[1,2,3],
+						[4],
+						[5,6]
+					];
+					var joined = $api.Function.Arrays.join(arrays);
+					verify(joined).length.is(6);
+					verify(joined)[0].is(1);
+					verify(joined)[1].is(2);
+					verify(joined)[2].is(3);
+					verify(joined)[3].is(4);
+					verify(joined)[4].is(5);
+					verify(joined)[5].is(6);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Arrays: exports.Arrays
 	}
 
 	export interface Exports {
