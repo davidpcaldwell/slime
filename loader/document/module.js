@@ -320,6 +320,16 @@
 			}
 		};
 
+		/** @type { slime.Codec<slime.runtime.document.Fragment,string> } */
+		var fragmentStringCodec = {
+			decode: function(string) {
+				return source.fragment({ string: string });
+			},
+			encode: function(fragment) {
+				return source.serialize({ fragment: fragment });
+			}
+		}
+
 		/**
 		 *
 		 * @param { slime.runtime.document.Parent } root
@@ -388,13 +398,22 @@
 					throw new TypeError();
 				}
 			},
-			codec: {
-				document: documentStringCodec
-			},
 			Node: source.Node,
 			Parent: {
 				nodes: function(p) {
 					return NodesStream(p, []);
+				}
+			},
+			Fragment: {
+				codec: {
+					string: fragmentStringCodec
+				}
+			},
+			Element: {
+				isName: function(name) {
+					return function(element) {
+						return element.name == name;
+					}
 				}
 			},
 			//	TODO	temporarily disabling TypeScript while we figure out the loader/document vs. rhino/document nightmare
@@ -486,13 +505,6 @@
 					return elements[0];
 				}
 			},
-			Element: {
-				isName: function(name) {
-					return function(element) {
-						return element.name == name;
-					}
-				}
-			}
 		};
 
 		$export(rv);

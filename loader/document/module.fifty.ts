@@ -111,11 +111,11 @@ namespace slime.runtime.document {
 
 				fifty.tests.Document = function() {
 					var before = "<root><child/><child/><child/></root>";
-					var document = subject.codec.document.decode(before);
+					var document = subject.Document.codec.string.decode(before);
 					var pretty = subject.Document.prettify({
 						indent: "\t"
 					})(document);
-					var after = subject.codec.document.encode(pretty);
+					var after = subject.Document.codec.string.encode(pretty);
 					fifty.verify(
 						after == [
 							"<root>",
@@ -137,15 +137,17 @@ namespace slime.runtime.document {
 	export interface Exports {
 		load: old.Exports["load"]
 
-		codec: {
-			document: slime.Codec<Document,string>
-		}
-
 		Parent: {
 			nodes: (p: Parent) => slime.$api.fp.Stream<Node>
 		}
 
 		Document: exports.Document
+
+		Fragment: {
+			codec: {
+				string: slime.Codec<slime.runtime.document.Fragment,string>
+			}
+		}
 
 		Element: {
 			isName: (name: string) => (element: Element) => boolean
@@ -163,7 +165,7 @@ namespace slime.runtime.document {
 			fifty.tests.Parent = fifty.test.Parent();
 
 			fifty.tests.Parent.one = function() {
-				var document = subject.codec.document.decode("<root/>");
+				var document = subject.Document.codec.string.decode("<root/>");
 				var nodes = $api.Function.result(
 					subject.Parent.nodes(document),
 					$api.Function.Stream.collect
@@ -172,7 +174,7 @@ namespace slime.runtime.document {
 			}
 
 			fifty.tests.Parent.two = function() {
-				var document = subject.codec.document.decode("<root><a/><b><b2/></b></root>");
+				var document = subject.Document.codec.string.decode("<root><a/><b><b2/></b></root>");
 				var nodes = $api.Function.result(
 					subject.Parent.nodes(document),
 					$api.Function.Stream.collect
