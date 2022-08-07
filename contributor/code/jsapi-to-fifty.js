@@ -37,6 +37,11 @@
 				},
 				Array: {
 					/** @type { <T>(ts: T[]) => slime.$api.fp.Maybe<T> } */
+					first: function(array) {
+						if (array.length > 0) return $api.Function.Maybe.value(array[0]);
+						return $api.Function.Maybe.nothing();
+					},
+					/** @type { <T>(ts: T[]) => slime.$api.fp.Maybe<T> } */
 					last: function(array) {
 						if (array.length > 0) return $api.Function.Maybe.value(array[array.length-1]);
 						return $api.Function.Maybe.nothing();
@@ -221,11 +226,29 @@
 		 * @return { slime.project.jsapi.internal.Block[] }
 		 */
 		function parseBlocks(inputLines) {
+			var hasStart = $api.Function.result(
+				inputLines,
+				$api.Function.pipe(
+					$$api.Function.Array.first,
+					$api.Function.Maybe.map($api.Function.property("section")),
+					$api.Function.Maybe.map($api.Function.is("start")),
+					$api.Function.Maybe.else($api.Function.returning(false))
+				)
+			);
+			var hasEnd = $api.Function.result(
+				inputLines,
+				$api.Function.pipe(
+					$$api.Function.Array.last,
+					$api.Function.Maybe.map($api.Function.property("section")),
+					$api.Function.Maybe.map($api.Function.is("end")),
+					$api.Function.Maybe.else($api.Function.returning(false))
+				)
+			);
 			return [
 				{
 					prefix: (inputLines[0].prefix.present) ? inputLines[0].prefix.value : null,
-					hasStart: inputLines[0].section == "start",
-					hasEnd: Boolean(inputLines[inputLines.length-1].section == "end"),
+					hasStart: hasStart,
+					hasEnd: hasEnd,
 					tokens: inputLines.map($api.Function.property("content")).reduce(
 						/**
 						 * @param { string[] } rv

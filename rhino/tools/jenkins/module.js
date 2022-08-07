@@ -141,7 +141,7 @@
 								credentials: c
 							});
 							var xml = response.stream.character().asString();
-							var parsed = $context.library.document.codec.document.decode(xml);
+							var parsed = $context.library.document.Document.codec.string.decode(xml);
 							return parsed;
 						}
 					}
