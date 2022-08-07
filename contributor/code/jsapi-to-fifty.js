@@ -182,16 +182,14 @@
 
 		/**
 		 * @param { slime.project.jsapi.Format } format
-		 * @param { string } prefix The indent to use
-		 * @param { boolean } hasStart Whether the start of this content is the start of a comment
-		 * @param { boolean } hasEnd Whether the start of this content is the end of a comment
 		 */
-		function formatByLineLength(format, prefix, hasStart, hasEnd) {
+		function formatBlockUsing(format) {
 			/**
-			 * @param { string[] } content
+			 * @param { slime.project.jsapi.internal.Block } block
 			 * @returns { string[] }
 			 */
-			return function(content) {
+			return function(block) {
+				var content = block.tokens;
 				/** @type { string[] } */
 				var result = [];
 				var index = 0;
@@ -199,20 +197,20 @@
 					var currentLine = function() { return result[result.length-1] };
 					var currentWord = function() { return content[index]; }
 					if (result.length == 0) {
-						if (hasStart) {
-							result.push(prefix + "/**");
+						if (block.hasStart) {
+							result.push(block.prefix + "/**");
 						}
-						result.push(prefix + " * ");
+						result.push(block.prefix + " * ");
 					}
 					if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
-						var hasWord = currentLine().length > (prefix + " * ").length;
+						var hasWord = currentLine().length > (block.prefix + " * ").length;
 						result[result.length-1] += (hasWord ? " " : "") + currentWord();
 					} else {
-						result.push(prefix + " * " + currentWord());
+						result.push(block.prefix + " * " + currentWord());
 					}
 					index++;
 				}
-				if (hasEnd /*parsed.end*/) result.push(prefix + " */");
+				if (block.hasEnd) result.push(block.prefix + " */");
 				return result;
 			}
 		}
@@ -225,9 +223,9 @@
 		function parseBlocks(inputLines) {
 			return [
 				{
-					//	TODO	this doesn't look quite right, but Block design is preliminary anyway so will fix as we go
-					//			along
 					prefix: (inputLines[0].prefix.present) ? inputLines[0].prefix.value : null,
+					hasStart: inputLines[0].section == "start",
+					hasEnd: Boolean(inputLines[inputLines.length-1].section == "end"),
 					tokens: inputLines.map($api.Function.property("content")).reduce(
 						/**
 						 * @param { string[] } rv
@@ -241,27 +239,8 @@
 						/** @type { string[] } */
 						[]
 					),
-					start: inputLines[0].section == "start",
-					end: Boolean(inputLines[inputLines.length-1].section == "end")
 				}
-			]
-		}
-
-		/**
-		 *
-		 * @param { slime.project.jsapi.Format } format
-		 * @returns { (parsed: slime.project.jsapi.internal.Block) => string[] }
-		 */
-		var formatBlockUsing = function(format) {
-			return function(parsed) {
-				var textLines = formatByLineLength(
-					format,
-					parsed.prefix,
-					parsed.start,
-					parsed.end
-				)(parsed.tokens);
-				return textLines;
-			}
+			];
 		}
 
 		$export({

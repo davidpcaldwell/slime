@@ -33,10 +33,16 @@ namespace slime.project.jsapi {
 		}
 
 		export interface Block {
+			/** The indent to use. */
 			prefix: string
+
+			/** Whether the start of this content is the start of a comment. */
+			hasStart: boolean
+
+			/** Whether the end of this content is the end of a comment. */
+			hasEnd: boolean
+
 			tokens: string[]
-			start: boolean
-			end: boolean
 		}
 
 		export interface VisibleForTesting {
