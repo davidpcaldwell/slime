@@ -14,6 +14,40 @@
 	 * @param { slime.loader.Export<slime.jrunscript.io.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
+		var code = {
+			/** @type { slime.jrunscript.io.zip.Script } */
+			zip: $loader.script("zip.js"),
+			/** @type { slime.jrunscript.io.grid.Script } */
+			grid: $loader.script("grid.js"),
+			/** @type { slime.jrunscript.io.mime.Script } */
+			mime: $loader.script("mime.js")
+		};
+
+		var library = {
+			zip: code.zip({
+				InputStream: $context.$slime.io.InputStream.from.java,
+				Streams: $context.$slime.io.Streams
+			}),
+			grid: code.grid({
+				getClass: function(name) {
+					return $context.api.java.getClass(name);
+				},
+				Streams: $context.$slime.io.Streams
+			}),
+			mime: code.mime({
+				nojavamail: $context.nojavamail,
+				$slime: {
+					mime: $context.$slime.mime,
+					Resource: $context.$slime.Resource
+				},
+				api: {
+					java: $context.api.java,
+					io: $$exports
+				}
+			})
+		}
+
+
 		/** @type { slime.jrunscript.io.Exports["InputStream"] } */
 		var InputStream = {
 			string: function(stream) {
@@ -41,10 +75,7 @@
 			},
 			mime: void(0),
 			archive: {
-				zip: $loader.file("zip.js", {
-					InputStream: $context.$slime.io.InputStream,
-					Streams: $context.$slime.io.Streams
-				})
+				zip: library.zip
 			},
 			grid: $loader.file("grid.js", {
 				getClass: function(name) {
@@ -54,17 +85,7 @@
 			}),
 			system: $context.$slime.io.system
 		};
-		$$exports.mime = $loader.file("mime.js", {
-			nojavamail: $context.nojavamail,
-			$slime: {
-				mime: $context.$slime.mime,
-				Resource: $context.$slime.Resource
-			},
-			api: {
-				java: $context.api.java,
-				io: $$exports
-			}
-		});
+		$$exports.mime = library.mime;
 		$export($$exports);
 	}
 //@ts-ignore

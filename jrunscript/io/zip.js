@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { { Streams: any, InputStream: any } } $context
+	 * @param { { Streams: any, InputStream: slime.jrunscript.runtime.io.Exports["InputStream"]["from"]["java"] } } $context
 	 * @param { slime.jrunscript.io.Exports["archive"]["zip"] } $exports
 	 */
 	function(Packages,$context,$exports) {
@@ -133,7 +133,7 @@
 				} else {
 					var to = p.output.file({ path: name });
 					$context.Streams.binary.copy(
-						new $context.InputStream(_zipstream),
+						$context.InputStream(_zipstream),
 						to,
 						{
 							onFinish: function(_r,_w) {
