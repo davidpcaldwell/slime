@@ -17,7 +17,7 @@
 		var code = {
 			/** @type { slime.jrunscript.io.zip.Script } */
 			zip: $loader.script("zip.js"),
-			/** @type { slime.jrunscript.io.grid.excel.Script } */
+			/** @type { slime.jrunscript.io.grid.Script } */
 			grid: $loader.script("grid.js"),
 			/** @type { slime.jrunscript.io.mime.Script } */
 			mime: $loader.script("mime.js")

@@ -10,8 +10,8 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jrunscript.io.grid.excel.Context } $context
-	 * @param { slime.loader.Export<slime.jrunscript.io.grid.excel.Exports> } $export
+	 * @param { slime.jrunscript.io.grid.Context } $context
+	 * @param { slime.loader.Export<slime.jrunscript.io.grid.Exports> } $export
 	 */
 	function(Packages,$api,$context,$export) {
 		var $exports = {
@@ -164,7 +164,7 @@
 			}
 		}
 
-		$export($exports.excel);
+		$export($exports);
 	}
 //@ts-ignore
 )(Packages,$api,$context,$export);

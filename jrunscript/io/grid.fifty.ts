@@ -9,12 +9,20 @@ namespace slime.jrunscript.native.org.apache.poi {
 	}
 }
 
-namespace slime.jrunscript.io.grid.excel {
+namespace slime.jrunscript.io.grid {
 	export interface Context {
 		getClass: slime.jrunscript.host.Exports["getClass"]
 		Streams: slime.jrunscript.io.Exports["Streams"]
 	}
 
+	export interface Exports {
+		excel?: excel.Exports
+	}
+
+	export type Script = slime.loader.Script<Context,Exports>
+}
+
+namespace slime.jrunscript.io.grid.excel {
 	export type Format = (p: { resource: slime.Resource }) => slime.jrunscript.native.org.apache.poi.POIDocument
 
 	interface Cell {
@@ -69,7 +77,7 @@ namespace slime.jrunscript.io.grid.excel {
 				}
 			)();
 
-			var module = { excel: subject };
+			var module = subject;
 
 			function testSpreadsheet(module, workbook: Workbook) {
 				verify(workbook).sheets.is.type("object");
@@ -124,6 +132,4 @@ namespace slime.jrunscript.io.grid.excel {
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export type Script = slime.loader.Script<Context,Exports>
 }
