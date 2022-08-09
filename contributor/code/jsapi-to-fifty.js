@@ -222,6 +222,72 @@
 
 		/**
 		 *
+		 * @param { slime.runtime.document.Node } child
+		 * @returns { slime.$api.fp.Maybe<string> }
+		 */
+		function renderInlineNode(child) {
+			if ($context.library.document.Node.isText(child)) {
+				return $api.Function.Maybe.value(child.data);
+			} else if ($context.library.document.Node.isComment(child)) {
+				return $api.Function.Maybe.value("<!---- " + child.data + " --->");
+			} else {
+				return $api.Function.Maybe.nothing();
+			}
+		}
+
+		/**
+		 *
+		 * @param { string } input
+		 */
+		function doIt(input) {
+			var decoded = $context.library.document.Fragment.codec.string.decode(input);
+			/** @type { string[][] } */
+			var rv = [
+				[]
+			];
+			for (var i=0; i<decoded.children.length; i++) {
+				var child = decoded.children[i];
+				var inline = renderInlineNode(child);
+				if (inline.present) {
+					rv[rv.length-1].push(inline.value);
+				} else if ($context.library.document.Node.isElement(child)) {
+					if (child.name == "ul") {
+						rv.push([]);
+						child.children.forEach(function(node) {
+							var inline = renderInlineNode(node);
+							if (inline.present) {
+								rv[rv.length-1].push(inline.value);
+							} else if ($context.library.document.Node.isElement(node) && node.name == "li") {
+								var rendered = $context.library.document.Fragment.codec.string.encode({
+									type: "fragment",
+									children: node.children
+								});
+								rv.push([rendered]);
+							} else {
+								var html = $context.library.document.Fragment.codec.string.encode({
+									type: "fragment",
+									children: [node]
+								});
+								rv[rv.length-1].push(html);
+							}
+						});
+					} else {
+						rv.push(
+							[
+								$context.library.document.Fragment.codec.string.encode({
+									type: "fragment",
+									children: [child]
+								})
+							]
+						)
+					}
+				}
+			}
+			return rv;
+		}
+
+		/**
+		 *
 		 * @param { slime.project.jsapi.internal.InputLine[] } inputLines
 		 * @return { slime.project.jsapi.internal.Block[] }
 		 */
@@ -235,6 +301,7 @@
 					$api.Function.Maybe.else($api.Function.returning(false))
 				)
 			);
+
 			var hasEnd = $api.Function.result(
 				inputLines,
 				$api.Function.pipe(
@@ -244,6 +311,22 @@
 					$api.Function.Maybe.else($api.Function.returning(false))
 				)
 			);
+			var content = inputLines.map($api.Function.property("content")).reduce(
+				/**
+				 * @param { string[] } rv
+				 * @param { string } content
+				 */
+				function(rv,content) {
+					return rv.concat(
+						(content) ? content.split(" ") : []
+					);
+				},
+				/** @type { string[] } */
+				[]
+			);
+
+			debugger;
+
 			return [
 				{
 					prefix: (inputLines[0].prefix.present) ? inputLines[0].prefix.value : null,
@@ -270,7 +353,16 @@
 			test: {
 				prefix: getLineIndent,
 				maybeify: maybeify,
-				split: $$api.Function.split
+				split: $$api.Function.split,
+				html: function(string) {
+					return $context.library.document.Fragment.codec.string.decode(string);
+				},
+				parseBlocks: function(string) {
+					return doIt(string);
+				},
+				library: {
+					document: $context.library.document
+				}
 			},
 			comment: function(format) {
 				var applyInlineStyles = $api.Function.pipe(

@@ -713,7 +713,7 @@
 			},
 			parse: parse,
 			fragment: function(input) {
-				var events = $api.Events.toHandler(input.events);
+				var events = $api.events.toHandler(input.events);
 				events.attach();
 				var state = Parser()(
 					{
