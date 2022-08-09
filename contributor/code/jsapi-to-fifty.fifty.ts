@@ -6,13 +6,23 @@
 
 namespace slime.project.jsapi {
 	export interface Context {
+		library: {
+			document: slime.runtime.document.Exports
+		}
 	}
 
 	export namespace test {
 		export const subject = (
 			function(fifty: slime.fifty.test.Kit) {
 				var script: Script = fifty.$loader.script("jsapi-to-fifty.js");
-				var subject = script();
+				var code: { document: slime.runtime.document.Script } = {
+					document: fifty.$loader.script("../../loader/document/module.js")
+				}
+				var subject = script({
+					library: {
+						document: code.document()
+					}
+				});
 				return subject;
 			}
 		//@ts-ignore
@@ -127,6 +137,19 @@ namespace slime.project.jsapi {
 		//@ts-ignore
 		)(fifty);
 
+		export interface VisibleForTesting {
+			html: slime.runtime.document.Exports["Fragment"]["codec"]["string"]["decode"]
+		}
+
+		export interface VisibleForTesting {
+			library: {
+				document: slime.runtime.document.Exports
+			}
+		}
+
+		export interface VisibleForTesting {
+			parseBlocks: (string: string) => string[][]
+		}
 	}
 
 	export interface Exports {
@@ -147,8 +170,9 @@ namespace slime.project.jsapi {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			var script: Script = fifty.$loader.script("jsapi-to-fifty.js");
-			var subject = script();
+			const { $api } = fifty.global;
+
+			var subject = test.subject;
 
 			type Case = {
 				configuration: Format
@@ -209,6 +233,13 @@ namespace slime.project.jsapi {
 					var result = subject.comment(test.configuration)(test.input);
 					verify(result,"result").is(test.expected);
 				});
+			}
+
+			fifty.tests.wip = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
+				var input = tests[0].input;
+
+				debugger;
 			}
 
 			fifty.tests.suite = function() {

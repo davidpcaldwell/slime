@@ -144,7 +144,7 @@
 
 		if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
 			(
-				function() {
+				function($context) {
 					/** @type { (f: (p: any) => any ) => (() => any) } */
 					var noarg = function(f) {
 						return function() {
@@ -298,7 +298,7 @@
 						};
 					})();
 				}
-			)();
+			)($context);
 		}
 
 		var parser = (function() {

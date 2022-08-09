@@ -7,7 +7,7 @@
 									<li>They do not provide a sensible <code>.toString</code> implementation.</li>
 								</ul>
 ===
-			 * The created loaders currently have the following limitations:
+			 * The created loaders currently have the following limitations: <!--	TODO	address them	-->
 			 *
 			 * * They are not enumerable
 			 * * They do not respect the `.child` implementations of their elements
