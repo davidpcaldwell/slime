@@ -126,10 +126,6 @@
 			pathname: SRC.getRelativePath("jrunscript/io/mime.api.html")
 		}));
 
-		suite.add("jrunscript/io/grid", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jrunscript/io/grid.api.html")
-		}));
-
 		suite.add("jrunscript/file/main", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/file/api.html")
 		}));
