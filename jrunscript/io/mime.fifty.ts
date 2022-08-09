@@ -7,9 +7,9 @@
 namespace slime.jrunscript.io.mime {
 	export interface Context {
 		/** @deprecated */
-		gae: boolean
+		gae?: boolean
 		nojavamail: boolean
-		$slime: jsh.plugin.$slime
+		$slime: Pick<jsh.plugin.$slime,"mime" | "Resource">
 		api: {
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
@@ -45,4 +45,6 @@ namespace slime.jrunscript.io.mime {
 
 		Type: slime.runtime.Exports["mime"]["Type"] & { guess: (p: { name: string }) => slime.mime.Object }
 	}
+
+	export type Script = slime.loader.Script<Context,Exports>
 }

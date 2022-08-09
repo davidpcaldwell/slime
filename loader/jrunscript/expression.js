@@ -244,7 +244,7 @@
 							if (!_bytes) {
 								_bytes = stream.java.array();
 							}
-							return $exports.io.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes));
+							return $exports.io.InputStream.from.java(new Packages.java.io.ByteArrayInputStream(_bytes));
 						}
 					})(o.stream.binary)
 				}
@@ -284,7 +284,7 @@
 					if (isLoadedDescriptor(p)) {
 						if (!p.read) p.read = {};
 						p.read.binary = function() {
-							return $exports.io.InputStream(p._loaded.resource.getInputStream());
+							return $exports.io.InputStream.from.java(p._loaded.resource.getInputStream());
 						};
 					}
 

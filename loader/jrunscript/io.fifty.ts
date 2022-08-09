@@ -101,7 +101,12 @@ namespace slime.jrunscript.runtime.io {
 	}
 
 	export interface Exports {
-		InputStream: (p: slime.jrunscript.native.java.io.InputStream) => InputStream
+		InputStream: {
+			from: {
+				java: (p: slime.jrunscript.native.java.io.InputStream) => InputStream
+			}
+		}
+
 		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
 
 		Reader: (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader

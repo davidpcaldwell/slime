@@ -330,7 +330,11 @@
 		};
 
 		$export({
-			InputStream: InputStream,
+			InputStream: {
+				from: {
+					java: InputStream
+				}
+			},
 			OutputStream: OutputStream,
 			Reader: Reader,
 			Writer: Writer,

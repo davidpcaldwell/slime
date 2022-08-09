@@ -95,6 +95,7 @@ namespace slime.jrunscript.io {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
+				fifty.load("grid.fifty.ts");
 			}
 		}
 	//@ts-ignore

@@ -48,7 +48,7 @@ namespace slime.time {
 		}
 
 		export interface Time {
-			day: any
+			day: Day
 			format(mask: string): string
 		}
 
