@@ -5,9 +5,17 @@
 //	END LICENSE
 
 namespace slime.jrunscript.runtime.io {
+	/**
+	 * A stream from which bytes may be read.
+	 */
 	export interface InputStream {
 		character: (mode?: any) => Reader
+
+		/**
+		 * Closes the underlying stream.
+		 */
 		close: () => void
+
 		java: {
 			adapt: () => slime.jrunscript.native.java.io.InputStream
 			array: () => any
@@ -118,8 +126,20 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 
+		/**
+		 * Provides operations for processing streams of input or output.
+		 */
 		Streams: {
+			/**
+			 * Provides operations for processing byte streams.
+			 */
 			binary: {
+				/**
+				 * Copies a byte input stream to a byte output stream.
+				 *
+				 * @param from A stream from which to copy bytes.
+				 * @param to A stream to which to copy bytes.
+				 */
 				copy: (from: slime.jrunscript.runtime.io.InputStream, to: slime.jrunscript.runtime.io.OutputStream, mode?: BinaryCopyMode) => void
 			}
 			text: {
@@ -163,6 +183,23 @@ namespace slime.jrunscript.runtime.io {
 					var characters = bytes.character();
 					var string = characters.asString();
 					verify(string).is("foo!");
+				});
+
+				run(function jsapi() {
+					var buffer = new test.subject.Buffer();
+					var writer = buffer.writeText();
+					writer.write("Buffer readLines\n");
+
+					var lines = [];
+
+					buffer.readText().readLines(function(s) {
+						lines.push(s);
+						return lines;
+					}, { ending: "\n" });
+
+					verify(lines).length.is(1);
+
+					buffer.close();
 				});
 
 				var utf8 = test.subject.Charset.standard.utf8;

@@ -261,6 +261,8 @@ namespace slime.$api {
 			verify(decoded).evaluate.property("foo").is(void(0));
 
 			run(tests.exports.Resource);
+
+			fifty.load("io.fifty.ts");
 		}
 	}
 //@ts-ignore
