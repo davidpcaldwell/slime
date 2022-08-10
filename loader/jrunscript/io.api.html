@@ -13,12 +13,6 @@ END LICENSE
 		<script src="../../loader/api/api.js"></script>
 	</head>
 	<body>
-		<div>__DESCRIPTION__</div>
-		<div>
-			<h1>Context</h1>
-			<ul>
-			</ul>
-		</div>
 		<div>
 			<h1>Exports</h1>
 			<div jsapi:id="exports">
@@ -27,28 +21,8 @@ END LICENSE
 					scope.module = scope.module.io;
 				</script>
 				<ul>
-					<li class="constructor" jsapi:id="Buffer">
-						<div class="name">Buffer</div>
-						<script type="application/x.jsapi#tests" jsapi:id="Buffer readLines">
-							var buffer = new module.Buffer();
-							var writer = buffer.writeText();
-							writer.write("Buffer readLines\n");
-
-							var lines = [];
-
-							buffer.readText().readLines(function(s) {
-								lines.push(s);
-								return lines;
-							}, { ending: "\n" });
-
-							test(lines.length == 1);
-
-							buffer.close();
-						</script>
-					</li>
 					<li class="object" jsapi:id="Streams">
 						<div class="name">Streams</div>
-						<span>Provides operations for processing streams of input or output.</span>
 						<div class="type">
 							<a class="type" name="types.doutput">standard output stream</a>
 							<span class="type">supports <a href="#types.boutput">byte output stream</a>, except close()</span>
@@ -73,34 +47,14 @@ END LICENSE
 						<ul>
 							<li class="object">
 								<div class="name">binary</div>
-								<span>Provides operations for processing byte streams.</span>
 								<div class="label">has properties:</div>
 								<ul>
 									<li class="function">
 										<div class="name">copy</div>
-										<span>Copies a byte input stream to a byte output stream.</span>
-										<div class="arguments">
-											<div class="label">Arguments</div>
-											<ol>
-												<li class="value">
-													<span class="type"><a href="#types.binput">byte input stream</a></span>
-													<span>A stream from which to copy bytes.</span>
-												</li>
-												<li class="value">
-													<span class="type"><a href="#types.boutput">byte output stream</a></span>
-													<span>A stream to which to copy bytes.</span>
-												</li>
-											</ol>
-										</div>
 										<div class="type">
 											<a class="type" name="types.binput">byte input stream</a>
-											A stream from which bytes may be read.
 											<div class="label">has properties:</div>
 											<ul>
-												<li class="function">
-													<div class="name">close</div>
-													Closes the underlying stream.
-												</li>
 												<li class="function">
 													<div class="name">character</div>
 													<div class="returns">
@@ -400,14 +354,6 @@ END LICENSE
 					</li>
 				</ul>
 			</div>
-		</div>
-		<div>
-			<script type="application/x.jsapi#tests">
-				$jsapi.loader.fifty({
-					path: "io.fifty.ts",
-					verify: verify
-				});
-			</script>
 		</div>
 	</body>
 </html>
