@@ -166,23 +166,88 @@
 
 		/**
 		 *
-		 * @param { slime.project.jsapi.internal.InputLine } line
-		 */
-		function isEmpty(line) {
-			return !line.section && !line.prefix && !line.content;
-		}
-
-		/**
-		 *
 		 * @param { string } tagName
 		 * @param { string } delimiter
 		 */
 		function startEndTagReplace(tagName, delimiter) {
 			var startPattern = new RegExp("\<" + tagName + "\>", "g");
 			var endPattern = new RegExp("\<\/" + tagName + "\>", "g");
+			/**
+			 * @param { string } input
+			 */
 			return function(input) {
 				return input.replace(startPattern, delimiter).replace(endPattern, delimiter);
 			}
+		}
+
+		var applyInlineStyles = $api.Function.pipe(
+			startEndTagReplace("code", "`"),
+			startEndTagReplace("i", "*"),
+			startEndTagReplace("em", "*")
+		);
+
+		var parseInputLines = $api.Function.pipe(
+			applyInlineStyles,
+			$api.Function.string.split("\n"),
+			$api.Function.Array.map(parseLine)
+		);
+
+		/**
+		 *
+		 * @param { slime.project.jsapi.internal.InputLine[] } inputLines
+		 * @return { slime.project.jsapi.internal.Block }
+		 */
+		function parseBlock(inputLines) {
+			var hasStart = $api.Function.result(
+				inputLines,
+				$api.Function.pipe(
+					$$api.Function.Array.first,
+					$api.Function.Maybe.map($api.Function.property("section")),
+					$api.Function.Maybe.map($api.Function.is("start")),
+					$api.Function.Maybe.else($api.Function.returning(false))
+				)
+			);
+
+			var hasEnd = $api.Function.result(
+				inputLines,
+				$api.Function.pipe(
+					$$api.Function.Array.last,
+					$api.Function.Maybe.map($api.Function.property("section")),
+					$api.Function.Maybe.map($api.Function.is("end")),
+					$api.Function.Maybe.else($api.Function.returning(false))
+				)
+			);
+
+			var content = inputLines.map($api.Function.property("content")).reduce(
+				/**
+				 * @param { string[] } rv
+				 * @param { string } content
+				 */
+				function(rv,content) {
+					return rv.concat(
+						(content) ? content.split(" ") : []
+					);
+				},
+				/** @type { string[] } */
+				[]
+			);
+
+			debugger;
+
+			return {
+				prefix: (inputLines[0].prefix.present) ? inputLines[0].prefix.value : null,
+				hasStart: hasStart,
+				hasEnd: hasEnd,
+				tokens: content
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.project.jsapi.internal.InputLine } line
+		 */
+		function isEmpty(line) {
+			return !line.section && !line.prefix && !line.content;
 		}
 
 		/**
@@ -240,7 +305,10 @@
 		 * @param { string } input
 		 */
 		function doIt(input) {
-			var decoded = $context.library.document.Fragment.codec.string.decode(input);
+			var inputLines = parseInputLines(input);
+			var block = parseBlock(inputLines);
+			var content = block.tokens.join(" ");
+			var decoded = $context.library.document.Fragment.codec.string.decode(content);
 			/** @type { string[][] } */
 			var rv = [
 				[]
@@ -286,69 +354,6 @@
 			return rv;
 		}
 
-		/**
-		 *
-		 * @param { slime.project.jsapi.internal.InputLine[] } inputLines
-		 * @return { slime.project.jsapi.internal.Block[] }
-		 */
-		function parseBlocks(inputLines) {
-			var hasStart = $api.Function.result(
-				inputLines,
-				$api.Function.pipe(
-					$$api.Function.Array.first,
-					$api.Function.Maybe.map($api.Function.property("section")),
-					$api.Function.Maybe.map($api.Function.is("start")),
-					$api.Function.Maybe.else($api.Function.returning(false))
-				)
-			);
-
-			var hasEnd = $api.Function.result(
-				inputLines,
-				$api.Function.pipe(
-					$$api.Function.Array.last,
-					$api.Function.Maybe.map($api.Function.property("section")),
-					$api.Function.Maybe.map($api.Function.is("end")),
-					$api.Function.Maybe.else($api.Function.returning(false))
-				)
-			);
-			var content = inputLines.map($api.Function.property("content")).reduce(
-				/**
-				 * @param { string[] } rv
-				 * @param { string } content
-				 */
-				function(rv,content) {
-					return rv.concat(
-						(content) ? content.split(" ") : []
-					);
-				},
-				/** @type { string[] } */
-				[]
-			);
-
-			debugger;
-
-			return [
-				{
-					prefix: (inputLines[0].prefix.present) ? inputLines[0].prefix.value : null,
-					hasStart: hasStart,
-					hasEnd: hasEnd,
-					tokens: inputLines.map($api.Function.property("content")).reduce(
-						/**
-						 * @param { string[] } rv
-						 * @param { string } content
-						 */
-						function(rv,content) {
-							return rv.concat(
-								(content) ? content.split(" ") : []
-							);
-						},
-						/** @type { string[] } */
-						[]
-					),
-				}
-			];
-		}
-
 		$export({
 			test: {
 				prefix: getLineIndent,
@@ -365,25 +370,12 @@
 				}
 			},
 			comment: function(format) {
-				var applyInlineStyles = $api.Function.pipe(
-					startEndTagReplace("code", "`"),
-					startEndTagReplace("i", "*"),
-					startEndTagReplace("em", "*")
-				);
-
-				var parseLines = $api.Function.pipe(
-					$api.Function.string.split("\n"),
-					$api.Function.Array.map(parseLine)
-				);
-
 				return $api.Function.pipe(
-					applyInlineStyles,
-					parseLines,
+					parseInputLines,
 					$$api.Function.split([
 						$api.Function.pipe(
-							parseBlocks,
-							$api.Function.Array.map(formatBlockUsing(format)),
-							$api.Function.Arrays.join
+							parseBlock,
+							formatBlockUsing(format)
 						),
 						$api.Function.pipe(
 							$$api.Function.Array.last,
