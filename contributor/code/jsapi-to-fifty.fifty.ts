@@ -238,13 +238,14 @@ namespace slime.project.jsapi {
 			fifty.tests.wip = function() {
 				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
 				var input = tests[0].input;
-
+				var blocks = subject.test.parseBlocks(input);
 				debugger;
 			}
 
 			fifty.tests.suite = function() {
 				//	unit tests
 				fifty.run(fifty.tests.prefix);
+				fifty.run(fifty.tests.split);
 
 				//	functional tests
 				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
