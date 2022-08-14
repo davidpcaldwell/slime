@@ -5,7 +5,11 @@
 //	END LICENSE
 
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				prompt: String,
@@ -45,4 +49,5 @@
 			jsh.shell.exit(0);
 		}
 	}
-)();
+//@ts-ignore
+)(jsh);

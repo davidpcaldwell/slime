@@ -5,20 +5,36 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell {
-	export interface Stdio {
-		input?: slime.jrunscript.runtime.io.InputStream
-		output?: slime.jrunscript.runtime.io.OutputStream
-		error?: slime.jrunscript.runtime.io.OutputStream
-	}
-
 	interface Result {
 		stdio: {
 			output: string
 		}
 	}
 
+	export namespace context {
+		export type OutputStream = Omit<slime.jrunscript.runtime.io.OutputStream, "close">
+
+		/**
+		 * Represents a process output stream to which bytes and characters can be written.
+		 */
+		export type Console = OutputStream & {
+			/**
+			 * Writes a string to the stream and then flushes the stream.
+			 *
+			 * @param string A string to write to this console.
+			 */
+			write: (string: string) => void
+		}
+
+		export interface Stdio {
+			input?: slime.jrunscript.runtime.io.InputStream
+			output?: OutputStream
+			error?: OutputStream
+		}
+	}
+
 	export interface Context {
-		stdio: Stdio
+		stdio: context.Stdio
 		_environment: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
 		_properties: slime.jrunscript.native.java.util.Properties
 		kotlin: {
@@ -143,7 +159,7 @@ namespace slime.jrunscript.shell {
 	}
 
 	export namespace run {
-		export type OutputCapture = "string" | "line" | slime.jrunscript.runtime.io.OutputStream;
+		export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
 
 		export interface StdioConfiguration {
 			input: slime.jrunscript.runtime.io.InputStream

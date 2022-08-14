@@ -4,5 +4,15 @@
 //
 //	END LICENSE
 
-jsh.shell.stdout.write("Hello, World!");
-jsh.shell.stderr.write("Hello, tty!");
+//@ts-check
+(
+	/**
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api,jsh) {
+		jsh.shell.stdout.write("Hello, World!");
+		jsh.shell.stderr.write("Hello, tty!");
+	}
+//@ts-ignore
+)($api,jsh);

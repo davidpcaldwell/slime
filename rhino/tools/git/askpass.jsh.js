@@ -5,7 +5,11 @@
 //	END LICENSE
 
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
 		//	TODO	come up with a test suite and documentation for this
 		var parameters = jsh.script.getopts({
 			options: {
@@ -63,4 +67,5 @@
 			jsh.shell.exit(0);
 		}
 	}
-)();
+//@ts-ignore
+)(jsh);

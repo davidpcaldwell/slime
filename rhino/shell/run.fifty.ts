@@ -102,7 +102,7 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export interface OutputDestination {
-		stream: slime.jrunscript.runtime.io.OutputStream
+		stream: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
 		close: () => void
 		readText?: () => string
 	}
@@ -111,7 +111,7 @@ namespace slime.jrunscript.shell.internal.run {
 	 * Extends the standard shell `Stdio` type to make all fields required and add a `close()` method that closes the streams and
 	 * returns the output of the program.
 	 */
-	export type Stdio = Required<slime.jrunscript.shell.Stdio> & { close: () => slime.jrunscript.shell.run.Output }
+	export type Stdio = Required<slime.jrunscript.shell.invocation.Stdio> & { close: () => slime.jrunscript.shell.run.Output }
 
 	export interface Listener {
 		close: () => void

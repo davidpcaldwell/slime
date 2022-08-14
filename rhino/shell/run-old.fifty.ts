@@ -184,7 +184,7 @@ namespace slime.jrunscript.shell {
 namespace slime.jrunscript.shell.internal.run.old {
 	export interface Context {
 		environment: slime.jrunscript.host.Environment
-		stdio: slime.jrunscript.shell.Stdio
+		stdio: slime.jrunscript.shell.invocation.Stdio
 		api: {
 			file: slime.jrunscript.file.Exports
 		}

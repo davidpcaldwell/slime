@@ -71,7 +71,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.runtime.io.OutputStream } stream
+		 * @param { Omit<slime.jrunscript.runtime.io.OutputStream, "close"> } stream
 		 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 		 */
 		var getRawDestination = function(stream) {
