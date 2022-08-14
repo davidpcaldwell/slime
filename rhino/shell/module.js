@@ -548,7 +548,7 @@
 				};
 			},
 			mock: scripts.run.mock.tell
-		}
+		};
 
 		$exports.Invocation = {
 			old: Invocation_old,

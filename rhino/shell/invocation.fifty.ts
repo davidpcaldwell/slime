@@ -5,15 +5,13 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell {
-	export namespace internal.invocation.test {
-		export const subject = (function(fifty: slime.fifty.test.Kit) {
-			const code: slime.jrunscript.shell.internal.invocation.Script = fifty.$loader.script("invocation.js");
-			return code();
-		//@ts-ignore
-		})(fifty);
-	}
-
 	export namespace invocation {
+		export interface Stdio {
+			input?: slime.jrunscript.runtime.io.InputStream
+			output?: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
+			error?: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
+		}
+
 		export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
 
 		export type Input = string | slime.jrunscript.runtime.io.InputStream
@@ -266,6 +264,14 @@ namespace slime.jrunscript.shell.internal.invocation {
 		run: slime.jrunscript.shell.internal.run.Exports
 	}
 
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			const code: slime.jrunscript.shell.internal.invocation.Script = fifty.$loader.script("invocation.js");
+			return code();
+		//@ts-ignore
+		})(fifty);
+	}
+
 	export type Configuration = Pick<slime.jrunscript.shell.invocation.old.Argument, "command" | "arguments">
 
 	export type StdioWithInputFixed = {
@@ -285,7 +291,7 @@ namespace slime.jrunscript.shell.internal.invocation {
 
 		fallbackToParentStdio: (
 			p: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed,
-			parent: slime.jrunscript.shell.Stdio
+			parent: slime.jrunscript.shell.invocation.Stdio
 		) => void
 
 		toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
@@ -293,7 +299,7 @@ namespace slime.jrunscript.shell.internal.invocation {
 		toContext: (
 			p: slime.jrunscript.shell.invocation.old.Argument,
 			parentEnvironment: slime.jrunscript.host.Environment,
-			parentStdio: slime.jrunscript.shell.Stdio
+			parentStdio: slime.jrunscript.shell.invocation.Stdio
 		) => slime.jrunscript.shell.run.Context
 
 		isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines

@@ -55,12 +55,8 @@ namespace slime.jsh.shell {
 		exit: (code: number) => never
 		stdio: {
 			input: slime.jrunscript.runtime.io.InputStream
-			output: slime.jrunscript.runtime.io.OutputStream & {
-				write: any
-			}
-			error: slime.jrunscript.runtime.io.OutputStream & {
-				write: any
-			}
+			output: slime.jrunscript.shell.context.Console
+			error: slime.jrunscript.shell.context.Console
 		}
 		echo: {
 			(message: any, mode?: any): void

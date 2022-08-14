@@ -20,10 +20,31 @@
 				return Boolean(jsh.js && jsh.document && jsh.js.document && jsh.web && jsh.java && jsh.io && jsh.file);
 			},
 			load: function() {
+				/**
+				 *
+				 * @param { slime.jrunscript.runtime.io.OutputStream } outputStream
+				 * @returns { slime.jrunscript.shell.context.OutputStream }
+				 */
+				var toShellContextOutputStream = function(outputStream) {
+					return {
+						character: function() {
+							return outputStream.character();
+						},
+						java: {
+							adapt: function() {
+								return outputStream.java.adapt();
+							}
+						},
+						split: function(other) {
+							return outputStream.split(other);
+						}
+					}
+				};
+
 				var stdio = {
 					input: jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput()),
-					output: jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput()),
-					error: jsh.io.Streams.java.adapt($slime.getStdio().getStandardError())
+					output: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput())),
+					error: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardError()))
 				}
 
 				var code = {
