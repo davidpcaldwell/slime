@@ -53,11 +53,24 @@ namespace slime.jsh.shell {
 
 		//	TODO	run.evaluate.wrap
 		exit: (code: number) => never
+
+		/**
+		 * The standard I/O streams for this shell.
+		 */
 		stdio: {
+			//	TODO	originally this supported methods of Reader also, should it?
 			input: slime.jrunscript.runtime.io.InputStream
 			output: slime.jrunscript.shell.context.Console
 			error: slime.jrunscript.shell.context.Console
 		}
+
+		/** @deprecated Use {@link Exports["stdio"]["input"]} */
+		stdin: Exports["stdio"]["input"]
+		/** @deprecated Use {@link Exports["stdio"]["output"]} */
+		stdout: Exports["stdio"]["output"]
+		/** @deprecated Use {@link Exports["stdio"]["error"]} */
+		stderr: Exports["stdio"]["error"]
+
 		echo: {
 			(message: any, mode?: any): void
 			String: any

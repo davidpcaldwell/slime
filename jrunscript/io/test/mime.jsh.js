@@ -4,22 +4,38 @@
 //
 //	END LICENSE
 
-var multipart = new jsh.io.mime.Multipart({
-	subtype: "alternative",
-	parts: [
-		{
-			type: new jsh.io.mime.Type("text", "plain"),
-			string: "Hello, World"
-		},
-		{
-			type: new jsh.io.mime.Type("text", "html"),
-			string: "<html><body>Hello, World</body></html>",
-			filename: "second",
-			disposition: "attachment"
-		}
-	]
-});
+//@ts-check
+(
+	/**
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api,jsh) {
+		var multipart = jsh.io.mime.Multipart({
+			subtype: "alternative",
+			parts: [
+				//	TODO	failed type checking below may indicate problem
+				//@ts-ignore
+				{
+					type: jsh.io.mime.Type("text", "plain"),
+					string: "Hello, World"
+				},
+				{
+					type: jsh.io.mime.Type("text", "html"),
+					string: "<html><body>Hello, World</body></html>",
+					filename: "second",
+					//	TODO	failed type checking below may indicate problem
+					//@ts-ignore
+					disposition: "attachment"
+				}
+			]
+		});
 
-jsh.io.Streams.binary.copy(multipart.read.binary(), jsh.shell.stdout);
+		//	TODO	need to think through what type information should be below
+		//@ts-ignore
+		jsh.io.Streams.binary.copy(multipart.read.binary(), jsh.shell.stdout);
 
-jsh.shell.echo("MIME type for index.html = " + jsh.io.mime.Type.guess({ name: "index.html" }));
+		jsh.shell.echo("MIME type for index.html = " + jsh.io.mime.Type.guess({ name: "index.html" }));
+	}
+//@ts-ignore
+)($api,jsh);
