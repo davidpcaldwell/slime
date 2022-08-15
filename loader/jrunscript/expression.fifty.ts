@@ -277,5 +277,6 @@ namespace slime.external.e4x {
 	}
 
 	export interface XMLList extends Object {
+		length(): number
 	}
 }
