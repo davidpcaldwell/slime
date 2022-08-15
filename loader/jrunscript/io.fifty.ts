@@ -9,6 +9,7 @@ namespace slime.jrunscript.runtime.io {
 	 * A stream from which bytes may be read.
 	 */
 	export interface InputStream {
+		/** A character input stream that reads this stream. */
 		character: (mode?: any) => Reader
 
 		/**
@@ -16,42 +17,173 @@ namespace slime.jrunscript.runtime.io {
 		 */
 		close: () => void
 
+		/** Operations that bridge to Java constructs. */
 		java: {
+			/** Returns a Java `java.io.InputStream` equivalent to this stream. */
 			adapt: () => slime.jrunscript.native.java.io.InputStream
 			array: () => any
 		}
 	}
 
+	/**
+	 * A stream to which bytes may be written.
+	 */
 	export interface OutputStream {
+		/**
+		 * Returns a character output stream that writes to this stream.
+		 */
 		character: () => Writer
+
+		/**
+		 * Closes the underlying stream.
+		 */
 		close: () => void
+
+		/**
+		 * Operations that bridge to Java constructs.
+		 */
 		java: {
+			/**
+			 * Returns a Java `java.io.OutputStream` equivalent to this stream.
+			 */
 			adapt: () => slime.jrunscript.native.java.io.OutputStream
 		}
+
 		//	Possibly unused
 		split: (other: any) => OutputStream
 	}
 
-	export interface Reader {
-		close: () => void
-		asString: () => string
-		readLines: (
-			callback: (line: string) => any,
-			mode?: {
-				ending?: string
-				onEnd?: () => void
-			}
-		) => void
+	export namespace old {
+		/**
+		 * @param line A line read from this stream.
+		 *
+		 * @returns If anything other than `undefined` is returned, `readLines` will terminate reading the stream (and pass the
+		 * value to `onEnd`; see the second argument to `readLines`).
+		 */
+		export type ReadLinesCallback<T> = (line: string) => T
+
+		/**
+		 * @param t The value returned from the line processing function, if processing terminated because that function returned a
+		 * value (see {@link ReadLinesCallback}).
+		 */
+		export type ReadLinesOnEnd<T> = (t?: T) => void
+
+		/**
+		 * An object representing the mode of operation of {@link ReadLines}.
+		 */
+		export type ReadLinesMode<T> = {
+			/**
+			 * The line terminator to use when parsing the stream. The underlying platform line terminator will be used if not
+			 * specified.
+			 */
+			ending?: string
+
+			/**
+			 * A function that will be invoked when line processing terminates. The function will be invoked with this stream as `this`.
+			 * The default implementation closes the stream.
+			 */
+			onEnd?: ReadLinesOnEnd<T>
+		}
+
+		/**
+		 * @param callback A callback function.
+		 */
+		export type ReadLines = <T>(
+			callback: ReadLinesCallback<T>,
+			mode?: ReadLinesMode<T>
+		) => T
 	}
 
+	/**
+	 * A stream from which characters may be read.
+	 */
+	export interface Reader {
+		/**
+		 * Closes the underlying stream.
+		 */
+		close: () => void
+
+		/**
+		 * Returns the entire content of this stream as a single string.
+		 */
+		asString: () => string
+
+		//	TODO	very old API with superseded techniques; should create an updated version and deprecate this one
+		/**
+		 * Iterates through the lines in this stream, sending each in succession to a callback function.
+		 */
+		readLines: old.ReadLines
+
+		/**
+		 * Operations bridging to Java constructs.
+		 */
+		java: {
+			/**
+			 * Returns a Java `java.io.Reader` equivalent to this stream.
+			 */
+			adapt: () => slime.jrunscript.native.java.io.Reader
+		}
+	}
+
+	export interface Reader {
+		/**
+		 * @deprecated No replacement; E4X is deprecated.
+		 *
+		 * Returns the entire content of this stream as a single {@link slime.external.e4x.XMLList}.
+		 *
+		 * This operation is only available if E4X is available.
+		 */
+		 asXml?: () => slime.external.e4x.XMLList
+	}
+
+	(
+		function(
+			$platform: slime.runtime.$platform,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			if ($platform.e4x) {
+				fifty.tests.E4X = function() {
+					var buffer = new test.subject.Buffer();
+					buffer.writeBinary().character().write("<a><b/></a>");
+					buffer.writeBinary().close();
+					var xml = { list: buffer.readText().asXml() };
+					verify(xml).evaluate(function(p) { return p.list.length(); }).is(1);
+				}
+			}
+		}
+	//@ts-ignore
+	)($platform,fifty);
+
+	/**
+	 * A stream to which characters can be written.
+	 */
 	export interface Writer {
+		/**
+		 * Writes a string to the stream.
+		 */
 		write: {
+			/**
+			 * @param string A string to write to the stream.
+			 */
 			(string: string): void
 			/** @deprecated */
 			(e4x: slime.external.e4x.Object): void
 		}
+
+		/**
+		 * Closes the underlying stream.
+		 */
 		close: () => void
+
+		/**
+		 * Operations that bridge to Java constructs.
+		 */
 		java: {
+			/**
+			 * Returns a Java `java.io.Writer` equivalent to this character output stream.
+			 */
 			adapt: () => slime.jrunscript.native.java.io.Writer
 		}
 	}
@@ -126,6 +258,14 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 
+		system: {
+			delimiter: {
+				line: string
+			}
+		}
+	}
+
+	export interface Exports {
 		/**
 		 * Provides operations for processing streams of input or output.
 		 */
@@ -142,10 +282,24 @@ namespace slime.jrunscript.runtime.io {
 				 */
 				copy: (from: slime.jrunscript.runtime.io.InputStream, to: slime.jrunscript.runtime.io.OutputStream, mode?: BinaryCopyMode) => void
 			}
+
+			/**
+			 * Provides operations for processing character streams.
+			 */
 			text: {
+				/**
+				 * Copies a character input stream to a character output stream.
+				 *
+				 * @param from A stream from which to copy characters.
+				 * @param to A stream to which to copy characters.
+				 */
 				copy: (from: slime.jrunscript.runtime.io.Reader, to: slime.jrunscript.runtime.io.Writer) => void
 			}
+
 			java: {
+				/**
+				 * Converts a Java object to a corresponding type from this package.
+				 */
 				adapt: {
 					(_stream: slime.jrunscript.native.java.io.InputStream): InputStream
 					(_stream: slime.jrunscript.native.java.io.OutputStream): OutputStream
@@ -154,17 +308,31 @@ namespace slime.jrunscript.runtime.io {
 				}
 			}
 		}
+	}
 
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const module = test.subject;
+
+			fifty.tests.Streams = function() {
+				var _out: slime.jrunscript.native.java.io.OutputStream = new Packages.java.io.ByteArrayOutputStream();
+				var out = module.Streams.java.adapt(_out);
+				verify(out).is.type("object");
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+
+	export interface Exports {
 		/**
 		 * Creates a buffer to which bytes can be written, and later read.
 		 */
-		Buffer: new () => Buffer
-
-		system: {
-			delimiter: {
-				line: string
-			}
-		}
+		 Buffer: new () => Buffer
 	}
 
 	(
@@ -216,7 +384,11 @@ namespace slime.jrunscript.runtime.io {
 
 			fifty.tests.suite = function() {
 				verify(test.subject,"subject").is.type("object");
+
+				run(fifty.tests.Streams);
 				run(fifty.tests.Buffer);
+
+				if (fifty.tests.E4X) run(fifty.tests.E4X);
 			}
 		}
 	//@ts-ignore

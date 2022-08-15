@@ -29,6 +29,28 @@
 				return Reader(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
 			};
 
+			//	TODO	this operation existed at one time and perhaps should be resurrected in some form, perhaps via a function
+			//			that caches an InputStream: that is of type (input: InputStream) => () => InputStream
+			// <ul>
+			// 	<li class="constructor">
+			// 		<div class="name">Resource</div>
+			// 		<span>Creates a resource that contains the contents of this stream.</span>
+			// 		<div class="arguments">
+			// 			<div class="label">Arguments</div>
+			// 			<ol>
+			// 				<li class="value">
+			// 					<span class="type"><a href="local/doc/typedoc/interfaces/slime.mimetype.html">type</a></span>
+			// 					<span>The MIME type of the data in this stream.</span>
+			// 				</li>
+			// 			</ol>
+			// 		</div>
+			// 		<div class="instances">
+			// 			<div class="label">Instances</div>
+			// 			<span class="type"><a href="#types.Resource">Resource</a></span>
+			// 		</div>
+			// 	</li>
+			// </ul>
+
 			return {
 				close: function() {
 					peer.close();
@@ -88,7 +110,7 @@
 					//	TODO	should we retrieve properties from the jrunscript/host module, or is this sufficient?
 					if (!mode.ending && properties && properties.LINE_SEPARATOR) mode.ending = properties.LINE_SEPARATOR;
 					if (!mode.ending) mode.ending = LINE_SEPARATOR;
-					if (!mode.onEnd) mode.onEnd = function() { peer.close(); }
+					if (!mode.onEnd) mode.onEnd = function() { peer.close(); return void(0); }
 
 					/** @type { string } */
 					var read;
@@ -115,6 +137,7 @@
 					} else {
 						mode.onEnd.call(this,result);
 					}
+					//@ts-ignore
 					return result;
 				},
 				{
