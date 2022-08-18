@@ -20,7 +20,9 @@ namespace slime.project.jsapi {
 				}
 				var subject = script({
 					library: {
-						document: code.document()
+						document: code.document(
+							fifty.global.jsh ? { $slime: fifty.global.jsh.unit.$slime } : {}
+						)
 					}
 				});
 				return subject;
@@ -150,6 +152,10 @@ namespace slime.project.jsapi {
 		export interface VisibleForTesting {
 			parseBlocks: (string: string) => string[][]
 		}
+
+		export interface VisibleForTesting {
+			formatBlockUsing: (format: Format) => (block: Block) => string[]
+		}
 	}
 
 	export interface Exports {
@@ -239,6 +245,8 @@ namespace slime.project.jsapi {
 				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
 				var input = tests[0].input;
 				var blocks = subject.test.parseBlocks(input);
+				// var formatter = subject.test.formatBlockUsing(tests[0].configuration);
+				// var formatted = blocks.map(formatter);
 				debugger;
 			}
 
