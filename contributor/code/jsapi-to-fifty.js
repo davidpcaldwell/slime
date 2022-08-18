@@ -326,9 +326,16 @@
 							if (inline.present) {
 								rv[rv.length-1].push(inline.value);
 							} else if ($context.library.document.Node.isElement(node) && node.name == "li") {
+								/** @type { slime.runtime.document.Text } */
+								var bullet = {
+									type: "text",
+									data: "* "
+								};
+								/** @type { slime.runtime.document.Node[] } */
+								var prefix = [ bullet ];
 								var rendered = $context.library.document.Fragment.codec.string.encode({
 									type: "fragment",
-									children: node.children
+									children: prefix.concat(node.children)
 								});
 								rv.push([rendered]);
 							} else {
@@ -365,6 +372,7 @@
 				parseBlocks: function(string) {
 					return doIt(string);
 				},
+				formatBlockUsing: formatBlockUsing,
 				library: {
 					document: $context.library.document
 				}
