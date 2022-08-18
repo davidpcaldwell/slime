@@ -487,7 +487,8 @@
 				},
 				jsh: (scopes.jsh) ? scopes.jsh({
 					loader: contexts.jsh.loader,
-					directory: contexts.jsh.directory
+					directory: contexts.jsh.directory,
+					filename: path
 				}) : void(0)
 			};
 

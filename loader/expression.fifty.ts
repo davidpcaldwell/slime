@@ -722,23 +722,7 @@ namespace slime {
 					fifty.load("Loader.fifty.ts");
 				}
 
-				if (jsh) fifty.tests.platforms = function() {
-					fifty.run(function jsh() {
-						fifty.tests.suite();
-					});
-					var runBrowser = jsh.shell.world.question(
-						jsh.shell.Invocation.create({
-							command: fifty.jsh.file.relative("../fifty").pathname,
-							arguments: [
-								"test.browser",
-								fifty.jsh.file.relative("expression.fifty.ts").pathname
-							]
-						})
-					);
-					var getBrowserResult = $api.Function.world.ask(runBrowser);
-					var result = getBrowserResult();
-					verify(result, "browserResult").status.is(0);
-				}
+				if (jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);
 			}
 		//@ts-ignore
 		)( (function() { return this; })().Packages, fifty)

@@ -12,10 +12,15 @@ namespace slime.time {
 	}
 
 	export namespace old {
+		/**
+		 * Represents a calendar year.
+		 */
+		export interface Year {
+			value: number
+		}
+
 		export interface Day {
-			year: {
-				value: number
-			}
+			year: Year
 			at: Function
 			format(mask: string): string
 			month: Month
@@ -156,9 +161,6 @@ namespace slime.time {
 
 	}
 
-	export interface Exports {
-	}
-
 	export namespace exports {
 		export interface Day {
 			new (year: number, month: number, day: number): old.Day
@@ -180,7 +182,27 @@ namespace slime.time {
 	}
 
 	export interface Exports {
-		Year: Function
+		Year: {
+			new (year: number): old.Year
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.Year = function() {
+				var nineteen = new test.subject.Year(2019);
+				verify(nineteen).value.is(2019);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	export interface Exports {
 		Month: Function
 		Day: exports.Day
 		Time: {
@@ -247,10 +269,14 @@ namespace slime.time {
 				var formatted = rounding.local().format("yyyy-mm-dd HR:mi:sc");
 				verify(formatted).is("2021-01-01 11:59:59");
 
+				fifty.run(fifty.tests.Year);
+
 				fifty.run(fifty.tests.Day);
 
 				fifty.run(fifty.tests.Day.old.constructor);
 			}
+
+			if (fifty.global.jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);
 		}
 	//@ts-ignore
 	)(fifty,$loader,verify,tests)
