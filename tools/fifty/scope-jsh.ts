@@ -8,6 +8,7 @@ namespace slime.fifty.test.internal.scope.jsh {
 	export interface Scope {
 		loader: slime.Loader
 		directory: slime.jrunscript.file.Directory
+		filename: string
 	}
 
 	export type Export = (scope: slime.fifty.test.internal.scope.jsh.Scope) => slime.fifty.test.Kit["jsh"]
@@ -67,7 +68,27 @@ namespace slime.fifty.test.internal.scope.jsh {
 							)
 						}
 					},
-					$slime: jsh.unit.$slime
+					$slime: jsh.unit.$slime,
+					platforms: function(fifty) {
+						return function() {
+							fifty.run(function jsh() {
+								fifty.tests.suite();
+							});
+							var runBrowser = jsh.shell.world.question(
+								jsh.shell.Invocation.create({
+									//	TODO	world-oriented
+									command: fifty.global.jsh.shell.jsh.src.getRelativePath("fifty").toString(),
+									arguments: [
+										"test.browser",
+										fifty.jsh.file.relative(scope.filename).pathname
+									]
+								})
+							);
+							var getBrowserResult = $api.Function.world.ask(runBrowser);
+							var result = getBrowserResult();
+							fifty.verify(result, "browserResult").status.is(0);
+						}
+					}
 				}
 			}
 		);

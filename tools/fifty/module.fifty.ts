@@ -45,6 +45,40 @@ namespace slime.fifty {
 	 * `fifty.verify()` function, which creates subjects that have various methods that can be invoked to represent assertions.
 	 *
 	 * For details, see the documentation on {@link slime.fifty.test.Kit | the `fifty` object}.
+	 *
+	 * ## Working with Fifty tests
+	 *
+	 * Fifty tests can be run using `jsh`.
+	 *
+	 * ### Running Fifty tests under `jsh`
+	 *
+	 * To run a Fifty test definition on the `jsh` platform:
+	 * `./fifty test.jsh [--debug:rhino] file.fifty.ts [--part part]`
+	 *
+	 * ### Running Fifty tests in a browser
+	 *
+	 * To run a Fifty test definition under a browser:
+	 * `/fifty test.browser [--interactive] [--chrome:data pathname] [--chrome:debug:vscode] file.fifty.ts [--part part]`
+	 *
+	 * This invokes the underlying `tools/fifty/test-browser.jsh.js` script. The
+	 * [script's code](../src/tools/fifty/test-browser.jsh.js?as=text) defines the semantics of the
+	 * command-line arguments.
+	 *
+	 * ### Running Fifty tests in both `jsh` and a browser
+	 *
+	 * To run a test suite that runs the same definition in both `jsh` and a browser:
+	 *
+	 * First, make sure the test suite defines a test using `fifty.jsh.platforms` (usually named `fifty.tests.platforms` by
+	 * convention), like this one:
+	 *
+	 * `fifty.tests.platforms = fifty.jsh.platforms(fifty);`
+	 *
+	 * Then, the suite can be run via:
+	 *
+	 * `./fifty test.jsh file.fifty.ts --part platforms`.
+	 *
+	 * This will run the platforms test under `jsh`, which first runs the suite under `jsh`, then launches a browser to run it
+	 * again. See {@link slime.fifty.test.Kit}, specifically the `jsh.platforms` method.
 	 */
 	export namespace test {
 		export type verify = slime.definition.verify.Verify
@@ -159,7 +193,12 @@ namespace slime.fifty {
 						plugins?: { [x: string]: any }
 						$slime?: slime.jsh.plugin.$slime
 					}) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
-				}
+				},
+				/**
+				 * Creates a test that will run the test suite (the `suite` part) under `jsh`, and then again under the browser,
+				 * and pass only if both parts pass.
+				 */
+				platforms: (fifty: Kit) => void
 			}
 		}
 
