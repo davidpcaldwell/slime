@@ -134,6 +134,9 @@ namespace slime.time {
 
 		export namespace day {
 			export interface Time {
+				hours: number
+				minutes: number
+				seconds: number
 			}
 		}
 
@@ -223,12 +226,19 @@ namespace slime.time {
 			new (year: number, month: number, day: number): old.Day
 			new (p: Day): old.Day
 			new (p: any): old.Day
-			Time: new (hours: number, minutes: number) => old.day.Time
+
 			subtract: Function
+
+			Time: new (hours: number, minutes: number, seconds?: number) => old.day.Time
+
 			order: Function
 			today: () => old.Day
 			codec: {
 				iso8601: {
+					/**
+					 * Encodes Day objects into strings, and decodes them from strings, using the ISO8601 extended format
+					 * (YYYY-MM-DD).
+					 */
 					extended: slime.Codec<old.Day,string>
 				}
 				json: any
@@ -459,6 +469,45 @@ namespace slime.time {
 							test(converted.getFullYear() == 2009);
 							test(converted.getMonth() == 1);
 							test(converted.getDate() == 28);
+						},
+						formatting: function() {
+							var mar1 = leap09.add(1);
+
+							var noon = new Day.Time(12,0);
+							var mar1_noon = mar1.at(noon);
+							var mar1_1pm = mar1.at(new Day.Time(13,0));
+							var mar1_9am = mar1.at(new Day.Time(9,0));
+							var mar1_901314am = mar1.at(new Day.Time(9,1,3.14));
+							test(mar1_noon.format("yyyy mm dd hr:mi") == "2009 03 01 12:00");
+							test(mar1_noon.format("yyyy mm dd hr:mipm") == "2009 03 01 12:00pm");
+							test(mar1_1pm.format("yyyy mm dd hr:mipm") == "2009 03 01 01:00pm");
+							test(mar1_1pm.format("yyyy mm dd hr:mipm") == "2009 03 01 01:00pm");
+							test(mar1_9am.format("yyyy mm dd h:mipm") == "2009 03 01 9:00am");
+							test(mar1_901314am.format("yyyy mm dd h:mi:sc.## pm") == "2009 03 01 9:01:03.14 am");
+
+							var jul2 = new Day(2009,7,2);
+							test(jul2.at(new Day.Time(13,0)).format("Www Mmmm ?d, yyyy") == "Thu July 2, 2009");
+						},
+						codec_js: function() {
+							var leap09js = Day.codec.js.encode(leap09);
+							test(leap09js.year == 2009);
+							test(leap09js.month == 2);
+							test(leap09js.day == 28);
+							var leap09decode = Day.codec.js.decode(leap09js);
+							test(leap09.is(leap09decode));
+
+							var when = leap09.at(new Day.Time(12,30)).local();
+							var copied = module.When.codec.js.decode(module.When.codec.js.encode(when));
+							test(when.unix == copied.unix);
+						},
+						codec_iso8601: function() {
+							var first = new Day(2019,1,1);
+							var codec = Day.codec.iso8601.extended;
+
+							verify(codec.encode(first)).is("2019-01-01");
+							verify(codec.decode(codec.encode(first))).evaluate(function(day) {
+								return day.is(first);
+							}).is(true);
 						}
 					}
 				}
