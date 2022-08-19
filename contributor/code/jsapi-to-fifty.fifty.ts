@@ -12,20 +12,24 @@ namespace slime.project.jsapi {
 	}
 
 	export namespace test {
-		export const subject = (
+		export const { subject, wip } = (
 			function(fifty: slime.fifty.test.Kit) {
 				var script: Script = fifty.$loader.script("jsapi-to-fifty.js");
 				var code: { document: slime.runtime.document.Script } = {
 					document: fifty.$loader.script("../../loader/document/module.js")
 				}
+				var library = {
+					document: code.document(
+						fifty.global.jsh ? { $slime: fifty.global.jsh.unit.$slime } : {}
+					)
+				};
 				var subject = script({
-					library: {
-						document: code.document(
-							fifty.global.jsh ? { $slime: fifty.global.jsh.unit.$slime } : {}
-						)
-					}
+					library: library
 				});
-				return subject;
+				var wip = script({
+					library: library
+				})
+				return { subject, wip };
 			}
 		//@ts-ignore
 		)(fifty);
@@ -150,11 +154,12 @@ namespace slime.project.jsapi {
 		}
 
 		export interface VisibleForTesting {
-			parseBlocks: (string: string) => string[][]
+			parseBlocks: (string: string) => Block[]
 		}
 
 		export interface VisibleForTesting {
 			formatBlockUsing: (format: Format) => (block: Block) => string[]
+			wip: Exports["comment"]
 		}
 	}
 
@@ -241,21 +246,7 @@ namespace slime.project.jsapi {
 				});
 			}
 
-			fifty.tests.wip = function() {
-				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
-				var input = tests[0].input;
-				var blocks = subject.test.parseBlocks(input);
-				// var formatter = subject.test.formatBlockUsing(tests[0].configuration);
-				// var formatted = blocks.map(formatter);
-				debugger;
-			}
-
-			fifty.tests.suite = function() {
-				//	unit tests
-				fifty.run(fifty.tests.prefix);
-				fifty.run(fifty.tests.split);
-
-				//	functional tests
+			var functionalTests = function(subject: Exports) {
 				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
 				tests.forEach(function(test) {
 					var result = subject.comment(test.configuration)(test.input);
@@ -264,6 +255,29 @@ namespace slime.project.jsapi {
 					}
 					verify(result,"result").is(test.expected);
 				});
+			}
+
+			fifty.tests.wip = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
+				var text = test.wip.comment(tests[0].configuration)(tests[0].input);
+				debugger;
+				verify(text).is(tests[0].expected);
+			}
+
+			fifty.tests.wip.suite = function() {
+				fifty.run(function regression() {
+					functionalTests(test.wip);
+				});
+				fifty.run(fifty.tests.wip);
+			}
+
+			fifty.tests.suite = function() {
+				//	unit tests
+				fifty.run(fifty.tests.prefix);
+				fifty.run(fifty.tests.split);
+
+				//	functional tests
+				functionalTests(subject);
 			}
 		}
 	//@ts-ignore

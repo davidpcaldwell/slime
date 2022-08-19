@@ -232,22 +232,12 @@
 				[]
 			);
 
-			debugger;
-
 			return {
 				prefix: (inputLines[0].prefix.present) ? inputLines[0].prefix.value : null,
 				hasStart: hasStart,
 				hasEnd: hasEnd,
 				tokens: content
 			}
-		}
-
-		/**
-		 *
-		 * @param { slime.project.jsapi.internal.InputLine } line
-		 */
-		function isEmpty(line) {
-			return !line.section && !line.prefix && !line.content;
 		}
 
 		/**
@@ -270,11 +260,10 @@
 						if (block.hasStart) {
 							result.push(block.prefix + "/**");
 						}
-						result.push(block.prefix + " * ");
+						result.push(block.prefix + " *");
 					}
 					if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
-						var hasWord = currentLine().length > (block.prefix + " * ").length;
-						result[result.length-1] += (hasWord ? " " : "") + currentWord();
+						result[result.length-1] += (currentWord()) ? " " + currentWord() : "";
 					} else {
 						result.push(block.prefix + " * " + currentWord());
 					}
@@ -294,7 +283,7 @@
 			if ($context.library.document.Node.isText(child)) {
 				return $api.Function.Maybe.value(child.data);
 			} else if ($context.library.document.Node.isComment(child)) {
-				return $api.Function.Maybe.value("<!---- " + child.data + " --->");
+				return $api.Function.Maybe.value("<!---" + child.data + "--->");
 			} else {
 				return $api.Function.Maybe.nothing();
 			}
@@ -304,7 +293,7 @@
 		 *
 		 * @param { string } input
 		 */
-		function doIt(input) {
+		function getBlocks(input) {
 			var inputLines = parseInputLines(input);
 			var block = parseBlock(inputLines);
 			var content = block.tokens.join(" ");
@@ -313,18 +302,26 @@
 			var rv = [
 				[]
 			];
+
+			var addToTokenList = function(now,add) {
+				if (add == " ") return now;
+				var split = add.split(" ");
+				if (now[now.length-1] == "") now.splice(now.length-1,1);
+				return now.concat(split);
+			}
+
 			for (var i=0; i<decoded.children.length; i++) {
 				var child = decoded.children[i];
 				var inline = renderInlineNode(child);
 				if (inline.present) {
-					rv[rv.length-1].push(inline.value);
+					rv[rv.length-1] = addToTokenList(rv[rv.length-1], inline.value);
 				} else if ($context.library.document.Node.isElement(child)) {
 					if (child.name == "ul") {
-						rv.push([]);
+						rv.push([""]);
 						child.children.forEach(function(node) {
 							var inline = renderInlineNode(node);
 							if (inline.present) {
-								rv[rv.length-1].push(inline.value);
+								rv[rv.length-1] = addToTokenList(rv[rv.length-1], inline.value);
 							} else if ($context.library.document.Node.isElement(node) && node.name == "li") {
 								/** @type { slime.runtime.document.Text } */
 								var bullet = {
@@ -358,7 +355,38 @@
 					}
 				}
 			}
-			return rv;
+			return rv.map(
+				/** @returns { slime.project.jsapi.internal.Block } */
+				function(tokens,index,array) {
+					return {
+						prefix: block.prefix,
+						hasStart: block.hasStart && index == 0,
+						hasEnd: block.hasEnd && index == array.length-1,
+						tokens: tokens
+					}
+				}
+			);
+		}
+
+		/** @type { slime.project.jsapi.Exports["comment"] } */
+		function comment(format) {
+			return function(input) {
+				var blocks = getBlocks(input);
+				blocks = blocks.map(function(block) {
+					if (block.tokens[block.tokens.length-1] == " ") {
+						block.tokens.splice(block.tokens.length-1, 1);
+					}
+					return block;
+				})
+				var formatter = formatBlockUsing(format);
+				var formatted = blocks.map(formatter);
+				var formattedStrings = formatted.map(function(lines) { return lines.join("\n"); });
+				var text = formattedStrings.join("\n");
+
+				// var lines = $api.Function.Arrays.join(formatted);
+				// var text = lines.join("\n");
+				return text;
+			};
 		}
 
 		$export({
@@ -370,38 +398,15 @@
 					return $context.library.document.Fragment.codec.string.decode(string);
 				},
 				parseBlocks: function(string) {
-					return doIt(string);
+					return getBlocks(string);
 				},
 				formatBlockUsing: formatBlockUsing,
 				library: {
 					document: $context.library.document
-				}
+				},
+				wip: comment
 			},
-			comment: function(format) {
-				return $api.Function.pipe(
-					parseInputLines,
-					$$api.Function.split([
-						$api.Function.pipe(
-							parseBlock,
-							formatBlockUsing(format)
-						),
-						$api.Function.pipe(
-							$$api.Function.Array.last,
-							$api.Function.Maybe.map(isEmpty),
-							//	TODO	does the below make sense? Or should we simply assert?
-							$api.Function.Maybe.else(function() { return false; })
-						)
-					]),
-					function(result) {
-						var blockLines = result[0];
-						var isEmpty = result[1];
-
-						var rv = blockLines.slice();
-						if (isEmpty) rv.push("");
-						return rv.join("\n");
-					}
-				)
-			}
+			comment: comment
 		})
 	}
 //@ts-ignore
