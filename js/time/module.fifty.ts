@@ -80,6 +80,16 @@ namespace slime.time {
 
 	export namespace old {
 		/**
+		 * @experimental Has other undocumented properties
+		 */
+		export interface Weekday {
+			/**
+			 * The full name of the weekday; e.g., `"MONDAY"`, `"WEDNESDAY"`.
+			 */
+			name: string
+		}
+
+		/**
 		 * Represents a calendar year.
 		 */
 		export interface Year {
@@ -88,40 +98,52 @@ namespace slime.time {
 
 		export interface Day {
 			year: Year
-			at: Function
-			format(mask: string): string
 			month: Month
 			day: number
+
+			weekday: Weekday
+
+			at: (time: any) => Time
+			format(mask: string): string
 			add(n: number): Day
 			addMonths(n: number): Day
 			addYears(n: number): Day
+			isBefore(day: Day): boolean
 			isAfter(day: Day): boolean
 
-			/** @experimental Has other undocumented properties */
-			weekday: {
-				/**
-				 * The full name of the weekday; e.g., `"MONDAY"`, `"WEDNESDAY"`.
-				 */
-				name: string
-			}
+			/**
+			 *
+			 * @param day
+			 * @returns `true` if the given `Day` is the same day as this `Day`; `false` otherwise.
+			 */
+			is(day: Day): boolean
+
 			adapt: () => slime.time.Day
 		}
 
 		export interface Month {
+			year: Year
 			id: {
 				index: number
 			}
+			/**
+			 * @param n A day of the month.
+			 */
 			day: (n: number) => Day
 		}
 
 		export namespace day {
 			export interface Time {
+				hours: number
+				minutes: number
+				seconds: number
 			}
 		}
 
 		export interface Time {
 			day: Day
 			format(mask: string): string
+			local(zone?: Zone)
 		}
 
 		export interface When {
@@ -139,9 +161,7 @@ namespace slime.time {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.Day = function() {
-				fifty.run(fifty.tests.Day.format);
-			};
+			fifty.tests.Day = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
@@ -190,6 +210,48 @@ namespace slime.time {
 						test(mar1.format("Wwwww Mmmm dd, yyyy") == "Sun March 01, 2009");
 					});
 				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
+	export namespace exports {
+		export interface Day {
+			/**
+			 * @param year Year
+			 * @param month Month (1 = January)
+			 * @param day Day of Month
+			 */
+			new (year: number, month: number, day: number): old.Day
+			new (p: Day): old.Day
+			new (p: any): old.Day
+
+			subtract: Function
+
+			Time: new (hours: number, minutes: number, seconds?: number) => old.day.Time
+
+			order: Function
+			today: () => old.Day
+			codec: {
+				iso8601: {
+					/**
+					 * Encodes Day objects into strings, and decodes them from strings, using the ISO8601 extended format
+					 * (YYYY-MM-DD).
+					 */
+					extended: slime.Codec<old.Day,string>
+				}
+				json: any
+				js: any
+			}
+			rehydrate: (p: any) => old.Day
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
 
 				fifty.tests.Day.old = {};
 				fifty.tests.Day.old.constructor = function() {
@@ -212,27 +274,11 @@ namespace slime.time {
 	}
 
 	export namespace exports {
-		export interface Day {
-			new (year: number, month: number, day: number): old.Day
-			new (p: Day): old.Day
-			new (p: any): old.Day
-			Time: new (hours: number, minutes: number) => old.day.Time
-			subtract: Function
-			order: Function
-			today: () => old.Day
-			codec: {
-				iso8601: {
-					extended: slime.Codec<old.Day,string>
-				}
-				json: any
-				js: any
-			}
-			rehydrate: (p: any) => old.Day
-		}
-	}
-
-	export namespace exports {
 		export interface Month {
+			/**
+			 * @param year A year.
+			 * @param month A month, where 1 = January
+			 */
 			new (year: number, month: number): old.Month
 		}
 
@@ -244,10 +290,23 @@ namespace slime.time {
 				const api = test.subject;
 
 				fifty.tests.Month = function() {
-					var novemberSecondNineteen = new api.Month(2019,11).day(2);
-					verify(novemberSecondNineteen).year.value.is(2019);
-					verify(novemberSecondNineteen).month.id.is(api.Year.Month.NOVEMBER);
-					verify(novemberSecondNineteen).day.is(2);
+					fifty.run(function() {
+						var novemberSecondNineteen = new api.Month(2019,11).day(2);
+						verify(novemberSecondNineteen).year.value.is(2019);
+						verify(novemberSecondNineteen).month.id.is(api.Year.Month.NOVEMBER);
+						verify(novemberSecondNineteen).day.is(2);
+					});
+
+					fifty.run(function() {
+						var novemberNineteen = new api.Month(2019,11);
+						verify(novemberNineteen).year.value.is(2019);
+						verify(novemberNineteen).id.is(api.Year.Month.NOVEMBER);
+
+						var second = novemberNineteen.day(2);
+						verify(second).year.value.is(2019);
+						verify(second).month.id.is(api.Year.Month.NOVEMBER);
+						verify(second).day.is(2);
+					});
 				}
 			}
 		//@ts-ignore
@@ -277,6 +336,185 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.jsapi = fifty.test.Parent();
+
+			const module = test.old;
+			const api = test.subject;
+
+			fifty.tests.jsapi.Day = (
+				function() {
+					var Day = module.Day;
+
+					var leapday = new Day(2008,2,29);
+
+					var leap09 = leapday.addYears(1);
+
+					var oldmas = new module.Day(1958,7,30);
+					var katemas = new api.Day(1958,7,30);
+
+					const test = function(b: boolean) {
+						verify(b).is(true);
+					}
+
+					return {
+						year: function() {
+							verify(katemas).year.value.is(1958);
+						},
+						month: function() {
+							verify(katemas).month.year.value.is(1958);
+							verify(katemas).month.id.is(api.Year.Month.JULY);
+							verify(oldmas).month.is(module.Year.Month.JULY);
+						},
+						add: function() {
+							var day = new api.Day(2019,11,1);
+							var before = day.add(-1);
+							var after = day.add(1);
+
+							verify(before).year.value.is(2019);
+							verify(before).month.id.is(api.Year.Month.OCTOBER);
+							verify(before).day.is(31);
+
+							verify(after).year.value.is(2019);
+							verify(after).month.id.is(api.Year.Month.NOVEMBER);
+							verify(after).day.is(2);
+						},
+						addMonths: function() {
+							var date = new api.Day(2019,1,15);
+							var after = date.addMonths(2);
+							verify(after).year.value.is(2019);
+							verify(after).month.id.is(api.Year.Month.MARCH);
+							verify(after).day.is(15);
+						},
+						isBefore: function() {
+							var day = new api.Day(2019,11,2);
+							var before = day.add(-1);
+							var after = day.add(1);
+
+							verify(day).isBefore(before).is(false);
+							verify(day).isBefore(after).is(true);
+							verify(day).isBefore(day).is(false);
+						},
+						_1: function() {
+							module.install();
+							var Day = module.Day;
+							var Year = module.Year;
+
+							var day = new Day(2009,1,1);
+							var jan2 = day.add(1);
+							test(jan2.year.value == 2009);
+							test(jan2.month == Year.Month.JANUARY);
+							test(jan2.day == 2);
+							var jan8 = day.add(7);
+							test(jan8.year.value == 2009);
+							test(jan8.month == Year.Month.JANUARY);
+							test(jan8.day == 8);
+							var feb1 = day.add(31);
+							test(feb1.year.value == 2009);
+							test(feb1.month == Year.Month.FEBRUARY);
+							test(feb1.day == 1);
+							var dec31 = day.add(-1);
+							test(dec31.year.value == 2008);
+							test(dec31.month == Year.Month.DECEMBER);
+							test(dec31.day == 31);
+
+							var jan31 = day.add(30);
+							var feb31 = jan31.addMonths(1);
+							test(feb31.year.value == 2009);
+							test(feb31.month == Year.Month.FEBRUARY);
+							test(feb31.day == 28);
+
+							var feb3110 = jan31.addMonths(13);
+							test(feb3110.year.value == 2010);
+							test(feb3110.month == Year.Month.FEBRUARY);
+							test(feb3110.day == 28);
+
+							//	TODO	Promote into jsunit framework?
+							var ExpectError = function(f) {
+								var success;
+								var messages = {};
+								try {
+									f();
+									success = false;
+									messages = { failure: "No error" };
+								} catch (e) {
+									success = true;
+									messages = { success: "Correct: got error: " + e };
+								}
+								this.success = success;
+								this.messages = messages;
+							}
+
+							var invalid: { success: boolean, messages: { failure?: string, success?: string } } =
+								new ExpectError(function() { return new Day(2009,2,29) });
+							verify(invalid).success.is(true);
+							verify(invalid).messages.success.is.type("string");
+							verify(invalid).messages.success.is(invalid.messages.success);
+
+
+							var leapday = new Day(2008,2,29);
+
+							var leap09 = leapday.addYears(1);
+							test(leap09.year.value == 2009);
+							test(leap09.month == Year.Month.FEBRUARY);
+							test(leap09.day == 28);
+
+							//@ts-ignore
+							var converted = new Date(leap09);
+							test(converted.getFullYear() == 2009);
+							test(converted.getMonth() == 1);
+							test(converted.getDate() == 28);
+						},
+						formatting: function() {
+							var mar1 = leap09.add(1);
+
+							var noon = new Day.Time(12,0);
+							var mar1_noon = mar1.at(noon);
+							var mar1_1pm = mar1.at(new Day.Time(13,0));
+							var mar1_9am = mar1.at(new Day.Time(9,0));
+							var mar1_901314am = mar1.at(new Day.Time(9,1,3.14));
+							test(mar1_noon.format("yyyy mm dd hr:mi") == "2009 03 01 12:00");
+							test(mar1_noon.format("yyyy mm dd hr:mipm") == "2009 03 01 12:00pm");
+							test(mar1_1pm.format("yyyy mm dd hr:mipm") == "2009 03 01 01:00pm");
+							test(mar1_1pm.format("yyyy mm dd hr:mipm") == "2009 03 01 01:00pm");
+							test(mar1_9am.format("yyyy mm dd h:mipm") == "2009 03 01 9:00am");
+							test(mar1_901314am.format("yyyy mm dd h:mi:sc.## pm") == "2009 03 01 9:01:03.14 am");
+
+							var jul2 = new Day(2009,7,2);
+							test(jul2.at(new Day.Time(13,0)).format("Www Mmmm ?d, yyyy") == "Thu July 2, 2009");
+						},
+						codec_js: function() {
+							var leap09js = Day.codec.js.encode(leap09);
+							test(leap09js.year == 2009);
+							test(leap09js.month == 2);
+							test(leap09js.day == 28);
+							var leap09decode = Day.codec.js.decode(leap09js);
+							test(leap09.is(leap09decode));
+
+							var when = leap09.at(new Day.Time(12,30)).local();
+							var copied = module.When.codec.js.decode(module.When.codec.js.encode(when));
+							test(when.unix == copied.unix);
+						},
+						codec_iso8601: function() {
+							var first = new Day(2019,1,1);
+							var codec = Day.codec.iso8601.extended;
+
+							verify(codec.encode(first)).is("2019-01-01");
+							verify(codec.decode(codec.encode(first))).evaluate(function(day) {
+								return day.is(first);
+							}).is(true);
+						}
+					}
+				}
+			)();
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
 		Month: exports.Month
@@ -353,7 +591,7 @@ namespace slime.time {
 
 				fifty.run(fifty.tests.Day);
 
-				fifty.run(fifty.tests.Day.old.constructor);
+				fifty.run(fifty.tests.jsapi);
 			}
 
 			if (fifty.global.jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);
