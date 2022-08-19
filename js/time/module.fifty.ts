@@ -80,6 +80,16 @@ namespace slime.time {
 
 	export namespace old {
 		/**
+		 * @experimental Has other undocumented properties
+		 */
+		export interface Weekday {
+			/**
+			 * The full name of the weekday; e.g., `"MONDAY"`, `"WEDNESDAY"`.
+			 */
+			name: string
+		}
+
+		/**
 		 * Represents a calendar year.
 		 */
 		export interface Year {
@@ -88,29 +98,37 @@ namespace slime.time {
 
 		export interface Day {
 			year: Year
-			at: Function
-			format(mask: string): string
 			month: Month
 			day: number
+
+			weekday: Weekday
+
+			at: (time: any) => Time
+			format(mask: string): string
 			add(n: number): Day
 			addMonths(n: number): Day
 			addYears(n: number): Day
+			isBefore(day: Day): boolean
 			isAfter(day: Day): boolean
 
-			/** @experimental Has other undocumented properties */
-			weekday: {
-				/**
-				 * The full name of the weekday; e.g., `"MONDAY"`, `"WEDNESDAY"`.
-				 */
-				name: string
-			}
+			/**
+			 *
+			 * @param day
+			 * @returns `true` if the given `Day` is the same day as this `Day`; `false` otherwise.
+			 */
+			is(day: Day): boolean
+
 			adapt: () => slime.time.Day
 		}
 
 		export interface Month {
+			year: Year
 			id: {
 				index: number
 			}
+			/**
+			 * @param n A day of the month.
+			 */
 			day: (n: number) => Day
 		}
 
@@ -122,6 +140,7 @@ namespace slime.time {
 		export interface Time {
 			day: Day
 			format(mask: string): string
+			local(zone?: Zone)
 		}
 
 		export interface When {
@@ -139,9 +158,7 @@ namespace slime.time {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.Day = function() {
-				fifty.run(fifty.tests.Day.format);
-			};
+			fifty.tests.Day = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
@@ -190,21 +207,6 @@ namespace slime.time {
 						test(mar1.format("Wwwww Mmmm dd, yyyy") == "Sun March 01, 2009");
 					});
 				}
-
-				fifty.tests.Day.old = {};
-				fifty.tests.Day.old.constructor = function() {
-					var nov1: slime.time.Day = {
-						year: 2021,
-						month: 11,
-						day: 1
-					};
-
-					var day = new test.subject.Day(nov1);
-
-					verify(day).year.value.is(2021);
-					verify(day).month.id.index.is(11);
-					verify(day).day.is(1);
-				}
 			}
 		//@ts-ignore
 		)(fifty);
@@ -213,6 +215,11 @@ namespace slime.time {
 
 	export namespace exports {
 		export interface Day {
+			/**
+			 * @param year Year
+			 * @param month Month (1 = January)
+			 * @param day Day of Month
+			 */
 			new (year: number, month: number, day: number): old.Day
 			new (p: Day): old.Day
 			new (p: any): old.Day
@@ -229,10 +236,95 @@ namespace slime.time {
 			}
 			rehydrate: (p: any) => old.Day
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.Day.old = {};
+				fifty.tests.Day.old.constructor = function() {
+					var nov1: slime.time.Day = {
+						year: 2021,
+						month: 11,
+						day: 1
+					};
+
+					var day = new test.subject.Day(nov1);
+
+					verify(day).year.value.is(2021);
+					verify(day).month.id.index.is(11);
+					verify(day).day.is(1);
+				}
+
+				fifty.tests.Day.old.jsapi = (
+					function() {
+						const module = test.old;
+						const api = test.subject;
+
+						var Day = module.Day;
+
+						var leapday = new Day(2008,2,29);
+
+						var leap09 = leapday.addYears(1);
+
+						var oldmas = new module.Day(1958,7,30);
+						var katemas = new api.Day(1958,7,30);
+
+						return {
+							year: function() {
+								verify(katemas).year.value.is(1958);
+							},
+							month: function() {
+								verify(katemas).month.year.value.is(1958);
+								verify(katemas).month.id.is(api.Year.Month.JULY);
+								verify(oldmas).month.is(module.Year.Month.JULY);
+							},
+							add: function() {
+								var day = new api.Day(2019,11,1);
+								var before = day.add(-1);
+								var after = day.add(1);
+
+								verify(before).year.value.is(2019);
+								verify(before).month.id.is(api.Year.Month.OCTOBER);
+								verify(before).day.is(31);
+
+								verify(after).year.value.is(2019);
+								verify(after).month.id.is(api.Year.Month.NOVEMBER);
+								verify(after).day.is(2);
+							},
+							addMonths: function() {
+								var date = new api.Day(2019,1,15);
+								var after = date.addMonths(2);
+								verify(after).year.value.is(2019);
+								verify(after).month.id.is(api.Year.Month.MARCH);
+								verify(after).day.is(15);
+							},
+							isBefore: function() {
+								var day = new api.Day(2019,11,2);
+								var before = day.add(-1);
+								var after = day.add(1);
+
+								verify(day).isBefore(before).is(false);
+								verify(day).isBefore(after).is(true);
+								verify(day).isBefore(day).is(false);
+							}
+						}
+					}
+				)();
+			}
+		//@ts-ignore
+		)(fifty);
+
 	}
 
 	export namespace exports {
 		export interface Month {
+			/**
+			 * @param year A year.
+			 * @param month A month, where 1 = January
+			 */
 			new (year: number, month: number): old.Month
 		}
 
@@ -244,10 +336,23 @@ namespace slime.time {
 				const api = test.subject;
 
 				fifty.tests.Month = function() {
-					var novemberSecondNineteen = new api.Month(2019,11).day(2);
-					verify(novemberSecondNineteen).year.value.is(2019);
-					verify(novemberSecondNineteen).month.id.is(api.Year.Month.NOVEMBER);
-					verify(novemberSecondNineteen).day.is(2);
+					fifty.run(function() {
+						var novemberSecondNineteen = new api.Month(2019,11).day(2);
+						verify(novemberSecondNineteen).year.value.is(2019);
+						verify(novemberSecondNineteen).month.id.is(api.Year.Month.NOVEMBER);
+						verify(novemberSecondNineteen).day.is(2);
+					});
+
+					fifty.run(function() {
+						var novemberNineteen = new api.Month(2019,11);
+						verify(novemberNineteen).year.value.is(2019);
+						verify(novemberNineteen).id.is(api.Year.Month.NOVEMBER);
+
+						var second = novemberNineteen.day(2);
+						verify(second).year.value.is(2019);
+						verify(second).month.id.is(api.Year.Month.NOVEMBER);
+						verify(second).day.is(2);
+					});
 				}
 			}
 		//@ts-ignore
@@ -352,8 +457,6 @@ namespace slime.time {
 				fifty.run(fifty.tests.Month);
 
 				fifty.run(fifty.tests.Day);
-
-				fifty.run(fifty.tests.Day.old.constructor);
 			}
 
 			if (fifty.global.jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);
