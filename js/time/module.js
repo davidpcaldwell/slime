@@ -12,6 +12,7 @@
 	 * @param { slime.time.Exports } $exports
 	 */
 	function($api,$context,$exports) {
+		/** @type { { [id: string]: slime.time.Zone } } */
 		var zones = {};
 		if (typeof($context.zones) != "undefined") {
 			for (var x in $context.zones) {

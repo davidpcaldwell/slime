@@ -5,6 +5,66 @@
 //	END LICENSE
 
 namespace slime.time {
+	export namespace zone {
+		export interface Time {
+			year: number
+			month: number
+			day: number
+			hour: number
+			minute: number
+
+			/**
+			 * May be a decimal number including fractional seconds.
+			 */
+			second: number
+		}
+	}
+
+	export interface Zone {
+		/**
+		 * Given a UNIX time, in milliseconds, returns the corresponding time in this time zone.
+		 */
+		local: (unixMilliseconds: number) => zone.Time
+
+		/**
+		 * Returns the UNIX time, in milliseconds, for the given time in this time zone.
+		 */
+		unix: (time: zone.Time) => number
+	}
+
+	export namespace context {
+		/**
+		 * Configuration of the Java context for this module. Allows the Calendar and TimeZone Java classes to be replaced, in
+		 * scenarios where they are inaccessible but do not work. Unlikely to be needed; older versions of Google App Engine for
+		 * Java restricted reflective access to these classes.
+		 */
+		export interface Java {
+			Calendar?: slime.jrunscript.Packages["java"]["util"]["Calendar"]
+			TimeZone?: slime.jrunscript.Packages["java"]["util"]["TimeZone"]
+		}
+	}
+
+	export interface Context {
+		zones: {
+			[id: string]: Zone
+		}
+
+		old?: {
+			Day_month: boolean
+		}
+
+		java: context.Java
+	}
+
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			var script: Script = fifty.$loader.script("module.js");
+			var jcontext: slime.loader.Script<context.Java,Context> = fifty.$loader.script("context.java.js");
+			return (fifty.global.jsh) ? script(jcontext()) : script();
+		//@ts-ignore
+		})(fifty);
+	}
+
 	export interface Day {
 		year: number
 		month: number
@@ -62,23 +122,6 @@ namespace slime.time {
 			local(): Time
 			local(zone: any): Time
 		}
-	}
-
-	export interface Context {
-		zones: object
-		old: {
-			Day_month: boolean
-		}
-		java: object
-	}
-
-	export namespace test {
-		export const subject: Exports = (
-			function(fifty: slime.fifty.test.Kit) {
-				return fifty.$loader.module("module.js");
-			}
-		//@ts-ignore
-		)(fifty);
 	}
 
 	export interface World {
@@ -207,7 +250,9 @@ namespace slime.time {
 		Day: exports.Day
 		Time: {
 			new (): old.Time
-			Zone: object
+			Zone: {
+				[id: string]: Zone
+			}
 		}
 		When: {
 			new (p: { date: Date }): old.When
