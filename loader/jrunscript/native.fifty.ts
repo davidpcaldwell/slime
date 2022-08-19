@@ -473,6 +473,8 @@ namespace slime.jrunscript {
 				zip: any
 				jar: any
 				UUID: any
+				TimeZone: any
+				Calendar: any
 			}
 			text: {
 				SimpleDateFormat: any
