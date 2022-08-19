@@ -45,7 +45,7 @@ namespace slime.time {
 	}
 
 	export interface Context {
-		zones: {
+		zones?: {
 			[id: string]: Zone
 		}
 
@@ -53,14 +53,21 @@ namespace slime.time {
 			Day_month: boolean
 		}
 
-		java: context.Java
+		java?: context.Java
 	}
 
 	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.Kit) {
+		export const { subject, old } = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("module.js");
 			var jcontext: slime.loader.Script<context.Java,Context> = fifty.$loader.script("context.java.js");
-			return (fifty.global.jsh) ? script(jcontext()) : script();
+			return {
+				subject: (fifty.global.jsh) ? script(jcontext()) : script(),
+				old: script({
+					old: {
+						Day_month: true
+					}
+				})
+			};
 		//@ts-ignore
 		})(fifty);
 	}
@@ -224,9 +231,35 @@ namespace slime.time {
 		}
 	}
 
+	export namespace exports {
+		export interface Month {
+			new (year: number, month: number): old.Month
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const api = test.subject;
+
+				fifty.tests.Month = function() {
+					var novemberSecondNineteen = new api.Month(2019,11).day(2);
+					verify(novemberSecondNineteen).year.value.is(2019);
+					verify(novemberSecondNineteen).month.id.is(api.Year.Month.NOVEMBER);
+					verify(novemberSecondNineteen).day.is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
 	export interface Exports {
 		Year: {
 			new (year: number): old.Year
+
+			Month: any
 		}
 	}
 
@@ -246,7 +279,7 @@ namespace slime.time {
 
 
 	export interface Exports {
-		Month: Function
+		Month: exports.Month
 		Day: exports.Day
 		Time: {
 			new (): old.Time
@@ -315,6 +348,8 @@ namespace slime.time {
 				verify(formatted).is("2021-01-01 11:59:59");
 
 				fifty.run(fifty.tests.Year);
+
+				fifty.run(fifty.tests.Month);
 
 				fifty.run(fifty.tests.Day);
 
