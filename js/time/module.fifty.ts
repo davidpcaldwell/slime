@@ -257,62 +257,6 @@ namespace slime.time {
 					verify(day).month.id.index.is(11);
 					verify(day).day.is(1);
 				}
-
-				fifty.tests.Day.old.jsapi = (
-					function() {
-						const module = test.old;
-						const api = test.subject;
-
-						var Day = module.Day;
-
-						var leapday = new Day(2008,2,29);
-
-						var leap09 = leapday.addYears(1);
-
-						var oldmas = new module.Day(1958,7,30);
-						var katemas = new api.Day(1958,7,30);
-
-						return {
-							year: function() {
-								verify(katemas).year.value.is(1958);
-							},
-							month: function() {
-								verify(katemas).month.year.value.is(1958);
-								verify(katemas).month.id.is(api.Year.Month.JULY);
-								verify(oldmas).month.is(module.Year.Month.JULY);
-							},
-							add: function() {
-								var day = new api.Day(2019,11,1);
-								var before = day.add(-1);
-								var after = day.add(1);
-
-								verify(before).year.value.is(2019);
-								verify(before).month.id.is(api.Year.Month.OCTOBER);
-								verify(before).day.is(31);
-
-								verify(after).year.value.is(2019);
-								verify(after).month.id.is(api.Year.Month.NOVEMBER);
-								verify(after).day.is(2);
-							},
-							addMonths: function() {
-								var date = new api.Day(2019,1,15);
-								var after = date.addMonths(2);
-								verify(after).year.value.is(2019);
-								verify(after).month.id.is(api.Year.Month.MARCH);
-								verify(after).day.is(15);
-							},
-							isBefore: function() {
-								var day = new api.Day(2019,11,2);
-								var before = day.add(-1);
-								var after = day.add(1);
-
-								verify(day).isBefore(before).is(false);
-								verify(day).isBefore(after).is(true);
-								verify(day).isBefore(day).is(false);
-							}
-						}
-					}
-				)();
 			}
 		//@ts-ignore
 		)(fifty);
@@ -382,6 +326,146 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.jsapi = fifty.test.Parent();
+
+			const module = test.old;
+			const api = test.subject;
+
+			fifty.tests.jsapi.Day = (
+				function() {
+					var Day = module.Day;
+
+					var leapday = new Day(2008,2,29);
+
+					var leap09 = leapday.addYears(1);
+
+					var oldmas = new module.Day(1958,7,30);
+					var katemas = new api.Day(1958,7,30);
+
+					const test = function(b: boolean) {
+						verify(b).is(true);
+					}
+
+					return {
+						year: function() {
+							verify(katemas).year.value.is(1958);
+						},
+						month: function() {
+							verify(katemas).month.year.value.is(1958);
+							verify(katemas).month.id.is(api.Year.Month.JULY);
+							verify(oldmas).month.is(module.Year.Month.JULY);
+						},
+						add: function() {
+							var day = new api.Day(2019,11,1);
+							var before = day.add(-1);
+							var after = day.add(1);
+
+							verify(before).year.value.is(2019);
+							verify(before).month.id.is(api.Year.Month.OCTOBER);
+							verify(before).day.is(31);
+
+							verify(after).year.value.is(2019);
+							verify(after).month.id.is(api.Year.Month.NOVEMBER);
+							verify(after).day.is(2);
+						},
+						addMonths: function() {
+							var date = new api.Day(2019,1,15);
+							var after = date.addMonths(2);
+							verify(after).year.value.is(2019);
+							verify(after).month.id.is(api.Year.Month.MARCH);
+							verify(after).day.is(15);
+						},
+						isBefore: function() {
+							var day = new api.Day(2019,11,2);
+							var before = day.add(-1);
+							var after = day.add(1);
+
+							verify(day).isBefore(before).is(false);
+							verify(day).isBefore(after).is(true);
+							verify(day).isBefore(day).is(false);
+						},
+						_1: function() {
+							module.install();
+							var Day = module.Day;
+							var Year = module.Year;
+
+							var day = new Day(2009,1,1);
+							var jan2 = day.add(1);
+							test(jan2.year.value == 2009);
+							test(jan2.month == Year.Month.JANUARY);
+							test(jan2.day == 2);
+							var jan8 = day.add(7);
+							test(jan8.year.value == 2009);
+							test(jan8.month == Year.Month.JANUARY);
+							test(jan8.day == 8);
+							var feb1 = day.add(31);
+							test(feb1.year.value == 2009);
+							test(feb1.month == Year.Month.FEBRUARY);
+							test(feb1.day == 1);
+							var dec31 = day.add(-1);
+							test(dec31.year.value == 2008);
+							test(dec31.month == Year.Month.DECEMBER);
+							test(dec31.day == 31);
+
+							var jan31 = day.add(30);
+							var feb31 = jan31.addMonths(1);
+							test(feb31.year.value == 2009);
+							test(feb31.month == Year.Month.FEBRUARY);
+							test(feb31.day == 28);
+
+							var feb3110 = jan31.addMonths(13);
+							test(feb3110.year.value == 2010);
+							test(feb3110.month == Year.Month.FEBRUARY);
+							test(feb3110.day == 28);
+
+							//	TODO	Promote into jsunit framework?
+							var ExpectError = function(f) {
+								var success;
+								var messages = {};
+								try {
+									f();
+									success = false;
+									messages = { failure: "No error" };
+								} catch (e) {
+									success = true;
+									messages = { success: "Correct: got error: " + e };
+								}
+								this.success = success;
+								this.messages = messages;
+							}
+
+							var invalid: { success: boolean, messages: { failure?: string, success?: string } } =
+								new ExpectError(function() { return new Day(2009,2,29) });
+							verify(invalid).success.is(true);
+							verify(invalid).messages.success.is.type("string");
+							verify(invalid).messages.success.is(invalid.messages.success);
+
+
+							var leapday = new Day(2008,2,29);
+
+							var leap09 = leapday.addYears(1);
+							test(leap09.year.value == 2009);
+							test(leap09.month == Year.Month.FEBRUARY);
+							test(leap09.day == 28);
+
+							//@ts-ignore
+							var converted = new Date(leap09);
+							test(converted.getFullYear() == 2009);
+							test(converted.getMonth() == 1);
+							test(converted.getDate() == 28);
+						}
+					}
+				}
+			)();
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
 		Month: exports.Month
@@ -457,6 +541,8 @@ namespace slime.time {
 				fifty.run(fifty.tests.Month);
 
 				fifty.run(fifty.tests.Day);
+
+				fifty.run(fifty.tests.jsapi);
 			}
 
 			if (fifty.global.jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);
