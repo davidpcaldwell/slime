@@ -13,18 +13,24 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
-	 * @param { slime.loader.Export<slime.tools.documentation.implementation> } $export
+	 * @param { slime.loader.Export<slime.tools.documentation.Export> } $export
 	 */
 	function($api,jsh,$loader,$export) {
 		$export(
 			function(configuration) {
 				var base = configuration.base;
-				/** @type { slime.tools.documentation.factory } */
 
+				/** @type { slime.tools.documentation.HandlerFactory } */
 				var rv = function(httpd) {
-					/** @type { slime.tools.documentation.internal.asTextHandler.Factory } */
+					/** @type { slime.tools.documentation.internal.asTextHandler.Script } */
 					var asTextHandlerCode = $loader.script("as-text-handler.js");
 					var asTextHandler = asTextHandlerCode({ httpd: httpd });
+
+					/**
+					 *
+					 * @param { slime.jrunscript.file.Directory } src
+					 * @returns
+					 */
 					function update(src) {
 						var result = jsh.wf.typescript.typedoc({
 							project: src,
@@ -43,6 +49,7 @@
 							}
 						}
 					}
+
 					return httpd.Handler.series(
 						//	Allows links to src/path/to/file.ext within Typedoc
 						function(request) {
