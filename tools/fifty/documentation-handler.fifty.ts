@@ -10,15 +10,15 @@ namespace slime.tools.documentation {
 		watch?: boolean
 	}
 
+	export type HandlerFactory = (p: slime.servlet.httpd) => slime.servlet.handler
+
 	/**
 	 * The application-level export of the documentation handler. Using a configuration, creates a function capable of creating a
 	 * servlet handler that can serve Typedoc documentation given the httpd API.
 	 */
-	export type implementation = (configuration: Configuration) => factory
+	export type Export = (configuration: Configuration) => HandlerFactory
 
-	export type Export = implementation
-
-	export type factory = (p: slime.servlet.httpd) => slime.servlet.handler
+	export type Script = slime.loader.Script<void,Export>
 
 	export namespace internal.asTextHandler {
 		export type Context = { httpd: slime.servlet.httpd }
@@ -27,6 +27,6 @@ namespace slime.tools.documentation {
 		 * Given the `httpd` object (see {@link Context}), provides an object that can serve the contents of a Loader and
 		 * understands the `as=text` query string.
 		 */
-		export type Factory = slime.loader.Script<Context,Export>
+		export type Script = slime.loader.Script<Context,Export>
 	}
 }

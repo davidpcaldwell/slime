@@ -47,12 +47,18 @@
 					servlets: {
 						"/*": {
 							load: function(scope) {
-								/** @type { slime.tools.documentation.internal.asTextHandler.Factory } */
-								var asTextHandlerCode = loader.script("as-text-handler.js");
-								var asTextHandler = asTextHandlerCode({
+								var code = {
+									/** @type { slime.tools.documentation.internal.asTextHandler.Script } */
+									asTextHandler: loader.script("as-text-handler.js"),
+									/** @type { slime.tools.documentation.Script } */
+									documentationHandler: loader.script("documentation-handler.js"),
+									/** @type { slime.tools.documentation.wiki.Script } */
+									wiki: loader.script("wiki-handler.js")
+								};
+								var asTextHandler = code.asTextHandler({
 									httpd: scope.httpd
 								});
-								/** @type { slime.tools.documentation.implementation } */
+								/** @type { slime.tools.documentation.Export } */
 								var documentationHandler = loader.module("documentation-handler.js", {
 									httpd: scope.httpd
 								});
@@ -60,8 +66,16 @@
 									base: base,
 									watch: p.options.watch
 								});
+								var wikiHandler = code.wiki({
+									httpd: scope.httpd,
+									library: {
+										file: jsh.file
+									},
+									base: base.getSubdirectory("local/wiki")
+								});
 								scope.$exports.handle = scope.httpd.Handler.series(
 									documentationFactory(scope.httpd),
+									wikiHandler,
 									asTextHandler({
 										loader: new jsh.file.Loader({ directory: base })
 									})
