@@ -34,10 +34,68 @@ namespace slime.$api {
 			or: slime.$api.fp.Exports["Predicate"]["or"]
 		}
 
-		Constructor: any
-
 		Key: any
 	}
+
+	export interface Global {
+		Constructor: {
+			invoke: <C extends new (...args: any) => any>(p: {
+				constructor: C
+				arguments?: ConstructorParameters<C>
+			}) => InstanceType<C>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const api = fifty.global.$api;
+
+			fifty.tests.exports.Constructor = function() {
+				verify(api).evaluate.property("Constructor").is.not(void(0));
+				verify(api).Constructor.evaluate.property("invoke").is.not(void(0));
+
+				//@ts-ignore
+				var A: new (a?: number, b?: number) => { a: number, b: number } = function(a,b) {
+					this.a = a;
+					this.b = b;
+				};
+
+				var a1 = api.Constructor.invoke({
+					constructor: A,
+					arguments: [1,2]
+				});
+				verify(a1).a.is(1);
+				verify(a1).b.is(2);
+
+				var a2 = api.Constructor.invoke({
+					constructor: A,
+					arguments: [1]
+				});
+				verify(a2).a.is(1);
+				verify(a2).b.is(void(0));
+
+				var a3 = api.Constructor.invoke({
+					constructor: A,
+					arguments: []
+				});
+				verify(a3).a.is(void(0));
+				verify(a3).b.is(void(0));
+
+				(function omittedArguments() {
+					var a = api.Constructor.invoke({
+						constructor: A
+					});
+					verify(a).a.is(void(0));
+					verify(a).b.is(void(0));
+				})();
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export interface Global {
 		Iterable: {
@@ -407,6 +465,8 @@ namespace slime.$api {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
 			}
+
+			if (fifty.jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);
 		}
 	//@ts-ignore
 	)(fifty)
