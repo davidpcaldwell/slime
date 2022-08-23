@@ -68,10 +68,10 @@ namespace slime.fifty {
 	 *
 	 * To run a test suite that runs the same definition in both `jsh` and a browser:
 	 *
-	 * First, make sure the test suite defines a test using `fifty.jsh.platforms` (usually named `fifty.tests.platforms` by
-	 * convention), like this one:
+	 * First, make sure the test suite defines a test - that runs under `jsh` only - using `fifty.jsh.platforms` (usually named
+	 * `fifty.tests.platforms` by convention), like this one:
 	 *
-	 * `fifty.tests.platforms = fifty.jsh.platforms(fifty);`
+	 * `if (fifty.jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);`
 	 *
 	 * Then, the suite can be run via:
 	 *
