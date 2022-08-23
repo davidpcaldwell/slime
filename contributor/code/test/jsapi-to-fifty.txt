@@ -13,6 +13,7 @@
 ===
 			 * Allows the loader to customize the way child sources are created when creating child loaders. if omitted, a child
 			 * that delegates requests back to the parent, prepended by the child's path, will be created
+
 ===
 { "tabSize": 4, "lineLength": 132 }
 				 * 								The created loaders currently have the following limitations:
@@ -28,4 +29,5 @@
 				 * * They are not enumerable
 				 * * They do not respect the `.child` implementations of their elements
 				 * * They do not provide a sensible `.toString` implementation.
+
 ===
