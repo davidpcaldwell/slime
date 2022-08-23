@@ -26,26 +26,13 @@ namespace slime.$api {
 			/**
 			 * @deprecated Use {@link slime.$api.Global["filter"]["and"]}. }
 			 */
-			and: $api.fp.Exports["filter"]["and"]
+			and: slime.$api.fp.Exports["Predicate"]["and"]
+
 			/**
 			 * @deprecated Use {@link slime.$api.Global["filter"]["or"]}. }
 			 */
-			or: $api.fp.Exports["filter"]["or"]
-			/**
-			 * @deprecated Use {@link slime.$api.Global["filter"]["not"]}. }
-			 */
-			not: $api.fp.Exports["filter"]["not"]
-			property: {
-				is: any
-				equals: any
-			}
+			or: slime.$api.fp.Exports["Predicate"]["or"]
 		}
-
-		Map: any
-
-		Reduce: any
-
-		Method: any
 
 		Constructor: any
 
@@ -239,8 +226,6 @@ namespace slime.$api {
 			message: string
 			stack?: string
 		} & P
-
-		export type x = ErrorConstructor
 
 		export type Type<N extends string, P extends {}> = {
 			new (message?: string, properties?: P): Instance<N,P>
