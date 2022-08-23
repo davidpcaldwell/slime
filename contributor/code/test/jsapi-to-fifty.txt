@@ -31,3 +31,10 @@
 				 * * They do not provide a sensible `.toString` implementation.
 
 ===
+{ "tabSize": 4, "lineLength": 132 }
+		 * Returns the resource associated with a given path, by invoking the <code>get</code> method of this
+									loader's <code>source</code>.
+===
+		 * Returns the resource associated with a given path, by invoking the `get` method of this loader's `source`.
+
+===
