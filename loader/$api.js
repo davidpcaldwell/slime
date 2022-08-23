@@ -103,102 +103,13 @@
 			}
 		};
 
-		$exports.Filter = Object.assign(
-			function(f) {
-			},
-			{
-				and: void(0),
-				or: void(0),
-				not: void(0),
-				property: void(0)
-			}
-		);
-		$exports.Filter.and = $exports.Function.Predicate.and;
-		$exports.Filter.or = $exports.Function.Predicate.or;
-		$exports.Filter.not = $exports.Function.Predicate.not;
-		$exports.Filter.property = {
-			is: function(name,value) {
-				return function(v) {
-					return v[name] === value;
-				}
-			},
-			equals: function(name,value) {
-				return function(v) {
-					return v[name] == value;
-				}
-			}
-		};
-
-		$exports.Map = {};
-		$exports.Map.property = function(name) {
-			return function(v) {
-				return v[name];
-			};
-		};
-
-		$exports.Reduce = {};
-		$exports.Reduce.sum = function(array,map) {
-			return array.reduce(function(sum,element) {
-				return sum + map(element);
-			},0);
-		};
-
-		$exports.Method = {};
-		$exports.Method.property = function() {
-			var name = arguments;
-			return function() {
-				var rv = this;
-				for (var i=0; i<name.length; i++) {
-					rv = rv[name[i]];
-				}
-				return rv;
-			}
+		$exports.Filter = {
+			and: $exports.deprecate($exports.Function.Predicate.and),
+			or: $exports.deprecate($exports.Function.Predicate.or),
 		};
 
 		$exports.Constructor = {};
 
-		$exports.Constructor.decorated = function(original,decorator) {
-			if (!decorator) return original;
-			var rv = function() {
-				var invokedAsConstructor = this.constructor == arguments.callee;
-				if (false) {
-					return (
-						function() {
-							var delimited = "";
-							for (var i=0; i<arguments.length; i++) {
-								if (i > 0) {
-									delimited += ",";
-								}
-								delimited += "arguments[" + i + "]";
-							}
-							var defaulted = eval("new original(" + delimited + ")");
-							var decorated = decorator.apply(defaulted,arguments);
-							if (typeof(decorated) == "object" && decorated !== null) {
-								return decorated;
-							}
-							return defaulted;
-						}
-					)();
-				} else {
-					var rv = (invokedAsConstructor) ? this : {};
-					var functions = [original,decorator];
-					for (var i=0; i<functions.length; i++) {
-						if (invokedAsConstructor) {
-							rv.constructor = functions[i];
-						}
-						var returned = functions[i].apply(rv,arguments);
-						if (typeof(returned) == "object" && returned !== null) {
-							rv = returned;
-						}
-					}
-					if (rv != this) return rv;
-				}
-			};
-			rv.toString = function() {
-				return original.toString() + " decorated with " + decorator.toString();
-			}
-			return rv;
-		};
 		$exports.Constructor.invoke = function(p) {
 			if (!p.arguments) p.arguments = [];
 			var code = "new p.constructor(" +
@@ -210,29 +121,6 @@
 			return eval(code);
 		};
 
-		$exports.Constructor.global = function() {
-			var construct = function() {
-				return $exports.Constructor.invoke({
-					constructor: this,
-					arguments: Array.prototype.slice.call(arguments)
-				});
-			};
-
-			if (Object.defineProperty) {
-				Object.defineProperty(
-					Function.prototype,
-					"construct",
-					{
-						value: construct,
-						enumerable: false,
-						writable: true
-					}
-				);
-			} else {
-				//	TODO	or should we refuse to do it? Fail silently? Error?
-				Function.prototype.construct = construct;
-			}
-		}
 		$exports.Key = {};
 		$exports.Key.by = function(p) {
 			var rv = {};
