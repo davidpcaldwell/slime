@@ -195,6 +195,15 @@ namespace slime.project.jsapi {
 				return input as Format;
 			}
 
+			/**
+			 * Parses test cases from a text file. The first line of a test case is a JSON string that evaluates to a
+			 * {@link Format}. Following lines are added to the input for the test case until a `===` line is reached; the trailing
+			 * newline is *not* added to the input. Lines after the `===` are interpreted as output, again until a `===`, and again
+			 * not including the trailing newline before that `===`.
+			 *
+			 * @param input A file containing formatted test cases
+			 * @returns
+			 */
 			function parseTestData(input: string): Case[] {
 				var lines = input.split("\n");
 				var state: { format: Format, input: string[], output: string[] } = {
@@ -238,16 +247,7 @@ namespace slime.project.jsapi {
 				return rv;
 			}
 
-			fifty.tests.next = function() {
-				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
-				tests.forEach(function(test) {
-					var result = subject.comment(test.configuration)(test.input);
-					verify(result,"result").is(test.expected);
-				});
-			}
-
-			var functionalTests = function(subject: Exports) {
-				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
+			var functionalTests = function(subject: Exports, tests: Case[]) {
 				tests.forEach(function(test) {
 					var result = subject.comment(test.configuration)(test.input);
 					if (result != test.expected) {
@@ -257,27 +257,31 @@ namespace slime.project.jsapi {
 				});
 			}
 
-			fifty.tests.wip = function() {
-				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
-				var text = test.wip.comment(tests[0].configuration)(tests[0].input);
-				debugger;
-				verify(text).is(tests[0].expected);
-			}
-
-			fifty.tests.wip.suite = function() {
-				fifty.run(function regression() {
-					functionalTests(test.wip);
-				});
-				fifty.run(fifty.tests.wip);
-			}
-
 			fifty.tests.suite = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
+
 				//	unit tests
 				fifty.run(fifty.tests.prefix);
 				fifty.run(fifty.tests.split);
 
 				//	functional tests
-				functionalTests(subject);
+				functionalTests(subject, tests);
+			}
+
+			fifty.tests.next = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
+				functionalTests(subject, tests);
+			}
+
+			fifty.tests.wip = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
+				functionalTests(test.wip, [ tests[0] ]);
+			}
+
+			fifty.tests.wip.suite = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
+				functionalTests(test.wip, tests);
+				fifty.run(fifty.tests.wip);
 			}
 		}
 	//@ts-ignore
