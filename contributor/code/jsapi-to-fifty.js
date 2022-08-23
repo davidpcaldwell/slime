@@ -381,7 +381,8 @@
 				var formatter = formatBlockUsing(format);
 				var formatted = blocks.map(formatter);
 				var formattedStrings = formatted.map(function(lines) { return lines.join("\n"); });
-				var text = formattedStrings.join("\n");
+				var text = formattedStrings.join("\n")
+				if (!blocks[blocks.length-1].hasEnd) text += "\n";
 
 				// var lines = $api.Function.Arrays.join(formatted);
 				// var text = lines.join("\n");
