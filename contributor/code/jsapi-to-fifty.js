@@ -211,10 +211,12 @@
 			var hasEnd = $api.Function.result(
 				inputLines,
 				$api.Function.pipe(
-					$$api.Function.Array.last,
-					$api.Function.Maybe.map($api.Function.property("section")),
-					$api.Function.Maybe.map($api.Function.is("end")),
-					$api.Function.Maybe.else($api.Function.returning(false))
+					$api.Function.Array.find(function(line) {
+						return line.section == "end";
+					}),
+					function(line) {
+						return typeof(line) != "undefined"
+					}
 				)
 			);
 
@@ -260,10 +262,21 @@
 						if (block.hasStart) {
 							result.push(block.prefix + "/**");
 						}
-						result.push(block.prefix + " *");
+						if (block.prefix === null) {
+							result.push("");
+						} else {
+							result.push(block.prefix + " *");
+						}
 					}
 					if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
-						result[result.length-1] += (currentWord()) ? " " + currentWord() : "";
+						if (currentWord()) {
+							if (currentLine()) {
+								result[result.length-1] += (" " + currentWord());
+							} else {
+								result[result.length-1] += currentWord();
+							}
+						}
+						//result[result.length-1] += (currentWord()) ? " " + currentWord() : "";
 					} else {
 						result.push(block.prefix + " * " + currentWord());
 					}
@@ -381,8 +394,8 @@
 				var formatter = formatBlockUsing(format);
 				var formatted = blocks.map(formatter);
 				var formattedStrings = formatted.map(function(lines) { return lines.join("\n"); });
-				var text = formattedStrings.join("\n")
-				if (!blocks[blocks.length-1].hasEnd) text += "\n";
+				var text = formattedStrings.join("\n");
+				if (input.substring(input.length-1) == "\n") text += "\n";
 
 				// var lines = $api.Function.Arrays.join(formatted);
 				// var text = lines.join("\n");
