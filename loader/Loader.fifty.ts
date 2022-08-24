@@ -15,7 +15,22 @@ namespace slime {
 			 */
 			$set: (v: any) => void
 		}
+
+		interface AnyEntry {
+			path: string
+		}
+
+		export interface LoaderEntry extends AnyEntry {
+			loader: slime.Loader
+		}
+
+		export interface ResourceEntry extends AnyEntry {
+			resource: any
+		}
+
+		export type Entry = LoaderEntry | ResourceEntry
 	}
+
 	export interface Loader<R extends Resource = Resource> {
 		source: loader.Source
 
@@ -25,7 +40,12 @@ namespace slime {
 		 * @param path A path.
 		 */
 		get: (path: string) => R
-		list?: (m?: { filter?: any, descendants?: any }) => ( loader.LoaderEntry | loader.ResourceEntry )[]
+
+		/**
+		 * (conditional method, present if `source.list` is present)
+		 */
+		list?: (m?: { filter?: any, descendants?: any }) => loader.Entry[]
+
 		Child: {
 			(prefix: string): Loader
 		}
@@ -159,20 +179,7 @@ namespace slime {
 	//@ts-ignore
 	)(fifty);
 
-
 	export namespace loader {
-		interface Entry {
-			path: string
-		}
-
-		export interface LoaderEntry extends Entry {
-			loader: slime.Loader
-		}
-
-		export interface ResourceEntry extends Entry {
-			resource: any
-		}
-
 		export interface Script<C,E> {
 			(c?: C): E
 			thread: (c?: C) => PromiseLike<E>
