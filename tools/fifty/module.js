@@ -150,7 +150,7 @@
 				//	TODO
 			}
 
-			var UnimplementedKind = $api.Error.Type({ name: "UnimplementedKind" });
+			var UnimplementedKind = $api.Error.old.Type({ name: "UnimplementedKind" });
 
 			var interpret = function(node,context) {
 				var kind = node.object.kind;
