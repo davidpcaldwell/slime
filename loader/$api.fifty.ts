@@ -475,7 +475,8 @@ namespace slime.$api {
 					}
 				});
 
-				verify(e).message.is("Foo: baz: foo=foo bar=8");
+				verify(e).message.is("baz: foo=foo bar=8");
+				verify(e).evaluate(String).is("Foo: baz: foo=foo bar=8");
 				verify(e).evaluate(function(e) { return e instanceof Parent }).is(true);
 				verify(e).evaluate(function(e) { return e instanceof TypeError }).is(true);
 				verify(e).evaluate(function(e) { return e instanceof EvalError }).is(false);
@@ -484,7 +485,8 @@ namespace slime.$api {
 				verify(e).properties.bar.is(8);
 
 				var c = new Child({ baz: "bizzy" });
-				verify(c).message.is("Bar: hey, it is bizzy");
+				verify(c).message.is("hey, it is bizzy");
+				verify(c).evaluate(String).is("Bar: hey, it is bizzy");
 				verify(c).evaluate(function(e) { return e instanceof Child }).is(true);
 				verify(c).evaluate(function(e) { return e instanceof Parent }).is(true);
 				verify(c).evaluate(function(e) { return e instanceof TypeError }).is(true);
