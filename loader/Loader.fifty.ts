@@ -393,10 +393,10 @@ namespace slime {
 			}
 
 			tests.suite = function() {
-				fifty.run(tests.source);
-				fifty.run(tests.closure);
-				fifty.run(tests.$export);
-				fifty.run(fifty.tests.context);
+				fifty.run(fifty.tests.source);
+				fifty.run(fifty.tests.closure);
+				fifty.run(fifty.tests.$export);
+				fifty.run(fifty.tests.script);
 				//	TODO	tests.thread, browser only?
 			};
 
