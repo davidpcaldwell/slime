@@ -1283,7 +1283,7 @@
 			}
 		})();
 
-		var GUI = $api.Error.Type({
+		var GUI = $api.Error.old.Type({
 			name: "GUIInstallRequired"
 		});
 

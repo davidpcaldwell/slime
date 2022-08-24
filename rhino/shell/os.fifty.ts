@@ -96,8 +96,8 @@ namespace slime.jrunscript.shell.system {
 
 		initialize: (p: string) => void
 
-		PasswordRequired: slime.$api.error.Type<"PasswordRequired",{}>
-		PasswordIncorrect: slime.$api.error.Type<"PasswordIncorrect",{}>
+		PasswordRequired: slime.$api.error.old.Type<"PasswordRequired",{}>
+		PasswordIncorrect: slime.$api.error.old.Type<"PasswordIncorrect",{}>
 
 		gui?: (p?: { prompt: string }) => () => string
 

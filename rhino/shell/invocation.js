@@ -14,7 +14,7 @@
 	function($api,$context,$export) {
 		var parseCommandToken = (
 			function() {
-				var ArgumentError = $api.Error.Type({ name: "ArgumentError", extends: TypeError });
+				var ArgumentError = $api.Error.old.Type({ name: "ArgumentError", extends: TypeError });
 
 				/**
 				 *

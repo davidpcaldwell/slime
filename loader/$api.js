@@ -478,15 +478,40 @@
 		};
 
 		$exports.Error = {
-			//	TODO	see whether we can get rid of this
-			//@ts-ignore
-			Type: ErrorType,
-			/** @type { slime.$api.Global["Error"]["isType"] } */
-			isType: function(type) {
+			old: {
+				//	TODO	see whether we can get rid of this
 				//@ts-ignore
-				return function(e) {
-					return e instanceof type;
+				Type: ErrorType,
+				/** @type { slime.$api.Global["Error"]["old"]["isType"] } */
+				isType: function(type) {
+					//@ts-ignore
+					return function(e) {
+						return e instanceof type;
+					}
 				}
+			},
+			/** @type { slime.$api.Global["Error"]["type"] } */
+			type: function(p) {
+				var CustomError = function(properties) {
+					var invokedAsConstructor = this instanceof CustomError;
+					if (invokedAsConstructor) {
+						this.name = p.name;
+						this.message = p.name + ": " + p.getMessage(properties);
+						var stack = new Error("__message__").stack;
+						var elements = stack.split("\n");
+						if (elements[0] == "Error: __message__") {
+							elements[0] = this.message;
+							stack = elements.join("\n");
+						}
+						this.stack = stack;
+						this.properties = properties;
+					} else {
+						return new CustomError(properties);
+					}
+				}
+				var prototypeFactory = p.extends || Error;
+				CustomError.prototype = Object.assign(prototypeFactory(), { properties: void(0) });
+				return CustomError;
 			}
 		}
 
