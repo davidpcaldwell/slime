@@ -493,6 +493,15 @@ namespace slime.$api {
 				verify(c).properties.baz.is("bizzy");
 				verify(c).properties.evaluate.property("foo").is.type("undefined");
 				verify(c).stack.is.type("string");
+
+				var NoSupertype = $api.Error.type({
+					name: "Standalone",
+					getMessage: function(p: {}): string {
+						return "foo";
+					}
+				});
+				var n = new NoSupertype();
+				verify(n).is.type("object");
 			}
 		}
 	//@ts-ignore
