@@ -344,16 +344,17 @@ namespace slime.jsh.script {
 
 	export namespace cli {
 		export namespace error {
-			export type NoTargetProvided = $api.error.Instance<"NoTargetProvided",{}>
-			export type TargetNotFound = $api.error.Instance<"TargetNotFound", { command: string }>
-			export type TargetNotFunction = $api.error.Instance<"TargetNotFunction", { command: string, target: any }>
+			export type NoTargetProvided = $api.error.old.Instance<"NoTargetProvided",{}>
+			export type TargetNotFound = $api.error.old.Instance<"TargetNotFound", { command: string }>
+			export type TargetNotFunction = $api.error.old.Instance<"TargetNotFunction", { command: string, target: any }>
 		}
 
 		export interface Exports {
 			error: {
-				NoTargetProvided: $api.error.Type<"NoTargetProvided",{}>
-				TargetNotFound: $api.error.Type<"TargetNotFound", { command: string }>
-				TargetNotFunction: $api.error.Type<"TargetNotFunction", { command: string, target: any }>
+				//	TODO	switch to new APIs
+				NoTargetProvided: $api.error.old.Type<"NoTargetProvided",{}>
+				TargetNotFound: $api.error.old.Type<"TargetNotFound", { command: string }>
+				TargetNotFunction: $api.error.old.Type<"TargetNotFunction", { command: string, target: any }>
 			}
 
 			parser: {

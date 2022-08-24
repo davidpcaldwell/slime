@@ -434,7 +434,7 @@
 				};
 
 				jsh.wf.error = {
-					Failure: $api.Error.Type({ name: "jsh.wf.Failure" })
+					Failure: $api.Error.old.Type({ name: "jsh.wf.Failure" })
 				}
 
 				var typescript = {

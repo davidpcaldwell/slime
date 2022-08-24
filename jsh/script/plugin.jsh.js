@@ -307,14 +307,14 @@
 						});
 					}
 
-					var isTargetNotFunction = $api.Error.isType(jsh.script.cli.error.TargetNotFunction);
+					var isTargetNotFunction = $api.Error.old.isType(jsh.script.cli.error.TargetNotFunction);
 
-					if ($api.Error.isType(jsh.script.cli.error.NoTargetProvided)(call)) {
+					if ($api.Error.old.isType(jsh.script.cli.error.NoTargetProvided)(call)) {
 						showUsage();
 						jsh.shell.console("");
 						showCommands();
 						jsh.shell.exit(1);
-					} else if ($api.Error.isType(jsh.script.cli.error.TargetNotFound)(call)) {
+					} else if ($api.Error.old.isType(jsh.script.cli.error.TargetNotFound)(call)) {
 						jsh.shell.console("Command not found: " + call.command);
 						jsh.shell.console("");
 						showCommands();
@@ -387,9 +387,9 @@
 						}
 					},
 					error: {
-						NoTargetProvided: $api.Error.Type({ name: "NoTargetProvided" }),
-						TargetNotFound: $api.Error.Type({ name: "TargetNotFound" }),
-						TargetNotFunction: $api.Error.Type({ name: "TargetNotFunction", extends: TypeError })
+						NoTargetProvided: $api.Error.old.Type({ name: "NoTargetProvided" }),
+						TargetNotFound: $api.Error.old.Type({ name: "TargetNotFound" }),
+						TargetNotFunction: $api.Error.old.Type({ name: "TargetNotFunction", extends: TypeError })
 					},
 					parser: parser,
 					/**

@@ -84,7 +84,7 @@ namespace slime.jsh.wf {
 	 */
 	export interface Exports {
 		error: {
-			Failure: $api.error.Type<"jsh.wf.Failure",{}>
+			Failure: $api.error.old.Type<"jsh.wf.Failure",{}>
 		}
 
 		project: {
