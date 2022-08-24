@@ -509,7 +509,8 @@
 						return new CustomError(properties);
 					}
 				}
-				CustomError.prototype = Object.assign(p.extends(), { properties: void(0) });
+				var prototypeFactory = p.extends || Error;
+				CustomError.prototype = Object.assign(prototypeFactory(), { properties: void(0) });
 				return CustomError;
 			}
 		}
