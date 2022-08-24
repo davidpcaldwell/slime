@@ -5,29 +5,160 @@
 //	END LICENSE
 
 namespace slime {
+	export namespace loader {
+		/**
+		 * The scope provided to a script executed via the {@link Loader | Loader.value()} call.
+		 */
+		export interface ValueScope {
+			/**
+			 * Allows the code to return a single value to the caller by invoking this method with the value.
+			 */
+			$set: (v: any) => void
+		}
+	}
 	export interface Loader<R extends Resource = Resource> {
 		source: loader.Source
 
+		/**
+		 * Returns the resource associated with a given path, by invoking the `get` method of this loader's `source`.
+		 *
+		 * @param path A path.
+		 */
 		get: (path: string) => R
 		list?: (m?: { filter?: any, descendants?: any }) => ( loader.LoaderEntry | loader.ResourceEntry )[]
 		Child: {
 			(prefix: string): Loader
 		}
 
+		/**
+		 * Executes code in a particular scope with a particular `this` value. The code will automatically contain the `$platform`
+		 * and `$api` objects described above in its scope.
+		 *
+		 * @param path The path of the code to execute.
+		 * @param scope The scope in which to execute the code.
+		 * @param target The object to use as the `this` value when executing the code.
+		 */
 		run: (path: string, scope?: any, target?: any) => void
+
+		/**
+		 * Identical to `run`, except that the code to execute is supplied with a `$set` function in its scope that allows it to set
+		 * a value to be returned to the caller:
+		 *
+		 * @param path The path of the code to execute.
+		 * @param scope The scope in which to execute the code.
+		 * @param target The object to use as the `this` value when executing the code.
+		 * @returns The value the code to execute passed to `$set`, or `undefined` if `$set` was not invoked.
+		 */
 		value: (path: string, scope?: any, target?: any) => any
-		file: (path: string, $context?: any, target?: any) => any
+
+		//	TODO	update the below descriptions to reflect the $export method of exporting and the fact that exports need not be
+		//			objects
+
+		/**
+		 * Executes a script in a separate scope. The scope will contain the `$platform` and `$api` objects described above. In
+		 * addition, the script will be provided with special objects named `$context` and `$exports`. The `$context` object
+		 * represents an application-specific context to provide to the script; the `$exports` object represents an object to which
+		 * the script can assign properties that will be visible outside the script.
+		 *
+		 * @param path The path of the code to execute.
+		 * @param $context A value to use as the `$context` object when executing the given code. If undefined or `null`, the
+		 * value provided is not specified.
+		 * @param target The object to use as the `this` value when executing the code.
+		 * @returns The value exported by this module.
+		 */
+		 file: (path: string, $context?: any, target?: any) => any
+
+		 /**
+		 * Loads a module. The module's code is specified by the first argument, and the second argument specifies objects to be
+		 * supplied to the module when loading it.
+		 *
+		 * The module's main file will be executed with the following variables in scope:
+		 *
+		 * * the `$platform` and `$api` objects specified above,
+		 * * the `$context` value specified by the second argument,
+		 * * an `$exports` object,
+		 * * a `$loader` object of type {@link Loader} allowing other source files and submodules to be loaded.
+		 *
+		 * @param path The path of the code to execute.
+		 * @param $context A value to use as the `$context` object when executing the given code. If undefined or `null`, the
+		 * value provided is not specified.
+		 * @param target The object to use as the `this` value when executing the code.
+		 * @returns The value exported by this module.
+		 */
 		module: (path: string, $context?: any, target?: any) => any
-		script: <C,E>(path: string) => loader.Script<C,E>
+
+		//	TODO	what if a value is exported? Like a number? We know a function works.
 
 		thread?: {
 			get: (path: string) => PromiseLike<Resource>
 			module: (path: string, $context?: any, target?: any) => PromiseLike<any>
 		}
+	}
+
+	export interface Loader<R extends Resource = Resource> {
+		//	TODO	What about if $context is a number, string, or boolean?
+		script: <C,E>(path: string) => loader.Script<C,E>
 
 		/** @deprecated Replaced by `script`. */
 		factory: Loader<R>["script"]
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.script = fifty.test.Parent();
+
+			fifty.tests.script.context = function() {
+				function echo<T>(t: T): T {
+					var script: slime.loader.Script<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
+					return script(t).provided;
+				}
+
+				//	TODO	should these two tests pass?
+				if (false) {
+					var ifUndefined = echo(void(0));
+					verify(ifUndefined).is.type("undefined");
+					var ifNull = echo(null);
+					verify(ifNull).is.type("null");
+				}
+				var ifString = echo("foo");
+				verify(ifString).is.type("string");
+				var ifNumber = echo(3);
+				verify(ifNumber).is.type("number");
+				var ifBoolean = echo(true);
+				verify(ifBoolean).is.type("boolean");
+				var ifObject = echo({ foo: "bar" });
+				verify(ifObject).is.type("object");
+				verify(ifObject).evaluate.property("foo").is("bar");
+			}
+
+			fifty.tests.script.export = function() {
+				function echo<T>(t: T): T {
+					var script: slime.loader.Script<{ export: T },T> = fifty.$loader.script("test/data/export.js");
+					return script({ export: t });
+				}
+
+				var ifUndefined = echo(void(0));
+				verify(ifUndefined).is.type("undefined");
+				var ifNull = echo(null);
+				verify(ifNull).is.type("null");
+				var ifString = echo("foo");
+				verify(ifString).is.type("string");
+				var ifNumber = echo(3);
+				verify(ifNumber).is.type("number");
+				var ifBoolean = echo(true);
+				verify(ifBoolean).is.type("boolean");
+				var ifObject = echo({ foo: "bar" });
+				verify(ifObject).is.type("object");
+				verify(ifObject).evaluate.property("foo").is("bar");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export namespace loader {
 		interface Entry {
@@ -130,8 +261,10 @@ namespace slime {
 	}
 
 	export namespace loader.test {
-		declare type api = { convert: (input: number) => number };
-		export type factory = slime.loader.Script<{ scale: number }, api>;
+		/**
+		 * A script that exports a standard export structure to act as a test case for the loader API.
+		 */
+		export type Script = slime.loader.Script<{ scale: number }, { convert: (input: number) => number }>;
 	}
 
 	(
@@ -152,12 +285,6 @@ namespace slime {
 				verify(tools).is.type("object");
 				verify(tools).evaluate.property("toExportScope").is.type("function");
 			};
-
-			tests.suite = function() {
-				fifty.run(tests.source);
-				fifty.run(tests.closure);
-				fifty.run(tests.$export);
-			}
 
 			tests.source = function() {
 				fifty.run(tests.source.object);
@@ -197,7 +324,7 @@ namespace slime {
 			}
 
 			tests.closure = function() {
-				var closure: slime.loader.test.factory = $loader.value("test/data/closure.js");
+				var closure: slime.loader.test.Script = $loader.value("test/data/closure.js");
 				var context = { scale: 2 };
 				var module = closure(context);
 				verify(module).convert(2).is(4);
@@ -205,13 +332,13 @@ namespace slime {
 
 			tests.$export = function() {
 				fifty.run(function module() {
-					var module: slime.loader.test.factory = $loader.script("test/data/module-export.js");
+					var module: slime.loader.test.Script = $loader.script("test/data/module-export.js");
 					var api = module({ scale: 2 });
 					verify(api).convert(3).is(6);
 				});
 
 				fifty.run(function file() {
-					var file: slime.loader.test.factory = $loader.script("test/data/file-export.js");
+					var file: slime.loader.test.Script = $loader.script("test/data/file-export.js");
 					var api = file({ scale: 2 });
 					verify(api).convert(3).is(6);
 				});
@@ -264,6 +391,16 @@ namespace slime {
 					})
 				});
 			}
+
+			tests.suite = function() {
+				fifty.run(fifty.tests.source);
+				fifty.run(fifty.tests.closure);
+				fifty.run(fifty.tests.$export);
+				fifty.run(fifty.tests.script);
+				//	TODO	tests.thread, browser only?
+			};
+
+			if (fifty.jsh) tests.platforms = fifty.jsh.platforms(fifty);
 		}
 	//@ts-ignore
 	)(fifty);
