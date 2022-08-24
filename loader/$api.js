@@ -496,7 +496,7 @@
 					var invokedAsConstructor = this instanceof CustomError;
 					if (invokedAsConstructor) {
 						this.name = p.name;
-						this.message = p.name + ": " + p.getMessage(properties);
+						this.message = p.getMessage(properties);
 						var stack = new Error("__message__").stack;
 						var elements = stack.split("\n");
 						if (elements[0] == "Error: __message__") {
