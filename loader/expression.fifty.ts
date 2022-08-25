@@ -578,7 +578,24 @@ namespace slime {
 					 */
 					 object: (o: object) => slime.loader.Source
 				}
+
+				/**
+				 * A loader that uses a series of loaders to resolve resources. For a given path, each loader is searched in turn
+				 * until a resource is found.
+				 *
+				 * The created loaders currently have the following limitations: <!---	TODO	address them	--->
+				 *
+				 * * They are not enumerable
+				 * * They do not respect the `.child` implementations of their elements
+				 * * They do not provide a sensible `.toString` implementation.
+				 *
+				 * @param loaders A list of {@link slime.Loader}s
+				 * @returns A loader that looks up resources in the given list of underlying loaders.
+				 *
+				 * @experimental
+				 */
 				series: (loaders: Loader[]) => Loader
+
 				tools: {
 					toExportScope: <T extends { [x: string]: any }>(t: T) => T & { $export: any, $exports: any }
 				}
@@ -608,7 +625,7 @@ namespace slime {
 				fifty.tests.jsapi = (
 					function() {
 						//	TODO	this is a problem with type definition of fifty.test.Parent
-						var rv = Object.assign(fifty.test.Parent(), { _1: void(0) });
+						var rv = Object.assign(fifty.test.Parent(), { _1: void(0), _2: void(0), _3: void(0) });
 						var $jsapi = {
 							loader: {
 								module: fifty.$loader.module,
@@ -621,6 +638,63 @@ namespace slime {
 								} : void(0)
 							}
 						};
+						var api = test.subject;
+						var Mock = function recurse() {
+							var contents = {};
+
+							this.add = function(path,value) {
+								var tokens = path.split("/");
+								if (tokens.length == 1) {
+									if (typeof(value) == "string") {
+										value = (function(string) {
+											return {
+												read: {
+													string: function() { return string; }
+												}
+											}
+										})(value);
+									}
+									contents[path] = { resource: value };
+								} else {
+									if (!contents[tokens[0]]) {
+										contents[tokens[0]] = { child: new recurse() };
+									}
+									contents[tokens[0]].child.add(tokens.slice(1).join("/"), value);
+								}
+							}
+
+							this.loader = new api.Loader({
+								get: function(path) {
+									var tokens = path.split("/");
+									if (tokens.length == 1) {
+										debugger;
+										return (contents[path]) ? contents[path].resource : null;
+									} else {
+										if (contents[tokens[0]]) {
+											var loader = contents[tokens[0]].child.loader.source;
+											if (!loader) {
+												throw new Error("No loader at " + tokens[0] + " for " + path);
+											}
+											if (!loader.get) throw new Error("No loader.get in " + Object.keys(loader));
+											return loader.get(tokens.slice(1).join("/"));
+										}
+										return null;
+									}
+								},
+								list: function(prefix) {
+									if (prefix) {
+										var tokens = prefix.split("/");
+										return contents[tokens[0]].child.loader.source.list(tokens.slice(1).join("/"));
+									} else {
+										var rv = [];
+										for (var x in contents) {
+											var item = { path: x, resource: Boolean(contents[x].resource), loader: Boolean(contents[x].child) };
+											rv.push(item);
+										}
+									}
+								}
+							});
+						}
 						rv._1 = function() {
 							var Tests = function(p: { loadTestModule: (path: string, context: object) => any }) {
 								var a = function(scope) {
@@ -710,6 +784,47 @@ namespace slime {
 								verify: verify
 							});
 						};
+						rv._2 = function() {
+							var loader = new api.Loader({
+								//	TODO	take care of the below; expand type definition or update test
+								//@ts-ignore
+								get: function(path) {
+									if (path == "a") {
+										return {
+											string: "a"
+										}
+									} else if (path == "b/c") {
+										return {
+											string: "c"
+										}
+									}
+								},
+								//	TODO	take care of the below; expand type definition or update test
+								//@ts-ignore
+								list: function(prefix) {
+									if (prefix == "b/") return [ { path: "c", resource: true } ];
+									return [ { path: "a", resource: true }, { path: "b", loader: true } ]
+								}
+							});
+							var listing = loader.list({ descendants: function() { return true; } } );
+							verify(listing).length.is(3);
+							//	TODO	take care of the below; expand type definition or update test
+							//@ts-ignore
+							verify(listing)[0].path.length.is(1);
+							verify(listing)[0].path.is("a");
+							verify(listing)[1].path.is("b");
+							verify(listing)[2].path.is("b/c");
+						}
+						rv._3 = function() {
+							var mock1 = new Mock();
+							mock1.add("a", "sa");
+							var mock2 = new Mock();
+							mock2.add("b/c", "sb/c");
+							var series = api.Loader.series([mock1.loader,mock2.loader]);
+							verify(series).get("foo").is(null);
+							verify(series).get("a").read(String).evaluate(String).is("sa");
+							verify(series).get("b/c").read(String).evaluate(String).is("sb/c");
+						}
 						return rv;
 					}
 				)();
