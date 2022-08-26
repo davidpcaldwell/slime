@@ -12,7 +12,11 @@ namespace slime.jrunscript.io.mime {
 		$slime: Pick<jsh.plugin.$slime,"mime" | "Resource">
 		api: {
 			java: slime.jrunscript.host.Exports
-			io: slime.jrunscript.io.Exports
+			io: {
+				Buffer: slime.jrunscript.io.Exports["Buffer"]
+				Resource: slime.jrunscript.io.Exports["Resource"]
+				Streams: slime.jrunscript.io.Exports["Streams"]
+			}
 		}
 	}
 

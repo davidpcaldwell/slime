@@ -23,6 +23,13 @@
 			mime: $loader.script("mime.js")
 		};
 
+		/** @type { slime.jrunscript.io.mime.Context["api"]["io"] } */
+		var mimeIoContext = {
+			Buffer: $context.$slime.io.Buffer,
+			Resource: $context.$slime.Resource,
+			Streams: $context.$slime.io.Streams
+		};
+
 		var library = {
 			zip: code.zip({
 				InputStream: $context.$slime.io.InputStream.from.java,
@@ -42,7 +49,7 @@
 				},
 				api: {
 					java: $context.api.java,
-					io: $$exports
+					io: mimeIoContext
 				}
 			})
 		}
