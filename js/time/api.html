@@ -61,83 +61,8 @@ END LICENSE
 				scope.katemas = new api.Day(1958,7,30);
 			</script>
 			<li class="constructor">
-				<div class="name">Time</div>
-				<div class="instances">
-					<div class="label">Instances</div>
-					<span class="type">__TYPE__</span>
-					<span>__DESCRIPTION__</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">day</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-						<li class="value">
-							<div class="name">time</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-						<li class="function">
-							<div class="name">local</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-						<li class="function">
-							<div class="name">format</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-						</li>
-					</ul>
-				</div>
-				<script type="application/x.jsapi#tests">
-					if (false) {
-						//	Assumes Eastern time
-						var fourAm = new module.Time({ day:new module.Day(2010,4,7), time: new module.Day.Time(4,0,0) });
-						var localized = fourAm.local();
-						var localUnix = 1270627200000;
-						test(localized.unix == localUnix);
-						test(fourAm.local(module.Time.Zone.UTC).unix == localUnix-4*60*60*1000);
-					}
-				</script>
-			</li>
-			<li class="constructor">
 				<div class="name">When</div>
 				<span>__DESCRIPTION__</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="object">
-							<span>__DESCRIPTION__</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">unix</div>
-									<span class="type">number</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-							</ul>
-						</li>
-					</ol>
-				</div>
 				<div class="instances">
 					<div class="label">Instances</div>
 					<span class="type">__TYPE__</span>
