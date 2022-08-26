@@ -140,12 +140,6 @@ namespace slime.time {
 			}
 		}
 
-		export interface Time {
-			day: Day
-			format(mask: string): string
-			local(zone?: Zone)
-		}
-
 		export interface When {
 			unix: number
 			local(): Time
@@ -270,7 +264,10 @@ namespace slime.time {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
 
+	export interface Exports {
+		Day: exports.Day
 	}
 
 	export namespace exports {
@@ -516,16 +513,55 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		Month: exports.Month
-		Day: exports.Day
-		Time: {
+	export namespace old {
+		export interface Time {
+			day: Day
+			time: day.Time
+			format(mask: string): string
+			local(zone?: Zone): When
+		}
+	}
+
+	export namespace exports {
+		export interface Time {
 			new (): old.Time
 			Zone: {
 				[id: string]: Zone
 			}
 		}
-		When: {
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.Time = function() {
+					const { verify } = fifty;
+					const module = slime.time.test.subject;
+
+					const test = function(b: boolean) {
+						verify(b).is(true);
+					}
+
+					if (false) {
+						//	Assumes Eastern time
+						var fourAm = new module.Time({ day:new module.Day(2010,4,7), time: new module.Day.Time(4,0,0) });
+						var localized = fourAm.local();
+						var localUnix = 1270627200000;
+						test(localized.unix == localUnix);
+						test(fourAm.local(module.Time.Zone.UTC).unix == localUnix-4*60*60*1000);
+					}
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Time: exports.Time
+	}
+
+	export namespace exports {
+		export interface When {
 			new (p: { date: Date }): old.When
 			new (p: { unix: number }): old.When
 			new (date: Date): old.When
@@ -538,6 +574,14 @@ namespace slime.time {
 			order: Function
 			now: () => old.When
 		}
+	}
+
+	export interface Exports {
+		When: exports.When
+	}
+
+	export interface Exports {
+		Month: exports.Month
 		java: object
 		install: Function
 		world: World
