@@ -117,7 +117,7 @@
 						}
 					},
 					create: function create(pathname) {
-						return $api.Function.world.old.tell(function(events) {
+						return function(events) {
 							var url = $api.Function.result(INSTALLER, $api.Function.pipe(
 								$api.Function.optionalChain($context.library.shell.os.name),
 								$api.Function.optionalChain($context.library.shell.os.arch)
@@ -143,7 +143,7 @@
 									events.fire("console", e.detail);
 								}
 							})
-						});
+						};
 					}
 				}
 			}

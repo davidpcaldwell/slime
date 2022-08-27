@@ -69,7 +69,7 @@ namespace slime.jrunscript.tools.gcloud {
 					command: cli.Executor
 				}
 
-				create: (pathname: string) => slime.$api.fp.world.old.Tell<{
+				create: slime.$api.fp.world.Action<string,{
 					console: string
 				}>
 			}
@@ -81,7 +81,7 @@ namespace slime.jrunscript.tools.gcloud {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 			const script: Script = fifty.$loader.script("module.js");
 			const install = jsh.tools.install;
 
@@ -186,7 +186,9 @@ namespace slime.jrunscript.tools.gcloud {
 				verify(captor).last().configuration.arguments[7].is("bar");
 			}
 
-			fifty.tests.world = function() {
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.install = function() {
 				const module = script({
 					library: {
 						file: jsh.file,
@@ -194,15 +196,17 @@ namespace slime.jrunscript.tools.gcloud {
 						install: jsh.tools.install
 					}
 				});
-				//	TODO	think there is an API for getting a location to put a directory, maybe in Fifty, maybe somewhere else
-				var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-				TMPDIR.directory.remove();
-				module.cli.Installation.create(TMPDIR.toString())({
-					console: function(e) {
-						jsh.shell.console(e.detail);
+				var at = fifty.jsh.file.temporary.location();
+				$api.Function.world.now.action(
+					module.cli.Installation.create,
+					at.pathname,
+					{
+						console: function(e) {
+							jsh.shell.console(e.detail);
+						}
 					}
-				});
-				jsh.shell.console("Installed to: " + TMPDIR);
+				);
+				jsh.shell.console("Installed to: " + at.pathname);
 			}
 
 			fifty.tests.suite = function() {
