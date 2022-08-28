@@ -5,6 +5,6 @@
 //	END LICENSE
 
 function FindProxyForURL(url, host) {
-	if (/http\:/.test(url)) return "HTTPS 127.0.0.1:__HTTPS__";
+	if (/http\:/.test(url)) return "PROXY 127.0.0.1:__HTTP__";
 	return "DIRECT";
 }

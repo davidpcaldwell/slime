@@ -236,9 +236,7 @@
 				});
 
 				var pac = $loader.get("proxy.pac").read(String)
-					.replace(/__HOST__/g, p.hosts[0])
 					.replace(/__HTTP__/g, String(p.server.http))
-					.replace(/__HTTPS__/g, String(tomcat.https.port))
 				;
 
 				console("HTTP running on " + p.server.http);
