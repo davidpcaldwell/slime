@@ -9,7 +9,7 @@ namespace slime.jrunscript.http.client {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.exports = {};
+			fifty.tests.exports = fifty.test.Parent();
 			fifty.tests.types = {};
 		}
 	//@ts-ignore
@@ -53,6 +53,45 @@ namespace slime.jrunscript.http.client {
 	}
 
 	export type Header = { name: string, value: string }
+
+	export namespace exports {
+		export interface Header {
+			value: (name: string) => (header: slime.jrunscript.http.client.Header[]) => slime.$api.fp.Maybe<string>
+			values: (name: string) => (header: slime.jrunscript.http.client.Header[]) => string[]
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Header = function() {
+					var headers = [
+						{ name: "foo", value: "bar" },
+						{ name: "baz", value: "bizzy" },
+						{ name: "Baz", value: "bizzy2" }
+					];
+
+					var subject = test.subject.Header;
+
+					verify(headers).evaluate(subject.value("foo")).present.is(true);
+					verify(headers).evaluate(subject.value("bar")).present.is(false);
+					verify(headers).evaluate(subject.value("Foo")).present.is(true);
+
+					verify(headers).evaluate(subject.values("baz")).length.is(2);
+					verify(headers).evaluate(subject.values("baz"))[0].is("bizzy");
+					verify(headers).evaluate(subject.values("baz"))[1].is("bizzy2");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
+	export interface Exports {
+		Header: exports.Header
+	}
 
 	/** Information specifying a proxy server. */
 	export interface Proxy {
@@ -105,10 +144,6 @@ namespace slime.jrunscript.http.client {
 		)(fifty);
 	}
 
-	export interface Exports {
-		Body: exports.Body
-	}
-
 	export namespace exports {
 		export interface Body {
 			json: () => (value: any) => spi.request.Body
@@ -130,6 +165,10 @@ namespace slime.jrunscript.http.client {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
+
+	export interface Exports {
+		Body: exports.Body
 	}
 
 	export namespace request {
@@ -585,7 +624,8 @@ namespace slime.jrunscript.http.client {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.exports.world);
+				fifty.run(fifty.tests.exports);
+
 				fifty.run(fifty.tests.jsapi.spi);
 				fifty.run(fifty.tests.jsapi.proxy);
 				fifty.run(fifty.tests.jsapi.other);

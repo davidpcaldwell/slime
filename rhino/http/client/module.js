@@ -396,7 +396,31 @@
 			interpretRequestBody: _interpretRequestBody
 		});
 
+		var isHeaderName = function(name) {
+			return function(header) {
+				return header.name.toLowerCase() == name.toLowerCase();
+			}
+		}
+
 		$export({
+			Header: {
+				value: function(name) {
+					return function(headers) {
+						var filtered = headers.filter(isHeaderName(name));
+						if (filtered.length > 1) throw new Error("Expected only one match for header " + name + ", but got more than one");
+						return $api.Function.result(
+							$api.Function.Maybe.from(filtered[0]),
+							$api.Function.Maybe.map($api.Function.property("value"))
+						);
+					}
+				},
+				values: function(name) {
+					return function(headers) {
+						var filtered = headers.filter(isHeaderName(name));
+						return filtered.map($api.Function.property("value"));
+					}
+				}
+			},
 			world: {
 				request: function(p) {
 					return urlConnectionImplementation(p);
