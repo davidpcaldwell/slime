@@ -8,9 +8,10 @@
 (
 	/**
 	 *
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		//	TODO	part of this is reproduced in wf.js ... probably should consolidate into an API
 		var parameters = jsh.script.getopts({
 			options: {
@@ -41,7 +42,7 @@
 			 * @param { number } majorVersion
 			 */
 			var getLatestVersion = function(majorVersion) {
-				var response = jsh.http.world.request({
+				var response = $api.Function.world.ask(jsh.http.world.request({
 					request: {
 						method: "GET",
 						url: jsh.web.Url.codec.string.decode("https://chromedriver.storage.googleapis.com/LATEST_RELEASE_" + majorVersion),
@@ -51,7 +52,7 @@
 						connect: 1000,
 						read: 1000
 					}
-				});
+				}));
 				var result = response();
 				var latest = result.stream.character().asString();
 				return latest;
@@ -83,4 +84,4 @@
 		}
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);

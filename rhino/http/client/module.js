@@ -276,7 +276,7 @@
 				return _open(new Packages.java.net.URL($context.api.web.Url.codec.string.encode(url)), toJavaProxy(proxy));
 			}
 
-			var execute = $api.Events.action(
+			var execute = (
 				/**
 				 *
 				 * @param { slime.$api.Events<slime.jrunscript.http.client.spi.Events> } e

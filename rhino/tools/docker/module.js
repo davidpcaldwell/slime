@@ -325,7 +325,7 @@
 										}
 									)
 								)
-								var ask = spi({
+								var ask = $api.Function.world.ask(spi({
 									request: {
 										method: (e.method) ? e.method : "GET",
 										url: $context.library.web.Url.codec.string.decode("http://docker.sock.unix" + url + query),
@@ -334,7 +334,7 @@
 									},
 									timeout: void(0),
 									proxy: void(0)
-								});
+								}));
 								var result = ask();
 								var json = result.stream.character().asString();
 								return (json) ? JSON.parse(json) : void(0);

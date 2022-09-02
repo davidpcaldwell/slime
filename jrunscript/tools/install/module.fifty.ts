@@ -130,7 +130,55 @@ namespace slime.jrunscript.tools.install {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface Exports {
+			getDefaultName: (url: string) => string
+		}
 	}
+
+	export interface Exports {
+		test: test.Exports
+	}
+
+	export interface Download {
+		/**
+		 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported.
+		 */
+		url: string
+
+		/**
+		 * A globally-unique name for this download. If present, it may be used as a cache key for certain kinds of caching
+		 * (for example, storing downloads in a directory, indexed by this name).
+		 */
+		name?: string
+	}
+
+	export namespace exports {
+		export interface Downloads {
+			from: {
+				url: (url: string) => Download
+			}
+		}
+	}
+
+	export interface Exports {
+		Download: exports.Downloads
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const subject = test.scope.api;
+
+			fifty.tests.getDefaultFilename = function() {
+				verify(subject).test.getDefaultName("https://www.example.com/path/dist.zip").is("dist.zip");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace events {
 		export interface Console {

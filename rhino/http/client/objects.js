@@ -188,7 +188,7 @@
 			 */
 			function oldspi(p) {
 				var body = $context.interpretRequestBody(p.body);
-				return urlConnectionImplementation({
+				return $api.Function.world.ask(urlConnectionImplementation({
 					request: {
 						method: p.method,
 						url: p.url,
@@ -197,7 +197,7 @@
 					},
 					proxy: p.proxy,
 					timeout: p.timeout
-				})();
+				}))();
 			}
 
 			/**

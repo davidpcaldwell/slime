@@ -86,6 +86,25 @@
 		)();
 
 		/**
+		 *
+		 * @param { string } url
+		 */
+		function getDefaultName(url) {
+			//	TODO	does js/web have something like this? Should it?
+			return url.split("/").slice(-1)[0];
+		}
+
+		/**
+		 *
+		 * @param { string } url
+		 */
+		function getDefaultLocation(url) {
+			var filename = getDefaultName(url);
+			if ($context.downloads) return $context.downloads.getRelativePath(filename).os.adapt();
+			return $context.api.shell.TMPDIR.getRelativePath(filename).os.adapt();
+		}
+
+		/**
 		 * @param { slime.jrunscript.tools.install.Source } p
 		 * @param { slime.$api.Events<{ console: string }> } events
 		 */
@@ -94,7 +113,7 @@
 			if (!p.file) {
 				if (p.url) {
 					//	Apache supplies name so that url property, which is getter that hits Apache mirror list, is not invoked
-					if (!p.name) p.name = String(p.url).split("/").slice(-1)[0];
+					if (!p.name) p.name = getDefaultName(p.url);
 					var pathname = downloads.getRelativePath(p.name);
 					if (!pathname.file) {
 						//	TODO	we could check to make sure this URL is http
@@ -254,6 +273,19 @@
 		};
 
 		$export({
+			test: {
+				getDefaultName: getDefaultName
+			},
+			Download: {
+				from: {
+					url: function(url) {
+						return {
+							url: url,
+							name: getDefaultName(url)
+						}
+					}
+				}
+			},
 			get: $exports.get,
 			//	TODO	find is completely untested
 			find: function(p) {
