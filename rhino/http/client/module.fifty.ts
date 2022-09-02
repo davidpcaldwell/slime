@@ -16,8 +16,6 @@ namespace slime.jrunscript.http.client {
 	)(fifty);
 
 	export interface Context {
-		debug: any
-
 		//	TODO	replace with individual properties governing these behaviors, and/or see whether the whole thing is obsolete
 		/**
 		 * If `true`, avoids the use of classes that are not whitelisted in Google App Engine. Currently, this means that a custom
@@ -39,7 +37,6 @@ namespace slime.jrunscript.http.client {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var script: slime.loader.Script<Context,Exports> = fifty.$loader.script("module.js");
 			var api = script({
-				debug: false,
 				gae: false,
 				api: {
 					web: fifty.global.jsh.web,
@@ -211,6 +208,10 @@ namespace slime.jrunscript.http.client {
 
 	export interface World {
 		request: spi.Implementation
+
+		Client: {
+			withFollowRedirects: (implementation: spi.Implementation) => spi.Implementation
+		}
 
 		Argument: {
 			request: (request: Request) => spi.Argument

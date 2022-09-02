@@ -12,54 +12,22 @@
 	 * @param { slime.jsh.script.cli.main } main
 	 */
 	function($api,jsh,main) {
-		/** @param { slime.jrunscript.http.client.spi.Response } response */
-		var getLocation = function(response) {
-			var value = jsh.http.Header.value("Location")(response.headers);
-			if (value.present) {
-				return value.value;
-			}
-			throw new Error("Expected: 'Location' header.");
-		};
-
-		/**
-		 *
-		 * @param { slime.web.Url } requested
-		 * @param { string } redirected
-		 * @returns
-		 */
-		var getRedirectUrl = function(requested, redirected) {
-			return jsh.web.Url.resolve(requested, redirected);
-		};
-
-		/**
-		 *
-		 * @param { slime.jrunscript.http.client.spi.Argument } argument
-		 */
-		var fetch = function(argument) {
-			var getResponse = $api.Function.world.question(jsh.http.world.request);
-			var response = getResponse(argument);
-
-			var getRedirectDestination = function() {
-				return getRedirectUrl(argument.request.url, getLocation(response));
-			}
-
-			//	TODO	does not handle relative URLs in redirects
-			if (response.status.code == 302 || response.status.code == 303) {
-				jsh.shell.console("Redirecting to " + getLocation(response));
-				return fetch($api.Object.compose(argument, { request: $api.Object.compose(argument.request, { method: "GET", url: getRedirectDestination(), body: void(0) }) }));
-			} else if (response.status.code == 307) {
-				jsh.shell.console("Redirecting to " + getLocation(response));
-				return fetch($api.Object.compose(argument, { request: $api.Object.compose(argument.request, { url: getRedirectDestination() }) }));
-			}
-			return response;
-		}
-
 		main(
 			$api.Function.pipe(
 				jsh.script.cli.option.string({ longname: "url" }),
 				jsh.script.cli.option.string({ longname: "format" }),
 				function(p) {
 					jsh.shell.console("url = " + p.options.url + " format = " + p.options.format);
+
+					var fetch = $api.Function.world.question(
+						jsh.http.world.Client.withFollowRedirects(jsh.http.world.request),
+						{
+							request: function(e) {
+								jsh.shell.console("Requesting: " + jsh.web.Url.codec.string.encode(e.detail.url));
+							}
+						}
+					);
+
 					var response = fetch(
 						jsh.http.world.Argument.request({
 							url: p.options.url

@@ -272,7 +272,8 @@
 				events.fire("request", {
 					url: url,
 					proxy: proxy
-				})
+				});
+
 				return _open(new Packages.java.net.URL($context.api.web.Url.codec.string.encode(url)), toJavaProxy(proxy));
 			}
 
@@ -351,6 +352,105 @@
 			return execute;
 		}
 
+		var isHeaderName = function(name) {
+			return function(header) {
+				return header.name.toLowerCase() == name.toLowerCase();
+			}
+		}
+
+		var Header = {
+			value: function(name) {
+				return function(headers) {
+					var filtered = headers.filter(isHeaderName(name));
+					if (filtered.length > 1) throw new Error("Expected only one match for header " + name + ", but got more than one");
+					return $api.Function.result(
+						$api.Function.Maybe.from(filtered[0]),
+						$api.Function.Maybe.map($api.Function.property("value"))
+					);
+				}
+			},
+			values: function(name) {
+				return function(headers) {
+					var filtered = headers.filter(isHeaderName(name));
+					return filtered.map($api.Function.property("value"));
+				}
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.spi.Implementation } implementation
+		 */
+		var withFollowRedirects = function(implementation) {
+			/** @param { slime.jrunscript.http.client.spi.Response } response */
+			var getLocation = function(response) {
+				var value = Header.value("Location")(response.headers);
+				if (value.present) {
+					return value.value;
+				}
+				throw new Error("Expected: 'Location' header.");
+			};
+
+			/**
+			 *
+			 * @param { slime.web.Url } requested
+			 * @param { string } redirected
+			 * @returns
+			 */
+			var getRedirectUrl = function(requested, redirected) {
+				return $context.api.web.Url.resolve(requested, redirected);
+			};
+
+			/**
+			 * @type { slime.jrunscript.http.client.spi.Implementation }
+			 */
+			return function fetch(argument) {
+				return function(events) {
+					var response = implementation(argument)(events);
+
+					var getRedirectDestination = function() {
+						return getRedirectUrl(argument.request.url, getLocation(response));
+					}
+
+					//	TODO	should make 302 handling more explicit
+
+					if (response.status.code == 302 || response.status.code == 303) {
+						return fetch(
+							$api.Object.compose(
+								argument,
+								{
+									request: $api.Object.compose(
+										argument.request,
+										{
+											method: "GET",
+											url: getRedirectDestination(),
+											body: void(0)
+										}
+									)
+								}
+							)
+						)(events);
+					} else if (response.status.code == 307) {
+						return fetch(
+							$api.Object.compose(
+								argument,
+								{
+									request: $api.Object.compose(
+										argument.request,
+										{
+											url: getRedirectDestination()
+										}
+									)
+								}
+							)
+						)(events);
+					}
+
+					return response;
+				}
+			}
+		}
+
 		/** @type { slime.jrunscript.http.client.internal.sessionRequest } */
 		var sessionRequest = function(cookies) {
 			return function(argument) {
@@ -396,34 +496,14 @@
 			interpretRequestBody: _interpretRequestBody
 		});
 
-		var isHeaderName = function(name) {
-			return function(header) {
-				return header.name.toLowerCase() == name.toLowerCase();
-			}
-		}
-
 		$export({
-			Header: {
-				value: function(name) {
-					return function(headers) {
-						var filtered = headers.filter(isHeaderName(name));
-						if (filtered.length > 1) throw new Error("Expected only one match for header " + name + ", but got more than one");
-						return $api.Function.result(
-							$api.Function.Maybe.from(filtered[0]),
-							$api.Function.Maybe.map($api.Function.property("value"))
-						);
-					}
-				},
-				values: function(name) {
-					return function(headers) {
-						var filtered = headers.filter(isHeaderName(name));
-						return filtered.map($api.Function.property("value"));
-					}
-				}
-			},
+			Header: Header,
 			world: {
 				request: function(p) {
 					return urlConnectionImplementation(p);
+				},
+				Client: {
+					withFollowRedirects: withFollowRedirects
 				},
 				Argument: {
 					request: function(request) {
