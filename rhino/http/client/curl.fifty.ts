@@ -32,7 +32,7 @@ namespace slime.jrunscript.http.client.curl {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			var script: Script = fifty.$loader.script("curl.js");
 
@@ -56,7 +56,7 @@ namespace slime.jrunscript.http.client.curl {
 				var implementation = api({
 					unixSocket: "/var/run/docker.sock"
 				});
-				var response = implementation({
+				var response = $api.Function.world.ask(implementation({
 					request: {
 						method: "GET",
 						url: jsh.web.Url.codec.string.decode("http://docker.local.unix/info"),
@@ -66,7 +66,7 @@ namespace slime.jrunscript.http.client.curl {
 						connect: void(0),
 						read: void(0)
 					}
-				})();
+				}))();
 				jsh.shell.console("status = " + response.status);
 				jsh.shell.console("headers = " + JSON.stringify(response.headers));
 				jsh.shell.console("stream = " + JSON.stringify(JSON.parse(response.stream.character().asString()), void(0), 4));

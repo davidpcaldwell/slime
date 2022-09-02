@@ -51,11 +51,7 @@
 		 * @returns { slime.jrunscript.http.client.spi.Response }
 		 */
 		function request(p) {
-			return $context.library.http.world.request(
-				toRequest(p)
-			)({
-				//	TODO	setting an event handler to void(0) below causes an error, which is somewhat unintuitive
-			});
+			return $api.Function.world.now.question($context.library.http.world.request, toRequest(p));
 		}
 
 		/**

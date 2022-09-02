@@ -48,14 +48,14 @@ namespace slime.jrunscript.http.client.spi {
 		}
 	}
 
-	export type Implementation = (p: Argument) => slime.$api.fp.world.old.Ask<Events,Response>
+	export type Implementation = slime.$api.fp.world.Question<Argument,Events,Response>
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			fifty.tests.types.Implementation = function(subject: Implementation) {
 				var server = jsh.httpd.Tomcat();
@@ -75,14 +75,14 @@ namespace slime.jrunscript.http.client.spi {
 					}
 				});
 				server.start();
-				var ask = subject({
+				var ask = $api.Function.world.ask(subject({
 					request: {
 						method: "GET",
 						url: jsh.web.Url.codec.string.decode("http://127.0.0.1:" + server.port + "/foo"),
 						headers: []
 					},
 					timeout: void(0)
-				});
+				}));
 				var response = ask();
 				verify(response).status.code.is(200);
 				var body: { path: string } = JSON.parse(response.stream.character().asString());
