@@ -118,6 +118,12 @@
 			"type": "shell",
 			"command": "./fifty test.jsh ${file} --part wip",
 			"problemMatcher": []
+		},
+		{
+			"label": "Fifty: list tests",
+			"type": "shell",
+			"command": "./fifty test.jsh list ${file}",
+			"problemMatcher": []
 		}
 	],
 	"inputs": [
