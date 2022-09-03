@@ -408,7 +408,7 @@
 						if (!format.extract) throw new Error("No algorithm to extract " + format.extension);
 
 						//	TODO	what if directory exists? Right now will bomb, which may be OK
-						var to = p.to.createDirectory();
+						var to = p.to.createDirectory({ recursive: true });
 						//	TODO	no world-oriented equivalent
 						format.extract(archive.file, to);
 					}
