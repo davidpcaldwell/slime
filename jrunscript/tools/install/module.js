@@ -85,6 +85,28 @@
 			}
 		)();
 
+		var newFormats = {
+			zip: {
+				extension: ".zip",
+				extract: formats.zip.extract
+			},
+			targz: {
+				extension: ".tgz",
+				extract: algorithms.gzip.extract
+			}
+		};
+
+		/**
+		 *
+		 * @param { slime.mime.Type } type
+		 * @returns { slime.$api.fp.Maybe<slime.jrunscript.tools.install.download.Format> }
+		 */
+		var getFormat = function(type) {
+			if (type.media == "application" && type.subtype == "zip") return $api.Function.Maybe.value(newFormats.zip);
+			if (type.media == "application" && type.subtype == "gzip") return $api.Function.Maybe.value(newFormats.targz);
+			return $api.Function.Maybe.nothing();
+		}
+
 		/**
 		 *
 		 * @param { string } url
@@ -105,7 +127,7 @@
 		}
 
 		/**
-		 * @param { slime.jrunscript.tools.install.Source } p
+		 * @param { slime.jrunscript.tools.install.old.WorldSource } p
 		 * @param { slime.$api.Events<{ console: string }> } events
 		 */
 		var get = function(p,events) {
@@ -145,7 +167,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.tools.install.old.Source } oldSource
-		 * @returns { slime.jrunscript.tools.install.Source }
+		 * @returns { slime.jrunscript.tools.install.old.WorldSource }
 		 */
 		var toModernSource = function(oldSource) {
 			return {
@@ -156,7 +178,7 @@
 		}
 
 		/**
-		 * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: Parameters<slime.jrunscript.tools.install.Exports["install"]>[0]["format"], to: slime.jrunscript.file.Pathname, replace?: boolean } } p
+		 * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: slime.jrunscript.tools.install.old.Format, to: slime.jrunscript.file.Pathname, replace?: boolean } } p
 		 * @param { slime.$api.Events<{ console: string }> } events
 		 * @returns { slime.jrunscript.file.Directory }
 		 */
@@ -238,7 +260,7 @@
 			return install(p,events);
 		});
 
-		/** @type { slime.jrunscript.tools.install.install } */
+		/** @type { (p: slime.jrunscript.tools.install.old.WorldInstallation) => slime.$api.fp.world.old.Tell<slime.jrunscript.tools.install.events.Console> } */
 		var newInstall = function(p) {
 			return $api.Function.world.old.tell(function(events) {
 				if (typeof(p.source.file) != "string" && typeof(p.source.file) != "undefined") {
@@ -283,6 +305,112 @@
 							url: url,
 							name: getDefaultName(url)
 						}
+					}
+				},
+				Format: newFormats,
+				install: function(p) {
+					/** @param { slime.jrunscript.file.File } file */
+					var getFileMimeType = function(file) {
+						var basename = file.pathname.basename;
+						var decode = $api.mime.Type.codec.declaration.decode;
+						if (/\.zip$/.test(basename)) return $api.Function.Maybe.value(decode("application/zip"));
+						if (/\.tgz$/.test(basename)) return $api.Function.Maybe.value(decode("application/gzip"));
+						if (/\.tar.gz$/.test(basename)) return $api.Function.Maybe.value(decode("application/gzip"));
+						return $api.Function.Maybe.nothing();
+					};
+
+					/** @param { slime.jrunscript.http.client.spi.Response } response */
+					var getResponseMimeType = function(response) {
+						return $api.Function.result(
+							$context.api.http.Header.value("Content-Type")(response.headers),
+							$api.Function.Maybe.map($api.mime.Type.codec.declaration.decode)
+						);
+					};
+
+					/**
+					 *
+					 * @param { slime.jrunscript.tools.install.download.Format } specifiedFormat
+					 * @param { slime.$api.fp.Maybe<slime.mime.Type> } mimeType
+					 * @returns
+					 */
+					var getArchiveFormat = function(specifiedFormat, mimeType) {
+						if (specifiedFormat) return specifiedFormat;
+						if (mimeType.present) {
+							var maybe = getFormat(mimeType.value);
+							if (maybe.present) return maybe.value;
+						}
+					}
+
+					/**
+					 *
+					 * @param { slime.jrunscript.tools.install.Download } download
+					 * @param { (argument: slime.jrunscript.http.client.spi.Argument) => slime.jrunscript.http.client.spi.Response } fetch
+					 * @returns { { file: slime.jrunscript.file.File, type: slime.$api.fp.Maybe<slime.mime.Type> } }
+					 */
+					var getArchive = function(download,fetch) {
+						/** @type { slime.jrunscript.file.Pathname } */
+						var local;
+						if (download.name && $context.downloads) {
+							local = $context.downloads.getRelativePath(download.name);
+						}
+						if (local && local.file) {
+							return { file: local.file, type: getFileMimeType(local.file) };
+						}
+						var response = fetch(
+							$context.api.http.world.Argument.request({
+								url: download.url
+							})
+						);
+						var format = getArchiveFormat(download.format, getResponseMimeType(response));
+						// var type = $context.api.http.Header.value("Content-Type")(response.headers);
+						// throw new Error("type = " + ((type.present) ? type.value : "(absent)"));
+						if (!format) throw new Error("Could not determine format of archive at: " + download.url + " (type: " + getResponseMimeType(response) + ")");
+						if (!local) {
+							local = $context.api.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("archive" + format.extension);
+						}
+						var write = $context.api.file.world.Location.file.write.stream({ input: response.stream });
+						$api.Function.world.now.action(write, local.os.adapt());
+						return { file: local.file, type: getResponseMimeType(response) };
+					}
+
+					/**
+					 *
+					 * @param { slime.$api.Events<slime.jrunscript.tools.install.download.Events> } events
+					 * @returns
+					 */
+					var createFetcher = function(events) {
+						return $api.Function.world.question(
+							$context.api.http.world.Client.withFollowRedirects($context.api.http.world.request),
+							{
+								request: function(e) {
+									events.fire("request", e.detail);
+								}
+							}
+						);
+					}
+
+					return function(events) {
+						var fetch = createFetcher(events);
+						var archive = getArchive(p.download,fetch);
+						events.fire("archive", archive.file);
+
+						var format = (
+							function() {
+								if (p.download.format) return p.download.format;
+								if (archive.type.present) {
+									var maybe = getFormat(archive.type.value);
+									if (maybe.present) return maybe.value;
+								}
+							}
+						)();
+
+						if (!format) throw new Error("Could not determine format of archive: " + archive.file);
+						if (!format.extract) throw new Error("No algorithm to extract " + format.extension);
+
+						//	TODO	what if directory exists? Right now will bomb, which may be OK
+						var to = p.to.createDirectory();
+						//	TODO	no world-oriented equivalent
+						format.extract(archive.file, to);
 					}
 				}
 			},

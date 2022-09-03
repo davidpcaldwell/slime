@@ -19,35 +19,29 @@
 				function(p) {
 					jsh.shell.console("url = " + p.options.url + " format = " + p.options.format);
 
-					var fetch = $api.Function.world.question(
-						jsh.http.world.Client.withFollowRedirects(jsh.http.world.request),
+					var destination = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+					destination.directory.remove();
+
+					$api.Function.world.now.action(
+						jsh.tools.install.Download.install,
+						{
+							download: {
+								url: p.options.url,
+								format: (p.options.format) ? jsh.tools.install.Download.Format[p.options.format] : void(0)
+							},
+							to: destination
+						},
 						{
 							request: function(e) {
 								jsh.shell.console("Requesting: " + jsh.web.Url.codec.string.encode(e.detail.url));
+							},
+							archive: function(e) {
+								jsh.shell.console("Wrote archive to " + e.detail.pathname.toString());
 							}
 						}
 					);
 
-					var response = fetch(
-						jsh.http.world.Argument.request({
-							url: p.options.url
-						})
-					);
-
-					jsh.shell.console("HTTP " + response.status.code);
-
-					//	TODO	no world-oriented equivalent
-					var archive = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("archive." + p.options.format);
-					var write = jsh.file.world.Location.file.write.stream({ input: response.stream });
-					$api.Function.world.now.action(write, archive.os.adapt());
-					jsh.shell.console("Wrote archive to " + archive.os.adapt().pathname);
-
-					/** @type { slime.jrunscript.tools.install.Format } */
-					var format = jsh.tools.install.format[p.options.format];
-					var expanded = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					//	TODO	no world-oriented equivalent
-					format.extract(archive.file, expanded);
-					jsh.shell.console("Expanded archive to " + expanded);
+					jsh.shell.console("Downloaded to " + destination);
 				}
 			)
 		)
