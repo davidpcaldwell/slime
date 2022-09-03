@@ -140,31 +140,6 @@ namespace slime.jrunscript.tools.install {
 		test: test.Exports
 	}
 
-	export interface Download {
-		/**
-		 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported.
-		 */
-		url: string
-
-		/**
-		 * A globally-unique name for this download. If present, it may be used as a cache key for certain kinds of caching
-		 * (for example, storing downloads in a directory, indexed by this name).
-		 */
-		name?: string
-	}
-
-	export namespace exports {
-		export interface Downloads {
-			from: {
-				url: (url: string) => Download
-			}
-		}
-	}
-
-	export interface Exports {
-		Download: exports.Downloads
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -179,6 +154,59 @@ namespace slime.jrunscript.tools.install {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace download {
+		export interface Events {
+			request: slime.jrunscript.http.client.spi.Events["request"]
+			archive: slime.jrunscript.file.File
+		}
+
+		export interface Format {
+			extract: (f: slime.jrunscript.file.File, d: slime.jrunscript.file.Directory) => void
+			extension: string
+		}
+	}
+
+	export interface Download {
+		/**
+		 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported.
+		 */
+		url: string
+
+		/**
+		 * A globally-unique name for this download. If present, it may be used as a cache key for certain kinds of caching
+		 * (for example, storing downloads in a directory, indexed by this name).
+		 */
+		name?: string
+
+		format?: download.Format
+	}
+
+	export namespace exports {
+		export interface Download {
+			from: {
+				url: (url: string) => install.Download
+			}
+		}
+
+		export interface Download {
+			Format: {
+				zip: download.Format
+				targz: download.Format
+			}
+		}
+
+		export interface Download {
+			install: slime.$api.fp.world.Action<
+				{ download: install.Download, to: slime.jrunscript.file.Pathname },
+				download.Events
+			>
+		}
+	}
+
+	export interface Exports {
+		Download: exports.Download
+	}
 
 	export namespace events {
 		export interface Console {
@@ -196,45 +224,9 @@ namespace slime.jrunscript.tools.install {
 		}
 	}
 
-	export interface Source {
-		//	TODO	it's not really specified what happens if `url` and `file` are both present.
-
-		/**
-		 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported. Optional; not
-		 * necessary if `file` is provided.
-		 */
-		url?: string
-
-		/**
-		 * The filename to use if a file needs to be created when downloading this file. Defaults to terminal file name of URL.
-		 */
-		name?: string
-
-		/**
-		 * The local copy of the installation file. Optional; not necessary if `url` is present.
-		 */
-		file?: string
-	}
-
-	export interface Format {
-		extract: (f: slime.jrunscript.file.File, d: slime.jrunscript.file.Directory) => void
-		getDestinationPath: (basename: string) => string
-	}
-
-	export interface Archive {
-		format?: Format
-		folder?: (file: slime.jrunscript.file.File) => string
-	}
-
 	export interface Destination {
 		location: string
 		replace?: boolean
-	}
-
-	export interface Installation {
-		source: Source
-		archive?: Archive
-		destination: Destination
 	}
 
 	export namespace old {
@@ -242,7 +234,46 @@ namespace slime.jrunscript.tools.install {
 		 *
 		 * @returns The directory to which the installation was installed.
 		 */
-		export type install = (p: old.Installation, events?: events.old.Receiver) => slime.jrunscript.file.Directory;
+		export interface install {
+			(p: Installation, events?: events.old.Receiver): slime.jrunscript.file.Directory
+			(p: WorldInstallation): slime.$api.fp.world.old.Tell<events.Console>
+		}
+
+		export interface WorldSource {
+			//	TODO	it's not really specified what happens if `url` and `file` are both present.
+
+			/**
+			 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported. Optional; not
+			 * necessary if `file` is provided.
+			 */
+			url?: string
+
+			/**
+			 * The filename to use if a file needs to be created when downloading this file. Defaults to terminal file name of URL.
+			 */
+			name?: string
+
+			/**
+			 * The local copy of the installation file. Optional; not necessary if `url` is present.
+			 */
+			file?: string
+		}
+
+		export interface Format {
+			extract: (f: slime.jrunscript.file.File, d: slime.jrunscript.file.Directory) => void
+			getDestinationPath: (basename: string) => string
+		}
+
+		export interface Archive {
+			format?: Format
+			folder?: (file: slime.jrunscript.file.File) => string
+		}
+
+		export interface WorldInstallation {
+			source: WorldSource
+			archive?: Archive
+			destination: Destination
+		}
 
 		export interface Source {
 			//	TODO	it's not really specified what happens if `url` and `file` are both present.
@@ -310,8 +341,6 @@ namespace slime.jrunscript.tools.install {
 		}
 	}
 
-	export type install = (p: Installation) => slime.$api.fp.world.old.Tell<events.Console>;
-
 	export interface Exports {
 		/**
 		 * This method can process both local and remote files. For remote files, it is assumed that the filename of
@@ -323,7 +352,7 @@ namespace slime.jrunscript.tools.install {
 		 * is assumed to have the same name as the file (minus the extension). For a given archive, if the desired
 		 * directory has a different path within, it can be specified with `getDestinationPath()`.
 		 */
-		install: install & old.install
+		install: old.install
 	}
 
 	(
@@ -390,15 +419,15 @@ namespace slime.jrunscript.tools.install {
 
 	export interface Exports {
 		format: {
-			zip: Format
+			zip: old.Format
 
 			/**
 			 * A format representing `gzip`ped `.tar` files. Conditional; requires `tar` to be in the `PATH`.
 			 */
-			gzip?: Format
+			gzip?: old.Format
 		}
 
-		find: (p: Source) => slime.$api.fp.world.old.Ask<events.Console,string>
+		find: (p: old.WorldSource) => slime.$api.fp.world.old.Ask<events.Console,string>
 
 		/**
 		 * Returns a file containing an installer, either using a specified local file or a specified URL.
