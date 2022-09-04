@@ -141,9 +141,11 @@ namespace slime.time {
 		}
 
 		export interface When {
+			/**
+			 * The number of milliseconds since epoch represented by this object.
+			 */
 			unix: number
-			local(): Time
-			local(zone: any): Time
+			local(zone?: Zone): Time
 		}
 	}
 
@@ -207,7 +209,6 @@ namespace slime.time {
 			}
 		//@ts-ignore
 		)(fifty);
-
 	}
 
 	export namespace exports {
@@ -574,6 +575,20 @@ namespace slime.time {
 			order: Function
 			now: () => old.When
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.When = function() {
+					var string = "2011-01-01T00:00:00Z";
+					var when = test.subject.When.codec.rfc3339.decode(string);
+					var translated = when.local(test.subject.Time.Zone.UTC).format("yyyy-mm-dd HR:mi:sc");
+					fifty.verify(translated).is("2011-01-01 00:00:00");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Exports {
@@ -634,6 +649,10 @@ namespace slime.time {
 				fifty.run(fifty.tests.Month);
 
 				fifty.run(fifty.tests.Day);
+
+				fifty.run(fifty.tests.Time);
+
+				fifty.run(fifty.tests.When);
 
 				fifty.run(fifty.tests.jsapi);
 			}
