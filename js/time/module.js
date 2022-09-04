@@ -9,9 +9,14 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.time.Context } $context
-	 * @param { slime.time.Exports } $exports
+	 * @param { slime.loader.Script<slime.time.Exports> } $export
 	 */
-	function($api,$context,$exports) {
+	function($api,$context,$export) {
+		var now = $context.now || function() { return new Date().getTime(); };
+
+		/** @type { Partial<slime.time.Exports> } */
+		var $exports = {};
+
 		/** @type { { [id: string]: slime.time.Zone } } */
 		var zones = {};
 		if (typeof($context.zones) != "undefined") {
@@ -639,14 +644,6 @@
 		Day.rehydrate = function(json) {
 			return new Day(json.year.value, json.month.id.index, json.day);
 		};
-		/** @type {slime.time.Exports["Day"]["format"] } */
-		Day.format = function(mask) {
-			/** @type { ReturnType<slime.time.Exports["Day"]["format"]> } */
-			return function(day) {
-				var toDayObject = new Day(day.year, day.month, day.day);
-				return toDayObject.format(mask);
-			}
-		}
 
 		function Time() {
 			var day;
@@ -958,11 +955,34 @@
 
 		$exports.install = install;
 
-		$exports.world = {
-			today: function() {
-				return Day.today().adapt()
-			}
-		}
+		$export({
+			Date: {
+				input: {
+					today: function() {
+						var datetime = zones.local.local(now());
+						return {
+							year: datetime.year,
+							month: datetime.month,
+							day: datetime.day
+						}
+					}
+				},				/** @type {slime.time.Exports["Date"]["format"] } */
+				format: function(mask) {
+					/** @type { ReturnType<slime.time.Exports["Date"]["format"]> } */
+					return function(day) {
+						var toDayObject = new Day(day.year, day.month, day.day);
+						return toDayObject.format(mask);
+					}
+				}
+			},
+			install: install,
+			Day: $exports.Day,
+			Time: $exports.Time,
+			Year: $exports.Year,
+			When: $exports.When,
+			Month: $exports.Month,
+			java: $exports.java
+		})
 	}
 //@ts-ignore
-)($api,$context,$exports)
+)($api,$context,$export)
