@@ -25,6 +25,7 @@ namespace slime.external.lib.rename {
 
 namespace slime.external.lib.rename.es5 {
 	export type _Function = Function
+	export type _Date = Date
 }
 
 namespace slime.external.lib.rename.dom {
@@ -33,6 +34,7 @@ namespace slime.external.lib.rename.dom {
 
 namespace slime.external.lib.es5 {
 	export type Function = slime.external.lib.rename.es5._Function
+	export type Date = slime.external.lib.rename.es5._Date
 }
 
 namespace slime.external.lib.dom {
