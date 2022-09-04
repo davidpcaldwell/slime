@@ -32,7 +32,6 @@
 		add("js/object/", getSlimePart("js/object/api.html"));
 		add("js/object/Error.js", getSlimePart("js/object/Error.api.html"));
 		add("js/document/", getSlimePart("js/document/api.html"));
-		add("js/time/", getSlimePart("js/time/api.html"));
 		// TODO: does js/promise have any real tests?
 		add("js/promise/", getSlimePart("js/promise/api.html"));
 

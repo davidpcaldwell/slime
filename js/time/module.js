@@ -758,6 +758,7 @@
 			}
 
 			//	Time zone information: http://www.twinsun.com/tz/tz-link.htm
+			/** @type { slime.time.old.When["local"] } */
 			this.local = function(zone) {
 				if (!zone) zone = zones.local;
 				var zoned = zone.local(date.getTime());
