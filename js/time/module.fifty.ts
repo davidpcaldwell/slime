@@ -45,6 +45,10 @@ namespace slime.time {
 	}
 
 	export interface Context {
+		/**
+		 * A function that returns the number of milliseconds since the UNIX epoch. If not supplied, the standard JavaScript
+		 * implementation will be used.
+		 */
 		now?: slime.$api.fp.impure.Input<number>
 
 		zones?: {
@@ -59,16 +63,11 @@ namespace slime.time {
 	}
 
 	export namespace test {
-		export const { subject, old, load } = (function(fifty: slime.fifty.test.Kit) {
+		export const { subject, load } = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("module.js");
 			var jcontext: slime.loader.Script<context.Java,Context> = fifty.$loader.script("context.java.js");
 			return {
 				subject: (fifty.global.jsh) ? script(jcontext()) : script(),
-				old: script({
-					old: {
-						Day_month: true
-					}
-				}),
 				load: function(context: Context) {
 					return script(context);
 				}
@@ -151,19 +150,6 @@ namespace slime.time {
 					verify(format("WWWWWW Mmmm ?d, yyyy")).is("SUNDAY March 1, 2009");
 					verify(format("Wwwww Mmmm ?d, yyyy")).is("Sun March 1, 2009");
 					verify(format("Wwwww Mmmm dd, yyyy")).is("Sun March 01, 2009");
-
-					const subject = test.subject;
-					fifty.run(function old() {
-						var mar1 = new subject.Day(2009,3,1);
-						const test = function(b) { return verify(b).is(true); }
-						test(mar1.format("yyyy mm dd") == "2009 03 01");
-						test(mar1.format("yyyy/?m/?d") == "2009/3/1");
-						test(mar1.format("Mmmm ?d, yyyy") == "March 1, 2009");
-						test(mar1.format("Www Mmmm ?d, yyyy") == "Sun March 1, 2009");
-						test(mar1.format("WWWWWW Mmmm ?d, yyyy") == "SUNDAY March 1, 2009");
-						test(mar1.format("Wwwww Mmmm ?d, yyyy") == "Sun March 1, 2009");
-						test(mar1.format("Wwwww Mmmm dd, yyyy") == "Sun March 01, 2009");
-					});
 				}
 			}
 		//@ts-ignore
