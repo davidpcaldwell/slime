@@ -54,16 +54,48 @@ namespace slime.jrunscript.tools.homebrew {
 			install: Command<{
 				formula: string
 			},string>
+
+			list: Command<void,string[]>
 		}
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
 
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			const { jsh } = fifty.global;
+			var script: Script = fifty.$loader.script("homebrew.js");
+			return script({
+				library: {
+					http: jsh.http,
+					shell: jsh.shell
+				}
+			});
+		//@ts-ignore
+		})(fifty);
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { jsh } = fifty.global;
+
 			fifty.tests.suite = function() {
+			}
+
+			fifty.tests.manual = function() {
+				if (!jsh.shell.environment.TEST_HOMEBREW_PREFIX) {
+					jsh.shell.console("Required: TEST_HOMEBREW_PREFIX");
+					return;
+				}
+				var existing = test.subject.get({ location: jsh.file.Pathname(jsh.shell.environment.TEST_HOMEBREW_PREFIX) });
+				var output = existing.command(test.subject.commands.list).parameters().run({
+					stderr: function(e) {
+						jsh.shell.console(e.detail);
+					}
+				});
+				jsh.shell.console(JSON.stringify(output));
 			}
 		}
 	//@ts-ignore

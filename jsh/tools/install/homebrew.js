@@ -143,6 +143,19 @@
 					result: function(output) {
 						return output;
 					}
+				},
+				list: {
+					invocation: function() {
+						return {
+							command: "list",
+							arguments: ["--full-name"]
+						}
+					},
+					result: function(output) {
+						return output.split("\n").filter(function(line) {
+							return Boolean(line);
+						});
+					}
 				}
 			}
 		});
