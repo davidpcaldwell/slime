@@ -6,7 +6,9 @@
 
 namespace slime.time {
 	export interface Context {
+		/** @deprecated */
 		old?: {
+			/** @deprecated */
 			Day_month: boolean
 		}
 	}
@@ -34,7 +36,7 @@ namespace slime.time {
 		/**
 		 * @experimental Has other undocumented properties
 		 */
-		 export interface Weekday {
+		export interface Weekday {
 			/**
 			 * The full name of the weekday; e.g., `"MONDAY"`, `"WEDNESDAY"`.
 			 */
@@ -42,12 +44,17 @@ namespace slime.time {
 		}
 
 		/**
+		 * @deprecated
+		 *
 		 * Represents a calendar year.
 		 */
 		export interface Year {
 			value: number
 		}
 
+		/**
+		 * @deprecated
+		 */
 		export interface Day {
 			year: Year
 			month: Month
@@ -73,6 +80,7 @@ namespace slime.time {
 			adapt: () => slime.time.Date
 		}
 
+		/** @deprecated */
 		export interface Month {
 			year: Year
 			id: {
@@ -85,6 +93,7 @@ namespace slime.time {
 		}
 
 		export namespace day {
+			/** @deprecated */
 			export interface Time {
 				hours: number
 				minutes: number
@@ -92,6 +101,7 @@ namespace slime.time {
 			}
 		}
 
+		/** @deprecated */
 		export interface When {
 			/**
 			 * The number of milliseconds since epoch represented by this object.
@@ -114,7 +124,15 @@ namespace slime.time {
 
 			 subtract: Function
 
-			 Time: new (hours: number, minutes: number, seconds?: number) => old.day.Time
+			 Time: {
+				new (p: {
+					hours: number,
+					minutes: number,
+					seconds?: number
+				}): old.day.Time
+
+				new (hours: number, minutes: number, seconds?: number): old.day.Time
+			 }
 
 			 order: Function
 			 today: () => old.Day
@@ -152,6 +170,17 @@ namespace slime.time {
 					verify(day).year.value.is(2021);
 					verify(day).month.id.index.is(11);
 					verify(day).day.is(1);
+				}
+				fifty.tests.Day.format = function() {
+					var mar1 = new old.test.subject.Day(2009,3,1);
+					const test = function(b) { return verify(b).is(true); }
+					test(mar1.format("yyyy mm dd") == "2009 03 01");
+					test(mar1.format("yyyy/?m/?d") == "2009/3/1");
+					test(mar1.format("Mmmm ?d, yyyy") == "March 1, 2009");
+					test(mar1.format("Www Mmmm ?d, yyyy") == "Sun March 1, 2009");
+					test(mar1.format("WWWWWW Mmmm ?d, yyyy") == "SUNDAY March 1, 2009");
+					test(mar1.format("Wwwww Mmmm ?d, yyyy") == "Sun March 1, 2009");
+					test(mar1.format("Wwwww Mmmm dd, yyyy") == "Sun March 01, 2009");
 				}
 			}
 		//@ts-ignore
@@ -336,13 +365,20 @@ namespace slime.time {
 			}
 		//@ts-ignore
 		)(fifty);
-
 	}
 
 	export interface Exports {
+		/** @deprecated */
+		Day: exports.Days
+	}
+
+	export interface Exports {
+		/** @deprecated */
 		Year: {
+			/** @deprecated */
 			new (year: number): old.Year
 
+			/** @deprecated */
 			Month: any
 		}
 	}
@@ -364,6 +400,8 @@ namespace slime.time {
 	export namespace exports {
 		export interface Month {
 			/**
+			 * @deprecated
+			 *
 			 * @param year A year.
 			 * @param month A month, where 1 = January
 			 */
@@ -402,10 +440,12 @@ namespace slime.time {
 	}
 
 	export interface Exports {
+		/** @deprecated */
 		Month: exports.Month
 	}
 
 	export namespace old {
+		/** @deprecated */
 		export interface Time {
 			day: Day
 			time: day.Time
@@ -416,8 +456,11 @@ namespace slime.time {
 
 	export namespace exports {
 		export interface Time {
+			/** @deprecated */
 			new (): old.Time
+			/** @deprecated */
 			new (p: { day: old.Day, time: old.day.Time }): old.Time
+			/** @deprecated */
 			Zone: {
 				[id: string]: Zone
 			}
@@ -450,25 +493,33 @@ namespace slime.time {
 	}
 
 	export interface Exports {
+		/** @deprecated */
 		Time: exports.Time
 	}
 
-	export interface Exports {
-		Day: exports.Days
-	}
-
 	export namespace exports {
+		/** @deprecated */
 		export interface When {
+			/** @deprecated */
 			new (p: { date: Date }): old.When
+			/** @deprecated */
 			new (p: { unix: number }): old.When
+			/** @deprecated */
 			new (date: Date): old.When
+			/** @deprecated */
 			new (): old.When
+			/** @deprecated */
 			codec: {
+				/** @deprecated */
 				rfc3339: slime.Codec<old.When,string>
+				/** @deprecated */
 				Date: slime.Codec<old.When,slime.external.lib.es5.Date>
+				/** @deprecated */
 				js: any
 			}
+			/** @deprecated */
 			order: Function
+			/** @deprecated */
 			now: () => old.When
 		}
 
@@ -488,10 +539,12 @@ namespace slime.time {
 	}
 
 	export interface Exports {
+		/** @deprecated */
 		When: exports.When
 	}
 
 	export interface Exports {
+		/** @deprecated */
 		install: Function
 	}
 
@@ -548,5 +601,4 @@ namespace slime.time {
 		}
 	//@ts-ignore
 	)(fifty);
-
 }
