@@ -542,6 +542,8 @@ namespace slime.$api {
 			}
 
 			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.events.Handler<E>) => R
+
+			invoke: <E,R>(f: (events: slime.$api.Events<E>) => R, handler: slime.$api.events.Handler<E>) => R
 		}
 		/** @deprecated Replaced by {@link slime.$api.Global["events"] } */
 		Events: {

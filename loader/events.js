@@ -144,7 +144,7 @@
 
 			this.detach = function() {
 				for (var x in on) {
-					events.listeners.add(x,on[x]);
+					events.listeners.remove(x,on[x]);
 				}
 			};
 
@@ -230,6 +230,15 @@
 						} finally {
 							invocationReceiver.detach();
 						}
+					}
+				},
+				invoke: function(f,handler) {
+					var invocationReceiver = new ListenersInvocationReceiver(handler);
+					invocationReceiver.attach();
+					try {
+						return f.call( this, invocationReceiver.emitter );
+					} finally {
+						invocationReceiver.detach();
 					}
 				}
 			},

@@ -230,57 +230,58 @@
 		};
 
 		/** @type { slime.jrunscript.shell.run.World } */
-		var realWorld = {
+		var world = $context.world || {
 			start: function(p) {
-				var context = p.context;
-				var configuration = p.configuration;
-				var events = p.events;
+				return function(events) {
+					var context = p.context;
+					var configuration = p.configuration;
 
-				var stdio = buildStdio(context.stdio)(events);
+					var stdio = buildStdio(context.stdio)(events);
 
-				//	TODO	could throw exception on launch; should deal with it
-				var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
-					createJavaCommandContext({
-						directory: (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory,
-						environment: context.environment,
-						stdio: stdio
-					}),
-					createJavaCommandConfiguration(configuration)
-				);
+					//	TODO	could throw exception on launch; should deal with it
+					var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
+						createJavaCommandContext({
+							directory: (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory,
+							environment: context.environment,
+							stdio: stdio
+						}),
+						createJavaCommandConfiguration(configuration)
+					);
 
-				return {
-					pid: Number(_subprocess.getPid()),
-					kill: function() {
-						_subprocess.terminate();
-					},
-					run: function() {
-						var listener = new function() {
-							this.status = void(0);
+					return {
+						pid: Number(_subprocess.getPid()),
+						kill: function() {
+							_subprocess.terminate();
+						},
+						run: function() {
+							var listener = new function() {
+								this.status = void(0);
 
-							this.finished = function(status) {
-								this.status = status;
+								this.finished = function(status) {
+									this.status = status;
+								};
+
+								this.interrupted = function(_exception) {
+									//	who knows what we should do here. Kill the process?
+									throw new Error("Unhandled Java thread interruption.");
+								};
 							};
 
-							this.interrupted = function(_exception) {
-								//	who knows what we should do here. Kill the process?
-								throw new Error("Unhandled Java thread interruption.");
-							};
-						};
+							//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
+							_subprocess.wait(new JavaAdapter(
+								Packages.inonit.system.Subprocess.Listener,
+								listener
+							));
 
-						//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
-						_subprocess.wait(new JavaAdapter(
-							Packages.inonit.system.Subprocess.Listener,
-							listener
-						));
-
-						return {
-							status: listener.status,
-							stdio: stdio.close()
+							return {
+								status: listener.status,
+								stdio: stdio.close()
+							}
 						}
-					}
-				};
+					};
+				}
 			}
-		}
+		};
 
 		/**
 		 *
@@ -294,13 +295,10 @@
 			 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
 			 */
 			return function(events) {
-				var world = $context.world || realWorld;
-
 				var subprocess = world.start({
 					context: context,
-					configuration: configuration,
-					events: events
-				});
+					configuration: configuration
+				})(events);
 
 				events.fire("start", {
 					pid: subprocess.pid,
@@ -526,6 +524,7 @@
 					);
 				}
 			},
+			world: world,
 			run: function(invocation) {
 				return impure(invocation.context,invocation.configuration);
 			},

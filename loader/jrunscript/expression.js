@@ -8,7 +8,7 @@
 (
 	/**
 	 * @param { slime.jrunscript.runtime.$javahost } $javahost
-	 * @param { slime.jrunscript.runtime.java.Engine } $bridge
+	 * @param { slime.jrunscript.runtime.java.context.Engine } $bridge
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { any } XML

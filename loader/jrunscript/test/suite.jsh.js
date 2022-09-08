@@ -22,8 +22,21 @@
 		suite.add("jrunscript/main", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/jrunscript/api.html")
 		}));
-		suite.add("jrunscript/java", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/jrunscript/java.api.html")
+
+		/**
+		 *
+		 * @param { { file: slime.jrunscript.file.File }} p
+		 */
+		var FiftyPart = function(p) {
+			return jsh.unit.fifty.Part({
+				shell: SRC,
+				script: SRC.getFile("tools/fifty/test.jsh.js"),
+				file: p.file
+			});
+		};
+
+		suite.add("jrunscript/java", FiftyPart({
+			file: SRC.getFile("loader/jrunscript/java.fifty.ts")
 		}));
 
 		jsh.unit.html.cli({
