@@ -262,6 +262,8 @@ namespace slime.$api {
 
 			run(tests.exports.Resource);
 
+			//	TODO	redundant? tested per-engine in contributor/suite.jsh.js
+			fifty.load("java.fifty.ts");
 			fifty.load("io.fifty.ts");
 		}
 	}

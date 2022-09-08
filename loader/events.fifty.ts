@@ -43,4 +43,42 @@ namespace slime.runtime.internal.events {
 		ask: slime.$api.fp.Exports["world"]["old"]["ask"]
 		tell: slime.$api.fp.Exports["world"]["old"]["tell"]
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			var code: Script = fifty.$loader.script("events.js");
+			var subject = code({
+				deprecate: fifty.global.$api.deprecate
+			});
+
+			var remembered;
+
+			fifty.tests.suite = function() {
+				var f = function(events) {
+					remembered = events;
+					events.fire("xxx", 2);
+				};
+
+				var captured = [];
+
+				subject.api.invoke(f, {
+					xxx: function(e) {
+						captured.push(e);
+					}
+				});
+
+				verify(captured).length.is(1);
+
+				remembered.fire("xxx", 2);
+				verify(captured).length.is(1);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export type Script = slime.loader.Script<Context,Exports>
 }

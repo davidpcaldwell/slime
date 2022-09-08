@@ -835,6 +835,7 @@ namespace slime {
 					fifty.load("$api-Function.fifty.ts");
 					fifty.load("$api-Function-old.fifty.ts");
 					fifty.load("Loader.fifty.ts");
+					fifty.load("events.fifty.ts");
 				}
 
 				if (jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);
