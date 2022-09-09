@@ -30,6 +30,48 @@ namespace slime.$api {
 		 */
 		export type Handler<T> = (e: Event<T>) => void
 	}
+
+	export namespace events {
+		/**
+		 * An object whose methods process events; events of a type are mapped to a method with the same name as that type.
+		 */
+		export type Handler<D> = {
+			[k in keyof D]?: event.Handler<D[k]>
+		}
+
+		export namespace Function {
+			//	TODO	it appears this duplicates the events.Handler concept above
+			export type Receiver = { [x: string]: (e: Event<any>) => void } | Events<any>
+		}
+	}
+
+	export namespace exports {
+		export interface Events {
+			create: (p?: {
+				source?: any
+				parent?: slime.$api.Events<any>
+				getParent?: () => slime.$api.Events<any>
+				on?: { [x: string]: any }
+			}) => slime.$api.Events<any>
+
+			//	TODO	could probably use parameterized types to improve accuracy
+			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.events.Function.Receiver) => R
+
+			toHandler: <D>(handler: slime.$api.events.Handler<D>) => {
+				emitter: slime.$api.Events<D>
+				attach: () => void
+				detach: () => void
+			}
+
+			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.events.Handler<E>) => R
+
+			invoke: <E,R>(f: (events: slime.$api.Events<E>) => R, handler: slime.$api.events.Handler<E>) => R
+
+			Handler: {
+				attach: <T>(events: slime.$api.Events<T>) => (handler: slime.$api.events.Handler<T>) => void
+			}
+		}
+	}
 }
 
 namespace slime.runtime.internal.events {
@@ -38,7 +80,7 @@ namespace slime.runtime.internal.events {
 	}
 
 	export interface Exports {
-		api: slime.$api.Global["events"]
+		api: slime.$api.exports.Events
 
 		ask: slime.$api.fp.Exports["world"]["old"]["ask"]
 		tell: slime.$api.fp.Exports["world"]["old"]["tell"]

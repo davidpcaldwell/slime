@@ -8,7 +8,7 @@ namespace slime.jrunscript.shell {
 	export interface World {
 		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 		action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
-		start: (p: run.Invocation) => (events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>) => slime.jrunscript.shell.run.world.Subprocess
+		start: slime.$api.fp.world.Question<run.Invocation,slime.jrunscript.shell.run.TellEvents,slime.jrunscript.shell.run.world.Subprocess>
 		run: slime.$api.fp.world.old.Action<run.Invocation,run.TellEvents>
 	}
 }
