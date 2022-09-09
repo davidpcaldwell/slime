@@ -132,20 +132,28 @@
 			}
 		};
 
-		var ListenersInvocationReceiver = function(on) {
+		var attach = function(events,handler) {
+			for (var x in handler) {
+				events.listeners.add(x,handler[x]);
+			}
+		};
+
+		var detach = function(events,handler) {
+			for (var x in handler) {
+				events.listeners.remove(x,handler[x]);
+			}
+		}
+
+		var ListenersInvocationReceiver = function(handler) {
 			var source = {};
 			var events = new Emitter({ source: source });
 
 			this.attach = function() {
-				for (var x in on) {
-					events.listeners.add(x,on[x]);
-				}
+				attach(events,handler);
 			};
 
 			this.detach = function() {
-				for (var x in on) {
-					events.listeners.remove(x,on[x]);
-				}
+				detach(events,handler);
 			};
 
 			this.emitter = events;
@@ -239,6 +247,13 @@
 						return f.call( this, invocationReceiver.emitter );
 					} finally {
 						invocationReceiver.detach();
+					}
+				},
+				Handler: {
+					attach: function(events) {
+						return function(handler) {
+							attach(events,handler);
+						}
 					}
 				}
 			},
