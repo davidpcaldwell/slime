@@ -22,7 +22,7 @@ namespace slime.servlet {
 			 * {@link slime.jrunscript.runtime.Resource}s.
 			 */
 			Loader: (o: {
-				loader: slime.Loader<slime.jrunscript.runtime.Resource>
+				loader: slime.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.Resource>
 
 				/**
 				 * An optional path within the loader to use if the path is empty.

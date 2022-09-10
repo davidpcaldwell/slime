@@ -18,7 +18,7 @@ namespace slime.jrunscript.file {
 				//	TODO	would be nice to get rid of string below, but right now it's unknown exactly how to access MimeType from
 				//			jsh/browser/servlet environments
 				type?: (path: slime.jrunscript.file.File) => (slime.mime.Type | string)
-			}): slime.Loader<slime.jrunscript.runtime.Resource>
+			}): slime.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.Resource>
 		}
 	}
 
