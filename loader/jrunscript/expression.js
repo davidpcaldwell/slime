@@ -679,154 +679,221 @@
 		// 	)
 		// };
 
-		$exports.Loader = (function(was) {
-			/**
-			 * @this { slime.Loader & { java: any } }
-			 */
-			var rv = function(p) {
-				//	Satisfy TypeScript
-				this.source = void(0);
-				this.run = void(0);
-				this.value = void(0);
-				this.file = void(0);
-				this.module = void(0);
-				this.script = void(0);
-				this.factory = void(0);
-				this.Child = void(0);
-				this.get = void(0);
+		/** @typedef { slime.jrunscript.runtime.internal.Source } InternalSource */
 
-				if (!p) throw new TypeError("source argument required for Loader.");
-				var _source = (function() {
-					if (p._source) return p._source;
-					if (p.zip) {
-						if (p.zip._file) {
-							return Packages.inonit.script.engine.Code.Loader.zip(p.zip._file);
-						} else if (p.zip.resource) {
-							return Packages.inonit.script.engine.Code.Loader.zip(p.zip.resource.java.adapt(p.zip.resource.name));
-						}
-					} else if (p._file && p._file.isDirectory()) {
-						return Packages.inonit.script.engine.Code.Loader.create(p._file);
-					} else if (p._url) {
-						//	TODO	no known test coverage
-						return Packages.inonit.script.engine.Code.Loader.create(p._url);
+		/** @type { (p: InternalSource) => p is slime.jrunscript.runtime.internal.ZipFileSource } */
+		function isZipFileSource(p) {
+			return p["zip"] && p["zip"]["_file"];
+		}
+
+		/** @type { (p: InternalSource) => p is slime.jrunscript.runtime.internal.ZipResourceSource } */
+		function isZipResourceSource(p) {
+			return p["zip"] && p["zip"]["resource"];
+		}
+
+		/** @type { (p: InternalSource) => p is slime.jrunscript.runtime.internal.JavaFileSource } */
+		function isJavaFileSource(p) {
+			return p["_file"];
+		}
+
+		/** @type { (p: InternalSource) => p is slime.jrunscript.runtime.internal.JavaCodeLoaderSource } */
+		function isJavaCodeLoaderSource(p) {
+			return p["_source"];
+		}
+
+		/** @type { (_source: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.loader.Source<slime.jrunscript.runtime.internal.JavaCodeLoaderSource> } */
+		function adaptCodeLoader(_source) {
+			return {
+				get: function(path) {
+					var _file = _source.getFile(path);
+					if (!_file) return null;
+					return {
+						_loaded: {
+							resource: _file,
+							path: path
+						},
+						read: void(0)
+					};
+				},
+				child: function(prefix) {
+					return {
+						_source: _source.child(prefix)
 					}
-				})();
-				if (_source) {
-					p.get = function(path) {
-						var _file = _source.getFile(path);
-						if (!_file) return null;
-						return {
-							_loaded: {
-								resource: _file,
-								path: path
-							},
-							read: void(0)
-						};
-					};
-					p.child = function(prefix) {
-						return {
-							_source: _source.child(prefix)
-						}
-					};
-					if (_source.getEnumerator()) {
-						p.list = function(prefix) {
-							var _paths = _source.getEnumerator().list(prefix);
-							var rv = [];
-							if (!_paths) return rv;
-							for (var i=0; i<_paths.length; i++) {
-								var path = String(_paths[i]);
-								if (/\/$/.test(path)) {
-									rv.push({ path: path.substring(0,path.length-1), loader: true, resource: false });
-								} else {
-									rv.push({ path: path, loader: false, resource: true });
-								}
-							}
-							return rv;
+				},
+				list: (_source.getEnumerator()) ? function(prefix) {
+					var _paths = _source.getEnumerator().list(prefix);
+					var rv = [];
+					if (!_paths) return rv;
+					for (var i=0; i<_paths.length; i++) {
+						var path = String(_paths[i]);
+						if (/\/$/.test(path)) {
+							rv.push({ path: path.substring(0,path.length-1), loader: true, resource: false });
+						} else {
+							rv.push({ path: path, loader: false, resource: true });
 						}
 					}
-					p.toString = function() {
-						return "Java loader: " + _source.toString();
-					};
-				} else if (p.resources) {
-					if (Packages.java.lang.System.getenv("SLIME_LOADER_RHINO_REMOVE_DEPRECATED")) throw new Error();
-					//	TODO	would be nice to get rid of this, but it is used in rhino/http/servlet, it appears
-					$exports.$api.deprecate(function() {
-						p.get = function(path) {
-							var resource = p.resources.get(String(path));
-							if (!resource) return null;
-							var rv = {};
-							if (typeof(resource.length) != "undefined") rv.length = resource.length;
-							if (typeof(resource.name) != "undefined") rv.name = resource.name;
-							if (typeof(resource.string) != "undefined") rv.string = resource.string;
-							if (typeof(resource.type) != "undefined") rv.type = resource.type;
-							if (typeof(resource.read) == "function") {
-								rv.read = {
-									binary: resource.read.binary,
-									string: void(0)
-								}
+					return rv;
+				} : void(0),
+				toString: function() {
+					return "Java loader: " + _source.toString();
+				},
+				Resource: $exports.Resource
+			}
+		}
+
+		/** @type { (p: slime.jrunscript.runtime.internal.JavaCodeLoaderSource) => slime.loader.Source<slime.jrunscript.runtime.internal.JavaCodeLoaderSource> } */
+		function adaptJavaCodeLoaderSource(p) {
+			return adaptCodeLoader(p._source);
+		}
+
+		/** @type { (p: slime.jrunscript.runtime.internal.ZipFileSource) => slime.loader.Source } */
+		function adaptZipFileSource(p) {
+			return adaptCodeLoader(Packages.inonit.script.engine.Code.Loader.zip(p.zip._file));
+		}
+
+		/** @type { (p: slime.jrunscript.runtime.internal.ZipResourceSource) => slime.loader.Source } */
+		function adaptZipResourceSource(p) {
+			return adaptCodeLoader(Packages.inonit.script.engine.Code.Loader.zip(p.zip.resource.java.adapt(p.zip.resource.name)));
+		}
+
+		/** @type { (p: slime.jrunscript.runtime.internal.JavaFileSource) => slime.loader.Source } */
+		function adaptJavaFileSource(p) {
+			return adaptCodeLoader(Packages.inonit.script.engine.Code.Loader.create(p._file));
+		}
+
+		/** @type { (p: InternalSource) => p is slime.jrunscript.runtime.internal.DeprecatedResourcesSource } */
+		function isResourcesSource(p) {
+			return p["resources"];
+		}
+
+		/** @type { (p: slime.jrunscript.runtime.internal.DeprecatedResourcesSource) => slime.loader.Source } */
+		function adaptResourcesSource(p) {
+			return {
+				get: function(path) {
+					var resource = p.resources.get(String(path));
+					if (!resource) return null;
+					var rv = {};
+					if (typeof(resource.length) != "undefined") rv.length = resource.length;
+					if (typeof(resource.name) != "undefined") rv.name = resource.name;
+					if (typeof(resource.string) != "undefined") rv.string = resource.string;
+					if (typeof(resource.type) != "undefined") rv.type = resource.type;
+					if (typeof(resource.read) == "function") {
+						rv.read = {
+							binary: resource.read.binary,
+							string: void(0)
+						}
+					}
+					//var rv = new loader.Resource(resource);
+					if (!rv.name) {
+						rv.name = p.resources.toString() + "!" + String(path);
+					}
+					if (!rv.type) {
+						rv.type = getTypeFromPath(path);
+					}
+					// rv.java = {
+					// 	InputStream: function() {
+					// 		return resource.read.binary().java.adapt()
+					// 	}
+					// };
+					// rv.resource = rv;
+					return rv;
+				},
+				child: p.child || function(prefix) {
+					return {
+						resources: {
+							get: function(path) {
+								return p.resources.get(prefix + path);
 							}
-							//var rv = new loader.Resource(resource);
-							if (!rv.name) {
-								rv.name = p.resources.toString() + "!" + String(path);
-							}
-							if (!rv.type) {
-								rv.type = getTypeFromPath(path);
-							}
-							// rv.java = {
-							// 	InputStream: function() {
-							// 		return resource.read.binary().java.adapt()
-							// 	}
-							// };
-							// rv.resource = rv;
-							return rv;
-						};
-						if (!p.child) p.child = function(prefix) {
-							return {
-								resources: {
-									get: function(path) {
-										return p.resources.get(prefix + path);
+						}
+					}
+				},
+				Resource: $exports.Resource
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.runtime.internal.Source } p
+		 * @returns { slime.loader.Source<slime.jrunscript.runtime.internal.CustomSource> }
+		 */
+		function adaptLoaderArgument(p) {
+			if (isZipFileSource(p)) return adaptZipFileSource(p);
+			if (isZipResourceSource(p)) return adaptZipResourceSource(p);
+			if (isJavaFileSource(p)) return adaptJavaFileSource(p);
+			if (isJavaCodeLoaderSource(p)) return adaptJavaCodeLoaderSource(p);
+			if (isResourcesSource(p)) return $exports.$api.deprecate(adaptResourcesSource)(p);
+			//	TODO	no known static or dynamic uses or test coverage
+			if (p["_url"]) return $exports.$api.deprecate(adaptCodeLoader)(Packages.inonit.script.engine.Code.Loader.create(p["_url"]));
+
+			//	TODO	this line was present previously and makes jrunscript file Loaders work, but does not make a lot of sense
+			//			at the moment
+			p.Resource = $exports.Resource;
+			return p;
+		}
+
+		$exports.Loader = (
+			/**
+			 *
+			 * @param { slime.runtime.Exports["Loader"] } was
+			 * @returns
+			 */
+			function(was) {
+				/**
+				 * @this { slime.jrunscript.runtime.Loader }
+				 */
+				var rv = function(p) {
+					if (!p) throw new TypeError("source argument required for Loader.");
+
+					//	Satisfy TypeScript
+					this.source = void(0);
+					this.run = void(0);
+					this.value = void(0);
+					this.file = void(0);
+					this.module = void(0);
+					this.script = void(0);
+					this.factory = void(0);
+					this.Child = void(0);
+					this.get = void(0);
+
+					var source = adaptLoaderArgument(p);
+
+					was.call(this,source);
+
+					var self = this;
+
+					this.java = {
+						adapt: function() {
+							if (source["_source"]) return source["_source"];
+							return new JavaAdapter(
+								Packages.inonit.script.engine.Code.Loader,
+								new function() {
+									this.getFile = function(path) {
+										var resource = self.get(path);
+										// TODO: Below inserted hastily, not sure whether it makes sense
+										if (!resource) return null;
+										return resource["java"].adapt(path);
+									};
+
+									this.getClasses = function() {
+										throw new Error("Unimplemented: getClasses");
+									};
+
+									this.getEnumerator = function() {
+										throw new Error("Unimplemented: getEnumerator");
 									}
 								}
-							}
-						};
-					})();
-				}
-				p.Resource = $exports.Resource;
-				was.apply(this,arguments);
-				var source = this.source;
-				var self = this;
-				this.java = {
-					adapt: function() {
-						if (source["_source"]) return source["_source"];
-						return new JavaAdapter(
-							Packages.inonit.script.engine.Code.Loader,
-							new function() {
-								this.getFile = function(path) {
-									var resource = self.get(path);
-									// TODO: Below inserted hastily, not sure whether it makes sense
-									if (!resource) return null;
-									return resource["java"].adapt(path);
-								};
-
-								this.getClasses = function() {
-									throw new Error("Unimplemented: getClasses");
-								};
-
-								this.getEnumerator = function() {
-									throw new Error("Unimplemented: getEnumerator");
-								}
-							}
-						)
-					}
+							)
+						}
+					};
 				};
-			};
-			//	Satisfy TypeScript by adding properties that will be added by Object.assign below
-			rv.source = void(0);
-			rv.series = void(0);
-			rv.tools = void(0);
-			Object.assign(rv, was);
-			return rv;
-		})($exports.Loader);
+				//	Satisfy TypeScript by adding properties that will be added by Object.assign below
+				rv.source = void(0);
+				rv.series = void(0);
+				rv.tools = void(0);
+				Object.assign(rv, was);
+				return rv;
+			}
+		)($exports.Loader);
 
 		$exports.classpath = (
 			/**

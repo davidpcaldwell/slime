@@ -146,6 +146,39 @@ namespace slime.jrunscript.runtime {
 		}
 	}
 
+	export namespace internal {
+		export interface ZipFileSource {
+			zip: {
+				_file: any
+			}
+		}
+
+		export interface ZipResourceSource {
+			zip: {
+				resource: any
+			}
+		}
+
+		export interface JavaFileSource {
+			_file: any
+		}
+
+		export interface JavaCodeLoaderSource {
+			_source: slime.jrunscript.native.inonit.script.engine.Code.Loader
+		}
+
+		/** @deprecated */
+		export interface DeprecatedResourcesSource {
+			child?: any
+			resources: any
+			Loader?: any
+		}
+
+		export type CustomSource = ZipFileSource | ZipResourceSource | JavaFileSource | JavaCodeLoaderSource | DeprecatedResourcesSource
+
+		export type Source = slime.loader.Source | CustomSource
+	}
+
 	/**
 	 * The SLIME runtime, augmented with Java-specific capabilities: a `classpath`, the `jrunscript` `java` and `io` interfaces,
 	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
@@ -158,11 +191,7 @@ namespace slime.jrunscript.runtime {
 		mime: $api.mime.Export
 
 		Loader: slime.runtime.Exports["Loader"] & {
-			new (p: { zip: { _file: any }}): any
-			new (p: { zip: { resource: any }}): any
-			new (p: { _file: any }): any
-			new (p: { _source: slime.jrunscript.native.inonit.script.engine.Code.Loader }): Loader
-			new (p: { resources: any, Loader?: any }): any
+			new (p: internal.CustomSource): Loader
 		}
 
 		Resource: slime.runtime.Exports["Resource"] & {

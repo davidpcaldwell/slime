@@ -31,8 +31,8 @@ namespace slime {
 		export type Entry = LoaderEntry | ResourceEntry
 	}
 
-	export interface Loader<R extends Resource = Resource> {
-		source: loader.Source
+	export interface Loader<S = never, R extends Resource = Resource> {
+		source: loader.Source<S>
 
 		/**
 		 * Returns the resource associated with a given path, by invoking the `get` method of this loader's `source`.
@@ -47,7 +47,7 @@ namespace slime {
 		list?: (m?: { filter?: any, descendants?: any }) => loader.Entry[]
 
 		Child: {
-			(prefix: string): Loader
+			(prefix: string): Loader<S,R>
 		}
 
 		/**
@@ -115,12 +115,12 @@ namespace slime {
 		}
 	}
 
-	export interface Loader<R extends Resource = Resource> {
+	export interface Loader<S = never, R extends Resource = Resource> {
 		//	TODO	What about if $context is a number, string, or boolean?
 		script: <C,E>(path: string) => loader.Script<C,E>
 
 		/** @deprecated Replaced by `script`. */
-		factory: Loader<R>["script"]
+		factory: Loader<S,R>["script"]
 	}
 
 	(
@@ -216,7 +216,7 @@ namespace slime {
 		/**
 		 * An object that provides the implementation for a {@link Loader}.
 		 */
-		export interface Source {
+		export interface Source<S = never> {
 			/**
 			 * Provides the `toString` for the created Loader by default.
 			 */
@@ -251,7 +251,7 @@ namespace slime {
 			 *
 			 * @returns A source that represents a child of the parent source.
 			 */
-			child?: (prefix: string) => Source
+			child?: (prefix: string) => Source | S
 
 			/**
 			 * Allows the loader to customize the way resource descriptors are turned into resources.
@@ -278,9 +278,7 @@ namespace slime {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			var tests = fifty.tests;
-			var verify = fifty.verify;
-			var $loader = fifty.$loader;
+			var { tests, verify, $loader } = fifty;
 
 			const subject: slime.runtime.Exports = fifty.$loader.module("fixtures.ts").subject(fifty);
 
@@ -417,8 +415,7 @@ namespace slime.runtime.loader {
 	/**
 	 * @param p The implementation of this `Loader`.
 	 */
-	export type Constructor = new (p: slime.loader.Source) => Loader
-
+	export type Constructor = new <S>(p: slime.loader.Source | S) => Loader<S>
 }
 
 namespace slime.runtime.internal.loader {
