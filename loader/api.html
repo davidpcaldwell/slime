@@ -41,67 +41,6 @@ END LICENSE
 			</script>
 			<div class="label">has properties:</div>
 			<ul>
-				<li class="function" jsapi:id="namespace">
-					<div class="name"><a id="exports.namespace">namespace</a></div>
-					<!--
-					TODO	this documentation copied from older version; merge with below
-
-					Creates a <i>namespace</i>, a scope object that has a given position in the global scope. For example, a
-					namespace named "inonit.foo.bar" is the <code>bar</code> property of an object which is the <code>foo</code>
-					property of another object which is in turn the <code>inonit</code> property of the global object.
-					<div>
-						If some or all of the named properties exist, the existing ones will be used; they will not be created. Thus, if
-						the global object already has an <code>inonit</code> property, and that object has a <code>foo</code> property,
-						but the <code>inonit.foo</code> object does not have a <code>bar</code> property, a single object will be
-						created and assigned to the <code>bar</code> property of the existing <code>inonit.foo</code> object.
-					</div>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li><span class="type">string</span> The name of the namespace to create (or return if it exists).</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">object</span> A namespace located at the given name.
-					</div>
-					-->
-					<span>
-						Creates a <i>namespace</i>. A namespace is an object which is globally visible because it is rooted to the
-						global object (e.g., <code>window</code> in the browser). So, in the browser, the namespace
-						<code>inonit.foo.bar</code> would be an object that is the <code>bar</code> property of an object that is the
-						<code>foo</code> property of an object that is the <code>inonit</code> property of <code>window</code>. It could
-						be referenced as <code>inonit.foo.bar</code> in JavaScript code, or alternatively as
-						<code>window.inonit.foo.bar</code> in the browser.
-					</span>
-					<p>
-						In the event portions of the sequence of rooting objects do not exist, they will be created. So, for example, in
-						the browser-based example above, if the <code>window.inonit</code> object exists, but the
-						<code>window.inonit</code> object does not have a property named <code>foo</code>, an object will be created
-						and assigned to the <code>foo</code> property of <code>window.inonit</code>, and then an object will be created
-						and assigned to that object's <code>bar</code> property.
-					</p>
-					<p>
-						If the full sequence of rooting objects exists, the object at the given location will be returned.
-					</p>
-					<div class="arguments">
-						<div class="label">Arguments</div>
-						<ol>
-							<li class="value">
-								<span class="type">string</span>
-								<span>The name/location of the namespace to create.</span>
-							</li>
-						</ol>
-					</div>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">object</span>
-						<span>
-							The object at the specified location. The object (and its parents) will be created if it does not
-							exist.
-						</span>
-					</div>
-				</li>
 				<li class="object">
 					<div class="name">java</div>
 					<span>The same object as <code>$platform.java</code>.</span>
