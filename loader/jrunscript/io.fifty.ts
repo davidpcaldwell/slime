@@ -244,26 +244,37 @@ namespace slime.jrunscript.runtime.io {
 		InputStream: {
 			from: {
 				java: (p: slime.jrunscript.native.java.io.InputStream) => InputStream
-			}
-		}
 
-		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
-
-		Reader: (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
-		Writer: (p: slime.jrunscript.native.java.io.Writer) => Writer
-
-		Charset: {
-			standard: {
-				utf8: Charset
-			}
-		}
-
-		system: {
-			delimiter: {
-				line: string
+				string: (p: {
+					string: string
+					charset: Charset
+				}) => InputStream
 			}
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.InputStream = function() {
+				var utf8 = test.subject.Charset.standard.utf8;
+
+				var input = test.subject.InputStream.from.string({
+					charset: utf8,
+					string: "foo"
+				});
+
+				var reader = utf8.read(input);
+				var string = reader.asString();
+				verify(string).is("foo");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export interface Exports {
 		/**
@@ -327,7 +338,6 @@ namespace slime.jrunscript.runtime.io {
 	//@ts-ignore
 	)(Packages,fifty);
 
-
 	export interface Exports {
 		/**
 		 * Creates a buffer to which bytes can be written, and later read.
@@ -381,18 +391,48 @@ namespace slime.jrunscript.runtime.io {
 				var string = text.asString();
 				verify(string).is("bar!");
 			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
+
+		Reader: (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
+		Writer: (p: slime.jrunscript.native.java.io.Writer) => Writer
+
+		Charset: {
+			standard: {
+				utf8: Charset
+			}
+		}
+
+		system: {
+			delimiter: {
+				line: string
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify, run } = fifty;
 
 			fifty.tests.suite = function() {
 				verify(test.subject,"subject").is.type("object");
 
 				run(fifty.tests.Streams);
 				run(fifty.tests.Buffer);
+				run(fifty.tests.InputStream);
 
 				if (fifty.tests.E4X) run(fifty.tests.E4X);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
+
 
 	(
 		function(

@@ -355,7 +355,14 @@
 		$export({
 			InputStream: {
 				from: {
-					java: InputStream
+					java: InputStream,
+					string: function(p) {
+						var buffer = new Buffer();
+						var writer = p.charset.write(buffer.writeBinary());
+						writer.write(p.string);
+						writer.close();
+						return buffer.readBinary();
+					}
 				}
 			},
 			OutputStream: OutputStream,
