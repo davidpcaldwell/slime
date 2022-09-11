@@ -19,11 +19,21 @@ namespace slime.project.metrics {
 	}
 
 	export interface Exports {
+		/**
+		 * Returns all the source files under the given directory. Source files are defined as all files in a directory containing
+		 * source files; the `.git`, `local`, and `bin` directories are excluded, as are `.git` files.
+		 */
 		getSourceFiles: (base: slime.jrunscript.file.Directory) => SourceFile[]
 
 		SourceFile: {
 			isJsapi: slime.$api.fp.Predicate<SourceFile>
 			isGenerated: slime.$api.fp.Predicate<SourceFile>
+			isJavascript: slime.$api.fp.Predicate<SourceFile>
+			isTypescript: slime.$api.fp.Predicate<SourceFile>
+
+			javascript: {
+				hasTypeChecking: (sourceFile: SourceFile) => slime.$api.fp.Maybe<boolean>
+			}
 		}
 
 		jsapi: (base: slime.jrunscript.file.Directory) => {
