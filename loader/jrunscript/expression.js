@@ -933,7 +933,7 @@
 							//	do nothing
 						} else if (p.slime) {
 							if (p.slime.loader) {
-								_classpath.add(p.slime.loader.java.adapt().child("$jvm/classes"));
+								_classpath.add(toJavaCodeLoader(p.slime.loader).child("$jvm/classes"));
 							} else {
 								throw new Error();
 							}
