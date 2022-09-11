@@ -71,12 +71,6 @@ namespace slime.jrunscript.runtime {
 		}
 	}
 
-	export interface Loader extends slime.Loader {
-		java: {
-			adapt: () => slime.jrunscript.native.inonit.script.engine.Code.Loader
-		}
-	}
-
 	export interface $javahost {
 		script: any
 		setReadOnly: any
