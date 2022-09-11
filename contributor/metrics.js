@@ -115,6 +115,16 @@
 			}
 		}
 
+		/** @type { slime.project.metrics.Exports["SourceFile"]["isTypescript"] } */
+		var isTypescript = function(entry) {
+			return (/\.ts$/.test(entry.path));
+		};
+
+		/** @type { slime.project.metrics.Exports["SourceFile"]["isJavascript"] } */
+		function isJavascript(entry) {
+			return (/\.js$/.test(entry.path));
+		}
+
 		$export({
 			getSourceFiles: getSourceFiles,
 			SourceFile: {
@@ -123,6 +133,17 @@
 					if (file.path == "rhino/tools/docker/tools/docker-api.d.ts") return true;
 					if (file.path == "rhino/tools/github/tools/github-rest.d.ts") return true;
 					return false;
+				},
+				isJavascript: isJavascript,
+				isTypescript: isTypescript,
+				javascript: {
+					hasTypeChecking: function(entry) {
+						if (isJavascript(entry)) {
+							var code = entry.file.read(String);
+							return $api.Function.Maybe.value(code.indexOf("ts-check") != -1);
+						}
+						return $api.Function.Maybe.nothing();
+					}
 				}
 			},
 			jsapi: function(base) {

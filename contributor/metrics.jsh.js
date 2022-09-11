@@ -53,13 +53,13 @@
 					/**
 					 *
 					 * @param { string } code
-					 * @returns { { line: number, ignored: string }[] } The lines on which a @ts-ignore occurs; lines on the
+					 * @returns { { line: number, ignored: string }[] } The lines on which a ts-ignore occurs; lines on the
 					 * second-to-last line of a .js file are not included.
 					 */
 					var getIgnores = function(type,code) {
 						var lines = code.split("\n");
 						return lines.reduce(function(rv,line,index,array) {
-							var indexOf = line.indexOf("@ts-ignore");
+							var indexOf = line.indexOf("@" + "ts-ignore");
 							var ok = (function() {
 								if (type == "js" && index == array.length-3) return true;
 								if (type == "ts" && lines[index+1] && lines[index+1].trim() == ")(fifty);") return true;
@@ -72,16 +72,12 @@
 						},[]);
 					};
 
-					var isCovered = function(code) {
-						return code.indexOf("ts-check") != -1;
-					}
-
 					var src = getSourceFiles();
 					var grouper = $api.Function.Array.groupBy({
 						/** @type { (entry: slime.project.metrics.SourceFile) => string } */
 						group: function(entry) {
-							if (/\.js$/.test(entry.path)) return "js";
-							if (/\.ts$/.test(entry.path)) return "ts";
+							if (model.SourceFile.isJavascript(entry)) return "js";
+							if (model.SourceFile.isTypescript(entry)) return "ts";
 							return "other";
 						}
 					});
@@ -94,7 +90,10 @@
 							language: language.group,
 							files: language.array.map(function(entry) {
 								var code = entry.file.read(String);
-								var covered = isCovered(code);
+								var covered = (language.group == "ts")
+									? true
+									: model.SourceFile.javascript.hasTypeChecking(entry)["value"]
+								;
 								return {
 									path: entry.path,
 									ignores: getIgnores(language.group,code),
@@ -149,7 +148,7 @@
 						jsh.shell.console(ignore.path + ":" + ignore.line + ": " + ignore.ignored.trim());
 					});
 					jsh.shell.console("");
-					jsh.shell.console("Total @ts-ignore comments violating rules: " + ignores.length);
+					jsh.shell.console("Total @" + "ts-ignore comments violating rules: " + ignores.length);
 				},
 				size: function(invocation) {
 					//	TODO	could cache by path so as not to do so much re-reading while sorting etc.
