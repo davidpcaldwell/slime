@@ -603,7 +603,28 @@ namespace slime {
 		}
 
 		export interface Exports {
-			namespace: any
+			/**
+			 * Creates a *namespace*. A namespace is an object which is globally visible because it is rooted to the global object
+			 * (e.g., `window` in the browser). So, in the browser, the namespace `inonit.foo.bar` would be an object that is the
+			 * `bar` property of an object that is the `foo` property of an object that is the `inonit` property of `window`. It
+			 * could be referenced as `inonit.foo.bar` in JavaScript code, or alternatively as `window.inonit.foo.bar` in the
+			 * browser.
+			 *
+			 * In the event portions of the sequence of rooting objects do not exist, they will be created. So, for example, in the
+			 * browser-based example above, if the `window.inonit` object exists, but the `window.inonit` object does not have a
+			 * property named `foo`, an object will be created and assigned to the `foo` property of `window.inonit`, and then an
+			 * object will be created and assigned to that object's `bar` property.
+			 *
+			 * If the full sequence of rooting objects exists, the object at the given location will be returned.
+			 *
+			 * @param name The name/location of the namespace to create (or return if it exists).
+			 *
+			 * @returns The object at the specified location. The object (and its parents) will be created if it does not exist.
+			 */
+			namespace: (name: string) => object
+		}
+
+		export interface Exports {
 			$platform: $platform
 			java?: any
 			$api: slime.$api.Global
