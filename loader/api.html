@@ -16,140 +16,33 @@ END LICENSE
 </head>
 <body>
 	<h1>Overview</h1>
-	<div>
-		<h1>Embedding</h1>
-		<div>
-			<h2>Properties</h2>
-			<script type="application/x.jsapi#initialize">
-				scope.api = $jsapi.loader.eval("expression.js", {
-					$slime: {
-						getRuntimeScript: function(path) {
-							return {
-								name: path,
-								js: $jsapi.loader.string(path)
-							}
-						},
-						getCoffeeScript: function() {
-							return null;
-						}
-					},
-					$engine: void(0)
-				});
-				scope.loadTestModule = function(path,context) {
-					return $jsapi.loader.module(path,context);
+	<script type="application/x.jsapi#initialize">
+		scope.api = $jsapi.loader.eval("expression.js", {
+			$slime: {
+				getRuntimeScript: function(path) {
+					return {
+						name: path,
+						js: $jsapi.loader.string(path)
+					}
+				},
+				getCoffeeScript: function() {
+					return null;
 				}
-			</script>
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="object">
-					<div class="name">java</div>
-					<span>The same object as <code>$platform.java</code>.</span>
-				</li>
-				<li class="object">
-					<div class="name">$platform</div>
-					<span>The same object as <code>$platform</code>.</span>
-				</li>
-				<li class="object">
-					<div class="name">$api</div>
-					<span>An additional way for embedding environments to access the <a href="$api.api.html">$api</a> object.</span>
-					<span jsapi:id="$api">See <a href="$api.api.html">detailed documentation</a>.</span>
-				</li>
-			</ul>
-		</div>
-	</div>
+			},
+			$engine: void(0)
+		});
+		scope.loadTestModule = function(path,context) {
+			return $jsapi.loader.module(path,context);
+		}
+	</script>
 	<div>
 		<h1>Objects provided to loaded code</h1>
 		<div>
 			The following objects are automatically present in the scope by all code loaded by the SLIME loader.
 		</div>
-		<div>
-			<h2><code>$api</code></h2>
-			<p>
-				Provides a set of basic JavaScript utilities. See <a href="$api.api.html">detailed documentation</a>.
-			</p>
-		</div>
 		<div jsapi:id="$platform">
 			<h2><code>$platform</code></h2>
-			<div>
-				When code is loaded by the loader, the loader provides the <code>$platform</code> object to that code in the scope.
-				The <code>$platform</code> object provides information about
-				the underlying JavaScript platform; the loaded code can use this information in its implementation.
-			</div>
 			<ul>
-				<li class="object">
-					<div class="name">Object</div>
-					<span>An object containing properties describing the platform's capabilities for objects.</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="object">
-							<div class="name">defineProperty</div>
-							<span>(optional) An object containing properties describing the platform's meta-object capabilities.</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">ecma</div>
-									<span class="type">boolean</span>
-									<span>
-										(conditional) If <code>true</code>, the platform supports the ECMA-262 version 5
-										<code>Object.defineProperty</code> method.
-									</span>
-								</li>
-								<li class="value">
-									<div class="name">accessor</div>
-									<span class="type">boolean</span>
-									<span>
-										(conditional) If <code>true</code>, the platform supports <code>__defineGetter__</code> and
-										<code>__defineSetter__</code> as defined by Mozilla.
-									</span>
-								</li>
-								<li class="function" jsapi:id="$platform.Object.defineProperty.setReadOnly">
-									<div class="name"><a name="$platform.Object.defineProperty.setReadOnly">setReadOnly</a></div>
-									<span>(conditional; depends on platform support) Sets whether a named property on an object is read-only.</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type">object</span>
-												<span>An object.</span>
-											</li>
-											<li class="value">
-												<span class="type">string</span>
-												<span>The name of a property.</span>
-											</li>
-											<li class="value">
-												<span class="type">boolean</span>
-												<span>
-													Whether the property should be read-only (<code>true</code>) or writable
-													(<code>false</code>).
-												</span>
-											</li>
-										</ol>
-									</div>
-									<script type="application/x.jsapi#tests"><![CDATA[
-										var o = {};
-										o.x = 3;
-										verify(o).x.is(3);
-										o.x = 4;
-										verify(o).x.is(4);
-										var setReadOnly = (function() {
-											if ($platform.Object.defineProperty && $platform.Object.defineProperty.setReadOnly) {
-												return $platform.Object.defineProperty.setReadOnly;
-											}
-										})();
-										if (setReadOnly) {
-											setReadOnly(o,"x",true);
-											o.x = 5;
-											verify(o).x.is(4);
-											setReadOnly(o,"x",false);
-											o.x = 5;
-											verify(o).x.is(5);
-										}
-									]]></script>
-								</li>
-							</ul>
-						</li>
-					</ul>
-				</li>
 				<li class="object">
 					<div class="name">java</div>
 					<span>(conditional) An object with properties describing the platform's Java/LiveConnect capabilities.</span>
