@@ -831,6 +831,43 @@
 			return p;
 		}
 
+		/**
+		 *
+		 * @param { slime.loader.Source } source
+		 * @returns { boolean }
+		 */
+		var isJavaCodeLoader = function(source) {
+			var type = $bridge.toNativeClass(Packages.inonit.script.engine.Code.Loader);
+			return type.isInstance(source);
+		}
+
+		/**
+		 *
+		 * @param { slime.Loader } self
+		 */
+		var toJavaCodeLoader = function(self) {
+			if (isJavaCodeLoader(self.source)) return self.source;
+			return new JavaAdapter(
+				Packages.inonit.script.engine.Code.Loader,
+				new function() {
+					this.getFile = function(path) {
+						var resource = self.get(path);
+						// TODO: Below inserted hastily, not sure whether it makes sense
+						if (!resource) return null;
+						return resource["java"].adapt(path);
+					};
+
+					this.getClasses = function() {
+						throw new Error("Unimplemented: getClasses");
+					};
+
+					this.getEnumerator = function() {
+						throw new Error("Unimplemented: getEnumerator");
+					}
+				}
+			)
+		}
+
 		$exports.Loader = (
 			/**
 			 *
@@ -839,7 +876,7 @@
 			 */
 			function(was) {
 				/**
-				 * @this { slime.jrunscript.runtime.Loader }
+				 * @this { slime.Loader }
 				 */
 				var rv = function(p) {
 					if (!p) throw new TypeError("source argument required for Loader.");
@@ -858,33 +895,6 @@
 					var source = adaptLoaderArgument(p);
 
 					was.call(this,source);
-
-					var self = this;
-
-					this.java = {
-						adapt: function() {
-							if (source["_source"]) return source["_source"];
-							return new JavaAdapter(
-								Packages.inonit.script.engine.Code.Loader,
-								new function() {
-									this.getFile = function(path) {
-										var resource = self.get(path);
-										// TODO: Below inserted hastily, not sure whether it makes sense
-										if (!resource) return null;
-										return resource["java"].adapt(path);
-									};
-
-									this.getClasses = function() {
-										throw new Error("Unimplemented: getClasses");
-									};
-
-									this.getEnumerator = function() {
-										throw new Error("Unimplemented: getEnumerator");
-									}
-								}
-							)
-						}
-					};
 				};
 				//	Satisfy TypeScript by adding properties that will be added by Object.assign below
 				rv.source = void(0);
@@ -944,7 +954,7 @@
 							}
 						} else if (p.src) {
 							if (p.src.loader) {
-								_classpath.add(_classpath.compiling(p.src.loader.java.adapt()));
+								_classpath.add(_classpath.compiling(toJavaCodeLoader(p.src.loader)));
 							} else {
 								throw new Error();
 							}

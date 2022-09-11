@@ -557,7 +557,7 @@ namespace slime.jsh.script.internal {
 		uri: string
 		packaged: {
 			file: slime.jrunscript.file.File
-			loader: slime.jrunscript.runtime.Loader
+			loader: slime.Loader
 		}
 	}
 
