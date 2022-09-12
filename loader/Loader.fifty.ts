@@ -445,5 +445,9 @@ namespace slime.runtime.internal.loader {
 		$api: slime.$api.Global
 	}
 
-	export type Script = slime.old.loader.Script<Scope,runtime.loader.old.Constructor>
+	export interface Exports {
+		old: slime.runtime.loader.old.Constructor
+	}
+
+	export type Script = slime.old.loader.Script<Scope,Exports>
 }
