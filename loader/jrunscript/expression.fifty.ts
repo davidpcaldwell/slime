@@ -61,7 +61,7 @@ namespace slime.jrunscript.runtime {
 	}
 
 	export namespace loader {
-		export interface Source extends slime.loader.Source {
+		export interface Source extends slime.old.loader.Source {
 			_source?: slime.jrunscript.native.inonit.script.engine.Code.Loader
 			zip?: any
 			_file?: any
@@ -170,7 +170,7 @@ namespace slime.jrunscript.runtime {
 
 		export type CustomSource = ZipFileSource | ZipResourceSource | JavaFileSource | JavaCodeLoaderSource | DeprecatedResourcesSource
 
-		export type Source = slime.loader.Source | CustomSource
+		export type Source = slime.old.loader.Source | CustomSource
 	}
 
 	/**
@@ -221,7 +221,7 @@ namespace slime.$api {
 		fifty: slime.fifty.test.Kit,
 		$slime: slime.jrunscript.runtime.Exports,
 		$api: slime.$api.Global,
-		$loader: slime.Loader,
+		$loader: slime.old.Loader,
 		verify: slime.fifty.test.verify,
 		tests: slime.fifty.test.tests,
 		run: slime.fifty.test.Kit["run"]

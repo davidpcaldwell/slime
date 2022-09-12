@@ -5,50 +5,9 @@
 //	END LICENSE
 
 namespace slime {
-	export namespace loader {
-		/**
-		 * The scope provided to a script executed via the {@link Loader | Loader.value()} call.
-		 */
-		export interface ValueScope {
-			/**
-			 * Allows the code to return a single value to the caller by invoking this method with the value.
-			 */
-			$set: (v: any) => void
-		}
-
-		interface AnyEntry {
-			path: string
-		}
-
-		export interface LoaderEntry extends AnyEntry {
-			loader: slime.Loader
-		}
-
-		export interface ResourceEntry extends AnyEntry {
-			resource: any
-		}
-
-		export type Entry = LoaderEntry | ResourceEntry
-	}
-
-	export interface Loader<S = never, R extends Resource = Resource> {
-		source: loader.Source<S>
-
-		/**
-		 * Returns the resource associated with a given path, by invoking the `get` method of this loader's `source`.
-		 *
-		 * @param path A path.
-		 */
-		get: (path: string) => R
-
-		/**
-		 * (conditional method, present if `source.list` is present)
-		 */
-		list?: (m?: { filter?: any, descendants?: any }) => loader.Entry[]
-
-		Child: {
-			(prefix: string): Loader<S,R>
-		}
+	export interface Loader {
+		//	TODO	What about if $context is a number, string, or boolean?
+		script: <C,E>(path: string) => loader.Script<C,E>
 
 		/**
 		 * Executes code in a particular scope with a particular `this` value. The code will automatically contain the `$platform`
@@ -71,9 +30,6 @@ namespace slime {
 		 */
 		value: (path: string, scope?: any, target?: any) => any
 
-		//	TODO	update the below descriptions to reflect the $export method of exporting and the fact that exports need not be
-		//			objects
-
 		/**
 		 * Executes a script in a separate scope. The scope will contain the `$platform` and `$api` objects described above. In
 		 * addition, the script will be provided with special objects named `$context` and `$exports`. The `$context` object
@@ -86,9 +42,9 @@ namespace slime {
 		 * @param target The object to use as the `this` value when executing the code.
 		 * @returns The value exported by this module.
 		 */
-		 file: (path: string, $context?: any, target?: any) => any
+		file: (path: string, $context?: any, target?: any) => any
 
-		 /**
+		/**
 		 * Loads a module. The module's code is specified by the first argument, and the second argument specifies objects to be
 		 * supplied to the module when loading it.
 		 *
@@ -107,20 +63,75 @@ namespace slime {
 		 */
 		module: (path: string, $context?: any, target?: any) => any
 
-		//	TODO	what if a value is exported? Like a number? We know a function works.
-
-		thread?: {
-			get: (path: string) => PromiseLike<Resource>
-			module: (path: string, $context?: any, target?: any) => PromiseLike<any>
-		}
+		/**
+		 * Returns the resource associated with a given path, by invoking the `get` method of this loader's `source`.
+		 *
+		 * @param path A path.
+		 */
+		get: (path: string) => Resource
 	}
 
-	export interface Loader<S = never, R extends Resource = Resource> {
-		//	TODO	What about if $context is a number, string, or boolean?
-		script: <C,E>(path: string) => loader.Script<C,E>
+	export namespace old {
+		export namespace loader {
+			/**
+			 * The scope provided to a script executed via the {@link Loader | Loader.value()} call.
+			 */
+			export interface ValueScope {
+				/**
+				 * Allows the code to return a single value to the caller by invoking this method with the value.
+				 */
+				$set: (v: any) => void
+			}
 
-		/** @deprecated Replaced by `script`. */
-		factory: Loader<S,R>["script"]
+			interface AnyEntry {
+				path: string
+			}
+
+			export interface LoaderEntry extends AnyEntry {
+				loader: slime.old.Loader
+			}
+
+			export interface ResourceEntry extends AnyEntry {
+				resource: any
+			}
+
+			export type Entry = LoaderEntry | ResourceEntry
+		}
+
+		export interface Loader<S = never, R extends Resource = Resource> extends slime.Loader {
+			source: loader.Source<S>
+
+			/**
+			 * Returns the resource associated with a given path, by invoking the `get` method of this loader's `source`.
+			 *
+			 * @param path A path.
+			 */
+			get: (path: string) => R
+
+			/**
+			 * (conditional method, present if `source.list` is present)
+			 */
+			list?: (m?: { filter?: any, descendants?: any }) => loader.Entry[]
+
+			Child: {
+				(prefix: string): Loader<S,R>
+			}
+
+			//	TODO	update the below descriptions to reflect the $export method of exporting and the fact that exports need not be
+			//			objects
+
+			//	TODO	what if a value is exported? Like a number? We know a function works.
+
+			thread?: {
+				get: (path: string) => PromiseLike<Resource>
+				module: (path: string, $context?: any, target?: any) => PromiseLike<any>
+			}
+		}
+
+		export interface Loader<S = never, R extends Resource = Resource> extends slime.Loader {
+			/** @deprecated Replaced by `script`. */
+			factory: Loader<S,R>["script"]
+		}
 	}
 
 	(
@@ -133,7 +144,7 @@ namespace slime {
 
 			fifty.tests.script.context = function() {
 				function echo<T>(t: T): T {
-					var script: slime.loader.Script<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
+					var script: slime.old.loader.Script<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
 					return script(t).provided;
 				}
 
@@ -157,7 +168,7 @@ namespace slime {
 
 			fifty.tests.script.export = function() {
 				function echo<T>(t: T): T {
-					var script: slime.loader.Script<{ export: T },T> = fifty.$loader.script("test/data/export.js");
+					var script: slime.old.loader.Script<{ export: T },T> = fifty.$loader.script("test/data/export.js");
 					return script({ export: t });
 				}
 
@@ -185,10 +196,18 @@ namespace slime {
 			thread: (c?: C) => PromiseLike<E>
 		}
 
+		export type Export<T> = (value: T) => void
+	}
+
+	export namespace old.loader {
+		/** @deprecated Can use slime.loader.Script directly. */
+		export type Script<C,E> = slime.loader.Script<C,E>
+
 		/** @deprecated Replaced by {@link Script}. */
 		export type Product<C,E> = Script<C,E>
 
-		export type Export<T> = (value: T) => void
+		/** @deprecated Can use slime.loader.Export directly. */
+		export type Export<T> = slime.loader.Export<T>
 
 		export namespace source {
 			//	TODO	this does not seem like a great design
@@ -261,17 +280,17 @@ namespace slime {
 
 		export interface Scope {
 			$context: any
-			$loader?: slime.Loader
+			$loader?: slime.old.Loader
 			$exports: any
 			$export: ($exports: any) => void
 		}
 	}
 
-	export namespace loader.test {
+	export namespace old.loader.test {
 		/**
 		 * A script that exports a standard export structure to act as a test case for the loader API.
 		 */
-		export type Script = slime.loader.Script<{ scale: number }, { convert: (input: number) => number }>;
+		export type Script = slime.old.loader.Script<{ scale: number }, { convert: (input: number) => number }>;
 	}
 
 	(
@@ -329,7 +348,7 @@ namespace slime {
 			}
 
 			tests.closure = function() {
-				var closure: slime.loader.test.Script = $loader.value("test/data/closure.js");
+				var closure: slime.old.loader.test.Script = $loader.value("test/data/closure.js");
 				var context = { scale: 2 };
 				var module = closure(context);
 				verify(module).convert(2).is(4);
@@ -337,20 +356,20 @@ namespace slime {
 
 			tests.$export = function() {
 				fifty.run(function module() {
-					var module: slime.loader.test.Script = $loader.script("test/data/module-export.js");
+					var module: slime.old.loader.test.Script = $loader.script("test/data/module-export.js");
 					var api = module({ scale: 2 });
 					verify(api).convert(3).is(6);
 				});
 
 				fifty.run(function file() {
-					var file: slime.loader.test.Script = $loader.script("test/data/file-export.js");
+					var file: slime.old.loader.test.Script = $loader.script("test/data/file-export.js");
 					var api = file({ scale: 2 });
 					verify(api).convert(3).is(6);
 				});
 			}
 
 			tests.thread = function() {
-				var source: loader.Source = {
+				var source: slime.old.loader.Source = {
 					thread: {
 						get: function(path) {
 							if (path == "foo") {
@@ -411,11 +430,11 @@ namespace slime {
 	)(fifty);
 }
 
-namespace slime.runtime.loader {
+namespace slime.runtime.loader.old {
 	/**
 	 * @param p The implementation of this `Loader`.
 	 */
-	export type Constructor = new <S>(p: slime.loader.Source | S) => Loader<S>
+	export type Constructor = new <S>(p: slime.old.loader.Source | S) => slime.old.Loader<S>
 }
 
 namespace slime.runtime.internal.loader {
@@ -426,5 +445,5 @@ namespace slime.runtime.internal.loader {
 		$api: slime.$api.Global
 	}
 
-	export type Script = slime.loader.Script<Scope,runtime.loader.Constructor>
+	export type Script = slime.old.loader.Script<Scope,runtime.loader.old.Constructor>
 }

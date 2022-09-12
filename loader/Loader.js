@@ -12,13 +12,13 @@
 	 * @param { slime.runtime.internal.loader.Scope["methods"] } methods
 	 * @param { slime.runtime.internal.loader.Scope["createScriptScope"] } createScriptScope
 	 * @param { slime.runtime.internal.loader.Scope["$api"] } $api
-	 * @param { slime.loader.Export<slime.runtime.loader.Constructor> } $export
+	 * @param { slime.old.loader.Export<slime.runtime.loader.old.Constructor> } $export
 	 */
 	function(Resource,methods,createScriptScope,$api,$export) {
 		$export(
 			/**
-			 * @this { slime.Loader }
-			 * @param { slime.loader.Source } p
+			 * @this { slime.old.Loader }
+			 * @param { slime.old.loader.Source } p
 			 */
 			function(p) {
 				if (!p.Resource) p.Resource = Resource;
@@ -38,7 +38,7 @@
 					return new p.Resource(descriptor);
 				}
 
-				/** @type { slime.Loader["get"] } */
+				/** @type { slime.old.Loader["get"] } */
 				if (p.get) this.get = function(path) {
 					var rsource = this.source.get(path);
 					var rv = get(rsource);
@@ -58,7 +58,7 @@
 				}
 
 				/**
-				 * @this { slime.Loader }
+				 * @this { slime.old.Loader }
 				 * @param { string } name
 				 */
 				var declare = function(name) {
@@ -78,11 +78,11 @@
 				};
 
 				if (p.get) {
-					/** @type { slime.Loader["run"] } */
+					/** @type { slime.old.Loader["run"] } */
 					this.run = void(0);
-					/** @type { slime.Loader["value"] } */
+					/** @type { slime.old.Loader["value"] } */
 					this.value = void(0);
-					/** @type { slime.Loader["file"] } */
+					/** @type { slime.old.Loader["file"] } */
 					this.file = void(0);
 					declare.call(this,"run");
 					declare.call(this,"value");
@@ -103,14 +103,14 @@
 				};
 
 				var getModuleScope = function($context,locations) {
-					/** @type { slime.loader.Scope } */
+					/** @type { slime.old.loader.Scope } */
 					var inner = createScriptScope($context);
 					inner.$loader = Child(locations.prefix);
 					return inner;
 				}
 
 				if (p.get) {
-					/** @type { slime.Loader["module"] } */
+					/** @type { slime.old.Loader["module"] } */
 					this.module = function(path,$context,target) {
 						var locations = getModuleLocations(path);
 						var inner = getModuleScope($context,locations);
@@ -124,7 +124,7 @@
 
 				var inModule = (
 					/**
-					 * @this { slime.Loader }
+					 * @this { slime.old.Loader }
 					 * @param { string } path
 					 * @param { any } $context
 					 * @param { any } target
@@ -145,7 +145,7 @@
 				}
 
 				if (p.get) {
-					/** @type { slime.Loader["script"] } */
+					/** @type { slime.old.Loader["script"] } */
 					this.script = function(path) {
 						var $loader = this;
 						var sync = function(c) {
@@ -207,7 +207,7 @@
 						};
 
 						/**
-						 * @returns { new (p: any) => slime.Loader }
+						 * @returns { new (p: any) => slime.old.Loader }
 						 */
 						var castToConstructor = function(v) {
 							return v;
@@ -218,7 +218,7 @@
 					return rv;
 				})(this,p);
 
-				/** @type { slime.Loader["Child"] } */
+				/** @type { slime.old.Loader["Child"] } */
 				this.Child = $api.experimental(Child);
 
 				if (p.list) {
@@ -244,7 +244,7 @@
 						}
 					}
 
-					/** @type { slime.Loader["list"] } */
+					/** @type { slime.old.Loader["list"] } */
 					this.list = function(m) {
 						if (!m) m = {};
 						if (!m.filter) m.filter = function() { return true; };

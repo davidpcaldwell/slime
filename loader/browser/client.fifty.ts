@@ -106,12 +106,12 @@ namespace slime.browser {
 			 *
 			 * @param p A URL which should be used as the base URL of the loader.
 			 */
-			new (p: string): slime.Loader
+			new (p: string): slime.old.Loader
 
 			/**
 			 * Creates a SLIME {@link slime.Loader | Loader}; see {@link slime.loader.Source}.
 			 */
-			new (p: slime.loader.Source): slime.Loader
+			new (p: slime.old.loader.Source): slime.Loader
 
 			series: slime.runtime.Exports["old"]["Loader"]["series"]
 			//	TODO	JSAPI-declared properties below
@@ -231,7 +231,7 @@ namespace slime.browser {
 		/**
 		 * See {@link slime.Loader.value}. Note that the first argument will be interpreted relative to the current page.
 		 */
-		value: slime.Loader["value"]
+		value: slime.old.Loader["value"]
 
 		get: slime.Loader["get"]
 

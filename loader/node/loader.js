@@ -66,7 +66,7 @@
 				/**
 				 *
 				 * @param { string } path
-				 * @returns { slime.loader.Source }
+				 * @returns { slime.old.loader.Source }
 				 */
 				function toSource(path) {
 					return {

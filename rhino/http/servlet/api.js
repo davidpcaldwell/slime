@@ -173,12 +173,12 @@
 		)();
 
 		/**
-		 * @type { (p: any, prefix?: any) => slime.Loader }
+		 * @type { (p: any, prefix?: any) => slime.old.Loader }
 		 */
 		var Loader = (function() {
 			if (bootstrap) {
 				var Loader = function(p,prefix) {
-					/** @type { slime.loader.Source } */
+					/** @type { slime.old.loader.Source } */
 					var source = {
 						get: function(path) {
 							var pp = {};
