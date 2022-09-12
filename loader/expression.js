@@ -335,8 +335,8 @@
 		/** @type { slime.runtime.Exports["old"]["loader"] } */
 		var loaders = code.loaders({
 			toExportScope: scripts.toExportScope,
-			Loader: Loader
-		})
+			Loader: Loader.old
+		});
 
 		/** @type { slime.runtime.Exports } */
 		var rv = $api.Object.compose(
@@ -349,7 +349,7 @@
 				value: topMethod("value"),
 				Resource: ResourceExport,
 				old: {
-					Loader: Object.assign(Loader, loaders),
+					Loader: Object.assign(Loader.old, loaders),
 					loader: loaders
 				},
 				namespace: function(string) {
