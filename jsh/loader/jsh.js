@@ -65,8 +65,9 @@
 					})(invocation);
 
 					// $jsh.runtime() is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
+					var runtime = $jsh.runtime();
 					return Object.assign(
-						$jsh.runtime(),
+						runtime,
 						{
 							getEnvironment: function() {
 								return configuration.getEnvironment();
@@ -92,14 +93,14 @@
 									return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
 								};
 
-								return {
+								return Object.assign(runtime.old.loader, {
 									getLoaderScript: function(path) {
 										return new $slime.Resource({
 											name: "jsh://" + path,
 											read: $slime.Resource.ReadInterface.string(getLoaderCode(path))
 										});
 									}
-								};
+								});
 							})(),
 							getLibraryFile: function(path) {
 								return $jsh.getLibraryFile(path);

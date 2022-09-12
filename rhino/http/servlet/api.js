@@ -107,7 +107,7 @@
 		})();
 
 		var toExportScope = (function() {
-			if ($java) return $java.loader.tools.toExportScope;
+			if ($java) return $java.old.loader.tools.toExportScope;
 			if (isScript($host)) {
 				return $host.Loader.tools.toExportScope;
 			}

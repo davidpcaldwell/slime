@@ -18,7 +18,7 @@
 	 */
 	function($slime,$platform,$engine,$api,mime,mimeTypeIs,$export) {
 		/**
-		 * @type { slime.runtime.Exports["Loader"]["tools"]["toExportScope"] }
+		 * @type { slime.runtime.Exports["old"]["Loader"]["tools"]["toExportScope"] }
 		 */
 		var toExportScope = function(scope) {
 			var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });

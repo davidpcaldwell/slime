@@ -10,13 +10,13 @@
 	 *
 	 * @param { slime.runtime.internal.loaders.Scope["toExportScope"] } toExportScope
 	 * @param { slime.runtime.internal.loaders.Scope["Loader"] } Loader
-	 * @param { slime.loader.Export<slime.runtime.Exports["loader"]> } $export
+	 * @param { slime.loader.Export<slime.runtime.Exports["old"]["loader"]> } $export
 	 */
 	function(toExportScope,Loader,$export) {
 		$export({
-			/** @type { slime.runtime.Exports["Loader"]["source"] } */
+			/** @type { slime.runtime.Exports["old"]["Loader"]["source"] } */
 			source: {
-				/** @type { slime.runtime.Exports["Loader"]["source"]["object"] } */
+				/** @type { slime.runtime.Exports["old"]["Loader"]["source"]["object"] } */
 				object: function(o) {
 					var getLocation = function(path) {
 						var target = o;

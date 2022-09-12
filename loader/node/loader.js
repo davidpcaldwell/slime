@@ -92,7 +92,7 @@
 				}
 				return {
 					Loader: function(p) {
-						return new runtime.Loader(toSource(p.base));
+						return new runtime.old.Loader(toSource(p.base));
 					}
 				}
 			}

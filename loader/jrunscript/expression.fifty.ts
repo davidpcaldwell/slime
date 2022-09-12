@@ -184,7 +184,7 @@ namespace slime.jrunscript.runtime {
 		 */
 		mime: $api.mime.Export
 
-		Loader: slime.runtime.Exports["Loader"] & {
+		Loader: slime.runtime.Exports["old"]["Loader"] & {
 			new (p: internal.CustomSource): Loader
 		}
 

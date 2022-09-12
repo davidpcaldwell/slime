@@ -282,7 +282,7 @@
 					this.factory = void(0);
 					this.Child = void(0);
 					this.get = void(0);
-					runtime.Loader.apply(this,arguments);
+					runtime.old.Loader.apply(this,arguments);
 				};
 
 				var getPageBase = function() {
@@ -320,7 +320,7 @@
 						Loader: Object.assign(
 							Loader,
 							{
-								series: runtime.Loader.series,
+								series: runtime.old.Loader.series,
 								getCode: fetcher.getCode,
 								fetch: fetcher.fetch
 							}

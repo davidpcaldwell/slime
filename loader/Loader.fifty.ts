@@ -284,7 +284,7 @@ namespace slime {
 
 			tests.types = {};
 
-			tests.types.Loader = function(it: slime.runtime.Exports["Loader"]) {
+			tests.types.Loader = function(it: slime.runtime.Exports["old"]["Loader"]) {
 				verify(it).is.type("function");
 				var tools: { [x: string]: any } = it.tools;
 				verify(tools).is.type("object");
@@ -297,8 +297,8 @@ namespace slime {
 
 			tests.source.object = function() {
 				var api: slime.runtime.Exports = subject;
-				verify(api).evaluate(function() { return this.Loader.source.object; }).is.type("function");
-				var source = api.loader.source.object({
+				verify(api).evaluate(function() { return this.old.Loader.source.object; }).is.type("function");
+				var source = api.old.loader.source.object({
 					a: {
 						resource: {
 							read: {
@@ -322,7 +322,7 @@ namespace slime {
 					if (typeof(p.read) != "function") throw new Error("p.read is " + typeof(p.read));
 					return p.read(String);
 				};
-				var loader = new api.Loader(source);
+				var loader = new api.old.Loader(source);
 				verify(loader).get("a").evaluate(readString).is("a");
 				verify(loader).get("b/c").evaluate(readString).is("c");
 				verify(loader).list().length.is(2);
@@ -370,7 +370,7 @@ namespace slime {
 					}
 				};
 
-				var loader = new subject.Loader(source);
+				var loader = new subject.old.Loader(source);
 
 				var readString = function(p: Resource): string { return p.read(String); };
 
