@@ -28,7 +28,7 @@ namespace slime.jsh.httpd {
 
 		map: (p: {
 			path: string,
-			resources?: slime.Loader,
+			resources?: slime.old.Loader,
 			servlets?: { [pattern: string]: servlet.descriptor }
 			webapp?: any
 		}) => void
@@ -36,7 +36,7 @@ namespace slime.jsh.httpd {
 		/**
 		 * Configures the given servlet as a single top-level servlet in this Tomcat server.
 		 */
-		servlet: (servlet: servlet.descriptor & { resources?: slime.Loader }) => void
+		servlet: (servlet: servlet.descriptor & { resources?: slime.old.Loader }) => void
 
 		start: () => void
 
@@ -79,8 +79,8 @@ namespace slime.jsh.httpd {
 	export interface Exports {
 		nugget: any
 		spi: {
-			argument: (resources: slime.Loader, servlet: slime.jsh.httpd.servlet.descriptor) => {
-				resources: slime.Loader,
+			argument: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.descriptor) => {
+				resources: slime.old.Loader,
 				load: servlet.byLoad["load"],
 				$loader?: slime.Loader
 			}

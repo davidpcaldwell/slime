@@ -352,7 +352,7 @@
 		/**
 		 *
 		 * @param { slime.fifty.test.internal.test.AsynchronousScopes } ascopes
-		 * @param { slime.Loader } loader
+		 * @param { slime.old.Loader } loader
 		 * @param { Parameters<slime.fifty.test.internal.test.Exports["run"]>[1] } contexts
 		 * @param { string } path
 		 * @param { any } [argument]

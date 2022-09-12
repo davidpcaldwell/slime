@@ -116,7 +116,7 @@ namespace slime.fifty {
 			 * A function that can be used to create subjects and make assertions about them. See {@link slime.definition.verify.Verify}.
 			 */
 			verify: verify
-			$loader: slime.Loader
+			$loader: slime.old.Loader
 			run: (f: () => void, name?: string) => void
 
 			test: {

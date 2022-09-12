@@ -14,7 +14,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
-	 * @param { slime.Loader } $loader
+	 * @param { slime.old.Loader } $loader
 	 */
 	function(Packages,JavaAdapter,$slime,$api,jsh,plugin,$loader) {
 		plugin({
@@ -294,7 +294,7 @@
 
 							/**
 							 * @param { any } context - Tomcat native Java context object
-							 * @param { slime.Loader } resources
+							 * @param { slime.old.Loader } resources
 							 * @param { string } pattern
 							 * @param { string } servletName
 							 * @param { slime.jsh.httpd.servlet.descriptor } servletDeclaration

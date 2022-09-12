@@ -495,10 +495,10 @@ namespace slime {
 			export namespace loaders {
 				export interface Scope {
 					toExportScope: slime.runtime.Exports["old"]["Loader"]["tools"]["toExportScope"]
-					Loader: runtime.loader.Constructor
+					Loader: runtime.loader.old.Constructor
 				}
 
-				export type Script = slime.loader.Script<Scope,slime.runtime.Exports["old"]["loader"]>
+				export type Script = slime.old.loader.Script<Scope,slime.runtime.Exports["old"]["loader"]>
 			}
 
 			/**
@@ -610,7 +610,7 @@ namespace slime {
 				/**
 				 * Creates a *Loader*. A Loader loads resources from a specified source.
 				 */
-				Loader: loader.Constructor & {
+				Loader: loader.old.Constructor & {
 					/** @deprecated Use `loader.source` */
 					source: {
 						/**
@@ -639,7 +639,7 @@ namespace slime {
 						 * @param o An object with named properties; each property either contains a loader object, in which case it
 						 * is a loader which provides its children, or a resource object, whose properties are {@link resource.Descriptor}s.
 						 */
-						object: (o: object) => slime.loader.Source
+						object: (o: object) => slime.old.loader.Source
 					}
 
 					/**
@@ -657,7 +657,7 @@ namespace slime {
 					 *
 					 * @experimental
 					 */
-					series: (loaders: Loader[]) => Loader
+					series: (loaders: old.Loader[]) => old.Loader
 
 					tools: {
 						toExportScope: <T extends { [x: string]: any }>(t: T) => T & { $export: any, $exports: any }

@@ -192,7 +192,7 @@
 		/**
 		 *
 		 * @param { string } path
-		 * @returns { slime.loader.Script<any,any> }
+		 * @returns { slime.old.loader.Script<any,any> }
 		 */
 		var script = function(path) {
 			return Object.assign(

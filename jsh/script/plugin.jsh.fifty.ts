@@ -543,7 +543,7 @@ namespace slime.jsh.script {
 		addClasses: any
 		getRelativePath: any
 		Application: any
-		loader: slime.Loader
+		loader: slime.old.Loader
 		Loader?: any
 		world: {
 			file: slime.jrunscript.file.world.Location
@@ -557,7 +557,7 @@ namespace slime.jsh.script.internal {
 		uri: string
 		packaged: {
 			file: slime.jrunscript.file.File
-			loader: slime.Loader
+			loader: slime.old.Loader
 		}
 	}
 

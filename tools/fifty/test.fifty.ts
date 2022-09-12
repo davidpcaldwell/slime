@@ -65,11 +65,11 @@ namespace slime.fifty.test.internal.test {
 	 */
 	export interface Exports {
 		run: (
-			loader: slime.Loader,
+			loader: slime.old.Loader,
 			scopes: {
 				jsh?: {
 					directory: slime.jrunscript.file.Directory
-					loader: slime.Loader
+					loader: slime.old.Loader
 				}
 			},
 			path: string,
@@ -77,11 +77,11 @@ namespace slime.fifty.test.internal.test {
 		) => Result
 
 		list: (
-			loader: slime.Loader,
+			loader: slime.old.Loader,
 			scopes: {
 				jsh?: {
 					directory: slime.jrunscript.file.Directory
-					loader: slime.Loader
+					loader: slime.old.Loader
 				}
 			},
 			path: string

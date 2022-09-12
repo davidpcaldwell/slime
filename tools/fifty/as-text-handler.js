@@ -14,7 +14,7 @@
 	function($context,$export) {
 		$export(
 			function(p) {
-				/** @type { slime.loader.Source } */
+				/** @type { slime.old.loader.Source } */
 				var asTextLoaderSource = {
 					get: function(path) {
 						var rv = p.loader.source.get(path);
@@ -22,7 +22,7 @@
 						return rv;
 					}
 				};
-				/** @type { slime.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.Resource> } */
+				/** @type { slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.Resource> } */
 				//@ts-ignore
 				var asTextLoader = new $context.httpd.io.Loader(asTextLoaderSource);
 
