@@ -851,7 +851,7 @@
 		var $exports_Loader = (
 			/**
 			 *
-			 * @param { slime.runtime.Exports["Loader"] } was
+			 * @param { slime.runtime.Exports["old"]["Loader"] } was
 			 * @returns
 			 */
 			function(was) {
@@ -883,7 +883,7 @@
 				Object.assign(rv, was);
 				return rv;
 			}
-		)(slime.Loader);
+		)(slime.old.Loader);
 
 		var $exports_classpath = (
 			/**
@@ -978,7 +978,7 @@
 			function() {
 				return {
 					run: slime.run,
-					loader: slime.loader,
+					old: slime.old,
 					file: slime.file,
 					value: slime.value,
 					namespace: slime.namespace,

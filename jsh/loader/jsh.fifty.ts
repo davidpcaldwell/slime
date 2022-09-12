@@ -173,7 +173,7 @@ namespace slime.jsh.plugin {
 			mock: slime.jsh.loader.internal.plugins.Export["mock"]
 		}
 
-		loader: slime.jrunscript.runtime.Exports["loader"] & {
+		loader: slime.jrunscript.runtime.Exports["old"]["loader"] & {
 			getLoaderScript(path: string): any
 		}
 		getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File

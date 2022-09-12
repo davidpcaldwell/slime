@@ -332,7 +332,7 @@
 			};
 		};
 
-		/** @type { slime.runtime.Exports["loader"] } */
+		/** @type { slime.runtime.Exports["old"]["loader"] } */
 		var loaders = code.loaders({
 			toExportScope: scripts.toExportScope,
 			Loader: Loader
@@ -348,8 +348,10 @@
 				file: topMethod("file"),
 				value: topMethod("value"),
 				Resource: ResourceExport,
-				Loader: Object.assign(Loader, loaders),
-				loader: loaders,
+				old: {
+					Loader: Object.assign(Loader, loaders),
+					loader: loaders
+				},
 				namespace: function(string) {
 					//	This construct returns the top-level global object, e.g., window in the browser
 					var global = function() {

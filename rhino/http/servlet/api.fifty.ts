@@ -86,7 +86,7 @@ namespace slime.servlet {
 
 				Loader: {
 					tools: {
-						toExportScope: slime.runtime.Exports["loader"]["tools"]["toExportScope"]
+						toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
 					}
 				}
 

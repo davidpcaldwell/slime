@@ -494,11 +494,11 @@ namespace slime {
 
 			export namespace loaders {
 				export interface Scope {
-					toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
+					toExportScope: slime.runtime.Exports["old"]["Loader"]["tools"]["toExportScope"]
 					Loader: runtime.loader.Constructor
 				}
 
-				export type Script = slime.loader.Script<Scope,slime.runtime.Exports["loader"]>
+				export type Script = slime.loader.Script<Scope,slime.runtime.Exports["old"]["loader"]>
 			}
 
 			/**
@@ -606,60 +606,62 @@ namespace slime {
 		}
 
 		export interface Exports {
-			/**
-			 * Creates a *Loader*. A Loader loads resources from a specified source.
-			 */
-			Loader: loader.Constructor & {
-				/** @deprecated Use `loader.source` */
-				source: {
-					/**
-					 * @deprecated Use `loader.source.object`.
-					 */
-					object: Exports["loader"]["source"]["object"]
-				}
+			old: {
 				/**
-				 * @deprecated Use `loader.series`.
+				 * Creates a *Loader*. A Loader loads resources from a specified source.
 				 */
-				series: Exports["loader"]["series"]
-				/**
-				 * @deprecated Use `loader.tools`.
-				 */
-				tools: {
+				Loader: loader.Constructor & {
+					/** @deprecated Use `loader.source` */
+					source: {
+						/**
+						 * @deprecated Use `loader.source.object`.
+						 */
+						object: Exports["old"]["loader"]["source"]["object"]
+					}
 					/**
-					 * @deprecated Use `loader.tools.toExportScope`.
+					 * @deprecated Use `loader.series`.
 					 */
-					toExportScope: Exports["loader"]["tools"]["toExportScope"]
-				}
-			}
-			loader: {
-				source: {
+					series: Exports["old"]["loader"]["series"]
 					/**
-					 * Creates an loader source defined by a single JavaScript object.
-					 * @param o An object with named properties; each property either contains a loader object, in which case it
-					 * is a loader which provides its children, or a resource object, whose properties are {@link resource.Descriptor}s.
+					 * @deprecated Use `loader.tools`.
 					 */
-					 object: (o: object) => slime.loader.Source
+					tools: {
+						/**
+						 * @deprecated Use `loader.tools.toExportScope`.
+						 */
+						toExportScope: Exports["old"]["loader"]["tools"]["toExportScope"]
+					}
 				}
+				loader: {
+					source: {
+						/**
+						 * Creates an loader source defined by a single JavaScript object.
+						 * @param o An object with named properties; each property either contains a loader object, in which case it
+						 * is a loader which provides its children, or a resource object, whose properties are {@link resource.Descriptor}s.
+						 */
+						object: (o: object) => slime.loader.Source
+					}
 
-				/**
-				 * A loader that uses a series of loaders to resolve resources. For a given path, each loader is searched in turn
-				 * until a resource is found.
-				 *
-				 * The created loaders currently have the following limitations: <!---	TODO	address them	--->
-				 *
-				 * * They are not enumerable
-				 * * They do not respect the `.child` implementations of their elements
-				 * * They do not provide a sensible `.toString` implementation.
-				 *
-				 * @param loaders A list of {@link slime.Loader}s
-				 * @returns A loader that looks up resources in the given list of underlying loaders.
-				 *
-				 * @experimental
-				 */
-				series: (loaders: Loader[]) => Loader
+					/**
+					 * A loader that uses a series of loaders to resolve resources. For a given path, each loader is searched in turn
+					 * until a resource is found.
+					 *
+					 * The created loaders currently have the following limitations: <!---	TODO	address them	--->
+					 *
+					 * * They are not enumerable
+					 * * They do not respect the `.child` implementations of their elements
+					 * * They do not provide a sensible `.toString` implementation.
+					 *
+					 * @param loaders A list of {@link slime.Loader}s
+					 * @returns A loader that looks up resources in the given list of underlying loaders.
+					 *
+					 * @experimental
+					 */
+					series: (loaders: Loader[]) => Loader
 
-				tools: {
-					toExportScope: <T extends { [x: string]: any }>(t: T) => T & { $export: any, $exports: any }
+					tools: {
+						toExportScope: <T extends { [x: string]: any }>(t: T) => T & { $export: any, $exports: any }
+					}
 				}
 			}
 		}
@@ -758,7 +760,7 @@ namespace slime {
 								}
 							}
 
-							this.loader = new api.Loader({
+							this.loader = new api.old.Loader({
 								get: function(path) {
 									var tokens = path.split("/");
 									if (tokens.length == 1) {
@@ -880,7 +882,7 @@ namespace slime {
 							});
 						};
 						rv._2 = function() {
-							var loader = new api.Loader({
+							var loader = new api.old.Loader({
 								//	TODO	take care of the below; expand type definition or update test
 								//@ts-ignore
 								get: function(path) {
@@ -915,7 +917,7 @@ namespace slime {
 							mock1.add("a", "sa");
 							var mock2 = new Mock();
 							mock2.add("b/c", "sb/c");
-							var series = api.Loader.series([mock1.loader,mock2.loader]);
+							var series = api.old.Loader.series([mock1.loader,mock2.loader]);
 							verify(series).get("foo").is(null);
 							verify(series).get("a").read(String).evaluate(String).is("sa");
 							verify(series).get("b/c").read(String).evaluate(String).is("sb/c");
