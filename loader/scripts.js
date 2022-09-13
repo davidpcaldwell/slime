@@ -78,7 +78,7 @@
 			if (!object || typeof(object) != "object") {
 				throw new TypeError("'object' must be an object, not " + object);
 			}
-			if (typeof(object.read) != "function") throw new Error("Not resource.");
+			if (typeof(object.read) != "function") throw new Error("Not resource: no read() function");
 			/** @type { slime.Resource & { js: { name: string, code: string } } } */
 			var resource = Object.assign(object, { js: void(0) });
 			var type = (resource.type) ? mime.Type(resource.type.media, resource.type.subtype, resource.type.parameters) : mime.Type.parse("application/javascript");

@@ -352,6 +352,7 @@
 					Loader: Object.assign(Loader.old, loaders),
 					loader: loaders
 				},
+				loader: Loader.api,
 				namespace: function(string) {
 					//	This construct returns the top-level global object, e.g., window in the browser
 					var global = function() {
