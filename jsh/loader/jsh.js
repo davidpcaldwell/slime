@@ -93,14 +93,18 @@
 									return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
 								};
 
-								return Object.assign(runtime.old.loader, {
-									getLoaderScript: function(path) {
-										return new $slime.Resource({
-											name: "jsh://" + path,
-											read: $slime.Resource.ReadInterface.string(getLoaderCode(path))
-										});
+								return Object.assign(
+									runtime.old.loader,
+									runtime.loader,
+									{
+										getLoaderScript: function(path) {
+											return new $slime.Resource({
+												name: "jsh://" + path,
+												read: $slime.Resource.ReadInterface.string(getLoaderCode(path))
+											});
+										}
 									}
-								});
+								);
 							})(),
 							getLibraryFile: function(path) {
 								return $jsh.getLibraryFile(path);

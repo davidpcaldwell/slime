@@ -210,8 +210,6 @@ namespace slime.browser {
 	//@ts-ignore
 	)(window,fifty);
 
-
-
 	export interface Exports {
 		/**
 		 * See {@link slime.Loader.run}. Note that the first argument will be interpreted relative to the current page.

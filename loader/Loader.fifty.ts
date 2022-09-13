@@ -39,39 +39,23 @@ namespace slime {
 			) {
 				const { verify } = fifty;
 
-				const { $api } = fifty.global;
+				/**
+				 * A test that accepts a {@link Synchronous} that loads files from this directory and tests its ability to load
+				 * scripts correctly.
+				 *
+				 * @param loader A loader that loads files from this source directory.
+				 */
+				fifty.tests.script = function(loader: Synchronous) {
+					fifty.run(function missing() { fifty.tests.script.missing(loader); });
+					fifty.run(function context() { fifty.tests.script.context(loader); });
+				};
 
-				fifty.tests.script = fifty.test.Parent();
-
-				var adaptOldLoader = function(was: slime.old.Loader): Synchronous {
-					return {
-						get: function(path) {
-							var old = was.get(path);
-							if (old) {
-								/** @type { slime.runtime.loader.Resource } */
-								var rv = {
-									string: function() {
-										if (old.read.string) return old.read.string();
-										return old.read(String);
-									}
-								};
-								return $api.Function.Maybe.value(rv);
-							} else {
-								return $api.Function.Maybe.nothing();
-							}
-						}
-					}
-				}
-
-				//	TODO	for now, this implementation piggybacks off the old implementation, which is used for fifty.$loader.
-				var loader: Synchronous = adaptOldLoader(fifty.$loader);
-
-				fifty.tests.script.missing = function() {
+				fifty.tests.script.missing = function(loader: Synchronous) {
 					var no = test.subject.synchronous.script(loader, "foo");
 					verify(no).is(null);
 				}
 
-				fifty.tests.script.context = function() {
+				fifty.tests.script.context = function(loader: Synchronous) {
 					function echo<T>(t: T): T {
 						var script: <C>(c: C) => { provided: C } = test.subject.synchronous.script(loader, "test/data/context.js");
 						return script(t).provided;
@@ -524,7 +508,7 @@ namespace slime {
 			}
 
 			tests.suite = function() {
-				fifty.run(fifty.tests.script);
+				//fifty.run(fifty.tests.script);
 
 				fifty.run(fifty.tests.source);
 				fifty.run(fifty.tests.closure);
