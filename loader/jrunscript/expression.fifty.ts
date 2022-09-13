@@ -256,31 +256,29 @@ namespace slime.jrunscript.runtime {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports extends slime.runtime.Exports {
+		jrunscript: {
+			loader: {
+				from: {
+					java: (_loader: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.runtime.loader.Synchronous
+				}
+			}
+		}
+	}
+
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { $api, jsh } = fifty.global;
 			const { $slime } = fifty.global.jsh.unit;
 
-			function toResource(file: slime.jrunscript.file.File): slime.runtime.loader.Resource {
-				return {
-					string: function() {
-						return file.read(String);
-					}
-				}
-			};
-
-			var runtime = fifty.jsh.file.object.getRelativePath("..").directory;
-
-			var loader: slime.runtime.loader.Synchronous = {
-				get: function(path) {
-					var file = runtime.getFile(path);
-					if (!file) return $api.Function.Maybe.nothing();
-					return $api.Function.Maybe.value(toResource(file));
-				}
-			};
+			var loader: slime.runtime.loader.Synchronous = $slime.jrunscript.loader.from.java(
+				Packages.inonit.script.engine.Code.Loader.create(
+					fifty.jsh.file.object.getRelativePath("..").java.adapt()
+				)
+			);
 
 			fifty.tests.exports.loader = function() {
 				verify($slime).loader.is.type("object");
@@ -291,7 +289,7 @@ namespace slime.jrunscript.runtime {
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 }
 
 namespace slime.$api {

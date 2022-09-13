@@ -528,7 +528,10 @@ namespace slime.jrunscript {
 				engine: {
 					Code: {
 						Loader: {
-							create: (url: slime.jrunscript.native.java.net.URL) => slime.jrunscript.native.inonit.script.engine.Code.Loader
+							create: {
+								(url: slime.jrunscript.native.java.net.URL): slime.jrunscript.native.inonit.script.engine.Code.Loader
+								(file: slime.jrunscript.native.java.io.File): slime.jrunscript.native.inonit.script.engine.Code.Loader
+							}
 
 							github: any
 							Resource: any
