@@ -181,6 +181,7 @@
 			}
 		);
 
+		/** @type { slime.jrunscript.runtime.io.Exports } */
 		var $exports_io = slime.file(
 			new slime.Resource({
 				name: "slime://loader/jrunscript/io.js",
@@ -973,6 +974,28 @@
 			}
 		}
 
+		var jrunscript = {
+			loader: {
+				/** @type { slime.jrunscript.runtime.Exports["jrunscript"]["loader"]["from"] } */
+				from: {
+					java: function(_loader) {
+						return {
+							get: function(path) {
+								var _file = _loader.getFile(path);
+								if (!_file) return slime.$api.Function.Maybe.nothing();
+								return slime.$api.Function.Maybe.value({
+									string: function() {
+										var _stream = _file.getInputStream();
+										return $exports_io.Streams.java.adapt(_stream).character().asString();
+									}
+								})
+							}
+						}
+					}
+				}
+			}
+		};
+
 		return (
 			/** @returns { slime.jrunscript.runtime.Exports } */
 			function() {
@@ -993,8 +1016,10 @@
 
 					java: $exports_java,
 					io: $exports_io,
-					classpath: $exports_classpath
-				}
+					classpath: $exports_classpath,
+
+					jrunscript: jrunscript
+				};
 			}
 		)();
 	}
