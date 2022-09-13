@@ -173,6 +173,16 @@ namespace slime.jrunscript.runtime {
 		export type Source = slime.old.loader.Source | CustomSource
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+
 	/**
 	 * The SLIME runtime, augmented with Java-specific capabilities: a `classpath`, the `jrunscript` `java` and `io` interfaces,
 	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
@@ -196,6 +206,92 @@ namespace slime.jrunscript.runtime {
 		java: slime.jrunscript.runtime.java.Exports
 		classpath: any
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit,
+		) {
+			const { verify, run } = fifty;
+			const { jsh } = fifty.global;
+			const { $slime } = jsh.unit;
+
+			fifty.tests.exports.Resource = function() {
+				var file: slime.jrunscript.runtime.resource.Descriptor = fifty.$loader.source.get("expression.fifty.ts") as slime.jrunscript.runtime.resource.Descriptor;
+				var resource = new $slime.Resource({
+					type: $slime.mime.Type.parse("application/x.typescript"),
+					read: {
+						binary: function() {
+							return file.read.binary();
+						}
+					}
+				});
+				verify(resource).is.type("object");
+				verify(resource).type.media.is("application");
+				verify(resource).type.subtype.is("x.typescript");
+
+				//	TODO	when running Fifty tests, this shows up as a 'run' child; should use function name ("streamIsCopied")
+				//			if there is one
+				function streamIsCopied() {
+					var data = "foo!";
+					var buffer = new $slime.io.Buffer();
+					var stream = buffer.writeText();
+					stream.write(data);
+					stream.close();
+
+					var resource = new $slime.Resource({
+						stream: {
+							binary: buffer.readBinary()
+						}
+					});
+
+					var first = resource.read(String);
+					var second = resource.read(String);
+					verify(first).is(data);
+					verify(second).is(data);
+				};
+
+				run(streamIsCopied);
+			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+			const { $slime } = fifty.global.jsh.unit;
+
+			function toResource(file: slime.jrunscript.file.File): slime.runtime.loader.Resource {
+				return {
+					string: function() {
+						return file.read(String);
+					}
+				}
+			};
+
+			var runtime = fifty.jsh.file.object.getRelativePath("..").directory;
+
+			var loader: slime.runtime.loader.Synchronous = {
+				get: function(path) {
+					var file = runtime.getFile(path);
+					if (!file) return $api.Function.Maybe.nothing();
+					return $api.Function.Maybe.value(toResource(file));
+				}
+			};
+
+			fifty.tests.exports.loader = function() {
+				verify($slime).loader.is.type("object");
+				verify($slime).loader.synchronous.is.type("object");
+				verify($slime).loader.synchronous.script.is.type("function");
+
+				fifty.load("../Loader.fifty.ts", "script", loader);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 namespace slime.$api {
@@ -214,76 +310,48 @@ namespace slime.$api {
 	export namespace jrunscript {
 		export type Properties = { [x: string]: string }
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.$api = {
+				jrunscript: function() {
+					var values = {
+						a: "1"
+					};
+
+					var encoded = $api.jrunscript.Properties.codec.object.encode(values);
+					jsh.shell.console(String(encoded));
+					verify(encoded.getProperty("a")).evaluate(String).is("1");
+					verify(encoded.getProperty("foo")).is(null);
+
+					var decoded = $api.jrunscript.Properties.codec.object.decode(encoded);
+					verify(decoded).a.is("1");
+					verify(decoded).evaluate.property("foo").is(void(0));
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 }
 
 (
 	function(
-		fifty: slime.fifty.test.Kit,
-		$slime: slime.jrunscript.runtime.Exports,
-		$api: slime.$api.Global,
-		$loader: slime.old.Loader,
-		verify: slime.fifty.test.verify,
-		tests: slime.fifty.test.tests,
-		run: slime.fifty.test.Kit["run"]
+		fifty: slime.fifty.test.Kit
 	) {
-		tests.exports = {};
-		tests.exports.Resource = function() {
-			var file: slime.jrunscript.runtime.resource.Descriptor = $loader.source.get("expression.fifty.ts") as slime.jrunscript.runtime.resource.Descriptor;
-			var resource = new $slime.Resource({
-				type: $slime.mime.Type.parse("application/x.typescript"),
-				read: {
-					binary: function() {
-						return file.read.binary();
-					}
-				}
-			});
-			verify(resource).is.type("object");
-			verify(resource).type.media.is("application");
-			verify(resource).type.subtype.is("x.typescript");
+		const { verify } = fifty;
 
-			//	TODO	when running Fifty tests, this shows up as a 'run' child; should use function name ("streamIsCopied")
-			//			if there is one
-			function streamIsCopied() {
-				var data = "foo!";
-				var buffer = new $slime.io.Buffer();
-				var stream = buffer.writeText();
-				stream.write(data);
-				stream.close();
+		fifty.tests.suite = function() {
+			verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
 
-				var resource = new $slime.Resource({
-					stream: {
-						binary: buffer.readBinary()
-					}
-				});
+			fifty.run(fifty.tests.exports);
 
-				var first = resource.read(String);
-				var second = resource.read(String);
-				verify(first).is(data);
-				verify(second).is(data);
-			};
-
-			run(streamIsCopied);
-		};
-
-		tests.suite = function() {
-			verify($slime).$platform.is.type("object");
-
-			const jsh = fifty.global.jsh;
-
-			var values = {
-				a: "1"
-			};
-
-			var encoded = $api.jrunscript.Properties.codec.object.encode(values);
-			jsh.shell.console(String(encoded));
-			verify(encoded.getProperty("a")).evaluate(String).is("1");
-			verify(encoded.getProperty("foo")).is(null);
-
-			var decoded = $api.jrunscript.Properties.codec.object.decode(encoded);
-			verify(decoded).a.is("1");
-			verify(decoded).evaluate.property("foo").is(void(0));
-
-			run(tests.exports.Resource);
+			fifty.run(fifty.tests.$api.jrunscript);
 
 			//	TODO	redundant? tested per-engine in contributor/suite.jsh.js
 			fifty.load("java.fifty.ts");
@@ -291,7 +359,8 @@ namespace slime.$api {
 		}
 	}
 //@ts-ignore
-)(fifty, jsh.unit["$slime"], $api, $loader, verify, tests, run);
+)(fifty);
+
 
 namespace slime.external.e4x {
 	export interface Object {
