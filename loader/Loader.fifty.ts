@@ -51,7 +51,8 @@ namespace slime {
 								/** @type { slime.runtime.loader.Resource } */
 								var rv = {
 									string: function() {
-										return old.read.string();
+										if (old.read.string) return old.read.string();
+										return old.read(String);
 									}
 								};
 								return $api.Function.Maybe.value(rv);
