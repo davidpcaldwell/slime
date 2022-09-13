@@ -113,7 +113,7 @@ namespace slime.browser {
 			 */
 			new (p: slime.old.loader.Source): slime.Loader
 
-			series: slime.runtime.Exports["old"]["Loader"]["series"]
+			series: slime.runtime.Exports["old"]["loader"]["series"]
 			//	TODO	JSAPI-declared properties below
 			//	getCode
 			//	fetch

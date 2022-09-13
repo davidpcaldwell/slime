@@ -494,7 +494,7 @@ namespace slime {
 
 			export namespace loaders {
 				export interface Scope {
-					toExportScope: slime.runtime.Exports["old"]["Loader"]["tools"]["toExportScope"]
+					toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
 					Loader: runtime.loader.old.Constructor
 				}
 
@@ -610,28 +610,8 @@ namespace slime {
 				/**
 				 * Creates a *Loader*. A Loader loads resources from a specified source.
 				 */
-				Loader: loader.old.Constructor & {
-					/** @deprecated Use `loader.source` */
-					source: {
-						/**
-						 * @deprecated Use `loader.source.object`.
-						 */
-						object: Exports["old"]["loader"]["source"]["object"]
-					}
-					/**
-					 * @deprecated Use `loader.series`.
-					 */
-					series: Exports["old"]["loader"]["series"]
-					/**
-					 * @deprecated Use `loader.tools`.
-					 */
-					tools: {
-						/**
-						 * @deprecated Use `loader.tools.toExportScope`.
-						 */
-						toExportScope: Exports["old"]["loader"]["tools"]["toExportScope"]
-					}
-				}
+				Loader: loader.old.Constructor
+
 				loader: {
 					source: {
 						/**
@@ -917,7 +897,7 @@ namespace slime {
 							mock1.add("a", "sa");
 							var mock2 = new Mock();
 							mock2.add("b/c", "sb/c");
-							var series = api.old.Loader.series([mock1.loader,mock2.loader]);
+							var series = api.old.loader.series([mock1.loader,mock2.loader]);
 							verify(series).get("foo").is(null);
 							verify(series).get("a").read(String).evaluate(String).is("sa");
 							verify(series).get("b/c").read(String).evaluate(String).is("sb/c");

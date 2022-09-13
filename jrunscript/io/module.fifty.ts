@@ -60,6 +60,7 @@ namespace slime.jrunscript.io {
 		Buffer: slime.jrunscript.runtime.io.Exports["Buffer"]
 		Resource: slime.jrunscript.runtime.Exports["Resource"]
 		Loader: slime.jrunscript.runtime.Exports["Loader"]
+		old: slime.jrunscript.runtime.Exports["old"]
 		java: {
 			adapt: {
 				(native: slime.jrunscript.native.java.io.InputStream): slime.jrunscript.runtime.io.InputStream

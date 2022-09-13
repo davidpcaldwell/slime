@@ -320,7 +320,7 @@
 						Loader: Object.assign(
 							Loader,
 							{
-								series: runtime.old.Loader.series,
+								series: runtime.old.loader.series,
 								getCode: fetcher.getCode,
 								fetch: fetcher.fetch
 							}

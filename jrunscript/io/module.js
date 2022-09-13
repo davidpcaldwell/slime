@@ -76,6 +76,7 @@
 			Buffer: $context.$slime.io.Buffer,
 			Resource: $context.$slime.Resource,
 			Loader: $context.$slime.Loader,
+			old: $context.$slime.old,
 			InputStream: InputStream,
 			java: {
 				adapt: $context.$slime.io.Streams.java.adapt

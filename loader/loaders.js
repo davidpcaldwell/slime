@@ -14,9 +14,9 @@
 	 */
 	function(toExportScope,Loader,$export) {
 		$export({
-			/** @type { slime.runtime.Exports["old"]["Loader"]["source"] } */
+			/** @type { slime.runtime.Exports["old"]["loader"]["source"] } */
 			source: {
-				/** @type { slime.runtime.Exports["old"]["Loader"]["source"]["object"] } */
+				/** @type { slime.runtime.Exports["old"]["loader"]["source"]["object"] } */
 				object: function(o) {
 					var getLocation = function(path) {
 						var target = o;

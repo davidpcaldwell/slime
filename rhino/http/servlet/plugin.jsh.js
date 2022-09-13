@@ -330,13 +330,16 @@
 														container: servletImplementation.resources
 													},
 
-													Loader: jsh.io.Loader,
+													Loader: {
+														tools: {
+															toExportScope: jsh.io.old.loader.tools.toExportScope
+														}
+													},
 
 													loadServletScriptIntoScope: function(scope) {
 														servletImplementation.load(scope);
 													},
 
-													//	TODO	should not needlessly rename this
 													$slime: $slime,
 
 													server: server,
