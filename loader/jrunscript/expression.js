@@ -979,6 +979,7 @@
 				return {
 					run: slime.run,
 					old: slime.old,
+					loader: slime.loader,
 					file: slime.file,
 					value: slime.value,
 					namespace: slime.namespace,

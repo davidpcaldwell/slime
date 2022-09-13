@@ -5,6 +5,104 @@
 //	END LICENSE
 
 namespace slime {
+	export namespace runtime.loader {
+		export interface Resource {
+			string: () => string
+		}
+
+		export interface Synchronous<T extends Resource = Resource> {
+			/**
+			 * Returns the resource associated with a given path.
+			 *
+			 * @param path A path.
+			 */
+			get: (path: string) => slime.$api.fp.Maybe<T>
+		}
+
+		export interface Exports {
+			synchronous: {
+				script: <C,E>(loader: Synchronous, path: string) => (c: C) => E
+			}
+		}
+
+		export namespace test {
+			export const subject = (function(fifty: slime.fifty.test.Kit) {
+				const runtime: slime.runtime.Exports = fifty.$loader.module("fixtures.ts").subject(fifty);
+				return runtime.loader;
+			//@ts-ignore
+			})(fifty);
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				const { $api } = fifty.global;
+
+				fifty.tests.script = fifty.test.Parent();
+
+				var adaptOldLoader = function(was: slime.old.Loader): Synchronous {
+					return {
+						get: function(path) {
+							var old = was.get(path);
+							if (old) {
+								/** @type { slime.runtime.loader.Resource } */
+								var rv = {
+									string: function() {
+										if (old.read.string) return old.read.string();
+										return old.read(String);
+									}
+								};
+								return $api.Function.Maybe.value(rv);
+							} else {
+								return $api.Function.Maybe.nothing();
+							}
+						}
+					}
+				}
+
+				//	TODO	for now, this implementation piggybacks off the old implementation, which is used for fifty.$loader.
+				var loader: Synchronous = adaptOldLoader(fifty.$loader);
+
+				fifty.tests.script.missing = function() {
+					var no = test.subject.synchronous.script(loader, "foo");
+					verify(no).is(null);
+				}
+
+				fifty.tests.script.context = function() {
+					function echo<T>(t: T): T {
+						var script: <C>(c: C) => { provided: C } = test.subject.synchronous.script(loader, "test/data/context.js");
+						return script(t).provided;
+					}
+
+					var ifUndefined = echo(void(0));
+					verify(ifUndefined).is.type("undefined");
+					var ifNull = echo(null);
+					verify(ifNull).is.type("null");
+					var ifString = echo("foo");
+					verify(ifString).is.type("string");
+					var ifNumber = echo(3);
+					verify(ifNumber).is.type("number");
+					var ifBoolean = echo(true);
+					verify(ifBoolean).is.type("boolean");
+					var ifObject = echo({ foo: "bar" });
+					verify(ifObject).is.type("object");
+					verify(ifObject).evaluate.property("foo").is("bar");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
+	export namespace runtime {
+		export interface Exports {
+			loader: slime.runtime.loader.Exports
+		}
+	}
+
 	export interface Loader {
 		//	TODO	What about if $context is a number, string, or boolean?
 		script: <C,E>(path: string) => loader.Script<C,E>
@@ -72,6 +170,15 @@ namespace slime {
 	}
 
 	export namespace old {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.old = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export namespace loader {
 			/**
 			 * The scope provided to a script executed via the {@link Loader | Loader.value()} call.
@@ -134,62 +241,6 @@ namespace slime {
 		}
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			fifty.tests.script = fifty.test.Parent();
-
-			fifty.tests.script.context = function() {
-				function echo<T>(t: T): T {
-					var script: slime.old.loader.Script<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
-					return script(t).provided;
-				}
-
-				//	TODO	should these two tests pass?
-				if (false) {
-					var ifUndefined = echo(void(0));
-					verify(ifUndefined).is.type("undefined");
-					var ifNull = echo(null);
-					verify(ifNull).is.type("null");
-				}
-				var ifString = echo("foo");
-				verify(ifString).is.type("string");
-				var ifNumber = echo(3);
-				verify(ifNumber).is.type("number");
-				var ifBoolean = echo(true);
-				verify(ifBoolean).is.type("boolean");
-				var ifObject = echo({ foo: "bar" });
-				verify(ifObject).is.type("object");
-				verify(ifObject).evaluate.property("foo").is("bar");
-			}
-
-			fifty.tests.script.export = function() {
-				function echo<T>(t: T): T {
-					var script: slime.old.loader.Script<{ export: T },T> = fifty.$loader.script("test/data/export.js");
-					return script({ export: t });
-				}
-
-				var ifUndefined = echo(void(0));
-				verify(ifUndefined).is.type("undefined");
-				var ifNull = echo(null);
-				verify(ifNull).is.type("null");
-				var ifString = echo("foo");
-				verify(ifString).is.type("string");
-				var ifNumber = echo(3);
-				verify(ifNumber).is.type("number");
-				var ifBoolean = echo(true);
-				verify(ifBoolean).is.type("boolean");
-				var ifObject = echo({ foo: "bar" });
-				verify(ifObject).is.type("object");
-				verify(ifObject).evaluate.property("foo").is("bar");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export namespace loader {
 		export interface Script<C,E> {
 			(c?: C): E
@@ -202,6 +253,62 @@ namespace slime {
 	export namespace old.loader {
 		/** @deprecated Can use slime.loader.Script directly. */
 		export type Script<C,E> = slime.loader.Script<C,E>
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.old.script = fifty.test.Parent();
+
+				fifty.tests.old.script.context = function() {
+					function echo<T>(t: T): T {
+						var script: slime.old.loader.Script<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
+						return script(t).provided;
+					}
+
+					//	TODO	should these two tests pass? They do under new loader
+					if (false) {
+						var ifUndefined = echo(void(0));
+						verify(ifUndefined).is.type("undefined");
+						var ifNull = echo(null);
+						verify(ifNull).is.type("null");
+					}
+					var ifString = echo("foo");
+					verify(ifString).is.type("string");
+					var ifNumber = echo(3);
+					verify(ifNumber).is.type("number");
+					var ifBoolean = echo(true);
+					verify(ifBoolean).is.type("boolean");
+					var ifObject = echo({ foo: "bar" });
+					verify(ifObject).is.type("object");
+					verify(ifObject).evaluate.property("foo").is("bar");
+				}
+
+				fifty.tests.old.script.export = function() {
+					function echo<T>(t: T): T {
+						var script: slime.old.loader.Script<{ export: T },T> = fifty.$loader.script("test/data/export.js");
+						return script({ export: t });
+					}
+
+					var ifUndefined = echo(void(0));
+					verify(ifUndefined).is.type("undefined");
+					var ifNull = echo(null);
+					verify(ifNull).is.type("null");
+					var ifString = echo("foo");
+					verify(ifString).is.type("string");
+					var ifNumber = echo(3);
+					verify(ifNumber).is.type("number");
+					var ifBoolean = echo(true);
+					verify(ifBoolean).is.type("boolean");
+					var ifObject = echo({ foo: "bar" });
+					verify(ifObject).is.type("object");
+					verify(ifObject).evaluate.property("foo").is("bar");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 
 		/** @deprecated Replaced by {@link Script}. */
 		export type Product<C,E> = Script<C,E>
@@ -417,10 +524,12 @@ namespace slime {
 			}
 
 			tests.suite = function() {
+				fifty.run(fifty.tests.script);
+
 				fifty.run(fifty.tests.source);
 				fifty.run(fifty.tests.closure);
 				fifty.run(fifty.tests.$export);
-				fifty.run(fifty.tests.script);
+				fifty.run(fifty.tests.old.script);
 				//	TODO	tests.thread, browser only?
 			};
 
@@ -447,6 +556,7 @@ namespace slime.runtime.internal.loader {
 
 	export interface Exports {
 		old: slime.runtime.loader.old.Constructor
+		api: slime.runtime.loader.Exports
 	}
 
 	export type Script = slime.old.loader.Script<Scope,Exports>

@@ -16,6 +16,61 @@
 	 */
 	function(Resource,methods,createScriptScope,$api,$export) {
 		/**
+		 * @type { slime.runtime.loader.Exports }
+		 */
+		var api = {
+			synchronous: {
+				script: function(loader, path) {
+					var resource = loader.get(path);
+
+					if (resource.present) {
+						return (
+							function(resource) {
+								return function(context) {
+									var rv;
+
+									/** @type { (p: slime.runtime.loader.Resource) => slime.Resource } */
+									var adapt = function(resource) {
+										return {
+											name: path,
+											type: void(0),
+											read: Object.assign(
+												function(p) {
+													if (p === String) return resource.string();
+													throw new TypeError("Adapter unimplemented for " + p);
+												},
+												{
+													string: function() {
+														throw new TypeError("Adapter .string() unimplemented.");
+													}
+												}
+											)
+										}
+									};
+
+									methods.run(
+										adapt(resource),
+										{
+											$context: context,
+											$loader: void(0),
+											$export: function(v) {
+												rv = v;
+											}
+										}
+									);
+
+									return rv;
+								}
+							}
+						)(resource.value);
+					} else {
+						return null;
+					}
+				}
+			}
+		};
+
+		/**
 		 * @this { slime.old.Loader }
 		 * @param { slime.old.loader.Source } p
 		 */
@@ -280,7 +335,8 @@
 		}
 
 		$export({
-			old: old
+			old: old,
+			api: api
 		});
 	}
 //@ts-ignore

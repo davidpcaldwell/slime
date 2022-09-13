@@ -175,6 +175,9 @@ namespace slime.jsh.plugin {
 
 		loader: slime.jrunscript.runtime.Exports["old"]["loader"] & {
 			getLoaderScript(path: string): any
+		} & {
+			//	TODO	dubious
+			synchronous: slime.runtime.loader.Exports["synchronous"]
 		}
 		getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File
 		getInterface(): any
