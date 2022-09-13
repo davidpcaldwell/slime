@@ -394,7 +394,7 @@ namespace slime {
 
 			tests.types = {};
 
-			tests.types.Loader = function(it: slime.runtime.Exports["old"]["Loader"]) {
+			tests.types.Loader = function(it: slime.runtime.Exports["old"]["loader"]) {
 				verify(it).is.type("function");
 				var tools: { [x: string]: any } = it.tools;
 				verify(tools).is.type("object");
