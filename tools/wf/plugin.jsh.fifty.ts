@@ -493,12 +493,7 @@ namespace slime.jsh.wf {
 
 	export namespace exports {
 		export interface Checks {
-			tsc: () => slime.$api.fp.world.old.Ask<
-				{
-					console: string
-				},
-				boolean
-			>
+			tsc: slime.$api.fp.world.Question<void,{ console: string, output: string },boolean>
 		}
 	}
 

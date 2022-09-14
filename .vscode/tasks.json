@@ -78,7 +78,7 @@
 		{
 			"label": "TypeScript: Check types",
 			"type": "shell",
-			"command": "./wf tsc",
+			"command": "./wf tsc --vscode",
 			"problemMatcher": [],
 			"presentation": {
 				"echo": false,

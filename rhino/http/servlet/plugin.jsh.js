@@ -145,7 +145,7 @@
 					resources = getResourceLoader(resources);
 
 					/**
-					 *	@param { { load: (scope: slime.servlet.Scope) => void, $loader?: slime.Loader } } o
+					 *	@param { { load: (scope: slime.servlet.Scope) => void, $loader?: slime.old.Loader } } o
 					 */
 					var returning = function(o) {
 						return Object.assign(o, { resources: resources });

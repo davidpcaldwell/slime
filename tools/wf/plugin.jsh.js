@@ -814,23 +814,43 @@
 
 				/** @type { slime.jsh.wf.exports.Checks["tsc"] } */
 				function tsc() {
-					return $api.Function.world.old.ask(function(events) {
+					return function(events) {
 						events.fire("console", "Verifying with TypeScript compiler ...");
 						var project = base;
 						var version = typescript.getVersion(project);
 						events.fire("console", "Compiling with TypeScript " + version + " ...");
-						var result = jsh.shell.jsh({
-							script: jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
-							arguments: [
-								"-version", version,
-								"-tsconfig", typescript.getConfig(project)
-							],
-							evaluate: function(result) {
-								return result;
+						//	TODO	create standard jsh invocation to make the terser, commented-out form below this form possible
+						var result = $api.Function.world.now.question(
+							jsh.shell.world.question,
+							jsh.shell.Invocation.create({
+								command: jsh.shell.jsh.src.getFile("jsh.bash"),
+								arguments: [
+									jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
+									"-version", version,
+									"-tsconfig", typescript.getConfig(project)
+								],
+								stdio: {
+									output: "line"
+								}
+							}),
+							{
+								stdout: function(e) {
+									events.fire("output", e.detail.line);
+								}
 							}
-						});
+						);
+						// var result = jsh.shell.jsh({
+						// 	script: jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
+						// 	arguments: [
+						// 		"-version", version,
+						// 		"-tsconfig", typescript.getConfig(project)
+						// 	],
+						// 	evaluate: function(result) {
+						// 		return result;
+						// 	}
+						// });
 						return (result.status == 0);
-					});
+					};
 				}
 
 				jsh.wf.checks = {
@@ -898,8 +918,11 @@
 								});
 							}
 
-							success = success && tsc()({
+							success = success && $api.Function.world.now.question(tsc, void(0), {
 								console: function(e) {
+									events.fire("console", e.detail);
+								},
+								output: function(e) {
 									events.fire("console", e.detail);
 								}
 							});
