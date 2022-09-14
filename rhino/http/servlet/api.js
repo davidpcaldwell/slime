@@ -246,7 +246,7 @@
 
 		var loaders = (
 			/**
-			 * @return { { script: slime.Loader, container: slime.Loader, api: slime.Loader } }
+			 * @return { { script: slime.old.Loader, container: slime.old.Loader, api: slime.Loader } }
 			 */
 			function() {
 				if ($java && $servlet) {

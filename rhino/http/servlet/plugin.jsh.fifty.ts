@@ -82,7 +82,7 @@ namespace slime.jsh.httpd {
 			argument: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.descriptor) => {
 				resources: slime.old.Loader,
 				load: servlet.byLoad["load"],
-				$loader?: slime.Loader
+				$loader?: slime.old.Loader
 			}
 		}
 		Resources: slime.jsh.httpd.resources.Export

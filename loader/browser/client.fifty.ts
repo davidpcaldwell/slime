@@ -111,7 +111,7 @@ namespace slime.browser {
 			/**
 			 * Creates a SLIME {@link slime.Loader | Loader}; see {@link slime.loader.Source}.
 			 */
-			new (p: slime.old.loader.Source): slime.Loader
+			new (p: slime.old.loader.Source): slime.old.Loader
 
 			series: slime.runtime.Exports["old"]["loader"]["series"]
 			//	TODO	JSAPI-declared properties below
@@ -236,7 +236,7 @@ namespace slime.browser {
 		/**
 		 * A loader that loads resources using the current page as the base URL for the loader.
 		 */
-		loader: slime.Loader
+		loader: slime.old.Loader
 
 		/**
 		 * Contains useful pieces of code that are exported for general use.

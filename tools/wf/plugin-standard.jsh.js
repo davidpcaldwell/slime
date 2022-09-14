@@ -175,19 +175,45 @@
 					);
 				}
 
-				$exports.tsc = function() {
-					var result = jsh.wf.checks.tsc()({
-						console: function(e) {
-							jsh.shell.console(e.detail);
+				$exports.tsc = $api.Function.pipe(
+					jsh.script.cli.option.boolean({ longname: "vscode" }),
+					function(p) {
+						/**
+						 * Reformats output so that is is clickable in the VSCode terminal. See also
+						 * [VSCode issue](https://github.com/microsoft/vscode/issues/160895) describing the need for this.
+						 *
+						 * @type { (message: string) => string }
+						 */
+						function formatForVscode(message) {
+							var pattern = /^(.*)\((\d+),(\d+)\)\: (.*)/;
+							var match = pattern.exec(message);
+							if (match) {
+								return match[1] + ":" + match[2] + ":" + match[3] + ": " + match[4];
+							} else {
+								return message;
+							}
 						}
-					});
-					if (result) {
-						jsh.shell.console("Passed.");
-					} else {
-						jsh.shell.console("tsc failed.");
-						return 1;
+						var formatter = (p.options.vscode) ? formatForVscode : $api.Function.identity;
+						var result = $api.Function.world.now.question(
+							jsh.wf.checks.tsc,
+							void(0),
+							{
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								},
+								output: function(e) {
+									jsh.shell.console(formatter(e.detail));
+								}
+							}
+						);
+						if (result) {
+							jsh.shell.console("Passed.");
+						} else {
+							jsh.shell.console("tsc failed.");
+							return 1;
+						}
 					}
-				};
+				);
 
 				$exports.typedoc = function() {
 					jsh.wf.typescript.typedoc();

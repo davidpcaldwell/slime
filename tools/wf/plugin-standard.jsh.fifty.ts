@@ -226,7 +226,8 @@ namespace slime.jsh.wf {
 
 		export interface Interface {
 			/**
-			 * Runs the TypeScript compiler on the project.
+			 * Runs the TypeScript compiler on the project. If the `--vscode` argument is provided, the output will be reformatted
+			 * so that references to lines in error messages are clickable.
 			 */
 			tsc:  slime.jsh.script.cli.Command<Options>
 		}
