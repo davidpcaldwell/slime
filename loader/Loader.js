@@ -29,14 +29,14 @@
 								return function(context) {
 									var rv;
 
-									/** @type { (p: slime.runtime.loader.Resource) => slime.Resource } */
-									var adapt = function(resource) {
+									/** @type { (p: slime.runtime.loader.Code) => slime.Resource } */
+									var adapt = function(code) {
 										return {
 											name: path,
 											type: void(0),
 											read: Object.assign(
 												function(p) {
-													if (p === String) return resource.string();
+													if (p === String) return code.read();
 													throw new TypeError("Adapter unimplemented for " + p);
 												},
 												{
@@ -48,8 +48,10 @@
 										}
 									};
 
+									var code = loader.code(resource);
+
 									methods.run(
-										adapt(resource),
+										adapt(code),
 										{
 											$context: context,
 											$loader: void(0),
