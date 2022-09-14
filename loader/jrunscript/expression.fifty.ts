@@ -260,7 +260,7 @@ namespace slime.jrunscript.runtime {
 		jrunscript: {
 			loader: {
 				from: {
-					java: (_loader: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.runtime.loader.Synchronous
+					java: (_loader: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.runtime.loader.Synchronous<slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource>
 				}
 			}
 		}
@@ -274,7 +274,7 @@ namespace slime.jrunscript.runtime {
 			const { verify } = fifty;
 			const { $slime } = fifty.global.jsh.unit;
 
-			var loader: slime.runtime.loader.Synchronous = $slime.jrunscript.loader.from.java(
+			var loader = $slime.jrunscript.loader.from.java(
 				Packages.inonit.script.engine.Code.Loader.create(
 					fifty.jsh.file.object.getRelativePath("..").java.adapt()
 				)

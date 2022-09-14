@@ -6,11 +6,13 @@
 
 namespace slime {
 	export namespace runtime.loader {
-		export interface Resource {
-			string: () => string
+		export interface Code {
+			read: () => string
 		}
 
-		export interface Synchronous<T extends Resource = Resource> {
+		export interface Synchronous<T> {
+			code: (t: T) => Code
+
 			/**
 			 * Returns the resource associated with a given path.
 			 *
@@ -21,7 +23,7 @@ namespace slime {
 
 		export interface Exports {
 			synchronous: {
-				script: <C,E>(loader: Synchronous, path: string) => (c: C) => E
+				script: <T,C,E>(loader: Synchronous<T>, path: string) => (c: C) => E
 			}
 		}
 
@@ -45,17 +47,17 @@ namespace slime {
 				 *
 				 * @param loader A loader that loads files from this source directory.
 				 */
-				fifty.tests.script = function(loader: Synchronous) {
+				fifty.tests.script = function(loader: Synchronous<any>) {
 					fifty.run(function missing() { fifty.tests.script.missing(loader); });
 					fifty.run(function context() { fifty.tests.script.context(loader); });
 				};
 
-				fifty.tests.script.missing = function(loader: Synchronous) {
+				fifty.tests.script.missing = function(loader: Synchronous<any>) {
 					var no = test.subject.synchronous.script(loader, "foo");
 					verify(no).is(null);
 				}
 
-				fifty.tests.script.context = function(loader: Synchronous) {
+				fifty.tests.script.context = function(loader: Synchronous<any>) {
 					function echo<T>(t: T): T {
 						var script: <C>(c: C) => { provided: C } = test.subject.synchronous.script(loader, "test/data/context.js");
 						return script(t).provided;

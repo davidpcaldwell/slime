@@ -983,12 +983,15 @@
 							get: function(path) {
 								var _file = _loader.getFile(path);
 								if (!_file) return slime.$api.Function.Maybe.nothing();
-								return slime.$api.Function.Maybe.value({
-									string: function() {
-										var _stream = _file.getInputStream();
+								return slime.$api.Function.Maybe.value(_file)
+							},
+							code: function(_resource) {
+								return {
+									read: function() {
+										var _stream = _resource.getInputStream();
 										return $exports_io.Streams.java.adapt(_stream).character().asString();
 									}
-								})
+								}
 							}
 						}
 					}
