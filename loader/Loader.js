@@ -23,50 +23,57 @@
 				script: function(loader, path) {
 					var resource = loader.get(path);
 
-					if (resource.present) {
-						return (
-							function(resource) {
-								return function(context) {
-									var rv;
-
-									/** @type { (p: slime.runtime.loader.Code) => slime.Resource } */
-									var adapt = function(code) {
-										return {
-											name: path,
-											type: void(0),
-											read: Object.assign(
-												function(p) {
-													if (p === String) return code.read();
-													throw new TypeError("Adapter unimplemented for " + p);
-												},
-												{
-													string: function() {
-														throw new TypeError("Adapter .string() unimplemented.");
-													}
-												}
-											)
-										}
-									};
-
-									var code = loader.code(resource);
-
-									methods.run(
-										adapt(code),
-										{
-											$context: context,
-											$loader: void(0),
-											$export: function(v) {
-												rv = v;
-											}
-										}
-									);
-
-									return rv;
+					/** @type { (p: slime.runtime.loader.Code) => slime.Resource } */
+					var adapt = function(code) {
+						var string = code.read();
+						return {
+							name: path,
+							type: void(0),
+							read: Object.assign(
+								function(p) {
+									if (p === String) return string;
+									throw new TypeError("Adapter unimplemented for " + p);
+								},
+								{
+									string: function() {
+										throw new TypeError("Adapter .string() unimplemented.");
+									}
 								}
-							}
-						)(resource.value);
+							)
+						}
+					};
+
+					if (resource.present) {
+						var code = loader.code(resource.value);
+						var oldResource = adapt(code);
+
+						return function(context) {
+							var rv;
+
+							methods.run(
+								oldResource,
+								{
+									$context: context,
+									$loader: void(0),
+									$export: function(v) {
+										rv = v;
+									}
+								}
+							);
+
+							return rv;
+						}
 					} else {
 						return null;
+					}
+				}
+			},
+			object: {
+				Synchronous: function(loader) {
+					return {
+						script: function(path) {
+							return api.synchronous.script(loader, path);
+						}
 					}
 				}
 			}

@@ -80,13 +80,75 @@ namespace slime {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
 
+	export namespace runtime.loader {
+		export interface Exports {
+			object: {
+				Synchronous: <T>(loader: runtime.loader.Synchronous<T>) => object.Synchronous
+			}
+		}
+
+		export namespace object {
+			export interface Synchronous {
+				script: <C,E>(path: string) => ($context: C) => E
+			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+
+					fifty.tests.object = function(loader: slime.runtime.loader.Synchronous<any>) {
+						fifty.run(function script() {
+							fifty.tests.object.script(loader);
+						});
+					};
+
+					fifty.tests.object.script = function(loader: slime.runtime.loader.Synchronous<any>) {
+						var object = test.subject.object.Synchronous(loader);
+
+						//	TODO	this only works when we invoke this each time, otherwise we get Stream closed
+						var script: <C>(c: C) => { provided: C } = object.script("test/data/context.js");
+
+						function echo<T>(t: T): T {
+							return script(t).provided;
+						}
+
+						var ifUndefined = echo(void(0));
+						verify(ifUndefined).is.type("undefined");
+						var ifNull = echo(null);
+						verify(ifNull).is.type("null");
+						var ifString = echo("foo");
+						verify(ifString).is.type("string");
+						var ifNumber = echo(3);
+						verify(ifNumber).is.type("number");
+						var ifBoolean = echo(true);
+						verify(ifBoolean).is.type("boolean");
+						var ifObject = echo({ foo: "bar" });
+						verify(ifObject).is.type("object");
+						verify(ifObject).evaluate.property("foo").is("bar");
+					}
+				}
+			//@ts-ignore
+			)(fifty);
+		}
 	}
 
 	export namespace runtime {
 		export interface Exports {
 			loader: slime.runtime.loader.Exports
 		}
+	}
+
+	export namespace loader {
+		export interface Script<C,E> {
+			(c?: C): E
+			thread: (c?: C) => PromiseLike<E>
+		}
+
+		export type Export<T> = (value: T) => void
 	}
 
 	export interface Loader {
@@ -225,15 +287,6 @@ namespace slime {
 			/** @deprecated Replaced by `script`. */
 			factory: Loader<S,R>["script"]
 		}
-	}
-
-	export namespace loader {
-		export interface Script<C,E> {
-			(c?: C): E
-			thread: (c?: C) => PromiseLike<E>
-		}
-
-		export type Export<T> = (value: T) => void
 	}
 
 	export namespace old.loader {
