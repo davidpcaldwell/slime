@@ -286,6 +286,11 @@ namespace slime.jrunscript.runtime {
 				verify($slime).loader.synchronous.script.is.type("function");
 
 				fifty.load("../Loader.fifty.ts", "script", loader);
+				fifty.load("../Loader.fifty.ts", "object", loader);
+			}
+
+			fifty.tests.wip = function() {
+				fifty.load("../Loader.fifty.ts", "object", loader);
 			}
 		}
 	//@ts-ignore
