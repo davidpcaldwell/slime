@@ -62,13 +62,14 @@ namespace slime.jrunscript.shell.browser {
 		}
 	}
 }
+
 namespace slime.jrunscript.shell.browser.internal.chrome {
 	export interface Context {
 		os: any
 		run: any
 		api: {
 			js: any
-			java: any
+			java: slime.jrunscript.host.Exports
 			file: any
 		}
 		HOME: slime.jrunscript.file.Directory
