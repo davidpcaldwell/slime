@@ -389,16 +389,15 @@
 
 			//	TODO	replace with Java logging; currently there is no way to enable this debugging without changing this file
 			var debug = function(m) {
-				//	TODO	below property could never be set in existing code
-				if (false /* arguments.callee.on */) {
-					Packages.java.lang.System.err.println(m);
-				}
+				$exports.log.named("jrunscript.host").FINE(m);
 			}
 
 			var runnable = new function() {
 				this.run = function() {
 					try {
+						debug("Running thread " + thread.getName() + " ...");
 						var rv = p.call();
+						debug("Finished " + p);
 						if (!done) {
 							synchronize(function() {
 								if (p.on && p.on.result) {
@@ -428,7 +427,13 @@
 			var _runnable = new JavaAdapter(Packages.java.lang.Runnable,runnable);
 			var thread = (factory) ? factory(_runnable) : new Packages.java.lang.Thread(_runnable);
 
+			this.toString = function() {
+				return "Java thread: " + thread.getName() + " factory=" + factory;
+			};
+
+			debug("Starting Java thread " + thread.getName());
 			thread.start();
+			debug("Started Java thread " + thread.getName());
 
 			if (p && p.timeout) {
 				debug("Starting timeout thread for " + thread + " ...");

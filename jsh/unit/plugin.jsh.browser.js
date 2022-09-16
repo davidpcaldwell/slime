@@ -497,17 +497,22 @@
 					return {
 						//name: "Google Chrome",
 						open: function(p) {
-							jsh.java.Thread.start(function() {
-								chrome.run({
-									//	TODO	enhance chrome.run so it can take a Url object rather than just a string
-									uri: p.uri,
-									arguments: (configuration.debugPort) ? ["--remote-debugging-port=" + configuration.debugPort ] : [],
-									on: {
-										start: function(p) {
-											process = p;
+							var browserThread = jsh.java.Thread.start(function() {
+								try {
+									chrome.run({
+										//	TODO	enhance chrome.run so it can take a Url object rather than just a string
+										uri: p.uri,
+										arguments: (configuration.debugPort) ? ["--remote-debugging-port=" + configuration.debugPort ] : [],
+										on: {
+											start: function(p) {
+												jsh.shell.console("In plugin.jsh.browser, Chrome subprocess started (PID: " + p.pid + ")");
+												process = p;
+											}
 										}
-									}
-								});
+									});
+								} catch (e) {
+									jsh.shell.console(e.stack);
+								}
 							});
 						},
 						close: function() {

@@ -19,6 +19,8 @@
 		if (!$context.os.process) throw new Error("No $context.os.process");
 		if (!$context.os.process.list) throw new Error("No $context.os.process.list");
 
+		var log = $context.api.java.log.named("jrunscript.shell.browser.chrome");
+
 		/**
 		 *
 		 * @param { { program: slime.jrunscript.file.File, user?: slime.jrunscript.file.Directory }} b
@@ -154,7 +156,11 @@
 					}
 
 					var launch = function(m) {
+						log.FINE("Launching Chrome browser.");
+						log.FINEST("$context.os = " + $context.os);
+						log.FINER("$context.os.name = " + $context.os.name);
 						if ($context.os.name == "Mac OS X") {
+							log.FINE("Ensure default user is running ...");
 							(function startDefaultUser() {
 								var isDefaultRunning = function() {
 									return ps.isDefaultRunning();
@@ -223,6 +229,7 @@
 								args.push.apply(args,m.uris);
 							}
 						}
+						log.FINE("Running program: " + b.program + " with args " + JSON.stringify(args));
 						//Packages.java.lang.System.err.println("using program: args = " + JSON.stringify(args));
 						//	TODO	use events rather than on.start property
 						$context.run({
@@ -232,6 +239,7 @@
 							on: {
 								//	TODO	on.start is deprecated
 								start: function(p) {
+									log.FINE("Program " + b.program + " started.");
 									if ($context.os.name == "Mac OS X" && m.exitOnClose) {
 										//	TODO: The exitOnClose property is currently undocumented; it is not clear that it works correctly. More
 										//	testing needed
@@ -274,6 +282,7 @@
 								}
 							}
 						});
+						log.FINE("Program " + b.program + " terminated.");
 						if (m.on && m.on.close) {
 							m.on.close.call(m);
 						}
