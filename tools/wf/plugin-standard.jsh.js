@@ -652,7 +652,6 @@
 								return submodule.path == p.options.path;
 							});
 							var revision = submodule.commit.commit.hash;
-							//	TODO	implement git reset API
 							submodule.repository.execute({
 								command: "reset",
 								arguments: [
@@ -661,12 +660,27 @@
 								]
 							})
 							if (submodule.branch) {
-								submodule.repository.checkout({ branch: revision });
+								//	TODO	seems like this could be a standard command
+								/** @type { slime.jrunscript.tools.git.Command<{ branch: string },void> } */
+								var checkout = {
+									invocation: function(p) {
+										return {
+											command: "checkout",
+											arguments: [p.branch]
+										}
+									}
+								}
+								var withoutHooks = jsh.tools.git.program({ command: "git" }).config({
+									//	TODO	UNIX-like operating systems only
+									"core.hooksPath": "/dev/null"
+								}).repository(submodule.repository.directory.toString())
+								//	TODO	need to use version of git checkout that disables commit hooks
+								withoutHooks.command(checkout).argument({ branch: revision }).run();
 								submodule.repository.branch({
 									force: true,
 									name: submodule.branch
 								});
-								submodule.repository.checkout({ branch: submodule.branch });
+								withoutHooks.command(checkout).argument({ branch: submodule.branch }).run();
 							}
 						}
 					)

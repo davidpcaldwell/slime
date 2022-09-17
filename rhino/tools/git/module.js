@@ -682,7 +682,7 @@
 
 				this.rm = command(rm);
 
-				/** @type { ( () => void ) & { getUrl: ({ name: string }) => string } }} */
+				/** @type { ( () => void ) & { getUrl: (p: { name: string }) => string } }} */
 				var myremote = function() {
 					throw new Error("Unimplemented: remote");
 				};
@@ -1350,15 +1350,19 @@
 
 		/**
 		 * @param { slime.jrunscript.tools.git.Program } program
+		 * @param { slime.jrunscript.tools.git.world.Config } config
 		 * @param { slime.jrunscript.tools.git.Invocation } invocation
 		 * @param { string } pathname
 		 * @param { slime.jrunscript.shell.invocation.Argument["stdio"] } stdio
 		 * @returns { slime.jrunscript.shell.run.Invocation }
 		 */
-		var createShellInvocation = function(program,pathname,invocation,stdio) {
+		var createShellInvocation = function(program,config,pathname,invocation,stdio) {
 			return $context.api.shell.Invocation.create({
 				command: program.command,
 				arguments: $api.Array.build(function(rv) {
+					for (var name in config) {
+						rv.push("-c", name + "=" + config[name]);
+					}
 					rv.push(invocation.command);
 					if (invocation.arguments) invocation.arguments.forEach(function(argument) {
 						rv.push(argument);
@@ -1381,7 +1385,7 @@
 				output: (p.stdout) ? "line" : "string",
 				error: (p.stderr) ? "line" : void(0)
 			}
-			return createShellInvocation(p.program, p.pathname, invocation, stdio);
+			return createShellInvocation(p.program, p.config, p.pathname, invocation, stdio);
 		}
 
 		/** @type { slime.jrunscript.tools.git.Exports["run"] } */
@@ -1407,7 +1411,14 @@
 			return (p.command.result) ? p.command.result(output) : void(0);
 		};
 
-		var commandExecutor = function(program,pathname) {
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.git.Program } program
+		 * @param { slime.jrunscript.tools.git.world.Config } values
+		 * @param { string } pathname
+		 * @returns
+		 */
+		var commandExecutor = function(program,values,pathname) {
 			return function(command) {
 				return {
 					argument: function(a) {
@@ -1416,6 +1427,7 @@
 								/** @type { slime.jrunscript.tools.git.world.Invocation } */
 								var bound = {
 									program: program,
+									config: values,
 									pathname: pathname,
 									command: command,
 									argument: a,
@@ -1437,15 +1449,26 @@
 				Invocation: function(p) {
 					return {
 						program: program,
+						config: {},
 						pathname: p.pathname,
 						command: p.command,
 						argument: p.argument
+					}
+				},
+				config: function(values) {
+					return {
+						repository: function(pathname) {
+							return {
+								command: commandExecutor(program, values, pathname)
+							}
+						}
 					}
 				},
 				repository: function(pathname) {
 					var Invocation = function(p) {
 						return {
 							program: program,
+							config: {},
 							pathname: pathname,
 							command: p.command,
 							argument: p.argument
@@ -1456,12 +1479,13 @@
 						shell: function(invocation) {
 							return createShellInvocation(
 								program,
+								{},
 								pathname,
 								invocation.invocation,
 								invocation.stdio
 							);
 						},
-						command: commandExecutor(program,pathname),
+						command: commandExecutor(program,{},pathname),
 						run: function(p) {
 							var invocation = $api.Object.compose(
 								Invocation(p),
@@ -1473,7 +1497,7 @@
 						}
 					}
 				},
-				command: commandExecutor(program,void(0))
+				command: commandExecutor(program,{},void(0))
 			}
 		}
 
@@ -1485,7 +1509,7 @@
 
 		$exports.Invocation = {
 			shell: function(p) {
-				return createShellInvocation(p.program, p.pathname, p.invocation, p.stdio);
+				return createShellInvocation(p.program, {}, p.pathname, p.invocation, p.stdio);
 			}
 		}
 
