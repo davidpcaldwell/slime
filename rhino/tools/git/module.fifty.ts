@@ -163,7 +163,7 @@ namespace slime.jrunscript.tools.git {
 
 			checkout: (p: { branch: string, stdio?: any  }) => void
 
-			remote: ( () => void ) & { getUrl: ({ name: string }) => string },
+			remote: ( () => void ) & { getUrl: (p: { name: string }) => string },
 			stash: any,
 			push: (p?: {
 				delete?: boolean
@@ -789,8 +789,12 @@ namespace slime.jrunscript.tools.git {
 	}
 
 	export namespace world {
+		export type Config = { [name: string]: string }
+
 		export interface Invocation<P,R> {
 			program: Program
+
+			config: Config
 
 			/**
 			 * The directory in which to run the command; most likely the repository on which it is intended to act.
@@ -868,6 +872,12 @@ namespace slime.jrunscript.tools.git {
 					input: P
 					world?: world.Invocation<P,R>["world"]
 				}) => R
+			}
+
+			config: (values: { [name: string]: string }) => {
+				repository: (pathname: string) => {
+					command: exports.command.Executor
+				}
 			}
 
 			command: exports.command.Executor
@@ -1038,6 +1048,7 @@ namespace slime.jrunscript.tools.git {
 
 				var output = exports.run({
 					program: { command: "c" },
+					config: {},
 					pathname: "/pathname/foo",
 					command: command,
 					argument: { foo: 2 },
