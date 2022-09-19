@@ -145,7 +145,7 @@
 				throw new TypeError("Resource: " + resource.name + " is not convertible to string, it is " + typeof(string) + ", so cannot be executed. resource.read = " + resource.read);
 			}
 
-			newrun({
+			newrun.call(this, {
 				name: resource.name,
 				type: type,
 				string: string
