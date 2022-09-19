@@ -41,7 +41,7 @@
 			return rv;
 		};
 
-		/** @type { slime.runtime.internal.createScriptScope } */
+		/** @type { slime.runtime.internal.scripts.Exports["createScriptScope"] } */
 		var createScriptScope = function($context) {
 			var toT = function(any) { return any; };
 
@@ -72,6 +72,57 @@
 		//	TODO	re-work resource.js
 
 		/**
+		 *
+		 * @param { { name: string, type: slime.mime.Object, string: string } } script
+		 * @param { { [name: string]: any } } scope
+		 */
+		function newrun(script,scope) {
+			var typeIs = function(string) {
+				return script.type && mimeTypeIs(string)(script.type);
+			}
+
+			var js;
+			if ($slime.typescript && typeIs("application/x.typescript")) {
+				js = {
+					name: script.name,
+					code: $slime.typescript.compile(script.string)
+				};
+			} else if (typeIs("application/vnd.coffeescript")) {
+				js = {
+					name: script.name,
+					code: $coffee.compile(script.string)
+				};
+			} else if (typeIs("application/javascript") || typeIs("application/x-javascript")) {
+				js = {
+					name: script.name,
+					code: script.string
+				}
+			}
+			if (!js) {
+				throw new TypeError("Resource " + script.name + " is not JavaScript; type = " + script.type);
+			}
+			var target = this;
+			var global = (function() { return this; })();
+			//	TODO	why is this present?
+			if (scope === global) {
+				scope = {};
+			}
+			if (scope === void(0)) {
+				scope = {};
+			}
+			scope.$platform = $platform;
+			scope.$api = $api;
+			$engine.execute(
+				{
+					name: js.name,
+					js: js.code
+				},
+				scope,
+				target
+			);
+		}
+
+		/**
 		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
 		 */
 		function run(object,scope) {
@@ -94,48 +145,11 @@
 				throw new TypeError("Resource: " + resource.name + " is not convertible to string, it is " + typeof(string) + ", so cannot be executed. resource.read = " + resource.read);
 			}
 
-			var typeIs = function(string) {
-				return type && mimeTypeIs(string)(type);
-			}
-
-			if ($slime.typescript && typeIs("application/x.typescript")) {
-				resource.js = {
-					name: resource.name,
-					code: $slime.typescript.compile(string)
-				};
-			} else if (typeIs("application/vnd.coffeescript")) {
-				resource.js = {
-					name: resource.name,
-					code: $coffee.compile(string)
-				};
-			} else if (typeIs("application/javascript") || typeIs("application/x-javascript")) {
-				resource.js = {
-					name: resource.name,
-					code: string
-				}
-			}
-			if (!resource.js) {
-				throw new TypeError("Resource " + resource.name + " is not JavaScript; type = " + type);
-			}
-			var target = this;
-			var global = (function() { return this; })();
-			//	TODO	why is this present?
-			if (scope === global) {
-				scope = {};
-			}
-			if (scope === void(0)) {
-				scope = {};
-			}
-			scope.$platform = $platform;
-			scope.$api = $api;
-			$engine.execute(
-				{
-					name: resource.js.name,
-					js: resource.js.code
-				},
-				scope,
-				target
-			);
+			newrun({
+				name: resource.name,
+				type: type,
+				string: string
+			}, scope);
 		}
 
 		/**

@@ -20,8 +20,14 @@ namespace slime.runtime.internal.scripts {
 			value: (code: slime.Resource, scope: { [name: string]: any }) => any
 			file: (code: slime.Resource, context: { [name: string]: any }) => { [x: string]: any }
 		}
+
 		toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
-		createScriptScope: createScriptScope
+
+		createScriptScope: <C extends { [x: string]: any },T>($context: C) => {
+			$context: C
+			$export: (t: T) => void
+			$exports: T
+		}
 	}
 
 	(
