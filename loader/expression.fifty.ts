@@ -480,11 +480,6 @@ namespace slime {
 			export type methods = {
 				run: any
 			}
-			export type createScriptScope = <T extends { [x: string]: any }>($context: T) => {
-				$context: T
-				$export: any
-				$exports: any
-			}
 			export namespace mime {
 				export interface Context {
 					Function: slime.$api.Global["Function"]
@@ -640,7 +635,7 @@ namespace slime {
 					series: (loaders: old.Loader[]) => old.Loader
 
 					tools: {
-						toExportScope: <T extends { [x: string]: any }>(t: T) => T & { $export: any, $exports: any }
+						toExportScope: <S extends { [x: string]: any },T>(scope: S) => S & { $export: (t: T) => void, $exports: T }
 					}
 				}
 			}
