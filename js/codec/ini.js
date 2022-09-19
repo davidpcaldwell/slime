@@ -8,9 +8,10 @@
 (
 	/**
 	 *
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.loader.Export<slime.codec.ini.Exports> } $export
 	 */
-	function($export) {
+	function($api,$export) {
 		/**
 		 *
 		 * @param { string } line
@@ -149,6 +150,13 @@
 					value: function(file, name) {
 						return parse(file.split("\n")).value(name);
 					},
+					valueOf: function(name) {
+						return function(file) {
+							var x = parse(file.split("\n")).value(name);
+							if (x === null) return $api.Function.Maybe.nothing();
+							return $api.Function.Maybe.value(x);
+						}
+					},
 					values: function(file) {
 						return parse(file.split("\n")).values();
 					},
@@ -284,4 +292,4 @@
 		// );
 	}
 //@ts-ignore
-)($export);
+)($api,$export);

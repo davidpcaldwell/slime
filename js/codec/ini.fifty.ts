@@ -19,6 +19,8 @@ namespace slime.codec.ini {
 			 */
 			value: (file: string, name: string) => string
 
+			valueOf: (name: string) => (file: string) => slime.$api.fp.Maybe<string>
+
 			values: (file: string) => {
 				[x: string]: string
 			}
