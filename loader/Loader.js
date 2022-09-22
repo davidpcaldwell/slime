@@ -50,7 +50,7 @@
 						return function(context) {
 							var rv;
 
-							methods.run(
+							methods.old.run(
 								oldResource,
 								{
 									$context: context,
@@ -135,7 +135,7 @@
 						// return methods[name].call(target,p.get(path),scope);
 						var resource = this.get(path);
 						if (!resource) throw new Error("Not found: " + path);
-						return methods[name].call(target,resource,context);
+						return methods.old[name].call(target,resource,context);
 					}
 				);
 			};
@@ -180,7 +180,7 @@
 					var script = this.get(locations.main);
 					//	TODO	generalize error handling strategy; add to file, run, value
 					if (!script) throw new Error("Module not found at " + locations.main);
-					methods.run.call(target,script,inner);
+					methods.old.run.call(target,script,inner);
 					return inner.$exports;
 				};
 			}
@@ -197,7 +197,7 @@
 					var locations = getModuleLocations(path);
 					var inner = getModuleScope($context,locations);
 					return this.thread.get(locations.main).then(function(script) {
-						methods.run.call(target,script,inner);
+						methods.old.run.call(target,script,inner);
 						return inner.$exports;
 					});
 				}

@@ -169,7 +169,7 @@
 			})(was.Type.fromName);
 
 			return was;
-		})(slime.mime);
+		})(slime.$api.mime);
 
 		var $exports_java = slime.file(
 			new slime.Resource({
@@ -986,7 +986,12 @@
 								return slime.$api.Function.Maybe.value(_file)
 							},
 							code: function(_resource) {
+								var name = String(_resource.getSourceName());
 								return {
+									name: String(_resource.getSourceName()),
+									type: function() {
+										return slime.$api.mime.Type.fromName(name);
+									},
 									read: function() {
 										var _stream = _resource.getInputStream();
 										return $exports_io.Streams.java.adapt(_stream).character().asString();

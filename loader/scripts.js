@@ -12,11 +12,9 @@
 	 * @param { slime.runtime.internal.scripts.Scope["$platform"] } $platform
 	 * @param { slime.runtime.internal.scripts.Scope["$engine"] } $engine
 	 * @param { slime.runtime.internal.scripts.Scope["$api"] } $api
-	 * @param { slime.runtime.internal.scripts.Scope["mime"] } mime
-	 * @param { slime.runtime.internal.scripts.Scope["mimeTypeIs"] } mimeTypeIs
 	 * @param { slime.loader.Export<slime.runtime.internal.scripts.Exports> } $export
 	 */
-	function($slime,$platform,$engine,$api,mime,mimeTypeIs,$export) {
+	function($slime,$platform,$engine,$api,$export) {
 		/**
 		 * @type { slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"] }
 		 */
@@ -73,7 +71,22 @@
 
 		/**
 		 *
-		 * @param { { name: string, type: slime.mime.Object, string: string } } script
+		 * @param { string } string
+		 */
+		function mimeTypeIs(string) {
+			/**
+			 *
+			 * @param { slime.mime.Type } type
+			 */
+			function rv(type) {
+				return (type.media + "/" + type.subtype) == string;
+			}
+			return rv;
+		}
+
+		/**
+		 *
+		 * @param { { name: string, type: slime.mime.Type, string: string } } script
 		 * @param { { [name: string]: any } } scope
 		 */
 		function newrun(script,scope) {
@@ -123,7 +136,7 @@
 		}
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["run"] }
 		 */
 		function run(object,scope) {
 			if (!object || typeof(object) != "object") {
@@ -132,7 +145,7 @@
 			if (typeof(object.read) != "function") throw new Error("Not resource: no read() function");
 			/** @type { slime.Resource & { js: { name: string, code: string } } } */
 			var resource = Object.assign(object, { js: void(0) });
-			var type = (resource.type) ? mime.Type(resource.type.media, resource.type.subtype, resource.type.parameters) : mime.Type.parse("application/javascript");
+			var type = (resource.type) ? resource.type : $api.mime.Type.codec.declaration.decode("application/javascript");
 			var string = (function() {
 				if (resource.read) {
 					var rv = resource.read(String);
@@ -153,7 +166,7 @@
 		}
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["file"] }
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["file"] }
 		 */
 		function file(code,$context) {
 			var inner = createScriptScope($context);
@@ -162,7 +175,7 @@
 		}
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["value"] }
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["value"] }
 		 */
 		function value(code,scope) {
 			var rv;
@@ -176,13 +189,18 @@
 
 		$export({
 			methods: {
-				run: run,
-				file: file,
-				value: value
+				old: {
+					run: run,
+					file: file,
+					value: value
+				},
+				run: function(code,scope) {
+					newrun({ name: code.name, type: code.type(), string: code.read() }, scope);
+				}
 			},
 			toExportScope: toExportScope,
 			createScriptScope: createScriptScope
 		});
 	}
 //@ts-ignore
-)($slime,$platform,$engine,$api,mime,mimeTypeIs,$export);
+)($slime,$platform,$engine,$api,$export);

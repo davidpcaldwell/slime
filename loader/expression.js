@@ -300,19 +300,6 @@
 		var scripts = code.scripts(
 			{
 				$api: $api,
-				mime: {
-					Type: mime.Type
-				},
-				mimeTypeIs: function(string) {
-					/**
-					 *
-					 * @param { slime.mime.Type } type
-					 */
-					function rv(type) {
-						return string == type.media + "/" + type.subtype;
-					}
-					return rv;
-				},
 				$slime: $slime,
 				$platform: $platform,
 				$engine: engine
@@ -328,7 +315,7 @@
 
 		var topMethod = function(name) {
 			return function(code,scope,target) {
-				return scripts.methods[name].call(target,code,scope);
+				return scripts.methods.old[name].call(target,code,scope);
 			};
 		};
 
