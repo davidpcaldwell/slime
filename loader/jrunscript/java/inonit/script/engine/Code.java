@@ -253,6 +253,20 @@ public class Code {
 			}
 
 			public static Resource create(final URL url) {
+				//	TODO	right now, the URL-based resource does some weird optimizations etc. so that we don't connect to the
+				//			same URL over-and-over again, and hence it only supports the input being read once. That's worth fixing,
+				//			but for now we leave it because we don't remember where it came from, how to test it (maybe jsh remote
+				//			shells), etc.
+				//
+				//			Our file-based implementation works correctly, so for now we will just use it when we know the thing is
+				//			a file.
+				if (url.getProtocol().equals("file")) {
+					try {
+						return create(java.nio.file.Paths.get(url.toURI()).toFile());
+					} catch (URISyntaxException e) {
+						throw new RuntimeException(e);
+					}
+				}
 				return create(url, (URLConnection)null);
 			}
 

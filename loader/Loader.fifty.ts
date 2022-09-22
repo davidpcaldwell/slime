@@ -7,6 +7,8 @@
 namespace slime {
 	export namespace runtime.loader {
 		export interface Code {
+			name: string
+			type: () => slime.mime.Type
 			read: () => string
 		}
 

@@ -23,35 +23,14 @@
 				script: function(loader, path) {
 					var resource = loader.get(path);
 
-					/** @type { (p: slime.runtime.loader.Code) => slime.Resource } */
-					var adapt = function(code) {
-						var string = code.read();
-						return {
-							name: path,
-							type: void(0),
-							read: Object.assign(
-								function(p) {
-									if (p === String) return string;
-									throw new TypeError("Adapter unimplemented for " + p);
-								},
-								{
-									string: function() {
-										throw new TypeError("Adapter .string() unimplemented.");
-									}
-								}
-							)
-						}
-					};
-
 					if (resource.present) {
 						var code = loader.code(resource.value);
-						var oldResource = adapt(code);
 
 						return function(context) {
 							var rv;
 
 							methods.run(
-								oldResource,
+								code,
 								{
 									$context: context,
 									$loader: void(0),
@@ -135,7 +114,7 @@
 						// return methods[name].call(target,p.get(path),scope);
 						var resource = this.get(path);
 						if (!resource) throw new Error("Not found: " + path);
-						return methods[name].call(target,resource,context);
+						return methods.old[name].call(target,resource,context);
 					}
 				);
 			};
@@ -180,7 +159,7 @@
 					var script = this.get(locations.main);
 					//	TODO	generalize error handling strategy; add to file, run, value
 					if (!script) throw new Error("Module not found at " + locations.main);
-					methods.run.call(target,script,inner);
+					methods.old.run.call(target,script,inner);
 					return inner.$exports;
 				};
 			}
@@ -197,7 +176,7 @@
 					var locations = getModuleLocations(path);
 					var inner = getModuleScope($context,locations);
 					return this.thread.get(locations.main).then(function(script) {
-						methods.run.call(target,script,inner);
+						methods.old.run.call(target,script,inner);
 						return inner.$exports;
 					});
 				}
