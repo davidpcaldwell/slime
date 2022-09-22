@@ -988,7 +988,7 @@
 							code: function(_resource) {
 								var name = String(_resource.getSourceName());
 								return {
-									name: String(_resource.getSourceName()),
+									name: name,
 									type: function() {
 										return slime.$api.mime.Type.fromName(name);
 									},

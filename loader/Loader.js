@@ -23,35 +23,14 @@
 				script: function(loader, path) {
 					var resource = loader.get(path);
 
-					/** @type { (p: slime.runtime.loader.Code) => slime.Resource } */
-					var adapt = function(code) {
-						var string = code.read();
-						return {
-							name: path,
-							type: void(0),
-							read: Object.assign(
-								function(p) {
-									if (p === String) return string;
-									throw new TypeError("Adapter unimplemented for " + p);
-								},
-								{
-									string: function() {
-										throw new TypeError("Adapter .string() unimplemented.");
-									}
-								}
-							)
-						}
-					};
-
 					if (resource.present) {
 						var code = loader.code(resource.value);
-						var oldResource = adapt(code);
 
 						return function(context) {
 							var rv;
 
-							methods.old.run(
-								oldResource,
+							methods.run(
+								code,
 								{
 									$context: context,
 									$loader: void(0),
