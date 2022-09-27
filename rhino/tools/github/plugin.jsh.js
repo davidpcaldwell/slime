@@ -160,7 +160,7 @@
 									/**
 									 *
 									 * @param { { path: string, resource: slime.jrunscript.file.Node }} nodeEntry
-									 * @returns { { path: string, resource: slime.jrunscript.runtime.Resource } }
+									 * @returns { { path: string, resource: slime.jrunscript.runtime.old.Resource } }
 									 */
 									var toFileEntry = function(nodeEntry) {
 										/** @type { (node: slime.jrunscript.file.Node) => node is slime.jrunscript.file.File } */
@@ -172,7 +172,7 @@
 											if (isFile(node)) return node;
 											throw new Error();
 										}
-										/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.runtime.Resource } */
+										/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.runtime.old.Resource } */
 										var toResource = $api.Function.cast;
 										if (isFile(nodeEntry.resource)) {
 											return {

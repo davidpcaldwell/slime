@@ -17,7 +17,7 @@ namespace slime.jrunscript.mail {
 	export interface Session {
 		send(message: Message): void
 		Message(o: Message): {
-			resource: slime.jrunscript.runtime.Resource
+			resource: slime.jrunscript.runtime.old.Resource
 		}
 		java: {
 			adapt: any

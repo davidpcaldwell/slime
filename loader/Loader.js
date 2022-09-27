@@ -20,30 +20,66 @@
 		 */
 		var api = {
 			synchronous: {
-				script: function(loader, path) {
-					var resource = loader.get(path);
+				script: function(path) {
+					return function(loader) {
+						var resource = loader.get(path.split("/"));
 
-					if (resource.present) {
-						var code = loader.code(resource.value);
+						if (resource.present) {
+							var code = loader.code(resource.value);
 
-						return function(context) {
-							var rv;
+							return function(context) {
+								var rv;
 
-							methods.run(
-								code,
-								{
-									$context: context,
-									$loader: void(0),
-									$export: function(v) {
-										rv = v;
+								methods.run(
+									code,
+									{
+										$context: context,
+										$loader: void(0),
+										$export: function(v) {
+											rv = v;
+										}
+									}
+								);
+
+								return rv;
+							}
+						} else {
+							return null;
+						}
+					}
+				},
+				resources: function(filter) {
+					/**
+					 *
+					 * @param { slime.runtime.loader.Synchronous<any> } loader
+					 * @param { Parameters<slime.runtime.loader.Exports["synchronous"]["resources"]>[0] } filter
+					 * @param { string[] } path
+					 * @returns
+					 */
+					var resources = function(loader, filter, path) {
+						/** @type { { path: string[], name: string }[] } */
+						var rv = [];
+						var listing = loader.list(path);
+						if (listing.present) {
+							listing.value.forEach(function(item) {
+								if (item.resource) {
+									if (filter.resource(path, item.name)) {
+										rv.push({ path: path, name: item.name });
 									}
 								}
-							);
-
+								if (item.parent) {
+									if (filter.parent(path.concat([item.name]))) {
+										rv = rv.concat(resources(loader, filter, path.concat([item.name])));
+									}
+								}
+							});
 							return rv;
 						}
-					} else {
-						return null;
+						throw new Error("No listing for " + path);
+					}
+
+					return function(loader) {
+						return resources(loader, filter, []);
 					}
 				}
 			},
@@ -51,7 +87,7 @@
 				Synchronous: function(loader) {
 					return {
 						script: function(path) {
-							return api.synchronous.script(loader, path);
+							return api.synchronous.script(path)(loader);
 						}
 					}
 				}

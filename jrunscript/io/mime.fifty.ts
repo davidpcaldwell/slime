@@ -24,7 +24,7 @@ namespace slime.jrunscript.io.mime {
 	 * A MIME entity, as defined by {@link http://tools.ietf.org/html/rfc2045#section-2.4|RFC 2045 section 2.4}.
 	 */
 	interface Entity {
-		resource?: slime.jrunscript.runtime.Resource
+		resource?: slime.jrunscript.runtime.old.Resource
 
 		type?: slime.mime.Type
 		stream?: slime.jrunscript.runtime.io.InputStream
@@ -35,7 +35,7 @@ namespace slime.jrunscript.io.mime {
 		filename: string
 	}
 
-	export interface Multipart extends slime.jrunscript.runtime.Resource {
+	export interface Multipart extends slime.jrunscript.runtime.old.Resource {
 		java?: {
 			adapt: () => slime.jrunscript.native.javax.mail.internet.MimeMultipart
 		}

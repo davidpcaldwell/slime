@@ -624,7 +624,7 @@ namespace slime.jrunscript.tools.install {
 										if (host == "apache.inonit.com") {
 											return {
 												status: { code: 200 },
-												body: fifty.$loader.get(request.path) as slime.jrunscript.runtime.Resource
+												body: fifty.$loader.get(request.path) as slime.jrunscript.runtime.old.Resource
 											};
 										}
 									};

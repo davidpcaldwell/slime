@@ -65,7 +65,7 @@ namespace slime.jrunscript.file {
 		 */
 		readonly parent: Pathname
 
-		write: slime.jrunscript.runtime.Resource["write"]
+		write: slime.jrunscript.runtime.old.Resource["write"]
 
 		/**
 		 * An object representing the file located at the location of this `Pathname`, or `null` if a (non-directory) file with

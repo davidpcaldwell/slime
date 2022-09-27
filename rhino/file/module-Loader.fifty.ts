@@ -18,7 +18,7 @@ namespace slime.jrunscript.file {
 				//	TODO	would be nice to get rid of string below, but right now it's unknown exactly how to access MimeType from
 				//			jsh/browser/servlet environments
 				type?: (path: slime.jrunscript.file.File) => (slime.mime.Type | string)
-			}): slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.Resource>
+			}): slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.old.Resource>
 		}
 	}
 
@@ -72,7 +72,7 @@ namespace slime.jrunscript.file {
 				});
 
 				run(function() {
-					var api = loader.get("api.html") as slime.jrunscript.runtime.Resource;
+					var api = loader.get("api.html") as slime.jrunscript.runtime.old.Resource;
 					verify(api).length.is.not.equalTo(null);
 					verify(api).length.is.type("number");
 				});
@@ -83,7 +83,7 @@ namespace slime.jrunscript.file {
 				});
 
 				run(function() {
-					var api = loader.get("api.html") as slime.jrunscript.runtime.Resource;
+					var api = loader.get("api.html") as slime.jrunscript.runtime.old.Resource;
 					verify(api).modified.is.type("object");
 				});
 

@@ -123,7 +123,7 @@
 							/**
 							 *
 							 * @param { slime.Resource } p
-							 * @returns { p is slime.jrunscript.runtime.Resource }
+							 * @returns { p is slime.jrunscript.runtime.old.Resource }
 							 */
 							var isJrunscriptResource = function(p) {
 								return true;

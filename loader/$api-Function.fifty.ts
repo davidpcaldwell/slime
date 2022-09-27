@@ -24,6 +24,8 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	export type Mapping<P,R> = (p: P) => R
+
 	export type Predicate<T> = (t: T) => boolean
 	/** @deprecated Use {@link Predicate}. */
 	export type Filter<T> = (t: T) => boolean
@@ -126,6 +128,10 @@ namespace slime.$api.fp {
 			): (t: T) => R
 			<T,R>(f: (t: T) => R): (t: T) => R
 		}
+	}
+
+	export interface Exports {
+		split: <P,R>(functions: { [k in keyof R]: (p: P) => R[k] }) => (p: P) => R
 	}
 
 	export interface Exports {
@@ -546,6 +552,12 @@ namespace slime.$api.fp {
 		}
 	}
 
+	export namespace exports {
+		export interface Array {
+			first: <T>(ordering: Ordering<T>) => (ts: T[]) => Maybe<T>
+		}
+	}
+
 	export interface Exports {
 		Array: exports.Array
 	}
@@ -718,7 +730,9 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
-	export type Comparator<T> = (t1: T, t2: T) => number
+	export type CompareFn<T> = (t1: T, t2: T) => number
+
+	export type Ordering<T> = (subject: T) => (other: T) => "BEFORE" | "EQUAL" | "AFTER"
 
 	export interface Exports {
 		comparator: {
@@ -726,23 +740,27 @@ namespace slime.$api.fp {
 			 * Creates a comparator given a mapping (which represents some aspect of an underlying type) and a comparator that
 			 * compares the mapped values.
 			 */
-			create: <T,M>(mapping: (t: T) => M, comparator: fp.Comparator<M>) => fp.Comparator<T>
+			create: <T,M>(mapping: (t: T) => M, comparator: fp.CompareFn<M>) => fp.CompareFn<T>
 
 			/**
 			 * A comparator that uses the < and > operators to compare its arguments.
 			 */
-			operators: fp.Comparator<any>,
+			operators: fp.CompareFn<any>,
 
 			/**
 			 * Creates a comparator that represents the opposite of the given comparator.
 			 */
-			reverse: <T>(comparator: fp.Comparator<T>) => fp.Comparator<T>
+			reverse: <T>(comparator: fp.CompareFn<T>) => fp.CompareFn<T>
 
 			/**
 			 * Creates a comparator that applies the given comparators in order, using succeeding comparators if a comparator
 			 * indicates two values are equal.
 			 */
-			compose: <T>(...comparators: fp.Comparator<T>[]) => fp.Comparator<T>
+			compose: <T>(...comparators: fp.CompareFn<T>[]) => fp.CompareFn<T>
+
+			from: {
+				Ordering: <T>(o: Ordering<T>) => fp.CompareFn<T>
+			}
 		}
 	}
 
@@ -751,15 +769,31 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit,
 			$api: slime.$api.Global
 		) {
-			const { verify } = fifty;
+			const { verify, run } = fifty;
+			const $f = fifty.global.$api.Function;
 
 			fifty.tests.compare = function() {
+				run(function orderingArray() {
+					var numbers = [1, 0, 2];
+					numbers.sort($f.comparator.from.Ordering(function(n) {
+						return function(o) {
+							var difference = n - o;
+							if (difference < 0) return "BEFORE";
+							if (difference > 0) return "AFTER";
+							return "EQUAL";
+						}
+					}));
+					verify(numbers[0]).is(0);
+					verify(numbers[1]).is(1);
+					verify(numbers[2]).is(2);
+				});
+
 				var array = [
 					{ name: "a", value: 1 },
 					{ name: "b", value: 0 },
 					{ name: "c", value: 2 }
 				];
-				var comparator: slime.$api.fp.Comparator<{ name: string, value: number }> = fifty.global.$api.Function.comparator.create(
+				var comparator: slime.$api.fp.CompareFn<{ name: string, value: number }> = fifty.global.$api.Function.comparator.create(
 					fifty.global.$api.Function.property("value"),
 					fifty.global.$api.Function.comparator.operators
 				);
@@ -772,12 +806,12 @@ namespace slime.$api.fp {
 				verify(array)[1].name.is("a");
 				verify(array)[2].name.is("b");
 
-				var tiebreaking: slime.$api.fp.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.global.$api.Function.comparator.create(
+				var tiebreaking: slime.$api.fp.CompareFn<{ name: string, value: number, tiebreaker: number }> = fifty.global.$api.Function.comparator.create(
 					fifty.global.$api.Function.property("tiebreaker"),
 					fifty.global.$api.Function.comparator.operators
 				);
 
-				var multicomparator: slime.$api.fp.Comparator<{ name: string, value: number, tiebreaker: number }> = fifty.global.$api.Function.comparator.compose(
+				var multicomparator: slime.$api.fp.CompareFn<{ name: string, value: number, tiebreaker: number }> = fifty.global.$api.Function.comparator.compose(
 					fifty.global.$api.Function.comparator.reverse(comparator),
 					fifty.global.$api.Function.comparator.reverse(tiebreaking)
 				);
@@ -797,93 +831,6 @@ namespace slime.$api.fp {
 		}
 	//@ts-ignore
 	)(fifty, $api, tests, verify);
-
-	export namespace impure {
-		export type Input<T> = () => T
-		export type Output<T> = (t: T) => void
-		export type Process = () => void
-	}
-
-	export interface Exports {
-		impure: {
-			now: {
-				input: <T>(input: impure.Input<T>) => T
-				output: <P>(p: P, f: impure.Output<P>) => void
-				process: (process: impure.Process) => void
-			}
-
-			Input: {
-				value: <T>(t: T) => impure.Input<T>
-				map: <I,T>(input: impure.Input<I>, map: (i: I) => T) => impure.Input<T>
-			}
-
-			Process: {
-				compose: (processes: impure.Process[]) => impure.Process
-				output: <P>(p: P, f: impure.Output<P>) => impure.Process
-			}
-		}
-	}
-
-	export namespace world {
-		export type Question<P,E,A> = (p?: P) => Ask<E,A>
-		export type Action<P,E> = (p?: P) => Tell<E>
-
-		export type Ask<E,T> = (events: slime.$api.Events<E>) => T
-		export type Tell<E> = (events: slime.$api.Events<E>) => void
-
-		/** @deprecated */
-		export namespace old {
-			/** @deprecated */
-			export type Ask<E,T> = (on?: slime.$api.events.Handler<E>) => T
-
-			/** @deprecated */
-			export type Tell<E> = (on?: slime.$api.events.Handler<E>) => void
-
-			/** @deprecated */
-			export type Action<P,E> = (p?: P) => Tell<E>
-
-			/** @deprecated Identical to {@link Ask} but has slightly different semantics (analogous to HTTP POST). */
-			export type Operation<E,R> = (on?: slime.$api.events.Handler<E>) => R
-		}
-	}
-
-	export interface World {
-		question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => (p: P) => A
-		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => impure.Output<P>
-
-		Question: {
-			/**
-			 * An operation equivalent to {@link Exports | pipe(argument, question)}, but limited to one argument which provides
-			 * more readable type inference, mapping the produced value to a `Question` rather than a function returning an `Ask`.
-			 */
-			pipe: <I,P,E,A>(argument: (i: I) => P, question: world.Question<P,E,A>) => world.Question<I,E,A>
-			map: <P,E,A,O>(question: world.Question<P,E,A>, map: (a: A) => O) => world.Question<P,E,O>
-			wrap: <I,P,E,A,O>(argument: (i: I) => P, question: world.Question<P,E,A>, map: (a: A) => O) => world.Question<I,E,O>
-		}
-
-		ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => impure.Input<A>
-		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => impure.Process
-
-		now: {
-			question: <P,E,A>(question: world.Question<P,E,A>, argument?: P, handler?: slime.$api.events.Handler<E>) => A
-			action: <P,E>(action: world.Action<P,E>, argument?: P, handler?: slime.$api.events.Handler<E>) => void
-		}
-
-		/** @deprecated Used almost entirely for `jsh.shwll.tools.node.require`. After refactoring that, reassess. */
-		execute: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => void
-
-		/** @deprecated */
-		old: {
-			/** @deprecated */
-			ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => world.old.Ask<E,T>
-			/** @deprecated */
-			tell: <E>(f: (events: slime.$api.Events<E>) => void) => world.old.Tell<E>
-		}
-	}
-
-	export interface Exports {
-		world: World
-	}
 
 	export namespace object {
 		export type Update<T extends Object> = (t: T) => void
@@ -922,7 +869,7 @@ namespace slime.$api.fp {
 		) {
 			const { verify } = fifty;
 
-			fifty.tests.impure = function() {
+			fifty.tests.object = function() {
 				var f1 = function(p: { number: number }) {
 					p.number += 1;
 				};
@@ -1132,7 +1079,7 @@ namespace slime.$api.fp {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
 				fifty.run(fifty.tests.string);
-				fifty.run(fifty.tests.impure);
+				fifty.run(fifty.tests.object);
 				fifty.run(fifty.tests.compare);
 				fifty.run(fifty.tests.is);
 				fifty.run(fifty.tests.result);
@@ -1141,6 +1088,7 @@ namespace slime.$api.fp {
 				fifty.run(fifty.tests.series);
 
 				fifty.load("$api-Function-stream.fifty.ts");
+				fifty.load("$api-fp-impure.fifty.ts");
 			}
 		}
 	//@ts-ignore

@@ -199,7 +199,7 @@ namespace slime.internal.jrunscript.bootstrap {
 				var archive = global.$api.github.test.zip(zip.body.stream.java.adapt());
 				verify(archive).read("slime-master/rhino/jrunscript/api.fifty.ts").is.type("object");
 				verify(archive).read("slime-master/rhino/jrunscript/api.fifty.ts.foo").is.type("null");
-				var descriptor: slime.jrunscript.runtime.resource.Descriptor = {
+				var descriptor: slime.jrunscript.runtime.old.resource.Descriptor = {
 					read: {
 						binary: function() {
 							return jsh.io.java.adapt(archive.read("slime-master/rhino/jrunscript/api.fifty.ts"));

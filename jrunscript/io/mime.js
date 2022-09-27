@@ -63,7 +63,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.io.mime.Part } part
-			 * @returns { slime.jrunscript.runtime.Resource }
+			 * @returns { slime.jrunscript.runtime.old.Resource }
 			 */
 			function getResource(part) {
 				if (part.resource) return part.resource;
@@ -102,7 +102,7 @@
 				var BOUNDARY = "----=_SLIME_MULTIPART_HACK_" + index;
 				parts.forEach( function(part) {
 
-					/** @type { slime.jrunscript.runtime.Resource } */
+					/** @type { slime.jrunscript.runtime.old.Resource } */
 					var resource = getResource(part);
 
 					if (arguments[1] != 0) {

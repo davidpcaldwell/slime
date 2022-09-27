@@ -53,6 +53,16 @@
 			}
 		};
 
+		$exports.Function.split = function(functions) {
+			var entries = Object.entries(functions);
+			return function(p) {
+				var results = entries.map(function(entry) {
+					return [entry[0], functions[entry[0]](p)];
+				});
+				return Object.fromEntries(results);
+			}
+		};
+
 		$exports.Function.result = function() {
 			var items = Array.prototype.slice.call(arguments);
 			return $exports.Function.pipe.apply(this, items.slice(1))(items[0]);
@@ -203,13 +213,15 @@
 
 		var code = {
 			/** @type { slime.$api.fp.internal.stream.Script } */
-			Stream: $context.script("$api-Function-stream.js")
+			Stream: $context.script("$api-Function-stream.js"),
+			/** @type { slime.$api.fp.internal.impure.Script } */
+			impure: $context.script("$api-fp-impure.js")
 		};
 
 		$exports.Function.Stream = code.Stream({
 			//@ts-ignore
 			$f: $exports.Function
-		})
+		});
 
 		$exports.Function.Array = {
 			filter: function(f) {
@@ -263,6 +275,20 @@
 					return array.reduce(function(rv,element) {
 						return rv + attribute(element);
 					},0);
+				}
+			},
+			first: function(ordering) {
+				return function(ts) {
+					/** @type { slime.$api.fp.Maybe<any> } */
+					var rv = $exports.Function.Maybe.nothing();
+					ts.forEach(function(item) {
+						if (!rv.present) {
+							rv = $exports.Function.Maybe.value(item);
+						} else if (rv.present && ordering(rv.value)(item) == "BEFORE") {
+							rv = $exports.Function.Maybe.value(item);
+						}
+					});
+					return rv;
 				}
 			}
 		};
@@ -388,119 +414,28 @@
 					}
 					return 0;
 				}
-			}
-		}
-
-		/** @type { slime.$api.fp.Exports["impure"] } */
-		$exports.Function.impure = {
-			now: {
-				input: function(input) {
-					return input();
-				},
-				output: function(p, f) {
-					f(p);
-				},
-				process: function(process) {
-					process();
-				}
 			},
-			Input: {
-				value: function(v) {
-					return function() {
-						return v;
-					}
-				},
-				map: function(input, map) {
-					return function() {
-						return map(input());
-					}
-				}
-			},
-			Process: {
-				compose: function(processes) {
-					return function() {
-						processes.forEach(function(process) {
-							process();
-						});
-					}
-				},
-				output: function(p,f) {
-					return function() {
-						f(p);
+			from: {
+				Ordering: function(ordering) {
+					return function(a,b) {
+						var compare = ordering(a);
+						var result = compare(b);
+						if (result == "BEFORE") return -1;
+						if (result == "EQUAL") return 0;
+						if (result == "AFTER") return 1;
+						throw new TypeError("Result must be BEFORE, EQUAL, or AFTER.");
 					}
 				}
 			}
 		};
 
-		$exports.Function.world = {
-			question: function(question, handler) {
-				return function(p) {
-					var ask = question(p);
-					var adapted = $context.events.ask(ask);
-					return adapted(handler);
-				}
-			},
-			Question: {
-				pipe: function(a,q) {
-					return function(n) {
-						return q(a(n));
-					}
-				},
-				map: function(q,m) {
-					return function(p) {
-						return function(events) {
-							var rv = q(p)(events);
-							return m(rv);
-						}
-					}
-				},
-				wrap: function(a,q,m) {
-					return $exports.Function.world.Question.map(
-						$exports.Function.world.Question.pipe(a, q),
-						m
-					);
-				}
-			},
-			action: function(action, handler) {
-				return function(p) {
-					var tell = action(p);
-					var adapted = $context.events.tell(tell);
-					adapted(handler);
-				}
-			},
-			ask: function(ask, handler) {
-				return function() {
-					var adapted = $context.events.ask(ask);
-					return adapted(handler);
-				}
-			},
-			tell: function(tell, handler) {
-				return function() {
-					var adapted = $context.events.tell(tell);
-					adapted(handler);
-				}
-			},
-			now: {
-				question: function(question, argument, handler) {
-					var ask = question(argument);
-					var adapted = $context.events.ask(ask);
-					return adapted(handler);
-				},
-				action: function(action, argument, handler) {
-					var tell = action(argument);
-					var adapted = $context.events.tell(tell);
-					adapted(handler);
-				}
-			},
-			execute: function(tell, handler) {
-				var adapted = $context.events.tell(tell);
-				adapted(handler);
-			},
-			old: {
-				ask: $context.events.ask,
-				tell: $context.events.tell
-			}
-		};
+		var impure = code.impure({
+			events: $context.events
+		});
+
+		$exports.Function.impure = impure.impure;
+
+		$exports.Function.world = impure.world;
 
 		$exports.Function.object = {
 			Update: {

@@ -22,7 +22,7 @@ namespace slime.servlet {
 			 * {@link slime.jrunscript.runtime.Resource}s.
 			 */
 			Loader: (o: {
-				loader: slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.Resource>
+				loader: slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.old.Resource>
 
 				/**
 				 * An optional path within the loader to use if the path is empty.
@@ -39,7 +39,7 @@ namespace slime.servlet {
 		http: {
 			Response: {
 				text: (string: string) => Response
-				resource: (body: slime.jrunscript.runtime.Resource) => Response
+				resource: (body: slime.jrunscript.runtime.old.Resource) => Response
 				NOT_FOUND: () => Response
 
 				SEE_OTHER: (p: {
