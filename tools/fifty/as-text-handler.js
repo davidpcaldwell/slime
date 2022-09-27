@@ -22,7 +22,7 @@
 						return rv;
 					}
 				};
-				/** @type { slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.Resource> } */
+				/** @type { slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.old.Resource> } */
 				//@ts-ignore
 				var asTextLoader = new $context.httpd.io.Loader(asTextLoaderSource);
 

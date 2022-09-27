@@ -6,6 +6,21 @@
 
 namespace slime {
 	export namespace runtime.loader {
+		export interface Node {
+			name: string
+			resource: boolean
+			parent: boolean
+		}
+
+		/**
+		 * A location within a loader, consisting of a (possibly empty) path, an ordered set of names of parents of the location,
+		 * and a `name` within that path.
+		 */
+		export interface Location {
+			path: string[]
+			name: string
+		}
+
 		export interface Code {
 			name: string
 			type: () => slime.mime.Type
@@ -13,19 +28,26 @@ namespace slime {
 		}
 
 		export interface Synchronous<T> {
-			code: (t: T) => Code
-
 			/**
 			 * Returns the resource associated with a given path.
 			 *
 			 * @param path A path.
 			 */
-			get: (path: string) => slime.$api.fp.Maybe<T>
+			get: (path: string[]) => slime.$api.fp.Maybe<T>
+
+			list?: (path: string[]) => slime.$api.fp.Maybe<Node[]>
+
+			code: (t: T) => Code
 		}
 
 		export interface Exports {
 			synchronous: {
-				script: <T,C,E>(loader: Synchronous<T>, path: string) => (c: C) => E
+				resources: <T>(filter: {
+					resource: (path: string[], name: string) => boolean,
+					parent: (path: string[]) => boolean
+				}) => (loader: Synchronous<T>) => Location[]
+
+				script: (path: string) => <T>(loader: Synchronous<T>) => <C,E>(c: C) => E
 			}
 		}
 
@@ -55,13 +77,18 @@ namespace slime {
 				};
 
 				fifty.tests.script.missing = function(loader: Synchronous<any>) {
-					var no = test.subject.synchronous.script(loader, "foo");
+					var no = test.subject.synchronous.script("foo")(loader);
 					verify(no).is(null);
 				}
 
 				fifty.tests.script.context = function(loader: Synchronous<any>) {
 					function echo<T>(t: T): T {
-						var script: <C>(c: C) => { provided: C } = test.subject.synchronous.script(loader, "test/data/context.js");
+						if (!test.subject.synchronous.script) throw new Error("No 'script'");
+						var at = test.subject.synchronous.script("loader/test/data/context.js");
+						if (!at) throw new Error("No 'at'");
+						debugger;
+						var script: <C>(c: C) => { provided: C } = at(loader);
+						if (!script) throw new Error("No script");
 						return script(t).provided;
 					}
 
@@ -111,8 +138,7 @@ namespace slime {
 					fifty.tests.object.script = function(loader: slime.runtime.loader.Synchronous<any>) {
 						var object = test.subject.object.Synchronous(loader);
 
-						//	TODO	this only works when we invoke this each time, otherwise we get Stream closed
-						var script: <C>(c: C) => { provided: C } = object.script("test/data/context.js");
+						var script: <C>(c: C) => { provided: C } = object.script("loader/test/data/context.js");
 
 						function echo<T>(t: T): T {
 							return script(t).provided;

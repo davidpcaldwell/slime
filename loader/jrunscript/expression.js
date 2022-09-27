@@ -201,8 +201,8 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.runtime.resource.HistoricSupportedDescriptor } o
-		 * @returns { o is slime.jrunscript.runtime.resource.DeprecatedStreamDescriptor }
+		 * @param { slime.jrunscript.runtime.old.resource.HistoricSupportedDescriptor } o
+		 * @returns { o is slime.jrunscript.runtime.old.resource.DeprecatedStreamDescriptor }
 		 */
 		var isStreamDescriptor = function(o) {
 			return o["stream"] && o["stream"]["binary"]
@@ -210,8 +210,8 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.runtime.resource.DeprecatedStreamDescriptor } o
-		 * @returns { slime.jrunscript.runtime.resource.Descriptor }
+		 * @param { slime.jrunscript.runtime.old.resource.DeprecatedStreamDescriptor } o
+		 * @returns { slime.jrunscript.runtime.old.resource.Descriptor }
 		 */
 		var fromStreamDescriptor = function(o) {
 			return {
@@ -234,8 +234,8 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.runtime.resource.HistoricSupportedDescriptor } o
-		 * @returns { o is slime.jrunscript.runtime.resource.LoadedDescriptor }
+		 * @param { slime.jrunscript.runtime.old.resource.HistoricSupportedDescriptor } o
+		 * @returns { o is slime.jrunscript.runtime.old.resource.LoadedDescriptor }
 		 */
 		var isLoadedDescriptor = function(o) {
 			return o["_loaded"];
@@ -243,8 +243,8 @@
 
 		/**
 		 *
-		 * @param { slime.resource.Descriptor | slime.jrunscript.runtime.resource.Descriptor } p
-		 * @returns { p is slime.jrunscript.runtime.resource.Descriptor }
+		 * @param { slime.resource.Descriptor | slime.jrunscript.runtime.old.resource.Descriptor } p
+		 * @returns { p is slime.jrunscript.runtime.old.resource.Descriptor }
 		 */
 		var isJrunscriptDescriptor = function(p) {
 			return (p.read && (p.read["binary"] || p.read["text"])) || p["write"];
@@ -254,7 +254,7 @@
 		var Resource = (function(was) {
 			var rv = (
 				/**
-				 * @param { slime.jrunscript.runtime.resource.HistoricSupportedDescriptor } p
+				 * @param { slime.jrunscript.runtime.old.resource.HistoricSupportedDescriptor } p
 				 * @constructor
 				 */
 				function(p) {
@@ -523,7 +523,7 @@
 						})();
 
 						//	TODO	a lot of type narrowing, etc., needed here to get the type checking in order
-						/** @type { slime.jrunscript.runtime.Resource["write"]} */
+						/** @type { slime.jrunscript.runtime.old.Resource["write"]} */
 						//@ts-ignore
 						this.write = function(dataOrType,mode) {
 							if (typeof(dataOrType) == "undefined") throw new TypeError("Cannot write 'undefined'");
@@ -974,17 +974,37 @@
 			}
 		}
 
+		/** @type { slime.jrunscript.runtime.Exports["jrunscript"] } */
 		var jrunscript = {
 			loader: {
 				/** @type { slime.jrunscript.runtime.Exports["jrunscript"]["loader"]["from"] } */
 				from: {
 					java: function(_loader) {
 						return {
+							toString: function() {
+								return "[runtime/jrunscript].jrunscript.loader.from: " + _loader.toString();
+							},
 							get: function(path) {
-								var _file = _loader.getFile(path);
+								var _file = _loader.getFile(path.join("/"));
 								if (!_file) return slime.$api.Function.Maybe.nothing();
 								return slime.$api.Function.Maybe.value(_file)
 							},
+							list: (_loader.getEnumerator()) ? function(path) {
+								var prefix = (path.length) ? path.join("/") : "";
+								var _list = _loader.getEnumerator().list(prefix);
+								if (!_list) return slime.$api.Function.Maybe.nothing();
+								var rv = Array.prototype.map.call(_list, function(x) { return String(x); }).map(function(string) {
+									var folder = (string.substring(string.length-1) == "/");
+									var name = (folder) ? string.substring(0,string.length-1) : string;
+									var item = {
+										name: name,
+										resource: !folder,
+										parent: folder
+									}
+									return item;
+								});
+								return slime.$api.Function.Maybe.value(rv);
+							} : void(0),
 							code: function(_resource) {
 								var name = String(_resource.getSourceName());
 								return {
@@ -998,6 +1018,43 @@
 									}
 								}
 							}
+						}
+					}
+				}
+			},
+			Resource: {
+				from: {
+					java: function(_resource) {
+						return {
+							read: function() {
+								return $exports_io.Streams.java.adapt(_resource.getInputStream());
+							},
+							length: function() {
+								var length = _resource.getLength();
+								if (length === null) return slime.$api.Function.Maybe.nothing();
+								return slime.$api.Function.Maybe.value(length.longValue());
+							},
+							modified: function() {
+								var _date = _resource.getLastModified();
+								return (_date) ? slime.$api.Function.Maybe.value(_date.getTime() / 1000) : slime.$api.Function.Maybe.nothing();
+							}
+						}
+					}
+				}
+			},
+			entry: {
+				Loader: {
+					from: {
+						synchronous: function(p) {
+							/** @param { slime.runtime.loader.Location } resource */
+							return function(resource) {
+								var loaded = p.loader.get(resource.path.concat([resource.name]));
+								if (loaded.present) return {
+									path: resource.path,
+									name: resource.name,
+									resource: p.map(loaded.value)
+								}
+							};
 						}
 					}
 				}

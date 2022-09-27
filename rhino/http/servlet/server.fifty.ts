@@ -102,7 +102,7 @@ namespace slime.servlet {
 		status: { code: number }
 		headers?: Header[]
 		body?: (
-			slime.jrunscript.runtime.Resource
+			slime.jrunscript.runtime.old.Resource
 			| {
 				type: string | slime.mime.Type,
 				string: string

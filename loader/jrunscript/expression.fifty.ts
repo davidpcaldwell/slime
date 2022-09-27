@@ -5,69 +5,71 @@
 //	END LICENSE
 
 namespace slime.jrunscript.runtime {
-	export interface Resource extends slime.Resource {
-		read: slime.Resource["read"] & {
-			binary: () => slime.jrunscript.runtime.io.InputStream
-			text: () => slime.jrunscript.runtime.io.Reader
-		}
-		length?: number
-		modified?: any
-
-		write?: {
-			(marker: slime.jrunscript.runtime.io.Exports["Streams"]["binary"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.OutputStream
-			(marker: slime.jrunscript.runtime.io.Exports["Streams"]["text"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.Writer
-			(input: slime.jrunscript.runtime.io.InputStream, mode?: resource.WriteMode): void
-			(input: slime.jrunscript.runtime.io.Reader, mode?: resource.WriteMode): void
-			(input: string, mode?: resource.WriteMode): void
-			(input: slime.jrunscript.native.java.util.Properties, mode?: resource.WriteMode): void
-		}
-	}
-
-	export namespace resource {
-		export interface Descriptor extends slime.resource.Descriptor {
-			read?: slime.resource.ReadInterface & {
-				binary?: () => slime.jrunscript.runtime.io.InputStream
-				text?: any
+	export namespace old {
+		export interface Resource extends slime.Resource {
+			read: slime.Resource["read"] & {
+				binary: () => slime.jrunscript.runtime.io.InputStream
+				text: () => slime.jrunscript.runtime.io.Reader
 			}
 			length?: number
 			modified?: any
+
 			write?: {
-				binary?: (mode: any) => slime.jrunscript.runtime.io.OutputStream
-				text?: (mode: any) => slime.jrunscript.runtime.io.Writer
+				(marker: slime.jrunscript.runtime.io.Exports["Streams"]["binary"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.OutputStream
+				(marker: slime.jrunscript.runtime.io.Exports["Streams"]["text"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.Writer
+				(input: slime.jrunscript.runtime.io.InputStream, mode?: resource.WriteMode): void
+				(input: slime.jrunscript.runtime.io.Reader, mode?: resource.WriteMode): void
+				(input: string, mode?: resource.WriteMode): void
+				(input: slime.jrunscript.native.java.util.Properties, mode?: resource.WriteMode): void
 			}
 		}
 
-		/**
-		 * @deprecated
-		 */
-		export interface DeprecatedStreamDescriptor extends slime.resource.Descriptor {
-			stream?: {
-				binary: slime.jrunscript.runtime.io.InputStream
+		export namespace resource {
+			export interface Descriptor extends slime.resource.Descriptor {
+				read?: slime.resource.ReadInterface & {
+					binary?: () => slime.jrunscript.runtime.io.InputStream
+					text?: any
+				}
+				length?: number
+				modified?: any
+				write?: {
+					binary?: (mode: any) => slime.jrunscript.runtime.io.OutputStream
+					text?: (mode: any) => slime.jrunscript.runtime.io.Writer
+				}
+			}
+
+			/**
+			 * @deprecated
+			 */
+			export interface DeprecatedStreamDescriptor extends slime.resource.Descriptor {
+				stream?: {
+					binary: slime.jrunscript.runtime.io.InputStream
+				}
+			}
+
+			//	TODO	not even sure what this is
+			export interface LoadedDescriptor extends Descriptor {
+				_loaded?: {
+					path: string
+					resource: slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource
+				}
+			}
+
+			export type HistoricSupportedDescriptor = resource.Descriptor | resource.LoadedDescriptor | slime.resource.Descriptor | DeprecatedStreamDescriptor
+
+			export interface WriteMode {
 			}
 		}
 
-		//	TODO	not even sure what this is
-		export interface LoadedDescriptor extends Descriptor {
-			_loaded?: {
-				path: string
-				resource: slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource
+		export namespace loader {
+			export interface Source extends slime.old.loader.Source {
+				_source?: slime.jrunscript.native.inonit.script.engine.Code.Loader
+				zip?: any
+				_file?: any
+				_url?: any
+				/** @deprecated */
+				resources?: any
 			}
-		}
-
-		export type HistoricSupportedDescriptor = resource.Descriptor | resource.LoadedDescriptor | slime.resource.Descriptor | DeprecatedStreamDescriptor
-
-		export interface WriteMode {
-		}
-	}
-
-	export namespace loader {
-		export interface Source extends slime.old.loader.Source {
-			_source?: slime.jrunscript.native.inonit.script.engine.Code.Loader
-			zip?: any
-			_file?: any
-			_url?: any
-			/** @deprecated */
-			resources?: any
 		}
 	}
 
@@ -199,7 +201,7 @@ namespace slime.jrunscript.runtime {
 		}
 
 		Resource: slime.runtime.Exports["Resource"] & {
-			new (p: resource.HistoricSupportedDescriptor): Resource
+			new (p: old.resource.HistoricSupportedDescriptor): slime.jrunscript.runtime.old.Resource
 		}
 
 		io: slime.jrunscript.runtime.io.Exports
@@ -216,7 +218,7 @@ namespace slime.jrunscript.runtime {
 			const { $slime } = jsh.unit;
 
 			fifty.tests.exports.Resource = function() {
-				var file: slime.jrunscript.runtime.resource.Descriptor = fifty.$loader.source.get("expression.fifty.ts") as slime.jrunscript.runtime.resource.Descriptor;
+				var file: slime.jrunscript.runtime.old.resource.Descriptor = fifty.$loader.source.get("expression.fifty.ts") as slime.jrunscript.runtime.old.resource.Descriptor;
 				var resource = new $slime.Resource({
 					type: $slime.mime.Type.parse("application/x.typescript"),
 					read: {
@@ -256,11 +258,47 @@ namespace slime.jrunscript.runtime {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * A standardized interface for resources that eases interoperability between various kinds of loaders.
+	 */
+	export interface Resource {
+		read: () => slime.jrunscript.runtime.io.InputStream
+		length: () => slime.$api.fp.Maybe<number>
+		modified: () => slime.$api.fp.Maybe<number>
+	}
+
+	export namespace loader {
+		export interface Entry {
+			path: string[]
+			name: string
+			resource: slime.jrunscript.runtime.Resource
+		}
+
+		export namespace entry {
+			export type Loader = (location: slime.runtime.loader.Location) => loader.Entry
+		}
+	}
+
 	export interface Exports extends slime.runtime.Exports {
 		jrunscript: {
 			loader: {
 				from: {
 					java: (_loader: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.runtime.loader.Synchronous<slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource>
+				}
+			},
+			Resource: {
+				from: {
+					java: (_resource: slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource) => Resource
+				}
+			},
+			entry: {
+				Loader: {
+					from: {
+						synchronous: <T>(p: {
+							loader: slime.runtime.loader.Synchronous<T>
+							map: (t: T) => slime.jrunscript.runtime.Resource
+						}) => loader.entry.Loader
+					}
 				}
 			}
 		}
@@ -272,11 +310,12 @@ namespace slime.jrunscript.runtime {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
 			const { $slime } = fifty.global.jsh.unit;
 
 			var loader = $slime.jrunscript.loader.from.java(
 				Packages.inonit.script.engine.Code.Loader.create(
-					fifty.jsh.file.object.getRelativePath("..").java.adapt()
+					fifty.jsh.file.object.getRelativePath("../..").java.adapt()
 				)
 			);
 
@@ -289,9 +328,67 @@ namespace slime.jrunscript.runtime {
 				fifty.load("../Loader.fifty.ts", "object", loader);
 			}
 
-			fifty.tests.wip = function() {
-				fifty.load("../Loader.fifty.ts", "object", loader);
-			}
+			var modifiedOrder: slime.$api.fp.Ordering<loader.Entry> = function(entry) {
+				return function(other) {
+					var m1 = entry.resource.modified();
+					var m2 = other.resource.modified();
+					if (!m1.present && !m2.present) return "EQUAL";
+					if (!m1.present) return "BEFORE";
+					if (!m2.present) return "AFTER";
+					var eTime = m1.value;
+					var oTime = m2.value;
+					if (oTime < eTime) return "AFTER";
+					if (oTime > eTime) return "BEFORE";
+					return "EQUAL";
+				}
+			};
+
+			var getLastModified: (loader: slime.runtime.loader.Synchronous<slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource>) => slime.$api.fp.Maybe<number> = $api.Function.pipe(
+				$api.Function.split({
+					listing: $slime.loader.synchronous.resources({
+						resource: function(path, name) {
+							return true;
+						},
+						parent: function(path) {
+							if (path.length == 1 && path[0] == ".git") return false;
+							if (path.length == 1 && path[0] == "local") return false;
+							if (path.length == 1 && path[0] == "bin") return false;
+							return true;
+						}
+					}),
+					loader: $api.Function.identity
+				}),
+				function(inputs) {
+					return inputs.listing.map(
+						$slime.jrunscript.entry.Loader.from.synchronous({
+							loader: inputs.loader,
+							map: $slime.jrunscript.Resource.from.java
+						})
+					);
+				},
+				$api.Function.Array.first(modifiedOrder),
+				$api.Function.Maybe.map(function(latest) {
+					jsh.shell.console("latest = " + ((latest.path.length) ? latest.path.join("/") + "/" : "") + latest.name);
+					return latest.resource.modified();
+				}),
+				function(it) {
+					if (it.present) return it.value;
+					return $api.Function.Maybe.nothing();
+				}
+			)
+
+			fifty.tests.wip = $api.Function.pipe(
+				$api.Function.impure.Input.value(loader),
+				getLastModified,
+				function(it) {
+					if (it.present) {
+						jsh.shell.console("Modified: " + it.value);
+						// jsh.shell.console("Latest: " + ( (it.value.path.length) ? it.value.path.join("/") + "/" : "" ) + it.value.name + " at " + JSON.stringify(it.value.resource.modified()));
+					} else {
+						jsh.shell.console("Error.");
+					}
+				}
+			);
 		}
 	//@ts-ignore
 	)(Packages,fifty);
