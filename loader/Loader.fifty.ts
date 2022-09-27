@@ -83,7 +83,12 @@ namespace slime {
 
 				fifty.tests.script.context = function(loader: Synchronous<any>) {
 					function echo<T>(t: T): T {
-						var script: <C>(c: C) => { provided: C } = test.subject.synchronous.script("test/data/context.js")(loader);
+						if (!test.subject.synchronous.script) throw new Error("No 'script'");
+						var at = test.subject.synchronous.script("loader/test/data/context.js");
+						if (!at) throw new Error("No 'at'");
+						debugger;
+						var script: <C>(c: C) => { provided: C } = at(loader);
+						if (!script) throw new Error("No script");
 						return script(t).provided;
 					}
 
@@ -133,8 +138,7 @@ namespace slime {
 					fifty.tests.object.script = function(loader: slime.runtime.loader.Synchronous<any>) {
 						var object = test.subject.object.Synchronous(loader);
 
-						//	TODO	this only works when we invoke this each time, otherwise we get Stream closed
-						var script: <C>(c: C) => { provided: C } = object.script("test/data/context.js");
+						var script: <C>(c: C) => { provided: C } = object.script("loader/test/data/context.js");
 
 						function echo<T>(t: T): T {
 							return script(t).provided;
