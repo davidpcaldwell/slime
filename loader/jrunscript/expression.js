@@ -1020,6 +1020,22 @@
 							}
 						}
 					}
+				},
+				entries: function(p) {
+					return slime.$api.Function.pipe(
+						slime.$api.Function.split({
+							listing: slime.loader.synchronous.resources(p.filter),
+							loader: slime.$api.Function.identity
+						}),
+						function(inputs) {
+							return inputs.listing.map(
+								jrunscript.entry.Loader.from.synchronous({
+									loader: inputs.loader,
+									map: p.map
+								})
+							);
+						}
+					);
 				}
 			},
 			Resource: {
@@ -1038,6 +1054,24 @@
 								var _date = _resource.getLastModified();
 								return (_date) ? slime.$api.Function.Maybe.value(_date.getTime() / 1000) : slime.$api.Function.Maybe.nothing();
 							}
+						}
+					}
+				}
+			},
+			Entry: {
+				mostRecentlyModified: function() {
+					return function(entry) {
+						return function(other) {
+							var m1 = entry.resource.modified();
+							var m2 = other.resource.modified();
+							if (!m1.present && !m2.present) return "EQUAL";
+							if (!m1.present) return "BEFORE";
+							if (!m2.present) return "AFTER";
+							var eTime = m1.value;
+							var oTime = m2.value;
+							if (oTime < eTime) return "AFTER";
+							if (oTime > eTime) return "BEFORE";
+							return "EQUAL";
 						}
 					}
 				}
