@@ -56,9 +56,17 @@ namespace slime.jrunscript.io {
 	)(fifty);
 
 	export interface Exports {
+		loader: slime.jrunscript.runtime.Exports["jrunscript"]["loader"]
+		Entry: slime.jrunscript.runtime.Exports["jrunscript"]["Entry"]
+	}
+
+	export interface Exports {
+		Resource: slime.jrunscript.runtime.Exports["Resource"] & slime.jrunscript.runtime.Exports["jrunscript"]["Resource"]
+	}
+
+	export interface Exports {
 		Streams: slime.jrunscript.runtime.io.Exports["Streams"]
 		Buffer: slime.jrunscript.runtime.io.Exports["Buffer"]
-		Resource: slime.jrunscript.runtime.Exports["Resource"]
 		Loader: slime.jrunscript.runtime.Exports["Loader"]
 		old: slime.jrunscript.runtime.Exports["old"]
 		java: {

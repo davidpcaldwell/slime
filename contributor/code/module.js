@@ -235,7 +235,39 @@
 		)();
 
 		$export({
-			files: files
+			files: files,
+			directory: {
+				lastModified: function(p) {
+					return $api.Function.result(
+						p.loader,
+						$api.Function.pipe(
+							$context.library.io.loader.entries({
+								filter: {
+									resource: function(path, name) {
+										return true;
+									},
+									parent: function(path) {
+										if (path.length == 1 && path[0] == ".git") return false;
+										if (path.length == 1 && path[0] == "local") return false;
+										if (path.length == 1 && path[0] == "bin") return false;
+										return true;
+									}
+								},
+								map: p.map
+							}),
+							$api.Function.Array.first($context.library.io.Entry.mostRecentlyModified()),
+							$api.Function.Maybe.map(function(latest) {
+								// jsh.shell.console("latest = " + ((latest.path.length) ? latest.path.join("/") + "/" : "") + latest.name);
+								return latest.resource.modified();
+							}),
+							function(it) {
+								if (it.present) return it.value;
+								return $api.Function.Maybe.nothing();
+							}
+						)
+					);
+				}
+			}
 		});
 	}
 //@ts-ignore

@@ -285,6 +285,12 @@ namespace slime.jrunscript.runtime {
 				from: {
 					java: (_loader: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.runtime.loader.Synchronous<slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource>
 				}
+				entries: <T>(
+					p: {
+						filter: Parameters<slime.runtime.loader.Exports["synchronous"]["resources"]>[0],
+						map: (t: T) => slime.jrunscript.runtime.Resource
+					}
+				) => (p: slime.runtime.loader.Synchronous<T>) => loader.Entry[]
 			},
 			Resource: {
 				from: {
@@ -300,6 +306,9 @@ namespace slime.jrunscript.runtime {
 						}) => loader.entry.Loader
 					}
 				}
+			},
+			Entry: {
+				mostRecentlyModified: () => slime.$api.fp.Ordering<loader.Entry>
 			}
 		}
 	}
@@ -327,68 +336,6 @@ namespace slime.jrunscript.runtime {
 				fifty.load("../Loader.fifty.ts", "script", loader);
 				fifty.load("../Loader.fifty.ts", "object", loader);
 			}
-
-			var modifiedOrder: slime.$api.fp.Ordering<loader.Entry> = function(entry) {
-				return function(other) {
-					var m1 = entry.resource.modified();
-					var m2 = other.resource.modified();
-					if (!m1.present && !m2.present) return "EQUAL";
-					if (!m1.present) return "BEFORE";
-					if (!m2.present) return "AFTER";
-					var eTime = m1.value;
-					var oTime = m2.value;
-					if (oTime < eTime) return "AFTER";
-					if (oTime > eTime) return "BEFORE";
-					return "EQUAL";
-				}
-			};
-
-			var getLastModified: (loader: slime.runtime.loader.Synchronous<slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource>) => slime.$api.fp.Maybe<number> = $api.Function.pipe(
-				$api.Function.split({
-					listing: $slime.loader.synchronous.resources({
-						resource: function(path, name) {
-							return true;
-						},
-						parent: function(path) {
-							if (path.length == 1 && path[0] == ".git") return false;
-							if (path.length == 1 && path[0] == "local") return false;
-							if (path.length == 1 && path[0] == "bin") return false;
-							return true;
-						}
-					}),
-					loader: $api.Function.identity
-				}),
-				function(inputs) {
-					return inputs.listing.map(
-						$slime.jrunscript.entry.Loader.from.synchronous({
-							loader: inputs.loader,
-							map: $slime.jrunscript.Resource.from.java
-						})
-					);
-				},
-				$api.Function.Array.first(modifiedOrder),
-				$api.Function.Maybe.map(function(latest) {
-					jsh.shell.console("latest = " + ((latest.path.length) ? latest.path.join("/") + "/" : "") + latest.name);
-					return latest.resource.modified();
-				}),
-				function(it) {
-					if (it.present) return it.value;
-					return $api.Function.Maybe.nothing();
-				}
-			)
-
-			fifty.tests.wip = $api.Function.pipe(
-				$api.Function.impure.Input.value(loader),
-				getLastModified,
-				function(it) {
-					if (it.present) {
-						jsh.shell.console("Modified: " + it.value);
-						// jsh.shell.console("Latest: " + ( (it.value.path.length) ? it.value.path.join("/") + "/" : "" ) + it.value.name + " at " + JSON.stringify(it.value.resource.modified()));
-					} else {
-						jsh.shell.console("Error.");
-					}
-				}
-			);
 		}
 	//@ts-ignore
 	)(Packages,fifty);

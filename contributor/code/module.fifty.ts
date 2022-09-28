@@ -7,6 +7,7 @@
 namespace slime.project.code {
 	export interface Context {
 		library: {
+			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 			code: slime.tools.code.Exports
 		}
@@ -31,8 +32,54 @@ namespace slime.project.code {
 			}) => slime.$api.fp.world.old.Tell<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
 
 			toHandler: (on: on) => slime.$api.events.Handler<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
+		},
+		directory: {
+			lastModified: <T>(p: {
+				loader: slime.runtime.loader.Synchronous<T>
+				map: (t: T) => slime.jrunscript.runtime.Resource
+			}) => slime.$api.fp.Maybe<number>
 		}
 	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			jsh.loader.plugins(fifty.jsh.file.object.getRelativePath(".").directory);
+
+			var subject = jsh.project.code;
+
+			var loader = jsh.io.loader.from.java(
+				Packages.inonit.script.engine.Code.Loader.create(
+					fifty.jsh.file.object.getRelativePath("../..").java.adapt()
+				)
+			);
+
+			fifty.tests.wip = $api.Function.pipe(
+				$api.Function.impure.Input.value(loader),
+				function(loader) {
+					return {
+						loader: loader,
+						map: jsh.io.Resource.from.java
+					}
+				},
+				subject.directory.lastModified,
+				function(it) {
+					if (it.present) {
+						jsh.shell.console("Modified: " + it.value);
+						// jsh.shell.console("Latest: " + ( (it.value.path.length) ? it.value.path.join("/") + "/" : "" ) + it.value.name + " at " + JSON.stringify(it.value.resource.modified()));
+					} else {
+						jsh.shell.console("Error.");
+					}
+				}
+			)
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
 
 	(
 		function(

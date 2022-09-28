@@ -26,7 +26,7 @@
 		/** @type { slime.jrunscript.io.mime.Context["api"]["io"] } */
 		var mimeIoContext = {
 			Buffer: $context.$slime.io.Buffer,
-			Resource: $context.$slime.Resource,
+			Resource: Object.assign($context.$slime.Resource, { from: void(0) }),
 			Streams: $context.$slime.io.Streams
 		};
 
@@ -70,11 +70,15 @@
 					return buffer.readBinary();
 				}
 			}
-		}
+		};
+
 		var $$exports = {
 			Streams: $context.$slime.io.Streams,
 			Buffer: $context.$slime.io.Buffer,
-			Resource: $context.$slime.Resource,
+			Resource: Object.assign(
+				$context.$slime.Resource,
+				$context.$slime.jrunscript.Resource
+			),
 			Loader: $context.$slime.Loader,
 			old: $context.$slime.old,
 			InputStream: InputStream,
@@ -91,7 +95,9 @@
 				},
 				Streams: $context.$slime.io.Streams
 			}),
-			system: $context.$slime.io.system
+			system: $context.$slime.io.system,
+			loader: $context.$slime.jrunscript.loader,
+			Entry: $context.$slime.jrunscript.Entry
 		};
 		$$exports.mime = library.mime;
 		$export($$exports);

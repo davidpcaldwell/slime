@@ -27,6 +27,7 @@
 				jsh.project.code = script({
 					library: {
 						file: jsh.file,
+						io: jsh.io,
 						code: jsh.tools.code
 					}
 				});
