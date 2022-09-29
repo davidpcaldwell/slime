@@ -20,11 +20,13 @@
 			function(configuration) {
 				var base = configuration.base;
 
-				/** @type { slime.tools.documentation.HandlerFactory } */
-				var rv = function(httpd) {
+				var code = {
 					/** @type { slime.tools.documentation.internal.asTextHandler.Script } */
-					var asTextHandlerCode = $loader.script("as-text-handler.js");
-					var asTextHandler = asTextHandlerCode({ httpd: httpd });
+					asTextHandler: $loader.script("as-text-handler.js")
+				}
+
+				return function(httpd) {
+					var asTextHandler = code.asTextHandler({ httpd: httpd });
 
 					/**
 					 *
@@ -107,7 +109,6 @@
 						}
 					)
 				};
-				return rv;
 			}
 		)
 	}

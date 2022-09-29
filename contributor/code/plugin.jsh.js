@@ -22,9 +22,15 @@
 					code: void(0),
 					openapi: void(0)
 				};
-				/** @type { slime.project.code.Script } */
-				var script = $loader.script("module.js");
-				jsh.project.code = script({
+
+				var code = {
+					/** @type { slime.project.code.Script } */
+					code: $loader.script("module.js"),
+					/** @type { slime.project.openapi.Script } */
+					openapi: $loader.script("openapi-update.js")
+				};
+
+				jsh.project.code = code.code({
 					library: {
 						file: jsh.file,
 						io: jsh.io,
@@ -34,9 +40,7 @@
 
 				var openapi = (
 					function() {
-						/** @type { slime.project.openapi.Script } */
-						var script = $loader.script("openapi-update.js");
-						return script({
+						return code.openapi({
 							library: {
 								shell: jsh.shell
 							}

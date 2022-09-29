@@ -40,51 +40,22 @@
 
 				var index = p.options.index || "README.html";
 
-				var server = jsh.httpd.Tomcat();
 				var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
-				server.map({
-					path: "",
-					servlets: {
-						"/*": {
-							load: function(scope) {
-								var code = {
-									/** @type { slime.tools.documentation.internal.asTextHandler.Script } */
-									asTextHandler: loader.script("as-text-handler.js"),
-									/** @type { slime.tools.documentation.Script } */
-									documentationHandler: loader.script("documentation-handler.js"),
-									/** @type { slime.tools.documentation.wiki.Script } */
-									wiki: loader.script("wiki-handler.js")
-								};
-								var asTextHandler = code.asTextHandler({
-									httpd: scope.httpd
-								});
-								/** @type { slime.tools.documentation.Export } */
-								var documentationHandler = loader.module("documentation-handler.js", {
-									httpd: scope.httpd
-								});
-								var documentationFactory = documentationHandler({
-									base: base,
-									watch: p.options.watch
-								});
-								var wikiHandler = code.wiki({
-									httpd: scope.httpd,
-									library: {
-										file: jsh.file
-									},
-									base: base.getSubdirectory("local/wiki")
-								});
-								scope.$exports.handle = scope.httpd.Handler.series(
-									documentationFactory(scope.httpd),
-									wikiHandler,
-									asTextHandler({
-										loader: new jsh.file.Loader({ directory: base })
-									})
-								)
-							}
-						}
-					}
+				var code = {
+					/** @type { slime.fifty.view.Exports } */
+					documentation: loader.script("documentation.js")
+				};
+				var library = {
+					documentation: code.documentation({
+						base: base,
+						watch: p.options.watch
+					})
+				};
+
+				var server = code.documentation({
+					base: base,
+					watch: p.options.watch
 				});
-				server.start();
 
 				//	Use dedicated Chrome browser if present
 				if (jsh.shell.browser.chrome) {
@@ -105,6 +76,7 @@
 					//	Otherwise, fall back to Java desktop integration and default browser
 					Packages.java.awt.Desktop.getDesktop().browse( new Packages.java.net.URI( "http://127.0.0.1:" + server.port + "/" + index ) );
 				}
+
 				server.run();
 			}
 		)
