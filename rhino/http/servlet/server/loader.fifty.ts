@@ -18,7 +18,7 @@ namespace slime.servlet {
 			HostRedirect: any
 
 			/**
-			 * Creates a handler that servers the contents of a {@link slime.Loader} that loads
+			 * Creates a handler that serves the contents of a {@link slime.Loader} that loads
 			 * {@link slime.jrunscript.runtime.Resource}s.
 			 */
 			Loader: (o: {
