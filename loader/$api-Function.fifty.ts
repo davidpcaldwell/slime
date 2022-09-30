@@ -289,9 +289,6 @@ namespace slime.$api.fp {
 
 		conditional: {
 			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
-
-			/** @deprecated Replaced by version with condition/true/false. */
-			(test: any, yes: any, no: any): any
 		}
 
 		Boolean: {
