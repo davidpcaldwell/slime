@@ -43,11 +43,11 @@
 				var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
 				var code = {
 					/** @type { slime.fifty.view.Script } */
-					documentation: loader.script("project.js")
+					project: loader.script("project.js")
 				};
 
 				var library = {
-					documentation: code.documentation({
+					project: code.project({
 						library: {
 							file: jsh.file,
 							httpd: jsh.httpd
@@ -55,7 +55,7 @@
 					})
 				};
 
-				var server = library.documentation({
+				var server = library.project({
 					base: base,
 					watch: p.options.watch
 				});
