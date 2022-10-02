@@ -24,13 +24,3 @@ namespace slime.tools.documentation.main {
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
-
-namespace slime.tools.documentation.internal.asTextHandler {
-	export type Context = { httpd: slime.servlet.httpd }
-	export type Export = slime.servlet.httpd["Handler"]["Loader"];
-	/**
-	 * Given the `httpd` object (see {@link Context}), provides an object that can serve the contents of a Loader and
-	 * understands the `as=text` query string.
-	 */
-	export type Script = slime.loader.Script<Context,Export>
-}

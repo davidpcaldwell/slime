@@ -42,17 +42,20 @@
 
 				var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
 				var code = {
-					/** @type { slime.fifty.view.Exports } */
-					documentation: loader.script("documentation.js")
+					/** @type { slime.fifty.view.Script } */
+					documentation: loader.script("project.js")
 				};
+
 				var library = {
 					documentation: code.documentation({
-						base: base,
-						watch: p.options.watch
+						library: {
+							file: jsh.file,
+							httpd: jsh.httpd
+						}
 					})
 				};
 
-				var server = code.documentation({
+				var server = library.documentation({
 					base: base,
 					watch: p.options.watch
 				});

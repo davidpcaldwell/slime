@@ -12,6 +12,13 @@ namespace slime.fifty.view {
 		}
 	}
 
+	/**
+	 * Given a project's base directory, creates a server that can serve project files, providing a project UI. The server:
+	 *
+	 * * Serves TypeDoc from URLs designated for TypeDoc,
+	 * * Makes wiki page requests for `local/wiki/pagename` work for `local/wiki/pagename.md` files,
+	 * * Serves project files, respecting the `as=text` query parameter to serve them as text.
+	 */
 	export type Exports = (p: {
 		base: slime.jrunscript.file.Directory
 		watch?: boolean
@@ -24,7 +31,7 @@ namespace slime.fifty.view {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			var code: Script = fifty.$loader.script("documentation.js");
+			var code: Script = fifty.$loader.script("project.js");
 			var library = code({
 				library: {
 					file: jsh.file,
@@ -43,7 +50,7 @@ namespace slime.fifty.view {
 				);
 				var README = response.stream.character().asString();
 				var file = fifty.jsh.file.object.getRelativePath("../../README.html").file.read(String);
-				verify(file == README, "Matches file").is(true);
+				verify(file == README, "README.html served matches file").is(true);
 			}
 		}
 	//@ts-ignore
