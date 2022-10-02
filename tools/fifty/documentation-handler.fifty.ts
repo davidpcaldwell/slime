@@ -12,7 +12,7 @@ namespace slime.tools.documentation {
 
 	/**
 	 * The application-level export of the documentation handler. Using a configuration, creates a function capable of creating a
-	 * servlet handler that can serve Typedoc documentation given the httpd API.
+	 * servlet handler that can serve project TypeDoc documentation from standard SLIME TypeDoc URLs given the httpd API.
 	 */
 	export type Export = (configuration: Configuration) => (p: slime.servlet.httpd) => slime.servlet.handler
 
