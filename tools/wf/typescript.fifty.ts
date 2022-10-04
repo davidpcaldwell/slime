@@ -14,6 +14,10 @@ namespace slime.jsh.wf.internal.typescript {
 
 	export interface Exports {
 		typedoc: {
+			/**
+			 * Given a TypeScript configuration and project directory, runs TypeDoc and returns a boolean: `true` for success, false
+			 * for failure.
+			 */
 			run: slime.$api.fp.world.Question<{
 				configuration: {
 					typescript: {

@@ -37,7 +37,7 @@
 					typescript: $loader.script("typescript.js")
 				};
 
-				var parts = {
+				var library = {
 					typescript: code.typescript({
 						library: {
 							file: jsh.file,
@@ -478,8 +478,9 @@
 							jsh.shell.console("Compiling with TypeScript " + typescript.getVersion(project) + " ...");
 							jsh.shell.tools.rhino.require();
 							jsh.shell.tools.tomcat.require();
-							var ask = $api.Function.world.ask(
-								parts.typescript.typedoc.run({
+							return $api.Function.world.now.question(
+								library.typescript.typedoc.run,
+								{
 									configuration: {
 										typescript: {
 											version: version,
@@ -487,9 +488,8 @@
 										}
 									},
 									project: project.pathname.toString()
-								})
+								}
 							);
-							return ask();
 						}
 					}
 				})();
