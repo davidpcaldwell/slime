@@ -239,9 +239,10 @@
 					}
 				}
 
+				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["createDirectoryAt"] } */
 				this.createDirectoryAt = function(peer) {
-					return peer.mkdirs();
-				}
+					peer.mkdir();
+				};
 
 				this.read = new function() {
 					/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["read"]["binary"] } */
@@ -299,13 +300,13 @@
 					var suffix = defined(parameters.suffix, null);
 					var directory = defined(parameters.directory, false);
 					var jdir = (peer) ? peer.getHostFile() : null;
-					var jfile = Packages.java.io.File.createTempFile(prefix,suffix,jdir);
+					var _file = Packages.java.io.File.createTempFile(prefix,suffix,jdir);
 					//	If this was request for directory, delete the temp file and create directory with same name
 					if (directory) {
-						jfile["delete"]();
-						jfile.mkdir();
+						_file["delete"]();
+						_file.mkdir();
 					}
-					return _peer.getNode(jfile);
+					return _peer.getNode(_file);
 				}
 
 				this.java = new (function(self) {

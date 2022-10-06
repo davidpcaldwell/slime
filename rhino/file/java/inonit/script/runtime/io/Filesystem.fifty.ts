@@ -16,22 +16,31 @@ namespace slime.jrunscript.native {
 		}
 
 		export namespace Filesystem {
+			/**
+			 * A filesystem path, corresponding to a `java.io.File`.
+			 */
 			export interface Node {
 				getScriptPath: () => slime.jrunscript.native.java.lang.String
-				exists(): boolean
-				isDirectory(): boolean
-				readBinary(): slime.jrunscript.native.java.io.InputStream
-				readText(): slime.jrunscript.native.java.io.Reader
-				writeBinary(append: boolean): slime.jrunscript.native.java.io.OutputStream
-				writeText(append: boolean): slime.jrunscript.native.java.io.Writer
-				mkdirs()
-				getHostFile(): slime.jrunscript.native.java.io.File
-				delete()
-				move(to: Node)
-				list(pattern: slime.jrunscript.native.java.io.FilenameFilter): Node[]
+				getHostFile: () => slime.jrunscript.native.java.io.File
+
+				exists: () => boolean
+				isDirectory: () => boolean
+
+				getParent: () => Node
+
+				readBinary: () => slime.jrunscript.native.java.io.InputStream
+				readText: () => slime.jrunscript.native.java.io.Reader
+				writeBinary: (append: boolean) => slime.jrunscript.native.java.io.OutputStream
+				writeText: (append: boolean) => slime.jrunscript.native.java.io.Writer
+
+				mkdir: () => void
+				delete: () => void
+				move: (to: Node) => void
+
+				list: (pattern: slime.jrunscript.native.java.io.FilenameFilter) => Node[]
 
 				//	TODO	exists only for Cygwin
-				invalidate()
+				invalidate: () => void
 			}
 		}
 	}

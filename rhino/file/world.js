@@ -21,17 +21,17 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } was
+		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } java
 		 * @returns { slime.jrunscript.file.world.Filesystem }
 		 */
-		function toWorldFilesystem(was) {
+		function toWorldFilesystem(java) {
 			/**
 			 *
 			 * @param { string } pathname
 			 * @param { slime.$api.Events<{ notFound: void }> } events
 			 */
 			var openInputStream = function(pathname,events) {
-				var peer = was.newPeer(pathname);
+				var peer = java.newPeer(pathname);
 				if (!peer.exists()) {
 					events.fire("notFound");
 					return null;
@@ -44,7 +44,7 @@
 			 */
 			var maybeOutputStream = function(p) {
 				return function(events) {
-					var peer = was.newPeer(p.pathname);
+					var peer = java.newPeer(p.pathname);
 					var binary = peer.writeBinary(p.append || false);
 					return $api.Function.Maybe.value($context.library.io.Streams.java.adapt(binary));
 				}
@@ -57,7 +57,7 @@
 			 * @returns
 			 */
 			var maybeInputStream = function(pathname,events) {
-				var peer = was.newPeer(pathname);
+				var peer = java.newPeer(pathname);
 				if (!peer.exists()) {
 					events.fire("notFound");
 					return $api.Function.Maybe.nothing();
@@ -66,7 +66,7 @@
 			}
 
 			var openWriter = function(pathname,events) {
-				var peer = was.newPeer(pathname);
+				var peer = java.newPeer(pathname);
 				return peer.writeText(false);
 			}
 
@@ -132,15 +132,15 @@
 			 */
 			function pathname_relative(parent, relative) {
 				if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
-				var peer = was.relative(parent, relative);
-				return was.peerToString(peer);
+				var peer = java.relative(parent, relative);
+				return java.peerToString(peer);
 			}
 
 			/**
 			 * @param { string } pathname
 			 */
 			function directory_exists(pathname) {
-				var peer = was.newPeer(pathname);
+				var peer = java.newPeer(pathname);
 				return peer.exists() && peer.isDirectory();
 			}
 
@@ -148,35 +148,33 @@
 			 * @param { string } pathname
 			 */
 			function file_exists(pathname) {
-				var peer = was.newPeer(pathname);
+				var peer = java.newPeer(pathname);
 				return peer.exists() && !peer.isDirectory();
 			}
 
-			/**
-			 *
-			 * @param { { pathname: string, recursive: boolean } } p
-			 */
-			function createDirectory(p) {
-				var peer = was.newPeer(p.pathname);
-				var parent = was.getParent(peer);
-				if (!parent.exists() && !p.recursive) throw new Error("Parent " + parent.getScriptPath() + " does not exist; specify recursive: true to override.");
-				was.createDirectoryAt(peer);
-			}
-
 			function directory_require_impure(p) {
+				var recursive = function(peer) {
+					if (!java.getParent(peer).exists()) {
+						recursive(java.getParent(peer));
+					}
+					java.createDirectoryAt(peer);
+				}
 				return $api.Function.world.old.tell(function() {
-					var peer = was.newPeer(p.pathname);
-					var parent = was.getParent(peer);
-					if (!parent.exists() && !p.recursive) throw new Error("Parent " + parent.getScriptPath() + " does not exist; specify recursive: true to override.");
+					var peer = java.newPeer(p.pathname);
+					var parent = java.getParent(peer);
+					if (!parent.exists()) {
+						if (!p.recursive) throw new Error("Parent " + parent.getScriptPath() + " does not exist; specify recursive: true to override.");
+						recursive(parent);
+					}
 					if (!peer.exists()) {
-						was.createDirectoryAt(peer);
+						java.createDirectoryAt(peer);
 					}
 				});
 			}
 
 			function directory_remove_impure(p) {
 				return $api.Function.world.old.tell(function() {
-					var peer = was.newPeer(p.pathname);
+					var peer = java.newPeer(p.pathname);
 					peer.delete();
 				});
 			}
@@ -200,7 +198,7 @@
 			function directory_list(pathname) {
 				return function() {
 					return $api.Function.world.old.ask(function(events) {
-						var peer = was.newPeer(pathname);
+						var peer = java.newPeer(pathname);
 						return peer.list(null).map(function(node) {
 							return pathname_create(String(node.getScriptPath()));
 						})
@@ -215,7 +213,7 @@
 			function file_exists_impure(pathname) {
 				return function() {
 					return $api.Function.world.old.ask(function(events) {
-						var peer = was.newPeer(pathname);
+						var peer = java.newPeer(pathname);
 						return peer.exists() && !peer.isDirectory();
 					});
 				}
@@ -229,11 +227,11 @@
 			 */
 			function copy_impure(file,destination) {
 				return $api.Function.world.old.tell(function(events) {
-					var from = was.newPeer(file);
-					var to = was.newPeer(destination);
+					var from = java.newPeer(file);
+					var to = java.newPeer(destination);
 					$context.library.io.Streams.binary.copy(
-						was.read.binary(from),
-						was.write.binary(to, false)
+						java.read.binary(from),
+						java.write.binary(to, false)
 					);
 					var _from = from.getHostFile().toPath();
 					var _to = to.getHostFile().toPath();
@@ -253,11 +251,11 @@
 			 */
 			function copy(source,destination) {
 				return function() {
-					var from = was.newPeer(source);
-					var to = was.newPeer(destination);
+					var from = java.newPeer(source);
+					var to = java.newPeer(destination);
 					$context.library.io.Streams.binary.copy(
-						was.read.binary(from),
-						was.write.binary(to, false)
+						java.read.binary(from),
+						java.write.binary(to, false)
 					);
 					var _from = from.getHostFile().toPath();
 					var _to = to.getHostFile().toPath();
@@ -268,6 +266,29 @@
 					}
 				}
 			}
+
+			/**
+			 *
+			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
+			 * @param { slime.$api.Events<{ created: string }> } events
+			 */
+			var createAt = function(peer,events) {
+				java.createDirectoryAt(peer);
+				events.fire("created", String(peer.getScriptPath()));
+			}
+
+			/**
+			 *
+			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
+			 * @param { slime.$api.Events<{ created: string }> } events
+			 */
+			var ensureParent = function(peer,events) {
+				var parent = java.getParent(peer);
+				ensureParent(parent,events);
+				if (!parent.exists()) {
+					createAt(parent,events);
+				}
+			};
 
 			/** @type { slime.jrunscript.file.world.Filesystem } */
 			var filesystem = {
@@ -289,21 +310,24 @@
 				},
 				createDirectory: function(p) {
 					return function(events) {
-						createDirectory({
-							pathname: p.pathname,
-							recursive: p.recursive
-						});
+						var peer = java.newPeer(p.pathname);
+						java.createDirectoryAt(peer);
 					}
 				},
 				copy: function(p) {
 					return copy(p.from, p.to);
 				},
+				move: function(p) {
+					return function(events) {
+						java.move(java.newPeer(p.from), java.newPeer(p.to));
+					}
+				},
 				pathname: pathname_create,
 				Pathname: {
 					relative: pathname_relative,
 					isDirectory: function(pathname) {
-						var peer = was.newPeer(pathname);
-						return was.exists(peer) && was.isDirectory(peer);
+						var peer = java.newPeer(pathname);
+						return java.exists(peer) && java.isDirectory(peer);
 					}
 				},
 				File: {
@@ -328,13 +352,12 @@
 					}
 				},
 				Directory: {
-					require: directory_require_impure,
 					remove: function(p) {
 						return $api.Function.world.old.tell(function(e) {
-							var peer = was.newPeer(p.pathname);
+							var peer = java.newPeer(p.pathname);
 							if (!peer.exists()) e.fire("notFound");
 							if (peer.exists() && !peer.isDirectory()) throw new Error();
-							if (peer.exists() && peer.isDirectory()) was.remove(peer);
+							if (peer.exists() && peer.isDirectory()) java.remove(peer);
 						});
 					}
 				}
@@ -376,6 +399,50 @@
 			);
 		};
 
+		/** @type { ReturnType<slime.jrunscript.file.World["Location"]["file"]["exists"]> } */
+		var Location_file_exists = function(location) {
+			return function(events) {
+				var ask = location.filesystem.fileExists({ pathname: location.pathname });
+				var rv = ask(events);
+				if (rv.present) {
+					return rv.value;
+				} else {
+					throw new Error("Error determining whether file is present at " + location.pathname);
+				}
+			}
+		}
+
+		/** @type { ReturnType<slime.jrunscript.file.World["Location"]["directory"]["exists"]> } */
+		var Location_directory_exists = function(location) {
+			return function(events) {
+				var rv = location.filesystem.directoryExists({
+					pathname: location.pathname
+				})(events);
+				if (rv.present) return rv.value;
+				throw new Error("Error determining whether directory is present at " + location.pathname);
+			}
+		}
+
+		/** @type { slime.$api.fp.world.Action<slime.jrunscript.file.world.Location, { created: string }> } */
+		var ensureParent = function(location) {
+			var it = function(location,events) {
+				var parent = Location_relative("../")(location);
+				var exists = Location_directory_exists(parent)(events);
+				if (!exists) {
+					it(parent, events);
+					$api.Function.world.now.action(
+						location.filesystem.createDirectory,
+						{ pathname: parent.pathname }
+					);
+					events.fire("created", parent.pathname);
+				}
+			};
+
+			return function(events) {
+				it(location,events);
+			}
+		}
+
 		var os = toWorldFilesystem(providers.os);
 
 		$export({
@@ -398,17 +465,7 @@
 				},
 				file: {
 					exists: function() {
-						return function(location) {
-							return function(events) {
-								var ask = location.filesystem.fileExists({ pathname: location.pathname });
-								var rv = ask(events);
-								if (rv.present) {
-									return rv.value;
-								} else {
-									throw new Error("Error determining whether file is present at " + location.pathname);
-								}
-							}
-						}
+						return Location_file_exists;
 					},
 					read: {
 						stream: function() {
@@ -495,6 +552,39 @@
 						return function(location) {
 							return function(events) {
 								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
+
+								$api.Function.world.now.action(
+									ensureParent,
+									p.to,
+									{
+										created: function(e) {
+											events.fire("created", e.detail);
+										}
+									}
+								)
+
+								p.to.filesystem.copy({
+									from: location.pathname,
+									to: p.to.pathname
+								})(events);
+							}
+						}
+					},
+					move: function(p) {
+						return function(location) {
+							return function(events) {
+								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
+
+								$api.Function.world.now.action(
+									ensureParent,
+									p.to,
+									{
+										created: function(e) {
+											events.fire("created", e.detail);
+										}
+									}
+								)
+
 								p.to.filesystem.copy({
 									from: location.pathname,
 									to: p.to.pathname
@@ -506,15 +596,7 @@
 				directory: {
 					/** @type { slime.jrunscript.file.World["Location"]["directory"]["exists"] } */
 					exists: function() {
-						return function(location) {
-							return function(events) {
-								var rv = location.filesystem.directoryExists({
-									pathname: location.pathname
-								})(events);
-								if (rv.present) return rv.value;
-								throw new Error("Error determining whether directory is present at " + location.pathname);
-							}
-						}
+						return Location_directory_exists;
 					},
 					require: function(p) {
 						return function(location) {
@@ -524,11 +606,29 @@
 								})(events);
 								if (exists.present) {
 									if (!exists.value) {
-										var tell = location.filesystem.createDirectory({
-											pathname: location.pathname,
-											recursive: Boolean(p && p.recursive)
-										});
-										tell(events);
+										if (p && p.recursive) {
+											$api.Function.world.now.action(
+												ensureParent,
+												location,
+												{
+													created: function(e) {
+														events.fire("created", {
+															filesystem: location.filesystem,
+															pathname: e.detail
+														})
+													}
+												}
+											);
+										}
+										$api.Function.world.now.action(
+											location.filesystem.createDirectory,
+											{ pathname: location.pathname },
+											{
+												parentNotFound: function() {
+
+												}
+											}
+										)
 										//	TODO	should push this event back into implementation
 										//			this way, we could inform of recursive creations as well
 										//			probably in the implementation, payload should be pathname, translated into
