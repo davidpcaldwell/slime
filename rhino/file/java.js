@@ -241,7 +241,7 @@
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["createDirectoryAt"] } */
 				this.createDirectoryAt = function(peer) {
-					return peer.mkdir();
+					peer.mkdir();
 				};
 
 				this.read = new function() {

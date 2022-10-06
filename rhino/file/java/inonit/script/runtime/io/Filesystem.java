@@ -10,8 +10,6 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.logging.*;
 
-import inonit.system.*;
-
 public abstract class Filesystem {
 	private static final Logger LOG = Logger.getLogger(Filesystem.class.getName());
 
@@ -316,6 +314,7 @@ public abstract class Filesystem {
 			}
 
 			public void mkdir() throws IOException {
+				if (this.file.exists()) throw new IOException("Already exists: " + this.file);
 				boolean success = this.file.mkdir();
 				if (!success) throw new IOException("Failed to create: " + this.file);
 			}

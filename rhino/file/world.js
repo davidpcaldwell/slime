@@ -606,7 +606,7 @@
 								})(events);
 								if (exists.present) {
 									if (!exists.value) {
-										if (p.recursive) {
+										if (p && p.recursive) {
 											$api.Function.world.now.action(
 												ensureParent,
 												location,
@@ -629,10 +629,6 @@
 												}
 											}
 										)
-										var tell = location.filesystem.createDirectory({
-											pathname: location.pathname
-										});
-										tell(events);
 										//	TODO	should push this event back into implementation
 										//			this way, we could inform of recursive creations as well
 										//			probably in the implementation, payload should be pathname, translated into
