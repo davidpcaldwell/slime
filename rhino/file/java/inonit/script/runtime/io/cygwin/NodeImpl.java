@@ -120,6 +120,10 @@ class NodeImpl extends Filesystem.Node {
 		}
 	}
 
+	public Filesystem.Node getParent() {
+		return NodeImpl.create(parent, host.getParentFile());
+	}
+
 	private void uncache() {
 		directory = null;
 		softlink = null;

@@ -50,6 +50,7 @@ sourceSets {
 
 			//	modules
 			srcDir 'jrunscript/host/rhino/java'
+			srcDir 'rhino/file/java'
 		}
 	}
 

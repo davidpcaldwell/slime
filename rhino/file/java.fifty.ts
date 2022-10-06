@@ -44,6 +44,10 @@ namespace slime.jrunscript.file.internal.java {
 
 		getParent: (peer: Peer) => Peer
 
+		/**
+		 * Creates a directory at the given location. Will throw an exception if the operation fails, for example, if the parent
+		 * does not exist.
+		 */
 		createDirectoryAt: (peer: Peer) => void
 
 		read: {

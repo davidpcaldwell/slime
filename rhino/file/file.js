@@ -229,6 +229,9 @@
 				}
 
 				if (mode.recursive) {
+					if (!getParent().directory) {
+						getParent().createDirectory(mode);
+					}
 					$filesystem.createDirectoryAt(peer);
 				} else {
 					if (!getParent().directory) {

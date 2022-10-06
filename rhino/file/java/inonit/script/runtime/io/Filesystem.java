@@ -129,11 +129,12 @@ public abstract class Filesystem {
 		public abstract boolean exists() throws IOException;
 		public abstract boolean isDirectory() throws IOException;
 
+		public abstract Node getParent() throws IOException;
+
 		public abstract Node[] list(FilenameFilter pattern) throws IOException;
 		public abstract void delete() throws IOException;
 		public abstract void move(Node to) throws IOException;
 		public abstract void mkdir() throws IOException;
-		public abstract void mkdirs() throws IOException;
 
 		public abstract OutputStream writeBinary(boolean append) throws IOException;
 		public abstract Writer writeText(boolean append) throws IOException;
@@ -157,14 +158,6 @@ public abstract class Filesystem {
 	private static class NativeFilesystem extends Filesystem {
 		protected Node createNode(String path) throws IOException {
 			return new NodeImpl( new File(path) );
-		}
-
-		String toScriptPath(String path) throws IOException {
-			return path;
-		}
-
-		File toHostFileImpl(String path) {
-			return new File(path);
 		}
 
 		protected String getPathnameSeparatorImpl() {
@@ -231,6 +224,10 @@ public abstract class Filesystem {
 
 			public boolean isDirectory() {
 				return file.isDirectory();
+			}
+
+			public Node getParent() throws IOException {
+				return new NodeImpl(file.getParentFile());
 			}
 
 			public File getHostFile() throws IOException {
@@ -320,11 +317,6 @@ public abstract class Filesystem {
 
 			public void mkdir() throws IOException {
 				boolean success = this.file.mkdir();
-				if (!success) throw new IOException("Failed to create: " + this.file);
-			}
-
-			public void mkdirs() throws IOException {
-				boolean success = this.file.mkdirs();
 				if (!success) throw new IOException("Failed to create: " + this.file);
 			}
 
