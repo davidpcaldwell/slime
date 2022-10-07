@@ -32,6 +32,8 @@ namespace slime.$api.fp.impure {
 			compose: (processes: impure.Process[]) => impure.Process
 			output: <P>(p: P, f: impure.Output<P>) => impure.Process
 		}
+
+		tap: <T>(output: Output<T>) => (t: T) => T
 	}
 }
 
@@ -58,8 +60,42 @@ namespace slime.$api.fp.world {
 	}
 
 	export interface Exports {
-		question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => (p: P) => A
+		question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => fp.Mapping<P,A>
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.question = function() {
+				var doubler: Question<number, { argument: string }, number> = function(p) {
+					return function(events) {
+						events.fire("argument", String(p));
+						return p * 2;
+					}
+				};
+
+				var captor = fifty.$api.Events.Captor({
+					argument: void(0)
+				});
+				var map = $api.Function.world.question(doubler, captor.handler);
+
+				verify(captor).events.length.is(0);
+				verify(2).evaluate(map).is(4);
+				verify(captor).events.length.is(1);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => impure.Output<P>
+
+		ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => impure.Input<A>
+		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => impure.Process
 
 		Question: {
 			/**
@@ -70,10 +106,9 @@ namespace slime.$api.fp.world {
 			map: <P,E,A,O>(question: world.Question<P,E,A>, map: (a: A) => O) => world.Question<P,E,O>
 			wrap: <I,P,E,A,O>(argument: (i: I) => P, question: world.Question<P,E,A>, map: (a: A) => O) => world.Question<I,E,O>
 		}
+	}
 
-		ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => impure.Input<A>
-		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => impure.Process
-
+	export interface Exports {
 		now: {
 			question: <P,E,A>(question: world.Question<P,E,A>, argument?: P, handler?: slime.$api.events.Handler<E>) => A
 			action: <P,E>(action: world.Action<P,E>, argument?: P, handler?: slime.$api.events.Handler<E>) => void
@@ -107,7 +142,7 @@ namespace slime.$api.fp.internal.impure {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-
+				fifty.run(fifty.tests.question);
 			}
 		}
 	//@ts-ignore
