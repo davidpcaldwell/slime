@@ -573,6 +573,8 @@
 					move: function(p) {
 						return function(location) {
 							return function(events) {
+								//	TODO	lots of duplication with directory move()
+								//	TODO	insert existence check like there? Refactor?
 								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
 
 								$api.Function.world.now.action(
@@ -585,7 +587,7 @@
 									}
 								)
 
-								p.to.filesystem.copy({
+								p.to.filesystem.move({
 									from: location.pathname,
 									to: p.to.pathname
 								})(events);
@@ -640,6 +642,38 @@
 								} else {
 									throw new Error("Error determining whether directory is present at " + location.pathname);
 								}
+							}
+						}
+					},
+					move: function(p) {
+						return function(location) {
+							return function(events) {
+								var exists = $api.Function.world.now.question(
+									location.filesystem.directoryExists,
+									{ pathname: location.pathname }
+								);
+								if (!exists.present) throw new Error("Could not determine whether " + location.pathname + " exists in " + location.filesystem);
+								if (!exists.value) throw new Error("Could not move directory: " + location.pathname + " does not exist (or is not a directory).");
+
+								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
+
+								$api.Function.world.now.action(
+									ensureParent,
+									p.to,
+									{
+										created: function(e) {
+											events.fire("created", e.detail);
+										}
+									}
+								);
+
+								$api.Function.world.now.action(
+									location.filesystem.move,
+									{
+										from: location.pathname,
+										to: p.to.pathname
+									}
+								);
 							}
 						}
 					}

@@ -55,6 +55,9 @@ namespace slime.jrunscript.file {
 			)(fifty);
 
 			export interface Files {
+				/**
+				 * Copies a file to a given location, creating the location's parent folders as necessary.
+				 */
 				copy: (p: {
 					to: world.Location
 				}) => slime.$api.fp.world.Action<
@@ -87,27 +90,27 @@ namespace slime.jrunscript.file {
 					const { verify } = fifty;
 					const { $api, jsh } = fifty.global;
 
+					var writeText = $api.Function.world.action(
+						jsh.file.world.Location.file.write.string({ value: "tocopy" })
+					);
+
+					var readText = $api.Function.pipe(
+						$api.Function.world.question(
+							jsh.file.world.Location.file.read.string()
+						),
+						$api.Function.Maybe.map(function(s) { return s; }),
+						$api.Function.Maybe.else(function(): string { return null; })
+					);
+
+					var exists = $api.Function.world.question(
+						jsh.file.world.Location.file.exists()
+					);
+
+					var dExists = $api.Function.world.question(
+						jsh.file.world.Location.directory.exists()
+					)
+
 					fifty.tests.sandbox.locations.file.copy = function() {
-						var writeText = $api.Function.world.action(
-							jsh.file.world.Location.file.write.string({ value: "tocopy" })
-						);
-
-						var readText = $api.Function.pipe(
-							$api.Function.world.question(
-								jsh.file.world.Location.file.read.string()
-							),
-							$api.Function.Maybe.map(function(s) { return s; }),
-							$api.Function.Maybe.else(function(): string { return null; })
-						);
-
-						var exists = $api.Function.world.question(
-							jsh.file.world.Location.file.exists()
-						);
-
-						var dExists = $api.Function.world.question(
-							jsh.file.world.Location.directory.exists()
-						)
-
 						fifty.run(function basic() {
 							var from = fifty.jsh.file.temporary.location();
 							var to = fifty.jsh.file.temporary.location();
@@ -150,6 +153,60 @@ namespace slime.jrunscript.file {
 							var copy = $api.Function.world.action(jsh.file.world.Location.file.copy({ to: to }), captor.handler);
 							copy(from);
 
+							verify(dExists(parent)).is(true);
+							verify(exists(to)).is(true);
+							verify(readText(to)).is("tocopy");
+							verify(captor).events.length.is(1);
+						});
+					};
+
+					fifty.tests.sandbox.locations.file.move = function() {
+						fifty.run(function basic() {
+							var from = fifty.jsh.file.temporary.location();
+							var to = fifty.jsh.file.temporary.location();
+
+							verify(readText(from)).is(null);
+							writeText(from);
+							verify(readText(from)).is("tocopy");
+
+							verify(exists(from)).is(true);
+							verify(exists(to)).is(false);
+							verify(readText(to)).is(null);
+
+							var copy = $api.Function.world.action(jsh.file.world.Location.file.move({ to: to }));
+							copy(from);
+
+							verify(exists(from)).is(false);
+							verify(exists(to)).is(true);
+							verify(readText(to)).is("tocopy");
+						});
+
+						fifty.run(function recursive() {
+							var from = fifty.jsh.file.temporary.location();
+							var parent = fifty.jsh.file.temporary.location();
+							var to = $api.Function.result(
+								parent,
+								jsh.file.world.Location.relative("foo")
+							);
+
+							verify(readText(from)).is(null);
+							writeText(from);
+							verify(readText(from)).is("tocopy");
+
+							var captor = fifty.$api.Events.Captor({
+								created: void(0)
+							});
+							verify(captor).events.length.is(0);
+
+							verify(exists(from)).is(true);
+							verify(dExists(parent)).is(false);
+							verify(exists(to)).is(false);
+							verify(readText(to)).is(null);
+
+							var copy = $api.Function.world.action(jsh.file.world.Location.file.move({ to: to }), captor.handler);
+							copy(from);
+
+							verify(exists(from)).is(false);
 							verify(dExists(parent)).is(true);
 							verify(exists(to)).is(true);
 							verify(readText(to)).is("tocopy");
@@ -249,8 +306,25 @@ namespace slime.jrunscript.file {
 			file: locations.Files
 		}
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.sandbox.locations.directory = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export namespace locations {
+			export interface Directories {}
+		}
+
 		export interface Locations {
-			directory: {
+			directory: locations.Directories
+		}
+
+		export namespace locations {
+			export interface Directories {
 				exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
 
 				require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Action<world.Location, {
@@ -258,33 +332,137 @@ namespace slime.jrunscript.file {
 					found: world.Location
 				}>
 			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api, jsh } = fifty.global;
+					const subject = jsh.file.world;
+
+					fifty.tests.sandbox.locations.directory.exists = function() {
+						var at = fifty.jsh.file.temporary.location();
+
+						var exists = Object.assign($api.Function.world.question(subject.Location.directory.exists()), { toString: function() { return "exists()"; }});
+
+						verify(at).evaluate(exists).is(false);
+
+						$api.Function.world.tell(subject.Location.directory.require()(at))();
+						verify(at).evaluate(exists).is(true);
+
+						$api.Function.world.tell(subject.Location.directory.require()(at))();
+						verify(at).evaluate(exists).is(true);
+					}
+				}
+			//@ts-ignore
+			)(fifty);
 		}
 
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { $api, jsh } = fifty.global;
-				const subject = jsh.file.world;
-
-				fifty.tests.sandbox.locations.directory = function() {
-					var at = fifty.jsh.file.temporary.location();
-
-					var exists = $api.Function.world.question(subject.Location.directory.exists());
-
-					verify(exists(at)).is(false);
-
-					$api.Function.world.tell(subject.Location.directory.require()(at))();
-					verify(exists(at)).is(true);
-
-					$api.Function.world.tell(subject.Location.directory.require()(at))();
-					verify(exists(at)).is(true);
-				}
+		export namespace locations {
+			export interface Directories {
+				/**
+				 * Moves a directory
+				 */
+				move: (p: {
+					to: world.Location
+				}) => slime.$api.fp.world.Action<
+					world.Location,
+					{ created: string }
+				>
 			}
-		//@ts-ignore
-		)(fifty);
 
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api, jsh } = fifty.global;
+
+					fifty.tests.sandbox.locations.directory.move = function() {
+						const exists = {
+							file: $api.Function.world.question(jsh.file.world.Location.file.exists()),
+							directory: $api.Function.world.question(jsh.file.world.Location.directory.exists())
+						}
+
+						const createDirectoryToMove = function(): world.Location {
+							var at = fifty.jsh.file.temporary.location();
+							$api.Function.world.now.action(jsh.file.world.Location.directory.require(), at);
+							$api.Function.impure.now.output(
+								at,
+								$api.Function.pipe(
+									jsh.file.world.Location.relative("filepath"),
+									$api.Function.world.action(jsh.file.world.Location.file.write.string({ value: "contents" }))
+								)
+							);
+							return at;
+						}
+
+						fifty.run(function basic() {
+							var from = createDirectoryToMove();
+
+							var to = fifty.jsh.file.temporary.location();
+
+							(function before() {
+								verify(from).evaluate(exists.directory).is(true);
+								verify(from).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(true);
+								verify(to).evaluate(exists.directory).is(false);
+								verify(to).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(false);
+							})();
+
+							var move = $api.Function.world.action(
+								jsh.file.world.Location.directory.move({ to: to })
+							);
+
+							move(from);
+
+							(function after() {
+								verify(from).evaluate(exists.directory).is(false);
+								verify(from).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(false);
+								verify(to).evaluate(exists.directory).is(true);
+								verify(to).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(true);
+							})();
+						});
+
+						fifty.run(function recursive() {
+							var from = createDirectoryToMove();
+
+							var parent = fifty.jsh.file.temporary.location();
+
+							var to = $api.Function.result(parent, jsh.file.world.Location.relative("child"));
+
+							var captor = fifty.$api.Events.Captor({
+								created: void(0)
+							});
+
+							(function before() {
+								verify(from).evaluate(exists.directory).is(true);
+								verify(from).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(true);
+								verify(to).evaluate(exists.directory).is(false);
+								verify(to).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(false);
+								verify(captor).events.length.is(0);
+							})();
+
+							var move = $api.Function.world.action(
+								jsh.file.world.Location.directory.move({ to: to }),
+								captor.handler
+							);
+
+							move(from);
+
+							(function after() {
+								verify(from).evaluate(exists.directory).is(false);
+								verify(from).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(false);
+								verify(to).evaluate(exists.directory).is(true);
+								verify(to).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(true);
+								verify(captor).events.length.is(1);
+							})();
+						});
+					}
+				}
+			//@ts-ignore
+			)(fifty);
+		}
 	}
 
 	export interface World {
@@ -292,7 +470,6 @@ namespace slime.jrunscript.file {
 	}
 
 	export namespace world {
-
 		(
 			function(
 				fifty: slime.fifty.test.Kit
