@@ -383,20 +383,25 @@ namespace slime.jrunscript.file {
 						const exists = {
 							file: $api.Function.world.question(jsh.file.world.Location.file.exists()),
 							directory: $api.Function.world.question(jsh.file.world.Location.directory.exists())
-						}
+						};
 
-						const createDirectoryToMove = function(): world.Location {
-							var at = fifty.jsh.file.temporary.location();
-							$api.Function.world.now.action(jsh.file.world.Location.directory.require(), at);
-							$api.Function.impure.now.output(
-								at,
-								$api.Function.pipe(
-									jsh.file.world.Location.relative("filepath"),
-									$api.Function.world.action(jsh.file.world.Location.file.write.string({ value: "contents" }))
+						const atFilepath = jsh.file.world.Location.relative("filepath");
+
+						const createDirectoryToMove = $api.Function.impure.Input.map(
+							fifty.jsh.file.temporary.location,
+							$api.Function.pipe(
+								//	TODO	Output.compose?
+								$api.Function.impure.tap(
+									$api.Function.world.action(jsh.file.world.Location.directory.require())
+								),
+								$api.Function.impure.tap(
+									$api.Function.pipe(
+										atFilepath,
+										$api.Function.world.action(jsh.file.world.Location.file.write.string({ value: "contents" }))
+									)
 								)
-							);
-							return at;
-						}
+							)
+						)
 
 						fifty.run(function basic() {
 							var from = createDirectoryToMove();
@@ -405,9 +410,9 @@ namespace slime.jrunscript.file {
 
 							(function before() {
 								verify(from).evaluate(exists.directory).is(true);
-								verify(from).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(true);
+								verify(from).evaluate(atFilepath).evaluate(exists.file).is(true);
 								verify(to).evaluate(exists.directory).is(false);
-								verify(to).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(false);
+								verify(to).evaluate(atFilepath).evaluate(exists.file).is(false);
 							})();
 
 							var move = $api.Function.world.action(
@@ -418,9 +423,9 @@ namespace slime.jrunscript.file {
 
 							(function after() {
 								verify(from).evaluate(exists.directory).is(false);
-								verify(from).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(false);
+								verify(from).evaluate(atFilepath).evaluate(exists.file).is(false);
 								verify(to).evaluate(exists.directory).is(true);
-								verify(to).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(true);
+								verify(to).evaluate(atFilepath).evaluate(exists.file).is(true);
 							})();
 						});
 
@@ -437,9 +442,9 @@ namespace slime.jrunscript.file {
 
 							(function before() {
 								verify(from).evaluate(exists.directory).is(true);
-								verify(from).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(true);
+								verify(from).evaluate(atFilepath).evaluate(exists.file).is(true);
 								verify(to).evaluate(exists.directory).is(false);
-								verify(to).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(false);
+								verify(to).evaluate(atFilepath).evaluate(exists.file).is(false);
 								verify(captor).events.length.is(0);
 							})();
 
@@ -452,9 +457,9 @@ namespace slime.jrunscript.file {
 
 							(function after() {
 								verify(from).evaluate(exists.directory).is(false);
-								verify(from).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(false);
+								verify(from).evaluate(atFilepath).evaluate(exists.file).is(false);
 								verify(to).evaluate(exists.directory).is(true);
-								verify(to).evaluate(jsh.file.world.Location.relative("filepath")).evaluate(exists.file).is(true);
+								verify(to).evaluate(atFilepath).evaluate(exists.file).is(true);
 								verify(captor).events.length.is(1);
 							})();
 						});

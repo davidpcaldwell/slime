@@ -12,6 +12,7 @@
 	 * @param { slime.loader.Export<slime.$api.fp.internal.impure.Exports> } $export
 	 */
 	function($context,$export) {
+		/** @type { slime.$api.fp.impure.Exports } */
 		var impure = {
 			now: {
 				input: function(input) {
@@ -49,17 +50,17 @@
 						f(p);
 					}
 				}
+			},
+			tap: function(f) {
+				return function(t) {
+					f(t);
+					return t;
+				}
 			}
 		}
 
+		/** @type { slime.$api.fp.world.Exports } */
 		var world = {
-			question: function(question, handler) {
-				return function(p) {
-					var ask = question(p);
-					var adapted = $context.events.ask(ask);
-					return adapted(handler);
-				}
-			},
 			Question: {
 				pipe: function(a,q) {
 					return function(n) {
@@ -79,6 +80,13 @@
 						world.Question.pipe(a, q),
 						m
 					);
+				}
+			},
+			question: function(question, handler) {
+				return function(p) {
+					var ask = question(p);
+					var adapted = $context.events.ask(ask);
+					return adapted(handler);
 				}
 			},
 			action: function(action, handler) {

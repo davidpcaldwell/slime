@@ -82,7 +82,7 @@ namespace slime.runtime.internal.events {
 	export interface Exports {
 		api: slime.$api.exports.Events
 
-		ask: slime.$api.fp.Exports["world"]["old"]["ask"]
+		ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => (on?: slime.$api.events.Handler<E>) => T
 		tell: slime.$api.fp.Exports["world"]["old"]["tell"]
 	}
 

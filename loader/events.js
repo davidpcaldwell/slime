@@ -186,10 +186,7 @@
 			}
 		};
 
-		/**
-		 *
-		 * @param { Parameters<slime.$api.fp.Exports["world"]["old"]["ask"]>[0] } f
-		 */
+		/** @type { slime.runtime.internal.events.Exports["ask"] } */
 		function ask(f) {
 			var rv = function(on) {
 				var receiver = new ListenersInvocationReceiver(on);
@@ -203,10 +200,7 @@
 			return rv;
 		}
 
-		/**
-		 *
-		 * @param { Parameters<slime.$api.fp.Exports["world"]["old"]["tell"]>[0] } f
-		 */
+		/** @type { slime.runtime.internal.events.Exports["tell"] } */
 		function tell(f) {
 			var rv = function(on) {
 				var receiver = new ListenersInvocationReceiver(on);
@@ -257,10 +251,7 @@
 					}
 				}
 			},
-
-			//@ts-ignore
 			ask: ask,
-			//@ts-ignore
 			tell: tell,
 		});
 	}
