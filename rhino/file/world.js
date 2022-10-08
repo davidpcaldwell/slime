@@ -14,357 +14,363 @@
 	 * @param { slime.loader.Export<slime.jrunscript.file.World> } $export
 	 */
 	function(Packages,$api,$context,$export) {
-		//	World-oriented filesystem implementations. No world-oriented Cygwin implementation yet.
-		var providers = {
-			os: new $context.module.java.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
-		};
+		// /**
+		//  *
+		//  * @param { slime.jrunscript.file.internal.java.FilesystemProvider } java
+		//  * @returns { slime.jrunscript.file.world.Filesystem }
+		//  */
+		// function toWorldFilesystem(java) {
+		// 	/**
+		// 	 *
+		// 	 * @param { string } pathname
+		// 	 * @param { slime.$api.Events<{ notFound: void }> } events
+		// 	 */
+		// 	var openInputStream = function(pathname,events) {
+		// 		var peer = java.newPeer(pathname);
+		// 		if (!peer.exists()) {
+		// 			events.fire("notFound");
+		// 			return null;
+		// 		}
+		// 		return $context.library.io.Streams.java.adapt(peer.readBinary());
+		// 	};
 
-		/**
-		 *
-		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } java
-		 * @returns { slime.jrunscript.file.world.Filesystem }
-		 */
-		function toWorldFilesystem(java) {
-			/**
-			 *
-			 * @param { string } pathname
-			 * @param { slime.$api.Events<{ notFound: void }> } events
-			 */
-			var openInputStream = function(pathname,events) {
-				var peer = java.newPeer(pathname);
-				if (!peer.exists()) {
-					events.fire("notFound");
-					return null;
-				}
-				return $context.library.io.Streams.java.adapt(peer.readBinary());
-			};
+		// 	/**
+		// 	 * @type { slime.jrunscript.file.world.Filesystem["openOutputStream"] }
+		// 	 */
+		// 	var maybeOutputStream = function(p) {
+		// 		return function(events) {
+		// 			var peer = java.newPeer(p.pathname);
+		// 			var binary = peer.writeBinary(p.append || false);
+		// 			return $api.Function.Maybe.value($context.library.io.Streams.java.adapt(binary));
+		// 		}
+		// 	}
 
-			/**
-			 * @type { slime.jrunscript.file.world.Filesystem["openOutputStream"] }
-			 */
-			var maybeOutputStream = function(p) {
-				return function(events) {
-					var peer = java.newPeer(p.pathname);
-					var binary = peer.writeBinary(p.append || false);
-					return $api.Function.Maybe.value($context.library.io.Streams.java.adapt(binary));
-				}
-			}
+		// 	/**
+		// 	 *
+		// 	 * @param { string } pathname
+		// 	 * @param { slime.$api.Events<{ notFound: void }> } events
+		// 	 * @returns
+		// 	 */
+		// 	var maybeInputStream = function(pathname,events) {
+		// 		var peer = java.newPeer(pathname);
+		// 		if (!peer.exists()) {
+		// 			events.fire("notFound");
+		// 			return $api.Function.Maybe.nothing();
+		// 		}
+		// 		return $api.Function.Maybe.value($context.library.io.Streams.java.adapt(peer.readBinary()));
+		// 	}
 
-			/**
-			 *
-			 * @param { string } pathname
-			 * @param { slime.$api.Events<{ notFound: void }> } events
-			 * @returns
-			 */
-			var maybeInputStream = function(pathname,events) {
-				var peer = java.newPeer(pathname);
-				if (!peer.exists()) {
-					events.fire("notFound");
-					return $api.Function.Maybe.nothing();
-				}
-				return $api.Function.Maybe.value($context.library.io.Streams.java.adapt(peer.readBinary()));
-			}
+		// 	var openWriter = function(pathname,events) {
+		// 		var peer = java.newPeer(pathname);
+		// 		return peer.writeText(false);
+		// 	}
 
-			var openWriter = function(pathname,events) {
-				var peer = java.newPeer(pathname);
-				return peer.writeText(false);
-			}
+		// 	/**
+		// 	 *
+		// 	 * @param { string } pathname
+		// 	 * @returns { slime.jrunscript.file.world.object.Location }
+		// 	 */
+		// 	function pathname_create(pathname) {
+		// 		return {
+		// 			filesystem: filesystem,
+		// 			pathname: pathname,
+		// 			relative: function(relative) {
+		// 				return filesystem.pathname(pathname_relative(pathname, relative));
+		// 			},
+		// 			file: {
+		// 				read: {
+		// 					stream: void(0),
+		// 					string: function() {
+		// 						return $api.Function.world.old.ask(function(events) {
+		// 							var stream = openInputStream(pathname, events);
+		// 							return (stream === null) ? null : stream.character().asString();
+		// 						});
+		// 					}
+		// 				},
+		// 				write: {
+		// 					string: function(p) {
+		// 						return function() {
+		// 							var writer = openWriter(pathname);
+		// 							writer.write(p.content);
+		// 							writer.close();
+		// 						}
+		// 					}
+		// 				},
+		// 				copy: function(p) {
+		// 					return copy_impure(pathname, p.to);
+		// 				},
+		// 				exists: file_exists_impure(pathname)
+		// 			},
+		// 			directory: {
+		// 				exists: directory_exists_impure(pathname),
+		// 				require: function(p) {
+		// 					return directory_require_impure({
+		// 						pathname: pathname,
+		// 						recursive: Boolean(p && p.recursive)
+		// 					});
+		// 				},
+		// 				remove: function() {
+		// 					return directory_remove_impure({
+		// 						pathname: pathname
+		// 					})
+		// 				},
+		// 				list: directory_list(pathname)
+		// 			}
+		// 		}
+		// 	}
 
-			/**
-			 *
-			 * @param { string } pathname
-			 * @returns { slime.jrunscript.file.world.object.Location }
-			 */
-			function pathname_create(pathname) {
-				return {
-					filesystem: filesystem,
-					pathname: pathname,
-					relative: function(relative) {
-						return filesystem.pathname(pathname_relative(pathname, relative));
-					},
-					file: {
-						read: {
-							stream: void(0),
-							string: function() {
-								return $api.Function.world.old.ask(function(events) {
-									var stream = openInputStream(pathname, events);
-									return (stream === null) ? null : stream.character().asString();
-								});
-							}
-						},
-						write: {
-							string: function(p) {
-								return function() {
-									var writer = openWriter(pathname);
-									writer.write(p.content);
-									writer.close();
-								}
-							}
-						},
-						copy: function(p) {
-							return copy_impure(pathname, p.to);
-						},
-						exists: file_exists_impure(pathname)
-					},
-					directory: {
-						exists: directory_exists_impure(pathname),
-						require: function(p) {
-							return directory_require_impure({
-								pathname: pathname,
-								recursive: Boolean(p && p.recursive)
-							});
-						},
-						remove: function() {
-							return directory_remove_impure({
-								pathname: pathname
-							})
-						},
-						list: directory_list(pathname)
-					}
-				}
-			}
+		// 	/**
+		// 	 *
+		// 	 * @param { string } parent
+		// 	 * @param { string } relative
+		// 	 * @returns
+		// 	 */
+		// 	function pathname_relative(parent, relative) {
+		// 		if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
+		// 		var peer = java.relative(parent, relative);
+		// 		return java.peerToString(peer);
+		// 	}
 
-			/**
-			 *
-			 * @param { string } parent
-			 * @param { string } relative
-			 * @returns
-			 */
-			function pathname_relative(parent, relative) {
-				if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
-				var peer = java.relative(parent, relative);
-				return java.peerToString(peer);
-			}
+		// 	/**
+		// 	 * @param { string } pathname
+		// 	 */
+		// 	function directory_exists(pathname) {
+		// 		var peer = java.newPeer(pathname);
+		// 		return peer.exists() && peer.isDirectory();
+		// 	}
 
-			/**
-			 * @param { string } pathname
-			 */
-			function directory_exists(pathname) {
-				var peer = java.newPeer(pathname);
-				return peer.exists() && peer.isDirectory();
-			}
+		// 	/**
+		// 	 * @param { string } pathname
+		// 	 */
+		// 	function file_exists(pathname) {
+		// 		var peer = java.newPeer(pathname);
+		// 		return peer.exists() && !peer.isDirectory();
+		// 	}
 
-			/**
-			 * @param { string } pathname
-			 */
-			function file_exists(pathname) {
-				var peer = java.newPeer(pathname);
-				return peer.exists() && !peer.isDirectory();
-			}
+		// 	function directory_require_impure(p) {
+		// 		var recursive = function(peer) {
+		// 			if (!java.getParent(peer).exists()) {
+		// 				recursive(java.getParent(peer));
+		// 			}
+		// 			java.createDirectoryAt(peer);
+		// 		}
+		// 		return $api.Function.world.old.tell(function() {
+		// 			var peer = java.newPeer(p.pathname);
+		// 			var parent = java.getParent(peer);
+		// 			if (!parent.exists()) {
+		// 				if (!p.recursive) throw new Error("Parent " + parent.getScriptPath() + " does not exist; specify recursive: true to override.");
+		// 				recursive(parent);
+		// 			}
+		// 			if (!peer.exists()) {
+		// 				java.createDirectoryAt(peer);
+		// 			}
+		// 		});
+		// 	}
 
-			function directory_require_impure(p) {
-				var recursive = function(peer) {
-					if (!java.getParent(peer).exists()) {
-						recursive(java.getParent(peer));
-					}
-					java.createDirectoryAt(peer);
-				}
-				return $api.Function.world.old.tell(function() {
-					var peer = java.newPeer(p.pathname);
-					var parent = java.getParent(peer);
-					if (!parent.exists()) {
-						if (!p.recursive) throw new Error("Parent " + parent.getScriptPath() + " does not exist; specify recursive: true to override.");
-						recursive(parent);
-					}
-					if (!peer.exists()) {
-						java.createDirectoryAt(peer);
-					}
-				});
-			}
+		// 	function directory_remove_impure(p) {
+		// 		return $api.Function.world.old.tell(function() {
+		// 			var peer = java.newPeer(p.pathname);
+		// 			peer.delete();
+		// 		});
+		// 	}
 
-			function directory_remove_impure(p) {
-				return $api.Function.world.old.tell(function() {
-					var peer = java.newPeer(p.pathname);
-					peer.delete();
-				});
-			}
+		// 	/**
+		// 	 *
+		// 	 * @param { string } pathname
+		// 	 */
+		// 	function directory_exists_impure(pathname) {
+		// 		return function() {
+		// 			return $api.Function.world.old.ask(function(events) {
+		// 				return directory_exists(pathname);
+		// 			});
+		// 		}
+		// 	}
 
-			/**
-			 *
-			 * @param { string } pathname
-			 */
-			function directory_exists_impure(pathname) {
-				return function() {
-					return $api.Function.world.old.ask(function(events) {
-						return directory_exists(pathname);
-					});
-				}
-			}
+		// 	/**
+		// 	 *
+		// 	 * @param { string } pathname
+		// 	 */
+		// 	function directory_list(pathname) {
+		// 		return function() {
+		// 			return $api.Function.world.old.ask(function(events) {
+		// 				var peer = java.newPeer(pathname);
+		// 				return peer.list(null).map(function(node) {
+		// 					return pathname_create(String(node.getScriptPath()));
+		// 				})
+		// 			});
+		// 		}
+		// 	}
 
-			/**
-			 *
-			 * @param { string } pathname
-			 */
-			function directory_list(pathname) {
-				return function() {
-					return $api.Function.world.old.ask(function(events) {
-						var peer = java.newPeer(pathname);
-						return peer.list(null).map(function(node) {
-							return pathname_create(String(node.getScriptPath()));
-						})
-					});
-				}
-			}
+		// 	/**
+		// 	 *
+		// 	 * @param { string } pathname
+		// 	 */
+		// 	function file_exists_impure(pathname) {
+		// 		return function() {
+		// 			return $api.Function.world.old.ask(function(events) {
+		// 				var peer = java.newPeer(pathname);
+		// 				return peer.exists() && !peer.isDirectory();
+		// 			});
+		// 		}
+		// 	}
 
-			/**
-			 *
-			 * @param { string } pathname
-			 */
-			function file_exists_impure(pathname) {
-				return function() {
-					return $api.Function.world.old.ask(function(events) {
-						var peer = java.newPeer(pathname);
-						return peer.exists() && !peer.isDirectory();
-					});
-				}
-			}
+		// 	/**
+		// 	 *
+		// 	 * @param { string } file
+		// 	 * @param { string } destination
+		// 	 * @returns { slime.$api.fp.world.old.Tell<void> }
+		// 	 */
+		// 	function copy_impure(file,destination) {
+		// 		return $api.Function.world.old.tell(function(events) {
+		// 			var from = java.newPeer(file);
+		// 			var to = java.newPeer(destination);
+		// 			$context.library.io.Streams.binary.copy(
+		// 				java.read.binary(from),
+		// 				java.write.binary(to, false)
+		// 			);
+		// 			var _from = from.getHostFile().toPath();
+		// 			var _to = to.getHostFile().toPath();
+		// 			var _Files = Packages.java.nio.file.Files;
+		// 			if (_from.getFileSystem().supportedFileAttributeViews().contains("posix") && _to.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+		// 				var _fpermissions = _Files.getPosixFilePermissions(_from);
+		// 				_Files.setPosixFilePermissions(_to, _fpermissions);
+		// 			}
+		// 		});
+		// 	}
 
-			/**
-			 *
-			 * @param { string } file
-			 * @param { string } destination
-			 * @returns { slime.$api.fp.world.old.Tell<void> }
-			 */
-			function copy_impure(file,destination) {
-				return $api.Function.world.old.tell(function(events) {
-					var from = java.newPeer(file);
-					var to = java.newPeer(destination);
-					$context.library.io.Streams.binary.copy(
-						java.read.binary(from),
-						java.write.binary(to, false)
-					);
-					var _from = from.getHostFile().toPath();
-					var _to = to.getHostFile().toPath();
-					var _Files = Packages.java.nio.file.Files;
-					if (_from.getFileSystem().supportedFileAttributeViews().contains("posix") && _to.getFileSystem().supportedFileAttributeViews().contains("posix")) {
-						var _fpermissions = _Files.getPosixFilePermissions(_from);
-						_Files.setPosixFilePermissions(_to, _fpermissions);
-					}
-				});
-			}
+		// 	/**
+		// 	 *
+		// 	 * @param { string } source
+		// 	 * @param { string } destination
+		// 	 * @returns { slime.$api.fp.world.Tell<void> }
+		// 	 */
+		// 	function copy(source,destination) {
+		// 		return function() {
+		// 			var from = java.newPeer(source);
+		// 			var to = java.newPeer(destination);
+		// 			$context.library.io.Streams.binary.copy(
+		// 				java.read.binary(from),
+		// 				java.write.binary(to, false)
+		// 			);
+		// 			var _from = from.getHostFile().toPath();
+		// 			var _to = to.getHostFile().toPath();
+		// 			var _Files = Packages.java.nio.file.Files;
+		// 			if (_from.getFileSystem().supportedFileAttributeViews().contains("posix") && _to.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+		// 				var _fpermissions = _Files.getPosixFilePermissions(_from);
+		// 				_Files.setPosixFilePermissions(_to, _fpermissions);
+		// 			}
+		// 		}
+		// 	}
 
-			/**
-			 *
-			 * @param { string } source
-			 * @param { string } destination
-			 * @returns { slime.$api.fp.world.Tell<void> }
-			 */
-			function copy(source,destination) {
-				return function() {
-					var from = java.newPeer(source);
-					var to = java.newPeer(destination);
-					$context.library.io.Streams.binary.copy(
-						java.read.binary(from),
-						java.write.binary(to, false)
-					);
-					var _from = from.getHostFile().toPath();
-					var _to = to.getHostFile().toPath();
-					var _Files = Packages.java.nio.file.Files;
-					if (_from.getFileSystem().supportedFileAttributeViews().contains("posix") && _to.getFileSystem().supportedFileAttributeViews().contains("posix")) {
-						var _fpermissions = _Files.getPosixFilePermissions(_from);
-						_Files.setPosixFilePermissions(_to, _fpermissions);
-					}
-				}
-			}
+		// 	/**
+		// 	 *
+		// 	 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
+		// 	 * @param { slime.$api.Events<{ created: string }> } events
+		// 	 */
+		// 	var createAt = function(peer,events) {
+		// 		java.createDirectoryAt(peer);
+		// 		events.fire("created", String(peer.getScriptPath()));
+		// 	}
 
-			/**
-			 *
-			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
-			 * @param { slime.$api.Events<{ created: string }> } events
-			 */
-			var createAt = function(peer,events) {
-				java.createDirectoryAt(peer);
-				events.fire("created", String(peer.getScriptPath()));
-			}
+		// 	/**
+		// 	 *
+		// 	 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
+		// 	 * @param { slime.$api.Events<{ created: string }> } events
+		// 	 */
+		// 	var ensureParent = function(peer,events) {
+		// 		var parent = java.getParent(peer);
+		// 		ensureParent(parent,events);
+		// 		if (!parent.exists()) {
+		// 			createAt(parent,events);
+		// 		}
+		// 	};
 
-			/**
-			 *
-			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
-			 * @param { slime.$api.Events<{ created: string }> } events
-			 */
-			var ensureParent = function(peer,events) {
-				var parent = java.getParent(peer);
-				ensureParent(parent,events);
-				if (!parent.exists()) {
-					createAt(parent,events);
-				}
-			};
+		// 	/** @type { slime.jrunscript.file.world.Filesystem } */
+		// 	var filesystem = {
+		// 		openInputStream: function(p) {
+		// 			return function(events) {
+		// 				return maybeInputStream(p.pathname, events);
+		// 			}
+		// 		},
+		// 		openOutputStream: maybeOutputStream,
+		// 		fileExists: function(p) {
+		// 			return function(events) {
+		// 				return $api.Function.Maybe.value(file_exists(p.pathname));
+		// 			}
+		// 		},
+		// 		directoryExists: function(p) {
+		// 			return function(events) {
+		// 				return $api.Function.Maybe.value(directory_exists(p.pathname));
+		// 			}
+		// 		},
+		// 		createDirectory: function(p) {
+		// 			return function(events) {
+		// 				var peer = java.newPeer(p.pathname);
+		// 				java.createDirectoryAt(peer);
+		// 			}
+		// 		},
+		// 		copy: function(p) {
+		// 			return copy(p.from, p.to);
+		// 		},
+		// 		move: function(p) {
+		// 			return function(events) {
+		// 				java.move(java.newPeer(p.from), java.newPeer(p.to));
+		// 			}
+		// 		},
+		// 		temporary: function(p) {
+		// 			return function(events) {
+		// 				var parent = java.newPeer(p.parent);
+		// 				var created = java.temporary(parent, {
+		// 					prefix: p.prefix,
+		// 					suffix: p.suffix,
+		// 					directory: p.directory
+		// 				});
+		// 				return String(created.getScriptPath());
+		// 			}
+		// 		},
+		// 		pathname: pathname_create,
+		// 		Pathname: {
+		// 			relative: pathname_relative,
+		// 			isDirectory: function(pathname) {
+		// 				var peer = java.newPeer(pathname);
+		// 				return java.exists(peer) && java.isDirectory(peer);
+		// 			}
+		// 		},
+		// 		File: {
+		// 			read: {
+		// 				stream: {
+		// 					bytes: function(pathname) {
+		// 						return $api.Function.world.old.ask(function(events) {
+		// 							return openInputStream(pathname,events);
+		// 						})
+		// 					}
+		// 				},
+		// 				string: function(p) {
+		// 					return function(events) {
+		// 						if (typeof(p.pathname) == "undefined") throw new TypeError("p.pathname must not be undefined.");
+		// 						var stream = openInputStream(p.pathname,events);
+		// 						return (stream) ? stream.character().asString() : null;
+		// 					};
+		// 				}
+		// 			},
+		// 			copy: function(p) {
+		// 				return copy_impure(p.from,p.to);
+		// 			}
+		// 		},
+		// 		Directory: {
+		// 			remove: function(p) {
+		// 				return $api.Function.world.old.tell(function(e) {
+		// 					var peer = java.newPeer(p.pathname);
+		// 					if (!peer.exists()) e.fire("notFound");
+		// 					if (peer.exists() && !peer.isDirectory()) throw new Error();
+		// 					if (peer.exists() && peer.isDirectory()) java.remove(peer);
+		// 				});
+		// 			}
+		// 		}
+		// 	};
 
-			/** @type { slime.jrunscript.file.world.Filesystem } */
-			var filesystem = {
-				openInputStream: function(p) {
-					return function(events) {
-						return maybeInputStream(p.pathname, events);
-					}
-				},
-				openOutputStream: maybeOutputStream,
-				fileExists: function(p) {
-					return function(events) {
-						return $api.Function.Maybe.value(file_exists(p.pathname));
-					}
-				},
-				directoryExists: function(p) {
-					return function(events) {
-						return $api.Function.Maybe.value(directory_exists(p.pathname));
-					}
-				},
-				createDirectory: function(p) {
-					return function(events) {
-						var peer = java.newPeer(p.pathname);
-						java.createDirectoryAt(peer);
-					}
-				},
-				copy: function(p) {
-					return copy(p.from, p.to);
-				},
-				move: function(p) {
-					return function(events) {
-						java.move(java.newPeer(p.from), java.newPeer(p.to));
-					}
-				},
-				pathname: pathname_create,
-				Pathname: {
-					relative: pathname_relative,
-					isDirectory: function(pathname) {
-						var peer = java.newPeer(pathname);
-						return java.exists(peer) && java.isDirectory(peer);
-					}
-				},
-				File: {
-					read: {
-						stream: {
-							bytes: function(pathname) {
-								return $api.Function.world.old.ask(function(events) {
-									return openInputStream(pathname,events);
-								})
-							}
-						},
-						string: function(p) {
-							return function(events) {
-								if (typeof(p.pathname) == "undefined") throw new TypeError("p.pathname must not be undefined.");
-								var stream = openInputStream(p.pathname,events);
-								return (stream) ? stream.character().asString() : null;
-							};
-						}
-					},
-					copy: function(p) {
-						return copy_impure(p.from,p.to);
-					}
-				},
-				Directory: {
-					remove: function(p) {
-						return $api.Function.world.old.tell(function(e) {
-							var peer = java.newPeer(p.pathname);
-							if (!peer.exists()) e.fire("notFound");
-							if (peer.exists() && !peer.isDirectory()) throw new Error();
-							if (peer.exists() && peer.isDirectory()) java.remove(peer);
-						});
-					}
-				}
-			};
-
-			return filesystem;
-		}
+		// 	return filesystem;
+		// }
 
 		/** @type { slime.jrunscript.file.world.Locations["relative"] } */
 		var Location_relative = function(path) {
@@ -443,17 +449,13 @@
 			}
 		}
 
-		var os = toWorldFilesystem(providers.os);
-
 		$export({
-			providers: providers,
-			filesystems: {
-				os: os
-			},
+			providers: $context.module.java.providers,
+			filesystems: $context.module.java.filesystems,
 			os: {
 				Location: function(string) {
 					return {
-						filesystem: os,
+						filesystem: $context.module.java.filesystems.os,
 						pathname: string
 					}
 				}

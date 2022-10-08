@@ -795,8 +795,39 @@ namespace slime.jrunscript.file {
 				from: string
 				to: string
 			},void>
+		}
 
-			/** @deprecated Not really world-oriented; use the methods of `Pathname`, `File`, and `Directory`. */
+		export interface Filesystem {
+			temporary: slime.$api.fp.world.Question<
+				{
+					parent?: string
+					prefix?: string
+					suffix?: string
+					directory: boolean
+				},
+				void,
+				string
+			>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.sandbox.filesystem.temporary = function() {
+					//verify(1).is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Filesystem {
+			/**
+			 * @deprecated Not really world-oriented; use the methods of `Pathname`, `File`, and `Directory`. Cannot be removed
+			 * without converting resulting usages of `object.Location` to usages of {@link Location}.
+			 */
 			pathname: (pathname: string) => object.Location
 
 			/** @deprecated Use .pathname() to obtain a {@link Location}. */
