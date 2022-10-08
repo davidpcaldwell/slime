@@ -12,9 +12,9 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.file.internal.java.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.jrunscript.file.internal.java.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.file.internal.java.Exports> } $export
 	 */
-	function(Packages,$api,$context,$loader,$exports) {
+	function(Packages,$api,$context,$loader,$export) {
 		/** @type { slime.jrunscript.file.internal.spi.Script } */
 		var code = $loader.script("spi.js");
 
@@ -165,7 +165,7 @@
 			return createNode;
 		}
 
-		$exports.FilesystemProvider = (
+		var FilesystemProvider = (
 			/**
 			 *
 			 * @constructor
@@ -677,24 +677,25 @@
 
 		//	World-oriented filesystem implementations. No world-oriented Cygwin implementation yet.
 		var providers = {
-			os: new $exports.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
+			os: new FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
 		};
 
 		var os = toWorldFilesystem(providers.os);
 
-		$exports.providers = providers;
-
-		$exports.filesystems = {
-			os: os
-		}
-
-		$exports.test = {
-			unix: systems.unix,
-			windows: systems.windows,
-			systemForPathnameSeparator: systemForPathnameSeparator,
-			trailingSeparatorRemover: trailingSeparatorRemover,
-			nodeCreator: nodeCreator
-		}
+		$export({
+			providers: providers,
+			filesystems: {
+				os: os
+			},
+			test: {
+				FilesystemProvider: FilesystemProvider,
+				unix: systems.unix,
+				windows: systems.windows,
+				systemForPathnameSeparator: systemForPathnameSeparator,
+				trailingSeparatorRemover: trailingSeparatorRemover,
+				nodeCreator: nodeCreator
+			}
+		});
 	}
 //@ts-ignore
-)(Packages,$api,$context,$loader,$exports);
+)(Packages,$api,$context,$loader,$export);

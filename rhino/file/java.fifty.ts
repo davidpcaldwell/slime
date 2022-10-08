@@ -93,10 +93,6 @@ namespace slime.jrunscript.file.internal.java {
 	}
 
 	export interface Exports {
-		FilesystemProvider: new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => FilesystemProvider
-	}
-
-	export interface Exports {
 		filesystems: {
 			os: slime.jrunscript.file.world.Filesystem
 		}
@@ -108,6 +104,7 @@ namespace slime.jrunscript.file.internal.java {
 
 	export interface Exports {
 		test: {
+			FilesystemProvider: new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => FilesystemProvider
 			unix: System
 			windows: System
 			systemForPathnameSeparator: (separator: string) => System
@@ -146,7 +143,7 @@ namespace slime.jrunscript.file.internal.java {
 			}
 
 			fifty.tests.world = function() {
-				var os = new subject.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
+				var os = new subject.test.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
 				var at = os.newPeer("at");
 				fifty.global.jsh.shell.console("at = " + at.getScriptPath());
 			}
