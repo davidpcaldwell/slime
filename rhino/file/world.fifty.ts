@@ -989,10 +989,6 @@ namespace slime.jrunscript.file {
 		filesystems: {
 			os: world.Filesystem
 		}
-
-		providers: {
-			os: slime.jrunscript.file.internal.java.FilesystemProvider
-		}
 	}
 
 	(
@@ -1046,5 +1042,11 @@ namespace slime.jrunscript.file.internal.world {
 		}
 	}
 
-	export type Script = slime.loader.Script<Context,slime.jrunscript.file.World>
+	export interface Exports extends slime.jrunscript.file.World {
+		providers: {
+			os: slime.jrunscript.file.internal.java.FilesystemProvider
+		}
+	}
+
+	export type Script = slime.loader.Script<Context,Exports>
 }

@@ -35,7 +35,7 @@
 			world: $loader.script("world.js")
 		}
 
-		/** @type { { java: slime.jrunscript.file.internal.java.Exports, world: slime.jrunscript.file.World } } */
+		/** @type { { java: slime.jrunscript.file.internal.java.Exports, world: slime.jrunscript.file.internal.world.Exports } } */
 		var library = (
 			function() {
 				var java = code.java({
