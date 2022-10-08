@@ -25,16 +25,17 @@
 		var code = {
 			/** @type { slime.jrunscript.file.internal.file.Script } */
 			file: $loader.script("file.js"),
-			/** @type { slime.jrunscript.file.internal.java.Script } */
-			java: $loader.script("java.js"),
 			/** @type { slime.jrunscript.file.internal.filesystem.Script } */
 			filesystem: $loader.script("filesystem.js"),
 			/** @type { slime.jrunscript.file.internal.spi.Script } */
 			spi: $loader.script("spi.js"),
+			/** @type { slime.jrunscript.file.internal.java.Script } */
+			java: $loader.script("java.js"),
 			/** @type { slime.jrunscript.file.internal.world.Script } */
 			world: $loader.script("world.js")
 		}
 
+		/** @type { { java: slime.jrunscript.file.internal.java.Exports, world: slime.jrunscript.file.World } } */
 		var library = (
 			function() {
 				var java = code.java({
@@ -53,6 +54,7 @@
 				});
 
 				return {
+					//	TODO	Goal would be not to export this, but it is still used when loading cygwin.js
 					java: java,
 					world: world
 				}

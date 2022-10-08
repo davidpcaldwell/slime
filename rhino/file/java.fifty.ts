@@ -69,10 +69,14 @@ namespace slime.jrunscript.file.internal.java {
 
 		list: (peer: Peer) => Peer[]
 
+		/**
+		 * @param parent The location in which to create a temporary file / directory, or `null` to create it in the default Java
+		 * location.
+		 */
 		temporary: (parent: Peer, parameters: {
-			prefix: string
-			suffix: string
-			directory: boolean
+			prefix?: string
+			suffix?: string
+			directory?: boolean
 		}) => Peer
 
 		java: {
@@ -90,6 +94,16 @@ namespace slime.jrunscript.file.internal.java {
 
 	export interface Exports {
 		FilesystemProvider: new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => FilesystemProvider
+	}
+
+	export interface Exports {
+		filesystems: {
+			os: slime.jrunscript.file.world.Filesystem
+		}
+
+		providers: {
+			os: slime.jrunscript.file.internal.java.FilesystemProvider
+		}
 	}
 
 	export interface Exports {
