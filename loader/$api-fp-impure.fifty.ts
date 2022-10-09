@@ -26,6 +26,7 @@ namespace slime.$api.fp.impure {
 		Input: {
 			value: <T>(t: T) => impure.Input<T>
 			map: <I,T>(input: impure.Input<I>, map: (i: I) => T) => impure.Input<T>
+			process: <T>(input: impure.Input<T>, output: impure.Output<T>) => impure.Process
 		}
 
 		Process: {
@@ -94,8 +95,9 @@ namespace slime.$api.fp.world {
 	export interface Exports {
 		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => impure.Output<P>
 
-		ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => impure.Input<A>
 		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => impure.Process
+
+		input: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => impure.Input<A>
 
 		Question: {
 			/**

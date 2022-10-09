@@ -679,9 +679,10 @@
 
 					/** @type { slime.jsh.shell.tools.Managed } */
 					var managed = {
-						installation: node.world.Installation.from.location(
-							jsh.file.world.os.Location(location.toString())
-						),
+						installation: node.world.Installation.from.location({
+							filesystem: jsh.file.world.filesystems.os,
+							pathname: location.toString()
+						}),
 						installed: void(0),
 						require: void(0)
 					}

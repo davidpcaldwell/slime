@@ -189,7 +189,7 @@
 				};
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["newPeer"] } */
-				this.newPeer = function(string) {
+				this.newPeer = function this_newPeer(string) {
 					if (typeof(string) == "undefined") throw new TypeError("'string' must not be undefined.");
 					return newPeer(string);
 				};
@@ -622,7 +622,7 @@
 				},
 				temporary: function(p) {
 					return function(events) {
-						var parent = java.newPeer(p.parent);
+						var parent = (p.parent) ? java.newPeer(p.parent) : null;
 						var created = java.temporary(parent, {
 							prefix: p.prefix,
 							suffix: p.suffix,

@@ -5,12 +5,6 @@
 //	END LICENSE
 
 namespace slime.jrunscript.file {
-	export interface World {
-		os: {
-			Location: (pathname: string) => world.Location
-		}
-	}
-
 	export namespace world {
 		(
 			function(
@@ -284,7 +278,7 @@ namespace slime.jrunscript.file {
 
 							process();
 
-							var getText = $api.Function.world.ask(
+							var getText = $api.Function.world.input(
 								subject.Location.file.read.string()(at)
 							);
 
@@ -467,6 +461,12 @@ namespace slime.jrunscript.file {
 				}
 			//@ts-ignore
 			)(fifty);
+		}
+
+		export interface Locations {
+			from: {
+				os: (pathname: string) => Location
+			}
 		}
 	}
 
@@ -815,10 +815,50 @@ namespace slime.jrunscript.file {
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+				const { Location } = jsh.file.world;
 
 				fifty.tests.sandbox.filesystem.temporary = function() {
-					//verify(1).is(2);
-				}
+					//	Really the only defined attribute of a "temporary" file is that after this method is called, it should
+					//	exist. So going to test for that, and test for files and directories.
+
+					var exists = {
+						file: $api.Function.world.question(Location.file.exists()),
+						directory: $api.Function.world.question(Location.directory.exists())
+					};
+
+					var tmpfile = $api.Function.world.input(jsh.file.world.filesystems.os.temporary({ directory: false }));
+					var tmpdir = $api.Function.world.input(jsh.file.world.filesystems.os.temporary({ directory: true }));
+
+					var file = $api.Function.impure.Input.process(
+						tmpfile,
+						$api.Function.pipe(
+							jsh.file.world.Location.from.os,
+							function(location) {
+								verify(location).evaluate(exists.file).is(true);
+							}
+						)
+					);
+
+					var directory = $api.Function.impure.Input.process(
+						tmpdir,
+						$api.Function.pipe(
+							jsh.file.world.Location.from.os,
+							function(location) {
+								verify(location).evaluate(exists.directory).is(true);
+							}
+						)
+					);
+
+					$api.Function.impure.now.process(
+						$api.Function.impure.Process.compose([
+							file,
+							directory
+						])
+					);
+				};
+
+				fifty.tests.wip = fifty.tests.sandbox.filesystem.temporary;
 			}
 		//@ts-ignore
 		)(fifty);
@@ -930,11 +970,11 @@ namespace slime.jrunscript.file {
 					var me = filesystem.Pathname.relative(here, "module.fifty.ts");
 					var nothing = filesystem.Pathname.relative(here, "nonono");
 					var code = $api.Function.impure.now.input(
-						$api.Function.world.ask(filesystem.File.read.string({ pathname: me }))
+						$api.Function.world.input(filesystem.File.read.string({ pathname: me }))
 					);
 					verify(code,"code").is.type("string");
 					var no = $api.Function.impure.now.input(
-						$api.Function.world.ask(filesystem.File.read.string({ pathname: nothing }))
+						$api.Function.world.input(filesystem.File.read.string({ pathname: nothing }))
 					);
 					verify(no,"no").is.type("null");
 
@@ -943,12 +983,12 @@ namespace slime.jrunscript.file {
 						var thisFile = pathname("module.fifty.ts");
 						var doesNotExist = pathname("foo");
 						var thisFileContents = $api.Function.impure.now.input(
-							$api.Function.world.ask(
+							$api.Function.world.input(
 								filesystem.File.read.string({ pathname: thisFile })
 							)
 						);
 						var doesNotExistContents = $api.Function.impure.now.input(
-							$api.Function.world.ask(
+							$api.Function.world.input(
 								filesystem.File.read.string({ pathname: doesNotExist })
 							)
 						);
@@ -1016,7 +1056,7 @@ namespace slime.jrunscript.file {
 			fifty.tests.world = function() {
 				var pathname = fifty.jsh.file.object.getRelativePath("module.fifty.ts").toString();
 				var contents = $api.Function.impure.now.input(
-					$api.Function.world.ask(
+					$api.Function.world.input(
 						world.filesystems.os.File.read.string({ pathname: pathname })
 					)
 				);
@@ -1036,9 +1076,6 @@ namespace slime.jrunscript.file.internal.world {
 	export interface Context {
 		library: {
 			io: slime.jrunscript.io.Exports
-		}
-		module: {
-			java: slime.jrunscript.file.internal.java.Exports
 		}
 	}
 

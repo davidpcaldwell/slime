@@ -325,7 +325,7 @@
 										}
 									)
 								)
-								var ask = $api.Function.world.ask(spi({
+								var ask = $api.Function.world.input(spi({
 									request: {
 										method: (e.method) ? e.method : "GET",
 										url: $context.library.web.Url.codec.string.decode("http://docker.sock.unix" + url + query),

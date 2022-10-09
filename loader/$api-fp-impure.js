@@ -35,6 +35,11 @@
 					return function() {
 						return map(input());
 					}
+				},
+				process: function(input, output) {
+					return function() {
+						output(input());
+					}
 				}
 			},
 			Process: {
@@ -58,6 +63,13 @@
 				}
 			}
 		}
+
+		var input = function(ask, handler) {
+			return function() {
+				var adapted = $context.events.ask(ask);
+				return adapted(handler);
+			}
+		};
 
 		/** @type { slime.$api.fp.world.Exports } */
 		var world = {
@@ -96,12 +108,7 @@
 					adapted(handler);
 				}
 			},
-			ask: function(ask, handler) {
-				return function() {
-					var adapted = $context.events.ask(ask);
-					return adapted(handler);
-				}
-			},
+			input: input,
 			tell: function(tell, handler) {
 				return function() {
 					var adapted = $context.events.tell(tell);

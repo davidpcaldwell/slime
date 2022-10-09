@@ -354,7 +354,7 @@
 											run: function(run) {
 												var world = (run && run.world) ? run.world : $context.library.http.world;
 												return $api.Function.world.old.ask(function(events) {
-													var response = $api.Function.world.ask(world.request(
+													var response = $api.Function.world.input(world.request(
 														toHttpArgument(
 															api,
 															authentication,
@@ -382,7 +382,7 @@
 													);
 													var rv = [];
 													while(request) {
-														var response = $api.Function.world.ask(world.request(request))();
+														var response = $api.Function.world.input(world.request(request))();
 														var page = operation.response(response);
 														rv = rv.concat(page);
 														var link = links(response);

@@ -29,34 +29,19 @@
 			filesystem: $loader.script("filesystem.js"),
 			/** @type { slime.jrunscript.file.internal.spi.Script } */
 			spi: $loader.script("spi.js"),
-			/** @type { slime.jrunscript.file.internal.java.Script } */
-			java: $loader.script("java.js"),
 			/** @type { slime.jrunscript.file.internal.world.Script } */
 			world: $loader.script("world.js")
 		}
 
-		/** @type { { java: slime.jrunscript.file.internal.java.Exports, world: slime.jrunscript.file.internal.world.Exports } } */
+		/** @type { { world: slime.jrunscript.file.internal.world.Exports } } */
 		var library = (
 			function() {
-				var java = code.java({
-					api: {
-						io: $context.api.io
-					}
-				});
-
-				var world = code.world({
-					library: {
-						io: $context.api.io
-					},
-					module: {
-						java: java
-					}
-				});
-
 				return {
-					//	TODO	Goal would be not to export this, but it is still used when loading cygwin.js
-					java: java,
-					world: world
+					world: code.world({
+						library: {
+							io: $context.api.io
+						}
+					})
 				}
 			}
 		)();
@@ -92,7 +77,18 @@
 			cygwin: ($context.cygwin) ? $loader.file("cygwin.js", {
 				cygwin: $context.cygwin,
 				Filesystem: os.Filesystem,
-				java: library.java,
+				java: (
+					function() {
+						//	TODO	right now java.js is encapsulated within world.js except here
+						/** @type { slime.jrunscript.file.internal.java.Script } */
+						var code = $loader.script("java.js");
+						return code({
+							api: {
+								io: $context.api.io
+							}
+						})
+					}
+				)(),
 				isPathname: file.isPathname,
 				Searchpath: file.Searchpath,
 				addFinalizer: $context.addFinalizer

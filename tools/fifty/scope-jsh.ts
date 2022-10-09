@@ -84,7 +84,7 @@ namespace slime.fifty.test.internal.scope.jsh {
 									]
 								})
 							);
-							var getBrowserResult = $api.Function.world.ask(runBrowser);
+							var getBrowserResult = $api.Function.world.input(runBrowser);
 							var result = getBrowserResult();
 							fifty.verify(result, "browserResult").status.is(0);
 						}
