@@ -11,9 +11,23 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.file.internal.world.Context } $context
+	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.world.Exports> } $export
 	 */
-	function(Packages,$api,$context,$export) {
+	function(Packages,$api,$context,$loader,$export) {
+		var code = {
+			/** @type { slime.jrunscript.file.internal.java.Script } */
+			java: $loader.script("java.js"),
+		};
+
+		var library = {
+			java: code.java({
+				api: {
+					io: $context.library.io
+				}
+			})
+		};
+
 		/** @type { slime.jrunscript.file.world.Locations["relative"] } */
 		var Location_relative = function(path) {
 			return function(pathname) {
@@ -92,17 +106,17 @@
 		}
 
 		$export({
-			providers: $context.module.java.providers,
-			filesystems: $context.module.java.filesystems,
-			os: {
-				Location: function(string) {
-					return {
-						filesystem: $context.module.java.filesystems.os,
-						pathname: string
-					}
-				}
-			},
+			providers: library.java.providers,
+			filesystems: library.java.filesystems,
 			Location: {
+				from: {
+					os: function(string) {
+						return {
+							filesystem: library.java.filesystems.os,
+							pathname: string
+						}
+					}
+				},
 				relative: Location_relative,
 				parent: function() {
 					return Location_relative("../");
@@ -326,4 +340,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$api,$context,$export);
+)(Packages,$api,$context,$loader,$export);

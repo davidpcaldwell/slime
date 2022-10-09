@@ -18,7 +18,7 @@
 
 		/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.file.world.Location } */
 		var toLocation = function(node) {
-			return $context.library.file.world.os.Location(node.pathname.toString());
+			return $context.library.file.world.Location.from.os(node.pathname.toString());
 		}
 
 		/**

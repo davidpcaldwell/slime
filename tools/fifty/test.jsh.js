@@ -13,7 +13,7 @@
 	function($api,jsh) {
 		var isTypescriptInstalled = function() {
 			var installation = jsh.shell.tools.node.installation;
-			var nodeExists = $api.Function.world.ask(
+			var nodeExists = $api.Function.world.input(
 				jsh.shell.tools.node.world.Installation.exists(installation)
 			)();
 			if (!nodeExists) return false;

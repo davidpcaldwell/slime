@@ -80,14 +80,14 @@
 		var getInstallationPathEntry = $api.Function.pipe(
 			$api.Function.property("executable"),
 			//	TODO	should be Location.from.os
-			$context.library.file.world.os.Location,
+			$context.library.file.world.Location.from.os,
 			$context.library.file.world.Location.parent(),
 			$api.Function.property("pathname")
 		);
 
 		/** @type { (project: string) => string } */
 		var getProjectBin = $api.Function.pipe(
-			$context.library.file.world.os.Location,
+			$context.library.file.world.Location.from.os,
 			$context.library.file.world.Location.relative(".bin"),
 			$api.Function.property("pathname")
 		)
@@ -98,7 +98,7 @@
 		 * @param { string } name
 		 */
 		var directoryContains = function(pathname,name) {
-			var directory = $context.library.file.world.os.Location(pathname);
+			var directory = $context.library.file.world.Location.from.os(pathname);
 			var location = $api.Function.result(directory, $context.library.file.world.Location.relative(name));
 			return $api.Function.world.now.question(
 				$context.library.file.world.Location.file.exists(),
@@ -112,7 +112,7 @@
 		 * @param { string } path
 		 */
 		var getRelativePath = function(parent, path) {
-			var base = $context.library.file.world.os.Location(parent);
+			var base = $context.library.file.world.Location.from.os(parent);
 			var target = $api.Function.result(base, $context.library.file.world.Location.relative(path));
 			return target.pathname;
 		}
@@ -546,7 +546,7 @@
 							installation,
 							$api.Function.pipe(
 								$api.Function.property("executable"),
-								$context.library.file.world.os.Location,
+								$context.library.file.world.Location.from.os,
 								$api.Function.world.question($context.library.file.world.Location.file.exists())
 							)
 						)

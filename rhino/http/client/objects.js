@@ -188,7 +188,7 @@
 			 */
 			function oldspi(p) {
 				var body = $context.interpretRequestBody(p.body);
-				return $api.Function.world.ask(urlConnectionImplementation({
+				return $api.Function.world.input(urlConnectionImplementation({
 					request: {
 						method: p.method,
 						url: p.url,

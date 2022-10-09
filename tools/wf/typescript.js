@@ -48,7 +48,7 @@
 			return $api.Function.result(
 				pathname,
 				$api.Function.pipe(
-					$context.library.file.world.os.Location,
+					$context.library.file.world.Location.from.os,
 					$context.library.file.world.Location.relative(relative),
 					$api.Function.property("pathname")
 				)
@@ -113,7 +113,7 @@
 					$context.library.node.installation
 				);
 
-				var project = $context.library.file.world.os.Location(p.project);
+				var project = $context.library.file.world.Location.from.os(p.project);
 
 				var configuration = $api.Function.result(
 					project,
