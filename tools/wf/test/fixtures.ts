@@ -54,7 +54,7 @@ namespace slime.jsh.wf.test {
 					var src = p.src;
 					var destination = (() => {
 						var object = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						return jsh.file.world.filesystems.os.pathname(object.toString());
+						return jsh.file.world.spi.filesystems.os.pathname(object.toString());
 					})();
 					jsh.tools.git.program({ command: "git" }).command(clone).argument({
 						repository: src.pathname,

@@ -105,9 +105,24 @@
 			}
 		}
 
+		/** @type { slime.jrunscript.file.World["Filesystem"]["from"]["spi"] } */
+		var filesystemFromSpi = function(provider) {
+			return {};
+		}
+
 		$export({
 			providers: library.java.providers,
-			filesystems: library.java.filesystems,
+			spi: {
+				filesystems: library.java.filesystems
+			},
+			Filesystem: {
+				from: {
+					spi: filesystemFromSpi
+				}
+			},
+			filesystems: {
+				os: filesystemFromSpi(library.java.filesystems.os)
+			},
 			Location: {
 				from: {
 					os: function(string) {

@@ -57,7 +57,7 @@
 			},
 			Streams: $context.api.io.Streams,
 			Resource: $context.api.io.Resource,
-			filesystems: library.world.filesystems,
+			filesystems: library.world.spi.filesystems,
 			pathext: $context.pathext
 		});
 		file.Searchpath.prototype = prototypes.Searchpath;

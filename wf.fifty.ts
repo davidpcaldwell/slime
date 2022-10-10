@@ -29,7 +29,7 @@ namespace slime.project.wf {
 			return {
 				clone: function() {
 					return fixtures.clone({
-						src: jsh.file.world.filesystems.os.pathname(fifty.jsh.file.relative(".").pathname)
+						src: jsh.file.world.spi.filesystems.os.pathname(fifty.jsh.file.relative(".").pathname)
 					});
 				},
 				configure: fixtures.configure,

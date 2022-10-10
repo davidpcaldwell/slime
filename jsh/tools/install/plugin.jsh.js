@@ -680,7 +680,7 @@
 					/** @type { slime.jsh.shell.tools.Managed } */
 					var managed = {
 						installation: node.world.Installation.from.location({
-							filesystem: jsh.file.world.filesystems.os,
+							filesystem: jsh.file.world.spi.filesystems.os,
 							pathname: location.toString()
 						}),
 						installed: void(0),

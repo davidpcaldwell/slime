@@ -94,7 +94,7 @@ namespace slime.jrunscript.file.internal.java {
 
 	export interface Exports {
 		filesystems: {
-			os: slime.jrunscript.file.world.Filesystem
+			os: slime.jrunscript.file.world.spi.Filesystem
 		}
 
 		providers: {
