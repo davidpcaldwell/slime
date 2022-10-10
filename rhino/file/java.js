@@ -320,7 +320,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } java
-		 * @returns { slime.jrunscript.file.world.Filesystem }
+		 * @returns { slime.jrunscript.file.world.spi.Filesystem }
 		 */
 		function toWorldFilesystem(java) {
 			/**
@@ -338,7 +338,7 @@
 			};
 
 			/**
-			 * @type { slime.jrunscript.file.world.Filesystem["openOutputStream"] }
+			 * @type { slime.jrunscript.file.world.spi.Filesystem["openOutputStream"] }
 			 */
 			var maybeOutputStream = function(p) {
 				return function(events) {
@@ -588,7 +588,7 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.file.world.Filesystem } */
+			/** @type { slime.jrunscript.file.world.spi.Filesystem } */
 			var filesystem = {
 				openInputStream: function(p) {
 					return function(events) {

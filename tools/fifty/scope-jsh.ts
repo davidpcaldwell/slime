@@ -35,17 +35,17 @@ namespace slime.fifty.test.internal.scope.jsh {
 				return {
 					file: {
 						relative: function(path) {
-							var page = jsh.file.world.filesystems.os.pathname(scope.directory.toString());
+							var page = jsh.file.world.spi.filesystems.os.pathname(scope.directory.toString());
 							return page.relative(path);
 						},
 						temporary: {
 							location: function() {
 								var object = tmp.location();
-								return jsh.file.world.filesystems.os.pathname(object.toString());
+								return jsh.file.world.spi.filesystems.os.pathname(object.toString());
 							},
 							directory: function() {
 								var object = tmp.directory();
-								return jsh.file.world.filesystems.os.pathname(object.toString());
+								return jsh.file.world.spi.filesystems.os.pathname(object.toString());
 							}
 						},
 						object: {

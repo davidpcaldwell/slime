@@ -20,7 +20,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Location {
-			readonly filesystem: Filesystem
+			readonly filesystem: spi.Filesystem
 			readonly pathname: string
 		}
 
@@ -500,7 +500,7 @@ namespace slime.jrunscript.file {
 				const { verify } = fifty;
 				const { $api, jsh } = fifty.global;
 				const { world } = jsh.file;
-				const filesystem = world.filesystems.os;
+				const filesystem = world.spi.filesystems.os;
 
 				fifty.tests.sandbox.filesystem.pathname.relative = function() {
 					var parent = filesystem.pathname(fifty.jsh.file.object.getRelativePath(".").toString());
@@ -541,7 +541,7 @@ namespace slime.jrunscript.file {
 				const { verify, run } = fifty;
 				const { $api, jsh } = fifty.global;
 				const subject = jsh.file;
-				const filesystem = subject.world.filesystems.os;
+				const filesystem = subject.world.spi.filesystems.os;
 
 				fifty.tests.sandbox.filesystem.pathname.directory.require = function() {
 					run(function recursiveRequired() {
@@ -681,7 +681,7 @@ namespace slime.jrunscript.file {
 			) {
 				const { verify } = fifty;
 				const { jsh } = fifty.global;
-				const filesystem = jsh.file.world.filesystems.os;
+				const filesystem = jsh.file.world.spi.filesystems.os;
 
 				fifty.tests.sandbox.filesystem.pathname.file.write = {};
 				fifty.tests.sandbox.filesystem.pathname.file.write.string = function() {
@@ -732,7 +732,7 @@ namespace slime.jrunscript.file {
 			) {
 				const { verify } = fifty;
 				const { jsh } = fifty.global;
-				const here = jsh.file.world.filesystems.os.pathname(fifty.jsh.file.object.getRelativePath(".").toString());
+				const here = jsh.file.world.spi.filesystems.os.pathname(fifty.jsh.file.object.getRelativePath(".").toString());
 
 				fifty.tests.sandbox.filesystem.pathname.file.read = {};
 				fifty.tests.sandbox.filesystem.pathname.file.read.string = function() {
@@ -759,273 +759,294 @@ namespace slime.jrunscript.file {
 				directory: Directory
 			}
 		}
+	}
 
-		export interface Filesystem {
-			fileExists: slime.$api.fp.world.Question<{
-				pathname: string
-			},void,slime.$api.fp.Maybe<boolean>>
+	export namespace world {
+		export namespace spi {
+			export interface Filesystem {
+				fileExists: slime.$api.fp.world.Question<{
+					pathname: string
+				},void,slime.$api.fp.Maybe<boolean>>
 
-			openInputStream: slime.$api.fp.world.Question<{
-				pathname: string
-			},{
-				notFound: void
-			},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
+				openInputStream: slime.$api.fp.world.Question<{
+					pathname: string
+				},{
+					notFound: void
+				},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
 
-			openOutputStream: slime.$api.fp.world.Question<{
-				pathname: string
-				append?: boolean
-			},{
-			},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.OutputStream>>
+				openOutputStream: slime.$api.fp.world.Question<{
+					pathname: string
+					append?: boolean
+				},{
+				},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.OutputStream>>
 
-			directoryExists: slime.$api.fp.world.Question<{
-				pathname: string
-			},void,slime.$api.fp.Maybe<boolean>>
+				directoryExists: slime.$api.fp.world.Question<{
+					pathname: string
+				},void,slime.$api.fp.Maybe<boolean>>
 
-			createDirectory: slime.$api.fp.world.Action<{
-				pathname: string
-			},{
-			}>
+				createDirectory: slime.$api.fp.world.Action<{
+					pathname: string
+				},{
+				}>
 
-			copy: slime.$api.fp.world.Action<{
-				from: string
-				to: string
-			},void>
-
-			move: slime.$api.fp.world.Action<{
-				from: string
-				to: string
-			},void>
-		}
-
-		export interface Filesystem {
-			temporary: slime.$api.fp.world.Question<
-				{
-					parent?: string
-					prefix?: string
-					suffix?: string
-					directory: boolean
-				},
-				void,
-				string
-			>
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { $api, jsh } = fifty.global;
-				const { Location } = jsh.file.world;
-
-				fifty.tests.sandbox.filesystem.temporary = function() {
-					//	Really the only defined attribute of a "temporary" file is that after this method is called, it should
-					//	exist. So going to test for that, and test for files and directories.
-
-					var exists = {
-						file: $api.Function.world.question(Location.file.exists()),
-						directory: $api.Function.world.question(Location.directory.exists())
-					};
-
-					var tmpfile = $api.Function.world.input(jsh.file.world.filesystems.os.temporary({ directory: false }));
-					var tmpdir = $api.Function.world.input(jsh.file.world.filesystems.os.temporary({ directory: true }));
-
-					var file = $api.Function.impure.Input.process(
-						tmpfile,
-						$api.Function.pipe(
-							jsh.file.world.Location.from.os,
-							function(location) {
-								verify(location).evaluate(exists.file).is(true);
-							}
-						)
-					);
-
-					var directory = $api.Function.impure.Input.process(
-						tmpdir,
-						$api.Function.pipe(
-							jsh.file.world.Location.from.os,
-							function(location) {
-								verify(location).evaluate(exists.directory).is(true);
-							}
-						)
-					);
-
-					$api.Function.impure.now.process(
-						$api.Function.impure.Process.compose([
-							file,
-							directory
-						])
-					);
-				};
-
-				fifty.tests.wip = fifty.tests.sandbox.filesystem.temporary;
-			}
-		//@ts-ignore
-		)(fifty);
-
-		export interface Filesystem {
-			/**
-			 * @deprecated Not really world-oriented; use the methods of `Pathname`, `File`, and `Directory`. Cannot be removed
-			 * without converting resulting usages of `object.Location` to usages of {@link Location}.
-			 */
-			pathname: (pathname: string) => object.Location
-
-			/** @deprecated Use .pathname() to obtain a {@link Location}. */
-			Pathname: {
-				/** @deprecated Use .pathname() to obtain a {@link Location}. */
-				relative: (parent: string, relative: string) => string
-
-				/** @deprecated Use .pathname() to obtain a {@link Location}. */
-				isDirectory: (pathname: string) => boolean
-			}
-
-			/** @deprecated Use .pathname() to obtain a {@link Location}. */
-			File: {
-				/** @deprecated Use .pathname() to obtain a {@link Location}. */
-				read: {
-					/** @deprecated Use .pathname() to obtain a {@link Location}. */
-					stream: {
-						/** @deprecated Use .pathname() to obtain a {@link Location}. */
-						bytes: (pathname: string) => slime.$api.fp.world.old.Ask<{
-							notFound: void
-						},slime.jrunscript.runtime.io.InputStream>
-					}
-
-					/**
-					 * Returns an `Ask` that returns the contents of the file as a string, or `null` if the file does not exist.
-					 * The `Ask` also provides a `notFound` event to allow special handling of the case in which the file does not
-					 * exist.
-					 */
-					string: slime.$api.fp.world.Question<
-						{
-							pathname: string
-						},
-						{
-							notFound: void
-						},
-						string
-					>
-				}
-
-				/** @deprecated Use .pathname() to obtain a {@link Location}. */
-				copy: (p: {
+				copy: slime.$api.fp.world.Action<{
 					from: string
 					to: string
-				}) => slime.$api.fp.world.old.Tell<void>
+				},void>
+
+				move: slime.$api.fp.world.Action<{
+					from: string
+					to: string
+				},void>
 			}
 
-			/** @deprecated Use .pathname() to obtain a {@link Location}. */
-			Directory: {
-				/**
-				 * @deprecated Use .pathname() to obtain a {@link Location}.
-				 *
-				 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
-				 * event and return.
-				 */
-				remove: (p: {
-					pathname: string
-				}) => slime.$api.fp.world.old.Tell<{
-					notFound: void
-				}>
-			}
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify, run } = fifty;
-				const { $api, jsh } = fifty.global;
-				const { world } = jsh.file;
-				const filesystem = world.filesystems.os;
-
-				fifty.tests.sandbox.filesystem.Pathname = {
-					relative: function() {
-
+			export interface Filesystem {
+				temporary: slime.$api.fp.world.Question<
+					{
+						parent?: string
+						prefix?: string
+						suffix?: string
+						directory: boolean
 					},
-					isDirectory: function() {
-						var parent = fifty.jsh.file.object.getRelativePath(".").toString();
-						var cases = {
-							parent: parent,
-							thisFile: filesystem.Pathname.relative(parent, "module.fifty.ts"),
-							nothing: filesystem.Pathname.relative(parent, "foo"),
-							subfolder: filesystem.Pathname.relative(parent, "java")
+					void,
+					string
+				>
+			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api, jsh } = fifty.global;
+					const { Location } = jsh.file.world;
+
+					fifty.tests.sandbox.filesystem.temporary = function() {
+						//	Really the only defined attribute of a "temporary" file is that after this method is called, it should
+						//	exist. So going to test for that, and test for files and directories.
+
+						var exists = {
+							file: $api.Function.world.question(Location.file.exists()),
+							directory: $api.Function.world.question(Location.directory.exists())
 						};
-						var isDirectory = function(property) {
-							return function(cases) { return filesystem.Pathname.isDirectory(cases[property]); };
+
+						var tmpfile = $api.Function.world.input(jsh.file.world.spi.filesystems.os.temporary({ directory: false }));
+						var tmpdir = $api.Function.world.input(jsh.file.world.spi.filesystems.os.temporary({ directory: true }));
+
+						var file = $api.Function.impure.Input.process(
+							tmpfile,
+							$api.Function.pipe(
+								jsh.file.world.Location.from.os,
+								function(location) {
+									verify(location).evaluate(exists.file).is(true);
+								}
+							)
+						);
+
+						var directory = $api.Function.impure.Input.process(
+							tmpdir,
+							$api.Function.pipe(
+								jsh.file.world.Location.from.os,
+								function(location) {
+									verify(location).evaluate(exists.directory).is(true);
+								}
+							)
+						);
+
+						$api.Function.impure.now.process(
+							$api.Function.impure.Process.compose([
+								file,
+								directory
+							])
+						);
+					};
+
+					fifty.tests.wip = fifty.tests.sandbox.filesystem.temporary;
+				}
+			//@ts-ignore
+			)(fifty);
+
+			export interface Filesystem {
+				/**
+				 * @deprecated Not really world-oriented; use the methods of `Pathname`, `File`, and `Directory`. Cannot be removed
+				 * without converting resulting usages of `object.Location` to usages of {@link Location}.
+				 */
+				pathname: (pathname: string) => object.Location
+
+				/** @deprecated Use .pathname() to obtain a {@link Location}. */
+				Pathname: {
+					/** @deprecated Use .pathname() to obtain a {@link Location}. */
+					relative: (parent: string, relative: string) => string
+
+					/** @deprecated Use .pathname() to obtain a {@link Location}. */
+					isDirectory: (pathname: string) => boolean
+				}
+
+				/** @deprecated Use .pathname() to obtain a {@link Location}. */
+				File: {
+					/** @deprecated Use .pathname() to obtain a {@link Location}. */
+					read: {
+						/** @deprecated Use .pathname() to obtain a {@link Location}. */
+						stream: {
+							/** @deprecated Use .pathname() to obtain a {@link Location}. */
+							bytes: (pathname: string) => slime.$api.fp.world.old.Ask<{
+								notFound: void
+							},slime.jrunscript.runtime.io.InputStream>
 						}
 
-						verify(cases).evaluate(isDirectory("parent")).is(true);
-						verify(cases).evaluate(isDirectory("thisFile")).is(false);
-						verify(cases).evaluate(isDirectory("nothing")).is(false);
-						verify(cases).evaluate(isDirectory("subfolder")).is(true);
+						/**
+						 * Returns an `Ask` that returns the contents of the file as a string, or `null` if the file does not exist.
+						 * The `Ask` also provides a `notFound` event to allow special handling of the case in which the file does not
+						 * exist.
+						 */
+						string: slime.$api.fp.world.Question<
+							{
+								pathname: string
+							},
+							{
+								notFound: void
+							},
+							string
+						>
 					}
-				};
 
-				var here = fifty.jsh.file.object.getRelativePath(".").toString();
-
-				fifty.tests.sandbox.filesystem.File = {};
-
-				fifty.tests.sandbox.filesystem.File.read = function() {
-					var me = filesystem.Pathname.relative(here, "module.fifty.ts");
-					var nothing = filesystem.Pathname.relative(here, "nonono");
-					var code = $api.Function.impure.now.input(
-						$api.Function.world.input(filesystem.File.read.string({ pathname: me }))
-					);
-					verify(code,"code").is.type("string");
-					var no = $api.Function.impure.now.input(
-						$api.Function.world.input(filesystem.File.read.string({ pathname: nothing }))
-					);
-					verify(no,"no").is.type("null");
-
-					fifty.run(function string() {
-						var pathname = function(relative: string) { return fifty.jsh.file.object.getRelativePath(relative).toString(); };
-						var thisFile = pathname("module.fifty.ts");
-						var doesNotExist = pathname("foo");
-						var thisFileContents = $api.Function.impure.now.input(
-							$api.Function.world.input(
-								filesystem.File.read.string({ pathname: thisFile })
-							)
-						);
-						var doesNotExistContents = $api.Function.impure.now.input(
-							$api.Function.world.input(
-								filesystem.File.read.string({ pathname: doesNotExist })
-							)
-						);
-						verify(thisFileContents).is.type("string");
-						verify(doesNotExistContents).is.type("null");
-					});
+					/** @deprecated Use .pathname() to obtain a {@link Location}. */
+					copy: (p: {
+						from: string
+						to: string
+					}) => slime.$api.fp.world.old.Tell<void>
 				}
 
-				fifty.tests.sandbox.filesystem.Directory = {};
-
-				fifty.tests.sandbox.filesystem.Directory.remove = function() {
-					var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					var location = filesystem.Pathname.relative(TMPDIR.toString(), "toRemove");
-					var exists = function(location) {
-						return filesystem.Pathname.isDirectory(location);
-					}
-					verify(location).evaluate(exists).is(false);
-					$api.Function.world.now.action(filesystem.createDirectory, { pathname: location });
-					verify(location).evaluate(exists).is(true);
-					filesystem.Directory.remove({
-						pathname: location
-					})();
-					verify(location).evaluate(exists).is(false);
-
-					var doesNotExist = filesystem.Pathname.relative(TMPDIR.toString(), "notThere");
-					verify(doesNotExist).evaluate(exists).is(false);
-					filesystem.Directory.remove({
-						pathname: doesNotExist
-					})();
-					verify(doesNotExist).evaluate(exists).is(false);
+				/** @deprecated Use .pathname() to obtain a {@link Location}. */
+				Directory: {
+					/**
+					 * @deprecated Use .pathname() to obtain a {@link Location}.
+					 *
+					 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
+					 * event and return.
+					 */
+					remove: (p: {
+						pathname: string
+					}) => slime.$api.fp.world.old.Tell<{
+						notFound: void
+					}>
 				}
 			}
-		//@ts-ignore
-		)(fifty);
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify, run } = fifty;
+					const { $api, jsh } = fifty.global;
+					const { world } = jsh.file;
+					const filesystem = world.spi.filesystems.os;
+
+					fifty.tests.sandbox.filesystem.Pathname = {
+						relative: function() {
+
+						},
+						isDirectory: function() {
+							var parent = fifty.jsh.file.object.getRelativePath(".").toString();
+							var cases = {
+								parent: parent,
+								thisFile: filesystem.Pathname.relative(parent, "module.fifty.ts"),
+								nothing: filesystem.Pathname.relative(parent, "foo"),
+								subfolder: filesystem.Pathname.relative(parent, "java")
+							};
+							var isDirectory = function(property) {
+								return function(cases) { return filesystem.Pathname.isDirectory(cases[property]); };
+							}
+
+							verify(cases).evaluate(isDirectory("parent")).is(true);
+							verify(cases).evaluate(isDirectory("thisFile")).is(false);
+							verify(cases).evaluate(isDirectory("nothing")).is(false);
+							verify(cases).evaluate(isDirectory("subfolder")).is(true);
+						}
+					};
+
+					var here = fifty.jsh.file.object.getRelativePath(".").toString();
+
+					fifty.tests.sandbox.filesystem.File = {};
+
+					fifty.tests.sandbox.filesystem.File.read = function() {
+						var me = filesystem.Pathname.relative(here, "module.fifty.ts");
+						var nothing = filesystem.Pathname.relative(here, "nonono");
+						var code = $api.Function.impure.now.input(
+							$api.Function.world.input(filesystem.File.read.string({ pathname: me }))
+						);
+						verify(code,"code").is.type("string");
+						var no = $api.Function.impure.now.input(
+							$api.Function.world.input(filesystem.File.read.string({ pathname: nothing }))
+						);
+						verify(no,"no").is.type("null");
+
+						fifty.run(function string() {
+							var pathname = function(relative: string) { return fifty.jsh.file.object.getRelativePath(relative).toString(); };
+							var thisFile = pathname("module.fifty.ts");
+							var doesNotExist = pathname("foo");
+							var thisFileContents = $api.Function.impure.now.input(
+								$api.Function.world.input(
+									filesystem.File.read.string({ pathname: thisFile })
+								)
+							);
+							var doesNotExistContents = $api.Function.impure.now.input(
+								$api.Function.world.input(
+									filesystem.File.read.string({ pathname: doesNotExist })
+								)
+							);
+							verify(thisFileContents).is.type("string");
+							verify(doesNotExistContents).is.type("null");
+						});
+					}
+
+					fifty.tests.sandbox.filesystem.Directory = {};
+
+					fifty.tests.sandbox.filesystem.Directory.remove = function() {
+						var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
+						var location = filesystem.Pathname.relative(TMPDIR.toString(), "toRemove");
+						var exists = function(location) {
+							return filesystem.Pathname.isDirectory(location);
+						}
+						verify(location).evaluate(exists).is(false);
+						$api.Function.world.now.action(filesystem.createDirectory, { pathname: location });
+						verify(location).evaluate(exists).is(true);
+						filesystem.Directory.remove({
+							pathname: location
+						})();
+						verify(location).evaluate(exists).is(false);
+
+						var doesNotExist = filesystem.Pathname.relative(TMPDIR.toString(), "notThere");
+						verify(doesNotExist).evaluate(exists).is(false);
+						filesystem.Directory.remove({
+							pathname: doesNotExist
+						})();
+						verify(doesNotExist).evaluate(exists).is(false);
+					}
+				}
+			//@ts-ignore
+			)(fifty);
+		}
+
+		export interface Filesystem {
+		}
 	}
 
 	export interface World {
+		Filesystem: {
+			from: {
+				spi: (provider: world.spi.Filesystem) => world.Filesystem
+			}
+		}
+	}
+
+	export interface World {
+		spi: {
+			filesystems: {
+				os: world.spi.Filesystem
+			}
+		}
+
 		filesystems: {
 			os: world.Filesystem
 		}
@@ -1057,14 +1078,14 @@ namespace slime.jrunscript.file {
 				var pathname = fifty.jsh.file.object.getRelativePath("module.fifty.ts").toString();
 				var contents = $api.Function.impure.now.input(
 					$api.Function.world.input(
-						world.filesystems.os.File.read.string({ pathname: pathname })
+						world.spi.filesystems.os.File.read.string({ pathname: pathname })
 					)
 				);
 				jsh.shell.console(contents.substring(0,500));
 
 				var folder = fifty.jsh.file.object.getRelativePath(".").toString();
 				var file = "module.fifty.ts";
-				var relative = world.filesystems.os.Pathname.relative(folder, file);
+				var relative = world.spi.filesystems.os.Pathname.relative(folder, file);
 				jsh.shell.console(relative);
 			}
 		}

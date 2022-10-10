@@ -50,7 +50,7 @@ namespace slime.jsh.wf {
 							path: "."
 						});
 						var slime = fixtures.clone({
-							src: jsh.file.world.filesystems.os.pathname(src.toString()),
+							src: jsh.file.world.spi.filesystems.os.pathname(src.toString()),
 							commit: {
 								message: "Local modifications"
 							}
@@ -88,7 +88,7 @@ namespace slime.jsh.wf {
 							if (!p) p = {};
 							var origin = fixture();
 							var repository = fixtures.clone({
-								src: jsh.file.world.filesystems.os.pathname(origin.directory.toString())
+								src: jsh.file.world.spi.filesystems.os.pathname(origin.directory.toString())
 							});
 							repository.submodule.update({
 								init: true
@@ -110,7 +110,7 @@ namespace slime.jsh.wf {
 							function toGitFixturesRepository(p: slime.jrunscript.tools.git.repository.Local): slime.jrunscript.tools.git.test.fixtures.Repository {
 								return {
 									location: {
-										filesystem: jsh.file.world.filesystems.os,
+										filesystem: jsh.file.world.spi.filesystems.os,
 										pathname: p.directory.toString()
 									},
 									api: jsh.tools.git.program({ command: "git" }).repository(p.directory.toString())
@@ -598,7 +598,7 @@ namespace slime.jsh.wf {
 				fifty.tests.manual.profile = function() {
 					var project = test.fixtures.adapt.repository(test.fixtures.project({ noInitialize: true }).clone);;
 					var getSlimePath = function(relative) {
-						return jsh.file.world.filesystems.os.pathname(project.directory.toString()).relative("slime").relative(relative);
+						return jsh.file.world.spi.filesystems.os.pathname(project.directory.toString()).relative("slime").relative(relative);
 					}
 					//	TODO	should profiler install Rhino?
 					jsh.shell.world.run(
