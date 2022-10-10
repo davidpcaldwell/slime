@@ -122,9 +122,18 @@ namespace slime.jrunscript.node {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Invocation {
+		command?: string
+		project?: string
+		arguments?: slime.jrunscript.shell.invocation.Argument["arguments"]
+		environment?: slime.jrunscript.shell.invocation.Argument["environment"]
+		directory?: slime.jrunscript.shell.invocation.Argument["directory"]
+		stdio?: slime.jrunscript.shell.invocation.Argument["stdio"]
+	}
+
 	export namespace functions {
 		export interface Installation {
-			question: (argument: internal.Argument) => slime.$api.fp.world.Question<world.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
+			question: (argument: Invocation) => slime.$api.fp.world.Question<world.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 		}
 
 		(
@@ -490,15 +499,6 @@ namespace slime.jrunscript.node.internal {
 				version: string
 			}
 		}
-	}
-
-	export interface Argument {
-		command?: string
-		project?: string
-		arguments?: slime.jrunscript.shell.invocation.Argument["arguments"]
-		environment?: slime.jrunscript.shell.invocation.Argument["environment"]
-		directory?: slime.jrunscript.shell.invocation.Argument["directory"]
-		stdio?: slime.jrunscript.shell.invocation.Argument["stdio"]
 	}
 
 	(

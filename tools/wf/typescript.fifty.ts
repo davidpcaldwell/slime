@@ -12,8 +12,26 @@ namespace slime.jsh.wf.internal.typescript {
 		}
 	}
 
+	export interface Invocation {
+		configuration: {
+			typescript: {
+				version: string
+				/**
+				 * Pathname of the project file (for example, `tsconfig.json`, `jsconfig.json`).
+				 */
+				configuration: string
+			}
+		}
+		/**
+		 * The pathname of the project to document.
+		 */
+		project: string
+	}
+
 	export interface Exports {
 		typedoc: {
+			invocation: (p: Invocation) => slime.jrunscript.node.Invocation
+
 			/**
 			 * Given a TypeScript configuration and project directory, runs TypeDoc and returns a boolean: `true` for success, false
 			 * for failure.

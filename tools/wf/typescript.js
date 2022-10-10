@@ -85,89 +85,96 @@
 			throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
 		};
 
+		/** @type { slime.jsh.wf.internal.typescript.Exports["typedoc"]["invocation"] } */
+		var invocation = function(p) {
+			if (!p.configuration || !p.configuration.typescript || !p.configuration.typescript.version) throw new TypeError("Required: p.configuration.typescript.version");
+
+			$api.Function.world.now.action($context.library.node.require);
+
+			$api.Function.world.now.action(
+				$context.library.node.world.Installation.modules.require({ name: "typescript", version: p.configuration.typescript.version }),
+				$context.library.node.installation
+			);
+
+			var typedocVersion = $api.Function.result(
+				p.configuration.typescript.version,
+				$api.Function.pipe(
+					typedocVersionForTypescript,
+					parseTypedocVersion
+				)
+			);
+
+			$api.Function.world.now.action(
+				$context.library.node.world.Installation.modules.require({
+					name: "typedoc",
+					version: $api.Function.result(p.configuration.typescript.version, typedocVersionForTypescript)
+				}),
+				$context.library.node.installation
+			);
+
+			var project = $context.library.file.world.Location.from.os(p.project);
+
+			var configuration = $api.Function.result(
+				project,
+				getTypedocConfguration
+			);
+
+			/** @type { slime.jrunscript.node.Invocation } */
+			var argument = {
+				command: "typedoc",
+				arguments: $api.Array.build(function(rv) {
+					//	TODO	is this relative to tsconfig or to PWD?
+					if (!configuration.out) {
+						rv.push("--out", getRelativePath(p.project, "local/doc/typedoc"));
+					}
+
+					rv.push("--tsconfig", p.configuration.typescript.configuration);
+
+					if (typedocVersion.major == 0 && typedocVersion.minor < 20) {
+						rv.push("--mode", "file");
+						rv.push("--includeDeclarations");
+					}
+
+					//	TODO	dubious
+					//rv.push("--excludeExternals");
+
+					if (!configuration.readme) {
+						var readme = (function(project) {
+							var typedocIndexLocation = $api.Function.result(
+								project,
+								$context.library.file.world.Location.relative("typedoc-index.md")
+							);
+							var exists = $api.Function.world.now.question(
+								$context.library.file.world.Location.file.exists(),
+								typedocIndexLocation
+							);
+							return (exists) ? typedocIndexLocation.pathname : "none";
+						})(project);
+						rv.push("--readme", readme);
+					}
+
+					if (!configuration.entryPoints && typedocVersionUsesEntryPoints(typedocVersion)) {
+						var entryPointLocation = $api.Function.result(project, $context.library.file.world.Location.relative("README.fifty.ts"));
+						var exists = $api.Function.world.now.question(
+							$context.library.file.world.Location.file.exists(),
+							entryPointLocation
+						);
+						if (!exists) {
+							throw new Error("Required: typedoc.json, or README.fifty.ts to use as TypeDoc entry point.");
+						}
+						rv.push("--entryPoints", entryPointLocation.pathname);
+					}
+				}),
+				directory: project.pathname
+			};
+
+			return argument;
+		}
+
 		/** @type { slime.jsh.wf.internal.typescript.Exports["typedoc"]["run"] } */
 		var typedoc_run = function(p) {
 			return function(events) {
-				if (!p.configuration || !p.configuration.typescript || !p.configuration.typescript.version) throw new TypeError("Required: p.configuration.typescript.version");
-
-				$api.Function.world.now.action($context.library.node.require);
-
-				$api.Function.world.now.action(
-					$context.library.node.world.Installation.modules.require({ name: "typescript", version: p.configuration.typescript.version }),
-					$context.library.node.installation
-				);
-
-				var typedocVersion = $api.Function.result(
-					p.configuration.typescript.version,
-					$api.Function.pipe(
-						typedocVersionForTypescript,
-						parseTypedocVersion
-					)
-				);
-
-				$api.Function.world.now.action(
-					$context.library.node.world.Installation.modules.require({
-						name: "typedoc",
-						version: $api.Function.result(p.configuration.typescript.version, typedocVersionForTypescript)
-					}),
-					$context.library.node.installation
-				);
-
-				var project = $context.library.file.world.Location.from.os(p.project);
-
-				var configuration = $api.Function.result(
-					project,
-					getTypedocConfguration
-				);
-
-				/** @type { slime.jrunscript.node.internal.Argument } */
-				var argument = {
-					command: "typedoc",
-					arguments: $api.Array.build(function(rv) {
-						//	TODO	is this relative to tsconfig or to PWD?
-						if (!configuration.out) {
-							rv.push("--out", getRelativePath(p.project, "local/doc/typedoc"));
-						}
-
-						rv.push("--tsconfig", p.configuration.typescript.configuration);
-
-						if (typedocVersion.major == 0 && typedocVersion.minor < 20) {
-							rv.push("--mode", "file");
-							rv.push("--includeDeclarations");
-						}
-
-						//	TODO	dubious
-						//rv.push("--excludeExternals");
-
-						if (!configuration.readme) {
-							var readme = (function(project) {
-								var typedocIndexLocation = $api.Function.result(
-									project,
-									$context.library.file.world.Location.relative("typedoc-index.md")
-								);
-								var exists = $api.Function.world.now.question(
-									$context.library.file.world.Location.file.exists(),
-									typedocIndexLocation
-								);
-								return (exists) ? typedocIndexLocation.pathname : "none";
-							})(project);
-							rv.push("--readme", readme);
-						}
-
-						if (!configuration.entryPoints && typedocVersionUsesEntryPoints(typedocVersion)) {
-							var entryPointLocation = $api.Function.result(project, $context.library.file.world.Location.relative("README.fifty.ts"));
-							var exists = $api.Function.world.now.question(
-								$context.library.file.world.Location.file.exists(),
-								entryPointLocation
-							);
-							if (!exists) {
-								throw new Error("Required: typedoc.json, or README.fifty.ts to use as TypeDoc entry point.");
-							}
-							rv.push("--entryPoints", entryPointLocation.pathname);
-						}
-					}),
-					directory: project.pathname
-				};
+				var argument = invocation(p);
 
 				var exit = $api.Function.world.now.question(
 					$context.library.node.world.Installation.question(argument),
@@ -180,6 +187,7 @@
 
 		$export({
 			typedoc: {
+				invocation: invocation,
 				run: typedoc_run
 			}
 		})

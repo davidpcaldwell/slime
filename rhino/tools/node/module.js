@@ -117,7 +117,7 @@
 			return target.pathname;
 		}
 
-		/** @type { (installation: slime.jrunscript.node.world.Installation) => (p: slime.jrunscript.node.internal.Argument) => slime.jrunscript.shell.invocation.Argument } */
+		/** @type { (installation: slime.jrunscript.node.world.Installation) => (p: slime.jrunscript.node.Invocation) => slime.jrunscript.shell.invocation.Argument } */
 		var node_invocation = function(installation) {
 			return function(invocation) {
 				var command = (

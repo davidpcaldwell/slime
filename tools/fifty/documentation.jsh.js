@@ -28,10 +28,10 @@
 
 				var operation = (p.options.watch) ? "document" : "documentation";
 
-				var chromeId = (function(chromeId,watch) {
+				var chromeId = (function(chromeId,operation) {
 					if (chromeId) return chromeId;
-					return (watch) ? "document" : "documentation";
-				})(p.options["chrome:id"], p.options.watch);
+					return operation;
+				})(p.options["chrome:id"], operation);
 
 				var host = (function(host,operation) {
 					if (host) return operation + "." + host;
