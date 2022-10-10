@@ -107,7 +107,17 @@
 
 		/** @type { slime.jrunscript.file.World["Filesystem"]["from"]["spi"] } */
 		var filesystemFromSpi = function(provider) {
-			return {};
+			return {
+				temporary: function(p) {
+					return function(events) {
+						var path = provider.temporary(p)(events);
+						return {
+							filesystem: provider,
+							pathname: path
+						}
+					}
+				}
+			};
 		}
 
 		$export({
