@@ -307,16 +307,25 @@
 						install: function(p) {
 							var destination = (p && p.destination) ? p.destination : location;
 
-							var getBinaryUrl = function() {
-								/** @type { { [os: string]: string } } */
-								var byOs = {
-									"Mac OS X": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-amd64",
-									"Linux": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64"
-								};
-								return byOs[jsh.shell.os.name];
+							/**
+							 *
+							 * @param { string } os
+							 * @param { string } arch
+							 * @returns
+							 */
+							var getBinaryUrl = function(os,arch) {
+								if (os == "Linux") {
+									return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64";
+								} else if (os == "Mac OS X") {
+									if (arch == "aarch64") {
+										return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-arm64";
+									} else {
+										return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-amd64";
+									}
+								}
 							}
 
-							var at = jsh.tools.install.get({ url: getBinaryUrl() });
+							var at = jsh.tools.install.get({ url: getBinaryUrl(jsh.shell.os.name, jsh.shell.os.arch) });
 
 							at.copy(destination, {
 								filter: function(p) {
