@@ -13,6 +13,7 @@ if [ -n "${JSH_LAUNCHER_BASH_DEBUG}" ]; then
 fi
 
 UNAME=$(uname)
+ARCH=$(arch)
 
 if [ "$0" == "bash" ]; then
 	#	Remote shell
@@ -136,7 +137,12 @@ install_jdk_corretto() {
 	TO=$(clean_destination "$3")
 
 	if [ "${UNAME}" == "Darwin" ]; then
-		JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-macosx-x64.tar.gz"
+		if [ "${ARCH}" == "arm64" ]; then
+			JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-macosx-aarch64.tar.gz"
+		else
+			#	i386
+			JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-macosx-x64.tar.gz"
+		fi
 		JDK_TARBALL_PATH="amazon-corretto-${MAJOR_VERSION}.jdk/Contents/Home"
 	elif [ "${UNAME}" == "Linux" ]; then
 		JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-linux-x64.tar.gz"
@@ -161,7 +167,7 @@ install_jdk_corretto() {
 }
 
 install_jdk_8_corretto() {
-	install_jdk_corretto "8.332.08.1" "8" $1
+	install_jdk_corretto "8.342.07.3" "8" $1
 }
 
 install_jdk_11_corretto() {
