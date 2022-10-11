@@ -26,16 +26,32 @@
 					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-darwin-x64.tar.gz" },
 					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-darwin-x64.tar.gz" },
 					"16.15.1": { url: "https://nodejs.org/dist/v16.15.1/node-v16.15.1-darwin-x64.tar.gz" },
+					"16.17.1": { url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-darwin-x64.tar.gz" },
 				},
 				"Linux": {
 					"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-linux-x64.tar.gz" },
 					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-linux-x64.tar.gz" },
 					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-linux-x64.tar.gz" },
-					"16.15.1": { url: "https://nodejs.org/dist/v16.15.1/node-v16.15.1-linux-x64.tar.gz" }
+					"16.15.1": { url: "https://nodejs.org/dist/v16.15.1/node-v16.15.1-linux-x64.tar.gz" },
+					"16.17.1": { url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-linux-x64.tar.gz" }
 				}
 			},
-			default: "16.15.1"
+			default: "16.17.1"
 		};
+
+		var getDownload = function(version, os, arch) {
+			if (arch == "aarch64") {
+				if (version == "16.17.1") {
+					return {
+						url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-darwin-arm64.tar.gz"
+					}
+				}
+			}
+			var osVersions = versions.byOs[os];
+			if (!osVersions) throw new TypeError("Unsupported operating system: " + $context.library.shell.os.name);
+			var download = osVersions[version];
+			return download;
+		}
 
 		var provider = ($context.world) || (
 			/** @type { () => slime.jrunscript.node.World } */
@@ -45,9 +61,7 @@
 						return function(events) {
 							var existing = $exports.at({ location: p.location.toString() });
 							if (existing) throw new Error("Node installation directory exists: " + p.location.toString());
-							var os = versions.byOs[$context.library.shell.os.name];
-							if (!os) throw new TypeError("Unsupported operating system: " + $context.library.shell.os.name);
-							var version = os[p.version];
+							var version = getDownload(p.version, $context.library.shell.os.name, $context.library.shell.os.arch);
 							$context.library.install.install({
 								url: version.url,
 								to: $context.library.file.Pathname(p.location)
@@ -520,9 +534,7 @@
 			return function(events) {
 				var existing = $exports.at({ location: p.location.toString() });
 				if (existing) throw new Error("Node instlalation directory exists: " + p.location.toString());
-				var os = versions.byOs[$context.library.shell.os.name];
-				if (!os) throw new TypeError("Unsupported operating system: " + $context.library.shell.os.name);
-				var version = os[p.version];
+				var version = getDownload(p.version, $context.library.shell.os.name, $context.library.shell.os.arch);
 				$context.library.install.install({
 					url: version.url,
 					to: p.location
