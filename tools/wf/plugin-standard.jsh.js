@@ -32,7 +32,7 @@
 			var repository = jsh.tools.git.Repository({ directory: project });
 			var status = repository.status();
 			if (status.paths) {
-				var modified = $api.Function.result(
+				var modified = $api.fp.result(
 					status.paths,
 					Object.entries
 				);
@@ -175,7 +175,7 @@
 					);
 				}
 
-				$exports.tsc = $api.Function.pipe(
+				$exports.tsc = $api.fp.pipe(
 					jsh.script.cli.option.boolean({ longname: "vscode" }),
 					function(p) {
 						/**
@@ -193,8 +193,8 @@
 								return message;
 							}
 						}
-						var formatter = (p.options.vscode) ? formatForVscode : $api.Function.identity;
-						var result = $api.Function.world.now.question(
+						var formatter = (p.options.vscode) ? formatForVscode : $api.fp.identity;
+						var result = $api.fp.world.now.question(
 							jsh.wf.checks.tsc,
 							void(0),
 							{
@@ -261,12 +261,12 @@
 								arguments: ["list"]
 							}
 						},
-						result: $api.Function.pipe(
-							$api.Function.string.split("\n"),
-							$api.Function.Array.map($api.Function.RegExp.exec(/^([^\:]+)(?:.*)$/)),
-							$api.Function.Array.filter($api.Function.Maybe.present),
-							$api.Function.Array.map($api.Function.property("value")),
-							$api.Function.Array.map(function(p) {
+						result: $api.fp.pipe(
+							$api.fp.string.split("\n"),
+							$api.fp.Array.map($api.fp.RegExp.exec(/^([^\:]+)(?:.*)$/)),
+							$api.fp.Array.filter($api.fp.Maybe.present),
+							$api.fp.Array.map($api.fp.property("value")),
+							$api.fp.Array.map(function(p) {
 								return { stash: p[1] };
 							})
 						)
@@ -286,23 +286,23 @@
 					jsh.shell.console("Current branch: " + displayBranchName(status.branch));
 					if (vsRemote && vsRemote.ahead.length) jsh.shell.console("ahead of " + base + ": " + vsRemote.ahead.length);
 					if (vsRemote && vsRemote.behind.length) jsh.shell.console("behind " + base + ": " + vsRemote.behind.length);
-					var output = $api.Function.result(
+					var output = $api.fp.result(
 						status.entries,
-						$api.Function.conditional({
+						$api.fp.conditional({
 							condition: function(entries) {
 								return entries.length > 0;
 							},
-							true: $api.Function.pipe(
-								$api.Function.Array.map(function(entry) {
+							true: $api.fp.pipe(
+								$api.fp.Array.map(function(entry) {
 									if (entry.orig_path) {
 										return entry.code + " " + entry.path + " (was: " + entry.orig_path + ")";
 									} else {
 										return entry.code + " " + entry.path;
 									}
 								}),
-								$api.Function.Array.join("\n")
+								$api.fp.Array.join("\n")
 							),
-							false: $api.Function.returning(null)
+							false: $api.fp.returning(null)
 						})
 					);
 					if (output) jsh.shell.console(output);
@@ -580,7 +580,7 @@
 				}
 
 				$exports.submodule = {
-					update: (project.precommit) ? $api.Function.pipe(
+					update: (project.precommit) ? $api.fp.pipe(
 						/**
 						 *
 						 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { path: string }> } p
@@ -611,14 +611,14 @@
 							}
 						}
 					) : void(0),
-					remove: $api.Function.pipe(
+					remove: $api.fp.pipe(
 						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
 							var path = p.options.path;
 							jsh.wf.project.submodule.remove({ path: path });
 						}
 					),
-					attach: $api.Function.pipe(
+					attach: $api.fp.pipe(
 						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
 							var repository = jsh.tools.git.Repository({ directory: $context.base });
@@ -644,7 +644,7 @@
 							}
 						}
 					),
-					reset: $api.Function.pipe(
+					reset: $api.fp.pipe(
 						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
 							var repository = jsh.tools.git.Repository({ directory: $context.base });
@@ -686,7 +686,7 @@
 					)
 				};
 
-				if (project.precommit) $exports.commit = $api.Function.pipe(
+				if (project.precommit) $exports.commit = $api.fp.pipe(
 					jsh.script.cli.option.string({ longname: "message" }),
 					jsh.script.cli.option.boolean({ longname: "notest" }),
 					function(p) {
@@ -726,7 +726,7 @@
 				);
 
 				var serveDocumentation = function(c) {
-					return $api.Function.pipe(
+					return $api.fp.pipe(
 						function(p) {
 							jsh.shell.run({
 								command: jsh.shell.jsh.src.getFile("fifty"),

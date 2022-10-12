@@ -66,9 +66,9 @@ namespace slime.jrunscript.file {
 					//	jsh.shell.echo(loader.list().map(function(item) { return item.path; }));
 					verify(map).java.evaluate(isLoaderEntry).is(true);
 					verify(map).java.evaluate(function() { return this.resource; }).is(void(0));
-					verify(map).java.evaluate($api.Function.property("resource")).is(void(0));
+					verify(map).java.evaluate($api.fp.property("resource")).is(void(0));
 					verify(map["java.js"]).evaluate(isResourceEntry).is(true);
-					verify(map["java.js"]).evaluate($api.Function.property("loader")).is(void(0));
+					verify(map["java.js"]).evaluate($api.fp.property("loader")).is(void(0));
 				});
 
 				run(function() {

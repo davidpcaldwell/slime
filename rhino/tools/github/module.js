@@ -20,10 +20,10 @@
 		 * @returns
 		 */
 		var parseLinkHeader = function(value) {
-			return $api.Function.result(
+			return $api.fp.result(
 				value,
-				$api.Function.string.split(", "),
-				$api.Function.Array.map(function(string) {
+				$api.fp.string.split(", "),
+				$api.fp.Array.map(function(string) {
 					var relationFormat = /^\<(.+?)\>\; rel\=\"(.+)\"/;
 					var parsed = relationFormat.exec(string);
 					return {
@@ -31,7 +31,7 @@
 						rel: parsed[2]
 					}
 				}),
-				$api.Function.Array.map(
+				$api.fp.Array.map(
 					/** @returns { [string, string] } */
 					function(relation) {
 						return [relation.rel, relation.url];
@@ -353,8 +353,8 @@
 										return {
 											run: function(run) {
 												var world = (run && run.world) ? run.world : $context.library.http.world;
-												return $api.Function.world.old.ask(function(events) {
-													var response = $api.Function.world.input(world.request(
+												return $api.fp.world.old.ask(function(events) {
+													var response = $api.fp.world.input(world.request(
 														toHttpArgument(
 															api,
 															authentication,
@@ -374,7 +374,7 @@
 										return {
 											run: function(run) {
 												var world = (run && run.world) ? run.world : $context.library.http.world;
-												return $api.Function.world.old.ask(function(events) {
+												return $api.fp.world.old.ask(function(events) {
 													var request = toHttpArgument(
 														api,
 														authentication,
@@ -382,7 +382,7 @@
 													);
 													var rv = [];
 													while(request) {
-														var response = $api.Function.world.input(world.request(request))();
+														var response = $api.fp.world.input(world.request(request))();
 														var page = operation.response(response);
 														rv = rv.concat(page);
 														var link = links(response);

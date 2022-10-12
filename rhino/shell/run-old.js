@@ -127,7 +127,7 @@
 						})();
 					} else if (typeof(p.command) != "undefined") {
 						rv.result.command = p.command;
-						//	TODO	switch to $api.Function.mutating
+						//	TODO	switch to $api.fp.mutating
 						rv.result.arguments = p.arguments;
 						rv.result.as = p.as;
 						rv.configuration = toConfiguration(p.command, p.arguments);

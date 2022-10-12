@@ -21,7 +21,7 @@
 					jsh,
 					"java",
 					{
-						get: $api.Function.memoized(function() {
+						get: $api.fp.memoized(function() {
 							return $loader.module("module.js", {
 								globals: true,
 								$slime: $slime,

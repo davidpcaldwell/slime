@@ -55,7 +55,7 @@
 			}
 		}
 
-		var invocation = $api.Function.result(
+		var invocation = $api.fp.result(
 			{ options: {}, arguments: p.arguments },
 			option.boolean({ longname: "nocache" }),
 			option.boolean({ longname: "harness" }),
@@ -109,7 +109,7 @@
 					}
 				});
 			};
-			if (!options.nocache) rv = $api.Function.memoized(rv);
+			if (!options.nocache) rv = $api.fp.memoized(rv);
 			return rv;
 		})(invocation.options);
 

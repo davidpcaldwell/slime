@@ -14,7 +14,7 @@
 	function($api,jsh) {
 		jsh.shell.tools.tomcat.require();
 
-		$api.Function.result(
+		$api.fp.result(
 			{ options: { index: "index.html" }, arguments: jsh.script.arguments },
 			jsh.script.cli.option.pathname({ longname: "chrome:data" }),
 			jsh.script.cli.option.string({ longname: "index" }),

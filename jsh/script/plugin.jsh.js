@@ -133,7 +133,7 @@
 					}
 					if ($slime.getPackaged()) {
 						/** @type { slime.js.Cast<slime.old.Loader> } */
-						var toJavaLoader = $api.Function.cast;
+						var toJavaLoader = $api.fp.cast;
 						var x = toJavaLoader(new jsh.io.Loader({ _source: $slime.getPackaged().getCode() }));
 						rv.packaged = {
 							file: jsh.file.filesystem.java.adapt($slime.getPackaged().getFile()).file,
@@ -214,7 +214,7 @@
 							}
 							p.arguments = args;
 						};
-						return $api.Function.object.revise(rv);
+						return $api.fp.object.revise(rv);
 					}
 				};
 
@@ -279,7 +279,7 @@
 				/** @type { slime.jsh.script.cli.Exports["Call"]["get"] } */
 				var getCall = function(p) {
 					/** @type { slime.jsh.script.cli.Processor<{},{}> } */
-					var emptyOptions = $api.Function.identity;
+					var emptyOptions = $api.fp.identity;
 
 					var options = p.descriptor.options || emptyOptions;
 					var global = options({ options: {}, arguments: p.arguments });
@@ -356,7 +356,7 @@
 						});
 					},
 					option: {
-						string: option($api.Function.identity),
+						string: option($api.fp.identity),
 						boolean: function(o) {
 							var rv = function(p) {
 								var args = [];
@@ -369,7 +369,7 @@
 								}
 								p.arguments = args;
 							}
-							return $api.Function.object.revise(rv);
+							return $api.fp.object.revise(rv);
 						},
 						number: option(Number),
 						pathname: option(jsh.script.getopts.parser.Pathname),
@@ -386,7 +386,7 @@
 								}
 								p.arguments = args;
 							}
-							return $api.Function.object.revise(rv);
+							return $api.fp.object.revise(rv);
 						}
 					},
 					error: {
@@ -401,7 +401,7 @@
 					 */
 					invocation: function(f) {
 						/** @type { slime.js.Cast<T> } */
-						var cast = $api.Function.cast;
+						var cast = $api.fp.cast;
 						return f({
 							options: cast({}),
 							arguments: Array.prototype.slice.call(jsh.script.arguments)

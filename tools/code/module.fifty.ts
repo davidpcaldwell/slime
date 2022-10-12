@@ -76,7 +76,7 @@ namespace slime.tools.code {
 				var jxa = fifty.jsh.file.relative("../../jxa.bash");
 				var foo = fifty.jsh.file.relative("../../foo");
 
-				var hasShebang = $api.Function.world.question(test.subject.File.hasShebang());
+				var hasShebang = $api.fp.world.question(test.subject.File.hasShebang());
 
 				var wfHas = hasShebang({
 					path: "wf",

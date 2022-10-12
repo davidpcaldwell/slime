@@ -16,7 +16,7 @@
 	function (Packages, $api, $context, $export) {
 		if (!$context.Resource) throw new Error();
 
-		var constant = $api.Function.memoized;
+		var constant = $api.fp.memoized;
 
 		var fail = function(message) {
 			throw new Error(message);

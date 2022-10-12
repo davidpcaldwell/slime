@@ -198,12 +198,12 @@ namespace slime.jsh.script {
 				fifty.tests.cli.option = function() {
 					const subject = test.subject;
 
-					var invoked = $api.Function.result(
+					var invoked = $api.fp.result(
 						{
 							options: {},
 							arguments: ["--foo", "bar", "--baz", 42]
 						},
-						$api.Function.pipe(
+						$api.fp.pipe(
 							subject.cli.option.string({ longname: "foo" }),
 							subject.cli.option.number({ longname: "baz" })
 						)
@@ -316,7 +316,7 @@ namespace slime.jsh.script {
 
 						fifty.run(
 				 			function() {
-								var processor = $api.Function.pipe(
+								var processor = $api.fp.pipe(
 									subject.cli.option.string({ longname: "a" }),
 									subject.cli.option.boolean({ longname: "b" }),
 									subject.cli.option.string({ longname: "aa" }),
@@ -405,7 +405,7 @@ namespace slime.jsh.script {
 			fifty.tests.cli.invocation = function() {
 				const subject = test.subject;
 
-				var parser = fifty.global.$api.Function.pipe(
+				var parser = fifty.global.$api.fp.pipe(
 					subject.cli.option.string({ longname: "foo" })
 				);
 				var was = fifty.global.jsh.unit.$slime;
@@ -443,7 +443,7 @@ namespace slime.jsh.script {
 					descriptor: {
 						options: subject.cli.option.string({ longname: "global" }),
 						commands: {
-							universe: $api.Function.pipe(
+							universe: $api.fp.pipe(
 								subject.cli.option.string({ longname: "command" }),
 								function(invocation) {
 									invocationWas(invocation);
@@ -495,7 +495,7 @@ namespace slime.jsh.script {
 					shell: fifty.global.jsh.shell.jsh.src,
 					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
 					arguments: ["status"],
-					evaluate: $api.Function.identity
+					evaluate: $api.fp.identity
 				});
 				fifty.verify(result).status.is(0);
 
@@ -503,7 +503,7 @@ namespace slime.jsh.script {
 					shell: fifty.global.jsh.shell.jsh.src,
 					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
 					arguments: ["status", "42"],
-					evaluate: $api.Function.identity
+					evaluate: $api.fp.identity
 				});
 				fifty.verify(result).status.is(42);
 
@@ -511,7 +511,7 @@ namespace slime.jsh.script {
 					shell: fifty.global.jsh.shell.jsh.src,
 					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
 					arguments: [],
-					evaluate: $api.Function.identity
+					evaluate: $api.fp.identity
 				});
 				fifty.verify(result).status.is(1);
 			};

@@ -395,7 +395,7 @@
 		$exports.java = $context.api.io.java;
 
 		$export(
-			$api.Function.result(
+			$api.fp.result(
 				(
 					function() {
 						/** @type { slime.jrunscript.file.Exports } */

@@ -197,7 +197,7 @@ namespace slime.jrunscript.tools.gcloud {
 					}
 				});
 				var at = fifty.jsh.file.temporary.location();
-				$api.Function.world.now.action(
+				$api.fp.world.now.action(
 					module.cli.Installation.create,
 					at.pathname,
 					{

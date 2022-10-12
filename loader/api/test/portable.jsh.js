@@ -12,7 +12,7 @@
 	 */
 	function($api,jsh) {
 		(
-			$api.Function.pipe(
+			$api.fp.pipe(
 				jsh.script.cli.option.pathname({ longname: "definition" }),
 				function run(p) {
 					var suite = new jsh.unit.html.Suite();

@@ -75,7 +75,7 @@ namespace slime.jrunscript.http.client.spi {
 					}
 				});
 				server.start();
-				var ask = $api.Function.world.input(subject({
+				var ask = $api.fp.world.input(subject({
 					request: {
 						method: "GET",
 						url: jsh.web.Url.codec.string.decode("http://127.0.0.1:" + server.port + "/foo"),

@@ -37,7 +37,7 @@
 				};
 				output.split("\n").forEach(function(line) {
 					var NO_COMMITS_PREFIX = "## No commits yet on ";
-					if ($api.Function.string.startsWith(NO_COMMITS_PREFIX)(line)) {
+					if ($api.fp.string.startsWith(NO_COMMITS_PREFIX)(line)) {
 						rv.branch = line.substring(NO_COMMITS_PREFIX.length);
 					} else if (line.substring(0,2) == "##") {
 						var branchName = line.substring(3);

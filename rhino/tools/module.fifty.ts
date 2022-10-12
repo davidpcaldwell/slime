@@ -24,7 +24,7 @@ namespace slime.jrunscript.java.tools {
 	export interface Exports {
 		javac: {
 			/**
-			 * @deprecated Use the form that returns the result and pipe that to another function using `$api.Function.pipe` for
+			 * @deprecated Use the form that returns the result and pipe that to another function using `$api.fp.pipe` for
 			 * this behavior.
 			 */
 			<R>(p: {

@@ -109,7 +109,7 @@
 				events.fire("buildStart");
 				var tmpdir = $context.library.shell.TMPDIR.createTemporary({ directory: true });
 				events.fire("buildLocation", tmpdir);
-				$api.Function.world.now.action(
+				$api.fp.world.now.action(
 					_buildShell(p.src, void(0)),
 					tmpdir,
 					{
@@ -164,7 +164,7 @@
 		};
 
 		/** @type { (invocation: slime.jsh.internal.launcher.test.ShellInvocation) => slime.jsh.internal.launcher.test.Result } */
-		var getShellResultFor = $api.Function.world.question(shellResultQuestion, {
+		var getShellResultFor = $api.fp.world.question(shellResultQuestion, {
 			invocation: function(e) {
 				//	TODO	can we use console for this and the next call?
 				$context.console("Command: " + e.detail.command + " " + e.detail.arguments.join(" "));
@@ -353,7 +353,7 @@
 		 * @returns
 		 */
 		var getHome = function(context,built,console) {
-			return $api.Function.world.now.question(
+			return $api.fp.world.now.question(
 				requireBuiltShellHomeDirectory,
 				$api.Object.compose(context, {
 					specified: built
@@ -380,7 +380,7 @@
 
 		/** @type { <T>(input: slime.$api.fp.impure.Input<T>) => slime.$api.fp.impure.Input<T> } */
 		var memoized = function(input) {
-			return $api.Function.memoized(input);
+			return $api.fp.memoized(input);
 		}
 
 		var getBuiltShellHomeDirectory = function(p) {
@@ -396,7 +396,7 @@
 			 * @returns
 			 */
 			function(jsh,options,runner) {
-				var getJsh = $api.Function.impure.Input.value(jsh);
+				var getJsh = $api.fp.impure.Input.value(jsh);
 
 				var Context = {
 					src: getContextSrc,
@@ -411,13 +411,13 @@
 					}
 				};
 
-				var getContext = $api.Function.impure.Input.map(getJsh, Context.from.jsh);
+				var getContext = $api.fp.impure.Input.map(getJsh, Context.from.jsh);
 
-				var getSrc = $api.Function.impure.Input.map(getContext, Context.src);
+				var getSrc = $api.fp.impure.Input.map(getContext, Context.src);
 
-				var getEngines = memoized($api.Function.impure.Input.map(getSrc, getJavascriptEngines));
+				var getEngines = memoized($api.fp.impure.Input.map(getSrc, getJavascriptEngines));
 
-				var getUnbuilt = $api.Function.impure.Input.map(getSrc, function(src) {
+				var getUnbuilt = $api.fp.impure.Input.map(getSrc, function(src) {
 					/** @type { slime.jsh.internal.launcher.test.ShellImplementation } */
 					var unbuilt = {
 						type: "unbuilt",
@@ -439,7 +439,7 @@
 					});
 				});
 
-				var getBuilt = $api.Function.impure.Input.map(getHome, function(home) {
+				var getBuilt = $api.fp.impure.Input.map(getHome, function(home) {
 					/** @type { slime.jsh.internal.launcher.test.ShellImplementation } */
 					var built = {
 						type: "built",

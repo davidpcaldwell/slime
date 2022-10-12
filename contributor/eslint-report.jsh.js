@@ -22,7 +22,7 @@
 		});
 		//jsh.shell.console("rules = " + Object.keys(configuration.rules));
 
-		$api.Function.world.execute(jsh.shell.tools.node.require());
+		$api.fp.world.execute(jsh.shell.tools.node.require());
 
 		var node = jsh.shell.tools.node.installed;
 

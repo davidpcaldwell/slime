@@ -70,13 +70,13 @@
 				}
 			};
 
-			var isIdentifier = $api.Function.pipe(
-				$api.Function.property("object"),
-				$api.Function.property("kind"),
-				$api.Function.is("Identifier")
+			var isIdentifier = $api.fp.pipe(
+				$api.fp.property("object"),
+				$api.fp.property("kind"),
+				$api.fp.is("Identifier")
 			);
 
-			var isNotIdentifier = $api.Function.pipe(
+			var isNotIdentifier = $api.fp.pipe(
 				isIdentifier,
 				$ff.not()
 			)

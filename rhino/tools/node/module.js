@@ -82,7 +82,7 @@
 						output: "string"
 					}
 				});
-				var getExit = $api.Function.world.question(
+				var getExit = $api.fp.world.question(
 					$context.library.shell.world.question
 				);
 				var exit = getExit(invocation);
@@ -91,19 +91,19 @@
 		}
 
 		/** @type { (installation: slime.jrunscript.node.world.Installation) => string } */
-		var getInstallationPathEntry = $api.Function.pipe(
-			$api.Function.property("executable"),
+		var getInstallationPathEntry = $api.fp.pipe(
+			$api.fp.property("executable"),
 			//	TODO	should be Location.from.os
 			$context.library.file.world.Location.from.os,
 			$context.library.file.world.Location.parent(),
-			$api.Function.property("pathname")
+			$api.fp.property("pathname")
 		);
 
 		/** @type { (project: string) => string } */
-		var getProjectBin = $api.Function.pipe(
+		var getProjectBin = $api.fp.pipe(
 			$context.library.file.world.Location.from.os,
 			$context.library.file.world.Location.relative(".bin"),
-			$api.Function.property("pathname")
+			$api.fp.property("pathname")
 		)
 
 		/**
@@ -113,8 +113,8 @@
 		 */
 		var directoryContains = function(pathname,name) {
 			var directory = $context.library.file.world.Location.from.os(pathname);
-			var location = $api.Function.result(directory, $context.library.file.world.Location.relative(name));
-			return $api.Function.world.now.question(
+			var location = $api.fp.result(directory, $context.library.file.world.Location.relative(name));
+			return $api.fp.world.now.question(
 				$context.library.file.world.Location.file.exists(),
 				location
 			);
@@ -127,7 +127,7 @@
 		 */
 		var getRelativePath = function(parent, path) {
 			var base = $context.library.file.world.Location.from.os(parent);
-			var target = $api.Function.result(base, $context.library.file.world.Location.relative(path));
+			var target = $api.fp.result(base, $context.library.file.world.Location.relative(path));
 			return target.pathname;
 		}
 
@@ -162,12 +162,12 @@
 					}
 				)();
 
-				var PATH = $api.Function.result(
+				var PATH = $api.fp.result(
 					path,
-					$api.Function.pipe(
-						$api.Function.property("pathnames"),
-						$api.Function.Array.prepend([
-							$api.Function.result(getInstallationPathEntry(installation), $context.library.file.Pathname)
+					$api.fp.pipe(
+						$api.fp.property("pathnames"),
+						$api.fp.Array.prepend([
+							$api.fp.result(getInstallationPathEntry(installation), $context.library.file.Pathname)
 						]),
 						$context.library.file.Searchpath,
 						String
@@ -217,7 +217,7 @@
 						}
 					});
 
-					var result = $api.Function.world.now.question(
+					var result = $api.fp.world.now.question(
 						$context.library.shell.world.question,
 						$context.library.shell.Invocation.create(invocation)
 					);
@@ -225,12 +225,12 @@
 					/** @type { slime.jrunscript.node.internal.NpmLsOutput } */
 					var npmJson = JSON.parse(result.stdio.output);
 
-					return $api.Function.result(
+					return $api.fp.result(
 						npmJson,
-						$api.Function.pipe(
-							$api.Function.property("dependencies"),
+						$api.fp.pipe(
+							$api.fp.property("dependencies"),
 							Object.entries,
-							$api.Function.Array.map(function(entry) {
+							$api.fp.Array.map(function(entry) {
 								return { name: entry[0], version: entry[1].version }
 							})
 						)
@@ -248,7 +248,7 @@
 					var found = list.find(function(item) {
 						return item.name == p;
 					});
-					return $api.Function.Maybe.from(found);
+					return $api.fp.Maybe.from(found);
 				}
 			}
 		};
@@ -272,7 +272,7 @@
 						})
 					});
 
-					$api.Function.world.now.action(
+					$api.fp.world.now.action(
 						$context.library.shell.world.action,
 						$context.library.shell.Invocation.create(invocation)
 					);
@@ -373,7 +373,7 @@
 						//	TODO	check for other types besides object, function, falsy
 						//	TODO	can this be simplified further using mutator concept? Maybe; mutator could allow object and just return it
 						environment.PATH = PATH.toString();
-						var mutating = $api.Function.mutating(p.environment);
+						var mutating = $api.fp.mutating(p.environment);
 						var result = mutating(environment);
 						if (!result.PATH) result.PATH = PATH.toString();
 
@@ -430,7 +430,7 @@
 							if (p.global) {
 								list.push("--global");
 							}
-							var mutating = $api.Function.mutating(p.arguments);
+							var mutating = $api.fp.mutating(p.arguments);
 							var npmargs = mutating([]);
 							list.push.apply(list, npmargs);
 						})
@@ -548,18 +548,18 @@
 				from: {
 					location: function(location) {
 						return {
-							executable: $api.Function.result(location, $context.library.file.world.Location.relative("bin/node")).pathname
+							executable: $api.fp.result(location, $context.library.file.world.Location.relative("bin/node")).pathname
 						}
 					}
 				},
 				exists: function(installation) {
 					return function(events) {
-						return $api.Function.result(
+						return $api.fp.result(
 							installation,
-							$api.Function.pipe(
-								$api.Function.property("executable"),
+							$api.fp.pipe(
+								$api.fp.property("executable"),
 								$context.library.file.world.Location.from.os,
-								$api.Function.world.question($context.library.file.world.Location.file.exists())
+								$api.fp.world.question($context.library.file.world.Location.file.exists())
 							)
 						)
 					}

@@ -11,7 +11,7 @@
 		var base = __dirname + "/";
 		var loader = slime.fs.Loader({ base: base });
 		console.log(JSON.stringify({
-			identity: slime.runtime.$api.Function.identity(3),
+			identity: slime.runtime.$api.fp.identity(3),
 			base: base,
 			loader: {
 				type: typeof(loader),

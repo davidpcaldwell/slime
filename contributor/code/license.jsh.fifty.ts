@@ -29,7 +29,7 @@ namespace slime.project.license {
 					}
 				});
 				cloned.directory.getRelativePath("a.js").write("", { append: false });
-				var result = $api.Function.world.now.question(
+				var result = $api.fp.world.now.question(
 					jsh.shell.world.question,
 					jsh.shell.Invocation.create({
 						command: cloned.directory.getRelativePath("jsh.bash"),

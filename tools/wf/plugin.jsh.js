@@ -102,7 +102,7 @@
 					},
 					lint: {
 						eslint: function() {
-							$api.Function.world.execute(jsh.shell.tools.node.require());
+							$api.fp.world.execute(jsh.shell.tools.node.require());
 							jsh.shell.tools.node.installed.modules.require({ name: "eslint" });
 							return jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
@@ -301,7 +301,7 @@
 							}
 						},
 						invocation: function(f) {
-							return $api.Function.result(
+							return $api.fp.result(
 								{
 									options: {},
 									arguments: Array.prototype.slice.call(jsh.script.arguments)
@@ -326,7 +326,7 @@
 					}
 				};
 
-				var fetch = $api.Function.memoized(function() {
+				var fetch = $api.fp.memoized(function() {
 					var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
 
 					var repository = jsh.tools.git.Repository({ directory: base });
@@ -453,7 +453,7 @@
 					return {
 						require: function(p) {
 							var project = (p && p.project) ? p.project : base;
-							$api.Function.world.execute(jsh.shell.tools.node.require());
+							$api.fp.world.execute(jsh.shell.tools.node.require());
 							jsh.shell.tools.node.installed.modules.require({ name: "typescript", version: typescript.getVersion(project) });
 						},
 						tsc: function(p) {
@@ -478,7 +478,7 @@
 							jsh.shell.console("Compiling with TypeScript " + typescript.getVersion(project) + " ...");
 							jsh.shell.tools.rhino.require();
 							jsh.shell.tools.tomcat.require();
-							return $api.Function.world.now.question(
+							return $api.fp.world.now.question(
 								library.typescript.typedoc.run,
 								{
 									configuration: {
@@ -505,7 +505,7 @@
 
 				/** @type { slime.jsh.wf.exports.Checks["noUntrackedFiles"] } */
 				function noUntrackedFiles(p) {
-					return $api.Function.world.old.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying no untracked files ...");
 						var status = p.repository.status();
 						var untracked = (status.paths) ? $api.Object.properties(status.paths).filter(function(property) {
@@ -528,7 +528,7 @@
 						return Boolean(config["user.name"] && config["user.email"]);
 					}
 
-					return $api.Function.world.old.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						events.fire("debug", "Verifying git identity ...");
 						var config = p.repository.config({
 							arguments: ["--list"]
@@ -560,7 +560,7 @@
 
 				/** @type { slime.jsh.wf.exports.Checks["noModifiedSubmodules"] } */
 				function noModifiedSubmodules(p) {
-					return $api.Function.world.old.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying submodules unmodified ...")
 						// var success = true;
 						// p.repository.submodule().forEach(function(sub) {
@@ -631,7 +631,7 @@
 
 				/** @type { slime.jsh.wf.exports.Checks["noDetachedHead"] } */
 				function noDetachedHead(p) {
-					return $api.Function.world.old.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying not a detached HEAD ...");
 						var status = p.repository.status();
 						if (status.branch.name === null) {
@@ -658,7 +658,7 @@
 						return Boolean(allBranches.find(function(branch) { return branch == base; }));
 					}
 
-					return $api.Function.world.old.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying up to date with origin ...");
 						var remote = "origin";
 						var origin = jsh.tools.git.program({ command: "git" })
@@ -703,7 +703,7 @@
 					var handleTrailingWhitespace = (typeof(p.trailingWhitespace) == "undefined") ? true : p.trailingWhitespace;
 					var handleFinalNewlines = (typeof(p.handleFinalNewlines) == "undefined") ? true : p.handleFinalNewlines;
 					return {
-						check: $api.Function.world.old.ask(function(events) {
+						check: $api.fp.world.old.ask(function(events) {
 							var success = true;
 
 							if (handleTrailingWhitespace) {
@@ -769,7 +769,7 @@
 
 							return success;
 						}),
-						fix: $api.Function.world.old.tell(function(events) {
+						fix: $api.fp.world.old.tell(function(events) {
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
 								jsh.tools.code.handleTrailingWhitespace({
@@ -820,7 +820,7 @@
 						var version = typescript.getVersion(project);
 						events.fire("console", "Compiling with TypeScript " + version + " ...");
 						//	TODO	create standard jsh invocation to make the terser, commented-out form below this form possible
-						var result = $api.Function.world.now.question(
+						var result = $api.fp.world.now.question(
 							jsh.shell.world.question,
 							jsh.shell.Invocation.create({
 								command: jsh.shell.jsh.src.getFile("jsh.bash"),
@@ -862,7 +862,7 @@
 					tsc: tsc,
 					lint: lint,
 					precommit: function(p) {
-						return $api.Function.world.old.ask(function(events) {
+						return $api.fp.world.old.ask(function(events) {
 							var repository = fetch();
 
 							var success = true;
@@ -918,7 +918,7 @@
 								});
 							}
 
-							success = success && $api.Function.world.now.question(tsc, void(0), {
+							success = success && $api.fp.world.now.question(tsc, void(0), {
 								console: function(e) {
 									events.fire("console", e.detail);
 								},

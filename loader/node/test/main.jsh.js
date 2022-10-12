@@ -12,7 +12,7 @@
 	 */
 	function($api,jsh) {
 		jsh.shell.tools.rhino.require();
-		$api.Function.world.execute(jsh.shell.tools.node.require());
+		$api.fp.world.execute(jsh.shell.tools.node.require());
 		var node = jsh.shell.tools.node.installed;
 		//	TODO	this API could use better documentation, struggled to get this right
 		node.run({

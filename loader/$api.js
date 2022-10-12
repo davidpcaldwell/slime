@@ -73,7 +73,7 @@
 		(function() {
 			var old = code.Function_old({ deprecate: $exports.deprecate });
 			var current = code.Function({ $api: $exports, events: events, old: old, deprecate: $exports.deprecate, script: script });
-			Object.assign($exports, { Function: current });
+			Object.assign($exports, { fp: current, Function: old.Function });
 		})();
 
 		$exports.debug = {
@@ -104,8 +104,8 @@
 		};
 
 		$exports.Filter = {
-			and: $exports.deprecate($exports.Function.Predicate.and),
-			or: $exports.deprecate($exports.Function.Predicate.or),
+			and: $exports.deprecate($exports.fp.Predicate.and),
+			or: $exports.deprecate($exports.fp.Predicate.or),
 		};
 
 		$exports.Constructor = {};
@@ -534,7 +534,7 @@
 		})($exports);
 
 		$exports.mime = code.mime({
-			Function: $exports.Function,
+			Function: $exports.fp,
 			deprecate: $exports.deprecate
 		});
 

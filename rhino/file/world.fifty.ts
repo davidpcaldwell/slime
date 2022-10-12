@@ -84,23 +84,23 @@ namespace slime.jrunscript.file {
 					const { verify } = fifty;
 					const { $api, jsh } = fifty.global;
 
-					var writeText = $api.Function.world.action(
+					var writeText = $api.fp.world.action(
 						jsh.file.world.Location.file.write.string({ value: "tocopy" })
 					);
 
-					var readText = $api.Function.pipe(
-						$api.Function.world.question(
+					var readText = $api.fp.pipe(
+						$api.fp.world.question(
 							jsh.file.world.Location.file.read.string()
 						),
-						$api.Function.Maybe.map(function(s) { return s; }),
-						$api.Function.Maybe.else(function(): string { return null; })
+						$api.fp.Maybe.map(function(s) { return s; }),
+						$api.fp.Maybe.else(function(): string { return null; })
 					);
 
-					var exists = $api.Function.world.question(
+					var exists = $api.fp.world.question(
 						jsh.file.world.Location.file.exists()
 					);
 
-					var dExists = $api.Function.world.question(
+					var dExists = $api.fp.world.question(
 						jsh.file.world.Location.directory.exists()
 					)
 
@@ -116,7 +116,7 @@ namespace slime.jrunscript.file {
 							verify(exists(to)).is(false);
 							verify(readText(to)).is(null);
 
-							var copy = $api.Function.world.action(jsh.file.world.Location.file.copy({ to: to }));
+							var copy = $api.fp.world.action(jsh.file.world.Location.file.copy({ to: to }));
 							copy(from);
 
 							verify(exists(to)).is(true);
@@ -126,7 +126,7 @@ namespace slime.jrunscript.file {
 						fifty.run(function recursive() {
 							var from = fifty.jsh.file.temporary.location();
 							var parent = fifty.jsh.file.temporary.location();
-							var to = $api.Function.result(
+							var to = $api.fp.result(
 								parent,
 								jsh.file.world.Location.relative("foo")
 							);
@@ -144,7 +144,7 @@ namespace slime.jrunscript.file {
 							verify(exists(to)).is(false);
 							verify(readText(to)).is(null);
 
-							var copy = $api.Function.world.action(jsh.file.world.Location.file.copy({ to: to }), captor.handler);
+							var copy = $api.fp.world.action(jsh.file.world.Location.file.copy({ to: to }), captor.handler);
 							copy(from);
 
 							verify(dExists(parent)).is(true);
@@ -167,7 +167,7 @@ namespace slime.jrunscript.file {
 							verify(exists(to)).is(false);
 							verify(readText(to)).is(null);
 
-							var copy = $api.Function.world.action(jsh.file.world.Location.file.move({ to: to }));
+							var copy = $api.fp.world.action(jsh.file.world.Location.file.move({ to: to }));
 							copy(from);
 
 							verify(exists(from)).is(false);
@@ -178,7 +178,7 @@ namespace slime.jrunscript.file {
 						fifty.run(function recursive() {
 							var from = fifty.jsh.file.temporary.location();
 							var parent = fifty.jsh.file.temporary.location();
-							var to = $api.Function.result(
+							var to = $api.fp.result(
 								parent,
 								jsh.file.world.Location.relative("foo")
 							);
@@ -197,7 +197,7 @@ namespace slime.jrunscript.file {
 							verify(exists(to)).is(false);
 							verify(readText(to)).is(null);
 
-							var copy = $api.Function.world.action(jsh.file.world.Location.file.move({ to: to }), captor.handler);
+							var copy = $api.fp.world.action(jsh.file.world.Location.file.move({ to: to }), captor.handler);
 							copy(from);
 
 							verify(exists(from)).is(false);
@@ -254,13 +254,13 @@ namespace slime.jrunscript.file {
 						fifty.run(function exists() {
 							var at = fifty.jsh.file.temporary.location();
 
-							var exists = $api.Function.world.question(subject.Location.file.exists());
+							var exists = $api.fp.world.question(subject.Location.file.exists());
 
 							verify(exists(at)).is(false);
 
-							var writeA = $api.Function.world.action(subject.Location.file.write.string({ value: "a" }));
+							var writeA = $api.fp.world.action(subject.Location.file.write.string({ value: "a" }));
 
-							$api.Function.impure.now.output(at, writeA);
+							$api.fp.impure.now.output(at, writeA);
 
 							verify(exists(at)).is(true);
 						});
@@ -272,13 +272,13 @@ namespace slime.jrunscript.file {
 							buffer.writeText().write("text");
 							buffer.close();
 
-							var process = $api.Function.world.tell(
+							var process = $api.fp.world.tell(
 								subject.Location.file.write.stream({ input: buffer.readBinary() })(at)
 							);
 
 							process();
 
-							var getText = $api.Function.world.input(
+							var getText = $api.fp.world.input(
 								subject.Location.file.read.string()(at)
 							);
 
@@ -338,14 +338,14 @@ namespace slime.jrunscript.file {
 					fifty.tests.sandbox.locations.directory.exists = function() {
 						var at = fifty.jsh.file.temporary.location();
 
-						var exists = Object.assign($api.Function.world.question(subject.Location.directory.exists()), { toString: function() { return "exists()"; }});
+						var exists = Object.assign($api.fp.world.question(subject.Location.directory.exists()), { toString: function() { return "exists()"; }});
 
 						verify(at).evaluate(exists).is(false);
 
-						$api.Function.world.tell(subject.Location.directory.require()(at))();
+						$api.fp.world.tell(subject.Location.directory.require()(at))();
 						verify(at).evaluate(exists).is(true);
 
-						$api.Function.world.tell(subject.Location.directory.require()(at))();
+						$api.fp.world.tell(subject.Location.directory.require()(at))();
 						verify(at).evaluate(exists).is(true);
 					}
 				}
@@ -375,23 +375,23 @@ namespace slime.jrunscript.file {
 
 					fifty.tests.sandbox.locations.directory.move = function() {
 						const exists = {
-							file: $api.Function.world.question(jsh.file.world.Location.file.exists()),
-							directory: $api.Function.world.question(jsh.file.world.Location.directory.exists())
+							file: $api.fp.world.question(jsh.file.world.Location.file.exists()),
+							directory: $api.fp.world.question(jsh.file.world.Location.directory.exists())
 						};
 
 						const atFilepath = jsh.file.world.Location.relative("filepath");
 
-						const createDirectoryToMove = $api.Function.impure.Input.map(
+						const createDirectoryToMove = $api.fp.impure.Input.map(
 							fifty.jsh.file.temporary.location,
-							$api.Function.pipe(
+							$api.fp.pipe(
 								//	TODO	Output.compose?
-								$api.Function.impure.tap(
-									$api.Function.world.action(jsh.file.world.Location.directory.require())
+								$api.fp.impure.tap(
+									$api.fp.world.action(jsh.file.world.Location.directory.require())
 								),
-								$api.Function.impure.tap(
-									$api.Function.pipe(
+								$api.fp.impure.tap(
+									$api.fp.pipe(
 										atFilepath,
-										$api.Function.world.action(jsh.file.world.Location.file.write.string({ value: "contents" }))
+										$api.fp.world.action(jsh.file.world.Location.file.write.string({ value: "contents" }))
 									)
 								)
 							)
@@ -409,7 +409,7 @@ namespace slime.jrunscript.file {
 								verify(to).evaluate(atFilepath).evaluate(exists.file).is(false);
 							})();
 
-							var move = $api.Function.world.action(
+							var move = $api.fp.world.action(
 								jsh.file.world.Location.directory.move({ to: to })
 							);
 
@@ -428,7 +428,7 @@ namespace slime.jrunscript.file {
 
 							var parent = fifty.jsh.file.temporary.location();
 
-							var to = $api.Function.result(parent, jsh.file.world.Location.relative("child"));
+							var to = $api.fp.result(parent, jsh.file.world.Location.relative("child"));
 
 							var captor = fifty.$api.Events.Captor({
 								created: void(0)
@@ -442,7 +442,7 @@ namespace slime.jrunscript.file {
 								verify(captor).events.length.is(0);
 							})();
 
-							var move = $api.Function.world.action(
+							var move = $api.fp.world.action(
 								jsh.file.world.Location.directory.move({ to: to }),
 								captor.handler
 							);
@@ -508,12 +508,12 @@ namespace slime.jrunscript.file {
 					var result = parent.relative(relative);
 					verify(result).is.type("object");
 					verify(result).relative.is.type("function");
-					verify(result).pathname.evaluate($api.Function.string.endsWith("module.fifty.ts")).is(true);
+					verify(result).pathname.evaluate($api.fp.string.endsWith("module.fifty.ts")).is(true);
 					result = parent.relative("foo");
 					verify(result).is.type("object");
 					verify(result).relative.is.type("function");
-					verify(result).pathname.evaluate($api.Function.string.endsWith("module.fifty.ts")).is(false);
-					verify(result).pathname.evaluate($api.Function.string.endsWith("foo")).is(true);
+					verify(result).pathname.evaluate($api.fp.string.endsWith("module.fifty.ts")).is(false);
+					verify(result).pathname.evaluate($api.fp.string.endsWith("foo")).is(true);
 				}
 			}
 		//@ts-ignore
@@ -919,12 +919,12 @@ namespace slime.jrunscript.file {
 					fifty.tests.sandbox.filesystem.File.read = function() {
 						var me = filesystem.Pathname.relative(here, "module.fifty.ts");
 						var nothing = filesystem.Pathname.relative(here, "nonono");
-						var code = $api.Function.impure.now.input(
-							$api.Function.world.input(filesystem.File.read.string({ pathname: me }))
+						var code = $api.fp.impure.now.input(
+							$api.fp.world.input(filesystem.File.read.string({ pathname: me }))
 						);
 						verify(code,"code").is.type("string");
-						var no = $api.Function.impure.now.input(
-							$api.Function.world.input(filesystem.File.read.string({ pathname: nothing }))
+						var no = $api.fp.impure.now.input(
+							$api.fp.world.input(filesystem.File.read.string({ pathname: nothing }))
 						);
 						verify(no,"no").is.type("null");
 
@@ -932,13 +932,13 @@ namespace slime.jrunscript.file {
 							var pathname = function(relative: string) { return fifty.jsh.file.object.getRelativePath(relative).toString(); };
 							var thisFile = pathname("module.fifty.ts");
 							var doesNotExist = pathname("foo");
-							var thisFileContents = $api.Function.impure.now.input(
-								$api.Function.world.input(
+							var thisFileContents = $api.fp.impure.now.input(
+								$api.fp.world.input(
 									filesystem.File.read.string({ pathname: thisFile })
 								)
 							);
-							var doesNotExistContents = $api.Function.impure.now.input(
-								$api.Function.world.input(
+							var doesNotExistContents = $api.fp.impure.now.input(
+								$api.fp.world.input(
 									filesystem.File.read.string({ pathname: doesNotExist })
 								)
 							);
@@ -956,7 +956,7 @@ namespace slime.jrunscript.file {
 							return filesystem.Pathname.isDirectory(location);
 						}
 						verify(location).evaluate(exists).is(false);
-						$api.Function.world.now.action(filesystem.createDirectory, { pathname: location });
+						$api.fp.world.now.action(filesystem.createDirectory, { pathname: location });
 						verify(location).evaluate(exists).is(true);
 						filesystem.Directory.remove({
 							pathname: location
@@ -1001,29 +1001,29 @@ namespace slime.jrunscript.file {
 					//	exist. So going to test for that, and test for files and directories.
 
 					var exists = {
-						file: $api.Function.world.question(Location.file.exists()),
-						directory: $api.Function.world.question(Location.directory.exists())
+						file: $api.fp.world.question(Location.file.exists()),
+						directory: $api.fp.world.question(Location.directory.exists())
 					};
 
-					var tmpfile = $api.Function.world.input(jsh.file.world.filesystems.os.temporary({ directory: false }));
-					var tmpdir = $api.Function.world.input(jsh.file.world.filesystems.os.temporary({ directory: true }));
+					var tmpfile = $api.fp.world.input(jsh.file.world.filesystems.os.temporary({ directory: false }));
+					var tmpdir = $api.fp.world.input(jsh.file.world.filesystems.os.temporary({ directory: true }));
 
-					var file = $api.Function.impure.Input.process(
+					var file = $api.fp.impure.Input.process(
 						tmpfile,
 						function(location) {
 							verify(location).evaluate(exists.file).is(true);
 						}
 					);
 
-					var directory = $api.Function.impure.Input.process(
+					var directory = $api.fp.impure.Input.process(
 						tmpdir,
 						function(location) {
 							verify(location).evaluate(exists.directory).is(true);
 						}
 					);
 
-					$api.Function.impure.now.process(
-						$api.Function.impure.Process.compose([
+					$api.fp.impure.now.process(
+						$api.fp.impure.Process.compose([
 							file,
 							directory
 						])
@@ -1080,8 +1080,8 @@ namespace slime.jrunscript.file {
 
 			fifty.tests.world = function() {
 				var pathname = fifty.jsh.file.object.getRelativePath("module.fifty.ts").toString();
-				var contents = $api.Function.impure.now.input(
-					$api.Function.world.input(
+				var contents = $api.fp.impure.now.input(
+					$api.fp.world.input(
 						world.spi.filesystems.os.File.read.string({ pathname: pathname })
 					)
 				);

@@ -13,11 +13,11 @@
 	 */
 	function($api,jsh,main) {
 		main(
-			$api.Function.pipe(
+			$api.fp.pipe(
 				jsh.script.cli.option.pathname({ longname: "to" }),
 				jsh.script.cli.option.string({ longname: "version" }),
 				function(p) {
-					$api.Function.world.now.action(
+					$api.fp.world.now.action(
 						jsh.shell.tools.node.install,
 						{
 							location: p.options.to,

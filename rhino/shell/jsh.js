@@ -249,7 +249,7 @@
 				if (!p.script) {
 					throw new TypeError("Required: script property indicating script to run.");
 				}
-				var argumentsFactory = $api.Function.mutating(p.arguments);
+				var argumentsFactory = $api.fp.mutating(p.arguments);
 				p.arguments = argumentsFactory([]);
 
 				if (p.script["file"] && !p.script.pathname) {
@@ -522,7 +522,7 @@
 		};
 		$exports.jsh.relaunch = $api.experimental(function(p) {
 			if (!p) p = {};
-			var environment = $api.Function.mutating(p.environment)($exports.environment);
+			var environment = $api.fp.mutating(p.environment)($exports.environment);
 			$exports.jsh({
 				fork: true,
 				script: $context.api.script.file,

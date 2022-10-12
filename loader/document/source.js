@@ -84,49 +84,49 @@
 				 *
 				 * @param { slime.runtime.document.source.internal.State } state
 				 */
-				atXmlDeclaration: $api.Function.Predicate.and(
+				atXmlDeclaration: $api.fp.Predicate.and(
 					function(state) {
 						return state.position.offset == 0;
 					},
-					$api.Function.pipe(
+					$api.fp.pipe(
 						remaining,
 						startsWith("<?xml")
 					)
 				),
 
 				//	https://www.w3.org/TR/xml/#sec-cdata-sect
-				atCdata: $api.Function.pipe(
+				atCdata: $api.fp.pipe(
 					remaining,
 					startsWith(format.xml.cdata.start)
 				),
 
-				atComment: $api.Function.pipe(
+				atComment: $api.fp.pipe(
 					remaining,
 					startsWith("<!--")
 				),
 
-				atDoctype: $api.Function.pipe(
+				atDoctype: $api.fp.pipe(
 					remaining,
 					//	TODO	case-insensitive
 					startsWith("<!DOCTYPE")
 				),
 
-				atElement: $api.Function.pipe(
+				atElement: $api.fp.pipe(
 					remaining,
-					$api.Function.Predicate.and(
+					$api.fp.Predicate.and(
 						startsWith("<"),
-						$api.Function.Predicate.not(startsWith("</"))
+						$api.fp.Predicate.not(startsWith("</"))
 					)
 				),
 
-				atText: $api.Function.pipe(
+				atText: $api.fp.pipe(
 					remaining,
-					$api.Function.Predicate.not(startsWith("<"))
+					$api.fp.Predicate.not(startsWith("<"))
 				)
 			};
 		})();
 
-		var warnOnce = $api.Function.memoized(function() {
+		var warnOnce = $api.fp.memoized(function() {
 			debugger;
 		});
 
@@ -397,16 +397,16 @@
 				var after = recurse(
 					substate,
 					events,
-					$api.Function.pipe(
+					$api.fp.pipe(
 						State.remaining,
-						$api.Function.Predicate.or(
+						$api.fp.Predicate.or(
 							startsWithEndTag,
 							function(string) { return !Boolean(string.length) }
 						)
 					)
 				);
 
-				var endTag = $api.Function.pipe(
+				var endTag = $api.fp.pipe(
 					State.remaining,
 					startsWithEndTagFor(tagName),
 					function(closing) {

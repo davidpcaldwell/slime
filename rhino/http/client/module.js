@@ -363,16 +363,16 @@
 				return function(headers) {
 					var filtered = headers.filter(isHeaderName(name));
 					if (filtered.length > 1) throw new Error("Expected only one match for header " + name + ", but got more than one");
-					return $api.Function.result(
-						$api.Function.Maybe.from(filtered[0]),
-						$api.Function.Maybe.map($api.Function.property("value"))
+					return $api.fp.result(
+						$api.fp.Maybe.from(filtered[0]),
+						$api.fp.Maybe.map($api.fp.property("value"))
 					);
 				}
 			},
 			values: function(name) {
 				return function(headers) {
 					var filtered = headers.filter(isHeaderName(name));
-					return filtered.map($api.Function.property("value"));
+					return filtered.map($api.fp.property("value"));
 				}
 			}
 		}

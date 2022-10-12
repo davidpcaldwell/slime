@@ -28,7 +28,7 @@
 		 * @param { (t: T) => Error } failure
 		 */
 		var assert = function(test,failure) {
-			return $api.Function.conditional({
+			return $api.fp.conditional({
 				condition: test,
 				true: function(o) {
 					return o;
@@ -46,30 +46,30 @@
 		 */
 		var mustBeType = function(type) {
 			return assert(
-				$api.Function.pipe(
-					$api.Function.type,
-					$api.Function.Predicate.equals(type)
+				$api.fp.pipe(
+					$api.fp.type,
+					$api.fp.Predicate.equals(type)
 				),
 				function(v) {
-					throw new TypeError("Argument must be " + type + ", not " + $api.Function.type(v));
+					throw new TypeError("Argument must be " + type + ", not " + $api.fp.type(v));
 				}
 			);
 		};
 
 		/** @type { (v: any) => slime.jrunscript.ip.Host } */
-		var castToHost = $api.Function.identity;
+		var castToHost = $api.fp.identity;
 
-		var Host = $api.Function.pipe(
+		var Host = $api.fp.pipe(
 			castToHost,
 			mustBeType("object"),
 			assert(
-				$api.Function.pipe(
-					$api.Function.property("name"),
-					$api.Function.type,
-					$api.Function.Predicate.equals("string")
+				$api.fp.pipe(
+					$api.fp.property("name"),
+					$api.fp.type,
+					$api.fp.Predicate.equals("string")
 				),
 				function(v) {
-					return new TypeError("name property must be string, not " + $api.Function.type(v.name));
+					return new TypeError("name property must be string, not " + $api.fp.type(v.name));
 				}
 			),
 			function(o) {
@@ -144,7 +144,7 @@
 		var world = {
 			/** @type { slime.jrunscript.ip.World["isReachable"] } */
 			isReachable: function(p) {
-				return $api.Function.world.old.ask(function(events) {
+				return $api.fp.world.old.ask(function(events) {
 					try {
 						if (p.port) {
 							var _socket = new Packages.java.net.Socket();
@@ -165,7 +165,7 @@
 			/** @type { slime.jrunscript.ip.World["tcp"] } */
 			tcp: {
 				isAvailable: function(p) {
-					return $api.Function.world.old.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						var number = p.port.number;
 
 						var debug = function(message) {

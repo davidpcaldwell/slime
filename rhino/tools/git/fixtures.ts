@@ -47,16 +47,16 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 				}
 
 				function edit(repository: Repository, path: string, change: (before: string) => string) {
-					var target = $api.Function.result(
+					var target = $api.fp.result(
 						repository.location,
 						jsh.file.world.Location.relative(path)
 					);
 
-					var before = $api.Function.result(
+					var before = $api.fp.result(
 						target,
-						$api.Function.pipe(
-							$api.Function.world.question(jsh.file.world.Location.file.read.string()),
-							$api.Function.Maybe.else(function() {
+						$api.fp.pipe(
+							$api.fp.world.question(jsh.file.world.Location.file.read.string()),
+							$api.fp.Maybe.else(function() {
 								return null as string;
 							})
 						)
@@ -64,9 +64,9 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 
 					var edited = change(before);
 
-					var writeEdited = $api.Function.world.action(jsh.file.world.Location.file.write.string({ value: edited }));
+					var writeEdited = $api.fp.world.action(jsh.file.world.Location.file.write.string({ value: edited }));
 
-					$api.Function.impure.now.output(target, writeEdited);
+					$api.fp.impure.now.output(target, writeEdited);
 				}
 
 				return {

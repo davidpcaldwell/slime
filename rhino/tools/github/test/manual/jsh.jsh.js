@@ -46,7 +46,7 @@
 
 		jsh.script.cli.wrap({
 			commands: {
-				serve: $api.Function.pipe(
+				serve: $api.fp.pipe(
 					//	emit information about requests sent to GitHub
 					jsh.script.cli.option.boolean({ longname: "optimize" }),
 
@@ -74,7 +74,7 @@
 					});
 					emit(command);
 				},
-				test: $api.Function.pipe(
+				test: $api.fp.pipe(
 					//	turn on jsh launcher console-based debugging
 					jsh.script.cli.option.boolean({ longname: "debug" }),
 					function(p) {

@@ -12,7 +12,7 @@
 	 */
 	function($api,jsh) {
 		var invocation = jsh.script.cli.invocation(
-			$api.Function.pipe(
+			$api.fp.pipe(
 				jsh.script.cli.option.pathname({ longname: "installation" }),
 				jsh.script.cli.option.string({ longname: "account" }),
 				jsh.script.cli.option.string({ longname: "project" })

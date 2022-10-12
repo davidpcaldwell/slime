@@ -183,7 +183,7 @@
 					if (typeof(argument) == "object") return argument;
 					if (typeof(argument) == "function") {
 						var rv = Object.assign({}, now);
-						return $api.Function.mutating(argument)(rv);
+						return $api.fp.mutating(argument)(rv);
 					}
 				})(parentEnvironment, p.environment),
 				directory: directoryForModuleRunArgument(p)

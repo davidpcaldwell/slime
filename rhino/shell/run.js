@@ -193,11 +193,11 @@
 							environment: context.environment
 						});
 					},
-					getStandardOutput: $api.Function.returning( (context.stdio.output) ? context.stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
-					getStandardError: $api.Function.returning( (context.stdio.error) ? context.stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
-					getStandardInput: $api.Function.returning( (context.stdio.input) ? context.stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM ),
-					getSubprocessEnvironment: $api.Function.returning( _environment ),
-					getWorkingDirectory: $api.Function.returning((context.directory) ? context.directory.pathname.java.adapt() : null)
+					getStandardOutput: $api.fp.returning( (context.stdio.output) ? context.stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
+					getStandardError: $api.fp.returning( (context.stdio.error) ? context.stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
+					getStandardInput: $api.fp.returning( (context.stdio.input) ? context.stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM ),
+					getSubprocessEnvironment: $api.fp.returning( _environment ),
+					getWorkingDirectory: $api.fp.returning((context.directory) ? context.directory.pathname.java.adapt() : null)
 				}
 			);
 		};
@@ -223,8 +223,8 @@
 						return "command: " + configuration.command + " arguments: " + configuration.arguments;
 					};
 
-					this.getCommand = $api.Function.returning(adapted.command);
-					this.getArguments = $api.Function.returning(adapted.arguments);
+					this.getCommand = $api.fp.returning(adapted.command);
+					this.getArguments = $api.fp.returning(adapted.arguments);
 				}
 			);
 		};
@@ -318,7 +318,7 @@
 		 * @returns { slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents> }
 		 */
 		var impure = function(context,configuration) {
-			return $api.Function.world.old.tell(
+			return $api.fp.world.old.tell(
 				tell(context, configuration)
 			);
 		};
@@ -344,7 +344,7 @@
 		 */
 		var mockTell = function(stdio,result) {
 			var killed = false;
-			return $api.Function.world.old.tell(
+			return $api.fp.world.old.tell(
 				/**
 				 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
 				 */
@@ -479,8 +479,8 @@
 				return function(events) {
 					/** @type { slime.jrunscript.shell.run.Exit } */
 					var rv;
-					$api.Function.impure.now.process(
-						$api.Function.world.tell(
+					$api.fp.impure.now.process(
+						$api.fp.world.tell(
 							tell(invocation.context, invocation.configuration),
 							{
 								start: function(e) {
@@ -503,8 +503,8 @@
 			},
 			action: function(invocation) {
 				return function(events) {
-					$api.Function.impure.now.process(
-						$api.Function.world.tell(
+					$api.fp.impure.now.process(
+						$api.fp.world.tell(
 							tell(invocation.context, invocation.configuration),
 							{
 								start: function(e) {

@@ -77,7 +77,7 @@ namespace slime.$api.fp.internal.old {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const $api = fifty.global.$api as unknown as Exports;
+			const $api = fifty.global.$api;
 
 			fifty.tests.jsapi = fifty.test.Parent();
 
@@ -87,7 +87,7 @@ namespace slime.$api.fp.internal.old {
 					foo: "bar"
 				};
 
-				var mutating = $api.Function.mutating(function(p) {
+				var mutating = $api.fp.mutating(function(p) {
 					p.foo = "baz";
 				} as slime.$api.fp.old.Mutator<T>);
 
@@ -95,7 +95,7 @@ namespace slime.$api.fp.internal.old {
 				verify(result).foo.is("baz");
 				verify(result).is(object);
 
-				var swapper = $api.Function.mutating(function(p) {
+				var swapper = $api.fp.mutating(function(p) {
 					return { a: "b" }
 				}) as slime.$api.fp.old.Mutator<T>;
 
@@ -103,8 +103,8 @@ namespace slime.$api.fp.internal.old {
 				verify(swap).a.is("b");
 				verify(swap).is.not(object);
 
-				var voiding = $api.Function.mutating(function(p) {
-					return $api.Function.value.UNDEFINED;
+				var voiding = $api.fp.mutating(function(p) {
+					return $api.fp.value.UNDEFINED;
 				});
 
 				var voided = {
@@ -113,7 +113,7 @@ namespace slime.$api.fp.internal.old {
 				verify(voided).evaluate.property("value").is(void(0));
 
 				var k = { foo: "k" };
-				var valuer = $api.Function.mutating(k);
+				var valuer = $api.fp.mutating(k);
 				var valued = valuer(object);
 				verify(valued).foo.is("k");
 				verify(valued).is.not(object);
@@ -121,7 +121,7 @@ namespace slime.$api.fp.internal.old {
 				object = {
 					foo: "bar"
 				};
-				var missinger: (t: T) => T = $api.Function.mutating(void(0));
+				var missinger: (t: T) => T = $api.fp.mutating(void(0));
 				var missinged = missinger(object);
 				verify(missinged).foo.is("bar");
 				verify(missinged).is(object);

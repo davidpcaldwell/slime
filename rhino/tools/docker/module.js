@@ -133,7 +133,7 @@
 						})
 					);
 					return {
-						run: $api.Function.world.old.ask(function(events) {
+						run: $api.fp.world.old.ask(function(events) {
 							var rv;
 							tell({
 								stderr: function(e) {
@@ -312,11 +312,11 @@
 										url = url.replace("{" + x + "}", String(p.path[x]));
 									}
 								}
-								var query = $api.Function.result(
+								var query = $api.fp.result(
 									p.query,
-									$api.Function.pipe(
+									$api.fp.pipe(
 										Object.entries,
-										$api.Function.Array.map(function(entry) {
+										$api.fp.Array.map(function(entry) {
 											return { name: entry[0], value: String(entry[1]) }
 										}),
 										$context.library.web.Url.query,
@@ -325,7 +325,7 @@
 										}
 									)
 								)
-								var ask = $api.Function.world.input(spi({
+								var ask = $api.fp.world.input(spi({
 									request: {
 										method: (e.method) ? e.method : "GET",
 										url: $context.library.web.Url.codec.string.decode("http://docker.sock.unix" + url + query),
@@ -360,7 +360,7 @@
 							var toMethod = function(method, path) {
 								var defined = define({ method: method, url: path });
 								/** @type { slime.js.Cast<R> } */
-								var toR = $api.Function.cast;
+								var toR = $api.fp.cast;
 								return function(p) {
 									/** @type { R } */
 									var rv = toR(defined(implementation, p));
@@ -400,7 +400,7 @@
 						}
 					}
 				}
-				return $api.Function.world.old.tell(function(events) {
+				return $api.fp.world.old.tell(function(events) {
 					if (!p.destination.directory) {
 						if (p.library.shell.os.name == "Mac OS X") {
 							//	https://docs.docker.com/desktop/mac/release-notes/

@@ -341,7 +341,7 @@
 			}
 		}
 
-		$exports.Function = $api.Function;
+		$exports.Function = $api.fp;
 		$api.deprecate($exports, "Function");
 
 		$exports.Filter = new function() {

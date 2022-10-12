@@ -229,12 +229,12 @@
 				function(web) {
 					//	TODO	web module probably has easier way to parse query string
 					/** @type { slime.fifty.browser.test.internal.Query } */
-					var query = $api.Function.result(
+					var query = $api.fp.result(
 						void(0),
 						web.window.url,
-						$api.Function.property("query"),
+						$api.fp.property("query"),
 						web.Url.query.parse,
-						$api.Function.Array.map(
+						$api.fp.Array.map(
 							/** @returns { [string, string] } */
 							function(control) {
 								return [control.name, control.value];

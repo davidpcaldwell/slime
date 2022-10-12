@@ -56,7 +56,7 @@ namespace slime.jrunscript.http.client.curl {
 				var implementation = api({
 					unixSocket: "/var/run/docker.sock"
 				});
-				var response = $api.Function.world.input(implementation({
+				var response = $api.fp.world.input(implementation({
 					request: {
 						method: "GET",
 						url: jsh.web.Url.codec.string.decode("http://docker.local.unix/info"),

@@ -13,9 +13,9 @@
 	 * @param { slime.loader.Export<slime.jsh.wf.internal.typescript.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var parseTypedocVersion = $api.Function.pipe(
-			$api.Function.string.split("."),
-			$api.Function.Array.map(Number),
+		var parseTypedocVersion = $api.fp.pipe(
+			$api.fp.string.split("."),
+			$api.fp.Array.map(Number),
 			function(parsed) {
 				return {
 					major: parsed[0],
@@ -45,32 +45,32 @@
 		 * @returns
 		 */
 		function getRelativePath(pathname, relative) {
-			return $api.Function.result(
+			return $api.fp.result(
 				pathname,
-				$api.Function.pipe(
+				$api.fp.pipe(
 					$context.library.file.world.Location.from.os,
 					$context.library.file.world.Location.relative(relative),
-					$api.Function.property("pathname")
+					$api.fp.property("pathname")
 				)
 			)
 		}
 
 		/** @type { (project: slime.jrunscript.file.world.Location) => { [x: string]: any } } */
-		var getTypedocConfguration = $api.Function.pipe(
+		var getTypedocConfguration = $api.fp.pipe(
 			$context.library.file.world.Location.relative("typedoc.json"),
-			$api.Function.world.question($context.library.file.world.Location.file.read.string()),
-			$api.Function.Maybe.map(function removeComments(s) {
+			$api.fp.world.question($context.library.file.world.Location.file.read.string()),
+			$api.fp.Maybe.map(function removeComments(s) {
 				return s.split("\n").filter(function(line) {
 					if (!Boolean(line)) return false;
 					if (/^\s*\/\/(.*)/.test(line)) return false;
 					return true;
 				}).join("\n")
 			}),
-			$api.Function.Maybe.map(function(s) {
+			$api.fp.Maybe.map(function(s) {
 				//Packages.java.lang.System.err.println(s);
 				return JSON.parse(s);
 			}),
-			$api.Function.Maybe.else(
+			$api.fp.Maybe.else(
 				/** @type { () => { [x: string]: any } } */
 				function() { return {}; }
 			)
@@ -89,32 +89,32 @@
 		var invocation = function(p) {
 			if (!p.configuration || !p.configuration.typescript || !p.configuration.typescript.version) throw new TypeError("Required: p.configuration.typescript.version");
 
-			$api.Function.world.now.action($context.library.node.require);
+			$api.fp.world.now.action($context.library.node.require);
 
-			$api.Function.world.now.action(
+			$api.fp.world.now.action(
 				$context.library.node.world.Installation.modules.require({ name: "typescript", version: p.configuration.typescript.version }),
 				$context.library.node.installation
 			);
 
-			var typedocVersion = $api.Function.result(
+			var typedocVersion = $api.fp.result(
 				p.configuration.typescript.version,
-				$api.Function.pipe(
+				$api.fp.pipe(
 					typedocVersionForTypescript,
 					parseTypedocVersion
 				)
 			);
 
-			$api.Function.world.now.action(
+			$api.fp.world.now.action(
 				$context.library.node.world.Installation.modules.require({
 					name: "typedoc",
-					version: $api.Function.result(p.configuration.typescript.version, typedocVersionForTypescript)
+					version: $api.fp.result(p.configuration.typescript.version, typedocVersionForTypescript)
 				}),
 				$context.library.node.installation
 			);
 
 			var project = $context.library.file.world.Location.from.os(p.project);
 
-			var configuration = $api.Function.result(
+			var configuration = $api.fp.result(
 				project,
 				getTypedocConfguration
 			);
@@ -140,11 +140,11 @@
 
 					if (!configuration.readme) {
 						var readme = (function(project) {
-							var typedocIndexLocation = $api.Function.result(
+							var typedocIndexLocation = $api.fp.result(
 								project,
 								$context.library.file.world.Location.relative("typedoc-index.md")
 							);
-							var exists = $api.Function.world.now.question(
+							var exists = $api.fp.world.now.question(
 								$context.library.file.world.Location.file.exists(),
 								typedocIndexLocation
 							);
@@ -154,8 +154,8 @@
 					}
 
 					if (!configuration.entryPoints && typedocVersionUsesEntryPoints(typedocVersion)) {
-						var entryPointLocation = $api.Function.result(project, $context.library.file.world.Location.relative("README.fifty.ts"));
-						var exists = $api.Function.world.now.question(
+						var entryPointLocation = $api.fp.result(project, $context.library.file.world.Location.relative("README.fifty.ts"));
+						var exists = $api.fp.world.now.question(
 							$context.library.file.world.Location.file.exists(),
 							entryPointLocation
 						);
@@ -176,7 +176,7 @@
 			return function(events) {
 				var argument = invocation(p);
 
-				var exit = $api.Function.world.now.question(
+				var exit = $api.fp.world.now.question(
 					$context.library.node.world.Installation.question(argument),
 					$context.library.node.installation
 				);

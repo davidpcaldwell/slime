@@ -14,7 +14,7 @@
 	 */
 	function($api,$context,$export) {
 		/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
-		var castToFile = $api.Function.cast;
+		var castToFile = $api.fp.cast;
 
 		/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.file.world.Location } */
 		var toLocation = function(node) {
@@ -112,14 +112,14 @@
 
 		var defaults = {
 			exclude: {
-				file: $api.Function.pipe(
+				file: $api.fp.pipe(
 					function(file) { return file.pathname.basename; },
-					$api.Function.Predicate.or(
+					$api.fp.Predicate.or(
 						filename.isVcsGenerated,
 						filename.isIdeGenerated
 					)
 				),
-				directory: $api.Function.Predicate.or(
+				directory: $api.fp.Predicate.or(
 					directory.isLocal,
 					directory.isVcs,
 					directory.isBuildTool
@@ -133,13 +133,13 @@
 		 */
 		function getSourceFiles(p) {
 			if (!p.base) throw new Error("Required: base, specifying directory.");
-			return $api.Function.world.old.ask(function(on) {
+			return $api.fp.world.old.ask(function(on) {
 				return p.base.list({
 					filter: isAuthoredTextFile( (p.exclude && p.exclude.file) ? p.exclude.file : defaults.exclude.file ),
-					descendants: $api.Function.Predicate.not( (p.exclude && p.exclude.directory) ? p.exclude.directory : defaults.exclude.directory ),
+					descendants: $api.fp.Predicate.not( (p.exclude && p.exclude.directory) ? p.exclude.directory : defaults.exclude.directory ),
 					type: $context.library.file.list.ENTRY
 				}).map(toSourceFile).filter(
-					$api.Function.series(
+					$api.fp.series(
 						p.isText,
 						function(file) {
 							on.fire("unknownFileType", file);
@@ -205,8 +205,8 @@
 			throw new Error("Asserted Maybe that was Nothing.");
 		}
 
-		var readFileString = $api.Function.pipe(
-			$api.Function.world.question(
+		var readFileString = $api.fp.pipe(
+			$api.fp.world.question(
 				$context.library.file.world.Location.file.read.string()
 			),
 			Maybe_assert
@@ -218,7 +218,7 @@
 		 * @param { string } string
 		 */
 		var writeFileString = function(file,string) {
-			$api.Function.world.now.action(
+			$api.fp.world.now.action(
 				$context.library.file.world.Location.file.write.string({ value: string }),
 				file
 			);
@@ -239,7 +239,7 @@
 				if (!configuration) configuration = {
 					nowrite: false
 				};
-				return $api.Function.world.old.tell(function(events) {
+				return $api.fp.world.old.tell(function(events) {
 					var code = readFileString(entry.file);
 					var scan = findTrailingWhitespaceIn(code);
 					scan.instances.forEach(function(instance) {
@@ -268,7 +268,7 @@
 		 * @type { slime.tools.code.Exports["handleTrailingWhitespace"] }
 		 */
 		var trailingWhitespace = function(p) {
-			return $api.Function.world.old.tell(function(events) {
+			return $api.fp.world.old.tell(function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
 				getSourceFiles({
 					base: p.base,
@@ -318,7 +318,7 @@
 
 		/** @type { slime.tools.code.Exports["handleFinalNewlines"] } */
 		function handleFinalNewlines(p) {
-			return $api.Function.world.old.tell(function(events) {
+			return $api.fp.world.old.tell(function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
 				getSourceFiles({
 					base: p.base,
@@ -346,16 +346,16 @@
 		function hasShebang() {
 			return function(file) {
 				return function(events) {
-					var input = $api.Function.world.now.question(
+					var input = $api.fp.world.now.question(
 						$context.library.file.world.Location.file.read.stream(),
 						file.file
 					);
-					if (!input.present) return $api.Function.Maybe.nothing();
+					if (!input.present) return $api.fp.Maybe.nothing();
 					var _input = input.value.java.adapt();
 					var _1 = _input.read();
 					var _2 = _input.read();
 					_input.close();
-					return $api.Function.Maybe.value(_1 == 35 && _2 == 33);
+					return $api.fp.Maybe.value(_1 == 35 && _2 == 33);
 				}
 			}
 		}
@@ -368,12 +368,12 @@
 						return function(events) {
 							var basename = getBasename(file.file);
 							var byExtension = filename.isText(basename);
-							if (typeof(byExtension) == "boolean") return $api.Function.Maybe.value(byExtension);
+							if (typeof(byExtension) == "boolean") return $api.fp.Maybe.value(byExtension);
 							if (basename.indexOf(".") == -1) {
 								var rv = hasShebang()(file)(events);
 								if (rv.present) return rv;
 							}
-							return $api.Function.Maybe.nothing();
+							return $api.fp.Maybe.nothing();
 						}
 					}
 				}

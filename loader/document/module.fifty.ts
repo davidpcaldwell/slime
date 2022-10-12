@@ -166,18 +166,18 @@ namespace slime.runtime.document {
 
 			fifty.tests.Parent.one = function() {
 				var document = subject.Document.codec.string.decode("<root/>");
-				var nodes = $api.Function.result(
+				var nodes = $api.fp.result(
 					subject.Parent.nodes(document),
-					$api.Function.Stream.collect
+					$api.fp.Stream.collect
 				);
 				verify(nodes).length.is(2);
 			}
 
 			fifty.tests.Parent.two = function() {
 				var document = subject.Document.codec.string.decode("<root><a/><b><b2/></b></root>");
-				var nodes = $api.Function.result(
+				var nodes = $api.fp.result(
 					subject.Parent.nodes(document),
-					$api.Function.Stream.collect
+					$api.fp.Stream.collect
 				);
 
 				var isElement = function(name: string) {
@@ -194,11 +194,11 @@ namespace slime.runtime.document {
 				verify(nodes)[3].evaluate(isElement("b")).is(true);
 				verify(nodes)[4].evaluate(isElement("b2")).is(true);
 
-				var elements = $api.Function.result(
+				var elements = $api.fp.result(
 					subject.Parent.nodes(document),
-					$api.Function.pipe(
-						$api.Function.Stream.filter(subject.Node.isElement),
-						$api.Function.Stream.collect
+					$api.fp.pipe(
+						$api.fp.Stream.filter(subject.Node.isElement),
+						$api.fp.Stream.collect
 					)
 				);
 				verify(elements).length.is(4);

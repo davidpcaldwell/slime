@@ -21,7 +21,7 @@
 			}
 		})
 
-		$api.Function.world.execute(jsh.shell.tools.node.require());
+		$api.fp.world.execute(jsh.shell.tools.node.require());
 		jsh.shell.tools.node.installed.modules.require({ name: "typescript" });
 		jsh.shell.tools.node.installed.modules.require({ name: "@microsoft/tsdoc" });
 

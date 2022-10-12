@@ -68,7 +68,7 @@
 							var lines = output.split("\n");
 
 							var noCarriageReturn = function(line) {
-								if ($api.Function.string.endsWith("\r")(line)) {
+								if ($api.fp.string.endsWith("\r")(line)) {
 									line = line.substring(0,line.length-1);
 								}
 								return line;

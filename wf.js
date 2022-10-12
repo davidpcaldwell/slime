@@ -149,7 +149,7 @@
 			}
 		}
 
-		$exports.initialize = $api.Function.pipe(
+		$exports.initialize = $api.fp.pipe(
 			function initialize(p) {
 				jsh.wf.project.git.installHooks();
 				//	TODO	could consider whether we can wire our commit process into the git hooks mechanism:
@@ -195,7 +195,7 @@
 					function node() {
 						(
 							function core() {
-								$api.Function.world.execute(jsh.shell.tools.node.require());
+								$api.fp.world.execute(jsh.shell.tools.node.require());
 							}
 						)();
 						(
@@ -261,7 +261,7 @@
 		}
 
 		/** @type { slime.jsh.wf.Lint["check"] } */
-		var lint = $api.Function.world.old.ask(function(events) {
+		var lint = $api.fp.world.old.ask(function(events) {
 			var success = true;
 
 			success = success && jsh.wf.checks.lint().check({
@@ -428,7 +428,7 @@
 				};
 
 				/** @type { slime.jsh.wf.Precommit } */
-				var precommit = $api.Function.world.old.ask(function(events) {
+				var precommit = $api.fp.world.old.ask(function(events) {
 					var success = true;
 
 					var trunk = getTrunk();
@@ -467,7 +467,7 @@
 			$exports
 		);
 
-		$exports.check = $api.Function.pipe(
+		$exports.check = $api.fp.pipe(
 			jsh.script.cli.option.boolean({ longname: "docker" }),
 			function(p) {
 				jsh.shell.console("Linting ...");
@@ -494,7 +494,7 @@
 		if (jsh.tools.git.Repository) {
 			(
 				function() {
-					$exports.git.branch = $api.Function.pipe(
+					$exports.git.branch = $api.fp.pipe(
 						function(p) {
 							var name = p.arguments[0];
 							git.repository.command(git.command.fetch).argument().run();
@@ -503,15 +503,15 @@
 						}
 					);
 
-					$exports.git.trunk = $api.Function.pipe(
+					$exports.git.trunk = $api.fp.pipe(
 						function(p) {
 							git.repository.command(git.command.checkout).argument({ branch: getTrunk() }).run();
-							$api.Function.world.now.action(cleanGitBranches);
+							$api.fp.world.now.action(cleanGitBranches);
 						}
 					)
 
 					$exports.git.branches = (jsh.tools.git.Repository) ? {
-						list: $api.Function.pipe(
+						list: $api.fp.pipe(
 							function(p) {
 								repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
 								/** @type { slime.jrunscript.tools.git.Branch[] } */
@@ -540,14 +540,14 @@
 							}
 						),
 						prune: function(p) {
-							$api.Function.world.now.action(cleanGitBranches);
+							$api.fp.world.now.action(cleanGitBranches);
 						}
 					} : void(0)
 				}
 			)();
 		}
 
-		$exports.merge = $api.Function.pipe(
+		$exports.merge = $api.fp.pipe(
 			/**
 			 *
 			 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { branch: string }> } p
@@ -674,7 +674,7 @@
 		//	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
 
 		//	TODO	figure out whether there is anything to be harvested from the below or whether it can simply be removed
-		if (false) $exports.commit = $api.Function.pipe(
+		if (false) $exports.commit = $api.fp.pipe(
 			/**
 			 *
 			 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { message: string }> } p
@@ -800,14 +800,14 @@
 		)
 
 		/** @type { (p: slime.jrunscript.file.Directory) => void } */
-		var deleteContents = $api.Function.pipe(
+		var deleteContents = $api.fp.pipe(
 			function(dir) { return dir.pathname.toString() },
 			jsh.file.state.list,
 			function(f) {
 				return f();
 			},
-			$api.Function.Array.map($api.Function.property("absolute")),
-			$api.Function.Array.map(jsh.file.action.delete),
+			$api.fp.Array.map($api.fp.property("absolute")),
+			$api.fp.Array.map(jsh.file.action.delete),
 			function(p) {
 				p.forEach(function(deletion) {
 					deletion({
@@ -830,7 +830,7 @@
 				}
 			},
 			{
-				case: $api.Function.returning(true),
+				case: $api.fp.returning(true),
 				use: function(p) {
 					jsh.shell.console("Not found: " + $context.base.getRelativePath(p));
 				}

@@ -58,8 +58,8 @@ namespace slime.project.code {
 				)
 			);
 
-			fifty.tests.wip = $api.Function.pipe(
-				$api.Function.impure.Input.value(loader),
+			fifty.tests.wip = $api.fp.pipe(
+				$api.fp.impure.Input.value(loader),
 				function(loader) {
 					return {
 						loader: loader,
