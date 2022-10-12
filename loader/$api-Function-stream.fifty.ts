@@ -134,7 +134,10 @@ namespace slime.$api.fp {
 
 namespace slime.$api.fp.internal.stream {
 	export interface Context {
-		$f: slime.$api.Global["Function"]
+		$f: {
+			Maybe: slime.$api.fp.Exports["Maybe"],
+			pipe: slime.$api.fp.Exports["pipe"]
+		}
 	}
 
 	export type Exports = slime.$api.fp.Exports["Stream"];

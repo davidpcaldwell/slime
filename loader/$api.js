@@ -73,7 +73,7 @@
 		(function() {
 			var old = code.Function_old({ deprecate: $exports.deprecate });
 			var current = code.Function({ $api: $exports, events: events, old: old, deprecate: $exports.deprecate, script: script });
-			Object.assign($exports, current);
+			Object.assign($exports, { Function: current });
 		})();
 
 		$exports.debug = {

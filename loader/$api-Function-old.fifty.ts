@@ -4,6 +4,48 @@
 //
 //	END LICENSE
 
+namespace slime.$api.fp {
+	export interface Exports {
+		/**
+		 * @deprecated
+		 */
+		 mutating: {
+			/**
+			 * @deprecated
+			 *
+			 * Creates a function that wraps a supplied mutator function for the purpose of modifying a default value.
+			 * `mutating()` is designed for use by API designers who wish to provide an override mechanism for a particular
+			 * default value (especially an object). API designers may provide for a single value to be supplied which can be an
+			 * object to replace the default, a function which returns a value to replace the default, or a value that mutates
+			 * the default.
+			 */
+			<T>(f: old.Mutator<T>): (t?: T) => T
+
+			/**
+			 * @deprecated
+			 *
+			 * Creates a function that returns the given value, regardless of what it is passed.
+			 *
+			 * @param t The value to always return.
+			 */
+			<T>(t: T): (t: T) => T
+
+			/**
+			 * @deprecated
+			 *
+			 * Creates a function that will simply return its argument.
+			 */
+			<T>(f: undefined): (t: T) => T
+		}
+
+		/**
+		 * @deprecated
+		 */
+		value: {
+			UNDEFINED: object
+		}
+	}
+}
 namespace slime.$api.fp.internal.old {
 	export interface Context {
 		deprecate: slime.$api.Global["deprecate"]
@@ -19,11 +61,9 @@ namespace slime.$api.fp.internal.old {
 		Function: {
 			preprocessing: any
 
-			value: {
-				UNDEFINED: object
-			}
-
+			value: slime.$api.fp.Exports["value"]
 			mutating: slime.$api.fp.Exports["mutating"]
+
 			Basic: any
 			Revise: any
 			Prepare: any
