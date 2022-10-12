@@ -28,9 +28,9 @@
 			var rv = function(command) {
 				return {
 					argument: function(argument) {
-						var toResult = command.result || $api.Function.identity;
+						var toResult = command.result || $api.fp.identity;
 						return {
-							run: $api.Function.world.old.ask(
+							run: $api.fp.world.old.ask(
 								function(events) {
 									var result;
 									var invocation = command.invocation(argument);
@@ -118,9 +118,9 @@
 					},
 					create: function create(pathname) {
 						return function(events) {
-							var url = $api.Function.result(INSTALLER, $api.Function.pipe(
-								$api.Function.optionalChain($context.library.shell.os.name),
-								$api.Function.optionalChain($context.library.shell.os.arch)
+							var url = $api.fp.result(INSTALLER, $api.fp.pipe(
+								$api.fp.optionalChain($context.library.shell.os.name),
+								$api.fp.optionalChain($context.library.shell.os.arch)
 							));
 							if (!url) {
 								throw new Error("Could not install.");

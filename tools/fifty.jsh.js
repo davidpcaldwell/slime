@@ -15,7 +15,7 @@
 
 		jsh.script.cli.wrap({
 			commands: {
-				view: $api.Function.pipe(
+				view: $api.fp.pipe(
 					jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
 					function(p) {
 						jsh.shell.jsh({
@@ -32,7 +32,7 @@
 					}
 				),
 				test: {
-					jsh: $api.Function.pipe(
+					jsh: $api.fp.pipe(
 						jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
 						jsh.script.cli.option.array({
 							longname: "property",
@@ -69,7 +69,7 @@
 							jsh.shell.exit(p.status);
 						}
 					),
-					browser: $api.Function.pipe(
+					browser: $api.fp.pipe(
 						function(p) {
 							return jsh.shell.jsh({
 								shell: SLIME,

@@ -51,7 +51,7 @@
 		 * @returns { slime.jrunscript.http.client.spi.Response }
 		 */
 		function request(p) {
-			return $api.Function.world.now.question($context.library.http.world.request, toRequest(p));
+			return $api.fp.world.now.question($context.library.http.world.request, toRequest(p));
 		}
 
 		/**
@@ -256,7 +256,7 @@
 			api: {
 				JobSummary: {
 					isName: function(name) {
-						return $api.Function.pipe($api.Function.property("name"), $api.Function.is(name));
+						return $api.fp.pipe($api.fp.property("name"), $api.fp.is(name));
 					}
 				}
 			}

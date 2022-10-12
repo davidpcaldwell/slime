@@ -164,7 +164,7 @@
 							});
 
 							/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
-							var castToFile = $api.Function.cast;
+							var castToFile = $api.fp.cast;
 
 							var distribution = src.directory.getSubdirectory("build/distributions").list().map(castToFile)[0];
 							jsh.tools.install.install({
@@ -254,7 +254,7 @@
 					 * @returns { slime.jsh.shell.tools.mkcert.Installation }
 					 */
 					function Installation(program) {
-						var CAROOT = $api.Function.memoized(function() {
+						var CAROOT = $api.fp.memoized(function() {
 							var result = jsh.shell.run({
 								command: program,
 								arguments: ["-CAROOT"],
@@ -277,7 +277,7 @@
 									output: null,
 									error: null
 								},
-								evaluate: $api.Function.identity
+								evaluate: $api.fp.identity
 							});
 							return result.status === 0;
 						}

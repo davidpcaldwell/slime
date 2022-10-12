@@ -17,7 +17,7 @@
 			jsh.shell.exit(1);
 		}
 
-		$api.Function.result(
+		$api.fp.result(
 			jsh.shell.tools.node.installed.modules.installed,
 			Object.entries,
 			function(entries) {

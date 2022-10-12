@@ -127,8 +127,8 @@ namespace slime.jrunscript.tools.git {
 				}
 
 				var it = fixtures.empty();
-				fixtures.edit(it, "a", $api.Function.returning("a"));
-				fixtures.edit(it, "b", $api.Function.returning("b"));
+				fixtures.edit(it, "a", $api.fp.returning("a"));
+				fixtures.edit(it, "b", $api.fp.returning("b"));
 				it.api.command(add).argument("a").run();
 				verify(status(), "status", function(it) {
 					it.paths.a.is("A ");
@@ -136,8 +136,8 @@ namespace slime.jrunscript.tools.git {
 				});
 				it.api.command(add).argument("b").run();
 				it.api.command(commit).argument({ message: "1" }).run();
-				fixtures.edit(it, "a", $api.Function.returning("aa"));
-				fixtures.edit(it, "b", $api.Function.returning("bb"));
+				fixtures.edit(it, "a", $api.fp.returning("aa"));
+				fixtures.edit(it, "b", $api.fp.returning("bb"));
 				verify(status(), "status_after_edits", function(it) {
 					it.paths.a.is(" M");
 					it.paths.b.is(" M");

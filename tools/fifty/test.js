@@ -115,7 +115,7 @@
 			if (!code) throw new TypeError("Cannot run scope " + code);
 			/** @type { string } */
 			var name;
-			if (!name) name = $api.Function.result(
+			if (!name) name = $api.fp.result(
 				code,
 				getPropertyPathFrom(tests),
 				function(array) {
@@ -537,7 +537,7 @@
 						/** @type { any } */
 						var target = scope.tests;
 						part.split(".").forEach(function(token) {
-							target = $api.Function.result(target, $api.Function.optionalChain(token))
+							target = $api.fp.result(target, $api.fp.optionalChain(token))
 						});
 						if (typeof(target) == "function") {
 							/** @type { (argument: any) => void } */

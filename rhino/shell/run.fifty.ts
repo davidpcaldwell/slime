@@ -174,8 +174,8 @@ namespace slime.jrunscript.shell.internal.run {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.question = $api.Function.pipe(
-				$api.Function.world.input(
+			fifty.tests.question = $api.fp.pipe(
+				$api.fp.world.input(
 					test.subject.question(test.ls)
 				),
 				function(exit) {

@@ -255,7 +255,7 @@
 			$exports,
 			"browser",
 			{
-				get: $api.Function.memoized(function() {
+				get: $api.fp.memoized(function() {
 					return $loader.module("browser/module.js", {
 						os: $exports.os,
 						HOME: $exports.HOME,
@@ -278,7 +278,7 @@
 			$exports.system,
 			"apple",
 			{
-				get: $api.Function.memoized(function() {
+				get: $api.fp.memoized(function() {
 					return $loader.file("apple.js", {
 						api: {
 							document: $context.api.document,
@@ -295,7 +295,7 @@
 			$exports.system,
 			"opendesktop",
 			{
-				get: $api.Function.memoized(function() {
+				get: $api.fp.memoized(function() {
 					return $loader.file("opendesktop.js", {
 						api: {
 							js: $context.api.js,
@@ -418,7 +418,7 @@
 			Object.defineProperty(
 				this, "launcher",
 				{
-					get: $api.Function.memoized(function() {
+					get: $api.fp.memoized(function() {
 						return $context.api.file.Searchpath([self.home.getRelativePath("bin")]).getCommand("java");
 					})
 				}
@@ -428,7 +428,7 @@
 			Object.defineProperty(
 				this, "jrunscript",
 				{
-					get: $api.Function.memoized(function() {
+					get: $api.fp.memoized(function() {
 						return $context.api.file.Searchpath([self.home.getRelativePath("bin"),self.home.getRelativePath("../bin")]).getCommand("jrunscript");
 					})
 				}
@@ -437,7 +437,7 @@
 			Object.defineProperty(
 				this, "keytool",
 				{
-					get: $api.Function.memoized(function() {
+					get: $api.fp.memoized(function() {
 						return $context.api.file.Searchpath([self.home.getRelativePath("bin")]).getCommand("keytool");
 					})
 				}

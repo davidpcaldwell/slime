@@ -15,7 +15,7 @@
 			commands: {
 				install: function() {
 					var invocation = jsh.script.cli.invocation(
-						$api.Function.pipe(
+						$api.fp.pipe(
 							jsh.script.cli.option.pathname({ longname: "destination", default: jsh.shell.jsh.lib.getRelativePath("bin/mkcert") })
 						)
 					);

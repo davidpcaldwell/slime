@@ -13,12 +13,12 @@
 	function($api,jsh) {
 		var isTypescriptInstalled = function() {
 			var installation = jsh.shell.tools.node.installation;
-			var nodeExists = $api.Function.world.input(
+			var nodeExists = $api.fp.world.input(
 				jsh.shell.tools.node.world.Installation.exists(installation)
 			)();
 			if (!nodeExists) return false;
 			var typescript = jsh.shell.tools.node.world.Installation.modules.installed("typescript");
-			var tsInstalled = $api.Function.world.now.question(
+			var tsInstalled = $api.fp.world.now.question(
 				typescript,
 				installation
 			);
@@ -36,7 +36,7 @@
 		});
 
 		/** @type { slime.jsh.script.cli.Processor<any, { definition: slime.jrunscript.file.File, list: boolean, part: string, view: string }> } */
-		var processor = $api.Function.pipe(
+		var processor = $api.fp.pipe(
 			function(p) {
 				var list = p.arguments[0];
 				if (list == "list") {

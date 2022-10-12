@@ -13,7 +13,7 @@
 	function($api,jsh) {
 		var repository = jsh.tools.git.Repository({ directory: jsh.script.file.parent.parent });
 		var log = repository.log();
-		var byCommitter = $api.Function.Array.groupBy({
+		var byCommitter = $api.fp.Array.groupBy({
 			/**
 			 *
 			 * @param { slime.jrunscript.tools.git.Commit } v
@@ -22,7 +22,7 @@
 				return v.committer.name + " <" + v.committer.email + ">";
 			}
 		});
-		var byAuthor = $api.Function.Array.groupBy({
+		var byAuthor = $api.fp.Array.groupBy({
 			/**
 			 *
 			 * @param { slime.jrunscript.tools.git.Commit } v

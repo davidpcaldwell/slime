@@ -382,14 +382,14 @@ namespace slime.jrunscript.tools.git {
 					var captor = fifty.$api.Events.Captor(events);
 
 					var isType = function(type: string): slime.$api.fp.Predicate<slime.$api.Event<any>> {
-						return $api.Function.pipe(
-							$api.Function.property("type"),
-							$api.Function.Predicate.is(type)
+						return $api.fp.pipe(
+							$api.fp.property("type"),
+							$api.fp.Predicate.is(type)
 						);
 					};
 
 					var ofType = function(type: string) {
-						return $api.Function.Array.filter(isType(type));
+						return $api.fp.Array.filter(isType(type));
 					}
 
 					var handler = captor.handler;
@@ -912,7 +912,7 @@ namespace slime.jrunscript.tools.git {
 						world: {
 							run: function(created: shell.run.Invocation) {
 								invocation = created;
-								return fifty.global.$api.Function.world.old.tell(function(events) {
+								return fifty.global.$api.fp.world.old.tell(function(events) {
 									events.fire("exit", {
 										status: 0,
 										stdio: {

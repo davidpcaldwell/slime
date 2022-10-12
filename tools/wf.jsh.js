@@ -25,9 +25,9 @@
 						return function(string) {
 							var match = p.pattern.exec(string);
 							if (match) {
-								return $api.Function.Maybe.value(p.match(match));
+								return $api.fp.Maybe.value(p.match(match));
 							} else {
-								return $api.Function.Maybe.nothing();
+								return $api.fp.Maybe.nothing();
 							}
 						}
 					}
@@ -47,7 +47,7 @@
 
 		/** @type { slime.jsh.script.cli.Descriptor<T> } */
 		var descriptor = {
-			options: $api.Function.cast,
+			options: $api.fp.cast,
 			commands: new jsh.file.Loader({ directory: jsh.wf.project.base }).module("wf.js", {
 				base: jsh.wf.project.base
 			})
@@ -59,7 +59,7 @@
 		var invocation = jsh.script.cli.invocation(descriptor.options);
 
 		/** @type { slime.js.Cast<T> } */
-		var toT = $api.Function.cast;
+		var toT = $api.fp.cast;
 
 		if (invocation.arguments[0] != "initialize" && project.initialize) {
 			project.initialize({

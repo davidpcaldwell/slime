@@ -522,7 +522,7 @@ namespace slime.jrunscript.shell {
 				};
 
 				var exit = jsh.shell.Tell.exit();
-				var result = $api.Function.result(exit(tell), interpret);
+				var result = $api.fp.result(exit(tell), interpret);
 				verify(result).is("foobarfoobar");
 			}
 		}

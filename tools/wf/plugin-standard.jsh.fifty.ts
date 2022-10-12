@@ -491,7 +491,7 @@ namespace slime.jsh.wf {
 
 					jsh.shell.world.run(
 						jsh.shell.Invocation.create({
-							command: $api.Function.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
+							command: $api.fp.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
 							arguments: ["status"]
 						})
 					)({
@@ -502,7 +502,7 @@ namespace slime.jsh.wf {
 
 					jsh.shell.world.run(
 						jsh.shell.Invocation.create({
-							command: $api.Function.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
+							command: $api.fp.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
 							arguments: ["status"]
 						})
 					)({
@@ -511,7 +511,7 @@ namespace slime.jsh.wf {
 
 				fifty.tests.issue319 = function() {
 					var project = test.fixtures.adapt.repository(test.fixtures.project().clone);
-					$api.Function.world.now.action(
+					$api.fp.world.now.action(
 						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
 							command: project.directory.getRelativePath("wf"),
@@ -530,7 +530,7 @@ namespace slime.jsh.wf {
 					fixtures.git.edit(repository, "wf.js", function(before) {
 						return before.replace("slime.jsh.Global", "slime.jjj.Global");
 					});
-					$api.Function.world.now.action(
+					$api.fp.world.now.action(
 						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
 							command: project.directory.getRelativePath("wf"),

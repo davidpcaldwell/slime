@@ -13,7 +13,7 @@
 	 */
 	function($api,jsh,main) {
 		main(
-			$api.Function.pipe(
+			$api.fp.pipe(
 				jsh.script.cli.option.string({ longname: "url" }),
 				jsh.script.cli.option.string({ longname: "format" }),
 				function(p) {
@@ -22,7 +22,7 @@
 					var destination = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 					destination.directory.remove();
 
-					$api.Function.world.now.action(
+					$api.fp.world.now.action(
 						jsh.tools.install.Download.install,
 						{
 							download: {

@@ -13,7 +13,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {
-		$api.Function.result(
+		$api.fp.result(
 			{ options: {}, arguments: jsh.script.arguments.slice() },
 			jsh.script.cli.option.pathname({ longname: "base" }),
 			jsh.script.cli.option.string({ longname: "chrome:id" }),

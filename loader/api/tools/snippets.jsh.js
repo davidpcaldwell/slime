@@ -81,10 +81,10 @@
 			/**
 			 * @type { slime.tools.snippets.ApiHtmlSnippet[] }
 			 */
-			var snippets = $api.Function.result(
+			var snippets = $api.fp.result(
 				snippetAbbreviations,
 				Object.entries,
-				$api.Function.Array.map(
+				$api.fp.Array.map(
 					function(p) {
 						return {
 							name: p[0],
@@ -149,9 +149,9 @@
 			}
 
 			return function() {
-				var pattern = $api.Function.result(
+				var pattern = $api.fp.result(
 					snippetPattern,
-					$api.Function.RegExp.modify(function(pattern) {
+					$api.fp.RegExp.modify(function(pattern) {
 						return pattern.replace(/zzz/g, p.extension)
 					})
 				);
@@ -224,7 +224,7 @@
 			typescript: snippetFiles({ extension: "ts" })
 		}
 
-		$api.Function.result(
+		$api.fp.result(
 			{ options: {}, arguments: jsh.script.arguments },
 			jsh.script.cli.option.string({ longname: "language" }),
 			jsh.script.cli.option.string({ longname: "format" }),
@@ -235,9 +235,9 @@
 
 				var toObject = function(array) {
 					return array.reduce(function(rv,element) {
-						rv[element.name] = $api.Function.result(element, $api.Function.pipe(
+						rv[element.name] = $api.fp.result(element, $api.fp.pipe(
 							Object.entries,
-							$api.Function.Array.filter(function(entry) { return entry[0] != "name"; }),
+							$api.fp.Array.filter(function(entry) { return entry[0] != "name"; }),
 							Object.fromEntries
 						));
 						return rv;

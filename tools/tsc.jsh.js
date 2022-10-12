@@ -30,23 +30,23 @@
 			jsh.shell.exit(1);
 		}
 
-		$api.Function.world.execute(jsh.shell.tools.node.require());
-		var typescriptVersionInstalled = $api.Function.result(
+		$api.fp.world.execute(jsh.shell.tools.node.require());
+		var typescriptVersionInstalled = $api.fp.result(
 			jsh.shell.tools.node.installation,
-			$api.Function.pipe(
-				$api.Function.world.question(
+			$api.fp.pipe(
+				$api.fp.world.question(
 					jsh.shell.tools.node.world.Installation.modules.installed("typescript")
 				),
-				$api.Function.Maybe.map(function(module) {
+				$api.fp.Maybe.map(function(module) {
 					return module.version == parameters.options.version;
 				}),
-				$api.Function.Maybe.else(function() {
+				$api.fp.Maybe.else(function() {
 					return false;
 				})
 			)
 		);
 		if (!typescriptVersionInstalled) {
-			$api.Function.world.now.action(
+			$api.fp.world.now.action(
 				jsh.shell.tools.node.world.Installation.modules.install({ name: "typescript", version: parameters.options.version }),
 				jsh.shell.tools.node.installation
 			);

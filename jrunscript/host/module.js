@@ -80,7 +80,7 @@
 		$exports.Array = JavaArray;
 
 		$exports.Map = function(o) {
-			return $api.Function.result(
+			return $api.fp.result(
 				o.object,
 				Object.entries,
 				function(entries) {

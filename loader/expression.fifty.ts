@@ -482,7 +482,7 @@ namespace slime {
 			}
 			export namespace mime {
 				export interface Context {
-					Function: slime.$api.Global["Function"]
+					Function: slime.$api.Global["fp"]
 					deprecate: slime.$api.Global["deprecate"]
 				}
 			}

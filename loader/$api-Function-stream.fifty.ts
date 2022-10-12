@@ -44,20 +44,20 @@ namespace slime.$api.fp {
 
 			fifty.tests.suite = function() {
 				fifty.run(function testEmptyStream() {
-					var stream = $api.Function.Stream.from.empty();
-					var first = $api.Function.Stream.first(stream);
+					var stream = $api.fp.Stream.from.empty();
+					var first = $api.fp.Stream.first(stream);
 					verify(first).present.is(false);
-					var collected = $api.Function.Stream.collect(stream);
+					var collected = $api.fp.Stream.collect(stream);
 					verify(collected).length.is(0);
 				});
 
 				fifty.run(function testArrayStream() {
 					var array = [1,2,3,4];
-					var stream = $api.Function.Stream.from.array(array);
-					var first = $api.Function.Stream.first(stream);
+					var stream = $api.fp.Stream.from.array(array);
+					var first = $api.fp.Stream.first(stream);
 					verify(first).present.is(true);
 					verify(first).evaluate.property("value").is(1);
-					var collected = $api.Function.Stream.collect(stream);
+					var collected = $api.fp.Stream.collect(stream);
 					verify(collected).length.is(4);
 					verify(collected)[0].is(1);
 					verify(collected)[1].is(2);
@@ -78,12 +78,12 @@ namespace slime.$api.fp {
 					return function() {
 						if (start < limit) {
 							return {
-								next: $api.Function.Maybe.value(start),
+								next: $api.fp.Maybe.value(start),
 								remaining: streamRange(start+1, limit)
 							}
 						} else {
 							return {
-								next: $api.Function.Maybe.nothing(),
+								next: $api.fp.Maybe.nothing(),
 								remaining: emptyStream()
 							}
 						}
@@ -97,32 +97,32 @@ namespace slime.$api.fp {
 				var isOdd: Predicate<number> = (n: number) => n % 2 == 1;
 
 				fifty.run(function testStream() {
-					var rv = $api.Function.Stream.collect(streamTo(10));
+					var rv = $api.fp.Stream.collect(streamTo(10));
 					verify(rv.join(",")).is("0,1,2,3,4,5,6,7,8,9")
 				});
 
 				fifty.run(function testFilter() {
-					var rv = $api.Function.result(
+					var rv = $api.fp.result(
 						streamTo(10),
-						$api.Function.pipe(
-							$api.Function.Stream.filter(isOdd),
-							$api.Function.Stream.collect
+						$api.fp.pipe(
+							$api.fp.Stream.filter(isOdd),
+							$api.fp.Stream.collect
 						)
 					);
 					verify(rv.join(",")).is("1,3,5,7,9");
 				});
 
 				fifty.run(function testFind() {
-					var firstOdd = $api.Function.result(
+					var firstOdd = $api.fp.result(
 						streamTo(10),
-						$api.Function.Stream.find(isOdd)
+						$api.fp.Stream.find(isOdd)
 					);
 					verify(firstOdd).present.is(true);
 					verify(firstOdd).evaluate.property("value").is(1);
 
-					var firstOver10 = $api.Function.result(
+					var firstOver10 = $api.fp.result(
 						streamTo(10),
-						$api.Function.Stream.find(function(v) { return v > 10; })
+						$api.fp.Stream.find(function(v) { return v > 10; })
 					);
 					verify(firstOver10).present.is(false);
 				});

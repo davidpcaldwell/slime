@@ -13,7 +13,7 @@
 	 */
 	function($api,jsh,main) {
 		main(
-			$api.Function.pipe(
+			$api.fp.pipe(
 				jsh.script.cli.option.string({ longname: "foo" }),
 				jsh.script.cli.option.number({ longname: "exit" }),
 				function(p) {

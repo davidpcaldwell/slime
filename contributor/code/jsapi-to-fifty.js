@@ -23,7 +23,7 @@
 							var r = cases[i](p);
 							if (r.present) return r;
 						}
-						return $api.Function.Maybe.nothing();
+						return $api.fp.Maybe.nothing();
 					}
 				},
 				/** @type { <P,R1,R2>(fs: [(p: P) => R1, (p: P) => R2]) => (p: P) => [R1, R2] } */
@@ -38,13 +38,13 @@
 				Array: {
 					/** @type { <T>(ts: T[]) => slime.$api.fp.Maybe<T> } */
 					first: function(array) {
-						if (array.length > 0) return $api.Function.Maybe.value(array[0]);
-						return $api.Function.Maybe.nothing();
+						if (array.length > 0) return $api.fp.Maybe.value(array[0]);
+						return $api.fp.Maybe.nothing();
 					},
 					/** @type { <T>(ts: T[]) => slime.$api.fp.Maybe<T> } */
 					last: function(array) {
-						if (array.length > 0) return $api.Function.Maybe.value(array[array.length-1]);
-						return $api.Function.Maybe.nothing();
+						if (array.length > 0) return $api.fp.Maybe.value(array[array.length-1]);
+						return $api.fp.Maybe.nothing();
 					}
 				}
 			}
@@ -55,7 +55,7 @@
 			return function(f) {
 				return function() {
 					var result = f.apply(this,arguments);
-					return $api.Function.Maybe.from(result);
+					return $api.fp.Maybe.from(result);
 				}
 			}
 		};
@@ -69,21 +69,21 @@
 		 */
 		function getLineIndent(line) {
 			if (line.trim().substring(0,3) == "/**") {
-				return $api.Function.Maybe.value(line.substring(0,line.indexOf("/**")));
+				return $api.fp.Maybe.value(line.substring(0,line.indexOf("/**")));
 			}
 			if (line.trim().substring(0,1) == "*") {
 				var at = line.indexOf("*");
 				if (line.substring(at-1,at) != " ") {
-					return $api.Function.Maybe.nothing();
+					return $api.fp.Maybe.nothing();
 				}
-				return $api.Function.Maybe.value(line.substring(0,at-1));
+				return $api.fp.Maybe.value(line.substring(0,at-1));
 			}
 			var leadingWhitespacePattern = /^(\s+)/;
 			var leadingWhitespaceMatch = leadingWhitespacePattern.exec(line);
 			if (leadingWhitespaceMatch) {
-				return $api.Function.Maybe.value(leadingWhitespaceMatch[1]);
+				return $api.fp.Maybe.value(leadingWhitespaceMatch[1]);
 			}
-			return $api.Function.Maybe.nothing();
+			return $api.fp.Maybe.nothing();
 		}
 
 		/**
@@ -100,7 +100,7 @@
 
 		/** @typedef { { section: slime.project.jsapi.internal.InputLine["section"], content: string } } ParsedCommentLine */
 
-		var parseComment = $api.Function.pipe(
+		var parseComment = $api.fp.pipe(
 			$$api.Function.switch(
 				toMaybe(
 					/** @type { (rest: string) => ParsedCommentLine } */
@@ -140,7 +140,7 @@
 				)
 			),
 			//	TODO	we have to force this else because of the inability to define the switch statement with an else currently
-			$api.Function.Maybe.else(
+			$api.fp.Maybe.else(
 				/** @returns { ParsedCommentLine } */
 				function() {
 					if (true) throw new Error("Unreachable.");
@@ -180,16 +180,16 @@
 			}
 		}
 
-		var applyInlineStyles = $api.Function.pipe(
+		var applyInlineStyles = $api.fp.pipe(
 			startEndTagReplace("code", "`"),
 			startEndTagReplace("i", "*"),
 			startEndTagReplace("em", "*")
 		);
 
-		var parseInputLines = $api.Function.pipe(
+		var parseInputLines = $api.fp.pipe(
 			applyInlineStyles,
-			$api.Function.string.split("\n"),
-			$api.Function.Array.map(parseLine)
+			$api.fp.string.split("\n"),
+			$api.fp.Array.map(parseLine)
 		);
 
 		/**
@@ -198,20 +198,20 @@
 		 * @return { slime.project.jsapi.internal.Block }
 		 */
 		function parseBlock(inputLines) {
-			var hasStart = $api.Function.result(
+			var hasStart = $api.fp.result(
 				inputLines,
-				$api.Function.pipe(
+				$api.fp.pipe(
 					$$api.Function.Array.first,
-					$api.Function.Maybe.map($api.Function.property("section")),
-					$api.Function.Maybe.map($api.Function.is("start")),
-					$api.Function.Maybe.else($api.Function.returning(false))
+					$api.fp.Maybe.map($api.fp.property("section")),
+					$api.fp.Maybe.map($api.fp.is("start")),
+					$api.fp.Maybe.else($api.fp.returning(false))
 				)
 			);
 
-			var hasEnd = $api.Function.result(
+			var hasEnd = $api.fp.result(
 				inputLines,
-				$api.Function.pipe(
-					$api.Function.Array.find(function(line) {
+				$api.fp.pipe(
+					$api.fp.Array.find(function(line) {
 						return line.section == "end";
 					}),
 					function(line) {
@@ -220,7 +220,7 @@
 				)
 			);
 
-			var content = inputLines.map($api.Function.property("content")).reduce(
+			var content = inputLines.map($api.fp.property("content")).reduce(
 				/**
 				 * @param { string[] } rv
 				 * @param { string } content
@@ -294,11 +294,11 @@
 		 */
 		function renderInlineNode(child) {
 			if ($context.library.document.Node.isText(child)) {
-				return $api.Function.Maybe.value(child.data);
+				return $api.fp.Maybe.value(child.data);
 			} else if ($context.library.document.Node.isComment(child)) {
-				return $api.Function.Maybe.value("<!---" + child.data + "--->");
+				return $api.fp.Maybe.value("<!---" + child.data + "--->");
 			} else {
-				return $api.Function.Maybe.nothing();
+				return $api.fp.Maybe.nothing();
 			}
 		}
 

@@ -14,7 +14,7 @@
 	 */
 	function($api,$context,$exports) {
 		$exports.getClass = function(name) {
-			$api.Function.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
+			$api.fp.argument.isString({ index: 0, name: "name" }).apply(this,arguments);
 			if ($context.classpath.getClass(name)) {
 				return $context.engine.getJavaClass(name);
 			}

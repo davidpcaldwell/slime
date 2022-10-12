@@ -253,14 +253,14 @@ namespace slime.jrunscript.ip {
 				var mocks = {
 					success: Mock(
 						function(p) {
-							return $api.Function.world.old.ask(function(events) {
+							return $api.fp.world.old.ask(function(events) {
 								return true;
 							})
 						}
 					),
 					error: Mock(
 						function(p) {
-							return $api.Function.world.old.ask(function(events) {
+							return $api.fp.world.old.ask(function(events) {
 								events.fire("error", new Error("mock error message"));
 								return false;
 							})
@@ -268,7 +268,7 @@ namespace slime.jrunscript.ip {
 					),
 					failure: Mock(
 						function(p) {
-							return $api.Function.world.old.ask(function(events) {
+							return $api.fp.world.old.ask(function(events) {
 								return false;
 							})
 						}
@@ -388,7 +388,7 @@ namespace slime.jrunscript.ip {
 				) => boolean
 			 ) {
 				var isAvailable: World["tcp"]["isAvailable"] = function(p) {
-					return $api.Function.world.old.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						return implementation(p, events);
 					})
 				};

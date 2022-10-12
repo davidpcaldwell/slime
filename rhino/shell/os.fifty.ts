@@ -65,7 +65,7 @@ namespace slime.jrunscript.shell.system {
 				var processes = ps();
 				jsh.shell.console(
 					processes.map(
-						$api.Function.pipe(
+						$api.fp.pipe(
 							function(process) {
 								return {
 									id: process.id,
@@ -74,7 +74,7 @@ namespace slime.jrunscript.shell.system {
 									children: process.children.map(function(child) { return child.id })
 								}
 							},
-							$api.Function.JSON.stringify({ space: 4 })
+							$api.fp.JSON.stringify({ space: 4 })
 						)
 					)
 				.join("\n"));

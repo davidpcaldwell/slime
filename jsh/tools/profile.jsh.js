@@ -12,7 +12,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var options = $api.Function.pipe(
+		var options = $api.fp.pipe(
 			jsh.script.cli.option.pathname({ longname: "profiler:javassist" }),
 			jsh.script.cli.option.pathname({ longname: "profiler:output:html" }),
 			jsh.script.cli.option.pathname({ longname: "profiler:output:json" }),
@@ -29,7 +29,7 @@
 		 * @param { slime.jrunscript.file.Pathname } pathname
 		 */
 		var isUnderSlime = function(pathname) {
-			return $api.Function.string.startsWith(jsh.shell.jsh.src.toString())(pathname.toString());
+			return $api.fp.string.startsWith(jsh.shell.jsh.src.toString())(pathname.toString());
 		};
 
 		var pathUnderSlime = function(pathname) {
@@ -38,7 +38,7 @@
 		}
 
 		jsh.script.cli.run(
-			$api.Function.pipe(
+			$api.fp.pipe(
 				options,
 				function(parameters) {
 					var output = (function() {

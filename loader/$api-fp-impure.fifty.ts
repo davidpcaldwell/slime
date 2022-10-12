@@ -82,7 +82,7 @@ namespace slime.$api.fp.world {
 				var captor = fifty.$api.Events.Captor({
 					argument: void(0)
 				});
-				var map = $api.Function.world.question(doubler, captor.handler);
+				var map = $api.fp.world.question(doubler, captor.handler);
 
 				verify(captor).events.length.is(0);
 				verify(2).evaluate(map).is(4);

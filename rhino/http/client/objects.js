@@ -188,7 +188,7 @@
 			 */
 			function oldspi(p) {
 				var body = $context.interpretRequestBody(p.body);
-				return $api.Function.world.input(urlConnectionImplementation({
+				return $api.fp.world.input(urlConnectionImplementation({
 					request: {
 						method: p.method,
 						url: p.url,
@@ -222,7 +222,7 @@
 					}
 				})();
 
-				var spirequest = $api.Function.result(
+				var spirequest = $api.fp.result(
 					interpretRequest(p),
 					sessionRequest(cookies),
 					authorizedRequest(authorization),

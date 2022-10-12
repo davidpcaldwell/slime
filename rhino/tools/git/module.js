@@ -135,11 +135,11 @@
 							args.push("-c", "credential.helper=", "-c", "credential.helper=" + p.credentialHelper);
 						}
 						args.push(c.name);
-						if (o.arguments) args = $api.Function.object.revise(o.arguments(p))(args);
+						if (o.arguments) args = $api.fp.object.revise(o.arguments(p))(args);
 						//	TODO	this type should be in rhino/shell if it is not already
 						/** @type { slime.jrunscript.tools.git.internal.Environment } */
 						var environment = $api.Object.compose($context.environment);
-						if (o.environment) environment = $api.Function.object.revise(o.environment(p))(environment);
+						if (o.environment) environment = $api.fp.object.revise(o.environment(p))(environment);
 
 						var output = {
 							stdout: [],
@@ -167,7 +167,7 @@
 							directory: p.directory
 						});
 
-						var createReturnValue = (o.createReturnValue) ? o.createReturnValue(p) : $api.Function.returning(void(0));
+						var createReturnValue = (o.createReturnValue) ? o.createReturnValue(p) : $api.fp.returning(void(0));
 
 						return createReturnValue({ output: output, result: result });
 					}
@@ -950,7 +950,7 @@
 						});
 						/** @type { { name: string, value: string }[] } */
 						var settings = settingsCommand({});
-						return $api.Function.result(
+						return $api.fp.result(
 							settings,
 							function(settings) {
 								return settings.reduce(function(rv,setting) {
@@ -964,7 +964,7 @@
 								}, {});
 							},
 							Object.entries,
-							$api.Function.Array.map(function(entry) {
+							$api.fp.Array.map(function(entry) {
 								return $api.Object.compose({
 									name: entry[0]
 								}, entry[1])

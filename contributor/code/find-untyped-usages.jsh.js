@@ -54,7 +54,7 @@
 		};
 
 		main(
-			$api.Function.pipe(
+			$api.fp.pipe(
 				jsh.script.cli.option.string({ longname: "pattern" }),
 				function(p) {
 					var directory = jsh.script.file.parent.parent.parent;

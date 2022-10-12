@@ -77,7 +77,7 @@
 				}
 			},
 			result: function(world,invocation) {
-				return $api.Function.world.old.ask(function(events) {
+				return $api.fp.world.old.ask(function(events) {
 					var tell = world.run(invocation);
 					var rv;
 					tell({

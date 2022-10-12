@@ -75,14 +75,14 @@
 				separator: {
 					file: "\\"
 				},
-				isAbsolute: $api.Function.pipe(fixWindowsForwardSlashes, function(string) {
+				isAbsolute: $api.fp.pipe(fixWindowsForwardSlashes, function(string) {
 					if (string[1] == ":" || string.substring(0,2) == "\\\\") {
 						return true;
 					} else {
 						return false;
 					}
 				}),
-				isRootPath: $api.Function.pipe(fixWindowsForwardSlashes, function(string) {
+				isRootPath: $api.fp.pipe(fixWindowsForwardSlashes, function(string) {
 					if (string.substring(1,2) == ":") {
 						return string.length == 3 && string[2] == "\\";
 					} else if (string.substring(0,2) == "\\\\") {
@@ -127,9 +127,9 @@
 			 * @param { string } path
 			 */
 			function removeTrailingSeparator(path) {
-				var matchTrailingSlash = $api.Function.result(
+				var matchTrailingSlash = $api.fp.result(
 					/(.*)/,
-					$api.Function.RegExp.modify(function(pattern) {
+					$api.fp.RegExp.modify(function(pattern) {
 						return pattern + "\\" + system.separator.file + "$";
 					})
 				);
@@ -140,8 +140,8 @@
 					return path;
 				}
 			}
-			var fixArgument = (system == systems.windows) ? fixWindowsForwardSlashes : $api.Function.identity;
-			return $api.Function.pipe(fixArgument, removeTrailingSeparator);
+			var fixArgument = (system == systems.windows) ? fixWindowsForwardSlashes : $api.fp.identity;
+			return $api.fp.pipe(fixArgument, removeTrailingSeparator);
 		}
 
 		/**
@@ -344,7 +344,7 @@
 				return function(events) {
 					var peer = java.newPeer(p.pathname);
 					var binary = peer.writeBinary(p.append || false);
-					return $api.Function.Maybe.value($context.api.io.Streams.java.adapt(binary));
+					return $api.fp.Maybe.value($context.api.io.Streams.java.adapt(binary));
 				}
 			}
 
@@ -358,9 +358,9 @@
 				var peer = java.newPeer(pathname);
 				if (!peer.exists()) {
 					events.fire("notFound");
-					return $api.Function.Maybe.nothing();
+					return $api.fp.Maybe.nothing();
 				}
-				return $api.Function.Maybe.value($context.api.io.Streams.java.adapt(peer.readBinary()));
+				return $api.fp.Maybe.value($context.api.io.Streams.java.adapt(peer.readBinary()));
 			}
 
 			var openWriter = function(pathname,events) {
@@ -384,7 +384,7 @@
 						read: {
 							stream: void(0),
 							string: function() {
-								return $api.Function.world.old.ask(function(events) {
+								return $api.fp.world.old.ask(function(events) {
 									var stream = openInputStream(pathname, events);
 									return (stream === null) ? null : stream.character().asString();
 								});
@@ -457,7 +457,7 @@
 					}
 					java.createDirectoryAt(peer);
 				}
-				return $api.Function.world.old.tell(function() {
+				return $api.fp.world.old.tell(function() {
 					var peer = java.newPeer(p.pathname);
 					var parent = java.getParent(peer);
 					if (!parent.exists()) {
@@ -471,7 +471,7 @@
 			}
 
 			function directory_remove_impure(p) {
-				return $api.Function.world.old.tell(function() {
+				return $api.fp.world.old.tell(function() {
 					var peer = java.newPeer(p.pathname);
 					peer.delete();
 				});
@@ -483,7 +483,7 @@
 			 */
 			function directory_exists_impure(pathname) {
 				return function() {
-					return $api.Function.world.old.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						return directory_exists(pathname);
 					});
 				}
@@ -495,7 +495,7 @@
 			 */
 			function directory_list(pathname) {
 				return function() {
-					return $api.Function.world.old.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						var peer = java.newPeer(pathname);
 						return peer.list(null).map(function(node) {
 							return pathname_create(String(node.getScriptPath()));
@@ -510,7 +510,7 @@
 			 */
 			function file_exists_impure(pathname) {
 				return function() {
-					return $api.Function.world.old.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						var peer = java.newPeer(pathname);
 						return peer.exists() && !peer.isDirectory();
 					});
@@ -524,7 +524,7 @@
 			 * @returns { slime.$api.fp.world.old.Tell<void> }
 			 */
 			function copy_impure(file,destination) {
-				return $api.Function.world.old.tell(function(events) {
+				return $api.fp.world.old.tell(function(events) {
 					var from = java.newPeer(file);
 					var to = java.newPeer(destination);
 					$context.api.io.Streams.binary.copy(
@@ -598,12 +598,12 @@
 				openOutputStream: maybeOutputStream,
 				fileExists: function(p) {
 					return function(events) {
-						return $api.Function.Maybe.value(file_exists(p.pathname));
+						return $api.fp.Maybe.value(file_exists(p.pathname));
 					}
 				},
 				directoryExists: function(p) {
 					return function(events) {
-						return $api.Function.Maybe.value(directory_exists(p.pathname));
+						return $api.fp.Maybe.value(directory_exists(p.pathname));
 					}
 				},
 				createDirectory: function(p) {
@@ -643,7 +643,7 @@
 					read: {
 						stream: {
 							bytes: function(pathname) {
-								return $api.Function.world.old.ask(function(events) {
+								return $api.fp.world.old.ask(function(events) {
 									return openInputStream(pathname,events);
 								})
 							}
@@ -662,7 +662,7 @@
 				},
 				Directory: {
 					remove: function(p) {
-						return $api.Function.world.old.tell(function(e) {
+						return $api.fp.world.old.tell(function(e) {
 							var peer = java.newPeer(p.pathname);
 							if (!peer.exists()) e.fire("notFound");
 							if (peer.exists() && !peer.isDirectory()) throw new Error();

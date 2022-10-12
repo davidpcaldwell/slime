@@ -112,7 +112,7 @@
 				})
 
 				Object.defineProperty(this, "children", {
-					get: $api.Function.memoized(function() {
+					get: $api.fp.memoized(function() {
 						return new NodeList(p.dom.childNodes);
 					}),
 					enumerable: true
@@ -161,7 +161,7 @@
 
 					var Parent = function(p) {
 						Object.defineProperty(this, "children", {
-							get: $api.Function.memoized(function() {
+							get: $api.fp.memoized(function() {
 								return new NodeList({ parent: p.jsoup });
 							}),
 							enumerable: true
@@ -170,7 +170,7 @@
 
 					var Doctype = function(p) {
 						Object.defineProperty(this, "name", {
-							get: noarg($api.Function.pipe(function() {
+							get: noarg($api.fp.pipe(function() {
 								return p.jsoup.attr("name");
 							}, $context.$slime.java.adapt.String)),
 							enumerable: true
@@ -265,8 +265,8 @@
 
 							var document = new (function(parent) {
 								Object.defineProperty(this, "element", {
-									get: noarg($api.Function.pipe(
-										$api.Function.returning(parent.children),
+									get: noarg($api.fp.pipe(
+										$api.fp.returning(parent.children),
 										function(array) {
 											return array.filter(filters.element);
 										},
@@ -338,7 +338,7 @@
 		 */
 		function NodesStream(root, cursor) {
 			/** @type { slime.js.Cast<slime.runtime.document.Parent> } */
-			var asParent = $api.Function.cast;
+			var asParent = $api.fp.cast;
 
 			/**
 			 *
@@ -379,8 +379,8 @@
 					next = checkParent(root, cursor);
 				}
 				return {
-					next: $api.Function.Maybe.value(position),
-					remaining: (next) ? NodesStream(root, next) : $api.Function.Stream.from.empty()
+					next: $api.fp.Maybe.value(position),
+					remaining: (next) ? NodesStream(root, next) : $api.fp.Stream.from.empty()
 				};
 			};
 		}
@@ -469,10 +469,10 @@
 							/** @type { slime.runtime.document.Node[] } */
 							var result = [];
 							copy.children = copy.children.reduce(function(rv,child,index,children) {
-								if (!hasOneTextChild) rv.push(text("\n" + $api.Function.string.repeat(depth+1)(p.indent)));
+								if (!hasOneTextChild) rv.push(text("\n" + $api.fp.string.repeat(depth+1)(p.indent)));
 								rv.push(convert(child,depth+1));
 								if (index+1 == children.length) {
-									if (!hasOneTextChild) rv.push(text("\n" + $api.Function.string.repeat(depth)(p.indent)));
+									if (!hasOneTextChild) rv.push(text("\n" + $api.fp.string.repeat(depth)(p.indent)));
 								}
 								return rv;
 							},result);

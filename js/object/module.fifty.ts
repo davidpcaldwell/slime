@@ -28,7 +28,7 @@ namespace slime.js.old {
 		Error: any
 		Task: any
 
-		Function: slime.$api.Global["Function"]
+		Function: slime.$api.Global["fp"]
 
 		/**
 		 * @deprecated

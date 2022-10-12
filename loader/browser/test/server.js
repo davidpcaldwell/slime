@@ -59,7 +59,7 @@
 													}
 												}
 											})()
-											: $api.Function.returning(void(0))
+											: $api.fp.returning(void(0))
 									),
 									(
 										(resultsPath)
@@ -78,7 +78,7 @@
 													url: resultsPath
 												})
 											})()
-											: $api.Function.returning(void(0))
+											: $api.fp.returning(void(0))
 									),
 									scope.httpd.Handler.Loader({
 										loader: new jsh.file.Loader({

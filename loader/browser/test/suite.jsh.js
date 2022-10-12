@@ -162,7 +162,7 @@
 												}
 											}
 										})()
-										: $api.Function.returning(void(0))
+										: $api.fp.returning(void(0))
 								),
 								(
 									(!parameters.options.interactive)
@@ -181,7 +181,7 @@
 												url: url
 											})
 										})()
-										: $api.Function.returning(void(0))
+										: $api.fp.returning(void(0))
 								),
 								scope.httpd.Handler.Loader({
 									loader: new jsh.file.Loader({
@@ -311,7 +311,7 @@
 			if (argument == "selenium:chrome") {
 				return jshUnitBrowserToBrowser(
 					"Chrome (Selenium)",
-					$api.Function.identity,
+					$api.fp.identity,
 					jsh.unit.browser.selenium.Chrome()
 				);
 			}
@@ -323,7 +323,7 @@
 				var instance = (parameters.options["chrome:instance"]) || jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 				return jshUnitBrowserToBrowser(
 					"Chrome",
-					$api.Function.identity,
+					$api.fp.identity,
 					jsh.unit.browser.local.Chrome({
 						program: jsh.shell.browser.installed.chrome.program,
 						user: instance.toString(),
@@ -335,7 +335,7 @@
 			if (argument == "firefox") {
 				return jshUnitBrowserToBrowser(
 					"Firefox",
-					$api.Function.identity,
+					$api.fp.identity,
 					jsh.unit.browser.local.Firefox({
 						//	TODO	push knowledge of these locations back into rhino/shell
 						program: "/Applications/Firefox.app/Contents/MacOS/firefox"

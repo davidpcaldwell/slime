@@ -56,7 +56,7 @@
 				}
 
 				/** @type { slime.tools.code.isText } */
-				var isText = $api.Function.series(
+				var isText = $api.fp.series(
 					function(entry) {
 						if (entry.path == "contributor/docker-compose-run") return true;
 						if (entry.path == "tools/wf/test/data/plugin-standard/wf") return true;
@@ -102,8 +102,8 @@
 						if (entry.path == "tools/wf") return true;
 						if (entry.path == "wf") return true;
 					},
-					$api.Function.pipe(
-						$api.Function.world.question(
+					$api.fp.pipe(
+						$api.fp.world.question(
 							$context.library.code.File.isText()
 						),
 						function(maybe) {
@@ -208,7 +208,7 @@
 				}
 
 				var excludes = {
-					directory: $api.Function.Predicate.or(
+					directory: $api.fp.Predicate.or(
 						$context.library.code.defaults.exclude.directory,
 						isVscodeJavaExtensionDirectory
 					)
@@ -238,9 +238,9 @@
 			files: files,
 			directory: {
 				lastModified: function(p) {
-					return $api.Function.result(
+					return $api.fp.result(
 						p.loader,
-						$api.Function.pipe(
+						$api.fp.pipe(
 							$context.library.io.loader.entries({
 								filter: {
 									resource: function(path, name) {
@@ -255,14 +255,14 @@
 								},
 								map: p.map
 							}),
-							$api.Function.Array.first($context.library.io.Entry.mostRecentlyModified()),
-							$api.Function.Maybe.map(function(latest) {
+							$api.fp.Array.first($context.library.io.Entry.mostRecentlyModified()),
+							$api.fp.Maybe.map(function(latest) {
 								// jsh.shell.console("latest = " + ((latest.path.length) ? latest.path.join("/") + "/" : "") + latest.name);
 								return latest.resource.modified();
 							}),
 							function(it) {
 								if (it.present) return it.value;
-								return $api.Function.Maybe.nothing();
+								return $api.fp.Maybe.nothing();
 							}
 						)
 					);

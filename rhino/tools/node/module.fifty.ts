@@ -95,24 +95,24 @@ namespace slime.jrunscript.node {
 			fifty.tests.sandbox.installation = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
 				var installation = test.subject.world.Installation.from.location(TMPDIR);
-				var before = $api.Function.world.now.question(
+				var before = $api.fp.world.now.question(
 					test.subject.world.Installation.exists,
 					installation
 				);
 				verify(before).is(false);
-				$api.Function.world.now.action(
+				$api.fp.world.now.action(
 					test.subject.test.world.install,
 					{
 						location: TMPDIR.pathname,
 						version: test.subject.test.versions.current
 					}
 				);
-				var after = $api.Function.world.now.question(
+				var after = $api.fp.world.now.question(
 					test.subject.world.Installation.exists,
 					installation
 				);
 				verify(after).is(true);
-				var version = $api.Function.world.now.question(
+				var version = $api.fp.world.now.question(
 					test.subject.world.Installation.getVersion,
 					installation
 				)
@@ -145,7 +145,7 @@ namespace slime.jrunscript.node {
 
 				fifty.tests.sandbox.question = function() {
 					var TMPDIR = fifty.jsh.file.temporary.location();
-					$api.Function.world.now.action(
+					$api.fp.world.now.action(
 						test.subject.test.world.install,
 						{
 							location: TMPDIR.pathname,
@@ -154,7 +154,7 @@ namespace slime.jrunscript.node {
 					);
 					var installation = test.subject.world.Installation.from.location(TMPDIR);
 					debugger;
-					var result = $api.Function.world.now.question(
+					var result = $api.fp.world.now.question(
 						test.subject.world.Installation.question({
 							arguments: [fifty.jsh.file.object.getRelativePath("test/hello.js")],
 							stdio: {
@@ -196,7 +196,7 @@ namespace slime.jrunscript.node {
 
 			fifty.tests.wip = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
-				$api.Function.world.now.action(
+				$api.fp.world.now.action(
 					test.subject.test.world.install,
 					{
 						location: TMPDIR.pathname,
@@ -205,7 +205,7 @@ namespace slime.jrunscript.node {
 				);
 				var installation = test.subject.world.Installation.from.location(TMPDIR);
 
-				var installedModule = $api.Function.world.question(
+				var installedModule = $api.fp.world.question(
 					test.subject.world.Installation.modules.installed("minimal-package"),
 				)
 
@@ -214,7 +214,7 @@ namespace slime.jrunscript.node {
 				verify(before).present.is(false);
 
 				var findInListing = function() {
-					var listing = $api.Function.world.now.question(
+					var listing = $api.fp.world.now.question(
 						test.subject.world.Installation.modules.list(),
 						installation
 					);
@@ -226,7 +226,7 @@ namespace slime.jrunscript.node {
 
 				verify(findInListing()).is(void(0));
 
-				$api.Function.world.now.action(
+				$api.fp.world.now.action(
 					test.subject.world.Installation.modules.install({ name: "minimal-package" }),
 					installation
 				);
@@ -366,7 +366,7 @@ namespace slime.jrunscript.node {
 				var tell = subject.install({
 					location: jsh.file.Pathname(TMPDIR.pathname)
 				});
-				$api.Function.world.execute(tell, {
+				$api.fp.world.execute(tell, {
 					installed: function(e) {
 						jsh.shell.console("Installed: Node " + e.detail.version + " at " + e.detail.location);
 					}
@@ -412,8 +412,8 @@ namespace slime.jsh.shell.tools {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			$api.Function.impure.now.process(
-				$api.Function.world.action(jsh.shell.tools.node.require)
+			$api.fp.impure.now.process(
+				$api.fp.world.action(jsh.shell.tools.node.require)
 			)
 
 			const api = jsh.shell.tools.node.installed;
@@ -477,7 +477,7 @@ namespace slime.jsh.shell.tools {
 			fifty.tests.manual.jsh = function() {
 				jsh.shell.console("hello");
 				var installation = jsh.shell.tools.node.installation;
-				var modules = $api.Function.world.now.question(
+				var modules = $api.fp.world.now.question(
 					jsh.shell.tools.node.world.Installation.modules.list(),
 					installation
 				);

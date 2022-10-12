@@ -20,7 +20,7 @@
 		 */
 		function getSourceFiles(base) {
 			/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
-			var castToFile = $api.Function.cast;
+			var castToFile = $api.fp.cast;
 			return base.list({
 				type: $context.library.file.list.ENTRY,
 				filter: function(item) {
@@ -140,15 +140,15 @@
 					hasTypeChecking: function(entry) {
 						if (isJavascript(entry)) {
 							var code = entry.file.read(String);
-							return $api.Function.Maybe.value(code.indexOf("ts-check") != -1);
+							return $api.fp.Maybe.value(code.indexOf("ts-check") != -1);
 						}
-						return $api.Function.Maybe.nothing();
+						return $api.fp.Maybe.nothing();
 					}
 				}
 			},
 			jsapi: function(base) {
 				var src = getSourceFiles(base);
-				var grouper = $api.Function.Array.groupBy({
+				var grouper = $api.fp.Array.groupBy({
 					/** @type { (p: slime.project.metrics.SourceFile) => string } */
 					group: function(entry) {
 						if (isJsapi(entry)) return "jsapi";

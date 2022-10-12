@@ -50,11 +50,11 @@
 				pathname: location.pathname
 			});
 			var output = ask(events);
-			$api.Function.result(
+			$api.fp.result(
 				output,
-				$api.Function.pipe(
-					$api.Function.Maybe.map(write),
-					$api.Function.Maybe.else(function() {
+				$api.fp.pipe(
+					$api.fp.Maybe.map(write),
+					$api.fp.Maybe.else(function() {
 						throw new Error("Could not write to location " + location.pathname);
 					})
 				)
@@ -92,7 +92,7 @@
 				var exists = Location_directory_exists(parent)(events);
 				if (!exists) {
 					it(parent, events);
-					$api.Function.world.now.action(
+					$api.fp.world.now.action(
 						location.filesystem.createDirectory,
 						{ pathname: parent.pathname }
 					);
@@ -168,9 +168,9 @@
 										pathname: location.pathname
 									});
 									var maybe = ask(events);
-									return $api.Function.result(
+									return $api.fp.result(
 										maybe,
-										$api.Function.Maybe.map(
+										$api.fp.Maybe.map(
 											function(it) {
 												return it.character().asString()
 											}
@@ -219,9 +219,9 @@
 										var ask = location.filesystem.openOutputStream({
 											pathname: location.pathname
 										});
-										return $api.Function.result(
+										return $api.fp.result(
 											ask(events),
-											$api.Function.Maybe.map(function(stream) {
+											$api.fp.Maybe.map(function(stream) {
 												return stream.character();
 											})
 										);
@@ -236,7 +236,7 @@
 							return function(events) {
 								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
 
-								$api.Function.world.now.action(
+								$api.fp.world.now.action(
 									ensureParent,
 									p.to,
 									{
@@ -260,7 +260,7 @@
 								//	TODO	insert existence check like there? Refactor?
 								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
 
-								$api.Function.world.now.action(
+								$api.fp.world.now.action(
 									ensureParent,
 									p.to,
 									{
@@ -292,7 +292,7 @@
 								if (exists.present) {
 									if (!exists.value) {
 										if (p && p.recursive) {
-											$api.Function.world.now.action(
+											$api.fp.world.now.action(
 												ensureParent,
 												location,
 												{
@@ -305,7 +305,7 @@
 												}
 											);
 										}
-										$api.Function.world.now.action(
+										$api.fp.world.now.action(
 											location.filesystem.createDirectory,
 											{ pathname: location.pathname },
 											{
@@ -331,7 +331,7 @@
 					move: function(p) {
 						return function(location) {
 							return function(events) {
-								var exists = $api.Function.world.now.question(
+								var exists = $api.fp.world.now.question(
 									location.filesystem.directoryExists,
 									{ pathname: location.pathname }
 								);
@@ -340,7 +340,7 @@
 
 								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
 
-								$api.Function.world.now.action(
+								$api.fp.world.now.action(
 									ensureParent,
 									p.to,
 									{
@@ -350,7 +350,7 @@
 									}
 								);
 
-								$api.Function.world.now.action(
+								$api.fp.world.now.action(
 									location.filesystem.move,
 									{
 										from: location.pathname,

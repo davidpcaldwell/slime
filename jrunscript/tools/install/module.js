@@ -102,9 +102,9 @@
 		 * @returns { slime.$api.fp.Maybe<slime.jrunscript.tools.install.download.Format> }
 		 */
 		var getFormat = function(type) {
-			if (type.media == "application" && type.subtype == "zip") return $api.Function.Maybe.value(newFormats.zip);
-			if (type.media == "application" && type.subtype == "gzip") return $api.Function.Maybe.value(newFormats.targz);
-			return $api.Function.Maybe.nothing();
+			if (type.media == "application" && type.subtype == "zip") return $api.fp.Maybe.value(newFormats.zip);
+			if (type.media == "application" && type.subtype == "gzip") return $api.fp.Maybe.value(newFormats.targz);
+			return $api.fp.Maybe.nothing();
 		}
 
 		/**
@@ -262,7 +262,7 @@
 
 		/** @type { (p: slime.jrunscript.tools.install.old.WorldInstallation) => slime.$api.fp.world.old.Tell<slime.jrunscript.tools.install.events.Console> } */
 		var newInstall = function(p) {
-			return $api.Function.world.old.tell(function(events) {
+			return $api.fp.world.old.tell(function(events) {
 				if (typeof(p.source.file) != "string" && typeof(p.source.file) != "undefined") {
 					throw new TypeError("source.file must be string.");
 				}
@@ -313,17 +313,17 @@
 					var getFileMimeType = function(file) {
 						var basename = file.pathname.basename;
 						var decode = $api.mime.Type.codec.declaration.decode;
-						if (/\.zip$/.test(basename)) return $api.Function.Maybe.value(decode("application/zip"));
-						if (/\.tgz$/.test(basename)) return $api.Function.Maybe.value(decode("application/gzip"));
-						if (/\.tar.gz$/.test(basename)) return $api.Function.Maybe.value(decode("application/gzip"));
-						return $api.Function.Maybe.nothing();
+						if (/\.zip$/.test(basename)) return $api.fp.Maybe.value(decode("application/zip"));
+						if (/\.tgz$/.test(basename)) return $api.fp.Maybe.value(decode("application/gzip"));
+						if (/\.tar.gz$/.test(basename)) return $api.fp.Maybe.value(decode("application/gzip"));
+						return $api.fp.Maybe.nothing();
 					};
 
 					/** @param { slime.jrunscript.http.client.spi.Response } response */
 					var getResponseMimeType = function(response) {
-						return $api.Function.result(
+						return $api.fp.result(
 							$context.api.http.Header.value("Content-Type")(response.headers),
-							$api.Function.Maybe.map($api.mime.Type.codec.declaration.decode)
+							$api.fp.Maybe.map($api.mime.Type.codec.declaration.decode)
 						);
 					};
 
@@ -369,7 +369,7 @@
 							local = $context.api.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("archive" + format.extension);
 						}
 						var write = $context.api.file.world.Location.file.write.stream({ input: response.stream });
-						$api.Function.world.now.action(write, local.os.adapt());
+						$api.fp.world.now.action(write, local.os.adapt());
 						return { file: local.file, type: getResponseMimeType(response) };
 					}
 
@@ -379,7 +379,7 @@
 					 * @returns
 					 */
 					var createFetcher = function(events) {
-						return $api.Function.world.question(
+						return $api.fp.world.question(
 							$context.api.http.world.Client.withFollowRedirects($context.api.http.world.request),
 							{
 								request: function(e) {
@@ -417,7 +417,7 @@
 			get: $exports.get,
 			//	TODO	find is completely untested
 			find: function(p) {
-				return $api.Function.world.old.ask(function(events) {
+				return $api.fp.world.old.ask(function(events) {
 					get(p,events);
 					return p.file;
 				});
@@ -475,7 +475,7 @@
 
 						return function(p,on) {
 							var listeners = new Listeners({
-								on: $api.Function.evaluator(
+								on: $api.fp.evaluator(
 									function() { return on; },
 									function() { return defaultOn; },
 									function() { return {}; }

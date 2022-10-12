@@ -6,12 +6,12 @@
 
 namespace slime.$api {
 	export interface Global {
-		Function: slime.$api.fp.Exports
+		fp: slime.$api.fp.Exports
 	}
 }
 
 /**
- * The {@link slime.$api.fp.Exports | Exports} member of this namespace is available as `$api.Function` in all scripts loaded by the
+ * The {@link slime.$api.fp.Exports | Exports} member of this namespace is available as `$api.fp` in all scripts loaded by the
  * SLIME loader.
  */
 namespace slime.$api.fp {
@@ -69,7 +69,7 @@ namespace slime.$api.fp {
 				};
 
 				verify(calls).is(void(0));
-				var memoized = fifty.global.$api.Function.memoized(counter);
+				var memoized = fifty.global.$api.fp.memoized(counter);
 				verify(calls).is(void(0));
 				var result = memoized();
 				verify(result).is(42);
@@ -228,9 +228,9 @@ namespace slime.$api.fp {
 					}
 				};
 
-				var x = fifty.global.$api.Function.result(
+				var x = fifty.global.$api.fp.result(
 					2,
-					fifty.global.$api.Function.pipe(
+					fifty.global.$api.fp.pipe(
 						times(3),
 						plus(4)
 					)
@@ -273,7 +273,7 @@ namespace slime.$api.fp {
 			const { verify } = fifty;
 
 			fifty.tests.is = function() {
-				var is2 = fifty.global.$api.Function.is(2);
+				var is2 = fifty.global.$api.fp.is(2);
 
 				verify(is2(2)).is(true);
 				//@ts-ignore
@@ -332,7 +332,7 @@ namespace slime.$api.fp {
 				const { $api } = fifty.global;
 
 				fifty.tests.exports.string.replace = function() {
-					var replacer = $api.Function.string.replace(/xmas/i, "Christmas");
+					var replacer = $api.fp.string.replace(/xmas/i, "Christmas");
 					var input = "Twas the night before Xmas...";
 					var output = "Twas the night before Christmas...";
 					verify(input).evaluate(replacer).is(output);
@@ -361,8 +361,8 @@ namespace slime.$api.fp {
 				const { $api } = fifty.global;
 
 				fifty.tests.exports.string.leftPad = function() {
-					var lpad4 = $api.Function.string.leftPad({ length: 4 });
-					var lpad4zero = $api.Function.string.leftPad({ length: 4, padding: "0" });
+					var lpad4 = $api.fp.string.leftPad({ length: 4 });
+					var lpad4zero = $api.fp.string.leftPad({ length: 4, padding: "0" });
 
 					verify("1").evaluate(lpad4).is("   1");
 					verify("1").evaluate(lpad4zero).is("0001");
@@ -370,8 +370,8 @@ namespace slime.$api.fp {
 				}
 
 				fifty.tests.exports.string.rightPad = function() {
-					var pad4 = $api.Function.string.rightPad({ length: 4 });
-					var pad4zero = $api.Function.string.rightPad({ length: 4, padding: "0" });
+					var pad4 = $api.fp.string.rightPad({ length: 4 });
+					var pad4zero = $api.fp.string.rightPad({ length: 4, padding: "0" });
 
 					verify("1").evaluate(pad4).is("1   ");
 					verify("1").evaluate(pad4zero).is("1000");
@@ -384,7 +384,7 @@ namespace slime.$api.fp {
 	}
 
 	/**
-	 * This object is available as `$api.Function` in all scripts loaded by the SLIME loader.
+	 * This object is available as `$api.fp` in all scripts loaded by the SLIME loader.
 	 */
 	export interface Exports {
 		string: exports.String
@@ -395,14 +395,14 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.string = function() {
-				var subject = fifty.global.$api.Function.string;
+				var subject = fifty.global.$api.fp.string;
 
 				fifty.run(function repeat() {
-					var one = fifty.global.$api.Function.string.repeat(1)("foo");
+					var one = fifty.global.$api.fp.string.repeat(1)("foo");
 					fifty.verify(one).is("foo");
-					var three = fifty.global.$api.Function.string.repeat(3)("foo");
+					var three = fifty.global.$api.fp.string.repeat(3)("foo");
 					fifty.verify(three).is("foofoofoo");
-					var zero = fifty.global.$api.Function.string.repeat(0)("foo");
+					var zero = fifty.global.$api.fp.string.repeat(0)("foo");
 					fifty.verify(zero).is("");
 				});
 
@@ -440,7 +440,7 @@ namespace slime.$api.fp {
 			fifty.tests.Object = function() {
 				run(function fromEntries() {
 					var array = [ ["a", 2], ["b", 3] ];
-					var result: { a: number, b: number } = fifty.global.$api.Function.result(
+					var result: { a: number, b: number } = fifty.global.$api.fp.result(
 						array,
 						Object.fromEntries
 					) as { a: number, b: number };
@@ -508,7 +508,7 @@ namespace slime.$api.fp {
 				var n24 = [2, 4];
 
 				fifty.tests.exports.Array.concat = function() {
-					var append24 = $api.Function.Array.concat(n24);
+					var append24 = $api.fp.Array.concat(n24);
 
 					var n0124 = append24([0,1]);
 
@@ -520,7 +520,7 @@ namespace slime.$api.fp {
 				};
 
 				fifty.tests.exports.Array.prepend = function() {
-					var prepend24 = $api.Function.Array.prepend(n24);
+					var prepend24 = $api.fp.Array.prepend(n24);
 
 					var n2468 = prepend24([6,8]);
 					verify(n2468).length.is(4);
@@ -586,7 +586,7 @@ namespace slime.$api.fp {
 						[4],
 						[5,6]
 					];
-					var joined = $api.Function.Arrays.join(arrays);
+					var joined = $api.fp.Arrays.join(arrays);
 					verify(joined).length.is(6);
 					verify(joined)[0].is(1);
 					verify(joined)[1].is(2);
@@ -640,8 +640,8 @@ namespace slime.$api.fp {
 						{ a: 2, b: "b" }
 					]
 
-					const f1: Predicate<T> = fifty.global.$api.Function.Predicate.property("a", function(v) { return v == 1; });
-					const f2: Predicate<T> = fifty.global.$api.Function.Predicate.property("b", function(v) { return v == "b"; });
+					const f1: Predicate<T> = fifty.global.$api.fp.Predicate.property("a", function(v) { return v == 1; });
+					const f2: Predicate<T> = fifty.global.$api.fp.Predicate.property("b", function(v) { return v == "b"; });
 
 					verify(ts).evaluate(function(ts) { return ts.filter(f1); }).length.is(1);
 					verify(ts.filter(f1))[0].a.is(1);
@@ -685,7 +685,7 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const subject = fifty.global.$api.Function.RegExp;
+			const subject = fifty.global.$api.fp.RegExp;
 
 			fifty.tests.exports.RegExp = fifty.test.Parent();
 
@@ -767,7 +767,7 @@ namespace slime.$api.fp {
 			$api: slime.$api.Global
 		) {
 			const { verify, run } = fifty;
-			const $f = fifty.global.$api.Function;
+			const $f = fifty.global.$api.fp;
 
 			fifty.tests.compare = function() {
 				run(function orderingArray() {
@@ -790,27 +790,27 @@ namespace slime.$api.fp {
 					{ name: "b", value: 0 },
 					{ name: "c", value: 2 }
 				];
-				var comparator: slime.$api.fp.CompareFn<{ name: string, value: number }> = fifty.global.$api.Function.comparator.create(
-					fifty.global.$api.Function.property("value"),
-					fifty.global.$api.Function.comparator.operators
+				var comparator: slime.$api.fp.CompareFn<{ name: string, value: number }> = fifty.global.$api.fp.comparator.create(
+					fifty.global.$api.fp.property("value"),
+					fifty.global.$api.fp.comparator.operators
 				);
 				array.sort(comparator);
 				verify(array)[0].name.is("b");
 				verify(array)[1].name.is("a");
 				verify(array)[2].name.is("c");
-				array.sort(fifty.global.$api.Function.comparator.reverse(comparator));
+				array.sort(fifty.global.$api.fp.comparator.reverse(comparator));
 				verify(array)[0].name.is("c");
 				verify(array)[1].name.is("a");
 				verify(array)[2].name.is("b");
 
-				var tiebreaking: slime.$api.fp.CompareFn<{ name: string, value: number, tiebreaker: number }> = fifty.global.$api.Function.comparator.create(
-					fifty.global.$api.Function.property("tiebreaker"),
-					fifty.global.$api.Function.comparator.operators
+				var tiebreaking: slime.$api.fp.CompareFn<{ name: string, value: number, tiebreaker: number }> = fifty.global.$api.fp.comparator.create(
+					fifty.global.$api.fp.property("tiebreaker"),
+					fifty.global.$api.fp.comparator.operators
 				);
 
-				var multicomparator: slime.$api.fp.CompareFn<{ name: string, value: number, tiebreaker: number }> = fifty.global.$api.Function.comparator.compose(
-					fifty.global.$api.Function.comparator.reverse(comparator),
-					fifty.global.$api.Function.comparator.reverse(tiebreaking)
+				var multicomparator: slime.$api.fp.CompareFn<{ name: string, value: number, tiebreaker: number }> = fifty.global.$api.fp.comparator.compose(
+					fifty.global.$api.fp.comparator.reverse(comparator),
+					fifty.global.$api.fp.comparator.reverse(tiebreaking)
 				);
 
 				var multi = [
@@ -876,7 +876,7 @@ namespace slime.$api.fp {
 				var f3 = function(p: { number: number }) {
 					p.number -= 3;
 				}
-				var f = fifty.global.$api.Function.object.compose(f1, f2, f3);
+				var f = fifty.global.$api.fp.object.compose(f1, f2, f3);
 				var input = { number: 4 };
 				var output = f(input);
 				verify(output).number.is(7);
@@ -885,14 +885,14 @@ namespace slime.$api.fp {
 					return { number: 9 };
 				};
 
-				var r = fifty.global.$api.Function.object.compose(f1, r1, f3);
+				var r = fifty.global.$api.fp.object.compose(f1, r1, f3);
 				var rinput = { number: 4 };
 				var routput = r(rinput);
 				verify(routput).number.is(6);
 
 				fifty.run(function() {
-					var nullRevision = fifty.global.$api.Function.object.revise(null);
-					var undefinedRevision = fifty.global.$api.Function.object.revise(void(0));
+					var nullRevision = fifty.global.$api.fp.object.revise(null);
+					var undefinedRevision = fifty.global.$api.fp.object.revise(void(0));
 
 					var two = { number: 2 }
 
@@ -908,7 +908,7 @@ namespace slime.$api.fp {
 						function(a: A) { a.b++ },
 						function(a: A) { a.c = 0 }
 					];
-					var update = fifty.global.$api.Function.object.Update.compose(updates);
+					var update = fifty.global.$api.fp.object.Update.compose(updates);
 					update(a);
 					verify(a).a.is(2);
 					verify(a).b.is(3);
@@ -931,7 +931,7 @@ namespace slime.$api.fp {
 
 			fifty.tests.series = function() {
 				var api = fifty.global.$api;
-				var one = api.Function.series(
+				var one = api.fp.series(
 					function() {
 						return 1;
 					},
@@ -940,7 +940,7 @@ namespace slime.$api.fp {
 					}
 				);
 				verify(one()).is(1);
-				var two = api.Function.series(
+				var two = api.fp.series(
 					function(): number {
 						return void(0);
 					},
@@ -963,7 +963,7 @@ namespace slime.$api.fp {
 		 * * It may directly modify the value (if the value is mutable, like an object) in its implementation,
 		 * * It may _replace_ the value entirely by returning a value.
 		 *
-		 * The special value $api.Function.value.UNDEFINED can be returned to replace the value with `undefined`.
+		 * The special value $api.fp.value.UNDEFINED can be returned to replace the value with `undefined`.
 		 *
 		 * @param p A value to mutate or replace.
 		 *
@@ -1020,7 +1020,7 @@ namespace slime.$api.fp {
 			const { verify } = fifty;
 
 			fifty.tests.deprecated = function() {
-				var check = fifty.global.$api.Function.argument.check;
+				var check = fifty.global.$api.fp.argument.check;
 
 				var tester = {
 					invoke: function(argument,array) {

@@ -80,10 +80,10 @@
 				repository: new function() {
 					var commit = function(repository,files,message) {
 						//	TODO	should use execute and forEach
-						$api.Function.result(
+						$api.fp.result(
 							files,
 							Object.entries,
-							$api.Function.Array.map(function(entry) {
+							$api.fp.Array.map(function(entry) {
 								repository.directory.getRelativePath(entry[0]).write(entry[1], { append: false, recursive: true });
 								repository.add({ path: entry[0] });
 							})

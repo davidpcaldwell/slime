@@ -73,7 +73,7 @@
 					};
 
 					var src = getSourceFiles();
-					var grouper = $api.Function.Array.groupBy({
+					var grouper = $api.fp.Array.groupBy({
 						/** @type { (entry: slime.project.metrics.SourceFile) => string } */
 						group: function(entry) {
 							if (model.SourceFile.isJavascript(entry)) return "js";
@@ -157,11 +157,11 @@
 						return file.file.read(String).split("\n").length - 1;
 					}
 
-					var files = $api.Function.result(
+					var files = $api.fp.result(
 						getSourceFiles(),
-						$api.Function.Array.filter($api.Function.Predicate.not(model.SourceFile.isGenerated)),
-						$api.Function.Array.filter($api.Function.Predicate.not(model.SourceFile.isJsapi)),
-						$api.Function.Array.filter(function(file) {
+						$api.fp.Array.filter($api.fp.Predicate.not(model.SourceFile.isGenerated)),
+						$api.fp.Array.filter($api.fp.Predicate.not(model.SourceFile.isJsapi)),
+						$api.fp.Array.filter(function(file) {
 							return getLines(file) > 500;
 						})
 					).sort(function(a,b) {

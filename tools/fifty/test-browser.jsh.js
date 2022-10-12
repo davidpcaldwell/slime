@@ -41,13 +41,13 @@
 			});
 		};
 
-		$api.Function.pipe(
+		$api.fp.pipe(
 			//	Keeps the browser open after running the tests so that they can be re-run by refreshing the page
 			jsh.script.cli.option.boolean({ longname: "interactive" }),
 
 			jsh.script.cli.option.string({ longname: "browser", default: "chrome" }),
 
-			$api.Function.pipe(
+			$api.fp.pipe(
 				//	Selects a location to use for Google Chrome configuration; if unspecified, a temporary directory will be used
 				jsh.script.cli.option.pathname({ longname: "chrome:data" }),
 
@@ -60,7 +60,7 @@
 
 			jsh.script.cli.option.pathname({ longname: "base" }),
 
-			$api.Function.pipe(
+			$api.fp.pipe(
 				//	See https://github.com/davidpcaldwell/slime/issues/317
 				jsh.script.cli.option.number({ longname: "debug:delay" }),
 				jsh.script.cli.option.boolean({ longname: "debug:devtools" })

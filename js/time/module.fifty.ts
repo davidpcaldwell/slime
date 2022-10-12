@@ -108,7 +108,7 @@ namespace slime.time {
 
 			fifty.tests.Date.today = function() {
 				var subject = test.load({
-					now: $api.Function.returning(1643907600000)
+					now: $api.fp.returning(1643907600000)
 				});
 				var today = subject.Date.input.today();
 				verify(today, "today", function(it) {
