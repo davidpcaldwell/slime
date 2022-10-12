@@ -505,7 +505,7 @@
 										arguments: (configuration.debugPort) ? ["--remote-debugging-port=" + configuration.debugPort ] : [],
 										on: {
 											start: function(p) {
-												jsh.shell.console("In plugin.jsh.browser, Chrome subprocess started (PID: " + p.pid + ")");
+												//jsh.shell.console("In plugin.jsh.browser, Chrome subprocess started (PID: " + p.pid + ")");
 												process = p;
 											}
 										}

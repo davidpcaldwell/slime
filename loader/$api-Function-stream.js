@@ -14,15 +14,46 @@
 	function($context,$export) {
 		var $f = $context.$f;
 
+		/** @type { slime.$api.fp.Stream<any> } */
+		var empty = function() {
+			return {
+				next: $f.Maybe.nothing(),
+				remaining: empty
+			};
+		};
+
+		var filter = function filter(predicate) {
+			return function(stream) {
+				return function() {
+					while(true) {
+						var current = stream();
+						if (!current.next.present) {
+							return {
+								next: $f.Maybe.nothing(),
+								remaining: empty
+							}
+						}
+						if (current.next.present && predicate(current.next.value)) {
+							return {
+								next: current.next,
+								remaining: filter(predicate)(current.remaining)
+							}
+						} else {
+							stream = current.remaining;
+						}
+					}
+				}
+			}
+		};
+
+		var first = function(stream) {
+			return stream().next;
+		};
+
 		$export({
 			from: {
 				empty: function() {
-					return function() {
-						return {
-							next: $f.Maybe.nothing(),
-							remaining: $f.Stream.from.empty()
-						};
-					};
+					return empty;
 				},
 				array: function(array) {
 					/**
@@ -41,7 +72,7 @@
 							} else {
 								return {
 									next: $f.Maybe.nothing(),
-									remaining: $f.Stream.from.empty()
+									remaining: empty
 								}
 							}
 						};
@@ -67,33 +98,11 @@
 				}
 				return rv;
 			},
-			filter: function filter(predicate) {
-				return function(stream) {
-					return function() {
-						while(true) {
-							var current = stream();
-							if (!current.next.present) {
-								return {
-									next: $f.Maybe.nothing(),
-									remaining: $f.Stream.from.empty()
-								}
-							}
-							if (current.next.present && predicate(current.next.value)) {
-								return {
-									next: current.next,
-									remaining: filter(predicate)(current.remaining)
-								}
-							} else {
-								stream = current.remaining;
-							}
-						}
-					}
-				}
-			},
+			filter: filter,
 			find: function find(predicate) {
 				return $f.pipe(
-					$f.Stream.filter(predicate),
-					$f.Stream.first
+					filter(predicate),
+					first
 				)
 			}
 		});
