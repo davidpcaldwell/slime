@@ -34,7 +34,7 @@
 		var typescriptVersionInstalled = $api.fp.result(
 			jsh.shell.tools.node.installation,
 			$api.fp.pipe(
-				$api.fp.world.question(
+				$api.fp.world.mapping(
 					jsh.shell.tools.node.world.Installation.modules.installed("typescript")
 				),
 				$api.fp.Maybe.map(function(module) {

@@ -206,7 +206,7 @@
 		}
 
 		var readFileString = $api.fp.pipe(
-			$api.fp.world.question(
+			$api.fp.world.mapping(
 				$context.library.file.world.Location.file.read.string()
 			),
 			Maybe_assert

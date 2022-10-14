@@ -103,7 +103,7 @@ namespace slime.jsh.shell {
 			)();
 
 			fifty.tests.stdio.close = function() {
-				var f = $api.fp.world.question(
+				var f = $api.fp.world.mapping(
 					jsh.shell.world.question
 				);
 				var result = f(

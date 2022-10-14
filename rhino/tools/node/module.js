@@ -82,7 +82,7 @@
 						output: "string"
 					}
 				});
-				var getExit = $api.fp.world.question(
+				var getExit = $api.fp.world.mapping(
 					$context.library.shell.world.question
 				);
 				var exit = getExit(invocation);
@@ -559,7 +559,7 @@
 							$api.fp.pipe(
 								$api.fp.property("executable"),
 								$context.library.file.world.Location.from.os,
-								$api.fp.world.question($context.library.file.world.Location.file.exists())
+								$api.fp.world.mapping($context.library.file.world.Location.file.exists())
 							)
 						)
 					}

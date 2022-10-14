@@ -86,48 +86,7 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export interface Exports {
-		pipe: {
-			<T,U,V,W,X,Y,Z,R>(
-				f: (t: T) => U,
-				g: (u: U) => V,
-				h: (v: V) => W,
-				i: (w: W) => X,
-				j: (x: X) => Y,
-				k: (y: Y) => Z,
-				l: (z: Z) => R
-			): (t: T) => R
-			<T,U,V,W,X,Y,R>(
-				f: (t: T) => U,
-				g: (u: U) => V,
-				h: (v: V) => W,
-				i: (w: W) => X,
-				j: (x: X) => Y,
-				k: (y: Y) => R
-			): (t: T) => R
-			<T,U,V,W,X,R>(
-				f: (t: T) => U,
-				g: (u: U) => V,
-				h: (v: V) => W,
-				i: (w: W) => X,
-				j: (x: X) => R
-			): (t: T) => R
-			<T,U,V,W,R>(
-				f: (t: T) => U,
-				g: (u: U) => V,
-				h: (v: V) => W,
-				i: (w: W) => R
-			): (t: T) => R
-			<T,U,V,R>(
-				f: (t: T) => U,
-				g: (u: U) => V,
-				h: (v: V) => R
-			): (t: T) => R
-			<T,U,R>(
-				f: (t: T) => U,
-				g: (u: U) => R
-			): (t: T) => R
-			<T,R>(f: (t: T) => R): (t: T) => R
-		}
+		pipe: Pipe
 	}
 
 	export interface Exports {
@@ -135,79 +94,48 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
-		/**
-		 * Returns the result of invoking a function. `result(input, f)` is syntactic sugar for `f(input)` in situations where
-		 * writing the input before the function lends clarity (for example, if the function is a pipeline created by `pipe`).
-		 */
-		result: {
-			/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
-			<P,T,U,V,W,X,Y,Z,R>(
-				p: P,
-				f: (p: P) => T,
-				g: (t: T) => U,
-				h: (u: U) => V,
-				i: (v: V) => W,
-				j: (w: W) => X,
-				k: (x: X) => Y,
-				l: (y: Y) => Z,
-				m: (z: Z) => R
-			): R
-			/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
-			<P,T,U,V,W,X,Y,R>(
-				p: P,
-				f: (p: P) => T,
-				g: (t: T) => U,
-				h: (u: U) => V,
-				i: (v: V) => W,
-				j: (w: W) => X,
-				k: (x: X) => Y,
-				l: (y: Y) => R
-			): R
-			/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
-			<P,T,U,V,W,X,R>(
-				p: P,
-				f: (p: P) => T,
-				g: (t: T) => U,
-				h: (u: U) => V,
-				i: (v: V) => W,
-				j: (w: W) => X,
-				k: (x: X) => R
-			): R
-			/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
-			<P,T,U,V,W,R>(
-				p: P,
-				f: (p: P) => T,
-				g: (t: T) => U,
-				h: (u: U) => V,
-				i: (v: V) => W,
-				j: (w: W) => R
-			): R
-			/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
-			<P,T,U,V,R>(
-				p: P,
-				f: (p: P) => T,
-				g: (t: T) => U,
-				h: (u: U) => V,
-				i: (v: V) => R
-			): R
-			/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
-			<P,T,U,R>(
-				p: P,
-				f: (p: P) => T,
-				g: (t: T) => U,
-				h: (u: U) => R
-			): R
-			/** @deprecated Use the two-argument version of `result`, and `pipe` to compose the functions. */
-			<P,T,R>(
-				p: P,
-				f: (p: P) => T,
-				g: (t: T) => R
-			): R
-			<P,R>(
-				p: P,
-				f: (i: P) => R
-			): R
+		now: {
+			/**
+			 * Returns the result of invoking a function. `invoke(input, f)` is syntactic sugar for `f(input)` in situations where
+			 * writing the input before the function lends clarity (for example, if the function is a pipeline created by `pipe`).
+			 */
+			invoke: Invoke
 		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.now = function() {
+				var f = function(i: number): string {
+					return String(i);
+				};
+
+				var g = function(s: string): string {
+					return "g" + s;
+				};
+
+				var result = $api.fp.now.invoke(2, f);
+				verify(result).is("2");
+
+				var result2 = $api.fp.now.invoke(2, f, g);
+				verify(result2).is("g2");
+			};
+
+			fifty.tests.wip = fifty.tests.exports.now;
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		/**
+		 * @deprecated Use `$api.Function.now.invoke`.
+		 */
+		result: Invoke
 	}
 
 	(

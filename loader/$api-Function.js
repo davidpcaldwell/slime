@@ -485,6 +485,17 @@
 					}
 				}
 			},
+			now: {
+				invoke: function(p) {
+					var functions = Array.prototype.slice.call(arguments).slice(1);
+					if (functions.length == 0) throw new TypeError();
+					var rv = p;
+					functions.forEach(function(f) {
+						rv = f(rv);
+					});
+					return rv;
+				}
+			},
 			impure: impure.impure,
 			world: impure.world,
 			object: {

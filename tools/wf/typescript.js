@@ -58,7 +58,7 @@
 		/** @type { (project: slime.jrunscript.file.world.Location) => { [x: string]: any } } */
 		var getTypedocConfguration = $api.fp.pipe(
 			$context.library.file.world.Location.relative("typedoc.json"),
-			$api.fp.world.question($context.library.file.world.Location.file.read.string()),
+			$api.fp.world.mapping($context.library.file.world.Location.file.read.string()),
 			$api.fp.Maybe.map(function removeComments(s) {
 				return s.split("\n").filter(function(line) {
 					if (!Boolean(line)) return false;

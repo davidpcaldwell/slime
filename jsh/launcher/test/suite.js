@@ -164,7 +164,7 @@
 		};
 
 		/** @type { (invocation: slime.jsh.internal.launcher.test.ShellInvocation) => slime.jsh.internal.launcher.test.Result } */
-		var getShellResultFor = $api.fp.world.question(shellResultQuestion, {
+		var getShellResultFor = $api.fp.world.mapping(shellResultQuestion, {
 			invocation: function(e) {
 				//	TODO	can we use console for this and the next call?
 				$context.console("Command: " + e.detail.command + " " + e.detail.arguments.join(" "));
