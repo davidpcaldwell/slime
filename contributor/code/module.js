@@ -103,7 +103,7 @@
 						if (entry.path == "wf") return true;
 					},
 					$api.fp.pipe(
-						$api.fp.world.question(
+						$api.fp.world.mapping(
 							$context.library.code.File.isText()
 						),
 						function(maybe) {

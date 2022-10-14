@@ -379,7 +379,7 @@
 					 * @returns
 					 */
 					var createFetcher = function(events) {
-						return $api.fp.world.question(
+						return $api.fp.world.mapping(
 							$context.api.http.world.Client.withFollowRedirects($context.api.http.world.request),
 							{
 								request: function(e) {

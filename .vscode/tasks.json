@@ -114,9 +114,46 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "Fifty: run wip test under jsh",
+			"label": "jsh: Run Current File",
+			"type": "shell",
+			"command": "./jsh.bash ${file}",
+			"problemMatcher": [],
+			"runOptions": {
+				"reevaluateOnRerun": false
+			}
+		},
+		{
+			"label": "jsh: Debug Current File",
+			"type": "shell",
+			"command": "./jsh.bash ${file}",
+			"problemMatcher": [],
+			"options": {
+				"env": {
+					"JSH_DEBUG_SCRIPT": "rhino"
+				}
+			},
+			"runOptions": {
+				"reevaluateOnRerun": false
+			}
+		},
+		{
+			"label": "Fifty (jsh): Run wip() Test in Current File",
 			"type": "shell",
 			"command": "./fifty test.jsh ${file} --part wip",
+			"problemMatcher": []
+		},
+		{
+			"label": "Fifty (browser): Run wip() Test in Current File",
+			"type": "shell",
+			"command": "./fifty",
+			"args": [
+				"test.browser",
+				"--chrome:data", "local/chrome/fifty",
+				"'${relativeFile}'",
+				"--part", "wip",
+				"--interactive",
+				"--chrome:debug:vscode"
+			],
 			"problemMatcher": []
 		},
 		{

@@ -31,14 +31,30 @@
 						return v;
 					}
 				},
-				map: function(input, map) {
+				map: function(input) {
+					var functions = Array.prototype.slice.call(arguments,1);
 					return function() {
-						return map(input());
+						var rv = input();
+						functions.forEach(function(f) {
+							rv = f(rv);
+						});
+						return rv;
 					}
 				},
 				process: function(input, output) {
 					return function() {
 						output(input());
+					}
+				},
+				//@ts-ignore
+				compose: function(p) {
+					return function() {
+						var rv = Object.fromEntries(
+							Object.entries(p).map(function(entry) {
+								return [entry[0], entry[1]()];
+							})
+						);
+						return rv;
 					}
 				}
 			},
@@ -53,6 +69,12 @@
 				output: function(p,f) {
 					return function() {
 						f(p);
+					}
+				},
+				/** @type { slime.$api.fp.impure.Exports["Process"]["create"]} */
+				create: function(p) {
+					return function() {
+						p.output(p.input());
 					}
 				}
 			},
@@ -94,14 +116,14 @@
 					);
 				}
 			},
-			question: function(question, handler) {
+			mapping: function(question, handler) {
 				return function(p) {
 					var ask = question(p);
 					var adapted = $context.events.ask(ask);
 					return adapted(handler);
 				}
 			},
-			action: function(action, handler) {
+			output: function(action, handler) {
 				return function(p) {
 					var tell = action(p);
 					var adapted = $context.events.tell(tell);

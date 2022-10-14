@@ -25,17 +25,64 @@ namespace slime.$api.fp.impure {
 
 		Input: {
 			value: <T>(t: T) => impure.Input<T>
-			map: <I,T>(input: impure.Input<I>, map: (i: I) => T) => impure.Input<T>
+			map: impure.Input_map
 			process: <T>(input: impure.Input<T>, output: impure.Output<T>) => impure.Process
+
+			compose: <T>(inputs: {
+				[k in keyof T]: slime.$api.fp.impure.Input<T[k]>
+			}) => slime.$api.fp.impure.Input<T>
 		}
 
 		Process: {
 			compose: (processes: impure.Process[]) => impure.Process
 			output: <P>(p: P, f: impure.Output<P>) => impure.Process
+
+			create: <T>(p: {
+				input: Input<T>
+				output: Output<T>
+			}) => impure.Process
 		}
 
 		tap: <T>(output: Output<T>) => (t: T) => T
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.input = {};
+
+			fifty.tests.input.compose = function() {
+				var inputs = {
+					n: $api.fp.returning(8),
+					s: $api.fp.returning("hello")
+				};
+
+				var input = $api.fp.impure.Input.compose(inputs);
+
+				var values = input();
+				verify(values).n.is(8);
+				verify(values).s.is("hello");
+			};
+
+			fifty.tests.input.map = function() {
+				var input = function() { return 1; };
+				var triple = function(n) { return n*3; };
+
+				var one = $api.fp.impure.Input.map(input, triple);
+				verify(one()).is(3);
+				var two = $api.fp.impure.Input.map(input, triple, triple);
+				verify(two()).is(9);
+			}
+
+			fifty.tests.wip = fifty.tests.input.map;
+		}
+	//@ts-ignore
+	)(fifty);
+
 }
 
 namespace slime.$api.fp.world {
@@ -61,7 +108,7 @@ namespace slime.$api.fp.world {
 	}
 
 	export interface Exports {
-		question: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => fp.Mapping<P,A>
+		mapping: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => fp.Mapping<P,A>
 	}
 
 	(
@@ -82,7 +129,7 @@ namespace slime.$api.fp.world {
 				var captor = fifty.$api.Events.Captor({
 					argument: void(0)
 				});
-				var map = $api.fp.world.question(doubler, captor.handler);
+				var map = $api.fp.world.mapping(doubler, captor.handler);
 
 				verify(captor).events.length.is(0);
 				verify(2).evaluate(map).is(4);
@@ -93,7 +140,7 @@ namespace slime.$api.fp.world {
 	)(fifty);
 
 	export interface Exports {
-		action: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => impure.Output<P>
+		output: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => impure.Output<P>
 
 		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => impure.Process
 

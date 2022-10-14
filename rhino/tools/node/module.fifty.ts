@@ -205,7 +205,7 @@ namespace slime.jrunscript.node {
 				);
 				var installation = test.subject.world.Installation.from.location(TMPDIR);
 
-				var installedModule = $api.fp.world.question(
+				var installedModule = $api.fp.world.mapping(
 					test.subject.world.Installation.modules.installed("minimal-package"),
 				)
 
@@ -413,7 +413,7 @@ namespace slime.jsh.shell.tools {
 			const { $api, jsh } = fifty.global;
 
 			$api.fp.impure.now.process(
-				$api.fp.world.action(jsh.shell.tools.node.require)
+				$api.fp.world.output(jsh.shell.tools.node.require)
 			)
 
 			const api = jsh.shell.tools.node.installed;
