@@ -48,7 +48,7 @@
 
 			p.stdio = extractStdioIncludingDeprecatedForm(p);
 
-			var context = scripts.invocation.toContext(p, $context.environment, $context.stdio);
+			var context = scripts.invocation.internal.old.toContext(p, $context.environment, $context.stdio);
 
 			/** @type { slime.jrunscript.shell.internal.module.Invocation } */
 			var invocation = (
@@ -100,12 +100,12 @@
 						};
 
 						try {
-							return scripts.invocation.toConfiguration({
+							return scripts.invocation.internal.old.toConfiguration({
 								command: command,
 								arguments: args
 							});
 						} catch (e) {
-							if (e instanceof scripts.invocation.error.BadCommandToken) {
+							if (e instanceof scripts.invocation.internal.old.error.BadCommandToken) {
 								throw new TypeError(e.message + "; full invocation = " + toErrorMessage(command, args));
 							} else {
 								throw e;
@@ -159,7 +159,7 @@
 			input.workingDirectory = directory;
 			$api.deprecate(input,"workingDirectory");
 
-			var result = scripts.run.old.run(context, invocation.configuration, $context.module, events, p, input, scripts.invocation.isLineListener);
+			var result = scripts.run.old.run(context, invocation.configuration, $context.module, events, p, input, scripts.invocation.internal.old.isLineListener);
 
 			var evaluate = (p["evaluate"]) ? p["evaluate"] : $exports.run.evaluate;
 			return evaluate($api.Object.compose(input, result));
@@ -199,9 +199,9 @@
 					if (stdio) {
 						//	TODO	the below $api.Events() is highly dubious, inserted just to get past TypeScript; who knows
 						//			whether it will work but refactoring in progress may change it further
-						var fixed = scripts.invocation.updateForStringInput(stdio);
-						scripts.invocation.fallbackToParentStdio(fixed, $context.stdio);
-						var x = scripts.invocation.toStdioConfiguration(fixed);
+						var fixed = scripts.invocation.internal.old.updateForStringInput(stdio);
+						scripts.invocation.internal.old.fallbackToParentStdio(fixed, $context.stdio);
+						var x = scripts.invocation.internal.old.toStdioConfiguration(fixed);
 						var rv = scripts.run.old.buildStdio(x)($api.Events());
 						return rv;
 					}

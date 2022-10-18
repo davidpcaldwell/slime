@@ -510,70 +510,21 @@
 			}), events);
 		});
 
-		var Invocation_old = function(p) {
-			return {
-				command: String(p.command),
-				arguments: (p.arguments) ? p.arguments.map(String) : [],
-				environment: (p.environment) ? p.environment : $exports.environment,
-				stdio: $api.Object.compose({
-					input: null,
-					output: $context.stdio.output,
-					error: $context.stdio.error
-				}, p.stdio),
-				directory: (p.directory) ? p.directory : $exports.PWD
-			};
-		};
-
-		$exports.world = {
-			question: scripts.run.question,
-			action: scripts.run.action,
-			start: scripts.run.world.start,
-			run: scripts.run.run,
-			mock: scripts.run.mock.run,
-			Invocation: $api.deprecate(Invocation_old)
+		/** @type { slime.jrunscript.shell.internal.invocation.Defaults } */
+		var defaults = {
+			directory: $api.fp.returning($exports.PWD.toString()),
+			environment: $api.fp.returning($exports.environment),
+			stdio: $api.fp.returning({
+				output: $context.stdio.output,
+				error: $context.stdio.error
+			})
 		}
 
-		$exports.Tell = {
-			exit: function() {
-				return function(tell) {
-					var rv;
-
-					tell({
-						exit: function(e) {
-							rv = e.detail;
-						}
-					});
-
-					return rv;
-				};
-			},
-			mock: scripts.run.mock.tell
-		};
-
 		$exports.Invocation = {
-			old: Invocation_old,
+			old: scripts.invocation.old(defaults, function(path) { return $context.api.file.Pathname(path).directory; }),
 			modernize: scripts.invocation.modernize,
 			sudo: scripts.invocation.sudo,
-			create: function(p) {
-				return {
-					context: {
-						environment: (p.environment) ? p.environment : $exports.environment,
-						directory: (p.directory) ? p.directory.toString() : $exports.PWD.toString(),
-						stdio: {
-							input: (function() {
-								if (p.stdio && p.stdio.input) return scripts.invocation.toInputStream(p.stdio.input);
-								return null;
-							})(),
-							output: (p.stdio && p.stdio.output) ? p.stdio.output : $context.stdio.output,
-							error: (p.stdio && p.stdio.error) ? p.stdio.error : $context.stdio.error,
-						}
-					},
-					configuration: {
-						command: String(p.command),
-						arguments: (p.arguments) ? p.arguments.map(String) : []
-					}
-				}
-			},
+			create: scripts.invocation.create(defaults),
 			stdio: {
 				handler: {
 					line: function(f) {
@@ -593,7 +544,33 @@
 					}
 				}
 			}
+		};
+
+		$exports.world = {
+			question: scripts.run.question,
+			action: scripts.run.action,
+			start: scripts.run.world.start,
+			run: scripts.run.run,
+			mock: scripts.run.mock.run,
+			Invocation: $api.deprecate($exports.Invocation.old)
 		}
+
+		$exports.Tell = {
+			exit: function() {
+				return function(tell) {
+					var rv;
+
+					tell({
+						exit: function(e) {
+							rv = e.detail;
+						}
+					});
+
+					return rv;
+				};
+			},
+			mock: scripts.run.mock.tell
+		};
 	}
 //@ts-ignore
 )(Packages,$api,$context,$loader,$exports);
