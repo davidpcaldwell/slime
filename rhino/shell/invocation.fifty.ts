@@ -9,7 +9,6 @@ namespace slime.jrunscript.shell.internal.invocation {
 		library: {
 			io: slime.jrunscript.io.Exports
 		}
-		run: slime.jrunscript.shell.internal.run.Exports
 	}
 
 	export namespace test {
@@ -19,50 +18,6 @@ namespace slime.jrunscript.shell.internal.invocation {
 		//@ts-ignore
 		})(fifty);
 	}
-
-	export type Configuration = Pick<slime.jrunscript.shell.invocation.old.Argument, "command" | "arguments">
-
-	export type StdioWithInputFixed = {
-		input: slime.jrunscript.runtime.io.InputStream
-		output: slime.jrunscript.shell.invocation.old.Stdio["output"]
-		error: slime.jrunscript.shell.invocation.old.Stdio["error"]
-	}
-
-	export interface Export {
-		error: {
-			BadCommandToken: slime.$api.error.old.Type<"ArgumentError",{}>
-		}
-
-		toInputStream: (p: slime.jrunscript.shell.invocation.Input) => slime.jrunscript.runtime.io.InputStream
-
-		updateForStringInput: (p: slime.jrunscript.shell.invocation.old.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
-
-		fallbackToParentStdio: (
-			p: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed,
-			parent: slime.jrunscript.shell.invocation.Stdio
-		) => void
-
-		toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
-
-		toContext: (
-			p: slime.jrunscript.shell.invocation.old.Argument,
-			parentEnvironment: slime.jrunscript.host.Environment,
-			parentStdio: slime.jrunscript.shell.invocation.Stdio
-		) => slime.jrunscript.shell.run.Context
-
-		isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
-
-		toConfiguration: (
-			p: Configuration
-		) => slime.jrunscript.shell.internal.run.java.Configuration
-
-		modernize: slime.jrunscript.shell.exports.Invocation["modernize"]
-		sudo: slime.jrunscript.shell.exports.Invocation["sudo"]
-
-		invocation: slime.jrunscript.shell.Exports["invocation"]
-	}
-
-	export type Script = slime.loader.Script<Context,Export>
 }
 
 namespace slime.jrunscript.shell {
@@ -315,4 +270,57 @@ namespace slime.jrunscript.shell {
 		}
 	//@ts-ignore
 	)(fifty);
+}
+
+namespace slime.jrunscript.shell.run {
+	export interface Invocation {
+		context: Context
+		configuration: Configuration
+	}
+}
+
+namespace slime.jrunscript.shell.internal.invocation {
+	export type Configuration = Pick<slime.jrunscript.shell.invocation.old.Argument, "command" | "arguments">
+
+	export type StdioWithInputFixed = {
+		input: slime.jrunscript.runtime.io.InputStream
+		output: slime.jrunscript.shell.invocation.old.Stdio["output"]
+		error: slime.jrunscript.shell.invocation.old.Stdio["error"]
+	}
+
+	export interface Export {
+		error: {
+			BadCommandToken: slime.$api.error.old.Type<"ArgumentError",{}>
+		}
+
+		toInputStream: (p: slime.jrunscript.shell.invocation.Input) => slime.jrunscript.runtime.io.InputStream
+
+		updateForStringInput: (p: slime.jrunscript.shell.invocation.old.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
+
+		fallbackToParentStdio: (
+			p: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed,
+			parent: slime.jrunscript.shell.invocation.Stdio
+		) => void
+
+		toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
+
+		toContext: (
+			p: slime.jrunscript.shell.invocation.old.Argument,
+			parentEnvironment: slime.jrunscript.host.Environment,
+			parentStdio: slime.jrunscript.shell.invocation.Stdio
+		) => slime.jrunscript.shell.run.Context
+
+		isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
+
+		toConfiguration: (
+			p: Configuration
+		) => slime.jrunscript.shell.internal.run.java.Configuration
+
+		modernize: slime.jrunscript.shell.exports.Invocation["modernize"]
+		sudo: slime.jrunscript.shell.exports.Invocation["sudo"]
+
+		invocation: slime.jrunscript.shell.Exports["invocation"]
+	}
+
+	export type Script = slime.loader.Script<Context,Export>
 }

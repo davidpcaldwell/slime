@@ -103,8 +103,7 @@
 			var invocation = code.invocation({
 				library: {
 					io: $context.api.io
-				},
-				run: run
+				}
 			});
 			return {
 				run: run,
