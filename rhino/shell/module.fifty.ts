@@ -178,11 +178,6 @@ namespace slime.jrunscript.shell {
 			arguments: string[]
 		}
 
-		export interface Invocation {
-			context: Context
-			configuration: Configuration
-		}
-
 		export namespace old {
 			export interface Argument extends invocation.old.Argument {
 				as?: {
