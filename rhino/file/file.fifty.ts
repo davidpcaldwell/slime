@@ -73,6 +73,10 @@ namespace slime.jrunscript.file {
 		 */
 		readonly file: File
 
+		/**
+		 * (Read-only) An object representing the directory located at the location of this `Pathname`, or `null` if a directory
+		 * with this `Pathname` does not exist.
+		 */
 		readonly directory: Directory
 
 		os: {
@@ -82,6 +86,11 @@ namespace slime.jrunscript.file {
 		java: {
 			adapt: () => slime.jrunscript.native.java.io.File
 		}
+
+		/**
+		 * Converts the path to a string and returns it.
+		 */
+		toString: () => string
 	}
 
 	export namespace pathname {
