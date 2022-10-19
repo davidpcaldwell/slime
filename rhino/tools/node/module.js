@@ -543,6 +543,16 @@
 			}
 		};
 
+		/**
+		 *
+		 * @param { slime.jrunscript.node.Invocation } nodeInvocation
+		 * @param { slime.jrunscript.node.world.Installation } installation
+		 */
+		var toShellInvocation = function(nodeInvocation,installation) {
+			var shellArgument = node_invocation(installation)(nodeInvocation);
+			return $context.library.shell.Invocation.create(shellArgument);
+		};
+
 		$exports.world = {
 			Installation: {
 				from: {
@@ -565,15 +575,15 @@
 					}
 				},
 				getVersion: getVersion,
+				invocation: function(argument) {
+					return function(installation) {
+						return toShellInvocation(argument,installation);
+					}
+				},
 				question: function(argument) {
 					return function(installation) {
-						var shellArgument = node_invocation(installation)(argument);
 						return function(events) {
-							var ask = $context.library.shell.world.question(
-								$context.library.shell.Invocation.create(
-									shellArgument
-								)
-							);
+							var ask = $context.library.shell.world.question(toShellInvocation(argument,installation));
 							return ask(events);
 						}
 					}

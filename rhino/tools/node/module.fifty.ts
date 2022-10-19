@@ -133,6 +133,8 @@ namespace slime.jrunscript.node {
 
 	export namespace functions {
 		export interface Installation {
+			invocation: (argument: Invocation) => (installation: world.Installation) => slime.jrunscript.shell.run.Invocation
+
 			question: (argument: Invocation) => slime.$api.fp.world.Question<world.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 		}
 
