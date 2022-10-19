@@ -35,20 +35,39 @@ namespace slime.jrunscript.shell {
 
 	export interface Context {
 		stdio: context.Stdio
+
+		/**
+		 * (optional: if omitted, the actual operating system environment will be used.) An object representing the operating system
+		 * environment.
+		 */
 		_environment: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+
+		/**
+		 * (optional: if omitted, the actual system properties will be used.) A set of properties representing Java system
+		 * properties.
+		 */
 		_properties: slime.jrunscript.native.java.util.Properties
+
 		kotlin: {
 			compiler: slime.jrunscript.file.File
 		}
 		api: {
-			js: slime.js.old.Exports
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 
-			document: any
 			httpd: any
-			xml: any
+
+			js: slime.js.old.Exports
+
+			/**
+			 * The `js/document` module.
+			 */
+			document: any
+
+			xml: {
+				parseFile: (file: slime.jrunscript.file.File) => slime.runtime.document.exports.Document
+			}
 		}
 		world?: {
 			run?: slime.jrunscript.shell.run.World
@@ -544,6 +563,94 @@ namespace slime.jrunscript.shell {
 			}
 		}
 	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+
+			fifty.tests.jsapi = fifty.test.Parent();
+
+			const fixtures: slime.jrunscript.shell.test.Script = fifty.$loader.script("fixtures.ts");
+
+			var context = new function() {
+				var java = fifty.$loader.module("../../jrunscript/host/", {
+					$slime: jsh.unit.$slime,
+					logging: {
+						prefix: "slime.jrunscript.shell.test"
+					}
+				});
+				var io = fifty.$loader.module("../../jrunscript/io/", {
+					api: {
+						java: java,
+						mime: jsh.unit.$slime.mime
+					},
+					$slime: jsh.unit.$slime
+				});
+				this.api = {
+					js: fifty.$loader.module("../../js/object/"),
+					java: java,
+					io: io,
+					file: fifty.$loader.module("../../rhino/file/", new function() {
+						if (jsh.shell.environment.PATHEXT) {
+							this.pathext = jsh.shell.environment.PATHEXT.split(";");
+						}
+						this.$rhino = jsh.unit.$slime;
+						this.api = {
+							io: io,
+							js: jsh.js,
+							java: jsh.java
+						};
+						this.$pwd = String(jsh.shell.properties.object.user.dir);
+						this.addFinalizer = jsh.loader.addFinalizer;
+						//	TODO	below copy-pasted from rhino/file/api.html
+						//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+						var System = Packages.java.lang.System;
+						if (System.getProperty("cygwin.root")) {
+							this.cygwin = {
+								root: String( System.getProperty("cygwin.root") )
+							};
+							if (System.getProperty("cygwin.paths")) {
+								//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+								//	the SDK server
+								//	TODO	check this
+								this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+							}
+						}
+					}),
+					document: fifty.$loader.module("../../js/document/"),
+					xml: {
+						parseFile: function(file) {
+							return new jsh.document.Document({ string: file.read(String) });
+						}
+					}
+				};
+				this._properties = Packages.java.lang.System.getProperties();
+				this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
+				this.stdio = {
+					output: jsh.shell.stdio.output,
+					error: jsh.shell.stdio.error
+				}
+			}
+
+			var module = fixtures().load(context);
+
+			var test = function(b) {
+				fifty.verify(b).is(true);
+			}
+
+			fifty.tests.jsapi._1 = function() {
+				var environment = module.environment;
+
+				test( typeof(environment.PATH) != "undefined" );
+				test( typeof(environment.ZZFF) == "undefined" );
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
 
 	(
 		function(fifty: slime.fifty.test.Kit) {

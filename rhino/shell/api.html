@@ -13,62 +13,6 @@ END LICENSE
 	<script type="text/javascript" src="../../loader/api/api.js"></script>
 </head>
 <body>
-	<div>
-		<h1>Context</h1>
-		<ul>
-			<li class="object">
-				<div class="name">api</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">document</div>
-						<span>The <a href="../../js/document/api.html">js/document</a> module.</span>
-					</li>
-					<li class="object">
-						<div class="name">xml</div>
-						<span>__DESCRIPTION__</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function">
-								<div class="name">parseFile</div>
-								<span>__DESCRIPTION__</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-										<li class="value">
-											<span class="type">file</span>
-											<span>__DESCRIPTION__</span>
-										</li>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">document</span>
-									<span>__DESCRIPTION__</span>
-								</div>
-							</li>
-						</ul>
-					</li>
-				</ul>
-			</li>
-			<li class="value">
-				<div class="name">_environment</div>
-				<span class="type">Packages.inonit.system.OperatingSystem.Environment</span>
-				<span>
-					(optional: if omitted, the actual operating system environment will be used.)
-					An object representing the operating system environment.
-				</span>
-			</li>
-			<li class="value">
-				<div class="name">_properties</div>
-				<span class="type">Packages.java.util.Properties</span>
-				<span>
-					(optional: if omitted, the actual system properties will be used.)
-					A set of properties representing Java system properties.
-				</span>
-			</li>
-		</ul>
-	</div>
 	<script type="application/x.jsapi#initialize">
 		var context = new function() {
 			var java = $jsapi.loader.module("../../jrunscript/host/", {
@@ -124,6 +68,10 @@ END LICENSE
 			};
 			this._properties = Packages.java.lang.System.getProperties();
 			this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
+			this.stdio = {
+				output: jsh.shell.stdio.output,
+				error: jsh.shell.stdio.error
+			}
 		};
 		scope.module = $jsapi.loader.module("module.js", context);
 	</script>
@@ -179,12 +127,6 @@ END LICENSE
 					environment variables that are <em>not</em> case-sensitive, all properties of this object will have
 					UPPERCASE names.
 				</span>
-				<script type="application/x.jsapi#tests">
-					var environment = module.environment;
-
-					test( typeof(environment.PATH) != "undefined" );
-					test( typeof(environment.ZZFF) == "undefined" );
-				</script>
 			</li>
 			<li class="object">
 				<div class="name">properties</div>

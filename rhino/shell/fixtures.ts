@@ -13,13 +13,15 @@ namespace slime.jrunscript.shell.test {
 	}
 
 	export interface Fixtures {
+		load: (context: slime.jrunscript.shell.Context) => slime.jrunscript.shell.Exports
+
 		run: {
 			createMockWorld: (delegate: run.Delegate) => slime.jrunscript.shell.run.World
 		}
 	}
 
 	(
-		function($context: Context, $export: slime.loader.Export<Fixtures>) {
+		function($context: Context, $loader: slime.Loader, $export: slime.loader.Export<Fixtures>) {
 			var isLineWithProperty = function(name) {
 				return function(line) {
 					return Boolean(line[name]);
@@ -108,13 +110,17 @@ namespace slime.jrunscript.shell.test {
 			};
 
 			$export({
+				load: function(context) {
+					var script: slime.jrunscript.shell.Script = $loader.script("module.js");
+					return script(context);
+				},
 				run: {
 					createMockWorld: createMockWorld
 				}
 			})
 		}
 	//@ts-ignore
-	)($context,$export);
+	)($context,$loader,$export);
 
 	export type Script = slime.loader.Script<Context,Fixtures>
 }

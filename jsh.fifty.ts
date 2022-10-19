@@ -50,7 +50,11 @@ namespace slime.jsh {
 
 		script: slime.jsh.script.Exports
 
-		js: any
+		js: slime.js.old.Exports & {
+			document: any
+			web: slime.web.Exports
+		}
+
 		file: slime.jrunscript.file.Exports
 		time: slime.time.Exports
 		ip: slime.jrunscript.ip.Exports
