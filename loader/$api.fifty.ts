@@ -108,8 +108,6 @@ namespace slime.$api {
 				verify(countKeys)[2].is(1);
 				verify(countKeys)[3].is(0);
 			}
-
-			fifty.tests.wip = fifty.tests.exports.Key;
 		}
 	//@ts-ignore
 	)(fifty);
@@ -176,6 +174,10 @@ namespace slime.$api {
 
 
 	export interface Global {
+		/**
+		 * Contains constructs related to *Iterable* objects, as defined by
+		 * [ES2015](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
+		 */
 		Iterable: {
 			/**
 			 * Collates an iterable set of values of type V (extends any) into groups of type G (extends any) (or counts the number of
@@ -202,10 +204,21 @@ namespace slime.$api {
 				groups?: Array<G>
 
 				/**
-				 * If `G` is not <code>string</code>, converts `G`s to and from `string`.
+				 * If `G` is not `string`, converts `G`s to and from `string`.
 				 */
 				codec?: {
-					encode: (group: G) => string,
+					/**
+					 * Converts a G to a `string`.
+					 * @param group A group.
+					 * @returns A distinct string identifying the given group.
+					 */
+					encode: (group: G) => string
+
+					/**
+					 * Converts a `string` to a G.
+					 * @param string An encoded group.
+					 * @returns A group.
+					 */
 					decode: (string: string) => G
 				}
 
