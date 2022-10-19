@@ -288,38 +288,51 @@ namespace slime.jrunscript.shell.internal.invocation {
 		error: slime.jrunscript.shell.invocation.old.Stdio["error"]
 	}
 
+	export interface Defaults {
+		environment: slime.$api.fp.Lazy<shell.invocation.Argument["environment"]>
+		directory: slime.$api.fp.Lazy<shell.invocation.Argument["directory"]>
+		stdio: slime.$api.fp.Lazy<shell.invocation.Argument["stdio"]>
+	}
+
 	export interface Export {
-		error: {
-			BadCommandToken: slime.$api.error.old.Type<"ArgumentError",{}>
+		internal: {
+			/**
+			 * Interface that is exposed because the old `run` interface uses it; see `run-old.js`.
+			 */
+			old: {
+				error: {
+					BadCommandToken: slime.$api.error.old.Type<"ArgumentError",{}>
+				}
+				updateForStringInput: (p: slime.jrunscript.shell.invocation.old.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
+
+				fallbackToParentStdio: (
+					p: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed,
+					parent: slime.jrunscript.shell.invocation.Stdio
+				) => void
+
+				toContext: (
+					p: slime.jrunscript.shell.invocation.old.Argument,
+					parentEnvironment: slime.jrunscript.host.Environment,
+					parentStdio: slime.jrunscript.shell.invocation.Stdio
+				) => slime.jrunscript.shell.run.Context
+
+				toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
+
+				toConfiguration: (
+					p: Configuration
+				) => slime.jrunscript.shell.internal.run.java.Configuration
+
+				isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
+			}
 		}
 
-		toInputStream: (p: slime.jrunscript.shell.invocation.Input) => slime.jrunscript.runtime.io.InputStream
-
-		updateForStringInput: (p: slime.jrunscript.shell.invocation.old.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
-
-		fallbackToParentStdio: (
-			p: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed,
-			parent: slime.jrunscript.shell.invocation.Stdio
-		) => void
-
-		toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
-
-		toContext: (
-			p: slime.jrunscript.shell.invocation.old.Argument,
-			parentEnvironment: slime.jrunscript.host.Environment,
-			parentStdio: slime.jrunscript.shell.invocation.Stdio
-		) => slime.jrunscript.shell.run.Context
-
-		isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
-
-		toConfiguration: (
-			p: Configuration
-		) => slime.jrunscript.shell.internal.run.java.Configuration
+		invocation: slime.jrunscript.shell.Exports["invocation"]
 
 		modernize: slime.jrunscript.shell.exports.Invocation["modernize"]
 		sudo: slime.jrunscript.shell.exports.Invocation["sudo"]
 
-		invocation: slime.jrunscript.shell.Exports["invocation"]
+		create: (defaults: Defaults) => slime.jrunscript.shell.exports.Invocation["create"]
+		old: (defaults: Defaults, toDirectory: (path: string) => slime.jrunscript.file.Directory) => slime.jrunscript.shell.exports.Invocation["old"]
 	}
 
 	export type Script = slime.loader.Script<Context,Export>

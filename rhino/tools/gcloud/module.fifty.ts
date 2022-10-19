@@ -138,7 +138,10 @@ namespace slime.jrunscript.tools.gcloud {
 						xml: void(0)
 					},
 					kotlin: void(0),
-					stdio: void(0),
+					stdio: {
+						output: jsh.shell.stdio.output,
+						error: jsh.shell.stdio.error
+					},
 					world: {
 						run: fixtures.shell.run.createMockWorld(captor.mock)
 					}

@@ -238,17 +238,65 @@
 			});
 		}
 
+		/** @type { slime.jrunscript.shell.internal.invocation.Export["create"] } */
+		var create = function(defaults) {
+			return function(p) {
+				return {
+					context: {
+						environment: (p.environment) ? p.environment : defaults.environment(),
+						directory: (p.directory) ? p.directory.toString() : defaults.directory(),
+						stdio: {
+							input: (function() {
+								if (p.stdio && p.stdio.input) return toInputStream(p.stdio.input);
+								return null;
+							})(),
+							output: (p.stdio && p.stdio.output) ? p.stdio.output : defaults.stdio().output,
+							error: (p.stdio && p.stdio.error) ? p.stdio.error : defaults.stdio().error,
+						}
+					},
+					configuration: {
+						command: String(p.command),
+						arguments: (p.arguments) ? p.arguments.map(String) : []
+					}
+				}
+			}
+		};
+
+		/** @type { slime.jrunscript.shell.internal.invocation.Export["old"] } */
+		var old = function(defaults, toDirectory) {
+			return function(p) {
+				return {
+					command: String(p.command),
+					arguments: (p.arguments) ? p.arguments.map(String) : [],
+					environment: (p.environment) ? p.environment : defaults.environment(),
+					stdio: $api.Object.compose({
+						input: null,
+						output: defaults.stdio().output,
+						error: defaults.stdio().error
+					}, p.stdio),
+					directory: (p.directory) ? p.directory : toDirectory(defaults.directory())
+				};
+			}
+		};
+
+		/** @type { slime.jrunscript.shell.internal.invocation.Export["internal"]["old"] } */
+		var internal = (
+			function() {
+				return {
+					error: {
+						BadCommandToken: parseCommandToken.Error
+					},
+					updateForStringInput: updateForStringInput,
+					fallbackToParentStdio: fallbackToParentStdio,
+					toStdioConfiguration: toStdioConfiguration,
+					toConfiguration: toConfiguration,
+					isLineListener: isLineListener,
+					toContext: toContext
+				}
+			}
+		)();
+
 		$export({
-			error: {
-				BadCommandToken: parseCommandToken.Error
-			},
-			toInputStream: toInputStream,
-			updateForStringInput: updateForStringInput,
-			toContext: toContext,
-			fallbackToParentStdio: fallbackToParentStdio,
-			toStdioConfiguration: toStdioConfiguration,
-			toConfiguration: toConfiguration,
-			isLineListener: isLineListener,
 			modernize: modernize,
 			sudo: function(settings) {
 				return function(invocation) {
@@ -333,8 +381,13 @@
 
 					return toScriptCode;
 				}
+			},
+			create: create,
+			old: old,
+			internal: {
+				old: internal
 			}
-		})
+		});
 	}
 //@ts-ignore
 )($api,$context,$export);
