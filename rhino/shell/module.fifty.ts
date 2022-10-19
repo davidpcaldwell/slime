@@ -134,6 +134,14 @@ namespace slime.jrunscript.shell {
 		/**
 		 * An object representing the environment provided via the {@link Context}, or representing the system environment if
 		 * no environment was provided via the `Context`.
+		 *
+		 * An object describing the environment provided via the {@link Context}, or the operating system process environment under
+		 * which this script was executed if no environment was provided via the `Context`.
+		 *
+		 * Each variable defined in the environment is represented as a property in this object, with its name being the name of the
+		 * property and its value being the value of that property. This object uses JavaScript semantics, and thus this object has
+		 * case-sensitive names. In the event that the underlying operating system has environment variables that are *not*
+		 * case-sensitive, all properties of this object will have UPPERCASE names.
 		 */
 		environment: slime.jrunscript.host.Environment
 	}
@@ -403,7 +411,15 @@ namespace slime.jrunscript.shell {
 			started: (p: { output?: string, error?: string }) => boolean
 		}, events: $api.events.Function.Receiver) => void
 
+		/**
+		 * Provides access to Java system properties.
+		 */
 		properties: {
+			/**
+			 * An object that attempts to allow the use of JavaScript semantics to access Java system properties. For example, the
+			 * `java.home` system property is referenced as `properties.object.java.home`. This value can be examined using
+			 * `String(properties.java.home)` to obtain its value as a `string`.
+			 */
 			object: any
 
 			/**
@@ -569,6 +585,7 @@ namespace slime.jrunscript.shell {
 			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
 			const { jsh } = fifty.global;
 
 			fifty.tests.jsapi = fifty.test.Parent();
@@ -647,10 +664,84 @@ namespace slime.jrunscript.shell {
 				test( typeof(environment.PATH) != "undefined" );
 				test( typeof(environment.ZZFF) == "undefined" );
 			}
+
+			var scope = {
+				test: test
+			};
+
+			var properties = module.properties.object;
+
+			//	TODO	rewrite the below tests in light of whatever we decide the correct semantics for properties are
+			//	TODO	or just get rid of this construct altogether
+			fifty.tests.jsapi.properties = function() {
+				properties.foo = "bar";
+				properties.foo.bar = "baz";
+
+				properties.composite = {
+					david: "caldwell",
+					katie: "alex",
+					home: "/home/inonit",
+				};
+
+				var property = function(name) {
+					return function(o): string {
+						var rv = o;
+						var tokens = name.split(".");
+						tokens.forEach(function(token) {
+							rv = rv[token];
+						});
+						return rv;
+					}
+				};
+
+				var type = function(v): string {
+					return typeof(v);
+				};
+
+				verify(properties).evaluate(property("foo")).is("bar");
+
+				//	TODO	fails; returns `undefined` instead
+				if (false) verify(properties).evaluate(property("foo.bar")).is("baz");
+
+				//	TODO	fails; TypeError: Cannot find default value for object.
+				if (false) scope.test( String(properties.java) == "null" );
+
+				scope.test( String(properties.java.version) != "null" );
+
+				//	TODO	fails; type is string
+				if (false) verify(properties.java.version).evaluate(type).is("object");
+
+				scope.test( String(properties.composite.david) == "caldwell" );
+				scope.test( String(properties.composite.david).substring(1,4) == "ald" );
+
+				scope.test( String(properties.blah) == "undefined" );
+			};
+
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.properties = function() {
+				var list = function(prefix,p) {
+					for (var x in p) {
+						if (p[x]) {
+							Packages.java.lang.System.err.println(prefix+x + "=" + p[x]);
+						}
+						list(prefix+x+".",p[x]);
+					}
+				}
+
+				Packages.java.lang.System.err.println("BEFORE:");
+				list("",properties);
+
+				Packages.java.lang.System.err.println("AFTER:");
+				delete properties.foo;
+				list("",properties);
+
+				Packages.java.lang.System.err.println("JAVA:");
+				list("",properties.java);
+			}
 		}
 	//@ts-ignore
 	)(Packages,fifty);
-
 
 	(
 		function(fifty: slime.fifty.test.Kit) {
@@ -659,6 +750,9 @@ namespace slime.jrunscript.shell {
 				fifty.run(fifty.tests.environment);
 
 				fifty.run(fifty.tests.exports.Tell);
+
+				fifty.run(fifty.tests.jsapi);
+
 				fifty.load("invocation.fifty.ts");
 				fifty.load("run.fifty.ts");
 				fifty.load("run-old.fifty.ts");
