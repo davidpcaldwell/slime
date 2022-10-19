@@ -34,8 +34,86 @@ namespace slime.$api {
 			or: slime.$api.fp.Exports["Predicate"]["or"]
 		}
 
-		Key: any
 	}
+
+	export interface Global {
+		Key: {
+			by: {
+				<K,T>(p: {
+					count: true
+					keys?: K[]
+					codec?: slime.Codec<K,string>
+					key: (t: T) => K
+					array: T[]
+				}): {
+					[key: string]: number
+				}
+
+				<K,T>(p: {
+					keys?: K[]
+					codec?: slime.Codec<K,string>
+					key: (t: T) => K
+					array: T[]
+				}): {
+					[key: string]: T[]
+				}
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const api = fifty.global.$api;
+
+			fifty.tests.exports.Key = function() {
+				var array = [
+					{ a: 1, b: 2 },
+					{ a: 1, b: 3 },
+					{ a: 2, b: 4 },
+					{ a: 1, b: 5 }
+				];
+
+				var lists = api.Key.by({
+					key: function(value) {
+						return value.a;
+					},
+					array: array
+				});
+				verify(lists)[1].length.is(3);
+				verify(lists)[2].length.is(1);
+
+				var counts = api.Key.by({
+					key: function(value) {
+						return value.a;
+					},
+					count: true,
+					array: array
+				});
+				verify(counts)[1].is(3);
+				verify(counts)[2].is(1);
+				verify(counts).evaluate.property(3).is(void(0));
+
+				var countKeys = api.Key.by({
+					keys: [1,2,3],
+					key: function(value) {
+						return value.a;
+					},
+					count: true,
+					array: array
+				});
+				verify(countKeys)[1].is(3);
+				verify(countKeys)[2].is(1);
+				verify(countKeys)[3].is(0);
+			}
+
+			fifty.tests.wip = fifty.tests.exports.Key;
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export interface Global {
 		Constructor: {

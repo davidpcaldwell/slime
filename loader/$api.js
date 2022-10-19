@@ -122,13 +122,20 @@
 		};
 
 		$exports.Key = {};
+		/** @type { slime.$api.Global["Key"]["by"] } */
+		//@ts-ignore
 		$exports.Key.by = function(p) {
+			/** @type { ReturnType<slime.$api.Global["Key"]["by"]> } */
 			var rv = {};
+
 			var create = function(key) {
+				//@ts-ignore
 				rv[key] = (p.count) ? 0 : [];
 			};
+
 			var add = function(key,value) {
 				if (p.count) {
+					//@ts-ignore
 					rv[key]++;
 				} else {
 					rv[key].push(value);
@@ -147,11 +154,14 @@
 					create(toStringKey(key));
 				});
 			}
+
 			p.array.forEach(function(element) {
 				var key = toStringKey(p.key(element));
 				if (!rv[key]) create(key);
 				add(key,element);
 			});
+
+			//@ts-ignore
 			return rv;
 		};
 
