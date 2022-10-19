@@ -41,6 +41,7 @@
 					typescript: code.typescript({
 						library: {
 							file: jsh.file,
+							shell: jsh.shell,
 							node: jsh.shell.tools.node
 						}
 					})
@@ -478,18 +479,21 @@
 							jsh.shell.console("Compiling with TypeScript " + typescript.getVersion(project) + " ...");
 							jsh.shell.tools.rhino.require();
 							jsh.shell.tools.tomcat.require();
-							return $api.fp.world.now.question(
-								library.typescript.typedoc.run,
-								{
-									configuration: {
-										typescript: {
-											version: version,
-											configuration: typescript.getConfig(project)
-										}
-									},
-									project: project.pathname.toString()
-								}
+							var typedocInvocation = {
+								configuration: {
+									typescript: {
+										version: version,
+										configuration: typescript.getConfig(project)
+									}
+								},
+								project: project.pathname.toString()
+							};
+							var shellInvocation = library.typescript.typedoc.invocation(typedocInvocation);
+							var exit = $api.fp.world.now.question(
+								jsh.shell.world.question,
+								shellInvocation(jsh.shell.tools.node.installation)
 							);
+							return exit.status == 0;
 						}
 					}
 				})();

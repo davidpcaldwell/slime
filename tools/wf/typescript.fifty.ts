@@ -8,6 +8,7 @@ namespace slime.jsh.wf.internal.typescript {
 	export interface Context {
 		library: {
 			file: slime.jrunscript.file.Exports
+			shell: slime.jrunscript.shell.Exports
 			node: slime.jsh.Global["shell"]["tools"]["node"]
 		}
 	}
@@ -30,27 +31,7 @@ namespace slime.jsh.wf.internal.typescript {
 
 	export interface Exports {
 		typedoc: {
-			invocation: (p: Invocation) => slime.jrunscript.node.Invocation
-
-			/**
-			 * Given a TypeScript configuration and project directory, runs TypeDoc and returns a boolean: `true` for success, false
-			 * for failure.
-			 */
-			run: slime.$api.fp.world.Question<{
-				configuration: {
-					typescript: {
-						version: string
-						/**
-						 * Pathname of the project file (for example, `tsconfig.json`, `jsconfig.json`).
-						 */
-						configuration: string
-					}
-				}
-				/**
-				 * The pathname of the project to document.
-				 */
-				project: string
-			},void,boolean>
+			invocation: (p: Invocation) => (node: slime.jrunscript.node.world.Installation) => slime.jrunscript.shell.run.Invocation
 		}
 	}
 
