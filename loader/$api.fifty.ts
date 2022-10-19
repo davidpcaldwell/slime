@@ -8,6 +8,15 @@ interface Function {
 	construct: any
 }
 
+/**
+ * The `$api` object is provided to all code loaded by the platform loader. It provides basic JavaScript language functionality.
+ *
+ * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
+ *
+ * Various `$api` methods can "flag" APIs for callers, causing a configurable callback to be executed when they are invoked, to warn
+ * the users that the APIs are deprecated or experimental. See the `deprecate` and `experimental` functions of {@link Global |
+ * `$api`}.
+ */
 namespace slime.$api {
 	(
 		function(fifty: slime.fifty.test.Kit) {
@@ -235,17 +244,50 @@ namespace slime.$api {
 				}>
 			},
 
+			/**
+			 * A function that operates on two lists, called `left` and `right`, pertaining to a common underlying set. Callers
+			 * specify a `matches` function that can determine which elements on each side
+			 * <dfn>match</dfn> , or pertain to the same logical element in the set. The method will identify which elements from
+			 * each list match, and which from each list remain unmatched after searching for matches. The results will be returned;
+			 * optionally, a callback can be invoked for each element based on the result for that element.
+			 *
+			 * @param p
+			 */
 			match<L,R> (
 				p: {
 					left: L[],
 					right: R[],
+					/**
+					 * @param l An element from `left`.
+					 * @param r An element from `right`.
+					 * @returns `true` if the two elements *match* , that is, pertain to the same element in the underlying set.
+					 */
 					matches: (l: L, r: R) => boolean,
 					unmatched?: {
+						/**
+						 * A callback invoked for each item from `left` that does not match.
+						 *
+						 * @param l The element from `left`.
+						 */
 						left?: (l: L) => void,
-						right?: (r: R) => void
+						/**
+						 * A callback invoked for each item from `right` that does not match.
+						 *
+						 * @param r The element from `right`.
+						 */
+						 right?: (r: R) => void
 					},
+					/**
+					 * A callback invoked for each pair of items that matches.
+					 */
 					matched?: (p: {
+						/**
+						 * An element from `left`.
+						 */
 						left: L,
+						/**
+						 * An element from `right`.
+						 */
 						right: R
 					}) => void
 				}
@@ -322,7 +364,60 @@ namespace slime.$api {
 				verify(counted)[0].count.is(2);
 				verify(counted)[1].count.is(0);
 				verify(counted)[2].count.is(1);
+
+				fifty.run(function match() {
+					const api = $api;
+
+					var left = ["a", "b"];
+					var right = ["B", "C"];
+					var matches = function(a,b) {
+						return a.toLowerCase() == b.toLowerCase();
+					};
+
+					var recordingFunction = function() {
+						var rv: {
+							(): void
+							received: any[][]
+						} = Object.assign(
+							function() {
+								rv.received.push(Array.prototype.slice.call(arguments));
+							},
+							{
+								received: []
+							}
+						);
+						return rv;
+					};
+
+					var onLeft = recordingFunction();
+					var onRight = recordingFunction();
+					var onMatch = recordingFunction();
+
+					var result = api.Iterable.match({
+						left: left,
+						right: right,
+						matches: matches,
+						unmatched: {
+							left: onLeft,
+							right: onRight
+						},
+						matched: onMatch
+					});
+					verify(result).unmatched.left.length.is(1);
+					verify(result).unmatched.right.length.is(1);
+					verify(result).matched.length.is(1);
+					verify(onLeft.received).length.is(1);
+					verify(onLeft.received)[0].length.is(1);
+					verify(onRight.received).length.is(1);
+					verify(onRight.received)[0].length.is(1);
+					verify(onMatch.received).length.is(1);
+					verify(onMatch.received)[0].length.is(1);
+					verify(onMatch.received)[0][0].left.is.type("string");
+					verify(onMatch.received)[0][0].right.is.type("string");
+				})
 			}
+
+			fifty.tests.wip = fifty.tests.exports.Iterable;
 		}
 	//@ts-ignore
 	)(fifty);
