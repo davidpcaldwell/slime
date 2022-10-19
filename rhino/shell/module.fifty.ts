@@ -125,6 +125,7 @@ namespace slime.jrunscript.shell {
 		) {
 			fifty.tests.environment = function() {
 				const jsh = fifty.global.jsh;
+				const script: Script = fifty.$loader.script("module.js");
 
 				var fixtures: slime.jrunscript.native.inonit.system.test.Fixtures = fifty.$loader.file("../../rhino/system/test/system.fixtures.ts");
 				var o = fixtures.OperatingSystem.Environment.create({
@@ -133,13 +134,22 @@ namespace slime.jrunscript.shell {
 				});
 				fifty.verify(String(o.getValue("foo"))).is("bazz");
 
-				var module: Exports = fifty.$loader.module("module.js", {
+				var module: Exports = script({
 					_environment: o,
 					api: {
 						java: jsh.java,
 						io: jsh.io,
 						file: jsh.file,
-						js: jsh.js
+						js: jsh.js,
+						document: void(0),
+						httpd: void(0),
+						xml: void(0)
+					},
+					_properties: void(0),
+					kotlin: void(0),
+					stdio: {
+						output: jsh.shell.stdio.output,
+						error: jsh.shell.stdio.error
 					}
 				});
 				fifty.verify(module).environment.evaluate.property("foo").is("bazz");
