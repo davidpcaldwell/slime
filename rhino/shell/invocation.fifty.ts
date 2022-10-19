@@ -55,7 +55,7 @@ namespace slime.jrunscript.shell {
 			}
 
 			/**
-			 * Type used by callers to specify {@link Invocation}s, without requiring boilerplate defaults; only the `command`
+			 * Type used by callers to specify {@link slime.jrunscript.shell.Invocation}s, without requiring boilerplate defaults; only the `command`
 			 * property is required.
 			 */
 			export interface Argument {
