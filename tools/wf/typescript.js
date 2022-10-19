@@ -168,27 +168,14 @@
 				directory: project.pathname
 			};
 
-			return argument;
-		}
+			var invocation = $context.library.node.world.Installation.invocation(argument);
 
-		/** @type { slime.jsh.wf.internal.typescript.Exports["typedoc"]["run"] } */
-		var typedoc_run = function(p) {
-			return function(events) {
-				var argument = invocation(p);
-
-				var exit = $api.fp.world.now.question(
-					$context.library.node.world.Installation.question(argument),
-					$context.library.node.installation
-				);
-
-				return exit.status == 0;
-			}
+			return invocation;
 		}
 
 		$export({
 			typedoc: {
-				invocation: invocation,
-				run: typedoc_run
+				invocation: invocation
 			}
 		})
 	}
