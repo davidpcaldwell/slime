@@ -28,8 +28,8 @@ namespace slime.jrunscript.shell {
 
 		export interface Stdio {
 			input?: slime.jrunscript.runtime.io.InputStream
-			output?: OutputStream
-			error?: OutputStream
+			output: OutputStream
+			error: OutputStream
 		}
 	}
 
