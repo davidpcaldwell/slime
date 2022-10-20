@@ -546,14 +546,7 @@
 			}
 		};
 
-		$exports.world = {
-			question: scripts.run.question,
-			action: scripts.run.action,
-			start: scripts.run.world.start,
-			run: scripts.run.run,
-			mock: scripts.run.mock.run,
-			Invocation: $api.deprecate($exports.Invocation.old)
-		}
+		$exports.world = scripts.run;
 
 		$exports.Tell = {
 			exit: function() {
@@ -569,7 +562,7 @@
 					return rv;
 				};
 			},
-			mock: scripts.run.mock.tell
+			mock: scripts.run.internal.mock.tell
 		};
 	}
 //@ts-ignore
