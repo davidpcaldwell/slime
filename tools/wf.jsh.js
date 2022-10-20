@@ -35,21 +35,21 @@
 			}
 		}
 
-		if (!jsh.wf.project.base) {
+		if (!jsh.wf.project.base()) {
 			jsh.shell.console("No wf project base defined; PROJECT = " + jsh.shell.environment.PROJECT);
 			jsh.shell.exit(1);
 		}
 
-		if (!jsh.wf.project.base.getFile("wf.js")) {
-			jsh.shell.console("Directory " + jsh.wf.project.base + " does not appear to be a project directory; no wf.js found.");
+		if (!jsh.wf.project.base().getFile("wf.js")) {
+			jsh.shell.console("Directory " + jsh.wf.project.base() + " does not appear to be a project directory; no wf.js found.");
 			jsh.shell.exit(1);
 		}
 
 		/** @type { slime.jsh.script.cli.Descriptor<T> } */
 		var descriptor = {
 			options: $api.fp.cast,
-			commands: new jsh.file.Loader({ directory: jsh.wf.project.base }).module("wf.js", {
-				base: jsh.wf.project.base
+			commands: new jsh.file.Loader({ directory: jsh.wf.project.base() }).module("wf.js", {
+				base: jsh.wf.project.base()
 			})
 		}
 
