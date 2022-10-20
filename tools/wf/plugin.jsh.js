@@ -45,18 +45,42 @@
 							node: jsh.shell.tools.node
 						}
 					})
-				}
+				};
 
-				var base = (function() {
-					if (jsh.shell.environment.PROJECT) {
-						var location = jsh.file.Pathname(jsh.shell.environment.PROJECT);
-						// if (!location.directory) {
-						// 	jsh.shell.console("PROJECT is missing: " + location);
-						// }
-						return location.directory;
+				var inputs = (
+					function() {
+						/** @type { slime.$api.fp.impure.Input<string> } */
+						var project = function() {
+							if (jsh.shell.environment.PROJECT) {
+								//	TODO	check for existence here?
+								return jsh.shell.environment.PROJECT;
+							}
+							return jsh.shell.PWD.pathname.toString();
+						};
+
+						var base = $api.fp.impure.Input.map(
+							project,
+							function(pathname) {
+								return jsh.file.Pathname(pathname).directory;
+							}
+						);
+
+						return {
+							project: project,
+							base: base,
+							/** @type { slime.$api.fp.impure.Input<boolean> } */
+							gitInstalled: function() {
+								return Boolean(jsh.shell.PATH.getCommand("git"));
+							},
+							isGitClone: $api.fp.impure.Input.map(
+								base,
+								function(base) {
+									return Boolean(base.getSubdirectory(".git") || base.getFile(".git"));
+								}
+							),
+						}
 					}
-					return jsh.shell.PWD;
-				})();
+				)();
 
 				/**
 				 *
@@ -74,13 +98,6 @@
 					)
 				};
 
-				var gitInstalled = Boolean(jsh.shell.PATH.getCommand("git"));
-				var isGitClone = (
-					function(base) {
-						return Boolean(base.getSubdirectory(".git") || base.getFile(".git"));
-					}
-				)(base);
-
 				/** @type { slime.jrunscript.tools.git.Command<{ name: string, value: string },void> } */
 				var setConfigValue = {
 					invocation: function(p) {
@@ -95,7 +112,7 @@
 				}
 
 				jsh.wf.project = {
-					base: base,
+					base: inputs.base,
 					Submodule: {
 						construct: function(submodule) {
 							return submoduleDecorate(submodule);
@@ -108,7 +125,7 @@
 							return jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
 								script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
-								arguments: ["-project", base],
+								arguments: ["-project", inputs.project()],
 								evaluate: function(result) {
 									return result.status == 0;
 								}
@@ -125,10 +142,10 @@
 								"post-commit"
 							];
 
-							if (gitInstalled && isGitClone) {
+							if (inputs.gitInstalled() && inputs.isGitClone()) {
 								var path = (p) ? p.path : "local/git/hooks";
-								var repository = jsh.tools.git.program({ command: "git" }).repository(base.toString())
-								var clone = jsh.tools.git.Repository({ directory: base });
+								var repository = jsh.tools.git.program({ command: "git" }).repository(inputs.project())
+								var clone = jsh.tools.git.Repository({ directory: jsh.file.Pathname(inputs.project()).directory });
 								var config = clone.config({
 									arguments: ["--list"]
 								});
@@ -138,7 +155,7 @@
 								}
 								if (!p) {
 									ALL_GIT_HOOKS.forEach(function(hook) {
-										var location = base.getRelativePath(path + "/" + hook);
+										var location = inputs.base().getRelativePath(path + "/" + hook);
 										location.write("./wf " + "git.hooks." + hook + " " + "\"$@\"", { append: false, recursive: true });
 										jsh.shell.run({
 											command: "chmod",
@@ -153,14 +170,14 @@
 					},
 					submodule: {
 						status: function() {
-							var repository = jsh.tools.git.Repository({ directory: base });
+							var repository = jsh.tools.git.Repository({ directory: inputs.base() });
 							var submodules = repository.submodule();
 							return submodules.map(submoduleDecorate);
 						},
 						remove: function(p) {
-							var repository = jsh.tools.git.Repository({ directory: base });
+							var repository = jsh.tools.git.Repository({ directory: inputs.base() });
 							jsh.shell.console("Removing submodule " + p.path);
-							var checkout = base.getSubdirectory(p.path);
+							var checkout = inputs.base().getSubdirectory(p.path);
 							if (checkout && checkout.getSubdirectory(".git")) {
 								jsh.shell.console("Removing submodule .git ...");
 								checkout.getSubdirectory(".git").remove();
@@ -193,11 +210,11 @@
 						}
 					},
 					updateSubmodule: function(p) {
-						var subcheckout = base.getSubdirectory(p.path);
+						var subcheckout = inputs.base().getSubdirectory(p.path);
 						if (!subcheckout) {
-							throw new jsh.wf.error.Failure("Submodule not found at " + p.path + " of " + base);
+							throw new jsh.wf.error.Failure("Submodule not found at " + p.path + " of " + inputs.base());
 						}
-						var repository = jsh.tools.git.Repository({ directory: base.getSubdirectory(p.path) });
+						var repository = jsh.tools.git.Repository({ directory: inputs.base().getSubdirectory(p.path) });
 
 						jsh.shell.console("Update subrepository " + repository + " ...");
 						var current = repository.branch().filter(function(branch) {
@@ -330,7 +347,7 @@
 				var fetch = $api.fp.memoized(function() {
 					var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
 
-					var repository = jsh.tools.git.Repository({ directory: base });
+					var repository = jsh.tools.git.Repository({ directory: inputs.base() });
 					jsh.shell.console("Fetching all updates ...");
 					repository.fetch({
 						all: true,
@@ -453,12 +470,12 @@
 				jsh.wf.typescript = (function() {
 					return {
 						require: function(p) {
-							var project = (p && p.project) ? p.project : base;
+							var project = (p && p.project) ? p.project : inputs.base();
 							$api.fp.world.execute(jsh.shell.tools.node.require());
 							jsh.shell.tools.node.installed.modules.require({ name: "typescript", version: typescript.getVersion(project) });
 						},
 						tsc: function(p) {
-							var project = (p && p.project) ? p.project : base;
+							var project = (p && p.project) ? p.project : inputs.base();
 							var version = typescript.getVersion(project);
 							jsh.shell.console("Compiling with TypeScript " + version + " ...");
 							var result = jsh.shell.jsh({
@@ -474,7 +491,7 @@
 							return (result.status == 0);
 						},
 						typedoc: function(p) {
-							var project = (p && p.project) ? p.project : base;
+							var project = (p && p.project) ? p.project : inputs.base();
 							var version = typescript.getVersion(project);
 							jsh.shell.console("Compiling with TypeScript " + typescript.getVersion(project) + " ...");
 							jsh.shell.tools.rhino.require();
@@ -488,10 +505,10 @@
 								},
 								project: project.pathname.toString()
 							};
-							var shellInvocation = library.typescript.typedoc.invocation(typedocInvocation);
+							var getShellInvocation = library.typescript.typedoc.invocation(typedocInvocation);
 							var exit = $api.fp.world.now.question(
 								jsh.shell.world.question,
-								shellInvocation(jsh.shell.tools.node.installation)
+								getShellInvocation(jsh.shell.tools.node.installation)
 							);
 							return exit.status == 0;
 						}
@@ -597,7 +614,7 @@
 								stdio: {
 									output: "string"
 								},
-								directory: base.toString()
+								directory: inputs.project()
 							})
 						)({
 							exit: function(e) {
@@ -666,7 +683,7 @@
 						events.fire("console", "Verifying up to date with origin ...");
 						var remote = "origin";
 						var origin = jsh.tools.git.program({ command: "git" })
-							.repository(base.pathname.toString())
+							.repository(inputs.project())
 							.command(jsh.tools.git.commands.remote.show)
 							.argument(remote)
 							.run()
@@ -713,7 +730,7 @@
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
 								jsh.tools.code.handleTrailingWhitespace({
-									base: base,
+									base: inputs.base(),
 									exclude: jsh.project.code.files.exclude,
 									isText: isText,
 									nowrite: true
@@ -732,7 +749,7 @@
 							if (handleFinalNewlines) {
 								events.fire("console", "Handling final newlines ...");
 								jsh.tools.code.handleFinalNewlines({
-									base: base,
+									base: inputs.base(),
 									exclude: jsh.project.code.files.exclude,
 									isText: isText,
 									nowrite: true
@@ -752,7 +769,7 @@
 								});
 							}
 
-							if (base.getFile(".eslintrc.json")) {
+							if (inputs.base().getFile(".eslintrc.json")) {
 								events.fire("console", "Running ESLint ...");
 								jsh.shell.jsh({
 									shell: jsh.shell.jsh.src,
@@ -777,7 +794,7 @@
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
 								jsh.tools.code.handleTrailingWhitespace({
-									base: base,
+									base: inputs.base(),
 									exclude: jsh.project.code.files.exclude,
 									isText: isText,
 									nowrite: false
@@ -794,7 +811,7 @@
 							if (handleFinalNewlines) {
 								events.fire("console", "Handling final newlines ...");
 								jsh.tools.code.handleFinalNewlines({
-									base: base,
+									base: inputs.base(),
 									exclude: jsh.project.code.files.exclude,
 									isText: isText,
 									nowrite: false
@@ -820,7 +837,7 @@
 				function tsc() {
 					return function(events) {
 						events.fire("console", "Verifying with TypeScript compiler ...");
-						var project = base;
+						var project = inputs.base();
 						var version = typescript.getVersion(project);
 						events.fire("console", "Compiling with TypeScript " + version + " ...");
 						//	TODO	create standard jsh invocation to make the terser, commented-out form below this form possible
