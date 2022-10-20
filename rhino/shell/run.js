@@ -15,79 +15,79 @@
 	 * @param { slime.loader.Export<slime.jrunscript.shell.internal.run.Exports> } $export
 	 */
 	function(Packages,JavaAdapter,$api,$context,$export) {
-		/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
-		var getStringBufferDestination = function() {
-			var buffer = new $context.api.io.Buffer();
-			return {
-				stream: buffer.writeBinary(),
-				close: function() {
-					buffer.close();
-				},
-				readText: function() {
-					return buffer.readText().asString();
-				}
-			}
-		};
-
-		/**
-		 * @param { string } stream
-		 * @returns { "stdout" | "stderr" }
-		 */
-		var toStreamEventType = function(stream) {
-			if (stream == "output") return "stdout";
-			if (stream == "error") return "stderr";
-		};
-
-		/**
-		 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
-		 * @param { "output" | "error" } stream
-		 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
-		 */
-		var getLineBufferDestination = function(events,stream) {
-			var buffer = new $context.api.io.Buffer();
-
-			var lines = [];
-
-			var thread = $context.api.java.Thread.start({
-				call: function() {
-					buffer.readText().readLines(function(line) {
-						lines.push(line);
-						events.fire(toStreamEventType(stream), { line: line });
-					});
-				}
-			});
-
-			return {
-				stream: buffer.writeBinary(),
-				close: function() {
-					buffer.close();
-					thread.join();
-				},
-				readText: function() {
-					return lines.join($context.api.io.system.delimiter.line);
-				}
-			}
-		};
-
-		/**
-		 *
-		 * @param { Omit<slime.jrunscript.runtime.io.OutputStream, "close"> } stream
-		 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
-		 */
-		var getRawDestination = function(stream) {
-			return {
-				stream: stream,
-				close: function() {
-				}
-			}
-		}
-
 		/**
 		 *
 		 * @param { slime.jrunscript.shell.run.StdioConfiguration } p
 		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>) => slime.jrunscript.shell.internal.run.Stdio }
 		 */
 		function buildStdio(p) {
+			/**
+			 * @param { string } stream
+			 * @returns { "stdout" | "stderr" }
+			 */
+			var toStreamEventType = function(stream) {
+				if (stream == "output") return "stdout";
+				if (stream == "error") return "stderr";
+			};
+
+			/**
+			 *
+			 * @param { Omit<slime.jrunscript.runtime.io.OutputStream, "close"> } stream
+			 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+			 */
+			var getRawDestination = function(stream) {
+				return {
+					stream: stream,
+					close: function() {
+					}
+				}
+			}
+
+			/**
+			 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
+			 * @param { "output" | "error" } stream
+			 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+			 */
+			var getLineBufferDestination = function(events,stream) {
+				var buffer = new $context.api.io.Buffer();
+
+				var lines = [];
+
+				var thread = $context.api.java.Thread.start({
+					call: function() {
+						buffer.readText().readLines(function(line) {
+							lines.push(line);
+							events.fire(toStreamEventType(stream), { line: line });
+						});
+					}
+				});
+
+				return {
+					stream: buffer.writeBinary(),
+					close: function() {
+						buffer.close();
+						thread.join();
+					},
+					readText: function() {
+						return lines.join($context.api.io.system.delimiter.line);
+					}
+				}
+			};
+
+			/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
+			var getStringBufferDestination = function() {
+				var buffer = new $context.api.io.Buffer();
+				return {
+					stream: buffer.writeBinary(),
+					close: function() {
+						buffer.close();
+					},
+					readText: function() {
+						return buffer.readText().asString();
+					}
+				}
+			};
+
 			/** @type { slime.jrunscript.shell.internal.run.Stdio } */
 			var rv = {};
 			/** @type { { [x: string]: slime.jrunscript.shell.internal.run.OutputDestination } } */
@@ -119,7 +119,7 @@
 			 */
 			var destinationFactory = function(events, stream) {
 				/**
-				 * @param { slime.jrunscript.shell.run.OutputCapture } configuration
+				 * @param { slime.jrunscript.shell.invocation.OutputCapture } configuration
 				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 				 */
 				var getDestination = function(configuration) {
@@ -164,74 +164,74 @@
 			return returned;
 		}
 
-		/**
-		 *
-		 * @param { slime.jrunscript.shell.internal.run.java.Context } context
-		 * @returns
-		 */
-		var createJavaCommandContext = function(context) {
-			var _environment = (function(environment) {
-				var _hashMap = function(p) {
-					var rv = new Packages.java.util.HashMap();
-					for (var x in p) {
-						if (p[x] === null) {
-							//	do nothing
-						} else {
-							rv.put( new Packages.java.lang.String(String(x)), new Packages.java.lang.String(String(p[x])) );
-						}
-					}
-					return rv;
-				}
-
-				return _hashMap( environment );
-			})(context.environment);
-			return new JavaAdapter(
-				Packages.inonit.system.Command.Context,
-				{
-					toString: function() {
-						return JSON.stringify({
-							environment: context.environment
-						});
-					},
-					getStandardOutput: $api.fp.returning( (context.stdio.output) ? context.stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
-					getStandardError: $api.fp.returning( (context.stdio.error) ? context.stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
-					getStandardInput: $api.fp.returning( (context.stdio.input) ? context.stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM ),
-					getSubprocessEnvironment: $api.fp.returning( _environment ),
-					getWorkingDirectory: $api.fp.returning((context.directory) ? context.directory.pathname.java.adapt() : null)
-				}
-			);
-		};
-
-		/**
-		 * @param { slime.jrunscript.shell.internal.run.java.Configuration } configuration
-		 */
-		var createJavaCommandConfiguration = function(configuration) {
-			var toJavaString = function(p) { return new Packages.java.lang.String(p); };
-
-			var adapted = {
-				command: toJavaString(configuration.command),
-				arguments: $context.api.java.Array.create({
-					type: Packages.java.lang.String,
-					array: configuration.arguments.map(toJavaString)
-				})
-			}
-
-			return new JavaAdapter(
-				Packages.inonit.system.Command.Configuration,
-				new function() {
-					this.toString = function() {
-						return "command: " + configuration.command + " arguments: " + configuration.arguments;
-					};
-
-					this.getCommand = $api.fp.returning(adapted.command);
-					this.getArguments = $api.fp.returning(adapted.arguments);
-				}
-			);
-		};
-
 		/** @type { slime.jrunscript.shell.run.World } */
 		var world = $context.world || {
 			start: function(p) {
+				/**
+				 *
+				 * @param { slime.jrunscript.shell.internal.run.java.Context } context
+				 * @returns
+				 */
+				var createJavaCommandContext = function(context) {
+					var _environment = (function(environment) {
+						var _hashMap = function(p) {
+							var rv = new Packages.java.util.HashMap();
+							for (var x in p) {
+								if (p[x] === null) {
+									//	do nothing
+								} else {
+									rv.put( new Packages.java.lang.String(String(x)), new Packages.java.lang.String(String(p[x])) );
+								}
+							}
+							return rv;
+						}
+
+						return _hashMap( environment );
+					})(context.environment);
+					return new JavaAdapter(
+						Packages.inonit.system.Command.Context,
+						{
+							toString: function() {
+								return JSON.stringify({
+									environment: context.environment
+								});
+							},
+							getStandardOutput: $api.fp.returning( (context.stdio.output) ? context.stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
+							getStandardError: $api.fp.returning( (context.stdio.error) ? context.stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
+							getStandardInput: $api.fp.returning( (context.stdio.input) ? context.stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM ),
+							getSubprocessEnvironment: $api.fp.returning( _environment ),
+							getWorkingDirectory: $api.fp.returning((context.directory) ? context.directory.pathname.java.adapt() : null)
+						}
+					);
+				};
+
+				/**
+				 * @param { slime.jrunscript.shell.internal.run.java.Configuration } configuration
+				 */
+				var createJavaCommandConfiguration = function(configuration) {
+					var toJavaString = function(p) { return new Packages.java.lang.String(p); };
+
+					var adapted = {
+						command: toJavaString(configuration.command),
+						arguments: $context.api.java.Array.create({
+							type: Packages.java.lang.String,
+							array: configuration.arguments.map(toJavaString)
+						})
+					}
+
+					return new JavaAdapter(
+						Packages.inonit.system.Command.Configuration,
+						new function() {
+							this.toString = function() {
+								return "command: " + configuration.command + " arguments: " + configuration.arguments;
+							};
+
+							this.getCommand = $api.fp.returning(adapted.command);
+							this.getArguments = $api.fp.returning(adapted.arguments);
+						}
+					);
+				};
+
 				return function(events) {
 					var context = p.context;
 					var configuration = p.configuration;

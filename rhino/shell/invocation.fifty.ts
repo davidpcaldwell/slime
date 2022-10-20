@@ -32,6 +32,8 @@ namespace slime.jrunscript.shell {
 
 		export type Input = string | slime.jrunscript.runtime.io.InputStream
 
+		export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
+
 		export namespace old {
 			export type OutputStreamToStream = slime.jrunscript.runtime.io.OutputStream
 			export type OutputStreamToString = StringConstructor
@@ -105,8 +107,8 @@ namespace slime.jrunscript.shell {
 
 			stdio?: {
 				input?: Input
-				output?: slime.jrunscript.shell.run.OutputCapture
-				error?: slime.jrunscript.shell.run.OutputCapture
+				output?: OutputCapture
+				error?: OutputCapture
 			}
 		}
 	}

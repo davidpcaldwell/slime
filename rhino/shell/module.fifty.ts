@@ -196,12 +196,10 @@ namespace slime.jrunscript.shell {
 	}
 
 	export namespace run {
-		export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
-
 		export interface StdioConfiguration {
 			input: slime.jrunscript.runtime.io.InputStream
-			output: OutputCapture
-			error: OutputCapture
+			output: invocation.OutputCapture
+			error: invocation.OutputCapture
 		}
 
 		export interface Context {
