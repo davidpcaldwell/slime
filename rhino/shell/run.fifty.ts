@@ -163,7 +163,7 @@ namespace slime.jrunscript.shell.internal.run {
 	export interface Exports {
 		question: slime.jrunscript.shell.World["question"]
 		action: slime.jrunscript.shell.World["action"]
-		world: slime.jrunscript.shell.run.World
+		start: slime.jrunscript.shell.run.World["start"]
 		run: slime.jrunscript.shell.World["run"]
 	}
 
@@ -439,11 +439,12 @@ namespace slime.jrunscript.shell.internal.run {
 	)($fifty);
 
 	export interface Exports {
-		mock: {
-			run: shell.World["mock"]
-
-			tell: shell.Exports["Tell"]["mock"]
+		internal: {
+			mock: {
+				tell: shell.Exports["Tell"]["mock"]
+			}
 		}
+		mock: shell.World["mock"]
 
 		old: {
 			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>) => Stdio

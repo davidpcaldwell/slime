@@ -524,9 +524,6 @@ namespace slime.jrunscript.shell {
 		 * the appropriate `Tell` and fire the appropriate events to the caller.
 		 */
 		mock: (delegate: (invocation: shell.run.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.Invocation,run.TellEvents>
-
-		 /** @deprecated Replaced by {@link Exports | Exports Invocation.create()} because it does not rely on external state. */
-		Invocation: (p: invocation.old.Argument) => old.Invocation
 	}
 
 	export interface Exports {

@@ -524,13 +524,15 @@
 					);
 				}
 			},
-			world: world,
+			start: world.start,
 			run: function(invocation) {
 				return impure(invocation.context,invocation.configuration);
 			},
-			mock: {
-				run: mockRun,
-				tell: mockTell
+			mock: mockRun,
+			internal: {
+				mock: {
+					tell: mockTell
+				}
 			},
 			old: {
 				buildStdio: buildStdio,
