@@ -118,7 +118,7 @@
 
 				var rv = function(input) {
 					var invocation = command.invocation(input);
-					var tell = $context.library.shell.world.run(
+					var tell = $context.library.shell.world.action(
 						$context.library.shell.Invocation.create({
 							command: "docker",
 							arguments: invocation.command.concat(invocation.arguments).concat(
@@ -135,21 +135,24 @@
 					return {
 						run: $api.fp.world.old.ask(function(events) {
 							var rv;
-							tell({
-								stderr: function(e) {
-									events.fire("stderr", e.detail.line);
-								},
-								exit: function(e) {
-									var status = e.detail.status;
-									if (status != 0) throw new Error("Exit status: " + status);
-									if (command.output.json) {
-										var array = e.detail.stdio.output.split("\n").filter(function(string) { return Boolean(string); }).map(function(string) { return JSON.parse(string); });
-										rv = command.result(array);
-									} else {
-										rv = command.result(e.detail.stdio.output);
+							$api.fp.world.now.tell(
+								tell,
+								{
+									stderr: function(e) {
+										events.fire("stderr", e.detail.line);
+									},
+									exit: function(e) {
+										var status = e.detail.status;
+										if (status != 0) throw new Error("Exit status: " + status);
+										if (command.output.json) {
+											var array = e.detail.stdio.output.split("\n").filter(function(string) { return Boolean(string); }).map(function(string) { return JSON.parse(string); });
+											rv = command.result(array);
+										} else {
+											rv = command.result(e.detail.stdio.output);
+										}
 									}
 								}
-							})
+							);
 							return rv;
 						})
 					}

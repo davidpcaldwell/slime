@@ -78,17 +78,20 @@
 			},
 			result: function(world,invocation) {
 				return $api.fp.world.old.ask(function(events) {
-					var tell = world.run(invocation);
+					var tell = world.action(invocation);
 					var rv;
-					tell({
-						stderr: function(e) {
-							events.fire("stderr", e.detail);
-						},
-						exit: function(e) {
-							if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
-							if (e.detail.stdio && e.detail.stdio.output) rv = JSON.parse(e.detail.stdio.output);
+					$api.fp.world.now.tell(
+						tell,
+						{
+							stderr: function(e) {
+								events.fire("stderr", e.detail);
+							},
+							exit: function(e) {
+								if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
+								if (e.detail.stdio && e.detail.stdio.output) rv = JSON.parse(e.detail.stdio.output);
+							}
 						}
-					});
+					);
 					return rv;
 				})
 			}

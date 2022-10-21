@@ -480,7 +480,7 @@
 					/** @type { slime.jrunscript.shell.run.Exit } */
 					var rv;
 					$api.fp.impure.now.process(
-						$api.fp.world.tell(
+						$api.fp.world.process(
 							tell(invocation.context, invocation.configuration),
 							{
 								start: function(e) {
@@ -504,7 +504,7 @@
 			action: function(invocation) {
 				return function(events) {
 					$api.fp.impure.now.process(
-						$api.fp.world.tell(
+						$api.fp.world.process(
 							tell(invocation.context, invocation.configuration),
 							{
 								start: function(e) {

@@ -131,7 +131,7 @@
 				}
 			},
 			input: input,
-			tell: function(tell, handler) {
+			process: function(tell, handler) {
 				return function() {
 					var adapted = $context.events.tell(tell);
 					adapted(handler);
@@ -145,6 +145,10 @@
 				},
 				action: function(action, argument, handler) {
 					var tell = action(argument);
+					var adapted = $context.events.tell(tell);
+					adapted(handler);
+				},
+				tell: function(tell, handler) {
 					var adapted = $context.events.tell(tell);
 					adapted(handler);
 				}

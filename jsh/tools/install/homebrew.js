@@ -86,7 +86,7 @@
 							return {
 								parameters: function(parameters) {
 									var invocation = command.invocation(parameters);
-									var tell = $context.library.shell.world.run(
+									var tell = $context.library.shell.world.action(
 										$context.library.shell.Invocation.create({
 											command: program,
 											arguments: [invocation.command].concat(invocation.arguments || []),
@@ -100,19 +100,22 @@
 									return {
 										run: $api.fp.world.old.ask(function(events) {
 											var rv;
-											tell({
-												stdout: function(e) {
-													events.fire("stdout", e.detail.line);
-												},
-												stderr: function(e) {
-													events.fire("stderr", e.detail.line);
-												},
-												exit: function(e) {
-													var status = e.detail.status;
-													if (status != 0) throw new Error("Exit status: " + status);
-													rv = command.result(e.detail.stdio.output);
+											$api.fp.world.now.tell(
+												tell,
+												{
+													stdout: function(e) {
+														events.fire("stdout", e.detail.line);
+													},
+													stderr: function(e) {
+														events.fire("stderr", e.detail.line);
+													},
+													exit: function(e) {
+														var status = e.detail.status;
+														if (status != 0) throw new Error("Exit status: " + status);
+														rv = command.result(e.detail.stdio.output);
+													}
 												}
-											})
+											);
 											return rv;
 										})
 									}

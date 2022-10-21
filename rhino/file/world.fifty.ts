@@ -272,7 +272,7 @@ namespace slime.jrunscript.file {
 							buffer.writeText().write("text");
 							buffer.close();
 
-							var process = $api.fp.world.tell(
+							var process = $api.fp.world.process(
 								subject.Location.file.write.stream({ input: buffer.readBinary() })(at)
 							);
 
@@ -342,10 +342,10 @@ namespace slime.jrunscript.file {
 
 						verify(at).evaluate(exists).is(false);
 
-						$api.fp.world.tell(subject.Location.directory.require()(at))();
+						$api.fp.world.process(subject.Location.directory.require()(at))();
 						verify(at).evaluate(exists).is(true);
 
-						$api.fp.world.tell(subject.Location.directory.require()(at))();
+						$api.fp.world.process(subject.Location.directory.require()(at))();
 						verify(at).evaluate(exists).is(true);
 					}
 				}

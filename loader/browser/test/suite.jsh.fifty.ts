@@ -81,7 +81,8 @@ namespace slime.runtime.browser.test.internal.suite {
 
 			function run(browser: string, suite: string = "contributor/browser-jsapi-suite.js"): slime.jrunscript.shell.run.TellEvents["exit"] {
 				var rv: slime.jrunscript.shell.run.TellEvents["exit"];
-				jsh.shell.world.run(
+				$api.fp.world.now.action(
+					jsh.shell.world.action,
 					jsh.shell.Invocation.create({
 						command: "/bin/bash",
 						arguments: $api.Array.build(function(rv: string[]) {
@@ -92,12 +93,13 @@ namespace slime.runtime.browser.test.internal.suite {
 							rv.push("-view", "stdio");
 						}),
 						directory: jsh.shell.jsh.src.toString()
-					})
-				)({
-					exit: function(e) {
-						rv = e.detail;
+					}),
+					{
+						exit: function(e) {
+							rv = e.detail;
+						}
 					}
-				});
+				);
 				return rv;
 			}
 
@@ -119,7 +121,7 @@ namespace slime.runtime.browser.test.internal.suite {
 			}
 
 			var runDockerSelenium = function(image) {
-				return jsh.shell.world.run(
+				return jsh.shell.world.action(
 					jsh.shell.Invocation.create({
 						command: "docker",
 						arguments: $api.Array.build(function(rv) {
@@ -138,7 +140,8 @@ namespace slime.runtime.browser.test.internal.suite {
 			}
 
 			var removeDockerContainer = function(id) {
-				jsh.shell.world.run(
+				$api.fp.world.now.action(
+					jsh.shell.world.action,
 					jsh.shell.Invocation.create({
 						command: "docker",
 						arguments: $api.Array.build(function(rv) {
@@ -146,12 +149,13 @@ namespace slime.runtime.browser.test.internal.suite {
 							rv.push("-f");
 							rv.push(id);
 						})
-					})
-				)({
-					exit: function(e) {
-						jsh.shell.console("Docker rm exit status: " + e.detail.status);
+					}),
+					{
+						exit: function(e) {
+							jsh.shell.console("Docker rm exit status: " + e.detail.status);
+						}
 					}
-				});
+				);
 			};
 
 			fifty.tests.manual.docker = {
@@ -159,12 +163,15 @@ namespace slime.runtime.browser.test.internal.suite {
 					chrome: function() {
 						var tell = runDockerSelenium("selenium/standalone-chrome");
 						var container;
-						tell({
-							exit: function(e) {
-								container = e.detail.stdio.output.trim();
-								jsh.shell.console("container = [" + container + "]");
+						$api.fp.world.now.tell(
+							tell,
+							{
+								exit: function(e) {
+									container = e.detail.stdio.output.trim();
+									jsh.shell.console("container = [" + container + "]");
+								}
 							}
-						})
+						);
 						var result = run("docker:selenium:chrome");
 						removeDockerContainer(container);
 						jsh.shell.console("Exit status: " + result.status);
