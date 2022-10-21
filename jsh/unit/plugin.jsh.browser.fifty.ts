@@ -132,7 +132,7 @@ namespace slime.jsh.unit {
 			fifty.tests.manual.browsers.selenium.remote = {};
 
 			var runDockerSelenium = function(image) {
-				return jsh.shell.world.run(
+				return jsh.shell.world.action(
 					jsh.shell.Invocation.create({
 						command: "docker",
 						arguments: $api.Array.build(function(rv) {
@@ -151,7 +151,8 @@ namespace slime.jsh.unit {
 			}
 
 			var removeDockerContainer = function(id) {
-				jsh.shell.world.run(
+				$api.fp.world.now.action(
+					jsh.shell.world.action,
 					jsh.shell.Invocation.create({
 						command: "docker",
 						arguments: $api.Array.build(function(rv) {
@@ -159,23 +160,27 @@ namespace slime.jsh.unit {
 							rv.push("-f");
 							rv.push(id);
 						})
-					})
-				)({
-					exit: function(e) {
-						jsh.shell.console("Docker rm exit status: " + e.detail.status);
+					}),
+					{
+						exit: function(e) {
+							jsh.shell.console("Docker rm exit status: " + e.detail.status);
+						}
 					}
-				});
+				);
 			};
 
 			fifty.tests.manual.browsers.selenium.remote.chrome = function() {
 				var tell = runDockerSelenium("selenium/standalone-chrome");
 				var container;
-				tell({
-					exit: function(e) {
-						container = e.detail.stdio.output.trim();
-						jsh.shell.console("container = [" + container + "]");
+				$api.fp.world.now.tell(
+					tell,
+					{
+						exit: function(e) {
+							container = e.detail.stdio.output.trim();
+							jsh.shell.console("container = [" + container + "]");
+						}
 					}
-				});
+				);
 				var chrome = subject.selenium.remote.Chrome({
 					host: "127.0.0.1",
 					port: 4444
@@ -188,12 +193,15 @@ namespace slime.jsh.unit {
 			fifty.tests.manual.browsers.selenium.remote.firefox = function() {
 				var tell = runDockerSelenium("selenium/standalone-firefox");
 				var container;
-				tell({
-					exit: function(e) {
-						container = e.detail.stdio.output.trim();
-						jsh.shell.console("container = [" + container + "]");
+				$api.fp.world.now.tell(
+					tell,
+					{
+						exit: function(e) {
+							container = e.detail.stdio.output.trim();
+							jsh.shell.console("container = [" + container + "]");
+						}
 					}
-				});
+				);
 				var chrome = subject.selenium.remote.Firefox({
 					host: "127.0.0.1",
 					port: 4444

@@ -28,7 +28,8 @@
 					/** @type { slime.jrunscript.http.client.spi.Response } */
 					var response;
 
-					$context.library.shell.world.run(
+					$api.fp.world.now.action(
+						$context.library.shell.world.action,
 						$context.library.shell.Invocation.create({
 							//	TODO	should not assume location and/or PATH
 							command: "curl",
@@ -57,53 +58,55 @@
 								output: "string",
 								error: "line"
 							}
-						})
-					)({
-						stderr: function(e) {
-							$context.console(e.detail.line);
-						},
-						exit: function(e) {
-							if (e.detail.status == 7) throw new Error("Connection refused.");
-							var output = e.detail.stdio.output;
-							var lines = output.split("\n");
+						}),
+						{
+							stderr: function(e) {
+								$context.console(e.detail.line);
+							},
+							exit: function(e) {
+								if (e.detail.status == 7) throw new Error("Connection refused.");
+								var output = e.detail.stdio.output;
+								var lines = output.split("\n");
 
-							var noCarriageReturn = function(line) {
-								if ($api.fp.string.endsWith("\r")(line)) {
-									line = line.substring(0,line.length-1);
+								var noCarriageReturn = function(line) {
+									if ($api.fp.string.endsWith("\r")(line)) {
+										line = line.substring(0,line.length-1);
+									}
+									return line;
+								};
+
+								var notBlank = function(line) {
+									return noCarriageReturn(line).length != 0;
+								};
+
+								var statusLine = noCarriageReturn(lines[0]);
+								var statusTokens = statusLine.split(" ");
+								var index = 1;
+								var headers = [];
+
+
+								while(typeof(lines[index]) == "string" && notBlank(lines[index])) {
+									var parsed = noCarriageReturn(lines[index]).split(": ");
+									headers.push({ name: parsed[0], value: parsed.slice(1).join(": ") });
+									index++;
 								}
-								return line;
-							};
-
-							var notBlank = function(line) {
-								return noCarriageReturn(line).length != 0;
-							};
-
-							var statusLine = noCarriageReturn(lines[0]);
-							var statusTokens = statusLine.split(" ");
-							var index = 1;
-							var headers = [];
-
-
-							while(typeof(lines[index]) == "string" && notBlank(lines[index])) {
-								var parsed = noCarriageReturn(lines[index]).split(": ");
-								headers.push({ name: parsed[0], value: parsed.slice(1).join(": ") });
-								index++;
-							}
-							response = {
-								status: {
-									code: Number(statusTokens[1]),
-									reason: statusTokens.slice(2).join(" "),
-								},
-								headers: headers,
-								stream: (function(string) {
-									var buffer = new $context.library.io.Buffer();
-									buffer.writeText().write(string);
-									buffer.writeText().close();
-									return buffer.readBinary();
-								})(lines.slice(index+1).join("\n"))
+								response = {
+									status: {
+										code: Number(statusTokens[1]),
+										reason: statusTokens.slice(2).join(" "),
+									},
+									headers: headers,
+									stream: (function(string) {
+										var buffer = new $context.library.io.Buffer();
+										buffer.writeText().write(string);
+										buffer.writeText().close();
+										return buffer.readBinary();
+									})(lines.slice(index+1).join("\n"))
+								}
 							}
 						}
-					});
+					);
+
 					return response;
 				};
 			}

@@ -142,7 +142,7 @@ namespace slime.$api.fp.world {
 	export interface Exports {
 		output: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => impure.Output<P>
 
-		tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => impure.Process
+		process: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => impure.Process
 
 		input: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => impure.Input<A>
 
@@ -161,6 +161,8 @@ namespace slime.$api.fp.world {
 		now: {
 			question: <P,E,A>(question: world.Question<P,E,A>, argument?: P, handler?: slime.$api.events.Handler<E>) => A
 			action: <P,E>(action: world.Action<P,E>, argument?: P, handler?: slime.$api.events.Handler<E>) => void
+
+			tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => void
 		}
 
 		/** @deprecated Used almost entirely for `jsh.shwll.tools.node.require`. After refactoring that, reassess. */

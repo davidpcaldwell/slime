@@ -22,37 +22,41 @@ namespace slime.node {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { $api, jsh } = fifty.global;
+
 			fifty.tests.suite = function() {
-				fifty.global.jsh.shell.world.run(
+				$api.fp.world.now.action(
+					jsh.shell.world.action,
 					fifty.global.jsh.shell.Invocation.create({
 						command: fifty.jsh.file.object.getRelativePath("test/main.bash"),
 						stdio: {
 							output: "string"
 						}
-					})
-				)({
-					exit: function(e) {
-						var output: {
-							identity: number
-							loader: {
-								type: string
-								files: {
-									me: {
-										type: string
-										content: string
+					}),
+					{
+						exit: function(e) {
+							var output: {
+								identity: number
+								loader: {
+									type: string
+									files: {
+										me: {
+											type: string
+											content: string
+										}
+										foo: any
 									}
-									foo: any
 								}
-							}
-						} = JSON.parse(e.detail.stdio.output);
+							} = JSON.parse(e.detail.stdio.output);
 
-						fifty.verify(output).identity.is(3);
-						fifty.verify(output).loader.type.is("object");
-						fifty.verify(output).loader.files.me.type.is("object");
-						fifty.verify(output).loader.files.me.content.is.type("string");
-						fifty.verify(output).loader.files.foo.is(null);
+							fifty.verify(output).identity.is(3);
+							fifty.verify(output).loader.type.is("object");
+							fifty.verify(output).loader.files.me.type.is("object");
+							fifty.verify(output).loader.files.me.content.is.type("string");
+							fifty.verify(output).loader.files.foo.is(null);
+						}
 					}
-				});
+				);
 			}
 		}
 	//@ts-ignore

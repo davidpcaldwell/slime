@@ -409,16 +409,18 @@
 					return {
 						open: function(p) {
 							jsh.java.Thread.start(function() {
-								jsh.shell.world.run(
+								$api.fp.world.now.action(
+									jsh.shell.world.action,
 									jsh.shell.Invocation.create({
 										command: configuration.program,
 										arguments: configuration.arguments.concat([p.uri])
-									})
-								)({
-									start: function(e) {
-										process = e.detail;
+									}),
+									{
+										start: function(e) {
+											process = e.detail;
+										}
 									}
-								})
+								);
 							});
 						},
 						close: function() {
