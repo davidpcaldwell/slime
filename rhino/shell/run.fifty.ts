@@ -249,9 +249,67 @@ namespace slime.jrunscript.shell.internal.run {
 			const { $api } = fifty.global;
 			const subject = fifty.global.jsh.shell;
 
-			fifty.tests.world = function() {
-				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
+			fifty.tests.world = fifty.test.Parent();
 
+			var directory = fifty.jsh.file.object.getRelativePath(".").directory;
+
+			fifty.tests.world.subprocess = function() {
+				const console = fifty.global.jsh.shell.console;
+
+				console("Hello, World!");
+
+				var ls = subject.Invocation.create({
+					command: "ls",
+					directory: directory.toString(),
+					stdio: {
+						output: "line",
+						error: "line"
+					}
+				});
+
+				var ask = subject.world.start(ls);
+
+				console("Created ask.");
+
+				var handler: slime.$api.events.Handler<slime.jrunscript.shell.run.TellEvents> = {
+					start: function(e) {
+						console("START PID: " + e.detail.pid);
+					},
+					exit: function(e) {
+						console("EXIT Status: " + e.detail.status);
+						console("EXIT Output: " + e.detail.stdio.output);
+						console("EXIT Error: " + e.detail.stdio.error);
+					},
+					stdout: function(e) {
+						console("STDOUT: " + e.detail.line);
+					},
+					stderr: function(e) {
+						console("STDERR: " + e.detail.line);
+					}
+				};
+
+				var listener = $api.events.toListener(handler);
+
+				listener.attach();
+
+				var subprocess = ask(listener.emitter);
+
+				console("subprocess pid = " + subprocess.pid);
+
+				console("Running ...");
+
+				var result = subprocess.run();
+
+				listener.detach();
+
+				console("result = " + result.status);
+				console("result output = " + result.stdio.output);
+				console("result error = " + result.stdio.error);
+			};
+
+			fifty.tests.wip = fifty.tests.world.subprocess;
+
+			fifty.tests.world.commands = function() {
 				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
 					var ls = subject.Invocation.create({
 						command: "ls",
