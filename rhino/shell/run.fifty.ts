@@ -10,9 +10,6 @@ namespace slime.jrunscript.shell {
 		action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 
 		start: slime.$api.fp.world.Question<run.Invocation,slime.jrunscript.shell.run.TellEvents,slime.jrunscript.shell.run.world.Subprocess>
-
-		/** @deprecated */
-		run: slime.$api.fp.world.old.Action<run.Invocation,run.TellEvents>
 	}
 }
 
@@ -167,7 +164,6 @@ namespace slime.jrunscript.shell.internal.run {
 		question: slime.jrunscript.shell.World["question"]
 		action: slime.jrunscript.shell.World["action"]
 		start: slime.jrunscript.shell.run.World["start"]
-		run: slime.jrunscript.shell.World["run"]
 	}
 
 	(
@@ -265,14 +261,14 @@ namespace slime.jrunscript.shell.internal.run {
 							error: "line"
 						}
 					});
-					var tell = subject.world.run(ls);
+					var tell = subject.world.action(ls);
 					var captor = fifty.$api.Events.Captor({
 						start: void(0),
 						stdout: void(0),
 						stderr: void(0),
 						exit: void(0)
 					});
-					tell(captor.handler);
+					$api.fp.world.now.tell(tell, captor.handler);
 					fifty.global.jsh.shell.console(JSON.stringify(captor.events,void(0),4));
 
 					var killed = subject.Invocation.create({
@@ -286,36 +282,40 @@ namespace slime.jrunscript.shell.internal.run {
 					});
 					var events = [];
 					var subprocess;
-					var killtell = subject.world.run(killed);
-					killtell({
-						start: function(e) {
-							events.push(e);
-							subprocess = e.detail;
-							subprocess.kill();
-						},
-						stdout: function(e) {
-							events.push(e);
-						},
-						stderr: function(e) {
-							events.push(e);
-						},
-						exit: function(e) {
-							events.push(e);
+					var killtell = subject.world.action(killed);
+					$api.fp.world.now.tell(
+						killtell,
+						{
+							start: function(e) {
+								events.push(e);
+								subprocess = e.detail;
+								subprocess.kill();
+							},
+							stdout: function(e) {
+								events.push(e);
+							},
+							stderr: function(e) {
+								events.push(e);
+							},
+							exit: function(e) {
+								events.push(e);
+							}
 						}
-					});
+					);
 					fifty.global.jsh.shell.console(JSON.stringify(events,void(0),4));
 				}
 			}
 
 			fifty.tests.sandbox = function() {
+				const { jsh } = fifty.global;
 				fifty.run(function checkErrorForBogusInvocation() {
 					var bogus = subject.Invocation.create({
 						command: "foobarbaz"
 					});
 
-					var tell = subject.world.run(bogus);
-					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.type(Error);
-					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.evaluate.property("name").is("JavaException");
+					var tell = subject.world.action(bogus);
+					fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f); }).threw.type(Error);
+					fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f); }).threw.evaluate.property("name").is("JavaException");
 				});
 
 				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
@@ -326,11 +326,14 @@ namespace slime.jrunscript.shell.internal.run {
 						directory: directory.toString()
 					});
 					var status: number;
-					subject.world.run(ls)({
-						exit: function(e) {
-							status = e.detail.status;
+					$api.fp.world.now.tell(
+						subject.world.action(ls),
+						{
+							exit: function(e) {
+								status = e.detail.status;
+							}
 						}
-					});
+					);
 					fifty.verify(status).is(0);
 
 					var lsIllegalArgumentStatus = (function() {
@@ -346,11 +349,14 @@ namespace slime.jrunscript.shell.internal.run {
 							})
 						});
 						var status: number;
-						subject.world.run(lserror)({
-							exit: function(e) {
-								status = e.detail.status;
+						$api.fp.world.now.tell(
+							subject.world.action(lserror),
+							{
+								exit: function(e) {
+									status = e.detail.status;
+								}
 							}
-						});
+						);
 						fifty.verify(status).is(lsIllegalArgumentStatus);
 					});
 
@@ -360,7 +366,7 @@ namespace slime.jrunscript.shell.internal.run {
 								arguments: ["--foo"]
 							})
 						});
-						var tell = subject.world.run(lserror);
+						var tell = subject.world.action(lserror);
 						//	TODO	this listener functionality was previously provided by default; will want to improve API over
 						//			time so that it's harder to accidentally ignore non-zero exit status
 						var listener: slime.$api.events.Handler<slime.jrunscript.shell.run.TellEvents> = {
@@ -370,8 +376,8 @@ namespace slime.jrunscript.shell.internal.run {
 								}
 							}
 						}
-						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.type(Error);
-						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.message.is("Non-zero exit status: " + lsIllegalArgumentStatus);
+						fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f, listener); }).threw.type(Error);
+						fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f, listener); }).threw.message.is("Non-zero exit status: " + lsIllegalArgumentStatus);
 					});
 				}
 

@@ -386,7 +386,8 @@
 				var test = function() {
 					var success = true;
 
-					jsh.shell.world.run(
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
 							command: "docker",
 							arguments: $api.Array.build(function(rv) {
@@ -394,19 +395,21 @@
 								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml"));
 								rv.push("build", "test");
 							})
-						})
-					)({
-						exit: function(e) {
-							if (e.detail.status != 0) {
-								jsh.shell.console("docker compose build exit status: " + e.detail.status);
-								success = false;
+						}),
+						{
+							exit: function(e) {
+								if (e.detail.status != 0) {
+									jsh.shell.console("docker compose build exit status: " + e.detail.status);
+									success = false;
+								}
 							}
 						}
-					});
+					);
 
 					if (!success) return false;
 
-					jsh.shell.world.run(
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
 							command: "docker",
 							arguments: $api.Array.build(function(rv) {
@@ -414,15 +417,16 @@
 								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml"));
 								rv.push("run", "test");
 							})
-						})
-					)({
-						exit: function(e) {
-							if (e.detail.status != 0) {
-								jsh.shell.console("docker compose build exit status: " + e.detail.status);
-								success = false;
+						}),
+						{
+							exit: function(e) {
+								if (e.detail.status != 0) {
+									jsh.shell.console("docker compose build exit status: " + e.detail.status);
+									success = false;
+								}
 							}
 						}
-					})
+					);
 
 					return success;
 				};

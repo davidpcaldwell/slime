@@ -18,7 +18,8 @@ namespace slime.jrunscript.tools.profiler.viewer {
 			fifty.tests.manual = {};
 
 			fifty.tests.manual.viewer = function() {
-				jsh.shell.world.run(
+				$api.fp.world.now.action(
+					jsh.shell.world.action,
 					jsh.shell.Invocation.create({
 						command: jsh.shell.jsh.src.getRelativePath("jsh.bash").toString(),
 						arguments: $api.Array.build(function(rv) {
@@ -27,7 +28,7 @@ namespace slime.jrunscript.tools.profiler.viewer {
 							rv.push(jsh.shell.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js"));
 						})
 					})
-				)();
+				);
 			}
 		}
 	//@ts-ignore
