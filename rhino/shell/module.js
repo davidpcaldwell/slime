@@ -12,9 +12,9 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.shell.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.jrunscript.shell.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.shell.Exports> } $export
 	 */
-	function(Packages,$api,$context,$loader,$exports) {
+	function(Packages,$api,$context,$loader,$export) {
 		if (!$context.api.io) {
 			throw new Error("Missing: $context.api.io");
 		}
@@ -28,11 +28,14 @@
 			return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
 		};
 
+		/** @type { Partial<slime.jrunscript.shell.Exports> } */
+		var $exports = {};
+
 		var module = {
-			events: $api.events.create({ source: $exports })
+			events: $api.events.create()
 		};
 
-		$exports.environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
+		var environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
 		$exports.properties = (
 			/**
@@ -73,11 +76,11 @@
 		if ($exports.properties.get("user.dir")) {
 			$exports.PWD = $exports.properties.directory("user.dir");
 		}
-		if ($exports.environment.PATH) {
-			$exports.PATH = toLocalSearchpath($exports.environment.PATH);
-		} else if ($exports.environment.Path) {
+		if (environment.PATH) {
+			$exports.PATH = toLocalSearchpath(environment.PATH);
+		} else if (environment.Path) {
 			//	Windows
-			$exports.PATH = toLocalSearchpath($exports.environment.Path);
+			$exports.PATH = toLocalSearchpath(environment.Path);
 		} else {
 			$exports.PATH = $context.api.file.Searchpath([]);
 		}
@@ -111,7 +114,7 @@
 					api: {
 						file: $context.api.file
 					},
-					environment: $exports.environment,
+					environment: environment,
 					module: module,
 					os: {
 						name: function() {
@@ -225,7 +228,7 @@
 				TMPDIR: $exports.TMPDIR,
 				os: this,
 				run: $exports.run,
-				environment: $exports.environment,
+				environment: environment,
 				api: {
 					js: $context.api.js,
 					io: $context.api.io,
@@ -260,7 +263,7 @@
 						HOME: $exports.HOME,
 						TMPDIR: $exports.TMPDIR,
 						run: $exports.run,
-						environment: $exports.environment,
+						environment: environment,
 						api: {
 							js: $context.api.js,
 							java: $context.api.java,
@@ -513,7 +516,7 @@
 		/** @type { slime.jrunscript.shell.internal.invocation.Defaults } */
 		var defaults = {
 			directory: $api.fp.returning($exports.PWD.toString()),
-			environment: $api.fp.returning($exports.environment),
+			environment: $api.fp.returning(environment),
 			stdio: $api.fp.returning({
 				output: $context.stdio.output,
 				error: $context.stdio.error
@@ -564,6 +567,13 @@
 			},
 			mock: scripts.run.internal.mock.tell
 		};
+
+		$exports.environment = environment;
+
+		/** @type { slime.js.Cast<slime.jrunscript.shell.Exports> } */
+		var cast = $api.fp.cast;
+
+		$export(cast($exports));
 	}
 //@ts-ignore
-)(Packages,$api,$context,$loader,$exports);
+)(Packages,$api,$context,$loader,$export);
