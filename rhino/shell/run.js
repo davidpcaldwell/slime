@@ -284,21 +284,15 @@
 		};
 
 		/**
-		 *
-		 * @param { slime.jrunscript.shell.run.Context } context
-		 * @param { slime.jrunscript.shell.run.Configuration } configuration
-		 * @returns { slime.$api.fp.world.Tell<slime.jrunscript.shell.run.TellEvents> }
+		 * @type { slime.jrunscript.shell.World["action"] }
 		 */
-		var tell = function(context,configuration) {
+		var action = function(invocation) {
 			/**
 			 *
 			 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
 			 */
 			return function(events) {
-				var subprocess = world.start({
-					context: context,
-					configuration: configuration
-				})(events);
+				var subprocess = world.start(invocation)(events);
 
 				events.fire("start", {
 					pid: subprocess.pid,
@@ -309,18 +303,6 @@
 
 				events.fire("exit", exit);
 			}
-		};
-
-		/**
-		 *
-		 * @param { slime.jrunscript.shell.run.Context } context
-		 * @param { slime.jrunscript.shell.run.Configuration } configuration
-		 * @returns { slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents> }
-		 */
-		var impure = function(context,configuration) {
-			return $api.fp.world.old.tell(
-				tell(context, configuration)
-			);
 		};
 
 		//	TODO	next two functions also copy-pasted into fixtures
@@ -436,41 +418,44 @@
 		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
-			var tell = impure(context, configuration);
-			tell({
-				start: function(e) {
-					var startEvent = {
-						command: invocation.command,
-						arguments: invocation.arguments,
-						environment: invocation.environment,
-						directory: invocation.directory,
-						pid: e.detail.pid,
-						kill: e.detail.kill
-					};
+			var tell = action({ context: context, configuration: configuration });
+			$api.fp.world.now.tell(
+				tell,
+				{
+					start: function(e) {
+						var startEvent = {
+							command: invocation.command,
+							arguments: invocation.arguments,
+							environment: invocation.environment,
+							directory: invocation.directory,
+							pid: e.detail.pid,
+							kill: e.detail.kill
+						};
 
-					if (p.on && p.on.start) {
-						$api.deprecate(function() {
-							p.on.start.call({}, startEvent);
-						})();
+						if (p.on && p.on.start) {
+							$api.deprecate(function() {
+								p.on.start.call({}, startEvent);
+							})();
+						}
+						module.events.fire("run.start", startEvent);
+						events.fire("start", startEvent);
+					},
+					stdout: function(e) {
+						if (p.stdio && p.stdio.output && isLineListener(p.stdio.output)) {
+							p.stdio.output.line(e.detail.line);
+						}
+					},
+					stderr: function(e) {
+						if (p.stdio && p.stdio.error && isLineListener(p.stdio.error)) {
+							p.stdio.error.line(e.detail.line);
+						}
+					},
+					exit: function(e) {
+						rv = $api.Object.compose(invocation, e.detail);
+						events.fire("terminate", rv);
 					}
-					module.events.fire("run.start", startEvent);
-					events.fire("start", startEvent);
-				},
-				stdout: function(e) {
-					if (p.stdio && p.stdio.output && isLineListener(p.stdio.output)) {
-						p.stdio.output.line(e.detail.line);
-					}
-				},
-				stderr: function(e) {
-					if (p.stdio && p.stdio.error && isLineListener(p.stdio.error)) {
-						p.stdio.error.line(e.detail.line);
-					}
-				},
-				exit: function(e) {
-					rv = $api.Object.compose(invocation, e.detail);
-					events.fire("terminate", rv);
 				}
-			});
+			);
 			return rv;
 		}
 
@@ -481,7 +466,7 @@
 					var rv;
 					$api.fp.impure.now.process(
 						$api.fp.world.process(
-							tell(invocation.context, invocation.configuration),
+							action(invocation),
 							{
 								start: function(e) {
 									events.fire("start", e.detail);
@@ -505,7 +490,7 @@
 				return function(events) {
 					$api.fp.impure.now.process(
 						$api.fp.world.process(
-							tell(invocation.context, invocation.configuration),
+							action(invocation),
 							{
 								start: function(e) {
 									events.fire("start", e.detail);
@@ -526,7 +511,12 @@
 			},
 			start: world.start,
 			run: function(invocation) {
-				return impure(invocation.context,invocation.configuration);
+				return function(handler) {
+					$api.fp.world.now.tell(
+						action(invocation),
+						handler
+					);
+				}
 			},
 			mock: mockRun,
 			internal: {

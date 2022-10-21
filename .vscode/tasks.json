@@ -143,6 +143,12 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "Fifty (jsh): Debug wip() Test in Current File",
+			"type": "shell",
+			"command": "./fifty test.jsh --debug:rhino ${file} --part wip",
+			"problemMatcher": []
+		},
+		{
 			"label": "Fifty (browser): Run wip() Test in Current File",
 			"type": "shell",
 			"command": "./fifty",

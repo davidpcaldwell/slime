@@ -220,7 +220,7 @@
 					return new Emitter(p);
 				},
 				Function: listening,
-				toHandler: function(handler) {
+				toListener: function(handler) {
 					return new ListenersInvocationReceiver(handler);
 				},
 				action: function(f) {

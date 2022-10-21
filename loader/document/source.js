@@ -614,7 +614,7 @@
 		 * @returns
 		 */
 		var parse = function(input) {
-			var events = $api.events.toHandler(input.events);
+			var events = $api.events.toListener(input.events);
 			events.attach();
 			var state = Parser()(
 				{
@@ -713,7 +713,7 @@
 			},
 			parse: parse,
 			fragment: function(input) {
-				var events = $api.events.toHandler(input.events);
+				var events = $api.events.toListener(input.events);
 				events.attach();
 				var state = Parser()(
 					{
