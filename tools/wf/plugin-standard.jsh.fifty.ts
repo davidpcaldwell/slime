@@ -451,14 +451,15 @@ namespace slime.jsh.wf {
 					var project = test.fixtures.project();
 					var cloned = test.fixtures.adapt.repository(project.clone);
 					var repository = project.clone;
-					jsh.shell.world.run(
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
 							command: repository.location.pathname + "/" + "wf",
 							arguments: ["initialize"],
 							directory: repository.location.pathname
-						})
-					)({
-					})
+						}),
+						{}
+					);
 					fixtures.git.edit(repository, "wf.js", function(before) {
 						return before + "\n";
 					});
@@ -489,24 +490,26 @@ namespace slime.jsh.wf {
 
 					var project = fixtures.subject.project().clone;
 
-					jsh.shell.world.run(
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
 							command: $api.fp.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
 							arguments: ["status"]
-						})
-					)({
-					});
+						}),
+						{}
+					);
 
 					fixtures.git.edit(project, "new.js", () => "new");
 					project.api.command(mv).argument({ from: "a.js", to: "b.js" }).run();
 
-					jsh.shell.world.run(
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
 							command: $api.fp.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
 							arguments: ["status"]
-						})
-					)({
-					});
+						}),
+						{}
+					);
 				}
 
 				fifty.tests.issue319 = function() {
@@ -601,7 +604,8 @@ namespace slime.jsh.wf {
 						return jsh.file.world.spi.filesystems.os.pathname(project.directory.toString()).relative("slime").relative(relative);
 					}
 					//	TODO	should profiler install Rhino?
-					jsh.shell.world.run(
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
 							command: getSlimePath("jsh.bash").pathname,
 							arguments: $api.Array.build(function(rv) {
@@ -609,9 +613,10 @@ namespace slime.jsh.wf {
 							}),
 							directory: getSlimePath(".").pathname
 						})
-					)();
+					);
 					//	Needed for profile viewer, to serve UI and JSON data
-					jsh.shell.world.run(
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
 							command: getSlimePath("jsh.bash").pathname,
 							arguments: $api.Array.build(function(rv) {
@@ -619,8 +624,9 @@ namespace slime.jsh.wf {
 							}),
 							directory: getSlimePath(".").pathname
 						})
-					)();
-					jsh.shell.world.run(
+					);
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
 						jsh.shell.Invocation.create({
 							//	TODO	perhaps should accept world Pathname
 							command: getSlimePath("jsh.bash").pathname,
@@ -633,7 +639,7 @@ namespace slime.jsh.wf {
 							}),
 							directory: getSlimePath(".").pathname
 						})
-					)();
+					);
 				}
 			}
 		//@ts-ignore

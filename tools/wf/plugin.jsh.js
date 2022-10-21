@@ -604,7 +604,8 @@
 						//	that we should always be running against the base repository when inside a commit hook and thus ought to
 						//	be able to list its submodules. We set the working directory any so that this check also works outside
 						//	git commit hooks (and when executed from somewhere other than the project directory).
-						jsh.shell.world.run(
+						$api.fp.world.now.action(
+							jsh.shell.world.action,
 							jsh.shell.Invocation.create({
 								command: "git",
 								arguments: $api.Array.build(function(rv) {
@@ -615,32 +616,33 @@
 									output: "string"
 								},
 								directory: inputs.project()
-							})
-						)({
-							exit: function(e) {
-								var lines = e.detail.stdio.output.split("\n");
-								var current;
-								var patterns = {
-									repo: /^Entering \'(.*)\'/,
-									file: /^(..) (.*)$/
-								}
-								lines.forEach(function(line) {
-									if (patterns.repo.exec(line)) {
-										var match = patterns.repo.exec(line);
-										current = match[1];
-									} else if (patterns.file.exec(line)) {
-										var m2 = patterns.file.exec(line);
-										modified.push({
-											submodule: current,
-											file: m2[2],
-											status: m2[1]
-										});
-									} else {
-										//jsh.shell.console("Ignoring line: [" + line + "]");
+							}),
+							{
+								exit: function(e) {
+									var lines = e.detail.stdio.output.split("\n");
+									var current;
+									var patterns = {
+										repo: /^Entering \'(.*)\'/,
+										file: /^(..) (.*)$/
 									}
-								})
+									lines.forEach(function(line) {
+										if (patterns.repo.exec(line)) {
+											var match = patterns.repo.exec(line);
+											current = match[1];
+										} else if (patterns.file.exec(line)) {
+											var m2 = patterns.file.exec(line);
+											modified.push({
+												submodule: current,
+												file: m2[2],
+												status: m2[1]
+											});
+										} else {
+											//jsh.shell.console("Ignoring line: [" + line + "]");
+										}
+									})
+								}
 							}
-						});
+						);
 						if (modified.length) {
 							modified.forEach(function(modification) {
 								events.fire("console", "Modified: " + modification.submodule + " " + modification.file + ": " + modification.status);

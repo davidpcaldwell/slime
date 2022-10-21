@@ -39,7 +39,8 @@ namespace slime.fifty.browser.test.internal.script {
 		fifty.tests.manual = {};
 
 		var run = function(browser) {
-			jsh.shell.world.run(
+			$api.fp.world.now.action(
+				jsh.shell.world.action,
 				jsh.shell.Invocation.create({
 					command: "/bin/bash",
 					arguments: $api.Array.build(function(rv) {
@@ -49,12 +50,13 @@ namespace slime.fifty.browser.test.internal.script {
 						rv.push("--browser", browser);
 					}),
 					directory: jsh.shell.jsh.src.toString()
-				})
-			)({
-				exit: function(e) {
-					jsh.shell.console("Status: " + e.detail.status);
+				}),
+				{
+					exit: function(e) {
+						jsh.shell.console("Status: " + e.detail.status);
+					}
 				}
-			});
+			);
 		}
 
 		fifty.tests.manual.chrome = function() {

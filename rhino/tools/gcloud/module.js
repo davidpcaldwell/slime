@@ -13,8 +13,6 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.gcloud.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var run = $context.library.shell.world.run;
-
 		/**
 		 *
 		 * @param { string } executable
@@ -34,7 +32,8 @@
 								function(events) {
 									var result;
 									var invocation = command.invocation(argument);
-									run(
+									$api.fp.world.now.action(
+										$context.library.shell.world.action,
 										$context.library.shell.Invocation.create({
 											//	TODO	could this dependency be narrowed to world filesystem rather than whole library?
 											command: executable,
@@ -50,17 +49,18 @@
 												output: "string",
 												error: "line"
 											}
-										})
-									)({
-										stderr: function(e) {
-											events.fire("console", e.detail.line);
-										},
-										exit: function(e) {
-											if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
-											var json = JSON.parse(e.detail.stdio.output);
-											result = toResult(json);
+										}),
+										{
+											stderr: function(e) {
+												events.fire("console", e.detail.line);
+											},
+											exit: function(e) {
+												if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
+												var json = JSON.parse(e.detail.stdio.output);
+												result = toResult(json);
+											}
 										}
-									});
+									);
 									return result;
 								}
 							)
