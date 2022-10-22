@@ -69,8 +69,8 @@ namespace slime.jrunscript.shell {
 				parseFile: (file: slime.jrunscript.file.File) => slime.runtime.document.exports.Document
 			}
 		}
-		world?: {
-			run?: slime.jrunscript.shell.internal.run.Context["spi"]
+		run?: {
+			spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 		}
 	}
 
@@ -245,7 +245,7 @@ namespace slime.jrunscript.shell {
 				workingDirectory: slime.jrunscript.file.Directory
 
 				status: number
-				stdio?: run.Output
+				stdio?: run.CapturedOutput
 			}
 
 			export namespace events {
@@ -264,7 +264,7 @@ namespace slime.jrunscript.shell {
 
 					terminate: Event & {
 						status: number
-						stdio?: slime.jrunscript.shell.run.Output
+						stdio?: slime.jrunscript.shell.run.CapturedOutput
 					}
 				}
 			}

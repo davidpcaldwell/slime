@@ -28,26 +28,18 @@ namespace slime.jrunscript.shell.run {
 	}
 
 	//	TODO	right now we only capture output of type string; we could capture binary also
-	export interface Output {
+	export interface CapturedOutput {
 		output?: string
 		error?: string
 	}
 
 	export interface Exit {
 		status: number
-		stdio?: Output
+		stdio?: CapturedOutput
 	}
 
 	export interface TellEvents extends AskEvents {
 		exit: Exit
-	}
-
-	export namespace world {
-		export interface Subprocess {
-			pid: number
-			kill: () => void
-			run: () => Exit
-		}
 	}
 
 	/**
@@ -89,7 +81,7 @@ namespace slime.jrunscript.shell.internal.run {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
-		spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+		spi?: slime.jrunscript.shell.Context["run"]["spi"]
 	}
 
 	export interface OutputDestination {
@@ -102,7 +94,7 @@ namespace slime.jrunscript.shell.internal.run {
 	 * Extends the standard shell `Stdio` type to make all fields required and add a `close()` method that closes the streams and
 	 * returns the output of the program.
 	 */
-	export type Stdio = Required<slime.jrunscript.shell.invocation.Stdio> & { close: () => slime.jrunscript.shell.run.Output }
+	export type Stdio = Required<slime.jrunscript.shell.invocation.Stdio> & { close: () => slime.jrunscript.shell.run.CapturedOutput }
 
 	export interface Listener {
 		close: () => void
@@ -240,6 +232,7 @@ namespace slime.jrunscript.shell.internal.run {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
 			const { $api } = fifty.global;
 			const subject = fifty.global.jsh.shell;
 
@@ -249,8 +242,6 @@ namespace slime.jrunscript.shell.internal.run {
 
 			fifty.tests.world.subprocess = function() {
 				const console = fifty.global.jsh.shell.console;
-
-				console("Hello, World!");
 
 				var ls = subject.Invocation.create({
 					command: "ls",
@@ -263,29 +254,49 @@ namespace slime.jrunscript.shell.internal.run {
 
 				var tell = subject.world.action(ls);
 
-				console("Created tell.");
-
-				var handler: slime.$api.events.Handler<slime.jrunscript.shell.run.TellEvents> = {
-					start: function(e) {
-						console("START PID: " + e.detail.pid);
-					},
-					exit: function(e) {
-						console("EXIT Status: " + e.detail.status);
-						console("EXIT Output: " + e.detail.stdio.output);
-						console("EXIT Error: " + e.detail.stdio.error);
-					},
-					stdout: function(e) {
-						console("STDOUT: " + e.detail.line);
-					},
-					stderr: function(e) {
-						console("STDERR: " + e.detail.line);
-					}
-				};
+				var captor = fifty.$api.Events.Captor({
+					start: void(0),
+					exit: void(0),
+					stdout: void(0),
+					stderr: void(0)
+				} as slime.jrunscript.shell.run.TellEvents)
 
 				$api.fp.world.now.tell(
 					tell,
-					handler
+					captor.handler
 				);
+
+				var isType: (type: string) => slime.$api.fp.Predicate<slime.$api.Event<any>> = function(type) {
+					return function(event: slime.$api.Event<any>) {
+						return event.type == type;
+					}
+				};
+
+				var ofType: (type: string) => (events: slime.$api.Event<any>[]) => slime.$api.Event<any>[] = function(type) {
+					return function(events) {
+						return events.filter(isType(type));
+					}
+				}
+
+				//	TODO	this is not necessarily true at the moment, given the implementation
+				//verify(captor).events[0].type.is("start");
+				verify(captor).events.evaluate(ofType("start")).length.is(1);
+
+				verify(captor).events.evaluate(ofType("stdout")).evaluate(function(stdout) {
+					return stdout.length > 0;
+				}).is(true);
+
+				verify(captor).events.evaluate(ofType("stderr")).length.is(1);
+				verify(captor).events.evaluate(ofType("stderr"))[0].evaluate(function(event) {
+					return event.detail.line == "";
+				}).is(true);
+
+				verify(captor).events[captor.events.length-1].type.is("exit");
+				verify(captor).events.evaluate(ofType("exit")).length.is(1);
+
+				captor.events.forEach(function(event) {
+					console(JSON.stringify(event));
+				});
 			};
 
 			fifty.tests.wip = fifty.tests.world.subprocess;
