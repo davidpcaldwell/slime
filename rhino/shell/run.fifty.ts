@@ -237,6 +237,8 @@ namespace slime.jrunscript.shell.internal.run {
 
 			var directory = fifty.jsh.file.object.getRelativePath(".").directory;
 
+			fifty.tests.manual = {};
+
 			fifty.tests.manual.kill = function() {
 				if (fifty.global.jsh.shell.PATH.getCommand("sleep")) {
 					var killed = subject.Invocation.create({
