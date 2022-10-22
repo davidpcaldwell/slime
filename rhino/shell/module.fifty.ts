@@ -516,8 +516,8 @@ namespace slime.jrunscript.shell {
 
 	export interface World {
 		/**
-		 * @deprecated Replaced by the {@link Context} `world.run` property, which allows a mock implementation to be used when
-		 * loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
+		 * @deprecated Replaced by the {@link Context} `run.spi` property, which allows a mock (or other) implementation to be used
+		 * when loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
 		 *
 		 * Allows a mock implementation of the `run` action to be created using a function that receives an invocation as an
 		 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create

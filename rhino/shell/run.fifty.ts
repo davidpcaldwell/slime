@@ -147,9 +147,8 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export interface Exports {
-		question: slime.jrunscript.shell.World["question"]
 		action: slime.jrunscript.shell.World["action"]
-		start: slime.jrunscript.shell.internal.run.Context["spi"]
+		question: slime.jrunscript.shell.World["question"]
 	}
 
 	(
@@ -236,11 +235,48 @@ namespace slime.jrunscript.shell.internal.run {
 			const { $api } = fifty.global;
 			const subject = fifty.global.jsh.shell;
 
-			fifty.tests.world = fifty.test.Parent();
-
 			var directory = fifty.jsh.file.object.getRelativePath(".").directory;
 
-			fifty.tests.world.subprocess = function() {
+			fifty.tests.manual.kill = function() {
+				if (fifty.global.jsh.shell.PATH.getCommand("sleep")) {
+					var killed = subject.Invocation.create({
+						command: "sleep",
+						arguments: ["1"],
+						directory: directory.toString(),
+						stdio: {
+							output: "line",
+							error: "line"
+						}
+					});
+					var events = [];
+					var subprocess;
+					var killtell = subject.world.action(killed);
+					$api.fp.world.now.tell(
+						killtell,
+						{
+							start: function(e) {
+								events.push(e);
+								subprocess = e.detail;
+								subprocess.kill();
+							},
+							stdout: function(e) {
+								events.push(e);
+							},
+							stderr: function(e) {
+								events.push(e);
+							},
+							exit: function(e) {
+								events.push(e);
+							}
+						}
+					);
+					fifty.global.jsh.shell.console(JSON.stringify(events,void(0),4));
+				}
+			};
+
+			fifty.tests.sandbox = fifty.test.Parent();
+
+			fifty.tests.sandbox.subprocess = function() {
 				const console = fifty.global.jsh.shell.console;
 
 				var ls = subject.Invocation.create({
@@ -299,64 +335,7 @@ namespace slime.jrunscript.shell.internal.run {
 				});
 			};
 
-			fifty.tests.wip = fifty.tests.world.subprocess;
-
-			fifty.tests.world.commands = function() {
-				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
-					var ls = subject.Invocation.create({
-						command: "ls",
-						directory: directory.toString(),
-						stdio: {
-							output: "line",
-							error: "line"
-						}
-					});
-					var tell = subject.world.action(ls);
-					var captor = fifty.$api.Events.Captor({
-						start: void(0),
-						stdout: void(0),
-						stderr: void(0),
-						exit: void(0)
-					});
-					$api.fp.world.now.tell(tell, captor.handler);
-					fifty.global.jsh.shell.console(JSON.stringify(captor.events,void(0),4));
-
-					var killed = subject.Invocation.create({
-						command: "sleep",
-						arguments: ["1"],
-						directory: directory.toString(),
-						stdio: {
-							output: "line",
-							error: "line"
-						}
-					});
-					var events = [];
-					var subprocess;
-					var killtell = subject.world.action(killed);
-					$api.fp.world.now.tell(
-						killtell,
-						{
-							start: function(e) {
-								events.push(e);
-								subprocess = e.detail;
-								subprocess.kill();
-							},
-							stdout: function(e) {
-								events.push(e);
-							},
-							stderr: function(e) {
-								events.push(e);
-							},
-							exit: function(e) {
-								events.push(e);
-							}
-						}
-					);
-					fifty.global.jsh.shell.console(JSON.stringify(events,void(0),4));
-				}
-			}
-
-			fifty.tests.sandbox = function() {
+			fifty.tests.sandbox.other = function() {
 				const { jsh } = fifty.global;
 				fifty.run(function checkErrorForBogusInvocation() {
 					var bogus = subject.Invocation.create({
@@ -503,10 +482,25 @@ namespace slime.jrunscript.shell.internal.run {
 				tell: shell.Exports["Tell"]["mock"]
 			}
 		}
+
+		/**
+		 * @deprecated Replaced by the use of the {@link Context} `spi` property, which allows a mock (or alternative)
+		 * implementation to be used when executing subprocess invocations.
+		 */
 		mock: shell.World["mock"]
 
+		/**
+		 * @deprecated
+		 */
 		old: {
+			/**
+			 * @deprecated
+			 */
 			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>) => Stdio
+
+			/**
+			 * @deprecated
+			 */
 			run: (
 				context: slime.jrunscript.shell.run.Context,
 				configuration: slime.jrunscript.shell.run.Configuration,

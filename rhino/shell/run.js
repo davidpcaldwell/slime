@@ -283,11 +283,6 @@
 			}
 		};
 
-		/**
-		 * @type { slime.jrunscript.shell.World["action"] }
-		 */
-		var action = spi;
-
 		//	TODO	next two functions also copy-pasted into fixtures
 		var isLineWithProperty = function(name) {
 			return function(line) {
@@ -401,7 +396,7 @@
 		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
-			var tell = action({ context: context, configuration: configuration });
+			var tell = spi({ context: context, configuration: configuration });
 			$api.fp.world.now.tell(
 				tell,
 				{
@@ -443,13 +438,14 @@
 		}
 
 		$export({
+			action: spi,
 			question: function(invocation) {
 				return function(events) {
 					/** @type { slime.jrunscript.shell.run.Exit } */
 					var rv;
 					$api.fp.impure.now.process(
 						$api.fp.world.process(
-							action(invocation),
+							spi(invocation),
 							{
 								start: function(e) {
 									events.fire("start", e.detail);
@@ -469,34 +465,10 @@
 					return rv;
 				}
 			},
-			action: function(invocation) {
-				return function(events) {
-					$api.fp.impure.now.process(
-						$api.fp.world.process(
-							action(invocation),
-							{
-								start: function(e) {
-									events.fire("start", e.detail);
-								},
-								stdout: function(e) {
-									events.fire("stdout", e.detail);
-								},
-								stderr: function(e) {
-									events.fire("stderr", e.detail);
-								},
-								exit: function(e) {
-									events.fire("exit", e.detail);
-								}
-							}
-						)
-					);
-				}
-			},
-			start: spi,
 			run: function(invocation) {
 				return function(handler) {
 					$api.fp.world.now.tell(
-						action(invocation),
+						spi(invocation),
 						handler
 					);
 				}
