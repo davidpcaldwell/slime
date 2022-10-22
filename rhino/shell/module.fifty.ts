@@ -70,7 +70,7 @@ namespace slime.jrunscript.shell {
 			}
 		}
 		world?: {
-			run?: slime.jrunscript.shell.run.World
+			run?: slime.jrunscript.shell.internal.run.Context["spi"]
 		}
 	}
 
