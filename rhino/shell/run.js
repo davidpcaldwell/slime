@@ -164,146 +164,129 @@
 			return returned;
 		}
 
-		/** @type { slime.jrunscript.shell.run.World } */
-		var world = $context.world || {
-			start: function(p) {
-				/**
-				 *
-				 * @param { slime.jrunscript.shell.internal.run.java.Context } context
-				 * @returns
-				 */
-				var createJavaCommandContext = function(context) {
-					var _environment = (function(environment) {
-						var _hashMap = function(p) {
-							var rv = new Packages.java.util.HashMap();
-							for (var x in p) {
-								if (p[x] === null) {
-									//	do nothing
-								} else {
-									rv.put( new Packages.java.lang.String(String(x)), new Packages.java.lang.String(String(p[x])) );
-								}
+		/** @type { slime.jrunscript.shell.internal.run.Context["spi"] } */
+		var spi = $context.spi || function(p) {
+			/**
+			 *
+			 * @param { slime.jrunscript.shell.internal.run.java.Context } context
+			 * @returns
+			 */
+			var createJavaCommandContext = function(context) {
+				var _environment = (function(environment) {
+					var _hashMap = function(p) {
+						var rv = new Packages.java.util.HashMap();
+						for (var x in p) {
+							if (p[x] === null) {
+								//	do nothing
+							} else {
+								rv.put( new Packages.java.lang.String(String(x)), new Packages.java.lang.String(String(p[x])) );
 							}
-							return rv;
 						}
-
-						return _hashMap( environment );
-					})(context.environment);
-					return new JavaAdapter(
-						Packages.inonit.system.Command.Context,
-						{
-							toString: function() {
-								return JSON.stringify({
-									environment: context.environment
-								});
-							},
-							getStandardOutput: $api.fp.returning( (context.stdio.output) ? context.stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
-							getStandardError: $api.fp.returning( (context.stdio.error) ? context.stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
-							getStandardInput: $api.fp.returning( (context.stdio.input) ? context.stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM ),
-							getSubprocessEnvironment: $api.fp.returning( _environment ),
-							getWorkingDirectory: $api.fp.returning((context.directory) ? context.directory.pathname.java.adapt() : null)
-						}
-					);
-				};
-
-				/**
-				 * @param { slime.jrunscript.shell.internal.run.java.Configuration } configuration
-				 */
-				var createJavaCommandConfiguration = function(configuration) {
-					var toJavaString = function(p) { return new Packages.java.lang.String(p); };
-
-					var adapted = {
-						command: toJavaString(configuration.command),
-						arguments: $context.api.java.Array.create({
-							type: Packages.java.lang.String,
-							array: configuration.arguments.map(toJavaString)
-						})
+						return rv;
 					}
 
-					return new JavaAdapter(
-						Packages.inonit.system.Command.Configuration,
-						new function() {
-							this.toString = function() {
-								return "command: " + configuration.command + " arguments: " + configuration.arguments;
-							};
+					return _hashMap( environment );
+				})(context.environment);
+				return new JavaAdapter(
+					Packages.inonit.system.Command.Context,
+					{
+						toString: function() {
+							return JSON.stringify({
+								environment: context.environment
+							});
+						},
+						getStandardOutput: $api.fp.returning( (context.stdio.output) ? context.stdio.output.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
+						getStandardError: $api.fp.returning( (context.stdio.error) ? context.stdio.error.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.OUTPUT_STREAM ),
+						getStandardInput: $api.fp.returning( (context.stdio.input) ? context.stdio.input.java.adapt() : Packages.inonit.script.runtime.io.Streams.Null.INPUT_STREAM ),
+						getSubprocessEnvironment: $api.fp.returning( _environment ),
+						getWorkingDirectory: $api.fp.returning((context.directory) ? context.directory.pathname.java.adapt() : null)
+					}
+				);
+			};
 
-							this.getCommand = $api.fp.returning(adapted.command);
-							this.getArguments = $api.fp.returning(adapted.arguments);
-						}
-					);
+			/**
+			 * @param { slime.jrunscript.shell.internal.run.java.Configuration } configuration
+			 */
+			var createJavaCommandConfiguration = function(configuration) {
+				var toJavaString = function(p) { return new Packages.java.lang.String(p); };
+
+				var adapted = {
+					command: toJavaString(configuration.command),
+					arguments: $context.api.java.Array.create({
+						type: Packages.java.lang.String,
+						array: configuration.arguments.map(toJavaString)
+					})
+				}
+
+				return new JavaAdapter(
+					Packages.inonit.system.Command.Configuration,
+					new function() {
+						this.toString = function() {
+							return "command: " + configuration.command + " arguments: " + configuration.arguments;
+						};
+
+						this.getCommand = $api.fp.returning(adapted.command);
+						this.getArguments = $api.fp.returning(adapted.arguments);
+					}
+				);
+			};
+
+			return function(events) {
+				var context = p.context;
+				var configuration = p.configuration;
+
+				var stdio = buildStdio(context.stdio)(events);
+
+				//	TODO	could throw exception on launch; should deal with it
+
+				//	TODO	currently we can start firing stdio events before we fire the start event, given how this
+				//			implementation works. That's probably not ideal, a more rigorous event sequence would be better.
+				var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
+					createJavaCommandContext({
+						directory: (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory,
+						environment: context.environment,
+						stdio: stdio
+					}),
+					createJavaCommandConfiguration(configuration)
+				);
+
+				events.fire("start", {
+					pid: Number(_subprocess.getPid()),
+					kill: function() {
+						_subprocess.terminate();
+					}
+				});
+
+				var listener = new function() {
+					this.status = void(0);
+
+					this.finished = function(status) {
+						this.status = status;
+					};
+
+					this.interrupted = function(_exception) {
+						//	who knows what we should do here. Kill the process?
+						throw new Error("Unhandled Java thread interruption.");
+					};
 				};
 
-				return function(events) {
-					var context = p.context;
-					var configuration = p.configuration;
+				//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
+				_subprocess.wait(new JavaAdapter(
+					Packages.inonit.system.Subprocess.Listener,
+					listener
+				));
 
-					var stdio = buildStdio(context.stdio)(events);
-
-					//	TODO	could throw exception on launch; should deal with it
-					var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
-						createJavaCommandContext({
-							directory: (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory,
-							environment: context.environment,
-							stdio: stdio
-						}),
-						createJavaCommandConfiguration(configuration)
-					);
-
-					return {
-						pid: Number(_subprocess.getPid()),
-						kill: function() {
-							_subprocess.terminate();
-						},
-						run: function() {
-							var listener = new function() {
-								this.status = void(0);
-
-								this.finished = function(status) {
-									this.status = status;
-								};
-
-								this.interrupted = function(_exception) {
-									//	who knows what we should do here. Kill the process?
-									throw new Error("Unhandled Java thread interruption.");
-								};
-							};
-
-							//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
-							_subprocess.wait(new JavaAdapter(
-								Packages.inonit.system.Subprocess.Listener,
-								listener
-							));
-
-							return {
-								status: listener.status,
-								stdio: stdio.close()
-							}
-						}
-					};
-				}
+				events.fire("exit", {
+					status: listener.status,
+					stdio: stdio.close()
+				});
 			}
 		};
 
 		/**
 		 * @type { slime.jrunscript.shell.World["action"] }
 		 */
-		var action = function(invocation) {
-			/**
-			 *
-			 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
-			 */
-			return function(events) {
-				var subprocess = world.start(invocation)(events);
-
-				events.fire("start", {
-					pid: subprocess.pid,
-					kill: subprocess.kill
-				});
-
-				var exit = subprocess.run();
-
-				events.fire("exit", exit);
-			}
-		};
+		var action = spi;
 
 		//	TODO	next two functions also copy-pasted into fixtures
 		var isLineWithProperty = function(name) {
@@ -509,7 +492,7 @@
 					);
 				}
 			},
-			start: world.start,
+			start: spi,
 			run: function(invocation) {
 				return function(handler) {
 					$api.fp.world.now.tell(

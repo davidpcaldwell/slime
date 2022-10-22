@@ -8,8 +8,6 @@ namespace slime.jrunscript.shell {
 	export interface World {
 		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 		action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
-
-		start: slime.$api.fp.world.Question<run.Invocation,slime.jrunscript.shell.run.TellEvents,slime.jrunscript.shell.run.world.Subprocess>
 	}
 }
 
@@ -52,10 +50,6 @@ namespace slime.jrunscript.shell.run {
 		}
 	}
 
-	export interface World {
-		start: slime.jrunscript.shell.World["start"]
-	}
-
 	/**
 	 * Represents the result of a mock shell invocation. Currently, if line-based output is provided for a stream, the
 	 * string given as part of `exit` is ignored.
@@ -95,7 +89,7 @@ namespace slime.jrunscript.shell.internal.run {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
-		world?: slime.jrunscript.shell.run.World
+		spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 	}
 
 	export interface OutputDestination {
@@ -163,7 +157,7 @@ namespace slime.jrunscript.shell.internal.run {
 	export interface Exports {
 		question: slime.jrunscript.shell.World["question"]
 		action: slime.jrunscript.shell.World["action"]
-		start: slime.jrunscript.shell.run.World["start"]
+		start: slime.jrunscript.shell.internal.run.Context["spi"]
 	}
 
 	(
@@ -267,9 +261,9 @@ namespace slime.jrunscript.shell.internal.run {
 					}
 				});
 
-				var ask = subject.world.start(ls);
+				var tell = subject.world.action(ls);
 
-				console("Created ask.");
+				console("Created tell.");
 
 				var handler: slime.$api.events.Handler<slime.jrunscript.shell.run.TellEvents> = {
 					start: function(e) {
@@ -288,23 +282,10 @@ namespace slime.jrunscript.shell.internal.run {
 					}
 				};
 
-				var listener = $api.events.toListener(handler);
-
-				listener.attach();
-
-				var subprocess = ask(listener.emitter);
-
-				console("subprocess pid = " + subprocess.pid);
-
-				console("Running ...");
-
-				var result = subprocess.run();
-
-				listener.detach();
-
-				console("result = " + result.status);
-				console("result output = " + result.stdio.output);
-				console("result error = " + result.stdio.error);
+				$api.fp.world.now.tell(
+					tell,
+					handler
+				);
 			};
 
 			fifty.tests.wip = fifty.tests.world.subprocess;

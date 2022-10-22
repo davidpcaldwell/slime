@@ -16,7 +16,7 @@ namespace slime.jrunscript.shell.test {
 		load: (context: slime.jrunscript.shell.Context) => slime.jrunscript.shell.Exports
 
 		run: {
-			createMockWorld: (delegate: run.Delegate) => slime.jrunscript.shell.run.World
+			createMockWorld: (delegate: run.Delegate) => slime.jrunscript.shell.internal.run.Context["spi"]
 		}
 	}
 
@@ -34,72 +34,70 @@ namespace slime.jrunscript.shell.test {
 				}
 			};
 
-			var createMockWorld = function(delegate: slime.jrunscript.shell.test.run.Delegate): slime.jrunscript.shell.run.World {
-				return {
-					start: function(p) {
-						return function(events) {
-							var killed = false;
+			var createMockWorld = function(delegate: slime.jrunscript.shell.test.run.Delegate): slime.jrunscript.shell.internal.run.Context["spi"] {
+				return function(p) {
+					return function(events) {
+						var killed = false;
 
-							var result = delegate({
-								context: p.context,
-								configuration: p.configuration
-							});
-							return {
-								pid: result.pid || 0,
-								kill: function() {
-									killed = true;
-								},
-								run: function() {
-									var stdio = p.context.stdio;
+						var result = delegate({
+							context: p.context,
+							configuration: p.configuration
+						});
+						return {
+							pid: result.pid || 0,
+							kill: function() {
+								killed = true;
+							},
+							run: function() {
+								var stdio = p.context.stdio;
 
-									//	TODO	should emit at least one empty line for each if line buffering
-									//	TODO	the below appears as though it would skip blank lines; should use isLineWithProperty and then
-									//			fix that method
-									if (result.lines) result.lines.forEach(function(line) {
-										if (killed) return;
-										if (stdio.output == "line" && line["stdout"]) {
-											events.fire("stdout", { line: line["stdout"] });
-										} else if (stdio.error == "line" && line["stderr"]) {
-											events.fire("stderr", { line: line["stderr"] });
+								//	TODO	should emit at least one empty line for each if line buffering
+								//	TODO	the below appears as though it would skip blank lines; should use isLineWithProperty and then
+								//			fix that method
+								if (result.lines) result.lines.forEach(function(line) {
+									if (killed) return;
+									if (stdio.output == "line" && line["stdout"]) {
+										events.fire("stdout", { line: line["stdout"] });
+									} else if (stdio.error == "line" && line["stderr"]) {
+										events.fire("stderr", { line: line["stderr"] });
+									}
+								});
+
+								/**
+								 *
+								 * @param { string } stdioName
+								 * @param { string } eventName
+								 * @returns { string }
+								 */
+								var getStdioProperty = function(stdioName, eventName) {
+									if (stdio[stdioName] == "line" || stdio[stdioName] == "string") {
+										if (hasLineWithProperty(eventName)(result.lines)) {
+											return result.lines.filter(isLineWithProperty(eventName)).map(function(entry) {
+												return entry[eventName]
+											}).join("\n");
 										}
-									});
+										if (result.exit.stdio && result.exit.stdio[stdioName]) return result.exit.stdio[stdioName];
+										return "";
+									}
+									return void(0);
+								};
 
-									/**
-									 *
-									 * @param { string } stdioName
-									 * @param { string } eventName
-									 * @returns { string }
-									 */
-									var getStdioProperty = function(stdioName, eventName) {
-										if (stdio[stdioName] == "line" || stdio[stdioName] == "string") {
-											if (hasLineWithProperty(eventName)(result.lines)) {
-												return result.lines.filter(isLineWithProperty(eventName)).map(function(entry) {
-													return entry[eventName]
-												}).join("\n");
-											}
-											if (result.exit.stdio && result.exit.stdio[stdioName]) return result.exit.stdio[stdioName];
-											return "";
+								if (!killed) {
+									return {
+										status: result.exit.status,
+										stdio: {
+											output: getStdioProperty("output", "stdout"),
+											error: getStdioProperty("error", "stderr")
 										}
-										return void(0);
 									};
-
-									if (!killed) {
-										return {
-											status: result.exit.status,
-											stdio: {
-												output: getStdioProperty("output", "stdout"),
-												error: getStdioProperty("error", "stderr")
-											}
-										};
-									} else {
-										return {
-											status: 143,
-											//	TODO	the below is wrong, should terminate output and include only what happened
-											//			before being killed
-											stdio: {
-												output: getStdioProperty("output", "stdout"),
-												error: getStdioProperty("error", "stderr")
-											}
+								} else {
+									return {
+										status: 143,
+										//	TODO	the below is wrong, should terminate output and include only what happened
+										//			before being killed
+										stdio: {
+											output: getStdioProperty("output", "stdout"),
+											error: getStdioProperty("error", "stderr")
 										}
 									}
 								}
