@@ -69,8 +69,8 @@ namespace slime.jrunscript.shell {
 				parseFile: (file: slime.jrunscript.file.File) => slime.runtime.document.exports.Document
 			}
 		}
-		world?: {
-			run?: slime.jrunscript.shell.internal.run.Context["spi"]
+		run?: {
+			spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 		}
 	}
 
@@ -245,7 +245,7 @@ namespace slime.jrunscript.shell {
 				workingDirectory: slime.jrunscript.file.Directory
 
 				status: number
-				stdio?: run.Output
+				stdio?: run.CapturedOutput
 			}
 
 			export namespace events {
@@ -264,7 +264,7 @@ namespace slime.jrunscript.shell {
 
 					terminate: Event & {
 						status: number
-						stdio?: slime.jrunscript.shell.run.Output
+						stdio?: slime.jrunscript.shell.run.CapturedOutput
 					}
 				}
 			}
@@ -516,8 +516,8 @@ namespace slime.jrunscript.shell {
 
 	export interface World {
 		/**
-		 * @deprecated Replaced by the {@link Context} `world.run` property, which allows a mock implementation to be used when
-		 * loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
+		 * @deprecated Replaced by the {@link Context} `run.spi` property, which allows a mock (or other) implementation to be used
+		 * when loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
 		 *
 		 * Allows a mock implementation of the `run` action to be created using a function that receives an invocation as an
 		 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
