@@ -549,6 +549,37 @@ namespace slime.jsh.wf {
 		}
 	}
 
+	export interface Project {
+		base: string
+	}
+
+	export interface Exports {
+		Project: {
+			input: slime.$api.fp.impure.Input<Project>
+			getTypescriptVersion: (project: Project) => string
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+			const subject = jsh.wf;
+
+			fifty.tests.world = {};
+
+			fifty.tests.world.Project = function() {
+				var project = subject.Project.input();
+				jsh.shell.console(project.base);
+				var typescriptVersion = subject.Project.getTypescriptVersion(project);
+				jsh.shell.console("typescript version = " + typescriptVersion);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit

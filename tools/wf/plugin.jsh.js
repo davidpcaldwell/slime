@@ -19,19 +19,6 @@
 				return Boolean(jsh.file && jsh.shell && jsh.shell.tools && jsh.ui && jsh.tools && jsh.tools.git);
 			},
 			load: function() {
-				jsh.wf = {
-					project: void(0),
-					git: void(0),
-					typescript: void(0),
-					inputs: void(0),
-					checks: void(0),
-					requireGitIdentity: void(0),
-					prohibitUntrackedFiles: void(0),
-					prohibitModifiedSubmodules: void(0),
-					cli: void(0),
-					error: void(0)
-				};
-
 				var code = {
 					/** @type { slime.jsh.wf.internal.typescript.Script } */
 					typescript: $loader.script("typescript.js")
@@ -111,7 +98,7 @@
 					}
 				}
 
-				jsh.wf.project = {
+				var project = {
 					base: inputs.base,
 					Submodule: {
 						construct: function(submodule) {
@@ -249,7 +236,7 @@
 					})
 				};
 
-				jsh.wf.cli = {
+				var jsh_wf_cli = {
 					$f: {
 						command: {
 							parse: function(p) {
@@ -331,7 +318,7 @@
 					/**
 					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
 					 */
-					initialize: $api.deprecate(jsh.wf.project.initialize)
+					initialize: $api.deprecate(project.initialize)
 				};
 
 				var guiAsk = function(pp) {
@@ -390,7 +377,7 @@
 					return repository;
 				});
 
-				jsh.wf.git = {
+				var jsh_wf_git = {
 					commands: {
 						/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
 						getBranches: {
@@ -451,8 +438,26 @@
 					}
 				};
 
-				jsh.wf.error = {
+				var jsh_wf_error = {
 					Failure: $api.Error.old.Type({ name: "jsh.wf.Failure" })
+				}
+
+				var Project_getTypescriptVersion = $api.fp.pipe(
+					/** @param { slime.jsh.wf.Project } project */
+					function(project) {
+						return jsh.file.world.Location.from.os(project.base);
+					},
+					jsh.file.world.Location.relative("tsc.version"),
+					$api.fp.world.mapping(jsh.file.world.Location.file.read.string()),
+					$api.fp.Maybe.else($api.fp.returning("4.7.3"))
+				);
+
+				/** @param { slime.jsh.wf.Project } project */
+				var Project_getConfiguration = function(project) {
+					var base = jsh.file.Pathname(project.base).directory;
+					if (base.getFile("tsconfig.json")) return base.getFile("tsconfig.json");
+					if (base.getFile("jsconfig.json")) return base.getFile("jsconfig.json");
+					throw new Error("No TypeScript configuration file found at " + base);
 				}
 
 				var typescript = {
@@ -467,7 +472,33 @@
 					}
 				}
 
-				jsh.wf.typescript = (function() {
+				/**
+				 *
+				 * @param { slime.jsh.wf.Project } project
+				 * @returns
+				 */
+				var getTypedocCommand = function(project) {
+					var version = Project_getTypescriptVersion(project);
+					var configuration = Project_getConfiguration(project);
+					jsh.shell.console("Compiling with TypeScript " + version + " ...");
+					jsh.shell.tools.rhino.require();
+					jsh.shell.tools.tomcat.require();
+					/** @type { slime.jsh.wf.internal.typescript.Invocation } */
+					var typedocInvocation = {
+						configuration: {
+							typescript: {
+								version: version,
+								configuration: configuration.pathname.toString()
+							}
+						},
+						project: project.base
+					};
+					var getShellInvocation = library.typescript.typedoc.invocation(typedocInvocation);
+					return getShellInvocation;
+				}
+
+				/** @type { slime.jsh.wf.Exports["typescript"] } */
+				var jsh_wf_typescript = (function() {
 					return {
 						require: function(p) {
 							var project = (p && p.project) ? p.project : inputs.base();
@@ -492,20 +523,7 @@
 						},
 						typedoc: function(p) {
 							var project = (p && p.project) ? p.project : inputs.base();
-							var version = typescript.getVersion(project);
-							jsh.shell.console("Compiling with TypeScript " + typescript.getVersion(project) + " ...");
-							jsh.shell.tools.rhino.require();
-							jsh.shell.tools.tomcat.require();
-							var typedocInvocation = {
-								configuration: {
-									typescript: {
-										version: version,
-										configuration: typescript.getConfig(project)
-									}
-								},
-								project: project.pathname.toString()
-							};
-							var getShellInvocation = library.typescript.typedoc.invocation(typedocInvocation);
+							var getShellInvocation = getTypedocCommand({ base: project.pathname.toString() });
 							var exit = $api.fp.world.now.question(
 								jsh.shell.world.question,
 								getShellInvocation(jsh.shell.tools.node.installation)
@@ -515,7 +533,7 @@
 					}
 				})();
 
-				jsh.wf.inputs = {
+				var jsh_wf_inputs = {
 					gitIdentityProvider: {
 						gui: {
 							name: guiAsk({ name: "user.name" }),
@@ -876,7 +894,7 @@
 					};
 				}
 
-				jsh.wf.checks = {
+				var jsh_wf_checks = {
 					noUntrackedFiles: noUntrackedFiles,
 					requireGitIdentity: requireGitIdentity,
 					noModifiedSubmodules: noModifiedSubmodules,
@@ -966,7 +984,7 @@
 					}
 				}
 
-				jsh.wf.requireGitIdentity = Object.assign($api.events.Function(function(p,events) {
+				var jsh_wf_requireGitIdentity = Object.assign($api.events.Function(function(p,events) {
 					var get = p.get || {
 						name: function(p) {
 							throw new jsh.wf.error.Failure("Missing: user.name");
@@ -1003,7 +1021,7 @@
 					}
 				});
 
-				jsh.wf.prohibitUntrackedFiles = $api.events.Function(function(p, events) {
+				var jsh_wf_prohibitUntrackedFiles = $api.events.Function(function(p, events) {
 					var status = p.repository.status();
 					var untracked = (status.paths) ? $api.Object.properties(status.paths).filter(function(property) {
 						return property.value == "??"
@@ -1017,7 +1035,7 @@
 					}
 				});
 
-				jsh.wf.prohibitModifiedSubmodules = $api.events.Function(function(p,events) {
+				var jsh_wf_prohibitModifiedSubmodules = $api.events.Function(function(p,events) {
 					p.repository.submodule().forEach(function(sub) {
 						var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
 						var status = submodule.status();
@@ -1030,6 +1048,30 @@
 						}
 					});
 				});
+
+				/** @type { slime.jsh.wf.Exports["Project"] } */
+				var Project = {
+					input: function() {
+						return {
+							base: inputs.project()
+						}
+					},
+					getTypescriptVersion: Project_getTypescriptVersion
+				};
+
+				jsh.wf = {
+					Project: Project,
+					project: project,
+					git: jsh_wf_git,
+					typescript: jsh_wf_typescript,
+					inputs: jsh_wf_inputs,
+					checks: jsh_wf_checks,
+					requireGitIdentity: jsh_wf_requireGitIdentity,
+					prohibitUntrackedFiles: jsh_wf_prohibitUntrackedFiles,
+					prohibitModifiedSubmodules: jsh_wf_prohibitModifiedSubmodules,
+					cli: jsh_wf_cli,
+					error: jsh_wf_error
+				}
 			}
 		})
 	}
