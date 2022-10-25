@@ -590,6 +590,9 @@
 
 			/** @type { slime.jrunscript.file.world.spi.Filesystem } */
 			var filesystem = {
+				separator: {
+					pathname: java.separators.pathname
+				},
 				openInputStream: function(p) {
 					return function(events) {
 						return maybeInputStream(p.pathname, events);

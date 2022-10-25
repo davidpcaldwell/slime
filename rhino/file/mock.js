@@ -17,8 +17,12 @@
 		 *
 		 * @returns { slime.jrunscript.file.world.spi.Filesystem }
 		 */
-		var Mock = function() {
+		var Mock = function(p) {
+			var SLASH = (p && p.separators && p.separators.pathname) ? p.separators.pathname : "/";
 			return {
+				separator: {
+					pathname: SLASH
+				},
 				copy: void(0),
 				createDirectory: void(0),
 				directoryExists: void(0),
@@ -27,7 +31,9 @@
 				openInputStream: void(0),
 				openOutputStream: void(0),
 				temporary: void(0),
-				relative: void(0),
+				relative: function(base, relative) {
+					return base + SLASH + relative;
+				},
 				Directory: void(0),
 				File: void(0),
 				Pathname: void(0),
@@ -36,8 +42,8 @@
 		};
 
 		$export({
-			filesystem: function() {
-				return Mock();
+			filesystem: function(p) {
+				return Mock(p);
 			}
 		})
 	}

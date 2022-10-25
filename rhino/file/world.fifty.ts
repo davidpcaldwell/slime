@@ -764,6 +764,12 @@ namespace slime.jrunscript.file {
 	export namespace world {
 		export namespace spi {
 			export interface Filesystem {
+				separator: {
+					pathname: string
+				}
+			}
+
+			export interface Filesystem {
 				fileExists: slime.$api.fp.world.Question<{
 					pathname: string
 				},void,slime.$api.fp.Maybe<boolean>>
@@ -816,6 +822,56 @@ namespace slime.jrunscript.file {
 			export interface Filesystem {
 				relative: (base: string, relative: string) => string
 			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api } = fifty.global;
+
+					fifty.tests.spi = {};
+
+					fifty.tests.spi.filesystem = {};
+
+					fifty.tests.spi.filesystem.relative = function(filesystem: Filesystem) {
+						//	TODO	Not a very good test for Windows filesystem
+						var prefix = "/";
+						var base = prefix + "foo" + filesystem.separator.pathname + "bar";
+						var relative = "baz";
+						verify(filesystem).relative(base, relative).is(prefix + ["foo", "bar", "baz"].join(filesystem.separator.pathname));
+					}
+
+					fifty.tests.spi.filesystem.openInputStreamNotFound = function(filesystem: Filesystem) {
+						// var notFound = $api.fp.world.now.question(
+						// 	filesystem.temporary,
+						// 	{
+						// 		directory: false
+						// 	}
+						// );
+						// filesystem.fileExists({ pathname: notFound })
+						// var notFound = fifty.jsh.file.relative("foo");
+						// var notFoundEvent;
+						// var input = $api.fp.world.now.question(
+						// 	filesystem.openInputStream,
+						// 	{ pathname: notFound.pathname },
+						// 	{
+						// 		notFound: function(e) {
+						// 			notFoundEvent = e;
+						// 		}
+						// 	}
+						// );
+
+						// verify(notFoundEvent).is.type("object");
+						// jsh.shell.console(notFoundEvent.detail);
+						// jsh.shell.console(null);
+
+						// jsh.shell.console(String(input.present));
+					}
+				}
+			//@ts-ignore
+			)(fifty);
+
 
 			export interface Filesystem {
 				/**
@@ -1076,6 +1132,7 @@ namespace slime.jrunscript.file {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 			const { world } = jsh.file;
 
@@ -1092,6 +1149,34 @@ namespace slime.jrunscript.file {
 				var file = "module.fifty.ts";
 				var relative = world.spi.filesystems.os.relative(folder, file);
 				jsh.shell.console(relative);
+				var relative2 = world.spi.filesystems.os.relative(pathname, "foo");
+				jsh.shell.console(relative2);
+
+				fifty.load("world.fifty.ts", "spi.filesystem", world.spi.filesystems.os);
+			};
+
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.openInputStreamNotFound = function() {
+				var fs = world.spi.filesystems.os;
+				var notFound = fifty.jsh.file.relative("foo");
+				jsh.shell.console(notFound.pathname);
+				var notFoundEvent;
+				var input = $api.fp.world.now.question(
+					fs.openInputStream,
+					{ pathname: notFound.pathname },
+					{
+						notFound: function(e) {
+							notFoundEvent = e;
+						}
+					}
+				);
+
+				verify(notFoundEvent).is.type("object");
+				jsh.shell.console(notFoundEvent.detail);
+				jsh.shell.console(null);
+
+				jsh.shell.console(String(input.present));
 			}
 		}
 	//@ts-ignore

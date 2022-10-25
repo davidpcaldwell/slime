@@ -14,9 +14,13 @@ namespace slime.jrunscript.file.internal.mock {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.suite = function() {
+			var script: Script = fifty.$loader.script("mock.js");
+			var module = script();
 
-			}
+			fifty.tests.suite = function() {
+				fifty.load("world.fifty.ts", "spi.filesystem.relative", module.filesystem());
+				fifty.load("world.fifty.ts", "spi.filesystem.openInputStreamNotFound", module.filesystem());
+			};
 		}
 	//@ts-ignore
 	)(fifty);
