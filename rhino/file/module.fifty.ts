@@ -187,7 +187,11 @@ namespace slime.jrunscript.file {
 
 	export interface Exports {
 		mock: {
-			filesystem: () => slime.jrunscript.file.world.spi.Filesystem
+			filesystem: (p?: {
+				separator?: {
+					pathname?: string
+				}
+			}) => slime.jrunscript.file.world.spi.Filesystem
 		}
 	}
 

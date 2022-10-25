@@ -56,6 +56,24 @@
 						);
 						return rv;
 					}
+				},
+				stream: function(input) {
+					return function() {
+						return {
+							next: {
+								present: true,
+								value: input()
+							},
+							remaining: function empty() {
+								return {
+									next: {
+										present: false
+									},
+									remaining: empty
+								}
+							}
+						}
+					}
 				}
 			},
 			Process: {

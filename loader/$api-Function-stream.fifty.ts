@@ -12,8 +12,46 @@ namespace slime.$api.fp {
 		}
 	}
 
-	export interface Exports {
-		Stream: {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	export namespace stream {
+		export interface Exports {
+			join: <T>(streams: Stream<T>[]) => Stream<T>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+				const subject = $api.fp.Stream;
+
+				fifty.tests.exports.join = function() {
+					var one = subject.from.array([1,2,3]);
+					var two = subject.from.array([9,10,11,12]);
+					var three: Stream<number> = subject.from.array([]);
+					var four = subject.from.array([99]);
+					var joined = subject.join([one, two, three, four]);
+					var collected = subject.collect(joined);
+					verify(collected).evaluate(function(array) { return array.join(","); }).is("1,2,3,9,10,11,12,99");
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
+	export namespace stream {
+		export interface Exports {
 			from: {
 				empty: <T>() => Stream<T>
 				array: <T>(ts: T[]) => Stream<T>
@@ -33,6 +71,10 @@ namespace slime.$api.fp {
 
 			collect: <T>(ts: Stream<T>) => T[]
 		}
+	}
+
+	export interface Exports {
+		Stream: stream.Exports
 	}
 
 	(
@@ -126,7 +168,11 @@ namespace slime.$api.fp {
 					);
 					verify(firstOver10).present.is(false);
 				});
-			}
+
+				fifty.run(fifty.tests.exports);
+			};
+
+			fifty.tests.wip = fifty.tests.suite;
 		}
 	//@ts-ignore
 	)(fifty);

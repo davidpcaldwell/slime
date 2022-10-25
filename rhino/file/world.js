@@ -116,6 +116,19 @@
 							pathname: path
 						}
 					}
+				},
+				Searchpath: {
+					parse: function(value) {
+						return value.split(provider.separator.searchpath).map(function(pathname) {
+							return {
+								filesystem: provider,
+								pathname: pathname
+							}
+						});
+					},
+					string: function(paths) {
+						return paths.join(provider.separator.searchpath);
+					}
 				}
 			};
 		}
