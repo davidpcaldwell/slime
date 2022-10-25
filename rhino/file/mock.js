@@ -19,9 +19,11 @@
 		 */
 		var Mock = function(p) {
 			var SLASH = (p && p.separators && p.separators.pathname) ? p.separators.pathname : "/";
+			var COLON = (p && p.separators && p.separators.searchpath) ? p.separators.searchpath : ":";
 			return {
 				separator: {
-					pathname: SLASH
+					pathname: SLASH,
+					searchpath: COLON
 				},
 				copy: void(0),
 				createDirectory: void(0),

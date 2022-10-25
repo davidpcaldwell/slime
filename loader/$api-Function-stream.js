@@ -50,6 +50,34 @@
 			return stream().next;
 		};
 
+		/**
+		 * @template { any } T
+		 * @param { slime.$api.fp.Stream<T>[] } streams
+		 * @returns { slime.$api.fp.Stream<T> }
+		 */
+		var StreamsStream = function(streams) {
+			return function() {
+				if (streams.length == 0) {
+					return {
+						next: $f.Maybe.nothing(),
+						remaining: empty
+					}
+				}
+				var current = streams[0];
+				var first = current();
+				if (first.next.present) {
+					return {
+						next: first.next,
+						remaining: StreamsStream([first.remaining].concat(streams.slice(1)))
+					};
+				} else if (streams.length > 1) {
+					return StreamsStream(streams.slice(1))();
+				} else {
+					return current();
+				}
+			}
+		}
+
 		$export({
 			from: {
 				empty: function() {
@@ -104,6 +132,9 @@
 					filter(predicate),
 					first
 				)
+			},
+			join: function(streams) {
+				return StreamsStream(streams);
 			}
 		});
 	}

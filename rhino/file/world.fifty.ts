@@ -766,6 +766,7 @@ namespace slime.jrunscript.file {
 			export interface Filesystem {
 				separator: {
 					pathname: string
+					searchpath: string
 				}
 			}
 
@@ -1091,6 +1092,14 @@ namespace slime.jrunscript.file {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface Filesystem {
+			Searchpath: {
+				string: (paths: string[]) => string
+
+				parse: (value: string) => Location[]
+			}
+		}
 	}
 
 	export interface World {

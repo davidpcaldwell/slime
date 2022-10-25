@@ -31,6 +31,8 @@ namespace slime.$api.fp.impure {
 			compose: <T>(inputs: {
 				[k in keyof T]: slime.$api.fp.impure.Input<T[k]>
 			}) => slime.$api.fp.impure.Input<T>
+
+			stream: <T>(input: Input<T>) => Stream<T>
 		}
 
 		Process: {
@@ -78,7 +80,15 @@ namespace slime.$api.fp.impure {
 				verify(two()).is(9);
 			}
 
-			fifty.tests.wip = fifty.tests.input.map;
+			fifty.tests.input.stream = function() {
+				var input = function() { return "yes! with me" };
+				var stream = $api.fp.impure.Input.stream(input);
+				var collected = $api.fp.Stream.collect(stream);
+				verify(collected).length.is(1);
+				verify(collected)[0].is("yes! with me");
+			}
+
+			fifty.tests.wip = fifty.tests.input.stream;
 		}
 	//@ts-ignore
 	)(fifty);
