@@ -453,10 +453,10 @@
 				);
 
 				/** @param { slime.jsh.wf.Project } project */
-				var Project_getConfiguration = function(project) {
+				var Project_getConfigurationFilePathname = function(project) {
 					var base = jsh.file.Pathname(project.base).directory;
-					if (base.getFile("tsconfig.json")) return base.getFile("tsconfig.json");
-					if (base.getFile("jsconfig.json")) return base.getFile("jsconfig.json");
+					if (base.getFile("tsconfig.json")) return base.getRelativePath("tsconfig.json").toString();
+					if (base.getFile("jsconfig.json")) return base.getRelativePath("jsconfig.json").toString();
 					throw new Error("No TypeScript configuration file found at " + base);
 				}
 
@@ -479,7 +479,7 @@
 				 */
 				var getTypedocCommand = function(project) {
 					var version = Project_getTypescriptVersion(project);
-					var configuration = Project_getConfiguration(project);
+					var configuration = Project_getConfigurationFilePathname(project);
 					jsh.shell.console("Compiling with TypeScript " + version + " ...");
 					jsh.shell.tools.rhino.require();
 					jsh.shell.tools.tomcat.require();
@@ -488,7 +488,7 @@
 						configuration: {
 							typescript: {
 								version: version,
-								configuration: configuration.pathname.toString()
+								configuration: configuration
 							}
 						},
 						project: project.base
@@ -1056,7 +1056,8 @@
 							base: inputs.project()
 						}
 					},
-					getTypescriptVersion: Project_getTypescriptVersion
+					getTypescriptVersion: Project_getTypescriptVersion,
+					getConfigurationFilePathname: Project_getConfigurationFilePathname
 				};
 
 				jsh.wf = {

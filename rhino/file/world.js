@@ -31,7 +31,7 @@
 		/** @type { slime.jrunscript.file.world.Locations["relative"] } */
 		var Location_relative = function(path) {
 			return function(pathname) {
-				var absolute = pathname.filesystem.Pathname.relative(pathname.pathname, path);
+				var absolute = pathname.filesystem.relative(pathname.pathname, path);
 				return {
 					filesystem: pathname.filesystem,
 					pathname: absolute

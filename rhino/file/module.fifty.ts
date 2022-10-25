@@ -185,6 +185,12 @@ namespace slime.jrunscript.file {
 		}
 	}
 
+	export interface Exports {
+		mock: {
+			filesystem: () => slime.jrunscript.file.world.spi.Filesystem
+		}
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit

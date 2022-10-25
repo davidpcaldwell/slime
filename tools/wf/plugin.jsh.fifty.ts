@@ -557,6 +557,7 @@ namespace slime.jsh.wf {
 		Project: {
 			input: slime.$api.fp.impure.Input<Project>
 			getTypescriptVersion: (project: Project) => string
+			getConfigurationFilePathname: (project: Project) => string
 		}
 	}
 
@@ -574,6 +575,8 @@ namespace slime.jsh.wf {
 				jsh.shell.console(project.base);
 				var typescriptVersion = subject.Project.getTypescriptVersion(project);
 				jsh.shell.console("typescript version = " + typescriptVersion);
+				var configuration = subject.Project.getConfigurationFilePathname(project);
+				jsh.shell.console("configuration file = " + configuration);
 			}
 		}
 	//@ts-ignore

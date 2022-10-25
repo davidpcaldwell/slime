@@ -62,7 +62,7 @@ namespace slime.jrunscript.file {
 						return Boolean(p.resource);
 					}
 					//	TODO	this is pretty brittle
-					verify(list,"number of entries in rhino/file").length.is(23);
+					verify(list,"number of entries in rhino/file").length.is(25);
 					//	jsh.shell.echo(loader.list().map(function(item) { return item.path; }));
 					verify(map).java.evaluate(isLoaderEntry).is(true);
 					verify(map).java.evaluate(function() { return this.resource; }).is(void(0));

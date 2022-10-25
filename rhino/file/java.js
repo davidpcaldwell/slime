@@ -632,8 +632,8 @@
 					}
 				},
 				pathname: pathname_create,
+				relative: pathname_relative,
 				Pathname: {
-					relative: pathname_relative,
 					isDirectory: function(pathname) {
 						var peer = java.newPeer(pathname);
 						return java.exists(peer) && java.isDirectory(peer);
