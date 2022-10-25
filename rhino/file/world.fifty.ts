@@ -814,6 +814,10 @@ namespace slime.jrunscript.file {
 			}
 
 			export interface Filesystem {
+				relative: (base: string, relative: string) => string
+			}
+
+			export interface Filesystem {
 				/**
 				 * @deprecated Not really world-oriented; use the methods of `Pathname`, `File`, and `Directory`. Cannot be removed
 				 * without converting resulting usages of `object.Location` to usages of {@link Location}.
@@ -822,9 +826,6 @@ namespace slime.jrunscript.file {
 
 				/** @deprecated Use .pathname() to obtain a {@link Location}. */
 				Pathname: {
-					/** @deprecated Use .pathname() to obtain a {@link Location}. */
-					relative: (parent: string, relative: string) => string
-
 					/** @deprecated Use .pathname() to obtain a {@link Location}. */
 					isDirectory: (pathname: string) => boolean
 				}
@@ -897,9 +898,9 @@ namespace slime.jrunscript.file {
 							var parent = fifty.jsh.file.object.getRelativePath(".").toString();
 							var cases = {
 								parent: parent,
-								thisFile: filesystem.Pathname.relative(parent, "module.fifty.ts"),
-								nothing: filesystem.Pathname.relative(parent, "foo"),
-								subfolder: filesystem.Pathname.relative(parent, "java")
+								thisFile: filesystem.relative(parent, "module.fifty.ts"),
+								nothing: filesystem.relative(parent, "foo"),
+								subfolder: filesystem.relative(parent, "java")
 							};
 							var isDirectory = function(property) {
 								return function(cases) { return filesystem.Pathname.isDirectory(cases[property]); };
@@ -917,8 +918,8 @@ namespace slime.jrunscript.file {
 					fifty.tests.sandbox.filesystem.File = {};
 
 					fifty.tests.sandbox.filesystem.File.read = function() {
-						var me = filesystem.Pathname.relative(here, "module.fifty.ts");
-						var nothing = filesystem.Pathname.relative(here, "nonono");
+						var me = filesystem.relative(here, "module.fifty.ts");
+						var nothing = filesystem.relative(here, "nonono");
 						var code = $api.fp.impure.now.input(
 							$api.fp.world.input(filesystem.File.read.string({ pathname: me }))
 						);
@@ -951,7 +952,7 @@ namespace slime.jrunscript.file {
 
 					fifty.tests.sandbox.filesystem.Directory.remove = function() {
 						var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						var location = filesystem.Pathname.relative(TMPDIR.toString(), "toRemove");
+						var location = filesystem.relative(TMPDIR.toString(), "toRemove");
 						var exists = function(location) {
 							return filesystem.Pathname.isDirectory(location);
 						}
@@ -963,7 +964,7 @@ namespace slime.jrunscript.file {
 						})();
 						verify(location).evaluate(exists).is(false);
 
-						var doesNotExist = filesystem.Pathname.relative(TMPDIR.toString(), "notThere");
+						var doesNotExist = filesystem.relative(TMPDIR.toString(), "notThere");
 						verify(doesNotExist).evaluate(exists).is(false);
 						filesystem.Directory.remove({
 							pathname: doesNotExist
@@ -1089,7 +1090,7 @@ namespace slime.jrunscript.file {
 
 				var folder = fifty.jsh.file.object.getRelativePath(".").toString();
 				var file = "module.fifty.ts";
-				var relative = world.spi.filesystems.os.Pathname.relative(folder, file);
+				var relative = world.spi.filesystems.os.relative(folder, file);
 				jsh.shell.console(relative);
 			}
 		}

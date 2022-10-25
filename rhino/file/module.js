@@ -30,7 +30,9 @@
 			/** @type { slime.jrunscript.file.internal.spi.Script } */
 			spi: $loader.script("spi.js"),
 			/** @type { slime.jrunscript.file.internal.world.Script } */
-			world: $loader.script("world.js")
+			world: $loader.script("world.js"),
+			/** @type { slime.jrunscript.file.internal.mock.Script } */
+			mock: $loader.script("mock.js")
 		}
 
 		/** @type { { world: slime.jrunscript.file.internal.world.Exports } } */
@@ -421,7 +423,8 @@
 								}
 							},
 							Streams: $exports.Streams,
-							java: $exports.java
+							java: $exports.java,
+							mock: code.mock()
 						}
 						return rv;
 					}

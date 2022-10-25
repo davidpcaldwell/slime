@@ -85,7 +85,7 @@
 					at: function at(installation) {
 						if (typeof(installation) == "undefined") throw new TypeError("'installation' must not be undefined.");
 						//	TODO	could this dependency be narrowed to world filesystem rather than whole library?
-						var executable = $context.library.file.world.spi.filesystems.os.Pathname.relative(installation, "bin/gcloud");
+						var executable = $context.library.file.world.spi.filesystems.os.relative(installation, "bin/gcloud");
 						//	TODO	a lot of repetition below, but a lot of test coverage would be needed to safely refactor it
 						return {
 							config: function(config) {
