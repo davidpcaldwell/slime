@@ -549,10 +549,6 @@ namespace slime.jsh.wf {
 		}
 	}
 
-	export interface Project {
-		base: string
-	}
-
 	export interface Exports {
 		Project: {
 			input: slime.$api.fp.impure.Input<Project>

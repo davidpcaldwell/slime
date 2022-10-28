@@ -4,6 +4,12 @@
 //
 //	END LICENSE
 
+namespace slime.jsh.wf {
+	export interface Project {
+		base: string
+	}
+}
+
 namespace slime.jsh.wf.internal.module {
 	export interface Context {
 		library: {
