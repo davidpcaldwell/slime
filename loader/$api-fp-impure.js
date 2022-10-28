@@ -169,6 +169,10 @@
 				tell: function(tell, handler) {
 					var adapted = $context.events.tell(tell);
 					adapted(handler);
+				},
+				ask: function(ask, handler) {
+					var adapted = $context.events.ask(ask);
+					return adapted(handler);
 				}
 			},
 			execute: function(tell, handler) {

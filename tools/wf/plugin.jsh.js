@@ -449,7 +449,7 @@
 					},
 					jsh.file.world.Location.relative("tsc.version"),
 					$api.fp.world.mapping(jsh.file.world.Location.file.read.string()),
-					$api.fp.Maybe.else($api.fp.returning("4.7.3"))
+					$api.fp.Maybe.else($api.fp.returning("4.8.4"))
 				);
 
 				/** @param { slime.jsh.wf.Project } project */
@@ -463,7 +463,7 @@
 				var typescript = {
 					getVersion: function(base) {
 						if (base.getFile("tsc.version")) return base.getFile("tsc.version").read(String);
-						return "4.7.3";
+						return "4.8.4";
 					},
 					getConfig: function(base) {
 						if (base.getFile("tsconfig.json")) return base.getFile("tsconfig.json");
