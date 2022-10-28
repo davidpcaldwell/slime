@@ -6,6 +6,9 @@
 
 namespace slime.jrunscript.file.internal.mock {
 	export interface Context {
+		library: {
+			io: slime.jrunscript.io.Exports
+		}
 	}
 
 	export type Exports = slime.jrunscript.file.Exports["mock"]
