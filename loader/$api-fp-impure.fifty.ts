@@ -172,6 +172,7 @@ namespace slime.$api.fp.world {
 			question: <P,E,A>(question: world.Question<P,E,A>, argument?: P, handler?: slime.$api.events.Handler<E>) => A
 			action: <P,E>(action: world.Action<P,E>, argument?: P, handler?: slime.$api.events.Handler<E>) => void
 
+			ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => A
 			tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => void
 		}
 

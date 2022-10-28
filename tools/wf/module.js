@@ -29,7 +29,7 @@
 			},
 			$context.library.file.world.Location.relative("tsc.version"),
 			$api.fp.world.mapping($context.library.file.world.Location.file.read.string()),
-			$api.fp.Maybe.else($api.fp.returning("4.7.3"))
+			$api.fp.Maybe.else($api.fp.returning("4.8.4"))
 		);
 
 		$export({

@@ -52,7 +52,7 @@ namespace slime.jsh.wf.internal.module {
 					base: "/foo"
 				};
 				var version = subject.Project.getTypescriptVersion(project);
-				verify(version).is("4.7.3");
+				verify(version).is("4.8.4");
 
 				var output = $api.fp.impure.now.input(
 					$api.fp.world.input(

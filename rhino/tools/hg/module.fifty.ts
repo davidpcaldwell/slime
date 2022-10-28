@@ -30,7 +30,7 @@ namespace slime.jrunscript.tools.hg {
 			log: (p?: any) => Commit[]
 			subrepositories: {
 				(): { [path: string]: { repository: slime.jrunscript.tools.hg.Repository.Local, revision: string } }
-				({ array: boolean }): slime.jrunscript.tools.hg.Repository.Local[]
+				(p: { array: boolean }): slime.jrunscript.tools.hg.Repository.Local[]
 			}
 			paths: {
 				default: {

@@ -396,6 +396,12 @@ namespace slime.jsh.script {
 		 * a main function of type {@link Program}, which can be created using functional techniques.
 		 */
 		export type main = (program: Program) => void
+
+		export interface Exports {
+			program: <T>(p: {
+				commands: Commands<T>
+			}) => Program
+		}
 	}
 
 	(

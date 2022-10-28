@@ -228,11 +228,7 @@
 					}
 				}
 
-				/**
-				 * @template { any } T
-				 * @param { { invocation: slime.jsh.script.cli.Invocation<T>, commands: slime.jsh.script.cli.Commands<T> } } p
-				 * @returns
-				 */
+				/** @type { slime.jsh.script.cli.Exports["Call"]["parse"] } */
 				function getCommand(p) {
 					var command = p.invocation.arguments[0];
 					if (!command) {
@@ -345,8 +341,20 @@
 						get: getCall,
 						execute: executeCall
 					},
+					program: function(p) {
+						return function(invocation) {
+							var call = getCommand({
+								commands: p.commands,
+								invocation: invocation
+							});
+							executeCall({
+								commands: p.commands,
+								call: call
+							});
+						}
+					},
 					execute: function(p) {
-						var call = jsh.script.cli.Call.parse({
+						var call = getCommand({
 							commands: p.commands,
 							invocation: p.invocation
 						});
