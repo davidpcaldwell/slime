@@ -21,7 +21,9 @@
 			load: function() {
 				var code = {
 					/** @type { slime.jsh.wf.internal.typescript.Script } */
-					typescript: $loader.script("typescript.js")
+					typescript: $loader.script("typescript.js"),
+					/** @type { slime.jsh.wf.internal.module.Script } */
+					module: $loader.script("module.js")
 				};
 
 				var library = {
@@ -30,6 +32,14 @@
 							file: jsh.file,
 							shell: jsh.shell,
 							node: jsh.shell.tools.node
+						}
+					}),
+					module: code.module({
+						library: {
+							file: jsh.file
+						},
+						world: {
+							filesystem: jsh.file.world.spi.filesystems.os
 						}
 					})
 				};
@@ -442,16 +452,6 @@
 					Failure: $api.Error.old.Type({ name: "jsh.wf.Failure" })
 				}
 
-				var Project_getTypescriptVersion = $api.fp.pipe(
-					/** @param { slime.jsh.wf.Project } project */
-					function(project) {
-						return jsh.file.world.Location.from.os(project.base);
-					},
-					jsh.file.world.Location.relative("tsc.version"),
-					$api.fp.world.mapping(jsh.file.world.Location.file.read.string()),
-					$api.fp.Maybe.else($api.fp.returning("4.8.4"))
-				);
-
 				/** @param { slime.jsh.wf.Project } project */
 				var Project_getConfigurationFilePathname = function(project) {
 					var base = jsh.file.Pathname(project.base).directory;
@@ -461,10 +461,6 @@
 				}
 
 				var typescript = {
-					getVersion: function(base) {
-						if (base.getFile("tsc.version")) return base.getFile("tsc.version").read(String);
-						return "4.8.4";
-					},
 					getConfig: function(base) {
 						if (base.getFile("tsconfig.json")) return base.getFile("tsconfig.json");
 						if (base.getFile("jsconfig.json")) return base.getFile("jsconfig.json");
@@ -478,7 +474,7 @@
 				 * @returns
 				 */
 				var getTypedocCommand = function(project) {
-					var version = Project_getTypescriptVersion(project);
+					var version = library.module.Project.getTypescriptVersion(project);
 					var configuration = Project_getConfigurationFilePathname(project);
 					jsh.shell.console("Compiling with TypeScript " + version + " ...");
 					jsh.shell.tools.rhino.require();
@@ -503,11 +499,14 @@
 						require: function(p) {
 							var project = (p && p.project) ? p.project : inputs.base();
 							$api.fp.world.execute(jsh.shell.tools.node.require());
-							jsh.shell.tools.node.installed.modules.require({ name: "typescript", version: typescript.getVersion(project) });
+							jsh.shell.tools.node.installed.modules.require({
+								name: "typescript",
+								version: library.module.Project.getTypescriptVersion({ base: project.toString() })
+							});
 						},
 						tsc: function(p) {
 							var project = (p && p.project) ? p.project : inputs.base();
-							var version = typescript.getVersion(project);
+							var version = library.module.Project.getTypescriptVersion({ base: project.toString() });
 							jsh.shell.console("Compiling with TypeScript " + version + " ...");
 							var result = jsh.shell.jsh({
 								script: jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
@@ -858,7 +857,7 @@
 					return function(events) {
 						events.fire("console", "Verifying with TypeScript compiler ...");
 						var project = inputs.base();
-						var version = typescript.getVersion(project);
+						var version = library.module.Project.getTypescriptVersion({ base: project.toString() });
 						events.fire("console", "Compiling with TypeScript " + version + " ...");
 						//	TODO	create standard jsh invocation to make the terser, commented-out form below this form possible
 						var result = $api.fp.world.now.question(
@@ -1056,7 +1055,7 @@
 							base: inputs.project()
 						}
 					},
-					getTypescriptVersion: Project_getTypescriptVersion,
+					getTypescriptVersion: library.module.Project.getTypescriptVersion,
 					getConfigurationFilePathname: Project_getConfigurationFilePathname
 				};
 
