@@ -43,6 +43,7 @@ namespace slime.jsh.wf.internal.module {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
 
 			fifty.tests.suite = function() {
 				var filesystem = fifty.global.jsh.file.mock.filesystem();
@@ -52,6 +53,21 @@ namespace slime.jsh.wf.internal.module {
 				};
 				var version = subject.Project.getTypescriptVersion(project);
 				verify(version).is("4.7.3");
+
+				var output = $api.fp.impure.now.input(
+					$api.fp.world.input(
+						filesystem.openOutputStream({
+							pathname: "/foo/tsc.version"
+						})
+					)
+				);
+				verify(output).present.is(true);
+				if (output.present) {
+					output.value.character().write("9.9.9");
+					output.value.close();
+				}
+				var after = subject.Project.getTypescriptVersion(project);
+				verify(after).is("9.9.9");
 			}
 		}
 	//@ts-ignore

@@ -424,7 +424,11 @@
 							},
 							Streams: $exports.Streams,
 							java: $exports.java,
-							mock: code.mock()
+							mock: code.mock({
+								library: {
+									io: $context.api.io
+								}
+							})
 						}
 						return rv;
 					}

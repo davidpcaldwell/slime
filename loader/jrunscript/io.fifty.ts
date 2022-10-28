@@ -5,6 +5,8 @@
 //	END LICENSE
 
 namespace slime.jrunscript.runtime.io {
+	type byte = number
+
 	/**
 	 * A stream from which bytes may be read.
 	 */
@@ -21,7 +23,7 @@ namespace slime.jrunscript.runtime.io {
 		java: {
 			/** Returns a Java `java.io.InputStream` equivalent to this stream. */
 			adapt: () => slime.jrunscript.native.java.io.InputStream
-			array: () => any
+			array: () => slime.jrunscript.Array<byte>
 		}
 	}
 

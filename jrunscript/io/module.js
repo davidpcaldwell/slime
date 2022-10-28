@@ -68,6 +68,9 @@
 					buffer.writeText().write(value);
 					buffer.close();
 					return buffer.readBinary();
+				},
+				java: function(native) {
+					return $context.$slime.io.InputStream.from.java(native);
 				}
 			}
 		};
