@@ -15,26 +15,56 @@
 	function($api,$context,$export) {
 		var filesystem = ($context.world.filesystem) ? $context.world.filesystem : $context.library.file.world.spi.filesystems.os;
 
+		var exists = $api.fp.world.mapping($context.library.file.world.Location.file.exists());
+
+		/**
+		 *
+		 * @param { slime.jsh.wf.Project } project
+		 * @returns { slime.jrunscript.file.world.Location }
+		 */
+		var base = function(project) {
+			return {
+				filesystem: filesystem,
+				pathname: project.base
+			}
+		};
+
+		/** @type { (path: string) => slime.$api.fp.Partial<slime.jsh.wf.Project, slime.jrunscript.file.world.Location> } */
+		var getProjectConfigurationFile = function(path) {
+			return function(project) {
+				var at = $api.fp.now.invoke(
+					base(project),
+					$context.library.file.world.Location.relative(path)
+				);
+				var created = $api.fp.now.invoke(
+					at,
+					exists
+				);
+				return (created) ? $api.fp.Maybe.value(at) : $api.fp.Maybe.nothing();
+			};
+		};
+
 		/** @type { slime.jsh.wf.internal.module.Exports["Project"]["getTypescriptVersion"] } */
 		var Project_getTypescriptVersion = $api.fp.pipe(
-			/**
-			 * @param { slime.jsh.wf.Project } project
-			 * @returns { slime.jrunscript.file.world.Location }
-			 */
-			function(project) {
-				return {
-					filesystem: filesystem,
-					pathname: project.base
-				};
-			},
+			base,
 			$context.library.file.world.Location.relative("tsc.version"),
 			$api.fp.world.mapping($context.library.file.world.Location.file.read.string()),
 			$api.fp.Maybe.else($api.fp.returning("4.8.4"))
 		);
 
+		var Project_getConfigurationFile = $api.fp.switch([
+			getProjectConfigurationFile("tsconfig.json"),
+			getProjectConfigurationFile("jsconfig.json")
+		]);
+
 		$export({
 			Project: {
-				getTypescriptVersion: Project_getTypescriptVersion
+				getTypescriptVersion: Project_getTypescriptVersion,
+				getConfigurationLocation: function(project) {
+					var rv = Project_getConfigurationFile(project);
+					if (rv.present) return rv.value;
+					throw new Error("Configuration file not found in " + project.base);
+				}
 			}
 		})
 	}

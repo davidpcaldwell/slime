@@ -43,50 +43,6 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
-		/**
-		 * A function that takes a function as an argument and returns a memoized version of that function. Memoized functions
-		 * currently cannot be invoked as methods (i.e., with a <code>this</code> value) and also may not receive arguments.
-		 *
-		 * @param f A function to memoize
-		 * @returns A memoized function whose underlying implementation will only be invoked the first time it is invoked;
-		 * succeeding invocations will simply return the value returned by the first invocation.
-		 */
-		memoized: <T>(f: () => T) => () => T
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			fifty.tests.exports.memoized = function() {
-				var calls: number;
-
-				var counter = function() {
-					if (typeof(calls) == "undefined") calls = 0;
-					calls++;
-					return 42;
-				};
-
-				verify(calls).is(void(0));
-				var memoized = fifty.global.$api.fp.memoized(counter);
-				verify(calls).is(void(0));
-				var result = memoized();
-				verify(result).is(42);
-				verify(calls).is(1);
-				var result2 = memoized();
-				verify(result2).is(42);
-				verify(calls).is(1);
-				var result3 = counter();
-				verify(result3).is(42);
-				verify(calls).is(2);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export interface Exports {
 		pipe: Pipe
 	}
 
@@ -126,8 +82,6 @@ namespace slime.$api.fp {
 				var result2 = $api.fp.now.invoke(2, f, g);
 				verify(result2).is("g2");
 			};
-
-			fifty.tests.wip = fifty.tests.exports.now;
 		}
 	//@ts-ignore
 	)(fifty);
@@ -401,6 +355,57 @@ namespace slime.$api.fp {
 		}
 	}
 
+	export type Partial<P,R> = (p: P) => Maybe<R>
+
+	export interface Exports {
+		switch: <P,R>(cases: Partial<P,R>[]) => Partial<P,R>
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.switch = function() {
+				var arithmetic: slime.$api.fp.Partial<{ operation: string, left: number, right: number }, number> = $api.fp.switch([
+					function(p) {
+						if (p.operation == "+") {
+							return $api.fp.Maybe.value(p.left + p.right);
+						}
+						return $api.fp.Maybe.nothing();
+					},
+					function(p) {
+						if (p.operation == "*") {
+							return $api.fp.Maybe.value(p.left * p.right);
+						}
+						return $api.fp.Maybe.nothing();
+					}
+				]);
+
+				var add = arithmetic({ operation: "+", left: 2, right: 3 });
+				verify(add).present.is(true);
+				if (add.present) {
+					verify(add).value.is(5);
+				}
+
+				var multiple = arithmetic({ operation: "*", left: 2, right: 3 });
+				verify(multiple).present.is(true);
+				if (multiple.present) {
+					verify(multiple).value.is(6);
+				}
+
+				var nothing = arithmetic({ operation: "?", left: 2, right: 3 });
+				verify(nothing).present.is(false);
+			}
+
+			fifty.tests.wip = fifty.tests.exports.switch;
+		}
+	//@ts-ignore
+	)(fifty);
+
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -461,7 +466,6 @@ namespace slime.$api.fp {
 			}
 		//@ts-ignore
 		)(fifty);
-
 	}
 
 	export namespace exports {
@@ -1005,7 +1009,7 @@ namespace slime.$api.fp.internal {
 	}
 
 	export interface Exports {
-		Function: Partial<slime.$api.fp.Exports>
+		Function: slime.external.lib.typescript.Partial<slime.$api.fp.Exports>
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>

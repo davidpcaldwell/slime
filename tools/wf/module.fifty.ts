@@ -36,11 +36,33 @@ namespace slime.jsh.wf.internal.module {
 			}
 		//@ts-ignore
 		})(fifty);
+
+		export const write = (function(fifty: slime.fifty.test.Kit) {
+			const { $api } = fifty.global;
+
+			return function(filesystem: slime.jrunscript.file.world.spi.Filesystem, pathname: string, string: string) {
+				var output = $api.fp.impure.now.input(
+					$api.fp.world.input(
+						filesystem.openOutputStream({
+							pathname: pathname
+						})
+					)
+				);
+				if (output.present) {
+					output.value.character().write(string);
+					output.value.close();
+				} else {
+					throw new Error();
+				}
+			}
+		//@ts-ignore
+		})(fifty);
 	}
 
 	export interface Exports {
 		Project: {
 			getTypescriptVersion: (project: slime.jsh.wf.Project) => string
+			getConfigurationLocation: (project: slime.jsh.wf.Project) => slime.jrunscript.file.world.Location
 		}
 	}
 
@@ -48,32 +70,45 @@ namespace slime.jsh.wf.internal.module {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { verify } = fifty;
+			const { verify, run } = fifty;
 			const { $api, jsh } = fifty.global;
 
 			fifty.tests.suite = function() {
-				var filesystem = fifty.global.jsh.file.mock.filesystem();
-				var subject = test.mock(filesystem);
+				var spi = fifty.global.jsh.file.mock.filesystem();
+				var subject = test.mock(spi);
 				var project: slime.jsh.wf.Project = {
 					base: "/foo"
 				};
 				var version = subject.Project.getTypescriptVersion(project);
 				verify(version).is("4.8.4");
 
-				var output = $api.fp.impure.now.input(
-					$api.fp.world.input(
-						filesystem.openOutputStream({
-							pathname: "/foo/tsc.version"
-						})
-					)
-				);
-				verify(output).present.is(true);
-				if (output.present) {
-					output.value.character().write("9.9.9");
-					output.value.close();
-				}
+				test.write(spi, "/foo/tsc.version", "9.9.9");
+
 				var after = subject.Project.getTypescriptVersion(project);
 				verify(after).is("9.9.9");
+
+				run(function configuration() {
+					var spi = fifty.global.jsh.file.mock.filesystem();
+					var subject = test.mock(spi);
+					var project: slime.jsh.wf.Project = {
+						base: "/foo"
+					};
+					var error = false;
+					try {
+						var one = subject.Project.getConfigurationLocation(project);
+					} catch (e) {
+						error = true;
+					}
+					verify(error).is(true);
+
+					test.write(spi, "/foo/jsconfig.json", "{}");
+					var two = subject.Project.getConfigurationLocation(project);
+					verify(two).pathname.is("/foo/jsconfig.json");
+
+					test.write(spi, "/foo/tsconfig.json", "{}");
+					var three = subject.Project.getConfigurationLocation(project);
+					verify(three).pathname.is("/foo/tsconfig.json");
+				})
 			}
 		}
 	//@ts-ignore
