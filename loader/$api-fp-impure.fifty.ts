@@ -10,6 +10,15 @@ namespace slime.$api.fp {
 		world: slime.$api.fp.world.Exports
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		/**
 		 * A function that takes a function as an argument and returns a memoized version of that function. Memoized functions
@@ -21,6 +30,17 @@ namespace slime.$api.fp {
 		 */
 		memoized: <T>(f: () => T) => () => T
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.impure = fifty.test.Parent();
+			fifty.tests.exports.world = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	(
 		function(
@@ -99,9 +119,9 @@ namespace slime.$api.fp.impure {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.input = {};
+			fifty.tests.exports.impure.input = {};
 
-			fifty.tests.input.compose = function() {
+			fifty.tests.exports.impure.input.compose = function() {
 				var inputs = {
 					n: $api.fp.returning(8),
 					s: $api.fp.returning("hello")
@@ -114,7 +134,7 @@ namespace slime.$api.fp.impure {
 				verify(values).s.is("hello");
 			};
 
-			fifty.tests.input.map = function() {
+			fifty.tests.exports.impure.input.map = function() {
 				var input = function() { return 1; };
 				var triple = function(n) { return n*3; };
 
@@ -124,15 +144,13 @@ namespace slime.$api.fp.impure {
 				verify(two()).is(9);
 			}
 
-			fifty.tests.input.stream = function() {
+			fifty.tests.exports.impure.input.stream = function() {
 				var input = function() { return "yes! with me" };
 				var stream = $api.fp.impure.Input.stream(input);
 				var collected = $api.fp.Stream.collect(stream);
 				verify(collected).length.is(1);
 				verify(collected)[0].is("yes! with me");
 			}
-
-			fifty.tests.wip = fifty.tests.input.stream;
 		}
 	//@ts-ignore
 	)(fifty);
@@ -172,7 +190,7 @@ namespace slime.$api.fp.world {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.question = function() {
+			fifty.tests.exports.world.question = function() {
 				var doubler: Question<number, { argument: string }, number> = function(p) {
 					return function(events) {
 						events.fire("argument", String(p));
@@ -248,9 +266,10 @@ namespace slime.$api.fp.internal.impure {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.exports.memoized);
-				fifty.run(fifty.tests.question);
+				fifty.run(fifty.tests.exports);
 			}
+
+			fifty.tests.wip = fifty.tests.suite;
 		}
 	//@ts-ignore
 	)(fifty);
