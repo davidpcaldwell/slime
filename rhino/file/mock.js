@@ -60,6 +60,13 @@
 					};
 					return $api.fp.Maybe.value(wrap);
 				}
+			};
+
+			/** @type { slime.jrunscript.file.world.spi.Filesystem["fileExists"] } */
+			var fileExists = function(p) {
+				return function(events) {
+					return $api.fp.Maybe.value(Boolean(state[p.pathname]));
+				}
 			}
 
 			return {
@@ -70,7 +77,7 @@
 				copy: void(0),
 				createDirectory: void(0),
 				directoryExists: void(0),
-				fileExists: void(0),
+				fileExists: fileExists,
 				move: void(0),
 				openInputStream: openInputStream,
 				openOutputStream: openOutputStream,

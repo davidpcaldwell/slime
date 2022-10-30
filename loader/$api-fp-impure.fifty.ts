@@ -9,6 +9,50 @@ namespace slime.$api.fp {
 		impure: slime.$api.fp.impure.Exports
 		world: slime.$api.fp.world.Exports
 	}
+
+	export interface Exports {
+		/**
+		 * A function that takes a function as an argument and returns a memoized version of that function. Memoized functions
+		 * currently cannot be invoked as methods (i.e., with a <code>this</code> value) and also may not receive arguments.
+		 *
+		 * @param f A function to memoize
+		 * @returns A memoized function whose underlying implementation will only be invoked the first time it is invoked;
+		 * succeeding invocations will simply return the value returned by the first invocation.
+		 */
+		memoized: <T>(f: () => T) => () => T
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.exports.memoized = function() {
+				var calls: number;
+
+				var counter = function() {
+					if (typeof(calls) == "undefined") calls = 0;
+					calls++;
+					return 42;
+				};
+
+				verify(calls).is(void(0));
+				var memoized = fifty.global.$api.fp.memoized(counter);
+				verify(calls).is(void(0));
+				var result = memoized();
+				verify(result).is(42);
+				verify(calls).is(1);
+				var result2 = memoized();
+				verify(result2).is(42);
+				verify(calls).is(1);
+				var result3 = counter();
+				verify(result3).is(42);
+				verify(calls).is(2);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 namespace slime.$api.fp.impure {
@@ -204,6 +248,7 @@ namespace slime.$api.fp.internal.impure {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports.memoized);
 				fifty.run(fifty.tests.question);
 			}
 		}

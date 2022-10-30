@@ -5,7 +5,6 @@
 //	END LICENSE
 
 namespace slime.external {
-
 }
 
 /**
@@ -32,6 +31,10 @@ namespace slime.external.lib.rename.dom {
 	export type _Console = Console
 }
 
+namespace slime.external.lib.rename.typescript {
+	export type _Partial<T> = Partial<T>
+}
+
 namespace slime.external.lib.es5 {
 	export type Function = slime.external.lib.rename.es5._Function
 	export type Date = slime.external.lib.rename.es5._Date
@@ -39,6 +42,10 @@ namespace slime.external.lib.es5 {
 
 namespace slime.external.lib.dom {
 	export type Console = slime.external.lib.rename.dom._Console
+}
+
+namespace slime.external.lib.typescript {
+	export type Partial<T> = slime.external.lib.rename.typescript._Partial<T>
 }
 
 interface Object {

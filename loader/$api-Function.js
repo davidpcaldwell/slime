@@ -280,6 +280,15 @@
 				fromEntries: Object.fromEntries
 			},
 			Maybe: Maybe,
+			switch: function(cases) {
+				return function(p) {
+					for (var i=0; i<cases.length; i++) {
+						var r = cases[i](p);
+						if (r.present) return r;
+					}
+					return Maybe.nothing();
+				}
+			},
 			Stream: code.Stream({
 				$f: {
 					Maybe: Maybe,
