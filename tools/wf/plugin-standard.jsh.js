@@ -216,7 +216,7 @@
 				);
 
 				$exports.typedoc = function() {
-					jsh.wf.typescript.typedoc();
+					jsh.wf.typescript.typedoc.now();
 				}
 
 				var displayBranchName = function(name) {
