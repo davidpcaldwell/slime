@@ -26,7 +26,7 @@
  * constructs for documentation and embedded scripts for testing.
  *
  * ### Embedding
- * SLIME provides several embeddings (`jsh`, a Java servlet=based embedding, a browser embedding, and a JXA embedding for macOS
+ * SLIME provides several embeddings (`jsh`, a Java servlet-based embedding, a browser embedding, and a JXA embedding for macOS
  * automation). A Node.js embedding is planned.
  *
  * Custom SLIME embeddings may be developed by creating a suitable implementation of {@link slime.runtime.Scope} and putting that

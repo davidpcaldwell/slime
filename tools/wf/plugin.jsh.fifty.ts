@@ -151,15 +151,24 @@ namespace slime.jsh.wf {
 			/**
 			 * Runs TypeDoc on the project, emitting the output to `local/doc/typedoc`.
 			 */
-			typedoc: (
-				/**
-				 * Information about the project. Defaults to running on the `wf` project directory.
-				 */
-				p?: {
-					project: slime.jrunscript.file.Directory
-					stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
-				}
-			) => boolean
+			typedoc: {
+				now: (
+					/**
+					 * Information about the project. Defaults to running on the `wf` project directory.
+					 */
+					p?: {
+						project: slime.jrunscript.file.Directory
+						stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
+					}
+				) => boolean
+
+				invocation: (
+					p: {
+						project: slime.jsh.wf.Project
+						stdio?: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
+					}
+				) => slime.jrunscript.shell.run.Invocation
+			}
 		}
 	}
 

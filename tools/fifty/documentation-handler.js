@@ -34,19 +34,23 @@
 					 * @returns
 					 */
 					function update(src) {
-						var result = jsh.wf.typescript.typedoc({
-							project: src,
+						var invocation = jsh.wf.typescript.typedoc.invocation({
+							project: { base: src.toString() },
 							stdio: {
-								output: String,
-								error: String
+								output: "string",
+								error: "string"
 							}
 						});
-						if (!result) {
+						var result = $api.fp.world.now.question(
+							jsh.shell.world.question,
+							invocation
+						);
+						if (result.status != 0) {
 							return {
 								status: { code: 500 },
 								body: {
 									type: "text/plain",
-									string: "TypeDoc invocation failed."
+									string: "TypeDoc invocation failed:\nSTDOUT:\n" + result.stdio.output + "\nSTDERR:\n" + result.stdio.error
 								}
 							}
 						}

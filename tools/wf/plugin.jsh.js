@@ -452,11 +452,6 @@
 					Failure: $api.Error.old.Type({ name: "jsh.wf.Failure" })
 				}
 
-				/** @param { slime.jsh.wf.Project } project */
-				var Project_getConfigurationFilePathname = function(project) {
-					return library.module.Project.getConfigurationLocation(project).pathname;
-				}
-
 				var typescript = {
 					getConfig: function(base) {
 						if (base.getFile("tsconfig.json")) return base.getFile("tsconfig.json");
@@ -517,14 +512,23 @@
 							});
 							return (result.status == 0);
 						},
-						typedoc: function(p) {
-							var project = (p && p.project) ? p.project : inputs.base();
-							var getShellInvocation = getTypedocCommand({ base: project.pathname.toString() });
-							var exit = $api.fp.world.now.question(
-								jsh.shell.world.question,
-								getShellInvocation(jsh.shell.tools.node.installation)
-							);
-							return exit.status == 0;
+						typedoc: {
+							now: function(p) {
+								var project = (p && p.project) ? p.project : inputs.base();
+								var getShellInvocation = getTypedocCommand({ base: project.pathname.toString() });
+								var exit = $api.fp.world.now.question(
+									jsh.shell.world.question,
+									getShellInvocation(jsh.shell.tools.node.installation)
+								);
+								return exit.status == 0;
+							},
+							invocation: $api.fp.pipe(
+								$api.fp.property("project"),
+								getTypedocCommand,
+								function(f) {
+									return f(jsh.shell.tools.node.installation);
+								}
+							)
 						}
 					}
 				})();
