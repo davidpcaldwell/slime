@@ -7,7 +7,13 @@
 namespace slime.jrunscript.file.internal.loader {
 	export interface Context {
 		library: {
-			Location: slime.jrunscript.file.Exports["world"]["Location"]
+			Location: {
+				relative: slime.jrunscript.file.Exports["world"]["Location"]["relative"]
+
+				file: {
+					exists: slime.jrunscript.file.Exports["world"]["Location"]["file"]["exists"]
+				}
+			}
 		}
 	}
 

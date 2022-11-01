@@ -1052,7 +1052,7 @@
 							},
 							modified: function() {
 								var _date = _resource.getLastModified();
-								return (_date) ? slime.$api.fp.Maybe.value(_date.getTime() / 1000) : slime.$api.fp.Maybe.nothing();
+								return (_date) ? slime.$api.fp.Maybe.value(_date.getTime()) : slime.$api.fp.Maybe.nothing();
 							}
 						}
 					}
