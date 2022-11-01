@@ -18,6 +18,8 @@
 		var code = {
 			/** @type { slime.jrunscript.file.internal.java.Script } */
 			java: $loader.script("java.js"),
+			/** @type { slime.jrunscript.file.internal.loader.Script } */
+			loader: $loader.script("loader.js")
 		};
 
 		var library = {
@@ -131,7 +133,22 @@
 					}
 				}
 			};
-		}
+		};
+
+		var Location = {
+			relative: Location_relative,
+			file: {
+				exists: function() {
+					return Location_file_exists;
+				}
+			}
+		};
+
+		var loader = code.loader({
+			library: {
+				Location: Location
+			}
+		})
 
 		$export({
 			providers: library.java.providers,
@@ -371,6 +388,11 @@
 									}
 								);
 							}
+						}
+					},
+					loader: {
+						synchronous: function(p) {
+							return loader.create(p.root);
 						}
 					}
 				}

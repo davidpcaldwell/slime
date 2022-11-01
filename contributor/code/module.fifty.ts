@@ -52,18 +52,45 @@ namespace slime.project.code {
 
 			var subject = jsh.project.code;
 
-			var loader = jsh.io.loader.from.java(
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.lastModified = fifty.test.Parent();
+
+			var fileLoader = jsh.file.world.Location.directory.loader.synchronous({ root: fifty.jsh.file.relative("../..") });
+
+			var javaLoader = jsh.io.loader.from.java(
 				Packages.inonit.script.engine.Code.Loader.create(
 					fifty.jsh.file.object.getRelativePath("../..").java.adapt()
 				)
 			);
 
-			fifty.tests.wip = $api.fp.pipe(
-				$api.fp.impure.Input.value(loader),
+			fifty.tests.manual.lastModified.java = $api.fp.pipe(
+				$api.fp.impure.Input.value(javaLoader),
 				function(loader) {
 					return {
 						loader: loader,
 						map: jsh.io.Resource.from.java
+					}
+				},
+				subject.directory.lastModified,
+				function(it) {
+					if (it.present) {
+						jsh.shell.console("Modified: " + it.value);
+						// jsh.shell.console("Latest: " + ( (it.value.path.length) ? it.value.path.join("/") + "/" : "" ) + it.value.name + " at " + JSON.stringify(it.value.resource.modified()));
+					} else {
+						jsh.shell.console("Error.");
+					}
+				}
+			);
+
+			fifty.tests.manual.lastModified.file = $api.fp.pipe(
+				$api.fp.impure.Input.value(fileLoader),
+				function(loader): Parameters<slime.project.code.Exports["directory"]["lastModified"]>[0] {
+					return {
+						loader: loader,
+						map: function(resource: slime.jrunscript.file.internal.loader.Resource) {
+							return resource;
+						}
 					}
 				},
 				subject.directory.lastModified,

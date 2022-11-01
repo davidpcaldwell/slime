@@ -463,6 +463,16 @@ namespace slime.jrunscript.file {
 			)(fifty);
 		}
 
+		export namespace locations {
+			export interface Directories {
+				loader: {
+					synchronous: (p: {
+						root: Location
+					}) => slime.runtime.loader.Synchronous<slime.jrunscript.file.internal.loader.Resource>
+				}
+			}
+		}
+
 		export interface Locations {
 			from: {
 				os: (pathname: string) => Location
@@ -662,7 +672,6 @@ namespace slime.jrunscript.file {
 			}
 		//@ts-ignore
 		)(fifty);
-
 
 		export interface File {
 			exists: () => slime.$api.fp.world.old.Ask<{},boolean>
