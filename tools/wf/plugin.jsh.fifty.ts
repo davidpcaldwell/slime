@@ -78,6 +78,100 @@ namespace slime.jsh.wf {
 		state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		typescript: {
+			/**
+			 * Ensures that Node.js is installed and that the project-appropriate version of TypeScript is present.
+			 */
+			require: (p?: { project: slime.jrunscript.file.Directory }) => void
+
+			/**
+			 * @deprecated Replaced by {@link slime.jsh.wf.exports.Checks["tsc"]}.
+			 */
+			tsc: (p?: { project: slime.jrunscript.file.Directory }) => boolean
+
+			/**
+			 * Runs TypeDoc on the project, emitting the output to `local/doc/typedoc`.
+			 */
+			typedoc: {
+				now: (
+					/**
+					 * Information about the project. Defaults to running on the `wf` project directory.
+					 */
+					p?: {
+						project: slime.jrunscript.file.Directory
+						stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
+					}
+				) => boolean
+
+				invocation: (
+					p: {
+						project: slime.jsh.wf.Project
+						stdio?: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
+						out?: string
+					}
+				) => slime.jrunscript.shell.run.Invocation
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			var project = {
+				base: fifty.jsh.file.relative("../..").pathname
+			};
+
+			var out = fifty.jsh.file.temporary.directory();
+
+			fifty.tests.manual.typedoc = function() {
+				var invocation = jsh.wf.typescript.typedoc.invocation({
+					project: project,
+					stdio: {
+						output: "line",
+						error: "line"
+					},
+					out: out.pathname
+				});
+				jsh.shell.console(JSON.stringify(invocation));
+				$api.fp.world.now.action(
+					jsh.shell.world.action,
+					invocation,
+					{
+						start: function(e) {
+							jsh.shell.console("PID: " + e.detail.pid);
+						},
+						exit: function(e) {
+							jsh.shell.console("Status: " + e.detail.status);
+						},
+						stdout: function(e) {
+							jsh.shell.console("STDOUT: " + e.detail.line);
+						},
+						stderr: function(e) {
+							jsh.shell.console("STDERR: " + e.detail.line);
+						}
+					}
+				);
+				jsh.shell.console("Output to " + out.pathname);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+
 	/**
 	 * The `project.initialize` function provides a default `wf` implementation for projects with a number of standard commands; it
 	 * requires project-level specification of operations like `commit`, `lint`, and/or `test`.
@@ -136,50 +230,7 @@ namespace slime.jsh.wf {
 					paths: any
 				}
 		}
-
-		typescript: {
-			/**
-			 * Ensures that Node.js is installed and that the project-appropriate version of TypeScript is present.
-			 */
-			require: (p?: { project: slime.jrunscript.file.Directory }) => void
-
-			/**
-			 * @deprecated Replaced by {@link slime.jsh.wf.exports.Checks["tsc"]}.
-			 */
-			tsc: (p?: { project: slime.jrunscript.file.Directory }) => boolean
-
-			/**
-			 * Runs TypeDoc on the project, emitting the output to `local/doc/typedoc`.
-			 */
-			typedoc: {
-				now: (
-					/**
-					 * Information about the project. Defaults to running on the `wf` project directory.
-					 */
-					p?: {
-						project: slime.jrunscript.file.Directory
-						stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
-					}
-				) => boolean
-
-				invocation: (
-					p: {
-						project: slime.jsh.wf.Project
-						stdio?: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
-					}
-				) => slime.jrunscript.shell.run.Invocation
-			}
-		}
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports = fifty.test.Parent();
-		}
-	//@ts-ignore
-	)(fifty);
 
 	export interface Exports {
 		cli: {
