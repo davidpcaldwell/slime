@@ -14,6 +14,8 @@ namespace slime.jsh.wf.internal.typescript {
 	}
 
 	export interface Invocation {
+		stdio: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
+
 		configuration: {
 			typescript: {
 				version: string
@@ -23,10 +25,16 @@ namespace slime.jsh.wf.internal.typescript {
 				configuration: string
 			}
 		}
+
 		/**
 		 * The pathname of the project to document.
 		 */
 		project: string
+
+		/**
+		 * Destination to provide as the `out` configuration parameter.
+		 */
+		out?: string
 	}
 
 	export interface Exports {

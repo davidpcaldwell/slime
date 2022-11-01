@@ -462,10 +462,12 @@
 
 				/**
 				 *
+				 * @param { any } stdio
 				 * @param { slime.jsh.wf.Project } project
+				 * @param { string } out
 				 * @returns
 				 */
-				var getTypedocCommand = function(project) {
+				var getTypedocCommand = function(stdio,project,out) {
 					var version = library.module.Project.getTypescriptVersion(project);
 					var configuration = library.module.Project.getConfigurationLocation(project);
 					jsh.shell.console("Compiling with TypeScript " + version + " ...");
@@ -473,13 +475,15 @@
 					jsh.shell.tools.tomcat.require();
 					/** @type { slime.jsh.wf.internal.typescript.Invocation } */
 					var typedocInvocation = {
+						stdio: stdio,
 						configuration: {
 							typescript: {
 								version: version,
 								configuration: configuration.pathname
 							}
 						},
-						project: project.base
+						project: project.base,
+						out: out
 					};
 					var getShellInvocation = library.typescript.typedoc.invocation(typedocInvocation);
 					return getShellInvocation;
@@ -515,7 +519,7 @@
 						typedoc: {
 							now: function(p) {
 								var project = (p && p.project) ? p.project : inputs.base();
-								var getShellInvocation = getTypedocCommand({ base: project.pathname.toString() });
+								var getShellInvocation = getTypedocCommand(p.stdio, { base: project.pathname.toString() }, void(0));
 								var exit = $api.fp.world.now.question(
 									jsh.shell.world.question,
 									getShellInvocation(jsh.shell.tools.node.installation)
@@ -523,10 +527,24 @@
 								return exit.status == 0;
 							},
 							invocation: $api.fp.pipe(
-								$api.fp.property("project"),
-								getTypedocCommand,
-								function(f) {
-									return f(jsh.shell.tools.node.installation);
+								$api.fp.split({
+									nodeCommand: $api.fp.pipe(
+										function(p) {
+											return getTypedocCommand(p.stdio, p.project, p.out);
+										}
+									),
+									stdio: $api.fp.property("stdio")
+								}),
+								function(inputs) {
+									var invocation = inputs.nodeCommand(jsh.shell.tools.node.installation);
+									if (inputs.stdio) {
+										invocation.context.stdio = {
+											input: null,
+											output: inputs.stdio.output,
+											error: inputs.stdio.error
+										}
+									}
+									return invocation;
 								}
 							)
 						}

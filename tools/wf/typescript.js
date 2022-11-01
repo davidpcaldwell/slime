@@ -125,7 +125,9 @@
 				command: "typedoc",
 				arguments: $api.Array.build(function(rv) {
 					//	TODO	is this relative to tsconfig or to PWD?
-					if (!configuration.out) {
+					if (p.out) {
+						rv.push("--out", p.out);
+					} else if (!configuration.out) {
 						rv.push("--out", getRelativePath(p.project, "local/doc/typedoc"));
 					}
 
