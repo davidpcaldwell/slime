@@ -119,6 +119,7 @@ namespace slime.jrunscript.file.internal.java {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
 
 			var file: file.Script = fifty.$loader.script("file.js");
 			var code: Script = fifty.$loader.script("java.js");
@@ -146,6 +147,18 @@ namespace slime.jrunscript.file.internal.java {
 				var os = new subject.test.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
 				var at = os.newPeer("at");
 				fifty.global.jsh.shell.console("at = " + at.getScriptPath());
+
+				var me = fifty.jsh.file.relative("java.fifty.ts").pathname;
+				var fs = subject.filesystems.os;
+				var size = $api.fp.world.now.ask(fs.fileLength({ pathname: me }));
+				if (size.present) {
+					jsh.shell.console("size = " + size.value);
+				}
+				var modified = $api.fp.world.now.ask(fs.fileLastModified({ pathname: me }));
+				if (modified.present) {
+					jsh.shell.console("modified = " + modified.value);
+					jsh.shell.console("date = " + new Date(modified.value));
+				}
 			}
 
 			fifty.tests.suite = function() {

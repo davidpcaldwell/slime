@@ -291,7 +291,7 @@
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["list"] } */
 				this.list = function(peer) {
-					return peer.list(null);
+					return peer.list();
 				}
 
 				this.temporary = function(peer,parameters) {
@@ -450,6 +450,16 @@
 				return peer.exists() && !peer.isDirectory();
 			}
 
+			function last_modified(pathname) {
+				var peer = java.newPeer(pathname);
+				return peer.getHostFile().lastModified();
+			}
+
+			function length(pathname) {
+				var peer = java.newPeer(pathname);
+				return peer.getHostFile().length();
+			}
+
 			function directory_require_impure(p) {
 				var recursive = function(peer) {
 					if (!java.getParent(peer).exists()) {
@@ -497,7 +507,7 @@
 				return function() {
 					return $api.fp.world.old.ask(function(events) {
 						var peer = java.newPeer(pathname);
-						return peer.list(null).map(function(node) {
+						return peer.list().map(function(node) {
 							return pathname_create(String(node.getScriptPath()));
 						})
 					});
@@ -605,6 +615,16 @@
 						return $api.fp.Maybe.value(file_exists(p.pathname));
 					}
 				},
+				fileLength: function(p) {
+					return function(events) {
+						return $api.fp.Maybe.value(length(p.pathname));
+					}
+				},
+				fileLastModified: function(p) {
+					return function(events) {
+						return $api.fp.Maybe.value(last_modified(p.pathname));
+					}
+				},
 				directoryExists: function(p) {
 					return function(events) {
 						return $api.fp.Maybe.value(directory_exists(p.pathname));
@@ -614,6 +634,24 @@
 					return function(events) {
 						var peer = java.newPeer(p.pathname);
 						java.createDirectoryAt(peer);
+					}
+				},
+				listDirectory: function(p) {
+					return function(events) {
+						var peer = java.newPeer(p.pathname);
+						var list = peer.list();
+						return $api.fp.Maybe.value(
+							list.map(
+								/** @type { slime.$api.fp.Mapping<slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node,slime.jrunscript.file.world.spi.Node> } */
+								function(node) {
+									var directory = node.isDirectory();
+									return {
+										name: String(node.getHostFile().getName()),
+										type: (directory) ? "directory" : "file"
+									}
+								}
+							)
+						);
 					}
 				},
 				copy: function(p) {

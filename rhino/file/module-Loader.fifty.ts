@@ -41,7 +41,7 @@ namespace slime.jrunscript.file {
 			const loader = new fixtures.module.Loader({ directory: fifty.jsh.file.object.getRelativePath("api.html").parent.directory })
 
 			fifty.tests.suite = function() {
-				run(function() {
+				run(function brittleEntries() {
 					verify(loader).get("api.html").is.not(null);
 					verify(loader).get("foo.html").is(null);
 					var list = loader.list();
@@ -62,7 +62,7 @@ namespace slime.jrunscript.file {
 						return Boolean(p.resource);
 					}
 					//	TODO	this is pretty brittle
-					verify(list,"number of entries in rhino/file").length.is(25);
+					verify(list,"number of entries in rhino/file").length.is(27);
 					//	jsh.shell.echo(loader.list().map(function(item) { return item.path; }));
 					verify(map).java.evaluate(isLoaderEntry).is(true);
 					verify(map).java.evaluate(function() { return this.resource; }).is(void(0));
@@ -71,23 +71,23 @@ namespace slime.jrunscript.file {
 					verify(map["java.js"]).evaluate($api.fp.property("loader")).is(void(0));
 				});
 
-				run(function() {
+				run(function oldResourceLength() {
 					var api = loader.get("api.html") as slime.jrunscript.runtime.old.Resource;
 					verify(api).length.is.not.equalTo(null);
 					verify(api).length.is.type("number");
 				});
 
-				run(function() {
+				run(function oldResourceMimeType() {
 					var api = loader.get("api.html");
 					verify(api).type.evaluate(function() { return this.is("text/html") }).is(true);
 				});
 
-				run(function() {
+				run(function oldResourceLastModified() {
 					var api = loader.get("api.html") as slime.jrunscript.runtime.old.Resource;
 					verify(api).modified.is.type("object");
 				});
 
-				run(function() {
+				run(function nullDirectoryFails() {
 					verify(module).evaluate(function() { return new module.Loader({ directory: null }) }).threw.type(Error);
 				});
 			}

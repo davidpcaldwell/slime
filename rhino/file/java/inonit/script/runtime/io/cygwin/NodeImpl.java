@@ -249,9 +249,9 @@ class NodeImpl extends Filesystem.Node {
 		}
 	}
 
-	public Filesystem.Node[] list(FilenameFilter pattern) throws IOException {
+	public Filesystem.Node[] list() throws IOException {
 		try {
-			return parent.list(this, pattern);
+			return parent.list(this);
 		} catch (CygwinFilesystem.CygpathException e) {
 			throw new IOException(e);
 		} catch (Command.Result.Failure e) {

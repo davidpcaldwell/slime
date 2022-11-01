@@ -257,7 +257,6 @@
 							}),
 							$api.fp.Array.first($context.library.io.Entry.mostRecentlyModified()),
 							$api.fp.Maybe.map(function(latest) {
-								// jsh.shell.console("latest = " + ((latest.path.length) ? latest.path.join("/") + "/" : "") + latest.name);
 								return latest.resource.modified();
 							}),
 							function(it) {

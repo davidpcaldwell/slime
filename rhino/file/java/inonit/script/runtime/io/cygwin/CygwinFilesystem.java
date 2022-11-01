@@ -372,7 +372,7 @@ public class CygwinFilesystem extends Filesystem {
 		return paths.mkdirs(node);
 	}
 
-	Filesystem.Node[] list(NodeImpl node, FilenameFilter pattern) throws CygpathException, Command.Result.Failure {
+	Filesystem.Node[] list(NodeImpl node) throws CygpathException, Command.Result.Failure {
 		String[] names = paths.list(node);
 		ArrayList<Filesystem.Node> unfiltered = new ArrayList<Filesystem.Node>();
 		for (int i=0; i<names.length; i++) {
@@ -395,22 +395,8 @@ public class CygwinFilesystem extends Filesystem {
 				unfiltered.add(n);
 			}
 		}
-		if (pattern == null) {
-			pattern = new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					return true;
-				}
-			};
-		}
-		ArrayList<Filesystem.Node> rv = new ArrayList<Filesystem.Node>();
-		for (int i=0; i<unfiltered.size(); i++) {
-			NodeImpl n = (NodeImpl)unfiltered.get(i);
-			if (pattern.accept(n.getCygwinHostFile().getParentFile(), n.getCygwinHostFile().getName())) {
-				rv.add(n);
-			}
-		}
 
-		return (Filesystem.Node[])rv.toArray(new Filesystem.Node[0]);
+		return (Filesystem.Node[])unfiltered.toArray(new Filesystem.Node[0]);
 	}
 
 	//

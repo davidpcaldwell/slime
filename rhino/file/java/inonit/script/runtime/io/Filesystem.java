@@ -129,7 +129,7 @@ public abstract class Filesystem {
 
 		public abstract Node getParent() throws IOException;
 
-		public abstract Node[] list(FilenameFilter pattern) throws IOException;
+		public abstract Node[] list() throws IOException;
 		public abstract void delete() throws IOException;
 		public abstract void move(Node to) throws IOException;
 		public abstract void mkdir() throws IOException;
@@ -249,8 +249,8 @@ public abstract class Filesystem {
 				return rv;
 			}
 
-			public Node[] list(FilenameFilter pattern) throws IOException {
-				File[] files = this.file.listFiles(pattern);
+			public Node[] list() throws IOException {
+				File[] files = this.file.listFiles();
 				Node[] rv = new Node[files.length];
 				for (int i=0; i<files.length; i++) {
 					rv[i] = new NodeImpl(files[i]);
