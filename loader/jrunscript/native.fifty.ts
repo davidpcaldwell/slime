@@ -47,8 +47,6 @@ namespace slime.jrunscript {
 				}
 				export interface PrintStream extends OutputStream {
 				}
-				export interface FilenameFilter {
-				}
 				export interface File {
 					exists(): boolean
 					isDirectory(): boolean
@@ -65,6 +63,7 @@ namespace slime.jrunscript {
 					mkdirs()
 					isAbsolute(): boolean
 					lastModified(): number
+					length(): number
 					setLastModified(time: number)
 				}
 			}

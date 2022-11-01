@@ -37,7 +37,7 @@ namespace slime.jrunscript.native {
 				delete: () => void
 				move: (to: Node) => void
 
-				list: (pattern: slime.jrunscript.native.java.io.FilenameFilter) => Node[]
+				list: () => Node[]
 
 				//	TODO	exists only for Cygwin
 				invalidate: () => void

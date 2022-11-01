@@ -264,6 +264,10 @@ namespace slime.jrunscript.runtime {
 	export interface Resource {
 		read: () => slime.jrunscript.runtime.io.InputStream
 		length: () => slime.$api.fp.Maybe<number>
+
+		/**
+		 * Returns a modification time, in milliseconds since the UNIX epoch.
+		 */
 		modified: () => slime.$api.fp.Maybe<number>
 	}
 

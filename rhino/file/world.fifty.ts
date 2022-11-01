@@ -770,10 +770,26 @@ namespace slime.jrunscript.file {
 				}
 			}
 
+			export interface Node {
+				name: string
+				type: "file" | "directory"
+			}
+
 			export interface Filesystem {
 				fileExists: slime.$api.fp.world.Question<{
 					pathname: string
 				},void,slime.$api.fp.Maybe<boolean>>
+
+				fileLength: slime.$api.fp.world.Question<{
+					pathname: string
+				},void,slime.$api.fp.Maybe<number>>
+
+				/**
+				 * Returns the time the file was last modified, in milliseconds since the UNIX epoch.
+				 */
+				fileLastModified: slime.$api.fp.world.Question<{
+					pathname: string
+				},void,slime.$api.fp.Maybe<number>>
 
 				openInputStream: slime.$api.fp.world.Question<{
 					pathname: string
@@ -795,6 +811,11 @@ namespace slime.jrunscript.file {
 					pathname: string
 				},{
 				}>
+
+				listDirectory: slime.$api.fp.world.Question<{
+					pathname: string
+				},{
+				},slime.$api.fp.Maybe<Node[]>>
 
 				copy: slime.$api.fp.world.Action<{
 					from: string
