@@ -510,7 +510,7 @@
 										},
 										started: function() {
 											// Packages.java.lang.System.err.println("Got 'started' callback for hg serve");
-											new lock.Waiter({
+											lock.Waiter({
 												until: function() {
 													return true;
 												},
@@ -525,7 +525,7 @@
 								}
 							});
 						}
-						return new lock.Waiter({
+						return lock.Waiter({
 							until: function() {
 								return Boolean(running);
 							},

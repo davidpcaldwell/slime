@@ -565,14 +565,118 @@ namespace slime.jrunscript.host {
 			}
 		//@ts-ignore
 		)(Packages,fifty);
+	}
 
+	export namespace thread {
+		/**
+		 * Represents a Java monitor that can be used for synchronization.
+		 */
+		export interface Monitor {
+			/**
+			 * Creates a function that waits on its parent monitor until a condition is true, and then executes an underlying
+			 * function.
+			 *
+			 * @param p An object specifying the condition and function.
+			 *
+			 * @returns A function that can be invoked that will invoke `until` repeatedly and wait on the monitor if it returns
+			 * `false`; when `until` returns `true`, `then` will be invoked and the return value from `then` returned.
+			 */
+			Waiter: <T>(p: {
+				/**
+				 * (optional; default returns `true`) A function that specifies whether the condition has been satisfied. The
+				 * function will receive the `this` and arguments passed to the function by the caller.
+				 *
+				 * @returns `true` indicating the condition has been satisfied; `false` indicating it has not.
+				 */
+				until?: (...args: any[]) => boolean
+
+				/**
+				 * (optional; default does nothing) A function to execute when the condition has been satisfied. The function will
+				 * receive the `this` and arguments passed to the function by the caller, and can return any value intended to be
+				 * returned to the caller.
+				 */
+				then?: (...args: any[]) => T
+			}) => () => T
+		}
+
+		export interface Exports {
+			Monitor: new () => Monitor
+		}
+
+		(
+			function(
+				Packages: slime.jrunscript.Packages,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const module = internal.test.subject;
+
+				const test = function(b: boolean) {
+					verify(b).is(true);
+				}
+
+				fifty.tests.exports.Thread.Monitor = function() {
+					if (module.Thread) {
+						var lock = new module.Thread.Monitor();
+
+						var count = 0;
+
+						var waiter = function() {
+							return lock.Waiter({
+								//	TODO	make optional in API with this default implementation
+								until: function() {
+									return true;
+								},
+								then: function() {
+									test(count == 0);
+									count++;
+									test(count == 1);
+									Packages.java.lang.Thread.sleep(Packages.java.lang.Math.random() * 100);
+									count--;
+									test(count == 0);
+//											jsh.shell.echo("Success.");
+								}
+							});
+						}
+
+						var waiters = [];
+						for (var i=0; i<10; i++) {
+							waiters.push(waiter());
+						}
+
+						var joiners = [];
+						waiters.forEach(function(element) {
+							//	jsh.shell.echo("Starting ...");
+							var t = module.Thread.start({
+								call: element,
+								on: {
+									result: function(o) {
+										//	jsh.shell.echo("Finished.");
+										test(true);
+									},
+									error: function(t) {
+										//	jsh.shell.echo("Threw.");
+										throw t;
+									}
+								}
+							});
+							joiners.push(t);
+						});
+
+						joiners.forEach(function(t) {
+							t.join();
+						});
+					}
+				}
+			}
+		//@ts-ignore
+		)(Packages,fifty);
 	}
 
 	export namespace thread {
 		export interface Exports {
 			setContextClassLoader: any
 			thisSynchronize: any
-			Monitor: any
 			Task: any
 			forkJoin: any
 			map: any

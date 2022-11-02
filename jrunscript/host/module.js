@@ -616,7 +616,7 @@
 			var fail = false;
 			var computation = function(index) {
 				return function() {
-					new lock.Waiter({
+					lock.Waiter({
 						until: function() {
 							if (!p.limit) return true;
 							return running < p.limit;
@@ -632,7 +632,7 @@
 						toThrow = e;
 						fail = true;
 					}
-					new lock.Waiter({
+					lock.Waiter({
 						until: function() {
 							return true;
 						},

@@ -363,9 +363,9 @@ namespace slime.jrunscript {
 		}
 	}
 
-	export type JavaClass<T extends slime.jrunscript.native.java.lang.Object = slime.jrunscript.native.java.lang.Object> = {
-		new (...args: any[]): T
-	}
+	export type JavaClass<O extends slime.jrunscript.native.java.lang.Object = slime.jrunscript.native.java.lang.Object, C = {}> = {
+		new (...args: any[]): O
+	} & C
 
 	export interface Packages {
 		java: {
@@ -390,6 +390,9 @@ namespace slime.jrunscript {
 
 					gc(): void
 				}
+				Math: JavaClass<slime.jrunscript.native.java.lang.Object,{
+					random(): number
+				}>,
 				Throwable: any
 				reflect: {
 					Field: any

@@ -189,7 +189,7 @@
 
 			var on = {
 				start: function(p) {
-					new lock.Waiter({
+					lock.Waiter({
 						until: function() {
 							return true;
 						},
@@ -227,7 +227,7 @@
 						p.open(on)(uri);
 					}
 				});
-				var returner = new lock.Waiter({
+				var returner = lock.Waiter({
 					until: function() {
 						return Boolean(opened);
 					},
@@ -331,7 +331,7 @@
 					uri: url.toString(),
 					on: {
 						start: function(p) {
-							new lock.Waiter({
+							lock.Waiter({
 								until: function() {
 									return true;
 								},
@@ -349,7 +349,7 @@
 						}
 					}
 				});
-				var returner = new lock.Waiter({
+				var returner = lock.Waiter({
 					until: function() {
 						return Boolean(opened);
 					},

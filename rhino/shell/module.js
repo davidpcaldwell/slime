@@ -182,7 +182,7 @@
 		$exports.embed = $api.events.Function(function(p,events) {
 			var lock = new $context.api.java.Thread.Monitor();
 			var started = false;
-			events.listeners.add("started", new lock.Waiter({
+			events.listeners.add("started", lock.Waiter({
 				then: function() {
 					started = true;
 				}
@@ -194,7 +194,7 @@
 					events.fire("exception", e);
 				}
 			});
-			new lock.Waiter({
+			lock.Waiter({
 				until: function() {
 					return started;
 				}

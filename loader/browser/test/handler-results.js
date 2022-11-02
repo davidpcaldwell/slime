@@ -24,7 +24,7 @@
 					if (request.method == "POST") {
 						$context.library.shell.console("Receiving POSTed results ...");
 						//	TODO	perhaps need better concurrency construct, like Notifier
-						var notifier = new lock.Waiter({
+						var notifier = lock.Waiter({
 							until: function() {
 								return true;
 							},
@@ -40,7 +40,7 @@
 						return notifier();
 					} else if (request.method == "GET") {
 						$context.library.shell.console("Received GET request for results; blocking on " + lock);
-						var waitForResult = new lock.Waiter({
+						var waitForResult = lock.Waiter({
 							until: function() {
 								return typeof(result) != "undefined";
 							},
