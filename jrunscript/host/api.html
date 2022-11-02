@@ -559,21 +559,6 @@ END LICENSE
 						});
 						t2.join();
 						verify(c2).getResult().is("Timed out.");
-
-						var r3 = module.Thread.run({
-							call: f,
-							timeout: 150
-						});
-						test(r3 == 1);
-						try {
-							var r4 = module.Thread.run({
-								call: sleeper(250),
-								timeout: 50
-							});
-							test(false);
-						} catch (e) {
-							test(e == module.Thread.run.TIMED_OUT);
-						}
 					}
 				</script>
 			</li>
