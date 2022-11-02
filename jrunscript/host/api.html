@@ -42,37 +42,6 @@ END LICENSE
 				<div class="name">Thread</div>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="function">
-						<div class="name">run</div>
-						<span>Runs a function in a separate thread, but blocks the calling thread until the function completes or times out.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">call</div>
-											<span>__DESCRIPTION__</span>
-										</li>
-										<li class="value">
-											<div class="name">timeout</div>
-											<span class="type">number</span>
-											<span>
-												(optional)
-												A timeout, in milliseconds.
-											</span>
-										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span>The value returned by the underlying function specified by <code>call</code>.</span>
-						</div>
-					</li>
 					<li class="constructor">
 						<div class="name">Monitor</div>
 						<span>Represents a Java monitor that can be used for synchronization.</span>
@@ -590,21 +559,6 @@ END LICENSE
 						});
 						t2.join();
 						verify(c2).getResult().is("Timed out.");
-
-						var r3 = module.Thread.run({
-							call: f,
-							timeout: 150
-						});
-						test(r3 == 1);
-						try {
-							var r4 = module.Thread.run({
-								call: sleeper(250),
-								timeout: 50
-							});
-							test(false);
-						} catch (e) {
-							test(e == module.Thread.run.TIMED_OUT);
-						}
 					}
 				</script>
 			</li>

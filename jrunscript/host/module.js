@@ -469,6 +469,13 @@
 		$exports.Thread.start = function(p,factory) {
 			return new Thread(p,factory);
 		}
+		var TIMED_OUT = $api.Error.type({
+			name: "JavaThreadTimeoutError",
+			getMessage: function() {
+				return "Timed out.";
+			}
+		});
+
 		$exports.Thread.run = function(p) {
 			var on = new function() {
 				var result = {};
@@ -488,7 +495,7 @@
 				this.evaluate = function() {
 					if (result.returned) return result.returned.value;
 					if (result.threw) throw result.threw;
-					if (result.timedOut) throw $exports.Thread.run.TIMED_OUT;
+					if (result.timedOut) throw new TIMED_OUT();
 				}
 			};
 			var o = {};

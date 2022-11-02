@@ -501,13 +501,76 @@ namespace slime.jrunscript.host {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
+
+	export namespace thread {
+		export interface Exports {
+			/**
+			 * Runs a function in a separate thread, but blocks the calling thread until the function completes or times out. If the
+			 * function times out, an error will be thrown.
+			 *
+			 * @returns The value returned by the underlying function specified by `call`.
+			 */
+			run: <T>(
+				p: {
+					call: () => T
+
+					/**
+					 * (optional) A timeout, in milliseconds.
+					 */
+					timeout: number
+				}
+			) => T
+		}
+
+		(
+			function(
+				Packages: slime.jrunscript.Packages,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify, run } = fifty;
+				const { subject } = internal.test;
+
+				fifty.tests.exports.Thread.run = function() {
+					var fn = function(result: number, sleep?: number) {
+						return function() {
+							if (sleep) Packages.java.lang.Thread.sleep(sleep);
+							return result;
+						}
+					};
+
+					var f_one = fn(1, 250);
+
+					var one = subject.Thread.run({
+						call: f_one,
+						timeout: 500
+					});
+					verify(one).is(1);
+
+					try {
+						var tooLate = subject.Thread.run({
+							call: f_one,
+							timeout: 100
+						});
+						verify(false).is(true);
+					} catch (e) {
+						if (e instanceof Error) {
+							verify(e).name.is("JavaThreadTimeoutError");
+							verify(e).message.is("Timed out.");
+						} else {
+							verify("Error").is("Not Error");
+						}
+					}
+				}
+			}
+		//@ts-ignore
+		)(Packages,fifty);
 
 	}
 
 	export namespace thread {
 		export interface Exports {
 			setContextClassLoader: any
-			run: any
 			thisSynchronize: any
 			Monitor: any
 			Task: any
