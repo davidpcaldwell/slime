@@ -42,7 +42,7 @@
 					while(more) {
 						monitor.Waiter({
 							until: function() {
-								return queue.length;
+								return Boolean(queue.length);
 							},
 							then: function() {
 								var e = queue.shift();
