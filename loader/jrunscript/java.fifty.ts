@@ -57,10 +57,10 @@ namespace slime.jrunscript.runtime.java {
 	 */
 	export interface Exports {
 		/**
-		 * Returns a Java class given its name. Note that the name expected is the VM-level class name, not the source-level class
-		 * name. So for inner class `Baz` of class `foo.Bar`, the argument given should be `"foo.Bar$Baz"`.
+		 * Returns a Java class given its name.
 		 *
-		 * @param { string } name The name of a Java class.
+		 * @param { string } name The name of a Java class. Note that the name expected is the VM-level class name, not the
+		 * source-level class name. So for inner class `Baz` of class `foo.Bar`, the argument given should be `"foo.Bar$Baz"`.
 		 * @returns { JavaClass } The JavaClass representing the Java class with the given name, or `null` if no such class exists.
 		 */
 		getClass(name: string): JavaClass

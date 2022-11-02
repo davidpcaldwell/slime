@@ -23,7 +23,7 @@
 								jsh.java.Map({ object: p.values }),
 								p.caseSensitive
 							]
-						})
+						}) as slime.jrunscript.native.inonit.system.OperatingSystem.Environment;
 					}
 				}
 			}

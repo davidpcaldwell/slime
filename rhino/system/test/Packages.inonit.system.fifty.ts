@@ -31,7 +31,7 @@ namespace slime.jrunscript.native {
 		}
 
 		export namespace OperatingSystem {
-			export interface Environment {
+			export interface Environment extends native.java.lang.Object {
 				isNameCaseSensitive(): {
 					booleanValue(): boolean
 				}
@@ -93,7 +93,7 @@ namespace slime.jrunscript.native {
 							environment
 						)
 					]
-				});
+				}) as unknown as { booleanValue(): boolean };
 			};
 
 			fifty.verify(detectedAsCaseSensitive(CaseSensitive({ foo: "bar" }))).booleanValue().is(true);

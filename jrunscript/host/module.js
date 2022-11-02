@@ -7,39 +7,16 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { any } JavaAdapter
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.host.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.host.Exports } $exports
-	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
 	 */
-	function($api,$context,$loader,$exports,Packages,JavaAdapter) {
-		//	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide JavaScript
-		//	objects to wrap Java classes, which may be a better approach
-		//$exports.getClass = $api.Function({
-		//	before: $api.Function.argument.isString({ index: 0, name: "name" }),
-		//	call: function(name) {
-		//		if ($context.$slime.classpath.getClass(name)) {
-		//			return $context.$slime.java.getJavaPackagesReference(name);
-		//		}
-		//		return null;
-		//	}
-		//});
+	function(Packages,JavaAdapter,$api,$context,$loader,$exports) {
 		$exports.getClass = $context.$slime.java.getClass;
 
-		//var isJavaObject = function(object) {
-		//	if (typeof(object) == "undefined") return false;
-		//	if (typeof(object) == "string") return false;
-		//	if (typeof(object) == "number") return false;
-		//	if (typeof(object) == "boolean") return false;
-		//	if (object == null) return false;
-		//	//	TODO	Is the next line superfluous now?
-		//	if ($context.$slime.java.isJavaObjectArray(object)) return true;
-		//	if ($context.$slime.java.isJavaInstance(object)) return true;
-		//	return false;
-		//}
-		//$exports.isJavaObject = isJavaObject;
 		var isJavaObject = $context.$slime.java.isJavaObject;
 		$exports.isJavaObject = isJavaObject;
 
@@ -731,4 +708,4 @@
 		}
 	}
 //@ts-ignore
-)($api,$context,$loader,$exports,Packages,JavaAdapter)
+)(Packages,JavaAdapter,$api,$context,$loader,$exports)
