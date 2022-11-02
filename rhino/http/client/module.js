@@ -51,11 +51,13 @@
 			var oldMethods = $context.api.java.Array.adapt(methodsField.get(null));
 			var newMethods = oldMethods.concat(Array.prototype.slice.call(arguments));
 
+			var array = newMethods.map(function(s) { return new Packages.java.lang.String(s); });
+
 			methodsField.set(
 				null,
 				$context.api.java.Array.create({
 					type: Packages.java.lang.String,
-					array: newMethods.map(function(s) { return new Packages.java.lang.String(s); })
+					array: array
 				})
 			);
 		};

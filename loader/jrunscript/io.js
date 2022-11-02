@@ -281,13 +281,19 @@
 				},
 
 				java: new function() {
+					//	TODO	to get rid of these ignores, we'd need to rethink the relationship between the Packages types and
+					//			the native types, which might be worth doing, but not doing it now
 					/** @type { (object: any) => object is slime.jrunscript.native.java.io.InputStream } */
+					//@ts-ignore
 					var isJavaInputStream = $context.api.java.isJavaType(Packages.java.io.InputStream);
 					/** @type { (object: any) => object is slime.jrunscript.native.java.io.OutputStream } */
+					//@ts-ignore
 					var isJavaOutputStream = $context.api.java.isJavaType(Packages.java.io.OutputStream);
 					/** @type { (object: any) => object is slime.jrunscript.native.java.io.Reader } */
+					//@ts-ignore
 					var isJavaReader = $context.api.java.isJavaType(Packages.java.io.Reader);
 					/** @type { (object: any) => object is slime.jrunscript.native.java.io.Writer } */
+					//@ts-ignore
 					var isJavaWriter = $context.api.java.isJavaType(Packages.java.io.Writer);
 
 					/**

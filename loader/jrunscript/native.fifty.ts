@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript {
-	export interface Array<T = native.java.lang.Object> {
+	export interface Array<T = native.java.lang.Object> extends slime.jrunscript.native.java.lang.Object {
 		[i: number]: T
 		readonly length: number
 	}
@@ -17,14 +17,28 @@ namespace slime.jrunscript {
 		export namespace java {
 			export namespace lang {
 				export interface Object {
+					getClass(): Class
 				}
 
-				export interface String {
+				export interface String extends Object {
 					equals(other: any): boolean
+					toCharArray(): any
+					getBytes(): any
 				}
 
 				export interface Class {
 					isInstance(object: any): boolean
+					getDeclaredField(name: string): reflect.Field
+				}
+
+				export namespace reflect {
+					export interface Field {
+						setAccessible(flag: boolean): void
+						setInt(object: object, i: number)
+						getModifiers(): number
+						get(object: Object): Object
+						set(obj: Object, value: Object): void
+					}
 				}
 			}
 			export namespace io {
@@ -157,7 +171,7 @@ namespace slime.jrunscript {
 					contains(element: any): boolean
 				}
 
-				export interface Map {
+				export interface Map extends java.lang.Object {
 					keySet(): Set
 					get(key: any): any
 				}
@@ -367,6 +381,8 @@ namespace slime.jrunscript {
 					getenv(name: string): string
 					getenv(): any
 					identityHashCode(o: any): number
+
+					gc(): void
 				}
 				Throwable: any
 				reflect: {
@@ -374,7 +390,10 @@ namespace slime.jrunscript {
 					Modifier: any
 					Array: any
 				}
-				String: any
+				String: {
+					new (string: string): slime.jrunscript.native.java.lang.String
+					format: any
+				}
 				Character: any
 				Thread: any
 				Runnable: any

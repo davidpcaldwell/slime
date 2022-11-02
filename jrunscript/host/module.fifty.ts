@@ -82,7 +82,7 @@ namespace slime.jrunscript.host {
 						foo: "bar"
 					},
 					true
-				);
+				) as native.inonit.system.OperatingSystem.Environment;
 
 				var environment = subject.Environment(_environment);
 
@@ -97,7 +97,7 @@ namespace slime.jrunscript.host {
 				var _insensitive = _Environment(
 					{ foo: "bar" },
 					false
-				);
+				) as native.inonit.system.OperatingSystem.Environment;
 
 				var insensitive = subject.Environment(_insensitive);
 
@@ -110,10 +110,17 @@ namespace slime.jrunscript.host {
 	)(Packages,fifty);
 
 	export interface Exports {
-		getClass: Function
-		isJavaObject: any
-		isJavaType: any
-		toNativeClass: any
+		/** The {@link slime.jrunscript.runtim.java.Exports} `getClass()` function. */
+		getClass: slime.jrunscript.runtime.java.Exports["getClass"]
+
+		/** The {@link slime.jrunscript.runtim.java.Exports} `isJavaObject()` function. */
+		isJavaObject: slime.jrunscript.runtime.java.Exports["isJavaObject"]
+
+		/** The {@link slime.jrunscript.runtim.java.Exports} `isJavaType()` function. */
+		isJavaType: slime.jrunscript.runtime.java.Exports["isJavaType"]
+
+		/** The {@link slime.jrunscript.runtim.java.Exports} `toNativeClass()` function. */
+		toNativeClass: slime.jrunscript.runtime.java.Exports["toNativeClass"]
 	}
 
 	export interface Exports {
@@ -135,7 +142,7 @@ namespace slime.jrunscript.host {
 			create: <T>(p: {
 				type?: JavaClass
 				array: T[]
-			}) => slime.jrunscript.Array
+			}) => slime.jrunscript.Array<T>
 		}
 	}
 
@@ -156,7 +163,7 @@ namespace slime.jrunscript.host {
 			}
 
 			fifty.tests.exports.Array = function() {
-				var StringClass = (isRhino) ? Packages.java.lang.String : Packages.java.lang.String.class;
+				var StringClass = (isRhino) ? Packages.java.lang.String : Packages.java.lang.String["class"];
 				var javaArray = Packages.java.lang.reflect.Array.newInstance( StringClass, 3 );
 				javaArray[0] = "Hello";
 				javaArray[1] = "World";
@@ -260,7 +267,6 @@ namespace slime.jrunscript.host {
 
 
 	export interface Exports {
-		invoke: any
 		Properties: any
 		ErrorType: any
 		toJsArray: any
@@ -276,8 +282,106 @@ namespace slime.jrunscript.host {
 			map: any
 			sleep: any
 		}
-		addShutdownHook: any
+
+		/**
+		 * Adds a function to be run at VM shutdown. Note that under some scenarios (for example, a script executed without
+		 * forking), this may not be at script exit.
+		 *
+		 * @param hook A function, which will be invoked with no arguments and the global object as `this`.
+		 */
+		addShutdownHook: (hook: () => void) => void
 	}
+
+	export interface Exports {
+		/**
+		 * Invokes a method on a Java object via reflection. Ordinarily, Java methods can simply be invoked with JavaScript
+		 * semantics using a LiveConnect implementation. The `invoke` function provides the ability to invoke methods that are not
+		 * accessible (for example, those that are private, package or protected).
+		 *
+		 * @returns The value returned by the Java method, or `undefined` for `void` methods.
+		 */
+		//	As of this writing, used only in tests; are there use cases for it?
+		invoke: (p: {
+			/**
+			 * The Java object on which to invoke the method. May be omitted for `static` methods.
+			 */
+			target?: slime.jrunscript.native.java.lang.Object
+			/**
+			 * An object specifying the Java method to invoke.
+			 */
+			method: {
+				/**
+				 * The name of the method to invoke.
+				 */
+				name: string
+
+				/**
+				 * (optional; defaults to a method with no parameters) The list of parameter types in the signature of the method to
+				 * invoke.
+				 */
+				parameterTypes?: JavaClass[]
+
+				/**
+				 * The declaring class of the method to be invoked. If the method is declared in the concrete class of the object,
+				 * this value may be omitted.
+				 */
+				class?: JavaClass
+			}
+
+			/**
+			 * (may be omitted if the Java method takes no arguments) The arguments with which to invoke the method.
+			 */
+			arguments?: (slime.jrunscript.native.java.lang.Object | boolean)[]
+		}) => slime.jrunscript.native.java.lang.Object
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const module = internal.test.subject;
+
+			fifty.tests.exports.invoke = function() {
+				var directVersion = String(Packages.java.lang.System.getProperty("java.version"));
+
+				var _version = module.invoke({
+					method: {
+						name: "getProperty",
+						parameterTypes: [Packages.java.lang.String],
+						class: Packages.java.lang.System
+					},
+					arguments: [new Packages.java.lang.String("java.version")]
+				});
+				var version = String(_version);
+				verify(version).is(directVersion);
+
+				var string = new Packages.java.lang.String("Hello");
+				var _toString = module.invoke({
+					target: string,
+					method: {
+						name: "toString"
+					}
+				});
+				verify(String(_toString)).is("Hello");
+
+				var _void = module.invoke({
+					method: {
+						name: "gc",
+						class: Packages.java.lang.System
+					}
+				});
+				verify(_void).is.type("undefined");
+
+				var _v2 = Packages.java.lang.System.gc();
+				verify(_v2).is.type("undefined");
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
 
 	(
 		function(
