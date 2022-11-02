@@ -191,7 +191,6 @@ namespace slime.jrunscript.host {
 	//@ts-ignore
 	)(Packages,fifty);
 
-
 	export interface Exports {
 		/**
 		 * Creates a Java `java.util.Map` object from the given JavaScript object by putting all its enumerable properties
@@ -227,6 +226,34 @@ namespace slime.jrunscript.host {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		Properties: any
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const module = internal.test.subject;
+
+			fifty.tests.exports.Properties = function() {
+				var $p = new Packages.java.util.Properties();
+				$p.setProperty("a.a", "a");
+				$p.setProperty("a.b", "b");
+				$p.setProperty("a.c", "c");
+				var p = new module.Properties($p);
+				//	Note that for-in loop would yield four properties, including toString(), but this seems fine
+				Packages.java.lang.System.err.println(Object.keys(p.a));
+				verify(p).evaluate.property("a").evaluate(function(a) { return Object.keys(a); }).length.is(3);
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
 
 	export namespace logging {
 		type LevelMethod = (...args: any[]) => void
@@ -267,21 +294,9 @@ namespace slime.jrunscript.host {
 
 
 	export interface Exports {
-		Properties: any
 		ErrorType: any
 		toJsArray: any
 		toJavaArray: any
-		Thread: {
-			setContextClassLoader: any
-			start: any
-			run: any
-			thisSynchronize: any
-			Monitor: any
-			Task: any
-			forkJoin: any
-			map: any
-			sleep: any
-		}
 
 		/**
 		 * Adds a function to be run at VM shutdown. Note that under some scenarios (for example, a script executed without
@@ -290,6 +305,216 @@ namespace slime.jrunscript.host {
 		 * @param hook A function, which will be invoked with no arguments and the global object as `this`.
 		 */
 		addShutdownHook: (hook: () => void) => void
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.Thread = fifty.test.Parent();
+
+			fifty.tests.exports.Thread.object = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Thread {
+		/**
+		 * Causes the calling thread to block and wait for this thread to terminate (either via the completion of the execution of
+		 * the function or via timing out).
+		 */
+		join: () => void
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const module = internal.test.subject;
+
+			fifty.tests.exports.Thread.object.join = function() {
+				var listener = (function() {
+					return {
+						returned: 0,
+						errored: 0,
+						expired: 0,
+						result: module.Thread.thisSynchronize(function(rv) {
+							this.returned++;
+						}),
+						error: module.Thread.thisSynchronize(function(e) {
+							this.errored++;
+						}),
+						timeout: module.Thread.thisSynchronize(function() {
+							this.expired++;
+						})
+					};
+				})();
+
+				var MAX = 250;
+				var COUNT = 5;
+
+				var rnd = new Packages.java.util.Random();
+
+				var random = function() {
+					return rnd.nextDouble();
+				}
+
+				verify(listener).returned.is(0);
+				verify(listener).errored.is(0);
+				verify(listener).expired.is(0);
+
+				var Thread = module.Thread;
+
+				var all = [];
+
+				for (var i=0; i<COUNT; i++) {
+					(function(i) {
+						var t = Thread.start({
+							call: function() {
+								Packages.java.lang.Thread.sleep(MAX * random() / 2);
+								return i;
+							},
+							on: listener
+						});
+						all.push(t);
+					})(i)
+				}
+
+				for (var i=0; i<COUNT; i++) {
+					(function(i) {
+						var t = Thread.start({
+							call: function() {
+								Packages.java.lang.Thread.sleep(MAX * random() / 2);
+								throw new Error(String(i));
+							},
+							on: listener
+						});
+						all.push(t);
+					})(i);
+				}
+
+				for (var i=0; i<COUNT; i++) {
+					(function(i) {
+						var t = Thread.start({
+							call: function() {
+								Packages.java.lang.Thread.sleep(MAX * (3 + random()));
+								throw new Error(String("to" + i));
+							},
+							timeout: MAX,
+							on: listener
+						});
+						all.push(t);
+					})(i);
+				}
+
+				for (var i=0; i<all.length; i++) {
+					all[i].join();
+				}
+
+				verify(listener).returned.is(COUNT);
+				verify(listener).errored.is(COUNT);
+				verify(listener).expired.is(COUNT);
+				var engine = String(Packages.java.lang.System.getProperty("jsh.engine"));
+				verify(engine,"Engine running").is(engine);
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+
+	export interface Exports {
+		//	TODO	a comment in api.html claimed "(conditional; not implemented for Nashorn)" but I believe this is implemented
+		//			for Nashorn
+		Thread: thread.Exports
+	}
+
+	export namespace thread {
+		export interface Exports {
+			/**
+			 * Starts a thread.
+			 */
+			start: {
+				<T>(f: () => T ): Thread
+
+				<T>(p: {
+					/**
+					 * A function. The function will be invoked with no arguments and an undefined `this` value; if a specific
+					 * calling configuration is required, a wrapper function that provides this configuration is required.
+					 */
+					call: () => T
+
+					/**
+					 * (optional) A timeout, in milliseconds.
+					 */
+					timeout?: number
+
+
+					/**
+					 * (optional) Specifies a set of callbacks.
+					 */
+					on?: {
+						/**
+						 * (optional) A function invoked when the function executed by the thread returns.
+						 *
+						 * @param t The value returned by the function.
+						 */
+						result?: (t: T) => void
+
+						/**
+						 * (optional) A function invoked if the function executed by the thread throws an exception.
+						 *
+						 * @param e The JavaScript value thrown.
+						 */
+						error?: (e: any) => void
+
+						/**
+						 * (optional) A function invoked if the function executed by the thread times out. This function must do any
+						 * cleanup desired to terminate the executing function; the function will otherwise continue executing in
+						 * the background.
+						 */
+						timeout?: () => void
+					}
+				}): Thread
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { subject } = internal.test;
+				let count = 0;
+
+				fifty.tests.exports.Thread.start = function() {
+					var count = 0;
+					verify(count).is(0);
+					var thread = subject.Thread.start(function() {
+						count++;
+					});
+					thread.join();
+					verify(count).is(1);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+	}
+
+	export namespace thread {
+		export interface Exports {
+			setContextClassLoader: any
+			run: any
+			thisSynchronize: any
+			Monitor: any
+			Task: any
+			forkJoin: any
+			map: any
+			sleep: any
+		}
 	}
 
 	export interface Exports {
