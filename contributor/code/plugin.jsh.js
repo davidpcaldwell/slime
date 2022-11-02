@@ -15,7 +15,7 @@
 	function($api,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.file && jsh.shell && jsh.tools && jsh.tools.code);
+				return Boolean(jsh.file && jsh.shell && jsh.tools && jsh.tools.git && jsh.tools.code);
 			},
 			load: function() {
 				if (!jsh.project) jsh.project = {
@@ -34,6 +34,7 @@
 					library: {
 						file: jsh.file,
 						io: jsh.io,
+						git: jsh.tools.git,
 						code: jsh.tools.code
 					}
 				});
