@@ -145,6 +145,10 @@ namespace slime.jrunscript {
 				export interface List<T = native.java.lang.Object> {
 				}
 
+				export interface Random extends native.java.lang.Object {
+					nextDouble(): number
+				}
+
 				export interface Properties {
 					get(name: string): any
 					propertyNames(): any
@@ -359,12 +363,14 @@ namespace slime.jrunscript {
 		}
 	}
 
-	export type JavaClass = any
+	export type JavaClass<T extends slime.jrunscript.native.java.lang.Object = slime.jrunscript.native.java.lang.Object> = {
+		new (...args: any[]): T
+	}
 
 	export interface Packages {
 		java: {
 			lang: {
-				System: {
+				System: JavaClass & {
 					err: {
 						println: any
 					}
@@ -407,13 +413,15 @@ namespace slime.jrunscript {
 				RuntimeException: any
 				ProcessBuilder: any
 				StringBuilder: any
-				Byte: JavaClass
+				Byte: JavaClass & {
+					TYPE: any
+				}
 				Number: JavaClass
 			}
 			io: {
 				ByteArrayInputStream: any
 				ByteArrayOutputStream: any
-				File: {
+				File: JavaClass & {
 					new (parent: slime.jrunscript.native.java.io.File, path: string): slime.jrunscript.native.java.io.File
 					new (parent: string, path: string): slime.jrunscript.native.java.io.File
 					new (path: slime.jrunscript.native.java.lang.String): slime.jrunscript.native.java.io.File
@@ -493,6 +501,7 @@ namespace slime.jrunscript {
 				UUID: any
 				TimeZone: any
 				Calendar: any
+				Random: JavaClass<slime.jrunscript.native.java.util.Random>
 			}
 			text: {
 				SimpleDateFormat: any
@@ -545,7 +554,7 @@ namespace slime.jrunscript {
 				}
 				engine: {
 					Code: {
-						Loader: {
+						Loader: JavaClass & {
 							create: {
 								(url: slime.jrunscript.native.java.net.URL): slime.jrunscript.native.inonit.script.engine.Code.Loader
 								(file: slime.jrunscript.native.java.io.File): slime.jrunscript.native.inonit.script.engine.Code.Loader
