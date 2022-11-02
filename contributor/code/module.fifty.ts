@@ -9,6 +9,7 @@ namespace slime.project.code {
 		library: {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
+			git: slime.jrunscript.tools.git.Exports
 			code: slime.tools.code.Exports
 		}
 	}
@@ -32,11 +33,18 @@ namespace slime.project.code {
 			}) => slime.$api.fp.world.old.Tell<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
 
 			toHandler: (on: on) => slime.$api.events.Handler<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
-		},
+		}
+
 		directory: {
 			lastModified: <T>(p: {
 				loader: slime.runtime.loader.Synchronous<T>
 				map: (t: T) => slime.jrunscript.runtime.Resource
+			}) => slime.$api.fp.Maybe<number>
+		}
+
+		git: {
+			lastModified: (p: {
+				base: string
 			}) => slime.$api.fp.Maybe<number>
 		}
 	}
@@ -98,6 +106,21 @@ namespace slime.project.code {
 					if (it.present) {
 						jsh.shell.console("Modified: " + it.value);
 						// jsh.shell.console("Latest: " + ( (it.value.path.length) ? it.value.path.join("/") + "/" : "" ) + it.value.name + " at " + JSON.stringify(it.value.resource.modified()));
+					} else {
+						jsh.shell.console("Error.");
+					}
+				}
+			);
+
+			fifty.tests.manual.lastModified.git = $api.fp.pipe(
+				$api.fp.impure.Input.value( fifty.jsh.file.relative("../..").pathname ),
+				function(src) {
+					return { base: src }
+				},
+				subject.git.lastModified,
+				function(it) {
+					if (it.present) {
+						jsh.shell.console("Modified: " + it.value);
 					} else {
 						jsh.shell.console("Error.");
 					}

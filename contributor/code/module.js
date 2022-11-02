@@ -234,6 +234,19 @@
 			}
 		)();
 
+		/** @type { slime.jrunscript.tools.git.Command<void, string[]> } */
+		var lsFiles = {
+			invocation: function() {
+				return {
+					command: "ls-files"
+				}
+			},
+			result: function(output) {
+				//	TODO	platform line ending or \n?
+				return output.split("\n");
+			}
+		}
+
 		$export({
 			files: files,
 			directory: {
@@ -264,6 +277,41 @@
 								return $api.fp.Maybe.nothing();
 							}
 						)
+					);
+				}
+			},
+			git: {
+				lastModified: function(p) {
+					var files = $context.library.git.program({ command: "git" }).repository(p.base).command(lsFiles).argument().run();
+					var loader = $context.library.file.world.Location.directory.loader.synchronous({
+						root: $context.library.file.world.Location.from.os(p.base)
+					});
+					return files.reduce(
+						/**
+						 *
+						 * @param { slime.$api.fp.Maybe<number> } rv
+						 * @param { string } path
+						 */
+						function(rv,path) {
+							//	TODO	forward slash, or pathname separator?
+							var resource = loader.get(path.split("/"));
+							if (resource.present) {
+								var modified = resource.value.modified();
+								if (rv.present) {
+									if (modified.present) {
+										if (modified.value > rv.value) {
+											rv = modified;
+										}
+									}
+								} else {
+									if (modified.present) {
+										rv = modified;
+									}
+								}
+							}
+							return rv;
+						},
+						$api.fp.Maybe.nothing()
 					);
 				}
 			}
