@@ -265,7 +265,17 @@ namespace slime.jrunscript.host {
 		ErrorType: any
 		toJsArray: any
 		toJavaArray: any
-		Thread: any
+		Thread: {
+			setContextClassLoader: any
+			start: any
+			run: any
+			thisSynchronize: any
+			Monitor: any
+			Task: any
+			forkJoin: any
+			map: any
+			sleep: any
+		}
 		addShutdownHook: any
 	}
 

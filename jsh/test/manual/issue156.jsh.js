@@ -26,7 +26,7 @@
 					call: f
 				});
 			} else {
-				new jsh.java.Thread(f).start();
+				jsh.java.Thread.start(f);
 			}
 		}
 

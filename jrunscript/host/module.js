@@ -469,7 +469,17 @@
 			};
 		};
 
-		$exports.Thread = {};
+		$exports.Thread = {
+			setContextClassLoader: void(0),
+			start: void(0),
+			run: void(0),
+			forkJoin: void(0),
+			map: void(0),
+			Monitor: void(0),
+			sleep: void(0),
+			Task: void(0),
+			thisSynchronize: void(0)
+		};
 		$exports.Thread.setContextClassLoader = function(p) {
 			if (!p) p = {};
 			if (!p._thread) p._thread = Packages.java.lang.Thread.currentThread();
