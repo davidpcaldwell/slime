@@ -42,62 +42,6 @@ END LICENSE
 				<div class="name">Thread</div>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="constructor">
-						<div class="name">Monitor</div>
-						<script type="application/x.jsapi#tests" jsapi:id="Monitor"><![CDATA[
-							if (module.Thread) {
-								var lock = new module.Thread.Monitor();
-
-								var count = 0;
-
-								var waiter = function() {
-									return new lock.Waiter({
-										//	TODO	make optional in API with this default implementation
-										until: function() {
-											return true;
-										},
-										then: function() {
-											test(count == 0);
-											count++;
-											test(count == 1);
-											Packages.java.lang.Thread.sleep(Packages.java.lang.Math.random() * 100);
-											count--;
-											test(count == 0);
-	//											jsh.shell.echo("Success.");
-										}
-									});
-								}
-
-								var waiters = [];
-								for (var i=0; i<10; i++) {
-									waiters.push(waiter());
-								}
-
-								var joiners = [];
-								waiters.forEach(function(element) {
-									//	jsh.shell.echo("Starting ...");
-									var t = module.Thread.start({
-										call: element,
-										on: {
-											result: function(o) {
-												//	jsh.shell.echo("Finished.");
-												test(true);
-											},
-											error: function(t) {
-												//	jsh.shell.echo("Threw.");
-												throw t;
-											}
-										}
-									});
-									joiners.push(t);
-								});
-
-								joiners.forEach(function(t) {
-									t.join();
-								});
-							}
-						]]></script>
-					</li>
 					<li class="function">
 						<div class="name">thisSynchronize</div>
 						<span>
