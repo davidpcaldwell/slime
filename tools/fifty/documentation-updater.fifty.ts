@@ -7,11 +7,26 @@
 namespace slime.tools.documentation.updater {
 	export interface Context {
 		library: {
+			java: slime.jrunscript.host.Exports
+			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 		}
 		typedoc: {
 			invocation: slime.jsh.Global["wf"]["typescript"]["typedoc"]["invocation"]
 		}
+	}
+
+	export namespace internal {
+		export type Listener = {
+			started: slime.jrunscript.file.world.Location
+			finished: slime.jrunscript.file.world.Location
+		}
+		export type Update = slime.$api.fp.world.Action<
+			{
+				project: slime.jrunscript.file.world.Location
+			},
+			Listener
+		>
 	}
 
 	export interface Updater {
