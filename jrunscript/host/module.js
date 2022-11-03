@@ -583,13 +583,18 @@
 			return rv;
 		};
 
+		/**
+		 * @template { any } T
+		 */
 		$exports.Thread.forkJoin = function(functions) {
-			var rv = functions.map(function(){});
+			/** @type { T[] } */
+			var rv = functions.map(function(){ return void(0); });
 			var threads = functions.map(function(f,index) {
 				return $exports.Thread.start({
 					call: f,
 					on: {
 						result: function(returned) {
+							//@ts-ignore
 							rv[index] = returned;
 						},
 						error: function(error) {
@@ -605,8 +610,11 @@
 		};
 
 		$exports.Thread.map = function(array,mapper,target,p) {
-			if (!target) target = {};
-			if (!p) p = {};
+			if (!target) target = null;
+			if (!p) p = {
+				callback: void(0),
+				limit: void(0)
+			};
 			if (!p.callback) p.callback = function() {};
 			var rv = [];
 			var lock = new $exports.Thread.Monitor();
