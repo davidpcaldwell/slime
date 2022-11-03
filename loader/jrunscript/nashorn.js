@@ -7,14 +7,17 @@
 //@ts-check
 (
 	/**
+	 * @typedef { slime.jrunscript.runtime.internal.nashorn.Nashorn | slime.jrunscript.runtime.internal.nashorn.Graal } Bootstrap
+	 */
+	/**
 	 *
 	 * @param { slime.jrunscript.runtime.internal.nashorn.load } load
 	 * @param { slime.jrunscript.runtime.Java } Java
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.runtime.sync } sync
-	 * @param { slime.jrunscript.runtime.nashorn.Scope["$graal"] } $graal
-	 * @param { slime.jrunscript.runtime.nashorn.Scope["$loader"] } $loader
-	 * @returns { slime.jrunscript.runtime.Exports | slime.jrunscript.runtime.internal.nashorn.Nashorn | slime.jrunscript.runtime.internal.nashorn.Graal }
+	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["$graal"] } $graal
+	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["$loader"] } $loader
+	 * @returns { slime.jrunscript.runtime.Nashorn | slime.jrunscript.runtime.Graal | Bootstrap }
 	 */
 	function(load,Java,Packages,sync,$graal,$loader) {
 		//	TODO	this function is called twice or something with different semantics, that's why its return type is so strange.
