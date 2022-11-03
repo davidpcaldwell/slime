@@ -143,6 +143,7 @@ namespace slime.jrunscript.runtime.java {
 		 * A function that determines whether its argument is of a certain Java type.
 		 *
 		 * @param value A value.
+		 *
 		 * @returns `true` if the value is a Java object which is an instance of the Java type; `false` otherwise.
 		 */
 		export type isJavaType = (value: any) => boolean
@@ -152,8 +153,10 @@ namespace slime.jrunscript.runtime.java {
 		/**
 		 * A function that creates a function that can determine whether that function's argument is of the given Java type.
 		 *
-		 * @param javaclass A Java type.
-		 * @returns A function that can determine whether its argument is of the given type.
+		 * @param javaclass A Java type, like `Packages.java.lang.Object`
+		 *
+		 * @returns a function which takes a single argument and returns `true` if the given argument is an object of the given Java
+		 * type and `false` if it is not.
 		 */
 		isJavaType(javaclass: JavaClass): exports.isJavaType
 	}

@@ -7,7 +7,12 @@
 namespace slime.jrunscript.host {
 	export interface Context {
 		$slime: any
-		globals: any
+
+		/**
+		 * If `true`, this module modifies global JavaScript objects.
+		 */
+		globals: boolean
+
 		logging: {
 			prefix: string
 		}
@@ -138,9 +143,18 @@ namespace slime.jrunscript.host {
 
 			/**
 			 * Creates a native Java array from a JavaScript array containing Java objects.
+			 *
+			 * @returns A Java array containing the elements in the JavaScript array.
 			 */
 			create: <T>(p: {
+				/**
+				 * A reference to a Java class, e.g., `Packages.java.lang.Object`, representing the type of the array to create.
+				 */
 				type?: JavaClass
+
+				/**
+				 * A JavaScript array to be converted.
+				 */
 				array: T[]
 			}) => slime.jrunscript.Array<T>
 		}
@@ -292,11 +306,16 @@ namespace slime.jrunscript.host {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		/**
+		 * Converts an ECMAScript array into a Java array
+		 */
+		toJavaArray: any
+	}
 
 	export interface Exports {
 		ErrorType: any
 		toJsArray: any
-		toJavaArray: any
 
 		/**
 		 * Adds a function to be run at VM shutdown. Note that under some scenarios (for example, a script executed without
@@ -776,6 +795,7 @@ namespace slime.jrunscript.host {
 
 		(
 			function(
+				Packages: slime.jrunscript.Packages,
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify, run } = fifty;
@@ -816,6 +836,238 @@ namespace slime.jrunscript.host {
 						}
 						verify(finished).is(4);
 					});
+
+					run(function _2() {
+						var scope = {
+							$$api: void(0),
+							monitor: void(0),
+							A: void(0),
+							B: void(0),
+							C: void(0)
+						};
+
+						(
+							function(scope) {
+								var $$api = fifty.global.$api;
+								// $jsapi.loader.eval("../../loader/$api.js", {
+								// 	$slime: {
+								// 		getRuntimeScript: function(path) {
+								// 			return {
+								// 				name: path,
+								// 				js: $jsapi.loader.string("../../loader/" + path)
+								// 			}
+								// 		}
+								// 	},
+								// 	//	TODO	dubious; relies on $engine/$platform compatibility
+								// 	$engine: $platform,
+								// 	$export: function(value) {
+								// 		$$api = value;
+								// 	}
+								// });
+								scope.$$api = $$api;
+
+								var monitor = new module.Thread.Monitor();
+
+								scope.monitor = monitor;
+
+								var Multithreaded = function(step) {
+									var Event = function(f) {
+										return function(error,returned) {
+											monitor.Waiter({
+												until: function() {
+													return true;
+												},
+												then: function() {
+													f();
+												}
+											})();
+										}
+									};
+
+									return {
+										toString: function() {
+											return step.toString();
+										},
+										ready: function() {
+											return step.ready();
+										},
+										task: new module.Thread.Task({
+											call: Event(step.call)
+										})
+									};
+								}
+
+								scope.A = function(shared) {
+									return Multithreaded({
+										ready: function() {
+											return true;
+										},
+										call: function() {
+											shared.a = true;
+										}
+									});
+								};
+								scope.B = function(shared) {
+									return Multithreaded({
+										ready: function() {
+											return shared.a;
+										},
+										call: function() {
+											shared.b = true;
+										}
+									});
+								};
+								scope.C = function(shared) {
+									return Multithreaded({
+										toString: function() {
+											return "C";
+										},
+										ready: function() {
+											return false;
+										},
+										call: function() {
+											throw new Error();
+										}
+									});
+								};
+							}
+						)(scope);
+
+						const { monitor, $$api, C, A, B } = scope;
+
+						Packages.java.lang.System.err.println("Second test.");
+						var Steps: () => {
+							shared: {
+								a: boolean
+								b: boolean
+							}
+							c: any
+							steps: any[]
+							unready: any[]
+							on: {
+								unready: (e: any) => void
+							}
+						} = function() {
+							var shared = { a: false, b: false };
+							var unready = [];
+
+							var c = new C(shared)
+
+							return {
+								shared: shared,
+								c: c,
+								steps: [new A(shared), new B(shared), c],
+								unready: unready,
+								on: {
+									unready: function(e) {
+										unready.push(e.detail);
+									}
+								}
+							}
+						};
+
+						var steps = Steps();
+
+						var task = $$api.threads.steps.Task(steps);
+
+						var finished = false;
+
+						task(monitor.Waiter({
+							until: function() {
+								return true;
+							},
+							then: function() {
+								finished = true;
+							}
+						}));
+
+						monitor.Waiter({
+							until: function() {
+								return finished;
+							},
+							then: function() {
+							}
+						})();
+
+						verify(steps).shared.a.is(true);
+						verify(steps).shared.b.is(true);
+						verify(steps).unready.length.is(1);
+						//	TODO	verify(unready[0]).ready.is(steps.c.ready) does not work because ready property of the
+						//			verify object does not have is() method. Probably addressable in unit test framework.
+						verify(steps).unready[0].is(steps.c);
+
+						var ssteps = Steps();
+						verify(ssteps).shared.a.is(false);
+
+						var stask = $$api.threads.steps.Task(ssteps);
+
+						stask();
+
+						verify(ssteps).shared.a.is(true);
+						verify(ssteps).shared.b.is(true);
+						verify(ssteps).unready.length.is(1);
+						if (ssteps.unready.length) {
+							verify(ssteps).unready[0].is(ssteps.c);
+						}
+					})
+				}
+			}
+		//@ts-ignore
+		)(Packages,fifty);
+	}
+
+	export namespace thread {
+		export interface Exports {
+			map: <T,O extends Object,R>(
+				array: T[],
+				mapper: (this: O, item: T) => R,
+				target?: O,
+				p?: {
+					callback: (p: {
+						completed: number
+						running: number
+						index: number
+						threw?: any
+						returned?: any
+					}) => void
+
+					limit: number
+				}
+			) => R[]
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
+				const module = internal.test.subject;
+
+				fifty.tests.exports.Thread.map = function() {
+					var array = [1,2,3];
+					var doubled = module.Thread.map(
+						array,
+						function(element) {
+							return element * 2;
+						},
+						null,
+						{
+							limit: 2,
+							callback: function(result) {
+								if (result.threw) {
+									jsh.shell.console(result.index + "/" + result.threw.type + ": " + result.threw.message);
+									jsh.shell.console(result.threw.stack);
+								} else {
+									jsh.shell.console(result.index + "/" + result.returned);
+								}
+							}
+						}
+					);
+					verify(doubled)[0].is(2);
+					verify(doubled)[1].is(4);
+					verify(doubled)[2].is(6);
 				}
 			}
 		//@ts-ignore
@@ -824,10 +1076,114 @@ namespace slime.jrunscript.host {
 
 	export namespace thread {
 		export interface Exports {
+			forkJoin: <T>(f: (() => T)[]) => T[]
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				const module = internal.test.subject;
+
+				fifty.tests.exports.Thread.forkJoin = function() {
+					var fork = [
+						(function() { return 1; }),
+						(function() { return 3; }),
+						(function() { return 2; })
+					];
+					var result = module.Thread.forkJoin(fork);
+					verify(result).length.is(3);
+					verify(result)[0].is(1);
+					verify(result)[1].is(3);
+					verify(result)[2].is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace thread {
+		(
+			function(
+				Packages: slime.jrunscript.Packages,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				const module = internal.test.subject;
+
+				const test = function(b) {
+					verify(b).is(true);
+				}
+
+				fifty.tests.exports.Thread.jsapi = function() {
+					if (module.Thread) {
+						var sleeper = function(length) {
+							return function() {
+								Packages.java.lang.Thread.sleep(length);
+							}
+						}
+
+						var f = function() {
+							Packages.java.lang.Thread.sleep(100);
+							return 1;
+						};
+
+						var Callbacks = function() {
+							var result;
+
+							return {
+								result: function(v) {
+									result = v;
+								},
+								error: function(t) {
+									throw t;
+								},
+								timeout: function() {
+									result = "Timed out.";
+								},
+								evaluate: function() {
+									return result;
+								},
+								getResult: function() {
+									return result;
+								}
+							};
+						};
+
+						var c1 = Callbacks();
+						var t1 = module.Thread.start({
+							call: f,
+							timeout: 150,
+							on: c1
+						});
+						t1.join();
+						test(c1.evaluate() == 1);
+
+						//	This test is highly suspect; it essentially hopes that the CPU scheduling happens as expected. Its
+						//	chances of passage could be improved by using thread priorities for timeouts, which is probably a good
+						//	idea anyway. But perhaps it needs to be re-designed.
+						var c2 = Callbacks();
+						var t2 = module.Thread.start({
+							call: sleeper(250),
+							timeout: 50,
+							on: c2
+						});
+						t2.join();
+						//@ts-ignore
+						verify(c2).getResult().is("Timed out.");
+					}
+				}
+			}
+		//@ts-ignore
+		)(Packages,fifty);
+	}
+
+	export namespace thread {
+		export interface Exports {
 			setContextClassLoader: any
-			Task: any
-			forkJoin: any
-			map: any
 			sleep: any
 		}
 	}
