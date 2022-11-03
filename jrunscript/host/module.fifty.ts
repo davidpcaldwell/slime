@@ -675,8 +675,156 @@ namespace slime.jrunscript.host {
 
 	export namespace thread {
 		export interface Exports {
+			/**
+			 * Creates a function whose execution synchronizes on the `this` object of its invocation.
+			 *
+			 * @param f A function which the returned function should execute.
+			 *
+			 * @returns A function that obtains the lock to its `this` object, executes the given function, and then releases the
+			 * lock.
+			 */
+			thisSynchronize: <F extends (...args: any[]) => any>(f: F) => F
+		}
+
+		(
+			function(
+				Packages: slime.jrunscript.Packages,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const module = internal.test.subject;
+
+				const test = function(b: boolean) {
+					verify(b).is(true);
+				};
+
+				fifty.tests.exports.Thread.thisSynchronize = function() {
+					if (module.Thread) {
+						var f = function(x) {
+							return 2*x;
+						};
+
+						var s = module.Thread.thisSynchronize(f);
+
+						//	TODO	actually test synchronization
+
+						test(s(2) == 4);
+						test(s(4) == 8);
+
+						var debug = function(s) {
+//								Packages.java.lang.System.err.println(s);
+						}
+
+						var lock = new Packages.java.lang.Object();
+
+						var finished = 0;
+
+						var inner = Object.assign(function() {
+							inner.count++;
+							Packages.java.lang.Thread.sleep(100);
+							inner.count--;
+							finished++;
+							this.notifyAll();
+						}, { count: 0 });
+
+						var nested = module.Thread.thisSynchronize(inner);
+
+						var outer = Object.assign(function() {
+							outer.count++;
+							nested.call(lock);
+							outer.count--;
+						}, { count: 0 });
+
+						var getCount = module.Thread.thisSynchronize(function() {
+							return inner.count;
+						});
+
+						var threads = [];
+						for (var i=0; i<10; i++) {
+							threads.push(module.Thread.start({
+								call: outer,
+								on: new function() {
+									this.returned = function(rv) {
+										debug("outer = " + outer.count);
+										test(getCount.call(lock) == 0);
+									}
+
+									this.threw = function(e) {
+										debug("threw = " + e);
+										throw e;
+									}
+								}
+							}));
+						}
+
+						threads.forEach( function(thread) {
+							thread.join();
+						});
+
+						test(finished == 10);
+					}
+				}
+			}
+		//@ts-ignore
+		)(Packages,fifty);
+	}
+
+	export namespace thread {
+		export interface Exports {
+			Task: any
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify, run } = fifty;
+
+				const module = internal.test.subject;
+
+				fifty.tests.exports.Thread.Task = function() {
+					run(function _1() {
+						var monitor = new module.Thread.Monitor();
+						var task = new module.Thread.Task({
+							call: function() {
+								return 2*2;
+							}
+						});
+						var events = [];
+						var finished: number;
+						task(function(error,returned) {
+							monitor.Waiter({
+								until: function() {
+									return true;
+								},
+								then: function() {
+									events.push(function() {
+										finished = returned;
+									})
+								}
+							})();
+						});
+						while(!finished) {
+							monitor.Waiter({
+								until: function() {
+									return Boolean(events.length);
+								},
+								then: function() {
+									events.shift()();
+								}
+							})();
+						}
+						verify(finished).is(4);
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace thread {
+		export interface Exports {
 			setContextClassLoader: any
-			thisSynchronize: any
 			Task: any
 			forkJoin: any
 			map: any
