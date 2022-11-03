@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.host {
 	export interface Context {
-		$slime: any
+		$slime: slime.jrunscript.runtime.Exports
 
 		/**
 		 * If `true`, this module modifies global JavaScript objects.
@@ -1184,7 +1184,11 @@ namespace slime.jrunscript.host {
 	export namespace thread {
 		export interface Exports {
 			setContextClassLoader: any
-			sleep: any
+
+			/**
+			 * Causes the currently running thread to sleep for the given number of milliseconds.
+			 */
+			sleep: (milliseconds: number) => void
 		}
 	}
 

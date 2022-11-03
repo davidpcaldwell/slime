@@ -10,8 +10,8 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.runtime.sync } sync
-	 * @param { slime.jrunscript.runtime.rhino.Scope["$rhino"] } $rhino
-	 * @param { slime.jrunscript.runtime.rhino.Scope["$loader"] } $loader
+	 * @param { slime.jrunscript.runtime.internal.rhino.Scope["$rhino"] } $rhino
+	 * @param { slime.jrunscript.runtime.internal.rhino.Scope["$loader"] } $loader
 	 * @returns { slime.jrunscript.runtime.Exports }
 	 */
 	function(Packages,sync,$rhino,$loader) {
@@ -103,6 +103,7 @@
 		};
 
 		//	TODO	does this file need to know what directory it is in, or could it just use ./expression.js somehow?
+		/** @type { slime.jrunscript.runtime.Rhino } */
 		var rv = $rhino.script(
 			"jrunscript/expression.js",
 			$loader.getLoaderCode("jrunscript/expression.js"),

@@ -81,40 +81,59 @@ namespace slime.jrunscript.runtime {
 		eval(a: any, b: any, c: any, d: any): any
 	}
 
-	export namespace rhino {
-		/**
-		 * An object providing the scope variables for running `loader/jrunscript/rhino.js`.
-		 */
-		export interface Scope {
-			$rhino: Engine
-			$loader: slime.jrunscript.native.inonit.script.engine.Loader
+	export namespace internal {
+		export namespace rhino {
+			/**
+			 * This is essentially a `Packages.inonit.script.rhino.Engine` instance.
+			 */
+			export interface Engine {
+				script(name: string, code: string, scope: object, target: object)
+				canAccessEnvironment(): boolean
+				getDebugger(): slime.jrunscript.native.inonit.script.rhino.Engine.Debugger
+			}
+
+			/**
+			 * An object providing the scope variables for running `loader/jrunscript/rhino.js`.
+			 */
+			export interface Scope {
+				$rhino: Engine
+				$loader: slime.jrunscript.native.inonit.script.engine.Loader
+			}
 		}
 
-		/**
-		 * This is essentially a `Packages.inonit.script.rhino.Engine` instance.
-		 */
-		export interface Engine {
-			script(name: string, code: string, scope: object, target: object)
-			canAccessEnvironment(): boolean
-			getDebugger(): slime.jrunscript.native.inonit.script.rhino.Engine.Debugger
+		export namespace nashorn {
+			/**
+			 * A `Packages.inonit.script.jsh.Graal.Host` instance, currently, although this should not depend on `jsh` classes. In any case,
+			 * none of its methods are currently used, so this is currently an empty interface.
+			 */
+			export interface Graal {
+			}
+
+			export interface Scope {
+				$graal: Graal
+				$loader: slime.jrunscript.native.inonit.script.engine.Loader
+			}
 		}
 	}
 
-	export namespace nashorn {
-		/**
-		 * A `Packages.inonit.script.jsh.Graal.Host` instance, currently, although this should not depend on `jsh` classes. In any case,
-		 * none of its methods are currently used, so this is currently an empty interface.
-		 */
-		export interface Graal {
-		}
+	export type sync = <F extends (...args: any[]) => any>(f: F, lock: any) => F
 
-		export interface Scope {
-			$graal: Graal
-			$loader: slime.jrunscript.native.inonit.script.engine.Loader
-		}
+	export type MultithreadedJava = Exports["java"] & {
+		sync: sync
+		thisSynchronize: any
 	}
 
-	export type sync = any
+	export interface Rhino extends Exports {
+		getDebugger: () => slime.jrunscript.native.inonit.script.rhino.Engine.Debugger
+		java: MultithreadedJava
+	}
+
+	export interface Nashorn extends Exports {
+		java: MultithreadedJava
+	}
+
+	export interface Graal extends Exports {
+	}
 
 	export interface Java {
 		type(className: string): any

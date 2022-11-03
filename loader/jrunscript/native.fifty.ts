@@ -29,6 +29,7 @@ namespace slime.jrunscript {
 				export interface Class {
 					isInstance(object: any): boolean
 					getDeclaredField(name: string): reflect.Field
+					getDeclaredMethod(name: string, types?: slime.jrunscript.native.java.lang.Class[]): reflect.Method
 				}
 
 				export namespace reflect {
@@ -38,6 +39,12 @@ namespace slime.jrunscript {
 						getModifiers(): number
 						get(object: Object): Object
 						set(obj: Object, value: Object): void
+					}
+
+					export interface Method {
+						setAccessible(flag: boolean): void
+						getReturnType(): slime.jrunscript.native.java.lang.Class
+						invoke: (target: slime.jrunscript.native.java.lang.Object, parameters: slime.jrunscript.native.java.lang.Object[]) => slime.jrunscript.native.java.lang.Object
 					}
 				}
 			}
