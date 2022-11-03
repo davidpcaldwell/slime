@@ -97,12 +97,6 @@
 			pathname: SRC.getRelativePath("js/document/api.html")
 		}));
 
-		suite.add("jrunscript/host/jsapi", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jrunscript/host/api.html"),
-			// TODO: why is supplying the module this way necessary?
-			environment: Object.assign({}, environment, { module: jsh.java })
-		}));
-
 		suite.add("jrunscript/io/module", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jrunscript/io/api.html")
 		}));
