@@ -282,7 +282,7 @@ namespace slime.jrunscript.host.internal.threads {
 	/**
 	 * Represents a Java monitor that can be used for synchronization.
 	 */
-		export interface Monitor {
+	export interface Monitor {
 		/**
 		 * Creates a function that waits on its parent monitor until a condition is true, and then executes an underlying
 		 * function.
@@ -382,6 +382,61 @@ namespace slime.jrunscript.host.internal.threads {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
+
+	export interface Exports {
+		Lock: () => {
+			wait: <T>(p: {
+				when?: () => boolean
+				then?: () => T
+			}) => () => T
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const subject = test.subject.Thread;
+
+			fifty.tests.exports.Lock = function() {
+				var lock = subject.Lock();
+
+				var count = 0;
+
+				var ordered: number[] = [];
+
+				var threads = [0,1,2,3,4].map(function(index) {
+					return lock.wait({
+						when: function() {
+							return count == 4 - index;
+						},
+						then: function() {
+							ordered.push(index);
+							count++;
+						}
+					});
+				}).map(function(f) {
+					return subject.start({
+						call: f
+					});
+				});
+
+				threads.forEach(function(thread) {
+					thread.join();
+				});
+
+				verify(ordered)[0].is(4);
+				verify(ordered)[1].is(3);
+				verify(ordered)[2].is(2);
+				verify(ordered)[3].is(1);
+				verify(ordered)[4].is(0);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export interface Exports {
 		/**

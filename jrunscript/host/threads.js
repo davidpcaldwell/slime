@@ -213,6 +213,30 @@
 				});
 			};
 		};
+
+		$exports.Lock = function() {
+			var lock = new Packages.java.lang.Object();
+
+			return {
+				toString: function() {
+					return "Thread.Lock [id=" + Packages.java.lang.System.identityHashCode(lock) + "]";
+				},
+				wait: function(p) {
+					return $context.java.sync(
+						function() {
+							while(!p.when()) {
+								lock.wait();
+							}
+							var rv = p.then();
+							lock.notifyAll();
+							return rv;
+						},
+						lock
+					);
+				}
+			}
+		};
+
 		$exports.Task = function(p) {
 			var rv = function x(tell) {
 				//	TODO	below causes TypeScript error. Unclear what this line of code does, but tests do not pass without it.
