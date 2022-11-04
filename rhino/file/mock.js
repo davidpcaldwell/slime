@@ -79,6 +79,7 @@
 				directoryExists: void(0),
 				fileExists: fileExists,
 				move: void(0),
+				remove: void(0),
 				fileLength: void(0),
 				fileLastModified: void(0),
 				listDirectory: void(0),

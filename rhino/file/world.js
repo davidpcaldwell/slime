@@ -390,6 +390,17 @@
 							}
 						}
 					},
+					/** @type { slime.jrunscript.file.World["Location"]["directory"]["remove"] } */
+					remove: function() {
+						return function(location) {
+							return function() {
+								$api.fp.world.now.action(
+									location.filesystem.remove,
+									{ pathname: location.pathname }
+								)
+							}
+						}
+					},
 					loader: {
 						synchronous: function(p) {
 							return loader.create(p.root);

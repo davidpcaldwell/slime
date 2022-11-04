@@ -662,6 +662,11 @@
 						java.move(java.newPeer(p.from), java.newPeer(p.to));
 					}
 				},
+				remove: function(p) {
+					return function(events) {
+						java.remove(java.newPeer(p.pathname));
+					}
+				},
 				temporary: function(p) {
 					return function(events) {
 						var parent = (p.parent) ? java.newPeer(p.parent) : null;
