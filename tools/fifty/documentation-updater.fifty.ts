@@ -17,10 +17,18 @@ namespace slime.tools.documentation.updater {
 	}
 
 	export namespace internal {
-		export type Listener = {
-			started: slime.jrunscript.file.world.Location
-			finished: slime.jrunscript.file.world.Location
+		export type Process = {
+			out: () => string
+			started: () => number
+			kill: () => void
 		}
+
+		export type Listener = {
+			started: Process
+			finished: Process
+			errored: Process
+		}
+
 		export type Update = slime.$api.fp.world.Action<
 			{
 				project: slime.jrunscript.file.world.Location

@@ -34,6 +34,19 @@
 				/** @type { () => void } */
 				var kill;
 
+				var rv = {
+					out: function() {
+						return tmp.pathname;
+					},
+					started: function() {
+						return started;
+					},
+					kill: function() {
+						if (!kill) throw new Error("Unreachable.");
+						kill();
+					}
+				};
+
 				$context.library.java.Thread.start(function() {
 					$api.fp.world.now.action(
 						$context.library.shell.world.action,
@@ -42,25 +55,20 @@
 							start: function(e) {
 								started = new Date().getTime();
 								kill = e.detail.kill;
-								events.fire("started", tmp);
+								events.fire("started", rv);
 							},
 							exit: function(e) {
 								if (e.detail.status == 0) {
-									events.fire("finished", tmp);
+									events.fire("finished", rv);
+								} else {
+									events.fire("errored", rv);
 								}
 							}
 						}
 					);
 				});
 
-				return {
-					started: function() {
-						return started;
-					},
-					kill: function() {
-						kill();
-					}
-				}
+				return rv;
 			}
 		}
 
@@ -72,7 +80,7 @@
 		var Updater = function(settings) {
 			var updates = {};
 
-			var lock = new $context.library.java.Thread.Monitor();
+			var lock = $context.library.java.Thread.Lock();
 
 			var project = $context.library.file.world.Location.from.os(settings.project);
 
@@ -81,15 +89,46 @@
 				$context.library.file.world.Location.relative("local/doc/typedoc")
 			);
 
+			var directoryExists = $api.fp.world.mapping(
+				$context.library.file.world.Location.directory.exists()
+			);
+
+			var removeDirectory = $api.fp.world.output(
+				$context.library.file.world.Location.directory.remove()
+			);
+
+			var moveTypedocIntoPlace = $api.fp.world.output(
+				$context.library.file.world.Location.directory.move({
+					to: documentation
+				})
+			)
+
 			/** @type { slime.$api.events.Handler<slime.tools.documentation.updater.internal.Listener> } */
 			var listener = {
 				started: function(e) {
-					lock.Waiter({
-
+					lock.wait({
+						then: function() {
+							updates[e.detail.out()] = e.detail;
+						}
 					})();
 				},
 				finished: function(e) {
-
+					lock.wait({
+						then: function() {
+							if (directoryExists(documentation)) {
+								removeDirectory(documentation)
+							}
+							moveTypedocIntoPlace($context.library.file.world.Location.from.os(e.detail.out()));
+							updates[e.detail.out()] = null;
+						}
+					})();
+				},
+				errored: function(e) {
+					lock.wait({
+						then: function() {
+							updates[e.detail.out()] = null;
+						}
+					})();
 				}
 			}
 

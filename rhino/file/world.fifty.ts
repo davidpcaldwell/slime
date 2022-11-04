@@ -310,15 +310,15 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export namespace locations {
-			export interface Directories {}
+			export interface Directory {}
 		}
 
 		export interface Locations {
-			directory: locations.Directories
+			directory: locations.Directory
 		}
 
 		export namespace locations {
-			export interface Directories {
+			export interface Directory {
 				exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
 
 				require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Action<world.Location, {
@@ -354,9 +354,10 @@ namespace slime.jrunscript.file {
 		}
 
 		export namespace locations {
-			export interface Directories {
+			export interface Directory {
+				//	TODO	what if something exists at to()?
 				/**
-				 * Moves a directory
+				 * Moves a directory.
 				 */
 				move: (p: {
 					to: world.Location
@@ -464,7 +465,37 @@ namespace slime.jrunscript.file {
 		}
 
 		export namespace locations {
-			export interface Directories {
+			export interface Directory {
+				remove: () => slime.$api.fp.world.Action<world.Location,void>
+			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api, jsh } = fifty.global;
+
+					const exists = {
+						directory: $api.fp.world.mapping(jsh.file.world.Location.directory.exists())
+					};
+
+					fifty.tests.sandbox.locations.directory.remove = function() {
+						var tmp = fifty.jsh.file.temporary.directory();
+
+						verify(tmp).evaluate(exists.directory).is(true);
+
+						$api.fp.world.now.action(jsh.file.world.Location.directory.remove(), tmp);
+
+						verify(tmp).evaluate(exists.directory).is(false);
+					}
+				}
+			//@ts-ignore
+			)(fifty);
+		}
+
+		export namespace locations {
+			export interface Directory {
 				loader: {
 					synchronous: (p: {
 						root: Location
@@ -834,6 +865,10 @@ namespace slime.jrunscript.file {
 				move: slime.$api.fp.world.Action<{
 					from: string
 					to: string
+				},void>
+
+				remove: slime.$api.fp.world.Action<{
+					pathname: string
 				},void>
 			}
 

@@ -93,12 +93,14 @@ namespace slime.jrunscript.file.internal.java {
 	}
 
 	export interface Exports {
-		filesystems: {
-			os: slime.jrunscript.file.world.spi.Filesystem
-		}
-
+		//	TODO	this provider object is still used internally by filesystem.js, but it seems like refactoring to remove this
+		//			export would be a goal
 		providers: {
 			os: slime.jrunscript.file.internal.java.FilesystemProvider
+		}
+
+		filesystems: {
+			os: slime.jrunscript.file.world.spi.Filesystem
 		}
 	}
 
@@ -209,7 +211,6 @@ namespace slime.jrunscript.file.internal.java {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
-
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
