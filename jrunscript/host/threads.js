@@ -222,12 +222,14 @@
 					return "Thread.Lock [id=" + Packages.java.lang.System.identityHashCode(lock) + "]";
 				},
 				wait: function(p) {
+					var when = p.when || function() { return true; };
+					var then = p.then || function() { return void(0); };
 					return $context.java.sync(
 						function() {
-							while(!p.when()) {
+							while(!when()) {
 								lock.wait();
 							}
-							var rv = p.then();
+							var rv = then();
 							lock.notifyAll();
 							return rv;
 						},
