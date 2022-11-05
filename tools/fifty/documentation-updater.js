@@ -15,61 +15,70 @@
 	function($api,$context,$export) {
 		/** @type { slime.tools.documentation.updater.internal.Update } */
 		var Update = function(p) {
-			return function(events) {
-				var tmp = $api.fp.world.now.ask($context.library.file.world.filesystems.os.temporary({
-					directory: true
-				}));
+			var eventsListener = $api.events.toListener(p.events);
+			eventsListener.attach();
+			var events = eventsListener.emitter;
 
-				var invocation = $context.typedoc.invocation({
-					project: { base: p.project.pathname },
-					stdio: {
-						output: "string",
-						error: "string"
-					},
-					out: tmp.pathname
-				});
+			var tmp = $api.fp.world.now.ask($context.library.file.world.filesystems.os.temporary({
+				directory: true
+			}));
 
-				/** @type { number } */
-				var started;
-				/** @type { () => void } */
-				var kill;
+			var invocation = $context.typedoc.invocation({
+				project: { base: p.project.pathname },
+				stdio: {
+					output: "line",
+					error: "line"
+				},
+				out: tmp.pathname
+			});
 
-				var rv = {
-					out: function() {
-						return tmp.pathname;
-					},
-					started: function() {
-						return started;
-					},
-					kill: function() {
-						if (!kill) throw new Error("Unreachable.");
-						kill();
-					}
-				};
+			/** @type { number } */
+			var started;
+			/** @type { () => void } */
+			var kill;
 
-				$context.library.java.Thread.start(function() {
-					$api.fp.world.now.action(
-						$context.library.shell.world.action,
-						invocation,
-						{
-							start: function(e) {
-								started = new Date().getTime();
-								kill = e.detail.kill;
-								events.fire("started", rv);
-							},
-							exit: function(e) {
-								if (e.detail.status == 0) {
-									events.fire("finished", rv);
-								} else {
-									events.fire("errored", rv);
-								}
+			var rv = {
+				out: function() {
+					return tmp.pathname;
+				},
+				started: function() {
+					return started;
+				},
+				kill: function() {
+					if (!kill) throw new Error("Unreachable.");
+					kill();
+				}
+			};
+
+			$context.library.java.Thread.start(function() {
+				$api.fp.world.now.action(
+					$context.library.shell.world.action,
+					invocation,
+					{
+						start: function(e) {
+							started = new Date().getTime();
+							kill = e.detail.kill;
+							events.fire("started", rv);
+						},
+						stdout: function(e) {
+							events.fire("stdout", { out: tmp.pathname, line: e.detail.line });
+						},
+						stderr: function(e) {
+							events.fire("stderr", { out: tmp.pathname, line: e.detail.line });
+						},
+						exit: function(e) {
+							if (e.detail.status == 0) {
+								events.fire("finished", rv);
+							} else {
+								events.fire("errored", rv);
 							}
+							eventsListener.detach();
 						}
-					);
-				});
+					}
+				);
+			});
 
-				return rv;
-			}
+			return rv;
 		}
 
 		var existsDirectory = $api.fp.world.mapping(
@@ -78,6 +87,10 @@
 
 		/** @type { slime.tools.documentation.updater.Exports["Updater"] } */
 		var Updater = function(settings) {
+			var eventsListener = $api.events.toListener(settings.events);
+			eventsListener.attach();
+			var events = eventsListener.emitter;
+
 			var updates = {};
 
 			var lock = $context.library.java.Thread.Lock();
@@ -101,7 +114,24 @@
 				$context.library.file.world.Location.directory.move({
 					to: documentation
 				})
-			)
+			);
+
+			var world = {
+				lastModified: {
+					code: function() {
+						return $context.library.code.git.lastModified({
+							base: settings.project
+						})
+					},
+					documentation: function() {
+						var x = $context.library.file.world.Location.directory.loader.synchronous({ root: documentation });
+						return $context.library.code.directory.lastModified({
+							loader: x,
+							map: $api.fp.identity
+						})
+					}
+				}
+			}
 
 			/** @type { slime.$api.events.Handler<slime.tools.documentation.updater.internal.Listener> } */
 			var listener = {
@@ -109,17 +139,25 @@
 					lock.wait({
 						then: function() {
 							updates[e.detail.out()] = e.detail;
+							events.fire("updating", { out: e.detail.out() });
 						}
 					})();
+				},
+				stdout: function(e) {
+					events.fire("stdout", e.detail);
+				},
+				stderr: function(e) {
+					events.fire("stderr", e.detail);
 				},
 				finished: function(e) {
 					lock.wait({
 						then: function() {
 							if (directoryExists(documentation)) {
-								removeDirectory(documentation)
+								removeDirectory(documentation);
 							}
 							moveTypedocIntoPlace($context.library.file.world.Location.from.os(e.detail.out()));
 							updates[e.detail.out()] = null;
+							events.fire("finished", { out: e.detail.out() });
 						}
 					})();
 				},
@@ -127,21 +165,58 @@
 					lock.wait({
 						then: function() {
 							updates[e.detail.out()] = null;
+							events.fire("errored", { out: e.detail.out() });
 						}
 					})();
 				}
-			}
+			};
+
+			var run = function() {
+				$context.library.java.Thread.start({
+					call: function() {
+						var update = Update({
+							project: project,
+							events: listener
+						});
+					}
+				});
+			};
+
+			events.fire("initialized", { project: settings.project });
 
 			if (!existsDirectory(documentation)) {
-				$api.fp.world.now.action(
-					Update,
-					{ project: project },
-					listener
-				);
+				run();
+			} else {
+				var timestamps = {
+					code: world.lastModified.code(),
+					documentation: world.lastModified.documentation()
+				};
+
+				if (timestamps.code.present && timestamps.documentation.present) {
+					if (timestamps.code.value > timestamps.documentation.value) {
+						events.fire("console", "Starting ...");
+						run();
+					} else {
+						events.fire("unchanged");
+					}
+				}
 			}
 
-			return {};
-		}
+			return {
+				run: function() {
+					lock.wait({
+						when: function() { return false; }
+					})();
+				}//,
+				// stop: function() {
+				// 	//	TODO	detach listener, stop threads
+				// }
+			};
+		};
+
+		$export({
+			Updater: Updater
+		});
 	}
 //@ts-ignore
 )($api,$context,$export);
