@@ -15,42 +15,38 @@
 	function($api,$context,$export) {
 		/** @type { slime.tools.documentation.updater.internal.Update } */
 		var Update = function(p) {
-			var eventsListener = $api.events.toListener(p.events);
-			eventsListener.attach();
-			var events = eventsListener.emitter;
+			return function(events) {
+				var tmp = $api.fp.world.now.ask($context.library.file.world.filesystems.os.temporary({
+					directory: true
+				}));
 
-			var tmp = $api.fp.world.now.ask($context.library.file.world.filesystems.os.temporary({
-				directory: true
-			}));
+				var invocation = $context.typedoc.invocation({
+					project: { base: p.project.pathname },
+					stdio: {
+						output: "line",
+						error: "line"
+					},
+					out: tmp.pathname
+				});
 
-			var invocation = $context.typedoc.invocation({
-				project: { base: p.project.pathname },
-				stdio: {
-					output: "line",
-					error: "line"
-				},
-				out: tmp.pathname
-			});
+				/** @type { number } */
+				var started;
+				/** @type { () => void } */
+				var kill;
 
-			/** @type { number } */
-			var started;
-			/** @type { () => void } */
-			var kill;
+				var object = {
+					out: function() {
+						return tmp.pathname;
+					},
+					started: function() {
+						return started;
+					},
+					kill: function() {
+						if (!kill) throw new Error("Unreachable.");
+						kill();
+					}
+				};
 
-			var rv = {
-				out: function() {
-					return tmp.pathname;
-				},
-				started: function() {
-					return started;
-				},
-				kill: function() {
-					if (!kill) throw new Error("Unreachable.");
-					kill();
-				}
-			};
-
-			$context.library.java.Thread.start(function() {
 				$api.fp.world.now.action(
 					$context.library.shell.world.action,
 					invocation,
@@ -58,7 +54,7 @@
 						start: function(e) {
 							started = new Date().getTime();
 							kill = e.detail.kill;
-							events.fire("started", rv);
+							events.fire("started", object);
 						},
 						stdout: function(e) {
 							events.fire("stdout", { out: tmp.pathname, line: e.detail.line });
@@ -68,17 +64,14 @@
 						},
 						exit: function(e) {
 							if (e.detail.status == 0) {
-								events.fire("finished", rv);
+								events.fire("finished", object);
 							} else {
-								events.fire("errored", rv);
+								events.fire("errored", object);
 							}
-							eventsListener.detach();
 						}
 					}
 				);
-			});
-
-			return rv;
+			}
 		}
 
 		var existsDirectory = $api.fp.world.mapping(
@@ -174,10 +167,13 @@
 			var run = function() {
 				$context.library.java.Thread.start({
 					call: function() {
-						var update = Update({
-							project: project,
-							events: listener
-						});
+						$api.fp.world.now.action(
+							Update,
+							{
+								project: project
+							},
+							listener
+						)
 					}
 				});
 			};

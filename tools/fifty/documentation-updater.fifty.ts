@@ -38,10 +38,12 @@ namespace slime.tools.documentation.updater {
 			errored: Process
 		}
 
-		export type Update = (p: {
-			project: slime.jrunscript.file.world.Location
-			events: slime.$api.events.Handler<Listener>
-		}) => Process
+		export type Update = slime.$api.fp.world.Action<
+			{
+				project: slime.jrunscript.file.world.Location
+			},
+			Listener
+		>
 	}
 
 	export interface Updater {
