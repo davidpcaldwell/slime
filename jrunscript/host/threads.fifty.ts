@@ -387,6 +387,7 @@ namespace slime.jrunscript.host.internal.threads {
 		Lock: () => {
 			wait: <T>(p: {
 				when?: () => boolean
+				timeout?: () => number
 				then?: () => T
 			}) => () => T
 		}
