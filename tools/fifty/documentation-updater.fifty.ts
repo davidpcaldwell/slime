@@ -57,8 +57,9 @@ namespace slime.tools.documentation.updater {
 				initialized: {
 					project: string
 				}
-				console: string
+				creating: void
 				unchanged: void
+				setInterval: number
 				updating: {
 					out: string
 				}
@@ -84,7 +85,7 @@ namespace slime.tools.documentation.updater {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			var script: Script = fifty.$loader.script("documentation-updater.js");
 			var subject = script({
@@ -103,16 +104,48 @@ namespace slime.tools.documentation.updater {
 
 			};
 
-			fifty.tests.manual = function() {
-				var project = fifty.jsh.file.relative("../..");
+			var project = fifty.jsh.file.relative("../..");
+
+			var timed = function<F extends (...args: any[]) => any>(f: F, callback: (elapsed: number) => void): F {
+				return function() {
+					var start = new Date();
+					var rv = f.apply(this,arguments);
+					var end = new Date();
+					callback(end.getTime() - start.getTime());
+					return rv;
+				} as F;
+			}
+
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.timing = function() {
+				var git = timed(jsh.project.code.git.lastModified, function(elapsed) {
+					jsh.shell.console("git took " + elapsed + " milliseconds");
+				})({ base: project.pathname });
+
+				var documentation = timed(function() {
+					var loader = jsh.file.world.Location.directory.loader.synchronous({ root: fifty.jsh.file.relative("../../local/doc/typedoc") });
+					return jsh.project.code.directory.lastModified({
+						loader: loader,
+						map: $api.fp.identity
+					})
+				}, function(elapsed) {
+					jsh.shell.console("documentation scan took " + elapsed + " milliseconds");
+				})();
+			}
+
+			fifty.tests.manual.run = function() {
 				var updater = subject.Updater({
 					project: project.pathname,
 					events: {
 						initialized: function(e) {
 							jsh.shell.console("Initialized: project=" + e.detail.project);
 						},
-						console: function(e) {
-							jsh.shell.console(e.detail);
+						creating: function(e) {
+							jsh.shell.console("Creating documentation ...");
+						},
+						setInterval: function(e) {
+							jsh.shell.console("Set interval to " + e.detail + " milliseconds.");
 						},
 						unchanged: function(e) {
 							jsh.shell.console("Checked; no change.");
