@@ -84,7 +84,15 @@
 			eventsListener.attach();
 			var events = eventsListener.emitter;
 
-			var updates = {};
+			var state = {
+				/** @type { { [out: string]: slime.tools.documentation.updater.internal.Process } } */
+				updates: {},
+				/** @type { number } */
+				typedocBasedOnSrcAt: void(0),
+				lastCodeUpdatedTimestamp: void(0),
+				codeCheckInterval: 10000,
+				stopped: false
+			}
 
 			var lock = $context.library.java.Thread.Lock();
 
@@ -117,13 +125,61 @@
 						})
 					},
 					documentation: function() {
-						var x = $context.library.file.world.Location.directory.loader.synchronous({ root: documentation });
+						var loader = $context.library.file.world.Location.directory.loader.synchronous({ root: documentation });
 						return $context.library.code.directory.lastModified({
-							loader: x,
+							loader: loader,
 							map: $api.fp.identity
 						})
 					}
 				}
+			};
+
+			var getLatestUpdateStart = function() {
+				/** @type { number } */
+				var latest = void(0);
+				return $api.fp.now.invoke(
+					state.updates,
+					function(p) { return Object.entries(p) },
+					$api.fp.Array.map(function(entry) {
+						return entry[1];
+					}),
+					function(x) {
+						return x.reduce(function(rv,item) {
+							if (typeof(rv) == "undefined") return item.started();
+							var started = item.started();
+							return (started > rv) ? started : rv;
+						},latest);
+					}
+				)
+			}
+
+			var setInterval = function(interval) {
+				state.codeCheckInterval = interval;
+				events.fire("setInterval", state.codeCheckInterval);
+			}
+
+			var getTimestamps = function() {
+				var code = world.lastModified.code();
+				if (code.present) {
+					if (code.value == state.lastCodeUpdatedTimestamp) {
+						//	TODO	nice little false delta
+						setInterval(state.codeCheckInterval * 2);
+					} else {
+						setInterval(10000);
+						state.lastCodeUpdatedTimestamp = code.value;
+					}
+				}
+				return {
+					code: code,
+					documentation: (
+						function() {
+							var latest = getLatestUpdateStart();
+							if (typeof(latest) != "undefined") return $api.fp.Maybe.value(latest);
+							if (state.typedocBasedOnSrcAt) return $api.fp.Maybe.value(state.typedocBasedOnSrcAt);
+							return world.lastModified.documentation();
+						}
+					)()
+				};
 			}
 
 			/** @type { slime.$api.events.Handler<slime.tools.documentation.updater.internal.Listener> } */
@@ -131,7 +187,7 @@
 				started: function(e) {
 					lock.wait({
 						then: function() {
-							updates[e.detail.out()] = e.detail;
+							state.updates[e.detail.out()] = e.detail;
 							events.fire("updating", { out: e.detail.out() });
 						}
 					})();
@@ -149,7 +205,8 @@
 								removeDirectory(documentation);
 							}
 							moveTypedocIntoPlace($context.library.file.world.Location.from.os(e.detail.out()));
-							updates[e.detail.out()] = null;
+							state.updates[e.detail.out()] = null;
+							state.typedocBasedOnSrcAt = e.detail.started();
 							events.fire("finished", { out: e.detail.out() });
 						}
 					})();
@@ -157,7 +214,7 @@
 				errored: function(e) {
 					lock.wait({
 						then: function() {
-							updates[e.detail.out()] = null;
+							state.updates[e.detail.out()] = null;
 							events.fire("errored", { out: e.detail.out() });
 						}
 					})();
@@ -181,28 +238,30 @@
 			events.fire("initialized", { project: settings.project });
 
 			if (!existsDirectory(documentation)) {
+				events.fire("creating");
 				run();
-			} else {
-				var timestamps = {
-					code: world.lastModified.code(),
-					documentation: world.lastModified.documentation()
-				};
-
-				if (timestamps.code.present && timestamps.documentation.present) {
-					if (timestamps.code.value > timestamps.documentation.value) {
-						events.fire("console", "Starting ...");
-						run();
-					} else {
-						events.fire("unchanged");
-					}
-				}
 			}
 
 			return {
 				run: function() {
-					lock.wait({
-						when: function() { return false; }
-					})();
+					while(!state.stopped) {
+						lock.wait({
+							when: function() { return true; },
+							then: function() {
+								var timestamps = getTimestamps();
+
+								if (timestamps.code.present && timestamps.documentation.present) {
+									if (timestamps.code.value > timestamps.documentation.value) {
+										run();
+									} else {
+										events.fire("unchanged");
+									}
+								}
+
+								$context.library.java.Thread.sleep(state.codeCheckInterval);
+							}
+						})();
+					}
 				}//,
 				// stop: function() {
 				// 	//	TODO	detach listener, stop threads
