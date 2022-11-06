@@ -227,7 +227,7 @@
 					return $context.java.sync(
 						function() {
 							while(!when()) {
-								lock.wait();
+								(p.timeout) ? lock.wait(p.timeout()) : lock.wait();
 							}
 							var rv = then();
 							lock.notifyAll();

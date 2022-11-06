@@ -22,39 +22,97 @@
 
 				var code = {
 					/** @type { slime.tools.documentation.internal.asTextHandler.Script } */
-					asTextHandler: $loader.script("as-text-handler.js")
+					asTextHandler: $loader.script("as-text-handler.js"),
+					/** @type { slime.tools.documentation.updater.Script } */
+					updater: $loader.script("documentation-updater.js")
 				}
 
-				return function(httpd) {
-					var asTextHandler = code.asTextHandler({ httpd: httpd });
+				var library = {
+					updater: code.updater({
+						library: {
+							java: jsh.java,
+							file: jsh.file,
+							shell: jsh.shell,
+							code: jsh.project.code
+						},
+						typedoc: {
+							invocation: jsh.wf.typescript.typedoc.invocation
+						}
+					})
+				}
 
-					/**
-					 *
-					 * @param { slime.jrunscript.file.Directory } src
-					 * @returns
-					 */
-					function update(src) {
-						var invocation = jsh.wf.typescript.typedoc.invocation({
-							project: { base: src.toString() },
-							stdio: {
-								output: "string",
-								error: "string"
-							}
-						});
-						var result = $api.fp.world.now.question(
-							jsh.shell.world.question,
-							invocation
-						);
-						if (result.status != 0) {
-							return {
-								status: { code: 500 },
-								body: {
-									type: "text/plain",
-									string: "TypeDoc invocation failed:\nSTDOUT:\n" + result.stdio.output + "\nSTDERR:\n" + result.stdio.error
-								}
+				/**
+				 *
+				 * @param { slime.jrunscript.file.Directory } src
+				 * @returns
+				 */
+				function synchronousUpdate(src) {
+					var invocation = jsh.wf.typescript.typedoc.invocation({
+						project: { base: src.toString() },
+						stdio: {
+							output: "string",
+							error: "string"
+						}
+					});
+					var result = $api.fp.world.now.question(
+						jsh.shell.world.question,
+						invocation
+					);
+					if (result.status != 0) {
+						return {
+							status: { code: 500 },
+							body: {
+								type: "text/plain",
+								string: "TypeDoc invocation failed:\nSTDOUT:\n" + result.stdio.output + "\nSTDERR:\n" + result.stdio.error
 							}
 						}
 					}
+				}
+
+				var updater = library.updater.Updater({
+					project: base.toString(),
+					events: {
+						initialized: function(e) {
+							jsh.shell.console("Initialized: project=" + e.detail.project);
+						},
+						creating: function(e) {
+							jsh.shell.console("Creating documentation ...");
+						},
+						setInterval: function(e) {
+							jsh.shell.console("Set interval to " + e.detail + " milliseconds.");
+						},
+						unchanged: function(e) {
+							jsh.shell.console("Checked; no change.");
+						},
+						updating: function(e) {
+							jsh.shell.console("Updating: out=" + e.detail.out);
+						},
+						stdout: function(e) {
+							jsh.shell.console(e.detail.out + " STDOUT: " + e.detail.line);
+						},
+						stderr: function(e) {
+							jsh.shell.console(e.detail.out + " STDERR: " + e.detail.line);
+						},
+						stopping: function(e) {
+							jsh.shell.console("Stopping: " + e.detail.out + " ...");
+						},
+						finished: function(e) {
+							jsh.shell.console("Finished updating: was " + e.detail.out);
+						},
+						errored: function(e) {
+							jsh.shell.console("Errored; was to write to " + e.detail.out);
+						}
+					}
+				});
+
+				jsh.java.Thread.start({
+					call: function() {
+						updater.run();
+					}
+				});
+
+				return function(httpd) {
+					var asTextHandler = code.asTextHandler({ httpd: httpd });
 
 					return httpd.Handler.series(
 						//	Allows links to src/path/to/file.ext within Typedoc
@@ -74,14 +132,25 @@
 							var match = typedocPattern.exec(request.path);
 							if (match) {
 								var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
-								var response = update(src);
-								if (response) return response;
-								return {
-									status: { code: 200 },
-									body: {
-										type: "text/plain",
-										string: "Ran TypeDoc successfully."
-									}
+								if (match[1]) {
+									var response = synchronousUpdate(src);
+									if (response) return response;
+									return {
+										status: { code: 200 },
+										body: {
+											type: "text/plain",
+											string: "Ran TypeDoc successfully."
+										}
+									};
+								} else {
+									updater.update();
+									return {
+										status: { code: 200 },
+										body: {
+											type: "text/plain",
+											string: "Updated updater."
+										}
+									};
 								}
 							}
 						},
@@ -92,7 +161,7 @@
 								var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
 								var output = src.getRelativePath("local/doc/typedoc");
 								if (!output.directory || configuration.watch) {
-									var response = update(src);
+									var response = synchronousUpdate(src);
 									if (response) return response;
 								}
 								jsh.shell.console("Serving: " + request.path);

@@ -48,6 +48,7 @@ namespace slime.tools.documentation.updater {
 
 	export interface Updater {
 		run: () => void
+		update: () => void
 	}
 
 	export interface Exports {
@@ -70,6 +71,9 @@ namespace slime.tools.documentation.updater {
 				stderr: {
 					out: string
 					line: string
+				}
+				stopping: {
+					out: string
 				}
 				finished: {
 					out: string
@@ -158,6 +162,9 @@ namespace slime.tools.documentation.updater {
 						},
 						stderr: function(e) {
 							jsh.shell.console(e.detail.out + " STDERR: " + e.detail.line);
+						},
+						stopping: function(e) {
+							jsh.shell.console("Stopping: " + e.detail.out + " ...");
 						},
 						finished: function(e) {
 							jsh.shell.console("Finished updating: was " + e.detail.out);

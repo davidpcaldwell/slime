@@ -34,6 +34,7 @@
 				/** @type { () => void } */
 				var kill;
 
+				/** @type { slime.tools.documentation.updater.internal.Process } */
 				var object = {
 					out: function() {
 						return tmp.pathname;
@@ -131,6 +132,12 @@
 							map: $api.fp.identity
 						})
 					}
+				},
+				//	Estimate of how long it takes TypeDoc to run
+				//	TODO	make this empirical after initial estimate
+				//	TODO	base initial estimate on project size
+				duration: function() {
+					return 300000;
 				}
 			};
 
@@ -151,6 +158,14 @@
 						},latest);
 					}
 				)
+			};
+
+			/**
+			 *
+			 * @param { slime.tools.documentation.updater.internal.Process } process
+			 */
+			var getElapsedTime = function(process) {
+				return new Date().getTime() - process.started();
 			}
 
 			var setInterval = function(interval) {
@@ -187,6 +202,20 @@
 				started: function(e) {
 					lock.wait({
 						then: function() {
+							Object.entries(state.updates).forEach(function(array) {
+								var process = array[1];
+								var elapsed = getElapsedTime(process);
+								if (elapsed < (world.duration() / 2)) {
+									var out = process.out();
+									events.fire("stopping", { out: out });
+									process.kill();
+									var location = $context.library.file.world.Location.from.os(out);
+									$api.fp.world.now.action(
+										$context.library.file.world.Location.directory.remove(),
+										location
+									);
+								}
+							})
 							state.updates[e.detail.out()] = e.detail;
 							events.fire("updating", { out: e.detail.out() });
 						}
@@ -205,7 +234,7 @@
 								removeDirectory(documentation);
 							}
 							moveTypedocIntoPlace($context.library.file.world.Location.from.os(e.detail.out()));
-							state.updates[e.detail.out()] = null;
+							delete state.updates[e.detail.out()];
 							state.typedocBasedOnSrcAt = e.detail.started();
 							events.fire("finished", { out: e.detail.out() });
 						}
@@ -214,7 +243,7 @@
 				errored: function(e) {
 					lock.wait({
 						then: function() {
-							state.updates[e.detail.out()] = null;
+							delete state.updates[e.detail.out()];
 							events.fire("errored", { out: e.detail.out() });
 						}
 					})();
@@ -257,11 +286,32 @@
 										events.fire("unchanged");
 									}
 								}
-
-								$context.library.java.Thread.sleep(state.codeCheckInterval);
 							}
 						})();
+
+						lock.wait({
+							when: (
+								function() {
+									var called = false;
+									return function() {
+										if (!called) {
+											called = true;
+											return false;
+										}
+										return true;
+									};
+								}
+							)(),
+							timeout: function() { return state.codeCheckInterval; }
+						})();
 					}
+				},
+				update: function() {
+					lock.wait({
+						then: function() {
+							setInterval(10000);
+						}
+					})();
 				}//,
 				// stop: function() {
 				// 	//	TODO	detach listener, stop threads

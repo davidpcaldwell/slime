@@ -27,7 +27,7 @@
  *
  * ### Embedding
  * SLIME provides several embeddings (`jsh`, a Java servlet-based embedding, a browser embedding, and a JXA embedding for macOS
- * automation). A Node.js embedding is planned.
+ * automation), and a simple Node.js embedding that primarily allows the use of the {@link slime.$api} tools in Node applications.
  *
  * Custom SLIME embeddings may be developed by creating a suitable implementation of {@link slime.runtime.Scope} and putting that
  * object in scope when evaluating `loader/expression.js`, which yields an object of type {@link slime.runtime.Exports}.
