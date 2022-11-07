@@ -22,6 +22,7 @@ if [ "$0" == "bash" ]; then
 	rmdir ${JSH_LOCAL_JDKS}
 	JDK_USER_JDKS=/dev/null
 	JSH_LAUNCHER_GITHUB_PROTOCOL="${JSH_LAUNCHER_GITHUB_PROTOCOL:-https}"
+	JSH_LAUNCHER_GITHUB_BRANCH="${JSH_LAUNCHER_GITHUB_BRANCH:-master}"
 else
 	JSH_LOCAL_JDKS="${JSH_LOCAL_JDKS:-$(dirname $0)/local/jdk}"
 	JDK_USER_JDKS="${JSH_USER_JDKS:-${HOME}/.slime/jdk}"
@@ -362,7 +363,7 @@ if [ "$0" == "bash" ]; then
 		if [ -n "${JSH_HTTPS_PROXY_HOST}" ]; then
 			CURL_PROXY_ARGUMENTS="${CURL_PROXY_ARGUMENTS} -x ${JSH_LAUNCHER_GITHUB_PROTOCOL}://${JSH_HTTPS_PROXY_HOST}:${JSH_HTTPS_PROXY_PORT}"
 		fi
-		AUTHORIZATION_SCRIPT_URL="${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/tools/github/${SCRIPT}"
+		AUTHORIZATION_SCRIPT_URL="${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/tools/github/${SCRIPT}"
 		echo $(curl -L ${CURL_PROXY_ARGUMENTS} -u ${JSH_GITHUB_USER}:${JSH_GITHUB_PASSWORD} ${AUTHORIZATION_SCRIPT_URL})
 	}
 
@@ -370,7 +371,7 @@ if [ "$0" == "bash" ]; then
 	#	AUTHORIZATION_SCRIPT=$(get_authorization_script authorize.js)
 	#	echo ${AUTHORIZATION_SCRIPT}
 	AUTHORIZATION_SCRIPT="//  no-op"
-	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "${AUTHORIZATION_SCRIPT}" -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"
+	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "${AUTHORIZATION_SCRIPT}" -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
 else
 	${JRUNSCRIPT} $(dirname $0)/rhino/jrunscript/api.js jsh "$@"
 fi
