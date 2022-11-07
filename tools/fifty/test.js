@@ -524,6 +524,13 @@
 				loaderError = e;
 			}
 
+			var getName = function(path,part) {
+				if (contexts.jsh) {
+					return contexts.jsh.directory.getRelativePath(path) + ":" + part;
+				}
+				return path + ":" + part;
+			};
+
 			return {
 				/**
 				 *
@@ -543,7 +550,7 @@
 							/** @type { (argument: any) => void } */
 							var callable = target;
 							var createRunner = function() {
-								return runner(tests)( (ascopes) ? ascopes.current() : void(0), callable, path + ":" + part, argument);
+								return runner(tests)( (ascopes) ? ascopes.current() : void(0), callable, getName(path,part), argument);
 							}
 							if ($context.promises) {
 								return createRunner();
