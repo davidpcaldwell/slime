@@ -11,6 +11,7 @@ namespace slime.jsh.unit.mock.github.test {
 
 	export interface Settings {
 		mock?: slime.jsh.unit.mock.Web
+		branch?: string
 		optimize?: boolean
 		debug?: boolean
 		token?: () => string
@@ -18,6 +19,10 @@ namespace slime.jsh.unit.mock.github.test {
 
 	export interface Exports {
 		startMock: (jsh: slime.jsh.Global) => slime.jsh.unit.mock.Web
+
+		getDownloadJshBashCommand: (PATH: slime.jrunscript.file.Searchpath, options: Pick<slime.jsh.unit.mock.github.test.Settings,"mock" | "token" | "branch">) => string[]
+
+		getBashInvocationCommand: (options: slime.jsh.unit.mock.github.test.Settings) => string[]
 
 		/**
 		 * Outputs a single string, suitable for use at the shell command line, that will invoke a shell with the given settings
@@ -37,5 +42,5 @@ namespace slime.jsh.unit.mock.github.test {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.loader.synchronous.Script<Context,Exports>
 }

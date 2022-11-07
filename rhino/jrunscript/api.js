@@ -566,7 +566,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.java.net.URL } url
-			 * @returns { { zip: slime.jrunscript.native.java.net.URL, path: string } }
+			 * @returns { { zip: slime.jrunscript.native.java.net.URL, branch: string, path: string } }
 			 */
 			var toGithubArchiveLocation = function(url) {
 				var string = String(url);
@@ -579,6 +579,7 @@
 					);
 					return {
 						zip: zipurl,
+						branch: githubMatch[2],
 						path: githubMatch[3]
 					}
 				} else {
@@ -668,9 +669,9 @@
 						if (location) {
 							var archive = archives[String(location.zip.toExternalForm())];
 							if (archive) {
-								var _inputStream = archive.read("slime-master/" + location.path);
+								var _inputStream = archive.read("slime-" + location.branch + "/" + location.path);
 								if (!_inputStream) {
-									$api.debug("Not found in " + archive + ": " + "slime-master/" + location.path);
+									$api.debug("Not found in " + archive + ": " + "slime-" + location.branch + "/" + location.path);
 									return null;
 								}
 								return io.readJavaString(_inputStream);
@@ -688,7 +689,7 @@
 							if (archive) {
 								$api.debug("Listing URL " + _url + " path " + location.path);
 								//	TODO	should not hard-code master
-								var list = archive.list("slime-master/" + location.path);
+								var list = archive.list("slime-" + location.branch + "/" + location.path);
 
 								var rv = [];
 								for (var i=0; i<list.length; i++) {

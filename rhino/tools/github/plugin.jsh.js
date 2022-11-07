@@ -37,6 +37,11 @@
 					}
 					return function(request) {
 						var host = request.headers.value("host");
+
+						//	TODO	relaxing branch/ref requirements so that we always pretend that the requested branch was also
+						//			the current branch and can just serve from the filesystem. We could probably write a more
+						//			complex algorithm but we'd also have to figure out whether it would work in our GitHub Action
+						//			(do we even install git on the server in that action?).
 						if (host == "raw.githubusercontent.com") {
 							var response = authorize(request);
 							if (response) return response;
@@ -49,7 +54,9 @@
 							var branch = repository.branch().filter(function(b) {
 								return b.current;
 							})[0];
-							if (branch.name == ref) {
+							//	TODO	for the purposes of this script, we pretend that master points to local also, because
+							//			when running the shell via jsh.bash
+							if (ref == "local") {
 								var file = repository.directory.getFile(match[4])
 								return (file) ? {
 									status: { code: 200 },
@@ -62,7 +69,7 @@
 									status: { code: 404 }
 								}
 							} else {
-								throw new Error("Unsupported: branch and ref different.");
+								throw new Error("Unsupported: ref not 'local'.");
 							}
 						} else if (host == "api.github.com") {
 							var pattern = /^repos\/(.*)\/(.*)\/contents\/(.*)$/;
@@ -72,7 +79,7 @@
 								var repo = match[2];
 								var path = match[3];
 								//	TODO	can take ref as query parameter; see https://developer.github.com/v3/repos/contents/
-								var ref = "master";
+								var ref = "local";
 								var repository = o.src[user][repo];
 								var branch = repository.branch().filter(function(b) {
 									return b.current;
@@ -126,7 +133,7 @@
 								var user = match[1];
 								var repo = match[2];
 								var version = match[3];
-								if (user == "davidpcaldwell" && repo == "slime" && version == "master") {
+								if (user == "davidpcaldwell" && repo == "slime" && version == "local") {
 									//	create zip file of source tree, excluding .git
 									var isTopLevel = function(node) {
 										return node.parent.toString() == jsh.shell.jsh.src.toString();

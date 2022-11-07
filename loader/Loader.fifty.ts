@@ -5,6 +5,12 @@
 //	END LICENSE
 
 namespace slime {
+	export namespace loader {
+		export namespace synchronous {
+			export type Script<C,E> = (c: C) => E
+		}
+	}
+
 	export namespace runtime.loader {
 		export interface Node {
 			name: string
@@ -47,7 +53,7 @@ namespace slime {
 					parent: (path: string[]) => boolean
 				}) => (loader: Synchronous<T>) => Location[]
 
-				script: (path: string) => <T>(loader: Synchronous<T>) => <C,E>(c: C) => E
+				script: (path: string) => <T,C,E>(loader: Synchronous<T>) => slime.loader.synchronous.Script<C,E>
 			}
 		}
 

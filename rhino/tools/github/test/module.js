@@ -42,13 +42,15 @@
 
 		/**
 		 * @param { slime.jrunscript.file.Searchpath } PATH
-		 * @param { Pick<slime.jsh.unit.mock.github.test.Settings,"mock" | "token"> } p
+		 * @param { Pick<slime.jsh.unit.mock.github.test.Settings,"mock" | "token" | "branch"> } p
 		 * @returns
 		 */
 		var getDownloadJshBashCommand = function(PATH,p) {
 			/** @type { string[] } */
 			var command = [];
 			var PROTOCOL = (p.mock) ? "http" : "https";
+			var branch = p.branch || "master";
+			var URL = PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/" + branch + "/jsh.bash";
 			if (PATH.getCommand("curl")) {
 				command.push("curl", "-v");
 				if (p.token) {
@@ -58,7 +60,7 @@
 					command.push("--proxy", "https://127.0.0.1:" + p.mock.https.port);
 				}
 				command.push("-L");
-				command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
+				command.push(URL);
 				return command;
 			} else if (PATH.getCommand("wget")) {
 				command.push("wget");
@@ -66,7 +68,7 @@
 					command.push("--http-user=" + "davidpcaldwell");
 					command.push("--http-password=" + p.token());
 				}
-				command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
+				command.push(URL);
 				if (p.mock) {
 					command.push("-e", "use_proxy=yes");
 					command.push("-e", "http_proxy=" + "http://127.0.0.1:" + p.mock.port);
@@ -87,6 +89,7 @@
 			/** @type { string[] } */
 			var command = [];
 			var PROTOCOL = "https";
+			var branch = p.branch || "master";
 			if (p.mock) {
 				command.push("env");
 				command.push("JSH_HTTP_PROXY_HOST=127.0.0.1", "JSH_HTTP_PROXY_PORT=" + p.mock.port);
@@ -104,8 +107,14 @@
 			if (p.token) {
 				command.push("JSH_GITHUB_USER=davidpcaldwell", "JSH_GITHUB_PASSWORD=" + p.token());
 			}
+			if (p && p.branch) command.push("JSH_LAUNCHER_GITHUB_BRANCH=" + p.branch);
+			//	TODO	for now, we simply try to force-disable the Rhino debugger (because by default we will be running in
+			//			Nashorn), even if this script is running in the Rhino debugger. Probably could do more here to think this
+			//			through, including allowing the running of remote shells under Rhino, but bootstrapping with Nashorn may
+			//			be fine.
+			command.push("JSH_DEBUG_SCRIPT=");
 			command.push("bash", "-s");
-			command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js");
+			command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/" + branch + "/jsh/test/jsh-data.jsh.js");
 			return command;
 		}
 
@@ -124,6 +133,8 @@
 
 		$export({
 			startMock: startMock,
+			getDownloadJshBashCommand: getDownloadJshBashCommand,
+			getBashInvocationCommand: getBashInvocationCommand,
 			getCommandLine: getCommand
 		})
 	}

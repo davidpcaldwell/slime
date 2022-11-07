@@ -130,6 +130,7 @@ namespace slime.jsh {
 					}
 				) => any
 			}
+			synchronous: slime.runtime.loader.Exports["synchronous"]
 		}
 
 		(
