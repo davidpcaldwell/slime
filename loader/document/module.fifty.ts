@@ -151,6 +151,7 @@ namespace slime.runtime.document {
 
 		Element: {
 			isName: (name: string) => (element: Element) => boolean
+			getAttribute: (name: string) => (element: Element) => slime.$api.fp.Maybe<string>
 		}
 	}
 

@@ -414,6 +414,14 @@
 					return function(element) {
 						return element.name == name;
 					}
+				},
+				getAttribute: function(name) {
+					return function(element) {
+						var match = element.attributes.filter(function(attribute) {
+							return attribute.name == name;
+						})[0];
+						return (match) ? $api.fp.Maybe.value(match.value) : $api.fp.Maybe.nothing();
+					}
 				}
 			},
 			//	TODO	temporarily disabling TypeScript while we figure out the loader/document vs. rhino/document nightmare

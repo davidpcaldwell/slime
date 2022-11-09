@@ -1,3 +1,0 @@
-{ "tabSize": 4, "lineLength": 132 }
-===
-===

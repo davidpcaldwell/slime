@@ -38,19 +38,26 @@ namespace slime.project.jsapi {
 	export namespace fp {
 		export type Case<P,R> = (p: P) => slime.$api.fp.Maybe<R>
 		export type Switch = <P,R>(...cases: Case<P,R>[]) => (p: P) => slime.$api.fp.Maybe<R>
-		export type Maybeify = () => <T extends (...args: any[]) => any>(f: T) => (...args: Parameters<T>) => slime.$api.fp.Maybe<ReturnType<T>>
+		export type ToPartial = <P,R>(f: slime.$api.fp.Mapping<P,R>) => slime.$api.fp.Partial<P,R>
 	}
 
 	export namespace internal {
+		/**
+		 * A single line of comment data, including an optional prefix
+		 */
 		export interface InputLine {
-			prefix: slime.$api.fp.Maybe<string>
+			indent: slime.$api.fp.Maybe<string>
 			section: "start" | "middle" | "end"
 			content: string
 		}
 
+		/**
+		 * A multiline section of a comment, including an indent, whether the section has the first or last line of a comment,
+		 * and a set of tokens that represent the comment's content.
+		 */
 		export interface Block {
 			/** The indent to use. */
-			prefix: string
+			indent: string
 
 			/** Whether the start of this content is the start of a comment. */
 			hasStart: boolean
@@ -62,7 +69,7 @@ namespace slime.project.jsapi {
 		}
 
 		export interface VisibleForTesting {
-			maybeify: fp.Maybeify
+			maybeify: fp.ToPartial
 		}
 
 		(
@@ -76,7 +83,7 @@ namespace slime.project.jsapi {
 						if (n % 2 == 0) return n / 2;
 					}
 
-					var maybeDivideByTwo = test.subject.test.maybeify()(divideByTwoEvenly);
+					var maybeDivideByTwo = test.subject.test.maybeify(divideByTwoEvenly);
 
 					var forThree = maybeDivideByTwo(3);
 					verify(forThree).present.is(false);
