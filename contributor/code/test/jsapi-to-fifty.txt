@@ -48,3 +48,13 @@ The object to use as the <code>this</code> value when executing the code.
 ===
 The object to use as the `this` value when executing the code.
 ===
+{ "tabSize": 4, "lineLength": 132 }
+		 * <a href="https://example.com/foo">The Big Foo</a> is awesome!
+===
+		 * [The Big Foo](https://example.com/foo) is awesome!
+===
+{ "tabSize": 4, "lineLength": 132 }
+		 * I <strong>really</strong> think so.
+===
+		 * I **really** think so.
+===

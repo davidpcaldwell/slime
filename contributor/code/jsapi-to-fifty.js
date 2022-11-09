@@ -50,17 +50,13 @@
 			}
 		};
 
-		/** @type { slime.project.jsapi.fp.Maybeify } */
-		var maybeify = function() {
-			return function(f) {
-				return function() {
-					var result = f.apply(this,arguments);
-					return $api.fp.Maybe.from(result);
-				}
+		/** @type { slime.project.jsapi.fp.ToPartial } */
+		var toPartial = function(f) {
+			return function(p) {
+				var r = f(p);
+				return $api.fp.Maybe.from(r);
 			}
-		};
-
-		var toMaybe = maybeify();
+		}
 
 		/**
 		 *
@@ -101,8 +97,8 @@
 		/** @typedef { { section: slime.project.jsapi.internal.InputLine["section"], content: string } } ParsedCommentLine */
 
 		var parseComment = $api.fp.pipe(
-			$$api.Function.switch(
-				toMaybe(
+			$api.fp.switch([
+				toPartial(
 					/** @type { (rest: string) => ParsedCommentLine } */
 					function(rest) {
 						if (rest.substring(0,3) == "/**") return {
@@ -111,7 +107,7 @@
 						}
 					}
 				),
-				toMaybe(
+				toPartial(
 					/** @type { (rest: string) => ParsedCommentLine } */
 					function(rest) {
 						if (rest.substring(0,3) == " */") return {
@@ -120,7 +116,7 @@
 						};
 					}
 				),
-				toMaybe(
+				toPartial(
 					/** @type { (rest: string) => ParsedCommentLine } */
 					function(rest) {
 						if (rest.substring(0,2) == " *") return {
@@ -129,7 +125,7 @@
 						};
 					}
 				),
-				toMaybe(
+				toPartial(
 					/** @type { (rest: string) => ParsedCommentLine } */
 					function(rest) {
 						return {
@@ -138,7 +134,7 @@
 						}
 					}
 				)
-			),
+			]),
 			//	TODO	we have to force this else because of the inability to define the switch statement with an else currently
 			$api.fp.Maybe.else(
 				/** @returns { ParsedCommentLine } */
@@ -158,7 +154,7 @@
 			var rest = (start.present) ? line.substring(start.value.length) : line;
 			var parsed = parseComment(rest);
 			return {
-				prefix: start,
+				indent: start,
 				section: parsed.section,
 				content: parsed.content
 			};
@@ -180,10 +176,39 @@
 			}
 		}
 
+		var replaceLinks = function(input) {
+			var api = $context.library.document;
+			var parsed = api.Fragment.codec.string.decode(input)
+			parsed.children = parsed.children.map(function(child) {
+				if ($context.library.document.Node.isElement(child)) {
+					if (child.name == "a") {
+						var link = api.Element.getAttribute("href")(child);
+						if (link.present) {
+							//	TODO	not a great heuristic for external URL; improve
+							if (link.value.substring(0,4) == "http") {
+								var caption = api.Fragment.codec.string.encode({
+									type: "fragment",
+									children: child.children
+								});
+								return {
+									type: "text",
+									data: "[" + caption + "]" + "(" + link.value + ")"
+								};
+							}
+						}
+					}
+				}
+				return child;
+			});
+			return api.Fragment.codec.string.encode(parsed);
+		}
+
 		var applyInlineStyles = $api.fp.pipe(
 			startEndTagReplace("code", "`"),
 			startEndTagReplace("i", "*"),
-			startEndTagReplace("em", "*")
+			startEndTagReplace("em", "*"),
+			startEndTagReplace("strong", "**"),
+			replaceLinks
 		);
 
 		var parseInputLines = $api.fp.pipe(
@@ -235,7 +260,7 @@
 			);
 
 			return {
-				prefix: (inputLines[0].prefix.present) ? inputLines[0].prefix.value : null,
+				indent: (inputLines[0].indent.present) ? inputLines[0].indent.value : null,
 				hasStart: hasStart,
 				hasEnd: hasEnd,
 				tokens: content
@@ -260,12 +285,12 @@
 					var currentWord = function() { return content[index]; }
 					if (result.length == 0) {
 						if (block.hasStart) {
-							result.push(block.prefix + "/**");
+							result.push(block.indent + "/**");
 						}
-						if (block.prefix === null) {
+						if (block.indent === null) {
 							result.push("");
 						} else {
-							result.push(block.prefix + " *");
+							result.push(block.indent + " *");
 						}
 					}
 					if (getDisplayLength(currentLine() + " " + currentWord(), format.tabSize) <= format.lineLength) {
@@ -278,11 +303,11 @@
 						}
 						//result[result.length-1] += (currentWord()) ? " " + currentWord() : "";
 					} else {
-						result.push(block.prefix + " * " + currentWord());
+						result.push(block.indent + " * " + currentWord());
 					}
 					index++;
 				}
-				if (block.hasEnd) result.push(block.prefix + " */");
+				if (block.hasEnd) result.push(block.indent + " */");
 				return result;
 			}
 		}
@@ -372,7 +397,7 @@
 				/** @returns { slime.project.jsapi.internal.Block } */
 				function(tokens,index,array) {
 					return {
-						prefix: block.prefix,
+						indent: block.indent,
 						hasStart: block.hasStart && index == 0,
 						hasEnd: block.hasEnd && index == array.length-1,
 						tokens: tokens
@@ -406,7 +431,7 @@
 		$export({
 			test: {
 				prefix: getLineIndent,
-				maybeify: maybeify,
+				maybeify: toPartial,
 				split: $$api.Function.split,
 				html: function(string) {
 					return $context.library.document.Fragment.codec.string.decode(string);
