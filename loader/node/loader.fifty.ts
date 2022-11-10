@@ -6,7 +6,8 @@
 
 /**
  * Loading the `loader/node/loader.js` file via `require` from a SLIME source distribution will return a
- * {@link slime.node.Exports} object providing access to the SLIME runtime.
+ * {@link slime.node.Exports} object providing access to the SLIME runtime and to a filesystem-based {@link slime.Loader}
+ * implementation.
  */
 namespace slime.node {
 	export interface Exports {
