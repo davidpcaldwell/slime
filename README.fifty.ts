@@ -104,7 +104,38 @@
  * * `jsh`: `./jsh.bash jsh/test/suite.jsh.js -definition *definition* [-part *part*]`
  * * Browser definition page: `./jsh.bash [loader/browser/test/suite.jsh.js](src/loader/browser/test/suite.jsh.api.html) -definition *pathname* [...]`
  *
- * (**deprecated**) Running a JSAPI browser suite: `./jsh.bash [loader/browser/test/suite.jsh.js](src/loader/browser/test/suite.jsh.api.html) -suite *pathname* [-base *directory*] [-interactive]`
+ * (**deprecated**) Running a JSAPI browser suite: `./jsh.bash
+ * [loader/browser/test/suite.jsh.js](src/loader/browser/test/suite.jsh.api.html) -suite *pathname* [-base *directory*]
+ * [-interactive]`
+ *
+ * ### SLIME projects: `wf`
+ *
+ * SLIME provides a tool called `wf` for automating tasks in the software development lifecycle. It provides standard
+ * implementations of various commands that can be added to a project with some project-specific configuration; see {@link
+ * slime.jsh.wf.Exports#project | `jsh.wf.project.initialize()`}. Custom `wf` commands can also be implemented, either from scratch or using
+ * a provided `jsh` plugin {@link slime.jsh.wf.Exports | API}. See the `wf` {@link slime.jsh.wf | documentation} for more
+ * information on setting up `wf` in a new project.
+ *
+ * ### Bundled tools and examples
+ *
+ * SLIME has several potentially useful programs bundled in its distribution
+ *
+ * #### Serve a directory (and optionally open a Chrome browser to browse it)
+ *
+ * In the context of SLIME development, one might serve a directory perhaps to make it easy to browse files, or maybe to support a
+ * browser-only application.
+ *
+ * But this program is also a simple one-command web server that can be used for any purpose.
+ *
+ * It also serves as a useful example program if you want to design your own SLIME-based HTTP server.
+ *
+ * `./jsh.bash rhino/http/servlet/tools/serve.jsh.js [--chrome:data *location*] [--chrome:debug:port *number*] [--index
+ * *path-to-index*] *directory*`
+ *
+ * *  `--chrome:data *location*`: Chrome will be opened to browse the directory, starting at the path specified by `--index`.
+ * *  `--chrome:debug:port *number*`: If specified, the opened Chrome will allow debuggers to connect on the given port.
+ * *  `--index *path-to-index*`: (optional; defaults to `index.html`) The relative path of the index page in the directory being served.
+ * *  `*directory*`: A directory to serve.
  */
 namespace slime {
 	export interface Codec<T,E> {
