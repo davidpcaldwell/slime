@@ -44,107 +44,25 @@ END LICENSE
 	<body>
 		<h1>SLIME: Documentation</h1>
 		<div id="typedoc">
-			<h2>View the SLIME TypeDoc <a href="local/doc/typedoc/index.html">documentation</a></h2>
-		</div>
-		<div id="projects">
-			<h2>Creating projects using SLIME</h2>
-			<div>
-				<div>
-					<h4><code>fifty view</code>: Serving documentation from SLIME definitions</h4>
-					<p>
-						Fifty also allows SLIME-based projects to generate and serve their own documentation (interleaved with
-						SLIME's, if SLIME is included in the TypeScript project) via the <code>fifty view</code> command.
-					</p>
-					<div>
-						<code>fifty view</code> serves the documentation for a project, in a dedicated Chrome browser if Chrome is
-						found. Typedoc
-						documentation will be generated if necessary and served for both the top-level repository and
-						subrepositories at <code>local/doc/typedoc</code> (it will be re-generated for each request if
-						<code>--watch</code> is used).
-						<ul>
-							<li>
-								<code>--base <i>directory</i></code>: top-level directory of the project; defaults to the current
-								working directory.
-							</li>
-							<li>
-								<code>--host <i>hostname</i></code>: hostname suffix to use in the browser's address bar when serving
-								pages. If omitted, the script will provide a host name.
-							</li>
-							<li><code>--index <i>path</i></code>: relative path to the index page; defaults to <code>README.html</code>.</li>
-							<li>
-								<code>--watch</code>: if present, causes documentation to be re-generated for every HTML page
-								requested; helpful when authoring docunmentation.
-							</li>
-							<li>
-								<code>--chrome:id <i>name</i></code>: the private Chrome directory to use (under
-								<code>local/chrome</code>); defaults to <code>documentation</code>, or <code>document</code>
-								if <code>--watch</code> is set).
-							</li>
-						</ul>
-					</div>
-					<div>
-						<h5>Embedding <code>fifty view</code></h5>
-						<p>
-							Some projects might benefit from a more flexible Fifty UI; an alternative to <code>fifty view</code>
-							is to embed its documentation in a SLIME application. The following APIs can be used as building
-							blocks:
-							<ul>
-								<li>
-									The <a href="local/doc/typedoc/modules/slime-1.tools.documentation.html">Documentation API</a>
-									provides a SLIME servlet handler implementation that serves documentation.
-								</li>
-								<li>
-									The <a href="local/doc/typedoc/interfaces/slime-1.jsh.global.html#ui"><code>jsh.ui</code></a>
-									API provides the ablity to launch SLIME applications with a UI, and can incorporate the
-									documentation servlet handler implementation defined above.
-								</li>
-							</ul>
-						</p>
-					</div>
-				</div>
-			</div>
-			<div>
-				<h3><code>wf</code></h3>
-				<p>
-					SLIME provides a tool called <code>wf</code> for automating tasks in the software development lifecycle. It
-					provides standard implementations of various commands that can be added to a project with some project-specific
-					configuration; see <a href="local/doc/typedoc/interfaces/slime-1.jsh.wf.Exports.html#project"><code>jsh.wf.project.initialize()</code></a>.
-					Custom <code>wf</code> commands can also be implemented, either from scratch or using a provided
-					<code>jsh</code> plugin <a href="local/doc/typedoc/interfaces/slime-1.jsh.wf.exports.html">API</a>.
-					See the <code>wf</code> <a href="local/doc/typedoc/modules/slime-1.jsh.wf.html">documentation</a>
-					(specifically the namespace comment in <a href="tools/wf/plugin.jsh.fifty.ts?as=text"><code>tools/wf/plugin.jsh.fifty.ts</code></a>,
-					as long as TypeDoc is <a href="https://github.com/TypeStrong/typedoc/issues/1855">struggling</a> to handle multi-file namespaces)
-					for more information on setting up
-					<code>wf</code> in a new project.
-				</p>
-			</div>
-		</div>
-		<div id="tools">
-			<h2>Tools and examples</h2>
-			<ul>
-				<li>
-					<code>rhino/http/servlet/tools/serve.jsh.js
-						[--chrome:data <i>location</i>]
-						[--chrome:debug:port <i>number</i>]
-						[--index <i>path-to-index</i>]
-						<i>directory</i></code>: Serves a directory on an ephemeral port, perhaps to make it easy to browse files,
-						or maybe to support a browser-only application.
-
-						If <code>--chrome:data</code>
-						is provided, Chrome will be opened to
-						browse the directory, starting at the path specified by <code>--index</code> (default: <code>index.html</code>).
-
-						If <code>--chrome-debug-port</code> is specified, the opened Chrome will
-						allow debuggers to connect on the given port.
-				</li>
-			</ul>
+			<h2>SLIME TypeDoc <a href="local/doc/typedoc/index.html">documentation</a></h2>
+			<p>
+				Includes most documentation pertinent to using SLIME, its platforms, and its APIs.
+			</p>
 		</div>
 		<div id="links">
 			<div>
 				<h2><a href="https://github.com/davidpcaldwell/slime">SLIME on GitHub</a></h2>
+				<p>
+					SLIME development takes place on GitHub; the GitHub project contains a place to report
+					<a href="https://github.com/davidpcaldwell/slime/issues">issues</a>, create
+					<a href="https://github.com/davidpcaldwell/slime/pulls">pull requests</a>, and so forth.
+				</p>
 			</div>
 			<div>
 				<h2><a href="contributor/README.html">Contributing to SLIME</a></h2>
+				<p>
+					A page containing resources that will be useful primarily if you want to contribute to SLIME.
+				</p>
 			</div>
 		</div>
 	</body>
