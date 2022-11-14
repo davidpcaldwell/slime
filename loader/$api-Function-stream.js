@@ -107,6 +107,32 @@
 					}
 
 					return ArrayStream(array, 0);
+				},
+				integers: {
+					range: function(p) {
+						var IntRange = function recurse(p) {
+							var start = p.start || 0;
+							var increment = p.increment || 1;
+							return function() {
+								if ( (start + increment) <= p.end) {
+									return {
+										next: $f.Maybe.value(start),
+										remaining: recurse({
+											start: start + increment,
+											end: p.end,
+											increment: increment
+										})
+									}
+								} else {
+									return {
+										next: $f.Maybe.nothing(),
+										remaining: empty
+									}
+								}
+							}
+						};
+						return IntRange(p);
+					}
 				}
 			},
 			first: function(stream) {
