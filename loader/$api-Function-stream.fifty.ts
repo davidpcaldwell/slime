@@ -47,15 +47,53 @@ namespace slime.$api.fp {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
 
+	export namespace stream {
+		export namespace exports {
+			export interface From {
+				integers: {
+					range: (p: {
+						start?: number
+						end: number
+						increment?: number
+					}) => Stream<number>
+				}
+			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api }  = fifty.global;
+					const subject = $api.fp.Stream;
+
+					fifty.tests.exports.from = function() {
+						var lessThan10 = subject.from.integers.range({ end: 10 });
+						var collected = subject.collect(lessThan10);
+						verify(collected).length.is(10);
+						verify(collected)[0].is(0);
+						verify(collected)[9].is(9);
+					};
+				}
+			//@ts-ignore
+			)(fifty);
+		}
+	}
+
+	export namespace stream {
+		export namespace exports {
+			export interface From {
+				empty: <T>() => Stream<T>
+				array: <T>(ts: T[]) => Stream<T>
+			}
+		}
 	}
 
 	export namespace stream {
 		export interface Exports {
-			from: {
-				empty: <T>() => Stream<T>
-				array: <T>(ts: T[]) => Stream<T>
-			}
+			from: exports.From
 
 			first: <T>(ts: Stream<T>) => Maybe<T>
 
@@ -171,8 +209,6 @@ namespace slime.$api.fp {
 
 				fifty.run(fifty.tests.exports);
 			};
-
-			fifty.tests.wip = fifty.tests.suite;
 		}
 	//@ts-ignore
 	)(fifty);
