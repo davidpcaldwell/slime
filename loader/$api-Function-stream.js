@@ -135,6 +135,28 @@
 					}
 				}
 			},
+			map: function(mapping) {
+				/**
+				 * @template { any } T
+				 * @template { any } R
+				 * @param { slime.$api.fp.Stream<T> } stream
+				 * @param { (t: T) => R } mapping
+				 * @returns { slime.$api.fp.Stream<R> }
+				 */
+				var MappedStream = function recurse(stream,mapping) {
+					return function() {
+						var delegate = stream();
+						return {
+							//	TODO	probably a better way to write this with Maybe.else
+							next: (delegate.next.present) ? $context.$f.Maybe.value(mapping(delegate.next.value)) : $context.$f.Maybe.nothing(),
+							remaining: recurse(delegate.remaining,mapping)
+						}
+					};
+				}
+				return function(stream) {
+					return MappedStream(stream,mapping);
+				}
+			},
 			first: function(stream) {
 				return stream().next;
 			},

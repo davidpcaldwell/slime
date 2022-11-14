@@ -21,34 +21,6 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
-
-	export namespace stream {
-		export interface Exports {
-			join: <T>(streams: Stream<T>[]) => Stream<T>
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { $api } = fifty.global;
-				const subject = $api.fp.Stream;
-
-				fifty.tests.exports.join = function() {
-					var one = subject.from.array([1,2,3]);
-					var two = subject.from.array([9,10,11,12]);
-					var three: Stream<number> = subject.from.array([]);
-					var four = subject.from.array([99]);
-					var joined = subject.join([one, two, three, four]);
-					var collected = subject.collect(joined);
-					verify(collected).evaluate(function(array) { return array.join(","); }).is("1,2,3,9,10,11,12,99");
-				};
-			}
-		//@ts-ignore
-		)(fifty);
-	}
-
 	export namespace stream {
 		export namespace exports {
 			export interface From {
@@ -94,7 +66,66 @@ namespace slime.$api.fp {
 	export namespace stream {
 		export interface Exports {
 			from: exports.From
+		}
+	}
 
+	export namespace stream {
+		export interface Exports {
+			map: <T,R>(f: (t: T) => R) => (stream: Stream<T>) => Stream<R>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+				const subject = $api.fp.Stream;
+
+				fifty.tests.exports.map = function() {
+					var three = subject.from.integers.range({ end: 3 });
+					var zeroTwoFour = subject.map(function(n: number) { return n*2; })(three);
+					var collected = subject.collect(zeroTwoFour);
+					verify(collected).length.is(3);
+					verify(collected)[0].is(0);
+					verify(collected)[2].is(4);
+				}
+
+				fifty.tests.wip = fifty.tests.exports.map;
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace stream {
+		export interface Exports {
+			join: <T>(streams: Stream<T>[]) => Stream<T>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+				const subject = $api.fp.Stream;
+
+				fifty.tests.exports.join = function() {
+					var one = subject.from.array([1,2,3]);
+					var two = subject.from.array([9,10,11,12]);
+					var three: Stream<number> = subject.from.array([]);
+					var four = subject.from.array([99]);
+					var joined = subject.join([one, two, three, four]);
+					var collected = subject.collect(joined);
+					verify(collected).evaluate(function(array) { return array.join(","); }).is("1,2,3,9,10,11,12,99");
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace stream {
+		export interface Exports {
 			first: <T>(ts: Stream<T>) => Maybe<T>
 
 			find: {
