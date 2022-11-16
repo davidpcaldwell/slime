@@ -30,7 +30,8 @@
  * ##### JDK
  *
  * Current goal is to be compatible with version used by most Java developers per most recent [JetBrains
- * survey](https://www.jetbrains.com/lp/devecosystem-2021/java/), which is currently **Java 8**.
+ * survey](https://www.jetbrains.com/lp/devecosystem-2021/java/), which (as of 2021; 2022 survey is not out as of 2022 Nov 13) is
+ * currently **Java 8**.
  *
  * ##### JVM JavaScript engine
  *

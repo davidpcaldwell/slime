@@ -96,7 +96,7 @@ namespace slime.jsh.wf {
 			require: (p?: { project: slime.jrunscript.file.Directory }) => void
 
 			/**
-			 * @deprecated Replaced by {@link slime.jsh.wf.exports.Checks["tsc"]}.
+			 * @deprecated Replaced by {@link slime.jsh.wf.exports.Checks | jsh.wf.checks.tsc()}.
 			 */
 			tsc: (p?: { project: slime.jrunscript.file.Directory }) => boolean
 
