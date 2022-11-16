@@ -6,19 +6,24 @@
 
 version: '2.4'
 services:
-  test:
+  test: &test
     build: ..
     volumes:
       - ../local/wf/logs/docker.compose.test:/slime/local/wf/logs/test/current/
       # - ..:/slime
       # - /slime/local
-    environment:
-      - SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT=1
+    environment: &test_environment
+      SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
     working_dir: /slime
     command: /bin/bash /slime/wf check --docker
     depends_on:
       - chrome
       - firefox
+  test11:
+    <<: *test
+    environment:
+      <<: *test_environment
+      SLIME_WF_JDK_VERSION: 11
   chrome:
     image: seleniarm/standalone-chromium
     ports:
