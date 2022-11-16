@@ -11,4 +11,3 @@ if [ ! -d "${LOCAL}" ]; then
 fi
 export JSH_LOCAL_JDKS="${LOCAL}/jdk"
 export JSH_SHELL_LIB="${LOCAL}/jsh/lib"
-export SLIME_WF_JDK_8=${JSH_LOCAL_JDKS}/default

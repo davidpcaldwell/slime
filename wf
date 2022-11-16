@@ -9,11 +9,17 @@ export PROJECT="$(dirname $0)"
 
 SLIME="${PROJECT}"
 
+JSH_LOCAL_JDKS="${SLIME}/local/jdk"
+JSH_SHELL_LIB="${SLIME}/local/jsh/lib"
+
+#	If this is a VMWare Linux guest, mount the source directory inside the VM at ${HOME}/src
 if [ "$(uname)" == "Linux" ]; then
 	#	We know (?) realpath is present because this is Linux
 	if [ "$(realpath $0)" == "/mnt/hgfs/slime/wf" ]; then
 		#	VMWare Linux guest with host source directory mounted
 		if [ -z "${JSH_LOCAL_JDKS}" ]; then
+			#	Set up profile which specifies "local" assets (ordinarily in the local/ subdirectory) should go under the home
+			#	directory
 			echo "source $(realpath ${SLIME}/contributor/macos/linuxvm/profile.bashrc)" >>"${HOME}/.bashrc"
 			source ${SLIME}/contributor/macos/linuxvm/profile.bashrc
 		fi
@@ -23,19 +29,36 @@ if [ "$(uname)" == "Linux" ]; then
 	fi
 fi
 
+SLIME_WF_JDK_VERSION="${SLIME_WF_JDK_VERSION:-8}"
+
 #	For now, run all SLIME wf commands under JDK 8 with Rhino
+if [ "${SLIME_WF_JDK_VERSION}" = "8" ]; then
+	SLIME_WF_JDK_8="${JSH_LOCAL_JDKS}/8"
 
-if [ -z "${SLIME_WF_JDK_8}" ]; then
-	SLIME_WF_JDK_8="${SLIME}/local/jdk/8"
-fi
+	if [ ! -d "${SLIME_WF_JDK_8}" ]; then
+		${SLIME}/jsh.bash --add-jdk-8
+	fi
 
-if [ ! -d "${SLIME_WF_JDK_8}" ]; then
-	${SLIME}/jsh.bash --add-jdk-8
+	if [ ! -f "${JSH_SHELL_LIB}/js.jar" ]; then
+		${SLIME}/jsh.bash ${SLIME}/jsh/tools/install/rhino.jsh.js
+	fi
+
+	export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_8}"
+elif [ "${SLIME_WF_JDK_VERSION}" = "11" ]; then
+	SLIME_WF_JDK_11="${JSH_LOCAL_JDKS}/11"
+
+	if [ ! -d "${SLIME_WF_JDK_8}" ]; then
+		${SLIME}/jsh.bash --add-jdk-11
+	fi
+
+	if [ ! -f "${JSH_SHELL_LIB}/js.jar" ]; then
+		${SLIME}/jsh.bash ${SLIME}/jsh/tools/install/rhino.jsh.js
+	fi
+
+	export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_11}"
+else
+	>&2 echo "Unsupported JDK version ${SLIME_WF_JDK_VERSION}; exiting."
+	exit 1
 fi
-LIB="${JSH_SHELL_LIB:-${SLIME}/local/jsh/lib}"
-if [ ! -f "${LIB}/js.jar" ]; then
-	${SLIME}/jsh.bash ${SLIME}/jsh/tools/install/rhino.jsh.js
-fi
-export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_8}"
 
 ${PROJECT}/tools/wf.bash "$@"

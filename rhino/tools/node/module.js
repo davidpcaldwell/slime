@@ -40,10 +40,16 @@
 		};
 
 		var getDownload = function(version, os, arch) {
-			if (arch == "aarch64") {
+			if (os == "Mac OS X" && arch == "aarch64") {
 				if (version == "16.17.1") {
 					return {
 						url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-darwin-arm64.tar.gz"
+					}
+				}
+			} else if (os == "Linux" && arch == "aarch64") {
+				if (version == "16.17.1") {
+					return {
+						url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-linux-arm64.tar.gz"
 					}
 				}
 			}

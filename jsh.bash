@@ -146,8 +146,13 @@ install_jdk_corretto() {
 		fi
 		JDK_TARBALL_PATH="amazon-corretto-${MAJOR_VERSION}.jdk/Contents/Home"
 	elif [ "${UNAME}" == "Linux" ]; then
-		JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-linux-x64.tar.gz"
-		JDK_TARBALL_PATH="amazon-corretto-${VERSION}-linux-x64"
+		if [ "${ARCH}" == "aarch64" ]; then
+			JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-linux-aarch64.tar.gz"
+			JDK_TARBALL_PATH="amazon-corretto-${VERSION}-linux-aarch64"
+		else
+			JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-linux-x64.tar.gz"
+			JDK_TARBALL_PATH="amazon-corretto-${VERSION}-linux-x64"
+		fi
 	fi
 	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/${VERSION}/${JDK_TARBALL_BASENAME}"
 	if [ ! -d "${HOME}/Downloads" ]; then

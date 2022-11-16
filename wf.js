@@ -160,7 +160,7 @@
 				//	Currently used by plugin-standard.jsh.fifty.ts to install TypeScript types so tsc passes in parent project
 				var skipGitIdentityRequirement =
 					(p && p.arguments[0] == "--test-skip-git-identity-requirement")
-					|| jsh.shell.environment.SLIME_WF_SKIP_GIT_IDENTITY_REEQUIREMENT
+					|| jsh.shell.environment.SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT
 				;
 
 				if (!skipGitIdentityRequirement) {
@@ -481,7 +481,7 @@
 					return 1;
 				}
 				jsh.shell.console("Running TypeScript compiler ...");
-				jsh.wf.typescript.tsc();
+				jsh.wf.checks.tsc();
 				jsh.shell.console("Running tests ...");
 				var testsPassed = test({
 					docker: p.options.docker,
