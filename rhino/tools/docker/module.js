@@ -399,21 +399,24 @@
 							intel: "https://desktop.docker.com/mac/stable/amd64/67351/Docker.dmg"
 						},
 						latest: {
-							intel: "https://desktop.docker.com/mac/stable/amd64/Docker.dmg"
+							intel: "https://desktop.docker.com/mac/stable/amd64/Docker.dmg",
+							apple: "https://desktop.docker.com/mac/stable/arm64/Docker.dmg"
 						}
 					}
 				}
-				return $api.fp.world.old.tell(function(events) {
+				return function(events) {
 					if (!p.destination.directory) {
 						if (p.library.shell.os.name == "Mac OS X") {
 							//	https://docs.docker.com/desktop/mac/release-notes/
-							var distribution = (function() {
-								if (p.version) {
+							var distribution = (function(arch) {
+								if (p.version && arch == "amd64") {
 									return versions.macos[p.version].intel;
+								} else if (arch == "aarch64") {
+									return versions.macos.latest.apple;
 								} else {
 									return versions.macos.latest.intel;
 								}
-							})();
+							})(p.library.shell.os.arch);
 							//	TODO	note that this will get an arbitrary version if it is cached, since the basename is
 							//			still Docker.dmg
 							var dmg = p.library.install.get({
@@ -441,7 +444,7 @@
 						//	TODO	check for version conflict and decide what to do
 						events.fire("found", p.destination.directory);
 					}
-				})
+				};
 			},
 			kubectl: kubectl
 		});
