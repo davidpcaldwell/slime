@@ -533,7 +533,7 @@
 			if (!p.version) p.version = versions.default;
 			return function(events) {
 				var existing = $exports.at({ location: p.location.toString() });
-				if (existing) throw new Error("Node instlalation directory exists: " + p.location.toString());
+				if (existing) throw new Error("Node installation directory exists: " + p.location.toString());
 				var version = getDownload(p.version, $context.library.shell.os.name, $context.library.shell.os.arch);
 				$context.library.install.install({
 					url: version.url,
