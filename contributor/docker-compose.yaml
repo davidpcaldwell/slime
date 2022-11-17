@@ -17,10 +17,10 @@ services:
 
   test: &test
     <<: *box
-    volumes:
-      - type: bind
-        source: ../local/wf/logs/docker.compose.test
-        target: /slime/local/wf/logs/test/current/
+    # volumes:
+    #   - type: bind
+    #     source: ../local/wf/logs/docker.compose.test
+    #     target: /slime/local/wf/logs/test/current/
     command: /bin/bash /slime/wf check --docker
 
   test11:
