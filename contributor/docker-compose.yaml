@@ -4,30 +4,40 @@
 #
 #	END LICENSE
 
-version: '2.4'
+version: '3.9'
 services:
-  test: &test
+  box: &box
     build: ..
-    volumes:
-      - ../local/wf/logs/docker.compose.test:/slime/local/wf/logs/test/current/
-      # - ..:/slime
-      # - /slime/local
-    environment: &test_environment
+    environment: &environment
       SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
     working_dir: /slime
-    command: /bin/bash /slime/wf check --docker
     depends_on:
       - chrome
       - firefox
+
+  test: &test
+    <<: *box
+    volumes:
+      - type: bind
+        source: ../local/wf/logs/docker.compose.test
+        target: /slime/local/wf/logs/test/current/
+    command: /bin/bash /slime/wf check --docker
+
   test11:
     <<: *test
     environment:
-      <<: *test_environment
+      <<: *environment
       SLIME_WF_JDK_VERSION: 11
+
+  devbox:
+    <<: *box
+    command: sleep infinity
+
   chrome:
     image: seleniarm/standalone-chromium
     ports:
       - 7900:7900
+
   firefox:
     image: seleniarm/standalone-firefox
     ports:
