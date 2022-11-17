@@ -7,8 +7,12 @@
 services:
   test:
     volumes:
-      - ..:/slime
-      - local:/slime/local
+      - type: bind
+        source: ..
+        target: /slime
+      - type: volume
+        source: local
+        target: /slime/local
     command: sleep infinity
 
 volumes:
