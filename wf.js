@@ -326,15 +326,15 @@
 					}
 				}
 			};
-			if (!jsh.shell.environment.SLIME_WF_JDK_8) {
-				jsh.shell.run({
-					command: "bash",
-					arguments: [
-						$context.base.getRelativePath("jsh.bash"),
-						"--install-jdk"
-					]
-				});
-			}
+			// if (!jsh.shell.environment.SLIME_WF_JDK_8) {
+			// 	jsh.shell.run({
+			// 		command: "bash",
+			// 		arguments: [
+			// 			$context.base.getRelativePath("jsh.bash"),
+			// 			"--install-jdk"
+			// 		]
+			// 	});
+			// }
 			jsh.shell.run({
 				command: "bash",
 				arguments: [

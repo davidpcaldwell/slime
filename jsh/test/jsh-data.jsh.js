@@ -56,6 +56,13 @@
 
 		jsh.shell.echo(JSON.stringify({
 			engines: engines,
+			jsr223: jsh.java.Array.adapt(new Packages.javax.script.ScriptEngineManager().getEngineFactories()).map(function(_factory) {
+				return {
+					name: String(_factory.getEngineName()),
+					version: String(_factory.getEngineVersion()),
+					names: jsh.java.Array.adapt(_factory.getNames()).map(function(name) { return String(name); })
+				}
+			}),
 			"jsh.script.file": (typeof(jsh.script.file) != "undefined") ? {
 				string: jsh.script.file.toString(),
 				pathname: {

@@ -13,3 +13,4 @@ rm -R ${SLIME}/local/jsh
 rm -R ${SLIME}/local/wiki
 ${SLIME}/jsh.bash --install-jdk-11
 ${SLIME}/jsh.bash ${SLIME}/jsh/test/jsh-data.jsh.js
+env SLIME_WF_JDK_VERSION=11 ${SLIME}/wf check --docker
