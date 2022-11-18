@@ -4,16 +4,4 @@
 #
 #	END LICENSE
 
-services:
-  test:
-    volumes:
-      - type: bind
-        source: ..
-        target: /slime
-      - type: volume
-        source: local
-        target: /slime/local
-    command: sleep infinity
-
-volumes:
-  local:
+version: '3.9'

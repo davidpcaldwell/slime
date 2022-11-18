@@ -31,6 +31,13 @@ services:
 
   devbox:
     <<: *box
+    volumes:
+      - type: bind
+        source: ..
+        target: /slime
+      - type: volume
+        source: local
+        target: /slime/local
     command: sleep infinity
 
   chrome:
@@ -42,3 +49,6 @@ services:
     image: seleniarm/standalone-firefox
     ports:
       - 7901:7900
+
+volumes:
+  local:
