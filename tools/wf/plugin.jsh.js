@@ -470,7 +470,6 @@
 				var getTypedocCommand = function(stdio,project,out) {
 					var version = library.module.Project.getTypescriptVersion(project);
 					var configuration = library.module.Project.getConfigurationLocation(project);
-					jsh.shell.console("Compiling with TypeScript " + version + " ...");
 					jsh.shell.tools.rhino.require();
 					jsh.shell.tools.tomcat.require();
 					/** @type { slime.jsh.wf.internal.typescript.Invocation } */
@@ -504,16 +503,18 @@
 							var project = (p && p.project) ? p.project : inputs.base();
 							var version = library.module.Project.getTypescriptVersion({ base: project.toString() });
 							jsh.shell.console("Compiling with TypeScript " + version + " ...");
-							var result = jsh.shell.jsh({
-								script: jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
-								arguments: [
-									"-version", version,
-									"-tsconfig", typescript.getConfig(project)
-								],
-								evaluate: function(result) {
-									return result;
-								}
-							});
+							var result = $api.fp.world.now.question(
+								jsh.shell.world.question,
+								jsh.shell.Invocation.create({
+									command: "bash",
+									arguments: [
+										jsh.shell.jsh.src.getFile("jsh.bash"),
+										jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
+										"-version", version,
+										"-tsconfig", typescript.getConfig(project)
+									]
+								})
+							)
 							return (result.status == 0);
 						},
 						typedoc: {
@@ -882,8 +883,9 @@
 						var result = $api.fp.world.now.question(
 							jsh.shell.world.question,
 							jsh.shell.Invocation.create({
-								command: jsh.shell.jsh.src.getFile("jsh.bash"),
+								command: "bash",
 								arguments: [
+									jsh.shell.jsh.src.getFile("jsh.bash"),
 									jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
 									"-version", version,
 									"-tsconfig", typescript.getConfig(project)
