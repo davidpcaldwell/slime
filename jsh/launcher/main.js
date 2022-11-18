@@ -226,9 +226,20 @@
 			command.vm("jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED");
 		}
 
-		if (Packages.java.lang.System.getenv("JSH_NASHORN_DEPRECATION_ARGUMENT")) {
-			command.systemProperty("nashorn.args", "--no-deprecation-warning");
-		}
+		(
+			function handleNashornDeprecation() {
+				function javaMajorVersionString(javaVersionProperty) {
+					if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
+					return javaVersionProperty.split(".")[0];
+				}
+
+				var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
+
+				if (javaMajorVersion > 8) {
+					command.systemProperty("nashorn.args", "--no-deprecation-warning");
+				}
+			}
+		)();
 
 		var _urls = [];
 

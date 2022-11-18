@@ -38,6 +38,11 @@ namespace slime.jsh.wf.test {
 			const $api = $context.$api;
 			const jsh = $context.jsh;
 
+			function configure(repository) {
+				repository.config({ set: { name: "user.name", value: "foo" }});
+				repository.config({ set: { name: "user.email", value: "bar@example.com" }});
+			}
+
 			$export({
 				clone: function(p) {
 					var clone: slime.jrunscript.tools.git.Command<{ repository: string, to: string }, void> = {
@@ -51,6 +56,23 @@ namespace slime.jsh.wf.test {
 							}
 						}
 					};
+					var addAll: slime.jrunscript.tools.git.Command<void,void> = {
+						invocation: function(p) {
+							return {
+								command: "add",
+								arguments: ["."]
+							}
+						}
+					};
+					var commitAll: slime.jrunscript.tools.git.Command<{ message: string },void> = {
+						invocation: function(p) {
+							return {
+								command: "commit",
+								arguments: ["--all", "--message", p.message]
+							};
+						}
+					}
+
 					var src = p.src;
 					var destination = (() => {
 						var object = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -108,12 +130,15 @@ namespace slime.jsh.wf.test {
 						}
 					)();
 					var rv = jsh.tools.git.Repository({ directory: jsh.file.Pathname(destination.pathname).directory });
+					configure(rv);
 					if (p.commit && rv.status().paths) {
+						var repository = jsh.tools.git.program({ command: "git" }).repository(destination.pathname);
 						//	Add untracked files
-						rv.add({ path: "." });
-						rv.commit({
-							all: true,
-							message: p.commit.message
+						repository.command(addAll).argument().run();
+						repository.command(commitAll).argument({ message: p.commit.message }).run({
+							stderr: function(line) {
+								jsh.shell.console(line);
+							}
 						});
 					}
 					return rv;
@@ -137,10 +162,7 @@ namespace slime.jsh.wf.test {
 					// 	}
 					// })();
 				},
-				configure: function(repository) {
-					repository.config({ set: { name: "user.name", value: "foo" }});
-					repository.config({ set: { name: "user.email", value: "bar@example.com" }});
-				}
+				configure: configure
 			})
 		}
 	//@ts-ignore

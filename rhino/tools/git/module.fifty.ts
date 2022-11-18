@@ -836,6 +836,10 @@ namespace slime.jrunscript.tools.git {
 		export namespace command {
 			export type Executor = <P,R>(command: slime.jrunscript.tools.git.Command<P,R>) => {
 				argument: (argument: P) => {
+					/**
+					 * Runs the resulting git command, sending any output emitted to the `stdout` and `stderr` callbacks. Uses the
+					 * alternative `world` implementation if one is provided. If the `git` exit status is non-zero, throws an error.
+					 */
 					run: (p?: {
 						stdout?: world.Invocation<P,R>["stdout"]
 						stderr?: world.Invocation<P,R>["stderr"]
