@@ -1388,7 +1388,7 @@
 			return createShellInvocation(p.program, p.config, p.pathname, invocation, stdio);
 		}
 
-		var oldShellRunInTermsOfNewShellApi = function(invocation) {
+		var toOldWorldOrientedApi = function(invocation) {
 			return function(handler) {
 				$api.fp.world.now.action(
 					$context.api.shell.world.action,
@@ -1402,7 +1402,9 @@
 		var run = function(p) {
 			var shellInvocation = shell(p);
 			var output;
-			var run = (p.world && p.world.run) ? p.world.run : oldShellRunInTermsOfNewShellApi;
+			//	TODO	need to change the type of p.world.run to the current wo API and then refactor
+			//			toOldWorldOrientedApi (it might be just removed)
+			var run = (p.world && p.world.run) ? p.world.run : toOldWorldOrientedApi;
 			run(shellInvocation)({
 				stdout: function(e) {
 					p.stdout(e.detail.line);
@@ -1513,7 +1515,7 @@
 
 		$exports.run = function(p) {
 			return run($api.Object.compose(p, {
-				run: oldShellRunInTermsOfNewShellApi
+				run: toOldWorldOrientedApi
 			}));
 		};
 

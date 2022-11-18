@@ -71,14 +71,15 @@ public abstract class Host {
 	}
 
 	private static class JavaxScriptHost extends Host {
-		private ScriptEngineManager factory;
+		private ScriptEngineManager manager;
 		private ScriptEngine engine;
 
 		private JavaxScriptHost(String engineName) {
-			this.factory = new ScriptEngineManager();
-			this.engine = factory.getEngineByName(engineName);
+			this.manager = new ScriptEngineManager();
+			this.engine = manager.getEngineByName(engineName);
 			if (this.engine == null) {
-				throw new RuntimeException("No engine: " + engineName + " in " + System.getProperty("java.home"));
+				//	this can happen in JDK 8 if the "--no-deprecation-warning" argument is passed to Nashorn
+				throw new RuntimeException("No engine: " + engineName + " in " + System.getProperty("java.home") + " (" + System.getProperty("java.version") + ")");
 			}
 		}
 
@@ -86,7 +87,7 @@ public abstract class Host {
 		public void destroy() {}
 
 		public void bind(Binding binding) {
-			factory.getBindings().put(binding.getName(), binding.getValue());
+			manager.getBindings().put(binding.getName(), binding.getValue());
 		}
 
 		public Object eval(Script file) throws ScriptException {
