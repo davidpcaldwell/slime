@@ -130,8 +130,8 @@ namespace slime.jsh.wf.test {
 						}
 					)();
 					var rv = jsh.tools.git.Repository({ directory: jsh.file.Pathname(destination.pathname).directory });
-					configure(rv);
 					if (p.commit && rv.status().paths) {
+						configure(rv);
 						var repository = jsh.tools.git.program({ command: "git" }).repository(destination.pathname);
 						//	Add untracked files
 						repository.command(addAll).argument().run();

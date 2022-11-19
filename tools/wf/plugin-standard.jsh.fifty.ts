@@ -75,6 +75,7 @@ namespace slime.jsh.wf {
 					}
 
 					return {
+						jsh: fifty.jsh.file.object.getRelativePath("../../jsh.bash").file,
 						wf: fifty.jsh.file.object.getRelativePath("../wf.bash").file,
 						test: {
 							fixture: fixture
@@ -82,7 +83,7 @@ namespace slime.jsh.wf {
 						/**
 						 *
 						 * @param p Specifies whether to skip running `wf initialize` on the project.
-						 * @returns A repository representing a project with a SLIME submodule that has an `origin` remote.
+						 * @returns An `origin` repository and a `clone` repository that is cloned from that origin.
 						 */
 						project: function project(p?: { noInitialize?: boolean }) {
 							if (!p) p = {};
@@ -236,7 +237,7 @@ namespace slime.jsh.wf {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
-				var jsh = fifty.global.jsh;
+				var { $api, jsh } = fifty.global;
 
 				fifty.tests.interface.tsc = function() {
 					var repository = test.fixtures.adapt.repository(test.fixtures.project().clone);
@@ -298,15 +299,30 @@ namespace slime.jsh.wf {
 							{ append: false }
 						);
 
+						var engines = JSON.parse($api.fp.world.now.question(
+							jsh.shell.world.question,
+							jsh.shell.Invocation.create({
+								command: "bash",
+								arguments: [test.fixtures.jsh.toString(), "-engines"],
+								stdio: {
+									output: "string"
+								}
+							})
+						).stdio.output);
+
 						//	issue 178 (https://github.com/davidpcaldwell/slime/issues/178)
 						//	the issue claimed that a stack trace was dumped when tsc failed under nashorn, but there is no stack
 						//	trace, as the below output indicates. So hard to assert that there's no stack trace without knowing
 						//	what it would look like; disabling output since it is just manually-checked clutter
-						var after: { status: number, stdio?: any } = tsc({ JSH_ENGINE: "nashorn" });
-						fifty.verify(after).status.is(1);
-						if (false) {
-							jsh.shell.console("output = [" + after.stdio.output + "]");
-							jsh.shell.console("error = [" + after.stdio.error + "]");
+						if (engines.indexOf("nashorn") != -1) {
+							var after: { status: number, stdio?: any } = tsc({ JSH_ENGINE: "nashorn" });
+							fifty.verify(after).status.is(1);
+							if (false) {
+								jsh.shell.console("output = [" + after.stdio.output + "]");
+								jsh.shell.console("error = [" + after.stdio.error + "]");
+							}
+						} else {
+							jsh.shell.console("Nashorn not present; skipping Nashorn-specific test case.");
 						}
 					})
 				}
