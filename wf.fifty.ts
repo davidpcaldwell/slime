@@ -33,13 +33,13 @@ namespace slime.project.wf {
 					});
 				},
 				configure: fixtures.configure,
-				wf: function(repository: slime.jrunscript.tools.git.repository.Local, p: { arguments: string[] }): { status: number, stdio?: { output?: string, error?: string }} {
+				wf: function(repository: slime.jrunscript.tools.git.repository.Local, p: { arguments: string[], environment?: { [variable: string]: string } }): { status: number, stdio?: { output?: string, error?: string }} {
 					return jsh.shell.run({
 						command: repository.directory.getFile("wf"),
 						arguments: p.arguments,
 						environment: Object.assign({}, jsh.shell.environment, {
 							JSH_USER_JDKS: "/dev/null"
-						}),
+						}, p.environment || {}),
 						stdio: {
 							output: String,
 							error: String
@@ -179,6 +179,27 @@ namespace slime.project.wf {
 		) {
 			const { jsh } = fifty.global;
 
+			fifty.tests.requireGitIdentityDuringInitialize = function() {
+				[true,false].forEach(function(configured) {
+					var fresh = test.fixtures.clone();
+					if (configured) test.fixtures.configure(fresh);
+					var result = test.fixtures.wf(fresh, {
+						arguments: ["initialize", "--test-git-identity-requirement"],
+						environment: {
+							SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: null
+						}
+					});
+					var expected = (configured) ? 0 : 1;
+					fifty.verify(result).status.is(expected);
+					if (result.status != expected) {
+						jsh.shell.console("Output:");
+						jsh.shell.console(result.stdio.output);
+						jsh.shell.console("Console:");
+						jsh.shell.console(result.stdio.error);
+					}
+				});
+			}
+
 			fifty.tests.suite = function() {
 				fifty.run(function ensureInitializeInstallsEslint() {
 					var fresh = test.fixtures.clone();
@@ -197,17 +218,7 @@ namespace slime.project.wf {
 					fifty.verify(fresh).directory.getSubdirectory("local/jsh/lib/node/lib/node_modules/eslint").is.type("object");
 				});
 
-				fifty.run(function requireGitIdentityDuringInitialize() {
-					[true,false].forEach(function(configured) {
-						var fresh = test.fixtures.clone();
-						if (configured) test.fixtures.configure(fresh);
-						var result = test.fixtures.wf(fresh, {
-							arguments: ["initialize", "--test-git-identity-requirement"]
-						});
-						var expected = (configured) ? 0 : 1;
-						fifty.verify(result).status.is(expected);
-					});
-				})
+				fifty.run(fifty.tests.requireGitIdentityDuringInitialize);
 			}
 
 			fifty.tests.manual.fixtures = {
