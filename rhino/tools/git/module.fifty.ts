@@ -289,23 +289,25 @@ namespace slime.jrunscript.tools.git {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Fixtures {
-			init: slime.jrunscript.tools.git.Exports["init"]
-			write: (p: {
-				repository?: repository.Local
-				directory?: slime.jrunscript.file.Directory
-				files: {
-					[path: string]: string
-				}
-			}) => void
-		}
-
-		export const fixtures: Fixtures = (
-			function(fifty: slime.fifty.test.Kit) {
-				return fifty.$loader.file("fixtures.js", { module: subject });
+		export namespace old {
+			export interface Fixtures {
+				init: slime.jrunscript.tools.git.Exports["init"]
+				write: (p: {
+					repository?: repository.Local
+					directory?: slime.jrunscript.file.Directory
+					files: {
+						[path: string]: string
+					}
+				}) => void
 			}
-		//@ts-ignore
-		)(fifty);
+
+			export const fixtures: Fixtures = (
+				function(fifty: slime.fifty.test.Kit) {
+					return fifty.$loader.file("fixtures-old.js", { module: subject });
+				}
+			//@ts-ignore
+			)(fifty);
+		}
 	}
 
 
@@ -564,11 +566,11 @@ namespace slime.jrunscript.tools.git {
 
 				fifty.tests.types.Repository.Local.status = function() {
 					var at = fifty.jsh.file.object.temporary.location();
-					var repository = internal.fixtures.init({ pathname: at });
+					var repository = internal.old.fixtures.init({ pathname: at });
 					debugger;
 					var status = repository.status();
 					verify(repository).status().evaluate.property("paths").is(void(0));
-					internal.fixtures.write({
+					internal.old.fixtures.write({
 						repository: repository,
 						files: {
 							a: "a"

@@ -17,6 +17,17 @@ namespace slime.jsh.script {
 		})(fifty);
 	}
 
+	/**
+	 * Provides APIs supporting command-line `jsh` applications.
+	 *
+	 * ## CLI applications with commands
+	 *
+	 * The simplest way to define a CLI application with commands - in other words, applications invoked using the main script and
+	 * a command name, where each command defines its own arguments - is using the
+	 * {@link slime.jsh.script.cli.Exports#program | jsh.script.cli.program()} method, providing a
+	 * {@link slime.jsh.script.cli.Commands} object as the `commands` property; the function produced is a
+	 * {@link slime.jsh.script.cli.main | `main` implementation}.
+	 */
 	export namespace cli {
 		export interface Invocation<T> {
 			options: T

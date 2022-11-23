@@ -105,6 +105,30 @@
 
 		/** @type { slime.jrunscript.tools.git.Commands["submodule"] } */
 		var submodule = {
+			status: {
+				invocation: function(p) {
+					return {
+						command: "submodule",
+						arguments: $api.Array.build(function(rv) {
+							rv.push("status");
+							if (p.cached) rv.push("--cached");
+							if (p.recursive) rv.push("--recursive");
+						})
+					};
+				},
+				result: function(output) {
+					return output.split("\n").filter(Boolean).map(function(line) {
+						return line.trim();
+					}).map(function(line) {
+						return line.split(/\s/);
+					}).map(function(tokens) {
+						return {
+							sha1: tokens[0],
+							path: tokens[1]
+						};
+					});
+				}
+			},
 			update: {
 				invocation: function() {
 					return {

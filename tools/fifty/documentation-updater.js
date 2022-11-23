@@ -283,7 +283,10 @@
 									if (timestamps.code.value > timestamps.documentation.value) {
 										run();
 									} else {
-										events.fire("unchanged");
+										events.fire("unchanged", {
+											code: timestamps.code.value,
+											documentation: timestamps.documentation.value
+										});
 									}
 								}
 							}

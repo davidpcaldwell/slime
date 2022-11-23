@@ -82,7 +82,11 @@
 							jsh.shell.console("Set interval to " + e.detail + " milliseconds.");
 						},
 						unchanged: function(e) {
-							jsh.shell.console("Checked; no change.");
+							jsh.shell.console(
+								"Checked; unchanged -"
+								+ " code = " + new Date(e.detail.code)
+								+ " documentation = " + new Date(e.detail.documentation)
+							);
 						},
 						updating: function(e) {
 							jsh.shell.console("Updating: out=" + e.detail.out);

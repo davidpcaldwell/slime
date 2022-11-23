@@ -8,7 +8,7 @@
 (
 	/**
 	 * @param { { module: slime.jrunscript.tools.git.Exports }} $context
-	 * @param { slime.loader.Export<slime.jrunscript.tools.git.internal.Fixtures> } $export
+	 * @param { slime.loader.Export<slime.jrunscript.tools.git.internal.old.Fixtures> } $export
 	 */
 	function($context,$export) {
 		var module = $context.module;
