@@ -11,6 +11,7 @@ namespace slime.jrunscript.tools.git.internal.commands {
 		) {
 			fifty.tests.exports = fifty.test.Parent();
 			fifty.tests.world = {};
+			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
@@ -168,8 +169,28 @@ namespace slime.jrunscript.tools.git {
 	export interface Commands {
 		submodule: {
 			update: Command<void,void>
+			status: Command<{ cached?: boolean, recursive?: boolean }, { sha1: string, path: string }[]>
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+			const subject = jsh.tools.git.commands;
+
+			fifty.tests.manual.submodule = {};
+			fifty.tests.manual.submodule.status = function() {
+				var repository = jsh.tools.git.program({ command: "git" }).repository(jsh.shell.PWD.toString());
+				var submodules = repository.command(subject.submodule.status).argument({}).run();
+				submodules.forEach(function(submodule) {
+					jsh.shell.console("Path: " + submodule.path + " commit: " + submodule.sha1);
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Commands {
 		remote: {

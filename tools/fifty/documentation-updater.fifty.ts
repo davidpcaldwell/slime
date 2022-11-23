@@ -59,7 +59,10 @@ namespace slime.tools.documentation.updater {
 					project: string
 				}
 				creating: void
-				unchanged: void
+				unchanged: {
+					code: number
+					documentation: number
+				}
 				setInterval: number
 				updating: {
 					out: string
