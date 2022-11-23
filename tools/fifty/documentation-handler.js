@@ -85,7 +85,7 @@
 							jsh.shell.console(
 								"Checked; unchanged -"
 								+ " code = " + new Date(e.detail.code)
-								+ " documentation = " + e.detail.documentation
+								+ " documentation = " + new Date(e.detail.documentation)
 							);
 						},
 						updating: function(e) {
