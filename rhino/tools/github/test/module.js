@@ -9,8 +9,8 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.unit.mock.github.test.Context } $context
-	 * @param { slime.loader.Export<slime.jsh.unit.mock.github.test.Exports> } $export
+	 * @param { slime.jrunscript.tools.github.internal.test.Context } $context
+	 * @param { slime.loader.Export<slime.jsh.unit.mock.github.Exports> } $export
 	 */
 	function($api,$context,$export) {
 		/**
@@ -42,7 +42,7 @@
 
 		/**
 		 * @param { slime.jrunscript.file.Searchpath } PATH
-		 * @param { Pick<slime.jsh.unit.mock.github.test.Settings,"mock" | "token" | "branch"> } p
+		 * @param { Pick<slime.jsh.unit.mock.github.Settings,"mock" | "token" | "branch"> } p
 		 * @returns
 		 */
 		var getDownloadJshBashCommand = function(PATH,p) {
@@ -82,7 +82,7 @@
 
 		/**
 		 *
-		 * @param { slime.jsh.unit.mock.github.test.Settings } p
+		 * @param { slime.jsh.unit.mock.github.Settings } p
 		 * @returns
 		 */
 		var getBashInvocationCommand = function(p) {
@@ -120,7 +120,7 @@
 
 		/**
 		 *
-		 * @param { slime.jsh.unit.mock.github.test.Settings } p
+		 * @param { slime.jsh.unit.mock.github.Settings } p
 		 * @returns
 		 */
 		var getCommand = function(PATH,p) {
