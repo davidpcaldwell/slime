@@ -17,7 +17,7 @@ namespace slime.jsh.test.remote {
 			var loader = jsh.file.world.Location.directory.loader.synchronous({ root: slime });
 
 			var code: {
-				testing: slime.jsh.unit.mock.github.test.Script
+				testing: slime.jrunscript.tools.github.internal.test.Script
 			} = {
 				testing: jsh.loader.synchronous.script("rhino/tools/github/test/module.js")(loader)
 			};
@@ -50,6 +50,11 @@ namespace slime.jsh.test.remote {
 				}),
 				$api.fp.world.mapping(jsh.shell.world.question),
 				$api.fp.impure.tap(function(t) {
+					if (t.status != 0) {
+						jsh.shell.console("Status: " + t.status);
+						jsh.shell.console("stderr:");
+						jsh.shell.console(t.stdio.error);
+					}
 					debugger;
 				}),
 				$api.fp.property("stdio"),
@@ -57,7 +62,7 @@ namespace slime.jsh.test.remote {
 			)
 
 			fifty.tests.suite = function() {
-				var settings: slime.jsh.unit.mock.github.test.Settings = {
+				var settings: slime.jsh.unit.mock.github.Settings = {
 					mock: server,
 					branch: "local"
 				};
@@ -73,10 +78,12 @@ namespace slime.jsh.test.remote {
 					getOutput
 				);
 				jsh.shell.console("bash = " + launcherBashScript);
+				jsh.shell.console("invoke = " + invoke);
 				var scriptOutput = $api.fp.now.invoke(
 					toInvocation(invoke, launcherBashScript),
 					getOutput
 				);
+				if (!scriptOutput) throw new Error("No script output.");
 				var output = JSON.parse(scriptOutput);
 				verify(output).evaluate.property("engines").is.type("object");
 			}

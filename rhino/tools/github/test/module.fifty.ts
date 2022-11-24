@@ -4,11 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jsh.unit.mock.github.test {
-	export interface Context {
-		slime: slime.jrunscript.file.Directory
-	}
-
+namespace slime.jsh.unit.mock.github {
 	export interface Settings {
 		mock?: slime.jsh.unit.mock.Web
 		branch?: string
@@ -20,15 +16,21 @@ namespace slime.jsh.unit.mock.github.test {
 	export interface Exports {
 		startMock: (jsh: slime.jsh.Global) => slime.jsh.unit.mock.Web
 
-		getDownloadJshBashCommand: (PATH: slime.jrunscript.file.Searchpath, options: Pick<slime.jsh.unit.mock.github.test.Settings,"mock" | "token" | "branch">) => string[]
+		getDownloadJshBashCommand: (PATH: slime.jrunscript.file.Searchpath, options: Pick<slime.jsh.unit.mock.github.Settings,"mock" | "token" | "branch">) => string[]
 
-		getBashInvocationCommand: (options: slime.jsh.unit.mock.github.test.Settings) => string[]
+		getBashInvocationCommand: (options: slime.jsh.unit.mock.github.Settings) => string[]
 
 		/**
 		 * Outputs a single string, suitable for use at the shell command line, that will invoke a shell with the given settings
 		 * using tools (`curl` or `wget`) found on the given search path.
 		 */
-		getCommandLine: (PATH: slime.jrunscript.file.Searchpath, settings: Settings) => string
+		getCommandLine: (PATH: slime.jrunscript.file.Searchpath, settings: slime.jsh.unit.mock.github.Settings) => string
+	}
+}
+
+namespace slime.jrunscript.tools.github.internal.test {
+	export interface Context {
+		slime: slime.jrunscript.file.Directory
 	}
 
 	(
@@ -42,5 +44,5 @@ namespace slime.jsh.unit.mock.github.test {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.synchronous.Script<Context,Exports>
+	export type Script = slime.loader.synchronous.Script<Context,slime.jsh.unit.mock.github.Exports>
 }

@@ -1232,6 +1232,10 @@
 				}
 			};
 			var source = sources[version];
+			//	TODO	possibly not the right variable to use, but band-aiding to pass tests
+			if (/^https\:\/\/github\.com/.test(source.url) && $api.shell.environment.JSH_GITHUB_API_PROTOCOL == "http") {
+				source.url = source.url.replace("https://", "http://");
+			}
 			if (!source) throw new Error("No known way to retrieve Rhino version " + version);
 			var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
 			tmpdir["delete"]();
@@ -1243,6 +1247,7 @@
 			var _url = new Packages.java.net.URL(source.url);
 			Packages.java.lang.System.err.println("Downloading Rhino from " + _url);
 			var _connection = _url.openConnection();
+			$api.console("Rhino download: opened connection " + _connection);
 			if (source.format == "dist") {
 				var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
 				var _entry;
@@ -1257,6 +1262,8 @@
 				Packages.java.lang.System.err.println("Downloaded Rhino to " + tmprhino);
 				return tmprhino;
 			} else if (source.format == "jar") {
+				$api.console("Rhino download: getting response code ...");
+				$api.console("Rhino download status: " + _connection.getResponseCode());
 				$api.io.copy(_connection.getInputStream(), new Packages.java.io.FileOutputStream(tmprhino));
 				return tmprhino;
 			} else {

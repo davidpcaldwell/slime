@@ -19,8 +19,7 @@
 			},
 			load: function() {
 				/**
-				 * @param { { src: slime.jsh.unit.mock.github.src, private: boolean } } o
-				 * @returns { slime.jsh.unit.mock.handler }
+				 * @type { slime.jsh.unit.mock.web.Github }
 				 */
 				var MockGithubApi = function(o) {
 					var authorize = function(request) {
@@ -37,6 +36,7 @@
 					}
 					return function(request) {
 						var host = request.headers.value("host");
+						Packages.java.lang.System.err.println("Received request: " + request.method + " " + host + " " + request.path)
 
 						//	TODO	relaxing branch/ref requirements so that we always pretend that the requested branch was also
 						//			the current branch and can just serve from the filesystem. We could probably write a more

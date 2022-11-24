@@ -24,7 +24,7 @@ namespace slime.jsh.unit {
 
 			export type Constructor = constructor.Function & {
 				bitbucket: (o: {}) => handler
-				github: (o: { src: slime.jsh.unit.mock.github.src, private?: boolean }) => handler
+				github: slime.jsh.unit.mock.web.Github
 			}
 		}
 
