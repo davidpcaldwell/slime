@@ -609,7 +609,7 @@ namespace slime.$api.fp {
 			 */
 			modify: (modifier: (pattern: string) => string) => (original: RegExp) => RegExp
 
-			exec: (regexp: RegExp) => (string: string) => Maybe<RegExpExecArray>
+			exec: (regexp: RegExp) => Partial<string,RegExpExecArray>
 		}
 	}
 
