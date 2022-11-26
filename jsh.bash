@@ -300,11 +300,6 @@ if [ -z "${JRUNSCRIPT}" ]; then
 	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
 fi
 
-#	TODO	Because jsh shells invoke jrunscript by name currently, we put jrunscript in the PATH. Could be removed by having
-#			shells execute subshells using the launcher program (e.g., this bash script), or by having it locate jrunscript
-#			dynamically, possibly using an environment variable provided here
-export PATH="$(dirname ${JRUNSCRIPT}):${PATH}"
-
 javaSystemPropertyArgument() {
 	if [ -n "$2" ]; then
 		echo "-D$1=$2"

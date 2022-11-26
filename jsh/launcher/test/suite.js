@@ -141,8 +141,11 @@
 				var script = (p.script) ? p.script : $context.script;
 				var environment = $api.Object.compose(
 					p.environment,
-					(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
-					($context.library.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: $context.library.shell.environment.JSH_SHELL_LIB } : {}
+					{ JSH_JAVA_HOME: $context.library.shell.java.home.toString() },
+					$api.Object.compose(
+						(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
+						($context.library.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: $context.library.shell.environment.JSH_SHELL_LIB } : {}
+					)
 				);
 				return $context.library.shell.run({
 					command: (p.bash) ? p.bash : $context.library.shell.java.jrunscript,
@@ -155,7 +158,9 @@
 						if (p.bash) {
 							events.fire("invocation", { command: result.command, arguments: result.arguments, environment: environment });
 						}
-						if (result.status !== 0) throw new Error("Status is " + result.status);
+						if (result.status !== 0) {
+							throw new Error("Status is " + result.status);
+						}
 						events.fire("output", result.stdio.output);
 						return JSON.parse(result.stdio.output);
 					}
@@ -167,7 +172,7 @@
 		var getShellResultFor = $api.fp.world.mapping(shellResultQuestion, {
 			invocation: function(e) {
 				//	TODO	can we use console for this and the next call?
-				$context.console("Command: " + e.detail.command + " " + e.detail.arguments.join(" "));
+				$context.console("Command: " + e.detail.command + " " + e.detail.arguments.join(" ") + " environment=" + JSON.stringify(e.detail.environment));
 			},
 			output: function(e) {
 				$context.console("Output: " + e.detail);
@@ -286,6 +291,8 @@
 						function(rv) {
 							rv.push(checkShellOutput(shellInvocation, implementation, descriptorChecks));
 							if (implementation.type == "built" && bashInvocation) {
+								//	TODO	it appears we use another entire launcher for built shells, in the source code at
+								//			jsh/launcher/jsh.bash
 								rv.push(
 									checkShellOutput(
 										bashInvocation,

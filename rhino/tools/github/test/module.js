@@ -98,6 +98,7 @@
 				command.push("JSH_GITHUB_API_PROTOCOL=http");
 				command.push("JSH_DISABLE_HTTPS_SECURITY=true");
 				if (p && p.optimize) command.push("JSH_OPTIMIZE_REMOTE_SHELL=true");
+				if (p && p.debug) command.push("JSH_LAUNCHER_BASH_DEBUG=true");
 				if (p && p.debug) command.push("JSH_LAUNCHER_DEBUG=true");
 				PROTOCOL = "http";
 			} else if (p && p.debug) {
