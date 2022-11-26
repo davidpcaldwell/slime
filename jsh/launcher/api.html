@@ -80,7 +80,7 @@ END LICENSE
 	<script>
 		window.addEventListener('load', function() {
 			var settings = document.getElementById("settings");
-			Array.prototype.slice.call(settings.tBodies[0].rows).slice(1).forEach(function(row) {
+			Array.prototype.slice.call(settings.tBodies[0].rows).slice(2).forEach(function(row) {
 				var propertyElement = row.cells[0].getElementsByTagName("code")[0];
 				propertyElement.className = "name";
 				var cell = document.createElement("td");
@@ -230,6 +230,16 @@ END LICENSE
 				</tr>
 			</thead>
 			<tbody>
+				<!--
+					Note that the markup below is modified by script above.
+				-->
+				<tr>
+					<td>(none)</td>
+					<td><code>JSH_LAUNCHER_BASH_DEBUG</code></td>
+					<td>
+						Enables debugging within the <code>jsh.bash</code> launcher.
+					</td>
+				</tr>
 				<tr>
 					<td>(none)</td>
 					<td><code>JSH_LAUNCHER_JDK_HOME</code></td>

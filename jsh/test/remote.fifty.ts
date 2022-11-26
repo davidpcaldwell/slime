@@ -77,7 +77,6 @@ namespace slime.jsh.test.remote {
 					toInvocation(download),
 					getOutput
 				);
-				jsh.shell.console("bash = " + launcherBashScript);
 				jsh.shell.console("invoke = " + invoke);
 				var scriptOutput = $api.fp.now.invoke(
 					toInvocation(invoke, launcherBashScript),
@@ -86,6 +85,7 @@ namespace slime.jsh.test.remote {
 				if (!scriptOutput) throw new Error("No script output.");
 				var output = JSON.parse(scriptOutput);
 				verify(output).evaluate.property("engines").is.type("object");
+				jsh.shell.console(JSON.stringify(output,void(0),4));
 			}
 		}
 	//@ts-ignore
