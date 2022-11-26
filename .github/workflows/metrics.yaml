@@ -8,7 +8,7 @@ name: metrics
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   jsapi:
     name: JSAPI-to-Fifty progress
