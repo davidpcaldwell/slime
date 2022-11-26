@@ -4,7 +4,7 @@
 #
 #	END LICENSE
 
-name: test
+name: test-jdk11
 on:
   push:
     branches:
