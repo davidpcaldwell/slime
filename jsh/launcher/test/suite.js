@@ -141,7 +141,10 @@
 				var script = (p.script) ? p.script : $context.script;
 				var environment = $api.Object.compose(
 					p.environment,
-					{ JSH_JAVA_HOME: $context.library.shell.java.home.toString() },
+					//	TODO	considered passing the location of jrunscript directly but it might affect native launcher, which
+					//			currently contains its own logic for locating jrunscript. So for now we pass this (somewhat
+					//			inaccurately-named, since it might not really be JAVA_HOME) value
+					{ JSH_JAVA_HOME: $context.library.shell.java.jrunscript.parent.parent.pathname.toString() },
 					$api.Object.compose(
 						(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
 						($context.library.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: $context.library.shell.environment.JSH_SHELL_LIB } : {}
