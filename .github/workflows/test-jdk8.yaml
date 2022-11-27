@@ -4,7 +4,7 @@
 #
 #	END LICENSE
 
-name: test
+name: test-jdk8
 on:
   pull_request:
     branches:
