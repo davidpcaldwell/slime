@@ -450,7 +450,7 @@
 				p.format = algorithms.zip;
 				oldInstall(p,on);
 			}),
-			//	TODO	below seems to be used in plugin.jsh.tomcat.js
+			//	TODO	below seems to be used in tomcat.js
 			$api: {
 				Events: {
 					Function: $api.deprecate(function(f,defaultOn) {
