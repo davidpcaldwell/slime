@@ -55,25 +55,6 @@ namespace slime.jsh.shell.tools {
 		graal: any
 	}
 
-	export namespace tomcat {
-		export type Version = {
-			toString(): string
-		}
-
-		export type Installation = {
-			version: Version
-		}
-
-		export namespace install {
-			export type Events = {
-				console: string
-				installed: {
-					to: slime.jrunscript.file.Pathname
-				}
-			}
-		}
-	}
-
 	export interface Exports {
 		tomcat: slime.jsh.shell.tools.Tomcat
 	}
