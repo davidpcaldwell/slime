@@ -17,17 +17,22 @@
 				version: String,
 				local: jsh.file.Pathname,
 				replace: false,
-				to: jsh.shell.jsh.lib.getRelativePath("tomcat"),
+				to: jsh.file.Pathname(jsh.shell.tools.tomcat.Installation.from.jsh().base),
 				show: false
 			}
 		});
 
 		if (parameters.options.show) {
-			var installed = jsh.shell.tools.tomcat.installed({ home: parameters.options.to.directory });
-			if (!installed) {
+			var installation = {
+				base: parameters.options.to.toString()
+			};
+			var version = jsh.shell.tools.tomcat.Installation.getVersion(
+				installation
+			);
+			if (!version.present) {
 				jsh.shell.console("No Tomcat found at " + parameters.options.to);
 			} else {
-				jsh.shell.console("Tomcat " + installed.version.toString() + " found at " + parameters.options.to);
+				jsh.shell.console("Tomcat " + version.value + " found at " + installation.base);
 			}
 			jsh.shell.exit(0);
 		}

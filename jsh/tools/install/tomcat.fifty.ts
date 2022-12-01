@@ -32,19 +32,12 @@ namespace slime.jsh.shell.tools {
 	}
 
 	export interface Tomcat {
-		/**
-		 * Returns the Tomcat installed at the given location.
-		 */
-		 installed: (p?: {
-			mock?: {
-				notes: slime.Resource
+		Installation: {
+			getVersion: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.Maybe<string>
+			from: {
+				jsh: () => slime.jsh.shell.tools.tomcat.Installed
 			}
-			/**
-			 * If present, represents the location in which to look for the installation. Defaults to the `jsh` managed Tomcat
-			 * location.
-			 */
-			home?: slime.jrunscript.file.Pathname
-		}) => tomcat.Installation
+		}
 
 		install: (p?: {
 			mock?: {
@@ -74,11 +67,12 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 	export interface Exports extends slime.jsh.shell.tools.Tomcat {
 		test: {
-			getVersion: (releaseNotes: string) => string
-			getLatestVersion: () => string
-
 			//	TODO	world test coverage only
 			getReleaseNotes: slime.$api.fp.world.Question<slime.jsh.shell.tools.tomcat.Installed,void,slime.$api.fp.Maybe<string>>
+
+			getVersion: (releaseNotes: string) => string
+
+			getLatestVersion: () => string
 		}
 	}
 
@@ -94,6 +88,11 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				if (!this.version) return null;
 				return this.version.toString();
 			};
+
+			var orNull = function<T>(maybe: slime.$api.fp.Maybe<T>): T {
+				if (maybe.present) return maybe.value;
+				return null;
+			}
 
 			var MockReleaseNotes = function(version: string) {
 				return fifty.$loader.get("test/data/tomcat-release-notes-7.0.70.txt").read(String).replace(/7\.0\.70/g, version);
@@ -146,23 +145,41 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			}
 
 			fifty.tests.replace = function() {
+				var installation = { base: mock.lib.getRelativePath("tomcat").toString() };
+
 				jsh.shell.tools.tomcat.install({ mock: mock, version: "7.0.98" });
-				var installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getRelativePath("tomcat") });
-				verify(installed).evaluate(getVersionString).is("7.0.98");
+				var installed = jsh.shell.tools.tomcat.Installation.getVersion(installation);
+				verify(installed).evaluate(orNull).is("7.0.98");
 
 				var noreplace = [];
 				jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(noreplace,["installed"]));
-				installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getRelativePath("tomcat") });
-				verify(installed).evaluate(getVersionString).is("7.0.98");
+				installed = jsh.shell.tools.tomcat.Installation.getVersion(installation);
+				verify(installed).evaluate(orNull).is("7.0.98");
 				verify(noreplace).length.is(0);
 
 				debugger;
 				var replace = [];
 				jsh.shell.tools.tomcat.install({ mock: mock, replace: true }, new Captor(replace,["installed"]));
-				installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getRelativePath("tomcat") });
-				verify(installed).evaluate(getVersionString).is("7.0.109");
+				installed = jsh.shell.tools.tomcat.Installation.getVersion(installation);
+				verify(installed).evaluate(orNull).is("7.0.109");
 				verify(replace).length.is(1);
 
+				mock.lib.getSubdirectory("tomcat").remove();
+			};
+
+			fifty.tests.install = function() {
+				var installation = { base: mock.lib.getRelativePath("tomcat").toString() };
+
+				var events: slime.$api.Event<string>[] = [];
+				jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
+				verify(events)[0].type.is("console");
+				jsh.shell.console(events[1].detail);
+				verify(events)[1].evaluate(function() { return /^Unzipping (?:[a-zA-Z0-9\/\._]+) to\:(.*)$/.test(this.detail); }).is(true);
+				verify(mock.lib).getSubdirectory("tomcat").getFile("a").is.type("object");
+				verify(mock.lib).getSubdirectory("tomcat").getFile("b").is.type("null");
+				var installed = jsh.shell.tools.tomcat.Installation.getVersion(installation);
+				var version = orNull(installed);
+				verify(version).is("7.0.109");
 				mock.lib.getSubdirectory("tomcat").remove();
 			}
 
@@ -178,19 +195,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 					mock.lib.getSubdirectory("tomcat").remove();
 				});
 
-				fifty.run(function install() {
-					var events: slime.$api.Event<string>[] = [];
-					jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
-					verify(events)[0].type.is("console");
-					jsh.shell.console(events[1].detail);
-					verify(events)[1].evaluate(function() { return /^Unzipping (?:[a-zA-Z0-9\/\._]+) to\:(.*)$/.test(this.detail); }).is(true);
-					verify(mock.lib).getSubdirectory("tomcat").getFile("a").is.type("object");
-					verify(mock.lib).getSubdirectory("tomcat").getFile("b").is.type("null");
-					var installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getRelativePath("tomcat") });
-					var version = installed.version.toString();
-					verify(version).is("7.0.109");
-					mock.lib.getSubdirectory("tomcat").remove();
-				});
+				fifty.run(fifty.tests.install);
 
 				fifty.run(fifty.tests.replace);
 			};

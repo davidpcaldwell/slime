@@ -10,9 +10,9 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.shell.tools.internal.tomcat.Context } $context
-	 * @param { slime.jsh.shell.tools.internal.tomcat.Exports } $exports
+	 * @param { slime.loader.Export<slime.jsh.shell.tools.internal.tomcat.Exports> } $export
 	 */
-	function($api,$context,$exports) {
+	function($api,$context,$export) {
 		var jsh = $context.jsh;
 		if (!jsh) throw new TypeError("No jsh.");
 
@@ -112,7 +112,7 @@
 			}
 		};
 
-		$exports.installed = function(p) {
+		var installed = function(p) {
 			if (!p) p = {};
 			/** @type { slime.$api.fp.Maybe<slime.$api.fp.impure.Input<string>> } */
 			var notes = (function() {
@@ -213,7 +213,7 @@
 			events.fire("installed", { to: p.to });
 		};
 
-		$exports.install = $context.$api.Events.Function(
+		var exportInstall = $context.$api.Events.Function(
 			install,
 			{
 				console: function(e) {
@@ -222,7 +222,7 @@
 			}
 		);
 
-		$exports.require = $api.events.Function(
+		var require = $api.events.Function(
 			/**
 			 *
 			 * @param { Parameters<slime.jsh.shell.tools.internal.tomcat.Exports["install"]>[0] } p
@@ -230,17 +230,37 @@
 			 */
 			function(p,events) {
 				jsh.shell.jsh.require({
-					satisfied: function() { return Boolean($exports.installed()); },
+					satisfied: function() { return Boolean(installed()); },
 					install: function() { return install(p,events); }
 				});
 			}
 		);
 
-		$exports.test = {
-			getVersion: getVersion,
-			getReleaseNotes: getReleaseNotes,
-			getLatestVersion: getLatestVersion
-		}
+		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"] } */
+		var Installation = {
+			from: {
+				jsh: function() {
+					return {
+						base: jsh.shell.jsh.lib.getRelativePath("tomcat").os.adapt().pathname
+					}
+				}
+			},
+			getVersion: $api.fp.pipe(
+				$api.fp.world.mapping(getReleaseNotes),
+				$api.fp.Maybe.map(getVersion)
+			)
+		};
+
+		$export({
+			Installation: Installation,
+			install: exportInstall,
+			require: require,
+			test: {
+				getVersion: getVersion,
+				getReleaseNotes: getReleaseNotes,
+				getLatestVersion: getLatestVersion
+			}
+		})
 	}
 //@ts-ignore
-)($api,$context,$exports);
+)($api,$context,$export);
