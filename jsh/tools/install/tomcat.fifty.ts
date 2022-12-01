@@ -14,6 +14,13 @@ namespace slime.jsh.shell.tools {
 			version: Version
 		}
 
+		//	TODO	because this is Java, it's possible that we don't need a native filesystem to do this; we might be able to run
+		//			it directly out of other Location objects. But for now we assume a native filesystem and use only the base
+		//			property.
+		export type Installed = {
+			base: string
+		}
+
 		export namespace install {
 			export type Events = {
 				console: string
@@ -69,6 +76,9 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 		test: {
 			getVersion: (releaseNotes: string) => string
 			getLatestVersion: () => string
+
+			//	TODO	world test coverage only
+			getReleaseNotes: slime.$api.fp.world.Question<slime.jsh.shell.tools.tomcat.Installed,void,slime.$api.fp.Maybe<string>>
 		}
 	}
 
@@ -77,7 +87,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 			const subject = jsh.shell.tools.tomcat as Exports;
 
 			var getVersionString = function(): string {
@@ -183,11 +193,27 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				});
 
 				fifty.run(fifty.tests.replace);
-			}
+			};
 
-			fifty.tests.world = function() {
+			fifty.tests.world = {};
+
+			fifty.tests.world.getLatestVersion = function() {
 				var version = subject.test.getLatestVersion();
 				fifty.global.jsh.shell.console(version);
+			};
+
+			fifty.tests.world.getReleaseNotes = function() {
+				var notes = $api.fp.world.now.question(
+					subject.test.getReleaseNotes,
+					{
+						base: jsh.shell.jsh.lib.getRelativePath("tomcat").toString()
+					}
+				);
+				if (notes.present) {
+					jsh.shell.console(notes.value);
+				} else {
+					jsh.shell.console("Release notes at " + jsh.shell.jsh.lib.getRelativePath("tomcat") + " not found.");
+				}
 			}
 		}
 	//@ts-ignore
