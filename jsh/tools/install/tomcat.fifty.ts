@@ -5,9 +5,28 @@
 //	END LICENSE
 
 namespace slime.jsh.shell.tools {
+	export namespace tomcat {
+		export type Version = {
+			toString(): string
+		}
+
+		export type Installation = {
+			version: Version
+		}
+
+		export namespace install {
+			export type Events = {
+				console: string
+				installed: {
+					to: slime.jrunscript.file.Pathname
+				}
+			}
+		}
+	}
+
 	export interface Tomcat {
 		/**
-		 * Returns the Tomcat installed at the
+		 * Returns the Tomcat installed at the given location.
 		 */
 		 installed: (p?: {
 			mock?: {
@@ -48,6 +67,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 	export interface Exports extends slime.jsh.shell.tools.Tomcat {
 		test: {
+			getVersion: (releaseNotes: string) => string
 			getLatestVersion: () => string
 		}
 	}
@@ -65,11 +85,15 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				return this.version.toString();
 			};
 
-			var Distribution = function(version) {
+			var MockReleaseNotes = function(version: string) {
+				return fifty.$loader.get("test/data/tomcat-release-notes-7.0.70.txt").read(String).replace(/7\.0\.70/g, version);
+			}
+
+			var MockDistribution = function(version) {
 				var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				var dist = tmpdir.getRelativePath("apache-tomcat-" + version).createDirectory();
 				dist.getRelativePath("a").write("a", { append: false });
-				dist.getRelativePath("RELEASE-NOTES").write(fifty.$loader.get("test/data/tomcat-release-notes-7.0.70.txt").read(String).replace(/7\.0\.70/g, version), { append: false });
+				dist.getRelativePath("RELEASE-NOTES").write(MockReleaseNotes(version), { append: false });
 				var rv = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
 				jsh.io.archive.zip.encode({
 					stream: rv.write(jsh.io.Streams.binary, { append: false }),
@@ -89,9 +113,9 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 					return "7.0.99";
 				},
 				findApache: function(o) {
-					if (o.path == "tomcat/tomcat-7/v7.0.98/bin/apache-tomcat-7.0.98.zip") return Distribution("7.0.98");
-					if (o.path == "tomcat/tomcat-7/v7.0.99/bin/apache-tomcat-7.0.99.zip") return Distribution("7.0.99");
-					if (o.path == "tomcat/tomcat-7/v7.0.109/bin/apache-tomcat-7.0.109.zip") return Distribution("7.0.109");
+					if (o.path == "tomcat/tomcat-7/v7.0.98/bin/apache-tomcat-7.0.98.zip") return MockDistribution("7.0.98");
+					if (o.path == "tomcat/tomcat-7/v7.0.99/bin/apache-tomcat-7.0.99.zip") return MockDistribution("7.0.99");
+					if (o.path == "tomcat/tomcat-7/v7.0.109/bin/apache-tomcat-7.0.109.zip") return MockDistribution("7.0.109");
 					throw new Error("Mock: " + o.path);
 				}
 			};
@@ -104,6 +128,12 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 					}
 				},this);
 			};
+
+			fifty.tests.getVersion = function() {
+				var notes = MockReleaseNotes("7.0.70");
+				var version = subject.test.getVersion(notes);
+				verify(version).is("7.0.70");
+			}
 
 			fifty.tests.replace = function() {
 				jsh.shell.tools.tomcat.install({ mock: mock, version: "7.0.98" });
@@ -127,6 +157,8 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			}
 
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.getVersion);
+
 				fifty.run(function alreadyInstalled() {
 					var events: slime.$api.Event<string>[] = [];
 					mock.lib.getRelativePath("tomcat").createDirectory();

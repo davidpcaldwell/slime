@@ -85,6 +85,21 @@
 			}
 		};
 
+		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["test"]["getVersion"] } */
+		var getVersion = function(releaseNotes) {
+			var lines = releaseNotes.split("\n");
+			var rv = null;
+			lines.forEach(function(line) {
+				if (rv) return;
+				var matcher = /(?:\s*)Apache Tomcat Version (\d+\.\d+\.\d+)(?:\s*)/;
+				var match = matcher.exec(line);
+				if (match) {
+					rv = match[1];
+				}
+			});
+			return rv;
+		}
+
 		$exports.installed = function(p) {
 			if (!p) p = {};
 			var notes = (function() {
@@ -94,17 +109,8 @@
 				return home.directory.getFile("RELEASE-NOTES");
 			})();
 			if (!notes) return null;
-			var lines = notes.read(String).split("\n");
-			var rv = null;
-			lines.forEach(function(line) {
-				if (rv) return;
-				var matcher = /(?:\s*)Apache Tomcat Version (\d+\.\d+\.\d+)(?:\s*)/;
-				var match = matcher.exec(line);
-				if (match) {
-					rv = { version: new Version(match[1]) };
-				}
-			});
-			return rv;
+			var releaseNotes = notes.read(String);
+			return { version: new Version(getVersion(releaseNotes)) };
 		}
 
 		/**
@@ -216,6 +222,7 @@
 		);
 
 		$exports.test = {
+			getVersion: getVersion,
 			getLatestVersion: getLatestVersion
 		}
 	}
