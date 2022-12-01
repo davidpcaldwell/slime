@@ -98,18 +98,33 @@
 				}
 			});
 			return rv;
-		}
+		};
+
+		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["test"]["getReleaseNotes"] } */
+		var getReleaseNotes = function(p) {
+			return function(events) {
+				return $api.fp.now.invoke(
+					p.base,
+					$context.jsh.file.world.Location.from.os,
+					$context.jsh.file.world.Location.relative("RELEASE-NOTES"),
+					$api.fp.world.mapping($context.jsh.file.world.Location.file.read.string())
+				);
+			}
+		};
 
 		$exports.installed = function(p) {
 			if (!p) p = {};
+			/** @type { slime.$api.fp.Maybe<slime.$api.fp.impure.Input<string>> } */
 			var notes = (function() {
-				if (p.mock && p.mock.notes) return p.mock.notes;
+				if (p.mock && p.mock.notes) return $api.fp.Maybe.value($api.fp.impure.Input.value(p.mock.notes.read(String)));
 				var home = (typeof(p.home) != "undefined") ? p.home : jsh.shell.jsh.lib.getRelativePath("tomcat");
-				if (!home.directory) return null;
-				return home.directory.getFile("RELEASE-NOTES");
+				if (!home.directory) return $api.fp.Maybe.nothing();
+				var file = home.directory.getFile("RELEASE-NOTES");
+				if (!file) return $api.fp.Maybe.nothing();
+				return $api.fp.Maybe.value($api.fp.impure.Input.value(file.read(String)));
 			})();
-			if (!notes) return null;
-			var releaseNotes = notes.read(String);
+			if (!notes.present) return null;
+			var releaseNotes = notes.value();
 			return { version: new Version(getVersion(releaseNotes)) };
 		}
 
@@ -223,6 +238,7 @@
 
 		$exports.test = {
 			getVersion: getVersion,
+			getReleaseNotes: getReleaseNotes,
 			getLatestVersion: getLatestVersion
 		}
 	}
