@@ -4,8 +4,14 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api,jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				version: String,
@@ -17,7 +23,7 @@
 		});
 
 		if (parameters.options.show) {
-			var installed = jsh.tools.install.tomcat.installed({ home: parameters.options.to.directory });
+			var installed = jsh.shell.tools.tomcat.installed({ home: parameters.options.to.directory });
 			if (!installed) {
 				jsh.shell.console("No Tomcat found at " + parameters.options.to);
 			} else {
@@ -26,11 +32,12 @@
 			jsh.shell.exit(0);
 		}
 
-		jsh.tools.install.tomcat.install({
+		jsh.shell.tools.tomcat.install({
 			version: parameters.options.version,
 			local: (parameters.options.local) ? parameters.options.local.file : null,
 			replace: parameters.options.replace,
 			to: parameters.options.to
 		});
 	}
-)();
+//@ts-ignore
+)($api,jsh);

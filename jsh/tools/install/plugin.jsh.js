@@ -229,7 +229,7 @@
 				jsh.shell.tools.graal = graal;
 
 				/** @type { slime.jsh.shell.tools.internal.tomcat.Script } */
-				var script = $loader.script("plugin.jsh.tomcat.js");
+				var script = $loader.script("tomcat.js");
 				var tomcat = script({
 					$api: jsh.tools.install.$api,
 					jsh: jsh

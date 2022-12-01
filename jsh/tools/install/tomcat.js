@@ -114,6 +114,7 @@
 		 * @returns
 		 */
 		var install = function(p,events) {
+			debugger;
 			if (!p) p = {};
 
 			var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
@@ -176,7 +177,11 @@
 				to: to
 			});
 			events.fire("console","Installing Tomcat at " + p.to);
+			//	TODO	unclear what case this mv addresses; maybe something exotic like moving across filesystems?
 			if (jsh.shell.PATH.getCommand("mv")) {
+				if (p.to.directory) {
+					p.to.directory.remove();
+				}
 				jsh.shell.run({
 					command: "mv",
 					arguments: [to.getSubdirectory("apache-tomcat-" + p.version).toString(), p.to.toString()]
