@@ -49,6 +49,7 @@ namespace slime.tools.documentation.updater {
 	export interface Updater {
 		run: () => void
 		update: () => void
+		stop: () => void
 	}
 
 	export interface Exports {
@@ -84,6 +85,8 @@ namespace slime.tools.documentation.updater {
 				errored: {
 					out: string
 				}
+				destroying: void
+				destroyed: void
 			}>
 		}) => Updater
 	}
@@ -141,8 +144,8 @@ namespace slime.tools.documentation.updater {
 				})();
 			}
 
-			fifty.tests.manual.run = function() {
-				var updater = subject.Updater({
+			var createUpdater = function() {
+				return subject.Updater({
 					project: project.pathname,
 					events: {
 						initialized: function(e) {
@@ -174,9 +177,28 @@ namespace slime.tools.documentation.updater {
 						},
 						errored: function(e) {
 							jsh.shell.console("Errored; was to write to " + e.detail.out);
+						},
+						destroying: function(e) {
+							jsh.shell.console("Destroying ...");
+						},
+						destroyed: function(e) {
+							jsh.shell.console("Destroyed.");
 						}
 					}
 				});
+			}
+
+			fifty.tests.manual.run = function() {
+				var updater = createUpdater();
+				updater.run();
+			};
+
+			fifty.tests.manual.stop = function() {
+				var updater = createUpdater();
+				jsh.java.Thread.start(function() {
+					jsh.java.Thread.sleep(45000);
+					updater.stop();
+				})
 				updater.run();
 			}
 		}
