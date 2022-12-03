@@ -105,6 +105,12 @@
 						},
 						errored: function(e) {
 							jsh.shell.console("Errored; was to write to " + e.detail.out);
+						},
+						destroying: function(e) {
+							jsh.shell.console("Destroying handler ...");
+						},
+						destroyed: function(e) {
+							jsh.shell.console("Destroyed handler.");
 						}
 					}
 				});
@@ -115,76 +121,81 @@
 					}
 				});
 
-				return function(httpd) {
-					var asTextHandler = code.asTextHandler({ httpd: httpd });
+				return {
+					handler: function(httpd) {
+						var asTextHandler = code.asTextHandler({ httpd: httpd });
 
-					return httpd.Handler.series(
-						//	Allows links to src/path/to/file.ext within Typedoc
-						function(request) {
-							var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/src\/(.*)/;
-							var match = typedocPattern.exec(request.path);
-							if (match) {
-								var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
-								return asTextHandler({
-									loader: new jsh.file.Loader({ directory: src }),
-									index: "index.html"
-								})($api.Object.compose(request, { path: match[2] }))
-							}
-						},
-						function(request) {
-							var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/update/;
-							var match = typedocPattern.exec(request.path);
-							if (match) {
-								var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
-								if (match[1]) {
-									var response = synchronousUpdate(src);
-									if (response) return response;
-									return {
-										status: { code: 200 },
-										body: {
-											type: "text/plain",
-											string: "Ran TypeDoc successfully."
-										}
-									};
-								} else {
-									updater.update();
-									return {
-										status: { code: 200 },
-										body: {
-											type: "text/plain",
-											string: "Updated updater."
-										}
-									};
+						return httpd.Handler.series(
+							//	Allows links to src/path/to/file.ext within Typedoc
+							function(request) {
+								var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/src\/(.*)/;
+								var match = typedocPattern.exec(request.path);
+								if (match) {
+									var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
+									return asTextHandler({
+										loader: new jsh.file.Loader({ directory: src }),
+										index: "index.html"
+									})($api.Object.compose(request, { path: match[2] }))
+								}
+							},
+							function(request) {
+								var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/update/;
+								var match = typedocPattern.exec(request.path);
+								if (match) {
+									var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
+									if (match[1]) {
+										var response = synchronousUpdate(src);
+										if (response) return response;
+										return {
+											status: { code: 200 },
+											body: {
+												type: "text/plain",
+												string: "Ran TypeDoc successfully."
+											}
+										};
+									} else {
+										updater.update();
+										return {
+											status: { code: 200 },
+											body: {
+												type: "text/plain",
+												string: "Updated updater."
+											}
+										};
+									}
+								}
+							},
+							function(request) {
+								var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/((.*)\.html$)/;
+								var match = typedocPattern.exec(request.path);
+								if (match) {
+									var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
+									var output = src.getRelativePath("local/doc/typedoc");
+									if (!output.directory || configuration.watch) {
+										var response = synchronousUpdate(src);
+										if (response) return response;
+									}
+									jsh.shell.console("Serving: " + request.path);
+									return httpd.Handler.Loader({
+										loader: new jsh.file.Loader({ directory: src.getSubdirectory("local/doc/typedoc") }),
+										index: "index.html"
+									})($api.Object.compose(request, { path: match[2] }))
+								}
+							},
+							function(request) {
+								var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/(.*)/;
+								var match = typedocPattern.exec(request.path);
+								if (match) {
+									var loader = new jsh.file.Loader({ directory: base });
+									var handler = httpd.Handler.Loader({ loader: loader });
+									return handler(request);
 								}
 							}
-						},
-						function(request) {
-							var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/((.*)\.html$)/;
-							var match = typedocPattern.exec(request.path);
-							if (match) {
-								var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
-								var output = src.getRelativePath("local/doc/typedoc");
-								if (!output.directory || configuration.watch) {
-									var response = synchronousUpdate(src);
-									if (response) return response;
-								}
-								jsh.shell.console("Serving: " + request.path);
-								return httpd.Handler.Loader({
-									loader: new jsh.file.Loader({ directory: src.getSubdirectory("local/doc/typedoc") }),
-									index: "index.html"
-								})($api.Object.compose(request, { path: match[2] }))
-							}
-						},
-						function(request) {
-							var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/(.*)/;
-							var match = typedocPattern.exec(request.path);
-							if (match) {
-								var loader = new jsh.file.Loader({ directory: base });
-								var handler = httpd.Handler.Loader({ loader: loader });
-								return handler(request);
-							}
-						}
-					)
+						)
+					},
+					stop: function() {
+						updater.stop();
+					}
 				};
 			}
 		)

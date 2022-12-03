@@ -48,12 +48,15 @@
 								base: p.base.getSubdirectory("local/wiki")
 							});
 							scope.$exports.handle = scope.httpd.Handler.series(
-								documentationFactory(scope.httpd),
+								documentationFactory.handler(scope.httpd),
 								wikiHandler,
 								asTextHandler({
 									loader: new $context.library.file.Loader({ directory: p.base })
 								})
-							)
+							);
+							scope.$exports.destroy = function() {
+								documentationFactory.stop();
+							}
 						}
 					}
 				}

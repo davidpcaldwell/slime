@@ -308,6 +308,7 @@
 							timeout: function() { return state.codeCheckInterval; }
 						})();
 					}
+					events.fire("destroyed");
 				},
 				update: function() {
 					lock.wait({
@@ -315,10 +316,16 @@
 							setInterval(10000);
 						}
 					})();
-				}//,
-				// stop: function() {
-				// 	//	TODO	detach listener, stop threads
-				// }
+				},
+				stop: function() {
+					events.fire("destroying");
+					lock.wait({
+						then: function() {
+							eventsListener.detach();
+							state.stopped = true;
+						}
+					})();
+				}
 			};
 		};
 
