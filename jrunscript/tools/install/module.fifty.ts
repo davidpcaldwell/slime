@@ -463,10 +463,16 @@ namespace slime.jrunscript.tools.install {
 			 *
 			 * @returns A local file containing the content from Apache.
 			 */
-			find: (p: {
-				path: string
-				mirror?: string
-			}) => slime.jrunscript.file.File
+			find: slime.$api.fp.world.Question<
+				{
+					path: string
+					mirror?: string
+				},
+				{
+					console: string
+				},
+				slime.jrunscript.file.File
+			>
 		}
 
 		/**
@@ -524,7 +530,7 @@ namespace slime.jrunscript.tools.install {
 			fifty: slime.fifty.test.Kit
 		) {
 			const verify = fifty.verify;
-			const jsh = fifty.global.jsh;
+			const { $api, jsh } = fifty.global;
 			const api: { install: any, format: any, apache: any } = test.scope.api;
 			const server = test.scope.server;
 			const harness = test.scope.harness;
@@ -656,7 +662,7 @@ namespace slime.jrunscript.tools.install {
 					var mockclient = new jsh.http.Client({
 						proxy: PROXY
 					});
-					var mockapi = fifty.$loader.module("module.js", {
+					var mockapi: slime.jrunscript.tools.install.Exports = fifty.$loader.module("module.js", {
 						client: mockclient,
 						api: {
 							shell: jsh.shell,
@@ -668,9 +674,11 @@ namespace slime.jrunscript.tools.install {
 					});
 
 					var GET_API_HTML = function() { return this.getFile("module.fifty.ts") };
-					var EQUALS = function(string) { return function() { return this.read(String) == string; } };
+					var EQUALS = function(string) { return function(p) { return p.read(String) == string; } };
 					verify(mockdownloads).evaluate(GET_API_HTML).is(null);
-					var file: object = mockapi.apache.find({ path: "module.fifty.ts" });
+					var file: object = $api.fp.world.now.ask(
+						mockapi.apache.find({ path: "module.fifty.ts" })
+					);
 					var string = fifty.$loader.get("module.fifty.ts").read(String);
 					verify(file).evaluate(EQUALS(string)).is(true);
 					verify(mockdownloads).evaluate(GET_API_HTML).is.not(null);
