@@ -130,7 +130,46 @@
 
 		/**
 		 *
-		 * @param { Parameters<slime.jsh.shell.tools.internal.tomcat.Exports["install"]>[0] } p
+		 * @param { { local: slime.jrunscript.file.File, version: string, p_to: slime.jrunscript.file.Pathname } } p
+		 */
+		var basicInstall = function(p) {
+			/**
+			 * @param { slime.$api.Events<{ unzipping: { local: string, to: string }, installing: { to: string } }> } events
+			 */
+			return function(events) {
+				var local = p.local;
+				var p_to = p.p_to;
+				var version = p.version;
+				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				events.fire("unzipping", { local: local.pathname.toString(), to: to.pathname.toString() });
+				jsh.file.unzip({
+					zip: local,
+					to: to
+				});
+				events.fire("installing",{ to: p_to.toString() });
+				//	TODO	unclear what case this mv addresses; maybe something exotic like moving across filesystems?
+				if (jsh.shell.PATH.getCommand("mv")) {
+					if (p_to.directory) {
+						p_to.directory.remove();
+					}
+					jsh.shell.run({
+						command: "mv",
+						arguments: [to.getSubdirectory("apache-tomcat-" + version).toString(), p_to.toString()]
+					});
+				} else {
+					to.getSubdirectory("apache-tomcat-" + version).move(p_to, { overwrite: true });
+				}
+			}
+		}
+
+		var Installation_getVersion = $api.fp.pipe(
+			$api.fp.world.mapping(getReleaseNotes),
+			$api.fp.Maybe.map(getVersion)
+		);
+
+		/**
+		 *
+		 * @param { slime.jsh.shell.tools.tomcat.old.Argument } p
 		 * @param { slime.$api.Events<slime.jsh.shell.tools.tomcat.install.Events> } events
 		 * @returns
 		 */
@@ -175,10 +214,13 @@
 				} else {
 					events.fire("console","Installing specified version " + p.version);
 				}
-				p.local = findApache({
-					mirror: mirror,
-					path: "tomcat/tomcat-7/v" + p.version + "/bin/apache-tomcat-" + p.version + ".zip"
-				});
+				p.local = $api.fp.world.now.question(
+					findApache,
+					{
+						mirror: mirror,
+						path: "tomcat/tomcat-7/v" + p.version + "/bin/apache-tomcat-" + p.version + ".zip"
+					}
+				);
 			} else {
 				if (!p.version) {
 					//	TODO	we do not check to see whether this file actually is the desired version
@@ -191,41 +233,97 @@
 					}
 				}
 			}
-			var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-			events.fire("console","Unzipping " + p.local + " to: " + to);
-			jsh.file.unzip({
-				zip: p.local,
-				to: to
-			});
-			events.fire("console","Installing Tomcat at " + p.to);
-			//	TODO	unclear what case this mv addresses; maybe something exotic like moving across filesystems?
-			if (jsh.shell.PATH.getCommand("mv")) {
-				if (p.to.directory) {
-					p.to.directory.remove();
+			$api.fp.world.now.action(
+				basicInstall,
+				{
+					local: p.local,
+					version: p.version,
+					p_to: p.to
+				},
+				{
+					unzipping: function(e) {
+						events.fire("console", "Unzipping " + e.detail.local + " to " + e.detail.to + " ...");
+					},
+					installing: function(e) {
+						events.fire("console", "Installing to " + e.detail.to + " ...");
+					}
 				}
-				jsh.shell.run({
-					command: "mv",
-					arguments: [to.getSubdirectory("apache-tomcat-" + p.version).toString(), p.to.toString()]
-				});
-			} else {
-				to.getSubdirectory("apache-tomcat-" + p.version).move(p.to, { overwrite: true });
-			}
+			);
 			events.fire("installed", { to: p.to });
 		};
 
-		var exportInstall = $context.$api.Events.Function(
-			install,
-			{
-				console: function(e) {
-					jsh.shell.console(e.detail);
+		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["install"] } */
+		var newInstall = function(installation) {
+			return function(p) {
+				return function(events) {
+					//	TODO	we are basically hard-coding the version while we switch to a maintained version that we can detect
+					//			at runtime
+					var version = p.version || "7.0.109";
+					var mirror = (p.version) ? "https://archive.apache.org/dist/" : void(0);
+					var local = $api.fp.world.now.question(
+						p.world.findApache,
+						{
+							path: "tomcat/tomcat-7/v" + version + "/bin/apache-tomcat-" + version + ".zip",
+							mirror: mirror
+						}
+					);
+					basicInstall({
+						local: local,
+						version: version,
+						p_to: $context.jsh.file.Pathname(installation.base)
+					})(events);
+					//debugger;
+					var installed = Installation_getVersion(installation);
+					events.fire("installed", {
+						version: (installed.present) ? installed.value : void(0)
+					})
+				};
+			};
+		};
+
+		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["require"] } */
+		var newRequire = function(installation) {
+			return function(p) {
+				return function(events) {
+					var replace = p.replace || (function() {
+						return p.version ? function(version) {
+							return version != p.version;
+						} : function(version) {
+							return false;
+						}
+					})();
+					//	TODO	we are essentially hard-coding the version until we move to a supported version
+					var version = p.version || "7.0.109";
+					var installed = Installation_getVersion(installation);
+					/** @type { boolean } Whether to install the provided version. */
+					var proceed;
+					if (installed.present) {
+						events.fire("found", { version: installed.value } );
+						var update = replace(installed.value);
+						if (update) {
+							//	delete existing
+							$api.fp.world.now.action(
+								$context.jsh.file.world.Location.directory.remove(),
+								$context.jsh.file.world.Location.from.os(installation.base)
+							);
+							proceed = true;
+						} else {
+							proceed = false;
+						}
+					} else {
+						proceed = true;
+					}
+					if (proceed) {
+						newInstall(installation)({ world: p.world, version: version })(events);
+					}
 				}
 			}
-		);
+		}
 
-		var require = $api.events.Function(
+		var oldRequire = $api.events.Function(
 			/**
 			 *
-			 * @param { Parameters<slime.jsh.shell.tools.internal.tomcat.Exports["install"]>[0] } p
+			 * @param { slime.jsh.shell.tools.tomcat.old.Argument } p
 			 * @param { slime.$api.Events<slime.jsh.shell.tools.tomcat.install.Events> } events
 			 */
 			function(p,events) {
@@ -245,16 +343,14 @@
 					}
 				}
 			},
-			getVersion: $api.fp.pipe(
-				$api.fp.world.mapping(getReleaseNotes),
-				$api.fp.Maybe.map(getVersion)
-			)
+			getVersion: Installation_getVersion,
+			install: newInstall,
+			require: newRequire
 		};
 
 		$export({
 			Installation: Installation,
-			install: exportInstall,
-			require: require,
+			require: oldRequire,
 			test: {
 				getVersion: getVersion,
 				getReleaseNotes: getReleaseNotes,

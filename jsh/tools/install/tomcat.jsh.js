@@ -22,10 +22,12 @@
 			}
 		});
 
+		/** @type { slime.jsh.shell.tools.tomcat.Installed } */
+		var installation = {
+			base: parameters.options.to.toString()
+		};
+
 		if (parameters.options.show) {
-			var installation = {
-				base: parameters.options.to.toString()
-			};
 			var version = jsh.shell.tools.tomcat.Installation.getVersion(
 				installation
 			);
@@ -37,12 +39,13 @@
 			jsh.shell.exit(0);
 		}
 
-		jsh.shell.tools.tomcat.install({
-			version: parameters.options.version,
-			local: (parameters.options.local) ? parameters.options.local.file : null,
-			replace: parameters.options.replace,
-			to: parameters.options.to
-		});
+		$api.fp.world.now.action(
+			jsh.shell.tools.tomcat.Installation.require(installation),
+			{
+				version: parameters.options.version,
+				replace: (parameters.options.replace) ? function(version) { return true; } : function(version) { return false; }
+			}
+		);
 	}
 //@ts-ignore
 )($api,jsh);

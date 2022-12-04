@@ -463,10 +463,16 @@ namespace slime.jrunscript.tools.install {
 			 *
 			 * @returns A local file containing the content from Apache.
 			 */
-			find: (p: {
-				path: string
-				mirror?: string
-			}) => slime.jrunscript.file.File
+			find: slime.$api.fp.world.Question<
+				{
+					path: string
+					mirror?: string
+				},
+				{
+					console: string
+				},
+				slime.jrunscript.file.File
+			>
 		}
 
 		/**
