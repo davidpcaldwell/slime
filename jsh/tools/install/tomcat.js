@@ -256,12 +256,13 @@
 		var newInstall = function(installation) {
 			return function(p) {
 				return function(events) {
+					var findApache = (p.world && p.world.findApache) ? p.world.findApache : jsh.tools.install.apache.find;
 					//	TODO	we are basically hard-coding the version while we switch to a maintained version that we can detect
 					//			at runtime
 					var version = p.version || "7.0.109";
 					var mirror = (p.version) ? "https://archive.apache.org/dist/" : void(0);
 					var local = $api.fp.world.now.question(
-						p.world.findApache,
+						findApache,
 						{
 							path: "tomcat/tomcat-7/v" + version + "/bin/apache-tomcat-" + version + ".zip",
 							mirror: mirror
