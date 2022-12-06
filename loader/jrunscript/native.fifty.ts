@@ -32,6 +32,12 @@ namespace slime.jrunscript {
 					getDeclaredMethod(name: string, types?: slime.jrunscript.native.java.lang.Class[]): reflect.Method
 				}
 
+				export interface Runnable {
+				}
+
+				export interface Thread {
+				}
+
 				export namespace reflect {
 					export interface Field {
 						setAccessible(flag: boolean): void

@@ -52,7 +52,7 @@ namespace slime.jsh.ui.application {
 	}
 
 	export interface ServerRunning {
-		server: slime.jsh.httpd.Tomcat
+		server: Pick<slime.jsh.httpd.Tomcat,"start" | "stop" | "port">
 	}
 
 	export type ServerSpecification = ServerRunning | ServerConfiguration

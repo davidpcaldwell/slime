@@ -151,7 +151,7 @@ namespace slime.jrunscript.host.internal.threads {
 		 * Starts a thread.
 		 */
 		start: {
-			<T>(f: () => T ): Thread
+			<T>(f: () => T, factory?: (_r: slime.jrunscript.native.java.lang.Runnable) => slime.jrunscript.native.java.lang.Thread): Thread
 
 			<T>(p: {
 				/**
@@ -191,7 +191,7 @@ namespace slime.jrunscript.host.internal.threads {
 					 */
 					timeout?: () => void
 				}
-			}): Thread
+			}, factory?: (_r: slime.jrunscript.native.java.lang.Runnable) => slime.jrunscript.native.java.lang.Thread): Thread
 		}
 	}
 
