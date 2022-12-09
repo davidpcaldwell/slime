@@ -75,7 +75,8 @@
 		/** @type { { [os: string]: { [arch: string ]: string }} } */
 		var INSTALLER = {
 			"Mac OS X": {
-				x86_64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-368.0.0-darwin-x86_64.tar.gz"
+				x86_64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-411.0.0-darwin-x86_64.tar.gz",
+				aarch64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-411.0.0-darwin-arm.tar.gz"
 			}
 		};
 
@@ -123,7 +124,7 @@
 								$api.fp.optionalChain($context.library.shell.os.arch)
 							));
 							if (!url) {
-								throw new Error("Could not install.");
+								throw new Error("Could not install: No installer found for " + $context.library.shell.os.name + "/" + $context.library.shell.os.arch);
 							}
 							events.fire("console", "Installing from: " + url);
 							$context.library.install.install({
