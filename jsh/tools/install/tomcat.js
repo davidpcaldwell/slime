@@ -285,6 +285,7 @@
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["require"] } */
 		var newRequire = function(installation) {
 			return function(p) {
+				if (!p) p = {};
 				return function(events) {
 					var replace = p.replace || (function() {
 						return p.version ? function(version) {
