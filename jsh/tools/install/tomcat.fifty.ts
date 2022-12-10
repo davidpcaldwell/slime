@@ -92,11 +92,19 @@ namespace slime.jsh.shell.tools {
 			>
 		}
 
-		/**
-		 * If Tomcat is not installed at the target location (defined by the first parameter; see `install()`), installs it at
-		 * that location using the configuration specified by the first argument.
-		 */
-		require: (p?: slime.jsh.shell.tools.tomcat.old.Argument, handler?: slime.jsh.shell.tools.tomcat.old.Handler) => void
+		old: {
+			/** @deprecated */
+			require: (
+				argument?: {
+					world?: slime.jsh.shell.tools.tomcat.World
+					version?: string
+					replace?: (version: string) => boolean
+				},
+				handler?: slime.$api.events.Handler<{
+					console: string
+				}>
+			) => void
+		}
 	}
 }
 

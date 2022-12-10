@@ -13,7 +13,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages, $api, jsh) {
-		jsh.shell.tools.tomcat.require();
+		jsh.shell.tools.tomcat.old.require();
 
 		var parameters = jsh.script.getopts({
 			options: {

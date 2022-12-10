@@ -252,7 +252,7 @@
 				}
 			},
 			ask: ask,
-			tell: tell,
+			tell: tell
 		});
 	}
 //@ts-ignore
