@@ -471,7 +471,7 @@
 					var version = library.module.Project.getTypescriptVersion(project);
 					var configuration = library.module.Project.getConfigurationLocation(project);
 					jsh.shell.tools.rhino.require();
-					jsh.shell.tools.tomcat.require();
+					jsh.shell.tools.tomcat.old.require();
 					/** @type { slime.jsh.wf.internal.typescript.Invocation } */
 					var typedocInvocation = {
 						stdio: stdio,

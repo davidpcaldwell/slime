@@ -12,7 +12,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		jsh.shell.tools.tomcat.require(void(0), {
+		jsh.shell.tools.tomcat.old.require(void(0), {
 			console: function(e) {
 				jsh.shell.console(e.detail);
 			}

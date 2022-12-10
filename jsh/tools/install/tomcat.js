@@ -285,6 +285,7 @@
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["require"] } */
 		var newRequire = function(installation) {
 			return function(p) {
+				if (!p) p = {};
 				return function(events) {
 					var replace = p.replace || (function() {
 						return p.version ? function(version) {
@@ -321,20 +322,6 @@
 			}
 		}
 
-		var oldRequire = $api.events.Function(
-			/**
-			 *
-			 * @param { slime.jsh.shell.tools.tomcat.old.Argument } p
-			 * @param { slime.$api.Events<slime.jsh.shell.tools.tomcat.install.Events> } events
-			 */
-			function(p,events) {
-				jsh.shell.jsh.require({
-					satisfied: function() { return Boolean(installed()); },
-					install: function() { return install(p,events); }
-				});
-			}
-		);
-
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"] } */
 		var Installation = {
 			from: {
@@ -351,7 +338,31 @@
 
 		$export({
 			Installation: Installation,
-			require: oldRequire,
+			old: {
+				require: function(argument, handler) {
+					var listener = $api.events.toListener(handler);
+					listener.attach();
+					$api.fp.world.now.action(
+						newRequire(Installation.from.jsh()),
+						argument,
+						{
+							found: function(e) {
+								listener.emitter.fire("console", "Found Tomcat " + e.detail.version + ".");
+							},
+							unzipping: function(e) {
+								listener.emitter.fire("console", "Unzipping Tomcat from " + e.detail.local + " to " + e.detail.to + " ...");
+							},
+							installing: function(e) {
+								listener.emitter.fire("console", "Installing Tomcat to " + e.detail.to + " ...");
+							},
+							installed: function(e) {
+								listener.emitter.fire("console", "Installed Tomcat " + e.detail.version);
+							}
+						}
+					);
+					listener.detach();
+				}
+			},
 			test: {
 				getVersion: getVersion,
 				getReleaseNotes: getReleaseNotes,

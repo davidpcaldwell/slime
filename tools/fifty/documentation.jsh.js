@@ -21,7 +21,7 @@
 			jsh.script.cli.option.string({ longname: "index" }),
 			jsh.script.cli.option.boolean({ longname: "watch"}),
 			function(p) {
-				jsh.shell.tools.tomcat.require();
+				jsh.shell.tools.tomcat.old.require();
 
 				/** @type { slime.jrunscript.file.Directory } */
 				var base = (p.options.base) ? p.options.base.directory : jsh.shell.PWD;

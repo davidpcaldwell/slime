@@ -12,7 +12,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		jsh.shell.tools.tomcat.require();
+		jsh.shell.tools.tomcat.old.require();
 
 		$api.fp.result(
 			{ options: { index: "index.html" }, arguments: jsh.script.arguments },
