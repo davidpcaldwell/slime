@@ -49,7 +49,9 @@
 				return Boolean(jsh.ui && jsh.java);
 			},
 			load: function() {
-				jsh.ui.askpass = $loader.file("askpass.js", {
+				/** @type { slime.jsh.ui.askpass.Script } */
+				var script = $loader.script("askpass.js");
+				jsh.ui.askpass = script({
 					api: {
 						java: jsh.java
 					}
