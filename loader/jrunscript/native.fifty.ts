@@ -533,7 +533,10 @@ namespace slime.jrunscript {
 				}
 				event: {
 					WindowListener: any
+					KeyListener: any
+					KeyEvent: any
 				}
+				BorderLayout: any
 			}
 			sql: {
 				Types: any

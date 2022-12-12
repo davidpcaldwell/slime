@@ -20,7 +20,7 @@ namespace slime.jsh {
 				browser: any
 			}
 
-			askpass: any
+			askpass: slime.jsh.ui.askpass.Exports
 			Chrome: any
 
 			/**
