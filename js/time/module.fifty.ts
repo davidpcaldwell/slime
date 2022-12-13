@@ -160,12 +160,27 @@ namespace slime.time {
 		Date: exports.Dates
 	}
 
+	export interface Exports {
+		Timezone: {
+			local: Zone
+			UTC: Zone
+			[x: string]: Zone
+		}
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
+
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.Date);
+
+				fifty.run(function zones() {
+					verify(test.subject).Timezone.local.is.type("object");
+					verify(test.subject).Timezone.UTC.is.type("object");
+				})
 
 				fifty.load("old.fifty.ts");
 			}
