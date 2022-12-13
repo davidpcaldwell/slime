@@ -280,6 +280,14 @@
 				fromEntries: Object.fromEntries
 			},
 			Maybe: Maybe,
+			Partial: {
+				match: function(v) {
+					return function(p) {
+						var present = v.if(p);
+						return present ? Maybe.value(v.then(p)) : Maybe.nothing();
+					}
+				}
+			},
 			switch: function(cases) {
 				return function(p) {
 					for (var i=0; i<cases.length; i++) {
