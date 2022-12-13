@@ -79,12 +79,6 @@
 		}
 		getLatestVersion.pattern = /^apache-tomcat-(\d+)\.(\d+)\.(\d+)\.zip$/;
 
-		var Version = function(s) {
-			this.toString = function() {
-				return s;
-			}
-		};
-
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["test"]["getVersion"] } */
 		var getVersion = function(releaseNotes) {
 			var lines = releaseNotes.split("\n");
@@ -111,22 +105,6 @@
 				);
 			}
 		};
-
-		var installed = function(p) {
-			if (!p) p = {};
-			/** @type { slime.$api.fp.Maybe<slime.$api.fp.impure.Input<string>> } */
-			var notes = (function() {
-				if (p.mock && p.mock.notes) return $api.fp.Maybe.value($api.fp.impure.Input.value(p.mock.notes.read(String)));
-				var home = (typeof(p.home) != "undefined") ? p.home : jsh.shell.jsh.lib.getRelativePath("tomcat");
-				if (!home.directory) return $api.fp.Maybe.nothing();
-				var file = home.directory.getFile("RELEASE-NOTES");
-				if (!file) return $api.fp.Maybe.nothing();
-				return $api.fp.Maybe.value($api.fp.impure.Input.value(file.read(String)));
-			})();
-			if (!notes.present) return null;
-			var releaseNotes = notes.value();
-			return { version: new Version(getVersion(releaseNotes)) };
-		}
 
 		/**
 		 *
@@ -166,91 +144,6 @@
 			$api.fp.world.mapping(getReleaseNotes),
 			$api.fp.Maybe.map(getVersion)
 		);
-
-		/**
-		 *
-		 * @param { slime.jsh.shell.tools.tomcat.old.Argument } p
-		 * @param { slime.$api.Events<slime.jsh.shell.tools.tomcat.install.Events> } events
-		 * @returns
-		 */
-		var install = function(p,events) {
-			debugger;
-			if (!p) p = {};
-
-			var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
-			var getLatest = (p.mock && p.mock.getLatestVersion) ? p.mock.getLatestVersion : getLatestVersion;
-			var findApache = (p.mock && p.mock.findApache) ? p.mock.findApache : jsh.tools.install.apache.find;
-
-			if (!p.to) {
-				p.to = lib.getRelativePath("tomcat");
-			}
-
-			if (p.to.directory && !p.replace) {
-				events.fire("console", "Tomcat already installed at " + p.to.directory);
-				return;
-			}
-
-			if (!p.local) {
-				if (!p.version) {
-					//	TODO	this essentially disables the usage of Apache mirrors now that we are on a version that is EOLed.
-					//			We can go back to mirroring when we get onto a maintained version.
-					p.version = "7.0.109";
-				}
-				var mirror = (p.version) ? "https://archive.apache.org/dist/" : void(0);
-				if (!p.version) {
-					//	Check tomcat.apache.org; if unreachable, assume latest version is latest in downloads directory
-					try {
-						p.version = getLatest();
-						if (!p.version) {
-							throw new Error("Could not determine latest Tomcat 7 version; not installing.");
-						}
-					} catch (e) {
-						if (e.version) {
-							p.version = e.version;
-						} else {
-							throw e;
-						}
-					}
-				} else {
-					events.fire("console","Installing specified version " + p.version);
-				}
-				p.local = $api.fp.world.now.question(
-					findApache,
-					{
-						mirror: mirror,
-						path: "tomcat/tomcat-7/v" + p.version + "/bin/apache-tomcat-" + p.version + ".zip"
-					}
-				);
-			} else {
-				if (!p.version) {
-					//	TODO	we do not check to see whether this file actually is the desired version
-					var match = getLatestVersion.pattern.exec(p.local.pathname.basename);
-					if (match) {
-						p.version = match[1] + "." + match[2] + "." + match[3];
-						events.fire("console","Installing version " + p.version + " determined from local filename.");
-					} else {
-						throw new Error("Unable to determine version from filename: " + p.local);
-					}
-				}
-			}
-			$api.fp.world.now.action(
-				basicInstall,
-				{
-					local: p.local,
-					version: p.version,
-					p_to: p.to
-				},
-				{
-					unzipping: function(e) {
-						events.fire("console", "Unzipping " + e.detail.local + " to " + e.detail.to + " ...");
-					},
-					installing: function(e) {
-						events.fire("console", "Installing to " + e.detail.to + " ...");
-					}
-				}
-			);
-			events.fire("installed", { to: p.to });
-		};
 
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["install"] } */
 		var newInstall = function(installation) {
