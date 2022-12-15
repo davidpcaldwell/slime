@@ -41,7 +41,7 @@ namespace slime.fifty.browser.test.internal.script {
 		var run = function(browser) {
 			$api.fp.world.now.action(
 				jsh.shell.world.action,
-				jsh.shell.Invocation.create({
+				jsh.shell.Invocation.from.argument({
 					command: "/bin/bash",
 					arguments: $api.Array.build(function(rv) {
 						rv.push("./fifty");

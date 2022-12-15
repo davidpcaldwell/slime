@@ -115,7 +115,12 @@ namespace slime.jrunscript.shell {
 
 	export namespace exports {
 		export interface Invocation {
-			modernize: (p: old.Invocation) => run.Invocation
+			from: {
+				argument: (p: invocation.Argument) => run.Invocation
+			}
+
+			/** @deprecated Use `from.argument`. */
+			create: Invocation["from"]["argument"]
 
 			//	TODO	probably should be conditional based on presence of sudo tool
 			/**
@@ -124,7 +129,7 @@ namespace slime.jrunscript.shell {
 			 * @param settings A set of `sudo` settings.
 			 * @returns An invocation that will run the given invocation under `sudo`.
 			 */
-			sudo: (settings: sudo.Settings) => (invocation: run.Invocation) => run.Invocation
+			sudo: (settings: sudo.Settings) => slime.$api.fp.Transform<run.Invocation>
 
 			handler: {
 				stdio: {
@@ -193,7 +198,7 @@ namespace slime.jrunscript.shell {
 			fifty.tests.invocation = {};
 
 			fifty.tests.invocation.sudo = function() {
-				var sudoed = internal.invocation.test.subject.sudo({})(fifty.global.jsh.shell.Invocation.create({
+				var sudoed = internal.invocation.test.subject.exports(void(0)).sudo({})(fifty.global.jsh.shell.Invocation.from.argument({
 					command: "ls"
 				}));
 
@@ -268,9 +273,9 @@ namespace slime.jrunscript.shell {
 				fifty.run(fifty.tests.invocation.sudo);
 
 				fifty.run(function askpass() {
-					var sudoed = subject.sudo({
+					var sudoed = subject.exports(void(0)).sudo({
 						askpass: "/path/to/askpass"
-					})(jsh.shell.Invocation.create({
+					})(jsh.shell.Invocation.from.argument({
 						command: "ls"
 					}));
 
@@ -307,7 +312,9 @@ namespace slime.jrunscript.shell.internal.invocation {
 		stdio: slime.$api.fp.Lazy<shell.invocation.Argument["stdio"]>
 	}
 
-	export interface Export extends Pick<slime.jrunscript.shell.exports.Invocation,"modernize"|"sudo"|"handler"> {
+	export interface Export {
+		exports: (defaults: Defaults) => slime.jrunscript.shell.exports.Invocation
+
 		internal: {
 			/**
 			 * Interface that is exposed because the old `run` interface uses it; see `run-old.js`.
@@ -330,8 +337,6 @@ namespace slime.jrunscript.shell.internal.invocation {
 		}
 
 		invocation: slime.jrunscript.shell.Exports["invocation"]
-
-		create: (defaults: Defaults) => slime.jrunscript.shell.exports.Invocation["create"]
 	}
 
 	export type Script = slime.loader.Script<Context,Export>

@@ -1342,7 +1342,7 @@
 						if (p.invocation.arguments) rv.push.apply(rv, p.invocation.arguments);
 					})
 				};
-				return $context.api.shell.Invocation.create(rv);
+				return $context.api.shell.Invocation.from.argument(rv);
 			}
 		};
 
@@ -1357,7 +1357,7 @@
 		 * @returns { slime.jrunscript.shell.run.Invocation }
 		 */
 		var createShellInvocation = function(program,config,pathname,invocation,stdio) {
-			return $context.api.shell.Invocation.create({
+			return $context.api.shell.Invocation.from.argument({
 				command: program.command,
 				arguments: $api.Array.build(function(rv) {
 					for (var name in config) {

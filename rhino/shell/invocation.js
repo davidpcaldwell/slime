@@ -164,7 +164,7 @@
 			});
 		}
 
-		/** @type { slime.jrunscript.shell.internal.invocation.Export["create"] } */
+		/** @type { (defaults: slime.jrunscript.shell.internal.invocation.Defaults) => slime.jrunscript.shell.exports.Invocation["from"]["argument"] } */
 		var create = function(defaults) {
 			return function(p) {
 				return {
@@ -204,39 +204,48 @@
 		)();
 
 		$export({
-			modernize: modernize,
-			//	TODO	sudo has preserve-env and preserver-env= flags. Should make the relationship more explicit
-			//			between that and the environment provided normally, e.g., how could we pass an explicit environment
-			//			to sudo? Maybe by transforming the command into an `env` command?
-			sudo: function(settings) {
-				return function(invocation) {
-					return {
-						context: {
-							environment: getEnvironmentToSudo(invocation.context.environment, settings),
-							directory: invocation.context.directory,
-							stdio: invocation.context.stdio
-						},
-						configuration: {
-							command: "sudo",
-							arguments: getArgumentsToSudo(invocation.configuration.command, invocation.configuration.arguments, settings)
-						}
-					}
-				}
-			},
-			handler: {
-				stdio: {
-					line: function(f) {
-						var lastBlank = null;
-
-						return function(e) {
-							if (lastBlank) {
-								f(lastBlank);
-								lastBlank = null;
+			exports: function(defaults) {
+				//	TODO	this being undefined is just for testing at the moment, should think through how to make this less kludgy
+				var withDefaults = (defaults) ? create(defaults) : void(0);
+				return {
+					from: {
+						argument: withDefaults
+					},
+					create: (withDefaults) ? $api.deprecate(withDefaults) : void(0),
+					//	TODO	sudo has preserve-env and preserver-env= flags. Should make the relationship more explicit
+					//			between that and the environment provided normally, e.g., how could we pass an explicit environment
+					//			to sudo? Maybe by transforming the command into an `env` command?
+					sudo: function(settings) {
+						return function(invocation) {
+							return {
+								context: {
+									environment: getEnvironmentToSudo(invocation.context.environment, settings),
+									directory: invocation.context.directory,
+									stdio: invocation.context.stdio
+								},
+								configuration: {
+									command: "sudo",
+									arguments: getArgumentsToSudo(invocation.configuration.command, invocation.configuration.arguments, settings)
+								}
 							}
-							if (e.detail.line == "") {
-								lastBlank = e;
-							} else {
-								f(e);
+						}
+					},
+					handler: {
+						stdio: {
+							line: function(f) {
+								var lastBlank = null;
+
+								return function(e) {
+									if (lastBlank) {
+										f(lastBlank);
+										lastBlank = null;
+									}
+									if (e.detail.line == "") {
+										lastBlank = e;
+									} else {
+										f(e);
+									}
+								}
 							}
 						}
 					}
@@ -288,7 +297,6 @@
 					return toScriptCode;
 				}
 			},
-			create: create,
 			internal: {
 				old: internal
 			}

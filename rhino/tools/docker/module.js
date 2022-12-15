@@ -119,7 +119,7 @@
 				var rv = function(input) {
 					var invocation = command.invocation(input);
 					var tell = $context.library.shell.world.action(
-						$context.library.shell.Invocation.create({
+						$context.library.shell.Invocation.from.argument({
 							command: "docker",
 							arguments: invocation.command.concat(invocation.arguments).concat(
 								(command.output.truncated) ? ["--no-trunc"] : []
@@ -431,7 +431,7 @@
 								command: "cp",
 								arguments: ["-R", "/Volumes/Docker/Docker.app", p.destination]
 							};
-							var invocation = p.library.shell.Invocation.create(argument);
+							var invocation = p.library.shell.Invocation.from.argument(argument);
 							if (p.sudo) {
 								invocation = p.library.shell.Invocation.sudo({
 									askpass: p.sudo.askpass

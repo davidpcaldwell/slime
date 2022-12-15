@@ -133,7 +133,7 @@ namespace slime.jsh.unit {
 
 			var runDockerSelenium = function(image) {
 				return jsh.shell.world.action(
-					jsh.shell.Invocation.create({
+					jsh.shell.Invocation.from.argument({
 						command: "docker",
 						arguments: $api.Array.build(function(rv) {
 							rv.push("run");
@@ -153,7 +153,7 @@ namespace slime.jsh.unit {
 			var removeDockerContainer = function(id) {
 				$api.fp.world.now.action(
 					jsh.shell.world.action,
-					jsh.shell.Invocation.create({
+					jsh.shell.Invocation.from.argument({
 						command: "docker",
 						arguments: $api.Array.build(function(rv) {
 							rv.push("rm");

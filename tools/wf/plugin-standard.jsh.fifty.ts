@@ -301,7 +301,7 @@ namespace slime.jsh.wf {
 
 						var engines = JSON.parse($api.fp.world.now.question(
 							jsh.shell.world.question,
-							jsh.shell.Invocation.create({
+							jsh.shell.Invocation.from.argument({
 								command: "bash",
 								arguments: [test.fixtures.jsh.toString(), "-engines"],
 								stdio: {
@@ -469,7 +469,7 @@ namespace slime.jsh.wf {
 					var repository = project.clone;
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
-						jsh.shell.Invocation.create({
+						jsh.shell.Invocation.from.argument({
 							command: repository.location.pathname + "/" + "wf",
 							arguments: ["initialize"],
 							directory: repository.location.pathname
@@ -508,7 +508,7 @@ namespace slime.jsh.wf {
 
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
-						jsh.shell.Invocation.create({
+						jsh.shell.Invocation.from.argument({
 							command: $api.fp.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
 							arguments: ["status"]
 						}),
@@ -520,7 +520,7 @@ namespace slime.jsh.wf {
 
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
-						jsh.shell.Invocation.create({
+						jsh.shell.Invocation.from.argument({
 							command: $api.fp.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
 							arguments: ["status"]
 						}),
@@ -532,7 +532,7 @@ namespace slime.jsh.wf {
 					var project = test.fixtures.adapt.repository(test.fixtures.project().clone);
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
-						jsh.shell.Invocation.create({
+						jsh.shell.Invocation.from.argument({
 							command: project.directory.getRelativePath("wf"),
 							arguments: $api.Array.build(function(rv) {
 								rv.push("commit");
@@ -551,7 +551,7 @@ namespace slime.jsh.wf {
 					});
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
-						jsh.shell.Invocation.create({
+						jsh.shell.Invocation.from.argument({
 							command: project.directory.getRelativePath("wf"),
 							arguments: $api.Array.build(function(rv) {
 								rv.push("commit");
@@ -622,7 +622,7 @@ namespace slime.jsh.wf {
 					//	TODO	should profiler install Rhino?
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
-						jsh.shell.Invocation.create({
+						jsh.shell.Invocation.from.argument({
 							command: getSlimePath("jsh.bash").pathname,
 							arguments: $api.Array.build(function(rv) {
 								rv.push(getSlimePath("jsh/tools/install/rhino.jsh.js").pathname);
@@ -633,7 +633,7 @@ namespace slime.jsh.wf {
 					//	Needed for profile viewer, to serve UI and JSON data
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
-						jsh.shell.Invocation.create({
+						jsh.shell.Invocation.from.argument({
 							command: getSlimePath("jsh.bash").pathname,
 							arguments: $api.Array.build(function(rv) {
 								rv.push(getSlimePath("jsh/tools/install/tomcat.jsh.js").pathname);
@@ -643,7 +643,7 @@ namespace slime.jsh.wf {
 					);
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
-						jsh.shell.Invocation.create({
+						jsh.shell.Invocation.from.argument({
 							//	TODO	perhaps should accept world Pathname
 							command: getSlimePath("jsh.bash").pathname,
 							arguments: $api.Array.build(function(rv) {

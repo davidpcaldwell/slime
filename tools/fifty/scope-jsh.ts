@@ -75,7 +75,7 @@ namespace slime.fifty.test.internal.scope.jsh {
 								fifty.tests.suite();
 							});
 							var runBrowser = jsh.shell.world.question(
-								jsh.shell.Invocation.create({
+								jsh.shell.Invocation.from.argument({
 									//	TODO	world-oriented
 									command: fifty.global.jsh.shell.jsh.src.getRelativePath("fifty").toString(),
 									arguments: [

@@ -81,7 +81,7 @@
 		/** @type { slime.jrunscript.node.Functions["Installation"]["getVersion"] } */
 		function getVersion(installation) {
 			return function(events) {
-				var invocation = $context.library.shell.Invocation.create({
+				var invocation = $context.library.shell.Invocation.from.argument({
 					command: installation.executable,
 					arguments: ["--version"],
 					stdio: {
@@ -225,7 +225,7 @@
 
 					var result = $api.fp.world.now.question(
 						$context.library.shell.world.question,
-						$context.library.shell.Invocation.create(invocation)
+						$context.library.shell.Invocation.from.argument(invocation)
 					);
 
 					/** @type { slime.jrunscript.node.internal.NpmLsOutput } */
@@ -280,7 +280,7 @@
 
 					$api.fp.world.now.action(
 						$context.library.shell.world.action,
-						$context.library.shell.Invocation.create(invocation)
+						$context.library.shell.Invocation.from.argument(invocation)
 					);
 				}
 			}
@@ -556,7 +556,7 @@
 		 */
 		var toShellInvocation = function(nodeInvocation,installation) {
 			var shellArgument = node_invocation(installation)(nodeInvocation);
-			return $context.library.shell.Invocation.create(shellArgument);
+			return $context.library.shell.Invocation.from.argument(shellArgument);
 		};
 
 		$exports.world = {

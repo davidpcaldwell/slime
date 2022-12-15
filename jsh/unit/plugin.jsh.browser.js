@@ -411,7 +411,7 @@
 							jsh.java.Thread.start(function() {
 								$api.fp.world.now.action(
 									jsh.shell.world.action,
-									jsh.shell.Invocation.create({
+									jsh.shell.Invocation.from.argument({
 										command: configuration.program,
 										arguments: configuration.arguments.concat([p.uri])
 									}),

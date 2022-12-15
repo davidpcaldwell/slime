@@ -514,12 +514,7 @@
 			})
 		}
 
-		$exports.Invocation = {
-			modernize: scripts.invocation.modernize,
-			sudo: scripts.invocation.sudo,
-			create: scripts.invocation.create(defaults),
-			handler: scripts.invocation.handler
-		};
+		$exports.Invocation = scripts.invocation.exports(defaults);
 
 		$exports.world = scripts.run;
 

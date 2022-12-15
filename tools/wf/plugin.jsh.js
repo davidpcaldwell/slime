@@ -505,7 +505,7 @@
 							jsh.shell.console("Compiling with TypeScript " + version + " ...");
 							var result = $api.fp.world.now.question(
 								jsh.shell.world.question,
-								jsh.shell.Invocation.create({
+								jsh.shell.Invocation.from.argument({
 									command: "bash",
 									arguments: [
 										jsh.shell.jsh.src.getFile("jsh.bash"),
@@ -643,7 +643,7 @@
 						//	git commit hooks (and when executed from somewhere other than the project directory).
 						$api.fp.world.now.action(
 							jsh.shell.world.action,
-							jsh.shell.Invocation.create({
+							jsh.shell.Invocation.from.argument({
 								command: "git",
 								arguments: $api.Array.build(function(rv) {
 									rv.push("submodule", "foreach");
@@ -882,7 +882,7 @@
 						//	TODO	create standard jsh invocation to make the terser, commented-out form below this form possible
 						var result = $api.fp.world.now.question(
 							jsh.shell.world.question,
-							jsh.shell.Invocation.create({
+							jsh.shell.Invocation.from.argument({
 								command: "bash",
 								arguments: [
 									jsh.shell.jsh.src.getFile("jsh.bash"),

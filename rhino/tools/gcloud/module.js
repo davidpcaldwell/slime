@@ -34,7 +34,7 @@
 									var invocation = command.invocation(argument);
 									$api.fp.world.now.action(
 										$context.library.shell.world.action,
-										$context.library.shell.Invocation.create({
+										$context.library.shell.Invocation.from.argument({
 											//	TODO	could this dependency be narrowed to world filesystem rather than whole library?
 											command: executable,
 											arguments: $api.Array.build(function(rv) {

@@ -87,7 +87,7 @@
 								parameters: function(parameters) {
 									var invocation = command.invocation(parameters);
 									var tell = $context.library.shell.world.action(
-										$context.library.shell.Invocation.create({
+										$context.library.shell.Invocation.from.argument({
 											command: program,
 											arguments: [invocation.command].concat(invocation.arguments || []),
 											environment: invocation.environment,

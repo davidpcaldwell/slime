@@ -83,7 +83,7 @@ namespace slime.runtime.browser.test.internal.suite {
 				var rv: slime.jrunscript.shell.run.TellEvents["exit"];
 				$api.fp.world.now.action(
 					jsh.shell.world.action,
-					jsh.shell.Invocation.create({
+					jsh.shell.Invocation.from.argument({
 						command: "/bin/bash",
 						arguments: $api.Array.build(function(rv: string[]) {
 							rv.push(jsh.shell.jsh.src.getRelativePath("jsh.bash").toString())
@@ -122,7 +122,7 @@ namespace slime.runtime.browser.test.internal.suite {
 
 			var runDockerSelenium = function(image) {
 				return jsh.shell.world.action(
-					jsh.shell.Invocation.create({
+					jsh.shell.Invocation.from.argument({
 						command: "docker",
 						arguments: $api.Array.build(function(rv) {
 							rv.push("run");
@@ -142,7 +142,7 @@ namespace slime.runtime.browser.test.internal.suite {
 			var removeDockerContainer = function(id) {
 				$api.fp.world.now.action(
 					jsh.shell.world.action,
-					jsh.shell.Invocation.create({
+					jsh.shell.Invocation.from.argument({
 						command: "docker",
 						arguments: $api.Array.build(function(rv) {
 							rv.push("rm");

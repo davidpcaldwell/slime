@@ -241,7 +241,7 @@ namespace slime.jrunscript.shell.internal.run {
 
 			fifty.tests.manual.kill = function() {
 				if (fifty.global.jsh.shell.PATH.getCommand("sleep")) {
-					var killed = subject.Invocation.create({
+					var killed = subject.Invocation.from.argument({
 						command: "sleep",
 						arguments: ["1"],
 						directory: directory.toString(),
@@ -281,7 +281,7 @@ namespace slime.jrunscript.shell.internal.run {
 			fifty.tests.sandbox.subprocess = function() {
 				const console = fifty.global.jsh.shell.console;
 
-				var ls = subject.Invocation.create({
+				var ls = subject.Invocation.from.argument({
 					command: "ls",
 					directory: directory.toString(),
 					stdio: {
@@ -340,7 +340,7 @@ namespace slime.jrunscript.shell.internal.run {
 			fifty.tests.sandbox.other = function() {
 				const { jsh } = fifty.global;
 				fifty.run(function checkErrorForBogusInvocation() {
-					var bogus = subject.Invocation.create({
+					var bogus = subject.Invocation.from.argument({
 						command: "foobarbaz"
 					});
 
@@ -352,7 +352,7 @@ namespace slime.jrunscript.shell.internal.run {
 				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
 
 				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
-					var ls = subject.Invocation.create({
+					var ls = subject.Invocation.from.argument({
 						command: "ls",
 						directory: directory.toString()
 					});
@@ -439,7 +439,7 @@ namespace slime.jrunscript.shell.internal.run {
 						var argument: shell.invocation.Argument = {
 							command: "ls"
 						};
-						var invocation = fifty.global.jsh.shell.Invocation.create(argument);
+						var invocation = fifty.global.jsh.shell.Invocation.from.argument(argument);
 						fifty.verify(invocation, "invocation", function(its) {
 							its.configuration.command.is("ls");
 							its.configuration.arguments.is.type("object");
@@ -463,7 +463,7 @@ namespace slime.jrunscript.shell.internal.run {
 							//	TODO	environment
 							directory: directory.toString()
 						};
-						var invocation = fifty.global.jsh.shell.Invocation.create(argument);
+						var invocation = fifty.global.jsh.shell.Invocation.from.argument(argument);
 						fifty.verify(invocation, "invocation", function(its) {
 							its.configuration.command.is("/bin/ls");
 							its.configuration.arguments.is.type("object");
