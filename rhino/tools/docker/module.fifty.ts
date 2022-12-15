@@ -148,7 +148,7 @@ namespace slime.jrunscript.tools {
 					}
 				}
 
-				const dumpErrors: $api.events.Handler<cli.Events> = {
+				const dumpErrors: $api.event.Handlers<cli.Events> = {
 					stderr: function(e) {
 						jsh.shell.console(e.detail);
 					}

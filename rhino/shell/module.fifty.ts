@@ -271,7 +271,7 @@ namespace slime.jrunscript.shell {
 
 			export type Events = slime.$api.Events<events.Events>
 
-			export type Handler = slime.$api.events.Handler<events.Events>
+			export type Handler = slime.$api.event.Handlers<events.Events>
 		}
 	}
 
@@ -391,14 +391,6 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export interface Exports {
-		//	TODO	probably should be conditional based on presence of sudo tool
-		/**
-		 * Creates an object that can execute invocations under `sudo` using the settings given.
-		 */
-		sudo: (settings?: Parameters<Exports["invocation"]["sudo"]>[0]) => {
-			run: (invocation: invocation.old.Argument) => any
-		}
-
 		//	fires started, exception, stdout, stderr
 		/**
 		 * Provides a framework for embedding processes inside a shell. Invokes the given method with the given argument
@@ -407,7 +399,7 @@ namespace slime.jrunscript.shell {
 			method: Function
 			argument: object
 			started: (p: { output?: string, error?: string }) => boolean
-		}, events: $api.events.Function.Receiver) => void
+		}, events: $api.event.Function.Receiver) => void
 
 		/**
 		 * Provides access to Java system properties.
@@ -491,20 +483,13 @@ namespace slime.jrunscript.shell {
 		export interface Invocation {
 			create: (p: invocation.Argument) => run.Invocation
 
-			/**
-			 * @deprecated
-			 *
-			 * Creates a fully-specified {@link old.Invocation} from a given {@link invocation.old.Argument} and the surrounding context.
-			 */
-			old: (p: invocation.old.Argument) => old.Invocation
-
-			stdio: {
-				handler: {
+			handler: {
+				stdio: {
 					/**
 					 * Creates an event handler that automatically buffers trailing blank lines, so that blank lines created by the
 					 * end of a stream do not produce calls to the event handler.
 					 */
-					line: (f: (e: slime.$api.Event<slime.jrunscript.shell.run.Line>) => void) => (e: slime.$api.Event<slime.jrunscript.shell.run.Line>) => void
+					line: (f: slime.$api.event.Handler<slime.jrunscript.shell.run.Line>) => slime.$api.event.Handler<slime.jrunscript.shell.run.Line>
 				}
 			}
 		}

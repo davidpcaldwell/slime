@@ -140,15 +140,6 @@
 
 		$exports.listeners = module.events.listeners;
 
-		$exports.sudo = function(settings) {
-			return {
-				run: function(invocation) {
-					var toRun = $exports.invocation.sudo(settings)($exports.Invocation.old(invocation));
-					return $exports.run(toRun);
-				}
-			}
-		};
-
 		var embed = $api.events.Function(
 			/**
 			 * @param { { method: Function, argument: object, started: (p: { output?: string, error?: string }) => boolean } } p
@@ -524,12 +515,11 @@
 		}
 
 		$exports.Invocation = {
-			old: scripts.invocation.old(defaults, function(path) { return $context.api.file.Pathname(path).directory; }),
 			modernize: scripts.invocation.modernize,
 			sudo: scripts.invocation.sudo,
 			create: scripts.invocation.create(defaults),
-			stdio: {
-				handler: {
+			handler: {
+				stdio: {
 					line: function(f) {
 						var lastBlank = null;
 

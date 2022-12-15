@@ -32,7 +32,7 @@ namespace slime.project.code {
 				nowrite?: boolean
 			}) => slime.$api.fp.world.old.Tell<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
 
-			toHandler: (on: on) => slime.$api.events.Handler<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
+			toHandler: (on: on) => slime.$api.event.Handlers<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
 		}
 
 		directory: {

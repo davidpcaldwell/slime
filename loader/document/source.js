@@ -659,7 +659,7 @@
 					/** @type { string[] } */
 					var stack = [];
 					/**
-					 * @type { slime.$api.events.Handler<slime.runtime.document.internal.source.ParseEvents> }
+					 * @type { slime.$api.event.Handlers<slime.runtime.document.internal.source.ParseEvents> }
 					 */
 					var rv = {
 						startElement: function(e) {

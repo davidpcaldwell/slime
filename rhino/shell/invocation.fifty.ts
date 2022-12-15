@@ -116,19 +116,20 @@ namespace slime.jrunscript.shell {
 	export namespace exports {
 		export interface Invocation {
 			modernize: (p: old.Invocation) => run.Invocation
+
+			//	TODO	probably should be conditional based on presence of sudo tool
+			/**
+			 * Given settings for `sudo`, converts an invocation into an equivalent invocation that will be run under `sudo`.
+			 *
+			 * @param settings A set of `sudo` settings.
+			 * @returns An invocation that will run the given invocation under `sudo`.
+			 */
 			sudo: (settings: sudo.Settings) => (invocation: run.Invocation) => run.Invocation
 		}
 	}
 
 	export interface Exports {
 		invocation: {
-			 //	TODO	probably should be conditional based on presence of sudo tool
-			 /**
-			  * Given a set of `sudo` settings, provides a function that can convert an {@link Invocation} to an equivalent
-			  * `Invocation` that runs the command under `sudo`.
-			  */
-			 sudo: (settings?: sudo.Settings) => (p: slime.jrunscript.shell.old.Invocation) => slime.jrunscript.shell.old.Invocation
-
 			 /**
 			  * Creates the code for a `bash` script from a single Invocation-like object and returns it as a string.
 			  */
@@ -182,13 +183,13 @@ namespace slime.jrunscript.shell {
 			fifty.tests.invocation = {};
 
 			fifty.tests.invocation.sudo = function() {
-				var sudoed = internal.invocation.test.subject.invocation.sudo()(fifty.global.jsh.shell.Invocation.old({
+				var sudoed = internal.invocation.test.subject.sudo({})(fifty.global.jsh.shell.Invocation.create({
 					command: "ls"
 				}));
 
-				fifty.verify(sudoed).command.evaluate(String).is("sudo");
-				fifty.verify(sudoed).arguments[0].is("ls");
-				fifty.verify(sudoed).environment.evaluate.property("SUDO_ASKPASS").is(void(0));
+				fifty.verify(sudoed).configuration.command.evaluate(String).is("sudo");
+				fifty.verify(sudoed).configuration.arguments[0].is("ls");
+				fifty.verify(sudoed).context.environment.evaluate.property("SUDO_ASKPASS").is(void(0));
 			};
 
 			fifty.tests.invocation.toBashScript = function() {
@@ -257,16 +258,16 @@ namespace slime.jrunscript.shell {
 				fifty.run(fifty.tests.invocation.sudo);
 
 				fifty.run(function askpass() {
-					var sudoed = subject.invocation.sudo({
+					var sudoed = subject.sudo({
 						askpass: "/path/to/askpass"
-					})(jsh.shell.Invocation.old({
+					})(jsh.shell.Invocation.create({
 						command: "ls"
 					}));
 
-					verify(sudoed).command.evaluate(String).is("sudo");
-					verify(sudoed).arguments[0].is("--askpass");
-					verify(sudoed).arguments[1].is("ls");
-					verify(sudoed).environment.SUDO_ASKPASS.is("/path/to/askpass");
+					verify(sudoed).configuration.command.evaluate(String).is("sudo");
+					verify(sudoed).configuration.arguments[0].is("--askpass");
+					verify(sudoed).configuration.arguments[1].is("ls");
+					verify(sudoed).context.environment.SUDO_ASKPASS.is("/path/to/askpass");
 				});
 			}
 		}
@@ -334,7 +335,6 @@ namespace slime.jrunscript.shell.internal.invocation {
 		sudo: slime.jrunscript.shell.exports.Invocation["sudo"]
 
 		create: (defaults: Defaults) => slime.jrunscript.shell.exports.Invocation["create"]
-		old: (defaults: Defaults, toDirectory: (path: string) => slime.jrunscript.file.Directory) => slime.jrunscript.shell.exports.Invocation["old"]
 	}
 
 	export type Script = slime.loader.Script<Context,Export>

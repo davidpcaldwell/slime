@@ -31,16 +31,16 @@ namespace slime.$api {
 		export type Handler<T> = (e: Event<T>) => void
 	}
 
-	export namespace events {
+	export namespace event {
 		/**
 		 * An object whose methods process events; events of a type are mapped to a method with the same name as that type.
 		 */
-		export type Handler<D> = {
+		export type Handlers<D> = {
 			[k in keyof D]?: event.Handler<D[k]>
 		}
 
 		export namespace Function {
-			//	TODO	it appears this duplicates the events.Handler concept above
+			//	TODO	it appears this duplicates the event.Handlers concept above
 			export type Receiver = { [x: string]: (e: Event<any>) => void } | Events<any>
 		}
 	}
@@ -55,20 +55,20 @@ namespace slime.$api {
 			}) => slime.$api.Events<any>
 
 			//	TODO	could probably use parameterized types to improve accuracy
-			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.events.Function.Receiver) => R
+			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.event.Function.Receiver) => R
 
-			toListener: <D>(handler: slime.$api.events.Handler<D>) => {
+			toListener: <D>(handler: slime.$api.event.Handlers<D>) => {
 				emitter: slime.$api.Events<D>
 				attach: () => void
 				detach: () => void
 			}
 
-			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.events.Handler<E>) => R
+			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.event.Handlers<E>) => R
 
-			invoke: <E,R>(f: (events: slime.$api.Events<E>) => R, handler: slime.$api.events.Handler<E>) => R
+			invoke: <E,R>(f: (events: slime.$api.Events<E>) => R, handler: slime.$api.event.Handlers<E>) => R
 
 			Handler: {
-				attach: <T>(events: slime.$api.Events<T>) => (handler: slime.$api.events.Handler<T>) => void
+				attach: <T>(events: slime.$api.Events<T>) => (handler: slime.$api.event.Handlers<T>) => void
 			}
 		}
 	}
@@ -82,7 +82,7 @@ namespace slime.runtime.internal.events {
 	export interface Exports {
 		api: slime.$api.exports.Events
 
-		ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => (on?: slime.$api.events.Handler<E>) => T
+		ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => (on?: slime.$api.event.Handlers<E>) => T
 		tell: slime.$api.fp.Exports["world"]["old"]["tell"]
 	}
 

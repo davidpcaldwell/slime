@@ -55,7 +55,7 @@ namespace slime.tools.documentation.updater {
 	export interface Exports {
 		Updater: (p: {
 			project: string
-			events: slime.$api.events.Handler<{
+			events: slime.$api.event.Handlers<{
 				initialized: {
 					project: string
 				}

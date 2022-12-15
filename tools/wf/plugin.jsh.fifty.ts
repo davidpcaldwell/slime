@@ -334,7 +334,7 @@ namespace slime.jsh.wf {
 			(p: {
 				repository: slime.jrunscript.tools.git.repository.Local
 				get?: GitIdentityProvider
-			}, events?: $api.events.Function.Receiver)
+			}, events?: $api.event.Function.Receiver)
 
 			/**
 			 * @deprecated
@@ -432,7 +432,7 @@ namespace slime.jsh.wf {
 		/**
 		 * Errs if files untracked by Git are found in the given repository.
 		 */
-		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.tools.git.repository.Local }, events?: $api.events.Function.Receiver) => void
+		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.tools.git.repository.Local }, events?: $api.event.Function.Receiver) => void
 	}
 
 	export namespace exports {
@@ -447,7 +447,7 @@ namespace slime.jsh.wf {
 	}
 
 	export interface Exports {
-		prohibitModifiedSubmodules: (p: { repository: slime.jrunscript.tools.git.repository.Local }, events?: $api.events.Function.Receiver) => void
+		prohibitModifiedSubmodules: (p: { repository: slime.jrunscript.tools.git.repository.Local }, events?: $api.event.Function.Receiver) => void
 	}
 
 	(

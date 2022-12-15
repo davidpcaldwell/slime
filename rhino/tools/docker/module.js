@@ -426,16 +426,21 @@
 								command: "hdiutil",
 								arguments: ["attach", dmg]
 							});
-							var invocation = {
+							/** @type { slime.jrunscript.shell.invocation.Argument } */
+							var argument = {
 								command: "cp",
 								arguments: ["-R", "/Volumes/Docker/Docker.app", p.destination]
 							};
+							var invocation = p.library.shell.Invocation.create(argument);
 							if (p.sudo) {
-								invocation = p.library.shell.invocation.sudo({
+								invocation = p.library.shell.Invocation.sudo({
 									askpass: p.sudo.askpass
-								})(p.library.shell.Invocation.old(invocation))
+								})(invocation)
 							}
-							p.library.shell.run(invocation);
+							$api.fp.world.now.action(
+								p.library.shell.world.action,
+								invocation
+							);
 							events.fire("installed", p.destination.directory);
 						} else {
 							throw new Error("Unsupported: Docker installation on non-macOS system.");

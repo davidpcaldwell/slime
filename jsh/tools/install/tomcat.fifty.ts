@@ -63,7 +63,7 @@ namespace slime.jsh.shell.tools {
 				local?: slime.jrunscript.file.File
 			}
 
-			export type Handler = slime.$api.events.Handler<tomcat.install.Events>
+			export type Handler = slime.$api.event.Handlers<tomcat.install.Events>
 		}
 	}
 
@@ -100,7 +100,7 @@ namespace slime.jsh.shell.tools {
 					version?: string
 					replace?: (version: string) => boolean
 				},
-				handler?: slime.$api.events.Handler<{
+				handler?: slime.$api.event.Handlers<{
 					console: string
 				}>
 			) => void

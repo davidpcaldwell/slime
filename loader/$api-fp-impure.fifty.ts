@@ -167,20 +167,20 @@ namespace slime.$api.fp.world {
 	/** @deprecated */
 	export namespace old {
 		/** @deprecated */
-		export type Ask<E,T> = (on?: slime.$api.events.Handler<E>) => T
+		export type Ask<E,T> = (on?: slime.$api.event.Handlers<E>) => T
 
 		/** @deprecated */
-		export type Tell<E> = (on?: slime.$api.events.Handler<E>) => void
+		export type Tell<E> = (on?: slime.$api.event.Handlers<E>) => void
 
 		/** @deprecated */
 		export type Action<P,E> = (p?: P) => Tell<E>
 
 		/** @deprecated Identical to {@link Ask} but has slightly different semantics (analogous to HTTP POST). */
-		export type Operation<E,R> = (on?: slime.$api.events.Handler<E>) => R
+		export type Operation<E,R> = (on?: slime.$api.event.Handlers<E>) => R
 	}
 
 	export interface Exports {
-		mapping: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.events.Handler<E>) => fp.Mapping<P,A>
+		mapping: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.event.Handlers<E>) => fp.Mapping<P,A>
 	}
 
 	(
@@ -212,11 +212,11 @@ namespace slime.$api.fp.world {
 	)(fifty);
 
 	export interface Exports {
-		output: <P,E>(action: world.Action<P,E>, handler?: slime.$api.events.Handler<E>) => impure.Output<P>
+		output: <P,E>(action: world.Action<P,E>, handler?: slime.$api.event.Handlers<E>) => impure.Output<P>
 
-		process: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => impure.Process
+		process: <E>(tell: world.Tell<E>, handler?: slime.$api.event.Handlers<E>) => impure.Process
 
-		input: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => impure.Input<A>
+		input: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.event.Handlers<E>) => impure.Input<A>
 
 		Question: {
 			/**
@@ -231,15 +231,15 @@ namespace slime.$api.fp.world {
 
 	export interface Exports {
 		now: {
-			question: <P,E,A>(question: world.Question<P,E,A>, argument?: P, handler?: slime.$api.events.Handler<E>) => A
-			action: <P,E>(action: world.Action<P,E>, argument?: P, handler?: slime.$api.events.Handler<E>) => void
+			question: <P,E,A>(question: world.Question<P,E,A>, argument?: P, handler?: slime.$api.event.Handlers<E>) => A
+			action: <P,E>(action: world.Action<P,E>, argument?: P, handler?: slime.$api.event.Handlers<E>) => void
 
-			ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.events.Handler<E>) => A
-			tell: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => void
+			ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.event.Handlers<E>) => A
+			tell: <E>(tell: world.Tell<E>, handler?: slime.$api.event.Handlers<E>) => void
 		}
 
 		/** @deprecated Used almost entirely for `jsh.shwll.tools.node.require`. After refactoring that, reassess. */
-		execute: <E>(tell: world.Tell<E>, handler?: slime.$api.events.Handler<E>) => void
+		execute: <E>(tell: world.Tell<E>, handler?: slime.$api.event.Handlers<E>) => void
 
 		/** @deprecated */
 		old: {
