@@ -181,11 +181,11 @@ namespace slime.fifty {
 			$api: {
 				Events: {
 					/**
-					 * Creates a {@link slime.$api.events.Handler} that captures and stores all received {@link slime.$api.Event}s for querying.
+					 * Creates a {@link slime.$api.event.Handlers} that captures and stores all received {@link slime.$api.Event}s for querying.
 					 */
 					Captor: <T>(t: T) => {
 						events: $api.Event<any>[],
-						handler: Required<$api.events.Handler<T>>
+						handler: Required<$api.event.Handlers<T>>
 					}
 				}
 			},

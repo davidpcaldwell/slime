@@ -197,7 +197,7 @@
 				};
 			}
 
-			/** @type { slime.$api.events.Handler<slime.tools.documentation.updater.internal.Listener> } */
+			/** @type { slime.$api.event.Handlers<slime.tools.documentation.updater.internal.Listener> } */
 			var listener = {
 				started: function(e) {
 					lock.wait({

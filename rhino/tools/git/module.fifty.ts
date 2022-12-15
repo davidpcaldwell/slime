@@ -118,7 +118,7 @@ namespace slime.jrunscript.tools.git {
 			directory: slime.jrunscript.file.Directory
 
 			add: any
-			rm: (p: { path: string }, events?: $api.events.Function.Receiver) => void
+			rm: (p: { path: string }, events?: $api.event.Function.Receiver) => void
 
 			branch: {
 				(p: {
@@ -151,7 +151,7 @@ namespace slime.jrunscript.tools.git {
 				prune?: boolean
 				recurseSubmodules?: boolean
 				stdio?: any
-			}, events?: $api.events.Function.Receiver) => void
+			}, events?: $api.event.Function.Receiver) => void
 
 			merge: (p: {
 				name: string
@@ -1088,7 +1088,7 @@ namespace slime.jrunscript.tools.git {
 			invocation: (p: {
 				client: Client,
 				invocation: Invocation
-			}) => slime.jrunscript.shell.old.Invocation
+			}) => slime.jrunscript.shell.run.Invocation
 		}
 	}
 
@@ -1111,9 +1111,9 @@ namespace slime.jrunscript.tools.git {
 							command: "status"
 						}
 					});
-					fifty.verify(invocation).command.is(fakeCommand.toString());
-					fifty.verify(invocation).arguments.length.is(1);
-					fifty.verify(invocation).arguments[0].is("status");
+					fifty.verify(invocation).configuration.command.is(fakeCommand.toString());
+					fifty.verify(invocation).configuration.arguments.length.is(1);
+					fifty.verify(invocation).configuration.arguments[0].is("status");
 				});
 			}
 		}

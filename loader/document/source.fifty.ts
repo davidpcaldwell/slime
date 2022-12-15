@@ -39,18 +39,18 @@ namespace slime.runtime.document.internal.source {
 		debug: {
 			fidelity: (p: {
 				markup: string
-				events: slime.$api.events.Handler<{ console: string }>
+				events: slime.$api.event.Handlers<{ console: string }>
 			}) => boolean
 		}
 
 		parse: (p: {
 			string: string
-			events?: slime.$api.events.Handler<ParseEvents>
+			events?: slime.$api.event.Handlers<ParseEvents>
 		}) => Document
 
 		fragment: (p: {
 			string: string
-			events?: slime.$api.events.Handler<ParseEvents>
+			events?: slime.$api.event.Handlers<ParseEvents>
 		}) => Fragment
 
 		serialize: {
@@ -330,7 +330,7 @@ namespace slime.runtime.document.internal.source {
 					events: (function() {
 						var stack = [];
 						/**
-						 * @type { slime.$api.events.Handler<slime.runtime.document.source.ParseEvents> }
+						 * @type { slime.$api.event.Handlers<slime.runtime.document.source.ParseEvents> }
 						 */
 						var rv = {
 							startElement: function(e) {

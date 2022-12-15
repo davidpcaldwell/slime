@@ -98,7 +98,7 @@ namespace slime.jsh.shell {
 				properties?: { [x: string]: string }
 			}): any
 			src?: slime.jrunscript.file.Directory
-			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.events.Function.Receiver ) => void
+			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.event.Function.Receiver ) => void
 			lib?: slime.jrunscript.file.Directory
 			home?: slime.jrunscript.file.Directory
 			relaunch: () => void

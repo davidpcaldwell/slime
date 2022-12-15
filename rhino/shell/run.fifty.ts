@@ -400,7 +400,7 @@ namespace slime.jrunscript.shell.internal.run {
 						var tell = subject.world.action(lserror);
 						//	TODO	this listener functionality was previously provided by default; will want to improve API over
 						//			time so that it's harder to accidentally ignore non-zero exit status
-						var listener: slime.$api.events.Handler<slime.jrunscript.shell.run.TellEvents> = {
+						var listener: slime.$api.event.Handlers<slime.jrunscript.shell.run.TellEvents> = {
 							exit: function(e) {
 								if (e.detail.status != 0) {
 									throw new Error("Non-zero exit status: " + e.detail.status);

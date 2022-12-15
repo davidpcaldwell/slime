@@ -262,23 +262,6 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.shell.internal.invocation.Export["old"] } */
-		var old = function(defaults, toDirectory) {
-			return function(p) {
-				return {
-					command: String(p.command),
-					arguments: (p.arguments) ? p.arguments.map(String) : [],
-					environment: (p.environment) ? p.environment : defaults.environment(),
-					stdio: $api.Object.compose({
-						input: null,
-						output: defaults.stdio().output,
-						error: defaults.stdio().error
-					}, p.stdio),
-					directory: (p.directory) ? p.directory : toDirectory(defaults.directory())
-				};
-			}
-		};
-
 		/** @type { slime.jrunscript.shell.internal.invocation.Export["internal"]["old"] } */
 		var internal = (
 			function() {
@@ -298,6 +281,9 @@
 
 		$export({
 			modernize: modernize,
+			//	TODO	sudo has preserve-env and preserver-env= flags. Should make the relationship more explicit
+			//			between that and the environment provided normally, e.g., how could we pass an explicit environment
+			//			to sudo? Maybe by transforming the command into an `env` command?
 			sudo: function(settings) {
 				return function(invocation) {
 					return {
@@ -314,29 +300,6 @@
 				}
 			},
 			invocation: {
-				sudo: function(settings) {
-					//	TODO	sudo has preserve-env and preserver-env= flags. Should make the relationship
-					//			more explicit
-					//			between that and the environment provided normally, e.g., how could we pass an explicit environment
-					//			to sudo? Maybe by transforming the command into an `env` command?
-					return function(invocation) {
-						return $api.Object.compose(invocation, {
-							command: "sudo",
-							arguments: $api.Array.build(function(array) {
-								if (settings && settings.askpass) array.push("--askpass");
-								if (settings && settings.nocache) array.push("--reset-timestamp")
-								array.push(invocation.command);
-								array.push.apply(array, invocation.arguments);
-							}),
-							environment: $api.Object.compose(
-								invocation.environment,
-								(settings && settings.askpass) ? { SUDO_ASKPASS: settings.askpass } : {}
-							),
-							directory: invocation.directory,
-							stdio: invocation.stdio
-						});
-					}
-				},
 				//	The returned function is wrapped in this function because one could envision this function someday having
 				//	arguments containing some sort of information about how the script should be authored, maybe the path
 				//	to bash (which is different on FreeBSD), and so forth.
@@ -383,7 +346,6 @@
 				}
 			},
 			create: create,
-			old: old,
 			internal: {
 				old: internal
 			}
