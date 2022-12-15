@@ -25,6 +25,7 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export type Mapping<P,R> = (p: P) => R
+	export type Transform<T> = Mapping<T,T>
 	export type Lazy<T> = () => T
 
 	export type Predicate<T> = (t: T) => boolean

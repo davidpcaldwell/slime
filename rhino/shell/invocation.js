@@ -41,43 +41,6 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.internal.invocation.Configuration } p
-		 * @returns { slime.jrunscript.shell.internal.run.java.Configuration }
-		 */
-		var toConfiguration = function(p) {
-			return {
-				command: parseCommandToken(p.command),
-				arguments: (p.arguments) ? p.arguments.map(parseCommandToken) : []
-			}
-		}
-
-		/**
-		 *
-		 * @param { { directory?: slime.jrunscript.file.Directory, workingDirectory?: slime.jrunscript.file.Directory } } p
-		 * @return { string }
-		 */
-		function directoryForModuleRunArgument(p) {
-			/**
-			 *
-			 * @param { { directory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"] } } p
-			 * @return { slime.jrunscript.file.Directory }
-			 */
-			var getDirectoryProperty = function(p) {
-				if (p.directory && p.directory.pathname) {
-					return p.directory;
-				}
-			}
-
-			if (p.directory) {
-				return getDirectoryProperty(p).toString();
-			}
-			if (p.workingDirectory) {
-				return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory }).toString();
-			}
-		}
-
-		/**
-		 *
 		 * @param { slime.jrunscript.shell.invocation.Input } p
 		 * @return { slime.jrunscript.runtime.io.InputStream }
 		 */
@@ -103,18 +66,6 @@
 				output: p.output,
 				error: p.error
 			};
-		}
-
-		/**
-		 *
-		 * @param { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed } p
-		 * @param { slime.jrunscript.shell.invocation.Stdio } parent
-		 */
-		var fallbackToParentStdio = function(p, parent) {
-			if (typeof(p.input) == "undefined") p.input = null;
-			["output","error"].forEach(function(property) {
-				if (typeof(p[property]) == "undefined" && parent) p[property] = parent[property];
-			})
 		}
 
 		/**
@@ -163,31 +114,6 @@
 				output: toCapture(declaration.output),
 				error: toCapture(declaration.error)
 			};
-		}
-
-		/**
-		 * @param { Pick<slime.jrunscript.shell.invocation.old.Argument, "stdio" | "environment" | "directory"> } p
-		 * @param { slime.jrunscript.host.Environment } parentEnvironment
-		 * @param { slime.jrunscript.shell.invocation.Stdio } parentStdio
-		 * @returns { slime.jrunscript.shell.run.Context }
-		 */
-		var toContext = function(p, parentEnvironment, parentStdio) {
-			var stdio1 = updateForStringInput(p.stdio);
-			fallbackToParentStdio(stdio1, parentStdio);
-			var stdio = toStdioConfiguration(stdio1);
-			return {
-				stdio: stdio,
-				environment: (function(now, argument) {
-					if (typeof(argument) == "undefined") return now;
-					if (argument === null) return now;
-					if (typeof(argument) == "object") return argument;
-					if (typeof(argument) == "function") {
-						var rv = Object.assign({}, now);
-						return $api.fp.mutating(argument)(rv);
-					}
-				})(parentEnvironment, p.environment),
-				directory: directoryForModuleRunArgument(p)
-			}
 		}
 
 		/**
@@ -270,11 +196,9 @@
 						BadCommandToken: parseCommandToken.Error
 					},
 					updateForStringInput: updateForStringInput,
-					fallbackToParentStdio: fallbackToParentStdio,
 					toStdioConfiguration: toStdioConfiguration,
-					toConfiguration: toConfiguration,
-					isLineListener: isLineListener,
-					toContext: toContext
+					parseCommandToken: parseCommandToken,
+					isLineListener: isLineListener
 				}
 			}
 		)();
@@ -295,6 +219,25 @@
 						configuration: {
 							command: "sudo",
 							arguments: getArgumentsToSudo(invocation.configuration.command, invocation.configuration.arguments, settings)
+						}
+					}
+				}
+			},
+			handler: {
+				stdio: {
+					line: function(f) {
+						var lastBlank = null;
+
+						return function(e) {
+							if (lastBlank) {
+								f(lastBlank);
+								lastBlank = null;
+							}
+							if (e.detail.line == "") {
+								lastBlank = e;
+							} else {
+								f(e);
+							}
 						}
 					}
 				}

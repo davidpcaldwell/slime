@@ -34,6 +34,40 @@ namespace slime.jrunscript.shell {
 
 		export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
 
+		export interface Argument {
+			//	TODO	limit to string, maybe Location
+			/**
+			 * The command to run.
+			 */
+			command: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
+
+			//	TODO	limit to string[], maybe (string | Location)[]
+			/**
+			 * The arguments to supply to the command. If not present, an empty array will be supplied.
+			 */
+			arguments?: Token[]
+
+			/**
+			 * The environment to supply to the command. If `undefined`, this process's environment will be provided.
+			 */
+			environment?: {
+				[name: string]: string
+			}
+
+			//	TODO	possibly allow Location
+			/**
+			 * The working directory in which the command will be executed. If not specified, this process's working directory
+			 * will be provided.
+			 */
+			directory?: string
+
+			stdio?: {
+				input?: Input
+				output?: OutputCapture
+				error?: OutputCapture
+			}
+		}
+
 		export namespace old {
 			export type OutputStreamToStream = slime.jrunscript.runtime.io.OutputStream
 			export type OutputStreamToString = StringConstructor
@@ -77,40 +111,6 @@ namespace slime.jrunscript.shell {
 				stdio?: slime.jrunscript.shell.old.Invocation["stdio"]
 			}
 		}
-
-		export interface Argument {
-			//	TODO	limit to string, maybe Location
-			/**
-			 * The command to run.
-			 */
-			command: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
-
-			//	TODO	limit to string[], maybe (string | Location)[]
-			/**
-			 * The arguments to supply to the command. If not present, an empty array will be supplied.
-			 */
-			arguments?: Token[]
-
-			/**
-			 * The environment to supply to the command. If `undefined`, this process's environment will be provided.
-			 */
-			environment?: {
-				[name: string]: string
-			}
-
-			//	TODO	possibly allow Location
-			/**
-			 * The working directory in which the command will be executed. If not specified, this process's working directory
-			 * will be provided.
-			 */
-			directory?: string
-
-			stdio?: {
-				input?: Input
-				output?: OutputCapture
-				error?: OutputCapture
-			}
-		}
 	}
 
 	export namespace exports {
@@ -125,6 +125,16 @@ namespace slime.jrunscript.shell {
 			 * @returns An invocation that will run the given invocation under `sudo`.
 			 */
 			sudo: (settings: sudo.Settings) => (invocation: run.Invocation) => run.Invocation
+
+			handler: {
+				stdio: {
+					/**
+					 * Creates an event handler that automatically buffers trailing blank lines, so that blank lines created by the
+					 * end of a stream do not produce calls to the event handler.
+					 */
+					line: slime.$api.fp.Transform<slime.$api.event.Handler<slime.jrunscript.shell.run.Line>>
+				}
+			}
 		}
 	}
 
@@ -297,7 +307,7 @@ namespace slime.jrunscript.shell.internal.invocation {
 		stdio: slime.$api.fp.Lazy<shell.invocation.Argument["stdio"]>
 	}
 
-	export interface Export {
+	export interface Export extends Pick<slime.jrunscript.shell.exports.Invocation,"modernize"|"sudo"|"handler"> {
 		internal: {
 			/**
 			 * Interface that is exposed because the old `run` interface uses it; see `run-old.js`.
@@ -308,31 +318,18 @@ namespace slime.jrunscript.shell.internal.invocation {
 				}
 				updateForStringInput: (p: slime.jrunscript.shell.invocation.old.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
 
-				fallbackToParentStdio: (
-					p: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed,
-					parent: slime.jrunscript.shell.invocation.Stdio
-				) => void
-
-				toContext: (
-					p: slime.jrunscript.shell.invocation.old.Argument,
-					parentEnvironment: slime.jrunscript.host.Environment,
-					parentStdio: slime.jrunscript.shell.invocation.Stdio
-				) => slime.jrunscript.shell.run.Context
-
 				toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
 
-				toConfiguration: (
-					p: Configuration
-				) => slime.jrunscript.shell.internal.run.java.Configuration
+				parseCommandToken: {
+					(arg: slime.jrunscript.shell.invocation.Token, index?: number, ...args: any[]): string;
+					Error: slime.$api.error.old.Type<"ArgumentError", {}>;
+				}
 
 				isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
 			}
 		}
 
 		invocation: slime.jrunscript.shell.Exports["invocation"]
-
-		modernize: slime.jrunscript.shell.exports.Invocation["modernize"]
-		sudo: slime.jrunscript.shell.exports.Invocation["sudo"]
 
 		create: (defaults: Defaults) => slime.jrunscript.shell.exports.Invocation["create"]
 	}
