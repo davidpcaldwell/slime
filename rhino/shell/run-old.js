@@ -35,6 +35,83 @@
 			return {};
 		}
 
+		var parseCommandToken = $context.scripts.invocation.internal.old.parseCommandToken;
+
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.internal.invocation.Configuration } p
+		 * @returns { slime.jrunscript.shell.internal.run.java.Configuration }
+		 */
+		var old_toConfiguration = function(p) {
+			return {
+				command: parseCommandToken(p.command),
+				arguments: (p.arguments) ? p.arguments.map(parseCommandToken) : []
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed } p
+		 * @param { slime.jrunscript.shell.invocation.Stdio } parent
+		 */
+		var fallbackToParentStdio = function(p, parent) {
+			if (typeof(p.input) == "undefined") p.input = null;
+			["output","error"].forEach(function(property) {
+				if (typeof(p[property]) == "undefined" && parent) p[property] = parent[property];
+			})
+		}
+
+		/**
+		 * @param { Pick<slime.jrunscript.shell.invocation.old.Argument, "stdio" | "environment" | "directory"> } p
+		 * @param { slime.jrunscript.host.Environment } parentEnvironment
+		 * @param { slime.jrunscript.shell.invocation.Stdio } parentStdio
+		 * @returns { slime.jrunscript.shell.run.Context }
+		 */
+		var toContext = function(p, parentEnvironment, parentStdio) {
+
+			/**
+			 *
+			 * @param { { directory?: slime.jrunscript.file.Directory, workingDirectory?: slime.jrunscript.file.Directory } } p
+			 * @return { string }
+			 */
+			function directoryForModuleRunArgument(p) {
+				/**
+				 *
+				 * @param { { directory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"] } } p
+				 * @return { slime.jrunscript.file.Directory }
+				 */
+				var getDirectoryProperty = function(p) {
+					if (p.directory && p.directory.pathname) {
+						return p.directory;
+					}
+				}
+
+				if (p.directory) {
+					return getDirectoryProperty(p).toString();
+				}
+				if (p.workingDirectory) {
+					return $api.deprecate(getDirectoryProperty)({ directory: p.workingDirectory }).toString();
+				}
+			}
+
+			var stdio1 = $context.scripts.invocation.internal.old.updateForStringInput(p.stdio);
+			fallbackToParentStdio(stdio1, parentStdio);
+			var stdio = $context.scripts.invocation.internal.old.toStdioConfiguration(stdio1);
+			return {
+				stdio: stdio,
+				environment: (function(now, argument) {
+					if (typeof(argument) == "undefined") return now;
+					if (argument === null) return now;
+					if (typeof(argument) == "object") return argument;
+					if (typeof(argument) == "function") {
+						var rv = Object.assign({}, now);
+						return $api.fp.mutating(argument)(rv);
+					}
+				})(parentEnvironment, p.environment),
+				directory: directoryForModuleRunArgument(p)
+			}
+		}
+
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
@@ -48,7 +125,7 @@
 
 			p.stdio = extractStdioIncludingDeprecatedForm(p);
 
-			var context = scripts.invocation.internal.old.toContext(p, $context.environment, $context.stdio);
+			var context = toContext(p, $context.environment, $context.stdio);
 
 			/** @type { slime.jrunscript.shell.internal.module.Invocation } */
 			var invocation = (
@@ -100,7 +177,7 @@
 						};
 
 						try {
-							return scripts.invocation.internal.old.toConfiguration({
+							return old_toConfiguration({
 								command: command,
 								arguments: args
 							});
@@ -200,7 +277,7 @@
 						//	TODO	the below $api.Events() is highly dubious, inserted just to get past TypeScript; who knows
 						//			whether it will work but refactoring in progress may change it further
 						var fixed = scripts.invocation.internal.old.updateForStringInput(stdio);
-						scripts.invocation.internal.old.fallbackToParentStdio(fixed, $context.stdio);
+						fallbackToParentStdio(fixed, $context.stdio);
 						var x = scripts.invocation.internal.old.toStdioConfiguration(fixed);
 						var rv = scripts.run.old.buildStdio(x)($api.Events());
 						return rv;

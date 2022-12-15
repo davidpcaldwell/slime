@@ -482,16 +482,6 @@ namespace slime.jrunscript.shell {
 	export namespace exports {
 		export interface Invocation {
 			create: (p: invocation.Argument) => run.Invocation
-
-			handler: {
-				stdio: {
-					/**
-					 * Creates an event handler that automatically buffers trailing blank lines, so that blank lines created by the
-					 * end of a stream do not produce calls to the event handler.
-					 */
-					line: (f: slime.$api.event.Handler<slime.jrunscript.shell.run.Line>) => slime.$api.event.Handler<slime.jrunscript.shell.run.Line>
-				}
-			}
 		}
 	}
 

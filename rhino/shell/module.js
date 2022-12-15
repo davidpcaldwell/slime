@@ -518,25 +518,7 @@
 			modernize: scripts.invocation.modernize,
 			sudo: scripts.invocation.sudo,
 			create: scripts.invocation.create(defaults),
-			handler: {
-				stdio: {
-					line: function(f) {
-						var lastBlank = null;
-
-						return function(e) {
-							if (lastBlank) {
-								f(lastBlank);
-								lastBlank = null;
-							}
-							if (e.detail.line == "") {
-								lastBlank = e;
-							} else {
-								f(e);
-							}
-						}
-					}
-				}
-			}
+			handler: scripts.invocation.handler
 		};
 
 		$exports.world = scripts.run;
