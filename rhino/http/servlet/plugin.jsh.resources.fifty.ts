@@ -175,7 +175,7 @@ namespace slime.jsh.httpd {
 					verify(slime).list().evaluate(function(p) { return p.filter(byPath(".hg")) }).length.is(0);
 					verify(slime).list().evaluate(function(p) { return p.filter(byPath("loader")) }).length.is(1);
 					verify(slime).list().evaluate(function(p) { return p.filter(byPath("jsh")) }).length.is(1);
-					jsh.shell.echo(slime.list().map(function(item) { return item.path; }));
+					jsh.shell.echo(slime.list().map(function(item) { return item.path; }).join(","));
 
 					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					mapping.build(tmpdir);
