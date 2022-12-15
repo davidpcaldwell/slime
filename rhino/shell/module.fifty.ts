@@ -479,12 +479,6 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	export namespace exports {
-		export interface Invocation {
-			create: (p: invocation.Argument) => run.Invocation
-		}
-	}
-
 	export interface Exports {
 		Invocation: exports.Invocation
 	}

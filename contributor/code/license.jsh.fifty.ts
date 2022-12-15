@@ -31,7 +31,7 @@ namespace slime.project.license {
 				cloned.directory.getRelativePath("a.js").write("", { append: false });
 				var result = $api.fp.world.now.question(
 					jsh.shell.world.question,
-					jsh.shell.Invocation.create({
+					jsh.shell.Invocation.from.argument({
 						command: cloned.directory.getRelativePath("jsh.bash"),
 						arguments: $api.Array.build(function(rv) {
 							rv.push(cloned.directory.getRelativePath("contributor/code/license.jsh.js"));

@@ -20,7 +20,7 @@ namespace slime.jrunscript.tools.profiler.viewer {
 			fifty.tests.manual.viewer = function() {
 				$api.fp.world.now.action(
 					jsh.shell.world.action,
-					jsh.shell.Invocation.create({
+					jsh.shell.Invocation.from.argument({
 						command: jsh.shell.jsh.src.getRelativePath("jsh.bash").toString(),
 						arguments: $api.Array.build(function(rv) {
 							rv.push(jsh.shell.jsh.src.getRelativePath("jsh/tools/profile.jsh.js"));

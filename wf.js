@@ -388,7 +388,7 @@
 
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
-						jsh.shell.Invocation.create({
+						jsh.shell.Invocation.from.argument({
 							command: "docker",
 							arguments: $api.Array.build(function(rv) {
 								rv.push("compose");
@@ -410,7 +410,7 @@
 
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
-						jsh.shell.Invocation.create({
+						jsh.shell.Invocation.from.argument({
 							command: "docker",
 							arguments: $api.Array.build(function(rv) {
 								rv.push("compose");

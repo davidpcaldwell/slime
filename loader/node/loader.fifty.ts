@@ -28,7 +28,7 @@ namespace slime.node {
 			fifty.tests.suite = function() {
 				$api.fp.world.now.action(
 					jsh.shell.world.action,
-					fifty.global.jsh.shell.Invocation.create({
+					fifty.global.jsh.shell.Invocation.from.argument({
 						command: fifty.jsh.file.object.getRelativePath("test/main.bash"),
 						stdio: {
 							output: "string"

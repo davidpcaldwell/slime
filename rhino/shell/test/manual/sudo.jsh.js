@@ -14,7 +14,7 @@
 		var invocation = jsh.shell.Invocation.sudo({
 			nocache: true,
 			askpass: jsh.shell.jsh.src.getFile("rhino/shell/sudo-askpass.bash")
-		})(jsh.shell.Invocation.create({
+		})(jsh.shell.Invocation.from.argument({
 			command: "ls"
 		}));
 

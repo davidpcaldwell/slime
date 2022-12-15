@@ -107,7 +107,7 @@ namespace slime.jsh.shell {
 					jsh.shell.world.question
 				);
 				var result = f(
-					jsh.shell.Invocation.create({
+					jsh.shell.Invocation.from.argument({
 						command: jsh.shell.jsh.src.getFile("jsh.bash"),
 						arguments: [
 							jsh.shell.jsh.src.getRelativePath("rhino/shell/test/stdio-close.jsh.js")

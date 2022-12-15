@@ -30,7 +30,7 @@
 
 					$api.fp.world.now.action(
 						$context.library.shell.world.action,
-						$context.library.shell.Invocation.create({
+						$context.library.shell.Invocation.from.argument({
 							//	TODO	should not assume location and/or PATH
 							command: "curl",
 							arguments: $api.Array.build(function(rv) {

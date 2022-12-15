@@ -33,7 +33,7 @@ namespace slime.jsh.test.remote {
 			var server = library.testing.startMock(jsh);
 
 			var toInvocation = function(line: string[], input?: string) {
-				return jsh.shell.Invocation.create({
+				return jsh.shell.Invocation.from.argument({
 					command: line[0],
 					arguments: line.slice(1),
 					stdio: {
