@@ -47,6 +47,7 @@
 		$api.deprecate($exports,"stderr");
 
 		$exports.echo = Object.assign(
+			/** @type { slime.jsh.shell.Echo } */
 			function(message,mode) {
 				if (arguments.length == 0) message = "";
 				if (!mode) mode = {};

@@ -32,6 +32,8 @@ namespace slime.jsh.shell {
 
 	type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
 
+	export type Echo = (message: string, mode?: { console?: (message: string) => void, stream?: any }) => void
+
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		/**
 		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
@@ -71,10 +73,13 @@ namespace slime.jsh.shell {
 		/** @deprecated Use {@link Exports["stdio"]["error"]} */
 		stderr: Exports["stdio"]["error"]
 
-		echo: {
-			(message: any, mode?: any): void
-			String: any
+		echo: Echo & {
+			String: (message: any) => string & {
+				undefined: string
+				null: string
+			}
 		}
+
 		console: (message: string) => void
 		//	TODO	shell?
 		rhino: any
