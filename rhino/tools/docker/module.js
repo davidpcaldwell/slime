@@ -429,7 +429,7 @@
 							/** @type { slime.jrunscript.shell.invocation.Argument } */
 							var argument = {
 								command: "cp",
-								arguments: ["-R", "/Volumes/Docker/Docker.app", p.destination]
+								arguments: ["-R", "/Volumes/Docker/Docker.app", p.destination.toString()]
 							};
 							var invocation = p.library.shell.Invocation.from.argument(argument);
 							if (p.sudo) {

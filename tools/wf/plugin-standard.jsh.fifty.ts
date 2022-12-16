@@ -533,7 +533,7 @@ namespace slime.jsh.wf {
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
 						jsh.shell.Invocation.from.argument({
-							command: project.directory.getRelativePath("wf"),
+							command: project.directory.getRelativePath("wf").toString(),
 							arguments: $api.Array.build(function(rv) {
 								rv.push("commit");
 								rv.push("--message", "unchanged");
@@ -552,7 +552,7 @@ namespace slime.jsh.wf {
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
 						jsh.shell.Invocation.from.argument({
-							command: project.directory.getRelativePath("wf"),
+							command: project.directory.getRelativePath("wf").toString(),
 							arguments: $api.Array.build(function(rv) {
 								rv.push("commit");
 								rv.push("--message", "messed up tsc, hopefully");

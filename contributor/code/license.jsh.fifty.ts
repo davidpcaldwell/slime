@@ -32,9 +32,9 @@ namespace slime.project.license {
 				var result = $api.fp.world.now.question(
 					jsh.shell.world.question,
 					jsh.shell.Invocation.from.argument({
-						command: cloned.directory.getRelativePath("jsh.bash"),
+						command: cloned.directory.getRelativePath("jsh.bash").toString(),
 						arguments: $api.Array.build(function(rv) {
-							rv.push(cloned.directory.getRelativePath("contributor/code/license.jsh.js"));
+							rv.push(cloned.directory.getRelativePath("contributor/code/license.jsh.js").toString());
 							rv.push("--fix");
 						})
 					})

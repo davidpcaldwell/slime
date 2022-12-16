@@ -126,7 +126,7 @@
 		/** @type { slime.$api.fp.world.Question<slime.jsh.internal.launcher.test.ShellInvocation,slime.jsh.internal.launcher.test.ShellInvocationEvents,slime.jsh.internal.launcher.test.Result> } */
 		var shellResultQuestion = function(p) {
 			return function(events) {
-				/** @type { slime.jrunscript.shell.invocation.Token[] } */
+				/** @type { slime.jrunscript.shell.invocation.old.Token[] } */
 				var vm = [];
 				if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
 				if (!p.bash) {

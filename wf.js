@@ -392,7 +392,7 @@
 							command: "docker",
 							arguments: $api.Array.build(function(rv) {
 								rv.push("compose");
-								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml"));
+								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml").toString());
 								rv.push("build", "test");
 							})
 						}),
@@ -414,7 +414,7 @@
 							command: "docker",
 							arguments: $api.Array.build(function(rv) {
 								rv.push("compose");
-								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml"));
+								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml").toString());
 								rv.push("run", "test");
 							})
 						}),

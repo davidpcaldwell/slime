@@ -108,9 +108,9 @@ namespace slime.jsh.shell {
 				);
 				var result = f(
 					jsh.shell.Invocation.from.argument({
-						command: jsh.shell.jsh.src.getFile("jsh.bash"),
+						command: jsh.shell.jsh.src.getFile("jsh.bash").toString(),
 						arguments: [
-							jsh.shell.jsh.src.getRelativePath("rhino/shell/test/stdio-close.jsh.js")
+							jsh.shell.jsh.src.getRelativePath("rhino/shell/test/stdio-close.jsh.js").toString()
 						],
 						stdio: {
 							output: "string",

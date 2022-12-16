@@ -27,13 +27,13 @@ namespace slime.jsh.internal.launcher {
 		}
 
 		export interface ShellInvocation {
-			vmarguments?: slime.jrunscript.shell.invocation.Token[]
+			vmarguments?: slime.jrunscript.shell.invocation.old.Token[]
 			bash?: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Directory
 			logging?: string
 			properties?: { [name: string]: string }
-			shell?: slime.jrunscript.shell.invocation.Token[]
+			shell?: slime.jrunscript.shell.invocation.old.Token[]
 			script?: slime.jrunscript.file.File
-			arguments?: slime.jrunscript.shell.invocation.Token[]
+			arguments?: slime.jrunscript.shell.invocation.old.Token[]
 			environment: { [name: string]: string }
 			stdio?: slime.jrunscript.shell.invocation.old.Stdio
 			evaluate?: any
@@ -50,7 +50,7 @@ namespace slime.jsh.internal.launcher {
 
 		export interface ShellImplementation {
 			type: "unbuilt" | "built"
-			shell: slime.jrunscript.shell.invocation.Token[]
+			shell: slime.jrunscript.shell.invocation.old.Token[]
 			coffeescript: slime.jrunscript.file.File
 		}
 
