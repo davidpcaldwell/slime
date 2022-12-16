@@ -155,7 +155,7 @@
 					var toConfiguration = function(command,args) {
 						/**
 						 *
-						 * @param { slime.jrunscript.shell.invocation.Token } v
+						 * @param { slime.jrunscript.shell.invocation.old.Token } v
 						 * @returns
 						 */
 						var toErrorMessageString = function(v) {
@@ -170,7 +170,7 @@
 						 * @param { slime.jrunscript.shell.invocation.old.Argument["arguments"] } args
 						 */
 						var toErrorMessage = function(command,args) {
-							/** @type { slime.jrunscript.shell.invocation.Token[] } */
+							/** @type { slime.jrunscript.shell.invocation.old.Token[] } */
 							var full = [command];
 							if (args) full = full.concat(args);
 							return full.map(toErrorMessageString).join(" ");

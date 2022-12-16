@@ -250,8 +250,8 @@ namespace slime.jrunscript.shell {
 
 			export namespace events {
 				export interface Event {
-					command: slime.jrunscript.shell.invocation.Token
-					arguments?: slime.jrunscript.shell.invocation.Token[]
+					command: slime.jrunscript.shell.invocation.old.Token
+					arguments?: slime.jrunscript.shell.invocation.old.Token[]
 					environment?: slime.jrunscript.shell.old.Invocation["environment"]
 					directory?: slime.jrunscript.file.Directory
 				}
@@ -538,7 +538,7 @@ namespace slime.jrunscript.shell {
 			configuration: internal.run.java.Configuration
 			result: {
 				command: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
-				arguments: slime.jrunscript.shell.invocation.Token[]
+				arguments: slime.jrunscript.shell.invocation.old.Token[]
 				as: Parameters<Exports["run"]>[0]["as"]
 			}
 		}

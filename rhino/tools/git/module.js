@@ -1336,7 +1336,7 @@
 			invocation: function(p) {
 				/** @type { slime.jrunscript.shell.invocation.Argument } */
 				var rv = {
-					command: p.client.command,
+					command: p.client.command.toString(),
 					arguments: $api.Array.build(function(rv) {
 						rv.push(p.invocation.command);
 						if (p.invocation.arguments) rv.push.apply(rv, p.invocation.arguments);

@@ -28,24 +28,20 @@ namespace slime.jrunscript.shell {
 			error?: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
 		}
 
-		export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
-
 		export type Input = string | slime.jrunscript.runtime.io.InputStream
 
 		export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
 
 		export interface Argument {
-			//	TODO	limit to string, maybe Location
 			/**
 			 * The command to run.
 			 */
-			command: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
+			command: string
 
-			//	TODO	limit to string[], maybe (string | Location)[]
 			/**
 			 * The arguments to supply to the command. If not present, an empty array will be supplied.
 			 */
-			arguments?: Token[]
+			arguments?: string[]
 
 			/**
 			 * The environment to supply to the command. If `undefined`, this process's environment will be provided.
@@ -69,6 +65,8 @@ namespace slime.jrunscript.shell {
 		}
 
 		export namespace old {
+			export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
+
 			export type OutputStreamToStream = slime.jrunscript.runtime.io.OutputStream
 			export type OutputStreamToString = StringConstructor
 			export type OutputStreamToLines = { line: (line: string) => void }
@@ -91,12 +89,12 @@ namespace slime.jrunscript.shell {
 			}
 
 			/**
-			 * Type used by callers to specify {@link slime.jrunscript.shell.Invocation}s, without requiring boilerplate defaults; only the `command`
+			 * Type used by callers to specify {@link slime.jrunscript.shell.old.Invocation}s, without requiring boilerplate defaults; only the `command`
 			 * property is required.
 			 */
 			export interface Argument {
-				command: slime.jrunscript.shell.invocation.Argument["command"]
-				arguments?: slime.jrunscript.shell.invocation.Argument["arguments"]
+				command: slime.jrunscript.shell.invocation.Argument["command"] | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
+				arguments?: Token[]
 				environment?: slime.jrunscript.shell.invocation.Argument["environment"]
 				directory?: slime.jrunscript.file.Directory
 
@@ -328,7 +326,7 @@ namespace slime.jrunscript.shell.internal.invocation {
 				toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
 
 				parseCommandToken: {
-					(arg: slime.jrunscript.shell.invocation.Token, index?: number, ...args: any[]): string;
+					(arg: slime.jrunscript.shell.invocation.old.Token, index?: number, ...args: any[]): string;
 					Error: slime.$api.error.old.Type<"ArgumentError", {}>;
 				}
 

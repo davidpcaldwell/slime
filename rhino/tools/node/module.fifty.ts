@@ -158,7 +158,7 @@ namespace slime.jrunscript.node {
 					debugger;
 					var result = $api.fp.world.now.question(
 						test.subject.world.Installation.question({
-							arguments: [fifty.jsh.file.object.getRelativePath("test/hello.js")],
+							arguments: [fifty.jsh.file.object.getRelativePath("test/hello.js").toString()],
 							stdio: {
 								output: "string"
 							}

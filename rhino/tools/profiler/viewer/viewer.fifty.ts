@@ -23,9 +23,9 @@ namespace slime.jrunscript.tools.profiler.viewer {
 					jsh.shell.Invocation.from.argument({
 						command: jsh.shell.jsh.src.getRelativePath("jsh.bash").toString(),
 						arguments: $api.Array.build(function(rv) {
-							rv.push(jsh.shell.jsh.src.getRelativePath("jsh/tools/profile.jsh.js"));
-							rv.push("--profiler:output:json", jsh.shell.jsh.src.getRelativePath("local/profiler/profiles.json"));
-							rv.push(jsh.shell.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js"));
+							rv.push(jsh.shell.jsh.src.getRelativePath("jsh/tools/profile.jsh.js").toString());
+							rv.push("--profiler:output:json", jsh.shell.jsh.src.getRelativePath("local/profiler/profiles.json").toString());
+							rv.push(jsh.shell.jsh.src.getRelativePath("jsh/test/jsh-data.jsh.js").toString());
 						})
 					})
 				);

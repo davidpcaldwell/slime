@@ -18,7 +18,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.shell.invocation.Token } arg
+				 * @param { slime.jrunscript.shell.invocation.old.Token } arg
 				 * @param { number } [index]
 				 * @returns { string }
 				 */
