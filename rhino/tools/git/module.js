@@ -504,6 +504,8 @@
 				},
 				stdio: cli.stdio.Events(),
 				evaluate: function(result) {
+					var subdirectory = result.directory.getSubdirectory(result.argument.path);
+					if (!subdirectory) throw new Error("Could not find added submodule: " + result.directory + " " + result.argument.path);
 					return new LocalRepository({ directory: result.directory.getSubdirectory(result.argument.path) });
 				}
 			});

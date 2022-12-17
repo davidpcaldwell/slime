@@ -183,6 +183,7 @@ namespace slime.jrunscript.tools.git {
 				(p?: { cached?: boolean }): Submodule[]
 
 				add: (p: {
+					config?: { [name: string]: string }
 					repository: slime.jrunscript.tools.git.Repository
 					path: string
 					name?: string
@@ -695,12 +696,16 @@ namespace slime.jrunscript.tools.git {
 			var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
 			configure(library);
 			commitFile(library, "b");
+			var branch = library.status().branch;
 
 			var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
 			configure(parent);
 			commitFile(parent, "a");
 
-			var subrepository = parent.submodule.add({ repository: library, path: "path/sub", name: "sub", branch: "master" });
+			var subrepository = parent.submodule.add({ repository: library, path: "path/sub", name: "sub", branch: branch.name, config: {
+				//	See https://vielmetti.typepad.com/logbook/2022/10/git-security-fixes-lead-to-fatal-transport-file-not-allowed-error-in-ci-systems-cve-2022-39253.html
+				"protocol.file.allow": "always"
+			} });
 			configure(subrepository);
 			parent.commit({ all: true, message: "add submodule"});
 
@@ -716,7 +721,7 @@ namespace slime.jrunscript.tools.git {
 			var submodules = parent.submodule();
 			verify(submodules)[0].commit.commit.hash.is(after.commit.commit.hash);
 			verify(submodules)[0].repository.status().branch.commit.commit.hash.is(after.commit.commit.hash);
-		}
+		};
 	//@ts-ignore
 	})(fifty);
 }
