@@ -32,10 +32,15 @@ namespace slime.jsh.test.remote {
 
 			var server = library.testing.startMock(jsh);
 
-			var toInvocation = function(line: string[], input?: string) {
+			var toInvocation = function(line: string[], input?: string, environment?: { [name: string]: string }) {
+				if (!environment) environment = {};
 				return jsh.shell.Invocation.from.argument({
 					command: line[0],
 					arguments: line.slice(1),
+					environment: $api.Object.compose(
+						jsh.shell.environment,
+						environment
+					),
 					stdio: {
 						input: input,
 						output: "string",
@@ -51,7 +56,7 @@ namespace slime.jsh.test.remote {
 				$api.fp.world.mapping(jsh.shell.world.question),
 				$api.fp.impure.tap(function(t) {
 					if (t.status != 0) {
-						jsh.shell.console("Status: " + t.status);
+						jsh.shell.console("Exit status: " + t.status);
 						jsh.shell.console("stderr:");
 						jsh.shell.console(t.stdio.error);
 					}
@@ -66,22 +71,27 @@ namespace slime.jsh.test.remote {
 					mock: server,
 					branch: "local"
 				};
+
 				var download = library.testing.getDownloadJshBashCommand(
 					jsh.shell.PATH,
 					settings
 				);
-				var invoke = library.testing.getBashInvocationCommand(settings);
+				jsh.shell.console("Downloading ...");
 				jsh.shell.console(download.join(" "));
-				jsh.shell.console(invoke.join(" "));
 				var launcherBashScript = $api.fp.now.invoke(
 					toInvocation(download),
 					getOutput
 				);
-				jsh.shell.console("invoke = " + invoke);
+				jsh.shell.console("Script starts with:\n" + launcherBashScript.split("\n").slice(0,10).join("\n"));
+
+				var invoke = library.testing.getBashInvocationCommand(settings);
+				jsh.shell.console("Invoking ...");
+				jsh.shell.console(invoke.join(" "));
 				var scriptOutput = $api.fp.now.invoke(
-					toInvocation(invoke, launcherBashScript),
+					toInvocation(invoke, launcherBashScript, { JSH_LAUNCHER_BASH_DEBUG: "1" }),
 					getOutput
 				);
+
 				if (!scriptOutput) throw new Error("No script output.");
 				var output = JSON.parse(scriptOutput);
 				verify(output).evaluate.property("engines").is.type("object");

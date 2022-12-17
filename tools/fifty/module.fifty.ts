@@ -290,6 +290,8 @@ namespace slime.fifty {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.test.suite);
+
+				fifty.load("project.fifty.ts");
 			}
 		}
 	//@ts-ignore
