@@ -62,7 +62,8 @@
 					url: jsh.loader.file( jsh.web.Url.parse("http://127.0.0.1:" + server.port + "/file.js") )
 				}
 			}, void(0), 4)
-		)
+		);
+		server.stop();
 	}
 //@ts-ignore
 )(jsh);
