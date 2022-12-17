@@ -16,30 +16,35 @@
 		var jsh = $context.jsh;
 		if (!jsh) throw new TypeError("No jsh.");
 
+		var MAJOR_VERSION = 7;
+
+		//	As of 2022 Dec 15
+		var DEFAULT_VERSION = {
+			//	Tomcat 7 is EOL
+			7: "7.0.109",
+			8: "8.5.84",
+			9: "9.0.70"
+		}[MAJOR_VERSION];
+
 		var getLatestVersion = function() {
 			try {
+				//	This step would fail for Tomcat 7
 				var downloadRawHtml = new jsh.http.Client().request({
-					url: "http://tomcat.apache.org/download-70.cgi",
+					url: "http://tomcat.apache.org/download-" + MAJOR_VERSION + "0.cgi",
 					evaluate: function(result) {
 						return result.body.stream.character().asString()
 					}
 				});
-				var matcher = /\<h3 id=\"(7\..*)\"\>/;
+				var matcher = new RegExp("\<h3 id=\"(" + MAJOR_VERSION + "\..*)\"\>");
 				var match = matcher.exec(downloadRawHtml);
 				var version = match[1];
 				if (version.indexOf("\"") != -1) {
 					version = version.substring(0, version.indexOf("\""));
 				}
-				jsh.shell.console("Latest Tomcat version from tomcat.apache.org is " + version);
-				//	Work around issue manifested 2020-02-14 regarding version
-				if (version.indexOf("\"") != -1) {
-					jsh.shell.console("html = [" + downloadRawHtml + "]");
-					version = version.substring(0,version.indexOf("\""));
-				}
+				jsh.shell.console("Latest supported Tomcat version from tomcat.apache.org is " + version);
 				return version;
 			} catch (e) {
-				//	Tomcat 7 EOL; apparently last version
-				return "7.0.109";
+				return DEFAULT_VERSION;
 				// jsh.shell.console("Could not get latest Tomcat 7 version from tomcat.apache.org (offline?) ...");
 				// //	TODO	probably should implement some sort of jsh.shell.user.downloads
 				// if (jsh.shell.user.downloads) {
@@ -130,9 +135,13 @@
 					if (p_to.directory) {
 						p_to.directory.remove();
 					}
+					var sub = to.getSubdirectory("apache-tomcat-" + version);
+					if (!sub) {
+						throw new Error("No subdirectory " + "apache-tomcat-" + version + " in " + to.pathname.toString());
+					}
 					jsh.shell.run({
 						command: "mv",
-						arguments: [to.getSubdirectory("apache-tomcat-" + version).toString(), p_to.toString()]
+						arguments: [sub.toString(), p_to.toString()]
 					});
 				} else {
 					to.getSubdirectory("apache-tomcat-" + version).move(p_to, { overwrite: true });
@@ -150,15 +159,20 @@
 			return function(p) {
 				return function(events) {
 					var findApache = (p.world && p.world.findApache) ? p.world.findApache : jsh.tools.install.apache.find;
-					//	TODO	we are basically hard-coding the version while we switch to a maintained version that we can detect
-					//			at runtime
-					var version = p.version || "7.0.109";
+					var version = p.version || getLatestVersion();
+					var majorVersion = Number(version.split(".")[0]);
 					var mirror = (p.version) ? "https://archive.apache.org/dist/" : void(0);
+					//	TODO	this does not seem to fail on 404
 					var local = $api.fp.world.now.question(
 						findApache,
 						{
-							path: "tomcat/tomcat-7/v" + version + "/bin/apache-tomcat-" + version + ".zip",
+							path: "tomcat/tomcat-" + majorVersion + "/v" + version + "/bin/apache-tomcat-" + version + ".zip",
 							mirror: mirror
+						},
+						{
+							console: function(e) {
+								jsh.shell.console(e.detail);
+							}
 						}
 					);
 					basicInstall({
@@ -188,7 +202,7 @@
 						}
 					})();
 					//	TODO	we are essentially hard-coding the version until we move to a supported version
-					var version = p.version || "7.0.109";
+					var version = p.version || getLatestVersion();
 					var installed = Installation_getVersion(installation);
 					/** @type { boolean } Whether to install the provided version. */
 					var proceed;
