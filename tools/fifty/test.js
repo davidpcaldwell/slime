@@ -322,7 +322,26 @@
 			executeTestScope(
 				void(0),
 				name,
-				function() { verify(String(e) + "\n" + e.stack).is("Successfully loaded tests"); }
+				function() {
+					var error = [
+						String(e),
+						e.stack
+					];
+					if (e.javaException) {
+						error.push("Java exception:");
+						var ex = e.javaException;
+						while(ex != null) {
+							error.push(ex.getClass().getName() + ": " + ex.getMessage());
+							var _stack = ex.getStackTrace();
+							for (var i=0; i<_stack.length; i++) {
+								error.push("\t" + String(_stack[i].toString()));
+							}
+							ex = ex.getCause();
+							if (ex) error.push("");
+						}
+					}
+					verify(error.join("\n")).is("Successfully loaded tests");
+				}
 			)
 		}
 
