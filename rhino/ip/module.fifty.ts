@@ -35,6 +35,9 @@ namespace slime.jrunscript.ip {
 		}
 
 		export interface Port extends slime.jrunscript.ip.Port {
+			/**
+			 * Returns whether the port is "open" (meaning unused).
+			 */
 			isOpen(): boolean
 		}
 	}
