@@ -44,6 +44,20 @@
 			{
 				version: parameters.options.version,
 				replace: (parameters.options.replace) ? function(version) { return true; } : function(version) { return false; }
+			},
+			{
+				found: function(e) {
+					jsh.shell.console("Found: " + e.detail.version);
+				},
+				unzipping: function(e) {
+					jsh.shell.console("Unzipping: " + e.detail.local + " to " + e.detail.to);
+				},
+				installing: function(e) {
+					jsh.shell.console("Installing to: " + e.detail.to);
+				},
+				installed: function(e) {
+					jsh.shell.console("Installed: " + e.detail.version);
+				}
 			}
 		);
 	}
