@@ -6,10 +6,7 @@
 
 namespace slime.jsh {
 	export interface Global {
-		shell: slime.jsh.shell.Exports & {
-			/** @deprecated */
-			getopts: slime.jsh.Global["script"]["getopts"]
-		}
+		shell: slime.jsh.shell.Exports
 	}
 }
 

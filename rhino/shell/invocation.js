@@ -118,25 +118,6 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.old.Invocation } invocation
-		 * @returns { slime.jrunscript.shell.run.Invocation }
-		 */
-		var modernize = function(invocation) {
-			return {
-				context: {
-					environment: invocation.environment,
-					directory: invocation.directory.toString(),
-					stdio: toStdioConfiguration(updateForStringInput(invocation.stdio))
-				},
-				configuration: {
-					command: invocation.command,
-					arguments: invocation.arguments
-				}
-			}
-		}
-
-		/**
-		 *
 		 * @param { slime.jrunscript.host.Environment } environment
 		 * @param { slime.jrunscript.shell.sudo.Settings } settings
 		 * @returns { slime.jrunscript.host.Environment }

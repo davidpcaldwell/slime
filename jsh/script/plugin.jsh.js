@@ -462,8 +462,6 @@
 						}
 					}
 				};
-
-				jsh.shell.getopts = $api.deprecate(jsh.script.getopts);
 			}
 		});
 
