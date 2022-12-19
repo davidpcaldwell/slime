@@ -53,7 +53,9 @@
 			fifty.load("../rhino/http/servlet/plugin.jsh.resources.fifty.ts");
 			fifty.load("../tools/code/module.fifty.ts");
 			fifty.load("../tools/fifty/module.fifty.ts");
-			fifty.load("../tools/wf/plugin.jsh.fifty.ts");
+			//	TODO	For reasons that are baffling, merely loading this file (even though all its tests are conditionally
+			//			disabled) seems to cause issue #896
+			if (false) fifty.load("../tools/wf/plugin.jsh.fifty.ts");
 			if (hasGit && isGitClone) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
 			if (hasGit && isGitClone) fifty.load("../wf.fifty.ts");
 			//	TODO	below test is probably pointless, probably doesn't run anything. Should we find a way to short-circuit it?

@@ -8,6 +8,21 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Documentation: Show",
+			"detail": "Serves the project documentation and opens a browser to view it",
+			"type": "shell",
+			"command": "./wf documentation",
+			"problemMatcher": [],
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": true,
+				"clear": true
+			}
+		},
+		{
 			"label": "Java: Install JDK",
 			"detail": "Installs the default JDK into this shell",
 			"type": "shell",
@@ -90,27 +105,6 @@
 			}
 		},
 		{
-			"label": "Documentation: Show",
-			"detail": "Serves the project documentation and opens a browser to view it",
-			"type": "shell",
-			"command": "./wf documentation",
-			"problemMatcher": [],
-			"presentation": {
-				"echo": true,
-				"reveal": "always",
-				"focus": false,
-				"panel": "dedicated",
-				"showReuseMessage": true,
-				"clear": true
-			}
-		},
-		{
-			"label": "Project: Update MPL headers",
-			"type": "shell",
-			"command": "./jsh.bash contributor/code/license.jsh.js --fix",
-			"problemMatcher": []
-		},
-		{
 			"label": "jsh: Run Current File",
 			"type": "shell",
 			"command": "./jsh.bash ${file}",
@@ -163,6 +157,18 @@
 			"label": "Fifty: list tests",
 			"type": "shell",
 			"command": "./fifty test.jsh list ${file}",
+			"problemMatcher": []
+		},
+		{
+			"label": "Project: Update MPL headers",
+			"type": "shell",
+			"command": "./jsh.bash contributor/code/license.jsh.js --fix",
+			"problemMatcher": []
+		},
+		{
+			"label": "Project: Run tests in Docker",
+			"type": "shell",
+			"command": "./wf test",
 			"problemMatcher": []
 		}
 	],

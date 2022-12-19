@@ -344,6 +344,11 @@
 				]
 			});
 			if (logs) jsh.shell.console("Running tests with output to " + logs + " ...");
+
+			//	Inserted to try to deal with issue #896. May not be needed; TypeScript may be installed when needed anyway. But with
+			//	tsc blipping in and out of existence, it seemed prudent to try simplifying the TypeScript life cycle.
+			jsh.wf.typescript.require();
+
 			var debugging = (jsh.shell.environment.JSH_TEST_ISSUE317) ? ["-issue317"] : [];
 			var success = true;
 			var invocation = {
