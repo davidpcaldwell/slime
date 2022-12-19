@@ -118,8 +118,10 @@ public class Shell {
 			return Shell.this.classpath;
 		}
 
+		private static final String TSC_PATH = "bin/tsc";
+
 		private File getTscPath() {
-			return configuration.getInstallation().getLibraryFile("node/bin/tsc");
+			return configuration.getInstallation().getLibraryFile("node/" + TSC_PATH);
 		}
 
 		private File getNodeBinPath() {
@@ -134,7 +136,7 @@ public class Shell {
 		}
 
 		public Loader.Typescript getTypescript() throws IOException {
-			Code.Loader.Resource tsc = configuration.getInstallation().getLibraries().getFile("node/bin/tsc");
+			Code.Loader.Resource tsc = configuration.getInstallation().getLibraries().getFile("node/" + TSC_PATH);
 			if (tsc != null) {
 				return new Loader.Typescript() {
 					@Override public String compile(String code) throws IOException {
@@ -176,7 +178,7 @@ public class Shell {
 											File file = getTscPath();
 											if (file == null) throw new RuntimeException(
 												"tsc file is null, even though tsc resource was " + tsc
-												+ "\nand is " + configuration.getInstallation().getLibraries().getFile("node/bin/tsc")
+												+ "\nand is " + configuration.getInstallation().getLibraries().getFile("node/" + TSC_PATH)
 												+ "\nlibraries = " + configuration.getInstallation().getLibraries()
 											);
 											return file.getCanonicalPath();
