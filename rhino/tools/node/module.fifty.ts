@@ -387,111 +387,6 @@ namespace slime.jrunscript.node {
 	}
 }
 
-namespace slime.jsh.shell.tools {
-	export interface Managed {
-		installation: slime.jrunscript.node.world.Installation
-
-		installed: slime.jrunscript.node.object.Installation
-		require: slime.$api.fp.world.Action<void,slime.jrunscript.node.object.install.Events & {
-			removed: slime.jrunscript.node.object.Installation
-			found: slime.jrunscript.node.object.Installation
-		}>
-	}
-
-	export namespace node {
-		export interface Exports extends slime.jrunscript.node.Exports, slime.jsh.shell.tools.Managed {
-		}
-	}
-
-	export interface Exports {
-		node: node.Exports
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api, jsh } = fifty.global;
-
-			$api.fp.impure.now.process(
-				$api.fp.world.output(jsh.shell.tools.node.require)
-			)
-
-			const api = jsh.shell.tools.node.installed;
-
-			fifty.tests.jsapi = fifty.test.Parent();
-
-			fifty.tests.jsapi.a = function() {
-				var result = api.run({
-					arguments: [fifty.jsh.file.object.getRelativePath("test/hello.js")],
-					stdio: {
-						output: String
-					}
-				});
-				verify(result).stdio.output.is("Hello, World (Node.js)\n");
-			}
-
-			fifty.tests.jsapi.b = function() {
-				//	TODO	should not be messing with global installation in tests
-				if (api.modules["minimal-package"]) {
-					api.run({
-						command: "npm",
-						arguments: ["uninstall", "-g", "minimal-package"]
-					});
-					api.modules["refresh"]();
-				}
-				verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
-				var result = api.run({
-					command: "npm",
-					arguments: ["install", "-g", "minimal-package"]
-				});
-				api.modules["refresh"]();
-				verify(api).modules.installed["minimal-package"].is.type("object");
-
-				api.run({
-					command: "npm",
-					arguments: ["uninstall", "-g", "minimal-package"]
-				});
-				api.modules["refresh"]();
-				verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
-			}
-
-			fifty.tests.jsapi.c = function() {
-				if (api.modules["minimal-package"]) {
-					api.modules.uninstall({
-						name: "minimal-package"
-					});
-				}
-				verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
-				api.modules.install({
-					name: "minimal-package"
-				});
-				verify(api).modules.installed["minimal-package"].is.type("object");
-
-				api.modules.uninstall({
-					name: "minimal-package"
-				});
-				verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
-			}
-
-			fifty.tests.manual = {};
-			fifty.tests.manual.jsh = function() {
-				jsh.shell.console("hello");
-				var installation = jsh.shell.tools.node.installation;
-				var modules = $api.fp.world.now.question(
-					jsh.shell.tools.node.world.Installation.modules.list(),
-					installation
-				);
-				modules.forEach(function(module) {
-					jsh.shell.console(module.name + " " + module.version);
-				});
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-}
-
 namespace slime.jrunscript.node.internal {
 	//	TODO	this probably has a richer structure when --depth is not 0
 	export interface NpmLsOutput {
@@ -514,7 +409,6 @@ namespace slime.jrunscript.node.internal {
 				jsh.shell.console("version: " + api.version);
 				fifty.run(fifty.tests.sandbox);
 				fifty.run(fifty.tests.object.installation);
-				fifty.run(fifty.tests.jsapi);
 			}
 		}
 	//@ts-ignore

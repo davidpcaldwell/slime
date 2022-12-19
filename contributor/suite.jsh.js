@@ -41,6 +41,32 @@
 			unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 		});
 
+		jsh.java.Thread.start(
+			function addDiagnosticForTscDisappearing() {
+				/** @type { boolean } */
+				var found;
+
+				/** @type { boolean } */
+				var now;
+
+				while(true) {
+					now = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/node/bin/tsc").java.adapt().exists();
+					if (typeof(found) == "undefined") {
+						jsh.shell.console("Initial check: tsc found = " + now);
+					} else if (found && !now) {
+						jsh.shell.console("tsc change: removed");
+						jsh.shell.console("node present? " + jsh.shell.jsh.src.getRelativePath("local/jsh/lib/node").java.adapt().exists());
+					} else if (!found && now) {
+						jsh.shell.console("tsc change: added");
+					} else {
+						//jsh.shell.console("tsc still " + now);
+					}
+					found = now;
+					jsh.java.Thread.sleep(25);
+				}
+			}
+		);
+
 		// TODO: force CoffeeScript for verification?
 
 		if (!parameters.options.java.length) {
