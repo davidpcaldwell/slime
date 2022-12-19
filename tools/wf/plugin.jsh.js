@@ -1055,19 +1055,26 @@
 					}
 				});
 
-				var jsh_wf_prohibitModifiedSubmodules = $api.events.Function(function(p,events) {
-					p.repository.submodule().forEach(function(sub) {
-						var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
-						var status = submodule.status();
-						if (status.paths) {
-							throw new jsh.wf.error.Failure(
-								"Submodule " + sub.path + " " + submodule + " "
-								+ "is modified in " + p.repository
-								+ " paths=" + JSON.stringify(status.paths)
-							);
-						}
-					});
-				});
+				var jsh_wf_prohibitModifiedSubmodules = $api.events.Function(
+					/**
+					 *
+					 * @param { { repository: slime.jrunscript.tools.git.repository.Local } } p
+					 * @param {*} events
+					 */
+					function(p,events) {
+						p.repository.submodule().forEach(function(sub) {
+							var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
+							var status = submodule.status();
+							if (status.paths) {
+								throw new jsh.wf.error.Failure(
+									"Submodule " + sub.path + " " + submodule + " "
+									+ "is modified in " + p.repository
+									+ " paths=" + JSON.stringify(status.paths)
+								);
+							}
+						});
+					}
+				);
 
 				/** @type { slime.jsh.wf.Exports["Project"] } */
 				var Project = {

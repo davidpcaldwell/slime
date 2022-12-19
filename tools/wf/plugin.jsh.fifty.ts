@@ -473,25 +473,41 @@ namespace slime.jsh.wf {
 			}
 
 			fifty.tests.exports.prohibitModifiedSubmodules = function() {
+				var check = function(message) {
+					var tsc = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/node/bin/tsc");
+					jsh.shell.console(message + " tsc " + tsc + " exists: " + tsc.java.adapt().exists());
+				}
 				if (jsh.shell.PATH.getCommand("git")) {
+					check("start");
 					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
+					check("after tmpdir");
 					jsh.shell.console("directory = " + directory);
 					var parent = jsh.tools.git.init({ pathname: directory.pathname });
+					check("after init");
 					configure(parent);
+					check("after configure parent " + parent);
 					directory.getRelativePath("a").write("a", { append: false });
+					check("after file write");
 					parent.add({ path: "." });
+					check("after repository add");
 					parent.commit({ all: true, message: "message a" });
+					check("after repository commit a");
 					var subdirectory = directory.getRelativePath("sub").createDirectory();
 					var child = jsh.tools.git.init({ pathname: subdirectory.pathname });
+					check("after init child " + child);
 					configure(child);
+					check("after configure child");
 					subdirectory.getRelativePath("b").write("b", { append: false });
 					child.add({ path: "." });
 					child.commit({ all: true, message: "message b" });
+					check("after commit b child");
 					verify(parent).submodule().length.is(0);
+					check("after submodule length 0; before submodule add");
 					parent.submodule.add({
 						repository: child,
 						path: "sub"
 					});
+					check("after submodule add");
 
 					var mock = fifty.jsh.plugin.mock({
 						jsh: {
@@ -509,20 +525,30 @@ namespace slime.jsh.wf {
 							ui: {}
 						}
 					});
+					check("after plugin mock");
 					var plugin: slime.jsh.wf.Exports = mock.jsh.wf;
 
 					jsh.shell.console(Object.keys(plugin).toString());
 
-					var prohibitModifiedSubmodules = function(module) {
+					var prohibitModifiedSubmodules = function(module: Exports) {
 						return module.prohibitModifiedSubmodules({ repository: parent })
 					};
 
+					check("before first call");
 					verify(plugin).evaluate(prohibitModifiedSubmodules).threw.nothing();
+					check("after first call");
 
 					subdirectory.getRelativePath("c").write("", { append: false });
+					check("after subdirectory write");
+					//	TODO	somehow, the below call was causing tsc to be erased (?!?) and future execution of TypeScript not
+					//			to work, at least in Docker. If you trace the call below into the module, there appears to be
+					//			nothing that could possibly do this; it lists the submodules, checks the status of each, and throws
+					//			an error if any are modified. But in any case, we'll disable this test using the if(false) above
 					verify(plugin).evaluate(prohibitModifiedSubmodules).threw.type(Error);
+					check("after second call");
 
 					verify(parent).submodule().length.is(1);
+					check("after check for submodule count");
 				}
 			};
 		}

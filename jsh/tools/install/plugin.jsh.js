@@ -686,7 +686,7 @@
 
 					var location = jsh.shell.jsh.lib.getRelativePath("node");
 
-					/** @type { slime.jsh.shell.tools.Managed } */
+					/** @type { slime.jsh.shell.tools.node.Managed } */
 					var managed = {
 						installation: node.world.Installation.from.location({
 							filesystem: jsh.file.world.spi.filesystems.os,

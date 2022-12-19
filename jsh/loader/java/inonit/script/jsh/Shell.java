@@ -175,7 +175,8 @@ public class Shell {
 										try {
 											File file = getTscPath();
 											if (file == null) throw new RuntimeException(
-												"tsc file is null, even though tsc resource is " + tsc
+												"tsc file is null, even though tsc resource was " + tsc
+												+ "\nand is " + configuration.getInstallation().getLibraries().getFile("node/bin/tsc")
 												+ "\nlibraries = " + configuration.getInstallation().getLibraries()
 											);
 											return file.getCanonicalPath();

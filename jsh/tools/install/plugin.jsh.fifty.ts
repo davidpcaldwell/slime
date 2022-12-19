@@ -98,16 +98,6 @@ namespace slime.jsh.shell.tools {
 	}
 
 	export interface Exports {
-		selenium: {
-			/**
-			 * Loads the Selenium Java API if it is present; otherwise, throws an exception. If the Chrome Selenium driver is
-			 * installed into the shell, the API will be configured to use it.
-			 */
-			load: () => void
-		}
-	}
-
-	export interface Exports {
 		/**
 		 * Integration with [`js-yaml`](https://github.com/nodeca/js-yaml) v3, which provides support for the YAML serialization format.
 		 */
@@ -128,6 +118,16 @@ namespace slime.jsh.shell.tools {
 			 * Downloads `js-yaml` if it is not installed into the shell, and returns it.
 			 */
 			load: () => typeof jsyaml
+		}
+	}
+
+	export interface Exports {
+		selenium: {
+			/**
+			 * Loads the Selenium Java API if it is present; otherwise, throws an exception. If the Chrome Selenium driver is
+			 * installed into the shell, the API will be configured to use it.
+			 */
+			load: () => void
 		}
 	}
 
@@ -172,6 +172,120 @@ namespace slime.jsh.shell.tools {
 	}
 }
 
+namespace slime.jsh.shell.tools {
+	export namespace node {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.node = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Managed {
+			installation: slime.jrunscript.node.world.Installation
+
+			installed: slime.jrunscript.node.object.Installation
+			require: slime.$api.fp.world.Action<void,slime.jrunscript.node.object.install.Events & {
+				removed: slime.jrunscript.node.object.Installation
+				found: slime.jrunscript.node.object.Installation
+			}>
+		}
+
+		export interface Exports extends slime.jrunscript.node.Exports, slime.jsh.shell.tools.node.Managed {
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+
+				$api.fp.impure.now.process(
+					$api.fp.world.output(jsh.shell.tools.node.require)
+				)
+
+				const api = jsh.shell.tools.node.installed;
+
+				fifty.tests.node.jsapi = fifty.test.Parent();
+
+				fifty.tests.node.jsapi.a = function() {
+					var result = api.run({
+						arguments: [fifty.jsh.file.object.getRelativePath("../../../rhino/tools/node/test/hello.js")],
+						stdio: {
+							output: String
+						}
+					});
+					verify(result).stdio.output.is("Hello, World (Node.js)\n");
+				}
+
+				fifty.tests.node.jsapi.b = function() {
+					//	TODO	should not be messing with global installation in tests
+					if (api.modules["minimal-package"]) {
+						api.run({
+							command: "npm",
+							arguments: ["uninstall", "-g", "minimal-package"]
+						});
+						api.modules["refresh"]();
+					}
+					verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
+					var result = api.run({
+						command: "npm",
+						arguments: ["install", "-g", "minimal-package"]
+					});
+					api.modules["refresh"]();
+					verify(api).modules.installed["minimal-package"].is.type("object");
+
+					api.run({
+						command: "npm",
+						arguments: ["uninstall", "-g", "minimal-package"]
+					});
+					api.modules["refresh"]();
+					verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
+				}
+
+				fifty.tests.node.jsapi.c = function() {
+					if (api.modules["minimal-package"]) {
+						api.modules.uninstall({
+							name: "minimal-package"
+						});
+					}
+					verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
+					api.modules.install({
+						name: "minimal-package"
+					});
+					verify(api).modules.installed["minimal-package"].is.type("object");
+
+					api.modules.uninstall({
+						name: "minimal-package"
+					});
+					verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
+				}
+
+				fifty.tests.manual = {};
+				fifty.tests.manual.node = {};
+				fifty.tests.manual.node.jsh = function() {
+					var installation = jsh.shell.tools.node.installation;
+					var modules = $api.fp.world.now.question(
+						jsh.shell.tools.node.world.Installation.modules.list(),
+						installation
+					);
+					modules.forEach(function(module) {
+						jsh.shell.console(module.name + " " + module.version);
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		node: node.Exports
+	}
+}
+
 namespace slime.jsh {
 	//	TODO	the need to modify slime.jsh in this plugin, as well as jsh.shell.tools, probably means a refactor is needed
 	export interface Tools {
@@ -180,7 +294,6 @@ namespace slime.jsh {
 }
 
 namespace slime.jsh.shell.tools {
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -194,6 +307,8 @@ namespace slime.jsh.shell.tools {
 
 			fifty.tests.suite = function() {
 				fifty.load("tomcat.fifty.ts");
+
+				fifty.run(fifty.tests.node);
 			}
 		}
 	//@ts-ignore
