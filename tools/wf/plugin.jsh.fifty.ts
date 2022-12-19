@@ -356,7 +356,9 @@ namespace slime.jsh.wf {
 			var verify = fifty.verify;
 
 			fifty.tests.exports.requireGitIdentity = function() {
-				if (jsh.shell.PATH.getCommand("git")) {
+				//	TODO	disabled for now because of issue #896, tsc disappearing at runtime, to see whether this task is at
+				//			work
+				if (false && jsh.shell.PATH.getCommand("git")) {
 					fifty.run(fifty.tests.exports.requireGitIdentity.first);
 					fifty.run(fifty.tests.exports.requireGitIdentity.second);
 					fifty.run(fifty.tests.exports.requireGitIdentity.third);
@@ -477,7 +479,9 @@ namespace slime.jsh.wf {
 					var tsc = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/node/bin/tsc");
 					jsh.shell.console(message + " tsc " + tsc + " exists: " + tsc.java.adapt().exists());
 				}
-				if (jsh.shell.PATH.getCommand("git")) {
+				//	TODO	disabled for now because of issue #896, tsc disappearing at runtime, to see whether this task is at
+				//			work
+				if (false && jsh.shell.PATH.getCommand("git")) {
 					check("start");
 					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
 					check("after tmpdir");
