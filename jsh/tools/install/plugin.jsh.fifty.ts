@@ -7,6 +7,15 @@
 /// <reference path="../../../local/jsh/lib/node/lib/node_modules/@types/js-yaml/index.d.ts" />
 
 namespace slime.jsh.shell.tools {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace rhino {
 		export interface InstallCommand {
 			mock?: { lib: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.File }
@@ -137,23 +146,57 @@ namespace slime.jsh.shell.tools {
 
 	export namespace scala {
 		export interface Installation {
-			compile: (p: {
-				destination: slime.jrunscript.file.Pathname
-				deprecation: boolean
-				files: any[]
-			}) => void
-
-			run: (p: {
-				classpath: slime.jrunscript.file.Pathname
-				main: string
-			}) => void
+			base: string
 		}
+
+		export interface Exports {
+			Installation: {
+				from: {
+					jsh: slime.$api.fp.impure.Input<scala.Installation>
+				}
+
+				install: (installation: scala.Installation) => slime.$api.fp.world.Action<{ majorVersion: number }, void>
+
+				getVersion: slime.$api.fp.world.Question<scala.Installation,void,slime.$api.fp.Maybe<string>>
+
+				compile: (installation: scala.Installation) => slime.$api.fp.world.Action<{
+					destination: slime.jrunscript.file.Pathname
+					deprecation: boolean
+					files: any[]
+				},void>
+
+				run: (installation: scala.Installation) => slime.$api.fp.world.Action<{
+					deprecation: boolean
+					classpath: slime.jrunscript.file.Pathname
+					main: string
+				},void>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+				const subject = jsh.shell.tools.scala;
+
+				fifty.tests.manual.scala = {};
+
+				fifty.tests.manual.scala.getVersion = function() {
+					var managed = subject.Installation.from.jsh();
+					var version = $api.fp.world.now.question(
+						subject.Installation.getVersion,
+						managed
+					);
+					jsh.shell.console(JSON.stringify(version));
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Exports {
-		scala: {
-			installation: scala.Installation
-		}
+		scala: scala.Exports
 	}
 
 	export interface Exports {
@@ -264,7 +307,6 @@ namespace slime.jsh.shell.tools {
 					verify(api).modules.installed.evaluate.property("minimal-package").is(void(0));
 				}
 
-				fifty.tests.manual = {};
 				fifty.tests.manual.node = {};
 				fifty.tests.manual.node.jsh = function() {
 					var installation = jsh.shell.tools.node.installation;

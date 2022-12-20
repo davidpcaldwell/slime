@@ -473,64 +473,137 @@
 				} : null;
 				jsh.shell.tools.kotlin = kotlin;
 
-				var scala = (jsh.shell.jsh.lib) ? new function() {
-					var location = jsh.shell.jsh.lib.getRelativePath("scala");
-
-					this.install = function() {
-						if (location.directory) {
-							location.directory.remove();
-						}
-						jsh.tools.install.install({
-							//	UNIX only
-							url: "https://downloads.lightbend.com/scala/2.13.5/scala-2.13.5.tgz",
-							to: location
-						})
-					};
-
-					var Installation = function(o) {
-						return {
-							compile: function(p) {
-								if (p.destination) p.destination.createDirectory({
-									exists: function() {
-										return false;
+				var scala = (jsh.shell.jsh.lib) ? (
+					function() {
+						/** @type { slime.jsh.shell.tools.scala.Exports["Installation"] } */
+						var Installation = {
+							from: {
+								jsh: function() {
+									var location = jsh.shell.jsh.lib.getRelativePath("scala");
+									return {
+										base: location.os.adapt().pathname
 									}
-								});
-								return jsh.shell.run({
-									command: o.directory.getFile("bin/scalac"),
-									arguments: $api.Array.build(function(list) {
-										if (p.deprecation) list.push("-deprecation");
-										if (p.destination) list.push("-d", p.destination);
-										list.push.apply(list,p.files);
-									})
-								})
+								}
 							},
-							run: function(p) {
-								//	TODO	possibly could just use java command with location.directory.getRelativePath("lib/scala-library.jar")
-								//			in classpath
-								return jsh.shell.run({
-									command: o.directory.getFile("bin/scala"),
-									arguments: $api.Array.build(function(list) {
-										if (p.classpath) list.push("-classpath", p.classpath);
-										if (p.deprecation) list.push("-deprecation");
-										list.push(p.main);
-									})
-								});
+							install: function(installation) {
+								return function(p) {
+									return function(events) {
+										//	TODO	wo API needed
+										if (p.majorVersion == 2) {
+											jsh.tools.install.install({
+												//	UNIX only
+												url: "https://downloads.lightbend.com/scala/2.13.10/scala-2.13.10.tgz",
+												to: jsh.file.Pathname(installation.base)
+											});
+										} else if (p.majorVersion == 3) {
+											jsh.tools.install.install({
+												url: "https://github.com/lampepfl/dotty/releases/download/3.2.1/scala3-3.2.1.tar.gz",
+												to: jsh.file.Pathname(installation.base)
+											});
+										} else {
+											throw new Error("Unsupported Scala major version: " + p.majorVersion);
+										}
+									}
+								}
+							},
+							getVersion: function(installation) {
+								return function(events) {
+									return $api.fp.now.invoke(
+										installation,
+										$api.fp.property("base"),
+										jsh.file.world.Location.from.os,
+										jsh.file.world.Location.relative("bin/scala"),
+										$api.fp.switch([
+											$api.fp.Partial.match({
+												if: $api.fp.world.mapping(jsh.file.world.Location.file.exists()),
+												then: $api.fp.identity
+											})
+										]),
+										$api.fp.Maybe.map(
+											$api.fp.pipe(
+												function(program) {
+													var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames.slice());
+													PATH.pathnames.splice(0, 0, jsh.shell.java.launcher.parent.pathname);
+													jsh.shell.console("PATH = " + PATH.toString());
+													return jsh.shell.Invocation.from.argument({
+														command: program.pathname,
+														arguments: ["-version"],
+														environment: $api.Object.compose(
+															jsh.shell.environment,
+															{
+																PATH: PATH.toString()
+															}
+														),
+														stdio: {
+															output: "string",
+															error: "string"
+														}
+													})
+												},
+												$api.fp.world.mapping(jsh.shell.world.question),
+												$api.fp.property("stdio"),
+												$api.fp.property("error"),
+												function(string) {
+													var pattern = /^Scala code runner version ([\d\.]+) (?:.*)/;
+													var match = pattern.exec(string);
+													if (match === null) throw new TypeError("Could not determine Scala version from output [" + string + "]");
+													return match[1];
+												}
+											)
+										)
+									)
+									return $api.fp.Maybe.nothing();
+								}
+							},
+							compile: function(installation) {
+								var o = {
+									directory: jsh.file.Pathname(installation.base).directory
+								}
+								return function(p) {
+									return function(events) {
+										if (p.destination) p.destination.createDirectory({
+											exists: function() {
+												return false;
+											}
+										});
+										return jsh.shell.run({
+											command: o.directory.getFile("bin/scalac"),
+											arguments: $api.Array.build(function(list) {
+												if (p.deprecation) list.push("-deprecation");
+												if (p.destination) list.push("-d", p.destination);
+												list.push.apply(list,p.files);
+											})
+										})
+									}
+								}
+							},
+							run: function(installation) {
+								var o = {
+									directory: jsh.file.Pathname(installation.base).directory
+								}
+								return function(p) {
+									return function(events) {
+										//	TODO	possibly could just use java command with location.directory.getRelativePath("lib/scala-library.jar")
+										//			in classpath
+										return jsh.shell.run({
+											command: o.directory.getFile("bin/scala"),
+											arguments: $api.Array.build(function(list) {
+												if (p.classpath) list.push("-classpath", p.classpath);
+												if (p.deprecation) list.push("-deprecation");
+												list.push(p.main);
+											})
+										});
+									}
+								}
 							}
-						}
-					};
+						};
 
-					this.installation = void(0);
-					Object.defineProperty(this, "installation", {
-						get: function() {
-							if (location.directory) {
-								return Installation({
-									directory: location.directory
-								});
-							}
-							return void(0);
-						}
-					})
-				} : null;
+						return {
+							Installation: Installation
+						};
+					}
+				)() : null;
+
 				jsh.shell.tools.scala = scala;
 
 				jsh.shell.tools.jsoup = (function() {
