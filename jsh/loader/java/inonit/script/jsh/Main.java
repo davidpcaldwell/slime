@@ -250,11 +250,17 @@ public class Main {
 		abstract File getLibraryDirectory();
 
 		final File getLibraryFile(String path) {
+			//	issue #896
+			boolean issue896 = path.equals("node/bin/tsc") && System.getenv("SLIME_DEBUG_ISSUE_896") != null;
 			if (lib == null) {
+				if (issue896) System.err.println("Finding library directory ...");
 				lib = getLibraryDirectory();
+				if (issue896) System.err.println("Library directory = " + getLibraryDirectory());
 			}
 			if (lib != null) {
 				File rv = new File(lib, path);
+				if (issue896) System.err.println("java.io.File = " + rv);
+				if (issue896) System.err.println("tsc exists = " + rv.exists());
 				if (rv.exists()) return rv;
 			}
 			return null;
