@@ -81,7 +81,7 @@
 			};
 
 			this.$jsh = new function() {
-				//	Currently used by jsh.shell.getopts for Pathname
+				//	Currently used by jsh.script.getopts for Pathname
 				this.PATHNAME_SEPARATOR = system.separators.pathname;
 
 				//	Interprets an OS Pathname in this filesystem. Used, at least, for calculation of jsh.shell.PATH

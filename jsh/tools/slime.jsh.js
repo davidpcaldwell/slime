@@ -4,10 +4,15 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
 		//	TODO	Allow compilation dependencies
-		var parameters = jsh.shell.getopts({
+		var parameters = jsh.script.getopts({
 			options: {
 				from: jsh.file.Pathname,
 				to: jsh.file.Pathname,
@@ -41,4 +46,5 @@
 		} else {
 		}
 	}
-)();
+//@ts-ignore
+)(jsh);
