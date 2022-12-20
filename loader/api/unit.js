@@ -655,14 +655,17 @@
 			},
 
 			Decoder: function() {
-				this.listeners = void(0);
+				var rv = {
+					listeners: void(0),
+					decode: function(string) {
+						var json = JSON.parse(string);
+						events.fire(json.type, json.detail);
+					}
+				};
 
-				var events = $api.Events({ source: this });
+				var events = $api.Events({ source: rv });
 
-				this.decode = function(string) {
-					var json = JSON.parse(string);
-					events.fire(json.type, json.detail);
-				}
+				return rv;
 			}
 		};
 	}

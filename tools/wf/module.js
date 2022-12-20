@@ -13,6 +13,10 @@
 	 * @param { slime.loader.Export<slime.jsh.wf.internal.module.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		var input = {
+			getTypescriptVersion: $api.fp.returning("4.9.4")
+		};
+
 		var filesystem = ($context.world.filesystem) ? $context.world.filesystem : $context.library.file.world.spi.filesystems.os;
 
 		var exists = $api.fp.world.mapping($context.library.file.world.Location.file.exists());
@@ -49,7 +53,7 @@
 			base,
 			$context.library.file.world.Location.relative("tsc.version"),
 			$api.fp.world.mapping($context.library.file.world.Location.file.read.string()),
-			$api.fp.Maybe.else($api.fp.returning("4.8.4"))
+			$api.fp.Maybe.else(input.getTypescriptVersion)
 		);
 
 		var Project_getConfigurationFile = $api.fp.switch([
@@ -58,6 +62,7 @@
 		]);
 
 		$export({
+			input: input,
 			Project: {
 				getTypescriptVersion: Project_getTypescriptVersion,
 				getConfigurationLocation: function(project) {
