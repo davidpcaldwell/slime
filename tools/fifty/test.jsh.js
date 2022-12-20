@@ -26,6 +26,11 @@
 			return tsInstalled.present;
 		}
 
+		//	For debugging issue #896
+		var debug896 = function(message) {
+			if (jsh.shell.environment.SLIME_DEBUG_ISSUE_896) jsh.shell.console(message);
+		}
+
 		//	We need to use this method, which forks a new shell, because we need TypeScript in this running shell in order to load
 		//	the Fifty tests. May want to provide this as an API somewhere (currently there is one in jsh.wf, but it functions
 		//	slightly differently; a `jsh` script requiring TypeScript is very foreseeable, though). Could generalize to require a
@@ -34,11 +39,11 @@
 			satisfied: $api.fp.impure.Input.map(
 				$api.fp.impure.Input.value(void(0)),
 				$api.fp.impure.tap(function() {
-					jsh.shell.console("[fifty tsc check] Checking for TypeScript ...")
+					debug896("[fifty tsc check] Checking for TypeScript ...")
 				}),
 				isTypescriptInstalled,
 				$api.fp.impure.tap(function(installed) {
-					jsh.shell.console("[fifty tsc check] TypeScript installed? " + installed);
+					debug896("[fifty tsc check] TypeScript installed? " + installed);
 				})
 			),
 			install: function() { jsh.wf.typescript.require(); }
