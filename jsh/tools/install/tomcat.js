@@ -45,7 +45,8 @@
 						if (version.indexOf("\"") != -1) {
 							version = version.substring(0, version.indexOf("\""));
 						}
-						jsh.shell.console("Latest supported Tomcat version from tomcat.apache.org is " + version);
+						//	TODO	convert this to world oriented and fire the below as an event
+						//	jsh.shell.console("Latest supported Tomcat version from tomcat.apache.org is " + version);
 						return $api.fp.Maybe.value(version);
 					} catch (e) {
 						return $api.fp.Maybe.nothing();
