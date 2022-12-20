@@ -197,6 +197,10 @@
 							"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
 							"lib/catalina.jar"
 							,"lib/annotations-api.jar"
+							//	below added for Tomcat 8
+							,"lib/tomcat-jni.jar"
+							,"lib/tomcat-util-scan.jar"
+							,"lib/jaspic-api.jar"
 						].forEach(function(path) {
 							jsh.loader.java.add(CATALINA_HOME.getRelativePath(path));
 						});
@@ -265,7 +269,16 @@
 							}
 
 							tomcat.setBaseDir(base.toString());
-							tomcat.setPort(port);
+
+							//	In Tomcat 7, we could just do this:
+							//	tomcat.setPort(port);
+							//	HTTP was the default connector, and was created automatically.
+
+							//	In Tomcat 8, we need to add the connector explicitly, at least when HTTPS is present
+							var _http = new Packages.org.apache.catalina.connector.Connector();
+							_http.setPort(port);
+							_http.setScheme("http");
+							tomcat.getService().addConnector(_http);
 
 							var api = {
 								$api: $api,
@@ -362,7 +375,15 @@
 										}
 									}
 								));
-								context.addServletMapping(pattern,servletName);
+								if (typeof(context.addServletMapping) == "function") {
+									//	Tomcat 7
+									context.addServletMapping(pattern,servletName);
+								} else if (typeof(context.addServletMappingDecoded) == "function") {
+									//	Tomcat 9
+									context.addServletMappingDecoded(pattern,servletName,false);
+								} else {
+									throw new Error("Unable to locate API for adding servlet mapping to embedded Tomcat")
+								}
 							};
 
 							/** @type { slime.jsh.httpd.Tomcat["map"] } */
@@ -413,6 +434,8 @@
 
 							rv.stop = function() {
 								tomcat.stop();
+								//	Destroy was not needed with Tomcat 7, but is needed with 9 (unknown whether needed with 8.5)
+								tomcat.destroy();
 								started = false;
 							}
 

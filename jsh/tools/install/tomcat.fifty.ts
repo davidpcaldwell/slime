@@ -46,9 +46,11 @@ namespace slime.jsh.shell.tools {
 		}
 
 		export interface World {
-			getLatestVersion: () => string
+			getLatestVersion: slime.$api.fp.world.Question<number,void,slime.$api.fp.Maybe<string>>
 			findApache: slime.jsh.Global["tools"]["install"]["apache"]["find"]
 		}
+
+		export type Mock = Partial<World>
 
 		export namespace old {
 			export type Argument = {
@@ -68,6 +70,10 @@ namespace slime.jsh.shell.tools {
 	}
 
 	export interface Tomcat {
+		input: {
+			getDefaultMajorVersion: slime.$api.fp.impure.Input<number>
+		}
+
 		Installation: {
 			from: {
 				jsh: () => slime.jsh.shell.tools.tomcat.Installed
@@ -76,13 +82,13 @@ namespace slime.jsh.shell.tools {
 			getVersion: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.Maybe<string>
 
 			install: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Action<{
-				world?: slime.jsh.shell.tools.tomcat.World
+				world?: tomcat.Mock
 				version?: string
 			},slime.jsh.shell.tools.tomcat.installation.Events>
 
 			require: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Action<
 				{
-					world?: slime.jsh.shell.tools.tomcat.World
+					world?: tomcat.Mock
 					version?: string
 					replace?: (version: string) => boolean
 				},
@@ -96,7 +102,7 @@ namespace slime.jsh.shell.tools {
 			/** @deprecated */
 			require: (
 				argument?: {
-					world?: slime.jsh.shell.tools.tomcat.World
+					world?: tomcat.Mock
 					version?: string
 					replace?: (version: string) => boolean
 				},
@@ -121,7 +127,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 			getVersion: (releaseNotes: string) => string
 
-			getLatestVersion: slime.jsh.shell.tools.tomcat.World["getLatestVersion"]
+			getLatestVersion: (major: number) => string
 		}
 	}
 
@@ -133,10 +139,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			const { $api, jsh } = fifty.global;
 			const subject = jsh.shell.tools.tomcat as Exports;
 
-			var getVersionString = function(): string {
-				if (!this.version) return null;
-				return this.version.toString();
-			};
+			var majorVersion = subject.input.getDefaultMajorVersion();
 
 			var orNull = function<T>(maybe: slime.$api.fp.Maybe<T>): T {
 				if (maybe.present) return maybe.value;
@@ -169,13 +172,14 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 			var mock = {
 				lib: jsh.shell.TMPDIR.createTemporary({ directory: true }),
-				getLatestVersion: function() {
-					return "7.0.99";
+				getLatestVersion: function(major) {
+					return function(events) {
+						return $api.fp.Maybe.value(major + ".0.99");
+					}
 				},
 				findApache: function(o) {
-					if (o.path == "tomcat/tomcat-7/v7.0.98/bin/apache-tomcat-7.0.98.zip") return MockDistribution("7.0.98");
-					if (o.path == "tomcat/tomcat-7/v7.0.99/bin/apache-tomcat-7.0.99.zip") return MockDistribution("7.0.99");
-					if (o.path == "tomcat/tomcat-7/v7.0.109/bin/apache-tomcat-7.0.109.zip") return MockDistribution("7.0.109");
+					if (o.path == "tomcat/tomcat-9/v9.0.98/bin/apache-tomcat-9.0.98.zip") return MockDistribution("9.0.98");
+					if (o.path == "tomcat/tomcat-9/v9.0.99/bin/apache-tomcat-9.0.99.zip") return MockDistribution("9.0.99");
 					throw new Error("Mock: " + o.path);
 				}
 			};
@@ -190,9 +194,9 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			};
 
 			fifty.tests.getVersion = function() {
-				var notes = MockReleaseNotes("7.0.70");
+				var notes = MockReleaseNotes("3.4.5");
 				var version = subject.test.getVersion(notes);
-				verify(version).is("7.0.70");
+				verify(version).is("3.4.5");
 			}
 
 			fifty.tests.install = function() {
@@ -200,7 +204,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 				var events: slime.$api.Event<any>[] = [];
 				$api.fp.world.now.action(
-					jsh.shell.tools.tomcat.Installation.install(installation),
+					subject.Installation.install(installation),
 					{ world: mock },
 					new Captor(events,["unzipping","installing","installed"])
 				);
@@ -208,49 +212,52 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				verify(events)[0].type.is("unzipping");
 				verify(events)[1].type.is("installing");
 				verify(events)[2].type.is("installed");
-				verify(events)[2].detail.evaluate(function(detail): string { return detail.version; }).is("7.0.109");
+				verify(events)[2].detail.evaluate(function(detail): string { return detail.version; }).is(majorVersion + ".0.99");
 				verify(mock.lib).getSubdirectory("tomcat").getFile("a").is.type("object");
 				verify(mock.lib).getSubdirectory("tomcat").getFile("b").is.type("null");
-				var installed = jsh.shell.tools.tomcat.Installation.getVersion(installation);
+				var installed = subject.Installation.getVersion(installation);
 				var version = orNull(installed);
-				verify(version).is("7.0.109");
+				verify(version).is(majorVersion + ".0.99");
 				mock.lib.getSubdirectory("tomcat").remove();
 			}
 
 			fifty.tests.replace = function() {
+				const VERSION = majorVersion + ".0.98";
+				const LATEST = majorVersion + ".0.99";
+
 				var installation = { base: mock.lib.getRelativePath("tomcat").toString() };
 				var events = ["unzipping","installing","installed","found"];
 
 				$api.fp.world.now.action(
-					jsh.shell.tools.tomcat.Installation.install(installation),
-					{ world: mock, version: "7.0.98" }
+					subject.Installation.install(installation),
+					{ world: mock, version: VERSION }
 				);
-				var installed = jsh.shell.tools.tomcat.Installation.getVersion(installation);
-				verify(installed).evaluate(orNull).is("7.0.98");
+				var installed = subject.Installation.getVersion(installation);
+				verify(installed).evaluate(orNull).is(VERSION);
 
 				var noreplace = [];
 				$api.fp.world.now.action(
-					jsh.shell.tools.tomcat.Installation.require(installation),
+					subject.Installation.require(installation),
 					{ world: mock },
 					new Captor(noreplace,events)
 				);
-				installed = jsh.shell.tools.tomcat.Installation.getVersion(installation);
-				verify(installed).evaluate(orNull).is("7.0.98");
+				installed = subject.Installation.getVersion(installation);
+				verify(installed).evaluate(orNull).is(VERSION);
 				verify(noreplace).length.is(1);
-				verify(noreplace)[0].detail.evaluate(function(detail): string { return detail.version; }).is("7.0.98");
+				verify(noreplace)[0].detail.evaluate(function(detail): string { return detail.version; }).is(VERSION);
 
 				debugger;
 				var replace = [];
 				$api.fp.world.now.action(
-					jsh.shell.tools.tomcat.Installation.require(installation),
+					subject.Installation.require(installation),
 					{
 						world: mock,
 						replace: function(version) { return true; }
 					},
 					new Captor(replace,events)
 				)
-				installed = jsh.shell.tools.tomcat.Installation.getVersion(installation);
-				verify(installed).evaluate(orNull).is("7.0.109");
+				installed = subject.Installation.getVersion(installation);
+				verify(installed).evaluate(orNull).is(LATEST);
 				verify(replace).length.is(4);
 
 				mock.lib.getSubdirectory("tomcat").remove();
@@ -262,18 +269,18 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				fifty.run(function alreadyInstalled() {
 					var installation = { base: mock.lib.getRelativePath("tomcat").toString() };
 					$api.fp.world.now.action(
-						jsh.shell.tools.tomcat.Installation.install(installation),
+						subject.Installation.install(installation),
 						{ world: mock }
 					);
 					var events: slime.$api.Event<any>[] = [];
 					$api.fp.world.now.action(
-						jsh.shell.tools.tomcat.Installation.require(installation),
+						subject.Installation.require(installation),
 						{ world: mock },
 						new Captor(events,["unzipping","installing","installed","found"])
 					);
 					verify(events).length.is(1);
 					verify(events)[0].type.is("found");
-					verify(events)[0].detail.evaluate(function(detail): string { return detail.version; }).is("7.0.109");
+					verify(events)[0].detail.evaluate(function(detail): string { return detail.version; }).is(majorVersion + ".0.99");
 					mock.lib.getSubdirectory("tomcat").remove();
 				});
 
@@ -285,8 +292,10 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			fifty.tests.world = {};
 
 			fifty.tests.world.getLatestVersion = function() {
-				var version = subject.test.getLatestVersion();
-				fifty.global.jsh.shell.console(version);
+				[7,8,9].forEach(function(major) {
+					var version = subject.test.getLatestVersion(major);
+					fifty.global.jsh.shell.console("Latest version for " + major + " is " + JSON.stringify(version));
+				})
 			};
 
 			fifty.tests.world.getReleaseNotes = function() {
@@ -301,6 +310,14 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				} else {
 					jsh.shell.console("Release notes at " + jsh.shell.jsh.lib.getRelativePath("tomcat") + " not found.");
 				}
+			};
+
+			fifty.tests.world.getInstalledVersion = function() {
+				var installation = subject.Installation.from.jsh();
+
+				var version = subject.Installation.getVersion(installation);
+
+				jsh.shell.console(JSON.stringify(version));
 			}
 		}
 	//@ts-ignore

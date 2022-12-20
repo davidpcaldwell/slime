@@ -16,7 +16,7 @@
 		var jsh = $context.jsh;
 		if (!jsh) throw new TypeError("No jsh.");
 
-		var MAJOR_VERSION = 7;
+		var MAJOR_VERSION = 9;
 
 		//	As of 2022 Dec 15
 		var DEFAULT_VERSION = {
@@ -24,27 +24,35 @@
 			7: "7.0.109",
 			8: "8.5.84",
 			9: "9.0.70"
-		}[MAJOR_VERSION];
+		};
 
-		var getLatestVersion = function() {
-			try {
-				//	This step would fail for Tomcat 7
-				var downloadRawHtml = new jsh.http.Client().request({
-					url: "http://tomcat.apache.org/download-" + MAJOR_VERSION + "0.cgi",
-					evaluate: function(result) {
-						return result.body.stream.character().asString()
+		/** @type { slime.jsh.shell.tools.tomcat.World } */
+		var world = {
+			findApache: jsh.tools.install.apache.find,
+			getLatestVersion: function(major) {
+				return function(events) {
+					try {
+						//	This step would fail for Tomcat 7
+						var downloadRawHtml = new jsh.http.Client().request({
+							url: "http://tomcat.apache.org/download-" + major + "0.cgi",
+							evaluate: function(result) {
+								return result.body.stream.character().asString()
+							}
+						});
+						var matcher = new RegExp("\<h3 id=\"(" + major + "\..*)\"\>");
+						var match = matcher.exec(downloadRawHtml);
+						var version = match[1];
+						if (version.indexOf("\"") != -1) {
+							version = version.substring(0, version.indexOf("\""));
+						}
+						jsh.shell.console("Latest supported Tomcat version from tomcat.apache.org is " + version);
+						return $api.fp.Maybe.value(version);
+					} catch (e) {
+						return $api.fp.Maybe.nothing();
 					}
-				});
-				var matcher = new RegExp("\<h3 id=\"(" + MAJOR_VERSION + "\..*)\"\>");
-				var match = matcher.exec(downloadRawHtml);
-				var version = match[1];
-				if (version.indexOf("\"") != -1) {
-					version = version.substring(0, version.indexOf("\""));
-				}
-				jsh.shell.console("Latest supported Tomcat version from tomcat.apache.org is " + version);
-				return version;
-			} catch (e) {
-				return DEFAULT_VERSION;
+				};
+				//	Code to process the downloads directory to get insight into versions:
+				//
 				// jsh.shell.console("Could not get latest Tomcat 7 version from tomcat.apache.org (offline?) ...");
 				// //	TODO	probably should implement some sort of jsh.shell.user.downloads
 				// if (jsh.shell.user.downloads) {
@@ -80,9 +88,36 @@
 				// 		throw error;
 				// 	}
 				// }
+				// getLatestVersion.pattern = /^apache-tomcat-(\d+)\.(\d+)\.(\d+)\.zip$/;
+			}
+		};
+
+		/**
+		 *
+		 * @param { slime.jsh.shell.tools.tomcat.Mock } mock
+		 * @returns { slime.jsh.shell.tools.tomcat.World }
+		 */
+		var getWorld = function(mock) {
+			return {
+				findApache: (mock && mock.findApache) ? mock.findApache : world.findApache,
+				getLatestVersion: (mock && mock.getLatestVersion) ? mock.getLatestVersion : world.getLatestVersion
+			}
+		};
+
+		/**
+		 *
+		 * @param { slime.jsh.shell.tools.tomcat.Mock } mock
+		 * @return { (major: number) => string }
+		 */
+		var getLatestVersion = function(mock) {
+			var world = getWorld(mock);
+			var getLatest = $api.fp.world.mapping(world.getLatestVersion);
+			return function(major) {
+				var latest = getLatest(major);
+				if (latest.present) return latest.value;
+				return DEFAULT_VERSION[major];
 			}
 		}
-		getLatestVersion.pattern = /^apache-tomcat-(\d+)\.(\d+)\.(\d+)\.zip$/;
 
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["test"]["getVersion"] } */
 		var getVersion = function(releaseNotes) {
@@ -159,7 +194,7 @@
 			return function(p) {
 				return function(events) {
 					var findApache = (p.world && p.world.findApache) ? p.world.findApache : jsh.tools.install.apache.find;
-					var version = p.version || getLatestVersion();
+					var version = p.version || getLatestVersion(p.world)(MAJOR_VERSION);
 					var majorVersion = Number(version.split(".")[0]);
 					var mirror = (p.version) ? "https://archive.apache.org/dist/" : void(0);
 					//	TODO	this does not seem to fail on 404
@@ -202,7 +237,7 @@
 						}
 					})();
 					//	TODO	we are essentially hard-coding the version until we move to a supported version
-					var version = p.version || getLatestVersion();
+					var version = p.version || getLatestVersion(p.world)(MAJOR_VERSION);
 					var installed = Installation_getVersion(installation);
 					/** @type { boolean } Whether to install the provided version. */
 					var proceed;
@@ -244,6 +279,11 @@
 		};
 
 		$export({
+			input: {
+				getDefaultMajorVersion: function() {
+					return MAJOR_VERSION;
+				}
+			},
 			Installation: Installation,
 			old: {
 				require: function(argument, handler) {
@@ -273,7 +313,7 @@
 			test: {
 				getVersion: getVersion,
 				getReleaseNotes: getReleaseNotes,
-				getLatestVersion: getLatestVersion
+				getLatestVersion: getLatestVersion(void(0))
 			}
 		})
 	}
