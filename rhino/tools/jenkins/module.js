@@ -146,7 +146,7 @@
 			Server: function(o) {
 				var client = new $context.library.http.Client();
 
-				this.request = function(p) {
+				var this_request = function(p) {
 					return client.request({
 						url: o.url + p.url,
 						parameters: p.parameters,
@@ -229,7 +229,7 @@
 					}
 				}
 
-				this.Session = function(s) {
+				var Session = function(s) {
 					var c = {};
 
 					if (s && s.credentials) {
@@ -251,6 +251,11 @@
 						});
 						return rv;
 					}
+				};
+
+				return {
+					request: this_request,
+					Session: Session
 				}
 			},
 			api: {

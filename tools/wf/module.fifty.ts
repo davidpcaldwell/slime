@@ -60,6 +60,10 @@ namespace slime.jsh.wf.internal.module {
 	}
 
 	export interface Exports {
+		input: {
+			getTypescriptVersion: slime.$api.fp.impure.Input<string>
+		}
+
 		Project: {
 			getTypescriptVersion: (project: slime.jsh.wf.Project) => string
 			getConfigurationLocation: (project: slime.jsh.wf.Project) => slime.jrunscript.file.world.Location
@@ -80,7 +84,7 @@ namespace slime.jsh.wf.internal.module {
 					base: "/foo"
 				};
 				var version = subject.Project.getTypescriptVersion(project);
-				verify(version).is("4.8.4");
+				verify(version).is(subject.input.getTypescriptVersion());
 
 				test.write(spi, "/foo/tsc.version", "9.9.9");
 
