@@ -79,7 +79,7 @@
 							jsh.shell.console("Creating documentation ...");
 						},
 						setInterval: function(e) {
-							jsh.shell.console("Set interval to " + e.detail + " milliseconds.");
+							jsh.shell.console("Set interval to " + e.detail + " milliseconds at " + new Date() + ".");
 						},
 						unchanged: function(e) {
 							jsh.shell.console(
@@ -89,7 +89,7 @@
 							);
 						},
 						updating: function(e) {
-							jsh.shell.console("Updating: out=" + e.detail.out);
+							jsh.shell.console("Updating at " + new Date() + ": out=" + e.detail.out);
 						},
 						stdout: function(e) {
 							jsh.shell.console(e.detail.out + " STDOUT: " + e.detail.line);

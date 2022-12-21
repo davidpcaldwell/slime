@@ -292,20 +292,16 @@
 							}
 						})();
 
+						var start = new Date();
 						lock.wait({
-							when: (
-								function() {
-									var called = false;
-									return function() {
-										if (!called) {
-											called = true;
-											return false;
-										}
-										return true;
-									};
-								}
-							)(),
-							timeout: function() { return state.codeCheckInterval; }
+							when: function() {
+								return new Date().getTime() - start.getTime() >= state.codeCheckInterval;
+							},
+							timeout: function() {
+								var now = new Date();
+								var elapsed = now.getTime() - start.getTime();
+								return (state.codeCheckInterval > elapsed) ? state.codeCheckInterval - elapsed : 1;
+							}
 						})();
 					}
 					events.fire("destroyed");
