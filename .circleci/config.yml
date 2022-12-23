@@ -1,3 +1,9 @@
+#       LICENSE
+#       This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#       distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#       END LICENSE
+
 # Use the latest 2.1 version of CircleCI pipeline process engine.
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
@@ -19,8 +25,6 @@ jobs:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     parameters:
-      platforms: 
-        type: string
       machine-type:
         type: executor
     executor: << parameters.machine-type >>
@@ -43,10 +47,8 @@ workflows:
     jobs:
       - test-jdk11:
           name: test-jdk11-amd64
-          platforms: linux/amd64
           machine-type: ubuntu2004amd64
       - test-jdk11:
           name: test-jdk11-arm64
-          platforms: linux/arm64
           machine-type: ubuntu2004arm64
 
