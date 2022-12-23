@@ -67,50 +67,54 @@ namespace slime.jsh.shell.tools {
 
 			export type Handler = slime.$api.event.Handlers<tomcat.install.Events>
 		}
-	}
 
-	export interface Tomcat {
-		input: {
-			getDefaultMajorVersion: slime.$api.fp.impure.Input<number>
-		}
-
-		Installation: {
-			from: {
-				jsh: () => slime.jsh.shell.tools.tomcat.Installed
+		export interface Exports {
+			input: {
+				getDefaultMajorVersion: slime.$api.fp.impure.Input<number>
 			}
 
-			getVersion: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.Maybe<string>
-
-			install: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Action<{
-				world?: tomcat.Mock
-				version?: string
-			},slime.jsh.shell.tools.tomcat.installation.Events>
-
-			require: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Action<
-				{
-					world?: tomcat.Mock
-					version?: string
-					replace?: (version: string) => boolean
-				},
-				slime.jsh.shell.tools.tomcat.installation.Events & {
-					found: { version: string }
+			Installation: {
+				from: {
+					jsh: () => slime.jsh.shell.tools.tomcat.Installed
 				}
-			>
-		}
 
-		old: {
-			/** @deprecated */
-			require: (
-				argument?: {
+				getVersion: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.Maybe<string>
+
+				install: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Action<{
 					world?: tomcat.Mock
 					version?: string
-					replace?: (version: string) => boolean
-				},
-				handler?: slime.$api.event.Handlers<{
-					console: string
-				}>
-			) => void
+				},slime.jsh.shell.tools.tomcat.installation.Events>
+
+				require: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Action<
+					{
+						world?: tomcat.Mock
+						version?: string
+						replace?: (version: string) => boolean
+					},
+					slime.jsh.shell.tools.tomcat.installation.Events & {
+						found: { version: string }
+					}
+				>
+			}
+
+			old: {
+				/** @deprecated */
+				require: (
+					argument?: {
+						world?: tomcat.Mock
+						version?: string
+						replace?: (version: string) => boolean
+					},
+					handler?: slime.$api.event.Handlers<{
+						console: string
+					}>
+				) => void
+			}
 		}
+	}
+
+	export interface Exports {
+		tomcat: slime.jsh.shell.tools.tomcat.Exports
 	}
 }
 
@@ -120,7 +124,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 		jsh: slime.jsh.Global
 	}
 
-	export interface Exports extends slime.jsh.shell.tools.Tomcat {
+	export interface Exports extends slime.jsh.shell.tools.tomcat.Exports {
 		test: {
 			//	TODO	world test coverage only
 			getReleaseNotes: slime.$api.fp.world.Question<slime.jsh.shell.tools.tomcat.Installed,void,slime.$api.fp.Maybe<string>>

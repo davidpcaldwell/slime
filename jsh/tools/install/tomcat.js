@@ -237,7 +237,6 @@
 							return false;
 						}
 					})();
-					//	TODO	we are essentially hard-coding the version until we move to a supported version
 					var version = p.version || getLatestVersion(p.world)(MAJOR_VERSION);
 					var installed = Installation_getVersion(installation);
 					/** @type { boolean } Whether to install the provided version. */

@@ -64,10 +64,6 @@ namespace slime.jsh.shell.tools {
 		graal: any
 	}
 
-	export interface Exports {
-		tomcat: slime.jsh.shell.tools.Tomcat
-	}
-
 	export namespace mkcert {
 		export interface Installation {
 			/**
@@ -336,6 +332,54 @@ namespace slime.jsh {
 }
 
 namespace slime.jsh.shell.tools {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			var slime: slime.$api.fp.impure.Input<slime.jrunscript.file.world.Location> = $api.fp.returning(fifty.jsh.file.relative("../../.."));
+
+			fifty.tests.manual.initial = function() {
+				jsh.shell.console("slime = " + slime().pathname);
+				var jdks = fifty.jsh.file.temporary.directory();
+				var lib = fifty.jsh.file.temporary.directory();
+				var invocation = jsh.shell.Invocation.from.argument({
+					command: "bash",
+					arguments: $api.Array.build(function(rv) {
+						rv.push($api.fp.now.invoke(slime(), jsh.file.world.Location.relative("jsh.bash")).pathname);
+						rv.push($api.fp.now.invoke(slime(), jsh.file.world.Location.relative("jsh/test/jsh-data.jsh.js")).pathname);
+					}),
+					environment: $api.Object.compose(
+						jsh.shell.environment,
+						{
+							JSH_LOCAL_JDKS: jdks.pathname,
+							JSH_USER_JDKS: "/dev/null",
+							JSH_SHELL_LIB: lib.pathname
+						}
+					),
+					stdio: {
+						output: "line",
+						error: "line"
+					}
+				});
+				$api.fp.world.now.action(
+					jsh.shell.world.action,
+					invocation,
+					{
+						stdout: function(e) {
+							jsh.shell.console("STDOUT: " + e.detail.line);
+						},
+						stderr: function(e) {
+							jsh.shell.console("STDERR: " + e.detail.line);
+						}
+					}
+				);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit

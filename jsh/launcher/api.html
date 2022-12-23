@@ -80,7 +80,8 @@ END LICENSE
 	<script>
 		window.addEventListener('load', function() {
 			var settings = document.getElementById("settings");
-			Array.prototype.slice.call(settings.tBodies[0].rows).slice(2).forEach(function(row) {
+			//	TODO	should calculate when there are only two columns and use that
+			Array.prototype.slice.call(settings.tBodies[0].rows).slice(4).forEach(function(row) {
 				var propertyElement = row.cells[0].getElementsByTagName("code")[0];
 				propertyElement.className = "name";
 				var cell = document.createElement("td");
@@ -245,6 +246,22 @@ END LICENSE
 					<td><code>JSH_LAUNCHER_JDK_HOME</code></td>
 					<td>
 						Specifies a Java Development Kit that <code>jsh.bash</code> should use to execute scripts.
+					</td>
+				</tr>
+				<tr>
+					<td>(none)</td>
+					<td><code>JSH_LOCAL_JDKS</code></td>
+					<td>
+						Specifies the directory in which the shell should look for shell-local JDKs. Defaults to
+						<code>${SLIME}/local/jdk</code>.
+					</td>
+				</tr>
+				<tr>
+					<td>(none)</td>
+					<td><code>JSH_USER_JDKS</code></td>
+					<td>
+						Specifies the directory in which the shell should look for shell-local JDKs. Defaults to
+						<code>${HOME}/.slime/jdk</code>.
 					</td>
 				</tr>
 				<tr>
