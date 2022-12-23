@@ -16,7 +16,12 @@ namespace slime.jsh.shell {
 			exit: any
 			stdio: any
 			_getSystemProperties: () => slime.jrunscript.native.java.util.Properties
+
+			/**
+			 * Provides access to the shell's subshell implementation, allowing a new shell to be invoked within the same process.
+			 */
 			jsh: any
+
 			api: {
 				js: any
 				java: slime.jrunscript.host.Exports
@@ -93,6 +98,7 @@ namespace slime.jsh.shell {
 				directory?: any
 				workingDirectory?: any
 				properties?: { [x: string]: string }
+				on?: slime.jrunscript.shell.run.old.Argument["on"]
 			}): any
 			src?: slime.jrunscript.file.Directory
 			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.event.Function.Receiver ) => void

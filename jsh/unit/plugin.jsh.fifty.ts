@@ -22,7 +22,16 @@ namespace slime.jsh.unit {
 
 	export interface Exports {
 		mock: slime.jsh.unit.mock;
-		html: any
+		html: {
+			Part: any
+			cli: any
+			Suite: any
+		}
+		/** @deprecated */
+		part: {
+			/** @deprecated Replaced by `html.Part` */
+			Html: any
+		}
 		Suite: any
 		interface: any
 		$slime: slime.jsh.plugin.$slime
