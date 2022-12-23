@@ -2,25 +2,51 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
+executors:
+  ubuntu2004arm64:
+    machine:
+      image: ubuntu-2004:current
+    resource_class: arm-medium
+  ubuntu2004amd64:
+    machine:
+      image: ubuntu-2004:current
+    resource_class: medium
+
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  say-hello:
+  test-jdk11:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    docker:
-      - image: cimg/base:stable
+    parameters:
+      platforms: 
+        type: string
+      machine-type:
+        type: executor
+    executor: << parameters.machine-type >>
+    
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: "Build the Docker image"
+          command: "docker compose -f contributor/docker-compose.yaml build test11"
+      - run:
+          name: "Run the linting and tests"
+          command: "docker compose -f contributor/docker-compose.yaml run test11"
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  test-jdk11-workflow:
     jobs:
-      - say-hello
+      - test-jdk11:
+          name: test-jdk11-amd64
+          platforms: linux/amd64
+          machine-type: ubuntu2004amd64
+      - test-jdk11:
+          name: test-jdk11-arm64
+          platforms: linux/arm64
+          machine-type: ubuntu2004arm64
+
