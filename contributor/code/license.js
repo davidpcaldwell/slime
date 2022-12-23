@@ -277,6 +277,7 @@
 		this.bashrc = new Line("#");
 		this.kts = cplusplus;
 		this.yaml = new Line("#");
+		this.yml = new Line("#");
 
 		this.bash = new Line("#");
 	}
