@@ -341,6 +341,7 @@ namespace slime.jsh.shell.tools {
 			var slime: slime.$api.fp.impure.Input<slime.jrunscript.file.world.Location> = $api.fp.returning(fifty.jsh.file.relative("../../.."));
 
 			fifty.tests.manual.initial = function() {
+				//	TODO	more modular version of invocation is in tomcat.fifty.ts currently
 				jsh.shell.console("slime = " + slime().pathname);
 				var jdks = fifty.jsh.file.temporary.directory();
 				var lib = fifty.jsh.file.temporary.directory();

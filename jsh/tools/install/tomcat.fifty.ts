@@ -267,6 +267,77 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				mock.lib.getSubdirectory("tomcat").remove();
 			};
 
+			var jshInvocation = function(p: {
+				shell: {
+					jdks: slime.jrunscript.file.world.Location
+					lib: slime.jrunscript.file.world.Location
+				}
+				script: slime.jrunscript.file.world.Location
+			}): slime.jrunscript.shell.run.Invocation {
+				var invocation = jsh.shell.Invocation.from.argument({
+					command: "bash",
+					arguments: $api.Array.build(function(rv) {
+						rv.push(fifty.jsh.file.relative("../../../jsh.bash").pathname);
+						rv.push(p.script.pathname);
+					}),
+					environment: $api.Object.compose(
+						jsh.shell.environment,
+						{
+							JSH_LOCAL_JDKS: p.shell.jdks.pathname,
+							JSH_USER_JDKS: "/dev/null",
+							JSH_SHELL_LIB: p.shell.lib.pathname
+						}
+					),
+					stdio: {
+						output: "line",
+						error: "line"
+					}
+				});
+				return invocation;
+			}
+
+			fifty.tests.addToShellAtRuntime = function() {
+				//	TODO	we use local JDK downloads when available, but do not seem to say so in the output of jsh.bash
+				var shell = {
+					jdks: fifty.jsh.file.temporary.directory(),
+					lib: fifty.jsh.file.temporary.directory()
+				};
+
+				var getInvocation = function(script) {
+					return jshInvocation({
+						shell: shell,
+						script: script
+					})
+				}
+
+				var invokeTomcatRequire = getInvocation(fifty.jsh.file.relative("test/require-tomcat.jsh.js"));
+
+				var getCommandResult = $api.fp.world.mapping(
+					jsh.shell.world.question,
+					{
+						stdout: function(e) {
+							jsh.shell.console("STDOUT: " + e.detail.line);
+						},
+						stderr: function(e) {
+							jsh.shell.console("STDERR: " + e.detail.line);
+						}
+					}
+				);
+
+				jsh.shell.console("Invoking ./test/require-tomcat.jsh.js ...");
+
+				var result = $api.fp.now.invoke(
+					invokeTomcatRequire,
+					getCommandResult,
+					$api.fp.property("stdio"),
+					$api.fp.property("output"),
+					JSON.parse
+				);
+
+				verify(result).before.is(false);
+				verify(result).after.is(true);
+			}
+
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.getVersion);
 
@@ -291,6 +362,8 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				fifty.run(fifty.tests.install);
 
 				fifty.run(fifty.tests.replace);
+
+				fifty.run(fifty.tests.addToShellAtRuntime);
 			};
 
 			fifty.tests.world = {};
