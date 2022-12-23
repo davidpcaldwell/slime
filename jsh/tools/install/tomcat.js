@@ -10,9 +10,10 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.shell.tools.internal.tomcat.Context } $context
+	 * @param { slime.old.Loader } $loader
 	 * @param { slime.loader.Export<slime.jsh.shell.tools.internal.tomcat.Exports> } $export
 	 */
-	function($api,$context,$export) {
+	function($api,$context,$loader,$export) {
 		var jsh = $context.jsh;
 		if (!jsh) throw new TypeError("No jsh.");
 
@@ -259,6 +260,11 @@
 					}
 					if (proceed) {
 						newInstall(installation)({ world: p.world, version: version })(events);
+						if (installation.base == Installation.from.jsh().base) {
+							//	TODO	refactor so instead of reloading plugin, plugin exposes a method allowing it to be reloaded
+							//	TODO	probably don't need to do this if it was already installed
+							jsh.loader.plugins($loader.Child("../../../rhino/http/servlet/"));
+						}
 					}
 				}
 			}
@@ -318,4 +324,4 @@
 		})
 	}
 //@ts-ignore
-)($api,$context,$export);
+)($api,$context,$loader,$export);
