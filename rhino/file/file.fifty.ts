@@ -65,6 +65,9 @@ namespace slime.jrunscript.file {
 		 */
 		readonly parent: Pathname
 
+		/**
+		 * Opens a file located at the location of this `Pathname` for writing, possibly writing data to it.
+		 */
 		write: slime.jrunscript.runtime.old.Resource["write"]
 
 		/**
