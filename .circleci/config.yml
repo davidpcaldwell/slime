@@ -10,11 +10,11 @@ executors:
   ubuntu2004arm64:
     machine:
       image: ubuntu-2004:current
-    resource_class: arm-medium
+    resource_class: arm-large
   ubuntu2004amd64:
     machine:
       image: ubuntu-2004:current
-    resource_class: medium
+    resource_class: large
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
