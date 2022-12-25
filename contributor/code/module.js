@@ -66,6 +66,7 @@
 						if (/\.prefs$/.test(entry.path)) return true;
 						if (/\.py$/.test(entry.path)) return true;
 						if (/\.yaml$/.test(entry.path)) return true;
+						if (/\.yml$/.test(entry.path)) return true;
 
 						if (entry.path == ".hgsub") return true;
 						if (entry.path == ".hgignore") return true;
