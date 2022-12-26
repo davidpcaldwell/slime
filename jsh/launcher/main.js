@@ -131,11 +131,15 @@
 		$api.debug("shell detected = " + shell);
 
 		if (!new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+			$api.debug("Nashorn not detected via javax.script; removing.");
 			delete $api.jsh.engines.nashorn;
 		}
 		if ($api.jsh.engines.nashorn) {
 			var Context = Java.type("jdk.nashorn.internal.runtime.Context");
-			if (typeof(Context.getContext) != "function") delete $api.jsh.engines.nashorn;
+			if (typeof(Context.getContext) != "function") {
+				$api.debug("jdk.nashorn.internal.runtime.Context.getContext not accessible as function; removing Nashorn.")
+				delete $api.jsh.engines.nashorn;
+			}
 		}
 
 		// TODO: delete Graal if it is not available
@@ -331,7 +335,7 @@
 		var classpath = new $api.jsh.Classpath(_urls);
 
 		var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
-		if (!engine) throw new Error("Specified engine not found: " + $api.slime.settings.get("jsh.engine")
+		if (!engine) throw new Error("Specified engine [" + $api.slime.settings.get("jsh.engine") + "]" + " not found;"
 			+ " JSH_ENGINE=" + $api.shell.environment.JSH_ENGINE
 			+ " jsh.engine=" + Packages.java.lang.System.getProperty("jsh.engine")
 			+ " shell=" + shell
