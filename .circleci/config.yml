@@ -26,7 +26,7 @@ jobs:
       machine-type:
         type: executor
     executor: << parameters.machine-type >>
-    
+
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
@@ -49,4 +49,3 @@ workflows:
       - test-jdk11:
           name: test-jdk11-arm64
           machine-type: ubuntu2004arm64
-

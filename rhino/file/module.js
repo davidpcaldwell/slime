@@ -281,7 +281,6 @@
 				return getFile(path);
 			}
 			a.list = function(path) {
-				debugger;
 				if (!p.directory) return [];
 				//	Validate path
 				if (path) {
