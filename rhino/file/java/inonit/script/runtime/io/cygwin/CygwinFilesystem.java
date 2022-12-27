@@ -9,8 +9,6 @@ package inonit.script.runtime.io.cygwin;
 import java.io.*;
 import java.util.*;
 
-import java.lang.reflect.*;
-
 import inonit.script.runtime.io.*;
 import inonit.system.*;
 import inonit.system.cygwin.*;
@@ -37,7 +35,6 @@ public class CygwinFilesystem extends Filesystem {
 	}
 
 	private Implementation paths;
-	private Commands commands;
 
 	private CygwinFilesystem() {
 	}
@@ -261,7 +258,7 @@ public class CygwinFilesystem extends Filesystem {
 					return new File(System.getProperty("user.dir"));
 				}
 
-				public Map getSubprocessEnvironment() {
+				public Map<String,String> getSubprocessEnvironment() {
 					Map<String,String> toUse = new HashMap<String,String>();
 
 					//	TODO	do we really have to copy the environment? The PATH below should be sufficient, maybe ...

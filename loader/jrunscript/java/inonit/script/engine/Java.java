@@ -339,9 +339,6 @@ public class Java {
 				throw new UnsupportedOperationException("Not supported yet: isSupportedOption(" + option + ")"); //To change body of generated methods, choose Tools | Templates.
 			}
 
-			//	Below added for JDK 11 ... implementation may be nonsensical, just overrides method that throws UnxupportedOperationException
-			private final Iterable<Set<JavaFileManager.Location>> EMPTY_LOCATIONS_FOR_MODULES = new ArrayList<Set<JavaFileManager.Location>>();
-
 			private Iterable<Set<JavaFileManager.Location>> getDefaultListLocationsForModules(JavaFileManager.Location location) {
 				try {
 					java.lang.reflect.Method method = delegate.getClass().getMethod("listLocationsForModules", new Class[] { JavaFileManager.Location.class });
