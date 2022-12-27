@@ -1247,7 +1247,7 @@
 			var _url = new Packages.java.net.URL(source.url);
 			Packages.java.lang.System.err.println("Downloading Rhino from " + _url);
 			var _connection = _url.openConnection();
-			$api.console("Rhino download: opened connection " + _connection);
+			$api.debug("Rhino download: opened connection " + _connection);
 			if (source.format == "dist") {
 				var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
 				var _entry;
@@ -1262,8 +1262,8 @@
 				Packages.java.lang.System.err.println("Downloaded Rhino to " + tmprhino);
 				return tmprhino;
 			} else if (source.format == "jar") {
-				$api.console("Rhino download: getting response code ...");
-				$api.console("Rhino download status: " + _connection.getResponseCode());
+				$api.debug("Rhino download: getting response code ...");
+				$api.debug("Rhino download status: " + _connection.getResponseCode());
 				$api.io.copy(_connection.getInputStream(), new Packages.java.io.FileOutputStream(tmprhino));
 				return tmprhino;
 			} else {
