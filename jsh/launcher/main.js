@@ -136,8 +136,14 @@
 		}
 		if ($api.jsh.engines.nashorn) {
 			var Context = Java.type("jdk.nashorn.internal.runtime.Context");
-			if (typeof(Context.getContext) != "function") {
-				$api.debug("jdk.nashorn.internal.runtime.Context.getContext not accessible as function; removing Nashorn.")
+			var $getContext;
+			try {
+				$getContext = Context.class.getMethod("getContext");
+			} catch (e) {
+				//	do nothing; $getContext will remain undefined
+			}
+			if (typeof(Context.getContext) != "function" && !$getContext) {
+				$api.debug("jdk.nashorn.internal.runtime.Context.getContext not accessible; removing Nashorn.")
 				delete $api.jsh.engines.nashorn;
 			}
 		}
@@ -229,6 +235,9 @@
 			command.vm("java.base/sun.net.www.protocol.https=ALL-UNNAMED");
 			command.vm("--add-opens");
 			command.vm("jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED");
+
+			command.vm("--add-opens");
+			command.vm("jdk.scripting.nashorn/jdk.nashorn.internal.runtime=ALL-UNNAMED");
 		}
 
 		(

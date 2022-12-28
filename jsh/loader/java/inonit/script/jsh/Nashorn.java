@@ -51,6 +51,85 @@ public class Nashorn extends Shell.Engine {
 		}
 	}
 
+	public static class HostImpl extends Host {
+		private Loader.Classes classes;
+		private boolean top;
+		private Class Context;
+
+		private HostImpl(Loader.Classes classes, boolean top) {
+			this.classes = classes;
+			this.top = top;
+			try {
+				this.Context = Class.forName("jdk.nashorn.internal.runtime.Context");
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override public Loader.Classes.Interface getClasspath() {
+			return classes.getInterface();
+		}
+
+		@Override public boolean isTop() {
+			return top;
+		}
+
+		@Override public void exit(int status) {
+			throw new ExitException(status);
+		}
+
+		private Object getContext() {
+			try {
+				return Context.getMethod("getContext").invoke(null);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		private Object unwrap(Object context, Object mirror) {
+			try {
+				Class Context = context.getClass();
+				java.lang.reflect.Method getGlobal = Context.getMethod("getGlobal");
+				Class ScriptObjectMirror = Class.forName("jdk.nashorn.api.scripting.ScriptObjectMirror");
+				java.lang.reflect.Method unwrap = ScriptObjectMirror.getMethod("unwrap", Object.class, Object.class);
+				Object global = getGlobal.invoke(context);
+				Object unwrapped = unwrap.invoke(null, mirror, global);
+				return unwrapped;
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		public Object compileScript(Object context, Object source, Object scope) {
+			java.lang.reflect.Method method = null;
+			try {
+				Class Source = Class.forName("jdk.nashorn.internal.runtime.Source");
+				Class ScriptObject = Class.forName("jdk.nashorn.internal.runtime.ScriptObject");
+				method = context.getClass().getMethod("compileScript", Source, ScriptObject);
+				try {
+					return method.invoke(context, source, unwrap(context, scope));
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		public Object apply(Object compiled, Object target) {
+			try {
+				Class ScriptFunction = Class.forName("jdk.nashorn.internal.runtime.ScriptFunction");
+				Class ScriptRuntime = Class.forName("jdk.nashorn.internal.runtime.ScriptRuntime");
+				java.lang.reflect.Method apply = ScriptRuntime.getMethod("apply", ScriptFunction, Object.class, Object[].class);
+				//System.err.println("compiled = " + compiled);
+				Object context = getContext();
+				return apply.invoke(null, unwrap(context, compiled), unwrap(context, target), new Object[0]);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
 	private static class ExecutionImpl extends Shell.Execution {
 		private Loader.Classes classes;
 		private boolean top;
@@ -70,19 +149,7 @@ public class Nashorn extends Shell.Engine {
 		@Override public void setJshRuntimeObject(inonit.script.engine.Host.Program program) {
 			program.bind(
 				"$nashorn",
-				new Host() {
-					@Override public Loader.Classes.Interface getClasspath() {
-						return classes.getInterface();
-					}
-
-					@Override public boolean isTop() {
-						return top;
-					}
-
-					@Override public void exit(int status) {
-						throw new ExitException(status);
-					}
-				}
+				new HostImpl(this.classes, this.top)
 			);
 
 			program.run(this.getJshLoaderFile("nashorn.js"));
