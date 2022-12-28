@@ -23,7 +23,7 @@ $jsh.setRuntime((function() {
 			Packages: Packages,
 			load: load,
 			$loader: $jsh.getLoader(),
-			$classpath: $nashorn.getClasspath()
+			$nashorn: $nashorn
 		},
 		null
 	);

@@ -42,24 +42,29 @@
 		var allowMethods = function() {
 			var methodsField = $context.api.java.toNativeClass(Packages.java.net.HttpURLConnection).getDeclaredField("methods");
 
-			var modifiersField = $context.api.java.toNativeClass(Packages.java.lang.reflect.Field).getDeclaredField("modifiers");
-			modifiersField.setAccessible(true);
-			modifiersField.setInt(methodsField, methodsField.getModifiers() & ~Packages.java.lang.reflect.Modifier.FINAL);
+			try {
+				var modifiersField = $context.api.java.toNativeClass(Packages.java.lang.reflect.Field).getDeclaredField("modifiers");
+				modifiersField.setAccessible(true);
+				modifiersField.setInt(methodsField, methodsField.getModifiers() & ~Packages.java.lang.reflect.Modifier.FINAL);
 
-			methodsField.setAccessible(true);
+				methodsField.setAccessible(true);
 
-			var oldMethods = $context.api.java.Array.adapt(methodsField.get(null));
-			var newMethods = oldMethods.concat(Array.prototype.slice.call(arguments));
+				var oldMethods = $context.api.java.Array.adapt(methodsField.get(null));
+				var newMethods = oldMethods.concat(Array.prototype.slice.call(arguments));
 
-			var array = newMethods.map(function(s) { return new Packages.java.lang.String(s); });
+				var array = newMethods.map(function(s) { return new Packages.java.lang.String(s); });
 
-			methodsField.set(
-				null,
-				$context.api.java.Array.create({
-					type: Packages.java.lang.String,
-					array: array
-				})
-			);
+				methodsField.set(
+					null,
+					$context.api.java.Array.create({
+						type: Packages.java.lang.String,
+						array: array
+					})
+				);
+			} catch (e) {
+				//	TODO	will be reached in JDK 11 (Nashorn only?) as JPMS prohibits access to Field.modifiers for now
+				//	TODO	thus, PATCH will not be allowed under JDK 11. See issue #915.
+			}
 		};
 
 		allowMethods("PATCH");
