@@ -360,6 +360,23 @@ namespace slime.jsh.script {
 			export type TargetNotFunction = $api.error.old.Instance<"TargetNotFunction", { command: string, target: any }>
 		}
 
+		/**
+		 * @experimental
+		 *
+		 * Currently, a value of this type is provided to the top-level `jsh` script's scope as `main`.
+		 */
+		export type main = (program: Program) => void
+
+		export interface Exports {
+			/**
+			 * Invoking this function allows the declaration of a main function for this script of type {@link Program}, which can
+			 * be created using functional techniques.
+			 */
+			main: main
+
+			listener: (callback: main) => void
+		}
+
 		export interface Exports {
 			error: {
 				//	TODO	switch to new APIs
@@ -399,14 +416,6 @@ namespace slime.jsh.script {
 		}
 
 		export type Program = (invocation: slime.jsh.script.cli.Invocation<{}>) => number | void
-
-		/**
-		 * @experimental
-		 *
-		 * A value of this type is provided to the top-level `jsh` script's scope as `main`. It can be used to essentially declare
-		 * a main function of type {@link Program}, which can be created using functional techniques.
-		 */
-		export type main = (program: Program) => void
 
 		export interface Exports {
 			program: <T>(p: {

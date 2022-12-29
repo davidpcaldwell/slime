@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.tools.snippets {
-	interface Language {
+	export interface Language {
 		json: Snippet[]
 		vscode: vscode.Snippet[]
 	}

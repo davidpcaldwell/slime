@@ -18,7 +18,8 @@
 			/** @type { (status: number) => never } */
 			exit: void(0),
 			/** @type { string[] } */
-			arguments: void(0)
+			arguments: void(0),
+			deprecate: void(0)
 		};
 
 		global.jsh = new function() {
@@ -158,6 +159,8 @@
 					debugger;
 				};
 			})();
+
+			internal.deprecate = $slime.$api.deprecate;
 
 			var plugins = (
 				function(jsh) {
@@ -448,6 +451,12 @@
 		/** @type { slime.jsh.script.cli.Program } */
 		var main;
 
+		global.jsh.script.cli.listener(
+			function(defined) {
+				main = defined;
+			}
+		);
+
 		global.jsh.loader.run(
 			{
 				name: $jsh.getInvocation().getScript().getSource().getSourceName(),
@@ -462,9 +471,9 @@
 				})()
 			},
 			Object.assign({}, this, {
-				main: function(supplied) {
-					main = supplied;
-				}
+				main: internal.deprecate(function(supplied) {
+					global.jsh.script.cli.main(supplied);
+				})
 			}),
 			this
 		);
