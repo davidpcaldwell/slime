@@ -16,10 +16,27 @@ namespace slime.jrunscript.file.internal.java {
 	 */
 	type Peer = slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node
 
+	/**
+	 * A filesystem implementation from which files may be read and listed and to which files may be written.
+	 */
 	export interface FilesystemProvider {
 		separators: {
+			/**
+			 * The string used to separate components of a path name in this filesystem; for example, `/` in Unix-like operating
+			 * systems.
+			 */
 			pathname: string
+
+			/**
+			 * The string used to separate components of a search path in this filesystem; for example, `:` in Unix-like operating
+			 * systems.
+			 */
 			searchpath: string
+
+			/**
+			 * The string used to separate components of a search path in this filesystem; for example, `"\n"` in Unix-like
+			 * operating systems.
+			 */
 			line: string
 		}
 
