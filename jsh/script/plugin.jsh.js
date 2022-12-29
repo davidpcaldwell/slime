@@ -335,7 +335,16 @@
 					}
 				}
 
+				/** @type { slime.jsh.script.cli.main } */
+				var listener;
+
 				jsh.script.cli = {
+					main: function(program) {
+						if (listener) listener(program);
+					},
+					listener: function(main) {
+						listener = main;
+					},
 					Call: {
 						parse: getCommand,
 						get: getCall,

@@ -9,10 +9,13 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
-	 * @param { slime.jsh.script.cli.main } main
 	 */
-	function($api,jsh,main) {
-		/*$0*/
+	function($api,jsh) {
+		jsh.script.cli.main(
+			function(program) {
+				jsh.shell.console("Hello, World!");
+			}
+		)
 	}
 //@ts-ignore
 )($api,jsh,main);
