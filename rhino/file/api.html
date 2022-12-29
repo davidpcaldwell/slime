@@ -190,50 +190,6 @@ END LICENSE
 		<script type="application/x.jsapi#initialize"><![CDATA[
 			scope.helpers.initialize(scope.module);
 		]]></script>
-		<div class="type">
-			<a class="type" name="types.filesystem">filesystem</a>
-			<div class="label">has properties:</div>
-			<ul>
-				<!--
-					$doc.types.filesystem = new $Doc.Type({
-						name: "(filesystem)",
-						summary: <>A filesystem implementation from which files may be read and listed and to which files may be written.</>,
-						members: {
-							PATHNAME_SEPARATOR: {
-								type: "string",
-								summary: <>The string used to separate components of a path name in this filesystem; for example, / in Unix-like
-									operating systems.
-								</>
-							},
-							SEARCHPATH_SEPARATOR: {
-								type: "string",
-								summary: <>The string used to separate components of a search path in this filesystem; for example, : in Unix-like
-									operating systems.
-								</>
-							},
-							LINE_SEPARATOR: {
-								type: "string",
-								summary: <>The string used to separate components of a search path in this filesystem; for example, "\n" in Unix-like
-									operating systems.
-								</>
-							},
-							Pathname: {
-								type: $Doc.Method,
-								arguments: {
-									list: [
-										{ name: "path", type: "string", comment: <>A path name that is valid in this filesystem.</> },
-									]
-								},
-								returns: {
-									type: $doc.types.Pathname,
-									comment: <>A Pathname in this filesystem corresponding to the given string.</>
-								}
-							}
-						}
-					});
-				-->
-			</ul>
-		</div>
 		<ul>
 			<li class="function" jsapi:id="Pathname">
 				<div class="name">Pathname</div>
