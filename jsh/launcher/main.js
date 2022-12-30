@@ -135,7 +135,7 @@
 			delete $api.jsh.engines.nashorn;
 		}
 		if ($api.jsh.engines.nashorn) {
-			var Context = Java.type("jdk.nashorn.internal.runtime.Context");
+			var Context = Packages.jdk.nashorn.internal.runtime.Context;
 			var $getContext;
 			try {
 				$getContext = Context.class.getMethod("getContext");
