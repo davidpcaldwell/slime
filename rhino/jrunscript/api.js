@@ -84,37 +84,44 @@
 			bitbucket: void(0)
 		};
 
-		(function defineLogging() {
-			var on = false;
+		(
+			/** @this { slime.internal.jrunscript.bootstrap.Global } */
+			function defineLogging() {
+				var on = false;
 
-			$api.debug = function(message) {
-				//	TODO	note that we are disabling this until Packages is provided, which means we presently can't log until
-				//			the engine compatibility is loaded unless print is present
-				if (on && Packages) Packages.java.lang.System.err.println(message);
-				if (on && !Packages && Java) Java.type("java.lang.System").err.println(message);
-				if (Packages) Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.FINE, message);
-			};
-			if (this.$api && this.$api.debug) {
-				on = true;
-				$api.debug("Debug enabled via $api.debug");
-			}
-			if (Object.defineProperty) {
-				Object.defineProperty($api.debug, "on", {
-					enumerable: true,
-					set: function(v) {
-						on = v;
-					}
-				});
-			}
+				//	TODO	could define an Object.assign-like function here and then use it to build the implementation to satisfy
+				//			TypeScript, but not right now.
+				//@ts-ignore
+				$api.debug = function(message) {
+					//	TODO	note that we are disabling this until Packages is provided, which means we presently can't log until
+					//			the engine compatibility is loaded unless print is present
+					if (on && Packages) Packages.java.lang.System.err.println(message);
+					//@ts-ignore
+					if (on && !Packages && Java) Java.type("java.lang.System").err.println(message);
+					if (Packages) Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.FINE, message);
+				};
+				if (configuration && configuration.debug) {
+					on = true;
+					$api.debug("Debug enabled via $api.debug configuration value");
+				}
+				if (Object.defineProperty) {
+					Object.defineProperty($api.debug, "on", {
+						enumerable: true,
+						set: function(v) {
+							on = v;
+						}
+					});
+				}
 
-			$api.console = function(message) {
-				Packages.java.lang.System.err.println(message);
-			}
+				$api.console = function(message) {
+					Packages.java.lang.System.err.println(message);
+				}
 
-			$api.log = function(message) {
-				Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.INFO, message);
+				$api.log = function(message) {
+					Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.INFO, message);
+				}
 			}
-		}).call(this);
+		).call(this);
 
 		var $engine = (function(global) {
 			var Nashorn = function() {

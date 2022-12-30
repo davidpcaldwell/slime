@@ -30,6 +30,7 @@ namespace slime.jrunscript {
 					isInstance(object: any): boolean
 					getDeclaredField(name: string): reflect.Field
 					getDeclaredMethod(name: string, types?: slime.jrunscript.native.java.lang.Class[]): reflect.Method
+					getMethod(name: string): reflect.Method
 				}
 
 				export interface Runnable {
@@ -544,7 +545,6 @@ namespace slime.jrunscript {
 		}
 		javax: any
 		javafx: any
-		jdk: any
 		org: {
 			mozilla: {
 				javascript: {
