@@ -17,7 +17,24 @@
 			bootstrap: jsh.script.loader.script("../../rhino/jrunscript/embed.js")
 		};
 
-		var bootstrap = code.bootstrap();
+		var JSH_EMBED_BOOTSTRAP_DEBUG = Boolean(jsh.shell.environment.JSH_EMBED_BOOTSTRAP_DEBUG);
+
+		/** @type { slime.internal.jrunscript.bootstrap.Configuration["script"] } */
+		var script = (
+			function() {
+				if (jsh.shell.jsh.src) return { file: jsh.shell.jsh.src.getFile("rhino/jrunscript/api.js").toString() };
+				if (jsh.shell.jsh.url) return { url: jsh.shell.jsh.url + "rhino/jrunscript/api.js?api" };
+				if (jsh.shell.jsh.home) return { file: jsh.shell.jsh.home.getRelativePath("jsh.js").toString() };
+			}
+		)();
+
+		//	TODO	for now, we just don't load the embedding in packaged shells, because it doesn't seem worth it to figure out
+		//			how to do that at the moment. Might become more feasible with more discipline surrounding the embedding and
+		//			packaging code.
+		var bootstrap = (script) ? code.bootstrap({
+			debug: JSH_EMBED_BOOTSTRAP_DEBUG,
+			script: script
+		}) : void(0);
 
 		var toJsonProperty = function(value,formatter) {
 			if (typeof(value) == "undefined") return void(0);
@@ -39,7 +56,7 @@
 		var engines = {};
 		if (jsh.java.getClass("org.mozilla.javascript.Context")) {
 			engines.rhino = true;
-			if (bootstrap.rhino.running()) {
+			if (bootstrap && bootstrap.rhino.running()) {
 				engines.current = {
 					name: "rhino",
 					optimization: bootstrap.rhino.running().getOptimizationLevel()
@@ -48,7 +65,7 @@
 		}
 		if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 			engines.nashorn = true;
-			if (bootstrap.nashorn.running()) {
+			if (bootstrap && bootstrap.nashorn.running()) {
 				engines.current = {
 					name: "nashorn"
 				};

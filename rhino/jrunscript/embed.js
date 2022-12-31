@@ -18,6 +18,10 @@
 		var after = $api.fp.cast;
 		var jrunscript = {
 			$api: {
+				debug: ($context.debug) ? function(message) {
+					Packages.java.lang.System.err.println("SLIME JRUNSCRIPT BOOTSTRAP EMBED: " + message);
+				} : false,
+				script: $context.script,
 				arguments: ["api"]
 			},
 			load: function() {

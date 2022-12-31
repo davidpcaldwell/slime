@@ -6,6 +6,8 @@
 
 namespace slime.jrunscript.bootstrap {
 	export interface Context {
+		debug: boolean
+		script: slime.internal.jrunscript.bootstrap.Configuration["script"]
 	}
 
 	//	TODO	obviously external type should not depend on internal one

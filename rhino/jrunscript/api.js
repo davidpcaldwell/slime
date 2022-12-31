@@ -93,6 +93,8 @@
 				//			TypeScript, but not right now.
 				//@ts-ignore
 				$api.debug = function(message) {
+					//@ts-ignore
+					if (configuration && typeof(configuration.debug) == "function") configuration.debug(message);
 					//	TODO	note that we are disabling this until Packages is provided, which means we presently can't log until
 					//			the engine compatibility is loaded unless print is present
 					if (on && Packages) Packages.java.lang.System.err.println(message);
@@ -185,6 +187,7 @@
 			rv.resolve = function(options) {
 				return options[name];
 			};
+			$api.debug("Getting main engine script ...");
 			rv.script = rv.resolve({
 				nashorn: function() {
 					return new global.Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
@@ -230,6 +233,7 @@
 					return global[String(global.Packages.javax.script.ScriptEngine.FILENAME)];
 				}
 			})();
+			$api.debug("Main engine script is [" + rv.script + "]");
 			rv.newArray = function(type,length) {
 				var argument = this.resolve({
 					nashorn: function() {
