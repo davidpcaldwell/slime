@@ -314,6 +314,7 @@ JSH_GITHUB_USER_ARGUMENT=$(javaSystemPropertyArgument jsh.github.user ${JSH_GITH
 JSH_GITHUB_PASSWORD_ARGUMENT=$(javaSystemPropertyArgument jsh.github.password ${JSH_GITHUB_PASSWORD})
 
 get_jdk_major_version() {
+	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
 	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
 	JDK=$1
 	JAVA="${JDK}/bin/java"
