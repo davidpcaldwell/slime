@@ -88,7 +88,7 @@ namespace slime.jsh.test.remote {
 				jsh.shell.console("Invoking ...");
 				jsh.shell.console(invoke.join(" "));
 				var scriptOutput = $api.fp.now.invoke(
-					toInvocation(invoke, launcherBashScript, { JSH_LAUNCHER_BASH_DEBUG: "1" }),
+					toInvocation(invoke, launcherBashScript, { JSH_LAUNCHER_BASH_DEBUG: "1", JSH_EMBED_BOOTSTRAP_DEBUG: "true" }),
 					getOutput
 				);
 

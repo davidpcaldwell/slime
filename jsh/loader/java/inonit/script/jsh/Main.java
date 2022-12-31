@@ -61,7 +61,7 @@ public class Main {
 						int branchIndex = string.indexOf(githubUrlPortion) + githubUrlPortion.length();
 						int branchEnd = string.substring(branchIndex).indexOf("/");
 						String branch = string.substring(branchIndex, branchIndex + branchEnd);
-						System.err.println("branch = " + branch);
+						//System.err.println("branch = " + branch);
 						String protocol = "https";
 						if (System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL") != null) {
 							protocol = System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL");

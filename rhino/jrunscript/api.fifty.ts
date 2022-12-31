@@ -4,13 +4,27 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.native {
+	export namespace org.mozilla.javascript {
+		export interface Context extends slime.jrunscript.native.java.lang.Object {
+			getApplicationClassLoader: () => slime.jrunscript.native.java.lang.ClassLoader
+			getOptimizationLevel: () => number
+		}
+	}
+
+	export namespace jdk.nashorn.internal.runtime {
+		export interface Context extends slime.jrunscript.native.java.lang.Object {
+		}
+	}
+}
+
 namespace slime.jrunscript {
 	export interface Packages {
 		jdk: {
 			nashorn: {
 				internal: {
 					runtime: {
-						Context: slime.jrunscript.JavaClass<slime.jrunscript.native.java.lang.Object, {
+						Context: slime.jrunscript.JavaClass<slime.jrunscript.native.jdk.nashorn.internal.runtime.Context, {
 							class: slime.jrunscript.native.java.lang.Class
 							getContext: () => slime.jrunscript.native.java.lang.Object
 						}>
@@ -22,13 +36,21 @@ namespace slime.jrunscript {
 }
 
 /**
- * Definitions of types pertaining to the Java bootstrap scripts. The bootstrap scripts are launched via
- * `jrunscript` and use the built-in Nashorn engine to are used to configure the
- * SLIME Java environment using the `jrunscript` tool; they compile Java code and check for the presence of JavaScript
- * engines.
+ * Definitions of types pertaining to the Java bootstrap scripts. The bootstrap script at `api.js` is launched via `jrunscript` and
+ * use the built-in Nashorn engine to are used to configure the SLIME Java environment using the `jrunscript` tool; they compile
+ * Java code and check for the presence of JavaScript engines. They are designed to run with no dependencies except on the JDK (and
+ * Nashorn).
  *
- * In the context of the `jsh` shell, which is invoked with the `jsh` query parameter, they build the Java portions of the
- * `jsh` loader process and launch the `jsh` loader configured appropriately.
+ * Arguments can be passed to the bootstrap script via the query string when it is invoked as a URL (for example, when loaded over
+ * a network), or can be passed on the command line if being invoked locally (they will be parsed out via the JSR 223 APIs, or
+ * engine-specific APIs).
+ *
+ * However, so that code does not have to be developed twice - once for the bootstrap script and once for the SLIME Java runtime -
+ * the bootstrap script can also be embedded in the SLIME Java runtime using the `embed.js` script, which packages the bootstrap
+ * script as an ordinary {@link slime.loader.Script}.
+ *
+ * In the context of the `jsh` shell, which is invoked with the `jsh` query parameter, the bootstrap script builds the Java portions
+ * of the `jsh` loader process and launch the `jsh` loader configured appropriately.
  */
 namespace slime.internal.jrunscript.bootstrap {
 	/**
@@ -187,9 +209,18 @@ namespace slime.internal.jrunscript.bootstrap {
 				readJavaString: (from: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String
 			}
 
-			bitbucket: any
+			rhino: {
+				classpath: slime.jrunscript.native.java.io.File
+				download: (version?: string) => slime.jrunscript.native.java.io.File
+				isPresent: () => boolean
+				running: () => slime.jrunscript.native.org.mozilla.javascript.Context
+			}
 
-			rhino: any
+			nashorn: {
+				isPresent: () => boolean
+				running: () => slime.jrunscript.native.jdk.nashorn.internal.runtime.Context
+			}
+
 			shell: any
 		} & T
 	}

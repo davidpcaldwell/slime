@@ -69,19 +69,19 @@
 		 * @type { slime.internal.jrunscript.bootstrap.Global<{},{}>["$api"] }
 		 */
 		var $api = {
-			debug: (this.$api && this.$api.debug) ? this.$api.debug : void(0),
+			debug: void(0),
 			console: void(0),
 			log: void(0),
 			engine: void(0),
 			github: void(0),
 			script: void(0),
 			rhino: void(0),
+			nashorn: void(0),
 			java: void(0),
 			arguments: void(0),
 			shell: void(0),
 			io: void(0),
-			Script: void(0),
-			bitbucket: void(0)
+			Script: void(0)
 		};
 
 		(
@@ -93,6 +93,8 @@
 				//			TypeScript, but not right now.
 				//@ts-ignore
 				$api.debug = function(message) {
+					//@ts-ignore
+					if (configuration && typeof(configuration.debug) == "function") configuration.debug(message);
 					//	TODO	note that we are disabling this until Packages is provided, which means we presently can't log until
 					//			the engine compatibility is loaded unless print is present
 					if (on && Packages) Packages.java.lang.System.err.println(message);
@@ -122,6 +124,19 @@
 				}
 			}
 		).call(this);
+
+		var rhino = (
+			function(global) {
+				return {
+					isPresent: function() {
+						return typeof(global.Packages.org.mozilla.javascript.Context.getCurrentContext) == "function";
+					},
+					running: function() {
+						return global.Packages.org.mozilla.javascript.Context.getCurrentContext();
+					}
+				}
+			}
+		)(this);
 
 		var $engine = (function(global) {
 			var Nashorn = function() {
@@ -158,7 +173,7 @@
 			var name = (function() {
 				if (this.Graal) {
 					return "graal";
-				} if (typeof(global.Packages.org.mozilla.javascript.Context.getCurrentContext) == "function" && global.Packages.org.mozilla.javascript.Context.getCurrentContext()) {
+				} if (rhino.isPresent() && rhino.running()) {
 					//	TODO	untested
 					return "rhino";
 				} else if (new global.Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
@@ -172,6 +187,7 @@
 			rv.resolve = function(options) {
 				return options[name];
 			};
+			$api.debug("Getting main engine script ...");
 			rv.script = rv.resolve({
 				nashorn: function() {
 					return new global.Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
@@ -181,9 +197,10 @@
 					var trace = String(new global.Packages.org.mozilla.javascript.WrappedException(new global.Packages.java.lang.RuntimeException()).getScriptStackTrace()).split(LINE_SEPARATOR);
 					for (var i=0; i<trace.length; i++) {
 						if (trace[i].length) {
-							var parsed = /^(?:\s+)(?:at )(.*)\:(\d+)$/.exec(trace[i]);
+							var pattern = /^(?:\s+)(?:at )(.*)\:(\d+)(?: \(.*\))?$/;
+							var parsed = pattern.exec(trace[i]);
 							if (!parsed) {
-								throw new Error("Stack trace frame does not match: [" + trace[i] + "]");
+								throw new Error("Rhino stack trace frame [" + trace[i] + " does not match expected pattern: [" + parsed + "]");
 							}
 							if (/* /api\.js$/.test(parsed[1]) */ true) {
 								return parsed[1];
@@ -216,6 +233,7 @@
 					return global[String(global.Packages.javax.script.ScriptEngine.FILENAME)];
 				}
 			})();
+			$api.debug("Main engine script is [" + rv.script + "]");
 			rv.newArray = function(type,length) {
 				var argument = this.resolve({
 					nashorn: function() {
@@ -268,6 +286,51 @@
 		//	Now that Nashorn / Graal have loaded mozilla_compat.js, we can access these
 		var Packages = this.Packages;
 		var JavaAdapter = this.JavaAdapter;
+
+		var nashorn = (
+			function() {
+				//	TODO	A little bit of this logic is duplicated in loader/jrunscript/nashorn.js; we could make this method
+				//			available there somehow, perhaps, although it might be tricky getting things organized between
+				//			bootstrapping Nashorn in the loader and loading the launcher bootstrap script
+				var Context = Packages.jdk.nashorn.internal.runtime.Context;
+				var $getContext;
+				if (typeof(Context) == "function") {
+					try {
+						//	TODO	is there any way to avoid repeating the class name?
+						$getContext = Packages.java.lang.Class.forName("jdk.nashorn.internal.runtime.Context").getMethod("getContext");
+					} catch (e) {
+						//	do nothing; $getContext will remain undefined
+					}
+				}
+
+				var isPresent = function() {
+					if (!new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+						$api.debug("Nashorn not detected via javax.script; removing.");
+						return false;
+					}
+					if (typeof(Context.getContext) != "function" && !$getContext) {
+						$api.debug("jdk.nashorn.internal.runtime.Context.getContext not accessible; removing Nashorn.")
+						return false;
+					}
+					return true;
+				}
+
+				return {
+					isPresent: isPresent,
+					running: function() {
+						if ($getContext) {
+							try {
+								return $getContext.invoke(null);
+							} catch (e) {
+								return null;
+							}
+						} else {
+							return null;
+						}
+					}
+				}
+			}
+		)();
 
 		if (configuration && configuration.engine && configuration.engine.script) {
 			$engine.script = configuration.engine.script;
@@ -1180,104 +1243,76 @@
 		};
 		$api.io.readJavaString = io.readJavaString;
 
-		$api.bitbucket = {};
-		$api.bitbucket.get = function(p) {
-			var owner = (p.owner) ? p.owner : "davidpcaldwell";
-			var repository = (p.repository) ? p.repository : "slime";
-			var revision = (p.revision) ? p.revision : "tip";
-			var protocol = (p.protocol) ? p.protocol : "https";
-			var URL = protocol + "://bitbucket.org/" + owner + "/" + repository + "/" + "get" + "/" + revision + ".zip";
-			var tmp = $api.io.tmpdir();
-			tmp["delete"]();
-			$api.io.unzip({
-				from: { url: URL },
-				to: { _directory: tmp }
-			});
-			var root = tmp.listFiles()[0];
-			if (p.destination) {
-				root.renameTo(p.destination);
-				if (p.revision) {
-					var writer = new Packages.java.io.FileWriter(new Packages.java.io.File(p.destination, ".version"));
-					writer.write(p.revision);
-					writer.close();
-				}
-			} else {
-				return root;
-			}
-		}
-		$api.bitbucket.script = function(p) {
-			//	TODO	should default be '@'?
-			var owner = (p.owner) ? p.owner : "davidpcaldwell";
-			var repository = p.repository;
-			var revision = (p.revision) ? p.revision : "tip";
-			var URL = p.protocol + "://bitbucket.org/api/1.0/repositories/" + owner + "/" + repository + "/" + "raw" + "/" + revision + "/" + p.script;
-			$api.Script.run({ string: URL });
-		}
-		$api.rhino = {};
-		$api.rhino.classpath = $engine.resolve({
-			jdkrhino: null,
-			nashorn: null,
-			rhino: $engine.classpath
-		});
-		$api.rhino.download = function(version) {
-			if (!version) version = "mozilla/1.7.14";
-			var sources = {
-				"mozilla/1.7R3": {
-					url: "http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip",
-					format: "dist"
-				},
-				"mozilla/1.7.12": {
-					url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_12_Release/rhino-1.7.12.jar",
-					format: "jar"
-				},
-				"mozilla/1.7.13": {
-					url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_13_Release/rhino-1.7.13.jar",
-					format: "jar"
-				},
-				"mozilla/1.7.14": {
-					url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-1.7.14.jar",
-					format: "jar"
-				}
-			};
-			var source = sources[version];
-			//	TODO	possibly not the right variable to use, but band-aiding to pass tests
-			if (/^https\:\/\/github\.com/.test(source.url) && $api.shell.environment.JSH_GITHUB_API_PROTOCOL == "http") {
-				source.url = source.url.replace("https://", "http://");
-			}
-			if (!source) throw new Error("No known way to retrieve Rhino version " + version);
-			var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
-			tmpdir["delete"]();
-			tmpdir.mkdirs();
-			if (!tmpdir.exists()) {
-				throw new Error("Failed to create temporary file.");
-			}
-			var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
-			var _url = new Packages.java.net.URL(source.url);
-			Packages.java.lang.System.err.println("Downloading Rhino from " + _url);
-			var _connection = _url.openConnection();
-			$api.debug("Rhino download: opened connection " + _connection);
-			if (source.format == "dist") {
-				var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
-				var _entry;
-				while(_entry = _zipstream.getNextEntry()) {
-					var name = String(_entry.getName());
-					var path = name.split("/");
-					if (path[1] == "js.jar") {
-						var out = new Packages.java.io.FileOutputStream(tmprhino);
-						$api.io.copy(_zipstream,out);
+		$api.rhino = {
+			classpath: $engine.resolve({
+				jdkrhino: null,
+				nashorn: null,
+				rhino: $engine.classpath
+			}),
+			download: function(version) {
+				if (!version) version = "mozilla/1.7.14";
+				var sources = {
+					"mozilla/1.7R3": {
+						url: "http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip",
+						format: "dist"
+					},
+					"mozilla/1.7.12": {
+						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_12_Release/rhino-1.7.12.jar",
+						format: "jar"
+					},
+					"mozilla/1.7.13": {
+						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_13_Release/rhino-1.7.13.jar",
+						format: "jar"
+					},
+					"mozilla/1.7.14": {
+						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-1.7.14.jar",
+						format: "jar"
 					}
+				};
+				var source = sources[version];
+				//	TODO	possibly not the right variable to use, but band-aiding to pass tests
+				if (/^https\:\/\/github\.com/.test(source.url) && $api.shell.environment.JSH_GITHUB_API_PROTOCOL == "http") {
+					source.url = source.url.replace("https://", "http://");
 				}
-				Packages.java.lang.System.err.println("Downloaded Rhino to " + tmprhino);
-				return tmprhino;
-			} else if (source.format == "jar") {
-				$api.debug("Rhino download: getting response code ...");
-				$api.debug("Rhino download status: " + _connection.getResponseCode());
-				$api.io.copy(_connection.getInputStream(), new Packages.java.io.FileOutputStream(tmprhino));
-				return tmprhino;
-			} else {
-				throw new Error("Unsupported Rhino format: version=" + version + " format=" + source.format);
-			}
-		}
+				if (!source) throw new Error("No known way to retrieve Rhino version " + version);
+				var tmpdir = Packages.java.io.File.createTempFile("jsh-install",null);
+				tmpdir["delete"]();
+				tmpdir.mkdirs();
+				if (!tmpdir.exists()) {
+					throw new Error("Failed to create temporary file.");
+				}
+				var tmprhino = new Packages.java.io.File(tmpdir,"js.jar");
+				var _url = new Packages.java.net.URL(source.url);
+				Packages.java.lang.System.err.println("Downloading Rhino from " + _url);
+				var _connection = _url.openConnection();
+				$api.debug("Rhino download: opened connection " + _connection);
+				if (source.format == "dist") {
+					var _zipstream = new Packages.java.util.zip.ZipInputStream(_connection.getInputStream());
+					var _entry;
+					while(_entry = _zipstream.getNextEntry()) {
+						var name = String(_entry.getName());
+						var path = name.split("/");
+						if (path[1] == "js.jar") {
+							var out = new Packages.java.io.FileOutputStream(tmprhino);
+							$api.io.copy(_zipstream,out);
+						}
+					}
+					Packages.java.lang.System.err.println("Downloaded Rhino to " + tmprhino);
+					return tmprhino;
+				} else if (source.format == "jar") {
+					$api.debug("Rhino download: getting response code ...");
+					$api.debug("Rhino download status: " + _connection.getResponseCode());
+					$api.io.copy(_connection.getInputStream(), new Packages.java.io.FileOutputStream(tmprhino));
+					return tmprhino;
+				} else {
+					throw new Error("Unsupported Rhino format: version=" + version + " format=" + source.format);
+				}
+			},
+			isPresent: rhino.isPresent,
+			running: rhino.running
+		};
+
+		$api.nashorn = nashorn;
 
 		$api.shell = {};
 		$api.shell.environment = (function() {
@@ -1451,24 +1486,6 @@
 				$api.script.resolve("../../jsh/launcher/main.js").load();
 			} else if (parameters.relative) {
 				$api.script.resolve(parameters.relative).load();
-			} else if (parameters.bitbucket) {
-				var parser = /(?:(\w+)\/)?(\w+)(?:\@(\w+))?\:(.*)/;
-				var parsed = parser.exec(parameters.bitbucket);
-				var get = {
-					owner: parsed[1],
-					repository: parsed[2],
-					revision: parsed[3]
-				};
-				if (false) {
-					var tmp = $api.bitbucket.get(get);
-					$api.Script.run({ file: new Packages.java.io.File(tmp,parsed[4]) });
-				} else {
-					//	Packages.java.lang.System.err.println("protocol = " + $api.script.url.getProtocol());
-					get.script = parsed[4];
-					//	We pass protocol because mock Bitbucket uses http while Bitbucket uses https
-					get.protocol = String($api.script.url.getProtocol());
-					$api.bitbucket.script(get);
-				}
 			} else if (parameters.test) {
 				if (parameters.test == "filename") {
 					Packages.java.lang.System.out.println("stack = " + new Packages.java.lang.Throwable().getStackTrace()[0].getFileName());
