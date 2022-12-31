@@ -206,16 +206,47 @@
 			command.vm($api.arguments.shift());
 		}
 
+		var jshJavaHomeMajorVersion = (
+			function() {
+				if ($api.slime.settings.get("jsh.java.home")) {
+					var mode = {
+						output: "",
+						err: ""
+					}
+					var status = $api.engine.runCommand(
+						$api.slime.settings.get("jsh.java.home") + "/bin/java",
+						"-version",
+						mode
+					);
+					if (status) throw new Error(
+						"Error determining Java version for loader; exit status " + status
+						+ " stdout: " + mode.output
+						+ " stderr: " + mode.err
+					);
+					var pattern = /\"(.+)\"/;
+					var oneDotPattern = /^1\.(.*)\./;
+					var majorVersionPattern = /^(\d+)\./;
+					var version;
+					var majorVersion;
+					mode.err.split("\n").forEach(function(line) {
+						var match = pattern.exec(line);
+						if (match) version = match[1];
+					});
+					if (!version) throw new Error("Could not detect Java version for loader.");
+					if (oneDotPattern.test(version)) {
+						majorVersion = Number(oneDotPattern.exec(version)[1]);
+					} else if (majorVersionPattern.test(version)) {
+						majorVersion = Number(majorVersionPattern.exec(version)[1])
+					}
+					$api.debug("jsh.java.home major version detected: [" + majorVersion + "]");
+					return majorVersion;
+				}
+			}
+		)();
+
 		var hasJavaPlatformModuleSystem = (function() {
 			if ($api.slime.settings.get("jsh.java.home")) {
-				//	TODO	explore a way to detect this, or document the below environment variable
-				if ($api.slime.settings.get("jsh.java.jpms")) {
-					return true;
-				}
-				//	returning false if it *does* have the module system will produce extra warnings but still work
-				//	returning false if it doesn't will work
-				//	so we default to the safer option: false
-				return false;
+				return jshJavaHomeMajorVersion > 8;
 			} else {
 				var javaLangObjectClass = Packages.java.lang.Class.forName("java.lang.Object");
 				return typeof(javaLangObjectClass.getModule) == "function";
@@ -326,7 +357,7 @@
 		})();
 		$api.slime.settings.sendPropertiesTo(command);
 
-		var _shellUrls = shell.shellClasspath();
+		var _shellUrls = shell.shellClasspath({ source: jshJavaHomeMajorVersion, target: jshJavaHomeMajorVersion });
 		$api.debug("_shellUrls = " + _shellUrls);
 		for (var i=0; i<_shellUrls.length; i++) {
 			_urls.push(_shellUrls[i]);

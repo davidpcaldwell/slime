@@ -386,6 +386,7 @@
 						list.add(new Packages.java.lang.String(String(arguments[i])));
 					} else {
 						//	TODO	in Rhino-compatible runCommand this should only work if it is the last argument
+						$api.debug("Setting runCommand mode ...");
 						context.setMode(arguments[i]);
 					}
 				}
