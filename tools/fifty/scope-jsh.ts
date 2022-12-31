@@ -26,7 +26,7 @@ namespace slime.fifty.test.internal.scope.jsh {
 				return rv;
 			},
 			directory: function() {
-				return jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
+				return jsh.shell.TMPDIR.createTemporary({ directory: true });
 			}
 		};
 
