@@ -109,16 +109,25 @@
 		/**
 		 *
 		 * @param { slime.jsh.shell.tools.tomcat.Mock } mock
-		 * @return { (major: number) => string }
+		 * @return { slime.$api.fp.world.Question<number,{ online: { major: number, latest: slime.$api.fp.Maybe<string> } },string> }
 		 */
-		var getLatestVersion = function(mock) {
+		var getLatestVersionUsingWorld = function(mock) {
 			var world = getWorld(mock);
 			var getLatest = $api.fp.world.mapping(world.getLatestVersion);
 			return function(major) {
-				var latest = getLatest(major);
-				if (latest.present) return latest.value;
-				return DEFAULT_VERSION[major];
+				return function(events) {
+					var latest = getLatest(major);
+					events.fire("online", { major: major, latest: latest });
+					if (latest.present) {
+						return latest.value;
+					}
+					return DEFAULT_VERSION[major];
+				}
 			}
+		};
+
+		var getLatestVersion = function(mock) {
+			return $api.fp.world.mapping(getLatestVersionUsingWorld(mock));
 		}
 
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["test"]["getVersion"] } */
@@ -319,7 +328,7 @@
 			test: {
 				getVersion: getVersion,
 				getReleaseNotes: getReleaseNotes,
-				getLatestVersion: getLatestVersion(void(0))
+				getLatestVersion: getLatestVersionUsingWorld(void(0))
 			}
 		})
 	}

@@ -131,7 +131,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 			getVersion: (releaseNotes: string) => string
 
-			getLatestVersion: (major: number) => string
+			getLatestVersion: slime.$api.fp.world.Question<number,{ online: { major: number, latest: slime.$api.fp.Maybe<string> } },string>
 		}
 	}
 
@@ -369,8 +369,14 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			fifty.tests.world = {};
 
 			fifty.tests.world.getLatestVersion = function() {
+				var getLatestVersion = $api.fp.world.mapping(subject.test.getLatestVersion, {
+					online: function(e) {
+						jsh.shell.console("Latest version (via Apache): " + JSON.stringify(e.detail));
+					}
+				});
+
 				[7,8,9].forEach(function(major) {
-					var version = subject.test.getLatestVersion(major);
+					var version = getLatestVersion(major);
 					fifty.global.jsh.shell.console("Latest version for " + major + " is " + JSON.stringify(version));
 				})
 			};
