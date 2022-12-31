@@ -12,6 +12,13 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,jsh) {
+		var code = {
+			/** @type { slime.jrunscript.bootstrap.Script } */
+			bootstrap: jsh.script.loader.script("../../rhino/jrunscript/embed.js")
+		};
+
+		var bootstrap = code.bootstrap();
+
 		var toJsonProperty = function(value,formatter) {
 			if (typeof(value) == "undefined") return void(0);
 			if (value === null) return null;
@@ -32,16 +39,22 @@
 		var engines = {};
 		if (jsh.java.getClass("org.mozilla.javascript.Context")) {
 			engines.rhino = true;
-			if (Packages.org.mozilla.javascript.Context.getCurrentContext()) {
+			if (bootstrap.rhino.running()) {
 				engines.current = {
 					name: "rhino",
-					optimization: Packages.org.mozilla.javascript.Context.getCurrentContext().getOptimizationLevel()
+					optimization: bootstrap.rhino.running().getOptimizationLevel()
 				};
 			}
 		}
 		if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 			engines.nashorn = true;
+			if (bootstrap.nashorn.running()) {
+				engines.current = {
+					name: "nashorn"
+				};
+			}
 		}
+
 		if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("graal")) {
 			engines.graal = true;
 		}

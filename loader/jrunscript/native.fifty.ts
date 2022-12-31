@@ -33,6 +33,10 @@ namespace slime.jrunscript {
 					getMethod(name: string): reflect.Method
 				}
 
+				export interface ClassLoader {
+					loadClass: (name: string) => slime.jrunscript.native.java.lang.Class
+				}
+
 				export interface Runnable {
 				}
 
@@ -548,7 +552,9 @@ namespace slime.jrunscript {
 		org: {
 			mozilla: {
 				javascript: {
-					Context: any
+					Context: slime.jrunscript.JavaClass<slime.jrunscript.native.org.mozilla.javascript.Context,{
+						getCurrentContext: () => slime.jrunscript.native.org.mozilla.javascript.Context
+					}>
 					Synchronizer: any
 					WrappedException: any
 				}
