@@ -194,9 +194,10 @@
 					var trace = String(new global.Packages.org.mozilla.javascript.WrappedException(new global.Packages.java.lang.RuntimeException()).getScriptStackTrace()).split(LINE_SEPARATOR);
 					for (var i=0; i<trace.length; i++) {
 						if (trace[i].length) {
-							var parsed = /^(?:\s+)(?:at )(.*)\:(\d+)$/.exec(trace[i]);
+							var pattern = /^(?:\s+)(?:at )(.*)\:(\d+)(?: \(.*\))?$/;
+							var parsed = pattern.exec(trace[i]);
 							if (!parsed) {
-								throw new Error("Stack trace frame does not match: [" + trace[i] + "]");
+								throw new Error("Rhino stack trace frame [" + trace[i] + " does not match expected pattern: [" + parsed + "]");
 							}
 							if (/* /api\.js$/.test(parsed[1]) */ true) {
 								return parsed[1];
