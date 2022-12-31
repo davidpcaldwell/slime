@@ -16,7 +16,7 @@ namespace slime.jsh.wf.test {
 		 * commits changes with the given p.commit.message.
 		 */
 		clone: (p: {
-			src: slime.jrunscript.file.world.object.Location
+			src: slime.jrunscript.file.world.Location
 			commit?: {
 				message: string
 			}
@@ -38,7 +38,12 @@ namespace slime.jsh.wf.test {
 			const $api = $context.$api;
 			const jsh = $context.jsh;
 
-			function configure(repository) {
+			/**
+			 * Make sure `user.name` and `user.email` are set (to nonsense values).
+			 *
+			 * @param repository A repository to configure.
+			 */
+			function configure(repository: slime.jrunscript.tools.git.repository.Local) {
 				repository.config({ set: { name: "user.name", value: "foo" }});
 				repository.config({ set: { name: "user.email", value: "bar@example.com" }});
 			}
@@ -56,6 +61,7 @@ namespace slime.jsh.wf.test {
 							}
 						}
 					};
+
 					var addAll: slime.jrunscript.tools.git.Command<void,void> = {
 						invocation: function(p) {
 							return {
@@ -64,6 +70,7 @@ namespace slime.jsh.wf.test {
 							}
 						}
 					};
+
 					var commitAll: slime.jrunscript.tools.git.Command<{ message: string },void> = {
 						invocation: function(p) {
 							return {
@@ -71,13 +78,12 @@ namespace slime.jsh.wf.test {
 								arguments: ["--all", "--message", p.message]
 							};
 						}
-					}
+					};
 
-					var src = p.src;
-					var destination = (() => {
-						var object = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						return jsh.file.world.spi.filesystems.os.pathname(object.toString());
-					})();
+					var src: slime.jrunscript.file.world.Location = p.src;
+
+					var destination = $api.fp.world.now.ask(jsh.file.world.filesystems.os.temporary({ directory: true }));
+
 					jsh.tools.git.program({ command: "git" }).command(clone).argument({
 						repository: src.pathname,
 						to: destination.pathname
