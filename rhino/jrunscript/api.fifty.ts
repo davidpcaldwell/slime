@@ -153,7 +153,14 @@ namespace slime.internal.jrunscript.bootstrap {
 				resolve: any
 				readFile: any
 				readUrl: any
-				runCommand: any
+
+				/**
+				 * Attempts to be compatible with the old Rhino shell `runCommand` implementation.
+				 *
+				 * @param arguments A set of tokens for the command line, followed optionally by a "mode" argument
+				 * @returns The exit status of the command
+				 */
+				runCommand: (...arguments: any[]) => number
 			}
 
 			github: {
