@@ -250,38 +250,6 @@ namespace slime.jrunscript.tools.git {
 		}
 	}
 
-	export interface Context {
-		program: slime.jrunscript.file.File
-		api: {
-			js: any
-			java: any
-			shell: slime.jrunscript.shell.Exports
-			Error: any
-			time: slime.time.Exports
-			web: slime.web.Exports
-		}
-		environment: any
-		console: any
-	}
-
-	export interface Exports {
-		Installation: (environment: {
-			program: slime.jrunscript.file.File
-		}) => slime.jrunscript.tools.git.Installation
-
-		credentialHelper: any
-		installation: slime.jrunscript.tools.git.Installation
-		daemon: slime.jrunscript.tools.git.Installation["daemon"]
-		Repository: slime.jrunscript.tools.git.Installation["Repository"]
-		init: slime.jrunscript.tools.git.Installation["init"]
-		execute: slime.jrunscript.tools.git.Installation["execute"]
-		install: Function & { GUI: any }
-	}
-
-	export type Script = slime.loader.Script<Context,Exports>
-}
-
-namespace slime.jrunscript.tools.git {
 	export namespace internal {
 		export const subject = (
 			function(fifty: slime.fifty.test.Kit) {
@@ -724,9 +692,7 @@ namespace slime.jrunscript.tools.git {
 		};
 	//@ts-ignore
 	})(fifty);
-}
 
-namespace slime.jrunscript.tools.git {
 	/**
 	 * A `git` installation.
 	 */
@@ -1019,7 +985,6 @@ namespace slime.jrunscript.tools.git {
 	//@ts-ignore
 	)(fifty);
 
-
 	export interface Exports {
 		run: <P,R>(p: world.Invocation<P,R>) => R
 
@@ -1032,7 +997,6 @@ namespace slime.jrunscript.tools.git {
 			}) => shell.run.Invocation
 		}
 	}
-
 
 	(
 		function(
@@ -1163,23 +1127,52 @@ namespace slime.jrunscript.tools.git {
 	//@ts-ignore
 	)(fifty);
 
-}
-
-(function(fifty: slime.fifty.test.Kit) {
-	fifty.tests.suite = function() {
-		fifty.run(fifty.tests.Installation.init);
-		fifty.run(fifty.tests.types.Repository.Local.config);
-		fifty.run(fifty.tests.types.Repository.Local.status);
-		fifty.run(fifty.tests.submoduleStatusCached);
-		fifty.run(fifty.tests.submoduleWithDifferentNameAndPath);
-		fifty.run(fifty.tests.submoduleTrackingBranch);
-
-		fifty.run(fifty.tests.Client.invocation);
-
-		fifty.run(fifty.tests.Exports.program);
-		fifty.run(fifty.tests.test.run);
-
-		fifty.run(fifty.tests.sandbox);
+	export interface Context {
+		program: slime.jrunscript.file.File
+		api: {
+			js: any
+			java: any
+			shell: slime.jrunscript.shell.Exports
+			Error: any
+			time: slime.time.Exports
+			web: slime.web.Exports
+		}
+		environment: any
+		console: any
 	}
-//@ts-ignore
-})(fifty);
+
+	export interface Exports {
+		Installation: (environment: {
+			program: slime.jrunscript.file.File
+		}) => slime.jrunscript.tools.git.Installation
+
+		credentialHelper: any
+		installation: slime.jrunscript.tools.git.Installation
+		daemon: slime.jrunscript.tools.git.Installation["daemon"]
+		Repository: slime.jrunscript.tools.git.Installation["Repository"]
+		init: slime.jrunscript.tools.git.Installation["init"]
+		execute: slime.jrunscript.tools.git.Installation["execute"]
+		install: Function & { GUI: any }
+	}
+
+	(function(fifty: slime.fifty.test.Kit) {
+		fifty.tests.suite = function() {
+			fifty.run(fifty.tests.Installation.init);
+			fifty.run(fifty.tests.types.Repository.Local.config);
+			fifty.run(fifty.tests.types.Repository.Local.status);
+			fifty.run(fifty.tests.submoduleStatusCached);
+			fifty.run(fifty.tests.submoduleWithDifferentNameAndPath);
+			fifty.run(fifty.tests.submoduleTrackingBranch);
+
+			fifty.run(fifty.tests.Client.invocation);
+
+			fifty.run(fifty.tests.Exports.program);
+			fifty.run(fifty.tests.test.run);
+
+			fifty.run(fifty.tests.sandbox);
+		}
+	//@ts-ignore
+	})(fifty);
+
+	export type Script = slime.loader.Script<Context,Exports>
+}
