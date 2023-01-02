@@ -25,7 +25,7 @@ The following script runs the `master` version of the shell remotely and runs th
 ### Using `curl` (installed on macOS)
 
 ```bash
-curl -v -L https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js
+curl -v -L https://raw.githubusercontent.com/davidpcaldwell/slime/main/jsh.bash | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/main/jsh/test/jsh-data.jsh.js
 ```
 
 ### Using `wget` (installed on many Linux distributions lacking `curl`)
