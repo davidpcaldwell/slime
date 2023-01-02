@@ -70,7 +70,7 @@ namespace slime.jrunscript.shell {
 			}
 		}
 		run?: {
-			spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+			spi?: slime.jrunscript.shell.internal.run.Context["spi"]
 		}
 	}
 

@@ -607,7 +607,21 @@ namespace slime.jrunscript {
 					Servlet: any
 				}
 			}
-			system: slime.jrunscript.native.inonit.system
+			system: {
+				OperatingSystem: {
+					Environment: JavaClass<slime.jrunscript.native.inonit.system.OperatingSystem.Environment,{
+						SYSTEM: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+						create: any
+					}>
+					get: () => slime.jrunscript.native.inonit.system.OperatingSystem
+				}
+				Command: {
+					Context: any
+					Configuration: any
+				}
+				Logging: any
+				Subprocess: any
+			}
 			tools: {
 				Profiler: any
 			}

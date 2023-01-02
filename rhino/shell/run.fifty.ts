@@ -4,6 +4,17 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.shell.internal.run {
+	export interface Context {
+		api: {
+			java: slime.jrunscript.host.Exports
+			io: slime.jrunscript.io.Exports
+			file: slime.jrunscript.file.Exports
+		}
+		spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+	}
+}
+
 namespace slime.jrunscript.shell {
 	export interface World {
 		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
@@ -75,15 +86,6 @@ namespace slime.jrunscript.shell.run {
 }
 
 namespace slime.jrunscript.shell.internal.run {
-	export interface Context {
-		api: {
-			java: slime.jrunscript.host.Exports
-			io: slime.jrunscript.io.Exports
-			file: slime.jrunscript.file.Exports
-		}
-		spi?: slime.jrunscript.shell.Context["run"]["spi"]
-	}
-
 	export interface OutputDestination {
 		stream: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
 		close: () => void

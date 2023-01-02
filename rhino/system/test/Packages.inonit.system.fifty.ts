@@ -30,6 +30,18 @@ namespace slime.jrunscript.native {
 			}
 		}
 
+		export interface OperatingSystem {
+			start: (context: Command.Context, configuration: Command.Configuration) => Subprocess
+		}
+
+		export namespace Command {
+			export interface Context {
+			}
+
+			export interface Configuration {
+			}
+		}
+
 		export namespace OperatingSystem {
 			export interface Environment extends native.java.lang.Object {
 				isNameCaseSensitive(): {
@@ -37,6 +49,17 @@ namespace slime.jrunscript.native {
 				}
 				getMap(): slime.jrunscript.native.java.util.Map
 				getValue(name: string): string
+			}
+		}
+
+		export interface Subprocess {
+			getPid: () => number
+			terminate: () => void
+			wait: (listener: Subprocess.Listener) => void
+		}
+
+		export namespace Subprocess {
+			export interface Listener {
 			}
 		}
 	}
