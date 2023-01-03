@@ -504,7 +504,7 @@
 			}), events);
 		});
 
-		/** @type { slime.jrunscript.shell.internal.invocation.Defaults } */
+		/** @type { slime.jrunscript.shell.run.Parent } */
 		var defaults = {
 			directory: $api.fp.returning($exports.PWD.toString()),
 			environment: $api.fp.returning(environment),

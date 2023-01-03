@@ -145,7 +145,7 @@
 			});
 		}
 
-		/** @type { (defaults: slime.jrunscript.shell.internal.invocation.Defaults) => slime.jrunscript.shell.exports.Invocation["from"]["argument"] } */
+		/** @type { (defaults: slime.jrunscript.shell.run.Parent) => slime.jrunscript.shell.exports.Invocation["from"]["argument"] } */
 		var create = function(defaults) {
 			return function(p) {
 				return {

@@ -295,14 +295,8 @@ namespace slime.jrunscript.shell.internal.invocation {
 		error: slime.jrunscript.shell.invocation.old.Stdio["error"]
 	}
 
-	export interface Defaults {
-		environment: slime.$api.fp.Lazy<shell.invocation.Argument["environment"]>
-		directory: slime.$api.fp.Lazy<shell.invocation.Argument["directory"]>
-		stdio: slime.$api.fp.Lazy<shell.invocation.Argument["stdio"]>
-	}
-
 	export interface Export {
-		exports: (defaults: Defaults) => slime.jrunscript.shell.exports.Invocation
+		exports: (defaults: shell.run.Parent) => slime.jrunscript.shell.exports.Invocation
 
 		internal: {
 			/**
