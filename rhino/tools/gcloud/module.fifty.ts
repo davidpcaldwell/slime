@@ -142,8 +142,8 @@ namespace slime.jrunscript.tools.gcloud {
 						output: jsh.shell.stdio.output,
 						error: jsh.shell.stdio.error
 					},
-					run: {
-						spi: fixtures.shell.run.createMockWorld(captor.mock)
+					world: {
+						subprocess: fixtures.shell.run.createMockWorld(captor.mock)
 					}
 				})
 			}

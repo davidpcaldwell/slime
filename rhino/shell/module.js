@@ -101,7 +101,7 @@
 					io: $context.api.io,
 					file: $context.api.file
 				},
-				spi: ($context.run && $context.run.spi)
+				spi: ($context.world && $context.world.subprocess)
 			});
 			var invocation = code.invocation({
 				library: {

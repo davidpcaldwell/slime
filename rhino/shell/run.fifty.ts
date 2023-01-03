@@ -11,7 +11,7 @@ namespace slime.jrunscript.shell.internal.run {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
-		spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
+		spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 	}
 }
 
@@ -39,6 +39,14 @@ namespace slime.jrunscript.shell.run {
 			context: Context
 			configuration: Configuration
 		}
+	}
+
+	export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
+
+	export interface StdioConfiguration {
+		input: slime.jrunscript.runtime.io.InputStream
+		output: OutputCapture
+		error: OutputCapture
 	}
 
 	export interface Invocation {
@@ -175,6 +183,13 @@ namespace slime.jrunscript.shell.internal.run {
 			};
 		//@ts-ignore
 		})(fifty);
+	}
+
+	export interface Exports {
+		subprocess: {
+			question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+			action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+		}
 	}
 
 	export interface Exports {

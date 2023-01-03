@@ -5,12 +5,6 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell {
-	interface Result {
-		stdio: {
-			output: string
-		}
-	}
-
 	export namespace context {
 		export type OutputStream = Omit<slime.jrunscript.runtime.io.OutputStream, "close">
 
@@ -51,6 +45,7 @@ namespace slime.jrunscript.shell {
 		kotlin: {
 			compiler: slime.jrunscript.file.File
 		}
+
 		api: {
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
@@ -69,8 +64,9 @@ namespace slime.jrunscript.shell {
 				parseFile: (file: slime.jrunscript.file.File) => slime.runtime.document.exports.Document
 			}
 		}
-		run?: {
-			spi?: slime.jrunscript.shell.internal.run.Context["spi"]
+
+		world?: {
+			subprocess?: slime.jrunscript.shell.internal.run.Context["spi"]
 		}
 	}
 
@@ -186,22 +182,7 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export interface World {
-	}
-
-	export interface Exports {
-		//	environment (maybe defined erroneously in jsh.d.ts)
-
-		//	listeners
-	}
-
 	export namespace run {
-		export interface StdioConfiguration {
-			input: slime.jrunscript.runtime.io.InputStream
-			output: invocation.OutputCapture
-			error: invocation.OutputCapture
-		}
-
 		export namespace old {
 			export interface Argument extends invocation.old.Argument {
 				as?: {
@@ -261,6 +242,18 @@ namespace slime.jrunscript.shell {
 			export type Events = slime.$api.Events<events.Events>
 
 			export type Handler = slime.$api.event.Handlers<events.Events>
+		}
+	}
+
+	export interface Exports {
+		//	environment (maybe defined erroneously in jsh.d.ts)
+
+		//	listeners
+	}
+
+	interface Result {
+		stdio: {
+			output: string
 		}
 	}
 
@@ -474,8 +467,8 @@ namespace slime.jrunscript.shell {
 
 	export interface World {
 		/**
-		 * @deprecated Replaced by the {@link Context} `run.spi` property, which allows a mock (or other) implementation to be used
-		 * when loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
+		 * @deprecated Replaced by the {@link Context} `world.subprocess` property, which allows a mock (or other) implementation to
+		 * be used when loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
 		 *
 		 * Allows a mock implementation of the `run` action to be created using a function that receives an invocation as an
 		 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create

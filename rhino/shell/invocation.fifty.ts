@@ -30,8 +30,6 @@ namespace slime.jrunscript.shell {
 
 		export type Input = string | slime.jrunscript.runtime.io.InputStream
 
-		export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
-
 		export interface Argument {
 			/**
 			 * The command to run.
@@ -59,8 +57,8 @@ namespace slime.jrunscript.shell {
 
 			stdio?: {
 				input?: Input
-				output?: OutputCapture
-				error?: OutputCapture
+				output?: run.OutputCapture
+				error?: run.OutputCapture
 			}
 		}
 
