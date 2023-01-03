@@ -566,14 +566,22 @@
 												return false;
 											}
 										});
+										var PATH = jsh.shell.PATH.pathnames;
+										PATH.splice(0, 0, jsh.shell.java.launcher.parent.pathname);
 										return jsh.shell.run({
 											command: o.directory.getFile("bin/scalac"),
 											arguments: $api.Array.build(function(list) {
 												if (p.deprecation) list.push("-deprecation");
 												if (p.destination) list.push("-d", p.destination);
 												list.push.apply(list,p.files);
-											})
-										})
+											}),
+											environment: $api.Object.compose(
+												jsh.shell.environment,
+												{
+													PATH: jsh.file.Searchpath(PATH).toString()
+												}
+											)
+										});
 									}
 								}
 							},
@@ -585,13 +593,21 @@
 									return function(events) {
 										//	TODO	possibly could just use java command with location.directory.getRelativePath("lib/scala-library.jar")
 										//			in classpath
+										var PATH = jsh.shell.PATH.pathnames;
+										PATH.splice(0, 0, jsh.shell.java.launcher.parent.pathname);
 										return jsh.shell.run({
 											command: o.directory.getFile("bin/scala"),
 											arguments: $api.Array.build(function(list) {
 												if (p.classpath) list.push("-classpath", p.classpath);
 												if (p.deprecation) list.push("-deprecation");
 												list.push(p.main);
-											})
+											}),
+											environment: $api.Object.compose(
+												jsh.shell.environment,
+												{
+													PATH: jsh.file.Searchpath(PATH).toString()
+												}
+											)
 										});
 									}
 								}
