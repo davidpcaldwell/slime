@@ -1356,7 +1356,7 @@
 		 * @param { slime.jrunscript.tools.git.Invocation } invocation
 		 * @param { string } pathname
 		 * @param { slime.jrunscript.shell.invocation.Argument["stdio"] } stdio
-		 * @returns { slime.jrunscript.shell.run.Invocation }
+		 * @returns { slime.jrunscript.shell.run.old.Invocation }
 		 */
 		var createShellInvocation = function(program,config,pathname,invocation,stdio) {
 			return $context.api.shell.Invocation.from.argument({

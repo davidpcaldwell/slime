@@ -120,7 +120,7 @@ namespace slime.jsh.wf {
 						stdio?: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
 						out?: string
 					}
-				) => slime.jrunscript.shell.run.Invocation
+				) => slime.jrunscript.shell.run.old.Invocation
 			}
 		}
 	}

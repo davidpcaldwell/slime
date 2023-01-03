@@ -87,13 +87,13 @@ namespace slime.jrunscript.tools.gcloud {
 
 			var captor = (
 				function() {
-					var last: shell.run.Invocation;
+					var last: shell.run.old.Invocation;
 
 					return {
 						last: function() {
 							return last;
 						},
-						mock: function(invocation: shell.run.Invocation): shell.run.Mock {
+						mock: function(invocation: shell.run.old.Invocation): shell.run.Mock {
 							last = invocation;
 							return {
 								exit: {

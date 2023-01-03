@@ -106,7 +106,7 @@ namespace slime.jrunscript.shell {
 				 * * `output`: This process's standard output stream
 				 * * `error`: This process's standard error stream
 				 */
-				stdio?: slime.jrunscript.shell.old.Invocation["stdio"]
+				stdio?: slime.jrunscript.shell.older.Invocation["stdio"]
 			}
 		}
 	}
@@ -114,7 +114,7 @@ namespace slime.jrunscript.shell {
 	export namespace exports {
 		export interface Invocation {
 			from: {
-				argument: (p: invocation.Argument) => run.Invocation
+				argument: (p: invocation.Argument) => run.old.Invocation
 			}
 
 			/** @deprecated Use `from.argument`. */
@@ -127,7 +127,7 @@ namespace slime.jrunscript.shell {
 			 * @param settings A set of `sudo` settings.
 			 * @returns An invocation that will run the given invocation under `sudo`.
 			 */
-			sudo: (settings: sudo.Settings) => slime.$api.fp.Transform<run.Invocation>
+			sudo: (settings: sudo.Settings) => slime.$api.fp.Transform<run.old.Invocation>
 
 			handler: {
 				stdio: {
@@ -229,7 +229,7 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace old {
+	export namespace older {
 		/**
 		 * A fully-specified invocation of a command to be run in an external process.
 		 */
@@ -286,13 +286,6 @@ namespace slime.jrunscript.shell {
 		}
 	//@ts-ignore
 	)(fifty);
-}
-
-namespace slime.jrunscript.shell.run {
-	export interface Invocation {
-		context: Context
-		configuration: Configuration
-	}
 }
 
 namespace slime.jrunscript.shell.internal.invocation {

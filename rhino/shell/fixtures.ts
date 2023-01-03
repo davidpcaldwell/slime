@@ -9,7 +9,7 @@ namespace slime.jrunscript.shell.test {
 	}
 
 	export namespace run {
-		export type Delegate = (invocation: slime.jrunscript.shell.run.Invocation) => slime.jrunscript.shell.run.Mock
+		export type Delegate = (invocation: slime.jrunscript.shell.run.old.Invocation) => slime.jrunscript.shell.run.Mock
 	}
 
 	export interface Fixtures {

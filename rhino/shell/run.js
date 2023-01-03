@@ -372,14 +372,14 @@
 
 		/**
 		 *
-		 * @param { (invocation: slime.jrunscript.shell.run.Invocation) => slime.jrunscript.shell.run.Mock } delegate
+		 * @param { (invocation: slime.jrunscript.shell.run.old.Invocation) => slime.jrunscript.shell.run.Mock } delegate
 		 * @returns
 		 */
 		var mockRun = function(delegate) {
 			return (
 				/**
 				 *
-				 * @param { slime.jrunscript.shell.run.Invocation } invocation
+				 * @param { slime.jrunscript.shell.run.old.Invocation } invocation
 				 * @returns
 				 */
 				function(invocation) {
