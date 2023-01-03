@@ -39,7 +39,7 @@ namespace slime.jsh.wf.internal.typescript {
 
 	export interface Exports {
 		typedoc: {
-			invocation: (p: Invocation) => (node: slime.jrunscript.node.world.Installation) => slime.jrunscript.shell.run.Invocation
+			invocation: (p: Invocation) => (node: slime.jrunscript.node.world.Installation) => slime.jrunscript.shell.run.old.Invocation
 		}
 	}
 

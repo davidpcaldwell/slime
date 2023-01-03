@@ -202,17 +202,6 @@ namespace slime.jrunscript.shell {
 			error: invocation.OutputCapture
 		}
 
-		export interface Context {
-			environment: slime.jrunscript.host.Environment
-			directory: string
-			stdio: StdioConfiguration
-		}
-
-		export interface Configuration {
-			command: string
-			arguments: string[]
-		}
-
 		export namespace old {
 			export interface Argument extends invocation.old.Argument {
 				as?: {
@@ -252,7 +241,7 @@ namespace slime.jrunscript.shell {
 				export interface Event {
 					command: slime.jrunscript.shell.invocation.old.Token
 					arguments?: slime.jrunscript.shell.invocation.old.Token[]
-					environment?: slime.jrunscript.shell.old.Invocation["environment"]
+					environment?: slime.jrunscript.shell.older.Invocation["environment"]
 					directory?: slime.jrunscript.file.Directory
 				}
 
@@ -492,7 +481,7 @@ namespace slime.jrunscript.shell {
 		 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
 		 * the appropriate `Tell` and fire the appropriate events to the caller.
 		 */
-		mock: (delegate: (invocation: shell.run.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.Invocation,run.TellEvents>
+		mock: (delegate: (invocation: shell.run.old.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.old.Invocation,run.TellEvents>
 	}
 
 	export interface Exports {

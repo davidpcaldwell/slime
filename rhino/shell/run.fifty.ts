@@ -11,18 +11,46 @@ namespace slime.jrunscript.shell.internal.run {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
-		spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+		spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
 	}
 }
 
 namespace slime.jrunscript.shell {
 	export interface World {
-		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
-		action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+		action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
 	}
 }
 
 namespace slime.jrunscript.shell.run {
+	export namespace old {
+		export interface Context {
+			environment: slime.jrunscript.host.Environment
+			directory: string
+			stdio: StdioConfiguration
+		}
+
+		export interface Configuration {
+			command: string
+			arguments: string[]
+		}
+
+		export interface Invocation {
+			context: Context
+			configuration: Configuration
+		}
+	}
+
+	export interface Invocation {
+		environment: {
+			readonly [name: string]: string
+		}
+		directory: string
+		stdio: StdioConfiguration
+		command: string
+		arguments: string[]
+	}
+
 	export type Line = {
 		line: string
 	}
@@ -73,6 +101,7 @@ namespace slime.jrunscript.shell.run {
 
 		exit: {
 			status: number
+
 			/**
 			 * The output for the process. Currently, if line-based output is provided for a stream, the value for that strean
 			 * is ignored.
@@ -128,7 +157,7 @@ namespace slime.jrunscript.shell.internal.run {
 		//@ts-ignore
 		})(fifty);
 
-		export const ls: shell.run.Invocation = (function(fifty: slime.fifty.test.Kit) {
+		export const ls: shell.run.old.Invocation = (function(fifty: slime.fifty.test.Kit) {
 			return {
 				context: {
 					environment: fifty.global.jsh.shell.environment,
@@ -176,7 +205,7 @@ namespace slime.jrunscript.shell.internal.run {
 	)(fifty);
 
 	export interface Exports {
-		run: slime.$api.fp.world.old.Action<slime.jrunscript.shell.run.Invocation,slime.jrunscript.shell.run.TellEvents>
+		run: slime.$api.fp.world.old.Action<slime.jrunscript.shell.run.old.Invocation,slime.jrunscript.shell.run.TellEvents>
 	}
 
 	(
@@ -506,8 +535,8 @@ namespace slime.jrunscript.shell.internal.run {
 			 * @deprecated
 			 */
 			run: (
-				context: slime.jrunscript.shell.run.Context,
-				configuration: slime.jrunscript.shell.run.Configuration,
+				context: slime.jrunscript.shell.run.old.Context,
+				configuration: slime.jrunscript.shell.run.old.Configuration,
 				module: {
 					events: any
 				},

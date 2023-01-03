@@ -65,7 +65,7 @@
 		 * @param { Pick<slime.jrunscript.shell.invocation.old.Argument, "stdio" | "environment" | "directory"> } p
 		 * @param { slime.jrunscript.host.Environment } parentEnvironment
 		 * @param { slime.jrunscript.shell.invocation.Stdio } parentStdio
-		 * @returns { slime.jrunscript.shell.run.Context }
+		 * @returns { slime.jrunscript.shell.run.old.Context }
 		 */
 		var toContext = function(p, parentEnvironment, parentStdio) {
 
