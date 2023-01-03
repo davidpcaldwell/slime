@@ -92,7 +92,7 @@
 			return true;
 		}
 
-		/** @type { (configuration: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => slime.jrunscript.shell.invocation.OutputCapture } */
+		/** @type { (configuration: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => slime.jrunscript.shell.run.OutputCapture } */
 		var toCapture = function(configuration) {
 			if (isLineListener(configuration)) {
 				return "line";

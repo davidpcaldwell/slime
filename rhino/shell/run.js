@@ -17,6 +17,21 @@
 	function(Packages,JavaAdapter,$api,$context,$export) {
 		/**
 		 *
+		 * @param { slime.jrunscript.shell.run.old.Invocation } old
+		 * @returns { slime.jrunscript.shell.run.Invocation }
+		 */
+		var modernize = function(old) {
+			return {
+				command: old.configuration.command,
+				arguments: old.configuration.arguments,
+				environment: old.context.environment,
+				directory: old.context.directory,
+				stdio: old.context.stdio
+			}
+		};
+
+		/**
+		 *
 		 * @param { slime.jrunscript.shell.run.StdioConfiguration } p
 		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>) => slime.jrunscript.shell.internal.run.Stdio }
 		 */
@@ -119,7 +134,7 @@
 			 */
 			var destinationFactory = function(events, stream) {
 				/**
-				 * @param { slime.jrunscript.shell.invocation.OutputCapture } configuration
+				 * @param { slime.jrunscript.shell.run.OutputCapture } configuration
 				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 				 */
 				var getDestination = function(configuration) {
@@ -232,10 +247,7 @@
 			};
 
 			return function(events) {
-				var context = p.context;
-				var configuration = p.configuration;
-
-				var stdio = buildStdio(context.stdio)(events);
+				var stdio = buildStdio(p.stdio)(events);
 
 				//	TODO	could throw exception on launch; should deal with it
 
@@ -243,11 +255,14 @@
 				//			implementation works. That's probably not ideal, a more rigorous event sequence would be better.
 				var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
 					createJavaCommandContext({
-						directory: (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory,
-						environment: context.environment,
+						directory: (p.directory) ? $context.api.file.Pathname(p.directory).directory : void(0),
+						environment: p.environment,
 						stdio: stdio
 					}),
-					createJavaCommandConfiguration(configuration)
+					createJavaCommandConfiguration({
+						command: p.command,
+						arguments: p.arguments
+					})
 				);
 
 				events.fire("start", {
@@ -396,7 +411,7 @@
 		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
-			var tell = spi({ context: context, configuration: configuration });
+			var tell = spi(modernize({ context: context, configuration: configuration }));
 			$api.fp.world.now.tell(
 				tell,
 				{
@@ -438,14 +453,47 @@
 		}
 
 		$export({
-			action: spi,
+			subprocess: {
+				action: function(invocation) {
+					return spi(invocation);
+				},
+				question: function(invocation) {
+					return function(events) {
+						/** @type { slime.jrunscript.shell.run.Exit } */
+						var rv;
+						$api.fp.impure.now.process(
+							$api.fp.world.process(
+								spi(invocation),
+								{
+									start: function(e) {
+										events.fire("start", e.detail);
+									},
+									stdout: function(e) {
+										events.fire("stdout", e.detail);
+									},
+									stderr: function(e) {
+										events.fire("stderr", e.detail);
+									},
+									exit: function(e) {
+										rv = e.detail;
+									}
+								}
+							)
+						);
+						return rv;
+					}
+				}
+			},
+			action: function(old) {
+				return spi(modernize(old));
+			},
 			question: function(invocation) {
 				return function(events) {
 					/** @type { slime.jrunscript.shell.run.Exit } */
 					var rv;
 					$api.fp.impure.now.process(
 						$api.fp.world.process(
-							spi(invocation),
+							spi(modernize(invocation)),
 							{
 								start: function(e) {
 									events.fire("start", e.detail);
@@ -468,7 +516,7 @@
 			run: function(invocation) {
 				return function(handler) {
 					$api.fp.world.now.tell(
-						spi(invocation),
+						spi(modernize(invocation)),
 						handler
 					);
 				}
