@@ -446,7 +446,6 @@ namespace slime.jrunscript.shell {
 
 		kotlin: any
 
-		/** @deprecated Presently unused. */
 		rhino: any
 
 		world: World
@@ -688,6 +687,10 @@ namespace slime.jrunscript.shell {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
+
+	export interface Exports {
+		browser: slime.jrunscript.shell.browser.Exports
+	}
 
 	(
 		function(fifty: slime.fifty.test.Kit) {

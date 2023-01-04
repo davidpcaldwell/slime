@@ -111,7 +111,6 @@ namespace slime.jsh.shell {
 		}
 		HOME: slime.jrunscript.file.Directory
 		PATH: slime.jrunscript.file.Searchpath
-		browser: slime.jrunscript.shell.browser.Exports
 		listeners: any
 		system: {
 			apple: {
