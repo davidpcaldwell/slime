@@ -28,7 +28,7 @@
 			return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
 		};
 
-		/** @type { Partial<slime.jrunscript.shell.Exports> } */
+		/** @type { Pick<slime.jrunscript.shell.Exports,"TMPDIR"|"USER"|"HOME"|"PWD"|"PATH"|"os"|"run"|"invocation"|"embed"|"user"|"system"|"java"|"jrunscript"|"rhino"|"kotlin"|"Invocation"|"world"|"Tell"|"environment"|"browser"> } */
 		var $exports = {};
 
 		var module = {
@@ -37,7 +37,7 @@
 
 		var environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
-		$exports.properties = (
+		var properties = (
 			/**
 			 * @returns { slime.jrunscript.shell.Exports["properties"] }
 			 */
@@ -68,13 +68,13 @@
 			}
 		)();
 
-		$api.experimental($exports.properties,"object");
+		$api.experimental(properties,"object");
 
-		$exports.TMPDIR = $exports.properties.directory("java.io.tmpdir");
-		$exports.USER = $exports.properties.get("user.name");
-		$exports.HOME = $exports.properties.directory("user.home");
-		if ($exports.properties.get("user.dir")) {
-			$exports.PWD = $exports.properties.directory("user.dir");
+		$exports.TMPDIR = properties.directory("java.io.tmpdir");
+		$exports.USER = properties.get("user.name");
+		$exports.HOME = properties.directory("user.home");
+		if (properties.get("user.dir")) {
+			$exports.PWD = properties.directory("user.dir");
 		}
 		if (environment.PATH) {
 			$exports.PATH = toLocalSearchpath(environment.PATH);
@@ -138,8 +138,6 @@
 
 		$exports.invocation = scripts.invocation.invocation;
 
-		$exports.listeners = module.events.listeners;
-
 		var embed = $api.events.Function(
 			/**
 			 * @param { { method: Function, argument: object, started: (p: { output?: string, error?: string }) => boolean } } p
@@ -193,10 +191,10 @@
 		});
 
 		$exports.os = new function() {
-			this.name = $exports.properties.get("os.name");
-			this.arch = $exports.properties.get("os.arch");
-			this.version = $exports.properties.get("os.version");
-			this.newline = $exports.properties.get("line.separator");
+			this.name = properties.get("os.name");
+			this.arch = properties.get("os.arch");
+			this.version = properties.get("os.version");
+			this.newline = properties.get("line.separator");
 
 			this.resolve = function(p) {
 				if (typeof(p) == "function") {
@@ -347,20 +345,20 @@
 			}
 		);
 		(function() {
-			this.version = $exports.properties.get("java.version");
+			this.version = properties.get("java.version");
 			this.vendor = new function() {
 				this.toString = function() {
-					return $exports.properties.get("java.vendor");
+					return properties.get("java.vendor");
 				}
 
-				this.url = $exports.properties.get("java.vendor.url");
+				this.url = properties.get("java.vendor.url");
 			}
-			this.home = $exports.properties.directory("java.home");
+			this.home = properties.directory("java.home");
 
 			var Vvn = function(prefix) {
-				this.version = $exports.properties.get(prefix + "version");
-				this.vendor = $exports.properties.get(prefix + "vendor");
-				this.name = $exports.properties.get(prefix + "name");
+				this.version = properties.get(prefix + "version");
+				this.vendor = properties.get(prefix + "vendor");
+				this.name = properties.get(prefix + "name");
 			}
 
 			this.vm = Object.assign(
@@ -373,28 +371,28 @@
 			this.specification = new Vvn("java.specification.");
 
 			this["class"] = new function() {
-				this.version = $exports.properties.get("java.class.version");
-				if ($exports.properties.get("java.class.path")) this.path = $exports.properties.searchpath("java.class.path");
+				this.version = properties.get("java.class.version");
+				if (properties.get("java.class.path")) this.path = properties.searchpath("java.class.path");
 			}
 
 			//	Convenience alias that omits keyword
 			this.CLASSPATH = this["class"].path;
 
 			this.library = new function() {
-				this.path = $exports.properties.searchpath("java.library.path");
+				this.path = properties.searchpath("java.library.path");
 			}
 
 			//	java.io.tmpdir really part of filesystem; see TMPDIR above
 
 			//	Javadoc claims this to be always present but it is sometimes null; we leave it as undefined in that case, although this
 			//	behavior is undocumented
-			var compiler = $exports.properties.get("java.compiler");
+			var compiler = properties.get("java.compiler");
 			if (compiler) {
 				this.compiler = compiler;
 			}
 
-			if ($exports.properties.get("java.ext.dirs")) this.ext = new function() {
-				this.dirs = $exports.properties.searchpath("java.ext.dirs");
+			if (properties.get("java.ext.dirs")) this.ext = new function() {
+				this.dirs = properties.searchpath("java.ext.dirs");
 			}
 
 			//	os.name, os.arch, os.version handled by $exports.os
@@ -537,10 +535,33 @@
 
 		$exports.environment = environment;
 
-		/** @type { slime.js.Cast<slime.jrunscript.shell.Exports> } */
-		var cast = $api.fp.cast;
+		/** @type { slime.jrunscript.shell.Exports } */
+		var x = {
+			listeners: module.events.listeners,
+			properties: properties,
+			invocation: $exports.invocation,
+			environment: $exports.environment,
+			java: $exports.java,
+			embed: $exports.embed,
+			TMPDIR: $exports.TMPDIR,
+			USER: $exports.USER,
+			HOME: $exports.HOME,
+			PWD: $exports.PWD,
+			os: $exports.os,
+			user: $exports.user,
+			system: $exports.system,
+			jrunscript: $exports.jrunscript,
+			kotlin: $exports.kotlin,
+			rhino: $exports.rhino,
+			world: $exports.world,
+			Invocation: $exports.Invocation,
+			Tell: $exports.Tell,
+			run: $exports.run,
+			PATH: $exports.PATH,
+			browser: $exports.browser
+		}
 
-		$export(cast($exports));
+		$export(x);
 	}
 //@ts-ignore
 )(Packages,$api,$context,$loader,$export);
