@@ -511,7 +511,7 @@ namespace slime.jrunscript.shell.internal.run {
 					fifty.run(function specified() {
 						var argument: shell.invocation.Argument = {
 							command: fifty.global.jsh.file.Pathname("/bin/ls").toString(),
-							arguments: [directory.getRelativePath("invocation.fifty.ts").toString()],
+							arguments: [directory.getRelativePath("run.fifty.ts").toString()],
 							//	TODO	environment
 							directory: directory.toString()
 						};
@@ -520,7 +520,7 @@ namespace slime.jrunscript.shell.internal.run {
 							its.configuration.command.is("/bin/ls");
 							its.configuration.arguments.is.type("object");
 							its.configuration.arguments.length.is(1);
-							its.configuration.arguments[0].is(directory.getRelativePath("invocation.fifty.ts").toString());
+							its.configuration.arguments[0].is(directory.getRelativePath("run.fifty.ts").toString());
 							its.context.directory.evaluate(isDirectory(directory)).is(true);
 						});
 					});
