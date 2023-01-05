@@ -684,6 +684,18 @@ namespace slime.jrunscript.shell {
 				Packages.java.lang.System.err.println("JAVA:");
 				list("",properties.java);
 			}
+
+			fifty.tests.manual.process = {};
+			fifty.tests.manual.process.list = function() {
+				var processes = fifty.global.jsh.shell.os.process.list().map(function(process) {
+					return {
+						id: process.id,
+						parent: process.parent.id,
+						command: process.command
+					}
+				});
+				fifty.global.jsh.shell.console(JSON.stringify(processes,void(0),4));
+			}
 		}
 	//@ts-ignore
 	)(Packages,fifty);
