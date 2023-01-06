@@ -54,16 +54,17 @@
 		};
 
 		var engines = {};
-		if (jsh.java.getClass("org.mozilla.javascript.Context")) {
+		if (bootstrap && bootstrap.rhino.isPresent()) {
 			engines.rhino = true;
 			if (bootstrap && bootstrap.rhino.running()) {
 				engines.current = {
 					name: "rhino",
+					version: String(bootstrap.rhino.running().getImplementationVersion()),
 					optimization: bootstrap.rhino.running().getOptimizationLevel()
 				};
 			}
 		}
-		if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+		if (bootstrap && bootstrap.nashorn.isPresent()) {
 			engines.nashorn = true;
 			if (bootstrap && bootstrap.nashorn.running()) {
 				engines.current = {
