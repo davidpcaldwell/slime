@@ -60,9 +60,9 @@ namespace slime.jrunscript.shell.run {
 	}
 
 	export interface Parent {
-		environment: slime.$api.fp.Lazy<Invocation["environment"]>
-		directory: slime.$api.fp.Lazy<Invocation["directory"]>
-		stdio: slime.$api.fp.Lazy<Pick<Invocation["stdio"],"output"|"error">>
+		environment: Invocation["environment"]
+		directory: Invocation["directory"]
+		stdio: Pick<Invocation["stdio"],"output"|"error">
 	}
 
 	export type Line = {
