@@ -9,6 +9,7 @@ namespace slime.jrunscript.native {
 		export interface Context extends slime.jrunscript.native.java.lang.Object {
 			getApplicationClassLoader: () => slime.jrunscript.native.java.lang.ClassLoader
 			getOptimizationLevel: () => number
+			getImplementationVersion: () => slime.jrunscript.native.java.lang.String
 		}
 	}
 
