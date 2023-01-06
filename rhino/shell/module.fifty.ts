@@ -78,6 +78,36 @@ namespace slime.jrunscript.shell {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports = {};
+
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		subprocess: {
+			Parent: {
+				from: {
+					process: () => slime.jrunscript.shell.run.Parent
+				}
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+
+			const subject = jsh.shell;
+
+			fifty.tests.manual.subprocess = {};
+
+			fifty.tests.manual.subprocess.Parent = function() {
+				var parent = subject.subprocess.Parent.from.process();
+				jsh.shell.console(JSON.stringify(parent,void(0),4));
+			}
 		}
 	//@ts-ignore
 	)(fifty);
@@ -139,7 +169,9 @@ namespace slime.jrunscript.shell {
 		 * case-sensitive names. In the event that the underlying operating system has environment variables that are *not*
 		 * case-sensitive, all properties of this object will have UPPERCASE names.
 		 */
-		environment: slime.jrunscript.host.Environment
+		environment: {
+			readonly [name: string]: string
+		}
 	}
 
 	(
@@ -243,12 +275,6 @@ namespace slime.jrunscript.shell {
 
 			export type Handler = slime.$api.event.Handlers<events.Events>
 		}
-	}
-
-	export interface Exports {
-		//	environment (maybe defined erroneously in jsh.d.ts)
-
-		//	listeners
 	}
 
 	interface Result {
@@ -373,16 +399,6 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export interface Exports {
-		//	fires started, exception, stdout, stderr
-		/**
-		 * Provides a framework for embedding processes inside a shell. Invokes the given method with the given argument
-		 */
-		embed: (p: {
-			method: Function
-			argument: object
-			started: (p: { output?: string, error?: string }) => boolean
-		}, events: $api.event.Function.Receiver) => void
-
 		/**
 		 * Provides access to Java system properties.
 		 */
@@ -437,8 +453,6 @@ namespace slime.jrunscript.shell {
 		user: {
 			downloads?: slime.jrunscript.file.Directory
 		}
-
-		//	browser
 
 		system: any
 
@@ -661,8 +675,6 @@ namespace slime.jrunscript.shell {
 
 				scope.test( String(properties.blah) == "undefined" );
 			};
-
-			fifty.tests.manual = {};
 
 			fifty.tests.manual.properties = function() {
 				var list = function(prefix,p) {

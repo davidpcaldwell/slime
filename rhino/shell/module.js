@@ -28,7 +28,7 @@
 			return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
 		};
 
-		/** @type { Pick<slime.jrunscript.shell.Exports,"TMPDIR"|"USER"|"HOME"|"PWD"|"PATH"|"os"|"run"|"invocation"|"embed"|"user"|"system"|"java"|"jrunscript"|"rhino"|"kotlin"|"Invocation"|"world"|"Tell"|"environment"|"browser"> } */
+		/** @type { Pick<slime.jrunscript.shell.Exports,"TMPDIR"|"USER"|"HOME"|"PWD"|"PATH"|"os"|"run"|"invocation"|"user"|"system"|"java"|"jrunscript"|"rhino"|"kotlin"|"Invocation"|"world"|"Tell"|"environment"|"browser"> } */
 		var $exports = {};
 
 		var module = {
@@ -233,15 +233,15 @@
 					return function(p) {
 						return {
 							context: {
-								environment: (p.environment) ? p.environment : defaults.environment(),
-								directory: (p.directory) ? p.directory.toString() : defaults.directory(),
+								environment: (p.environment) ? p.environment : defaults.environment,
+								directory: (p.directory) ? p.directory.toString() : defaults.directory,
 								stdio: {
 									input: (function() {
 										if (p.stdio && p.stdio.input) return toInputStream(p.stdio.input);
 										return null;
 									})(),
-									output: (p.stdio && p.stdio.output) ? p.stdio.output : defaults.stdio().output,
-									error: (p.stdio && p.stdio.error) ? p.stdio.error : defaults.stdio().error,
+									output: (p.stdio && p.stdio.output) ? p.stdio.output : defaults.stdio.output,
+									error: (p.stdio && p.stdio.error) ? p.stdio.error : defaults.stdio.error,
 								}
 							},
 							configuration: {
@@ -435,28 +435,6 @@
 				);
 			}
 		);
-
-		$exports.embed = $api.events.Function(function(p,events) {
-			var lock = new $context.api.java.Thread.Monitor();
-			var started = false;
-			events.listeners.add("started", lock.Waiter({
-				then: function() {
-					started = true;
-				}
-			}));
-			$context.api.java.Thread.start(function() {
-				try {
-					embed(p, events);
-				} catch (e) {
-					events.fire("exception", e);
-				}
-			});
-			lock.Waiter({
-				until: function() {
-					return started;
-				}
-			})();
-		});
 
 		$exports.os = new function() {
 			this.name = properties.get("os.name");
@@ -772,12 +750,12 @@
 
 		/** @type { slime.jrunscript.shell.run.Parent } */
 		var defaults = {
-			directory: $api.fp.returning($exports.PWD.toString()),
-			environment: $api.fp.returning(environment),
-			stdio: $api.fp.returning({
+			directory: $exports.PWD.toString(),
+			environment: environment,
+			stdio: {
 				output: $context.stdio.output,
 				error: $context.stdio.error
-			})
+			}
 		}
 
 		$exports.Invocation = invocation.exports(defaults);
@@ -805,12 +783,27 @@
 
 		/** @type { slime.jrunscript.shell.Exports } */
 		var x = {
+			subprocess: {
+				Parent: {
+					from: {
+						process: function() {
+							return {
+								environment: environment,
+								stdio: {
+									output: $context.stdio.output,
+									error: $context.stdio.error
+								},
+								directory: properties.get("user.dir")
+							}
+						}
+					}
+				}
+			},
 			listeners: module.events.listeners,
 			properties: properties,
 			invocation: $exports.invocation,
 			environment: $exports.environment,
 			java: $exports.java,
-			embed: $exports.embed,
 			TMPDIR: $exports.TMPDIR,
 			USER: $exports.USER,
 			HOME: $exports.HOME,
