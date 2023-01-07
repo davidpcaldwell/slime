@@ -491,7 +491,7 @@
 						api: {
 							document: $context.api.document,
 							js: $context.api.js,
-							shell: $exports,
+							shell: x,
 							xml: $context.api.xml
 						}
 					});
