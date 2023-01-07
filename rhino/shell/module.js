@@ -19,15 +19,6 @@
 			throw new Error("Missing: $context.api.io");
 		}
 
-		var toLocalPathname = function(osPathname) {
-			var _rv = osPathname.java.adapt();
-			return $context.api.file.filesystem.java.adapt(_rv);
-		}
-
-		var toLocalSearchpath = function(searchpath) {
-			return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
-		};
-
 		/** @type { Pick<slime.jrunscript.shell.Exports,"TMPDIR"|"USER"|"HOME"|"PWD"|"PATH"|"os"|"run"|"invocation"|"user"|"system"|"java"|"jrunscript"|"rhino"|"kotlin"|"Invocation"|"world"|"Tell"|"environment"|"browser"> } */
 		var $exports = {};
 
@@ -36,6 +27,15 @@
 		};
 
 		var environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
+
+		/**
+		 *
+		 * @param { slime.jrunscript.file.Pathname } osPathname
+		 */
+		var toLocalPathname = function(osPathname) {
+			var _rv = osPathname.java.adapt();
+			return $context.api.file.filesystem.java.adapt(_rv);
+		};
 
 		var properties = (
 			/**
@@ -76,6 +76,9 @@
 		if (properties.get("user.dir")) {
 			$exports.PWD = properties.directory("user.dir");
 		}
+		var toLocalSearchpath = function(searchpath) {
+			return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
+		};
 		if (environment.PATH) {
 			$exports.PATH = toLocalSearchpath(environment.PATH);
 		} else if (environment.Path) {

@@ -28,19 +28,19 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Context {
-		stdio: context.Stdio
-
 		/**
 		 * (optional: if omitted, the actual operating system environment will be used.) An object representing the operating system
 		 * environment.
 		 */
-		_environment: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+		_environment?: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
 
 		/**
 		 * (optional: if omitted, the actual system properties will be used.) A set of properties representing Java system
 		 * properties.
 		 */
-		_properties: slime.jrunscript.native.java.util.Properties
+		_properties?: slime.jrunscript.native.java.util.Properties
+
+		stdio: context.Stdio
 
 		kotlin: {
 			compiler: slime.jrunscript.file.File
