@@ -99,6 +99,8 @@ namespace slime.jrunscript.shell {
 					process: () => slime.jrunscript.shell.run.Parent
 				}
 			}
+			action: slime.$api.fp.world.Action<run.Plan,run.TellEvents>
+			question: slime.$api.fp.world.Question<run.Plan,run.AskEvents,run.Exit>
 		}
 
 		(
@@ -126,20 +128,34 @@ namespace slime.jrunscript.shell {
 				}
 
 				fifty.tests.manual.subprocess.question = function() {
-					var invocation = subject.subprocess.Invocation.from.plan(
-						subject.subprocess.Parent.from.process()
-					)({
-						command: "ls",
-						stdio: {
-							output: "string"
-						}
-					});
-					var exit = $api.fp.world.now.question(
-						subject.subprocess.question,
-						invocation
-					);
-					jsh.shell.console(JSON.stringify(exit));
+					$api.fp.now.invoke(
+						{
+							command: "ls",
+							stdio: {
+								output: "string"
+							}
+						},
+						$api.fp.world.mapping(subject.subprocess.question),
+						$api.fp.JSON.stringify({ space: 4 }),
+						jsh.shell.console
+					)
 				}
+
+				fifty.tests.manual.subprocess.question = $api.fp.impure.Process.create({
+					input: $api.fp.impure.Input.map(
+						$api.fp.impure.Input.value({
+							command: "ls",
+							stdio: {
+								output: "string"
+							}
+						} as slime.jrunscript.shell.run.Plan),
+						$api.fp.world.mapping(subject.subprocess.question)
+					),
+					output: $api.fp.pipe(
+						$api.fp.JSON.stringify({ space: 4 }),
+						jsh.shell.console
+					)
+				});
 			}
 		//@ts-ignore
 		)(fifty);
