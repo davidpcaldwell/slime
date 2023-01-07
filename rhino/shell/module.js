@@ -19,7 +19,7 @@
 			throw new Error("Missing: $context.api.io");
 		}
 
-		/** @type { Pick<slime.jrunscript.shell.Exports,"TMPDIR"|"USER"|"HOME"|"PWD"|"PATH"|"os"|"run"|"invocation"|"user"|"system"|"java"|"jrunscript"|"rhino"|"kotlin"|"Invocation"|"world"|"Tell"|"environment"|"browser"> } */
+		/** @type { Pick<slime.jrunscript.shell.Exports,"TMPDIR"|"USER"|"HOME"|"PWD"|"PATH"|"os"|"invocation"|"user"|"system"|"java"|"jrunscript"|"rhino"|"kotlin"|"Invocation"|"world"|"Tell"|"environment"|"browser"> } */
 		var $exports = {};
 
 		var module = {
@@ -405,39 +405,7 @@
 			}
 		})();
 
-		$exports.run = scripts.run_old.run;
-
 		$exports.invocation = invocation.invocation;
-
-		var embed = $api.events.Function(
-			/**
-			 * @param { { method: Function, argument: object, started: (p: { output?: string, error?: string }) => boolean } } p
-			 */
-			function(p,events) {
-				var ServerMonitor = function(started) {
-					return function(events) {
-						return {
-							output: {
-								line: function(line) {
-									events.fire("stdout", line);
-									if (started({ output: line })) events.fire("started");
-								}
-							},
-							error: {
-								line: function(line) {
-									events.fire("stderr", line);
-									if (started({ error: line })) events.fire("started");
-								}
-							}
-						}
-					}
-				};
-
-				p.method(
-					$api.Object.compose(p.argument, { stdio: ServerMonitor(p.started)(events) })
-				);
-			}
-		);
 
 		$exports.os = new function() {
 			this.name = properties.get("os.name");
@@ -465,7 +433,7 @@
 				},
 				TMPDIR: $exports.TMPDIR,
 				os: this,
-				run: $exports.run,
+				run: scripts.run_old.run,
 				environment: environment,
 				api: {
 					js: $context.api.js,
@@ -500,7 +468,7 @@
 						os: $exports.os,
 						HOME: $exports.HOME,
 						TMPDIR: $exports.TMPDIR,
-						run: $exports.run,
+						run: scripts.run_old.run,
 						environment: environment,
 						api: {
 							js: $context.api.js,
@@ -583,7 +551,7 @@
 					args.push(p.main);
 				}
 				shell.arguments = args.concat( (p.arguments) ? p.arguments : [] );
-				return $exports.run(shell);
+				return scripts.run_old.run(shell);
 			},
 			{
 				version: void(0),
@@ -731,7 +699,7 @@
 
 			var args = vmargs.concat(launch.arguments).concat(p.arguments);
 
-			return $exports.run($context.api.js.Object.set({}, p, {
+			return scripts.run_old.run($context.api.js.Object.set({}, p, {
 				command: launch.command,
 				arguments: args
 			}));
@@ -800,7 +768,10 @@
 							}
 						}
 					}
-				}
+				},
+				Invocation: scripts.run.exports.Invocation,
+				question: scripts.run.exports.question,
+				action: scripts.run.exports.action
 			},
 			listeners: module.events.listeners,
 			properties: properties,
@@ -820,7 +791,7 @@
 			world: $exports.world,
 			Invocation: $exports.Invocation,
 			Tell: $exports.Tell,
-			run: $exports.run,
+			run: scripts.run_old.run,
 			PATH: $exports.PATH,
 			browser: $exports.browser,
 			test: {

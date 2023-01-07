@@ -453,7 +453,27 @@
 		}
 
 		$export({
-			subprocess: {
+			exports: {
+				Invocation: {
+					from: {
+						plan: function(parent) {
+							return function(plan) {
+								return {
+									command: plan.command,
+									arguments: plan.arguments || [],
+									environment: plan.environment || parent.environment,
+									directory: plan.directory || parent.directory,
+									stdio: {
+										//	TODO	maybe should supply empty InputStream right here
+										input: (plan.stdio && plan.stdio.input) ? plan.stdio.input : null,
+										output: (plan.stdio && plan.stdio.output) ? plan.stdio.output : parent.stdio.output,
+										error: (plan.stdio && plan.stdio.error) ? plan.stdio.error : parent.stdio.error
+									}
+								}
+							}
+						}
+					}
+				},
 				action: function(invocation) {
 					return spi(invocation);
 				},

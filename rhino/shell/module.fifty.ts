@@ -84,33 +84,66 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace exports {
+		export interface Subprocess {}
+	}
+
 	export interface Exports {
-		subprocess: {
+		subprocess: exports.Subprocess
+	}
+
+	export namespace exports {
+		export interface Subprocess {
 			Parent: {
 				from: {
 					process: () => slime.jrunscript.shell.run.Parent
 				}
 			}
 		}
-	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { jsh } = fifty.global;
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
 
-			const subject = jsh.shell;
+				const subject = jsh.shell;
 
-			fifty.tests.manual.subprocess = {};
+				fifty.tests.manual.subprocess = {};
 
-			fifty.tests.manual.subprocess.Parent = function() {
-				var parent = subject.subprocess.Parent.from.process();
-				jsh.shell.console(JSON.stringify(parent,void(0),4));
+				fifty.tests.manual.subprocess.Parent = function() {
+					var parent = subject.subprocess.Parent.from.process();
+					jsh.shell.console(JSON.stringify(parent,void(0),4));
+				}
+
+				fifty.tests.manual.subprocess.Invocation = function() {
+					var invocation = subject.subprocess.Invocation.from.plan(
+						subject.subprocess.Parent.from.process()
+					)({
+						command: "ls"
+					});
+					jsh.shell.console(JSON.stringify(invocation));
+				}
+
+				fifty.tests.manual.subprocess.question = function() {
+					var invocation = subject.subprocess.Invocation.from.plan(
+						subject.subprocess.Parent.from.process()
+					)({
+						command: "ls",
+						stdio: {
+							output: "string"
+						}
+					});
+					var exit = $api.fp.world.now.question(
+						subject.subprocess.question,
+						invocation
+					);
+					jsh.shell.console(JSON.stringify(exit));
+				}
 			}
-		}
-	//@ts-ignore
-	)(fifty);
+		//@ts-ignore
+		)(fifty);
+	}
 
 	export interface Exports {
 		listeners: $api.Events<{
