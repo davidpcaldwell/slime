@@ -20,6 +20,24 @@ namespace slime.jrunscript.shell {
 		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 		action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
 	}
+
+	export namespace exports {
+		export interface Subprocess {
+			Invocation: {
+				from: {
+					plan: (parent: run.Parent) => (plan: run.Plan) => run.Invocation
+				}
+			}
+			question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+			action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+		}
+	}
+}
+
+namespace slime.jrunscript.shell.internal.run {
+	export interface Exports {
+		exports: Pick<slime.jrunscript.shell.exports.Subprocess,"Invocation"|"question"|"action">
+	}
 }
 
 namespace slime.jrunscript.shell.run {
@@ -57,6 +75,10 @@ namespace slime.jrunscript.shell.run {
 		stdio: StdioConfiguration
 		command: string
 		arguments: string[]
+	}
+
+	export type Plan = Pick<Invocation,"command"> & Partial<Omit<Invocation,"command"|"stdio">> & {
+		stdio?: Partial<StdioConfiguration>
 	}
 
 	export interface Parent {
@@ -189,13 +211,6 @@ namespace slime.jrunscript.shell.internal.run {
 			};
 		//@ts-ignore
 		})(fifty);
-	}
-
-	export interface Exports {
-		subprocess: {
-			question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
-			action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
-		}
 	}
 
 	export interface Exports {

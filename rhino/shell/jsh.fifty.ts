@@ -112,20 +112,6 @@ namespace slime.jsh.shell {
 		HOME: slime.jrunscript.file.Directory
 		PATH: slime.jrunscript.file.Searchpath
 		listeners: any
-		system: {
-			apple: {
-				plist: {
-					xml: {
-						encode: Function
-						decode: Function
-					}
-				}
-				osx: {
-					ApplicationBundle: any
-				}
-			}
-			opendesktop: any
-		},
 		tools: jsh.shell.tools.Exports
 	}
 }

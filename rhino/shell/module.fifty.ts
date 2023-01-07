@@ -77,40 +77,73 @@ namespace slime.jrunscript.shell {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.exports = {};
+			fifty.tests.exports = fifty.test.Parent();
 
 			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
 
+	export namespace exports {
+		export interface Subprocess {}
+	}
+
 	export interface Exports {
-		subprocess: {
+		subprocess: exports.Subprocess
+	}
+
+	export namespace exports {
+		export interface Subprocess {
 			Parent: {
 				from: {
 					process: () => slime.jrunscript.shell.run.Parent
 				}
 			}
 		}
-	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { jsh } = fifty.global;
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
 
-			const subject = jsh.shell;
+				const subject = jsh.shell;
 
-			fifty.tests.manual.subprocess = {};
+				fifty.tests.manual.subprocess = {};
 
-			fifty.tests.manual.subprocess.Parent = function() {
-				var parent = subject.subprocess.Parent.from.process();
-				jsh.shell.console(JSON.stringify(parent,void(0),4));
+				fifty.tests.manual.subprocess.Parent = function() {
+					var parent = subject.subprocess.Parent.from.process();
+					jsh.shell.console(JSON.stringify(parent,void(0),4));
+				}
+
+				fifty.tests.manual.subprocess.Invocation = function() {
+					var invocation = subject.subprocess.Invocation.from.plan(
+						subject.subprocess.Parent.from.process()
+					)({
+						command: "ls"
+					});
+					jsh.shell.console(JSON.stringify(invocation));
+				}
+
+				fifty.tests.manual.subprocess.question = function() {
+					var invocation = subject.subprocess.Invocation.from.plan(
+						subject.subprocess.Parent.from.process()
+					)({
+						command: "ls",
+						stdio: {
+							output: "string"
+						}
+					});
+					var exit = $api.fp.world.now.question(
+						subject.subprocess.question,
+						invocation
+					);
+					jsh.shell.console(JSON.stringify(exit));
+				}
 			}
-		}
-	//@ts-ignore
-	)(fifty);
+		//@ts-ignore
+		)(fifty);
+	}
 
 	export interface Exports {
 		listeners: $api.Events<{
@@ -454,8 +487,6 @@ namespace slime.jrunscript.shell {
 			downloads?: slime.jrunscript.file.Directory
 		}
 
-		system: any
-
 		jrunscript: any
 
 		kotlin: any
@@ -464,6 +495,161 @@ namespace slime.jrunscript.shell {
 
 		world: World
 	}
+
+	export namespace system {
+		export namespace apple {
+			export namespace osx {
+				/**
+				 * An object specifying properties to be added to the `Info.plist`. Properties with string values will be
+				 * treated as name-value pairs. Some properties allow non-string values, as specified below. The
+				 * `CFBundlePackageType` property is hard-coded to `APPL`, per Apple's specification. The following
+				 * properties are also required to be supplied, per Apple's documentation (although SLIME provides a default
+				 * value for one):
+				 */
+				export interface ApplicationBundleInfo {
+					/**
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html)
+					 */
+					CFBundleName: string
+
+					/**
+					 * Apple says this value is required, but it does not appear to be required.
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
+					 */
+					CFBundleDisplayName?: string
+
+					/**
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
+					 */
+					CFBundleIdentifier: string
+
+					/**
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
+					 */
+					CFBundleVersion: string
+
+					/**
+					 * (optional; defaults to `????`; see [Stack
+					 * Overflow](http://stackoverflow.com/questions/1875912/naming-convention-for-cfbundlesignature-and-cfbundleidentifier).)
+					 *
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
+					 */
+					CFBundleSignature?: string
+
+					//	TODO	document allowed object type with command (preceding comment copied from JSAPI)
+					/**
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
+					 */
+					CFBundleExecutable: string | { name: string, command: string }
+
+					//	Added to make test pass type checking; not sure what this does
+					CFBundleIconFile?: any
+				}
+
+				export interface ApplicationBundle {
+					directory: slime.jrunscript.file.Directory
+					info: ApplicationBundleInfo
+				}
+			}
+		}
+	}
+
+	export interface Exports {
+		system: {
+			apple: {
+				plist: {
+					xml: {
+						encode: Function
+						decode: Function
+					}
+				}
+				osx: {
+					/**
+					 * Implements the creation of OS X [Application
+					 * Bundles](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/Introduction/Introduction.html).
+					 */
+					ApplicationBundle: new (p: {
+						/**
+						 * The location at which to create the bundle.
+						 */
+						pathname: slime.jrunscript.file.Pathname
+
+						info: system.apple.osx.ApplicationBundleInfo
+					}) => system.apple.osx.ApplicationBundle
+				}
+			}
+			opendesktop: any
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			const subject = jsh.shell;
+
+			fifty.tests.exports.system = function() {
+				fifty.run(function applicationBundle() {
+					if (subject.system.apple.osx.ApplicationBundle) {
+						var tmpfile = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("tmp.icns");
+						tmpfile.write("ICONS", { append: false });
+						var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+						tmp.directory.remove();
+						var bundle = new subject.system.apple.osx.ApplicationBundle({
+							pathname: tmp,
+							info: {
+								CFBundleName: "name",
+								CFBundleIdentifier: "com.bitbucket.davidpcaldwell.slime",
+								CFBundleVersion: "1",
+								CFBundleExecutable: {
+									name: "program",
+									command: "ls"
+								},
+								CFBundleIconFile: {
+									file: tmpfile.file
+								}
+							}
+						});
+						verify(bundle).directory.evaluate(String).is(tmp.directory.toString());
+						verify(bundle).info.is.type("object");
+						//	TODO	not sure what the below is for
+						//@ts-ignore
+						bundle.info = "foo";
+						verify(bundle).info.is.type("object");
+						verify(bundle).info.CFBundleName.is("name");
+						verify(bundle).info.CFBundleIdentifier.is("com.bitbucket.davidpcaldwell.slime");
+						verify(bundle).info.CFBundleVersion.is("1");
+						verify(bundle).info.CFBundleExecutable.evaluate(String).is("program");
+						verify(bundle).directory.getFile("Contents/MacOS/program").is.type("object");
+						verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("null");
+						verify(bundle).directory.getFile("Contents/Resources/tmp.icns").is.type("object");
+
+						bundle.info.CFBundleExecutable = "string";
+						verify(bundle).info.CFBundleExecutable.evaluate(String).is("string");
+
+						bundle.info.CFBundleExecutable = {
+							name: "executable",
+							command: "pwd"
+						};
+						verify(bundle).directory.getFile("Contents/MacOS/program").is.type("null");
+						verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("object");
+						verify(bundle).directory.evaluate(function() {
+							var file = this.getFile("Contents/MacOS/executable");
+							if (!file) return null;
+							return { string: file.read(String) };
+						}).is.type("object");
+					} else {
+						var message = "ApplicationBundle not available on this system";
+						verify(message).is(message);
+					}
+				})
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>;
 
@@ -788,11 +974,11 @@ namespace slime.jrunscript.shell {
 				fifty.run(fifty.tests.listeners);
 				fifty.run(fifty.tests.environment);
 
-				fifty.run(fifty.tests.exports.Tell);
-
 				fifty.run(fifty.tests.jsapi);
 
 				fifty.run(fifty.tests.invocation);
+
+				fifty.run(fifty.tests.exports);
 
 				fifty.load("run.fifty.ts");
 				fifty.load("run-old.fifty.ts");
