@@ -27,16 +27,16 @@ namespace slime.jrunscript.shell {
 				from: {
 					plan: (parent: run.Parent) => (plan: run.Plan) => run.Invocation
 				}
+				question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+				action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 			}
-			question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
-			action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 		}
 	}
 }
 
 namespace slime.jrunscript.shell.internal.run {
 	export interface Exports {
-		exports: Pick<slime.jrunscript.shell.exports.Subprocess,"Invocation"|"question"|"action">
+		exports: Pick<slime.jrunscript.shell.exports.Subprocess,"Invocation">
 	}
 }
 

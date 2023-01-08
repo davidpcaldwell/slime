@@ -752,26 +752,36 @@
 
 		$exports.environment = environment;
 
+		var Parent_from_process = function() {
+			return {
+				environment: environment,
+				stdio: {
+					output: $context.stdio.output,
+					error: $context.stdio.error
+				},
+				directory: properties.get("user.dir")
+			}
+		}
+
 		/** @type { slime.jrunscript.shell.Exports } */
 		var x = {
 			subprocess: {
 				Parent: {
 					from: {
-						process: function() {
-							return {
-								environment: environment,
-								stdio: {
-									output: $context.stdio.output,
-									error: $context.stdio.error
-								},
-								directory: properties.get("user.dir")
-							}
-						}
+						process: Parent_from_process
 					}
 				},
 				Invocation: scripts.run.exports.Invocation,
-				question: scripts.run.exports.question,
-				action: scripts.run.exports.action
+				action: function(p) {
+					return scripts.run.exports.Invocation.action(
+						scripts.run.exports.Invocation.from.plan(Parent_from_process())(p)
+					);
+				},
+				question: function(p) {
+					return scripts.run.exports.Invocation.question(
+						scripts.run.exports.Invocation.from.plan(Parent_from_process())(p)
+					);
+				}
 			},
 			listeners: module.events.listeners,
 			properties: properties,

@@ -472,37 +472,37 @@
 								}
 							}
 						}
-					}
-				},
-				action: function(invocation) {
-					return spi(invocation);
-				},
-				question: function(invocation) {
-					return function(events) {
-						/** @type { slime.jrunscript.shell.run.Exit } */
-						var rv;
-						$api.fp.impure.now.process(
-							$api.fp.world.process(
-								spi(invocation),
-								{
-									start: function(e) {
-										events.fire("start", e.detail);
-									},
-									stdout: function(e) {
-										events.fire("stdout", e.detail);
-									},
-									stderr: function(e) {
-										events.fire("stderr", e.detail);
-									},
-									exit: function(e) {
-										rv = e.detail;
+					},
+					action: function(invocation) {
+						return spi(invocation);
+					},
+					question: function(invocation) {
+						return function(events) {
+							/** @type { slime.jrunscript.shell.run.Exit } */
+							var rv;
+							$api.fp.impure.now.process(
+								$api.fp.world.process(
+									spi(invocation),
+									{
+										start: function(e) {
+											events.fire("start", e.detail);
+										},
+										stdout: function(e) {
+											events.fire("stdout", e.detail);
+										},
+										stderr: function(e) {
+											events.fire("stderr", e.detail);
+										},
+										exit: function(e) {
+											rv = e.detail;
+										}
 									}
-								}
-							)
-						);
-						return rv;
+								)
+							);
+							return rv;
+						}
 					}
-				}
+				},
 			},
 			action: function(old) {
 				return spi(modernize(old));
