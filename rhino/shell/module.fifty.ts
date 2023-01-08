@@ -99,8 +99,8 @@ namespace slime.jrunscript.shell {
 					process: () => slime.jrunscript.shell.run.Parent
 				}
 			}
-			action: slime.$api.fp.world.Action<run.Plan,run.TellEvents>
-			question: slime.$api.fp.world.Question<run.Plan,run.AskEvents,run.Exit>
+			action: slime.$api.fp.world.Action<run.Intention,run.TellEvents>
+			question: slime.$api.fp.world.Question<run.Intention,run.AskEvents,run.Exit>
 		}
 
 		(
@@ -119,26 +119,12 @@ namespace slime.jrunscript.shell {
 				}
 
 				fifty.tests.manual.subprocess.Invocation = function() {
-					var invocation = subject.subprocess.Invocation.from.plan(
+					var invocation = subject.subprocess.Invocation.from.intention(
 						subject.subprocess.Parent.from.process()
 					)({
 						command: "ls"
 					});
 					jsh.shell.console(JSON.stringify(invocation));
-				}
-
-				fifty.tests.manual.subprocess.question = function() {
-					$api.fp.now.invoke(
-						{
-							command: "ls",
-							stdio: {
-								output: "string"
-							}
-						},
-						$api.fp.world.mapping(subject.subprocess.question),
-						$api.fp.JSON.stringify({ space: 4 }),
-						jsh.shell.console
-					)
 				}
 
 				fifty.tests.manual.subprocess.question = $api.fp.impure.Process.create({
@@ -148,7 +134,7 @@ namespace slime.jrunscript.shell {
 							stdio: {
 								output: "string"
 							}
-						} as slime.jrunscript.shell.run.Plan),
+						} as slime.jrunscript.shell.run.Intention),
 						$api.fp.world.mapping(subject.subprocess.question)
 					),
 					output: $api.fp.pipe(
