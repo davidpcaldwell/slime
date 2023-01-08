@@ -456,12 +456,13 @@
 			exports: {
 				Invocation: {
 					from: {
-						plan: function(parent) {
+						intention: function(parent) {
 							return function(plan) {
+								var environment = plan.environment || $api.fp.identity;
 								return {
 									command: plan.command,
 									arguments: plan.arguments || [],
-									environment: plan.environment || parent.environment,
+									environment: environment(parent.environment),
 									directory: plan.directory || parent.directory,
 									stdio: {
 										//	TODO	maybe should supply empty InputStream right here

@@ -774,12 +774,12 @@
 				Invocation: scripts.run.exports.Invocation,
 				action: function(p) {
 					return scripts.run.exports.Invocation.action(
-						scripts.run.exports.Invocation.from.plan(Parent_from_process())(p)
+						scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
 					);
 				},
 				question: function(p) {
 					return scripts.run.exports.Invocation.question(
-						scripts.run.exports.Invocation.from.plan(Parent_from_process())(p)
+						scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
 					);
 				}
 			},
