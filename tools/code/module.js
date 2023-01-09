@@ -63,6 +63,7 @@
 
 				if (/\.html$/.test(basename)) return true;
 				if (/\.java$/.test(basename)) return true;
+				if (/\.scala$/.test(basename)) return true;
 				if (/\.css$/.test(basename)) return true;
 				if (/\.c$/.test(basename)) return true;
 				if (/\.cpp$/.test(basename)) return true;
