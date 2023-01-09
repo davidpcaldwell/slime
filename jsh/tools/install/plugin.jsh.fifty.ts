@@ -141,32 +141,16 @@ namespace slime.jsh.shell.tools {
 	}
 
 	export namespace scala {
-		export interface Installation {
-			base: string
-		}
-
 		export interface Exports {
 			Installation: {
 				from: {
-					jsh: slime.$api.fp.impure.Input<scala.Installation>
+					jsh: slime.$api.fp.impure.Input<slime.jrunscript.tools.scala.Installation>
 				}
 
-				install: (installation: scala.Installation) => slime.$api.fp.world.Action<{ majorVersion: number }, void>
-
-				getVersion: slime.$api.fp.world.Question<scala.Installation,void,slime.$api.fp.Maybe<string>>
-
-				compile: (installation: scala.Installation) => slime.$api.fp.world.Action<{
-					destination: slime.jrunscript.file.Pathname
-					deprecation: boolean
-					files: any[]
-				},slime.jrunscript.shell.run.TellEvents>
-
-				run: (installation: scala.Installation) => slime.$api.fp.world.Action<{
-					deprecation: boolean
-					classpath: slime.jrunscript.file.Pathname
-					main: string
-				},slime.jrunscript.shell.run.TellEvents>
-			}
+				//	TODO	should be able to migrate this to jrunscript at some point, but currently uses a jsh-specific API for
+				//			implementation
+				install: (installation: slime.jrunscript.tools.scala.Installation) => slime.$api.fp.world.Action<{ majorVersion: number }, void>
+			} & slime.jrunscript.tools.scala.Exports["Installation"]
 		}
 
 		(

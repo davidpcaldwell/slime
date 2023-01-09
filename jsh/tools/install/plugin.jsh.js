@@ -16,7 +16,7 @@
 	function(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install);
+				return Boolean(jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install && plugins.scala);
 			},
 			load: function() {
 				/**
@@ -475,15 +475,6 @@
 
 				var scala = (jsh.shell.jsh.lib) ? (
 					function() {
-						/** @type { slime.jrunscript.shell.run.Intention["environment"] } */
-						var prependJavaToPath = function(existingEnvironment) {
-							//	TODO	should be refactoring this out of existence but if not there must be a
-							//			better API
-							var PATH = jsh.file.Searchpath(existingEnvironment.PATH.split(":").map(jsh.file.Pathname)).pathnames;
-							PATH.splice(0, 0, jsh.shell.java.launcher.parent.pathname);
-							return $api.Object.compose(existingEnvironment, { PATH: jsh.file.Searchpath(PATH).toString() });
-						};
-
 						/** @type { slime.jsh.shell.tools.scala.Exports["Installation"] } */
 						var Installation = {
 							from: {
@@ -515,101 +506,9 @@
 									}
 								}
 							},
-							getVersion: function(installation) {
-								return function(events) {
-									return $api.fp.now.invoke(
-										installation,
-										$api.fp.property("base"),
-										jsh.file.world.Location.from.os,
-										jsh.file.world.Location.relative("bin/scala"),
-										$api.fp.switch([
-											$api.fp.Partial.match({
-												if: $api.fp.world.mapping(jsh.file.world.Location.file.exists()),
-												then: $api.fp.identity
-											})
-										]),
-										$api.fp.Maybe.map(
-											$api.fp.pipe(
-												function(program) {
-													var PATH = jsh.file.Searchpath(jsh.shell.PATH.pathnames.slice());
-													PATH.pathnames.splice(0, 0, jsh.shell.java.launcher.parent.pathname);
-													jsh.shell.console("PATH = " + PATH.toString());
-													return jsh.shell.Invocation.from.argument({
-														command: program.pathname,
-														arguments: ["-version"],
-														environment: $api.Object.compose(
-															jsh.shell.environment,
-															{
-																PATH: PATH.toString()
-															}
-														),
-														stdio: {
-															output: "string",
-															error: "string"
-														}
-													})
-												},
-												$api.fp.world.mapping(jsh.shell.world.question),
-												$api.fp.property("stdio"),
-												$api.fp.property("error"),
-												function(string) {
-													var pattern = /^Scala code runner version ([\d\.]+) (?:.*)/;
-													var match = pattern.exec(string);
-													if (match === null) throw new TypeError("Could not determine Scala version from output [" + string + "]");
-													return match[1];
-												}
-											)
-										)
-									)
-									return $api.fp.Maybe.nothing();
-								}
-							},
-							compile: function(installation) {
-								var o = {
-									directory: jsh.file.Pathname(installation.base).directory
-								}
-								return function(p) {
-									return function(events) {
-										//	TODO	scalac will error if this is not done; document it
-										if (p.destination) p.destination.createDirectory({
-											exists: function() {
-												return false;
-											}
-										});
-										var tell = jsh.shell.subprocess.action({
-											command: o.directory.getFile("bin/scalac").toString(),
-											arguments: $api.Array.build(function(list) {
-												if (p.deprecation) list.push("-deprecation");
-												if (p.destination) list.push("-d", p.destination.toString());
-												list.push.apply(list,p.files);
-											}),
-											environment: prependJavaToPath
-										});
-										tell(events);
-									}
-								}
-							},
-							run: function(installation) {
-								var o = {
-									directory: jsh.file.Pathname(installation.base).directory
-								}
-								return function(p) {
-									return function(events) {
-										//	TODO	possibly could just use java command with location.directory.getRelativePath("lib/scala-library.jar")
-										//			in classpath
-										var tell = jsh.shell.subprocess.action({
-											command: o.directory.getFile("bin/scala").toString(),
-											arguments: $api.Array.build(function(list) {
-												if (p.classpath) list.push("-classpath", p.classpath.toString());
-												if (p.deprecation) list.push("-deprecation");
-												list.push(p.main);
-											}),
-											environment: prependJavaToPath
-										});
-										tell(events);
-									}
-								}
-							}
+							getVersion: plugins.scala.Installation.getVersion,
+							compile: plugins.scala.Installation.compile,
+							run: plugins.scala.Installation.run
 						};
 
 						return {
