@@ -475,6 +475,15 @@
 
 				var scala = (jsh.shell.jsh.lib) ? (
 					function() {
+						/** @type { slime.jrunscript.shell.run.Intention["environment"] } */
+						var prependJavaToPath = function(existingEnvironment) {
+							//	TODO	should be refactoring this out of existence but if not there must be a
+							//			better API
+							var PATH = jsh.file.Searchpath(existingEnvironment.PATH.split(":").map(jsh.file.Pathname)).pathnames;
+							PATH.splice(0, 0, jsh.shell.java.launcher.parent.pathname);
+							return $api.Object.compose(existingEnvironment, { PATH: jsh.file.Searchpath(PATH).toString() });
+						};
+
 						/** @type { slime.jsh.shell.tools.scala.Exports["Installation"] } */
 						var Installation = {
 							from: {
@@ -561,27 +570,22 @@
 								}
 								return function(p) {
 									return function(events) {
+										//	TODO	scalac will error if this is not done; document it
 										if (p.destination) p.destination.createDirectory({
 											exists: function() {
 												return false;
 											}
 										});
-										var PATH = jsh.shell.PATH.pathnames;
-										PATH.splice(0, 0, jsh.shell.java.launcher.parent.pathname);
-										return jsh.shell.run({
-											command: o.directory.getFile("bin/scalac"),
+										var tell = jsh.shell.subprocess.action({
+											command: o.directory.getFile("bin/scalac").toString(),
 											arguments: $api.Array.build(function(list) {
 												if (p.deprecation) list.push("-deprecation");
-												if (p.destination) list.push("-d", p.destination);
+												if (p.destination) list.push("-d", p.destination.toString());
 												list.push.apply(list,p.files);
 											}),
-											environment: $api.Object.compose(
-												jsh.shell.environment,
-												{
-													PATH: jsh.file.Searchpath(PATH).toString()
-												}
-											)
+											environment: prependJavaToPath
 										});
+										tell(events);
 									}
 								}
 							},
@@ -593,22 +597,16 @@
 									return function(events) {
 										//	TODO	possibly could just use java command with location.directory.getRelativePath("lib/scala-library.jar")
 										//			in classpath
-										var PATH = jsh.shell.PATH.pathnames;
-										PATH.splice(0, 0, jsh.shell.java.launcher.parent.pathname);
-										return jsh.shell.run({
-											command: o.directory.getFile("bin/scala"),
+										var tell = jsh.shell.subprocess.action({
+											command: o.directory.getFile("bin/scala").toString(),
 											arguments: $api.Array.build(function(list) {
-												if (p.classpath) list.push("-classpath", p.classpath);
+												if (p.classpath) list.push("-classpath", p.classpath.toString());
 												if (p.deprecation) list.push("-deprecation");
 												list.push(p.main);
 											}),
-											environment: $api.Object.compose(
-												jsh.shell.environment,
-												{
-													PATH: jsh.file.Searchpath(PATH).toString()
-												}
-											)
+											environment: prependJavaToPath
 										});
+										tell(events);
 									}
 								}
 							}

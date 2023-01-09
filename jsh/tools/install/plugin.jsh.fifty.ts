@@ -159,13 +159,13 @@ namespace slime.jsh.shell.tools {
 					destination: slime.jrunscript.file.Pathname
 					deprecation: boolean
 					files: any[]
-				},void>
+				},slime.jrunscript.shell.run.TellEvents>
 
 				run: (installation: scala.Installation) => slime.$api.fp.world.Action<{
 					deprecation: boolean
 					classpath: slime.jrunscript.file.Pathname
 					main: string
-				},void>
+				},slime.jrunscript.shell.run.TellEvents>
 			}
 		}
 
@@ -185,6 +185,29 @@ namespace slime.jsh.shell.tools {
 						managed
 					);
 					jsh.shell.console(JSON.stringify(version));
+				}
+
+				fifty.tests.manual.scala.compile = function() {
+					var local = subject.Installation.from.jsh();
+					var to = fifty.jsh.file.temporary.location();
+					var compile = subject.Installation.compile(local);
+					var run = subject.Installation.run(local);
+					$api.fp.world.now.action(
+						compile,
+						{
+							deprecation: true,
+							destination: jsh.file.Pathname(to.pathname),
+							files: [fifty.jsh.file.object.getRelativePath("test/data/Hello.scala")]
+						}
+					);
+					$api.fp.world.now.action(
+						run,
+						{
+							deprecation: true,
+							classpath: jsh.file.Pathname(to.pathname),
+							main: "Hello"
+						}
+					);
 				}
 			}
 		//@ts-ignore
