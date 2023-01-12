@@ -78,7 +78,11 @@ namespace slime.jrunscript.shell.run {
 	}
 
 	export type Intention = Pick<Invocation,"command"> & Partial<Omit<Invocation,"command"|"stdio"|"environment">> & {
-		stdio?: Partial<StdioConfiguration>
+		stdio?: {
+			input?: string | StdioConfiguration["input"]
+			output?: StdioConfiguration["output"]
+			error?: StdioConfiguration["error"]
+		}
 		environment?: slime.$api.fp.Transform<Invocation["environment"]>
 	}
 

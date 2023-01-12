@@ -457,6 +457,22 @@
 				Invocation: {
 					from: {
 						intention: function(parent) {
+							/**
+							 *
+							 * @param { string | slime.jrunscript.runtime.io.InputStream } p
+							 * @return { slime.jrunscript.runtime.io.InputStream }
+							 */
+							var toInputStream = function(p) {
+								if (typeof(p) == "string") {
+									var buffer = new $context.api.io.Buffer();
+									buffer.writeText().write(p);
+									buffer.close();
+									return buffer.readBinary();
+								} else {
+									return p;
+								}
+							};
+
 							return function(plan) {
 								var environment = plan.environment || $api.fp.identity;
 								return {
@@ -466,7 +482,7 @@
 									directory: plan.directory || parent.directory,
 									stdio: {
 										//	TODO	maybe should supply empty InputStream right here
-										input: (plan.stdio && plan.stdio.input) ? plan.stdio.input : null,
+										input: (plan.stdio && plan.stdio.input) ? toInputStream(plan.stdio.input) : null,
 										output: (plan.stdio && plan.stdio.output) ? plan.stdio.output : parent.stdio.output,
 										error: (plan.stdio && plan.stdio.error) ? plan.stdio.error : parent.stdio.error
 									}
