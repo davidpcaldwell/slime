@@ -28,21 +28,32 @@ namespace slime.jrunscript.tools.hg.install {
 		hg: string
 	}
 
-	export interface Exports {
+	/**
+	 * Wraps the {@link slime.jrunscript.tools.hg.Exports} module, adding additional methods pertaining to installation.
+	 */
+	export interface Exports extends slime.jrunscript.tools.hg.Exports {
 		distribution: {
 			osx: (o: {
 				os: string
 			}) => Distribution
 		}
+
 		install: {
+			/**
+			 * Updates the Mercurial install to the best version for the platform.
+			 */
 			(p: {
 				mock: any
 			}, listener?: {}) : void
 			GUI: any
 		}
+
 		installed: any
 		installation: any
 		Installation: any
+
+		init: any
+		Repository: any
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>

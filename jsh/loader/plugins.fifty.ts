@@ -17,6 +17,8 @@ namespace slime.jsh.loader.internal.plugins {
 			plugins?: { [x: string]: any }
 			$loader: slime.Loader
 			$slime?: slime.jsh.plugin.$slime
+
+			toString?: any
 		}) => {
 			global: { [x: string]: any },
 			jsh: { [x: string]: any },

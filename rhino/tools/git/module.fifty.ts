@@ -1141,12 +1141,15 @@ namespace slime.jrunscript.tools.git {
 		console: any
 	}
 
+	export interface CredentialHelpers {
+	}
+
 	export interface Exports {
 		Installation: (environment: {
 			program: slime.jrunscript.file.File
 		}) => slime.jrunscript.tools.git.Installation
 
-		credentialHelper: any
+		credentialHelper: CredentialHelpers
 		installation: slime.jrunscript.tools.git.Installation
 		daemon: slime.jrunscript.tools.git.Installation["daemon"]
 		Repository: slime.jrunscript.tools.git.Installation["Repository"]

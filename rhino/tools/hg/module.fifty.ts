@@ -48,7 +48,7 @@ namespace slime.jrunscript.tools.hg {
 		write: () => void;
 	}
 
-	interface Exports {
+	export interface Exports {
 		Hgrc: new (p: { file: slime.jrunscript.file.File }) => Hgrc
 	}
 }

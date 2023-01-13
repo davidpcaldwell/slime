@@ -327,6 +327,9 @@ namespace slime.jsh.shell.tools {
 	}
 
 	export interface Exports {
+		/**
+		 * Provides convenience methods to represent and use Node.js installations.
+		 */
 		node: node.Exports
 	}
 }
