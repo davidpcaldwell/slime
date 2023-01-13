@@ -85,7 +85,15 @@ namespace slime.jrunscript.tools.jenkins {
 	export interface Exports {
 		Server: (o: {
 			url: string
-		}) => {}
+		}) => {
+			request: any
+			Session: new (p: {
+				credentials: any
+			}) => {
+				request: any
+				api: any
+			}
+		}
 
 		Credentials: {
 			list: (p: { server: string, use: { user: string, token: string } }[]) => api.Credentials
