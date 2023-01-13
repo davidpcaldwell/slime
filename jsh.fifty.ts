@@ -23,8 +23,6 @@ namespace slime.jsh {
 	}
 
 	export interface Tools {
-		git: slime.jrunscript.tools.git.Exports
-		hg: any
 		node: slime.jrunscript.node.Exports
 		install: slime.jrunscript.tools.install.Exports
 		github: slime.jrunscript.tools.github.Exports

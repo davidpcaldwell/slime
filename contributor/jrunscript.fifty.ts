@@ -41,6 +41,7 @@
 			fifty.load("../rhino/http/client/module.fifty.ts");
 			fifty.load("../rhino/shell/module.fifty.ts");
 			fifty.load("../rhino/tools/module.fifty.ts");
+			fifty.load("../rhino/tools/plugin.jsh.fifty.ts");
 			fifty.load("../rhino/tools/node/module.fifty.ts");
 			fifty.load("../rhino/tools/docker/module.fifty.ts");
 			fifty.load("../rhino/tools/github/module.fifty.ts");

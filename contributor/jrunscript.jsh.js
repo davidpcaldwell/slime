@@ -188,10 +188,6 @@
 			environment: environment
 		}));
 
-		suite.add("jsh/jsh.tools", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/plugin.jsh.jsh.tools.api.html")
-		}));
-
 		suite.add("jsh-tools", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jsh/tools/internal.api.html"),
 			environment: environment
