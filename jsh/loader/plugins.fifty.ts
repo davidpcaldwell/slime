@@ -5,8 +5,37 @@
 //	END LICENSE
 
 namespace slime.jsh.plugin {
-	export type plugin = (p: { isReady?: () => boolean, load: () => void }) => void;
+	export interface Declaration {
+		isReady?: () => boolean
+		disabled?: () => string
+		load: () => void
+	}
+
+	export type plugin = (p: Declaration) => void;
+
 	export type plugins = { [x: string]: any }
+
+	/**
+	 * The scope available to `jsh` plugins when they are running. The properties of this object may be accessed using unqualified
+	 * names within a plugin.
+	 */
+	export interface Scope {
+		/**
+		 * A namespace plugins can use for inter-plugin communication; a plugin can add properties to this object that other plugins
+		 * depend on and/or use.
+		 */
+		plugins: plugins
+
+		plugin: plugin
+
+		$slime: slime.jsh.plugin.$slime
+
+		global: object
+
+		jsh: any
+
+		$loader: any
+	}
 }
 
 namespace slime.jsh.loader.internal.plugins {

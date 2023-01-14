@@ -42,6 +42,15 @@
 		});
 
 		jsh.java.Thread.start(
+			/**
+			 * At one point, builds were failing on Docker because `tsc` was not found when attempting to use TypeScript within
+			 * tests. `tsc` would blink in and out of existence in the shell's library directory.
+			 *
+			 * This seems to be no longer happening.
+			 *
+			 * This function runs a thread that monitors the existence of the TypeScript compiler in the test suite shell and
+			 * writes console messages if its status changes (it is removed, it reappears, etc.)
+			 */
 			function addDiagnosticForTscDisappearing() {
 				/** @type { boolean } */
 				var found;
