@@ -141,7 +141,7 @@ namespace slime.jsh {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			var scope = function(built: boolean) {
+			var global = function(built: boolean) {
 				var result = $api.fp.world.now.question(
 					jsh.shell.subprocess.question,
 					{
@@ -163,11 +163,34 @@ namespace slime.jsh {
 				var json = JSON.parse(result.stdio.output) as string[];
 				verify(json).length.is(1);
 				verify(json)[0].is("jsh");
-			}
+			};
+
+			var plugin = function() {
+				var result = $api.fp.world.now.question(
+					jsh.shell.subprocess.question,
+					{
+						command: "bash",
+						arguments: $api.Array.build(function(rv: string[]) {
+							rv.push("jsh.bash");
+							rv.push("jsh/loader/test/plugin-scope.jsh.js");
+							return rv;
+						}),
+						stdio: {
+							output: "string"
+						},
+						directory: jsh.shell.jsh.src.toString()
+					}
+				);
+				verify(result).status.is(0);
+				jsh.shell.console(result.stdio.output);
+				var json = JSON.parse(result.stdio.output) as { $host: string };
+				verify(json).$host.is("undefined");
+			};
 
 			fifty.tests.scope = function() {
-				scope(false);
-				scope(true);
+				global(false);
+				global(true);
+				plugin();
 			}
 		}
 	//@ts-ignore
@@ -220,6 +243,11 @@ namespace slime.jsh.plugin {
 				getLoaderScript(path: string): any
 			}
 
+		/**
+		 * Returns a `java.io.File` representing a file location relative to the `jsh` library location.
+		 *
+		 * @param path A relative path.
+		 */
 		getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File
 		getInterface(): any
 		getSystemProperties(): slime.jrunscript.native.java.util.Properties

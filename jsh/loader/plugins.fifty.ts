@@ -28,6 +28,9 @@ namespace slime.jsh.plugin {
 
 		plugin: plugin
 
+		/**
+		 * The SLIME Java-enabled runtime which exposes SLIME internals to embeddings. Most plugins will not need to use this.
+		 */
 		$slime: slime.jsh.plugin.$slime
 
 		global: object & {
