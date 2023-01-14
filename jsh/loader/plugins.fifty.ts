@@ -30,34 +30,57 @@ namespace slime.jsh.plugin {
 
 		$slime: slime.jsh.plugin.$slime
 
-		global: object
+		global: object & {
+			jsh: slime.jsh.Global
+		}
 
-		jsh: any
+		jsh: slime.jsh.Global
 
 		$loader: any
 	}
 }
 
 namespace slime.jsh.loader.internal.plugins {
+	export type load = (p: {
+		plugins: slime.jsh.plugin.plugins
+		toString: () => string
+		mock?: {
+			$slime: slime.jsh.plugin.$slime
+			global: slime.jsh.plugin.Scope["global"]
+			jsh?: slime.jsh.Global
+		}
+		$loader: slime.Loader
+	}) => slime.jsh.plugin.Declaration[]
+
 	export interface Export {
 		mock: (p: {
-			global?: { [x: string]: any }
-			jsh?: { [x: string]: any }
-			plugins?: { [x: string]: any }
+			global?: slime.jsh.plugin.Scope["global"]
+			jsh?: slime.jsh.plugin.Scope["jsh"]
+			plugins?: slime.jsh.plugin.plugins
 			$loader: slime.Loader
 			$slime?: slime.jsh.plugin.$slime
 
 			toString?: any
 		}) => {
-			global: { [x: string]: any },
-			jsh: { [x: string]: any },
-			plugins: { [x: string]: any }
+			global: slime.jsh.plugin.Scope["global"]
+			jsh: slime.jsh.plugin.Scope["jsh"]
+			plugins: slime.jsh.plugin.plugins
 		}
 
 		load: {
 			(p: {
-				_file?: slime.jrunscript.native.java.io.File
-				loader?: slime.Loader
+				loader: slime.Loader
+			}): void
+
+			(p: {
+				_file: slime.jrunscript.native.java.io.File
+			}): void
+
+			/**
+			 * Adds the contents of the given ZIP file to the Java classpath. Does not interpret the file as a JavaScript plugin or
+			 * scan the file contents for JavaScript plugins.
+			 */
+			(p: {
 				zip?: {
 					_file: slime.jrunscript.native.java.io.File
 				}

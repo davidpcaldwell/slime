@@ -7,20 +7,30 @@
 //@ts-check
 (
 	/**
-	 * @param { any } Packages
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.loader.Export<slime.jsh.loader.internal.plugins.Export> } $export
 	 */
 	function(Packages,$slime,jsh,$export) {
+		//	Bootstrap some Java logging; we end up loading a plugin that does more of this in the standard jsh implementation but
+		//	it is obviously not available here, so we use this API within this file
+		var log = function(_level,message) {
+			//	TODO	improve with parameters, but then would need to create Java arrays and so forth
+			Packages.java.util.logging.Logger.getLogger("inonit.script.jsh.Shell").log(
+				_level,
+				message
+			);
+		};
+		log.Level = Packages.java.util.logging.Level;
+
 		var Constructor = function() {
 			/**
 			 * Loads the plugin code from a specific plugin.jsh.js at the top level of a loader and returns a list of
 			 * implementations with 'declaration' properties representing the objects provided by the implementor and 'toString'
 			 * methods supplied by the caller of this function.
 			 *
-			 * @param { { plugins: slime.jsh.plugin.plugins, toString: () => string, mock?: { $slime: slime.jsh.plugin.$slime, global: object, jsh?: slime.jsh.Global }, $loader: slime.Loader } } p
-			 * @returns { slime.jsh.plugin.Declaration[] }
+			 * @type { slime.jsh.loader.internal.plugins.load }
 			 */
 			var load = function load(p) {
 				/** @type { slime.jsh.plugin.Scope } */
@@ -72,15 +82,6 @@
 				scope.$loader.run("plugin.jsh.js", scope);
 				return rv;
 			};
-
-			var log = function(_level,message) {
-				//	TODO	improve with parameters, but then would need to create Java arrays and so forth
-				Packages.java.util.logging.Logger.getLogger("inonit.script.jsh.Shell").log(
-					_level,
-					message
-				);
-			};
-			log.Level = Packages.java.util.logging.Level;
 
 			//	Given an array of plugin objects returned by load(), run all of those that are ready until all have been run or are not
 			//	ready
