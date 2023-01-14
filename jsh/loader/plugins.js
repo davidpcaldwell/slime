@@ -14,10 +14,16 @@
 	 */
 	function(Packages,$slime,jsh,$export) {
 		var Constructor = function() {
-			//	Loads the plugin code from a specific plugin.jsh.js at the top level of a loader and returns a list of implementations
-			//	with 'declaration' properties representing the objects provided by the implementor and 'toString' methods supplied by the
-			//	caller of this function
+			/**
+			 * Loads the plugin code from a specific plugin.jsh.js at the top level of a loader and returns a list of
+			 * implementations with 'declaration' properties representing the objects provided by the implementor and 'toString'
+			 * methods supplied by the caller of this function.
+			 *
+			 * @param { { plugins: slime.jsh.plugin.plugins, toString: () => string, mock?: { $slime: slime.jsh.plugin.$slime, global: object, jsh?: slime.jsh.Global }, $loader: slime.Loader } } p
+			 * @returns { slime.jsh.plugin.Declaration[] }
+			 */
 			var load = function load(p) {
+				/** @type { slime.jsh.plugin.Scope } */
 				var scope = {};
 				//	TODO	$host is currently *automatically* in scope for these plugins, but that is probably not as it should be; see
 				//			issue 32. $host *should* be in scope, though; we should just have to put it there manually.

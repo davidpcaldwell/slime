@@ -200,7 +200,7 @@
 				});
 			} else {
 				//	TODO	more helpful error message
-				jsh.shell.echo("Executing from unknown URL: " + jsh.script.url + " ... cannot locate source distribution for version.");
+				jsh.shell.console("Executing from unknown URL: " + jsh.script.url + " ... cannot locate source distribution for version.");
 				jsh.shell.exit(1);
 			}
 		}
@@ -392,7 +392,7 @@
 			return modules;
 		})();
 
-		jsh.shell.echo("Creating plugins directory ...");
+		jsh.shell.console("Creating plugins directory ...");
 		destination.shell.getRelativePath("plugins").createDirectory();
 		//	TODO	it might be useful in the future to copy jsh/loader/plugin.api.html into this directory, to make it easy to find.
 		//			this would also make it so that an installer would automatically create the plugins directory when unzipping the
@@ -498,7 +498,7 @@
 						// 	}
 						// );
 					} else {
-						jsh.shell.echo("bash not found on Cygwin; not building native launcher.");
+						jsh.shell.console("bash not found on Cygwin; not building native launcher.");
 					}
 				} else if (UNIX) {
 					(

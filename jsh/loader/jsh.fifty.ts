@@ -10,7 +10,8 @@ namespace slime.jsh {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
-				fifty.tests.exports = {};
+				fifty.tests.loader = {};
+				fifty.tests.loader.exports = fifty.test.Parent();
 			}
 		//@ts-ignore
 		)(fifty);
@@ -39,7 +40,6 @@ namespace slime.jsh {
 				fifty: slime.fifty.test.Kit
 			) {
 				var verify = fifty.verify;
-				var tests = fifty.tests;
 				var jsh = fifty.global.jsh;
 
 				type exports = { foo: string }
@@ -47,7 +47,7 @@ namespace slime.jsh {
 				type pathsExports = { a: number }
 				type pathsFileExports = { value: string }
 
-				tests.exports.module = function() {
+				fifty.tests.loader.exports.module = function() {
 					var byFullPathname: exports = jsh.loader.module(fifty.jsh.file.object.getRelativePath("test/code/module.js"));
 					verify(byFullPathname).foo.is("bar");
 
@@ -132,18 +132,58 @@ namespace slime.jsh {
 			}
 			synchronous: slime.runtime.loader.Exports["synchronous"]
 		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				fifty.tests.suite = function() {
-					fifty.run(fifty.tests.exports.module);
-				}
-			}
-		//@ts-ignore
-		)(fifty);
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			var scope = function(built: boolean) {
+				var result = $api.fp.world.now.question(
+					jsh.shell.subprocess.question,
+					{
+						command: "bash",
+						arguments: $api.Array.build(function(rv: string[]) {
+							rv.push("jsh.bash");
+							if (built) rv.push("jsh/test/tools/run-in-built-shell.jsh.js");
+							rv.push("jsh/loader/test/global-scope.jsh.js");
+							return rv;
+						}),
+						stdio: {
+							output: "string"
+						},
+						directory: jsh.shell.jsh.src.toString()
+					}
+				);
+				verify(result).status.is(0);
+				jsh.shell.console(result.stdio.output);
+				var json = JSON.parse(result.stdio.output) as string[];
+				verify(json).length.is(1);
+				verify(json)[0].is("jsh");
+			}
+
+			fifty.tests.scope = function() {
+				scope(false);
+				scope(true);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.scope);
+				fifty.run(fifty.tests.loader.exports);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Global {
 		loader: slime.jsh.loader.Exports

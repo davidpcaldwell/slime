@@ -32,18 +32,18 @@
 		var zip = (jsh.script.loader.resource) ? jsh.script.loader.resource("build.zip") : null;
 
 		if (!parameters.options.to && zip) {
-			jsh.shell.echo("Usage: " + jsh.script.file.pathname.basename + " -to <destination> [-replace] [-executable]");
-			jsh.shell.echo("If <destination> does not exist, it will be created, recursively if necessary.");
-			jsh.shell.echo("If <destination> does exist, -replace will overwrite it; otherwise, the installation will abort.");
-			jsh.shell.echo("-executable will attempt to create a native executable launcher program at <destination>/jsh");
+			jsh.shell.console("Usage: " + jsh.script.file.pathname.basename + " -to <destination> [-replace] [-executable]");
+			jsh.shell.console("If <destination> does not exist, it will be created, recursively if necessary.");
+			jsh.shell.console("If <destination> does exist, -replace will overwrite it; otherwise, the installation will abort.");
+			jsh.shell.console("-executable will attempt to create a native executable launcher program at <destination>/jsh");
 			//	TODO	what if it exists and is an ordinary file?
 			//	TODO	if it is a symlink to a directory with -replace, the symlink *target* will be removed ... and then what will happen?
 			//	TODO	if it is a symlink to a non-existent directory, what will happen?
 			jsh.shell.exit(1);
 		} else if (!parameters.options.to && !zip) {
-			jsh.shell.echo("Doing post-installation for shell at " + jsh.shell.jsh.home);
+			jsh.shell.console("Doing post-installation for shell at " + jsh.shell.jsh.home);
 		} else {
-			jsh.shell.echo("Installing to: " + parameters.options.to);
+			jsh.shell.console("Installing to: " + parameters.options.to);
 		}
 
 		var realpath = function(pathname) {
@@ -53,8 +53,8 @@
 		}
 
 		var destinationIsSoftlink = function() {
-			jsh.shell.echo(parameters.options.to.toString() + " detected as a softlink to " + realpath(parameters.options.to));
-			jsh.shell.echo("Please remove the softlink manually, or reference " + realpath(parameters.options.to) + " directly.");
+			jsh.shell.console(parameters.options.to.toString() + " detected as a softlink to " + realpath(parameters.options.to));
+			jsh.shell.console("Please remove the softlink manually, or reference " + realpath(parameters.options.to) + " directly.");
 			jsh.shell.exit(1);
 		}
 
@@ -86,8 +86,8 @@
 					} else {
 						//	TODO	for symlink to file, dir.toString() does not work. Why?
 						var type = (parameters.options.to.file) ? "File" : "Directory";
-						jsh.shell.echo(type + " found at " + parameters.options.to);
-						jsh.shell.echo("Use -replace to overwrite it.");
+						jsh.shell.console(type + " found at " + parameters.options.to);
+						jsh.shell.console("Use -replace to overwrite it.");
 						jsh.shell.exit(1);
 					}
 				},
@@ -109,18 +109,18 @@
 		//			UNIXes and check that property for them?
 		var uname = which("uname");
 		if (uname) {
-			jsh.shell.echo("Detected UNIX-like operating system.");
+			jsh.shell.console("Detected UNIX-like operating system.");
 			parameters.options.unix = true;
 			//	Re-use the detection logic that jsh uses for Cygwin, although this leaves it opaque in this script exactly how we are doing
 			//	it; we could run the uname we just found, or even check for its .exe extension
 			if (jsh.file.filesystems.cygwin) {
-				jsh.shell.echo("Detected Cygwin.");
+				jsh.shell.console("Detected Cygwin.");
 				parameters.options.cygwin = true;
 			}
 		} else {
 			parameters.options.unix = false;
 			parameters.options.cygwin = false;
-			jsh.shell.echo("Did not detect UNIX-like operating system using PATH: " + jsh.shell.PATH);
+			jsh.shell.console("Did not detect UNIX-like operating system using PATH: " + jsh.shell.PATH);
 		}
 
 		var src = (parameters.options.src) ? parameters.options.src.directory : install.getSubdirectory("src");
@@ -142,11 +142,11 @@
 						"+x", install.getRelativePath("jsh.bash")
 					]
 				);
-				jsh.shell.echo("Created bash launcher at " + install.getRelativePath("jsh.bash") + " using bash at " + bash);
+				jsh.shell.console("Created bash launcher at " + install.getRelativePath("jsh.bash") + " using bash at " + bash);
 			} else if (!ISSUE_200_FIXED) {
-				jsh.shell.echo("bash launcher disabled; see https://bitbucket.org/davidpcaldwell/slime/issues/200");
+				jsh.shell.console("bash launcher disabled; see https://bitbucket.org/davidpcaldwell/slime/issues/200");
 			} else {
-				jsh.shell.echo("bash not found in " + jsh.shell.PATH);
+				jsh.shell.console("bash not found in " + jsh.shell.PATH);
 			}
 		}
 
@@ -154,7 +154,7 @@
 		if (parameters.options.cygwin) {
 			var gplusplus = which("g++");
 			if (gplusplus) {
-				jsh.shell.echo("Creating cygwin paths helper ...");
+				jsh.shell.console("Creating cygwin paths helper ...");
 				install.getRelativePath("bin").createDirectory();
 				jsh.shell.shell(
 					gplusplus,
@@ -163,9 +163,9 @@
 						src.getRelativePath("rhino/file/java/inonit/script/runtime/io/cygwin/cygpath.cpp")
 					]
 				);
-				jsh.shell.echo("Cygwin paths helper written to " + install.getRelativePath("bin"));
+				jsh.shell.console("Cygwin paths helper written to " + install.getRelativePath("bin"));
 			} else {
-				jsh.shell.echo("g++ not found; not building Cygwin paths helper.");
+				jsh.shell.console("g++ not found; not building Cygwin paths helper.");
 			}
 		}
 
@@ -182,7 +182,7 @@
 					});
 				} else {
 					if (/\.jsh\.js$/.test(node.pathname.basename)) {
-						jsh.shell.echo("Making executable: " + node.pathname.toString());
+						jsh.shell.console("Making executable: " + node.pathname.toString());
 						jsh.shell.shell(
 							arguments.callee.chmod,
 							[
