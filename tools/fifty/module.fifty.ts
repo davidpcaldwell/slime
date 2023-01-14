@@ -218,9 +218,9 @@ namespace slime.fifty {
 					 * loader.
 					 */
 					mock: (p: {
-						global?: { [x: string]: any }
-						jsh?: { [x: string]: any }
-						plugins?: { [x: string]: any }
+						global?: slime.jsh.plugin.Scope["global"]
+						jsh?: slime.jsh.plugin.Scope["jsh"]
+						plugins?: slime.jsh.plugin.plugins
 						$slime?: slime.jsh.plugin.$slime
 					}) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
 				},

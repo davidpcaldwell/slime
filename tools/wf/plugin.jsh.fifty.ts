@@ -516,9 +516,11 @@ namespace slime.jsh.wf {
 					var mock = fifty.jsh.plugin.mock({
 						jsh: {
 							file: jsh.file,
+							//@ts-ignore
 							tools: {
 								git: jsh.tools.git
 							},
+							//@ts-ignore
 							shell: {
 								environment: {
 									PROJECT: directory.pathname.toString()
@@ -526,6 +528,7 @@ namespace slime.jsh.wf {
 								PATH: jsh.shell.PATH,
 								tools: jsh.shell.tools
 							},
+							//@ts-ignore
 							ui: {}
 						}
 					});
