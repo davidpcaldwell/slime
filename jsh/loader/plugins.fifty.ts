@@ -122,50 +122,16 @@ namespace slime.jsh.plugin {
 	 */
 	export type plugins = Scope["plugins"]
 
-	export interface EngineSpecific {
-		//	provided by engine-specific rhino.js and nashorn.js
-		exit: any
-		jsh: any
-	}
-
 	export interface Stdio {
 		getStandardInput(): slime.jrunscript.native.java.io.InputStream
 		getStandardOutput(): slime.jrunscript.native.java.io.PrintStream
 		getStandardError(): slime.jrunscript.native.java.io.PrintStream
 	}
-
-	export interface $slime extends slime.jrunscript.runtime.Exports, EngineSpecific {
-		getSystemProperty(name: string): string
-		getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-		getInvocation(): slime.jrunscript.native.inonit.script.jsh.Shell.Invocation
-
-		getPackaged(): slime.jrunscript.native.inonit.script.jsh.Shell.Packaged
-
-		plugins: {
-			mock: slime.jsh.loader.internal.plugins.Export["mock"]
-		}
-
-		loader: slime.jrunscript.runtime.Exports["old"]["loader"]
-			& slime.jrunscript.runtime.Exports["loader"]
-			& {
-				getLoaderScript(path: string): any
-			}
-
-		/**
-		 * Returns a `java.io.File` representing a file location relative to the `jsh` library location.
-		 *
-		 * @param path A relative path.
-		 */
-		getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File
-		getInterface(): any
-		getSystemProperties(): slime.jrunscript.native.java.util.Properties
-		getStdio(): Stdio
-	}
 }
 
 namespace slime.jsh.loader.internal.plugins {
-	export type load = (p: {
-		plugins: slime.jsh.plugin.plugins
+	export type register = (p: {
+		plugins: slime.jsh.plugin.Scope["plugins"]
 		toString: () => string
 		mock?: {
 			$slime: slime.jsh.plugin.$slime
@@ -175,11 +141,21 @@ namespace slime.jsh.loader.internal.plugins {
 		$loader: slime.Loader
 	}) => slime.jsh.plugin.Declaration[]
 
+	export type LoaderPlugins = { loader: slime.old.Loader }
+	export type JavaFilePlugins = { _file: slime.jrunscript.native.java.io.File }
+	export type ZipFilePlugins = { zip: { _file: slime.jrunscript.native.java.io.File } }
+	export type Plugins = LoaderPlugins | JavaFilePlugins | ZipFilePlugins
+
+	export type LoaderSource = { loader: slime.Loader }
+	export type SlimeSource = { slime: any }
+	export type JarSource = { jar: any }
+	export type Source = LoaderSource | SlimeSource | JarSource
+
 	export interface Export {
 		mock: (p: {
 			global?: slime.jsh.plugin.Scope["global"]
 			jsh?: slime.jsh.plugin.Scope["jsh"]
-			plugins?: slime.jsh.plugin.plugins
+			plugins?: slime.jsh.plugin.Scope["plugins"]
 			$loader: slime.Loader
 			$slime?: slime.jsh.plugin.$slime
 
@@ -190,24 +166,11 @@ namespace slime.jsh.loader.internal.plugins {
 			plugins: slime.jsh.plugin.plugins
 		}
 
-		load: {
-			(p: {
-				loader: slime.Loader
-			}): void
-
-			(p: {
-				_file: slime.jrunscript.native.java.io.File
-			}): void
-
-			/**
-			 * Adds the contents of the given ZIP file to the Java classpath. Does not interpret the file as a JavaScript plugin or
-			 * scan the file contents for JavaScript plugins.
-			 */
-			(p: {
-				zip?: {
-					_file: slime.jrunscript.native.java.io.File
-				}
-			}): void
-		}
+		/**
+		 *
+		 * @param p if a {@link ZipFilePlugins}, adds the contents of the given ZIP file to the Java classpath; does not interpret the file as a JavaScript plugin or
+		 * scan the file contents for JavaScript plugins.
+		 */
+		load: (p: Plugins) => void
 	}
 }

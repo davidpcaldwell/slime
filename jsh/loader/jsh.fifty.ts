@@ -5,6 +5,36 @@
 //	END LICENSE
 
 namespace slime.jsh {
+	export namespace plugin {
+		export interface $slime extends slime.jrunscript.runtime.Exports, slime.jsh.loader.EngineSpecific {
+			getSystemProperty(name: string): string
+			getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+			getInvocation(): slime.jrunscript.native.inonit.script.jsh.Shell.Invocation
+
+			getPackaged(): slime.jrunscript.native.inonit.script.jsh.Shell.Packaged
+
+			plugins: {
+				mock: slime.jsh.loader.internal.plugins.Export["mock"]
+			}
+
+			loader: slime.jrunscript.runtime.Exports["old"]["loader"]
+				& slime.jrunscript.runtime.Exports["loader"]
+				& {
+					getLoaderScript(path: string): any
+				}
+
+			/**
+			 * Returns a `java.io.File` representing a file location relative to the `jsh` library location.
+			 *
+			 * @param path A relative path.
+			 */
+			getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File
+			getInterface(): slime.jrunscript.native.inonit.script.jsh.Shell.Interface
+			getSystemProperties(): slime.jrunscript.native.java.util.Properties
+			getStdio(): Stdio
+		}
+	}
+
 	export namespace loader {
 		(
 			function(
@@ -15,6 +45,12 @@ namespace slime.jsh {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface EngineSpecific {
+			//	provided by engine-specific rhino.js and nashorn.js
+			exit: any
+			jsh: any
+		}
 
 		/**
 		 * A script to be executed. Can be a {@link slime.resource.Descriptor} which fully describes the code to be executed, but

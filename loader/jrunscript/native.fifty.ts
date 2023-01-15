@@ -221,9 +221,6 @@ namespace slime.jrunscript {
 			}
 		}
 
-		//	TODO	very skeptical that jsh type should be referenced here
-		type EngineSpecificJshInterface = slime.jsh.plugin.EngineSpecific;
-
 		export namespace inonit.script {
 			export namespace runtime.io {
 				export interface Streams {
@@ -320,63 +317,6 @@ namespace slime.jrunscript {
 
 				export interface Engine {
 					script: (a: any, b: any, c: any, d: any) => any
-				}
-			}
-
-			//	TODO	move to appropriate directory
-			export namespace jsh {
-				export interface Shell {
-					setRuntime(value: slime.jrunscript.runtime.Exports)
-					runtime(): slime.jrunscript.runtime.Exports & EngineSpecificJshInterface
-					getLoader(): slime.jrunscript.native.inonit.script.engine.Loader
-					getEnvironment(): Shell.Environment
-					getInvocation(): Shell.Invocation
-					getJshLoader: any
-					getInterface(): any
-					getLibrary(path: string): any
-					getLibraryFile(path: string): slime.jrunscript.native.java.io.File
-					getPackaged(): Shell.Packaged
-
-					worker: any
-					events: any
-				}
-
-				export namespace Shell {
-					/**
-					 * Methods related to packaged applications, currently used to provide access to packaged application resources
-					 * and location so that they can be provided by the <code>jsh.script</code> API.
-					 */
-					export interface Packaged {
-						getFile(): slime.jrunscript.native.java.io.File
-						getCode(): slime.jrunscript.native.inonit.script.engine.Code.Loader
-					}
-
-					export interface Environment {
-						getStdio(): Environment.Stdio
-						getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-						getSystemProperties(): slime.jrunscript.native.java.util.Properties
-					}
-
-					export namespace Environment {
-						export interface Stdio {
-							getStandardInput(): slime.jrunscript.native.java.io.InputStream
-							getStandardOutput(): slime.jrunscript.native.java.io.OutputStream
-							getStandardError(): slime.jrunscript.native.java.io.OutputStream
-						}
-					}
-
-					export interface Invocation {
-						getScript: any
-						getArguments(): slime.jrunscript.native.java.lang.String[]
-					}
-				}
-
-				export namespace Rhino {
-					export interface Interface {
-						script: any
-						exit: any
-						jsh: any
-					}
 				}
 			}
 		}
