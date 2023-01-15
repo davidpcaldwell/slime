@@ -423,7 +423,8 @@
 								plugins.load({ _file: from.pathname.java.adapt() });
 							}
 						},
-						//	TODO	check semantics; maybe this returns null on non-existence, currently not documented in jsh/loader/plugin.api.html
+						//	TODO	check semantics; maybe this returns null on non-existence, currently not documented in
+						//			slime.jsh.plugin documentation
 						kotlin: ($slime.getLibraryFile("kotlin") && $slime.getLibraryFile("kotlin").exists()) ? kotlin() : void(0),
 						synchronous: $slime.loader.synchronous
 					}

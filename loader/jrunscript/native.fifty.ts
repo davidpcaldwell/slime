@@ -221,6 +221,7 @@ namespace slime.jrunscript {
 			}
 		}
 
+		//	TODO	very skeptical that jsh type should be referenced here
 		type EngineSpecificJshInterface = slime.jsh.plugin.EngineSpecific;
 
 		export namespace inonit.script {

@@ -394,11 +394,6 @@
 
 		jsh.shell.console("Creating plugins directory ...");
 		destination.shell.getRelativePath("plugins").createDirectory();
-		//	TODO	it might be useful in the future to copy jsh/loader/plugin.api.html into this directory, to make it easy to find.
-		//			this would also make it so that an installer would automatically create the plugins directory when unzipping the
-		//			distribution; right now this is also done in install.jsh.js. But currently, this would mess up the CSS, etc., so it
-		//			might be better to leave the plugin documentation only in docs/api/
-		//	copyFile(new File(SLIME_SRC, "jsh/loader/plugin.api.html"))
 
 		console("Creating tools ...");
 		SLIME.getSubdirectory("jsh/tools").copy(destination.shell.getRelativePath("tools"));

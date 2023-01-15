@@ -73,7 +73,7 @@
 					return jsh;
 				})();
 				if (typeof(scope.jsh) == "undefined") throw new Error("jsh undefined");
-				scope.$loader = p.$loader;
+				scope.$loader = Object.assign(p.$loader, { classpath: void(0) });
 				scope.$loader.classpath = new function() {
 					this.add = function(pathname) {
 						$slime.classpath.add({ _file: pathname.java.adapt() });
