@@ -32,58 +32,64 @@
 		 * @type { slime.jsh.loader.internal.plugins.register }
 		 */
 		var register = function register(p) {
+			if (typeof(p.scope.jsh) == "undefined") throw new Error("jsh undefined");
+
+			/** @type { ReturnType<register> } */
+			var rv = [];
+
 			/** @type { slime.jsh.plugin.Scope } */
 			var scope = {};
-			//	TODO	$host is currently *automatically* in scope for these plugins, but that is probably not as it should be; see
-			//			issue 32. $host *should* be in scope, though; we should just have to put it there manually.
-			scope.plugins = p.plugins;
-			var rv = [];
+
+			scope.plugins = p.scope.plugins;
+
 			scope.plugin = function(declaration) {
-				if (typeof(declaration.isReady) == "undefined") {
-					declaration.isReady = function() {
-						return true;
-					};
-				}
-				if (typeof(declaration.disabled) == "undefined") {
-					declaration.disabled = function() {
-						return "never returned true from isReady(): " + declaration.isReady;
-					}
-				}
 				rv.push({
 					toString: p.toString,
-					declaration: declaration
+					declaration: {
+						load: declaration.load,
+						isReady: declaration.isReady || function() {
+							return true;
+						},
+						disabled: declaration.disabled || function() {
+							return "never returned true from isReady(): " + declaration.isReady;
+						}
+					}
 				});
 			}
 
-			scope.$slime = (p.mock && p.mock.$slime) ? p.mock.$slime : $slime;
-
-			(function setDeprecatedProperty(object,property,value) {
-				object[property] = value;
-				//	TODO	deprecating $jsh property breaks Nashorn somehow, apparently by making the global $jsh the one seen
-				if (typeof(Packages.org.mozilla.javascript.Context.getCurrentContext) == "function" && Packages.org.mozilla.javascript.Context.getCurrentContext() != null) {
-					$slime.$api.deprecate(object,property);
+			scope.$slime = p.scope.$slime;
+			Object.defineProperty(scope, "$jsh", {
+				get: function() {
+					throw new TypeError("The $jsh scope property in jsh plugins has been removed; use $slime instead.")
 				}
-			})(scope,"$jsh",$slime);
+			});
 
-			scope.global = (p.mock && p.mock.global) ? p.mock.global : (function() { return this; })();
-			scope.jsh = (function() {
-				if (p.mock && p.mock.jsh) return p.mock.jsh;
-				if (p.mock && p.mock.global && p.mock.global.jsh) return p.mock.global.jsh;
-				return jsh;
-			})();
-			if (typeof(scope.jsh) == "undefined") throw new Error("jsh undefined");
-			scope.$loader = Object.assign(p.$loader, { classpath: void(0) });
-			scope.$loader.classpath = new function() {
-				this.add = function(pathname) {
-					$slime.classpath.add({ _file: pathname.java.adapt() });
+			scope.global = p.scope.global;
+
+			scope.jsh = p.scope.jsh;
+
+			scope.$loader = Object.assign(
+				p.$loader,
+				{
+					classpath: {
+						add: function(pathname) {
+							scope.$slime.classpath.add({ _file: pathname.java.adapt() });
+						}
+					}
 				}
-			};
+			);
+
 			scope.$loader.run("plugin.jsh.js", scope);
+
 			return rv;
 		};
 
-		//	Given an array of plugin objects returned by load(), run all of those that are ready until all have been run or are not
-		//	ready
+		/**
+		 * Given an array of plugin objects returned by load(), run all of those that are ready until all have been run or are not
+		 * ready.
+		 *
+		 * @param { ReturnType<register> } plugins
+		 */
 		var run = function(plugins) {
 			var stop = false;
 			while(plugins.length > 0 && !stop) {
@@ -119,13 +125,14 @@
 			if (!p.global && p.jsh) p.global = { jsh: p.jsh }
 			if (!p.plugins) p.plugins = {};
 			var list = register({
-				plugins: (p.plugins) ? p.plugins : {},
-				toString: (p.toString) ? p.toString : function() { return "mock"; },
+				scope: {
+					plugins: (p.plugins) ? p.plugins : {},
+					$slime: p.$slime || $slime,
+					global: p.global || (function() { return this; })(),
+					jsh: p.jsh || (p.global && p.global.jsh) || jsh
+				},
 				$loader: p.$loader,
-				mock: {
-					global: p.global,
-					$slime: p.$slime
-				}
+				toString: (p.toString) ? p.toString : function() { return "mock"; }
 			});
 			run(list);
 			return {
@@ -143,12 +150,13 @@
 		/**
 		 *
 		 * @param { slime.old.Loader } loader
-		 * @param { slime.jsh.loader.internal.plugins.Source[] } [list]
+		 * @returns { slime.jsh.loader.internal.plugins.Source[] }
 		 */
-		var scan = function(loader,list) {
-			if (!list) list = [];
+		var scan = function(loader) {
+			/** @type { ReturnType<scan> } */
+			var rv = [];
 			if (loader.get("plugin.jsh.js")) {
-				list.push({
+				rv.push({
 					loader: loader
 				});
 			} else {
@@ -157,18 +165,18 @@
 					for (var i=0; i<listed.length; i++) {
 						var entry = listed[i];
 						if (isLoaderEntry(entry)) {
-							scan(entry.loader,list);
+							rv = rv.concat(scan(entry.loader));
 						} else if (/\.slime$/.test(entry.path)) {
-							list.push({ slime: entry.resource });
+							rv.push({ slime: entry.resource });
 						} else if (/\.jar$/.test(entry.path)) {
-							list.push({ jar: entry.resource });
+							rv.push({ jar: entry.resource });
 						} else {
 							//	ignore other kinds of files, presumably
 						}
 					}
 				}
 			}
-			return list;
+			return rv;
 		}
 
 		/** @type { (plugins: slime.jsh.loader.internal.plugins.Plugins) => plugins is slime.jsh.loader.internal.plugins.ZipFilePlugins } */
@@ -214,48 +222,61 @@
 			var plugins = {};
 			if (loader) {
 				var sources = scan(loader);
-				sources.sort(function(a,b) {
-					var precedence = function(item) {
-						return 0;
-					}
 
-					return precedence(b) - precedence(a);
-				});
-				//	TODO	should this share with jsh loader?
-				//	Use while loop because loop can add to the list; not sure how .forEach() works in that instance
-				//	TODO	check the above
-				var index = 0;
-				while(index < sources.length) {
-					var item = sources[index];
-					if (isLoaderSource(item)) {
-						$slime.classpath.add({ src: { loader: item.loader }});
-						var array = register({
+				/**
+				 *
+				 * @param { slime.jsh.loader.internal.plugins.LoaderSource } item
+				 * @param { (item: slime.jsh.loader.internal.plugins.LoaderSource ) => void } addToClasspath
+				 */
+				var registerLoaderSource = function(item, addToClasspath) {
+					addToClasspath(item);
+					$slime.classpath.add({ src: { loader: item.loader }});
+					var array = register({
+						scope: {
+							$slime: $slime,
 							plugins: plugins,
-							toString: (function(item) {
-								return function() {
-									return item.loader.toString();
-								};
-							})(item),
-							$loader: item.loader
-						});
-						list.push.apply(list,array);
+							global: (function() { return this; })(),
+							jsh: jsh
+						},
+						$loader: item.loader,
+						toString: (function(item) {
+							return function() {
+								return item.loader.toString();
+							};
+						})(item),
+					});
+					list.push.apply(list,array);
+				}
+
+				//	TODO	should this share with jsh loader?
+				sources.forEach(function(item) {
+					if (isLoaderSource(item)) {
+						registerLoaderSource(
+							item,
+							function(item) {
+								$slime.classpath.add({ src: { loader: item.loader }});
+							}
+						);
 					} else if (isSlimeSource(item)) {
 						var subloader = new $slime.Loader({ zip: { resource: item.slime } });
-						$slime.classpath.add({ slime: { loader: subloader } });
 						//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
 						//			decision?
 						if (subloader.get("plugin.jsh.js")) {
-							sources.push({
-								loader: subloader
-							});
+							registerLoaderSource(
+								{
+									loader: subloader
+								},
+								function(item) {
+									$slime.classpath.add({ slime: { loader: item.loader } });
+								}
+							);
 						}
 					} else if (isJarSource(item)) {
 						$slime.classpath.add({ jar: { resource: item.jar }});
 					} else {
 						//	TODO	some kind of error condition, maybe throw TypeError
 					}
-					index++;
-				}
+				});
 			} else if (isZipFilePlugins(p)) {
 				var name = String(p.zip._file.getName());
 				if (/\.jar$/.test(name)) {
