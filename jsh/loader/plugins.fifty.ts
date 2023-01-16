@@ -131,15 +131,10 @@ namespace slime.jsh.plugin {
 
 namespace slime.jsh.loader.internal.plugins {
 	export type register = (p: {
-		plugins: slime.jsh.plugin.Scope["plugins"]
-		toString: () => string
-		mock?: {
-			$slime: slime.jsh.plugin.$slime
-			global: slime.jsh.plugin.Scope["global"]
-			jsh?: slime.jsh.Global
-		}
+		scope: Pick<slime.jsh.plugin.Scope,"plugins"|"$slime"|"global"|"jsh">
 		$loader: slime.Loader
-	}) => slime.jsh.plugin.Declaration[]
+		toString: () => string
+	}) => { toString: () => string, declaration: Required<slime.jsh.plugin.Declaration> }[]
 
 	export type LoaderPlugins = { loader: slime.old.Loader }
 	export type JavaFilePlugins = { _file: slime.jrunscript.native.java.io.File }
@@ -152,25 +147,13 @@ namespace slime.jsh.loader.internal.plugins {
 	export type Source = LoaderSource | SlimeSource | JarSource
 
 	export interface Export {
-		mock: (p: {
-			global?: slime.jsh.plugin.Scope["global"]
-			jsh?: slime.jsh.plugin.Scope["jsh"]
-			plugins?: slime.jsh.plugin.Scope["plugins"]
-			$loader: slime.Loader
-			$slime?: slime.jsh.plugin.$slime
-
-			toString?: any
-		}) => {
-			global: slime.jsh.plugin.Scope["global"]
-			jsh: slime.jsh.plugin.Scope["jsh"]
-			plugins: slime.jsh.plugin.plugins
-		}
-
 		/**
 		 *
 		 * @param p if a {@link ZipFilePlugins}, adds the contents of the given ZIP file to the Java classpath; does not interpret the file as a JavaScript plugin or
 		 * scan the file contents for JavaScript plugins.
 		 */
 		load: (p: Plugins) => void
+
+		mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.Loader, toString?: any }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
 	}
 }
