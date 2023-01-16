@@ -5,18 +5,24 @@
 //	END LICENSE
 
 namespace slime.time {
-	export namespace zone {
-		export interface Time {
-			year: number
-			month: number
-			day: number
-			hour: number
-			minute: number
+	export interface Date {
+		year: number
+		month: number
+		day: number
+	}
 
-			/**
-			 * May be a decimal number including fractional seconds.
-			 */
-			second: number
+	export interface Time {
+		hour: number
+		minute: number
+
+		/**
+		 * May be a decimal number including fractional seconds.
+		 */
+		second: number
+	}
+
+	export namespace zone {
+		export interface Time extends slime.time.Date, slime.time.Time {
 		}
 	}
 
@@ -76,12 +82,6 @@ namespace slime.time {
 		})(fifty);
 	}
 
-	export interface Date {
-		year: number
-		month: number
-		day: number
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -92,7 +92,7 @@ namespace slime.time {
 	)(fifty);
 
 	export namespace exports {
-		export interface Dates {
+		export interface Date {
 			input: {
 				today: slime.$api.fp.impure.Input<slime.time.Date>
 			}
@@ -122,7 +122,7 @@ namespace slime.time {
 	)(fifty);
 
 	export namespace exports {
-		export interface Dates {
+		export interface Date {
 			format: (mask: string) => (day: slime.time.Date) => string
 		}
 
@@ -157,7 +157,7 @@ namespace slime.time {
 	}
 
 	export interface Exports {
-		Date: exports.Dates
+		Date: exports.Date
 	}
 
 	export interface Exports {

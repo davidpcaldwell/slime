@@ -228,11 +228,15 @@ namespace slime.$api.fp {
 		export interface String {
 			leftPad: (p: {
 				length: number
+
+				/** A string with which to pad. Defaults to the space (`" "`) character. */
 				padding?: string
 			}) => (original: string) => string
 
 			rightPad: (p: {
 				length: number
+
+				/** A string with which to pad. Defaults to the space (`" "`) character. */
 				padding?: string
 			}) => (original: string) => string
 		}
