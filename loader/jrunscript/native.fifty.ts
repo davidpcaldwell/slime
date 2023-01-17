@@ -197,6 +197,19 @@ namespace slime.jrunscript {
 					keySet(): Set
 					get(key: any): any
 				}
+
+				export namespace logging {
+					export interface Logger extends java.lang.Object {
+						log: {
+							(_level: Level, message: string): void
+							(_level: Level, message: string, objects: any): void
+						}
+						isLoggable: (_traceLevel: Level) => boolean
+					}
+
+					export interface Level extends java.lang.Object {
+					}
+				}
 			}
 			export namespace awt {
 				export interface Desktop {
@@ -454,7 +467,25 @@ namespace slime.jrunscript {
 				HashMap: any
 				ArrayList: any
 				Properties: any
-				logging: any
+				logging: {
+					Logger: JavaClass<
+						slime.jrunscript.native.java.util.logging.Logger,
+						{
+							getLogger: (name: string) => slime.jrunscript.native.java.util.logging.Logger
+						}
+					>
+					Level: JavaClass<
+						slime.jrunscript.native.java.util.logging.Level,
+						{
+							WARNING: slime.jrunscript.native.java.util.logging.Level
+							INFO: slime.jrunscript.native.java.util.logging.Level
+							FINE: slime.jrunscript.native.java.util.logging.Level
+							FINEST: slime.jrunscript.native.java.util.logging.Level
+						}
+					>
+					LogManager: any
+					Handler: any
+				}
 				Base64: any
 				Map: any
 				Date: any

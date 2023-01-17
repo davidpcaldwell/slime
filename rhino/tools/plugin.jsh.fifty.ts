@@ -193,7 +193,7 @@ namespace slime.jsh.java.tools {
 						$context.$slime.plugins.mock({
 							$loader: $loader,
 							plugins: plugins,
-							toString: configuration.toString,
+							source: configuration.toString,
 							global: scope,
 							jsh: scope.jsh
 						});
