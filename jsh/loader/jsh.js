@@ -413,21 +413,27 @@
 							}
 						)(),
 						plugins: function(from) {
-							if (isPathname(from)) {
+							/**
+							 *
+							 * @param { slime.jrunscript.file.Pathname } from
+							 */
+							var loadFromPathname = function(from) {
 								if (from.file) {
+									//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/jrunscript/expression.js
 									plugins.load({ zip: { _file: from.java.adapt() } });
 								} else if (from.directory) {
 									plugins.load({ _file: from.java.adapt() });
 								} else {
 									//	TODO	log a message
 								}
+							};
+
+							if (isPathname(from)) {
+								loadFromPathname(from);
+							} else if (isFile(from) || isDirectory(from)) {
+								loadFromPathname(from.pathname);
 							} else if (isLoader(from)) {
 								plugins.load({ loader: from });
-							} else if (isFile(from)) {
-								//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/jrunscript/expression.js
-								plugins.load({ zip: { _file: from.pathname.java.adapt() } });
-							} else if (isDirectory(from)) {
-								plugins.load({ _file: from.pathname.java.adapt() });
 							}
 						},
 						//	TODO	check semantics; maybe this returns null on non-existence, currently not documented in

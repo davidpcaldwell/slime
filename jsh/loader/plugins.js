@@ -224,77 +224,120 @@
 			return Boolean(source["jar"]);
 		}
 
+		/** @type { slime.$api.fp.Mapping<slime.jsh.loader.internal.plugins.Source,slime.jsh.loader.internal.plugins.SourceContent> } */
+		var getContent = function(item) {
+			if (isLoaderSource(item)) {
+				return {
+					source: {
+						loader: item.loader,
+						from: function() {
+							return item.loader.toString();
+						}
+					},
+					classes: {
+						src: {
+							loader: item.loader
+						}
+					}
+				}
+			} else if (isSlimeSource(item)) {
+				var subloader = new $slime.Loader({ zip: { resource: item.slime } });
+				if (subloader.get("plugin.jsh.js")) {
+					return {
+						source: {
+							loader: subloader,
+							from: function() {
+								return subloader.toString();
+							}
+						},
+						classes: {
+							slime: {
+								loader: subloader
+							}
+						}
+					}
+				}
+			} else if (isJarSource(item)) {
+				return {
+					classes: {
+						jar: {
+							resource: item.jar
+						}
+					}
+				}
+			}
+		}
+
+		/**
+		 * @param { Parameters<register>[0]["scope"] } scope
+		 * @param { slime.old.Loader } loader
+		 * @returns { slime.jsh.loader.internal.plugins.PluginsContent }
+		 */
+		var getPluginsContent = function(scope,loader) {
+			/** @type { slime.jsh.loader.internal.plugins.PluginsContent } */
+			var rv = {
+				plugins: [],
+				classpath: []
+			};
+			var sources = scan(loader);
+
+			//	TODO	should this share with jsh loader?
+			sources.forEach(function(item) {
+				var content = getContent(item);
+				if (content.source) {
+					var array = register({
+						scope: scope,
+						$loader: content.source.loader,
+						source: content.source.from
+					});
+					rv.plugins.push.apply(rv.plugins,array);
+				}
+				if (content.classes) {
+					rv.classpath.push(content.classes);
+				}
+			});
+
+			return rv;
+		}
+
 		/** @type { slime.jsh.loader.internal.plugins.Export["load"] } */
 		var load = function(p) {
+			//	Note that this only deals with cases where we are scanning a filesystem; loading a JAR plugin is dealt with below.
 			var loader = (function(p) {
-				//	TODO	we really assume the file is a directory here, I think, and used to explicitly check for that. Perhaps
-				//			we should allow a file; we allegedly allow .slime plugins to be built; it seems here we are saying they
-				//			can't be loaded, though.
 				if (isJavaFilePlugins(p)) return new $slime.Loader({ _file: p._file });
 				if (isLoaderPlugins(p)) return p.loader;
 			})(p);
-			var list = [];
-			var plugins = {};
-			if (loader) {
-				var sources = scan(loader);
 
-				/**
-				 *
-				 * @param { slime.jsh.loader.internal.plugins.LoaderSource } item
-				 * @param { (item: slime.jsh.loader.internal.plugins.LoaderSource ) => void } addToClasspath
-				 */
-				var registerLoaderSource = function(item, addToClasspath) {
-					addToClasspath(item);
-					var array = register({
-						scope: {
-							$slime: $slime,
-							plugins: plugins,
-							global: (function() { return this; })(),
-							jsh: jsh
-						},
-						$loader: item.loader,
-						source: (function(item) {
-							return function() {
-								return item.loader.toString();
-							};
-						})(item),
-					});
-					list.push.apply(list,array);
-				}
+			/** @type { slime.jsh.loader.internal.plugins.PluginsContent } */
+			var content;
 
-				//	TODO	should this share with jsh loader?
-				sources.forEach(function(item) {
-					if (isLoaderSource(item)) {
-						registerLoaderSource(
-							item,
-							function(item) {
-								$slime.classpath.add({ src: { loader: item.loader }});
-							}
-						);
-					} else if (isSlimeSource(item)) {
-						var subloader = new $slime.Loader({ zip: { resource: item.slime } });
-						//	TODO	.slime files cannot contain multiple plugin folders; we only look at the top level. Is this a good
-						//			decision?
-						if (subloader.get("plugin.jsh.js")) {
-							registerLoaderSource(
-								{
-									loader: subloader
-								},
-								function(item) {
-									$slime.classpath.add({ slime: { loader: item.loader } });
-								}
-							);
-						}
-					} else if (isJarSource(item)) {
-						$slime.classpath.add({ jar: { resource: item.jar }});
-					} else {
-						//	TODO	some kind of error condition, maybe throw TypeError
-					}
-				});
+			/** @type { Parameters<register>[0]["scope"] } */
+			var scope = {
+				$slime: $slime,
+				plugins: {},
+				global: (function() { return this; })(),
+				jsh: jsh
+			}
+
+			if (isJavaFilePlugins(p)) {
+				content = getPluginsContent(
+					scope,
+					new $slime.Loader({ _file: p._file })
+				);
+			} else if (isLoaderPlugins(p)) {
+				content = getPluginsContent(
+					scope,
+					p.loader
+				);
 			} else if (isZipFilePlugins(p)) {
 				var name = String(p.zip._file.getName());
 				if (/\.jar$/.test(name)) {
-					$slime.classpath.add({ jar: { _file: p.zip._file }});
+					content = {
+						plugins: [],
+						classpath: [
+							{ jar: { _file: p.zip._file }}
+						]
+					};
 				} else if (/\.slime$/.test(name)) {
 					throw new Error("Deal with .slime");
 				} else {
@@ -303,7 +346,10 @@
 			} else {
 				//	TODO	this is some kind of error condition; probably should throw TypeError
 			}
-			run(list);
+			content.classpath.forEach(function(entry) {
+				$slime.classpath.add(entry);
+			});
+			run(content.plugins);
 		};
 
 		$export({

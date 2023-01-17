@@ -146,6 +146,19 @@ namespace slime.jsh.loader.internal.plugins {
 	export type JarSource = { jar: any }
 	export type Source = LoaderSource | SlimeSource | JarSource
 
+	export interface SourceContent {
+		source?: {
+			loader: slime.old.Loader
+			from: () => string
+		}
+		classes?: slime.jrunscript.runtime.ClasspathEntry
+	}
+
+	export interface PluginsContent {
+		plugins: slime.jsh.loader.internal.plugins.Plugin[]
+		classpath: slime.jrunscript.runtime.ClasspathEntry[]
+	}
+
 	export type LoaderPlugins = { loader: slime.old.Loader }
 	export type JavaFilePlugins = { _file: slime.jrunscript.native.java.io.File }
 	export type ZipFilePlugins = { zip: { _file: slime.jrunscript.native.java.io.File } }
