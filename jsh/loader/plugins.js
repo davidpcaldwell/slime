@@ -15,14 +15,23 @@
 	function(Packages,$slime,jsh,$export) {
 		//	Bootstrap some Java logging; we end up loading a plugin that does more of this in the standard jsh implementation but
 		//	it is obviously not available here, so we use this API within this file
-		var log = function(_level,message) {
-			//	TODO	improve with parameters, but then would need to create Java arrays and so forth
-			Packages.java.util.logging.Logger.getLogger("inonit.script.jsh.Shell").log(
-				_level,
-				message
-			);
-		};
-		log.Level = Packages.java.util.logging.Level;
+		/**
+		 *
+		 * @param { slime.jrunscript.native.java.util.logging.Level } _level
+		 * @param { string } message
+		 */
+		var log = Object.assign(
+			function(_level,message) {
+				//	TODO	improve with parameters, but then would need to create Java arrays and so forth
+				Packages.java.util.logging.Logger.getLogger("inonit.script.jsh.Shell").log(
+					_level,
+					message
+				);
+			},
+			{
+				Level: Packages.java.util.logging.Level
+			}
+		);
 
 		/**
 		 * Executes the plugin code from a specific plugin.jsh.js at the top level of a loader and returns a list of
@@ -44,8 +53,8 @@
 
 			scope.plugin = function(declaration) {
 				rv.push({
-					toString: p.toString,
-					declaration: {
+					source: p.source,
+					implementation: {
 						load: declaration.load,
 						isReady: declaration.isReady || function() {
 							return true;
@@ -88,7 +97,7 @@
 		 * Given an array of plugin objects returned by load(), run all of those that are ready until all have been run or are not
 		 * ready.
 		 *
-		 * @param { ReturnType<register> } plugins
+		 * @param { slime.jsh.loader.internal.plugins.Plugin[] } plugins
 		 */
 		var run = function(plugins) {
 			var stop = false;
@@ -96,8 +105,8 @@
 				var ranSomething = false;
 				var i = 0;
 				while(i < plugins.length) {
-					if (plugins[i].declaration.isReady()) {
-						plugins[i].declaration.load();
+					if (plugins[i].implementation.isReady()) {
+						plugins[i].implementation.load();
 						plugins.splice(i,1);
 						ranSomething = true;
 					} else {
@@ -109,12 +118,7 @@
 					stop = true;
 					//	TODO	think harder about what to do
 					plugins.forEach(function(item) {
-						try {
-							log(log.Level.WARNING, "Plugin from " + item + " is disabled: " + item.declaration.disabled());
-						} catch (e) {
-							//	TODO	default value for object?!?
-							log(log.Level.WARNING, "Plugin is disabled: " + item.declaration.disabled());
-						}
+						log(log.Level.WARNING, "Plugin from " + item.source() + " is disabled: " + item.implementation.disabled());
 					});
 				}
 			}
@@ -122,24 +126,35 @@
 
 		/** @type { slime.jsh.loader.internal.plugins.Export["mock"] } */
 		var mock = function(p) {
-			if (!p.global && p.jsh) p.global = { jsh: p.jsh }
-			if (!p.plugins) p.plugins = {};
+			var globals = (
+				/**
+				 * @param { Parameters<mock>[0] } p
+				 * @returns { Pick<Parameters<mock>[0],"global"|"jsh"> }
+				 */
+				function(p) {
+					if (p.global && p.jsh) return p;
+					if (p.global && !p.jsh) return { global: p.global, jsh: p.global.jsh };
+					if (!p.global && p.jsh) return { global: { jsh: p.jsh }, jsh: p.jsh };
+					if (!p.global && !p.jsh) return { global: (function() { return this; })(), jsh: jsh };
+				}
+			)(p);
+			var plugins = p.plugins || {};
 			var list = register({
 				scope: {
-					plugins: (p.plugins) ? p.plugins : {},
+					plugins: plugins,
 					$slime: p.$slime || $slime,
-					global: p.global || (function() { return this; })(),
-					jsh: p.jsh || (p.global && p.global.jsh) || jsh
+					global: globals.global,
+					jsh: globals.jsh
 				},
 				$loader: p.$loader,
-				toString: (p.toString) ? p.toString : function() { return "mock"; }
+				source: (p.source) || function() { return "mock"; }
 			});
 			run(list);
 			return {
-				global: p.global,
-				jsh: p.global.jsh,
-				plugins: p.plugins
-			}
+				global: globals.global,
+				jsh: globals.jsh,
+				plugins: plugins
+			};
 		};
 
 		/** @type { (entry: slime.old.loader.Entry) => entry is slime.old.loader.ResourceEntry } */
@@ -239,7 +254,7 @@
 							jsh: jsh
 						},
 						$loader: item.loader,
-						toString: (function(item) {
+						source: (function(item) {
 							return function() {
 								return item.loader.toString();
 							};

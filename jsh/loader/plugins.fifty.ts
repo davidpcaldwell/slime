@@ -130,11 +130,16 @@ namespace slime.jsh.plugin {
 }
 
 namespace slime.jsh.loader.internal.plugins {
+	export interface Plugin {
+		source: () => string
+		implementation: Required<slime.jsh.plugin.Declaration>
+	}
+
 	export type register = (p: {
 		scope: Pick<slime.jsh.plugin.Scope,"plugins"|"$slime"|"global"|"jsh">
 		$loader: slime.Loader
-		toString: () => string
-	}) => { toString: () => string, declaration: Required<slime.jsh.plugin.Declaration> }[]
+		source: () => string
+	}) => Plugin[]
 
 	export type LoaderPlugins = { loader: slime.old.Loader }
 	export type JavaFilePlugins = { _file: slime.jrunscript.native.java.io.File }
@@ -154,6 +159,6 @@ namespace slime.jsh.loader.internal.plugins {
 		 */
 		load: (p: Plugins) => void
 
-		mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.Loader, toString?: any }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
+		mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.Loader, source?: () => string }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
 	}
 }
