@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.runtime {
 	export namespace old {
-		export interface Resource extends slime.Resource {
+		export interface Resource<JA = (path: string) => slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource> extends slime.Resource {
 			read: slime.Resource["read"] & {
 				binary: () => slime.jrunscript.runtime.io.InputStream
 				text: () => slime.jrunscript.runtime.io.Reader
@@ -21,6 +21,10 @@ namespace slime.jrunscript.runtime {
 				(input: slime.jrunscript.runtime.io.Reader, mode?: resource.WriteMode): void
 				(input: string, mode?: resource.WriteMode): void
 				(input: slime.jrunscript.native.java.util.Properties, mode?: resource.WriteMode): void
+			}
+
+			java?: {
+				adapt: JA
 			}
 		}
 
@@ -203,6 +207,12 @@ namespace slime.jrunscript.runtime {
 	//@ts-ignore
 	)(fifty);
 
+	export type JavaFileClasspathEntry = { _file: slime.jrunscript.native.java.io.File }
+	export type SlimeClasspathEntry = { slime: { loader: slime.old.Loader } }
+	export type JarFileClasspathEntry = { jar: { _file: slime.jrunscript.native.java.io.File } }
+	export type JarResourceClasspathEntry = { jar: { resource: any } }
+	export type SrcClasspathEntry = { src: { loader: slime.old.Loader } }
+	export type ClasspathEntry = JavaFileClasspathEntry | SlimeClasspathEntry | JarFileClasspathEntry | JarResourceClasspathEntry | SrcClasspathEntry
 
 	/**
 	 * The SLIME runtime, augmented with Java-specific capabilities: a `classpath`, the `jrunscript` `java` and `io` interfaces,
@@ -225,7 +235,12 @@ namespace slime.jrunscript.runtime {
 
 		io: slime.jrunscript.runtime.io.Exports
 		java: slime.jrunscript.runtime.java.Exports
-		classpath: any
+
+		classpath: {
+			setAsThreadContextClassLoaderFor: (_thread: slime.jrunscript.native.java.lang.Thread) => void
+			getClass: (name: string) => slime.jrunscript.native.java.lang.Class
+			add: (p: ClasspathEntry) => void
+		}
 	}
 
 	(

@@ -249,7 +249,7 @@ namespace slime.jrunscript {
 
 			export namespace engine {
 				export namespace Code {
-					export interface Loader {
+					export interface Loader extends java.lang.Object {
 						getFile(path: string): Loader.Resource
 						getEnumerator(): Code.Loader.Enumerator
 						child(path: string): Loader
@@ -267,25 +267,6 @@ namespace slime.jrunscript {
 
 						export interface Enumerator {
 							list(prefix: string): slime.jrunscript.native.java.lang.String[]
-						}
-					}
-				}
-
-				export interface Loader {
-					getCoffeeScript()
-					getTypescript()
-					getClasspath(): any
-					getLoaderCode(path: string): any
-				}
-
-				export namespace Loader {
-					export namespace Classes {
-						export interface Interface {
-							setAsThreadContextClassLoaderFor: (_thread: any) => void
-							getClass: (name: any) => any
-							add: (argument: any) => void
-							addJar: (argument: any) => void
-							compiling: (argument: any) => any
 						}
 					}
 				}
@@ -551,17 +532,23 @@ namespace slime.jrunscript {
 				}
 				engine: {
 					Code: {
-						Loader: JavaClass & {
-							create: {
-								(url: slime.jrunscript.native.java.net.URL): slime.jrunscript.native.inonit.script.engine.Code.Loader
-								(file: slime.jrunscript.native.java.io.File): slime.jrunscript.native.inonit.script.engine.Code.Loader
-							}
+						Loader: JavaClass<
+							slime.jrunscript.native.inonit.script.engine.Code.Loader,
+							{
+								create: {
+									(url: slime.jrunscript.native.java.net.URL): slime.jrunscript.native.inonit.script.engine.Code.Loader
+									(file: slime.jrunscript.native.java.io.File): slime.jrunscript.native.inonit.script.engine.Code.Loader
+								}
 
-							github: any
-							Resource: any
-							URI: any
-							zip: (p: any) => slime.jrunscript.native.inonit.script.engine.Code.Loader
-						}
+								github: any
+								Resource: any
+								URI: any
+								zip: {
+									(p: slime.jrunscript.native.java.io.File): slime.jrunscript.native.inonit.script.engine.Code.Loader
+									(p: slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource): slime.jrunscript.native.inonit.script.engine.Code.Loader
+								}
+							}
+						>
 					}
 				}
 				rhino: {

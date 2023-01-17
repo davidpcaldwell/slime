@@ -350,7 +350,8 @@
 						);
 
 						this.java = {
-							adapt: function() {
+							/** @param { string } path */
+							adapt: function(path) {
 								return p._loaded.resource;
 							}
 						}
@@ -558,37 +559,38 @@
 							}
 						};
 
-						if (!this.java) this.java = {};
 						var self = this;
-						if (!this.java.adapt) this.java.adapt = function(path) {
-							return new JavaAdapter(
-								Packages.inonit.script.engine.Code.Loader.Resource,
-								new function() {
-									["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
-										this[methodName] = function() {
-											throw new Error("Unimplemented: " + methodName);
-										};
-									},this);
+						if (!this.java) this.java = {
+							adapt: function(path) {
+								return new JavaAdapter(
+									Packages.inonit.script.engine.Code.Loader.Resource,
+									new function() {
+										["getURI","getSourceName","getInputStream","getLength","getLastModified"].forEach(function(methodName) {
+											this[methodName] = function() {
+												throw new Error("Unimplemented: " + methodName);
+											};
+										},this);
 
-									this.getURI = function() {
-										// TODO: Unclear what this is doing; does this object represent just one file? Seems like no
-										return Packages.inonit.script.engine.Code.Loader.URI.script(
-											"expression.js",
-											path
-										)
-									}
+										this.getURI = function() {
+											// TODO: Unclear what this is doing; does this object represent just one file? Seems like no
+											return Packages.inonit.script.engine.Code.Loader.URI.script(
+												"expression.js",
+												path
+											)
+										}
 
-									this.getSourceName = function() {
-										return (self.name) ? self.name : null;
-									}
+										this.getSourceName = function() {
+											return (self.name) ? self.name : null;
+										}
 
-									this.getInputStream = function() {
-										if (!self.read || !self.read.binary) throw new Error("Cannot read " + self);
-										return self.read.binary().java.adapt();
+										this.getInputStream = function() {
+											if (!self.read || !self.read.binary) throw new Error("Cannot read " + self);
+											return self.read.binary().java.adapt();
+										}
 									}
-								}
-							);
-						}
+								);
+							}
+						};
 					}
 				}
 			);
@@ -815,7 +817,7 @@
 		/**
 		 *
 		 * @param { slime.old.loader.Source } source
-		 * @returns { boolean }
+		 * @returns { source is slime.jrunscript.native.inonit.script.engine.Code.Loader }
 		 */
 		var isJavaCodeLoader = function(source) {
 			var type = $bridge.toNativeClass(Packages.inonit.script.engine.Code.Loader);
@@ -825,6 +827,7 @@
 		/**
 		 *
 		 * @param { slime.old.Loader } self
+		 * @returns { slime.jrunscript.native.inonit.script.engine.Code.Loader }
 		 */
 		var toJavaCodeLoader = function(self) {
 			if (isJavaCodeLoader(self.source)) return self.source;
@@ -892,6 +895,17 @@
 			 * @param { slime.jrunscript.native.inonit.script.engine.Loader.Classes.Interface } _classpath
 			 */
 			function(_classpath) {
+				/** @type { (entry: slime.jrunscript.runtime.ClasspathEntry) => entry is slime.jrunscript.runtime.JavaFileClasspathEntry } */
+				var isJavaFileClasspathEntry = function(entry) { return Boolean(entry["_file"]); }
+				/** @type { (entry: slime.jrunscript.runtime.ClasspathEntry) => entry is slime.jrunscript.runtime.SlimeClasspathEntry } */
+				var isSlimeClasspathEntry = function(entry) { return Boolean(entry["slime"]); }
+				/** @type { (entry: slime.jrunscript.runtime.ClasspathEntry) => entry is slime.jrunscript.runtime.JarFileClasspathEntry } */
+				var isJarFileClasspathEntry = function(entry) { return Boolean(entry["jar"] && entry["jar"]["_file"]); }
+				/** @type { (entry: slime.jrunscript.runtime.ClasspathEntry) => entry is slime.jrunscript.runtime.JarResourceClasspathEntry } */
+				var isJarResourceClasspathEntry = function(entry) { return Boolean(entry["jar"] && entry["jar"]["resource"]); }
+				/** @type { (entry: slime.jrunscript.runtime.ClasspathEntry) => entry is slime.jrunscript.runtime.SrcClasspathEntry } */
+				var isSrcClasspathEntry = function(entry) { return Boolean(entry["src"]); }
+
 				return {
 					toString: function() {
 						return String(_classpath);
@@ -902,38 +916,37 @@
 					getClass: function(name) {
 						return _classpath.getClass(name);
 					},
+					/** @type { slime.jrunscript.runtime.Exports["classpath"]["add"] } */
 					add: function(p) {
-						if (p._file && p._file.isDirectory()) {
+						if (isJavaFileClasspathEntry(p) && p._file.isDirectory()) {
 							_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
-						} else if (p._file && p._file.exists() && !p._file.isDirectory()) {
+						} else if (isJavaFileClasspathEntry(p) && p._file.exists() && !p._file.isDirectory()) {
 							//	Currently can be used to add .jar directly to classpath through jsh.loader.java.add
 							//	TODO	determine whether this should be switched to jar._file; used by servlet plugin to put Tomcat classes
 							//			in classpath
 							_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
-						} else if (p._file && !p._file.exists()) {
+						} else if (isJavaFileClasspathEntry(p) && !p._file.exists()) {
 							//	do nothing
-						} else if (p.slime) {
+						} else if (isSlimeClasspathEntry(p)) {
 							if (p.slime.loader) {
 								_classpath.add(toJavaCodeLoader(p.slime.loader).child("$jvm/classes"));
 							} else {
 								throw new Error();
 							}
-						} else if (p.jar) {
-							if (p.jar._file) {
-								if (Packages.java.lang.System.getenv("SLIME_JAVA_SERVICELOADER_WORKS")) {
-									_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(
-										Packages.inonit.script.engine.Code.Loader.Resource.create(p.jar._file)
-									));
-									// _classpath.add(Packages.inonit.script.engine.Code.Loader.create(p.jar._file));
-								} else {
-									_classpath.addJar(p.jar._file);
-								}
-							} else if (p.jar.resource) {
-								_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(p.jar.resource.java.adapt(p.jar.resource.name)));
+						} else if (isJarFileClasspathEntry(p)) {
+							//	TODO	undocumented
+							if (Packages.java.lang.System.getenv("SLIME_JAVA_SERVICELOADER_WORKS")) {
+								_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(
+									Packages.inonit.script.engine.Code.Loader.Resource.create(p.jar._file)
+								));
+								// _classpath.add(Packages.inonit.script.engine.Code.Loader.create(p.jar._file));
 							} else {
-								throw new Error();
+								_classpath.addJar(p.jar._file);
 							}
-						} else if (p.src) {
+						} else if (isJarResourceClasspathEntry(p)) {
+							//	TODO	not sure what type p.jar.resource is
+							_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(p.jar.resource.java.adapt(p.jar.resource.name)));
+						} else if (isSrcClasspathEntry(p)) {
 							if (p.src.loader) {
 								_classpath.add(_classpath.compiling(toJavaCodeLoader(p.src.loader)));
 							} else {

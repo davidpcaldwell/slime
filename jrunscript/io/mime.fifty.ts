@@ -35,7 +35,7 @@ namespace slime.jrunscript.io.mime {
 		filename: string
 	}
 
-	export interface Multipart extends slime.jrunscript.runtime.old.Resource {
+	export interface Multipart extends slime.jrunscript.runtime.old.Resource<() => slime.jrunscript.native.javax.mail.internet.MimeMultipart> {
 		java?: {
 			adapt: () => slime.jrunscript.native.javax.mail.internet.MimeMultipart
 		}

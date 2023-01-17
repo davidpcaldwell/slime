@@ -141,15 +141,15 @@ namespace slime.jsh.loader.internal.plugins {
 		source: () => string
 	}) => Plugin[]
 
+	export type LoaderSource = { loader: slime.old.Loader }
+	export type SlimeSource = { slime: any }
+	export type JarSource = { jar: any }
+	export type Source = LoaderSource | SlimeSource | JarSource
+
 	export type LoaderPlugins = { loader: slime.old.Loader }
 	export type JavaFilePlugins = { _file: slime.jrunscript.native.java.io.File }
 	export type ZipFilePlugins = { zip: { _file: slime.jrunscript.native.java.io.File } }
 	export type Plugins = LoaderPlugins | JavaFilePlugins | ZipFilePlugins
-
-	export type LoaderSource = { loader: slime.Loader }
-	export type SlimeSource = { slime: any }
-	export type JarSource = { jar: any }
-	export type Source = LoaderSource | SlimeSource | JarSource
 
 	export interface Export {
 		/**
