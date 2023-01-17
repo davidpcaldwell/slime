@@ -245,7 +245,6 @@
 				 */
 				var registerLoaderSource = function(item, addToClasspath) {
 					addToClasspath(item);
-					$slime.classpath.add({ src: { loader: item.loader }});
 					var array = register({
 						scope: {
 							$slime: $slime,
