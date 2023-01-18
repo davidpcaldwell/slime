@@ -6,7 +6,7 @@
 
 namespace slime.fifty.test.internal.scope.jsh {
 	export interface Scope {
-		loader: slime.Loader
+		loader: slime.old.Loader
 		directory: slime.jrunscript.file.Directory
 		filename: string
 	}

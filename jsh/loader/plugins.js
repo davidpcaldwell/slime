@@ -124,39 +124,6 @@
 			}
 		};
 
-		/** @type { slime.jsh.loader.internal.plugins.Export["mock"] } */
-		var mock = function(p) {
-			var globals = (
-				/**
-				 * @param { Parameters<mock>[0] } p
-				 * @returns { Pick<Parameters<mock>[0],"global"|"jsh"> }
-				 */
-				function(p) {
-					if (p.global && p.jsh) return p;
-					if (p.global && !p.jsh) return { global: p.global, jsh: p.global.jsh };
-					if (!p.global && p.jsh) return { global: { jsh: p.jsh }, jsh: p.jsh };
-					if (!p.global && !p.jsh) return { global: (function() { return this; })(), jsh: jsh };
-				}
-			)(p);
-			var plugins = p.plugins || {};
-			var list = register({
-				scope: {
-					plugins: plugins,
-					$slime: p.$slime || $slime,
-					global: globals.global,
-					jsh: globals.jsh
-				},
-				$loader: p.$loader,
-				source: (p.source) || function() { return "mock"; }
-			});
-			run(list);
-			return {
-				global: globals.global,
-				jsh: globals.jsh,
-				plugins: plugins
-			};
-		};
-
 		/** @type { (entry: slime.old.loader.Entry) => entry is slime.old.loader.ResourceEntry } */
 		var isResourceEntry = function(entry) { return Boolean(entry["resource"]); };
 		/** @type { (entry: slime.old.loader.Entry) => entry is slime.old.loader.LoaderEntry } */
@@ -300,14 +267,26 @@
 			return rv;
 		}
 
+		/**
+		 * Updates the current environment with the provided content. Note that in the current somewhat-imperfect design, the
+		 * "destination" for plugins is baked in at the time we load the plugin code, using the scope that is provided at that time.
+		 * In contrast, we can in theory apply classpath changes at the end, but in practice, we do not have a reasonable mock
+		 * classpath implementation.
+		 *
+		 * So for realistic purposes, this method affects the real shell's classpath, and affects whatever mocks might have been
+		 * given at load time in terms of the plugins loaded.
+		 *
+		 * @param { slime.jsh.loader.internal.plugins.PluginsContent } content
+		 */
+		var update = function(content) {
+			content.classpath.forEach(function(entry) {
+				$slime.classpath.add(entry);
+			});
+			run(content.plugins);
+		}
+
 		/** @type { slime.jsh.loader.internal.plugins.Export["load"] } */
 		var load = function(p) {
-			//	Note that this only deals with cases where we are scanning a filesystem; loading a JAR plugin is dealt with below.
-			var loader = (function(p) {
-				if (isJavaFilePlugins(p)) return new $slime.Loader({ _file: p._file });
-				if (isLoaderPlugins(p)) return p.loader;
-			})(p);
-
 			/** @type { slime.jsh.loader.internal.plugins.PluginsContent } */
 			var content;
 
@@ -346,10 +325,37 @@
 			} else {
 				//	TODO	this is some kind of error condition; probably should throw TypeError
 			}
-			content.classpath.forEach(function(entry) {
-				$slime.classpath.add(entry);
-			});
-			run(content.plugins);
+			update(content);
+		};
+
+		/** @type { slime.jsh.loader.internal.plugins.Export["mock"] } */
+		var mock = function(p) {
+			var globals = (
+				/**
+				 * @param { Parameters<mock>[0] } p
+				 * @returns { Pick<Parameters<mock>[0],"global"|"jsh"> }
+				 */
+				function(p) {
+					if (p.global && p.jsh) return p;
+					if (p.global && !p.jsh) return { global: p.global, jsh: p.global.jsh };
+					if (!p.global && p.jsh) return { global: { jsh: p.jsh }, jsh: p.jsh };
+					if (!p.global && !p.jsh) return { global: (function() { return this; })(), jsh: jsh };
+				}
+			)(p);
+			/** @type { Parameters<register>[0]["scope"] } */
+			var scope = {
+				plugins: p.plugins || {},
+				$slime: p.$slime || $slime,
+				global: globals.global,
+				jsh: globals.jsh
+			};
+			var content = getPluginsContent(scope, p.$loader);
+			update(content);
+			return {
+				global: scope.global,
+				jsh: scope.jsh,
+				plugins: scope.plugins
+			};
 		};
 
 		$export({
