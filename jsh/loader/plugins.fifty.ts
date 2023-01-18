@@ -166,12 +166,21 @@ namespace slime.jsh.loader.internal.plugins {
 
 	export interface Export {
 		/**
+		 * Loads plugins from the given location and applies them to the current shell.
 		 *
-		 * @param p if a {@link ZipFilePlugins}, adds the contents of the given ZIP file to the Java classpath; does not interpret the file as a JavaScript plugin or
-		 * scan the file contents for JavaScript plugins.
+		 * @param p if a {@link LoaderPlugins} or {@link JavaFilePlugins}, scans the given location for plugins and loads them. If a
+		 * {@link ZipFilePlugins}, adds the contents of the given ZIP file to the Java classpath; does not interpret the file as a
+		 * JavaScript plugin or scan the file contents for JavaScript plugins.
 		 */
 		load: (p: Plugins) => void
 
-		mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.Loader, source?: () => string }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
+		/**
+		 * Loads a single plugin from the given loader, and applies it to the mock objects given in the argument (or real objects if
+		 * mocks are not provided), returning the modified objects for inspection by tests.
+		 *
+		 * @param p Scope objects to use when loading the plugin, and a definition of the plugin itself.
+		 * @returns objects affected by plugin loading, for evaluation
+		 */
+		mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.old.Loader, source?: () => string }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
 	}
 }
