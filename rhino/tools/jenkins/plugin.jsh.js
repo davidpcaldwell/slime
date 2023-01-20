@@ -9,23 +9,30 @@
 	/**
 	 *
 	 * @param { { jenkins: slime.jrunscript.tools.jenkins.Exports } } global
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function(global, jsh, $loader, plugin) {
+	function(global, $api, jsh, $loader, plugin) {
 		plugin({
 			load: function() {
 				/** @type { slime.jrunscript.tools.jenkins.Script } */
 				var script = $loader.script("module.js");
-				global.jenkins = script({
+
+				var jenkins = script({
 					library: {
 						http: jsh.http,
 						document: jsh.document
 					}
 				});
+
+				jsh.tools.jenkins = jenkins;
+
+				global.jenkins = jenkins;
+				$api.deprecate(global, "jenkins");
 			}
 		});
 	}
 //@ts-ignore
-)( global, jsh, $loader, plugin );
+)( global, $api, jsh, $loader, plugin );

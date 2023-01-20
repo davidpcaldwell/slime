@@ -23,6 +23,11 @@ namespace slime.jsh {
 	}
 
 	export interface Tools {
+		plugin: {
+			jenkins: () => slime.jrunscript.tools.jenkins.Exports
+		}
+		jenkins: slime.jrunscript.tools.jenkins.Exports
+
 		node: slime.jrunscript.node.Exports
 		install: slime.jrunscript.tools.install.Exports
 		github: slime.jrunscript.tools.github.Exports

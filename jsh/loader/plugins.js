@@ -84,6 +84,16 @@
 						add: function(pathname) {
 							scope.$slime.classpath.add({ _file: pathname.java.adapt() });
 						}
+					},
+					plugin: function(path) {
+						var sub = register({
+							scope: scope,
+							$loader: p.$loader.Child(path),
+							source: function() {
+								return p.source() + " subpath=" + path;
+							}
+						});
+						rv = rv.concat(sub);
 					}
 				}
 			);

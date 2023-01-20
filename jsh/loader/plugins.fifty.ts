@@ -97,7 +97,7 @@ namespace slime.jsh.plugin {
 		/**
 		 * An object that allows this plugin to load code, relative to the plugin's location.
 		 */
-		$loader: slime.Loader & {
+		$loader: slime.old.Loader & {
 			/**
 			 * An object representing the classpath visible to scripts.
 			 */
@@ -109,6 +109,8 @@ namespace slime.jsh.plugin {
 				 */
 				add: (pathname: slime.jrunscript.file.Pathname) => void
 			}
+
+			plugin: (path: string) => void
 		}
 	}
 
@@ -137,7 +139,7 @@ namespace slime.jsh.loader.internal.plugins {
 
 	export type register = (p: {
 		scope: Pick<slime.jsh.plugin.Scope,"plugins"|"$slime"|"global"|"jsh">
-		$loader: slime.Loader
+		$loader: slime.old.Loader
 		source: () => string
 	}) => Plugin[]
 
@@ -183,4 +185,31 @@ namespace slime.jsh.loader.internal.plugins {
 		 */
 		mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.old.Loader, source?: () => string }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.tools = function() {
+				verify(1).is(1);
+				verify(jsh).tools.git.is.type("object");
+
+				var getJenkins = function() {
+					return jsh.tools.jenkins;
+				};
+
+				verify(getJenkins()).is.type("undefined");
+
+				jsh.tools.plugin.jenkins();
+
+				verify(getJenkins()).is.type("object");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }

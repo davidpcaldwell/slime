@@ -12,8 +12,6 @@
 			}
 		});
 
-		jsh.java.tools.plugin.git();
-
 		var name = parameters.options.directory.basename;
 
 		var server = new jsh.httpd.Tomcat();
