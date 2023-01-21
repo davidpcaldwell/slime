@@ -19,6 +19,8 @@
 			},
 			load: function() {
 				if (!jsh.tools) jsh.tools = {
+					plugin: void(0),
+
 					git: void(0),
 					hg: void(0),
 					node: void(0),
@@ -28,6 +30,8 @@
 					docker: void(0),
 					kubectl: void(0),
 					code: void(0),
+					jenkins: void(0),
+
 
 					//	deprecated
 					rhino: void(0),

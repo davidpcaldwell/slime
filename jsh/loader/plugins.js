@@ -77,6 +77,10 @@
 
 			scope.jsh = p.scope.jsh;
 
+			//	TODO	this rigamarole exists to support the deprecated $jsapi.loader.plugin.mock API. This is the wrong place to
+			//			put it but the simplest change to make to get it working in this refactored structure.
+			var $jsapi_loader_plugin_mock = (p.$loader["plugin"] && p.$loader["plugin"].mock) ? p.$loader["plugin"].mock : void(0);
+
 			scope.$loader = Object.assign(
 				p.$loader,
 				{
@@ -84,9 +88,25 @@
 						add: function(pathname) {
 							scope.$slime.classpath.add({ _file: pathname.java.adapt() });
 						}
+					},
+					plugin: function(path) {
+						var sub = register({
+							scope: scope,
+							$loader: p.$loader.Child(path),
+							source: function() {
+								return p.source() + " subpath=" + path;
+							}
+						});
+						rv = rv.concat(sub);
 					}
 				}
 			);
+
+			if ($jsapi_loader_plugin_mock) scope.$loader.plugin["mock"] = $jsapi_loader_plugin_mock;
+
+			//	TODO	this rigamarole exists to support the deprecated $jsapi.loader.plugin.mock API. This is the wrong place to
+			//			put it but the simplest change to make.
+			if (p.$loader["plugin"] && p.$loader["plugin"].mock) scope.$loader.plugin["mock"] = p.$loader["plugin"].mock;
 
 			scope.$loader.run("plugin.jsh.js", scope);
 

@@ -24,9 +24,6 @@ namespace slime.jsh.java.tools {
 		plugin: {
 			/** @deprecated */
 			hg: any
-
-			/** @deprecated */
-			git: any
 		}
 	}
 
