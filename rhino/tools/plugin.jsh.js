@@ -27,7 +27,7 @@
 				};
 				jsh.tools.plugin.jenkins = function() {
 					jsh.loader.plugins($loader.Child("jenkins/"));
-					return (function() { return this; })().jenkins;
+					return jsh.tools.jenkins;
 				}
 			}
 		})

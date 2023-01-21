@@ -205,9 +205,11 @@ namespace slime.jsh.loader.internal.plugins {
 
 				verify(getJenkins()).is.type("undefined");
 
-				jsh.tools.plugin.jenkins();
+				var jenkins = jsh.tools.plugin.jenkins();
 
 				verify(getJenkins()).is.type("object");
+				verify(jenkins).is.type("object");
+				verify(jenkins).is(getJenkins());
 			}
 		}
 	//@ts-ignore
