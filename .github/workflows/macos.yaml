@@ -25,6 +25,5 @@ jobs:
           SLIME_TEST_NO_JAVA_THREADS: 1
           SLIME_TEST_NO_DOCKER: 1
           SLIME_TEST_NO_GIT: 1
-          SLIME_TEST_NO_JSH_REMOTE: 1
         run: ./wf check
         shell: bash
