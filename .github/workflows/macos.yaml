@@ -19,5 +19,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Run the linting and the tests
+        env:
+          SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
         run: ./wf check
         shell: bash
