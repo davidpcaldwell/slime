@@ -260,18 +260,19 @@ public class Rhino {
 				});
 				Integer status = future.get();
 				service.shutdown();
-				LOG.log(Level.INFO, "Exiting normally with status %d.", status);
 				if (status != null) {
+					LOG.log(Level.INFO, "Exiting via provided exit status %d.", status);
 					shell.getEnvironment().exit(status.intValue());
 				} else {
-					Thread[] threads = new Thread[Thread.activeCount()*2];
+					Set<Thread> threads = Thread.getAllStackTraces().keySet();
+					LOG.log(Level.INFO, "No exit status provided; destroying debugger (if any). JVM will exit when threads complete.", status);
+					java.util.function.Function<Thread,Boolean> isAwt = (t) -> t.getName().startsWith("AWT-");
 					for (Thread t : threads) {
-						if (t != null && t != Thread.currentThread() && !t.isDaemon()) {
+						if (t != null && t != Thread.currentThread() && !t.isDaemon() && !isAwt.apply(t)) {
 							LOG.log(Level.FINER, "Active thread: " + t + " daemon = " + t.isDaemon());
 							t.join();
 						}
 					}
-					LOG.log(Level.INFO, "Exiting normally with status %d.", status);
 					engineConfiguration.getEngine().getDebugger().destroy();
 					//	JVM will exit normally when non-daemon threads complete.
 				}

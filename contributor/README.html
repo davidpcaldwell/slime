@@ -25,8 +25,8 @@ END LICENSE
 			document.domain = document.domain;
 		</script>
 		<style>
-			#jsapi table { border-collapse: collapse; }
-			#jsapi th, #jsapi td {
+			#jsapi table, #openapi table { border-collapse: collapse; }
+			#jsapi th, #jsapi td, #openapi th, #openapi td {
 				border: 1px solid black;
 				padding: 0.5em 1.0em;
 			}
@@ -59,14 +59,14 @@ END LICENSE
 		<h1>SLIME: Contributing</h1>
 		<div>This page contains resources for developing SLIME itself.</div>
 		<div>
-			<h2><a href="../local/doc/typedoc/interfaces/slime.project.wf.interface.html"><code>wf</code> Commands for SLIME itself</a></h2>
+			<h2><a href="../local/doc/typedoc/interfaces/slime-1.project.wf.Interface.html"><code>wf</code> Commands for SLIME itself</a></h2>
 			<script>
 				window.addEventListener("load", function(e) {
 					var typedoc = document.querySelector("[data-name='typedoc']");
 					var button = typedoc.querySelector("[data-name='update']");
 					var output = typedoc.querySelector("[data-name='console']");
 					button.addEventListener("click", function(e) {
-						output.innerHTML = "Running TypeDoc ...";
+						output.innerHTML = "Running TypeDoc ... (started at " + new Date() + ")";
 						button.disabled = true;
 						fetch("../local/doc/typedoc/update", {
 							method: "POST"
@@ -94,12 +94,21 @@ END LICENSE
 						file called <code>_.fifty.ts</code> to contain simply a namespace declaration and the top-level namespace comment.
 					</p>
 				</div>
-				<button data-name="update">Update</button>
 				<div>
-					<h4>Console</h4>
-					<pre data-name="console">
-						(TypeDoc output will appear here.)
-					</pre>
+					<h4>Re-generating the documentation</h4>
+					<p>
+						Although the TypeDoc documentation will be updated automatically when the documentation server is running via
+						`fifty view`, it uses exponential backoff when scanning the file system for changes in order to avoid overusing
+						local system resources. To hint to the server that it should begin checking for updates more frequently again,
+						this <button data-name="update">Update</button> button may be clicked and the server response to the update
+						request will be rendered below.
+					</p>
+					<div>
+						<h5>Console</h5>
+						<pre data-name="console">
+							(Server response to update request will be presented here.)
+						</pre>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -146,7 +155,7 @@ END LICENSE
 										<code>$jsapi.loader.fifty({ path: <i>path</i>, verify: verify })</code>
 									</td>
 									<td>
-										The <code>loader/api/test/fifty/test.jsh.js</code> script provides a
+										The <code>tools/fifty/test.jsh.js</code> script provides a
 										<code>--view jsapi</code> argument that allows the executed Fifty script to broadcast its
 										results via <code>stdio</code> in a way compatible with jsapi. For jsapi-based tests, this is encapsulated in
 										<code>jsh.unit.fifty.Part(p)</code>, which takes <code>shell</code>, <code>script</code>,
@@ -252,6 +261,11 @@ END LICENSE
 			</div>
 			<div>
 				<h3><a href="../tools/fifty/project.html">Fifty contributor documentation</a></h3>
+			</div>
+			<div>
+				<h3><a href="../local/wiki/Home">Wiki</a> (local copy; recommended to install
+					<a href="https://chrome.google.com/webstore/detail/markdown-preview-plus/febilkbfcbhebfnokafefeacimjdckgl?hl=en-US">Markdown Preview Plus</a>
+					to browse it)</h3>
 			</div>
 		</div>
 		<div>
@@ -580,12 +594,11 @@ END LICENSE
 			<div>
 				<h3>Rhino</h3>
 				<p>
-					Rhino is currently downloaded and installed as part of the <code>jrunscript</code> bootstrap API
+					Rhino download/installation is currently implemented as part of the <code>jrunscript</code> bootstrap API
 					(see <a href="../rhino/jrunscript/api.js"><code>rhino/jrunscript/api.js</code></a>, specifically
-					<code>$api.rhino.download()</code>)
-					in order to
-					preserve the ability to restore support for older JDKs (6 or 7, where the built-in engine cannot
-					run the loader, so the launcher would need to install it).
+					<code>$api.rhino.download()</code>) for historical reasons, because JDK 6 and 7 relied on being able to
+					download it. The built-in Rhino fork bundled with JDK 6 and 7 cannot run the loader, so the JDK 6-7 launcher
+					downloaded and installed Mozilla Rhino. This structure was preserved to ease a hypothetical backport to JDK 6-7.
 				</p>
 				<p>
 					The implementation could be simplified at the cost of making it harder to restore support for JDK 6 and
@@ -593,8 +606,12 @@ END LICENSE
 					would be running the shell that installed Rhino.
 				</p>
 				<p>
-					Rhino can be updated by updating the default version in <code>rhino/jrunscript/api.js</code>, along with
-					(so that contributors can work properly) the version in <code>build.gradle</code>.
+					Rhino's default version can be updated by updating the default version in <code>rhino/jrunscript/api.js</code>,
+					along with (so that contributors can work properly) the version in <code>build.gradle</code>.
+				</p>
+				<p>
+					The locally installed version of Rhino can be altered using the <code>jsh/tools/install/rhino.jsh.js</code>
+					script, with the `-replace` option.
 				</p>
 			</div>
 			<div>
@@ -614,15 +631,46 @@ END LICENSE
 				</div>
 			</div>
 			<div>
-				<h3>GitHub</h3>
+				<h3>TypeScript / TypeDoc</h3>
 				<p>
-					SLIME uses the GitHub REST API and so incorporates its type definitions. These definitions are available on the
-					web as OpenAPI definitions at
-					<a href="https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json">https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json</a>.
-					They are converted to TypeScript definitions using
-					<a href="https://www.npmjs.com/package/dtsgenerator">dtsgenerator</a>, and stored directly in the SLIME source
-					tree. They can be updated via:
-					<pre><code>./jsh.bash rhino/tools/github/tools/types.jsh.js</code></pre>
+					The version of TypeScript used by <code>wf</code> is specified in <code>tools/wf/plugin.jsh.js</code>.
+				</p>
+				<p>
+					The version of TypeDoc used for a given TypeScript version is specified in <code>tools/wf/typescript.js</code>.
+					The latest releases can be tracked <a href="https://github.com/TypeStrong/typedoc/releases">on GitHub</a>.
+				</p>
+			</div>
+			<div id="openapi">
+				<h3>GitHub / Docker TypeScript definitions</h3>
+				<p>
+					SLIME uses the GitHub REST API and the Docker Engine API and so incorporates their TypeScript type definitions.
+					Both APIs use OpenAPI documents to describe themselves; these are downloaded from the web and converted to
+					TypeScript type definitions using <a href="https://www.npmjs.com/package/dtsgenerator">dtsgenerator</a>, and
+					stored directly in the SLIME source tree.
+					<table>
+						<thead>
+							<tr>
+								<th>API</th>
+								<th>OpenAPI</th>
+								<th>TypeScript definition</th>
+								<th>Script</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>GitHub REST API</td>
+								<td><a href="https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json">Link</a></td>
+								<td><code>rhino/tools/github/tools/github-rest.d.ts</code></td>
+								<td><code>rhino/tools/github/tools/types.jsh.js</code></td>
+							</tr>
+							<tr>
+								<td>Docker Engine API</td>
+								<td><a href="https://docs.docker.com/engine/api/v1.41.yaml">Link</a></td>
+								<td><code>rhino/tools/docker/tools/docker-api.d.ts</code></td>
+								<td><code>rhino/tools/docker/tools/types.jsh.js</code></td>
+							</tr>
+						</tbody>
+					</table>
 				</p>
 			</div>
 		</div>

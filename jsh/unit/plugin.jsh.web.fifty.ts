@@ -24,7 +24,7 @@ namespace slime.jsh.unit {
 
 			export type Constructor = constructor.Function & {
 				bitbucket: (o: {}) => handler
-				github: (o: { src: slime.jsh.unit.mock.github.src, private?: boolean }) => handler
+				github: slime.jsh.unit.mock.web.Github
 			}
 		}
 
@@ -64,12 +64,13 @@ namespace slime.jsh.unit {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var jsh = fifty.global.jsh;
 
 				fifty.tests.old = function() {
 					fifty.verify("mock").is("mock");
+					if (!jsh.unit.mock.Web) return;
 
 					var web = new jsh.unit.mock.Web({ trace: true });
 					web.addHttpsHost("mockweb.xlime.com");
@@ -110,10 +111,16 @@ namespace slime.jsh.unit {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
+				const { jsh } = fifty.global;
+
 				fifty.tests.https = function() {
 					fifty.verify(1).is(1);
+					if (!fifty.global.jsh.unit.mock.Web) {
+						jsh.shell.console("jsh.unit.mock.Web not present; skipping test.");
+						return;
+					}
 					var web = new fifty.global.jsh.unit.mock.Web();
 					web.addHttpsHost("https.fifty.com");
 					web.add(function(request) {
@@ -154,7 +161,7 @@ namespace slime.jsh.unit {
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		fifty.tests.suite = function() {
 			fifty.run(fifty.tests.old);

@@ -78,14 +78,24 @@ namespace slime {
 			 * Allows the XML and XMLList constructors as arguments, and returns the resource as an E4X `type="xml"` object.
 			 */
 			(p: any): any
+
+			string: () => string
 		}
 	}
 
 	export namespace resource {
+		export interface ReadInterface {
+			/**
+			 * Returns the content of the resource as a string.
+			 */
+			string?: () => string
+		}
+
 		/**
 		 * An object that provides the implementation for a {@link slime.Resource}.
 		 */
 		export interface Descriptor {
+			//	TODO	remove mime.Type
 			/**
 			 * The MIME type of the resource.
 			 */
@@ -98,20 +108,8 @@ namespace slime {
 			//			path? Or to the full path?
 			name?: string
 
-			/**
-			 * The content of the resource as a string.
-			 */
-			string?: string
-
-			read?: {
-				/**
-				 * Returns the content of the resource as a string.
-				 */
-				string?: () => string
-			}
+			read?: ReadInterface
 		}
-
-		export type Factory = new (o: Descriptor) => slime.Resource
 	}
 
 	/**
@@ -122,7 +120,7 @@ namespace slime {
 	 *
 	 * Embeddings must supply two values in the scope when executing the runtime. They must supply a value for `$engine` that is either
 	 * `undefined` or is a value of type {@link $engine} specifying information about the underlying JavaScript engine, and
-	 * they must supply a value for `$slime` of type {@link $slime.Deployment} that provides information about the SLIME installation.
+	 * they must supply a value for `$slime` of type {@link slime.runtime.$slime.Deployment | $slime.Deployment} that provides information about the SLIME installation.
 	 *
 	 * In return, the embedding will be supplied with an {@link Exports} object that provides the SLIME runtime.
 	 *
@@ -135,22 +133,14 @@ namespace slime {
 	export namespace runtime {
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
-				fifty.tests.runtime = {};
+				fifty.tests.runtime = {
+					exports: fifty.test.Parent()
+				};
 			}
 		//@ts-ignore
 		)(fifty);
-
-		export interface Scope {
-			$engine: slime.runtime.$engine | undefined
-			$slime: slime.runtime.$slime.Deployment
-
-			/**
-			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
-			 */
-			Packages: slime.jrunscript.Packages
-		}
 
 		export namespace $slime {
 			export interface TypeScript {
@@ -200,17 +190,6 @@ namespace slime {
 					[name: string]: string
 				}
 			}
-
-			(
-				function(
-					fifty: slime.fifty.test.kit
-				) {
-					fifty.tests.runtime.$slime = function() {
-
-					}
-				}
-			//@ts-ignore
-			)(fifty);
 		}
 
 		/**
@@ -252,6 +231,16 @@ namespace slime {
 			MetaObject: any
 		}
 
+		export interface Scope {
+			$engine: slime.runtime.$engine | undefined
+			$slime: slime.runtime.$slime.Deployment
+
+			/**
+			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
+			 */
+			Packages?: slime.jrunscript.Packages
+		}
+
 		/**
 		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
 		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
@@ -267,26 +256,27 @@ namespace slime {
 		export interface Exports {
 		}
 
-		(
-			function(
-				fifty: slime.fifty.test.kit
-			) {
-				fifty.tests.exports = {};
+		export namespace resource {
+			export interface Exports {
+				new (o: slime.resource.Descriptor): slime.Resource
+
+				ReadInterface: {
+					string: (content: string) => slime.resource.ReadInterface
+				}
 			}
-		//@ts-ignore
-		)(fifty);
+		}
 
 		export interface Exports {
 			/**
 			 * Creates a {@link slime.Resource | Resource}.
 			 */
-			Resource: resource.Factory
+			Resource: resource.Exports
 		}
 
 		(
 			function(
 				$platform: slime.runtime.$platform,
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
 
@@ -317,7 +307,7 @@ namespace slime {
 					}
 				)();
 
-				fifty.tests.exports.Resource = function() {
+				fifty.tests.runtime.exports.Resource = function() {
 					fifty.run(function type() {
 						var toString = function(p): string { return p.toString(); };
 
@@ -358,16 +348,27 @@ namespace slime {
 						})();
 					});
 
-					fifty.run(function() {
-						var readResource = function(resource: slime.Resource): string {
-							return resource.read(String);
-						};
+					fifty.run(function read() {
+						var readResource = fifty.evaluate.create(
+							function(resource: slime.Resource): string {
+								return resource.read(String);
+							},
+							"read(String)"
+						);
+
+						var newReadResource = fifty.evaluate.create(
+							function(resource: slime.Resource): string {
+								return resource.read.string();
+							},
+							"read.string()"
+						);
 
 						(function() {
 							var resource = new api.Resource({
-								string: "foo"
+								read: api.Resource.ReadInterface.string("foo")
 							});
 							verify(resource).evaluate(readResource).is("foo");
+							verify(resource).evaluate(newReadResource).is("foo");
 						})();
 
 						(function() {
@@ -383,19 +384,19 @@ namespace slime {
 
 						(function() {
 							var resource = new api.Resource({
-								string: JSON.stringify({ foo: "bar" })
+								read: api.Resource.ReadInterface.string(JSON.stringify({ foo: "bar" }))
 							});
 							var json: { foo: string, baz?: any } = resource.read(JSON);
 							verify(json).foo.is("bar");
 							verify(json).evaluate.property("baz").is(void(0));
 						})();
-						var p = $platform;
-						var global = (function() { return this; })();
-						var XML = global["XML"];
-						var XMLList = global["XMLList"];
+
 						if ($platform.e4x) {
+							var global = (function() { return this; })();
+							var XML = global["XML"];
+							var XMLList = global["XMLList"];
 							var resource = new api.Resource({
-								string: "<a><b/></a>"
+								read: api.Resource.ReadInterface.string("<a><b/></a>")
 							});
 							var xml = resource.read(XML);
 							verify(xml).is.type("xml");
@@ -474,39 +475,25 @@ namespace slime {
 			) => { [name: string]: any }
 		}
 
-		(
-			function(
-				fifty: slime.fifty.test.kit
-			) {
-
-			}
-		//@ts-ignore
-		)(fifty);
-
 		export namespace internal {
-			export type Resource = resource.Factory
+			export type Resource = resource.Exports
 			export type methods = {
 				run: any
 			}
-			export type createScriptScope = <T extends { [x: string]: any }>($context: T) => {
-				$context: T
-				$export: any
-				$exports: any
-			}
 			export namespace mime {
 				export interface Context {
-					Function: slime.$api.Global["Function"]
+					Function: slime.$api.Global["fp"]
 					deprecate: slime.$api.Global["deprecate"]
 				}
 			}
 
 			export namespace loaders {
 				export interface Scope {
-					toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
-					Loader: loader.Constructor
+					toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
+					Loader: runtime.loader.old.Constructor
 				}
 
-				export type Script = slime.loader.Script<Scope,slime.runtime.Exports["loader"]>
+				export type Script = slime.old.loader.Script<Scope,slime.runtime.Exports["old"]["loader"]>
 			}
 
 			/**
@@ -528,14 +515,41 @@ namespace slime {
 			}
 		}
 
+		/**
+		 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
+		 * in its implementation.
+		 */
 		export interface $platform {
 			/** @deprecated */
 			execute: any
 
+			/**
+			 * An object containing properties describing the platform's capabilities for objects.
+			 */
 			Object: {
-				defineProperty: {
+				/**
+				 * An object containing properties describing the platform's meta-object capabilities.
+				 */
+				defineProperty?: {
+					/**
+					 * If `true`, the platform supports the ECMA-262 version 5 `Object.defineProperty` method.
+					 */
 					ecma?: boolean
+
+					//	TODO	rename
+					/**
+					 * If `true`, the platform supports `__defineGetter__` and `__defineSetter__` as defined by Mozilla.
+					 */
 					accessor?: boolean
+
+					/**
+					 * (Conditional; if platform supports it) Sets whether a named property on an object is read-only.
+					 *
+					 * @param object An object.
+					 * @param property The name of a property.
+					 * @param readonly Whether the property should be read-only (`true`) or writable (`false`).
+					 */
+					setReadOnly?: (object: object, property: string, readonly: boolean) => void
 				}
 			}
 			e4x: any
@@ -543,100 +557,363 @@ namespace slime {
 			java: any
 		}
 
+		(
+			function(
+				$platform: $platform,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.$platform = function() {
+					var o: { x: number } = { x: void(0) };
+					o.x = 3;
+					verify(o).x.is(3);
+					o.x = 4;
+					verify(o).x.is(4);
+					var setReadOnly = (function() {
+						if ($platform.Object.defineProperty && $platform.Object.defineProperty.setReadOnly) {
+							return $platform.Object.defineProperty.setReadOnly;
+						}
+					})();
+					if (setReadOnly) {
+						setReadOnly(o,"x",true);
+						o.x = 5;
+						verify(o).x.is(4);
+						setReadOnly(o,"x",false);
+						o.x = 5;
+						verify(o).x.is(5);
+					} else {
+						//	TODO	seems to go here under Rhino; can we just remove this?
+						const message = "setReadOnly not implemented";
+						verify(message).is(message);
+					}
+				}
+			}
+		//@ts-ignore
+		)($platform,fifty);
+
 		export namespace test {
-			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.kit) {
-				return fifty.$loader.module("fixtures.ts").subject;
+			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.Kit) {
+				var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+				return script().subject(fifty);
 			//@ts-ignore
 			})(fifty);
 		}
 
-		/**
-		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
-		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
-		 *
-		 * ## Loading code
-		 *
-		 * Note that although there are global `run()`, `file()`, and `value()` methods that
-		 * can be used to execute code, there is no global `module()` method. Since modules themselves load code, in
-		 * order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to
-		 * load modules via first creating a {@link slime.Loader} implementation and then using the
-		 * `module()` method of the `Loader`.
-		 */
 		export interface Exports {
-			/**
-			 * Creates a *Loader*. A Loader loads resources from a specified source.
-			 */
-			Loader: internal.loader.Constructor & {
-				/** @deprecated Use `loader.source` */
-				source: {
-					/**
-					 * @deprecated Use `loader.source.object`.
-					 */
-					object: Exports["loader"]["source"]["object"]
-				}
+			old: {
 				/**
-				 * @deprecated Use `loader.series`.
+				 * Creates a *Loader*. A Loader loads resources from a specified source.
 				 */
-				series: Exports["loader"]["series"]
-				/**
-				 * @deprecated Use `loader.tools`.
-				 */
-				tools: {
+				Loader: loader.old.Constructor
+
+				loader: {
+					source: {
+						/**
+						 * Creates an loader source defined by a single JavaScript object.
+						 * @param o An object with named properties; each property either contains a loader object, in which case it
+						 * is a loader which provides its children, or a resource object, whose properties are {@link resource.Descriptor}s.
+						 */
+						object: (o: object) => slime.old.loader.Source
+					}
+
 					/**
-					 * @deprecated Use `loader.tools.toExportScope`.
+					 * A loader that uses a series of loaders to resolve resources. For a given path, each loader is searched in turn
+					 * until a resource is found.
+					 *
+					 * The created loaders currently have the following limitations: <!---	TODO	address them	--->
+					 *
+					 * * They are not enumerable
+					 * * They do not respect the `.child` implementations of their elements
+					 * * They do not provide a sensible `.toString` implementation.
+					 *
+					 * @param loaders A list of {@link slime.Loader}s
+					 * @returns A loader that looks up resources in the given list of underlying loaders.
+					 *
+					 * @experimental
 					 */
-					toExportScope: Exports["loader"]["tools"]["toExportScope"]
-				}
-			}
-			loader: {
-				source: {
-					/**
-					 * Creates an loader source defined by a single JavaScript object.
-					 * @param o An object with named properties; each property either contains a loader object, in which case it
-					 * is a loader which provides its children, or a resource object, whose properties are {@link resource.Descriptor}s.
-					 */
-					 object: (o: object) => loader.Source
-				}
-				series: (loaders: Loader[]) => Loader
-				tools: {
-					toExportScope: <T extends { [x: string]: any }>(t: T) => T & { $export: any, $exports: any }
+					series: (loaders: old.Loader[]) => old.Loader
+
+					tools: {
+						toExportScope: <S extends { [x: string]: any },T>(scope: S) => S & { $export: (t: T) => void, $exports: T }
+					}
 				}
 			}
 		}
 
 		export interface Exports {
-			namespace: any
+			/**
+			 * Creates a *namespace*. A namespace is an object which is globally visible because it is rooted to the global object
+			 * (e.g., `window` in the browser). So, in the browser, the namespace `inonit.foo.bar` would be an object that is the
+			 * `bar` property of an object that is the `foo` property of an object that is the `inonit` property of `window`. It
+			 * could be referenced as `inonit.foo.bar` in JavaScript code, or alternatively as `window.inonit.foo.bar` in the
+			 * browser.
+			 *
+			 * In the event portions of the sequence of rooting objects do not exist, they will be created. So, for example, in the
+			 * browser-based example above, if the `window.inonit` object exists, but the `window.inonit` object does not have a
+			 * property named `foo`, an object will be created and assigned to the `foo` property of `window.inonit`, and then an
+			 * object will be created and assigned to that object's `bar` property.
+			 *
+			 * If the full sequence of rooting objects exists, the object at the given location will be returned.
+			 *
+			 * @param name The name/location of the namespace to create (or return if it exists).
+			 *
+			 * @returns The object at the specified location. The object (and its parents) will be created if it does not exist.
+			 */
+			namespace: (name: string) => object
+		}
+
+		export interface Exports {
+			/**
+			 * The same object as `$platform`.
+			 */
 			$platform: $platform
+
+			/**
+			 * The same object as `$platform.java`.
+			 */
 			java?: any
+
+			/**
+			 * An additional way for embedding environments to access the {@link slime.$api.Global | $api} object.
+			 */
 			$api: slime.$api.Global
+
 			/**
 			 * @deprecated Replaced by `$api.mime`.
 			 */
 			mime: slime.$api.mime.Export
 			readonly typescript: slime.runtime.$slime.TypeScript
 		}
+
+		(
+			function(
+				Packages: slime.jrunscript.Packages,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.jsapi = (
+					function() {
+						//	TODO	this is a problem with type definition of fifty.test.Parent
+						var rv = Object.assign(fifty.test.Parent(), { _1: void(0), _2: void(0), _3: void(0) });
+						var $jsapi = {
+							loader: {
+								module: fifty.$loader.module,
+								file: fifty.$loader.file,
+								//	TODO	either support this or drop support for it
+								coffee: void(0),
+								getRelativePath: (fifty.jsh) ? function(path) {
+									var rv = fifty.jsh.file.relative(path);
+									return jsh.file.Pathname(rv.pathname);
+								} : void(0)
+							}
+						};
+						var api = test.subject;
+						var Mock = function recurse() {
+							var contents = {};
+
+							this.add = function(path,value) {
+								var tokens = path.split("/");
+								if (tokens.length == 1) {
+									if (typeof(value) == "string") {
+										value = (function(string) {
+											return {
+												read: {
+													string: function() { return string; }
+												}
+											}
+										})(value);
+									}
+									contents[path] = { resource: value };
+								} else {
+									if (!contents[tokens[0]]) {
+										contents[tokens[0]] = { child: new recurse() };
+									}
+									contents[tokens[0]].child.add(tokens.slice(1).join("/"), value);
+								}
+							}
+
+							this.loader = new api.old.Loader({
+								get: function(path) {
+									var tokens = path.split("/");
+									if (tokens.length == 1) {
+										debugger;
+										return (contents[path]) ? contents[path].resource : null;
+									} else {
+										if (contents[tokens[0]]) {
+											var loader = contents[tokens[0]].child.loader.source;
+											if (!loader) {
+												throw new Error("No loader at " + tokens[0] + " for " + path);
+											}
+											if (!loader.get) throw new Error("No loader.get in " + Object.keys(loader));
+											return loader.get(tokens.slice(1).join("/"));
+										}
+										return null;
+									}
+								},
+								list: function(prefix) {
+									if (prefix) {
+										var tokens = prefix.split("/");
+										return contents[tokens[0]].child.loader.source.list(tokens.slice(1).join("/"));
+									} else {
+										var rv = [];
+										for (var x in contents) {
+											var item = { path: x, resource: Boolean(contents[x].resource), loader: Boolean(contents[x].child) };
+											rv.push(item);
+										}
+									}
+								}
+							});
+						}
+						rv._1 = function() {
+							var Tests = function(p: { loadTestModule: (path: string, context: object) => any }) {
+								var a = function(scope) {
+									if (!scope.verify) throw new Error("No scope.verify; scope keys = " + Object.keys(scope));
+									if (!p.loadTestModule) throw new Error("No p.loadTestModule");
+									var module = scope.verify(p.loadTestModule("test/data/a/", {
+										d: 1970
+									}), "test/data/a");
+									module.a.is(3);
+									module.b.is(4);
+									module.c.is(5);
+									module.d.is(1970);
+									module.e.is(4);
+									module.f.is(6);
+									module.fThis.is("fThis");
+									module.mThis.is("mThis");
+									module.value.is(5);
+									module.vThis.thisName.is("vThis:4");
+								};
+
+								var b = function(scope) {
+									var module = scope.verify(p.loadTestModule("test/data/b/", {
+									}), "test/data/b");
+									module.submodule.message.is("ititit");
+								}
+
+								var c = function(scope) {
+									var module = scope.verify(p.loadTestModule("test/data/c/main.js", {
+									}), "test/data/c/main");
+									module.value.is(13);
+									module.other.is(42);
+								};
+
+								var rhino = function(scope) {
+									var module = scope.verify(p.loadTestModule("jrunscript/test/data/1/", {
+									}), "rhino/test/data/1");
+									var $java = (function() {
+										if (this.jsh && this.jsh.java && this.jsh.java.getClass) return this.jsh.java.getClass("slime.Data");
+										try {
+											Packages.java.lang.Class.forName("slime.Data");
+											return true;
+										} catch (e) {
+											return false;
+										}
+									})();
+									if ($java) {
+										module.data.is("From Java");
+									} else {
+										module.data.is("No Java");
+									}
+								};
+
+								var coffee = function(scope) {
+									//	TODO	for some reason these (at least sometimes) do not run in browser
+									if ($jsapi.loader.coffee) {
+										// TODO: Below works around issue with relative path being incorrect when this file
+										// is invoked from a file which in turn is invoked from another file; happens in
+										// test suite currently. Should be refactored out as we work to run tests directly
+										// rather than via includes
+										var PREFIX = ($jsapi.loader.getRelativePath && $jsapi.loader.getRelativePath(".").basename == "jrunscript") ? "../" : "";
+										var loader = $jsapi.loader.module(PREFIX + "test/data/coffee/loader.js");
+										var coffee = $jsapi.loader.module(PREFIX + "test/data/coffee/module.coffee");
+										scope.verify(coffee,"coffee").a.is(2);
+										scope.verify(coffee,"coffee").file.b.is(3);
+										scope.verify(loader,"loader").file.b.is(3);
+										var file = $jsapi.loader.file(PREFIX + "test/data/coffee/file.coffee");
+										scope.verify(file,"file").b.is(3);
+									} else {
+										scope.verify("No CoffeeScript").is("No CoffeeScript");
+									}
+								}
+
+								this.run = function(scope) {
+									a(scope);
+									b(scope);
+									c(scope);
+									rhino(scope);
+									coffee(scope);
+								}
+							};
+							new Tests({
+								loadTestModule: function(path: string, context: object): any {
+									return fifty.$loader.module(path, context);
+								}
+							}).run({
+								test: test,
+								verify: verify
+							});
+						};
+						rv._2 = function() {
+							var loader = new api.old.Loader({
+								//	TODO	take care of the below; expand type definition or update test
+								//@ts-ignore
+								get: function(path) {
+									if (path == "a") {
+										return {
+											string: "a"
+										}
+									} else if (path == "b/c") {
+										return {
+											string: "c"
+										}
+									}
+								},
+								//	TODO	take care of the below; expand type definition or update test
+								//@ts-ignore
+								list: function(prefix) {
+									if (prefix == "b/") return [ { path: "c", resource: true } ];
+									return [ { path: "a", resource: true }, { path: "b", loader: true } ]
+								}
+							});
+							var listing = loader.list({ descendants: function() { return true; } } );
+							verify(listing).length.is(3);
+							//	TODO	take care of the below; expand type definition or update test
+							//@ts-ignore
+							verify(listing)[0].path.length.is(1);
+							verify(listing)[0].path.is("a");
+							verify(listing)[1].path.is("b");
+							verify(listing)[2].path.is("b/c");
+						}
+						rv._3 = function() {
+							var mock1 = new Mock();
+							mock1.add("a", "sa");
+							var mock2 = new Mock();
+							mock2.add("b/c", "sb/c");
+							var series = api.old.loader.series([mock1.loader,mock2.loader]);
+							verify(series).get("foo").is(null);
+							verify(series).get("a").read(String).evaluate(String).is("sa");
+							verify(series).get("b/c").read(String).evaluate(String).is("sb/c");
+						}
+						return rv;
+					}
+				)();
+
+				fifty.tests.suite = function() {
+					fifty.run(fifty.tests.runtime.exports);
+					fifty.load("$api.fifty.ts");
+					fifty.load("mime.fifty.ts");
+					fifty.load("$api-Function.fifty.ts");
+					fifty.load("$api-Function-old.fifty.ts");
+					fifty.load("Loader.fifty.ts");
+					fifty.load("events.fifty.ts");
+				}
+
+				if (jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);
+			}
+		//@ts-ignore
+		)( (function() { return this; })().Packages, fifty)
 	}
 }
-
-namespace slime.test {
-	declare type api = { convert: (input: number) => number };
-	export type factory = slime.loader.Script<{ scale: number }, api>;
-}
-
-(
-	function(
-		$loader: slime.fifty.test.$loader,
-		verify: slime.fifty.test.verify,
-		tests: any,
-		fifty: slime.fifty.test.kit
-	) {
-		tests.suite = function() {
-			fifty.run(fifty.tests.runtime.$slime);
-			fifty.run(fifty.tests.exports.Resource);
-			fifty.load("mime.fifty.ts");
-			fifty.load("$api-Function.fifty.ts");
-			fifty.load("Loader.fifty.ts");
-		}
-	}
-//@ts-ignore
-)($loader,verify,tests,fifty)

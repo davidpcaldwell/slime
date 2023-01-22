@@ -18,7 +18,7 @@ namespace slime.jrunscript.tools.gcloud {
 
 		export type Executor = <P,R>(command: cli.Command<P,R>) => {
 			argument: (p: P) => {
-				run: slime.$api.fp.impure.Ask<{
+				run: slime.$api.fp.world.old.Ask<{
 					console: string
 				},R>
 			}
@@ -45,11 +45,6 @@ namespace slime.jrunscript.tools.gcloud {
 			shell: slime.jrunscript.shell.Exports
 			install: slime.jrunscript.tools.install.Exports
 		}
-		mock?: {
-			shell?: {
-				run: Parameters<slime.jrunscript.shell.World["mock"]>[0]
-			}
-		}
 	}
 
 	export interface Exports {
@@ -74,7 +69,7 @@ namespace slime.jrunscript.tools.gcloud {
 					command: cli.Executor
 				}
 
-				create: (pathname: string) => slime.$api.fp.impure.Tell<{
+				create: slime.$api.fp.world.Action<string,{
 					console: string
 				}>
 			}
@@ -83,22 +78,22 @@ namespace slime.jrunscript.tools.gcloud {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 			const script: Script = fifty.$loader.script("module.js");
 			const install = jsh.tools.install;
 
 			var captor = (
 				function() {
-					var last: shell.run.Invocation;
+					var last: shell.run.old.Invocation;
 
 					return {
 						last: function() {
 							return last;
 						},
-						mock: function(invocation: shell.run.Invocation): shell.run.Mock {
+						mock: function(invocation: shell.run.old.Invocation): shell.run.Mock {
 							last = invocation;
 							return {
 								exit: {
@@ -113,16 +108,51 @@ namespace slime.jrunscript.tools.gcloud {
 				}
 			)();
 
+			var code: {
+				shell: {
+					module: slime.jrunscript.shell.Script
+					fixtures: slime.jrunscript.shell.test.Script
+				}
+			} = {
+				shell: {
+					module: fifty.$loader.script("../../../rhino/shell/module.js"),
+					fixtures: fifty.$loader.script("../../../rhino/shell/fixtures.ts")
+				}
+			};
+
+			var fixtures = {
+				shell: code.shell.fixtures()
+			};
+
+			var library = {
+				shell: code.shell.module({
+					_environment: void(0),
+					_properties: void(0),
+					api: {
+						js: void(0),
+						java: jsh.java,
+						io: jsh.io,
+						file: jsh.file,
+						document: void(0),
+						httpd: void(0),
+						xml: void(0)
+					},
+					kotlin: void(0),
+					stdio: {
+						output: jsh.shell.stdio.output,
+						error: jsh.shell.stdio.error
+					},
+					world: {
+						subprocess: fixtures.shell.run.createMockWorld(captor.mock)
+					}
+				})
+			}
+
 			const subject = script({
 				library: {
 					file: jsh.file,
-					shell: jsh.shell,
+					shell: library.shell,
 					install: jsh.tools.install
-				},
-				mock: {
-					shell: {
-						run: captor.mock
-					}
 				}
 			});
 
@@ -159,7 +189,9 @@ namespace slime.jrunscript.tools.gcloud {
 				verify(captor).last().configuration.arguments[7].is("bar");
 			}
 
-			fifty.tests.world = function() {
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.install = function() {
 				const module = script({
 					library: {
 						file: jsh.file,
@@ -167,15 +199,17 @@ namespace slime.jrunscript.tools.gcloud {
 						install: jsh.tools.install
 					}
 				});
-				//	TODO	think there is an API for getting a location to put a directory, maybe in Fifty, maybe somewhere else
-				var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-				TMPDIR.directory.remove();
-				module.cli.Installation.create(TMPDIR.toString())({
-					console: function(e) {
-						jsh.shell.console(e.detail);
+				var at = fifty.jsh.file.temporary.location();
+				$api.fp.world.now.action(
+					module.cli.Installation.create,
+					at.pathname,
+					{
+						console: function(e) {
+							jsh.shell.console(e.detail);
+						}
 					}
-				});
-				jsh.shell.console("Installed to: " + TMPDIR);
+				);
+				jsh.shell.console("Installed to: " + at.pathname);
 			}
 
 			fifty.tests.suite = function() {

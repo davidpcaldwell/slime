@@ -173,41 +173,6 @@ END LICENSE
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
-							<div class="name">installed</div>
-							<span>Returns information about a currently installed Tomcat.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="object">
-										<span>(optional; if omitted, an empty object is used)</span>
-										<div class="label">has properties:</div>
-										<ul>
-											<li class="value">
-												<div class="name">home</div>
-												<span class="type">directory</span>
-												<span>
-													(optional; if omitted, returns information about the version installed with
-													<code>jsh</code>)
-												</span>
-											</li>
-										</ul>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type"><a href="#types.tomcat.installation">installation</a></span>
-							</div>
-							<script type="application/x.jsapi#tests">
-								var toString = function() {
-									return this.toString();
-								};
-
-								var installed = jsh.shell.tools.tomcat.installed({ mock: { notes: $jsapi.loader.get("test/data/tomcat-release-notes-7.0.70.txt") } });
-								verify(installed).version.evaluate(toString).is("7.0.70");
-							</script>
-						</li>
-						<li class="function">
 							<div class="name">install</div>
 							<span>Installs Tomcat to a given directory (or to the shell).</span>
 							<div class="arguments">
@@ -248,98 +213,6 @@ END LICENSE
 									</li>
 								</ol>
 							</div>
-							<script type="application/x.jsapi#tests">
-								var Captor = function(array,types) {
-									types.forEach(function(type) {
-										this[type] = function(e) {
-											array.push(e);
-										}
-									},this);
-								};
-
-								var isType = function(name) {
-									return function(e) {
-										return e.type == name;
-									}
-								};
-
-								var getVersionString = function() {
-									if (!this.version) return null;
-									return this.version.toString();
-								};
-
-								var Distribution = function(version) {
-									var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-									var dist = tmpdir.getRelativePath("apache-tomcat-" + version).createDirectory();
-									dist.getRelativePath("a").write("a", { append: false });
-									dist.getRelativePath("RELEASE-NOTES").write($jsapi.loader.get("test/data/tomcat-release-notes-7.0.70.txt").read(String).replace(/7\.0\.70/g, version), { append: false });
-									var rv = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
-									jsh.io.archive.zip.encode({
-										stream: rv.write(jsh.io.Streams.binary, { append: false }),
-										entries: [
-											{ path: "apache-tomcat-" + version + "/" + "RELEASE-NOTES", resource: dist.getFile("RELEASE-NOTES") },
-											{ path: "apache-tomcat-" + version + "/" + "a", resource: dist.getFile("a") }
-										]
-									});
-									return rv.file;
-								}
-
-								var mock = {
-									lib: jsh.shell.TMPDIR.createTemporary({ directory: true }),
-									getLatestVersion: function() {
-										return "7.0.99";
-									},
-									findApache: function(o) {
-										if (o.path == "tomcat/tomcat-7/v7.0.98/bin/apache-tomcat-7.0.98.zip") return Distribution("7.0.98");
-										if (o.path == "tomcat/tomcat-7/v7.0.99/bin/apache-tomcat-7.0.99.zip") return Distribution("7.0.99");
-										if (o.path == "tomcat/tomcat-7/v7.0.109/bin/apache-tomcat-7.0.109.zip") return Distribution("7.0.109");
-										throw new Error("Mock: " + o.path);
-									}
-								};
-
-								(function alreadyInstalled() {
-									var events = [];
-									mock.lib.getRelativePath("tomcat").createDirectory();
-									jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
-									verify(events)[0].type.is("console");
-									verify(events)[0].detail.is("Tomcat already installed at " + mock.lib.getSubdirectory("tomcat"));
-									mock.lib.getSubdirectory("tomcat").remove();
-								})();
-
-								(function install() {
-									var events = [];
-									jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(events,["console","installed"]));
-									verify(events)[0].type.is("console");
-									jsh.shell.console(events[1].detail);
-									verify(events)[1].evaluate(function() { return /^Unzipping (?:[a-zA-Z0-9\/\._]+) to\:(.*)$/.test(this.detail); }).is(true);
-									verify(mock.lib).getSubdirectory("tomcat").getFile("a").is.type("object");
-									verify(mock.lib).getSubdirectory("tomcat").getFile("b").is.type("null");
-									var installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
-									var version = installed.version.toString();
-									verify(version).is("7.0.109");
-									mock.lib.getSubdirectory("tomcat").remove();
-								})();
-
-								(function replace() {
-									jsh.shell.tools.tomcat.install({ mock: mock, version: "7.0.98" });
-									var installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
-									verify(installed).evaluate(getVersionString).is("7.0.98");
-
-									var noreplace = [];
-									jsh.shell.tools.tomcat.install({ mock: mock }, new Captor(noreplace,["installed"]));
-									installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
-									verify(installed).evaluate(getVersionString).is("7.0.98");
-									verify(noreplace).length.is(0);
-
-									var replace = [];
-									jsh.shell.tools.tomcat.install({ mock: mock, replace: true }, new Captor(replace,["installed"]));
-									installed = jsh.shell.tools.tomcat.installed({ home: mock.lib.getSubdirectory("tomcat") });
-									verify(installed).evaluate(getVersionString).is("7.0.109");
-									verify(replace).length.is(1);
-
-									mock.lib.getSubdirectory("tomcat").remove();
-								})();
-							</script>
 						</li>
 					</ul>
 				</li>
@@ -480,7 +353,7 @@ END LICENSE
 					</span>
 					<div>
 						If Node.js is installed in this installation of <code>jsh</code>, this object will be a Node.js
-						<a href="../../../rhino/tools/node/api.html">Installation</a>, augmented with the following property:
+						<code>Installation</code>, augmented with the following property:
 						<div class="label">has properties:</div>
 						<ul>
 							<li class="function">

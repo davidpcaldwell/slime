@@ -7,7 +7,6 @@
 package inonit.script.runtime.io.cygwin;
 
 import java.io.*;
-import java.util.*;
 
 import inonit.script.runtime.io.*;
 import inonit.system.*;
@@ -49,11 +48,11 @@ class NodeImpl extends Filesystem.Node {
 		check(directoryScriptPath);
 		NodeImpl rv = new NodeImpl();
 		rv.parent = parent;
-		rv.directory = new Boolean(true);
+		rv.directory = Boolean.TRUE;
 		rv.host = new File(directoryHost, leafName);
 		rv.scriptPath = directoryScriptPath + ( (directoryScriptPath.endsWith("/")) ? "" : "/" ) + leafName;
-		rv.softlink = new Boolean(false);
-		rv.exists = new Boolean(true);
+		rv.softlink = Boolean.FALSE;
+		rv.exists = Boolean.TRUE;
 		return rv;
 	}
 
@@ -65,11 +64,11 @@ class NodeImpl extends Filesystem.Node {
 		check(directoryScriptPath);
 		NodeImpl rv = new NodeImpl();
 		rv.parent = parent;
-		rv.directory = new Boolean(false);
+		rv.directory = Boolean.FALSE;;
 		rv.host = new File(directoryHost, leafName);
 		rv.scriptPath = directoryScriptPath + ( (directoryScriptPath.endsWith("/")) ? "" : "/" ) + leafName;
-		rv.softlink = new Boolean(false);
-		rv.exists = new Boolean(true);
+		rv.softlink = Boolean.FALSE;
+		rv.exists = Boolean.TRUE;
 		return rv;
 	}
 
@@ -82,7 +81,7 @@ class NodeImpl extends Filesystem.Node {
 		rv.directory = null;
 		rv.host = null;
 		rv.scriptPath = directoryScriptPath + ( (directoryScriptPath.endsWith("/")) ? "" : "/" ) + leafName;
-		rv.softlink = new Boolean(true);
+		rv.softlink = Boolean.TRUE;
 		//	Softlink may point to non-existent file
 		rv.exists = null;
 		return rv;
@@ -120,6 +119,10 @@ class NodeImpl extends Filesystem.Node {
 		}
 	}
 
+	public Filesystem.Node getParent() {
+		return NodeImpl.create(parent, host.getParentFile());
+	}
+
 	private void uncache() {
 		directory = null;
 		softlink = null;
@@ -132,11 +135,11 @@ class NodeImpl extends Filesystem.Node {
 	public boolean exists() throws IOException {
 		if (exists == null) {
 			try {
-				exists = new Boolean(getHostFile().exists());
+				exists = Boolean.valueOf(getHostFile().exists());
 			} catch (IOException e) {
 				String[] tokens = scriptPath.substring(1).split("/");
 				if (tokens[0].equals("cygdrive") && tokens[1].endsWith(".exe")) {
-					exists = new Boolean(false);
+					exists = Boolean.FALSE;
 				} else {
 					throw e;
 				}
@@ -174,14 +177,14 @@ class NodeImpl extends Filesystem.Node {
 
 	public boolean isDirectory() throws IOException {
 		if (directory == null) {
-			directory = new Boolean( getHostFile().isDirectory() );
+			directory = Boolean.valueOf( getHostFile().isDirectory() );
 		}
 		return directory.booleanValue();
 	}
 
 	boolean isSoftlink() throws CygwinFilesystem.CygpathException, Command.Result.Failure {
 		if (softlink == null) {
-			softlink = new Boolean( parent.isSoftlink(this) );
+			softlink = Boolean.valueOf( parent.isSoftlink(this) );
 		}
 		return softlink.booleanValue();
 	}
@@ -245,9 +248,9 @@ class NodeImpl extends Filesystem.Node {
 		}
 	}
 
-	public Filesystem.Node[] list(FilenameFilter pattern) throws IOException {
+	public Filesystem.Node[] list() throws IOException {
 		try {
-			return parent.list(this, pattern);
+			return parent.list(this);
 		} catch (CygwinFilesystem.CygpathException e) {
 			throw new IOException(e);
 		} catch (Command.Result.Failure e) {

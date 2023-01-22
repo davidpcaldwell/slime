@@ -7,13 +7,13 @@
 /**
  * Provides access to the `git` command-line tool from scripts.
  *
- * The main world-oriented entry point is the {@link slime.jrunscript.git.Exports} `program` function, which returns an API that allows the usage
+ * The main world-oriented entry point is the {@link slime.jrunscript.tools.git.Exports} `program` function, which returns an API that allows the usage
  * of commands against a particular executable; this function can then be chained with `repository` (targeting a specific
- * repository), `command` (executing a specific {@link slime.jrunscript.git.Command} toward that repository), `argument` (passing
+ * repository), `command` (executing a specific {@link slime.jrunscript.tools.git.Command} toward that repository), `argument` (passing
  * specific information to that command), and finally, `run`, which executes the command, optionally supplying a world
  * implementation and event handlers for the `stdout` and `stderr` streams.
  */
-namespace slime.jrunscript.git {
+namespace slime.jrunscript.tools.git {
 	export interface Commit {
 		names: string[],
 		commit: { hash: string },
@@ -45,12 +45,12 @@ namespace slime.jrunscript.git {
 		}) => Daemon
 
 		Repository: {
-			(p: repository.argument.Directory): slime.jrunscript.git.repository.Local
-			new (p: repository.argument.Directory): slime.jrunscript.git.repository.Local
-			(p: repository.argument.Local): slime.jrunscript.git.repository.Local
-			new (p: repository.argument.Local): slime.jrunscript.git.repository.Local
-			(p: repository.argument.Remote): slime.jrunscript.git.Repository
-			new (p: repository.argument.Remote): slime.jrunscript.git.Repository
+			(p: repository.argument.Directory): slime.jrunscript.tools.git.repository.Local
+			new (p: repository.argument.Directory): slime.jrunscript.tools.git.repository.Local
+			(p: repository.argument.Local): slime.jrunscript.tools.git.repository.Local
+			new (p: repository.argument.Local): slime.jrunscript.tools.git.repository.Local
+			(p: repository.argument.Remote): slime.jrunscript.tools.git.Repository
+			new (p: repository.argument.Remote): slime.jrunscript.tools.git.Repository
 		}
 
 		//	Uses Object.assign for rhino/shell run(), so should cross-check with those arguments
@@ -68,7 +68,7 @@ namespace slime.jrunscript.git {
 		clone: (argument: repository.Argument & {
 			to: slime.jrunscript.file.Pathname,
 			recurseSubmodules?: boolean
-		}, events?: object ) => slime.jrunscript.git.repository.Local
+		}, events?: object ) => slime.jrunscript.tools.git.repository.Local
 	}
 
 	export interface Submodule {
@@ -114,11 +114,11 @@ namespace slime.jrunscript.git {
 			}
 		}
 
-		export interface Local extends slime.jrunscript.git.Repository {
+		export interface Local extends slime.jrunscript.tools.git.Repository {
 			directory: slime.jrunscript.file.Directory
 
 			add: any
-			rm: (p: { path: string }, events?: $api.events.Function.Receiver) => void
+			rm: (p: { path: string }, events?: $api.event.Function.Receiver) => void
 
 			branch: {
 				(p: {
@@ -131,11 +131,11 @@ namespace slime.jrunscript.git {
 					/** @deprecated */
 					remote?: boolean
 					all?: boolean
-				}): slime.jrunscript.git.Branch[]
+				}): slime.jrunscript.tools.git.Branch[]
 
 				(p: {
 					old: boolean
-				}): slime.jrunscript.git.Branch
+				}): slime.jrunscript.tools.git.Branch
 
 				(p: {
 					name: string
@@ -151,7 +151,7 @@ namespace slime.jrunscript.git {
 				prune?: boolean
 				recurseSubmodules?: boolean
 				stdio?: any
-			}, events?: $api.events.Function.Receiver) => void
+			}, events?: $api.event.Function.Receiver) => void
 
 			merge: (p: {
 				name: string
@@ -163,7 +163,7 @@ namespace slime.jrunscript.git {
 
 			checkout: (p: { branch: string, stdio?: any  }) => void
 
-			remote: ( () => void ) & { getUrl: ({ name: string }) => string },
+			remote: ( () => void ) & { getUrl: (p: { name: string }) => string },
 			stash: any,
 			push: (p?: {
 				delete?: boolean
@@ -183,11 +183,12 @@ namespace slime.jrunscript.git {
 				(p?: { cached?: boolean }): Submodule[]
 
 				add: (p: {
-					repository: slime.jrunscript.git.Repository
+					config?: { [name: string]: string }
+					repository: slime.jrunscript.tools.git.Repository
 					path: string
 					name?: string
 					branch?: string
-				}, events?: any) => slime.jrunscript.git.repository.Local
+				}, events?: any) => slime.jrunscript.tools.git.repository.Local
 
 				update: (p: Argument & {
 					init?: boolean,
@@ -222,8 +223,8 @@ namespace slime.jrunscript.git {
 		}
 
 		export interface InvocationConfiguration<T> {
-			arguments?: (p: T) => $api.fp.impure.Revision<string[]>
-			environment?: (p: T) => $api.fp.impure.Revision<Environment>,
+			arguments?: (p: T) => $api.fp.object.Revision<string[]>
+			environment?: (p: T) => $api.fp.object.Revision<Environment>,
 			createReturnValue?: (p: T) => (result: Result) => any
 		}
 
@@ -249,63 +250,33 @@ namespace slime.jrunscript.git {
 		}
 	}
 
-	export interface Context {
-		program: slime.jrunscript.file.File
-		api: {
-			js: any
-			java: any
-			shell: slime.jrunscript.shell.Exports
-			Error: any
-			time: slime.time.Exports
-			web: slime.web.Exports
-		}
-		environment: any
-		console: any
-	}
-
-	export interface Exports {
-		Installation: (environment: {
-			program: slime.jrunscript.file.File
-		}) => slime.jrunscript.git.Installation
-
-		credentialHelper: any
-		installation: slime.jrunscript.git.Installation
-		daemon: slime.jrunscript.git.Installation["daemon"]
-		Repository: slime.jrunscript.git.Installation["Repository"]
-		init: slime.jrunscript.git.Installation["init"]
-		execute: slime.jrunscript.git.Installation["execute"]
-		install: Function & { GUI: any }
-	}
-
-	export type Script = slime.loader.Script<Context,Exports>
-}
-
-namespace slime.jrunscript.git {
 	export namespace internal {
 		export const subject = (
-			function(fifty: slime.fifty.test.kit) {
+			function(fifty: slime.fifty.test.Kit) {
 				return fifty.global.jsh.tools.git;
 			}
 		//@ts-ignore
 		)(fifty);
 
-		export interface Fixtures {
-			init: slime.jrunscript.git.Exports["init"]
-			write: (p: {
-				repository?: repository.Local
-				directory?: slime.jrunscript.file.Directory
-				files: {
-					[path: string]: string
-				}
-			}) => void
-		}
-
-		export const fixtures: Fixtures = (
-			function(fifty: slime.fifty.test.kit) {
-				return fifty.$loader.file("fixtures.js", { module: subject });
+		export namespace old {
+			export interface Fixtures {
+				init: slime.jrunscript.tools.git.Exports["init"]
+				write: (p: {
+					repository?: repository.Local
+					directory?: slime.jrunscript.file.Directory
+					files: {
+						[path: string]: string
+					}
+				}) => void
 			}
-		//@ts-ignore
-		)(fifty);
+
+			export const fixtures: Fixtures = (
+				function(fifty: slime.fifty.test.Kit) {
+					return fifty.$loader.file("fixtures-old.js", { module: subject });
+				}
+			//@ts-ignore
+			)(fifty);
+		}
 	}
 
 
@@ -326,12 +297,12 @@ namespace slime.jrunscript.git {
 				stdout: slime.$api.event.Handler<string>
 				stderr: slime.$api.event.Handler<string>
 			}
-		) => slime.jrunscript.git.repository.Local
+		) => slime.jrunscript.tools.git.repository.Local
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var verify = fifty.verify;
 
@@ -350,13 +321,13 @@ namespace slime.jrunscript.git {
 
 			fifty.tests.Installation = {};
 			fifty.tests.Installation.init = function() {
-				var verifyEmptyRepository = function(repository: slime.jrunscript.git.repository.Local) {
+				var verifyEmptyRepository = function(repository: slime.jrunscript.tools.git.repository.Local) {
 					verify(repository).is.type("object");
 					verify(repository).log().length.is(0);
 				};
 
 				fifty.run(function worksWhenCreatingDirectory() {
-					var location = fifty.jsh.file.location();
+					var location = fifty.jsh.file.object.temporary.location();
 					verify(location).directory.is(null);
 					var createdLocation = internal.subject.init({
 						pathname: location
@@ -366,8 +337,8 @@ namespace slime.jrunscript.git {
 				});
 
 				fifty.run(function worksWithEmptyDirectory() {
-					const $api = fifty.$api;
-					var directory = fifty.jsh.file.directory();
+					const $api = fifty.global.$api;
+					var directory = fifty.jsh.file.object.temporary.directory();
 
 					fixture.write({
 						directory: directory,
@@ -382,14 +353,14 @@ namespace slime.jrunscript.git {
 					var captor = fifty.$api.Events.Captor(events);
 
 					var isType = function(type: string): slime.$api.fp.Predicate<slime.$api.Event<any>> {
-						return $api.Function.pipe(
-							$api.Function.property("type"),
-							$api.Function.Predicate.is(type)
+						return $api.fp.pipe(
+							$api.fp.property("type"),
+							$api.fp.Predicate.is(type)
 						);
 					};
 
 					var ofType = function(type: string) {
-						return $api.Function.Array.filter(isType(type));
+						return $api.fp.Array.filter(isType(type));
 					}
 
 					var handler = captor.handler;
@@ -413,7 +384,7 @@ namespace slime.jrunscript.git {
 	export namespace repository {
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.types.Repository = {};
 				fifty.tests.types.Repository.Local = {};
@@ -465,14 +436,14 @@ namespace slime.jrunscript.git {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.types.Repository = {};
 				fifty.tests.types.Repository.Local = {};
 				fifty.tests.types.Repository.Local.config = function() {
 					fifty.run(function old() {
 						var empty = internal.subject.init({
-							pathname: fifty.jsh.file.location()
+							pathname: fifty.jsh.file.object.temporary.location()
 						});
 						var old = empty.config({
 							arguments: ["--list", "--local"]
@@ -493,7 +464,7 @@ namespace slime.jrunscript.git {
 
 					fifty.run(function list() {
 						var empty = internal.subject.init({
-							pathname: fifty.jsh.file.location()
+							pathname: fifty.jsh.file.object.temporary.location()
 						});
 						var local = empty.config({
 							list: {
@@ -523,7 +494,7 @@ namespace slime.jrunscript.git {
 						}
 
 						var empty = internal.subject.init({
-							pathname: fifty.jsh.file.location()
+							pathname: fifty.jsh.file.object.temporary.location()
 						});
 						fifty.verify(empty).evaluate(getConfigObject).evaluate.property("foo.bar").is(void(0));
 
@@ -558,17 +529,17 @@ namespace slime.jrunscript.git {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var verify = fifty.verify;
 
 				fifty.tests.types.Repository.Local.status = function() {
-					var at = fifty.jsh.file.location();
-					var repository = internal.fixtures.init({ pathname: at });
+					var at = fifty.jsh.file.object.temporary.location();
+					var repository = internal.old.fixtures.init({ pathname: at });
 					debugger;
 					var status = repository.status();
 					verify(repository).status().evaluate.property("paths").is(void(0));
-					internal.fixtures.write({
+					internal.old.fixtures.write({
 						repository: repository,
 						files: {
 							a: "a"
@@ -596,7 +567,7 @@ namespace slime.jrunscript.git {
 		)(fifty);
 	}
 
-	(function(fifty: slime.fifty.test.kit) {
+	(function(fifty: slime.fifty.test.Kit) {
 		const { verify, run } = fifty;
 
 		var debug = function(s) {
@@ -634,7 +605,7 @@ namespace slime.jrunscript.git {
 
 		fifty.tests.submoduleTrackingBranch = function() {
 			function initialize() {
-				var tmpdir = fifty.jsh.file.directory();
+				var tmpdir = fifty.jsh.file.object.temporary.directory();
 
 				var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
 				configure(library);
@@ -667,7 +638,7 @@ namespace slime.jrunscript.git {
 		}
 
 		fifty.tests.submoduleWithDifferentNameAndPath = function() {
-			var tmpdir = fifty.jsh.file.directory();
+			var tmpdir = fifty.jsh.file.object.temporary.directory();
 			var sub = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
 			configure(sub);
 			commitFile(sub, "b");
@@ -688,17 +659,21 @@ namespace slime.jrunscript.git {
 		};
 
 		fifty.tests.submoduleStatusCached = function() {
-			var tmpdir = fifty.jsh.file.directory();
+			var tmpdir = fifty.jsh.file.object.temporary.directory();
 
 			var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
 			configure(library);
 			commitFile(library, "b");
+			var branch = library.status().branch;
 
 			var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
 			configure(parent);
 			commitFile(parent, "a");
 
-			var subrepository = parent.submodule.add({ repository: library, path: "path/sub", name: "sub", branch: "master" });
+			var subrepository = parent.submodule.add({ repository: library, path: "path/sub", name: "sub", branch: branch.name, config: {
+				//	See https://vielmetti.typepad.com/logbook/2022/10/git-security-fixes-lead-to-fatal-transport-file-not-allowed-error-in-ci-systems-cve-2022-39253.html
+				"protocol.file.allow": "always"
+			} });
 			configure(subrepository);
 			parent.commit({ all: true, message: "add submodule"});
 
@@ -714,12 +689,10 @@ namespace slime.jrunscript.git {
 			var submodules = parent.submodule();
 			verify(submodules)[0].commit.commit.hash.is(after.commit.commit.hash);
 			verify(submodules)[0].repository.status().branch.commit.commit.hash.is(after.commit.commit.hash);
-		}
+		};
 	//@ts-ignore
 	})(fifty);
-}
 
-namespace slime.jrunscript.git {
 	/**
 	 * A `git` installation.
 	 */
@@ -734,7 +707,7 @@ namespace slime.jrunscript.git {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.Exports = {};
 		}
@@ -758,21 +731,43 @@ namespace slime.jrunscript.git {
 			 */
 			branch: string
 
+			entries: {
+				code: string
+				path: string
+				orig_path?: string
+			}[]
+
 			/**
+			 * @deprecated Replaced by the `entries` property, which properly captures rename entries.
+			 *
 			 * An object whose keys are string paths within the repository, and whose values are the two-letter output
 			 * of the `git status --porcelain` command. This property is absent if no files have a status.
 			 */
 			paths?: { [path: string]: string }
 		}
+
+		export namespace old {
+			export type Result = Pick<command.status.Result,"branch" | "paths">
+		}
 	}
 
-	export interface Commands {
-		status: Command<void,command.status.Result>
+	export interface Exports {
+		/**
+		 * An opinionated object that provides a set of {@link Command} implementations deemed to be useful for `git` automation.
+		 * If the exact combination of git commands and options for your use case is not provided here, you can implement your own
+		 * {@link Command} which can be tailored to any set of commands, arguments, and options, any way of parsing output, and so
+		 * forth.
+		 */
+		commands: Commands
 	}
 
 	export namespace world {
+		export type Config = { [name: string]: string }
+
 		export interface Invocation<P,R> {
 			program: Program
+
+			config: Config
 
 			/**
 			 * The directory in which to run the command; most likely the repository on which it is intended to act.
@@ -805,19 +800,19 @@ namespace slime.jrunscript.git {
 				 * An alternative implementation for the launching of the `git` subprocess. The most likely use case for
 				 * this is in mocking.
 				 */
-				run: (invocation: slime.jrunscript.shell.run.Invocation) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.Events>
+				run: (invocation: slime.jrunscript.shell.run.old.Invocation) => slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents>
 			}
 		}
 	}
 
-	export interface Exports {
-		commands: Commands
-	}
-
 	export namespace exports {
 		export namespace command {
-			export type Executor = <P,R>(command: slime.jrunscript.git.Command<P,R>) => {
+			export type Executor = <P,R>(command: slime.jrunscript.tools.git.Command<P,R>) => {
 				argument: (argument: P) => {
+					/**
+					 * Runs the resulting git command, sending any output emitted to the `stdout` and `stderr` callbacks. Uses the
+					 * alternative `world` implementation if one is provided. If the `git` exit status is non-zero, throws an error.
+					 */
 					run: (p?: {
 						stdout?: world.Invocation<P,R>["stdout"]
 						stderr?: world.Invocation<P,R>["stderr"]
@@ -832,28 +827,34 @@ namespace slime.jrunscript.git {
 		program: (program: Program) => {
 			Invocation: <P,R>(p: {
 				pathname?: string
-				command: slime.jrunscript.git.Command<P,R>
+				command: slime.jrunscript.tools.git.Command<P,R>
 				argument: P
 			}) => world.Invocation<P,R>
 
 			repository: (pathname: string) => {
 				Invocation: <P,R>(p: {
-					command: slime.jrunscript.git.Command<P,R>
+					command: slime.jrunscript.tools.git.Command<P,R>
 					argument: P
 				}) => world.Invocation<P,R>
 
 				shell: (p: {
-					invocation: slime.jrunscript.git.Invocation
+					invocation: slime.jrunscript.tools.git.Invocation
 					stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
-				}) => shell.run.Invocation
+				}) => shell.run.old.Invocation
 
 				command: exports.command.Executor
 
 				run: <P,R>(p: {
-					command: slime.jrunscript.git.Command<P,R>
+					command: slime.jrunscript.tools.git.Command<P,R>
 					input: P
 					world?: world.Invocation<P,R>["world"]
 				}) => R
+			}
+
+			config: (values: { [name: string]: string }) => {
+				repository: (pathname: string) => {
+					command: exports.command.Executor
+				}
 			}
 
 			command: exports.command.Executor
@@ -862,7 +863,7 @@ namespace slime.jrunscript.git {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.Exports.program = function() {
 				fifty.run(function program() {
@@ -883,12 +884,12 @@ namespace slime.jrunscript.git {
 						.command(internal.subject.commands.status)
 						.argument()
 					;
-					var invocation: shell.run.Invocation;
+					var invocation: shell.run.old.Invocation;
 					executor.run({
 						world: {
-							run: function(created: shell.run.Invocation) {
+							run: function(created: shell.run.old.Invocation) {
 								invocation = created;
-								return fifty.global.$api.Function.impure.tell(function(events) {
+								return fifty.global.$api.fp.world.old.tell(function(events) {
 									events.fire("exit", {
 										status: 0,
 										stdio: {
@@ -949,7 +950,7 @@ namespace slime.jrunscript.git {
 						}
 					);
 
-					var invoked: shell.run.Invocation;
+					var invoked: shell.run.old.Invocation;
 					var stderr: string[] = [];
 					var stdout = [];
 					var output = internal.subject.program({ command: "boo" })
@@ -984,25 +985,23 @@ namespace slime.jrunscript.git {
 	//@ts-ignore
 	)(fifty);
 
-
 	export interface Exports {
 		run: <P,R>(p: world.Invocation<P,R>) => R
 
 		Invocation: {
 			shell: (p: {
-				program: slime.jrunscript.git.Program
+				program: slime.jrunscript.tools.git.Program
 				pathname?: string
-				invocation: slime.jrunscript.git.Invocation
+				invocation: slime.jrunscript.tools.git.Invocation
 				stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
-			}) => shell.run.Invocation
+			}) => shell.run.old.Invocation
 		}
 	}
-
 
 	(
 		function(
 			$api: slime.$api.Global,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var exports: Exports = fifty.global.jsh.tools.git;
 			fifty.tests.test = {};
@@ -1024,6 +1023,7 @@ namespace slime.jrunscript.git {
 
 				var output = exports.run({
 					program: { command: "c" },
+					config: {},
 					pathname: "/pathname/foo",
 					command: command,
 					argument: { foo: 2 },
@@ -1057,19 +1057,19 @@ namespace slime.jrunscript.git {
 			invocation: (p: {
 				client: Client,
 				invocation: Invocation
-			}) => slime.jrunscript.shell.old.Invocation
+			}) => slime.jrunscript.shell.run.old.Invocation
 		}
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
-			var subject: slime.jrunscript.git.Exports = fifty.global.jsh.tools.git;
+			var subject: slime.jrunscript.tools.git.Exports = fifty.global.jsh.tools.git;
 
 			fifty.tests.Client = {};
 			fifty.tests.Client.invocation = function() {
-				var fakeCommand = fifty.$loader.getRelativePath("git");
+				var fakeCommand = fifty.jsh.file.object.getRelativePath("git");
 				var client = {
 					command: fakeCommand
 				};
@@ -1080,9 +1080,9 @@ namespace slime.jrunscript.git {
 							command: "status"
 						}
 					});
-					fifty.verify(invocation).command.is(fakeCommand.toString());
-					fifty.verify(invocation).arguments.length.is(1);
-					fifty.verify(invocation).arguments[0].is("status");
+					fifty.verify(invocation).configuration.command.is(fakeCommand.toString());
+					fifty.verify(invocation).configuration.arguments.length.is(1);
+					fifty.verify(invocation).configuration.arguments[0].is("status");
 				});
 			}
 		}
@@ -1105,43 +1105,77 @@ namespace slime.jrunscript.git {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var api: { github: slime.jrunscript.tools.github.Exports } = {
 				github: fifty.$loader.module("../github/module.js")
 			};
 
 			fifty.tests.sandbox = function() {
-				var isDocker = Boolean(fifty.global.jsh.file.Pathname("/slime").directory);
-				//	Test will fail on Docker because .git is in .dockerignore
-				if (isDocker) return;
+				var SLIME = fifty.jsh.file.object.getRelativePath("../../..").directory;
+				if (!SLIME.getFile(".git") || !SLIME.getSubdirectory(".git")) {
+					//	This test will not work on an export or other format without git metadata
+					return;
+				}
 				var base = fifty.global.jsh.tools.git.local({
-					start: fifty.$loader.getRelativePath(".").directory,
+					start: fifty.jsh.file.object.getRelativePath(".").directory,
 					match: api.github.isProjectUrl({ owner: "davidpcaldwell", name: "slime" })
 				});
-				fifty.verify(base.toString()).is(fifty.$loader.getRelativePath("../../..").directory.toString());
+				fifty.verify(base.toString()).is(SLIME.toString());
 			}
 		}
 	//@ts-ignore
 	)(fifty);
 
-}
-
-(function(fifty: slime.fifty.test.kit) {
-	fifty.tests.suite = function() {
-		fifty.run(fifty.tests.Installation.init);
-		fifty.run(fifty.tests.types.Repository.Local.config);
-		fifty.run(fifty.tests.types.Repository.Local.status);
-		fifty.run(fifty.tests.submoduleStatusCached);
-		fifty.run(fifty.tests.submoduleWithDifferentNameAndPath);
-		fifty.run(fifty.tests.submoduleTrackingBranch);
-
-		fifty.run(fifty.tests.Client.invocation);
-
-		fifty.run(fifty.tests.Exports.program);
-		fifty.run(fifty.tests.test.run);
-
-		fifty.run(fifty.tests.sandbox);
+	export interface Context {
+		program: slime.jrunscript.file.File
+		api: {
+			js: any
+			java: any
+			shell: slime.jrunscript.shell.Exports
+			Error: any
+			time: slime.time.Exports
+			web: slime.web.Exports
+		}
+		environment: any
+		console: any
 	}
-//@ts-ignore
-})(fifty);
+
+	export interface CredentialHelpers {
+	}
+
+	export interface Exports {
+		Installation: (environment: {
+			program: slime.jrunscript.file.File
+		}) => slime.jrunscript.tools.git.Installation
+
+		credentialHelper: CredentialHelpers
+		installation: slime.jrunscript.tools.git.Installation
+		daemon: slime.jrunscript.tools.git.Installation["daemon"]
+		Repository: slime.jrunscript.tools.git.Installation["Repository"]
+		init: slime.jrunscript.tools.git.Installation["init"]
+		execute: slime.jrunscript.tools.git.Installation["execute"]
+		install: Function & { GUI: any }
+	}
+
+	(function(fifty: slime.fifty.test.Kit) {
+		fifty.tests.suite = function() {
+			fifty.run(fifty.tests.Installation.init);
+			fifty.run(fifty.tests.types.Repository.Local.config);
+			fifty.run(fifty.tests.types.Repository.Local.status);
+			fifty.run(fifty.tests.submoduleStatusCached);
+			fifty.run(fifty.tests.submoduleWithDifferentNameAndPath);
+			fifty.run(fifty.tests.submoduleTrackingBranch);
+
+			fifty.run(fifty.tests.Client.invocation);
+
+			fifty.run(fifty.tests.Exports.program);
+			fifty.run(fifty.tests.test.run);
+
+			fifty.run(fifty.tests.sandbox);
+		}
+	//@ts-ignore
+	})(fifty);
+
+	export type Script = slime.loader.Script<Context,Exports>
+}

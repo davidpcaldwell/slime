@@ -118,8 +118,10 @@ public class Shell {
 			return Shell.this.classpath;
 		}
 
+		private static final String TSC_PATH = "bin/tsc";
+
 		private File getTscPath() {
-			return configuration.getInstallation().getLibraryFile("node/bin/tsc");
+			return configuration.getInstallation().getLibraryFile("node/" + TSC_PATH);
 		}
 
 		private File getNodeBinPath() {
@@ -134,7 +136,7 @@ public class Shell {
 		}
 
 		public Loader.Typescript getTypescript() throws IOException {
-			Code.Loader.Resource tsc = configuration.getInstallation().getLibraries().getFile("node/bin/tsc");
+			Code.Loader.Resource tsc = configuration.getInstallation().getLibraries().getFile("node/" + TSC_PATH);
 			if (tsc != null) {
 				return new Loader.Typescript() {
 					@Override public String compile(String code) throws IOException {
@@ -173,7 +175,13 @@ public class Shell {
 								new Command.Configuration() {
 									@Override public String getCommand() {
 										try {
-											return getTscPath().getCanonicalPath();
+											File file = getTscPath();
+											if (file == null) throw new RuntimeException(
+												"tsc file is null, even though tsc resource was " + tsc
+												+ "\nand is " + configuration.getInstallation().getLibraries().getFile("node/" + TSC_PATH)
+												+ "\nlibraries = " + configuration.getInstallation().getLibraries()
+											);
+											return file.getCanonicalPath();
 										} catch (IOException e) {
 											throw new RuntimeException(e);
 										}
@@ -271,7 +279,17 @@ public class Shell {
 		public abstract Code.Loader getPlatformLoader();
 		public abstract Code.Loader getJshLoader();
 		public abstract Code.Loader getLibraries();
-		public abstract File getLibraryFile(String file);
+
+		/**
+		 * Returns a {@link java.io.File} representing the file at the given location in the shell's library store, if a file at
+		 * the given location exists and can be returned as a {@link java.io.File}.
+		 *
+		 * @param path A path within the installation's library store.
+		 * @returns A {@link java.io.File} object for the given location if the file exists, or {@code null} if no such file exists
+		 * or can be returned.
+		 */
+		public abstract File getLibraryFile(String path);
+
 		public abstract Code.Loader[] getExtensions();
 
 		public abstract Packaged getPackaged();

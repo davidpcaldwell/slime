@@ -131,11 +131,21 @@
 		$api.debug("shell detected = " + shell);
 
 		if (!new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+			$api.debug("Nashorn not detected via javax.script; removing.");
 			delete $api.jsh.engines.nashorn;
 		}
 		if ($api.jsh.engines.nashorn) {
-			var Context = Java.type("jdk.nashorn.internal.runtime.Context");
-			if (typeof(Context.getContext) != "function") delete $api.jsh.engines.nashorn;
+			var Context = Packages.jdk.nashorn.internal.runtime.Context;
+			var $getContext;
+			try {
+				$getContext = Context.class.getMethod("getContext");
+			} catch (e) {
+				//	do nothing; $getContext will remain undefined
+			}
+			if (typeof(Context.getContext) != "function" && !$getContext) {
+				$api.debug("jdk.nashorn.internal.runtime.Context.getContext not accessible; removing Nashorn.")
+				delete $api.jsh.engines.nashorn;
+			}
 		}
 
 		// TODO: delete Graal if it is not available
@@ -148,6 +158,7 @@
 			//			run
 			$api.console("No default engine; downloading Rhino ...");
 			var _file = $api.rhino.download();
+			$api.console("Using Rhino downloaded to " + _file + ".");
 			shell.rhino = [_file.toURI().toURL()];
 			$api.slime.settings.set("jsh.engine.rhino.classpath", String(_file.getCanonicalPath()));
 			return "rhino";
@@ -195,16 +206,47 @@
 			command.vm($api.arguments.shift());
 		}
 
+		var jshJavaHomeMajorVersion = (
+			function() {
+				if ($api.slime.settings.get("jsh.java.home")) {
+					var mode = {
+						output: "",
+						err: ""
+					}
+					var status = $api.engine.runCommand(
+						$api.slime.settings.get("jsh.java.home") + "/bin/java",
+						"-version",
+						mode
+					);
+					if (status) throw new Error(
+						"Error determining Java version for loader; exit status " + status
+						+ " stdout: " + mode.output
+						+ " stderr: " + mode.err
+					);
+					var pattern = /\"(.+)\"/;
+					var oneDotPattern = /^1\.(.*)\./;
+					var majorVersionPattern = /^(\d+)\./;
+					var version;
+					var majorVersion;
+					mode.err.split("\n").forEach(function(line) {
+						var match = pattern.exec(line);
+						if (match) version = match[1];
+					});
+					if (!version) throw new Error("Could not detect Java version for loader.");
+					if (oneDotPattern.test(version)) {
+						majorVersion = Number(oneDotPattern.exec(version)[1]);
+					} else if (majorVersionPattern.test(version)) {
+						majorVersion = Number(majorVersionPattern.exec(version)[1])
+					}
+					$api.debug("jsh.java.home major version detected: [" + majorVersion + "]");
+					return majorVersion;
+				}
+			}
+		)();
+
 		var hasJavaPlatformModuleSystem = (function() {
 			if ($api.slime.settings.get("jsh.java.home")) {
-				//	TODO	explore a way to detect this, or document the below environment variable
-				if ($api.slime.settings.get("jsh.java.jpms")) {
-					return true;
-				}
-				//	returning false if it *does* have the module system will produce extra warnings but still work
-				//	returning false if it doesn't will work
-				//	so we default to the safer option: false
-				return false;
+				return jshJavaHomeMajorVersion > 8;
 			} else {
 				var javaLangObjectClass = Packages.java.lang.Class.forName("java.lang.Object");
 				return typeof(javaLangObjectClass.getModule) == "function";
@@ -224,11 +266,25 @@
 			command.vm("java.base/sun.net.www.protocol.https=ALL-UNNAMED");
 			command.vm("--add-opens");
 			command.vm("jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED");
+
+			command.vm("--add-opens");
+			command.vm("jdk.scripting.nashorn/jdk.nashorn.internal.runtime=ALL-UNNAMED");
 		}
 
-		if (Packages.java.lang.System.getenv("JSH_NASHORN_DEPRECATION_ARGUMENT")) {
-			command.systemProperty("nashorn.args", "--no-deprecation-warning");
-		}
+		(
+			function handleNashornDeprecation() {
+				function javaMajorVersionString(javaVersionProperty) {
+					if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
+					return javaVersionProperty.split(".")[0];
+				}
+
+				var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
+
+				if (javaMajorVersion > 8) {
+					command.systemProperty("nashorn.args", "--no-deprecation-warning");
+				}
+			}
+		)();
 
 		var _urls = [];
 
@@ -301,7 +357,7 @@
 		})();
 		$api.slime.settings.sendPropertiesTo(command);
 
-		var _shellUrls = shell.shellClasspath();
+		var _shellUrls = shell.shellClasspath({ source: jshJavaHomeMajorVersion, target: jshJavaHomeMajorVersion });
 		$api.debug("_shellUrls = " + _shellUrls);
 		for (var i=0; i<_shellUrls.length; i++) {
 			_urls.push(_shellUrls[i]);
@@ -320,7 +376,7 @@
 		var classpath = new $api.jsh.Classpath(_urls);
 
 		var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
-		if (!engine) throw new Error("Specified engine not found: " + $api.slime.settings.get("jsh.engine")
+		if (!engine) throw new Error("Specified engine [" + $api.slime.settings.get("jsh.engine") + "]" + " not found;"
 			+ " JSH_ENGINE=" + $api.shell.environment.JSH_ENGINE
 			+ " jsh.engine=" + Packages.java.lang.System.getProperty("jsh.engine")
 			+ " shell=" + shell

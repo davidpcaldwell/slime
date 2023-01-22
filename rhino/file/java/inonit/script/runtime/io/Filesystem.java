@@ -7,9 +7,8 @@
 package inonit.script.runtime.io;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.logging.*;
-
-import inonit.system.*;
 
 public abstract class Filesystem {
 	private static final Logger LOG = Logger.getLogger(Filesystem.class.getName());
@@ -128,11 +127,12 @@ public abstract class Filesystem {
 		public abstract boolean exists() throws IOException;
 		public abstract boolean isDirectory() throws IOException;
 
-		public abstract Node[] list(FilenameFilter pattern) throws IOException;
+		public abstract Node getParent() throws IOException;
+
+		public abstract Node[] list() throws IOException;
 		public abstract void delete() throws IOException;
 		public abstract void move(Node to) throws IOException;
 		public abstract void mkdir() throws IOException;
-		public abstract void mkdirs() throws IOException;
 
 		public abstract OutputStream writeBinary(boolean append) throws IOException;
 		public abstract Writer writeText(boolean append) throws IOException;
@@ -156,14 +156,6 @@ public abstract class Filesystem {
 	private static class NativeFilesystem extends Filesystem {
 		protected Node createNode(String path) throws IOException {
 			return new NodeImpl( new File(path) );
-		}
-
-		String toScriptPath(String path) throws IOException {
-			return path;
-		}
-
-		File toHostFileImpl(String path) {
-			return new File(path);
 		}
 
 		protected String getPathnameSeparatorImpl() {
@@ -232,6 +224,10 @@ public abstract class Filesystem {
 				return file.isDirectory();
 			}
 
+			public Node getParent() throws IOException {
+				return new NodeImpl(file.getParentFile());
+			}
+
 			public File getHostFile() throws IOException {
 				try {
 					return file.getCanonicalFile();
@@ -253,8 +249,8 @@ public abstract class Filesystem {
 				return rv;
 			}
 
-			public Node[] list(FilenameFilter pattern) throws IOException {
-				File[] files = this.file.listFiles(pattern);
+			public Node[] list() throws IOException {
+				File[] files = this.file.listFiles();
 				Node[] rv = new Node[files.length];
 				for (int i=0; i<files.length; i++) {
 					rv[i] = new NodeImpl(files[i]);
@@ -296,19 +292,30 @@ public abstract class Filesystem {
 				if (!success) throw new IOException("Failed to delete: " + this.file);
 			}
 
+			private void copy(File from, File to) throws IOException {
+				if (from.isDirectory()) {
+					File[] files = from.listFiles();
+					for (File file : files) {
+						copy(file, new File(to, file.getName()));
+					}
+				} else {
+					Files.copy(from.toPath(), to.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+				}
+			}
+
 			public void move(Node to) throws IOException {
 				NodeImpl toNode = (NodeImpl)to;
 				boolean success = file.renameTo(toNode.file);
-				if (!success) throw new IOException("Failed to move: " + this.file + " to " + toNode.file);
+				if (!success) {
+					//	TODO	this does not work for symlinks; it appears to copy them "by value"
+					copy(file, toNode.file);
+					file.delete();
+				}
 			}
 
 			public void mkdir() throws IOException {
+				if (this.file.exists()) throw new IOException("Already exists: " + this.file);
 				boolean success = this.file.mkdir();
-				if (!success) throw new IOException("Failed to create: " + this.file);
-			}
-
-			public void mkdirs() throws IOException {
-				boolean success = this.file.mkdirs();
 				if (!success) throw new IOException("Failed to create: " + this.file);
 			}
 

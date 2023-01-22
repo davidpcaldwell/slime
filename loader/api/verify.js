@@ -201,10 +201,10 @@
 				}
 
 				this.is.equalTo = function(value) {
-					return isEqualTo(value,false);
+					isEqualTo(value,false);
 				}
 				this.is.not.equalTo = function(value) {
-					return isEqualTo(value,true);
+					isEqualTo(value,true);
 				}
 
 				this.evaluate = Object.assign(
@@ -231,7 +231,7 @@
 										error: e,
 										message: name + " threw " + e
 									};
-									scope($api.Function.returning(result));
+									scope($api.fp.returning(result));
 								}
 							}
 
@@ -242,13 +242,13 @@
 									if (success) return name + " threw expected " + type.name;
 									return "Threw " + e + ", not " + new type().name;
 								})(success);
-								scope($api.Function.returning({
+								scope($api.fp.returning({
 									success: success,
 									message: message
 								}));
 							};
 							this.threw.nothing = function() {
-								scope($api.Function.returning({
+								scope($api.fp.returning({
 									success: false,
 									message: name + " threw " + e
 								}));
@@ -260,7 +260,7 @@
 
 							for (var x in delegate) {
 								this[x] = function() {
-									scope($api.Function.returning({
+									scope($api.fp.returning({
 										success: false,
 										message: name + " did not throw; returned " + returned
 									}));
@@ -268,14 +268,14 @@
 							}
 
 							this.nothing = function() {
-								scope($api.Function.returning({
+								scope($api.fp.returning({
 									success: true,
 									message: name + " did not error. (returned: " + returned + ")"
 								}));
 							};
 
 							this.type = function(type) {
-								scope($api.Function.returning({
+								scope($api.fp.returning({
 									success: false,
 									message: name + " did not throw expected error; returned " + returned
 								}))

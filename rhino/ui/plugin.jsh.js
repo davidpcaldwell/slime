@@ -17,12 +17,30 @@
 	function(Packages,$api,jsh,$slime,$loader,plugin) {
 		plugin({
 			load: function() {
-				jsh.ui = $loader.module("module.js", {
+				/** @type { slime.jrunscript.ui.Script } */
+				var script = $loader.script("module.js");
+				var module = script({
 					exit: function(status) {
 						Packages.java.lang.System.exit(status);
 					},
-					javafx: $slime.classpath.getClass("javafx.embed.swing.JFXPanel")
+					javafx: Boolean($slime.classpath.getClass("javafx.embed.swing.JFXPanel"))
 				});
+				jsh.ui = Object.assign(
+					{
+						javafx: Object.assign(
+							module.javafx || {},
+							{
+								WebView: void(0)
+							}
+						)
+					},
+					{
+						askpass: void(0),
+						application: void(0),
+						Chrome: void(0),
+						browser: void(0)
+					}
+				);
 			}
 		});
 
@@ -31,7 +49,9 @@
 				return Boolean(jsh.ui && jsh.java);
 			},
 			load: function() {
-				jsh.ui.askpass = $loader.file("askpass.js", {
+				/** @type { slime.jsh.ui.askpass.Script } */
+				var script = $loader.script("askpass.js");
+				jsh.ui.askpass = script({
 					api: {
 						java: jsh.java
 					}
@@ -77,6 +97,7 @@
 				return Boolean(jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java);
 			},
 			load: function() {
+				//	TODO	rename to slime.jsh.ui.internal.application.Exports
 				/** @type { slime.jsh.ui.application.internal.Exports } */
 				var api = $loader.module("application.js", { jsh: jsh });
 				(function(v) {

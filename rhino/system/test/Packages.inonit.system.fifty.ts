@@ -30,13 +30,36 @@ namespace slime.jrunscript.native {
 			}
 		}
 
+		export interface OperatingSystem {
+			start: (context: Command.Context, configuration: Command.Configuration) => Subprocess
+		}
+
+		export namespace Command {
+			export interface Context {
+			}
+
+			export interface Configuration {
+			}
+		}
+
 		export namespace OperatingSystem {
-			export interface Environment {
+			export interface Environment extends native.java.lang.Object {
 				isNameCaseSensitive(): {
 					booleanValue(): boolean
 				}
 				getMap(): slime.jrunscript.native.java.util.Map
 				getValue(name: string): string
+			}
+		}
+
+		export interface Subprocess {
+			getPid: () => number
+			terminate: () => void
+			wait: (listener: Subprocess.Listener) => void
+		}
+
+		export namespace Subprocess {
+			export interface Listener {
 			}
 		}
 	}
@@ -46,7 +69,7 @@ namespace slime.jrunscript.native {
 	function(
 		Packages: any,
 		JavaAdapter: any,
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		const fixtures: slime.jrunscript.native.inonit.system.test.Fixtures = fifty.$loader.file("system.fixtures.ts");
 
@@ -93,7 +116,7 @@ namespace slime.jrunscript.native {
 							environment
 						)
 					]
-				});
+				}) as unknown as { booleanValue(): boolean };
 			};
 
 			fifty.verify(detectedAsCaseSensitive(CaseSensitive({ foo: "bar" }))).booleanValue().is(true);

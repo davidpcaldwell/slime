@@ -107,7 +107,7 @@
 		})();
 
 		var toExportScope = (function() {
-			if ($java) return $java.loader.tools.toExportScope;
+			if ($java) return $java.old.loader.tools.toExportScope;
 			if (isScript($host)) {
 				return $host.Loader.tools.toExportScope;
 			}
@@ -173,12 +173,12 @@
 		)();
 
 		/**
-		 * @type { (p: any, prefix?: any) => slime.Loader }
+		 * @type { (p: any, prefix?: any) => slime.old.Loader }
 		 */
 		var Loader = (function() {
 			if (bootstrap) {
 				var Loader = function(p,prefix) {
-					/** @type { slime.loader.Source } */
+					/** @type { slime.old.loader.Source } */
 					var source = {
 						get: function(path) {
 							var pp = {};
@@ -246,7 +246,7 @@
 
 		var loaders = (
 			/**
-			 * @return { { script: slime.Loader, container: slime.Loader, api: slime.Loader } }
+			 * @return { { script: slime.old.Loader, container: slime.old.Loader, api: slime.Loader } }
 			 */
 			function() {
 				if ($java && $servlet) {

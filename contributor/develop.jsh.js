@@ -11,89 +11,10 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
-		//	TODO	obsolete; harvest anything useful and remove. See also contributor/hooks and wf.js
-		jsh.loader.plugins(jsh.script.file.parent.getRelativePath("../rhino/tools/hg"));
-
-		if (jsh.script.arguments.length == 0) {
-			var hgrc = jsh.script.file.parent.getRelativePath("../.hg/hgrc");
-			if (!hgrc.file) {
-				jsh.shell.echo("Not found: " + hgrc);
-				jsh.shell.exit(1);
-			}
-			var settings = new jsh.tools.hg.Hgrc({ file: hgrc.file });
-			var runscript = (function() {
-				if (jsh.shell.jsh.home) {
-					return [
-						jsh.shell.java.jrunscript,
-						jsh.shell.jsh.home.getRelativePath("jsh.js")
-					]
-				} else if (jsh.shell.rhino) {
-					return [
-						jsh.shell.java.jrunscript,
-						"-Djsh.engine.rhino.classpath=" + jsh.shell.rhino.classpath,
-						"rhino/jrunscript/api.js",
-						"jsh/launcher/main.js"
-					];
-				} else {
-					return [
-						jsh.shell.java.jrunscript,
-						"rhino/jrunscript/api.js",
-						"jsh/launcher/main.js"
-					];
-				}
-			})();
-			settings.set("hooks","precommit.slime",runscript.concat([
-				"contributor/develop.jsh.js",
-				"commit"
-			]).join(" "));
-			settings.normalize();
-			settings.write();
+		//	TODO	this file is obsolete. Duplicative code was eliminated; what remains below could be harvested
+		if (false) {
 		} else if (jsh.script.arguments.length == 1 && jsh.script.arguments[0] == "commit") {
-			var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
-			/** @type { slime.project.code.Script } */
-			var script = loader.script("code/module.js");
-			var code = script({
-				library: {
-					file: jsh.file,
-					code: jsh.tools.code
-				}
-			});
 			var failed = false;
-			code.files.trailingWhitespace({
-				base: jsh.script.file.parent.parent,
-			})(code.files.toHandler({
-				unknownFileType: function(entry) {
-					throw new Error("Unknown file type; cannot determine whether text: " + entry.file);
-				},
-				change: function(p) {
-					jsh.shell.echo("Changed " + p.file.path + " at line " + p.line.number);
-				},
-				changed: function(entry) {
-					jsh.shell.echo("Modified: " + entry.file);
-					failed = true;
-				},
-				unchanged: function(entry) {
-					//jsh.shell.echo("No change: " + entry.node);
-				}
-			}));
-			var licenseBase = jsh.script.file.parent.getRelativePath("code").directory;
-			var licenses = new jsh.document.Document({ string: licenseBase.getFile("licenses.xml").read(String) });
-			jsh.script.loader.run("code/license.jsh.js", {
-				parameters: {
-					options: {
-						base: jsh.script.file.parent.parent.pathname
-					}
-				},
-				$loader: new jsh.file.Loader({ directory: licenseBase }),
-				getLicense: function(name) {
-					var child = licenses.document.getElement().child(jsh.js.document.filter({ elements: name }));
-					var text = child.children[0].getString();
-					return text.substring(1,text.length-1);
-				},
-				fail: function() {
-					failed = true;
-				}
-			});
 			var javaFiles = jsh.script.file.parent.parent.parent.list({
 				filter: function(node) {
 					if (node.directory) return false;

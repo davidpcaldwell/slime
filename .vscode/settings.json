@@ -11,5 +11,16 @@
 		"javascript"
 	],
 	"debug.node.autoAttach": "on",
-	"java.configuration.updateBuildConfiguration": "interactive"
+	"java.configuration.updateBuildConfiguration": "interactive",
+	"files.associations": {
+		"*.json": "jsonc"
+	},
+	"git.branchProtection": [
+		"main"
+	],
+	"java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m",
+	//	See	https://github.com/redhat-developer/vscode-java/issues/2551 for why the below is currently needed; should be considered
+	//	temporary as presumably at some point that bug will be fixed.
+	"java.import.gradle.jvmArguments": "-XX:MaxMetaspaceSize=256m -XX:+HeapDumpOnOutOfMemoryError -Xms256m -Xmx1g",
+	"task.allowAutomaticTasks": "on"
 }

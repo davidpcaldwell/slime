@@ -20,104 +20,88 @@
 
 		var _java = $context._streams;
 
-		/**
-		 *
-		 * @param { slime.jrunscript.native.java.io.OutputStream } peer
-		 */
-		function OutputStream(peer) {
-			this.close = function() {
-				peer.close();
-			}
-
-			this.character = function() {
-				return new Writer(new Packages.java.io.OutputStreamWriter(peer));
-			}
-
-			this.split = function(other) {
-				var otherPeer = other.java.adapt();
-
-				//	Handle Buffer special case, very dubious
-				if (!otherPeer && other.writeBinary) {
-					otherPeer = other.writeBinary.java.adapt();
-				}
-
-				return new OutputStream(_java.split(peer,otherPeer))
-			}
-
-			this.java = new function() {
-				this.adapt = function() {
-					return peer;
-				}
-			}
-		}
-
-		var Writer = function(peer) {
-			this.close = function() {
-				peer.close();
-			}
-
-			/** @returns { string } */
-			var getTypeof = function(value) {
-				return typeof(value);
-			}
-
-			this.write = function(string) {
-				if (getTypeof(string) == "xml") {
-					peer.write( string.toXMLString() );
-					peer.flush();
-				} else if (typeof(string) == "string") {
-					peer.write( String(string) );
-					peer.flush();
-				} else {
-					throw new TypeError("Attempt to write non-string, non-XML to writer: " + string);
-				}
-			};
-
-			this.java = new function() {
-				this.adapt = function() {
-					return peer;
-				}
-			};
-		};
-
 		function InputStream(peer) {
-			this.close = function() {
-				peer.close();
-			}
-
-			this.character = function(mode) {
+			var character = function(mode) {
 				if (!mode) mode = {};
 				if (!mode.charset) mode.charset = Packages.java.nio.charset.Charset.defaultCharset().name();
 				var separator = mode.LINE_SEPARATOR;
 				//	TODO	No unit test for this method currently; does it work?
-				return new Reader(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
-			}
-
-			this.java = new function() {
-				this.adapt = function() {
-					return peer;
-				}
-
-				this.array = function() {
-					return _java.readBytes(peer);
-				}
+				return Reader(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
 			};
 
-			this.characters = this.character;
-			$api.deprecate(this, "characters");
+			//	TODO	this operation existed at one time and perhaps should be resurrected in some form, perhaps via a function
+			//			that caches an InputStream: that is of type (input: InputStream) => () => InputStream
+			// <ul>
+			// 	<li class="constructor">
+			// 		<div class="name">Resource</div>
+			// 		<span>Creates a resource that contains the contents of this stream.</span>
+			// 		<div class="arguments">
+			// 			<div class="label">Arguments</div>
+			// 			<ol>
+			// 				<li class="value">
+			// 					<span class="type"><a href="local/doc/typedoc/interfaces/slime.mimetype.html">type</a></span>
+			// 					<span>The MIME type of the data in this stream.</span>
+			// 				</li>
+			// 			</ol>
+			// 		</div>
+			// 		<div class="instances">
+			// 			<div class="label">Instances</div>
+			// 			<span class="type"><a href="#types.Resource">Resource</a></span>
+			// 		</div>
+			// 	</li>
+			// </ul>
+
+			return {
+				close: function() {
+					peer.close();
+				},
+				character: character,
+				java: {
+					adapt: function() {
+						return peer;
+					},
+					array: function() {
+						return _java.readBytes(peer);
+					}
+				},
+				characters: $api.deprecate(character)
+			}
+		}
+
+		/** @type { slime.jrunscript.runtime.io.Exports["OutputStream"] } */
+		function OutputStream(peer) {
+			return {
+				split: function(other) {
+					var otherPeer = other.java.adapt();
+
+					//	Handle Buffer special case, very dubious
+					if (!otherPeer && other.writeBinary) {
+						otherPeer = other.writeBinary.java.adapt();
+					}
+
+					return OutputStream(_java.split(peer,otherPeer))
+				},
+				character: function() {
+					return Writer(new Packages.java.io.OutputStreamWriter(peer));
+				},
+				close: function() {
+					peer.close();
+				},
+				java: {
+					adapt: function() {
+						return peer;
+					}
+				}
+			}
 		}
 
 		/**
 		 * @type { slime.jrunscript.runtime.io.Exports["Reader"] }
-		 * @param { ConstructorParameters<slime.jrunscript.runtime.io.Exports["Reader"]>[0] } peer
-		 * @param { ConstructorParameters<slime.jrunscript.runtime.io.Exports["Reader"]>[1] } properties
+		 * @param { Parameters<slime.jrunscript.runtime.io.Exports["Reader"]>[0] } peer
+		 * @param { Parameters<slime.jrunscript.runtime.io.Exports["Reader"]>[1] } properties
 		 */
 		var Reader = function(peer,properties) {
-			this.close = function() {
-				peer.close();
-			}
-
-			this.readLines = Object.assign(
+			var readLines = Object.assign(
 				/**
 				 * @type { slime.jrunscript.runtime.io.Reader["readLines"] }
 				 */
@@ -126,7 +110,7 @@
 					//	TODO	should we retrieve properties from the jrunscript/host module, or is this sufficient?
 					if (!mode.ending && properties && properties.LINE_SEPARATOR) mode.ending = properties.LINE_SEPARATOR;
 					if (!mode.ending) mode.ending = LINE_SEPARATOR;
-					if (!mode.onEnd) mode.onEnd = function() { peer.close(); }
+					if (!mode.onEnd) mode.onEnd = function() { peer.close(); return void(0); }
 
 					/** @type { string } */
 					var read;
@@ -153,6 +137,7 @@
 					} else {
 						mode.onEnd.call(this,result);
 					}
+					//@ts-ignore
 					return result;
 				},
 				{
@@ -161,53 +146,96 @@
 				}
 			);
 
-			$api.deprecate(this.readLines, "UNIX");
-			$api.deprecate(this.readLines, "DOS");
+			$api.deprecate(readLines, "UNIX");
+			$api.deprecate(readLines, "DOS");
 
-			// this.read = function(callback,mode) {
-			// 	if (!mode) mode = {};
-			// 	if (!mode.onEnd) mode.onEnd = function() { peer.close(); };
-			// 	var more = true;
-			// 	var result;
-			// 	while(more) {
-			// 		var c = peer.read();
-			// 		var result = callback( String(c) );
-			// 		if (typeof(result) != "undefined") {
-			// 			break;
-			// 		}
-			// 	}
-			// 	if (typeof(result) == "undefined") {
-			// 		mode.onEnd.call(this);
-			// 	} else {
-			// 		mode.onEnd.call(this,result);
-			// 	}
-			// 	return result;
-			// }
-
-			this.asString = function() {
-				var buffer = new Packages.java.io.StringWriter();
-				_java.copy(
-					peer,
-					buffer
-				);
-				return String( buffer.toString() );
-			}
-
-			if ($platform.e4x) {
-				this.asXml = function() {
-					var resource = new $context.api.Resource({
-						string: this.asString()
-					});
-					return resource.read(XMLList);
+			return $api.Object.compose(
+				{
+					close: function() {
+						peer.close();
+					},
+					readLines: readLines,
+					asString: function() {
+						var buffer = new Packages.java.io.StringWriter();
+						_java.copy(
+							peer,
+							buffer
+						);
+						return String( buffer.toString() );
+					},
+					java: {
+						adapt: function() {
+							return peer;
+						}
+					}
+				},
+				($platform.e4x) ? {
+					asXml: $api.deprecate(function() {
+						var string = this.asString();
+						var resource = new $context.api.Resource({
+							read: {
+								string: function() { return string; }
+							}
+						});
+						return resource.read(XMLList);
+					})
+				} : {
 				}
-			}
-
-			this.java = new function() {
-				this.adapt = function() {
-					return peer;
-				}
-			}
+			);
 		};
+
+		/** @type { slime.jrunscript.runtime.io.Exports["Writer"] } */
+		var Writer = function(peer) {
+			/** @returns { string } */
+			var getTypeof = function(value) {
+				return typeof(value);
+			};
+
+			/** @type { (value: string | slime.external.e4x.Object) => value is slime.external.e4x.Object} */
+			var isE4x = function(value) {
+				return getTypeof(value) == "xml";
+			}
+
+			return {
+				close: function() {
+					peer.close();
+				},
+				write: function(string) {
+					if ($platform.e4x && isE4x(string)) {
+						$api.deprecate(function() {
+							peer.write( string.toXMLString() );
+							peer.flush();
+						})();
+					} else if (typeof(string) == "string") {
+						peer.write( String(string) );
+						peer.flush();
+					} else {
+						throw new TypeError("Attempt to unsupported type to writer: " + string);
+					}
+				},
+				java: {
+					adapt: function() {
+						return peer;
+					}
+				}
+			};
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.native.java.nio.charset.Charset } _peer
+		 * @return { slime.jrunscript.runtime.io.Charset }
+		 */
+		function Charset(_peer) {
+			return {
+				read: function(input) {
+					return Reader(new Packages.java.io.InputStreamReader(input.java.adapt(), _peer));
+				},
+				write: function(output) {
+					return Writer(new Packages.java.io.OutputStreamWriter(output.java.adapt(), _peer));
+				}
+			}
+		}
 
 		var Streams = (function() {
 			return {
@@ -253,13 +281,19 @@
 				},
 
 				java: new function() {
+					//	TODO	to get rid of these ignores, we'd need to rethink the relationship between the Packages types and
+					//			the native types, which might be worth doing, but not doing it now
 					/** @type { (object: any) => object is slime.jrunscript.native.java.io.InputStream } */
+					//@ts-ignore
 					var isJavaInputStream = $context.api.java.isJavaType(Packages.java.io.InputStream);
 					/** @type { (object: any) => object is slime.jrunscript.native.java.io.OutputStream } */
+					//@ts-ignore
 					var isJavaOutputStream = $context.api.java.isJavaType(Packages.java.io.OutputStream);
 					/** @type { (object: any) => object is slime.jrunscript.native.java.io.Reader } */
+					//@ts-ignore
 					var isJavaReader = $context.api.java.isJavaType(Packages.java.io.Reader);
 					/** @type { (object: any) => object is slime.jrunscript.native.java.io.Writer } */
+					//@ts-ignore
 					var isJavaWriter = $context.api.java.isJavaType(Packages.java.io.Writer);
 
 					/**
@@ -271,13 +305,13 @@
 						if (false) {
 							throw new Error("Unreachable.");
 						} else if ($context.api.java.isJavaObject(object) && isJavaInputStream(object)) {
-							return new InputStream(object);
+							return InputStream(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaOutputStream(object)) {
-							return new OutputStream(object);
+							return OutputStream(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaReader(object)) {
-							return new Reader(object);
+							return Reader(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaWriter(object)) {
-							return new Writer(object);
+							return Writer(object);
 						} else {
 							var type = (function() {
 								if (object.getClass) {
@@ -308,7 +342,7 @@
 			//	TODO	could we name these better? in/out, read/write, ... ?
 
 			this.writeBinary = function() {
-				return new OutputStream(peer.getOutputStream());
+				return OutputStream(peer.getOutputStream());
 			}
 
 			this.writeText = function() {
@@ -316,7 +350,7 @@
 			}
 
 			this.readBinary = function() {
-				return new InputStream(peer.getInputStream());
+				return InputStream(peer.getInputStream());
 			}
 
 			this.readText = function() {
@@ -325,10 +359,26 @@
 		};
 
 		$export({
+			InputStream: {
+				from: {
+					java: InputStream,
+					string: function(p) {
+						var buffer = new Buffer();
+						var writer = p.charset.write(buffer.writeBinary());
+						writer.write(p.string);
+						writer.close();
+						return buffer.readBinary();
+					}
+				}
+			},
 			OutputStream: OutputStream,
-			Writer: Writer,
-			InputStream: InputStream,
 			Reader: Reader,
+			Writer: Writer,
+			Charset: {
+				standard: {
+					utf8: Charset(Packages.java.nio.charset.StandardCharsets.UTF_8)
+				}
+			},
 			Streams: Streams,
 			Buffer: Buffer,
 			system: {

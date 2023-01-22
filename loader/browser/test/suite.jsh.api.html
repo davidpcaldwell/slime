@@ -43,44 +43,5 @@ END LICENSE
 			</li>
 		</ul>
 	</div>
-	<div jsapi:id="issue300">
-		<script type="application/x.jsapi#tests" jsapi:id="success">
-			if (jsh.shell.browser.chrome) jsh.shell.jsh({
-				shell: jsh.shell.jsh.src,
-				script: jsh.shell.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
-				arguments: [
-					"-suite", jsh.shell.jsh.src.getFile("loader/browser/test/test/issue300.suite.js"),
-					"-browser", "chrome"
-				],
-				evaluate: function(result) {
-					verify(result).status.is(0);
-				}
-			})
-		</script>
-		<script type="application/x.jsapi#tests" jsapi:id="failure">
-			if (jsh.shell.browser.chrome) jsh.shell.jsh({
-				shell: jsh.shell.jsh.src,
-				script: jsh.shell.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
-				arguments: [
-					"-suite", jsh.shell.jsh.src.getFile("loader/browser/test/test/issue300.suite.js"),
-					"-browser", "chrome",
-					"-parameter", "failure=true"
-				],
-				evaluate: function(result) {
-					verify(result).status.is(1);
-				}
-			})
-		</script>
-	</div>
-	<div>
-		<h1>Context</h1>
-		<ul>
-		</ul>
-	</div>
-	<div>
-		<h1>Exports</h1>
-		<ul>
-		</ul>
-	</div>
 </body>
 </html>

@@ -14,7 +14,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
-	 * @param { slime.Loader } $loader
+	 * @param { slime.old.Loader } $loader
 	 */
 	function(Packages,JavaAdapter,$slime,$api,jsh,plugin,$loader) {
 		plugin({
@@ -145,7 +145,7 @@
 					resources = getResourceLoader(resources);
 
 					/**
-					 *	@param { { load: (scope: slime.servlet.Scope) => void, $loader?: slime.Loader } } o
+					 *	@param { { load: (scope: slime.servlet.Scope) => void, $loader?: slime.old.Loader } } o
 					 */
 					var returning = function(o) {
 						return Object.assign(o, { resources: resources });
@@ -197,6 +197,10 @@
 							"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
 							"lib/catalina.jar"
 							,"lib/annotations-api.jar"
+							//	below added for Tomcat 8
+							,"lib/tomcat-jni.jar"
+							,"lib/tomcat-util-scan.jar"
+							,"lib/jaspic-api.jar"
 						].forEach(function(path) {
 							jsh.loader.java.add(CATALINA_HOME.getRelativePath(path));
 						});
@@ -210,8 +214,7 @@
 				if (TOMCAT_CLASS) {
 					var Tomcat = (
 						/**
-						 * @constructor
-						 * @param { ConstructorParameters<slime.jsh.httpd.Exports["Tomcat"]>[0] } p
+						 * @param { Parameters<slime.jsh.httpd.Exports["Tomcat"]>[0] } p
 						 */
 						function(p) {
 							if (!p) p = {};
@@ -224,8 +227,6 @@
 
 							var base = (p.base) ? p.base : castToDirectory(jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat" }));
 
-							this.base = base;
-
 							var getOpenPort = function() {
 								var address = new Packages.java.net.ServerSocket(0);
 								var rv = address.getLocalPort();
@@ -235,7 +236,7 @@
 
 							var port = (p.port) ? p.port : getOpenPort();
 
-							this.port = port;
+							var rv = {};
 
 							if (p.https) {
 								var _https = new Packages.org.apache.catalina.connector.Connector();
@@ -260,13 +261,24 @@
 								_https.setAttribute("clientAuth", "false");
 								_https.setAttribute("sslProtocol", "TLS");
 								tomcat.getService().addConnector(_https);
-								this.https = {
+								rv.https = {
 									port: hport
 								};
+							} else {
+								rv.https = void(0);
 							}
 
 							tomcat.setBaseDir(base.toString());
-							tomcat.setPort(port);
+
+							//	In Tomcat 7, we could just do this:
+							//	tomcat.setPort(port);
+							//	HTTP was the default connector, and was created automatically.
+
+							//	In Tomcat 8, we need to add the connector explicitly, at least when HTTPS is present
+							var _http = new Packages.org.apache.catalina.connector.Connector();
+							_http.setPort(port);
+							_http.setScheme("http");
+							tomcat.getService().addConnector(_http);
 
 							var api = {
 								$api: $api,
@@ -295,7 +307,7 @@
 
 							/**
 							 * @param { any } context - Tomcat native Java context object
-							 * @param { slime.Loader } resources
+							 * @param { slime.old.Loader } resources
 							 * @param { string } pattern
 							 * @param { string } servletName
 							 * @param { slime.jsh.httpd.servlet.descriptor } servletDeclaration
@@ -331,13 +343,16 @@
 														container: servletImplementation.resources
 													},
 
-													Loader: jsh.io.Loader,
+													Loader: {
+														tools: {
+															toExportScope: jsh.io.old.loader.tools.toExportScope
+														}
+													},
 
 													loadServletScriptIntoScope: function(scope) {
 														servletImplementation.load(scope);
 													},
 
-													//	TODO	should not needlessly rename this
 													$slime: $slime,
 
 													server: server,
@@ -360,11 +375,19 @@
 										}
 									}
 								));
-								context.addServletMapping(pattern,servletName);
+								if (typeof(context.addServletMapping) == "function") {
+									//	Tomcat 7
+									context.addServletMapping(pattern,servletName);
+								} else if (typeof(context.addServletMappingDecoded) == "function") {
+									//	Tomcat 9
+									context.addServletMappingDecoded(pattern,servletName,false);
+								} else {
+									throw new Error("Unable to locate API for adding servlet mapping to embedded Tomcat")
+								}
 							};
 
 							/** @type { slime.jsh.httpd.Tomcat["map"] } */
-							this.map = function(m) {
+							rv.map = function(m) {
 								if (typeof(m.path) == "string" && m.servlets) {
 									var context = addContext(m.path,base);
 									var id = 0;
@@ -379,20 +402,20 @@
 							};
 
 							/** @type { slime.jsh.httpd.Tomcat["servlet"] } */
-							this.servlet = function(declaration) {
+							rv.servlet = function(declaration) {
 								addServlet(addContext("",base),declaration.resources,"/*","slime",declaration);
 							};
 
 							var started = false;
 
-							this.start = function() {
+							rv.start = function() {
 								if (!started) {
 									tomcat.start();
 									started = true;
 								}
 							}
 
-							this.run = function() {
+							rv.run = function() {
 								if (!started) {
 									tomcat.start();
 									started = true;
@@ -409,9 +432,22 @@
 								}
 							}
 
-							this.stop = function() {
+							rv.stop = function() {
 								tomcat.stop();
+								//	Destroy was not needed with Tomcat 7, but is needed with 9 (unknown whether needed with 8.5)
+								tomcat.destroy();
 								started = false;
+							}
+
+							return {
+								base: base,
+								port: port,
+								https: rv.https,
+								map: rv.map,
+								servlet: rv.servlet,
+								start: rv.start,
+								run: rv.run,
+								stop: rv.stop
 							}
 						}
 					);
@@ -425,7 +461,7 @@
 							if (rv && rv.media == "application" && rv.subtype == "x.typescript") return "text/plain";
 							return rv;
 						}
-						var tomcat = new jsh.httpd.Tomcat(p);
+						var tomcat = jsh.httpd.Tomcat(p);
 						tomcat.map({
 							path: "",
 							servlets: {

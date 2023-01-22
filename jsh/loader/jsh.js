@@ -14,6 +14,14 @@
 	 * @param { slime.jrunscript.native.inonit.script.jsh.Shell } $jsh
 	 */
 	function(global,Packages,JavaAdapter,$jsh) {
+		var internal = {
+			/** @type { (status: number) => never } */
+			exit: void(0),
+			/** @type { string[] } */
+			arguments: void(0),
+			deprecate: void(0)
+		};
+
 		global.jsh = new function() {
 			var $slime = (
 				/**
@@ -23,7 +31,6 @@
 				 */
 				function($jsh) {
 					var configuration = $jsh.getEnvironment();
-					var invocation = $jsh.getInvocation();
 
 					/**
 					 * @type { slime.jsh.plugin.Stdio }
@@ -47,9 +54,21 @@
 						}
 					})();
 
+					var invocation = $jsh.getInvocation();
+
+					internal.arguments = (function(_invocation) {
+						var _arguments = _invocation.getArguments();
+						var rv = [];
+						for (var i=0; i<_arguments.length; i++) {
+							rv.push(String(_arguments[i]));
+						}
+						return rv;
+					})(invocation);
+
 					// $jsh.runtime() is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
+					var runtime = $jsh.runtime();
 					return Object.assign(
-						$jsh.runtime(),
+						runtime,
 						{
 							getEnvironment: function() {
 								return configuration.getEnvironment();
@@ -75,14 +94,18 @@
 									return String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
 								};
 
-								return {
-									getLoaderScript: function(path) {
-										return new $slime.Resource({
-											name: "jsh://" + path,
-											string: getLoaderCode(path)
-										});
+								return Object.assign(
+									runtime.old.loader,
+									runtime.loader,
+									{
+										getLoaderScript: function(path) {
+											return new $slime.Resource({
+												name: "jsh://" + path,
+												read: $slime.Resource.ReadInterface.string(getLoaderCode(path))
+											});
+										}
 									}
-								};
+								);
 							})(),
 							getLibraryFile: function(path) {
 								return $jsh.getLibraryFile(path);
@@ -100,6 +123,8 @@
 					);
 				}
 			)($jsh);
+
+			internal.exit = $slime.exit;
 
 			(function initializeDeprecation() {
 				//	TODO	The name prefix used below is duplicative of the one in js/debug/plugin.jsh.js, so not DRY currently
@@ -135,13 +160,25 @@
 				};
 			})();
 
-			var plugins = $slime.value(
-				$slime.loader.getLoaderScript("plugins.js"),
-				{
-					$slime: $slime,
-					jsh: this
+			internal.deprecate = $slime.$api.deprecate;
+
+			var plugins = (
+				function(jsh) {
+					/** @type { slime.jsh.loader.internal.plugins.Export } */
+					var exported;
+					$slime.run(
+						$slime.loader.getLoaderScript("plugins.js"),
+						{
+							$slime: $slime,
+							jsh: jsh,
+							$export: function(v) {
+								exported = v;
+							}
+						}
+					);
+					return exported;
 				}
-			);
+			)(this);
 
 			$slime.plugins = {
 				mock: function(p) {
@@ -150,7 +187,25 @@
 			};
 
 			this.loader = (
+				/**
+				 *
+				 * @returns { slime.jsh.loader.Exports }
+				 */
 				function() {
+					/** @type { (from: any) => from is slime.jrunscript.file.Pathname } */
+					var isPathname = function(from) { return Boolean(from && from.java && from.java.adapt && $slime.classpath.getClass("java.io.File").isInstance(from.java.adapt())) };
+					/** @type { (from: any) => from is slime.jrunscript.file.Directory } */
+					var isDirectory = function(from) { return Boolean(from && from.pathname && from.pathname.directory); };
+					/** @type { (from: any) => from is slime.jrunscript.file.File } */
+					var isFile = function(from) { return Boolean(from && from.pathname && from.pathname.file); };
+					/** @type { (from: any) => from is slime.old.Loader } */
+					var isLoader = function(from) { return Boolean(from.get); };
+
+					/**
+					 *
+					 * @param {*} code
+					 * @returns { slime.Resource }
+					 */
 					var getCode = function(code) {
 						if (typeof(code) == "undefined") throw new TypeError("'code' must not be undefined.");
 						if (code === null) throw new TypeError("'code' must not be null.");
@@ -159,17 +214,30 @@
 						//			corresponding to files ... or else what should they do if the file is not found? Maybe file could return
 						//			null or something ... but run would probably have to fail silently, which is not good unless it is
 						//			explicitly specified
-						if (code.java && code.java.adapt() && $slime.classpath.getClass("java.io.File").isInstance(code.java.adapt())) {
+						if (isPathname(code)) {
 							return new $slime.Resource({
 								name: code.toString(),
-								string: (function() {
-									var _in = new Packages.java.io.FileInputStream(code.java.adapt());
-									var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_in));
-									return rv;
-								})()
+								read: $slime.Resource.ReadInterface.string(
+									(function() {
+										var _in = new Packages.java.io.FileInputStream(code.java.adapt());
+										var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_in));
+										return rv;
+									})()
+								)
 							});
 						} else {
 							if (typeof(code.read) == "function") return code;
+							if (typeof(code.string) == "string") {
+								return $slime.$api.deprecate(function() {
+									return new $slime.Resource({
+										name: code.name,
+										type: code.type,
+										read: {
+											string: function() { return code.string; }
+										}
+									});
+								})();
+							}
 							return new $slime.Resource(code);
 						}
 					};
@@ -220,44 +288,41 @@
 						};
 					}
 
+					/** @type { (code: any) => code is slime.jrunscript.file.Node } */
+					var isNode = function(code) {
+						return isFile(code) || isDirectory(code);
+					}
+
 					return {
 						run: function(code,scope,target) {
 							//	TODO	untested
-							if (typeof(code.directory) == "boolean") {
-								code = code.pathname;
-							}
+							if (isNode(code)) code = code.pathname;
 							return $slime.run(getCode(code),scope,target);
 						},
 						//	TODO	seems to be undocumented in type system, may be unused
 						value: function(code,scope,target) {
 							//	TODO	untested
-							if (typeof(code.directory) == "boolean") {
-								code = code.pathname;
-							}
+							if (isNode(code)) code = code.pathname;
 							return $slime.value(getCode(code),scope,target);
 						},
 						file: function(code,$context) {
 							//	TODO	untested
-							if (typeof(code.directory) == "boolean") {
-								code = code.pathname;
-							}
+							if (isNode(code)) code = code.pathname;
 							return $slime.file(getCode(code),$context);
 						},
 						module: function(pathname) {
 							var format = {};
-							if (typeof(pathname.directory) == "boolean") {
-								pathname = pathname.pathname;
-							}
-							if (pathname.directory) {
+							if (isNode(pathname)) pathname = pathname.pathname;
+							if (isPathname(pathname) && pathname.directory) {
 								if (!pathname.directory.getFile("module.js")) {
 									return null;
 								}
 								format.base = pathname.java.adapt();
 								format.name = "module.js";
-							} else if (pathname.file && /\.slime$/.test(pathname.basename)) {
+							} else if (isPathname(pathname) && pathname.file && /\.slime$/.test(pathname.basename)) {
 								format.slime = pathname.java.adapt();
 								format.name = "module.js";
-							} else if (pathname.file) {
+							} else if (isPathname(pathname) && pathname.file) {
 								format.base = pathname.parent.java.adapt();
 								format.name = pathname.basename;
 							} else {
@@ -312,11 +377,6 @@
 								};
 							})();
 						},
-						events: function() {
-						},
-						namespace: function(name) {
-							return $slime.namespace(name);
-						},
 						//	TODO	try to bring this back? Would it be legal under Graal threading rules?
 						// //	experimental interface and therefore currently undocumented
 						addFinalizer: function(f) {
@@ -329,46 +389,57 @@
 							// 	}
 							// ));
 						},
-						java: new function() {
-							this.toString = function() {
-								return $slime.classpath.toString();
+						java: (
+							function() {
+								/**
+								 * @type { slime.jsh.loader.Exports["java"] }
+								 */
+								var rv = {
+									toString: function() {
+										return $slime.classpath.toString();
+									},
+									add: function(pathname) {
+										if (!pathname) throw new TypeError("'pathname' must be provided and not undefined or null.");
+										if (!pathname.directory && !pathname.file) {
+											return;
+										}
+										$slime.classpath.add({ _file: pathname.java.adapt() });
+									},
+									getClass: function(name) {
+										return $slime.classpath.getClass(name);
+									}
+								};
+								return rv;
 							}
-
-							this.add = function(pathname) {
-								if (!pathname) throw new TypeError("'pathname' must be provided and not undefined or null.");
-								if (!pathname.directory && !pathname.file) {
-									return;
-								}
-								$slime.classpath.add({ _file: pathname.java.adapt() });
-							};
-
-							this.getClass = function(name) {
-								return $slime.classpath.getClass(name);
-							}
-						},
+						)(),
 						plugins: function(from) {
-							var isPathname = from && from.java && from.java.adapt && $slime.classpath.getClass("java.io.File").isInstance(from.java.adapt());
-							var isFile = from && from.pathname && from.pathname.file;
-							var isDirectory = from && from.pathname && from.pathname.directory;
-							if (isPathname) {
+							/**
+							 *
+							 * @param { slime.jrunscript.file.Pathname } from
+							 */
+							var loadFromPathname = function(from) {
 								if (from.file) {
+									//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/jrunscript/expression.js
 									plugins.load({ zip: { _file: from.java.adapt() } });
 								} else if (from.directory) {
 									plugins.load({ _file: from.java.adapt() });
 								} else {
 									//	TODO	log a message
 								}
-							} else if (from && from.get) {
+							};
+
+							if (isPathname(from)) {
+								loadFromPathname(from);
+							} else if (isFile(from) || isDirectory(from)) {
+								loadFromPathname(from.pathname);
+							} else if (isLoader(from)) {
 								plugins.load({ loader: from });
-							} else if (isFile) {
-								//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/jrunscript/expression.js
-								plugins.load({ zip: { _file: from.pathname.java.adapt() } });
-							} else if (isDirectory) {
-								plugins.load({ _file: from.pathname.java.adapt() });
 							}
 						},
-						//	TODO	check semantics; maybe this returns null on non-existence, currently not documented in jsh/loader/plugin.api.html
-						kotlin: ($slime.getLibraryFile("kotlin") && $slime.getLibraryFile("kotlin").exists()) ? kotlin() : void(0)
+						//	TODO	check semantics; maybe this returns null on non-existence, currently not documented in
+						//			slime.jsh.plugin documentation
+						kotlin: ($slime.getLibraryFile("kotlin") && $slime.getLibraryFile("kotlin").exists()) ? kotlin() : void(0),
+						synchronous: $slime.loader.synchronous
 					}
 				}
 			)();
@@ -391,6 +462,15 @@
 			}
 		};
 
+		/** @type { slime.jsh.script.cli.Program } */
+		var main;
+
+		global.jsh.script.cli.listener(
+			function(defined) {
+				main = defined;
+			}
+		);
+
 		global.jsh.loader.run(
 			{
 				name: $jsh.getInvocation().getScript().getSource().getSourceName(),
@@ -404,9 +484,23 @@
 					return rv;
 				})()
 			},
-			this,
+			Object.assign({}, this, {
+				main: internal.deprecate(function(supplied) {
+					global.jsh.script.cli.main(supplied);
+				})
+			}),
 			this
 		);
+
+		if (main) {
+			var status = main({
+				options: {},
+				arguments: internal.arguments
+			});
+			if (typeof(status) == "number") {
+				internal.exit(status);
+			}
+		}
 
 		$jsh.events();
 	}

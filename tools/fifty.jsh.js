@@ -15,7 +15,7 @@
 
 		jsh.script.cli.wrap({
 			commands: {
-				view: $api.Function.pipe(
+				view: $api.fp.pipe(
 					jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
 					function(p) {
 						jsh.shell.jsh({
@@ -32,8 +32,8 @@
 					}
 				),
 				test: {
-					jsh: $api.Function.pipe(
-						jsh.wf.cli.$f.option.boolean({ longname: "debug:rhino" }),
+					jsh: $api.fp.pipe(
+						jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
 						jsh.script.cli.option.array({
 							longname: "property",
 							value: function(string) {
@@ -53,7 +53,7 @@
 							},{});
 							return jsh.shell.jsh({
 								shell: SLIME,
-								script: SLIME.getFile("loader/api/test/fifty/test.jsh.js"),
+								script: SLIME.getFile("tools/fifty/test.jsh.js"),
 								arguments: p.arguments,
 								environment: $api.Object.compose(
 									jsh.shell.environment,
@@ -69,15 +69,18 @@
 							jsh.shell.exit(p.status);
 						}
 					),
-					browser: $api.Function.pipe(
+					browser: $api.fp.pipe(
 						function(p) {
 							return jsh.shell.jsh({
 								shell: SLIME,
-								script: SLIME.getFile("loader/api/test/fifty/test-browser.jsh.js"),
+								script: SLIME.getFile("tools/fifty/test-browser.jsh.js"),
 								arguments: p.arguments,
 								environment: $api.Object.compose(
 									jsh.shell.environment
-								)
+								),
+								evaluate: function(result) {
+									return result;
+								}
 							})
 						},
 						function(p) {

@@ -464,6 +464,8 @@
 			} catch (e) {
 				if (e.rhinoException) {
 					e.rhinoException.printStackTrace();
+				} else if (e.printStackTrace) {
+					e.printStackTrace();
 				}
 				throw e;
 			}

@@ -8,10 +8,11 @@
 (
 	/**
 	 *
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(jsh) {
-		jsh.shell.tools.tomcat.require(void(0), {
+	function($api,jsh) {
+		jsh.shell.tools.tomcat.old.require(void(0), {
 			console: function(e) {
 				jsh.shell.console(e.detail);
 			}
@@ -23,6 +24,7 @@
 			options: {
 				java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 				engine: jsh.script.getopts.ARRAY(String),
+				docker: false,
 				part: String,
 				//	https://github.com/davidpcaldwell/slime/issues/138
 				issue138: false,
@@ -39,6 +41,41 @@
 			unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 		});
 
+		jsh.java.Thread.start(
+			/**
+			 * At one point, builds were failing on Docker because `tsc` was not found when attempting to use TypeScript within
+			 * tests. `tsc` would blink in and out of existence in the shell's library directory.
+			 *
+			 * This seems to be no longer happening.
+			 *
+			 * This function runs a thread that monitors the existence of the TypeScript compiler in the test suite shell and
+			 * writes console messages if its status changes (it is removed, it reappears, etc.)
+			 */
+			function addDiagnosticForTscDisappearing() {
+				/** @type { boolean } */
+				var found;
+
+				/** @type { boolean } */
+				var now;
+
+				while(true) {
+					now = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/node/bin/tsc").java.adapt().exists();
+					if (typeof(found) == "undefined") {
+						jsh.shell.console("Initial check: tsc found = " + now);
+					} else if (found && !now) {
+						jsh.shell.console("tsc change: removed");
+						jsh.shell.console("node present? " + jsh.shell.jsh.src.getRelativePath("local/jsh/lib/node").java.adapt().exists());
+					} else if (!found && now) {
+						jsh.shell.console("tsc change: added");
+					} else {
+						//jsh.shell.console("tsc still " + now);
+					}
+					found = now;
+					jsh.java.Thread.sleep(25);
+				}
+			}
+		);
+
 		// TODO: force CoffeeScript for verification?
 
 		if (!parameters.options.java.length) {
@@ -49,15 +86,19 @@
 			parameters.options.engine = [""];
 		}
 
-		var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
+		var Environment = jsh.script.loader.module("jrunscript-environment.js");
 
-		var isDocker = Boolean(jsh.file.Pathname("/slime").directory);
+		var hasGit = Boolean(jsh.shell.PATH.getCommand("git"));
+		var isGitClone = (function() {
+			var SLIME = jsh.script.file.parent.parent;
+			return Boolean(SLIME.getSubdirectory(".git") || SLIME.getFile(".git"));
+		})();
 
 		var environment = new Environment({
 			src: jsh.script.file.parent.parent,
 			noselfping: parameters.options.noselfping,
 			tomcat: true,
-			executable: !isDocker
+			executable: Boolean(jsh.shell.PATH.getCommand("gcc"))
 		});
 
 		var suite = new jsh.unit.html.Suite();
@@ -122,31 +163,50 @@
 			});
 		});
 
-		var getSafariProcess = function() {
-			var processes = jsh.shell.os.process.list();
-			var safaris = processes.filter(function(process) {
-				return process.command == "/Applications/Safari.app/Contents/MacOS/Safari";
-			});
-			return (safaris.length) ? safaris[0] : null;
-		};
+		(
+			function safariLifecycle() {
+				var getSafariProcess = function() {
+					if (jsh.shell.os.name != "Mac OS X") return null;
+					var processes = jsh.shell.os.process.list();
+					var safaris = processes.filter(function(process) {
+						return process.command == "/Applications/Safari.app/Contents/MacOS/Safari";
+					});
+					return (safaris.length) ? safaris[0] : null;
+				};
 
-		var safariWas = getSafariProcess();
+				var safariWas = getSafariProcess();
 
-		if (!safariWas) {
-			jsh.java.addShutdownHook(function() {
-				var safari = getSafariProcess();
-				if (safari) safari.kill();
-			});
-		}
+				if (!safariWas) {
+					jsh.java.addShutdownHook(function() {
+						var safari = getSafariProcess();
+						if (safari) safari.kill();
+					});
+				}
+			}
+		)();
 
-		if (!isDocker) suite.add("browsers", new function() {
+		suite.add("browsers", new function() {
+			var browsers = (parameters.options.docker)
+				? $api.Array.build(function(rv) {
+					rv.push({ id: "dockercompose:selenium:chrome", name: "Chrome (Selenium)" });
+					//	TODO	need to debug why this didn't work:
+					//	TypeError: Cannot call method "start" of undefined
+					rv.push({ id: "dockercompose:selenium:firefox", name: "Firefox (Selenium)" });
+				})
+				: jsh.unit.browser.installed;
+
 			this.name = "Browser tests";
 
 			this.parts = new function() {
 				this.jsapi = {
 					parts: {}
 				};
-				jsh.unit.browser.installed.forEach(function(browser) {
+
+				this.fifty = {
+					parts: {}
+				};
+
+				browsers.forEach(function(browser) {
 					this.jsapi.parts[browser.id] = jsh.unit.Suite.Fork({
 						name: browser.name + " jsapi",
 						run: jsh.shell.jsh,
@@ -162,21 +222,31 @@
 					});
 				},this);
 
-				//	TODO	Fifty tests should be able to run in multiple browsers
-				this.fifty = jsh.unit.Suite.Fork({
-					name: "fifty",
-					run: jsh.shell.run,
-					command: environment.jsh.src.getFile("fifty"),
-					arguments: [
-						"test.browser",
-						environment.jsh.src.getFile("contributor/browser.fifty.ts")
-					],
-					directory: environment.jsh.src
-				});
+				this.fifty = (
+					/** @returns { { parts: { [x: string]: any } } } */
+					function() {
+						/** @type { { [x: string]: any }} */
+						var parts = {};
+						browsers.forEach(function(browser) {
+							parts[browser.id] = jsh.unit.Suite.Fork({
+								name: "Fifty (" + browser.name + ")",
+								run: jsh.shell.run,
+								command: environment.jsh.src.getFile("fifty"),
+								arguments: [
+									"test.browser",
+									"--browser", browser.id,
+									environment.jsh.src.getFile("contributor/browser.fifty.ts")
+								],
+								directory: environment.jsh.src
+							});
+						});
+						return { parts: parts };
+					}
+				)();
 			}
 		});
 
-		if (!isDocker) suite.add("tools", {
+		suite.add("tools", {
 			initialize: function() {
 				environment.jsh.built.requireTomcat();
 			},
@@ -212,35 +282,31 @@
 								}
 							}
 						}
-
-						this.suite = new jsh.unit.html.Part({
-							pathname: jsh.shell.jsh.src.getRelativePath("loader/browser/test/suite.jsh.api.html")
-						});
 					}
 				}
 			}
 		});
 
-		if (!isDocker) suite.add(
+		if (hasGit && isGitClone) suite.add(
 			"project",
 			{
 				parts: {
 					wf: jsh.unit.fifty.Part({
 						shell: environment.jsh.unbuilt.src,
-						script: environment.jsh.unbuilt.src.getFile("loader/api/test/fifty/test.jsh.js"),
+						script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
 						file: environment.jsh.unbuilt.src.getFile("wf.fifty.ts")
 					})
 				}
 			}
 		);
 
-		if (!isDocker) suite.add(
+		suite.add(
 			"node",
 			{
 				parts: {
 					runtime: jsh.unit.fifty.Part({
 						shell: environment.jsh.unbuilt.src,
-						script: environment.jsh.unbuilt.src.getFile("loader/api/test/fifty/test.jsh.js"),
+						script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
 						file: environment.jsh.unbuilt.src.getFile("loader/node/loader.fifty.ts")
 					})
 				}
@@ -261,4 +327,4 @@
 		});
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);

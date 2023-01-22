@@ -200,7 +200,7 @@
 				});
 			} else {
 				//	TODO	more helpful error message
-				jsh.shell.echo("Executing from unknown URL: " + jsh.script.url + " ... cannot locate source distribution for version.");
+				jsh.shell.console("Executing from unknown URL: " + jsh.script.url + " ... cannot locate source distribution for version.");
 				jsh.shell.exit(1);
 			}
 		}
@@ -392,13 +392,8 @@
 			return modules;
 		})();
 
-		jsh.shell.echo("Creating plugins directory ...");
+		jsh.shell.console("Creating plugins directory ...");
 		destination.shell.getRelativePath("plugins").createDirectory();
-		//	TODO	it might be useful in the future to copy jsh/loader/plugin.api.html into this directory, to make it easy to find.
-		//			this would also make it so that an installer would automatically create the plugins directory when unzipping the
-		//			distribution; right now this is also done in install.jsh.js. But currently, this would mess up the CSS, etc., so it
-		//			might be better to leave the plugin documentation only in docs/api/
-		//	copyFile(new File(SLIME_SRC, "jsh/loader/plugin.api.html"))
 
 		console("Creating tools ...");
 		SLIME.getSubdirectory("jsh/tools").copy(destination.shell.getRelativePath("tools"));
@@ -414,7 +409,11 @@
 					return !node.directory;
 				},
 				descendants: function(directory) {
-					if (directory.pathname.basename == ".hg") return false;
+					//	TODO	could we use .gitignore for this?
+					if (directory.pathname.basename == ".git") return false;
+					if (directory.pathname.basename == "bin") return false;
+					if (directory.pathname.basename == ".gradle") return false;
+					if (directory.pathname.basename == ".settings") return false;
 					if (directory.pathname.basename == "local") return false;
 					return true;
 				},
@@ -494,7 +493,7 @@
 						// 	}
 						// );
 					} else {
-						jsh.shell.echo("bash not found on Cygwin; not building native launcher.");
+						jsh.shell.console("bash not found on Cygwin; not building native launcher.");
 					}
 				} else if (UNIX) {
 					(

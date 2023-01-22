@@ -4,16 +4,70 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.native {
+	export namespace org.mozilla.javascript {
+		export interface Context extends slime.jrunscript.native.java.lang.Object {
+			getApplicationClassLoader: () => slime.jrunscript.native.java.lang.ClassLoader
+			getOptimizationLevel: () => number
+			getImplementationVersion: () => slime.jrunscript.native.java.lang.String
+		}
+	}
+
+	export namespace jdk.nashorn.internal.runtime {
+		export interface Context extends slime.jrunscript.native.java.lang.Object {
+		}
+	}
+}
+
+namespace slime.jrunscript {
+	export interface Packages {
+		jdk: {
+			nashorn: {
+				internal: {
+					runtime: {
+						Context: slime.jrunscript.JavaClass<slime.jrunscript.native.jdk.nashorn.internal.runtime.Context, {
+							class: slime.jrunscript.native.java.lang.Class
+							getContext: () => slime.jrunscript.native.java.lang.Object
+						}>
+					}
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Definitions of types pertaining to the Java bootstrap scripts. The bootstrap script at `api.js` is launched via `jrunscript` and
+ * use the built-in Nashorn engine to are used to configure the SLIME Java environment using the `jrunscript` tool; they compile
+ * Java code and check for the presence of JavaScript engines. They are designed to run with no dependencies except on the JDK (and
+ * Nashorn).
+ *
+ * Arguments can be passed to the bootstrap script via the query string when it is invoked as a URL (for example, when loaded over
+ * a network), or can be passed on the command line if being invoked locally (they will be parsed out via the JSR 223 APIs, or
+ * engine-specific APIs).
+ *
+ * However, so that code does not have to be developed twice - once for the bootstrap script and once for the SLIME Java runtime -
+ * the bootstrap script can also be embedded in the SLIME Java runtime using the `embed.js` script, which packages the bootstrap
+ * script as an ordinary {@link slime.loader.Script}.
+ *
+ * In the context of the `jsh` shell, which is invoked with the `jsh` query parameter, the bootstrap script builds the Java portions
+ * of the `jsh` loader process and launch the `jsh` loader configured appropriately.
+ */
 namespace slime.internal.jrunscript.bootstrap {
+	/**
+	 * An object that can be used to configure the invocation of the `api.js` script, by setting the `$api` property of the global
+	 * object to an object of this type. This value will be replaced by the {@link Global} value exported by the script.
+	 */
 	export interface Configuration {
-		script: {
-			file: string
-			url: string
+		script?: {
+			file?: string
+			url?: string
 		}
-		engine: {
-			script: any
+		engine?: {
+			script?: any
 		}
-		arguments: string[]
+		arguments?: string[]
+		debug?: boolean
 	}
 
 	export interface Script {
@@ -23,8 +77,17 @@ namespace slime.internal.jrunscript.bootstrap {
 		resolve: (path: string) => Script
 	}
 
+	/**
+	 * APIs the jrunscript bootstrap script uses that are provided by the underlying JavaScript engine.
+	 */
 	export interface Environment {
-		load: any
+		/**
+		 * A function compatible with the [Nashorn shell `load()` function](https://docs.oracle.com/javase/10/nashorn/nashorn-and-shell-scripting.htm)
+		 */
+		load: {
+			(fileOrUrl: string): void
+			(p: { name: string, script: slime.jrunscript.native.java.lang.String })
+		}
 
 		//	Rhino compatibility
 		Packages: slime.jrunscript.Packages
@@ -37,11 +100,13 @@ namespace slime.internal.jrunscript.bootstrap {
 		//	Nashorn-provided
 		//	Used to provide debug output before Packages is loaded
 		//	Used in jsh/launcher/main.js
-		Java?: any
-
-		$api: {
-			debug: boolean
+		Java?: {
+			type: (name: string) => slime.jrunscript.JavaClass & {
+				class: any
+			}
 		}
+
+		$api?: Configuration
 	}
 
 	export namespace internal {
@@ -69,9 +134,19 @@ namespace slime.internal.jrunscript.bootstrap {
 		}
 	}
 
-	export interface Global<T,J> extends Environment {
+	/**
+	 * The `Global` is the type definition for the global `this` value (i.e., `globalThis` in other environments) in `jrunscript`
+	 * bootstrap environments.
+	 *
+	 * @typeParam T - An object specifying a set of properties to add to the `$api` property.
+	 * @typeParam J - An object specifying a set of properties to add to the `$api.java` property.
+	 */
+	export interface Global<T,J> extends Omit<Environment,"$api"> {
 		$api: {
-			debug: any
+			debug: {
+				(message: string): void
+				on: boolean
+			}
 			console: any
 			log: any
 			engine: {
@@ -79,7 +154,14 @@ namespace slime.internal.jrunscript.bootstrap {
 				resolve: any
 				readFile: any
 				readUrl: any
-				runCommand: any
+
+				/**
+				 * Attempts to be compatible with the old Rhino shell `runCommand` implementation.
+				 *
+				 * @param arguments A set of tokens for the command line, followed optionally by a "mode" argument
+				 * @returns The exit status of the command
+				 */
+				runCommand: (...arguments: any[]) => number
 			}
 
 			github: {
@@ -128,9 +210,18 @@ namespace slime.internal.jrunscript.bootstrap {
 				readJavaString: (from: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String
 			}
 
-			bitbucket: any
+			rhino: {
+				classpath: slime.jrunscript.native.java.io.File
+				download: (version?: string) => slime.jrunscript.native.java.io.File
+				isPresent: () => boolean
+				running: () => slime.jrunscript.native.org.mozilla.javascript.Context
+			}
 
-			rhino: any
+			nashorn: {
+				isPresent: () => boolean
+				running: () => slime.jrunscript.native.jdk.nashorn.internal.runtime.Context
+			}
+
 			shell: any
 		} & T
 	}
@@ -138,7 +229,7 @@ namespace slime.internal.jrunscript.bootstrap {
 	(
 		function(
 			Packages: any,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
@@ -154,8 +245,8 @@ namespace slime.internal.jrunscript.bootstrap {
 					}
 				};
 				fifty.$loader.run("api.js", {}, configuration);
-				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as slime.internal.jrunscript.bootstrap.Global<{},{}>;
-				var thisPathname = fifty.$loader.getRelativePath("api.fifty.ts");
+				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as unknown as slime.internal.jrunscript.bootstrap.Global<{},{}>;
+				var thisPathname = fifty.jsh.file.object.getRelativePath("api.fifty.ts");
 				var jshReadThisFile = thisPathname.file.read(String);
 				var bootstrapReadThisFile = (function() {
 					var javaFile = thisPathname.java.adapt();
@@ -194,12 +285,12 @@ namespace slime.internal.jrunscript.bootstrap {
 					}
 				};
 				fifty.$loader.run("api.js", {}, configuration);
-				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as slime.internal.jrunscript.bootstrap.Global<{},{}>;
+				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as unknown as slime.internal.jrunscript.bootstrap.Global<{},{}>;
 
 				var archive = global.$api.github.test.zip(zip.body.stream.java.adapt());
 				verify(archive).read("slime-master/rhino/jrunscript/api.fifty.ts").is.type("object");
 				verify(archive).read("slime-master/rhino/jrunscript/api.fifty.ts.foo").is.type("null");
-				var descriptor: slime.jrunscript.runtime.resource.Descriptor = {
+				var descriptor: slime.jrunscript.runtime.old.resource.Descriptor = {
 					read: {
 						binary: function() {
 							return jsh.io.java.adapt(archive.read("slime-master/rhino/jrunscript/api.fifty.ts"));
@@ -208,7 +299,7 @@ namespace slime.internal.jrunscript.bootstrap {
 				}
 				var resource = new jsh.io.Resource(descriptor);
 				var fromZip = resource.read(String);
-				var fromFilesystem = fifty.$loader.getRelativePath("api.fifty.ts").file.read(String);
+				var fromFilesystem = fifty.jsh.file.object.getRelativePath("api.fifty.ts").file.read(String);
 				var filesAreEqual = fromZip == fromFilesystem
 				verify(filesAreEqual,"filesAreEqual").is(true);
 
@@ -260,7 +351,7 @@ namespace slime.internal.jrunscript.bootstrap {
 					}
 				};
 				fifty.$loader.run("api.js", {}, configuration);
-				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as slime.internal.jrunscript.bootstrap.Global<{},{}>;
+				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as unknown as slime.internal.jrunscript.bootstrap.Global<{},{}>;
 				fifty.verify(global).is.type("object");
 				fifty.verify(global).$api.is.type("object");
 				fifty.verify(global).$api.script.is.type("object");
@@ -287,6 +378,18 @@ namespace slime.internal.jrunscript.bootstrap {
 				fifty.verify(subject).Script.test.evaluate(interpret("http://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).url.is("http://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js");
 				fifty.verify(subject).Script.test.evaluate(interpret("https://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js")).url.is("https://raw.githubusercontent.com/davidpcaldwell/slime/branch/rhino/jrunscript/api.js");
 			}
+
+			fifty.tests.manual = {};
+
+			//	This will generate an exception under Rhino, but executes successfully under Nashorn.
+			fifty.tests.manual.load = function() {
+				var global = (function() { return this; })();
+				fifty.$loader.run("api.js", {}, global);
+				jsh.shell.console("Loaded.");
+			};
+
+			fifty.tests.manual.jsh = {};
+			//fifty.tests.manual.jsh.
 		}
 	//@ts-ignore
 	)(Packages,fifty);

@@ -9,30 +9,30 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.time.Context } $context
-	 * @param { slime.time.Exports } $exports
+	 * @param { slime.loader.Script<slime.time.Exports> } $export
 	 */
-	function($api,$context,$exports) {
-		var zones = {};
-		if (typeof($context.zones) != "undefined") {
-			for (var x in $context.zones) {
-				zones[x] = $context.zones[x];
-			}
-		}
+	function($api,$context,$export) {
+		var now = $context.now || function() { return new Date().getTime(); };
 
-		zones.local = new function() {
-			this.local = function(unix) {
-				var date = new Date(unix);
-				return {
-					year: date.getFullYear(), month: date.getMonth()+1, day: date.getDate(),
-					hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds() + date.getMilliseconds() / 1000
+		/** @type { Partial<slime.time.Exports> } */
+		var $exports = {};
+
+		/** @type { { local: slime.time.Zone, UTC: slime.time.Zone, [id: string]: slime.time.Zone } } */
+		var zones = {
+			local: new function() {
+				this.local = function(unix) {
+					var date = new Date(unix);
+					return {
+						year: date.getFullYear(), month: date.getMonth()+1, day: date.getDate(),
+						hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds() + date.getMilliseconds() / 1000
+					}
 				}
-			}
-			this.unix = function(local) {
-				return new Date(local.year,local.month-1,local.day,local.hour,local.minute,local.second).getTime();
-			}
-		}
-		if (!zones.UTC) {
-			zones.UTC = new function() {
+				this.unix = function(local) {
+					return new Date(local.year,local.month-1,local.day,local.hour,local.minute,local.second).getTime();
+				}
+			},
+			//	TODO	Should we make this conditional on $context.zones.UTC?
+			UTC: new function() {
 				this.local = function(unix) {
 					var date = new Date(unix);
 					return {
@@ -45,6 +45,12 @@
 					var milliseconds = Math.round((local.second - Math.floor(local.second)) * 1000);
 					return Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,wholeSeconds,milliseconds);
 				}
+			}
+		};
+
+		if (typeof($context.zones) != "undefined") {
+			for (var x in $context.zones) {
+				zones[x] = $context.zones[x];
 			}
 		}
 
@@ -638,14 +644,6 @@
 		Day.rehydrate = function(json) {
 			return new Day(json.year.value, json.month.id.index, json.day);
 		};
-		/** @type {slime.time.Exports["Day"]["format"] } */
-		Day.format = function(mask) {
-			/** @type { ReturnType<slime.time.Exports["Day"]["format"]> } */
-			return function(day) {
-				var toDayObject = new Day(day.year, day.month, day.day);
-				return toDayObject.format(mask);
-			}
-		}
 
 		function Time() {
 			var day;
@@ -757,6 +755,7 @@
 			}
 
 			//	Time zone information: http://www.twinsun.com/tz/tz-link.htm
+			/** @type { slime.time.old.When["local"] } */
 			this.local = function(zone) {
 				if (!zone) zone = zones.local;
 				var zoned = zone.local(date.getTime());
@@ -956,11 +955,35 @@
 
 		$exports.install = install;
 
-		$exports.world = {
-			today: function() {
-				return Day.today().adapt()
-			}
-		}
+		$export({
+			Date: {
+				input: {
+					today: function() {
+						var datetime = zones.local.local(now());
+						return {
+							year: datetime.year,
+							month: datetime.month,
+							day: datetime.day
+						}
+					}
+				},				/** @type {slime.time.Exports["Date"]["format"] } */
+				format: function(mask) {
+					/** @type { ReturnType<slime.time.Exports["Date"]["format"]> } */
+					return function(day) {
+						var toDayObject = new Day(day.year, day.month, day.day);
+						return toDayObject.format(mask);
+					}
+				}
+			},
+			Timezone: zones,
+			install: install,
+			Day: $exports.Day,
+			Time: $exports.Time,
+			Year: $exports.Year,
+			When: $exports.When,
+			Month: $exports.Month,
+			java: $exports.java
+		})
 	}
 //@ts-ignore
-)($api,$context,$exports)
+)($api,$context,$export)

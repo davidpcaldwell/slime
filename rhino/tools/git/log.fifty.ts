@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.git {
+namespace slime.jrunscript.tools.git {
 	export interface Exports {
 		log: {
 			format: {
@@ -16,7 +16,7 @@ namespace slime.jrunscript.git {
 	}
 }
 
-namespace slime.jrunscript.git.internal.log {
+namespace slime.jrunscript.tools.git.internal.log {
 	export interface Context {
 		library: {
 			time: slime.time.Exports
@@ -24,12 +24,12 @@ namespace slime.jrunscript.git.internal.log {
 	}
 
 	export interface Exports {
-		format: slime.jrunscript.git.Exports["log"]["format"]
+		format: slime.jrunscript.tools.git.Exports["log"]["format"]
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 

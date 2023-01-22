@@ -24,7 +24,7 @@ namespace slime.servlet {
 			}
 		}
 
-		loader: slime.Loader
+		loader: slime.old.Loader
 
 		/**
 		 * @deprecated
@@ -55,7 +55,7 @@ namespace slime.servlet {
 	 */
 	export interface Scope {
 		httpd: httpd
-		$loader: slime.Loader
+		$loader: slime.old.Loader
 		$parameters: Parameters
 		$exports: Script
 	}
@@ -80,13 +80,13 @@ namespace slime.servlet {
 
 				loaders?: {
 					api: slime.Loader
-					script: slime.Loader
-					container: slime.Loader
+					script: slime.old.Loader
+					container: slime.old.Loader
 				}
 
 				Loader: {
 					tools: {
-						toExportScope: slime.runtime.Exports["loader"]["tools"]["toExportScope"]
+						toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
 					}
 				}
 

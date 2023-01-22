@@ -19,9 +19,11 @@
 		if (!$context.os.process) throw new Error("No $context.os.process");
 		if (!$context.os.process.list) throw new Error("No $context.os.process.list");
 
+		var log = $context.api.java.log.named("jrunscript.shell.browser.chrome");
+
 		/**
 		 *
-		 * @param { { program: slime.jrunscript.file.File, user: slime.jrunscript.file.Directory }} b
+		 * @param { { program: slime.jrunscript.file.File, user?: slime.jrunscript.file.Directory }} b
 		 */
 		var Chrome = function(b) {
 			this.toString = function() {
@@ -61,9 +63,15 @@
 			//
 			//	See https://www.chromium.org/user-experience/user-data-directory
 			//	See https://www.chromium.org/user-experience/multi-profiles
+			/** @type { slime.jrunscript.shell.browser.object.Chrome["Instance"]} */
 			this.Instance = (
 				/** @param { ConstructorParameters<slime.jrunscript.shell.browser.object.Chrome["Instance"]>[0] } u */
 				function(u) {
+					/** @type { (u: any) => u is slime.jrunscript.shell.browser.object.instance.DefaultConfiguration } */
+					var isDefaultConfiguration = function(u) {
+						return u["isntall"];
+					};
+
 					if (u.location) {
 						u.directory = u.location.createDirectory({
 							exists: function(dir) {
@@ -148,12 +156,16 @@
 					}
 
 					var launch = function(m) {
+						log.FINE("Launching Chrome browser.");
+						log.FINEST("$context.os = " + $context.os);
+						log.FINER("$context.os.name = " + $context.os.name);
 						if ($context.os.name == "Mac OS X") {
+							log.FINE("Ensure default user is running ...");
 							(function startDefaultUser() {
 								var isDefaultRunning = function() {
 									return ps.isDefaultRunning();
 								}
-								if (!isDefaultRunning()) {
+								if (b.user && !isDefaultRunning()) {
 									Packages.java.lang.System.err.println("Starting background Chrome ...");
 									$context.run({
 										command: "open",
@@ -217,6 +229,7 @@
 								args.push.apply(args,m.uris);
 							}
 						}
+						log.FINE("Running program: " + b.program + " with args " + JSON.stringify(args));
 						//Packages.java.lang.System.err.println("using program: args = " + JSON.stringify(args));
 						//	TODO	use events rather than on.start property
 						$context.run({
@@ -226,6 +239,7 @@
 							on: {
 								//	TODO	on.start is deprecated
 								start: function(p) {
+									log.FINE("Program " + b.program + " started.");
 									if ($context.os.name == "Mac OS X" && m.exitOnClose) {
 										//	TODO: The exitOnClose property is currently undocumented; it is not clear that it works correctly. More
 										//	testing needed
@@ -268,6 +282,7 @@
 								}
 							}
 						});
+						log.FINE("Program " + b.program + " terminated.");
 						if (m.on && m.on.close) {
 							m.on.close.call(m);
 						}
@@ -312,7 +327,7 @@
 
 						this.preferences = data.read("Preferences");
 
-						if (u.install) {
+						if (isDefaultConfiguration(u)) {
 							this.open = function(m) {
 								if (isRunning()) {
 									//	On OS X, if we do not use "launch," the tabs open in the profile last used, regardless of the arguments
@@ -343,7 +358,7 @@
 
 					this.directory = u.directory;
 
-					if (u.install) {
+					if (isDefaultConfiguration(u)) {
 						this.open = function(m) {
 							open(m);
 						}
@@ -384,28 +399,38 @@
 			throw new TypeError("Could not determine Chrome version from version string: " + chrome.version);
 		}
 
-		if ($context.os.name == "Mac OS X") {
-			if ($context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file) {
-				$export({
-					getMajorVersion: getMajorVersion,
-					object: new Chrome({
-						program: $context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file,
-						user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
-					})
-				});
+		var installed = (
+			function() {
+				if ($context.os.name == "Mac OS X") {
+					if ($context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file) {
+						return new Chrome({
+							program: $context.api.file.Pathname("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome").file,
+							user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
+						});
+					}
+				}
+
+				if ($context.os.name == "Linux") {
+					if ($context.api.file.Pathname("/opt/google/chrome/chrome").file) {
+						return new Chrome({
+							program: $context.api.file.Pathname("/opt/google/chrome/chrome").file,
+							user: $context.HOME.getSubdirectory(".config/google-chrome")
+						});
+					}
+				}
 			}
-		}
-		if ($context.os.name == "Linux") {
-			if ($context.api.file.Pathname("/opt/google/chrome/chrome").file) {
-				$export({
-					getMajorVersion: getMajorVersion,
-					object: new Chrome({
-						program: $context.api.file.Pathname("/opt/google/chrome/chrome").file,
-						user: $context.HOME.getSubdirectory(".config/google-chrome")
-					})
+		)();
+
+		$export({
+			getMajorVersion: getMajorVersion,
+			Installation: function(p) {
+				return new Chrome({
+					program: $context.api.file.Pathname(p.program).file,
+					user: (p.user) ? $context.api.file.Pathname(p.user).directory : null
 				});
-			}
-		}
+			},
+			installed: installed
+		});
 	}
 //@ts-ignore
 )(Packages,$api,$context,$loader,$export);

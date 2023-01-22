@@ -86,9 +86,9 @@
 							return {
 								parameters: function(parameters) {
 									var invocation = command.invocation(parameters);
-									var tell = $context.library.shell.world.run(
-										$context.library.shell.Invocation.create({
-											command: program,
+									var tell = $context.library.shell.world.action(
+										$context.library.shell.Invocation.from.argument({
+											command: program.toString(),
 											arguments: [invocation.command].concat(invocation.arguments || []),
 											environment: invocation.environment,
 											stdio: {
@@ -98,21 +98,24 @@
 										})
 									);
 									return {
-										run: $api.Function.impure.ask(function(events) {
+										run: $api.fp.world.old.ask(function(events) {
 											var rv;
-											tell({
-												stdout: function(e) {
-													events.fire("stdout", e.detail.line);
-												},
-												stderr: function(e) {
-													events.fire("stderr", e.detail.line);
-												},
-												exit: function(e) {
-													var status = e.detail.status;
-													if (status != 0) throw new Error("Exit status: " + status);
-													rv = command.result(e.detail.stdio.output);
+											$api.fp.world.now.tell(
+												tell,
+												{
+													stdout: function(e) {
+														events.fire("stdout", e.detail.line);
+													},
+													stderr: function(e) {
+														events.fire("stderr", e.detail.line);
+													},
+													exit: function(e) {
+														var status = e.detail.status;
+														if (status != 0) throw new Error("Exit status: " + status);
+														rv = command.result(e.detail.stdio.output);
+													}
 												}
-											})
+											);
 											return rv;
 										})
 									}
@@ -142,6 +145,19 @@
 					},
 					result: function(output) {
 						return output;
+					}
+				},
+				list: {
+					invocation: function() {
+						return {
+							command: "list",
+							arguments: ["--full-name"]
+						}
+					},
+					result: function(output) {
+						return output.split("\n").filter(function(line) {
+							return Boolean(line);
+						});
 					}
 				}
 			}

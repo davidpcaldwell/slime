@@ -31,9 +31,7 @@
 			}
 		});
 
-		var isDocker = Boolean(jsh.file.Pathname("/slime").directory);
-
-		var Environment = jsh.script.loader.file("jrunscript-environment.js").Environment;
+		var Environment = jsh.script.loader.module("jrunscript-environment.js");
 
 		var environment = new Environment({
 			src: jsh.script.file.parent.parent,
@@ -53,7 +51,7 @@
 		var FiftyPart = function(p) {
 			return jsh.unit.fifty.Part({
 				shell: environment.jsh.unbuilt.src,
-				script: SRC.getFile("loader/api/test/fifty/test.jsh.js"),
+				script: SRC.getFile("tools/fifty/test.jsh.js"),
 				file: p.file
 			});
 		}
@@ -62,7 +60,7 @@
 			file: jsh.script.file.parent.getFile("jrunscript.fifty.ts")
 		}));
 
-		suite.add("internal/slime/jsapi", new jsh.unit.html.Part({
+		suite.add("internal/runtime", new jsh.unit.html.Part({
 			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 			//	Functionality used internally or accessed through loader/jrunscript (although untested by loader/jrunscript)
 			pathname: SRC.getRelativePath("loader/api.html")
@@ -72,17 +70,6 @@
 			//	Test cases of loader implementation
 			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
 			pathname: SRC.getRelativePath("loader/jrunscript/api.html")
-		}));
-		suite.add("internal/jrunscript/java/jsapi", new jsh.unit.html.Part({
-			//	Test cases of loader implementation
-			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
-			pathname: SRC.getRelativePath("loader/jrunscript/java.api.html")
-		}));
-		suite.add("internal/jrunscript/io", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/jrunscript/io.api.html"),
-			environment: {
-				$slime: jsh.unit.$slime
-			}
 		}));
 
 		suite.add("internal/other", new jsh.unit.html.Part({
@@ -110,26 +97,12 @@
 			pathname: SRC.getRelativePath("js/document/api.html")
 		}));
 
-		suite.add("js/time", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("js/time/api.html")
-		}));
-
-		suite.add("jrunscript/host/jsapi", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jrunscript/host/api.html"),
-			// TODO: why is supplying the module this way necessary?
-			environment: Object.assign({}, environment, { module: jsh.java })
-		}));
-
 		suite.add("jrunscript/io/module", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jrunscript/io/api.html")
 		}));
 
 		suite.add("jrunscript/io/mime", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jrunscript/io/mime.api.html")
-		}));
-
-		suite.add("jrunscript/io/grid", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jrunscript/io/grid.api.html")
 		}));
 
 		suite.add("jrunscript/file/main", new jsh.unit.html.Part({
@@ -148,22 +121,15 @@
 			pathname: SRC.getRelativePath("rhino/shell/api.html"),
 			environment: { noselfping: parameters.options.noselfping }
 		}));
-		if (!isDocker) suite.add("jrunscript/shell/browser", new jsh.unit.html.Part({
+		suite.add("jrunscript/shell/browser", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/shell/browser/api.html")
 		}));
 
-		suite.add("jrunscript/java/tools/api", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/api.html")
-		}));
-		suite.add("jrunscript/java/tools/jsh", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/plugin.jsh.api.html")
-		}));
 		// TODO: does this require hg be installed?
 		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
 		}));
-		// TODO: does this require git be installed?
-		if (!parameters.options.issue138) {
+		if (!parameters.options.issue138 && jsh.shell.PATH.getCommand("git")) {
 			suite.add(
 				"jrunscript/tools/git/jsapi",
 				new jsh.unit.html.Part({
@@ -171,29 +137,8 @@
 				})
 			);
 		}
-		suite.add("jrunscript/tools/node", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/node/api.html")
-		}));
 
 		(function jshLauncher() {
-			var rhinoArgs = (jsh.shell.rhino) ? ["-rhino", jsh.shell.rhino.classpath.toString()] : [];
-
-			//	TODO	Move these tests elsewhere; see issue #128
-			var part = jsh.unit.Suite.Fork({
-				name: "Launcher tests",
-				run: jsh.shell.jsh,
-				shell: environment.jsh.built.home,
-				script: environment.jsh.src.getFile("jsh/launcher/test/suite.jsh.js"),
-				arguments: [
-					"-scenario",
-					"-shell:unbuilt", environment.jsh.unbuilt.src,
-					"-shell:built", environment.jsh.built.home,
-					"-view", "stdio"
-				].concat(rhinoArgs)
-			});
-
-			suite.add("jsh/launcher/suite", part);
-
 			suite.add("jsh/launcher/internal", new jsh.unit.html.Part({
 				pathname: environment.jsh.src.getRelativePath("jsh/launcher/internal.api.html"),
 				environment: environment
@@ -205,7 +150,7 @@
 			environment: environment
 		}));
 
-		if (!isDocker) suite.add("jsh/jsh.tools.install", new jsh.unit.html.Part({
+		suite.add("jsh/jsh.tools.install", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jsh/tools/install/plugin.jsh.api.html")
 		}));
 
@@ -243,10 +188,6 @@
 			environment: environment
 		}));
 
-		suite.add("jsh/jsh.tools", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/plugin.jsh.jsh.tools.api.html")
-		}));
-
 		suite.add("jsh-tools", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jsh/tools/internal.api.html"),
 			environment: environment
@@ -262,7 +203,7 @@
 			pathname: SRC.getRelativePath("jsh/unit/plugin.jsh.api.html")
 		}));
 		suite.add("testing/fifty", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/api/test/fifty/test/data/api.html")
+			pathname: SRC.getRelativePath("tools/fifty/test/data/api.html")
 		}));
 		//	TODO	disabling Bitbucket testing to try to get tests to pass after migration to GitHub. Examine to see whether there is
 		//			something still needed, something analogous still needed, or whether this can be discarded
@@ -375,7 +316,7 @@
 		};
 		suite.add("servlet/suite", servletPart);
 
-		if (!isDocker) suite.add("jsh/jsh.ui", new jsh.unit.html.Part({
+		suite.add("jsh/jsh.ui", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/ui/plugin.jsh.api.html")
 		}));
 

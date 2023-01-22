@@ -6,10 +6,7 @@
 
 namespace slime.jsh {
 	export interface Global {
-		shell: slime.jsh.shell.Exports & {
-			/** @deprecated */
-			getopts: slime.jsh.Global["script"]["getopts"]
-		}
+		shell: slime.jsh.shell.Exports
 	}
 }
 
@@ -19,7 +16,12 @@ namespace slime.jsh.shell {
 			exit: any
 			stdio: any
 			_getSystemProperties: () => slime.jrunscript.native.java.util.Properties
+
+			/**
+			 * Provides access to the shell's subshell implementation, allowing a new shell to be invoked within the same process.
+			 */
 			jsh: any
+
 			api: {
 				js: any
 				java: slime.jrunscript.host.Exports
@@ -31,6 +33,8 @@ namespace slime.jsh.shell {
 	}
 
 	type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
+
+	export type Echo = (message: string, mode?: { console?: (message: string) => void, stream?: any }) => void
 
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		/**
@@ -47,21 +51,37 @@ namespace slime.jsh.shell {
 			}
 		}
 
+		world: slime.jrunscript.shell.Exports["world"] & {
+			exit: slime.$api.fp.world.old.Action<number,void>
+		}
+
 		//	TODO	run.evaluate.wrap
-		exit: (code: number) => void
+		exit: (code: number) => never
+
+		/**
+		 * The standard I/O streams for this shell.
+		 */
 		stdio: {
+			//	TODO	originally this supported methods of Reader also, should it?
 			input: slime.jrunscript.runtime.io.InputStream
-			output: slime.jrunscript.runtime.io.OutputStream & {
-				write: any
-			}
-			error: slime.jrunscript.runtime.io.OutputStream & {
-				write: any
+			output: slime.jrunscript.shell.context.Console
+			error: slime.jrunscript.shell.context.Console
+		}
+
+		/** @deprecated Use {@link Exports["stdio"]["input"]} */
+		stdin: Exports["stdio"]["input"]
+		/** @deprecated Use {@link Exports["stdio"]["output"]} */
+		stdout: Exports["stdio"]["output"]
+		/** @deprecated Use {@link Exports["stdio"]["error"]} */
+		stderr: Exports["stdio"]["error"]
+
+		echo: Echo & {
+			String: (message: any) => string & {
+				undefined: string
+				null: string
 			}
 		}
-		echo: {
-			(message: any, mode?: any): void
-			String: any
-		}
+
 		console: (message: string) => void
 		//	TODO	shell?
 		rhino: any
@@ -78,9 +98,10 @@ namespace slime.jsh.shell {
 				directory?: any
 				workingDirectory?: any
 				properties?: { [x: string]: string }
+				on?: slime.jrunscript.shell.run.old.Argument["on"]
 			}): any
 			src?: slime.jrunscript.file.Directory
-			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.events.Function.Receiver ) => void
+			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.event.Function.Receiver ) => void
 			lib?: slime.jrunscript.file.Directory
 			home?: slime.jrunscript.file.Directory
 			relaunch: () => void
@@ -89,20 +110,8 @@ namespace slime.jsh.shell {
 			url: any
 		}
 		HOME: slime.jrunscript.file.Directory
-		PATH: any
-		browser: slime.jrunscript.shell.browser.Exports
+		PATH: slime.jrunscript.file.Searchpath
 		listeners: any
-		system: {
-			apple: {
-				plist: {
-					xml: {
-						encode: Function
-						decode: Function
-					}
-				}
-			}
-			opendesktop: any
-		},
 		tools: jsh.shell.tools.Exports
 	}
 }

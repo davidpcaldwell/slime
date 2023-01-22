@@ -40,7 +40,7 @@
 		 * @returns { slime.jsh.httpd.Tomcat }
 		 */
 		var Server = function(p) {
-			var server = new jsh.httpd.Tomcat({
+			var server = jsh.httpd.Tomcat({
 				port: (p.port) ? p.port : void(0),
 				https: p.https
 			});
@@ -78,7 +78,7 @@
 						var lock = new jsh.java.Thread.Monitor();
 
 						var notify = function() {
-							new lock.Waiter({
+							lock.Waiter({
 								until: function() {
 									return true;
 								},
@@ -107,7 +107,7 @@
 											};
 
 											this.run = function() {
-												return new lock.Waiter({
+												return lock.Waiter({
 													until: function() {
 														return finished;
 													},
@@ -133,7 +133,7 @@
 							notify();
 						});
 
-						return new lock.Waiter({
+						return lock.Waiter({
 							until: function() {
 								return process;
 							},
@@ -214,7 +214,7 @@
 					}),
 					on: {
 						close: function(p) {
-							new lock.Waiter({
+							lock.Waiter({
 								until: function() {
 									return true;
 								},
@@ -225,7 +225,7 @@
 						}
 					}
 				});
-				new lock.Waiter({
+				lock.Waiter({
 					until: function() {
 						return closed;
 					},
@@ -331,7 +331,7 @@
 			};
 		};
 
-		$exports.Application = $api.Events.Function(function(p,events) {
+		$exports.Application = $api.events.Function(function(p,events) {
 			return Application(p,events);
 		});
 	}

@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.runtime.internal.events.Context } $context
-	 * @param { slime.loader.Export<slime.runtime.internal.events.Export> } $export
+	 * @param { slime.loader.Export<slime.runtime.internal.events.Exports> } $export
 	 */
 	function($context,$export) {
 		/**
@@ -132,20 +132,28 @@
 			}
 		};
 
-		var ListenersInvocationReceiver = function(on) {
+		var attach = function(events,handler) {
+			for (var x in handler) {
+				events.listeners.add(x,handler[x]);
+			}
+		};
+
+		var detach = function(events,handler) {
+			for (var x in handler) {
+				events.listeners.remove(x,handler[x]);
+			}
+		}
+
+		var ListenersInvocationReceiver = function(handler) {
 			var source = {};
 			var events = new Emitter({ source: source });
 
 			this.attach = function() {
-				for (var x in on) {
-					source.listeners.add(x,on[x]);
-				}
+				attach(events,handler);
 			};
 
 			this.detach = function() {
-				for (var x in on) {
-					source.listeners.remove(x,on[x]);
-				}
+				detach(events,handler);
 			};
 
 			this.emitter = events;
@@ -178,10 +186,7 @@
 			}
 		};
 
-		/**
-		 *
-		 * @param { Parameters<slime.$api.fp.Exports["impure"]["ask"]>[0] } f
-		 */
+		/** @type { slime.runtime.internal.events.Exports["ask"] } */
 		function ask(f) {
 			var rv = function(on) {
 				var receiver = new ListenersInvocationReceiver(on);
@@ -195,10 +200,7 @@
 			return rv;
 		}
 
-		/**
-		 *
-		 * @param { Parameters<slime.$api.fp.Exports["impure"]["tell"]>[0] } f
-		 */
+		/** @type { slime.runtime.internal.events.Exports["tell"] } */
 		function tell(f) {
 			var rv = function(on) {
 				var receiver = new ListenersInvocationReceiver(on);
@@ -213,22 +215,26 @@
 		}
 
 		$export({
-			/**
-			 * @param { Parameters<slime.$api.Global["Events"]>[0] } p
-			 */
-			create: function(p) {
-				return new Emitter(p);
-			},
-			Function: listening,
-			//@ts-ignore
-			ask: ask,
-			//@ts-ignore
-			tell: tell,
-			toHandler: function(handler) {
-				return new ListenersInvocationReceiver(handler);
-			},
-			action: function(f) {
-				return function(handler) {
+			api: {
+				create: function(p) {
+					return new Emitter(p);
+				},
+				Function: listening,
+				toListener: function(handler) {
+					return new ListenersInvocationReceiver(handler);
+				},
+				action: function(f) {
+					return function(handler) {
+						var invocationReceiver = new ListenersInvocationReceiver(handler);
+						invocationReceiver.attach();
+						try {
+							return f.call( this, invocationReceiver.emitter );
+						} finally {
+							invocationReceiver.detach();
+						}
+					}
+				},
+				invoke: function(f,handler) {
 					var invocationReceiver = new ListenersInvocationReceiver(handler);
 					invocationReceiver.attach();
 					try {
@@ -236,8 +242,17 @@
 					} finally {
 						invocationReceiver.detach();
 					}
+				},
+				Handler: {
+					attach: function(events) {
+						return function(handler) {
+							attach(events,handler);
+						}
+					}
 				}
-			}
+			},
+			ask: ask,
+			tell: tell
 		});
 	}
 //@ts-ignore

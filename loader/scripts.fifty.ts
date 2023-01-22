@@ -10,23 +10,30 @@ namespace slime.runtime.internal.scripts {
 		$platform: slime.runtime.$platform
 		$engine: slime.runtime.internal.Engine
 		$api: slime.$api.Global
-		mime: slime.runtime.Exports["mime"]
-		mimeTypeIs: (type: string) => (type: slime.mime.Type) => boolean
 	}
 
 	export interface Exports {
 		methods: {
-			run: (code: slime.Resource, scope: { [name: string]: any }) => void
-			value: (code: slime.Resource, scope: { [name: string]: any }) => any
-			file: (code: slime.Resource, context: { [name: string]: any }) => { [x: string]: any }
+			run: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
+			old: {
+				run: (code: slime.Resource, scope: { [name: string]: any }) => void
+				value: (code: slime.Resource, scope: { [name: string]: any }) => any
+				file: (code: slime.Resource, context: { [name: string]: any }) => { [x: string]: any }
+			}
 		}
-		toExportScope: slime.runtime.Exports["Loader"]["tools"]["toExportScope"]
-		createScriptScope: createScriptScope
+
+		toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
+
+		createScriptScope: <C extends { [x: string]: any },T>($context: C) => {
+			$context: C
+			$export: (t: T) => void
+			$exports: T
+		}
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 

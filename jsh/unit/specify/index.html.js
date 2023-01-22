@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-window.addEventListener('load', function() {
+window.addEventListener("load", function() {
 	//	TODO	CORS
 	document.domain = document.domain;
 

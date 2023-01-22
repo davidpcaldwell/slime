@@ -7,16 +7,20 @@
 //@ts-check
 (
 	/**
+	 * @typedef { slime.jrunscript.runtime.internal.nashorn.Nashorn | slime.jrunscript.runtime.internal.nashorn.Graal } Bootstrap
+	 */
+	/**
 	 *
 	 * @param { slime.jrunscript.runtime.internal.nashorn.load } load
 	 * @param { slime.jrunscript.runtime.Java } Java
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.runtime.sync } sync
-	 * @param { slime.jrunscript.runtime.nashorn.Scope["$graal"] } $graal
-	 * @param { slime.jrunscript.runtime.nashorn.Scope["$loader"] } $loader
-	 * @returns { slime.jrunscript.runtime.Exports | slime.jrunscript.runtime.internal.nashorn.Nashorn | slime.jrunscript.runtime.internal.nashorn.Graal }
+	 * @param { any } $nashorn
+	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["$graal"] } $graal
+	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["$loader"] } $loader
+	 * @returns { slime.jrunscript.runtime.Nashorn | slime.jrunscript.runtime.Graal | Bootstrap }
 	 */
-	function(load,Java,Packages,sync,$graal,$loader) {
+	function(load,Java,Packages,sync,$nashorn,$graal,$loader) {
 		//	TODO	this function is called twice or something with different semantics, that's why its return type is so strange.
 		//			should figure out how this works and write it up.
 
@@ -93,10 +97,70 @@
 			 * @returns { slime.jrunscript.runtime.internal.nashorn.Nashorn }
 			 */
 			function() {
-				var Context = Java.type("jdk.nashorn.internal.runtime.Context");
+				var types = {
+					Context: Java.type("jdk.nashorn.internal.runtime.Context"),
+					Source: Java.type("jdk.nashorn.internal.runtime.Source"),
+					ScriptObject: Java.type("jdk.nashorn.internal.runtime.ScriptObject")
+				};
+
+				var Context = types.Context;
+				var Source = types.Source;
+				var ScriptObject = types.ScriptObject;
+
+				var getReflectionMethod = function(type,name,signature) {
+					if (signature) {
+						var $signature = new (Java.type("java.lang.Class[]"))(signature.length);
+						for (var i=0; i<signature.length; i++) {
+							$signature[i] = Java.type(signature[i]).class;
+						}
+						try {
+							return type.class.getMethod(name, $signature);
+						} catch (e) {
+							Packages.java.lang.System.err.println("Not found: " + name + " in " + type + " with signature: " + signature);
+							Packages.java.lang.System.err.println(e);
+							return null;
+						}
+					} else {
+						try {
+							return type.class.getMethod(name);
+						} catch (e) {
+							Packages.java.lang.System.err.println("Not found: " + name + " in " + type);
+							Packages.java.lang.System.err.println(e);
+							return null;
+						}
+					}
+				}
+
+				var methodExists = function(type,name,signature) {
+					if (type[name]) return true;
+					var reflection = getReflectionMethod(type, name, signature);
+					return Boolean(reflection);
+				}
+
+				if (!Context.getContext) {
+					Context = {
+						"class": types.Context.class,
+						getContext: function() {
+							var getContext = getReflectionMethod(types.Context, "getContext");
+							var delegate = getContext.invoke(null);
+							return {
+								compileScript: function(source,scope) {
+									return $nashorn.compileScript(delegate, source, scope);
+								}
+							};
+						}
+					}
+
+					Source = {
+						"class": types.Source.class,
+						sourceFor: (methodExists(types.Source, "sourceFor", ["java.lang.String", "java.lang.String"])) ? function sourceFor(name, code) {
+							var method = getReflectionMethod(types.Source, "sourceFor", ["java.lang.String","java.lang.String"]);
+							return method.invoke(null, name, code);
+						} : void(0)
+					}
+				}
 
 				var toSource = function(name,code) {
-					var Source = Java.type("jdk.nashorn.internal.runtime.Source");
 					if (Source.sourceFor) return Source.sourceFor(name,code);
 					return new Source(name,code);
 				};
@@ -106,7 +170,8 @@
 				//	those may have been caused by loading multiple scripts with the same name, so should also test that possibility.
 				var compile = function(name,code,scope,target) {
 					var compiled = Context.getContext().compileScript(toSource(name,code),scope);
-					return Packages.jdk.nashorn.internal.runtime.ScriptRuntime.apply(compiled,target);
+					//return Packages.jdk.nashorn.internal.runtime.ScriptRuntime.apply(compiled,target);
+					return $nashorn.apply(compiled,target);
 				};
 
 				var evaluateSource;
@@ -117,8 +182,7 @@
 				var old = function(name,code,scope,target) {
 					if (!evaluateSource) {
 						var evaluateSourceSignature = new (Java.type("java.lang.Class[]"))(3);
-						var ScriptObject = Java.type("jdk.nashorn.internal.runtime.ScriptObject");
-						evaluateSourceSignature[0] = Java.type("jdk.nashorn.internal.runtime.Source").class;
+						evaluateSourceSignature[0] = Source.class;
 						evaluateSourceSignature[1] = ScriptObject.class;
 						evaluateSourceSignature[2] = ScriptObject.class;
 						evaluateSource = Context.class.getDeclaredMethod("evaluateSource", evaluateSourceSignature);
@@ -320,4 +384,4 @@
 		}
 	}
 //@ts-ignore
-)(load,(function() { return this; })().Java,Packages,(function() { return this; })().sync,$graal,$loader)
+)(load,(function() { return this; })().Java,Packages,(function() { return this; })().sync,$nashorn,$graal,$loader)

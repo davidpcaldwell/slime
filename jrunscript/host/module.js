@@ -7,39 +7,16 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { any } JavaAdapter
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.host.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jrunscript.host.Exports } $exports
-	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
 	 */
-	function($api,$context,$loader,$exports,Packages,JavaAdapter) {
-		//	TODO	Document these three, when it is clear how to represent host objects in the documentation; or we provide JavaScript
-		//	objects to wrap Java classes, which may be a better approach
-		//$exports.getClass = $api.Function({
-		//	before: $api.Function.argument.isString({ index: 0, name: "name" }),
-		//	call: function(name) {
-		//		if ($context.$slime.classpath.getClass(name)) {
-		//			return $context.$slime.java.getJavaPackagesReference(name);
-		//		}
-		//		return null;
-		//	}
-		//});
+	function(Packages,JavaAdapter,$api,$context,$loader,$exports) {
 		$exports.getClass = $context.$slime.java.getClass;
 
-		//var isJavaObject = function(object) {
-		//	if (typeof(object) == "undefined") return false;
-		//	if (typeof(object) == "string") return false;
-		//	if (typeof(object) == "number") return false;
-		//	if (typeof(object) == "boolean") return false;
-		//	if (object == null) return false;
-		//	//	TODO	Is the next line superfluous now?
-		//	if ($context.$slime.java.isJavaObjectArray(object)) return true;
-		//	if ($context.$slime.java.isJavaInstance(object)) return true;
-		//	return false;
-		//}
-		//$exports.isJavaObject = isJavaObject;
 		var isJavaObject = $context.$slime.java.isJavaObject;
 		$exports.isJavaObject = isJavaObject;
 
@@ -80,9 +57,9 @@
 		$exports.Array = JavaArray;
 
 		$exports.Map = function(o) {
-			return $api.Function.result(
+			return $api.fp.result(
 				o.object,
-				$api.Function.Object.entries,
+				Object.entries,
 				function(entries) {
 					return entries.reduce(function(rv,entry) {
 						rv.put(entry[0],entry[1]);
@@ -371,312 +348,20 @@
 		}).log;
 
 		/**
-		 * @constructor
-		 * @param { any } [factory]
+		 * @type { (java: slime.jrunscript.runtime.Exports["java"]) => java is slime.jrunscript.runtime.MultithreadedJava }
 		 */
-		var Thread = function(p,factory) {
-			var synchronize = (function() {
-				//	This entire construct (synchronize, synchronize.lock) exists just to support join()
-				var lock = new Packages.java.lang.Object();
-				var rv = function(f) {
-					return $context.$slime.java.sync(f,lock);
-				};
-				rv.lock = lock;
-				return rv;
-			})();
-
-			var done = false;
-
-			//	TODO	replace with Java logging; currently there is no way to enable this debugging without changing this file
-			var debug = function(m) {
-				//	TODO	below property could never be set in existing code
-				if (false /* arguments.callee.on */) {
-					Packages.java.lang.System.err.println(m);
-				}
-			}
-
-			var runnable = new function() {
-				this.run = function() {
-					try {
-						var rv = p.call();
-						if (!done) {
-							synchronize(function() {
-								if (p.on && p.on.result) {
-									p.on.result(rv);
-								}
-								debug("Returned: " + thread);
-								done = true;
-								synchronize.lock.notifyAll();
-							})();
-						}
-					} catch (e) {
-						var error = e;
-						if (!done) {
-							synchronize(function() {
-								if (p.on && p.on.error) {
-									p.on.error(error);
-								}
-								debug("Threw: " + thread);
-								done = true;
-								synchronize.lock.notifyAll();
-							})();
-						}
-					}
-				}
-			}
-
-			var _runnable = new JavaAdapter(Packages.java.lang.Runnable,runnable);
-			var thread = (factory) ? factory(_runnable) : new Packages.java.lang.Thread(_runnable);
-
-			thread.start();
-
-			if (p && p.timeout) {
-				debug("Starting timeout thread for " + thread + " ...");
-				new Thread({
-					call: function() {
-						debug(thread + ": Sleeping for " + p.timeout);
-						Packages.java.lang.Thread.sleep(p.timeout);
-						debug(thread + ": Waking from sleeping for " + p.timeout);
-						if (!done) {
-							synchronize(function() {
-								if (p.on && p.on.timeout) {
-									p.on.timeout();
-								}
-								debug("Timed out: " + thread);
-								done = true;
-								synchronize.lock.notifyAll();
-							})();
-						}
-					}
-				});
-			}
-
-			this.join = function() {
-				synchronize(function() {
-					debug("Waiting for " + thread);
-					while(!done) {
-						debug("prewait done = " + done + " for " + thread);
-						synchronize.lock.wait();
-						debug("postwait done = " + done + " for " + thread);
-					}
-				})();
-				debug("Done waiting for " + thread);
-			};
+		var isMultithreaded = function(java) {
+			return Boolean(java["sync"]);
 		};
 
-		$exports.Thread = {};
-		$exports.Thread.setContextClassLoader = function(p) {
-			if (!p) p = {};
-			if (!p._thread) p._thread = Packages.java.lang.Thread.currentThread();
-			if (p._classLoader) {
-				p._thread.setContextClassLoader(p._classLoader);
-			} else {
-				$context.$slime.classpath.setAsThreadContextClassLoaderFor(p._thread);
-			}
-		};
-		$exports.Thread.start = function(p,factory) {
-			return new Thread(p,factory);
-		}
-		$exports.Thread.run = function(p) {
-			var on = new function() {
-				var result = {};
+		var java = $context.$slime.java;
 
-				this.result = function(rv) {
-					result.returned = { value: rv };
-				}
-
-				this.error = function(t) {
-					result.threw = t;
-				}
-
-				this.timeout = function() {
-					result.timedOut = true;
-				}
-
-				this.evaluate = function() {
-					if (result.returned) return result.returned.value;
-					if (result.threw) throw result.threw;
-					if (result.timedOut) throw $exports.Thread.run.TIMED_OUT;
-				}
-			};
-			var o = {};
-			for (var x in p) {
-				o[x] = p[x];
-			}
-			o.on = on;
-			var t = new Thread(o);
-			t.join();
-			return on.evaluate();
-		};
-		//	TODO	make the below a subtype of Error
-		$exports.Thread.run.__defineGetter__("TIMED_OUT", (function() {
-			//	TODO	this indirection is necessary because Rhino debugger pauses when constructing new Error() if set to break on errors
-			var cached;
-			return function() {
-				if (!cached) {
-					cached = new Error("Timed out.");
-				}
-				return cached;
-			}
-		})());
-		$exports.Thread.thisSynchronize = function(f) {
-			//	TODO	deprecate when Rhino 1.7R3 released; use two-argument version of the Synchronizer constructor in a new method called
-			//			synchronize()
-			return $context.$slime.java.thisSynchronize(f);
-		};
-		$exports.Thread.Monitor = function() {
-			var lock = new Packages.java.lang.Object();
-
-			this.toString = function() {
-				return "Thread.Monitor [id=" + Packages.java.lang.System.identityHashCode(lock) + "]";
-			}
-
-			//	TODO	repetition: this is also in Thread constructor
-			var synchronize = function(f) {
-				return $context.$slime.java.sync(f, lock);
-			};
-
-			this.Waiter = function(c) {
-				if (!c.until) {
-					c.until = function() {
-						return true;
-					};
-				}
-				if (!c.then) {
-					c.then = function() {
-					};
-				}
-				return synchronize(function() {
-					while(!c.until.apply(this,arguments)) {
-						lock.wait();
-					}
-					var rv = c.then.apply(this,arguments);
-					lock.notifyAll();
-					return rv;
-				});
-			};
-		};
-		$exports.Thread.Task = function(p) {
-			var rv = function x(tell) {
-				//	TODO	below causes TypeScript error. Unclear what this line of code does, but tests do not pass without it.
-				x.p = p;
-				if (tell) {
-					$exports.Thread.start({
-						call: function() {
-							var result;
-							try {
-								result = { returned: p.call() }
-							} catch (e) {
-								result = { threw: e }
-							}
-							if (tell.length == 2) {
-								tell(result.threw, result.returned);
-							} else {
-								tell(result);
-							}
-						}
-					});
-				} else {
-					return p.call();
-				}
-			};
-			rv.p = void(0);
-			return rv;
-		};
-
-		$exports.Thread.forkJoin = function(functions) {
-			var rv = functions.map(function(){});
-			var threads = functions.map(function(f,index) {
-				return $exports.Thread.start({
-					call: f,
-					on: {
-						result: function(returned) {
-							rv[index] = returned;
-						},
-						error: function(error) {
-							throw error;
-						}
-					}
-				});
+		if (isMultithreaded(java)) {
+			$exports.Thread = $loader.module("threads.js", {
+				java: java,
+				log: $exports.log.named("jrunscript.host"),
+				classpath: $context.$slime.classpath
 			});
-			threads.forEach(function(thread) {
-				thread.join();
-			});
-			return rv;
-		};
-
-		$exports.Thread.map = function(array,mapper,target,p) {
-			if (!target) target = {};
-			if (!p) p = {};
-			if (!p.callback) p.callback = function() {};
-			var rv = [];
-			var lock = new $exports.Thread.Monitor();
-			var running = 0;
-			var completed = 0;
-			var threads = [];
-			var fail = false;
-			var computation = function(index) {
-				return function() {
-					new lock.Waiter({
-						until: function() {
-							if (!p.limit) return true;
-							return running < p.limit;
-						},
-						then: function() {
-							running++;
-						}
-					})();
-					var toThrow;
-					try {
-						rv[index] = mapper.call(target,array[index]);
-					} catch (e) {
-						toThrow = e;
-						fail = true;
-					}
-					new lock.Waiter({
-						until: function() {
-							return true;
-						},
-						then: function() {
-							running--;
-							completed++;
-						}
-					})();
-					if (toThrow) {
-						throw toThrow;
-					}
-				}
-			};
-			for (var i=0; i<array.length; i++) {
-				threads.push($exports.Thread.start({
-					call: computation(i),
-					on: {
-						//	TODO	can the below callback structure be combined with the Tell construct?
-						error: (function(index) {
-							return function(e) {
-								fail = true;
-								p.callback({ completed: completed, running: running, index: index, threw: e });
-							}
-						})(i),
-						result: (function(index) {
-							return function(rv) {
-								p.callback({ completed: completed, running: running, index: index, returned: rv });
-							}
-						})(i)
-					}
-				}));
-			}
-			for (var i=0; i<threads.length; i++) {
-				threads[i].join();
-			}
-			if (fail) {
-				throw new Error("Failed.");
-			}
-			return rv;
-		};
-
-		$exports.Thread.sleep = function(milliseconds) {
-			Packages.java.lang.Thread.sleep(milliseconds);
 		}
 
 		$exports.Environment = function(_environment) {
@@ -686,7 +371,7 @@
 			while(i.hasNext()) {
 				var name = String(i.next());
 				var value = String(_environment.getValue(name));
-				Object.defineProperty(rv, name, { value: value, enumerable: true });
+				Object.defineProperty(rv, name, { value: value, enumerable: true, configurable: true });
 				//	The below handling of case sensitivity deals with GraalVM unwrapping java.lang.Boolean to JavaScript boolean,
 				//	while Nashorn and Rhino do not (untested, but the code below should have broken if not?)
 				var isCaseSensitiveObject;
@@ -716,4 +401,4 @@
 		}
 	}
 //@ts-ignore
-)($api,$context,$loader,$exports,Packages,JavaAdapter)
+)(Packages,JavaAdapter,$api,$context,$loader,$exports)

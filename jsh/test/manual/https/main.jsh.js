@@ -14,12 +14,12 @@
 	function($api,jsh) {
 		var port = jsh.ip.getEphemeralPort().number;
 		var invocation = jsh.script.cli.invocation(
-			$api.Function.pipe(
+			$api.fp.pipe(
 				jsh.script.cli.option.pathname({ longname: "keystore" }),
 				jsh.script.cli.option.string({ longname: "password" })
 			)
 		)
-		var tomcat = new jsh.httpd.Tomcat({
+		var tomcat = jsh.httpd.Tomcat({
 			https: {
 				port: port,
 				keystore: {

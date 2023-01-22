@@ -2,15 +2,59 @@
 			/**
 			 * Creates a <i>Loader</i>. A Loader loads resources from a specified source.
 			 */
+
 ===
 			/**
 			 * Creates a *Loader*. A Loader loads resources from a specified source.
 			 */
+
 ===
 { "tabSize": 4, "lineLength": 132 }
 			 * Allows the loader to customize the way child sources are created when creating child loaders. if omitted, a child that delegates requests back to the parent, prepended by the
 									child's path, will be created
+
 ===
 			 * Allows the loader to customize the way child sources are created when creating child loaders. if omitted, a child
 			 * that delegates requests back to the parent, prepended by the child's path, will be created
+
+===
+{ "tabSize": 4, "lineLength": 132 }
+				 * 								The created loaders currently have the following limitations:
+								<!--	TODO	address them	-->
+								<ul>
+									<li>They are not enumerable</li>
+									<li>They do not respect the <code>.child</code> implementations of their elements</li>
+									<li>They do not provide a sensible <code>.toString</code> implementation.</li>
+								</ul>
+
+===
+				 * The created loaders currently have the following limitations: <!---	TODO	address them	--->
+				 *
+				 * * They are not enumerable
+				 * * They do not respect the `.child` implementations of their elements
+				 * * They do not provide a sensible `.toString` implementation.
+
+===
+{ "tabSize": 4, "lineLength": 132 }
+		 * Returns the resource associated with a given path, by invoking the <code>get</code> method of this
+									loader's <code>source</code>.
+
+===
+		 * Returns the resource associated with a given path, by invoking the `get` method of this loader's `source`.
+
+===
+{ "tabSize": 4, "lineLength": 132 }
+The object to use as the <code>this</code> value when executing the code.
+===
+The object to use as the `this` value when executing the code.
+===
+{ "tabSize": 4, "lineLength": 132 }
+		 * <a href="https://example.com/foo">The Big Foo</a> is awesome!
+===
+		 * [The Big Foo](https://example.com/foo) is awesome!
+===
+{ "tabSize": 4, "lineLength": 132 }
+		 * I <strong>really</strong> think so.
+===
+		 * I **really** think so.
 ===

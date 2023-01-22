@@ -15,14 +15,14 @@ namespace slime.jrunscript.file.test {
 		}
 		context: slime.jrunscript.file.Context & { $Context: any }
 		module: Exports
-		newTemporaryDirectory: any
-		createFile: any
-		createDirectory: any
+		newTemporaryDirectory: (filesystem?: any) => slime.jrunscript.file.Directory
+		createFile: (base: Directory, name: string, length?: number) => File
+		createDirectory: (base: Directory, name: string) => Directory
 	}
 
 	export namespace fixtures {
 		export interface Context {
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		}
 
 		export type Script = slime.loader.Script<Context,Fixtures>
@@ -51,7 +51,8 @@ namespace slime.jrunscript.file.test {
 								return dir;
 							};
 
-							return function() {
+							return function(filesystem?: any) {
+								if (filesystem && filesystem === module.filesystems.cygwin) throw new TypeError("filesystem is cyginw");
 								if (!tmpdir) tmpdir = tmppath();
 								var rv = Packages.java.io.File.createTempFile("tmpdir-",".tmp",tmpdir);
 								rv["delete"]();
@@ -121,7 +122,7 @@ namespace slime.jrunscript.file.test {
 				)
 			)(void(0))
 
-			const module = fifty.$loader.module("module.js", context);
+			const module: Exports = fifty.$loader.module("module.js", context);
 
 			let filesystem: Filesystem;
 
@@ -135,8 +136,8 @@ namespace slime.jrunscript.file.test {
 
 				//	Although this is equivalent to jsh.file.TMP.createTemporary({ directory: true }), we use a separate copy here because we want the
 				//	calls to go to the module being tested, not the module executing the test environment
-				this.newTemporaryDirectory = function(): Directory {
-					var $dir: slime.jrunscript.native.java.io.File = $jsapi.java.io.newTemporaryDirectory();
+				this.newTemporaryDirectory = function(fs?: any): Directory {
+					var $dir: slime.jrunscript.native.java.io.File = $jsapi.java.io.newTemporaryDirectory(fs);
 					return filesystem.java.adapt($dir).directory;
 //					return scope.filesystem.$unit.Pathname(scope.filesystem.$unit.getNode($dir)).directory;
 				}

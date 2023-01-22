@@ -56,7 +56,12 @@ public class Main {
 			String host = "raw.githubusercontent.com";
 			if (string.startsWith("http://" + host) || string.startsWith("https://" + host)) {
 				try {
-					if (string.indexOf("//raw.githubusercontent.com/davidpcaldwell/slime/master/") != -1) {
+					String githubUrlPortion = "//raw.githubusercontent.com/davidpcaldwell/slime/";
+					if (string.indexOf(githubUrlPortion) != -1) {
+						int branchIndex = string.indexOf(githubUrlPortion) + githubUrlPortion.length();
+						int branchEnd = string.substring(branchIndex).indexOf("/");
+						String branch = string.substring(branchIndex, branchIndex + branchEnd);
+						//System.err.println("branch = " + branch);
 						String protocol = "https";
 						if (System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL") != null) {
 							protocol = System.getenv("JSH_LAUNCHER_GITHUB_PROTOCOL");
@@ -70,7 +75,7 @@ public class Main {
 								throw new RuntimeException(e);
 							}
 						}
-						return Code.Loader.github(new java.net.URL(protocol + "://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip"), "slime-master");
+						return Code.Loader.github(new java.net.URL(protocol + "://github.com/davidpcaldwell/slime/archive/refs/heads/" + branch + ".zip"), "slime-" + branch);
 						//	Below is older API that "works" in the sense that it requests the correct URLs etc. but is horrendously
 						//	inefficient and switfly hits a GitHub API rate limit
 						//	return Code.Loader.githubApi(new URL(string));
@@ -245,11 +250,17 @@ public class Main {
 		abstract File getLibraryDirectory();
 
 		final File getLibraryFile(String path) {
+			//	issue #896
+			boolean issue896 = path.equals("node/bin/tsc") && System.getenv("SLIME_DEBUG_ISSUE_896") != null;
 			if (lib == null) {
+				if (issue896) System.err.println("Finding library directory ...");
 				lib = getLibraryDirectory();
+				if (issue896) System.err.println("Library directory = " + getLibraryDirectory());
 			}
 			if (lib != null) {
 				File rv = new File(lib, path);
+				if (issue896) System.err.println("java.io.File = " + rv);
+				if (issue896) System.err.println("tsc exists = " + rv.exists());
 				if (rv.exists()) return rv;
 			}
 			return null;

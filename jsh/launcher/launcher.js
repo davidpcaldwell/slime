@@ -299,18 +299,19 @@
 					var args = [
 						"-Xlint:unchecked",
 						"-Xlint:deprecation",
+					].concat(sourceArguments).concat(targetArguments).concat([
 						"-d", p.to.getAbsolutePath()
-					].concat(classpathArguments).concat(sourceArguments).concat(targetArguments);
+					]).concat(classpathArguments);
 					//	TODO	we used to use .concat(toCompile) but that does not work under Nashorn 8u45, which is presumably a Nashorn
 					//			bug
 					for (var i=0; i<toCompile.length; i++) {
-						args.push(toCompile[i].getCanonicalPath());
+						args.push(String(toCompile[i].getCanonicalPath()));
 					}
 					$$api.java.install.compile(args);
 					return p.to;
 				};
 
-				this.shellClasspath = function() {
+				this.shellClasspath = function(p) {
 					var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
 
 					if (!$$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
@@ -323,7 +324,9 @@
 							$$api.debug("Found already-compiled files.");
 						} else {
 							this.compileLoader({
-								to: LOADER_CLASSES
+								to: LOADER_CLASSES,
+								source: p.source,
+								target: p.target
 							});
 						}
 					} else {

@@ -36,7 +36,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { jsh } = fifty.global;
 			const { verify, run } = fifty;
@@ -155,7 +155,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 		}
 	//@ts-ignore
@@ -164,13 +164,13 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const jsh = fifty.global.jsh;
 
 			fifty.tests.world = function() {
 				var searchpath = jsh.file.Searchpath([
-					fifty.$loader.getRelativePath(".")
+					fifty.jsh.file.object.getRelativePath(".")
 				]);
 				jsh.shell.console(searchpath.toString());
 				jsh.shell.console(String(searchpath.pathnames.length));
@@ -183,7 +183,7 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { run } = fifty;
 

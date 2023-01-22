@@ -8,7 +8,7 @@ name: metrics
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   jsapi:
     name: JSAPI-to-Fifty progress
@@ -29,11 +29,23 @@ jobs:
         run: env JSH_LAUNCHER_JDK_HOME=$JAVA_HOME_8_X64 JSH_JAVA_HOME=$JAVA_HOME_8_X64 ./jsh.bash contributor/metrics.jsh.js types
         shell: bash
   eslint:
-    name: "ESLint"
+    name: ESLint
+    runs-on: macos-11
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Run ESLint's default command
+        run: env JSH_LAUNCHER_JDK_HOME=$JAVA_HOME_8_X64 JSH_JAVA_HOME=$JAVA_HOME_8_X64 ./jsh.bash contributor/eslint.jsh.js
+        shell: bash
+      - name: Run the ESLint warning report
+        run: env JSH_LAUNCHER_JDK_HOME=$JAVA_HOME_8_X64 JSH_JAVA_HOME=$JAVA_HOME_8_X64 ./jsh.bash contributor/eslint-report.jsh.js
+        shell: bash
+  size:
+    name: List source files exceeding maximum number of lines
     runs-on: macos-11
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Run the script
-        run: env JSH_LAUNCHER_JDK_HOME=$JAVA_HOME_8_X64 JSH_JAVA_HOME=$JAVA_HOME_8_X64 ./jsh.bash contributor/eslint.jsh.js
+        run: env JSH_LAUNCHER_JDK_HOME=$JAVA_HOME_8_X64 JSH_JAVA_HOME=$JAVA_HOME_8_X64 ./jsh.bash contributor/metrics.jsh.js size
         shell: bash

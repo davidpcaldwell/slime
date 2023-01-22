@@ -16,13 +16,13 @@
 	function(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install);
+				return Boolean(jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install && plugins.scala);
 			},
 			load: function() {
 				/**
 				 * @type { slime.jsh.shell.Exports["tools"]["rhino"]["install"] }
 				 */
-				var installRhino = $api.Events.Function(
+				var installRhino = $api.events.Function(
 					function(p,events) {
 						if (!p) p = {};
 						var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
@@ -82,6 +82,7 @@
 					kotlin: void(0),
 					jsyaml: void(0),
 					mkcert: void(0),
+					selenium: void(0),
 					node: void(0),
 					javamail: void(0),
 					jsoup: void(0),
@@ -91,7 +92,7 @@
 
 				jsh.shell.tools.rhino = {
 					install: installRhino,
-					require: $api.Events.Function(function(p,events) {
+					require: $api.events.Function(function(p,events) {
 						jsh.shell.jsh.require({
 							satisfied: function() { return Boolean(jsh.shell.jsh.lib.getFile("js.jar")); },
 							install: function() { return installRhino(p); }
@@ -109,67 +110,6 @@
 					$api.deprecate(jsh.tools.install,"rhino");
 				})();
 
-				var graal = new function() {
-					var VERSION = {
-						number: "21.0.0.2",
-						jdk: "8",
-						edition: "ce"
-					};
-					this.install = $api.Events.Function(function(p,events) {
-						if (jsh.shell.os.name == "Mac OS X") {
-							jsh.tools.install.install({
-								url: "https://github.com/graalvm/graalvm-ce-builds/releases/download/"
-									+ "vm-" + VERSION.number + "/"
-									+ "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
-								,
-								getDestinationPath: function(file) {
-									return "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + VERSION.number;
-								},
-								to: jsh.shell.jsh.lib.getRelativePath("graal")
-							});
-						} else {
-							throw new Error("Unsupported: os " + jsh.shell.os.name);
-						}
-					});
-				};
-
-				jsh.shell.tools.graal = graal;
-
-				var tomcat = $loader.file("plugin.jsh.tomcat.js", {
-					$api: jsh.tools.install.$api,
-					jsh: jsh
-				});
-				jsh.shell.tools.tomcat = tomcat;
-
-				(function deprecated() {
-					jsh.tools.tomcat = tomcat;
-					$api.deprecate(jsh.tools,"tomcat");
-					jsh.tools.install["tomcat"] = tomcat;
-					$api.deprecate(jsh.tools.install,"tomcat");
-				})();
-
-				var gradle = (function() {
-					var URL = "https://services.gradle.org/distributions/gradle-6.8-bin.zip";
-
-					return new function() {
-						this.install = function(p,events) {
-							jsh.tools.install.install({
-								url: URL,
-								format: jsh.tools.install.format.zip,
-								to: jsh.shell.jsh.lib.getRelativePath("gradle"),
-								getDestinationPath: function(file) {
-									return "gradle-6.8";
-								},
-								replace: true
-							}, events);
-							jsh.shell.run({
-								command: "chmod",
-								arguments: ["+x", jsh.shell.jsh.lib.getSubdirectory("gradle").getFile("bin/gradle")]
-							});
-						}
-					}
-				})();
-
 				var ncdbg = new function() {
 					Object.defineProperty(this, "installed", {
 						get: function() {
@@ -177,7 +117,7 @@
 						}
 					});
 
-					this.install = $api.Events.Function(function(p,events) {
+					this.install = $api.events.Function(function(p,events) {
 						if (!p) p = {};
 						if (!p.version) p.version = "0.8.4";
 						if (p.replace) {
@@ -222,7 +162,11 @@
 								],
 								directory: local.directory
 							});
-							var distribution = src.directory.getSubdirectory("build/distributions").list()[0];
+
+							/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
+							var castToFile = $api.fp.cast;
+
+							var distribution = src.directory.getSubdirectory("build/distributions").list().map(castToFile)[0];
 							jsh.tools.install.install({
 								file: distribution,
 								format: jsh.tools.install.format.zip,
@@ -258,6 +202,47 @@
 					$api.deprecate(jsh.tools,"ncdbg");
 				})();
 
+				var graal = new function() {
+					var VERSION = {
+						number: "21.0.0.2",
+						jdk: "8",
+						edition: "ce"
+					};
+					this.install = $api.events.Function(function(p,events) {
+						if (jsh.shell.os.name == "Mac OS X") {
+							jsh.tools.install.install({
+								url: "https://github.com/graalvm/graalvm-ce-builds/releases/download/"
+									+ "vm-" + VERSION.number + "/"
+									+ "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
+								,
+								getDestinationPath: function(file) {
+									return "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + VERSION.number;
+								},
+								to: jsh.shell.jsh.lib.getRelativePath("graal")
+							});
+						} else {
+							throw new Error("Unsupported: os " + jsh.shell.os.name);
+						}
+					});
+				};
+
+				jsh.shell.tools.graal = graal;
+
+				/** @type { slime.jsh.shell.tools.internal.tomcat.Script } */
+				var script = $loader.script("tomcat.js");
+				var tomcat = script({
+					$api: jsh.tools.install.$api,
+					jsh: jsh
+				});
+				jsh.shell.tools.tomcat = tomcat;
+
+				(function deprecated() {
+					jsh.tools.tomcat = tomcat;
+					$api.deprecate(jsh.tools,"tomcat");
+					jsh.tools.install["tomcat"] = tomcat;
+					$api.deprecate(jsh.tools.install,"tomcat");
+				})();
+
 				jsh.shell.tools.mkcert = (function() {
 					//	TODO	deal with Firefox
 					//	TODO	deal with Java
@@ -269,7 +254,7 @@
 					 * @returns { slime.jsh.shell.tools.mkcert.Installation }
 					 */
 					function Installation(program) {
-						var CAROOT = $api.Function.memoized(function() {
+						var CAROOT = $api.fp.memoized(function() {
 							var result = jsh.shell.run({
 								command: program,
 								arguments: ["-CAROOT"],
@@ -292,7 +277,7 @@
 									output: null,
 									error: null
 								},
-								evaluate: $api.Function.identity
+								evaluate: $api.fp.identity
 							});
 							return result.status === 0;
 						}
@@ -322,7 +307,25 @@
 						install: function(p) {
 							var destination = (p && p.destination) ? p.destination : location;
 
-							var at = jsh.tools.install.get({ url: "https://github.com/FiloSottile/mkcert/releases/download/v1.4.3/mkcert-v1.4.3-darwin-amd64" });
+							/**
+							 *
+							 * @param { string } os
+							 * @param { string } arch
+							 * @returns
+							 */
+							var getBinaryUrl = function(os,arch) {
+								if (os == "Linux") {
+									return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64";
+								} else if (os == "Mac OS X") {
+									if (arch == "aarch64") {
+										return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-arm64";
+									} else {
+										return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-amd64";
+									}
+								}
+							}
+
+							var at = jsh.tools.install.get({ url: getBinaryUrl(jsh.shell.os.name, jsh.shell.os.arch) });
 
 							at.copy(destination, {
 								filter: function(p) {
@@ -356,10 +359,89 @@
 					}
 				})();
 
+				//	TODO	probably want to create a jrunscript/io version of this also, or even a loader/ version given that this
+				//			is pure JavaScript
+				jsh.shell.tools.jsyaml = (function() {
+					var location = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getRelativePath("js-yaml.js") : null;
+
+					var fetchCode = function() {
+						return new jsh.http.Client().request({
+							url: "https://raw.githubusercontent.com/nodeca/js-yaml/v3/dist/js-yaml.js",
+							evaluate: function(response) {
+								return response.body.stream.character().asString();
+							}
+						});
+					};
+
+					var load = function(code) {
+						return $api.debug.disableBreakOnExceptionsFor(function() {
+							var global = {};
+							eval(code);
+							return global.jsyaml;
+						})();
+					}
+
+					var install = (location) ? function() {
+						var code = fetchCode();
+						location.write(code, { append: false });
+						return load(code);
+					} : void(0)
+
+					return $api.Object.compose(
+						(install) ? { install: install } : {},
+						{
+							require: function() {
+								var code = (function() {
+									if (location) {
+										if (location.file) {
+											return location.file.read(String);
+										} else {
+											var rv = fetchCode();
+											location.write(rv, { append: false });
+											return rv;
+										}
+									} else {
+										return fetchCode();
+									}
+								})();
+								return load(code);
+							},
+							load: function() {
+								var code = (location && location.file) ? location.file.read(String) : fetchCode();
+								return load(code);
+							}
+						}
+					);
+				})();
+
+				jsh.shell.tools.selenium = (
+					function() {
+						return {
+							load: function() {
+								if (jsh.shell.jsh.lib.getSubdirectory("selenium/java")) {
+									if (jsh.shell.jsh.lib.getSubdirectory("selenium/chrome")) {
+										Packages.java.lang.System.setProperty("webdriver.chrome.driver",jsh.shell.jsh.lib.getRelativePath("selenium/chrome/chromedriver").toString());
+									}
+									jsh.shell.jsh.lib.getSubdirectory("selenium/java/lib").list().forEach(function(node) {
+										//jsh.shell.console("node = " + node);
+										jsh.loader.java.add(node.pathname);
+									});
+									jsh.shell.jsh.lib.getSubdirectory("selenium/java").list().forEach(function(node) {
+										//jsh.shell.console("node = " + node);
+										jsh.loader.java.add(node.pathname);
+									});
+								} else {
+									throw new Error("Could not be loaded; is Selenium installed? Try ./jsh.bash jsh/tools/install/selenium.jsh.js");
+								}
+							}
+						};
+					}
+				)();
+
 				var kotlin = (jsh.shell.jsh.lib) ? new function() {
 					var location = jsh.shell.jsh.lib.getRelativePath("kotlin");
 
-					this.install = $api.Events.Function(function(p,events) {
+					this.install = $api.events.Function(function(p,events) {
 						var URL = "https://github.com/JetBrains/kotlin/releases/download/v1.5.0/kotlin-compiler-1.5.0.zip";
 
 						var existing = location.directory;
@@ -391,63 +473,50 @@
 				} : null;
 				jsh.shell.tools.kotlin = kotlin;
 
-				var scala = (jsh.shell.jsh.lib) ? new function() {
-					var location = jsh.shell.jsh.lib.getRelativePath("scala");
-
-					this.install = function() {
-						if (location.directory) {
-							location.directory.remove();
-						}
-						jsh.tools.install.install({
-							//	UNIX only
-							url: "https://downloads.lightbend.com/scala/2.13.5/scala-2.13.5.tgz",
-							to: location
-						})
-					};
-
-					var Installation = function(o) {
-						return {
-							compile: function(p) {
-								if (p.destination) p.destination.createDirectory({
-									exists: function() {
-										return false;
+				var scala = (jsh.shell.jsh.lib) ? (
+					function() {
+						/** @type { slime.jsh.shell.tools.scala.Exports["Installation"] } */
+						var Installation = {
+							from: {
+								jsh: function() {
+									var location = jsh.shell.jsh.lib.getRelativePath("scala");
+									return {
+										base: location.os.adapt().pathname
 									}
-								});
-								return jsh.shell.run({
-									command: o.directory.getFile("bin/scalac"),
-									arguments: $api.Array.build(function(list) {
-										if (p.deprecation) list.push("-deprecation");
-										if (p.destination) list.push("-d", p.destination);
-										list.push.apply(list,p.files);
-									})
-								})
+								}
 							},
-							run: function(p) {
-								//	TODO	possibly could just use java command with location.directory.getRelativePath("lib/scala-library.jar")
-								//			in classpath
-								return jsh.shell.run({
-									command: o.directory.getFile("bin/scala"),
-									arguments: $api.Array.build(function(list) {
-										if (p.classpath) list.push("-classpath", p.classpath);
-										if (p.deprecation) list.push("-deprecation");
-										list.push(p.main);
-									})
-								});
-							}
-						}
-					};
+							install: function(installation) {
+								return function(p) {
+									return function(events) {
+										//	TODO	wo API needed
+										if (p.majorVersion == 2) {
+											jsh.tools.install.install({
+												//	UNIX only
+												url: "https://downloads.lightbend.com/scala/2.13.10/scala-2.13.10.tgz",
+												to: jsh.file.Pathname(installation.base)
+											});
+										} else if (p.majorVersion == 3) {
+											jsh.tools.install.install({
+												url: "https://github.com/lampepfl/dotty/releases/download/3.2.1/scala3-3.2.1.tar.gz",
+												to: jsh.file.Pathname(installation.base)
+											});
+										} else {
+											throw new Error("Unsupported Scala major version: " + p.majorVersion);
+										}
+									}
+								}
+							},
+							getVersion: plugins.scala.Installation.getVersion,
+							compile: plugins.scala.Installation.compile,
+							run: plugins.scala.Installation.run
+						};
 
-					this.installation = void(0);
-					Object.defineProperty(this, "installation", {
-						get: function() {
-							if (location.directory) {
-								return Installation({
-									directory: location.directory
-								});
-							}
-						}
-					})
-				} : null;
+						return {
+							Installation: Installation
+						};
+					}
+				)() : null;
+
 				jsh.shell.tools.scala = scala;
 
 				jsh.shell.tools.jsoup = (function() {
@@ -479,7 +548,7 @@
 						}
 					});
 
-					rv.require = function(p) {
+					rv.require = function require(p) {
 						jsh.shell.jsh.require({
 							satisfied: function() { return Boolean(jsh.shell.jsh.lib.getFile("jsoup.jar")); },
 							install: function() {
@@ -541,6 +610,7 @@
 										version: manifest.main["Implementation-Version"]
 									};
 								}
+								return void(0);
 							}
 						});
 
@@ -553,59 +623,26 @@
 					}
 				}
 
-				//	TODO	probably want to create a jrunscript/io version of this also, or even a loader/ version given that this
-				//			is pure JavaScript
-				jsh.shell.tools.jsyaml = (function() {
-					var location = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getRelativePath("js-yaml.js") : null;
+				var gradle = (function() {
+					var URL = "https://services.gradle.org/distributions/gradle-6.8-bin.zip";
 
-					var fetchCode = function() {
-						return new jsh.http.Client().request({
-							url: "https://raw.githubusercontent.com/nodeca/js-yaml/v3/dist/js-yaml.js",
-							evaluate: function(response) {
-								return response.body.stream.character().asString();
-							}
-						});
-					};
-
-					var load = function(code) {
-						return $api.debug.disableBreakOnExceptionsFor(function() {
-							var global = {};
-							eval(code);
-							return global.jsyaml;
-						})();
-					}
-
-					var install = (location) ? function() {
-						var code = fetchCode();
-						location.write(code, { append: false });
-						return load(code);
-					} : void(0)
-
-					return $api.Object.compose(
-						(install) ? { install: install } : {},
-						{
-							require: function() {
-								var code = (function() {
-									if (location) {
-										if (location.file) {
-											return location.file.read(String);
-										} else {
-											var rv = fetchCode();
-											location.write(rv, { append: false });
-											return rv;
-										}
-									} else {
-										return fetchCode();
-									}
-								})();
-								return load(code);
-							},
-							load: function() {
-								var code = (location && location.file) ? location.file.read(String) : fetchCode();
-								return load(code);
-							}
+					return new function() {
+						this.install = function(p,events) {
+							jsh.tools.install.install({
+								url: URL,
+								format: jsh.tools.install.format.zip,
+								to: jsh.shell.jsh.lib.getRelativePath("gradle"),
+								getDestinationPath: function(file) {
+									return "gradle-6.8";
+								},
+								replace: true
+							}, events);
+							jsh.shell.run({
+								command: "chmod",
+								arguments: ["+x", jsh.shell.jsh.lib.getSubdirectory("gradle").getFile("bin/gradle")]
+							});
 						}
-					);
+					}
 				})();
 
 				jsh.tools.gradle = gradle;
@@ -617,121 +654,158 @@
 				return Boolean(plugins.node && jsh.file && jsh.shell && jsh.shell.tools && jsh.tools.install);
 			},
 			load: function() {
-				/** @type { slime.jrunscript.node.Exports } */
-				var node = plugins.node.module({
+				/** @type { slime.jrunscript.node.Plugin } */
+				var plugin = plugins.node;
+
+				var node = plugin.module({
 					context: {
-						module: {
-							file: jsh.file,
-							shell: jsh.shell
-						},
 						library: {
+							file: jsh.file,
+							shell: jsh.shell,
 							install: jsh.tools.install
 						}
 					}
 				});
 
-				(function integratedNode() {
+				jsh.shell.tools.node = (function integratedNode() {
 					if (!jsh.shell.jsh.lib) return;
 
 					var location = jsh.shell.jsh.lib.getRelativePath("node");
 
-					/** @type { slime.jrunscript.node.Installation } */
-					var installed = node.at({ location: location });
-
-					function update() {
-						jsh.shell.tools.node = Object.assign(
-							node.install({
-								location: location,
-								update: true
-							}),
-							{
-								update: update,
-								require: require
-							}
-						);
+					/** @type { slime.jsh.shell.tools.node.Managed } */
+					var managed = {
+						installation: node.world.Installation.from.location({
+							filesystem: jsh.file.world.spi.filesystems.os,
+							pathname: location.toString()
+						}),
+						installed: void(0),
+						require: void(0)
 					}
 
-					function require() {
-						jsh.shell.jsh.require({
-							satisfied: function() {
-								return Boolean(jsh.shell.tools.node["version"])
-							},
-							install: function() {
-								jsh.shell.tools.node["install"]();
-							}
-						});
-					}
+					Object.defineProperty(managed, "installed", {
+						get: function() {
+							return node.at({ location: location.toString() });
+						},
+						enumerable: true
+					});
 
-					if (installed) {
-						//	TODO	update?
-						jsh.shell.tools.node = Object.assign(
-							installed,
-							{
-								update: update,
-								require: require
-							}
-						);
-					} else {
-						jsh.shell.tools.node = {
-							install: function(p) {
-								if (!p) p = {};
-								jsh.shell.tools.node = Object.assign(
-									node.install(
-										{
-											location: location,
-											update: p.update
-										},
-										{
-											console: function(e) {
-												jsh.shell.console(e.detail);
-											}
-										}
-									),
-									{ update: update, require: require }
-								)
-							},
-							require: require
-						};
-					}
-					if (jsh.shell.tools.node["modules"]) {
-						/** @type { slime.jrunscript.node.Installation["modules"] } */
-						var modules = jsh.shell.tools.node["modules"];
-
-						var getVersion = function(p) {
-							if (!p) return void(0);
-							var now = modules.installed[p.name];
-							if (now.version) return now.version;
-							if (now.required && now.required.version) return now.required.version;
-						}
-
-						//	Wraps the existing require and makes it pertain to the entire shell. Not sure whether this is necessary;
-						//	maybe for something like TypeScript that is built into the shell itself?
-						modules.require = function(p) {
-							jsh.shell.jsh.require({
-								satisfied: function() {
-									var now = modules.installed[p.name];
-									if (!now) return false;
-									var version = getVersion({ name: p.name });
-									if (p.version) {
-										return version == p.version;
-									} else {
-										return true;
-									}
-								},
-								install: function() {
-									if (p.version) {
-										modules.install({
-											name: p.name + "@" + p.version
-										});
-									} else {
-										modules.install({
-											name: p.name
-										});
-									}
+					managed.require = function() {
+						return function(events) {
+							//	TODO	this is hard-coded in several places now
+							var now = node.at({ location: location.toString() });
+							if (now && now.version == "v16.17.1") {
+								events.fire("found", now);
+							} else {
+								if (now) {
+									location.directory.remove();
+									events.fire("removed", now);
 								}
-							})
+								node.install({ version: "16.17.1", location: location })(events);
+							}
 						}
-					}
+					};
+
+					var exports = Object.assign(managed, node);
+
+					return exports;
+
+					// function update() {
+					// 	jsh.shell.tools.node = Object.assign(
+					// 		(
+					// 			function() {
+					// 				node.install({
+					// 					location: location
+					// 				})
+					// 			}
+					// 		)();
+					// 		{
+					// 			update: update,
+					// 			require: require
+					// 		}
+					// 	);
+					// }
+
+					// function require() {
+					// 	jsh.shell.jsh.require({
+					// 		satisfied: function() {
+					// 			return Boolean(jsh.shell.tools.node["version"])
+					// 		},
+					// 		install: function() {
+					// 			jsh.shell.tools.node["install"]();
+					// 		}
+					// 	});
+					// }
+
+					// if (installed) {
+					// 	//	TODO	update?
+					// 	jsh.shell.tools.node = Object.assign(
+					// 		installed,
+					// 		{
+					// 			update: update,
+					// 			require: require
+					// 		}
+					// 	);
+					// } else {
+					// 	jsh.shell.tools.node = {
+					// 		install: function(p) {
+					// 			if (!p) p = {};
+					// 			jsh.shell.tools.node = Object.assign(
+					// 				node.install(
+					// 					{
+					// 						location: location,
+					// 						update: p.update
+					// 					},
+					// 					{
+					// 						console: function(e) {
+					// 							jsh.shell.console(e.detail);
+					// 						}
+					// 					}
+					// 				),
+					// 				{ update: update, require: require }
+					// 			)
+					// 		},
+					// 		require: require
+					// 	};
+					// }
+					// if (jsh.shell.tools.node.installed.modules) {
+					// 	/** @type { slime.jrunscript.node.Installation["modules"] } */
+					// 	var modules = jsh.shell.tools.node.installed.modules;
+
+					// 	var getVersion = function(p) {
+					// 		if (!p) return void(0);
+					// 		var now = modules.installed[p.name];
+					// 		if (now.version) return now.version;
+					// 		if (now.required && now.required.version) return now.required.version;
+					// 	}
+
+					// 	//	Wraps the existing require and makes it pertain to the entire shell. Not sure whether this is necessary;
+					// 	//	maybe for something like TypeScript that is built into the shell itself?
+					// 	modules.require = function(p) {
+					// 		jsh.shell.jsh.require({
+					// 			satisfied: function() {
+					// 				var now = modules.installed[p.name];
+					// 				if (!now) return false;
+					// 				var version = getVersion({ name: p.name });
+					// 				if (p.version) {
+					// 					return version == p.version;
+					// 				} else {
+					// 					return true;
+					// 				}
+					// 			},
+					// 			install: function() {
+					// 				if (p.version) {
+					// 					modules.install({
+					// 						name: p.name + "@" + p.version
+					// 					});
+					// 				} else {
+					// 					modules.install({
+					// 						name: p.name
+					// 					});
+					// 				}
+					// 			}
+					// 		})
+					// 	}
+					// }
 				})();
 
 				jsh.tools.node = node;

@@ -16,7 +16,7 @@
 	function($api,jsh,$loader,$export) {
 		$export(
 			function(resources,serve,resultsPath) {
-				var tomcat = new jsh.httpd.Tomcat();
+				var tomcat = jsh.httpd.Tomcat();
 				tomcat.map({
 					//	TODO	make the below the default for goodness' sake if it is not already
 					path: "",
@@ -59,7 +59,7 @@
 													}
 												}
 											})()
-											: $api.Function.returning(void(0))
+											: $api.fp.returning(void(0))
 									),
 									(
 										(resultsPath)
@@ -78,7 +78,7 @@
 													url: resultsPath
 												})
 											})()
-											: $api.Function.returning(void(0))
+											: $api.fp.returning(void(0))
 									),
 									scope.httpd.Handler.Loader({
 										loader: new jsh.file.Loader({

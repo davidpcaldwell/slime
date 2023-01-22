@@ -18,7 +18,7 @@
 		window.console.log("loading loader/api/promises.js ..." + new Error("Stack trace").stack);
 
 		/** @type { slime.definition.test.promises.internal.Events } */
-		var events = $api.Events();
+		var events = $api.events.create();
 
 		var RegisteredPromise = (function(was) {
 			/**
@@ -159,6 +159,7 @@
 
 		$export({
 			Promise: window.Promise,
+			//@ts-ignore
 			controlled: ControlledPromise,
 			Registry: Registry,
 			console: console

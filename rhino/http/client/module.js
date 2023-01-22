@@ -42,29 +42,97 @@
 		var allowMethods = function() {
 			var methodsField = $context.api.java.toNativeClass(Packages.java.net.HttpURLConnection).getDeclaredField("methods");
 
-			var modifiersField = $context.api.java.toNativeClass(Packages.java.lang.reflect.Field).getDeclaredField("modifiers");
-			modifiersField.setAccessible(true);
-			modifiersField.setInt(methodsField, methodsField.getModifiers() & ~Packages.java.lang.reflect.Modifier.FINAL);
+			try {
+				var modifiersField = $context.api.java.toNativeClass(Packages.java.lang.reflect.Field).getDeclaredField("modifiers");
+				modifiersField.setAccessible(true);
+				modifiersField.setInt(methodsField, methodsField.getModifiers() & ~Packages.java.lang.reflect.Modifier.FINAL);
 
-			methodsField.setAccessible(true);
+				methodsField.setAccessible(true);
 
-			var oldMethods = $context.api.java.Array.adapt(methodsField.get(null));
-			var newMethods = oldMethods.concat(Array.prototype.slice.call(arguments));
+				var oldMethods = $context.api.java.Array.adapt(methodsField.get(null));
+				var newMethods = oldMethods.concat(Array.prototype.slice.call(arguments));
 
-			methodsField.set(
-				null,
-				$context.api.java.Array.create({
-					type: Packages.java.lang.String,
-					array: newMethods.map(function(s) { return new Packages.java.lang.String(s); })
-				})
-			);
+				var array = newMethods.map(function(s) { return new Packages.java.lang.String(s); });
+
+				methodsField.set(
+					null,
+					$context.api.java.Array.create({
+						type: Packages.java.lang.String,
+						array: array
+					})
+				);
+			} catch (e) {
+				//	TODO	will be reached in JDK 11 (Nashorn only?) as JPMS prohibits access to Field.modifiers for now
+				//	TODO	thus, PATCH will not be allowed under JDK 11. See issue #915.
+			}
 		};
 
 		allowMethods("PATCH");
 
 		/**
 		 *
-		 * @param { slime.jrunscript.http.client.object.request.Body } body
+		 * @param { slime.jrunscript.http.client.request.Body } body
+		 * @returns { slime.mime.Type }
+		 */
+		function _getRequestBodyType(body) {
+			if (typeof(body.type) == "string") {
+				return $api.mime.Type.codec.declaration.decode(body.type);
+			} else {
+				return body.type;
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.request.Body } body
+		 * @returns { slime.jrunscript.runtime.io.InputStream }
+		 */
+		function _getRequestBodyStream(body) {
+			//	TODO	Does not handle stream/$stream from rhino/mime
+			//			above is a very old comment; may no longer apply
+
+			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Stream } */
+			var isStream = function(body) {
+				return Boolean(body["stream"]);
+			}
+
+			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Binary } */
+			var isBinary = function(body) {
+				return Boolean(body["read"] && body["read"].binary);
+			}
+
+			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.String } */
+			var isString = function(body) {
+				return typeof body["string"] != "undefined";
+			}
+
+			if (isStream(body)) return body.stream;
+			if (isBinary(body)) return body.read.binary();
+			if (isString(body)) {
+				var buffer = new $context.api.io.Buffer();
+				buffer.writeText().write(body.string);
+				buffer.writeText().close();
+				return buffer.readBinary();
+			}
+			throw new TypeError("Body is not a recognized type: " + body);
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.request.Body } p
+		 * @returns { slime.jrunscript.http.client.spi.request.Body }
+		 */
+		var _interpretRequestBody = function(p) {
+			if (!p) return null;
+			return {
+				type: _getRequestBodyType(p),
+				stream: _getRequestBodyStream(p)
+			};
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.request.Body } body
 		 */
 		function getRequestBodyType(body) {
 			if (typeof(body.type) == "string") {
@@ -211,27 +279,33 @@
 				events.fire("request", {
 					url: url,
 					proxy: proxy
-				})
+				});
+
 				return _open(new Packages.java.net.URL($context.api.web.Url.codec.string.encode(url)), toJavaProxy(proxy));
 			}
 
-			var execute = $api.Events.action(
+			var execute = (
 				/**
 				 *
 				 * @param { slime.$api.Events<slime.jrunscript.http.client.spi.Events> } e
 				 */
 				function(e) {
-					var url = $context.api.web.Url.codec.string.decode(p.request.url);
+					var url = p.request.url;
 					/** @type { slime.jrunscript.http.client.Header } */
 					var hostHeader;
-					if (url.scheme == "https" && p.proxy && p.proxy.https) {
-						//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
-						//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
-						//	TODO	does this work for default port?
-						hostHeader = { name: "Host", value: url.host + ((url.port) ? ":" + url.port : "") };
-						url.host = p.proxy.https.host;
-						url.port = p.proxy.https.port;
-					}
+
+					(
+						function implementHttpProxying() {
+							if (url.scheme == "https" && p.proxy && p.proxy.https) {
+								//	Currently implemented by re-writing the URL; would be better to implement a tunnel through an HTTP proxy but
+								//	could not get that working with Tomcat, which returned 400 errors when https requests are sent to http listener
+								//	TODO	does this work for default port?
+								hostHeader = { name: "Host", value: url.host + ((url.port) ? ":" + url.port : "") };
+								url.host = p.proxy.https.host;
+								url.port = p.proxy.https.port;
+							}
+						}
+					)();
 
 					var $urlConnection = openUrlConnection(url, p.proxy, e);
 
@@ -285,12 +359,111 @@
 			return execute;
 		}
 
+		var isHeaderName = function(name) {
+			return function(header) {
+				return header.name.toLowerCase() == name.toLowerCase();
+			}
+		}
+
+		var Header = {
+			value: function(name) {
+				return function(headers) {
+					var filtered = headers.filter(isHeaderName(name));
+					if (filtered.length > 1) throw new Error("Expected only one match for header " + name + ", but got more than one");
+					return $api.fp.result(
+						$api.fp.Maybe.from(filtered[0]),
+						$api.fp.Maybe.map($api.fp.property("value"))
+					);
+				}
+			},
+			values: function(name) {
+				return function(headers) {
+					var filtered = headers.filter(isHeaderName(name));
+					return filtered.map($api.fp.property("value"));
+				}
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.http.client.spi.Implementation } implementation
+		 */
+		var withFollowRedirects = function(implementation) {
+			/** @param { slime.jrunscript.http.client.spi.Response } response */
+			var getLocation = function(response) {
+				var value = Header.value("Location")(response.headers);
+				if (value.present) {
+					return value.value;
+				}
+				throw new Error("Expected: 'Location' header.");
+			};
+
+			/**
+			 *
+			 * @param { slime.web.Url } requested
+			 * @param { string } redirected
+			 * @returns
+			 */
+			var getRedirectUrl = function(requested, redirected) {
+				return $context.api.web.Url.resolve(requested, redirected);
+			};
+
+			/**
+			 * @type { slime.jrunscript.http.client.spi.Implementation }
+			 */
+			return function fetch(argument) {
+				return function(events) {
+					var response = implementation(argument)(events);
+
+					var getRedirectDestination = function() {
+						return getRedirectUrl(argument.request.url, getLocation(response));
+					}
+
+					//	TODO	should make 302 handling more explicit
+
+					if (response.status.code == 302 || response.status.code == 303) {
+						return fetch(
+							$api.Object.compose(
+								argument,
+								{
+									request: $api.Object.compose(
+										argument.request,
+										{
+											method: "GET",
+											url: getRedirectDestination(),
+											body: void(0)
+										}
+									)
+								}
+							)
+						)(events);
+					} else if (response.status.code == 307) {
+						return fetch(
+							$api.Object.compose(
+								argument,
+								{
+									request: $api.Object.compose(
+										argument.request,
+										{
+											url: getRedirectDestination()
+										}
+									)
+								}
+							)
+						)(events);
+					}
+
+					return response;
+				}
+			}
+		}
+
 		/** @type { slime.jrunscript.http.client.internal.sessionRequest } */
 		var sessionRequest = function(cookies) {
 			return function(argument) {
 				//	TODO	this implementation mutates the request but provides an immutable-appearing signature for
 				//			forward-compatibility
-				cookies.get(argument.request.url, argument.request.headers);
+				cookies.get($context.api.web.Url.codec.string.encode(argument.request.url), argument.request.headers);
 				return argument;
 			}
 		};
@@ -326,13 +499,45 @@
 			urlConnectionImplementation: urlConnectionImplementation,
 			sessionRequest: sessionRequest,
 			authorizedRequest: authorizedRequest,
-			proxiedRequest: proxiedRequest
+			proxiedRequest: proxiedRequest,
+			interpretRequestBody: _interpretRequestBody
 		});
 
 		$export({
+			Header: Header,
 			world: {
 				request: function(p) {
 					return urlConnectionImplementation(p);
+				},
+				Client: {
+					withFollowRedirects: withFollowRedirects
+				},
+				Argument: {
+					request: function(request) {
+						/**
+						 *
+						 * @param { slime.jrunscript.http.client.request.url } value
+						 * @returns { slime.web.Url }
+						 */
+						function url(value) {
+							if (typeof(value) == "string") {
+								return $context.api.web.Url.codec.string.decode(value);
+							} else {
+								return value;
+							}
+						}
+
+						return {
+							request: {
+								method: (request.method) ? request.method : "GET",
+								url: url(request.url),
+								headers: (request.headers) ? request.headers : [],
+								body: (request.body) ? _interpretRequestBody(request.body) : null
+							},
+							timeout: void(0),
+							proxy: void(0)
+						}
+					}
 				}
 			},
 			Client: scripts.objects.Client,

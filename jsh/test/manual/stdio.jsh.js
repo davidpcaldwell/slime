@@ -4,10 +4,20 @@
 //
 //	END LICENSE
 
-jsh.shell.stderr.character().write("Verify that the text 'stdout' shows up before typing anything:\n");
-//	TODO	it does not, at least in my setup, which is a bug, but it is unclear exactly what is causing it
-//	TODO	currently does not work on Windows or FreeBSD
-jsh.shell.stdout.character().write("stdout: ");
-jsh.shell.stdin.character().readLines(function(line) {
-	jsh.shell.echo("Line: [" + line + "]");
-});
+//@ts-check
+(
+	/**
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api,jsh) {
+		jsh.shell.stderr.character().write("Verify that the text 'stdout' shows up before typing anything:\n");
+		//	TODO	it does not, at least in my setup, which is a bug, but it is unclear exactly what is causing it
+		//	TODO	currently does not work on Windows or FreeBSD
+		jsh.shell.stdout.character().write("stdout: ");
+		jsh.shell.stdin.character().readLines(function(line) {
+			jsh.shell.echo("Line: [" + line + "]");
+		});
+	}
+//@ts-ignore
+)($api,jsh);

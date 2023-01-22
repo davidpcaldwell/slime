@@ -150,45 +150,13 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<td><a href="../../js/time/api.html">jsh.time</a></td>
+					<td><code>jsh.time</code></td>
 					<td jsapi:id="jsh.time">
 						jsh.time
 					</td>
 				</tr>
 			</tbody>
 		</table>
-		<script jsapi:id="issue32" type="application/x.jsapi#tests">
-			if (jsh.shell.environment.SLIME_TEST_ISSUE_307) {
-				(function() {
-					var output = jsh.shell.jsh({
-						shell: $jsapi.environment.jsh.unbuilt.src,
-						// TODO: move to jsh/loader/test
-						script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/loader/test/global-scope.jsh.js"),
-						stdio: {
-							output: String
-						},
-						evaluate: function(result) {
-							return JSON.parse(result.stdio.output);
-						}
-					});
-					verify(output).length.is(1);
-					verify(output)[0].is("jsh");
-				})();
-			}
-			var output = jsh.shell.jsh({
-				shell: $jsapi.environment.jsh.built.home,
-				// TODO: move to jsh/loader/test
-				script: $jsapi.environment.jsh.src.getFile("jsh/loader/test/global-scope.jsh.js"),
-				stdio: {
-					output: String
-				},
-				evaluate: function(result) {
-					return JSON.parse(result.stdio.output);
-				}
-			});
-			verify(output).length.is(1);
-			verify(output)[0].is("jsh");
-		</script>
 	</div>
 	<div>
 		<h1>HTTP server</h1>
@@ -305,7 +273,7 @@ END LICENSE
 				</tr>
 			</thead>
 			<tbody>
-				<tr><td><a href="../../jsh/loader/plugin.api.html">(plugins)</a></td><td>Interface for creating <code>jsh</code> plugins</td><!-- no tests --></tr>
+				<tr><td>(plugins)</td><td>Interface for creating <code>jsh</code> plugins</td><!-- no tests --></tr>
 			</tbody>
 		</table>
 	</div>

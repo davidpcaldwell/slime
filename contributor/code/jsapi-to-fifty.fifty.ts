@@ -6,17 +6,172 @@
 
 namespace slime.project.jsapi {
 	export interface Context {
+		library: {
+			document: slime.runtime.document.Exports
+		}
 	}
 
 	export namespace test {
-		export const subject = (
-			function(fifty: slime.fifty.test.kit) {
+		export const { subject, wip } = (
+			function(fifty: slime.fifty.test.Kit) {
 				var script: Script = fifty.$loader.script("jsapi-to-fifty.js");
-				var subject = script();
-				return subject;
+				var code: { document: slime.runtime.document.Script } = {
+					document: fifty.$loader.script("../../loader/document/module.js")
+				}
+				var library = {
+					document: code.document(
+						fifty.global.jsh ? { $slime: fifty.global.jsh.unit.$slime } : {}
+					)
+				};
+				var subject = script({
+					library: library
+				});
+				var wip = script({
+					library: library
+				})
+				return { subject, wip };
 			}
 		//@ts-ignore
 		)(fifty);
+	}
+
+	export namespace fp {
+		export type Case<P,R> = (p: P) => slime.$api.fp.Maybe<R>
+		export type Switch = <P,R>(...cases: Case<P,R>[]) => (p: P) => slime.$api.fp.Maybe<R>
+		export type ToPartial = <P,R>(f: slime.$api.fp.Mapping<P,R>) => slime.$api.fp.Partial<P,R>
+	}
+
+	export namespace internal {
+		/**
+		 * A single line of comment data, including an optional prefix
+		 */
+		export interface InputLine {
+			indent: slime.$api.fp.Maybe<string>
+			section: "start" | "middle" | "end"
+			content: string
+		}
+
+		/**
+		 * A multiline section of a comment, including an indent, whether the section has the first or last line of a comment,
+		 * and a set of tokens that represent the comment's content.
+		 */
+		export interface Block {
+			/** The indent to use. */
+			indent: string
+
+			/** Whether the start of this content is the start of a comment. */
+			hasStart: boolean
+
+			/** Whether the end of this content is the end of a comment. */
+			hasEnd: boolean
+
+			tokens: string[]
+		}
+
+		export interface VisibleForTesting {
+			maybeify: fp.ToPartial
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.maybeify = function() {
+					var divideByTwoEvenly = function(n: number): number {
+						if (n % 2 == 0) return n / 2;
+					}
+
+					var maybeDivideByTwo = test.subject.test.maybeify(divideByTwoEvenly);
+
+					var forThree = maybeDivideByTwo(3);
+					verify(forThree).present.is(false);
+					var forThree = maybeDivideByTwo(4);
+					verify(forThree).present.is(true);
+					if (forThree.present) verify(forThree).value.is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface VisibleForTesting {
+			prefix: (line: string) => slime.$api.fp.Maybe<string>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const subject = test.subject;
+
+				fifty.tests.prefix = function() {
+					const assert = function(m: slime.$api.fp.Maybe<string>): string {
+						if (m.present) return m.value;
+						return null;
+					};
+
+					verify(subject).test.prefix("\t\t\t *").evaluate(assert).is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t * dd").evaluate(assert).is("\t\t\t");
+
+					verify(subject).test.prefix("\t\t\t/**").evaluate(assert).is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t/**  ").evaluate(assert).is("\t\t\t");
+
+					verify(subject).test.prefix("\t\t\t */").evaluate(assert).is("\t\t\t");
+					verify(subject).test.prefix("\t\t\t */  ").evaluate(assert).is("\t\t\t");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface VisibleForTesting {
+			split: <P,R1,R2>(fs: [(p: P) => R1, (p: P) => R2]) => (p: P) => [R1, R2]
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const subject = test.subject;
+
+				fifty.tests.split = function() {
+					var double = function(n: number) { return n*2; };
+					var stringify = function(n: number) { return String(n); };
+					var both = test.subject.test.split([double, stringify]);
+
+					var answer = both(2);
+					verify(answer).length.is(2);
+					verify(answer)[0].is(4);
+					verify(answer)[1].is("2");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface VisibleForTesting {
+			html: slime.runtime.document.Exports["Fragment"]["codec"]["string"]["decode"]
+		}
+
+		export interface VisibleForTesting {
+			library: {
+				document: slime.runtime.document.Exports
+			}
+		}
+
+		export interface VisibleForTesting {
+			parseBlocks: (string: string) => Block[]
+		}
+
+		export interface VisibleForTesting {
+			formatBlockUsing: (format: Format) => (block: Block) => string[]
+			wip: Exports["comment"]
+		}
+	}
+
+	export interface Exports {
+		test: internal.VisibleForTesting
 	}
 
 	export interface Format {
@@ -25,38 +180,17 @@ namespace slime.project.jsapi {
 	}
 
 	export interface Exports {
-		test: {
-			prefix: (line: string) => string
-		}
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
-			const { verify } = fifty;
-			const subject = test.subject;
-
-			fifty.tests.prefix = function() {
-				verify(subject).test.prefix("\t\t\t *").is("\t\t\t");
-				verify(subject).test.prefix("\t\t\t/**").is("\t\t\t");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-
-	export interface Exports {
 		comment: (p: Format) => (input: string) => string
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			var script: Script = fifty.$loader.script("jsapi-to-fifty.js");
-			var subject = script();
+			const { $api } = fifty.global;
+
+			var subject = test.subject;
 
 			type Case = {
 				configuration: Format
@@ -68,6 +202,15 @@ namespace slime.project.jsapi {
 				return input as Format;
 			}
 
+			/**
+			 * Parses test cases from a text file. The first line of a test case is a JSON string that evaluates to a
+			 * {@link Format}. Following lines are added to the input for the test case until a `===` line is reached; the trailing
+			 * newline is *not* added to the input. Lines after the `===` are interpreted as output, again until a `===`, and again
+			 * not including the trailing newline before that `===`.
+			 *
+			 * @param input A file containing formatted test cases
+			 * @returns
+			 */
 			function parseTestData(input: string): Case[] {
 				var lines = input.split("\n");
 				var state: { format: Format, input: string[], output: string[] } = {
@@ -111,17 +254,7 @@ namespace slime.project.jsapi {
 				return rv;
 			}
 
-			fifty.tests.next = function() {
-				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
-				tests.forEach(function(test) {
-					var result = subject.comment(test.configuration)(test.input);
-					verify(result,"result").is(test.expected);
-				});
-			}
-
-			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.prefix);
-				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
+			var functionalTests = function(subject: Exports, tests: Case[]) {
 				tests.forEach(function(test) {
 					var result = subject.comment(test.configuration)(test.input);
 					if (result != test.expected) {
@@ -129,6 +262,33 @@ namespace slime.project.jsapi {
 					}
 					verify(result,"result").is(test.expected);
 				});
+			}
+
+			fifty.tests.suite = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
+
+				//	unit tests
+				fifty.run(fifty.tests.prefix);
+				fifty.run(fifty.tests.split);
+
+				//	functional tests
+				functionalTests(subject, tests);
+			}
+
+			fifty.tests.next = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
+				functionalTests(subject, tests);
+			}
+
+			fifty.tests.wip = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty-next.txt").read(String));
+				functionalTests(test.wip, [ tests[0] ]);
+			}
+
+			fifty.tests.wip.suite = function() {
+				var tests = parseTestData(fifty.$loader.get("test/jsapi-to-fifty.txt").read(String));
+				functionalTests(test.wip, tests);
+				fifty.run(fifty.tests.wip);
 			}
 		}
 	//@ts-ignore

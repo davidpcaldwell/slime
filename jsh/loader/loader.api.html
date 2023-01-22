@@ -37,14 +37,9 @@ END LICENSE
 			1.	A programmer can use feature detection for Object.defineProperty and related
 			2.	A programmer can use Packages to look for LiveConnect
 			3.	MetaObject is not provided another way, but should implement ECMAScript 6 Proxy and then use that
-
-	<div jsapi:reference="getApi('../../loader/api.html').getElement('$platform')">
-	</div>
 	-->
 	<div>
 		<h1><code>$api</code></h1>
-		<div jsapi:reference="getApi('../../loader/$api.api.html').getElement('top/summary')">
-		</div>
 		<div>
 			See <a href="../../loader/$api.api.html">detailed documentation</a>.
 		</div>
@@ -65,14 +60,14 @@ END LICENSE
 				<span>Any type supported by the rhino loader.</span>
 			</div>
 		</div>
-		<div class="type" jsapi:id="Loader" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type')">
+		<div class="type" jsapi:id="Loader">
 			<a class="type" name="types.Loader">Loader</a>
 			See <a href="../../loader/api.html#types.Loader">platform loader</a>.
 		</div>
 		<ul>
 			<li class="function" jsapi:id="run">
 				<div class="name"><a id="exports.run">run</a></div>
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/run/description')">See the <a href="../../loader/jrunscript/api.html">Java loader</a> for details.</span>
+				<span>See the <a href="../../loader/jrunscript/api.html">Java loader</a> for details.</span>
 				<span>
 					Note that the Java loader adds the ability to pass a
 					<a href="../../loader/jrunscript/api.html#types.script">Java script</a> as the first argument.
@@ -88,7 +83,7 @@ END LICENSE
 			</li>
 			<li class="function" jsapi:id="file">
 				<div class="name"><a id="exports.file">file</a></div>
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/file/description')">See the <a href="../../loader/jrunscript/api.html">Java loader</a> for details.</span>
+				<span>See the <a href="../../loader/jrunscript/api.html">Java loader</a> for details.</span>
 				<span>
 					Note that the Java loader adds the ability to pass a
 					<a href="../../loader/jrunscript/api.html#types.script">Java script</a> as the first argument.
@@ -101,7 +96,7 @@ END LICENSE
 					<div class="label">Arguments</div>
 					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
 				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/file/returns')">
+				<div class="returns" jsapi:id="returns">
 					<div class="label">Returns</div>
 					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
 				</div>
@@ -109,7 +104,7 @@ END LICENSE
 			<li class="function" jsapi:id="module">
 				<div class="name"><a id="exports.module">module</a></div>
 				<!--	TODO	should the below links be top-level rather than Loader/type/ ?	-->
-				<div jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/module/description')">
+				<div>
 					See the platform loader's <a href="../../loader/api.html#module">module</a> method.
 				</div>
 				<div class="arguments">
@@ -124,7 +119,7 @@ END LICENSE
 								directory in which the file is located.
 							</span>
 						</li>
-						<li class="value" jsapi:id="arguments[1]" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/module/arguments/arguments[1]')">
+						<li class="value" jsapi:id="arguments[1]">
 							<span class="type">object</span>
 							<!--	TODO	what if this is omitted? Does the module receive null context, or empty?	-->
 							<span>
@@ -134,7 +129,7 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/module/returns')">
+				<div class="returns" jsapi:id="returns">
 					<!--
 						TODO	Document that this method returns null if the module cannot be found, and check whether that is also
 								true of the Rhino loader's module()
@@ -164,9 +159,9 @@ END LICENSE
 								The location of a script file.
 							</span>
 						</li>
-						<li class="value" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/run/arguments/arguments[1]')">
+						<li class="value">
 						</li>
-						<li class="value" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/run/arguments/arguments[2]')">
+						<li class="value">
 						</li>
 					</ol>
 				</div>
@@ -197,7 +192,7 @@ END LICENSE
 					verify(v2).is(5);
 				</script>
 			</li>
-			<li class="function" jsapi:reference="getApi('../../loader/api.html').getElement('namespace')">
+			<li class="function">
 				<div class="name">namespace</div>
 				Invokes the Rhino loader's <code>namespace</code> method.
 			</li>
@@ -361,20 +356,6 @@ END LICENSE
 			var MESSAGE = "No CoffeeScript.";
 			verify(MESSAGE).is(MESSAGE);
 		}
-	</script>
-	<script type="application/x.jsapi#tests" jsapi:id="global">
-		var output = jsh.shell.jsh({
-			shell: $jsapi.environment.jsh.unbuilt.src,
-			script: $jsapi.environment.jsh.src.getFile("jsh/loader/test/global-scope.jsh.js"),
-			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				return JSON.parse(result.stdio.output);
-			}
-		});
-		verify(output).length.is(1);
-		verify(output)[0].is("jsh");
 	</script>
 </body>
 </html>

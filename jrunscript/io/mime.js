@@ -63,7 +63,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.io.mime.Part } part
-			 * @returns { slime.jrunscript.runtime.Resource }
+			 * @returns { slime.jrunscript.runtime.old.Resource }
 			 */
 			function getResource(part) {
 				if (part.resource) return part.resource;
@@ -102,7 +102,7 @@
 				var BOUNDARY = "----=_SLIME_MULTIPART_HACK_" + index;
 				parts.forEach( function(part) {
 
-					/** @type { slime.jrunscript.runtime.Resource } */
+					/** @type { slime.jrunscript.runtime.old.Resource } */
 					var resource = getResource(part);
 
 					if (arguments[1] != 0) {
@@ -124,12 +124,22 @@
 				writer.write("--" + BOUNDARY + "--" + CRLF);
 				writer.close();
 				var stream = buffer.readBinary();
-				return new $context.$slime.Resource({
-					stream: {
-						binary: stream
-					},
-					type: $context.$slime.mime.Type("multipart", subtype, { boundary: BOUNDARY })
-				});
+				return Object.assign(
+					new $context.$slime.Resource({
+						stream: {
+							binary: stream
+						},
+						type: $context.$slime.mime.Type("multipart", subtype, { boundary: BOUNDARY })
+					}),
+					{
+						java: {
+							adapt: function() {
+								//	in this case, cannot adapt to native type
+								return void(0);
+							}
+						}
+					}
+				);
 			} else {
 				var $mail = Packages.javax.mail;
 				var $multipart = new $mail.internet.MimeMultipart(subtype);
@@ -176,22 +186,26 @@
 				});
 
 				/** @type { slime.jrunscript.io.mime.Multipart } */
-				var rv = new $context.api.io.Resource({
-					type: $context.$slime.mime.Type.parse(String($multipart.getContentType())),
-					read: {
-						binary: function() {
-							var buffer = new $context.api.io.Buffer();
-							$multipart.writeTo(buffer.writeBinary().java.adapt());
-							buffer.close();
-							return buffer.readBinary();
+				var rv = Object.assign(
+					new $context.api.io.Resource({
+						type: $context.$slime.mime.Type.parse(String($multipart.getContentType())),
+						read: {
+							binary: function() {
+								var buffer = new $context.api.io.Buffer();
+								$multipart.writeTo(buffer.writeBinary().java.adapt());
+								buffer.close();
+								return buffer.readBinary();
+							}
+						}
+					}),
+					{
+						java: {
+							adapt: function() {
+								return $multipart;
+							}
 						}
 					}
-				});
-				rv.java = {
-					adapt: function() {
-						return $multipart;
-					}
-				};
+				);
 				return rv;
 			}
 		};

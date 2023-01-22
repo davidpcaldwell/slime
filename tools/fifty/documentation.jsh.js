@@ -13,25 +13,25 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {
-		$api.Function.result(
+		$api.fp.result(
 			{ options: {}, arguments: jsh.script.arguments.slice() },
-			jsh.wf.cli.$f.option.pathname({ longname: "base" }),
-			jsh.wf.cli.$f.option.string({ longname: "chrome:id" }),
-			jsh.wf.cli.$f.option.string({ longname: "host" }),
-			jsh.wf.cli.$f.option.string({ longname: "index" }),
-			jsh.wf.cli.$f.option.boolean({ longname: "watch"}),
+			jsh.script.cli.option.pathname({ longname: "base" }),
+			jsh.script.cli.option.string({ longname: "chrome:id" }),
+			jsh.script.cli.option.string({ longname: "host" }),
+			jsh.script.cli.option.string({ longname: "index" }),
+			jsh.script.cli.option.boolean({ longname: "watch"}),
 			function(p) {
-				jsh.shell.tools.tomcat.require();
+				jsh.shell.tools.tomcat.old.require();
 
 				/** @type { slime.jrunscript.file.Directory } */
 				var base = (p.options.base) ? p.options.base.directory : jsh.shell.PWD;
 
 				var operation = (p.options.watch) ? "document" : "documentation";
 
-				var chromeId = (function(chromeId,watch) {
+				var chromeId = (function(chromeId,operation) {
 					if (chromeId) return chromeId;
-					return (watch) ? "document" : "documentation";
-				})(p.options["chrome:id"], p.options.watch);
+					return operation;
+				})(p.options["chrome:id"], operation);
 
 				var host = (function(host,operation) {
 					if (host) return operation + "." + host;
@@ -40,37 +40,25 @@
 
 				var index = p.options.index || "README.html";
 
-				var server = new jsh.httpd.Tomcat();
 				var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
-				server.map({
-					path: "",
-					servlets: {
-						"/*": {
-							load: function(scope) {
-								/** @type { slime.tools.documentation.internal.asTextHandler.Factory } */
-								var asTextHandlerCode = loader.script("as-text-handler.js");
-								var asTextHandler = asTextHandlerCode({
-									httpd: scope.httpd
-								});
-								/** @type { slime.tools.documentation.implementation } */
-								var documentationHandler = loader.module("documentation-handler.js", {
-									httpd: scope.httpd
-								});
-								var documentationFactory = documentationHandler({
-									base: base,
-									watch: p.options.watch
-								});
-								scope.$exports.handle = scope.httpd.Handler.series(
-									documentationFactory(scope.httpd),
-									asTextHandler({
-										loader: new jsh.file.Loader({ directory: base })
-									})
-								)
-							}
+				var code = {
+					/** @type { slime.fifty.view.Script } */
+					project: loader.script("project.js")
+				};
+
+				var library = {
+					project: code.project({
+						library: {
+							file: jsh.file,
+							httpd: jsh.httpd
 						}
-					}
+					})
+				};
+
+				var server = library.project({
+					base: base,
+					watch: p.options.watch
 				});
-				server.start();
 
 				//	Use dedicated Chrome browser if present
 				if (jsh.shell.browser.chrome) {
@@ -91,6 +79,7 @@
 					//	Otherwise, fall back to Java desktop integration and default browser
 					Packages.java.awt.Desktop.getDesktop().browse( new Packages.java.net.URI( "http://127.0.0.1:" + server.port + "/" + index ) );
 				}
+
 				server.run();
 			}
 		)

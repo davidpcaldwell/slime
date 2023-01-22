@@ -6,7 +6,7 @@
 
 namespace slime.jsh.unit.mock.github {
 	interface User {
-		[x: string]: slime.jrunscript.git.repository.Local
+		[x: string]: slime.jrunscript.tools.git.repository.Local
 	}
 
 	export interface src {
@@ -60,7 +60,7 @@ namespace slime.jrunscript.tools.github {
 			argument: (i: I) => {
 				run: (r: {
 					world: slime.jrunscript.http.client.World
-				}) => slime.$api.fp.impure.Ask<E,O>
+				}) => slime.$api.fp.world.old.Ask<E,O>
 			}
 		}
 
@@ -142,7 +142,7 @@ namespace slime.jrunscript.tools.github {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const jsh = fifty.global.jsh;
 			const { verify, run } = fifty;
@@ -248,7 +248,7 @@ namespace slime.jrunscript.tools.github {
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 
 		fifty.tests.suite = function() {

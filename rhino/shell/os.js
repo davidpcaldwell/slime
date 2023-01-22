@@ -8,11 +8,11 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param {slime.jrunscript.shell.system.Context} $context
-	 * @param {slime.jrunscript.shell.system.Exports} $exports
+	 * @param {slime.jrunscript.shell.internal.os.Context} $context
+	 * @param {slime.jrunscript.shell.internal.os.Exports} $exports
 	 */
 	function($api,$context,$exports) {
-		/** @type { slime.jrunscript.shell.system.Exports["ps"]} */
+		/** @type { slime.jrunscript.shell.internal.os.Exports["ps"]} */
 		var ps = (function() {
 			/**
 			 * @returns {slime.jrunscript.shell.system.object.Process[]}
@@ -125,8 +125,8 @@
 
 		if ($context.os.name == "Mac OS X") {
 			var correctPassword;
-			var PasswordIncorrect = $api.Error.Type({ name: "PasswordIncorrect" });
-			var PasswordRequired = $api.Error.Type({ name: "PasswordRequired" });
+			var PasswordIncorrect = $api.Error.old.Type({ name: "PasswordIncorrect" });
+			var PasswordRequired = $api.Error.old.Type({ name: "PasswordRequired" });
 			//	TODO	the below method results in 3 failures from OS point of view; apparently askpass program is run three times before
 			//			giving up. Is there a way to verify password in one try and then use it?
 			//	TODO	developing a true graphical program would be one way to deal with the above
@@ -165,7 +165,7 @@
 				script.remove();
 				correctPassword = password;
 			};
-			/** @type { slime.jrunscript.shell.system.Exports["sudo"] } */
+			/** @type { slime.jrunscript.shell.internal.os.Exports["sudo"] } */
 			var sudo = function sudo(p) {
 				if (!correctPassword) {
 					if (p.password) {

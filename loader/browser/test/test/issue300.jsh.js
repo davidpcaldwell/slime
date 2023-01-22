@@ -4,16 +4,20 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		view: "console"
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				view: "console"
+			}
+		});
+
+		var suite = new jsh.unit.Suite(new jsh.unit.html.Part({
+			pathname: jsh.script.file.parent.parent.getRelativePath("suite.jsh.api.html")
+		}));
+
+		jsh.unit.interface.create(suite, {
+			view: parameters.options.view
+		});
 	}
-});
-
-var suite = new jsh.unit.Suite(new jsh.unit.html.Part({
-	pathname: jsh.script.file.parent.parent.getRelativePath("suite.jsh.api.html")
-}));
-
-jsh.unit.interface.create(suite, {
-	view: parameters.options.view
-});
+)();

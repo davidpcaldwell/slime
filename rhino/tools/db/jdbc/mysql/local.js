@@ -145,7 +145,7 @@
 								line: function(string) {
 									jsh.shell.console("[mysql stderr] " + string);
 									if (/ready for connections/.test(string)) {
-										new started.Waiter({
+										started.Waiter({
 											until: function() {
 												return true;
 											},
@@ -163,7 +163,7 @@
 				});
 
 				jsh.shell.console("Started mysqld thread.");
-				new started.Waiter({
+				started.Waiter({
 					until: function() {
 						return server;
 					},

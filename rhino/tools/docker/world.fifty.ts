@@ -7,7 +7,7 @@
 namespace slime.jrunscript.tools.kubectl {
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.docker = function() {
 				var isRunning = fifty.global.jsh.tools.docker.engine.isRunning();

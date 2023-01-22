@@ -40,7 +40,7 @@
 			}
 		};
 
-		var tomcat = new jsh.httpd.Tomcat({ port: parameters.options.port });
+		var tomcat = jsh.httpd.Tomcat({ port: parameters.options.port });
 		tomcat.map({
 			path: "/",
 			servlets: {
@@ -91,7 +91,7 @@
 				uri: "http://" + "127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
 				on: {
 					start: function(p) {
-						new lock.Waiter({
+						lock.Waiter({
 							until: function() {
 								return true;
 							},
@@ -112,7 +112,7 @@
 			jsh.shell.console("Initiated Chrome launch.");
 
 			jsh.shell.console("Waiting for Chrome launch to return process ...");
-			new lock.Waiter({
+			lock.Waiter({
 				until: function() { return Boolean(opened); },
 				then: function() {
 					jsh.shell.console("opened = " + opened);
@@ -126,7 +126,7 @@
 			jsh.shell.console("Chrome subprocess launched.");
 
 			jsh.shell.console("Waiting for result ...");
-			new lock.Waiter({
+			lock.Waiter({
 				until: function() { return typeof(result.success) != "undefined" },
 				then: function() {
 				}

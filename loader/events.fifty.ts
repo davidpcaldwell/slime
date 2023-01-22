@@ -4,24 +4,123 @@
 //
 //	END LICENSE
 
+namespace slime.$api {
+	/**
+	 * An occurrence in which other parts of a program might be interested. Events have a
+	 */
+	export interface Event<T> {
+		type: string
+		source: object
+		timestamp: number
+		detail: T
+		path: any[]
+	}
+
+	export interface Events<D> {
+		listeners: {
+			add: <K extends keyof D>(type: K, handler: event.Handler<D[K]>) => void
+			remove: <K extends keyof D>(type: K, handler: event.Handler<D[K]>) => void
+		},
+		fire: <K extends keyof D>(type: K, detail?: D[K]) => void
+	}
+
+	export namespace event {
+		/**
+		 * A function that receives events.
+		 */
+		export type Handler<T> = (e: Event<T>) => void
+	}
+
+	export namespace event {
+		/**
+		 * An object whose methods process events; events of a type are mapped to a method with the same name as that type.
+		 */
+		export type Handlers<D> = {
+			[k in keyof D]?: event.Handler<D[k]>
+		}
+
+		export namespace Function {
+			//	TODO	it appears this duplicates the event.Handlers concept above
+			export type Receiver = { [x: string]: (e: Event<any>) => void } | Events<any>
+		}
+	}
+
+	export namespace exports {
+		export interface Events {
+			create: (p?: {
+				source?: any
+				parent?: slime.$api.Events<any>
+				getParent?: () => slime.$api.Events<any>
+				on?: { [x: string]: any }
+			}) => slime.$api.Events<any>
+
+			//	TODO	could probably use parameterized types to improve accuracy
+			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.event.Function.Receiver) => R
+
+			toListener: <D>(handler: slime.$api.event.Handlers<D>) => {
+				emitter: slime.$api.Events<D>
+				attach: () => void
+				detach: () => void
+			}
+
+			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.event.Handlers<E>) => R
+
+			invoke: <E,R>(f: (events: slime.$api.Events<E>) => R, handler: slime.$api.event.Handlers<E>) => R
+
+			Handler: {
+				attach: <T>(events: slime.$api.Events<T>) => (handler: slime.$api.event.Handlers<T>) => void
+			}
+		}
+	}
+}
+
 namespace slime.runtime.internal.events {
 	export interface Context {
 		deprecate: slime.$api.Global["deprecate"]
 	}
 
-	export interface Export {
-		create: (p?: {
-			source?: any
-			parent?: slime.$api.Events<any>
-			getParent?: () => slime.$api.Events<any>
-			on?: { [x: string]: any }
-		}) => slime.$api.Events<any>
+	export interface Exports {
+		api: slime.$api.exports.Events
 
-		Function: slime.$api.Global["Events"]["Function"]
-		toHandler: slime.$api.Global["Events"]["toHandler"]
-		action: slime.$api.Global["Events"]["action"]
-
-		ask: slime.$api.fp.Exports["impure"]["ask"]
-		tell: slime.$api.fp.Exports["impure"]["tell"]
+		ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => (on?: slime.$api.event.Handlers<E>) => T
+		tell: slime.$api.fp.Exports["world"]["old"]["tell"]
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			var code: Script = fifty.$loader.script("events.js");
+			var subject = code({
+				deprecate: fifty.global.$api.deprecate
+			});
+
+			var remembered;
+
+			fifty.tests.suite = function() {
+				var f = function(events) {
+					remembered = events;
+					events.fire("xxx", 2);
+				};
+
+				var captured = [];
+
+				subject.api.invoke(f, {
+					xxx: function(e) {
+						captured.push(e);
+					}
+				});
+
+				verify(captured).length.is(1);
+
+				remembered.fire("xxx", 2);
+				verify(captured).length.is(1);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export type Script = slime.loader.Script<Context,Exports>
 }

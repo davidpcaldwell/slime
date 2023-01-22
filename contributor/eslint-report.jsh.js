@@ -16,72 +16,63 @@
 		var json = base.getFile(".eslintrc.json").read(String);
 		var configuration = eval("(" + json + ")");
 		var rules = Object.entries(configuration.rules).filter(function(entry) {
-			return entry[1] == "warn";
+			return entry[1] == "warn" || entry[1].length > 1 && entry[1][0] == "warn";
 		}).map(function(entry) {
 			return entry[0];
 		});
 		//jsh.shell.console("rules = " + Object.keys(configuration.rules));
 
-		jsh.shell.tools.node.require();
+		$api.fp.world.execute(jsh.shell.tools.node.require());
 
-		/**
-		 * @type { (node: any) => node is slime.jsh.shell.tools.node.Installed }
-		 */
-		function isInstalled(node) {
-			return true;
-		}
+		var node = jsh.shell.tools.node.installed;
 
-		var node = jsh.shell.tools.node;
+		node.modules.require({ name: "eslint" });
 
-		if (isInstalled(node)) {
-			node.modules.require({ name: "eslint" });
+		var results = node.run({
+			command: "eslint",
+			arguments: [/*"--debug",*/ "--format", "json", "."],
+			directory: base,
+			stdio: {
+				output: String
+			},
+			evaluate: function(result) {
+				return JSON.parse(result.stdio.output);
+			}
+		});
 
-			var results = node.run({
-				command: "eslint",
-				arguments: [/*"--debug",*/ "--format", "json", "."],
-				directory: base,
-				stdio: {
-					output: String
-				},
-				evaluate: function(result) {
-					return JSON.parse(result.stdio.output);
-				}
-			});
+		// var messages = results.reduce(function(rv,item) {
+		// 	return rv.concat(item.messages);
+		// },[]);
 
-			// var messages = results.reduce(function(rv,item) {
-			// 	return rv.concat(item.messages);
-			// },[]);
+		// jsh.shell.console(JSON.stringify(messages));
+		// jsh.shell.console(String(messages.length));
 
-			// jsh.shell.console(JSON.stringify(messages));
-			// jsh.shell.console(String(messages.length));
-
-			var warnings = results.reduce(function(rv,item) {
-				return rv.concat(
-					item.messages.map(function(message) {
-						return $api.Object.compose(message, {
-							file: item.filePath
-						})
+		var warnings = results.reduce(function(rv,item) {
+			return rv.concat(
+				item.messages.map(function(message) {
+					return $api.Object.compose(message, {
+						file: item.filePath
 					})
-				)
-			},[]);
-
-			// jsh.shell.console(JSON.stringify(results, void(0), 4));
-			rules.map(function(name) {
-				return {
-					name: name,
-					violations: warnings.filter(function(warning) {
-						return warning.ruleId == name;
-					})
-				}
-			}).sort(function(a,b) {
-				return b.violations.length - a.violations.length;
-			}).forEach(function(rule) {
-				jsh.shell.console(rule.name + ": " + rule.violations.length);
-				rule.violations.forEach(function(violation) {
-					jsh.shell.console(violation.file + ":" + violation.line + ":" + violation.column + " " + violation.message);
 				})
-			});
-		}
+			)
+		},[]);
+
+		// jsh.shell.console(JSON.stringify(results, void(0), 4));
+		rules.map(function(name) {
+			return {
+				name: name,
+				violations: warnings.filter(function(warning) {
+					return warning.ruleId == name;
+				})
+			}
+		}).sort(function(a,b) {
+			return b.violations.length - a.violations.length;
+		}).forEach(function(rule) {
+			jsh.shell.console(rule.name + ": " + rule.violations.length);
+			rule.violations.forEach(function(violation) {
+				jsh.shell.console(violation.file + ":" + violation.line + ":" + violation.column + " " + violation.message);
+			})
+		});
 	}
 //@ts-ignore
 )($api,jsh);

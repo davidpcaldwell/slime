@@ -9,25 +9,47 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function(Packages,jsh,$slime,$loader,plugin) {
+	function(Packages,$api,jsh,$slime,$loader,plugin) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.js && jsh.document && jsh.js.document && jsh.web && jsh.java && jsh.io && jsh.file);
 			},
 			load: function() {
+				/**
+				 *
+				 * @param { slime.jrunscript.runtime.io.OutputStream } outputStream
+				 * @returns { slime.jrunscript.shell.context.OutputStream }
+				 */
+				var toShellContextOutputStream = function(outputStream) {
+					return {
+						character: function() {
+							return outputStream.character();
+						},
+						java: {
+							adapt: function() {
+								return outputStream.java.adapt();
+							}
+						},
+						split: function(other) {
+							return outputStream.split(other);
+						}
+					}
+				};
+
 				var stdio = {
 					input: jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput()),
-					output: jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput()),
-					error: jsh.io.Streams.java.adapt($slime.getStdio().getStandardError())
+					output: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput())),
+					error: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardError()))
 				}
 
 				var code = {
-					/** @type { slime.jrunscript.shell.Loader } */
+					/** @type { slime.jrunscript.shell.Script } */
 					module: $loader.script("module.js")
 				}
 
@@ -102,10 +124,8 @@
 					}
 				);
 
-				/** @returns { slime.jsh.shell.Exports & { getopts: any } } */
-				var toJsh = function(api) {
-					return api;
-				}
+				/** @type { slime.js.Cast<slime.jsh.shell.Exports & { getopts: any }> } */
+				var toJsh = $api.fp.cast;
 
 				jsh.shell = toJsh(module);
 			}
@@ -177,4 +197,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,jsh,$slime,$loader,plugin);
+)(Packages,$api,jsh,$slime,$loader,plugin);

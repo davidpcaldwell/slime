@@ -27,13 +27,11 @@
 		};
 
 		add("loader/browser/client.js", getSlimePart("loader/browser/client.api.html"));
-		add("$api/old/Function", getSlimePart("loader/$api-Function-old.api.html"));
 		add("$api/flag", getSlimePart("loader/$api-flag.api.html"));
 		add("$api", getSlimePart("loader/$api.api.html"));
 		add("js/object/", getSlimePart("js/object/api.html"));
 		add("js/object/Error.js", getSlimePart("js/object/Error.api.html"));
 		add("js/document/", getSlimePart("js/document/api.html"));
-		add("js/time/", getSlimePart("js/time/api.html"));
 		// TODO: does js/promise have any real tests?
 		add("js/promise/", getSlimePart("js/promise/api.html"));
 
@@ -41,6 +39,6 @@
 		add("loader/api/", getSlimePart("loader/api/api.html"));
 		add("loader/api/test/data/1/", getSlimePart("loader/api/test/data/1/api.html"));
 		add("loader/browser/test/", getSlimePart("loader/browser/test/api.html"));
-		add("$jsapi.loader.fifty", getSlimePart("loader/api/test/fifty/test/data/api.html"));
+		add("$jsapi.loader.fifty", getSlimePart("tools/fifty/test/data/api.html"));
 	}
 )();

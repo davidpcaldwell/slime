@@ -23,12 +23,14 @@ namespace slime.jsh {
 	}
 
 	export interface Tools {
-		git: slime.jrunscript.git.Exports
-		hg: any
+		plugin: {
+			jenkins: () => slime.jrunscript.tools.jenkins.Exports
+		}
+		jenkins: slime.jrunscript.tools.jenkins.Exports
+
 		node: slime.jrunscript.node.Exports
 		install: slime.jrunscript.tools.install.Exports
 		github: slime.jrunscript.tools.github.Exports
-		gradle: any
 	}
 
 	/**
@@ -51,7 +53,11 @@ namespace slime.jsh {
 
 		script: slime.jsh.script.Exports
 
-		js: any
+		js: slime.js.old.Exports & {
+			document: any
+			web: slime.web.Exports
+		}
+
 		file: slime.jrunscript.file.Exports
 		time: slime.time.Exports
 		ip: slime.jrunscript.ip.Exports

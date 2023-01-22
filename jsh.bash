@@ -13,6 +13,7 @@ if [ -n "${JSH_LAUNCHER_BASH_DEBUG}" ]; then
 fi
 
 UNAME=$(uname)
+ARCH=$(arch)
 
 if [ "$0" == "bash" ]; then
 	#	Remote shell
@@ -21,6 +22,7 @@ if [ "$0" == "bash" ]; then
 	rmdir ${JSH_LOCAL_JDKS}
 	JDK_USER_JDKS=/dev/null
 	JSH_LAUNCHER_GITHUB_PROTOCOL="${JSH_LAUNCHER_GITHUB_PROTOCOL:-https}"
+	JSH_LAUNCHER_GITHUB_BRANCH="${JSH_LAUNCHER_GITHUB_BRANCH:-main}"
 else
 	JSH_LOCAL_JDKS="${JSH_LOCAL_JDKS:-$(dirname $0)/local/jdk}"
 	JDK_USER_JDKS="${JSH_USER_JDKS:-${HOME}/.slime/jdk}"
@@ -43,6 +45,26 @@ announce_install() {
 	>&2 echo "Installing ${URL} to ${DESTINATION} ..."
 }
 
+APT_UPDATED=
+debian_install_package() {
+	local SUDO=""
+	local sudo="$(which sudo)"
+	if [ ${sudo} ]; then
+		SUDO="${sudo}"
+	fi
+	local package="$1"
+	if [ "$(which apt-get)" ]; then
+		if [ -z "${APT_UPDATED}" ]; then
+			${SUDO} apt-get -y update
+			${SUDO} apt-get -y upgrade
+			APT_UPDATED=true
+		fi
+		${SUDO} apt-get -y install $package
+	else
+		exit 1
+	fi
+}
+
 download_install() {
 	URL="$1"
 	LOCATION="$2"
@@ -51,6 +73,9 @@ download_install() {
 		if [ "${UNAME}" == "Darwin" ]; then
 			curl -L -o ${LOCATION} ${URL}
 		elif [ "${UNAME}" == "Linux" ]; then
+			if [ ! "$(which wget)" ]; then
+				debian_install_package wget
+			fi
 			wget -O ${LOCATION} ${URL}
 		fi
 	fi
@@ -107,20 +132,33 @@ install_jdk_11_liberica() {
 	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
 }
 
-install_jdk_8_corretto() {
-	TO=$(clean_destination $1)
+install_jdk_corretto() {
+	local VERSION="$1"
+	local MAJOR_VERSION="$2"
+	TO=$(clean_destination "$3")
 
-	local VERSION="8.282.08.1"
 	if [ "${UNAME}" == "Darwin" ]; then
-		JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-macosx-x64.tar.gz"
-		JDK_TARBALL_PATH="amazon-corretto-8.jdk/Contents/Home"
+		if [ "${ARCH}" == "arm64" ]; then
+			JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-macosx-aarch64.tar.gz"
+		else
+			#	i386
+			JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-macosx-x64.tar.gz"
+		fi
+		JDK_TARBALL_PATH="amazon-corretto-${MAJOR_VERSION}.jdk/Contents/Home"
 	elif [ "${UNAME}" == "Linux" ]; then
-		JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-linux-x64.tar.gz"
-		JDK_TARBALL_PATH="amazon-corretto-${VERSION}-linux-x64"
+		if [ "${ARCH}" == "aarch64" ]; then
+			JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-linux-aarch64.tar.gz"
+			JDK_TARBALL_PATH="amazon-corretto-${VERSION}-linux-aarch64"
+		else
+			JDK_TARBALL_BASENAME="amazon-corretto-${VERSION}-linux-x64.tar.gz"
+			JDK_TARBALL_PATH="amazon-corretto-${VERSION}-linux-x64"
+		fi
 	fi
 	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/${VERSION}/${JDK_TARBALL_BASENAME}"
+	if [ ! -d "${HOME}/Downloads" ]; then
+		mkdir "${HOME}/Downloads"
+	fi
 	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
-
 	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
 		download_install "${JDK_TARBALL_URL}" "${JDK_TARBALL_LOCATION}"
 	fi
@@ -134,21 +172,16 @@ install_jdk_8_corretto() {
 	>&2 echo "Installed ${JDK_TARBALL_URL} at ${TO}"
 }
 
-install_jdk_11_corretto() {
-	TO=$(clean_destination $1)
+install_jdk_8_corretto() {
+	install_jdk_corretto "8.342.07.3" "8" $1
+}
 
-	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/11.0.9.12.1/amazon-corretto-11.0.9.12.1-macosx-x64.tar.gz"
-	JDK_TARBALL_BASENAME="amazon-corretto-11.0.9.12.1-macosx-x64.tar.gz"
-	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
-	JDK_TARBALL_PATH="amazon-corretto-11.jdk/Contents/Home"
-	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
-		echo "Downloading ${JDK_TARBALL_URL} ..."
-		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
-	fi
-	JDK_WORKDIR=$(mktemp -d)
-	tar xf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
-	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
-	>&2 echo "Installed ${JDK_TARBALL_URL} at ${TO}"
+install_jdk_11_corretto() {
+	install_jdk_corretto "11.0.15.9.1" "11" $1
+}
+
+install_jdk_17_corretto() {
+	install_jdk_corretto "17.0.3.6.1" "17" $1
 }
 
 install_jdk_8() {
@@ -157,6 +190,10 @@ install_jdk_8() {
 
 install_jdk_11() {
 	install_jdk_11_corretto "$@"
+}
+
+install_jdk_17() {
+	install_jdk_17_corretto "$@"
 }
 
 install_jdk() {
@@ -180,6 +217,11 @@ fi
 
 if [ "$1" == "--add-jdk-11" ]; then
 	install_jdk_11 ${JSH_LOCAL_JDKS}/11
+	exit $?
+fi
+
+if [ "$1" == "--add-jdk-17" ]; then
+	install_jdk_17 ${JSH_LOCAL_JDKS}/17
 	exit $?
 fi
 
@@ -258,11 +300,6 @@ if [ -z "${JRUNSCRIPT}" ]; then
 	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
 fi
 
-#	TODO	Because jsh shells invoke jrunscript by name currently, we put jrunscript in the PATH. Could be removed by having
-#			shells execute subshells using the launcher program (e.g., this bash script), or by having it locate jrunscript
-#			dynamically, possibly using an environment variable provided here
-export PATH="$(dirname ${JRUNSCRIPT}):${PATH}"
-
 javaSystemPropertyArgument() {
 	if [ -n "$2" ]; then
 		echo "-D$1=$2"
@@ -277,6 +314,7 @@ JSH_GITHUB_USER_ARGUMENT=$(javaSystemPropertyArgument jsh.github.user ${JSH_GITH
 JSH_GITHUB_PASSWORD_ARGUMENT=$(javaSystemPropertyArgument jsh.github.password ${JSH_GITHUB_PASSWORD})
 
 get_jdk_major_version() {
+	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
 	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
 	JDK=$1
 	JAVA="${JDK}/bin/java"
@@ -303,7 +341,7 @@ get_jdk_major_version() {
 #	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
 #	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to
 #	be found with JDK 8. So we have to version-check the JDK to determine whether to supply the argument. This version test works
-#	with SLIME-supported Amazon Corretta JDK 8 and JDK 11, and hasn't yet been tested with anything else.
+#	with SLIME-supported Amazon Corretto JDK 8 and JDK 11, and hasn't yet been tested with anything else.
 #
 #	But it works with JDK 8 and 11, so it's better than nothing.
 JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
@@ -326,7 +364,7 @@ if [ "$0" == "bash" ]; then
 		if [ -n "${JSH_HTTPS_PROXY_HOST}" ]; then
 			CURL_PROXY_ARGUMENTS="${CURL_PROXY_ARGUMENTS} -x ${JSH_LAUNCHER_GITHUB_PROTOCOL}://${JSH_HTTPS_PROXY_HOST}:${JSH_HTTPS_PROXY_PORT}"
 		fi
-		AUTHORIZATION_SCRIPT_URL="${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/tools/github/${SCRIPT}"
+		AUTHORIZATION_SCRIPT_URL="${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/tools/github/${SCRIPT}"
 		echo $(curl -L ${CURL_PROXY_ARGUMENTS} -u ${JSH_GITHUB_USER}:${JSH_GITHUB_PASSWORD} ${AUTHORIZATION_SCRIPT_URL})
 	}
 
@@ -334,7 +372,7 @@ if [ "$0" == "bash" ]; then
 	#	AUTHORIZATION_SCRIPT=$(get_authorization_script authorize.js)
 	#	echo ${AUTHORIZATION_SCRIPT}
 	AUTHORIZATION_SCRIPT="//  no-op"
-	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "${AUTHORIZATION_SCRIPT}" -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/master/rhino/jrunscript/api.js?jsh')" "$@"
+	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "${AUTHORIZATION_SCRIPT}" -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
 else
 	${JRUNSCRIPT} $(dirname $0)/rhino/jrunscript/api.js jsh "$@"
 fi

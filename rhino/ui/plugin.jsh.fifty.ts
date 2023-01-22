@@ -7,17 +7,20 @@
 namespace slime.jsh {
 	export interface Global {
 		ui: {
+			javafx: slime.jrunscript.ui.Exports["javafx"] & {
+				WebView: any
+			}
+
 			application: (
 				p: slime.jsh.ui.application.Argument,
-				events?: $api.events.Function.Receiver
+				events?: $api.event.Function.Receiver
 			) => {
 				port: number
 				server: any
 				browser: any
 			}
 
-			askpass: any
-			javafx: any
+			askpass: slime.jsh.ui.askpass.Exports
 			Chrome: any
 
 			/**
@@ -43,13 +46,13 @@ namespace slime.jsh.ui.application {
 
 		https?: slime.jsh.httpd.tomcat.Configuration["https"]
 
-		resources: slime.Loader
+		resources: slime.old.Loader
 		parameters?: slime.jsh.httpd.servlet.Parameters
 		servlet: slime.jsh.httpd.servlet.descriptor
 	}
 
 	export interface ServerRunning {
-		server: slime.jsh.httpd.Tomcat
+		server: Pick<slime.jsh.httpd.Tomcat,"start" | "stop" | "port">
 	}
 
 	export type ServerSpecification = ServerRunning | ServerConfiguration
@@ -89,9 +92,14 @@ namespace slime.jsh.ui.application {
 		create?: any
 	}
 
-	export type BrowserConfiguration = BrowserSpecification | ((p: any) => void)
+	/**
+	 * @deprecated Use {@link slime.jsh.ui.application.BrowserSpecification}.
+	 */
+	export type BrowserFunction = (p: any) => void
 
-	interface ClientSpecification {
+	export type BrowserConfiguration = BrowserSpecification | BrowserFunction
+
+	export interface ClientSpecification {
 		browser: BrowserConfiguration
 
 		url?: string
@@ -102,15 +110,15 @@ namespace slime.jsh.ui.application {
 		path?: string
 	}
 
-	interface EventsConfiguration {
+	export interface EventsConfiguration {
 		close: () => void
 	}
 
-	interface EventsSpecification {
+	export interface EventsSpecification {
 		on?: EventsConfiguration
 	}
 
-	interface Deprecated {
+	export interface Deprecated {
 		/** @deprecated */
 		zoom?: any
 		/** @deprecated */

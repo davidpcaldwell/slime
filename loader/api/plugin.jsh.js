@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jsh.Global } jsh
-	 * @param { slime.Loader } $loader
+	 * @param { slime.old.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
  	 */
 	function(jsh,$loader,plugin) {

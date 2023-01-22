@@ -7,29 +7,62 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function(jsh,$loader,plugin) {
+	function($api,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.file && jsh.tools && jsh.tools.code);
+				return Boolean(jsh.file && jsh.shell && jsh.tools && jsh.tools.git && jsh.tools.code);
 			},
 			load: function() {
 				if (!jsh.project) jsh.project = {
-					code: void(0)
+					code: void(0),
+					openapi: void(0)
 				};
-				/** @type { slime.project.code.Script } */
-				var script = $loader.script("module.js");
-				jsh.project.code = script({
+
+				var code = {
+					/** @type { slime.project.code.Script } */
+					code: $loader.script("module.js"),
+					/** @type { slime.project.openapi.Script } */
+					openapi: $loader.script("openapi-update.js")
+				};
+
+				jsh.project.code = code.code({
 					library: {
 						file: jsh.file,
+						io: jsh.io,
+						git: jsh.tools.git,
 						code: jsh.tools.code
 					}
-				})
+				});
+
+				var openapi = (
+					function() {
+						return code.openapi({
+							library: {
+								shell: jsh.shell
+							}
+						})
+					}
+				)();
+
+				jsh.project.openapi = {
+					generate: function(p) {
+						var configuration = openapi.initialize(jsh);
+						openapi.generate(
+							$api.Object.compose(
+								{ configuration: configuration },
+								p
+							)
+						)
+						jsh.shell.console("Wrote TypeScript definition to " + p.destination);
+					}
+				}
 			}
 		})
 	}
 //@ts-ignore
-)(jsh,$loader,plugin);
+)($api,jsh,$loader,plugin);

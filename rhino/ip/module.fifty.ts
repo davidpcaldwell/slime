@@ -35,6 +35,9 @@ namespace slime.jrunscript.ip {
 		}
 
 		export interface Port extends slime.jrunscript.ip.Port {
+			/**
+			 * Returns whether the port is "open" (meaning unused).
+			 */
 			isOpen(): boolean
 		}
 	}
@@ -94,7 +97,7 @@ namespace slime.jrunscript.ip {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.sandbox = function() {
 				fifty.run(fifty.tests.sandbox.reachable);
@@ -112,7 +115,7 @@ namespace slime.jrunscript.ip {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var jsh = fifty.global.jsh;
 			var verify = fifty.verify;
@@ -148,14 +151,14 @@ namespace slime.jrunscript.ip {
 			timeout: Timeout
 			host: Host
 			port?: Port
-		}) => slime.$api.fp.impure.Ask<{
+		}) => slime.$api.fp.world.old.Ask<{
 			error: Error
 		},boolean>
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var jsh = fifty.global.jsh;
 			var world = jsh.ip.world;
@@ -218,7 +221,7 @@ namespace slime.jrunscript.ip {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const $api = fifty.global.$api;
 			const jsh = fifty.global.jsh;
@@ -253,14 +256,14 @@ namespace slime.jrunscript.ip {
 				var mocks = {
 					success: Mock(
 						function(p) {
-							return $api.Function.impure.ask(function(events) {
+							return $api.fp.world.old.ask(function(events) {
 								return true;
 							})
 						}
 					),
 					error: Mock(
 						function(p) {
-							return $api.Function.impure.ask(function(events) {
+							return $api.fp.world.old.ask(function(events) {
 								events.fire("error", new Error("mock error message"));
 								return false;
 							})
@@ -268,7 +271,7 @@ namespace slime.jrunscript.ip {
 					),
 					failure: Mock(
 						function(p) {
-							return $api.Function.impure.ask(function(events) {
+							return $api.fp.world.old.ask(function(events) {
 								return false;
 							})
 						}
@@ -329,7 +332,7 @@ namespace slime.jrunscript.ip {
 		tcp: {
 			isAvailable: (p: {
 				port: Port
-			}) => slime.$api.fp.impure.Ask<{
+			}) => slime.$api.fp.world.old.Ask<{
 				/**
 				 * An event that supplies underlying exceptions received by the JVM when attempting to open sockets.
 				 * Exceptions are expected in this situation; the implementation tries several operations, using whether
@@ -361,7 +364,7 @@ namespace slime.jrunscript.ip {
 	(
 		function(
 			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
@@ -388,7 +391,7 @@ namespace slime.jrunscript.ip {
 				) => boolean
 			 ) {
 				var isAvailable: World["tcp"]["isAvailable"] = function(p) {
-					return $api.Function.impure.ask(function(events) {
+					return $api.fp.world.old.ask(function(events) {
 						return implementation(p, events);
 					})
 				};

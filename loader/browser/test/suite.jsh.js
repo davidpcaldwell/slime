@@ -4,16 +4,16 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
-		jsh.shell.jsh.require({
-			satisfied: function() {
-				return Boolean(jsh.httpd.Tomcat);
-			},
-			install: function() {
-				jsh.shell.tools.tomcat.install();
-			}
-		});
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(Packages, $api, jsh) {
+		jsh.shell.tools.tomcat.old.require();
 
 		var parameters = jsh.script.getopts({
 			options: {
@@ -76,6 +76,10 @@
 		var testBase = toSuite.base;
 
 		if (parameters.options.definition) {
+			if (!parameters.options.definition.file) {
+				jsh.shell.console("File not found: " + parameters.options.definition);
+				jsh.shell.exit(1);
+			}
 			var toDefinition = jsh.file.navigate({
 				from: testBase,
 				to: parameters.options.definition.file
@@ -102,13 +106,18 @@
 
 		// TODO: automated test cases for this script. Manual test cases for now:
 		// rhino/jrunscript/api.js
-		// loader/browser/test/test/sample-suite.
+		// loader/browser/test/test/sample.suite.js
 		// $HOME/.bash_profile
 
 		var $loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
 
-		var tomcat = new jsh.httpd.Tomcat();
+		var tomcat = jsh.httpd.Tomcat();
 
+		/**
+		 *
+		 * @param { slime.runtime.browser.test.internal.suite.Browser } browser
+		 * @returns { slime.runtime.browser.test.internal.suite.Host }
+		 */
 		var run = function(browser) {
 			//	TODO	first two lines are now copied to loader/browser/test/server.js
 			tomcat.map({
@@ -128,6 +137,7 @@
 							scope.$exports.handle = scope.httpd.Handler.series(
 								function(request) {
 									jsh.shell.console("REQUEST: " + request.method + " " + request.path);
+									return void(0);
 								},
 								(
 									(jsh.typescript)
@@ -152,7 +162,7 @@
 												}
 											}
 										})()
-										: $api.Function.returning(void(0))
+										: $api.fp.returning(void(0))
 								),
 								(
 									(!parameters.options.interactive)
@@ -171,9 +181,9 @@
 												url: url
 											})
 										})()
-										: $api.Function.returning(void(0))
+										: $api.fp.returning(void(0))
 								),
-								new scope.httpd.Handler.Loader({
+								scope.httpd.Handler.Loader({
 									loader: new jsh.file.Loader({
 										directory: toResult.base
 									})
@@ -204,9 +214,14 @@
 					//	TODO	url-encode the below
 					uri += "&" + argument;
 				});
-				browser.start({
-					uri: uri
-				});
+				try {
+					browser.start({
+						uri: uri
+					});
+				} catch (e) {
+					jsh.shell.console(e);
+					if (e.javaException) e.javaException.printStackTrace();
+				}
 			});
 			return {
 				port: tomcat.port
@@ -225,6 +240,8 @@
 				}
 			});
 
+			this.name = void(0);
+
 			this.start = function(p) {
 				open(p.uri);
 			};
@@ -235,50 +252,98 @@
 			}
 		};
 
-		var Chrome = function(o) {
-			var instance = new jsh.shell.browser.chrome.Instance({
-				location: o.location
-			});
-
-			var kill;
-
-			this.name = "Google Chrome";
-
-			this.start = function(p) {
-				instance.run({
-					uri: p.uri,
-					arguments: (function() {
-						var rv = [];
-						if (o.remoteDebugPort) rv.push("--remote-debugging-port=" + o.remoteDebugPort);
-						return rv;
-					})(),
-					on: {
-						start: function(e) {
-							kill = function() {
-								e.kill();
-							}
-						}
-					}
-				});
-			};
-
-			this.kill = function() {
-				kill();
+		/**
+		 *
+		 * @param { slime.jsh.unit.Browser } browser
+		 * @param { (url: string) => string } url
+		 * @returns { slime.runtime.browser.test.internal.suite.Browser }
+		 */
+		var jshUnitBrowserToBrowser = function(name, url, browser) {
+			return {
+				name: name,
+				start: function(p) {
+					browser.open({
+						uri: url(p.uri)
+					});
+				},
+				kill: function() {
+					browser.close();
+				}
 			}
-		};
+		}
 
+		/**
+		 *
+		 * @param { string } argument
+		 * @returns { slime.runtime.browser.test.internal.suite.Browser }
+		 */
 		var toBrowser = function(argument) {
+			if (argument == "dockercompose:selenium:chrome") {
+				return jshUnitBrowserToBrowser(
+					"Remote (Selenium Chrome) - slime",
+					function(url) { return url.replace(/127\.0\.0\.1/g, jsh.shell.environment.HOSTNAME) },
+					jsh.unit.browser.selenium.remote.Chrome({
+						host: "chrome",
+						port: 4444
+					})
+				);
+			}
+			if (argument == "dockercompose:selenium:firefox") {
+				return jshUnitBrowserToBrowser(
+					"Remote (Selenium Firefox) - slime",
+					function(url) { return url.replace(/127\.0\.0\.1/g, jsh.shell.environment.HOSTNAME) },
+					jsh.unit.browser.selenium.remote.Firefox({
+						host: "firefox",
+						port: 4444
+					})
+				);
+			}
+			if (argument == "docker:selenium:chrome") {
+				return jshUnitBrowserToBrowser(
+					"Remote (Selenium Chrome) - local",
+					function(url) { return url.replace(/127\.0\.0\.1/g, "host.docker.internal") },
+					jsh.unit.browser.selenium.remote.Chrome({
+						host: "localhost",
+						port: 4444
+					})
+				)
+			}
+			if (argument == "selenium:chrome") {
+				return jshUnitBrowserToBrowser(
+					"Chrome (Selenium)",
+					$api.fp.identity,
+					jsh.unit.browser.selenium.Chrome()
+				);
+			}
 			if (argument == "chrome") {
 				var port = (function() {
 					if (parameters.options["chrome:debug:port"]) return parameters.options["chrome:debug:port"];
 					if (parameters.options["chrome:debug:vscode"]) return 9222;
 				})();
-				return new Chrome({
-					location: parameters.options["chrome:instance"],
-					remoteDebugPort: port
-				});
+				var instance = (parameters.options["chrome:instance"]) || jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+				return jshUnitBrowserToBrowser(
+					"Chrome",
+					$api.fp.identity,
+					jsh.unit.browser.local.Chrome({
+						program: jsh.shell.browser.installed.chrome.program,
+						user: instance.toString(),
+						debugPort: port,
+						devtools: false
+					})
+				)
 			}
-			var browsers = ["IE","Firefox","Safari"];
+			if (argument == "firefox") {
+				return jshUnitBrowserToBrowser(
+					"Firefox",
+					$api.fp.identity,
+					jsh.unit.browser.local.Firefox({
+						//	TODO	push knowledge of these locations back into rhino/shell
+						program: "/Applications/Firefox.app/Contents/MacOS/firefox"
+						//	Linux: /usr/bin/firefox
+					})
+				)
+			}
+			var browsers = ["IE","Safari"];
 			for (var i=0; i<browsers.length; i++) {
 				if (argument == browsers[i].toLowerCase()) {
 					var rv = new Browser(jsh.unit.browser.installed[argument].delegate);
@@ -321,4 +386,5 @@
 			});
 		}
 	}
-)();
+//@ts-ignore
+)(Packages, $api, jsh);

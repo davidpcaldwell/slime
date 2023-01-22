@@ -8,23 +8,38 @@ namespace slime.jsh.wf {
 	export namespace standard {
 		namespace test {
 			export const fixtures = (
-				function(fifty: slime.fifty.test.kit) {
+				function(fifty: slime.fifty.test.Kit) {
 					const jsh = fifty.global.jsh;
 
-					function configure(repository: slime.jrunscript.git.repository.Local) {
-						repository.config({ set: { name: "user.name", value: "foo" }});
-						repository.config({ set: { name: "user.email", value: "bar@example.com" }});
-					}
+					const fixtures = (
+						function() {
+							var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
+							return script({
+								$api: fifty.global.$api,
+								jsh: fifty.global.jsh
+							});
+						}
+					)();
 
-					var src: slime.jrunscript.file.Directory = fifty.$loader.getRelativePath("../..").directory;
+					var src: slime.jrunscript.file.Directory = fifty.jsh.file.object.getRelativePath("../..").directory;
 
+					/**
+					 * Creates a project based on the project configuration in the `tools/wf/test/data/plugin-standard` directory,
+					 * with user.name and user.email configured, and adds a `slime` subrepository to it at `slime/`.
+					 *
+					 * @returns The repository for the new project.
+					 */
 					function fixture() {
-						var project = fifty.jsh.file.location();
-						fifty.$loader.getRelativePath("test/data/plugin-standard").directory.copy(project);
+						var project = fifty.jsh.file.object.temporary.location();
+						fifty.jsh.file.object.getRelativePath("test/data/plugin-standard").directory.copy(project);
+
+						//	Add a sample file to the fixture
+						project.directory.getRelativePath("a.js").write("", { append: false });
+
 						var repository = jsh.tools.git.init({
 							pathname: project
 						});
-						configure(repository);
+						fixtures.configure(repository);
 						repository.config({
 							set: {
 								name: "receive.denyCurrentBranch",
@@ -34,12 +49,13 @@ namespace slime.jsh.wf {
 						repository.add({
 							path: "."
 						});
-						var slime = jsh.tools.git.Repository({
-							directory: src
+						var slime = fixtures.clone({
+							src: jsh.file.world.spi.filesystems.os.pathname(src.toString()),
+							commit: {
+								message: "Local modifications"
+							}
 						});
-						//	TODO	Note that this adds committed version of SLIME (or something), rather than local version. May not work
-						//			as expected. May want to overwrite (so that submodule config is preserved) with a local copy
-						//			that excludes local/
+						fixtures.configure(slime);
 						repository.submodule.add({
 							repository: slime,
 							path: "slime"
@@ -59,62 +75,58 @@ namespace slime.jsh.wf {
 					}
 
 					return {
-						wf: fifty.$loader.getRelativePath("../wf.bash").file,
-						project: function() {
+						jsh: fifty.jsh.file.object.getRelativePath("../../jsh.bash").file,
+						wf: fifty.jsh.file.object.getRelativePath("../wf.bash").file,
+						test: {
+							fixture: fixture
+						},
+						/**
+						 *
+						 * @param p Specifies whether to skip running `wf initialize` on the project.
+						 * @returns An `origin` repository and a `clone` repository that is cloned from that origin.
+						 */
+						project: function project(p?: { noInitialize?: boolean }) {
+							if (!p) p = {};
 							var origin = fixture();
-							var repository = origin.clone({
-								to: fifty.jsh.file.location()
+							var repository = fixtures.clone({
+								src: jsh.file.world.spi.filesystems.os.pathname(origin.directory.toString())
 							});
 							repository.submodule.update({
 								init: true
 							});
-							configure(repository);
-							//	copy local modifications to source tree since we are testing this source code
-							src.copy(repository.directory.getRelativePath("slime"), {
-								filter: function(item) {
-									if (item.entry.path.substring(0,"local/".length) == "local/") return false;
-									if (item.entry.path == ".git") return false;
-									if (item.entry.path.substring(0,".git/".length) == ".git/") return false;
-									//jsh.shell.console("conflict: " + item.entry.path);
-									//	If we have a file in the way of a directory, remove it
-									if (item.exists && !item.exists.directory && item.entry.node.directory) {
-										item.exists.remove();
-										return true;
-									}
-									return true;
-								}
-							});
-							var cloned = repository.directory.getSubdirectory("slime").list({
-								type: repository.directory.list.ENTRY,
-								filter: function(node) {
-									return !node.directory;
-								},
-								descendants: function(directory) {
-									return directory.pathname.basename != ".git" && directory.pathname.basename != "local";
-								}
-							});
-							cloned.forEach(function(entry) {
-								var deleted = !src.getFile(entry.path);
-								if (deleted) {
-									if (entry.path != ".git") {
-										jsh.shell.console("Deleting cloned file deleted locally: " + entry.path);
-										repository.directory.getSubdirectory("slime").getFile(entry.path).remove();
-									}
-								}
-							});
+							fixtures.configure(repository);
+
 							var slime = jsh.tools.git.Repository({ directory: repository.directory.getSubdirectory("slime") });
-							if (slime.status().paths) {
-								slime.add({ path: "." });
-								slime.commit({ message: "Local modifications committed by plugin-standard.jsh.fifty.ts tests." });
-							}
 
 							//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
-							jsh.shell.run({
-								command: slime.directory.getFile("wf"),
-								arguments: ["initialize", "--test-skip-git-identity-requirement"]
-							});
+							if (!p.noInitialize) (
+								function wfInitialize() {
+									jsh.shell.run({
+										command: repository.directory.getFile("wf"),
+										arguments: ["initialize"]
+									});
+								}
+							)();
 
-							return repository;
+							function toGitFixturesRepository(p: slime.jrunscript.tools.git.repository.Local): slime.jrunscript.tools.git.test.fixtures.Repository {
+								return {
+									location: {
+										filesystem: jsh.file.world.spi.filesystems.os,
+										pathname: p.directory.toString()
+									},
+									api: jsh.tools.git.program({ command: "git" }).repository(p.directory.toString())
+								}
+							}
+
+							return {
+								origin: toGitFixturesRepository(origin),
+								clone: toGitFixturesRepository(repository)
+							};
+						},
+						adapt: {
+							repository: function(repository: slime.jrunscript.tools.git.test.fixtures.Repository): slime.jrunscript.tools.git.repository.Local {
+								return jsh.tools.git.Repository({ directory: jsh.file.Pathname(repository.location.pathname).directory });
+							}
 						}
 					}
 				}
@@ -122,12 +134,9 @@ namespace slime.jsh.wf {
 			)(fifty);
 		}
 		export interface Project {
-			lint?: () => boolean
-			test?: () => boolean
-			commit?: (p: {
-				message: string
-				notest?: boolean
-			}) => void
+			lint?: slime.jsh.wf.Lint
+			test?: slime.jsh.wf.Test
+			precommit?: slime.jsh.wf.Precommit
 		}
 
 		export type Options = {};
@@ -136,9 +145,17 @@ namespace slime.jsh.wf {
 		 * Implements the standard `wf` commands provided by {@link slime.jsh.wf.Exports | `jsh.wf.project.initialize()`}.
 		 */
 		export interface Interface {
-			eslint:  slime.jsh.script.cli.Command<Options>
+			/**
+			 * Runs `eslint` on the project; property is present only if `.eslintrc.json` is defined at the top level of the project.
+			 */
+			eslint?:  slime.jsh.script.cli.Command<Options>
 
-			lint?: slime.jsh.script.cli.Command<Options>
+			/**
+			 * Runs the configured {@link slime.jsh.wf.Lint} check; property is present only if a lint check is provided.
+			 */
+			lint?: slime.jsh.script.cli.Command<Options> & {
+				fix: slime.jsh.script.cli.Command<Options>
+			}
 
 			/**
 			 * Runs the Typedoc documentation generator.
@@ -149,10 +166,14 @@ namespace slime.jsh.wf {
 
 			prune: slime.jsh.script.cli.Command<Options>
 
-			test:  slime.jsh.script.cli.Command<Options>
+			test: slime.jsh.script.cli.Command<Options>
+
+			precommit: slime.jsh.script.cli.Command<Options>
 
 			submodule: {
 				/**
+				 * Completely removes a top-level submodule from the project.
+				 *
 				 * `--path <path-to-submodule>`
 				 */
 				remove:  slime.jsh.script.cli.Command<Options>
@@ -168,7 +189,9 @@ namespace slime.jsh.wf {
 				 *
 				 * `--path <path-to-submodule>`
 				 */
-				attach: slime.jsh.script.cli.Command<Options>
+				attach: slime.jsh.script.cli.Command<Options & {
+					path: string
+				}>
 
 				/**
 				 * Resets a submodule of this module to point at the current commit for that submodule, and if there is a tracking
@@ -178,33 +201,46 @@ namespace slime.jsh.wf {
 			}
 
 			documentation:  slime.jsh.script.cli.Command<Options>
+
+			/**
+			 * Intended to support interactively writing documentation; executes `fifty view` with the `--watch` option enabled.
+			 * **This process is currently very inefficient; it re-generates the project documentation for each request for a
+			 * `.html` URL.**
+			 */
 			document:  slime.jsh.script.cli.Command<Options>
+
+			git: {
+				hooks: {
+					"pre-commit"?: slime.jsh.script.cli.Command<Options>
+				}
+			}
 		}
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
-				fifty.tests.interface = {};
+				fifty.tests.interface = fifty.test.Parent();
 			}
 		//@ts-ignore
 		)(fifty);
 
 		export interface Interface {
 			/**
-			 * Runs the TypeScript compiler on the project.
+			 * Runs the TypeScript compiler on the project. If the `--vscode` argument is provided, the output will be reformatted
+			 * so that references to lines in error messages are clickable.
 			 */
-			 tsc:  slime.jsh.script.cli.Command<Options>
+			tsc:  slime.jsh.script.cli.Command<Options>
 		}
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
-				var jsh = fifty.global.jsh;
+				var { $api, jsh } = fifty.global;
 
 				fifty.tests.interface.tsc = function() {
-					var repository = test.fixtures.project();
+					var repository = test.fixtures.adapt.repository(test.fixtures.project().clone);
 
 					var tscresult = jsh.shell.run({
 						command: test.fixtures.wf,
@@ -229,7 +265,7 @@ namespace slime.jsh.wf {
 					}).is(true);
 
 					fifty.run(function tscfail() {
-						var repository = test.fixtures.project();
+						var repository = test.fixtures.adapt.repository(test.fixtures.project().clone);
 
 						var tsc = function(environment?) {
 							var result = jsh.shell.run({
@@ -263,22 +299,36 @@ namespace slime.jsh.wf {
 							{ append: false }
 						);
 
+						var engines = JSON.parse($api.fp.world.now.question(
+							jsh.shell.world.question,
+							jsh.shell.Invocation.from.argument({
+								command: "bash",
+								arguments: [test.fixtures.jsh.toString(), "-engines"],
+								stdio: {
+									output: "string"
+								}
+							})
+						).stdio.output);
+
 						//	issue 178 (https://github.com/davidpcaldwell/slime/issues/178)
 						//	the issue claimed that a stack trace was dumped when tsc failed under nashorn, but there is no stack
 						//	trace, as the below output indicates. So hard to assert that there's no stack trace without knowing
 						//	what it would look like; disabling output since it is just manually-checked clutter
-						var after: { status: number, stdio?: any } = tsc({ JSH_ENGINE: "nashorn" });
-						fifty.verify(after).status.is(1);
-						if (false) {
-							jsh.shell.console("output = [" + after.stdio.output + "]");
-							jsh.shell.console("error = [" + after.stdio.error + "]");
+						if (engines.indexOf("nashorn") != -1) {
+							var after: { status: number, stdio?: any } = tsc({ JSH_ENGINE: "nashorn" });
+							fifty.verify(after).status.is(1);
+							if (false) {
+								jsh.shell.console("output = [" + after.stdio.output + "]");
+								jsh.shell.console("error = [" + after.stdio.error + "]");
+							}
+						} else {
+							jsh.shell.console("Nashorn not present; skipping Nashorn-specific test case.");
 						}
 					})
 				}
 			}
 		//@ts-ignore
 		)(fifty);
-
 
 		export interface Interface {
 			/**
@@ -309,12 +359,13 @@ namespace slime.jsh.wf {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
-				var jsh = fifty.global.jsh;
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
 
 				fifty.tests.interface.commit = function() {
-					var repository = test.fixtures.project();
+					var repository = test.fixtures.adapt.repository(test.fixtures.project().clone);
 
 					var environment = {};
 
@@ -351,8 +402,198 @@ namespace slime.jsh.wf {
 					});
 					fifty.verify(result).status.is(1);
 					fifty.verify(result).stdio.evaluate(function(stdio) {
+						jsh.shell.console("error: [" + stdio.error + "]");
 						return stdio.error.indexOf("Found untracked files:\nb") != -1;
 					}).is(true);
+				}
+
+				var addAll: slime.jrunscript.tools.git.Command<void,void> = {
+					invocation: function(p) {
+						return {
+							command: "add",
+							arguments: ["."]
+						}
+					}
+				};
+
+				var branch: slime.jrunscript.tools.git.Command<{ name: string, startPoint: string },void> = {
+					invocation: function(p) {
+						return {
+							command: "branch",
+							arguments: [p.name, p.startPoint]
+						}
+					}
+				};
+
+				var commit: slime.jrunscript.tools.git.Command<{ message: string }, void> = {
+					invocation: function(p) {
+						return {
+							command: "commit",
+							arguments: ["--message", p.message]
+						}
+					}
+				};
+
+				var checkout: slime.jrunscript.tools.git.Command<{ branch: string },void> = {
+					invocation: function(p) {
+						return {
+							command: "checkout",
+							arguments: [p.branch]
+						}
+					}
+				};
+
+				var merge: slime.jrunscript.tools.git.Command<{ branch: string },void> = {
+					invocation: function(p) {
+						return {
+							command: "merge",
+							arguments: [p.branch]
+						}
+					}
+				};
+
+				var fixtures = {
+					git: (
+						function() {
+							var script: slime.jrunscript.tools.git.test.fixtures.Script = fifty.$loader.script("../../rhino/tools/git/fixtures.ts");
+							var setup = script();
+							return setup(fifty);
+						}
+					)(),
+					subject: test.fixtures
+				};
+
+				fifty.tests.issue485 = function() {
+					var project = test.fixtures.project();
+					var cloned = test.fixtures.adapt.repository(project.clone);
+					var repository = project.clone;
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							command: repository.location.pathname + "/" + "wf",
+							arguments: ["initialize"],
+							directory: repository.location.pathname
+						}),
+						{}
+					);
+					fixtures.git.edit(repository, "wf.js", function(before) {
+						return before + "\n";
+					});
+					repository.api.command(addAll).argument().run();
+					var before = repository.api.command(jsh.tools.git.commands.status).argument().run();
+					verify(before).paths["wf.js"].is("M ");
+					var success: boolean;
+					try {
+						repository.api.command(commit).argument({ message: "test" }).run();
+						success = true;
+					} catch (e) {
+						success = false;
+					}
+					verify(success).is(false);
+					var after = repository.api.command(jsh.tools.git.commands.status).argument().run();
+					verify(after).paths["wf.js"].is(" M");
+				}
+
+				fifty.tests.issue174 = function() {
+					var mv: slime.jrunscript.tools.git.Command<{ from: string, to: string },void> = {
+						invocation: function(p) {
+							return {
+								command: "mv",
+								arguments: [p.from, p.to]
+							}
+						}
+					};
+
+					var project = fixtures.subject.project().clone;
+
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							command: $api.fp.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
+							arguments: ["status"]
+						}),
+						{}
+					);
+
+					fixtures.git.edit(project, "new.js", () => "new");
+					project.api.command(mv).argument({ from: "a.js", to: "b.js" }).run();
+
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							command: $api.fp.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
+							arguments: ["status"]
+						}),
+						{}
+					);
+				}
+
+				fifty.tests.issue319 = function() {
+					var project = test.fixtures.adapt.repository(test.fixtures.project().clone);
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							command: project.directory.getRelativePath("wf").toString(),
+							arguments: $api.Array.build(function(rv) {
+								rv.push("commit");
+								rv.push("--message", "unchanged");
+							})
+						})
+					);
+				};
+
+				fifty.tests.issue332 = function() {
+					var x = test.fixtures.project();
+					var project = test.fixtures.adapt.repository(x.clone);
+					var repository = x.clone;
+					fixtures.git.edit(repository, "wf.js", function(before) {
+						return before.replace("slime.jsh.Global", "slime.jjj.Global");
+					});
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							command: project.directory.getRelativePath("wf").toString(),
+							arguments: $api.Array.build(function(rv) {
+								rv.push("commit");
+								rv.push("--message", "messed up tsc, hopefully");
+							})
+						})
+					);
+				};
+
+				fifty.tests.issue567 = function() {
+					var project = test.fixtures.project();
+					var origin = project.origin;
+					var repository = project.clone;
+					repository.api.command(branch).argument({
+						name: "feature",
+						startPoint: "master"
+					}).run();
+					repository.api.command(checkout).argument({
+						branch: "feature"
+					}).run();
+					fixtures.git.edit(repository, "f", function(before) {
+						return "f";
+					});
+					repository.api.command(addAll).argument().run();
+					repository.api.command(commit).argument({
+						message: "f"
+					}).run();
+
+					fixtures.git.edit(origin, "m", function(before) {
+						return "m";
+					});
+					origin.api.command(addAll).argument().run();
+					origin.api.command(commit).argument({
+						message: "m"
+					}).run();
+
+					repository.api.command(jsh.tools.git.commands.fetch).argument().run();
+					repository.api.command(merge).argument({
+						branch: "origin/master"
+					}).run();
+					jsh.shell.console("Repository location:");
+					jsh.shell.console(repository.location.pathname);
 				}
 			}
 		//@ts-ignore
@@ -360,15 +601,64 @@ namespace slime.jsh.wf {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
+				const { $api, jsh } = fifty.global;
+
 				fifty.tests.suite = function() {
-					fifty.run(fifty.tests.interface.tsc);
-					fifty.run(fifty.tests.interface.commit);
+					fifty.run(fifty.tests.interface);
+				}
+
+				fifty.tests.manual = {};
+				fifty.tests.manual.fixture = function() {
+					var project = test.fixtures.test.fixture();
+					jsh.shell.console("cd " + project.directory);
+				}
+				fifty.tests.manual.profile = function() {
+					var project = test.fixtures.adapt.repository(test.fixtures.project({ noInitialize: true }).clone);;
+					var getSlimePath = function(relative) {
+						return jsh.file.world.spi.filesystems.os.pathname(project.directory.toString()).relative("slime").relative(relative);
+					}
+					//	TODO	should profiler install Rhino?
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							command: getSlimePath("jsh.bash").pathname,
+							arguments: $api.Array.build(function(rv) {
+								rv.push(getSlimePath("jsh/tools/install/rhino.jsh.js").pathname);
+							}),
+							directory: getSlimePath(".").pathname
+						})
+					);
+					//	Needed for profile viewer, to serve UI and JSON data
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							command: getSlimePath("jsh.bash").pathname,
+							arguments: $api.Array.build(function(rv) {
+								rv.push(getSlimePath("jsh/tools/install/tomcat.jsh.js").pathname);
+							}),
+							directory: getSlimePath(".").pathname
+						})
+					);
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							//	TODO	perhaps should accept world Pathname
+							command: getSlimePath("jsh.bash").pathname,
+							arguments: $api.Array.build(function(rv) {
+								rv.push(getSlimePath("jsh/tools/profile.jsh.js").pathname);
+								rv.push("--profiler:output:json", getSlimePath("local/wf/profile.json").pathname);
+								rv.push(getSlimePath("tools/wf.jsh.js").pathname);
+								rv.push("initialize");
+								rv.push("--test-skip-git-identity-requirement");
+							}),
+							directory: getSlimePath(".").pathname
+						})
+					);
 				}
 			}
 		//@ts-ignore
 		)(fifty);
-
 	}
 }

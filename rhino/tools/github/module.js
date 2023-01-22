@@ -20,10 +20,10 @@
 		 * @returns
 		 */
 		var parseLinkHeader = function(value) {
-			return $api.Function.result(
+			return $api.fp.result(
 				value,
-				$api.Function.string.split(", "),
-				$api.Function.Array.map(function(string) {
+				$api.fp.string.split(", "),
+				$api.fp.Array.map(function(string) {
 					var relationFormat = /^\<(.+?)\>\; rel\=\"(.+)\"/;
 					var parsed = relationFormat.exec(string);
 					return {
@@ -31,13 +31,13 @@
 						rel: parsed[2]
 					}
 				}),
-				$api.Function.Array.map(
+				$api.fp.Array.map(
 					/** @returns { [string, string] } */
 					function(relation) {
 						return [relation.rel, relation.url];
 					}
 				),
-				$api.Function.Object.fromEntries
+				Object.fromEntries
 			);
 		}
 
@@ -165,7 +165,7 @@
 			return {
 				request: {
 					method: request.method,
-					url: $context.library.web.Url.codec.string.encode(withQueryString($context.library.web.Url.resolve(api.server, request.path), toQueryString(request.query))),
+					url: withQueryString($context.library.web.Url.resolve(api.server, request.path), toQueryString(request.query)),
 					headers: $api.Array.build(function(rv) {
 						if (authentication) rv.push({
 							name: "Authorization",
@@ -204,7 +204,7 @@
 			return {
 				request: {
 					method: "GET",
-					url: $context.library.web.Url.codec.string.encode(url),
+					url: url,
 					headers: $api.Array.build(function(rv) {
 						if (authentication) rv.push({
 							name: "Authorization",
@@ -353,14 +353,14 @@
 										return {
 											run: function(run) {
 												var world = (run && run.world) ? run.world : $context.library.http.world;
-												return $api.Function.impure.ask(function(events) {
-													var response = world.request(
+												return $api.fp.world.old.ask(function(events) {
+													var response = $api.fp.world.input(world.request(
 														toHttpArgument(
 															api,
 															authentication,
 															operation.request(argument)
 														)
-													)();
+													))();
 													return operation.response(response);
 												})
 											}
@@ -374,7 +374,7 @@
 										return {
 											run: function(run) {
 												var world = (run && run.world) ? run.world : $context.library.http.world;
-												return $api.Function.impure.ask(function(events) {
+												return $api.fp.world.old.ask(function(events) {
 													var request = toHttpArgument(
 														api,
 														authentication,
@@ -382,7 +382,7 @@
 													);
 													var rv = [];
 													while(request) {
-														var response = world.request(request)();
+														var response = $api.fp.world.input(world.request(request))();
 														var page = operation.response(response);
 														rv = rv.concat(page);
 														var link = links(response);

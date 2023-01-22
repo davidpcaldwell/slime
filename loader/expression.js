@@ -192,7 +192,7 @@
 		/**
 		 *
 		 * @param { string } path
-		 * @returns { slime.loader.Script<any,any> }
+		 * @returns { slime.old.loader.Script<any,any> }
 		 */
 		var script = function(path) {
 			return Object.assign(
@@ -233,7 +233,7 @@
 		var mime = $api.mime;
 
 		/**
-		 * @param { ConstructorParameters<slime.resource.Factory>[0] } o
+		 * @param { slime.resource.Descriptor } o
 		 * @this { slime.Resource }
 		 */
 		function Resource(o) {
@@ -250,60 +250,64 @@
 
 			this.name = (o.name) ? o.name : void(0);
 
-			if ( (!o.read || !o.read.string) && typeof(o.string) == "string") {
-				if (!o.read) o.read = {
-					string: function() {
-						return o.string;
-					}
-				};
-			}
-
 			if (o.read && o.read.string) {
-				this.read = function(v) {
-					if (v === String) return o.read.string();
-					if (v === JSON) return JSON.parse(this.read(String));
+				this.read = Object.assign(
+					function(v) {
+						if (v === String) {
+							var rv = o.read.string();
+							return rv;
+						}
+						if (v === JSON) return JSON.parse(this.read(String));
 
-					var e4xRead = function() {
-						var string = this.read(String);
-						string = string.replace(/\<\?xml.*\?\>/, "");
-						string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-						return string;
-					};
+						var e4xRead = function() {
+							var string = this.read(String);
+							string = string.replace(/\<\?xml.*\?\>/, "");
+							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+							return string;
+						};
 
-					if ($platform.e4x && v == $platform.e4x.XML) {
-						return $platform.e4x.XML( e4xRead.call(this) );
-					} else if ($platform.e4x && v == $platform.e4x.XMLList) {
-						return $platform.e4x.XMLList( e4xRead.call(this) );
+						if ($platform.e4x && v == $platform.e4x.XML) {
+							return $platform.e4x.XML( e4xRead.call(this) );
+						} else if ($platform.e4x && v == $platform.e4x.XMLList) {
+							return $platform.e4x.XMLList( e4xRead.call(this) );
+						}
+					},
+					{
+						string: function() {
+							return o.read.string();
+						}
+					}
+				)
+			}
+		}
+
+		var ResourceExport = Object.assign(
+			Resource,
+			{
+				/** @type { slime.runtime.resource.Exports["ReadInterface"]} */
+				ReadInterface: {
+					string: function(content) {
+						return {
+							string: function() {
+								return content;
+							}
+						}
 					}
 				}
 			}
-		}
+		)
 
 		var scripts = code.scripts(
 			{
 				$api: $api,
-				mime: {
-					Type: mime.Type
-				},
-				mimeTypeIs: function(string) {
-					/**
-					 *
-					 * @param { slime.mime.Type } type
-					 */
-					function rv(type) {
-						return string == type.media + "/" + type.subtype;
-					}
-					return rv;
-				},
 				$slime: $slime,
 				$platform: $platform,
 				$engine: engine
 			}
 		);
 
-		/** @type { slime.runtime.internal.loader.Constructor } */
 		var Loader = code.Loader({
-			Resource: Resource,
+			Resource: ResourceExport,
 			methods: scripts.methods,
 			createScriptScope: scripts.createScriptScope,
 			$api: $api
@@ -311,15 +315,15 @@
 
 		var topMethod = function(name) {
 			return function(code,scope,target) {
-				return scripts.methods[name].call(target,code,scope);
+				return scripts.methods.old[name].call(target,code,scope);
 			};
 		};
 
-		/** @type { slime.runtime.Exports["loader"] } */
+		/** @type { slime.runtime.Exports["old"]["loader"] } */
 		var loaders = code.loaders({
 			toExportScope: scripts.toExportScope,
-			Loader: Loader
-		})
+			Loader: Loader.old
+		});
 
 		/** @type { slime.runtime.Exports } */
 		var rv = $api.Object.compose(
@@ -330,9 +334,12 @@
 				run: topMethod("run"),
 				file: topMethod("file"),
 				value: topMethod("value"),
-				Resource: Resource,
-				Loader: Object.assign(Loader, loaders),
-				loader: loaders,
+				Resource: ResourceExport,
+				old: {
+					Loader: Object.assign(Loader.old, loaders),
+					loader: loaders
+				},
+				loader: Loader.api,
 				namespace: function(string) {
 					//	This construct returns the top-level global object, e.g., window in the browser
 					var global = function() {

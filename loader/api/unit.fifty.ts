@@ -6,7 +6,7 @@
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 
 	}
@@ -59,7 +59,7 @@ namespace slime.definition.unit {
 }
 
 namespace slime.definition.unit.internal {
-	export const { subject, types } = (function(fifty: slime.fifty.test.kit) {
+	export const { subject, types } = (function(fifty: slime.fifty.test.Kit) {
 		const code = fifty.$loader.script("unit.js") as slime.definition.unit.Factory;
 
 		const verify = fifty.verify;
@@ -171,7 +171,7 @@ namespace slime.definition.unit {
 namespace slime.definition.unit {
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(internal.types.definition);
@@ -230,7 +230,7 @@ namespace slime.definition.unit {
 			export type Detail = Start | End
 		}
 
-		export type Handler = slime.$api.events.Handler<{
+		export type Handler = slime.$api.event.Handlers<{
 			scenario: Event.Scenario.Detail
 			test: Test.Result
 		}>

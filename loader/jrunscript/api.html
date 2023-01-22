@@ -259,13 +259,6 @@ END LICENSE
 				<div class="name">java</div>
 				<div>
 					Provides the ability to interact with native Java constructs.
-					<span>See <a href="java.api.html">detailed documentation</a>.</span>
-				</div>
-			</li>
-			<li class="object" jsapi:id="io.api.html">
-				<div class="name">io</div>
-				<div jsapi:reference="getApi('io.api.html').getElement('exports')">
-					<span>See <a href="io.api.html">detailed documentation</a>.</span>
 				</div>
 			</li>
 			<li class="constructor" jsapi:id="Resource">
@@ -447,7 +440,9 @@ END LICENSE
 									"foo.bar=baz"
 								];
 								var resource = new module.Resource({
-									string: lines.join("\n")
+									read: {
+										string: function() { return lines.join("\n"); }
+									}
 								});
 								var _properties = resource.read(Packages.java.util.Properties);
 								var properties = new function() {
@@ -749,13 +744,9 @@ END LICENSE
 						return $jsapi.loader.module("../" + path, context);
 					}
 				</script>
-				<div jsapi:reference="getApi('../api.html').getElement('Loader/type/tests')">
-				</div>
 				<script type="application/x.jsapi#initialize">
 					scope.api = jsh.unit.$slime;
 				</script>
-				<div jsapi:reference="getApi('../api.html').getElement('Loader/tests')">
-				</div>
 				<script type="application/x.jsapi#tests">
 					// TODO: Moved from jrunscript/io, complete with if (false); what is this for?
 					if (false) {
@@ -827,7 +818,7 @@ END LICENSE
 				<ul>
 				</ul>
 			</li>
-			<li class="function" jsapi:id="namespace" jsapi:reference="getApi('../api.html').getElement('namespace')">
+			<li class="function" jsapi:id="namespace">
 				<div class="name">namespace</div>
 				<span>The platform loader's <a href="../api.html#exports.namespace"><code>namespace</code></a> method.</span>
 			</li>
@@ -861,14 +852,6 @@ END LICENSE
 				</li>
 			</ul>
 		</div>
-	</div>
-	<div>
-		 <script jsapi:id="fifty">
-			$jsapi.loader.fifty({
-				path: "expression.fifty.ts",
-				verify: verify
-			});
-		 </script>
 	</div>
 </body>
 </html>

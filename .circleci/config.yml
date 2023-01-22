@@ -1,0 +1,51 @@
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+version: 2.1
+
+executors:
+  ubuntu2004arm64:
+    machine:
+      image: ubuntu-2004:current
+    resource_class: arm-large
+  ubuntu2004amd64:
+    machine:
+      image: ubuntu-2004:current
+    resource_class: large
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  test-jdk11:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    parameters:
+      machine-type:
+        type: executor
+    executor: << parameters.machine-type >>
+
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+          name: "Build the Docker image"
+          command: "docker compose -f contributor/docker-compose.yaml build test11"
+      - run:
+          name: "Run the linting and tests"
+          command: "docker compose -f contributor/docker-compose.yaml run test11"
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  test-jdk11-workflow:
+    jobs:
+      - test-jdk11:
+          name: test-jdk11-amd64
+          machine-type: ubuntu2004amd64
+      - test-jdk11:
+          name: test-jdk11-arm64
+          machine-type: ubuntu2004arm64

@@ -12,18 +12,12 @@
 	 */
 	function($api,jsh) {
 		jsh.shell.tools.rhino.require();
-		jsh.shell.tools.node.require();
-		/** @type { (node: any) => node is slime.jsh.shell.tools.node.Installed } */
-		var isInstalled = function(node) {
-			return true;
-		}
-		var node = jsh.shell.tools.node;
-		if (isInstalled(node)) {
-			//	TODO	this API could use better documentation, struggled to get this right
-			node.run({
-				arguments: [jsh.script.file.parent.getRelativePath("main.js").toString()].concat(jsh.script.arguments)
-			});
-		}
+		$api.fp.world.execute(jsh.shell.tools.node.require());
+		var node = jsh.shell.tools.node.installed;
+		//	TODO	this API could use better documentation, struggled to get this right
+		node.run({
+			arguments: [jsh.script.file.parent.getRelativePath("main.js").toString()].concat(jsh.script.arguments)
+		});
 	}
 //@ts-ignore
 )($api,jsh);

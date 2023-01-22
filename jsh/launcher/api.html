@@ -80,7 +80,8 @@ END LICENSE
 	<script>
 		window.addEventListener('load', function() {
 			var settings = document.getElementById("settings");
-			Array.prototype.slice.call(settings.tBodies[0].rows).slice(1).forEach(function(row) {
+			//	TODO	should calculate when there are only two columns and use that
+			Array.prototype.slice.call(settings.tBodies[0].rows).slice(4).forEach(function(row) {
 				var propertyElement = row.cells[0].getElementsByTagName("code")[0];
 				propertyElement.className = "name";
 				var cell = document.createElement("td");
@@ -188,20 +189,25 @@ END LICENSE
 					<td>Nashorn (bundled with JDK)</td>
 					<td>
 						Rhino (if installed to shell),
-						Rhino (1.7R3, downloaded at runtime)
+						Nashorn (bundled with JDK)
 					</td>
 				</tr>
 			</tbody>
 		</table>
 		<div>
-			<h2>Installing the Rhino JavaScript engine</h2>
+			<h2><a id="rhino">Installing the Rhino JavaScript engine</a></h2>
 			<p>
 				Rhino may be installed into a <code>jsh</code> shell with the following command:
 				<pre><code>
 ./jsh.bash jsh/tools/install/rhino.jsh.js [-version <i>version</i>]
 				</code></pre>
-				where <i>version</i> is <code>mozilla/1.7.13</code> (the default), <code>mozilla/1.7R3</code>, or
-				<code>mozilla/1.7.12</code>.
+				where <i>version</i> is one of:
+				<ul>
+					<li><code>mozilla/1.7.14</code> (the default)</li>
+					<li><code>mozilla/1.7R3</code></li>
+					<li><code>mozilla/1.7.12</code></li>
+					<li><code>mozilla/1.7.13</code></li>
+				</ul>
 			</p>
 		</div>
 	</div>
@@ -225,11 +231,37 @@ END LICENSE
 				</tr>
 			</thead>
 			<tbody>
+				<!--
+					Note that the markup below is modified by script above.
+				-->
+				<tr>
+					<td>(none)</td>
+					<td><code>JSH_LAUNCHER_BASH_DEBUG</code></td>
+					<td>
+						Enables debugging within the <code>jsh.bash</code> launcher.
+					</td>
+				</tr>
 				<tr>
 					<td>(none)</td>
 					<td><code>JSH_LAUNCHER_JDK_HOME</code></td>
 					<td>
 						Specifies a Java Development Kit that <code>jsh.bash</code> should use to execute scripts.
+					</td>
+				</tr>
+				<tr>
+					<td>(none)</td>
+					<td><code>JSH_LOCAL_JDKS</code></td>
+					<td>
+						Specifies the directory in which the shell should look for shell-local JDKs. Defaults to
+						<code>${SLIME}/local/jdk</code>.
+					</td>
+				</tr>
+				<tr>
+					<td>(none)</td>
+					<td><code>JSH_USER_JDKS</code></td>
+					<td>
+						Specifies the directory in which the shell should look for shell-local JDKs. Defaults to
+						<code>${HOME}/.slime/jdk</code>.
 					</td>
 				</tr>
 				<tr>
@@ -288,8 +320,8 @@ END LICENSE
 									the profiler will emit profiling information to stderr when the program completes.
 								</p>
 								<p>
-									Profiler parameters are defined in the
-									<a href="../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
+									Profiler parameters are defined in the jsh profiler documentation, in the
+									`slime.jrunscript.tools.profiler.rhino.Options` interface.
 								</p>
 								<p>
 									The <a href="../../jsh/tools/api.html"><code>jsh/tools/profile.jsh.js</code></a>
@@ -414,20 +446,6 @@ END LICENSE
 		<h1>Environment variables</h1>
 		Several environment variables affect a jsh shell.
 		<ul>
-			<li>
-				<code>JSH_SCRIPT_DEBUGGER</code>: if set to <code>profiler</code> or a value starting with <code>profiler:</code>,
-				and a shell including a profiler is being run, the loader process will be run under a profiler. If set to
-				<code>rhino</code>, the main script will be run under the Rhino debugger. The profiler may be configured with an
-				argument like: <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code>. With no parameters,
-				the profiler will emit profiling information to stderr when the program completes. The following parameters may
-				be used to configure it:
-				<h2>Profiler parameters</h2>
-				<div jsapi:reference="getApi('../../jsh/loader/profiler.api.html').getElement('parameters')">
-					The semantics of
-					profiler parameters are defined in the
-					<a href="../../jsh/loader/profiler.api.html">jsh profiler documentation</a>.
-				</div>
-			</li>
 			<li>
 				<code>JSH_JAVA_LOGGING_PROPERTIES</code>: if set to the location of a properties file, it is used to configure
 				<a href="http://docs.oracle.com/javase/7/docs/technotes/guides/logging/index.html">Java logging</a> for the

@@ -13,8 +13,6 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.gcloud.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var run = ($context.mock && $context.mock.shell) ? $context.library.shell.world.mock($context.mock.shell.run) : $context.library.shell.world.run;
-
 		/**
 		 *
 		 * @param { string } executable
@@ -28,14 +26,15 @@
 			var rv = function(command) {
 				return {
 					argument: function(argument) {
-						var toResult = command.result || $api.Function.identity;
+						var toResult = command.result || $api.fp.identity;
 						return {
-							run: $api.Function.impure.ask(
+							run: $api.fp.world.old.ask(
 								function(events) {
 									var result;
 									var invocation = command.invocation(argument);
-									run(
-										$context.library.shell.Invocation.create({
+									$api.fp.world.now.action(
+										$context.library.shell.world.action,
+										$context.library.shell.Invocation.from.argument({
 											//	TODO	could this dependency be narrowed to world filesystem rather than whole library?
 											command: executable,
 											arguments: $api.Array.build(function(rv) {
@@ -50,17 +49,18 @@
 												output: "string",
 												error: "line"
 											}
-										})
-									)({
-										stderr: function(e) {
-											events.fire("console", e.detail.line);
-										},
-										exit: function(e) {
-											if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
-											var json = JSON.parse(e.detail.stdio.output);
-											result = toResult(json);
+										}),
+										{
+											stderr: function(e) {
+												events.fire("console", e.detail.line);
+											},
+											exit: function(e) {
+												if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
+												var json = JSON.parse(e.detail.stdio.output);
+												result = toResult(json);
+											}
 										}
-									});
+									);
 									return result;
 								}
 							)
@@ -75,7 +75,8 @@
 		/** @type { { [os: string]: { [arch: string ]: string }} } */
 		var INSTALLER = {
 			"Mac OS X": {
-				x86_64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-368.0.0-darwin-x86_64.tar.gz"
+				x86_64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-411.0.0-darwin-x86_64.tar.gz",
+				aarch64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-411.0.0-darwin-arm.tar.gz"
 			}
 		};
 
@@ -85,7 +86,7 @@
 					at: function at(installation) {
 						if (typeof(installation) == "undefined") throw new TypeError("'installation' must not be undefined.");
 						//	TODO	could this dependency be narrowed to world filesystem rather than whole library?
-						var executable = $context.library.file.world.filesystems.os.Pathname.relative(installation, "bin/gcloud");
+						var executable = $context.library.file.world.spi.filesystems.os.relative(installation, "bin/gcloud");
 						//	TODO	a lot of repetition below, but a lot of test coverage would be needed to safely refactor it
 						return {
 							config: function(config) {
@@ -117,13 +118,13 @@
 						}
 					},
 					create: function create(pathname) {
-						return $api.Function.impure.tell(function(events) {
-							var url = $api.Function.result(INSTALLER, $api.Function.pipe(
-								$api.Function.optionalChain($context.library.shell.os.name),
-								$api.Function.optionalChain($context.library.shell.os.arch)
+						return function(events) {
+							var url = $api.fp.result(INSTALLER, $api.fp.pipe(
+								$api.fp.optionalChain($context.library.shell.os.name),
+								$api.fp.optionalChain($context.library.shell.os.arch)
 							));
 							if (!url) {
-								throw new Error("Could not install.");
+								throw new Error("Could not install: No installer found for " + $context.library.shell.os.name + "/" + $context.library.shell.os.arch);
 							}
 							events.fire("console", "Installing from: " + url);
 							$context.library.install.install({
@@ -143,7 +144,7 @@
 									events.fire("console", e.detail);
 								}
 							})
-						});
+						};
 					}
 				}
 			}

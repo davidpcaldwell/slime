@@ -19,7 +19,7 @@
 			/**
 			 * @type { {
 			 * 		init: Function
-			 * 		module: slime.jrunscript.git.Exports
+			 * 		module: slime.jrunscript.tools.git.Exports
 			 * 		remotes: slime.jrunscript.file.Directory
 			 * 		fixtures: {
 			 * 			location: {
@@ -30,8 +30,8 @@
 			 * 				remote: () => void
 			 * 			}
 			 * 		}
-			 * 		remote: slime.jrunscript.git.Repository
-			 * 		child: slime.jrunscript.git.Repository
+			 * 		remote: slime.jrunscript.tools.git.Repository
+			 * 		child: slime.jrunscript.tools.git.Repository
 			 * 		fixture: {
 			 * 			write: Function
 			 * 		}
@@ -42,7 +42,7 @@
 
 			scope.module = module;
 
-			var fixtures = $loader.file("fixtures.js", { module: module });
+			var fixtures = $loader.file("fixtures-old.js", { module: module });
 
 			scope.init = fixtures.init;
 
@@ -80,10 +80,10 @@
 				repository: new function() {
 					var commit = function(repository,files,message) {
 						//	TODO	should use execute and forEach
-						$api.Function.result(
+						$api.fp.result(
 							files,
-							$api.Function.Object.entries,
-							$api.Function.Array.map(function(entry) {
+							Object.entries,
+							$api.fp.Array.map(function(entry) {
 								repository.directory.getRelativePath(entry[0]).write(entry[1], { append: false, recursive: true });
 								repository.add({ path: entry[0] });
 							})

@@ -47,6 +47,7 @@
 		$api.deprecate($exports,"stderr");
 
 		$exports.echo = Object.assign(
+			/** @type { slime.jsh.shell.Echo } */
 			function(message,mode) {
 				if (arguments.length == 0) message = "";
 				if (!mode) mode = {};
@@ -249,7 +250,7 @@
 				if (!p.script) {
 					throw new TypeError("Required: script property indicating script to run.");
 				}
-				var argumentsFactory = $api.Function.mutating(p.arguments);
+				var argumentsFactory = $api.fp.mutating(p.arguments);
 				p.arguments = argumentsFactory([]);
 
 				if (p.script["file"] && !p.script.pathname) {
@@ -522,7 +523,7 @@
 		};
 		$exports.jsh.relaunch = $api.experimental(function(p) {
 			if (!p) p = {};
-			var environment = $api.Function.mutating(p.environment)($exports.environment);
+			var environment = $api.fp.mutating(p.environment)($exports.environment);
 			$exports.jsh({
 				fork: true,
 				script: $context.api.script.file,
@@ -534,7 +535,7 @@
 			});
 		});
 		/** @type { slime.jsh.shell.Exports["jsh"]["require"] } */
-		$exports.jsh.require = $api.Events.Function(
+		$exports.jsh.require = $api.events.Function(
 			function(p,events) {
 				//  TODO    should develop a strategy for preventing infinite loops
 				if (!p.satisfied()) {
@@ -575,6 +576,12 @@
 			$exports.jsh.lib = $context.api.file.Pathname($exports.properties.object.jsh.shell.lib).directory;
 		} else if ($exports.jsh.home) {
 			$exports.jsh.lib = $exports.jsh.home.getSubdirectory("lib");
+		}
+
+		$exports.world.exit = function(status) {
+			return function() {
+				$exports.exit(status);
+			}
 		}
 	}
 //@ts-ignore

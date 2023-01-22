@@ -4,16 +4,6 @@
 //
 //	END LICENSE
 
-//	TODO	this is now run via jsh.loader.run, from develop.jsh.js, which is sloppy but was an easy way to wrap a jsh script
-
-//var parameters = jsh.script.getopts({
-//	options: {
-//		base: jsh.file.Pathname,
-//		year: false,
-//		debug: false
-//	}
-//});
-
 //@ts-check
 (
 	/**
@@ -22,7 +12,7 @@
 	 */
 	function($api,jsh) {
 		var invocation = jsh.script.cli.invocation(
-			$api.Function.pipe(
+			$api.fp.pipe(
 				jsh.script.cli.option.boolean({ longname: "fix" })
 			)
 		);
@@ -150,9 +140,12 @@
 			var extension = getExtension(file);
 			if (files[i].path == ".eslintrc.json") extension = "js";
 			if (files[i].path == "jsconfig.json") extension = "js";
+			if (files[i].path == "typedoc.json") extension = "js";
+			if (files[i].path == ".devcontainer/devcontainer.json") extension = "js";
 			if (files[i].path == "rhino/tools/github/tools/dtsgen.json") extension = "js";
+			if (files[i].path == "rhino/tools/docker/tools/dtsgen.json") extension = "js";
 			if (files[i].path == "tools/wf/test/data/plugin-standard/jsconfig.json") extension = "js";
-			if (files[i].path == "loader/api/test/fifty/vscode-tasks-obsolete.json") extension = "js";
+			if (files[i].path == "tools/fifty/vscode-tasks-obsolete.json") extension = "js";
 			if (extension == "json" && files[i].path.split("/")[0] == ".vscode") extension = "js";
 			if (files[i].path == "loader/jrunscript/test/data/ServiceLoader/META-INF/services/java.lang.Runnable") extension = "properties";
 			if (extension === null) {
@@ -160,6 +153,8 @@
 				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";
 				if (files[i].path == "fifty") extension = "bash";
 				if (files[i].path == "wf") extension = "bash";
+				if (files[i].path == "tools/wf/test/data/plugin-standard/wf") extension = "bash";
+				if (files[i].path == "contributor/docker-compose-run") extension = "bash";
 				if (!extension) throw new Error("Extension null for " + files[i].path);
 			}
 			var text = toFile(file).node.read(String);
@@ -205,15 +200,7 @@
 			}
 		}
 
-		function old() {
-
-
-			//jsh.shell.echo(template.original.parser.toString());
-			//jsh.shell.echo(template.introduction.parser.toString());
-			//jsh.shell.echo(template.introduction.create());
-
-		}
-		jsh.shell.exit( (updated) ? 1 : 0 );
+		jsh.shell.exit( (!invocation.options.fix && updated) ? 1 : 0 );
 	}
 //@ts-ignore
 )($api,jsh);

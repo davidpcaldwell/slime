@@ -16,7 +16,10 @@
 	 * @param { slime.Loader } $loader
 	 */
 	function(Packages,plugin,$slime,$api,jsh,$loader) {
-		/** @returns { slime.jsh.script.Exports } */
+		/**
+		 * @param { slime.jsh.script.internal.Context } $context
+		 * @returns { slime.jsh.script.Exports }
+		 */
 		var load = function($context) {
 			/** @type { Partial<slime.jsh.script.Exports> } */
 			var $exports = {};
@@ -28,7 +31,7 @@
 				$exports.pathname = $context.file.pathname;
 				$api.deprecate($exports,"pathname");
 				$exports.getRelativePath = function(path) {
-					return $context.file.getRelativePath(path);
+					return $context.file.parent.getRelativePath(path);
 				}
 				$api.deprecate($exports,"getRelativePath");
 			} else if ($context.packaged) {
@@ -73,7 +76,7 @@
 
 			if ($context.file) {
 				$exports.Loader = function(path) {
-					var base = $context.file.getRelativePath(path).directory;
+					var base = $context.file.parent.getRelativePath(path).directory;
 					return new $context.api.file.Loader({ directory: base });
 				};
 			} else if ($context.uri) {
@@ -97,6 +100,14 @@
 				getopts: $exports.getopts
 			}).Application;
 
+			//	TODO	think this through, what about packaged shells etc.?
+			$exports.world = ($context.file) ? {
+				file: {
+					filesystem: $context.api.file.world.spi.filesystems.os,
+					pathname: $context.file.toString()
+				}
+			} : void(0)
+
 			/** @returns {slime.jsh.script.Exports} */
 			var finished = function(partial) { return partial; }
 
@@ -109,6 +120,7 @@
 				return Boolean(jsh.js && jsh.web && jsh.java && jsh.file && jsh.http && jsh.shell);
 			},
 			load: function() {
+				/** @type { slime.jsh.script.internal.Source } */
 				var source = (function() {
 					var _script = $slime.getInvocation().getScript();
 					var _uri = _script.getUri();
@@ -120,9 +132,12 @@
 						rv.uri = String(_uri.normalize().toString());
 					}
 					if ($slime.getPackaged()) {
+						/** @type { slime.js.Cast<slime.old.Loader> } */
+						var toJavaLoader = $api.fp.cast;
+						var x = toJavaLoader(new jsh.io.Loader({ _source: $slime.getPackaged().getCode() }));
 						rv.packaged = {
 							file: jsh.file.filesystem.java.adapt($slime.getPackaged().getFile()).file,
-							loader: new jsh.io.Loader({ _source: $slime.getPackaged().getCode() })
+							loader: x
 						}
 					}
 					return rv;
@@ -163,20 +178,27 @@
 					}
 				})(jsh.file.filesystem, jsh.shell.PWD);
 
-				jsh.script = load($api.Object.compose({
-					api: {
-						js: jsh.js,
-						web: jsh.web,
-						file: jsh.file,
-						http: function() {
-							return jsh.http;
+				jsh.script = load(
+					$api.Object.compose(
+						{
+							api: {
+								js: jsh.js,
+								web: jsh.web,
+								file: jsh.file,
+								http: function() {
+									return jsh.http;
+								},
+								addClasses: jsh.loader.java.add,
+								parser: parser
+							},
+							directory: jsh.shell.PWD,
+							//	TODO	this is now redundant with code in the loader jsh.js that converts arguments to native form
+							//			for use with the new main() function API
+							arguments: jsh.java.Array.adapt($slime.getInvocation().getArguments()).map(function(s) { return String(s); }),
 						},
-						addClasses: jsh.loader.java.add,
-						parser: parser
-					},
-					directory: jsh.shell.PWD,
-					arguments: jsh.java.Array.adapt($slime.getInvocation().getArguments()).map(function(s) { return String(s); }),
-				}, source));
+						source
+					)
+				);
 
 				var option = function(parse) {
 					return function(o) {
@@ -192,7 +214,7 @@
 							}
 							p.arguments = args;
 						};
-						return $api.Function.impure.revise(rv);
+						return $api.fp.object.revise(rv);
 					}
 				};
 
@@ -206,15 +228,152 @@
 					}
 				}
 
+				/** @type { slime.jsh.script.cli.Exports["Call"]["parse"] } */
+				function getCommand(p) {
+					var command = p.invocation.arguments[0];
+					if (!command) {
+						return new jsh.script.cli.error.NoTargetProvided();
+					}
+
+					var referenced = (function() {
+						/** @type { slime.jsh.script.cli.Commands | slime.jsh.script.cli.Command } */
+						var rv = p.commands;
+						var tokens = command.split(".");
+						for (var i=0; i<tokens.length; i++) {
+							rv = rv[tokens[i]];
+							if (!rv) return rv;
+						}
+						return rv;
+					})();
+
+					/** @type { (v: any) => v is slime.jsh.script.cli.Command } */
+					var isCommand = function(v) {
+						return typeof(v) == "function";
+					};
+
+					if (!referenced) {
+						return new jsh.script.cli.error.TargetNotFound("Command " + command + " is " + referenced, {
+							command: command
+						});
+					}
+					if (!isCommand(referenced)) {
+						return new jsh.script.cli.error.TargetNotFunction(command + " is object.", {
+							command: command,
+							target: referenced
+						});
+					} else {
+						return {
+							command: referenced,
+							invocation: {
+								options: p.invocation.options,
+								arguments: p.invocation.arguments.slice(1)
+							}
+						}
+					}
+				}
+
+				/** @type { slime.jsh.script.cli.Exports["Call"]["get"] } */
+				var getCall = function(p) {
+					/** @type { slime.jsh.script.cli.Processor<{},{}> } */
+					var emptyOptions = $api.fp.identity;
+
+					var options = p.descriptor.options || emptyOptions;
+					var global = options({ options: {}, arguments: p.arguments });
+					var call = getCommand({
+						invocation: global,
+						commands: p.descriptor.commands
+					});
+					//	TODO	something to do with generics
+					//@ts-ignore
+					return call;
+				}
+
+				/** @type { slime.jsh.script.cli.Exports["Call"]["execute"] } */
+				var executeCall = function(p) {
+					var commands = p.commands;
+					var call = p.call;
+					function showUsage() {
+						jsh.shell.console("Usage: " + jsh.script.file + " [options] <command> [arguments]");
+					}
+
+					function showCommands() {
+						var rv = [];
+						getCommandList(rv, commands);
+						jsh.shell.console("Available commands:");
+						jsh.shell.console("");
+						rv.forEach(function(item) {
+							jsh.shell.console(item);
+						});
+					}
+
+					var isTargetNotFunction = $api.Error.old.isType(jsh.script.cli.error.TargetNotFunction);
+
+					if ($api.Error.old.isType(jsh.script.cli.error.NoTargetProvided)(call)) {
+						showUsage();
+						jsh.shell.console("");
+						showCommands();
+						jsh.shell.exit(1);
+					} else if ($api.Error.old.isType(jsh.script.cli.error.TargetNotFound)(call)) {
+						jsh.shell.console("Command not found: " + call.command);
+						jsh.shell.console("");
+						showCommands();
+						jsh.shell.exit(1);
+					} else if (isTargetNotFunction(call)) {
+						jsh.shell.console("Command is not function: " + call.command + " is " + call.target);
+						jsh.shell.exit(1);
+					} else {
+						try {
+							var status = call.command(call.invocation);
+							if (typeof(status) != "undefined") {
+								jsh.shell.exit(status);
+							}
+						} catch (e) {
+							jsh.shell.console(e);
+							jsh.shell.console(e.stack);
+							jsh.shell.exit(1);
+						}
+					}
+				}
+
+				/** @type { slime.jsh.script.cli.main } */
+				var listener;
+
 				jsh.script.cli = {
-					error: {
-						NoTargetProvided: $api.Error.Type({ name: "NoTargetProvided" }),
-						TargetNotFound: $api.Error.Type({ name: "TargetNotFound" }),
-						TargetNotFunction: $api.Error.Type({ name: "TargetNotFunction", extends: TypeError })
+					main: function(program) {
+						if (listener) listener(program);
 					},
-					parser: parser,
+					listener: function(main) {
+						listener = main;
+					},
+					Call: {
+						parse: getCommand,
+						get: getCall,
+						execute: executeCall
+					},
+					program: function(p) {
+						return function(invocation) {
+							var call = getCommand({
+								commands: p.commands,
+								invocation: invocation
+							});
+							executeCall({
+								commands: p.commands,
+								call: call
+							});
+						}
+					},
+					execute: function(p) {
+						var call = getCommand({
+							commands: p.commands,
+							invocation: p.invocation
+						});
+						jsh.script.cli.Call.execute({
+							commands: p.commands,
+							call: call
+						});
+					},
 					option: {
-						string: option($api.Function.identity),
+						string: option($api.fp.identity),
 						boolean: function(o) {
 							var rv = function(p) {
 								var args = [];
@@ -227,7 +386,7 @@
 								}
 								p.arguments = args;
 							}
-							return $api.Function.impure.revise(rv);
+							return $api.fp.object.revise(rv);
 						},
 						number: option(Number),
 						pathname: option(jsh.script.getopts.parser.Pathname),
@@ -244,95 +403,52 @@
 								}
 								p.arguments = args;
 							}
-							return $api.Function.impure.revise(rv);
+							return $api.fp.object.revise(rv);
 						}
 					},
+					error: {
+						NoTargetProvided: $api.Error.old.Type({ name: "NoTargetProvided" }),
+						TargetNotFound: $api.Error.old.Type({ name: "TargetNotFound" }),
+						TargetNotFunction: $api.Error.old.Type({ name: "TargetNotFunction", extends: TypeError })
+					},
+					parser: parser,
+					/**
+					 * @template { any } T
+					 * @param { slime.jsh.script.cli.Processor<T> } f
+					 */
 					invocation: function(f) {
+						/** @type { slime.js.Cast<T> } */
+						var cast = $api.fp.cast;
 						return f({
-							options: {},
+							options: cast({}),
 							arguments: Array.prototype.slice.call(jsh.script.arguments)
 						});
 					},
-					Application: function(p) {
-						return {
-							run: function(args) {
-								var global = (p.options) ? p.options({
-									options: {},
-									arguments: args
-								}) : {
-									options: {},
-									arguments: args
-								};
-								var command = global.arguments.shift();
-								if (!command) {
-									throw new jsh.script.cli.error.NoTargetProvided("Usage: " + jsh.script.file + " [options] <command> [arguments]");
-								}
-								var referenced = (function() {
-									/** @type { slime.jsh.script.cli.Commands | slime.jsh.script.cli.Command } */
-									var rv = p.commands;
-									var tokens = command.split(".");
-									for (var i=0; i<tokens.length; i++) {
-										rv = rv[tokens[i]];
-										if (!rv) return rv;
-									}
-									return rv;
-								})();
-
-								/** @type { (v: any) => v is slime.jsh.script.cli.Command } */
-								var isCommand = function(v) {
-									return typeof(v) == "function";
-								};
-
-								if (!referenced) {
-									throw new jsh.script.cli.error.TargetNotFound("Command " + command + " is " + referenced, {
-										command: command
-									});
-								}
-								if (!isCommand(referenced)) {
-									throw new jsh.script.cli.error.TargetNotFunction(command + " is object.", {
-										command: command,
-										target: referenced
-									});
-								} else {
-									return referenced(global);
-								}
-							}
-						}
-					},
-					wrap: function(descriptor) {
-						function showCommands() {
-							var rv = [];
-							getCommandList(rv, descriptor.commands);
-							jsh.shell.console("Available commands:");
-							jsh.shell.console("");
-							rv.forEach(function(item) {
-								jsh.shell.console(item);
-							});
-						}
-
+					run: function(command) {
 						try {
-							var status = jsh.script.cli.Application(descriptor).run(jsh.script.arguments.slice());
-							if (typeof(status) != "undefined") {
+							var status = command({
+								options: {},
+								arguments: jsh.script.arguments
+							});
+							if (typeof(status) == "number") {
 								jsh.shell.exit(status);
 							}
+							jsh.shell.exit(0);
 						} catch (e) {
-							if (e instanceof jsh.script.cli.error.NoTargetProvided) {
-								showCommands();
-								jsh.shell.exit(1);
-							} else if (e instanceof jsh.script.cli.error.TargetNotFound) {
-								jsh.shell.console("Command not found: " + e.command);
-								jsh.shell.console("");
-								showCommands();
-								jsh.shell.exit(1);
-							} else if (e instanceof jsh.script.cli.error.TargetNotFunction) {
-								jsh.shell.console("Command is not function: " + e.command + " is " + e.target);
-								jsh.shell.exit(1);
-							} else {
-								jsh.shell.console(e);
-								jsh.shell.console(e.stack);
-								jsh.shell.exit(1);
-							}
+							jsh.shell.console(e);
+							jsh.shell.console(e.stack);
+							jsh.shell.exit(1);
 						}
+					},
+					wrap: function wrap(descriptor) {
+						var call = getCall({
+							descriptor: descriptor,
+							arguments: jsh.script.arguments.slice()
+						});
+						executeCall({
+							commands: descriptor.commands,
+							call: call
+						});
 					}
 				};
 
@@ -355,8 +471,6 @@
 						}
 					}
 				};
-
-				jsh.shell.getopts = $api.deprecate(jsh.script.getopts);
 			}
 		});
 

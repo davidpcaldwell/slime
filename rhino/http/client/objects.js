@@ -121,67 +121,6 @@
 
 			/**
 			 *
-			 * @param { slime.jrunscript.http.client.object.request.Body } body
-			 * @returns { slime.mime.Type }
-			 */
-			function getRequestBodyType(body) {
-				if (typeof(body.type) == "string") {
-					return $api.mime.Type.codec.declaration.decode(body.type);
-				} else {
-					return body.type;
-				}
-			}
-
-			/**
-			 *
-			 * @param { slime.jrunscript.http.client.object.request.Body } body
-			 * @returns { slime.jrunscript.runtime.io.InputStream }
-			 */
-			function getRequestBodyStream(body) {
-				//	TODO	Does not handle stream/$stream from rhino/mime
-				//			above is a very old comment; may no longer apply
-
-				/** @type { (body: slime.jrunscript.http.client.object.request.Body) => body is slime.jrunscript.http.client.object.request.body.Stream } */
-				var isStream = function(body) {
-					return Boolean(body["stream"]);
-				}
-
-				/** @type { (body: slime.jrunscript.http.client.object.request.Body) => body is slime.jrunscript.http.client.object.request.body.Binary } */
-				var isBinary = function(body) {
-					return Boolean(body["read"] && body["read"].binary);
-				}
-
-				/** @type { (body: slime.jrunscript.http.client.object.request.Body) => body is slime.jrunscript.http.client.object.request.body.String } */
-				var isString = function(body) {
-					return typeof body["string"] != "undefined";
-				}
-
-				if (isStream(body)) return body.stream;
-				if (isBinary(body)) return body.read.binary();
-				if (isString(body)) {
-					var buffer = new $context.api.io.Buffer();
-					buffer.writeText().write(body.string);
-					buffer.writeText().close();
-					return buffer.readBinary();
-				}
-				throw new TypeError("Body is not a recognized type: " + body);
-			}
-
-			/**
-			 *
-			 * @param { slime.jrunscript.http.client.object.request.Body } p
-			 * @returns { slime.jrunscript.http.client.spi.Argument["request"]["body"] }
-			 */
-			var interpretRequestBody = function(p) {
-				if (!p) return null;
-				return {
-					type: getRequestBodyType(p),
-					stream: getRequestBodyStream(p)
-				};
-			}
-
-			/**
-			 *
 			 * @param { slime.jrunscript.http.client.object.Request } p
 			 * @returns { slime.jrunscript.http.client.spi.Argument }
 			 */
@@ -213,12 +152,12 @@
 
 				var headers = (p.headers) ? Parameters(p.headers) : [];
 
-				var body = interpretRequestBody(p.body);
+				var body = $context.interpretRequestBody(p.body);
 
 				return {
 					request: {
 						method: method,
-						url: $context.api.web.Url.codec.string.encode(url),
+						url: url,
 						headers: headers,
 						body: body
 					},
@@ -235,7 +174,7 @@
 			function toOldRequest(argument) {
 				return {
 					method: argument.request.method,
-					url: $context.api.web.Url.codec.string.decode(argument.request.url),
+					url: argument.request.url,
 					headers: argument.request.headers,
 					body: argument.request.body,
 					proxy: argument.proxy,
@@ -248,17 +187,17 @@
 			 * @returns { slime.jrunscript.http.client.spi.Response }
 			 */
 			function oldspi(p) {
-				var body = interpretRequestBody(p.body);
-				return urlConnectionImplementation({
+				var body = $context.interpretRequestBody(p.body);
+				return $api.fp.world.input(urlConnectionImplementation({
 					request: {
 						method: p.method,
-						url: $context.api.web.Url.codec.string.encode(p.url),
+						url: p.url,
 						headers: p.headers,
 						body: body
 					},
 					proxy: p.proxy,
 					timeout: p.timeout
-				})();
+				}))();
 			}
 
 			/**
@@ -283,7 +222,7 @@
 					}
 				})();
 
-				var spirequest = $api.Function.result(
+				var spirequest = $api.fp.result(
 					interpretRequest(p),
 					sessionRequest(cookies),
 					authorizedRequest(authorization),
@@ -293,7 +232,7 @@
 				var spiImplementation = (configuration && configuration.spi) ? configuration.spi(oldspi) : oldspi;
 
 				var spiresponse = spiImplementation(toOldRequest(spirequest));
-				cookies.set(spirequest.request.url,spiresponse.headers);
+				cookies.set($context.api.web.Url.codec.string.encode(spirequest.request.url),spiresponse.headers);
 
 				var isRedirect = function(status) {
 					return (status.code >= 300 && status.code <= 303) || status.code == 307;
@@ -302,7 +241,7 @@
 				if (isRedirect(spiresponse.status)) {
 					var redirectTo = headersImplementationForGet.call(spiresponse.headers, "Location");
 					if (redirectTo === null) throw new Error("Redirect without location header.");
-					var redirectUrl = $context.api.web.Url.resolve($context.api.web.Url.codec.string.decode(spirequest.request.url), redirectTo);
+					var redirectUrl = $context.api.web.Url.resolve(spirequest.request.url, redirectTo);
 					//	TODO	copy object rather than modifying
 					var rv = {};
 					for (var x in p) {

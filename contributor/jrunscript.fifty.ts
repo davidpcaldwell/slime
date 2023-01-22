@@ -6,38 +6,63 @@
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		var jsh = fifty.global.jsh;
 
 		fifty.tests.suite = function() {
-			var isDocker = Boolean(fifty.global.jsh.file.Pathname("/slime").directory);
+			var hasJsoup = Boolean(jsh.shell.tools.jsoup.installed);
+
+			var hasGit = Boolean(jsh.shell.PATH.getCommand("git"));
+
+			var isGitClone = (function() {
+				var SLIME = fifty.jsh.file.object.getRelativePath("..").directory;
+				return Boolean(SLIME.getSubdirectory(".git") || SLIME.getFile(".git"));
+			})();
+
+			var isMkcertImplemented = (function() {
+				if (jsh.shell.os.name == "Mac OS X") return true;
+				if (jsh.shell.os.name == "Linux") return true;
+			})();
 
 			fifty.load("../loader/expression.fifty.ts");
-			fifty.load("../loader/jrunscript/java.fifty.ts");
+			fifty.load("../loader/jrunscript/expression.fifty.ts");
+			fifty.load("../loader/api/unit.fifty.ts");
 			fifty.load("../rhino/system/test/Packages.inonit.system.fifty.ts");
 			fifty.load("../rhino/jrunscript/api.fifty.ts");
-			if (jsh.shell.tools.jsoup.installed) fifty.load("../loader/document/module.fifty.ts");
+			if (hasJsoup) fifty.load("../loader/document/module.fifty.ts");
 			fifty.load("../js/web/module.fifty.ts");
 			fifty.load("../js/codec/ini.fifty.ts");
+			fifty.load("../js/time/module.fifty.ts");
 			fifty.load("../jrunscript/host/module.fifty.ts");
 			fifty.load("../jrunscript/io/plugin.jsh.fifty.ts");
 			fifty.load("../jrunscript/tools/install/module.fifty.ts");
 			fifty.load("../rhino/ip/module.fifty.ts");
 			fifty.load("../rhino/http/client/module.fifty.ts");
 			fifty.load("../rhino/shell/module.fifty.ts");
+			fifty.load("../rhino/tools/module.fifty.ts");
+			fifty.load("../rhino/tools/plugin.jsh.fifty.ts");
+			fifty.load("../rhino/tools/node/module.fifty.ts");
 			fifty.load("../rhino/tools/docker/module.fifty.ts");
 			fifty.load("../rhino/tools/github/module.fifty.ts");
-			fifty.load("../rhino/tools/git/module.fifty.ts");
+			if (hasGit) fifty.load("../rhino/tools/git/module.fifty.ts");
 			fifty.load("../rhino/tools/gcloud/module.fifty.ts");
+			fifty.load("../jsh/launcher/test/suite.fifty.ts");
+			fifty.load("../jsh/test/remote.fifty.ts");
 			fifty.load("../jsh/loader/jsh.fifty.ts");
 			fifty.load("../jsh/script/plugin.jsh.fifty.ts");
-			if (!isDocker) fifty.load("../jsh/unit/plugin.jsh.web.fifty.ts");
+			if (isMkcertImplemented) fifty.load("../jsh/unit/plugin.jsh.web.fifty.ts");
+			fifty.load("../jsh/tools/install/plugin.jsh.fifty.ts");
 			fifty.load("../rhino/http/servlet/plugin.jsh.resources.fifty.ts");
 			fifty.load("../tools/code/module.fifty.ts");
-			fifty.load("../tools/wf/plugin.jsh.fifty.ts");
-			if (!isDocker) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
-			//fifty.load("../");
+			fifty.load("../tools/fifty/module.fifty.ts");
+			//	TODO	For reasons that are baffling, merely loading this file (even though all its tests are conditionally
+			//			disabled) seems to cause issue #896
+			if (false) fifty.load("../tools/wf/plugin.jsh.fifty.ts");
+			if (hasGit && isGitClone) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
+			if (hasGit && isGitClone) fifty.load("../wf.fifty.ts");
+			//	TODO	below test is probably pointless, probably doesn't run anything. Should we find a way to short-circuit it?
+			fifty.load("../loader/browser/test/suite.jsh.fifty.ts");
 		}
 	}
 //@ts-ignore

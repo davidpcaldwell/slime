@@ -7,18 +7,24 @@
 //@ts-check
 (
 	/**
-	 *
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(jsh) {
-		jsh.shell.sudo({
+	function($api,jsh) {
+		var invocation = jsh.shell.Invocation.sudo({
 			nocache: true,
 			askpass: jsh.shell.jsh.src.getFile("rhino/shell/sudo-askpass.bash")
-		}).run({
+		})(jsh.shell.Invocation.from.argument({
 			command: "ls"
-		});
+		}));
+
+		$api.fp.world.now.action(
+			jsh.shell.world.action,
+			invocation
+		);
+
 		//	TODO	Why is the explicit exit needed?
 		jsh.shell.exit(0);
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);

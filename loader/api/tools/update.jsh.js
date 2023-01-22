@@ -8,6 +8,12 @@
 //	TODO	check whether contents of comment in <style> need to be escaped
 
 (function() {
+	// <li>
+	// 	<code>loader/api/tools/update.jsh.js [-base <i>directory</i>]</code>: Inlines or updates the definition files
+	// 	for a library that does not itself contain SLIME (and thus cannot link to the SLIME definition files in
+	// 	<code>loader/api</code>).
+	// </li>
+
 	var parameters = jsh.script.getopts({
 		options: {
 			base: jsh.shell.PWD.pathname,

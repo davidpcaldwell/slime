@@ -13,7 +13,7 @@ if [ -z "$JSH_JAVA_HOME" ]; then
 	if [ "0" = "$?" ]; then
 		true
 	else
-		echo "JSH_JAVA_HOME not defined; should point to Java 2 SDK."
+		echo "JSH_JAVA_HOME not defined; should point to Java Development Kit."
 		exit 1
 	fi
 else

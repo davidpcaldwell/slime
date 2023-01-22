@@ -4,16 +4,27 @@
 //
 //	END LICENSE
 
+//@ts-check
+//@ts-check
 (
-	function() {
-		$exports.gui = function(p) {
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { any } JavaAdapter
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.ui.askpass.Context } $context
+	 * @param { slime.loader.Export<slime.jsh.ui.askpass.Exports> } $export
+	 */
+	function(Packages,JavaAdapter,$api,$context,$export) {
+		/** @type { slime.jsh.ui.askpass.Exports["gui"] } */
+		var gui = function(p) {
 			var _lock = new $context.api.java.Thread.Monitor();
 			var BorderLayout = Packages.java.awt.BorderLayout;
 			var _frame = new Packages.javax.swing.JFrame();
 			var _label = new Packages.javax.swing.JLabel(p.prompt);
 			var _field = (p.nomask) ? new Packages.javax.swing.JTextField() : new Packages.javax.swing.JPasswordField();
 			var done = false;
-			var doneWaiter = new _lock.Waiter({
+			var doneWaiter = _lock.Waiter({
 				until: function() {
 					return true;
 				},
@@ -47,7 +58,7 @@
 			_frame.pack();
 			_frame.setVisible(true);
 			var rv;
-			new _lock.Waiter({
+			_lock.Waiter({
 				until: function() {
 					return done;
 				},
@@ -57,5 +68,9 @@
 			})();
 			return String(rv);
 		}
+		$export({
+			gui: gui
+		});
 	}
-)();
+//@ts-ignore
+)(Packages,JavaAdapter,$api,$context,$export);

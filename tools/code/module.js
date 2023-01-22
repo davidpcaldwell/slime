@@ -14,7 +14,12 @@
 	 */
 	function($api,$context,$export) {
 		/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
-		var castToFile = $api.Function.cast;
+		var castToFile = $api.fp.cast;
+
+		/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.file.world.Location } */
+		var toLocation = function(node) {
+			return $context.library.file.world.Location.from.os(node.pathname.toString());
+		}
 
 		/**
 		 *
@@ -37,7 +42,7 @@
 		function toSourceFile(p) {
 			return {
 				path: p.path,
-				file: castToFile(p.node)
+				file: toLocation(castToFile(p.node))
 			}
 		}
 
@@ -58,6 +63,7 @@
 
 				if (/\.html$/.test(basename)) return true;
 				if (/\.java$/.test(basename)) return true;
+				if (/\.scala$/.test(basename)) return true;
 				if (/\.css$/.test(basename)) return true;
 				if (/\.c$/.test(basename)) return true;
 				if (/\.cpp$/.test(basename)) return true;
@@ -75,6 +81,10 @@
 				if (/\.dockerignore$/.test(basename)) return true;
 				if (/Dockerfile$/.test(basename)) return true;
 				if (/\.bashrc$/.test(basename)) return true;
+
+				if (basename == ".hgignore") return true;
+				if (basename == ".hgsubstate") return false;
+				if (basename == ".hgsub") return true;
 			},
 			isVcsGenerated: function(name) {
 				if (name == ".hgtags") return true;
@@ -103,14 +113,14 @@
 
 		var defaults = {
 			exclude: {
-				file: $api.Function.pipe(
+				file: $api.fp.pipe(
 					function(file) { return file.pathname.basename; },
-					$api.Function.Predicate.or(
+					$api.fp.Predicate.or(
 						filename.isVcsGenerated,
 						filename.isIdeGenerated
 					)
 				),
-				directory: $api.Function.Predicate.or(
+				directory: $api.fp.Predicate.or(
 					directory.isLocal,
 					directory.isVcs,
 					directory.isBuildTool
@@ -124,13 +134,13 @@
 		 */
 		function getSourceFiles(p) {
 			if (!p.base) throw new Error("Required: base, specifying directory.");
-			return $api.Function.impure.ask(function(on) {
+			return $api.fp.world.old.ask(function(on) {
 				return p.base.list({
 					filter: isAuthoredTextFile( (p.exclude && p.exclude.file) ? p.exclude.file : defaults.exclude.file ),
-					descendants: $api.Function.Predicate.not( (p.exclude && p.exclude.directory) ? p.exclude.directory : defaults.exclude.directory ),
+					descendants: $api.fp.Predicate.not( (p.exclude && p.exclude.directory) ? p.exclude.directory : defaults.exclude.directory ),
 					type: $context.library.file.list.ENTRY
 				}).map(toSourceFile).filter(
-					$api.Function.series(
+					$api.fp.series(
 						p.isText,
 						function(file) {
 							on.fire("unknownFileType", file);
@@ -190,6 +200,37 @@
 			}
 		}
 
+		/** @type { <T>(m: slime.$api.fp.Maybe<T>) => T } */
+		function Maybe_assert(m) {
+			if (m.present) return m.value;
+			throw new Error("Asserted Maybe that was Nothing.");
+		}
+
+		var readFileString = $api.fp.pipe(
+			$api.fp.world.mapping(
+				$context.library.file.world.Location.file.read.string()
+			),
+			Maybe_assert
+		)
+
+		/**
+		 *
+		 * @param { slime.jrunscript.file.world.Location } file
+		 * @param { string } string
+		 */
+		var writeFileString = function(file,string) {
+			$api.fp.world.now.action(
+				$context.library.file.world.Location.file.write.string({ value: string }),
+				file
+			);
+		};
+
+		//	TODO	obviously this is not ideal
+		/** @type { (location: slime.jrunscript.file.world.Location) => string } */
+		var getBasename = function(location) {
+			return $context.library.file.Pathname(location.pathname).basename;
+		}
+
 		/**
 		 *
 		 * @type { slime.tools.code.Exports["handleFileTrailingWhitespace"] }
@@ -199,8 +240,8 @@
 				if (!configuration) configuration = {
 					nowrite: false
 				};
-				return $api.Function.impure.tell(function(events) {
-					var code = entry.file.read(String);
+				return $api.fp.world.old.tell(function(events) {
+					var code = readFileString(entry.file);
 					var scan = findTrailingWhitespaceIn(code);
 					scan.instances.forEach(function(instance) {
 						events.fire("foundAt", {
@@ -214,7 +255,7 @@
 					if (scan.instances.length) {
 						events.fire("foundIn", entry);
 						if (!configuration.nowrite) {
-							entry.file.pathname.write(scan.without, { append: false });
+							writeFileString(entry.file, scan.without);
 						}
 					} else {
 						events.fire("notFoundIn", entry);
@@ -228,12 +269,12 @@
 		 * @type { slime.tools.code.Exports["handleTrailingWhitespace"] }
 		 */
 		var trailingWhitespace = function(p) {
-			return $api.Function.impure.tell(function(events) {
+			return $api.fp.world.old.tell(function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
 				getSourceFiles({
 					base: p.base,
 					isText: (p.isText) ? p.isText : function(file) {
-						return filename.isText(file.file.pathname.basename);
+						return filename.isText(getBasename(file.file));
 					},
 					exclude: p.exclude
 				})({
@@ -278,12 +319,12 @@
 
 		/** @type { slime.tools.code.Exports["handleFinalNewlines"] } */
 		function handleFinalNewlines(p) {
-			return $api.Function.impure.tell(function(events) {
+			return $api.fp.world.old.tell(function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
 				getSourceFiles({
 					base: p.base,
 					isText: (p.isText) ? p.isText : function(file) {
-						return filename.isText(file.file.pathname.basename);
+						return filename.isText(getBasename(file.file));
 					},
 					exclude: p.exclude
 				})({
@@ -291,18 +332,53 @@
 						events.fire("unknownFileType", e.detail);
 					}
 				}).forEach(function(entry) {
-					var code = entry.file.read(String);
+					var code = readFileString(entry.file);
 					var check = checkSingleFinalNewline(code);
 					if (check.missing) events.fire("missing", entry);
 					if (check.multiple) events.fire("multiple", entry);
 					if (!p.nowrite && (check.missing || check.multiple)) {
-						entry.file.pathname.write(check.fixed, { append: false });
+						writeFileString(entry.file, check.fixed);
 					}
 				});
 			});
 		}
 
+		/** @type { slime.tools.code.Exports["File"]["hasShebang"] } */
+		function hasShebang() {
+			return function(file) {
+				return function(events) {
+					var input = $api.fp.world.now.question(
+						$context.library.file.world.Location.file.read.stream(),
+						file.file
+					);
+					if (!input.present) return $api.fp.Maybe.nothing();
+					var _input = input.value.java.adapt();
+					var _1 = _input.read();
+					var _2 = _input.read();
+					_input.close();
+					return $api.fp.Maybe.value(_1 == 35 && _2 == 33);
+				}
+			}
+		}
+
 		$export({
+			File: {
+				hasShebang: hasShebang,
+				isText: function() {
+					return function(file) {
+						return function(events) {
+							var basename = getBasename(file.file);
+							var byExtension = filename.isText(basename);
+							if (typeof(byExtension) == "boolean") return $api.fp.Maybe.value(byExtension);
+							if (basename.indexOf(".") == -1) {
+								var rv = hasShebang()(file)(events);
+								if (rv.present) return rv;
+							}
+							return $api.fp.Maybe.nothing();
+						}
+					}
+				}
+			},
 			filename: filename,
 			directory: directory,
 			defaults: defaults,

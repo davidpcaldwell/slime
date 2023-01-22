@@ -9,7 +9,6 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { slime.jrunscript.file.internal.spi.Context } $context
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.spi.Exports> } $export
 	 */
 	function(Packages,$export) {

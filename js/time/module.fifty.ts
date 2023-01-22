@@ -5,113 +5,142 @@
 //	END LICENSE
 
 namespace slime.time {
-	export interface Day {
+	export interface Date {
 		year: number
 		month: number
 		day: number
 	}
 
-	export namespace old {
-		export interface Day {
-			year: {
-				value: number
-			}
-			at: Function
-			format(mask: string): string
-			month: Month
-			day: number
-			add(n: number): Day
-			addMonths(n: number): Day
-			addYears(n: number): Day
-			isAfter(day: Day): boolean
+	export interface Time {
+		hour: number
+		minute: number
 
-			/** @experimental Has other undocumented properties */
-			weekday: {
-				/**
-				 * The full name of the weekday; e.g., `"MONDAY"`, `"WEDNESDAY"`.
-				 */
-				name: string
-			}
-			adapt: () => slime.time.Day
+		/**
+		 * May be a decimal number including fractional seconds.
+		 */
+		second: number
+	}
+
+	export namespace zone {
+		export interface Time extends slime.time.Date, slime.time.Time {
 		}
+	}
 
-		export interface Month {
-			id: {
-				index: number
-			}
-			day: (n: number) => Day
-		}
+	export interface Zone {
+		/**
+		 * Given a UNIX time, in milliseconds, returns the corresponding time in this time zone.
+		 */
+		local: (unixMilliseconds: number) => zone.Time
 
-		export namespace day {
-			export interface Time {
-			}
-		}
+		/**
+		 * Returns the UNIX time, in milliseconds, for the given time in this time zone.
+		 */
+		unix: (time: zone.Time) => number
+	}
 
-		export interface Time {
-			day: any
-			format(mask: string): string
-		}
-
-		export interface When {
-			unix: number
-			local(): Time
-			local(zone: any): Time
+	export namespace context {
+		/**
+		 * Configuration of the Java context for this module. Allows the Calendar and TimeZone Java classes to be replaced, in
+		 * scenarios where they are inaccessible but do not work. Unlikely to be needed; older versions of Google App Engine for
+		 * Java restricted reflective access to these classes.
+		 */
+		export interface Java {
+			Calendar?: slime.jrunscript.Packages["java"]["util"]["Calendar"]
+			TimeZone?: slime.jrunscript.Packages["java"]["util"]["TimeZone"]
 		}
 	}
 
 	export interface Context {
-		zones: object
-		old: {
-			Day_month: boolean
+		/**
+		 * A function that returns the number of milliseconds since the UNIX epoch. If not supplied, the standard JavaScript
+		 * implementation will be used.
+		 */
+		now?: slime.$api.fp.impure.Input<number>
+
+		zones?: {
+			[id: string]: Zone
 		}
-		java: object
+
+		java?: context.Java
+	}
+
+	export interface Exports {
+		java?: context.Java
 	}
 
 	export namespace test {
-		export const subject: Exports = (
-			function(fifty: slime.fifty.test.kit) {
-				return fifty.$loader.module("module.js");
-			}
+		export const { subject, load } = (function(fifty: slime.fifty.test.Kit) {
+			var script: Script = fifty.$loader.script("module.js");
+			var jcontext: slime.loader.Script<context.Java,Context> = fifty.$loader.script("context.java.js");
+			return {
+				subject: (fifty.global.jsh) ? script(jcontext()) : script(),
+				load: function(context: Context) {
+					return script(context);
+				}
+			};
 		//@ts-ignore
-		)(fifty);
-	}
-
-	export interface World {
-		today: () => Day
+		})(fifty);
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.Day = function() {
-				fifty.run(fifty.tests.Day.format);
-			};
+			fifty.tests.Date = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
 
+	export namespace exports {
+		export interface Date {
+			input: {
+				today: slime.$api.fp.impure.Input<slime.time.Date>
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.Date.today = function() {
+				var subject = test.load({
+					now: $api.fp.returning(1643907600000)
+				});
+				var today = subject.Date.input.today();
+				verify(today, "today", function(it) {
+					it.year.is(2022);
+					it.month.is(2);
+					it.day.is(3);
+				})
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace exports {
-		export interface Day {
-			format: (mask: string) => (day: slime.time.Day) => string
+		export interface Date {
+			format: (mask: string) => (day: slime.time.Date) => string
 		}
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				const verify = fifty.verify;
 
-				fifty.tests.Day.format = function() {
-					var mar1: slime.time.Day = {
+				fifty.tests.Date.format = function() {
+					var mar1: slime.time.Date = {
 						year: 2009,
 						month: 3,
 						day: 1
 					};
 
 					var format = function(mask) {
-						return test.subject.Day.format(mask)(mar1);
+						return test.subject.Date.format(mask)(mar1);
 					}
 
 					verify(format("yyyy mm dd")).is("2009 03 01");
@@ -121,137 +150,45 @@ namespace slime.time {
 					verify(format("WWWWWW Mmmm ?d, yyyy")).is("SUNDAY March 1, 2009");
 					verify(format("Wwwww Mmmm ?d, yyyy")).is("Sun March 1, 2009");
 					verify(format("Wwwww Mmmm dd, yyyy")).is("Sun March 01, 2009");
-
-					const subject = test.subject;
-					fifty.run(function old() {
-						var mar1 = new subject.Day(2009,3,1);
-						const test = function(b) { return verify(b).is(true); }
-						test(mar1.format("yyyy mm dd") == "2009 03 01");
-						test(mar1.format("yyyy/?m/?d") == "2009/3/1");
-						test(mar1.format("Mmmm ?d, yyyy") == "March 1, 2009");
-						test(mar1.format("Www Mmmm ?d, yyyy") == "Sun March 1, 2009");
-						test(mar1.format("WWWWWW Mmmm ?d, yyyy") == "SUNDAY March 1, 2009");
-						test(mar1.format("Wwwww Mmmm ?d, yyyy") == "Sun March 1, 2009");
-						test(mar1.format("Wwwww Mmmm dd, yyyy") == "Sun March 01, 2009");
-					});
-				}
-
-				fifty.tests.Day.old = {};
-				fifty.tests.Day.old.constructor = function() {
-					var nov1: slime.time.Day = {
-						year: 2021,
-						month: 11,
-						day: 1
-					};
-
-					var day = new test.subject.Day(nov1);
-
-					verify(day).year.value.is(2021);
-					verify(day).month.id.index.is(11);
-					verify(day).day.is(1);
 				}
 			}
 		//@ts-ignore
 		)(fifty);
-
 	}
 
 	export interface Exports {
-	}
-
-	export namespace exports {
-		export interface Day {
-			new (year: number, month: number, day: number): old.Day
-			new (p: Day): old.Day
-			new (p: any): old.Day
-			Time: new (hours: number, minutes: number) => old.day.Time
-			subtract: Function
-			order: Function
-			today: () => old.Day
-			codec: {
-				iso8601: {
-					extended: slime.Codec<old.Day,string>
-				}
-				json: any
-				js: any
-			}
-			rehydrate: (p: any) => old.Day
-		}
+		Date: exports.Date
 	}
 
 	export interface Exports {
-		Year: Function
-		Month: Function
-		Day: exports.Day
-		Time: {
-			new (): old.Time
-			Zone: object
+		Timezone: {
+			local: Zone
+			UTC: Zone
+			[x: string]: Zone
 		}
-		When: {
-			new (p: { date: Date }): old.When
-			new (p: { unix: number }): old.When
-			new (date: Date): old.When
-			new (): old.When
-			codec: {
-				rfc3339: slime.Codec<old.When,string>
-				Date: slime.Codec<old.When,Date>
-				js: any
-			}
-			order: Function
-			now: () => old.When
-		}
-		java: object
-		install: Function
-		world: World
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.kit,
-			$loader: slime.fifty.test.$loader,
-			verify: slime.fifty.test.verify,
-			tests: slime.fifty.test.tests
+			fifty: slime.fifty.test.Kit
 		) {
-			tests.suite = function() {
-				var global = (function() { return this; })();
-				var subject: slime.time.Exports = (global.jsh) ? $loader.module("module.js", $loader.file("context.java.js")) : $loader.module("module.js");
-				//var subject: slime.time.Exports = $loader.module("module.js");
+			const { verify } = fifty;
 
-				var when = new subject.When({ unix: 1599143670821 });
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.Date);
 
-				(function(when) {
-					var rfc3339 = subject.When.codec.rfc3339.encode(when);
-					var decoded = subject.When.codec.rfc3339.decode(rfc3339);
-					verify(when).unix.is(decoded.unix);
-				})(when);
+				fifty.run(function zones() {
+					verify(test.subject).Timezone.local.is.type("object");
+					verify(test.subject).Timezone.UTC.is.type("object");
+				})
 
-				//	Got 1599187454916 from 2020-09-04T02:44:14.917Z
-				var sample = "2020-09-04T02:44:14.917Z";
-				var desired = 1599187454917;
-				var decoded = subject.When.codec.rfc3339.decode(sample);
-				verify(decoded).unix.is(desired);
-
-				//	Got 1599188612109 from 2020-09-04T03:03:32.110Z
-				var sample = "2020-09-04T03:03:32.110Z";
-				var desired = 1599188612110;
-				var decoded = subject.When.codec.rfc3339.decode(sample);
-				verify(decoded).unix.is(desired);
-
-				var sample = "2020-09-04T03:17:44.858Z";
-				var desired = 1599189464858;
-				var decoded = subject.When.codec.rfc3339.decode(sample);
-				verify(decoded).unix.is(desired);
-
-				var base = new subject.Day(2021,1,1).at(new subject.Day.Time(11,59)).local();
-				var rounding = new subject.When({ unix: base.unix + 59750 });
-				var formatted = rounding.local().format("yyyy-mm-dd HR:mi:sc");
-				verify(formatted).is("2021-01-01 11:59:59");
-
-				fifty.run(fifty.tests.Day);
-
-				fifty.run(fifty.tests.Day.old.constructor);
+				fifty.load("old.fifty.ts");
 			}
+
+			if (fifty.global.jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);
 		}
 	//@ts-ignore
-	)(fifty,$loader,verify,tests)
+	)(fifty);
+
+	export type Script = slime.loader.Script<Context,Exports>
 }

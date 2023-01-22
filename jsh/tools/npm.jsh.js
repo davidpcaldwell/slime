@@ -17,9 +17,9 @@
 			jsh.shell.exit(1);
 		}
 
-		$api.Function.result(
-			jsh.shell.tools.node["modules"].installed,
-			$api.Function.Object.entries,
+		$api.fp.result(
+			jsh.shell.tools.node.installed.modules.installed,
+			Object.entries,
 			function(entries) {
 				entries.forEach(function(item) {
 					jsh.shell.console(item[0] + ": " + item[1].version)

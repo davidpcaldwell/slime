@@ -12,13 +12,11 @@
 	 * @param { slime.runtime.internal.scripts.Scope["$platform"] } $platform
 	 * @param { slime.runtime.internal.scripts.Scope["$engine"] } $engine
 	 * @param { slime.runtime.internal.scripts.Scope["$api"] } $api
-	 * @param { slime.runtime.internal.scripts.Scope["mime"] } mime
-	 * @param { slime.runtime.internal.scripts.Scope["mimeTypeIs"] } mimeTypeIs
 	 * @param { slime.loader.Export<slime.runtime.internal.scripts.Exports> } $export
 	 */
-	function($slime,$platform,$engine,$api,mime,mimeTypeIs,$export) {
+	function($slime,$platform,$engine,$api,$export) {
 		/**
-		 * @type { slime.runtime.Exports["Loader"]["tools"]["toExportScope"] }
+		 * @type { slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"] }
 		 */
 		var toExportScope = function(scope) {
 			var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
@@ -41,7 +39,7 @@
 			return rv;
 		};
 
-		/** @type { slime.runtime.internal.createScriptScope } */
+		/** @type { slime.runtime.internal.scripts.Exports["createScriptScope"] } */
 		var createScriptScope = function($context) {
 			var toT = function(any) { return any; };
 
@@ -72,48 +70,49 @@
 		//	TODO	re-work resource.js
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
+		 *
+		 * @param { string } string
 		 */
-		function run(object,scope) {
-			if (!object || typeof(object) != "object") {
-				throw new TypeError("'object' must be an object, not " + object);
+		function mimeTypeIs(string) {
+			/**
+			 *
+			 * @param { slime.mime.Type } type
+			 */
+			function rv(type) {
+				return (type.media + "/" + type.subtype) == string;
 			}
-			if (typeof(object.read) != "function") throw new Error("Not resource.");
-			/** @type { slime.Resource & { js: { name: string, code: string } } } */
-			var resource = Object.assign(object, { js: void(0) });
-			var type = (resource.type) ? mime.Type(resource.type.media, resource.type.subtype, resource.type.parameters) : mime.Type.parse("application/javascript");
-			var string = (function() {
-				if (resource.read) {
-					var rv = resource.read(String);
-					if (typeof(rv) == "string") return rv;
-				}
-			})();
-			if (typeof(string) != "string") {
-				throw new TypeError("Resource: " + resource.name + " is not convertible to string, so cannot be executed.");
-			}
+			return rv;
+		}
 
+		/**
+		 *
+		 * @param { { name: string, type: slime.mime.Type, string: string } } script
+		 * @param { { [name: string]: any } } scope
+		 */
+		function newrun(script,scope) {
 			var typeIs = function(string) {
-				return type && mimeTypeIs(string)(type);
+				return script.type && mimeTypeIs(string)(script.type);
 			}
 
+			var js;
 			if ($slime.typescript && typeIs("application/x.typescript")) {
-				resource.js = {
-					name: resource.name,
-					code: $slime.typescript.compile(string)
+				js = {
+					name: script.name,
+					code: $slime.typescript.compile(script.string)
 				};
 			} else if (typeIs("application/vnd.coffeescript")) {
-				resource.js = {
-					name: resource.name,
-					code: $coffee.compile(string)
+				js = {
+					name: script.name,
+					code: $coffee.compile(script.string)
 				};
 			} else if (typeIs("application/javascript") || typeIs("application/x-javascript")) {
-				resource.js = {
-					name: resource.name,
-					code: string
+				js = {
+					name: script.name,
+					code: script.string
 				}
 			}
-			if (!resource.js) {
-				throw new TypeError("Resource " + resource.name + " is not JavaScript; type = " + type);
+			if (!js) {
+				throw new TypeError("Resource " + script.name + " is not JavaScript; type = " + script.type);
 			}
 			var target = this;
 			var global = (function() { return this; })();
@@ -128,8 +127,8 @@
 			scope.$api = $api;
 			$engine.execute(
 				{
-					name: resource.js.name,
-					js: resource.js.code
+					name: js.name,
+					js: js.code
 				},
 				scope,
 				target
@@ -137,7 +136,37 @@
 		}
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["file"] }
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["run"] }
+		 */
+		function run(object,scope) {
+			if (!object || typeof(object) != "object") {
+				throw new TypeError("'object' must be an object, not " + object);
+			}
+			if (typeof(object.read) != "function") throw new Error("Not resource: no read() function");
+			/** @type { slime.Resource & { js: { name: string, code: string } } } */
+			var resource = Object.assign(object, { js: void(0) });
+			var type = (resource.type) ? resource.type : $api.mime.Type.codec.declaration.decode("application/javascript");
+			var string = (function() {
+				if (resource.read) {
+					var rv = resource.read(String);
+					if (typeof(rv) == "undefined") throw new Error("resource.read(String) returned undefined");
+					if (typeof(rv) == "string") return rv;
+					throw new Error("Not string: " + typeof(rv) + " " + rv + " using " + resource.read);
+				}
+			})();
+			if (typeof(string) != "string") {
+				throw new TypeError("Resource: " + resource.name + " is not convertible to string, it is " + typeof(string) + ", so cannot be executed. resource.read = " + resource.read);
+			}
+
+			newrun.call(this, {
+				name: resource.name,
+				type: type,
+				string: string
+			}, scope);
+		}
+
+		/**
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["file"] }
 		 */
 		function file(code,$context) {
 			var inner = createScriptScope($context);
@@ -146,7 +175,7 @@
 		}
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["value"] }
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["value"] }
 		 */
 		function value(code,scope) {
 			var rv;
@@ -160,13 +189,18 @@
 
 		$export({
 			methods: {
-				run: run,
-				file: file,
-				value: value
+				old: {
+					run: run,
+					file: file,
+					value: value
+				},
+				run: function(code,scope) {
+					newrun({ name: code.name, type: code.type(), string: code.read() }, scope);
+				}
 			},
 			toExportScope: toExportScope,
 			createScriptScope: createScriptScope
 		});
 	}
 //@ts-ignore
-)($slime,$platform,$engine,$api,mime,mimeTypeIs,$export);
+)($slime,$platform,$engine,$api,$export);

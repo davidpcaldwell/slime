@@ -4,6 +4,29 @@
 //
 //	END LICENSE
 
-jsh.shell.console("Hello.");
-jsh.shell.console("jsh.tools.hg = " + jsh.tools.hg);
-jsh.shell.tools.node.install();
+//@ts-check
+(
+	/**
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.jsh.script.cli.main } main
+	 */
+	function($api,jsh,main) {
+		main(
+			$api.fp.pipe(
+				jsh.script.cli.option.pathname({ longname: "to" }),
+				jsh.script.cli.option.string({ longname: "version" }),
+				function(p) {
+					$api.fp.world.now.action(
+						jsh.shell.tools.node.install,
+						{
+							location: p.options.to,
+							version: p.options.version
+						}
+					);
+				}
+			)
+		)
+	}
+//@ts-ignore
+)($api,jsh,main);

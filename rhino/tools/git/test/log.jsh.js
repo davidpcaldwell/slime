@@ -12,8 +12,8 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		$api.Function.pipe(
-			jsh.wf.cli.$f.option.string({ longname: "revisionRange" }),
+		$api.fp.pipe(
+			jsh.script.cli.option.string({ longname: "revisionRange" }),
 			function(p) {
 				var repository = jsh.tools.git.Repository({ directory: jsh.shell.PWD });
 				jsh.shell.console("revision range = " + p.options.revisionRange);

@@ -8,14 +8,29 @@
 (
 	/**
 	 *
+	 * @param { any } global
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.plugins } plugins
 	 * @param { slime.jsh.plugin.plugin } plugin
-	 * @param { slime.Loader } $loader
+	 * @param { slime.jsh.plugin.Scope["$loader"] } $loader
 	 */
-	function(Packages,$api,jsh,plugins,plugin,$loader) {
+	function(global,Packages,$api,jsh,plugins,plugin,$loader) {
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.tools);
+			},
+			load: function() {
+				jsh.tools.plugin = {
+					jenkins: void(0)
+				};
+				jsh.tools.plugin.jenkins = function() {
+					jsh.loader.plugins($loader.Child("jenkins/"));
+					return jsh.tools.jenkins;
+				}
+			}
+		})
 		plugin({
 			//	TODO	it does not make much sense to check for jsh.shell in .isReady() and then not pass it to the plugin. Is this
 			//			method of running the compiler obsolete?
@@ -48,24 +63,21 @@
 			load: function() {
 				plugins.node = {
 					module: function(p) {
-						return $loader.module("node/module.js", p.context);
+						/** @type { slime.jrunscript.node.Script } */
+						var script = $loader.script("node/module.js");
+						return script(p.context);
 					}
 				};
 			}
 		});
 
-		var loadGit = function() {
-			jsh.loader.plugins($loader.Child("git/"));
-		};
+		$loader.plugin("git/");
 
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.js && jsh.time && jsh.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools);
 			},
 			load: function() {
-				//	TODO	we are duplicating the isReady() logic both here and in the git plugin
-				loadGit();
-
 				var loadHg = function() {
 					var module = $loader.module("hg/module.js", {
 						api: {
@@ -80,7 +92,10 @@
 						}
 					});
 
-					jsh.tools.hg = $loader.file("hg/install.js", {
+					/** @type { slime.jrunscript.tools.hg.install.Script } */
+					var hgInstall = $loader.script("hg/install.js");
+
+					jsh.tools.hg = hgInstall({
 						api: {
 							module: module,
 							shell: jsh.shell,
@@ -103,15 +118,11 @@
 					}
 				};
 
-
 				loadHg();
 
 				if (!jsh.java.tools.plugin) jsh.java.tools.plugin = {
 					hg: $api.deprecate(function() {
 						loadHg();
-					}),
-					git: $api.deprecate(function() {
-						loadGit();
 					})
 				};
 			}
@@ -168,4 +179,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$api,jsh,plugins,plugin,$loader);
+)( (function() { return this; })(), Packages,$api,jsh,plugins,plugin,$loader);

@@ -11,6 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		var httpPort = jsh.ip.getEphemeralPort().number;
 		var httpsPort = jsh.ip.getEphemeralPort().number;
 
 		//	Does not work as of Chrome 96 without mkcert because Chrome treats page as untrusted with default SLIME HTTPS setup
@@ -22,7 +23,14 @@
 		//	Does not work as of Chrome 96 without 127.0.0.1 since that is where hostrule proxies the request
 		mkcert.pkcs12({ to: keystore, hosts: ["127.0.0.1", "it.is.awesome"] });
 
+		/** @type { slime.jrunscript.shell.browser.ProxyConfiguration } */
+		var proxyConfiguration = {
+			code: jsh.script.loader.get("proxy.pac.js").read(String)
+				.replace(/__HTTP__/g, String(httpPort))
+		}
+
 		jsh.ui.application({
+			port: httpPort,
 			https: {
 				port: httpsPort,
 				keystore: (keystore) ? {
@@ -42,6 +50,7 @@
 							body: {
 								type: "application.json",
 								string: JSON.stringify({
+									scheme: request.scheme,
 									path: request.path
 								})
 							}
@@ -50,6 +59,7 @@
 				}
 			},
 			browser: {
+				proxy: proxyConfiguration,
 				chrome: {
 					browser: true,
 					hostrules: [

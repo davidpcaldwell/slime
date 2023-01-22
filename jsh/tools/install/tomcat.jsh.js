@@ -4,29 +4,62 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		version: String,
-		local: jsh.file.Pathname,
-		replace: false,
-		to: jsh.shell.jsh.lib.getRelativePath("tomcat"),
-		show: false
-	}
-});
+//@ts-check
+(
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api,jsh) {
+		var parameters = jsh.script.getopts({
+			options: {
+				version: String,
+				local: jsh.file.Pathname,
+				replace: false,
+				to: jsh.file.Pathname(jsh.shell.tools.tomcat.Installation.from.jsh().base),
+				show: false
+			}
+		});
 
-if (parameters.options.show) {
-	var installed = jsh.tools.install.tomcat.installed({ home: parameters.options.to.directory });
-	if (!installed) {
-		jsh.shell.console("No Tomcat found at " + parameters.options.to);
-	} else {
-		jsh.shell.console("Tomcat " + installed.version.toString() + " found at " + parameters.options.to);
-	}
-	jsh.shell.exit(0);
-}
+		/** @type { slime.jsh.shell.tools.tomcat.Installed } */
+		var installation = {
+			base: parameters.options.to.toString()
+		};
 
-jsh.tools.install.tomcat.install({
-	version: parameters.options.version,
-	local: (parameters.options.local) ? parameters.options.local.file : null,
-	replace: parameters.options.replace,
-	to: parameters.options.to
-});
+		if (parameters.options.show) {
+			var version = jsh.shell.tools.tomcat.Installation.getVersion(
+				installation
+			);
+			if (!version.present) {
+				jsh.shell.console("No Tomcat found at " + parameters.options.to);
+			} else {
+				jsh.shell.console("Tomcat " + version.value + " found at " + installation.base);
+			}
+			jsh.shell.exit(0);
+		}
+
+		$api.fp.world.now.action(
+			jsh.shell.tools.tomcat.Installation.require(installation),
+			{
+				version: parameters.options.version,
+				replace: (parameters.options.replace) ? function(version) { return true; } : function(version) { return false; }
+			},
+			{
+				found: function(e) {
+					jsh.shell.console("Found: " + e.detail.version);
+				},
+				unzipping: function(e) {
+					jsh.shell.console("Unzipping: " + e.detail.local + " to " + e.detail.to);
+				},
+				installing: function(e) {
+					jsh.shell.console("Installing to: " + e.detail.to);
+				},
+				installed: function(e) {
+					jsh.shell.console("Installed: " + e.detail.version);
+				}
+			}
+		);
+	}
+//@ts-ignore
+)($api,jsh);

@@ -1,0 +1,54 @@
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+version: '3.9'
+services:
+  box: &box
+    build: ..
+    environment: &environment
+      SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
+    working_dir: /slime
+    depends_on:
+      - chrome
+      - firefox
+
+  test: &test
+    <<: *box
+    # volumes:
+    #   - type: bind
+    #     source: ../local/wf/logs/docker.compose.test
+    #     target: /slime/local/wf/logs/test/current/
+    command: /bin/bash /slime/wf check --docker
+
+  test11:
+    <<: *test
+    environment:
+      <<: *environment
+      SLIME_WF_JDK_VERSION: 11
+
+  devbox:
+    <<: *box
+    volumes:
+      - type: bind
+        source: ..
+        target: /slime
+      - type: volume
+        source: local
+        target: /slime/local
+    command: sleep infinity
+
+  chrome:
+    image: seleniarm/standalone-chromium
+    ports:
+      - 7900:7900
+
+  firefox:
+    image: seleniarm/standalone-firefox
+    ports:
+      - 7901:7900
+
+volumes:
+  local:

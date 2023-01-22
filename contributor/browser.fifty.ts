@@ -6,13 +6,16 @@
 
 (
 	function(
-		fifty: slime.fifty.test.kit
+		fifty: slime.fifty.test.Kit
 	) {
 		fifty.tests.suite = function() {
 			fifty.load("../loader/expression.fifty.ts");
+			fifty.load("../loader/browser/client.fifty.ts");
+			fifty.load("../loader/api/unit.fifty.ts");
 			fifty.load("../loader/document/module.fifty.ts");
 			fifty.load("../js/web/module.fifty.ts");
 			fifty.load("../js/codec/ini.fifty.ts");
+			fifty.load("../js/time/module.fifty.ts");
 		}
 	}
 //@ts-ignore

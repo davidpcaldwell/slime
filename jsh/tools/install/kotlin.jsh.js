@@ -4,13 +4,17 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		replace: false
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				replace: false
+			}
+		});
+		jsh.shell.tools.kotlin.install(parameters.options, {
+			console: function(e) {
+				jsh.shell.console(e.detail);
+			}
+		});
 	}
-});
-jsh.shell.tools.kotlin.install(parameters.options, {
-	console: function(e) {
-		jsh.shell.console(e.detail);
-	}
-});
+)();

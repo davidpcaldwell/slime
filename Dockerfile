@@ -4,6 +4,8 @@
 #
 #	END LICENSE
 
-FROM openjdk:8
+FROM debian AS bare
 COPY . /slime
-ENV SLIME_WF_JDK_8=/usr/local/openjdk-8
+
+FROM bare AS test
+RUN apt update && apt install -y git

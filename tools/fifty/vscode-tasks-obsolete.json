@@ -1,0 +1,90 @@
+//	LICENSE
+//	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+//	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//	END LICENSE
+
+//	This file is currently obsolete; it's unclear whether we will continue building the embedded-tsc version of Fifty UI now that
+//	we are using Typedoc
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Fifty tsc harness: debug",
+			"detail": "Runs the tsc node.js program on test data using a debugger",
+			"type": "shell",
+			"command": "node --inspect-brk tools/fifty/tsc.node.js tools/fifty/test/data/module.d.ts; echo \"Terminated with exit status $?.\"",
+			"options": {
+				"env": {
+					"PROJECT": ".",
+					"PATH": "${PATH}:local/jsh/lib/node/bin",
+					"NODE_PATH": "local/jsh/lib/node/lib/node_modules"
+				}
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Fifty tsc harness: debug project",
+			"detail": "Runs the tsc node.js program on a specified project using a debugger",
+			"type": "shell",
+			"command": "node --inspect-brk tools/fifty/tsc.node.js; echo \"Terminated with exit status $?.\"",
+			"options": {
+				"env": {
+					"PROJECT": "${input:project}",
+					"PATH": "${PATH}:local/jsh/lib/node/bin",
+					"NODE_PATH": "local/jsh/lib/node/lib/node_modules"
+				}
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Fifty tsc harness",
+			"detail": "Runs the UI, opening the tsc JSON page",
+			"type": "shell",
+			"command": "tools/fifty/ui.bash --tsc-harness",
+			"problemMatcher": []
+		},
+		{
+			"label": "Fifty UI harness",
+			"type": "shell",
+			"command": "tools/fifty/ui.bash --harness",
+			"problemMatcher": []
+		},
+		{
+			"label": "Fifty UI: design",
+			"type": "shell",
+			"command": "tools/fifty/ui.bash --design",
+			"problemMatcher": []
+		},
+		{
+			"label": "Fifty UI: SLIME",
+			"type": "shell",
+			"command": "tools/fifty/ui.bash",
+			"problemMatcher": []
+		}
+	],
+	"inputs": [
+		{
+			"id": "project",
+			"type": "promptString",
+			"description": "Path to root directory of project",
+			"default": "."
+		}
+	]
+}

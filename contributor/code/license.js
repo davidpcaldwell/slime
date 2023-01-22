@@ -264,6 +264,7 @@
 		this.properties = new Line("#");
 		this.prefs = new Line("#");
 		this.java = cplusplus;
+		this.scala = cplusplus;
 		this.jsh = cplusplus;
 		this.css = new BeginEnd("/*","*/");
 		this.cpp = cplusplus;
@@ -277,6 +278,7 @@
 		this.bashrc = new Line("#");
 		this.kts = cplusplus;
 		this.yaml = new Line("#");
+		this.yml = new Line("#");
 
 		this.bash = new Line("#");
 	}

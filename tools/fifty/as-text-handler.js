@@ -12,17 +12,25 @@
 	 * @param { (value: slime.tools.documentation.internal.asTextHandler.Export) => void } $export
 	 */
 	function($context,$export) {
+		/**
+		 *
+		 * @param { slime.old.loader.Source } delegate
+		 * @returns { slime.old.loader.Source }
+		 */
+		function textLoaderSource(delegate) {
+			return {
+				get: function(path) {
+					var rv = delegate.get(path);
+					rv.type = "text/plain";
+					return rv;
+				}
+			}
+		}
 		$export(
 			function(p) {
-				/** @type { slime.loader.Source } */
-				var asTextLoaderSource = {
-					get: function(path) {
-						var rv = p.loader.source.get(path);
-						rv.type = "text/plain";
-						return rv;
-					}
-				};
-				var asTextLoader = new $context.httpd.io.Loader(asTextLoaderSource);
+				/** @type { slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.old.Resource> } */
+				//@ts-ignore
+				var asTextLoader = new $context.httpd.io.Loader(textLoaderSource(p.loader.source));
 
 				/**
 				 *

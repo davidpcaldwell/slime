@@ -38,7 +38,7 @@
 			var pkcs12 = mkcert(["127.0.0.1"].concat(hosts)).pathname;
 
 			var port = $context.library.ip.getEphemeralPort().number;
-			var tomcat = new $context.library.jsh.httpd.Tomcat({
+			var tomcat = $context.library.jsh.httpd.Tomcat({
 				https: {
 					port: port,
 					keystore: {
@@ -78,7 +78,7 @@
 						var send = {
 							request: {
 								method: request.method,
-								url: url,
+								url: $context.library.web.Url.codec.string.decode(url),
 								headers: $api.Array.build(function(rv) {
 									rv.push.apply(rv, request.headers.filter(function(header) {
 										var name = header.name.toLowerCase();
@@ -235,10 +235,8 @@
 					}
 				});
 
-				var pac = $loader.get("proxy.pac.js").read(String)
-					.replace(/__HOST__/g, p.hosts[0])
+				var pac = $loader.get("proxy.pac").read(String)
 					.replace(/__HTTP__/g, String(p.server.http))
-					.replace(/__HTTPS__/g, String(tomcat.https.port))
 				;
 
 				console("HTTP running on " + p.server.http);

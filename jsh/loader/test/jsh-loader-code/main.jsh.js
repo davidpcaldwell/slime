@@ -10,7 +10,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
-		var server = new jsh.httpd.Tomcat();
+		var server = jsh.httpd.Tomcat();
 		server.servlet({
 			load: function(scope) {
 				scope.$exports.handle = function(request) {
@@ -62,7 +62,8 @@
 					url: jsh.loader.file( jsh.web.Url.parse("http://127.0.0.1:" + server.port + "/file.js") )
 				}
 			}, void(0), 4)
-		)
+		);
+		server.stop();
 	}
 //@ts-ignore
 )(jsh);

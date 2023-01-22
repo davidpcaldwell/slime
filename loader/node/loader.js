@@ -66,7 +66,7 @@
 				/**
 				 *
 				 * @param { string } path
-				 * @returns { slime.loader.Source }
+				 * @returns { slime.old.loader.Source }
 				 */
 				function toSource(path) {
 					return {
@@ -92,7 +92,7 @@
 				}
 				return {
 					Loader: function(p) {
-						return new runtime.Loader(toSource(p.base));
+						return new runtime.old.Loader(toSource(p.base));
 					}
 				}
 			}

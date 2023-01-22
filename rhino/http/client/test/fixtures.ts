@@ -95,16 +95,44 @@ namespace slime.jrunscript.http.client.test {
 							return rv;
 						})();
 
+						//	TODO	duplicates logic in rhino/http/servlet/plugin.jsh.js
+						var addServletMappingTo = function(context) {
+							if (typeof(context.addServletMapping) == "function") {
+								//	Tomcat 7
+								return function(pattern,servletName) {
+									context.addServletMapping(pattern,servletName);
+								};
+							} else if (typeof(context.addServletMappingDecoded) == "function") {
+								//	Tomcat 9
+								return function(pattern,servletName) {
+									context.addServletMappingDecoded(pattern,servletName,false);
+								};
+							} else {
+								throw new Error("Unable to locate API for adding servlet mapping to embedded Tomcat")
+							}
+						};
+
 						(function() {
 							var base = jsh.shell.TMPDIR.createTemporary({ directory: true });
-							tomcat.setPort(port);
+
+							//	The below stuff duplicates logic in rhino/http/servlet/plugin.jsh.js
+							//	This was sufficient for Tomcat 7
+							//	tomcat.setPort(port);
+
+							//	But this is needed for Tomcat 9
+							var _http = new Packages.org.apache.catalina.connector.Connector();
+							_http.setPort(port);
+							_http.setScheme("http");
+							tomcat.getService().addConnector(_http);
+
 							tomcat.setBaseDir(base);
 							var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());
+							var addServletMapping = addServletMappingTo(context);
 							Packages.org.apache.catalina.startup.Tomcat.addServlet(context,"aName",new JavaAdapter(
 								Packages.javax.servlet.http.HttpServlet,
 								servlet
 							));
-							context.addServletMapping("/*","aName");
+							addServletMapping("/*","aName");
 							tomcat.start();
 						})();
 						global.tomcat = tomcat;
@@ -169,12 +197,23 @@ namespace slime.jrunscript.http.client.test {
 						verify(message).is(message);
 					};
 					scope.getServerRequestCookies = function(request) {
+						type Cookie = {
+							getName(): slime.jrunscript.native.java.lang.String
+							getValue(): slime.jrunscript.native.java.lang.String
+						}
 						if (request.getCookies() === null) return [];
-						return jsh.java.Array.adapt(request.getCookies()).filter(function(_cookie) {
-							return String(_cookie.getName()) != "JSESSIONID";
-						}).map(function(_cookie) {
-							return { name: String(_cookie.getName()), value: String(_cookie.getValue()) }
-						});
+						return jsh.java.Array.adapt(request.getCookies())
+							.filter(
+								function(_cookie: Cookie) {
+									return String(_cookie.getName()) != "JSESSIONID";
+								}
+							)
+							.map(
+								function(_cookie: Cookie) {
+									return { name: String(_cookie.getName()), value: String(_cookie.getValue()) }
+								}
+							)
+						;
 					};
 					scope.hasDefaultCookieHandler = Boolean(Packages.java.net.CookieHandler.getDefault());
 				}

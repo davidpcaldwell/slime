@@ -13,7 +13,7 @@ namespace ${1:__NAMESPACE__} {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 				/*$0*/

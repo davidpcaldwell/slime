@@ -81,10 +81,10 @@
 			/**
 			 * @type { slime.tools.snippets.ApiHtmlSnippet[] }
 			 */
-			var snippets = $api.Function.result(
+			var snippets = $api.fp.result(
 				snippetAbbreviations,
-				$api.Function.Object.entries,
-				$api.Function.Array.map(
+				Object.entries,
+				$api.fp.Array.map(
 					function(p) {
 						return {
 							name: p[0],
@@ -132,7 +132,21 @@
 
 		var snippetPattern = /^(.*)-(.*)\.zzz$/;
 
+		/**
+		 * Given a file extension, returns a function that searches the snippets subdirectory for files with the given extension to
+		 * build a set of snippets for a language. All snippets have a trailing newline, as all files should; those whose snippet
+		 * names end in `file` will be treated as whole files (and their trailing newlines will be retained); those whose snippet
+		 * names do not will be treated as inline snippets and their trailing newline will be removed.
+		 *
+		 * @param { { extension: string } } p
+		 * @returns { () => slime.tools.snippets.Language }
+		 */
 		var snippetFiles = function(p) {
+			/**
+			 *
+			 * @param { string } code
+			 * @returns { string }
+			 */
 			function removeLicense(code) {
 				var lines = code.split("\n");
 				var found;
@@ -148,24 +162,56 @@
 				}
 			}
 
+			/**
+			 *
+			 * @param { string } code
+			 * @returns { string }
+			 */
+			function removeTrailingNewline(code) {
+				var lines = code.split("\n");
+				if (lines[lines.length-1] == "") {
+					lines = lines.slice(0, lines.length-1);
+				}
+				return lines.join("\n");
+			}
+
 			return function() {
-				var pattern = $api.Function.result(
+				var pattern = $api.fp.result(
 					snippetPattern,
-					$api.Function.RegExp.modify(function(pattern) {
+					$api.fp.RegExp.modify(function(pattern) {
 						return pattern.replace(/zzz/g, p.extension)
 					})
 				);
-				var snippets = jsh.script.file.parent.getSubdirectory("snippets").list().filter(function(node) {
-					var match = pattern.exec(node.pathname.basename);
-					return Boolean(match);
-				}).map(function(node) {
-					var match = pattern.exec(node.pathname.basename);
-					return {
-						name: match[1],
-						abbreviation: match[2],
-						code: removeLicense(node.read(String))
-					}
-				});
+
+				/**
+				 *
+				 * @param { slime.jrunscript.file.Node } node
+				 * @returns { node is slime.jrunscript.file.File }
+				 */
+				var isFile = function(node) {
+					return !node.directory;
+				}
+
+				var snippets = jsh.script.file.parent.getSubdirectory("snippets").list()
+					.filter(isFile)
+					.filter(function(node) {
+						var match = pattern.exec(node.pathname.basename);
+						return Boolean(match);
+					}).map(function(node) {
+						var match = pattern.exec(node.pathname.basename);
+						var isFile = /file$/.test(match[1]);
+						return {
+							name: match[1],
+							abbreviation: match[2],
+							code: $api.fp.now.invoke(
+								node.read(String),
+								removeLicense,
+								isFile ? $api.fp.identity : removeTrailingNewline
+							)
+						}
+					})
+				;
+
 				return {
 					json: snippets.map(function(snippet) {
 						return {
@@ -192,6 +238,7 @@
 		}
 
 		var languages = {
+			/** @returns { slime.tools.snippets.Language } */
 			html: function() {
 				var html = getHtmlDocument();
 
@@ -210,48 +257,49 @@
 			typescript: snippetFiles({ extension: "ts" })
 		}
 
-		$api.Function.result(
-			{ options: {}, arguments: jsh.script.arguments },
-			jsh.wf.cli.$f.option.string({ longname: "language" }),
-			jsh.wf.cli.$f.option.string({ longname: "format" }),
-			function(p) {
-				jsh.shell.console("language = " + p.options.language);
-				var language = languages[p.options.language];
-				var code = language({ format: p.options.format });
+		jsh.script.cli.main(
+			$api.fp.pipe(
+				jsh.script.cli.option.string({ longname: "language" }),
+				jsh.script.cli.option.string({ longname: "format" }),
+				function(p) {
+					jsh.shell.console("language = " + p.options.language);
+					var language = languages[p.options.language];
+					var code = language({ format: p.options.format });
 
-				var toObject = function(array) {
-					return array.reduce(function(rv,element) {
-						rv[element.name] = $api.Function.result(element, $api.Function.pipe(
-							$api.Function.Object.entries,
-							$api.Function.Array.filter(function(entry) { return entry[0] != "name"; }),
-							$api.Function.Object.fromEntries
-						));
-						return rv;
-					},{});
-				}
+					var toObject = function(array) {
+						return array.reduce(function(rv,element) {
+							rv[element.name] = $api.fp.result(element, $api.fp.pipe(
+								Object.entries,
+								$api.fp.Array.filter(function(entry) { return entry[0] != "name"; }),
+								Object.fromEntries
+							));
+							return rv;
+						},{});
+					}
 
-				if (p.options.format == "vscode") {
-					jsh.shell.echo(
-						JSON.stringify(
-							toObject(code.vscode),
-							void(0),
-							4
+					if (p.options.format == "vscode") {
+						jsh.shell.echo(
+							JSON.stringify(
+								toObject(code.vscode),
+								void(0),
+								4
+							)
+						);
+					} else {
+						jsh.shell.echo(
+							JSON.stringify(
+								code.json.reduce(function(rv,snippet) {
+									rv[snippet.name] = snippet.code;
+									return rv;
+								}, {}),
+								void(0),
+								4
+							)
 						)
-					);
-				} else {
-					jsh.shell.echo(
-						JSON.stringify(
-							code.json.reduce(function(rv,snippet) {
-								rv[snippet.name] = snippet.code;
-								return rv;
-							}, {}),
-							void(0),
-							4
-						)
-					)
+					}
 				}
-			}
-		)
+			)
+		);
 	}
 //@ts-ignore
 )($api,jsh);

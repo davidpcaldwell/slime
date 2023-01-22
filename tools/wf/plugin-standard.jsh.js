@@ -13,182 +13,210 @@
 	 * @param { slime.loader.Export<slime.jsh.wf.Exports["project"]["initialize"]> } $export
 	 */
 	function($api,jsh,$export) {
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.git.repository.Local } repository
+		 * @param { string } path
+		 */
+		var isSubmodulePath = function(repository,path) {
+			var submodules = repository.submodule();
+			return submodules.some(function(submodule) {
+				return submodule.path == path;
+			});
+		}
+
+		/**
+		 * @param { slime.jrunscript.file.Directory } project
+		 */
+		function getDefaultCommitMessage(project) {
+			var repository = jsh.tools.git.Repository({ directory: project });
+			var status = repository.status();
+			if (status.paths) {
+				var modified = $api.fp.result(
+					status.paths,
+					Object.entries
+				);
+				if (
+					modified.length &&
+					modified.every(function(entry) {
+						return isSubmodulePath(repository,entry[0])
+					})
+				) {
+					return "Update "
+						+ ( (modified.length > 1) ? "submodules" : "submodule" )
+						+ " " + modified.map(function(entry) { return entry[0]; }).join(", ");
+				}
+			}
+			return null;
+		}
+
 		$export(
-			function($context,operations,$exports) {
+			function($context,project,$exports) {
 				if (arguments.length == 2) {
 					//	old signature
 					$api.deprecate(function(invocation) {
 						$context = invocation[0];
 						$exports = invocation[1];
-						operations = {};
+						project = {};
 					})(arguments);
 				}
 
+				//	TODO	the below credentialHelper code also appears to be in tools/wf/plugin.jsh.js
+
+				//	TODO	is this stuff documented anywhere?
 				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
-				var fetch = $api.Function.memoized(function() {
-					var repository = jsh.tools.git.Repository({ directory: $context.base });
-					jsh.shell.console("Fetching all updates ...");
-					repository.fetch({
-						all: true,
-						prune: true,
-						recurseSubmodules: true,
-						credentialHelpers: [
-							"cache",
-							credentialHelper
-						]
-					}, {
-						remote: function(e) {
-							var remote = e.detail;
-							var url = repository.remote.getUrl({ name: remote });
-							jsh.shell.console("Fetching updates from: " + url);
-						},
-						submodule: (function() {
-							var first = true;
-							return function(e) {
-								if (first) {
-									jsh.shell.stdio.error.write("Submodules: ");
-									first = false;
-								}
-								if (e.detail) {
-									jsh.shell.stdio.error.write(".");
-								} else {
-									jsh.shell.console("");
-								}
-							}
-						})(),
-						stdout_other: function(e) {
-							if (e.detail) jsh.shell.console("STDOUT: " + e.detail);
-						},
-						stderr_other: function(e) {
-							if (e.detail) jsh.shell.console("STDERR: " + e.detail);
+
+				/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
+				var getBranches = {
+					invocation: function() {
+						return {
+							command: "branch",
+							arguments: $api.Array.build(function(rv) {
+								rv.push("-a");
+							})
 						}
-					});
-					jsh.shell.console("");
-					jsh.shell.console("Fetched updates.");
-					jsh.shell.console("");
-					return repository;
-				});
+					},
+					result: function(output) {
+						var lines = output.split("\n");
+						return lines.map(function(line) {
+							return {
+								current: line.substring(0,1) == "*",
+								name: line.substring(2)
+							}
+						})
+					}
+				}
 
 				/**
 				 *
-				 * @param { slime.jrunscript.git.repository.Local } repository
-				 * @param { string } path
+				 * @param { string } repository
+				 * @param { string } base
+				 * @returns
 				 */
-				var isSubmodulePath = function(repository,path) {
-					var submodules = repository.submodule();
-					return submodules.some(function(submodule) {
-						return submodule.path == path;
+				var branchExists = function(repository,base) {
+					var allBranches = jsh.tools.git.program({ command: "git" }).repository(repository).command(getBranches).argument().run()
+						.map(function(branch) {
+							if (branch.name.substring(0,"remote/".length) == "remote/") return branch.name.substring("remote/".length);
+							return branch.name;
+						});
+					return Boolean(allBranches.find(function(branch) { return branch == base; }));
+				}
+
+				if ( (project.lint || project.test) && !project.precommit ) {
+					project.precommit = jsh.wf.checks.precommit({
+						lint: (project.lint) ? project.lint.check : void(0),
+						test: project.test
+					})
+				}
+
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.git.repository.Local } repository
+				 * @param { string } message
+				 */
+				var commit = function(repository,message) {
+					var target = jsh.tools.git.program({ command: "git" }).repository(repository.directory.toString());
+
+					var status = target.command(jsh.tools.git.commands.status).argument().run();
+
+					if (status.branch === null) {
+						throw new Error("Cannot commit on detached HEAD.");
+					}
+
+					repository.commit({
+						all: true,
+						noVerify: true,
+						message: message
+					});
+
+					//	We checked for upstream changes, so now we're going to push
+					//	If we allow branching, we may or may not really want to push, or may not want to push to
+					//	master
+					repository.push({
+						repository: "origin",
+						refspec: status.branch,
+						config: {
+							"credential.helper": credentialHelper
+						}
 					});
 				}
 
-				var Failure = jsh.wf.error.Failure;
-
-				if (operations.test && !operations.commit) {
-					operations.commit = function(p) {
-						var repository = jsh.tools.git.Repository({ directory: $context.base });
-
-						jsh.wf.requireGitIdentity({ repository: repository }, {
-							console: function(e) {
-								jsh.shell.console(e.detail);
-							}
-						});
-
-						jsh.wf.prohibitUntrackedFiles({ repository: repository });
-
-						jsh.wf.prohibitModifiedSubmodules({ repository: repository });
-
-						var branch = repository.status().branch;
-
-						if (branch.name === null) {
-							throw new Failure("Cannot commit a detached HEAD.");
-						}
-
-						//	TODO	looks like the below is duplicative, checking vs origin/master twice; maybe there's an offline
-						//			scenario where that makes sense?
-						var allowDivergeFromOrigin = false;
-						var vsLocalOrigin = jsh.wf.git.compareTo("origin/" + branch.name)(repository);
-						if (vsLocalOrigin.behind && vsLocalOrigin.behind.length && !allowDivergeFromOrigin) {
-							throw new Failure("Behind origin/" + branch.name + " by " + vsLocalOrigin.behind.length + " commits.");
-						}
-						repository = fetch();
-						var vsOrigin = jsh.wf.git.compareTo("origin/" + branch.name)(repository);
-						//	var status = repository.status();
-						//	maybe check branch above if we allow non-master-based workflow
-						//	Perhaps allow a command-line argument or something for this, need to think through branching
-						//	strategy overall
-						if (vsLocalOrigin.behind && vsOrigin.behind.length && !allowDivergeFromOrigin) {
-							throw new Failure("Behind origin/" + branch.name + " by " + vsOrigin.behind.length + " commits.");
-						}
-
-						if (operations.lint) {
-							if (!operations.lint()) {
-								throw new Failure("Linting failed.");
-							}
-						}
-
-						jsh.wf.typescript.tsc();
-						if (!p.notest) {
-							var success = operations.test();
-							if (!success) {
-								throw new Failure("Tests failed.");
-							} else {
-								jsh.shell.console("Tests passed; proceeding with commit.");
-							}
-						} else {
-							jsh.shell.console("Skipping tests because 'notest' is true.");
-						}
-						repository.commit({
-							all: true,
-							message: p.message
-						});
-						//	We checked for upstream changes, so now we're going to push
-						//	If we allow branching, we may or may not really want to push, or may not want to push to
-						//	master
-						repository.push({
-							repository: "origin",
-							refspec: "HEAD",
-							config: {
-								"credential.helper": credentialHelper
-							}
-						});
-					}
-				}
-
 				if ($context.base.getFile(".eslintrc.json")) {
-					jsh.shell.tools.node.require();
-					jsh.shell.tools.node["modules"].require({ name: "eslint" });
 					$exports.eslint = function() {
-						jsh.shell.jsh({
-							shell: jsh.shell.jsh.src,
-							script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
-							arguments: ["-project", $context.base]
-						});
+						var result = jsh.wf.project.lint.eslint();
+						return (result) ? 0 : 1;
 					}
 				}
 
-				if (operations.lint) {
-					$exports.lint = function(p) {
-						if (!operations.lint()) {
-							jsh.shell.console("Linting failed.");
-							return 1;
+				if (project.lint) {
+					$exports.lint = Object.assign(
+						function(p) {
+							var result = project.lint.check({
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
+							})
+							if (!result) {
+								jsh.shell.console("Linting failed.");
+								return 1;
+							} else {
+								jsh.shell.console("Linting passed.");
+							}
+						},
+						{
+							fix: function(p) {
+								project.lint.fix({
+									console: function(e) {
+										jsh.shell.console(e.detail);
+									}
+								})
+							}
+						}
+					);
+				}
+
+				$exports.tsc = $api.fp.pipe(
+					jsh.script.cli.option.boolean({ longname: "vscode" }),
+					function(p) {
+						/**
+						 * Reformats output so that is is clickable in the VSCode terminal. See also
+						 * [VSCode issue](https://github.com/microsoft/vscode/issues/160895) describing the need for this.
+						 *
+						 * @type { (message: string) => string }
+						 */
+						function formatForVscode(message) {
+							var pattern = /^(.*)\((\d+),(\d+)\)\: (.*)/;
+							var match = pattern.exec(message);
+							if (match) {
+								return match[1] + ":" + match[2] + ":" + match[3] + ": " + match[4];
+							} else {
+								return message;
+							}
+						}
+						var formatter = (p.options.vscode) ? formatForVscode : $api.fp.identity;
+						var result = $api.fp.world.now.question(
+							jsh.wf.checks.tsc,
+							void(0),
+							{
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								},
+								output: function(e) {
+									jsh.shell.console(formatter(e.detail));
+								}
+							}
+						);
+						if (result) {
+							jsh.shell.console("Passed.");
 						} else {
-							jsh.shell.console("Linting passed.");
+							jsh.shell.console("tsc failed.");
+							return 1;
 						}
 					}
-				}
-
-				$exports.tsc = function() {
-					try {
-						jsh.wf.typescript.tsc();
-						jsh.shell.console("Passed.");
-					} catch (e) {
-						jsh.shell.console("tsc failed.");
-						jsh.shell.exit(1);
-					}
-				};
+				);
 
 				$exports.typedoc = function() {
-					jsh.wf.typescript.typedoc();
+					jsh.wf.typescript.typedoc.now();
 				}
 
 				var displayBranchName = function(name) {
@@ -200,64 +228,106 @@
 					 *
 					 * @param { slime.jsh.wf.Submodule } item
 					 */
-					var rv = function(item) {
+					return function(item) {
 						var remote = "origin";
+						var rv = [];
 						if (item.branch && item.status.branch.name != item.branch) {
-							jsh.shell.console(prefix + item.path + ": tracking branch " + item.branch + ", but checked out branch is " + item.status.branch.name);
+							rv.push(prefix + item.path + ": tracking branch " + item.branch + ", but checked out branch is " + item.status.branch.name);
 						}
 						if (!item.state) {
-							jsh.shell.console(prefix + item.path + ": no remote tracking branch");
+							rv.push(prefix + item.path + ": no remote tracking branch");
 						} else if (item.state.behind.length) {
-							jsh.shell.console(prefix + item.path + ": behind remote tracked branch " + remote + "/" + item.branch + " (" + item.state.behind.length + " commits)");
+							rv.push(prefix + item.path + ": behind remote tracked branch " + remote + "/" + item.branch + " (" + item.state.behind.length + " commits)");
 						}
 						if (item.status.paths) {
-							jsh.shell.console(prefix + item.path + ": locally modified");
+							rv.push(prefix + item.path + ": locally modified");
 						}
 						if (item.repository.submodule().length) {
 							item.repository.submodule().map(jsh.wf.project.Submodule.construct).forEach(function(submodule) {
-								submoduleStatus(prefix + item.path + "/")(submodule);
-							})
+								var messages = submoduleStatus(prefix + item.path + "/")(submodule);
+								rv.push.apply(rv, messages);
+							});
 						}
+						return rv;
 					}
-					return rv;
 				}
 
 				$exports.status = function(p) {
+					/** @type { slime.jrunscript.tools.git.Command<void,{ stash: string }[]> } */
+					var stashList = {
+						invocation: function() {
+							return {
+								command: "stash",
+								arguments: ["list"]
+							}
+						},
+						result: $api.fp.pipe(
+							$api.fp.string.split("\n"),
+							$api.fp.Array.map($api.fp.RegExp.exec(/^([^\:]+)(?:.*)$/)),
+							$api.fp.Array.filter($api.fp.Maybe.present),
+							$api.fp.Array.map($api.fp.property("value")),
+							$api.fp.Array.map(function(p) {
+								return { stash: p[1] };
+							})
+						)
+					};
+
 					//	TODO	add option for offline
-					var repository = fetch();
+					var oRepository = jsh.wf.git.fetch();
+					var fRepository = jsh.tools.git.program({ command: "git" }).repository(oRepository.directory.toString());
 					var remote = "origin";
-					var status = repository.status();
-					var branch = status.branch.name;
-					var vsOriginMaster = (branch) ? jsh.wf.git.compareTo(remote + "/" + branch)(repository) : null;
-					jsh.shell.console("Current branch: " + displayBranchName(status.branch.name));
-					if (vsOriginMaster && vsOriginMaster.ahead.length) jsh.shell.console("ahead of " + remote + "/" + branch + ": " + vsOriginMaster.ahead.length);
-					if (vsOriginMaster && vsOriginMaster.behind.length) jsh.shell.console("behind " + remote + "/" + branch + ": " + vsOriginMaster.behind.length);
-					var output = $api.Function.result(
-						status.paths,
-						$api.Function.conditional({
-							condition: Boolean,
-							true: $api.Function.pipe(
-								$api.Function.Object.entries,
-								$api.Function.Array.map(function(entry) {
-									return entry[1] + " " + entry[0];
+					var status = fRepository.command(jsh.tools.git.commands.status).argument().run();
+					var branch = status.branch;
+					var base = remote + "/" + branch;
+					if (!branchExists(oRepository.directory.toString(), base)) {
+						base = "origin/master";
+					}
+					var vsRemote = (branch) ? jsh.wf.git.compareTo(base)(oRepository) : null;
+					jsh.shell.console("Current branch: " + displayBranchName(status.branch));
+					if (vsRemote && vsRemote.ahead.length) jsh.shell.console("ahead of " + base + ": " + vsRemote.ahead.length);
+					if (vsRemote && vsRemote.behind.length) jsh.shell.console("behind " + base + ": " + vsRemote.behind.length);
+					var output = $api.fp.result(
+						status.entries,
+						$api.fp.conditional({
+							condition: function(entries) {
+								return entries.length > 0;
+							},
+							true: $api.fp.pipe(
+								$api.fp.Array.map(function(entry) {
+									if (entry.orig_path) {
+										return entry.code + " " + entry.path + " (was: " + entry.orig_path + ")";
+									} else {
+										return entry.code + " " + entry.path;
+									}
 								}),
-								$api.Function.Array.join("\n")
+								$api.fp.Array.join("\n")
 							),
-							false: $api.Function.returning(null)
+							false: $api.fp.returning(null)
 						})
 					);
 					if (output) jsh.shell.console(output);
-					if (vsOriginMaster && vsOriginMaster.behind.length && !vsOriginMaster.ahead.length && !vsOriginMaster.paths) {
-						jsh.shell.console("Fast-forwarding ...");
-						repository.merge({ ffOnly: true, name: remote + "/" + branch });
+
+					var stashes = fRepository.command(stashList).argument().run();
+					if (stashes.length) {
+						jsh.shell.console("");
+						jsh.shell.console("Stashes:");
+						stashes.forEach(function(stash) {
+							jsh.shell.console(stash.stash);
+						});
 					}
-					var branches = repository.branch({ remote: true, all: true });
+
+					if (vsRemote && vsRemote.behind.length && !vsRemote.ahead.length && !vsRemote.paths) {
+						jsh.shell.console("");
+						jsh.shell.console("Fast-forwarding ...");
+						oRepository.merge({ ffOnly: true, name: base });
+					}
+					var branches = oRepository.branch({ remote: true, all: true });
 					var first = true;
 					branches.forEach(function findUnmergedBranches(branch) {
 						if (branch.name === null) {
 							return;
 						} else {
-							var compared = jsh.wf.git.compareTo(branch.name)(repository);
+							var compared = jsh.wf.git.compareTo(branch.name)(oRepository);
 							if (compared.behind.length) {
 								if (first) {
 									jsh.shell.console("");
@@ -270,16 +340,24 @@
 					if (!first) {
 						jsh.shell.console("");
 					}
-					if (repository.submodule().length) {
+					if (oRepository.submodule().length) {
 						jsh.shell.console("");
 						jsh.shell.console("Submodules:");
 						var submodules = jsh.wf.project.submodule.status();
-						submodules.forEach(submoduleStatus(""));
+						var messages = submodules.reduce(function(rv,submodule) {
+							return rv.concat(submoduleStatus("")(submodule))
+						}, []);
+						messages.forEach(jsh.shell.console);
+						if (messages.length == 0) {
+							jsh.shell.console("All submodules up to date.");
+						}
 					}
+					jsh.shell.console("");
+					jsh.shell.console("Finished.");
 				}
 
 				$exports.prune = function(p) {
-					/** @type { slime.jrunscript.git.Command<string,{ head: string }> } */
+					/** @type { slime.jrunscript.tools.git.Command<string,{ head: string }> } */
 					var showNamedRemote = {
 						invocation: function(remote) {
 							return {
@@ -302,7 +380,7 @@
 						}
 					};
 
-					/** @type { slime.jrunscript.git.Command<string,{ name: string, remote?: string }[]> } */
+					/** @type { slime.jrunscript.tools.git.Command<string,{ name: string, remote?: string }[]> } */
 					var getAllBranchesMergedTo = {
 						invocation: function(name) {
 							return {
@@ -330,7 +408,7 @@
 						}
 					};
 
-					/** @type { slime.jrunscript.git.Command<{ name: string, remote?: string },void> } */
+					/** @type { slime.jrunscript.tools.git.Command<{ name: string, remote?: string },void> } */
 					var deleteRemoteBranch = {
 						invocation: function(p) {
 							return {
@@ -342,7 +420,7 @@
 						}
 					};
 
-					/** @type { slime.jrunscript.git.Command<string,void> } */
+					/** @type { slime.jrunscript.tools.git.Command<string,void> } */
 					var deleteLocalBranch = {
 						invocation: function(name) {
 							return {
@@ -376,17 +454,171 @@
 					});
 				}
 
-				if (operations.test) {
+				if (project.test) {
 					$exports.test = function(p) {
-						var success = operations.test();
+						var success = project.test({
+							output: function(e) {
+								jsh.shell.console(e.detail);
+							},
+							console: function(e) {
+								jsh.shell.console(e.detail);
+							}
+						});
 						jsh.shell.console("Tests: " + ( (success) ? "passed." : "FAILED!") );
+						return (success) ? 0 : 1;
 					}
 				}
 
+				$exports.git = {
+					hooks: {}
+				};
+
+				/** @type { slime.jrunscript.tools.git.Command<void,void> } */
+				var unstage = {
+					invocation: function(p) {
+						return {
+							command: "reset",
+							arguments: []
+						}
+					}
+				};
+
+				$exports.git.hooks["post-checkout"] = function() {
+					var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+					var origin = repository.command(jsh.tools.git.commands.remote.show).argument("origin").run();
+					var trunk = origin.head;
+					var status = repository.command(jsh.tools.git.commands.status).argument().run();
+					if (status.branch == trunk) {
+						repository.command(jsh.tools.git.commands.fetch).argument().run();
+						repository.command(jsh.tools.git.commands.merge).argument({ name: "origin/" + trunk }).run();
+						//	TODO	below is implemented in top-level wf.js, and is used in git.branches.prune
+						// cleanGitBranches()();
+					}
+					if ($context.base.getFile(".gitmodules")) {
+						repository.command(jsh.tools.git.commands.submodule.update).argument().run();
+					}
+				}
+
+				if (project.precommit) {
+					$exports.precommit = function() {
+						var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+						var success = project.precommit({
+							console: function(e) {
+								jsh.shell.console(e.detail);
+							}
+						});
+						jsh.shell.console("Checks: " + ( (success) ? "passed." : "FAILED!") );
+						if (!success) {
+							repository.command(unstage).argument().run();
+						}
+						return (success) ? 0 : 1;
+					};
+
+					$exports.git.hooks["pre-commit"] = function() {
+						return $exports.precommit({
+							options: {},
+							arguments: []
+						});
+					}
+
+					$exports.git.hooks["prepare-commit-msg"] = function(p) {
+						var messageFile = p.arguments[0];
+						var messageSource = p.arguments[1];
+						var commitObjectName = p.arguments[2];
+						// jsh.shell.console(JSON.stringify({
+						// 	messageFile: messageFile,
+						// 	messageSource: messageSource,
+						// 	commitObjectName: commitObjectName
+						// }, void(0), 4));
+						// jsh.shell.console("Contents:");
+						// jsh.shell.console(
+						// 	jsh.file.Pathname(messageFile).file.read(String)
+						// )
+						// jsh.shell.console("===");
+						var defaultMessage = getDefaultCommitMessage($context.base);
+						if (defaultMessage) {
+							var location = jsh.file.Pathname(messageFile);
+							var now = location.file.read(String);
+							var after = defaultMessage + "\n" + now;
+							location.write(after, { append: false });
+						}
+					}
+				}
+
+				$exports.git.hooks["post-merge"] = function() {
+					var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+					if ($context.base.getFile(".gitmodules")) {
+						repository.command(jsh.tools.git.commands.submodule.update).argument().run();
+					}
+
+					/** @type { slime.jrunscript.tools.git.Command<void,void> } */
+					var push = {
+						invocation: function() {
+							return {
+								command: "push",
+								arguments: ["origin", "HEAD"]
+							}
+						}
+					};
+
+					repository.command(push).argument().run();
+				}
+
+				$exports.git.hooks["post-commit"] = function() {
+					var repository = jsh.tools.git.Repository({ directory: $context.base });
+
+					//	We checked for upstream changes, so now we're going to push
+					//	If we allow branching, we may or may not really want to push, or may not want to push to
+					//	master
+					repository.push({
+						repository: "origin",
+						refspec: "HEAD",
+						config: {
+							"credential.helper": credentialHelper
+						}
+					});
+				}
+
 				$exports.submodule = {
-					update: void(0),
-					remove: void(0),
-					attach: $api.Function.pipe(
+					update: (project.precommit) ? $api.fp.pipe(
+						/**
+						 *
+						 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { path: string }> } p
+						 */
+						function(p) {
+							var rv = {
+								options: $api.Object.compose(p.options),
+								arguments: []
+							};
+							for (var i=0; i<p.arguments.length; i++) {
+								if (p.arguments[i] == "--path") {
+									rv.options.path = p.arguments[++i];
+								} else {
+									rv.arguments.push(p.arguments[i]);
+								}
+							}
+							return rv;
+						},
+						function(p) {
+							jsh.wf.project.updateSubmodule({ path: p.options.path });
+							var result = project.precommit({
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
+							});
+							if (result) {
+								commit(jsh.tools.git.Repository({ directory: $context.base }), "Update " + p.options.path + " submodule");
+							}
+						}
+					) : void(0),
+					remove: $api.fp.pipe(
+						jsh.script.cli.option.string({ longname: "path" }),
+						function(p) {
+							var path = p.options.path;
+							jsh.wf.project.submodule.remove({ path: path });
+						}
+					),
+					attach: $api.fp.pipe(
 						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
 							var repository = jsh.tools.git.Repository({ directory: $context.base });
@@ -412,15 +644,14 @@
 							}
 						}
 					),
-					reset: $api.Function.pipe(
-						jsh.wf.cli.$f.option.string({ longname: "path" }),
+					reset: $api.fp.pipe(
+						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
 							var repository = jsh.tools.git.Repository({ directory: $context.base });
 							var submodule = repository.submodule({ cached: true }).find(function(submodule) {
 								return submodule.path == p.options.path;
 							});
 							var revision = submodule.commit.commit.hash;
-							//	TODO	implement git reset API
 							submodule.repository.execute({
 								command: "reset",
 								arguments: [
@@ -429,101 +660,73 @@
 								]
 							})
 							if (submodule.branch) {
-								submodule.repository.checkout({ branch: revision });
+								//	TODO	seems like this could be a standard command
+								/** @type { slime.jrunscript.tools.git.Command<{ branch: string },void> } */
+								var checkout = {
+									invocation: function(p) {
+										return {
+											command: "checkout",
+											arguments: [p.branch]
+										}
+									}
+								}
+								var withoutHooks = jsh.tools.git.program({ command: "git" }).config({
+									//	TODO	UNIX-like operating systems only
+									"core.hooksPath": "/dev/null"
+								}).repository(submodule.repository.directory.toString())
+								//	TODO	need to use version of git checkout that disables commit hooks
+								withoutHooks.command(checkout).argument({ branch: revision }).run();
 								submodule.repository.branch({
 									force: true,
 									name: submodule.branch
 								});
-								submodule.repository.checkout({ branch: submodule.branch });
+								withoutHooks.command(checkout).argument({ branch: submodule.branch }).run();
 							}
 						}
 					)
 				};
 
-				$exports.submodule.remove = $api.Function.pipe(
-					$api.Function.impure.revise(jsh.wf.cli.$f.option.string({ longname: "path" })),
-					function(p) {
-						var path = p.options.path;
-						jsh.wf.project.submodule.remove({ path: path });
-					}
-				)
-
-				if (operations.commit) $exports.submodule.update = $api.Function.pipe(
-					/**
-					 *
-					 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { path: string }> } p
-					 */
-					function(p) {
-						var rv = {
-							options: $api.Object.compose(p.options),
-							arguments: []
-						};
-						for (var i=0; i<p.arguments.length; i++) {
-							if (p.arguments[i] == "--path") {
-								rv.options.path = p.arguments[++i];
-							} else {
-								rv.arguments.push(p.arguments[i]);
-							}
-						}
-						return rv;
-					},
-					function(p) {
-						jsh.wf.project.updateSubmodule({ path: p.options.path });
-						operations.commit({
-							message: "Update " + p.options.path + " submodule"
-						});
-					}
-				);
-
-				if (operations.commit) $exports.commit = $api.Function.pipe(
-					jsh.wf.cli.$f.option.string({ longname: "message" }),
+				if (project.precommit) $exports.commit = $api.fp.pipe(
+					jsh.script.cli.option.string({ longname: "message" }),
 					jsh.script.cli.option.boolean({ longname: "notest" }),
 					function(p) {
-						//	Leave redundant check for message for now, in case there are existing implementations of
-						//	operations.commit that do not check. But going forward they should check themselves.
-						var repository = jsh.tools.git.Repository({ directory: $context.base });
-						var status = repository.status();
-						var defaultCommitMessage = null;
-						if (status.paths) {
-							var modified = $api.Function.result(
-								status.paths,
-								$api.Function.Object.entries
-							);
-							if (
-								modified.length &&
-								modified.every(function(entry) {
-									return isSubmodulePath(repository,entry[0])
-								})
-							) {
-								defaultCommitMessage = "Update "
-									+ ( (modified.length > 1) ? "submodules" : "submodule" )
-									+ " " + modified.map(function(entry) { return entry[0]; }).join(", ");
-							}
+						var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+
+						var status = repository.command(jsh.tools.git.commands.status).argument().run();
+
+						if (status.entries.length == 0) {
+							jsh.shell.console("Cannot commit; no modified files.");
+							return 1;
 						}
+
+						var defaultCommitMessage = getDefaultCommitMessage($context.base);
+
 						if (!p.options.message && defaultCommitMessage) {
 							p.options.message = defaultCommitMessage;
 						}
 
+						//	Leave redundant check for message for now, in case there are existing implementations of
+						//	operations.commit that do not check. But going forward they should check themselves.
 						if (!p.options.message) throw new Error("No default commit message, and no message given.");
-						try {
-							operations.commit({ message: p.options.message, notest: p.options.notest });
-							jsh.shell.console("Committed changes to " + $context.base);
-						} catch (e) {
-							//	TODO	should generalize this in the wf.jsh.js script, perhaps even adding an error handler
-							//			to jsh.script.cli.wrap or Descriptor or something
-							if (e instanceof jsh.wf.error.Failure) {
-								jsh.shell.console("ERROR: " + e.message);
-							} else {
-								jsh.shell.console(e);
-								jsh.shell.console(e.stack);
+
+						//	TODO	removed a notest option that could be used here
+						var check = project.precommit({
+							console: function(e) {
+								jsh.shell.console(e.detail);
 							}
+						});
+						if (check) {
+							commit(jsh.tools.git.Repository({ directory: $context.base }), p.options.message);
+							jsh.shell.console("Committed changes to " + $context.base);
+						} else {
+							jsh.shell.console("Precommit checks failed; aborting commit.");
 							return 1;
 						}
 					}
 				);
 
 				var serveDocumentation = function(c) {
-					return $api.Function.pipe(
+					return $api.fp.pipe(
 						function(p) {
 							jsh.shell.run({
 								command: jsh.shell.jsh.src.getFile("fifty"),
@@ -551,6 +754,7 @@
 				}
 
 				$exports.documentation = serveDocumentation({ watch: false });
+
 				$exports.document = serveDocumentation({ watch: true });
 			}
 		)

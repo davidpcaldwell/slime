@@ -50,13 +50,23 @@
 						|| directory.pathname.basename == ".settings"
 				};
 
+				//	TODO	obviously this is not ideal
+				var getBasename = function(location) {
+					return $context.library.file.Pathname(location.pathname).basename;
+				}
+
 				/** @type { slime.tools.code.isText } */
-				var isText = $api.Function.series(
+				var isText = $api.fp.series(
+					function(entry) {
+						if (entry.path == "contributor/docker-compose-run") return true;
+						if (entry.path == "tools/wf/test/data/plugin-standard/wf") return true;
+					},
 					function wasFromWf(entry) {
 						if (/\.def$/.test(entry.path)) return true;
 						if (/\.prefs$/.test(entry.path)) return true;
 						if (/\.py$/.test(entry.path)) return true;
 						if (/\.yaml$/.test(entry.path)) return true;
+						if (/\.yml$/.test(entry.path)) return true;
 
 						if (entry.path == ".hgsub") return true;
 						if (entry.path == ".hgignore") return true;
@@ -93,11 +103,16 @@
 						if (entry.path == "tools/wf") return true;
 						if (entry.path == "wf") return true;
 					},
+					$api.fp.pipe(
+						$api.fp.world.mapping(
+							$context.library.code.File.isText()
+						),
+						function(maybe) {
+							if (maybe.present) return maybe.value;
+						}
+					),
 					function(entry) {
-						return $context.library.code.filename.isText(entry.file.pathname.basename);
-					},
-					function(entry) {
-						var basename = entry.file.pathname.basename;
+						var basename = getBasename(entry.file);
 						//	Project-specific extensions
 						//	TODO	should be able to rename this one and get rid of it
 						if (/\.jsh$/.test(basename)) return true;
@@ -194,7 +209,7 @@
 				}
 
 				var excludes = {
-					directory: $api.Function.Predicate.or(
+					directory: $api.fp.Predicate.or(
 						$context.library.code.defaults.exclude.directory,
 						isVscodeJavaExtensionDirectory
 					)
@@ -220,8 +235,89 @@
 			}
 		)();
 
+		/** @type { slime.jrunscript.tools.git.Command<void, string[]> } */
+		var lsFilesRecurseSubmodules = {
+			invocation: function() {
+				return {
+					command: "ls-files",
+					arguments: ["--recurse-submodules"]
+				};
+			},
+			result: function(output) {
+				//	TODO	platform line ending or \n?
+				return output.split("\n");
+			}
+		};
+
 		$export({
-			files: files
+			files: files,
+			directory: {
+				lastModified: function(p) {
+					return $api.fp.result(
+						p.loader,
+						$api.fp.pipe(
+							$context.library.io.loader.entries({
+								filter: {
+									resource: function(path, name) {
+										return true;
+									},
+									parent: function(path) {
+										if (path.length == 1 && path[0] == ".git") return false;
+										if (path.length == 1 && path[0] == "local") return false;
+										if (path.length == 1 && path[0] == "bin") return false;
+										return true;
+									}
+								},
+								map: p.map
+							}),
+							$api.fp.Array.first($context.library.io.Entry.mostRecentlyModified()),
+							$api.fp.Maybe.map(function(latest) {
+								return latest.resource.modified();
+							}),
+							function(it) {
+								if (it.present) return it.value;
+								return $api.fp.Maybe.nothing();
+							}
+						)
+					);
+				}
+			},
+			git: {
+				lastModified: function(p) {
+					//	TODO	would this notice untracked files? Should it?
+					var files = $context.library.git.program({ command: "git" }).repository(p.base).command(lsFilesRecurseSubmodules).argument().run();
+					var loader = $context.library.file.world.Location.directory.loader.synchronous({
+						root: $context.library.file.world.Location.from.os(p.base)
+					});
+					return files.reduce(
+						/**
+						 *
+						 * @param { slime.$api.fp.Maybe<number> } rv
+						 * @param { string } path
+						 */
+						function(rv,path) {
+							//	TODO	forward slash, or pathname separator?
+							var resource = loader.get(path.split("/"));
+							if (resource.present) {
+								var modified = resource.value.modified();
+								if (rv.present) {
+									if (modified.present) {
+										if (modified.value > rv.value) {
+											rv = modified;
+										}
+									}
+								} else {
+									if (modified.present) {
+										rv = modified;
+									}
+								}
+							}
+							return rv;
+						},
+						$api.fp.Maybe.nothing()
+					);
+				}
+			}
 		});
 	}
 //@ts-ignore

@@ -286,14 +286,14 @@
 		 * @param { slime.web.form.Control[] } controls
 		 * @returns { { [x: string]: string } }
 		 */
-		var controlsToObject = $api.Function.pipe(
-			$api.Function.Array.map(
+		var controlsToObject = $api.fp.pipe(
+			$api.fp.Array.map(
 				/** @returns { readonly [string, string] } */
 				function(control) {
 					return [control.name,control.value]
 				}
 			),
-			$api.Function.Object.fromEntries
+			Object.fromEntries
 		);
 
 		/**
@@ -327,7 +327,7 @@
 			},
 			Control: {
 				isNamed: function(name) {
-					return $api.Function.Predicate.property("name", $api.Function.is(name));
+					return $api.fp.Predicate.property("name", $api.fp.is(name));
 				}
 			}
 		}
@@ -363,24 +363,24 @@
 
 				this.query = {
 					controls: function() {
-						return $api.Function.pipe(
+						return $api.fp.pipe(
 							$exports.window.url,
-							$api.Function.property("query"),
+							$api.fp.property("query"),
 							$exports.Url.query.parse
 						)(void(0))
 					},
 					object: function() {
 						var controls = $exports.window.query.controls();
 						if (controls === null) return null;
-						return $api.Function.result(
+						return $api.fp.result(
 							controls,
-							$api.Function.Array.map(
+							$api.fp.Array.map(
 								/** @returns { readonly [string, string] } */
 								function(control) {
 									return [control.name,control.value]
 								}
 							),
-							$api.Function.Object.fromEntries
+							Object.fromEntries
 						)
 					}
 				}

@@ -7,7 +7,7 @@
 /**
  * Provides a pure JavaScript parser/serializer for HTML and XML documents that, unlike a standard DOM HTML parser (but like a
  * standard DOM XML parser), can provide accurate bidirectional translation from markup to its internal representation using the
- * module's provided
+ * module's provided {@link slime.Codec}.
  */
 namespace slime.runtime.document {
 	export interface Node {
@@ -75,7 +75,7 @@ namespace slime.runtime.document {
 	}
 
 	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.kit) {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("module.js");
 			var isBrowser = Boolean(fifty.global.window);
 			var isJsh = Boolean(fifty.global.jsh);
@@ -105,17 +105,17 @@ namespace slime.runtime.document {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var subject = test.subject;
 
 				fifty.tests.Document = function() {
 					var before = "<root><child/><child/><child/></root>";
-					var document = subject.codec.document.decode(before);
+					var document = subject.Document.codec.string.decode(before);
 					var pretty = subject.Document.prettify({
 						indent: "\t"
 					})(document);
-					var after = subject.codec.document.encode(pretty);
+					var after = subject.Document.codec.string.encode(pretty);
 					fifty.verify(
 						after == [
 							"<root>",
@@ -137,27 +137,81 @@ namespace slime.runtime.document {
 	export interface Exports {
 		load: old.Exports["load"]
 
-		codec: {
-			document: slime.Codec<Document,string>
-		}
-
-		Node: {
-			isComment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment
-			isText: (node: slime.runtime.document.Node) => node is slime.runtime.document.Text
-			isDoctype: (node: slime.runtime.document.Node) => node is slime.runtime.document.Doctype
-			isDocument: (node: slime.runtime.document.Node) => node is slime.runtime.document.Document
-			isElement: (node: slime.runtime.document.Node) => node is slime.runtime.document.Element
-			isFragment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment
-			isParent: (node: Node) => node is Parent
-			isString: (node: Node) => node is String
+		Parent: {
+			nodes: (p: Parent) => slime.$api.fp.Stream<Node>
 		}
 
 		Document: exports.Document
 
+		Fragment: {
+			codec: {
+				string: slime.Codec<slime.runtime.document.Fragment,string>
+			}
+		}
+
 		Element: {
 			isName: (name: string) => (element: Element) => boolean
+			getAttribute: (name: string) => (element: Element) => slime.$api.fp.Maybe<string>
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, window } = fifty.global;
+			const subject = test.subject;
+
+			fifty.tests.Parent = fifty.test.Parent();
+
+			fifty.tests.Parent.one = function() {
+				var document = subject.Document.codec.string.decode("<root/>");
+				var nodes = $api.fp.result(
+					subject.Parent.nodes(document),
+					$api.fp.Stream.collect
+				);
+				verify(nodes).length.is(2);
+			}
+
+			fifty.tests.Parent.two = function() {
+				var document = subject.Document.codec.string.decode("<root><a/><b><b2/></b></root>");
+				var nodes = $api.fp.result(
+					subject.Parent.nodes(document),
+					$api.fp.Stream.collect
+				);
+
+				var isElement = function(name: string) {
+					return function(node: slime.runtime.document.Node) {
+						if (subject.Node.isElement(node)) {
+							return node.name == name;
+						}
+					}
+				}
+				verify(nodes).length.is(5);
+				verify(nodes)[0].type.is("document");
+				verify(nodes)[1].evaluate(isElement("root")).is(true);
+				verify(nodes)[2].evaluate(isElement("a")).is(true);
+				verify(nodes)[3].evaluate(isElement("b")).is(true);
+				verify(nodes)[4].evaluate(isElement("b2")).is(true);
+
+				var elements = $api.fp.result(
+					subject.Parent.nodes(document),
+					$api.fp.pipe(
+						$api.fp.Stream.filter(subject.Node.isElement),
+						$api.fp.Stream.collect
+					)
+				);
+				verify(elements).length.is(4);
+				verify(elements)[0].evaluate(isElement("root")).is(true);
+				verify(elements)[1].evaluate(isElement("a")).is(true);
+				verify(elements)[2].evaluate(isElement("b")).is(true);
+				verify(elements)[3].evaluate(isElement("b2")).is(true);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
@@ -192,7 +246,7 @@ namespace slime.runtime.document.old {
 	export type Script = slime.loader.Script<Context,Exports>;
 
 	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.kit) {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var load: Script = fifty.$loader.script("module.js");
 
 			var isBrowser = Boolean(fifty.global.window);
@@ -207,7 +261,7 @@ namespace slime.runtime.document.old {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var api = test.subject;
 

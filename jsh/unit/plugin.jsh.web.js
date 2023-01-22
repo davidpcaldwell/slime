@@ -74,7 +74,7 @@
 
 						//	TODO	https doesn't really work, as CONNECT to the real destination is attempted when requests for that
 						//			host arrive
-						tomcat = new jsh.httpd.Tomcat({
+						tomcat = jsh.httpd.Tomcat({
 							https: https
 						});
 
@@ -200,7 +200,7 @@
 					})();
 
 					var getHgServerProxy = (httpd)
-						? $api.Function.memoized(function() {
+						? $api.fp.memoized(function() {
 							// Packages.java.lang.System.err.println("Invoke startHgServer");
 							var server = startHgServer();
 							// Packages.java.lang.System.err.println("Return httpd.Handler.Proxy");
@@ -510,7 +510,7 @@
 										},
 										started: function() {
 											// Packages.java.lang.System.err.println("Got 'started' callback for hg serve");
-											new lock.Waiter({
+											lock.Waiter({
 												until: function() {
 													return true;
 												},
@@ -525,7 +525,7 @@
 								}
 							});
 						}
-						return new lock.Waiter({
+						return lock.Waiter({
 							until: function() {
 								return Boolean(running);
 							},

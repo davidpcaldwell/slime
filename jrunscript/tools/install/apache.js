@@ -22,10 +22,10 @@
 					return json.preferred;
 				}
 			});
-		}
+		};
 
-		$exports.find = $api.Events.Function(
-			function(p,events) {
+		$exports.find = function(p) {
+			return function(events) {
 				var name = p.path.split("/").slice(-1)[0];
 				if ($context.downloads) {
 					if ($context.downloads.getFile(name)) {
@@ -41,17 +41,13 @@
 					url: void(0)
 				};
 				Object.defineProperty(argument, "url", {
-					get: $api.Function.memoized(function() {
+					get: $api.fp.memoized(function() {
 						return mirror + p.path
 					})
 				});
 				return $context.get(argument);
-			}, {
-				console: function(e) {
-					Packages.java.lang.System.err.println(e.detail);
-				}
-			}
-		);
+			};
+		};
 	}
 //@ts-ignore
 )(Packages,$api,$context,$exports);

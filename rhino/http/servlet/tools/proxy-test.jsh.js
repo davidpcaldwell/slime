@@ -11,7 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var underlying = new jsh.httpd.Tomcat();
+		var underlying = jsh.httpd.Tomcat();
 		underlying.servlet({
 			load: function(scope) {
 				scope.$exports.handle = function(request) {

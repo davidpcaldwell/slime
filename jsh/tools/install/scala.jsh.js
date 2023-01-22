@@ -4,4 +4,26 @@
 //
 //	END LICENSE
 
-jsh.shell.tools.scala.install();
+//@ts-check
+(
+	/**
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.jsh.script.cli.main } main
+	 */
+	function($api,jsh,main) {
+		main(
+			$api.fp.pipe(
+				jsh.script.cli.option.number({ longname: "version", default: 2 }),
+				function(p) {
+					var managed = jsh.shell.tools.scala.Installation.from.jsh();
+					$api.fp.world.now.action(
+						jsh.shell.tools.scala.Installation.install(managed),
+						{ majorVersion: p.options.version }
+					);
+				}
+			)
+		);
+	}
+//@ts-ignore
+)($api,jsh,main);

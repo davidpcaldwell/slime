@@ -15,13 +15,29 @@
 	function(jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.shell && jsh.tools && jsh.tools.install);
+				/**
+				 * We want to wait until the curl plugin is loaded if curl is present (otherwise, it will never load).
+				 *
+				 * @type { () => boolean }
+				 */
+				var isCurlDependencySatisfied = function() {
+					if (!jsh.shell) return false;
+					var curlPresent = jsh.shell.PATH.getCommand("curl");
+					if (!curlPresent) return true;
+					return Boolean(jsh.http.curl);
+				}
+
+				return Boolean(jsh.web && jsh.http && isCurlDependencySatisfied() && jsh.io && jsh.file && jsh.shell && jsh.tools && jsh.tools.install);
 			},
 			load: function() {
 				/** @type { slime.jrunscript.tools.docker.Script } */
 				var load = $loader.script("module.js");
 				var module = load({
 					library: {
+						web: jsh.web,
+						http: jsh.http,
+						curl: jsh.http.curl,
+						file: jsh.file,
 						shell: jsh.shell
 					}
 				});
@@ -51,7 +67,7 @@
 				 */
 				var jshFacade = function(shell) {
 					/**
-					 * @param { slime.jrunscript.tools.kubectl.Invocation } invocation
+					 * @param { slime.jrunscript.tools.kubernetes.cli.Invocation } invocation
 					 */
 					function rv(invocation) {
 						var installation = module.kubectl.Installation({ command: "kubectl" });

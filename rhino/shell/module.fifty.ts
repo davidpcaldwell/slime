@@ -5,34 +5,68 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell {
-	export interface Stdio {
-		input?: slime.jrunscript.runtime.io.InputStream
-		output?: slime.jrunscript.runtime.io.OutputStream
-		error?: slime.jrunscript.runtime.io.OutputStream
-	}
+	export namespace context {
+		export type OutputStream = Omit<slime.jrunscript.runtime.io.OutputStream, "close">
 
-	interface Result {
-		stdio: {
-			output: string
+		/**
+		 * Represents a process output stream to which bytes and characters can be written.
+		 */
+		export type Console = OutputStream & {
+			/**
+			 * Writes a string to the stream and then flushes the stream.
+			 *
+			 * @param string A string to write to this console.
+			 */
+			write: (string: string) => void
+		}
+
+		export interface Stdio {
+			input?: slime.jrunscript.runtime.io.InputStream
+			output: OutputStream
+			error: OutputStream
 		}
 	}
 
 	export interface Context {
-		stdio: Stdio
-		_environment: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-		_properties: slime.jrunscript.native.java.util.Properties
+		/**
+		 * (optional: if omitted, the actual operating system environment will be used.) An object representing the operating system
+		 * environment.
+		 */
+		_environment?: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+
+		/**
+		 * (optional: if omitted, the actual system properties will be used.) A set of properties representing Java system
+		 * properties.
+		 */
+		_properties?: slime.jrunscript.native.java.util.Properties
+
+		stdio: context.Stdio
+
 		kotlin: {
 			compiler: slime.jrunscript.file.File
 		}
+
 		api: {
-			js: slime.js.old.Exports
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 
-			document: any
 			httpd: any
-			xml: any
+
+			js: slime.js.old.Exports
+
+			/**
+			 * The `js/document` module.
+			 */
+			document: any
+
+			xml: {
+				parseFile: (file: slime.jrunscript.file.File) => slime.runtime.document.exports.Document
+			}
+		}
+
+		world?: {
+			subprocess?: slime.jrunscript.shell.internal.run.Context["spi"]
 		}
 	}
 
@@ -41,12 +75,77 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.exports = {};
+			fifty.tests.exports = fifty.test.Parent();
+
+			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace exports {
+		export interface Subprocess {}
+	}
+
+	export interface Exports {
+		subprocess: exports.Subprocess
+	}
+
+	export namespace exports {
+		export interface Subprocess {
+			Parent: {
+				from: {
+					process: () => slime.jrunscript.shell.run.Parent
+				}
+			}
+			action: slime.$api.fp.world.Action<run.Intention,run.TellEvents>
+			question: slime.$api.fp.world.Question<run.Intention,run.AskEvents,run.Exit>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+
+				const subject = jsh.shell;
+
+				fifty.tests.manual.subprocess = {};
+
+				fifty.tests.manual.subprocess.Parent = function() {
+					var parent = subject.subprocess.Parent.from.process();
+					jsh.shell.console(JSON.stringify(parent,void(0),4));
+				}
+
+				fifty.tests.manual.subprocess.Invocation = function() {
+					var invocation = subject.subprocess.Invocation.from.intention(
+						subject.subprocess.Parent.from.process()
+					)({
+						command: "ls"
+					});
+					jsh.shell.console(JSON.stringify(invocation));
+				}
+
+				fifty.tests.manual.subprocess.question = $api.fp.impure.Process.create({
+					input: $api.fp.impure.Input.map(
+						$api.fp.impure.Input.value({
+							command: "ls",
+							stdio: {
+								output: "string"
+							}
+						} as slime.jrunscript.shell.run.Intention),
+						$api.fp.world.mapping(subject.subprocess.question)
+					),
+					output: $api.fp.pipe(
+						$api.fp.JSON.stringify({ space: 4 }),
+						jsh.shell.console
+					)
+				});
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
 	export interface Exports {
 		listeners: $api.Events<{
@@ -56,7 +155,7 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.listeners = function() {
 				const jsh = fifty.global.jsh;
@@ -96,16 +195,27 @@ namespace slime.jrunscript.shell {
 		/**
 		 * An object representing the environment provided via the {@link Context}, or representing the system environment if
 		 * no environment was provided via the `Context`.
+		 *
+		 * An object describing the environment provided via the {@link Context}, or the operating system process environment under
+		 * which this script was executed if no environment was provided via the `Context`.
+		 *
+		 * Each variable defined in the environment is represented as a property in this object, with its name being the name of the
+		 * property and its value being the value of that property. This object uses JavaScript semantics, and thus this object has
+		 * case-sensitive names. In the event that the underlying operating system has environment variables that are *not*
+		 * case-sensitive, all properties of this object will have UPPERCASE names.
 		 */
-		environment: slime.jrunscript.host.Environment
+		environment: {
+			readonly [name: string]: string
+		}
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.environment = function() {
 				const jsh = fifty.global.jsh;
+				const script: Script = fifty.$loader.script("module.js");
 
 				var fixtures: slime.jrunscript.native.inonit.system.test.Fixtures = fifty.$loader.file("../../rhino/system/test/system.fixtures.ts");
 				var o = fixtures.OperatingSystem.Environment.create({
@@ -114,13 +224,22 @@ namespace slime.jrunscript.shell {
 				});
 				fifty.verify(String(o.getValue("foo"))).is("bazz");
 
-				var module: Exports = fifty.$loader.module("module.js", {
+				var module: Exports = script({
 					_environment: o,
 					api: {
 						java: jsh.java,
 						io: jsh.io,
 						file: jsh.file,
-						js: jsh.js
+						js: jsh.js,
+						document: void(0),
+						httpd: void(0),
+						xml: void(0)
+					},
+					_properties: void(0),
+					kotlin: void(0),
+					stdio: {
+						output: jsh.shell.stdio.output,
+						error: jsh.shell.stdio.error
 					}
 				});
 				fifty.verify(module).environment.evaluate.property("foo").is("bazz");
@@ -130,66 +249,7 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export interface World {
-	}
-
-	export interface Exports {
-		//	environment (maybe defined erroneously in jsh.d.ts)
-
-		//	listeners
-	}
-
 	export namespace run {
-		//	TODO	right now we only capture output of type string; we could capture binary also
-		export interface Output {
-			output?: string
-			error?: string
-		}
-
-		export type OutputCapture = "string" | "line" | slime.jrunscript.runtime.io.OutputStream;
-
-		export type Line = {
-			line: string
-		}
-
-		export interface Events {
-			start: {
-				pid: number
-				kill: () => void
-			}
-
-			stdout: Line
-
-			stderr: Line
-
-			exit: {
-				status: number
-				stdio?: slime.jrunscript.shell.run.Output
-			}
-		}
-
-		export interface StdioConfiguration {
-			input: slime.jrunscript.runtime.io.InputStream
-			output: OutputCapture
-			error: OutputCapture
-		}
-
-		export interface Context {
-			environment: slime.jrunscript.host.Environment
-			directory: string
-			stdio: StdioConfiguration
-		}
-
-		export interface Configuration {
-			command: string
-			arguments: string[]
-		}
-
-		export interface Invocation {
-			context: Context
-			configuration: Configuration
-		}
-
 		export namespace old {
 			export interface Argument extends invocation.old.Argument {
 				as?: {
@@ -222,14 +282,14 @@ namespace slime.jrunscript.shell {
 				workingDirectory: slime.jrunscript.file.Directory
 
 				status: number
-				stdio?: run.Output
+				stdio?: run.CapturedOutput
 			}
 
 			export namespace events {
 				export interface Event {
-					command: slime.jrunscript.shell.invocation.Token
-					arguments?: slime.jrunscript.shell.invocation.Token[]
-					environment?: slime.jrunscript.shell.old.Invocation["environment"]
+					command: slime.jrunscript.shell.invocation.old.Token
+					arguments?: slime.jrunscript.shell.invocation.old.Token[]
+					environment?: slime.jrunscript.shell.older.Invocation["environment"]
 					directory?: slime.jrunscript.file.Directory
 				}
 
@@ -241,191 +301,22 @@ namespace slime.jrunscript.shell {
 
 					terminate: Event & {
 						status: number
-						stdio?: slime.jrunscript.shell.run.Output
+						stdio?: slime.jrunscript.shell.run.CapturedOutput
 					}
 				}
 			}
 
 			export type Events = slime.$api.Events<events.Events>
 
-			export type Handler = slime.$api.events.Handler<events.Events>
+			export type Handler = slime.$api.event.Handlers<events.Events>
 		}
 	}
 
-	export interface Exports {
-		run: {
-			<T>(
-				p: run.old.Argument & {
-					evaluate?: (p: run.old.Result) => T
-				},
-				events?: run.old.Handler
-			): T
-
-			(p: run.old.Argument, events?: run.old.Events): run.old.Result
-
-			evaluate: any
-			stdio: any
+	interface Result {
+		stdio: {
+			output: string
 		}
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
-			var getJavaProgram = function(name) {
-				var jsh = fifty.global.jsh;
-				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				jsh.java.tools.javac({
-					destination: to.pathname,
-					arguments: [fifty.$loader.getRelativePath("test/java/inonit/jsh/test/" + name + ".java")]
-				});
-				return {
-					classpath: jsh.file.Searchpath([to.pathname]),
-					main: "inonit.jsh.test." + name
-				}
-			};
-
-			fifty.tests.run = function() {
-				var subject: Exports = fifty.global.jsh.shell;
-
-				var here: slime.jrunscript.file.Directory = fifty.$loader.getRelativePath(".").directory;
-
-				var on = {
-					start: void(0)
-				}
-
-				var argument: slime.jrunscript.shell.run.old.Argument = {
-					command: "ls",
-					directory: here,
-					on: {
-						start: function(target) {
-							on.start = target;
-						}
-					}
-				};
-
-				var captured: run.old.events.Events = {
-					start: void(0),
-					terminate: void(0)
-				};
-
-				var events = {
-					start: function(e) {
-						fifty.global.jsh.shell.console("start!");
-						captured.start = e.detail;
-					},
-					terminate: function(e) {
-						fifty.global.jsh.shell.console("terminate!");
-						captured.terminate = e.detail;
-					}
-				};
-
-				fifty.verify(on).start.is.type("undefined");
-
-				subject.run(argument, events);
-
-				//	TODO	appears to work in latest version of TypeScript
-				//@ts-ignore
-				fifty.verify(captured).start.command.evaluate(function(p) { return String(p) }).is("ls");
-				fifty.verify(captured).start.directory.evaluate(function(directory) { return directory.toString(); }).is(here.toString());
-				fifty.verify(captured).start.pid.is.type("number");
-				fifty.verify(captured).start.kill.is.type("function");
-
-				fifty.verify(captured).terminate.status.is(0);
-
-				fifty.verify(on).start.is.type("object");
-
-				fifty.run(function argumentChecking() {
-					fifty.verify(subject).evaluate(function() {
-						this.run({
-							command: null
-						})
-					}).threw.message.is("property 'command' must not be null; full invocation = (null)");
-					fifty.verify(subject).evaluate(function() {
-						this.run({
-							command: "java",
-							arguments: [null]
-						})
-					}).threw.message.is("property 'arguments[0]' must not be null; full invocation = java (null)");
-				});
-
-				fifty.run(fifty.tests.run.stdio);
-
-				fifty.run(function directory() {
-					var jsh = fifty.global.jsh;
-					var module = subject;
-
-					var program = getJavaProgram("Directory");
-					var dir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					var result = module.java({
-						classpath: program.classpath,
-						main: program.main,
-						stdio: {
-							output: String
-						},
-						directory: dir
-					});
-					var workdir = result.stdio.output;
-					fifty.verify(workdir).is(dir.toString());
-				})
-			}
-			fifty.tests.run.stdio = function() {
-				var subject: Exports = fifty.global.jsh.shell;
-				var jsh = fifty.global.jsh;
-				var module = subject;
-				var verify = fifty.verify;
-
-				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				jsh.java.tools.javac({
-					destination: to.pathname,
-					arguments: [fifty.$loader.getRelativePath("test/java/inonit/jsh/test/Echo.java")]
-				});
-				var result = module.java({
-					classpath: jsh.file.Searchpath([to.pathname]),
-					main: "inonit.jsh.test.Echo",
-					stdio: {
-						input: "Hello, World!",
-						output: String
-					}
-				});
-				verify(result).stdio.output.is("Hello, World!");
-
-				var runLines = function(input) {
-					var buffered = [];
-					var rv = module.java({
-						classpath: jsh.file.Searchpath([to.pathname]),
-						main: "inonit.jsh.test.Echo",
-						stdio: {
-							input: input,
-							output: {
-								line: function(string) {
-									buffered.push(string);
-								}
-							}
-						}
-					});
-					return {
-						stdio: {
-							output: buffered
-						}
-					};
-				};
-
-				var lines: { stdio: { output: string[] }};
-				var nl = jsh.shell.os.newline;
-				lines = runLines("Hello, World!" + nl + "Line 2");
-				verify(lines).stdio.output.length.is(2);
-				verify(lines).stdio.output[0].is("Hello, World!");
-				verify(lines).stdio.output[1].is("Line 2");
-				lines = runLines("Hello, World!" + nl + "Line 2" + nl);
-				verify(lines).stdio.output.length.is(3);
-				verify(lines).stdio.output[0].is("Hello, World!");
-				verify(lines).stdio.output[1].is("Line 2");
-				verify(lines).stdio.output[2].is("");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
 
 	export interface Exports {
 		/**
@@ -484,7 +375,9 @@ namespace slime.jrunscript.shell {
 				 * A JAR file to pass to `java -jar`.
 				 */
 				jar: slime.jrunscript.file.File
-				arguments: any
+				arguments?: any
+				stdio: any
+				evaluate: any
 			}): Result
 
 			version: string
@@ -507,7 +400,7 @@ namespace slime.jrunscript.shell {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { jsh } = fifty.global;
@@ -518,7 +411,7 @@ namespace slime.jrunscript.shell {
 				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				jsh.java.tools.javac({
 					destination: to.pathname,
-					arguments: [fifty.$loader.getRelativePath("test/java/inonit/jsh/test/Program.java")]
+					arguments: [fifty.jsh.file.object.getRelativePath("test/java/inonit/jsh/test/Program.java")]
 				});
 				var buffer = new jsh.io.Buffer();
 				var output = subject.java({
@@ -540,27 +433,16 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-
 	export interface Exports {
-		//	TODO	probably should be conditional based on presence of sudo tool
 		/**
-		 * Creates an object that can execute invocations under `sudo` using the settings given.
+		 * Provides access to Java system properties.
 		 */
-		sudo: (settings?: Parameters<Exports["invocation"]["sudo"]>[0]) => {
-			run: (invocation: invocation.old.Argument) => any
-		}
-
-		//	fires started, exception, stdout, stderr
-		/**
-		 * Provides a framework for embedding processes inside a shell. Invokes the given method with the given argument
-		 */
-		embed: (p: {
-			method: Function
-			argument: object
-			started: (p: { output?: string, error?: string }) => boolean
-		}, events: $api.events.Function.Receiver) => void
-
 		properties: {
+			/**
+			 * An object that attempts to allow the use of JavaScript semantics to access Java system properties. For example, the
+			 * `java.home` system property is referenced as `properties.object.java.home`. This value can be examined using
+			 * `String(properties.java.home)` to obtain its value as a `string`.
+			 */
 			object: any
 
 			/**
@@ -588,11 +470,15 @@ namespace slime.jrunscript.shell {
 			version: string
 			newline: string
 			resolve: any
+
 			process?: {
 				list: slime.jrunscript.shell.system.ps
 			}
+
 			sudo?: slime.jrunscript.shell.system.sudo
-			ping?: slime.jrunscript.shell.system.Exports["ping"]
+
+			//	TODO	should not be using internal types
+			ping?: slime.jrunscript.shell.internal.os.Exports["ping"]
 
 			//	TODO	should not depend on jsh; need to disentangle jsh["ui"] from jsh first and have a separate TypeScript
 			//			definition for something like slime.jrunscript.ui or something
@@ -603,21 +489,171 @@ namespace slime.jrunscript.shell {
 			downloads?: slime.jrunscript.file.Directory
 		}
 
-		//	browser
-
-		system: any
-
 		jrunscript: any
 
 		kotlin: any
 
-		/** @deprecated Presently unused. */
 		rhino: any
 
 		world: World
 	}
 
-	export type Loader = slime.loader.Script<Context,Exports>;
+	export namespace system {
+		export namespace apple {
+			export namespace osx {
+				/**
+				 * An object specifying properties to be added to the `Info.plist`. Properties with string values will be
+				 * treated as name-value pairs. Some properties allow non-string values, as specified below. The
+				 * `CFBundlePackageType` property is hard-coded to `APPL`, per Apple's specification. The following
+				 * properties are also required to be supplied, per Apple's documentation (although SLIME provides a default
+				 * value for one):
+				 */
+				export interface ApplicationBundleInfo {
+					/**
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html)
+					 */
+					CFBundleName: string
+
+					/**
+					 * Apple says this value is required, but it does not appear to be required.
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
+					 */
+					CFBundleDisplayName?: string
+
+					/**
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
+					 */
+					CFBundleIdentifier: string
+
+					/**
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
+					 */
+					CFBundleVersion: string
+
+					/**
+					 * (optional; defaults to `????`; see [Stack
+					 * Overflow](http://stackoverflow.com/questions/1875912/naming-convention-for-cfbundlesignature-and-cfbundleidentifier).)
+					 *
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
+					 */
+					CFBundleSignature?: string
+
+					//	TODO	document allowed object type with command (preceding comment copied from JSAPI)
+					/**
+					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
+					 */
+					CFBundleExecutable: string | { name: string, command: string }
+
+					//	Added to make test pass type checking; not sure what this does
+					CFBundleIconFile?: any
+				}
+
+				export interface ApplicationBundle {
+					directory: slime.jrunscript.file.Directory
+					info: ApplicationBundleInfo
+				}
+			}
+		}
+	}
+
+	export interface Exports {
+		system: {
+			apple: {
+				plist: {
+					xml: {
+						encode: Function
+						decode: Function
+					}
+				}
+				osx: {
+					/**
+					 * Implements the creation of OS X [Application
+					 * Bundles](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/Introduction/Introduction.html).
+					 */
+					ApplicationBundle: new (p: {
+						/**
+						 * The location at which to create the bundle.
+						 */
+						pathname: slime.jrunscript.file.Pathname
+
+						info: system.apple.osx.ApplicationBundleInfo
+					}) => system.apple.osx.ApplicationBundle
+				}
+			}
+			opendesktop: any
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			const subject = jsh.shell;
+
+			fifty.tests.exports.system = function() {
+				fifty.run(function applicationBundle() {
+					if (subject.system.apple.osx.ApplicationBundle) {
+						var tmpfile = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("tmp.icns");
+						tmpfile.write("ICONS", { append: false });
+						var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+						tmp.directory.remove();
+						var bundle = new subject.system.apple.osx.ApplicationBundle({
+							pathname: tmp,
+							info: {
+								CFBundleName: "name",
+								CFBundleIdentifier: "com.bitbucket.davidpcaldwell.slime",
+								CFBundleVersion: "1",
+								CFBundleExecutable: {
+									name: "program",
+									command: "ls"
+								},
+								CFBundleIconFile: {
+									file: tmpfile.file
+								}
+							}
+						});
+						verify(bundle).directory.evaluate(String).is(tmp.directory.toString());
+						verify(bundle).info.is.type("object");
+						//	TODO	not sure what the below is for
+						//@ts-ignore
+						bundle.info = "foo";
+						verify(bundle).info.is.type("object");
+						verify(bundle).info.CFBundleName.is("name");
+						verify(bundle).info.CFBundleIdentifier.is("com.bitbucket.davidpcaldwell.slime");
+						verify(bundle).info.CFBundleVersion.is("1");
+						verify(bundle).info.CFBundleExecutable.evaluate(String).is("program");
+						verify(bundle).directory.getFile("Contents/MacOS/program").is.type("object");
+						verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("null");
+						verify(bundle).directory.getFile("Contents/Resources/tmp.icns").is.type("object");
+
+						bundle.info.CFBundleExecutable = "string";
+						verify(bundle).info.CFBundleExecutable.evaluate(String).is("string");
+
+						bundle.info.CFBundleExecutable = {
+							name: "executable",
+							command: "pwd"
+						};
+						verify(bundle).directory.getFile("Contents/MacOS/program").is.type("null");
+						verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("object");
+						verify(bundle).directory.evaluate(function() {
+							var file = this.getFile("Contents/MacOS/executable");
+							if (!file) return null;
+							return { string: file.read(String) };
+						}).is.type("object");
+					} else {
+						var message = "ApplicationBundle not available on this system";
+						verify(message).is(message);
+					}
+				})
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export type Script = slime.loader.Script<Context,Exports>;
 
 	export namespace sudo {
 		export interface Settings {
@@ -626,248 +662,38 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	export namespace exports {
-		export interface Invocation {
-			create: (p: invocation.Argument) => run.Invocation
-
-			/**
-			 * @deprecated
-			 *
-			 * Creates a fully-specified {@link old.Invocation} from a given {@link invocation.old.Argument} and the surrounding context.
-			 */
-			old: (p: invocation.old.Argument) => old.Invocation
-		}
-	}
-
 	export interface Exports {
 		Invocation: exports.Invocation
 	}
 
 	export interface World {
-		run: (invocation: run.Invocation) => slime.$api.fp.impure.Tell<run.Events>
-
 		/**
-		 * Allows a mock implementation of `run` to be created using a function that receives an invocation as an argument
-		 * and returns an object describing what the mocked subprocess should do. The system will use this object to create
+		 * @deprecated Replaced by the {@link Context} `world.subprocess` property, which allows a mock (or other) implementation to
+		 * be used when loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
+		 *
+		 * Allows a mock implementation of the `run` action to be created using a function that receives an invocation as an
+		 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
 		 * the appropriate `Tell` and fire the appropriate events to the caller.
 		 */
-		mock: (delegate: (invocation: shell.run.Invocation) => shell.run.Mock) => World["run"]
-
-		 /** @deprecated Replaced by {@link Exports | Exports Invocation.create()} because it does not rely on external state. */
-		Invocation: (p: invocation.old.Argument) => old.Invocation
+		mock: (delegate: (invocation: shell.run.old.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.old.Invocation,run.TellEvents>
 	}
-
-	(
-		function(
-			$api: slime.$api.Global,
-			fifty: slime.fifty.test.kit
-		) {
-			const subject = fifty.global.jsh.shell;
-
-			fifty.tests.world = function() {
-				var directory = fifty.$loader.getRelativePath(".").directory;
-
-				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
-					var ls = subject.Invocation.create({
-						command: "ls",
-						directory: directory,
-						stdio: {
-							output: "line",
-							error: "line"
-						}
-					});
-					var tell = subject.world.run(ls);
-					var captor = fifty.$api.Events.Captor({
-						start: void(0),
-						stdout: void(0),
-						stderr: void(0),
-						exit: void(0)
-					});
-					tell(captor.handler);
-					fifty.global.jsh.shell.console(JSON.stringify(captor.events,void(0),4));
-
-					var killed = subject.Invocation.create({
-						command: "sleep",
-						arguments: ["1"],
-						directory: directory,
-						stdio: {
-							output: "line",
-							error: "line"
-						}
-					});
-					var events = [];
-					var subprocess;
-					var killtell = subject.world.run(killed);
-					killtell({
-						start: function(e) {
-							events.push(e);
-							subprocess = e.detail;
-							subprocess.kill();
-						},
-						stdout: function(e) {
-							events.push(e);
-						},
-						stderr: function(e) {
-							events.push(e);
-						},
-						exit: function(e) {
-							events.push(e);
-						}
-					});
-					fifty.global.jsh.shell.console(JSON.stringify(events,void(0),4));
-				}
-			}
-
-			fifty.tests.sandbox = function() {
-				var bogus = subject.Invocation.create({
-					command: "foobarbaz"
-				});
-
-				(function() {
-					var tell = subject.world.run(bogus);
-					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.type(Error);
-					fifty.verify(tell).evaluate(function(f) { return f(); }).threw.name.is("JavaException");
-				})();
-
-				var directory = fifty.$loader.getRelativePath(".").directory;
-
-				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
-					var ls = subject.Invocation.create({
-						command: "ls",
-						directory: directory
-					});
-					var status: number;
-					subject.world.run(ls)({
-						exit: function(e) {
-							status = e.detail.status;
-						}
-					});
-					fifty.verify(status).is(0);
-
-					var lsIllegalArgumentStatus = (function() {
-						if (fifty.global.jsh.shell.os.name == "Mac OS X") return 1;
-						if (fifty.global.jsh.shell.os.name == "Linux") return 2;
-					})();
-
-					fifty.run(function checkExitStatus() {
-						debugger;
-						var lserror = $api.Object.compose(ls, {
-							configuration: $api.Object.compose(ls.configuration, {
-								arguments: ["--foo"]
-							})
-						});
-						var status: number;
-						subject.world.run(lserror)({
-							exit: function(e) {
-								status = e.detail.status;
-							}
-						});
-						fifty.verify(status).is(lsIllegalArgumentStatus);
-					});
-
-					fifty.run(function checkErrorOnNonZero() {
-						var lserror = $api.Object.compose(ls, {
-							configuration: $api.Object.compose(ls.configuration, {
-								arguments: ["--foo"]
-							})
-						});
-						var tell = subject.world.run(lserror);
-						//	TODO	this listener functionality was previously provided by default; will want to improve API over
-						//			time so that it's harder to accidentally ignore non-zero exit status
-						var listener: slime.$api.events.Handler<slime.jrunscript.shell.run.Events> = {
-							exit: function(e) {
-								if (e.detail.status != 0) {
-									throw new Error("Non-zero exit status: " + e.detail.status);
-								}
-							}
-						}
-						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.type(Error);
-						fifty.verify(tell).evaluate(function(f) { return f(listener); }).threw.message.is("Non-zero exit status: " + lsIllegalArgumentStatus);
-					});
-				}
-
-				var isDirectory = function(directory) {
-					return Object.assign(function(p) {
-						return directory.toString() == p.toString();
-					}, {
-						toString: function() {
-							return "is directory " + directory;
-						}
-					})
-				};
-
-				var it = {
-					is: function(value) {
-						return function(p) {
-							return p === value;
-						}
-					}
-				}
-
-				fifty.run(function Invocation() {
-					var directory = fifty.$loader.getRelativePath(".").directory;
-
-					//	TODO	test for missing command
-
-					fifty.run(function defaults() {
-						var argument: invocation.Argument = {
-							command: "ls"
-						};
-						var invocation = fifty.global.jsh.shell.Invocation.create(argument);
-						fifty.verify(invocation, "invocation", function(its) {
-							its.configuration.command.is("ls");
-							its.configuration.arguments.is.type("object");
-							its.configuration.arguments.length.is(0);
-							//	TODO	environment
-							its.context.directory.evaluate(isDirectory(fifty.global.jsh.shell.PWD)).is(true);
-							its.context.stdio.input.evaluate(it.is(null)).is(true);
-							//	TODO	appears to work in latest TypeScript
-							//@ts-ignore
-							its.context.stdio.output.evaluate(it.is(fifty.global.jsh.shell.stdio.output)).is(true);
-							//	TODO	appears to work in latest TypeScript
-							//@ts-ignore
-							its.context.stdio.error.evaluate(it.is(fifty.global.jsh.shell.stdio.error)).is(true);
-						});
-					});
-
-					fifty.run(function specified() {
-						var argument: invocation.Argument = {
-							command: fifty.global.jsh.file.Pathname("/bin/ls"),
-							arguments: [directory.getRelativePath("invocation.fifty.ts")],
-							//	TODO	environment
-							directory: directory
-						};
-						var invocation = fifty.global.jsh.shell.Invocation.create(argument);
-						fifty.verify(invocation, "invocation", function(its) {
-							its.configuration.command.is("/bin/ls");
-							its.configuration.arguments.is.type("object");
-							its.configuration.arguments.length.is(1);
-							its.configuration.arguments[0].is(directory.getRelativePath("invocation.fifty.ts").toString());
-							its.context.directory.evaluate(isDirectory(directory)).is(true);
-						});
-					});
-				});
-			}
-		}
-	//@ts-ignore
-	)($api,fifty);
 
 	export interface Exports {
 		Tell: {
-			exit: () => (tell: slime.$api.fp.impure.Tell<run.Events>) => (run.Events["exit"])
-			mock: (stdio: Partial<Pick<slime.jrunscript.shell.run.StdioConfiguration,"output" | "error">>, result: slime.jrunscript.shell.run.Mock) => slime.$api.fp.impure.Tell<slime.jrunscript.shell.run.Events>
+			exit: () => (tell: slime.$api.fp.world.old.Tell<run.TellEvents>) => run.TellEvents["exit"]
+			mock: (stdio: Partial<Pick<slime.jrunscript.shell.run.StdioConfiguration,"output" | "error">>, result: slime.jrunscript.shell.run.Mock) => slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents>
 		}
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
 			fifty.tests.exports.Tell = function() {
-				var tell: slime.$api.fp.impure.Tell<run.Events> = jsh.shell.Tell.mock({
+				var tell: slime.$api.fp.world.old.Tell<run.TellEvents> = jsh.shell.Tell.mock({
 					output: "string"
 				}, {
 					exit: {
@@ -878,12 +704,12 @@ namespace slime.jrunscript.shell {
 					}
 				})
 
-				var interpret = function(result: run.Events["exit"]): string {
+				var interpret = function(result: run.TellEvents["exit"]): string {
 					return result.stdio.output + result.stdio.output;
 				};
 
 				var exit = jsh.shell.Tell.exit();
-				var result = $api.Function.result(exit(tell), interpret);
+				var result = $api.fp.result(exit(tell), interpret);
 				verify(result).is("foobarfoobar");
 			}
 		}
@@ -895,24 +721,515 @@ namespace slime.jrunscript.shell {
 			configuration: internal.run.java.Configuration
 			result: {
 				command: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
-				arguments: slime.jrunscript.shell.invocation.Token[]
+				arguments: slime.jrunscript.shell.invocation.old.Token[]
 				as: Parameters<Exports["run"]>[0]["as"]
 			}
 		}
 	}
 
 	(
-		function(fifty: slime.fifty.test.kit) {
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			fifty.tests.jsapi = fifty.test.Parent();
+
+			const fixtures: slime.jrunscript.shell.test.Script = fifty.$loader.script("fixtures.ts");
+
+			var context = new function() {
+				var java = fifty.$loader.module("../../jrunscript/host/", {
+					$slime: jsh.unit.$slime,
+					logging: {
+						prefix: "slime.jrunscript.shell.test"
+					}
+				});
+				var io = fifty.$loader.module("../../jrunscript/io/", {
+					api: {
+						java: java,
+						mime: jsh.unit.$slime.mime
+					},
+					$slime: jsh.unit.$slime
+				});
+				this.api = {
+					js: fifty.$loader.module("../../js/object/"),
+					java: java,
+					io: io,
+					file: fifty.$loader.module("../../rhino/file/", new function() {
+						if (jsh.shell.environment.PATHEXT) {
+							this.pathext = jsh.shell.environment.PATHEXT.split(";");
+						}
+						this.$rhino = jsh.unit.$slime;
+						this.api = {
+							io: io,
+							js: jsh.js,
+							java: jsh.java
+						};
+						this.$pwd = String(jsh.shell.properties.object.user.dir);
+						this.addFinalizer = jsh.loader.addFinalizer;
+						//	TODO	below copy-pasted from rhino/file/api.html
+						//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+						var System = Packages.java.lang.System;
+						if (System.getProperty("cygwin.root")) {
+							this.cygwin = {
+								root: String( System.getProperty("cygwin.root") )
+							};
+							if (System.getProperty("cygwin.paths")) {
+								//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+								//	the SDK server
+								//	TODO	check this
+								this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+							}
+						}
+					}),
+					document: fifty.$loader.module("../../js/document/"),
+					xml: {
+						parseFile: function(file) {
+							return new jsh.document.Document({ string: file.read(String) });
+						}
+					}
+				};
+				this._properties = Packages.java.lang.System.getProperties();
+				this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
+				this.stdio = {
+					output: jsh.shell.stdio.output,
+					error: jsh.shell.stdio.error
+				}
+			}
+
+			var module = fixtures().load(context);
+
+			var test = function(b) {
+				fifty.verify(b).is(true);
+			}
+
+			fifty.tests.jsapi._1 = function() {
+				var environment = module.environment;
+
+				test( typeof(environment.PATH) != "undefined" );
+				test( typeof(environment.ZZFF) == "undefined" );
+			}
+
+			var scope = {
+				test: test
+			};
+
+			var properties = module.properties.object;
+
+			//	TODO	rewrite the below tests in light of whatever we decide the correct semantics for properties are
+			//	TODO	or just get rid of this construct altogether
+			fifty.tests.jsapi.properties = function() {
+				properties.foo = "bar";
+				properties.foo.bar = "baz";
+
+				properties.composite = {
+					david: "caldwell",
+					katie: "alex",
+					home: "/home/inonit",
+				};
+
+				var property = function(name) {
+					return function(o): string {
+						var rv = o;
+						var tokens = name.split(".");
+						tokens.forEach(function(token) {
+							rv = rv[token];
+						});
+						return rv;
+					}
+				};
+
+				var type = function(v): string {
+					return typeof(v);
+				};
+
+				verify(properties).evaluate(property("foo")).is("bar");
+
+				//	TODO	fails; returns `undefined` instead
+				if (false) verify(properties).evaluate(property("foo.bar")).is("baz");
+
+				//	TODO	fails; TypeError: Cannot find default value for object.
+				if (false) scope.test( String(properties.java) == "null" );
+
+				scope.test( String(properties.java.version) != "null" );
+
+				//	TODO	fails; type is string
+				if (false) verify(properties.java.version).evaluate(type).is("object");
+
+				scope.test( String(properties.composite.david) == "caldwell" );
+				scope.test( String(properties.composite.david).substring(1,4) == "ald" );
+
+				scope.test( String(properties.blah) == "undefined" );
+			};
+
+			fifty.tests.manual.properties = function() {
+				var list = function(prefix,p) {
+					for (var x in p) {
+						if (p[x]) {
+							Packages.java.lang.System.err.println(prefix+x + "=" + p[x]);
+						}
+						list(prefix+x+".",p[x]);
+					}
+				}
+
+				Packages.java.lang.System.err.println("BEFORE:");
+				list("",properties);
+
+				Packages.java.lang.System.err.println("AFTER:");
+				delete properties.foo;
+				list("",properties);
+
+				Packages.java.lang.System.err.println("JAVA:");
+				list("",properties.java);
+			}
+
+			fifty.tests.manual.process = {};
+			fifty.tests.manual.process.list = function() {
+				var processes = fifty.global.jsh.shell.os.process.list().map(function(process) {
+					return {
+						id: process.id,
+						parent: process.parent.id,
+						command: process.command
+					}
+				});
+				fifty.global.jsh.shell.console(JSON.stringify(processes,void(0),4));
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+	export interface Exports {
+		browser: slime.jrunscript.shell.browser.Exports
+	}
+
+	export interface Exports {
+		test: {
+			invocation: slime.jrunscript.shell.internal.invocation.Export
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+			const subject: slime.jrunscript.shell.internal.invocation.Export = fifty.global.jsh.shell.test.invocation;
+
+			fifty.tests.invocation = fifty.test.Parent();
+
+			fifty.tests.invocation.sudo = function() {
+				var sudoed = subject.exports(void(0)).sudo({})(fifty.global.jsh.shell.Invocation.from.argument({
+					command: "ls"
+				}));
+
+				fifty.verify(sudoed).configuration.command.evaluate(String).is("sudo");
+				fifty.verify(sudoed).configuration.arguments[0].is("ls");
+				fifty.verify(sudoed).context.environment.evaluate.property("SUDO_ASKPASS").is(void(0));
+			};
+
+			fifty.tests.invocation.toBashScript = function() {
+				var parent = fifty.global.jsh.shell.environment;
+				fifty.verify(parent).evaluate.property("PATH").is.type("string");
+				fifty.verify(parent).evaluate.property("TO_BASH_SCRIPT_EXAMPLE").is(void(0));
+				var script = subject.invocation.toBashScript()({
+					command: "foo",
+					arguments: ["bar", "baz"],
+					directory: "/path/to/use",
+					environment: {
+						values: {
+							PATH: null,
+							TO_BASH_SCRIPT_EXAMPLE: "example"
+						}
+					}
+				});
+				var lines = script.split("\n");
+				fifty.verify(lines[0]).is("#!/bin/bash");
+				fifty.verify(lines[1]).is("cd /path/to/use");
+				fifty.verify(lines[2]).is("env -u PATH TO_BASH_SCRIPT_EXAMPLE=\"example\" foo bar baz");
+			}
+
+			fifty.tests.invocation.suite = function() {
+				fifty.run(function askpass() {
+					var sudoed = subject.exports(void(0)).sudo({
+						askpass: "/path/to/askpass"
+					})(jsh.shell.Invocation.from.argument({
+						command: "ls"
+					}));
+
+					verify(sudoed).configuration.command.evaluate(String).is("sudo");
+					verify(sudoed).configuration.arguments[0].is("--askpass");
+					verify(sudoed).configuration.arguments[1].is("ls");
+					verify(sudoed).context.environment.SUDO_ASKPASS.is("/path/to/askpass");
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+
+	(
+		function(fifty: slime.fifty.test.Kit) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.listeners);
 				fifty.run(fifty.tests.environment);
 
-				fifty.run(fifty.tests.exports.Tell);
-				fifty.load("invocation.fifty.ts");
+				fifty.run(fifty.tests.jsapi);
 
-				fifty.run(fifty.tests.sandbox);
+				fifty.run(fifty.tests.invocation);
+
+				fifty.run(fifty.tests.exports);
+
+				fifty.load("run.fifty.ts");
+				fifty.load("run-old.fifty.ts");
 			}
 		}
 	//@ts-ignore
 	)(fifty)
+}
+
+namespace slime.jrunscript.shell.internal.invocation {
+	export interface Context {
+		library: {
+			io: slime.jrunscript.io.Exports
+		}
+	}
+}
+
+namespace slime.jrunscript.shell {
+	export namespace invocation {
+		export interface Stdio {
+			input?: slime.jrunscript.runtime.io.InputStream
+			output?: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
+			error?: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
+		}
+
+		export type Input = string | slime.jrunscript.runtime.io.InputStream
+
+		export interface Argument {
+			/**
+			 * The command to run.
+			 */
+			command: string
+
+			/**
+			 * The arguments to supply to the command. If not present, an empty array will be supplied.
+			 */
+			arguments?: string[]
+
+			/**
+			 * The environment to supply to the command. If `undefined`, this process's environment will be provided.
+			 */
+			environment?: {
+				[name: string]: string
+			}
+
+			//	TODO	possibly allow Location
+			/**
+			 * The working directory in which the command will be executed. If not specified, this process's working directory
+			 * will be provided.
+			 */
+			directory?: string
+
+			stdio?: {
+				input?: Input
+				output?: run.OutputCapture
+				error?: run.OutputCapture
+			}
+		}
+
+		export namespace old {
+			export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
+
+			export type OutputStreamToStream = slime.jrunscript.runtime.io.OutputStream
+			export type OutputStreamToString = StringConstructor
+			export type OutputStreamToLines = { line: (line: string) => void }
+			export type OutputStreamConfiguration = OutputStreamToStream | OutputStreamToString | OutputStreamToLines
+
+			/**
+			 * Specifies the standard input, output, and error streams to use for an invocation.
+			 *
+			 * For the output streams:
+			 * * if the global `String` object is used as the value, the stream's output will be captured as a string and returned along with the result of the subprocess.
+			 * * if an object with a `line()` function is used as the value, the output will be buffered and the given object will receive a callback for each line of output.
+			 *
+			 * For the input stream:
+			 * * if the value is a string, that string will be provided on the standard input stream for the subprocess.
+			 */
+			export interface Stdio {
+				output?: OutputStreamConfiguration
+				error?: OutputStreamConfiguration
+				input?: Input
+			}
+
+			/**
+			 * Type used by callers to specify {@link slime.jrunscript.shell.old.Invocation}s, without requiring boilerplate defaults; only the `command`
+			 * property is required.
+			 */
+			export interface Argument {
+				command: slime.jrunscript.shell.invocation.Argument["command"] | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
+				arguments?: Token[]
+				environment?: slime.jrunscript.shell.invocation.Argument["environment"]
+				directory?: slime.jrunscript.file.Directory
+
+				/**
+				 * The standard I/O streams to supply to the subprocess. If unspecified, or if any properties are unspecified,
+				 * defaults will be used. The defaults are:
+				 *
+				 * * `input`: `null`
+				 * * `output`: This process's standard output stream
+				 * * `error`: This process's standard error stream
+				 */
+				stdio?: slime.jrunscript.shell.older.Invocation["stdio"]
+			}
+		}
+	}
+
+	export namespace exports {
+		export interface Invocation {
+			from: {
+				argument: (p: invocation.Argument) => run.old.Invocation
+			}
+
+			/** @deprecated Use `from.argument`. */
+			create: Invocation["from"]["argument"]
+
+			//	TODO	probably should be conditional based on presence of sudo tool
+			/**
+			 * Given settings for `sudo`, converts an invocation into an equivalent invocation that will be run under `sudo`.
+			 *
+			 * @param settings A set of `sudo` settings.
+			 * @returns An invocation that will run the given invocation under `sudo`.
+			 */
+			sudo: (settings: sudo.Settings) => slime.$api.fp.Transform<run.old.Invocation>
+
+			handler: {
+				stdio: {
+					/**
+					 * Creates an event handler that automatically buffers trailing blank lines, so that blank lines created by the
+					 * end of a stream do not produce calls to the event handler.
+					 */
+					line: slime.$api.fp.Transform<slime.$api.event.Handler<slime.jrunscript.shell.run.Line>>
+				}
+			}
+		}
+	}
+
+	export interface Exports {
+		invocation: {
+			 /**
+			  * Creates the code for a `bash` script from a single Invocation-like object and returns it as a string.
+			  */
+			 toBashScript: () => (p: {
+				/**
+				 * The command to execute.
+				 */
+				command: string | slime.jrunscript.file.File
+
+				/**
+				 * Arguments to be sent to the command. If omitted, no arguments will be sent.
+				 */
+				arguments?: string[]
+
+				/**
+				 * The working directory to be used when executing the command. If omitted, the shell's current working directory
+				 * will be used.
+				 */
+				directory?: string | slime.jrunscript.file.Directory
+
+				/**
+				 * Configuration of the environment for the command. If omitted, the command will inherit the environment of the
+				 * invoking shell.
+				 */
+				environment?: {
+					/**
+					 * Whether to include the environment of the invoking shell. If `true`, the command's environment will include
+					 * the environment of the invoking shell. Defaults to `true`.
+					 */
+					inherit?: boolean
+
+					/**
+					 * Environment variables to be provided to the command, or to be removed from the environment of the command.
+					 * Properties with string values represent variables to be provided to the command (potentially overriding
+					 * values from the parent shell). Properties with `null` values represent variables to be **removed** from
+					 * the command's environment (even if they are present in the parent shell). Properties that are undefined
+					 * will have no effect.
+					 */
+					values: {
+						[x: string]: string | null
+					}
+				}
+			 }) => string
+		}
+	}
+
+	export namespace older {
+		/**
+		 * A fully-specified invocation of a command to be run in an external process.
+		 */
+		export interface Invocation {
+			/**
+			 * The command to run.
+			 */
+			command: string
+
+			/**
+			 * The arguments to pass to the command.
+			 */
+			arguments: string[]
+
+			/**
+			 * The environment to pass to the command.
+			 */
+			environment: invocation.Argument["environment"]
+
+			/**
+			 * The working directory to use when running the command.
+			 */
+			directory: slime.jrunscript.file.Directory
+
+			stdio: invocation.old.Stdio
+		}
+	}
+}
+
+namespace slime.jrunscript.shell.internal.invocation {
+	export type Configuration = Pick<slime.jrunscript.shell.invocation.old.Argument, "command" | "arguments">
+
+	export type StdioWithInputFixed = {
+		input: slime.jrunscript.runtime.io.InputStream
+		output: slime.jrunscript.shell.invocation.old.Stdio["output"]
+		error: slime.jrunscript.shell.invocation.old.Stdio["error"]
+	}
+
+	export interface Export {
+		exports: (defaults: shell.run.Parent) => slime.jrunscript.shell.exports.Invocation
+
+		internal: {
+			/**
+			 * Interface that is exposed because the old `run` interface uses it; see `run-old.js`.
+			 */
+			old: {
+				error: {
+					BadCommandToken: slime.$api.error.old.Type<"ArgumentError",{}>
+				}
+				updateForStringInput: (p: slime.jrunscript.shell.invocation.old.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
+
+				toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
+
+				parseCommandToken: {
+					(arg: slime.jrunscript.shell.invocation.old.Token, index?: number, ...args: any[]): string;
+					Error: slime.$api.error.old.Type<"ArgumentError", {}>;
+				}
+
+				isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
+			}
+		}
+
+		invocation: slime.jrunscript.shell.Exports["invocation"]
+	}
+
+	export type Script = slime.loader.Script<Context,Export>
 }

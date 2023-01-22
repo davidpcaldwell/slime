@@ -16,7 +16,7 @@
 	function($api,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return jsh.js;
+				return Boolean(jsh.js);
 			},
 			load: function() {
 				var web = $loader.module("module.js", $loader.file("context.java.js"));

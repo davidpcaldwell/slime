@@ -13,6 +13,7 @@
 	 * @param { slime.loader.Export<slime.$api.Global> } $export
 	 */
 	function($engine,$slime,$export) {
+		/** @type { slime.$api.Global } */
 		var $exports = {};
 
 		var load = function(name,$context) {
@@ -55,8 +56,12 @@
 		var code = {
 			/** @type { slime.loader.Script<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
 			mime: script("mime.js"),
-			/** @type { slime.loader.Script<slime.runtime.internal.events.Context,slime.runtime.internal.events.Export> } */
-			events: script("events.js")
+			/** @type { slime.loader.Script<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
+			events: script("events.js"),
+			/** @type { slime.$api.fp.internal.Script } */
+			Function: script("$api-Function.js"),
+			/** @type { slime.$api.fp.internal.old.Script } */
+			Function_old: script("$api-Function-old.js")
 		};
 
 		Object.assign($exports, load("$api-flag.js"));
@@ -66,9 +71,9 @@
 		});
 
 		(function() {
-			var old = {};
-			Object.assign(old, load("$api-Function-old.js", { deprecate: $exports.deprecate }));
-			Object.assign($exports, load("$api-Function.js", { $api: $exports, events: events, old: old, deprecate: $exports.deprecate }));
+			var old = code.Function_old({ deprecate: $exports.deprecate });
+			var current = code.Function({ $api: $exports, events: events, old: old, deprecate: $exports.deprecate, script: script });
+			Object.assign($exports, { fp: current, Function: old.Function });
 		})();
 
 		$exports.debug = {
@@ -98,98 +103,13 @@
 			}
 		};
 
-		$exports.Filter = Object.assign(
-			function(f) {
-			},
-			{
-				and: void(0),
-				or: void(0),
-				not: void(0),
-				property: void(0)
-			}
-		);
-		$exports.Filter.and = $exports.Function.Predicate.and;
-		$exports.Filter.or = $exports.Function.Predicate.or;
-		$exports.Filter.not = $exports.Function.Predicate.not;
-		$exports.Filter.property = {
-			is: function(name,value) {
-				return function(v) {
-					return v[name] === value;
-				}
-			},
-			equals: function(name,value) {
-				return function(v) {
-					return v[name] == value;
-				}
-			}
-		};
-
-		$exports.Map = {};
-		$exports.Map.property = function(name) {
-			return function(v) {
-				return v[name];
-			};
-		};
-
-		$exports.Reduce = {};
-		$exports.Reduce.sum = function(array,map) {
-			return array.reduce(function(sum,element) {
-				return sum + map(element);
-			},0);
-		};
-
-		$exports.Method = {};
-		$exports.Method.property = function() {
-			var name = arguments;
-			return function() {
-				var rv = this;
-				for (var i=0; i<name.length; i++) {
-					rv = rv[name[i]];
-				}
-				return rv;
-			}
+		$exports.Filter = {
+			and: $exports.deprecate($exports.fp.Predicate.and),
+			or: $exports.deprecate($exports.fp.Predicate.or),
 		};
 
 		$exports.Constructor = {};
 
-		$exports.Constructor.decorated = function(original,decorator) {
-			if (!decorator) return original;
-			var rv = function() {
-				var invokedAsConstructor = this.constructor == arguments.callee;
-				if (false) {
-					var delimited = "";
-					for (var i=0; i<arguments.length; i++) {
-						if (i > 0) {
-							delimited += ",";
-						}
-						delimited += "arguments[" + i + "]";
-					}
-					var defaulted = eval("new original(" + delimited + ")");
-					var decorated = decorator.apply(defaulted,arguments);
-					if (typeof(decorated) == "object" && decorated !== null) {
-						return decorated;
-					}
-					return defaulted;
-				} else {
-					var rv = (invokedAsConstructor) ? this : {};
-					var functions = [original,decorator];
-					for (var i=0; i<functions.length; i++) {
-						if (invokedAsConstructor) {
-							rv.constructor = functions[i];
-						}
-						var returned = functions[i].apply(rv,arguments);
-						if (typeof(returned) == "object" && returned !== null) {
-							rv = returned;
-						}
-					}
-					if (rv != this) return rv;
-				}
-			};
-			rv.toString = function() {
-				return original.toString() + " decorated with " + decorator.toString();
-			}
-			return rv;
-		};
 		$exports.Constructor.invoke = function(p) {
 			if (!p.arguments) p.arguments = [];
 			var code = "new p.constructor(" +
@@ -201,37 +121,21 @@
 			return eval(code);
 		};
 
-		$exports.Constructor.global = function() {
-			var construct = function() {
-				return $exports.Constructor.invoke({
-					constructor: this,
-					arguments: Array.prototype.slice.call(arguments)
-				});
-			};
-
-			if (Object.defineProperty) {
-				Object.defineProperty(
-					Function.prototype,
-					"construct",
-					{
-						value: construct,
-						enumerable: false,
-						writable: true
-					}
-				);
-			} else {
-				//	TODO	or should we refuse to do it? Fail silently? Error?
-				Function.prototype.construct = construct;
-			}
-		}
 		$exports.Key = {};
+		/** @type { slime.$api.Global["Key"]["by"] } */
+		//@ts-ignore
 		$exports.Key.by = function(p) {
+			/** @type { ReturnType<slime.$api.Global["Key"]["by"]> } */
 			var rv = {};
+
 			var create = function(key) {
+				//@ts-ignore
 				rv[key] = (p.count) ? 0 : [];
 			};
+
 			var add = function(key,value) {
 				if (p.count) {
+					//@ts-ignore
 					rv[key]++;
 				} else {
 					rv[key].push(value);
@@ -250,11 +154,14 @@
 					create(toStringKey(key));
 				});
 			}
+
 			p.array.forEach(function(element) {
 				var key = toStringKey(p.key(element));
 				if (!rv[key]) create(key);
 				add(key,element);
 			});
+
+			//@ts-ignore
 			return rv;
 		};
 
@@ -495,10 +402,12 @@
 			return Properties(rv);
 		};
 		$exports.Object.values = {
+			//@ts-ignore
 			map: function(f) {
 				return function(o) {
 					var rv = {};
 					for (var x in o) {
+						//@ts-ignore
 						rv[x] = f(o[x]);
 					}
 					return rv;
@@ -515,17 +424,19 @@
 		}
 
 		$exports.Value = function(v,name) {
-			return new function() {
-				this.property = function() {
-					return $exports.Value($exports.Object.property.apply(v,arguments),((name)?name:"") + "." + Array.prototype.join.call(arguments,"."))
-				};
-
-				this.require = function() {
+			return {
+				require: function() {
 					if (!v) {
 						throw new TypeError(name + " is required");
 					}
-				}
-			}
+				},
+				property: function() {
+					return $exports.Value(
+						$exports.Object.property.apply(v,arguments),
+						( name || "" ) + "." + Array.prototype.join.call(arguments,".")
+					)
+				},
+			};
 		};
 
 		/**
@@ -544,6 +455,20 @@
 				if (this instanceof Subtype) {
 					this.name = p.name;
 					this.message = (typeof(message) == "string") ? message : "";
+					var stack = new Error("__message__").stack;
+					var errorTypePattern = /^Error/;
+					var messagePattern = /__message__/;
+					var isChromeFormat = errorTypePattern.test(stack) && messagePattern.test(stack);
+					if (isChromeFormat) {
+						stack = stack.replace(errorTypePattern, this.name).replace(messagePattern, this.message);
+					} else {
+						//	leave it alone for now
+						//	untested: Rhino, Nashorn, GraalVM, Node.js
+						//	Rhino appears with current implementation to dump the stack without the type / message fields, but this
+						//	may be affected by our code intercepting it; Rhino's underlying code may have changed
+						//	TODO	get these tested
+					}
+					this.stack = stack;
 					Object.assign(this, properties);
 				} else {
 					return new Subtype(message);
@@ -551,7 +476,7 @@
 			}
 			Subtype.prototype = $exports.debug.disableBreakOnExceptionsFor(function() {
 				var rv = new Supertype();
-				delete rv.stack;
+				//delete rv.stack;
 				return rv;
 			})();
 			var rv = Subtype;
@@ -563,17 +488,51 @@
 		};
 
 		$exports.Error = {
-			//	TODO	see whether we can get rid of this
-			//@ts-ignore
-			Type: ErrorType
+			old: {
+				//	TODO	see whether we can get rid of this
+				//@ts-ignore
+				Type: ErrorType,
+				/** @type { slime.$api.Global["Error"]["old"]["isType"] } */
+				isType: function(type) {
+					//@ts-ignore
+					return function(e) {
+						return e instanceof type;
+					}
+				}
+			},
+			/** @type { slime.$api.Global["Error"]["type"] } */
+			type: function(p) {
+				var CustomError = function(properties) {
+					var invokedAsConstructor = this instanceof CustomError;
+					if (invokedAsConstructor) {
+						this.name = p.name;
+						this.message = p.getMessage(properties);
+						var stack = new Error("__message__").stack;
+						var elements = stack.split("\n");
+						if (elements[0] == "Error: __message__") {
+							elements[0] = this.message;
+							stack = elements.join("\n");
+						}
+						this.stack = stack;
+						this.properties = properties;
+					} else {
+						return new CustomError(properties);
+					}
+				}
+				var prototypeFactory = p.extends || Error;
+				CustomError.prototype = Object.assign(prototypeFactory(), { properties: void(0) });
+				return CustomError;
+			}
 		}
 
+		$exports.events = events.api;
+
 		$exports.Events = Object.assign(
-			events.create,
+			$exports.deprecate(events.api.create),
 			{
-				Function: events.Function,
-				toHandler: events.toHandler,
-				action: events.action
+				Function: $exports.deprecate(events.api.Function),
+				toHandler: $exports.deprecate(events.api.toListener),
+				action: $exports.deprecate(events.api.action)
 			}
 		);
 
@@ -584,13 +543,10 @@
 			return $exports;
 		})($exports);
 
-		/** @type { slime.$api.mime.Export } */
-		var mime = code.mime({
-			Function: $exports.Function,
+		$exports.mime = code.mime({
+			Function: $exports.fp,
 			deprecate: $exports.deprecate
 		});
-
-		$exports.mime = mime;
 
 		//	TODO	we can refactor typechecking another day; for now we know this works
 		//@ts-ignore

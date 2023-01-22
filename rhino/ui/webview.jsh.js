@@ -4,9 +4,13 @@
 //
 //	END LICENSE
 
-var parameters = jsh.script.getopts({
-	options: {
-		servlet: jsh.file.Pathname
+(
+	function() {
+		var parameters = jsh.script.getopts({
+			options: {
+				servlet: jsh.file.Pathname
+			}
+		});
+		jsh.ui.javafx.WebView.application({ servlet: parameters.options.servlet.file });
 	}
-});
-jsh.ui.javafx.WebView.application({ servlet: parameters.options.servlet.file });
+)();

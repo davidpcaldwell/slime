@@ -45,7 +45,7 @@
 		};
 
 		/**
-		 * @param { { directory?: slime.jrunscript.file.Directory, loader?: slime.Loader, prefix: string } } p
+		 * @param { { directory?: slime.jrunscript.file.Directory, loader?: slime.old.Loader, prefix: string } } p
 		 */
 		var Mapping = function(p) {
 			if (p.directory) {

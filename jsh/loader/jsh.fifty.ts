@@ -5,15 +5,52 @@
 //	END LICENSE
 
 namespace slime.jsh {
+	export namespace plugin {
+		export interface $slime extends slime.jrunscript.runtime.Exports, slime.jsh.loader.EngineSpecific {
+			getSystemProperty(name: string): string
+			getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+			getInvocation(): slime.jrunscript.native.inonit.script.jsh.Shell.Invocation
+
+			getPackaged(): slime.jrunscript.native.inonit.script.jsh.Shell.Packaged
+
+			plugins: {
+				mock: slime.jsh.loader.internal.plugins.Export["mock"]
+			}
+
+			loader: slime.jrunscript.runtime.Exports["old"]["loader"]
+				& slime.jrunscript.runtime.Exports["loader"]
+				& {
+					getLoaderScript(path: string): any
+				}
+
+			/**
+			 * Returns a `java.io.File` representing a file location relative to the `jsh` library location.
+			 *
+			 * @param path A relative path.
+			 */
+			getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File
+			getInterface(): slime.jrunscript.native.inonit.script.jsh.Shell.Interface
+			getSystemProperties(): slime.jrunscript.native.java.util.Properties
+			getStdio(): Stdio
+		}
+	}
+
 	export namespace loader {
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
-				fifty.tests.exports = {};
+				fifty.tests.loader = {};
+				fifty.tests.loader.exports = fifty.test.Parent();
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface EngineSpecific {
+			//	provided by engine-specific rhino.js and nashorn.js
+			exit: any
+			jsh: any
+		}
 
 		/**
 		 * A script to be executed. Can be a {@link slime.resource.Descriptor} which fully describes the code to be executed, but
@@ -36,10 +73,9 @@ namespace slime.jsh {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				var verify = fifty.verify;
-				var tests = fifty.tests;
 				var jsh = fifty.global.jsh;
 
 				type exports = { foo: string }
@@ -47,17 +83,17 @@ namespace slime.jsh {
 				type pathsExports = { a: number }
 				type pathsFileExports = { value: string }
 
-				tests.exports.module = function() {
-					var byFullPathname: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code/module.js"));
+				fifty.tests.loader.exports.module = function() {
+					var byFullPathname: exports = jsh.loader.module(fifty.jsh.file.object.getRelativePath("test/code/module.js"));
 					verify(byFullPathname).foo.is("bar");
 
-					var byModulePathname: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code"));
+					var byModulePathname: exports = jsh.loader.module(fifty.jsh.file.object.getRelativePath("test/code"));
 					verify(byModulePathname).foo.is("bar");
 
-					var byModuleFile: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code/module.js").file);
+					var byModuleFile: exports = jsh.loader.module(fifty.jsh.file.object.getRelativePath("test/code/module.js").file);
 					verify(byModuleFile).foo.is("bar");
 
-					var byModuleDirectory: exports = jsh.loader.module(fifty.$loader.getRelativePath("test/code").directory);
+					var byModuleDirectory: exports = jsh.loader.module(fifty.jsh.file.object.getRelativePath("test/code").directory);
 					verify(byModuleDirectory).foo.is("bar");
 
 					var paths: {
@@ -78,7 +114,7 @@ namespace slime.jsh {
 					} = (function() {
 						var result = jsh.shell.jsh({
 							shell: jsh.shell.jsh.src,
-							script: fifty.$loader.getRelativePath("test/jsh-loader-code/main.jsh.js").file,
+							script: fifty.jsh.file.object.getRelativePath("test/jsh-loader-code/main.jsh.js").file,
 							stdio: {
 								output: String
 							}
@@ -109,7 +145,11 @@ namespace slime.jsh {
 			 */
 			plugins: (p: slime.jrunscript.file.Directory | slime.jrunscript.file.Pathname | slime.Loader) => void
 			addFinalizer: any
-			java: any
+			java: {
+				toString: () => string
+				add: (pathname: slime.jrunscript.file.Pathname) => void
+				getClass: (name: any) => any
+			}
 			worker: any
 			kotlin: {
 				/**
@@ -126,55 +166,85 @@ namespace slime.jsh {
 					}
 				) => any
 			}
+			synchronous: slime.runtime.loader.Exports["synchronous"]
 		}
-
-		(
-			function(
-				fifty: slime.fifty.test.kit
-			) {
-				fifty.tests.suite = function() {
-					fifty.run(fifty.tests.exports.module);
-				}
-			}
-		//@ts-ignore
-		)(fifty);
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			var global = function(built: boolean) {
+				var result = $api.fp.world.now.question(
+					jsh.shell.subprocess.question,
+					{
+						command: "bash",
+						arguments: $api.Array.build(function(rv: string[]) {
+							rv.push("jsh.bash");
+							if (built) rv.push("jsh/test/tools/run-in-built-shell.jsh.js");
+							rv.push("jsh/loader/test/global-scope.jsh.js");
+							return rv;
+						}),
+						stdio: {
+							output: "string"
+						},
+						directory: jsh.shell.jsh.src.toString()
+					}
+				);
+				verify(result).status.is(0);
+				jsh.shell.console(result.stdio.output);
+				var json = JSON.parse(result.stdio.output) as string[];
+				verify(json).length.is(1);
+				verify(json)[0].is("jsh");
+			};
+
+			var plugin = function() {
+				var result = $api.fp.world.now.question(
+					jsh.shell.subprocess.question,
+					{
+						command: "bash",
+						arguments: $api.Array.build(function(rv: string[]) {
+							rv.push("jsh.bash");
+							rv.push("jsh/loader/test/plugin-scope.jsh.js");
+							return rv;
+						}),
+						stdio: {
+							output: "string"
+						},
+						directory: jsh.shell.jsh.src.toString()
+					}
+				);
+				verify(result).status.is(0);
+				jsh.shell.console(result.stdio.output);
+				var json = JSON.parse(result.stdio.output) as { $host: string };
+				verify(json).$host.is("undefined");
+			};
+
+			fifty.tests.scope = function() {
+				global(false);
+				global(true);
+				plugin();
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.scope);
+				fifty.run(fifty.tests.loader.exports);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Global {
 		loader: slime.jsh.loader.Exports
-	}
-}
-
-namespace slime.jsh.plugin {
-	export interface EngineSpecific {
-		//	provided by engine-specific rhino.js and nashorn.js
-		exit: any
-		jsh: any
-	}
-
-	export interface Stdio {
-		getStandardInput(): slime.jrunscript.native.java.io.InputStream
-		getStandardOutput(): slime.jrunscript.native.java.io.PrintStream
-		getStandardError(): slime.jrunscript.native.java.io.PrintStream
-	}
-
-	export interface $slime extends slime.jrunscript.runtime.Exports, EngineSpecific {
-		getSystemProperty(name: string): string
-		getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-		getInvocation(): slime.jrunscript.native.inonit.script.jsh.Shell.Invocation
-
-		getPackaged(): slime.jrunscript.native.inonit.script.jsh.Shell.Packaged
-
-		plugins: {
-			mock: slime.jsh.loader.internal.plugins.Export["mock"]
-		}
-
-		loader: slime.jrunscript.runtime.Exports["loader"] & {
-			getLoaderScript(path: string): any
-		}
-		getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File
-		getInterface(): any
-		getSystemProperties(): slime.jrunscript.native.java.util.Properties
-		getStdio(): Stdio
 	}
 }

@@ -4,77 +4,100 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
-		$exports.Function = $context.deprecate(function() {
-			var UNDEFINED = {};
+	/**
+	 *
+	 * @param { slime.$api.fp.internal.old.Context } $context
+	 * @param { slime.$api.fp.internal.old.Exports } $exports
+	 */
+	function($context,$exports) {
+		$exports.Function = Object.assign(
+			$context.deprecate(function() {
+				var UNDEFINED = {};
 
-			var Result = function() {
-				this.resolve = function() {
-					if (this.error) {
-						throw this.throwing;
-					} else {
-						if (this.returning === UNDEFINED) return void(0);
-						return this.returning;
+				var Result = function() {
+					this.error = void(0);
+					this.throwing = void(0);
+					this.returning = void(0);
+
+					this.resolve = function() {
+						if (this.error) {
+							throw this.throwing;
+						} else {
+							if (this.returning === UNDEFINED) return void(0);
+							return this.returning;
+						}
+					};
+				};
+
+				var Situation = function() {
+					var result = new Result();
+
+					this.target = arguments[0];
+					this.arguments = arguments[1];
+
+					this.setReturn = function(v) {
+						result.error = false;
+						result.returning = v;
+					};
+
+					this.setThrow = function(v) {
+						result.error = true;
+						result.throwing = v;
+					};
+
+					this.result = result;
+
+					this.resolve = function() {
+						return result.resolve();
+					};
+				};
+
+				var components = [];
+
+				if (arguments.length != 1) {
+					throw new TypeError("$api.Function expected 1 argument.");
+				} else {
+					components.push(new $exports.Function.Basic(arguments[0]));
+				}
+
+				var rv = function() {
+					var situation = new Situation(this,Array.prototype.slice.call(arguments));
+					components.forEach(function(component) {
+						component.call(situation);
+					});
+					return situation.resolve();
+				};
+
+				rv.prepare = function() {
+					for (var i=0; i<arguments.length; i++) {
+						components.splice(i,0,new $exports.Function.Prepare(arguments[i]));
 					}
-				};
-			};
-
-			var Situation = function() {
-				var result = new Result();
-
-				this.target = arguments[0];
-				this.arguments = arguments[1];
-
-				this.setReturn = function(v) {
-					result.error = false;
-					result.returning = v;
-				};
-
-				this.setThrow = function(v) {
-					result.error = true;
-					result.throwing = v;
-				};
-
-				this.result = result;
-
-				this.resolve = function() {
-					return result.resolve();
-				};
-			};
-
-			var components = [];
-
-			if (arguments.length != 1) {
-				throw new TypeError("$api.Function expected 1 argument.");
-			} else {
-				components.push(new $exports.Function.Basic(arguments[0]));
-			}
-
-			var rv = function() {
-				var situation = new Situation(this,Array.prototype.slice.call(arguments));
-				components.forEach(function(component) {
-					component.call(situation);
-				});
-				return situation.resolve();
-			};
-
-			rv.prepare = function() {
-				for (var i=0; i<arguments.length; i++) {
-					components.splice(i,0,new $exports.Function.Prepare(arguments[i]));
+					return this;
 				}
-				return this;
-			}
 
-			rv.revise = function() {
-				for (var i=0; i<arguments.length; i++) {
-					components.push(new $exports.Function.Revise(arguments[i]));
+				rv.revise = function() {
+					for (var i=0; i<arguments.length; i++) {
+						components.push(new $exports.Function.Revise(arguments[i]));
+					}
+					return this;
 				}
-				return this;
-			}
 
-			return rv;
-		});
+				return rv;
+			}),
+			{
+				preprocessing: void(0),
+				postprocessing: void(0),
+				value: void(0),
+				mutating: void(0),
+				Basic: void(0),
+				Revise: void(0),
+				Prepare: void(0),
+				singleton: void(0),
+				set: void(0)
+			}
+		);
 
 		$exports.Function.preprocessing = $context.deprecate(function(f,preprocessor) {
 			return function() {
@@ -88,29 +111,6 @@
 			}
 		});
 
-		$exports.Function.postprocessing = $context.deprecate(function(f,postprocessor) {
-			//	TODO	may want to think through whether to give postprocessor the ability to handle exceptions
-			var UNDEFINED = $exports.Function.value.UNDEFINED;
-			var rv = function() {
-				var returned = f.apply(this,arguments);
-				var rv = postprocessor({
-					target: this,
-					arguments: Array.prototype.slice.call(arguments),
-					returned: returned
-				});
-				if (typeof(rv) != "undefined") {
-					returned = (rv == UNDEFINED) ? void(0) : rv;
-				}
-				return returned;
-			};
-			for (var x in f) {
-				//  TODO    check to see what these properties are
-				rv[x] = f[x];
-			}
-			//  TODO    consider altering rv.toString()
-			return rv;
-		});
-
 		$exports.Function.value = {
 			UNDEFINED: {
 				toString: function() {
@@ -120,17 +120,16 @@
 		};
 		$context.deprecate($exports.Function, "value");
 
-		$exports.Function.postprocessing.UNDEFINED = $exports.Function.value.UNDEFINED;
-		$context.deprecate($exports.Function.postprocessing, "UNDEFINED");
-
 		$exports.Function.mutating = $context.deprecate(function(v) {
 			var implementation;
 			if (typeof(v) == "function") {
 				var mutator = v;
-				implementation = $exports.Function.postprocessing(mutator, function(result) {
-					if (result.returned === $exports.Function.value.UNDEFINED) return result.returned;
-					if (typeof(result.returned) == "undefined") return result.arguments[0];
-				});
+				implementation = function(value) {
+					var returned = mutator(value);
+					if (returned === $exports.Function.value.UNDEFINED) return void(0);
+					if (typeof(returned) == "undefined") return value;
+					return returned;
+				}
 			} else if (typeof(v) == "object" && v) {
 				implementation = function() {
 					return v;
@@ -202,4 +201,5 @@
 			};
 		});
 	}
-)();
+//@ts-ignore
+)($context,$exports);

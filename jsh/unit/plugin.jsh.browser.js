@@ -9,10 +9,11 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
-	 * @param { any } $exports
+	 * @param { slime.jsh.unit.Exports["browser"] } $exports
 	 */
-	function(Packages,jsh,$exports) {
+	function(Packages,$api,jsh,$exports) {
 		$exports.Modules = function(slime,pathnames) {
 			var common = (function() {
 				var isCommonAncestor = function(directory,list) {
@@ -48,7 +49,7 @@
 				var successUrl = (p.interactive) ? null : slimepath + "loader/browser/test/success";
 
 				var startServer = function(p) {
-					var tomcat = new jsh.httpd.Tomcat({
+					var tomcat = jsh.httpd.Tomcat({
 						port: p.port
 					});
 					var parameters = {
@@ -188,7 +189,7 @@
 
 			var on = {
 				start: function(p) {
-					new lock.Waiter({
+					lock.Waiter({
 						until: function() {
 							return true;
 						},
@@ -226,7 +227,7 @@
 						p.open(on)(uri);
 					}
 				});
-				var returner = new lock.Waiter({
+				var returner = lock.Waiter({
 					until: function() {
 						return Boolean(opened);
 					},
@@ -330,7 +331,7 @@
 					uri: url.toString(),
 					on: {
 						start: function(p) {
-							new lock.Waiter({
+							lock.Waiter({
 								until: function() {
 									return true;
 								},
@@ -348,7 +349,7 @@
 						}
 					}
 				});
-				var returner = new lock.Waiter({
+				var returner = lock.Waiter({
 					until: function() {
 						return Boolean(opened);
 					},
@@ -360,7 +361,10 @@
 			};
 		};
 
-		$exports.installed = [];
+		/** @type { { [id: string]: slime.jsh.unit.old.Browser } } */
+		var browsers = {};
+
+		$exports.installed = Object.assign([], browsers);
 
 		var addBrowser = function(id,value) {
 			$exports.installed.push(value);
@@ -388,6 +392,263 @@
 
 		//	Linux
 		add("Firefox", "/usr/bin/firefox");
+
+		var local = (
+			/**
+			 *
+			 * @returns { slime.jsh.unit.Exports["browser"]["local"] }
+			 */
+			function local() {
+				/**
+				 *
+				 * @param { slime.jsh.unit.internal.browser.Configuration } configuration
+				 * @returns { slime.jsh.unit.Browser }
+				 */
+				var Browser = function(configuration) {
+					var process;
+					return {
+						open: function(p) {
+							jsh.java.Thread.start(function() {
+								$api.fp.world.now.action(
+									jsh.shell.world.action,
+									jsh.shell.Invocation.from.argument({
+										command: configuration.program,
+										arguments: configuration.arguments.concat([p.uri])
+									}),
+									{
+										start: function(e) {
+											process = e.detail;
+										}
+									}
+								);
+							});
+						},
+						close: function() {
+							process.kill();
+						}
+					}
+				}
+
+				var Firefox = function(configuration) {
+					var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					return Browser({
+						program: configuration.program,
+						arguments: $api.Array.build(function(rv) {
+							rv.push("-no-remote");
+							rv.push("-profile", PROFILE.toString())
+						})
+					});
+				};
+
+				var Safari = (
+					function() {
+						var executable = "/Applications/Safari.app/Contents/MacOS/Safari";
+						var application = "/Applications/Safari.app";
+
+						var getSafariProcess = function() {
+							if (jsh.shell.os.name != "Mac OS X") return null;
+							var processes = jsh.shell.os.process.list();
+							var safaris = processes.filter(function(process) {
+								return process.command == executable;
+							});
+							return (safaris.length) ? safaris[0] : null;
+						};
+
+						/**
+						 * @return { slime.jsh.unit.Browser }
+						 */
+						var Safari = function() {
+							var safariWas;
+
+							return {
+								open: function(p) {
+									safariWas = getSafariProcess();
+									jsh.shell.console("Safari open ...");
+									jsh.shell.run({
+										command: "open",
+										arguments: $api.Array.build(function(rv) {
+											rv.push("-a", application);
+											rv.push(p.uri);
+										})
+									})
+								},
+								close: function() {
+									if (!safariWas) {
+										var process = getSafariProcess();
+										if (process) process.kill();
+									}
+								}
+							}
+						};
+
+						return Safari;
+					}
+				)();
+
+				/** @type { slime.jsh.unit.Exports["browser"]["local"]["Chrome"] } */
+				var Chrome = function(configuration) {
+					var chrome = new jsh.shell.browser.chrome.Instance({
+						location: jsh.file.object.pathname(
+							jsh.file.world.spi.filesystems.os.pathname(configuration.user)
+						),
+						devtools: configuration.devtools
+					});
+
+					/** @type { { kill: any } } */
+					var process;
+					return {
+						//name: "Google Chrome",
+						open: function(p) {
+							var browserThread = jsh.java.Thread.start(function() {
+								try {
+									chrome.run({
+										//	TODO	enhance chrome.run so it can take a Url object rather than just a string
+										uri: p.uri,
+										arguments: (configuration.debugPort) ? ["--remote-debugging-port=" + configuration.debugPort ] : [],
+										on: {
+											start: function(p) {
+												//jsh.shell.console("In plugin.jsh.browser, Chrome subprocess started (PID: " + p.pid + ")");
+												process = p;
+											}
+										}
+									});
+								} catch (e) {
+									jsh.shell.console(e.stack);
+								}
+							});
+						},
+						close: function() {
+							process.kill();
+						}
+					}
+				}
+
+				return {
+					Chrome: Chrome,
+					Firefox: Firefox,
+					Safari: Safari
+				}
+			}
+		)();
+
+		$exports.local = local;
+
+		var selenium = (
+			/**
+			 *
+			 * @returns { slime.jsh.unit.Exports["browser"]["selenium"] }
+			 */
+			function() {
+				/**
+				 * The `jsh` shell uses the Java system properties as a convenient global storage location, and puts its own
+				 * streams into properties to communicate between, if memory servers, the launcher and loader. This could perhaps
+				 * be refactored so that they were stored in a class loaded by a shared classloader, or a ThreadLocal, or something,
+				 * but for now they're there. And the Selenium remote driver loops through system properties, assuming they're
+				 * strings, and does something with them. So we need to remove these streams before creating the RemoteWebDriver
+				 * and replace them afterward (this second part is probably not necessary, as the system property stream references
+				 * are probably only used at startup,  but seems like good hygiene)
+				 * @returns
+				 */
+				var SystemPropertyStreams = function() {
+					//	TODO	remove need for the property manipulation by patching Selenium or transferring these global
+					//			properties to be in the inonit.script.jsh.Main Java class itself; would they be available where
+					//			needed?
+					//	TODO	extend Properties to properly include superclass methods?
+					/** @type { any } */
+					var _properties = Packages.java.lang.System.getProperties();
+					var saved = {};
+					var streams = ["stdin", "stdout", "stderr"];
+
+					return {
+						remove: function() {
+							streams.forEach(function(name) {
+								saved[name] = _properties.get("inonit.script.jsh.Main." + name);
+								_properties.remove("inonit.script.jsh.Main." + name);
+							});
+						},
+						replace: function() {
+							streams.forEach(function(name) {
+								_properties.put("inonit.script.jsh.Main." + name, saved[name]);
+							})
+						}
+					}
+				}
+
+				/**
+				 *
+				 * @param { slime.fifty.browser.test.internal.script.SeleniumChrome } [configuration]
+				 * @returns { slime.jsh.unit.Browser }
+				 */
+				var FiftySeleniumChrome = function(configuration) {
+					jsh.shell.tools.selenium.load();
+					var _driver;
+					return {
+						open: function(p) {
+							var _options = new Packages.org.openqa.selenium.chrome.ChromeOptions();
+							_driver = new Packages.org.openqa.selenium.chrome.ChromeDriver(_options);
+							_driver.get(p.uri);
+						},
+						close: function() {
+							_driver.quit();
+						}
+					}
+				};
+
+				/**
+				 *
+				 * @param { { host: string, port: number }} configuration
+				 * @param { slime.jrunscript.native.org.openqa.selenium.Capabilities } _capabilities
+				 */
+				var RemoteSelenium = function(configuration, _capabilities) {
+					var _driver;
+					return {
+						open: function(p) {
+							var streams = SystemPropertyStreams();
+							streams.remove();
+							_driver = new Packages.org.openqa.selenium.remote.RemoteWebDriver(
+								new Packages.java.net.URL("http://" + configuration.host + ":" + configuration.port + "/wd/hub"),
+								_capabilities
+							);
+							streams.replace();
+							_driver.get(p.uri);
+						},
+						close: function() {
+							_driver.quit();
+						}
+					}
+				}
+
+				/** @type { slime.jsh.unit.Exports["browser"]["selenium"]["remote"]["Chrome"] } */
+				var RemoteSeleniumChrome = function(configuration) {
+					jsh.shell.tools.selenium.load();
+					return RemoteSelenium(
+						configuration,
+						new Packages.org.openqa.selenium.chrome.ChromeOptions()
+					);
+				}
+
+				/** @type { slime.jsh.unit.Exports["browser"]["selenium"]["remote"]["Firefox"] } */
+				var RemoteSeleniumFirefox = function(configuration) {
+					jsh.shell.tools.selenium.load();
+					var rv = RemoteSelenium(
+						configuration,
+						new Packages.org.openqa.selenium.firefox.FirefoxOptions()
+					);
+					//rv.close = function() {};
+					return rv;
+				}
+
+				return {
+					Chrome: FiftySeleniumChrome,
+					remote: {
+						Chrome: RemoteSeleniumChrome,
+						Firefox: RemoteSeleniumFirefox
+					}
+				}
+			}
+		)();
+
+		$exports.selenium = selenium;
 	}
 //@ts-ignore
-)(Packages,jsh,$exports);
+)(Packages,$api,jsh,$exports);

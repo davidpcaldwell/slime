@@ -5,14 +5,6 @@
 //	END LICENSE
 
 namespace slime.definition.verify {
-	type BooleanSubject = {
-		is: {
-			(t: boolean): void
-			type: (name: string) => void
-			not: (t: boolean) => void
-		}
-	}
-
 	/**
 	 * Allows evaluating an arbitrary function with this subject's underlying value as an argument, and returning its result as a new
 	 * {@link Subject}.
@@ -22,63 +14,109 @@ namespace slime.definition.verify {
 	 * * `.threw.type(type)`, which asserts that a subtype of `type` was thrown
 	 * * `.threw.nothing()`, which asserts that nothing was thrown.
 	 */
-	type evaluate<T> = {
+	export type evaluate<T> = {
 		<R>(f: (t: T) => R): Subject<R> & {
 			threw: Subject<Error> & {
 				type: <E extends ErrorConstructor>(type: E) => void
 				nothing: () => void
 			}
 		}
+
+		/**
+		 * Allows evaluating an arbitrary property of the given value in order to create a {@link Subject} wrapping that value.
+		 * Although `Subject`s can already do this directly using {@link TargetSubject}, the `property` method has two additional
+		 * uses:
+		 *
+		 * 1. It can be used even if the value of the property is `undefined`,
+		 * 1. It can be used even on non-enumerable properties.
+		 */
 		property: any
+		//	TODO	this didn't work for some reason; should revisit
+		//property: (k: any) => Subject<any>
+		//	TODO	this didn't work for some reason; should revisit
+		//property: <K extends keyof T>(k: K) => Subject<T[K]>
 	}
 
-	type is<T> = {
+	export type is<T> = {
 		/**
 		 * Asserts that the subject value is === to the given value.
 		 */
 		(t: T): void
+
+		/**
+		 * Asserts that the subject value is of the given type. Types are the same as those given by the `typeof` JavaScript
+		 * operator, except that `null` has the type `"null"` (rather than JavaScript `typeof null`, which is `"object"`).
+		 */
 		type: (name: string) => void
+
 		not: {
+			/**
+			 * Asserts that the subject value is !== to the given value.
+			 */
 			(t: T): void
-			equalTo: any
+
+			/**
+			 * Asserts that the subject value is != to the given value.
+			 */
+			equalTo: (t: T) => void
 		}
 	}
 
-	type ValueSubject<T> = {
-		is: is<T>
-
-		evaluate: evaluate<T>
-	} & (
-		T extends Array<any> ? { length: Subject<number> } : {}
-	)
-
-	type MethodSubject<T extends (...args: any) => any> = {
+	/**
+	 * Methods that support assertions on {@link Subject}s.
+	 */
+	export type AssertSubject<T> = {
 		is: is<T>
 		evaluate: evaluate<T>
+	}
 
+	/**
+	 * Provides a {@link Subject} for each property of a given `Subject`'s value.
+	 */
+	export type TargetSubject<T> = {
+		[K in keyof T]: Subject<T[K]>
+	}
+
+	/**
+	 * For a {@link Subject} that is a function, makes the `Subject` callable and returns a `Subject` wrapping the return value of
+	 * the call.
+	 */
+	export type MethodSubject<T extends (...args: any) => any> = AssertSubject<T> & {
 		//	TODO	could we build the .threw stuff into MethodSubject as well?
 		(...p: Parameters<T>): Subject<ReturnType<T>>
 	}
 
-	type Subject<T> = (
-		(
+	/**
+	 * A `Subject` represents a value about which assertions can be made. A `Subject` has `is` and `evaluate` properties provided by
+	 * {@link AssertSubject}, as well as (if it is an object) a `Subject` property for each of its value's enumerable properties,
+	 * provided by {@link TargetSubject}. If it is a function, it also provides a function that invokes it and returns a `Subject`
+	 * representing the value returned. If the value is an array, the `Subject` will also have a length property of type
+	 * `Subject<number>` which represents the length of the array.
+	 */
+	export type Subject<T> = (
+		TargetSubject<T>
+		& (
+			//	As of 4.7.3 (and seemingly for some time before that), TypeScript is decomposing the boolean type into true | false,
+			//	which causes problems in the .is() method from AssertSubject, at least. So we handle booleans as a special case,
+			//	here and in the Verify type.
 			T extends Boolean
-			? BooleanSubject
+			? AssertSubject<boolean>
 			: (
 				T extends (...args: any) => any
 				? MethodSubject<T>
-				: ValueSubject<T>
+				: T extends Array<any>
+					? AssertSubject<T> & { length: Subject<number> }
+					: AssertSubject<T>
 			)
 		)
-		& { [K in keyof T]: Subject<T[K]> }
 	)
 
 	/**
 	 * A function that returns a {@link Subject}, which supports a convenient API for making assertions about a subject value.
-	 * Practical examples can be found in the [`slime.definnition.verify` tests](../src/loader/api/verify.fifty.ts?as=text).
+	 * Practical examples can be found in the [`slime.definition.verify` tests](../src/loader/api/verify.fifty.ts?as=text).
 	 */
 	export type Verify = {
-		<T>(value: boolean, name?: string, lambda?: (it: BooleanSubject) => void): BooleanSubject
+		<T>(value: boolean, name?: string, lambda?: (it: Subject<boolean>) => void): Subject<boolean>
 		<T>(value: T, name?: string, lambda?: (it: Subject<T>) => void): Subject<T>
 	}
 
@@ -94,7 +132,7 @@ namespace slime.definition.verify {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.primitivesCanHaveEvaluateCalled = function() {
 				fifty.verify(2,"2").evaluate(function(p) { return p * 2; }).is(4);

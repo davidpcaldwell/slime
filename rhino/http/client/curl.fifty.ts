@@ -20,17 +20,60 @@ namespace slime.jrunscript.http.client.curl {
 		library: {
 			io: slime.jrunscript.io.Exports
 			shell: slime.jrunscript.shell.Exports
+			web: slime.web.Exports
 		}
 	}
 
-	export type Exports = slime.jrunscript.http.client.Exports["world"]["request"]
+	export type Exports = (configuration?: {
+		unixSocket?: string
+	}) => slime.jrunscript.http.client.Exports["world"]["request"]
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.suite = function() {
+			const { $api, jsh } = fifty.global;
 
+			var script: Script = fifty.$loader.script("curl.js");
+
+			var api = script({
+				console: jsh.shell.console,
+				library: {
+					web: jsh.web,
+					io: jsh.io,
+					shell: jsh.shell
+				}
+			});
+
+			fifty.tests.lab = function() {
+				var subject = api();
+				fifty.load("spi.fifty.ts", "types.Implementation", subject);
+			}
+
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.docker = function() {
+				var implementation = api({
+					unixSocket: "/var/run/docker.sock"
+				});
+				var response = $api.fp.world.input(implementation({
+					request: {
+						method: "GET",
+						url: jsh.web.Url.codec.string.decode("http://docker.local.unix/info"),
+						headers: []
+					},
+					timeout: {
+						connect: void(0),
+						read: void(0)
+					}
+				}))();
+				jsh.shell.console("status = " + response.status);
+				jsh.shell.console("headers = " + JSON.stringify(response.headers));
+				jsh.shell.console("stream = " + JSON.stringify(JSON.parse(response.stream.character().asString()), void(0), 4));
+			}
+
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.lab);
 			}
 		}
 	//@ts-ignore

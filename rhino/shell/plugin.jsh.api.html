@@ -91,16 +91,6 @@ END LICENSE
 		</script>
 		<div class="type" jsapi:replace="getApi('api.html').getElement('types.stdio')">
 		</div>
-		<div class="type">
-			<a class="type" name="types.consolei">console input</a>
-			<span class="type">supports <a href="../../jrunscript/io/api.html#types.binput">byte input stream</a></span>
-			<span class="type">supports <a href="../../jrunscript/io/api.html#types.cinput">character input stream</a></span>
-		</div>
-		<div class="type">
-			<a class="type" name="types.consoleo">console output</a>
-			<span class="type">supports <a href="../../jrunscript/io/api.html#types.boutput">byte output stream</a></span>
-			<span class="type">supports <a href="../../jrunscript/io/api.html#types.coutput">character output stream</a></span>
-		</div>
 		<!--
 			TODO	the below does not work for unknown reason
 			<div jsapi:reference="getApi('api.html').getElement('types.stdio')">
@@ -110,85 +100,6 @@ END LICENSE
 		<ul>
 			<li jsapi:replace="window.slime.definition.inherited()">
 
-			</li>
-			<li class="value" jsapi:id="stdio">
-				<div class="name">stdio</div>
-				<span class="type"><a href="api.html#types.stdio">stdio</a></span>
-				<span>The standard I/O streams for this shell.</span>
-				<script type="application/x.jsapi#tests">
-					test(typeof(module.stdio.output.write) == "function");
-					test(typeof(module.stdio.output.close) == "function");
-				</script>
-				<script type="application/x.jsapi#tests">
-					test(typeof(module.stdio.error.write) == "function");
-					test(typeof(module.stdio.error.close) == "function");
-				</script>
-				<script type="application/x.jsapi#tests" jsapi:id="1">
-					var NASHORN_DEPRECATION_WARNING = "Warning: Nashorn engine is planned to be removed from a future JDK release";
-					var one = jsh.shell.jsh({
-						shell: $jsapi.environment.jsh.built.home,
-						script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/stdio.1.jsh.js"),
-						stdio: {
-							output: String,
-							error: String
-						},
-						evaluate: function(result) {
-							return {
-								output: result.stdio.output,
-								error: result.stdio.error.split("\n").filter(function(line) {
-									return line != NASHORN_DEPRECATION_WARNING;
-								}).join("\n")
-							}
-						}
-					});
-					verify(one).output.is("Hello, World!");
-					verify(one).error.is("Hello, tty!");
-				</script>
-				<script type="application/x.jsapi#initialize">
-					scope.input_abcdefghij = "ABCDEFGHIJ";
-					scope.getScriptOutput = function(p) {
-						return jsh.shell.jsh({
-							shell: $jsapi.environment.jsh.built.home,
-							script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/" + p.script),
-							stdio: {
-								input: p.input,
-								output: String
-							},
-							evaluate: function(result) {
-								return result.stdio.output;
-							}
-						})
-					};
-				</script>
-				<script type="application/x.jsapi#tests" jsapi:id="2">
-					var output = getScriptOutput({
-						script: "stdio.2.jsh.js",
-						input: input_abcdefghij
-					});
-					verify(output).is(input_abcdefghij);
-				</script>
-				<script type="application/x.jsapi#tests" jsapi:id="3">
-					var output = getScriptOutput({
-						script: "stdio.3.jsh.js",
-						input: input_abcdefghij
-					});
-					verify(output).is(input_abcdefghij);
-				</script>
-			</li>
-			<li class="value deprecated">
-				<div class="name">stdin</div>
-				<span class="type"><a href="#types.consolei">console input</a></span>
-				<span><b>See <code>stdio</code> for replacement.</b> The standard input stream for this shell.</span>
-			</li>
-			<li class="value deprecated">
-				<div class="name">stdout</div>
-				<span class="type"><a href="#types.consoleo">console output</a></span>
-				<span><b>See <code>stdio</code> for replacement.</b> The standard output stream for this shell.</span>
-			</li>
-			<li class="value deprecated">
-				<div class="name">stderr</div>
-				<span class="type"><a href="#types.consoleo">console output</a></span>
-				<span><b>See <code>stdio</code> for replacement.</b> The standard error stream for this shell.</span>
 			</li>
 			<li id="run" class="function">
 				<div class="name">run</div>

@@ -8,14 +8,14 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.loader.Export<slime.runtime.document.source.Exports> } $export
+	 * @param { slime.loader.Export<slime.runtime.document.internal.source.Exports> } $export
 	 */
 	function($api,$export) {
 		//	TODO	for HTML, use this: https://html.spec.whatwg.org/multipage/syntax.html#optional-tags
 
 		/**
 		 *
-		 * @param { slime.runtime.document.source.internal.Position } position
+		 * @param { slime.runtime.document.internal.source.internal.Position } position
 		 * @returns { string }
 		 */
 		function after(position) {
@@ -46,7 +46,7 @@
 		var State = (function() {
 			/**
 			 *
-			 * @param { slime.runtime.document.source.internal.State } state
+			 * @param { slime.runtime.document.internal.source.internal.State } state
 			 * @returns
 			 */
 			var remaining = function(state) {
@@ -57,10 +57,10 @@
 
 				/**
 				 *
-				 * @param { slime.runtime.document.source.internal.State } state
+				 * @param { slime.runtime.document.internal.source.internal.State } state
 				 * @param { slime.runtime.document.Node } node
 				 * @param { number } advance
-				 * @returns { slime.runtime.document.source.internal.State }
+				 * @returns { slime.runtime.document.internal.source.internal.State }
 				 */
 				step: function(state,node,advance) {
 					return {
@@ -73,7 +73,7 @@
 				},
 				/**
 				 *
-				 * @param { slime.runtime.document.source.internal.State } state
+				 * @param { slime.runtime.document.internal.source.internal.State } state
 				 */
 				atEnd: function(state) {
 					if (state.position.offset > state.position.document.length) throw new Error("Attempt to read past end of input.");
@@ -84,54 +84,54 @@
 				 *
 				 * @param { slime.runtime.document.source.internal.State } state
 				 */
-				atXmlDeclaration: $api.Function.Predicate.and(
+				atXmlDeclaration: $api.fp.Predicate.and(
 					function(state) {
 						return state.position.offset == 0;
 					},
-					$api.Function.pipe(
+					$api.fp.pipe(
 						remaining,
 						startsWith("<?xml")
 					)
 				),
 
 				//	https://www.w3.org/TR/xml/#sec-cdata-sect
-				atCdata: $api.Function.pipe(
+				atCdata: $api.fp.pipe(
 					remaining,
 					startsWith(format.xml.cdata.start)
 				),
 
-				atComment: $api.Function.pipe(
+				atComment: $api.fp.pipe(
 					remaining,
 					startsWith("<!--")
 				),
 
-				atDoctype: $api.Function.pipe(
+				atDoctype: $api.fp.pipe(
 					remaining,
 					//	TODO	case-insensitive
 					startsWith("<!DOCTYPE")
 				),
 
-				atElement: $api.Function.pipe(
+				atElement: $api.fp.pipe(
 					remaining,
-					$api.Function.Predicate.and(
+					$api.fp.Predicate.and(
 						startsWith("<"),
-						$api.Function.Predicate.not(startsWith("</"))
+						$api.fp.Predicate.not(startsWith("</"))
 					)
 				),
 
-				atText: $api.Function.pipe(
+				atText: $api.fp.pipe(
 					remaining,
-					$api.Function.Predicate.not(startsWith("<"))
+					$api.fp.Predicate.not(startsWith("<"))
 				)
 			};
 		})();
 
-		var warnOnce = $api.Function.memoized(function() {
+		var warnOnce = $api.fp.memoized(function() {
 			debugger;
 		});
 
 		/**
-		 * @type { slime.runtime.document.source.internal.Step }
+		 * @type { slime.runtime.document.internal.source.internal.Step }
 		 */
 		var parseXmlDeclaration = function(state) {
 			var end = state.position.document.indexOf("?>");
@@ -143,7 +143,7 @@
 		}
 
 		/**
-		 * @type { slime.runtime.document.source.internal.Step }
+		 * @type { slime.runtime.document.internal.source.internal.Step }
 		 */
 		var parseCdata = function(state) {
 			var remaining = State.remaining(state);
@@ -159,7 +159,7 @@
 		}
 
 		/**
-		 * @type { slime.runtime.document.source.internal.Step }
+		 * @type { slime.runtime.document.internal.source.internal.Step }
 		 */
 		var parseComment = function(state) {
 			var left = State.remaining(state);
@@ -174,7 +174,7 @@
 		}
 
 		/**
-		 * @type { slime.runtime.document.source.internal.Step }
+		 * @type { slime.runtime.document.internal.source.internal.Step }
 		 */
 		var parseDoctype = function(state) {
 			var left = State.remaining(state);
@@ -194,7 +194,7 @@
 		}
 
 		/**
-		 * @type { slime.runtime.document.source.internal.Step }
+		 * @type { slime.runtime.document.internal.source.internal.Step }
 		 */
 		var parseText = function(state) {
 			var left = State.remaining(state);
@@ -245,10 +245,10 @@
 			return /\s/.test(c);
 		}
 
-		/** @type { slime.runtime.document.source.internal.Export["parseStartTag"] } */
+		/** @type { slime.runtime.document.internal.source.internal.Export["parseStartTag"] } */
 		function parseStartTag(string) {
 			var index = 0;
-			/** @type { ReturnType<slime.runtime.document.source.internal.Export["parseStartTag"]> } */
+			/** @type { ReturnType<slime.runtime.document.internal.source.internal.Export["parseStartTag"]> } */
 			var rv = {
 				tag: "",
 				attributes: "",
@@ -277,10 +277,10 @@
 		}
 
 		/**
-		 * @param { slime.runtime.document.source.internal.State } state
-		 * @param { slime.$api.Events<slime.runtime.document.source.ParseEvents> } events
-		 * @param { slime.runtime.document.source.internal.Parser<slime.runtime.document.Parent> } recurse
-		 * @returns { slime.runtime.document.source.internal.State }
+		 * @param { slime.runtime.document.internal.source.internal.State } state
+		 * @param { slime.$api.Events<slime.runtime.document.internal.source.ParseEvents> } events
+		 * @param { slime.runtime.document.internal.source.internal.Parser<slime.runtime.document.Parent> } recurse
+		 * @returns { slime.runtime.document.internal.source.internal.State }
 		 */
 		var parseElement = function(state,events,recurse) {
 			//	TODO	special handling for SCRIPT
@@ -375,7 +375,7 @@
 
 			var attributes = toAttributes([], parsed.attributes);
 
-			/** @type { slime.runtime.document.source.internal.State<slime.runtime.document.Element> } */
+			/** @type { slime.runtime.document.internal.source.internal.State<slime.runtime.document.Element> } */
 			var substate = {
 				parsed: {
 					type: "element",
@@ -397,16 +397,16 @@
 				var after = recurse(
 					substate,
 					events,
-					$api.Function.pipe(
+					$api.fp.pipe(
 						State.remaining,
-						$api.Function.Predicate.or(
+						$api.fp.Predicate.or(
 							startsWithEndTag,
 							function(string) { return !Boolean(string.length) }
 						)
 					)
 				);
 
-				var endTag = $api.Function.pipe(
+				var endTag = $api.fp.pipe(
 					State.remaining,
 					startsWithEndTagFor(tagName),
 					function(closing) {
@@ -444,21 +444,21 @@
 			}
 		}
 
-		/** @returns { slime.runtime.document.source.internal.Parser<slime.runtime.document.Parent> } */
+		/** @returns { slime.runtime.document.internal.source.internal.Parser<slime.runtime.document.Parent> } */
 		var Parser = function(configuration) {
 			/**
 			 *
-			 * @param { slime.runtime.document.source.internal.State } state
-			 * @param { slime.$api.Events<slime.runtime.document.source.ParseEvents> } events
-			 * @param { (state: slime.runtime.document.source.internal.State) => boolean } finished
-			 * @returns { slime.runtime.document.source.internal.State }
+			 * @param { slime.runtime.document.internal.source.internal.State } state
+			 * @param { slime.$api.Events<slime.runtime.document.internal.source.ParseEvents> } events
+			 * @param { (state: slime.runtime.document.internal.source.internal.State) => boolean } finished
+			 * @returns { slime.runtime.document.internal.source.internal.State }
 			 */
-			var rv = function recurse(state,events,finished) {
+			return function recurse(state,events,finished) {
 				if (finished(state)) {
 					return state;
 				}
 
-				/** @type { slime.runtime.document.source.internal.State } */
+				/** @type { slime.runtime.document.internal.source.internal.State } */
 				var next;
 
 				//	HTML stuff
@@ -494,7 +494,7 @@
 					next = parseText(state);
 				} else {
 					//	skip to end of the thing
-					/** @type { slime.runtime.document.source.internal.Unparsed } */
+					/** @type { slime.runtime.document.internal.source.internal.Unparsed } */
 					var rest = {
 						type: "unparsed",
 						string: State.remaining(state)
@@ -515,7 +515,6 @@
 
 				return recurse(next, events, finished);
 			};
-			return rv;
 		}
 
 		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment } */
@@ -611,11 +610,11 @@
 
 		/**
 		 *
-		 * @param { Parameters<slime.runtime.document.source.Exports["parse"]>[0] } input
+		 * @param { Parameters<slime.runtime.document.internal.source.Exports["parse"]>[0] } input
 		 * @returns
 		 */
 		var parse = function(input) {
-			var events = $api.Events.toHandler(input.events);
+			var events = $api.events.toListener(input.events);
 			events.attach();
 			var state = Parser()(
 				{
@@ -660,7 +659,7 @@
 					/** @type { string[] } */
 					var stack = [];
 					/**
-					 * @type { slime.$api.events.Handler<slime.runtime.document.source.ParseEvents> }
+					 * @type { slime.$api.event.Handlers<slime.runtime.document.internal.source.ParseEvents> }
 					 */
 					var rv = {
 						startElement: function(e) {
@@ -714,7 +713,7 @@
 			},
 			parse: parse,
 			fragment: function(input) {
-				var events = $api.Events.toHandler(input.events);
+				var events = $api.events.toListener(input.events);
 				events.attach();
 				var state = Parser()(
 					{

@@ -16,10 +16,27 @@ namespace slime.jrunscript.file.internal.java {
 	 */
 	type Peer = slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node
 
+	/**
+	 * A filesystem implementation from which files may be read and listed and to which files may be written.
+	 */
 	export interface FilesystemProvider {
 		separators: {
+			/**
+			 * The string used to separate components of a path name in this filesystem; for example, `/` in Unix-like operating
+			 * systems.
+			 */
 			pathname: string
+
+			/**
+			 * The string used to separate components of a search path in this filesystem; for example, `:` in Unix-like operating
+			 * systems.
+			 */
 			searchpath: string
+
+			/**
+			 * The string used to separate components of a search path in this filesystem; for example, `"\n"` in Unix-like
+			 * operating systems.
+			 */
 			line: string
 		}
 
@@ -44,6 +61,10 @@ namespace slime.jrunscript.file.internal.java {
 
 		getParent: (peer: Peer) => Peer
 
+		/**
+		 * Creates a directory at the given location. Will throw an exception if the operation fails, for example, if the parent
+		 * does not exist.
+		 */
 		createDirectoryAt: (peer: Peer) => void
 
 		read: {
@@ -65,10 +86,14 @@ namespace slime.jrunscript.file.internal.java {
 
 		list: (peer: Peer) => Peer[]
 
+		/**
+		 * @param parent The location in which to create a temporary file / directory, or `null` to create it in the default Java
+		 * location.
+		 */
 		temporary: (parent: Peer, parameters: {
-			prefix: string
-			suffix: string
-			directory: boolean
+			prefix?: string
+			suffix?: string
+			directory?: boolean
 		}) => Peer
 
 		java: {
@@ -85,11 +110,20 @@ namespace slime.jrunscript.file.internal.java {
 	}
 
 	export interface Exports {
-		FilesystemProvider: new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => FilesystemProvider
+		//	TODO	this provider object is still used internally by filesystem.js, but it seems like refactoring to remove this
+		//			export would be a goal
+		providers: {
+			os: slime.jrunscript.file.internal.java.FilesystemProvider
+		}
+
+		filesystems: {
+			os: slime.jrunscript.file.world.spi.Filesystem
+		}
 	}
 
 	export interface Exports {
 		test: {
+			FilesystemProvider: new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => FilesystemProvider
 			unix: System
 			windows: System
 			systemForPathnameSeparator: (separator: string) => System
@@ -101,9 +135,10 @@ namespace slime.jrunscript.file.internal.java {
 	(
 		function(
 			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
 
 			var file: file.Script = fifty.$loader.script("file.js");
 			var code: Script = fifty.$loader.script("java.js");
@@ -117,7 +152,7 @@ namespace slime.jrunscript.file.internal.java {
 			fifty.tests.sandbox = function() {
 				var _fs = Packages.inonit.script.runtime.io.Filesystem.create();
 				var createNode = subject.test.nodeCreator(_fs);
-				var thisFile = fifty.$loader.getRelativePath("java.fifty.ts");
+				var thisFile = fifty.jsh.file.object.getRelativePath("java.fifty.ts");
 
 				var thisNode = createNode(thisFile.toString());
 				verify(thisNode).exists().is(true);
@@ -128,9 +163,21 @@ namespace slime.jrunscript.file.internal.java {
 			}
 
 			fifty.tests.world = function() {
-				var os = new subject.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
+				var os = new subject.test.FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create());
 				var at = os.newPeer("at");
 				fifty.global.jsh.shell.console("at = " + at.getScriptPath());
+
+				var me = fifty.jsh.file.relative("java.fifty.ts").pathname;
+				var fs = subject.filesystems.os;
+				var size = $api.fp.world.now.ask(fs.fileLength({ pathname: me }));
+				if (size.present) {
+					jsh.shell.console("size = " + size.value);
+				}
+				var modified = $api.fp.world.now.ask(fs.fileLastModified({ pathname: me }));
+				if (modified.present) {
+					jsh.shell.console("modified = " + modified.value);
+					jsh.shell.console("date = " + new Date(modified.value));
+				}
 			}
 
 			fifty.tests.suite = function() {
@@ -181,7 +228,6 @@ namespace slime.jrunscript.file.internal.java {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
-
 
 	export type Script = slime.loader.Script<Context,Exports>
 }

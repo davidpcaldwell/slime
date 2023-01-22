@@ -15,7 +15,7 @@ namespace slime.web {
 	}
 
 	export namespace test {
-		export const subject: slime.web.Exports = (function(fifty: slime.fifty.test.kit) {
+		export const subject: slime.web.Exports = (function(fifty: slime.fifty.test.Kit) {
 			if (fifty.global.jsh) return fifty.$loader.module("module.js", fifty.$loader.file("context.java.js"));
 			if (fifty.global.window) return fifty.$loader.module("module.browser.js");
 		//@ts-ignore
@@ -23,7 +23,7 @@ namespace slime.web {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.exports = {};
 			}
@@ -65,9 +65,9 @@ namespace slime.web {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.Url = {};
+			fifty.tests.exports.Url = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
@@ -79,12 +79,12 @@ namespace slime.web {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const subject = test.subject;
 			const { verify, run } = fifty;
 
-			fifty.tests.Url.codec = function() {
+			fifty.tests.exports.Url.codec = function() {
 				var codec = function(url: string) {
 					var parsed = subject.Url.codec.string.decode(url);
 					var encoded = subject.Url.codec.string.encode(parsed);
@@ -174,6 +174,65 @@ namespace slime.web {
 	//@ts-ignore
 	)(fifty);
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const module = test.subject;
+			const { verify } = fifty;
+
+			fifty.tests.exports.Url.query = function() {
+				var array = [ { name: "foo", value: "bar" }, { name: "foo", value: "baz" } ];
+				verify(module.Url.query(array)).is("foo=bar&foo=baz");
+			};
+
+			fifty.tests.object = {};
+
+			fifty.tests.object.Url = Object.assign(
+				function() {
+					fifty.run(function liveQueryProperty() {
+						var url = module.Url.parse("http://www.example.com/path/to/page.html");
+						var toString = function(p): string { return p.toString(); };
+						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html");
+						url.query = module.Url.query([
+							{ name: "foo", value: "bar" },
+							{ name: "foo", value: "baz" }
+						]);
+						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html?foo=bar&foo=baz");
+					});
+
+					fifty.run(fifty.tests.object.Url.constructor);
+					fifty.run(fifty.tests.object.Url.resolve);
+				},
+				{
+					constructor: function() {
+						var one = new module.Url({
+							path: "path",
+							query: [
+								{ name: "foo", value: "bar" }
+							]
+						});
+						fifty.verify(one).evaluate(function(p) { return p.toString(); }).is("path?foo=bar");
+					},
+					resolve: function() {
+						var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
+						fifty.run(function() {
+							var relative = base.resolve("../foo.js");
+							var toString = function(p): string { return p.toString(); };
+							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/foo.js");
+						});
+						fifty.run(function() {
+							var relative = base.resolve("./");
+							var toString = function(p): string { return p.toString(); };
+							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/to/");
+						});
+					}
+				}
+			)
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Form {
 		controls: form.Control[]
 	}
@@ -224,85 +283,42 @@ namespace slime.web {
 			 * {@link Url} object is the string form of the URL.
 			 */
 			 new (argument: object.url.Argument): object.Url
+
 			 parse: (string: string) => object.Url
+
 			 query: {
+				 /**
+				  * Converts the given form control array into a query string, omitting the leading `?`.
+				  */
 				 (array: form.Control[]): string
+
 				 parse: (string: string) => form.Control[]
 			 }
 		}
-	}
 
-	export interface Exports {
-		Url: url.Api
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.kit
-		) {
-			const module = test.subject;
-			const { verify } = fifty;
-
-			fifty.tests.exports.Url = {
-				query: function() {
-					var array = [ { name: "foo", value: "bar" }, { name: "foo", value: "baz" } ];
-					verify(module.Url.query(array)).is("foo=bar&foo=baz");
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.Url.query = function() {
+					var controls: form.Control[] = [
+						{ name: "foo", value: "bar" },
+						{ name: "baz", value: "bizzy" }
+					];
+					var encoded = test.subject.Url.query(controls);
+					fifty.verify(encoded).is("foo=bar&baz=bizzy");
 				}
-			};
+			}
+		//@ts-ignore
+		)(fifty);
 
-			fifty.tests.object = {};
-
-			fifty.tests.object.Url = Object.assign(
-				function() {
-					fifty.run(function liveQueryProperty() {
-						var url = module.Url.parse("http://www.example.com/path/to/page.html");
-						var toString = function(p): string { return p.toString(); };
-						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html");
-						url.query = module.Url.query([
-							{ name: "foo", value: "bar" },
-							{ name: "foo", value: "baz" }
-						]);
-						fifty.verify(url).evaluate(toString).is("http://www.example.com/path/to/page.html?foo=bar&foo=baz");
-					});
-
-					fifty.run(fifty.tests.object.Url.constructor);
-					fifty.run(fifty.tests.object.Url.resolve);
-				},
-				{
-					constructor: function() {
-						var one = new module.Url({
-							path: "path",
-							query: [
-								{ name: "foo", value: "bar" }
-							]
-						});
-						fifty.verify(one).evaluate(function(p) { return p.toString(); }).is("path?foo=bar");
-					},
-					resolve: function() {
-						var base = module.Url.parse("http://www.example.com/path/to/page.html?name=value&foo=bar#fragment");
-						fifty.run(function() {
-							var relative = base.resolve("../foo.js");
-							var toString = function(p): string { return p.toString(); };
-							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/foo.js");
-						});
-						fifty.run(function() {
-							var relative = base.resolve("./");
-							var toString = function(p): string { return p.toString(); };
-							fifty.verify(relative).evaluate(toString).is("http://www.example.com/path/to/");
-						});
-					}
-				}
-			)
-		}
-	//@ts-ignore
-	)(fifty);
-
+	}
 }
 
 namespace slime.web {
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports.form = {};
 		}
@@ -318,7 +334,7 @@ namespace slime.web {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.exports.form.codec = function() {
 					fifty.verify(1).is(1);
@@ -349,7 +365,7 @@ namespace slime.web {
 
 		(
 			function(
-				fifty: slime.fifty.test.kit
+				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.exports.form.object = function() {
 					var form: slime.web.Form = {
@@ -423,7 +439,7 @@ namespace slime.web {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports.Form = function() {
 				const { verify } = fifty
@@ -467,7 +483,7 @@ namespace slime.web {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			const module = test.subject;
 
@@ -503,11 +519,9 @@ namespace slime.web {
 }
 
 (
-	function(fifty: slime.fifty.test.kit) {
+	function(fifty: slime.fifty.test.Kit) {
 		fifty.tests.suite = function() {
-			fifty.run(fifty.tests.Url.codec);
-
-			fifty.run(fifty.tests.exports.Url.query);
+			fifty.run(fifty.tests.exports.Url);
 			fifty.run(fifty.tests.object.Url);
 
 			fifty.run(fifty.tests.exports.Form);

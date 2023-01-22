@@ -4,7 +4,31 @@
 //
 //	END LICENSE
 
-namespace slime.runtime.document.source {
+namespace slime.runtime.document {
+	export interface Exports {
+		Node: {
+			isComment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment
+			isText: (node: slime.runtime.document.Node) => node is slime.runtime.document.Text
+			isDoctype: (node: slime.runtime.document.Node) => node is slime.runtime.document.Doctype
+			isDocument: (node: slime.runtime.document.Node) => node is slime.runtime.document.Document
+			isElement: (node: slime.runtime.document.Node) => node is slime.runtime.document.Element
+			isFragment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment
+			isParent: (node: Node) => node is Parent
+			isString: (node: Node) => node is String
+		}
+	}
+}
+
+namespace slime.runtime.document.internal.source {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export type ParseEvents = {
 		startTag: string
 		startElement: string
@@ -15,18 +39,18 @@ namespace slime.runtime.document.source {
 		debug: {
 			fidelity: (p: {
 				markup: string
-				events: slime.$api.events.Handler<{ console: string }>
+				events: slime.$api.event.Handlers<{ console: string }>
 			}) => boolean
 		}
 
 		parse: (p: {
 			string: string
-			events?: slime.$api.events.Handler<ParseEvents>
+			events?: slime.$api.event.Handlers<ParseEvents>
 		}) => Document
 
 		fragment: (p: {
 			string: string
-			events?: slime.$api.events.Handler<ParseEvents>
+			events?: slime.$api.event.Handlers<ParseEvents>
 		}) => Fragment
 
 		serialize: {
@@ -50,7 +74,7 @@ namespace slime.runtime.document.source {
 
 	export namespace internal {
 		export namespace test {
-			export const subject: slime.runtime.document.source.Exports = (function(fifty: fifty.test.kit) {
+			export const subject: slime.runtime.document.internal.source.Exports = (function(fifty: fifty.test.Kit) {
 				return fifty.$loader.module("source.js");
 			//@ts-ignore
 			})(fifty)
@@ -91,7 +115,7 @@ namespace slime.runtime.document.source {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			var api: Exports = fifty.$loader.module("source.js");
 
@@ -286,7 +310,7 @@ namespace slime.runtime.document.source {
 
 	(
 		function(
-			fifty: slime.fifty.test.kit
+			fifty: slime.fifty.test.Kit
 		) {
 			//	TODO	possibly add to Fifty?
 			var console = function(...args: any[]) {
@@ -306,7 +330,7 @@ namespace slime.runtime.document.source {
 					events: (function() {
 						var stack = [];
 						/**
-						 * @type { slime.$api.events.Handler<slime.runtime.document.source.ParseEvents> }
+						 * @type { slime.$api.event.Handlers<slime.runtime.document.source.ParseEvents> }
 						 */
 						var rv = {
 							startElement: function(e) {
@@ -346,6 +370,13 @@ namespace slime.runtime.document.source {
 				}
 
 				fifty.verify(input == serialized, "page == serialized").is(true);
+			}
+
+			fifty.tests.manual.fidelity = function() {
+				const { jsh } = fifty.global;
+
+				var markup = jsh.file.Pathname(jsh.shell.environment.MARKUP).file.read(String);
+				fifty.tests.fidelity(markup);
 			}
 		}
 	//@ts-ignore

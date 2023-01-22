@@ -19,226 +19,15 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<ul>
-			<li class="function" jsapi:id="run">
-				<div class="name"><a id="exports.run">run</a></div>
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/run/description')">See the <a href="../../loader/api.html">platform loader</a> for details.</span>
-				<span>
-					Note that the first argument will be interpreted relative to the current page.
-				</span>
-				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/run/arguments')">
-					<div class="label">Arguments</div>
-					See the SLIME loader <a href="../../loader/api.html#types.Loader">run</a> method.
-				</div>
-			</li>
-			<li class="function" jsapi:id="file">
-				<div class="name"><a id="exports.file">file</a></div>
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/file/description')">See the <a href="../../loader/api.html">platform loader</a> for details.</span>
-				<span>
-					Note that the first argument will be interpreted relative to the current page.
-				</span>
-				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/file/arguments')">
-					<div class="label">Arguments</div>
-					See the platform loader's <a href="../../loader/api.html#types.Loader">file</a> method.
-				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/file/returns')">
-					<div class="label">Returns</div>
-					See the platform loader's <a href="../../loader/api.html#types.Loader">file</a> method.
-				</div>
-			</li>
-			<li class="function">
-				<div class="name">module</div>
-				<!--	TODO	There is a link in the target description that does not work when the content is copied.	-->
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/module/description')">
-					See the platform loader's <a href="../../loader/api.html#module">module</a> method.
-				</span>
-				<span>
-					Note that the first argument will be interpreted relative to the current page.
-				</span>
-				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/module/arguments')">
-					<div class="label">Arguments</div>
-					See the platform loader's <a href="../../loader/api.html#types.Loader">module</a> method.
-				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/module/returns')">
-					<div class="label">Returns</div>
-					See the platform loader's <a href="../../loader/api.html#types.Loader">module</a> method.
-				</div>
-			</li>
-			<li class="function">
-				<div class="name">value</div>
-				<span jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/value/description')">
-					See the platform loader's <a href="../../loader/api.html#types.Loader.value">value</a> method.
-				</span>
-				<span>
-					Note that the first argument will be interpreted relative to the current page.
-				</span>
-				<div class="arguments" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/value/arguments')">
-					<div class="label">Arguments</div>
-					See the platform loader's <a href="../../loader/api.html#types.Loader.value">value</a> method.
-				</div>
-				<div class="returns" jsapi:id="returns" jsapi:reference="getApi('../../loader/api.html').getElement('Loader/type/value/returns')">
-					<div class="label">Returns</div>
-					See the platform loader's <a href="../../loader/api.html#types.Loader.value">value</a> method.
-				</div>
-			</li>
-			<li class="value">
-				<div class="name">loader</div>
-				<span class="type">Loader</span>
-				<span>A loader that loads resources using the current page as the base URL for the loader.</span>
-			</li>
 			<li class="constructor">
-				<div class="name">Loader</div>
-				<span>Creates a SLIME <a href="../../loader/api.html#exports.Loader">Loader</a>.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<div>
-						Arguments to be used to invoke the SLIME <a href="../../loader/api.html#exports.Loader">Loader</a>
-						constructor,
-					</div>
-					-or-
-					<div>
-						<ol>
-							<li class="value">
-								<span class="type">string</span>
-								<span>A URL which should be used as the base URL of the loader.</span>
-							</li>
-						</ol>
-					</div>
-				</div>
-				<div class="instances">
-					<div class="label">Instances</div>
-					<span class="type"><a href="./../loader/api.html#exports.Loader">Loader</a></span>
-				</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">getCode</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-					<li class="function">
-						<div class="name">fetch</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-				</ul>
 				<script type="application/x.jsapi#initialize">
 					scope.api = inonit.loader;
 				</script>
-				<div jsapi:reference="getApi('../api.html').getElement('Loader/tests')"></div>
-				<script type="application/x.jsapi#tests" jsapi:id="issue296">
-					var hasSourceUrl = function(p) {
-						return p.string.indexOf("sourceURL") != -1;
-					};
-
-					var loader = new inonit.loader.Loader(inonit.loader.base + "../");
-
-					var resource = function(path) {
-						var resource = loader.get(path);
-						return {
-							type: resource.type,
-							string: resource.read(String)
-						};
-					}
-
-					verify(inonit).loader.base.is(inonit.loader.base);
-					var js = resource("loader/expression.js");
-					var css = resource("loader/api/api.css");
-					var html = resource("README.html");
-					verify(js,"js").evaluate(hasSourceUrl).is(true);
-					verify(js).type.media.is("application");
-					verify(js).type.subtype.is("javascript");
-					verify(css,"css").evaluate(hasSourceUrl).is(false);
-					//verify(css,"css").type.is.type("text/css");
-					if (css.type) {
-						verify(css).type.media.is("text");
-						verify(css).type.subtype.is("css");
-					}
-					verify(html,"html").evaluate(hasSourceUrl).is(false);
-					//	TODO: Unclear why the below construct does not work; is it because of the property named 'type', or maybe
-					//	the 'is' method?
-					// verify(html,"html").type.is.type("object");
-					if (html.type) {
-						verify(html).type.media.is("text");
-						verify(html).type.subtype.is("html");
-					}
-				</script>
-			</li>
-			<li class="function">
-				<div class="name">namespace</div>
-				<span>Invokes the platform loader's <a href="../../loader/api.html"><code>namespace</code></a> method.</span>
-				<script type="application/x.jsapi#tests">
-					test(typeof(window.foo) == "undefined");
-					var ns = inonit.loader.namespace("foo.bar.baz");
-					test(ns == window.foo.bar.baz);
-				</script>
-				<script type="application/x.jsapi#tests" jsapi:id="top-level scope">
-					var f = function() {
-						return this;
-					}
-
-					var x = new function() {
-						this.f = f;
-					}
-
-					test(f() == window);
-					test(x.f() != window);
-				</script>
-			</li>
-			<li class="object">
-				<div class="name">nugget</div>
-				Contains useful pieces of code that are exported for general use.
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">getCurrentScript</div>
-						<div>
-							Returns an object based on the current script being loaded (that is, the script from which the
-							method is invoked).
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">base</div>
-									<div>The base URL of this script: the URL of the script, excluding the file name.</div>
-								</li>
-								<li class="function">
-									<div class="name">getRelativePath</div>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value"><span class="type">string</span> A relative path.</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<div>A full path representing the specified relative path relative to the base URL
-											of this script.</div>
-									</div>
-								</li>
-							</ul>
-						</div>
-					</li>
-				</ul>
+				<!--
+					TODO	the below probably incorporates JSAPI tests from the general file, and so we cannot remove this
+							file until those have been ported, and all references to them also ported, presumably.
+				-->
+				<div></div>
 			</li>
 			<script type="application/x.jsapi#initialize">
 				scope.loadTestModule = function(path,context) {
@@ -248,23 +37,13 @@ END LICENSE
 			<script type="application/x.jsapi#initialize">
 				scope.api = inonit.loader;
 			</script>
-			<div jsapi:id="types.Loader" jsapi:reference="getApi('../api.html').getElement('Loader/tests')">
-			</div>
 			<!--
-			<li class="value">
-				<div class="name">$sdk</div>
-				(undocumented) Used to support development-related functions.
-			</li>
+				TODO	the below probably incorporates JSAPI tests from the general file, and so we cannot remove this
+						file until those have been ported, and all references to them also ported, presumably.
 			-->
+			<div jsapi:id="types.Loader">
+			</div>
 		</ul>
-	</div>
-	<div jsapi:id="fifty">
-		<script type="application/x.jsapi#tests">
-			$jsapi.loader.fifty({
-				path: "client.fifty.ts",
-				verify: verify
-			});
-		</script>
 	</div>
 </body>
 </html>

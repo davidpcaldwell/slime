@@ -8,14 +8,29 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Install JDK",
+			"label": "Documentation: Show",
+			"detail": "Serves the project documentation and opens a browser to view it",
+			"type": "shell",
+			"command": "./wf documentation",
+			"problemMatcher": [],
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": true,
+				"clear": true
+			}
+		},
+		{
+			"label": "Java: Install JDK",
 			"detail": "Installs the default JDK into this shell",
 			"type": "shell",
 			"command": "./jsh.bash --install-jdk",
 			"problemMatcher": []
 		},
 		{
-			"label": "status",
+			"label": "Git: Show status",
 			"type": "shell",
 			"command": "./wf status",
 			"problemMatcher": [],
@@ -29,7 +44,26 @@
 			}
 		},
 		{
-			"label": "eslint",
+			"label": "Git: Create branch",
+			"detail": "Creates a new branch based on newly-fetched origin/master and checks it out.",
+			"type": "shell",
+			"command": "./wf git.branch ${input:branchName}",
+			"problemMatcher": []
+		},
+		{
+			"label": "Git: Switch to and/or update trunk",
+			"type": "shell",
+			"command": "./wf git.trunk",
+			"problemMatcher": []
+		},
+		{
+			"label": "Git: Prune branches",
+			"type": "shell",
+			"command": "./wf git.branches.prune",
+			"problemMatcher": []
+		},
+		{
+			"label": "ESLint: Run",
 			"type": "shell",
 			"command": "./wf eslint",
 			"problemMatcher": [],
@@ -43,12 +77,26 @@
 			}
 		},
 		{
-			"label": "tsc",
+			"label": "ESLint: Create categorized report",
 			"type": "shell",
-			"command": "./wf tsc",
+			"command": "./jsh.bash contributor/eslint-report.jsh.js",
 			"problemMatcher": [],
 			"presentation": {
-				"echo": true,
+				"echo": false,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true
+			}
+		},
+		{
+			"label": "TypeScript: Check types",
+			"type": "shell",
+			"command": "./wf tsc --vscode",
+			"problemMatcher": [],
+			"presentation": {
+				"echo": false,
 				"reveal": "always",
 				"focus": false,
 				"panel": "dedicated",
@@ -57,37 +105,78 @@
 			}
 		},
 		{
-			"label": "documentation",
-			"detail": "Serves the project documentation and opens a browser to view it",
+			"label": "jsh: Run Current File",
 			"type": "shell",
-			"command": "./wf documentation",
+			"command": "./jsh.bash ${file}",
 			"problemMatcher": [],
-			"presentation": {
-				"echo": true,
-				"reveal": "always",
-				"focus": false,
-				"panel": "dedicated",
-				"showReuseMessage": true,
-				"clear": true
+			"runOptions": {
+				"reevaluateOnRerun": false
+			}
+		},
+		{
+			"label": "jsh: Debug Current File",
+			"type": "shell",
+			"command": "./jsh.bash ${file}",
+			"problemMatcher": [],
+			"options": {
+				"env": {
+					"JSH_DEBUG_SCRIPT": "rhino"
+				}
 			},
 			"runOptions": {
-				"runOn": "folderOpen"
+				"reevaluateOnRerun": false
 			}
 		},
 		{
-			"label": "document",
-			"detail": "Serves the project documentation and opens a browser to view it, re-rendering the documentation as it changes",
+			"label": "Fifty (jsh): Run wip() Test in Current File",
 			"type": "shell",
-			"command": "./wf document",
-			"problemMatcher": [],
-			"presentation": {
-				"echo": true,
-				"reveal": "always",
-				"focus": false,
-				"panel": "shared",
-				"showReuseMessage": true,
-				"clear": true
-			}
+			"command": "./fifty test.jsh ${file} --part wip",
+			"problemMatcher": []
+		},
+		{
+			"label": "Fifty (jsh): Debug wip() Test in Current File",
+			"type": "shell",
+			"command": "./fifty test.jsh --debug:rhino ${file} --part wip",
+			"problemMatcher": []
+		},
+		{
+			"label": "Fifty (browser): Run wip() Test in Current File",
+			"type": "shell",
+			"command": "./fifty",
+			"args": [
+				"test.browser",
+				"--chrome:data", "local/chrome/fifty",
+				"'${relativeFile}'",
+				"--part", "wip",
+				"--interactive",
+				"--chrome:debug:vscode"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "Fifty: list tests",
+			"type": "shell",
+			"command": "./fifty test.jsh list ${file}",
+			"problemMatcher": []
+		},
+		{
+			"label": "Project: Update MPL headers",
+			"type": "shell",
+			"command": "./jsh.bash contributor/code/license.jsh.js --fix",
+			"problemMatcher": []
+		},
+		{
+			"label": "Project: Run tests in Docker",
+			"type": "shell",
+			"command": "./wf test",
+			"problemMatcher": []
+		}
+	],
+	"inputs": [
+		{
+			"id": "branchName",
+			"type": "promptString",
+			"description": "Name of a branch to create"
 		}
 	]
 }

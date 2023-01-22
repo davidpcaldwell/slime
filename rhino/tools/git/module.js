@@ -10,14 +10,16 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jrunscript.git.Context } $context
+	 * @param { slime.jrunscript.tools.git.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.jrunscript.git.Exports } $exports
+	 * @param { slime.jrunscript.tools.git.Exports } $exports
 	 */
 	function($api,$context,$loader,$exports) {
 		var scripts = {
-			/** @type { slime.jrunscript.git.internal.log.Script } */
-			log: $loader.script("log.js")
+			/** @type { slime.jrunscript.tools.git.internal.log.Script } */
+			log: $loader.script("log.js"),
+			/** @type { slime.jrunscript.tools.git.internal.commands.Script } */
+			commands: $loader.script("commands.js")
 		};
 
 		var library = {
@@ -25,52 +27,11 @@
 				library: {
 					time: $context.api.time
 				}
-			})
+			}),
+			commands: scripts.commands()
 		}
 
-		/**
-		 * @type { slime.jrunscript.git.Exports["commands"]["status"] }
-		 */
-		var status = {
-			invocation: function() {
-				return {
-					command: "status",
-					arguments: [
-						"--porcelain", "-b"
-					]
-				}
-			},
-			result: function(output) {
-				//	TODO	This ignores renamed files; see git help status
-				var parser = /(..) (\S+)/;
-				var rv = {
-					branch: void(0)
-				};
-				output.split("\n").forEach(function(line) {
-					if (line.substring(0,2) == "##") {
-						var branchName = line.substring(3);
-						if (branchName.indexOf("...") != -1) {
-							branchName = branchName.substring(0,branchName.indexOf("..."));
-						}
-						var detached = Boolean(branchName == "HEAD (no branch)")
-						rv.branch = (detached) ? null : branchName;
-					} else {
-						var match = parser.exec(line);
-						if (match) {
-							if (!rv.paths) rv.paths = {};
-							rv.paths[match[2]] = match[1];
-						} else if (line == "") {
-							//	do nothing
-						} else {
-							throw new Error("Unexpected line: [" + line + "]");
-						}
-					}
-				});
-				return rv;
-			}
-		}
-
-		/** @type { new (environment: Parameters<slime.jrunscript.git.Exports["Installation"]>[0] ) => slime.jrunscript.git.Installation } */
+		/** @type { new (environment: Parameters<slime.jrunscript.tools.git.Exports["Installation"]>[0] ) => slime.jrunscript.tools.git.Installation } */
 		var Installation = function(environment) {
 
 			//	Organized via https://git-scm.com/docs
@@ -150,20 +111,20 @@
 						});
 					}
 
-					return $api.Events.Function(commandImplementation);
+					return $api.events.Function(commandImplementation);
 				};
 
 				/**
 				 *
-				 * @param { slime.jrunscript.git.internal.GitCommand } c
+				 * @param { slime.jrunscript.tools.git.internal.GitCommand } c
 				 */
 				this.gitCommand = function(c) {
 					var program = environment.program;
 
 					/**
 					 *
-					 * @param { slime.jrunscript.git.internal.InvocationConfiguration } o
-					 * @param { slime.jrunscript.git.repository.Argument } p
+					 * @param { slime.jrunscript.tools.git.internal.InvocationConfiguration } o
+					 * @param { slime.jrunscript.tools.git.repository.Argument } p
 					 * @param { any } events
 					 */
 					function invoke(o,p,events) {
@@ -174,11 +135,11 @@
 							args.push("-c", "credential.helper=", "-c", "credential.helper=" + p.credentialHelper);
 						}
 						args.push(c.name);
-						if (o.arguments) args = $api.Function.impure.revise(o.arguments(p))(args);
+						if (o.arguments) args = $api.fp.object.revise(o.arguments(p))(args);
 						//	TODO	this type should be in rhino/shell if it is not already
-						/** @type { slime.jrunscript.git.internal.Environment } */
+						/** @type { slime.jrunscript.tools.git.internal.Environment } */
 						var environment = $api.Object.compose($context.environment);
-						if (o.environment) environment = $api.Function.impure.revise(o.environment(p))(environment);
+						if (o.environment) environment = $api.fp.object.revise(o.environment(p))(environment);
 
 						var output = {
 							stdout: [],
@@ -206,7 +167,7 @@
 							directory: p.directory
 						});
 
-						var createReturnValue = (o.createReturnValue) ? o.createReturnValue(p) : $api.Function.returning(void(0));
+						var createReturnValue = (o.createReturnValue) ? o.createReturnValue(p) : $api.fp.returning(void(0));
 
 						return createReturnValue({ output: output, result: result });
 					}
@@ -250,7 +211,7 @@
 			var configFile = {
 				/**
 				 *
-				 * @param { slime.jrunscript.git.internal.Result } result
+				 * @param { slime.jrunscript.tools.git.internal.Result } result
 				 * @returns { { name: string, value: string }[] }
 				 */
 				parseResult: function(result) {
@@ -338,8 +299,8 @@
 
 			//	Getting and Creating Projects
 
-			/** @type { slime.jrunscript.git.Installation["init"] } */
-			var init = $api.Events.Function(function(m,events) {
+			/** @type { slime.jrunscript.tools.git.Installation["init"] } */
+			var init = $api.events.Function(function(m,events) {
 				git({
 					command: "init",
 					arguments: [m.pathname],
@@ -350,7 +311,7 @@
 				});
 			});
 
-			/** @type { slime.jrunscript.git.Repository["clone"] } */
+			/** @type { slime.jrunscript.tools.git.Repository["clone"] } */
 			var clone = cli.command({
 				command: "clone",
 				arguments: function(p) {
@@ -435,7 +396,7 @@
 			};
 
 			/**
-			 * @type { slime.jrunscript.git.repository.Local["fetch"] }
+			 * @type { slime.jrunscript.tools.git.repository.Local["fetch"] }
 			 */
 			var fetch = cli.command({
 				command: "fetch",
@@ -543,6 +504,8 @@
 				},
 				stdio: cli.stdio.Events(),
 				evaluate: function(result) {
+					var subdirectory = result.directory.getSubdirectory(result.argument.path);
+					if (!subdirectory) throw new Error("Could not find added submodule: " + result.directory + " " + result.argument.path);
 					return new LocalRepository({ directory: result.directory.getSubdirectory(result.argument.path) });
 				}
 			});
@@ -582,7 +545,7 @@
 			//	Plumbing Commands
 
 			/**
-			 * @type { new ({}) => slime.jrunscript.git.Repository }
+			 * @type { new ({}) => slime.jrunscript.tools.git.Repository }
 			 */
 			var Repository = function(o) {
 				//	Getting and Creating Projects
@@ -595,7 +558,7 @@
 			};
 
 			/**
-			 * @type { new ({}) => slime.jrunscript.git.Repository }
+			 * @type { new ({}) => slime.jrunscript.tools.git.Repository }
 			 */
 			var RemoteRepository = function(o) {
 				Repository.call(this,o);
@@ -620,7 +583,7 @@
 			};
 
 			/**
-			 * @type { new (o: any) => slime.jrunscript.git.repository.Local }
+			 * @type { new (o: any) => slime.jrunscript.tools.git.repository.Local }
 			 */
 			var LocalRepository = function LocalRepository(o) {
 				Repository.call(this,o);
@@ -679,7 +642,7 @@
 					format: library.log.format
 				}
 
-				/** @type { slime.jrunscript.git.repository.Local["show"] } */
+				/** @type { slime.jrunscript.tools.git.repository.Local["show"] } */
 				var show = function(p) {
 					return execute({
 						command: "show",
@@ -708,7 +671,7 @@
 
 				//	Setup and Config
 
-				/** @type { slime.jrunscript.git.repository.Local["config"] } */
+				/** @type { slime.jrunscript.tools.git.repository.Local["config"] } */
 				this.config = command(config);
 
 				//	Getting and Creating Projects
@@ -721,17 +684,17 @@
 
 				this.rm = command(rm);
 
-				/** @type { ( () => void ) & { getUrl: ({ name: string }) => string } }} */
+				/** @type { ( () => void ) & { getUrl: (p: { name: string }) => string } }} */
 				var myremote = function() {
 					throw new Error("Unimplemented: remote");
 				};
 				myremote.getUrl = command(remote.getUrl);
 				this.remote = myremote;
 
-				/** @type { slime.jrunscript.git.repository.Local["status"] } */
+				/** @type { slime.jrunscript.tools.git.repository.Local["status"] } */
 				this.status = function() {
 					var self = this;
-					var input = status.invocation();
+					var input = library.commands.status.invocation();
 					return execute({
 						command: input.command,
 						arguments: input.arguments,
@@ -741,11 +704,11 @@
 						/**
 						 *
 						 * @param { { stdio: { output: string } } } result
-						 * @returns { ReturnType<slime.jrunscript.git.repository.Local["status"]> }
+						 * @returns { ReturnType<slime.jrunscript.tools.git.repository.Local["status"]> }
 						 */
 						evaluate: function(result) {
 							//	TODO	This ignores renamed files; see git help status
-							var parsed = status.result(result.stdio.output);
+							var parsed = library.commands.status.result(result.stdio.output);
 							return {
 								branch: {
 									name: parsed.branch,
@@ -758,14 +721,14 @@
 					});
 				};
 
-				/** @type { slime.jrunscript.git.repository.Local["commit"] } */
+				/** @type { slime.jrunscript.tools.git.repository.Local["commit"] } */
 				this.commit = command(commit);
 
 				//	Branching and Merging
 
 				/**
 				 * @param { string } output
-				 * @returns { slime.jrunscript.git.Branch[] }
+				 * @returns { slime.jrunscript.tools.git.Branch[] }
 				 */
 				var toBranchList = function(output) {
 					return output.split("\n")
@@ -794,7 +757,7 @@
 
 				/**
 				 * @param { { remotes?: boolean, remote?: boolean, all?: boolean } } p
-				 * @returns { slime.jrunscript.git.Branch[] }
+				 * @returns { slime.jrunscript.tools.git.Branch[] }
 				 */
 				var branchList = function(p) {
 					var args = [];
@@ -817,12 +780,13 @@
 				};
 
 				/**
-				 * @returns { slime.jrunscript.git.Branch }
+				 * @returns { slime.jrunscript.tools.git.Branch }
 				 */
 				var currentBranch = function() {
 					return execute({
 						command: "branch",
-						arguments: args,
+						//	TODO	is this right? It used to be a global variable, and was removed during type checking
+						arguments: [],
 						stdio: {
 							output: String
 						},
@@ -884,7 +848,7 @@
 					}
 				};
 
-				/** @type { slime.jrunscript.git.repository.Local["checkout" ] } */
+				/** @type { slime.jrunscript.tools.git.repository.Local["checkout" ] } */
 				this.checkout = function(p) {
 					var args = [];
 					args.push(p.branch);
@@ -894,7 +858,7 @@
 					}, (p.stdio) ? { stdio: p.stdio } : {}));
 				};
 
-				/** @type { slime.jrunscript.git.repository.Local["merge"] } */
+				/** @type { slime.jrunscript.tools.git.repository.Local["merge"] } */
 				this.merge = function(p) {
 					var args = [];
 					if (p.noCommit) {
@@ -945,11 +909,11 @@
 
 				//	Sharing and Updating Projects
 
-				/** @type { slime.jrunscript.git.repository.Local["fetch"] } */
+				/** @type { slime.jrunscript.tools.git.repository.Local["fetch"] } */
 				this.fetch = command(fetch);
 
 				this.push = (
-					/** @param { Parameters<slime.jrunscript.git.repository.Local["push"]>[0] } p */
+					/** @param { Parameters<slime.jrunscript.tools.git.repository.Local["push"]>[0] } p */
 					function(p) {
 						var args = [];
 						if (p && p.delete) args.push("--delete");
@@ -988,7 +952,7 @@
 						});
 						/** @type { { name: string, value: string }[] } */
 						var settings = settingsCommand({});
-						return $api.Function.result(
+						return $api.fp.result(
 							settings,
 							function(settings) {
 								return settings.reduce(function(rv,setting) {
@@ -1002,7 +966,7 @@
 								}, {});
 							},
 							Object.entries,
-							$api.Function.Array.map(function(entry) {
+							$api.fp.Array.map(function(entry) {
 								return $api.Object.compose({
 									name: entry[0]
 								}, entry[1])
@@ -1013,7 +977,7 @@
 					}
 				}
 
-				/** @type { slime.jrunscript.git.repository.Local["submodule"] } */
+				/** @type { slime.jrunscript.tools.git.repository.Local["submodule"] } */
 				this.submodule = Object.assign(function(p) {
 					if (!p) p = {};
 					if (!p.command) {
@@ -1090,7 +1054,7 @@
 					return show(p);
 				};
 
-				/** @type { slime.jrunscript.git.repository.Local["log"] } */
+				/** @type { slime.jrunscript.tools.git.repository.Local["log"] } */
 				this.log = function(p) {
 					if (!p) p = {};
 
@@ -1207,7 +1171,7 @@
 
 			//	Server Admin
 
-			/** @type { slime.jrunscript.git.Installation["daemon"] } */
+			/** @type { slime.jrunscript.tools.git.Installation["daemon"] } */
 			this.daemon = function(p) {
 				var DEFAULT_GIT_PORT = 9418;
 
@@ -1253,22 +1217,22 @@
 				}
 			}
 
-			/** @type { (p: any) => p is slime.jrunscript.git.repository.argument.Directory } */
+			/** @type { (p: any) => p is slime.jrunscript.tools.git.repository.argument.Directory } */
 			var isDirectoryArgument = function(p) {
 				return Boolean(p.directory);
 			}
 
-			/** @type { (p: any) => p is slime.jrunscript.git.repository.argument.Local } */
+			/** @type { (p: any) => p is slime.jrunscript.tools.git.repository.argument.Local } */
 			var isLocalArgument = function(p) {
 				return Boolean(p.local);
 			}
 
-			/** @type { (p: any) => p is slime.jrunscript.git.repository.argument.Remote } */
+			/** @type { (p: any) => p is slime.jrunscript.tools.git.repository.argument.Remote } */
 			var isRemoteArgument = function(p) {
 				return Boolean(p.remote);
 			}
 
-			/** @type { slime.jrunscript.git.Installation["Repository"] } */
+			/** @type { slime.jrunscript.tools.git.Installation["Repository"] } */
 			//	TODO	disabled to support upgrade to TypeScript 4.5.4 and Typedoc 0.22.11
 			//@ts-ignore
 			this.Repository = (
@@ -1283,13 +1247,13 @@
 				}
 			);
 
-			/** @type { slime.jrunscript.git.Installation["execute"] } */
+			/** @type { slime.jrunscript.tools.git.Installation["execute"] } */
 			this.execute = function(m) {
 				git(m);
 			}
 		};
 
-		/** @type { (environment: Parameters<slime.jrunscript.git.Exports["Installation"]>[0] ) => slime.jrunscript.git.Installation } */
+		/** @type { (environment: Parameters<slime.jrunscript.tools.git.Exports["Installation"]>[0] ) => slime.jrunscript.tools.git.Installation } */
 		$exports.Installation = function(environment) {
 			return new Installation(environment);
 		}
@@ -1321,12 +1285,12 @@
 			}
 		})();
 
-		var GUI = $api.Error.Type({
+		var GUI = $api.Error.old.Type({
 			name: "GUIInstallRequired"
 		});
 
 		$exports.install = Object.assign(
-			$api.Events.Function(
+			$api.events.Function(
 				function(p,events) {
 					var console = function(message) {
 						events.fire("console", message);
@@ -1372,33 +1336,35 @@
 
 		$exports.Client = {
 			invocation: function(p) {
-				/** @type { slime.jrunscript.shell.invocation.old.Argument } */
+				/** @type { slime.jrunscript.shell.invocation.Argument } */
 				var rv = {
-					command: p.client.command,
+					command: p.client.command.toString(),
 					arguments: $api.Array.build(function(rv) {
 						rv.push(p.invocation.command);
 						if (p.invocation.arguments) rv.push.apply(rv, p.invocation.arguments);
 					})
 				};
-				return $context.api.shell.Invocation.old(rv);
+				return $context.api.shell.Invocation.from.argument(rv);
 			}
 		};
 
-		$exports.commands = {
-			status: status
-		};
+		$exports.commands = library.commands;
 
 		/**
-		 * @param { slime.jrunscript.git.Program } program
-		 * @param { slime.jrunscript.git.Invocation } invocation
+		 * @param { slime.jrunscript.tools.git.Program } program
+		 * @param { slime.jrunscript.tools.git.world.Config } config
+		 * @param { slime.jrunscript.tools.git.Invocation } invocation
 		 * @param { string } pathname
 		 * @param { slime.jrunscript.shell.invocation.Argument["stdio"] } stdio
-		 * @returns { slime.jrunscript.shell.run.Invocation }
+		 * @returns { slime.jrunscript.shell.run.old.Invocation }
 		 */
-		var createShellInvocation = function(program,pathname,invocation,stdio) {
-			return $context.api.shell.Invocation.create({
+		var createShellInvocation = function(program,config,pathname,invocation,stdio) {
+			return $context.api.shell.Invocation.from.argument({
 				command: program.command,
 				arguments: $api.Array.build(function(rv) {
+					for (var name in config) {
+						rv.push("-c", name + "=" + config[name]);
+					}
 					rv.push(invocation.command);
 					if (invocation.arguments) invocation.arguments.forEach(function(argument) {
 						rv.push(argument);
@@ -1412,7 +1378,7 @@
 		/**
 		 * @template { any } P
 		 * @template { any } R
-		 * @param { slime.jrunscript.git.world.Invocation<P,R> } p
+		 * @param { slime.jrunscript.tools.git.world.Invocation<P,R> } p
 		 */
 		var shell = function(p) {
 			var invocation = p.command.invocation(p.argument);
@@ -1421,14 +1387,26 @@
 				output: (p.stdout) ? "line" : "string",
 				error: (p.stderr) ? "line" : void(0)
 			}
-			return createShellInvocation(p.program, p.pathname, invocation, stdio);
+			return createShellInvocation(p.program, p.config, p.pathname, invocation, stdio);
 		}
 
-		/** @type { slime.jrunscript.git.Exports["run"] } */
+		var toOldWorldOrientedApi = function(invocation) {
+			return function(handler) {
+				$api.fp.world.now.action(
+					$context.api.shell.world.action,
+					invocation,
+					handler
+				);
+			}
+		}
+
+		/** @type { slime.jrunscript.tools.git.Exports["run"] } */
 		var run = function(p) {
 			var shellInvocation = shell(p);
 			var output;
-			var run = (p.world && p.world.run) ? p.world.run : $context.api.shell.world.run;
+			//	TODO	need to change the type of p.world.run to the current wo API and then refactor
+			//			toOldWorldOrientedApi (it might be just removed)
+			var run = (p.world && p.world.run) ? p.world.run : toOldWorldOrientedApi;
 			run(shellInvocation)({
 				stdout: function(e) {
 					p.stdout(e.detail.line);
@@ -1437,22 +1415,33 @@
 					p.stderr(e.detail.line);
 				},
 				exit: function(e) {
-					if (e.detail.status) throw new Error("Exit status: " + e.detail.status);
+					if (e.detail.status) throw new Error(
+						"Exit status: " + e.detail.status
+						+ " running: " + shellInvocation.configuration.command + " " + shellInvocation.configuration.arguments.join(" ")
+					);
 					output = e.detail.stdio.output;
 				}
 			});
 			return (p.command.result) ? p.command.result(output) : void(0);
 		};
 
-		var commandExecutor = function(program,pathname) {
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.git.Program } program
+		 * @param { slime.jrunscript.tools.git.world.Config } values
+		 * @param { string } pathname
+		 * @returns
+		 */
+		var commandExecutor = function(program,values,pathname) {
 			return function(command) {
 				return {
 					argument: function(a) {
 						return {
 							run: function(p) {
-								/** @type { slime.jrunscript.git.world.Invocation } */
+								/** @type { slime.jrunscript.tools.git.world.Invocation } */
 								var bound = {
 									program: program,
+									config: values,
 									pathname: pathname,
 									command: command,
 									argument: a,
@@ -1474,15 +1463,26 @@
 				Invocation: function(p) {
 					return {
 						program: program,
+						config: {},
 						pathname: p.pathname,
 						command: p.command,
 						argument: p.argument
+					}
+				},
+				config: function(values) {
+					return {
+						repository: function(pathname) {
+							return {
+								command: commandExecutor(program, values, pathname)
+							}
+						}
 					}
 				},
 				repository: function(pathname) {
 					var Invocation = function(p) {
 						return {
 							program: program,
+							config: {},
 							pathname: pathname,
 							command: p.command,
 							argument: p.argument
@@ -1493,12 +1493,13 @@
 						shell: function(invocation) {
 							return createShellInvocation(
 								program,
+								{},
 								pathname,
 								invocation.invocation,
 								invocation.stdio
 							);
 						},
-						command: commandExecutor(program,pathname),
+						command: commandExecutor(program,{},pathname),
 						run: function(p) {
 							var invocation = $api.Object.compose(
 								Invocation(p),
@@ -1510,19 +1511,19 @@
 						}
 					}
 				},
-				command: commandExecutor(program,void(0))
+				command: commandExecutor(program,{},void(0))
 			}
 		}
 
 		$exports.run = function(p) {
 			return run($api.Object.compose(p, {
-				run: $context.api.shell.world.run
+				run: toOldWorldOrientedApi
 			}));
 		};
 
 		$exports.Invocation = {
 			shell: function(p) {
-				return createShellInvocation(p.program, p.pathname, p.invocation, p.stdio);
+				return createShellInvocation(p.program, {}, p.pathname, p.invocation, p.stdio);
 			}
 		}
 
