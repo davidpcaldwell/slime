@@ -88,7 +88,13 @@
 
 		var Environment = jsh.script.loader.module("jrunscript-environment.js");
 
-		var hasGit = Boolean(jsh.shell.PATH.getCommand("git"));
+		var hasGit = (
+			function() {
+				if (jsh.shell.environment.SLIME_TEST_NO_GIT) return false;
+				return Boolean(jsh.shell.PATH.getCommand("git"));
+			}
+		)();
+
 		var isGitClone = (function() {
 			var SLIME = jsh.script.file.parent.parent;
 			return Boolean(SLIME.getSubdirectory(".git") || SLIME.getFile(".git"));

@@ -296,7 +296,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				return invocation;
 			}
 
-			fifty.tests.addToShellAtRuntime = function() {
+			if (!jsh.shell.environment.SLIME_TEST_NO_TOMCAT_INSTALL_TO_JSH) fifty.tests.addToShellAtRuntime = function() {
 				//	TODO	we use local JDK downloads when available, but do not seem to say so in the output of jsh.bash
 				var shell = {
 					jdks: fifty.jsh.file.temporary.directory(),
