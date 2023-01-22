@@ -19,5 +19,5 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Run the linting and the tests
-        run: /slime/wf check
+        run: ./wf check
         shell: bash
