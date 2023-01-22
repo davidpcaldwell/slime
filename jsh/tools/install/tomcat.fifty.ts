@@ -363,7 +363,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 				fifty.run(fifty.tests.replace);
 
-				fifty.run(fifty.tests.addToShellAtRuntime);
+				if (!jsh.shell.environment.SLIME_TEST_NO_TOMCAT_INSTALL_TO_JSH) fifty.run(fifty.tests.addToShellAtRuntime);
 			};
 
 			fifty.tests.world = {};

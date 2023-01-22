@@ -13,7 +13,12 @@
 		fifty.tests.suite = function() {
 			var hasJsoup = Boolean(jsh.shell.tools.jsoup.installed);
 
-			var hasGit = Boolean(jsh.shell.PATH.getCommand("git"));
+			var hasGit = (
+				function() {
+					if (jsh.shell.environment.SLIME_TEST_NO_GIT) return false;
+					return Boolean(jsh.shell.PATH.getCommand("git"));
+				}
+			)();
 
 			var isGitClone = (function() {
 				var SLIME = fifty.jsh.file.object.getRelativePath("..").directory;
@@ -21,6 +26,7 @@
 			})();
 
 			var isMkcertImplemented = (function() {
+				if (jsh.shell.environment.SLIME_TEST_NO_MKCERT) return false;
 				if (jsh.shell.os.name == "Mac OS X") return true;
 				if (jsh.shell.os.name == "Linux") return true;
 			})();
@@ -43,12 +49,12 @@
 			fifty.load("../rhino/tools/module.fifty.ts");
 			fifty.load("../rhino/tools/plugin.jsh.fifty.ts");
 			fifty.load("../rhino/tools/node/module.fifty.ts");
-			fifty.load("../rhino/tools/docker/module.fifty.ts");
+			if (!jsh.shell.environment.SLIME_TEST_NO_DOCKER) fifty.load("../rhino/tools/docker/module.fifty.ts");
 			fifty.load("../rhino/tools/github/module.fifty.ts");
 			if (hasGit) fifty.load("../rhino/tools/git/module.fifty.ts");
 			fifty.load("../rhino/tools/gcloud/module.fifty.ts");
 			fifty.load("../jsh/launcher/test/suite.fifty.ts");
-			fifty.load("../jsh/test/remote.fifty.ts");
+			if (isMkcertImplemented) fifty.load("../jsh/test/remote.fifty.ts");
 			fifty.load("../jsh/loader/jsh.fifty.ts");
 			fifty.load("../jsh/script/plugin.jsh.fifty.ts");
 			if (isMkcertImplemented) fifty.load("../jsh/unit/plugin.jsh.web.fifty.ts");

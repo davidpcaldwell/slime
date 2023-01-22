@@ -1,0 +1,30 @@
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+name: test-macos
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: macos-12
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Run the linting and the tests
+        env:
+          SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
+          SLIME_TEST_NO_MKCERT: 1
+          SLIME_TEST_NO_JAVA_THREADS: 1
+          SLIME_TEST_NO_DOCKER: 1
+          SLIME_TEST_NO_GIT: 1
+          SLIME_TEST_NO_TOMCAT_INSTALL_TO_JSH: 1
+        run: ./wf check
+        shell: bash
