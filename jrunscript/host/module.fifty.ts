@@ -438,9 +438,10 @@ namespace slime.jrunscript.host {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { jsh } = fifty.global;
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
-				fifty.load("threads.fifty.ts");
+				if (!jsh.shell.environment.SLIME_TEST_NO_JAVA_THREADS) fifty.load("threads.fifty.ts");
 			}
 		}
 	//@ts-ignore

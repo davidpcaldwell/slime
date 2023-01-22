@@ -21,5 +21,9 @@ jobs:
       - name: Run the linting and the tests
         env:
           SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
+          SLIME_TEST_NO_MKCERT: 1
+          SLIME_TEST_NO_JAVA_THREADS: 1
+          SLIME_TEST_NO_DOCKER: 1
+          SLIME_TEST_NO_GIT: 1
         run: ./wf check
         shell: bash
