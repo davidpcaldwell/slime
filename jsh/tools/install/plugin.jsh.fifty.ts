@@ -16,6 +16,40 @@ namespace slime.jsh.shell.tools {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace test {
+		export const jsh = (function(fifty: slime.fifty.test.Kit) {
+			return function(p: {
+				script: string
+				arguments?: string[]
+				jdks?: {
+					local?: string
+					user?: string
+				}
+				lib?: string
+			}) {
+				const { $api, jsh } = fifty.global;
+				const intention: slime.jsh.shell.Intention = {
+					shell: {
+						src: jsh.shell.jsh.src.toString()
+					},
+					script: p.script,
+					arguments: p.arguments,
+					environment: function(existing) {
+						var rv: { [x: string]: string } = $api.Object.compose(existing);
+						if (p.jdks?.local) rv.JSH_LOCAL_JDKS = p.jdks.local;
+						if (p.jdks?.user) rv.JSH_USER_JDKS = p.jdks.user;
+						//	TODO	would not work on Windows
+						if (p.jdks && !p.jdks.user) rv.JSH_USER_JDKS = "/dev/null";
+						if (p.lib) rv.JSH_SHELL_LIB = p.lib;
+						return rv;
+					}
+				}
+				return jsh.shell.Intention.jsh(intention);
+			}
+		//@ts-ignore
+		})(fifty);
+	}
+
 	export namespace rhino {
 		export interface InstallCommand {
 			mock?: { lib: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.File }
@@ -157,8 +191,64 @@ namespace slime.jsh.shell.tools {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				const { verify } = fifty;
 				const { $api, jsh } = fifty.global;
 				const subject = jsh.shell.tools.scala;
+
+				fifty.tests.scala = fifty.test.Parent();
+
+				fifty.tests.scala.three = function() {
+					const lib = fifty.jsh.file.temporary.directory();
+
+					var getVersionScript = test.jsh({
+						script: fifty.jsh.file.relative("test/scala-version.jsh.js").pathname,
+						lib: lib.pathname
+					});
+
+					var install = test.jsh({
+						script: fifty.jsh.file.relative("scala.jsh.js").pathname,
+						arguments: ["--version", "3"],
+						lib: lib.pathname
+					});
+
+					var execute = function(intention: slime.jrunscript.shell.run.Intention) {
+						return $api.fp.world.now.question(
+							jsh.shell.subprocess.question,
+							$api.Object.compose(intention, {
+								stdio: {
+									output: "string"
+								}
+							})
+						);
+					};
+
+					var outputToVersion = function(exit: slime.jrunscript.shell.run.Exit): slime.$api.fp.Maybe<any> {
+						if (exit.status != 0) throw new Error("Exit status: " + exit.status);
+						return JSON.parse(exit.stdio.output);
+					};
+
+					var getVersion = function() {
+						return $api.fp.now.invoke(
+							getVersionScript,
+							execute,
+							outputToVersion
+						)
+					};
+
+					var getMajorVersion = function getMajorVersion(version) {
+						return Number(version.split(".")[0]);
+					}
+
+					var before = getVersion();
+					execute(install);
+					var after = getVersion();
+
+					verify(before).present.is(false);
+					verify(after).present.is(true);
+					if (after.present) {
+						verify(after).value.evaluate(getMajorVersion).is(3);
+					}
+				}
 
 				fifty.tests.manual.scala = {};
 
@@ -406,6 +496,7 @@ namespace slime.jsh.shell.tools {
 				fifty.load("tomcat.fifty.ts");
 
 				fifty.run(fifty.tests.node);
+				fifty.run(fifty.tests.scala);
 			}
 		}
 	//@ts-ignore
