@@ -13,6 +13,9 @@ namespace slime.jrunscript.tools.jenkins {
 	}
 
 	export namespace api {
+		/**
+		 * Descriptor for a remote server.
+		 */
 		export interface Server {
 			/**
 			 * The base URL of the server, including the trailing `/`.
@@ -20,10 +23,10 @@ namespace slime.jrunscript.tools.jenkins {
 			url: string
 		}
 
-		export type Credentials = (url: string) => {
+		export interface Credentials {
 			user: string
 			token: string
-		};
+		}
 
 		export interface Request {
 			method: "GET"
@@ -95,10 +98,6 @@ namespace slime.jrunscript.tools.jenkins {
 			}
 		}
 
-		Credentials: {
-			list: (p: { server: string, use: { user: string, token: string } }[]) => api.Credentials
-		}
-
 		url: (p: {
 			server: api.Server
 			path: string
@@ -110,7 +109,9 @@ namespace slime.jrunscript.tools.jenkins {
 			json: <R>(p: api.Request) => R
 		}
 
-		client: (p: api.Credentials) => Client
+		client: (p: {
+			credentials: api.Credentials
+		}) => Client
 	}
 
 	(
@@ -148,11 +149,9 @@ namespace slime.jrunscript.tools.jenkins {
 				url: jsh.shell.environment["JENKINS_SERVER"]
 			};
 
-			var credentials: api.Credentials = (url: string) => {
-				return {
-					user: jsh.shell.environment["JENKINS_USER"],
-					token: jsh.shell.environment["JENKINS_TOKEN"]
-				}
+			var credentials: api.Credentials = {
+				user: jsh.shell.environment["JENKINS_USER"],
+				token: jsh.shell.environment["JENKINS_TOKEN"]
 			};
 
 			fifty.tests.manual.root.raw = function() {
@@ -168,7 +167,9 @@ namespace slime.jrunscript.tools.jenkins {
 			};
 
 			fifty.tests.manual.root.bound = function() {
-				var client = subject.client(credentials);
+				var client = subject.client({
+					credentials: credentials
+				});
 
 				var response = client.request({
 					method: "GET",

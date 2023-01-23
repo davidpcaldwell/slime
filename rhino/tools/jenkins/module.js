@@ -16,8 +16,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.tools.jenkins.api.Server } server
-		 * @param { string } path
-		 * @returns
+		 * @param { string } path A path on that server, without a leading `/`.
 		 */
 		function url(server, path) {
 			return server.url + path;
@@ -33,12 +32,11 @@
 				method: p.method,
 				url: p.url,
 				headers: $api.Array.build(function(rv) {
-					var credentials = (p.credentials) ? p.credentials(p.url) : void(0);
-					if (credentials) rv.push({
+					if (p.credentials) rv.push({
 						name: "Authorization",
 						value: $context.library.http.Authentication.Basic.Authorization({
-							user: credentials.user,
-							password: credentials.token
+							user: p.credentials.user,
+							password: p.credentials.token
 						})
 					});
 				})
@@ -75,19 +73,6 @@
 		}
 
 		$export({
-			Credentials: {
-				list: function(p) {
-					return function(url) {
-						for (var i=0; i<p.length; i++) {
-							var server = p[i].server;
-							if (url.substring(0,server.length) == server) {
-								return p[i].use;
-							}
-						}
-						return null;
-					}
-				}
-			},
 			request: {
 				json: function(p) {
 					var response = request(p);
@@ -113,7 +98,7 @@
 								var response = request({
 									method: r.method,
 									url: r.url + "api/json",
-									credentials: c
+									credentials: c.credentials
 								});
 								if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + r.method + " " + r.url + "api/json");
 								return JSON.parse(response.stream.character().asString());
@@ -124,7 +109,7 @@
 						var response = request({
 							method: "GET",
 							url: o.url + "api/json",
-							credentials: c
+							credentials: c.credentials
 						});
 						if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + "GET" + " " + o.url + "api/json");
 						return JSON.parse(response.stream.character().asString());
@@ -134,7 +119,7 @@
 							var response = request({
 								method: "GET",
 								url: p.url + "config.xml",
-								credentials: c
+								credentials: c.credentials
 							});
 							var xml = response.stream.character().asString();
 							var parsed = $context.library.document.Document.codec.string.decode(xml);
