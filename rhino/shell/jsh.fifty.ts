@@ -42,14 +42,19 @@ namespace slime.jsh.shell {
 	 */
 	export interface Exports {}
 
+	export type Intention = (
+		{
+			shell: {
+				src: string
+			},
+			script: string
+		}
+		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "stdio" | "directory">
+	)
+
 	export interface Exports {
 		Intention: slime.jrunscript.shell.Exports["Intention"] & {
-			jsh: (p: {
-				shell: {
-					src: string
-				},
-				script: string
-			} & Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "stdio" | "directory">) => slime.jrunscript.shell.run.Intention
+			jsh: (p: Intention) => slime.jrunscript.shell.run.Intention
 		}
 	}
 

@@ -20,8 +20,9 @@
 
 		$exports.Intention.jsh = function(p) {
 			return {
-				command: $context.api.file.world.Location.relative("jsh.bash")($context.api.file.world.Location.from.os(p.shell.src)).pathname,
+				command: "bash",
 				arguments: $api.Array.build(function(rv) {
+					rv.push($context.api.file.world.Location.relative("jsh.bash")($context.api.file.world.Location.from.os(p.shell.src)).pathname);
 					rv.push(p.script);
 					if (p.arguments) rv.push.apply(rv, p.arguments);
 				}),
