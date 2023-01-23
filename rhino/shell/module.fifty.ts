@@ -148,6 +148,15 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
+		Intention: exports.Intention
+	}
+
+	export namespace exports {
+		export interface Intention {
+		}
+	}
+
+	export interface Exports {
 		listeners: $api.Events<{
 			"run.start": any
 		}>["listeners"]

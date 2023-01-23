@@ -67,29 +67,37 @@ namespace slime.jrunscript.shell.run {
 		error: OutputCapture
 	}
 
-	export interface Invocation {
-		environment: {
-			readonly [name: string]: string
-		}
-		directory: string
-		stdio: StdioConfiguration
-		command: string
-		arguments: string[]
+	export type Environment = {
+		readonly [name: string]: string
 	}
 
-	export type Intention = Pick<Invocation,"command"> & Partial<Omit<Invocation,"command"|"stdio"|"environment">> & {
+	/**
+	 * A specification for a potential subprocess.
+	 */
+	export type Intention = {
+		command: string
+		arguments?: string[]
+		environment?: slime.$api.fp.Transform<Environment>
+		directory?: string
 		stdio?: {
 			input?: string | StdioConfiguration["input"]
 			output?: StdioConfiguration["output"]
 			error?: StdioConfiguration["error"]
 		}
-		environment?: slime.$api.fp.Transform<Invocation["environment"]>
+	}
+
+	export interface Invocation {
+		environment: Environment
+		directory: Intention["directory"]
+		stdio: StdioConfiguration
+		command: Intention["command"]
+		arguments: Intention["arguments"]
 	}
 
 	export interface Parent {
-		environment: Invocation["environment"]
-		directory: Invocation["directory"]
-		stdio: Pick<Invocation["stdio"],"output"|"error">
+		environment: Environment
+		directory: Intention["directory"]
+		stdio: Pick<StdioConfiguration,"output"|"error">
 	}
 
 	export type Line = {

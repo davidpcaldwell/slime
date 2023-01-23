@@ -783,6 +783,7 @@
 					);
 				}
 			},
+			Intention: {},
 			listeners: module.events.listeners,
 			properties: properties,
 			invocation: $exports.invocation,
