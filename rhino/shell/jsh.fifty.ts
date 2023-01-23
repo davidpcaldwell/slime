@@ -36,6 +36,50 @@ namespace slime.jsh.shell {
 
 	export type Echo = (message: string, mode?: { console?: (message: string) => void, stream?: any }) => void
 
+	/**
+	 * An implementation of {@link slime.jrunscript.shell.Exports} that adds additional APIs that are available when running under
+	 * the `jsh` shell.
+	 */
+	export interface Exports {}
+
+	export interface Exports {
+		Intention: slime.jrunscript.shell.Exports["Intention"] & {
+			jsh: (p: {
+				shell: {
+					src: string
+				},
+				script: string
+			} & Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "stdio" | "directory">) => slime.jrunscript.shell.run.Intention
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.Intention = {};
+			fifty.tests.Intention.jsh = function() {
+				var intention = jsh.shell.Intention.jsh({
+					shell: {
+						src: jsh.shell.jsh.src.toString()
+					},
+					script: fifty.jsh.file.relative("../../jsh/test/jsh-data.jsh.js").pathname,
+					stdio: {
+						output: "string"
+					}
+				});
+				var result = $api.fp.world.now.question(
+					jsh.shell.subprocess.question,
+					intention
+				);
+				jsh.shell.console(JSON.stringify(JSON.parse(result.stdio.output), void(0), 4));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		/**
 		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.

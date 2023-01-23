@@ -17,6 +17,20 @@
 	function(Packages,JavaAdapter,$api,$context,$exports) {
 		//	TODO	would be nice to generalize this and push it back into the shell module itself
 		if (!$exports.properties) throw new TypeError("No properties properties.");
+
+		$exports.Intention.jsh = function(p) {
+			return {
+				command: $context.api.file.world.Location.relative("jsh.bash")($context.api.file.world.Location.from.os(p.shell.src)).pathname,
+				arguments: $api.Array.build(function(rv) {
+					rv.push(p.script);
+					if (p.arguments) rv.push.apply(rv, p.arguments);
+				}),
+				directory: p.directory,
+				environment: p.environment,
+				stdio: p.stdio
+			}
+		};
+
 		$exports.engine = $exports.properties.get("jsh.engine");
 
 		$exports.run.evaluate.wrap = function(result) {
