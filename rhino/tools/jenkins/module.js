@@ -105,6 +105,21 @@
 							}
 						}
 					},
+					server: function(p) {
+						return function() {
+							var r = toRequest({
+								method: "GET",
+								url: p.server.url + "api/json",
+								credentials: c.credentials
+							});
+							var response = $api.fp.world.now.question(
+								$context.library.http.world.request,
+								r
+							);
+							if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + r.request.method + " " + r.request.url);
+							return JSON.parse(response.stream.character().asString());
+						}
+					},
 					fetch: function(o) {
 						var response = request({
 							method: "GET",

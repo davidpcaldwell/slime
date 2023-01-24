@@ -76,6 +76,10 @@ namespace slime.jrunscript.tools.jenkins {
 			json: <R>() => R
 		}
 
+		server: $api.fp.world.Question<{
+			server: api.Server
+		},void,Server>
+
 		fetch: {
 			(job: JobSummary): Job
 		}
