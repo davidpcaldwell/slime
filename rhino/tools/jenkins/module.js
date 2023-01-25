@@ -91,6 +91,29 @@
 				return getVersion(s);
 			},
 			client: function(c) {
+				/** @type { slime.jrunscript.tools.jenkins.Fetch<slime.jrunscript.tools.jenkins.api.Resource> } */
+				var fetch = function(p) {
+					return function() {
+						var r = toRequest({
+							method: "GET",
+							url: p.url + "api/json",
+							credentials: c.credentials
+						});
+						var response = $api.fp.world.now.question(
+							$context.library.http.world.request,
+							r
+						);
+						if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + r.request.method + " " + r.request.url);
+						return JSON.parse(response.stream.character().asString());
+					}
+				};
+
+				/** @type { slime.js.Cast<slime.jrunscript.tools.jenkins.Fetch<slime.jrunscript.tools.jenkins.Server>> } */
+				var castToFetchServer = $api.fp.cast;
+
+				/** @type { slime.js.Cast<slime.jrunscript.tools.jenkins.Fetch<slime.jrunscript.tools.jenkins.Job>> } */
+				var castToFetchJob = $api.fp.cast;
+
 				return {
 					request: function(r) {
 						return {
@@ -120,14 +143,9 @@
 							return JSON.parse(response.stream.character().asString());
 						}
 					},
-					fetch: function(o) {
-						var response = request({
-							method: "GET",
-							url: o.url + "api/json",
-							credentials: c.credentials
-						});
-						if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + "GET" + " " + o.url + "api/json");
-						return JSON.parse(response.stream.character().asString());
+					fetch: {
+						server: castToFetchServer(fetch),
+						job: castToFetchJob(fetch)
 					},
 					Job: {
 						config: function(p) {
@@ -259,7 +277,7 @@
 				}
 			},
 			api: {
-				JobSummary: {
+				Job: {
 					isName: function(name) {
 						return $api.fp.pipe($api.fp.property("name"), $api.fp.is(name));
 					}

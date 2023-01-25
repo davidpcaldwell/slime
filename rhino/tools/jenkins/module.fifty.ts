@@ -13,10 +13,14 @@ namespace slime.jrunscript.tools.jenkins {
 	}
 
 	export namespace api {
+		export interface Resource {
+			url: string
+		}
+
 		/**
 		 * Descriptor for a remote server.
 		 */
-		export interface Server {
+		export interface Server extends Resource {
 			/**
 			 * The base URL of the server, including the trailing `/`.
 			 */
@@ -42,7 +46,7 @@ namespace slime.jrunscript.tools.jenkins {
 		api: Api
 	}
 
-	export interface JobSummary {
+	export interface Job extends api.Resource {
 		_class: string
 		name: string
 		url: string
@@ -50,23 +54,19 @@ namespace slime.jrunscript.tools.jenkins {
 	}
 
 	export interface Api {
-		JobSummary: {
-			isName: (name: string) => slime.$api.fp.Predicate<slime.jrunscript.tools.jenkins.JobSummary>
+		Job: {
+			isName: (name: string) => slime.$api.fp.Predicate<slime.jrunscript.tools.jenkins.Job>
 		}
 	}
 
 	/**
 	 * An object representing an entire Jenkins server as returned by the root API endpoint.
 	 */
-	export interface Server {
-		jobs: JobSummary[]
+	export interface Server extends api.Server {
+		jobs: Job[]
 	}
 
-	export interface Job {
-	}
-
-	export namespace server {
-	}
+	export type Fetch<T extends api.Resource> = $api.fp.world.Question<api.Resource,void,T>
 
 	export interface Client {
 		request: (p: {
@@ -76,16 +76,13 @@ namespace slime.jrunscript.tools.jenkins {
 			json: <R>() => R
 		}
 
-		server: $api.fp.world.Question<{
-			server: api.Server
-		},void,Server>
-
 		fetch: {
-			(job: JobSummary): Job
+			server: Fetch<Server>
+			job: Fetch<Job>
 		}
 
 		Job: {
-			config: (job: JobSummary) => slime.runtime.document.Document
+			config: (job: Job) => slime.runtime.document.Document
 		}
 	}
 
