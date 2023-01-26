@@ -7,7 +7,36 @@
 namespace slime.jsh.wf {
 	export namespace standard {
 		namespace test {
-			export const fixtures = (
+			export interface Fixtures {
+				adapt: {
+					repository: (from: slime.jrunscript.tools.git.test.fixtures.Repository) => slime.jrunscript.tools.git.repository.Local
+				}
+
+				/**
+				 *
+				 * @param p Specifies whether to skip running `wf initialize` on the project.
+				 * @returns An `origin` repository and a `clone` repository that is cloned from that origin.
+				 */
+				project: (p?: { noInitialize?: boolean }) => {
+					origin: slime.jrunscript.tools.git.test.fixtures.Repository
+					clone: slime.jrunscript.tools.git.test.fixtures.Repository
+				}
+
+				test: {
+					/**
+					 * Creates a project based on the project configuration in the `tools/wf/test/data/plugin-standard` directory,
+					 * with user.name and user.email configured, and adds a `slime` subrepository to it at `slime/`.
+					 *
+					 * @returns The repository for the new project.
+					 */
+					fixture: () => slime.jrunscript.tools.git.repository.Local
+				}
+
+				wf: slime.jrunscript.file.File
+				jsh: slime.jrunscript.file.File
+			}
+
+			export const fixtures: Fixtures = (
 				function(fifty: slime.fifty.test.Kit) {
 					const jsh = fifty.global.jsh;
 
@@ -23,12 +52,6 @@ namespace slime.jsh.wf {
 
 					var src: slime.jrunscript.file.Directory = fifty.jsh.file.object.getRelativePath("../..").directory;
 
-					/**
-					 * Creates a project based on the project configuration in the `tools/wf/test/data/plugin-standard` directory,
-					 * with user.name and user.email configured, and adds a `slime` subrepository to it at `slime/`.
-					 *
-					 * @returns The repository for the new project.
-					 */
 					function fixture() {
 						var project = fifty.jsh.file.object.temporary.location();
 						fifty.jsh.file.object.getRelativePath("test/data/plugin-standard").directory.copy(project);
@@ -80,11 +103,6 @@ namespace slime.jsh.wf {
 						test: {
 							fixture: fixture
 						},
-						/**
-						 *
-						 * @param p Specifies whether to skip running `wf initialize` on the project.
-						 * @returns An `origin` repository and a `clone` repository that is cloned from that origin.
-						 */
 						project: function project(p?: { noInitialize?: boolean }) {
 							if (!p) p = {};
 							var origin = fixture();

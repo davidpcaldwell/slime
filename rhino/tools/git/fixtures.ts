@@ -14,9 +14,15 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 		edit: (repository: Repository, path: string, change: (before: string) => string) => void
 	}
 
+	/**
+	 * A local git repository, with a `location` indicating the repository's world-oriented location and an `api` that allows
+	 * running git {@link slime.jrunscript.tools.git.Command}s.
+	 */
 	export type Repository = {
 		location: slime.jrunscript.file.world.Location
-		api: ReturnType<ReturnType<slime.jrunscript.tools.git.Exports["program"]>["repository"]>
+		api: {
+			command: exports.command.Executor
+		}
 	};
 
 	(
