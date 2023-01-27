@@ -215,7 +215,7 @@
 			this.$jsapi = new function() {
 				// TODO: are these needed? and if so, what are they?
 				this.api = {
-					//	loader/browser/test/module.js
+					//	loader/api/old/module.js
 					browser: api.ui.unit,
 					//	loader/api/unit.js
 					unit: api.ui.api
