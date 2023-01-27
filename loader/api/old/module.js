@@ -450,7 +450,7 @@
 
 		//	currently undocumented
 		/** @type { slime.runtime.browser.test.events.Script } */
-		var events = $loader.script("events.js");
+		var events = $loader.script("../../../loader/browser/test/events.js");
 
 		$exports.fire = events();
 
