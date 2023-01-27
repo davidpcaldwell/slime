@@ -7,18 +7,25 @@
 //@ts-check
 (
 	/**
+	 * This script is loaded in the global scope via an HTML script tag, and thus `window` is treated as a scope variable
+	 * rather than a context variable, as is `inonit`.
 	 *
+	 * @param { Window & { console: typeof globalThis["console"] } } window
 	 * @param { slime.browser.Runtime } inonit
 	 */
-	function(inonit) {
+	function(window,inonit) {
 		var $api = inonit.loader.$api;
 		//	TODO	establish new slime loader relative to ../..?
 
 		var code = {
-			verify: inonit.loader.loader.script("../../loader/api/verify.js")
+			/** @type { slime.definition.verify.Script } */
+			verify: inonit.loader.loader.script("../../loader/api/verify.js"),
+			/** @type { slime.definition.test.promises.Script } */
+			promises: inonit.loader.loader.script("../../loader/api/promises.js")
 		};
 
-		/** @type { slime.definition.test.promises.Export } */
+		var verify = code.verify();
+
 		var promises = inonit.loader.loader.module("../../loader/api/promises.js");
 
 		/**
@@ -105,8 +112,6 @@
 				scopes.end(top, "bar", true);
 				return;
 			}
-
-			var verify = code.verify();
 
 			var console = (
 				/**
@@ -273,4 +278,4 @@
 		});
 	}
 //@ts-ignore
-)(inonit);
+)(window,inonit);

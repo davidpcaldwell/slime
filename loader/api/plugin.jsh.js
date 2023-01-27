@@ -24,7 +24,7 @@
 				return Boolean(jsh.js);
 			},
 			load: function() {
-				jsh.unit = $loader.module("unit.js", {
+				jsh.unit = $loader.module("old/unit.js", {
 				});
 				jsh.unit.html = $loader.module("api.html.js", new function() {
 					this.api = new function() {

@@ -35,10 +35,10 @@
 		// TODO: does js/promise have any real tests?
 		add("js/promise/", getSlimePart("js/promise/api.html"));
 
-		add("loader/api/unit.js", getSlimePart("loader/api/unit.api.html"));
+		add("loader/api/old/unit.js", getSlimePart("loader/api/old/unit.api.html"));
 		add("loader/api/", getSlimePart("loader/api/api.html"));
 		add("loader/api/test/data/1/", getSlimePart("loader/api/test/data/1/api.html"));
-		add("loader/browser/test/", getSlimePart("loader/api/old/api.html"));
+		add("loader/browser/test/", getSlimePart("loader/api/old/browser/api.html"));
 		add("$jsapi.loader.fifty", getSlimePart("tools/fifty/test/data/api.html"));
 	}
 )();

@@ -18,7 +18,7 @@
 				};
 			}
 			if (request.path == "structure") {
-				//	TODO	getStructure is part of loader/api/unit.js also
+				//	TODO	getStructure is part of loader/api/old/unit.js also
 				var getStructure = function(part) {
 					var rv = {
 						id: part.id,

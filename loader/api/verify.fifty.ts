@@ -121,7 +121,7 @@ namespace slime.definition.verify {
 	}
 
 	/**
-	 * An object that can execute {@link Context.Test}s.
+	 * An object that can execute {@link slime.definition.unit.Test}s.
 	 */
 	export type Context = (f: slime.definition.unit.Test) => void
 
@@ -202,4 +202,5 @@ namespace slime.definition.verify {
 	//@ts-ignore
 	)(fifty);
 
+	export type Script = slime.loader.Script<void,Export>
 }
