@@ -24,7 +24,13 @@
 				return Boolean(jsh.js);
 			},
 			load: function() {
+				var code = {
+					/** @type { slime.definition.verify.Script } */
+					verify: $loader.script("verify.js")
+				};
+
 				jsh.unit = $loader.module("old/unit.js", {
+					verify: code.verify()
 				});
 				jsh.unit.html = $loader.module("api.html.js", new function() {
 					this.api = new function() {

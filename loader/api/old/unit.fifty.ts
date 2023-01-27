@@ -15,7 +15,8 @@
 
 namespace slime.definition.unit {
 	export interface Context {
-		log: (message: string, p: any) => void,
+		verify: slime.definition.verify.Export
+		log: (message: string, p: any) => void
 		api: {
 			Promise: () => PromiseConstructorLike & { all: Function, resolve: Function }
 		}

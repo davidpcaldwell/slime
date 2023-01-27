@@ -16,8 +16,7 @@
 		/** @type { (message: string, p: any) => void } */
 		var log = ($context.log) ? $context.log : function(){};
 
-		/** @type { slime.definition.verify.Export } */
-		var Verify = $loader.file("../verify.js");
+		var Verify = $context.verify;
 
 		$exports.Verify = Verify;
 
