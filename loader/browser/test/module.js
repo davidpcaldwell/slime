@@ -449,7 +449,10 @@
 		}
 
 		//	currently undocumented
-		$exports.fire = $loader.module("events.js");
+		/** @type { slime.runtime.browser.test.events.Script } */
+		var events = $loader.script("events.js");
+
+		$exports.fire = events();
 
 		//	currently undocumented
 		//	TODO	this appears unused. Deprecating for now, pending more thorough check
