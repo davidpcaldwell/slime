@@ -13,9 +13,12 @@ namespace slime.jsh.wf {
 				}
 
 				/**
+				 * Initializes a `git`, using the code at `test/data/plugin-standard/`, adding a `slime/` subrepository, and then
+				 * clones it (and initializes it by updating the `slime` submodule and optionally running `wf initialize`),
+				 * returning both the original ("origin") repository and the cloned repository, enabling tests to be run
+				 * that involve `git` remotes.
 				 *
 				 * @param p Specifies whether to skip running `wf initialize` on the project.
-				 * @returns An `origin` repository and a `clone` repository that is cloned from that origin.
 				 */
 				project: (p?: { noInitialize?: boolean }) => {
 					origin: slime.jrunscript.tools.git.test.fixtures.Repository
@@ -106,21 +109,21 @@ namespace slime.jsh.wf {
 						project: function project(p?: { noInitialize?: boolean }) {
 							if (!p) p = {};
 							var origin = fixture();
-							var repository = fixtures.clone({
+							var clone = fixtures.clone({
 								src: jsh.file.world.spi.filesystems.os.pathname(origin.directory.toString())
 							});
-							repository.submodule.update({
+							clone.submodule.update({
 								init: true
 							});
-							fixtures.configure(repository);
+							fixtures.configure(clone);
 
-							var slime = jsh.tools.git.Repository({ directory: repository.directory.getSubdirectory("slime") });
+							var slime = jsh.tools.git.Repository({ directory: clone.directory.getSubdirectory("slime") });
 
 							//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
 							if (!p.noInitialize) (
 								function wfInitialize() {
 									jsh.shell.run({
-										command: repository.directory.getFile("wf"),
+										command: clone.directory.getFile("wf"),
 										arguments: ["initialize"]
 									});
 								}
@@ -138,7 +141,7 @@ namespace slime.jsh.wf {
 
 							return {
 								origin: toGitFixturesRepository(origin),
-								clone: toGitFixturesRepository(repository)
+								clone: toGitFixturesRepository(clone)
 							};
 						},
 						adapt: {

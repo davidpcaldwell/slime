@@ -16,7 +16,7 @@
 namespace slime.definition.unit {
 	export interface Context {
 		verify: slime.definition.verify.Export
-		log: (message: string, p: any) => void
+		log?: (message: string, p: any) => void
 		api: {
 			Promise: () => PromiseConstructorLike & { all: Function, resolve: Function }
 		}
@@ -61,11 +61,21 @@ namespace slime.definition.unit {
 
 namespace slime.definition.unit.internal {
 	export const { subject, types } = (function(fifty: slime.fifty.test.Kit) {
+		var Promise = (fifty.global.window) ? fifty.global.window["Promise"] : void(0);
 		const code = fifty.$loader.script("unit.js") as slime.definition.unit.Factory;
+
+		const scripts: { verify: slime.definition.verify.Script } = {
+			verify: fifty.$loader.script("../verify.js")
+		}
 
 		const verify = fifty.verify;
 
-		const subject = code();
+		const subject = code({
+			api: {
+				Promise: Promise
+			},
+			verify: scripts.verify()
+		});
 
 		return {
 			subject: subject,
