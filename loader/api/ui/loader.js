@@ -6,7 +6,9 @@
 
 $set(function(p) {
 	var $loader = new inonit.loader.Loader(inonit.loader.base + "../");
-	var api = $loader.module("loader/api/old/unit.js");
+	var api = $loader.module("loader/api/old/unit.js", {
+		verify: $loader.module("loader/api/verify.js")
+	});
 	var unit = $loader.module("loader/api/old/browser/module.js", {
 		api: {
 			unit: api,
