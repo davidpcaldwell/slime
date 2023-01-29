@@ -257,7 +257,7 @@
 				environment.jsh.built.requireTomcat();
 			},
 			parts: {
-				browser: {
+				browser: (!jsh.shell.environment.SLIME_TEST_NO_BROWSER) ? {
 					parts: new function() {
 						var debugging = (parameters.options["issue317"]) ? ["-debug:devtools"] : []
 						this.api = {
@@ -288,6 +288,11 @@
 								}
 							}
 						}
+					}
+				} : {
+					execute: function(scope,verify) {
+						var message = "Skipping tools/browser; browser not present.";
+						verify(message).is(message);
 					}
 				}
 			}

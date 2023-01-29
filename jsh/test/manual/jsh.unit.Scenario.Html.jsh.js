@@ -22,7 +22,7 @@
 				view: new jsh.unit.view.Console({ writer: jsh.shell.stdio.output })
 			});
 			top.add({ scenario: new jsh.unit.Scenario.Html({
-				pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.js")
+				pathname: jsh.script.file.getRelativePath("../../../loader/api/old/unit.js")
 			}) });
 			top.add({ scenario: new jsh.unit.Scenario.Fork({
 				name: "subprocess",
@@ -37,7 +37,7 @@
 		} else if (parameters.options.mode == "stdio.child") {
 			jsh.shell.echo("running child");
 			var scenario = new jsh.unit.Scenario.Html({
-				pathname: jsh.script.file.getRelativePath("../../../loader/api/unit.js")
+				pathname: jsh.script.file.getRelativePath("../../../loader/api/old/unit.js")
 			});
 			new jsh.unit.JSON.Encoder({
 				send: function(s) {

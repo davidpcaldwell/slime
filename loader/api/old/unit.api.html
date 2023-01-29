@@ -13,7 +13,14 @@ END LICENSE
 	</head>
 	<body jsapi:id="top">
 		<script type="application/x.jsapi#initialize">
-			scope.module = $jsapi.loader.module("unit.js");
+			var script = $jsapi.loader.script("../verify.js");
+
+			scope.module = $jsapi.loader.module("unit.js", {
+				api: {
+					Promise: void(0)
+				},
+				verify: script()
+			});
 		</script>
 		<div>
 			<script type="application/x.jsapi#initialize"><![CDATA[

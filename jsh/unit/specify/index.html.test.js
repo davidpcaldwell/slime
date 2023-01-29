@@ -6,8 +6,8 @@
 
 (
 	function() {
-		var api = $loader.module("loader/api/unit.js");
-		var unit = $loader.module("loader/api/old/module.js", {
+		var api = $loader.module("loader/api/old/unit.js");
+		var unit = $loader.module("loader/api/old/browser/module.js", {
 			api: {
 				unit: api,
 				Promise: window.Promise

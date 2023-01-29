@@ -149,7 +149,7 @@
 					function retarget(path,context,target) {
 						// return methods[name].call(target,p.get(path),scope);
 						var resource = this.get(path);
-						if (!resource) throw new Error("Not found: " + path);
+						if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
 						return methods.old[name].call(target,resource,context);
 					}
 				);

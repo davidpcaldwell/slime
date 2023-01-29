@@ -6,8 +6,8 @@
 
 $set(function(p) {
 	var $loader = new inonit.loader.Loader(inonit.loader.base + "../");
-	var api = $loader.module("loader/api/unit.js");
-	var unit = $loader.module("loader/api/old/module.js", {
+	var api = $loader.module("loader/api/old/unit.js");
+	var unit = $loader.module("loader/api/old/browser/module.js", {
 		api: {
 			unit: api,
 			Promise: window.Promise
@@ -72,7 +72,7 @@ $set(function(p) {
 			};
 
 			this.run = function() {
-				//  the loader/api/old/module.js implementation of run() adds appropriate listeners to the global suite and then runs it,
+				//  the loader/api/old/browser/module.js implementation of run() adds appropriate listeners to the global suite and then runs it,
 				//  issuing callbacks for each event delivered to those listeners. We then dispatch those events to the top-level view, which
 				//  dispatches them to the nested views
 				unit.run(new function() {

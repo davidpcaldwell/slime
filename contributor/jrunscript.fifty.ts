@@ -33,7 +33,7 @@
 
 			fifty.load("../loader/expression.fifty.ts");
 			fifty.load("../loader/jrunscript/expression.fifty.ts");
-			fifty.load("../loader/api/unit.fifty.ts");
+			fifty.load("../loader/api/old/unit.fifty.ts");
 			fifty.load("../rhino/system/test/Packages.inonit.system.fifty.ts");
 			fifty.load("../rhino/jrunscript/api.fifty.ts");
 			if (hasJsoup) fifty.load("../loader/document/module.fifty.ts");
@@ -68,7 +68,7 @@
 			if (hasGit && isGitClone) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
 			if (hasGit && isGitClone) fifty.load("../wf.fifty.ts");
 			//	TODO	below test is probably pointless, probably doesn't run anything. Should we find a way to short-circuit it?
-			fifty.load("../loader/browser/test/suite.jsh.fifty.ts");
+			if (!jsh.shell.environment.SLIME_TEST_NO_BROWSER) fifty.load("../loader/browser/test/suite.jsh.fifty.ts");
 		}
 	}
 //@ts-ignore

@@ -8,7 +8,7 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param { (value: slime.definition.verify.Export) => void } $export
+	 * @param { slime.loader.Export<slime.definition.verify.Export> } $export
 	 */
 	function($api,$export) {
 		/** @type { slime.definition.verify.Export } */
