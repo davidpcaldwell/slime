@@ -10,7 +10,7 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 
 	export type Exports = (fifty: slime.fifty.test.Kit) => {
 		program: ReturnType<slime.jsh.Global["tools"]["git"]["program"]>
-		empty: () => Repository
+		empty: (p?: { initialBranch?: string }) => Repository
 		edit: (repository: Repository, path: string, change: (before: string) => string) => void
 	}
 
@@ -34,18 +34,21 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 
 				var program = jsh.tools.git.program({ command: "git" });
 
-				var init: slime.jrunscript.tools.git.Command<void,void> = {
+				var init: slime.jrunscript.tools.git.Command<{ initialBranch?: string },void> = {
 					invocation: function(p) {
 						return {
-							command: "init"
+							command: "init",
+							arguments: $api.Array.build(function(rv) {
+								if (p && p.initialBranch) rv.push("--initial-branch", p.initialBranch);
+							})
 						}
 					}
 				}
 
-				function empty(): Repository {
+				var empty: ReturnType<Exports>["empty"] = function(p) {
 					var tmp = fifty.jsh.file.temporary.directory();
 					var repository = jsh.tools.git.program({ command: "git" }).repository(tmp.pathname);
-					repository.command(init).argument().run();
+					repository.command(init).argument(p).run();
 					return {
 						location: tmp,
 						api: repository

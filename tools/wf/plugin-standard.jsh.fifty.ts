@@ -13,10 +13,10 @@ namespace slime.jsh.wf {
 				}
 
 				/**
-				 * Initializes a `git`, using the code at `test/data/plugin-standard/`, adding a `slime/` subrepository, and then
-				 * clones it (and initializes it by updating the `slime` submodule and optionally running `wf initialize`),
-				 * returning both the original ("origin") repository and the cloned repository, enabling tests to be run
-				 * that involve `git` remotes.
+				 * Initializes a `git` repository using the code at `test/data/plugin-standard/`, adding a `slime/` subrepository,
+				 * and then clones it (and initializes it by updating the `slime` submodule and optionally running `wf initialize`),
+				 * returning both the original ("origin") repository and the cloned repository, enabling tests to be run that
+				 * involve `git` remotes.
 				 *
 				 * @param p Specifies whether to skip running `wf initialize` on the project.
 				 */
