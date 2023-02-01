@@ -13,10 +13,10 @@ namespace slime.jsh.wf {
 				}
 
 				/**
-				 * Initializes a `git`, using the code at `test/data/plugin-standard/`, adding a `slime/` subrepository, and then
-				 * clones it (and initializes it by updating the `slime` submodule and optionally running `wf initialize`),
-				 * returning both the original ("origin") repository and the cloned repository, enabling tests to be run
-				 * that involve `git` remotes.
+				 * Initializes a `git` repository using the code at `test/data/plugin-standard/`, adding a `slime/` subrepository,
+				 * and then clones it (and initializes it by updating the `slime` submodule and optionally running `wf initialize`),
+				 * returning both the original ("origin") repository and the cloned repository, enabling tests to be run that
+				 * involve `git` remotes.
 				 *
 				 * @param p Specifies whether to skip running `wf initialize` on the project.
 				 */
@@ -84,7 +84,11 @@ namespace slime.jsh.wf {
 						fixtures.configure(slime);
 						repository.submodule.add({
 							repository: slime,
-							path: "slime"
+							path: "slime",
+							config: {
+								//	See https://vielmetti.typepad.com/logbook/2022/10/git-security-fixes-lead-to-fatal-transport-file-not-allowed-error-in-ci-systems-cve-2022-39253.html
+								"protocol.file.allow": "always"
+							}
 						});
 						repository.commit({
 							all: true,
@@ -113,7 +117,11 @@ namespace slime.jsh.wf {
 								src: jsh.file.world.spi.filesystems.os.pathname(origin.directory.toString())
 							});
 							clone.submodule.update({
-								init: true
+								init: true,
+								config: {
+									//	See https://vielmetti.typepad.com/logbook/2022/10/git-security-fixes-lead-to-fatal-transport-file-not-allowed-error-in-ci-systems-cve-2022-39253.html
+									"protocol.file.allow": "always"
+								}
 							});
 							fixtures.configure(clone);
 
