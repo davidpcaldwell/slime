@@ -354,7 +354,6 @@ namespace slime.jrunscript.tools.git {
 				fifty.tests.types.Repository.Local.status = function() {
 					var empty = internal.oo.fixtures.empty({ initialBranch: "trunk" });
 					var repository = internal.oo.subject.Repository({ directory: jsh.file.Pathname(empty.location.pathname).directory });
-					debugger;
 					var status = repository.status();
 					verify(repository).status().evaluate.property("paths").is(void(0));
 					internal.oo.old.fixtures.write({
@@ -365,7 +364,13 @@ namespace slime.jrunscript.tools.git {
 					});
 					verify(repository).status().paths.a.is("??");
 					repository.add({ path: "a" });
-					repository.commit({ message: "amessage" });
+					repository.config({ set: { name: "user.name", value: "SLIME unit tests" }})
+					repository.config({ set: { name: "user.email", value: "slime@example.com" }})
+					repository.commit({ message: "amessage" }, {
+						stderr: function(e) {
+							jsh.shell.console(e.detail);
+						}
+					});
 					var status = repository.status();
 					verify(status).branch.name.is("trunk");
 					verify(status).branch.commit.subject.is("amessage");

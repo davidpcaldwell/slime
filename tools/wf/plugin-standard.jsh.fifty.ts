@@ -84,7 +84,11 @@ namespace slime.jsh.wf {
 						fixtures.configure(slime);
 						repository.submodule.add({
 							repository: slime,
-							path: "slime"
+							path: "slime",
+							config: {
+								//	See https://vielmetti.typepad.com/logbook/2022/10/git-security-fixes-lead-to-fatal-transport-file-not-allowed-error-in-ci-systems-cve-2022-39253.html
+								"protocol.file.allow": "always"
+							}
 						});
 						repository.commit({
 							all: true,
@@ -113,7 +117,11 @@ namespace slime.jsh.wf {
 								src: jsh.file.world.spi.filesystems.os.pathname(origin.directory.toString())
 							});
 							clone.submodule.update({
-								init: true
+								init: true,
+								config: {
+									//	See https://vielmetti.typepad.com/logbook/2022/10/git-security-fixes-lead-to-fatal-transport-file-not-allowed-error-in-ci-systems-cve-2022-39253.html
+									"protocol.file.allow": "always"
+								}
 							});
 							fixtures.configure(clone);
 
