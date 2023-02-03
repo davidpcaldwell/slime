@@ -14,6 +14,12 @@ namespace slime.jrunscript.runtime {
 			length?: number
 			modified?: any
 
+			/**
+			 * If the first argument is is `Streams.binary` or `Streams.text`, this method opens a stream and returns it. If the argument is a
+			 * string, this method opens a character stream, writes the string to the stream, and closes the stream. If the value is
+			 * a binary or character input stream, this method reads the stream until it is exhausted and copies its contents to the
+			 * location of this file, closing the stream after doing so.
+			 */
 			write?: {
 				(marker: slime.jrunscript.runtime.io.Exports["Streams"]["binary"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.OutputStream
 				(marker: slime.jrunscript.runtime.io.Exports["Streams"]["text"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.Writer
@@ -62,6 +68,16 @@ namespace slime.jrunscript.runtime {
 			export type HistoricSupportedDescriptor = resource.Descriptor | resource.LoadedDescriptor | slime.resource.Descriptor | DeprecatedStreamDescriptor
 
 			export interface WriteMode {
+				/**
+				 * What to do if the file already exists. If `true`, this method will append to, rather than overwriting, the file.
+				 * If `false`, the file will be overwritten. Otherwise, an exception will be generated if the file exists.
+				 */
+				append?: boolean
+
+				/**
+				 * Whether to create the directory containing this Pathname if it does not already exist.
+				 */
+				recursive?: boolean
 			}
 		}
 
