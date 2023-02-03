@@ -8,6 +8,8 @@ namespace slime.jsh.wf {
 	export namespace standard {
 		namespace test {
 			export interface Fixtures {
+				git: ReturnType<slime.jrunscript.tools.git.test.fixtures.Exports>
+
 				adapt: {
 					repository: (from: slime.jrunscript.tools.git.test.fixtures.Repository) => slime.jrunscript.tools.git.repository.Local
 				}
@@ -105,7 +107,16 @@ namespace slime.jsh.wf {
 						return repository;
 					}
 
+					var git = (
+						function() {
+							var script: slime.jrunscript.tools.git.test.fixtures.Script = fifty.$loader.script("../../rhino/tools/git/fixtures.ts");
+							var setup = script();
+							return setup(fifty);
+						}
+					)();
+
 					return {
+						git: git,
 						jsh: fifty.jsh.file.object.getRelativePath("../../jsh.bash").file,
 						wf: fifty.jsh.file.object.getRelativePath("../wf.bash").file,
 						local: fixture,
@@ -139,10 +150,7 @@ namespace slime.jsh.wf {
 
 							function toGitFixturesRepository(p: slime.jrunscript.tools.git.repository.Local): slime.jrunscript.tools.git.test.fixtures.Repository {
 								return {
-									location: {
-										filesystem: jsh.file.world.spi.filesystems.os,
-										pathname: p.directory.toString()
-									},
+									location: p.directory.toString(),
 									api: jsh.tools.git.program({ command: "git" }).repository(p.directory.toString())
 								}
 							}
@@ -154,7 +162,7 @@ namespace slime.jsh.wf {
 						},
 						adapt: {
 							repository: function(repository: slime.jrunscript.tools.git.test.fixtures.Repository): slime.jrunscript.tools.git.repository.Local {
-								return jsh.tools.git.Repository({ directory: jsh.file.Pathname(repository.location.pathname).directory });
+								return jsh.tools.git.Repository({ directory: jsh.file.Pathname(repository.location).directory });
 							}
 						}
 					}
@@ -198,36 +206,6 @@ namespace slime.jsh.wf {
 			test: slime.jsh.script.cli.Command<Options>
 
 			precommit: slime.jsh.script.cli.Command<Options>
-
-			submodule: {
-				/**
-				 * Completely removes a top-level submodule from the project.
-				 *
-				 * `--path <path-to-submodule>`
-				 */
-				remove:  slime.jsh.script.cli.Command<Options>
-
-				/**
-				 * `--path <path-to-submodule>`
-				 */
-				update:  slime.jsh.script.cli.Command<Options>
-
-				/**
-				 * For a submodule that is a detached HEAD that is tracking a branch, force the tracked branch to HEAD and check
-				 * out the tracked branch.
-				 *
-				 * `--path <path-to-submodule>`
-				 */
-				attach: slime.jsh.script.cli.Command<Options & {
-					path: string
-				}>
-
-				/**
-				 * Resets a submodule of this module to point at the current commit for that submodule, and if there is a tracking
-				 * branch, resets the tracking branch to that commit.
-				 */
-				reset:  slime.jsh.script.cli.Command<Options>
-			}
 
 			documentation:  slime.jsh.script.cli.Command<Options>
 
@@ -439,6 +417,53 @@ namespace slime.jsh.wf {
 		//@ts-ignore
 		)(fifty);
 
+		export interface Interface {
+			submodule: {
+				/**
+				 * Completely removes a top-level submodule from the project.
+				 *
+				 * `--path <path-to-submodule>`
+				 */
+				remove:  slime.jsh.script.cli.Command<Options>
+
+				/**
+				 * `--path <path-to-submodule>`
+				 */
+				update:  slime.jsh.script.cli.Command<Options>
+
+				/**
+				 * For a submodule that is a detached HEAD that is tracking a branch, force the tracked branch to HEAD and check
+				 * out the tracked branch.
+				 *
+				 * `--path <path-to-submodule>`
+				 */
+				attach: slime.jsh.script.cli.Command<Options & {
+					path: string
+				}>
+
+				/**
+				 * Resets a submodule of this module to point at the current commit for that submodule, and if there is a tracking
+				 * branch, resets the tracking branch to that commit.
+				 */
+				reset:  slime.jsh.script.cli.Command<Options>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.interface.submodule = fifty.test.Parent();
+
+				fifty.tests.interface.submodule.reset = function() {
+					//var it = test.fixtures.hosted().clone;
+
+
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 		(
 			function(
 				fifty: slime.fifty.test.Kit
@@ -466,7 +491,7 @@ namespace slime.jsh.wf {
 
 				fifty.tests.manual.hosted = function() {
 					var project = test.fixtures.hosted();
-					jsh.shell.console("cd " + project.clone.location.pathname);
+					jsh.shell.console("cd " + project.clone.location);
 				}
 
 				fifty.tests.manual.profile = function() {
@@ -576,9 +601,9 @@ namespace slime.jsh.wf {
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
 						jsh.shell.Invocation.from.argument({
-							command: repository.location.pathname + "/" + "wf",
+							command: repository.location + "/" + "wf",
 							arguments: ["initialize"],
-							directory: repository.location.pathname
+							directory: repository.location
 						}),
 						{}
 					);
@@ -615,7 +640,7 @@ namespace slime.jsh.wf {
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
 						jsh.shell.Invocation.from.argument({
-							command: $api.fp.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
+							command: $api.fp.result(project.location, jsh.file.world.Location.from.os, jsh.file.world.Location.relative("wf")).pathname,
 							arguments: ["status"]
 						}),
 						{}
@@ -627,7 +652,7 @@ namespace slime.jsh.wf {
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
 						jsh.shell.Invocation.from.argument({
-							command: $api.fp.result(project.location, jsh.file.world.Location.relative("wf")).pathname,
+							command: $api.fp.result(project.location, jsh.file.world.Location.from.os, jsh.file.world.Location.relative("wf")).pathname,
 							arguments: ["status"]
 						}),
 						{}
@@ -699,7 +724,7 @@ namespace slime.jsh.wf {
 						branch: "origin/master"
 					}).run();
 					jsh.shell.console("Repository location:");
-					jsh.shell.console(repository.location.pathname);
+					jsh.shell.console(repository.location);
 				}
 			}
 		//@ts-ignore
