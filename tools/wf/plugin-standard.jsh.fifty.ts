@@ -13,6 +13,14 @@ namespace slime.jsh.wf {
 				}
 
 				/**
+				 * Creates a project based on the project configuration in the `test/data/plugin-standard/` directory,
+				 * with user.name and user.email configured, and adds a `slime` subrepository to it at `slime/`.
+				 *
+				 * @returns The repository for the new project.
+				 */
+				local: () => slime.jrunscript.tools.git.repository.Local
+
+				/**
 				 * Initializes a `git` repository using the code at `test/data/plugin-standard/`, adding a `slime/` subrepository,
 				 * and then clones it (and initializes it by updating the `slime` submodule and optionally running `wf initialize`),
 				 * returning both the original ("origin") repository and the cloned repository, enabling tests to be run that
@@ -20,19 +28,9 @@ namespace slime.jsh.wf {
 				 *
 				 * @param p Specifies whether to skip running `wf initialize` on the project.
 				 */
-				project: (p?: { noInitialize?: boolean }) => {
+				hosted: (p?: { noInitialize?: boolean }) => {
 					origin: slime.jrunscript.tools.git.test.fixtures.Repository
 					clone: slime.jrunscript.tools.git.test.fixtures.Repository
-				}
-
-				test: {
-					/**
-					 * Creates a project based on the project configuration in the `tools/wf/test/data/plugin-standard` directory,
-					 * with user.name and user.email configured, and adds a `slime` subrepository to it at `slime/`.
-					 *
-					 * @returns The repository for the new project.
-					 */
-					fixture: () => slime.jrunscript.tools.git.repository.Local
 				}
 
 				wf: slime.jrunscript.file.File
@@ -82,14 +80,17 @@ namespace slime.jsh.wf {
 							}
 						});
 						fixtures.configure(slime);
-						repository.submodule.add({
+						var slime = repository.submodule.add({
 							repository: slime,
 							path: "slime",
+							branch: "main",
 							config: {
 								//	See https://vielmetti.typepad.com/logbook/2022/10/git-security-fixes-lead-to-fatal-transport-file-not-allowed-error-in-ci-systems-cve-2022-39253.html
 								"protocol.file.allow": "always"
 							}
 						});
+						//	TODO	it would be nice to set submodule.slime.udpate=merge, but hopefully not strictly necessary right
+						//			now
 						repository.commit({
 							all: true,
 							message: "initial"
@@ -107,10 +108,8 @@ namespace slime.jsh.wf {
 					return {
 						jsh: fifty.jsh.file.object.getRelativePath("../../jsh.bash").file,
 						wf: fifty.jsh.file.object.getRelativePath("../wf.bash").file,
-						test: {
-							fixture: fixture
-						},
-						project: function project(p?: { noInitialize?: boolean }) {
+						local: fixture,
+						hosted: function project(p?: { noInitialize?: boolean }) {
 							if (!p) p = {};
 							var origin = fixture();
 							var clone = fixtures.clone({
@@ -126,6 +125,7 @@ namespace slime.jsh.wf {
 							fixtures.configure(clone);
 
 							var slime = jsh.tools.git.Repository({ directory: clone.directory.getSubdirectory("slime") });
+							slime.checkout({ branch: "main" });
 
 							//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
 							if (!p.noInitialize) (
@@ -269,7 +269,7 @@ namespace slime.jsh.wf {
 				var { $api, jsh } = fifty.global;
 
 				fifty.tests.interface.tsc = function() {
-					var repository = test.fixtures.adapt.repository(test.fixtures.project().clone);
+					var repository = test.fixtures.adapt.repository(test.fixtures.hosted().clone);
 
 					var tscresult = jsh.shell.run({
 						command: test.fixtures.wf,
@@ -294,7 +294,7 @@ namespace slime.jsh.wf {
 					}).is(true);
 
 					fifty.run(function tscfail() {
-						var repository = test.fixtures.adapt.repository(test.fixtures.project().clone);
+						var repository = test.fixtures.adapt.repository(test.fixtures.hosted().clone);
 
 						var tsc = function(environment?) {
 							var result = jsh.shell.run({
@@ -394,7 +394,7 @@ namespace slime.jsh.wf {
 				const { $api, jsh } = fifty.global;
 
 				fifty.tests.interface.commit = function() {
-					var repository = test.fixtures.adapt.repository(test.fixtures.project().clone);
+					var repository = test.fixtures.adapt.repository(test.fixtures.hosted().clone);
 
 					var environment = {};
 
@@ -434,6 +434,83 @@ namespace slime.jsh.wf {
 						jsh.shell.console("error: [" + stdio.error + "]");
 						return stdio.error.indexOf("Found untracked files:\nb") != -1;
 					}).is(true);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.suite = function() {
+					fifty.run(fifty.tests.interface);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.manual = {};
+
+				fifty.tests.manual.local = function() {
+					var project = test.fixtures.local();
+					jsh.shell.console("cd " + project.directory);
+				};
+
+				fifty.tests.manual.hosted = function() {
+					var project = test.fixtures.hosted();
+					jsh.shell.console("cd " + project.clone.location.pathname);
+				}
+
+				fifty.tests.manual.profile = function() {
+					var project = test.fixtures.adapt.repository(test.fixtures.hosted({ noInitialize: true }).clone);;
+					var getSlimePath = function(relative) {
+						return jsh.file.world.spi.filesystems.os.pathname(project.directory.toString()).relative("slime").relative(relative);
+					}
+					//	TODO	should profiler install Rhino?
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							command: getSlimePath("jsh.bash").pathname,
+							arguments: $api.Array.build(function(rv) {
+								rv.push(getSlimePath("jsh/tools/install/rhino.jsh.js").pathname);
+							}),
+							directory: getSlimePath(".").pathname
+						})
+					);
+					//	Needed for profile viewer, to serve UI and JSON data
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							command: getSlimePath("jsh.bash").pathname,
+							arguments: $api.Array.build(function(rv) {
+								rv.push(getSlimePath("jsh/tools/install/tomcat.jsh.js").pathname);
+							}),
+							directory: getSlimePath(".").pathname
+						})
+					);
+					$api.fp.world.now.action(
+						jsh.shell.world.action,
+						jsh.shell.Invocation.from.argument({
+							//	TODO	perhaps should accept world Pathname
+							command: getSlimePath("jsh.bash").pathname,
+							arguments: $api.Array.build(function(rv) {
+								rv.push(getSlimePath("jsh/tools/profile.jsh.js").pathname);
+								rv.push("--profiler:output:json", getSlimePath("local/wf/profile.json").pathname);
+								rv.push(getSlimePath("tools/wf.jsh.js").pathname);
+								rv.push("initialize");
+								rv.push("--test-skip-git-identity-requirement");
+							}),
+							directory: getSlimePath(".").pathname
+						})
+					);
 				}
 
 				var addAll: slime.jrunscript.tools.git.Command<void,void> = {
@@ -492,8 +569,8 @@ namespace slime.jsh.wf {
 					subject: test.fixtures
 				};
 
-				fifty.tests.issue485 = function() {
-					var project = test.fixtures.project();
+				fifty.tests.manual.issue485 = function() {
+					var project = test.fixtures.hosted();
 					var cloned = test.fixtures.adapt.repository(project.clone);
 					var repository = project.clone;
 					$api.fp.world.now.action(
@@ -523,7 +600,7 @@ namespace slime.jsh.wf {
 					verify(after).paths["wf.js"].is(" M");
 				}
 
-				fifty.tests.issue174 = function() {
+				fifty.tests.manual.issue174 = function() {
 					var mv: slime.jrunscript.tools.git.Command<{ from: string, to: string },void> = {
 						invocation: function(p) {
 							return {
@@ -533,7 +610,7 @@ namespace slime.jsh.wf {
 						}
 					};
 
-					var project = fixtures.subject.project().clone;
+					var project = fixtures.subject.hosted().clone;
 
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
@@ -557,8 +634,8 @@ namespace slime.jsh.wf {
 					);
 				}
 
-				fifty.tests.issue319 = function() {
-					var project = test.fixtures.adapt.repository(test.fixtures.project().clone);
+				fifty.tests.manual.issue319 = function() {
+					var project = test.fixtures.adapt.repository(test.fixtures.hosted().clone);
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
 						jsh.shell.Invocation.from.argument({
@@ -571,8 +648,8 @@ namespace slime.jsh.wf {
 					);
 				};
 
-				fifty.tests.issue332 = function() {
-					var x = test.fixtures.project();
+				fifty.tests.manual.issue332 = function() {
+					var x = test.fixtures.hosted();
 					var project = test.fixtures.adapt.repository(x.clone);
 					var repository = x.clone;
 					fixtures.git.edit(repository, "wf.js", function(before) {
@@ -590,8 +667,8 @@ namespace slime.jsh.wf {
 					);
 				};
 
-				fifty.tests.issue567 = function() {
-					var project = test.fixtures.project();
+				fifty.tests.manual.issue567 = function() {
+					var project = test.fixtures.hosted();
 					var origin = project.origin;
 					var repository = project.clone;
 					repository.api.command(branch).argument({
@@ -623,68 +700,6 @@ namespace slime.jsh.wf {
 					}).run();
 					jsh.shell.console("Repository location:");
 					jsh.shell.console(repository.location.pathname);
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { $api, jsh } = fifty.global;
-
-				fifty.tests.suite = function() {
-					fifty.run(fifty.tests.interface);
-				}
-
-				fifty.tests.manual = {};
-				fifty.tests.manual.fixture = function() {
-					var project = test.fixtures.test.fixture();
-					jsh.shell.console("cd " + project.directory);
-				}
-				fifty.tests.manual.profile = function() {
-					var project = test.fixtures.adapt.repository(test.fixtures.project({ noInitialize: true }).clone);;
-					var getSlimePath = function(relative) {
-						return jsh.file.world.spi.filesystems.os.pathname(project.directory.toString()).relative("slime").relative(relative);
-					}
-					//	TODO	should profiler install Rhino?
-					$api.fp.world.now.action(
-						jsh.shell.world.action,
-						jsh.shell.Invocation.from.argument({
-							command: getSlimePath("jsh.bash").pathname,
-							arguments: $api.Array.build(function(rv) {
-								rv.push(getSlimePath("jsh/tools/install/rhino.jsh.js").pathname);
-							}),
-							directory: getSlimePath(".").pathname
-						})
-					);
-					//	Needed for profile viewer, to serve UI and JSON data
-					$api.fp.world.now.action(
-						jsh.shell.world.action,
-						jsh.shell.Invocation.from.argument({
-							command: getSlimePath("jsh.bash").pathname,
-							arguments: $api.Array.build(function(rv) {
-								rv.push(getSlimePath("jsh/tools/install/tomcat.jsh.js").pathname);
-							}),
-							directory: getSlimePath(".").pathname
-						})
-					);
-					$api.fp.world.now.action(
-						jsh.shell.world.action,
-						jsh.shell.Invocation.from.argument({
-							//	TODO	perhaps should accept world Pathname
-							command: getSlimePath("jsh.bash").pathname,
-							arguments: $api.Array.build(function(rv) {
-								rv.push(getSlimePath("jsh/tools/profile.jsh.js").pathname);
-								rv.push("--profiler:output:json", getSlimePath("local/wf/profile.json").pathname);
-								rv.push(getSlimePath("tools/wf.jsh.js").pathname);
-								rv.push("initialize");
-								rv.push("--test-skip-git-identity-requirement");
-							}),
-							directory: getSlimePath(".").pathname
-						})
-					);
 				}
 			}
 		//@ts-ignore
