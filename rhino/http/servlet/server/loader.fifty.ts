@@ -19,7 +19,7 @@ namespace slime.servlet {
 
 			/**
 			 * Creates a handler that serves the contents of a {@link slime.Loader} that loads
-			 * {@link slime.jrunscript.runtime.Resource}s.
+			 * {@link slime.jrunscript.runtime.old.Resource}s.
 			 */
 			Loader: (o: {
 				loader: slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.old.Resource>
