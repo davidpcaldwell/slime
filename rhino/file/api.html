@@ -202,23 +202,13 @@ END LICENSE
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
-									<li>
-										If this value is <code>Streams.binary</code> or <code>Streams.text</code>, this method opens
-										a stream and returns it.  If the argument is a string, this method opens a character stream,
-										writes the string to the stream, and closes the stream.  If the value is a binary or
-										character input stream, this method reads the stream until it is exhausted and copies its
-										contents to the location of this file, closing the stream after doing so.
-									</li>
 									<li class="object">
 										An object representing a mode of operation for this method.
 										<div class="label">has properties:</div>
 										<ul>
 											<li class="value">
 												<div class="name">append</div>
-												<span class="type">boolean</span> What to do if the file already exists.  If
-												<code>true</code>, this method will append to, rather than overwriting, the file.
-												If <code>false</code>, the file will be overwritten.  Otherwise, an exception will
-												be generated if the file exists.
+												<span class="type">boolean</span>
 											</li>
 											<li class="value">
 												<div class="name">recursive</div>
