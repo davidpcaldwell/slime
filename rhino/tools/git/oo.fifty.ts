@@ -353,7 +353,7 @@ namespace slime.jrunscript.tools.git {
 
 				fifty.tests.types.Repository.Local.status = function() {
 					var empty = internal.oo.fixtures.empty({ initialBranch: "trunk" });
-					var repository = internal.oo.subject.Repository({ directory: jsh.file.Pathname(empty.location.pathname).directory });
+					var repository = internal.oo.subject.Repository({ directory: jsh.file.Pathname(empty.location).directory });
 					var status = repository.status();
 					verify(repository).status().evaluate.property("paths").is(void(0));
 					internal.oo.old.fixtures.write({
