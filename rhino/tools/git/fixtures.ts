@@ -25,6 +25,9 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 				old: (p: slime.jrunscript.tools.git.repository.Local) => Repository
 			}
 		}
+		commands: {
+			commit: slime.jrunscript.tools.git.Command<{ message: string }, void>
+		}
 		program: ReturnType<slime.jsh.Global["tools"]["git"]["program"]>
 		empty: (p?: { initialBranch?: string }) => Repository
 		edit: (repository: Repository, path: string, change: (before: string) => string) => void
@@ -106,6 +109,16 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 					Repository: {
 						from: {
 							old: fromOldRepository
+						}
+					},
+					commands: {
+						commit: {
+							invocation: function(p) {
+								return {
+									command: "commit",
+									arguments: ["--message", p.message]
+								}
+							}
 						}
 					},
 					program,

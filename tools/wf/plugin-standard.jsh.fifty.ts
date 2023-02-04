@@ -453,13 +453,26 @@ namespace slime.jsh.wf {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
 				fifty.tests.interface.submodule = fifty.test.Parent();
 
-				fifty.tests.interface.submodule.reset = function() {
-					//var it = test.fixtures.hosted().clone;
+				//	Will be fifty.tests.interface.submodule.reset when complete
+				fifty.tests.wip = function() {
+					var it = test.fixtures.hosted().clone;
+					var status = it.api.command(jsh.tools.git.commands.submodule.status).argument({}).run();
+					var slime = test.fixtures.git.submodule(it, "slime");
 
-
-				}
+					test.fixtures.git.edit(slime, "wf.js", code => code + "\n" + "//foo");
+					jsh.shell.console("Committing ...");
+					if (true) {
+						verify(false, "user.name and user.email set").is(true);
+						return;
+					}
+					slime.api.command(test.fixtures.git.commands.commit).argument({ message: "advance submodule" }).run();
+					jsh.shell.console("cd " + it.location);
+				};
 			}
 		//@ts-ignore
 		)(fifty);
@@ -556,14 +569,7 @@ namespace slime.jsh.wf {
 					}
 				};
 
-				var commit: slime.jrunscript.tools.git.Command<{ message: string }, void> = {
-					invocation: function(p) {
-						return {
-							command: "commit",
-							arguments: ["--message", p.message]
-						}
-					}
-				};
+				var commit: slime.jrunscript.tools.git.Command<{ message: string }, void> = test.fixtures.git.commands.commit;
 
 				var checkout: slime.jrunscript.tools.git.Command<{ branch: string },void> = {
 					invocation: function(p) {
@@ -583,16 +589,16 @@ namespace slime.jsh.wf {
 					}
 				};
 
-				var fixtures = {
-					git: (
-						function() {
-							var script: slime.jrunscript.tools.git.test.fixtures.Script = fifty.$loader.script("../../rhino/tools/git/fixtures.ts");
-							var setup = script();
-							return setup(fifty);
-						}
-					)(),
-					subject: test.fixtures
-				};
+				// var fixtures = {
+				// 	git: (
+				// 		function() {
+				// 			var script: slime.jrunscript.tools.git.test.fixtures.Script = fifty.$loader.script("../../rhino/tools/git/fixtures.ts");
+				// 			var setup = script();
+				// 			return setup(fifty);
+				// 		}
+				// 	)(),
+				// 	subject: test.fixtures
+				// };
 
 				fifty.tests.manual.issue485 = function() {
 					var project = test.fixtures.hosted();
@@ -607,7 +613,7 @@ namespace slime.jsh.wf {
 						}),
 						{}
 					);
-					fixtures.git.edit(repository, "wf.js", function(before) {
+					test.fixtures.git.edit(repository, "wf.js", function(before) {
 						return before + "\n";
 					});
 					repository.api.command(addAll).argument().run();
@@ -635,7 +641,7 @@ namespace slime.jsh.wf {
 						}
 					};
 
-					var project = fixtures.subject.hosted().clone;
+					var project = test.fixtures.hosted().clone;
 
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
@@ -646,7 +652,7 @@ namespace slime.jsh.wf {
 						{}
 					);
 
-					fixtures.git.edit(project, "new.js", () => "new");
+					test.fixtures.git.edit(project, "new.js", () => "new");
 					project.api.command(mv).argument({ from: "a.js", to: "b.js" }).run();
 
 					$api.fp.world.now.action(
@@ -677,7 +683,7 @@ namespace slime.jsh.wf {
 					var x = test.fixtures.hosted();
 					var project = test.fixtures.adapt.repository(x.clone);
 					var repository = x.clone;
-					fixtures.git.edit(repository, "wf.js", function(before) {
+					test.fixtures.git.edit(repository, "wf.js", function(before) {
 						return before.replace("slime.jsh.Global", "slime.jjj.Global");
 					});
 					$api.fp.world.now.action(
@@ -703,7 +709,7 @@ namespace slime.jsh.wf {
 					repository.api.command(checkout).argument({
 						branch: "feature"
 					}).run();
-					fixtures.git.edit(repository, "f", function(before) {
+					test.fixtures.git.edit(repository, "f", function(before) {
 						return "f";
 					});
 					repository.api.command(addAll).argument().run();
@@ -711,7 +717,7 @@ namespace slime.jsh.wf {
 						message: "f"
 					}).run();
 
-					fixtures.git.edit(origin, "m", function(before) {
+					test.fixtures.git.edit(origin, "m", function(before) {
 						return "m";
 					});
 					origin.api.command(addAll).argument().run();

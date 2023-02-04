@@ -197,6 +197,16 @@ namespace slime.jrunscript.tools.git {
 			show: slime.jrunscript.tools.git.Command<string,{ head: string }>
 		}
 	}
+
+	export interface Exports {
+		/**
+		 * An opinionated object that provides a set of {@link Command} implementations deemed to be useful for `git` automation.
+		 * If the exact combination of git commands and options for your use case is not provided here, you can implement your own
+		 * {@link Command} which can be tailored to any set of commands, arguments, and options, any way of parsing output, and so
+		 * forth.
+		 */
+		commands: Commands
+	}
 }
 
 namespace slime.jrunscript.tools.git.internal.commands {
