@@ -322,7 +322,7 @@
 						//	The returned function is wrapped in this function because one could envision this function someday having
 						//	arguments containing some sort of information about how the script should be authored, maybe the path
 						//	to bash (which is different on FreeBSD), and so forth.
-						toBashScript: function() {
+						toBashScript: $api.deprecate(function() {
 							/** @type { ReturnType<slime.jrunscript.shell.Exports["invocation"]["toBashScript"]> } */
 							var toScriptCode = function(invocation) {
 								return $api.Array.build(function(script) {
@@ -362,7 +362,7 @@
 							};
 
 							return toScriptCode;
-						}
+						})
 					},
 					internal: {
 						old: internal
@@ -781,6 +781,63 @@
 					return scripts.run.exports.Invocation.question(
 						scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
 					);
+				}
+			},
+			bash: {
+				from: {
+					intention: function() {
+						return function(p) {
+							/** @type { string[] } */
+							var script = [];
+							script.push("#!/bin/bash");
+							if (p.directory) script.push("cd " + p.directory);
+
+							/** @type { (e: slime.jrunscript.shell.bash.Environment) => e is slime.jrunscript.shell.bash.InheritedEnvironment } */
+							var isInheritedEnvironment = function(e) {
+								return Boolean(e["set"]);
+							}
+
+							/**
+							 *
+							 * @param { slime.jrunscript.shell.bash.Environment } environment
+							 * @returns { string[] }
+							 */
+							var getEnvArgs = function(environment) {
+								var set = function(name,value) {
+									return name + "=" + "\"" + value + "\"";
+								};
+
+								if (isInheritedEnvironment(environment)) {
+									return Object.entries(environment.set).reduce(function(rv,entry) {
+										if (entry[1] === null) return ["-u", entry[0]].concat(rv);
+										if (typeof(entry[1]) == "string") return rv.concat([set(entry[0],entry[1])]);
+										if (typeof(entry[1]) == "undefined") return rv;
+										throw new Error("Variable " + entry[0] + " has wrong type: " + typeof(entry[1]));
+									},[]);
+								} else {
+									return ["-i"].concat(
+										Object.entries(environment.only).reduce(function(rv,entry) {
+											if (typeof(entry[1]) == "string") return rv.concat([set(entry[0],entry[1])]);
+											if (typeof(entry[1]) == "undefined") return rv;
+											throw new Error("Variable " + entry[0] + " has wrong type: " + typeof(entry[1]));
+										},[])
+									);
+								}
+							};
+
+							script.push($api.Array.build(function(rv) {
+								/** @type { Parameters<ReturnType<slime.jrunscript.shell.Exports["bash"]["from"]["intention"]>>[0]["environment"]} */
+								var environment = (p.environment) || { set: {} };
+
+								var envArgs = getEnvArgs(environment);
+								if (envArgs) rv.push.apply(rv, ["env"].concat(envArgs));
+								rv.push(p.command);
+								if (p.arguments) rv.push.apply(rv, p.arguments);
+							}).join(" "));
+
+							return script.join("\n");
+						}
+					}
 				}
 			},
 			Intention: {},

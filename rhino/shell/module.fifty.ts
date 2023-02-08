@@ -1126,9 +1126,94 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
+	export namespace bash {
+		export type StandaloneEnvironment = {
+			only: {
+				[x: string]: string
+			}
+		}
+
+		export type InheritedEnvironment = {
+			/**
+			 * Environment variables to be provided to the command, or to be removed from the environment of the command.
+			 * Properties with string values represent variables to be provided to the command (potentially overriding
+			 * values from the parent shell). Properties with `null` values represent variables to be **removed** from
+			 * the command's environment (even if they are present in the parent shell). Properties that are undefined
+			 * will have no effect.
+			 */
+			set: {
+				[x: string]: string | null
+			}
+		}
+
+		export type Environment = StandaloneEnvironment | InheritedEnvironment
+	}
+
+	export interface Exports {
+		bash: {
+			from: {
+				/**
+				 *
+				 * @returns A function that can create `bash` script code from {@link run.Intention}-like objects.
+				 */
+				intention: () => (p: {
+					/**
+					 * The command to execute.
+					 */
+					command: run.Intention["command"]
+
+					/**
+					 * Arguments to be sent to the command. If omitted, no arguments will be sent.
+					 */
+					arguments?: run.Intention["arguments"]
+
+					/**
+					 * The working directory to be used when executing the command. If omitted, the shell's current working directory
+					 * will be used.
+					 */
+					directory?: run.Intention["directory"]
+
+					environment?: bash.Environment
+				}) => string
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const subject = fifty.global.jsh.shell;
+
+			fifty.tests.exports.bash = function() {
+				var it = subject.bash.from.intention()({
+					command: "foo",
+					arguments: ["bar", "baz"],
+					directory: "/xxx/yyy/zzz",
+					environment: {
+						set: {
+							foo: "bar",
+							baz: null
+						}
+					}
+				});
+				verify(it).is([
+					"#!/bin/bash",
+					"cd /xxx/yyy/zzz",
+					"env -u baz foo=\"bar\" foo bar baz"
+				].join("\n"));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		invocation: {
 			 /**
+			  * @deprecated Replaced by {@link Exports["bash"]["from"]["intention"]}.
+			  *
 			  * Creates the code for a `bash` script from a single Invocation-like object and returns it as a string.
 			  */
 			 toBashScript: () => (p: {
