@@ -1147,6 +1147,26 @@ namespace slime.jrunscript.shell {
 		}
 
 		export type Environment = StandaloneEnvironment | InheritedEnvironment
+
+		export interface Intention {
+			/**
+			 * The command to execute.
+			 */
+			command: run.Intention["command"]
+
+			/**
+			 * Arguments to be sent to the command. If omitted, no arguments will be sent.
+			 */
+			arguments?: run.Intention["arguments"]
+
+			/**
+			 * The working directory to be used when executing the command. If omitted, the shell's current working directory
+			 * will be used.
+			 */
+			directory?: run.Intention["directory"]
+
+			environment?: bash.Environment
+		}
 	}
 
 	export interface Exports {
@@ -1156,25 +1176,7 @@ namespace slime.jrunscript.shell {
 				 *
 				 * @returns A function that can create `bash` script code from {@link run.Intention}-like objects.
 				 */
-				intention: () => (p: {
-					/**
-					 * The command to execute.
-					 */
-					command: run.Intention["command"]
-
-					/**
-					 * Arguments to be sent to the command. If omitted, no arguments will be sent.
-					 */
-					arguments?: run.Intention["arguments"]
-
-					/**
-					 * The working directory to be used when executing the command. If omitted, the shell's current working directory
-					 * will be used.
-					 */
-					directory?: run.Intention["directory"]
-
-					environment?: bash.Environment
-				}) => string
+				intention: () => (p: bash.Intention) => string
 			}
 		}
 	}
