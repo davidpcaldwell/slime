@@ -23,6 +23,8 @@ namespace slime.jrunscript.shell {
 
 	export namespace exports {
 		export interface Subprocess {
+			//	We export the Invocation property from this module directly, as-is, from the containing module. We also export other
+			//	constructs defined at the module level, hence the exports.Subprocess interface (which is defined there also).
 			Invocation: {
 				from: {
 					intention: (parent: run.Parent) => (plan: run.Intention) => run.Invocation
