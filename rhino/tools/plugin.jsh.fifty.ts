@@ -15,6 +15,10 @@ namespace slime.jsh {
 		 * property.
 		 */
 		git: slime.jrunscript.tools.git.Exports
+
+		plugin: {
+			jenkins: () => slime.jrunscript.tools.jenkins.Exports
+		}
 	}
 }
 

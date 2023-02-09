@@ -30,7 +30,8 @@
 					return jsh.tools.jenkins;
 				}
 			}
-		})
+		});
+
 		plugin({
 			//	TODO	it does not make much sense to check for jsh.shell in .isReady() and then not pass it to the plugin. Is this
 			//			method of running the compiler obsolete?

@@ -12,6 +12,20 @@ namespace slime.jrunscript.tools.jenkins {
 		}
 	}
 
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			const { jsh } = fifty.global;
+			var script: Script = fifty.$loader.script("module.js");
+			return script({
+				library: {
+					document: jsh.document,
+					http: jsh.http
+				}
+			})
+		//@ts-ignore
+		})(fifty);
+	}
+
 	export namespace api {
 		export interface Resource {
 			url: string
@@ -86,19 +100,41 @@ namespace slime.jrunscript.tools.jenkins {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
-		Server: (o: {
-			url: string
-		}) => {
-			request: any
-			Session: new (p: {
-				credentials: any
-			}) => {
-				request: any
-				api: any
+		Server: (server: api.Server) => {
+			job: (name: string) => api.Resource
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { subject } = test;
+
+			fifty.tests.exports.Server = function() {
+				var server: api.Server = {
+					url: "http://example.com/"
+				};
+
+				var job = subject.Server(server).job("foo");
+				verify(job).url.is("http://example.com/job/foo/");
 			}
 		}
+	//@ts-ignore
+	)(fifty);
 
+	export interface Exports {
 		url: (p: {
 			server: api.Server
 			path: string
@@ -120,7 +156,7 @@ namespace slime.jrunscript.tools.jenkins {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-
+				fifty.run(fifty.tests.exports);
 			}
 		}
 	//@ts-ignore
