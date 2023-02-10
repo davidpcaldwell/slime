@@ -15,7 +15,7 @@
 	function($api,$context,$export) {
 		/**
 		 *
-		 * @param { slime.jrunscript.tools.jenkins.api.Server } server
+		 * @param { slime.jrunscript.tools.jenkins.Server } server
 		 * @param { string } path A path on that server, without a leading `/`.
 		 */
 		function url(server, path) {
@@ -54,7 +54,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.tools.jenkins.api.Server } server
+		 * @param { slime.jrunscript.tools.jenkins.Server } server
 		 */
 		function getVersion(server) {
 			var rv = request({
@@ -277,20 +277,16 @@
 					}
 				}
 			},
-			Server: function(server) {
-				return {
-					job: function(name) {
+			Job: {
+				from: {
+					id: function(id) {
 						return {
-							url: server.url + "job" + "/" + name + "/"
-						};
+							url: id.server.url + "job" + "/" + id.name + "/"
+						}
 					}
-				}
-			},
-			api: {
-				Job: {
-					isName: function(name) {
-						return $api.fp.pipe($api.fp.property("name"), $api.fp.is(name));
-					}
+				},
+				isName: function(name) {
+					return $api.fp.pipe($api.fp.property("name"), $api.fp.is(name));
 				}
 			}
 		})

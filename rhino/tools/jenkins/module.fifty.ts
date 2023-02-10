@@ -31,16 +31,6 @@ namespace slime.jrunscript.tools.jenkins {
 			url: string
 		}
 
-		/**
-		 * Descriptor for a remote server.
-		 */
-		export interface Server extends Resource {
-			/**
-			 * The base URL of the server, including the trailing `/`.
-			 */
-			url: string
-		}
-
 		export interface Credentials {
 			user: string
 			token: string
@@ -53,31 +43,29 @@ namespace slime.jrunscript.tools.jenkins {
 		}
 	}
 
-	export interface Api {
-	}
+	/**
+	 * Descriptor for a remote server.
+	 */
+	export interface Server extends api.Resource {
+		/**
+		 * The base URL of the server, including the trailing `/`.
+		 */
+		url: string
 
-	export interface Exports {
-		api: Api
+		jobs?: Job[]
 	}
 
 	export interface Job extends api.Resource {
-		_class: string
-		name: string
-		url: string
-		color: string
+		_class?: string
+		name?: string
+		color?: string
 	}
 
-	export interface Api {
-		Job: {
-			isName: (name: string) => slime.$api.fp.Predicate<slime.jrunscript.tools.jenkins.Job>
+	export namespace job {
+		export interface Id {
+			server: Server
+			name: string
 		}
-	}
-
-	/**
-	 * An object representing an entire Jenkins server as returned by the root API endpoint.
-	 */
-	export interface Server extends api.Server {
-		jobs: Job[]
 	}
 
 	export type Fetch<T extends api.Resource> = $api.fp.world.Question<api.Resource,void,T>
@@ -110,8 +98,11 @@ namespace slime.jrunscript.tools.jenkins {
 	)(fifty);
 
 	export interface Exports {
-		Server: (server: api.Server) => {
-			job: (name: string) => api.Resource
+		Job: {
+			from: {
+				id: (p: job.Id) => Job
+			}
+			isName: (name: string) => slime.$api.fp.Predicate<Job>
 		}
 	}
 
@@ -122,12 +113,16 @@ namespace slime.jrunscript.tools.jenkins {
 			const { verify } = fifty;
 			const { subject } = test;
 
-			fifty.tests.exports.Server = function() {
-				var server: api.Server = {
+			fifty.tests.exports.Job = function() {
+				var server: Server = {
 					url: "http://example.com/"
 				};
 
-				var job = subject.Server(server).job("foo");
+				var job = subject.Job.from.id({
+					server: server,
+					name: "foo"
+				});
+
 				verify(job).url.is("http://example.com/job/foo/");
 			}
 		}
@@ -136,11 +131,11 @@ namespace slime.jrunscript.tools.jenkins {
 
 	export interface Exports {
 		url: (p: {
-			server: api.Server
+			server: Server
 			path: string
 		}) => string
 
-		getVersion: (server: api.Server) => string
+		getVersion: (server: Server) => string
 
 		request: {
 			json: <R>(p: api.Request) => R
@@ -178,11 +173,11 @@ namespace slime.jrunscript.tools.jenkins {
 				})
 			})();
 
-			fifty.tests.manual = fifty.test.Parent();
+			fifty.tests.world = fifty.test.Parent();
 
-			fifty.tests.manual.root = fifty.test.Parent();
+			fifty.tests.world.root = fifty.test.Parent();
 
-			var server: api.Server = {
+			var server: Server = {
 				url: jsh.shell.environment["JENKINS_SERVER"]
 			};
 
@@ -191,7 +186,7 @@ namespace slime.jrunscript.tools.jenkins {
 				token: jsh.shell.environment["JENKINS_TOKEN"]
 			};
 
-			fifty.tests.manual.root.raw = function() {
+			fifty.tests.world.root.raw = function() {
 				var response = subject.request.json({
 					method: "GET",
 					url: subject.url({
@@ -203,7 +198,7 @@ namespace slime.jrunscript.tools.jenkins {
 				jsh.shell.console(JSON.stringify(response, void(0), 4));
 			};
 
-			fifty.tests.manual.root.bound = function() {
+			fifty.tests.world.root.bound = function() {
 				var client = subject.client({
 					credentials: credentials
 				});
@@ -216,7 +211,7 @@ namespace slime.jrunscript.tools.jenkins {
 				jsh.shell.console(JSON.stringify(response, void(0), 4));
 			};
 
-			fifty.tests.manual.getVersion = function() {
+			fifty.tests.world.getVersion = function() {
 				var version = subject.getVersion(server)
 
 				jsh.shell.console("[" + version + "]");
