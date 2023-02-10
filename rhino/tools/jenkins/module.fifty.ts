@@ -7,6 +7,7 @@
 namespace slime.jrunscript.tools.jenkins {
 	export interface Context {
 		library: {
+			io: slime.jrunscript.io.Exports
 			http: slime.jrunscript.http.client.Exports
 			document: slime.runtime.document.Exports
 		}
@@ -18,6 +19,7 @@ namespace slime.jrunscript.tools.jenkins {
 			var script: Script = fifty.$loader.script("module.js");
 			return script({
 				library: {
+					io: jsh.io,
 					document: jsh.document,
 					http: jsh.http
 				}
@@ -98,6 +100,10 @@ namespace slime.jrunscript.tools.jenkins {
 	)(fifty);
 
 	export interface Exports {
+		Server: {
+			url: (server: Server) => (path: string) => string
+		}
+
 		Job: {
 			from: {
 				id: (p: job.Id) => Job
@@ -130,11 +136,6 @@ namespace slime.jrunscript.tools.jenkins {
 	)(fifty);
 
 	export interface Exports {
-		url: (p: {
-			server: Server
-			path: string
-		}) => string
-
 		getVersion: (server: Server) => string
 
 		request: {
@@ -163,15 +164,7 @@ namespace slime.jrunscript.tools.jenkins {
 		) {
 			const { jsh } = fifty.global;
 
-			const subject = (function() {
-				const script: Script = fifty.$loader.script("module.js");
-				return script({
-					library: {
-						http: jsh.http,
-						document: void(0)
-					}
-				})
-			})();
+			const { subject } = test;
 
 			fifty.tests.world = fifty.test.Parent();
 
@@ -189,10 +182,7 @@ namespace slime.jrunscript.tools.jenkins {
 			fifty.tests.world.root.raw = function() {
 				var response = subject.request.json({
 					method: "GET",
-					url: subject.url({
-						server: server,
-						path: "api/json"
-					}),
+					url: subject.Server.url(server)("api/json"),
 					credentials: credentials
 				});
 				jsh.shell.console(JSON.stringify(response, void(0), 4));

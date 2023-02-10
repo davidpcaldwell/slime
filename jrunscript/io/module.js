@@ -17,7 +17,7 @@
 		var code = {
 			/** @type { slime.jrunscript.io.zip.Script } */
 			zip: $loader.script("zip.js"),
-			/** @type { slime.jrunscript.io.grid.Script } */
+			/** @type { slime.jrunscript.io.internal.grid.Script } */
 			grid: $loader.script("grid.js"),
 			/** @type { slime.jrunscript.io.mime.Script } */
 			mime: $loader.script("mime.js")
@@ -58,9 +58,9 @@
 		/** @type { slime.jrunscript.io.Exports["InputStream"] } */
 		var InputStream = {
 			string: function(stream) {
-				return $api.fp.world.old.ask(function() {
+				return function() {
 					return stream.character().asString();
-				});
+				};
 			},
 			from: {
 				string: function(value) {
@@ -75,7 +75,7 @@
 			}
 		};
 
-		var $$exports = {
+		$export({
 			Streams: $context.$slime.io.Streams,
 			Buffer: $context.$slime.io.Buffer,
 			Resource: Object.assign(
@@ -88,11 +88,11 @@
 			java: {
 				adapt: $context.$slime.io.Streams.java.adapt
 			},
-			mime: void(0),
+			mime: library.mime,
 			archive: {
 				zip: library.zip
 			},
-			grid: $loader.file("grid.js", {
+			grid: code.grid({
 				getClass: function(name) {
 					return $context.api.java.getClass(name);
 				},
@@ -101,9 +101,7 @@
 			system: $context.$slime.io.system,
 			loader: $context.$slime.jrunscript.loader,
 			Entry: $context.$slime.jrunscript.Entry
-		};
-		$$exports.mime = library.mime;
-		$export($$exports);
+		});
 	}
 //@ts-ignore
 )($api, $context, $loader, $export);
