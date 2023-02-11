@@ -140,20 +140,6 @@
 							}
 						}
 					},
-					server: function(p) {
-						return function() {
-							var r = toRequest({
-								method: "GET",
-								url: p.server.url + "api/json",
-								credentials: c.credentials
-							});
-							var response = $api.fp.world.now.question(
-								$context.library.http.world.request,
-								r
-							);
-							return getResponseJson(response);
-						}
-					},
 					fetch: {
 						server: castToFetchServer(fetch),
 						job: castToFetchJob(fetch)

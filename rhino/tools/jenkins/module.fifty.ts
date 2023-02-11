@@ -73,13 +73,6 @@ namespace slime.jrunscript.tools.jenkins {
 	export type Fetch<T extends api.Resource> = $api.fp.world.Question<api.Resource,void,T>
 
 	export interface Client {
-		request: (p: {
-			method: api.Request["method"]
-			url: string
-		}) => {
-			json: <R>() => R
-		}
-
 		fetch: {
 			server: Fetch<Server>
 			job: Fetch<Job>
@@ -193,10 +186,7 @@ namespace slime.jrunscript.tools.jenkins {
 					credentials: credentials
 				});
 
-				var response = client.request({
-					method: "GET",
-					url: server.url
-				}).json();
+				var response = client.fetch.server(server);
 
 				jsh.shell.console(JSON.stringify(response, void(0), 4));
 			};
