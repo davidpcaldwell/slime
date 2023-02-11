@@ -25,6 +25,29 @@
 			$context.library.document.Document.codec.string.decode
 		);
 
+		/** @type { slime.$api.fp.Mapping<slime.jrunscript.http.client.spi.Response,slime.$api.fp.Maybe<string>> } */
+		var getResponseVersion = $api.fp.pipe(
+			$api.fp.property("headers"),
+			$api.fp.Stream.from.array,
+			$api.fp.Stream.find(function(header) {
+				return header.name.toLowerCase() == "x-jenkins";
+			}),
+			$api.fp.Maybe.map($api.fp.property("value"))
+		);
+
+		/** @type { slime.$api.fp.Mapping<slime.jrunscript.http.client.spi.Response,slime.jrunscript.runtime.io.InputStream> } */
+		var getResponseStream = $api.fp.pipe(
+			function(response) {
+				if (response.status.code != 200) throw new Error("Response status: " + response.status.code);
+				return response.stream;
+			}
+		);
+
+		var getResponseJson = $api.fp.pipe(
+			getResponseStream,
+			readJsonStream
+		);
+
 		/**
 		 *
 		 * @param { slime.jrunscript.tools.jenkins.Server } server
@@ -70,22 +93,14 @@
 				url: url(server, "api/json"),
 				credentials: void(0),
 			});
-			/** @type { string } */
-			var version;
-			rv.headers.forEach(function(header) {
-				if (header.name.toLowerCase() == "x-jenkins") {
-					version = header.value;
-				}
-			});
-			return version;
+			return getResponseVersion(rv);
 		}
 
 		$export({
 			request: {
 				json: function(p) {
 					var response = request(p);
-					if (response.status.code != 200) throw new TypeError("Response: " + response.status.code);
-					return readJsonStream(response.stream);
+					return getResponseJson(response);
 				}
 			},
 			getVersion: getVersion,
@@ -102,8 +117,7 @@
 							$context.library.http.world.request,
 							r
 						);
-						if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + r.request.method + " " + r.request.url);
-						return readJsonStream(response.stream);
+						return getResponseJson(response);
 					}
 				};
 
@@ -122,8 +136,7 @@
 									url: r.url + "api/json",
 									credentials: c.credentials
 								});
-								if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + r.method + " " + r.url + "api/json");
-								return readJsonStream(response.stream);
+								return getResponseJson(response);
 							}
 						}
 					},
@@ -138,8 +151,7 @@
 								$context.library.http.world.request,
 								r
 							);
-							if (response.status.code != 200) throw new TypeError("Response code: " + response.status.code + " for " + r.request.method + " " + r.request.url);
-							return readJsonStream(response.stream);
+							return getResponseJson(response);
 						}
 					},
 					fetch: {

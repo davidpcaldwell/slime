@@ -136,7 +136,7 @@ namespace slime.jrunscript.tools.jenkins {
 	)(fifty);
 
 	export interface Exports {
-		getVersion: (server: Server) => string
+		getVersion: (server: Server) => slime.$api.fp.Maybe<string>
 
 		request: {
 			json: <R>(p: api.Request) => R
@@ -204,7 +204,7 @@ namespace slime.jrunscript.tools.jenkins {
 			fifty.tests.world.getVersion = function() {
 				var version = subject.getVersion(server)
 
-				jsh.shell.console("[" + version + "]");
+				jsh.shell.console(JSON.stringify(version));
 			};
 		}
 	//@ts-ignore
