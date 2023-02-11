@@ -108,15 +108,11 @@
 				/** @type { slime.jrunscript.tools.jenkins.Fetch<slime.jrunscript.tools.jenkins.api.Resource> } */
 				var fetch = function(p) {
 					return function() {
-						var r = toRequest({
+						var response = request({
 							method: "GET",
 							url: p.url + "api/json",
 							credentials: c.credentials
 						});
-						var response = $api.fp.world.now.question(
-							$context.library.http.world.request,
-							r
-						);
 						return getResponseJson(response);
 					}
 				};
