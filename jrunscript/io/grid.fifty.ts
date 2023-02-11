@@ -10,16 +10,18 @@ namespace slime.jrunscript.native.org.apache.poi {
 }
 
 namespace slime.jrunscript.io.grid {
+	export interface Exports {
+		excel?: excel.Exports
+	}
+}
+
+namespace slime.jrunscript.io.internal.grid {
 	export interface Context {
 		getClass: slime.jrunscript.host.Exports["getClass"]
 		Streams: slime.jrunscript.io.Exports["Streams"]
 	}
 
-	export interface Exports {
-		excel?: excel.Exports
-	}
-
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.loader.Script<Context,io.grid.Exports>
 }
 
 namespace slime.jrunscript.io.grid.excel {
@@ -67,7 +69,7 @@ namespace slime.jrunscript.io.grid.excel {
 
 			const subject = (
 				function() {
-					var script: Script = fifty.$loader.script("grid.js");
+					var script: internal.grid.Script = fifty.$loader.script("grid.js");
 					return script({
 						getClass: function(name) {
 							return jsh.java.getClass(name);

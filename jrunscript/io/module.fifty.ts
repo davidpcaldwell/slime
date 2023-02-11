@@ -13,11 +13,6 @@ namespace slime.jrunscript.io {
 		nojavamail: boolean
 	}
 
-	/**
-	 * An object that builds on the internal runtime {@link slime.jrunscript.runtime.Exports} and
-	 * {@link slime.jrunscript.runtime.io.Exports} types and provides an improved
-	 * interface for callers.
-	 */
 	export interface Exports {
 	}
 
@@ -36,7 +31,7 @@ namespace slime.jrunscript.io {
 				string: (value: string) => slime.jrunscript.runtime.io.InputStream
 				java: (native: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.runtime.io.InputStream
 			}
-			string: (stream: slime.jrunscript.runtime.io.InputStream) => slime.$api.fp.world.old.Ask<void,string>
+			string: slime.$api.fp.world.Question<slime.jrunscript.runtime.io.InputStream,void,string>
 		}
 	}
 
@@ -111,5 +106,11 @@ namespace slime.jrunscript.io {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * An object that builds on the internal runtime {@link slime.jrunscript.runtime.Exports} provided in its {@link Context}
+	 * (particularly its `io` property of type {@link slime.jrunscript.runtime.io.Exports}), provides an improved interface for
+	 * callers, and adds miscellaneous capabilities (relating to MIME types, the ZIP compression format, and grid-based environments
+	 * like Excel).
+	 */
 	export type Script = slime.loader.Script<Context,Exports>
 }

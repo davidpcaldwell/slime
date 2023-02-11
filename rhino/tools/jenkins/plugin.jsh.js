@@ -22,6 +22,7 @@
 
 				var jenkins = script({
 					library: {
+						io: jsh.io,
 						http: jsh.http,
 						document: jsh.document
 					}
