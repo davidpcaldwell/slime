@@ -70,19 +70,6 @@ namespace slime.jrunscript.tools.jenkins {
 		}
 	}
 
-	export type Fetch<T extends api.Resource> = $api.fp.world.Question<api.Resource,void,T>
-
-	export interface Client {
-		fetch: {
-			server: Fetch<Server>
-			job: Fetch<Job>
-		}
-
-		Job: {
-			config: (job: Job) => slime.runtime.document.Document
-		}
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -93,10 +80,6 @@ namespace slime.jrunscript.tools.jenkins {
 	)(fifty);
 
 	export interface Exports {
-		Server: {
-			url: (server: Server) => (path: string) => string
-		}
-
 		Job: {
 			from: {
 				id: (p: job.Id) => Job
@@ -129,12 +112,23 @@ namespace slime.jrunscript.tools.jenkins {
 	)(fifty);
 
 	export interface Exports {
-		getVersion: (server: Server) => slime.$api.fp.Maybe<string>
+		getVersion: slime.$api.fp.world.Question<Server,void,slime.$api.fp.Maybe<string>>
+	}
 
-		request: {
-			json: <R>(p: api.Request) => R
+	export type Fetch<T extends api.Resource> = slime.$api.fp.world.Question<api.Resource,void,T>
+
+	export interface Client {
+		fetch: {
+			server: Fetch<Server>
+			job: Fetch<Job>
 		}
 
+		Job: {
+			config: slime.$api.fp.world.Question<Job,void,slime.runtime.document.Document>
+		}
+	}
+
+	export interface Exports {
 		client: (p: {
 			credentials: api.Credentials
 		}) => Client
@@ -155,7 +149,7 @@ namespace slime.jrunscript.tools.jenkins {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			const { subject } = test;
 
@@ -172,21 +166,12 @@ namespace slime.jrunscript.tools.jenkins {
 				token: jsh.shell.environment["JENKINS_TOKEN"]
 			};
 
-			fifty.tests.world.root.raw = function() {
-				var response = subject.request.json({
-					method: "GET",
-					url: subject.Server.url(server)("api/json"),
-					credentials: credentials
-				});
-				jsh.shell.console(JSON.stringify(response, void(0), 4));
-			};
-
 			fifty.tests.world.root.bound = function() {
 				var client = subject.client({
 					credentials: credentials
 				});
 
-				var response = client.fetch.server(server);
+				var response = $api.fp.world.now.ask(client.fetch.server(server));
 
 				jsh.shell.console(JSON.stringify(response, void(0), 4));
 			};
