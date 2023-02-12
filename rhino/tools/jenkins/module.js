@@ -97,13 +97,11 @@
 		}
 
 		$export({
-			request: {
-				json: function(p) {
-					var response = request(p);
-					return getResponseJson(response);
+			getVersion: function(server) {
+				return function() {
+					return getVersion(server);
 				}
 			},
-			getVersion: getVersion,
 			client: function(c) {
 				/** @type { slime.jrunscript.tools.jenkins.Fetch<slime.jrunscript.tools.jenkins.api.Resource> } */
 				var fetch = function(p) {
@@ -142,21 +140,16 @@
 					},
 					Job: {
 						config: function(p) {
-							var response = request({
-								method: "GET",
-								url: p.url + "config.xml",
-								credentials: c.credentials
-							});
-							var parsed = readXmlStream(response.stream);
-							return parsed;
+							return function() {
+								var response = request({
+									method: "GET",
+									url: p.url + "config.xml",
+									credentials: c.credentials
+								});
+								var parsed = readXmlStream(response.stream);
+								return parsed;
+							}
 						}
-					}
-				}
-			},
-			Server: {
-				url: function(server) {
-					return function(path) {
-						return server.url + path;
 					}
 				}
 			},
