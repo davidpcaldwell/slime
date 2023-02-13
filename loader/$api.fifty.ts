@@ -14,7 +14,7 @@ interface Function {
  * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
  *
  * Various `$api` methods can "flag" APIs for callers, causing a configurable callback to be executed when they are invoked, to warn
- * the users that the APIs are deprecated or experimental. See the `deprecate` and `experimental` functions of {@link Global |
+ * the users that the APIs are deprecated or experimental. See the `deprecate` and `experimental` functions of {@link slime.$api.Global |
  * `$api`}.
  */
 namespace slime.$api {
