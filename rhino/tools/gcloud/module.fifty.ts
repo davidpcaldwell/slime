@@ -47,6 +47,16 @@ namespace slime.jrunscript.tools.gcloud {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+			fifty.tests.exports.cli = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		cli: {
 			Installation: {
@@ -69,6 +79,9 @@ namespace slime.jrunscript.tools.gcloud {
 					command: cli.Executor
 				}
 
+				/**
+				 * Installs the `gcloud` CLI. Currently only supported on macOS.
+				 */
 				create: slime.$api.fp.world.Action<string,{
 					console: string
 				}>
@@ -83,7 +96,6 @@ namespace slime.jrunscript.tools.gcloud {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 			const script: Script = fifty.$loader.script("module.js");
-			const install = jsh.tools.install;
 
 			var captor = (
 				function() {
@@ -129,7 +141,7 @@ namespace slime.jrunscript.tools.gcloud {
 					_environment: void(0),
 					_properties: void(0),
 					api: {
-						js: void(0),
+						js: jsh.js,
 						java: jsh.java,
 						io: jsh.io,
 						file: jsh.file,
@@ -156,7 +168,7 @@ namespace slime.jrunscript.tools.gcloud {
 				}
 			});
 
-			fifty.tests.Installation = function() {
+			fifty.tests.exports.cli.Installation = function() {
 				var command: cli.Command<string,{}> = {
 					invocation: function(argument: string) {
 						return {
@@ -190,8 +202,9 @@ namespace slime.jrunscript.tools.gcloud {
 			}
 
 			fifty.tests.manual = {};
-
-			fifty.tests.manual.install = function() {
+			fifty.tests.manual.cli = {};
+			fifty.tests.manual.cli.Installation = {};
+			fifty.tests.manual.cli.Installation.create = function() {
 				const module = script({
 					library: {
 						file: jsh.file,
@@ -213,7 +226,7 @@ namespace slime.jrunscript.tools.gcloud {
 			}
 
 			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.Installation);
+				fifty.run(fifty.tests.exports);
 			}
 		}
 	//@ts-ignore
