@@ -72,12 +72,16 @@
 			return rv;
 		}
 
+		var macOsInstallers = function(version) {
+			return {
+				x86_64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-" + version + "-darwin-x86_64.tar.gz",
+				aarch64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-" + version + "-darwin-arm.tar.gz"
+			}
+		}
+
 		/** @type { { [os: string]: { [arch: string ]: string }} } */
 		var INSTALLER = {
-			"Mac OS X": {
-				x86_64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-411.0.0-darwin-x86_64.tar.gz",
-				aarch64: "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-411.0.0-darwin-arm.tar.gz"
-			}
+			"Mac OS X": macOsInstallers("417.0.1")
 		};
 
 		$export({
