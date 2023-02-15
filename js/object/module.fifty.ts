@@ -13,7 +13,6 @@ namespace slime.js.old {
 	}
 
 	export interface Exports {
-		undefined: void
 		defined: any
 		constant: any
 		lazy: any
