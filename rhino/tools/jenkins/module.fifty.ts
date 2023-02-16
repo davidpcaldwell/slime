@@ -65,7 +65,7 @@ namespace slime.jrunscript.tools.jenkins {
 
 	export namespace job {
 		export interface Id {
-			server: Server
+			server: string
 			name: string
 		}
 	}
@@ -81,9 +81,6 @@ namespace slime.jrunscript.tools.jenkins {
 
 	export interface Exports {
 		Job: {
-			from: {
-				id: (p: job.Id) => Job
-			}
 			isName: (name: string) => slime.$api.fp.Predicate<Job>
 		}
 	}
@@ -95,29 +92,31 @@ namespace slime.jrunscript.tools.jenkins {
 			const { verify } = fifty;
 			const { subject } = test;
 
-			fifty.tests.exports.Job = function() {
-				var server: Server = {
-					url: "http://example.com/"
-				};
+			// fifty.tests.exports.Job = function() {
+			// 	var server: Server = {
+			// 		url: "http://example.com/"
+			// 	};
 
-				var job = subject.Job.from.id({
-					server: server,
-					name: "foo"
-				});
+			// 	var job = subject.Job.from.id({
+			// 		server: server,
+			// 		name: "foo"
+			// 	});
 
-				verify(job).url.is("http://example.com/job/foo/");
-			}
+			// 	verify(job).url.is("http://example.com/job/foo/");
+			// }
 		}
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		getVersion: slime.$api.fp.world.Question<Server,void,slime.$api.fp.Maybe<string>>
-	}
-
-	export type Fetch<T extends api.Resource> = slime.$api.fp.world.Question<api.Resource,void,T>
+	export type Get<I,T extends api.Resource> = slime.$api.fp.world.Question<I,void,slime.$api.fp.Maybe<T>>
+	export type Fetch<T extends api.Resource> = slime.$api.fp.world.Question<string,void,T>
 
 	export interface Client {
+		get: {
+			server: Get<string, Server>
+			job: Get<job.Id, Job>
+		}
+
 		fetch: {
 			server: Fetch<Server>
 			job: Fetch<Job>
@@ -153,33 +152,68 @@ namespace slime.jrunscript.tools.jenkins {
 
 			const { subject } = test;
 
+			var server = jsh.shell.environment["JENKINS_SERVER"];
+
+			var client = subject.client({
+				credentials: {
+					user: jsh.shell.environment["JENKINS_USER"],
+					token: jsh.shell.environment["JENKINS_TOKEN"]
+				}
+			});
+
+			var jobs = {
+				exists: jsh.shell.environment["JENKINS_JOB"],
+				absent: jsh.shell.environment["JENKINS_NOT_JOB"]
+			}
+
 			fifty.tests.world = fifty.test.Parent();
 
-			fifty.tests.world.root = fifty.test.Parent();
+			fifty.tests.world.get = fifty.test.Parent();
 
-			var server: Server = {
-				url: jsh.shell.environment["JENKINS_SERVER"]
-			};
+			fifty.tests.world.get.server = fifty.test.Parent();
 
-			var credentials: api.Credentials = {
-				user: jsh.shell.environment["JENKINS_USER"],
-				token: jsh.shell.environment["JENKINS_TOKEN"]
-			};
-
-			fifty.tests.world.root.bound = function() {
-				var client = subject.client({
-					credentials: credentials
-				});
-
-				var response = $api.fp.world.now.ask(client.fetch.server(server));
+			fifty.tests.world.get.server.resource = function() {
+				var response = $api.fp.world.now.ask(client.get.server(server));
 
 				jsh.shell.console(JSON.stringify(response, void(0), 4));
 			};
 
-			fifty.tests.world.getVersion = function() {
-				var version = subject.getVersion(server)
+			fifty.tests.world.get.server.no = function() {
+				var response = $api.fp.world.now.ask(client.get.server("https://www.google.com/"));
 
-				jsh.shell.console(JSON.stringify(version));
+				jsh.shell.console(JSON.stringify(response, void(0), 4));
+			};
+
+			fifty.tests.world.get.job = fifty.test.Parent();
+
+			fifty.tests.world.get.job.exists = function() {
+				var job = {
+					server: server,
+					name: jobs.exists
+				};
+
+				var response = $api.fp.world.now.ask(client.get.job(job));
+
+				jsh.shell.console(JSON.stringify(response, void(0), 4));
+			};
+
+			fifty.tests.world.get.job.absent = function() {
+				var job = {
+					server: server,
+					name: jobs.absent
+				};
+
+				var response = $api.fp.world.now.ask(client.get.job(job));
+
+				jsh.shell.console(JSON.stringify(response, void(0), 4));
+			}
+
+			fifty.tests.world.fetch = fifty.test.Parent();
+
+			fifty.tests.world.fetch.server = function() {
+				var response = $api.fp.world.now.ask(client.fetch.server(server));
+
+				jsh.shell.console(JSON.stringify(response, void(0), 4));
 			};
 		}
 	//@ts-ignore
