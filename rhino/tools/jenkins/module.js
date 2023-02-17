@@ -62,7 +62,7 @@
 		 * @param { slime.jrunscript.tools.jenkins.api.Request } p
 		 * @returns { slime.jrunscript.http.client.spi.Argument }
 		 */
-		function toRequest(p) {
+		function toHttpRequest(p) {
 			return $context.library.http.world.Argument.request({
 				method: p.method,
 				url: p.url,
@@ -79,7 +79,7 @@
 		}
 
 		var request = $api.fp.pipe(
-			toRequest,
+			toHttpRequest,
 			$api.fp.world.mapping($context.library.http.world.request)
 		)
 
@@ -96,22 +96,39 @@
 			return getResponseVersion(rv);
 		}
 
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.jenkins.job.Id } id
+		 */
+		function getJobUrl(id) {
+			return id.server + "job" + "/" + id.name + "/";
+		}
+
 		$export({
-			getVersion: function(server) {
-				return function() {
-					return getVersion(server);
-				}
-			},
 			client: function(c) {
+				/** @type { slime.$api.fp.Mapping<string,slime.jrunscript.tools.jenkins.api.Request> } */
+				var resourceUrlToJenkinsRequest = function(url) {
+					return {
+						method: "GET",
+						url: url + "api/json",
+						credentials: c.credentials
+					}
+				};
+
+				var resourceUrlToHttpRequest = $api.fp.pipe(
+					resourceUrlToJenkinsRequest,
+					toHttpRequest
+				);
+
 				/** @type { slime.jrunscript.tools.jenkins.Fetch<slime.jrunscript.tools.jenkins.api.Resource> } */
-				var fetch = function(p) {
+				var fetch = function(url) {
 					return function() {
-						var response = request({
-							method: "GET",
-							url: p.url + "api/json",
-							credentials: c.credentials
-						});
-						return getResponseJson(response);
+						return $api.fp.now.invoke(
+							url,
+							resourceUrlToHttpRequest,
+							$api.fp.world.mapping($context.library.http.world.request),
+							getResponseJson
+						)
 					}
 				};
 
@@ -120,6 +137,29 @@
 
 				/** @type { slime.js.Cast<slime.jrunscript.tools.jenkins.Fetch<slime.jrunscript.tools.jenkins.Job>> } */
 				var castToFetchJob = $api.fp.cast;
+
+				var get_server = function(url) {
+					return function(events) {
+						return $api.fp.now.invoke(
+							url,
+							resourceUrlToHttpRequest,
+							$api.fp.world.mapping($context.library.http.world.request),
+							function(response) {
+								return $api.fp.now.invoke(
+									getResponseVersion(response),
+									$api.fp.Maybe.map(function(version) {
+										return $api.Object.compose(
+											{
+												version: version
+											},
+											getResponseJson(response)
+										)
+									})
+								);
+							}
+						)
+					}
+				};
 
 				return {
 					request: function(r) {
@@ -134,8 +174,31 @@
 							}
 						}
 					},
+					get: {
+						server: get_server,
+						job: function(id) {
+							return function(events) {
+								return $api.fp.now.invoke(
+									id,
+									getJobUrl,
+									resourceUrlToHttpRequest,
+									$api.fp.world.mapping($context.library.http.world.request),
+									function(response) {
+										if (response.status.code == 404) return $api.fp.Maybe.nothing();
+										return $api.fp.Maybe.value(getResponseJson(response));
+									}
+								)
+							}
+						}
+					},
 					fetch: {
-						server: castToFetchServer(fetch),
+						server: function(server) {
+							return function() {
+								var maybe = get_server(server)();
+								if (!maybe.present) throw new Error("Could not retrieve Jenkins server at: " + server);
+								return maybe.value;
+							}
+						},
 						job: castToFetchJob(fetch)
 					},
 					Job: {
@@ -154,13 +217,6 @@
 				}
 			},
 			Job: {
-				from: {
-					id: function(id) {
-						return {
-							url: id.server.url + "job" + "/" + id.name + "/"
-						}
-					}
-				},
 				isName: function(name) {
 					return $api.fp.pipe($api.fp.property("name"), $api.fp.is(name));
 				}
