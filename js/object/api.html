@@ -185,29 +185,6 @@ END LICENSE
 			</ul>
 		</div>
 		<ul>
-			<li class="value">
-				<div class="name">undefined</div>
-				<div>
-					The JavaScript <code>undefined</code> value.
-				</div>
-				<div>
-					If the underlying platform permits the creation of read-only properties, the value cannot be changed.
-				</div>
-				<script type="application/x.jsapi#tests">
-					verify(module).undefined.is(void(0));
-//					test( typeof(module.undefined) == "undefined" );
-					var a = {};
-					verify(a).evaluate(function() { return this.a == module.undefined; }).is(true);
-					verify(a).evaluate(function() { return this.a === module.undefined; }).is(true);
-//					test( a.a == module.undefined );
-//					test( a.a === module.undefined );
-					if ($platform.Object.setReadOnly) {
-						module.undefined = true;
-						verify(module).undefined.is(void(0));
-//						test( typeof(module.undefined) == "undefined" );
-					}
-				</script>
-			</li>
 			<li class="function">
 				<div class="name">defined</div>
 				<div>
