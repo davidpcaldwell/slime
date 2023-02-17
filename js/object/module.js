@@ -33,13 +33,6 @@
 		var deprecate = $api.deprecate;
 		var experimental = $api.experimental;
 
-		//	TODO	Create a branch that is even better, using defineProperty correctly
-		if ($platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
-			$exports.__defineGetter__("undefined", function(){});
-		} else {
-			$exports.undefined = function(){}();
-		}
-
 		$exports.defined = function() {
 			var _undefined;
 			for (var i=0; i<arguments.length; i++) {
@@ -214,7 +207,7 @@
 						//	delete the property by not adding it to rv
 					} else {
 						//	will receive undefined as argument if methods has the property but o does not
-						var propertyValue = (typeof(o[x]) == "undefined") ? $exports.undefined : o[x];
+						var propertyValue = (typeof(o[x]) == "undefined") ? void(0) : o[x];
 						rv[x] = methods[x](propertyValue,o);
 					}
 				}
