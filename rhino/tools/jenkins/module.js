@@ -121,10 +121,11 @@
 				);
 
 				/** @type { slime.jrunscript.tools.jenkins.Fetch<slime.jrunscript.tools.jenkins.api.Resource> } */
-				var fetch = function(url) {
+				var fetch = function(resource) {
 					return function() {
 						return $api.fp.now.invoke(
-							url,
+							resource,
+							$api.fp.property("url"),
 							resourceUrlToHttpRequest,
 							$api.fp.world.mapping($context.library.http.world.request),
 							getResponseJson
@@ -219,6 +220,9 @@
 			Job: {
 				isName: function(name) {
 					return $api.fp.pipe($api.fp.property("name"), $api.fp.is(name));
+				},
+				Id: {
+					url: getJobUrl
 				}
 			}
 		})
