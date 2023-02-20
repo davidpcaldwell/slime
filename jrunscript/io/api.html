@@ -35,10 +35,6 @@ END LICENSE
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="value">
-						<div class="name">js</div>
-						<span>A js/object-compatible module.</span>
-					</li>
-					<li class="value">
 						<div class="name">java</div>
 						<span>A jrunscript/host-compatible module.</span>
 					</li>
@@ -64,7 +60,6 @@ END LICENSE
 			this.$slime = jsh.unit.$slime;
 
 			this.api = {
-				js:  $jsapi.loader.module("../../js/object/", { globals: true }),
 				java: java
 			};
 		};
