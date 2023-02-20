@@ -998,29 +998,6 @@ END LICENSE
 				}
 			]]></script>
 		</div>
-		<script type="application/x.jsapi#initialize">
-			var hostdir = new Packages.java.io.File(scope.$jsapi.java.io.newTemporaryDirectory(), "streamtests");
-			hostdir.mkdirs();
-			var fileA = new Packages.java.io.File(hostdir, "a");
-			var aWriter = new Packages.java.io.PrintWriter( new Packages.java.io.FileWriter( fileA ) );
-			aWriter.print("Hello, World\n");
-			aWriter.print("Hello, DOS World\r\n");
-			aWriter.print("Finished.");
-			aWriter.flush();
-			aWriter.close();
-			scope.streamdir = scope.module.filesystem.java.adapt(hostdir).directory;
-//			scope.streamdir = scope.module.filesystem.$unit.Pathname(scope.module.filesystem.$unit.getNode(hostdir)).directory;
-		</script>
-		<script type="application/x.jsapi#tests" jsapi:id="Stream tests">
-			var fileA = streamdir.getFile("a");
-			var text = fileA.read(context.$Context.api.io.Streams.text);
-			var lines = [];
-			text.readLines( function(line) {
-				lines.push(line);
-			}, { ending: "\n" } );
-			test( lines.length == 3 );
-			test( lines.filter( function(line) { return line.indexOf("\r") != -1 } ).length == 1 );
-		</script>
 		<div jsapi:id="softlink">
 			//	TODO	softlinks could be much more thoroughly tested; many scenarios not covered including move, copy
 			<script type="application/x.jsapi#initialize">
@@ -1176,14 +1153,6 @@ END LICENSE
 				</script>
 			</div>
 		</div>
-	</div>
-	<div jsapi:id="fifty">
-		<script type="application/x.jsapi#tests">
-			$jsapi.loader.fifty({
-				path: "module.fifty.ts",
-				verify: verify
-			});
-		</script>
 	</div>
 </body>
 </html>

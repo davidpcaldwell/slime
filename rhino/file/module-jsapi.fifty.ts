@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.file {
 	export namespace test {
-		export const fixtures = (function(fifty: slime.fifty.test.Kit) {
+		export const fixtures = (function(Packages: slime.jrunscript.Packages, fifty: slime.fifty.test.Kit) {
 			var code: { fixtures: slime.jrunscript.file.test.fixtures.Script } = {
 				fixtures: fifty.$loader.script("fixtures.ts")
 			};
@@ -38,6 +38,29 @@ namespace slime.jrunscript.file {
 
 			context.createFile(dir,"target",1112);
 
+			var newJavaTemporaryDirectory = (function() {
+				var tmpdir;
+
+				var tmppath = function() {
+					var path = Packages.java.lang.System.getProperty("java.io.tmpdir");
+					var pathname = new Packages.java.text.SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS").format( new Packages.java.util.Date() );
+					var dir = new Packages.java.io.File(new Packages.java.io.File(path), "jsunit/" + pathname);
+					dir.mkdirs();
+					return dir;
+				};
+
+				return function() {
+					if (!tmpdir) tmpdir = tmppath();
+					var rv = Packages.java.io.File.createTempFile("tmpdir-",".tmp",tmpdir);
+					rv["delete"]();
+					var success = rv.mkdirs();
+					if (!success) {
+						throw new Error("Failed to create " + rv);
+					}
+					return rv;
+				};
+			})();
+
 			var fixtures = {
 				_context,
 				filesystem,
@@ -47,7 +70,8 @@ namespace slime.jrunscript.file {
 				filec,
 				filed,
 				filee,
-				filef
+				filef,
+				newJavaTemporaryDirectory
 			}
 
 			return {
@@ -55,11 +79,12 @@ namespace slime.jrunscript.file {
 				jsapi: fixtures
 			}
 		//@ts-ignore
-		})(fifty);
+		})(Packages, fifty);
 	}
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { run, verify } = fifty;
@@ -241,6 +266,48 @@ namespace slime.jrunscript.file {
 				}
 			}
 
+			fifty.tests.stream = function() {
+				const context = file.test.fixtures.module.context;
+				const scope: { module: slime.jrunscript.file.Exports, streamdir: slime.jrunscript.file.Directory, $jsapi: any } = {
+					module: file.test.fixtures.module.module,
+					streamdir: void(0),
+					$jsapi: {
+						java: {
+							io: {
+								newTemporaryDirectory: file.test.fixtures.jsapi.newJavaTemporaryDirectory
+							}
+						}
+					}
+				}
+
+				var hostdir = new Packages.java.io.File(scope.$jsapi.java.io.newTemporaryDirectory(), "streamtests");
+				hostdir.mkdirs();
+				var fileA = new Packages.java.io.File(hostdir, "a");
+				var aWriter = new Packages.java.io.PrintWriter( new Packages.java.io.FileWriter( fileA ) );
+				aWriter.print("Hello, World\n");
+				aWriter.print("Hello, DOS World\r\n");
+				aWriter.print("Finished.");
+				aWriter.flush();
+				aWriter.close();
+				scope.streamdir = scope.module.filesystem.java.adapt(hostdir).directory;
+	//			scope.streamdir = scope.module.filesystem.$unit.Pathname(scope.module.filesystem.$unit.getNode(hostdir)).directory;
+
+				const { streamdir } = scope;
+
+				(
+					function() {
+						var fileA = streamdir.getFile("a");
+						var text = fileA.read(context.$Context.api.io.Streams.text);
+						var lines = [];
+						text.readLines( function(line) {
+							lines.push(line);
+						}, { ending: "\n" } );
+						verify(lines,"lines").length.is(3);
+						test( lines.filter( function(line) { return line.indexOf("\r") != -1 } ).length == 1 );
+					}
+				)();
+			}
+
 			fifty.tests.suite = function() {
 				run(fifty.tests._1);
 				run(fifty.tests._2);
@@ -248,8 +315,9 @@ namespace slime.jrunscript.file {
 				run(fifty.tests._4);
 				run(fifty.tests.Pathname);
 				run(fifty.tests.Directory);
+				run(fifty.tests.stream);
 			};
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 }
