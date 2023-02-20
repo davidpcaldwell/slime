@@ -82,6 +82,10 @@ namespace slime.jrunscript.tools.jenkins {
 	export interface Exports {
 		Job: {
 			isName: (name: string) => slime.$api.fp.Predicate<Job>
+
+			Id: {
+				url: (id: job.Id) => string
+			}
 		}
 	}
 
@@ -109,7 +113,7 @@ namespace slime.jrunscript.tools.jenkins {
 	)(fifty);
 
 	export type Get<I,T extends api.Resource> = slime.$api.fp.world.Question<I,void,slime.$api.fp.Maybe<T>>
-	export type Fetch<T extends api.Resource> = slime.$api.fp.world.Question<string,void,T>
+	export type Fetch<T extends api.Resource> = slime.$api.fp.world.Question<T,void,T>
 
 	export interface Client {
 		get: {
@@ -118,7 +122,6 @@ namespace slime.jrunscript.tools.jenkins {
 		}
 
 		fetch: {
-			server: Fetch<Server>
 			job: Fetch<Job>
 		}
 
@@ -210,10 +213,15 @@ namespace slime.jrunscript.tools.jenkins {
 
 			fifty.tests.world.fetch = fifty.test.Parent();
 
-			fifty.tests.world.fetch.server = function() {
-				var response = $api.fp.world.now.ask(client.fetch.server(server));
+			fifty.tests.world.fetch.job = function() {
+				var response = $api.fp.world.now.ask(client.get.server(server));
 
-				jsh.shell.console(JSON.stringify(response, void(0), 4));
+				if (!response.present) throw new Error("Not Jenkins: " + server);
+				jsh.shell.console("First job: " + JSON.stringify(response.value.jobs[0]));
+
+				var fetched = $api.fp.world.now.question(client.fetch.job, response.value.jobs[0]);
+
+				jsh.shell.console(JSON.stringify(fetched, void(0), 4));
 			};
 		}
 	//@ts-ignore
