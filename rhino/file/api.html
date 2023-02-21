@@ -198,34 +198,6 @@ END LICENSE
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
-							<div class="name">write</div>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="object">
-										An object representing a mode of operation for this method.
-										<div class="label">has properties:</div>
-										<ul>
-											<li class="value">
-												<div class="name">append</div>
-												<span class="type">boolean</span>
-											</li>
-											<li class="value">
-												<div class="name">recursive</div>
-												<span class="type">boolean</span> Whether to create the directory containing this
-												Pathname if it does not already exist.
-											</li>
-										</ul>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								See the description of the first argument.  This method may return a
-								binary output stream, a character output stream, or <code>undefined</code>.
-							</div>
-						</li>
-						<li class="function">
 							<div class="name">createDirectory</div>
 							Creates a directory at the location of this <code>Pathname</code> and returns it.
 							<div>
@@ -783,14 +755,6 @@ END LICENSE
 									exists at that location.
 								</span>
 							</div>
-							<script type="application/x.jsapi#tests">
-								var directory = $jsapi.loader.getRelativePath("api.html").file.parent;
-								verify(directory).getFile("api.html").is.type("object");
-								verify(directory).getFile("foo").is(null);
-
-								verify(directory).getSubdirectory("java").is.type("object");	//	directory
-								verify(directory).getFile("java").is(null);
-							</script>
 						</li>
 						<li class="function">
 							<div class="name">getSubdirectory</div>

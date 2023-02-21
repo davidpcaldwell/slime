@@ -237,7 +237,17 @@ namespace slime.jrunscript.file {
 						if (filec.parent == null) return false;
 						return filec.parent.pathname.toString() == dir.pathname.toString();
 				})() );
-			}
+			};
+
+			fifty.tests.Node = fifty.test.Parent();
+			fifty.tests.Node.getFile_getDirectory = function() {
+				var directory = fifty.jsh.file.object.getRelativePath("api.html").file.parent;
+				verify(directory).getFile("api.html").is.type("object");
+				verify(directory).getFile("foo").is(null);
+
+				verify(directory).getSubdirectory("java").is.type("object");	//	directory
+				verify(directory).getFile("java").is(null);
+			};
 
 			fifty.tests.Directory = fifty.test.Parent();
 			fifty.tests.Directory._toString = function() {
@@ -314,6 +324,7 @@ namespace slime.jrunscript.file {
 				run(fifty.tests._3);
 				run(fifty.tests._4);
 				run(fifty.tests.Pathname);
+				run(fifty.tests.Node);
 				run(fifty.tests.Directory);
 				run(fifty.tests.stream);
 			};
