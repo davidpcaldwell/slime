@@ -19,6 +19,9 @@ namespace slime.jrunscript.runtime {
 			 * string, this method opens a character stream, writes the string to the stream, and closes the stream. If the value is
 			 * a binary or character input stream, this method reads the stream until it is exhausted and copies its contents to the
 			 * location of this file, closing the stream after doing so.
+			 *
+			 * @returns See the description of the method; the return type depends on the arguments.  May return a binary output
+			 * stream, a character output stream, or `undefined`.
 			 */
 			write?: {
 				(marker: slime.jrunscript.runtime.io.Exports["Streams"]["binary"], mode?: resource.WriteMode): slime.jrunscript.runtime.io.OutputStream
@@ -67,6 +70,9 @@ namespace slime.jrunscript.runtime {
 
 			export type HistoricSupportedDescriptor = resource.Descriptor | resource.LoadedDescriptor | slime.resource.Descriptor | DeprecatedStreamDescriptor
 
+			/**
+			 * An object representing the mode of operation of {@link old.Resource} `write` operations.
+			 */
 			export interface WriteMode {
 				/**
 				 * What to do if the file already exists. If `true`, this method will append to, rather than overwriting, the file.
@@ -74,6 +80,7 @@ namespace slime.jrunscript.runtime {
 				 */
 				append?: boolean
 
+				//	TODO	this comment is file-specific
 				/**
 				 * Whether to create the directory containing this Pathname if it does not already exist.
 				 */
