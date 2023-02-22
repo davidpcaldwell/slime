@@ -371,7 +371,7 @@
 					var filtered = headers.filter(isHeaderName(name));
 					if (filtered.length > 1) throw new Error("Expected only one match for header " + name + ", but got more than one");
 					return $api.fp.result(
-						$api.fp.Maybe.from(filtered[0]),
+						$api.fp.Maybe.from.value(filtered[0]),
 						$api.fp.Maybe.map($api.fp.property("value"))
 					);
 				}

@@ -178,7 +178,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				lib: jsh.shell.TMPDIR.createTemporary({ directory: true }),
 				getLatestVersion: function(major) {
 					return function(events) {
-						return $api.fp.Maybe.value(major + ".0.99");
+						return $api.fp.Maybe.from.some(major + ".0.99");
 					}
 				},
 				findApache: function(o) {

@@ -42,16 +42,16 @@
 								);
 							}
 						}
-						return $api.fp.Maybe.value(resource)
+						return $api.fp.Maybe.from.some(resource)
 					} else {
-						return $api.fp.Maybe.nothing();
+						return $api.fp.Maybe.from.nothing;
 					}
 				},
 				list: function(path) {
 					var target = $context.library.Location.relative(path.join(delegate.filesystem.separator.pathname))(delegate);
 					var nodes = $api.fp.world.now.ask(target.filesystem.listDirectory({ pathname: target.pathname }));
 					if (!nodes.present) throw new Error();
-					return $api.fp.Maybe.value(
+					return $api.fp.Maybe.from.some(
 						nodes.value.map(
 							/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.world.spi.Node,slime.runtime.loader.Node> } */
 							function(node) {

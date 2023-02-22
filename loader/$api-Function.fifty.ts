@@ -342,16 +342,27 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
-	export type Nothing = { present: false }
-	export type Some<T> = { present: true, value: T }
+	export type Nothing = Readonly<{ present: false }>
+	export type Some<T> = Readonly<{ present: true, value: T }>
 	export type Maybe<T> = Some<T> | Nothing
 
 	export interface Exports {
 		Maybe: {
-			nothing: () => Nothing
-			value: <T>(t: T) => Some<T>
+			from: {
+				nothing: Nothing
 
-			from: <T>(t: T) => Maybe<T>
+				some: <T>(t: T) => Some<T>
+
+				/**
+				 * Converts a possibly-defined JavaScript value to a {@link Maybe}.
+				 *
+				 * @param t A value
+				 *
+				 * @returns A {@link Maybe} corresponding to the given value; returns {@link Nothing} if the value is `null` or
+				 * `undefined`, or {@link Some | Some<T>} if the value is a `T`.
+				 */
+				value: <T>(t: T) => Maybe<T>
+			}
 
 			present: <T>(m: Maybe<T>) => m is Some<T>
 
@@ -424,15 +435,15 @@ namespace slime.$api.fp {
 				var arithmetic: slime.$api.fp.Partial<{ operation: string, left: number, right: number }, number> = $api.fp.switch([
 					function(p) {
 						if (p.operation == "+") {
-							return $api.fp.Maybe.value(p.left + p.right);
+							return $api.fp.Maybe.from.some(p.left + p.right);
 						}
-						return $api.fp.Maybe.nothing();
+						return $api.fp.Maybe.from.nothing;
 					},
 					function(p) {
 						if (p.operation == "*") {
-							return $api.fp.Maybe.value(p.left * p.right);
+							return $api.fp.Maybe.from.some(p.left * p.right);
 						}
-						return $api.fp.Maybe.nothing();
+						return $api.fp.Maybe.from.nothing;
 					}
 				]);
 

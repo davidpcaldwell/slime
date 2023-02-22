@@ -48,9 +48,9 @@
 						}
 						//	TODO	convert this to world oriented and fire the below as an event
 						//	jsh.shell.console("Latest supported Tomcat version from tomcat.apache.org is " + version);
-						return $api.fp.Maybe.value(version);
+						return $api.fp.Maybe.from.some(version);
 					} catch (e) {
-						return $api.fp.Maybe.nothing();
+						return $api.fp.Maybe.from.nothing;
 					}
 				};
 				//	Code to process the downloads directory to get insight into versions:

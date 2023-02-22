@@ -344,7 +344,7 @@
 				return function(events) {
 					var peer = java.newPeer(p.pathname);
 					var binary = peer.writeBinary(p.append || false);
-					return $api.fp.Maybe.value($context.api.io.Streams.java.adapt(binary));
+					return $api.fp.Maybe.from.some($context.api.io.Streams.java.adapt(binary));
 				}
 			}
 
@@ -358,9 +358,9 @@
 				var peer = java.newPeer(pathname);
 				if (!peer.exists()) {
 					events.fire("notFound");
-					return $api.fp.Maybe.nothing();
+					return $api.fp.Maybe.from.nothing;
 				}
-				return $api.fp.Maybe.value($context.api.io.Streams.java.adapt(peer.readBinary()));
+				return $api.fp.Maybe.from.some($context.api.io.Streams.java.adapt(peer.readBinary()));
 			}
 
 			var openWriter = function(pathname,events) {
@@ -612,22 +612,22 @@
 				openOutputStream: maybeOutputStream,
 				fileExists: function(p) {
 					return function(events) {
-						return $api.fp.Maybe.value(file_exists(p.pathname));
+						return $api.fp.Maybe.from.some(file_exists(p.pathname));
 					}
 				},
 				fileLength: function(p) {
 					return function(events) {
-						return $api.fp.Maybe.value(length(p.pathname));
+						return $api.fp.Maybe.from.some(length(p.pathname));
 					}
 				},
 				fileLastModified: function(p) {
 					return function(events) {
-						return $api.fp.Maybe.value(last_modified(p.pathname));
+						return $api.fp.Maybe.from.some(last_modified(p.pathname));
 					}
 				},
 				directoryExists: function(p) {
 					return function(events) {
-						return $api.fp.Maybe.value(directory_exists(p.pathname));
+						return $api.fp.Maybe.from.some(directory_exists(p.pathname));
 					}
 				},
 				createDirectory: function(p) {
@@ -640,7 +640,7 @@
 					return function(events) {
 						var peer = java.newPeer(p.pathname);
 						var list = peer.list();
-						return $api.fp.Maybe.value(
+						return $api.fp.Maybe.from.some(
 							list.map(
 								/** @type { slime.$api.fp.Mapping<slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node,slime.jrunscript.file.world.spi.Node> } */
 								function(node) {

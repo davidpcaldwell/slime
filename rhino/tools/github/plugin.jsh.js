@@ -117,13 +117,13 @@
 											}
 										}
 									},
-									$api.fp.Maybe.from
+									$api.fp.Maybe.from.value
 								)
 							)
 						),
 						function flatten(x) {
 							if (x.present) return x.value;
-							return $api.fp.Maybe.nothing();
+							return $api.fp.Maybe.from.nothing;
 						}
 					);
 

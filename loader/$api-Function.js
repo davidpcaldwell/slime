@@ -28,28 +28,30 @@
 		/** @type { slime.$api.fp.Exports["Maybe"] } */
 		var Maybe = (
 			function() {
-				/** @type { slime.$api.fp.Exports["Maybe"]["nothing"] } */
-				var nothing = function() {
-					return { present: false };
-				};
-				/** @type { slime.$api.fp.Exports["Maybe"]["value"] } */
+				/** @type { slime.$api.fp.Nothing } */
+				var nothing = { present: false };
+				/** @type { slime.$api.fp.Exports["Maybe"]["from"]["some"] } */
 				var value = function(t) {
 					return { present: true, value: t };
 				};
 				return {
 					nothing: nothing,
 					value: value,
-					from: function(v) {
-						if (v === null) return nothing();
-						if (typeof(v) == "undefined") return nothing();
-						return value(v);
+					from: {
+						nothing: { present: false },
+						some: value,
+						value: function(v) {
+							if (v === null) return nothing;
+							if (typeof(v) == "undefined") return nothing;
+							return value(v);
+						}
 					},
 					map: function(f) {
 						return function(maybe) {
 							if (maybe.present) {
 								return value(f(maybe.value));
 							} else {
-								return nothing();
+								return nothing;
 							}
 						}
 					},
@@ -284,7 +286,7 @@
 				match: function(v) {
 					return function(p) {
 						var present = v.if(p);
-						return present ? Maybe.value(v.then(p)) : Maybe.nothing();
+						return present ? Maybe.from.some(v.then(p)) : Maybe.from.nothing;
 					}
 				}
 			},
@@ -294,7 +296,7 @@
 						var r = cases[i](p);
 						if (r.present) return r;
 					}
-					return Maybe.nothing();
+					return Maybe.from.nothing;
 				}
 			},
 			Stream: code.Stream({
@@ -360,12 +362,12 @@
 				first: function(ordering) {
 					return function(ts) {
 						/** @type { slime.$api.fp.Maybe<any> } */
-						var rv = Maybe.nothing();
+						var rv = Maybe.from.nothing;
 						ts.forEach(function(item) {
 							if (!rv.present) {
-								rv = Maybe.value(item);
+								rv = Maybe.from.some(item);
 							} else if (rv.present && ordering(rv.value)(item) == "BEFORE") {
-								rv = Maybe.value(item);
+								rv = Maybe.from.some(item);
 							}
 						});
 						return rv;
@@ -459,7 +461,7 @@
 					return function(string) {
 						//	We copy the RegExp to deal with possibilities of multithreaded access
 						var copy = new RegExp(regexp.source);
-						return Maybe.from(copy.exec(string));
+						return Maybe.from.value(copy.exec(string));
 					}
 				}
 			},
