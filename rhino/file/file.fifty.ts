@@ -9,15 +9,45 @@ namespace slime.jrunscript.file {
 	 * An object representing a path in the local file system.
 	 */
 	export interface Pathname {
-		createDirectory: {
-			(p?: {
-				exists?: (d: Directory) => boolean
-				recursive?: boolean
+		//	TODO	type of the exists callback is probably wrong, probably should be Node since it could be a file, according to
+		//			the documentation
 
-				/** @deprecated Use `exists`. */
-				ifExists?: (d: Directory) => boolean
-			}): Directory
-		}
+		/**
+		 * Creates a directory at the location of this `Pathname` and returns it.
+		 *
+		 * By default, this method throws an exception if the directory cannot be created or if it already exists. This behavior can
+		 * be overridden using the argument.
+		 *
+		 * @param p An object representing a mode of operation for this method.
+		 *
+		 * @returns The directory that was created (or already existed; see the `exists()` method of the argument).
+		 */
+		createDirectory: (p?: {
+			/**
+			 * A method that will be invoked if a file or directory at this pathname already exists.
+			 *
+			 * The default implementation throws an exception, but callers can override this behavior. For example, to simply ensure
+			 * that a directory exists, one can call `createDirectory()` and use an `exists` function that does nothing and returns
+			 * `false` (the `Pathname.createDirectory.exists.LEAVE` function is provided as a convenience). Then, if the directory
+			 * exists, `createDirectory()` will abort early. To create a "working" directory that is empty (deleting it if it
+			 * already exists), use an `exists` method that removes the directory and then returns `true` (the
+			 * `Pathname.createDirectory.exists.RECREATE` function is provided as a convenience for this).
+			 *
+			 * @param d The node that exists at the given pathname.
+			 *
+			 * @returns Whether to continue normal processing after `exists` is invoked.
+			 */
+			exists?: (d: Directory) => boolean
+
+			/**
+			 * A `boolean` representing whether this method should recursively create any parent directories of this `Pathname` if
+			 * necessary.
+			 */
+			recursive?: boolean
+
+			/** @deprecated Use `exists`. */
+			ifExists?: (d: Directory) => boolean
+		}) => Directory
 	}
 
 	(
