@@ -185,7 +185,7 @@
 									resourceUrlToHttpRequest,
 									$api.fp.world.mapping($context.library.http.world.request),
 									function(response) {
-										if (response.status.code == 404) return $api.fp.Maybe.from.nothing;
+										if (response.status.code == 404) return $api.fp.Maybe.from.nothing();
 										return $api.fp.Maybe.from.some(getResponseJson(response));
 									}
 								)

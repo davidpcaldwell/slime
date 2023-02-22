@@ -123,7 +123,7 @@
 						),
 						function flatten(x) {
 							if (x.present) return x.value;
-							return $api.fp.Maybe.from.nothing;
+							return $api.fp.Maybe.from.nothing();
 						}
 					);
 

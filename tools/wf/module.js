@@ -44,7 +44,7 @@
 					at,
 					exists
 				);
-				return (created) ? $api.fp.Maybe.from.some(at) : $api.fp.Maybe.from.nothing;
+				return (created) ? $api.fp.Maybe.from.some(at) : $api.fp.Maybe.from.nothing();
 			};
 		};
 

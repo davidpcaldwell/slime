@@ -38,7 +38,7 @@
 					nothing: nothing,
 					value: value,
 					from: {
-						nothing: { present: false },
+						nothing: function() { return nothing; },
 						some: value,
 						value: function(v) {
 							if (v === null) return nothing;
@@ -286,7 +286,7 @@
 				match: function(v) {
 					return function(p) {
 						var present = v.if(p);
-						return present ? Maybe.from.some(v.then(p)) : Maybe.from.nothing;
+						return present ? Maybe.from.some(v.then(p)) : Maybe.from.nothing();
 					}
 				}
 			},
@@ -296,7 +296,7 @@
 						var r = cases[i](p);
 						if (r.present) return r;
 					}
-					return Maybe.from.nothing;
+					return Maybe.from.nothing();
 				}
 			},
 			Stream: code.Stream({
@@ -362,7 +362,7 @@
 				first: function(ordering) {
 					return function(ts) {
 						/** @type { slime.$api.fp.Maybe<any> } */
-						var rv = Maybe.from.nothing;
+						var rv = Maybe.from.nothing();
 						ts.forEach(function(item) {
 							if (!rv.present) {
 								rv = Maybe.from.some(item);

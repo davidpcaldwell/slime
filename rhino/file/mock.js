@@ -30,7 +30,7 @@
 			var openInputStream = function(p) {
 				return function(events) {
 					if (!state[p.pathname]) events.fire("notFound");
-					if (!state[p.pathname]) return $api.fp.Maybe.from.nothing;
+					if (!state[p.pathname]) return $api.fp.Maybe.from.nothing();
 					return $api.fp.Maybe.from.some(
 						$context.library.io.InputStream.from.java(
 							new Packages.java.io.ByteArrayInputStream(

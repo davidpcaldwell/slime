@@ -50,7 +50,7 @@
 						//	jsh.shell.console("Latest supported Tomcat version from tomcat.apache.org is " + version);
 						return $api.fp.Maybe.from.some(version);
 					} catch (e) {
-						return $api.fp.Maybe.from.nothing;
+						return $api.fp.Maybe.from.nothing();
 					}
 				};
 				//	Code to process the downloads directory to get insight into versions:

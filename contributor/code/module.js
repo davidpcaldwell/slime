@@ -276,7 +276,7 @@
 							}),
 							function(it) {
 								if (it.present) return it.value;
-								return $api.fp.Maybe.from.nothing;
+								return $api.fp.Maybe.from.nothing();
 							}
 						)
 					);
@@ -314,7 +314,7 @@
 							}
 							return rv;
 						},
-						$api.fp.Maybe.from.nothing
+						$api.fp.Maybe.from.nothing()
 					);
 				}
 			}

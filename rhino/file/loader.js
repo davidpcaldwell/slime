@@ -44,7 +44,7 @@
 						}
 						return $api.fp.Maybe.from.some(resource)
 					} else {
-						return $api.fp.Maybe.from.nothing;
+						return $api.fp.Maybe.from.nothing();
 					}
 				},
 				list: function(path) {

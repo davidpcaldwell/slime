@@ -142,7 +142,7 @@
 							var code = entry.file.read(String);
 							return $api.fp.Maybe.from.some(code.indexOf("ts-check") != -1);
 						}
-						return $api.fp.Maybe.from.nothing;
+						return $api.fp.Maybe.from.nothing();
 					}
 				}
 			},

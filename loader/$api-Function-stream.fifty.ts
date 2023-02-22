@@ -194,7 +194,7 @@ namespace slime.$api.fp {
 							}
 						} else {
 							return {
-								next: $api.fp.Maybe.from.nothing,
+								next: $api.fp.Maybe.from.nothing(),
 								remaining: emptyStream()
 							}
 						}

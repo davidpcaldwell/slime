@@ -351,7 +351,7 @@
 						$context.library.file.world.Location.file.read.stream(),
 						file.file
 					);
-					if (!input.present) return $api.fp.Maybe.from.nothing;
+					if (!input.present) return $api.fp.Maybe.from.nothing();
 					var _input = input.value.java.adapt();
 					var _1 = _input.read();
 					var _2 = _input.read();
@@ -374,7 +374,7 @@
 								var rv = hasShebang()(file)(events);
 								if (rv.present) return rv;
 							}
-							return $api.fp.Maybe.from.nothing;
+							return $api.fp.Maybe.from.nothing();
 						}
 					}
 				}

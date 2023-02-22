@@ -349,7 +349,7 @@ namespace slime.$api.fp {
 	export interface Exports {
 		Maybe: {
 			from: {
-				nothing: Nothing
+				nothing: () => Nothing
 
 				some: <T>(t: T) => Some<T>
 
@@ -437,13 +437,13 @@ namespace slime.$api.fp {
 						if (p.operation == "+") {
 							return $api.fp.Maybe.from.some(p.left + p.right);
 						}
-						return $api.fp.Maybe.from.nothing;
+						return $api.fp.Maybe.from.nothing();
 					},
 					function(p) {
 						if (p.operation == "*") {
 							return $api.fp.Maybe.from.some(p.left * p.right);
 						}
-						return $api.fp.Maybe.from.nothing;
+						return $api.fp.Maybe.from.nothing();
 					}
 				]);
 

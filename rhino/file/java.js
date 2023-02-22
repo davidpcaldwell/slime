@@ -358,7 +358,7 @@
 				var peer = java.newPeer(pathname);
 				if (!peer.exists()) {
 					events.fire("notFound");
-					return $api.fp.Maybe.from.nothing;
+					return $api.fp.Maybe.from.nothing();
 				}
 				return $api.fp.Maybe.from.some($context.api.io.Streams.java.adapt(peer.readBinary()));
 			}

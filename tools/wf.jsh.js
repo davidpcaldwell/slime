@@ -27,7 +27,7 @@
 							if (match) {
 								return $api.fp.Maybe.from.some(p.match(match));
 							} else {
-								return $api.fp.Maybe.from.nothing;
+								return $api.fp.Maybe.from.nothing();
 							}
 						}
 					}

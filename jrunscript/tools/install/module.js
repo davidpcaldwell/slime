@@ -104,7 +104,7 @@
 		var getFormat = function(type) {
 			if (type.media == "application" && type.subtype == "zip") return $api.fp.Maybe.from.some(newFormats.zip);
 			if (type.media == "application" && type.subtype == "gzip") return $api.fp.Maybe.from.some(newFormats.targz);
-			return $api.fp.Maybe.from.nothing;
+			return $api.fp.Maybe.from.nothing();
 		}
 
 		/**
@@ -316,7 +316,7 @@
 						if (/\.zip$/.test(basename)) return $api.fp.Maybe.from.some(decode("application/zip"));
 						if (/\.tgz$/.test(basename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
 						if (/\.tar.gz$/.test(basename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
-						return $api.fp.Maybe.from.nothing;
+						return $api.fp.Maybe.from.nothing();
 					};
 
 					/** @param { slime.jrunscript.http.client.spi.Response } response */

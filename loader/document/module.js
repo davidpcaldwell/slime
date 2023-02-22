@@ -420,7 +420,7 @@
 						var match = element.attributes.filter(function(attribute) {
 							return attribute.name == name;
 						})[0];
-						return (match) ? $api.fp.Maybe.from.some(match.value) : $api.fp.Maybe.from.nothing;
+						return (match) ? $api.fp.Maybe.from.some(match.value) : $api.fp.Maybe.from.nothing();
 					}
 				}
 			},
