@@ -23,7 +23,7 @@
 							var r = cases[i](p);
 							if (r.present) return r;
 						}
-						return $api.fp.Maybe.nothing();
+						return $api.fp.Maybe.from.nothing;
 					}
 				},
 				/** @type { <P,R1,R2>(fs: [(p: P) => R1, (p: P) => R2]) => (p: P) => [R1, R2] } */
@@ -38,13 +38,13 @@
 				Array: {
 					/** @type { <T>(ts: T[]) => slime.$api.fp.Maybe<T> } */
 					first: function(array) {
-						if (array.length > 0) return $api.fp.Maybe.value(array[0]);
-						return $api.fp.Maybe.nothing();
+						if (array.length > 0) return $api.fp.Maybe.from.some(array[0]);
+						return $api.fp.Maybe.from.nothing();
 					},
 					/** @type { <T>(ts: T[]) => slime.$api.fp.Maybe<T> } */
 					last: function(array) {
-						if (array.length > 0) return $api.fp.Maybe.value(array[array.length-1]);
-						return $api.fp.Maybe.nothing();
+						if (array.length > 0) return $api.fp.Maybe.from.some(array[array.length-1]);
+						return $api.fp.Maybe.from.nothing();
 					}
 				}
 			}
@@ -54,7 +54,7 @@
 		var toPartial = function(f) {
 			return function(p) {
 				var r = f(p);
-				return $api.fp.Maybe.from(r);
+				return $api.fp.Maybe.from.value(r);
 			}
 		}
 
@@ -65,21 +65,21 @@
 		 */
 		function getLineIndent(line) {
 			if (line.trim().substring(0,3) == "/**") {
-				return $api.fp.Maybe.value(line.substring(0,line.indexOf("/**")));
+				return $api.fp.Maybe.from.some(line.substring(0,line.indexOf("/**")));
 			}
 			if (line.trim().substring(0,1) == "*") {
 				var at = line.indexOf("*");
 				if (line.substring(at-1,at) != " ") {
-					return $api.fp.Maybe.nothing();
+					return $api.fp.Maybe.from.nothing();
 				}
-				return $api.fp.Maybe.value(line.substring(0,at-1));
+				return $api.fp.Maybe.from.some(line.substring(0,at-1));
 			}
 			var leadingWhitespacePattern = /^(\s+)/;
 			var leadingWhitespaceMatch = leadingWhitespacePattern.exec(line);
 			if (leadingWhitespaceMatch) {
-				return $api.fp.Maybe.value(leadingWhitespaceMatch[1]);
+				return $api.fp.Maybe.from.some(leadingWhitespaceMatch[1]);
 			}
-			return $api.fp.Maybe.nothing();
+			return $api.fp.Maybe.from.nothing();
 		}
 
 		/**
@@ -319,11 +319,11 @@
 		 */
 		function renderInlineNode(child) {
 			if ($context.library.document.Node.isText(child)) {
-				return $api.fp.Maybe.value(child.data);
+				return $api.fp.Maybe.from.some(child.data);
 			} else if ($context.library.document.Node.isComment(child)) {
-				return $api.fp.Maybe.value("<!---" + child.data + "--->");
+				return $api.fp.Maybe.from.some("<!---" + child.data + "--->");
 			} else {
-				return $api.fp.Maybe.nothing();
+				return $api.fp.Maybe.from.nothing();
 			}
 		}
 

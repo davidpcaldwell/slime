@@ -25,9 +25,9 @@
 						return function(string) {
 							var match = p.pattern.exec(string);
 							if (match) {
-								return $api.fp.Maybe.value(p.match(match));
+								return $api.fp.Maybe.from.some(p.match(match));
 							} else {
-								return $api.fp.Maybe.nothing();
+								return $api.fp.Maybe.from.nothing();
 							}
 						}
 					}

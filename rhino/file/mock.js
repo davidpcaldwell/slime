@@ -30,8 +30,8 @@
 			var openInputStream = function(p) {
 				return function(events) {
 					if (!state[p.pathname]) events.fire("notFound");
-					if (!state[p.pathname]) return $api.fp.Maybe.nothing();
-					return $api.fp.Maybe.value(
+					if (!state[p.pathname]) return $api.fp.Maybe.from.nothing();
+					return $api.fp.Maybe.from.some(
 						$context.library.io.InputStream.from.java(
 							new Packages.java.io.ByteArrayInputStream(
 								state[p.pathname]
@@ -58,14 +58,14 @@
 						java: out.java,
 						split: out.split
 					};
-					return $api.fp.Maybe.value(wrap);
+					return $api.fp.Maybe.from.some(wrap);
 				}
 			};
 
 			/** @type { slime.jrunscript.file.world.spi.Filesystem["fileExists"] } */
 			var fileExists = function(p) {
 				return function(events) {
-					return $api.fp.Maybe.value(Boolean(state[p.pathname]));
+					return $api.fp.Maybe.from.some(Boolean(state[p.pathname]));
 				}
 			}
 

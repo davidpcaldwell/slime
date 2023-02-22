@@ -254,7 +254,7 @@
 					var found = list.find(function(item) {
 						return item.name == p;
 					});
-					return $api.fp.Maybe.from(found);
+					return $api.fp.Maybe.from.value(found);
 				}
 			}
 		};

@@ -140,9 +140,9 @@
 					hasTypeChecking: function(entry) {
 						if (isJavascript(entry)) {
 							var code = entry.file.read(String);
-							return $api.fp.Maybe.value(code.indexOf("ts-check") != -1);
+							return $api.fp.Maybe.from.some(code.indexOf("ts-check") != -1);
 						}
-						return $api.fp.Maybe.nothing();
+						return $api.fp.Maybe.from.nothing();
 					}
 				}
 			},

@@ -102,9 +102,9 @@
 		 * @returns { slime.$api.fp.Maybe<slime.jrunscript.tools.install.download.Format> }
 		 */
 		var getFormat = function(type) {
-			if (type.media == "application" && type.subtype == "zip") return $api.fp.Maybe.value(newFormats.zip);
-			if (type.media == "application" && type.subtype == "gzip") return $api.fp.Maybe.value(newFormats.targz);
-			return $api.fp.Maybe.nothing();
+			if (type.media == "application" && type.subtype == "zip") return $api.fp.Maybe.from.some(newFormats.zip);
+			if (type.media == "application" && type.subtype == "gzip") return $api.fp.Maybe.from.some(newFormats.targz);
+			return $api.fp.Maybe.from.nothing();
 		}
 
 		/**
@@ -313,10 +313,10 @@
 					var getFileMimeType = function(file) {
 						var basename = file.pathname.basename;
 						var decode = $api.mime.Type.codec.declaration.decode;
-						if (/\.zip$/.test(basename)) return $api.fp.Maybe.value(decode("application/zip"));
-						if (/\.tgz$/.test(basename)) return $api.fp.Maybe.value(decode("application/gzip"));
-						if (/\.tar.gz$/.test(basename)) return $api.fp.Maybe.value(decode("application/gzip"));
-						return $api.fp.Maybe.nothing();
+						if (/\.zip$/.test(basename)) return $api.fp.Maybe.from.some(decode("application/zip"));
+						if (/\.tgz$/.test(basename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
+						if (/\.tar.gz$/.test(basename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
+						return $api.fp.Maybe.from.nothing();
 					};
 
 					/** @param { slime.jrunscript.http.client.spi.Response } response */

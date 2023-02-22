@@ -189,8 +189,8 @@
 					documentation: (
 						function() {
 							var latest = getLatestUpdateStart();
-							if (typeof(latest) != "undefined") return $api.fp.Maybe.value(latest);
-							if (state.typedocBasedOnSrcAt) return $api.fp.Maybe.value(state.typedocBasedOnSrcAt);
+							if (typeof(latest) != "undefined") return $api.fp.Maybe.from.some(latest);
+							if (state.typedocBasedOnSrcAt) return $api.fp.Maybe.from.some(state.typedocBasedOnSrcAt);
 							return world.lastModified.documentation();
 						}
 					)()

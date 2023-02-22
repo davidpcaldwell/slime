@@ -999,13 +999,13 @@
 							},
 							get: function(path) {
 								var _file = _loader.getFile(path.join("/"));
-								if (!_file) return slime.$api.fp.Maybe.nothing();
-								return slime.$api.fp.Maybe.value(_file)
+								if (!_file) return slime.$api.fp.Maybe.from.nothing();
+								return slime.$api.fp.Maybe.from.some(_file)
 							},
 							list: (_loader.getEnumerator()) ? function(path) {
 								var prefix = (path.length) ? path.join("/") : "";
 								var _list = _loader.getEnumerator().list(prefix);
-								if (!_list) return slime.$api.fp.Maybe.nothing();
+								if (!_list) return slime.$api.fp.Maybe.from.nothing();
 								var rv = Array.prototype.map.call(_list, function(x) { return String(x); }).map(function(string) {
 									var folder = (string.substring(string.length-1) == "/");
 									var name = (folder) ? string.substring(0,string.length-1) : string;
@@ -1016,7 +1016,7 @@
 									}
 									return item;
 								});
-								return slime.$api.fp.Maybe.value(rv);
+								return slime.$api.fp.Maybe.from.some(rv);
 							} : void(0),
 							code: function(_resource) {
 								var name = String(_resource.getSourceName());
@@ -1060,12 +1060,12 @@
 							},
 							length: function() {
 								var length = _resource.getLength();
-								if (length === null) return slime.$api.fp.Maybe.nothing();
-								return slime.$api.fp.Maybe.value(length.longValue());
+								if (length === null) return slime.$api.fp.Maybe.from.nothing();
+								return slime.$api.fp.Maybe.from.some(length.longValue());
 							},
 							modified: function() {
 								var _date = _resource.getLastModified();
-								return (_date) ? slime.$api.fp.Maybe.value(_date.getTime()) : slime.$api.fp.Maybe.nothing();
+								return (_date) ? slime.$api.fp.Maybe.from.some(_date.getTime()) : slime.$api.fp.Maybe.from.nothing();
 							}
 						}
 					}

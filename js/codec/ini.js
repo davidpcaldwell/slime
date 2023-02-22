@@ -153,8 +153,8 @@
 					valueOf: function(name) {
 						return function(file) {
 							var x = parse(file.split("\n")).value(name);
-							if (x === null) return $api.fp.Maybe.nothing();
-							return $api.fp.Maybe.value(x);
+							if (x === null) return $api.fp.Maybe.from.nothing();
+							return $api.fp.Maybe.from.some(x);
 						}
 					},
 					values: function(file) {

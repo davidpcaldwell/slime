@@ -351,12 +351,12 @@
 						$context.library.file.world.Location.file.read.stream(),
 						file.file
 					);
-					if (!input.present) return $api.fp.Maybe.nothing();
+					if (!input.present) return $api.fp.Maybe.from.nothing();
 					var _input = input.value.java.adapt();
 					var _1 = _input.read();
 					var _2 = _input.read();
 					_input.close();
-					return $api.fp.Maybe.value(_1 == 35 && _2 == 33);
+					return $api.fp.Maybe.from.some(_1 == 35 && _2 == 33);
 				}
 			}
 		}
@@ -369,12 +369,12 @@
 						return function(events) {
 							var basename = getBasename(file.file);
 							var byExtension = filename.isText(basename);
-							if (typeof(byExtension) == "boolean") return $api.fp.Maybe.value(byExtension);
+							if (typeof(byExtension) == "boolean") return $api.fp.Maybe.from.some(byExtension);
 							if (basename.indexOf(".") == -1) {
 								var rv = hasShebang()(file)(events);
 								if (rv.present) return rv;
 							}
-							return $api.fp.Maybe.nothing();
+							return $api.fp.Maybe.from.nothing();
 						}
 					}
 				}

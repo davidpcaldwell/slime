@@ -379,7 +379,7 @@
 					next = checkParent(root, cursor);
 				}
 				return {
-					next: $api.fp.Maybe.value(position),
+					next: $api.fp.Maybe.from.some(position),
 					remaining: (next) ? NodesStream(root, next) : $api.fp.Stream.from.empty()
 				};
 			};
@@ -420,7 +420,7 @@
 						var match = element.attributes.filter(function(attribute) {
 							return attribute.name == name;
 						})[0];
-						return (match) ? $api.fp.Maybe.value(match.value) : $api.fp.Maybe.nothing();
+						return (match) ? $api.fp.Maybe.from.some(match.value) : $api.fp.Maybe.from.nothing();
 					}
 				}
 			},

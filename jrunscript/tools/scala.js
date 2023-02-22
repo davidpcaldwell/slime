@@ -69,7 +69,6 @@
 							)
 						)
 					)
-					return $api.fp.Maybe.nothing();
 				}
 			},
 			compile: function(installation) {

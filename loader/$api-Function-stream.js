@@ -17,7 +17,7 @@
 		/** @type { slime.$api.fp.Stream<any> } */
 		var empty = function() {
 			return {
-				next: $f.Maybe.nothing(),
+				next: $f.Maybe.from.nothing(),
 				remaining: empty
 			};
 		};
@@ -29,7 +29,7 @@
 						var current = stream();
 						if (!current.next.present) {
 							return {
-								next: $f.Maybe.nothing(),
+								next: $f.Maybe.from.nothing(),
 								remaining: empty
 							}
 						}
@@ -59,7 +59,7 @@
 			return function() {
 				if (streams.length == 0) {
 					return {
-						next: $f.Maybe.nothing(),
+						next: $f.Maybe.from.nothing(),
 						remaining: empty
 					}
 				}
@@ -94,12 +94,12 @@
 						return function() {
 							if (index < array.length) {
 								return {
-									next: $f.Maybe.value(array[index]),
+									next: $f.Maybe.from.some(array[index]),
 									remaining: recurse(array, index+1)
 								}
 							} else {
 								return {
-									next: $f.Maybe.nothing(),
+									next: $f.Maybe.from.nothing(),
 									remaining: empty
 								}
 							}
@@ -116,7 +116,7 @@
 							return function() {
 								if ( (start + increment) <= p.end) {
 									return {
-										next: $f.Maybe.value(start),
+										next: $f.Maybe.from.some(start),
 										remaining: recurse({
 											start: start + increment,
 											end: p.end,
@@ -125,7 +125,7 @@
 									}
 								} else {
 									return {
-										next: $f.Maybe.nothing(),
+										next: $f.Maybe.from.nothing(),
 										remaining: empty
 									}
 								}
@@ -148,7 +148,7 @@
 						var delegate = stream();
 						return {
 							//	TODO	probably a better way to write this with Maybe.else
-							next: (delegate.next.present) ? $context.$f.Maybe.value(mapping(delegate.next.value)) : $context.$f.Maybe.nothing(),
+							next: (delegate.next.present) ? $context.$f.Maybe.from.some(mapping(delegate.next.value)) : $context.$f.Maybe.from.nothing(),
 							remaining: recurse(delegate.remaining,mapping)
 						}
 					};

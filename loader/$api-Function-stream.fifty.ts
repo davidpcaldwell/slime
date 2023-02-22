@@ -189,12 +189,12 @@ namespace slime.$api.fp {
 					return function() {
 						if (start < limit) {
 							return {
-								next: $api.fp.Maybe.value(start),
+								next: $api.fp.Maybe.from.some(start),
 								remaining: streamRange(start+1, limit)
 							}
 						} else {
 							return {
-								next: $api.fp.Maybe.nothing(),
+								next: $api.fp.Maybe.from.nothing(),
 								remaining: emptyStream()
 							}
 						}
