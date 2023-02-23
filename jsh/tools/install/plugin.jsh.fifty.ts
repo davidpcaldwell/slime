@@ -6,6 +6,17 @@
 
 /// <reference path="../../../local/jsh/lib/node/lib/node_modules/@types/js-yaml/index.d.ts" />
 
+namespace slime.external.rename {
+	export type _jsyaml = typeof jsyaml;
+}
+
+namespace slime.external {
+	/**
+	 * The `js-yaml` v3 API; see the [README](https://github.com/nodeca/js-yaml/blob/v3/README.md).
+	 */
+	export type jsyaml = slime.external.rename._jsyaml;
+}
+
 namespace slime.jsh.shell.tools {
 	(
 		function(
@@ -138,25 +149,26 @@ namespace slime.jsh.shell.tools {
 
 	export interface Exports {
 		/**
-		 * Integration with [`js-yaml`](https://github.com/nodeca/js-yaml) v3, which provides support for the YAML serialization format.
+		 * Integration with [`js-yaml`](https://github.com/nodeca/js-yaml) v3, which provides support for the YAML serialization
+		 * format.
 		 */
 		jsyaml: {
 			/**
 			 * Downloads `js-yaml`, installs it into the current shell, and returns it. Property is available if this shell allows
 			 * the installation of libraries.
 			 */
-			install?: () => typeof jsyaml
+			install?: () => slime.external.jsyaml
 
 			/**
 			 * Returns `js-yaml`, downloading it if it is not installed in the shell. If it is not installed in the shell and *can*
 			 * be installed into the shell, it will be installed into the shell.
 			 */
-			require: () => typeof jsyaml
+			require: () => slime.external.jsyaml
 
 			/**
-			 * Downloads `js-yaml` if it is not installed into the shell, and returns it.
+			 * Loads `js-yaml`, downloading its code if it is not installed into the shell, and returns it.
 			 */
-			load: () => typeof jsyaml
+			load: () => slime.external.jsyaml
 		}
 	}
 
