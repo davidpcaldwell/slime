@@ -13,6 +13,8 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {
+		jsh.wf.typescript.require();
+
 		jsh.shell.tools.tomcat.old.require();
 
 		/**
