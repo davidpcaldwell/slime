@@ -41,7 +41,9 @@ namespace slime.jsh {
 		}
 
 		tools: Tools & {
-			//	deprecated
+			/**
+			 * @deprecated See {@link slime.jsh.shell.tools.Exports | slime.jsh.shell.tools.Exports.rhino }
+			 */
 			rhino: {}
 			tomcat: {}
 			ncdbg: {}

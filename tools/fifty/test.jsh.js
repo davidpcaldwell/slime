@@ -35,6 +35,7 @@
 		//	the Fifty tests. May want to provide this as an API somewhere (currently there is one in jsh.wf, but it functions
 		//	slightly differently; a `jsh` script requiring TypeScript is very foreseeable, though). Could generalize to require a
 		//	specific TypeScript version, etc.
+		//	TODO	test-browser.jsh.js uses a much simpler method; is the above comment out of date? Is the other script wrong?
 		jsh.shell.jsh.require({
 			satisfied: $api.fp.impure.Input.map(
 				$api.fp.impure.Input.value(void(0)),

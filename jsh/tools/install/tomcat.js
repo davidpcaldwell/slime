@@ -209,6 +209,7 @@
 					var majorVersion = Number(version.split(".")[0]);
 					var mirror = (p.version) ? "https://archive.apache.org/dist/" : void(0);
 					//	TODO	this does not seem to fail on 404
+					//	TODO	logging console messages for findApache is not ideal, should fire event instead
 					var local = $api.fp.world.now.question(
 						findApache,
 						{
