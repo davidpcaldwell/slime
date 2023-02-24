@@ -352,9 +352,9 @@
 									argument: function(argument) {
 										return {
 											run: function(run) {
-												var world = (run && run.world) ? run.world : $context.library.http.world;
+												var implementation = (run && run.world) ? run.world.request : $context.library.http.world.java.urlconnection;
 												return $api.fp.world.old.ask(function(events) {
-													var response = $api.fp.world.input(world.request(
+													var response = $api.fp.world.input(implementation(
 														toHttpArgument(
 															api,
 															authentication,
@@ -373,7 +373,7 @@
 									argument: function(argument) {
 										return {
 											run: function(run) {
-												var world = (run && run.world) ? run.world : $context.library.http.world;
+												var implementation = (run && run.world) ? run.world.request : $context.library.http.world.java.urlconnection;
 												return $api.fp.world.old.ask(function(events) {
 													var request = toHttpArgument(
 														api,
@@ -382,7 +382,7 @@
 													);
 													var rv = [];
 													while(request) {
-														var response = $api.fp.world.input(world.request(request))();
+														var response = $api.fp.world.input(implementation(request))();
 														var page = operation.response(response);
 														rv = rv.concat(page);
 														var link = links(response);

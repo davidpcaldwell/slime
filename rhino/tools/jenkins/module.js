@@ -63,7 +63,7 @@
 		 * @returns { slime.jrunscript.http.client.spi.Argument }
 		 */
 		function toHttpRequest(p) {
-			return $context.library.http.world.Argument.request({
+			return $context.library.http.Argument.request({
 				method: p.method,
 				url: p.url,
 				headers: $api.Array.build(function(rv) {
@@ -80,7 +80,7 @@
 
 		var request = $api.fp.pipe(
 			toHttpRequest,
-			$api.fp.world.mapping($context.library.http.world.request)
+			$api.fp.world.mapping($context.library.http.world.java.urlconnection)
 		)
 
 		/**
@@ -127,7 +127,7 @@
 							resource,
 							$api.fp.property("url"),
 							resourceUrlToHttpRequest,
-							$api.fp.world.mapping($context.library.http.world.request),
+							$api.fp.world.mapping($context.library.http.world.java.urlconnection),
 							getResponseJson
 						)
 					}
@@ -144,7 +144,7 @@
 						return $api.fp.now.invoke(
 							url,
 							resourceUrlToHttpRequest,
-							$api.fp.world.mapping($context.library.http.world.request),
+							$api.fp.world.mapping($context.library.http.world.java.urlconnection),
 							function(response) {
 								return $api.fp.now.invoke(
 									getResponseVersion(response),
@@ -183,7 +183,7 @@
 									id,
 									getJobUrl,
 									resourceUrlToHttpRequest,
-									$api.fp.world.mapping($context.library.http.world.request),
+									$api.fp.world.mapping($context.library.http.world.java.urlconnection),
 									function(response) {
 										if (response.status.code == 404) return $api.fp.Maybe.from.nothing();
 										return $api.fp.Maybe.from.some(getResponseJson(response));

@@ -206,20 +206,22 @@ namespace slime.jrunscript.http.client {
 		body?: request.Body
 	}
 
-	export interface World {
-		request: spi.Implementation
+	export interface Exports {
+		world: {
+			java: {
+				urlconnection: spi.Implementation
+			}
+		}
+	}
 
-		Client: {
+	export interface Exports {
+		World: {
 			withFollowRedirects: (implementation: spi.Implementation) => spi.Implementation
 		}
 
 		Argument: {
 			request: (request: Request) => spi.Argument
 		}
-	}
-
-	export interface Exports {
-		world: World
 	}
 
 	export namespace exports {
@@ -336,7 +338,7 @@ namespace slime.jrunscript.http.client {
 				const { jsh } = fifty.global;
 
 				fifty.tests.exports.world = function() {
-					fifty.load("spi.fifty.ts", "types.Implementation", jsh.http.world.request);
+					fifty.load("spi.fifty.ts", "types.Implementation", jsh.http.world.java.urlconnection);
 				}
 			}
 		//@ts-ignore

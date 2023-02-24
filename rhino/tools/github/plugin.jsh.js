@@ -133,7 +133,7 @@
 						$api.fp.RegExp.exec(/^mozilla\/rhino\/releases\/download\/(.*)$/),
 						$api.fp.Maybe.map(function(match) {
 							var response = $api.fp.world.now.question(
-								jsh.http.world.request,
+								jsh.http.world.java.urlconnection,
 								{
 									request: {
 										method: "GET",

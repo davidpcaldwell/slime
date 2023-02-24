@@ -506,37 +506,37 @@
 		$export({
 			Header: Header,
 			world: {
-				request: function(p) {
-					return urlConnectionImplementation(p);
-				},
-				Client: {
-					withFollowRedirects: withFollowRedirects
-				},
-				Argument: {
-					request: function(request) {
-						/**
-						 *
-						 * @param { slime.jrunscript.http.client.request.url } value
-						 * @returns { slime.web.Url }
-						 */
-						function url(value) {
-							if (typeof(value) == "string") {
-								return $context.api.web.Url.codec.string.decode(value);
-							} else {
-								return value;
-							}
+				java: {
+					urlconnection: urlConnectionImplementation
+				}
+			},
+			World: {
+				withFollowRedirects: withFollowRedirects
+			},
+			Argument: {
+				request: function(request) {
+					/**
+					 *
+					 * @param { slime.jrunscript.http.client.request.url } value
+					 * @returns { slime.web.Url }
+					 */
+					function url(value) {
+						if (typeof(value) == "string") {
+							return $context.api.web.Url.codec.string.decode(value);
+						} else {
+							return value;
 						}
+					}
 
-						return {
-							request: {
-								method: (request.method) ? request.method : "GET",
-								url: url(request.url),
-								headers: (request.headers) ? request.headers : [],
-								body: (request.body) ? _interpretRequestBody(request.body) : null
-							},
-							timeout: void(0),
-							proxy: void(0)
-						}
+					return {
+						request: {
+							method: (request.method) ? request.method : "GET",
+							url: url(request.url),
+							headers: (request.headers) ? request.headers : [],
+							body: (request.body) ? _interpretRequestBody(request.body) : null
+						},
+						timeout: void(0),
+						proxy: void(0)
 					}
 				}
 			},
