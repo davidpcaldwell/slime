@@ -357,7 +357,7 @@
 							return { file: local.file, type: getFileMimeType(local.file) };
 						}
 						var response = fetch(
-							$context.api.http.world.Argument.request({
+							$context.api.http.Argument.request({
 								url: download.url
 							})
 						);
@@ -380,7 +380,7 @@
 					 */
 					var createFetcher = function(events) {
 						return $api.fp.world.mapping(
-							$context.api.http.world.Client.withFollowRedirects($context.api.http.world.request),
+							$context.api.http.World.withFollowRedirects($context.api.http.world.java.urlconnection),
 							{
 								request: function(e) {
 									events.fire("request", e.detail);

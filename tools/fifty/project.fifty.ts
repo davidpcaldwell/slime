@@ -43,8 +43,8 @@ namespace slime.fifty.view {
 				var base = fifty.jsh.file.object.getRelativePath("../..").directory;
 				var server = library({ base: base });
 				var response = $api.fp.world.now.question(
-					jsh.http.world.request,
-					jsh.http.world.Argument.request({
+					jsh.http.world.java.urlconnection,
+					jsh.http.Argument.request({
 						url: "http://127.0.0.1:" + server.port + "/README.html"
 					})
 				);

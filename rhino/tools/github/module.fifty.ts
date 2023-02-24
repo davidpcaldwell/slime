@@ -59,7 +59,9 @@ namespace slime.jrunscript.tools.github {
 		export interface Invocation<I,E,O> {
 			argument: (i: I) => {
 				run: (r: {
-					world: slime.jrunscript.http.client.World
+					world: {
+						request: slime.jrunscript.http.client.spi.Implementation
+					}
 				}) => slime.$api.fp.world.old.Ask<E,O>
 			}
 		}

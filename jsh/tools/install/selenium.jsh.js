@@ -42,7 +42,7 @@
 			 * @param { number } majorVersion
 			 */
 			var getLatestVersion = function(majorVersion) {
-				var response = $api.fp.world.input(jsh.http.world.request({
+				var response = $api.fp.world.input(jsh.http.world.java.urlconnection({
 					request: {
 						method: "GET",
 						url: jsh.web.Url.codec.string.decode("https://chromedriver.storage.googleapis.com/LATEST_RELEASE_" + majorVersion),

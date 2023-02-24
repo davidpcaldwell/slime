@@ -21,7 +21,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.http.client.spi.Argument } argument
-			 * @returns { ReturnType<slime.jrunscript.http.client.World["request"]> }
+			 * @returns { ReturnType<slime.jrunscript.http.client.spi.Implementation> }
 			 */
 			function implementation(argument) {
 				return function(events) {

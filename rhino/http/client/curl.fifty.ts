@@ -5,8 +5,8 @@
 //	END LICENSE
 
 /**
- * Provides a **very rough**, **experimental** drop-in replacement for the {@link slime.jrunscript.http.client.World}
- * `request` method that is implemented in terms of `curl`.
+ * Provides a **very rough**, **experimental** {@link slime.jrunscript.http.client.spi.Implementation}
+ * that is implemented in terms of `curl`.
  *
  * Currently, `curl` must be on the `PATH` in order for this method to work, and it has several limitations:
  *
@@ -26,7 +26,7 @@ namespace slime.jrunscript.http.client.curl {
 
 	export type Exports = (configuration?: {
 		unixSocket?: string
-	}) => slime.jrunscript.http.client.Exports["world"]["request"]
+	}) => slime.jrunscript.http.client.spi.Implementation
 
 	(
 		function(
