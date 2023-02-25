@@ -53,8 +53,10 @@ namespace slime.jsh.shell {
 	)
 
 	export interface Exports {
-		Intention: slime.jrunscript.shell.Exports["Intention"] & {
-			jsh: (p: Intention) => slime.jrunscript.shell.run.Intention
+		Intention: Omit<slime.jrunscript.shell.Exports["Intention"],"from"> & {
+			from: {
+				jsh: (p: Intention) => slime.jrunscript.shell.run.Intention
+			}
 		}
 	}
 
@@ -66,7 +68,7 @@ namespace slime.jsh.shell {
 
 			fifty.tests.Intention = {};
 			fifty.tests.Intention.jsh = function() {
-				var intention = jsh.shell.Intention.jsh({
+				var intention = jsh.shell.Intention.from.jsh({
 					shell: {
 						src: jsh.shell.jsh.src.toString()
 					},

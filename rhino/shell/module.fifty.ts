@@ -153,6 +153,8 @@ namespace slime.jrunscript.shell {
 
 	export namespace exports {
 		export interface Intention {
+			from: {
+			}
 		}
 	}
 
