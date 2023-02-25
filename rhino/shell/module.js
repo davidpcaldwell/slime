@@ -840,7 +840,9 @@
 					}
 				}
 			},
-			Intention: {},
+			Intention: {
+				from: {}
+			},
 			listeners: module.events.listeners,
 			properties: properties,
 			invocation: $exports.invocation,

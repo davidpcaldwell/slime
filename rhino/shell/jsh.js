@@ -18,7 +18,7 @@
 		//	TODO	would be nice to generalize this and push it back into the shell module itself
 		if (!$exports.properties) throw new TypeError("No properties properties.");
 
-		$exports.Intention.jsh = function(p) {
+		$exports.Intention.from.jsh = function(p) {
 			return {
 				command: "bash",
 				arguments: $api.Array.build(function(rv) {
