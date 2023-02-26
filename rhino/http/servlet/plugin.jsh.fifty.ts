@@ -87,7 +87,7 @@ namespace slime.jsh.httpd {
 			}
 		}
 
-		Resources: slime.jsh.httpd.resources.Exports
+		Resources: slime.jsh.httpd.internal.resources.Exports
 
 		Tomcat?: {
 			//	TODO	figure out why constructor definition not output

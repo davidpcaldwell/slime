@@ -31,20 +31,6 @@ namespace slime.jsh.httpd {
 	}
 
 	export namespace resources {
-		export interface Context {
-			getMimeType: (file: slime.jrunscript.file.File) => slime.mime.Type
-			jsh: slime.jsh.Global
-		}
-
-		export type Exports = {
-			new (): Resources
-			Old: any
-			NoVcsDirectory: any
-			script: any
-		}
-
-		export type Script = slime.loader.Script<Context,Exports>
-
 		export type Mapping = slime.jrunscript.file.File | LoaderMapping | CodeMapping
 
 		export interface LoaderMapping {
@@ -67,19 +53,42 @@ namespace slime.jsh.httpd {
 		}
 	}
 
+
+	export namespace internal {
+		export namespace resources {
+			export interface Context {
+				getMimeType: (file: slime.jrunscript.file.File) => slime.mime.Type
+				jsh: slime.jsh.Global
+			}
+
+			export type Exports = {
+				new (): Resources
+				Old: any
+				NoVcsDirectory: any
+				script: {
+					(file: slime.jrunscript.file.File): any
+					old: any
+				}
+			}
+
+			export type Script = slime.loader.Script<Context,Exports>
+		}
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			var factory: resources.Script = fifty.$loader.script("plugin.jsh.resources.js");
-			var api = factory({
+			var code: internal.resources.Script = fifty.$loader.script("plugin.jsh.resources.js");
+
+			var subject = code({
 				getMimeType: fifty.global.jsh.httpd.nugget.getMimeType,
 				jsh: fifty.global.jsh
 			});
 
 			fifty.tests.script = {
 				old: function() {
-					var one: { loader: slime.old.Loader } = api.script.old(
+					var one: { loader: slime.old.Loader } = subject.script.old(
 						fifty.jsh.file.object.getRelativePath("test/resource/1.old.js").file
 					);
 					var indexOf = function(value: string) {
@@ -109,9 +118,8 @@ namespace slime.jsh.httpd {
 				resources: function() {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
-					var code = api;
-					verify(code,"code").is.type("function");
-					var one: { loader: slime.old.Loader, add: any } = new code();
+					verify(subject,"code").is.type("function");
+					var one: { loader: slime.old.Loader, add: any } = new subject();
 					var top = fifty.jsh.file.object.getRelativePath(".").directory;
 					one.add({ prefix: "WEB-INF/generic/", directory: top.getSubdirectory("java") });
 					one.add({ prefix: "WEB-INF/mozilla/", directory: top.getSubdirectory("rhino") });
@@ -159,13 +167,15 @@ namespace slime.jsh.httpd {
 		//			verify(one).loader().file("WEB-INF/test/1.file.js").isNotEqualTo(null);
 		//			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
 				},
-				hg: function() {
+				noLocalOrVcs: function() {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
-					var mapping: { loader: slime.old.Loader, build: any } = api.script(fifty.jsh.file.object.getRelativePath("test/resource/1.hg.js").file);
+
+					var mapping: { loader: slime.old.Loader, build: any } = subject.script(fifty.jsh.file.object.getRelativePath("test/resource/1.vcs.js").file);
 					verify(mapping).is.not(null);
 					verify(mapping).loader.is.not(null);
 					verify(mapping).loader.evaluate.property("list").is.type("function");
+
 					var slime = mapping.loader.Child("WEB-INF/slime/");
 					var byPath = function(path) {
 						return function(o) {
@@ -173,6 +183,7 @@ namespace slime.jsh.httpd {
 						};
 					};
 					verify(slime).list().evaluate(function(p) { return p.filter(byPath(".hg")) }).length.is(0);
+					verify(slime).list().evaluate(function(p) { return p.filter(byPath(".git")) }).length.is(0);
 					verify(slime).list().evaluate(function(p) { return p.filter(byPath("loader")) }).length.is(1);
 					verify(slime).list().evaluate(function(p) { return p.filter(byPath("jsh")) }).length.is(1);
 					jsh.shell.echo(slime.list().map(function(item) { return item.path; }).join(","));
@@ -180,19 +191,21 @@ namespace slime.jsh.httpd {
 					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					mapping.build(tmpdir);
 					verify(tmpdir).getSubdirectory("WEB-INF/slime/.hg").is(null);
+					verify(tmpdir).getFile("WEB-INF/slime/.git").is(null);
+					verify(tmpdir).getSubdirectory("WEB-INF/slime/.git").is(null);
+					verify(tmpdir).getSubdirectory("WEB-INF/slime/local").is(null);
 					verify(tmpdir).getSubdirectory("WEB-INF/slime/jsh").is.not(null);
 				}
 			}
 
 			fifty.tests.suite = function() {
-				var type: string = typeof(api);
+				var type: string = typeof(subject);
 				fifty.verify({ type: type }).type.is("function");
 				fifty.run(fifty.tests.script.old);
 				fifty.run(fifty.tests.script.resources);
-				fifty.run(fifty.tests.script.hg);
+				fifty.run(fifty.tests.script.noLocalOrVcs);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
-
 }
