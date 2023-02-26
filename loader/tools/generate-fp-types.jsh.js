@@ -12,11 +12,14 @@
 	 * @param { slime.jsh.script.cli.main } main
 	 */
 	function($api,jsh,main) {
+		//	TODO	this script generates trailing whitespace
+		//	TODO	this script omits trailing newline
 		var inputs = {
 			counts: $api.fp.impure.Input.value({
 				pipe: 8,
 				invoke: 8,
-				input_map: 8
+				input_map: 8,
+				process_value: 8
 			}),
 			destination: $api.fp.impure.Input.map(
 				$api.fp.impure.Input.value(jsh.script.world.file),
@@ -130,6 +133,31 @@
 			}
 			rv.push("): " + "Input<" + types[types.length-1] + ">");
 			return rv;
+		};
+
+		/**
+		 *
+		 * @param { number } size
+		 * @returns { string[] }
+		 */
+		var processValueDefinition = function(size) {
+			var rv = [];
+			var types = getGenericTypeList(size);
+			rv.push("<" + types.join(",") + ">(");
+			rv.push(indent("a: A,"));
+			for (var i=0; i<size; i++) {
+				var last = i+1 == size;
+				var f = getFunctionName(i);
+				var p = getParameterNameOfType(types[i]);
+				if (!last) {
+					var r = types[i+1];
+					rv.push(indent(f + ": (" + p + ": " + types[i] + ") => " + r + ( last ? "" : "," )));
+				} else {
+					rv.push(indent(f + ": Output<" + types[i] + ">" + ( last ? "" : "," )));
+				}
+			}
+			rv.push("): " + "Process");
+			return rv;
 		}
 
 		/**
@@ -179,6 +207,12 @@
 												"Input_map",
 												indexes(inputs.counts.input_map).map(function(n,index,array) {
 													return inputMapDefinition(array.length-n);
+												})
+											),
+											typeDefinition(
+												"Process_value",
+												indexes(inputs.counts.process_value).map(function(n,index,array) {
+													return processValueDefinition(array.length-n);
 												})
 											)
 										]

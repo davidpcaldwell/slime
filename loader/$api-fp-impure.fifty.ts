@@ -81,12 +81,6 @@ namespace slime.$api.fp.impure {
 	export type Process = () => void
 
 	export interface Exports {
-		now: {
-			input: <T>(input: impure.Input<T>) => T
-			output: <P>(p: P, f: impure.Output<P>) => void
-			process: (process: impure.Process) => void
-		}
-
 		Input: {
 			value: <T>(t: T) => impure.Input<T>
 			map: impure.Input_map
@@ -98,18 +92,6 @@ namespace slime.$api.fp.impure {
 
 			stream: <T>(input: Input<T>) => Stream<T>
 		}
-
-		Process: {
-			compose: (processes: impure.Process[]) => impure.Process
-			output: <P>(p: P, f: impure.Output<P>) => impure.Process
-
-			create: <T>(p: {
-				input: Input<T>
-				output: Output<T>
-			}) => impure.Process
-		}
-
-		tap: <T>(output: Output<T>) => (t: T) => T
 	}
 
 	(
@@ -155,6 +137,66 @@ namespace slime.$api.fp.impure {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		Process: {
+			compose: (processes: impure.Process[]) => impure.Process
+			output: <P>(p: P, f: impure.Output<P>) => impure.Process
+
+			create: <T>(p: {
+				input: Input<T>
+				output: Output<T>
+			}) => impure.Process
+
+			value: Process_value
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			const subject = $api.fp.impure;
+
+			fifty.tests.exports.Process = fifty.test.Parent();
+
+			fifty.tests.exports.Process.value = function() {
+				var saved: string;
+
+				var save: Output<string> = function(v) {
+					saved = v;
+				};
+
+				var double = function(number): number {
+					return number * 2;
+				};
+
+				var p = subject.Process.value(
+					2,
+					double,
+					String,
+					save
+				);
+
+				verify(saved).is(void(0));
+				p();
+				verify(saved).is("4");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		now: {
+			input: <T>(input: impure.Input<T>) => T
+			output: <P>(p: P, f: impure.Output<P>) => void
+			process: (process: impure.Process) => void
+		}
+
+		tap: <T>(output: Output<T>) => (t: T) => T
+	}
 }
 
 namespace slime.$api.fp.world {
