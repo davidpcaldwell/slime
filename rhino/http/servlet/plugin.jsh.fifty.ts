@@ -78,6 +78,7 @@ namespace slime.jsh.httpd {
 
 	export interface Exports {
 		nugget: any
+
 		spi: {
 			argument: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.descriptor) => {
 				resources: slime.old.Loader,
@@ -85,7 +86,8 @@ namespace slime.jsh.httpd {
 				$loader?: slime.old.Loader
 			}
 		}
-		Resources: slime.jsh.httpd.resources.Export
+
+		Resources: slime.jsh.httpd.resources.Exports
 
 		Tomcat?: {
 			//	TODO	figure out why constructor definition not output
@@ -94,6 +96,7 @@ namespace slime.jsh.httpd {
 
 			serve: (p: tomcat.Configuration & { directory: slime.jrunscript.file.Directory }) => slime.jsh.httpd.Tomcat
 		}
+
 		plugin: {
 			tools: () => void
 		}

@@ -15,7 +15,7 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.httpd.resources.Context } $context
-	 * @param { (value: slime.jsh.httpd.resources.Export) => void } $export
+	 * @param { slime.loader.Export<slime.jsh.httpd.resources.Exports> } $export
 	 */
 	function($api,$context,$export) {
 		var jsh = $context.jsh;

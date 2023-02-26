@@ -36,14 +36,14 @@ namespace slime.jsh.httpd {
 			jsh: slime.jsh.Global
 		}
 
-		export type Export = {
+		export type Exports = {
 			new (): Resources
 			Old: any
 			NoVcsDirectory: any
 			script: any
 		}
 
-		export type Factory = slime.loader.Script<Context,Export>
+		export type Script = slime.loader.Script<Context,Exports>
 
 		export type Mapping = slime.jrunscript.file.File | LoaderMapping | CodeMapping
 
@@ -71,7 +71,7 @@ namespace slime.jsh.httpd {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			var factory: resources.Factory = fifty.$loader.script("plugin.jsh.resources.js");
+			var factory: resources.Script = fifty.$loader.script("plugin.jsh.resources.js");
 			var api = factory({
 				getMimeType: fifty.global.jsh.httpd.nugget.getMimeType,
 				jsh: fifty.global.jsh
