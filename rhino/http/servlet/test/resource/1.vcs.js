@@ -27,6 +27,9 @@
 				rv = rv.filter(function(item) {
 					return item.path != ".hg";
 				});
+				rv = rv.filter(function(item) {
+					return item.path != ".git";
+				});
 				return rv;
 			}
 		};
