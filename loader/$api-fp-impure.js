@@ -94,6 +94,16 @@
 					return function() {
 						p.output(p.input());
 					}
+				},
+				value: function(v) {
+					var functions = Array.prototype.slice.call(arguments,1);
+					return function() {
+						var rv = v;
+						functions.forEach(function(f) {
+							rv = f(rv);
+						});
+						return rv;
+					}
 				}
 			},
 			tap: function(f) {

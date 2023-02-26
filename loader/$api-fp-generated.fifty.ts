@@ -208,4 +208,74 @@ namespace slime.$api.fp.impure {
 			f: (a: A) => B
 		): Input<B>
 	}
+
+	export type Process_value = {
+		<A,B,C,D,E,F,G,H>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G,
+			l: (g: G) => H,
+			m: Output<H>
+		): Process
+
+		<A,B,C,D,E,F,G>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G,
+			l: Output<G>
+		): Process
+
+		<A,B,C,D,E,F>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: Output<F>
+		): Process
+
+		<A,B,C,D,E>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: Output<E>
+		): Process
+
+		<A,B,C,D>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: Output<D>
+		): Process
+
+		<A,B,C>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: Output<C>
+		): Process
+
+		<A,B>(
+			a: A,
+			f: (a: A) => B,
+			g: Output<B>
+		): Process
+
+		<A>(
+			a: A,
+			f: Output<A>
+		): Process
+	}
 }
