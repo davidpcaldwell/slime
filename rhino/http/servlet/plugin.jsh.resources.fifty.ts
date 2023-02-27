@@ -57,7 +57,7 @@ namespace slime.jsh.httpd {
 			Old: any
 			NoVcsDirectory: any
 			script: {
-				(file: slime.jrunscript.file.File): any
+				(...file: slime.jrunscript.file.File[]): any
 				old: any
 			}
 		}
