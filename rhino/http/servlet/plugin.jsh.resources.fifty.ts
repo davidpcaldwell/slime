@@ -51,6 +51,16 @@ namespace slime.jsh.httpd {
 			map: Resources["map"]
 			add?: Resources["add"]
 		}
+
+		export interface Exports {
+			Constructor: new () => Resources
+			Old: any
+			NoVcsDirectory: any
+			script: {
+				(file: slime.jrunscript.file.File): any
+				old: any
+			}
+		}
 	}
 
 
@@ -61,17 +71,7 @@ namespace slime.jsh.httpd {
 				jsh: slime.jsh.Global
 			}
 
-			export type Exports = {
-				new (): Resources
-				Old: any
-				NoVcsDirectory: any
-				script: {
-					(file: slime.jrunscript.file.File): any
-					old: any
-				}
-			}
-
-			export type Script = slime.loader.Script<Context,Exports>
+			export type Script = slime.loader.Script<Context,slime.jsh.httpd.resources.Exports>
 		}
 	}
 
@@ -118,8 +118,8 @@ namespace slime.jsh.httpd {
 				resources: function() {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
-					verify(subject,"code").is.type("function");
-					var one: { loader: slime.old.Loader, add: any } = new subject();
+					verify(subject.Constructor,"code").is.type("function");
+					var one: { loader: slime.old.Loader, add: any } = new subject.Constructor();
 					var top = fifty.jsh.file.object.getRelativePath(".").directory;
 					one.add({ prefix: "WEB-INF/generic/", directory: top.getSubdirectory("java") });
 					one.add({ prefix: "WEB-INF/mozilla/", directory: top.getSubdirectory("rhino") });
@@ -199,8 +199,10 @@ namespace slime.jsh.httpd {
 			}
 
 			fifty.tests.suite = function() {
-				var type: string = typeof(subject);
-				fifty.verify({ type: type }).type.is("function");
+				var type1: string = typeof(subject);
+				fifty.verify({ type: type1 }).type.is("object");
+				var type2: string = typeof(subject.Constructor);
+				fifty.verify({ type: type2 }).type.is("function");
 				fifty.run(fifty.tests.script.old);
 				fifty.run(fifty.tests.script.resources);
 				fifty.run(fifty.tests.script.noLocalOrVcs);

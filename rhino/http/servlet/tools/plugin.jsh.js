@@ -190,7 +190,7 @@
 						// if (p.buildResources) {
 						// 	p.buildResources();
 						// } else if (p.Resources) {
-						var resources = new jsh.httpd.Resources();
+						var resources = new jsh.httpd.Resources.Constructor();
 						p.Resources.call(resources);
 						resources.build(WEBAPP);
 						// }

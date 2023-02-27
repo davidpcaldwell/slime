@@ -15,7 +15,7 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.httpd.internal.resources.Context } $context
-	 * @param { slime.loader.Export<slime.jsh.httpd.internal.resources.Exports> } $export
+	 * @param { slime.loader.Export<slime.jsh.httpd.resources.Exports> } $export
 	 */
 	function($api,$context,$export) {
 		var jsh = $context.jsh;
@@ -441,11 +441,12 @@
 		};
 
 		var rv = (function() {
-			var rv = Object.assign(NewResources,{
+			var rv = {
 				Old: void(0),
 				NoVcsDirectory: void(0),
-				script: void(0)
-			});
+				script: void(0),
+				Constructor: NewResources
+			};
 			rv.Old = $api.deprecate(OldResources);
 
 			rv.NoVcsDirectory = DirectoryWithoutVcsLoader;
