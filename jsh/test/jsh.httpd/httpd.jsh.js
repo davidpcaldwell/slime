@@ -187,7 +187,7 @@
 				//	TODO	is there a jsh.script.getFile()?
 	//			resources: jsh.httpd.Resources.script(jsh.script.getRelativePath("httpd.resources.js").file)
 				resources: (function() {
-					var rv = new jsh.httpd.Resources();
+					var rv = new jsh.httpd.Resources.Constructor();
 					jsh.loader.run(jsh.script.file.getRelativePath("httpd.resources.js"), {
 						$mapping: new function() {
 							this.getRelativePath = function(path) {
