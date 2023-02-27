@@ -118,7 +118,7 @@ namespace slime.jsh.httpd {
 				resources: function() {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
-					verify(subject,"code").is.type("function");
+					verify(subject.Constructor,"code").is.type("function");
 					var one: { loader: slime.old.Loader, add: any } = new subject.Constructor();
 					var top = fifty.jsh.file.object.getRelativePath(".").directory;
 					one.add({ prefix: "WEB-INF/generic/", directory: top.getSubdirectory("java") });
