@@ -199,8 +199,10 @@ namespace slime.jsh.httpd {
 			}
 
 			fifty.tests.suite = function() {
-				var type: string = typeof(subject);
-				fifty.verify({ type: type }).type.is("function");
+				var type1: string = typeof(subject);
+				fifty.verify({ type: type1 }).type.is("object");
+				var type2: string = typeof(subject.Constructor);
+				fifty.verify({ type: type2 }).type.is("function");
 				fifty.run(fifty.tests.script.old);
 				fifty.run(fifty.tests.script.resources);
 				fifty.run(fifty.tests.script.noLocalOrVcs);
