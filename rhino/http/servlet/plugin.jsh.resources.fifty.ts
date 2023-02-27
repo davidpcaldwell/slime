@@ -51,6 +51,16 @@ namespace slime.jsh.httpd {
 			map: Resources["map"]
 			add?: Resources["add"]
 		}
+
+		export interface Exports {
+			Constructor: new () => Resources
+			Old: any
+			NoVcsDirectory: any
+			script: {
+				(file: slime.jrunscript.file.File): any
+				old: any
+			}
+		}
 	}
 
 
@@ -61,17 +71,7 @@ namespace slime.jsh.httpd {
 				jsh: slime.jsh.Global
 			}
 
-			export type Exports = {
-				new (): Resources
-				Old: any
-				NoVcsDirectory: any
-				script: {
-					(file: slime.jrunscript.file.File): any
-					old: any
-				}
-			}
-
-			export type Script = slime.loader.Script<Context,Exports>
+			export type Script = slime.loader.Script<Context,slime.jsh.httpd.resources.Exports>
 		}
 	}
 
@@ -119,7 +119,7 @@ namespace slime.jsh.httpd {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
 					verify(subject,"code").is.type("function");
-					var one: { loader: slime.old.Loader, add: any } = new subject();
+					var one: { loader: slime.old.Loader, add: any } = new subject.Constructor();
 					var top = fifty.jsh.file.object.getRelativePath(".").directory;
 					one.add({ prefix: "WEB-INF/generic/", directory: top.getSubdirectory("java") });
 					one.add({ prefix: "WEB-INF/mozilla/", directory: top.getSubdirectory("rhino") });
