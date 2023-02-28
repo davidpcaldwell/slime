@@ -85,34 +85,36 @@
 		}
 
 		/**
-		 *
-		 * @param { { name: string, type: slime.mime.Type, string: string } } script
-		 * @param { { [name: string]: any } } scope
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
 		 */
 		function newrun(script,scope) {
+			var name = script.name;
+			var type = script.type();
+			var string = script.read();
+
 			var typeIs = function(string) {
-				return script.type && mimeTypeIs(string)(script.type);
+				return type && mimeTypeIs(string)(type);
 			}
 
 			var js;
 			if ($slime.typescript && typeIs("application/x.typescript")) {
 				js = {
-					name: script.name,
-					code: $slime.typescript.compile(script.string)
+					name: name,
+					code: $slime.typescript.compile(string)
 				};
 			} else if (typeIs("application/vnd.coffeescript")) {
 				js = {
-					name: script.name,
-					code: $coffee.compile(script.string)
+					name: name,
+					code: $coffee.compile(string)
 				};
 			} else if (typeIs("application/javascript") || typeIs("application/x-javascript")) {
 				js = {
-					name: script.name,
-					code: script.string
+					name: name,
+					code: string
 				}
 			}
 			if (!js) {
-				throw new TypeError("Resource " + script.name + " is not JavaScript; type = " + script.type);
+				throw new TypeError("Resource " + name + " is not JavaScript; type = " + type);
 			}
 			var target = this;
 			var global = (function() { return this; })();
@@ -158,11 +160,15 @@
 				throw new TypeError("Resource: " + resource.name + " is not convertible to string, it is " + typeof(string) + ", so cannot be executed. resource.read = " + resource.read);
 			}
 
-			newrun.call(this, {
-				name: resource.name,
-				type: type,
-				string: string
-			}, scope);
+			newrun.call(
+				this,
+				{
+					name: resource.name,
+					type: function() { return type; },
+					read: function() { return string; }
+				},
+				scope
+			);
 		}
 
 		/**
@@ -194,9 +200,7 @@
 					file: file,
 					value: value
 				},
-				run: function(code,scope) {
-					newrun({ name: code.name, type: code.type(), string: code.read() }, scope);
-				}
+				run: newrun
 			},
 			toExportScope: toExportScope,
 			createScriptScope: createScriptScope

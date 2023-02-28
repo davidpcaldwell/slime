@@ -68,7 +68,12 @@ namespace slime.jsh.httpd {
 		export namespace resources {
 			export interface Context {
 				getMimeType: (file: slime.jrunscript.file.File) => slime.mime.Type
-				jsh: slime.jsh.Global
+				jsh: {
+					loader: slime.jsh.Global["loader"]
+					io: slime.jrunscript.io.Exports
+					file: slime.jrunscript.file.Exports
+					shell: slime.jsh.Global["shell"]
+				}
 			}
 
 			export type Script = slime.loader.Script<Context,slime.jsh.httpd.resources.Exports>
