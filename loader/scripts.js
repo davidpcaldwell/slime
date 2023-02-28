@@ -87,7 +87,7 @@
 		/**
 		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
 		 */
-		function newrun(script,scope) {
+		function run(script,scope) {
 			var name = script.name;
 			var type = script.type();
 			var string = script.read();
@@ -140,7 +140,7 @@
 		/**
 		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["run"] }
 		 */
-		function run(object,scope) {
+		function old_run(object,scope) {
 			if (!object || typeof(object) != "object") {
 				throw new TypeError("'object' must be an object, not " + object);
 			}
@@ -160,7 +160,7 @@
 				throw new TypeError("Resource: " + resource.name + " is not convertible to string, it is " + typeof(string) + ", so cannot be executed. resource.read = " + resource.read);
 			}
 
-			newrun.call(
+			run.call(
 				this,
 				{
 					name: resource.name,
@@ -176,7 +176,7 @@
 		 */
 		function file(code,$context) {
 			var inner = createScriptScope($context);
-			run.call(this,code,inner);
+			old_run.call(this,code,inner);
 			return inner.$exports;
 		}
 
@@ -189,18 +189,18 @@
 			scope.$set = function(v) {
 				rv = v;
 			};
-			run.call(this,code,scope);
+			old_run.call(this,code,scope);
 			return rv;
 		}
 
 		$export({
 			methods: {
 				old: {
-					run: run,
+					run: old_run,
 					file: file,
 					value: value
 				},
-				run: newrun
+				run: run
 			},
 			toExportScope: toExportScope,
 			createScriptScope: createScriptScope

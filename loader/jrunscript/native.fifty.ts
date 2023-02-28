@@ -310,7 +310,9 @@ namespace slime.jrunscript {
 				}
 
 				export interface Engine {
-					script: (a: any, b: any, c: any, d: any) => any
+					script: (name: string, code: string, scope: object, target: object) => any
+					canAccessEnvironment: () => boolean
+					getDebugger: () => slime.jrunscript.native.inonit.script.rhino.Engine.Debugger
 				}
 			}
 		}

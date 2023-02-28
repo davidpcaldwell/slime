@@ -108,39 +108,11 @@ namespace slime.jrunscript.runtime {
 		eval(a: any, b: any, c: any, d: any): any
 	}
 
+	/**
+	 * The `jrunscript` (Java) runtime is loaded by loading an engine-specific script: either the `loader/jrunscript/rhino.js`
+	 * script (for Rhino) or the `loader/jrunscript/nashorn.js` script (for Nashorn or GraalJS).
+	 */
 	export namespace internal {
-		export namespace rhino {
-			/**
-			 * This is essentially a `Packages.inonit.script.rhino.Engine` instance.
-			 */
-			export interface Engine {
-				script(name: string, code: string, scope: object, target: object)
-				canAccessEnvironment(): boolean
-				getDebugger(): slime.jrunscript.native.inonit.script.rhino.Engine.Debugger
-			}
-
-			/**
-			 * An object providing the scope variables for running `loader/jrunscript/rhino.js`.
-			 */
-			export interface Scope {
-				$rhino: Engine
-				$loader: slime.jrunscript.native.inonit.script.engine.Loader
-			}
-		}
-
-		export namespace nashorn {
-			/**
-			 * A `Packages.inonit.script.jsh.Graal.Host` instance, currently, although this should not depend on `jsh` classes. In any case,
-			 * none of its methods are currently used, so this is currently an empty interface.
-			 */
-			export interface Graal {
-			}
-
-			export interface Scope {
-				$graal: Graal
-				$loader: slime.jrunscript.native.inonit.script.engine.Loader
-			}
-		}
 	}
 
 	export type sync = <F extends (...args: any[]) => any>(f: F, lock: any) => F
@@ -164,28 +136,6 @@ namespace slime.jrunscript.runtime {
 
 	export interface Java {
 		type(className: string): any
-	}
-
-	export namespace internal {
-		export namespace nashorn {
-			export interface load {
-				(location: string): void
-				(script: { script: string, name: string })
-			}
-
-			export interface Engine {
-				script: any
-				subshell: any
-			}
-
-			export interface Nashorn extends Engine {
-				sync: any
-			}
-
-			export interface Graal extends Engine {
-				eval: any
-			}
-		}
 	}
 
 	export namespace internal {
