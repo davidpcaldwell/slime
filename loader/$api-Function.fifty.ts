@@ -307,10 +307,6 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export interface Exports {
-		/**
-		 * @deprecated All of these methods are just duplicates of ECMAScript standard methods. If we want to have these, perhaps
-		 * they should instead return streams.
-		 */
 		Object: {
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.entries`. */
 			entries: ObjectConstructor["entries"]
