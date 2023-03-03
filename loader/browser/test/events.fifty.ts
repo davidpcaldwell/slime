@@ -5,8 +5,7 @@
 //	END LICENSE
 
 namespace slime.runtime.browser.test.events {
-	export interface Context {
-	}
+	export type Context = void
 
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {

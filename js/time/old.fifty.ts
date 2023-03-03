@@ -17,7 +17,7 @@ namespace slime.time {
 		export namespace test {
 			export const { subject, old, load } = (function(fifty: slime.fifty.test.Kit) {
 				var script: Script = fifty.$loader.script("module.js");
-				var jcontext: slime.loader.Script<context.Java,Context> = fifty.$loader.script("context.java.js");
+				var jcontext: slime.loader.Script<context.Java | void,Context> = fifty.$loader.script("context.java.js");
 				return {
 					subject: (fifty.global.jsh) ? script(jcontext()) : script(),
 					old: script({

@@ -5,8 +5,7 @@
 //	END LICENSE
 
 namespace slime.jrunscript.security {
-	export interface Context {
-	}
+	export type Context = void
 
 	export interface Certificate {
 		alias: string

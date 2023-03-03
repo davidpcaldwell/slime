@@ -178,8 +178,8 @@ namespace slime {
 
 	export namespace loader {
 		export interface Script<C,E> {
-			(c?: C): E
-			thread: (c?: C) => PromiseLike<E>
+			(c: C): E
+			thread: (c: C) => PromiseLike<E>
 		}
 
 		export type Export<T> = (value: T) => void
