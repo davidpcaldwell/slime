@@ -8,7 +8,7 @@ namespace slime.jrunscript.native.inonit.script.jsh {
 	//type EngineSpecificJshInterface = slime.jsh.plugin.EngineSpecific;
 
 	export interface Shell {
-		setRuntime(value: slime.jrunscript.runtime.Exports)
+		setRuntime: (value: slime.jrunscript.runtime.Exports) => void
 		runtime(): slime.jrunscript.runtime.Exports & slime.jsh.loader.EngineSpecific
 		getLoader(): slime.jrunscript.native.inonit.script.engine.Loader
 		getEnvironment(): Shell.Environment
