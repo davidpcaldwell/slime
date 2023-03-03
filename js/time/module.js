@@ -973,6 +973,14 @@
 						var toDayObject = new Day(day.year, day.month, day.day);
 						return toDayObject.format(mask);
 					}
+				},
+				order: {
+					js: function(a,b) {
+						if (a.year - b.year != 0) return a.year - b.year;
+						if (a.month - b.month != 0) return a.month - b.month;
+						if (a.day - b.day != 0) return a.day - b.day;
+						return 0;
+					}
 				}
 			},
 			Timezone: zones,

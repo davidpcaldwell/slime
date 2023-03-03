@@ -156,6 +156,46 @@ namespace slime.time {
 		)(fifty);
 	}
 
+	export namespace exports {
+		export interface Date {
+			order: {
+				js: (a: slime.time.Date, b: slime.time.Date) => number
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.Date.order = function() {
+					var unordered: slime.time.Date[] = [
+						{ year: 2018, month: 2, day: 2 },
+						{ year: 2018, month: 1, day: 1 },
+						{ year: 2018, month: 2, day: 1 },
+						{ year: 2017, month: 1, day: 1 }
+					];
+
+					var ordered = unordered.sort(test.subject.Date.order.js);
+
+					var verifyDate = function(index: number, year: number, month: number, day: number) {
+						var target = ordered[index];
+						verify(target).year.is(year);
+						verify(target).month.is(month);
+						verify(target).day.is(day);
+					}
+
+					verifyDate(0, 2017, 1, 1);
+					verifyDate(1, 2018, 1, 1);
+					verifyDate(2, 2018, 2, 1);
+					verifyDate(3, 2018, 2, 2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export interface Exports {
 		Date: exports.Date
 	}
