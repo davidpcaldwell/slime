@@ -697,7 +697,12 @@ namespace slime.$api {
 
 	export interface Global {
 		events: exports.Events
-		/** @deprecated Replaced by {@link slime.$api.Global["events"] } */
+
+		/**
+		 * All parts of this property are **deprecated**. See the individual declarations for details.
+		 *
+		 * @deprecated Replaced by {@link slime.$api.Global["events"] }
+		 */
 		Events: {
 			/** @deprecated Replaced by {@link slime.$api.Global["events"]["create"]} */
 			(p?: {
