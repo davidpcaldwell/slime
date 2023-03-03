@@ -6,15 +6,14 @@
 
 namespace slime.jrunscript.runtime.internal.rhino {
 	/**
-	 * This is essentially a `Packages.inonit.script.rhino.Engine` instance.
-	 */
-	export type Engine = Pick<slime.jrunscript.native.inonit.script.rhino.Engine,"script"|"canAccessEnvironment"|"getDebugger">
-
-	/**
 	 * An object providing the scope variables for running `loader/jrunscript/rhino.js`.
 	 */
 	export interface Scope {
-		$rhino: Engine
+		/**
+		 * This is likely an instance of the Java class `inonit.script.rhino.Engine`.
+		 */
+		$rhino: Pick<slime.jrunscript.native.inonit.script.rhino.Engine,"script"|"canAccessEnvironment"|"getDebugger">
+
 		$loader: slime.jrunscript.native.inonit.script.engine.Loader
 	}
 
