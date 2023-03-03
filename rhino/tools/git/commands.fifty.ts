@@ -210,8 +210,7 @@ namespace slime.jrunscript.tools.git {
 }
 
 namespace slime.jrunscript.tools.git.internal.commands {
-	export interface Context {
-	}
+	export type Context = void
 
 	export interface Exports extends slime.jrunscript.tools.git.Commands {
 	}

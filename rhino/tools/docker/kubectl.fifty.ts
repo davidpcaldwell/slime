@@ -130,8 +130,7 @@ namespace slime.jrunscript.tools.kubernetes.cli {
 }
 
 namespace slime.jrunscript.tools.docker.internal.kubectl {
-	export interface Context {
-	}
+	export type Context = void
 
 	export type Script = slime.loader.Script<Context,slime.jrunscript.tools.kubernetes.cli.Exports>
 }

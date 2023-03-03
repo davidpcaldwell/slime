@@ -18,7 +18,11 @@ namespace slime.jrunscript.file.internal.mock {
 			fifty: slime.fifty.test.Kit
 		) {
 			var script: Script = fifty.$loader.script("mock.js");
-			var module = script();
+			var module = script({
+				library: {
+					io: fifty.global.jsh.io
+				}
+			});
 
 			fifty.tests.suite = function() {
 				fifty.load("world.fifty.ts", "spi.filesystem.relative", module.filesystem());

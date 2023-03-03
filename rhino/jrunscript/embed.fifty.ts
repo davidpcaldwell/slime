@@ -21,7 +21,10 @@ namespace slime.jrunscript.bootstrap {
 
 			fifty.tests.suite = function() {
 				var code: Script = fifty.$loader.script("embed.js");
-				var bootstrap = code();
+				var bootstrap = code({
+					debug: void(0),
+					script: void(0)
+				});
 				jsh.shell.console(Object.keys(bootstrap).toString());
 				var rhino = bootstrap.rhino.running();
 				jsh.shell.console("Rhino context: " + String(rhino));
