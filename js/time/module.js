@@ -73,6 +73,33 @@
 			return new Date(y,m,d);
 		}
 
+		/**
+		 *
+		 * @param { number } y
+		 * @param { number } m
+		 * @param { number } d
+		 * @returns { slime.time.Date }
+		 */
+		var harmonizeDate = function(y,m,d) {
+			while(m > 12) {
+				m -= 12;
+				y += 1;
+			}
+			while (m < 1) {
+				m += 12;
+				y -= 1;
+			}
+			while(new Date(y,m-1,d).getMonth() != m-1) {
+				d--;
+				if (d < 1) throw new Error("Some problem here; " + y + "/" + m + "/" + d);
+			}
+			return {
+				year: y,
+				month: m,
+				day: d
+			};
+		}
+
 		var Year = function(args) {
 			if (typeof(args) == "object" && args.constructor == arguments.callee) {
 				this.value = args.value;
@@ -401,6 +428,16 @@
 				month: end.getMonth() + 1,
 				day: end.getDate()
 			}
+		};
+
+		/**
+		 *
+		 * @param { slime.time.Date } ref
+		 * @param { number } offset
+		 * @returns { slime.time.Date }
+		 */
+		var Date_addMonths = function(ref,offset) {
+			return harmonizeDate(ref.year, ref.month + offset, ref.day);
 		}
 
 		/**
@@ -1000,6 +1037,13 @@
 				after: function(day) {
 					return function(offset) {
 						return Date_add(day, offset);
+					}
+				},
+				months: {
+					offset: function(offset) {
+						return function(day) {
+							return Date_addMonths(day, offset);
+						}
 					}
 				},
 				/** @type {slime.time.Exports["Date"]["format"] } */
