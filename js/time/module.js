@@ -380,6 +380,30 @@
 		}
 
 		/**
+		 *
+		 * @param { slime.time.Date } ref
+		 * @param { number } offset
+		 * @return { slime.time.Date }
+		 */
+		var Date_add = function(ref,offset) {
+			var base = new Date(
+				ref.year,
+				ref.month-1,
+				ref.day,
+				0,
+				0,
+				0
+			);
+			var time = base.getTime() + (offset + 0.5)*24*60*60*1000;
+			var end = new Date(time);
+			return {
+				year: end.getFullYear(),
+				month: end.getMonth() + 1,
+				day: end.getDate()
+			}
+		}
+
+		/**
 		 * @constructor
 		 * @param { any } p
 		 */
@@ -433,6 +457,7 @@
 				throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
 			}
 
+			//	TODO	use Date_add
 			var toDate = function(offset) {
 				if (typeof(offset) == "undefined") offset = 0;
 				var base = new Date(
@@ -966,7 +991,18 @@
 							day: datetime.day
 						}
 					}
-				},				/** @type {slime.time.Exports["Date"]["format"] } */
+				},
+				offset: function(offset) {
+					return function(day) {
+						return Date_add(day, offset);
+					}
+				},
+				after: function(day) {
+					return function(offset) {
+						return Date_add(day, offset);
+					}
+				},
+				/** @type {slime.time.Exports["Date"]["format"] } */
 				format: function(mask) {
 					/** @type { ReturnType<slime.time.Exports["Date"]["format"]> } */
 					return function(day) {
