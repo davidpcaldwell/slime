@@ -160,6 +160,10 @@ namespace slime.time {
 		export interface Date {
 			offset: (offset: number) => (day: slime.time.Date) => slime.time.Date
 			after: (day: slime.time.Date) => (offset: number) => slime.time.Date
+
+			months: {
+				offset: (offset: number) => (day: slime.time.Date) => slime.time.Date
+			}
 		}
 
 		(
@@ -200,6 +204,24 @@ namespace slime.time {
 					verify(plus).year.is(2019);
 					verify(plus).month.is(11);
 					verify(plus).day.is(2);
+				};
+
+				fifty.tests.Date.addMonths = function() {
+					var date: slime.time.Date = {
+						year: 2019,
+						month: 1,
+						day: 15
+					};
+
+					var after = test.subject.Date.months.offset(2)(date);
+					verify(after).year.is(2019);
+					verify(after).month.is(3);
+					verify(after).day.is(15);
+
+					var before = test.subject.Date.months.offset(-2)(date);
+					verify(before).year.is(2018);
+					verify(before).month.is(11);
+					verify(before).day.is(15);
 				}
 			}
 		//@ts-ignore
