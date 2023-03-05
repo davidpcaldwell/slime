@@ -158,6 +158,56 @@ namespace slime.time {
 
 	export namespace exports {
 		export interface Date {
+			offset: (offset: number) => (day: slime.time.Date) => slime.time.Date
+			after: (day: slime.time.Date) => (offset: number) => slime.time.Date
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.Date.add = function() {
+					var day = {
+						year: 2019,
+						month: 11,
+						day: 1
+					};
+
+					var yesterday = test.subject.Date.offset(-1);
+					var tomorrow = test.subject.Date.offset(1);
+					var add = test.subject.Date.after(day);
+
+					var before = yesterday(day);
+					var after = tomorrow(day);
+
+					verify(before).year.is(2019);
+					verify(before).month.is(10);
+					verify(before).day.is(31);
+
+					verify(after).year.is(2019);
+					verify(after).month.is(11);
+					verify(after).day.is(2);
+
+					var plus = add(1);
+					var minus = add(-1);
+
+					verify(minus).year.is(2019);
+					verify(minus).month.is(10);
+					verify(minus).day.is(31);
+
+					verify(plus).year.is(2019);
+					verify(plus).month.is(11);
+					verify(plus).day.is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Date {
 			order: {
 				js: (a: slime.time.Date, b: slime.time.Date) => number
 			}
