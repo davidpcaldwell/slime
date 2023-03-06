@@ -507,8 +507,68 @@ namespace slime.jrunscript.file {
 		export interface Locations {
 			from: {
 				os: (pathname: string) => Location
+
+				temporary: (filesystem: spi.Filesystem) => slime.$api.fp.world.Question<
+					{
+						parent?: string
+						prefix?: string
+						suffix?: string
+						directory: boolean
+					},
+					void,
+					Location
+				>
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+				const { Location } = jsh.file.world;
+
+				fifty.tests.sandbox.filesystem.temporary = function() {
+					//	Really the only defined attribute of a "temporary" file is that after this method is called, it should
+					//	exist. So going to test for that, and test for files and directories.
+
+					var exists = {
+						file: $api.fp.world.mapping(Location.file.exists()),
+						directory: $api.fp.world.mapping(Location.directory.exists())
+					};
+
+					var os = jsh.file.world.spi.filesystems.os;
+
+					var tmpfile = $api.fp.world.input(jsh.file.world.Location.from.temporary(os)({ directory: false }));
+					var tmpdir = $api.fp.world.input(jsh.file.world.Location.from.temporary(os)({ directory: true }));
+
+					var file = $api.fp.impure.Input.process(
+						tmpfile,
+						function(location) {
+							verify(location).evaluate(exists.file).is(true);
+						}
+					);
+
+					var directory = $api.fp.impure.Input.process(
+						tmpdir,
+						function(location) {
+							verify(location).evaluate(exists.directory).is(true);
+						}
+					);
+
+					$api.fp.impure.now.process(
+						$api.fp.impure.Process.compose([
+							file,
+							directory
+						])
+					);
+				};
+
+				fifty.tests.wip = fifty.tests.sandbox.filesystem.temporary;
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface World {
@@ -1097,66 +1157,6 @@ namespace slime.jrunscript.file {
 			//@ts-ignore
 			)(fifty);
 		}
-
-		export interface Filesystem {
-			temporary: slime.$api.fp.world.Question<
-				{
-					parent?: string
-					prefix?: string
-					suffix?: string
-					directory: boolean
-				},
-				void,
-				Location
-			>
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { $api, jsh } = fifty.global;
-				const { Location } = jsh.file.world;
-
-				fifty.tests.sandbox.filesystem.temporary = function() {
-					//	Really the only defined attribute of a "temporary" file is that after this method is called, it should
-					//	exist. So going to test for that, and test for files and directories.
-
-					var exists = {
-						file: $api.fp.world.mapping(Location.file.exists()),
-						directory: $api.fp.world.mapping(Location.directory.exists())
-					};
-
-					var tmpfile = $api.fp.world.input(jsh.file.world.filesystems.os.temporary({ directory: false }));
-					var tmpdir = $api.fp.world.input(jsh.file.world.filesystems.os.temporary({ directory: true }));
-
-					var file = $api.fp.impure.Input.process(
-						tmpfile,
-						function(location) {
-							verify(location).evaluate(exists.file).is(true);
-						}
-					);
-
-					var directory = $api.fp.impure.Input.process(
-						tmpdir,
-						function(location) {
-							verify(location).evaluate(exists.directory).is(true);
-						}
-					);
-
-					$api.fp.impure.now.process(
-						$api.fp.impure.Process.compose([
-							file,
-							directory
-						])
-					);
-				};
-
-				fifty.tests.wip = fifty.tests.sandbox.filesystem.temporary;
-			}
-		//@ts-ignore
-		)(fifty);
 
 		export interface Filesystem {
 			Searchpath: {

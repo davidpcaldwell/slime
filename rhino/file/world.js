@@ -107,7 +107,6 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.file.World["Filesystem"]["from"]["spi"] } */
 		var filesystemFromSpi = function(provider) {
 			return {
 				temporary: function(p) {
@@ -170,6 +169,9 @@
 							filesystem: library.java.filesystems.os,
 							pathname: string
 						}
+					},
+					temporary: function(provider) {
+						return filesystemFromSpi(provider).temporary;
 					}
 				},
 				relative: Location_relative,

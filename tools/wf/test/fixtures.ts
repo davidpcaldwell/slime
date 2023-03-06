@@ -82,7 +82,7 @@ namespace slime.jsh.wf.test {
 
 					var src: slime.jrunscript.file.world.Location = p.src;
 
-					var destination = $api.fp.world.now.ask(jsh.file.world.filesystems.os.temporary({ directory: true }));
+					var destination = $api.fp.world.now.ask(jsh.file.world.Location.from.temporary(jsh.file.world.spi.filesystems.os)({ directory: true }));
 
 					jsh.tools.git.program({ command: "git" }).command(clone).argument({
 						repository: src.pathname,
