@@ -15,6 +15,7 @@ namespace slime.jrunscript.file.test {
 		}
 		context: slime.jrunscript.file.Context & { $Context: any }
 		module: Exports
+		filesystem: Filesystem
 		newTemporaryDirectory: (filesystem?: any) => slime.jrunscript.file.Directory
 		createFile: (base: Directory, name: string, length?: number) => File
 		createDirectory: (base: Directory, name: string) => Directory
@@ -173,6 +174,7 @@ namespace slime.jrunscript.file.test {
 			$export({
 				$jsapi: $jsapi,
 				module: module,
+				filesystem: filesystem,
 				context: context,
 				newTemporaryDirectory: helpers.newTemporaryDirectory,
 				createFile: helpers.createFile,

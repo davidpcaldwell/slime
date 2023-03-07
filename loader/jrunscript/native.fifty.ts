@@ -438,6 +438,7 @@ namespace slime.jrunscript {
 					Files: any
 					attribute: {
 						FileTime: any
+						PosixFilePermission: any
 					}
 					LinkOption: any
 				}
