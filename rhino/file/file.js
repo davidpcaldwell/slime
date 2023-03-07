@@ -372,7 +372,7 @@
 				// $api.deprecate(this, "setLastModified");
 
 				/** @type { slime.jrunscript.file.Node["copy"] } */
-				this.copy = function (target, mode) {
+				this.copy = Object.assign(function (target, mode) {
 					if (target === null) throw new TypeError("Destination must not be null.");
 					/**
 					 * @type { (target: any) => target is slime.jrunscript.file.Directory }
@@ -473,8 +473,7 @@
 					} else {
 						return processDirectory("", this, to);
 					}
-				};
-				Object.assign(this.copy, {
+				}, {
 					filter: {
 						OVERWRITE: function (p) {
 							return true;

@@ -136,12 +136,39 @@ namespace slime.jrunscript.file {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.Node = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Node {
-		pathname: Pathname
-		directory: boolean
-		remove: () => void,
-		parent: Directory,
-		copy: (
+		/**
+		 * The directory containing this node.
+		 */
+		parent: Directory
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.Node.parent = function() {
+				var file = fifty.jsh.file.object.getRelativePath("api.html").file;
+				var parent = file.parent;
+				verify(parent,"parent").getFile("api.html").evaluate(String).is(fifty.jsh.file.object.getRelativePath("api.html").file.toString());
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Node {
+		copy: ((
 			pathname: Pathname | Directory,
 			mode?: {
 				filter?: (p: {
@@ -154,7 +181,312 @@ namespace slime.jrunscript.file {
 
 				recursive?: any
 			}
-		) => Node
+		) => this) & {
+			filter: any
+		}
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+			var fixtures = script({ fifty: fifty });
+
+			const { newTemporaryDirectory, filesystem } = fixtures;
+
+			var scope: {
+				d1: slime.jrunscript.file.Directory
+				f1: slime.jrunscript.file.File
+				f2: slime.jrunscript.file.File
+				d2: slime.jrunscript.file.Directory
+				d3: slime.jrunscript.file.Directory
+				d4: slime.jrunscript.file.Directory
+				f3: slime.jrunscript.file.File
+				d5: slime.jrunscript.file.Directory
+				f4: slime.jrunscript.file.File
+				p1: slime.jrunscript.file.Pathname
+				p2: slime.jrunscript.file.Pathname
+				p_overwrite: slime.jrunscript.file.Pathname
+				p_recursive: slime.jrunscript.file.Pathname
+				p_recursive2: slime.jrunscript.file.Pathname
+				top: slime.jrunscript.file.Directory
+			} = {
+				d1: void(0),
+				f1: void(0),
+				f2: void(0),
+				d2: void(0),
+				d3: void(0),
+				d4: void(0),
+				f3: void(0),
+				d5: void(0),
+				f4: void(0),
+				p1: void(0),
+				p2: void(0),
+				p_overwrite: void(0),
+				p_recursive: void(0),
+				p_recursive2: void(0),
+				top: void(0)
+			};
+
+			(
+				function() {
+					var top = newTemporaryDirectory();
+					scope.d1 = top.getRelativePath("d1").createDirectory();
+					top.getRelativePath("f1").write("f1", { append: false });
+					top.getRelativePath("f2").write("f2", { append: false });
+					scope.f1 = top.getFile("f1");
+					scope.f2 = top.getFile("f2");
+					scope.d2 = top.getRelativePath("d2").createDirectory();
+					scope.d3 = top.getRelativePath("d3").createDirectory();
+					scope.d4 = top.getRelativePath("d4").createDirectory();
+					scope.d4.getRelativePath("f3").write("f3", { append: false });
+					scope.f3 = scope.d4.getFile("f3");
+					scope.d5 = scope.d4.getRelativePath("d5").createDirectory();
+					scope.d5.getRelativePath("f4").write("f4", { append: false });
+					scope.f4 = scope.d5.getFile("f4");
+					scope.p1 = top.getRelativePath("p1");
+					scope.p2 = top.getRelativePath("p2");
+					scope.p_overwrite = top.getRelativePath("p_overwrite");
+					scope.p_recursive = top.getRelativePath("p_recursive/sub");
+					scope.p_recursive2 = top.getRelativePath("p_recursive2/sub");
+
+					scope.top = top;
+				}
+			)();
+
+			const test = function(b) {
+				verify(b).is(true);
+			}
+
+			const expectError = function(test,f,expect?) {
+				if (typeof(expect) == "undefined") {
+					expect = true;
+				}
+				var invoke = function() {
+					try {
+						f();
+						test(!expect);
+					} catch (e) {
+						test(expect);
+					}
+				};
+				(function() {
+					if (expect) {
+						$api.debug.disableBreakOnExceptionsFor(invoke)();
+					} else {
+						invoke();
+					}
+				})();
+			}
+
+			const { d1, f1, f2, p1, d4, d2, p2, p_recursive, p_recursive2, top, p_overwrite } = scope;
+
+			fifty.tests.Node.copy = fifty.test.Parent();
+
+			fifty.tests.Node.copy._1 = function() {
+				test(d1.getFile("f1") == null);
+				f1.copy(d1);
+				test(d1.getFile("f1") != null);
+
+				expectError(test, function() {
+					f1.copy(d2.pathname)
+				});
+
+				test(p1.file == null);
+				f1.copy(p1);
+				test(p1.file != null);
+
+				test(d1.getSubdirectory("d4") == null);
+				var d4_copy = d4.copy(d1);
+				test(d1.getSubdirectory("d4") != null);
+				test(d1.getFile("d4/f3") != null);
+				test(d1.getFile("d4/f3").read(String) == "f3");
+				test(d4_copy.getFile("f3") != null);
+				test(d4_copy.getFile("f3").read(String) == "f3");
+				test(d4_copy.getFile("d5/f4").read(String) == "f4");
+
+				test(d2.getSubdirectory("d4") == null);
+				var d4_copy2 = d4.copy(d2);
+				test(d2.getSubdirectory("d4") != null);
+				test(d2.getFile("d4/f3") != null);
+				test(d2.getFile("d4/f3").read(String) == "f3");
+				test(d4_copy2.getFile("f3") != null);
+				test(d4_copy2.getFile("f3").read(String) == "f3");
+				test(d4_copy2.getFile("d5/f4").read(String) == "f4");
+
+				test(p2.directory == null);
+				var d4_copy3 = d4.copy(p2);
+				test(p2.directory != null);
+				test(p2.directory.getFile("f3") != null);
+				test(p2.directory.getFile("f3").read(String) == "f3");
+				test(d4_copy3.getFile("f3") != null);
+				test(d4_copy3.getFile("f3").read(String) == "f3");
+				test(d4_copy3.getFile("d5/f4").read(String) == "f4");
+			};
+
+			fifty.tests.Node.copy._2 = function() {
+				if (jsh.shell.PATH.getCommand("chmod")) {
+					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					tmpdir.getRelativePath("a").write("", { append: false });
+					jsh.shell.run({
+						command: "chmod",
+						arguments: ["+x", tmpdir.getRelativePath("a")]
+					});
+
+					var _getPermissions = function(file) {
+						var _nio = file.pathname.java.adapt().toPath();
+						var _permissions = Packages.java.nio.file.Files.getPosixFilePermissions(_nio);
+						return _permissions;
+					};
+
+					var _permissions = _getPermissions(tmpdir.getFile("a"));
+					var permissionsString = String(_permissions);
+					verify(permissionsString).is(permissionsString);
+
+					verify(_permissions.contains(Packages.java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)).is(true);
+
+					tmpdir.getFile("a").copy(tmpdir.getRelativePath("b"));
+					var _p2 = _getPermissions(tmpdir.getFile("b"));
+					verify(_p2.contains(Packages.java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)).is(true);
+				}
+			};
+
+			fifty.tests.Node.copy._3 = function() {
+				expectError(test,function() {
+					f1.copy(p_recursive);
+				},true);
+				try {
+					var copied = f1.copy(p_recursive, { recursive: true });
+					test(true);
+					test(p_recursive.file.read(String) == "f1");
+					test(copied.read(String) == "f1");
+				} catch (e) {
+					test(false);
+				}
+
+				expectError(test, function() {
+					d4.copy(p_recursive2);
+				});
+				expectError(test, function() {
+					var to = d4.copy(p_recursive2, { recursive: true });
+					test(p_recursive2.directory.getFile("f3").read(String) == "f3");
+					test(to.getFile("f3").read(String) == "f3");
+				}, false);
+			};
+
+			fifty.tests.Node.copy._4 = function() {
+				var d_filter = top.getRelativePath("d_filter").createDirectory();
+				d_filter.getRelativePath("a").write("a", { append: false });
+				d_filter.getRelativePath("d/b").write("b", { append: false, recursive: true });
+				var d_filter2 = top.getRelativePath("d_filter2").createDirectory();
+				d_filter2.getRelativePath("a").write("a2", { append: false });
+				var p_filter = top.getRelativePath("p_filter");
+				var p_filter2 = top.getRelativePath("p_filter2");
+				var p_filter3 = top.getRelativePath("p_filter3");
+				var p_filter4 = top.getRelativePath("p_filter4");
+
+				f1.copy(p_overwrite);
+				expectError(test, function() {
+					f2.copy(p_overwrite);
+				});
+				test(p_overwrite.file.read(String) == "f1");
+
+				expectError(test, function() {
+					var copied = f2.copy(p_overwrite, { filter: f2.copy.filter.OVERWRITE });
+					test(p_overwrite.file.read(String) == "f2");
+					test(copied.read(String) == "f2");
+				}, false);
+
+				//	Implement for directories
+				//	TODO	definition should be consolidated with list() if possible
+				var copied = d_filter.copy(p_filter);
+				test(copied.getFile("a") != null);
+				test(copied.getFile("a").read(String) == "a");
+				test(copied.getFile("d/b") != null);
+				test(copied.getFile("d/b").read(String) == "b");
+
+				var filtered2 = d_filter.copy(p_filter2, {
+					filter: function(p) {
+						if (p.entry.path == "") return true;
+						if (p.entry.path == ("d" + filesystem.$unit.getPathnameSeparator())) return true;
+					}
+				});
+				test(filtered2.getFile("a") == null);
+				test(filtered2.getSubdirectory("d") != null);
+				test(filtered2.getFile("d/b") == null);
+
+				var filtered3 = d_filter.copy(p_filter3, {
+					filter: function(p) {
+						if (p.entry.path == "") return true;
+						if (p.entry.path == "a") return true;
+					}
+				});
+				test(filtered3.getFile("a") != null);
+				test(filtered3.getSubdirectory("d") == null);
+				test(filtered3.getFile("d/b") == null);
+
+				var filtered4 = d_filter.copy(p_filter4, {
+					filter: function(p) {
+						if (p.entry.path == "") return true;
+						if (p.entry.path == "d/b") return true;
+					}
+				});
+				test(filtered4.getFile("a") == null);
+				test(filtered4.getSubdirectory("d") == null);
+				test(filtered4.getFile("d/b") == null);
+
+				var filtered5 = d_filter2.copy(p_filter, {
+					filter: function(p) {
+						if (p.entry.path == "") return true;
+						if (p.exists) return false;
+						return true;
+					}
+				});
+				test(filtered5.getFile("a").read(String) == "a");
+
+				var filtered6 = d_filter2.copy(p_filter, {
+					filter: function(p) {
+						return true;
+					}
+				});
+				test(filtered6.getFile("a").read(String) == "a2");
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+	/**
+	 * An object representing a node in the local file system.
+	 */
+	export interface Node {
+		/**
+		 * The location of this file in the local file system.
+		 */
+		toString: Object["toString"]
+
+		/**
+		 * A Pathname corresponding to the location of this node.
+		 */
+		pathname: Pathname
+
+		/**
+		 * Whether this node represents a directory (`true`) or an ordinary file (`false`).
+		 */
+		directory: boolean
+
+		/**
+		 * Removes this node, recursively removing any children if it is a directory.
+		 */
+		remove: () => void
+
+		/**
+		 * The time at which this node was last modified.
+		 */
 		modified: Date
 	}
 
@@ -251,6 +583,10 @@ namespace slime.jrunscript.file {
 	}
 
 	export interface Directory extends Node {
+		/**
+		 *
+		 * @param path A relative path that will be interpreted relative to this directory's location.
+		 */
 		getRelativePath: (path: string) => Pathname
 		getFile: (path: string) => File
 		getSubdirectory: (path: string) => Directory
@@ -438,6 +774,8 @@ namespace slime.jrunscript.file {
 				}
 
 				fifty.run(fifty.tests.createDirectory);
+
+				fifty.run(fifty.tests.Node);
 			}
 		}
 	//@ts-ignore
