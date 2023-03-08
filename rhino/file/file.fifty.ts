@@ -174,22 +174,61 @@ namespace slime.jrunscript.file {
 		/**
 		 * Copies this node to another location. If this node is a regular file, the file is copied. If this node is a directory,
 		 * the node is copied recursively. Directories can be selectively copied using the `filter` property of the second argument.
+		 *
+		 * @param pathname A location to which to copy this node. If the given argument is a `Directory`, the node will be copied
+		 * into that directory with this node's basename. If the given argument is a `Pathname`, the node will be copied to the
+		 * given `Pathname`.
+		 *
+		 * @param mode An object whose properties specify the operation of this method.
+		 *
+		 * @returns The node created by this copy.
 		 */
 		copy: ((
 			pathname: Pathname | Directory,
 			mode?: {
+				//	TODO	this filtering approach should probably be harmonized with list() if it is not already
+				/**
+				 * A function that specifies which nodes to copy. For an ordinary file, this function will be invoked once with the
+				 * given file; for a directory, it will be invoked for the directory and then recursively for its contents. If
+				 * omitted, an implementation will be supplied that copies all nodes unless there is an existing node at the given
+				 * location, in which case it will throw an exception.
+				 *
+				 * @param p An argument with properties describing a node to copy.
+				 *
+				 * @returns If `true` is returned, then if this node is an ordinary file, it will be copied, overwriting the file at
+				 * the given location. If it is a directory, then the directory will be created; if it already exists, no action
+				 * will be taken. If `false` is returned, then for ordinary files; no action will be taken. For directories, not
+				 * only will no action be taken, but the contents of the given directory will not be processed.
+				 */
 				filter?: (p: {
-					entry: {
-						path: string
-						node: slime.jrunscript.file.Node
-					},
+					/**
+					 * The entry to copy, relative to the node on which the `copy()` method was invoked.
+					 */
+					entry: NodeListEntry
+
+					/**
+					 * The node, if any, that already exists at the destination to which this node will be copied.
+					 */
 					exists: slime.jrunscript.file.Node
 				}) => boolean
 
+				/**
+				 * If `true`, then if the parent directory or directories to which this file would be copied do not exist, they will
+				 * be created. Otherwise, if they do not exist, an exception will be thrown.
+				 */
 				recursive?: any
 			}
 		) => this) & {
-			filter: any
+			/**
+			 * An object whose properties supply implementations suitable for use as the `filter` property of the mode argument of
+			 * `copy`.
+			 */
+			filter: {
+				/**
+				 * Implementation that always overwrites the given files and directories.
+				 */
+				OVERWRITE: Parameters<Node["copy"]>[1]["filter"]
+			}
 		}
 	}
 
