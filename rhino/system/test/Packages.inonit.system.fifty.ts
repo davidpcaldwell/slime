@@ -32,6 +32,10 @@ namespace slime.jrunscript.native {
 
 		export interface OperatingSystem {
 			start: (context: Command.Context, configuration: Command.Configuration) => Subprocess
+
+
+			//	TODO	return type should be Result
+			execute: (path: string, arguments: string[]) => any
 		}
 
 		export namespace Command {

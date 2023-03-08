@@ -664,6 +664,10 @@ namespace slime.jrunscript.file {
 			const { verify } = fifty;
 			const { jsh } = fifty.global;
 
+			function ftest(b: () => boolean, name: string) {
+				verify(b(),name).is(true);
+			}
+
 			function test(b: boolean) {
 				verify(b).is(true);
 			}
@@ -788,6 +792,176 @@ namespace slime.jrunscript.file {
 					test( Pathname("C:\\").basename == "C:\\" );
 				}
 			};
+
+			fifty.tests.softlink = function() {
+				var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+				var fixtures = script({ fifty: fifty });
+
+				const { context, module, newTemporaryDirectory, createFile, createDirectory, filesystem } = fixtures;
+
+				var scope = (
+					function(scope) {
+						var module = fixtures.module;
+						var filesystem = fixtures.filesystem;
+						var createFile = fixtures.createFile;
+						var createDirectory = fixtures.createDirectory;
+
+						if (jsh.shell.PATH.getCommand("ln")) {
+							var tmpdir = fixtures.newTemporaryDirectory();
+							var hostdir = new Packages.java.io.File(tmpdir.pathname.java.adapt(), "hostdir");
+							hostdir.mkdirs();
+							var linkdir = new Packages.java.io.File( tmpdir.pathname.java.adapt(), "linkdir" );
+							linkdir.mkdirs();
+							var linkpathname = filesystem.java.adapt(linkdir);
+							var hostpathname = filesystem.java.adapt(hostdir);
+							var target = createFile(hostpathname.directory,"target",1112);
+							var c = createDirectory(hostpathname.directory,"c");
+
+							var shell = function(command,args) {
+								Packages.inonit.system.OperatingSystem.get().execute( command, args ).evaluate();
+							}
+
+							var LN_PATH;
+							if (module.filesystems.cygwin) {
+								LN_PATH="c:/cygwin/bin/ln";
+							} else {
+								LN_PATH="/bin/ln";
+							}
+							shell(LN_PATH, [ "-s",
+								hostpathname.directory.getRelativePath("target").toString(),
+								linkpathname.directory.getRelativePath("to_target").toString()
+							] );
+							shell(LN_PATH, [ "-s",
+								hostpathname.directory.getRelativePath("c").toString(),
+								linkpathname.directory.getRelativePath("to_c").toString()
+							] );
+							shell(LN_PATH, [ "-s",
+								linkpathname.directory.getRelativePath("to_c").toString(),
+								linkpathname.directory.getRelativePath("to_to_c").toString()
+							] );
+							shell(LN_PATH, [ "-s",
+								hostpathname.directory.getRelativePath("does_not_exist").toString(),
+								linkpathname.directory.getRelativePath("to_nowhere").toString()
+							] );
+							scope._linkdir = linkdir;
+							scope.linkdir = filesystem.java.adapt(scope._linkdir).directory;
+							scope.hostdir = hostdir;
+							var _createFile = function(_dir,path) {
+								var dir = filesystem.java.adapt(_dir).directory;
+								createFile(dir,path);
+							}
+
+							scope._createFile = _createFile;
+
+							var before = scope.linkdir.getRelativePath("to_c").directory.list().length;
+							scope.before = before;
+							scope.filelink = scope.linkdir.getRelativePath("to_target").file;
+							scope.dirlink = scope.linkdir.getRelativePath("to_c").directory;
+							scope.ln = jsh.shell.PATH.getCommand("ln");
+						}
+
+						return scope;
+					}
+				)({
+					_linkdir: void(0),
+					linkdir: void(0),
+					hostdir: void(0),
+					_createFile: void(0),
+					before: void(0),
+					filelink: void(0),
+					dirlink: void(0),
+					ln: void(0)
+				});
+
+				fifty.run(
+					function _1() {
+						var { linkdir, filelink } = scope;
+						if (scope.ln) {
+							test( linkdir != null );
+							test( linkdir.directory );
+
+							test( linkdir.getRelativePath("to_target").file != null );
+
+							ftest( function() {
+									var reader = filelink.read(context.$Context.api.io.Streams.binary);
+									var instream = reader.java.adapt();
+									var len = 0;
+									while( instream.read() != -1 ) {
+										len++;
+									}
+									instream.close();
+									return len == 1112;
+								},
+								"file is of correct size."
+							);
+							ftest( function() {
+									return filelink.parent.toString() == linkdir.toString();
+								},
+								"Softlink parent works correctly."
+							);
+							test( !filelink.directory );
+
+							test(linkdir.getRelativePath("to_c").directory != null);
+						}
+					}
+				);
+
+				fifty.run(
+					function _2() {
+						const { linkdir, before } = scope;
+						if (scope.ln) {
+							var File = Packages.java.io.File;
+							scope._createFile( scope.hostdir, "c/c1" );
+							scope._createFile( scope.hostdir, "c/c2" );
+							test(linkdir.getRelativePath("to_c").directory.list().length == before+2);
+						}
+					}
+				);
+
+				fifty.run(
+					function _3() {
+						const { linkdir } = scope;
+						if (scope.ln) {
+							var dir = fixtures.filesystem.java.adapt(scope.hostdir).directory;
+							scope.filelink.remove();
+							var dirlist = dir.getSubdirectory("c").list();
+
+							test( linkdir.getRelativePath("to_target").file == null );
+							test( dir.getRelativePath("target").file != null );
+							test( linkdir.getRelativePath("to_c").directory != null );
+							linkdir.getRelativePath("to_c").directory.remove();
+							verify(dir).getSubdirectory("c").list().length.is(dirlist.length);
+							test( dir.getRelativePath("c").directory != null );
+							test( linkdir.getRelativePath("to_c").directory == null );
+							test( dir.getRelativePath("c").directory != null );
+						}
+					}
+				);
+
+				fifty.run(
+					function _4() {
+						const { linkdir } = scope;
+						if (scope.ln) {
+							test( linkdir.getRelativePath("to_nowhere").file == null );
+							test( linkdir.getRelativePath("to_nowhere").directory == null );
+							var list = linkdir.list();
+							var toDelete;
+							list.forEach(function(item) {
+								test(item != null);
+								test(item.parent.pathname.toString() == linkdir.pathname.toString());
+								test(item.pathname.toString().substring(0,linkdir.pathname.toString().length) == linkdir.pathname.toString());
+								test(item.directory === null);
+								toDelete = item;
+							});
+							toDelete.remove();
+							test(linkdir.list().length+1 == list.length);
+						}
+					}
+				);
+
+				// var linkToLink = linkdir.getRelativePath("to_to_c").directory;
+				// test( linkToLink != null );
+			}
 
 			fifty.tests.suite = function() {
 				var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
@@ -942,6 +1116,8 @@ namespace slime.jrunscript.file {
 				fifty.run(fifty.tests.Node);
 
 				fifty.run(fifty.tests.File);
+
+				fifty.run(fifty.tests.softlink);
 			}
 		}
 	//@ts-ignore
