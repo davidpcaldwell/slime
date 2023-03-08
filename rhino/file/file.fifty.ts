@@ -159,9 +159,9 @@ namespace slime.jrunscript.file {
 			const { verify } = fifty;
 
 			fifty.tests.Node.parent = function() {
-				var file = fifty.jsh.file.object.getRelativePath("api.html").file;
+				var file = fifty.jsh.file.object.getRelativePath("file.fifty.ts").file;
 				var parent = file.parent;
-				verify(parent,"parent").getFile("api.html").evaluate(String).is(fifty.jsh.file.object.getRelativePath("api.html").file.toString());
+				verify(parent,"parent").getFile("file.fifty.ts").evaluate(String).is(file.toString());
 			}
 		}
 	//@ts-ignore
@@ -545,11 +545,29 @@ namespace slime.jrunscript.file {
 	//@ts-ignore
 	)(fifty);
 
+	//	TODO	possibly this also extends the jrunscript resource type?
+
 	export interface File extends Node {
+		/**
+		 * Opens this file for reading.
+		 *
+		 * @param p An argument specifying how the caller wants to read the file. The following arguments
+		 * are allowed. If the argument is:
+		 * * `Streams.binary`, `read` will return a `jrunscript/io` *binary input stream* which can be used to read the file.
+		 * * `Streams.text`, `read` will return a `jrunscript/io` *character input stream* which can be used to read the file.
+		 * * The global function `String`, `read` will read the entire file into a `string` and return it.
+		 * * The global function `XML`, `read` will read the entire file into an `XMLList` and return it.
+		 *
+		 * @returns Either the content of the file or a stream for reading that content, depending on its arguments: see above.
+		 */
 		read: {
 			(p: StringConstructor): string
 			(p: any): any
 		}
+
+		/**
+		 * The size of this file, in bytes.
+		 */
 		length: any
 	}
 
@@ -564,8 +582,8 @@ namespace slime.jrunscript.file {
 			const { verify } = fifty;
 
 			fifty.tests.File._1 = function() {
-				var apiHtml = fifty.jsh.file.object.getRelativePath("api.html").file;
-				verify(apiHtml).type.evaluate(String).is("text/html");
+				var apiHtml = fifty.jsh.file.object.getRelativePath("file.js").file;
+				verify(apiHtml).type.evaluate(String).is("application/javascript");
 			}
 		}
 	//@ts-ignore
@@ -668,12 +686,28 @@ namespace slime.jrunscript.file {
 		 * @param path A relative path that will be interpreted relative to this directory's location.
 		 */
 		getRelativePath: (path: string) => Pathname
+
+		/**
+		 * @param path A filesystem path relative to this directory.
+		 *
+		 * @returns A file that can be found at the given location, or `null` if no (non-directory) file exists at that location.
+		 */
 		getFile: (path: string) => File
+
+		/**
+		 *
+		 * @param path A relative path.
+		 *
+		 * @returns A subdirectory that can be found at the given location relative to this directory, or `null` if no directory
+		 * exists at that location.
+		 */
 		getSubdirectory: (path: string) => Directory
+
 		createTemporary: {
 			(p: { directory: true, prefix?: string, suffix?: string }): Directory
 			(p?: { directory?: false, prefix?: string, suffix?: string }): File
 		}
+
 		/**
 		 * Lists the nodes (or a subset of those nodes) contained in this directory.
 		 */
