@@ -276,10 +276,55 @@ namespace slime.$api.fp {
 
 	export namespace stream {
 		export interface Exports {
-			first: <T>(ts: Stream<T>) => Maybe<T>
-
 			collect: <T>(ts: Stream<T>) => T[]
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				const { streamTo } = test.fixtures;
+
+				fifty.tests.exports.collect = function() {
+					var rv = $api.fp.Stream.collect(streamTo(10));
+					verify(rv.join(",")).is("0,1,2,3,4,5,6,7,8,9")
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace stream {
+		export interface Exports {
+			first: <T>(ts: Stream<T>) => Maybe<T>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const subject = fifty.global.$api.fp.Stream;
+
+				fifty.tests.exports.first = function() {
+					var empty = subject.from.empty();
+					var empty2 = subject.from.array([]);
+					var one = subject.from.array(["one"]);
+
+					verify(empty).evaluate(subject.first).present.is(false);
+					verify(empty2).evaluate(subject.first).present.is(false);
+					verify(one).evaluate(subject.first).present.is(true);
+					var first = subject.first(one);
+					if (first.present) {
+						verify(first).value.is("one");
+					}
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Exports {
@@ -290,17 +335,7 @@ namespace slime.$api.fp {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { verify } = fifty;
-			const { $api } = fifty.global;
-
-			const { streamTo, isOdd } = test.fixtures;
-
 			fifty.tests.suite = function() {
-				fifty.run(function testStream() {
-					var rv = $api.fp.Stream.collect(streamTo(10));
-					verify(rv.join(",")).is("0,1,2,3,4,5,6,7,8,9")
-				});
-
 				fifty.run(fifty.tests.exports);
 			};
 		}
