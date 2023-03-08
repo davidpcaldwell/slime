@@ -168,6 +168,13 @@ namespace slime.jrunscript.file {
 	)(fifty);
 
 	export interface Node {
+		//	TODO	should we be preserving attributes like timestamps?
+		//	TODO	does this preserve modification times?
+		//	Inspiration: https://linux.die.net/man/1/cp
+		/**
+		 * Copies this node to another location. If this node is a regular file, the file is copied. If this node is a directory,
+		 * the node is copied recursively. Directories can be selectively copied using the `filter` property of the second argument.
+		 */
 		copy: ((
 			pathname: Pathname | Directory,
 			mode?: {
@@ -490,6 +497,15 @@ namespace slime.jrunscript.file {
 		modified: Date
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.File = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface File extends Node {
 		read: {
 			(p: StringConstructor): string
@@ -497,6 +513,24 @@ namespace slime.jrunscript.file {
 		}
 		length: any
 	}
+
+	export interface File extends Node {
+		type: slime.mime.Object
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.File._1 = function() {
+				var apiHtml = fifty.jsh.file.object.getRelativePath("api.html").file;
+				verify(apiHtml).type.evaluate(String).is("text/html");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace directory {
 		export namespace list {
@@ -542,6 +576,19 @@ namespace slime.jrunscript.file {
 		}
 	}
 
+	/**
+	 * Consists of a {@link Node} and a path to it relative to a base directory. Used in directory operations that return or
+	 * process a set of nodes.
+	 */
+	export interface NodeListEntry {
+		/**
+		 * The path, relative to the base, at which this node can be found. For the base directory itself, this will be a
+		 * zero-length string.
+		 */
+		path: string
+		node: slime.jrunscript.file.Node
+	}
+
 	export interface Exports {
 		list: {
 			/**
@@ -552,13 +599,7 @@ namespace slime.jrunscript.file {
 			/**
 			 * Returns {@link Node}s, along with their relative paths, when listing files.
 			 */
-			ENTRY: slime.jrunscript.file.directory.list.Format<{
-				/**
-				 * The path, relative to the listed directory, at which this node can be found.
-				 */
-				path: string
-				node: slime.jrunscript.file.Node
-			}>
+			ENTRY: slime.jrunscript.file.directory.list.Format<NodeListEntry>
 
 			// TODO	add RESOURCE that returns an array of path/resource? easy descriptor, would
 			// 		probably then exclude directories explicitly and this could be used as easy input
@@ -776,6 +817,8 @@ namespace slime.jrunscript.file {
 				fifty.run(fifty.tests.createDirectory);
 
 				fifty.run(fifty.tests.Node);
+
+				fifty.run(fifty.tests.File);
 			}
 		}
 	//@ts-ignore
