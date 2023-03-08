@@ -241,8 +241,8 @@ namespace slime.jrunscript.file {
 
 			fifty.tests.Node = fifty.test.Parent();
 			fifty.tests.Node.getFile_getDirectory = function() {
-				var directory = fifty.jsh.file.object.getRelativePath("api.html").file.parent;
-				verify(directory).getFile("api.html").is.type("object");
+				var directory = fifty.jsh.file.object.getRelativePath("module.js").file.parent;
+				verify(directory).getFile("module.js").is.type("object");
 				verify(directory).getFile("foo").is(null);
 
 				verify(directory).getSubdirectory("java").is.type("object");	//	directory

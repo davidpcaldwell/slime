@@ -42,7 +42,7 @@ namespace slime.jrunscript.file {
 
 			fifty.tests.suite = function() {
 				run(function brittleEntries() {
-					verify(loader).get("api.html").is.not(null);
+					verify(loader).get("module.fifty.ts").is.not(null);
 					verify(loader).get("foo.html").is(null);
 					var list = loader.list();
 					var map: {
@@ -62,7 +62,7 @@ namespace slime.jrunscript.file {
 						return Boolean(p.resource);
 					}
 					//	TODO	this is pretty brittle
-					verify(list,"number of entries in rhino/file").length.is(27);
+					verify(list,"number of entries in rhino/file").length.is(26);
 					//	jsh.shell.echo(loader.list().map(function(item) { return item.path; }));
 					verify(map).java.evaluate(isLoaderEntry).is(true);
 					verify(map).java.evaluate(function() { return this.resource; }).is(void(0));
@@ -72,18 +72,18 @@ namespace slime.jrunscript.file {
 				});
 
 				run(function oldResourceLength() {
-					var api = loader.get("api.html") as slime.jrunscript.runtime.old.Resource;
+					var api = loader.get("module.fifty.ts") as slime.jrunscript.runtime.old.Resource;
 					verify(api).length.is.not.equalTo(null);
 					verify(api).length.is.type("number");
 				});
 
 				run(function oldResourceMimeType() {
-					var api = loader.get("api.html");
-					verify(api).type.evaluate(function() { return this.is("text/html") }).is(true);
+					var api = loader.get("module.js");
+					verify(api).type.evaluate(function() { return this.is("application/javascript") }).is(true);
 				});
 
 				run(function oldResourceLastModified() {
-					var api = loader.get("api.html") as slime.jrunscript.runtime.old.Resource;
+					var api = loader.get("module.fifty.ts") as slime.jrunscript.runtime.old.Resource;
 					verify(api).modified.is.type("object");
 				});
 
