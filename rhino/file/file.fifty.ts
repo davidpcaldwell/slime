@@ -671,20 +671,143 @@ namespace slime.jrunscript.file {
 			var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
 			var fixtures = script({ fifty: fifty });
 
-			const { context, module, newTemporaryDirectory, createFile, createDirectory } = fixtures;
+			const { context, module, newTemporaryDirectory, createFile, createDirectory, filesystem } = fixtures;
+
+			const local = {
+				fixtures: function(filesystem) {
+					var dir = newTemporaryDirectory(filesystem);
+
+					var filea = createFile(dir,"a");
+					var fileb = createFile(dir,"b");
+					var filec = createDirectory(dir,"c");
+					var filed = createFile(filec,"d");
+					var filee = createDirectory(dir,"e");
+					var filef = createFile(filee,"f");
+
+					createFile(dir,"target",1112);
+
+					return {
+						dir,
+						filee
+					}
+				}
+			};
+
+			var { UNIX } = (
+				function() {
+					const UNIX = (filesystem.$unit.getPathnameSeparator() == "/");
+
+	// 				var _scenario = new function() {
+	// 					var tmpdir;
+	// 					var UNIX;
+	// 					var hostdir;
+
+	// 					this.name = "Filesystem tests; filesystem = " + filesystem;
+
+	// 					this.initialize = function() {
+	// 						//if (!SCOPE.module) throw "Missing SCOPE.module: module=" + module;
+	// 						if (SCOPE.module) {
+	// 							SCOPE.module.filesystem = filesystem;
+	// 						} else {
+	// 							module.filesystem = filesystem;
+	// 						}
+	// 					}
+
+	// 					this.execute = function(scope) {
+	// 						scope.scenario( new function() {
+	// 							this.name = "File tests";
+
+	// 							this.initialize = function() {
+	// 								var createDirectory = function(file) {
+	// 									file.mkdir();
+	// 									return file;
+	// 								}
+
+	// 								tmpdir = $jsapi.java.io.newTemporaryDirectory();
+
+	// 								hostdir = new Packages.java.io.File(tmpdir, "filetests" );
+	// 								hostdir.mkdirs();
+	// 								createFile(new Packages.java.io.File(hostdir, "a"));
+	// 								createFile(new Packages.java.io.File(hostdir, "b"));
+	// 								var hostfilec = createDirectory(new Packages.java.io.File(hostdir, "c"));
+	// 								createFile(new Packages.java.io.File(hostfilec, "d"));
+	// 								var hostfilee = createDirectory(new Packages.java.io.File(hostdir, "e"));
+	// 								createFile(new Packages.java.io.File(hostfilee, "f"));
+
+	// 								createFile(new Packages.java.io.File(hostdir, "target"), 1112);
+
+	// 								dir = filesystem.java.adapt(hostdir).directory;
+	// //								dir = filesystem.$unit.Pathname(module.filesystem.$unit.getNode(hostdir)).directory;
+	// 							}
+
+	// 							this.execute = function(scope) {
+	// 								var filea = dir.getFile("a");
+	// 								var fileb = dir.getFile("b");
+	// 								var filec = dir.getSubdirectory("c");
+	// 								var filed = filec.getFile("d");
+	// 								var filee = dir.getSubdirectory("e");
+	// 								var filef = filee.getFile("f");
+	// 							}
+	// 						} );
+	// 					}
+	// 				}
+
+					return {
+						UNIX
+					}
+				}
+			)();
+
+			fifty.tests.filesystem = function(fs: slime.jrunscript.file.Filesystem) {
+				var Pathname = fs.Pathname;
+				var test = function(b: boolean) {
+					verify(b).is(true);
+				};
+				if (UNIX) {
+					var foo = Pathname("/foo");
+					verify(foo).parent.toString().is("");
+					verify(foo).parent.directory.toString().is("/");
+//						test( Pathname("/foo").parent.toString() == "/" );
+					test( Pathname("/foo/bar").parent.toString() == "/foo" );
+					test( Pathname("/").parent == null );
+					test( Pathname("/").directory.list()[0].pathname.toString().substring(0,2) != "//" );
+					test( Pathname("a").toString().length != 1 );
+				} else {
+					test( Pathname("C:\\cygwin").parent.toString() == "C:\\" );
+					test( Pathname("C:\\cygwin\\tmp").parent.toString() == "C:\\cygwin" );
+					test( Pathname("C:\\").parent == null );
+				}
+
+				if (UNIX) {
+					test( Pathname("/home/inonit").basename == "inonit" );
+					test( Pathname("/home").basename == "home" );
+					test( Pathname("/").basename == "" );
+				} else {
+					test( Pathname("C:\\cygwin\\tmp").basename == "tmp" );
+					test( Pathname("C:\\cygwin").basename == "cygwin" );
+					test( Pathname("C:\\").basename == "C:\\" );
+				}
+			};
 
 			fifty.tests.suite = function() {
 				var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
-				var dir = newTemporaryDirectory(filesystem);
 
-				var filea = createFile(dir,"a");
-				var fileb = createFile(dir,"b");
-				var filec = createDirectory(dir,"c");
-				var filed = createFile(filec,"d");
-				var filee = createDirectory(dir,"e");
-				var filef = createFile(filee,"f");
+				var fx = local.fixtures(module.filesystems.os);
+				//	TODO	if Cygwin is present, we want to run on module.filesystems.cygwin, too, but that will require further
+				//			modularization
 
-				createFile(dir,"target",1112);
+				fifty.run(function fstest() {
+					fifty.tests.filesystem(filesystem);
+				});
+
+				if (UNIX) {
+					var top = jsh.file.Pathname("/").directory;
+					var HOME = jsh.shell.HOME.toString();
+					var home = top.getSubdirectory(HOME.substring(1));
+					verify(home).is.not(null);
+				}
+
+				var { dir, filee } = fx;
 
 				var NODE = dir.list.NODE;
 				var ENTRY = dir.list.ENTRY;
