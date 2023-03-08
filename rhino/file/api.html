@@ -195,40 +195,10 @@ END LICENSE
 				<div class="name">Pathname</div>
 				<div class="type">
 					<a class="type" name="types.node">node</a>
-					<div class="type">
-						<a class="type" name="types.node.entry">node.entry</a>
-						<span>
-							Consists of a <a href="#types.node">node</a> and a path to it relative to a
-							base directory. Used in directory operations that return or process a set of nodes.
-						</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="value">
-								<div class="name">path</div>
-								<span class="type">string</span>
-								<span>
-									The path, relative to the base, at which this node can be found. For the base directory
-									itself, this will be a zero-length string.
-								</span>
-							</li>
-							<li class="value">
-								<div class="name">node</div>
-								<span class="type"><a href="#types.node">node</a></span>
-							</li>
-						</ul>
-					</div>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function" jsapi:id="copy">
 							<div class="name">copy</div>
-							<!--	Inspiration: http://unixhelp.ed.ac.uk/CGI/man-cgi?cp -->
-							<!--	TODO	should we be preserving attributes like timestamps?	-->
-							<span>
-								Copies this node to another location. If this node is a regular file, the file is copied. If this
-								node is a directory, the node is copied recursively. Directories can be selectively copied using
-								the <code>filter</code> property of the second argument.
-								<!--	TODO	does this preserve modification times?	-->
-							</span>
 							<div class="arguments">
 								<div class="label">Arguments</div>
 								<ol>
@@ -407,10 +377,6 @@ END LICENSE
 							<span>Convenience for <code>read(Streams.text).readLines()</code>.</span>
 						</li>
 						-->
-						<script type="application/x.jsapi#tests">
-							var apiHtml = $jsapi.loader.getRelativePath("api.html").file;
-							verify(apiHtml).type.evaluate(function(p) { return p.toString() }).is("text/html");
-						</script>
 					</ul>
 				</div>
 				<div class="type">
@@ -781,8 +747,6 @@ END LICENSE
 				</script>
 			</div>
 			<div>
-				<script type="application/x.jsapi#initialize">
-				</script>
 				<script type="application/x.jsapi#tests">
 					if (scope.ln) {
 						scope.test( linkdir.getRelativePath("to_nowhere").file == null );
