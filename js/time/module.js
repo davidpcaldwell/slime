@@ -1017,6 +1017,9 @@
 
 		$exports.install = install;
 
+		/** @type { slime.time.DayOfWeek[] } */
+		var daysOfWeek = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+
 		$export({
 			Date: {
 				input: {
@@ -1050,8 +1053,8 @@
 				format: function(mask) {
 					/** @type { ReturnType<slime.time.Exports["Date"]["format"]> } */
 					return function(day) {
-						var toDayObject = new Day(day.year, day.month, day.day);
-						return toDayObject.format(mask);
+						var dayObject = new Day(day.year, day.month, day.day);
+						return dayObject.format(mask);
 					}
 				},
 				order: {
@@ -1061,6 +1064,12 @@
 						if (a.day - b.day != 0) return a.day - b.day;
 						return 0;
 					}
+				},
+				dayOfWeek: function(date) {
+					var js = new Date(date.year, date.month-1, date.day);
+					var dow = js.getDay();
+					var index = (dow == 0) ? 6 : dow - 1;
+					return daysOfWeek[index];
 				}
 			},
 			Timezone: zones,

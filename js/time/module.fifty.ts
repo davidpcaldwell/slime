@@ -268,6 +268,35 @@ namespace slime.time {
 		)(fifty);
 	}
 
+	export type DayOfWeek = "Mo" | "Tu" | "We" | "Th" | "Fr" | "Sa" | "Su"
+
+	export namespace exports {
+		export interface Date {
+			dayOfWeek: (date: slime.time.Date) => DayOfWeek
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.Date.dayOfWeek = function() {
+					var date: slime.time.Date = {
+						year: 2023,
+						month: 3,
+						day: 8
+					};
+
+					var day = test.subject.Date.dayOfWeek(date);
+
+					verify(day).evaluate(String).is("We");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export interface Exports {
 		Date: exports.Date
 	}
