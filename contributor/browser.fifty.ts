@@ -17,6 +17,7 @@
 			fifty.load("../js/web/module.fifty.ts");
 			fifty.load("../js/codec/ini.fifty.ts");
 			fifty.load("../js/time/module.fifty.ts");
+			fifty.load("../js/object/module.fifty.ts");
 		}
 	}
 //@ts-ignore
