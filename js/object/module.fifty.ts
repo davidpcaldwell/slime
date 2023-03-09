@@ -34,4 +34,15 @@ namespace slime.js.old {
 		 */
 		deprecate: slime.$api.Global["deprecate"]
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.load("Error.fifty.ts");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }

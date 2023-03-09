@@ -89,9 +89,6 @@
 		suite.add("js/object/other", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("js/object/api.html")
 		}));
-		suite.add("js/object/Error", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("js/object/Error.api.html")
-		}));
 
 		suite.add("js/document", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("js/document/api.html")
