@@ -29,7 +29,7 @@
 								url: p.options.url,
 								format: (p.options.format) ? jsh.tools.install.Download.Format[p.options.format] : void(0)
 							},
-							to: destination
+							to: destination.toString()
 						},
 						{
 							request: function(e) {

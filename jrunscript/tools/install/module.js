@@ -407,8 +407,9 @@
 						if (!format) throw new Error("Could not determine format of archive: " + archive.file);
 						if (!format.extract) throw new Error("No algorithm to extract " + format.extension);
 
+						var p_to = $context.api.file.Pathname(p.to);
 						//	TODO	what if directory exists? Right now will bomb, which may be OK
-						var to = p.to.createDirectory({ recursive: true });
+						var to = p_to.createDirectory({ recursive: true });
 						//	TODO	no world-oriented equivalent
 						format.extract(archive.file, to);
 					}
