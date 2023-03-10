@@ -198,7 +198,7 @@ namespace slime.jrunscript.tools.install {
 
 		export interface Download {
 			install: slime.$api.fp.world.Action<
-				{ download: install.Download, to: slime.jrunscript.file.Pathname },
+				{ download: install.Download, to: string },
 				download.Events
 			>
 		}
