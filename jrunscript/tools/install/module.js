@@ -309,23 +309,40 @@
 				},
 				Format: newFormats,
 				install: function(p) {
+					/**
+					 *
+					 * @param { string } filename
+					 * @return { slime.$api.fp.Maybe<slime.mime.Type> }
+					 */
+					var getFilenameMimeType = function(filename) {
+						var decode = $api.mime.Type.codec.declaration.decode;
+						if (/\.zip$/.test(filename)) return $api.fp.Maybe.from.some(decode("application/zip"));
+						if (/\.tgz$/.test(filename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
+						if (/\.tar.gz$/.test(filename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
+						return $api.fp.Maybe.from.nothing();
+					}
+
 					/** @param { slime.jrunscript.file.File } file */
 					var getFileMimeType = function(file) {
-						var basename = file.pathname.basename;
-						var decode = $api.mime.Type.codec.declaration.decode;
-						if (/\.zip$/.test(basename)) return $api.fp.Maybe.from.some(decode("application/zip"));
-						if (/\.tgz$/.test(basename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
-						if (/\.tar.gz$/.test(basename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
-						return $api.fp.Maybe.from.nothing();
+						return getFilenameMimeType(file.pathname.basename);
 					};
 
 					/** @param { slime.jrunscript.http.client.spi.Response } response */
 					var getResponseMimeType = function(response) {
 						return $api.fp.result(
 							$context.api.http.Header.value("Content-Type")(response.headers),
-							$api.fp.Maybe.map($api.mime.Type.codec.declaration.decode)
+							$api.fp.Maybe.map($api.mime.Type.codec.declaration.decode),
+							function(maybe) {
+								if (maybe.present && maybe.value.media == "application" && maybe.value.subtype == "octet-stream") return $api.fp.Maybe.from.nothing();
+								return maybe;
+							}
 						);
 					};
+
+					var getUrlMimeType = function(url) {
+						var name = getDefaultName(url);
+						return getFilenameMimeType(name);
+					}
 
 					/**
 					 *
@@ -361,16 +378,34 @@
 								url: download.url
 							})
 						);
-						var format = getArchiveFormat(download.format, getResponseMimeType(response));
+
+						var getMimeType = $api.fp.switch([
+							function() { return getResponseMimeType(response); },
+							function() { return getUrlMimeType(download.url) }
+						]);
+
+						var format = $api.fp.switch(
+							[
+								function() { return $api.fp.Maybe.from.value(download.format); },
+								function() {
+									var mime = getMimeType();
+									if (mime.present) {
+										return getFormat(mime.value);
+									}
+									return $api.fp.Maybe.from.nothing();
+								}
+							]
+						)();
+
 						// var type = $context.api.http.Header.value("Content-Type")(response.headers);
 						// throw new Error("type = " + ((type.present) ? type.value : "(absent)"));
-						if (!format) throw new Error("Could not determine format of archive at: " + download.url + " (type: " + getResponseMimeType(response) + ")");
+						if (!format.present) throw new Error("Could not determine format of archive at: " + download.url + " (type: " + getResponseMimeType(response) + ")");
 						if (!local) {
-							local = $context.api.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("archive" + format.extension);
+							local = $context.api.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("archive" + format.value.extension);
 						}
 						var write = $context.api.file.world.Location.file.write.stream({ input: response.stream });
 						$api.fp.world.now.action(write, local.os.adapt());
-						return { file: local.file, type: getResponseMimeType(response) };
+						return { file: local.file, type: getMimeType() };
 					}
 
 					/**
