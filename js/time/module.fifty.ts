@@ -64,6 +64,15 @@ namespace slime.time {
 		java?: context.Java
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		java?: context.Java
 	}
@@ -299,6 +308,53 @@ namespace slime.time {
 
 	export interface Exports {
 		Date: exports.Date
+	}
+
+	export interface Month {
+		year: number
+		month: number
+	}
+
+	export namespace exports {
+		export interface Month {
+			last: (month: slime.time.Month) => slime.time.Date
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Month = fifty.test.Parent();
+
+				fifty.tests.exports.Month.last = function() {
+					var feb23 = test.subject.Month.last({
+						year: 2023,
+						month: 2
+					});
+					var feb24 = test.subject.Month.last({
+						year: 2024,
+						month: 2
+					});
+					verify(feb23,"2023feb.last",function(it) {
+						it.year.is(2023);
+						it.month.is(2);
+						it.day.is(28);
+					});
+					verify(feb24,"2024feb.last",function(it) {
+						it.year.is(2024);
+						it.month.is(2);
+						it.day.is(29);
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Month: exports.Month
 	}
 
 	export interface Exports {
