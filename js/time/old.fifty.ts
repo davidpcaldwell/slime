@@ -439,11 +439,6 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export interface Exports {
-		/** @deprecated */
-		Month: exports.Month
-	}
-
 	export namespace old {
 		/** @deprecated */
 		export interface Time {
