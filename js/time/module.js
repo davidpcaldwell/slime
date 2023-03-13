@@ -1064,6 +1064,12 @@
 						return Date_add(day, offset);
 					}
 				},
+				month: function(date) {
+					return {
+						year: date.year,
+						month: date.month
+					};
+				},
 				months: {
 					offset: function(offset) {
 						return function(day) {
