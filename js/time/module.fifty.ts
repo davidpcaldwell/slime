@@ -304,6 +304,10 @@ namespace slime.time {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface Date {
+			month: (date: slime.time.Date) => slime.time.Month
+		}
 	}
 
 	export interface Exports {
