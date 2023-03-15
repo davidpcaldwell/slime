@@ -86,7 +86,7 @@ namespace slime.jrunscript.file {
 
 					var writeText = function(location: slime.jrunscript.file.world.Location) {
 						var write = jsh.file.world.Location.file.write(location);
-						$api.fp.world.output(write.string, { value: "tocopy" });
+						$api.fp.world.now.action(write.string, { value: "tocopy" });
 					};
 
 					var readText = $api.fp.pipe(
