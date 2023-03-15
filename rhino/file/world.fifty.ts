@@ -84,9 +84,10 @@ namespace slime.jrunscript.file {
 					const { verify } = fifty;
 					const { $api, jsh } = fifty.global;
 
-					var writeText = $api.fp.world.output(
-						jsh.file.world.Location.file.write.string({ value: "tocopy" })
-					);
+					var writeText = function(location: slime.jrunscript.file.world.Location) {
+						var write = jsh.file.world.Location.file.write(location);
+						$api.fp.world.output(write.string, { value: "tocopy" });
+					};
 
 					var readText = $api.fp.pipe(
 						$api.fp.world.mapping(
@@ -224,19 +225,11 @@ namespace slime.jrunscript.file {
 					}, slime.$api.fp.Maybe<string>>
 				}
 
-				write: {
-					string: (p: {
-						value: string
-					}) => slime.$api.fp.world.Action<world.Location, {
-					}>
-
-					stream: (p: {
-						input: slime.jrunscript.runtime.io.InputStream
-					}) => slime.$api.fp.world.Action<world.Location, {
-					}>
-
+				write: (location: world.Location) => {
+					string: slime.$api.fp.world.Action<{ value: string },{}>
+					stream: slime.$api.fp.world.Action<{ input: slime.jrunscript.runtime.io.InputStream },{}>
 					object: {
-						text: () => slime.$api.fp.world.Question<world.Location, {}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>>
+						text: slime.$api.fp.world.Question<{},{},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>>
 					}
 				}
 			}
@@ -258,7 +251,10 @@ namespace slime.jrunscript.file {
 
 							verify(exists(at)).is(false);
 
-							var writeA = $api.fp.world.output(subject.Location.file.write.string({ value: "a" }));
+							var writeA = function(location: slime.jrunscript.file.world.Location) {
+								var write = jsh.file.world.Location.file.write(location);
+								$api.fp.world.now.action(write.string, { value: "a" });
+							}
 
 							$api.fp.impure.now.output(at, writeA);
 
@@ -272,9 +268,10 @@ namespace slime.jrunscript.file {
 							buffer.writeText().write("text");
 							buffer.close();
 
-							var process = $api.fp.world.process(
-								subject.Location.file.write.stream({ input: buffer.readBinary() })(at)
-							);
+							var process = function() {
+								var write = subject.Location.file.write(at);
+								$api.fp.world.now.action(write.stream, { input: buffer.readBinary() });
+							};
 
 							process();
 
@@ -392,7 +389,10 @@ namespace slime.jrunscript.file {
 								$api.fp.impure.tap(
 									$api.fp.pipe(
 										atFilepath,
-										$api.fp.world.output(jsh.file.world.Location.file.write.string({ value: "contents" }))
+										function(location: slime.jrunscript.file.world.Location) {
+											var write = jsh.file.world.Location.file.write(location);
+											$api.fp.world.now.action(write.string, { value: "contents" })
+										}
 									)
 								)
 							)

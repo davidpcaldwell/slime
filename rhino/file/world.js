@@ -212,57 +212,110 @@
 							}
 						}
 					},
-					write: {
-						string: function(p) {
-							return function(location) {
-								return function(events) {
-									Location_write(
-										location,
-										events,
-										function(stream) {
-											var writer = stream.character();
-											writer.write(p.value);
-											writer.close();
+					write: Object.assign(
+						/**
+						 *
+						 * @param { Parameters<slime.jrunscript.file.world.locations.Files["write"]>[0] } location
+						 * @returns { ReturnType<slime.jrunscript.file.world.locations.Files["write"]> } location
+						 */
+						function(location) {
+							return {
+								string: function(p) {
+									return function(events) {
+										Location_write(
+											location,
+											events,
+											function(stream) {
+												var writer = stream.character();
+												writer.write(p.value);
+												writer.close();
+											}
+										)
+									}
+								},
+								stream: function(p) {
+									return function(events) {
+										Location_write(
+											location,
+											events,
+											function(output) {
+												$context.library.io.Streams.binary.copy(
+													p.input,
+													output
+												)
+											}
+										)
+									}
+								},
+								object: {
+									text: function(p) {
+										return function(events) {
+											var ask = location.filesystem.openOutputStream({
+												pathname: location.pathname
+											});
+											return $api.fp.result(
+												ask(events),
+												$api.fp.Maybe.map(function(stream) {
+													return stream.character();
+												})
+											);
 										}
-									);
+									}
 								}
 							}
 						},
-						stream: function(p) {
-							return function(location) {
-								return function(events) {
-									Location_write(
-										location,
-										events,
-										function(output) {
-											$context.library.io.Streams.binary.copy(
-												p.input,
-												output
-											)
-										}
-									)
-								}
-							}
-						},
-						object: {
-							text: function() {
+						{
+							string: function(p) {
 								return function(location) {
 									return function(events) {
-										var ask = location.filesystem.openOutputStream({
-											pathname: location.pathname
-										});
-										return $api.fp.result(
-											ask(events),
-											$api.fp.Maybe.map(function(stream) {
-												return stream.character();
-											})
+										Location_write(
+											location,
+											events,
+											function(stream) {
+												var writer = stream.character();
+												writer.write(p.value);
+												writer.close();
+											}
 										);
 									}
+								}
+							},
+							stream: function(p) {
+								return function(location) {
+									return function(events) {
+										Location_write(
+											location,
+											events,
+											function(output) {
+												$context.library.io.Streams.binary.copy(
+													p.input,
+													output
+												)
+											}
+										)
+									}
+								}
+							},
+							object: {
+								text: function() {
+									return function(location) {
+										return function(events) {
+											var ask = location.filesystem.openOutputStream({
+												pathname: location.pathname
+											});
+											return $api.fp.result(
+												ask(events),
+												$api.fp.Maybe.map(function(stream) {
+													return stream.character();
+												})
+											);
+										}
 
+									}
 								}
 							}
 						}
-					},
+					),
 					copy: function(p) {
 						return function(location) {
 							return function(events) {
