@@ -219,10 +219,8 @@
 		 * @param { string } string
 		 */
 		var writeFileString = function(file,string) {
-			$api.fp.world.now.action(
-				$context.library.file.world.Location.file.write.string({ value: string }),
-				file
-			);
+			var write = $context.library.file.world.Location.file.write(file);
+			$api.fp.world.now.action(write.string, { value: string });
 		};
 
 		//	TODO	obviously this is not ideal

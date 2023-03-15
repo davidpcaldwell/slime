@@ -31,10 +31,8 @@
 
 		var output = function(location) {
 			return function(string) {
-				$api.fp.impure.now.output(
-					location,
-					$api.fp.world.output(jsh.file.world.Location.file.write.string({ value: string }))
-				);
+				var write = jsh.file.world.Location.file.write(location);
+				$api.fp.world.now.action(write.string, { value: string });
 			}
 		};
 

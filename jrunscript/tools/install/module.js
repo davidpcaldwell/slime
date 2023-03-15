@@ -403,8 +403,9 @@
 						if (!local) {
 							local = $context.api.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("archive" + format.value.extension);
 						}
-						var write = $context.api.file.world.Location.file.write.stream({ input: response.stream });
-						$api.fp.world.now.action(write, local.os.adapt());
+						var location = local.os.adapt();
+						var w = $context.api.file.world.Location.file.write(location);
+						$api.fp.world.now.action(w.stream, { input: response.stream });
 						return { file: local.file, type: getMimeType() };
 					}
 
