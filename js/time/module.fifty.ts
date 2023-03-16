@@ -172,6 +172,12 @@ namespace slime.time {
 
 			months: {
 				offset: (offset: number) => (day: slime.time.Date) => slime.time.Date
+				after: (date: slime.time.Date) => (offset: number) => slime.time.Date
+			}
+
+			years: {
+				offset: (offset: number) => (day: slime.time.Date) => slime.time.Date
+				after: (date: slime.time.Date) => (offset: number) => slime.time.Date
 			}
 		}
 
@@ -215,7 +221,7 @@ namespace slime.time {
 					verify(plus).day.is(2);
 				};
 
-				fifty.tests.Date.addMonths = function() {
+				fifty.tests.Date.months = function() {
 					var date: slime.time.Date = {
 						year: 2019,
 						month: 1,
@@ -227,10 +233,63 @@ namespace slime.time {
 					verify(after).month.is(3);
 					verify(after).day.is(15);
 
+					var after2 = test.subject.Date.months.after(date)(2);
+					verify(after2).year.is(2019);
+					verify(after2).month.is(3);
+					verify(after2).day.is(15);
+
 					var before = test.subject.Date.months.offset(-2)(date);
 					verify(before).year.is(2018);
 					verify(before).month.is(11);
 					verify(before).day.is(15);
+
+					var before2 = test.subject.Date.months.after(date)(-2);
+					verify(before2).year.is(2018);
+					verify(before2).month.is(11);
+					verify(before2).day.is(15);
+				};
+
+				fifty.tests.Date.years = function() {
+					var date1: slime.time.Date = {
+						year: 2020,
+						month: 2,
+						day: 29
+					};
+
+					var date2: slime.time.Date = {
+						year: 2020,
+						month: 2,
+						day: 28
+					};
+
+					var date3: slime.time.Date = {
+						year: 2020,
+						month: 3,
+						day: 1
+					};
+
+					var next1 = test.subject.Date.years.after(date1)(1);
+					verify(next1).year.is(2021);
+					verify(next1).month.is(2);
+					verify(next1).day.is(28);
+
+
+					var next2 = test.subject.Date.years.after(date2)(1);
+					verify(next2).year.is(2021);
+					verify(next2).month.is(2);
+					verify(next2).day.is(28);
+
+
+					var next3 = test.subject.Date.years.after(date3)(1);
+					verify(next3).year.is(2021);
+					verify(next3).month.is(3);
+					verify(next3).day.is(1);
+
+
+					var next1leap = test.subject.Date.years.after(date1)(4);
+					verify(next1leap).year.is(2024);
+					verify(next1leap).month.is(2);
+					verify(next1leap).day.is(29);
 				}
 			}
 		//@ts-ignore
