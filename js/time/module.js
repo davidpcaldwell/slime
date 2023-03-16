@@ -438,6 +438,10 @@
 		 */
 		var Date_addMonths = function(ref,offset) {
 			return harmonizeDate(ref.year, ref.month + offset, ref.day);
+		};
+
+		var Date_addYears = function(ref,offset) {
+			return harmonizeDate(ref.year + offset, ref.month, ref.day);
 		}
 
 		/**
@@ -1074,6 +1078,23 @@
 					offset: function(offset) {
 						return function(day) {
 							return Date_addMonths(day, offset);
+						}
+					},
+					after: function(day) {
+						return function(offset) {
+							return Date_addMonths(day, offset);
+						}
+					}
+				},
+				years: {
+					offset: function(offset) {
+						return function(day) {
+							return Date_addYears(day, offset);
+						}
+					},
+					after: function(day) {
+						return function(offset) {
+							return Date_addYears(day, offset);
 						}
 					}
 				},
