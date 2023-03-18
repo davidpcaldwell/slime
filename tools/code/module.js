@@ -238,7 +238,7 @@
 				if (!configuration) configuration = {
 					nowrite: false
 				};
-				return $api.fp.world.old.tell(function(events) {
+				return function(events) {
 					var code = readFileString(entry.file);
 					var scan = findTrailingWhitespaceIn(code);
 					scan.instances.forEach(function(instance) {
@@ -258,7 +258,7 @@
 					} else {
 						events.fire("notFoundIn", entry);
 					}
-				});
+				};
 			}
 		}
 
@@ -267,7 +267,7 @@
 		 * @type { slime.tools.code.Exports["handleTrailingWhitespace"] }
 		 */
 		var trailingWhitespace = function(p) {
-			return $api.fp.world.old.tell(function(events) {
+			return function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
 				getSourceFiles({
 					base: p.base,
@@ -280,19 +280,23 @@
 						events.fire("unknownFileType", e.detail);
 					}
 				}).forEach(function(entry) {
-					handleFileTrailingWhitespace(p)(entry)({
-						foundAt: function(e) {
-							events.fire("foundAt", e.detail);
-						},
-						foundIn: function(e) {
-							events.fire("foundIn", e.detail);
-						},
-						notFoundIn: function(e) {
-							events.fire("notFoundIn", e.detail);
+					$api.fp.world.now.action(
+						handleFileTrailingWhitespace(p),
+						entry,
+						{
+							foundAt: function(e) {
+								events.fire("foundAt", e.detail);
+							},
+							foundIn: function(e) {
+								events.fire("foundIn", e.detail);
+							},
+							notFoundIn: function(e) {
+								events.fire("notFoundIn", e.detail);
+							}
 						}
-					});
+					);
 				});
-			});
+			};
 		}
 
 		/** @type { slime.tools.code.Exports["checkSingleFinalNewline"] } */

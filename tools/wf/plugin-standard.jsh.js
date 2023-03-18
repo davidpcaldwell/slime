@@ -165,11 +165,14 @@
 						},
 						{
 							fix: function(p) {
-								project.lint.fix({
-									console: function(e) {
-										jsh.shell.console(e.detail);
+								$api.fp.world.now.tell(
+									project.lint.fix,
+									{
+										console: function(e) {
+											jsh.shell.console(e.detail);
+										}
 									}
-								})
+								);
 							}
 						}
 					);
