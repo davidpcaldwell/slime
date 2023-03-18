@@ -148,14 +148,14 @@ namespace slime.tools.code {
 
 		handleFileTrailingWhitespace: (configuration?: {
 			nowrite?: boolean
-		}) => (file: slime.tools.code.File) => slime.$api.fp.world.old.Tell<TrailingWhitespaceEvents>
+		}) => slime.$api.fp.world.Action<slime.tools.code.File,TrailingWhitespaceEvents>
 
-		handleTrailingWhitespace: (p: {
+		handleTrailingWhitespace: slime.$api.fp.world.Action<{
 			base: slime.jrunscript.file.Directory
 			exclude?: Excludes
 			isText?: isText
 			nowrite?: boolean
-		}) => slime.$api.fp.world.old.Tell<FileEvents & TrailingWhitespaceEvents>
+		},FileEvents & TrailingWhitespaceEvents>
 
 		handleFinalNewlines: (p: {
 			base: slime.jrunscript.file.Directory

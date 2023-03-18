@@ -387,6 +387,7 @@
 					return repository;
 				});
 
+				/** @type { slime.jsh.wf.Exports["git"] } */
 				var jsh_wf_git = {
 					commands: {
 						/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
@@ -407,6 +408,20 @@
 										name: line.substring(2)
 									}
 								})
+							}
+						},
+						listFiles: {
+							invocation: function(p) {
+								return {
+									command: "ls-files",
+									arguments: $api.Array.build(function(rv) {
+										if (p.recurseSubmodules) rv.push("--recurse-submodules");
+									})
+								};
+							},
+							result: function(output) {
+								//	TODO	platform line ending or \n?
+								return output.split("\n");
 							}
 						}
 					},
@@ -768,21 +783,25 @@
 
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
-								jsh.tools.code.handleTrailingWhitespace({
-									base: inputs.base(),
-									exclude: jsh.project.code.files.exclude,
-									isText: isText,
-									nowrite: true
-								})({
-									unknownFileType: function(e) {
-										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
-										success = false;
+								$api.fp.world.now.action(
+									jsh.tools.code.handleTrailingWhitespace,
+									{
+										base: inputs.base(),
+										exclude: jsh.project.code.files.exclude,
+										isText: isText,
+										nowrite: true
 									},
-									foundAt: function(e) {
-										events.fire("console", "Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
-										success = false;
+									{
+										unknownFileType: function(e) {
+											events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+											success = false;
+										},
+										foundAt: function(e) {
+											events.fire("console", "Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
+											success = false;
+										}
 									}
-								});
+								);
 							}
 
 							if (handleFinalNewlines) {
@@ -829,22 +848,26 @@
 
 							return success;
 						}),
-						fix: $api.fp.world.old.tell(function(events) {
+						fix: function(events) {
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
-								jsh.tools.code.handleTrailingWhitespace({
-									base: inputs.base(),
-									exclude: jsh.project.code.files.exclude,
-									isText: isText,
-									nowrite: false
-								})({
-									unknownFileType: function(e) {
-										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+								$api.fp.world.now.action(
+									jsh.tools.code.handleTrailingWhitespace,
+									{
+										base: inputs.base(),
+										exclude: jsh.project.code.files.exclude,
+										isText: isText,
+										nowrite: false
 									},
-									foundAt: function(e) {
-										events.fire("console", "Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
+									{
+										unknownFileType: function(e) {
+											events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+										},
+										foundAt: function(e) {
+											events.fire("console", "Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
+										}
 									}
-								});
+								);
 							}
 
 							if (handleFinalNewlines) {
@@ -868,7 +891,7 @@
 							}
 
 							//	TODO	eslint has a fix option also, could consider adding it here
-						})
+						}
 					};
 				}
 

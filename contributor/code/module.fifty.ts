@@ -27,10 +27,10 @@ namespace slime.project.code {
 
 			exclude: slime.tools.code.Excludes
 
-			trailingWhitespace: (p: {
+			trailingWhitespace: slime.$api.fp.world.Action<{
 				base: slime.jrunscript.file.Directory
 				nowrite?: boolean
-			}) => slime.$api.fp.world.old.Tell<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
+			},slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
 
 			toHandler: (on: on) => slime.$api.event.Handlers<slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
 		}
