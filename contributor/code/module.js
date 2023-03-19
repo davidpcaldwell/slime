@@ -218,7 +218,7 @@
 				/** @type { slime.project.code.Exports["files"]["trailingWhitespace"] } */
 				var trailingWhitespace = function(p) {
 					//	TODO	return the Tell and have callers do normal event handling
-					return $context.library.code.handleTrailingWhitespace({
+					return $context.library.code.handleDirectoryTrailingWhitespace({
 						base: p.base,
 						exclude: excludes,
 						isText: isText,

@@ -219,7 +219,6 @@ namespace slime.jsh.wf {
 		git: {
 			commands: {
 				getBranches: slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]>
-				listFiles: slime.jrunscript.tools.git.Command<{ recurseSubmodules: boolean },string[]>
 			}
 
 			fetch: () => slime.jrunscript.tools.git.repository.Local

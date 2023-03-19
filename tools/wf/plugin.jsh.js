@@ -409,20 +409,6 @@
 									}
 								})
 							}
-						},
-						listFiles: {
-							invocation: function(p) {
-								return {
-									command: "ls-files",
-									arguments: $api.Array.build(function(rv) {
-										if (p.recurseSubmodules) rv.push("--recurse-submodules");
-									})
-								};
-							},
-							result: function(output) {
-								//	TODO	platform line ending or \n?
-								return output.split("\n");
-							}
 						}
 					},
 					fetch: fetch,
@@ -784,10 +770,10 @@
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
 								$api.fp.world.now.action(
-									jsh.tools.code.handleTrailingWhitespace,
+									jsh.tools.code.handleGitTrailingWhitespace,
 									{
-										base: inputs.base(),
-										exclude: jsh.project.code.files.exclude,
+										repository: inputs.base().toString(),
+										//exclude: jsh.project.code.files.exclude,
 										isText: isText,
 										nowrite: true
 									},
@@ -806,25 +792,28 @@
 
 							if (handleFinalNewlines) {
 								events.fire("console", "Handling final newlines ...");
-								jsh.tools.code.handleFinalNewlines({
-									base: inputs.base(),
-									exclude: jsh.project.code.files.exclude,
-									isText: isText,
-									nowrite: true
-								})({
-									unknownFileType: function(e) {
-										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
-										success = false;
+								$api.fp.world.now.action(
+									jsh.tools.code.handleGitFinalNewlines,
+									{
+										repository: inputs.base().toString(),
+										isText: isText,
+										nowrite: true
 									},
-									missing: function(e) {
-										events.fire("console", "Missing final newline: " + e.detail.path);
-										success = false;
-									},
-									multiple: function(e) {
-										events.fire("console", "Multiple final newlines: " + e.detail.path);
-										success = false;
+									{
+										unknownFileType: function(e) {
+											events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+											success = false;
+										},
+										missing: function(e) {
+											events.fire("console", "Missing final newline: " + e.detail.path);
+											success = false;
+										},
+										multiple: function(e) {
+											events.fire("console", "Multiple final newlines: " + e.detail.path);
+											success = false;
+										}
 									}
-								});
+								);
 							}
 
 							if (inputs.base().getFile(".eslintrc.json")) {
@@ -852,7 +841,8 @@
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
 								$api.fp.world.now.action(
-									jsh.tools.code.handleTrailingWhitespace,
+									//	TODO	switch to git
+									jsh.tools.code.handleDirectoryTrailingWhitespace,
 									{
 										base: inputs.base(),
 										exclude: jsh.project.code.files.exclude,
@@ -872,7 +862,7 @@
 
 							if (handleFinalNewlines) {
 								events.fire("console", "Handling final newlines ...");
-								jsh.tools.code.handleFinalNewlines({
+								jsh.tools.code.handleDirectoryFinalNewlines({
 									base: inputs.base(),
 									exclude: jsh.project.code.files.exclude,
 									isText: isText,

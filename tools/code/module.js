@@ -39,10 +39,24 @@
 		 * @param { { path: string, node: slime.jrunscript.file.Node } } p
 		 * @returns { slime.tools.code.File }
 		 */
-		function toSourceFile(p) {
+		function nodeToSourceFile(p) {
 			return {
 				path: p.path,
 				file: toLocation(castToFile(p.node))
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.file.world.Location } repository
+		 * @returns
+		 */
+		function gitPathToSourceFile(repository) {
+			return function(path) {
+				return {
+					path: path,
+					file: $context.library.file.world.Location.relative(path)(repository)
+				}
 			}
 		}
 
@@ -130,25 +144,91 @@
 
 		/**
 		 *
-		 * @type { slime.tools.code.Exports["getSourceFiles"] }
+		 * @type { slime.tools.code.internal.functions["getDirectorySourceFiles"] }
 		 */
 		function getSourceFiles(p) {
 			if (!p.base) throw new Error("Required: base, specifying directory.");
-			return $api.fp.world.old.ask(function(on) {
+			return function(events) {
 				return p.base.list({
 					filter: isAuthoredTextFile( (p.exclude && p.exclude.file) ? p.exclude.file : defaults.exclude.file ),
 					descendants: $api.fp.Predicate.not( (p.exclude && p.exclude.directory) ? p.exclude.directory : defaults.exclude.directory ),
 					type: $context.library.file.list.ENTRY
-				}).map(toSourceFile).filter(
+				}).map(nodeToSourceFile).filter(
 					$api.fp.series(
 						p.isText,
 						function(file) {
-							on.fire("unknownFileType", file);
+							events.fire("unknownFileType", file);
 							return void(0);
 						}
 					)
 				)
-			});
+			};
+		}
+
+		/**
+		 *
+		 * @type { slime.tools.code.internal.functions["getGitSourceFiles"] }
+		 */
+		function getGitSourceFiles(p) {
+			return function(events) {
+				/**
+				 *
+				 * @param { (p: slime.tools.code.File) => boolean | undefined } oldIsText
+				 * @returns { (p: slime.tools.code.File) => slime.$api.fp.Maybe<boolean> }
+				 */
+				var isText = function(oldIsText) {
+					return function(file) {
+						var old = oldIsText(file);
+						if (typeof(old) == "boolean") return $api.fp.Maybe.from.some(old);
+						return $api.fp.Maybe.from.nothing();
+					}
+				};
+
+				//	We retrieve the Git source files in two steps, because the --others mechanism used to retrieve untracked files
+				//	does not work recursively. Could we use git status? Then we'd only be checking changed files, which would mean
+				//	if linting were added to the project, it would not lint all files immediately. More thinking / design to do.
+
+				var tracked = $context.library.git.program({ command: "git" })
+					.repository(p.repository.pathname)
+					.command($context.library.git.commands.lsFiles)
+					.argument({ recurseSubmodules: true })
+					.run()
+				;
+
+				/** @type { slime.jrunscript.tools.git.Command<void,string[]> } */
+				var lsFilesOthers = {
+					invocation: function() {
+						return {
+							command: "ls-files",
+							arguments: ["--others", "--exclude-standard"]
+						}
+					},
+					result: $context.library.git.commands.lsFiles.result
+				};
+
+				var untracked = $context.library.git.program({ command: "git" })
+					.repository(p.repository.pathname)
+					.command(lsFilesOthers)
+					.argument()
+					.run()
+				;
+
+				var listed = tracked.concat(untracked).map(gitPathToSourceFile(p.repository));
+
+				var text = isText(p.isText);
+				var rv = [];
+				for (var i=0; i<listed.length; i++) {
+					var fileIsText = text(listed[i]);
+					if (!fileIsText.present) {
+						events.fire("unknownFileType", listed[i]);
+					} else {
+						if (fileIsText.value) {
+							rv.push(listed[i]);
+						}
+					}
+				}
+				return rv;
+			}
 		}
 
 		var trailingWhitespaceParser = /(.*?)\s+$/;
@@ -231,7 +311,7 @@
 
 		/**
 		 *
-		 * @type { slime.tools.code.Exports["handleFileTrailingWhitespace"] }
+		 * @type { slime.tools.code.internal.functions["handleFileTrailingWhitespace"] }
 		 */
 		function handleFileTrailingWhitespace(configuration) {
 			return function(entry) {
@@ -263,40 +343,60 @@
 		}
 
 		/**
-		 *
-		 * @type { slime.tools.code.Exports["handleTrailingWhitespace"] }
+		 * @type { slime.tools.code.internal.functions["handleFilesTrailingWhitespace"] }
 		 */
-		var trailingWhitespace = function(p) {
+		var handleFilesTrailingWhitespace = function(p) {
+			return function(events) {
+				p.files.forEach(function(entry) {
+					handleFileTrailingWhitespace(p)(entry)(events);
+				})
+			};
+		};
+
+		/**
+		 * @type { slime.tools.code.Exports["handleDirectoryTrailingWhitespace"] }
+		 */
+		var handleDirectoryTrailingWhitespace = function(p) {
 			return function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
-				getSourceFiles({
-					base: p.base,
-					isText: (p.isText) ? p.isText : function(file) {
-						return filename.isText(getBasename(file.file));
+				var files = $api.fp.world.now.question(
+					getSourceFiles,
+					{
+						base: p.base,
+						isText: (p.isText) ? p.isText : function(file) {
+							return filename.isText(getBasename(file.file));
+						},
+						exclude: p.exclude
 					},
-					exclude: p.exclude
-				})({
-					unknownFileType: function(e) {
-						events.fire("unknownFileType", e.detail);
-					}
-				}).forEach(function(entry) {
-					$api.fp.world.now.action(
-						handleFileTrailingWhitespace(p),
-						entry,
-						{
-							foundAt: function(e) {
-								events.fire("foundAt", e.detail);
-							},
-							foundIn: function(e) {
-								events.fire("foundIn", e.detail);
-							},
-							notFoundIn: function(e) {
-								events.fire("notFoundIn", e.detail);
-							}
+					{
+						unknownFileType: function(e) {
+							events.fire("unknownFileType", e.detail);
 						}
-					);
-				});
+					}
+				);
+				handleFilesTrailingWhitespace({ files: files, nowrite: p.nowrite })(events);
 			};
+		};
+
+		/**
+		 * @type { slime.tools.code.Exports["handleGitTrailingWhitespace"] }
+		 */
+		var handleGitTrailingWhitespace = function(p) {
+			return function(events) {
+				var files = $api.fp.world.now.question(
+					getGitSourceFiles,
+					{
+						repository: $context.library.file.world.Location.from.os(p.repository),
+						isText: p.isText
+					},
+					{
+						unknownFileType: function(e) {
+							events.fire("unknownFileType", e.detail);
+						}
+					}
+				);
+				handleFilesTrailingWhitespace({ files: files, nowrite: p.nowrite })(events);
+			}
 		}
 
 		/** @type { slime.tools.code.Exports["checkSingleFinalNewline"] } */
@@ -319,21 +419,40 @@
 			}
 		}
 
-		/** @type { slime.tools.code.Exports["handleFinalNewlines"] } */
+		/** @type { slime.tools.code.internal.functions["handleFileFinalNewlines"] } */
+		function handleFileFinalNewlines(p) {
+			return function(entry) {
+				return function(events) {
+					var code = readFileString(entry.file);
+					var check = checkSingleFinalNewline(code);
+					if (check.missing) events.fire("missing", entry);
+					if (check.multiple) events.fire("multiple", entry);
+					if (!p.nowrite && (check.missing || check.multiple)) {
+						writeFileString(entry.file, check.fixed);
+					}
+				}
+			}
+		}
+
+		/** @type { slime.tools.code.Exports["handleDirectoryFinalNewlines"] } */
 		function handleFinalNewlines(p) {
 			return $api.fp.world.old.tell(function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
-				getSourceFiles({
-					base: p.base,
-					isText: (p.isText) ? p.isText : function(file) {
-						return filename.isText(getBasename(file.file));
+				$api.fp.world.now.question(
+					getSourceFiles,
+					{
+						base: p.base,
+						isText: (p.isText) ? p.isText : function(file) {
+							return filename.isText(getBasename(file.file));
+						},
+						exclude: p.exclude
 					},
-					exclude: p.exclude
-				})({
-					unknownFileType: function(e) {
-						events.fire("unknownFileType", e.detail);
+					{
+						unknownFileType: function(e) {
+							events.fire("unknownFileType", e.detail);
+						}
 					}
-				}).forEach(function(entry) {
+				).forEach(function(entry) {
 					var code = readFileString(entry.file);
 					var check = checkSingleFinalNewline(code);
 					if (check.missing) events.fire("missing", entry);
@@ -343,6 +462,27 @@
 					}
 				});
 			});
+		}
+
+		/** @type { slime.tools.code.Exports["handleGitFinalNewlines"] } */
+		function handleGitFinalNewlines(p) {
+			return function(events) {
+				var files = $api.fp.world.now.question(
+					getGitSourceFiles,
+					{
+						repository: $context.library.file.world.Location.from.os(p.repository),
+						isText: p.isText
+					},
+					{
+						unknownFileType: function(e) {
+							events.fire("unknownFileType", e.detail);
+						}
+					}
+				);
+				files.forEach(function(entry) {
+					handleFileFinalNewlines(p)(entry)(events);
+				});
+			}
 		}
 
 		/** @type { slime.tools.code.Exports["File"]["hasShebang"] } */
@@ -384,12 +524,12 @@
 			filename: filename,
 			directory: directory,
 			defaults: defaults,
-			getSourceFiles: getSourceFiles,
-			handleFileTrailingWhitespace: handleFileTrailingWhitespace,
 			scanForTrailingWhitespace: findTrailingWhitespaceIn,
-			handleTrailingWhitespace: trailingWhitespace,
+			handleDirectoryTrailingWhitespace: handleDirectoryTrailingWhitespace,
+			handleGitTrailingWhitespace: handleGitTrailingWhitespace,
 			checkSingleFinalNewline: checkSingleFinalNewline,
-			handleFinalNewlines: handleFinalNewlines
+			handleDirectoryFinalNewlines: handleFinalNewlines,
+			handleGitFinalNewlines: handleGitFinalNewlines
 		})
 	}
 //@ts-ignore
