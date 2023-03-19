@@ -159,6 +159,23 @@
 			}
 		};
 
+		var lsFiles = {
+			invocation: function(p) {
+				return {
+					command: "ls-files",
+					arguments: $api.Array.build(function(rv) {
+						if (p.recurseSubmodules) rv.push("--recurse-submodules");
+					})
+				};
+			},
+			result: function(output) {
+				//	TODO	platform line ending or \n?
+				return output.split("\n").filter(function(path) {
+					return path.length > 0;
+				});
+			}
+		};
+
 		$export({
 			status: status,
 			fetch: fetch,
@@ -166,7 +183,8 @@
 			submodule: submodule,
 			remote: {
 				show: remoteShow
-			}
+			},
+			lsFiles: lsFiles
 		})
 	}
 //@ts-ignore

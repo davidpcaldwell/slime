@@ -198,6 +198,10 @@ namespace slime.jrunscript.tools.git {
 		}
 	}
 
+	export interface Commands {
+		lsFiles: slime.jrunscript.tools.git.Command<{ recurseSubmodules: boolean },string[]>
+	}
+
 	export interface Exports {
 		/**
 		 * An opinionated object that provides a set of {@link Command} implementations deemed to be useful for `git` automation.

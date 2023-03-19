@@ -8,6 +8,7 @@ namespace slime.tools.code {
 	export interface Context {
 		library: {
 			file: slime.jrunscript.file.Exports
+			git: slime.jrunscript.tools.git.Exports
 		}
 	}
 
@@ -16,7 +17,8 @@ namespace slime.tools.code {
 			const script: Script = fifty.$loader.script("module.js");
 			return script({
 				library: {
-					file: fifty.global.jsh.file
+					file: fifty.global.jsh.file,
+					git: fifty.global.jsh.tools.git
 				}
 			});
 		//@ts-ignore
@@ -105,7 +107,6 @@ namespace slime.tools.code {
 	//@ts-ignore
 	)(fifty);
 
-
 	export interface Exports {
 		filename: {
 			isText: (name: string) => boolean | undefined
@@ -137,32 +138,43 @@ namespace slime.tools.code {
 			fixed: string
 		}
 
-		getSourceFiles: (p: {
-			base: slime.jrunscript.file.Directory
-			isText?: isText
-			exclude?: Excludes
-		}) => slime.$api.fp.world.old.Ask<
-			FileEvents,
-			slime.tools.code.File[]
+		handleDirectoryTrailingWhitespace: slime.$api.fp.world.Action<
+			{
+				base: slime.jrunscript.file.Directory
+				exclude?: Excludes
+				isText: isText
+				nowrite?: boolean
+			},
+			FileEvents & TrailingWhitespaceEvents
 		>
 
-		handleFileTrailingWhitespace: (configuration?: {
-			nowrite?: boolean
-		}) => slime.$api.fp.world.Action<slime.tools.code.File,TrailingWhitespaceEvents>
+		handleGitTrailingWhitespace: slime.$api.fp.world.Action<
+			{
+				repository: string
+				isText: isText
+				nowrite?: boolean
+			},
+			FileEvents & TrailingWhitespaceEvents
+		>
 
-		handleTrailingWhitespace: slime.$api.fp.world.Action<{
-			base: slime.jrunscript.file.Directory
-			exclude?: Excludes
-			isText?: isText
-			nowrite?: boolean
-		},FileEvents & TrailingWhitespaceEvents>
+		handleDirectoryFinalNewlines: slime.$api.fp.world.Action<
+			{
+				base: slime.jrunscript.file.Directory
+				exclude?: Excludes
+				isText?: isText
+				nowrite?: boolean
+			},
+			FileEvents & FinalNewlineEvents
+		>
 
-		handleFinalNewlines: (p: {
-			base: slime.jrunscript.file.Directory
-			exclude?: Excludes
-			isText?: isText
-			nowrite?: boolean
-		}) => slime.$api.fp.world.old.Tell<FileEvents & FinalNewlineEvents>
+		handleGitFinalNewlines: slime.$api.fp.world.Action<
+			{
+				repository: string
+				isText: isText
+				nowrite?: boolean
+			},
+			FileEvents & FinalNewlineEvents
+		>
 	}
 
 	(
@@ -206,4 +218,44 @@ namespace slime.tools.code {
 	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>
+
+	export namespace internal {
+		export interface functions {
+			getDirectorySourceFiles: slime.$api.fp.world.Question<
+				{
+					base: slime.jrunscript.file.Directory
+					isText: isText
+					exclude?: Excludes
+				},
+				FileEvents,
+				slime.tools.code.File[]
+			>
+
+			getGitSourceFiles: slime.$api.fp.world.Question<
+				{
+					repository: slime.jrunscript.file.world.Location
+					isText: isText
+				},
+				FileEvents,
+				slime.tools.code.File[]
+			>
+
+			handleFileTrailingWhitespace: (configuration?: {
+				nowrite?: boolean
+			}) => slime.$api.fp.world.Action<slime.tools.code.File,TrailingWhitespaceEvents>
+
+			handleFileFinalNewlines: (configuration?: {
+				nowrite?: boolean
+			}) => slime.$api.fp.world.Action<slime.tools.code.File,FinalNewlineEvents>
+
+			handleFilesTrailingWhitespace: slime.$api.fp.world.Action<
+				{
+					files: slime.tools.code.File[],
+					nowrite: boolean
+				},
+				FileEvents & TrailingWhitespaceEvents
+			>
+
+		}
+	}
 }

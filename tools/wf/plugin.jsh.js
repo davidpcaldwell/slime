@@ -409,20 +409,6 @@
 									}
 								})
 							}
-						},
-						listFiles: {
-							invocation: function(p) {
-								return {
-									command: "ls-files",
-									arguments: $api.Array.build(function(rv) {
-										if (p.recurseSubmodules) rv.push("--recurse-submodules");
-									})
-								};
-							},
-							result: function(output) {
-								//	TODO	platform line ending or \n?
-								return output.split("\n");
-							}
 						}
 					},
 					fetch: fetch,
@@ -781,37 +767,48 @@
 						check: $api.fp.world.old.ask(function(events) {
 							var success = true;
 
+							var isGitClone = Boolean(inputs.base().getSubdirectory(".git") || inputs.base().getFile(".git"));
+
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
-								$api.fp.world.now.action(
-									jsh.tools.code.handleTrailingWhitespace,
-									{
-										base: inputs.base(),
-										exclude: jsh.project.code.files.exclude,
-										isText: isText,
-										nowrite: true
+								var trailingWhitespaceHandler = {
+									unknownFileType: function(e) {
+										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+										success = false;
 									},
-									{
-										unknownFileType: function(e) {
-											events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
-											success = false;
-										},
-										foundAt: function(e) {
-											events.fire("console", "Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
-											success = false;
-										}
+									foundAt: function(e) {
+										events.fire("console", "Found trailing whitespace: " + e.detail.file.path + " line " + e.detail.line.number);
+										success = false;
 									}
-								);
+								};
+								if (isGitClone) {
+									$api.fp.world.now.action(
+										jsh.tools.code.handleGitTrailingWhitespace,
+										{
+											repository: inputs.base().toString(),
+											//exclude: jsh.project.code.files.exclude,
+											isText: isText,
+											nowrite: true
+										},
+										trailingWhitespaceHandler
+									);
+								} else {
+									$api.fp.world.now.action(
+										jsh.tools.code.handleDirectoryTrailingWhitespace,
+										{
+											base: inputs.base(),
+											exclude: jsh.project.code.files.exclude,
+											isText: isText,
+											nowrite: true
+										},
+										trailingWhitespaceHandler
+									);
+								}
 							}
 
 							if (handleFinalNewlines) {
 								events.fire("console", "Handling final newlines ...");
-								jsh.tools.code.handleFinalNewlines({
-									base: inputs.base(),
-									exclude: jsh.project.code.files.exclude,
-									isText: isText,
-									nowrite: true
-								})({
+								var newlineHandler = {
 									unknownFileType: function(e) {
 										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
 										success = false;
@@ -824,7 +821,30 @@
 										events.fire("console", "Multiple final newlines: " + e.detail.path);
 										success = false;
 									}
-								});
+								};
+
+								if (isGitClone) {
+									$api.fp.world.now.action(
+										jsh.tools.code.handleGitFinalNewlines,
+										{
+											repository: inputs.base().toString(),
+											isText: isText,
+											nowrite: true
+										},
+										newlineHandler
+									);
+								} else {
+									$api.fp.world.now.action(
+										jsh.tools.code.handleDirectoryFinalNewlines,
+										{
+											base: inputs.base(),
+											exclude: jsh.project.code.files.exclude,
+											isText: isText,
+											nowrite: true
+										},
+										newlineHandler
+									);
+								}
 							}
 
 							if (inputs.base().getFile(".eslintrc.json")) {
@@ -852,7 +872,8 @@
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
 								$api.fp.world.now.action(
-									jsh.tools.code.handleTrailingWhitespace,
+									//	TODO	switch to git
+									jsh.tools.code.handleDirectoryTrailingWhitespace,
 									{
 										base: inputs.base(),
 										exclude: jsh.project.code.files.exclude,
@@ -872,22 +893,26 @@
 
 							if (handleFinalNewlines) {
 								events.fire("console", "Handling final newlines ...");
-								jsh.tools.code.handleFinalNewlines({
-									base: inputs.base(),
-									exclude: jsh.project.code.files.exclude,
-									isText: isText,
-									nowrite: false
-								})({
-									unknownFileType: function(e) {
-										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+								$api.fp.world.now.action(
+									jsh.tools.code.handleDirectoryFinalNewlines,
+									{
+										base: inputs.base(),
+										exclude: jsh.project.code.files.exclude,
+										isText: isText,
+										nowrite: false
 									},
-									missing: function(e) {
-										events.fire("console", "Missing final newline: " + e.detail.path);
-									},
-									multiple: function(e) {
-										events.fire("console", "Multiple final newlines: " + e.detail.path);
+									{
+										unknownFileType: function(e) {
+											events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+										},
+										missing: function(e) {
+											events.fire("console", "Missing final newline: " + e.detail.path);
+										},
+										multiple: function(e) {
+											events.fire("console", "Multiple final newlines: " + e.detail.path);
+										}
 									}
-								});
+								);
 							}
 
 							//	TODO	eslint has a fix option also, could consider adding it here
