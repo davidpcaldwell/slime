@@ -436,7 +436,7 @@
 
 		/** @type { slime.tools.code.Exports["handleDirectoryFinalNewlines"] } */
 		function handleFinalNewlines(p) {
-			return $api.fp.world.old.tell(function(events) {
+			return function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
 				$api.fp.world.now.question(
 					getSourceFiles,
@@ -461,7 +461,7 @@
 						writeFileString(entry.file, check.fixed);
 					}
 				});
-			});
+			};
 		}
 
 		/** @type { slime.tools.code.Exports["handleGitFinalNewlines"] } */

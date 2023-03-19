@@ -157,12 +157,15 @@ namespace slime.tools.code {
 			FileEvents & TrailingWhitespaceEvents
 		>
 
-		handleDirectoryFinalNewlines: (p: {
-			base: slime.jrunscript.file.Directory
-			exclude?: Excludes
-			isText?: isText
-			nowrite?: boolean
-		}) => slime.$api.fp.world.old.Tell<FileEvents & FinalNewlineEvents>
+		handleDirectoryFinalNewlines: slime.$api.fp.world.Action<
+			{
+				base: slime.jrunscript.file.Directory
+				exclude?: Excludes
+				isText?: isText
+				nowrite?: boolean
+			},
+			FileEvents & FinalNewlineEvents
+		>
 
 		handleGitFinalNewlines: slime.$api.fp.world.Action<
 			{
