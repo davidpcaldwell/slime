@@ -12,7 +12,7 @@ namespace slime.jrunscript.ui {
 		javafx: boolean
 
 		/**
-		 * A callback to be executed when a user attempts to exit an application.
+		 * An implementation for exiting a GUI application.
 		 *
 		 * @param status An exit status.
 		 */

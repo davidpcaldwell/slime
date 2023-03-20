@@ -25,24 +25,55 @@
 					},
 					javafx: Boolean($slime.classpath.getClass("javafx.embed.swing.JFXPanel"))
 				});
-				jsh.ui = Object.assign(
-					{
-						javafx: Object.assign(
-							module.javafx || {},
-							{
-								WebView: void(0)
-							}
-						)
-					},
-					{
-						askpass: void(0),
-						application: void(0),
-						Chrome: void(0),
-						browser: void(0)
-					}
-				);
+				jsh.ui = {
+					javafx: Object.assign(
+						module.javafx || {},
+						{
+							WebView: void(0)
+						}
+					),
+					askpass: void(0),
+					application: void(0),
+					desktop: void(0),
+					browser: void(0)
+				}
 			}
 		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.ui && jsh.shell);
+			},
+			load: function() {
+				/** @type { slime.jsh.Global["ui"]["desktop"]["clipboard"] } */
+				var clipboard = void(0);
+				if (jsh.shell.os.name == "Mac OS X") {
+					clipboard = {
+						copy: {
+							string: function(string) {
+								return function(events) {
+									//	For now, going to ignore everything like exit status, etc.; this will basically give us "best
+									//	effort" semantics. Could revisit.
+									$api.fp.world.now.action(
+										jsh.shell.subprocess.action,
+										{
+											command: "pbcopy",
+											stdio: {
+												input: string
+											}
+										}
+									)
+								}
+							}
+						}
+					};
+				}
+
+				jsh.ui.desktop = {
+					clipboard: clipboard
+				};
+			}
+		})
 
 		plugin({
 			isReady: function() {
@@ -105,9 +136,6 @@
 					jsh.ui.browser = $api.deprecate(v);
 					jsh.ui.application = v;
 				})(api.Application);
-
-				//	TODO	was undocumented and thus apparently unused; not even exported. Moved to rhino/shell, maybe?
-				//	jsh.ui.Chrome = api.Chrome;
 			}
 		})
 	}

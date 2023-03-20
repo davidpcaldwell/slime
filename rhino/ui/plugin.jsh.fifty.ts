@@ -21,14 +21,40 @@ namespace slime.jsh {
 			}
 
 			askpass: slime.jsh.ui.askpass.Exports
-			Chrome: any
+
+			desktop: {
+				clipboard: {
+					copy: {
+						string: slime.$api.fp.world.Action<string,void>
+					}
+				}
+			}
 
 			/**
-			 * Deprecated; replaced by application
+			 * @deprecated replaced by `application`
 			 */
 			browser: slime.jsh.Global["ui"]["application"]
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.clipboard = function() {
+				$api.fp.world.now.action(
+					jsh.ui.desktop.clipboard.copy.string,
+					"foo"
+				);
+				jsh.shell.console("Hopefully copied 'foo' to clipboard.");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 namespace slime.jsh.ui.application {
