@@ -19,18 +19,6 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		/**
-		 * A function that takes a function as an argument and returns a memoized version of that function. Memoized functions
-		 * currently cannot be invoked as methods (i.e., with a <code>this</code> value) and also may not receive arguments.
-		 *
-		 * @param f A function to memoize
-		 * @returns A memoized function whose underlying implementation will only be invoked the first time it is invoked;
-		 * succeeding invocations will simply return the value returned by the first invocation.
-		 */
-		memoized: <T>(f: () => T) => () => T
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -58,14 +46,19 @@ namespace slime.$api.fp {
 				};
 
 				verify(calls).is(void(0));
-				var memoized = fifty.global.$api.fp.memoized(counter);
+
+				var memoized = fifty.global.$api.fp.impure.Input.memoized(counter);
+
 				verify(calls).is(void(0));
+
 				var result = memoized();
 				verify(result).is(42);
 				verify(calls).is(1);
+
 				var result2 = memoized();
 				verify(result2).is(42);
 				verify(calls).is(1);
+
 				var result3 = counter();
 				verify(result3).is(42);
 				verify(calls).is(2);
@@ -83,6 +76,16 @@ namespace slime.$api.fp.impure {
 	export interface Exports {
 		Input: {
 			value: <T>(t: T) => impure.Input<T>
+
+			/**
+			 * A function that takes an {@link impure.Input | Input} as an argument and returns a memoized version of that `Input`.
+			 *
+			 * @param i An `Input` to memoize
+			 * @returns A memoized `Input` whose underlying implementation will only be invoked the first time it is invoked;
+			 * succeeding invocations will simply return the value returned by the first invocation.
+			 */
+			memoized: <T>(i: () => T) => () => T
+
 			map: impure.Input_map
 			process: <T>(input: impure.Input<T>, output: impure.Output<T>) => impure.Process
 

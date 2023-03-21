@@ -461,7 +461,7 @@
 					// cache length and modified
 					if (isJrunscriptDescriptor(p) && Object.prototype.hasOwnProperty.call(p, "length")) {
 						Object.defineProperty(this,"length",{
-							get: slime.$api.fp.memoized(function() {
+							get: slime.$api.fp.impure.Input.memoized(function() {
 								if (typeof(p.length) == "number") {
 									return p.length;
 								} else if (typeof(p.length) == "undefined" && binary) {
@@ -492,7 +492,7 @@
 					if (isJrunscriptDescriptor(p) && Object.prototype.hasOwnProperty.call(p, "modified")) {
 						this.modified = void(0);
 						Object.defineProperty(this,"modified",{
-							get: slime.$api.fp.memoized(function() {
+							get: slime.$api.fp.impure.Input.memoized(function() {
 								return p.modified;
 							}),
 							enumerable: true

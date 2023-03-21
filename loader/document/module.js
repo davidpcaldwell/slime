@@ -112,7 +112,7 @@
 				})
 
 				Object.defineProperty(this, "children", {
-					get: $api.fp.memoized(function() {
+					get: $api.fp.impure.Input.memoized(function() {
 						return new NodeList(p.dom.childNodes);
 					}),
 					enumerable: true
@@ -161,7 +161,7 @@
 
 					var Parent = function(p) {
 						Object.defineProperty(this, "children", {
-							get: $api.fp.memoized(function() {
+							get: $api.fp.impure.Input.memoized(function() {
 								return new NodeList({ parent: p.jsoup });
 							}),
 							enumerable: true

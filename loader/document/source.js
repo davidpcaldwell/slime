@@ -126,7 +126,7 @@
 			};
 		})();
 
-		var warnOnce = $api.fp.memoized(function() {
+		var warnOnce = $api.fp.impure.Input.memoized(function() {
 			debugger;
 		});
 

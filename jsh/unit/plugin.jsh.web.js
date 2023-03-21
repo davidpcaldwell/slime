@@ -200,7 +200,7 @@
 					})();
 
 					var getHgServerProxy = (httpd)
-						? $api.fp.memoized(function() {
+						? $api.fp.impure.Input.memoized(function() {
 							// Packages.java.lang.System.err.println("Invoke startHgServer");
 							var server = startHgServer();
 							// Packages.java.lang.System.err.println("Return httpd.Handler.Proxy");

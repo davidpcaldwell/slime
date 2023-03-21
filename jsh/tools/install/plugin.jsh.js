@@ -254,7 +254,7 @@
 					 * @returns { slime.jsh.shell.tools.mkcert.Installation }
 					 */
 					function Installation(program) {
-						var CAROOT = $api.fp.memoized(function() {
+						var CAROOT = $api.fp.impure.Input.memoized(function() {
 							var result = jsh.shell.run({
 								command: program,
 								arguments: ["-CAROOT"],

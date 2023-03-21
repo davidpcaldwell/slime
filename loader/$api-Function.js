@@ -158,18 +158,6 @@
 				if (o === null) return "null";
 				return typeof(o);
 			},
-			memoized: function(f) {
-				var returns;
-
-				return function() {
-					if (arguments.length > 0) throw new TypeError("Memoized functions may not have arguments.");
-					//	Ignore 'this'
-					if (!returns) {
-						returns = { value: f.call(this) };
-					}
-					return returns.value;
-				};
-			},
 			pipe: pipe,
 			split: function(functions) {
 				var entries = Object.entries(functions);

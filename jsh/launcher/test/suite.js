@@ -390,7 +390,7 @@
 
 		/** @type { <T>(input: slime.$api.fp.impure.Input<T>) => slime.$api.fp.impure.Input<T> } */
 		var memoized = function(input) {
-			return $api.fp.memoized(input);
+			return $api.fp.impure.Input.memoized(input);
 		}
 
 		var getBuiltShellHomeDirectory = function(p) {

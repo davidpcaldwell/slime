@@ -25,7 +25,7 @@
 					jsh,
 					"debug",
 					{
-						get: $api.fp.memoized(function() {
+						get: $api.fp.impure.Input.memoized(function() {
 							var rv = $loader.module("module.js", $loader.file("context.java.js"));
 
 							var Dumper = function(indent,p) {
