@@ -397,48 +397,6 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
-		export interface Month {
-			/**
-			 * @deprecated
-			 *
-			 * @param year A year.
-			 * @param month A month, where 1 = January
-			 */
-			new (year: number, month: number): old.Month
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const api = old.test.subject;
-
-				fifty.tests.Month = function() {
-					fifty.run(function() {
-						var novemberSecondNineteen = new api.Month(2019,11).day(2);
-						verify(novemberSecondNineteen).year.value.is(2019);
-						verify(novemberSecondNineteen).month.id.is(api.Year.Month.NOVEMBER);
-						verify(novemberSecondNineteen).day.is(2);
-					});
-
-					fifty.run(function() {
-						var novemberNineteen = new api.Month(2019,11);
-						verify(novemberNineteen).year.value.is(2019);
-						verify(novemberNineteen).id.is(api.Year.Month.NOVEMBER);
-
-						var second = novemberNineteen.day(2);
-						verify(second).year.value.is(2019);
-						verify(second).month.id.is(api.Year.Month.NOVEMBER);
-						verify(second).day.is(2);
-					});
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-	}
-
 	export namespace old {
 		/** @deprecated */
 		export interface Time {
@@ -553,7 +511,6 @@ namespace slime.time {
 				fifty.run(fifty.tests.Day);
 				fifty.run(fifty.tests.jsapi);
 				fifty.run(fifty.tests.Year);
-				fifty.run(fifty.tests.Month);
 				fifty.run(fifty.tests.Time);
 				fifty.run(fifty.tests.When);
 

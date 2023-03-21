@@ -948,29 +948,26 @@
 
 		$exports.Year = Year;
 		//$exports.Year = {Month: Year.Month};
-		$exports.Month = Object.assign(
-			Month,
-			{
-				/** @type { slime.time.exports.Month["last"] } */
-				last: function(p) {
-					/** @type { slime.time.Month } */
-					var next = (p.month == 12) ? {
-						year: p.year + 1,
-						month: 1
-					} : {
-						year: p.year,
-						month: p.month + 1
-					};
-					/** @type { slime.time.Date } */
-					var first = {
-						year: next.year,
-						month: next.month,
-						day: 1
-					};
-					return Date_add(first, -1);
-				}
+		$exports.Month = {
+			/** @type { slime.time.exports.Month["last"] } */
+			last: function(p) {
+				/** @type { slime.time.Month } */
+				var next = (p.month == 12) ? {
+					year: p.year + 1,
+					month: 1
+				} : {
+					year: p.year,
+					month: p.month + 1
+				};
+				/** @type { slime.time.Date } */
+				var first = {
+					year: next.year,
+					month: next.month,
+					day: 1
+				};
+				return Date_add(first, -1);
 			}
-		);
+		};
 		//@ts-ignore
 		$exports.Day = Day;
 		$exports.Day.order = order;
@@ -1121,13 +1118,32 @@
 					return daysOfWeek[index];
 				}
 			},
+			Month: {
+				/** @type { slime.time.exports.Month["last"] } */
+				last: function(p) {
+					/** @type { slime.time.Month } */
+					var next = (p.month == 12) ? {
+						year: p.year + 1,
+						month: 1
+					} : {
+						year: p.year,
+						month: p.month + 1
+					};
+					/** @type { slime.time.Date } */
+					var first = {
+						year: next.year,
+						month: next.month,
+						day: 1
+					};
+					return Date_add(first, -1);
+				}
+			},
 			Timezone: zones,
 			install: install,
 			Day: $exports.Day,
 			Time: $exports.Time,
 			Year: $exports.Year,
 			When: $exports.When,
-			Month: $exports.Month,
 			java: $exports.java
 		})
 	}
