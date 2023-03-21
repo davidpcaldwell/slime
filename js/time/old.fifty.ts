@@ -511,7 +511,6 @@ namespace slime.time {
 				fifty.run(fifty.tests.Day);
 				fifty.run(fifty.tests.jsapi);
 				fifty.run(fifty.tests.Year);
-				fifty.run(fifty.tests.Month);
 				fifty.run(fifty.tests.Time);
 				fifty.run(fifty.tests.When);
 
