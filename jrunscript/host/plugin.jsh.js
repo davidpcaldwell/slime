@@ -21,7 +21,7 @@
 					jsh,
 					"java",
 					{
-						get: $api.fp.memoized(function() {
+						get: $api.fp.impure.Input.memoized(function() {
 							return $loader.module("module.js", {
 								globals: true,
 								$slime: $slime,

@@ -109,7 +109,7 @@
 					}
 				});
 			};
-			if (!options.nocache) rv = $api.fp.memoized(rv);
+			if (!options.nocache) rv = $api.fp.impure.Input.memoized(rv);
 			return rv;
 		})(invocation.options);
 

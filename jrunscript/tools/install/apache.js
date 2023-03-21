@@ -41,7 +41,7 @@
 					url: void(0)
 				};
 				Object.defineProperty(argument, "url", {
-					get: $api.fp.memoized(function() {
+					get: $api.fp.impure.Input.memoized(function() {
 						return mirror + p.path
 					})
 				});

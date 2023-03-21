@@ -31,6 +31,18 @@
 						return v;
 					}
 				},
+				memoized: function(f) {
+					var returns;
+
+					return function() {
+						if (arguments.length > 0) throw new TypeError("Memoized functions may not have arguments.");
+						//	Ignore 'this'
+						if (!returns) {
+							returns = { value: f.call(this) };
+						}
+						return returns.value;
+					};
+				},
 				map: function(input) {
 					var functions = Array.prototype.slice.call(arguments,1);
 					return function() {

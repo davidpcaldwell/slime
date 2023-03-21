@@ -368,6 +368,7 @@ namespace slime.$api.fp {
 	}
 
 	export type Partial<P,R> = (p: P) => Maybe<R>
+
 	export type Match<P,R> = {
 		if: Predicate<P>
 		then: Mapping<P,R>

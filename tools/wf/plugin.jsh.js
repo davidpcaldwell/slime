@@ -341,7 +341,7 @@
 					}
 				};
 
-				var fetch = $api.fp.memoized(function() {
+				var fetch = $api.fp.impure.Input.memoized(function() {
 					var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
 
 					var repository = jsh.tools.git.Repository({ directory: inputs.base() });
