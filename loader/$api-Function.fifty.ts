@@ -169,7 +169,14 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export interface Exports {
+		/**
+		 * @deprecated Replaced by `Input.value` and `mapAllTo`
+		 * @param t
+		 * @returns
+		 */
 		returning: <T>(t: T) => () => T
+
+		mapAllTo: <P,R>(r: R) => (p: P) => R
 
 		conditional: {
 			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
