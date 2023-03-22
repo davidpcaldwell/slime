@@ -188,6 +188,11 @@
 					return v;
 				};
 			},
+			mapAllTo: function(v) {
+				return function(p) {
+					return v;
+				}
+			},
 			conditional: function(test,yes,no) {
 				if (arguments.length == 3) {
 					return $context.deprecate(function() {
