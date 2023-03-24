@@ -18,4 +18,6 @@ namespace slime.promise {
 		/** @deprecated */
 		Controlled: any
 	}
+
+	export type Script = slime.loader.Script<Context,Export>
 }

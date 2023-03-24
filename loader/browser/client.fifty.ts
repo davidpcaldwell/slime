@@ -6,8 +6,10 @@
 
 /**
  * The SLIME browser runtime can be loaded by executing the `loader/browser/client.js` script. The runtime can be configured by
- * creating a `window.inonit.loader` of type {@link Settings} before loading the runtime. The `window` object itself is presented
- * to the script as a {@link Context} object, and can be further configured by manipulating that object's writable properties.
+ * creating a `window.inonit.loader` of type {@link Settings} before loading the runtime. The script also is presented the `window`
+ * object itself as a value of type {@link Context}, so can be further configured by manipulating the writable properties of
+ * {@link Context} on `window`.
+ *
  * Based on the configuration, a `window.inonit` object of type
  * {@link Runtime} will be created and be available to the application.
  *
@@ -15,13 +17,13 @@
  *
  * Several additional APIs can be loaded from the `Runtime`:
  *
- * Path           | Description
+ * Path           | Type
  * -------------- | ----------------------------------
- * `js/web/`      | {@link slime.web.Exports}
- * `js/time/`     | {@link slime.time.Exports}
- * `js/document/` | XML and HTML documents
- * `js/promise/`  | **Deprecated.** {@link slime.promise.Export}
- * `js/object/`   | {@link slime.runtime.old.Exports}
+ * `js/web/`      | {@link slime.web.Script}
+ * `js/time/`     | {@link slime.time.Script}
+ * `js/document/` | **Deprecated.** XML and HTML documents
+ * `js/promise/`  | **Deprecated.** {@link slime.promise.Script}
+ * `js/object/`   | **Deprecated.** {@link slime.runtime.old.Exports}
  */
 namespace slime.browser {
 	/**
