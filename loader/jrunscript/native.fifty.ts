@@ -211,6 +211,13 @@ namespace slime.jrunscript {
 					}
 				}
 			}
+			export namespace math {
+				export interface BigDecimal extends slime.jrunscript.native.java.lang.Object {
+				}
+
+				export interface MathContext extends slime.jrunscript.native.java.lang.Object {
+				}
+			}
 			export namespace awt {
 				export interface Desktop {
 					browse: (uri: slime.jrunscript.native.java.net.URI) => void
@@ -432,6 +439,15 @@ namespace slime.jrunscript {
 				InetSocketAddress: any
 				ServerSocket: new (n: number) => slime.jrunscript.native.java.net.ServerSocket
 				Socket: any
+			}
+			math: {
+				BigDecimal: JavaClass<slime.jrunscript.native.java.math.BigDecimal>
+				MathContext: JavaClass<slime.jrunscript.native.java.math.MathContext,{
+					UNLIMITED: slime.jrunscript.native.java.math.MathContext
+				}>
+				RoundingMode: JavaClass<slime.jrunscript.native.java.lang.Object, {
+					HALF_EVEN: slime.jrunscript.native.java.lang.Object
+				}>
 			}
 			nio: {
 				file: {

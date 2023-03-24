@@ -14,4 +14,4 @@
 		/*$0*/
 	}
 //@ts-ignore
-)($api,jsh,main);
+)($api,jsh);
