@@ -97,6 +97,7 @@
 					var allBranches = jsh.tools.git.program({ command: "git" }).repository(repository).command(getBranches).argument().run()
 						.map(function(branch) {
 							if (branch.name.substring(0,"remote/".length) == "remote/") return branch.name.substring("remote/".length);
+							if (branch.name.substring(0,"remotes/".length) == "remotes/") return branch.name.substring("remotes/".length);
 							return branch.name;
 						});
 					return Boolean(allBranches.find(function(branch) { return branch == base; }));
