@@ -9,7 +9,7 @@
 	"tasks": [
 		{
 			"label": "Documentation: Show",
-			"detail": "(Not supported in devcontainer) Serves the project documentation and opens a browser to view it",
+			"detail": "(Local only) Serves the project documentation and opens a browser to view it",
 			"type": "shell",
 			"command": "./wf documentation",
 			"problemMatcher": [],
@@ -54,12 +54,6 @@
 			"label": "Git: Switch to and/or update trunk",
 			"type": "shell",
 			"command": "./wf git.trunk",
-			"problemMatcher": []
-		},
-		{
-			"label": "Git: Prune branches",
-			"type": "shell",
-			"command": "./wf git.branches.prune",
 			"problemMatcher": []
 		},
 		{
@@ -115,6 +109,7 @@
 		},
 		{
 			"label": "jsh: Debug Current File",
+			"detail": "(Local only) Run the current script under the Rhino debugger",
 			"type": "shell",
 			"command": "./jsh.bash ${file}",
 			"problemMatcher": [],
