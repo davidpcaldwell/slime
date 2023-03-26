@@ -750,7 +750,10 @@
 									if (c.watch) rv.push("--watch");
 
 									return rv;
-								})()
+								})(),
+								evaluate: function(result) {
+									jsh.shell.exit(result.status);
+								}
 							});
 						}
 					)

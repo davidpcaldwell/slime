@@ -9,7 +9,7 @@
 	"tasks": [
 		{
 			"label": "Documentation: Show",
-			"detail": "Serves the project documentation and opens a browser to view it",
+			"detail": "(Not supported in devcontainer) Serves the project documentation and opens a browser to view it",
 			"type": "shell",
 			"command": "./wf documentation",
 			"problemMatcher": [],

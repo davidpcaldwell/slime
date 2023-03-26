@@ -10,14 +10,18 @@
 		"../contributor/docker-compose.yaml",
 		"docker-compose.extend.yaml"
 	],
-	"extensions": [
-		"vscjava.vscode-java-pack",
-		"dbaeumer.vscode-eslint"
-	],
-	"settings": {
-		"java.jdt.ls.java.home": "/slime/local/jdk/17"
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"vscjava.vscode-java-pack",
+				"dbaeumer.vscode-eslint"
+			],
+			"settings": {
+				"java.jdt.ls.java.home": "/slime/local/jdk/17"
+			}
+		}
 	},
-	"service": "test",
+	"service": "devbox",
 	"workspaceFolder": "/slime",
 	"postCreateCommand": "/bin/bash .devcontainer/post-create-command.bash"
 }
