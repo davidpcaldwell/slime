@@ -77,7 +77,13 @@
 					});
 				} else {
 					//	Otherwise, fall back to Java desktop integration and default browser
-					Packages.java.awt.Desktop.getDesktop().browse( new Packages.java.net.URI( "http://127.0.0.1:" + server.port + "/" + index ) );
+					var supported = Packages.java.awt.Desktop.isDesktopSupported();
+					if (supported) {
+						Packages.java.awt.Desktop.getDesktop().browse( new Packages.java.net.URI( "http://127.0.0.1:" + server.port + "/" + index ) );
+					} else {
+						jsh.shell.console("Java Desktop integration not present; cannot launcher browser to view documentation.");
+						jsh.shell.exit(1);
+					}
 				}
 
 				server.run();

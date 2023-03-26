@@ -27,7 +27,10 @@
 								(p.options["debug:rhino"]) ? {
 									JSH_DEBUG_SCRIPT: "rhino"
 								} : {}
-							)
+							),
+							evaluate: function(result) {
+								jsh.shell.exit(result.status);
+							}
 						});
 					}
 				),
