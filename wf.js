@@ -69,6 +69,7 @@
 						return {
 							command: "checkout",
 							arguments: $api.Array.build(function(rv) {
+								rv.push("-m");
 								rv.push(p.branch);
 							})
 						}
