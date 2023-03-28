@@ -284,7 +284,9 @@
 					var branch = status.branch;
 					var base = remote + "/" + branch;
 					if (!branchExists(oRepository.directory.toString(), base)) {
-						base = "origin/master";
+						var origin = fRepository.command(jsh.tools.git.commands.remote.show).argument("origin").run();
+						var trunk = origin.head;
+						base = "origin/" + trunk;
 					}
 					var vsRemote = (branch) ? jsh.wf.git.compareTo(base)(oRepository) : null;
 					jsh.shell.console("Current branch: " + displayBranchName(status.branch));
