@@ -201,11 +201,16 @@ public class Rhino {
 								}
 							}
 						});
-						return Debugger.RhinoDebugger.create(new Debugger.RhinoDebugger.Configuration() {
-							public Debugger.RhinoDebugger.Ui.Factory getUiFactory() {
-								return Gui.RHINO_UI_FACTORY;
-							}
-						});
+						if (!java.awt.GraphicsEnvironment.isHeadless()) {
+							return Debugger.RhinoDebugger.create(new Debugger.RhinoDebugger.Configuration() {
+								public Debugger.RhinoDebugger.Ui.Factory getUiFactory() {
+									return Gui.RHINO_UI_FACTORY;
+								}
+							});
+						} else {
+							LOG.log(Level.WARNING, "Rhino debugger was specified, but display is not available.");
+							return null;
+						}
 					} else if (id.equals("profiler")) {
 						return new Debugger.Profiler();
 					} else if (id.startsWith("profiler:")) {
