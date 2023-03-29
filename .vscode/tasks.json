@@ -135,7 +135,7 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "Fifty (browser): Run wip() Test in Current File",
+			"label": "(Local only) Fifty (browser): Run wip() Test in Current File",
 			"type": "shell",
 			"command": "./fifty",
 			"args": [
@@ -149,7 +149,7 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "Fifty: list tests",
+			"label": "Fifty: List Tests in Current File",
 			"type": "shell",
 			"command": "./fifty test.jsh list ${file}",
 			"problemMatcher": []
@@ -161,7 +161,7 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "Project: Run tests in Docker",
+			"label": "(Local only) Project: Run tests in Docker",
 			"type": "shell",
 			"command": "./wf test",
 			"problemMatcher": []

@@ -392,6 +392,11 @@
 				var test = function() {
 					var success = true;
 
+					if (!jsh.shell.PATH.getCommand("docker")) {
+						jsh.shell.console("'docker' not found; cannot run tests.");
+						return false;
+					}
+
 					$api.fp.world.now.action(
 						jsh.shell.world.action,
 						jsh.shell.Invocation.from.argument({
