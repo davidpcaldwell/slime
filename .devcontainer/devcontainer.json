@@ -17,7 +17,21 @@
 				"dbaeumer.vscode-eslint"
 			],
 			"settings": {
-				"java.jdt.ls.java.home": "/slime/local/jdk/17"
+				"java.jdt.ls.java.home": "/slime/local/jdk/17",
+				"java.configuration.runtimes": [
+					{
+						"name": "JavaSE-1.8",
+						"path": "/slime/local/jdk/8"
+					},
+					{
+						"name": "JavaSE-11",
+						"path": "/slime/local/jdk/11"
+					},
+					{
+						"name": "JavaSE-17",
+						"path": "/slime/local/jdk/17"
+					}
+				]
 			}
 		}
 	},
