@@ -136,51 +136,60 @@
 					return "127.0.0.1";
 				})();
 
-				var browser = (function() {
-					if (p.options.browser == "chrome") {
-						var user = (p.options["chrome:data"]) ? p.options["chrome:data"] : jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-						var debugPort = (p.options["chrome:debug:vscode"]) ? 9222 : void(0);
-						if (debugPort) {
-							var available = jsh.ip.world.tcp.isAvailable({
-								port: {
-									number: debugPort
+				try {
+					var browser = (function() {
+						if (p.options.browser == "chrome") {
+							var user = (p.options["chrome:data"]) ? p.options["chrome:data"] : jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+							var debugPort = (p.options["chrome:debug:vscode"]) ? 9222 : void(0);
+							if (debugPort) {
+								var available = jsh.ip.world.tcp.isAvailable({
+									port: {
+										number: debugPort
+									}
+								})();
+								if (!available) {
+									jsh.shell.console("Could not open debug port " + debugPort + "; exiting.");
+									jsh.shell.exit(1);
 								}
-							})();
-							if (!available) {
-								jsh.shell.console("Could not open debug port " + debugPort + "; exiting.");
-								jsh.shell.exit(1);
 							}
+							if (jsh.shell.browser.installed.chrome) {
+								return jsh.unit.browser.local.Chrome({
+									program: jsh.shell.browser.installed.chrome.program,
+									user: user.toString(),
+									devtools: p.options["debug:devtools"],
+									debugPort: debugPort
+								});
+							} else {
+								throw new Error("Chrome not installed; cannot run Chrome browser tests.");
+							}
+						} else if (p.options.browser == "firefox") {
+							return jsh.unit.browser.local.Firefox({
+								//	TODO	push knowledge of these locations back into rhino/shell
+								program: "/Applications/Firefox.app/Contents/MacOS/firefox"
+								//	Linux: /usr/bin/firefox
+							});
+						} else if (p.options.browser == "safari") {
+							return jsh.unit.browser.local.Safari();
+						} else if (p.options.browser == "selenium:chrome") {
+							return jsh.unit.browser.selenium.Chrome()
+						} else if (p.options.browser == "dockercompose:selenium:chrome") {
+							return jsh.unit.browser.selenium.remote.Chrome({
+								host: "chrome",
+								port: 4444
+							})
+						} else if (p.options.browser == "dockercompose:selenium:firefox") {
+							return jsh.unit.browser.selenium.remote.Firefox({
+								host: "firefox",
+								port: 4444
+							})
+						} else {
+							throw new TypeError("Browser not found: " + p.options.browser);
 						}
-						return jsh.unit.browser.local.Chrome({
-							program: jsh.shell.browser.installed.chrome.program,
-							user: user.toString(),
-							devtools: p.options["debug:devtools"],
-							debugPort: debugPort
-						});
-					} else if (p.options.browser == "firefox") {
-						return jsh.unit.browser.local.Firefox({
-							//	TODO	push knowledge of these locations back into rhino/shell
-							program: "/Applications/Firefox.app/Contents/MacOS/firefox"
-							//	Linux: /usr/bin/firefox
-						});
-					} else if (p.options.browser == "safari") {
-						return jsh.unit.browser.local.Safari();
-					} else if (p.options.browser == "selenium:chrome") {
-						return jsh.unit.browser.selenium.Chrome()
-					} else if (p.options.browser == "dockercompose:selenium:chrome") {
-						return jsh.unit.browser.selenium.remote.Chrome({
-							host: "chrome",
-							port: 4444
-						})
-					} else if (p.options.browser == "dockercompose:selenium:firefox") {
-						return jsh.unit.browser.selenium.remote.Firefox({
-							host: "firefox",
-							port: 4444
-						})
-					} else {
-						throw new TypeError("Browser not found: " + p.options.browser);
-					}
-				})();
+					})();
+				} catch (e) {
+					jsh.shell.console(e.message);
+					jsh.shell.exit(1);
+				}
 
 				var getUri = function(host,delay) {
 					return jsh.web.Url.codec.string.encode(getUrl({

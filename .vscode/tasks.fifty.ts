@@ -8,12 +8,12 @@
 	function(
 		fifty: slime.fifty.test.Kit
 	) {
-		const { jsh } = fifty.global;
+		const { verify } = fifty;
 
 		fifty.tests.manual = {};
 
 		fifty.tests.manual.hello = function() {
-			jsh.shell.console("Hello, World!");
+			verify(1).is(1);
 		};
 
 		fifty.tests.wip = fifty.tests.manual.hello;
