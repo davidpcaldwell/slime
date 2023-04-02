@@ -496,8 +496,7 @@ namespace slime.jsh.wf {
 
 				fifty.tests.interface.submodule = fifty.test.Parent();
 
-				//	Will be fifty.tests.interface.submodule.reset when complete
-				fifty.tests.wip = function() {
+				fifty.tests.interface.submodule.reset = function() {
 					var createSlimeBranch: slime.jrunscript.tools.git.Command<{ name: string },void> = {
 						invocation: function(p) {
 							return {
