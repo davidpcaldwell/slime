@@ -473,7 +473,7 @@
 					var configuration = library.module.Project.getConfigurationLocation(project);
 					jsh.shell.tools.rhino.require();
 					jsh.shell.tools.tomcat.old.require();
-					/** @type { slime.jsh.wf.internal.typescript.Invocation } */
+					/** @type { slime.jsh.wf.internal.typescript.typedoc.Invocation } */
 					var typedocInvocation = {
 						stdio: stdio,
 						configuration: {
@@ -524,7 +524,23 @@
 								var getShellInvocation = getTypedocCommand(p.stdio, { base: project.pathname.toString() }, void(0));
 								var exit = $api.fp.world.now.question(
 									jsh.shell.world.question,
-									getShellInvocation(jsh.shell.tools.node.installation)
+									$api.fp.world.now.ask(
+										getShellInvocation,
+										{
+											found: function(e) {
+												jsh.shell.console("Found TypeDoc " + e.detail);
+											},
+											notFound: function(e) {
+												jsh.shell.console("TypeDoc not found.");
+											},
+											installed: function(e) {
+												jsh.shell.console("Installed TypeDoc " + e.detail);
+											},
+											installing: function(e) {
+												jsh.shell.console("Installing TypeDoc ...");
+											}
+										}
+									)(jsh.shell.tools.node.installation)
 								);
 								return exit.status == 0;
 							},
@@ -538,7 +554,23 @@
 									stdio: $api.fp.property("stdio")
 								}),
 								function(inputs) {
-									var invocation = inputs.nodeCommand(jsh.shell.tools.node.installation);
+									var invocation = $api.fp.world.now.ask(
+										inputs.nodeCommand,
+										{
+											found: function(e) {
+												jsh.shell.console("Found TypeDoc " + e.detail);
+											},
+											notFound: function(e) {
+												jsh.shell.console("TypeDoc not found.");
+											},
+											installed: function(e) {
+												jsh.shell.console("Installed TypeDoc " + e.detail);
+											},
+											installing: function(e) {
+												jsh.shell.console("Installing TypeDoc ...");
+											}
+										}
+									)(jsh.shell.tools.node.installation);
 									if (inputs.stdio) {
 										invocation.context.stdio = {
 											input: null,

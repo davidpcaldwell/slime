@@ -41,7 +41,6 @@
 		var files = (
 			/**
 			 *
-			 * @this { {} }
 			 * @returns { slime.project.code.Exports["files"] }
 			 */
 			function() {

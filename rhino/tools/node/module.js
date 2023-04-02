@@ -286,7 +286,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.node.functions.Installation["modules"]["install"] } */
+		/** @type { slime.jrunscript.node.functions.Installation["modules"]["require"] } */
 		var modules_require = function(p) {
 			var isSatisfied = function(version) {
 				/** @type { (installed: slime.$api.fp.Maybe<slime.jrunscript.node.world.Module>) => boolean } */
@@ -302,9 +302,17 @@
 			return function(installation) {
 				return function(events) {
 					var installed = modules_installed(p.name)(installation)(events);
+					events.fire("found", installed);
 					var satisfied = isSatisfied(p.version)(installed);
 					if (!satisfied) {
+						events.fire("installing");
 						modules_install(p)(installation)(events);
+						installed = modules_installed(p.name)(installation)(events);
+						if (installed.present) {
+							events.fire("installed", installed.value);
+						} else {
+							throw new Error("Unreachable: " + p.name + " not found after installation.");
+						}
 					}
 				}
 			}
