@@ -654,7 +654,19 @@
 						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
 							var repository = jsh.tools.git.Repository({ directory: $context.base });
-							var submodule = repository.submodule({ cached: true }).find(function(submodule) {
+							jsh.shell.console("repository = " + $context.base);
+							var submodules = repository.submodule({ cached: true });
+							jsh.shell.console(
+								JSON.stringify(
+									submodules.map(function(submodule) {
+										return {
+											path: submodule.path
+										}
+									})
+								)
+							);
+							jsh.shell.console("--path = [" + p.options.path + "]");
+							var submodule = submodules.find(function(submodule) {
 								return submodule.path == p.options.path;
 							});
 							var revision = submodule.commit.commit.hash;
