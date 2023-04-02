@@ -14,7 +14,7 @@
 	function($context,$export) {
 		var code = {
 			/** @type { slime.$api.fp.internal.stream.Script } */
-			Stream: $context.script("$api-Function-stream.js"),
+			Stream: $context.script("$api-fp-stream.js"),
 			/** @type { slime.$api.fp.internal.impure.Script } */
 			impure: $context.script("$api-fp-impure.js")
 		};
