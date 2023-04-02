@@ -262,14 +262,18 @@
 		}
 
 		/** @type { slime.jsh.wf.Lint["check"] } */
-		var lint = $api.fp.world.old.ask(function(events) {
+		var lint = function(events) {
+			if (!events.fire) throw new Error();
 			var success = true;
 
-			success = success && jsh.wf.checks.lint().check({
-				console: function(e) {
-					events.fire("console", e.detail);
+			success = success && $api.fp.world.now.ask(
+				jsh.wf.checks.lint().check,
+				{
+					console: function(e) {
+						events.fire("console", e.detail);
+					}
 				}
-			});
+			);
 
 			events.fire("console", "Verifying MPL license headers ...");
 			var license = jsh.shell.jsh({
@@ -289,7 +293,7 @@
 			}
 
 			return success;
-		});
+		};
 
 		/**
 		 * Runs the test suite, first installing Java, Rhino, and (if Docker testing is indicated) the Selenium Java driver.
@@ -486,7 +490,7 @@
 			jsh.script.cli.option.boolean({ longname: "docker" }),
 			function(p) {
 				jsh.shell.console("Linting ...");
-				var lintingPassed = lint();
+				var lintingPassed = $api.fp.world.now.ask(lint);
 				if (!lintingPassed) {
 					jsh.shell.console("Linting failed.");
 					return 1;

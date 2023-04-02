@@ -231,15 +231,17 @@
 			}
 		}
 
-		var trailingWhitespaceParser = /(.*?)\s+$/;
-
 		/**
 		 *
 		 * @param { string } line
 		 */
 		function hasTrailingWhitespace(line) {
-			return trailingWhitespaceParser.test(line);
+			//	Although using trailing whitespace parser would work, this method testing a single character is equivalent and about
+			//	10 times faster
+			return /\s/.test(line.substring(line.length-1));
 		}
+
+		var trailingWhitespaceParser = /(.*?)\s+$/;
 
 		/**
 		 *

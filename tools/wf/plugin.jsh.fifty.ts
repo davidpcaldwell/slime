@@ -600,8 +600,8 @@ namespace slime.jsh.wf {
 		}
 	}
 
-	export type Lint = {
-		check: slime.$api.fp.world.old.Ask<
+	export interface Lint {
+		check: slime.$api.fp.world.Ask<
 			{
 				console: string
 			},
@@ -631,12 +631,7 @@ namespace slime.jsh.wf {
 	export namespace exports {
 		export interface Checks {
 			precommit: (p?: {
-				lint?: slime.$api.fp.world.old.Ask<
-					{
-						console: string
-					},
-					boolean
-				>
+				lint?: Lint["check"]
 				test?: Test
 			}) => Precommit
 		}
