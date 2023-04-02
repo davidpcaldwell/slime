@@ -454,11 +454,11 @@ namespace slime.time {
 		/** @deprecated */
 		export interface When {
 			/** @deprecated */
-			new (p: { date: Date }): old.When
+			new (p: { date: slime.external.lib.es5.Date }): old.When
 			/** @deprecated */
 			new (p: { unix: number }): old.When
 			/** @deprecated */
-			new (date: Date): old.When
+			new (date: slime.external.lib.es5.Date): old.When
 			/** @deprecated */
 			new (): old.When
 			/** @deprecated */

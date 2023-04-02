@@ -1043,6 +1043,16 @@
 		/** @type { slime.time.DayOfWeek[] } */
 		var daysOfWeek = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
+		var ordering = {
+			/** @type { (a: slime.time.Date, b: slime.time.Date) => number } */
+			js: function(a,b) {
+				if (a.year - b.year != 0) return a.year - b.year;
+				if (a.month - b.month != 0) return a.month - b.month;
+				if (a.day - b.day != 0) return a.day - b.day;
+				return 0;
+			}
+		}
+
 		$export({
 			Date: {
 				input: {
@@ -1053,6 +1063,30 @@
 							month: datetime.month,
 							day: datetime.day
 						}
+					}
+				},
+				from: {
+					ymd: function(y,m,d) {
+						return {
+							year: y,
+							month: m,
+							day: d
+						}
+					}
+				},
+				is: function(date) {
+					return function(other) {
+						return ordering.js(date, other) == 0;
+					}
+				},
+				isBefore: function(date) {
+					return function(other) {
+						return ordering.js(date, other) > 0;
+					}
+				},
+				isAfter: function(date) {
+					return function(other) {
+						return ordering.js(date, other) < 0;
 					}
 				},
 				offset: function(offset) {
@@ -1104,12 +1138,7 @@
 					}
 				},
 				order: {
-					js: function(a,b) {
-						if (a.year - b.year != 0) return a.year - b.year;
-						if (a.month - b.month != 0) return a.month - b.month;
-						if (a.day - b.day != 0) return a.day - b.day;
-						return 0;
-					}
+					js: ordering.js
 				},
 				dayOfWeek: function(date) {
 					var js = new Date(date.year, date.month-1, date.day);
