@@ -1050,7 +1050,7 @@ namespace slime.$api.fp {
 				fifty.run(fifty.tests.deprecated);
 				fifty.run(fifty.tests.series);
 
-				fifty.load("$api-Function-stream.fifty.ts");
+				fifty.load("$api-fp-stream.fifty.ts");
 				fifty.load("$api-fp-impure.fifty.ts");
 			}
 		}
