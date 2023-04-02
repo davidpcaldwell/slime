@@ -101,7 +101,7 @@ namespace slime.time {
 	)(fifty);
 
 	export namespace exports {
-		export interface Date {
+		export interface Dates {
 			input: {
 				today: slime.$api.fp.impure.Input<slime.time.Date>
 			}
@@ -131,7 +131,93 @@ namespace slime.time {
 	)(fifty);
 
 	export namespace exports {
-		export interface Date {
+		export interface Dates {
+			from: {
+				ymd: (year: number, month: number, day: number) => Date
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.Date.from = function() {
+					var leap = test.subject.Date.from.ymd(2024,2,29);
+
+					verify(leap).year.is(2024);
+					verify(leap).month.is(2);
+					verify(leap).day.is(29);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Dates {
+			/**
+			 * Given a {@link Date}, returns a {@link slime.$api.fp.Predicate | Predicate} that represents whether a given
+			 * `Date` is the same `Date`.
+			 */
+			is: (date: Date) => slime.$api.fp.Predicate<Date>
+
+			/**
+			 * Given a {@link Date}, returns a {@link slime.$api.fp.Predicate | Predicate} that represents whether a given
+			 * `Date` is after that `Date`.
+			 */
+			isAfter: (date: Date) => slime.$api.fp.Predicate<Date>
+
+			/**
+			 * Given a {@link Date}, returns a {@link slime.$api.fp.Predicate | Predicate} that represents whether a given
+			 * `Date` is before that `Date`.
+			 */
+			isBefore: (date: Date) => slime.$api.fp.Predicate<Date>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				var ymd = test.subject.Date.from.ymd;
+				var leap = ymd(2024,2,29);
+
+				var feb28 = ymd(2024,2,28);
+				var mar1 = ymd(2024,3,1);
+
+				fifty.tests.Date.is = function() {
+					var isLeap = test.subject.Date.is(leap);
+
+					var same = ymd(2024,2,29);
+
+					verify(feb28).evaluate(isLeap).is(false);
+					verify(same).evaluate(isLeap).is(true);
+					verify(mar1).evaluate(isLeap).is(false);
+				};
+
+				fifty.tests.Date.isAfter = function() {
+					var isAfterLeap = test.subject.Date.isAfter(leap);
+
+					verify(feb28).evaluate(isAfterLeap).is(false);
+					verify(mar1).evaluate(isAfterLeap).is(true);
+				};
+
+				fifty.tests.Date.isBefore = function() {
+					var isBefore = test.subject.Date.isBefore(leap);
+
+					verify(feb28).evaluate(isBefore).is(true);
+					verify(mar1).evaluate(isBefore).is(false);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Dates {
 			format: (mask: string) => (day: slime.time.Date) => string
 		}
 
@@ -166,7 +252,7 @@ namespace slime.time {
 	}
 
 	export namespace exports {
-		export interface Date {
+		export interface Dates {
 			offset: (offset: number) => (day: slime.time.Date) => slime.time.Date
 			after: (day: slime.time.Date) => (offset: number) => slime.time.Date
 
@@ -297,7 +383,7 @@ namespace slime.time {
 	}
 
 	export namespace exports {
-		export interface Date {
+		export interface Dates {
 			order: {
 				js: (a: slime.time.Date, b: slime.time.Date) => number
 			}
@@ -339,7 +425,7 @@ namespace slime.time {
 	export type DayOfWeek = "Mo" | "Tu" | "We" | "Th" | "Fr" | "Sa" | "Su"
 
 	export namespace exports {
-		export interface Date {
+		export interface Dates {
 			dayOfWeek: (date: slime.time.Date) => DayOfWeek
 		}
 
@@ -364,13 +450,13 @@ namespace slime.time {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Date {
+		export interface Dates {
 			month: (date: slime.time.Date) => slime.time.Month
 		}
 	}
 
 	export interface Exports {
-		Date: exports.Date
+		Date: exports.Dates
 	}
 
 	export interface Month {
