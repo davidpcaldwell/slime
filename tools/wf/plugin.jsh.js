@@ -796,7 +796,7 @@
 					var handleTrailingWhitespace = (typeof(p.trailingWhitespace) == "undefined") ? true : p.trailingWhitespace;
 					var handleFinalNewlines = (typeof(p.handleFinalNewlines) == "undefined") ? true : p.handleFinalNewlines;
 					return {
-						check: $api.fp.world.old.ask(function(events) {
+						check: function(events) {
 							var success = true;
 
 							var isGitClone = Boolean(inputs.base().getSubdirectory(".git") || inputs.base().getFile(".git"));
@@ -899,7 +899,7 @@
 							}
 
 							return success;
-						}),
+						},
 						fix: function(events) {
 							if (handleTrailingWhitespace) {
 								events.fire("console", "Checking for trailing whitespace ...");
@@ -1002,6 +1002,7 @@
 					upToDateWithOrigin: upToDateWiithOrigin,
 					tsc: tsc,
 					lint: lint,
+					/** @type { slime.jsh.wf.Exports["checks"]["precommit"] } */
 					precommit: function(p) {
 						return $api.fp.world.old.ask(function(events) {
 							var repository = fetch();
@@ -1052,7 +1053,7 @@
 							});
 
 							if (p.lint) {
-								success = success && p.lint({
+								success = success && $api.fp.world.now.ask(p.lint, {
 									console: function(e) {
 										events.fire("console", e.detail);
 									}

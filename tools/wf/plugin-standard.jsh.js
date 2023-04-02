@@ -152,11 +152,14 @@
 				if (project.lint) {
 					$exports.lint = Object.assign(
 						function(p) {
-							var result = project.lint.check({
-								console: function(e) {
-									jsh.shell.console(e.detail);
+							var result = $api.fp.world.now.ask(
+								project.lint.check,
+								{
+									console: function(e) {
+										jsh.shell.console(e.detail);
+									}
 								}
-							})
+							);
 							if (!result) {
 								jsh.shell.console("Linting failed.");
 								return 1;

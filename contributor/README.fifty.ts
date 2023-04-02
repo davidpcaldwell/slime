@@ -11,6 +11,10 @@
  *
  * To update TypeScript, update the version in `tools/wf/module.js`, and make sure that there is a compatible TypeDoc version
  * declared for that version in `tools/wf/typescript.js`.
+ *
+ * ### Javassist
+ *
+ * Used in the Rhino profiler, it can be updated by editing the download URL in `rhino/tools/profiler/build.jsh.js`.
  */
 namespace slime.internal {
 
