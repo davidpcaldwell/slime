@@ -8,7 +8,13 @@ namespace slime.jsh.wf {
 	export namespace standard {
 		namespace test {
 			export interface Fixtures {
-				git: ReturnType<slime.jrunscript.tools.git.test.fixtures.Exports>
+				git: {
+					standard: ReturnType<slime.jrunscript.tools.git.test.fixtures.Exports>
+					local: {
+						addAll: slime.jrunscript.tools.git.Command<void,void>
+						getCurrentCommit: slime.jrunscript.tools.git.Command<void,string>
+					}
+				}
 
 				adapt: {
 					repository: (from: slime.jrunscript.tools.git.test.fixtures.Repository) => slime.jrunscript.tools.git.repository.Local
@@ -116,8 +122,37 @@ namespace slime.jsh.wf {
 					)();
 
 					return {
-						git: git,
+						git: {
+							standard: git,
+							local: {
+								addAll: {
+									invocation: function(p) {
+										return {
+											command: "add",
+											arguments: ["."]
+										}
+									}
+								},
+								getCurrentCommit: {
+									invocation: function(p) {
+										return {
+											command: "rev-parse",
+											arguments: [
+												"--verify",
+												"HEAD"
+											]
+										};
+									},
+									result: function(output) {
+										return output.split("\n")[0];
+									}
+								}
+							}
+						},
 						jsh: fifty.jsh.file.object.getRelativePath("../../jsh.bash").file,
+						/**
+						 * The `wf.bash` program for the current SLIME shell under test.
+						 */
 						wf: fifty.jsh.file.object.getRelativePath("../wf.bash").file,
 						local: fixture,
 						hosted: function project(p?: { noInitialize?: boolean }) {
@@ -137,6 +172,7 @@ namespace slime.jsh.wf {
 
 							var slime = jsh.tools.git.Repository({ directory: clone.directory.getSubdirectory("slime") });
 							slime.checkout({ branch: "main" });
+							fixtures.configure(slime);
 
 							//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
 							if (!p.noInitialize) (
@@ -445,7 +481,9 @@ namespace slime.jsh.wf {
 				 * Resets a submodule of this module to point at the current commit for that submodule, and if there is a tracking
 				 * branch, resets the tracking branch to that commit.
 				 */
-				reset:  slime.jsh.script.cli.Command<Options>
+				reset:  slime.jsh.script.cli.Command<Options & {
+					path: string
+				}>
 			}
 		}
 
@@ -454,23 +492,65 @@ namespace slime.jsh.wf {
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
-				const { jsh } = fifty.global;
+				const { $api, jsh } = fifty.global;
 
 				fifty.tests.interface.submodule = fifty.test.Parent();
 
 				//	Will be fifty.tests.interface.submodule.reset when complete
 				fifty.tests.wip = function() {
-					var it = test.fixtures.hosted().clone;
-					var status = it.api.command(jsh.tools.git.commands.submodule.status).argument({}).run();
-					var slime = test.fixtures.git.submodule(it, "slime");
+					var createSlimeBranch: slime.jrunscript.tools.git.Command<{ name: string },void> = {
+						invocation: function(p) {
+							return {
+								command: "checkout",
+								arguments: [
+									"-b",
+									p.name
+								]
+							}
+						}
+					};
 
-					test.fixtures.git.edit(slime, "wf.js", code => code + "\n" + "//foo");
+					var it = test.fixtures.hosted().clone;
+					var slime = test.fixtures.git.standard.submodule(it, "slime");
+
+					var before = slime.api.command(test.fixtures.git.local.getCurrentCommit).argument().run();
+
+					slime.api.command(createSlimeBranch).argument({ name: "submodule-reset" }).run();
+					test.fixtures.git.standard.edit(slime, "wf.js", code => code + "\n" + "//foo\n");
 					jsh.shell.console("Committing ...");
-					if (true) {
-						verify(false, "user.name and user.email set").is(true);
-						return;
-					}
-					slime.api.command(test.fixtures.git.commands.commit).argument({ message: "advance submodule" }).run();
+					slime.api.command(test.fixtures.git.local.addAll).argument().run();
+					slime.api.command(test.fixtures.git.standard.commands.commit).argument({ message: "advance submodule" }).run({
+						stdout: function(line) {
+							jsh.shell.console("STDOUT: " + line);
+						},
+						stderr: function(line) {
+							jsh.shell.console("STDERR: " + line);
+						}
+					});
+
+					var after = slime.api.command(test.fixtures.git.local.getCurrentCommit).argument().run();
+
+					verify(after).is.not(before);
+
+					jsh.shell.console("Running wf submodule.reset ...");
+					$api.fp.world.now.action(
+						jsh.shell.subprocess.action,
+						{
+							command: jsh.file.world.Location.relative("wf")(jsh.file.world.Location.from.os(it.location)).pathname,
+							arguments: [
+								"submodule.reset",
+								"--path", "slime"
+							]
+						}
+					)
+					jsh.shell.console("Ran wf submodule.reset.");
+
+					var afterResetCommit = slime.api.command(test.fixtures.git.local.getCurrentCommit).argument().run();
+					var afterResetBranch = slime.api.command(jsh.tools.git.commands.status).argument().run();
+
+					verify(afterResetBranch).branch.is("main");
+					verify(afterResetCommit).is(before);
+
 					jsh.shell.console("cd " + it.location);
 				};
 			}
@@ -551,14 +631,7 @@ namespace slime.jsh.wf {
 					);
 				}
 
-				var addAll: slime.jrunscript.tools.git.Command<void,void> = {
-					invocation: function(p) {
-						return {
-							command: "add",
-							arguments: ["."]
-						}
-					}
-				};
+				var addAll: slime.jrunscript.tools.git.Command<void,void> = test.fixtures.git.local.addAll;
 
 				var branch: slime.jrunscript.tools.git.Command<{ name: string, startPoint: string },void> = {
 					invocation: function(p) {
@@ -569,7 +642,7 @@ namespace slime.jsh.wf {
 					}
 				};
 
-				var commit: slime.jrunscript.tools.git.Command<{ message: string }, void> = test.fixtures.git.commands.commit;
+				var commit: slime.jrunscript.tools.git.Command<{ message: string }, void> = test.fixtures.git.standard.commands.commit;
 
 				var checkout: slime.jrunscript.tools.git.Command<{ branch: string },void> = {
 					invocation: function(p) {
@@ -613,7 +686,7 @@ namespace slime.jsh.wf {
 						}),
 						{}
 					);
-					test.fixtures.git.edit(repository, "wf.js", function(before) {
+					test.fixtures.git.standard.edit(repository, "wf.js", function(before) {
 						return before + "\n";
 					});
 					repository.api.command(addAll).argument().run();
@@ -652,7 +725,7 @@ namespace slime.jsh.wf {
 						{}
 					);
 
-					test.fixtures.git.edit(project, "new.js", () => "new");
+					test.fixtures.git.standard.edit(project, "new.js", () => "new");
 					project.api.command(mv).argument({ from: "a.js", to: "b.js" }).run();
 
 					$api.fp.world.now.action(
@@ -683,7 +756,7 @@ namespace slime.jsh.wf {
 					var x = test.fixtures.hosted();
 					var project = test.fixtures.adapt.repository(x.clone);
 					var repository = x.clone;
-					test.fixtures.git.edit(repository, "wf.js", function(before) {
+					test.fixtures.git.standard.edit(repository, "wf.js", function(before) {
 						return before.replace("slime.jsh.Global", "slime.jjj.Global");
 					});
 					$api.fp.world.now.action(
@@ -709,7 +782,7 @@ namespace slime.jsh.wf {
 					repository.api.command(checkout).argument({
 						branch: "feature"
 					}).run();
-					test.fixtures.git.edit(repository, "f", function(before) {
+					test.fixtures.git.standard.edit(repository, "f", function(before) {
 						return "f";
 					});
 					repository.api.command(addAll).argument().run();
@@ -717,7 +790,7 @@ namespace slime.jsh.wf {
 						message: "f"
 					}).run();
 
-					test.fixtures.git.edit(origin, "m", function(before) {
+					test.fixtures.git.standard.edit(origin, "m", function(before) {
 						return "m";
 					});
 					origin.api.command(addAll).argument().run();
