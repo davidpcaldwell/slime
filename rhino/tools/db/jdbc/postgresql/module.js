@@ -240,7 +240,7 @@
 				var ds = new Packages.org.postgresql.ds[driverName];
 				ds.serverName = host;
 				ds.databaseName = db;
-				ds.portNumber = Number($context.api.js.defined(port,5432));
+				ds.portNumber = port || 5432;
 				ds.user = user;
 				ds.password = password;
 				dataSources[dbid] = new driver.DataSource({

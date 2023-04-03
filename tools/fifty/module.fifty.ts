@@ -12,7 +12,7 @@
  * Fifty uses the {@link https://tsdoc.org/ | TSDoc } documentation format, and its results are published using
  * {@link https://github.com/TypeStrong/typedoc | TypeDoc }.
  *
- * ## Fifty definitions: uthoring tests
+ * ## Fifty definitions: authoring tests
  *
  * Fifty provides an API for {@link slime.fifty.test | authoring tests} right in the middle of TypeScript definitions.
  *

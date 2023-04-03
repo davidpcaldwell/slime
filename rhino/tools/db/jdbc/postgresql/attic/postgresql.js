@@ -314,7 +314,7 @@
 						var ds = new Packages.org.postgresql.ds[driver];
 						ds.serverName = dbsettings.server;
 						ds.databaseName = db;
-						ds.portNumber = Number($js.defined(dbsettings.port,0));
+						ds.portNumber = dbsettings.port || 0;
 						ds.user = user;
 						ds.password = password;
 						dataSources[dbid] = new DataSource(ds);
