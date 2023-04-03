@@ -33,14 +33,6 @@
 		var deprecate = $api.deprecate;
 		var experimental = $api.experimental;
 
-		$exports.defined = function() {
-			var _undefined;
-			for (var i=0; i<arguments.length; i++) {
-				if (typeof(arguments[i]) != "undefined") return arguments[i];
-			}
-			return _undefined;
-		}
-
 		var constant = function constant(f) {
 			return function() {
 				if (typeof(arguments.callee["called"]) == "undefined") {

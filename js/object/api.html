@@ -186,32 +186,6 @@ END LICENSE
 		</div>
 		<ul>
 			<li class="function">
-				<div class="name">defined</div>
-				<div>
-					A function which returns the first of its arguments that is not <code>undefined</code>.
-				</div>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					A variable-length list of arguments of any type.
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					The first argument that is not <code>undefined</code>, or <code>undefined</code> if all arguments are
-					undefined or there are no arguments.
-				</div>
-				<script type="application/x.jsapi#tests">
-					var a = { b: "yes", d: "no", e: null };
-					verify(module).defined().is(void(0));
-//					test( typeof(module.defined()) == "undefined" );
-					verify(module).defined(a.c, a.b).is("yes");
-//					test( module.defined(a.c, a.b) == "yes" );
-					verify(module).defined(a.b, a.e, a.d).is("yes");
-//					test( module.defined(a.b, a.e, a.d) == "yes" );
-					verify(module).defined(a.e, a.d).is(null);
-//					test( module.defined(a.e, a.d) == null );
-				</script>
-			</li>
-			<li class="function">
 				<div class="name">constant</div>
 				<div>
 					Creates a function which caches the result of an underlying function.
