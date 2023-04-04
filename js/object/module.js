@@ -43,7 +43,7 @@
 			}
 		}
 
-		$exports.constant = constant;
+		$exports.constant = deprecate(constant);
 
 		if ($platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
 			$exports.lazy = function(object,name,getter) {

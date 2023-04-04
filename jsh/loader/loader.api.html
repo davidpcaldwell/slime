@@ -226,7 +226,7 @@ END LICENSE
 						<!-- TODO: cannot target this test from command line for some reason -->
 						<div jsapi:id="java.add">
 							<script type="application/x.jsapi#initialize">
-								scope.compileAddClasses = jsh.js.constant(function() {
+								scope.compileAddClasses = $api.fp.impure.Input.memoized(function() {
 									var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
 									jsh.shell.console("Compiling AddClasses ...");
 									jsh.java.tools.javac({

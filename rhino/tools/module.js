@@ -57,7 +57,7 @@
 
 		//	We do not want to pre-load the Java compiler as it is way too slow to do so.
 		//	TODO	verify that this setup does not load it
-		$exports.__defineGetter__("javac", $api.experimental($context.api.js.constant(function() {
+		$exports.__defineGetter__("javac", $api.experimental($api.fp.impure.Input.memoized(function() {
 			var javac = getJavaCompiler();
 
 			if (!javac) return function(){}();
