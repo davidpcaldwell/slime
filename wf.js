@@ -51,7 +51,7 @@
 					changed = true;
 				}
 			});
-			if (changed) jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update Java settubgs.");
+			if (changed) jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update Java settings.");
 		}
 
 		var git = {

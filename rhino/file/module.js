@@ -425,6 +425,7 @@
 							java: $exports.java,
 							mock: code.mock({
 								library: {
+									java: $context.api.java,
 									io: $context.api.io
 								}
 							})

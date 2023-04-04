@@ -7,6 +7,7 @@
 namespace slime.jrunscript.file.internal.mock {
 	export interface Context {
 		library: {
+			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 		}
 	}
@@ -20,6 +21,7 @@ namespace slime.jrunscript.file.internal.mock {
 			var script: Script = fifty.$loader.script("mock.js");
 			var module = script({
 				library: {
+					java: fifty.global.jsh.java,
 					io: fifty.global.jsh.io
 				}
 			});

@@ -22,19 +22,32 @@
 			var SLASH = (p && p.separators && p.separators.pathname) ? p.separators.pathname : "/";
 			var COLON = (p && p.separators && p.separators.searchpath) ? p.separators.searchpath : ":";
 
-			/** @type { { [path: string]: slime.jrunscript.Array<number> } } */
+			/** @typedef { { type: "file", data: slime.jrunscript.Array<number> } } File */
+			/** @typedef { { type: "directory" } } Directory */
+			/** @typedef { File | Directory } Node */
+
+			/** @type { { [path: string]: Node } } } */
 			var state = {
+			}
+
+			/** @type { (node: Node) => node is File } */
+			var isFile = function(node) {
+				return node.type == "file";
 			}
 
 			/** @type { slime.jrunscript.file.world.spi.Filesystem["openInputStream"] } */
 			var openInputStream = function(p) {
 				return function(events) {
-					if (!state[p.pathname]) events.fire("notFound");
-					if (!state[p.pathname]) return $api.fp.Maybe.from.nothing();
+					var at = state[p.pathname];
+					if (!at) {
+						events.fire("notFound");
+						return $api.fp.Maybe.from.nothing();
+					}
+					if (!isFile(at)) throw new Error("TODO");
 					return $api.fp.Maybe.from.some(
 						$context.library.io.InputStream.from.java(
 							new Packages.java.io.ByteArrayInputStream(
-								state[p.pathname]
+								at.data
 							)
 						)
 					);
@@ -53,7 +66,10 @@
 						character: out.character,
 						close: function() {
 							out.close();
-							state[p.pathname] = buffer.readBinary().java.array();
+							state[p.pathname] = {
+								type: "file",
+								data: buffer.readBinary().java.array()
+							};
 						},
 						java: out.java,
 						split: out.split
@@ -65,7 +81,8 @@
 			/** @type { slime.jrunscript.file.world.spi.Filesystem["fileExists"] } */
 			var fileExists = function(p) {
 				return function(events) {
-					return $api.fp.Maybe.from.some(Boolean(state[p.pathname]));
+					var at = state[p.pathname];
+					return $api.fp.Maybe.from.some(Boolean(at && at.type == "file"));
 				}
 			}
 
@@ -79,13 +96,42 @@
 				directoryExists: void(0),
 				fileExists: fileExists,
 				move: void(0),
-				remove: void(0),
+				remove: function(p) {
+					return function(events) {
+						//	TODO	what should happen if it doesn't exist?
+						//	TODO	what should happen if it's a directory?
+						var at = state[p.pathname];
+						if (at) {
+							delete state[p.pathname];
+						}
+					}
+				},
 				fileLength: void(0),
 				fileLastModified: void(0),
 				listDirectory: void(0),
 				openInputStream: openInputStream,
 				openOutputStream: openOutputStream,
-				temporary: void(0),
+				temporary: function(p) {
+					return function(events) {
+						var getName = function(parent,prefix,index,suffix) {
+							return parent + SLASH + prefix + index + suffix;
+						};
+						var tmp = p.parent || "tmp";
+						var prefix = p.prefix || "slime";
+						var suffix = p.suffix || ".tmp";
+						var index = 0;
+						var name = getName(tmp, prefix, index, suffix);
+						while (state[name]) {
+							name = getName(tmp, prefix, ++index, suffix);
+						}
+						if (p.directory) {
+							state[name] = { type: "directory" };
+						} else {
+							state[name] = { type: "file", data: $context.library.java.Array.create({ type: Packages.java.lang.Byte, array: [] }) };
+						}
+						return name;
+					}
+				},
 				relative: function(base, relative) {
 					return base + SLASH + relative;
 				},

@@ -891,12 +891,6 @@ namespace slime.jrunscript.file {
 					pathname: string
 				},void,slime.$api.fp.Maybe<number>>
 
-				openInputStream: slime.$api.fp.world.Question<{
-					pathname: string
-				},{
-					notFound: void
-				},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
-
 				openOutputStream: slime.$api.fp.world.Question<{
 					pathname: string
 					append?: boolean
@@ -945,6 +939,74 @@ namespace slime.jrunscript.file {
 				>
 			}
 
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					fifty.tests.spi = {};
+
+					fifty.tests.spi.filesystem = {};
+				}
+			//@ts-ignore
+			)(fifty);
+
+			export interface Filesystem {
+				openInputStream: slime.$api.fp.world.Question<{
+					pathname: string
+				},{
+					notFound: void
+				},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
+			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api, jsh } = fifty.global;
+					const { world } = jsh.file;
+
+					fifty.tests.spi.filesystem.openInputStreamNotFound = function(filesystem: Filesystem) {
+						var notFound = $api.fp.world.now.question(
+							filesystem.temporary,
+							{
+								directory: false
+							}
+						);
+						$api.fp.world.now.tell(
+							filesystem.remove({ pathname: notFound })
+						);
+						var exists = $api.fp.world.now.ask(filesystem.fileExists({ pathname: notFound }));
+						verify(exists.present).is(true);
+						if (exists.present) {
+							verify(exists).value.is(false);
+						}
+
+						var notFoundEvent;
+						var input = $api.fp.world.now.question(
+							filesystem.openInputStream,
+							{ pathname: notFound },
+							{
+								notFound: function(e) {
+									notFoundEvent = e;
+								}
+							}
+						);
+
+						verify(notFoundEvent).is.type("object");
+						jsh.shell.console(notFoundEvent.detail);
+						jsh.shell.console(null);
+
+						verify(input).present.is(false);
+					}
+
+					fifty.tests.sandbox.filesystem.openInputStreamNotFound = function() {
+						fifty.load("world.fifty.ts", "spi.filesystem.openInputStreamNotFound", world.spi.filesystems.os);
+					}
+				}
+			//@ts-ignore
+			)(fifty);
+
 			export interface Filesystem {
 				relative: (base: string, relative: string) => string
 			}
@@ -954,11 +1016,6 @@ namespace slime.jrunscript.file {
 					fifty: slime.fifty.test.Kit
 				) {
 					const { verify } = fifty;
-					const { $api } = fifty.global;
-
-					fifty.tests.spi = {};
-
-					fifty.tests.spi.filesystem = {};
 
 					fifty.tests.spi.filesystem.relative = function(filesystem: Filesystem) {
 						//	TODO	Not a very good test for Windows filesystem
@@ -967,37 +1024,9 @@ namespace slime.jrunscript.file {
 						var relative = "baz";
 						verify(filesystem).relative(base, relative).is(prefix + ["foo", "bar", "baz"].join(filesystem.separator.pathname));
 					}
-
-					fifty.tests.spi.filesystem.openInputStreamNotFound = function(filesystem: Filesystem) {
-						// var notFound = $api.fp.world.now.question(
-						// 	filesystem.temporary,
-						// 	{
-						// 		directory: false
-						// 	}
-						// );
-						// filesystem.fileExists({ pathname: notFound })
-						// var notFound = fifty.jsh.file.relative("foo");
-						// var notFoundEvent;
-						// var input = $api.fp.world.now.question(
-						// 	filesystem.openInputStream,
-						// 	{ pathname: notFound.pathname },
-						// 	{
-						// 		notFound: function(e) {
-						// 			notFoundEvent = e;
-						// 		}
-						// 	}
-						// );
-
-						// verify(notFoundEvent).is.type("object");
-						// jsh.shell.console(notFoundEvent.detail);
-						// jsh.shell.console(null);
-
-						// jsh.shell.console(String(input.present));
-					}
 				}
 			//@ts-ignore
 			)(fifty);
-
 
 			export interface Filesystem {
 				/**
@@ -1192,6 +1221,8 @@ namespace slime.jrunscript.file {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.load("mock.fifty.ts");
+
 				fifty.run(fifty.tests.sandbox);
 			}
 		}
@@ -1230,28 +1261,6 @@ namespace slime.jrunscript.file {
 			};
 
 			fifty.tests.manual = {};
-
-			fifty.tests.manual.openInputStreamNotFound = function() {
-				var fs = world.spi.filesystems.os;
-				var notFound = fifty.jsh.file.relative("foo");
-				jsh.shell.console(notFound.pathname);
-				var notFoundEvent;
-				var input = $api.fp.world.now.question(
-					fs.openInputStream,
-					{ pathname: notFound.pathname },
-					{
-						notFound: function(e) {
-							notFoundEvent = e;
-						}
-					}
-				);
-
-				verify(notFoundEvent).is.type("object");
-				jsh.shell.console(notFoundEvent.detail);
-				jsh.shell.console(null);
-
-				jsh.shell.console(String(input.present));
-			}
 		}
 	//@ts-ignore
 	)(fifty);
