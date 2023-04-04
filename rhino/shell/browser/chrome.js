@@ -349,7 +349,7 @@
 
 					var data = new Data({ base: u.directory });
 					Object.defineProperty(this, "profiles", {
-						get: $context.api.js.constant(function() {
+						get: $api.fp.impure.Input.memoized(function() {
 							return data.profiles.map(function(profile) {
 								return new Profile(profile);
 							});

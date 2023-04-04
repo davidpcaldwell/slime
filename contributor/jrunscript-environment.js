@@ -219,7 +219,7 @@
 					// TODO: should this be allowed?
 					var TRACE = false;
 
-					var getMock = jsh.js.constant(function() {
+					var getMock = $api.fp.impure.Input.memoized(function() {
 						jsh.loader.plugins(p.src.getRelativePath("jsh/test/launcher"));
 						var mock = new jsh.test.launcher.MockRemote({
 							src: {

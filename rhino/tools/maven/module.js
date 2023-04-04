@@ -282,7 +282,7 @@
 			}
 
 			this.dependencies = new function() {
-				this.resolve = jsh.js.constant(function() {
+				this.resolve = $api.fp.impure.Input.memoized(function() {
 					return $exports.mvn({
 						directory: p.base,
 						arguments: getMavenArguments().concat(["dependency:resolve"]),

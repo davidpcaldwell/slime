@@ -9,9 +9,10 @@
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(Packages,JavaAdapter,jsh) {
+	function(Packages,JavaAdapter,$api,jsh) {
 		//	Build script for jsh
 		//
 		//	The best way to execute this script is to execute it in the Rhino shell via the jsh/etc/unbuilt.rhino.js helper script:
@@ -534,7 +535,7 @@
 			//	TODO	run test cases given in jsh.c
 		}
 
-		var getTestEnvironment = jsh.js.constant(function() {
+		var getTestEnvironment = $api.fp.impure.Input.memoized(function() {
 			var subenv = {};
 			for (var x in jsh.shell.environment) {
 				if (!/^JSH_/.test(x)) {
@@ -601,4 +602,4 @@
 		}
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,jsh);
+)(Packages,JavaAdapter,$api,jsh);
