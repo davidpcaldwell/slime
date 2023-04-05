@@ -89,7 +89,7 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		/**
-		 * @deprecated Use `$api.Function.now.invoke`.
+		 * @deprecated Use {@link Exports["now"]["invoke"] | `$api.fp.now.invoke`}.
 		 */
 		result: Invoke
 	}
