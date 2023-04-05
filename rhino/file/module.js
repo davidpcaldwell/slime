@@ -19,9 +19,6 @@
 			throw new Error("$pwd is " + typeof($context.$pwd) + ".");
 		}
 
-		/** @type { Partial<slime.jrunscript.file.Exports> } */
-		var $exports = {};
-
 		var code = {
 			/** @type { slime.jrunscript.file.internal.file.Script } */
 			file: $loader.script("file.js"),
@@ -66,42 +63,48 @@
 
 		//	Object-oriented filesystem implementations.
 
-		var os = code.filesystem({
-			Pathname: file.Pathname,
-			Searchpath: file.Searchpath
-		});
+		var filesystems = (
+			function() {
+				var os = code.filesystem({
+					Pathname: file.Pathname,
+					Searchpath: file.Searchpath
+				});
 
-		/**
-		 * @type { slime.jrunscript.file.Exports["filesystems"] }
-		 */
-		var filesystems = {
-			os: new os.Filesystem(library.world.providers.os),
-			cygwin: ($context.cygwin) ? $loader.file("cygwin.js", {
-				cygwin: $context.cygwin,
-				Filesystem: os.Filesystem,
-				java: (
-					function() {
-						//	TODO	right now java.js is encapsulated within world.js except here
-						/** @type { slime.jrunscript.file.internal.java.Script } */
-						var code = $loader.script("java.js");
-						return code({
-							api: {
-								io: $context.api.io
+				/**
+				 * @type { slime.jrunscript.file.Exports["filesystems"] }
+				 */
+				var filesystems = {
+					os: new os.Filesystem(library.world.providers.os),
+					cygwin: ($context.cygwin) ? $loader.file("cygwin.js", {
+						cygwin: $context.cygwin,
+						Filesystem: os.Filesystem,
+						java: (
+							function() {
+								//	TODO	right now java.js is encapsulated within world.js except here
+								/** @type { slime.jrunscript.file.internal.java.Script } */
+								var code = $loader.script("java.js");
+								return code({
+									api: {
+										io: $context.api.io
+									}
+								})
 							}
-						})
-					}
-				)(),
-				isPathname: file.isPathname,
-				Searchpath: file.Searchpath,
-				addFinalizer: $context.addFinalizer
-			}) : void(0)
-		};
+						)(),
+						isPathname: file.isPathname,
+						Searchpath: file.Searchpath,
+						addFinalizer: $context.addFinalizer
+					}) : void(0)
+				};
+
+				return filesystems;
+			}
+		)();
 
 		//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
 		var filesystem = (filesystems.cygwin) ? filesystems.cygwin : filesystems.os;
 
 		//	TODO	perhaps should move selection of default filesystem into these definitions rather than inside file.js
-		$exports.Pathname = Object.assign(function Pathname(parameters) {
+		var Pathname = Object.assign(function Pathname(parameters) {
 			if (this.constructor == arguments.callee) throw new Error("Cannot invoke Pathname as constructor.");
 			if (typeof(parameters) != "string") throw new TypeError("parameters must be string.");
 
@@ -117,7 +120,7 @@
 			return decorator(filesystem.Pathname(parameters));
 		}, { createDirectory: void(0) });
 
-		$exports.Pathname.createDirectory = Object.assign(
+		Pathname.createDirectory = Object.assign(
 			function(p) {
 				return p.pathname.createDirectory({
 					ifExists: p.exists
@@ -194,10 +197,8 @@
 			};
 		}
 
-		$exports.navigate = $api.experimental(navigate);
-
 		//	TODO	Searchpath implementation has multiple layers: in os.js, file.js, here ... consolidate and refactor
-		$exports.Searchpath = Object.assign(function(parameters) {
+		var Searchpath = Object.assign(function(parameters) {
 			if (this.constructor != arguments.callee) {
 				if (parameters instanceof Array) {
 					return filesystem.Searchpath(parameters);
@@ -208,10 +209,10 @@
 				throw new Error("Cannot invoke Searchpath as constructor.");
 			}
 		}, { createEmpty: void(0) });
-		$exports.Searchpath.createEmpty = function() {
-			return $exports.Searchpath([]);
+		Searchpath.createEmpty = function() {
+			return Searchpath([]);
 		}
-		$exports.Searchpath.prototype = prototypes.Searchpath;
+		Searchpath.prototype = prototypes.Searchpath;
 
 		/**
 		 * @param { ConstructorParameters<slime.jrunscript.file.Exports["Loader"]>[0] } p
@@ -314,8 +315,6 @@
 			$context.api.io.Loader.apply(this,args);
 		}
 
-		$exports.Loader = Loader;
-
 		var zip = $loader.file("zip.js", {
 			Streams: $context.api.io.Streams
 			,Pathname: file.Pathname
@@ -324,17 +323,10 @@
 			}
 		});
 
-		$exports.zip = zip.zip;
-		$exports.unzip = zip.unzip;
-		$api.experimental($exports, "zip");
-		$api.experimental($exports, "unzip");
-
-		$exports.list = file.list;
-
-		$exports.state = {
+		var state = {
 			list: function(pathname) {
 				return function() {
-					var argument = $exports.Pathname(pathname);
+					var argument = Pathname(pathname);
 					if (argument.directory) {
 						return argument.directory.list().map(function(node) {
 							var suffix = node.directory ? "/" : "";
@@ -348,7 +340,7 @@
 			}
 		}
 
-		$exports.action = {
+		var action = {
 			delete: function(pathname) {
 				return Object.assign(
 					$api.Events.action(function(events) {
@@ -356,7 +348,7 @@
 							node.remove();
 							events.fire("deleted", node.pathname.toString());
 						}
-						var location = $exports.Pathname(pathname);
+						var location = Pathname(pathname);
 						if (location.file) remove(location.file);
 						if (location.directory) remove(location.directory);
 					}),
@@ -368,7 +360,7 @@
 			write: function(p) {
 				return Object.assign(
 					$api.Events.action(function(events) {
-						var location = $exports.Pathname(p.location);
+						var location = Pathname(p.location);
 						var parent = location.parent;
 						if (parent.file) throw new Error("Parent pathname " + parent + " is an ordinary file.");
 						if (!parent.directory) {
@@ -392,37 +384,34 @@
 			}
 		}
 
-		$exports.Streams = $context.api.io.Streams;
-		$exports.java = $context.api.io.java;
-
 		$export(
-			$api.fp.result(
+			$api.fp.now.invoke(
 				(
 					function() {
 						/** @type { slime.jrunscript.file.Exports } */
 						var rv = {
 							filesystems: filesystems,
 							filesystem: filesystem,
-							Pathname: $exports.Pathname,
-							navigate: $exports.navigate,
-							Searchpath: $exports.Searchpath,
-							Loader: $exports.Loader,
-							zip: $exports.zip,
-							unzip: $exports.unzip,
-							list: $exports.list,
-							state: $exports.state,
-							action: $exports.action,
+							Pathname: Pathname,
+							navigate: $api.experimental(navigate),
+							Searchpath: Searchpath,
+							Loader: Loader,
+							zip: $api.experimental(zip.zip),
+							unzip: $api.experimental(zip.unzip),
+							list: file.list,
+							state: state,
+							action: action,
 							world: library.world,
 							object: {
 								pathname: function(pathname) {
-									return $exports.Pathname(pathname.pathname);
+									return Pathname(pathname.pathname);
 								},
 								directory: function(pathname) {
-									return $exports.Pathname(pathname.pathname).directory;
+									return Pathname(pathname.pathname).directory;
 								}
 							},
-							Streams: $exports.Streams,
-							java: $exports.java,
+							Streams: $context.api.io.Streams,
+							java: $context.api.io.java,
 							mock: code.mock({
 								library: {
 									java: $context.api.java,
