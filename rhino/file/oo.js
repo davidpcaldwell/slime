@@ -392,6 +392,8 @@
 					}
 				)(),
 				function($exports) {
+					//	TODO	these deprecations probably do not work now that the properties are copied into module-level
+					//			exports, but maybe they do
 					$api.deprecate($exports.Searchpath,"createEmpty");
 					$api.deprecate($exports,"workingDirectory");
 					$api.deprecate($exports,"Streams");

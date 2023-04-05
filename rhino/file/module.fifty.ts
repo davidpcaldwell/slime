@@ -442,6 +442,8 @@ namespace slime.jrunscript.file {
 
 				fifty.load("world.fifty.ts");
 
+				fifty.load("oo.fifty.ts");
+
 				fifty.load("module-Searchpath.fifty.ts");
 				fifty.load("module-node.fifty.ts");
 				fifty.load("module-Loader.fifty.ts");

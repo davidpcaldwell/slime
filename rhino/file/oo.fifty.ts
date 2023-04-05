@@ -22,5 +22,19 @@ namespace slime.jrunscript.file.internal.oo {
 
 	export type Exports = Pick<slime.jrunscript.file.Exports,"filesystems"|"filesystem"|"Pathname"|"navigate"|"Searchpath"|"Loader"|"zip"|"unzip"|"list"|"state"|"action"|"object"|"Streams"|"java">
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			fifty.tests.suite = function() {
+				verify(jsh.file.Streams).is.type("object");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export type Script = slime.loader.Script<Context,Exports>
 }

@@ -54,15 +54,24 @@
 			addFinalizer: $context.addFinalizer
 		});
 
-		$export(
-			$api.Object.compose(
-				{
-					world: world,
-					mock: mock
-				},
-				oo
-			)
-		);
+		$export({
+			world: world,
+			mock: mock,
+			action: oo.action,
+			filesystem: oo.filesystem,
+			filesystems: oo.filesystems,
+			list: oo.list,
+			Loader: oo.Loader,
+			navigate: oo.navigate,
+			object: oo.object,
+			Pathname: oo.Pathname,
+			Searchpath: oo.Searchpath,
+			state: oo.state,
+			zip: oo.zip,
+			unzip: oo.unzip,
+			Streams: oo.Streams,
+			java: oo.java
+		});
 	}
 //@ts-ignore
 )(Packages,$api,$context,$loader,$export)
