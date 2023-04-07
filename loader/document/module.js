@@ -306,9 +306,12 @@
 			if (parsers.jsoup) return parsers.jsoup;
 		})();
 
-		//	TODO	switch to Script
-		/** @type { slime.runtime.document.internal.source.Exports } */
-		var source = $loader.file("source.js");
+		var code = {
+			/** @type { slime.runtime.document.internal.source.Script } */
+			source: $loader.script("source.js")
+		};
+
+		var source = code.source();
 
 		/** @type { slime.Codec<slime.runtime.document.Document,string> } */
 		var documentStringCodec = {
