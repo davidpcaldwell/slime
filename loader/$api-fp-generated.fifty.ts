@@ -209,6 +209,80 @@ namespace slime.$api.fp.impure {
 		): Input<B>
 	}
 
+	export type Input_value = {
+		<A,B,C,D,E,F,G,H,I>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G,
+			l: (g: G) => H,
+			m: (h: H) => I
+		): Input<I>
+
+		<A,B,C,D,E,F,G,H>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G,
+			l: (g: G) => H
+		): Input<H>
+
+		<A,B,C,D,E,F,G>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G
+		): Input<G>
+
+		<A,B,C,D,E,F>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F
+		): Input<F>
+
+		<A,B,C,D,E>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E
+		): Input<E>
+
+		<A,B,C,D>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D
+		): Input<D>
+
+		<A,B,C>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C
+		): Input<C>
+
+		<A,B>(
+			a: A,
+			f: (a: A) => B
+		): Input<B>
+
+		<A>(
+			a: A
+		): Input<A>
+	}
+
 	export type Process_value = {
 		<A,B,C,D,E,F,G,H>(
 			a: A,

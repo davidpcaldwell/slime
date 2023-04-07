@@ -28,44 +28,6 @@ namespace slime.$api.fp {
 		}
 	//@ts-ignore
 	)(fifty);
-
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			fifty.tests.exports.memoized = function() {
-				var calls: number;
-
-				var counter = function() {
-					if (typeof(calls) == "undefined") calls = 0;
-					calls++;
-					return 42;
-				};
-
-				verify(calls).is(void(0));
-
-				var memoized = fifty.global.$api.fp.impure.Input.memoized(counter);
-
-				verify(calls).is(void(0));
-
-				var result = memoized();
-				verify(result).is(42);
-				verify(calls).is(1);
-
-				var result2 = memoized();
-				verify(result2).is(42);
-				verify(calls).is(1);
-
-				var result3 = counter();
-				verify(result3).is(42);
-				verify(calls).is(2);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
 }
 
 namespace slime.$api.fp.impure {
@@ -73,9 +35,52 @@ namespace slime.$api.fp.impure {
 	export type Output<T> = (t: T) => void
 	export type Process = () => void
 
-	export interface Exports {
-		Input: {
-			value: <T>(t: T) => impure.Input<T>
+	export namespace exports {
+		export interface Input {
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.impure.Input = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Input {
+			value: Input_value
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.impure.Input.value = function() {
+					var triple = function(n) { return n * 3; };
+
+					var one = $api.fp.impure.Input.value(1);
+
+					verify(one()).is(1);
+
+					var tripled = $api.fp.impure.Input.value(1, triple);
+					verify(tripled()).is(3);
+
+					var tripledTwice = $api.fp.impure.Input.value(1, triple, triple);
+					verify(tripledTwice()).is(9);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Input {
 
 			/**
 			 * A function that takes an {@link impure.Input | Input} as an argument and returns a memoized version of that `Input`.
@@ -84,61 +89,137 @@ namespace slime.$api.fp.impure {
 			 * @returns A memoized `Input` whose underlying implementation will only be invoked the first time it is invoked;
 			 * succeeding invocations will simply return the value returned by the first invocation.
 			 */
-			memoized: <T>(i: () => T) => () => T
+			memoized: <T>(i: impure.Input<T>) => impure.Input<T>
+		}
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.impure.Input.memoized = function() {
+					var calls: number;
+
+					var counter = function() {
+						if (typeof(calls) == "undefined") calls = 0;
+						calls++;
+						return 42;
+					};
+
+					verify(calls).is(void(0));
+
+					var memoized = fifty.global.$api.fp.impure.Input.memoized(counter);
+
+					verify(calls).is(void(0));
+
+					var result = memoized();
+					verify(result).is(42);
+					verify(calls).is(1);
+
+					var result2 = memoized();
+					verify(result2).is(42);
+					verify(calls).is(1);
+
+					var result3 = counter();
+					verify(result3).is(42);
+					verify(calls).is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Input {
 			map: impure.Input_map
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.impure.Input.map = function() {
+					var input = function() { return 1; };
+					var triple = function(n) { return n*3; };
+
+					var one = $api.fp.impure.Input.map(input, triple);
+					verify(one()).is(3);
+					var two = $api.fp.impure.Input.map(input, triple, triple);
+					verify(two()).is(9);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Input {
 			process: <T>(input: impure.Input<T>, output: impure.Output<T>) => impure.Process
-
-			compose: <T>(inputs: {
-				[k in keyof T]: slime.$api.fp.impure.Input<T[k]>
-			}) => slime.$api.fp.impure.Input<T>
-
-			stream: <T>(input: Input<T>) => Stream<T>
 		}
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api } = fifty.global;
-
-			fifty.tests.exports.impure.input = {};
-
-			fifty.tests.exports.impure.input.compose = function() {
-				var inputs = {
-					n: $api.fp.returning(8),
-					s: $api.fp.returning("hello")
-				};
-
-				var input = $api.fp.impure.Input.compose(inputs);
-
-				var values = input();
-				verify(values).n.is(8);
-				verify(values).s.is("hello");
-			};
-
-			fifty.tests.exports.impure.input.map = function() {
-				var input = function() { return 1; };
-				var triple = function(n) { return n*3; };
-
-				var one = $api.fp.impure.Input.map(input, triple);
-				verify(one()).is(3);
-				var two = $api.fp.impure.Input.map(input, triple, triple);
-				verify(two()).is(9);
-			}
-
-			fifty.tests.exports.impure.input.stream = function() {
-				var input = function() { return "yes! with me" };
-				var stream = $api.fp.impure.Input.stream(input);
-				var collected = $api.fp.Stream.collect(stream);
-				verify(collected).length.is(1);
-				verify(collected)[0].is("yes! with me");
-			}
+	export namespace exports {
+		export interface Input {
+			compose: <T>(inputs: {
+				[k in keyof T]: slime.$api.fp.impure.Input<T[k]>
+			}) => slime.$api.fp.impure.Input<T>
 		}
-	//@ts-ignore
-	)(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.impure.Input.compose = function() {
+					var inputs = {
+						n: $api.fp.returning(8),
+						s: $api.fp.returning("hello")
+					};
+
+					var input = $api.fp.impure.Input.compose(inputs);
+
+					var values = input();
+					verify(values).n.is(8);
+					verify(values).s.is("hello");
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Input {
+			stream: <T>(input: impure.Input<T>) => Stream<T>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.impure.Input.stream = function() {
+					var input = function() { return "yes! with me" };
+					var stream = $api.fp.impure.Input.stream(input);
+					var collected = $api.fp.Stream.collect(stream);
+					verify(collected).length.is(1);
+					verify(collected)[0].is("yes! with me");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Input: exports.Input
+	}
 
 	export interface Exports {
 		Process: {

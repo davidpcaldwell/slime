@@ -27,8 +27,13 @@
 			},
 			Input: {
 				value: function(v) {
+					var functions = Array.prototype.slice.call(arguments,1);
 					return function() {
-						return v;
+						var rv = v;
+						functions.forEach(function(f) {
+							rv = f(rv);
+						})
+						return rv;
 					}
 				},
 				memoized: function(f) {
