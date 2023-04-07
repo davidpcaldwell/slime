@@ -19,6 +19,7 @@
 				pipe: 8,
 				invoke: 8,
 				input_map: 8,
+				input_value: 8,
 				process_value: 8
 			}),
 			destination: $api.fp.impure.Input.map(
@@ -117,11 +118,29 @@
 			return rv;
 		}
 
+		//	TODO	inputMapDefinition and inputValueDefinition are very duplicative
+
 		var inputMapDefinition = function(size) {
 			var rv = [];
 			var types = getGenericTypeList(size+1);
 			rv.push("<" + types.join(",") + ">(");
 			rv.push(indent("a: Input<A>,"));
+			for (var i=0; i<size; i++) {
+				var last = i+1 == size;
+				var f = getFunctionName(i);
+				var p = getParameterNameOfType(types[i]);
+				var r = types[i+1]
+				rv.push(indent(f + ": (" + p + ": " + types[i] + ") => " + r + ( last ? "" : "," )));
+			}
+			rv.push("): " + "Input<" + types[types.length-1] + ">");
+			return rv;
+		};
+
+		var inputValueDefinition = function(size) {
+			var rv = [];
+			var types = getGenericTypeList(size+1);
+			rv.push("<" + types.join(",") + ">(");
+			rv.push(indent("a: A,"));
 			for (var i=0; i<size; i++) {
 				var last = i+1 == size;
 				var f = getFunctionName(i);
@@ -206,6 +225,17 @@
 												indexes(inputs.counts.input_map).map(function(n,index,array) {
 													return inputMapDefinition(array.length-n);
 												})
+											),
+											typeDefinition(
+												"Input_value",
+												indexes(inputs.counts.input_value).map(function(n,index,array) {
+													return inputValueDefinition(array.length-n);
+												}).concat([
+													//	TODO	seems like this could be pushed into inputValueDefinition
+													"<A>(",
+													indent("a: A"),
+													"): Input<A>"
+												])
 											),
 											typeDefinition(
 												"Process_value",
