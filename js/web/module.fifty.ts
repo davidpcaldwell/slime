@@ -36,22 +36,26 @@ namespace slime.web {
 	 * changed, and the URL will reflect the changes.
 	 */
 	export interface Url {
-		scheme: string
-		userinfo: string
-		host: string
+		scheme?: string
+		userinfo?: string
+		host?: string
 
 		/**
 		 * If a port number is specified in the URL, the port number; otherwise, `undefined`.
 		 */
-		port: number
+		port?: number
 
 		path: string
 
 		/**
 		 * The query portion of this URL (with no preceding `?`).
 		 */
-		query: string
-		fragment: string
+		query?: string
+
+		/**
+		 * The fragment portion of this URL (with no preceding `#`).
+		 */
+		fragment?: string
 	}
 
 	export namespace url {

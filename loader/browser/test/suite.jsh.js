@@ -253,6 +253,8 @@
 		};
 
 		/**
+		 * The `jsh.unit` module provides a set of browser implementations to drive Fifty testing. The JSAPI browser APIs are
+		 * slightly different than the Fifty APIs, so this function adapts a Fifty testing browser to a JSAPI testing browser.
 		 *
 		 * @param { slime.jsh.unit.Browser } browser
 		 * @param { (url: string) => string } url
