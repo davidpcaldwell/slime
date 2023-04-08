@@ -20,6 +20,9 @@ namespace slime.jsh.httpd {
 	export interface Tomcat {
 		base: slime.jrunscript.file.Directory
 
+		/**
+		 * The port number on which the HTTP server is running.
+		 */
 		port: number
 
 		https: {
@@ -38,10 +41,20 @@ namespace slime.jsh.httpd {
 		 */
 		servlet: (servlet: servlet.descriptor & { resources?: slime.old.Loader }) => void
 
+		/**
+		 * Starts the server; this method will not return until the server is ready to receive requests.
+		 */
 		start: () => void
 
+		/**
+		 * A method that, when invoked, starts the server if necessary and then blocks until the server is stopped.
+		 */
 		run: () => void
 
+		/**
+		 * Stops the server. Note that if a call to `run()` is running in another thread, stopping the server will cause that thread
+		 * to unblock and continue.
+		 */
 		stop: () => void
 	}
 
@@ -77,6 +90,61 @@ namespace slime.jsh.httpd {
 	}
 
 	export interface Exports {
+		Tomcat?: {
+			//	TODO	figure out why constructor definition not output
+			//	TODO	convert to function
+			(p?: tomcat.Configuration): Tomcat
+
+			serve: (p: tomcat.Configuration & { directory: slime.jrunscript.file.Directory }) => slime.jsh.httpd.Tomcat
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.Tomcat = fifty.test.Parent();
+
+			fifty.tests.Tomcat.lifecycle = function() {
+				var server = jsh.httpd.Tomcat();
+				server.servlet({
+					load: function(scope) {
+						scope.$exports.handle = function(request) {
+							return {
+								status: { code: 404 }
+							}
+						}
+					}
+				});
+				server.start();
+				var request: slime.jrunscript.http.client.Request = {
+					url: "http://127.0.0.1:" + server.port + "/"
+				};
+				var ask = jsh.http.world.java.urlconnection(
+					jsh.http.Argument.request(request)
+				);
+				var response = $api.fp.world.now.ask(ask);
+				verify(response).status.code.is(404);
+				//	This part of the test is essentially a manual test of lifecycle implementation
+				jsh.shell.console("Starting stop() thread ...");
+				jsh.java.Thread.start(function() {
+					jsh.java.Thread.sleep(2000);
+					jsh.shell.console("Stopping ...");
+					server.stop();
+					jsh.shell.console("Stopped.");
+				});
+				jsh.shell.console("Running ...");
+				server.run();
+				jsh.shell.console("Exiting.");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		nugget: any
 
 		spi: {
@@ -89,18 +157,21 @@ namespace slime.jsh.httpd {
 
 		Resources: slime.jsh.httpd.resources.Exports
 
-		Tomcat?: {
-			//	TODO	figure out why constructor definition not output
-			//	TODO	convert to function
-			(p?: tomcat.Configuration): Tomcat
-
-			serve: (p: tomcat.Configuration & { directory: slime.jrunscript.file.Directory }) => slime.jsh.httpd.Tomcat
-		}
-
 		plugin: {
 			tools: () => void
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.Tomcat);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 namespace slime.jsh {
