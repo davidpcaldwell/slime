@@ -62,6 +62,7 @@
 			fifty.load("../jsh/script/plugin.jsh.fifty.ts");
 			if (isMkcertImplemented) fifty.load("../jsh/unit/plugin.jsh.web.fifty.ts");
 			fifty.load("../jsh/tools/install/plugin.jsh.fifty.ts");
+			fifty.load("../rhino/http/servlet/plugin.jsh.fifty.ts");
 			fifty.load("../rhino/http/servlet/plugin.jsh.resources.fifty.ts");
 			fifty.load("../tools/code/module.fifty.ts");
 			fifty.load("../tools/fifty/module.fifty.ts");
