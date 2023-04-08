@@ -20,27 +20,27 @@
 		/**
 		 *
 		 * @param { { part: string, delay: number, host: string, port: number, paths: { toHtmlRunner: string, toFile: string, results: string } }} p
-		 * @returns { slime.web.object.Url }
+		 * @returns { slime.web.Url }
 		 */
-		var getUrl = function(p) {
-			return new jsh.web.Url({
+		var createUrlForTestExecution = function(p) {
+			return {
 				scheme: "http",
-				authority: {
-					host: p.host,
-					port: p.port
-				},
+				host: p.host,
+				port: p.port,
 				path: "/" + p.paths.toHtmlRunner,
-				query: $api.Array.build(function(rv) {
-					rv.push({ name: "file", value: p.paths.toFile });
-					rv.push({ name: "results", value: String(Boolean(p.paths.results)) });
-					if (p.part) {
-						rv.push({ name: "part", value: p.part });
-					}
-					if (p.delay) {
-						rv.push({ name: "delay", value: String(p.delay) });
-					}
-				})
-			});
+				query: jsh.web.Url.query(
+					$api.Array.build(function(rv) {
+						rv.push({ name: "file", value: p.paths.toFile });
+						rv.push({ name: "results", value: String(Boolean(p.paths.results)) });
+						if (p.part) {
+							rv.push({ name: "part", value: p.part });
+						}
+						if (p.delay) {
+							rv.push({ name: "delay", value: String(p.delay) });
+						}
+					})
+				)
+			};
 		};
 
 		$api.fp.pipe(
@@ -191,8 +191,15 @@
 					jsh.shell.exit(1);
 				}
 
+				/**
+				 *
+				 * @param { string } host The hostname to use when requesting the test page
+				 * @param { number } [delay] An optional delay, in milliseconds, after which the tests should start running. This
+				 * is used to work around an unknown problem.
+				 * @returns { string } A URI to open to run tests.
+				 */
 				var getUri = function(host,delay) {
-					return jsh.web.Url.codec.string.encode(getUrl({
+					return jsh.web.Url.codec.string.encode(createUrlForTestExecution({
 						host: host,
 						port: tomcat.port,
 						paths: {
