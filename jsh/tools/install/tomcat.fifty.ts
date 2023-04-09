@@ -43,6 +43,12 @@ namespace slime.jsh.shell.tools {
 					version: string
 				}
 			}
+
+			export type RequireEvents = Events & {
+				found: {
+					version: string
+				}
+			}
 		}
 
 		export interface World {
@@ -91,11 +97,18 @@ namespace slime.jsh.shell.tools {
 						version?: string
 						replace?: (version: string) => boolean
 					},
-					slime.jsh.shell.tools.tomcat.installation.Events & {
-						found: { version: string }
-					}
+					slime.jsh.shell.tools.tomcat.installation.RequireEvents
 				>
 			}
+
+			require: slime.$api.fp.world.Action<
+				{
+					world?: tomcat.Mock
+					version?: string
+					replace?: (version: string) => boolean
+				},
+				slime.jsh.shell.tools.tomcat.installation.RequireEvents
+			>
 
 			old: {
 				/** @deprecated */

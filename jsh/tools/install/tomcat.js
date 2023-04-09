@@ -301,6 +301,7 @@
 				}
 			},
 			Installation: Installation,
+			require: Installation.require(Installation.from.jsh()),
 			old: {
 				require: function(argument, handler) {
 					var listener = $api.events.toListener(handler);
