@@ -284,6 +284,7 @@
 		var Installation = {
 			from: {
 				jsh: function() {
+					if (!jsh.shell.jsh.lib) return null;
 					return {
 						base: jsh.shell.jsh.lib.getRelativePath("tomcat").os.adapt().pathname
 					}
@@ -301,7 +302,7 @@
 				}
 			},
 			Installation: Installation,
-			require: Installation.require(Installation.from.jsh()),
+			require: (Installation.from.jsh()) ? Installation.require(Installation.from.jsh()) : null,
 			old: {
 				require: function(argument, handler) {
 					var listener = $api.events.toListener(handler);
