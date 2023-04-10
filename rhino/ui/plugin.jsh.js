@@ -34,8 +34,7 @@
 					),
 					askpass: void(0),
 					application: void(0),
-					desktop: void(0),
-					browser: void(0)
+					desktop: void(0)
 				}
 			}
 		});
@@ -128,14 +127,12 @@
 				return Boolean(jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java);
 			},
 			load: function() {
-				//	TODO	rename to slime.jsh.ui.internal.application.Exports
-				/** @type { slime.jsh.ui.application.internal.Exports } */
-				var api = $loader.module("application.js", { jsh: jsh });
-				(function(v) {
-					jsh.ui.javafx.WebView.application = $api.deprecate(v);
-					jsh.ui.browser = $api.deprecate(v);
-					jsh.ui.application = v;
-				})(api.Application);
+				/** @type { slime.jsh.ui.internal.application.Script } */
+				var script = $loader.script("application.js");
+
+				var api = script({ jsh: jsh });
+
+				jsh.ui.application = api.Application;
 			}
 		})
 	}
