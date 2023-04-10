@@ -64,6 +64,7 @@
 			fifty.load("../jsh/tools/install/plugin.jsh.fifty.ts");
 			fifty.load("../rhino/http/servlet/plugin.jsh.fifty.ts");
 			fifty.load("../rhino/http/servlet/plugin.jsh.resources.fifty.ts");
+			fifty.load("../rhino/ui/application.fifty.ts");
 			fifty.load("../tools/code/module.fifty.ts");
 			fifty.load("../tools/fifty/module.fifty.ts");
 			//	TODO	For reasons that are baffling, merely loading this file (even though all its tests are conditionally
