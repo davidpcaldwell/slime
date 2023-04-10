@@ -92,28 +92,24 @@
 					argument: void(0)
 				};
 
+				/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jrunscript.file.File } */
+				var isFile = function(servlet) {
+					return Boolean(servlet["pathname"] && servlet["directory"] === false);
+				}
+
+				/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byLoad } */
+				var isByLoad = function(servlet) {
+					return Boolean(servlet["load"]);
+				}
+
+				/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byFile } */
+				var isByFile = function(servlet) {
+					return Boolean(servlet["file"]);
+				}
+
 				/** @type { slime.jsh.httpd.Exports["spi"]["argument"] } */
 				jsh.httpd.spi.argument = function(resources,servlet) {
 					if (servlet["$loader"]) throw new Error("servlet.$loader provided");
-
-					/** @returns { slime.jrunscript.file.File } */
-					var toFile = function(servlet) {
-						return servlet;
-					};
-
-					/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byLoad } */
-					var isByLoad = function(servlet) {
-						return Boolean(servlet["load"]);
-					}
-
-					/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byFile } */
-					var isByFile = function(servlet) {
-						return Boolean(servlet["file"]);
-					}
-
-					if (servlet["pathname"] && servlet["directory"] === false) {
-						servlet = { file: toFile(servlet) };
-					}
 
 					var byLoader = function($loader,path) {
 						return function(scope) {
@@ -121,43 +117,39 @@
 						}
 					};
 
-					var getResourceLoader = function(resources) {
-						if (!resources) return null;
-						if (resources.get && resources.Child) return resources;
-						if (resources.loader) return $api.deprecate(function() {
-							return resources.loader;
-						})();
-					};
-
-					resources = getResourceLoader(resources);
-
 					/**
 					 *	@param { { load: (scope: slime.servlet.Scope) => void, $loader?: slime.old.Loader } } o
 					 */
-					var returning = function(o) {
+					var withResources = function(o) {
 						return Object.assign(o, { resources: resources });
 					};
 
-					if (isByLoad(servlet)) {
-						return returning({
-							load: servlet.load
-						});
-					} else if (isByFile(servlet)) {
-						var file = servlet.file;
-						return returning({
+					/** @param { slime.jrunscript.file.File } file */
+					var fromFile = function(file) {
+						return withResources({
 							$loader: new jsh.file.Loader({
-								directory: servlet.file.parent,
+								directory: file.parent,
 								type: getMimeType
 							}),
 							load: function(scope) {
 								jsh.loader.run(file.pathname, scope);
 							}
 						});
+					}
+
+					if (isByLoad(servlet)) {
+						return withResources({
+							load: servlet.load
+						});
+					} else if (isByFile(servlet)) {
+						return fromFile(servlet.file);
+					} else if (isFile(servlet)) {
+						return fromFile(servlet);
 					} else if (servlet.resource) {
 						var prefix = servlet.resource.split("/").slice(0,-1).join("/");
 						if (prefix) prefix += "/";
 						var $loader = resources.Child(prefix);
-						return returning({
+						return withResources({
 							$loader: $loader,
 							load: byLoader($loader, servlet.resource.substring(prefix.length))
 						});
@@ -308,6 +300,11 @@
 										var servlet;
 
 										this.init = function() {
+											var parameters = (function() {
+												if (isFile(servletDeclaration)) return {};
+												return (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
+											})();
+
 											/** @type { { $host: slime.servlet.internal.$host.jsh } } */
 											var apiScope = {
 												$host: {
@@ -322,7 +319,7 @@
 														}
 													},
 
-													parameters: (servletDeclaration.parameters) ? servletDeclaration.parameters : {},
+													parameters: parameters,
 
 													loaders: {
 														api: $loader.Child("server/"),

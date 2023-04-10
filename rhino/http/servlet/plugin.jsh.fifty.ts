@@ -6,13 +6,23 @@
 
 namespace slime.jsh.httpd {
 	export namespace servlet {
-		export type byLoad = { load: (scope: slime.servlet.Scope) => void }
-		export type byFile = { file: slime.jrunscript.file.File }
-		type byResource = { resource: string }
-
-		export type descriptor = (byLoad | byFile | byResource) & {
+		type common = {
 			parameters?: Parameters
 		}
+
+		export interface byLoad extends common {
+			load: (scope: slime.servlet.Scope) => void
+		}
+
+		export interface byFile extends common {
+			file: slime.jrunscript.file.File
+		}
+
+		export interface byResource extends common {
+			resource: string
+		}
+
+		export type descriptor = byLoad | byFile | byResource | slime.jrunscript.file.File
 
 		export type Parameters = { [name: string]: any }
 	}
@@ -149,8 +159,8 @@ namespace slime.jsh.httpd {
 
 		spi: {
 			argument: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.descriptor) => {
-				resources: slime.old.Loader,
-				load: servlet.byLoad["load"],
+				resources: slime.old.Loader
+				load: servlet.byLoad["load"]
 				$loader?: slime.old.Loader
 			}
 		}
