@@ -11,7 +11,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { { jsh: slime.jsh.Global } } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.jsh.ui.application.internal.Exports } $exports
+	 * @param { slime.jsh.ui.internal.application.Exports } $exports
 	 */
 	function(Packages,$api,$context,$loader,$exports) {
 		var jsh = $context.jsh;
