@@ -37,6 +37,9 @@ namespace slime.jrunscript.tools.git {
 		kill: () => void
 	}
 
+	/**
+	 * A local installation of the `git` tool.
+	 */
 	export interface Installation {
 		daemon: (p: {
 			port?: number
@@ -44,6 +47,9 @@ namespace slime.jrunscript.tools.git {
 			exportAll?: boolean
 		}) => Daemon
 
+		/**
+		 * @returns A `Repository` of the appropriate subtype as determined by the argument.
+		 */
 		Repository: {
 			(p: repository.argument.Directory): slime.jrunscript.tools.git.repository.Local
 			new (p: repository.argument.Directory): slime.jrunscript.tools.git.repository.Local
@@ -101,15 +107,25 @@ namespace slime.jrunscript.tools.git {
 
 		export namespace argument {
 			export interface Directory {
+				/**
+				 * A directory containing a local Git repository.
+				 */
 				directory: slime.jrunscript.file.Directory
 			}
 
 			/** @deprecated */
 			export interface Local {
+				/**
+				 * A directory containing a local Git repository.
+				 */
 				local: slime.jrunscript.file.Directory
 			}
 
 			export interface Remote {
+				/**
+				 * A string that is compatible with the `git` command-line tool. See [Git
+				 * URLs](https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a).
+				 */
 				remote: string
 			}
 		}
