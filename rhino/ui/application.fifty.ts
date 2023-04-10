@@ -110,7 +110,21 @@ namespace slime.jsh.ui.application {
 
 namespace slime.jsh.ui.internal.application {
 	export interface Context {
-		jsh: slime.jsh.Global
+		library: {
+			java: slime.jrunscript.host.Exports
+			shell: slime.jrunscript.shell.Exports
+		}
+
+		input: {
+			chrome: slime.$api.fp.impure.Input<slime.jrunscript.shell.browser.object.Chrome>
+		}
+
+		console: slime.$api.fp.impure.Output<string>
+
+		jsh: {
+			httpd: slime.jsh.Global["httpd"]
+			ui: slime.jsh.Global["ui"]
+		}
 	}
 
 	export interface Exports {

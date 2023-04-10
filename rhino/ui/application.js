@@ -9,7 +9,7 @@
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { { jsh: slime.jsh.Global } } $context
+	 * @param { slime.jsh.ui.internal.application.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.ui.internal.application.Exports } $exports
 	 */
@@ -65,7 +65,7 @@
 		/**
 		 * @param { slime.jsh.ui.application.ChromeConfiguration } o
 		 */
-		var Chrome = (jsh.shell.browser.chrome)
+		var Chrome = ($context.input.chrome())
 			? (
 				/**
 				 *
@@ -75,7 +75,7 @@
 				function(o) {
 					//	TODO	add location (rather than directory) argument
 					return function(p) {
-						var lock = new jsh.java.Thread.Monitor();
+						var lock = new $context.library.java.Thread.Monitor();
 
 						var notify = function() {
 							lock.Waiter({
@@ -87,7 +87,9 @@
 							})();
 						}
 
-						var instance = new jsh.shell.browser.chrome.Instance({
+						var chrome = $context.input.chrome();
+
+						var instance = new chrome.Instance({
 							location: o.location,
 							directory: o.directory,
 							proxy: p.proxy,
@@ -97,7 +99,7 @@
 						var process;
 						var finished = false;
 
-						jsh.java.Thread.start(function() {
+						$context.library.java.Thread.start(function() {
 							var argument = {
 								on: {
 									start: function(argument) {
@@ -155,7 +157,7 @@
 					});
 				};
 
-				var lock = new jsh.java.Thread.Monitor();
+				var lock = new $context.library.java.Thread.Monitor();
 				var closed = false;
 
 				jsh.ui.javafx.launch({
@@ -164,7 +166,7 @@
 						page: { url: p.url },
 						//	TODO	configurable
 						alert: function(s) {
-							jsh.shell.console("ALERT: " + s);
+							$context.console("ALERT: " + s);
 						},
 						//	TODO	configurable
 						console: (settings.browser.console) ? settings.browser.console : new function() {
@@ -180,12 +182,12 @@
 							};
 
 							this.log = function() {
-								jsh.shell.console("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
+								$context.console("WEBVIEW CONSOLE: " + Array.prototype.slice.call(arguments).join("|"));
 							}
 						},
 						popup: function(_popup) {
 							if (!_popup) _popup = this._popup;
-							jsh.shell.console("Creating popup " + _popup + " ...");
+							$context.console("Creating popup " + _popup + " ...");
 							var browser = new Packages.javafx.scene.web.WebView();
 							//	TODO	This seems to be a layer higher than it should be; perhaps the lower layer should be creating this
 							//			object and calling back into the application layer with it already configured with things like the
@@ -262,7 +264,7 @@
 			server.start();
 			events.fire("started", server);
 
-			jsh.java.addShutdownHook(function() {
+			$context.library.java.addShutdownHook(function() {
 				server.stop();
 			});
 
@@ -299,7 +301,7 @@
 				if (p.browser.host) return hostToPort(p.browser.host)({ port: server.port });
 				return null;
 			})();
-			var proxy = (proxySettings) ? jsh.shell.browser.ProxyConfiguration(proxySettings) : void(0);
+			var proxy = (proxySettings) ? $context.library.shell.browser.ProxyConfiguration(proxySettings) : void(0);
 			var url = (function() {
 				if (p.url) return p.url;
 				var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
@@ -307,7 +309,7 @@
 			})();
 			if (p.browser.create) {
 				var browser = p.browser.create({ url: url, proxy: proxy, hostrules: p.browser.chrome.hostrules });
-				jsh.java.Thread.start(function() {
+				$context.library.java.Thread.start(function() {
 					browser.run();
 					server.stop();
 					on.close();
@@ -317,7 +319,7 @@
 					p.browser.run = javafx(p);
 				}
 				var run = p.browser.run;
-				jsh.java.Thread.start(function() {
+				$context.library.java.Thread.start(function() {
 					run({ url: url, proxy: proxy });
 					server.stop();
 					on.close();
