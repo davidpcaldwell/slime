@@ -53,19 +53,6 @@
 						var dname = ["cn","ou","o","l","st","c"].map(function(name) {
 							return name.toUpperCase() + "=" + p.dname[name];
 						}).join(", ");
-						// jsh.shell.run({
-						// 	command: jsh.shell.java.keytool,
-						// 	arguments: [
-						// 		"-genkey",
-						// 		"-noprompt",
-						// 		"-alias", "tomcat",
-						// 		"-dname", dname,
-						// 		//	TODO	is this the right place? for built shells?
-						// 		"-keystore", pathname.toString(),
-						// 		"-storepass", "inonit",
-						// 		"-keypass", "inonit"
-						// 	]
-						// });
 						jsh.shell.run({
 							command: jsh.shell.java.keytool,
 							arguments: [

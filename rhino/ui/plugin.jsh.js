@@ -130,7 +130,20 @@
 				/** @type { slime.jsh.ui.internal.application.Script } */
 				var script = $loader.script("application.js");
 
-				var api = script({ jsh: jsh });
+				var api = script({
+					library: {
+						java: jsh.java,
+						shell: jsh.shell
+					},
+					input: {
+						chrome: $api.fp.impure.Input.value(jsh.shell.browser.chrome)
+					},
+					console: jsh.shell.console,
+					jsh: {
+						httpd: jsh.httpd,
+						ui: jsh.ui
+					}
+				});
 
 				jsh.ui.application = api.Application;
 			}

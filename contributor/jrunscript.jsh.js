@@ -309,10 +309,6 @@
 		};
 		suite.add("servlet/suite", servletPart);
 
-		suite.add("jsh/jsh.ui", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/ui/plugin.jsh.api.html")
-		}));
-
 		//	TODO	disabling tests in order to try to get commit to succeed. Probably need to migrate this to a GitHub implementation
 		if (false) suite.add("provision", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jsh/tools/provision/api.html")

@@ -110,12 +110,147 @@ namespace slime.jsh.ui.application {
 
 namespace slime.jsh.ui.internal.application {
 	export interface Context {
-		jsh: slime.jsh.Global
+		library: {
+			java: slime.jrunscript.host.Exports
+			shell: slime.jrunscript.shell.Exports
+		}
+
+		input: {
+			chrome: slime.$api.fp.impure.Input<slime.jrunscript.shell.browser.object.Chrome>
+		}
+
+		console: slime.$api.fp.impure.Output<string>
+
+		jsh: {
+			httpd: slime.jsh.Global["httpd"]
+			ui: slime.jsh.Global["ui"]
+		}
 	}
 
 	export interface Exports {
 		Application: slime.jsh.Global["ui"]["application"]
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+
+				const script: Script = fifty.$loader.script("application.js");
+
+				const api = script({
+					library: {
+						java: jsh.java,
+						shell: jsh.shell
+					},
+					input: {
+						chrome: $api.fp.impure.Input.value(jsh.shell.browser.chrome)
+					},
+					console: jsh.shell.console,
+					jsh: {
+						httpd: jsh.httpd,
+						ui: jsh.ui
+					}
+				});
+
+				//	jsh.httpd.Tomcat supplies default server implementation
+				//	TODO	do we need to disable this whole thing when Chrome is not available?
+				if (jsh.httpd.Tomcat && jsh.shell.browser.chrome) {
+					verify("hello").is("hello");
+
+					var singleRequestApplication = function(decorator?) {
+						var firstRequest: servlet.Request;
+						var slock = new jsh.java.Thread.Monitor();
+
+						var argument = new function() {
+							const servlet: slime.jsh.httpd.servlet.byLoad = {
+								load: function(scope) {
+									scope.$exports.handle = function(request) {
+										slock.Waiter({
+											until: function() {
+												return true;
+											},
+											then: function() {
+												if (!firstRequest) firstRequest = request;
+											}
+										})();
+										return void(0);
+									}
+								}
+							};
+
+							this.servlet = servlet;
+
+							this.on = {
+								close: function() {
+									jsh.shell.console("Closed browser.");
+								}
+							};
+
+							this.browser = {
+								chrome: {}
+							};
+						};
+
+						if (decorator) decorator.call(argument);
+
+						var application = api.Application(argument);
+
+						slock.Waiter({
+							until: function() {
+								return Boolean(firstRequest);
+							},
+							then: function() {
+								application.browser.close();
+								application.server.stop();
+							}
+						})();
+
+						return {
+							application: application,
+							request: firstRequest
+						}
+					};
+
+					var getHeader = function(name: string): () => string {
+						return function() {
+							for (var i=0; i<this.headers.length; i++) {
+								if (this.headers[i].name.toLowerCase() == name) {
+									return this.headers[i].value;
+								}
+							}
+							return null;
+						}
+					};
+
+					var first = singleRequestApplication();
+					verify(first).request.method.is("GET");
+					verify(first).request.path.is("");
+					verify(first).request.evaluate(getHeader("host")).is("127.0.0.1:" + first.application.server.port);
+
+					var second = singleRequestApplication(function() {
+						this.browser.host = "x";
+					});
+					verify(second).request.method.is("GET");
+					verify(second).request.path.is("");
+					verify(second).request.evaluate(getHeader("host")).is("x");
+
+					var invoked = false;
+					var third = singleRequestApplication(function() {
+						this.browser.proxy = function(server) {
+							invoked = true;
+							return { port: server.port };
+						}
+					});
+					verify(invoked).is(true);
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
