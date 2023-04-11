@@ -33,14 +33,7 @@ namespace slime.jsh.ui {
 namespace slime.jsh.ui.application {
 	export type Server = Pick<slime.jsh.httpd.Tomcat,"start" | "stop" | "port">
 
-	export interface ServerConfiguration {
-		/**
-		 * See {@link slime.jsh.httpd.tomcat.Configuration}.
-		 */
-		port?: number
-
-		https?: slime.jsh.httpd.tomcat.Configuration["https"]
-
+	export interface ServerConfiguration extends slime.jsh.httpd.tomcat.Configuration {
 		resources: slime.old.Loader
 		parameters?: slime.jsh.httpd.servlet.Parameters
 		servlet: slime.jsh.httpd.servlet.descriptor

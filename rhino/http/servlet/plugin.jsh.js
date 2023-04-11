@@ -28,7 +28,8 @@
 						plugin: void(0),
 						tools: void(0),
 						nugget: void(0),
-						spi: void(0)
+						spi: void(0),
+						tomcat: void(0)
 					};
 				}
 
@@ -190,14 +191,55 @@
 
 				jsh.java.log.named("jsh.httpd").CONFIG("When trying to load Tomcat: class = %s CATALINA_HOME = %s", TOMCAT_CLASS, CATALINA_HOME);
 
+				jsh.httpd.tomcat = {
+					Servlets: {
+						from: {
+							root: function(p) {
+								return {
+									path: "",
+									resources: p.resources,
+									servlets: {
+										"/*": p.servlet
+									}
+								}
+							}
+						}
+					}
+				}
+
+				/** @type { (webapps: slime.jsh.httpd.tomcat.OldWebapps) => slime.jsh.httpd.tomcat.MultipleWebapps["webapps"] } */
+				var toWebappsWithContextPath = function(webapps) {
+					/** @type { (webapps: slime.jsh.httpd.tomcat.OldWebapps) => webapps is slime.jsh.httpd.tomcat.SingleWebapp } */
+					var isSingleWebapp = function(webapps) {
+						return Boolean(webapps["webapp"]);
+					}
+
+					/** @type { (webapps: slime.jsh.httpd.tomcat.OldWebapps) => webapps is slime.jsh.httpd.tomcat.MultipleWebapps } */
+					var isMultipleWebapps = function(webapps) {
+						return Boolean(webapps["webapps"]);
+					}
+
+					if (isSingleWebapp(webapps)) {
+						return {
+							"": webapps.webapp
+						}
+					} else if (isMultipleWebapps(webapps)) {
+						return webapps.webapps;
+					} else {
+						return {};
+					}
+				}
+
 				if (TOMCAT_CLASS) {
 					var Tomcat = (
 						/**
-						 * @param { Parameters<slime.jsh.httpd.Exports["Tomcat"]>[0] } p
+						 * @param { slime.jsh.httpd.tomcat.Configuration & (slime.jsh.httpd.tomcat.Webapps | {}) } p
 						 */
 						function(p) {
+							//	TODO	probably should not happen now that we specify webapps in the configuration
 							if (!p) p = {};
-							var tomcat = new Packages.org.apache.catalina.startup.Tomcat();
+
+							var _tomcat = new Packages.org.apache.catalina.startup.Tomcat();
 
 							/** @returns { slime.jrunscript.file.Directory } */
 							var castToDirectory = function(node) {
@@ -239,7 +281,7 @@
 								}
 								_https.setAttribute("clientAuth", "false");
 								_https.setAttribute("sslProtocol", "TLS");
-								tomcat.getService().addConnector(_https);
+								_tomcat.getService().addConnector(_https);
 								rv.https = {
 									port: hport
 								};
@@ -247,7 +289,7 @@
 								rv.https = void(0);
 							}
 
-							tomcat.setBaseDir(base.toString());
+							_tomcat.setBaseDir(base.toString());
 
 							//	In Tomcat 7, we could just do this:
 							//	tomcat.setPort(port);
@@ -257,7 +299,7 @@
 							var _http = new Packages.org.apache.catalina.connector.Connector();
 							_http.setPort(port);
 							_http.setScheme("http");
-							tomcat.getService().addConnector(_http);
+							_tomcat.getService().addConnector(_http);
 
 							var api = {
 								$api: $api,
@@ -281,7 +323,7 @@
 							)();
 
 							var addContext = function(path,base) {
-								return tomcat.addContext(path, base.pathname.java.adapt().getCanonicalPath());
+								return _tomcat.addContext(path, base.pathname.java.adapt().getCanonicalPath());
 							};
 
 							/**
@@ -370,42 +412,56 @@
 								}
 							};
 
+							/** @type { (context: slime.jsh.httpd.tomcat.configuration.Context) => context is slime.jsh.httpd.tomcat.configuration.Servlets } */
+							var isServlets = function(context) {
+								return Boolean(context["servlets"]);
+							}
+
 							/** @type { slime.jsh.httpd.Tomcat["map"] } */
-							rv.map = function(m) {
-								if (typeof(m.path) == "string" && m.servlets) {
+							var map = function(m) {
+								if (isServlets(m)) {
 									var context = addContext(m.path,base);
 									var id = 0;
 									for (var pattern in m.servlets) {
 										addServlet(context,m.resources,pattern,"slime" + String(id++),m.servlets[pattern])
 									}
 								} else if (typeof(m.path) == "string" && m.webapp) {
-									tomcat.getEngine().setParentClassLoader(tomcat.getEngine().getClass().getClassLoader());
-									var context = tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());
+									_tomcat.getEngine().setParentClassLoader(_tomcat.getEngine().getClass().getClassLoader());
+									var context = _tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());
 									jsh.shell.console("Added " + context);
 								}
 							};
 
 							/** @type { slime.jsh.httpd.Tomcat["servlet"] } */
-							rv.servlet = function(declaration) {
+							var servlet = function(declaration) {
 								addServlet(addContext("",base),declaration.resources,"/*","slime",declaration);
 							};
+
+							var webapps = toWebappsWithContextPath(p);
+
+							Object.entries(webapps).forEach(function(entry) {
+								map($api.Object.compose({ path: entry[0] }, entry[1]));
+							});
+
+							rv.map = $api.deprecate(map);
+							rv.servlet = $api.deprecate(servlet);
 
 							var started = false;
 
 							rv.start = function() {
 								if (!started) {
-									tomcat.start();
+									_tomcat.start();
 									started = true;
 								}
 							}
 
 							rv.run = function() {
 								if (!started) {
-									tomcat.start();
+									_tomcat.start();
 									started = true;
 								}
 								var run = function() {
-									tomcat.getServer().await();
+									_tomcat.getServer().await();
 									started = false;
 								};
 								var fork = false;
@@ -417,9 +473,9 @@
 							}
 
 							rv.stop = function() {
-								tomcat.stop();
+								_tomcat.stop();
 								//	Destroy was not needed with Tomcat 7, but is needed with 9 (unknown whether needed with 8.5)
-								tomcat.destroy();
+								_tomcat.destroy();
 								started = false;
 							}
 
