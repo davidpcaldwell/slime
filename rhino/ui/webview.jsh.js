@@ -11,6 +11,6 @@
 				servlet: jsh.file.Pathname
 			}
 		});
-		jsh.ui.javafx.WebView.application({ servlet: parameters.options.servlet.file });
+		jsh.ui.application({ servlet: parameters.options.servlet.file });
 	}
 )();
