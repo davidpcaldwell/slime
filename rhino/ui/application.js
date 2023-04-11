@@ -40,18 +40,12 @@
 
 		/**
 		 * @param { slime.jsh.ui.application.ServerConfiguration } p
-		 * @returns { slime.jsh.httpd.tomcat.configuration.Servlets }
+		 * @returns { slime.jsh.httpd.servlet.configuration.Servlets }
 		 */
 		var toServletDescriptor = function(p) {
-			var argument = jsh.httpd.spi.argument(p.resources,p.servlet);
-			return jsh.httpd.tomcat.Servlets.from.root({
-				servlet: {
-					parameters: p.parameters,
-					load: function(scope) {
-						argument.load.apply(this,[ $api.Object.compose(scope, { $loader: argument.$loader }) ]);
-						scope.$exports.handle = withWebviewInitializeServer(scope.$exports.handle);
-					}
-				},
+			var argument = jsh.httpd.spi.servlet.environment(p.resources,p.servlet);
+			return jsh.httpd.servlet.Servlets.from.root({
+				servlet: argument.descriptor,
 				resources: argument.resources
 			});
 		}

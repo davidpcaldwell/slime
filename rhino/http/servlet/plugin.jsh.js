@@ -29,6 +29,7 @@
 						tools: void(0),
 						nugget: void(0),
 						spi: void(0),
+						servlet: void(0),
 						tomcat: void(0)
 					};
 				}
@@ -90,13 +91,10 @@
 				jsh.httpd.nugget.getMimeType = getMimeType;
 
 				jsh.httpd.spi = {
-					argument: void(0)
+					servlet: {
+						environment: void(0)
+					}
 				};
-
-				/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jrunscript.file.File } */
-				var isFile = function(servlet) {
-					return Boolean(servlet["pathname"] && servlet["directory"] === false);
-				}
 
 				/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byLoad } */
 				var isByLoad = function(servlet) {
@@ -108,55 +106,67 @@
 					return Boolean(servlet["file"]);
 				}
 
-				/** @type { slime.jsh.httpd.Exports["spi"]["argument"] } */
-				jsh.httpd.spi.argument = function(resources,servlet) {
+				/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byResource } */
+				var isByResource = function(servlet) {
+					return Boolean(servlet["resource"]);
+				}
+
+				/** @type { slime.jsh.httpd.Exports["spi"]["servlet"]["environment"] } */
+				jsh.httpd.spi.servlet.environment = function(resources,servlet) {
 					if (servlet["$loader"]) throw new Error("servlet.$loader provided");
 
-					var byLoader = function($loader,path) {
+					/**
+					 *
+					 * @param { (scope: slime.servlet.Scope) => void } run
+					 * @param { () => slime.old.Loader } getScriptLoader
+					 * @returns { slime.jsh.httpd.servlet.byLoad["load"] }
+					 */
+					var toByLoad = function(run,getScriptLoader) {
+						var $loader = getScriptLoader();
 						return function(scope) {
-							$loader.run(path, scope);
+							run($api.Object.compose(scope, { $loader: $loader }));
+						}
+					}
+
+					var getLoad = function(descriptor) {
+						if (isByLoad(servlet)) {
+							return servlet.load;
+						} else if (isByFile(servlet)) {
+							return toByLoad(
+								function(scope) {
+									jsh.loader.run(servlet.file.pathname, scope);
+								},
+								function getScriptLoader() {
+									return new jsh.file.Loader({
+										directory: servlet.file.parent,
+										type: getMimeType
+									})
+								}
+							);
+						} else if (isByResource(servlet)) {
+							return toByLoad(
+								function(scope) {
+									resources.run(servlet.resource, scope);
+								},
+								function() {
+									var prefix = servlet.resource.split("/").slice(0,-1).join("/");
+									if (prefix) prefix += "/";
+									var $loader = resources.Child(prefix);
+									return $loader;
+								}
+							)
+						} else {
+							throw new Error("Bad argument.");
 						}
 					};
 
-					/**
-					 *	@param { { load: (scope: slime.servlet.Scope) => void, $loader?: slime.old.Loader } } o
-					 */
-					var withResources = function(o) {
-						return Object.assign(o, { resources: resources });
+					return {
+						resources: resources,
+						descriptor: {
+							parameters: servlet.parameters,
+							load: getLoad(servlet)
+						}
 					};
-
-					/** @param { slime.jrunscript.file.File } file */
-					var fromFile = function(file) {
-						return withResources({
-							$loader: new jsh.file.Loader({
-								directory: file.parent,
-								type: getMimeType
-							}),
-							load: function(scope) {
-								jsh.loader.run(file.pathname, scope);
-							}
-						});
-					}
-
-					if (isByLoad(servlet)) {
-						return withResources({
-							load: servlet.load
-						});
-					} else if (isByFile(servlet)) {
-						return fromFile(servlet.file);
-					} else if (isFile(servlet)) {
-						return fromFile(servlet);
-					} else if (servlet.resource) {
-						var prefix = servlet.resource.split("/").slice(0,-1).join("/");
-						if (prefix) prefix += "/";
-						var $loader = resources.Child(prefix);
-						return withResources({
-							$loader: $loader,
-							load: byLoader($loader, servlet.resource.substring(prefix.length))
-						});
-					} else {
-						throw new Error("Bad argument.");
-					}
 				};
 
 				jsh.httpd.Resources = $loader.module("plugin.jsh.resources.js", {
@@ -191,7 +201,7 @@
 
 				jsh.java.log.named("jsh.httpd").CONFIG("When trying to load Tomcat: class = %s CATALINA_HOME = %s", TOMCAT_CLASS, CATALINA_HOME);
 
-				jsh.httpd.tomcat = {
+				jsh.httpd.servlet = {
 					Servlets: {
 						from: {
 							root: function(p) {
@@ -327,14 +337,14 @@
 							};
 
 							/**
-							 * @param { any } context - Tomcat native Java context object
+							 * @param { any } context Tomcat native Java context object
 							 * @param { slime.old.Loader } resources
 							 * @param { string } pattern
 							 * @param { string } servletName
 							 * @param { slime.jsh.httpd.servlet.descriptor } servletDeclaration
 							 */
 							var addServlet = function(context,resources,pattern,servletName,servletDeclaration) {
-								var servletImplementation = jsh.httpd.spi.argument(resources,servletDeclaration);
+								var servletImplementation = jsh.httpd.spi.servlet.environment(resources,servletDeclaration);
 								Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
 									Packages.javax.servlet.http.HttpServlet,
 									new function() {
@@ -342,11 +352,6 @@
 										var servlet;
 
 										this.init = function() {
-											var parameters = (function() {
-												if (isFile(servletDeclaration)) return {};
-												return (servletDeclaration.parameters) ? servletDeclaration.parameters : {};
-											})();
-
 											/** @type { { $host: slime.servlet.internal.$host.jsh } } */
 											var apiScope = {
 												$host: {
@@ -361,11 +366,11 @@
 														}
 													},
 
-													parameters: parameters,
+													parameters: (servletDeclaration.parameters) ? servletDeclaration.parameters : {},
 
 													loaders: {
 														api: $loader.Child("server/"),
-														script: servletImplementation.$loader,
+														script: void(0),
 														container: servletImplementation.resources
 													},
 
@@ -375,9 +380,7 @@
 														}
 													},
 
-													loadServletScriptIntoScope: function(scope) {
-														servletImplementation.load(scope);
-													},
+													loadServletScriptIntoScope: servletImplementation.descriptor.load,
 
 													$slime: $slime,
 
@@ -412,7 +415,7 @@
 								}
 							};
 
-							/** @type { (context: slime.jsh.httpd.tomcat.configuration.Context) => context is slime.jsh.httpd.tomcat.configuration.Servlets } */
+							/** @type { (context: slime.jsh.httpd.servlet.configuration.Context) => context is slime.jsh.httpd.servlet.configuration.Servlets } */
 							var isServlets = function(context) {
 								return Boolean(context["servlets"]);
 							}
@@ -491,6 +494,12 @@
 							}
 						}
 					);
+
+					jsh.httpd.tomcat = {
+						Server: {
+							from: Tomcat
+						}
+					};
 
 					jsh.httpd.Tomcat = Object.assign(Tomcat, { serve: void(0) });
 

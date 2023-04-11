@@ -24,7 +24,20 @@ namespace slime.jsh.httpd {
 			resource: string
 		}
 
-		export type descriptor = byLoad | byFile | byResource | slime.jrunscript.file.File
+		export type descriptor = byLoad | byFile | byResource
+
+		export namespace configuration {
+			export interface Servlets {
+				resources?: slime.old.Loader
+				servlets?: { [pattern: string]: servlet.descriptor }
+			}
+
+			export interface Webapp {
+				webapp: slime.jrunscript.file.Pathname
+			}
+
+			export type Context = Servlets | Webapp
+		}
 	}
 
 	export interface Tomcat {
@@ -42,7 +55,7 @@ namespace slime.jsh.httpd {
 		/**
 		 * @deprecated Webapps should be declared at the time of server creation.
 		 */
-		map: (p: { path: string } & slime.jsh.httpd.tomcat.configuration.Context) => void
+		map: (p: { path: string } & slime.jsh.httpd.servlet.configuration.Context) => void
 
 		/**
 		 * @deprecated Webapps should be declared at the time of server creation.
@@ -70,12 +83,12 @@ namespace slime.jsh.httpd {
 
 	export namespace tomcat {
 		export interface SingleWebapp {
-			webapp: configuration.Context
+			webapp: slime.jsh.httpd.servlet.configuration.Context
 		}
 
 		export interface MultipleWebapps {
 			webapps: {
-				[path: string]: configuration.Context
+				[path: string]: slime.jsh.httpd.servlet.configuration.Context
 			}
 		}
 
@@ -115,19 +128,6 @@ namespace slime.jsh.httpd {
 			 */
 			base?: slime.jrunscript.file.Directory
 		}
-
-		export namespace configuration {
-			export interface Servlets {
-				resources?: slime.old.Loader
-				servlets?: { [pattern: string]: servlet.descriptor }
-			}
-
-			export interface Webapp {
-				webapp: slime.jrunscript.file.Pathname
-			}
-
-			export type Context = Servlets | Webapp
-		}
 	}
 
 	export interface Exports {
@@ -138,12 +138,18 @@ namespace slime.jsh.httpd {
 		}
 
 		tomcat: {
+			Server: {
+				from: (p: tomcat.Configuration & tomcat.Webapps) => Tomcat
+			}
+		}
+
+		servlet: {
 			Servlets: {
 				from: {
 					root: (p: {
 						servlet: servlet.descriptor
 						resources?: slime.old.Loader
-					}) => tomcat.configuration.Servlets
+					}) => servlet.configuration.Servlets
 				}
 			}
 		}
@@ -198,10 +204,11 @@ namespace slime.jsh.httpd {
 		nugget: any
 
 		spi: {
-			argument: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.descriptor) => {
-				resources: slime.old.Loader
-				load: servlet.byLoad["load"]
-				$loader?: slime.old.Loader
+			servlet: {
+				environment: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.descriptor) => {
+					resources: slime.old.Loader
+					descriptor: servlet.byLoad
+				}
 			}
 		}
 
