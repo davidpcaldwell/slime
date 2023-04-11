@@ -6,6 +6,8 @@
 
 namespace slime.jsh.httpd {
 	export namespace servlet {
+		export type Parameters = { [name: string]: any }
+
 		type common = {
 			parameters?: Parameters
 		}
@@ -23,8 +25,6 @@ namespace slime.jsh.httpd {
 		}
 
 		export type descriptor = byLoad | byFile | byResource | slime.jrunscript.file.File
-
-		export type Parameters = { [name: string]: any }
 	}
 
 	export interface Tomcat {
