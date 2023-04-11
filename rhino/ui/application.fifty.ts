@@ -5,19 +5,34 @@
 //	END LICENSE
 
 namespace slime.jsh.ui {
+	export interface Application {
+		browser: any
+	}
+
 	export interface Exports {
 		application: (
 			p: slime.jsh.ui.application.Argument,
 			events?: $api.event.Function.Receiver
-		) => {
+		) => Application & {
+			server: slime.jsh.ui.application.Server
 			port: number
-			server: any
-			browser: any
+		}
+
+		object: {
+			Application: slime.$api.fp.world.Question<
+				slime.jsh.ui.application.Configuration,
+				slime.jsh.ui.application.Events,
+				Application & {
+					server: slime.jsh.httpd.Tomcat
+				}
+			>
 		}
 	}
 }
 
 namespace slime.jsh.ui.application {
+	export type Server = Pick<slime.jsh.httpd.Tomcat,"start" | "stop" | "port">
+
 	export interface ServerConfiguration {
 		/**
 		 * See {@link slime.jsh.httpd.tomcat.Configuration}.
@@ -32,7 +47,7 @@ namespace slime.jsh.ui.application {
 	}
 
 	export interface ServerRunning {
-		server: Pick<slime.jsh.httpd.Tomcat,"start" | "stop" | "port">
+		server: Server
 	}
 
 	export type ServerSpecification = ServerRunning | ServerConfiguration
@@ -94,6 +109,11 @@ namespace slime.jsh.ui.application {
 		close: () => void
 	}
 
+	export interface Events {
+		started: Server
+		close: void
+	}
+
 	export interface EventsSpecification {
 		on?: EventsConfiguration
 	}
@@ -106,6 +126,14 @@ namespace slime.jsh.ui.application {
 	}
 
 	export type Argument = ServerSpecification & ClientSpecification & EventsSpecification & Deprecated
+
+	export interface Configuration {
+		server: ServerConfiguration
+		browser: {
+			proxy?: (p: { port: number }) => slime.jrunscript.shell.browser.ProxyConfiguration
+			chrome: ChromeConfiguration
+		}
+	}
 }
 
 namespace slime.jsh.ui.internal.application {
@@ -128,34 +156,35 @@ namespace slime.jsh.ui.internal.application {
 	}
 
 	export interface Exports {
-		Application: slime.jsh.Global["ui"]["application"]
+		old: slime.jsh.Global["ui"]["application"]
+		object: slime.jsh.Global["ui"]["object"]["Application"]
 	}
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			const script: Script = fifty.$loader.script("application.js");
+
+			const api = script({
+				library: {
+					java: jsh.java,
+					shell: jsh.shell
+				},
+				input: {
+					chrome: $api.fp.impure.Input.value(jsh.shell.browser.chrome)
+				},
+				console: jsh.shell.console,
+				jsh: {
+					httpd: jsh.httpd,
+					ui: jsh.ui
+				}
+			});
+
 			fifty.tests.suite = function() {
-				const { verify } = fifty;
-				const { $api, jsh } = fifty.global;
-
-				const script: Script = fifty.$loader.script("application.js");
-
-				const api = script({
-					library: {
-						java: jsh.java,
-						shell: jsh.shell
-					},
-					input: {
-						chrome: $api.fp.impure.Input.value(jsh.shell.browser.chrome)
-					},
-					console: jsh.shell.console,
-					jsh: {
-						httpd: jsh.httpd,
-						ui: jsh.ui
-					}
-				});
-
 				//	jsh.httpd.Tomcat supplies default server implementation
 				//	TODO	do we need to disable this whole thing when Chrome is not available?
 				if (jsh.httpd.Tomcat && jsh.shell.browser.chrome) {
@@ -197,7 +226,7 @@ namespace slime.jsh.ui.internal.application {
 
 						if (decorator) decorator.call(argument);
 
-						var application = api.Application(argument);
+						var application = api.old(argument);
 
 						slock.Waiter({
 							until: function() {
@@ -247,6 +276,45 @@ namespace slime.jsh.ui.internal.application {
 					});
 					verify(invoked).is(true);
 				}
+			}
+
+			fifty.tests.manual = function() {
+				var object = $api.fp.world.now.question(
+					api.object,
+					{
+						server: {
+							resources: fifty.$loader,
+							servlet: {
+								load: function(scope) {
+									scope.$exports.handle = function(request) {
+										return {
+											status: { code: 200 },
+											body: {
+												type: "application/json",
+												string: JSON.stringify(request, void(0), 4)
+											}
+										};
+									}
+								}
+							}
+						},
+						browser: {
+							chrome: {
+							}
+						}
+					},
+					{
+						started: function(e) {
+							jsh.shell.console("Started.");
+						},
+						close: function(e) {
+							jsh.shell.console("Event received: close.");
+						}
+					}
+				);
+				object.server.start();
+				object.server.run();
+				jsh.shell.console("Server exited.");
 			}
 		}
 	//@ts-ignore

@@ -34,6 +34,7 @@
 					),
 					askpass: void(0),
 					application: void(0),
+					object: void(0),
 					desktop: void(0)
 				}
 			}
@@ -145,7 +146,10 @@
 					}
 				});
 
-				jsh.ui.application = api.Application;
+				jsh.ui.application = api.old;
+				jsh.ui.object = {
+					Application: api.object
+				};
 			}
 		})
 	}

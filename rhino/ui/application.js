@@ -11,13 +11,16 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.ui.internal.application.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.jsh.ui.internal.application.Exports } $exports
+	 * @param { slime.loader.Export<slime.jsh.ui.internal.application.Exports> } $export
 	 */
-	function(Packages,$api,$context,$loader,$exports) {
+	function(Packages,$api,$context,$loader,$export) {
 		var jsh = $context.jsh;
 		// TODO: Remove or document (probably by renaming file) dependency on jsh
 
-		var webviewDecorated = function(was) {
+		/**
+		 * @type { slime.$api.fp.Transform<slime.servlet.handler> }
+		 */
+		var withWebviewInitializeServer = function(was) {
 			return function(request) {
 				if (request.path == "webview.initialize.js") {
 					var code = $loader.get("webview.initialize.js").read(String);
@@ -51,9 +54,8 @@
 					"/*": {
 						parameters: p.parameters,
 						load: function(scope) {
-							scope.$loader = servlet.$loader;
-							servlet.load.apply(this,arguments);
-							scope.$exports.handle = webviewDecorated(scope.$exports.handle);
+							servlet.load.apply(this,[ $api.Object.compose(scope, { $loader: servlet.$loader }) ]);
+							scope.$exports.handle = withWebviewInitializeServer(scope.$exports.handle);
 						}
 					}
 				},
@@ -255,7 +257,7 @@
 		 * @param { slime.jsh.ui.application.Argument } p
 		 * @param { slime.$api.Events } events
 		 */
-		var Application = function(p,events) {
+		var Old = function(p,events) {
 			/** @type { (v: slime.jsh.ui.application.ServerSpecification) => v is slime.jsh.ui.application.ServerRunning } */
 			var isTomcat = function(v) {
 				return Boolean(v["server"]);
@@ -333,9 +335,42 @@
 			};
 		};
 
-		$exports.Application = $api.events.Function(function(p,events) {
-			return Application(p,events);
+		/** @type { slime.jsh.ui.internal.application.Exports["object"] } */
+		var Application = function(p) {
+			return function(events) {
+				var server = Server(p.server);
+				var proxySettings = (p.browser.proxy) ? p.browser.proxy({ port: server.port }) : null;
+				var proxy = (proxySettings) ? $context.library.shell.browser.ProxyConfiguration(proxySettings) : void(0)
+				var create = Chrome(p.browser.chrome);
+				var url = (function() {
+					// if (p.url) return p.url;
+					// var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
+					// return "http://" + authority + "/" + ((p.path) ? p.path : "");
+					var authority = "127.0.0.1:" + server.port;
+					var path = "";
+					return "http://" + authority + "/" + path;
+				})();
+				server.start();
+				var browser = create({ url: url, proxy: proxy, hostrules: p.browser.chrome.hostrules });
+				//	TODO	creates race condition between browser and server
+				$context.library.java.Thread.start(function() {
+					browser.run();
+					server.stop();
+					events.fire("close");
+				});
+				return {
+					server: Server(p.server),
+					browser: browser
+				}
+			}
+		}
+
+		$export({
+			old: $api.events.Function(function(p,events) {
+				return Old(p,events);
+			}),
+			object: Application
 		});
 	}
 //@ts-ignore
-)(Packages,$api,$context,$loader,$exports);
+)(Packages,$api,$context,$loader,$export);
