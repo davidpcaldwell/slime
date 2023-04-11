@@ -25,6 +25,7 @@
 						plugin: void(0),
 						spi: void(0),
 						tools: void(0),
+						servlet: void(0),
 						tomcat: void(0)
 					};
 				}
