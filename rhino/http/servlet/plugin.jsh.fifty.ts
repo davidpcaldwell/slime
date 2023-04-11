@@ -39,14 +39,14 @@ namespace slime.jsh.httpd {
 			port: number
 		}
 
-		map: (p: {
-			path: string,
-			resources?: slime.old.Loader,
-			servlets?: { [pattern: string]: servlet.descriptor }
-			webapp?: any
-		}) => void
+		/**
+		 * @deprecated Webapps should be declared at the time of server creation.
+		 */
+		map: (p: { path: string } & slime.jsh.httpd.tomcat.configuration.Context) => void
 
 		/**
+		 * @deprecated Webapps should be declared at the time of server creation.
+		 *
 		 * Configures the given servlet as a single top-level servlet in this Tomcat server.
 		 */
 		servlet: (servlet: servlet.descriptor & { resources?: slime.old.Loader }) => void
@@ -69,16 +69,29 @@ namespace slime.jsh.httpd {
 	}
 
 	export namespace tomcat {
+		export interface SingleWebapp {
+			webapp: configuration.Context
+		}
+
+		export interface MultipleWebapps {
+			webapps: {
+				[path: string]: configuration.Context
+			}
+		}
+
+		/** @deprecated Should be declaring webapps at time of server creation. */
+		export type NoWebapps = {};
+
+		export type Webapps = SingleWebapp | MultipleWebapps
+
+		/** @deprecated Should be declaring webapps at time of server creation. */
+		export type OldWebapps = Webapps | NoWebapps
+
 		export interface Configuration {
 			/**
 			 * The port on which the server's HTTP service should run; if omitted, an ephemeral port will be used.
 			 */
 			port?: number
-
-			/**
-			 * The base directory against which the server should run; if omitted, a temporary directory will be used.
-			 */
-			base?: slime.jrunscript.file.Directory
 
 			/**
 			 * If present, describes an HTTPS service that should run.
@@ -96,16 +109,43 @@ namespace slime.jsh.httpd {
 					password: string
 				}
 			}
+
+			/**
+			 * The base directory against which the server should run; if omitted, a temporary directory will be used.
+			 */
+			base?: slime.jrunscript.file.Directory
+		}
+
+		export namespace configuration {
+			export interface Servlets {
+				resources?: slime.old.Loader
+				servlets?: { [pattern: string]: servlet.descriptor }
+			}
+
+			export interface Webapp {
+				webapp: slime.jrunscript.file.Pathname
+			}
+
+			export type Context = Servlets | Webapp
 		}
 	}
 
 	export interface Exports {
 		Tomcat?: {
-			//	TODO	figure out why constructor definition not output
-			//	TODO	convert to function
-			(p?: tomcat.Configuration): Tomcat
+			(p?: tomcat.Configuration & tomcat.OldWebapps): Tomcat
 
 			serve: (p: tomcat.Configuration & { directory: slime.jrunscript.file.Directory }) => slime.jsh.httpd.Tomcat
+		}
+
+		tomcat: {
+			Servlets: {
+				from: {
+					root: (p: {
+						servlet: servlet.descriptor
+						resources?: slime.old.Loader
+					}) => tomcat.configuration.Servlets
+				}
+			}
 		}
 	}
 

@@ -40,26 +40,31 @@
 
 		/**
 		 * @param { slime.jsh.ui.application.ServerConfiguration } p
+		 * @returns { slime.jsh.httpd.tomcat.configuration.Servlets }
+		 */
+		var toServletDescriptor = function(p) {
+			var argument = jsh.httpd.spi.argument(p.resources,p.servlet);
+			return jsh.httpd.tomcat.Servlets.from.root({
+				servlet: {
+					parameters: p.parameters,
+					load: function(scope) {
+						argument.load.apply(this,[ $api.Object.compose(scope, { $loader: argument.$loader }) ]);
+						scope.$exports.handle = withWebviewInitializeServer(scope.$exports.handle);
+					}
+				},
+				resources: argument.resources
+			});
+		}
+
+		/**
+		 * @param { slime.jsh.ui.application.ServerConfiguration } p
 		 * @returns { slime.jsh.httpd.Tomcat }
 		 */
 		var Server = function(p) {
 			var server = jsh.httpd.Tomcat({
 				port: (p.port) ? p.port : void(0),
-				https: p.https
-			});
-			var servlet = jsh.httpd.spi.argument(p.resources,p.servlet);
-			server.map({
-				path: "",
-				servlets: {
-					"/*": {
-						parameters: p.parameters,
-						load: function(scope) {
-							servlet.load.apply(this,[ $api.Object.compose(scope, { $loader: servlet.$loader }) ]);
-							scope.$exports.handle = withWebviewInitializeServer(scope.$exports.handle);
-						}
-					}
-				},
-				resources: servlet.resources
+				https: p.https,
+				webapp: toServletDescriptor(p)
 			});
 			return server;
 		};
