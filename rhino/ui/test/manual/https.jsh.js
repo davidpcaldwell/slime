@@ -23,7 +23,7 @@
 		//	Does not work as of Chrome 96 without 127.0.0.1 since that is where hostrule proxies the request
 		mkcert.pkcs12({ to: keystore, hosts: ["127.0.0.1", "it.is.awesome"] });
 
-		/** @type { slime.jrunscript.shell.browser.ProxyConfiguration } */
+		/** @type { slime.jrunscript.shell.browser.old.ProxyConfiguration } */
 		var proxyConfiguration = {
 			code: jsh.script.loader.get("proxy.pac.js").read(String)
 				.replace(/__HTTP__/g, String(httpPort))

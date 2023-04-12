@@ -37,56 +37,60 @@
 			chrome: library.chrome.installed
 		};
 
-		$exports.ProxyConfiguration = function(o) {
-			var pac = (function() {
-				if (o && o.code) return o.code;
-				if (o && o.pac) return o.pac;
-				if (!o || typeof(o.port) != "number") throw new TypeError("Required: port (number)");
-				return $loader.get("proxy.pac.js").read(String).replace(/__PORT__/g, String(o.port));
-			})();
+		$exports.ProxyConfiguration = Object.assign(
+			function(o) {
+				var pac = (function() {
+					if (o && o.code) return o.code;
+					if (o && o.pac) return o.pac;
+					if (!o || typeof(o.port) != "number") throw new TypeError("Required: port (number)");
+					return $loader.get("proxy.pac.js").read(String).replace(/__PORT__/g, String(o.port));
+				})();
 
-			/** @type { slime.servlet.Response } */
-			var response = {
-				status: { code: 200 },
-				body: {
-					type: "application/x-javascript-config",
-					string: pac
-				}
-			};
+				/** @type { slime.servlet.Response } */
+				var response = {
+					status: { code: 200 },
+					body: {
+						type: "application/x-javascript-config",
+						string: pac
+					}
+				};
 
-			return {
-				Server: ($context.api.httpd.Tomcat) ? function() {
-					//	TODO	should allow omission of empty argument
-					var pacserver = new $context.api.httpd.Tomcat({});
-					var url = "http://127.0.0.1:" + pacserver.port + "/proxy.pac";
-					pacserver.map({
-						path: "/",
-						servlets: {
-							"/*": {
-								load: function(scope) {
-									scope.$exports.handle = function(request) {
-										if (request.path == "proxy.pac") {
-											return response;
+				return {
+					Server: ($context.api.httpd.Tomcat) ? function() {
+						var pacserver = $context.api.httpd.Tomcat();
+						var url = "http://127.0.0.1:" + pacserver.port + "/proxy.pac";
+						pacserver.map({
+							path: "/",
+							servlets: {
+								"/*": {
+									load: function(scope) {
+										scope.$exports.handle = function(request) {
+											if (request.path == "proxy.pac") {
+												return response;
+											}
 										}
 									}
 								}
 							}
-						}
-					});
-					return {
-						url: url,
-						start: function() {
-							pacserver.start();
-						},
-						stop: function() {
-							pacserver.stop();
-						}
-					};
-				} : void(0),
-				code: pac,
-				response: response
-			};
-		};
+						});
+						return {
+							url: url,
+							start: function() {
+								pacserver.start();
+							},
+							stop: function() {
+								pacserver.stop();
+							}
+						};
+					} : void(0),
+					code: pac,
+					response: response
+				};
+			},
+			{
+				Server: void(0)
+			}
+		);
 		Object.defineProperty($exports.ProxyConfiguration,"Server",{
 			get: function() {
 				return ($context.api.httpd && $context.api.httpd.Tomcat) ? function(p) {

@@ -114,9 +114,6 @@
 			pathname: SRC.getRelativePath("rhino/shell/api.html"),
 			environment: { noselfping: parameters.options.noselfping }
 		}));
-		suite.add("jrunscript/shell/browser", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/shell/browser/api.html")
-		}));
 
 		// TODO: does this require hg be installed?
 		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
