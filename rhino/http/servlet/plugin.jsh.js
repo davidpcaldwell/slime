@@ -92,34 +92,34 @@
 
 				jsh.httpd.spi = {
 					servlet: {
-						environment: void(0)
+						inWebapp: void(0)
 					}
 				};
 
-				/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byLoad } */
+				/** @type { (servlet: slime.jsh.httpd.servlet.Descriptor) => servlet is slime.jsh.httpd.servlet.DescriptorUsingLoad } */
 				var isByLoad = function(servlet) {
 					return Boolean(servlet["load"]);
 				}
 
-				/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byFile } */
+				/** @type { (servlet: slime.jsh.httpd.servlet.Descriptor) => servlet is slime.jsh.httpd.servlet.DescriptorUsingFile } */
 				var isByFile = function(servlet) {
 					return Boolean(servlet["file"]);
 				}
 
-				/** @type { (servlet: slime.jsh.httpd.servlet.descriptor) => servlet is slime.jsh.httpd.servlet.byResource } */
+				/** @type { (servlet: slime.jsh.httpd.servlet.Descriptor) => servlet is slime.jsh.httpd.servlet.DescriptorUsingResourcePath } */
 				var isByResource = function(servlet) {
 					return Boolean(servlet["resource"]);
 				}
 
-				/** @type { slime.jsh.httpd.Exports["spi"]["servlet"]["environment"] } */
-				jsh.httpd.spi.servlet.environment = function(resources,servlet) {
+				/** @type { slime.jsh.httpd.Exports["spi"]["servlet"]["inWebapp"] } */
+				jsh.httpd.spi.servlet.inWebapp = function(resources,servlet) {
 					if (servlet["$loader"]) throw new Error("servlet.$loader provided");
 
 					/**
 					 *
 					 * @param { (scope: slime.servlet.Scope) => void } run
 					 * @param { () => slime.old.Loader } getScriptLoader
-					 * @returns { slime.jsh.httpd.servlet.byLoad["load"] }
+					 * @returns { slime.jsh.httpd.servlet.DescriptorUsingLoad["load"] }
 					 */
 					var toByLoad = function(run,getScriptLoader) {
 						var $loader = getScriptLoader();
@@ -128,7 +128,12 @@
 						}
 					}
 
-					var getLoad = function(descriptor) {
+					/**
+					 *
+					 * @param { slime.jsh.httpd.servlet.Descriptor } servlet
+					 * @returns { slime.jsh.httpd.servlet.DescriptorUsingLoad["load"] }
+					 */
+					var getLoad = function(servlet) {
 						if (isByLoad(servlet)) {
 							return servlet.load;
 						} else if (isByFile(servlet)) {
@@ -162,7 +167,7 @@
 
 					return {
 						resources: resources,
-						descriptor: {
+						servlet: {
 							parameters: servlet.parameters,
 							load: getLoad(servlet)
 						}
@@ -341,10 +346,10 @@
 							 * @param { slime.old.Loader } resources
 							 * @param { string } pattern
 							 * @param { string } servletName
-							 * @param { slime.jsh.httpd.servlet.descriptor } servletDeclaration
+							 * @param { slime.jsh.httpd.servlet.Descriptor } servletDeclaration
 							 */
 							var addServlet = function(context,resources,pattern,servletName,servletDeclaration) {
-								var servletImplementation = jsh.httpd.spi.servlet.environment(resources,servletDeclaration);
+								var servletImplementation = jsh.httpd.spi.servlet.inWebapp(resources,servletDeclaration);
 								Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
 									Packages.javax.servlet.http.HttpServlet,
 									new function() {
@@ -380,7 +385,7 @@
 														}
 													},
 
-													loadServletScriptIntoScope: servletImplementation.descriptor.load,
+													loadServletScriptIntoScope: servletImplementation.servlet.load,
 
 													$slime: $slime,
 

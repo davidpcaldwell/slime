@@ -33,10 +33,7 @@ namespace slime.jsh.ui {
 namespace slime.jsh.ui.application {
 	export type Server = Pick<slime.jsh.httpd.Tomcat,"start" | "stop" | "port">
 
-	export interface ServerConfiguration extends slime.jsh.httpd.tomcat.Configuration {
-		resources: slime.old.Loader
-		parameters?: slime.jsh.httpd.servlet.Parameters
-		servlet: slime.jsh.httpd.servlet.descriptor
+	export interface ServerConfiguration extends slime.jsh.httpd.tomcat.Configuration, slime.jsh.httpd.servlet.configuration.WebappServlet {
 	}
 
 	export interface ServerRunning {
@@ -188,7 +185,7 @@ namespace slime.jsh.ui.internal.application {
 						var slock = new jsh.java.Thread.Monitor();
 
 						var argument = new function() {
-							const servlet: slime.jsh.httpd.servlet.byLoad = {
+							const servlet: slime.jsh.httpd.servlet.DescriptorUsingLoad = {
 								load: function(scope) {
 									scope.$exports.handle = function(request) {
 										slock.Waiter({
@@ -293,12 +290,13 @@ namespace slime.jsh.ui.internal.application {
 						},
 						browser: {
 							chrome: {
+								browser: true
 							}
 						}
 					},
 					{
 						started: function(e) {
-							jsh.shell.console("Started.");
+							jsh.shell.console("Started: port = " + e.detail.port);
 						},
 						close: function(e) {
 							jsh.shell.console("Event received: close.");
