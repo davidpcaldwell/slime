@@ -144,13 +144,17 @@ namespace slime.jsh.httpd {
 
 		tomcat: {
 			Server: {
-				from: (p: tomcat.Configuration & tomcat.Webapps) => Tomcat
+				from: {
+					configuration: (p: tomcat.Configuration & tomcat.Webapps) => Tomcat
+				}
 			}
 		}
 
 		servlet: {
 			Servlets: {
 				from: {
+					//	TODO	in the given WebappServlet, it's legal to leave resources undefined. Nail down what this means and
+					//			adjust types accordingly.
 					root: (p: servlet.configuration.WebappServlet) => servlet.configuration.Servlets
 				}
 			}

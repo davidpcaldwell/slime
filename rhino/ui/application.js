@@ -249,20 +249,6 @@
 			};
 		}
 
-		var hostToPort = function(name) {
-			/**
-			 * @param { { port: number } } o
-			 * @returns { slime.jrunscript.shell.browser.old.ProxyConfiguration }
-			 */
-			var rv = function(o) {
-				var code = $loader.get("application-hostToPort.pac").read(String).replace(/__HOST__/g, name).replace(/__PORT__/g, String(o.port));
-				return {
-					code: code
-				}
-			}
-			return rv;
-		};
-
 		/**
 		 * @param { slime.jsh.ui.application.Argument } p
 		 * @param { slime.$api.Events } events
@@ -310,7 +296,7 @@
 			var proxySettings = (function() {
 				if (p.browser.proxy && typeof(p.browser.proxy) == "object") return p.browser.proxy;
 				if (p.browser.proxy && typeof(p.browser.proxy) == "function") return p.browser.proxy({ port: server.port });
-				if (p.browser.host) return hostToPort(p.browser.host)({ port: server.port });
+				if (p.browser.host) return { code: $context.library.shell.browser.ProxyConfiguration.from.host(p.browser.host)(server.port) };
 				return null;
 			})();
 			var proxy = (proxySettings) ? $context.library.shell.browser.ProxyConfiguration(proxySettings) : void(0);
@@ -349,13 +335,11 @@
 		var Application = function(p) {
 			return function(events) {
 				var server = Server(p.server);
-				var proxySettings = (p.browser.proxy) ? p.browser.proxy({ port: server.port }) : null;
-				var proxy = (proxySettings) ? $context.library.shell.browser.ProxyConfiguration(proxySettings) : void(0)
+				var network = (p.browser.network) ? p.browser.network({ port: server.port }) : null;
+				var proxy = (network) ? $context.library.shell.browser.ProxyConfiguration({ code: network.pac }) : void(0)
 				var create = Chrome(p.browser.chrome);
 				var url = (function() {
-					// if (p.url) return p.url;
-					// var authority = (p.browser.host) ? p.browser.host : "127.0.0.1:" + server.port;
-					// return "http://" + authority + "/" + ((p.path) ? p.path : "");
+					if (network) return network.url;
 					var authority = "127.0.0.1:" + server.port;
 					var path = "";
 					return "http://" + authority + "/" + path;
@@ -380,6 +364,22 @@
 			old: $api.events.Function(function(p,events) {
 				return Old(p,events);
 			}),
+			configuration: {
+				browser: {
+					network: {
+						from: {
+							host: function(host) {
+								return function(p) {
+									return {
+										url: "http://" + host + "/",
+										pac: $context.library.shell.browser.ProxyConfiguration.from.host(host)(p.port)
+									}
+								}
+							}
+						}
+					}
+				}
+			},
 			object: Application
 		});
 	}
