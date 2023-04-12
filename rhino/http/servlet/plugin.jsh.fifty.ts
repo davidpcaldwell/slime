@@ -8,35 +8,40 @@ namespace slime.jsh.httpd {
 	export namespace servlet {
 		export type Parameters = { [name: string]: any }
 
-		type common = {
+		type AnyDescriptor = {
 			parameters?: Parameters
 		}
 
-		export interface byLoad extends common {
+		export interface DescriptorUsingLoad extends AnyDescriptor {
 			load: (scope: slime.servlet.Scope) => void
 		}
 
-		export interface byFile extends common {
+		export interface DescriptorUsingFile extends AnyDescriptor {
 			file: slime.jrunscript.file.File
 		}
 
-		export interface byResource extends common {
+		export interface DescriptorUsingResourcePath extends AnyDescriptor {
 			resource: string
 		}
 
-		export type descriptor = byLoad | byFile | byResource
+		export type Descriptor = DescriptorUsingLoad | DescriptorUsingFile | DescriptorUsingResourcePath
 
 		export namespace configuration {
 			export interface Servlets {
 				resources?: slime.old.Loader
-				servlets?: { [pattern: string]: servlet.descriptor }
+				servlets?: { [pattern: string]: servlet.Descriptor }
 			}
 
-			export interface Webapp {
+			export interface WebappServlet<T extends Descriptor = Descriptor> {
+				resources: slime.old.Loader
+				servlet: T
+			}
+
+			export interface WarFile {
 				webapp: slime.jrunscript.file.Pathname
 			}
 
-			export type Context = Servlets | Webapp
+			export type Context = Servlets | WarFile
 		}
 	}
 
@@ -62,7 +67,7 @@ namespace slime.jsh.httpd {
 		 *
 		 * Configures the given servlet as a single top-level servlet in this Tomcat server.
 		 */
-		servlet: (servlet: servlet.descriptor & { resources?: slime.old.Loader }) => void
+		servlet: (servlet: servlet.Descriptor & { resources?: slime.old.Loader }) => void
 
 		/**
 		 * Starts the server; this method will not return until the server is ready to receive requests.
@@ -146,10 +151,7 @@ namespace slime.jsh.httpd {
 		servlet: {
 			Servlets: {
 				from: {
-					root: (p: {
-						servlet: servlet.descriptor
-						resources?: slime.old.Loader
-					}) => servlet.configuration.Servlets
+					root: (p: servlet.configuration.WebappServlet) => servlet.configuration.Servlets
 				}
 			}
 		}
@@ -205,10 +207,7 @@ namespace slime.jsh.httpd {
 
 		spi: {
 			servlet: {
-				environment: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.descriptor) => {
-					resources: slime.old.Loader
-					descriptor: servlet.byLoad
-				}
+				inWebapp: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.Descriptor) => servlet.configuration.WebappServlet<servlet.DescriptorUsingLoad>
 			}
 		}
 

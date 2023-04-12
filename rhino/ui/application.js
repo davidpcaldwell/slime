@@ -38,15 +38,26 @@
 			}
 		};
 
+		/** @type { slime.$api.fp.Transform<slime.jsh.httpd.servlet.DescriptorUsingLoad> } */
+		var withWebviewInitialize = function(descriptorUsingLoad) {
+			return {
+				parameters: descriptorUsingLoad.parameters,
+				load: function(scope) {
+					descriptorUsingLoad.load(scope);
+					scope.$exports.handle = withWebviewInitializeServer(scope.$exports.handle);
+				}
+			}
+		}
+
 		/**
 		 * @param { slime.jsh.ui.application.ServerConfiguration } p
 		 * @returns { slime.jsh.httpd.servlet.configuration.Servlets }
 		 */
 		var toServletDescriptor = function(p) {
-			var argument = jsh.httpd.spi.servlet.environment(p.resources,p.servlet);
+			var argument = jsh.httpd.spi.servlet.inWebapp(p.resources,p.servlet);
 			return jsh.httpd.servlet.Servlets.from.root({
-				servlet: argument.descriptor,
-				resources: argument.resources
+				resources: argument.resources,
+				servlet: withWebviewInitialize(argument.servlet)
 			});
 		}
 
@@ -350,6 +361,7 @@
 					return "http://" + authority + "/" + path;
 				})();
 				server.start();
+				events.fire("started", server);
 				var browser = create({ url: url, proxy: proxy, hostrules: p.browser.chrome.hostrules });
 				//	TODO	creates race condition between browser and server
 				$context.library.java.Thread.start(function() {
