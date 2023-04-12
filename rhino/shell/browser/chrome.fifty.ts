@@ -40,7 +40,7 @@ namespace slime.jrunscript.shell.browser {
 			export interface CreatedConfiguration {
 				location?: slime.jrunscript.file.Pathname
 				directory?: slime.jrunscript.file.Directory
-				proxy?: ProxyTools
+				proxy?: old.ProxyTools | ProxyConfigurationServer
 				hostrules?: string[]
 
 				/**

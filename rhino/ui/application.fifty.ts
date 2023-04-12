@@ -18,6 +18,16 @@ namespace slime.jsh.ui {
 			port: number
 		}
 
+		configuration: {
+			browser: {
+				network: {
+					from: {
+						host: (host: string) => slime.jsh.ui.application.Configuration["browser"]["network"]
+					}
+				}
+			}
+		}
+
 		object: {
 			Application: slime.$api.fp.world.Question<
 				slime.jsh.ui.application.Configuration,
@@ -120,7 +130,10 @@ namespace slime.jsh.ui.application {
 	export interface Configuration {
 		server: ServerConfiguration
 		browser: {
-			proxy?: (p: { port: number }) => slime.jrunscript.shell.browser.old.ProxyConfiguration
+			network?: (p: { port: number }) => {
+				url: string
+				pac?: string
+			}
 			chrome: ChromeConfiguration
 		}
 	}
@@ -146,8 +159,9 @@ namespace slime.jsh.ui.internal.application {
 	}
 
 	export interface Exports {
-		old: slime.jsh.Global["ui"]["application"]
-		object: slime.jsh.Global["ui"]["object"]["Application"]
+		old: slime.jsh.ui.Exports["application"]
+		configuration: slime.jsh.ui.Exports["configuration"]
+		object: slime.jsh.ui.Exports["object"]["Application"]
 	}
 
 	(
@@ -289,6 +303,7 @@ namespace slime.jsh.ui.internal.application {
 							}
 						},
 						browser: {
+							network: api.configuration.browser.network.from.host("foo.bar.baz"),
 							chrome: {
 								browser: true
 							}

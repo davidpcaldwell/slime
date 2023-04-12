@@ -10,15 +10,116 @@ namespace slime.jrunscript.shell.browser {
 			js: any
 			java: any
 			file: any
-			httpd: {
-				Tomcat: () => jsh.httpd.Tomcat
-			}
+			httpd: slime.jsh.httpd.Exports
 		}
 		os: any
 		run: any
 		HOME: slime.jrunscript.file.Directory
 		TMPDIR: slime.jrunscript.file.Directory
 		environment: any
+	}
+
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			const { jsh } = fifty.global;
+
+			const code: Script = fifty.$loader.script("module.js");
+
+			const api = code({
+				os: jsh.shell.os,
+				HOME: jsh.shell.HOME,
+				TMPDIR: jsh.shell.TMPDIR,
+				run: jsh.shell.run,
+				environment: {},
+				api: {
+					js: jsh.js,
+					java: jsh.java,
+					file: jsh.file,
+					httpd: jsh.httpd
+				}
+			});
+
+			return api;
+		//@ts-ignore
+		})(fifty);
+	}
+
+	export interface ProxyConfigurationServer {
+		url: string
+		stop: () => void
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.ProxyConfiguration = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface ProxyConfiguration {
+			from: {
+				port: (port: number) => string
+				host: (host: string) => (port: number) => string
+			}
+
+			Server: (pac: string) => ProxyConfigurationServer
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
+				fifty.tests.exports.ProxyConfiguration.Server = function() {
+					const port = 54321;
+					var proxy = test.subject.ProxyConfiguration.Server(
+						test.subject.ProxyConfiguration.from.port(port)
+					);
+					var client = new jsh.http.Client();
+					var response = client.request({
+						url: proxy.url,
+						evaluate: function(response) {
+							return { string: response.body.stream.character().asString() };
+						}
+					});
+					verify(response).string.is.type("string");
+					verify(response).string.is(response.string);
+					verify(response).evaluate(function(): number { return this.string.indexOf(String(port)); }).is.not(-1);
+					proxy.stop();
+
+					//	verify that stop() worked
+					let error: Error;
+					try {
+						var afterStop = client.request({
+							url: proxy.url,
+							evaluate: function(response) {
+								return { string: response.body.stream.character().asString() };
+							}
+						});
+					} catch (e) {
+						error = e;
+					}
+					verify(error).is.type("object");
+				};
+
+				fifty.tests.wip = fifty.tests.exports.ProxyConfiguration.Server;
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace old {
@@ -35,16 +136,16 @@ namespace slime.jrunscript.shell.browser {
 
 			port?: number
 		}
-	}
 
-	export interface ProxyTools {
-		Server: () => {
-			url: string
-			start: () => void
-			stop: () => void
+		export interface ProxyTools {
+			Server: () => {
+				url: string
+				start: () => void
+				stop: () => void
+			}
+			code: string
+			response: slime.servlet.Response
 		}
-		code: string
-		response: slime.servlet.Response
 	}
 
 	export interface Exports {
@@ -74,12 +175,16 @@ namespace slime.jrunscript.shell.browser {
 			 */
 			chrome: Chrome
 		}
+	}
 
-		ProxyConfiguration: {
-			(o: old.ProxyConfiguration): ProxyTools
-
-			Server: (o: old.ProxyConfiguration) => ReturnType<slime.jrunscript.shell.browser.ProxyTools["Server"]>
+	export namespace deprecated {
+		export interface ProxyConfiguration {
+			(o: old.ProxyConfiguration): old.ProxyTools
 		}
+	}
+
+	export interface Exports {
+		ProxyConfiguration: exports.ProxyConfiguration & deprecated.ProxyConfiguration
 	}
 
 	(
@@ -101,33 +206,16 @@ namespace slime.jrunscript.shell.browser {
 					js: jsh.js,
 					java: jsh.java,
 					file: jsh.file,
-					httpd: {
-						Tomcat: jsh.httpd.Tomcat
-					}
+					httpd: jsh.httpd
 				}
 			});
 
 			fifty.tests.jsapi = fifty.test.Parent();
 
 			fifty.tests.jsapi._1 = function() {
-				if (api && api.ProxyConfiguration.Server) {
-					var port = jsh.ip.tcp.getEphemeralPortNumber();
-					verify(port,"port").is(port); // this is just explication for the tests
-					var proxy = api.ProxyConfiguration.Server({ port: port });
-					proxy.start();
+				if (api && api.ProxyConfiguration) {
 					var client = new jsh.http.Client();
-					var response = client.request({
-						url: proxy.url,
-						evaluate: function(response) {
-							return { string: response.body.stream.character().asString() };
-						}
-					});
-					verify(response).string.is.type("string");
-					verify(response).string.is(response.string);
-					verify(response).evaluate(function(): number { return this.string.indexOf(String(port)); }).is.not(-1);
-					proxy.stop();
-
-					var code = fifty.$loader.get("proxy.pac.js").read(String);
+					var code = fifty.$loader.get("port.pac.js").read(String);
 					var pacProxy = api.ProxyConfiguration({ pac: code });
 					var server = pacProxy.Server();
 					server.start();
@@ -233,6 +321,7 @@ namespace slime.jrunscript.shell.browser {
 			}
 
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
 				fifty.run(fifty.tests.jsapi);
 			}
 		}

@@ -37,13 +37,60 @@
 			chrome: library.chrome.installed
 		};
 
+		/** @type { slime.jrunscript.shell.browser.exports.ProxyConfiguration } */
+		var ProxyConfiguration = {
+			from: {
+				port: function(port) {
+					return $loader.get("port.pac.js").read(String).replace(/__PORT__/g, String(port));
+				},
+				host: function(host) {
+					return function(port) {
+						return $loader.get("hostToPort.pac.js").read(String).replace(/__HOST__/g, host).replace(/__PORT__/g, String(port));
+					}
+				}
+			},
+			Server: function(pac) {
+				var pacserver = $context.api.httpd.tomcat.Server.from.configuration({
+					webapp: $context.api.httpd.servlet.Servlets.from.root({
+						resources: void(0),
+						servlet: {
+							load: function(scope) {
+								scope.$exports.handle = function(request) {
+									var response = {
+										status: { code: 200 },
+										body: {
+											type: "application/x-javascript-config",
+											string: pac
+										}
+									};
+
+									if (request.path == "proxy.pac") {
+										return response;
+									}
+								}
+							}
+						}
+					})
+				});
+
+				pacserver.start();
+
+				return {
+					url: "http://127.0.0.1:" + pacserver.port + "/proxy.pac",
+					stop: function() {
+						pacserver.stop();
+					}
+				};
+			}
+		};
+
 		$exports.ProxyConfiguration = Object.assign(
 			function(o) {
 				var pac = (function() {
 					if (o && o.code) return o.code;
 					if (o && o.pac) return o.pac;
 					if (!o || typeof(o.port) != "number") throw new TypeError("Required: port (number)");
-					return $loader.get("proxy.pac.js").read(String).replace(/__PORT__/g, String(o.port));
+					return ProxyConfiguration.from.port(o.port);
 				})();
 
 				/** @type { slime.servlet.Response } */
@@ -89,16 +136,9 @@
 			},
 			{
 				Server: void(0)
-			}
+			},
+			ProxyConfiguration
 		);
-		Object.defineProperty($exports.ProxyConfiguration,"Server",{
-			get: function() {
-				return ($context.api.httpd && $context.api.httpd.Tomcat) ? function(p) {
-					var proxy = $exports.ProxyConfiguration(p);
-					return proxy.Server();
-				} : void(0);
-			}
-		});
 	}
 //@ts-ignore
 )($context,$loader,$exports);

@@ -502,7 +502,9 @@
 
 					jsh.httpd.tomcat = {
 						Server: {
-							from: Tomcat
+							from: {
+								configuration: Tomcat
+							}
 						}
 					};
 

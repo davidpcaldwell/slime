@@ -134,12 +134,22 @@
 
 					var pacserver;
 
+					/** @type { (p: typeof u["proxy"]) => p is slime.jrunscript.shell.browser.old.ProxyTools } */
+					var isOldProxyImplementation = function(p) {
+						return p["Server"];
+					}
+
 					var addProfileArguments = function(args,m) {
 						if (u.directory) args.push("--user-data-dir=" + u.directory);
 						if (u.proxy) {
-							pacserver = u.proxy.Server();
-							pacserver.start();
-							args.push("--proxy-pac-url=" + pacserver.url);
+							var proxy = u.proxy;
+							if (isOldProxyImplementation(proxy)) {
+								pacserver = proxy.Server();
+								pacserver.start();
+								args.push("--proxy-pac-url=" + pacserver.url);
+							} else {
+								args.push("--proxy-pac-url=" + proxy.url);
+							}
 						}
 						if (u.hostrules) {
 							var value = u.hostrules.join(",");
