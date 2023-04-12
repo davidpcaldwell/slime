@@ -142,7 +142,8 @@
 			}
 		}
 
-		if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup")) {
+		//	TODO	is this condition reasonable? What's the relationship between $platform and $slime.java?
+		if ($platform.java && $platform.java.getClass("org.jsoup.Jsoup") && $context.$slime.java) {
 			(
 				function($context) {
 					/** @type { (f: (p: any) => any ) => (() => any) } */

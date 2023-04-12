@@ -7,7 +7,8 @@
 /**
  * Provides a pure JavaScript parser/serializer for HTML and XML documents that, unlike a standard DOM HTML parser (but like a
  * standard DOM XML parser), can provide accurate bidirectional translation from markup to its internal representation using the
- * module's provided {@link slime.Codec}.
+ * module's provided {@link slime.Codec}s: {@link slime.runtime.document.exports.Document | `Document.codec.string`} and
+ * {@link slime.runtime.document.Exports | `Fragment.codec.string`}
  */
 namespace slime.runtime.document {
 	export interface Node {
@@ -88,7 +89,10 @@ namespace slime.runtime.document {
 	}
 
 	export interface Context {
-		$slime?: old.Context["$slime"]
+		/**
+		 * If present, its `java` property allows the use of the older JSoup-based Java document parsing.
+		 */
+		$slime?: Pick<old.Context["$slime"],"java">
 	}
 
 	export namespace exports {
