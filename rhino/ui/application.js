@@ -252,7 +252,7 @@
 		var hostToPort = function(name) {
 			/**
 			 * @param { { port: number } } o
-			 * @returns { slime.jrunscript.shell.browser.ProxyConfiguration }
+			 * @returns { slime.jrunscript.shell.browser.old.ProxyConfiguration }
 			 */
 			var rv = function(o) {
 				var code = $loader.get("application-hostToPort.pac").read(String).replace(/__HOST__/g, name).replace(/__PORT__/g, String(o.port));
@@ -306,7 +306,7 @@
 			if (p.browser.chrome) {
 				p.browser.create = Chrome(p.browser.chrome);
 			}
-			/** @type { slime.jrunscript.shell.browser.ProxyConfiguration } */
+			/** @type { slime.jrunscript.shell.browser.old.ProxyConfiguration } */
 			var proxySettings = (function() {
 				if (p.browser.proxy && typeof(p.browser.proxy) == "object") return p.browser.proxy;
 				if (p.browser.proxy && typeof(p.browser.proxy) == "function") return p.browser.proxy({ port: server.port });

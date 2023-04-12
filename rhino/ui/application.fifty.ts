@@ -60,8 +60,8 @@ namespace slime.jsh.ui.application {
 	}
 
 	export interface BrowserSpecification {
-		proxy?: slime.jrunscript.shell.browser.ProxyConfiguration
-			| ( (p: { port: number }) => slime.jrunscript.shell.browser.ProxyConfiguration )
+		proxy?: slime.jrunscript.shell.browser.old.ProxyConfiguration
+			| ( (p: { port: number }) => slime.jrunscript.shell.browser.old.ProxyConfiguration )
 
 		/**
 		 * If `proxy` is not specified, this value provides a simple way of mapping all requests for the given host to the HTTP
@@ -120,7 +120,7 @@ namespace slime.jsh.ui.application {
 	export interface Configuration {
 		server: ServerConfiguration
 		browser: {
-			proxy?: (p: { port: number }) => slime.jrunscript.shell.browser.ProxyConfiguration
+			proxy?: (p: { port: number }) => slime.jrunscript.shell.browser.old.ProxyConfiguration
 			chrome: ChromeConfiguration
 		}
 	}
