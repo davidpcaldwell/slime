@@ -142,6 +142,15 @@ namespace slime.runtime.document {
 		load: old.Exports["load"]
 
 		Parent: {
+			/**
+			 * Creates a {@link slime.$api.fp.Stream | Stream} of the descendants of this parent node. In all cases -
+			 * {@link slime.runtime.document.Document | Document}s, {@link slime.runtime.document.Element | Element}s, and even
+			 * {@link slime.runtime.document.Fragment | Fragment}s, this first {@link slime.runtime.document.Node | Node} in the
+			 * returned stream will be the parent node provided as an argument.
+			 * @param p A parent node.
+			 * @returns A stream containing the given parent node and its descendants. Will not be empty, because it will always
+			 * contain the given node.
+			 */
 			nodes: (p: Parent) => slime.$api.fp.Stream<Node>
 		}
 
