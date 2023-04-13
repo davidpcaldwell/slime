@@ -217,7 +217,7 @@ namespace slime.runtime.document {
 	)(fifty);
 
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.loader.Script<Context | void,Exports>
 }
 
 namespace slime.jsh {
