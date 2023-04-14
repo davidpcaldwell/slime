@@ -16,7 +16,7 @@
 		/** @type { slime.tools.documentation.updater.internal.Update } */
 		var Update = function(p) {
 			return function(events) {
-				var tmp = $api.fp.world.now.ask($context.library.file.world.Location.from.temporary($context.library.file.world.spi.filesystems.os)({
+				var tmp = $api.fp.world.now.ask($context.library.file.world.Location.from.temporary($context.library.file.world.filesystems.os)({
 					directory: true
 				}));
 

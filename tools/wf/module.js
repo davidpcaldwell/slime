@@ -17,7 +17,7 @@
 			getTypescriptVersion: $api.fp.impure.Input.value("5.0.2")
 		};
 
-		var filesystem = ($context.world.filesystem) ? $context.world.filesystem : $context.library.file.world.spi.filesystems.os;
+		var filesystem = ($context.world.filesystem) ? $context.world.filesystem : $context.library.file.world.filesystems.os;
 
 		var exists = $api.fp.world.mapping($context.library.file.world.Location.file.exists());
 

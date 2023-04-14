@@ -30,7 +30,7 @@
 			})
 		};
 
-		/** @type { slime.jrunscript.file.world.Locations["relative"] } */
+		/** @type { slime.jrunscript.file.world.location.Exports["relative"] } */
 		var Location_relative = function(path) {
 			return function(pathname) {
 				var absolute = pathname.filesystem.relative(pathname.pathname, path);
@@ -107,32 +107,39 @@
 			}
 		}
 
-		var filesystemFromSpi = function(provider) {
-			return {
-				temporary: function(p) {
-					return function(events) {
-						var path = provider.temporary(p)(events);
-						return {
-							filesystem: provider,
-							pathname: path
-						}
-					}
-				},
-				Searchpath: {
-					parse: function(value) {
-						return value.split(provider.separator.searchpath).map(function(pathname) {
-							return {
-								filesystem: provider,
-								pathname: pathname
-							}
-						});
-					},
-					string: function(paths) {
-						return paths.join(provider.separator.searchpath);
+		var filesystemFromSpiTemporary = function(provider) {
+			return function(p) {
+				return function(events) {
+					var path = provider.temporary(p)(events);
+					return {
+						filesystem: provider,
+						pathname: path
 					}
 				}
 			};
 		};
+
+		//	TODO	probably the Searchpath construct belongs in jrunscript.shell, or maybe we would have a separate one here based
+		//			on a list of Location but it could be turned into a system path via a jrunscript.shell API or something
+
+		// /** @type { slime.jrunscript.file.World["Filesystem"]["from"]["spi"] } */
+		// var filesystemFromSpi = function(provider) {
+		// 	return {
+		// 		Searchpath: {
+		// 			parse: function(value) {
+		// 				return value.split(provider.separator.searchpath).map(function(pathname) {
+		// 					return {
+		// 						filesystem: provider,
+		// 						pathname: pathname
+		// 					}
+		// 				});
+		// 			},
+		// 			string: function(paths) {
+		// 				return paths.join(provider.separator.searchpath);
+		// 			}
+		// 		}
+		// 	};
+		// };
 
 		var Location = {
 			relative: Location_relative,
@@ -151,17 +158,15 @@
 
 		$export({
 			providers: library.java.providers,
-			spi: {
-				filesystems: library.java.filesystems
-			},
-			Filesystem: {
-				from: {
-					spi: filesystemFromSpi
-				}
-			},
-			filesystems: {
-				os: filesystemFromSpi(library.java.filesystems.os)
-			},
+			filesystems: library.java.filesystems,
+			// Filesystem: {
+			// 	from: {
+			// 		spi: filesystemFromSpi
+			// 	}
+			// },
+			// filesystems: {
+			// 	os: filesystemFromSpi(library.java.filesystems.os)
+			// },
 			Location: {
 				from: {
 					os: function(string) {
@@ -171,7 +176,7 @@
 						}
 					},
 					temporary: function(provider) {
-						return filesystemFromSpi(provider).temporary;
+						return filesystemFromSpiTemporary(provider);
 					}
 				},
 				relative: Location_relative,
@@ -215,8 +220,8 @@
 					write: Object.assign(
 						/**
 						 *
-						 * @param { Parameters<slime.jrunscript.file.world.locations.Files["write"]>[0] } location
-						 * @returns { ReturnType<slime.jrunscript.file.world.locations.Files["write"]> } location
+						 * @param { Parameters<slime.jrunscript.file.world.location.Files["write"]>[0] } location
+						 * @returns { ReturnType<slime.jrunscript.file.world.location.Files["write"]> } location
 						 */
 						function(location) {
 							return {

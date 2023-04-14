@@ -32,7 +32,7 @@
 			},
 			Streams: $context.api.io.Streams,
 			Resource: $context.api.io.Resource,
-			filesystems: $context.library.world.spi.filesystems,
+			filesystems: $context.library.world.filesystems,
 			pathext: $context.pathext
 		});
 		file.Searchpath.prototype = prototypes.Searchpath;

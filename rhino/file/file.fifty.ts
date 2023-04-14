@@ -1206,7 +1206,7 @@ namespace slime.jrunscript.file.internal.file {
 		}
 		Resource: slime.jrunscript.io.Exports["Resource"]
 		Streams: slime.jrunscript.io.Exports["Streams"]
-		filesystems: slime.jrunscript.file.World["spi"]["filesystems"]
+		filesystems: slime.jrunscript.file.World["filesystems"]
 		pathext: string[]
 	}
 

@@ -23,7 +23,7 @@ namespace slime.project.license {
 			fifty.tests.issue495 = function() {
 				//	TODO	fix this to allow Location rather than object
 				var cloned = fixtures.clone({
-					src: jsh.file.world.spi.filesystems.os.pathname(fifty.jsh.file.relative("../..").pathname),
+					src: jsh.file.world.filesystems.os.pathname(fifty.jsh.file.relative("../..").pathname),
 					commit: {
 						message: "Local modifications"
 					}
