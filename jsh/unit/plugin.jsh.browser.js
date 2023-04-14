@@ -489,7 +489,7 @@
 				var Chrome = function(configuration) {
 					var chrome = new jsh.shell.browser.chrome.Instance({
 						location: jsh.file.object.pathname(
-							jsh.file.world.spi.filesystems.os.pathname(configuration.user)
+							jsh.file.world.filesystems.os.pathname(configuration.user)
 						),
 						devtools: configuration.devtools
 					});

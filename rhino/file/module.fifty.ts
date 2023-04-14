@@ -441,6 +441,7 @@ namespace slime.jrunscript.file {
 				fifty.run(fifty.tests.action.delete);
 
 				fifty.load("world.fifty.ts");
+				fifty.load("world-old.fifty.ts");
 
 				fifty.load("oo.fifty.ts");
 

@@ -103,7 +103,7 @@
 			//	TODO	think this through, what about packaged shells etc.?
 			$exports.world = ($context.file) ? {
 				file: {
-					filesystem: $context.api.file.world.spi.filesystems.os,
+					filesystem: $context.api.file.world.filesystems.os,
 					pathname: $context.file.toString()
 				}
 			} : void(0)

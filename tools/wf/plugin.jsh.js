@@ -39,7 +39,7 @@
 							file: jsh.file
 						},
 						world: {
-							filesystem: jsh.file.world.spi.filesystems.os
+							filesystem: jsh.file.world.filesystems.os
 						}
 					})
 				};
