@@ -135,11 +135,6 @@
 			}));
 		})();
 
-		suite.add("jsh/loader", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jsh/loader/internal.api.html"),
-			environment: environment
-		}));
-
 		suite.add("jsh/jsh.tools.install", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jsh/tools/install/plugin.jsh.api.html")
 		}));
