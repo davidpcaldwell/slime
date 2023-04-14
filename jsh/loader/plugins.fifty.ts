@@ -193,6 +193,47 @@ namespace slime.jsh.loader.internal.plugins {
 			const { verify } = fifty;
 			const { jsh } = fifty.global;
 
+			fifty.tests.unbuiltShell = function() {
+				//	TODO	this dance should be covered by a jsh.test API
+				var src = jsh.shell.jsh.src;
+				var copied = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+				copied.directory.remove();
+				src.copy(copied,{
+					filter: function(p) {
+						if (p.entry.path == "local/") return false;
+						return true;
+					}
+				});
+				src.getFile("jsh/loader/test/unbuilt-shell-plugins/copy-as-plugin.jsh.js").copy(copied.directory.getRelativePath("foo/plugin.jsh.js"), { recursive: true });
+				var evaluate = function(result) {
+					jsh.shell.console("string = " + result.stdio.output);
+					return JSON.parse(result.stdio.output);
+				};
+				var shouldLoad = jsh.shell.jsh({
+					shell: copied.directory,
+					script: copied.directory.getFile("jsh/loader/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
+					stdio: {
+						output: String
+					},
+					evaluate: evaluate
+				});
+				verify(shouldLoad).evaluate.property("unbuilt-shell-plugins").is(true);
+				copied.directory.getFile("foo/plugin.jsh.js").move(copied.directory.getRelativePath("local/foo/plugin.jsh.js"), { recursive: true });
+				var shouldNotLoad = jsh.shell.jsh({
+					shell: copied.directory,
+					script: copied.directory.getFile("jsh/loader/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
+					stdio: {
+						output: String
+					},
+					evaluate: evaluate
+				});
+				verify(shouldNotLoad).evaluate.property("unbuilt-shell-plugins").is(void(0));
+			};
+
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.unbuiltShell);
+			};
+
 			fifty.tests.manual = {};
 
 			fifty.tests.manual.tools = function() {
