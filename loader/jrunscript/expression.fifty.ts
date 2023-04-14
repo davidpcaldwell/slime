@@ -188,7 +188,7 @@ namespace slime.jrunscript.runtime {
 	export type ClasspathEntry = JavaFileClasspathEntry | SlimeClasspathEntry | JarFileClasspathEntry | JarResourceClasspathEntry | SrcClasspathEntry
 
 	/**
-	 * The SLIME runtime, augmented with Java-specific capabilities: a `classpath`, the `jrunscript` `java` and `io` interfaces,
+	 * The SLIME runtime, augmented with Java-specific capabilities: a `classpath`, the `jrunscript`, `java` and `io` interfaces,
 	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
 	 */
 	export interface Exports extends slime.runtime.Exports {
