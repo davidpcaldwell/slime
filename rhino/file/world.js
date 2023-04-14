@@ -63,7 +63,7 @@
 			);
 		};
 
-		/** @type { ReturnType<slime.jrunscript.file.World["Location"]["file"]["exists"]> } */
+		/** @type { ReturnType<slime.jrunscript.file.world.Exports["Location"]["file"]["exists"]> } */
 		var Location_file_exists = function(location) {
 			return function(events) {
 				var ask = location.filesystem.fileExists({ pathname: location.pathname });
@@ -76,7 +76,7 @@
 			}
 		}
 
-		/** @type { ReturnType<slime.jrunscript.file.World["Location"]["directory"]["exists"]> } */
+		/** @type { ReturnType<slime.jrunscript.file.world.Exports["Location"]["directory"]["exists"]> } */
 		var Location_directory_exists = function(location) {
 			return function(events) {
 				var rv = location.filesystem.directoryExists({
@@ -159,14 +159,6 @@
 		$export({
 			providers: library.java.providers,
 			filesystems: library.java.filesystems,
-			// Filesystem: {
-			// 	from: {
-			// 		spi: filesystemFromSpi
-			// 	}
-			// },
-			// filesystems: {
-			// 	os: filesystemFromSpi(library.java.filesystems.os)
-			// },
 			Location: {
 				from: {
 					os: function(string) {
@@ -369,7 +361,7 @@
 					}
 				},
 				directory: {
-					/** @type { slime.jrunscript.file.World["Location"]["directory"]["exists"] } */
+					/** @type { slime.jrunscript.file.world.Exports["Location"]["directory"]["exists"] } */
 					exists: function() {
 						return Location_directory_exists;
 					},
@@ -450,7 +442,7 @@
 							}
 						}
 					},
-					/** @type { slime.jrunscript.file.World["Location"]["directory"]["remove"] } */
+					/** @type { slime.jrunscript.file.world.Exports["Location"]["directory"]["remove"] } */
 					remove: function() {
 						return function(location) {
 							return function() {

@@ -573,8 +573,10 @@ namespace slime.jrunscript.file {
 		}
 	}
 
-	export interface World {
-		Location: world.location.Exports
+	export namespace world {
+		export interface Exports {
+			Location: world.location.Exports
+		}
 	}
 
 	export namespace world {
@@ -904,9 +906,11 @@ namespace slime.jrunscript.file {
 		}
 	}
 
-	export interface World {
-		filesystems: {
-			os: world.spi.Filesystem
+	export namespace world {
+		export interface Exports {
+			filesystems: {
+				os: world.spi.Filesystem
+			}
 		}
 	}
 
@@ -924,7 +928,7 @@ namespace slime.jrunscript.file {
 	)(fifty);
 
 	export interface Exports {
-		world: World
+		world: world.Exports
 	}
 
 	(
@@ -967,7 +971,7 @@ namespace slime.jrunscript.file.internal.world {
 		}
 	}
 
-	export interface Exports extends slime.jrunscript.file.World {
+	export interface Exports extends slime.jrunscript.file.world.Exports {
 		providers: {
 			os: slime.jrunscript.file.internal.java.FilesystemProvider
 		}
