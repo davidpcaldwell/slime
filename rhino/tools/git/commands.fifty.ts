@@ -153,6 +153,61 @@ namespace slime.jrunscript.tools.git {
 					it.paths.a.is(" M");
 					it.paths.b.is(" M");
 				});
+			};
+
+			fifty.tests.world.lsFiles = function() {
+				var commands: {
+					lsFilesOther: slime.jrunscript.tools.git.Command<void,string[]>
+				} = {
+					lsFilesOther: {
+						invocation: function(p) {
+							return {
+								command: "ls-files",
+								arguments: ["--others", "--exclude-standard"]
+							}
+						},
+						result: function(output) {
+							return output.split("\n").filter(Boolean);
+						}
+					}
+				};
+
+				var it = fixtures.empty();
+				fixtures.edit(it, "a", $api.fp.mapAllTo("a"));
+				it.api.command(add).argument("a").run();
+				it.api.command(commit).argument({ message: "1" });
+
+				//	TODO	should recurseSubmodules have a default?
+				var before = {
+					list: it.api.command(subject.lsFiles).argument({ recurseSubmodules: false }).run(),
+					others: it.api.command(commands.lsFilesOther).argument().run()
+				};
+				verify(before).list.length.is(1);
+				verify(before).others.length.is(0);
+
+				fixtures.edit(it, "b", $api.fp.mapAllTo("b"));
+				var touch = {
+					list: it.api.command(subject.lsFiles).argument({ recurseSubmodules: false }).run(),
+					others: it.api.command(commands.lsFilesOther).argument().run()
+				};
+				verify(touch).list.length.is(1);
+				verify(touch).others.length.is(1);
+
+				it.api.command(add).argument("b").run();
+				var added = {
+					list: it.api.command(subject.lsFiles).argument({ recurseSubmodules: false }).run(),
+					others: it.api.command(commands.lsFilesOther).argument().run()
+				};
+				verify(added).list.length.is(2);
+				verify(added).others.length.is(0);
+
+				it.api.command(commit).argument({ message: "2" }).run();
+				var after = {
+					list: it.api.command(subject.lsFiles).argument({ recurseSubmodules: false }).run(),
+					others: it.api.command(commands.lsFilesOther).argument().run()
+				};
+				verify(after).list.length.is(2);
+				verify(after).others.length.is(0);
 			}
 		}
 	//@ts-ignore

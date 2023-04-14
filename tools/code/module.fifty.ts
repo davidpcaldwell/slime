@@ -115,8 +115,17 @@ namespace slime.tools.code {
 		}
 
 		directory: {
+			/**
+			 * Whether a given directory is named `local`. SLIME, and by convention, SLIME-based projects, use a `local`
+			 * subdirectory of the project directory to store build products, installations of software tools, and so forth.
+			 */
 			isLocal: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
+
+			/**
+			 * Whether a given directory is managed by a known source control system.
+			 */
 			isVcs: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
+
 			isBuildTool: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
 		}
 

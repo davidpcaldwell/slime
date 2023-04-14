@@ -140,7 +140,7 @@
 					directory.isBuildTool
 				)
 			}
-		}
+		};
 
 		/**
 		 *

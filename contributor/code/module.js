@@ -234,20 +234,6 @@
 			}
 		)();
 
-		/** @type { slime.jrunscript.tools.git.Command<void, string[]> } */
-		var lsFilesRecurseSubmodules = {
-			invocation: function() {
-				return {
-					command: "ls-files",
-					arguments: ["--recurse-submodules"]
-				};
-			},
-			result: function(output) {
-				//	TODO	platform line ending or \n?
-				return output.split("\n");
-			}
-		};
-
 		$export({
 			files: files,
 			directory: {
@@ -284,7 +270,12 @@
 			git: {
 				lastModified: function(p) {
 					//	TODO	would this notice untracked files? Should it?
-					var files = $context.library.git.program({ command: "git" }).repository(p.base).command(lsFilesRecurseSubmodules).argument().run();
+					var files = $context.library.git.program({ command: "git" })
+						.repository(p.base)
+						.command($context.library.git.commands.lsFiles)
+						.argument({ recurseSubmodules: true })
+						.run()
+					;
 					var loader = $context.library.file.world.Location.directory.loader.synchronous({
 						root: $context.library.file.world.Location.from.os(p.base)
 					});
