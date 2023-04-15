@@ -40,7 +40,7 @@ namespace slime.jrunscript.file {
 			}
 
 			export interface Exports {
-				file: Files
+				file: file.Exports
 			}
 
 			(
@@ -53,10 +53,12 @@ namespace slime.jrunscript.file {
 			)(fifty);
 
 			export interface Exports {
-				directory: Directory
+				directory: directory.Exports
 			}
 
-			export interface Directory {}
+			export namespace directory {
+				export interface Exports {}
+			}
 		}
 
 		export namespace location {
@@ -69,33 +71,35 @@ namespace slime.jrunscript.file {
 			//@ts-ignore
 			)(fifty);
 
-			export interface Files {
-				/**
-				 * Copies a file to a given location, creating the location's parent folders as necessary.
-				 */
-				copy: (p: {
-					to: world.Location
-				}) => slime.$api.fp.world.Action<
-					world.Location,
-					{
-						/**
-						 * Fired when a directory is created.
-						 */
-						created: string
-					}
-				>
+			export namespace file {
+				export interface Exports {
+					/**
+					 * Copies a file to a given location, creating the location's parent folders as necessary.
+					 */
+					copy: (p: {
+						to: world.Location
+					}) => slime.$api.fp.world.Action<
+						world.Location,
+						{
+							/**
+							 * Fired when a directory is created.
+							 */
+							created: string
+						}
+					>
 
-				move: (p: {
-					to: world.Location
-				}) => slime.$api.fp.world.Action<
-					world.Location,
-					{
-						/**
-						 * Fired when a directory is created.
-						 */
-						 created: string
-					}
-				>
+					move: (p: {
+						to: world.Location
+					}) => slime.$api.fp.world.Action<
+						world.Location,
+						{
+							/**
+							 * Fired when a directory is created.
+							 */
+							created: string
+						}
+					>
+				}
 			}
 
 			(
@@ -233,28 +237,29 @@ namespace slime.jrunscript.file {
 			//@ts-ignore
 			)(fifty);
 
-			export interface Files {
-				exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
+			export namespace file {
+				export interface Exports {
+					exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
 
-				read: {
-					stream: () => slime.$api.fp.world.Question<world.Location, {
-						notFound: void
-					}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
+					read: {
+						stream: () => slime.$api.fp.world.Question<world.Location, {
+							notFound: void
+						}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
 
-					string: () => slime.$api.fp.world.Question<world.Location, {
-						notFound: void
-					}, slime.$api.fp.Maybe<string>>
-				}
+						string: () => slime.$api.fp.world.Question<world.Location, {
+							notFound: void
+						}, slime.$api.fp.Maybe<string>>
+					}
 
-				write: (location: world.Location) => {
-					string: slime.$api.fp.world.Action<{ value: string },{}>
-					stream: slime.$api.fp.world.Action<{ input: slime.jrunscript.runtime.io.InputStream },{}>
-					object: {
-						text: slime.$api.fp.world.Question<{},{},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>>
+					write: (location: world.Location) => {
+						string: slime.$api.fp.world.Action<{ value: string },{}>
+						stream: slime.$api.fp.world.Action<{ input: slime.jrunscript.runtime.io.InputStream },{}>
+						object: {
+							text: slime.$api.fp.world.Question<{},{},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>>
+						}
 					}
 				}
 			}
-
 
 			(
 				function(
@@ -315,13 +320,15 @@ namespace slime.jrunscript.file {
 		}
 
 		export namespace location {
-			export interface Directory {
-				exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
+			export namespace directory {
+				export interface Exports {
+					exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
 
-				require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Action<world.Location, {
-					created: world.Location
-					found: world.Location
-				}>
+					require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Action<world.Location, {
+						created: world.Location
+						found: world.Location
+					}>
+				}
 			}
 
 			(
@@ -351,17 +358,19 @@ namespace slime.jrunscript.file {
 		}
 
 		export namespace location {
-			export interface Directory {
-				//	TODO	what if something exists at to()?
-				/**
-				 * Moves a directory.
-				 */
-				move: (p: {
-					to: world.Location
-				}) => slime.$api.fp.world.Action<
-					world.Location,
-					{ created: string }
-				>
+			export namespace directory {
+				export interface Exports {
+					//	TODO	what if something exists at to()?
+					/**
+					 * Moves a directory.
+					 */
+					move: (p: {
+						to: world.Location
+					}) => slime.$api.fp.world.Action<
+						world.Location,
+						{ created: string }
+					>
+				}
 			}
 
 			(
@@ -465,8 +474,10 @@ namespace slime.jrunscript.file {
 		}
 
 		export namespace location {
-			export interface Directory {
-				remove: () => slime.$api.fp.world.Action<world.Location,void>
+			export namespace directory {
+				export interface Exports {
+					remove: () => slime.$api.fp.world.Action<world.Location,void>
+				}
 			}
 
 			(
@@ -495,11 +506,13 @@ namespace slime.jrunscript.file {
 		}
 
 		export namespace location {
-			export interface Directory {
-				loader: {
-					synchronous: (p: {
-						root: Location
-					}) => slime.runtime.loader.Synchronous<slime.jrunscript.file.internal.loader.Resource>
+			export namespace directory {
+				export interface Exports {
+					loader: {
+						synchronous: (p: {
+							root: Location
+						}) => slime.runtime.loader.Synchronous<slime.jrunscript.file.internal.loader.Resource>
+					}
 				}
 			}
 		}
@@ -588,11 +601,6 @@ namespace slime.jrunscript.file {
 				}
 			}
 
-			export interface Node {
-				name: string
-				type: "file" | "directory"
-			}
-
 			export interface Filesystem {
 				fileExists: slime.$api.fp.world.Question<{
 					pathname: string
@@ -627,7 +635,7 @@ namespace slime.jrunscript.file {
 				listDirectory: slime.$api.fp.world.Question<{
 					pathname: string
 				},{
-				},slime.$api.fp.Maybe<Node[]>>
+				},slime.$api.fp.Maybe<string[]>>
 
 				copy: slime.$api.fp.world.Action<{
 					from: string

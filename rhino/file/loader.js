@@ -48,17 +48,27 @@
 					}
 				},
 				list: function(path) {
-					var target = $context.library.Location.relative(path.join(delegate.filesystem.separator.pathname))(delegate);
-					var nodes = $api.fp.world.now.ask(target.filesystem.listDirectory({ pathname: target.pathname }));
+					var filesystem = delegate.filesystem;
+					var target = $context.library.Location.relative(path.join(filesystem.separator.pathname))(delegate);
+					var nodes = $api.fp.world.now.ask(filesystem.listDirectory({ pathname: target.pathname }));
 					if (!nodes.present) throw new Error();
+
+					/** @type { (pathname: string, question: slime.$api.fp.world.Question<{ pathname: string },void,slime.$api.fp.Maybe<boolean>>) => boolean } */
+					var presentBoolean = function(pathname,question) {
+						var maybe = $api.fp.world.now.question(question, { pathname: pathname });
+						if (!maybe.present) throw new Error();
+						return maybe.value;
+					}
+
 					return $api.fp.Maybe.from.some(
 						nodes.value.map(
-							/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.world.spi.Node,slime.runtime.loader.Node> } */
+							/** @type { slime.$api.fp.Mapping<string,slime.runtime.loader.Node> } */
 							function(node) {
+								var pathname = $context.library.Location.relative(node)(target).pathname;
 								return {
-									name: node.name,
-									parent: node.type == "directory",
-									resource: node.type == "file"
+									name: node,
+									parent: presentBoolean(pathname, filesystem.directoryExists),
+									resource: presentBoolean(pathname, filesystem.fileExists)
 								}
 							}
 						)

@@ -212,8 +212,8 @@
 					write: Object.assign(
 						/**
 						 *
-						 * @param { Parameters<slime.jrunscript.file.world.location.Files["write"]>[0] } location
-						 * @returns { ReturnType<slime.jrunscript.file.world.location.Files["write"]> } location
+						 * @param { Parameters<slime.jrunscript.file.world.location.file.Exports["write"]>[0] } location
+						 * @returns { ReturnType<slime.jrunscript.file.world.location.file.Exports["write"]> } location
 						 */
 						function(location) {
 							return {

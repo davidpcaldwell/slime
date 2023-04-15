@@ -642,13 +642,9 @@
 						var list = peer.list();
 						return $api.fp.Maybe.from.some(
 							list.map(
-								/** @type { slime.$api.fp.Mapping<slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node,slime.jrunscript.file.world.spi.Node> } */
+								/** @type { slime.$api.fp.Mapping<slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node,string> } */
 								function(node) {
-									var directory = node.isDirectory();
-									return {
-										name: String(node.getHostFile().getName()),
-										type: (directory) ? "directory" : "file"
-									}
+									return String(node.getHostFile().getName());
 								}
 							)
 						);
