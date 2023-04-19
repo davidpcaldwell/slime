@@ -203,7 +203,7 @@
 			/** @type { slime.runtime.document.Text } */
 			var text = {
 				type: "text",
-				data: left.substring(0,end)
+				data: left.substring(0,end).replace(/\&lt\;/g, "<")
 			};
 			return State.step(state, text, end);
 		}
