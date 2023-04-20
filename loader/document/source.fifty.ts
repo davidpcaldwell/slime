@@ -117,6 +117,8 @@ namespace slime.runtime.document.internal.source {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
+
 			var api: Exports = fifty.$loader.module("source.js");
 
 			fifty.tests.happy = function() {
@@ -254,16 +256,15 @@ namespace slime.runtime.document.internal.source {
 				fifty.verify(serialized).is(html);
 			}
 
-			fifty.tests.xml = function() {
-				fifty.run(fifty.tests.xml.prolog);
-				fifty.run(fifty.tests.xml.cdata);
-			};
+			fifty.tests.xml = fifty.test.Parent();
+
 			fifty.tests.xml.prolog = function() {
 				var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root/>";
 				var document = api.parse({ string: xml });
 				var serialized = api.serialize({ document: document });
 				fifty.verify(serialized).is(xml);
 			}
+
 			fifty.tests.xml.cdata = function() {
 				var xml = "<root><![CDATA[<data!/>]]></root>";
 				var document = api.parse({ string: xml });
@@ -291,6 +292,22 @@ namespace slime.runtime.document.internal.source {
 				fifty.verify(baz).name.is("baz");
 				var serialized = api.serialize({ document: document });
 				fifty.verify(serialized == xml, "symmetric").is(true);
+			};
+
+			fifty.tests.escaping = function() {
+				//	XML specification: https://www.w3.org/TR/2006/REC-xml11-20060816/
+				var codec = function(xml,data) {
+					var document = api.parse({ string: xml });
+					var element = document.children[0] as Element;
+					var content = element.children[0] as Text;
+					verify(content).data.is(data);
+
+					var serialized = api.serialize({ document: document });
+					verify(serialized).is(xml);
+				};
+
+				codec("<root>Ben &amp; Jerry</root>", "Ben & Jerry");
+				codec("<root>1 &lt; 2</root>", "1 < 2");
 			}
 
 			fifty.tests.suite = function() {
