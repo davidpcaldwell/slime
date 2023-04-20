@@ -319,6 +319,7 @@ namespace slime.runtime.document.internal.source {
 				fifty.run(fifty.tests.emptyAttribute);
 				fifty.run(fifty.tests.optionalTags);
 				fifty.run(fifty.tests.emptyTagsParsedCorrectly);
+				fifty.run(fifty.tests.escaping);
 				fifty.run(fifty.tests.xml);
 			}
 		}
