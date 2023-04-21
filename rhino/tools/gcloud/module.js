@@ -24,6 +24,7 @@
 		var executeCommand = function(executable,config,account,project) {
 			/** @type { slime.jrunscript.tools.gcloud.cli.Executor } */
 			var rv = function(command) {
+				if (!command) throw new TypeError("Required: arguments[0] (command)");
 				return {
 					argument: function(argument) {
 						var toResult = command.result || $api.fp.identity;
