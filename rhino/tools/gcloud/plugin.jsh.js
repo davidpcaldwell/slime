@@ -17,7 +17,7 @@
 		var code = $loader.script("module.js");
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.file && jsh.shell && jsh.tools.install);
+				return Boolean(jsh.file && jsh.shell && jsh.tools && jsh.tools.install);
 			},
 			load: function() {
 				jsh.tools.gcloud = code({
