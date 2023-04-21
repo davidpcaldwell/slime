@@ -9,8 +9,8 @@
 //			Java in plugins at runtime (basically, create a way to embed the logic of slime.jsh.js into the shell).
 //	TODO	decide whether the above task is already done; we do compile at runtime now, right?
 /**
- * A jsh plugin can modify a local jsh installation to add or modify existing functionality. As a matter of design philosophy, the
- * plugin architecture allows plugins enormous freedom to modify the existing installation, rather than restricting plugins to a
+ * A `jsh` _plugin_ can modify a local `jsh` installation to add or modify existing functionality. As a matter of design philosophy,
+ * the plugin architecture allows plugins enormous freedom to modify the existing installation, rather than restricting plugins to a
  * narrow, safe set of modifications.
  *
  * ## Types
@@ -110,6 +110,15 @@ namespace slime.jsh.plugin {
 				add: (pathname: slime.jrunscript.file.Pathname) => void
 			}
 
+			/**
+			 * Allows a parent plugin to load a "child" `jsh` plugin from the given child location. This call does not establish a
+			 * parent-child relationship between the plugins; the plugin at the given path is simply added to the list of plugins in
+			 * the shell and will be loaded when (and if) it is ready. This ability allows a "parent" plugin to contain the source
+			 * code for several "child" plugins and add them to the shell plugin search directly (shells do not search the child
+			 * folders of a `jsh` plugin for other plugins).
+			 *
+			 * @param path A path relative to the parent plugin.
+			 */
 			plugin: (path: string) => void
 		}
 	}

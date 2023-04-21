@@ -361,7 +361,22 @@ namespace slime.jsh.java.tools {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			fifty.tests.jsh = function() {
+				verify(jsh).tools.gcloud.is.type("object");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.jsh);
 				fifty.run(fifty.tests.jsapi);
 			}
 		}
