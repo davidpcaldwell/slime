@@ -31,6 +31,7 @@
 					kubectl: void(0),
 					code: void(0),
 					jenkins: void(0),
+					gcloud: void(0),
 
 
 					//	deprecated

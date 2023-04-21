@@ -4,6 +4,9 @@
 //
 //	END LICENSE
 
+/**
+ * Provides APIs related to Google Cloud Platform.
+ */
 namespace slime.jrunscript.tools.gcloud {
 	export namespace cli {
 		export interface Invocation {
@@ -58,6 +61,9 @@ namespace slime.jrunscript.tools.gcloud {
 	)(fifty);
 
 	export interface Exports {
+		/**
+		 * Provides APIs related to the `gcloud` command-line tool (including the ability to install it).
+		 */
 		cli: {
 			Installation: {
 				at: (pathname: string) => {
@@ -234,4 +240,10 @@ namespace slime.jrunscript.tools.gcloud {
 
 
 	export type Script = slime.loader.Script<Context,Exports>
+}
+
+namespace slime.jsh {
+	export interface Tools {
+		gcloud: slime.jrunscript.tools.gcloud.Exports
+	}
 }

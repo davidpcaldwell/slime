@@ -165,6 +165,8 @@
 			}
 		});
 
+		$loader.plugin("gcloud/");
+
 		plugin({
 			isReady: function() {
 				//	TODO	cannot load postgresql driver under Nashorn presently; uses E4X
