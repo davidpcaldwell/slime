@@ -66,6 +66,10 @@ namespace slime.jrunscript.tools.gcloud {
 		 */
 		cli: {
 			Installation: {
+				/**
+				 *
+				 * @param pathname A Cloud SDK installation directory.
+				 */
 				at: (pathname: string) => {
 					config: (config: string) => {
 						account: (account: string) => {
