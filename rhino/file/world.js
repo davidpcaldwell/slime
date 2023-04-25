@@ -358,7 +358,18 @@
 								})(events);
 							}
 						}
-					}
+					},
+					/** @type { slime.jrunscript.file.world.Exports["Location"]["file"]["remove"] } */
+					remove: function() {
+						return function(location) {
+							return function() {
+								$api.fp.world.now.action(
+									location.filesystem.remove,
+									{ pathname: location.pathname }
+								)
+							}
+						}
+					},
 				},
 				directory: {
 					/** @type { slime.jrunscript.file.world.Exports["Location"]["directory"]["exists"] } */
