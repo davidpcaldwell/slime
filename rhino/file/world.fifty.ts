@@ -99,6 +99,8 @@ namespace slime.jrunscript.file {
 							created: string
 						}
 					>
+
+					remove: () => slime.$api.fp.world.Action<world.Location,void>
 				}
 			}
 
