@@ -65,7 +65,14 @@ namespace slime.jrunscript.tools.jenkins {
 
 	export namespace job {
 		export interface Id {
+			/**
+			 * The root URL of the Jenkins server having this job, including the trailing `/`.
+			 */
 			server: string
+
+			/**
+			 * The name of the job on the Jenkins server.
+			 */
 			name: string
 		}
 	}
@@ -117,7 +124,14 @@ namespace slime.jrunscript.tools.jenkins {
 
 	export interface Client {
 		get: {
+			/**
+			 * A {@link Get} that returns a {@link Server} given the base URL of that server.
+			 */
 			server: Get<string, Server>
+
+			/**
+			 * A {@link Get} that returns a {@link Job} given its {@link job.Id}, that is, the server it is on
+			 */
 			job: Get<job.Id, Job>
 		}
 
