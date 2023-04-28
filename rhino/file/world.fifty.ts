@@ -11,6 +11,8 @@ namespace slime.jrunscript.file {
 		) {
 			const { run } = fifty;
 
+			fifty.tests.exports = fifty.test.Parent();
+
 			fifty.tests.sandbox = fifty.test.Parent();
 
 			fifty.tests.sandbox.filesystem = fifty.test.Parent();
@@ -28,6 +30,7 @@ namespace slime.jrunscript.file {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				fifty.tests.exports.Location = fifty.test.Parent();
 				fifty.tests.sandbox.locations = fifty.test.Parent();
 			}
 		//@ts-ignore
@@ -322,6 +325,15 @@ namespace slime.jrunscript.file {
 		}
 
 		export namespace location {
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					fifty.tests.exports.Location.directory = fifty.test.Parent();
+				}
+			//@ts-ignore
+			)(fifty);
+
 			export namespace directory {
 				export interface Exports {
 					exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
@@ -505,6 +517,73 @@ namespace slime.jrunscript.file {
 				}
 			//@ts-ignore
 			)(fifty);
+		}
+
+		export namespace location {
+			export namespace directory {
+				export namespace list {
+					export interface Events {
+						failed: Location
+					}
+				}
+				export interface Exports {
+					list: {
+						stream: (p?: {
+							descend: slime.$api.fp.Predicate<Location>
+						}) => slime.$api.fp.world.Question<
+							slime.jrunscript.file.world.Location,
+							list.Events,
+							slime.$api.fp.Stream<Location>
+						>
+					}
+				}
+
+				(
+					function(
+						fifty: slime.fifty.test.Kit
+					) {
+						const { verify } = fifty;
+						const { $api } = fifty.global;
+						const subject = fifty.global.jsh.file.world;
+
+						fifty.tests.exports.Location.directory.list = function() {
+							var fs = {
+								separator: {
+									pathname: "/"
+								},
+								listDirectory: function(p) {
+									return function(events) {
+										if (p.pathname == "") {
+											return $api.fp.Maybe.from.some(["a","b","c"]);
+										}
+										throw new Error("Pathname: " + p.pathname);
+									}
+								},
+								directoryExists: function(p) {
+									return function(events) {
+										if (p.pathname == "") return $api.fp.Maybe.from.some(true);
+										return $api.fp.Maybe.from.some(false);
+									}
+								}
+							} as world.spi.Filesystem
+
+							var simple = $api.fp.Stream.collect($api.fp.world.now.question(
+								subject.Location.directory.list.stream(),
+								{
+									filesystem: fs,
+									pathname: ""
+								}
+							));
+
+							verify(simple).length.is(3);
+							verify(simple)[0].pathname.is("/a");
+							verify(simple)[1].pathname.is("/b");
+							verify(simple)[2].pathname.is("/c");
+						}
+					}
+				//@ts-ignore
+				)(fifty);
+			}
 		}
 
 		export namespace location {
@@ -931,6 +1010,7 @@ namespace slime.jrunscript.file {
 			fifty.tests.suite = function() {
 				fifty.load("mock.fifty.ts");
 
+				fifty.run(fifty.tests.exports);
 				fifty.run(fifty.tests.sandbox);
 			}
 		}

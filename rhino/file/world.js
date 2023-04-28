@@ -464,6 +464,54 @@
 							}
 						}
 					},
+					list: {
+						stream: function(p) {
+							/**
+							 *
+							 * @param { slime.jrunscript.file.world.Location } location
+							 * @param { slime.$api.Events<slime.jrunscript.file.world.location.directory.list.Events> } events
+							 * @returns { slime.jrunscript.file.world.Location[] }
+							 */
+							var process = function(location,events) {
+								var listed = $api.fp.world.now.ask(
+									location.filesystem.listDirectory({ pathname: location.pathname })
+								);
+								if (listed.present) {
+									/** @type { slime.jrunscript.file.world.Location[] } */
+									var rv = [];
+									listed.value.forEach(function(name) {
+										var it = {
+											filesystem: location.filesystem,
+											pathname: location.pathname + location.filesystem.separator.pathname + name
+										};
+										rv.push(it);
+										var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
+										if (isDirectory.present) {
+											if (isDirectory.value) {
+												var contents = process(it,events);
+												rv = rv.concat(contents);
+											} else {
+												//	ordinary file, nothing to do
+											}
+										} else {
+											//	TODO	not exactly the same situation as failing to list the directory, but close enough
+											events.fire("failed", it);
+										}
+									});
+									return rv;
+								} else {
+									events.fire("failed", location);
+								}
+							};
+
+							return function(location) {
+								return function(events) {
+									var array = process(location,events);
+									return $api.fp.Stream.from.array(array);
+								}
+							}
+						}
+					},
 					loader: {
 						synchronous: function(p) {
 							return loader.create(p.root);
