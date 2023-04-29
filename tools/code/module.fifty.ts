@@ -25,6 +25,50 @@ namespace slime.tools.code {
 		})(fifty);
 	}
 
+	/**
+	 * A `Project` consists of a set of source files to be processed.
+	 */
+	export type Project = slime.jrunscript.file.world.Location[]
+
+	export interface Exports {
+		Project: {
+			from: {
+				directory: (p: {
+					root: slime.jrunscript.file.world.Location
+					descend: slime.$api.fp.Predicate<slime.jrunscript.file.world.Location>
+					isSource: (p: slime.jrunscript.file.world.Location) => slime.$api.fp.Maybe<boolean>
+				}) => Project
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.wip = function() {
+				var project = test.subject.Project.from.directory({
+					root: fifty.jsh.file.relative("../.."),
+					descend: function(location) {
+						if (location.pathname.indexOf(".git") != -1) {
+							debugger;
+						}
+						if (/local$/.test(location.pathname)) return false;
+						if (/\.git$/.test(location.pathname)) return false;
+						return true;
+					},
+					isSource: function(file) {
+						return $api.fp.Maybe.from.some(true);
+					}
+				});
+				jsh.shell.console(project.map($api.fp.property("pathname")).join(", "));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface File {
 		path: string
 		file: slime.jrunscript.file.world.Location
@@ -230,7 +274,7 @@ namespace slime.tools.code {
 
 	export namespace internal {
 		export interface functions {
-			getDirectorySourceFiles: slime.$api.fp.world.Question<
+			getDirectoryObjectSourceFiles: slime.$api.fp.world.Question<
 				{
 					base: slime.jrunscript.file.Directory
 					isText: isText
@@ -253,18 +297,16 @@ namespace slime.tools.code {
 				nowrite?: boolean
 			}) => slime.$api.fp.world.Action<slime.tools.code.File,TrailingWhitespaceEvents>
 
+			handleFilesTrailingWhitespace: (configuration?: {
+				nowrite?: boolean
+			}) => slime.$api.fp.world.Action<
+				slime.tools.code.File[],
+				TrailingWhitespaceEvents
+			>
+
 			handleFileFinalNewlines: (configuration?: {
 				nowrite?: boolean
 			}) => slime.$api.fp.world.Action<slime.tools.code.File,FinalNewlineEvents>
-
-			handleFilesTrailingWhitespace: slime.$api.fp.world.Action<
-				{
-					files: slime.tools.code.File[],
-					nowrite: boolean
-				},
-				FileEvents & TrailingWhitespaceEvents
-			>
-
 		}
 	}
 }

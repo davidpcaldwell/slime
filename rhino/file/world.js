@@ -469,10 +469,11 @@
 							/**
 							 *
 							 * @param { slime.jrunscript.file.world.Location } location
+							 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.world.Location> } descend
 							 * @param { slime.$api.Events<slime.jrunscript.file.world.location.directory.list.Events> } events
 							 * @returns { slime.jrunscript.file.world.Location[] }
 							 */
-							var process = function(location,events) {
+							var process = function(location,descend,events) {
 								var listed = $api.fp.world.now.ask(
 									location.filesystem.listDirectory({ pathname: location.pathname })
 								);
@@ -488,8 +489,10 @@
 										var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
 										if (isDirectory.present) {
 											if (isDirectory.value) {
-												var contents = process(it,events);
-												rv = rv.concat(contents);
+												if (descend(it)) {
+													var contents = process(it,descend,events);
+													rv = rv.concat(contents);
+												}
 											} else {
 												//	ordinary file, nothing to do
 											}
@@ -506,7 +509,7 @@
 
 							return function(location) {
 								return function(events) {
-									var array = process(location,events);
+									var array = process(location,p.descend,events);
 									return $api.fp.Stream.from.array(array);
 								}
 							}

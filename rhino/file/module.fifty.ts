@@ -185,16 +185,6 @@ namespace slime.jrunscript.file {
 		}
 	}
 
-	export interface Exports {
-		mock: {
-			filesystem: (p?: {
-				separator?: {
-					pathname?: string
-				}
-			}) => slime.jrunscript.file.world.spi.Filesystem
-		}
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit

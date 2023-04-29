@@ -5,6 +5,24 @@
 //	END LICENSE
 
 namespace slime.jrunscript.file.test {
+	export namespace filesystem {
+		export interface BinaryFile {
+			bytes: number[]
+		}
+
+		export interface TextFile {
+			text: string
+		}
+
+		export type File = BinaryFile | TextFile
+
+		export type Node = File | Folder;
+
+		export interface Folder {
+			contents: { [name: string]: Node }
+		}
+	}
+
 	export interface Fixtures {
 		$jsapi: {
 			java: {
@@ -19,6 +37,12 @@ namespace slime.jrunscript.file.test {
 		newTemporaryDirectory: (filesystem?: any) => slime.jrunscript.file.Directory
 		createFile: (base: Directory, name: string, length?: number) => File
 		createDirectory: (base: Directory, name: string) => Directory
+
+		Filesystem: {
+			from: {
+				descriptor: (p: filesystem.Folder) => slime.jrunscript.file.world.spi.Filesystem
+			}
+		}
 	}
 
 	export namespace fixtures {
@@ -36,7 +60,7 @@ namespace slime.jrunscript.file.test {
 			$export: slime.loader.Export<slime.jrunscript.file.test.Fixtures>
 		) {
 			const { fifty } = $context;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			var $jsapi = {
 				java: {
@@ -171,6 +195,40 @@ namespace slime.jrunscript.file.test {
 
 			const { newTemporaryDirectory, createFile, createDirectory } = helpers;
 
+			const isTextFile = (p: filesystem.Node): p is filesystem.TextFile => Boolean(p["text"]);
+			const isBinaryFile = (p: filesystem.Node): p is filesystem.TextFile => Boolean(p["binary"]);
+
+			var writeContents = function(mock: slime.jrunscript.file.world.spi.Filesystem, prefix: string, contents: slime.jrunscript.file.test.filesystem.Folder["contents"]) {
+				Object.entries(contents).forEach(function(entry) {
+					var name = entry[0];
+					if (isTextFile(entry[1])) {
+						var o = $api.fp.world.now.question(
+							mock.openOutputStream,
+							{ pathname: prefix + name }
+						);
+						if (!o.present) throw new Error("Unreachable");
+						o.value.character().write(entry[1].text);
+						o.value.close();
+					} else if (isBinaryFile(entry[1])) {
+						// write it out
+					} else {
+						// recurse somehow
+					}
+				})
+
+			}
+
+			var Filesystem: Fixtures["Filesystem"] = {
+				from: {
+					descriptor: function(p) {
+
+						var mock = module.mock.filesystem();
+						writeContents(mock, "", p.contents);
+						return mock;
+					}
+				}
+			}
+
 			$export({
 				$jsapi: $jsapi,
 				module: module,
@@ -178,7 +236,8 @@ namespace slime.jrunscript.file.test {
 				context: context,
 				newTemporaryDirectory: helpers.newTemporaryDirectory,
 				createFile: helpers.createFile,
-				createDirectory: helpers.createDirectory
+				createDirectory: helpers.createDirectory,
+				Filesystem: Filesystem
 			});
 		}
 	//@ts-ignore
