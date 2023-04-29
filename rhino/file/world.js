@@ -509,6 +509,7 @@
 
 							return function(location) {
 								return function(events) {
+									var descend = p.descend || $api.fp.mapAllTo(false);
 									var array = process(location,p.descend,events);
 									return $api.fp.Stream.from.array(array);
 								}
