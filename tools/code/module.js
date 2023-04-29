@@ -13,43 +13,10 @@
 	 * @param { slime.loader.Export<slime.tools.code.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
-		var castToFile = $api.fp.cast;
-
-		/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.file.world.Location } */
-		var toLocation = function(node) {
-			return $context.library.file.world.Location.from.os(node.pathname.toString());
-		}
-
-		/**
-		 *
-		 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.File> } isExcludedFile
-		 * @returns { slime.$api.fp.Predicate<slime.jrunscript.file.Node> }
-		 */
-		function isAuthoredTextFile(isExcludedFile) {
-			return function(node) {
-				if (node.directory) return false;
-				if (isExcludedFile(castToFile(node))) return false;
-				return true;
-			}
-		}
-
-		/**
-		 *
-		 * @param { { path: string, node: slime.jrunscript.file.Node } } p
-		 * @returns { slime.tools.code.File }
-		 */
-		function nodeToSourceFile(p) {
-			return {
-				path: p.path,
-				file: toLocation(castToFile(p.node))
-			}
-		}
-
 		/**
 		 *
 		 * @param { slime.jrunscript.file.world.Location } repository
-		 * @returns
+		 * @returns { (path: string) => slime.tools.code.File }
 		 */
 		function gitPathToSourceFile(repository) {
 			return function(path) {
@@ -144,9 +111,42 @@
 
 		/**
 		 *
-		 * @type { slime.tools.code.internal.functions["getDirectorySourceFiles"] }
+		 * @type { slime.tools.code.internal.functions["getDirectoryObjectSourceFiles"] }
 		 */
-		function getSourceFiles(p) {
+		function getDirectoryObjectSourceFiles(p) {
+			/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
+			var castToFile = $api.fp.cast;
+
+			/**
+			 *
+			 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.File> } isExcludedFile
+			 * @returns { slime.$api.fp.Predicate<slime.jrunscript.file.Node> }
+			 */
+			function isAuthoredTextFile(isExcludedFile) {
+				return function(node) {
+					if (node.directory) return false;
+					if (isExcludedFile(castToFile(node))) return false;
+					return true;
+				}
+			}
+
+			/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.file.world.Location } */
+			var toLocation = function(node) {
+				return $context.library.file.world.Location.from.os(node.pathname.toString());
+			}
+
+			/**
+			 *
+			 * @param { { path: string, node: slime.jrunscript.file.Node } } p
+			 * @returns { slime.tools.code.File }
+			 */
+			function nodeToSourceFile(p) {
+				return {
+					path: p.path,
+					file: toLocation(castToFile(p.node))
+				}
+			}
+
 			if (!p.base) throw new Error("Required: base, specifying directory.");
 			return function(events) {
 				return p.base.list({
@@ -348,11 +348,13 @@
 		 * @type { slime.tools.code.internal.functions["handleFilesTrailingWhitespace"] }
 		 */
 		var handleFilesTrailingWhitespace = function(p) {
-			return function(events) {
-				p.files.forEach(function(entry) {
-					handleFileTrailingWhitespace(p)(entry)(events);
-				})
-			};
+			return function(files) {
+				return function(events) {
+					files.forEach(function(entry) {
+						handleFileTrailingWhitespace(p)(entry)(events);
+					})
+				};
+			}
 		};
 
 		/**
@@ -362,7 +364,7 @@
 			return function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
 				var files = $api.fp.world.now.question(
-					getSourceFiles,
+					getDirectoryObjectSourceFiles,
 					{
 						base: p.base,
 						isText: (p.isText) ? p.isText : function(file) {
@@ -376,7 +378,7 @@
 						}
 					}
 				);
-				handleFilesTrailingWhitespace({ files: files, nowrite: p.nowrite })(events);
+				handleFilesTrailingWhitespace({ nowrite: p.nowrite })(files)(events);
 			};
 		};
 
@@ -397,7 +399,7 @@
 						}
 					}
 				);
-				handleFilesTrailingWhitespace({ files: files, nowrite: p.nowrite })(events);
+				handleFilesTrailingWhitespace({ nowrite: p.nowrite })(files)(events);
 			}
 		}
 
@@ -441,7 +443,7 @@
 			return function(events) {
 				//	TODO	is there a simpler way to forward all those events below?
 				$api.fp.world.now.question(
-					getSourceFiles,
+					getDirectoryObjectSourceFiles,
 					{
 						base: p.base,
 						isText: (p.isText) ? p.isText : function(file) {
@@ -506,6 +508,26 @@
 		}
 
 		$export({
+			Project: {
+				from: {
+					directory: function(p) {
+						var question = $context.library.file.world.Location.directory.list.stream({
+							descend: p.descend
+						});
+						var listing = $api.fp.world.now.question(question, p.root);
+						return $api.fp.now.invoke(
+							listing,
+							$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.world.Location.file.exists())),
+							$api.fp.Stream.filter(function(location) {
+								var include = p.isSource(location);
+								if (include.present) return include.value;
+								throw new TypeError("Could not determine whether source file: " + location.pathname);
+							}),
+							$api.fp.Stream.collect
+						);
+					}
+				}
+			},
 			File: {
 				hasShebang: hasShebang,
 				isText: function() {

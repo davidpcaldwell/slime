@@ -15,12 +15,13 @@
 	 */
 	function(Packages,$api,$context,$export) {
 		/**
+		 * @type { slime.jrunscript.file.Exports["mock"]["filesystem"] }
 		 *
 		 * @returns { slime.jrunscript.file.world.spi.Filesystem }
 		 */
 		var Mock = function(p) {
-			var SLASH = (p && p.separators && p.separators.pathname) ? p.separators.pathname : "/";
-			var COLON = (p && p.separators && p.separators.searchpath) ? p.separators.searchpath : ":";
+			var SLASH = (p && p.separator && p.separator.pathname) ? p.separator.pathname : "/";
+			var COLON = (p && p.separator && p.separator.searchpath) ? p.separator.searchpath : ":";
 
 			/** @typedef { { type: "file", data: slime.jrunscript.Array<number> } } File */
 			/** @typedef { { type: "directory" } } Directory */

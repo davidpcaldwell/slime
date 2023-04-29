@@ -242,18 +242,6 @@ namespace slime.jrunscript {
 		}
 
 		export namespace inonit.script {
-			export namespace runtime.io {
-				export interface Streams {
-					split: any
-					readBytes: any
-					copy: {
-						(i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream, closeInputStream?: boolean): void
-						(r: slime.jrunscript.native.java.io.Reader, w: slime.jrunscript.native.java.io.Writer): void
-					}
-					readLine: any
-				}
-			}
-
 			export namespace engine {
 				export namespace Code {
 					export interface Loader extends java.lang.Object {

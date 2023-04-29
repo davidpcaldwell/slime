@@ -4,6 +4,25 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.file {
+	export interface Exports {
+		mock: {
+			/**
+			 * Produces a mock filesystem implementation that operates in memory only.
+			 *
+			 * @param p
+			 * @returns
+			 */
+			filesystem: (p?: {
+				separator?: {
+					pathname?: string
+					searchpath?: string
+				}
+			}) => slime.jrunscript.file.world.spi.Filesystem
+		}
+	}
+}
+
 namespace slime.jrunscript.file.internal.mock {
 	export interface Context {
 		library: {
@@ -18,6 +37,9 @@ namespace slime.jrunscript.file.internal.mock {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
 			var script: Script = fifty.$loader.script("mock.js");
 			var module = script({
 				library: {
@@ -30,6 +52,37 @@ namespace slime.jrunscript.file.internal.mock {
 				fifty.load("world.fifty.ts", "spi.filesystem.relative", module.filesystem());
 				fifty.load("world.fifty.ts", "spi.filesystem.openInputStreamNotFound", module.filesystem());
 			};
+
+			fifty.tests.manual = {};
+			fifty.tests.manual.fixtures = function() {
+				var code: slime.jrunscript.file.test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+				var fixtures = code({
+					fifty: fifty
+				});
+
+				var x = fixtures.Filesystem.from.descriptor({
+					contents: {
+						a: {
+							text: "aa"
+						}
+					}
+				});
+
+				var location: slime.jrunscript.file.world.Location = {
+					filesystem: x,
+					pathname: "a"
+				};
+
+				var text = $api.fp.world.now.question(
+					jsh.file.world.Location.file.read.string(),
+					location
+				);
+
+				verify(text).present.is(true);
+				if (text.present) {
+					verify(text).value.is("aa");
+				}
+			}
 		}
 	//@ts-ignore
 	)(fifty);
