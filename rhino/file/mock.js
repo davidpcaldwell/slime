@@ -67,7 +67,7 @@
 						character: out.character,
 						close: function() {
 							out.close();
-							state[p.pathname] = {
+							state[SLASH + p.pathname] = {
 								type: "file",
 								data: buffer.readBinary().java.array()
 							};
@@ -85,7 +85,15 @@
 					var at = state[p.pathname];
 					return $api.fp.Maybe.from.some(Boolean(at && at.type == "file"));
 				}
-			}
+			};
+
+			/** @type { slime.jrunscript.file.world.spi.Filesystem["directoryExists"] } */
+			var directoryExists = function(p) {
+				return function(events) {
+					var at = state[p.pathname];
+					return $api.fp.Maybe.from.some(Boolean(at && at.type == "directory"));
+				}
+			};
 
 			return {
 				separator: {
@@ -94,7 +102,7 @@
 				},
 				copy: void(0),
 				createDirectory: void(0),
-				directoryExists: void(0),
+				directoryExists: directoryExists,
 				fileExists: fileExists,
 				move: void(0),
 				remove: function(p) {
@@ -109,7 +117,19 @@
 				},
 				fileLength: void(0),
 				fileLastModified: void(0),
-				listDirectory: void(0),
+				listDirectory: function(p) {
+					return function(events) {
+						debugger;
+						var prefix = p.pathname + "/";
+						return $api.fp.Maybe.from.some(
+							Object.entries(state).filter(function(entry) {
+								return entry[0].substring(0,prefix.length) == prefix;
+							}).map(function(entry) {
+								return entry[0].substring(prefix.length);
+							})
+						);
+					}
+				},
 				openInputStream: openInputStream,
 				openOutputStream: openOutputStream,
 				temporary: function(p) {

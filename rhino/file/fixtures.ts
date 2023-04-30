@@ -195,7 +195,7 @@ namespace slime.jrunscript.file.test {
 
 			const { newTemporaryDirectory, createFile, createDirectory } = helpers;
 
-			const isTextFile = (p: filesystem.Node): p is filesystem.TextFile => Boolean(p["text"]);
+			const isTextFile = (p: filesystem.Node): p is filesystem.TextFile => typeof(p["text"]) == "string";
 			const isBinaryFile = (p: filesystem.Node): p is filesystem.TextFile => Boolean(p["binary"]);
 
 			var writeContents = function(mock: slime.jrunscript.file.world.spi.Filesystem, prefix: string, contents: slime.jrunscript.file.test.filesystem.Folder["contents"]) {
@@ -221,7 +221,6 @@ namespace slime.jrunscript.file.test {
 			var Filesystem: Fixtures["Filesystem"] = {
 				from: {
 					descriptor: function(p) {
-
 						var mock = module.mock.filesystem();
 						writeContents(mock, "", p.contents);
 						return mock;
