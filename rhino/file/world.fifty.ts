@@ -547,25 +547,20 @@ namespace slime.jrunscript.file {
 						const subject = fifty.global.jsh.file.world;
 
 						fifty.tests.exports.Location.directory.list = function() {
-							var fs = {
-								separator: {
-									pathname: "/"
-								},
-								listDirectory: function(p) {
-									return function(events) {
-										if (p.pathname == "") {
-											return $api.fp.Maybe.from.some(["a","b","c"]);
-										}
-										throw new Error("Pathname: " + p.pathname);
-									}
-								},
-								directoryExists: function(p) {
-									return function(events) {
-										if (p.pathname == "") return $api.fp.Maybe.from.some(true);
-										return $api.fp.Maybe.from.some(false);
+							debugger;
+							var fs = internal.world.test.fixtures.Filesystem.from.descriptor({
+								contents: {
+									a: {
+										text: ""
+									},
+									b: {
+										text: ""
+									},
+									c: {
+										text: ""
 									}
 								}
-							} as world.spi.Filesystem
+							});
 
 							var simple = $api.fp.Stream.collect($api.fp.world.now.question(
 								subject.Location.directory.list.stream(),
@@ -1059,6 +1054,16 @@ namespace slime.jrunscript.file.internal.world {
 		library: {
 			io: slime.jrunscript.io.Exports
 		}
+	}
+
+	export namespace test {
+		export const fixtures = (function(fifty: slime.fifty.test.Kit) {
+			const code: slime.jrunscript.file.test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+			return code({
+				fifty: fifty
+			});
+		//@ts-ignore
+		})(fifty);
 	}
 
 	export interface Exports extends slime.jrunscript.file.world.Exports {
