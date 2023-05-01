@@ -8,38 +8,18 @@
 (
 	/**
 	 *
-	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jrunscript.file.internal.world.Context } $context
+	 * @param { slime.jrunscript.file.internal.wo.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.loader.Export<slime.jrunscript.file.internal.world.Exports & { Location: slime.jrunscript.file.location.Exports }> } $export
+	 * @param { slime.loader.Export<slime.jrunscript.file.internal.wo.Exports> } $export
 	 */
-	function(Packages,$api,$context,$loader,$export) {
+	function($api,$context,$loader,$export) {
 		var code = {
 			/** @type { slime.jrunscript.file.internal.java.Script } */
 			java: $loader.script("java.js"),
 			/** @type { slime.jrunscript.file.internal.loader.Script } */
 			loader: $loader.script("loader.js")
 		};
-
-		var library = {
-			java: code.java({
-				api: {
-					io: $context.library.io
-				}
-			})
-		};
-
-		/** @type { slime.jrunscript.file.location.Exports["relative"] } */
-		var Location_relative = function(path) {
-			return function(pathname) {
-				var absolute = pathname.filesystem.relative(pathname.pathname, path);
-				return {
-					filesystem: pathname.filesystem,
-					pathname: absolute
-				}
-			}
-		}
 
 		/**
 		 *
@@ -63,6 +43,28 @@
 			);
 		};
 
+		/** @type { ReturnType<slime.jrunscript.file.Exports["world"]["Location"]["directory"]["exists"]> } */
+		var Location_directory_exists = function(location) {
+			return function(events) {
+				var rv = location.filesystem.directoryExists({
+					pathname: location.pathname
+				})(events);
+				if (rv.present) return rv.value;
+				throw new Error("Error determining whether directory is present at " + location.pathname);
+			}
+		}
+
+		/** @type { slime.jrunscript.file.location.Exports["relative"] } */
+		var Location_relative = function(path) {
+			return function(pathname) {
+				var absolute = pathname.filesystem.relative(pathname.pathname, path);
+				return {
+					filesystem: pathname.filesystem,
+					pathname: absolute
+				}
+			}
+		}
+
 		/** @type { ReturnType<slime.jrunscript.file.Exports["world"]["Location"]["file"]["exists"]> } */
 		var Location_file_exists = function(location) {
 			return function(events) {
@@ -76,16 +78,17 @@
 			}
 		}
 
-		/** @type { ReturnType<slime.jrunscript.file.Exports["world"]["Location"]["directory"]["exists"]> } */
-		var Location_directory_exists = function(location) {
-			return function(events) {
-				var rv = location.filesystem.directoryExists({
-					pathname: location.pathname
-				})(events);
-				if (rv.present) return rv.value;
-				throw new Error("Error determining whether directory is present at " + location.pathname);
-			}
-		}
+		var filesystemFromSpiTemporary = function(provider) {
+			return function(p) {
+				return function(events) {
+					var path = provider.temporary(p)(events);
+					return {
+						filesystem: provider,
+						pathname: path
+					}
+				}
+			};
+		};
 
 		/** @type { slime.$api.fp.world.Action<slime.jrunscript.file.Location, { created: string }> } */
 		var ensureParent = function(location) {
@@ -107,40 +110,6 @@
 			}
 		}
 
-		var filesystemFromSpiTemporary = function(provider) {
-			return function(p) {
-				return function(events) {
-					var path = provider.temporary(p)(events);
-					return {
-						filesystem: provider,
-						pathname: path
-					}
-				}
-			};
-		};
-
-		//	TODO	probably the Searchpath construct belongs in jrunscript.shell, or maybe we would have a separate one here based
-		//			on a list of Location but it could be turned into a system path via a jrunscript.shell API or something
-
-		// /** @type { slime.jrunscript.file.World["Filesystem"]["from"]["spi"] } */
-		// var filesystemFromSpi = function(provider) {
-		// 	return {
-		// 		Searchpath: {
-		// 			parse: function(value) {
-		// 				return value.split(provider.separator.searchpath).map(function(pathname) {
-		// 					return {
-		// 						filesystem: provider,
-		// 						pathname: pathname
-		// 					}
-		// 				});
-		// 			},
-		// 			string: function(paths) {
-		// 				return paths.join(provider.separator.searchpath);
-		// 			}
-		// 		}
-		// 	};
-		// };
-
 		var Location = {
 			relative: Location_relative,
 			file: {
@@ -154,16 +123,14 @@
 			library: {
 				Location: Location
 			}
-		})
+		});
 
 		$export({
-			providers: library.java.providers,
-			filesystems: library.java.filesystems,
 			Location: {
 				from: {
 					os: function(string) {
 						return {
-							filesystem: library.java.filesystems.os,
+							filesystem: $context.filesystem.os,
 							pathname: string
 						}
 					},
@@ -524,6 +491,29 @@
 				}
 			}
 		});
+
+		//	Some old code follows
+		//	TODO	probably the Searchpath construct belongs in jrunscript.shell, or maybe we would have a separate one here based
+		//			on a list of Location but it could be turned into a system path via a jrunscript.shell API or something
+
+		// /** @type { slime.jrunscript.file.World["Filesystem"]["from"]["spi"] } */
+		// var filesystemFromSpi = function(provider) {
+		// 	return {
+		// 		Searchpath: {
+		// 			parse: function(value) {
+		// 				return value.split(provider.separator.searchpath).map(function(pathname) {
+		// 					return {
+		// 						filesystem: provider,
+		// 						pathname: pathname
+		// 					}
+		// 				});
+		// 			},
+		// 			string: function(paths) {
+		// 				return paths.join(provider.separator.searchpath);
+		// 			}
+		// 		}
+		// 	};
+		// };
 	}
 //@ts-ignore
-)(Packages,$api,$context,$loader,$export);
+)($api,$context,$loader,$export);

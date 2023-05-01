@@ -796,3 +796,20 @@ namespace slime.jrunscript.file {
 		})(fifty);
 	}
 }
+
+namespace slime.jrunscript.file.internal.wo {
+	export interface Context {
+		library: {
+			io: slime.jrunscript.io.Exports
+		}
+		filesystem: {
+			os: slime.jrunscript.file.world.Filesystem
+		}
+	}
+
+	export interface Exports {
+		Location: location.Exports
+	}
+
+	export type Script = slime.loader.Script<Context,Exports>
+}

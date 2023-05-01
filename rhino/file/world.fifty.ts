@@ -222,12 +222,13 @@ namespace slime.jrunscript.file.internal.world {
 	export interface Context {
 		library: {
 			io: slime.jrunscript.io.Exports
+			internal: {
+				java: slime.jrunscript.file.internal.java.Exports
+			}
 		}
 	}
 
 	export interface Exports extends slime.jrunscript.file.world.Exports {
-		Location: slime.jrunscript.file.location.Exports
-
 		providers: {
 			os: slime.jrunscript.file.internal.java.FilesystemProvider
 		}

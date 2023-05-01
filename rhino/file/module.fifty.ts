@@ -462,7 +462,14 @@ namespace slime.jrunscript.file {
 	}
 
 	export interface Exports {
-		world: world.Exports & { Location: location.Exports }
+		world: world.Exports & {
+			/** @deprecated Replaced by direct `Location` property. */
+			Location: location.Exports
+		}
+	}
+
+	export interface Exports {
+		Location: location.Exports
 	}
 
 	export interface Exports {
