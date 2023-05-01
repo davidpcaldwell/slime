@@ -27,7 +27,7 @@ namespace slime.jrunscript.file.world.object {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Location extends world.Location {
+	export interface Location extends slime.jrunscript.file.Location {
 		/**
 		 * @deprecated Not world-oriented.
 		 */

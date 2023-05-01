@@ -30,7 +30,7 @@
 			})
 		};
 
-		/** @type { slime.jrunscript.file.world.location.Exports["relative"] } */
+		/** @type { slime.jrunscript.file.location.Exports["relative"] } */
 		var Location_relative = function(path) {
 			return function(pathname) {
 				var absolute = pathname.filesystem.relative(pathname.pathname, path);
@@ -43,7 +43,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.file.world.Location } location
+		 * @param { slime.jrunscript.file.Location } location
 		 * @param { slime.$api.Events<{}> } events
 		 * @param { (to: slime.jrunscript.runtime.io.OutputStream) => void } write
 		 */
@@ -87,7 +87,7 @@
 			}
 		}
 
-		/** @type { slime.$api.fp.world.Action<slime.jrunscript.file.world.Location, { created: string }> } */
+		/** @type { slime.$api.fp.world.Action<slime.jrunscript.file.Location, { created: string }> } */
 		var ensureParent = function(location) {
 			var it = function(location,events) {
 				var parent = Location_relative("../")(location);
@@ -212,8 +212,8 @@
 					write: Object.assign(
 						/**
 						 *
-						 * @param { Parameters<slime.jrunscript.file.world.location.file.Exports["write"]>[0] } location
-						 * @returns { ReturnType<slime.jrunscript.file.world.location.file.Exports["write"]> } location
+						 * @param { Parameters<slime.jrunscript.file.location.file.Exports["write"]>[0] } location
+						 * @returns { ReturnType<slime.jrunscript.file.location.file.Exports["write"]> } location
 						 */
 						function(location) {
 							return {
@@ -468,17 +468,17 @@
 						stream: function(p) {
 							/**
 							 *
-							 * @param { slime.jrunscript.file.world.Location } location
-							 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.world.Location> } descend
-							 * @param { slime.$api.Events<slime.jrunscript.file.world.location.directory.list.Events> } events
-							 * @returns { slime.jrunscript.file.world.Location[] }
+							 * @param { slime.jrunscript.file.Location } location
+							 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
+							 * @param { slime.$api.Events<slime.jrunscript.file.location.directory.list.Events> } events
+							 * @returns { slime.jrunscript.file.Location[] }
 							 */
 							var process = function(location,descend,events) {
 								var listed = $api.fp.world.now.ask(
 									location.filesystem.listDirectory({ pathname: location.pathname })
 								);
 								if (listed.present) {
-									/** @type { slime.jrunscript.file.world.Location[] } */
+									/** @type { slime.jrunscript.file.Location[] } */
 									var rv = [];
 									listed.value.forEach(function(name) {
 										var it = {

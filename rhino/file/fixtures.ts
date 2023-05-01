@@ -196,22 +196,24 @@ namespace slime.jrunscript.file.test {
 			const { newTemporaryDirectory, createFile, createDirectory } = helpers;
 
 			const isTextFile = (p: filesystem.Node): p is filesystem.TextFile => typeof(p["text"]) == "string";
-			const isBinaryFile = (p: filesystem.Node): p is filesystem.TextFile => Boolean(p["binary"]);
+			const isBinaryFile = (p: filesystem.Node): p is filesystem.BinaryFile => Boolean(p["binary"]);
 
 			var writeContents = function(mock: slime.jrunscript.file.world.spi.Filesystem, prefix: string, contents: slime.jrunscript.file.test.filesystem.Folder["contents"]) {
 				Object.entries(contents).forEach(function(entry) {
 					var name = entry[0];
-					if (isTextFile(entry[1])) {
+					var value = entry[1];
+					if (isTextFile(value)) {
 						var o = $api.fp.world.now.question(
 							mock.openOutputStream,
 							{ pathname: prefix + name }
 						);
 						if (!o.present) throw new Error("Unreachable");
-						o.value.character().write(entry[1].text);
+						o.value.character().write(value.text);
 						o.value.close();
-					} else if (isBinaryFile(entry[1])) {
+					} else if (isBinaryFile(value)) {
 						// write it out
 					} else {
+						var v = value;
 						// recurse somehow
 					}
 				})
