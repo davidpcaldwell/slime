@@ -36,6 +36,13 @@
 			}
 		});
 
+		var mock = code.mock({
+			library: {
+				java: $context.api.java,
+				io: $context.api.io
+			}
+		});
+
 		var wo = code.wo({
 			library: {
 				io: $context.api.io
@@ -44,13 +51,6 @@
 				os: world.filesystems.os
 			},
 		})
-
-		var mock = code.mock({
-			library: {
-				java: $context.api.java,
-				io: $context.api.io
-			}
-		});
 
 		var oo = code.oo({
 			api: {
@@ -66,9 +66,15 @@
 		});
 
 		$export({
-			world: $api.Object.compose(world, wo),
-			Location: wo.Location,
+			world: {
+				filesystems: {
+					os: world.filesystems.os,
+					mock: mock.filesystem
+				},
+				Location: wo.Location
+			},
 			mock: mock,
+			Location: wo.Location,
 			action: oo.action,
 			filesystem: oo.filesystem,
 			filesystems: oo.filesystems,

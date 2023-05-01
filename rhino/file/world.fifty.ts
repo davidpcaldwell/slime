@@ -166,14 +166,6 @@ namespace slime.jrunscript.file {
 		)(fifty);
 	}
 
-	export namespace world {
-		export interface Exports {
-			filesystems: {
-				os: Filesystem
-			}
-		}
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -216,23 +208,4 @@ namespace slime.jrunscript.file {
 		}
 	//@ts-ignore
 	)(fifty);
-}
-
-namespace slime.jrunscript.file.internal.world {
-	export interface Context {
-		library: {
-			io: slime.jrunscript.io.Exports
-			internal: {
-				java: slime.jrunscript.file.internal.java.Exports
-			}
-		}
-	}
-
-	export interface Exports extends slime.jrunscript.file.world.Exports {
-		providers: {
-			os: slime.jrunscript.file.internal.java.FilesystemProvider
-		}
-	}
-
-	export type Script = slime.loader.Script<Context,Exports>
 }
