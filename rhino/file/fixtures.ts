@@ -40,7 +40,7 @@ namespace slime.jrunscript.file.test {
 
 		Filesystem: {
 			from: {
-				descriptor: (p: filesystem.Folder) => slime.jrunscript.file.world.spi.Filesystem
+				descriptor: (p: filesystem.Folder) => slime.jrunscript.file.world.Filesystem
 			}
 		}
 	}
@@ -198,7 +198,7 @@ namespace slime.jrunscript.file.test {
 			const isTextFile = (p: filesystem.Node): p is filesystem.TextFile => typeof(p["text"]) == "string";
 			const isBinaryFile = (p: filesystem.Node): p is filesystem.BinaryFile => Boolean(p["binary"]);
 
-			var writeContents = function(mock: slime.jrunscript.file.world.spi.Filesystem, prefix: string, contents: slime.jrunscript.file.test.filesystem.Folder["contents"]) {
+			var writeContents = function(mock: slime.jrunscript.file.world.Filesystem, prefix: string, contents: slime.jrunscript.file.test.filesystem.Folder["contents"]) {
 				Object.entries(contents).forEach(function(entry) {
 					var name = entry[0];
 					var value = entry[1];

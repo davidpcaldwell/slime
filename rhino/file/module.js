@@ -20,16 +20,18 @@
 		}
 
 		var code = {
-			/** @type { slime.jrunscript.file.internal.world.Script } */
-			world: $loader.script("world.js"),
+			/** @type { slime.jrunscript.file.internal.java.Script } */
+			java: $loader.script("java.js"),
+			/** @type { slime.jrunscript.file.internal.wo.Script } */
+			wo: $loader.script("wo.js"),
 			/** @type { slime.jrunscript.file.internal.mock.Script } */
 			mock: $loader.script("mock.js"),
 			/** @type { slime.jrunscript.file.internal.oo.Script } */
 			oo: $loader.script("oo.js")
 		}
 
-		var world = code.world({
-			library: {
+		var world = code.java({
+			api: {
 				io: $context.api.io
 			}
 		});
@@ -40,6 +42,15 @@
 				io: $context.api.io
 			}
 		});
+
+		var wo = code.wo({
+			library: {
+				io: $context.api.io
+			},
+			filesystem: {
+				os: world.filesystems.os
+			},
+		})
 
 		var oo = code.oo({
 			api: {
@@ -55,8 +66,15 @@
 		});
 
 		$export({
-			world: world,
+			world: {
+				filesystems: {
+					os: world.filesystems.os,
+					mock: mock.filesystem
+				},
+				Location: wo.Location
+			},
 			mock: mock,
+			Location: wo.Location,
 			action: oo.action,
 			filesystem: oo.filesystem,
 			filesystems: oo.filesystems,

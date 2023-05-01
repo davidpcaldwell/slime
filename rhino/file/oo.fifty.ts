@@ -12,7 +12,7 @@ namespace slime.jrunscript.file.internal.oo {
 		}
 
 		library: {
-			world: slime.jrunscript.file.internal.world.Exports
+			world: slime.jrunscript.file.internal.java.Exports
 		}
 
 		pathext: slime.jrunscript.file.Context["pathext"]

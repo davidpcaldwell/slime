@@ -18,7 +18,7 @@ namespace slime.jrunscript.file {
 	)(fifty);
 
 	export interface Location {
-		readonly filesystem: world.spi.Filesystem
+		readonly filesystem: world.Filesystem
 		readonly pathname: string
 	}
 
@@ -604,7 +604,7 @@ namespace slime.jrunscript.file {
 			from: {
 				os: (pathname: string) => Location
 
-				temporary: (filesystem: world.spi.Filesystem) => slime.$api.fp.world.Question<
+				temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Question<
 					{
 						parent?: string
 						prefix?: string
@@ -795,4 +795,21 @@ namespace slime.jrunscript.file {
 		//@ts-ignore
 		})(fifty);
 	}
+}
+
+namespace slime.jrunscript.file.internal.wo {
+	export interface Context {
+		library: {
+			io: slime.jrunscript.io.Exports
+		}
+		filesystem: {
+			os: slime.jrunscript.file.world.Filesystem
+		}
+	}
+
+	export interface Exports {
+		Location: location.Exports
+	}
+
+	export type Script = slime.loader.Script<Context,Exports>
 }

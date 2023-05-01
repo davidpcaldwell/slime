@@ -17,7 +17,7 @@
 		/**
 		 * @type { slime.jrunscript.file.Exports["mock"]["filesystem"] }
 		 *
-		 * @returns { slime.jrunscript.file.world.spi.Filesystem }
+		 * @returns { slime.jrunscript.file.world.Filesystem }
 		 */
 		var Mock = function(p) {
 			var SLASH = (p && p.separator && p.separator.pathname) ? p.separator.pathname : "/";
@@ -36,7 +36,7 @@
 				return node.type == "file";
 			}
 
-			/** @type { slime.jrunscript.file.world.spi.Filesystem["openInputStream"] } */
+			/** @type { slime.jrunscript.file.world.Filesystem["openInputStream"] } */
 			var openInputStream = function(p) {
 				return function(events) {
 					var at = state[p.pathname];
@@ -55,7 +55,7 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.file.world.spi.Filesystem["openOutputStream"] } */
+			/** @type { slime.jrunscript.file.world.Filesystem["openOutputStream"] } */
 			var openOutputStream = function(p) {
 				return function(events) {
 					//	TODO	append
@@ -79,7 +79,7 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.file.world.spi.Filesystem["fileExists"] } */
+			/** @type { slime.jrunscript.file.world.Filesystem["fileExists"] } */
 			var fileExists = function(p) {
 				return function(events) {
 					var at = state[p.pathname];
@@ -87,7 +87,7 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.file.world.spi.Filesystem["directoryExists"] } */
+			/** @type { slime.jrunscript.file.world.Filesystem["directoryExists"] } */
 			var directoryExists = function(p) {
 				return function(events) {
 					var at = state[p.pathname];

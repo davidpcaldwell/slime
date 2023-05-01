@@ -56,7 +56,6 @@
 						Filesystem: os.Filesystem,
 						java: (
 							function() {
-								//	TODO	right now java.js is encapsulated within world.js except here
 								/** @type { slime.jrunscript.file.internal.java.Script } */
 								var code = $loader.script("java.js");
 								return code({

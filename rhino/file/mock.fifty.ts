@@ -4,25 +4,6 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.file {
-	export interface Exports {
-		mock: {
-			/**
-			 * Produces a mock filesystem implementation that operates in memory only.
-			 *
-			 * @param p
-			 * @returns
-			 */
-			filesystem: (p?: {
-				separator?: {
-					pathname?: string
-					searchpath?: string
-				}
-			}) => slime.jrunscript.file.world.spi.Filesystem
-		}
-	}
-}
-
 namespace slime.jrunscript.file.internal.mock {
 	export interface Context {
 		library: {
@@ -31,7 +12,9 @@ namespace slime.jrunscript.file.internal.mock {
 		}
 	}
 
-	export type Exports = slime.jrunscript.file.Exports["mock"]
+	export type Exports = {
+		filesystem: slime.jrunscript.file.Exports["world"]["filesystems"]["mock"]
+	}
 
 	(
 		function(

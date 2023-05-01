@@ -117,7 +117,7 @@ namespace slime.jrunscript.file.internal.java {
 		}
 
 		filesystems: {
-			os: slime.jrunscript.file.world.spi.Filesystem
+			os: slime.jrunscript.file.world.Filesystem
 		}
 	}
 

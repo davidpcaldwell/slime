@@ -461,10 +461,38 @@ namespace slime.jrunscript.file {
 		export type Location = slime.jrunscript.file.Location
 	}
 
-	export namespace world {
-		export interface Exports {
+
+	export interface Exports {
+		world: {
+			filesystems: {
+				os: world.Filesystem
+
+				/**
+				 * Produces a mock filesystem implementation that operates in memory only.
+				 *
+				 * @param p
+				 * @returns
+				 */
+				mock: (p?: {
+					separator?: {
+						pathname?: string
+						searchpath?: string
+					}
+				}) => world.Filesystem
+			}
+
+			/** @deprecated Replaced by direct `Location` property. */
 			Location: location.Exports
 		}
+
+		mock: {
+			/** @deprecated Use `Exports["world"]["filesystems"]["mock"]. */
+			filesystem: Exports["world"]["filesystems"]["mock"]
+		}
+	}
+
+	export interface Exports {
+		Location: location.Exports
 	}
 
 	export interface Exports {
