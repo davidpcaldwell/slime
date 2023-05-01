@@ -461,10 +461,8 @@ namespace slime.jrunscript.file {
 		export type Location = slime.jrunscript.file.Location
 	}
 
-	export namespace world {
-		export interface Exports {
-			Location: location.Exports
-		}
+	export interface Exports {
+		world: world.Exports & { Location: location.Exports }
 	}
 
 	export interface Exports {

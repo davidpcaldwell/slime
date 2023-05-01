@@ -240,10 +240,6 @@ namespace slime.jrunscript.file {
 		}
 	}
 
-	export interface Exports {
-		world: world.Exports
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -296,6 +292,8 @@ namespace slime.jrunscript.file.internal.world {
 	}
 
 	export interface Exports extends slime.jrunscript.file.world.Exports {
+		Location: slime.jrunscript.file.location.Exports
+
 		providers: {
 			os: slime.jrunscript.file.internal.java.FilesystemProvider
 		}

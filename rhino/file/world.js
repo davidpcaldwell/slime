@@ -12,7 +12,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.file.internal.world.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.loader.Export<slime.jrunscript.file.internal.world.Exports> } $export
+	 * @param { slime.loader.Export<slime.jrunscript.file.internal.world.Exports & { Location: slime.jrunscript.file.location.Exports }> } $export
 	 */
 	function(Packages,$api,$context,$loader,$export) {
 		var code = {
@@ -63,7 +63,7 @@
 			);
 		};
 
-		/** @type { ReturnType<slime.jrunscript.file.world.Exports["Location"]["file"]["exists"]> } */
+		/** @type { ReturnType<slime.jrunscript.file.Exports["world"]["Location"]["file"]["exists"]> } */
 		var Location_file_exists = function(location) {
 			return function(events) {
 				var ask = location.filesystem.fileExists({ pathname: location.pathname });
@@ -76,7 +76,7 @@
 			}
 		}
 
-		/** @type { ReturnType<slime.jrunscript.file.world.Exports["Location"]["directory"]["exists"]> } */
+		/** @type { ReturnType<slime.jrunscript.file.Exports["world"]["Location"]["directory"]["exists"]> } */
 		var Location_directory_exists = function(location) {
 			return function(events) {
 				var rv = location.filesystem.directoryExists({
@@ -359,7 +359,7 @@
 							}
 						}
 					},
-					/** @type { slime.jrunscript.file.world.Exports["Location"]["file"]["remove"] } */
+					/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
 					remove: function() {
 						return function(location) {
 							return function() {
@@ -372,7 +372,7 @@
 					},
 				},
 				directory: {
-					/** @type { slime.jrunscript.file.world.Exports["Location"]["directory"]["exists"] } */
+					/** @type { slime.jrunscript.file.location.Exports["directory"]["exists"] } */
 					exists: function() {
 						return Location_directory_exists;
 					},
@@ -453,7 +453,7 @@
 							}
 						}
 					},
-					/** @type { slime.jrunscript.file.world.Exports["Location"]["directory"]["remove"] } */
+					/** @type { slime.jrunscript.file.location.Exports["directory"]["remove"] } */
 					remove: function() {
 						return function(location) {
 							return function() {
