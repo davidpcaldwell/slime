@@ -17,14 +17,14 @@ namespace slime.jsh.wf.internal.module {
 		}
 
 		world?: {
-			filesystem?: slime.jrunscript.file.world.spi.Filesystem
+			filesystem?: slime.jrunscript.file.world.Filesystem
 		}
 	}
 
 	export namespace test {
 		export const mock = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("module.js");
-			return function(filesystem: slime.jrunscript.file.world.spi.Filesystem): Exports {
+			return function(filesystem: slime.jrunscript.file.world.Filesystem): Exports {
 				return script({
 					library: {
 						file: fifty.global.jsh.file
@@ -40,7 +40,7 @@ namespace slime.jsh.wf.internal.module {
 		export const write = (function(fifty: slime.fifty.test.Kit) {
 			const { $api } = fifty.global;
 
-			return function(filesystem: slime.jrunscript.file.world.spi.Filesystem, pathname: string, string: string) {
+			return function(filesystem: slime.jrunscript.file.world.Filesystem, pathname: string, string: string) {
 				var output = $api.fp.impure.now.input(
 					$api.fp.world.input(
 						filesystem.openOutputStream({

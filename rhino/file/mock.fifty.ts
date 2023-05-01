@@ -18,7 +18,7 @@ namespace slime.jrunscript.file {
 					pathname?: string
 					searchpath?: string
 				}
-			}) => slime.jrunscript.file.world.spi.Filesystem
+			}) => slime.jrunscript.file.world.Filesystem
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace slime.jrunscript.file {
 	)(fifty);
 
 	export interface Location {
-		readonly filesystem: world.spi.Filesystem
+		readonly filesystem: world.Filesystem
 		readonly pathname: string
 	}
 
@@ -604,7 +604,7 @@ namespace slime.jrunscript.file {
 			from: {
 				os: (pathname: string) => Location
 
-				temporary: (filesystem: world.spi.Filesystem) => slime.$api.fp.world.Question<
+				temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Question<
 					{
 						parent?: string
 						prefix?: string
