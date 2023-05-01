@@ -432,6 +432,8 @@ namespace slime.jrunscript.file {
 
 				fifty.load("world.fifty.ts");
 				fifty.load("world-old.fifty.ts");
+				fifty.load("mock.fifty.ts");
+				fifty.load("wo.fifty.ts");
 
 				fifty.load("oo.fifty.ts");
 
@@ -451,6 +453,17 @@ namespace slime.jrunscript.file {
 		object: {
 			pathname: (pathname: slime.jrunscript.file.world.Location) => slime.jrunscript.file.Pathname
 			directory: (pathname: slime.jrunscript.file.world.Location) => slime.jrunscript.file.Directory
+		}
+	}
+
+	export namespace world {
+		/** @deprecated Replaced by slime.jrunscript.file.Location. */
+		export type Location = slime.jrunscript.file.Location
+	}
+
+	export namespace world {
+		export interface Exports {
+			Location: location.Exports
 		}
 	}
 
