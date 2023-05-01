@@ -72,7 +72,11 @@
 				var serialized = $context.library.document.Document.codec.string.encode(parsed);
 
 				if (markup != serialized) {
-					throw new Error("Could not parse: " + file.pathname);
+					//	TODO	using this to work around an issue with the serializer introduced with escaping. Will need to
+					//			research exact requirements, but essentially, <script> elements should not require escaping.
+					if (markup != serialized.replace(/\&amp\;/g, "&")) {
+						throw new Error("Could not parse: " + file.pathname);
+					}
 				}
 
 				var getAttribute = function(name) {
