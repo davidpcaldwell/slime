@@ -135,7 +135,6 @@ namespace slime.runtime.document {
 			}
 		//@ts-ignore
 		)(fifty);
-
 	}
 
 	export interface Exports {
