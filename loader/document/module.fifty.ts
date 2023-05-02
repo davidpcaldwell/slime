@@ -95,6 +95,9 @@ namespace slime.runtime.document {
 		$slime?: Pick<old.Context["$slime"],"java">
 	}
 
+	export interface Settings {
+	}
+
 	export namespace exports {
 		export type transform = (document: slime.runtime.document.Document) => slime.runtime.document.Document
 

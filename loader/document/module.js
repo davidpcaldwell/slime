@@ -390,14 +390,18 @@
 			},
 			Fragment: {
 				codec: {
-					string: {
-						decode: function(string) {
-							return source.fragment({ string: string });
-						},
-						encode: function(fragment) {
-							return source.serialize({ fragment: fragment });
+					string: (function() {
+						/** @type { slime.runtime.document.Settings } */
+						var settings = {};
+						return {
+							decode: function(string) {
+								return source.fragment({ settings: settings, string: string });
+							},
+							encode: function(fragment) {
+								return source.serialize({ settings: settings, fragment: fragment });
+							}
 						}
-					}
+					})()
 				}
 			},
 			Element: {
@@ -419,14 +423,18 @@
 			//@ts-ignore
 			Document: {
 				codec: {
-					string: {
-						decode: function(string) {
-							return source.parse({ string: string });
-						},
-						encode: function(document) {
-							return source.serialize({ document: document });
+					string: (function() {
+						/** @type { slime.runtime.document.Settings } */
+						var settings = {};
+						return {
+							decode: function(string) {
+								return source.parse({ settings: settings, string: string });
+							},
+							encode: function(document) {
+								return source.serialize({ settings: settings, document: document });
+							}
 						}
-					}
+					})()
 				},
 				removeWhitespaceTextNodes: function(document) {
 					/**

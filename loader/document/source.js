@@ -684,9 +684,13 @@
 		var debugFidelity = function(input, events) {
 			var console = function(string) {
 				events.fire("console", string);
-			}
+			};
+
+			/** @type { slime.runtime.document.Settings } */
+			var settings = {};
 
 			var document = parse({
+				settings: settings,
 				string: input,
 				events: (function() {
 					/** @type { string[] } */
@@ -716,6 +720,7 @@
 			console("Parsed.");
 
 			var serialized = serialize({
+				settings: settings,
 				document: document
 			});
 
