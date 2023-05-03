@@ -643,29 +643,50 @@
 
 		/**
 		 *
-		 * @param { Parameters<slime.runtime.document.internal.source.Exports["parse"]>[0] } input
-		 * @returns
+		 * @type { slime.runtime.document.internal.source.Exports["parse"] }
 		 */
-		var parse = function(input) {
-			var events = $api.events.toListener(input.events);
-			events.attach();
-			var state = Parser()(
-				{
-					parsed: {
-						type: "document",
-						children: []
+		var parse = {
+			document: function(input) {
+				var events = $api.events.toListener(input.events);
+				events.attach();
+				var state = Parser()(
+					{
+						parsed: {
+							type: "document",
+							children: []
+						},
+						position: {
+							document: input.string,
+							offset: 0
+						}
 					},
-					position: {
-						document: input.string,
-						offset: 0
-					}
-				},
-				events.emitter,
-				State.atEnd
-			);
-			events.detach();
-			if (isDocument(state.parsed)) return state.parsed;
-		};
+					events.emitter,
+					State.atEnd
+				);
+				events.detach();
+				if (isDocument(state.parsed)) return state.parsed;
+			},
+			fragment: function(input) {
+				var events = $api.events.toListener(input.events);
+				events.attach();
+				var state = Parser()(
+					{
+						parsed: {
+							type: "fragment",
+							children: []
+						},
+						position: {
+							document: input.string,
+							offset: 0
+						}
+					},
+					events.emitter,
+					State.atEnd
+				);
+				events.detach();
+				if (isFragment(state.parsed)) return state.parsed;
+			}
+		}
 
 		var serialize = function(output) {
 			var serialize = Serializer();
@@ -689,7 +710,7 @@
 			/** @type { slime.runtime.document.Settings } */
 			var settings = {};
 
-			var document = parse({
+			var document = parse.document({
 				settings: settings,
 				string: input,
 				events: (function() {
@@ -750,27 +771,10 @@
 				}
 			},
 			parse: parse,
-			fragment: function(input) {
-				var events = $api.events.toListener(input.events);
-				events.attach();
-				var state = Parser()(
-					{
-						parsed: {
-							type: "fragment",
-							children: []
-						},
-						position: {
-							document: input.string,
-							offset: 0
-						}
-					},
-					events.emitter,
-					State.atEnd
-				);
-				events.detach();
-				if (isFragment(state.parsed)) return state.parsed;
+			serialize: {
+				document: serialize,
+				fragment: serialize
 			},
-			serialize: serialize,
 			Node: {
 				isComment: isComment,
 				isText: isText,

@@ -395,10 +395,10 @@
 						var settings = {};
 						return {
 							decode: function(string) {
-								return source.fragment({ settings: settings, string: string });
+								return source.parse.fragment({ settings: settings, string: string });
 							},
 							encode: function(fragment) {
-								return source.serialize({ settings: settings, fragment: fragment });
+								return source.serialize.fragment({ settings: settings, fragment: fragment });
 							}
 						}
 					})()
@@ -428,10 +428,10 @@
 						var settings = {};
 						return {
 							decode: function(string) {
-								return source.parse({ settings: settings, string: string });
+								return source.parse.document({ settings: settings, string: string });
 							},
 							encode: function(document) {
-								return source.serialize({ settings: settings, document: document });
+								return source.serialize.document({ settings: settings, document: document });
 							}
 						}
 					})()
