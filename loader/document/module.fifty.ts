@@ -8,7 +8,18 @@
  * Provides a pure JavaScript parser/serializer for HTML and XML documents that, unlike a standard DOM HTML parser, can provide
  * accurate bidirectional translation from markup to its internal representation using the module's provided {@link slime.Codec}s:
  * {@link slime.runtime.document.exports.Document | `Document.codec.string`} and
- * {@link slime.runtime.document.Exports | `Fragment.codec.string`}
+ * {@link slime.runtime.document.Exports | `Fragment.codec.string`}.
+ *
+ * Note that the "objects" returned by this parser are "dumb" objects, and are not really designed to be used by the application.
+ * Rather, the application should use the functional interfaces provided for operating on these objects. For example:
+ *
+ * * when a document contains a text node with an escaped character in it, the escaped character is preserved as-is in the `data` property
+ *   of that node (even though the DOM `data` property has different semantics.)
+ * * In a list of attributes for an element, if there is whitespace after the last attribute, a phantom "attribute" will be created
+ *   that consists only of the whitespace.
+ *
+ * Generally speaking, the functional interfaces provide APIs that clean up these "dumb" objects and return application-level
+ * information about them.
  */
 namespace slime.runtime.document {
 	export interface Node {

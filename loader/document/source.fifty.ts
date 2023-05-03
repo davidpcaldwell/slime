@@ -186,7 +186,7 @@ namespace slime.runtime.document.internal.source {
 			);
 
 			fifty.tests.selfClosing = function() {
-				var html = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />"
+				var html = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />";
 				var fragment = api.parse.fragment({
 					settings: settings,
 					string: html,
@@ -204,7 +204,7 @@ namespace slime.runtime.document.internal.source {
 					fragment: fragment
 				});
 				fifty.verify(serialized).is(html);
-			}
+			};
 
 			fifty.tests.voidElements = function() {
 				var html = "<input type=\"hidden\" value=\"foo\"><input type=\"hidden\" value=\"bar\">";
@@ -311,6 +311,14 @@ namespace slime.runtime.document.internal.source {
 				fifty.verify(serialized == xml, "symmetric").is(true);
 			};
 
+			fifty.tests.missingEndTag = function() {
+				var xml = "<root>foo";
+				var document = api.parse.document({ settings: settings, string: xml });
+				fifty.verify(document).children[0].type.is("element");
+				var element = document.children[0] as Element
+				fifty.verify(element).endTag.is("");
+			};
+
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.happy);
 				fifty.run(fifty.tests.attributes);
@@ -320,6 +328,7 @@ namespace slime.runtime.document.internal.source {
 				fifty.run(fifty.tests.emptyAttribute);
 				fifty.run(fifty.tests.optionalTags);
 				fifty.run(fifty.tests.emptyTagsParsedCorrectly);
+				fifty.run(fifty.tests.missingEndTag);
 				fifty.run(fifty.tests.xml);
 			}
 		}
