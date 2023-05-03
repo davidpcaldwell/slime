@@ -311,22 +311,6 @@ namespace slime.runtime.document.internal.source {
 				fifty.verify(serialized == xml, "symmetric").is(true);
 			};
 
-			fifty.tests.escaping = function() {
-				//	XML specification: https://www.w3.org/TR/2006/REC-xml11-20060816/
-				var codec = function(xml,data) {
-					var document = api.parse.document({ settings: settings, string: xml });
-					var element = document.children[0] as Element;
-					var content = element.children[0] as Text;
-					verify(content).data.is(data);
-
-					var serialized = api.serialize.document({ settings: settings, document: document });
-					verify(serialized).is(xml);
-				};
-
-				codec("<root>Ben &amp; Jerry</root>", "Ben & Jerry");
-				codec("<root>1 &lt; 2</root>", "1 < 2");
-			}
-
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.happy);
 				fifty.run(fifty.tests.attributes);
@@ -336,7 +320,6 @@ namespace slime.runtime.document.internal.source {
 				fifty.run(fifty.tests.emptyAttribute);
 				fifty.run(fifty.tests.optionalTags);
 				fifty.run(fifty.tests.emptyTagsParsedCorrectly);
-				fifty.run(fifty.tests.escaping);
 				fifty.run(fifty.tests.xml);
 			}
 		}

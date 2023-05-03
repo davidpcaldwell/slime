@@ -193,39 +193,6 @@
 			return State.step(state, doctype, end + ">".length);
 		};
 
-		var escaping = (
-			function() {
-				var escapes = {
-					amp: {
-						character: "&",
-						must: true
-					},
-					lt: {
-						character: "<",
-						must: true
-					}
-				};
-				return {
-					encode: function(string) {
-						var rv = string;
-						for (var x in escapes) {
-							if (escapes[x].must) {
-								rv = rv.replace(new RegExp(escapes[x].character), "&" + x + ";");
-							}
-						}
-						return rv;
-					},
-					decode: function(string) {
-						var rv = string;
-						for (var x in escapes) {
-							rv = rv.replace(new RegExp("\&" + x + ";", "g"), escapes[x].character);
-						}
-						return rv;
-					}
-				}
-			}
-		)();
-
 		/**
 		 * @type { slime.runtime.document.internal.source.internal.Step }
 		 */
@@ -236,7 +203,7 @@
 			/** @type { slime.runtime.document.Text } */
 			var text = {
 				type: "text",
-				data: escaping.decode(left.substring(0,end))
+				data: left.substring(0,end)
 			};
 			return State.step(state, text, end);
 		}
@@ -626,7 +593,7 @@
 				} else if (isComment(node)) {
 					return "<!--" + node.data + "-->";
 				} else if (isText(node)) {
-					return escaping.encode(node.data);
+					return node.data;
 				} else if (isDoctype(node)) {
 					return "<!DOCTYPE" + node.before + node.name + node.after + ">";
 				} else if (isElement(node)) {

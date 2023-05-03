@@ -369,6 +369,55 @@
 			};
 		}
 
+		var escaping = (
+			function() {
+				// fifty.tests.escaping = function() {
+				// 	//	XML specification: https://www.w3.org/TR/2006/REC-xml11-20060816/
+				// 	var codec = function(xml,data) {
+				// 		var document = api.parse.document({ settings: settings, string: xml });
+				// 		var element = document.children[0] as Element;
+				// 		var content = element.children[0] as Text;
+				// 		verify(content).data.is(data);
+
+				// 		var serialized = api.serialize.document({ settings: settings, document: document });
+				// 		verify(serialized).is(xml);
+				// 	};
+
+				// 	codec("<root>Ben &amp; Jerry</root>", "Ben & Jerry");
+				// 	codec("<root>1 &lt; 2</root>", "1 < 2");
+				// }
+
+				var escapes = {
+					amp: {
+						character: "&",
+						must: true
+					},
+					lt: {
+						character: "<",
+						must: true
+					}
+				};
+				return {
+					encode: function(string) {
+						var rv = string;
+						for (var x in escapes) {
+							if (escapes[x].must) {
+								rv = rv.replace(new RegExp(escapes[x].character), "&" + x + ";");
+							}
+						}
+						return rv;
+					},
+					decode: function(string) {
+						var rv = string;
+						for (var x in escapes) {
+							rv = rv.replace(new RegExp("\&" + x + ";", "g"), escapes[x].character);
+						}
+						return rv;
+					}
+				}
+			}
+		)();
+
 		/** @type { slime.runtime.document.Exports } */
 		var rv = {
 			load: function(p) {

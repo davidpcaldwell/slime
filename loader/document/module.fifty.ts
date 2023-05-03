@@ -5,9 +5,9 @@
 //	END LICENSE
 
 /**
- * Provides a pure JavaScript parser/serializer for HTML and XML documents that, unlike a standard DOM HTML parser (but like a
- * standard DOM XML parser), can provide accurate bidirectional translation from markup to its internal representation using the
- * module's provided {@link slime.Codec}s: {@link slime.runtime.document.exports.Document | `Document.codec.string`} and
+ * Provides a pure JavaScript parser/serializer for HTML and XML documents that, unlike a standard DOM HTML parser, can provide
+ * accurate bidirectional translation from markup to its internal representation using the module's provided {@link slime.Codec}s:
+ * {@link slime.runtime.document.exports.Document | `Document.codec.string`} and
  * {@link slime.runtime.document.Exports | `Fragment.codec.string`}
  */
 namespace slime.runtime.document {
