@@ -47,14 +47,65 @@
 
 		/**
 		 *
-		 * @param { { array: slime.project.metrics.SourceFile[] }} group
+		 * @param { slime.project.metrics.SourceFile[] } array
 		 * @returns
 		 */
-		var size = function(group) {
-			return group.array.reduce(function(rv,entry) {
+		var size = function(array) {
+			return array.reduce(function(rv,entry) {
 				return rv + entry.file.length;
 			},0);
 		};
+
+		var Element = {
+			/** @type { slime.$api.fp.Predicate<slime.runtime.document.Element> } */
+			isJsapiTestingElement: $api.fp.Predicate.and(
+				$context.library.document.Element.isName("script"),
+				$api.fp.pipe(
+					$context.library.document.Element.getAttribute("type"),
+					function(value) {
+						return value.present && /application\/x.jsapi\#/.test(value.value)
+					}
+				)
+			),
+			/** @type { (f: (p: slime.runtime.document.Element) => void ) => (p: slime.runtime.document.Node) => void  } */
+			forJsapiTestingElements: function(f) {
+				return function recurse(node) {
+					if ($context.library.document.Node.isElement(node)) {
+						if (Element.isJsapiTestingElement(node)) f(node);
+					}
+					if ($context.library.document.Node.isParent(node)) {
+						node.children.forEach(recurse);
+					}
+				}
+			},
+			/** @type { slime.$api.fp.Mapping<slime.runtime.document.Element,number> } */
+			getJsapiTestSize: $api.fp.pipe(
+				$api.fp.impure.tap(function(e) {
+					var match = Element.isJsapiTestingElement(e);
+					if (!match) throw new Error("Not JSAPI testing element.");
+				}),
+				$api.fp.mapAllTo(0)
+			)
+		};
+
+		/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.File,slime.runtime.document.Document> } */
+		var parseJsapiHtml = function(file) {
+			var markup = file.read(String);
+
+			var parsed = $context.library.document.Document.codec.string.decode(
+				markup
+			);
+
+			(function checkParser() {
+				var serialized = $context.library.document.Document.codec.string.encode(parsed);
+
+				if (markup != serialized) {
+					throw new Error("Bug in parser: incorrect result parsing " + file.pathname);
+				}
+			})();
+
+			return parsed;
+		}
 
 		/** @type { (entry: slime.project.metrics.SourceFile) => boolean } */
 		var isJsapi = function(entry) {
@@ -63,54 +114,13 @@
 				return true;
 			}
 			if (/\.html$/.test(file.pathname.basename)) {
-				var markup = file.read(String);
-
-				var parsed = $context.library.document.Document.codec.string.decode(
-					markup
-				);
-
-				var serialized = $context.library.document.Document.codec.string.encode(parsed);
-
-				if (markup != serialized) {
-					//	TODO	using this to work around an issue with the serializer introduced with escaping. Will need to
-					//			research exact requirements, but essentially, <script> elements should not require escaping.
-					if (markup != serialized.replace(/\&amp\;/g, "&")) {
-						throw new Error("Could not parse: " + file.pathname);
-					}
-				}
-
-				var getAttribute = function(name) {
-					/**
-					 *
-					 * @param { slime.runtime.document.Element } element
-					 */
-					return function(element) {
-						var found = element.attributes.find(function(attribute) {
-							return attribute.name == name;
-						});
-						return (found) ? found.value : null;
-					}
-				}
-				/**
-				 *
-				 * @param { slime.runtime.document.Element } element
-				 */
-				var isJsapiTest = function(element) {
-					return element.name == "script" && getAttribute("type")(element) == "application/x.jsapi#tests";
-				}
+				var parsed = parseJsapiHtml(file);
 
 				var isJsapi = false;
 
-				var process = function(node) {
-					if ($context.library.document.Node.isElement(node)) {
-						if (isJsapiTest(node)) isJsapi = true;
-					}
-					if ($context.library.document.Node.isParent(node)) {
-						node.children.forEach(process);
-					}
-				}
-
-				process(parsed);
+				Element.forJsapiTestingElements(function(node) {
+					isJsapi = true;
+				})(parsed);
 
 				if (isJsapi) {
 					return true;
@@ -152,6 +162,7 @@
 			},
 			jsapi: function(base) {
 				var src = getSourceFiles(base);
+
 				var grouper = $api.fp.Array.groupBy({
 					/** @type { (p: slime.project.metrics.SourceFile) => string } */
 					group: function(entry) {
@@ -162,29 +173,61 @@
 						return "unknown";
 					}
 				});
+
 				var results = grouper(src);
 
-				var fifty = results.find(function(group) {
-					return group.group == "fifty";
-				});
-				var jsapi = results.find(function(group) {
-					return group.group == "jsapi";
-				});
+				var object = $api.fp.now.invoke(
+					results,
+					$api.fp.Array.map(
+						/** @returns { [string, slime.project.metrics.SourceFile[]] } */
+						function(group) {
+							return [ group.group, group.array ];
+						}
+					),
+					function(p) {
+						return Object.fromEntries(p);
+					}
+				);
+
 				return {
 					fifty: {
 						name: "fifty",
-						files: fifty.array.length,
-						bytes: size(fifty)
+						files: object.fifty.length,
+						bytes: size(object.fifty)
 					},
 					jsapi: {
 						name: "jsapi",
-						files: jsapi.array.length,
-						bytes: size(jsapi),
+						files: object.jsapi.length,
+						bytes: size(object.jsapi),
 						list: (function() {
-							return jsapi.array.map(function(entry) {
+							/** @type { slime.$api.fp.Mapping<slime.runtime.document.Element,number> } */
+							var getTestSize = function(element) {
+								if (element.children.length > 1) throw new Error("Multiple children: " + JSON.stringify(element.children));
+								var only = element.children[0];
+								if ($context.library.document.Node.isString(only)) {
+									return only.data.length;
+								} else {
+									throw new Error("Not string: " + JSON.stringify(only));
+								}
+							}
+
+							return object.jsapi.map(function(entry) {
+								var tests = (function() {
+									try {
+										var parsed = parseJsapiHtml(entry.file);
+										var tests = 0;
+										Element.forJsapiTestingElements(function(element) {
+											tests += getTestSize(element);
+										})(parsed);
+										return $api.fp.Maybe.from.some(tests);
+									} catch (e) {
+										return $api.fp.Maybe.from.nothing();
+									}
+								})();
 								return {
 									path: entry.path,
-									bytes: entry.file.length
+									bytes: entry.file.length,
+									tests: tests
 								}
 							}).sort(function(a,b) {
 								return b.bytes - a.bytes;
