@@ -193,39 +193,6 @@
 			return State.step(state, doctype, end + ">".length);
 		};
 
-		var escaping = (
-			function() {
-				var escapes = {
-					amp: {
-						character: "&",
-						must: true
-					},
-					lt: {
-						character: "<",
-						must: true
-					}
-				};
-				return {
-					encode: function(string) {
-						var rv = string;
-						for (var x in escapes) {
-							if (escapes[x].must) {
-								rv = rv.replace(new RegExp(escapes[x].character), "&" + x + ";");
-							}
-						}
-						return rv;
-					},
-					decode: function(string) {
-						var rv = string;
-						for (var x in escapes) {
-							rv = rv.replace(new RegExp("\&" + x + ";", "g"), escapes[x].character);
-						}
-						return rv;
-					}
-				}
-			}
-		)();
-
 		/**
 		 * @type { slime.runtime.document.internal.source.internal.Step }
 		 */
@@ -236,7 +203,7 @@
 			/** @type { slime.runtime.document.Text } */
 			var text = {
 				type: "text",
-				data: escaping.decode(left.substring(0,end))
+				data: left.substring(0,end)
 			};
 			return State.step(state, text, end);
 		}
@@ -626,7 +593,7 @@
 				} else if (isComment(node)) {
 					return "<!--" + node.data + "-->";
 				} else if (isText(node)) {
-					return escaping.encode(node.data);
+					return node.data;
 				} else if (isDoctype(node)) {
 					return "<!DOCTYPE" + node.before + node.name + node.after + ">";
 				} else if (isElement(node)) {
@@ -643,29 +610,50 @@
 
 		/**
 		 *
-		 * @param { Parameters<slime.runtime.document.internal.source.Exports["parse"]>[0] } input
-		 * @returns
+		 * @type { slime.runtime.document.internal.source.Exports["parse"] }
 		 */
-		var parse = function(input) {
-			var events = $api.events.toListener(input.events);
-			events.attach();
-			var state = Parser()(
-				{
-					parsed: {
-						type: "document",
-						children: []
+		var parse = {
+			document: function(input) {
+				var events = $api.events.toListener(input.events);
+				events.attach();
+				var state = Parser()(
+					{
+						parsed: {
+							type: "document",
+							children: []
+						},
+						position: {
+							document: input.string,
+							offset: 0
+						}
 					},
-					position: {
-						document: input.string,
-						offset: 0
-					}
-				},
-				events.emitter,
-				State.atEnd
-			);
-			events.detach();
-			if (isDocument(state.parsed)) return state.parsed;
-		};
+					events.emitter,
+					State.atEnd
+				);
+				events.detach();
+				if (isDocument(state.parsed)) return state.parsed;
+			},
+			fragment: function(input) {
+				var events = $api.events.toListener(input.events);
+				events.attach();
+				var state = Parser()(
+					{
+						parsed: {
+							type: "fragment",
+							children: []
+						},
+						position: {
+							document: input.string,
+							offset: 0
+						}
+					},
+					events.emitter,
+					State.atEnd
+				);
+				events.detach();
+				if (isFragment(state.parsed)) return state.parsed;
+			}
+		}
 
 		var serialize = function(output) {
 			var serialize = Serializer();
@@ -684,9 +672,13 @@
 		var debugFidelity = function(input, events) {
 			var console = function(string) {
 				events.fire("console", string);
-			}
+			};
 
-			var document = parse({
+			/** @type { slime.runtime.document.Settings } */
+			var settings = {};
+
+			var document = parse.document({
+				settings: settings,
 				string: input,
 				events: (function() {
 					/** @type { string[] } */
@@ -716,6 +708,7 @@
 			console("Parsed.");
 
 			var serialized = serialize({
+				settings: settings,
 				document: document
 			});
 
@@ -745,27 +738,10 @@
 				}
 			},
 			parse: parse,
-			fragment: function(input) {
-				var events = $api.events.toListener(input.events);
-				events.attach();
-				var state = Parser()(
-					{
-						parsed: {
-							type: "fragment",
-							children: []
-						},
-						position: {
-							document: input.string,
-							offset: 0
-						}
-					},
-					events.emitter,
-					State.atEnd
-				);
-				events.detach();
-				if (isFragment(state.parsed)) return state.parsed;
+			serialize: {
+				document: serialize,
+				fragment: serialize
 			},
-			serialize: serialize,
 			Node: {
 				isComment: isComment,
 				isText: isText,

@@ -369,6 +369,55 @@
 			};
 		}
 
+		var escaping = (
+			function() {
+				// fifty.tests.escaping = function() {
+				// 	//	XML specification: https://www.w3.org/TR/2006/REC-xml11-20060816/
+				// 	var codec = function(xml,data) {
+				// 		var document = api.parse.document({ settings: settings, string: xml });
+				// 		var element = document.children[0] as Element;
+				// 		var content = element.children[0] as Text;
+				// 		verify(content).data.is(data);
+
+				// 		var serialized = api.serialize.document({ settings: settings, document: document });
+				// 		verify(serialized).is(xml);
+				// 	};
+
+				// 	codec("<root>Ben &amp; Jerry</root>", "Ben & Jerry");
+				// 	codec("<root>1 &lt; 2</root>", "1 < 2");
+				// }
+
+				var escapes = {
+					amp: {
+						character: "&",
+						must: true
+					},
+					lt: {
+						character: "<",
+						must: true
+					}
+				};
+				return {
+					encode: function(string) {
+						var rv = string;
+						for (var x in escapes) {
+							if (escapes[x].must) {
+								rv = rv.replace(new RegExp(escapes[x].character), "&" + x + ";");
+							}
+						}
+						return rv;
+					},
+					decode: function(string) {
+						var rv = string;
+						for (var x in escapes) {
+							rv = rv.replace(new RegExp("\&" + x + ";", "g"), escapes[x].character);
+						}
+						return rv;
+					}
+				}
+			}
+		)();
+
 		/** @type { slime.runtime.document.Exports } */
 		var rv = {
 			load: function(p) {
@@ -390,14 +439,18 @@
 			},
 			Fragment: {
 				codec: {
-					string: {
-						decode: function(string) {
-							return source.fragment({ string: string });
-						},
-						encode: function(fragment) {
-							return source.serialize({ fragment: fragment });
+					string: (function() {
+						/** @type { slime.runtime.document.Settings } */
+						var settings = {};
+						return {
+							decode: function(string) {
+								return source.parse.fragment({ settings: settings, string: string });
+							},
+							encode: function(fragment) {
+								return source.serialize.fragment({ settings: settings, fragment: fragment });
+							}
 						}
-					}
+					})()
 				}
 			},
 			Element: {
@@ -419,14 +472,18 @@
 			//@ts-ignore
 			Document: {
 				codec: {
-					string: {
-						decode: function(string) {
-							return source.parse({ string: string });
-						},
-						encode: function(document) {
-							return source.serialize({ document: document });
+					string: (function() {
+						/** @type { slime.runtime.document.Settings } */
+						var settings = {};
+						return {
+							decode: function(string) {
+								return source.parse.document({ settings: settings, string: string });
+							},
+							encode: function(document) {
+								return source.serialize.document({ settings: settings, document: document });
+							}
 						}
-					}
+					})()
 				},
 				removeWhitespaceTextNodes: function(document) {
 					/**

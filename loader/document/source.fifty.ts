@@ -43,23 +43,30 @@ namespace slime.runtime.document.internal.source {
 			}) => boolean
 		}
 
-		parse: (p: {
-			string: string
-			events?: slime.$api.event.Handlers<ParseEvents>
-		}) => Document
+		parse: {
+			document: (p: {
+				settings: Settings
+				string: string
+				events?: slime.$api.event.Handlers<ParseEvents>
+			}) => Document
 
-		fragment: (p: {
-			string: string
-			events?: slime.$api.event.Handlers<ParseEvents>
-		}) => Fragment
+			fragment: (p: {
+				settings: Settings
+				string: string
+				events?: slime.$api.event.Handlers<ParseEvents>
+			}) => Fragment
+		}
 
 		serialize: {
-			(p: {
+			document: (p: {
+				settings: Settings
 				document: Document
-			}): string
-			(p: {
+			}) => string
+
+			fragment: (p: {
+				settings: Settings
 				fragment: Fragment
-			}): string
+			}) => string
 		}
 
 		Node: slime.runtime.document.Exports["Node"]
@@ -121,9 +128,12 @@ namespace slime.runtime.document.internal.source {
 
 			var api: Exports = fifty.$loader.module("source.js");
 
+			var settings: Settings = {};
+
 			fifty.tests.happy = function() {
 				var input = fifty.$loader.get("test/data/1.html").read(String);
-				var page = api.parse({
+				var page = api.parse.document({
+					settings: settings,
 					string: input
 				});
 				//	license header
@@ -137,7 +147,8 @@ namespace slime.runtime.document.internal.source {
 				fifty.verify(doctype).name.is("html");
 				var text2: Text = page.children[3] as Text;
 				fifty.verify(text2).data.is("\n");
-				var serialized = api.serialize({
+				var serialized = api.serialize.document({
+					settings: settings,
 					document: page
 				});
 				fifty.verify(serialized).is(input);
@@ -151,32 +162,33 @@ namespace slime.runtime.document.internal.source {
 				{
 					singlequoted: function(p) {
 						var html = "<e a='b'></e>";
-						var fragment = api.fragment({ string: html });
+						var fragment = api.parse.fragment({ settings: settings, string: html });
 						fifty.verify(fragment).children[0].type.is("element");
 						var element: Element = fragment.children[0] as Element;
 						fifty.verify(element).attributes[0].name.is("a");
 						fifty.verify(element).attributes[0].quote.is("'");
 						fifty.verify(element).attributes[0].value.is("b");
-						var serialized = api.serialize({ fragment: fragment });
+						var serialized = api.serialize.fragment({ settings: settings, fragment: fragment });
 						fifty.verify(serialized).is(html);
 					},
 					unquoted: function(p) {
 						var html = "<e a=b></e>";
-						var fragment = api.fragment({ string: html });
+						var fragment = api.parse.fragment({ settings: settings, string: html });
 						fifty.verify(fragment).children[0].type.is("element");
 						var element: Element = fragment.children[0] as Element;
 						fifty.verify(element).attributes[0].name.is("a");
 						fifty.verify(element).attributes[0].quote.is("");
 						fifty.verify(element).attributes[0].value.is("b");
-						var serialized = api.serialize({ fragment: fragment });
+						var serialized = api.serialize.fragment({ settings: settings, fragment: fragment });
 						fifty.verify(serialized).is(html);
 					}
 				}
 			);
 
 			fifty.tests.selfClosing = function() {
-				var html = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />"
-				var fragment = api.fragment({
+				var html = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\" />";
+				var fragment = api.parse.fragment({
+					settings: settings,
 					string: html,
 					events: {
 						startTag: function(e) {
@@ -187,19 +199,22 @@ namespace slime.runtime.document.internal.source {
 					}
 				});
 				fifty.verify(fragment).children[0].type.is("element");
-				var serialized = api.serialize({
+				var serialized = api.serialize.fragment({
+					settings: settings,
 					fragment: fragment
 				});
 				fifty.verify(serialized).is(html);
-			}
+			};
 
 			fifty.tests.voidElements = function() {
 				var html = "<input type=\"hidden\" value=\"foo\"><input type=\"hidden\" value=\"bar\">";
-				var fragment = api.fragment({
+				var fragment = api.parse.fragment({
+					settings: settings,
 					string: html
 				});
 				fifty.verify(fragment).children.length.is(2);
-				var serialized = api.serialize({
+				var serialized = api.serialize.fragment({
+					settings: settings,
 					fragment: fragment
 				});
 				fifty.verify(serialized).is(html);
@@ -208,14 +223,16 @@ namespace slime.runtime.document.internal.source {
 			fifty.tests.caseInsensitiveElement = function() {
 				var html = "<div>foo</DIV>";
 
-				var fragment = api.fragment({
+				var fragment = api.parse.fragment({
+					settings: settings,
 					string: html
 				});
 				fifty.verify(fragment).children.length.is(1);
 				var element: Element = fragment.children[0] as Element;
 				fifty.verify(element).type.is("element");
 				fifty.verify(element).children[0].type.is("text");
-				var serialized = api.serialize({
+				var serialized = api.serialize.fragment({
+					settings: settings,
 					fragment: fragment
 				});
 				fifty.verify(serialized).is(html);
@@ -232,15 +249,15 @@ namespace slime.runtime.document.internal.source {
 </div>
 `
 				);
-				var fragment = api.fragment({ string: html });
-				var serialized = api.serialize({ fragment: fragment });
+				var fragment = api.parse.fragment({ settings: settings, string: html });
+				var serialized = api.serialize.fragment({ settings: settings, fragment: fragment });
 				fifty.verify(serialized).is(html);
 			}
 
 			fifty.tests.emptyAttribute = function() {
 				var html = "<div id=\"\"></div>"
-				var fragment = api.fragment({ string: html });
-				var serialized = api.serialize({ fragment: fragment });
+				var fragment = api.parse.fragment({ settings: settings, string: html });
+				var serialized = api.serialize.fragment({ settings: settings, fragment: fragment });
 				fifty.verify(serialized).is(html);
 				debugger;
 			}
@@ -251,8 +268,8 @@ namespace slime.runtime.document.internal.source {
 
 			fifty.tests.optionalTags.tr = function() {
 				var html = "<table> <tr> <td>foo</td> </table>";
-				var fragment = api.fragment({ string: html });
-				var serialized = api.serialize({ fragment: fragment });
+				var fragment = api.parse.fragment({ settings: settings, string: html });
+				var serialized = api.serialize.fragment({ settings: settings, fragment: fragment });
 				fifty.verify(serialized).is(html);
 			}
 
@@ -260,27 +277,27 @@ namespace slime.runtime.document.internal.source {
 
 			fifty.tests.xml.prolog = function() {
 				var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root/>";
-				var document = api.parse({ string: xml });
-				var serialized = api.serialize({ document: document });
+				var document = api.parse.document({ settings: settings, string: xml });
+				var serialized = api.serialize.document({ settings: settings, document: document });
 				fifty.verify(serialized).is(xml);
 			}
 
 			fifty.tests.xml.cdata = function() {
 				var xml = "<root><![CDATA[<data!/>]]></root>";
-				var document = api.parse({ string: xml });
+				var document = api.parse.document({ settings: settings, string: xml });
 				fifty.verify(document).children.length.is(1);
 				fifty.verify(document).children[0].type.is("element");
 				var root = document.children[0] as slime.runtime.document.Element;
 				fifty.verify(root).children[0].type.is("cdata");
 				var cdata = root.children[0] as slime.runtime.document.xml.Cdata;
 				fifty.verify(cdata).data.is("<data!/>");
-				var serialized = api.serialize({ document: document });
+				var serialized = api.serialize.document({ settings: settings, document: document });
 				fifty.verify(serialized).is(xml);
 			}
 
 			fifty.tests.emptyTagsParsedCorrectly = function() {
 				var xml = "<root><foo bar=\"\"/><baz/></root>";
-				var document = api.parse({ string: xml });
+				var document = api.parse.document({ settings: settings, string: xml });
 				fifty.verify(document).children[0].type.is("element");
 				var root = document.children[0] as slime.runtime.document.Element;
 				fifty.verify(root).children.length.is(2);
@@ -290,25 +307,17 @@ namespace slime.runtime.document.internal.source {
 				fifty.verify(root).children[1].type.is("element");
 				var baz = root.children[1] as slime.runtime.document.Element;
 				fifty.verify(baz).name.is("baz");
-				var serialized = api.serialize({ document: document });
+				var serialized = api.serialize.document({ settings: settings, document: document });
 				fifty.verify(serialized == xml, "symmetric").is(true);
 			};
 
-			fifty.tests.escaping = function() {
-				//	XML specification: https://www.w3.org/TR/2006/REC-xml11-20060816/
-				var codec = function(xml,data) {
-					var document = api.parse({ string: xml });
-					var element = document.children[0] as Element;
-					var content = element.children[0] as Text;
-					verify(content).data.is(data);
-
-					var serialized = api.serialize({ document: document });
-					verify(serialized).is(xml);
-				};
-
-				codec("<root>Ben &amp; Jerry</root>", "Ben & Jerry");
-				codec("<root>1 &lt; 2</root>", "1 < 2");
-			}
+			fifty.tests.missingEndTag = function() {
+				var xml = "<root>foo";
+				var document = api.parse.document({ settings: settings, string: xml });
+				fifty.verify(document).children[0].type.is("element");
+				var element = document.children[0] as Element
+				fifty.verify(element).endTag.is("");
+			};
 
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.happy);
@@ -319,7 +328,7 @@ namespace slime.runtime.document.internal.source {
 				fifty.run(fifty.tests.emptyAttribute);
 				fifty.run(fifty.tests.optionalTags);
 				fifty.run(fifty.tests.emptyTagsParsedCorrectly);
-				fifty.run(fifty.tests.escaping);
+				fifty.run(fifty.tests.missingEndTag);
 				fifty.run(fifty.tests.xml);
 			}
 		}
@@ -343,7 +352,10 @@ namespace slime.runtime.document.internal.source {
 			fifty.tests.fidelity = function(input: string) {
 				var html = internal.test.subject;
 
-				var document = html.parse({
+				var settings: Settings = {};
+
+				var document = html.parse.document({
+					settings: settings,
 					string: input,
 					events: (function() {
 						var stack = [];
@@ -371,7 +383,8 @@ namespace slime.runtime.document.internal.source {
 
 				console("Parsed.");
 
-				var serialized = html.serialize({
+				var serialized = html.serialize.document({
+					settings: settings,
 					document: document
 				});
 
