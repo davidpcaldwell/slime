@@ -4,6 +4,12 @@
 //
 //	END LICENSE
 
+namespace slime.jsh {
+	export interface Global {
+		shell: slime.jsh.shell.Exports
+	}
+}
+
 namespace slime.jsh.shell {
 	(
 		function(
