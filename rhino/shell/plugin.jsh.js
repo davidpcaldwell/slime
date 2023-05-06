@@ -50,7 +50,9 @@
 
 				var code = {
 					/** @type { slime.jrunscript.shell.Script } */
-					module: $loader.script("module.js")
+					module: $loader.script("module.js"),
+					/** @type { slime.jsh.shell.internal.Script } */
+					jsh: $loader.script("jsh.js")
 				}
 
 				var mContext = {
@@ -106,7 +108,8 @@
 							})
 						);
 						return $slime.jsh(configuration,_invocation)
-					}
+					},
+					module: module
 				};
 
 				//	TODO	necessary because dependencies are entangled here
@@ -116,18 +119,9 @@
 					}
 				});
 
-				$loader.run(
-					"jsh.js",
-					{
-						$context: context,
-						$exports: module
-					}
+				jsh.shell = code.jsh(
+					context
 				);
-
-				/** @type { slime.js.Cast<slime.jsh.shell.Exports & { getopts: any }> } */
-				var toJsh = $api.fp.cast;
-
-				jsh.shell = toJsh(module);
 			}
 		});
 

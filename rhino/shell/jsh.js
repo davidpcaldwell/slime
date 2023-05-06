@@ -12,31 +12,39 @@
 	 * @param { any } JavaAdapter
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.shell.internal.Context } $context
-	 * @param { slime.jsh.shell.Exports } $exports
+	 * @param { slime.loader.Export<slime.jsh.shell.internal.Exports> } $export
 	 */
-	function(Packages,JavaAdapter,$api,$context,$exports) {
+	function(Packages,JavaAdapter,$api,$context,$export) {
+		var module = $context.module;
+
+		/** @type { Pick<slime.jsh.shell.Exports,"Intention"|"engine"|"exit"|"stdio"|"echo"|"console"|"rhino"|"shell"|"jsh"|"run"|"world"|"stdin"|"stdout"|"stderr"> } */
+		var $exports = {};
+
 		//	TODO	would be nice to generalize this and push it back into the shell module itself
-		if (!$exports.properties) throw new TypeError("No properties properties.");
+		if (!module.properties) throw new TypeError("No properties properties.");
 
-		$exports.Intention.from.jsh = function(p) {
-			return {
-				command: "bash",
-				arguments: $api.Array.build(function(rv) {
-					rv.push($context.api.file.world.Location.relative("jsh.bash")($context.api.file.world.Location.from.os(p.shell.src)).pathname);
-					rv.push(p.script);
-					if (p.arguments) rv.push.apply(rv, p.arguments);
-				}),
-				directory: p.directory,
-				environment: p.environment,
-				stdio: p.stdio
-			}
-		};
+		$exports.Intention = (function(was) {
+			/** @type { slime.js.Cast<slime.jsh.shell.Exports["Intention"]> } */
+			var toJsh = $api.fp.cast;
 
-		$exports.engine = $exports.properties.get("jsh.engine");
+			var is = toJsh(was);
+			is.from.jsh = function(p) {
+				return {
+					command: "bash",
+					arguments: $api.Array.build(function(rv) {
+						rv.push($context.api.file.world.Location.relative("jsh.bash")($context.api.file.world.Location.from.os(p.shell.src)).pathname);
+						rv.push(p.script);
+						if (p.arguments) rv.push.apply(rv, p.arguments);
+					}),
+					directory: p.directory,
+					environment: p.environment,
+					stdio: p.stdio
+				}
+			};
+			return is;
+		})(module.Intention);
 
-		$exports.run.evaluate.wrap = function(result) {
-			$exports.exit(result.status);
-		};
+		$exports.engine = module.properties.get("jsh.engine");
 
 		$exports.exit = $context.exit;
 
@@ -54,9 +62,9 @@
 				$exports.stdio[name].character().write(p);
 			}
 		});
-		$exports["stdin"] = $exports.stdio.input;
-		$exports["stdout"] = $exports.stdio.output;
-		$exports["stderr"] = $exports.stdio.error;
+		$exports.stdin = $exports.stdio.input;
+		$exports.stdout = $exports.stdio.output;
+		$exports.stderr = $exports.stdio.error;
 		$api.deprecate($exports,"stdin");
 		$api.deprecate($exports,"stdout");
 		$api.deprecate($exports,"stderr");
@@ -78,7 +86,7 @@
 						throw new TypeError("Not a recognized stream: " + stream);
 					})();
 					return function(message) {
-						writer.write(toString(message)+$exports.properties.get("line.separator"));
+						writer.write(toString(message)+module.properties.get("line.separator"));
 					}
 				}
 
@@ -200,9 +208,9 @@
 
 		//	TODO	make sure documentation correctly reflects presence of this property: this property being present does not mean Rhino
 		//			is executing this script, just that it is present
-		if ($exports.properties.get("jsh.engine.rhino.classpath")) {
-			$exports.rhino = new function() {
-				this.classpath = $exports.properties.searchpath("jsh.engine.rhino.classpath");
+		if (module.properties.get("jsh.engine.rhino.classpath")) {
+			$exports.rhino = {
+				classpath: module.properties.searchpath("jsh.engine.rhino.classpath")
 			};
 		}
 
@@ -210,8 +218,8 @@
 			if (p.fork) return true;
 			if (p.classpath) return true;
 			if (p.environment && p.environment.JSH_SCRIPT_CLASSPATH) return true;
-			if (p.environment && p.environment.JSH_PLUGINS != $exports.environment.JSH_PLUGINS) return true;
-			if (p.environment && p.environment.JSH_DEBUG_SCRIPT != $exports.environment.JSH_DEBUG_SCRIPT) return true;
+			if (p.environment && p.environment.JSH_PLUGINS != module.environment.JSH_PLUGINS) return true;
+			if (p.environment && p.environment.JSH_DEBUG_SCRIPT != module.environment.JSH_DEBUG_SCRIPT) return true;
 			if (p.shell) return true;
 			//	TODO	allow unforked URL-based scripts
 			if (typeof(p.script.resolve) == "function") return true;
@@ -225,7 +233,7 @@
 			if (p.environment) return p.environment;
 			if (p.shell || fork) {
 				var rv = {};
-				for (var x in $exports.environment) {
+				for (var x in module.environment) {
 					if (x == "JSH_DEBUG_JDWP") {
 						//	do not copy; exclude
 					} else if (/^JSH_/.test(x) && !/^JSH_HOST_/.test(x) && x != "JSH_LOCAL_JDKS" && x != "JSH_SHELL_LIB") {
@@ -234,15 +242,15 @@
 						if (p.shell) {
 							//	do not copy; exclude
 						} else {
-							rv[x] = $exports.environment[x];
+							rv[x] = module.environment[x];
 						}
 					} else {
-						rv[x] = $exports.environment[x];
+						rv[x] = module.environment[x];
 					}
 				}
 				return rv;
 			}
-			return $exports.environment;
+			return module.environment;
 		};
 
 		$exports.jsh = Object.assign(
@@ -280,11 +288,11 @@
 
 
 				if (fork) {
-					return $exports.jrunscript(
+					return module.jrunscript(
 						$api.Object.compose(
 							$exports.jsh.command(p),
 							{
-								jrunscript: $exports.properties.file("jsh.launcher.jrunscript")
+								jrunscript: module.properties.file("jsh.launcher.jrunscript")
 							}
 						)
 					);
@@ -538,7 +546,7 @@
 		};
 		$exports.jsh.relaunch = $api.experimental(function(p) {
 			if (!p) p = {};
-			var environment = $api.fp.mutating(p.environment)($exports.environment);
+			var environment = $api.fp.mutating(p.environment)(module.environment);
 			$exports.jsh({
 				fork: true,
 				script: $context.api.script.file,
@@ -563,10 +571,21 @@
 				}
 			}
 		);
-		$exports.run.evaluate.jsh = {};
-		$exports.run.evaluate.jsh.wrap = function(result) {
-			$exports.exit(result.status);
-		}
+
+		$exports.run = (function(was) {
+			/** @type { slime.js.Cast<slime.jsh.shell.Exports["run"]> } */
+			var cast = $api.fp.cast;
+
+			var is = cast(was);
+			is.evaluate.wrap = function(result) {
+				$exports.exit(result.status);
+			};
+			is.evaluate.jsh = {};
+			is.evaluate.jsh.wrap = function(result) {
+				$exports.exit(result.status);
+			}
+			return is;
+		})(module.run);
 
 		//if (String($exports.properties.object.jsh.plugins)) {
 		//	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
@@ -574,12 +593,12 @@
 
 		// Packages.java.lang.System.err.println(String(Packages.java.lang.System.getProperties()));
 		// Packages.java.lang.System.err.println(JSON.stringify($exports.properties.object,void(0),"    "));
-		if ($exports.properties.object.jsh && $exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.home) {
-			$exports.jsh.home = $context.api.file.Pathname($exports.properties.object.jsh.shell.home).directory
+		if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.home) {
+			$exports.jsh.home = $context.api.file.Pathname(module.properties.object.jsh.shell.home).directory
 		}
-		if ($exports.properties.object.jsh && $exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.src) {
+		if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.src) {
 			(function() {
-				var src = String($exports.properties.object.jsh.shell.src);
+				var src = String(module.properties.object.jsh.shell.src);
 				if ($context.api.file.Pathname(src).directory) {
 					$exports.jsh.src = $context.api.file.Pathname(src).directory;
 				} else {
@@ -587,17 +606,34 @@
 				}
 			})();
 		}
-		if ($exports.properties.object.jsh && $exports.properties.object.jsh.shell && $exports.properties.object.jsh.shell.lib) {
-			$exports.jsh.lib = $context.api.file.Pathname($exports.properties.object.jsh.shell.lib).directory;
+		if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.lib) {
+			$exports.jsh.lib = $context.api.file.Pathname(module.properties.object.jsh.shell.lib).directory;
 		} else if ($exports.jsh.home) {
 			$exports.jsh.lib = $exports.jsh.home.getSubdirectory("lib");
 		}
 
-		$exports.world.exit = function(status) {
-			return function() {
-				$exports.exit(status);
-			}
-		}
+		$exports.world = (function(was) {
+			/** @type { slime.js.Cast<slime.jsh.shell.Exports["world"]> } */
+			var cast = $api.fp.cast;
+
+			var is = cast(was);
+			is.exit = function(status) {
+				return function() {
+					$context.exit(status);
+				}
+			};
+			return is;
+		})(module.world);
+
+		$export(
+			Object.assign(
+				module,
+				{
+					PATH: module.PATH
+				},
+				$exports
+			)
+		);
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,$api,$context,$exports);
+)(Packages,JavaAdapter,$api,$context,$export);

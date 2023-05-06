@@ -4,12 +4,6 @@
 //
 //	END LICENSE
 
-namespace slime.jsh {
-	export interface Global {
-		shell: slime.jsh.shell.Exports
-	}
-}
-
 namespace slime.jsh.shell {
 	export namespace internal {
 		export interface Context {
@@ -29,10 +23,14 @@ namespace slime.jsh.shell {
 				file: slime.jrunscript.file.Exports
 				script: jsh.script.Exports
 			}
-		}
-	}
 
-	type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
+			module: slime.jrunscript.shell.Exports
+		}
+
+		export type Exports = Omit<slime.jsh.shell.Exports,"tools">
+
+		export type Script = slime.loader.Script<Context,slime.jsh.shell.Exports>
+	}
 
 	export type Echo = (message: string, mode?: { console?: (message: string) => void, stream?: any }) => void
 
@@ -87,26 +85,16 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
+	type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
+
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		/**
 		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
 		 */
 		engine: string
 
-		run: slime.jrunscript.shell.Exports["run"] & {
-			evaluate: {
-				wrap: any
-				jsh: {
-					wrap: any
-				}
-			}
-		}
+		//	TODO	run.evaluate.wrap is exported but not declared here (unused?)
 
-		world: slime.jrunscript.shell.Exports["world"] & {
-			exit: slime.$api.fp.world.old.Action<number,void>
-		}
-
-		//	TODO	run.evaluate.wrap
 		exit: (code: number) => never
 
 		/**
@@ -134,9 +122,15 @@ namespace slime.jsh.shell {
 		}
 
 		console: (message: string) => void
+
 		//	TODO	shell?
-		rhino: any
+		rhino: {
+			classpath: slime.jrunscript.file.Searchpath
+		}
+
+		/** @deprecated Replaced by `run`. */
 		shell: any
+
 		jsh: {
 			(p: {
 				shell?: slime.jrunscript.file.Directory
@@ -160,9 +154,22 @@ namespace slime.jsh.shell {
 			command: any
 			url: any
 		}
+
+		run: slime.jrunscript.shell.Exports["run"] & {
+			evaluate: {
+				wrap: any
+				jsh: {
+					wrap: any
+				}
+			}
+		}
+
+		world: slime.jrunscript.shell.Exports["world"] & {
+			exit: slime.$api.fp.world.old.Action<number,void>
+		}
+
 		HOME: slime.jrunscript.file.Directory
 		PATH: slime.jrunscript.file.Searchpath
 		listeners: any
-		tools: jsh.shell.tools.Exports
 	}
 }

@@ -465,7 +465,7 @@ namespace slime.jrunscript.shell {
 
 			file(name: any): any
 			directory(name: any): any
-			searchpath(name: any): any
+			searchpath: (name: string) => slime.jrunscript.file.Searchpath
 		}
 
 		TMPDIR: slime.jrunscript.file.Directory
