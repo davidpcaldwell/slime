@@ -465,6 +465,8 @@
 		/** @type { slime.jsh.script.cli.Program } */
 		var main;
 
+		if (!global.jsh.script) throw new Error("Unexpected error loading jsh.script");
+
 		global.jsh.script.cli.listener(
 			function(defined) {
 				main = defined;

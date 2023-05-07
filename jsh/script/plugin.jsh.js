@@ -9,13 +9,14 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.jsh.plugin.Scope["plugins"] } plugins
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
 	 */
-	function(Packages,plugin,$slime,$api,jsh,$loader) {
+	function(Packages,plugins,plugin,$slime,$api,jsh,$loader) {
 		/**
 		 * @param { slime.jsh.script.internal.Context } $context
 		 * @returns { slime.jsh.script.Exports }
@@ -117,7 +118,7 @@
 
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.web && jsh.java && jsh.file && jsh.http && jsh.shell);
+				return Boolean(jsh.js && jsh.web && jsh.java && jsh.file && jsh.http && plugins.shell);
 			},
 			load: function() {
 				/** @type { slime.jsh.script.internal.Source } */
@@ -176,7 +177,7 @@
 							}
 						}
 					}
-				})(jsh.file.filesystem, jsh.shell.PWD);
+				})(jsh.file.filesystem, plugins.shell.PWD);
 
 				jsh.script = load(
 					$api.Object.compose(
@@ -191,7 +192,7 @@
 								addClasses: jsh.loader.java.add,
 								parser: parser
 							},
-							directory: jsh.shell.PWD,
+							directory: plugins.shell.PWD,
 							//	TODO	this is now redundant with code in the loader jsh.js that converts arguments to native form
 							//			for use with the new main() function API
 							arguments: jsh.java.Array.adapt($slime.getInvocation().getArguments()).map(function(s) { return String(s); }),
@@ -611,4 +612,4 @@
 		})
 	}
 //@ts-ignore
-)(Packages,plugin,$slime,$api,jsh,$loader)
+)(Packages,plugins,plugin,$slime,$api,jsh,$loader)
