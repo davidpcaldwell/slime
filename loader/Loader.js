@@ -135,36 +135,25 @@
 				return p.thread.get(path).then(get);
 			}
 
-			/**
-				* @this { slime.old.Loader }
-				* @param { string } name
-				*/
-			var declare = function(name) {
-				this[name] = (
-					/**
-						* @param { string } path
-						* @param { any } context
-						* @param { any } target
-						*/
-					function retarget(path,context,target) {
-						// return methods[name].call(target,p.get(path),scope);
-						var resource = this.get(path);
-						if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
-						return methods.old[name].call(target,resource,context);
-					}
-				);
-			};
-
 			if (p.get) {
 				/** @type { slime.old.Loader["run"] } */
-				this.run = void(0);
+				this.run = function retarget(path,context,target) {
+					var resource = this.get(path);
+					if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
+					return methods.old.run.call(target,resource,context);
+				};
 				/** @type { slime.old.Loader["value"] } */
-				this.value = void(0);
+				this.value = function retarget(path,context,target) {
+					var resource = this.get(path);
+					if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
+					return methods.old.value.call(target,resource,context);
+				};
 				/** @type { slime.old.Loader["file"] } */
-				this.file = void(0);
-				declare.call(this,"run");
-				declare.call(this,"value");
-				declare.call(this,"file");
+				this.file = function retarget(path,context,target) {
+					var resource = this.get(path);
+					if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
+					return methods.old.file.call(target,resource,context);
+				};
 			}
 
 			var getModuleLocations = function(path) {

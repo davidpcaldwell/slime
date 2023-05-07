@@ -318,12 +318,6 @@
 			$api: $api
 		});
 
-		var topMethod = function(name) {
-			return function(code,scope,target) {
-				return scripts.methods.old[name].call(target,code,scope);
-			};
-		};
-
 		/** @type { slime.runtime.Exports["old"]["loader"] } */
 		var loaders = code.loaders({
 			toExportScope: scripts.toExportScope,
@@ -336,9 +330,18 @@
 				mime: {
 					Type: mime.Type
 				},
-				run: topMethod("run"),
-				file: topMethod("file"),
-				value: topMethod("value"),
+				/** @type { slime.runtime.Exports["run"] } */
+				run: function(code,scope,target) {
+					return scripts.methods.old.run.call(target,code,scope);
+				},
+				/** @type { slime.runtime.Exports["file"] } */
+				file: function(code,context,target) {
+					return scripts.methods.old.file.call(target,code,context);
+				},
+				/** @type { slime.runtime.Exports["value"] } */
+				value: function(code,scope,target) {
+					return scripts.methods.old.value.call(target,code,scope);
+				},
 				Resource: ResourceExport,
 				old: {
 					Loader: Object.assign(Loader.old, loaders),

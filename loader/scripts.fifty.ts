@@ -21,6 +21,12 @@ namespace slime.runtime.internal.scripts {
 	}
 
 	export interface Exports {
+		Code: {
+			from: {
+				Resource: (p: slime.Resource) => slime.runtime.loader.Code
+			}
+		}
+
 		methods: {
 			run: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
 			old: {
