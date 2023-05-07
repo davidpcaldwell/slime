@@ -31,7 +31,7 @@ namespace slime {
 		/**
 		 * @deprecated
 		 */
-		 export interface Object extends Type {
+		export interface Object extends Type {
 			/**
 			 * @deprecated
 			 * @param string
@@ -141,6 +141,14 @@ namespace slime {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export namespace test {
+			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.Kit) {
+				var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+				return script().subject(fifty);
+			//@ts-ignore
+			})(fifty);
+		}
 
 		export namespace $slime {
 			export interface TypeScript {
@@ -280,32 +288,7 @@ namespace slime {
 			) {
 				const { verify } = fifty;
 
-				var api = (
-					function(): slime.runtime.Exports {
-						var scope = {
-							$slime: {
-								getRuntimeScript: function(path) {
-									return {
-										name: path,
-										js: fifty.$loader.get(path).read(String)
-									}
-								},
-								getCoffeeScript: function() {
-									return null;
-								}
-							},
-							$engine: void(0)
-						}
-
-						var rv;
-
-						var $slime = scope.$slime;
-						var $engine = scope.$engine;
-						rv = eval(fifty.$loader.get("expression.js").read(String))
-
-						return rv;
-					}
-				)();
+				var api = test.subject;
 
 				fifty.tests.runtime.exports.Resource = function() {
 					fifty.run(function type() {
@@ -593,11 +576,6 @@ namespace slime {
 		)($platform,fifty);
 
 		export namespace test {
-			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.Kit) {
-				var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
-				return script().subject(fifty);
-			//@ts-ignore
-			})(fifty);
 		}
 
 		export interface Exports {
