@@ -10,12 +10,20 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.plugin.Scope["plugins"] } plugins
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function(Packages,$api,jsh,$slime,$loader,plugin) {
+	function(Packages,$api,plugins,jsh,$slime,$loader,plugin) {
+		var code = {
+			/** @type { slime.jrunscript.shell.Script } */
+			module: $loader.script("module.js"),
+			/** @type { slime.jsh.shell.internal.Script } */
+			jsh: $loader.script("jsh.js")
+		}
+
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.js && jsh.document && jsh.js.document && jsh.web && jsh.java && jsh.io && jsh.file);
@@ -48,13 +56,6 @@
 					error: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardError()))
 				}
 
-				var code = {
-					/** @type { slime.jrunscript.shell.Script } */
-					module: $loader.script("module.js"),
-					/** @type { slime.jsh.shell.internal.Script } */
-					jsh: $loader.script("jsh.js")
-				}
-
 				var mContext = {
 					api: {
 						js: jsh.js,
@@ -82,6 +83,17 @@
 
 				if (!module.properties) throw new TypeError();
 
+				//	TODO	undoubtedly a better way to do this than having two separate arguments
+				plugins.shell = module;
+				plugins.stdio = stdio;
+			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(plugins.shell && plugins.stdio && jsh.script);
+			},
+			load: function() {
 				/**
 				 * @type { slime.jsh.shell.internal.Context }
 				 */
@@ -91,9 +103,9 @@
 						,java: jsh.java
 						,io: jsh.io
 						,file: jsh.file
-						,script: void(0)
+						,script: jsh.script
 					},
-					stdio: stdio,
+					stdio: plugins.stdio,
 					_getSystemProperties: function() {
 						return $slime.getSystemProperties();
 					},
@@ -109,15 +121,8 @@
 						);
 						return $slime.jsh(configuration,_invocation)
 					},
-					module: module
+					module: plugins.shell
 				};
-
-				//	TODO	necessary because dependencies are entangled here
-				Object.defineProperty(context.api, "script", {
-					get: function() {
-						return jsh.script;
-					}
-				});
 
 				jsh.shell = code.jsh(
 					context
@@ -191,4 +196,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$api,jsh,$slime,$loader,plugin);
+)(Packages,$api,plugins,jsh,$slime,$loader,plugin);
