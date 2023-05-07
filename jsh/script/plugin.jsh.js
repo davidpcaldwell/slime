@@ -179,6 +179,7 @@
 					}
 				})(jsh.file.filesystem, plugins.shell.PWD);
 
+				debugger;
 				jsh.script = load(
 					$api.Object.compose(
 						{

@@ -435,8 +435,14 @@ namespace slime.jsh.script {
 					subject.cli.option.string({ longname: "foo" })
 				);
 				var was = fifty.global.jsh.unit.$slime;
+				debugger;
 				var mocked = fifty.jsh.plugin.mock({
 					jsh: fifty.global.jsh,
+					plugins: {
+						//	This is needed to load the plugin, although this is obviously a very skeletal mock of the
+						//	jrunscript.shell module
+						shell: {}
+					},
 					$slime: Object.assign({}, was, {
 						getPackaged: function() { return null; },
 						/** @return { slime.jrunscript.native.inonit.script.jsh.Shell.Invocation } */
