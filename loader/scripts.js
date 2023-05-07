@@ -204,6 +204,11 @@
 		}
 
 		$export({
+			Code: {
+				from: {
+					Resource: adaptResource
+				}
+			},
 			methods: {
 				old: {
 					run: old_run,
