@@ -29,23 +29,28 @@
 					//@ts-ignore
 					execute: (function() {
 						if ($engine && $engine.execute) return $engine.execute;
+						//	This is the function we want, but Node.js objects to the with() statement, even if we don't execute it,
+						//	in strict mode. So we need to fall back to a dynamically created version, which follows the comment
+						//	block.
+						//
+						// return (
+						// 	function(/*script{name,js},scope,target*/) {
+						// 		return (function() {
+						// 			//@ts-ignore
+						// 			with( arguments[1] ) {
+						// 				return eval(arguments[0]);
+						// 			}
+						// 		}).call(
+						// 			arguments[2],
+						// 			arguments[0].js, arguments[1]
+						// 		);
+						// 	}
+						// );
+						//	TODO	could we simply replace this with the version developed for Node.js?
 						return new Function(
 							"script",
 							"scope",
 							"target",
-							// return (
-							// 	function(/*script{name,js},scope,target*/) {
-							// 		return (function() {
-							// 			//@ts-ignore
-							// 			with( arguments[1] ) {
-							// 				return eval(arguments[0]);
-							// 			}
-							// 		}).call(
-							// 			arguments[2],
-							// 			arguments[0].js, arguments[1]
-							// 		);
-							// 	}
-							// )
 							[
 								"return(",
 								"function $engine_execute(/*script{name,js},scope,target*/) {",

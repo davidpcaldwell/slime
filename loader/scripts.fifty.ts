@@ -4,6 +4,14 @@
 //
 //	END LICENSE
 
+namespace slime.runtime.loader {
+	export interface Code {
+		name: string
+		type: () => slime.mime.Type
+		read: () => string
+	}
+}
+
 namespace slime.runtime.internal.scripts {
 	export interface Scope {
 		$slime: slime.runtime.$slime.Deployment

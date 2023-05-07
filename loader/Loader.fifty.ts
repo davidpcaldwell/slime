@@ -27,12 +27,6 @@ namespace slime {
 			name: string
 		}
 
-		export interface Code {
-			name: string
-			type: () => slime.mime.Type
-			read: () => string
-		}
-
 		export interface Synchronous<T> {
 			/**
 			 * Returns the resource associated with a given path.
@@ -172,6 +166,9 @@ namespace slime {
 
 	export namespace runtime {
 		export interface Exports {
+			/**
+			 * Provides operations related to loading resources and executing code using {@link slime.runtime.loader} types.
+			 */
 			loader: slime.runtime.loader.Exports
 		}
 	}

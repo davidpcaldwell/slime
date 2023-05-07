@@ -19,7 +19,7 @@ namespace slime.runtime.test {
 					var js = code.read(String);
 
 					var subject: slime.runtime.Exports = (function() {
-						var scope: { $slime: slime.runtime.internal.Code, $engine: slime.runtime.$engine } = {
+						var scope: slime.runtime.Scope = {
 							$slime: {
 								getRuntimeScript: function(path) {
 									var resource = fifty.$loader.get(path);
