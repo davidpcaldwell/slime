@@ -62,12 +62,11 @@
 				$exports.stdio[name].character().write(p);
 			}
 		});
+
+		//	TODO	these are deprecated
 		$exports.stdin = $exports.stdio.input;
 		$exports.stdout = $exports.stdio.output;
 		$exports.stderr = $exports.stdio.error;
-		$api.deprecate($exports,"stdin");
-		$api.deprecate($exports,"stdout");
-		$api.deprecate($exports,"stderr");
 
 		$exports.echo = Object.assign(
 			/** @type { slime.jsh.shell.Echo } */
@@ -625,15 +624,19 @@
 			return is;
 		})(module.world);
 
-		$export(
-			Object.assign(
-				module,
-				{
-					PATH: module.PATH
-				},
-				$exports
-			)
+		var exported = Object.assign(
+			module,
+			{
+				PATH: module.PATH
+			},
+			$exports
 		);
+
+		$api.deprecate(exported,"stdin");
+		$api.deprecate(exported,"stdout");
+		$api.deprecate(exported,"stderr");
+
+		$export(exported);
 	}
 //@ts-ignore
 )(Packages,JavaAdapter,$api,$context,$export);
