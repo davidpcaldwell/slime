@@ -31,7 +31,7 @@
 		}
 
 		$api.fp.world.execute(jsh.shell.tools.node.require());
-		var typescriptVersionInstalled = $api.fp.result(
+		var typescriptVersionInstalled = $api.fp.now.invoke(
 			jsh.shell.tools.node.installation,
 			$api.fp.pipe(
 				$api.fp.world.mapping(
