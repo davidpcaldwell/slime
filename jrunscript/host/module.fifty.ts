@@ -115,16 +115,16 @@ namespace slime.jrunscript.host {
 	)(Packages,fifty);
 
 	export interface Exports {
-		/** The {@link slime.jrunscript.runtim.java.Exports} `getClass()` function. */
+		/** The {@link slime.jrunscript.runtime.java.Exports} `getClass()` function. */
 		getClass: slime.jrunscript.runtime.java.Exports["getClass"]
 
-		/** The {@link slime.jrunscript.runtim.java.Exports} `isJavaObject()` function. */
+		/** The {@link slime.jrunscript.runtime.java.Exports} `isJavaObject()` function. */
 		isJavaObject: slime.jrunscript.runtime.java.Exports["isJavaObject"]
 
-		/** The {@link slime.jrunscript.runtim.java.Exports} `isJavaType()` function. */
+		/** The {@link slime.jrunscript.runtime.java.Exports} `isJavaType()` function. */
 		isJavaType: slime.jrunscript.runtime.java.Exports["isJavaType"]
 
-		/** The {@link slime.jrunscript.runtim.java.Exports} `toNativeClass()` function. */
+		/** The {@link slime.jrunscript.runtime.java.Exports} `toNativeClass()` function. */
 		toNativeClass: slime.jrunscript.runtime.java.Exports["toNativeClass"]
 	}
 

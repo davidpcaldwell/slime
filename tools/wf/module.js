@@ -14,7 +14,7 @@
 	 */
 	function($api,$context,$export) {
 		var input = {
-			getTypescriptVersion: $api.fp.impure.Input.value("5.0.2")
+			getTypescriptVersion: $api.fp.impure.Input.value("5.0.4")
 		};
 
 		var filesystem = ($context.world.filesystem) ? $context.world.filesystem : $context.library.file.world.filesystems.os;

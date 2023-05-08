@@ -980,16 +980,6 @@
 								}
 							}
 						);
-						// var result = jsh.shell.jsh({
-						// 	script: jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
-						// 	arguments: [
-						// 		"-version", version,
-						// 		"-tsconfig", typescript.getConfig(project)
-						// 	],
-						// 	evaluate: function(result) {
-						// 		return result;
-						// 	}
-						// });
 						return (result.status == 0);
 					};
 				}
