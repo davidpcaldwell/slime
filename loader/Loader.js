@@ -94,6 +94,29 @@
 			}
 		};
 
+		/** @type { slime.$api.fp.Mapping<slime.Resource,slime.runtime.loader.Code> } */
+		var adaptResource = function(object) {
+			/** @type { slime.Resource & { js: { name: string, code: string } } } */
+			var resource = Object.assign(object, { js: void(0) });
+			var type = (resource.type) ? resource.type : $api.mime.Type.codec.declaration.decode("application/javascript");
+			var string = (function() {
+				if (resource.read) {
+					var rv = resource.read(String);
+					if (typeof(rv) == "undefined") throw new Error("resource.read(String) returned undefined");
+					if (typeof(rv) == "string") return rv;
+					throw new Error("Not string: " + typeof(rv) + " " + rv + " using " + resource.read);
+				}
+			})();
+			if (typeof(string) != "string") {
+				throw new TypeError("Resource: " + resource.name + " is not convertible to string, it is " + typeof(string) + ", so cannot be executed. resource.read = " + resource.read);
+			}
+			return {
+				name: resource.name,
+				type: function() { return type; },
+				read: function() { return string; }
+			}
+		}
+
 		/**
 		 * @this { slime.old.Loader }
 		 * @param { slime.old.loader.Source } p
@@ -140,19 +163,19 @@
 				this.run = function retarget(path,context,target) {
 					var resource = this.get(path);
 					if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
-					return methods.old.run.call(target,resource,context);
+					return methods.run.call(target,adaptResource(resource),context);
 				};
 				/** @type { slime.old.Loader["value"] } */
 				this.value = function retarget(path,context,target) {
 					var resource = this.get(path);
 					if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
-					return methods.old.value.call(target,resource,context);
+					return methods.old.value.call(target,adaptResource(resource),context);
 				};
 				/** @type { slime.old.Loader["file"] } */
 				this.file = function retarget(path,context,target) {
 					var resource = this.get(path);
 					if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
-					return methods.old.file.call(target,resource,context);
+					return methods.old.file.call(target,adaptResource(resource),context);
 				};
 			}
 
@@ -184,7 +207,7 @@
 					var script = this.get(locations.main);
 					//	TODO	generalize error handling strategy; add to file, run, value
 					if (!script) throw new Error("Module not found at " + locations.main);
-					methods.old.run.call(target,script,inner);
+					methods.run.call(target,adaptResource(script),inner);
 					return inner.$exports;
 				};
 			}
@@ -201,7 +224,7 @@
 					var locations = getModuleLocations(path);
 					var inner = getModuleScope($context,locations);
 					return this.thread.get(locations.main).then(function(script) {
-						methods.old.run.call(target,script,inner);
+						methods.run.call(target,script,inner);
 						return inner.$exports;
 					});
 				}
@@ -349,6 +372,11 @@
 
 		$export({
 			old: old,
+			Code: {
+				from: {
+					Resource: adaptResource
+				}
+			},
 			api: api
 		});
 	}

@@ -88,6 +88,11 @@
 		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
 		 */
 		function run(script,scope) {
+			if (!script || typeof(script) != "object") {
+				throw new TypeError("'object' must be an object, not " + script);
+			}
+			if (typeof(script.read) != "function") throw new Error("Not resource: no read() function");
+
 			var name = script.name;
 			var type = script.type();
 			var string = script.read();
@@ -142,51 +147,12 @@
 			);
 		}
 
-		/** @type { slime.$api.fp.Mapping<slime.Resource,slime.runtime.loader.Code> } */
-		var adaptResource = function(object) {
-			/** @type { slime.Resource & { js: { name: string, code: string } } } */
-			var resource = Object.assign(object, { js: void(0) });
-			var type = (resource.type) ? resource.type : $api.mime.Type.codec.declaration.decode("application/javascript");
-			var string = (function() {
-				if (resource.read) {
-					var rv = resource.read(String);
-					if (typeof(rv) == "undefined") throw new Error("resource.read(String) returned undefined");
-					if (typeof(rv) == "string") return rv;
-					throw new Error("Not string: " + typeof(rv) + " " + rv + " using " + resource.read);
-				}
-			})();
-			if (typeof(string) != "string") {
-				throw new TypeError("Resource: " + resource.name + " is not convertible to string, it is " + typeof(string) + ", so cannot be executed. resource.read = " + resource.read);
-			}
-			return {
-				name: resource.name,
-				type: function() { return type; },
-				read: function() { return string; }
-			}
-		}
-
-		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["run"] }
-		 */
-		function old_run(object,scope) {
-			if (!object || typeof(object) != "object") {
-				throw new TypeError("'object' must be an object, not " + object);
-			}
-			if (typeof(object.read) != "function") throw new Error("Not resource: no read() function");
-
-			run.call(
-				this,
-				adaptResource(object),
-				scope
-			);
-		}
-
 		/**
 		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["file"] }
 		 */
 		function file(code,$context) {
 			var inner = createScriptScope($context);
-			run.call(this,adaptResource(code),inner);
+			run.call(this,code,inner);
 			return inner.$exports;
 		}
 
@@ -199,19 +165,13 @@
 			scope.$set = function(v) {
 				rv = v;
 			};
-			run.call(this,adaptResource(code),scope);
+			run.call(this,code,scope);
 			return rv;
 		}
 
 		$export({
-			Code: {
-				from: {
-					Resource: adaptResource
-				}
-			},
 			methods: {
 				old: {
-					run: old_run,
 					file: file,
 					value: value
 				},
