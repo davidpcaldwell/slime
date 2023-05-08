@@ -21,18 +21,11 @@ namespace slime.runtime.internal.scripts {
 	}
 
 	export interface Exports {
-		Code: {
-			from: {
-				Resource: (p: slime.Resource) => slime.runtime.loader.Code
-			}
-		}
-
 		methods: {
 			run: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
 			old: {
-				run: (code: slime.Resource, scope: { [name: string]: any }) => void
-				value: (code: slime.Resource, scope: { [name: string]: any }) => any
-				file: (code: slime.Resource, context: { [name: string]: any }) => { [x: string]: any }
+				value: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => any
+				file: (code: slime.runtime.loader.Code, context: { [name: string]: any }) => { [x: string]: any }
 			}
 		}
 

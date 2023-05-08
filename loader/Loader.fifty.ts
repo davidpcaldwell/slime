@@ -627,6 +627,11 @@ namespace slime.runtime.internal.loader {
 
 	export interface Exports {
 		old: slime.runtime.loader.old.Constructor
+		Code: {
+			from: {
+				Resource: (p: slime.Resource) => slime.runtime.loader.Code
+			}
+		}
 		api: slime.runtime.loader.Exports
 	}
 

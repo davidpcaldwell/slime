@@ -332,15 +332,15 @@
 				},
 				/** @type { slime.runtime.Exports["run"] } */
 				run: function(code,scope,target) {
-					return scripts.methods.old.run.call(target,code,scope);
+					return scripts.methods.run.call(target,Loader.Code.from.Resource(code),scope);
 				},
 				/** @type { slime.runtime.Exports["file"] } */
 				file: function(code,context,target) {
-					return scripts.methods.old.file.call(target,code,context);
+					return scripts.methods.old.file.call(target,Loader.Code.from.Resource(code),context);
 				},
 				/** @type { slime.runtime.Exports["value"] } */
 				value: function(code,scope,target) {
-					return scripts.methods.old.value.call(target,code,scope);
+					return scripts.methods.old.value.call(target,Loader.Code.from.Resource(code),scope);
 				},
 				Resource: ResourceExport,
 				old: {
