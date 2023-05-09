@@ -89,7 +89,7 @@
 		 * @param { slime.runtime.$slime.TypeScript } ts
 		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
 		 */
-		var getTypescriptCode = function(ts) {
+		var getTypescriptTranspiler = function(ts) {
 			if (ts) {
 				return function(script) {
 					if (mimeTypeIs("application/x.typescript")(script.type())) {
@@ -106,44 +106,60 @@
 					return $api.fp.Maybe.from.nothing();
 				}
 			}
+		};
+
+		/**
+		 *
+		 * @param { slime.runtime.$slime.CoffeeScript } $coffee
+		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
+		 */
+		var getCoffescriptTranspiler = function($coffee) {
+			if ($coffee) {
+				return function(script) {
+					if (mimeTypeIs("application/vnd.coffeescript")(script.type())) {
+						return $api.fp.Maybe.from.some({
+							name: script.name,
+							js: $coffee.compile(script.read())
+						});
+					} else {
+						return $api.fp.Maybe.from.nothing();
+					}
+				}
+			} else {
+				return function(script) {
+					return $api.fp.Maybe.from.nothing();
+				}
+			}
 		}
+
+		/**
+		 *
+		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
+		 */
+		var getJavascriptProvider = function() {
+			return function(script) {
+				var type = script.type();
+				if (mimeTypeIs("application/javascript")(type) || mimeTypeIs("application/x-javascript")(type)) {
+					return $api.fp.Maybe.from.some({
+						name: script.name,
+						js: script.read()
+					});
+				} else {
+					return $api.fp.Maybe.from.nothing();
+				}
+			}
+		};
 
 		/** @type { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> } */
 		var getEngineCode = function(script) {
-			var name = script.name;
-			var type = script.type();
-			var string = script.read();
+			var typescript = getTypescriptTranspiler($slime.typescript);
+			var coffeescript = getCoffescriptTranspiler($coffee);
+			var javascript = getJavascriptProvider();
 
-			var typeIs = (
-				function(scriptType) {
-					/** @type { (string: string) => boolean } */
-					return function(type) {
-						return scriptType && mimeTypeIs(type)(scriptType);
-					}
-				}
-			)(type);
+			var all = $api.fp.switch([ typescript, coffeescript, javascript ]);
+			var code = all(script);
 
-			/** @type { slime.runtime.internal.engine.Code } */
-			var js;
-			var getCodeViaTs = getTypescriptCode($slime.typescript);
-			var typescript = getCodeViaTs(script);
-			if (typescript.present) {
-				js = {
-					name: typescript.value.name,
-					js: typescript.value.js
-				};
-			} else if (typeIs("application/vnd.coffeescript")) {
-				js = {
-					name: name,
-					js: $coffee.compile(string)
-				};
-			} else if (typeIs("application/javascript") || typeIs("application/x-javascript")) {
-				js = {
-					name: name,
-					js: string
-				}
-			}
-			return (js) ? $api.fp.Maybe.from.some(js) : $api.fp.Maybe.from.nothing()
+			return (code.present) ? $api.fp.Maybe.from.some(code.value) : $api.fp.Maybe.from.nothing()
 		}
 
 		/**
