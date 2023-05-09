@@ -85,14 +85,31 @@
 		}
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
+		 *
+		 * @param { slime.runtime.$slime.TypeScript } ts
+		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
 		 */
-		function run(script,scope) {
-			if (!script || typeof(script) != "object") {
-				throw new TypeError("'object' must be an object, not " + script);
+		var getTypescriptCode = function(ts) {
+			if (ts) {
+				return function(script) {
+					if (mimeTypeIs("application/x.typescript")(script.type())) {
+						return $api.fp.Maybe.from.some({
+							name: script.name,
+							js: ts.compile(script.read())
+						});
+					} else {
+						return $api.fp.Maybe.from.nothing();
+					}
+				}
+			} else {
+				return function(script) {
+					return $api.fp.Maybe.from.nothing();
+				}
 			}
-			if (typeof(script.read) != "function") throw new Error("Not resource: no read() function");
+		}
 
+		/** @type { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> } */
+		var getEngineCode = function(script) {
 			var name = script.name;
 			var type = script.type();
 			var string = script.read();
@@ -106,26 +123,44 @@
 				}
 			)(type);
 
+			/** @type { slime.runtime.internal.engine.Code } */
 			var js;
-			if ($slime.typescript && typeIs("application/x.typescript")) {
+			var getCodeViaTs = getTypescriptCode($slime.typescript);
+			var typescript = getCodeViaTs(script);
+			if (typescript.present) {
 				js = {
-					name: name,
-					code: $slime.typescript.compile(string)
+					name: typescript.value.name,
+					js: typescript.value.js
 				};
 			} else if (typeIs("application/vnd.coffeescript")) {
 				js = {
 					name: name,
-					code: $coffee.compile(string)
+					js: $coffee.compile(string)
 				};
 			} else if (typeIs("application/javascript") || typeIs("application/x-javascript")) {
 				js = {
 					name: name,
-					code: string
+					js: string
 				}
 			}
-			if (!js) {
-				throw new TypeError("Resource " + name + " is not JavaScript; type = " + type);
+			return (js) ? $api.fp.Maybe.from.some(js) : $api.fp.Maybe.from.nothing()
+		}
+
+		/**
+		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
+		 */
+		function run(script,scope) {
+			if (!script || typeof(script) != "object") {
+				throw new TypeError("'object' must be an object, not " + script);
 			}
+			if (typeof(script.read) != "function") throw new Error("Not resource: no read() function");
+
+			var code = getEngineCode(script);
+
+			if (!code.present) {
+				throw new TypeError("Resource " + script.name + " cannot be converted to JavaScript; type = " + script.type());
+			}
+
 			var target = this;
 			var global = (function() { return this; })();
 			//	TODO	why is this present?
@@ -138,10 +173,7 @@
 			scope.$platform = $platform;
 			scope.$api = $api;
 			$engine.execute(
-				{
-					name: js.name,
-					js: js.code
-				},
+				code.value,
 				scope,
 				target
 			);
