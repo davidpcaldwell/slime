@@ -479,11 +479,18 @@ namespace slime {
 				export type Script = slime.old.loader.Script<Scope,slime.runtime.Exports["old"]["loader"]>
 			}
 
+			export namespace engine {
+				export interface Code {
+					name?: string
+					js: string
+				}
+			}
+
 			/**
 			 * An internal object derived from {@link slime.runtime.$engine} which adds default implementations.
 			 */
 			export interface Engine {
-				execute: (code: { name?: string, js: string }, scope: { [x: string]: any }, target: any) => any
+				execute: (code: engine.Code, scope: { [x: string]: any }, target: any) => any
 				Error: {
 					decorate?: <T>(errorConstructor: T) => T
 				}
