@@ -224,7 +224,7 @@
 					var locations = getModuleLocations(path);
 					var inner = getModuleScope($context,locations);
 					return this.thread.get(locations.main).then(function(script) {
-						methods.run.call(target,script,inner);
+						methods.run.call(target,adaptResource(script),inner);
 						return inner.$exports;
 					});
 				}
