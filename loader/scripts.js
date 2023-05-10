@@ -123,7 +123,7 @@
 		var getTypescriptTranspiler = function(ts) {
 			return getTranspiler({
 				accept: isMimeType("application/x.typescript"),
-				compile: (ts) ? ts.compile : void(0)
+				compile: (ts) ? function(code) { return ts.compile(code); } : void(0)
 			});
 		};
 
