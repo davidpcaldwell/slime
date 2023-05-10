@@ -71,7 +71,7 @@
 
 		/**
 		 *
-		 * @param { string } string
+		 * @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.mime.Type>> }
 		 */
 		function mimeTypeIs(string) {
 			/**
@@ -86,16 +86,16 @@
 
 		/**
 		 *
-		 * @param { slime.runtime.$slime.TypeScript } ts
+		 * @param { { accept: slime.$api.fp.Predicate<slime.runtime.loader.Code>, compile: slime.$api.fp.Mapping<string,string> }} p
 		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
 		 */
-		var getTypescriptTranspiler = function(ts) {
-			if (ts) {
+		var getTranspiler = function(p) {
+			if (p.compile) {
 				return function(script) {
-					if (mimeTypeIs("application/x.typescript")(script.type())) {
+					if (p.accept(script)) {
 						return $api.fp.Maybe.from.some({
 							name: script.name,
-							js: ts.compile(script.read())
+							js: p.compile(script.read())
 						});
 					} else {
 						return $api.fp.Maybe.from.nothing();
@@ -108,28 +108,35 @@
 			}
 		};
 
+		/** @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>> } */
+		var isMimeType = function(string) {
+			return function(script) {
+				return mimeTypeIs(string)(script.type());
+			}
+		}
+
+		/**
+		 *
+		 * @param { slime.runtime.$slime.TypeScript } ts
+		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
+		 */
+		var getTypescriptTranspiler = function(ts) {
+			return getTranspiler({
+				accept: isMimeType("application/x.typescript"),
+				compile: (ts) ? ts.compile : void(0)
+			});
+		};
+
 		/**
 		 *
 		 * @param { slime.runtime.$slime.CoffeeScript } $coffee
 		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
 		 */
 		var getCoffescriptTranspiler = function($coffee) {
-			if ($coffee) {
-				return function(script) {
-					if (mimeTypeIs("application/vnd.coffeescript")(script.type())) {
-						return $api.fp.Maybe.from.some({
-							name: script.name,
-							js: $coffee.compile(script.read())
-						});
-					} else {
-						return $api.fp.Maybe.from.nothing();
-					}
-				}
-			} else {
-				return function(script) {
-					return $api.fp.Maybe.from.nothing();
-				}
-			}
+			return getTranspiler({
+				accept: isMimeType("application/vnd.coffeescript"),
+				compile: ($coffee) ? $coffee.compile : void(0)
+			});
 		}
 
 		/**
@@ -137,17 +144,13 @@
 		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
 		 */
 		var getJavascriptProvider = function() {
-			return function(script) {
-				var type = script.type();
-				if (mimeTypeIs("application/javascript")(type) || mimeTypeIs("application/x-javascript")(type)) {
-					return $api.fp.Maybe.from.some({
-						name: script.name,
-						js: script.read()
-					});
-				} else {
-					return $api.fp.Maybe.from.nothing();
-				}
-			}
+			return getTranspiler({
+				accept: $api.fp.Predicate.or(
+					isMimeType("application/javascript"),
+					isMimeType("application/x-javascript")
+				),
+				compile: $api.fp.identity
+			});
 		};
 
 		/** @type { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> } */
