@@ -12,6 +12,8 @@
 	 * @param { slime.web.Exports } $exports
 	 */
 	function($api,$context,$exports) {
+		$exports.escaper = $context.escaper;
+
 		/**
 		 * @param { string } string
 		 * @returns { Pick<slime.web.object.url.Argument,"scheme" | "authority" | "path" | "fragment"> & { query: string } }
