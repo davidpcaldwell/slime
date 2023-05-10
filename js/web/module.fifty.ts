@@ -5,12 +5,14 @@
 //	END LICENSE
 
 namespace slime.web {
+	/**
+	 * An object capable of handling the [percent-encoding](http://tools.ietf.org/html/rfc3986#section-2.1)
+	 * (or "URL-encoding") algorithm.
+	 */
+	export type Escaping = slime.Codec<string,string>
+
 	export interface Context {
-		/**
-		 * An object capable of handling the [percent-encoding](http://tools.ietf.org/html/rfc3986#section-2.1)
-		 * (or "URL-encoding") algorithm.
-		 */
-		escaper: slime.Codec<string,string>
+		escaper: Escaping
 		window?: Window
 	}
 
@@ -29,6 +31,13 @@ namespace slime.web {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
+
+	export interface Exports {
+		/**
+		 * The same escaping implementation supplied to the module in its {@link Context}.
+		 */
+		escaper: Escaping
 	}
 
 	/**
