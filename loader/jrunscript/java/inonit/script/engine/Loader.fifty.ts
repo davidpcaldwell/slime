@@ -5,11 +5,32 @@
 //	END LICENSE
 
 namespace slime.jrunscript.native.inonit.script.engine {
+	/**
+	 * An object that can load the SLIME Java runtime.
+	 */
 	export interface Loader {
-		getCoffeeScript()
-		getTypescript()
-		getClasspath(): any
-		getLoaderCode(path: string): any
+		//	TODO	rename to inonit.script.engine.Runtime? Or something clearer? Maybe rename methods to getSlimeRuntimeCode() and
+		//			getCoffeeScriptCode()?
+
+		/**
+		 * Loads a SLIME runtime source file.
+		 *
+		 * @param path A path, relative to `loader/`, of a SLIME runtime source file.
+		 *
+		 * @returns The source code at the given location.
+		 */
+		getLoaderCode: (path: string) => slime.jrunscript.native.java.lang.String
+
+		getClasspath: () => Loader.Classes.Interface
+
+		/**
+		 * A function that provides access to CoffeeScript, if available.
+		 *
+		 * @returns The source code for CoffeeScript, or `null` if it is not present.
+		 */
+		getCoffeeScript: () => slime.jrunscript.native.java.lang.String
+
+		getTypescript: () => Loader.Typescript
 	}
 
 	export namespace Loader {
@@ -21,6 +42,10 @@ namespace slime.jrunscript.native.inonit.script.engine {
 				addJar: (argument: slime.jrunscript.native.java.io.File) => void
 				compiling: (argument: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.jrunscript.native.inonit.script.engine.Code.Loader
 			}
+		}
+
+		export interface Typescript {
+			compile: (code: string) => slime.jrunscript.native.java.lang.String
 		}
 	}
 }
