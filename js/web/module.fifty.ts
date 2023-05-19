@@ -33,6 +33,14 @@ namespace slime.web {
 		)(fifty);
 	}
 
+	/**
+	 * Provides APIs pertaining to URLs, web forms, and percent-encoding, and the browser `window` object (if one was supplied when
+	 * the script was loaded).
+	 */
+	export interface Exports {
+
+	}
+
 	export interface Exports {
 		/**
 		 * The same escaping implementation supplied to the module in its {@link Context}.
