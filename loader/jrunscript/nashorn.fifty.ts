@@ -4,6 +4,15 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.runtime {
+	export interface Nashorn extends Exports {
+		java: MultithreadedJava
+	}
+
+	export interface Graal extends Exports {
+	}
+}
+
 namespace slime.jrunscript.runtime.internal.nashorn {
 	/**
 	 * A `Packages.inonit.script.jsh.Graal.Host` instance, currently, although this should not depend on `jsh` classes. In any case,

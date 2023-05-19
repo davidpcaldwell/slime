@@ -122,18 +122,6 @@ namespace slime.jrunscript.runtime {
 		thisSynchronize: any
 	}
 
-	export interface Rhino extends Exports {
-		getDebugger: () => slime.jrunscript.native.inonit.script.rhino.Engine.Debugger
-		java: MultithreadedJava
-	}
-
-	export interface Nashorn extends Exports {
-		java: MultithreadedJava
-	}
-
-	export interface Graal extends Exports {
-	}
-
 	export interface Java {
 		type(className: string): any
 	}
@@ -197,7 +185,7 @@ namespace slime.jrunscript.runtime {
 		 * The `jrunscript` implementation enhances the default MIME implementation by using the
 		 * `java.net.URLConnection.getFileNameMap()` method as an additional way to guess content types from file names.
 		 */
-		mime: $api.mime.Export
+		mime: slime.runtime.Exports["mime"]
 
 		Loader: slime.runtime.Exports["old"]["Loader"] & {
 			new (p: internal.CustomSource): Loader
