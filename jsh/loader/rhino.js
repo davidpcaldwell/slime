@@ -12,24 +12,36 @@
 	 * @param { slime.jrunscript.native.inonit.script.jsh.Rhino.Interface } $rhino
 	 */
 	function($jsh,$rhino) {
-		$jsh.setRuntime((function() {
-			var rv = $rhino.script(
-				"jrunscript/rhino.js",
-				$jsh.getLoader().getLoaderCode("jrunscript/rhino.js"),
-				{ $loader: $jsh.getLoader(), $rhino: $rhino },
-				null
-			);
+		$jsh.setRuntime(
+			(
+				function() {
+					/** @type { slime.jrunscript.runtime.Rhino } */
+					var runtime = $rhino.script(
+						"jrunscript/rhino.js",
+						String($jsh.getLoader().getLoaderCode("jrunscript/rhino.js")),
+						{ $loader: $jsh.getLoader(), $rhino: $rhino },
+						null
+					);
 
-			rv.exit = function(status) {
-				return $rhino.exit(status);
-			};
+					/** @type { (v: any) => slime.jsh.loader.internal.Runtime } */
+					var castToJshRuntime = function(v) { return v; };
 
-			rv.jsh = function(configuration,invocation) {
-				return $rhino.jsh(configuration,invocation);
-			};
+					var rv = castToJshRuntime(runtime);
 
-			return rv;
-		})());
+					//	TODO	Object.assign?
+
+					rv.exit = function(status) {
+						return $rhino.exit(status);
+					};
+
+					rv.jsh = function(configuration,invocation) {
+						return $rhino.jsh(configuration,invocation);
+					};
+
+					return rv;
+				}
+			)()
+		);
 	}
 //@ts-ignore
 )($jsh,$rhino);

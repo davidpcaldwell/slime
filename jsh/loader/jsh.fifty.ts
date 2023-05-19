@@ -6,7 +6,7 @@
 
 namespace slime.jsh {
 	export namespace plugin {
-		export interface $slime extends slime.jrunscript.runtime.Exports, slime.jsh.loader.EngineSpecific {
+		export interface $slime extends slime.jsh.loader.internal.Runtime {
 			getSystemProperty(name: string): string
 			getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
 			getInvocation(): slime.jrunscript.native.inonit.script.jsh.Shell.Invocation
@@ -46,10 +46,12 @@ namespace slime.jsh {
 		//@ts-ignore
 		)(fifty);
 
-		export interface EngineSpecific {
-			//	provided by engine-specific rhino.js and nashorn.js
-			exit: any
-			jsh: any
+		export namespace internal {
+			export interface Runtime extends slime.jrunscript.runtime.Exports {
+				//	provided by engine-specific rhino.js and nashorn.js
+				exit: any
+				jsh: any
+			}
 		}
 
 		/**

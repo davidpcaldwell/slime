@@ -5,11 +5,10 @@
 //	END LICENSE
 
 namespace slime.jrunscript.native.inonit.script.jsh {
-	//type EngineSpecificJshInterface = slime.jsh.plugin.EngineSpecific;
-
 	export interface Shell {
-		setRuntime: (value: slime.jrunscript.runtime.Exports) => void
-		runtime(): slime.jrunscript.runtime.Exports & slime.jsh.loader.EngineSpecific
+		setRuntime: (value: slime.jsh.loader.internal.Runtime) => void
+		runtime: () => slime.jsh.loader.internal.Runtime
+
 		getLoader(): slime.jrunscript.native.inonit.script.engine.Loader
 		getEnvironment(): Shell.Environment
 		getInvocation(): Shell.Invocation
@@ -55,15 +54,6 @@ namespace slime.jrunscript.native.inonit.script.jsh {
 		export interface Interface {
 			getPluginSources(): slime.jrunscript.native.inonit.script.engine.Code.Loader[]
 			invocation: (script: slime.jrunscript.native.java.io.File, arguments: string[]) => Invocation
-		}
-	}
-
-	//	TODO	move to appropriate directory
-	export namespace Rhino {
-		export interface Interface {
-			script: any
-			exit: any
-			jsh: any
 		}
 	}
 }

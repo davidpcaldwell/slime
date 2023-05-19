@@ -4,6 +4,16 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.runtime {
+	/**
+	 * The type returned by `loader/jrunscript/rhino.js` for use in embedding Rhino.
+	 */
+	export interface Rhino extends Exports {
+		getDebugger: () => slime.jrunscript.native.inonit.script.rhino.Engine.Debugger
+		java: MultithreadedJava
+	}
+}
+
 namespace slime.jrunscript.runtime.internal.rhino {
 	/**
 	 * An object providing the scope variables for running `loader/jrunscript/rhino.js`.
