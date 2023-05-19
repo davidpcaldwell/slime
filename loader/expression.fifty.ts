@@ -484,6 +484,8 @@ namespace slime {
 					name?: string
 					js: string
 				}
+
+				export type Transpiler = slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code>
 			}
 
 			/**
