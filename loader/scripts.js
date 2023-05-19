@@ -48,21 +48,6 @@
 			});
 		};
 
-		/** @type { slime.runtime.$slime.CoffeeScript } */
-		var $coffee = (function() {
-			//	TODO	rename to getCoffeescript to make consistent with camel case.
-			if (!$slime.getCoffeeScript) return null;
-			var coffeeScript = $slime.getCoffeeScript();
-			if (!coffeeScript) return null;
-			if (coffeeScript.code) {
-				var target = {};
-				$engine.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
-				return target.CoffeeScript;
-			} else if (coffeeScript.object) {
-				return coffeeScript.object;
-			}
-		})();
-
 		//	resource.type: optional, but if it is not a recognized type, this method will error
 		//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
 		//	resource.string: optional, but used to determine code
@@ -87,7 +72,7 @@
 		/**
 		 *
 		 * @param { { accept: slime.$api.fp.Predicate<slime.runtime.loader.Code>, compile: slime.$api.fp.Mapping<string,string> }} p
-		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
+		 * @returns { slime.runtime.internal.engine.Transpiler }
 		 */
 		var getTranspiler = function(p) {
 			if (p.compile) {
@@ -117,22 +102,37 @@
 
 		/**
 		 *
-		 * @param { slime.runtime.$slime.TypeScript } ts
-		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
+		 * @param { slime.runtime.$slime.Deployment } $slime
+		 * @returns { slime.runtime.internal.engine.Transpiler }
 		 */
-		var getTypescriptTranspiler = function(ts) {
+		var getTypescriptTranspiler = function($slime) {
 			return getTranspiler({
 				accept: isMimeType("application/x.typescript"),
-				compile: (ts) ? function(code) { return ts.compile(code); } : void(0)
+				compile: ($slime.typescript) ? function(code) { return $slime.typescript.compile(code); } : void(0)
 			});
 		};
 
 		/**
 		 *
-		 * @param { slime.runtime.$slime.CoffeeScript } $coffee
-		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
+		 * @param { slime.runtime.$slime.Deployment } $slime
+		 * @returns { slime.runtime.internal.engine.Transpiler }
 		 */
-		var getCoffescriptTranspiler = function($coffee) {
+		var getCoffescriptTranspiler = function($slime) {
+			/** @type { slime.runtime.$slime.CoffeeScript } */
+			var $coffee = (function() {
+				//	TODO	rename to getCoffeescript to make consistent with camel case.
+				if (!$slime.getCoffeeScript) return null;
+				var coffeeScript = $slime.getCoffeeScript();
+				if (!coffeeScript) return null;
+				if (coffeeScript.code) {
+					var target = {};
+					$engine.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
+					return target.CoffeeScript;
+				} else if (coffeeScript.object) {
+					return coffeeScript.object;
+				}
+			})();
+
 			return getTranspiler({
 				accept: isMimeType("application/vnd.coffeescript"),
 				compile: ($coffee) ? $coffee.compile : void(0)
@@ -141,7 +141,7 @@
 
 		/**
 		 *
-		 * @returns { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> }
+		 * @returns { slime.runtime.internal.engine.Transpiler }
 		 */
 		var getJavascriptProvider = function() {
 			return getTranspiler({
@@ -153,17 +153,15 @@
 			});
 		};
 
-		/** @type { slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code> } */
-		var getEngineCode = function(script) {
-			var typescript = getTypescriptTranspiler($slime.typescript);
-			var coffeescript = getCoffescriptTranspiler($coffee);
-			var javascript = getJavascriptProvider();
+		var getEngineCode = (
+			function() {
+				var typescript = getTypescriptTranspiler($slime);
+				var coffeescript = getCoffescriptTranspiler($slime);
+				var javascript = getJavascriptProvider();
 
-			var all = $api.fp.switch([ typescript, coffeescript, javascript ]);
-			var code = all(script);
-
-			return (code.present) ? $api.fp.Maybe.from.some(code.value) : $api.fp.Maybe.from.nothing()
-		}
+				return $api.fp.switch([ typescript, coffeescript, javascript ]);
+			}
+		)();
 
 		/**
 		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
@@ -181,16 +179,21 @@
 			}
 
 			var target = this;
+
+			//	TODO	why is this present? I guess so we can't accidentally load scripts into the global scope, even if we say
+			//			we want to do that?
 			var global = (function() { return this; })();
-			//	TODO	why is this present?
 			if (scope === global) {
 				scope = {};
 			}
+
 			if (scope === void(0)) {
 				scope = {};
 			}
+
 			scope.$platform = $platform;
 			scope.$api = $api;
+
 			$engine.execute(
 				code.value,
 				scope,
