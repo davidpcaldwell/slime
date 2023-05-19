@@ -106,7 +106,7 @@
 		/** @type { slime.jrunscript.runtime.Rhino } */
 		var rv = $rhino.script(
 			"jrunscript/expression.js",
-			$loader.getLoaderCode("jrunscript/expression.js"),
+			String($loader.getLoaderCode("jrunscript/expression.js")),
 			{ $loader: $loader, $javahost: $javahost, $bridge: $bridge },
 			null
 		);

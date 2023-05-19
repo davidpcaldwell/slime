@@ -120,7 +120,17 @@
 						if (_code) return { code: String(_code) };
 						return null;
 					},
-					typescript: $loader.getTypescript()
+					typescript: (function(_ts) {
+						if (_ts) {
+							return {
+								compile: function(code) {
+									return String(_ts.compile(code));
+								}
+							}
+						} else {
+							return null;
+						}
+					})($loader.getTypescript())
 				};
 				if (!$javahost.noEnvironmentAccess) {
 					var flagPattern = /^SLIME_(.*)$/;
