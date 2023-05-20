@@ -8,7 +8,7 @@
 (
 	/**
 	 *
-	 * @param { { window: Window } } $context
+	 * @param { slime.web.browser.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.web.Exports> } $export
 	 */
@@ -22,8 +22,8 @@
 			load({
 				window: $context.window,
 				escaper: {
-					encode: window.escape,
-					decode: window.unescape
+					encode: $context.window.escape,
+					decode: $context.window.unescape
 				}
 			})
 		)
