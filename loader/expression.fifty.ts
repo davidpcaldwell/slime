@@ -164,6 +164,13 @@ namespace slime {
 				js: string
 			}
 
+			export interface Code {
+				name?: string
+				js: string
+			}
+
+			export type ScriptLoader = slime.$api.fp.Partial<slime.runtime.loader.Code,Code>;
+
 			/**
 			 * An object providing access to the SLIME execution environment.
 			 */
@@ -479,20 +486,11 @@ namespace slime {
 				export type Script = slime.old.loader.Script<Scope,slime.runtime.Exports["old"]["loader"]>
 			}
 
-			export namespace engine {
-				export interface Code {
-					name?: string
-					js: string
-				}
-
-				export type Transpiler = slime.$api.fp.Partial<slime.runtime.loader.Code,slime.runtime.internal.engine.Code>
-			}
-
 			/**
 			 * An internal object derived from {@link slime.runtime.$engine} which adds default implementations.
 			 */
 			export interface Engine {
-				execute: (code: engine.Code, scope: { [x: string]: any }, target: any) => any
+				execute: (code: $slime.Code, scope: { [x: string]: any }, target: any) => any
 				Error: {
 					decorate?: <T>(errorConstructor: T) => T
 				}

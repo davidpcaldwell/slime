@@ -8,13 +8,13 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.internal.scripts.Scope["$slime"] } $slime
 	 * @param { slime.runtime.internal.scripts.Scope["$platform"] } $platform
 	 * @param { slime.runtime.internal.scripts.Scope["$engine"] } $engine
+	 * @param { slime.runtime.internal.scripts.Scope["scriptLoader"] } scriptLoader
 	 * @param { slime.runtime.internal.scripts.Scope["$api"] } $api
 	 * @param { slime.loader.Export<slime.runtime.internal.scripts.Exports> } $export
 	 */
-	function($slime,$platform,$engine,$api,$export) {
+	function($platform,$engine,scriptLoader,$api,$export) {
 		/**
 		 * @type { slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"] }
 		 */
@@ -55,115 +55,6 @@
 		//	TODO	re-work resource.js
 
 		/**
-		 *
-		 * @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.mime.Type>> }
-		 */
-		function mimeTypeIs(string) {
-			/**
-			 *
-			 * @param { slime.mime.Type } type
-			 */
-			function rv(type) {
-				return (type.media + "/" + type.subtype) == string;
-			}
-			return rv;
-		}
-
-		/**
-		 *
-		 * @param { { accept: slime.$api.fp.Predicate<slime.runtime.loader.Code>, compile: slime.$api.fp.Mapping<string,string> }} p
-		 * @returns { slime.runtime.internal.engine.Transpiler }
-		 */
-		var getTranspiler = function(p) {
-			if (p.compile) {
-				return function(script) {
-					if (p.accept(script)) {
-						return $api.fp.Maybe.from.some({
-							name: script.name,
-							js: p.compile(script.read())
-						});
-					} else {
-						return $api.fp.Maybe.from.nothing();
-					}
-				}
-			} else {
-				return function(script) {
-					return $api.fp.Maybe.from.nothing();
-				}
-			}
-		};
-
-		/** @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>> } */
-		var isMimeType = function(string) {
-			return function(script) {
-				return mimeTypeIs(string)(script.type());
-			}
-		}
-
-		/**
-		 *
-		 * @param { slime.runtime.$slime.Deployment } $slime
-		 * @returns { slime.runtime.internal.engine.Transpiler }
-		 */
-		var getTypescriptTranspiler = function($slime) {
-			return getTranspiler({
-				accept: isMimeType("application/x.typescript"),
-				compile: ($slime.typescript) ? function(code) { return $slime.typescript.compile(code); } : void(0)
-			});
-		};
-
-		/**
-		 *
-		 * @param { slime.runtime.$slime.Deployment } $slime
-		 * @returns { slime.runtime.internal.engine.Transpiler }
-		 */
-		var getCoffescriptTranspiler = function($slime) {
-			/** @type { slime.runtime.$slime.CoffeeScript } */
-			var $coffee = (function() {
-				//	TODO	rename to getCoffeescript to make consistent with camel case.
-				if (!$slime.getCoffeeScript) return null;
-				var coffeeScript = $slime.getCoffeeScript();
-				if (!coffeeScript) return null;
-				if (coffeeScript.code) {
-					var target = {};
-					$engine.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
-					return target.CoffeeScript;
-				} else if (coffeeScript.object) {
-					return coffeeScript.object;
-				}
-			})();
-
-			return getTranspiler({
-				accept: isMimeType("application/vnd.coffeescript"),
-				compile: ($coffee) ? $coffee.compile : void(0)
-			});
-		}
-
-		/**
-		 *
-		 * @returns { slime.runtime.internal.engine.Transpiler }
-		 */
-		var getJavascriptProvider = function() {
-			return getTranspiler({
-				accept: $api.fp.Predicate.or(
-					isMimeType("application/javascript"),
-					isMimeType("application/x-javascript")
-				),
-				compile: $api.fp.identity
-			});
-		};
-
-		var getEngineCode = (
-			function() {
-				var typescript = getTypescriptTranspiler($slime);
-				var coffeescript = getCoffescriptTranspiler($slime);
-				var javascript = getJavascriptProvider();
-
-				return $api.fp.switch([ typescript, coffeescript, javascript ]);
-			}
-		)();
-
-		/**
 		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
 		 */
 		function run(script,scope) {
@@ -172,7 +63,7 @@
 			}
 			if (typeof(script.read) != "function") throw new Error("Not resource: no read() function");
 
-			var code = getEngineCode(script);
+			var code = scriptLoader(script);
 
 			if (!code.present) {
 				throw new TypeError("Resource " + script.name + " cannot be converted to JavaScript; type = " + script.type());
@@ -236,4 +127,4 @@
 		});
 	}
 //@ts-ignore
-)($slime,$platform,$engine,$api,$export);
+)($platform,$engine,scriptLoader,$api,$export);
