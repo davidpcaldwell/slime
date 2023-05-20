@@ -159,18 +159,6 @@ namespace slime {
 				compile: (code: string) => string
 			}
 
-			export interface Script {
-				name: string
-				js: string
-			}
-
-			export interface Code {
-				name?: string
-				js: string
-			}
-
-			export type ScriptLoader = slime.$api.fp.Partial<slime.runtime.loader.Code,Code>;
-
 			/**
 			 * An object providing access to the SLIME execution environment.
 			 */
@@ -178,21 +166,21 @@ namespace slime {
 				/**
 				 * Provides a component source file of the runtime.
 				 * @param path The path to a SLIME source file, relative to `expression.js`.
-				 * @returns An executable JavaScript script. The code contained in the source file. **This interface may change to return an instance of the *script* type.**
+				 * @returns An executable JavaScript script.
 				 */
-				getRuntimeScript(path: string): Script
+				getRuntimeScript(path: string): loader.Script
 
 				/**
 				 * Should provide an implementation of CoffeeScript, if one is present.
 				 *
 				 * @returns An object containing the CoffeeScript implementation, or `null` if CoffeeScript is not present.
 				 */
-				getCoffeeScript?(): {
+				getCoffeeScript?: () => {
 					/**
 					 * The JavaScript code for the CoffeeScript object, which can be executed to produce the CoffeeScript object.
 					 */
 					code?: string
-
+				} | {
 					/**
 					 * The CoffeeScript object.
 					 */
@@ -401,6 +389,32 @@ namespace slime {
 		//@ts-ignore
 		)($platform,fifty);
 
+		export namespace loader {
+			/**
+			 * An object representing code, which has a name (for tooling), and which can provide aMIME type,
+			 * and a string representing code. The most straightforward instances of this type are JavaScript scripts, but instances of
+			 * this type can also be code written in other languages that can be transpiled into JavaScript (notably, TypeScript).
+			 */
+			export interface Code {
+				name: string
+				type: () => slime.mime.Type
+				read: () => string
+			}
+
+			/**
+			 * A JavaScript script, with a name (used by tooling) and a property containing JavaScript code.
+			 */
+			export interface Script {
+				name: string
+				js: string
+			}
+
+			/**
+			 * An object that is capable of taking code of some set of MIME types and translating it into JavaScript.
+			 */
+			export type Compiler = slime.$api.fp.Partial<Code,Script>;
+		}
+
 		export interface Exports {
 			//	TODO	scope and target parameter documentation refers to slime.Loader, but that API does not actually define
 			//			them in Fifty (probably does in JSAPI).
@@ -490,7 +504,7 @@ namespace slime {
 			 * An internal object derived from {@link slime.runtime.$engine} which adds default implementations.
 			 */
 			export interface Engine {
-				execute: (code: $slime.Code, scope: { [x: string]: any }, target: any) => any
+				execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: any) => any
 				Error: {
 					decorate?: <T>(errorConstructor: T) => T
 				}

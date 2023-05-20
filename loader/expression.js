@@ -305,7 +305,7 @@
 		/**
 		 *
 		 * @param { { accept: slime.$api.fp.Predicate<slime.runtime.loader.Code>, compile: slime.$api.fp.Mapping<string,string> }} p
-		 * @returns { slime.runtime.$slime.ScriptLoader }
+		 * @returns { slime.runtime.loader.Compiler }
 		 */
 		var getTranspiler = function(p) {
 			if (p.compile) {
@@ -351,7 +351,7 @@
 		/**
 		 *
 		 * @param { slime.runtime.$slime.Deployment } $slime
-		 * @returns { slime.runtime.$slime.ScriptLoader }
+		 * @returns { slime.runtime.loader.Compiler }
 		 */
 		var getTypescriptTranspiler = function($slime) {
 			return getTranspiler({
@@ -363,20 +363,30 @@
 		/**
 		 *
 		 * @param { slime.runtime.$slime.Deployment } $slime
-		 * @returns { slime.runtime.$slime.ScriptLoader }
+		 * @returns { slime.runtime.loader.Compiler }
 		 */
 		var getCoffescriptTranspiler = function($slime) {
+			/** @type { (cs: ReturnType<typeof $slime.getCoffeeScript>) => cs is { code: string } } */
+			var isCode = function(cs) {
+				return cs["code"];
+			}
+
+			/** @type { (cs: ReturnType<typeof $slime.getCoffeeScript>) => cs is { object: slime.runtime.$slime.CoffeeScript } } */
+			var isObject = function(cs) {
+				return cs["object"];
+			}
+
 			/** @type { slime.runtime.$slime.CoffeeScript } */
 			var $coffee = (function() {
 				//	TODO	rename to getCoffeescript to make consistent with camel case.
 				if (!$slime.getCoffeeScript) return null;
 				var coffeeScript = $slime.getCoffeeScript();
 				if (!coffeeScript) return null;
-				if (coffeeScript.code) {
+				if (isCode(coffeeScript)) {
 					var target = {};
 					$engine.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
 					return target.CoffeeScript;
-				} else if (coffeeScript.object) {
+				} else if (isObject(coffeeScript)) {
 					return coffeeScript.object;
 				}
 			})();
@@ -389,7 +399,7 @@
 
 		/**
 		 *
-		 * @returns { slime.runtime.$slime.ScriptLoader }
+		 * @returns { slime.runtime.loader.Compiler }
 		 */
 		var getJavascriptProvider = function() {
 			return getTranspiler({
@@ -401,7 +411,7 @@
 			});
 		};
 
-		var scriptLoader = (
+		var compiler = (
 			function() {
 				var typescript = getTypescriptTranspiler($slime);
 				var coffeescript = getCoffescriptTranspiler($slime);
@@ -414,7 +424,7 @@
 		var scripts = code.scripts(
 			{
 				$api: $api,
-				scriptLoader: scriptLoader,
+				compiler: compiler,
 				$platform: $platform,
 				$engine: engine
 			}
