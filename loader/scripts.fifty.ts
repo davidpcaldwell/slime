@@ -4,23 +4,12 @@
 //
 //	END LICENSE
 
-namespace slime.runtime.loader {
-	/**
-	 * An object representing a script, which has a name (for tooling), a MIME type, and a string representing the code.
-	 */
-	export interface Code {
-		name: string
-		type: () => slime.mime.Type
-		read: () => string
-	}
-}
-
 namespace slime.runtime.internal.scripts {
 	export interface Scope {
 		$platform: slime.runtime.$platform
 		$engine: slime.runtime.internal.Engine
 		//$slime: slime.runtime.$slime.Deployment
-		scriptLoader: slime.runtime.$slime.ScriptLoader
+		compiler: slime.runtime.loader.Compiler
 		$api: slime.$api.Global
 	}
 

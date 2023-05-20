@@ -10,11 +10,11 @@
 	 *
 	 * @param { slime.runtime.internal.scripts.Scope["$platform"] } $platform
 	 * @param { slime.runtime.internal.scripts.Scope["$engine"] } $engine
-	 * @param { slime.runtime.internal.scripts.Scope["scriptLoader"] } scriptLoader
+	 * @param { slime.runtime.internal.scripts.Scope["compiler"] } compiler
 	 * @param { slime.runtime.internal.scripts.Scope["$api"] } $api
 	 * @param { slime.loader.Export<slime.runtime.internal.scripts.Exports> } $export
 	 */
-	function($platform,$engine,scriptLoader,$api,$export) {
+	function($platform,$engine,compiler,$api,$export) {
 		/**
 		 * @type { slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"] }
 		 */
@@ -63,7 +63,7 @@
 			}
 			if (typeof(script.read) != "function") throw new Error("Not resource: no read() function");
 
-			var code = scriptLoader(script);
+			var code = compiler(script);
 
 			if (!code.present) {
 				throw new TypeError("Resource " + script.name + " cannot be converted to JavaScript; type = " + script.type());
@@ -127,4 +127,4 @@
 		});
 	}
 //@ts-ignore
-)($platform,$engine,scriptLoader,$api,$export);
+)($platform,$engine,compiler,$api,$export);

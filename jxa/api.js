@@ -100,9 +100,6 @@
 							name: path,
 							js: load(slime+"loader/" + path).code
 						}
-					},
-					getCoffeeScript: function() {
-						return null;
 					}
 				},
 				$engine: void(0)

@@ -115,7 +115,7 @@
 							js: String($loader.getLoaderCode(path))
 						};
 					},
-					getCoffeeScript: function(path) {
+					getCoffeeScript: function() {
 						var _code = $loader.getCoffeeScript();
 						if (_code) return { code: String(_code) };
 						return null;
