@@ -4,11 +4,19 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
+		var URL = "https://coffeescript.org/v2/browser-compiler-legacy/coffeescript.js";
+		var DESTINATION = jsh.shell.jsh.lib.getRelativePath("coffee-script.js");
+
 		var parameters = jsh.script.getopts({
 			options: {
-				url: "https://coffeescript.org/v2/browser-compiler/coffeescript.js"
+				url: URL
 			}
 		});
 
@@ -16,9 +24,20 @@
 			url: parameters.options.url
 		});
 
-		var destination = jsh.shell.jsh.lib.getRelativePath("coffee-script.js");
+		if (file.length == 16) {
+			jsh.shell.console("Downloading CoffeeScript is currently blocked by CloudFlare.");
+			jsh.shell.console([
+				"It can be downloaded manually from:",
+				"https://coffeescript.org/v2/browser-compiler-legacy/coffeescript.js",
+				"and stored at ",
+				jsh.shell.jsh.src.getRelativePath("local/jsh/lib/coffee-script.js"),
+				"and the shell will pick it up there."
+			].join("\n"));
+			jsh.shell.exit(1);
+		}
 
-		jsh.shell.console("Writing CoffeeScript to " + destination + " ...");
-		file.copy(destination);
+		jsh.shell.console("Writing CoffeeScript to " + DESTINATION + " ...");
+		file.copy(DESTINATION);
 	}
-)();
+//@ts-ignore
+)(jsh);

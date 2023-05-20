@@ -248,6 +248,64 @@ namespace slime.jsh {
 	//@ts-ignore
 	)(fifty);
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			const $jsapi = {
+				environment: {
+					jsh: {
+						unbuilt: {
+							src: fifty.jsh.file.object.getRelativePath("../..").directory
+						}
+					}
+				}
+			}
+
+			//	This is a manual test because CloudFlare currently blocks downloads of CoffeeScript.
+			//	CoffeeScript support is probably going to be dropped soon, anyway.
+			fifty.tests.manual.coffeescript = function() {
+				if (jsh.shell.jsh.lib.getFile("coffee-script.js")) {
+					type jshResult = { status: number, stdio: { output: string } }
+					var hello: jshResult = jsh.shell.jsh({
+						shell: $jsapi.environment.jsh.unbuilt.src,
+						script: $jsapi.environment.jsh.unbuilt.src.getRelativePath("jsh/loader/test/coffee/hello.jsh.coffee").file,
+						stdio: {
+							output: String
+						},
+						evaluate: function(result) {
+							return result;
+						}
+					});
+					verify(hello).status.is(0);
+					verify(hello).stdio.output.is(["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator"))));
+					var loader: jshResult = jsh.shell.jsh({
+						fork: true,
+						script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/loader/test/coffee/loader.jsh.js")
+					});
+					verify(loader).status.is(0);
+				} else {
+					var MESSAGE = "No CoffeeScript.";
+					verify(MESSAGE).is(MESSAGE);
+				}
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
 	export interface Global {
 		loader: slime.jsh.loader.Exports
 	}
