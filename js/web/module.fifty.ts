@@ -16,6 +16,12 @@ namespace slime.web {
 		window?: Window
 	}
 
+	export namespace browser {
+		export interface Context {
+			window: Window & typeof globalThis
+		}
+	}
+
 	export namespace test {
 		export const subject: slime.web.Exports = (function(fifty: slime.fifty.test.Kit) {
 			if (fifty.global.jsh) return fifty.$loader.module("module.js", fifty.$loader.file("context.java.js"));
