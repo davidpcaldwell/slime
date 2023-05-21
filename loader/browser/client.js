@@ -193,9 +193,6 @@
 								name: bootstrap.getRelativePath(path),
 								js: fetcher.getCode(bootstrap.getRelativePath(path))
 							}
-						},
-						getCoffeeScript: function() {
-							return (window.CoffeeScript) ? { object: window.CoffeeScript } : null;
 						}
 					},
 					Packages: window.Packages
@@ -216,7 +213,6 @@
 					}
 					if (window.CoffeeScript) {
 						rv.compiler.update(function(was) {
-							debugger;
 							return rv.$api.fp.switch([
 								was,
 								rv.$api.compiler.getTranspiler({
