@@ -204,6 +204,7 @@
 				/** @type { slime.runtime.Exports } */
 				var runtime = (function(scope) {
 					//	TODO	still uses synchronous API
+					/** @type { slime.runtime.Exports } */
 					var rv = eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
 					rv.$api.deprecate.warning = function(access) {
 						debugger;
@@ -212,6 +213,18 @@
 						//	TODO	should configure this via property of inonit.loader
 						//	Can set breakpoint here to pop into debugger on experimental accesses
 						var breakpoint = null;
+					}
+					if (window.CoffeeScript) {
+						rv.compiler.update(function(was) {
+							debugger;
+							return rv.$api.fp.switch([
+								was,
+								rv.$api.compiler.getTranspiler({
+									accept: rv.$api.compiler.isMimeType("application/vnd.coffeescript"),
+									compile: window.CoffeeScript.compile
+								})
+							])
+						})
 					}
 					return rv;
 				})(scope);

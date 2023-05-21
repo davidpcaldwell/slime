@@ -14,6 +14,7 @@ namespace slime.$api {
 		experimental: {
 			(o: object, property: string): void
 			<T extends slime.external.lib.es5.Function>(f: T): T
+			warning: any
 		}
 	}
 }

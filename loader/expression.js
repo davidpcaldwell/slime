@@ -310,6 +310,8 @@
 			}
 		);
 
+		$api.compiler = scripts.compiler.library;
+
 		/**
 		 *
 		 * @param { slime.runtime.$slime.Deployment } $slime
@@ -349,7 +351,9 @@
 					$engine.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
 					return target.CoffeeScript;
 				} else if (isObject(coffeeScript)) {
-					return coffeeScript.object;
+					debugger;
+					return null;
+					//return coffeeScript.object;
 				}
 			})();
 
@@ -401,6 +405,9 @@
 					Loader: Object.assign(Loader.old, loaders),
 					loader: loaders
 				},
+				compiler: {
+					update: scripts.compiler.update
+				},
 				loader: Loader.api,
 				namespace: function(string) {
 					//	This construct returns the top-level global object, e.g., window in the browser
@@ -422,7 +429,7 @@
 				},
 				//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
 				//	TODO	also used by client.html unit tests
-				$platform: $platform
+				$platform: $platform,
 			},
 			($platform.java) ? { java: $platform.java } : {},
 			{
