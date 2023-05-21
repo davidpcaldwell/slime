@@ -5,6 +5,103 @@
 //	END LICENSE
 
 namespace slime {
+	export namespace runtime {
+		export interface Scope {
+			$slime: slime.runtime.$slime.Deployment
+
+			$engine?: slime.runtime.$engine
+
+			/**
+			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
+			 */
+			Packages?: slime.jrunscript.Packages
+		}
+
+		export namespace $slime {
+			export interface TypeScript {
+				compile: (code: string) => string
+			}
+
+			export interface CoffeeScript {
+				compile: (code: string) => string
+			}
+
+			/**
+			 * An object providing access to the SLIME execution environment.
+			 */
+			export interface Deployment {
+				/**
+				 * Provides a component source file of the runtime.
+				 * @param path The path to a SLIME source file, relative to `expression.js`.
+				 * @returns An executable JavaScript script.
+				 */
+				getRuntimeScript(path: string): loader.Script
+
+				/**
+				 * Should provide an implementation of CoffeeScript, if one is present.
+				 *
+				 * @returns An object containing the CoffeeScript implementation, or `null` if CoffeeScript is not present.
+				 */
+				getCoffeeScript?: () => {
+					/**
+					 * The JavaScript code for the CoffeeScript object, which can be executed to produce the CoffeeScript object.
+					 */
+					code?: string
+				} | {
+					/**
+					 * The CoffeeScript object.
+					 */
+					object?: CoffeeScript
+				}
+
+				typescript?: TypeScript
+
+				flags?: {
+					[name: string]: string
+				}
+			}
+		}
+
+		/**
+		 * The `$engine` object can be provided in the scope by the embedding in order to provide additional capabilities the
+		 * JavaScript engine may have.
+		 */
+		export interface $engine {
+			/**
+			 * @deprecated Possibly unused substantively (but used syntactically by loader/jrunscript, in a probably-obsolete way)
+			 */
+			Object: {
+				defineProperty: any
+			}
+
+			Error?: {
+				decorate: any
+			}
+
+			/**
+			 * A function that can execute JavaScript code with a given scope and *target* (`this` value).
+			 *
+			 * @param script An object describing the file to execute.
+			 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
+			 * @param target An object that must be provided to the code as `this` while the code is executing.
+			 */
+			execute?(
+				script: {
+					name: string,
+					/** A string of JavaScript code to execute. */
+					js: string
+				},
+				scope: { [x: string]: any },
+				target: object
+			): any
+
+			/**
+			 * A constructor that implements the behavior defined by {@link $platform.MetaObject}.
+			 */
+			MetaObject: any
+		}
+	}
+
 	export namespace mime {
 		/**
 		 * A MIME type.
@@ -158,101 +255,6 @@ namespace slime {
 			})(fifty);
 		}
 
-		export namespace $slime {
-			export interface TypeScript {
-				compile: (code: string) => string
-			}
-
-			export interface CoffeeScript {
-				compile: (code: string) => string
-			}
-
-			/**
-			 * An object providing access to the SLIME execution environment.
-			 */
-			export interface Deployment {
-				/**
-				 * Provides a component source file of the runtime.
-				 * @param path The path to a SLIME source file, relative to `expression.js`.
-				 * @returns An executable JavaScript script.
-				 */
-				getRuntimeScript(path: string): loader.Script
-
-				/**
-				 * Should provide an implementation of CoffeeScript, if one is present.
-				 *
-				 * @returns An object containing the CoffeeScript implementation, or `null` if CoffeeScript is not present.
-				 */
-				getCoffeeScript?: () => {
-					/**
-					 * The JavaScript code for the CoffeeScript object, which can be executed to produce the CoffeeScript object.
-					 */
-					code?: string
-				} | {
-					/**
-					 * The CoffeeScript object.
-					 */
-					object?: CoffeeScript
-				}
-
-				typescript?: TypeScript
-
-				flags?: {
-					[name: string]: string
-				}
-			}
-		}
-
-		/**
-		 * The `$engine` object can be provided in the scope by the embedding in order to provide additional capabilities the
-		 * JavaScript engine may have.
-		 */
-		export interface $engine {
-			/**
-			 * @deprecated Possibly unused substantively (but used syntactically by loader/jrunscript, in a probably-obsolete way)
-			 */
-			Object: {
-				defineProperty: any
-			}
-
-			Error?: {
-				decorate: any
-			}
-
-			/**
-			 * A function that can execute JavaScript code with a given scope and *target* (`this` value).
-			 *
-			 * @param script An object describing the file to execute.
-			 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
-			 * @param target An object that must be provided to the code as `this` while the code is executing.
-			 */
-			execute?(
-				script: {
-					name: string,
-					/** A string of JavaScript code to execute. */
-					js: string
-				},
-				scope: { [x: string]: any },
-				target: object
-			): any
-
-			/**
-			 * A constructor that implements the behavior defined by {@link $platform.MetaObject}.
-			 */
-			MetaObject: any
-		}
-
-		export interface Scope {
-			$slime: slime.runtime.$slime.Deployment
-
-			$engine?: slime.runtime.$engine
-
-			/**
-			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
-			 */
-			Packages?: slime.jrunscript.Packages
-		}
-
 		/**
 		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
 		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
@@ -397,6 +399,26 @@ namespace slime {
 			}
 		//@ts-ignore
 		)($platform,fifty);
+	}
+
+	export namespace $api {
+		export interface Global {
+			compiler: {
+				isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
+				getTranspiler: (p: { accept: slime.$api.fp.Predicate<slime.runtime.loader.Code>, compile: slime.$api.fp.Mapping<string,string> }) => slime.runtime.loader.Compiler
+			}
+		}
+	}
+
+	export namespace runtime {
+		export interface Exports {
+			compiler: {
+				update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler>) => void
+			}
+		}
+	}
+
+	export namespace runtime {
 
 		export namespace loader {
 			/**

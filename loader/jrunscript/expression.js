@@ -1124,6 +1124,7 @@
 				return {
 					run: slime.run,
 					old: slime.old,
+					compiler: slime.compiler,
 					loader: slime.loader,
 					file: slime.file,
 					value: slime.value,
