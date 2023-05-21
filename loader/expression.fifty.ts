@@ -37,23 +37,6 @@ namespace slime {
 				 */
 				getRuntimeScript(path: string): loader.Script
 
-				/**
-				 * Should provide an implementation of CoffeeScript, if one is present.
-				 *
-				 * @returns An object containing the CoffeeScript implementation, or `null` if CoffeeScript is not present.
-				 */
-				getCoffeeScript?: () => {
-					/**
-					 * The JavaScript code for the CoffeeScript object, which can be executed to produce the CoffeeScript object.
-					 */
-					code?: string
-				} | {
-					/**
-					 * The CoffeeScript object.
-					 */
-					object?: CoffeeScript
-				}
-
 				typescript?: TypeScript
 
 				flags?: {
@@ -957,9 +940,6 @@ namespace slime {
 							verify(w).evaluate.property("CoffeeScript").is.type("object");
 
 							var subject = test.fixture(function(scope) {
-								scope.$slime.getCoffeeScript = function() {
-									return { object: w["CoffeeScript"] };
-								};
 								return scope;
 							});
 

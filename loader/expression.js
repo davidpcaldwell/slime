@@ -324,49 +324,10 @@
 			});
 		};
 
-		/**
-		 *
-		 * @param { slime.runtime.$slime.Deployment } $slime
-		 * @returns { slime.runtime.loader.Compiler }
-		 */
-		var getCoffescriptTranspiler = function($slime) {
-			/** @type { (cs: ReturnType<typeof $slime.getCoffeeScript>) => cs is { code: string } } */
-			var isCode = function(cs) {
-				return cs["code"];
-			}
-
-			/** @type { (cs: ReturnType<typeof $slime.getCoffeeScript>) => cs is { object: slime.runtime.$slime.CoffeeScript } } */
-			var isObject = function(cs) {
-				return cs["object"];
-			}
-
-			/** @type { slime.runtime.$slime.CoffeeScript } */
-			var $coffee = (function() {
-				//	TODO	rename to getCoffeescript to make consistent with camel case.
-				if (!$slime.getCoffeeScript) return null;
-				var coffeeScript = $slime.getCoffeeScript();
-				if (!coffeeScript) return null;
-				if (isCode(coffeeScript)) {
-					var target = {};
-					$engine.execute({ name: "coffee-script.js", js: String(coffeeScript.code) }, {}, target);
-					return target.CoffeeScript;
-				} else if (isObject(coffeeScript)) {
-					debugger;
-					return null;
-					//return coffeeScript.object;
-				}
-			})();
-
-			return scripts.compiler.library.getTranspiler({
-				accept: scripts.compiler.library.isMimeType("application/vnd.coffeescript"),
-				compile: ($coffee) ? $coffee.compile : void(0)
-			});
-		}
 
 		scripts.compiler.update(function(javascript) {
 			var typescript = getTypescriptTranspiler($slime);
-			var coffeescript = getCoffescriptTranspiler($slime);
-			return $api.fp.switch([ typescript, coffeescript, javascript ]);
+			return $api.fp.switch([ typescript, javascript ]);
 		})
 
 		var Loader = code.Loader({

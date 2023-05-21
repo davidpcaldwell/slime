@@ -115,11 +115,6 @@
 							js: String($loader.getLoaderCode(path))
 						};
 					},
-					getCoffeeScript: function() {
-						var _code = $loader.getCoffeeScript();
-						if (_code) return { code: String(_code) };
-						return null;
-					},
 					typescript: (function(_ts) {
 						if (_ts) {
 							return {
@@ -152,9 +147,28 @@
 					$slime: $slime,
 					Packages: Packages
 				};
-				return $javahost.eval("slime://loader/expression.js",String($loader.getLoaderCode("expression.js")),{
+
+				/** @type { slime.runtime.Exports } */
+				var rv = $javahost.eval("slime://loader/expression.js",String($loader.getLoaderCode("expression.js")),{
 					scope: scope
 				},null);
+
+				var _coffeescript = $loader.getCoffeeScript();
+				if (_coffeescript) {
+					var target = {};
+					$engine.execute({ name: "coffee-script.js", js: String(_coffeescript) }, {}, target);
+					rv.compiler.update(function(was) {
+						return rv.$api.fp.switch([
+							was,
+							rv.$api.compiler.getTranspiler({
+								accept: rv.$api.compiler.isMimeType("application/vnd.coffeescript"),
+								compile: target.CoffeeScript.compile
+							})
+						])
+					})
+				}
+
+				return rv;
 			}
 		)();
 
