@@ -8,12 +8,18 @@ namespace slime.runtime.internal.scripts {
 	export interface Scope {
 		$platform: slime.runtime.$platform
 		$engine: slime.runtime.internal.Engine
-		//$slime: slime.runtime.$slime.Deployment
-		compiler: slime.runtime.loader.Compiler
 		$api: slime.$api.Global
 	}
 
 	export interface Exports {
+		compiler: {
+			library: {
+				isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
+				getTranspiler: (p: { accept: slime.$api.fp.Predicate<slime.runtime.loader.Code>, compile: slime.$api.fp.Mapping<string,string> }) => slime.runtime.loader.Compiler
+			}
+			update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler>) => void
+		}
+
 		methods: {
 			run: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
 			old: {
