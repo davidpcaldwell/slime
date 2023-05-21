@@ -148,6 +148,14 @@ namespace slime {
 				return script().subject(fifty);
 			//@ts-ignore
 			})(fifty);
+
+			export const fixture = (function(fifty: slime.fifty.test.Kit) {
+				return function(fixture: slime.$api.fp.Transform<slime.runtime.Scope>) {
+					var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+					return script().subject(fifty, fixture);
+				}
+			//@ts-ignore
+			})(fifty);
 		}
 
 		export namespace $slime {
@@ -235,8 +243,9 @@ namespace slime {
 		}
 
 		export interface Scope {
-			$engine: slime.runtime.$engine | undefined
 			$slime: slime.runtime.$slime.Deployment
+
+			$engine?: slime.runtime.$engine
 
 			/**
 			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
@@ -900,6 +909,72 @@ namespace slime {
 					}
 				)();
 
+				fifty.tests.browser = fifty.test.Parent();
+				fifty.tests.browser.coffeescript = function() {
+					const { verify } = fifty;
+					const URL = "https://coffeescript.org/v2/browser-compiler-legacy/coffeescript.js";
+
+					var ScriptLoadPromise = function(src) {
+						return new Promise(function(resolve, reject) {
+							var script = fifty.global.window.document.createElement("script");
+							script.src = src;
+							script.onerror = function(e) {
+								reject(e);
+							};
+							script.onload = function() {
+								resolve(void(0));
+							};
+							fifty.global.window.document.head.appendChild(script);
+						})
+					}
+
+					fifty.run(function() {
+						var w = fifty.global.window;
+						verify(w).evaluate.property("CoffeeScript").is.type("undefined");
+						ScriptLoadPromise(URL).then(function() {
+							verify(w).evaluate.property("CoffeeScript").is.type("object");
+
+							var subject = test.fixture(function(scope) {
+								scope.$slime.getCoffeeScript = function() {
+									return { object: w["CoffeeScript"] };
+								};
+								return scope;
+							});
+
+							verify(subject).is.type("object");
+
+							verify(w).evaluate.property("foo").is(void(0));
+
+							subject.run(
+								{
+									name: "it",
+									type: {
+										media: "application",
+										subtype: "vnd.coffeescript",
+										parameters: {}
+									},
+									read: Object.assign(
+										function(a) {
+											if (a === String) {
+												//	Use list comprehension that would be invalid JavaScript
+												return "window.foo = (s.toUpperCase() for s in ['foo'])[0]";
+											}
+											throw new Error();
+										},
+										{
+											string: function() {
+												throw new Error();
+											}
+										}
+									)
+								}
+							);
+
+							verify(w).evaluate.property("foo").is("FOO");
+						});
+					});
+				};
+
 				fifty.tests.suite = function() {
 					fifty.run(fifty.tests.runtime.exports);
 					fifty.load("$api.fifty.ts");
@@ -908,6 +983,10 @@ namespace slime {
 					fifty.load("$api-Function-old.fifty.ts");
 					fifty.load("Loader.fifty.ts");
 					fifty.load("events.fifty.ts");
+
+					if (fifty.global.window) {
+						fifty.run(fifty.tests.browser);
+					}
 				}
 
 				if (jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);

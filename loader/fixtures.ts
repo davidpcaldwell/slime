@@ -6,7 +6,7 @@
 
 namespace slime.runtime.test {
 	export interface Exports {
-		subject: (fifty: slime.fifty.test.Kit) => slime.runtime.Exports
+		subject: (fifty: slime.fifty.test.Kit, fixture?: slime.$api.fp.Transform<slime.runtime.Scope>) => slime.runtime.Exports
 	}
 
 	export type Script = slime.loader.Script<void,Exports>;
@@ -14,20 +14,20 @@ namespace slime.runtime.test {
 	(
 		function($export: slime.loader.Export<Exports>) {
 			$export({
-				subject: function(fifty: slime.fifty.test.Kit) {
+				subject: function(fifty: slime.fifty.test.Kit, fixture?: slime.$api.fp.Transform<slime.runtime.Scope>) {
+					if (!fixture) fixture = fifty.global.$api.fp.identity;
 					var code = fifty.$loader.get("expression.js");
 					var js = code.read(String);
 
 					var subject: slime.runtime.Exports = (function() {
-						var scope: slime.runtime.Scope = {
+						var scope: slime.runtime.Scope = fixture({
 							$slime: {
 								getRuntimeScript: function(path) {
 									var resource = fifty.$loader.get(path);
 									return { name: resource.name, js: resource.read(String) }
 								}
-							},
-							$engine: void(0)
-						}
+							}
+						});
 						return eval(js);
 					})();
 
