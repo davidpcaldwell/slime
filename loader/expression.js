@@ -312,24 +312,6 @@
 
 		$api.compiler = scripts.compiler.library;
 
-		/**
-		 *
-		 * @param { slime.runtime.$slime.Deployment } $slime
-		 * @returns { slime.runtime.loader.Compiler }
-		 */
-		var getTypescriptTranspiler = function($slime) {
-			return scripts.compiler.library.getTranspiler({
-				accept: scripts.compiler.library.isMimeType("application/x.typescript"),
-				compile: ($slime.typescript) ? function(code) { return $slime.typescript.compile(code); } : void(0)
-			});
-		};
-
-
-		scripts.compiler.update(function(javascript) {
-			var typescript = getTypescriptTranspiler($slime);
-			return $api.fp.switch([ typescript, javascript ]);
-		})
-
 		var Loader = code.Loader({
 			Resource: ResourceExport,
 			methods: scripts.methods,
@@ -404,12 +386,6 @@
 				typescript: void(0)
 			}
 		);
-		Object.defineProperty(rv, "typescript", {
-			get: function() {
-				return $slime.typescript;
-			},
-			enumerable: true
-		});
 		return rv;
 	}
 //@ts-ignore

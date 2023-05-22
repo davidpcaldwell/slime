@@ -22,10 +22,6 @@ namespace slime {
 				compile: (code: string) => string
 			}
 
-			export interface CoffeeScript {
-				compile: (code: string) => string
-			}
-
 			/**
 			 * An object providing access to the SLIME execution environment.
 			 */
@@ -36,8 +32,6 @@ namespace slime {
 				 * @returns An executable JavaScript script.
 				 */
 				getRuntimeScript(path: string): loader.Script
-
-				typescript?: TypeScript
 
 				flags?: {
 					[name: string]: string
@@ -696,7 +690,11 @@ namespace slime {
 			 * @deprecated Replaced by `$api.mime`.
 			 */
 			mime: slime.$api.mime.Export
-			readonly typescript: slime.runtime.$slime.TypeScript
+
+			//	Currently this is exposed for some reason, but it seems like it should not be necessary. It is currently used in
+			//	loader/browser/test/plugin.jsh.js to implement jsh.typescript; need to figure out how/why that's used, probably for
+			//	Fifty browser testing, and probably can instead provide a compiler.compile method on $api to take care of this
+			typescript: slime.runtime.$slime.TypeScript
 		}
 
 		(

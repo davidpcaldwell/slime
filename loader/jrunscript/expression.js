@@ -114,18 +114,7 @@
 							name: "slime://loader/" + path,
 							js: String($loader.getLoaderCode(path))
 						};
-					},
-					typescript: (function(_ts) {
-						if (_ts) {
-							return {
-								compile: function(code) {
-									return String(_ts.compile(code));
-								}
-							}
-						} else {
-							return null;
-						}
-					})($loader.getTypescript())
+					}
 				};
 				if (!$javahost.noEnvironmentAccess) {
 					var flagPattern = /^SLIME_(.*)$/;
@@ -166,6 +155,24 @@
 							})
 						])
 					})
+				}
+
+				var _typescript = $loader.getTypescript();
+				if (_typescript) {
+					rv.compiler.update(function(was) {
+						return rv.$api.fp.switch([
+							was,
+							rv.$api.compiler.getTranspiler({
+								accept: rv.$api.compiler.isMimeType("application/x.typescript"),
+								compile: function(code) { return String(_typescript.compile(code)); }
+							})
+						])
+					});
+					rv.typescript = {
+						compile: function(code) {
+							return String(_typescript.compile(code));
+						}
+					};
 				}
 
 				return rv;
