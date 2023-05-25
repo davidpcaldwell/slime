@@ -333,6 +333,7 @@ namespace slime.jrunscript.node {
 					command: string
 					global?: boolean
 					arguments?: string[]
+					environment?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["environment"]
 					stdio?: any
 					evaluate?: any
 					directory?: slime.jrunscript.file.Directory
