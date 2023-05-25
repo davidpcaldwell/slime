@@ -447,7 +447,8 @@
 							var mutating = $api.fp.mutating(p.arguments);
 							var npmargs = mutating([]);
 							list.push.apply(list, npmargs);
-						})
+						}),
+						environment: p.environment
 					}));
 				};
 				return rv;
