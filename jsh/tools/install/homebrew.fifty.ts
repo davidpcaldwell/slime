@@ -5,6 +5,10 @@
 //	END LICENSE
 
 namespace slime.jrunscript.tools.homebrew {
+	export interface Installation {
+		pathname: string
+	}
+
 	export interface Invocation {
 		command: string
 		arguments?: string[]
@@ -23,32 +27,39 @@ namespace slime.jrunscript.tools.homebrew {
 		stderr: string
 	}
 
-	export interface Installation {
-		directory: slime.jrunscript.file.Directory
-		update: () => void
-		install: (p: { formula: string }) => void
-		upgrade: (p: { formula: string }) => void
+	export namespace object {
+		export interface Installation {
+			directory: slime.jrunscript.file.Directory
+			update: () => void
+			install: (p: { formula: string }) => void
+			upgrade: (p: { formula: string }) => void
 
-		command: <P,R>(command: Command<P,R>) => {
-			parameters: (p: P) => {
-				run: slime.$api.fp.world.old.Ask<Events, R>
+			command: <P,R>(command: Command<P,R>) => {
+				parameters: (p: P) => {
+					run: slime.$api.fp.world.old.Ask<Events, R>
+				}
 			}
 		}
 	}
 
 	export interface Context {
 		library: {
+			file: slime.jrunscript.file.Exports
 			http: slime.jrunscript.http.client.Exports
 			shell: slime.jrunscript.shell.Exports
 		}
 	}
 
+	export interface Interface {
+		command: <P,R>(command: Command<P,R>) => slime.$api.fp.world.Question<P,Events,R>
+	}
+
 	export interface Exports {
 		/**
-		 * Returns a Homebrew installation at the given location, creating the directory (and ancestors, if necessay), and
+		 * Returns a Homebrew installation at the given location, creating the directory (and ancestors, if necessary), and
 		 * installing Homebrew if necessary.
 		 */
-		get: (p: { location: slime.jrunscript.file.Pathname }) => Installation
+		get: (p: { location: slime.jrunscript.file.Pathname }) => object.Installation
 
 		commands: {
 			install: Command<{
@@ -56,6 +67,10 @@ namespace slime.jrunscript.tools.homebrew {
 			},string>
 
 			list: Command<void,string[]>
+		}
+
+		Installation: {
+			require: (installation: Installation) => Interface
 		}
 	}
 
@@ -67,6 +82,7 @@ namespace slime.jrunscript.tools.homebrew {
 			var script: Script = fifty.$loader.script("homebrew.js");
 			return script({
 				library: {
+					file: jsh.file,
 					http: jsh.http,
 					shell: jsh.shell
 				}
@@ -79,12 +95,14 @@ namespace slime.jrunscript.tools.homebrew {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			fifty.tests.suite = function() {
 			}
 
-			fifty.tests.manual = function() {
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.old = function() {
 				if (!jsh.shell.environment.TEST_HOMEBREW_PREFIX) {
 					jsh.shell.console("Required: TEST_HOMEBREW_PREFIX");
 					return;
@@ -96,6 +114,35 @@ namespace slime.jrunscript.tools.homebrew {
 					}
 				});
 				jsh.shell.console(JSON.stringify(output));
+			};
+
+			fifty.tests.manual.wo = function() {
+				if (!jsh.shell.environment.TEST_HOMEBREW_PREFIX) {
+					jsh.shell.console("Required: TEST_HOMEBREW_PREFIX");
+					return;
+				}
+				var i: Installation = {
+					pathname: jsh.shell.environment.TEST_HOMEBREW_PREFIX
+				};
+				var created = test.subject.Installation.require(i);
+				var install = $api.fp.world.now.question(
+					created.command(test.subject.commands.install),
+					{ formula: "wget" },
+					{
+						stdout: function(e) {
+							jsh.shell.console("STDOUT: " + e.detail);
+						},
+						stderr: function(e) {
+							jsh.shell.console("STDERR: " + e.detail);
+						}
+					}
+				);
+				jsh.shell.console("install output: " + install);
+				var list = $api.fp.world.now.question(
+					created.command(test.subject.commands.list),
+					void(0)
+				);
+				jsh.shell.console("list: " + JSON.stringify(list));
 			}
 		}
 	//@ts-ignore

@@ -13,32 +13,44 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.homebrew.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		/** @type { (p: slime.jrunscript.tools.homebrew.Installation) => void } */
+		var createLocalHomebrew = function(p) {
+			//	TODO	internally uses older-style file and http calls
+			var location = $context.library.file.Pathname(p.pathname);
+
+			location.createDirectory({
+				exists: function(dir) {
+					return false;
+				},
+				recursive: true
+			});
+
+			$context.library.shell.run({
+				command: "tar",
+				arguments: ["xz", "--strip", "1", "-C", location.basename],
+				//	TODO	might not exist
+				directory: location.parent.directory,
+				stdio: {
+					input: new $context.library.http.Client().request({
+						url: "https://github.com/Homebrew/brew/tarball/master"
+					}).body.stream
+				}
+			});
+		}
+
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.tools.homebrew.Exports["get"]>[0] } p
-		 * @returns { slime.jrunscript.tools.homebrew.Installation }
+		 * @returns { slime.jrunscript.tools.homebrew.object.Installation }
 		 */
 		function getLocalHomebrew(p) {
 			var to = p.location.directory;
-			if (!to) {
-				to = p.location.createDirectory({
-					exists: function(dir) {
-						return false;
-					},
-					recursive: true
-				});
 
-				$context.library.shell.run({
-					command: "tar",
-					arguments: ["xz", "--strip", "1", "-C", to.pathname.basename],
-					//	TODO	might not exist
-					directory: to.parent,
-					stdio: {
-						input: new $context.library.http.Client().request({
-							url: "https://github.com/Homebrew/brew/tarball/master"
-						}).body.stream
-					}
+			if (!to) {
+				createLocalHomebrew({
+					pathname: p.location.toString()
 				});
+				to = p.location.directory;
 			}
 
 			var homebrew = (
@@ -56,7 +68,7 @@
 						})
 					}
 
-					/** @type { slime.jrunscript.tools.homebrew.Installation } */
+					/** @type { slime.jrunscript.tools.homebrew.object.Installation } */
 					var rv = {
 						directory: to,
 						update: function() {
@@ -158,6 +170,55 @@
 						return output.split("\n").filter(function(line) {
 							return Boolean(line);
 						});
+					}
+				}
+			},
+			Installation: {
+				require: function(installation) {
+					createLocalHomebrew(installation);
+					return {
+						command: function(command) {
+							return function(p) {
+								var invocation = command.invocation(p);
+
+								return function(events) {
+									var sub = $api.fp.world.now.question(
+										$context.library.shell.subprocess.question,
+										{
+											command: $api.fp.now.invoke(
+												installation.pathname,
+												$context.library.file.Location.from.os,
+												$context.library.file.Location.relative("bin/brew"),
+												$api.fp.property("pathname")
+											),
+											arguments: $api.Array.build(function(rv) {
+												rv.push(invocation.command);
+												if (invocation.arguments) rv.push.apply(rv, invocation.arguments);
+											}),
+											environment: function(existing) {
+												return $api.Object.compose(existing, invocation.environment || {});
+											},
+											stdio: {
+												output: "line",
+												error: "line"
+											}
+										},
+										{
+											stdout: function(e) {
+												events.fire("stdout", e.detail.line);
+											},
+											stderr: function(e) {
+												events.fire("stderr", e.detail.line);
+											}
+										}
+									);
+
+									var status = sub.status;
+									if (status != 0) throw new Error("Exit status: " + status);
+									return command.result(sub.stdio.output);
+								};
+							};
+						}
 					}
 				}
 			}
