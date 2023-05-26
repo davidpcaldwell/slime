@@ -64,6 +64,10 @@ namespace slime.jrunscript.node {
 	}
 
 	export namespace world {
+		/**
+		 * A specified installation of Node.js. When determining whether Node.js is installed at a particular location, one can
+		 * create an `Installation` using the `from.location` function, and then check for its existence with `exists`.
+		 */
 		export interface Installation {
 			executable: string
 		}
