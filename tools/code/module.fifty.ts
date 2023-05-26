@@ -28,15 +28,15 @@ namespace slime.tools.code {
 	/**
 	 * A `Project` consists of a set of source files to be processed.
 	 */
-	export type Project = slime.jrunscript.file.world.Location[]
+	export type Project = slime.jrunscript.file.Location[]
 
 	export interface Exports {
 		Project: {
 			from: {
 				directory: (p: {
-					root: slime.jrunscript.file.world.Location
-					descend: slime.$api.fp.Predicate<slime.jrunscript.file.world.Location>
-					isSource: (p: slime.jrunscript.file.world.Location) => slime.$api.fp.Maybe<boolean>
+					root: slime.jrunscript.file.Location
+					descend: slime.$api.fp.Predicate<slime.jrunscript.file.Location>
+					isSource: (p: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<boolean>
 				}) => Project
 			}
 		}
