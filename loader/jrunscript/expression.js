@@ -157,6 +157,15 @@
 					})
 				}
 
+				//	Implement TypeScript using Java-based TypeScript invocation
+				//
+				//	In jsh, this implementation is replaced later in the jsh loader by prepending a slime.jrunscript.shell-based
+				//	implementation to the script compiler. In servlets, this implementation (for now) continues to be used.
+				//
+				//	A better solution would be to refactor slime.jrunscript.shell to extract a basic interface to subprocesses
+				//	and provide that as part of the jrunscript runtime; then it could be used here to replace TypeScript in all
+				//	cases.
+
 				var _typescript = $loader.getTypescript();
 				if (_typescript) {
 					rv.compiler.update(function(was) {

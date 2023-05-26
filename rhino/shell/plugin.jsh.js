@@ -132,6 +132,43 @@
 
 		plugin({
 			isReady: function() {
+				return Boolean(jsh.file && jsh.shell);
+			},
+			load: function() {
+				var typescriptInstalled = jsh.shell.jsh.lib && jsh.shell.jsh.lib.getFile("node/bin/tsc");
+
+				if (typescriptInstalled) {
+					/** @type { slime.jsh.shell.internal.tsc.Script } */
+					var script = $loader.script("tsc.js");
+					var api = script({
+						node: jsh.shell.jsh.lib.getRelativePath("node").toString(),
+						tsc: jsh.shell.jsh.lib.getRelativePath("node/bin/tsc").toString(),
+						library: {
+							file: jsh.file,
+							shell: jsh.shell
+						}
+					});
+
+					/** @type { slime.runtime.loader.Compiler } */
+					var subprocess = $api.compiler.getTranspiler({
+						accept: $api.compiler.isMimeType("application/x.typescript"),
+						compile: api.compile
+					});
+
+					$slime.compiler.update(
+						function(was) {
+							return $api.fp.switch([
+								subprocess,
+								was
+							])
+						}
+					)
+				}
+			}
+		});
+
+		plugin({
+			isReady: function() {
 				return Boolean(jsh.shell && jsh.ui && jsh.shell.os);
 			},
 			load: function() {
