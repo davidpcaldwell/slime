@@ -295,7 +295,7 @@ namespace slime.jsh.java.tools {
 				var before = jsh.tools.git;
 
 				$jsapi.loader.plugin.mock({
-					path: "../../jsh/tools/install/",
+					path: "../../jrunscript/jsh/tools/install/",
 					jsh: jsh
 				});
 
