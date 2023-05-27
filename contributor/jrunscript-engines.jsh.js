@@ -45,7 +45,7 @@
 						execute: function(scope,verify) {
 							var output = jsh.shell.jsh({
 								shell: environment.jsh.unbuilt.src,
-								script: environment.jsh.src.getFile("jsh/test/jsh-data.jsh.js"),
+								script: environment.jsh.src.getFile("jrunscript/jsh/test/jsh-data.jsh.js"),
 								environment: Object.assign({}, jsh.shell.environment, {
 									JSH_ENGINE: engine
 								}),
@@ -87,7 +87,7 @@
 								}
 								var result = jsh.shell.jsh({
 									shell: environment.jsh.unbuilt.src,
-									script: environment.jsh.src.getFile("jsh/test/jsh-data.jsh.js"),
+									script: environment.jsh.src.getFile("jrunscript/jsh/test/jsh-data.jsh.js"),
 									environment: jsh.js.Object.set({}, jsh.shell.environment, {
 										JSH_ENGINE: "rhino",
 										JSH_ENGINE_RHINO_OPTIMIZATION: String(level)
