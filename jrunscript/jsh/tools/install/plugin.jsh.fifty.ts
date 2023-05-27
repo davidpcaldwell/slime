@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-/// <reference path="../../../local/jsh/lib/node/lib/node_modules/@types/js-yaml/index.d.ts" />
+/// <reference path="../../../../local/jsh/lib/node/lib/node_modules/@types/js-yaml/index.d.ts" />
 
 namespace slime.external.rename {
 	export type _jsyaml = typeof jsyaml;
