@@ -977,7 +977,7 @@
 					for (var i=0; i<jarray.length; i++) {
 						jarray[i] = new Packages.java.lang.String(args[i]);
 					}
-					var SUPPRESS_COMPILATION_OUTPUT = false;
+					var SUPPRESS_COMPILATION_OUTPUT = true;
 					var NOWHERE = new JavaAdapter(
 						Packages.java.io.OutputStream,
 						new function() {
