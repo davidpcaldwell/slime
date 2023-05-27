@@ -380,7 +380,7 @@ public class Main {
 		}
 
 		Code.Loader getJsh() {
-			return this.src.child("jsh/loader/");
+			return this.src.child("jrunscript/jsh/loader/");
 		}
 
 		Code.Loader getModules() {
