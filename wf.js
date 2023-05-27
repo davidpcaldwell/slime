@@ -344,7 +344,7 @@
 				command: "bash",
 				arguments: [
 					$context.base.getRelativePath("jsh.bash"),
-					$context.base.getRelativePath("jsh/tools/install/rhino.jsh.js"),
+					$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
 					"-replace"
 				]
 			});
