@@ -111,6 +111,8 @@ public class Shell {
 		}
 
 		public String getLoaderCode(String path) throws IOException {
+			Code.Loader.Resource file = configuration.getInstallation().getPlatformLoader().getFile(path);
+			if (file == null) throw new NullPointerException("File not found at " + path + " in " + configuration.getInstallation().getPlatformLoader());
 			return streams.readString(configuration.getInstallation().getPlatformLoader().getFile(path).getReader());
 		}
 

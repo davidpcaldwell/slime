@@ -12,6 +12,9 @@
 	],
 	"debug.node.autoAttach": "on",
 	"java.configuration.updateBuildConfiguration": "interactive",
+	"java.import.exclusions": [
+		"local/**"
+	],
 	"files.associations": {
 		"*.json": "jsonc"
 	},

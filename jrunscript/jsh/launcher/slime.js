@@ -102,12 +102,12 @@
 
 								return {
 									toString: function() {
-										return $$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().toString();
+										return $$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile().toString();
 									},
 									File: File,
 									//	TODO	it appears that this method is equivalent to File, should test that
 									getFile: function(path) {
-										return $$api.script.resolve("../../" + path).file;
+										return $$api.script.resolve("../../../" + path).file;
 									},
 									getSourceFilesUnder: function(dir) {
 										return getSourceFilesUnderFile(dir, []);
