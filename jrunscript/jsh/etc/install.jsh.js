@@ -130,7 +130,11 @@
 		if (parameters.options.unix) {
 			var bash = which("bash");
 			if (ISSUE_200_FIXED && bash) {
-				var code = src.getFile("jsh/launcher/jsh.bash").read(String);
+				if (!src.getFile("jrunscript/jsh/launcher/jsh.bash")) {
+					jsh.shell.console("src: " + src);
+					jsh.shell.exit(1);
+				}
+				var code = src.getFile("jrunscript/jsh/launcher/jsh.bash").read(String);
 				var lines = code.split("\n");
 				var path = bash.parent.getRelativePath("bash").toString();
 				var rewritten = ["#!" + path].concat(lines).join("\n");

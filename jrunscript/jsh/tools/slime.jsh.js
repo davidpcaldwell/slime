@@ -21,6 +21,10 @@
 			}
 		});
 
+		if (!parameters.options.from.directory) {
+			jsh.shell.console("Not found: " + parameters.options.from + "; failing.");
+			jsh.shell.exit(1);
+		}
 		var from = parameters.options.from.directory;
 		var format = parameters.options.format;
 

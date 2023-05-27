@@ -91,7 +91,7 @@
 								jsh.shell.console("Installing Tomcat into built shell ...");
 								jsh.shell.jsh({
 									shell: p.home.directory,
-									script: p.src.getFile("jsh/tools/install/tomcat.jsh.js")
+									script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
 								});
 							}
 						}
