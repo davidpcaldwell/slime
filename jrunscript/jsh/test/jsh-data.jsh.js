@@ -14,7 +14,7 @@
 	function(Packages,jsh) {
 		var code = {
 			/** @type { slime.jrunscript.bootstrap.Script } */
-			bootstrap: jsh.script.loader.script("../../rhino/jrunscript/embed.js")
+			bootstrap: jsh.script.loader.script("../../../rhino/jrunscript/embed.js")
 		};
 
 		var JSH_EMBED_BOOTSTRAP_DEBUG = Boolean(jsh.shell.environment.JSH_EMBED_BOOTSTRAP_DEBUG);
