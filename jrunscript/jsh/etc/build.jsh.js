@@ -54,7 +54,7 @@
 			unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 		});
 
-		jsh.script.loader = new jsh.script.Loader("../../");
+		jsh.script.loader = new jsh.script.Loader("../../../");
 
 		var jrunscript = (function() {
 			/**
@@ -193,7 +193,7 @@
 				jsh.shell.jsh({
 					shell: tmp,
 					properties: properties,
-					script: tmp.getFile("jsh/etc/build.jsh.js"),
+					script: tmp.getFile("jrunscript/jsh/etc/build.jsh.js"),
 					arguments: args,
 					evaluate: function(result) {
 						jsh.shell.exit(result.status);
@@ -216,7 +216,7 @@
 				}
 			})();
 			jrunscript.$api.script = new jrunscript.$api.Script(argument);
-			jsh.script.loader.run("jsh/launcher/" + name, { $api: jrunscript.$api }, jrunscript);
+			jsh.script.loader.run("jrunscript/jsh/launcher/" + name, { $api: jrunscript.$api }, jrunscript);
 		}
 
 		loadLauncherScript("slime.js");
@@ -292,7 +292,7 @@
 			}
 		})(parameters);
 
-		var SLIME = jsh.script.file.parent.parent.parent;
+		var SLIME = jsh.script.file.parent.parent.parent.parent;
 
 		console("Creating directories ...");
 		["lib","script","script/launcher","modules","src"].forEach(function(path) {
@@ -302,7 +302,7 @@
 		console("Copying launcher scripts ...");
 		SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath("jsh.js"));
 		["slime.js","javac.js","launcher.js","main.js"].forEach(function(name) {
-			SLIME.getFile("jsh/launcher/" + name).copy(destination.shell);
+			SLIME.getFile("jrunscript/jsh/launcher/" + name).copy(destination.shell);
 		});
 
 		if (build.rhino) {
@@ -349,13 +349,13 @@
 		(function copyScripts() {
 			console("Copying bootstrap scripts ...");
 			SLIME.getSubdirectory("loader").copy(destination.shell.getRelativePath("script/loader"));
-			SLIME.getSubdirectory("jsh/loader").copy(destination.shell.getRelativePath("script/jsh"));
+			SLIME.getSubdirectory("jrunscript/jsh/loader").copy(destination.shell.getRelativePath("script/jsh"));
 		})();
 
 		var modules = (function createModules() {
 			console("Creating bundled modules ...")
 			//	TODO	remove or modify this; appears to redefine the slime global object
-			var slime = jsh.script.loader.file("jsh/tools/slime.js").slime;
+			var slime = jsh.script.loader.file("jrunscript/jsh/tools/slime.js").slime;
 			var MODULE_CLASSPATH = (function() {
 				var files = [];
 				if (build.rhino) {
@@ -382,7 +382,7 @@
 			};
 
 			//	TODO	clean up below here
-			var modules = eval(SLIME.getFile("jsh/etc/api.js").read(String)).environment("jsh");
+			var modules = eval(SLIME.getFile("jrunscript/jsh/etc/api.js").read(String)).environment("jsh");
 
 			modules.forEach(function(item) {
 				if (item.module) {
@@ -397,11 +397,11 @@
 		destination.shell.getRelativePath("plugins").createDirectory();
 
 		console("Creating tools ...");
-		SLIME.getSubdirectory("jsh/tools").copy(destination.shell.getRelativePath("tools"));
+		SLIME.getSubdirectory("jrunscript/jsh/tools").copy(destination.shell.getRelativePath("tools"));
 
 		console("Creating install scripts ...");
 		var ETC = destination.shell.getRelativePath("etc").createDirectory();
-		SLIME.getFile("jsh/etc/install.jsh.js").copy(ETC);
+		SLIME.getFile("jrunscript/jsh/etc/install.jsh.js").copy(ETC);
 
 		(function copySource() {
 			console("Bundling source code ...");
@@ -487,7 +487,7 @@
 						// jsh.shell.shell(
 						// 	bash,
 						// 	[
-						// 		src.getRelativePath("jsh/launcher/native/win32/cygwin.bash")
+						// 		src.getRelativePath("jrunscript/jsh/launcher/native/win32/cygwin.bash")
 						// 	],
 						// 	{
 						// 		environment: env
@@ -506,7 +506,7 @@
 								// return;
 							}
 							var args = ["-o", "jsh"];
-							args.push(SLIME.getRelativePath("jsh/launcher/native/jsh.c").toString());
+							args.push(SLIME.getRelativePath("jrunscript/jsh/launcher/native/jsh.c").toString());
 							jsh.shell.console("Invoking gcc " + args.join(" ") + " ...");
 							jsh.shell.shell(
 								gcc,
@@ -565,10 +565,10 @@
 				console("Running jsapi.jsh.js to generate documentation ...");
 				args.push("-notest");
 				args.push("-doc",destination.shell.getRelativePath("doc/api"));
-				args.push("-index",SLIME.getFile("jsh/etc/api.html"));
+				args.push("-index",SLIME.getFile("jrunscript/jsh/etc/api.html"));
 				jsh.shell.jsh({
 					shell: destination.shell,
-					script: SLIME.getFile("jsh/unit/jsapi.jsh.js"),
+					script: SLIME.getFile("jrunscript/jsh/unit/jsapi.jsh.js"),
 					arguments: args,
 					environment: getTestEnvironment()
 				});

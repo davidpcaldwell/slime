@@ -29,7 +29,7 @@
 				var getData = function(shell) {
 					return jsh.shell.jsh({
 						shell: shell,
-						script: p.src.getFile("jsh/test/jsh-data.jsh.js"),
+						script: p.src.getFile("jrunscript/jsh/test/jsh-data.jsh.js"),
 						stdio: {
 							output: String
 						},
@@ -63,7 +63,7 @@
 						if (!p.home.directory) {
 							jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
-								script: p.src.getFile("jsh/etc/build.jsh.js"),
+								script: p.src.getFile("jrunscript/jsh/etc/build.jsh.js"),
 								arguments: [
 									p.home,
 									"-notest",
