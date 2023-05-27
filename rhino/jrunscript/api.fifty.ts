@@ -70,9 +70,17 @@ namespace slime.internal.jrunscript.bootstrap {
 		debug?: boolean
 	}
 
+	/**
+	 * Refers to the currently executing script.
+	 */
 	export interface Script {
 		load: () => void
+
+		/**
+		 * The file from which the current script was loaded.
+		 */
 		file?: slime.jrunscript.native.java.io.File
+
 		url?: slime.jrunscript.native.java.net.URL
 		resolve: (path: string) => Script
 	}

@@ -290,9 +290,9 @@
 					if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/rhino/java")));
 					if (graal) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/graal/java")));
 					toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("rhino/system/java")));
-					toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jsh/loader/java")));
-					if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jsh/loader/rhino/java")));
-					if (graal) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jsh/loader/graal/java")));
+					toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/java")));
+					if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/rhino/java")));
+					if (graal) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/graal/java")));
 					var classpathArguments = (classpath) ? ["-classpath", classpath.local()] : [];
 					var targetArguments = (p && p.target) ? ["-target", p.target] : [];
 					var sourceArguments = (p && p.source) ? ["-source", p.source] : [];

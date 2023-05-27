@@ -75,11 +75,10 @@
 						if ($$api.script.file) {
 							rv = (function() {
 								var File = function(path) {
-									return new Packages.java.io.File($$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile(), path);
+									return new Packages.java.io.File($$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile(), path);
 								}
 
 								var getSourceFilesUnderFile = function getSourceFilesUnderFile(dir,rv) {
-									//$api.log("Under: " + dir);
 									if (typeof(rv) == "undefined") {
 										rv = [];
 									}
