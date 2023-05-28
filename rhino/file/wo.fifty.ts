@@ -5,29 +5,34 @@
 //	END LICENSE
 
 namespace slime.jrunscript.file {
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports = fifty.test.Parent();
-			fifty.tests.sandbox = fifty.test.Parent();
-
-			fifty.tests.sandbox.filesystem = fifty.test.Parent();
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export interface Location {
 		readonly filesystem: world.Filesystem
 		readonly pathname: string
+	}
+
+	export interface Exports {
+		Location: location.Exports
 	}
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			fifty.tests.exports = fifty.test.Parent();
 			fifty.tests.exports.Location = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.sandbox = fifty.test.Parent();
+			fifty.tests.sandbox.filesystem = fifty.test.Parent();
 			fifty.tests.sandbox.locations = fifty.test.Parent();
+			fifty.tests.sandbox.locations.file = fifty.test.Parent();
+			fifty.tests.sandbox.locations.directory = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
@@ -37,19 +42,16 @@ namespace slime.jrunscript.file {
 			relative: (path: string) => (p: Location) => Location
 			parent: () => (p: Location) => Location
 		}
+	}
 
+	export namespace location {
 		export interface Exports {
 			file: file.Exports
 		}
 
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				fifty.tests.sandbox.locations.directory = fifty.test.Parent();
-			}
-		//@ts-ignore
-		)(fifty);
+		export namespace directory {
+			export interface Exports {}
+		}
 
 		export interface Exports {
 			directory: directory.Exports
@@ -61,15 +63,6 @@ namespace slime.jrunscript.file {
 	}
 
 	export namespace location {
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				fifty.tests.sandbox.locations.file = fifty.test.Parent();
-			}
-		//@ts-ignore
-		)(fifty);
-
 		export namespace file {
 			export interface Exports {
 				/**

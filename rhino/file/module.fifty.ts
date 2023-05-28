@@ -204,8 +204,8 @@ namespace slime.jrunscript.file {
 				//	TODO	brittle; changing structure of module can break it
 				fifty.verify(listing)[0].relative.is("_.fifty.ts");
 				fifty.verify(listing)[0].absolute.is(prefix + "/" + "_.fifty.ts");
-				fifty.verify(listing)[9].relative.is("java/");
-				fifty.verify(listing)[9].absolute.is(prefix + "/" + "java/");
+				fifty.verify(listing)[7].relative.is("java/");
+				fifty.verify(listing)[7].absolute.is(prefix + "/" + "java/");
 			}
 
 			fifty.tests.action = {};
@@ -436,12 +436,11 @@ namespace slime.jrunscript.file {
 				fifty.load("wo.fifty.ts");
 
 				fifty.load("oo.fifty.ts");
+				fifty.load("oo-file.fifty.ts");
 
 				fifty.load("module-Searchpath.fifty.ts");
 				fifty.load("module-node.fifty.ts");
 				fifty.load("module-Loader.fifty.ts");
-
-				fifty.load("file.fifty.ts");
 
 				fifty.load("module-jsapi.fifty.ts");
 			}
@@ -489,10 +488,6 @@ namespace slime.jrunscript.file {
 			/** @deprecated Use `Exports["world"]["filesystems"]["mock"]. */
 			filesystem: Exports["world"]["filesystems"]["mock"]
 		}
-	}
-
-	export interface Exports {
-		Location: location.Exports
 	}
 
 	export interface Exports {

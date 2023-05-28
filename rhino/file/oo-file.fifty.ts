@@ -159,9 +159,9 @@ namespace slime.jrunscript.file {
 			const { verify } = fifty;
 
 			fifty.tests.Node.parent = function() {
-				var file = fifty.jsh.file.object.getRelativePath("file.fifty.ts").file;
+				var file = fifty.jsh.file.object.getRelativePath("oo-file.fifty.ts").file;
 				var parent = file.parent;
-				verify(parent,"parent").getFile("file.fifty.ts").evaluate(String).is(file.toString());
+				verify(parent,"parent").getFile("oo-file.fifty.ts").evaluate(String).is(file.toString());
 			}
 		}
 	//@ts-ignore
@@ -582,7 +582,7 @@ namespace slime.jrunscript.file {
 			const { verify } = fifty;
 
 			fifty.tests.File._1 = function() {
-				var apiHtml = fifty.jsh.file.object.getRelativePath("file.js").file;
+				var apiHtml = fifty.jsh.file.object.getRelativePath("oo-file.js").file;
 				verify(apiHtml).type.evaluate(String).is("application/javascript");
 			}
 		}
