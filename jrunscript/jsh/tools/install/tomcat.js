@@ -273,7 +273,7 @@
 						if (installation.base == Installation.from.jsh().base) {
 							//	TODO	refactor so instead of reloading plugin, plugin exposes a method allowing it to be reloaded
 							//	TODO	probably don't need to do this if it was already installed
-							jsh.loader.plugins($loader.Child("../../../rhino/http/servlet/"));
+							jsh.loader.plugins($loader.Child("../../../../rhino/http/servlet/"));
 						}
 					}
 				}

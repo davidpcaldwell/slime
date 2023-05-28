@@ -290,7 +290,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				var invocation = jsh.shell.Invocation.from.argument({
 					command: "bash",
 					arguments: $api.Array.build(function(rv) {
-						rv.push(fifty.jsh.file.relative("../../../jsh.bash").pathname);
+						rv.push(fifty.jsh.file.relative("../../../../jsh.bash").pathname);
 						rv.push(p.script.pathname);
 					}),
 					environment: $api.Object.compose(

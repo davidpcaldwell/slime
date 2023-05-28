@@ -361,7 +361,7 @@ namespace slime.jsh.shell.tools {
 
 				fifty.tests.node.jsapi.a = function() {
 					var result = api.run({
-						arguments: [fifty.jsh.file.object.getRelativePath("../../../rhino/tools/node/test/hello.js")],
+						arguments: [fifty.jsh.file.object.getRelativePath("../../../../rhino/tools/node/test/hello.js")],
 						stdio: {
 							output: String
 						}
