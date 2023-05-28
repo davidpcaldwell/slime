@@ -213,14 +213,14 @@ namespace slime.jsh.loader.internal.plugins {
 						return true;
 					}
 				});
-				src.getFile("jsh/loader/test/unbuilt-shell-plugins/copy-as-plugin.jsh.js").copy(copied.directory.getRelativePath("foo/plugin.jsh.js"), { recursive: true });
+				src.getFile("jrunscript/jsh/loader/test/unbuilt-shell-plugins/copy-as-plugin.jsh.js").copy(copied.directory.getRelativePath("foo/plugin.jsh.js"), { recursive: true });
 				var evaluate = function(result) {
 					jsh.shell.console("string = " + result.stdio.output);
 					return JSON.parse(result.stdio.output);
 				};
 				var shouldLoad = jsh.shell.jsh({
 					shell: copied.directory,
-					script: copied.directory.getFile("jsh/loader/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
+					script: copied.directory.getFile("jrunscript/jsh/loader/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
 					stdio: {
 						output: String
 					},
@@ -230,7 +230,7 @@ namespace slime.jsh.loader.internal.plugins {
 				copied.directory.getFile("foo/plugin.jsh.js").move(copied.directory.getRelativePath("local/foo/plugin.jsh.js"), { recursive: true });
 				var shouldNotLoad = jsh.shell.jsh({
 					shell: copied.directory,
-					script: copied.directory.getFile("jsh/loader/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
+					script: copied.directory.getFile("jrunscript/jsh/loader/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
 					stdio: {
 						output: String
 					},
