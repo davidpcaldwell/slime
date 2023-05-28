@@ -433,7 +433,7 @@
 						type: "unbuilt",
 						shell: [
 							src.getRelativePath("rhino/jrunscript/api.js"),
-							src.getRelativePath("jsh/launcher/main.js")
+							src.getRelativePath("jrunscript/jsh/launcher/main.js")
 						],
 						coffeescript: src.getFile("local/jsh/lib/coffee-script.js")
 					};
