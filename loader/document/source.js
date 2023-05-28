@@ -720,8 +720,9 @@
 			}
 
 			if (match < input.length) {
-				console("page " + input.substring(match));
-				console("serialized " + serialized.substring(match));
+				console("input and output of parsing and serializing input are not the same");
+				console("input after divergence " + input.substring(match));
+				console("output after divergence " + serialized.substring(match));
 			}
 
 			return input == serialized;

@@ -9,6 +9,7 @@ namespace slime.project.metrics {
 		library: {
 			document: slime.runtime.document.Exports
 			file: slime.jrunscript.file.Exports
+			code: slime.tools.code.Exports
 			project: slime.project.code.Exports
 		}
 	}

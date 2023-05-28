@@ -15,13 +15,14 @@
 	function(jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.file && jsh.tools && jsh.tools.git);
+				return Boolean(jsh.document && jsh.file && jsh.tools && jsh.tools.git);
 			},
 			load: function() {
 				/** @type { slime.tools.code.Script } */
 				var script = $loader.script("module.js");
 				jsh.tools.code = script({
 					library: {
+						document: jsh.document,
 						file: jsh.file,
 						git: jsh.tools.git
 					}
