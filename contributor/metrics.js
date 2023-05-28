@@ -92,19 +92,11 @@
 		var parseJsapiHtml = function(file) {
 			var markup = file.read(String);
 
-			var parsed = $context.library.document.Document.codec.string.decode(
-				markup
-			);
+			var parse = $context.library.code.document.parse(markup);
 
-			(function checkParser() {
-				var serialized = $context.library.document.Document.codec.string.encode(parsed);
+			if (!parse.present) throw new Error("Bug in parser: incorrect result parsing " + file.pathname);
 
-				if (markup != serialized) {
-					throw new Error("Bug in parser: incorrect result parsing " + file.pathname);
-				}
-			})();
-
-			return parsed;
+			return parse.value;
 		}
 
 		/** @type { (entry: slime.project.metrics.SourceFile) => boolean } */

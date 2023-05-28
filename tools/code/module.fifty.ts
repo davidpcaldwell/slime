@@ -7,6 +7,7 @@
 namespace slime.tools.code {
 	export interface Context {
 		library: {
+			document: slime.runtime.document.Exports
 			file: slime.jrunscript.file.Exports
 			git: slime.jrunscript.tools.git.Exports
 		}
@@ -17,6 +18,7 @@ namespace slime.tools.code {
 			const script: Script = fifty.$loader.script("module.js");
 			return script({
 				library: {
+					document: fifty.global.jsh.document,
 					file: fifty.global.jsh.file,
 					git: fifty.global.jsh.tools.git
 				}
@@ -68,6 +70,19 @@ namespace slime.tools.code {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		document: {
+			/**
+			 * (Temporary API: because API to source-level parser is unstable) Parses a string into an HTML document, checking to make
+			 * sure the parse was successful.
+			 *
+			 * @param input A string
+			 * @returns The parsed document, or nothing if it did not parse successfully.
+			 */
+			parse: (input: string) => slime.$api.fp.Maybe<slime.runtime.document.Document>
+		}
+	}
 
 	export interface File {
 		path: string

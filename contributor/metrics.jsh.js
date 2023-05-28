@@ -24,6 +24,7 @@
 			library: {
 				document: jsh.document,
 				file: jsh.file,
+				code: jsh.tools.code,
 				project: jsh.project.code
 			}
 		})
