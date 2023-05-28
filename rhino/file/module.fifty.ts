@@ -436,12 +436,11 @@ namespace slime.jrunscript.file {
 				fifty.load("wo.fifty.ts");
 
 				fifty.load("oo.fifty.ts");
+				fifty.load("oo-file.fifty.ts");
 
 				fifty.load("module-Searchpath.fifty.ts");
 				fifty.load("module-node.fifty.ts");
 				fifty.load("module-Loader.fifty.ts");
-
-				fifty.load("file.fifty.ts");
 
 				fifty.load("module-jsapi.fifty.ts");
 			}
@@ -489,10 +488,6 @@ namespace slime.jrunscript.file {
 			/** @deprecated Use `Exports["world"]["filesystems"]["mock"]. */
 			filesystem: Exports["world"]["filesystems"]["mock"]
 		}
-	}
-
-	export interface Exports {
-		Location: location.Exports
 	}
 
 	export interface Exports {
