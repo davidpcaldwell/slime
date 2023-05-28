@@ -392,7 +392,7 @@ END LICENSE
 			<script type="application/x.jsapi#tests" jsapi:id="src">
 				var output = jsh.shell.jsh({
 					shell: $jsapi.environment.jsh.unbuilt.src,
-					script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh-data.jsh.js"),
+					script: $jsapi.environment.jsh.src.getFile("jrunscript/jsh/test/jsh-data.jsh.js"),
 					stdio: {
 						output: String
 					},
@@ -405,7 +405,7 @@ END LICENSE
 			<script type="application/x.jsapi#tests" jsapi:id="home">
 				var outputLines = jsh.shell.jsh({
 					shell: $jsapi.environment.jsh.built.home,
-					script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/properties.jsh.js"),
+					script: $jsapi.environment.jsh.src.getFile("jrunscript/jsh/test/jsh.shell/properties.jsh.js"),
 					stdio: {
 						output: String
 					},
@@ -422,7 +422,7 @@ END LICENSE
 					var remote = $jsapi.environment.jsh.remote;
 					if (!remote) throw new Error("No remote shell!");
 					var fileTestOutputLines = remote.jsh({
-						script: $jsapi.environment.jsh.src.getFile("jsh/test/jsh.shell/properties.jsh.js"),
+						script: $jsapi.environment.jsh.src.getFile("jrunscript/jsh/test/jsh.shell/properties.jsh.js"),
 						stdio: {
 							output: String
 						},
@@ -432,7 +432,7 @@ END LICENSE
 					});
 					verify(fileTestOutputLines)[0].is("Completed.");
 					var urlTestOutputLines = remote.jsh({
-						script: remote.url + "jsh/test/jsh.shell/properties.jsh.js",
+						script: remote.url + "jrunscript/jsh/test/jsh.shell/properties.jsh.js",
 						stdio: {
 							output: String
 						},
@@ -461,7 +461,7 @@ END LICENSE
 
 					var output = jsh.shell.run({
 						command: $jsapi.environment.jsh.built.home.getFile("jsh"),
-						arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+						arguments: [$jsapi.environment.jsh.built.home.getFile("src/jrunscript/jsh/test/jsh-data.jsh.js")],
 						stdio: {
 							output: String
 						},
@@ -472,7 +472,7 @@ END LICENSE
 					(function absolute() {
 						var output = jsh.shell.run({
 							command: $jsapi.environment.jsh.built.home.getFile("jsh").toString(),
-							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jrunscript/jsh/test/jsh-data.jsh.js")],
 							stdio: {
 								output: String
 							},
@@ -510,7 +510,7 @@ END LICENSE
 
 						var output = shellCommand({
 							command: basedir + "/" + "jsh",
-							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jrunscript/jsh/test/jsh-data.jsh.js")],
 							directory: parent,
 							stdio: {
 								output: String
@@ -527,7 +527,7 @@ END LICENSE
 						var output = shellCommand({
 							command: "jsh",
 							PATH: PATH,
-							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jsh/test/jsh-data.jsh.js")],
+							arguments: [$jsapi.environment.jsh.built.home.getFile("src/jrunscript/jsh/test/jsh-data.jsh.js")],
 							directory: jsh.shell.HOME,
 							stdio: {
 								output: String

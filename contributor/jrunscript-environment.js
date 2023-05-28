@@ -165,9 +165,9 @@
 							var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("packaged.jar");
 							jsh.shell.jsh({
 								shell: packagingShell.home,
-								script: p.src.getRelativePath("jsh/tools/package.jsh.js").file,
+								script: p.src.getRelativePath("jrunscript/jsh/tools/package.jsh.js").file,
 								arguments: ([
-									"-script", p.src.getRelativePath("jsh/test/jsh-data.jsh.js"),
+									"-script", p.src.getRelativePath("jrunscript/jsh/test/jsh-data.jsh.js"),
 									"-to", to
 								]).concat( (!rhino) ? ["-norhino"] : [] )
 							});
