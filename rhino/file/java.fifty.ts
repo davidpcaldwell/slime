@@ -140,7 +140,6 @@ namespace slime.jrunscript.file.internal.java {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			var file: file.Script = fifty.$loader.script("file.js");
 			var code: Script = fifty.$loader.script("java.js");
 
 			var subject = code({

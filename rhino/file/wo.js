@@ -496,6 +496,11 @@
 		//	TODO	probably the Searchpath construct belongs in jrunscript.shell, or maybe we would have a separate one here based
 		//			on a list of Location but it could be turned into a system path via a jrunscript.shell API or something
 
+		//	TODO	reading the above, it rather seems that a Searchpath should be a filesystem and array of pathname. That should
+		//			be sufficient to turn it into a string. Or there should be two separate types, one like the above, one an array
+		//			of Location, and Searchpath should be a union type of them. Only the single-filesystem Searchpath would have
+		//			the ability to be encoded as a string.
+
 		// /** @type { slime.jrunscript.file.World["Filesystem"]["from"]["spi"] } */
 		// var filesystemFromSpi = function(provider) {
 		// 	return {
