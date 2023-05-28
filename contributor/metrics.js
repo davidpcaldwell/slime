@@ -188,9 +188,8 @@
 								var tests = (function() {
 									try {
 										var parsed = parseJsapiHtml(entry.file);
-										var tests = 0;
-										Element.getJsapiElements(parsed).reduce(function(rv,element) {
-											tests += getTestSize(element);
+										var tests = Element.getJsapiTestingElements(parsed).reduce(function(rv,element) {
+											return rv + getTestSize(element);
 										}, 0);
 										return $api.fp.Maybe.from.some(tests);
 									} catch (e) {
