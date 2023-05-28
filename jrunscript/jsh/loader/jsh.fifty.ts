@@ -186,8 +186,8 @@ namespace slime.jsh {
 						command: "bash",
 						arguments: $api.Array.build(function(rv: string[]) {
 							rv.push("jsh.bash");
-							if (built) rv.push("jsh/test/tools/run-in-built-shell.jsh.js");
-							rv.push("jsh/loader/test/global-scope.jsh.js");
+							if (built) rv.push("jrunscript/jsh/test/tools/run-in-built-shell.jsh.js");
+							rv.push("jrunscript/jsh/loader/test/global-scope.jsh.js");
 							return rv;
 						}),
 						stdio: {
@@ -210,7 +210,7 @@ namespace slime.jsh {
 						command: "bash",
 						arguments: $api.Array.build(function(rv: string[]) {
 							rv.push("jsh.bash");
-							rv.push("jsh/loader/test/plugin-scope.jsh.js");
+							rv.push("jrunscript/jsh/loader/test/plugin-scope.jsh.js");
 							return rv;
 						}),
 						stdio: {
@@ -282,7 +282,7 @@ namespace slime.jsh {
 					type jshResult = { status: number, stdio: { output: string } }
 					var hello: jshResult = jsh.shell.jsh({
 						shell: $jsapi.environment.jsh.unbuilt.src,
-						script: $jsapi.environment.jsh.unbuilt.src.getRelativePath("jsh/loader/test/coffee/hello.jsh.coffee").file,
+						script: $jsapi.environment.jsh.unbuilt.src.getRelativePath("jrunscript/jsh/loader/test/coffee/hello.jsh.coffee").file,
 						stdio: {
 							output: String
 						},
@@ -294,7 +294,7 @@ namespace slime.jsh {
 					verify(hello).stdio.output.is(["hello coffeescript world",""].join(String(Packages.java.lang.System.getProperty("line.separator"))));
 					var loader: jshResult = jsh.shell.jsh({
 						fork: true,
-						script: $jsapi.environment.jsh.unbuilt.src.getFile("jsh/loader/test/coffee/loader.jsh.js")
+						script: $jsapi.environment.jsh.unbuilt.src.getFile("jrunscript/jsh/loader/test/coffee/loader.jsh.js")
 					});
 					verify(loader).status.is(0);
 				} else {
