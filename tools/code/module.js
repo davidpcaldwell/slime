@@ -511,13 +511,13 @@
 			Project: {
 				from: {
 					directory: function(p) {
-						var question = $context.library.file.world.Location.directory.list.stream({
+						var question = $context.library.file.Location.directory.list.stream({
 							descend: p.descend
 						});
 						var listing = $api.fp.world.now.question(question, p.root);
 						return $api.fp.now.invoke(
 							listing,
-							$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.world.Location.file.exists())),
+							$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.Location.file.exists())),
 							$api.fp.Stream.filter(function(location) {
 								var include = p.isSource(location);
 								if (include.present) return include.value;
@@ -526,6 +526,23 @@
 							$api.fp.Stream.collect
 						);
 					}
+				}
+			},
+			document: {
+				parse: function(markup) {
+					var parsed = $context.library.document.Document.codec.string.decode(
+						markup
+					);
+
+					(function checkParser() {
+						var serialized = $context.library.document.Document.codec.string.encode(parsed);
+
+						if (markup != serialized) {
+							return $api.fp.Maybe.from.nothing();
+						}
+					})();
+
+					return $api.fp.Maybe.from.some(parsed);
 				}
 			},
 			File: {
