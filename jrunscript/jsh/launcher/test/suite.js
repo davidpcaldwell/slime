@@ -46,7 +46,7 @@
 						arguments: [
 							src.getRelativePath("rhino/jrunscript/api.js"),
 							"jsh",
-							src.getRelativePath("jsh/etc/build.jsh.js"),
+							src.getRelativePath("jrunscript/jsh/etc/build.jsh.js"),
 							tmpdir,
 							"-notest",
 							"-nodoc"
