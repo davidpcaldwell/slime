@@ -545,6 +545,9 @@
 					return $api.fp.Maybe.from.some(parsed);
 				}
 			},
+			jsapi: {
+
+			},
 			File: {
 				hasShebang: hasShebang,
 				isText: function() {
