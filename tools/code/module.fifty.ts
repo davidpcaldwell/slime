@@ -84,6 +84,12 @@ namespace slime.tools.code {
 		}
 	}
 
+	export interface Exports {
+		jsapi: {
+
+		}
+	}
+
 	export interface File {
 		path: string
 		file: slime.jrunscript.file.world.Location
