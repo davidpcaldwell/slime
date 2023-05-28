@@ -173,7 +173,7 @@
 			environment: environment
 		}));
 
-		suite.add("jsh-tools", new jsh.unit.html.Part({
+		suite.add("jsh/tools", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jrunscript/jsh/tools/internal.api.html"),
 			environment: environment
 		}));
