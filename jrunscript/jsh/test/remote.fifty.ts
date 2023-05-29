@@ -12,7 +12,7 @@ namespace slime.jsh.test.remote {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			var slime = fifty.jsh.file.relative("../..");
+			var slime = fifty.jsh.file.relative("../../..");
 
 			var loader = jsh.file.world.Location.directory.loader.synchronous({ root: slime });
 

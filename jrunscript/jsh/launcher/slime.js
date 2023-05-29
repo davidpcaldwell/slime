@@ -116,7 +116,7 @@
 							})()
 						} else {
 							rv = (function() {
-								var base = new Packages.java.net.URL($$api.script.url, "../../");
+								var base = new Packages.java.net.URL($$api.script.url, "../../../");
 
 								var bitbucketGetSourceFilesUnder = function(url,rv) {
 									//	Bitbucket raw URLs allow essentially listing the directory with a newline-delimited list of names,

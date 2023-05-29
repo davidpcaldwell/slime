@@ -337,8 +337,8 @@
 							directories.push("loader/jrunscript/java/");
 							if (p.rhino) directories.push("loader/jrunscript/rhino/");
 							directories.push("rhino/system/java/");
-							directories.push("jsh/loader/java/");
-							if (p.rhino) directories.push("jsh/loader/rhino/");
+							directories.push("jrunscript/jsh/loader/java/");
+							if (p.rhino) directories.push("jrunscript/jsh/loader/rhino/");
 							var toCompile = [];
 							directories.forEach(function(directory) {
 								if (p.on && p.on.start) {

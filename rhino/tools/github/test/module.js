@@ -115,7 +115,7 @@
 			//			be fine.
 			command.push("JSH_DEBUG_SCRIPT=");
 			command.push("bash", "-s");
-			command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/" + branch + "/jsh/test/jsh-data.jsh.js");
+			command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/" + branch + "/jrunscript/jsh/test/jsh-data.jsh.js");
 			return command;
 		}
 
