@@ -39,9 +39,70 @@ namespace slime.jrunscript.file {
 
 	export namespace location {
 		export interface Exports {
+			base: (base: Location) => (relative: string) => Location
 			relative: (path: string) => (p: Location) => Location
 			parent: () => (p: Location) => Location
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const subject = fifty.global.jsh.file;
+
+				//	TODO	these tests might not pass on Windows
+
+				fifty.tests.exports.Location.base = function() {
+					var pathname = "/a/b/c";
+					var location = subject.Location.from.os(pathname);
+					var base = subject.Location.base(location);
+
+					var one = base("d");
+					verify(one).pathname.is("/a/b/c/d");
+					var two = base("./d");
+					verify(two).pathname.is("/a/b/c/d");
+					var three = base("../d");
+					verify(three).pathname.is("/a/b/d");
+				};
+
+				fifty.tests.exports.Location.relative = function() {
+					var pathname = "/a/b/c";
+					var child = subject.Location.from.os(pathname);
+					var target = subject.Location.relative("d")(child);
+					verify(target).pathname.is("/a/b/c/d");
+				};
+
+				fifty.tests.exports.Location.parent = function() {
+					var pathname = "/a/b/c";
+					var child = subject.Location.from.os(pathname);
+					var parent = subject.Location.parent()(child);
+					verify(parent).pathname.is("/a/b");
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			basename: (p: Location) => string
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const subject = fifty.global.jsh.file;
+
+				fifty.tests.exports.Location.basename = function() {
+					var pathname = "/a/b/c";
+					var location = subject.Location.from.os(pathname);
+					var basename = subject.Location.basename(location);
+					verify(basename).is("c");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace location {
@@ -533,7 +594,7 @@ namespace slime.jrunscript.file {
 				) {
 					const { verify } = fifty;
 					const { $api } = fifty.global;
-					const subject = fifty.global.jsh.file.world;
+					const subject = fifty.global.jsh.file;
 
 					fifty.tests.exports.Location.directory.list = function() {
 						debugger;
