@@ -50,7 +50,7 @@
 			var command = [];
 			var PROTOCOL = (p.mock) ? "http" : "https";
 			var branch = p.branch || "master";
-			var URL = PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/" + branch + "/jsh.bash";
+			var URL = PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/" + branch + "/jsh";
 			if (PATH.getCommand("curl")) {
 				command.push("curl", "-v");
 				if (p.token) {
