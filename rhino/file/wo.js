@@ -138,9 +138,18 @@
 						return filesystemFromSpiTemporary(provider);
 					}
 				},
+				base: function(location) {
+					return function(relative) {
+						return Location_relative(relative)(location);
+					}
+				},
 				relative: Location_relative,
 				parent: function() {
 					return Location_relative("../");
+				},
+				basename: function(location) {
+					var tokens = location.pathname.split(location.filesystem.separator.pathname);
+					return tokens[tokens.length-1];
 				},
 				file: {
 					exists: function() {
