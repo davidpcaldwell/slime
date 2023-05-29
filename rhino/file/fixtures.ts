@@ -48,6 +48,7 @@ namespace slime.jrunscript.file.test {
 	export namespace fixtures {
 		export interface Context {
 			fifty: slime.fifty.test.Kit
+			prefix?: string
 		}
 
 		export type Script = slime.loader.Script<Context,Fixtures>
@@ -61,6 +62,7 @@ namespace slime.jrunscript.file.test {
 		) {
 			const { fifty } = $context;
 			const { $api, jsh } = fifty.global;
+			const prefix = $context.prefix || "";
 
 			var $jsapi = {
 				java: {
@@ -94,16 +96,16 @@ namespace slime.jrunscript.file.test {
 
 			const api = (
 				function() {
-					var java = fifty.$loader.module("../../jrunscript/host/", {
+					var java = fifty.$loader.module(prefix + "../../jrunscript/host/", {
 						$slime: jsh.unit.$slime,
 						logging: {
 							prefix: "slime.jrunscript.file.test"
 						}
 					});
 					return {
-						js: fifty.$loader.module("../../js/object/"),
+						js: fifty.$loader.module(prefix + "../../js/object/"),
 						java: java,
-						io: fifty.$loader.module("../../jrunscript/io/", {
+						io: fifty.$loader.module(prefix + "../../jrunscript/io/", {
 							$slime: jsh.unit.$slime,
 							api: {
 								java: java,
@@ -147,7 +149,7 @@ namespace slime.jrunscript.file.test {
 				)
 			)(void(0))
 
-			const module: Exports = fifty.$loader.module("module.js", context);
+			const module: Exports = fifty.$loader.module(prefix + "module.js", context);
 
 			let filesystem: Filesystem;
 

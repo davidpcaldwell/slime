@@ -16,9 +16,9 @@
 	function($api,$context,$loader,$export) {
 		var code = {
 			/** @type { slime.jrunscript.file.internal.file.Script } */
-			file: $loader.script("oo-file.js"),
+			file: $loader.script("oo/file.js"),
 			/** @type { slime.jrunscript.file.internal.filesystem.Script } */
-			filesystem: $loader.script("filesystem.js")
+			filesystem: $loader.script("oo/filesystem.js")
 		}
 
 		var prototypes = {
@@ -78,7 +78,7 @@
 		//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
 		var filesystem = (filesystems.cygwin) ? filesystems.cygwin : filesystems.os;
 
-		//	TODO	perhaps should move selection of default filesystem into these definitions rather than inside oo-file.js
+		//	TODO	perhaps should move selection of default filesystem into these definitions rather than inside oo/file.js
 		var Pathname = Object.assign(function Pathname(parameters) {
 			if (this.constructor == arguments.callee) throw new Error("Cannot invoke Pathname as constructor.");
 			if (typeof(parameters) != "string") throw new TypeError("parameters must be string.");
@@ -172,7 +172,7 @@
 			};
 		}
 
-		//	TODO	Searchpath implementation has multiple layers: in os.js, oo-file.js, here ... consolidate and refactor
+		//	TODO	Searchpath implementation has multiple layers: in os.js, oo/file.js, here ... consolidate and refactor
 		var Searchpath = Object.assign(function(parameters) {
 			if (this.constructor != arguments.callee) {
 				if (parameters instanceof Array) {
