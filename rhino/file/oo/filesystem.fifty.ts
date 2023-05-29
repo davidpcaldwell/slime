@@ -21,4 +21,14 @@ namespace slime.jrunscript.file.internal.filesystem {
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }

@@ -57,8 +57,8 @@ namespace slime.jrunscript.file {
 			const { jsh } = fifty.global;
 			const { verify } = fifty;
 
-			var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
-			var fixtures = script({ fifty: fifty });
+			var script: test.fixtures.Script = fifty.$loader.script("../fixtures.ts");
+			var fixtures = script({ fifty: fifty, prefix: "../" });
 
 			const { module, newTemporaryDirectory, createFile } = fixtures;
 
@@ -159,9 +159,9 @@ namespace slime.jrunscript.file {
 			const { verify } = fifty;
 
 			fifty.tests.Node.parent = function() {
-				var file = fifty.jsh.file.object.getRelativePath("oo-file.fifty.ts").file;
+				var file = fifty.jsh.file.object.getRelativePath("file.fifty.ts").file;
 				var parent = file.parent;
-				verify(parent,"parent").getFile("oo-file.fifty.ts").evaluate(String).is(file.toString());
+				verify(parent,"parent").getFile("file.fifty.ts").evaluate(String).is(file.toString());
 			}
 		}
 	//@ts-ignore
@@ -240,8 +240,8 @@ namespace slime.jrunscript.file {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
-			var fixtures = script({ fifty: fifty });
+			var script: test.fixtures.Script = fifty.$loader.script("../fixtures.ts");
+			var fixtures = script({ fifty: fifty, prefix: "../" });
 
 			const { newTemporaryDirectory, filesystem } = fixtures;
 
@@ -582,7 +582,7 @@ namespace slime.jrunscript.file {
 			const { verify } = fifty;
 
 			fifty.tests.File._1 = function() {
-				var apiHtml = fifty.jsh.file.object.getRelativePath("oo-file.js").file;
+				var apiHtml = fifty.jsh.file.object.getRelativePath("file.js").file;
 				verify(apiHtml).type.evaluate(String).is("application/javascript");
 			}
 		}
@@ -745,8 +745,8 @@ namespace slime.jrunscript.file {
 				verify(b).is(true);
 			}
 
-			var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
-			var fixtures = script({ fifty: fifty });
+			var script: test.fixtures.Script = fifty.$loader.script("../fixtures.ts");
+			var fixtures = script({ fifty: fifty, prefix: "../" });
 
 			const { context, module, newTemporaryDirectory, createFile, createDirectory, filesystem } = fixtures;
 
@@ -867,8 +867,8 @@ namespace slime.jrunscript.file {
 			};
 
 			fifty.tests.softlink = function() {
-				var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
-				var fixtures = script({ fifty: fifty });
+				var script: test.fixtures.Script = fifty.$loader.script("../fixtures.ts");
+				var fixtures = script({ fifty: fifty, prefix: "../" });
 
 				const { context, module, newTemporaryDirectory, createFile, createDirectory, filesystem } = fixtures;
 

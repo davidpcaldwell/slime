@@ -110,7 +110,7 @@ namespace slime.jrunscript.file.internal.java {
 	}
 
 	export interface Exports {
-		//	TODO	this provider object is still used internally by filesystem.js, but it seems like refactoring to remove this
+		//	TODO	this provider object is still used internally by oo/filesystem.js, but it seems like refactoring to remove this
 		//			export would be a goal
 		providers: {
 			os: slime.jrunscript.file.internal.java.FilesystemProvider
