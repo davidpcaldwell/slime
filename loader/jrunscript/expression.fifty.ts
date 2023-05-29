@@ -409,6 +409,32 @@ namespace slime.$api {
 )(fifty);
 
 
+(
+	function(
+		fifty: slime.fifty.test.Kit
+	) {
+		const { $api, jsh } = fifty.global;
+
+		fifty.tests.manual = {};
+		fifty.tests.manual.issue22 = function() {
+			jsh.shell.console("Hello, World!");
+
+			var code: slime.resource.Descriptor = {
+				read: {
+					string: function() {
+						return "foobar";
+					}
+				}
+			};
+
+			//var x = $api.mime.Type.parse(void(0));
+
+			jsh.loader.run(code, null, null);
+		}
+	}
+//@ts-ignore
+)(fifty);
+
 namespace slime.external.e4x {
 	export interface Object {
 		toXMLString: () => string
