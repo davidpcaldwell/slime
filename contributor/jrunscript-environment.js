@@ -128,7 +128,7 @@
 						if (!this.home.getSubdirectory("lib/tomcat")) {
 							jsh.shell.jsh({
 								shell: this.home,
-								script: p.src.getFile("jsh/tools/install/tomcat.jsh.js")
+								script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
 							})
 						}
 					}

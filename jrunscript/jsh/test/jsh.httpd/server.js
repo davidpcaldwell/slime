@@ -69,7 +69,7 @@
 						var coffeeScriptArguments = ($context.coffeescript) ? ["-library", "coffee-script.js=" + $context.coffeescript] : [];
 						jsh.shell.jsh({
 							fork: true,
-							script: jsh.script.file.getRelativePath("../../../rhino/http/servlet/tools/webapp.jsh.js").file,
+							script: jsh.script.file.getRelativePath("../../../../rhino/http/servlet/tools/webapp.jsh.js").file,
 							arguments: [
 								"-to", environment.CATALINA_BASE.getSubdirectory("webapps").getRelativePath(urlpath),
 								"-servletapi", CATALINA_HOME.getRelativePath("lib/servlet-api.jar"),

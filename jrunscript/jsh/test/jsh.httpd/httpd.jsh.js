@@ -56,7 +56,7 @@
 		};
 
 		var fileServlet = new function() {
-			var script = jsh.script.file.parent.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file;
+			var script = jsh.script.file.parent.getRelativePath("../../../../rhino/http/servlet/test/file.servlet.js").file;
 
 			this.test = function(url) {
 				var client = new jsh.http.Client();
@@ -166,7 +166,7 @@
 				var tomcat = jsh.httpd.Tomcat({
 				});
 				jsh.shell.echo("Tomcat port: " + tomcat.port);
-				var script = jsh.script.file.parent.getRelativePath("../../../rhino/http/servlet/test/hello.servlet.js").file;
+				var script = jsh.script.file.parent.getRelativePath("../../../../rhino/http/servlet/test/hello.servlet.js").file;
 				tomcat.map({
 					path: "/",
 					servlets: {
@@ -182,7 +182,7 @@
 			this.file = function() {
 				jsh.shell.echo("file servlet");
 				var tomcat = jsh.httpd.Tomcat({});
-				var script = jsh.script.file.parent.getRelativePath("../../../rhino/http/servlet/test/file.servlet.js").file
+				var script = jsh.script.file.parent.getRelativePath("../../../../rhino/http/servlet/test/file.servlet.js").file
 				tomcat.map({
 					path: "/",
 					servlets: {
@@ -223,7 +223,7 @@
 			var run = function(path,tests) {
 				jsh.shell.echo("Plugin: " + path);
 				var tomcat = jsh.httpd.Tomcat({});
-				var script = jsh.script.file.parent.getRelativePath("../../../" + path).file
+				var script = jsh.script.file.parent.getRelativePath("../../../../" + path).file
 				tomcat.map({
 					path: "/",
 					servlets: {
@@ -241,7 +241,7 @@
 			this.api = function() {
 				jsh.shell.echo("plugin api servlet");
 				var tomcat = jsh.httpd.Tomcat({});
-				var script = jsh.script.file.parent.getRelativePath("../../../rhino/http/servlet/test/api.servlet.js").file
+				var script = jsh.script.file.parent.getRelativePath("../../../../rhino/http/servlet/test/api.servlet.js").file
 				tomcat.map({
 					path: "/",
 					servlets: {

@@ -4,6 +4,6 @@
 //
 //	END LICENSE
 
-map("WEB-INF/servlet/",$mapping.getRelativePath("../../../rhino/http/servlet/"));
-map("file/",$mapping.getRelativePath("../../../rhino/http/servlet/"));
-map("WEB-INF/coffee/", $mapping.getRelativePath("../../../loader/test/data/coffee/"));
+map("WEB-INF/servlet/",$mapping.getRelativePath("../../../../rhino/http/servlet/"));
+map("file/",$mapping.getRelativePath("../../../../rhino/http/servlet/"));
+map("WEB-INF/coffee/", $mapping.getRelativePath("../../../../loader/test/data/coffee/"));
