@@ -130,17 +130,17 @@
 
 		(function jshLauncher() {
 			suite.add("jsh/launcher/internal", new jsh.unit.html.Part({
-				pathname: environment.jsh.src.getRelativePath("jsh/launcher/internal.api.html"),
+				pathname: environment.jsh.src.getRelativePath("jrunscript/jsh/launcher/internal.api.html"),
 				environment: environment
 			}));
 		})();
 
 		suite.add("jsh/jsh.tools.install", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jsh/tools/install/plugin.jsh.api.html")
+			pathname: SRC.getRelativePath("jrunscript/jsh/tools/install/plugin.jsh.api.html")
 		}));
 
 		suite.add("jsh/jsh.loader/jsapi", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jsh/loader/loader.api.html"),
+			pathname: SRC.getRelativePath("jrunscript/jsh/loader/loader.api.html"),
 			environment: environment
 		}));
 
@@ -169,12 +169,12 @@
 		})));
 
 		suite.add("jsh/jsh.script/jsapi", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jsh/script/plugin.jsh.api.html"),
+			pathname: SRC.getRelativePath("jrunscript/jsh/script/plugin.jsh.api.html"),
 			environment: environment
 		}));
 
-		suite.add("jsh-tools", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jsh/tools/internal.api.html"),
+		suite.add("jsh/tools", new jsh.unit.html.Part({
+			pathname: SRC.getRelativePath("jrunscript/jsh/tools/internal.api.html"),
 			environment: environment
 		}));
 
@@ -185,7 +185,7 @@
 			pathname: SRC.getRelativePath("loader/api/api.html")
 		}));
 		suite.add("testing/jsh.unit/definition/jsapi", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jsh/unit/plugin.jsh.api.html")
+			pathname: SRC.getRelativePath("jrunscript/jsh/unit/plugin.jsh.api.html")
 		}));
 		suite.add("testing/fifty", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("tools/fifty/test/data/api.html")
@@ -195,7 +195,7 @@
 		if (false) suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
 			run: jsh.shell.jsh,
 			shell: (environment.jsh.built) ? environment.jsh.built.homne : environment.jsh.unbuilt.src,
-			script: SRC.getFile("jsh/unit/test/bitbucket.jsh.js"),
+			script: SRC.getFile("jrunscript/jsh/unit/test/bitbucket.jsh.js"),
 			arguments: ["-view", "stdio"]
 		}));
 		suite.add("testing/integration", new function() {
@@ -205,7 +205,7 @@
 					execute: function(scope,verify) {
 						var result = jsh.shell.jsh({
 							shell: src,
-							script: src.getFile("jsh/unit/test/fail.jsh.js"),
+							script: src.getFile("jrunscript/jsh/unit/test/fail.jsh.js"),
 							evaluate: function(result) {
 								return result;
 							}
@@ -215,7 +215,7 @@
 				},
 				// htmlReload: new ScriptPart({
 				// 	shell: src,
-				// 	script: src.getFile("jsh/unit/test/fail.jsh.js"),
+				// 	script: src.getFile("jrunscript/jsh/unit/test/fail.jsh.js"),
 				// 	check: function(verify) {
 				// 		verify(this).status.is(1);
 				// 	}
@@ -223,7 +223,7 @@
 				suiteWithScenario: new jsh.unit.Suite.Fork({
 					run: jsh.shell.jsh,
 					shell: src,
-					script: src.getFile("jsh/unit/test/suite.jsh.js"),
+					script: src.getFile("jrunscript/jsh/unit/test/suite.jsh.js"),
 					arguments: [
 						"-view", "stdio"
 					]
@@ -231,7 +231,7 @@
 				nakedScenario: new jsh.unit.Suite.Fork({
 					run: jsh.shell.jsh,
 					shell: src,
-					script: src.getFile("jsh/unit/test/scenario.jsh.js"),
+					script: src.getFile("jrunscript/jsh/unit/test/scenario.jsh.js"),
 					arguments: [
 						"-view", "stdio"
 					]
@@ -243,7 +243,7 @@
 			if (!environment.jsh.built.home.getSubdirectory("lib/tomcat")) {
 				jsh.shell.jsh({
 					shell: environment.jsh.built.home,
-					script: environment.jsh.src.getFile("jsh/tools/install/tomcat.jsh.js")
+					script: environment.jsh.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
 				})
 			}
 		}
@@ -280,7 +280,7 @@
 				execute: function(scope,verify) {
 					var result = jsh.shell.jsh({
 						shell: environment.jsh.built.home,
-						script: environment.jsh.src.getFile("jsh/test/jsh.httpd/httpd.jsh.js")
+						script: environment.jsh.src.getFile("jrunscript/jsh/test/jsh.httpd/httpd.jsh.js")
 					});
 					verify(result).status.is(0);
 				}
@@ -291,7 +291,7 @@
 					execute: function(scope,verify) {
 						var result = jsh.shell.jsh({
 							shell: environment.jsh.built.home,
-							script: environment.jsh.src.getFile("jsh/test/jsh.httpd/httpd.jsh.js"),
+							script: environment.jsh.src.getFile("jrunscript/jsh/test/jsh.httpd/httpd.jsh.js"),
 							arguments: ["-suite", "coffee"]
 						});
 						verify(result).status.is(0);
@@ -303,7 +303,7 @@
 
 		//	TODO	disabling tests in order to try to get commit to succeed. Probably need to migrate this to a GitHub implementation
 		if (false) suite.add("provision", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jsh/tools/provision/api.html")
+			pathname: SRC.getRelativePath("jrunscript/jsh/tools/provision/api.html")
 		}));
 
 		jsh.unit.html.cli({

@@ -1,0 +1,340 @@
+<!--
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+END LICENSE
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
+<head>
+	<title>jsh loader</title>
+	<link rel="stylesheet" type="text/css" href="../../loader/api/api.css" />
+	<script type="text/javascript" src="../../loader/api/api.js"></script>
+</head>
+<body>
+	<div>
+		The <code>jsh</code> loader, exposed to scripts as <code>jsh.loader</code>, augments the
+		<a href="../../loader/jrunscript/api.html">SLIME Java runtime</a> loader, which in turn augments the
+		<a href="../../loader/api.html">SLIME runtime</a> loader.
+	</div>
+	<div jsapi:id="1">
+		<!--	TODO	Moved to loader/expression.d.ts	-->
+		Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings like
+		<code>jsh</code>.
+	</div>
+	<div jsapi:id="2">
+		The SLIME runtime provides the <a href="$api.api.html"><code>$api</code></a> and <code>$platform</code> objects.
+		The <code>$api</code> provides a basic set of JavaScript utilities. The <code>$platform</code> object provides more
+		advanced JavaScript engine capabilities that depend on the underlying JavaScript engine. All code loaded by the SLIME
+		runtime has access to the <code>$api</code> and <code>$platform</code> objects.
+	</div>
+	<!--
+	<div jsapi:reference="getApi('../../loader/api.html').getElement('3')"></div>
+	-->
+	<!--
+		We are not going to bother documenting $platform for now. It contains things that can be inferred other ways:
+			1.	A programmer can use feature detection for Object.defineProperty and related
+			2.	A programmer can use Packages to look for LiveConnect
+			3.	MetaObject is not provided another way, but should implement ECMAScript 6 Proxy and then use that
+	-->
+	<div>
+		<h1><code>$api</code></h1>
+		<div>
+			See <a href="../../loader/$api.api.html">detailed documentation</a>.
+		</div>
+	</div>
+	<div>
+		<h1>Exports</h1>
+		<script type="application/x.jsapi#initialize">
+			scope.loadTestModule = function(path,context) {
+				return $jsapi.loader.module("../../loader/" + path, context);
+			}
+		</script>
+		<div class="type">
+			<a class="type" name="types.code">code</a>
+			<span>A type that can be processed by the <code>run</code> and <code>file</code> methods.</span>
+			<div>
+				<span class="type"><a href="../../rhino/file/api.html#types.Pathname">rhino/file Pathname</a></span>
+				<strong>-or-</strong>
+				<span>Any type supported by the rhino loader.</span>
+			</div>
+		</div>
+		<div class="type" jsapi:id="Loader">
+			<a class="type" name="types.Loader">Loader</a>
+			See <a href="../../loader/api.html#types.Loader">platform loader</a>.
+		</div>
+		<ul>
+			<li class="function" jsapi:id="run">
+				<div class="name"><a id="exports.run">run</a></div>
+				<span>See the <a href="../../loader/jrunscript/api.html">Java loader</a> for details.</span>
+				<span>
+					Note that the Java loader adds the ability to pass a
+					<a href="../../loader/jrunscript/api.html#types.script">Java script</a> as the first argument.
+				</span>
+				<span>
+					Note that the <code>jsh</code> loader adds the ability to pass a
+					<a href="../../rhino/file/api.html#types.Pathname">Pathname</a> as the first argument.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					See the platform loader's <a href="../../loader/api.html#exports.run">run</a> method.
+				</div>
+			</li>
+			<li class="function" jsapi:id="file">
+				<div class="name"><a id="exports.file">file</a></div>
+				<span>See the <a href="../../loader/jrunscript/api.html">Java loader</a> for details.</span>
+				<span>
+					Note that the Java loader adds the ability to pass a
+					<a href="../../loader/jrunscript/api.html#types.script">Java script</a> as the first argument.
+				</span>
+				<span>
+					Note that the <code>jsh</code> loader adds the ability to pass a
+					<a href="../../rhino/file/api.html#types.Pathname">Pathname</a> as the first argument.
+				</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
+				</div>
+				<div class="returns" jsapi:id="returns">
+					<div class="label">Returns</div>
+					See the platform loader's <a href="../../loader/api.html#exports.file">file</a> method.
+				</div>
+			</li>
+			<li class="function" jsapi:id="module">
+				<div class="name"><a id="exports.module">module</a></div>
+				<!--	TODO	should the below links be top-level rather than Loader/type/ ?	-->
+				<div>
+					See the platform loader's <a href="../../loader/api.html#module">module</a> method.
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+							<span>
+								The location of the module. If the file is a directory, it is treated as the base of an unpacked
+								module. If the file is a plain file, then if its name ends in <code>.slime</code>, it is treated as
+								a packed module. Otherwise, the given file is treated as the main file of a module whose base is the
+								directory in which the file is located.
+							</span>
+						</li>
+						<li class="value" jsapi:id="arguments[1]">
+							<span class="type">object</span>
+							<!--	TODO	what if this is omitted? Does the module receive null context, or empty?	-->
+							<span>
+								(optional) The object to use as the <code>$context</code> object for this module; if not
+								specified, an empty object will be supplied.
+							</span>
+						</li>
+					</ol>
+				</div>
+				<div class="returns" jsapi:id="returns">
+					<!--
+						TODO	Document that this method returns null if the module cannot be found, and check whether that is also
+								true of the Rhino loader's module()
+					-->
+					<div class="label">Returns</div>
+					<span>The return value of the Rhino loader's <code>module</code> method.</span>
+				</div>
+				<script type="application/x.jsapi#tests" jsapi:id="child">
+					// TODO: Unclear what this is really testing, but adapted from previous (inefficient) integration test
+					var loader = new jsh.file.Loader({ directory: $jsapi.environment.jsh.src.getSubdirectory("jrunscript/jsh/loader/test/module-loader") });
+					var module = loader.module("module.js");
+					var method = module.$loader.get;
+					verify(module).$loader.evaluate.property("get").is.type("function");
+				</script>
+			</li>
+			<li class="function">
+				<div class="name">value</div>
+				<div>
+					See the platform loader's <a href="../../loader/api.html#exports.value">value</a> method.
+				</div>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+							<span>
+								The location of a script file.
+							</span>
+						</li>
+						<li class="value">
+						</li>
+						<li class="value">
+						</li>
+					</ol>
+				</div>
+				<div class="returns">
+					<div class="label">Returns</div>
+					See the platform loader's <a href="../../loader/api.html#exports.value">value</a> method.
+				</div>
+				<script type="application/x.jsapi#tests">
+					$jsapi.loader.plugins();
+					var CODE = $jsapi.loader.string("../../../loader/test/data/a/value.js");
+					var Target = function() {
+						this.description = "rsi";
+					};
+					var scope = {
+						b: "battery"
+					};
+					var target = new Target();
+					//	TODO	name is (erroneously?) required for Java-based loader
+					var NAME = "foo.js";
+					var value = jsh.loader.value({ name: NAME, string: CODE }, scope, target);
+					verify(target).thisName.is("rsi:battery");
+					verify(value).is(5);
+					var t2 = new Target();
+					var FILE = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("a.js");
+					FILE.write(CODE, { append: false });
+					var v2 = jsh.loader.value(FILE, scope, t2);
+					verify(t2).thisName.is("rsi:battery");
+					verify(v2).is(5);
+				</script>
+			</li>
+			<li class="function">
+				<div class="name">namespace</div>
+				Invokes the Rhino loader's <code>namespace</code> method.
+			</li>
+			<li class="object">
+				<div class="name">java</div>
+				<span>The Java code available to the script.</span>
+				<div class="label">has properties:</div>
+				<ul>
+					<li class="function">
+						<div class="name">add</div>
+						<!--	TODO	should accept a file or directory as well, and probably should ignore null	-->
+						<!--
+								TODO	write tests: need to be able to compile Java classes and add them to the classpath. They
+										probably must be jsh/test tests. Also we need to test whether the Packages variable still
+										behaves "incorrectly," i.e., caches failed lookups, preventing new classes from being found
+										once they've been sought.
+						-->
+						<span>Adds a directory or JAR file to the Java classpath of this script.</span>
+						<div class="arguments">
+							<div class="label">Arguments</div>
+							<ol>
+								<li class="value">
+									<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+									<span>
+										A <code>jsh.file.Pathname</code> pointing to a directory or a JAR file containing Java
+										classes.
+									</span>
+								</li>
+							</ol>
+						</div>
+						<!-- TODO: cannot target this test from command line for some reason -->
+						<div jsapi:id="java.add">
+							<script type="application/x.jsapi#initialize">
+								scope.compileAddClasses = $api.fp.impure.Input.memoized(function() {
+									var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
+									jsh.shell.console("Compiling AddClasses ...");
+									jsh.java.tools.javac({
+										destination: classes.pathname,
+										sourcepath: jsh.file.Searchpath([$jsapi.environment.jsh.unbuilt.src.getRelativePath("jrunscript/jsh/loader/test/addClasses/java")]),
+										arguments: [$jsapi.environment.jsh.unbuilt.src.getRelativePath("jrunscript/jsh/loader/test/addClasses/java/test/AddClasses.java")]
+									});
+									return classes;
+								});
+							</script>
+							<script type="application/x.jsapi#tests" jsapi:id="addClasses">
+								var result = jsh.shell.jsh({
+									shell: $jsapi.environment.jsh.built.home,
+									script: $jsapi.environment.jsh.unbuilt.src.getFile("jrunscript/jsh/loader/test/addClasses/addClasses.jsh.js"),
+									arguments: ["-scenario"]
+								});
+								verify(result).status.is(0);
+							</script>
+							<script type="application/x.jsapi#tests" jsapi:id="jsh.loader.java">
+								var result = jsh.shell.jsh({
+									shell: $jsapi.environment.jsh.built.home,
+									script: $jsapi.environment.jsh.unbuilt.src.getFile("jrunscript/jsh/loader/test/addClasses/addClasses.jsh.js"),
+									arguments: ["-classes",compileAddClasses()]
+								});
+								verify(result).status.is(0);
+							</script>
+							<script type="application/x.jsapi#tests" jsapi:id="packaged">
+								// TODO: is Rhino a part of
+								var result = jsh.shell.jsh({
+									shell: $jsapi.environment.jsh.built.home,
+									script: $jsapi.environment.jsh.src.getFile("jrunscript/jsh/loader/test/packaged/suite.jsh.js"),
+									arguments: ["-classes",compileAddClasses()]
+								});
+								verify(result).status.is(0);
+							</script>
+						</div>
+					</li>
+				</ul>
+			</li>
+			<li class="function">
+				<div class="name">plugins</div>
+				<span>Loads <code>jsh</code> <a href="plugin.api.html">plugins</a> from a specified source.</span>
+				<div class="arguments">
+					<div class="label">Arguments</div>
+					<ol>
+						<li class="value">
+							<span class="type"><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></span>
+							-or-
+							<span class="type"><a href="../../rhino/file/api.html#types.Directory">directory</a></span>
+							-or-
+							<span class="type"><a href="../../loader/api.html#types.Loader">Loader</a></span>
+							<div>
+								A source, interpreted
+								as follows:
+								<ul>
+									<li>
+										If the pathname does not represent a directory or file which exists, do nothing.
+									</li>
+									<li>
+										If a directory, or a pathname which is a directory, is specified,
+										<ul>
+											<li>
+												and the directory has a <code>plugin.jsh.js</code> file, load the
+												plugin from the directory.
+											</li>
+											<li>
+												<!--	TODO	figure out what the method really should do; what it does do is
+																counterintuitive.
+												-->
+												otherwise, the behavior is undefined.
+											</li>
+										</ul>
+									</li>
+									<li>
+										If the pathname is an ordinary file,
+										<ul>
+											<li>
+												and ends in <code>.slime</code>, load the plugin in SLIME format from the
+												file.
+											</li>
+											<li>
+												and ends in <code>.jar</code>, load the Java-only plugin.
+											</li>
+											<li>
+												otherwise, do nothing.
+											</li>
+										</ul>
+									</li>
+									<li>
+										If it is a <code>Loader</code>, plugins are loaded from that Loader.
+									</li>
+								</ul>
+							</div>
+						</li>
+					</ol>
+				</div>
+				<script type="application/x.jsapi#tests">
+					var global = (function() { return this; })();
+					verify(global).evaluate.property("issue249").is(void(0));
+					var directory = $jsapi.loader.getRelativePath("test/plugin").directory;
+					verify(directory).directory.is(true);
+					verify(directory).pathname.is.type("object");
+					jsh.loader.plugins(directory);
+					verify(global).evaluate.property("issue249").is.type("object");
+					delete global.issue249;
+				</script>
+			</li>
+		</ul>
+	</div>
+</body>
+</html>

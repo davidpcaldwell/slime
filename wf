@@ -33,7 +33,6 @@ SLIME_WF_JDK_VERSION="${SLIME_WF_JDK_VERSION:-8}"
 
 SLIME_WF_JDK_DEFAULT="${JSH_LOCAL_JDKS}/default"
 
-#	For now, run all SLIME wf commands under JDK 8 with Rhino
 if [ "${SLIME_WF_JDK_VERSION}" = "8" ]; then
 	SLIME_WF_JDK_8="${JSH_LOCAL_JDKS}/8"
 
@@ -46,7 +45,7 @@ if [ "${SLIME_WF_JDK_VERSION}" = "8" ]; then
 	fi
 
 	if [ ! -f "${JSH_SHELL_LIB}/js.jar" ]; then
-		${SLIME}/jsh.bash ${SLIME}/jsh/tools/install/rhino.jsh.js
+		${SLIME}/jsh.bash ${SLIME}/jrunscript/jsh/tools/install/rhino.jsh.js
 	fi
 
 	export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_8}"
@@ -62,7 +61,7 @@ elif [ "${SLIME_WF_JDK_VERSION}" = "11" ]; then
 	fi
 
 	if [ ! -f "${JSH_SHELL_LIB}/js.jar" ]; then
-		${SLIME}/jsh.bash ${SLIME}/jsh/tools/install/rhino.jsh.js
+		${SLIME}/jsh.bash ${SLIME}/jrunscript/jsh/tools/install/rhino.jsh.js
 	fi
 
 	export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_11}"

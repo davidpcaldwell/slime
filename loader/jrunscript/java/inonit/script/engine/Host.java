@@ -27,6 +27,7 @@ public abstract class Host {
 		public abstract String getCode();
 
 		public static Script create(final Code.Loader.Resource resource) throws IOException {
+			if (resource == null) throw new NullPointerException("'resource' must not be null.");
 			final String code = streams.readString(resource.getReader());
 			return new Script() {
 				@Override

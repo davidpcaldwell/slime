@@ -9,7 +9,7 @@
 		//	Built shells do not contain these plugins
 		var SLIME = jsh.script.file.parent.parent.parent.parent;
 		jsh.loader.plugins(SLIME.getRelativePath("loader/api"));
-		jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
+		jsh.loader.plugins(SLIME.getRelativePath("jrunscript/jsh/unit"));
 
 		var parameters = jsh.script.getopts({
 			options: {

@@ -58,12 +58,12 @@
 			if (hasGit) fifty.load("../rhino/tools/git/module.fifty.ts");
 			fifty.load("../rhino/tools/gcloud/module.fifty.ts");
 			fifty.load("../rhino/tools/jenkins/module.fifty.ts");
-			fifty.load("../jsh/launcher/test/suite.fifty.ts");
-			if (isMkcertImplemented) fifty.load("../jsh/test/remote.fifty.ts");
-			fifty.load("../jsh/loader/jsh.fifty.ts");
-			fifty.load("../jsh/script/plugin.jsh.fifty.ts");
-			if (isMkcertImplemented) fifty.load("../jsh/unit/plugin.jsh.web.fifty.ts");
-			fifty.load("../jsh/tools/install/plugin.jsh.fifty.ts");
+			fifty.load("../jrunscript/jsh/launcher/test/suite.fifty.ts");
+			if (isMkcertImplemented) fifty.load("../jrunscript/jsh/test/remote.fifty.ts");
+			fifty.load("../jrunscript/jsh/loader/jsh.fifty.ts");
+			fifty.load("../jrunscript/jsh/script/plugin.jsh.fifty.ts");
+			if (isMkcertImplemented) fifty.load("../jrunscript/jsh/unit/plugin.jsh.web.fifty.ts");
+			fifty.load("../jrunscript/jsh/tools/install/plugin.jsh.fifty.ts");
 			fifty.load("../rhino/http/servlet/plugin.jsh.fifty.ts");
 			fifty.load("../rhino/http/servlet/plugin.jsh.resources.fifty.ts");
 			fifty.load("../rhino/ui/application.fifty.ts");

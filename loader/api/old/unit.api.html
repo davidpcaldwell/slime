@@ -13,13 +13,20 @@ END LICENSE
 	</head>
 	<body jsapi:id="top">
 		<script type="application/x.jsapi#initialize">
-			var script = $jsapi.loader.script("../verify.js");
+			//	This somehow failed locally when written as $jsapi.loader.script (an API apparently not implemented).
+			//
+			//	1. Don't know if that's a regression or a refactoring that was broken
+			//	2. Seems to indicate this test page does not run in CI. Or does it?
+			//
+			//	Currently working on https://github.com/davidpcaldwell/slime/issues/1149, could that have broken
+			//	$jsapi.loader.script?
+			var verify = $jsapi.loader.module("../verify.js");
 
 			scope.module = $jsapi.loader.module("unit.js", {
 				api: {
 					Promise: void(0)
 				},
-				verify: script()
+				verify: verify
 			});
 		</script>
 		<div>

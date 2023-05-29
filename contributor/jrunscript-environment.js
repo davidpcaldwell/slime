@@ -29,7 +29,7 @@
 				var getData = function(shell) {
 					return jsh.shell.jsh({
 						shell: shell,
-						script: p.src.getFile("jsh/test/jsh-data.jsh.js"),
+						script: p.src.getFile("jrunscript/jsh/test/jsh-data.jsh.js"),
 						stdio: {
 							output: String
 						},
@@ -63,7 +63,7 @@
 						if (!p.home.directory) {
 							jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
-								script: p.src.getFile("jsh/etc/build.jsh.js"),
+								script: p.src.getFile("jrunscript/jsh/etc/build.jsh.js"),
 								arguments: [
 									p.home,
 									"-notest",
@@ -91,7 +91,7 @@
 								jsh.shell.console("Installing Tomcat into built shell ...");
 								jsh.shell.jsh({
 									shell: p.home.directory,
-									script: p.src.getFile("jsh/tools/install/tomcat.jsh.js")
+									script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
 								});
 							}
 						}
@@ -128,7 +128,7 @@
 						if (!this.home.getSubdirectory("lib/tomcat")) {
 							jsh.shell.jsh({
 								shell: this.home,
-								script: p.src.getFile("jsh/tools/install/tomcat.jsh.js")
+								script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
 							})
 						}
 					}
@@ -165,9 +165,9 @@
 							var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("packaged.jar");
 							jsh.shell.jsh({
 								shell: packagingShell.home,
-								script: p.src.getRelativePath("jsh/tools/package.jsh.js").file,
+								script: p.src.getRelativePath("jrunscript/jsh/tools/package.jsh.js").file,
 								arguments: ([
-									"-script", p.src.getRelativePath("jsh/test/jsh-data.jsh.js"),
+									"-script", p.src.getRelativePath("jrunscript/jsh/test/jsh-data.jsh.js"),
 									"-to", to
 								]).concat( (!rhino) ? ["-norhino"] : [] )
 							});

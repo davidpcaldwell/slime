@@ -977,7 +977,7 @@
 					for (var i=0; i<jarray.length; i++) {
 						jarray[i] = new Packages.java.lang.String(args[i]);
 					}
-					var SUPPRESS_COMPILATION_WARNINGS = true;
+					var SUPPRESS_COMPILATION_OUTPUT = true;
 					var NOWHERE = new JavaAdapter(
 						Packages.java.io.OutputStream,
 						new function() {
@@ -987,11 +987,14 @@
 					var status = compiler.run(
 						Packages.java.lang.System["in"],
 						Packages.java.lang.System.out,
-						(SUPPRESS_COMPILATION_WARNINGS) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
+						(SUPPRESS_COMPILATION_OUTPUT) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
 						jarray
 					);
 					if (status) {
-						throw new Error("Compiler exited with status " + status + " with inputs " + args.join(" "));
+						var error = new Error("Compiler exited with status " + status + " with inputs " + args.join(" ")
+							+ " and java.class.path=" + Packages.java.lang.System.getProperty("java.class.path"));
+						Packages.java.lang.System.err.println(error.stack);
+						throw error;
 					}
 				};
 
@@ -1479,10 +1482,10 @@
 			if ($query == "api") {
 				embed = true;
 			} else if ($query == "jsh") {
-				$api.script.resolve("../../jsh/launcher/main.js").load();
+				$api.script.resolve("../../jrunscript/jsh/launcher/main.js").load();
 			} else if ($query == "jsh/install") {
 				Packages.java.lang.System.err.println("Installing jsh from SLIME source code at " + $api.script.resolve("../../").toString());
-				$api.arguments.unshift($api.script.resolve("../../jsh/etc/build.jsh.js").toString());
+				$api.arguments.unshift($api.script.resolve("../../jrunscript/jsh/etc/build.jsh.js").toString());
 				$api.script.resolve("../../jsh/launcher/main.js").load();
 			} else if (parameters.relative) {
 				$api.script.resolve(parameters.relative).load();
