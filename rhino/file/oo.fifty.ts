@@ -31,6 +31,9 @@ namespace slime.jrunscript.file.internal.oo {
 
 			fifty.tests.suite = function() {
 				verify(jsh.file.Streams).is.type("object");
+
+				fifty.load("oo/file.fifty.ts");
+				fifty.load("oo/filesystem.fifty.ts");
 			}
 		}
 	//@ts-ignore
