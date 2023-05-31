@@ -25,6 +25,10 @@
 				recursive: true
 			});
 
+			if (location.directory.getFile("bin/brew")) {
+				return;
+			}
+
 			$context.library.shell.run({
 				command: "tar",
 				arguments: ["xz", "--strip", "1", "-C", location.basename],
