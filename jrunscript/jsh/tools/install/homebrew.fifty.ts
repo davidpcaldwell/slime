@@ -116,7 +116,18 @@ namespace slime.jrunscript.tools.homebrew {
 				jsh.shell.console(JSON.stringify(output));
 			};
 
-			fifty.tests.manual.wo = function() {
+			fifty.tests.manual.wo = {};
+
+			fifty.tests.manual.wo.blank = function() {
+				var TMP = fifty.jsh.file.temporary.location();
+				var i: Installation = {
+					pathname: TMP.pathname
+				};
+				var created = test.subject.Installation.require(i);
+				jsh.shell.console("Created: " + TMP.pathname);
+			}
+
+			fifty.tests.manual.wo.install = function() {
 				if (!jsh.shell.environment.TEST_HOMEBREW_PREFIX) {
 					jsh.shell.console("Required: TEST_HOMEBREW_PREFIX");
 					return;
