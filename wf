@@ -29,42 +29,28 @@ if [ "$(uname)" == "Linux" ]; then
 	fi
 fi
 
-SLIME_WF_JDK_VERSION="${SLIME_WF_JDK_VERSION:-8}"
+SLIME_WF_JDK_VERSION="${SLIME_WF_JDK_VERSION:-11}"
 
 SLIME_WF_JDK_DEFAULT="${JSH_LOCAL_JDKS}/default"
 
-if [ "${SLIME_WF_JDK_VERSION}" = "8" ]; then
-	SLIME_WF_JDK_8="${JSH_LOCAL_JDKS}/8"
+#	TODO	this is very repetitive but would be cumbersome to simplify
+if [ "${SLIME_WF_JDK_VERSION}" = "8" ] || [ "${SLIME_WF_JDK_VERSION}" = "11" ] || [ "${SLIME_WF_JDK_VERSION}" = "17" ]; then
+	SLIME_WF_JDK_LOCAL="${JSH_LOCAL_JDKS}/${SLIME_WF_JDK_VERSION}"
 
-	if [ ! -d "${SLIME_WF_JDK_8}" ]; then
-		${SLIME}/jsh.bash --add-jdk-8
+	if [ ! -d "${SLIME_WF_JDK_LOCAL}" ]; then
+		${SLIME}/jsh --add-jdk-${SLIME_WF_JDK_VERSION}
 	fi
 
 	if [ ! -d "${SLIME_WF_JDK_DEFAULT}" ]; then
-		${SLIME}/jsh.bash --install-jdk
+		${SLIME}/jsh --install-jdk-${SLIME_WF_JDK_VERSION}
 	fi
 
+	#	Technically not needed for JDK 17, in which jsh installs it on its own
 	if [ ! -f "${JSH_SHELL_LIB}/js.jar" ]; then
-		${SLIME}/jsh.bash ${SLIME}/jrunscript/jsh/tools/install/rhino.jsh.js
+		${SLIME}/jsh ${SLIME}/jrunscript/jsh/tools/install/rhino.jsh.js
 	fi
 
-	export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_8}"
-elif [ "${SLIME_WF_JDK_VERSION}" = "11" ]; then
-	SLIME_WF_JDK_11="${JSH_LOCAL_JDKS}/11"
-
-	if [ ! -d "${SLIME_WF_JDK_8}" ]; then
-		${SLIME}/jsh.bash --add-jdk-11
-	fi
-
-	if [ ! -d "${SLIME_WF_JDK_DEFAULT}" ]; then
-		${SLIME}/jsh.bash --install-jdk-11
-	fi
-
-	if [ ! -f "${JSH_SHELL_LIB}/js.jar" ]; then
-		${SLIME}/jsh.bash ${SLIME}/jrunscript/jsh/tools/install/rhino.jsh.js
-	fi
-
-	export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_11}"
+	export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_LOCAL}"
 else
 	>&2 echo "Unsupported JDK version ${SLIME_WF_JDK_VERSION}; exiting."
 	exit 1

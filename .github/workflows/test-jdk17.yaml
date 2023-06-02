@@ -1,0 +1,24 @@
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+name: test-jdk17
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: docker compose -f contributor/docker-compose.yaml build test17
+      - name: Run the linting and tests
+        run: docker compose -f contributor/docker-compose.yaml run test17

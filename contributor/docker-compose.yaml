@@ -27,7 +27,7 @@ services:
     <<: *test
     environment:
       <<: *environment
-      SLIME_WF_JDK_VERSION: 11
+      SLIME_WF_JDK_VERSION: 17
 
   devbox:
     <<: *box
