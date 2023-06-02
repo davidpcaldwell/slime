@@ -417,6 +417,9 @@ namespace slime.$api {
 
 		fifty.tests.manual = {};
 		fifty.tests.manual.issue22 = function() {
+			//	This test enables checking to see whether the stack trace emitted uses reasonable file names for files from the
+			//	SLIME runtime.
+
 			jsh.shell.console("Hello, World!");
 
 			var code: slime.resource.Descriptor = {
