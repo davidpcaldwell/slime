@@ -132,6 +132,7 @@ namespace slime.jsh.shell {
 		export interface ForkInvocation<R = ForkResult> extends Invocation {
 			shell?: slime.jrunscript.file.Directory
 			fork?: true
+			vmarguments?: any
 
 			evaluate?: (p: ForkResult) => R
 		}
@@ -191,7 +192,6 @@ namespace slime.jsh.shell {
 			home?: slime.jrunscript.file.Directory
 			relaunch: () => void
 			debug: any
-			command: any
 			url: any
 		}
 
