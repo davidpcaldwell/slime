@@ -48,9 +48,11 @@ namespace slime.jsh {
 
 		export namespace internal {
 			export interface Runtime extends slime.jrunscript.runtime.Exports {
-				//	provided by engine-specific rhino.js and nashorn.js
-				exit: any
-				jsh: any
+				//	implementations provided by engine-specific rhino.js and nashorn.js
+
+				exit: (status: number) => never
+
+				jsh: (configuration: slime.jrunscript.native.inonit.script.jsh.Shell.Environment, invocation: slime.jrunscript.native.inonit.script.jsh.Shell.Invocation) => number
 			}
 		}
 
@@ -78,6 +80,7 @@ namespace slime.jsh {
 				fifty: slime.fifty.test.Kit
 			) {
 				var verify = fifty.verify;
+				var $api = fifty.global.$api;
 				var jsh = fifty.global.jsh;
 
 				type exports = { foo: string }
@@ -119,7 +122,8 @@ namespace slime.jsh {
 							script: fifty.jsh.file.object.getRelativePath("test/jsh-loader-code/main.jsh.js").file,
 							stdio: {
 								output: String
-							}
+							},
+							evaluate: $api.fp.identity
 						});
 						return JSON.parse(result.stdio.output);
 					})();

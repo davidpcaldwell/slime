@@ -32,7 +32,7 @@
 				return {
 					command: "bash",
 					arguments: $api.Array.build(function(rv) {
-						rv.push($context.api.file.world.Location.relative("jsh.bash")($context.api.file.world.Location.from.os(p.shell.src)).pathname);
+						rv.push($context.api.file.Location.relative("jsh")($context.api.file.Location.from.os(p.shell.src)).pathname);
 						rv.push(p.script);
 						if (p.arguments) rv.push.apply(rv, p.arguments);
 					}),
@@ -409,7 +409,7 @@
 					var status = $context.jsh(
 						configuration,
 						p.script,
-						p.arguments
+						p.arguments.map(String)
 					);
 					var evaluate = (p.evaluate) ? p.evaluate : function(result) {
 						if (result.status === null) {

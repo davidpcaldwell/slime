@@ -8,7 +8,7 @@
 (
 	/**
 	 *
-	 * @param { { jsh: any } } global
+	 * @param { { jsh: Partial<slime.jsh.Global> } } global
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { slime.jrunscript.native.inonit.script.jsh.Shell } $jsh
@@ -476,15 +476,17 @@
 		global.jsh.loader.run(
 			{
 				name: $jsh.getInvocation().getScript().getSource().getSourceName(),
-				string: (function() {
-					//	TODO	this code is repeated inside loader.js; should factor out
-					var _reader = $jsh.getInvocation().getScript().getSource().getReader();
-					var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
-					if (rv.substring(0,2) == "#!") {
-						rv = "//" + rv;
+				read: {
+					string: function() {
+						//	TODO	this code is repeated inside loader.js; should factor out
+						var _reader = $jsh.getInvocation().getScript().getSource().getReader();
+						var rv = String(new Packages.inonit.script.runtime.io.Streams().readString(_reader));
+						if (rv.substring(0,2) == "#!") {
+							rv = "//" + rv;
+						}
+						return rv;
 					}
-					return rv;
-				})()
+				}
 			},
 			Object.assign({}, this, {
 				main: internal.deprecate(function(supplied) {
