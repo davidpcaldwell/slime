@@ -1253,6 +1253,7 @@
 				rhino: $engine.classpath
 			}),
 			download: function(version) {
+				var RHINO_JAR_URL = "https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-1.7.14.jar";
 				if (!version) version = "mozilla/1.7.14";
 				var sources = {
 					"mozilla/1.7R3": {
@@ -1268,7 +1269,7 @@
 						format: "jar"
 					},
 					"mozilla/1.7.14": {
-						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-1.7.14.jar",
+						url: RHINO_JAR_URL,
 						format: "jar"
 					}
 				};

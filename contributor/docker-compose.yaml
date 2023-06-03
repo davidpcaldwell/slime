@@ -29,6 +29,12 @@ services:
       <<: *environment
       SLIME_WF_JDK_VERSION: 11
 
+  test17:
+    <<: *test
+    environment:
+      <<: *environment
+      SLIME_WF_JDK_VERSION: 17
+
   devbox:
     <<: *box
     volumes:

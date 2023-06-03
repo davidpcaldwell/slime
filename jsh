@@ -173,15 +173,15 @@ install_jdk_corretto() {
 }
 
 install_jdk_8_corretto() {
-	install_jdk_corretto "8.342.07.3" "8" $1
+	install_jdk_corretto "8.372.07.1" "8" $1
 }
 
 install_jdk_11_corretto() {
-	install_jdk_corretto "11.0.15.9.1" "11" $1
+	install_jdk_corretto "11.0.19.7.1" "11" $1
 }
 
 install_jdk_17_corretto() {
-	install_jdk_corretto "17.0.3.6.1" "17" $1
+	install_jdk_corretto "17.0.7.7.1" "17" $1
 }
 
 install_jdk_8() {
@@ -330,6 +330,8 @@ get_jdk_major_version() {
 			echo "8"
 		elif [[ $JAVA_VERSION =~ ^11\. ]]; then
 			echo "11"
+		elif [[ $JAVA_VERSION =~ ^17\. ]]; then
+			echo "17"
 		else
 			echo "Unknown"
 		fi
@@ -348,6 +350,24 @@ JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
 if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
 	JRUNSCRIPT="${JRUNSCRIPT} ${JSH_NASHORN_DEPRECATION_ARGUMENT}"
+fi
+
+if [ "${JDK_MAJOR_VERSION}" == "17" ]; then
+	#	Currently we know that we are not running a remote shell because we would download something other than Java 17 for that.
+	JSH_BOOTSTRAP_RHINO="local/jsh/lib/js.jar"
+	# If JSR-223 Rhino worked with jrunscript ...
+	# JSH_BOOTSTRAP_RHINO_ENGINE="local/jsh/lib/jsr223.jar"
+	if [ ! -f "${JSH_BOOTSTRAP_RHINO}" ]; then
+		RHINO_URL=$(awk '/RHINO_JAR_URL =/ {print $4}' rhino/jrunscript/api.js | cut -c 2- | rev | cut -c 3- | rev)
+		RHINO_ENGINE_URL=https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-engine-1.7.14.jar
+		download_install ${RHINO_URL} ${JSH_BOOTSTRAP_RHINO}
+		# If JSR-223 Rhino worked with jrunscript ...
+		# download_install ${RHINO_ENGINE_URL} ${JSH_BOOTSTRAP_RHINO_ENGINE}
+	fi
+	# If JSR-223 Rhino worked with jrunscript ...
+	# JRUNSCRIPT="${JRUNSCRIPT} -classpath ${JSH_BOOTSTRAP_RHINO}:${JSH_BOOTSTRAP_RHINO_ENGINE}"
+	BIN="$(dirname ${JRUNSCRIPT})"
+	JRUNSCRIPT="${BIN}/java -jar ${JSH_BOOTSTRAP_RHINO} -opt -1"
 fi
 
 if [ "$0" == "bash" ]; then
@@ -374,5 +394,5 @@ if [ "$0" == "bash" ]; then
 	AUTHORIZATION_SCRIPT="//  no-op"
 	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "${AUTHORIZATION_SCRIPT}" -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
 else
-	${JRUNSCRIPT} $(dirname $0)/rhino/jrunscript/api.js jsh "$@"
+	${JRUNSCRIPT} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
 fi

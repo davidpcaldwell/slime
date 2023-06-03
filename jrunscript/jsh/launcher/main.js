@@ -267,8 +267,10 @@
 			command.vm("--add-opens");
 			command.vm("jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED");
 
-			command.vm("--add-opens");
-			command.vm("jdk.scripting.nashorn/jdk.nashorn.internal.runtime=ALL-UNNAMED");
+			if (jshJavaHomeMajorVersion < 15) {
+				command.vm("--add-opens");
+				command.vm("jdk.scripting.nashorn/jdk.nashorn.internal.runtime=ALL-UNNAMED");
+			}
 		}
 
 		(
