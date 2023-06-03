@@ -67,28 +67,6 @@
 			}
 		}
 
-		/** @type { slime.$api.fp.Predicate<slime.runtime.document.Element> } */
-		var isJsapiTestingElement = $api.fp.Predicate.and(
-			$context.library.document.Element.isName("script"),
-			$api.fp.pipe(
-				$context.library.document.Element.getAttribute("type"),
-				function(value) {
-					return value.present && /application\/x.jsapi\#/.test(value.value)
-				}
-			)
-		)
-
-		var Element = {
-			isJsapiTestingElement: isJsapiTestingElement,
-			/** @type { (p: slime.runtime.document.Document) => slime.runtime.document.Element[]  } */
-			getJsapiTestingElements: $api.fp.pipe(
-				$context.library.document.Parent.nodes,
-				$api.fp.Stream.filter($context.library.document.Node.isElement),
-				$api.fp.Stream.filter(isJsapiTestingElement),
-				$api.fp.Stream.collect
-			)
-		};
-
 		/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.File,slime.runtime.document.Document> } */
 		var parseJsapiHtml = function(file) {
 			var markup = file.read(String);
@@ -108,7 +86,7 @@
 			}
 			if (/\.html$/.test(file.pathname.basename)) {
 				var parsed = parseJsapiHtml(file);
-				var elements = Element.getJsapiTestingElements(parsed);
+				var elements = $context.library.code.jsapi.Element.getTestingElements(parsed);
 				return Boolean(elements.length);
 			}
 		}
@@ -188,7 +166,7 @@
 								var tests = (function() {
 									try {
 										var parsed = parseJsapiHtml(entry.file);
-										var tests = Element.getJsapiTestingElements(parsed).reduce(function(rv,element) {
+										var tests = $context.library.code.jsapi.Element.getTestingElements(parsed).reduce(function(rv,element) {
 											return rv + getTestSize(element);
 										}, 0);
 										return $api.fp.Maybe.from.some(tests);
