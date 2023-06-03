@@ -115,7 +115,7 @@
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[1] } events
+		 * @param { slime.jrunscript.shell.run.old.Events } events
 		 */
 		var run = function(p,events) {
 			var as;

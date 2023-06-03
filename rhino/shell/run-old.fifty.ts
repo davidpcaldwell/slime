@@ -14,7 +14,7 @@ namespace slime.jrunscript.shell {
 				events?: run.old.Handler
 			): T
 
-			(p: run.old.Argument, events?: run.old.Events): run.old.Result
+			(p: run.old.Argument, events?: run.old.Handler): run.old.Result
 
 			evaluate: any
 			stdio: any
