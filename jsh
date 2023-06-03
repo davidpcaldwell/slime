@@ -343,9 +343,9 @@ get_jdk_major_version() {
 #	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
 #	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to
 #	be found with JDK 8. So we have to version-check the JDK to determine whether to supply the argument. This version test works
-#	with SLIME-supported Amazon Corretto JDK 8 and JDK 11, and hasn't yet been tested with anything else.
+#	with SLIME-supported Amazon Corretto JDK 8, JDK 11, and JDK 17, and hasn't yet been tested with anything else.
 #
-#	But it works with JDK 8 and 11, so it's better than nothing.
+#	But it works with JDK 8, 11, and 17, so it's better than nothing.
 JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
 if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
@@ -359,7 +359,8 @@ if [ "${JDK_MAJOR_VERSION}" == "17" ]; then
 	# JSH_BOOTSTRAP_RHINO_ENGINE="local/jsh/lib/jsr223.jar"
 	if [ ! -f "${JSH_BOOTSTRAP_RHINO}" ]; then
 		RHINO_URL=$(awk '/RHINO_JAR_URL =/ {print $4}' rhino/jrunscript/api.js | cut -c 2- | rev | cut -c 3- | rev)
-		RHINO_ENGINE_URL=https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-engine-1.7.14.jar
+		# If JSR-223 Rhino worked with jrunscript ...
+		# RHINO_ENGINE_URL=https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-engine-1.7.14.jar
 		download_install ${RHINO_URL} ${JSH_BOOTSTRAP_RHINO}
 		# If JSR-223 Rhino worked with jrunscript ...
 		# download_install ${RHINO_ENGINE_URL} ${JSH_BOOTSTRAP_RHINO_ENGINE}

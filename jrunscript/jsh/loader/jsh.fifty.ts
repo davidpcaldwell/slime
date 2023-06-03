@@ -283,7 +283,7 @@ namespace slime.jsh {
 			//	CoffeeScript support is probably going to be dropped soon, anyway.
 			fifty.tests.manual.coffeescript = function() {
 				if (jsh.shell.jsh.lib.getFile("coffee-script.js")) {
-					type jshResult = { status: number, stdio: { output: string } }
+					type jshResult = { status: number, stdio?: { output?: string } }
 					var hello: jshResult = jsh.shell.jsh({
 						shell: $jsapi.environment.jsh.unbuilt.src,
 						script: $jsapi.environment.jsh.unbuilt.src.getRelativePath("jrunscript/jsh/loader/test/coffee/hello.jsh.coffee").file,

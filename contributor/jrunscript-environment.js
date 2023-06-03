@@ -33,6 +33,7 @@
 						stdio: {
 							output: String
 						},
+						/** @type { (p: slime.jsh.shell.oo.ForkResult) => any } */
 						evaluate: function(result) {
 							return JSON.parse(result.stdio.output);
 						}
