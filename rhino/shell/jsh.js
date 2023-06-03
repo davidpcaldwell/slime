@@ -213,15 +213,20 @@
 			};
 		}
 
+		/**
+		 * @type { (p: slime.jsh.shell.oo.Invocation) => p is slime.jsh.shell.oo.ForkInvocation }
+		 */
 		var getJshFork = function(p) {
-			if (p.fork) return true;
-			if (p.classpath) return true;
+			if (p["fork"]) return true;
+			//	Was documented but unused; could re-implement
+			//if (p.classpath) return true;
 			if (p.environment && p.environment.JSH_SCRIPT_CLASSPATH) return true;
 			if (p.environment && p.environment.JSH_PLUGINS != module.environment.JSH_PLUGINS) return true;
 			if (p.environment && p.environment.JSH_DEBUG_SCRIPT != module.environment.JSH_DEBUG_SCRIPT) return true;
-			if (p.shell) return true;
+			if (p["shell"]) return true;
 			//	TODO	allow unforked URL-based scripts
-			if (typeof(p.script.resolve) == "function") return true;
+			//	TODO	this seems to indicate that the argument p.script need not be a file, but can be a URL
+			if (typeof(p.script["resolve"]) == "function") return true;
 			return false;
 		}
 
@@ -254,8 +259,7 @@
 
 		$exports.jsh = Object.assign(
 			/**
-			 *
-			 * @param { Parameters<slime.jsh.shell.Exports["jsh"]>[0] } p
+			 * @type { slime.jsh.shell.Exports["run"] }
 			 */
 			function(p) {
 				if (!arguments[0].script && !arguments[0].arguments) {
@@ -283,10 +287,9 @@
 				}
 				//	TODO	need to detect directives in the given script and fork if they are present
 
-				var fork = getJshFork(p);
+				//var fork = getJshFork(p);
 
-
-				if (fork) {
+				if (getJshFork(p)) {
 					return module.jrunscript(
 						$api.Object.compose(
 							$exports.jsh.command(p),
@@ -300,7 +303,7 @@
 						if (p.directory) return p.directory;
 						if (p.workingDirectory) return p.workingDirectory;
 					})();
-					var environment = getJshEnvironment(p,fork);
+					var environment = getJshEnvironment(p,false);
 					var configuration = new JavaAdapter(
 						Packages.inonit.script.jsh.Shell.Environment,
 						new function() {
@@ -411,6 +414,7 @@
 						p.script,
 						p.arguments.map(String)
 					);
+
 					var evaluate = (p.evaluate) ? p.evaluate : function(result) {
 						if (result.status === null) {
 							result.status = 0;
@@ -420,6 +424,7 @@
 						}
 						return result;
 					};
+
 					return evaluate({
 						status: status,
 						//	no error property

@@ -88,7 +88,7 @@ namespace slime.jsh.shell {
 	type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
 
 	export namespace oo {
-		export interface Result {
+		export interface EngineResult {
 			status: number
 			jsh: {
 				script: Invocation["script"]
@@ -97,20 +97,22 @@ namespace slime.jsh.shell {
 			environment: Invocation["environment"]
 			directory: Invocation["directory"]
 			workingDirectory: Invocation["workingDirectory"]
-
-			//	TODO	Plenty of working code indicates this property is present, but so far, analysis of the code has not revealed
-			//			why that might be
-			//
-			//	TODO	Now it looks like only forked shells would have this, which makes sense. Not sure whether it could be
-			//			correctly implemented for internal subshells; would have to think hard about java.lang.System streams
-			//			etc. and make sure everything was strictly encapsulated.
-			stdio: Invocation["stdio"]
 		}
 
-		export interface Invocation<R = Result> {
-			shell?: slime.jrunscript.file.Directory
-			fork?: boolean
+		// export interface ForkResult extends EngineResult {
+		// 	//	TODO	Plenty of working code indicates this property is present, but so far, analysis of the code has not revealed
+		// 	//			why that might be
+		// 	//
+		// 	//	TODO	Now it looks like only forked shells would have this, which makes sense. Not sure whether it could be
+		// 	//			correctly implemented for internal subshells; would have to think hard about java.lang.System streams
+		// 	//			etc. and make sure everything was strictly encapsulated.
+		// 	stdio: Invocation["stdio"]
+		// }
+		export type ForkResult = slime.jrunscript.shell.run.old.Result
 
+		export type Result = ForkResult | EngineResult
+
+		export interface Invocation {
 			script: slime.jrunscript.file.File
 			arguments?: Argument[]
 			environment?: any
@@ -120,7 +122,18 @@ namespace slime.jsh.shell {
 			properties?: { [x: string]: string }
 
 			on?: slime.jrunscript.shell.run.old.Argument["on"]
-			evaluate?: (p: Result) => R
+		}
+
+		export interface EngineInvocation<R = EngineResult> extends Invocation {
+			fork?: false
+			evaluate?: (p: EngineResult) => R
+		}
+
+		export interface ForkInvocation<R = ForkResult> extends Invocation {
+			shell?: slime.jrunscript.file.Directory
+			fork?: true
+
+			evaluate?: (p: ForkResult) => R
 		}
 	}
 
@@ -169,7 +182,8 @@ namespace slime.jsh.shell {
 		shell: any
 
 		jsh: {
-			<R>(p: oo.Invocation<R>): R
+			<R>(p: oo.ForkInvocation<R>): R
+			<R>(p: oo.EngineInvocation<R>): R
 
 			src?: slime.jrunscript.file.Directory
 			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.event.Function.Receiver ) => void

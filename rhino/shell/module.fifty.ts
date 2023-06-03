@@ -500,7 +500,10 @@ namespace slime.jrunscript.shell {
 			downloads?: slime.jrunscript.file.Directory
 		}
 
-		jrunscript: any
+		jrunscript: slime.jrunscript.shell.oo.Run<{
+			properties: any
+			arguments: any
+		}>
 
 		kotlin: any
 
