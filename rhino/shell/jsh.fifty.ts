@@ -100,6 +100,10 @@ namespace slime.jsh.shell {
 
 			//	TODO	Plenty of working code indicates this property is present, but so far, analysis of the code has not revealed
 			//			why that might be
+			//
+			//	TODO	Now it looks like only forked shells would have this, which makes sense. Not sure whether it could be
+			//			correctly implemented for internal subshells; would have to think hard about java.lang.System streams
+			//			etc. and make sure everything was strictly encapsulated.
 			stdio: Invocation["stdio"]
 		}
 
