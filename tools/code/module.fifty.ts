@@ -81,6 +81,7 @@ namespace slime.tools.code {
 			Location: {
 				is: (p: slime.jrunscript.file.Location) => boolean
 				parse: (p: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<slime.runtime.document.Document>
+				group: (p: slime.jrunscript.file.Location) => "jsapi" | "fifty" | "other"
 			}
 
 			Element: {
