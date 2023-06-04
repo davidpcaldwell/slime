@@ -553,6 +553,18 @@
 			}
 		}
 
+		var jsapi = {
+			Location: {
+				parse: $api.fp.pipe(
+					$api.fp.Maybe.impure.exception({
+						try: $api.fp.world.mapping($context.library.file.Location.file.read.string()),
+						nothing: function(e) { throw new Error("Could not read file: " + e.pathname + " in " + e.filesystem); }
+					}),
+					document.parse
+				)
+			}
+		}
+
 		$export({
 			Project: {
 				from: {
@@ -586,14 +598,24 @@
 				}
 			},
 			jsapi: {
-				file: {
-					parse: $api.fp.pipe(
-						$api.fp.Maybe.impure.exception({
-							try: $api.fp.world.mapping($context.library.file.Location.file.read.string()),
-							nothing: function(e) { throw new Error("Could not read file: " + e.pathname + " in " + e.filesystem); }
-						}),
-						document.parse
-					)
+				Location: {
+					is: function(location) {
+						var parseJsapiHtml = $api.fp.Maybe.impure.exception({
+							try: jsapi.Location.parse,
+							nothing: function(location) { return new Error("Could not parse: " + location.pathname); }
+						});
+
+						var basename = $context.library.file.Location.basename(location);
+						if (basename == "api.html" || /\.api\.html$/.test(basename)) {
+							return true;
+						}
+						if (/\.html$/.test(basename)) {
+							var parsed = parseJsapiHtml(location);
+							var elements = Element.getJsapiTestingElements(parsed);
+							return Boolean(elements.length);
+						}
+					},
+					parse: jsapi.Location.parse
 				},
 				Element: {
 					getTestingElements: Element.getJsapiTestingElements

@@ -67,24 +67,6 @@
 			}
 		};
 
-		var parseJsapiHtml = $api.fp.Maybe.impure.exception({
-			try: $context.library.code.jsapi.file.parse,
-			nothing: function(location) { return new Error("Could not parse: " + location.pathname); }
-		});
-
-		/** @type { (entry: slime.project.metrics.SourceFile) => boolean } */
-		var isJsapi = function(entry) {
-			var file = entry.file;
-			if (file.pathname.basename == "api.html" || /\.api\.html$/.test(file.pathname.basename)) {
-				return true;
-			}
-			if (/\.html$/.test(file.pathname.basename)) {
-				var parsed = parseJsapiHtml(file.pathname.os.adapt());
-				var elements = $context.library.code.jsapi.Element.getTestingElements(parsed);
-				return Boolean(elements.length);
-			}
-		}
-
 		/** @type { slime.project.metrics.Exports["SourceFile"]["isTypescript"] } */
 		var isTypescript = function(entry) {
 			return (/\.ts$/.test(entry.path));
@@ -98,7 +80,9 @@
 		$export({
 			getSourceFiles: getSourceFiles,
 			SourceFile: {
-				isJsapi: isJsapi,
+				isJsapi: function(file) {
+					return $context.library.code.jsapi.Location.is(file.file.pathname.os.adapt());
+				},
 				isGenerated: function(file) {
 					if (file.path == "rhino/tools/docker/tools/docker-api.d.ts") return true;
 					if (file.path == "rhino/tools/github/tools/github-rest.d.ts") return true;
@@ -122,7 +106,7 @@
 				var grouper = $api.fp.Array.groupBy({
 					/** @type { (p: slime.project.metrics.SourceFile) => string } */
 					group: function(entry) {
-						if (isJsapi(entry)) return "jsapi";
+						if ($context.library.code.jsapi.Location.is(entry.file.pathname.os.adapt())) return "jsapi";
 						if (/\.fifty\.ts$/.test(entry.file.pathname.basename)) {
 							return "fifty";
 						}
@@ -158,13 +142,13 @@
 						list: (function() {
 							return object.jsapi.map(function(entry) {
 								var tests = (function() {
-									try {
-										var parsed = parseJsapiHtml(entry.file.pathname.os.adapt());
-										var tests = $context.library.code.jsapi.Element.getTestingElements(parsed).reduce(function(rv,element) {
+									var parsed = $context.library.code.jsapi.Location.parse(entry.file.pathname.os.adapt());
+									if (parsed.present) {
+										var tests = $context.library.code.jsapi.Element.getTestingElements(parsed.value).reduce(function(rv,element) {
 											return rv + getTestSize(element);
 										}, 0);
 										return $api.fp.Maybe.from.some(tests);
-									} catch (e) {
+									} else {
 										return $api.fp.Maybe.from.nothing();
 									}
 								})();

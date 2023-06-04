@@ -78,7 +78,8 @@ namespace slime.tools.code {
 
 	export interface Exports {
 		jsapi: {
-			file: {
+			Location: {
+				is: (p: slime.jrunscript.file.Location) => boolean
 				parse: (p: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<slime.runtime.document.Document>
 			}
 
