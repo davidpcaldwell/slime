@@ -500,11 +500,13 @@ namespace slime.jrunscript.shell {
 			downloads?: slime.jrunscript.file.Directory
 		}
 
-		jrunscript: (p: Omit<slime.jrunscript.shell.run.old.Argument,"command"> & {
-			jrunscript?: any
-			properties?: any
-			vmarguments?: string[]
-		}) => any
+		jrunscript: slime.jrunscript.shell.oo.Run<
+			Omit<slime.jrunscript.shell.run.old.Argument,"command"> & {
+				jrunscript?: any
+				properties?: any
+				vmarguments?: string[]
+			}
+		>
 
 		kotlin: any
 
