@@ -77,20 +77,11 @@ namespace slime.tools.code {
 	)(fifty);
 
 	export interface Exports {
-		document: {
-			/**
-			 * (Temporary API: because API to source-level parser is unstable) Parses a string into an HTML document, checking to make
-			 * sure the parse was successful.
-			 *
-			 * @param input A string
-			 * @returns The parsed document, or nothing if it did not parse successfully.
-			 */
-			parse: (input: string) => slime.$api.fp.Maybe<slime.runtime.document.Document>
-		}
-	}
-
-	export interface Exports {
 		jsapi: {
+			file: {
+				parse: (p: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<slime.runtime.document.Document>
+			}
+
 			Element: {
 				getTestingElements: (p: slime.runtime.document.Document) => slime.runtime.document.Element[]
 			}
