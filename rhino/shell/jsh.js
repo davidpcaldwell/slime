@@ -261,9 +261,9 @@
 		 *
 		 * @param { slime.jsh.shell.oo.ForkInvocation } p
 		 */
-		var getJshCommand = function(p) {
-			var evaluate = (function() {
-				if (p.evaluate) {
+		var getJrunscriptForkCommand = function(p) {
+			var newEvaluateWithInvocationDataAdded = function(evaluate) {
+				if (evaluate) {
 					return function(result) {
 						result.jsh = {
 							script: p.script,
@@ -273,9 +273,9 @@
 						return p.evaluate(result);
 					}
 				}
-			})();
+			};
 
-			var addCommandTo = function(jargs,script) {
+			var addLoaderArgumentsTo = function(jargs,script) {
 				if (p.vmarguments) {
 					p.vmarguments.forEach(function(argument) {
 						jargs.push(argument);
@@ -293,7 +293,7 @@
 				return jargs;
 			}
 
-			var scripts = (function(shell) {
+			var bootstrapShellInvocationArguments = (function(shell) {
 				var remote = function(url) {
 					return [
 						"-e",
@@ -324,40 +324,49 @@
 					}
 					throw new Error("Shell not found: " + shell);
 				}
+
 				if ($exports.jsh.home) return built($exports.jsh.home);
 				if ($exports.jsh.src) return unbuilt($exports.jsh.src);
 				if ($exports.jsh.url) return remote($exports.jsh.url);
+
 				//	TODO	would unbuilt remote shells have a src property, and would it work?
-				throw new Error("Running shell lacks home, src, and url properties; jsh bug.");
+				throw new Error("Currently running jsh shell lacks home, src, and url properties; bug.");
 			})(p.shell);
 
+			var isRemoteShell = bootstrapShellInvocationArguments[0] == "-e";
+
 			//	Properties to be sent to main.js launcher; other properties will be sent as arguments using addCommandTo
-			var outerProperties = {};
-			if (p["classpath"]) {
-				outerProperties["jsh.shell.classpath"] = String(p["classpath"]);
-			}
-			var copyPropertyIfPresent = function(name) {
+			var launcherProperties = {};
+
+			var copySystemPropertyToLauncherPropertiesIfPresent = function(name) {
 				//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
 				if (Packages.java.lang.System.getProperty(name)) {
-					outerProperties[name] = String(Packages.java.lang.System.getProperty(name));
+					launcherProperties[name] = String(Packages.java.lang.System.getProperty(name));
 				}
+			};
+
+			if (p["classpath"]) {
+				launcherProperties["jsh.shell.classpath"] = String(p["classpath"]);
 			}
-			copyPropertyIfPresent("jsh.engine.rhino.classpath");
-			if (scripts[0] == "-e") {
-				//	remote shell
-				copyPropertyIfPresent("http.proxyHost");
-				copyPropertyIfPresent("http.proxyPort");
-				copyPropertyIfPresent("https.proxyHost");
-				copyPropertyIfPresent("https.proxyPort");
+
+			copySystemPropertyToLauncherPropertiesIfPresent("jsh.engine.rhino.classpath");
+
+			if (isRemoteShell) {
+				copySystemPropertyToLauncherPropertiesIfPresent("http.proxyHost");
+				copySystemPropertyToLauncherPropertiesIfPresent("http.proxyPort");
+				copySystemPropertyToLauncherPropertiesIfPresent("https.proxyHost");
+				copySystemPropertyToLauncherPropertiesIfPresent("https.proxyPort");
 			}
+
 			//	TODO	the jrunscript method also handles vmarguments, perhaps we should pass those through?
 			var argument = $api.Object.compose(p, {
 				environment: getJshEnvironment(p,true),
 				vmarguments: [],
-				properties: outerProperties,
-				arguments: addCommandTo(scripts,p.script),
-				evaluate: evaluate
+				properties: launcherProperties,
+				arguments: addLoaderArgumentsTo(bootstrapShellInvocationArguments,p.script),
+				evaluate: newEvaluateWithInvocationDataAdded(p.evaluate)
 			});
+
 			return argument;
 		}
 
@@ -394,15 +403,18 @@
 				//var fork = getJshFork(p);
 
 				if (getJshFork(p)) {
+					var jrunscriptForkConfiguration = getJrunscriptForkCommand(p);
+
 					// var bashResult = module.run({
 					// 	command: "bash",
 					// 	arguments: $api.Array.build(function(rv) {
 					// 		rv.push();
 					// 	})
 					// })
+
 					return module.jrunscript(
 						$api.Object.compose(
-							getJshCommand(p),
+							jrunscriptForkConfiguration,
 							{
 								jrunscript: module.properties.file("jsh.launcher.jrunscript")
 							}
