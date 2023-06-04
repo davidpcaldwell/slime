@@ -19,10 +19,18 @@ namespace slime.project.metrics {
 		file: slime.jrunscript.file.File
 	}
 
-	export interface JsapiData {
-		name: "jsapi"
+	export interface JsapiMigrationData {
+		name: string
 		files: number
 		bytes: number
+	}
+
+	export interface FiftyData extends JsapiMigrationData {
+		name: "fifty"
+	}
+
+	export interface JsapiData extends JsapiMigrationData {
+		name: "jsapi"
 		list: {
 			path: string
 			bytes: number

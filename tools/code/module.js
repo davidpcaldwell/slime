@@ -561,7 +561,23 @@
 						nothing: function(e) { throw new Error("Could not read file: " + e.pathname + " in " + e.filesystem); }
 					}),
 					document.parse
-				)
+				),
+				is: function(location) {
+					var parseJsapiHtml = $api.fp.Maybe.impure.exception({
+						try: jsapi.Location.parse,
+						nothing: function(location) { return new Error("Could not parse: " + location.pathname); }
+					});
+
+					var basename = $context.library.file.Location.basename(location);
+					if (basename == "api.html" || /\.api\.html$/.test(basename)) {
+						return true;
+					}
+					if (/\.html$/.test(basename)) {
+						var parsed = parseJsapiHtml(location);
+						var elements = Element.getJsapiTestingElements(parsed);
+						return Boolean(elements.length);
+					}
+				}
 			}
 		}
 
@@ -599,23 +615,15 @@
 			},
 			jsapi: {
 				Location: {
-					is: function(location) {
-						var parseJsapiHtml = $api.fp.Maybe.impure.exception({
-							try: jsapi.Location.parse,
-							nothing: function(location) { return new Error("Could not parse: " + location.pathname); }
-						});
-
-						var basename = $context.library.file.Location.basename(location);
-						if (basename == "api.html" || /\.api\.html$/.test(basename)) {
-							return true;
+					is: jsapi.Location.is,
+					parse: jsapi.Location.parse,
+					group: function(location) {
+						if (jsapi.Location.is(location)) return "jsapi";
+						if (/\.fifty\.ts$/.test(location.pathname)) {
+							return "fifty";
 						}
-						if (/\.html$/.test(basename)) {
-							var parsed = parseJsapiHtml(location);
-							var elements = Element.getJsapiTestingElements(parsed);
-							return Boolean(elements.length);
-						}
-					},
-					parse: jsapi.Location.parse
+						return "other";
+					}
 				},
 				Element: {
 					getTestingElements: Element.getJsapiTestingElements
