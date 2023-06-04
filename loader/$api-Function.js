@@ -25,8 +25,8 @@
 
 		var identity = function(v) { return v; };
 
-		/** @type { slime.$api.fp.Exports["Maybe"] } */
 		var Maybe = (
+			/** @type { () => slime.$api.fp.Exports["Maybe"] } */
 			function() {
 				/** @type { slime.$api.fp.Nothing } */
 				var nothing = { present: false };
@@ -35,8 +35,6 @@
 					return { present: true, value: t };
 				};
 				return {
-					nothing: nothing,
-					value: value,
 					from: {
 						nothing: function() { return nothing; },
 						some: value,
@@ -64,6 +62,16 @@
 					/** @type { slime.$api.fp.Exports["Maybe"]["present"] } */
 					present: function(m) {
 						return m.present;
+					},
+					/** @type { slime.$api.fp.Exports["Maybe"]["impure"] } */
+					impure: {
+						exception: function(p) {
+							return function(t) {
+								var tried = p.try(t);
+								if (tried.present) return tried.value;
+								throw p.nothing(t);
+							}
+						}
 					}
 				}
 			}

@@ -535,6 +535,24 @@
 			)
 		};
 
+		var document = {
+			parse: function(markup) {
+				var parsed = $context.library.document.Document.codec.string.decode(
+					markup
+				);
+
+				(function checkParser() {
+					var serialized = $context.library.document.Document.codec.string.encode(parsed);
+
+					if (markup != serialized) {
+						return $api.fp.Maybe.from.nothing();
+					}
+				})();
+
+				return $api.fp.Maybe.from.some(parsed);
+			}
+		}
+
 		$export({
 			Project: {
 				from: {
@@ -567,24 +585,16 @@
 					}
 				}
 			},
-			document: {
-				parse: function(markup) {
-					var parsed = $context.library.document.Document.codec.string.decode(
-						markup
-					);
-
-					(function checkParser() {
-						var serialized = $context.library.document.Document.codec.string.encode(parsed);
-
-						if (markup != serialized) {
-							return $api.fp.Maybe.from.nothing();
-						}
-					})();
-
-					return $api.fp.Maybe.from.some(parsed);
-				}
-			},
 			jsapi: {
+				file: {
+					parse: $api.fp.pipe(
+						$api.fp.Maybe.impure.exception({
+							try: $api.fp.world.mapping($context.library.file.Location.file.read.string()),
+							nothing: function(e) { throw new Error("Could not read file: " + e.pathname + " in " + e.filesystem); }
+						}),
+						document.parse
+					)
+				},
 				Element: {
 					getTestingElements: Element.getJsapiTestingElements
 				}

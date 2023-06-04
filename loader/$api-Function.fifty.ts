@@ -371,6 +371,10 @@ namespace slime.$api.fp {
 
 			map: <T,R>(f: (t: T) => R) => (m: Maybe<T>) => Maybe<R>
 			else: <T>(f: () => T) => (m: Maybe<T>) => T
+
+			impure: {
+				exception: <T,R,E extends Error>(p: { try: (t: T) => slime.$api.fp.Maybe<R>, nothing: (t: T) => E }) => (t: T) => R
+			}
 		}
 	}
 

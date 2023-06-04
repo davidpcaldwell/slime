@@ -65,18 +65,12 @@
 			} else {
 				throw new Error("Not string: " + JSON.stringify(only));
 			}
-		}
+		};
 
-		/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.File,slime.runtime.document.Document> } */
-		var parseJsapiHtml = function(file) {
-			var markup = file.read(String);
-
-			var parse = $context.library.code.document.parse(markup);
-
-			if (!parse.present) throw new Error("Bug in parser: incorrect result parsing " + file.pathname);
-
-			return parse.value;
-		}
+		var parseJsapiHtml = $api.fp.Maybe.impure.exception({
+			try: $context.library.code.jsapi.file.parse,
+			nothing: function(location) { return new Error("Could not parse: " + location.pathname); }
+		});
 
 		/** @type { (entry: slime.project.metrics.SourceFile) => boolean } */
 		var isJsapi = function(entry) {
@@ -85,7 +79,7 @@
 				return true;
 			}
 			if (/\.html$/.test(file.pathname.basename)) {
-				var parsed = parseJsapiHtml(file);
+				var parsed = parseJsapiHtml(file.pathname.os.adapt());
 				var elements = $context.library.code.jsapi.Element.getTestingElements(parsed);
 				return Boolean(elements.length);
 			}
@@ -165,7 +159,7 @@
 							return object.jsapi.map(function(entry) {
 								var tests = (function() {
 									try {
-										var parsed = parseJsapiHtml(entry.file);
+										var parsed = parseJsapiHtml(entry.file.pathname.os.adapt());
 										var tests = $context.library.code.jsapi.Element.getTestingElements(parsed).reduce(function(rv,element) {
 											return rv + getTestSize(element);
 										}, 0);
