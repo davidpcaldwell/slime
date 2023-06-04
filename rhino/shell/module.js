@@ -653,6 +653,7 @@
 		//	this.jrunscript = $context.api.file.Searchpath([this.home.getRelativePath("bin"),this.home.getRelativePath("../bin")]).getCommand("jrunscript");
 		}).call($exports.java);
 
+		/** @type { slime.jrunscript.shell.Exports["jrunscript"] } */
 		$exports.jrunscript = function(p) {
 			var launch = (function() {
 				//	This argument serves mostly to allow the jsh launcher to specify the jrunscript to use, since in Graal
@@ -697,9 +698,9 @@
 				}
 			}
 
-			var args = vmargs.concat(launch.arguments).concat(p.arguments);
+			var args = vmargs.concat(launch.arguments).concat(p.arguments.map(String));
 
-			return scripts.run_old.run($context.api.js.Object.set({}, p, {
+			return scripts.run_old.run($api.Object.compose(p, {
 				command: launch.command,
 				arguments: args
 			}));
