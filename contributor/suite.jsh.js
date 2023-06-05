@@ -86,7 +86,12 @@
 			parameters.options.engine = [""];
 		}
 
-		var Environment = jsh.script.loader.module("jrunscript-environment.js");
+		var code = {
+			/** @type { slime.project.internal.jrunscript_environment.Script } */
+			Environment: jsh.script.loader.script("jrunscript-environment.js")
+		};
+
+		var Environment = code.Environment();
 
 		var hasGit = (
 			function() {
