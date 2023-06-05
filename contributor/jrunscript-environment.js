@@ -49,91 +49,97 @@
 				var unbuilt;
 				var built;
 
-				if (!jsh.shell.environment.SLIME_UNIT_JSH_UNBUILT_ONLY) this.built = new function() {
-					var getLocation = function() {
-						if (!p.home) {
-							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-							p.home = tmp.pathname;
-							tmp.remove();
+				if (!jsh.shell.environment.SLIME_UNIT_JSH_UNBUILT_ONLY) this.built = (
+					function() {
+						var getLocation = function() {
+							if (!p.home) {
+								var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+								p.home = tmp.pathname;
+								tmp.remove();
+							}
+							return p.home;
 						}
-						return p.home;
-					}
 
-					var getHome = function() {
-						getLocation();
-						if (!p.home.directory) {
-							jsh.shell.jsh({
-								shell: jsh.shell.jsh.src,
-								script: p.src.getFile("jrunscript/jsh/etc/build.jsh.js"),
-								arguments: [
-									p.home,
-									"-notest",
-									"-nodoc"
-								].concat(
-									(jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar").pathname] : []
-								).concat(
-									(p.executable) ? ["-executable"] : []
-								),
-								environment: $api.Object.compose(
-									jsh.shell.environment,
-									(jsh.shell.jsh.lib) ? {
-										JSH_SHELL_LIB: jsh.shell.jsh.lib.toString()
-									} : {}
-								)
-								// TODO: below was from previous verify.jsh.js; is it helpful? On Windows, maybe? Looks like no-op
-								// environment: jsh.js.Object.set({
-								// 	//	TODO	next two lines duplicate logic in jsh.test plugin
-								// 	TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-								// 	PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-								// 	PATH: jsh.shell.environment.PATH.toString()
-								// })
-							});
-							if (p.tomcat) {
-								jsh.shell.console("Installing Tomcat into built shell ...");
+						var getHome = function() {
+							getLocation();
+							if (!p.home.directory) {
 								jsh.shell.jsh({
-									shell: p.home.directory,
-									script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
+									shell: jsh.shell.jsh.src,
+									script: p.src.getFile("jrunscript/jsh/etc/build.jsh.js"),
+									arguments: [
+										p.home,
+										"-notest",
+										"-nodoc"
+									].concat(
+										(jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar").pathname] : []
+									).concat(
+										(p.executable) ? ["-executable"] : []
+									),
+									environment: $api.Object.compose(
+										jsh.shell.environment,
+										(jsh.shell.jsh.lib) ? {
+											JSH_SHELL_LIB: jsh.shell.jsh.lib.toString()
+										} : {}
+									)
+									// TODO: below was from previous verify.jsh.js; is it helpful? On Windows, maybe? Looks like no-op
+									// environment: jsh.js.Object.set({
+									// 	//	TODO	next two lines duplicate logic in jsh.test plugin
+									// 	TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+									// 	PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+									// 	PATH: jsh.shell.environment.PATH.toString()
+									// })
 								});
+								if (p.tomcat) {
+									jsh.shell.console("Installing Tomcat into built shell ...");
+									jsh.shell.jsh({
+										shell: p.home.directory,
+										script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
+									});
+								}
 							}
+							return p.home.directory;
 						}
-						return p.home.directory;
-					}
 
-					Object.defineProperty(this, "location", {
-						get: function() {
-							return getLocation();
-						},
-						enumerable: true
-					});
+						var rv = {};
 
-					this.home = void(0);
+						Object.defineProperty(rv, "location", {
+							get: function() {
+								return getLocation();
+							},
+							enumerable: true
+						});
 
-					Object.defineProperty(this, "home", {
-						get: function() {
-							return getHome();
-						},
-						enumerable: true
-					});
+						this.home = void(0);
 
-					Object.defineProperty(this, "data", {
-						get: function() {
-							if (!built) {
-								built = getData(getHome());
+						Object.defineProperty(rv, "home", {
+							get: function() {
+								return getHome();
+							},
+							enumerable: true
+						});
+
+						Object.defineProperty(rv, "data", {
+							get: function() {
+								if (!built) {
+									built = getData(getHome());
+								}
+								return built;
+							},
+							enumerable: true
+						});
+
+						rv.requireTomcat = function() {
+							if (!this.home.getSubdirectory("lib/tomcat")) {
+								jsh.shell.jsh({
+									shell: this.home,
+									script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
+								})
 							}
-							return built;
-						},
-						enumerable: true
-					});
+						};
 
-					this.requireTomcat = function() {
-						if (!this.home.getSubdirectory("lib/tomcat")) {
-							jsh.shell.jsh({
-								shell: this.home,
-								script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
-							})
-						}
+						return rv;
 					}
-				};
+				)();
 
 				this.unbuilt = new function() {
 					this.src = p.src;
