@@ -15,7 +15,7 @@
 	function($api,jsh) {
 		var src = jsh.shell.jsh.src.toString();
 
-		var at = jsh.file.Location.base(
+		var at = jsh.file.Location.directory.base(
 			jsh.file.Location.from.os(
 				jsh.shell.jsh.src.toString()
 			)

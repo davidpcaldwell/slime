@@ -100,64 +100,66 @@
 					}
 				}
 			},
-			jsapi: $api.fp.pipe(
-				getSourceFiles,
-				$api.fp.Array.groupBy({
-					/** @type { (p: slime.project.metrics.SourceFile) => string } */
-					group: function(entry) {
-						return $context.library.code.jsapi.Location.group(entry.file.pathname.os.adapt());
-					}
-				}),
-				$api.fp.Array.map(
-					/** @returns { slime.project.metrics.JsapiMigrationData & { list: slime.project.metrics.JsapiData["list"] } } */
-					function(group) {
-						return {
-							name: group.group,
-							files: group.array.length,
-							bytes: size(group.array),
-							list: (group.group == "jsapi") ? (function() {
-								return group.array.map(function(entry) {
-									var tests = (function() {
-										var parsed = $context.library.code.jsapi.Location.parse(entry.file.pathname.os.adapt());
-										if (parsed.present) {
-											var tests = $context.library.code.jsapi.Element.getTestingElements(parsed.value).reduce(function(rv,element) {
-												return rv + getTestSize(element);
-											}, 0);
-											return $api.fp.Maybe.from.some(tests);
-										} else {
-											return $api.fp.Maybe.from.nothing();
+			jsapi: {
+				analysis: $api.fp.pipe(
+					getSourceFiles,
+					$api.fp.Array.groupBy({
+						/** @type { (p: slime.project.metrics.SourceFile) => string } */
+						group: function(entry) {
+							return $context.library.code.jsapi.Location.group(entry.file.pathname.os.adapt());
+						}
+					}),
+					$api.fp.Array.map(
+						/** @returns { slime.project.metrics.JsapiMigrationData & { list: slime.project.metrics.JsapiData["list"] } } */
+						function(group) {
+							return {
+								name: group.group,
+								files: group.array.length,
+								bytes: size(group.array),
+								list: (group.group == "jsapi") ? (function() {
+									return group.array.map(function(entry) {
+										var tests = (function() {
+											var parsed = $context.library.code.jsapi.Location.parse(entry.file.pathname.os.adapt());
+											if (parsed.present) {
+												var tests = $context.library.code.jsapi.Element.getTestingElements(parsed.value).reduce(function(rv,element) {
+													return rv + getTestSize(element);
+												}, 0);
+												return $api.fp.Maybe.from.some(tests);
+											} else {
+												return $api.fp.Maybe.from.nothing();
+											}
+										})();
+										return {
+											path: entry.path,
+											bytes: entry.file.length,
+											tests: tests
 										}
-									})();
-									return {
-										path: entry.path,
-										bytes: entry.file.length,
-										tests: tests
-									}
-								}).sort(function(a,b) {
-									return b.bytes - a.bytes;
-								});
-							})() : void(0)
+									}).sort(function(a,b) {
+										return b.bytes - a.bytes;
+									});
+								})() : void(0)
+							};
+						}
+					),
+					function(p) {
+						var byName = function(name) {
+							return p.find(function(group) {
+								return group.name == name;
+							});
 						};
-					}
-				),
-				function(p) {
-					var byName = function(name) {
-						return p.find(function(group) {
-							return group.name == name;
-						});
-					};
 
-					/** @type { slime.js.Cast<slime.project.metrics.FiftyData> } */
-					var asFiftyData = $api.fp.cast;
-					/** @type { slime.js.Cast<slime.project.metrics.JsapiData> } */
-					var asJsapiData = $api.fp.cast;
+						/** @type { slime.js.Cast<slime.project.metrics.FiftyData> } */
+						var asFiftyData = $api.fp.cast;
+						/** @type { slime.js.Cast<slime.project.metrics.JsapiData> } */
+						var asJsapiData = $api.fp.cast;
 
-					return {
-						jsapi: asJsapiData(byName("jsapi")),
-						fifty: asFiftyData(byName("fifty"))
+						return {
+							jsapi: asJsapiData(byName("jsapi")),
+							fifty: asFiftyData(byName("fifty"))
+						}
 					}
-				}
-			)
+				)
+			}
 		});
 	}
 //@ts-ignore

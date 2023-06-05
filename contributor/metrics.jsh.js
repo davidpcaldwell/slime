@@ -41,7 +41,7 @@
 		jsh.script.cli.wrap({
 			commands: {
 				jsapi: function(invocation) {
-					var data = model.jsapi(SLIME);
+					var data = model.jsapi.analysis(SLIME);
 
 					[data.fifty, data.jsapi].forEach(function(group) {
 						jsh.shell.console(group.name + ": " + group.files + " files, " + group.bytes + " bytes");

@@ -21,6 +21,36 @@
 			loader: $loader.script("loader.js")
 		};
 
+		/** @type { (fs: slime.jrunscript.file.world.Filesystem) => slime.$api.fp.Transform<string> } */
+		var canonicalize = function(filesystem) {
+			return function(pathname) {
+				var terms = pathname.split(filesystem.separator.pathname);
+				var rv = [];
+				terms.forEach(function(term) {
+					if (term == ".") {
+						return;
+					} else if (term == "..") {
+						rv.pop();
+					} else {
+						rv.push(term);
+					}
+				});
+				return rv.join(filesystem.separator.pathname);
+			}
+		};
+
+		/** @type { slime.jrunscript.file.location.Exports["relative"] } */
+		var Location_relative = function(path) {
+			return function(pathname) {
+				var absolute = pathname.pathname + pathname.filesystem.separator.pathname + path;
+				var canonical = canonicalize(pathname.filesystem)(absolute);
+				return {
+					filesystem: pathname.filesystem,
+					pathname: canonical
+				}
+			}
+		}
+
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Location } location
@@ -54,17 +84,6 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.file.location.Exports["relative"] } */
-		var Location_relative = function(path) {
-			return function(pathname) {
-				var absolute = pathname.filesystem.relative(pathname.pathname, path);
-				return {
-					filesystem: pathname.filesystem,
-					pathname: absolute
-				}
-			}
-		}
-
 		/** @type { ReturnType<slime.jrunscript.file.Exports["world"]["Location"]["file"]["exists"]> } */
 		var Location_file_exists = function(location) {
 			return function(events) {
@@ -93,7 +112,7 @@
 		/** @type { slime.$api.fp.world.Action<slime.jrunscript.file.Location, { created: string }> } */
 		var ensureParent = function(location) {
 			var it = function(location,events) {
-				var parent = Location_relative("../")(location);
+				var parent = Location_relative("..")(location);
 				var exists = Location_directory_exists(parent)(events);
 				if (!exists) {
 					it(parent, events);
@@ -119,6 +138,40 @@
 			}
 		};
 
+		var directory = {
+			/** @type { Pick<slime.jrunscript.file.location.directory.Exports,"base"|"relativePath"|"relativeTo"> } */
+			navigation: {
+				base: function(location) {
+					return function(relative) {
+						return Location_relative(relative)(location);
+					}
+				},
+				relativePath: Location_relative,
+				relativeTo: function(target) {
+					/** @type { (reference: slime.jrunscript.file.Location, location: slime.jrunscript.file.Location) => string } */
+					var x = function recurse(reference,location) {
+						//	TODO	make sure filesystems are the same
+						var prefix = reference.pathname + reference.filesystem.separator.pathname;
+						//	TODO	seriously, make a fp string function for this
+						if (location.pathname.substring(0, prefix.length) == prefix) {
+							return location.pathname.substring(prefix.length);
+						} else {
+							var terms = reference.pathname.split(reference.filesystem.separator.pathname);
+							var up = {
+								filesystem: reference.filesystem,
+								pathname: terms.slice(0, terms.length-1).join(reference.filesystem.separator.pathname)
+							};
+							return "../" + recurse(up, location);
+						}
+					}
+
+					return function(location) {
+						return x(target, location);
+					}
+				}
+			}
+		}
+
 		var loader = code.loader({
 			library: {
 				Location: Location
@@ -138,14 +191,9 @@
 						return filesystemFromSpiTemporary(provider);
 					}
 				},
-				base: function(location) {
-					return function(relative) {
-						return Location_relative(relative)(location);
-					}
-				},
-				relative: Location_relative,
+				relative: $api.deprecate(directory.navigation.relativePath),
 				parent: function() {
-					return Location_relative("../");
+					return Location_relative("..");
 				},
 				basename: function(location) {
 					var tokens = location.pathname.split(location.filesystem.separator.pathname);
@@ -348,6 +396,9 @@
 					},
 				},
 				directory: {
+					base: directory.navigation.base,
+					relativePath: directory.navigation.relativePath,
+					relativeTo: directory.navigation.relativeTo,
 					/** @type { slime.jrunscript.file.location.Exports["directory"]["exists"] } */
 					exists: function() {
 						return Location_directory_exists;
