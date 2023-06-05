@@ -112,7 +112,7 @@
 		/** @type { slime.$api.fp.world.Action<slime.jrunscript.file.Location, { created: string }> } */
 		var ensureParent = function(location) {
 			var it = function(location,events) {
-				var parent = Location_relative("../")(location);
+				var parent = Location_relative("..")(location);
 				var exists = Location_directory_exists(parent)(events);
 				if (!exists) {
 					it(parent, events);
@@ -193,7 +193,7 @@
 				},
 				relative: $api.deprecate(directory.navigation.relativePath),
 				parent: function() {
-					return Location_relative("../");
+					return Location_relative("..");
 				},
 				basename: function(location) {
 					var tokens = location.pathname.split(location.filesystem.separator.pathname);
