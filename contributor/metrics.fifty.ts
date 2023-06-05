@@ -56,12 +56,10 @@ namespace slime.project.metrics {
 			}
 		}
 
-		jsapi: (base: slime.jrunscript.file.Directory) => {
-			jsapi: JsapiData
-			fifty: {
-				name: "fifty"
-				files: number
-				bytes: number
+		jsapi: {
+			analysis: (base: slime.jrunscript.file.Directory) => {
+				jsapi: JsapiData
+				fifty: FiftyData
 			}
 		}
 	}
