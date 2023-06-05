@@ -14,7 +14,16 @@ namespace slime.project.internal.jrunscript_environment {
 	}
 
 	export interface Environment {
-		jsh: any
+		jsh: {
+			built: {
+				readonly location: slime.jrunscript.file.Pathname;
+				readonly home: slime.jrunscript.file.Directory;
+				readonly data: any;
+				requireTomcat(): void;
+			}
+			src: any
+			unbuilt: any
+		}
 		noselfping: any
 	}
 
