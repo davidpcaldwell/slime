@@ -5,18 +5,17 @@
 //	END LICENSE
 
 namespace slime.project.internal.jrunscript_environment {
-	export interface Context {
-	}
-
 	export interface Argument {
 		src: slime.jrunscript.file.Directory
-		home: slime.jrunscript.file.Pathname
+		home?: slime.jrunscript.file.Pathname
 		executable: boolean
-		noselfping: true
+		noselfping: boolean
 		tomcat: boolean
 	}
 
 	export interface Environment {
+		jsh: any
+		noselfping: any
 	}
 
 	export type Exports = new (p: Argument) => Environment
@@ -32,5 +31,5 @@ namespace slime.project.internal.jrunscript_environment {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.loader.Script<void,Exports>
 }
