@@ -197,11 +197,18 @@ install_jdk_17() {
 }
 
 install_jdk() {
-	install_jdk_8 "$@"
+	install_jdk_11 "$@"
 }
 
 if [ "$1" == "--install-jdk" ]; then
+	#	Default JDK remains 8 because remote shell does not yet work with JDK 11; module path issues
+	#	See jrunscript/jsh/test/remote.fifty.ts
 	install_jdk ${JSH_LOCAL_JDKS}/default
+	exit $?
+fi
+
+if [ "$1" == "--install-jdk-8" ]; then
+	install_jdk_8 ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
 
@@ -296,7 +303,12 @@ if [ -z "${JRUNSCRIPT}" ]; then
 fi
 
 if [ -z "${JRUNSCRIPT}" ]; then
-	install_jdk ${JSH_LOCAL_JDKS}/default
+	if [ "$0" == "bash" ]; then
+		#	Remote shell; we default to JDK 8 for those as there is a problem with module path implementation on remote shells
+		install_jdk_8 ${JSH_LOCAL_JDKS}/default
+	else
+		install_jdk ${JSH_LOCAL_JDKS}/default
+	fi
 	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
 fi
 

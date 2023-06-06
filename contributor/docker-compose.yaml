@@ -22,6 +22,9 @@ services:
     #     source: ../local/wf/logs/docker.compose.test
     #     target: /slime/local/wf/logs/test/current/
     command: /bin/bash /slime/wf check --docker
+    environment:
+      <<: *environment
+      SLIME_WF_JDK_VERSION: 8
 
   test11:
     <<: *test
