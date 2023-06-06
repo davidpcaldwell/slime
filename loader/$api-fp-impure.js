@@ -26,6 +26,13 @@
 				}
 			},
 			Input: {
+				from: {
+					mapping: function(p) {
+						return function() {
+							return p.mapping(p.argument);
+						}
+					}
+				},
 				value: function(v) {
 					var functions = Array.prototype.slice.call(arguments,1);
 					return function() {
