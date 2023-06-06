@@ -197,11 +197,16 @@ install_jdk_17() {
 }
 
 install_jdk() {
-	install_jdk_8 "$@"
+	install_jdk_11 "$@"
 }
 
 if [ "$1" == "--install-jdk" ]; then
 	install_jdk ${JSH_LOCAL_JDKS}/default
+	exit $?
+fi
+
+if [ "$1" == "--install-jdk-8" ]; then
+	install_jdk_8 ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
 

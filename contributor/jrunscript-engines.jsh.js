@@ -19,7 +19,7 @@
 			src: jsh.script.file.parent.parent,
 			noselfping: parameters.options.noselfping,
 			tomcat: true,
-			executable: true
+			executable: Boolean(jsh.shell.PATH.getCommand("gcc"))
 		});
 
 		var engines = jsh.shell.run({
