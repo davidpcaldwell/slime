@@ -201,7 +201,9 @@ install_jdk() {
 }
 
 if [ "$1" == "--install-jdk" ]; then
-	install_jdk ${JSH_LOCAL_JDKS}/default
+	#	Default JDK remains 8 because remote shell does not yet work with JDK 11; module path issues
+	#	See jrunscript/jsh/test/remote.fifty.ts
+	install_jdk_8 ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
 
