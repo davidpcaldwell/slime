@@ -153,9 +153,6 @@
 						return name;
 					}
 				},
-				relative: function(base, relative) {
-					return base + SLASH + relative;
-				},
 				Directory: void(0),
 				File: void(0),
 				Pathname: void(0),
