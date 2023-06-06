@@ -14,6 +14,17 @@
 	 * @param { slime.loader.Export<slime.project.internal.jrunscript_environment.Exports> } $export
 	 */
 	function(Packages,$api,jsh,$export) {
+		/** @type { (specified: slime.jrunscript.file.Pathname) => slime.$api.fp.impure.Input<slime.jrunscript.file.Pathname> } */
+		var getBuiltShellLocation = function(specified) {
+			return $api.fp.impure.Input.memoized(function() {
+				if (specified) return specified;
+				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var rv = tmp.pathname;
+				tmp.remove();
+				return rv;
+			});
+		};
+
 		/**
 		 *
 		 * @param { slime.project.internal.jrunscript_environment.Argument } p
@@ -22,9 +33,9 @@
 			if (!p.src.getSubdirectory("contributor")) {
 				throw new Error("p.src is " + p.src);
 			}
-			//	p.src (directory): source code of shell
-			//	p.home (Pathname): location of built shell
-			//	p.noselfping (boolean): if true, host cannot ping itself
+
+			var getLocation = getBuiltShellLocation(p.home);
+
 			this.jsh = new function() {
 				var getData = function(shell) {
 					return jsh.shell.jsh({
@@ -51,23 +62,13 @@
 
 				if (!jsh.shell.environment.SLIME_UNIT_JSH_UNBUILT_ONLY) this.built = (
 					function() {
-						var getLocation = function() {
-							if (!p.home) {
-								var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-								p.home = tmp.pathname;
-								tmp.remove();
-							}
-							return p.home;
-						}
-
 						var getHome = function() {
-							getLocation();
-							if (!p.home.directory) {
+							if (!getLocation().directory) {
 								jsh.shell.jsh({
 									shell: jsh.shell.jsh.src,
 									script: p.src.getFile("jrunscript/jsh/etc/build.jsh.js"),
 									arguments: [
-										p.home,
+										getLocation(),
 										"-notest",
 										"-nodoc"
 									].concat(
@@ -92,12 +93,12 @@
 								if (p.tomcat) {
 									jsh.shell.console("Installing Tomcat into built shell ...");
 									jsh.shell.jsh({
-										shell: p.home.directory,
+										shell: getLocation().directory,
 										script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
 									});
 								}
 							}
-							return p.home.directory;
+							return getLocation().directory;
 						}
 
 						var rv = {};

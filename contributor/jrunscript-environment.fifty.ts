@@ -6,10 +6,24 @@
 
 namespace slime.project.internal.jrunscript_environment {
 	export interface Argument {
+		/**
+		 * The location of the source code of the shell.
+		 */
 		src: slime.jrunscript.file.Directory
+
+		/**
+		 * The location of a built shell, or the location at which to build a built shell. If absent, a temporary directory will be
+		 * used.
+		 */
 		home?: slime.jrunscript.file.Pathname
+
 		executable: boolean
+
+		/**
+		 * Indicates whether the current host is capable of pinging itself; `true` indicates it cannot.
+		 */
 		noselfping: boolean
+
 		tomcat: boolean
 	}
 
