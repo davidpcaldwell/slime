@@ -30,6 +30,11 @@ namespace slime.project.metrics {
 		}[]
 	}
 
+	export interface JsapiAnalysis {
+		jsapi: JsapiMigrationData
+		fifty: JsapiMigrationData
+	}
+
 	export interface Exports {
 		/**
 		 * Returns all the source files under the given directory. Source files are defined as all files in a directory containing
@@ -49,10 +54,7 @@ namespace slime.project.metrics {
 		}
 
 		jsapi: {
-			analysis: (base: slime.jrunscript.file.Directory) => {
-				jsapi: JsapiMigrationData
-				fifty: JsapiMigrationData
-			}
+			analysis: (base: slime.jrunscript.file.Directory) => JsapiAnalysis
 		}
 	}
 
