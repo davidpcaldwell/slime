@@ -14,6 +14,82 @@
 	 * @param { slime.loader.Export<slime.project.internal.jrunscript_environment.Exports> } $export
 	 */
 	function(Packages,$api,jsh,$export) {
+		/** @type { (specified: slime.jrunscript.file.Pathname) => slime.$api.fp.impure.Input<slime.jrunscript.file.Pathname> } */
+		var configureBuiltShellLocation = function(specified) {
+			return $api.fp.impure.Input.memoized(function() {
+				if (specified) return specified;
+				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var rv = tmp.pathname;
+				tmp.remove();
+				return rv;
+			});
+		};
+
+		/** @type { (src: slime.jrunscript.file.Directory) => (shell: slime.jrunscript.file.Directory) => any } */
+		var getShellDataFromScript = function(src) {
+			return function(shell) {
+				return jsh.shell.jsh({
+					shell: shell,
+					script: src.getFile("jrunscript/jsh/test/jsh-data.jsh.js"),
+					stdio: {
+						output: String
+					},
+					/** @type { (p: slime.jsh.shell.oo.ForkResult) => any } */
+					evaluate: function(result) {
+						return JSON.parse(result.stdio.output);
+					}
+				});
+			}
+		};
+
+		/** @type { (src: slime.jrunscript.file.Directory) => slime.$api.fp.impure.Output<slime.jrunscript.file.Directory> } */
+		var configureTomcatInstallIntoShell = function(src) {
+			return function(shell) {
+				jsh.shell.jsh({
+					shell: shell,
+					script: src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
+				})
+			}
+		};
+
+		/** @type { (src: slime.jrunscript.file.Directory, executable: boolean, tomcat: boolean) => slime.$api.fp.impure.Output<slime.jrunscript.file.Pathname> } */
+		var configureShellBuild = function(src, executable, tomcat) {
+			var installTomcatToShell = configureTomcatInstallIntoShell(src);
+
+			return function(location) {
+				jsh.shell.jsh({
+					shell: jsh.shell.jsh.src,
+					script: src.getFile("jrunscript/jsh/etc/build.jsh.js"),
+					arguments: [
+						location,
+						"-notest",
+						"-nodoc"
+					].concat(
+						(jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar").pathname] : []
+					).concat(
+						(executable) ? ["-executable"] : []
+					),
+					environment: $api.Object.compose(
+						jsh.shell.environment,
+						(jsh.shell.jsh.lib) ? {
+							JSH_SHELL_LIB: jsh.shell.jsh.lib.toString()
+						} : {}
+					)
+					// TODO: below was from previous verify.jsh.js; is it helpful? On Windows, maybe? Looks like no-op
+					// environment: jsh.js.Object.set({
+					// 	//	TODO	next two lines duplicate logic in jsh.test plugin
+					// 	TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
+					// 	PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
+					// 	PATH: jsh.shell.environment.PATH.toString()
+					// })
+				});
+
+				if (tomcat) {
+					installTomcatToShell(location.directory);
+				}
+			}
+		}
+
 		/**
 		 *
 		 * @param { slime.project.internal.jrunscript_environment.Argument } p
@@ -22,117 +98,67 @@
 			if (!p.src.getSubdirectory("contributor")) {
 				throw new Error("p.src is " + p.src);
 			}
-			//	p.src (directory): source code of shell
-			//	p.home (Pathname): location of built shell
-			//	p.noselfping (boolean): if true, host cannot ping itself
-			this.jsh = new function() {
-				var getData = function(shell) {
-					return jsh.shell.jsh({
-						shell: shell,
-						script: p.src.getFile("jrunscript/jsh/test/jsh-data.jsh.js"),
-						stdio: {
-							output: String
-						},
-						evaluate: function(result) {
-							return JSON.parse(result.stdio.output);
-						}
-					});
-				};
 
+			var getShellData = getShellDataFromScript(p.src);
+
+			var getBuiltShellLocation = configureBuiltShellLocation(p.home);
+
+			var buildShell = configureShellBuild(p.src, p.executable, p.tomcat);
+
+			var installTomcatToShell = configureTomcatInstallIntoShell(p.src);
+
+			var getHome = $api.fp.impure.Input.map(
+				getBuiltShellLocation,
+				$api.fp.impure.tap(function(location) {
+					if (!location.directory) {
+						buildShell(location);
+						if (p.tomcat) {
+							jsh.shell.console("Installing Tomcat into built shell ...");
+							installTomcatToShell(location.directory);
+						}
+					}
+				}),
+				$api.fp.property("directory")
+			)
+
+			this.jsh = new function() {
 				this.src = p.src;
 
 				var rhino = ((jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function")) ? jsh.shell.jsh.lib.getFile("js.jar") : null;
 
-				//	TODO	we would like to memoize these functions, but what happens if a memoized function throws an error?
+				if (!jsh.shell.environment.SLIME_UNIT_JSH_UNBUILT_ONLY) this.built = (
+					function() {
+						var rv = {};
 
-				var unbuilt;
-				var built;
+						Object.defineProperty(rv, "location", {
+							get: getBuiltShellLocation,
+							enumerable: true
+						});
 
-				if (!jsh.shell.environment.SLIME_UNIT_JSH_UNBUILT_ONLY) this.built = new function() {
-					var getLocation = function() {
-						if (!p.home) {
-							var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-							p.home = tmp.pathname;
-							tmp.remove();
-						}
-						return p.home;
-					}
+						Object.defineProperty(rv, "home", {
+							get: getHome,
+							enumerable: true
+						});
 
-					var getHome = function() {
-						getLocation();
-						if (!p.home.directory) {
-							jsh.shell.jsh({
-								shell: jsh.shell.jsh.src,
-								script: p.src.getFile("jrunscript/jsh/etc/build.jsh.js"),
-								arguments: [
-									p.home,
-									"-notest",
-									"-nodoc"
-								].concat(
-									(jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar").pathname] : []
-								).concat(
-									(p.executable) ? ["-executable"] : []
-								),
-								environment: $api.Object.compose(
-									jsh.shell.environment,
-									(jsh.shell.jsh.lib) ? {
-										JSH_SHELL_LIB: jsh.shell.jsh.lib.toString()
-									} : {}
-								)
-								// TODO: below was from previous verify.jsh.js; is it helpful? On Windows, maybe? Looks like no-op
-								// environment: jsh.js.Object.set({
-								// 	//	TODO	next two lines duplicate logic in jsh.test plugin
-								// 	TEMP: (jsh.shell.environment.TEMP) ? jsh.shell.environment.TEMP : "",
-								// 	PATHEXT: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT : "",
-								// 	PATH: jsh.shell.environment.PATH.toString()
-								// })
-							});
-							if (p.tomcat) {
-								jsh.shell.console("Installing Tomcat into built shell ...");
-								jsh.shell.jsh({
-									shell: p.home.directory,
-									script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
-								});
+						Object.defineProperty(rv, "data", {
+							get: $api.fp.impure.Input.memoized(
+								$api.fp.impure.Input.from.mapping({
+									mapping: getShellData,
+									argument: getHome()
+								})
+							),
+							enumerable: true
+						});
+
+						rv.requireTomcat = function() {
+							if (!this.home.getSubdirectory("lib/tomcat")) {
+								installTomcatToShell(this.home);
 							}
-						}
-						return p.home.directory;
+						};
+
+						return rv;
 					}
-
-					Object.defineProperty(this, "location", {
-						get: function() {
-							return getLocation();
-						},
-						enumerable: true
-					});
-
-					this.home = void(0);
-
-					Object.defineProperty(this, "home", {
-						get: function() {
-							return getHome();
-						},
-						enumerable: true
-					});
-
-					Object.defineProperty(this, "data", {
-						get: function() {
-							if (!built) {
-								built = getData(getHome());
-							}
-							return built;
-						},
-						enumerable: true
-					});
-
-					this.requireTomcat = function() {
-						if (!this.home.getSubdirectory("lib/tomcat")) {
-							jsh.shell.jsh({
-								shell: this.home,
-								script: p.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
-							})
-						}
-					}
-				};
+				)();
 
 				this.unbuilt = new function() {
 					this.src = p.src;
@@ -144,12 +170,12 @@
 					});
 
 					Object.defineProperty(this, "data", {
-						get: function() {
-							if (!unbuilt) {
-								unbuilt = getData(p.src);
-							}
-							return unbuilt;
-						},
+						get: $api.fp.impure.Input.memoized(
+							$api.fp.impure.Input.from.mapping({
+								mapping: getShellData,
+								argument: p.src
+							})
+						),
 						enumerable: true
 					});
 				};

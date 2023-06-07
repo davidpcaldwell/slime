@@ -65,53 +65,7 @@
 			} else {
 				throw new Error("Not string: " + JSON.stringify(only));
 			}
-		}
-
-		/** @type { slime.$api.fp.Predicate<slime.runtime.document.Element> } */
-		var isJsapiTestingElement = $api.fp.Predicate.and(
-			$context.library.document.Element.isName("script"),
-			$api.fp.pipe(
-				$context.library.document.Element.getAttribute("type"),
-				function(value) {
-					return value.present && /application\/x.jsapi\#/.test(value.value)
-				}
-			)
-		)
-
-		var Element = {
-			isJsapiTestingElement: isJsapiTestingElement,
-			/** @type { (p: slime.runtime.document.Document) => slime.runtime.document.Element[]  } */
-			getJsapiTestingElements: $api.fp.pipe(
-				$context.library.document.Parent.nodes,
-				$api.fp.Stream.filter($context.library.document.Node.isElement),
-				$api.fp.Stream.filter(isJsapiTestingElement),
-				$api.fp.Stream.collect
-			)
 		};
-
-		/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.File,slime.runtime.document.Document> } */
-		var parseJsapiHtml = function(file) {
-			var markup = file.read(String);
-
-			var parse = $context.library.code.document.parse(markup);
-
-			if (!parse.present) throw new Error("Bug in parser: incorrect result parsing " + file.pathname);
-
-			return parse.value;
-		}
-
-		/** @type { (entry: slime.project.metrics.SourceFile) => boolean } */
-		var isJsapi = function(entry) {
-			var file = entry.file;
-			if (file.pathname.basename == "api.html" || /\.api\.html$/.test(file.pathname.basename)) {
-				return true;
-			}
-			if (/\.html$/.test(file.pathname.basename)) {
-				var parsed = parseJsapiHtml(file);
-				var elements = Element.getJsapiTestingElements(parsed);
-				return Boolean(elements.length);
-			}
-		}
 
 		/** @type { slime.project.metrics.Exports["SourceFile"]["isTypescript"] } */
 		var isTypescript = function(entry) {
@@ -126,7 +80,9 @@
 		$export({
 			getSourceFiles: getSourceFiles,
 			SourceFile: {
-				isJsapi: isJsapi,
+				isJsapi: function(file) {
+					return $context.library.code.jsapi.Location.is(file.file.pathname.os.adapt());
+				},
 				isGenerated: function(file) {
 					if (file.path == "rhino/tools/docker/tools/docker-api.d.ts") return true;
 					if (file.path == "rhino/tools/github/tools/github-rest.d.ts") return true;
@@ -144,69 +100,102 @@
 					}
 				}
 			},
-			jsapi: function(base) {
-				var src = getSourceFiles(base);
-
-				var grouper = $api.fp.Array.groupBy({
-					/** @type { (p: slime.project.metrics.SourceFile) => string } */
-					group: function(entry) {
-						if (isJsapi(entry)) return "jsapi";
-						if (/\.fifty\.ts$/.test(entry.file.pathname.basename)) {
-							return "fifty";
-						}
-						return "unknown";
-					}
-				});
-
-				var results = grouper(src);
-
-				var object = $api.fp.now.invoke(
-					results,
-					$api.fp.Array.map(
-						/** @returns { [string, slime.project.metrics.SourceFile[]] } */
-						function(group) {
-							return [ group.group, group.array ];
-						}
-					),
-					function(p) {
-						return Object.fromEntries(p);
-					}
-				);
-
-				return {
-					fifty: {
-						name: "fifty",
-						files: object.fifty.length,
-						bytes: size(object.fifty)
-					},
-					jsapi: {
-						name: "jsapi",
-						files: object.jsapi.length,
-						bytes: size(object.jsapi),
-						list: (function() {
-							return object.jsapi.map(function(entry) {
-								var tests = (function() {
-									try {
-										var parsed = parseJsapiHtml(entry.file);
-										var tests = Element.getJsapiTestingElements(parsed).reduce(function(rv,element) {
-											return rv + getTestSize(element);
-										}, 0);
-										return $api.fp.Maybe.from.some(tests);
-									} catch (e) {
-										return $api.fp.Maybe.from.nothing();
-									}
-								})();
-								return {
-									path: entry.path,
-									bytes: entry.file.length,
-									tests: tests
+			jsapi: {
+				analysis: $api.fp.pipe(
+					function(directory) { return directory.pathname.os.adapt(); },
+					function(location) {
+						return {
+							base: location,
+							files: $context.library.code.Project.from.directory({
+								root: location,
+								descend: function(directory) {
+									var basename = $context.library.file.Location.basename(directory);
+									if (basename == ".git") return false;
+									if (basename == "bin") return false;
+									if (basename == "local") return false;
+									return true;
+								},
+								isSource: function(file) {
+									return $api.fp.Maybe.from.some(true);
 								}
-							}).sort(function(a,b) {
-								return b.bytes - a.bytes;
+							})
+						}
+					},
+					function(p) {
+						//	TODO	simplify
+						return {
+							base: p.base,
+							groups: $api.fp.Array.groupBy({
+								/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,string> } */
+								group: function(entry) {
+									return $context.library.code.jsapi.Location.group(entry);
+								}
+							})(p.files)
+						}
+					},
+					function(p) {
+						var getPath = $context.library.file.Location.directory.relativeTo(p.base);
+
+						/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.project.metrics.SourceFile> } */
+						var toSourceFile = function(location) {
+							return {
+								path: getPath(location),
+								file: $context.library.file.Pathname(location.pathname).file
+							}
+						}
+
+						return p.groups.map(
+							/** @returns { slime.project.metrics.JsapiMigrationData & { list: slime.project.metrics.JsapiData["list"] } } */
+							function(group) {
+								var array = group.array.map(toSourceFile);
+								return {
+									name: group.group,
+									files: group.array.length,
+									bytes: size(array),
+									list: (group.group == "jsapi") ? (function() {
+										return array.map(function(entry) {
+											var tests = (function() {
+												var parsed = $context.library.code.jsapi.Location.parse(entry.file.pathname.os.adapt());
+												if (parsed.present) {
+													var tests = $context.library.code.jsapi.Element.getTestingElements(parsed.value).reduce(function(rv,element) {
+														return rv + getTestSize(element);
+													}, 0);
+													return $api.fp.Maybe.from.some(tests);
+												} else {
+													return $api.fp.Maybe.from.nothing();
+												}
+											})();
+											return {
+												path: entry.path,
+												bytes: entry.file.length,
+												tests: tests
+											}
+										}).sort(function(a,b) {
+											return b.bytes - a.bytes;
+										});
+									})(): void(0)
+								}
+							}
+						)
+					},
+					function(p) {
+						var byName = function(name) {
+							return p.find(function(group) {
+								return group.name == name;
 							});
-						})()
+						};
+
+						/** @type { slime.js.Cast<slime.project.metrics.FiftyData> } */
+						var asFiftyData = $api.fp.cast;
+						/** @type { slime.js.Cast<slime.project.metrics.JsapiData> } */
+						var asJsapiData = $api.fp.cast;
+
+						return {
+							jsapi: asJsapiData(byName("jsapi")),
+							fifty: asFiftyData(byName("fifty"))
+						}
 					}
-				}
+				)
 			}
 		});
 	}

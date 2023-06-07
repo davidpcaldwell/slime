@@ -38,7 +38,12 @@ namespace slime.tools.code {
 				directory: (p: {
 					root: slime.jrunscript.file.Location
 					descend: slime.$api.fp.Predicate<slime.jrunscript.file.Location>
-					isSource: (p: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<boolean>
+					isSource: isSource
+				}) => Project
+
+				git: (p: {
+					root: slime.jrunscript.file.Location
+					isSource: isSource
 				}) => Project
 			}
 		}
@@ -72,21 +77,16 @@ namespace slime.tools.code {
 	)(fifty);
 
 	export interface Exports {
-		document: {
-			/**
-			 * (Temporary API: because API to source-level parser is unstable) Parses a string into an HTML document, checking to make
-			 * sure the parse was successful.
-			 *
-			 * @param input A string
-			 * @returns The parsed document, or nothing if it did not parse successfully.
-			 */
-			parse: (input: string) => slime.$api.fp.Maybe<slime.runtime.document.Document>
-		}
-	}
-
-	export interface Exports {
 		jsapi: {
+			Location: {
+				is: (p: slime.jrunscript.file.Location) => boolean
+				parse: (p: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<slime.runtime.document.Document>
+				group: (p: slime.jrunscript.file.Location) => "jsapi" | "fifty" | "other"
+			}
 
+			Element: {
+				getTestingElements: (p: slime.runtime.document.Document) => slime.runtime.document.Element[]
+			}
 		}
 	}
 
@@ -96,6 +96,10 @@ namespace slime.tools.code {
 	}
 
 	export type isText = (p: slime.tools.code.File) => boolean | undefined
+
+	export type oldIsSource = (p: slime.tools.code.File) => slime.$api.fp.Maybe<boolean>
+
+	export type isSource = (p: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<boolean>
 
 	export interface FileEvents {
 		unknownFileType: slime.tools.code.File
@@ -307,8 +311,8 @@ namespace slime.tools.code {
 
 			getGitSourceFiles: slime.$api.fp.world.Question<
 				{
-					repository: slime.jrunscript.file.world.Location
-					isText: isText
+					repository: slime.jrunscript.file.Location
+					isSource: oldIsSource
 				},
 				FileEvents,
 				slime.tools.code.File[]

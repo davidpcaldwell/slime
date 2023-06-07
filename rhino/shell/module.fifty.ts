@@ -500,7 +500,13 @@ namespace slime.jrunscript.shell {
 			downloads?: slime.jrunscript.file.Directory
 		}
 
-		jrunscript: any
+		jrunscript: slime.jrunscript.shell.oo.Run<
+			Omit<slime.jrunscript.shell.run.old.Argument,"command"> & {
+				jrunscript?: any
+				properties?: any
+				vmarguments?: string[]
+			}
+		>
 
 		kotlin: any
 
@@ -837,7 +843,7 @@ namespace slime.jrunscript.shell {
 
 				properties.composite = {
 					david: "caldwell",
-					katie: "alex",
+					justine: "lutzel",
 					home: "/home/inonit",
 				};
 

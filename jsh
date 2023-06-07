@@ -197,11 +197,18 @@ install_jdk_17() {
 }
 
 install_jdk() {
-	install_jdk_8 "$@"
+	install_jdk_11 "$@"
 }
 
 if [ "$1" == "--install-jdk" ]; then
+	#	Default JDK remains 8 because remote shell does not yet work with JDK 11; module path issues
+	#	See jrunscript/jsh/test/remote.fifty.ts
 	install_jdk ${JSH_LOCAL_JDKS}/default
+	exit $?
+fi
+
+if [ "$1" == "--install-jdk-8" ]; then
+	install_jdk_8 ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
 
@@ -296,7 +303,12 @@ if [ -z "${JRUNSCRIPT}" ]; then
 fi
 
 if [ -z "${JRUNSCRIPT}" ]; then
-	install_jdk ${JSH_LOCAL_JDKS}/default
+	if [ "$0" == "bash" ]; then
+		#	Remote shell; we default to JDK 8 for those as there is a problem with module path implementation on remote shells
+		install_jdk_8 ${JSH_LOCAL_JDKS}/default
+	else
+		install_jdk ${JSH_LOCAL_JDKS}/default
+	fi
 	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
 fi
 
@@ -343,9 +355,9 @@ get_jdk_major_version() {
 #	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
 #	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to
 #	be found with JDK 8. So we have to version-check the JDK to determine whether to supply the argument. This version test works
-#	with SLIME-supported Amazon Corretto JDK 8 and JDK 11, and hasn't yet been tested with anything else.
+#	with SLIME-supported Amazon Corretto JDK 8, JDK 11, and JDK 17, and hasn't yet been tested with anything else.
 #
-#	But it works with JDK 8 and 11, so it's better than nothing.
+#	But it works with JDK 8, 11, and 17, so it's better than nothing.
 JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
 if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
@@ -359,7 +371,8 @@ if [ "${JDK_MAJOR_VERSION}" == "17" ]; then
 	# JSH_BOOTSTRAP_RHINO_ENGINE="local/jsh/lib/jsr223.jar"
 	if [ ! -f "${JSH_BOOTSTRAP_RHINO}" ]; then
 		RHINO_URL=$(awk '/RHINO_JAR_URL =/ {print $4}' rhino/jrunscript/api.js | cut -c 2- | rev | cut -c 3- | rev)
-		RHINO_ENGINE_URL=https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-engine-1.7.14.jar
+		# If JSR-223 Rhino worked with jrunscript ...
+		# RHINO_ENGINE_URL=https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-engine-1.7.14.jar
 		download_install ${RHINO_URL} ${JSH_BOOTSTRAP_RHINO}
 		# If JSR-223 Rhino worked with jrunscript ...
 		# download_install ${RHINO_ENGINE_URL} ${JSH_BOOTSTRAP_RHINO_ENGINE}

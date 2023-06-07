@@ -167,23 +167,30 @@
 
 		/**
 		 *
+		 * @param { (p: slime.tools.code.File) => boolean | undefined } oldIsText
+		 * @returns { (p: slime.tools.code.File) => slime.$api.fp.Maybe<boolean> }
+		 */
+		var updateIsText = function(oldIsText) {
+			return function(file) {
+				var old = oldIsText(file);
+				if (typeof(old) == "boolean") return $api.fp.Maybe.from.some(old);
+				return $api.fp.Maybe.from.nothing();
+			}
+		};
+
+		/** @type { (p: slime.tools.code.isSource) => slime.tools.code.oldIsSource } */
+		var downgradeIsSource = function(isSource) {
+			return function(file) {
+				return isSource(file.file);
+			}
+		};
+
+		/**
+		 *
 		 * @type { slime.tools.code.internal.functions["getGitSourceFiles"] }
 		 */
 		function getGitSourceFiles(p) {
 			return function(events) {
-				/**
-				 *
-				 * @param { (p: slime.tools.code.File) => boolean | undefined } oldIsText
-				 * @returns { (p: slime.tools.code.File) => slime.$api.fp.Maybe<boolean> }
-				 */
-				var isText = function(oldIsText) {
-					return function(file) {
-						var old = oldIsText(file);
-						if (typeof(old) == "boolean") return $api.fp.Maybe.from.some(old);
-						return $api.fp.Maybe.from.nothing();
-					}
-				};
-
 				//	We retrieve the Git source files in two steps, because the --others mechanism used to retrieve untracked files
 				//	does not work recursively. Could we use git status? Then we'd only be checking changed files, which would mean
 				//	if linting were added to the project, it would not lint all files immediately. More thinking / design to do.
@@ -215,10 +222,9 @@
 
 				var listed = tracked.concat(untracked).map(gitPathToSourceFile(p.repository));
 
-				var text = isText(p.isText);
 				var rv = [];
 				for (var i=0; i<listed.length; i++) {
-					var fileIsText = text(listed[i]);
+					var fileIsText = p.isSource(listed[i]);
 					if (!fileIsText.present) {
 						events.fire("unknownFileType", listed[i]);
 					} else {
@@ -391,7 +397,7 @@
 					getGitSourceFiles,
 					{
 						repository: $context.library.file.world.Location.from.os(p.repository),
-						isText: p.isText
+						isSource: updateIsText(p.isText)
 					},
 					{
 						unknownFileType: function(e) {
@@ -475,7 +481,7 @@
 					getGitSourceFiles,
 					{
 						repository: $context.library.file.world.Location.from.os(p.repository),
-						isText: p.isText
+						isSource: updateIsText(p.isText)
 					},
 					{
 						unknownFileType: function(e) {
@@ -507,6 +513,74 @@
 			}
 		}
 
+		/** @type { slime.$api.fp.Predicate<slime.runtime.document.Element> } */
+		var isJsapiTestingElement = $api.fp.Predicate.and(
+			$context.library.document.Element.isName("script"),
+			$api.fp.pipe(
+				$context.library.document.Element.getAttribute("type"),
+				function(value) {
+					return value.present && /application\/x.jsapi\#/.test(value.value)
+				}
+			)
+		)
+
+		var Element = {
+			isJsapiTestingElement: isJsapiTestingElement,
+			/** @type { (p: slime.runtime.document.Document) => slime.runtime.document.Element[]  } */
+			getJsapiTestingElements: $api.fp.pipe(
+				$context.library.document.Parent.nodes,
+				$api.fp.Stream.filter($context.library.document.Node.isElement),
+				$api.fp.Stream.filter(isJsapiTestingElement),
+				$api.fp.Stream.collect
+			)
+		};
+
+		var document = {
+			parse: function(markup) {
+				var parsed = $context.library.document.Document.codec.string.decode(
+					markup
+				);
+
+				(function checkParser() {
+					var serialized = $context.library.document.Document.codec.string.encode(parsed);
+
+					if (markup != serialized) {
+						return $api.fp.Maybe.from.nothing();
+					}
+				})();
+
+				return $api.fp.Maybe.from.some(parsed);
+			}
+		}
+
+		var jsapi = {
+			Location: {
+				parse: $api.fp.pipe(
+					$api.fp.Maybe.impure.exception({
+						try: $api.fp.world.mapping($context.library.file.Location.file.read.string()),
+						nothing: function(e) { throw new Error("Could not read file: " + e.pathname + " in " + e.filesystem); }
+					}),
+					document.parse
+				),
+				is: function(location) {
+					var parseJsapiHtml = $api.fp.Maybe.impure.exception({
+						try: jsapi.Location.parse,
+						nothing: function(location) { return new Error("Could not parse: " + location.pathname); }
+					});
+
+					var basename = $context.library.file.Location.basename(location);
+					if (basename == "api.html" || /\.api\.html$/.test(basename)) {
+						return true;
+					}
+					if (/\.html$/.test(basename)) {
+						var parsed = parseJsapiHtml(location);
+						var elements = Element.getJsapiTestingElements(parsed);
+						return Boolean(elements.length);
+					}
+				}
+			}
+		}
+
 		$export({
 			Project: {
 				from: {
@@ -525,28 +599,35 @@
 							}),
 							$api.fp.Stream.collect
 						);
+					},
+					git: function(p) {
+						return $api.fp.world.now.question(
+							getGitSourceFiles,
+							{
+								repository: p.root,
+								isSource: downgradeIsSource(p.isSource)
+							}
+						).map(function(file) {
+							return file.file;
+						});
 					}
 				}
 			},
-			document: {
-				parse: function(markup) {
-					var parsed = $context.library.document.Document.codec.string.decode(
-						markup
-					);
-
-					(function checkParser() {
-						var serialized = $context.library.document.Document.codec.string.encode(parsed);
-
-						if (markup != serialized) {
-							return $api.fp.Maybe.from.nothing();
-						}
-					})();
-
-					return $api.fp.Maybe.from.some(parsed);
-				}
-			},
 			jsapi: {
-
+				Location: {
+					is: jsapi.Location.is,
+					parse: jsapi.Location.parse,
+					group: function(location) {
+						if (jsapi.Location.is(location)) return "jsapi";
+						if (/\.fifty\.ts$/.test(location.pathname)) {
+							return "fifty";
+						}
+						return "other";
+					}
+				},
+				Element: {
+					getTestingElements: Element.getJsapiTestingElements
+				}
 			},
 			File: {
 				hasShebang: hasShebang,

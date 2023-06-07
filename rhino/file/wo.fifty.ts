@@ -20,6 +20,8 @@ namespace slime.jrunscript.file {
 		) {
 			fifty.tests.exports = fifty.test.Parent();
 			fifty.tests.exports.Location = fifty.test.Parent();
+
+			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
@@ -39,8 +41,6 @@ namespace slime.jrunscript.file {
 
 	export namespace location {
 		export interface Exports {
-			base: (base: Location) => (relative: string) => Location
-			relative: (path: string) => (p: Location) => Location
 			parent: () => (p: Location) => Location
 		}
 
@@ -50,28 +50,6 @@ namespace slime.jrunscript.file {
 			) {
 				const { verify } = fifty;
 				const subject = fifty.global.jsh.file;
-
-				//	TODO	these tests might not pass on Windows
-
-				fifty.tests.exports.Location.base = function() {
-					var pathname = "/a/b/c";
-					var location = subject.Location.from.os(pathname);
-					var base = subject.Location.base(location);
-
-					var one = base("d");
-					verify(one).pathname.is("/a/b/c/d");
-					var two = base("./d");
-					verify(two).pathname.is("/a/b/c/d");
-					var three = base("../d");
-					verify(three).pathname.is("/a/b/d");
-				};
-
-				fifty.tests.exports.Location.relative = function() {
-					var pathname = "/a/b/c";
-					var child = subject.Location.from.os(pathname);
-					var target = subject.Location.relative("d")(child);
-					verify(target).pathname.is("/a/b/c/d");
-				};
 
 				fifty.tests.exports.Location.parent = function() {
 					var pathname = "/a/b/c";
@@ -103,23 +81,16 @@ namespace slime.jrunscript.file {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface Exports {
+			/** @deprecated Replaced by `directory.relative`. */
+			relative: (path: string) => (p: Location) => Location
+		}
 	}
 
 	export namespace location {
 		export interface Exports {
 			file: file.Exports
-		}
-
-		export namespace directory {
-			export interface Exports {}
-		}
-
-		export interface Exports {
-			directory: directory.Exports
-		}
-
-		export namespace directory {
-			export interface Exports {}
 		}
 	}
 
@@ -375,6 +346,10 @@ namespace slime.jrunscript.file {
 	}
 
 	export namespace location {
+		export interface Exports {
+			directory: directory.Exports
+		}
+
 		(
 			function(
 				fifty: slime.fifty.test.Kit
@@ -385,6 +360,82 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export namespace directory {
+			export interface Exports {}
+		}
+
+		export namespace directory {
+			export interface Exports {
+				base: (base: Location) => (relative: string) => Location
+				relativePath: (path: string) => (p: Location) => Location
+				relativeTo: (location: Location) => (p: Location) => string
+			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+
+					const subject = fifty.global.jsh.file;
+
+					const filesystem = subject.world.filesystems.mock();
+
+					const at = (path: string): slime.jrunscript.file.Location => {
+						return {
+							filesystem: filesystem,
+							pathname: path
+						}
+					}
+
+					//	TODO	these tests might not pass on Windows
+
+					fifty.tests.exports.Location.directory.relativePath = function() {
+						var d = subject.Location.directory.relativePath("d");
+						var target = d(at("/a/b/c"));
+						verify(target).pathname.is("/a/b/c/d");
+					};
+
+					fifty.tests.exports.Location.directory.base = function() {
+						var directory = subject.Location.directory.base(at("/a/b/c"));
+
+						var one = directory("d");
+						verify(one).pathname.is("/a/b/c/d");
+						var two = directory("./d");
+						verify(two).pathname.is("/a/b/c/d");
+						var three = directory("../d");
+						verify(three).pathname.is("/a/b/d");
+					};
+
+					fifty.tests.exports.Location.directory.relativeTo = function() {
+						var target = at("/a/b/c");
+						var relativeOf = subject.Location.directory.relativeTo(target);
+						var one = relativeOf(at("/a/b/d"));
+						verify(one).is("../d");
+						var oneA = relativeOf(at("/a/c"));
+						verify(oneA).is("../../c");
+						var two = relativeOf(at("/b"));
+						verify(two).is("../../../b");
+						var three = relativeOf(at("/a/b/c/d"));
+						//	TODO	should this be ./d?
+						verify(three).is("d");
+					};
+
+					fifty.tests.exports.Location.directory.harvested = function() {
+						//	TODO	Not a very good test for Windows filesystem
+						var prefix = "/";
+						var base = prefix + "foo" + filesystem.separator.pathname + "bar";
+						var relative = "baz";
+						var b: Location = {
+							filesystem: filesystem,
+							pathname: base
+						};
+						var bb = subject.Location.directory.base(b);
+						verify(bb(relative)).pathname.is(prefix + ["foo", "bar", "baz"].join(filesystem.separator.pathname));
+					}
+				}
+			//@ts-ignore
+			)(fifty);
+
 			export interface Exports {
 				exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
 
@@ -593,7 +644,7 @@ namespace slime.jrunscript.file {
 					fifty: slime.fifty.test.Kit
 				) {
 					const { verify } = fifty;
-					const { $api } = fifty.global;
+					const { $api, jsh } = fifty.global;
 					const subject = fifty.global.jsh.file;
 
 					fifty.tests.exports.Location.directory.list = function() {
@@ -635,6 +686,21 @@ namespace slime.jrunscript.file {
 					};
 
 					fifty.tests.wip = fifty.tests.exports.Location.directory.list;
+
+					fifty.tests.manual.issue1181 = function() {
+						var location = fifty.jsh.file.temporary.location();
+						var listing = $api.fp.world.now.question(
+							subject.Location.directory.list.stream(),
+							location,
+							{
+								failed: function(e) {
+									jsh.shell.console("Failed: " + e.detail.pathname);
+								}
+							}
+						);
+						var array = $api.fp.Stream.collect(listing);
+						jsh.shell.console(array.join(" "));
+					}
 				}
 			//@ts-ignore
 			)(fifty);
@@ -739,21 +805,33 @@ namespace slime.jrunscript.file {
 			) {
 				const { verify, run } = fifty;
 				const { $api, jsh } = fifty.global;
+				const subject = jsh.file;
 				const { world } = jsh.file;
 				const filesystem = world.filesystems.os;
 
-				fifty.tests.sandbox.filesystem.Pathname = {
-					relative: function() {
+				const filesystem_relative = function(filesystem: world.Filesystem) {
+					return function(base: string, relative: string): string {
+						var b: Location = {
+							filesystem: filesystem,
+							pathname: base
+						};
+						return subject.Location.directory.base(b)(relative).pathname;
+					}
+				}
 
-					},
+				var f = filesystem_relative(filesystem);
+
+				fifty.tests.sandbox.filesystem.Pathname = {
 					isDirectory: function() {
 						var parent = fifty.jsh.file.object.getRelativePath(".").toString();
+
 						var cases = {
 							parent: parent,
-							thisFile: filesystem.relative(parent, "module.fifty.ts"),
-							nothing: filesystem.relative(parent, "foo"),
-							subfolder: filesystem.relative(parent, "java")
+							thisFile: f(parent, "module.fifty.ts"),
+							nothing: f(parent, "foo"),
+							subfolder: f(parent, "java")
 						};
+
 						var isDirectory = function(property) {
 							return function(cases) { return filesystem.Pathname.isDirectory(cases[property]); };
 						}
@@ -770,8 +848,8 @@ namespace slime.jrunscript.file {
 				fifty.tests.sandbox.filesystem.File = {};
 
 				fifty.tests.sandbox.filesystem.File.read = function() {
-					var me = filesystem.relative(here, "module.fifty.ts");
-					var nothing = filesystem.relative(here, "nonono");
+					var me = f(here, "module.fifty.ts");
+					var nothing = f(here, "nonono");
 					var code = $api.fp.impure.now.input(
 						$api.fp.world.input(filesystem.File.read.string({ pathname: me }))
 					);
@@ -804,7 +882,7 @@ namespace slime.jrunscript.file {
 
 				fifty.tests.sandbox.filesystem.Directory.remove = function() {
 					var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
-					var location = filesystem.relative(TMPDIR.toString(), "toRemove");
+					var location = f(TMPDIR.toString(), "toRemove");
 					var exists = function(location) {
 						return filesystem.Pathname.isDirectory(location);
 					}
@@ -816,7 +894,7 @@ namespace slime.jrunscript.file {
 					})();
 					verify(location).evaluate(exists).is(false);
 
-					var doesNotExist = filesystem.relative(TMPDIR.toString(), "notThere");
+					var doesNotExist = f(TMPDIR.toString(), "notThere");
 					verify(doesNotExist).evaluate(exists).is(false);
 					filesystem.Directory.remove({
 						pathname: doesNotExist

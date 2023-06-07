@@ -10,8 +10,34 @@
  *
  * `jsh` scripts have access to the global `jsh` object, which is of type {@link Global}.
  *
+ * ## Configuration
+ *
  * See [running `jsh`](../src/jsh/launcher/api.html) for information about how to run scripts using `jsh` and configure the
  * shell.
+ *
+ * ## Execution models
+ *
+ * `jsh` supports three execution models: an "unbuilt" shell executed directly from source, a "built" shell in which `jsh`
+ * components are preprocessed and deployed to support faster startup, and a "packaged" shell in which a `jsh` script is packaged
+ * into a standalone executable JAR file.
+ *
+ * ### Unbuilt shells
+ *
+ * Unbuilt shells can be executed from a source checkout (or over the internet, directly from GitHub). They are executed by
+ * invoking the `bash` launcher at `./jsh` in the source tree. Currently, only macOS and Linux are supported.
+ *
+ * ### Built shells
+ *
+ * A built shell can be created by executing the `jrunscript/jsh/etc/build.jsh.js` script.
+ *
+ * In built shells, the `bash` launcher is located at `./jsh.bash` in the build directory, and the native launcher (if specified)
+ * is located at `./jsh`. Both launchers expect the Java binaries to be in the `PATH`.
+ *
+ * ### Packaged applications
+ *
+ * TODO write documentation
+ *
+ * ## Older documentation
  *
  * See [old JSAPI-based `jsh` documentation](../src/jsh/etc/api.html).
  */

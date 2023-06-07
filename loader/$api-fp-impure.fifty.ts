@@ -81,6 +81,15 @@ namespace slime.$api.fp.impure {
 
 	export namespace exports {
 		export interface Input {
+			from: {
+				mapping: <P,R>(p: {
+					mapping: slime.$api.fp.Mapping<P,R>
+					argument: P
+				}) => impure.Input<R>
+			}
+		}
+
+		export interface Input {
 
 			/**
 			 * A function that takes an {@link impure.Input | Input} as an argument and returns a memoized version of that `Input`.

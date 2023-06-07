@@ -32,7 +32,7 @@
 				return {
 					command: "bash",
 					arguments: $api.Array.build(function(rv) {
-						rv.push($context.api.file.world.Location.relative("jsh.bash")($context.api.file.world.Location.from.os(p.shell.src)).pathname);
+						rv.push($context.api.file.Location.relative("jsh")($context.api.file.Location.from.os(p.shell.src)).pathname);
 						rv.push(p.script);
 						if (p.arguments) rv.push.apply(rv, p.arguments);
 					}),
@@ -213,15 +213,20 @@
 			};
 		}
 
+		/**
+		 * @type { (p: slime.jsh.shell.oo.Invocation) => p is slime.jsh.shell.oo.ForkInvocation }
+		 */
 		var getJshFork = function(p) {
-			if (p.fork) return true;
-			if (p.classpath) return true;
+			if (p["fork"]) return true;
+			//	Was documented but unused; could re-implement
+			//if (p.classpath) return true;
 			if (p.environment && p.environment.JSH_SCRIPT_CLASSPATH) return true;
 			if (p.environment && p.environment.JSH_PLUGINS != module.environment.JSH_PLUGINS) return true;
 			if (p.environment && p.environment.JSH_DEBUG_SCRIPT != module.environment.JSH_DEBUG_SCRIPT) return true;
-			if (p.shell) return true;
+			if (p["shell"]) return true;
 			//	TODO	allow unforked URL-based scripts
-			if (typeof(p.script.resolve) == "function") return true;
+			//	TODO	this seems to indicate that the argument p.script need not be a file, but can be a URL
+			if (typeof(p.script["resolve"]) == "function") return true;
 			return false;
 		}
 
@@ -252,10 +257,122 @@
 			return module.environment;
 		};
 
+		/**
+		 *
+		 * @param { slime.jsh.shell.oo.ForkInvocation } p
+		 */
+		var getJrunscriptForkCommand = function(p) {
+			var newEvaluateWithInvocationDataAdded = function(evaluate) {
+				if (evaluate) {
+					return function(result) {
+						result.jsh = {
+							script: p.script,
+							arguments: p.arguments
+						};
+						result.classpath = p["classpath"];
+						return p.evaluate(result);
+					}
+				}
+			};
+
+			var addLoaderArgumentsTo = function(jargs,script) {
+				if (p.vmarguments) {
+					p.vmarguments.forEach(function(argument) {
+						jargs.push(argument);
+					});
+				}
+				if (p.properties) {
+					for (var x in p.properties) {
+						jargs.push("-D" + x + "=" + p.properties[x]);
+					}
+				}
+				jargs.push(script);
+				p.arguments.forEach( function(arg) {
+					jargs.push(arg);
+				});
+				return jargs;
+			}
+
+			var bootstrapShellInvocationArguments = (function(shell) {
+				var remote = function(url) {
+					return [
+						"-e",
+						"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
+					];
+				}
+
+				var unbuilt = function(src) {
+					return [
+						src.getFile("rhino/jrunscript/api.js"),
+						"jsh"
+					];
+				};
+
+				var built = function(home) {
+					return [
+						home.getFile("jsh.js")
+					]
+				};
+
+				if (shell) {
+					//	TODO	should contemplate possibility of URL, I suppose
+					if (shell.getFile("jsh.js")) {
+						return built(shell);
+					}
+					if (shell.getFile("rhino/jrunscript/api.js")) {
+						return unbuilt(shell);
+					}
+					throw new Error("Shell not found: " + shell);
+				}
+
+				if ($exports.jsh.home) return built($exports.jsh.home);
+				if ($exports.jsh.src) return unbuilt($exports.jsh.src);
+				if ($exports.jsh.url) return remote($exports.jsh.url);
+
+				//	TODO	would unbuilt remote shells have a src property, and would it work?
+				throw new Error("Currently running jsh shell lacks home, src, and url properties; bug.");
+			})(p.shell);
+
+			var isRemoteShell = bootstrapShellInvocationArguments[0] == "-e";
+
+			//	Properties to be sent to main.js launcher; other properties will be sent as arguments using addCommandTo
+			var launcherProperties = {};
+
+			var copySystemPropertyToLauncherPropertiesIfPresent = function(name) {
+				//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
+				if (Packages.java.lang.System.getProperty(name)) {
+					launcherProperties[name] = String(Packages.java.lang.System.getProperty(name));
+				}
+			};
+
+			if (p["classpath"]) {
+				launcherProperties["jsh.shell.classpath"] = String(p["classpath"]);
+			}
+
+			copySystemPropertyToLauncherPropertiesIfPresent("jsh.engine.rhino.classpath");
+
+			if (isRemoteShell) {
+				copySystemPropertyToLauncherPropertiesIfPresent("http.proxyHost");
+				copySystemPropertyToLauncherPropertiesIfPresent("http.proxyPort");
+				copySystemPropertyToLauncherPropertiesIfPresent("https.proxyHost");
+				copySystemPropertyToLauncherPropertiesIfPresent("https.proxyPort");
+			}
+
+			//	TODO	the jrunscript method also handles vmarguments, perhaps we should pass those through?
+			var argument = $api.Object.compose(p, {
+				environment: getJshEnvironment(p,true),
+				vmarguments: [],
+				properties: launcherProperties,
+				arguments: addLoaderArgumentsTo(bootstrapShellInvocationArguments,p.script),
+				evaluate: newEvaluateWithInvocationDataAdded(p.evaluate)
+			});
+
+			return argument;
+		}
+
 		$exports.jsh = Object.assign(
 			/**
-			 *
-			 * @param { Parameters<slime.jsh.shell.Exports["jsh"]>[0] } p
+			 * @type { slime.jsh.shell.Exports["run"] }
 			 */
 			function(p) {
 				if (!arguments[0].script && !arguments[0].arguments) {
@@ -283,13 +400,21 @@
 				}
 				//	TODO	need to detect directives in the given script and fork if they are present
 
-				var fork = getJshFork(p);
+				//var fork = getJshFork(p);
 
+				if (getJshFork(p)) {
+					var jrunscriptForkConfiguration = getJrunscriptForkCommand(p);
 
-				if (fork) {
+					// var bashResult = module.run({
+					// 	command: "bash",
+					// 	arguments: $api.Array.build(function(rv) {
+					// 		rv.push();
+					// 	})
+					// })
+
 					return module.jrunscript(
 						$api.Object.compose(
-							$exports.jsh.command(p),
+							jrunscriptForkConfiguration,
 							{
 								jrunscript: module.properties.file("jsh.launcher.jrunscript")
 							}
@@ -300,7 +425,7 @@
 						if (p.directory) return p.directory;
 						if (p.workingDirectory) return p.workingDirectory;
 					})();
-					var environment = getJshEnvironment(p,fork);
+					var environment = getJshEnvironment(p,false);
 					var configuration = new JavaAdapter(
 						Packages.inonit.script.jsh.Shell.Environment,
 						new function() {
@@ -409,8 +534,9 @@
 					var status = $context.jsh(
 						configuration,
 						p.script,
-						p.arguments
+						p.arguments.map(String)
 					);
+
 					var evaluate = (p.evaluate) ? p.evaluate : function(result) {
 						if (result.status === null) {
 							result.status = 0;
@@ -420,6 +546,7 @@
 						}
 						return result;
 					};
+
 					return evaluate({
 						status: status,
 						//	no error property
@@ -444,105 +571,6 @@
 				url: void(0)
 			}
 		);
-		$exports.jsh.command = function(p) {
-			var evaluate = (function() {
-				if (p.evaluate) {
-					return function(result) {
-						result.jsh = {
-							script: p.script,
-							arguments: p.arguments
-						};
-						result.classpath = p.classpath;
-						return p.evaluate(result);
-					}
-				}
-			})();
-
-			var addCommandTo = function(jargs,script) {
-				if (p.vmarguments) {
-					p.vmarguments.forEach(function(argument) {
-						jargs.push(argument);
-					});
-				}
-				if (p.properties) {
-					for (var x in p.properties) {
-						jargs.push("-D" + x + "=" + p.properties[x]);
-					}
-				}
-				jargs.push(script);
-				p.arguments.forEach( function(arg) {
-					jargs.push(arg);
-				});
-				return jargs;
-			}
-
-			var scripts = (function(shell) {
-				var remote = function(url) {
-					return [
-						"-e",
-						"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
-					];
-				}
-
-				var unbuilt = function(src) {
-					return [
-						src.getFile("rhino/jrunscript/api.js"),
-						"jsh"
-					];
-				};
-
-				var built = function(home) {
-					return [
-						home.getFile("jsh.js")
-					]
-				};
-
-				if (shell) {
-					//	TODO	should contemplate possibility of URL, I suppose
-					if (shell.getFile("jsh.js")) {
-						return built(shell);
-					}
-					if (shell.getFile("rhino/jrunscript/api.js")) {
-						return unbuilt(shell);
-					}
-					throw new Error("Shell not found: " + shell);
-				}
-				if ($exports.jsh.home) return built($exports.jsh.home);
-				if ($exports.jsh.src) return unbuilt($exports.jsh.src);
-				if ($exports.jsh.url) return remote($exports.jsh.url);
-				//	TODO	would unbuilt remote shells have a src property, and would it work?
-				throw new Error("Running shell lacks home, src, and url properties; jsh bug.");
-			})(p.shell);
-
-			//	Properties to be sent to main.js launcher; other properties will be sent as arguments using addCommandTo
-			var outerProperties = {};
-			if (p.classpath) {
-				outerProperties["jsh.shell.classpath"] = String(p.classpath);
-			}
-			var copyPropertyIfPresent = function(name) {
-				//	TODO	is the below redundant with an API we already have for accessing the value (other than system property?)
-				if (Packages.java.lang.System.getProperty(name)) {
-					outerProperties[name] = String(Packages.java.lang.System.getProperty(name));
-				}
-			}
-			copyPropertyIfPresent("jsh.engine.rhino.classpath");
-			if (scripts[0] == "-e") {
-				//	remote shell
-				copyPropertyIfPresent("http.proxyHost");
-				copyPropertyIfPresent("http.proxyPort");
-				copyPropertyIfPresent("https.proxyHost");
-				copyPropertyIfPresent("https.proxyPort");
-			}
-			//	TODO	the jrunscript method also handles vmarguments, perhaps we should pass those through?
-			var argument = $context.api.js.Object.set({}, p, {
-				environment: getJshEnvironment(p,true),
-				vmarguments: [],
-				properties: outerProperties,
-				arguments: addCommandTo(scripts,p.script),
-				evaluate: evaluate
-			});
-			return argument;
-		};
 		$exports.jsh.relaunch = $api.experimental(function(p) {
 			if (!p) p = {};
 			var environment = $api.fp.mutating(p.environment)(module.environment);

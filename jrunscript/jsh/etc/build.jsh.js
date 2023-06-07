@@ -501,7 +501,7 @@
 						function() {
 							var gcc = which("gcc");
 							if (!gcc) {
-								jsh.shell.console("Cannot find gcc in PATH; not building native launcher.");
+								jsh.shell.console("Cannot find gcc in PATH when attempting to build native launcher; exiting.");
 								jsh.shell.exit(1);
 								// return;
 							}

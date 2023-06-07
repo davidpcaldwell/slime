@@ -5,18 +5,40 @@
 //	END LICENSE
 
 namespace slime.project.internal.jrunscript_environment {
-	export interface Context {
-	}
-
 	export interface Argument {
+		/**
+		 * The location of the source code of the shell.
+		 */
 		src: slime.jrunscript.file.Directory
-		home: slime.jrunscript.file.Pathname
+
+		/**
+		 * The location of a built shell, or the location at which to build a built shell. If absent, a temporary directory will be
+		 * used.
+		 */
+		home?: slime.jrunscript.file.Pathname
+
 		executable: boolean
-		noselfping: true
+
+		/**
+		 * Indicates whether the current host is capable of pinging itself; `true` indicates it cannot.
+		 */
+		noselfping: boolean
+
 		tomcat: boolean
 	}
 
 	export interface Environment {
+		jsh: {
+			built: {
+				readonly location: slime.jrunscript.file.Pathname;
+				readonly home: slime.jrunscript.file.Directory;
+				readonly data: any;
+				requireTomcat(): void;
+			}
+			src: any
+			unbuilt: any
+		}
+		noselfping: any
 	}
 
 	export type Exports = new (p: Argument) => Environment
@@ -32,5 +54,5 @@ namespace slime.project.internal.jrunscript_environment {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.loader.Script<void,Exports>
 }

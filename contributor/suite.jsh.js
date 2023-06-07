@@ -86,7 +86,12 @@
 			parameters.options.engine = [""];
 		}
 
-		var Environment = jsh.script.loader.module("jrunscript-environment.js");
+		var code = {
+			/** @type { slime.project.internal.jrunscript_environment.Script } */
+			Environment: jsh.script.loader.script("jrunscript-environment.js")
+		};
+
+		var Environment = code.Environment();
 
 		var hasGit = (
 			function() {
@@ -216,7 +221,9 @@
 					this.jsapi.parts[browser.id] = jsh.unit.Suite.Fork({
 						name: browser.name + " jsapi",
 						run: jsh.shell.jsh,
-						shell: environment.jsh.home,
+						//	TODO	was environment.jsh.home, but that seemed to be a bug, so replacing with what value actually
+						//			seemed to be.
+						shell: void(0),
 						script: environment.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
 						arguments: [
 							"-suite", environment.jsh.src.getFile("contributor/browser-jsapi-suite.js"),
