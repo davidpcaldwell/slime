@@ -676,7 +676,6 @@
 					}
 				},
 				pathname: pathname_create,
-				relative: pathname_relative,
 				Pathname: {
 					isDirectory: function(pathname) {
 						var peer = java.newPeer(pathname);

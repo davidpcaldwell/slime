@@ -86,7 +86,6 @@ namespace slime.jrunscript.file {
 				fifty.tests.spi.filesystem = function(filesystem: Filesystem) {
 					//	TODO	need better way to run this style of test
 					fifty.tests.spi.filesystem.openInputStreamNotFound(filesystem);
-					fifty.tests.spi.filesystem.relative(filesystem);
 				};
 			}
 		//@ts-ignore
@@ -143,27 +142,6 @@ namespace slime.jrunscript.file {
 			}
 		//@ts-ignore
 		)(fifty);
-
-		export interface Filesystem {
-			relative: (base: string, relative: string) => string
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-
-				fifty.tests.spi.filesystem.relative = function(filesystem: Filesystem) {
-					//	TODO	Not a very good test for Windows filesystem
-					var prefix = "/";
-					var base = prefix + "foo" + filesystem.separator.pathname + "bar";
-					var relative = "baz";
-					verify(filesystem).relative(base, relative).is(prefix + ["foo", "bar", "baz"].join(filesystem.separator.pathname));
-				}
-			}
-		//@ts-ignore
-		)(fifty);
 	}
 
 	(
@@ -186,9 +164,16 @@ namespace slime.jrunscript.file {
 
 				var folder = fifty.jsh.file.object.getRelativePath(".").toString();
 				var file = "module.fifty.ts";
-				var relative = world.filesystems.os.relative(folder, file);
+
+				var filesystems_os_relative = function(folder: string, file: string) {
+					return jsh.file.Location.directory.base(
+						jsh.file.Location.from.os(folder)
+					)(file).pathname;
+				}
+
+				var relative = filesystems_os_relative(folder, file);
 				jsh.shell.console(relative);
-				var relative2 = world.filesystems.os.relative(pathname, "foo");
+				var relative2 = filesystems_os_relative(pathname, "foo");
 				jsh.shell.console(relative2);
 			}
 		}
