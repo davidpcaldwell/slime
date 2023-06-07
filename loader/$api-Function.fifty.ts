@@ -26,6 +26,13 @@ namespace slime.$api.fp {
 
 	export type Mapping<P,R> = (p: P) => R
 	export type Transform<T> = Mapping<T,T>
+
+	/**
+	 * A type definition that can be attached to the `$api.fp.identity` function to create a function that acts as a type hint
+	 * for pipelining.
+	 */
+	export type Identity<T> = Mapping<T,T>
+
 	export type Lazy<T> = () => T
 
 	export type Predicate<T> = (t: T) => boolean
