@@ -20,6 +20,8 @@ namespace slime.jrunscript.file {
 		) {
 			fifty.tests.exports = fifty.test.Parent();
 			fifty.tests.exports.Location = fifty.test.Parent();
+
+			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
@@ -629,7 +631,7 @@ namespace slime.jrunscript.file {
 					fifty: slime.fifty.test.Kit
 				) {
 					const { verify } = fifty;
-					const { $api } = fifty.global;
+					const { $api, jsh } = fifty.global;
 					const subject = fifty.global.jsh.file;
 
 					fifty.tests.exports.Location.directory.list = function() {
@@ -671,6 +673,21 @@ namespace slime.jrunscript.file {
 					};
 
 					fifty.tests.wip = fifty.tests.exports.Location.directory.list;
+
+					fifty.tests.manual.issue1181 = function() {
+						var location = fifty.jsh.file.temporary.location();
+						var listing = $api.fp.world.now.question(
+							subject.Location.directory.list.stream(),
+							location,
+							{
+								failed: function(e) {
+									jsh.shell.console("Failed: " + e.detail.pathname);
+								}
+							}
+						);
+						var array = $api.fp.Stream.collect(listing);
+						jsh.shell.console(array.join(" "));
+					}
 				}
 			//@ts-ignore
 			)(fifty);

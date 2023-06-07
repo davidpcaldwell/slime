@@ -639,6 +639,7 @@
 				listDirectory: function(p) {
 					return function(events) {
 						var peer = java.newPeer(p.pathname);
+						if (!peer.exists()) return $api.fp.Maybe.from.nothing();
 						var list = peer.list();
 						return $api.fp.Maybe.from.some(
 							list.map(
