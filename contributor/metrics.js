@@ -145,14 +145,14 @@
 						}
 
 						return p.groups.map(
-							/** @returns { slime.project.metrics.JsapiMigrationData & { list: slime.project.metrics.JsapiData["list"] } } */
+							/** @returns { slime.project.metrics.JsapiMigrationData } } */
 							function(group) {
 								var array = group.array.map(toSourceFile);
 								return {
 									name: group.group,
 									files: group.array.length,
 									bytes: size(array),
-									list: (group.group == "jsapi") ? (function() {
+									list: function() {
 										return array.map(function(entry) {
 											var tests = (function() {
 												var parsed = $context.library.code.jsapi.Location.parse(entry.file.pathname.os.adapt());
@@ -173,7 +173,7 @@
 										}).sort(function(a,b) {
 											return b.bytes - a.bytes;
 										});
-									})(): void(0)
+									}
 								}
 							}
 						)
@@ -185,14 +185,9 @@
 							});
 						};
 
-						/** @type { slime.js.Cast<slime.project.metrics.FiftyData> } */
-						var asFiftyData = $api.fp.cast;
-						/** @type { slime.js.Cast<slime.project.metrics.JsapiData> } */
-						var asJsapiData = $api.fp.cast;
-
 						return {
-							jsapi: asJsapiData(byName("jsapi")),
-							fifty: asFiftyData(byName("fifty"))
+							jsapi: byName("jsapi"),
+							fifty: byName("fifty")
 						}
 					}
 				)
