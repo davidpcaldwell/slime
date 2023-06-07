@@ -504,9 +504,9 @@
 								var listed = $api.fp.world.now.ask(
 									location.filesystem.listDirectory({ pathname: location.pathname })
 								);
+								/** @type { slime.jrunscript.file.Location[] } */
+								var rv = [];
 								if (listed.present) {
-									/** @type { slime.jrunscript.file.Location[] } */
-									var rv = [];
 									listed.value.forEach(function(name) {
 										var it = {
 											filesystem: location.filesystem,
@@ -528,10 +528,10 @@
 											events.fire("failed", it);
 										}
 									});
-									return rv;
 								} else {
 									events.fire("failed", location);
 								}
+								return rv;
 							};
 
 							return function(location) {
