@@ -30,7 +30,10 @@ namespace slime.tools.code {
 	/**
 	 * A `Project` consists of a set of source files to be processed.
 	 */
-	export type Project = slime.jrunscript.file.Location[]
+	export type Project = {
+		base: slime.jrunscript.file.Location
+		files: slime.jrunscript.file.Location[]
+	}
 
 	export interface Exports {
 		Project: {
@@ -70,7 +73,7 @@ namespace slime.tools.code {
 						return $api.fp.Maybe.from.some(true);
 					}
 				});
-				jsh.shell.console(project.map($api.fp.property("pathname")).join(", "));
+				jsh.shell.console(project.files.map($api.fp.property("pathname")).join(", "));
 			}
 		}
 	//@ts-ignore
