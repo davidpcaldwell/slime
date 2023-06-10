@@ -35,7 +35,7 @@
 			}
 		}
 	},
-	"service": "devbox",
+	"service": "local",
 	"workspaceFolder": "/slime",
 	"postCreateCommand": "/bin/bash .devcontainer/post-create-command.bash"
 }

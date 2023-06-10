@@ -309,23 +309,10 @@
 		var test = function(p) {
 			if (!p) p = {};
 			return function(events) {
-				if (p.docker) {
-					var library = jsh.shell.jsh.lib.getRelativePath("selenium/java");
-
-					if (!library.directory) {
-						jsh.shell.console("Installing Selenium Java driver ...");
-						jsh.tools.install.install({
-							url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.3.zip",
-							getDestinationPath: function(file) { return ""; },
-							to: library
-						});
-					}
-				}
-
 				jsh.shell.run({
 					command: "bash",
 					arguments: [
-						$context.base.getRelativePath("jsh.bash"),
+						$context.base.getRelativePath("jsh"),
 						$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
 						"-replace"
 					]
@@ -590,59 +577,62 @@
 					}
 				}
 
-				var test = function() {
-					var success = true;
-
-					if (!jsh.shell.PATH.getCommand("docker")) {
-						jsh.shell.console("'docker' not found; cannot run tests.");
-						return false;
-					}
-
-					$api.fp.world.now.action(
-						jsh.shell.world.action,
-						jsh.shell.Invocation.from.argument({
-							command: "docker",
-							arguments: $api.Array.build(function(rv) {
-								rv.push("compose");
-								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml").toString());
-								rv.push("build", "test");
-							})
+				/** @type { (args: string[]) => slime.jrunscript.shell.run.Intention } */
+				var getIntention = function(args) {
+					return {
+						command: "docker",
+						arguments: $api.Array.build(function(rv) {
+							rv.push("compose");
+							rv.push("--project-directory", $context.base.pathname.toString());
+							rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml").toString());
+							rv.push.apply(rv, args);
+							jsh.shell.console("arguments = " + rv.join(" "));
 						}),
-						{
-							exit: function(e) {
-								if (e.detail.status != 0) {
-									jsh.shell.console("docker compose build exit status: " + e.detail.status);
-									success = false;
-								}
-							}
-						}
-					);
-
-					if (!success) return false;
-
-					$api.fp.world.now.action(
-						jsh.shell.world.action,
-						jsh.shell.Invocation.from.argument({
-							command: "docker",
-							arguments: $api.Array.build(function(rv) {
-								rv.push("compose");
-								//rv.push("--project-directory", $context.base.pathname.toString());
-								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml").toString());
-								rv.push("run", "test");
-							})
-						}),
-						{
-							exit: function(e) {
-								if (e.detail.status != 0) {
-									jsh.shell.console("docker compose run exit status: " + e.detail.status);
-									success = false;
-								}
-							}
-						}
-					);
-
-					return success;
+						stdio: {
+							output: "line",
+							error: "line"
+						},
+						directory: $context.base.pathname.toString()
+					};
 				};
+
+				/** @type { slime.$api.event.Handlers<slime.jrunscript.shell.run.AskEvents> } */
+				var handler = {
+					stdout: function(e) {
+						jsh.shell.echo(e.detail.line);
+					},
+					stderr: function(e) {
+						jsh.shell.console(e.detail.line);
+					}
+				};
+
+				var shell = $api.fp.world.mapping(
+					jsh.shell.subprocess.question,
+					handler
+				);
+
+				/** @type { (getComposeArguments: (invocation: slime.jsh.script.cli.Invocation<{}>) => string[]) => slime.jsh.script.cli.Command<{}> } */
+				var command = function(getComposeArguments) {
+					return function(p) {
+						//	TODO	need wo API for this
+						if (!jsh.shell.PATH.getCommand("docker")) {
+							jsh.shell.console("'docker' not found; cannot run Docker-based commands.");
+							return 1;
+						}
+
+						/** @type { slime.jrunscript.shell.run.Intention } */
+						var intention = getIntention($api.Array.build(function(rv) {
+							var x = getComposeArguments(p);
+							rv.push.apply(rv, x);
+						}));
+
+						return $api.fp.now.invoke(
+							intention,
+							shell,
+							$api.fp.property("status")
+						);
+					}
+				}
 
 				return {
 					fifty: function(p) {
@@ -659,19 +649,18 @@
 							].concat(p.arguments)
 						});
 					},
-					run: function(p) {
-						initialize();
-						jsh.shell.run({
-							command: docker,
-							arguments: [
-								"run",
-								"--name", "slime-test",
-								"davidpcaldwell/slime",
-								"sleep", "infinity"
-							]
+					box: command(function(p) {
+						return $api.Array.build(function(rv) {
+							rv.push("run");
+							rv.push("box");
 						});
-					},
-					test: test
+					}),
+					run: command(function(p) {
+						return $api.Array.build(function(rv) {
+							rv.push("run");
+							rv.push.apply(rv, p.arguments);
+						});
+					})
 				}
 			}
 		)();
