@@ -223,7 +223,7 @@
 			}
 		)();
 
-		if (jsh.unit.browser) suite.add("browsers", new function() {
+		if (jsh.unit.browser && !jsh.shell.environment.SLIME_TEST_NO_BROWSER) suite.add("browsers", new function() {
 			var browsers = (parameters.options.docker)
 				? $api.Array.build(function(rv) {
 					rv.push({ id: "dockercompose:selenium:chrome", name: "Chrome (Selenium)" });
