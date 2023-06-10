@@ -577,16 +577,15 @@
 					}
 				}
 
+				//	TODO	all of this is duplicative of the shell script in contributor/, and should be used to invoke that
+				//			instead
 				/** @type { (args: string[]) => slime.jrunscript.shell.run.Intention } */
 				var getIntention = function(args) {
 					return {
-						command: "docker",
+						command: "bash",
 						arguments: $api.Array.build(function(rv) {
-							rv.push("compose");
-							rv.push("--project-directory", $context.base.pathname.toString());
-							rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml").toString());
+							rv.push($context.base.getFile("contributor/docker-compose").toString());
 							rv.push.apply(rv, args);
-							jsh.shell.console("arguments = " + rv.join(" "));
 						}),
 						stdio: {
 							output: "line",
@@ -620,6 +619,14 @@
 							return 1;
 						}
 
+						var build = $api.fp.now.invoke(
+							getIntention(["build"]),
+							shell,
+							$api.fp.property("status")
+						);
+
+						if (build != 0) return build;
+
 						/** @type { slime.jrunscript.shell.run.Intention } */
 						var intention = getIntention($api.Array.build(function(rv) {
 							var x = getComposeArguments(p);
@@ -635,25 +642,13 @@
 				}
 
 				return {
-					fifty: function(p) {
-						initialize();
-						jsh.shell.run({
-							command: docker,
-							arguments: [
-								"run",
-								"--name", "slime-test",
-								"--workdir", "/slime",
-								"davidpcaldwell/slime",
-								"./fifty",
-								"test.jsh"
-							].concat(p.arguments)
-						});
-					},
-					box: command(function(p) {
+					fifty: command(function(p) {
 						return $api.Array.build(function(rv) {
 							rv.push("run");
 							rv.push("box");
-						});
+							rv.push("./fifty");
+							rv.push.apply(rv, p.arguments);
+						})
 					}),
 					run: command(function(p) {
 						return $api.Array.build(function(rv) {

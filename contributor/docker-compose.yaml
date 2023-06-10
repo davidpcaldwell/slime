@@ -5,39 +5,54 @@
 #	END LICENSE
 
 version: '3.9'
-services:
-  box: &box
+
+x-base-box: &box
     build: .
     environment: &environment
       SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
+      # The HOST_UNAME variable is set via the contributor/docker-compose command-line program and will not be present when
+      # Docker Compose is invoked directly (unless you supply it). It is used to disable tests that are unstable on certain host
+      # operating systems running Docker Desktop.
+      DOCKER_HOST_UNAME: ${DOCKER_HOST_UNAME}
     working_dir: /slime
     depends_on:
       - chrome
       - firefox
 
-  test: &test
+x-base-test: &test
     <<: *box
-    # volumes:
-    #   - type: bind
-    #     source: ../local/wf/logs/docker.compose.test
-    #     target: /slime/local/wf/logs/test/current/
     command: /bin/bash /slime/wf check --docker
+
+services:
+  # Produces a blank SLIME container for development (along with Chrome and Firefox browsers ready to be driven by it)
+  box:
+    <<: *box
+
+  # Produces a SLIME container for testing under JDK 8
+  test8:
+    <<: *test
     environment:
       <<: *environment
       SLIME_WF_JDK_VERSION: 8
 
+  # Produces a SLIME container for testing under JDK 11
   test11:
     <<: *test
     environment:
       <<: *environment
       SLIME_WF_JDK_VERSION: 11
 
+  # Produces a SLIME container for testing under JDK 17
   test17:
     <<: *test
     environment:
       <<: *environment
       SLIME_WF_JDK_VERSION: 17
 
+  # Produces a stateful, persistent SLIME container that begins as a blank box with the source directory mounted. Local changes
+  # (to the local/ subdirectory, like installing JDKs, Rhino, Tomcat, and so forth) will persist between runs.
+  #
+  # Also used by the devcontainer implementation.
   local:
     <<: *box
     volumes:
