@@ -19,6 +19,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Build the Docker image
-        run: docker compose --project-directory=. -f contributor/docker-compose.yaml build test
+        run: docker compose --project-directory=. -f contributor/docker-compose.yaml build test8
       - name: Run the linting and tests
-        run: docker compose --project-directory=. -f contributor/docker-compose.yaml run test
+        run: docker compose --project-directory=. -f contributor/docker-compose.yaml run test8
