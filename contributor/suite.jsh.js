@@ -12,11 +12,17 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		jsh.shell.tools.rhino.require();
+
 		jsh.shell.tools.tomcat.old.require(void(0), {
 			console: function(e) {
 				jsh.shell.console(e.detail);
 			}
 		});
+
+		//	TODO	should have a better way of dealing with this, but for now we just reload the plugin that depended on Tomcat
+		//			and it will succeed now.
+		jsh.loader.plugins(jsh.script.file.parent.parent.getRelativePath("jrunscript/jsh/unit"));
 
 		jsh.wf.typescript.require();
 
@@ -40,6 +46,27 @@
 			},
 			unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 		});
+
+		if (parameters.options.docker) {
+			jsh.shell.jsh.require(
+				(function() {
+					var SELENIUM = jsh.shell.jsh.lib.getRelativePath("selenium/java");
+					return {
+						satisfied: function() {
+							return Boolean(SELENIUM.directory);
+						},
+						install: function() {
+							jsh.shell.console("Installing Selenium Java driver ...");
+							jsh.tools.install.install({
+								url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.3.zip",
+								getDestinationPath: function(file) { return ""; },
+								to: SELENIUM
+							});
+						}
+					}
+				})()
+			);
+		}
 
 		jsh.java.Thread.start(
 			/**

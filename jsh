@@ -197,7 +197,7 @@ install_jdk_17() {
 }
 
 install_jdk() {
-	install_jdk_11 "$@"
+	install_jdk_8 "$@"
 }
 
 if [ "$1" == "--install-jdk" ]; then

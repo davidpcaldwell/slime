@@ -168,6 +168,8 @@ namespace slime.project.wf {
 
 		docker: {
 			fifty: slime.jsh.script.cli.Command<Options>
+			box: slime.jsh.script.cli.Command<Options>
+			run: slime.jsh.script.cli.Command<Options>
 		}
 
 		purge: slime.jsh.script.cli.Command<Options>

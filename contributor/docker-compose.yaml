@@ -7,7 +7,7 @@
 version: '3.9'
 services:
   box: &box
-    build: ..
+    build: .
     environment: &environment
       SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
     working_dir: /slime
@@ -38,16 +38,16 @@ services:
       <<: *environment
       SLIME_WF_JDK_VERSION: 17
 
-  devbox:
+  local:
     <<: *box
     volumes:
       - type: bind
-        source: ..
+        source: .
         target: /slime
       - type: volume
         source: local
         target: /slime/local
-    command: sleep infinity
+    command: /bin/bash
 
   chrome:
     image: seleniarm/standalone-chromium
