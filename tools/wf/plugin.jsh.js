@@ -1060,7 +1060,7 @@
 							});
 
 							if (p.test) {
-								success = success && p.test({
+								success = success && $api.fp.world.now.ask(p.test, {
 									output: function(e) {
 										events.fire("console", e.detail);
 									},

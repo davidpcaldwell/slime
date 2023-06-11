@@ -83,7 +83,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Exports {
-			/** @deprecated Replaced by `directory.relative`. */
+			/** @deprecated Replaced by `directory.relativePath`. */
 			relative: (path: string) => (p: Location) => Location
 		}
 	}
@@ -91,6 +91,32 @@ namespace slime.jrunscript.file {
 	export namespace location {
 		export interface Exports {
 			file: file.Exports
+		}
+	}
+
+	export namespace location {
+		export namespace file {
+			export interface Exports {
+				//length: slime.$api.fp.world.Question<Location, void, number>
+			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { jsh } = fifty.global;
+
+					fifty.tests.sandbox.locations.file.bytes = function() {
+						jsh.shell.console("wip");
+					}
+
+					fifty.tests.sandbox.locations.file.length = function() {
+						//	shadowed; see issue #1188
+						jsh.shell.console("#1188");
+					}
+				}
+			//@ts-ignore
+			)(fifty);
 		}
 	}
 

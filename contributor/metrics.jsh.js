@@ -33,11 +33,6 @@
 			return model.getSourceFiles(SLIME);
 		}
 
-		/** @type { (p: any) => p is slime.project.metrics.JsapiData } */
-		var isJsapi = function(p) {
-			return Boolean(p["list"])
-		}
-
 		jsh.script.cli.wrap({
 			commands: {
 				jsapi: function(invocation) {
@@ -45,8 +40,8 @@
 
 					[data.fifty, data.jsapi].forEach(function(group) {
 						jsh.shell.console(group.name + ": " + group.files + " files, " + group.bytes + " bytes");
-						if (isJsapi(group)) {
-							group.list.forEach(function(item) {
+						if (group.name == "jsapi") {
+							group.list().forEach(function(item) {
 								jsh.shell.console(item.path + " " + item.bytes + " tests: " + ( (item.tests.present) ? item.tests.value : "?" ));
 							})
 						}

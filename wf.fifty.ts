@@ -167,7 +167,22 @@ namespace slime.project.wf {
 		merge: slime.jsh.script.cli.Command<Options>
 
 		docker: {
+			/**
+			 * Allows the invocation of `fifty` running inside a bare SLIME installation, for help debugging tests in a closed
+			 * environment. They will run slowly, as Java will need to be installed, Node downloaded, TypeScript installed, and so
+			 * forth. For ordinary development, using the `box` Docker compose target, which will allow logging into the box and
+			 * doing everything once, might be more appropriate. Another alternative is the `local` Docker Compose target, which
+			 * creates a persistent SLIME server which stores its `local` data between runs. Developing inside the Visual Studio
+			 * Code devcontainer provided at `.devcontainer` is a third alternative.
+			 */
 			fifty: slime.jsh.script.cli.Command<Options>
+
+			/**
+			 * Allows running a `docker compose run` command using `./wf docker.run`. This capability is also provided by the
+			 * `contributor/docker-compose` script (if you pass `run` as an argument); this version just allows a bit less typing
+			 * (in exchange for a bit more indirection).
+			 */
+			run: slime.jsh.script.cli.Command<Options>
 		}
 
 		purge: slime.jsh.script.cli.Command<Options>

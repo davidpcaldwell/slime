@@ -465,7 +465,7 @@
 
 				if (project.test) {
 					$exports.test = function(p) {
-						var success = project.test({
+						var success = $api.fp.world.now.ask(project.test, {
 							output: function(e) {
 								jsh.shell.console(e.detail);
 							},

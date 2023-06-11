@@ -589,7 +589,7 @@
 							descend: p.descend
 						});
 						var listing = $api.fp.world.now.question(question, p.root);
-						return $api.fp.now.invoke(
+						var files = $api.fp.now.invoke(
 							listing,
 							$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.Location.file.exists())),
 							$api.fp.Stream.filter(function(location) {
@@ -599,9 +599,13 @@
 							}),
 							$api.fp.Stream.collect
 						);
+						return {
+							base: p.root,
+							files: files
+						};
 					},
 					git: function(p) {
-						return $api.fp.world.now.question(
+						var files = $api.fp.world.now.question(
 							getGitSourceFiles,
 							{
 								repository: p.root,
@@ -610,6 +614,10 @@
 						).map(function(file) {
 							return file.file;
 						});
+						return {
+							base: p.root,
+							files: files
+						};
 					}
 				}
 			},

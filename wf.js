@@ -296,95 +296,57 @@
 		};
 
 		/**
-		 * Runs the test suite, first installing Java, Rhino, and (if Docker testing is indicated) the Selenium Java driver.
+		 * Runs the test suite, first installing Java, and Rhino.
+		 *
+		 * If the `docker` property is specified, the Selenium driver is installed and the docker flag is passed through to the
+		 * test suite to specify running the tests configured for the Docker environment.
+		 *
 		 * Exits the VM with exit status 1 on failure; otherwise, returns `true`.
 		 *
-		 * @param { { docker: boolean, logs: slime.jrunscript.file.Directory } } p
+		 * @param { { docker?: boolean } } [p]
+		 * @returns { slime.jsh.wf.Test }
 		 */
 		var test = function(p) {
-			if (p.docker) {
-				var library = jsh.shell.jsh.lib.getRelativePath("selenium/java");
+			if (!p) p = {};
+			return function(events) {
+				jsh.shell.run({
+					command: "bash",
+					arguments: [
+						$context.base.getRelativePath("jsh"),
+						$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
+						"-replace"
+					]
+				});
 
-				if (!library.directory) {
-					jsh.shell.console("Installing Selenium Java driver ...");
-					jsh.tools.install.install({
-						url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.3.zip",
-						getDestinationPath: function(file) { return ""; },
-						to: library
-					});
-				}
-			}
+				//	Inserted to try to deal with issue #896. May not be needed; TypeScript may be installed when needed anyway. But with
+				//	tsc blipping in and out of existence, it seemed prudent to try simplifying the TypeScript life cycle.
+				jsh.wf.typescript.require();
 
-			var logs = p.logs;
-			var stdio = (logs) ? {
-				output: logs.getRelativePath("stdout.txt").write(jsh.io.Streams.text, { append: false }),
-				error: logs.getRelativePath("stderr.txt").write(jsh.io.Streams.text, { append: false })
-			} : {
-				output: {
-					write: function(s) {
-						jsh.shell.echo(s.substring(0,s.length-1));
-					}
-				},
-				error: {
-					write: function(s) {
-						jsh.shell.console(s.substring(0,s.length-1));
-					}
-				}
-			};
-			// if (!jsh.shell.environment.SLIME_WF_JDK_8) {
-			// 	jsh.shell.run({
-			// 		command: "bash",
-			// 		arguments: [
-			// 			$context.base.getRelativePath("jsh.bash"),
-			// 			"--install-jdk"
-			// 		]
-			// 	});
-			// }
-			jsh.shell.run({
-				command: "bash",
-				arguments: [
-					$context.base.getRelativePath("jsh.bash"),
-					$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
-					"-replace"
-				]
-			});
-			if (logs) jsh.shell.console("Running tests with output to " + logs + " ...");
-
-			//	Inserted to try to deal with issue #896. May not be needed; TypeScript may be installed when needed anyway. But with
-			//	tsc blipping in and out of existence, it seemed prudent to try simplifying the TypeScript life cycle.
-			jsh.wf.typescript.require();
-
-			var debugging = (jsh.shell.environment.JSH_TEST_ISSUE317) ? ["-issue317"] : [];
-			var success = true;
-			var invocation = {
-				command: "bash",
-				arguments: [
-					jsh.shell.jsh.src.getFile("jsh.bash").toString(),
-					$context.base.getFile("contributor/suite.jsh.js").toString()
-				].concat(p.docker ? ["-docker"] : []).concat(debugging),
-				stdio: {
-					output: {
-						line: function(line) {
-							stdio.output.write(line + "\n");
-						}
+				var result = $api.fp.world.now.question(
+					jsh.shell.subprocess.question,
+					{
+						command: "bash",
+						arguments: $api.Array.build(function(rv) {
+							rv.push(jsh.shell.jsh.src.getFile("jsh").toString());
+							rv.push($context.base.getRelativePath("contributor/suite.jsh.js"));
+							if (p.docker) rv.push("-docker");
+							if (jsh.shell.environment.JSH_TEST_ISSUE317) rv.push("-issue317");
+						})
 					},
-					error: {
-						line: function(line) {
-							stdio.error.write(line + "\n");
+					{
+						stdout: function(e) {
+							events.fire("output", e.detail.line);
+						},
+						stderr: function(e) {
+							events.fire("console", e.detail.line);
 						}
 					}
-				},
-				evaluate: function(result) {
-					if (result.status != 0) {
-						jsh.shell.console("Failing because tests failed.");
-						jsh.shell.console("Output directory: " + logs);
-						success = false;
-					}
+				)
+				if (result.status != 0) {
+					jsh.shell.console("Failing because tests failed.");
 				}
-			};
-			jsh.shell.run(invocation);
-			//	TODO	adapt the jsh.shell.exit-based status handling above to the boolean handling desired here
-			return success;
+				return result.status == 0;
+			}
 		};
 
 		var project = (
@@ -393,59 +355,6 @@
 			 * @returns { slime.jsh.wf.standard.Project }
 			 */
 			function() {
-				var test = function() {
-					var success = true;
-
-					if (!jsh.shell.PATH.getCommand("docker")) {
-						jsh.shell.console("'docker' not found; cannot run tests.");
-						return false;
-					}
-
-					$api.fp.world.now.action(
-						jsh.shell.world.action,
-						jsh.shell.Invocation.from.argument({
-							command: "docker",
-							arguments: $api.Array.build(function(rv) {
-								rv.push("compose");
-								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml").toString());
-								rv.push("build", "test");
-							})
-						}),
-						{
-							exit: function(e) {
-								if (e.detail.status != 0) {
-									jsh.shell.console("docker compose build exit status: " + e.detail.status);
-									success = false;
-								}
-							}
-						}
-					);
-
-					if (!success) return false;
-
-					$api.fp.world.now.action(
-						jsh.shell.world.action,
-						jsh.shell.Invocation.from.argument({
-							command: "docker",
-							arguments: $api.Array.build(function(rv) {
-								rv.push("compose");
-								rv.push("-f", $context.base.getRelativePath("contributor/docker-compose.yaml").toString());
-								rv.push("run", "test");
-							})
-						}),
-						{
-							exit: function(e) {
-								if (e.detail.status != 0) {
-									jsh.shell.console("docker compose build exit status: " + e.detail.status);
-									success = false;
-								}
-							}
-						}
-					);
-
-					return success;
-				};
-
 				/** @type { slime.jsh.wf.Precommit } */
 				var precommit = $api.fp.world.old.ask(function(events) {
 					var success = true;
@@ -474,7 +383,7 @@
 						check: lint,
 						fix: jsh.wf.checks.lint().fix
 					},
-					test: test,
+					test: test({ docker: false }),
 					precommit: precommit
 				}
 			}
@@ -498,10 +407,19 @@
 				jsh.shell.console("Running TypeScript compiler ...");
 				jsh.wf.checks.tsc();
 				jsh.shell.console("Running tests ...");
-				var testsPassed = test({
-					docker: p.options.docker,
-					logs: void(0)
-				});
+				var testsPassed = $api.fp.world.now.ask(
+					test({
+						docker: p.options.docker
+					}),
+					{
+						console: function(e) {
+							jsh.shell.console(e.detail);
+						},
+						output: function(e) {
+							jsh.shell.echo(e.detail);
+						}
+					}
+				);
 				if (!testsPassed) {
 					jsh.shell.console("Tests failed.");
 					return 1;
@@ -659,33 +577,85 @@
 					}
 				}
 
-				return {
-					fifty: function(p) {
-						initialize();
-						jsh.shell.run({
-							command: docker,
-							arguments: [
-								"run",
-								"--name", "slime-test",
-								"--workdir", "/slime",
-								"davidpcaldwell/slime",
-								"./fifty",
-								"test.jsh"
-							].concat(p.arguments)
-						});
+				//	TODO	all of this is duplicative of the shell script in contributor/, and should be used to invoke that
+				//			instead
+				/** @type { (args: string[]) => slime.jrunscript.shell.run.Intention } */
+				var getIntention = function(args) {
+					return {
+						command: "bash",
+						arguments: $api.Array.build(function(rv) {
+							rv.push($context.base.getFile("contributor/docker-compose").toString());
+							rv.push.apply(rv, args);
+						}),
+						stdio: {
+							output: "line",
+							error: "line"
+						},
+						directory: $context.base.pathname.toString()
+					};
+				};
+
+				/** @type { slime.$api.event.Handlers<slime.jrunscript.shell.run.AskEvents> } */
+				var handler = {
+					stdout: function(e) {
+						jsh.shell.echo(e.detail.line);
 					},
-					run: function(p) {
-						initialize();
-						jsh.shell.run({
-							command: docker,
-							arguments: [
-								"run",
-								"--name", "slime-test",
-								"davidpcaldwell/slime",
-								"sleep", "infinity"
-							]
-						});
+					stderr: function(e) {
+						jsh.shell.console(e.detail.line);
 					}
+				};
+
+				var shell = $api.fp.world.mapping(
+					jsh.shell.subprocess.question,
+					handler
+				);
+
+				/** @type { (getComposeArguments: (invocation: slime.jsh.script.cli.Invocation<{}>) => string[]) => slime.jsh.script.cli.Command<{}> } */
+				var command = function(getComposeArguments) {
+					return function(p) {
+						//	TODO	need wo API for this
+						if (!jsh.shell.PATH.getCommand("docker")) {
+							jsh.shell.console("'docker' not found; cannot run Docker-based commands.");
+							return 1;
+						}
+
+						var build = $api.fp.now.invoke(
+							getIntention(["build"]),
+							shell,
+							$api.fp.property("status")
+						);
+
+						if (build != 0) return build;
+
+						/** @type { slime.jrunscript.shell.run.Intention } */
+						var intention = getIntention($api.Array.build(function(rv) {
+							var x = getComposeArguments(p);
+							rv.push.apply(rv, x);
+						}));
+
+						return $api.fp.now.invoke(
+							intention,
+							shell,
+							$api.fp.property("status")
+						);
+					}
+				}
+
+				return {
+					fifty: command(function(p) {
+						return $api.Array.build(function(rv) {
+							rv.push("run");
+							rv.push("box");
+							rv.push("./fifty");
+							rv.push.apply(rv, p.arguments);
+						})
+					}),
+					run: command(function(p) {
+						return $api.Array.build(function(rv) {
+							rv.push("run");
+							rv.push.apply(rv, p.arguments);
+						});
+					})
 				}
 			}
 		)();

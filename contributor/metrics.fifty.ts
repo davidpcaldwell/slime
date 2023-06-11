@@ -23,19 +23,16 @@ namespace slime.project.metrics {
 		name: string
 		files: number
 		bytes: number
-	}
-
-	export interface FiftyData extends JsapiMigrationData {
-		name: "fifty"
-	}
-
-	export interface JsapiData extends JsapiMigrationData {
-		name: "jsapi"
-		list: {
+		list: () => {
 			path: string
 			bytes: number
 			tests: slime.$api.fp.Maybe<number>
 		}[]
+	}
+
+	export interface JsapiAnalysis {
+		jsapi: JsapiMigrationData
+		fifty: JsapiMigrationData
 	}
 
 	export interface Exports {
@@ -57,10 +54,7 @@ namespace slime.project.metrics {
 		}
 
 		jsapi: {
-			analysis: (base: slime.jrunscript.file.Directory) => {
-				jsapi: JsapiData
-				fifty: FiftyData
-			}
+			analysis: (base: slime.jrunscript.file.Directory) => JsapiAnalysis
 		}
 	}
 

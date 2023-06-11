@@ -6,5 +6,12 @@
 #	END LICENSE
 
 SLIME="$(dirname $0)/.."
-docker compose -f $SLIME/contributor/docker-compose.yaml build test \
-	&& docker compose -f $SLIME/contributor/docker-compose.yaml run -w /slime test /bin/bash "$@"
+
+export DOCKER_HOST_UNAME="$(uname)"
+
+compose() {
+	docker compose --project-directory=${SLIME} -f ${SLIME}/contributor/docker-compose.yaml "$@"
+}
+
+compose build
+compose "$@"

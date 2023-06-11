@@ -613,7 +613,7 @@ namespace slime.jsh.wf {
 		}>
 	}
 
-	export type Test = slime.$api.fp.world.old.Ask<
+	export type Test = slime.$api.fp.world.Ask<
 		{
 			output: string
 			console: string
