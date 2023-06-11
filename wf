@@ -47,7 +47,7 @@ if [ "${SLIME_WF_JDK_VERSION}" = "8" ] || [ "${SLIME_WF_JDK_VERSION}" = "11" ] |
 
 	#	Technically not needed for JDK 17, in which jsh installs it on its own
 	if [ ! -f "${JSH_SHELL_LIB}/js.jar" ]; then
-		${SLIME}/jsh ${SLIME}/jrunscript/jsh/tools/install/rhino.jsh.js
+		${SLIME}/jsh --install-rhino
 	fi
 
 	export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_LOCAL}"
