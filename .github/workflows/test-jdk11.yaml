@@ -18,7 +18,5 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Build the Docker image
-        run: docker compose --project-directory=. -f contributor/docker-compose.yaml build test11
-      - name: Run the linting and tests
-        run: docker compose --project-directory=. -f contributor/docker-compose.yaml run test11
+      - name: Use Docker to create image, and then run the linting and tests
+        run: contributor/docker-compose run test11
