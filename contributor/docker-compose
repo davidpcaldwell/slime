@@ -10,7 +10,7 @@ SLIME="$(dirname $0)/.."
 export DOCKER_HOST_UNAME="$(uname)"
 
 compose() {
-	docker compose --project-directory=${SLIME} -f ${SLIME}/contributor/docker-compose.yaml "$@"
+	docker compose --project-directory=${SLIME} "$@"
 }
 
 compose build

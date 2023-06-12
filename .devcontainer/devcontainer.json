@@ -7,7 +7,7 @@
 {
 	"name": "slime",
 	"dockerComposeFile": [
-		"../contributor/docker-compose.yaml",
+		"../docker-compose.yaml",
 		"docker-compose.extend.yaml"
 	],
 	"customizations": {
