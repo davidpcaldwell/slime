@@ -54,7 +54,7 @@ philosophy that essentially nothing should be prebuilt; it runs from its own sou
 At that point, it is ready to use; SLIME is capable of installing its own dependencies (including Java, Node.js, and TypeScript)
 over the internet.
 
-The top-level [`jsh`](src/jsh) script can be used to run scripts. `jsh` scripts that are top-level scripts and intended to
+The top-level [`jsh`](jsh) script can be used to run scripts. `jsh` scripts that are top-level scripts and intended to
 be used as main programs are denoted by the suffix `.jsh.js`. The example `jsh-data.jsh.js` invocation above will run a script that
 will output a JSON data structure describing the shell.
 
