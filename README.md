@@ -25,13 +25,13 @@ The following script runs the `master` version of the shell remotely and runs th
 ### Using `curl` (installed on macOS)
 
 ```bash
-curl -v -L https://raw.githubusercontent.com/davidpcaldwell/slime/main/jsh.bash | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/main/jsh/test/jsh-data.jsh.js
+curl -v -L https://raw.githubusercontent.com/davidpcaldwell/slime/main/jsh | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/main/jrunscript/jsh/test/jsh-data.jsh.js
 ```
 
 ### Using `wget` (installed on many Linux distributions lacking `curl`)
 
 ```bash
-wget https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash -O - | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js
+wget https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh -O - | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jrunscript/jsh/test/jsh-data.jsh.js
 ```
 
 ## Getting Started: Using SLIME locally
@@ -39,7 +39,7 @@ wget https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash -O -
 ### TL;DR
 
 * `git clone https://github.com/davidpcaldwell/slime.git; cd slime`
-* `./jsh.bash jsh/test/jsh-data.jsh.js` - runs a sample program emitting information about the installed `jsh` shell.
+* `./jsh jrunscript/jsh/test/jsh-data.jsh.js` - runs a sample program emitting information about the installed `jsh` shell.
 * `./fifty view` - runs a server that serves the SLIME documentation and opens an instance of Google Chrome to browse it.
 
 ### Getting the code
@@ -54,7 +54,7 @@ philosophy that essentially nothing should be prebuilt; it runs from its own sou
 At that point, it is ready to use; SLIME is capable of installing its own dependencies (including Java, Node.js, and TypeScript)
 over the internet.
 
-The top-level [`jsh.bash`](src/jsh.bash) script can be used to run scripts. `jsh` scripts that are top-level scripts and intended to
+The top-level [`jsh`](jsh) script can be used to run scripts. `jsh` scripts that are top-level scripts and intended to
 be used as main programs are denoted by the suffix `.jsh.js`. The example `jsh-data.jsh.js` invocation above will run a script that
 will output a JSON data structure describing the shell.
 
