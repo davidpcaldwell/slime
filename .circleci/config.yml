@@ -33,10 +33,10 @@ jobs:
       - checkout
       - run:
           name: "Build the Docker image"
-          command: "docker compose -f contributor/docker-compose.yaml build test11"
+          command: "docker compose build test11"
       - run:
           name: "Run the linting and tests"
-          command: "docker compose -f contributor/docker-compose.yaml run test11"
+          command: "docker compose run test11"
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
