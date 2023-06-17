@@ -52,7 +52,7 @@
 		 */
 		var size = function(array) {
 			return array.reduce(function(rv,entry) {
-				return rv + entry.file.length;
+				return rv + $api.fp.world.now.ask($context.library.file.Location.file.size(entry.file.pathname.os.adapt()));
 			},0);
 		};
 

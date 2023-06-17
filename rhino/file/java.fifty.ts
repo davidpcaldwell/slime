@@ -168,7 +168,7 @@ namespace slime.jrunscript.file.internal.java {
 
 				var me = fifty.jsh.file.relative("java.fifty.ts").pathname;
 				var fs = subject.filesystems.os;
-				var size = $api.fp.world.now.ask(fs.fileLength({ pathname: me }));
+				var size = $api.fp.world.now.ask(fs.fileSize({ pathname: me }));
 				if (size.present) {
 					jsh.shell.console("size = " + size.value);
 				}

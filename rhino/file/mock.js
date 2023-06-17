@@ -115,7 +115,7 @@
 						}
 					}
 				},
-				fileLength: void(0),
+				fileSize: void(0),
 				fileLastModified: void(0),
 				listDirectory: function(p) {
 					return function(events) {
