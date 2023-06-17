@@ -97,7 +97,7 @@ namespace slime.jrunscript.file {
 	export namespace location {
 		export namespace file {
 			export interface Exports {
-				//length: slime.$api.fp.world.Question<Location, void, number>
+				size: slime.$api.fp.world.Question<Location, void, number>
 			}
 
 			(
@@ -106,8 +106,8 @@ namespace slime.jrunscript.file {
 				) {
 					const { jsh } = fifty.global;
 
-					fifty.tests.sandbox.locations.file.bytes = function() {
-						jsh.shell.console("wip");
+					fifty.tests.sandbox.locations.file.size = function() {
+						//	TODO	write a test
 					}
 
 					fifty.tests.sandbox.locations.file.length = function() {

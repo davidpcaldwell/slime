@@ -18,7 +18,7 @@ namespace slime.jrunscript.file {
 				pathname: string
 			},void,slime.$api.fp.Maybe<boolean>>
 
-			fileLength: slime.$api.fp.world.Question<{
+			fileSize: slime.$api.fp.world.Question<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<number>>
 

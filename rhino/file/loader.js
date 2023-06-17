@@ -33,7 +33,7 @@
 							},
 							length: function() {
 								return $api.fp.world.now.ask(
-									target.filesystem.fileLength({ pathname: target.pathname })
+									target.filesystem.fileSize({ pathname: target.pathname })
 								);
 							},
 							modified: function() {

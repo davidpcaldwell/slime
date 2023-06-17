@@ -615,7 +615,7 @@
 						return $api.fp.Maybe.from.some(file_exists(p.pathname));
 					}
 				},
-				fileLength: function(p) {
+				fileSize: function(p) {
 					return function(events) {
 						return $api.fp.Maybe.from.some(length(p.pathname));
 					}

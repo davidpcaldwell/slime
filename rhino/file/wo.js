@@ -203,6 +203,13 @@
 					exists: function() {
 						return Location_file_exists;
 					},
+					size: function(location) {
+						return function(events) {
+							var maybe = location.filesystem.fileSize({ pathname: location.pathname })(events);
+							if (!maybe.present) throw new Error("Could not get file size for " + location.pathname);
+							return maybe.value;
+						}
+					},
 					read: {
 						stream: function() {
 							return function(location) {
