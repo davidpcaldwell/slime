@@ -66,6 +66,7 @@ services:
       - type: volume
         source: local
         target: /slime/local
+      - ./local/docker/home:/root
 
   chrome:
     image: seleniarm/standalone-chromium
