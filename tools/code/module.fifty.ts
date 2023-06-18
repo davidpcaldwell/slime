@@ -79,6 +79,22 @@ namespace slime.tools.code {
 	//@ts-ignore
 	)(fifty);
 
+	export interface JsapiMigrationData {
+		name: string
+		files: number
+		bytes: number
+		list: () => {
+			path: string
+			bytes: number
+			tests: slime.$api.fp.Maybe<number>
+		}[]
+	}
+
+	export interface JsapiAnalysis {
+		jsapi: JsapiMigrationData
+		fifty: JsapiMigrationData
+	}
+
 	export interface Exports {
 		jsapi: {
 			Location: {
@@ -90,6 +106,8 @@ namespace slime.tools.code {
 			Element: {
 				getTestingElements: (p: slime.runtime.document.Document) => slime.runtime.document.Element[]
 			}
+
+			analysis: slime.$api.fp.Mapping<slime.tools.code.Project,slime.tools.code.JsapiAnalysis>
 		}
 	}
 

@@ -19,22 +19,6 @@ namespace slime.project.metrics {
 		file: slime.jrunscript.file.File
 	}
 
-	export interface JsapiMigrationData {
-		name: string
-		files: number
-		bytes: number
-		list: () => {
-			path: string
-			bytes: number
-			tests: slime.$api.fp.Maybe<number>
-		}[]
-	}
-
-	export interface JsapiAnalysis {
-		jsapi: JsapiMigrationData
-		fifty: JsapiMigrationData
-	}
-
 	export interface Exports {
 		/**
 		 * Returns all the source files under the given directory. Source files are defined as all files in a directory containing
@@ -54,7 +38,7 @@ namespace slime.project.metrics {
 		}
 
 		jsapi: {
-			analysis: (base: slime.jrunscript.file.Directory) => JsapiAnalysis
+			analysis: (base: slime.jrunscript.file.Directory) => slime.tools.code.JsapiAnalysis
 		}
 	}
 

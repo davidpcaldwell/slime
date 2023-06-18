@@ -577,9 +577,111 @@
 						var elements = Element.getJsapiTestingElements(parsed);
 						return Boolean(elements.length);
 					}
+				},
+				group: function(location) {
+					if (jsapi.Location.is(location)) return "jsapi";
+					if (/\.fifty\.ts$/.test(location.pathname)) {
+						return "fifty";
+					}
+					return "other";
 				}
 			}
 		}
+
+		/** @type { slime.$api.fp.Mapping<slime.tools.code.Project,slime.tools.code.JsapiAnalysis> } */
+		var jsapiAnalysis = $api.fp.pipe(
+			function(p) {
+				//	TODO	simplify
+				return {
+					base: p.base,
+					groups: $api.fp.Array.groupBy({
+						/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,string> } */
+						group: function(entry) {
+							return jsapi.Location.group(entry);
+						}
+					})(p.files)
+				}
+			},
+			function(p) {
+				var getPath = $context.library.file.Location.directory.relativeTo(p.base);
+
+				/**
+				 *
+				 * @param { slime.jrunscript.file.Location } entry
+				 * @returns
+				 */
+				var fileSize = function(entry) {
+					return $api.fp.world.now.ask($context.library.file.Location.file.size(entry));
+				}
+
+				/**
+				 *
+				 * @param { slime.jrunscript.file.Location[] } array
+				 * @returns
+				 */
+				var totalSize = function(array) {
+					return array.reduce(function(rv,entry) {
+						return rv + fileSize(entry);
+					},0);
+				};
+
+				/** @type { slime.$api.fp.Mapping<slime.runtime.document.Element,number> } */
+				var getTestSize = function(element) {
+					if (element.children.length > 1) throw new Error("Multiple children: " + JSON.stringify(element.children));
+					var only = element.children[0];
+					if ($context.library.document.Node.isString(only)) {
+						return only.data.length;
+					} else {
+						throw new Error("Not string: " + JSON.stringify(only));
+					}
+				};
+
+				return p.groups.map(
+					/** @returns { slime.tools.code.JsapiMigrationData } } */
+					function(group) {
+						return {
+							name: group.group,
+							files: group.array.length,
+							bytes: totalSize(group.array),
+							list: function() {
+								return group.array.map(function(file) {
+									var tests = (function() {
+										var parsed = jsapi.Location.parse(file);
+										if (parsed.present) {
+											var tests = Element.getJsapiTestingElements(parsed.value).reduce(function(rv,element) {
+												return rv + getTestSize(element);
+											}, 0);
+											return $api.fp.Maybe.from.some(tests);
+										} else {
+											return $api.fp.Maybe.from.nothing();
+										}
+									})();
+									return {
+										path: getPath(file),
+										bytes: fileSize(file),
+										tests: tests
+									}
+								}).sort(function(a,b) {
+									return b.bytes - a.bytes;
+								});
+							}
+						}
+					}
+				)
+			},
+			function(p) {
+				var byName = function(name) {
+					return p.find(function(group) {
+						return group.name == name;
+					});
+				};
+
+				return {
+					jsapi: byName("jsapi"),
+					fifty: byName("fifty")
+				}
+			}
+		);
 
 		$export({
 			Project: {
@@ -622,20 +724,11 @@
 				}
 			},
 			jsapi: {
-				Location: {
-					is: jsapi.Location.is,
-					parse: jsapi.Location.parse,
-					group: function(location) {
-						if (jsapi.Location.is(location)) return "jsapi";
-						if (/\.fifty\.ts$/.test(location.pathname)) {
-							return "fifty";
-						}
-						return "other";
-					}
-				},
+				Location: jsapi.Location,
 				Element: {
 					getTestingElements: Element.getJsapiTestingElements
-				}
+				},
+				analysis: jsapiAnalysis
 			},
 			File: {
 				hasShebang: hasShebang,
