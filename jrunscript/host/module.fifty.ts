@@ -168,7 +168,8 @@ namespace slime.jrunscript.host {
 			const { verify } = fifty;
 			const module = internal.test.subject;
 
-			const isRhino = typeof(Packages.org.mozilla.javascript.Context) == "function"
+			const hasRhinoCode = Boolean(typeof(Packages.org.mozilla.javascript.Context) == "function");
+			const isRhino = hasRhinoCode
 				&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null)
 			;
 
