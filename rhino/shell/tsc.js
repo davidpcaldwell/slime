@@ -79,7 +79,9 @@
 
 			if (!rv.present) throw new Error("Error attempting to compile TypeScript.");
 
-			return rv.value;
+			var updated = rv.value.replace("export {};", "/* Removed by rhino/shell/tsc.js: export {}; */");
+
+			return updated;
 		};
 
 		$export({
