@@ -34,10 +34,11 @@ namespace slime.jrunscript.runtime.java {
 
 	export namespace test {
 		export const { subject, isRhino } = (function(Packages: slime.jrunscript.Packages, fifty: slime.fifty.test.Kit) {
+			const hasRhinoCode = Boolean(typeof(Packages.org.mozilla.javascript.Context) == "function");
 			return {
 				subject: fifty.jsh.$slime,
-				isRhino: Boolean(typeof(Packages.org.mozilla.javascript.Context) == "function"
-					&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null))
+				isRhino: hasRhinoCode
+					&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null)
 			};
 		//@ts-ignore
 		})(Packages,fifty);
