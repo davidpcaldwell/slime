@@ -9,7 +9,8 @@
 		"local",
 		"bin",
 		"loader/api/tools/snippets",
-		"jsh/tools/test/foo.ts",
+		"jrunscript/jsh/test/hello.ts",
+		"jrunscript/jsh/tools/test/foo.ts",
 		//	"**/*.jsh.js"
 	],
 	"compilerOptions": {
