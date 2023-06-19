@@ -137,6 +137,10 @@
  * *  `--chrome:debug:port *number*`: If specified, the opened Chrome will allow debuggers to connect on the given port.
  * *  `--index *path-to-index*`: (optional; defaults to `index.html`) The relative path of the index page in the directory being served.
  * *  `*directory*`: A directory to serve.
+ *
+ * ## Contributor documentation
+ *
+ * Separate documentation for project contributors can be browsed as the {@link slime.internal} TypeScript namespace.
  */
 namespace slime {
 	export interface Codec<T,E> {
