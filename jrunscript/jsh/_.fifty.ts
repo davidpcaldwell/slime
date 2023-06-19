@@ -93,7 +93,7 @@ namespace slime.jsh {
 
 /**
  * To execute a script in an ad-hoc built shell, execute:
- * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js _script_ [_arguments_]`
+ * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js <script> [arguments]`
  */
 namespace slime.jsh.internal {
 
