@@ -71,28 +71,7 @@
 						}
 					};
 				}
-			)(),
-			jsapi: {
-				analysis: $api.fp.pipe(
-					function(directory) { return directory.pathname.os.adapt(); },
-					function(location) {
-						return $context.library.code.Project.from.directory({
-							root: location,
-							descend: function(directory) {
-								var basename = $context.library.file.Location.basename(directory);
-								if (basename == ".git") return false;
-								if (basename == "bin") return false;
-								if (basename == "local") return false;
-								return true;
-							},
-							isSource: function(file) {
-								return $api.fp.Maybe.from.some(true);
-							}
-						});
-					},
-					$context.library.code.jsapi.analysis
-				)
-			}
+			)()
 		});
 	}
 //@ts-ignore

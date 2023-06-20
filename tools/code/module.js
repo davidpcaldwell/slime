@@ -688,14 +688,14 @@
 				from: {
 					directory: function(p) {
 						var question = $context.library.file.Location.directory.list.stream({
-							descend: p.descend
+							descend: p.excludes.descend
 						});
 						var listing = $api.fp.world.now.question(question, p.root);
 						var files = $api.fp.now.invoke(
 							listing,
 							$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.Location.file.exists())),
 							$api.fp.Stream.filter(function(location) {
-								var include = p.isSource(location);
+								var include = p.excludes.isSource(location);
 								if (include.present) return include.value;
 								throw new TypeError("Could not determine whether source file: " + location.pathname);
 							}),
@@ -711,7 +711,7 @@
 							getGitSourceFiles,
 							{
 								repository: p.root,
-								isSource: downgradeIsSource(p.isSource)
+								isSource: downgradeIsSource(p.excludes.isSource)
 							}
 						).map(function(file) {
 							return file.file;

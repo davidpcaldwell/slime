@@ -22,21 +22,41 @@
 
 		var model = code.model({
 			library: {
-				document: jsh.document,
 				file: jsh.file,
-				code: jsh.tools.code,
-				project: jsh.project.code
+				code: jsh.tools.code
 			}
-		})
+		});
 
 		var getSourceFiles = function() {
 			return model.getSourceFiles(SLIME);
-		}
+		};
+
+		var jsapiAnalysis = $api.fp.pipe(
+			function(directory) { return directory.pathname.os.adapt(); },
+			function(location) {
+				return jsh.tools.code.Project.from.directory({
+					root: location,
+					excludes: {
+						descend: function(directory) {
+							var basename = jsh.file.Location.basename(directory);
+							if (basename == ".git") return false;
+							if (basename == "bin") return false;
+							if (basename == "local") return false;
+							return true;
+						},
+						isSource: function(file) {
+							return $api.fp.Maybe.from.some(true);
+						}
+					}
+				});
+			},
+			jsh.tools.code.jsapi.analysis
+		)
 
 		jsh.script.cli.wrap({
 			commands: {
 				jsapi: function(invocation) {
-					var data = model.jsapi.analysis(SLIME);
+					var data = jsapiAnalysis(SLIME);
 
 					[data.fifty, data.jsapi].forEach(function(group) {
 						jsh.shell.console(group.name + ": " + group.files + " files, " + group.bytes + " bytes");
