@@ -25,7 +25,7 @@ namespace slime.project.code {
 		files: {
 			isText: slime.tools.code.isText
 
-			exclude: slime.tools.code.Excludes
+			exclude: slime.tools.code.old.Excludes
 
 			trailingWhitespace: slime.$api.fp.world.Action<{
 				base: slime.jrunscript.file.Directory
