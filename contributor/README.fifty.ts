@@ -5,6 +5,10 @@
 //	END LICENSE
 
 /**
+ * ## `jsh` documentation
+ *
+ * Documentation about contributing to `jsh` can be browsed at the {@link slime.jsh.internal} TypeScript namespace.
+ *
  * ## Compatibility updates
  *
  * ### TypeScript
