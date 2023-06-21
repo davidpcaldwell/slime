@@ -51,11 +51,13 @@
 						environment: environment
 					});
 				} else {
+					//	TODO	revisit alternatives to the below
+					var rhino = true;
 					var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("packaged.jar");
 					var script = parameters.arguments.shift();
 					jsh.shell.jsh({
 						shell: JSH_HOME,
-						script: jsh.shell.jsh.src.getRelativePath("jsh/tools/package.jsh.js"),
+						script: jsh.shell.jsh.src.getRelativePath("jrunscript/jsh/tools/package.jsh.js"),
 						arguments: ([
 							"-script", script,
 							"-to", to

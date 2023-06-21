@@ -94,6 +94,9 @@ namespace slime.jsh {
 /**
  * To execute a script in an ad-hoc built shell, execute:
  * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js <script> [arguments]`
+ *
+ * To execute a script in a packaged shell, execute:
+ * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js -packaged <script> [arguments]`
  */
 namespace slime.jsh.internal {
 
