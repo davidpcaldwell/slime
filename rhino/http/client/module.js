@@ -437,7 +437,7 @@
 								}
 							)
 						)(events);
-					} else if (response.status.code == 307) {
+					} else if (response.status.code == 307 || response.status.code == 308) {
 						return fetch(
 							$api.Object.compose(
 								argument,
@@ -503,6 +503,33 @@
 			interpretRequestBody: _interpretRequestBody
 		});
 
+		/** @type { slime.jrunscript.http.client.Exports["Argument"]["request"] } */
+		var Argument_request = function(request) {
+			/**
+			 *
+			 * @param { slime.jrunscript.http.client.request.url } value
+			 * @returns { slime.web.Url }
+			 */
+			function url(value) {
+				if (typeof(value) == "string") {
+					return $context.api.web.Url.codec.string.decode(value);
+				} else {
+					return value;
+				}
+			}
+
+			return {
+				request: {
+					method: (request.method) ? request.method : "GET",
+					url: url(request.url),
+					headers: (request.headers) ? request.headers : [],
+					body: (request.body) ? _interpretRequestBody(request.body) : null
+				},
+				timeout: void(0),
+				proxy: void(0)
+			}
+		}
+
 		$export({
 			Header: Header,
 			world: {
@@ -511,34 +538,13 @@
 				}
 			},
 			World: {
-				withFollowRedirects: withFollowRedirects
+				withFollowRedirects: withFollowRedirects,
+				question: function(implementation) {
+					return $api.fp.world.Question.pipe(Argument_request, implementation);
+				}
 			},
 			Argument: {
-				request: function(request) {
-					/**
-					 *
-					 * @param { slime.jrunscript.http.client.request.url } value
-					 * @returns { slime.web.Url }
-					 */
-					function url(value) {
-						if (typeof(value) == "string") {
-							return $context.api.web.Url.codec.string.decode(value);
-						} else {
-							return value;
-						}
-					}
-
-					return {
-						request: {
-							method: (request.method) ? request.method : "GET",
-							url: url(request.url),
-							headers: (request.headers) ? request.headers : [],
-							body: (request.body) ? _interpretRequestBody(request.body) : null
-						},
-						timeout: void(0),
-						proxy: void(0)
-					}
-				}
+				request: Argument_request
 			},
 			Client: scripts.objects.Client,
 			Body: {
