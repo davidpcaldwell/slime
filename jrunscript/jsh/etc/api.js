@@ -65,10 +65,11 @@
 		"jrunscript/tools/",
 		"rhino/document/",
 		"rhino/shell/",
-		"jrunscript/jsh/script/",
 		"rhino/http/client/",
 		"rhino/http/servlet/",
-		"rhino/ip/"
+		"rhino/ip/",
+		"jrunscript/jsh/shell/",
+		"jrunscript/jsh/script/",
 	].forEach(function(path) {
 		components.add(path, { jsh: { api: true, module: true }});
 	});
