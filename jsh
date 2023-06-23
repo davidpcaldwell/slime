@@ -217,6 +217,33 @@ install_rhino() {
 	# download_install ${RHINO_ENGINE_URL} ${JSH_BOOTSTRAP_RHINO_ENGINE}
 }
 
+get_jdk_major_version() {
+	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
+	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
+	JDK=$1
+	JAVA="${JDK}/bin/java"
+	IFS=$'\n'
+	JAVA_VERSION_OUTPUT=$(${JAVA} -version 2>&1)
+	for line in ${JAVA_VERSION_OUTPUT}; do
+		if [[ $line =~ \"(.+)\" ]]; then
+			JAVA_VERSION="${BASH_REMATCH[1]}"
+		fi
+	done
+	if [ -n ${JAVA_VERSION} ]; then
+		if [[ $JAVA_VERSION =~ ^1\.8\. ]]; then
+			echo "8"
+		elif [[ $JAVA_VERSION =~ ^11\. ]]; then
+			echo "11"
+		elif [[ $JAVA_VERSION =~ ^17\. ]]; then
+			echo "17"
+		else
+			echo "Unknown"
+		fi
+	else
+		echo "Unparsed"
+	fi
+}
+
 if [ "$1" == "--install-jdk" ]; then
 	#	Default JDK remains 8 because remote shell does not yet work with JDK 11; module path issues
 	#	See jrunscript/jsh/test/remote.fifty.ts
@@ -256,6 +283,11 @@ fi
 
 if [ "$1" == "--install-rhino" ]; then
 	install_rhino
+	exit $?
+fi
+
+if [ "$1" == "--jdk-major-version" ]; then
+	echo $(get_jdk_major_version $2)
 	exit $?
 fi
 
@@ -346,33 +378,6 @@ HTTPS_PROXY_HOST_ARGUMENT=$(javaSystemPropertyArgument https.proxyHost ${JSH_HTT
 HTTPS_PROXY_PORT_ARGUMENT=$(javaSystemPropertyArgument https.proxyPort ${JSH_HTTPS_PROXY_PORT})
 JSH_GITHUB_USER_ARGUMENT=$(javaSystemPropertyArgument jsh.github.user ${JSH_GITHUB_USER})
 JSH_GITHUB_PASSWORD_ARGUMENT=$(javaSystemPropertyArgument jsh.github.password ${JSH_GITHUB_PASSWORD})
-
-get_jdk_major_version() {
-	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
-	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
-	JDK=$1
-	JAVA="${JDK}/bin/java"
-	IFS=$'\n'
-	JAVA_VERSION_OUTPUT=$(${JAVA} -version 2>&1)
-	for line in ${JAVA_VERSION_OUTPUT}; do
-		if [[ $line =~ \"(.+)\" ]]; then
-			JAVA_VERSION="${BASH_REMATCH[1]}"
-		fi
-	done
-	if [ -n ${JAVA_VERSION} ]; then
-		if [[ $JAVA_VERSION =~ ^1\.8\. ]]; then
-			echo "8"
-		elif [[ $JAVA_VERSION =~ ^11\. ]]; then
-			echo "11"
-		elif [[ $JAVA_VERSION =~ ^17\. ]]; then
-			echo "17"
-		else
-			echo "Unknown"
-		fi
-	else
-		echo "Unparsed"
-	fi
-}
 
 #	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
 #	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to
