@@ -217,6 +217,8 @@ namespace slime.jrunscript.http.client {
 	export interface Exports {
 		World: {
 			withFollowRedirects: (implementation: spi.Implementation) => spi.Implementation
+
+			question: (implementation: spi.Implementation) => slime.$api.fp.world.Question<Request,spi.Events,spi.Response>
 		}
 
 		Argument: {
