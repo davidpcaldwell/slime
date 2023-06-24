@@ -42,8 +42,7 @@
  *
  * SLIME Servlets is compatible with the Servlet 3.0.1 implementation.
  *
- * `jsh` currently supports **Tomcat 7.0.x** and is tested via the test suite. Updating to Tomcat 9 is on the roadmap via [issue
- * 209](https://github.com/davidpcaldwell/slime/issues/209).
+ * `jsh` currently supports **Tomcat 9.0.70** and is tested via the test suite.
  *
  * ### Browser
  *
