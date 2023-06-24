@@ -35,13 +35,13 @@ END LICENSE
 			//	TODO	this setup is horrendous, far out of date, far too complicated, and needs refactoring; currently it is part
 			//			jsh/jsh.shell of the contributor/jrunscript.jsh.js suite
 			var context = new function() {
-				var host = $jsapi.loader.module("../../jrunscript/host/", {
+				var host = $jsapi.loader.module("../../../jrunscript/host/", {
 					$slime: jsh.unit.$slime,
 					logging: {
 						prefix: "slime.jsh.shell.test"
 					}
 				});
-				var file = $jsapi.loader.module("../../rhino/file/", new function() {
+				var file = $jsapi.loader.module("../../../rhino/file/", new function() {
 					if (jsh.shell.environment.PATHEXT) {
 						this.pathext = jsh.shell.environment.PATHEXT.split(";");
 					}
@@ -71,7 +71,28 @@ END LICENSE
 				this.host = host;
 				this.file = file;
 			};
+			debugger;
+			var plugins = $jsapi.loader.plugin.mock({
+				path: "../../../rhino/shell/",
+				jsh: {
+					js: jsh.js,
+					web: jsh.web,
+					document: jsh.document,
+					java: context.host,
+					io: jsh.io,
+					file: context.file,
+					script: jsh.script
+				},
+				evaluate: function(p) {
+					return {
+						shell: p.plugins.shell,
+						stdio: p.plugins.stdio
+					}
+				}
+			});
+			debugger;
 			scope.module = $jsapi.loader.plugin.mock({
+				plugins: plugins,
 				jsh: {
 					js: jsh.js,
 					web: jsh.web,
@@ -85,12 +106,13 @@ END LICENSE
 					return p.jsh.shell;
 				}
 			});
+			debugger;
 		</script>
 		<h1>Exports</h1>
-		<script type="application/x.jsapi#initialize" jsapi:reference="getApi('api.html').getElement('script.initialize')">
+		<script type="application/x.jsapi#initialize" jsapi:reference="getApi('../../../rhino/shell/api.html').getElement('script.initialize')">
 			//	see code in api.html
 		</script>
-		<div class="type" jsapi:replace="getApi('api.html').getElement('types.stdio')">
+		<div class="type" jsapi:replace="getApi('../../../rhino/shell/api.html').getElement('types.stdio')">
 		</div>
 		<!--
 			TODO	the below does not work for unknown reason
@@ -273,7 +295,7 @@ END LICENSE
 										into pathnames in this filesystem before the subprocess is launched.
 									</span>
 								</li>
-								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('exports/run/arguments/run.environment')">
+								<li class="value" jsapi:reference="getApi('../../../rhino/shell/api.html').getElement('exports/run/arguments/run.environment')">
 									<div class="name">environment</div>
 									<span><a href="../../rhino/shell/api.html#run.environment">See rhino/shell</a></span>
 								</li>
@@ -282,11 +304,11 @@ END LICENSE
 									<span class="type">__TYPE__</span>
 									<span>__DESCRIPTION__</span>
 								</li>
-								<li class="value" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('exports/run/arguments/run.directory')">
+								<li class="value" jsapi:reference="getApi('../../../rhino/shell/api.html').getElement('exports/run/arguments/run.directory')">
 									<div class="name">directory</div>
 									<span><a href="../../rhino/shell/api.html#run.directory">See rhino/shell</a></span>
 								</li>
-								<li class="function" jsapi:reference="getApi('../../rhino/shell/api.html').getElement('exports/run/arguments/run.evaluate')">
+								<li class="function" jsapi:reference="getApi('../../../rhino/shell/api.html').getElement('exports/run/arguments/run.evaluate')">
 									<div class="name">evaluate</div>
 									<span><a href="../../rhino/shell/api.html#run.evaluate">See rhino/shell</a></span>
 								</li>
