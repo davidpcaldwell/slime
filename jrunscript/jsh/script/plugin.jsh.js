@@ -100,7 +100,7 @@
 				parser: $context.api.parser
 			}).getopts;
 
-			$exports.Application = $api.Object.compose(
+			$exports.Application = Object.assign(
 				code.Application({
 					getopts: $exports.getopts
 				}),
