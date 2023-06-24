@@ -4,8 +4,15 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.script.old.application.Context } $context
+	 * @param { slime.loader.Export<slime.jsh.script.old.application.Exports> } $export
+	 */
+	function($api,$context,$export) {
 		//	TODO	is there a better way in our error framework?
 		var newError = function(p) {
 			var message = (p.message) ? p.message : Object.keys(p)[0];
@@ -16,17 +23,18 @@
 			return e;
 		}
 
-		$exports.Application = function(o) {
+		/** @type { slime.jsh.script.old.application.Exports } */
+		var Application = function(o) {
 			var toFunction = function(command) {
 				if (command.getopts) {
 					return function(globals) {
 						var parameters = $context.getopts(command.getopts, globals.arguments);
 						return command.run.call(this,
-							$context.js.Object.set(
-								{},
+							$api.Object.compose(
 								{
 									global: globals.options
-								}, parameters
+								},
+								parameters
 							)
 						);
 					}
@@ -74,5 +82,13 @@
 				return toFunction(object).call(o, { options: globals.options, arguments: globals.arguments });
 			};
 		};
+
+		$export(Application);
+	}
+//@ts-ignore
+)($api,$context,$export);
+
+(
+	function() {
 	}
 )();

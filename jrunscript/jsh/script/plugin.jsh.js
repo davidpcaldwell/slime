@@ -17,6 +17,10 @@
 	 * @param { slime.Loader } $loader
 	 */
 	function(Packages,plugins,plugin,$slime,$api,jsh,$loader) {
+		var code = {
+			/** @type { slime.jsh.script.old.application.Script } */
+			Application: $loader.script("Application.js")
+		}
 		/**
 		 * @param { slime.jsh.script.internal.Context } $context
 		 * @returns { slime.jsh.script.Exports }
@@ -96,10 +100,14 @@
 				parser: $context.api.parser
 			}).getopts;
 
-			$exports.Application = $loader.file("Application.js", {
-				js: $context.api.js,
-				getopts: $exports.getopts
-			}).Application;
+			$exports.Application = Object.assign(
+				code.Application({
+					getopts: $exports.getopts
+				}),
+				{
+					run: void(0)
+				}
+			);
 
 			//	TODO	think this through, what about packaged shells etc.?
 			$exports.world = ($context.file) ? {

@@ -574,7 +574,9 @@ namespace slime.jsh.script {
 		/** @deprecated */
 		addClasses: any
 		getRelativePath: any
-		Application: any
+		Application: slime.jsh.script.old.application.Constructor & {
+			run: any
+		}
 		loader: slime.old.Loader
 		Loader?: any
 		world: {
