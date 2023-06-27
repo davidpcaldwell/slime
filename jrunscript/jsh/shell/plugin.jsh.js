@@ -27,11 +27,11 @@
 				 */
 				var context = {
 					api: {
-						js: jsh.js
-						,java: jsh.java
-						,io: jsh.io
-						,file: jsh.file
-						,script: jsh.script
+						js: jsh.js,
+						java: jsh.java,
+						io: jsh.io,
+						file: jsh.file,
+						script: jsh.script
 					},
 					stdio: plugins.stdio,
 					_getSystemProperties: function() {
