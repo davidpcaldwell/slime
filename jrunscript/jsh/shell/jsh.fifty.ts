@@ -40,6 +40,95 @@ namespace slime.jsh.shell {
 	 */
 	export interface Exports {}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface JshShellJsh {
+	}
+
+	export interface Exports {
+		jsh: JshShellJsh
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.jsh = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface UnbuiltInstallation {
+		src: string
+	}
+
+	export interface BuiltInstallation {
+		home: string
+	}
+
+	export interface PackagedInstallation {
+		package: string
+	}
+
+	export interface UrlInstallation {
+		url: string
+	}
+
+	export type Installation = UnbuiltInstallation | BuiltInstallation | PackagedInstallation | UrlInstallation
+
+	export interface JshShellJsh {
+		Installation: {
+			from: {
+				/**
+				 * @experimental
+				 *
+				 * Returns the `jsh` installation that is running the current shell. Only implemented for unbuilt shells currently.
+				 */
+				current: slime.$api.fp.impure.Input<Installation>
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.exports.jsh.Installation = function() {
+				var src = fifty.jsh.file.relative("../../../");
+				var diagnostic = jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")(src);
+				var intention: slime.jsh.shell.Intention = {
+					shell: {
+						src: src.pathname
+					},
+					script: diagnostic.pathname,
+					stdio: {
+						output: "string"
+					}
+				};
+				var augmented = jsh.shell.Intention.from.jsh(intention);
+				var result = $api.fp.world.now.question(
+					jsh.shell.subprocess.question,
+					augmented
+				);
+				var output = JSON.parse(result.stdio.output);
+				var installationSrc: string = (output.installation) ? output.installation.src : void(0);
+
+				verify(installationSrc).is(src.pathname);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export type Intention = (
 		{
 			shell: {
@@ -138,6 +227,19 @@ namespace slime.jsh.shell {
 		}
 	}
 
+	export interface JshShellJsh {
+		<R>(p: oo.ForkInvocation<R>): R
+		<R>(p: oo.EngineInvocation<R>): R
+
+		src?: slime.jrunscript.file.Directory
+		require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.event.Function.Receiver ) => void
+		lib?: slime.jrunscript.file.Directory
+		home?: slime.jrunscript.file.Directory
+		relaunch: () => void
+		debug: any
+		url: any
+	}
+
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		/**
 		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
@@ -182,18 +284,7 @@ namespace slime.jsh.shell {
 		/** @deprecated Replaced by `run`. */
 		shell: any
 
-		jsh: {
-			<R>(p: oo.ForkInvocation<R>): R
-			<R>(p: oo.EngineInvocation<R>): R
-
-			src?: slime.jrunscript.file.Directory
-			require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.event.Function.Receiver ) => void
-			lib?: slime.jrunscript.file.Directory
-			home?: slime.jrunscript.file.Directory
-			relaunch: () => void
-			debug: any
-			url: any
-		}
+		jsh: JshShellJsh
 
 		run: slime.jrunscript.shell.Exports["run"] & {
 			evaluate: {
@@ -212,4 +303,15 @@ namespace slime.jsh.shell {
 		PATH: slime.jrunscript.file.Searchpath
 		listeners: any
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
