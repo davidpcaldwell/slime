@@ -564,11 +564,11 @@
 				}
 			},
 			{
-				command: void(0),
 				require: void(0),
 				relaunch: void(0),
 				debug: void(0),
-				url: void(0)
+				url: void(0),
+				Installation: void(0)
 			}
 		);
 		$exports.jsh.relaunch = $api.experimental(function(p) {
@@ -637,6 +637,25 @@
 			$exports.jsh.lib = $context.api.file.Pathname(module.properties.object.jsh.shell.lib).directory;
 		} else if ($exports.jsh.home) {
 			$exports.jsh.lib = $exports.jsh.home.getSubdirectory("lib");
+		}
+
+		$exports.jsh.Installation = {
+			from: {
+				current: function() {
+					if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.src) {
+						var src = String(module.properties.object.jsh.shell.src);
+						var os = $context.api.file.Location.from.os(src);
+						//	TODO	we need a wo API to canonicalize
+						var canonicalized = $context.api.file.Location.directory.relativePath("jsh")(os);
+						var directory = $context.api.file.Location.parent()(canonicalized);
+						if ($context.api.file.Pathname(src).directory) {
+							return {
+								src: directory.pathname
+							}
+						}
+					}
+				}
+			}
 		}
 
 		$exports.world = (function(was) {

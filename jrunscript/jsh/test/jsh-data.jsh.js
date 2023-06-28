@@ -94,6 +94,7 @@
 					names: jsh.java.Array.adapt(_factory.getNames()).map(function(name) { return String(name); })
 				}
 			}),
+			"installation": jsh.shell.jsh.Installation.from.current(),
 			"jsh.script.file": (typeof(jsh.script.file) != "undefined") ? {
 				string: jsh.script.file.toString(),
 				pathname: {

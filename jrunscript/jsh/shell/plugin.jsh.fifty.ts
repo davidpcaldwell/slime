@@ -132,6 +132,9 @@ namespace slime.jsh.shell {
 
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.stdio);
+
+				fifty.load("jsh.fifty.ts");
+				fifty.load("tsc.fifty.ts");
 			}
 		}
 	//@ts-ignore
