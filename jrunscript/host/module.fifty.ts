@@ -23,13 +23,16 @@ namespace slime.jrunscript.host {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports = fifty.test.Parent();
+
+			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
 
 	export namespace internal.test {
-		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
-			return fifty.$loader.module("module.js", {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			var script: Script = fifty.$loader.script("module.js");
+			return script({
 				$slime: fifty.jsh.$slime,
 				globals: false,
 				logging: {
@@ -58,6 +61,61 @@ namespace slime.jrunscript.host {
 	export interface Environment {
 		readonly [x: string]: string
 	}
+
+	export interface Exports {
+		/** The {@link slime.jrunscript.runtime.java.Exports} `getClass()` function. */
+		getClass: slime.jrunscript.runtime.java.Exports["getClass"]
+
+		/** The {@link slime.jrunscript.runtime.java.Exports} `isJavaObject()` function. */
+		isJavaObject: slime.jrunscript.runtime.java.Exports["isJavaObject"]
+
+		/** The {@link slime.jrunscript.runtime.java.Exports} `isJavaType()` function. */
+		isJavaType: slime.jrunscript.runtime.java.Exports["isJavaType"]
+
+		/** The {@link slime.jrunscript.runtime.java.Exports} `toNativeClass()` function. */
+		toNativeClass: slime.jrunscript.runtime.java.Exports["toNativeClass"]
+	}
+
+	export interface Exports {
+		vm: {
+			properties: {
+				all: slime.$api.fp.impure.Input<{ [name: string]: string }>
+
+				value: (name: string) => slime.$api.fp.impure.Input<slime.$api.fp.Maybe<string>>
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+			const { subject } = internal.test;
+
+			fifty.tests.exports.vm = fifty.test.Parent();
+
+			fifty.tests.exports.vm.properties = fifty.test.Parent();
+
+			fifty.tests.exports.vm.properties.all = function() {
+				var value = subject.vm.properties.all();
+				jsh.shell.console(JSON.stringify(value,void(0),4));
+				verify(value)["java.home"].is.type("string");
+				verify(value).evaluate.property("foo").is.type("undefined");
+			}
+
+			fifty.tests.exports.vm.properties.value = function() {
+				var exists = subject.vm.properties.value("java.home")();
+				verify(exists.present).is(true);
+				var foo = subject.vm.properties.value("foo")();
+				verify(foo.present).is(false);
+			}
+
+			fifty.tests.manual
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
 		Environment: (java: slime.jrunscript.native.inonit.system.OperatingSystem.Environment) => Environment
@@ -113,20 +171,6 @@ namespace slime.jrunscript.host {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
-
-	export interface Exports {
-		/** The {@link slime.jrunscript.runtime.java.Exports} `getClass()` function. */
-		getClass: slime.jrunscript.runtime.java.Exports["getClass"]
-
-		/** The {@link slime.jrunscript.runtime.java.Exports} `isJavaObject()` function. */
-		isJavaObject: slime.jrunscript.runtime.java.Exports["isJavaObject"]
-
-		/** The {@link slime.jrunscript.runtime.java.Exports} `isJavaType()` function. */
-		isJavaType: slime.jrunscript.runtime.java.Exports["isJavaType"]
-
-		/** The {@link slime.jrunscript.runtime.java.Exports} `toNativeClass()` function. */
-		toNativeClass: slime.jrunscript.runtime.java.Exports["toNativeClass"]
-	}
 
 	export interface Exports {
 		/**

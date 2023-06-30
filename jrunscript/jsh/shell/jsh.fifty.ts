@@ -103,7 +103,38 @@ namespace slime.jsh.shell {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			fifty.tests.exports.jsh.Installation = function() {
+			// const shells: {
+			// 	unbuilt: slime.$api.fp.impure.Input<string>
+			// 	built: slime.$api.fp.impure.Input<string>
+			// 	packaged: slime.$api.fp.impure.Input<string>
+			// 	remote: slime.$api.fp.impure.Input<string>
+			// } = (
+			// 	function() {
+			// 		var getTemporaryLocationProperty: (name: string) => slime.$api.fp.impure.Input<string> = function() {
+
+			// 		}
+
+			// 		var inTemporaryLocation = function(p: {
+			// 			propertyName: string
+			// 			build: (destination: string) => void
+			// 		}) {
+			// 			var location =
+			// 		}
+
+			// 		return {
+			// 			unbuilt: function() {
+			// 				return fifty.jsh.file.relative("../../../");
+			// 			},
+			// 			built: function() {
+
+			// 			}
+			// 		}
+			// 	}
+			// )();
+
+			fifty.tests.exports.jsh.Installation = fifty.test.Parent();
+			fifty.tests.exports.jsh.Installation.from = fifty.test.Parent();
+			fifty.tests.exports.jsh.Installation.from.unbuilt = function() {
 				var src = fifty.jsh.file.relative("../../../");
 				var diagnostic = jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")(src);
 				var intention: slime.jsh.shell.Intention = {
