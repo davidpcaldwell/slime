@@ -24,6 +24,60 @@
 
 		$exports.toNativeClass = $context.$slime.java.toNativeClass;
 
+		$exports.vm = {
+			properties: (
+				function() {
+					/** @type { (_value: any) => slime.$api.fp.Maybe<string> } */
+					var getPropertyJavascriptValue = function(_value) {
+						if (typeof(_value) != "string" && !$exports.isJavaType(Packages.java.lang.String)(_value)) {
+							//	omit
+
+							//	TODO	we seem to still have inonit.script.jsh.Main.stdout, .stderr, and .stdin in this category,
+							//			though code searches have not yet revealed exactly how they are created. Perhaps by
+							//			Main.class.getName() + ".stdout" etc.
+							//rv[String(_next)] = "NOT STRING: " + String(_value);
+							return $api.fp.Maybe.from.nothing();
+						} else {
+							return $api.fp.Maybe.from.some(String(_value));
+						}
+					}
+
+					var _properties = Packages.java.lang.System.getProperties();
+
+					return {
+						all: function() {
+							var _keys = _properties.keySet().iterator();
+							/** @type { ReturnType<slime.jrunscript.host.Exports["vm"]["properties"]["all"]> } */
+							var rv = {};
+							while(_keys.hasNext()) {
+								var _next = _keys.next();
+								var _value = _properties.getProperty(_next);
+								var maybe = getPropertyJavascriptValue(_value);
+								if (!maybe.present) {
+									//	omit
+
+									//	TODO	we seem to still have inonit.script.jsh.Main.stdout, .stderr, and .stdin in this category,
+									//			though code searches have not yet revealed exactly how they are created. Perhaps by
+									//			Main.class.getName() + ".stdout" etc.
+									//rv[String(_next)] = "NOT STRING: " + String(_value);
+								} else {
+									rv[String(_next)] = maybe.value;
+								}
+							}
+							return rv;
+						},
+						value: function(name) {
+							return function() {
+								var _value = _properties.getProperty(name);
+								var maybe = getPropertyJavascriptValue(_value);
+								return maybe;
+							}
+						}
+					}
+				}
+			)()
+		}
+
 		var JavaArray = new function() {
 			this.create = function(p) {
 				var type = (p.type) ? p.type : Packages.java.lang.Object;
