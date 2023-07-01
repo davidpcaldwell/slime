@@ -266,7 +266,9 @@ namespace slime.jsh.shell {
 		require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.event.Function.Receiver ) => void
 		lib?: slime.jrunscript.file.Directory
 		home?: slime.jrunscript.file.Directory
-		relaunch: () => void
+		relaunch: (p?: {
+			environment?: (initial: slime.jrunscript.shell.Exports["environment"]) => slime.jrunscript.shell.Exports["environment"]
+		}) => void
 		debug: any
 		url: any
 	}
