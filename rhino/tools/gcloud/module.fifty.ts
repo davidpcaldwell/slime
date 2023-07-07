@@ -29,11 +29,7 @@ namespace slime.jrunscript.tools.gcloud {
 			result: (result: slime.jrunscript.shell.run.Exit) => R
 		}
 
-		export type Executor = <P,R>(command: cli.Command<P,R>) => {
-			argument: (p: P) => {
-				run: (handlers: slime.$api.event.Handlers<Events>) => R
-			}
-		}
+		export type Executor = <P,R>(command: cli.Command<P,R>) => slime.$api.fp.world.Question<P,cli.Events,R>
 
 		export type OldExecutor = <P,R>(command: cli.Command<P,R>) => {
 			argument: (p: P) => {

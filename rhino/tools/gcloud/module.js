@@ -114,29 +114,16 @@
 		/** @type { (shellInterface: slime.jrunscript.tools.gcloud.cli.Configuration) => slime.jrunscript.tools.gcloud.cli.Executor } */
 		var toNewExecutor = function(configuration) {
 			return function(command) {
-				return {
-					argument: function(argument) {
+				return function(argument) {
+					return function(events) {
 						var delegate = configuration(command);
-
-						/** @type { slime.$api.fp.world.Ask<slime.jrunscript.tools.gcloud.cli.Events,slime.jrunscript.shell.run.Exit> } */
-						var ask = function(events) {
-							var intention = delegate.intention(argument);
-							return $api.fp.world.now.question(
-								$context.library.shell.subprocess.question,
-								intention,
-								delegate.handler(events)
-							);
-						}
-
-						return {
-							run: function(handlers) {
-								var exit = $api.fp.world.now.ask(
-									ask,
-									handlers
-								);
-								return delegate.result(exit);
-							}
-						}
+						var intention = delegate.intention(argument);
+						var exit = $api.fp.world.now.question(
+							$context.library.shell.subprocess.question,
+							intention,
+							delegate.handler(events)
+						);
+						return delegate.result(exit);
 					}
 				}
 			}
