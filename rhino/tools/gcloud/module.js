@@ -14,6 +14,135 @@
 	 */
 	function($api,$context,$export) {
 		/**
+		 * @param { string } executable
+		 * @returns { slime.jrunscript.tools.gcloud.cli.Configuration } }
+		 */
+		var getShellInterface = function(executable) {
+			return function(command) {
+				return {
+					intention: function(argument) {
+						var invocation = command.invocation(argument);
+						return {
+							command: executable,
+							arguments: $api.Array.build(function(rv) {
+								rv.push("--format", "json");
+								rv.push(invocation.command);
+								rv.push.apply(rv, invocation.arguments);
+							}),
+							environment: function(inherited) {
+								return inherited;
+							},
+							stdio: {
+								output: "string",
+								error: "line"
+							}
+						}
+					},
+					handler: function(events) {
+						return {
+							stderr: function(e) {
+								events.fire("console", e.detail.line);
+							}
+						}
+					},
+					result: function(exit) {
+						var toResult = command.result || $api.fp.identity;
+						if (exit.status != 0) throw new Error("Exit status: " + exit.status);
+						var json = JSON.parse(exit.stdio.output);
+						return toResult(json);
+					}
+				}
+			}
+		};
+
+		/**
+		 * @param { slime.$api.fp.Transform<slime.jrunscript.shell.run.Intention> } edit
+		 * @returns { slime.$api.fp.Transform<slime.jrunscript.tools.gcloud.cli.Configuration> }
+		 */
+		var modifyConfigurationIntention = function(edit) {
+			return function(was) {
+				return function(command) {
+					var wouldHaveBeen = was(command);
+					return {
+						intention: function(p) {
+							var toModify = wouldHaveBeen.intention(p);
+							return edit(toModify);
+						},
+						handler: wouldHaveBeen.handler,
+						result: wouldHaveBeen.result
+					}
+				}
+			}
+		};
+
+		/** @type { (name: string, value: string) => slime.$api.fp.Transform<slime.jrunscript.shell.run.Intention> } */
+		var prependArguments = function(name,value) {
+			return function(edit) {
+				return $api.Object.compose(
+					edit,
+					{
+						arguments: $api.Array.build(function(rv) {
+							rv.push(name, value);
+							//	TODO	ideally would remove duplicates
+							rv.push.apply(rv, edit.arguments);
+						})
+					}
+				);
+			};
+		};
+
+		/** @type { (set: slime.jrunscript.shell.run.Environment) => slime.$api.fp.Transform<slime.jrunscript.shell.run.Intention> } */
+		var setEnvironmentVariables = function(set) {
+			return function(edit) {
+				return $api.Object.compose(
+					edit,
+					{
+						/** @type { slime.jrunscript.shell.run.Intention["environment"] } */
+						environment: function(inherited) {
+							var rv = $api.Object.compose(inherited);
+							if (edit.environment) rv = edit.environment(inherited);
+							return $api.Object.compose(
+								rv,
+								set
+							)
+						}
+					}
+				);
+			};
+		};
+
+		/** @type { (shellInterface: slime.jrunscript.tools.gcloud.cli.Configuration) => slime.jrunscript.tools.gcloud.cli.Executor } */
+		var toNewExecutor = function(configuration) {
+			return function(command) {
+				return {
+					argument: function(argument) {
+						var delegate = configuration(command);
+
+						/** @type { slime.$api.fp.world.Ask<slime.jrunscript.tools.gcloud.cli.Events,slime.jrunscript.shell.run.Exit> } */
+						var ask = function(events) {
+							var intention = delegate.intention(argument);
+							return $api.fp.world.now.question(
+								$context.library.shell.subprocess.question,
+								intention,
+								delegate.handler(events)
+							);
+						}
+
+						return {
+							run: function(handlers) {
+								var exit = $api.fp.world.now.ask(
+									ask,
+									handlers
+								);
+								return delegate.result(exit);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		/**
 		 *
 		 * @param { string } executable
 		 * @param { string } config
@@ -22,7 +151,7 @@
 		 * @returns
 		 */
 		var executeCommand = function(executable,config,account,project) {
-			/** @type { slime.jrunscript.tools.gcloud.cli.Executor } */
+			/** @type { slime.jrunscript.tools.gcloud.cli.OldExecutor } */
 			var rv = function(command) {
 				if (!command) throw new TypeError("Required: arguments[0] (command)");
 				return {
@@ -82,7 +211,7 @@
 
 		/** @type { { [os: string]: { [arch: string ]: string }} } */
 		var INSTALLER = {
-			"Mac OS X": macOsInstallers("417.0.1")
+			"Mac OS X": macOsInstallers("437.0.1")
 		};
 
 		$export({
@@ -123,6 +252,12 @@
 							command: executeCommand(executable,void(0),void(0),void(0))
 						}
 					},
+					configuration: function configuration(installation) {
+						var base = $context.library.file.Location.from.os(installation);
+						var executable = $context.library.file.Location.directory.base(base)("bin/gcloud").pathname;
+						var delegate = getShellInterface(executable);
+						return delegate;
+					},
 					create: function create(pathname) {
 						return function(events) {
 							var url = $api.fp.result(INSTALLER, $api.fp.pipe(
@@ -152,7 +287,21 @@
 							})
 						};
 					}
-				}
+				},
+				Configuration: {
+					config: function(config) {
+						return modifyConfigurationIntention(setEnvironmentVariables({ CLOUDSDK_CONFIG: config }));
+					},
+					account: function(account) {
+						return modifyConfigurationIntention(prependArguments("--account", account));
+					},
+					project: function(project) {
+						return modifyConfigurationIntention(prependArguments("--project", project));
+					},
+					executor: function(configuration) {
+						return toNewExecutor(configuration);
+					}
+				},
 			}
 		})
 	}
