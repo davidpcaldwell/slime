@@ -119,6 +119,9 @@ namespace slime.jrunscript.tools.gcloud {
 				project: (project: string) => $api.fp.Transform<cli.Configuration>
 
 				executor: (configuration: cli.Configuration) => cli.Executor
+			},
+			commands: {
+				init: slime.jrunscript.tools.gcloud.cli.Command<void,void>
 			}
 		}
 	}
