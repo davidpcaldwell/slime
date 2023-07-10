@@ -289,6 +289,19 @@
 						return toNewExecutor(configuration);
 					}
 				},
+				commands: {
+					init: {
+						invocation: function() {
+							return {
+								command: "init"
+							}
+						},
+						result: function(json) {
+							//	In manual testing, this returned an empty array. Unknown whether any other return value is possible.
+							return void(0);
+						}
+					}
+				}
 			}
 		})
 	}
