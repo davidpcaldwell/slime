@@ -235,7 +235,7 @@ namespace slime.jrunscript.http.client {
 			 * @param query An object specifying the form.
 			 * @returns Objects suitable as request bodies.
 			 */
-			 Form: (query: object.query) => request.Body
+			Form: (query: object.query) => request.Body
 		}
 	}
 
