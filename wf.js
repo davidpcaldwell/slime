@@ -286,7 +286,7 @@
 
 			if (license.status) {
 				events.fire("console", "License headers need to be updated; run:");
-				events.fire("console", "./jsh.bash contributor/code/license.jsh.js --fix");
+				events.fire("console", "./jsh contributor/code/license.jsh.js --fix");
 				success = false;
 			} else {
 				events.fire("console", "All license headers are correct.")
