@@ -14,9 +14,6 @@
 	function($api,$context,$export) {
 		var now = $context.now || function() { return new Date().getTime(); };
 
-		/** @type { Partial<slime.time.Exports> } */
-		var $exports = {};
-
 		/** @type { { local: slime.time.Zone, UTC: slime.time.Zone, [id: string]: slime.time.Zone } } */
 		var zones = {
 			local: new function() {
@@ -946,44 +943,6 @@
 			return rv;
 		}
 
-		$exports.Year = Year;
-		//$exports.Year = {Month: Year.Month};
-		$exports.Month = {
-			/** @type { slime.time.exports.Month["last"] } */
-			last: function(p) {
-				/** @type { slime.time.Month } */
-				var next = (p.month == 12) ? {
-					year: p.year + 1,
-					month: 1
-				} : {
-					year: p.year,
-					month: p.month + 1
-				};
-				/** @type { slime.time.Date } */
-				var first = {
-					year: next.year,
-					month: next.month,
-					day: 1
-				};
-				return Date_add(first, -1);
-			}
-		};
-		//@ts-ignore
-		$exports.Day = Day;
-		$exports.Day.order = order;
-		$exports.Day.Time = Day_Time;
-		//@ts-ignore
-		$exports.Time = Time;
-		$exports.Time.Zone = zones;
-		//@ts-ignore
-		$exports.When = When;
-		$exports.When.order = order;
-		if ($context.java) {
-			$exports.java = $context.java;
-		}
-		//exports.Time = Time;
-		//exports.Period = Period;
-
 		// TODO: this is dumb and should be removed
 		var install = (function() {
 			var called = false;
@@ -1037,8 +996,6 @@
 				}
 			}
 		})();
-
-		$exports.install = install;
 
 		/** @type { slime.time.DayOfWeek[] } */
 		var daysOfWeek = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
@@ -1169,11 +1126,27 @@
 			},
 			Timezone: zones,
 			install: install,
-			Day: $exports.Day,
-			Time: $exports.Time,
-			Year: $exports.Year,
-			When: $exports.When,
-			java: $exports.java
+			Day: Object.assign(
+				Day,
+				{
+					order: order,
+					Time: Day_Time
+				}
+			),
+			Time: Object.assign(
+				Time,
+				{
+					Zone: zones
+				}
+			),
+			Year: Year,
+			When: Object.assign(
+				When,
+				{
+					order: order
+				}
+			),
+			java: ($context.java) ? $context.java : void(0)
 		})
 	}
 //@ts-ignore
