@@ -55,21 +55,35 @@
 			)
 		}
 
-		/** @type { (project: slime.jrunscript.file.world.Location) => { [x: string]: any } } */
-		var getTypedocConfguration = $api.fp.pipe(
-			$context.library.file.world.Location.relative("typedoc.json"),
-			$api.fp.world.mapping($context.library.file.world.Location.file.read.string()),
-			$api.fp.Maybe.map(function removeComments(s) {
+		//	TODO	should be generalized and provided as library function; could use `eval()` version also.
+		/**
+		 * Parses a JSONC (JSON with comments) file.
+		 */
+		var parseJsonc = $api.fp.pipe(
+			/**
+			 *
+			 * @param { string } s
+			 * @returns string
+			 */
+			function removeComments(s) {
 				return s.split("\n").filter(function(line) {
 					if (!Boolean(line)) return false;
 					if (/^\s*\/\/(.*)/.test(line)) return false;
 					return true;
 				}).join("\n")
-			}),
-			$api.fp.Maybe.map(function(s) {
-				//Packages.java.lang.System.err.println(s);
-				return JSON.parse(s);
-			}),
+			},
+			JSON.parse
+		)
+
+		/**
+		 * @type { (project: slime.jrunscript.file.Location) => { [x: string]: any } }
+		 *
+		 * Given a project location, returns the configuration object for TypeDoc as parsed from the project's `typedoc.json`.
+		 */
+		var getTypedocConfiguration = $api.fp.pipe(
+			$context.library.file.Location.directory.relativePath("typedoc.json"),
+			$api.fp.world.mapping($context.library.file.Location.file.read.string()),
+			$api.fp.Maybe.map(parseJsonc),
 			$api.fp.Maybe.else(
 				/** @type { () => { [x: string]: any } } */
 				function() { return {}; }
@@ -136,7 +150,7 @@
 
 				var configuration = $api.fp.result(
 					project,
-					getTypedocConfguration
+					getTypedocConfiguration
 				);
 
 				/** @type { slime.jrunscript.node.Invocation } */
