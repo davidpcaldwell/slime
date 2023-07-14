@@ -76,13 +76,54 @@ namespace slime.jrunscript.host {
 		toNativeClass: slime.jrunscript.runtime.java.Exports["toNativeClass"]
 	}
 
+	/**
+	 * @deprecated
+	 *
+	 * An attempt to build a group of nested JavaScript objects out of a single Java properties instance. Causes ugly edge cases
+	 * when you have properties like `a=foo`, `a.b=bar`, `a.c=baz`, in which a then has two properties `b` and `c`, but also a
+	 * value of its own. Would be easier just to use FP techniques to deal with subsets of Java properties.
+	 */
+	export type OldProperties = object
+
+	export interface Properties {
+		[name: string]: string
+	}
+
+	export interface Exports {
+		Properties: {
+			value: (name: string) => (properties: Properties) => slime.$api.fp.Maybe<string>
+
+			/** @deprecated */
+			adapt: (_java: slime.jrunscript.native.java.util.Properties) => OldProperties
+		}
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const module = internal.test.subject;
+
+			fifty.tests.exports.Properties = function() {
+				var $p = new Packages.java.util.Properties();
+				$p.setProperty("a.a", "a");
+				$p.setProperty("a.b", "b");
+				$p.setProperty("a.c", "c");
+				var p = module.Properties.adapt($p);
+				//	Note that for-in loop would yield four properties, including toString(), but this seems fine
+				Packages.java.lang.System.err.println(Object.keys(p["a"]));
+				verify(p).evaluate.property("a").evaluate(function(a) { return Object.keys(a); }).length.is(3);
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
 	export interface Exports {
 		vm: {
-			properties: {
-				all: slime.$api.fp.impure.Input<{ [name: string]: string }>
-
-				value: (name: string) => slime.$api.fp.impure.Input<slime.$api.fp.Maybe<string>>
-			}
+			properties: slime.$api.fp.impure.Input<Properties>
 		}
 	}
 
@@ -91,7 +132,7 @@ namespace slime.jrunscript.host {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 			const { subject } = internal.test;
 
 			fifty.tests.exports.vm = fifty.test.Parent();
@@ -99,16 +140,22 @@ namespace slime.jrunscript.host {
 			fifty.tests.exports.vm.properties = fifty.test.Parent();
 
 			fifty.tests.exports.vm.properties.all = function() {
-				var value = subject.vm.properties.all();
+				var value = subject.vm.properties();
 				jsh.shell.console(JSON.stringify(value,void(0),4));
 				verify(value)["java.home"].is.type("string");
 				verify(value).evaluate.property("foo").is.type("undefined");
 			}
 
 			fifty.tests.exports.vm.properties.value = function() {
-				var exists = subject.vm.properties.value("java.home")();
+				var exists = $api.fp.now.invoke(
+					subject.vm.properties(),
+					subject.Properties.value("java.home")
+				);
 				verify(exists.present).is(true);
-				var foo = subject.vm.properties.value("foo")();
+				var foo = $api.fp.now.invoke(
+					subject.vm.properties(),
+					subject.Properties.value("foo")
+				);
 				verify(foo.present).is(false);
 			}
 
@@ -285,34 +332,6 @@ namespace slime.jrunscript.host {
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export interface Exports {
-		Properties: any
-	}
-
-	(
-		function(
-			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			const module = internal.test.subject;
-
-			fifty.tests.exports.Properties = function() {
-				var $p = new Packages.java.util.Properties();
-				$p.setProperty("a.a", "a");
-				$p.setProperty("a.b", "b");
-				$p.setProperty("a.c", "c");
-				var p = new module.Properties($p);
-				//	Note that for-in loop would yield four properties, including toString(), but this seems fine
-				Packages.java.lang.System.err.println(Object.keys(p.a));
-				verify(p).evaluate.property("a").evaluate(function(a) { return Object.keys(a); }).length.is(3);
-			}
-		}
-	//@ts-ignore
-	)(Packages,fifty);
-
 
 	export namespace logging {
 		type LevelMethod = (...args: any[]) => void
