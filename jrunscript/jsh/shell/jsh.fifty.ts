@@ -103,35 +103,6 @@ namespace slime.jsh.shell {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			// const shells: {
-			// 	unbuilt: slime.$api.fp.impure.Input<string>
-			// 	built: slime.$api.fp.impure.Input<string>
-			// 	packaged: slime.$api.fp.impure.Input<string>
-			// 	remote: slime.$api.fp.impure.Input<string>
-			// } = (
-			// 	function() {
-			// 		var getTemporaryLocationProperty: (name: string) => slime.$api.fp.impure.Input<string> = function() {
-
-			// 		}
-
-			// 		var inTemporaryLocation = function(p: {
-			// 			propertyName: string
-			// 			build: (destination: string) => void
-			// 		}) {
-			// 			var location =
-			// 		}
-
-			// 		return {
-			// 			unbuilt: function() {
-			// 				return fifty.jsh.file.relative("../../../");
-			// 			},
-			// 			built: function() {
-
-			// 			}
-			// 		}
-			// 	}
-			// )();
-
 			fifty.tests.exports.jsh.Installation = fifty.test.Parent();
 			fifty.tests.exports.jsh.Installation.from = fifty.test.Parent();
 			fifty.tests.exports.jsh.Installation.from.unbuilt = function() {

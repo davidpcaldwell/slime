@@ -10,7 +10,7 @@ namespace slime.jrunscript.mail {
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 			mime: any
-			shell: jsh.shell.Exports
+			shell: slime.jsh.shell.Exports
 		}
 	}
 
