@@ -4,8 +4,10 @@
 //
 //	END LICENSE
 
+/**
+ * Unsupported API. `jsh` plugin used in implementing `fifty.jsh` APIs.
+ */
 namespace slime.jsh.$fifty {
-	//	TODO	should be making this available as part of Fifty object
 	export interface Exports {
 		plugin: {
 			mock: slime.jsh.loader.internal.plugins.Export["mock"]
@@ -15,6 +17,9 @@ namespace slime.jsh.$fifty {
 
 namespace slime.jsh {
 	export interface Global {
+		/**
+		 * Unsupported API. Used in implementation of supported `fifty.jsh` APIs.
+		 */
 		$fifty: slime.jsh.$fifty.Exports
 	}
 }

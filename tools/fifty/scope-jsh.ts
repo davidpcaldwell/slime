@@ -4,14 +4,71 @@
 //
 //	END LICENSE
 
+namespace slime.fifty.test.kit {
+	export interface Jsh {
+		$slime: slime.jsh.plugin.$slime
+		file: {
+			/**
+			 * Returns a filesystem pathname corresponding to the given relative path, relative to the currently executing
+			 * file.
+			 */
+			relative: (path: string) => slime.jrunscript.file.world.Location
+
+			temporary: {
+				location: () => slime.jrunscript.file.world.object.Location
+				directory: () => slime.jrunscript.file.world.object.Location
+			}
+
+			object: {
+				getRelativePath: (p: string) => slime.jrunscript.file.Pathname
+				temporary: {
+					location: () => slime.jrunscript.file.Pathname
+					directory: () => slime.jrunscript.file.Directory
+				}
+			}
+		}
+		plugin: {
+			/**
+			 * Allows a test to load `jsh` plugins into a mock shell. Loads plugins from the same directory as the
+			 * shell, optionally specifying the global object, `jsh`, and the shared `plugins` object used by the jsh plugin
+			 * loader.
+			 */
+			mock: slime.jsh.plugin.$slime["plugins"]["mock"]
+			// mock: (p: {
+			// 	global?: slime.jsh.plugin.Scope["global"]
+			// 	jsh?: slime.jsh.plugin.Scope["jsh"]
+			// 	plugins?: slime.jsh.plugin.plugins
+			// 	$slime?: slime.jsh.plugin.$slime
+			// }) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
+		}
+
+		/**
+		 * Creates a test that will run the test suite (the `suite` part) under `jsh`, and then again under the browser,
+		 * and pass only if both parts pass.
+		 */
+		platforms: (fifty: Kit) => void
+	}
+}
+
 namespace slime.fifty.test.internal.scope.jsh {
 	export interface Scope {
+		/**
+		 * A loader that will load resources from the same directory as the currently executing Fifty file.
+		 */
 		loader: slime.old.Loader
+
+		/**
+		 * The directory containing the currently executing Fifty file.
+		 */
 		directory: slime.jrunscript.file.Directory
+
+		/**
+		 * The filename of the currently executing Fifty file.
+		 */
 		filename: string
 	}
 
-	export type Export = (scope: slime.fifty.test.internal.scope.jsh.Scope) => slime.fifty.test.Kit["jsh"]
+	export type Export = (scope: slime.fifty.test.internal.scope.jsh.Scope) => slime.fifty.test.kit.Jsh
 
 	export type Script = slime.loader.Script<void,Export>
 }

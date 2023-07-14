@@ -185,14 +185,7 @@ namespace slime.jsh.loader.internal.plugins {
 		 */
 		load: (p: Plugins) => void
 
-		/**
-		 * Loads a single plugin from the given loader, and applies it to the mock objects given in the argument (or real objects if
-		 * mocks are not provided), returning the modified objects for inspection by tests.
-		 *
-		 * @param p Scope objects to use when loading the plugin, and a definition of the plugin itself.
-		 * @returns objects affected by plugin loading, for evaluation
-		 */
-		mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.old.Loader, source?: () => string }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
+		mock: slime.jsh.plugin.$slime["plugins"]["mock"]
 	}
 
 	(
