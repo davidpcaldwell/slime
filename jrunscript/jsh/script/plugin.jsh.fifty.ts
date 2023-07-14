@@ -437,6 +437,7 @@ namespace slime.jsh.script {
 				var was = fifty.global.jsh.unit.$slime;
 				debugger;
 				var mocked = fifty.jsh.plugin.mock({
+					$loader: void(0),
 					jsh: fifty.global.jsh,
 					plugins: {
 						//	This is needed to load the plugin, although this is obviously a very skeletal mock of the
