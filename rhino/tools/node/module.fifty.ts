@@ -5,17 +5,12 @@
 //	END LICENSE
 
 namespace slime.jrunscript.node {
-	export interface World {
-		install: slime.$api.fp.world.Action<{ location: string, version: string }, void>
-	}
-
 	export interface Context {
 		library: {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 			install: slime.jrunscript.tools.install.Exports
 		}
-		world?: World
 	}
 
 	export namespace test {
@@ -42,8 +37,6 @@ namespace slime.jrunscript.node {
 				previous: string
 				current: string
 			}
-
-			world: World
 		}
 	}
 
@@ -88,6 +81,10 @@ namespace slime.jrunscript.node {
 		}
 	}
 
+	export interface Functions {
+		install: (to: string) => slime.$api.fp.world.Action<{ version: string },void>
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -99,7 +96,6 @@ namespace slime.jrunscript.node {
 			fifty.tests.sandbox.installation = function() {
 				var exists = $api.fp.world.mapping(test.subject.world.Installation.exists);
 				var getVersion = $api.fp.world.mapping(test.subject.world.Installation.getVersion);
-				var install = $api.fp.world.output(test.subject.test.world.install);
 
 				var TMPDIR = fifty.jsh.file.temporary.location();
 				var installation = test.subject.world.Installation.from.location(TMPDIR);
@@ -107,10 +103,11 @@ namespace slime.jrunscript.node {
 				var before = exists(installation);
 				verify(before).is(false);
 
-				install({
-					location: TMPDIR.pathname,
-					version: test.subject.test.versions.current
-				});
+				$api.fp.world.now.tell(
+					test.subject.world.install(TMPDIR.pathname.toString())({
+						version: test.subject.test.versions.current
+					})
+				);
 
 				var after = exists(installation);
 				verify(after).is(true);
@@ -146,12 +143,10 @@ namespace slime.jrunscript.node {
 
 				fifty.tests.sandbox.question = function() {
 					var TMPDIR = fifty.jsh.file.temporary.location();
-					$api.fp.world.now.action(
-						test.subject.test.world.install,
-						{
-							location: TMPDIR.pathname,
+					$api.fp.world.now.tell(
+						test.subject.world.install(TMPDIR.pathname)({
 							version: test.subject.test.versions.current
-						}
+						})
 					);
 					var installation = test.subject.world.Installation.from.location(TMPDIR);
 					debugger;
@@ -202,9 +197,8 @@ namespace slime.jrunscript.node {
 			fifty.tests.wip = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
 				$api.fp.world.now.action(
-					test.subject.test.world.install,
+					test.subject.world.install(TMPDIR.pathname),
 					{
-						location: TMPDIR.pathname,
 						version: test.subject.test.versions.current
 					}
 				);
@@ -385,13 +379,13 @@ namespace slime.jrunscript.node {
 	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>
-
-	export interface Plugin {
-		module: (p: { context: Context }) => Exports
-	}
 }
 
 namespace slime.jrunscript.node.internal {
+	export interface JshPluginInterface {
+		module: (p: { context: Context }) => Exports
+	}
+
 	//	TODO	this probably has a richer structure when --depth is not 0
 	export interface NpmLsOutput {
 		name: string
