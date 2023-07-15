@@ -59,10 +59,12 @@
 			return download;
 		}
 
-		var provider = ($context.world) || (
-			/** @type { () => slime.jrunscript.node.World } */
+		var provider = (
 			function() {
 				return {
+					/**
+					 * @type { slime.$api.fp.world.Action<{ location: string, version: string },void> } p
+					 */
 					install: function(p) {
 						return function(events) {
 							var existing = $exports.at({ location: p.location.toString() });
@@ -538,8 +540,7 @@
 			versions: {
 				previous: "14.18.0",
 				current: versions.default
-			},
-			world: provider
+			}
 		};
 
 		$exports.install = function(p) {
@@ -569,6 +570,13 @@
 		};
 
 		$exports.world = {
+			install: function(to) {
+				return function(p) {
+					return function(events) {
+						provider.install({ location: to, version: p.version })(events);
+					}
+				}
+			},
 			Installation: {
 				from: {
 					location: function(location) {
