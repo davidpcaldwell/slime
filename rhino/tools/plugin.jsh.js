@@ -57,20 +57,7 @@
 			}
 		});
 
-		plugin({
-			isReady: function() {
-				return true;
-			},
-			load: function() {
-				plugins.node = {
-					module: function(p) {
-						/** @type { slime.jrunscript.node.Script } */
-						var script = $loader.script("node/module.js");
-						return script(p.context);
-					}
-				};
-			}
-		});
+		$loader.plugin("node/");
 
 		$loader.plugin("git/");
 
