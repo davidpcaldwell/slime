@@ -348,7 +348,7 @@
 			update(content);
 		};
 
-		/** @type { slime.jsh.loader.internal.plugins.Export["mock"] } */
+		/** @type { slime.jsh.plugin.$slime["plugins"]["mock"] } */
 		var mock = function(p) {
 			var globals = (
 				/**
