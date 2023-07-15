@@ -63,7 +63,7 @@
 			function() {
 				return {
 					/**
-					 * @param { { location: string, version: string } } p
+					 * @type { slime.$api.fp.world.Action<{ location: string, version: string },void> } p
 					 */
 					install: function(p) {
 						return function(events) {
@@ -573,7 +573,7 @@
 			install: function(to) {
 				return function(p) {
 					return function(events) {
-						provider.install({ location: to, version: p.version });
+						provider.install({ location: to, version: p.version })(events);
 					}
 				}
 			},
