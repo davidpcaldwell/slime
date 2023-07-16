@@ -51,7 +51,7 @@
 					changed = true;
 				}
 			});
-			if (changed) jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update Java settings.");
+			if (changed) jsh.shell.console("VSCode: Execute the 'Java: Clean Java Language Server Workspace' command to update Java settings.");
 		}
 
 		var git = {
@@ -253,8 +253,8 @@
 					removeIfPresent("bin");
 
 					jsh.shell.console("To complete the process of re-generating the VSCode project:");
-					jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command.");
-					jsh.shell.console("When prompted, choose Restart and delete.");
+					jsh.shell.console("VSCode: Execute the 'Java: Clean Java Language Server Workspace' command.");
+					jsh.shell.console("When prompted, choose Reload and delete.");
 					jsh.shell.console("If prompted to import Java projects in the workspace, choose Yes.");
 					jsh.shell.console("After the import is complete, run the wf initialize command and follow its instructions.");
 				}

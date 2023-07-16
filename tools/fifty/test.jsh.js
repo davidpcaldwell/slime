@@ -36,7 +36,7 @@
 		//	slightly differently; a `jsh` script requiring TypeScript is very foreseeable, though). Could generalize to require a
 		//	specific TypeScript version, etc.
 		//	TODO	test-browser.jsh.js uses a much simpler method; is the above comment out of date? Is the other script wrong?
-		jsh.shell.jsh.require({
+		$api.fp.world.now.tell(jsh.shell.jsh.require({
 			satisfied: $api.fp.impure.Input.map(
 				$api.fp.impure.Input.value(void(0)),
 				$api.fp.impure.tap(function() {
@@ -48,7 +48,7 @@
 				})
 			),
 			install: function() { jsh.wf.typescript.require(); }
-		});
+		}));
 
 		/** @type { slime.jsh.script.cli.Processor<any, { definition: slime.jrunscript.file.File, list: boolean, part: string, view: string }> } */
 		var processor = $api.fp.pipe(

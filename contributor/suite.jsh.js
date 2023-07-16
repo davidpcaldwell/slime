@@ -12,7 +12,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		jsh.shell.tools.rhino.require();
+		$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
 
 		jsh.shell.tools.tomcat.old.require(void(0), {
 			console: function(e) {
@@ -48,7 +48,7 @@
 		});
 
 		if (parameters.options.docker) {
-			jsh.shell.jsh.require(
+			$api.fp.world.now.tell(jsh.shell.jsh.require(
 				(function() {
 					var SELENIUM = jsh.shell.jsh.lib.getRelativePath("selenium/java");
 					return {
@@ -65,7 +65,7 @@
 						}
 					}
 				})()
-			);
+			));
 		}
 
 		jsh.java.Thread.start(

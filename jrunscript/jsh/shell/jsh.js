@@ -585,8 +585,8 @@
 			});
 		});
 		/** @type { slime.jsh.shell.Exports["jsh"]["require"] } */
-		$exports.jsh.require = $api.events.Function(
-			function(p,events) {
+		$exports.jsh.require = function(p) {
+			return function(events) {
 				//  TODO    should develop a strategy for preventing infinite loops
 				if (!p.satisfied()) {
 					events.fire("installing");
@@ -597,7 +597,7 @@
 					events.fire("satisfied");
 				}
 			}
-		);
+		};
 
 		$exports.run = (function(was) {
 			/** @type { slime.js.Cast<slime.jsh.shell.Exports["run"]> } */

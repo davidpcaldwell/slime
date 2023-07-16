@@ -92,12 +92,29 @@
 
 				jsh.shell.tools.rhino = {
 					install: installRhino,
-					require: $api.events.Function(function(p,events) {
-						jsh.shell.jsh.require({
-							satisfied: function() { return Boolean(jsh.shell.jsh.lib.getFile("js.jar")); },
-							install: function() { return installRhino(p); }
-						});
-					})
+					require: function(p) {
+						return function(events) {
+							var at = jsh.shell.jsh.lib.getRelativePath("js.jar")
+							$api.fp.world.now.action(
+								jsh.shell.jsh.require,
+								{
+									satisfied: function() { return Boolean(at.file); },
+									install: function() { return installRhino(p, events); }
+								},
+								{
+									installed: function(e) {
+										events.fire("installed", at.toString());
+									},
+									installing: function(e) {
+										events.fire("installing", at.toString());
+									},
+									satisfied: function() {
+										events.fire("satisfied", at.toString());
+									}
+								}
+							);
+						}
+					}
 				};
 
 				(function deprecated() {
@@ -431,7 +448,7 @@
 										jsh.loader.java.add(node.pathname);
 									});
 								} else {
-									throw new Error("Could not be loaded; is Selenium installed? Try ./jsh.bash jsh/tools/install/selenium.jsh.js");
+									throw new Error("Could not be loaded; is Selenium installed? Try ./jsh jrunscript/jsh/tools/install/selenium.jsh.js");
 								}
 							}
 						};
@@ -549,12 +566,12 @@
 					});
 
 					rv.require = function require(p) {
-						jsh.shell.jsh.require({
+						$api.fp.world.now.tell(jsh.shell.jsh.require({
 							satisfied: function() { return Boolean(jsh.shell.jsh.lib.getFile("jsoup.jar")); },
 							install: function() {
 								return rv.install();
 							}
-						});
+						}));
 					};
 
 					return rv;
@@ -577,10 +594,10 @@
 					return (to) ? {
 						install: install,
 						require: function() {
-							jsh.shell.jsh.require({
+							$api.fp.world.now.tell(jsh.shell.jsh.require({
 								satisfied: function() { return Boolean(to.file); },
 								install: install
-							});
+							}));
 						}
 					} : void(0);
 				})();
@@ -615,10 +632,14 @@
 						});
 
 						if (location) this.require = function(p,on) {
-							jsh.shell.jsh.require({
-								satisfied: function() { return Boolean(location.file); },
-								install: function() { install(); }
-							}, on);
+							$api.fp.world.now.action(
+								jsh.shell.jsh.require,
+								{
+									satisfied: function() { return Boolean(location.file); },
+									install: function() { install(); }
+								},
+								on
+							)
 						}
 					}
 				}
