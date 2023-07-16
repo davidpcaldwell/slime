@@ -566,12 +566,12 @@
 					});
 
 					rv.require = function require(p) {
-						jsh.shell.jsh.require({
+						$api.fp.world.now.tell(jsh.shell.jsh.require({
 							satisfied: function() { return Boolean(jsh.shell.jsh.lib.getFile("jsoup.jar")); },
 							install: function() {
 								return rv.install();
 							}
-						});
+						}));
 					};
 
 					return rv;
@@ -594,10 +594,10 @@
 					return (to) ? {
 						install: install,
 						require: function() {
-							jsh.shell.jsh.require({
+							$api.fp.world.now.tell(jsh.shell.jsh.require({
 								satisfied: function() { return Boolean(to.file); },
 								install: install
-							});
+							}));
 						}
 					} : void(0);
 				})();

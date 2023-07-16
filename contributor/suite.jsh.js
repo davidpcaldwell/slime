@@ -48,7 +48,7 @@
 		});
 
 		if (parameters.options.docker) {
-			jsh.shell.jsh.require(
+			$api.fp.world.now.tell(jsh.shell.jsh.require(
 				(function() {
 					var SELENIUM = jsh.shell.jsh.lib.getRelativePath("selenium/java");
 					return {
@@ -65,7 +65,7 @@
 						}
 					}
 				})()
-			);
+			));
 		}
 
 		jsh.java.Thread.start(
