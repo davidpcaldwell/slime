@@ -448,7 +448,7 @@
 										jsh.loader.java.add(node.pathname);
 									});
 								} else {
-									throw new Error("Could not be loaded; is Selenium installed? Try ./jsh.bash jsh/tools/install/selenium.jsh.js");
+									throw new Error("Could not be loaded; is Selenium installed? Try ./jsh jrunscript/jsh/tools/install/selenium.jsh.js");
 								}
 							}
 						};

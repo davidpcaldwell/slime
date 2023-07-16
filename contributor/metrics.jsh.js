@@ -11,7 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		jsh.shell.tools.rhino.require();
+		$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
 
 		var SLIME = jsh.script.file.parent.parent;
 
