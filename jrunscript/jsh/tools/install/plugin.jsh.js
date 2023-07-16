@@ -674,7 +674,7 @@
 
 					/** @type { slime.jsh.shell.tools.node.Managed } */
 					var managed = {
-						installation: node.world.Installation.from.location({
+						installation: node.Installation.from.location({
 							filesystem: jsh.file.world.filesystems.os,
 							pathname: location.toString()
 						}),
@@ -684,7 +684,7 @@
 
 					Object.defineProperty(managed, "installed", {
 						get: function() {
-							return node.at({ location: location.toString() });
+							return node.object.at({ location: location.toString() });
 						},
 						enumerable: true
 					});
@@ -692,7 +692,7 @@
 					managed.require = function() {
 						return function(events) {
 							//	TODO	this is hard-coded in several places now
-							var now = node.at({ location: location.toString() });
+							var now = node.object.at({ location: location.toString() });
 							if (now && now.version == "v16.17.1") {
 								events.fire("found", now);
 							} else {
@@ -700,7 +700,7 @@
 									location.directory.remove();
 									events.fire("removed", now);
 								}
-								node.install({ version: "16.17.1", location: location })(events);
+								node.object.install({ version: "16.17.1", location: location })(events);
 							}
 						}
 					};

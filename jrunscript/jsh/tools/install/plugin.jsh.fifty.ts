@@ -332,7 +332,7 @@ namespace slime.jsh.shell.tools {
 		)(fifty);
 
 		export interface Managed {
-			installation: slime.jrunscript.node.world.Installation
+			installation: slime.jrunscript.node.Installation
 
 			installed: slime.jrunscript.node.object.Installation
 			require: slime.$api.fp.world.Action<void,slime.jrunscript.node.object.install.Events & {
@@ -416,7 +416,7 @@ namespace slime.jsh.shell.tools {
 				fifty.tests.manual.node.jsh = function() {
 					var installation = jsh.shell.tools.node.installation;
 					var modules = $api.fp.world.now.question(
-						jsh.shell.tools.node.world.Installation.modules.list(),
+						jsh.shell.tools.node.Installation.modules.list(),
 						installation
 					);
 					modules.forEach(function(module) {

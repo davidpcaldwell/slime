@@ -67,7 +67,7 @@
 					 */
 					install: function(p) {
 						return function(events) {
-							var existing = $exports.at({ location: p.location.toString() });
+							var existing = $exports.object.at({ location: p.location.toString() });
 							if (existing) throw new Error("Node installation directory exists: " + p.location.toString());
 							var version = getDownload(p.version, $context.library.shell.os.name, $context.library.shell.os.arch);
 							$context.library.install.install({
@@ -98,7 +98,7 @@
 			}
 		}
 
-		/** @type { (installation: slime.jrunscript.node.world.Installation) => string } */
+		/** @type { (installation: slime.jrunscript.node.Installation) => string } */
 		var getInstallationPathEntry = $api.fp.pipe(
 			$api.fp.property("executable"),
 			//	TODO	should be Location.from.os
@@ -139,7 +139,7 @@
 			return target.pathname;
 		}
 
-		/** @type { (installation: slime.jrunscript.node.world.Installation) => (p: slime.jrunscript.node.Invocation) => slime.jrunscript.shell.invocation.Argument } */
+		/** @type { (installation: slime.jrunscript.node.Installation) => (p: slime.jrunscript.node.Invocation) => slime.jrunscript.shell.invocation.Argument } */
 		var node_invocation = function(installation) {
 			return function(invocation) {
 				var command = (
@@ -203,7 +203,7 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.node.functions.Installation["modules"]["list"] } */
+		/** @type { slime.jrunscript.node.functions.Installations["modules"]["list"] } */
 		var modules_list = function() {
 			return function(installation) {
 				var toShellInvocation = node_invocation(installation);
@@ -247,7 +247,7 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.node.functions.Installation["modules"]["installed"] } */
+		/** @type { slime.jrunscript.node.functions.Installations["modules"]["installed"] } */
 		var modules_installed = function(p) {
 			return function(installation) {
 				return function(events) {
@@ -261,7 +261,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.node.functions.Installation["modules"]["install"] } */
+		/** @type { slime.jrunscript.node.functions.Installations["modules"]["install"] } */
 		var modules_install = function(p) {
 			return function(installation) {
 				var toShellInvocation = node_invocation(installation);
@@ -288,10 +288,10 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.node.functions.Installation["modules"]["require"] } */
+		/** @type { slime.jrunscript.node.functions.Installations["modules"]["require"] } */
 		var modules_require = function(p) {
 			var isSatisfied = function(version) {
-				/** @type { (installed: slime.$api.fp.Maybe<slime.jrunscript.node.world.Module>) => boolean } */
+				/** @type { (installed: slime.$api.fp.Maybe<slime.jrunscript.node.Module>) => boolean } */
 				return function(installed) {
 					if (version) {
 						return installed.present && installed.value.version == version;
@@ -526,16 +526,6 @@
 			};
 		};
 
-		$exports.at = function(p) {
-			if (!p.location) throw new TypeError("Required: 'location' property.");
-			if (typeof(p.location) != "string") throw new TypeError("'location' property must be string.");
-			var location = $context.library.file.Pathname(p.location);
-			if (!location.directory) return null;
-			return new Installation({
-				directory: location.directory
-			})
-		};
-
 		$exports.test = {
 			versions: {
 				previous: "14.18.0",
@@ -543,82 +533,92 @@
 			}
 		};
 
-		$exports.install = function(p) {
-			if (!p) throw new TypeError();
-			//	TODO	compute this somehow?
-			if (!p.version) p.version = versions.default;
-			return function(events) {
-				var existing = $exports.at({ location: p.location.toString() });
-				if (existing) throw new Error("Node installation directory exists: " + p.location.toString());
-				var version = getDownload(p.version, $context.library.shell.os.name, $context.library.shell.os.arch);
-				$context.library.install.install({
-					url: version.url,
-					to: p.location
-				});
-				events.fire("installed", $exports.at({ location: p.location.toString() }));
+		$exports.object = {
+			install: function(p) {
+				if (!p) throw new TypeError();
+				//	TODO	compute this somehow?
+				if (!p.version) p.version = versions.default;
+				return function(events) {
+					var existing = $exports.object.at({ location: p.location.toString() });
+					if (existing) throw new Error("Node installation directory exists: " + p.location.toString());
+					var version = getDownload(p.version, $context.library.shell.os.name, $context.library.shell.os.arch);
+					$context.library.install.install({
+						url: version.url,
+						to: p.location
+					});
+					events.fire("installed", $exports.object.at({ location: p.location.toString() }));
+				}
+			},
+			at: function(p) {
+				if (!p.location) throw new TypeError("Required: 'location' property.");
+				if (typeof(p.location) != "string") throw new TypeError("'location' property must be string.");
+				var location = $context.library.file.Pathname(p.location);
+				if (!location.directory) return null;
+				return new Installation({
+					directory: location.directory
+				})
 			}
-		};
+		}
 
 		/**
 		 *
 		 * @param { slime.jrunscript.node.Invocation } nodeInvocation
-		 * @param { slime.jrunscript.node.world.Installation } installation
+		 * @param { slime.jrunscript.node.Installation } installation
 		 */
 		var toShellInvocation = function(nodeInvocation,installation) {
 			var shellArgument = node_invocation(installation)(nodeInvocation);
 			return $context.library.shell.Invocation.from.argument(shellArgument);
 		};
 
-		$exports.world = {
-			install: function(to) {
-				return function(p) {
-					return function(events) {
-						provider.install({ location: to, version: p.version })(events);
+		$exports.install = function(to) {
+			return function(p) {
+				return function(events) {
+					provider.install({ location: to, version: p.version })(events);
+				}
+			}
+		};
+
+		$exports.Installation = {
+			from: {
+				location: function(location) {
+					return {
+						executable: $api.fp.result(location, $context.library.file.world.Location.relative("bin/node")).pathname
 					}
 				}
 			},
-			Installation: {
-				from: {
-					location: function(location) {
-						return {
-							executable: $api.fp.result(location, $context.library.file.world.Location.relative("bin/node")).pathname
-						}
-					}
-				},
-				exists: function(installation) {
-					return function(events) {
-						return $api.fp.result(
-							installation,
-							$api.fp.pipe(
-								$api.fp.property("executable"),
-								$context.library.file.world.Location.from.os,
-								$api.fp.world.mapping($context.library.file.world.Location.file.exists())
-							)
+			exists: function(installation) {
+				return function(events) {
+					return $api.fp.result(
+						installation,
+						$api.fp.pipe(
+							$api.fp.property("executable"),
+							$context.library.file.world.Location.from.os,
+							$api.fp.world.mapping($context.library.file.world.Location.file.exists())
 						)
-					}
-				},
-				getVersion: getVersion,
-				invocation: function(argument) {
-					return function(installation) {
-						return toShellInvocation(argument,installation);
-					}
-				},
-				question: function(argument) {
-					return function(installation) {
-						return function(events) {
-							var ask = $context.library.shell.world.question(toShellInvocation(argument,installation));
-							return ask(events);
-						}
-					}
-				},
-				modules: {
-					list: modules_list,
-					installed: modules_installed,
-					install: modules_install,
-					require: modules_require
+					)
 				}
+			},
+			getVersion: getVersion,
+			invocation: function(argument) {
+				return function(installation) {
+					return toShellInvocation(argument,installation);
+				}
+			},
+			question: function(argument) {
+				return function(installation) {
+					return function(events) {
+						var ask = $context.library.shell.world.question(toShellInvocation(argument,installation));
+						return ask(events);
+					}
+				}
+			},
+			modules: {
+				list: modules_list,
+				installed: modules_installed,
+				install: modules_install,
+				require: modules_require
 			}
-		}
+		};
 	}
 	//@ts-ignore
 )($api,$context,$exports)

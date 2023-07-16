@@ -18,7 +18,7 @@
 				jsh.script.cli.option.string({ longname: "version" }),
 				function(p) {
 					$api.fp.world.now.action(
-						jsh.shell.tools.node.install,
+						jsh.shell.tools.node.object.install,
 						{
 							location: p.options.to,
 							version: p.options.version

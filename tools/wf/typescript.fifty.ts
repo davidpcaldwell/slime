@@ -48,7 +48,7 @@ namespace slime.jsh.wf.internal.typescript {
 					installing: void
 					installed: string
 				},
-				(node: slime.jrunscript.node.world.Installation) => slime.jrunscript.shell.run.old.Invocation
+				(node: slime.jrunscript.node.Installation) => slime.jrunscript.shell.run.old.Invocation
 			>
 		}
 	}
