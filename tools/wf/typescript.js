@@ -111,7 +111,7 @@
 				$api.fp.world.now.action($context.library.node.require);
 
 				$api.fp.world.now.action(
-					$context.library.node.world.Installation.modules.require({ name: "typescript", version: p.configuration.typescript.version }),
+					$context.library.node.Installation.modules.require({ name: "typescript", version: p.configuration.typescript.version }),
 					$context.library.node.installation
 				);
 
@@ -124,7 +124,7 @@
 				);
 
 				$api.fp.world.now.action(
-					$context.library.node.world.Installation.modules.require({
+					$context.library.node.Installation.modules.require({
 						name: "typedoc",
 						version: $api.fp.result(p.configuration.typescript.version, typedocVersionForTypescript)
 					}),
@@ -204,7 +204,7 @@
 					directory: project.pathname
 				};
 
-				var invocation = $context.library.node.world.Installation.invocation(argument);
+				var invocation = $context.library.node.Installation.invocation(argument);
 
 				return invocation;
 			}

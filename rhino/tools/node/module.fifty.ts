@@ -49,39 +49,34 @@ namespace slime.jrunscript.node {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Functions {
+	/**
+	 * A specified installation of Node.js. When determining whether Node.js is installed at a particular location, one can
+	 * create an `Installation` using the `from.location` function, and then check for its existence with `exists`.
+	 */
+	export interface Installation {
+		executable: string
 	}
 
-	export interface Exports {
-		world: Functions
-	}
-
-	export namespace world {
-		/**
-		 * A specified installation of Node.js. When determining whether Node.js is installed at a particular location, one can
-		 * create an `Installation` using the `from.location` function, and then check for its existence with `exists`.
-		 */
-		export interface Installation {
-			executable: string
-		}
-
-		export interface Module {
-			name: string
-			version: string
-		}
+	export interface Module {
+		name: string
+		version: string
 	}
 
 	export namespace functions {
-		export interface Installation {
+		export interface Installations {
 			from: {
-				location: (home: slime.jrunscript.file.Location) => world.Installation
+				location: (home: slime.jrunscript.file.Location) => Installation
 			}
-			exists: slime.$api.fp.world.Question<world.Installation,void,boolean>
-			getVersion: slime.$api.fp.world.Question<world.Installation,void,string>
+			exists: slime.$api.fp.world.Question<Installation,void,boolean>
+			getVersion: slime.$api.fp.world.Question<Installation,void,string>
 		}
 	}
 
-	export interface Functions {
+	export interface Exports {
+		Installation: functions.Installations
+	}
+
+	export interface Exports {
 		install: (to: string) => slime.$api.fp.world.Action<{ version: string },void>
 	}
 
@@ -94,17 +89,17 @@ namespace slime.jrunscript.node {
 
 			//	TODO	test still directly references world object
 			fifty.tests.sandbox.installation = function() {
-				var exists = $api.fp.world.mapping(test.subject.world.Installation.exists);
-				var getVersion = $api.fp.world.mapping(test.subject.world.Installation.getVersion);
+				var exists = $api.fp.world.mapping(test.subject.Installation.exists);
+				var getVersion = $api.fp.world.mapping(test.subject.Installation.getVersion);
 
 				var TMPDIR = fifty.jsh.file.temporary.location();
-				var installation = test.subject.world.Installation.from.location(TMPDIR);
+				var installation = test.subject.Installation.from.location(TMPDIR);
 
 				var before = exists(installation);
 				verify(before).is(false);
 
 				$api.fp.world.now.tell(
-					test.subject.world.install(TMPDIR.pathname.toString())({
+					test.subject.install(TMPDIR.pathname.toString())({
 						version: test.subject.test.versions.current
 					})
 				);
@@ -128,10 +123,10 @@ namespace slime.jrunscript.node {
 	}
 
 	export namespace functions {
-		export interface Installation {
-			invocation: (argument: Invocation) => (installation: world.Installation) => slime.jrunscript.shell.run.old.Invocation
+		export interface Installations {
+			invocation: (argument: Invocation) => (installation: Installation) => slime.jrunscript.shell.run.old.Invocation
 
-			question: (argument: Invocation) => slime.$api.fp.world.Question<world.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
+			question: (argument: Invocation) => slime.$api.fp.world.Question<Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 		}
 
 		(
@@ -144,14 +139,14 @@ namespace slime.jrunscript.node {
 				fifty.tests.sandbox.question = function() {
 					var TMPDIR = fifty.jsh.file.temporary.location();
 					$api.fp.world.now.tell(
-						test.subject.world.install(TMPDIR.pathname)({
+						test.subject.install(TMPDIR.pathname)({
 							version: test.subject.test.versions.current
 						})
 					);
-					var installation = test.subject.world.Installation.from.location(TMPDIR);
+					var installation = test.subject.Installation.from.location(TMPDIR);
 					debugger;
 					var result = $api.fp.world.now.question(
-						test.subject.world.Installation.question({
+						test.subject.Installation.question({
 							arguments: [fifty.jsh.file.object.getRelativePath("test/hello.js").toString()],
 							stdio: {
 								output: "string"
@@ -168,18 +163,18 @@ namespace slime.jrunscript.node {
 	}
 
 	export namespace functions {
-		export interface Installation {
+		export interface Installations {
 			modules: {
-				list: () => slime.$api.fp.world.Question<world.Installation, void, world.Module[]>
+				list: () => slime.$api.fp.world.Question<Installation, void, Module[]>
 
-				installed: (name: string) => slime.$api.fp.world.Question<world.Installation, void, slime.$api.fp.Maybe<world.Module>>
+				installed: (name: string) => slime.$api.fp.world.Question<Installation, void, slime.$api.fp.Maybe<Module>>
 
-				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<world.Installation,void>
+				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<Installation,void>
 
-				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<world.Installation,{
-					found: slime.$api.fp.Maybe<world.Module>
+				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<Installation,{
+					found: slime.$api.fp.Maybe<Module>
 					installing: void
-					installed: world.Module
+					installed: Module
 				}>
 			}
 		}
@@ -197,15 +192,15 @@ namespace slime.jrunscript.node {
 			fifty.tests.wip = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
 				$api.fp.world.now.action(
-					test.subject.world.install(TMPDIR.pathname),
+					test.subject.install(TMPDIR.pathname),
 					{
 						version: test.subject.test.versions.current
 					}
 				);
-				var installation = test.subject.world.Installation.from.location(TMPDIR);
+				var installation = test.subject.Installation.from.location(TMPDIR);
 
 				var installedModule = $api.fp.world.mapping(
-					test.subject.world.Installation.modules.installed("minimal-package"),
+					test.subject.Installation.modules.installed("minimal-package"),
 				)
 
 				var before = installedModule(installation);
@@ -214,7 +209,7 @@ namespace slime.jrunscript.node {
 
 				var findInListing = function() {
 					var listing = $api.fp.world.now.question(
-						test.subject.world.Installation.modules.list(),
+						test.subject.Installation.modules.list(),
 						installation
 					);
 					var found = listing.find(function(module) {
@@ -226,7 +221,7 @@ namespace slime.jrunscript.node {
 				verify(findInListing()).is(void(0));
 
 				$api.fp.world.now.action(
-					test.subject.world.Installation.modules.install({ name: "minimal-package" }),
+					test.subject.Installation.modules.install({ name: "minimal-package" }),
 					installation
 				);
 
@@ -243,7 +238,7 @@ namespace slime.jrunscript.node {
 	)(fifty);
 
 	export interface Functions {
-		Installation: functions.Installation
+		Installation: functions.Installations
 	}
 
 	export namespace object {
@@ -342,12 +337,14 @@ namespace slime.jrunscript.node {
 	}
 
 	export interface Exports {
-		at: (p: { location: string }) => slime.jrunscript.node.object.Installation
+		object: {
+			at: (p: { location: string }) => slime.jrunscript.node.object.Installation
 
-		install: slime.$api.fp.world.Action<{
-			version?: string
-			location: slime.jrunscript.file.Pathname
-		},object.install.Events>
+			install: slime.$api.fp.world.Action<{
+				version?: string
+				location: slime.jrunscript.file.Pathname
+			},object.install.Events>
+		}
 	}
 
 	(
@@ -362,8 +359,8 @@ namespace slime.jrunscript.node {
 
 			fifty.tests.object.installation = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
-				verify(subject).at({ location: TMPDIR.pathname }).is(null);
-				var tell = subject.install({
+				verify(subject).object.at({ location: TMPDIR.pathname }).is(null);
+				var tell = subject.object.install({
 					location: jsh.file.Pathname(TMPDIR.pathname)
 				});
 				$api.fp.world.execute(tell, {
@@ -371,8 +368,8 @@ namespace slime.jrunscript.node {
 						jsh.shell.console("Installed: Node " + e.detail.version + " at " + e.detail.location);
 					}
 				});
-				verify(subject).at({ location: TMPDIR.pathname }).is.type("object");
-				verify(subject).at({ location: TMPDIR.pathname }).version.is("v" + subject.test.versions.current);
+				verify(subject).object.at({ location: TMPDIR.pathname }).is.type("object");
+				verify(subject).object.at({ location: TMPDIR.pathname }).version.is("v" + subject.test.versions.current);
 			}
 		}
 	//@ts-ignore
