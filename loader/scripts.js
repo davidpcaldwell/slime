@@ -68,7 +68,10 @@
 			return getTranspiler({
 				accept: $api.fp.Predicate.or(
 					isMimeType("application/javascript"),
-					isMimeType("application/x-javascript")
+					isMimeType("application/x-javascript"),
+					//	TODO	unclear whether text/javascript should be accepted, but we had a situation where it was being passed
+					//			here and was causing crashes, so inserting acceptance as a workaround for now
+					isMimeType("text/javascript")
 				),
 				compile: $api.fp.identity
 			});
