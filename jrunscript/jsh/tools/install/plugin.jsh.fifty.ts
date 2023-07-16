@@ -94,10 +94,12 @@ namespace slime.jsh.shell.tools {
 				p?: rhino.InstallCommand,
 				events?: any
 			) => void
-			require: (
-				p?: rhino.InstallCommand,
-				events?: any
-			) => void
+
+			require: slime.$api.fp.world.Action<rhino.InstallCommand,{
+				satisfied: string
+				installing: string
+				installed: string
+			}>
 		}
 	}
 

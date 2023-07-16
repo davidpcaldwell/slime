@@ -92,12 +92,29 @@
 
 				jsh.shell.tools.rhino = {
 					install: installRhino,
-					require: $api.events.Function(function(p,events) {
-						jsh.shell.jsh.require({
-							satisfied: function() { return Boolean(jsh.shell.jsh.lib.getFile("js.jar")); },
-							install: function() { return installRhino(p); }
-						});
-					})
+					require: function(p) {
+						return function(events) {
+							var at = jsh.shell.jsh.lib.getRelativePath("js.jar")
+							$api.fp.world.now.action(
+								jsh.shell.jsh.require,
+								{
+									satisfied: function() { return Boolean(at.file); },
+									install: function() { return installRhino(p, events); }
+								},
+								{
+									installed: function(e) {
+										events.fire("installed", at.toString());
+									},
+									installing: function(e) {
+										events.fire("installing", at.toString());
+									},
+									satisfied: function() {
+										events.fire("satisfied", at.toString());
+									}
+								}
+							);
+						}
+					}
 				};
 
 				(function deprecated() {
@@ -615,10 +632,14 @@
 						});
 
 						if (location) this.require = function(p,on) {
-							jsh.shell.jsh.require({
-								satisfied: function() { return Boolean(location.file); },
-								install: function() { install(); }
-							}, on);
+							$api.fp.world.now.action(
+								jsh.shell.jsh.require,
+								{
+									satisfied: function() { return Boolean(location.file); },
+									install: function() { install(); }
+								},
+								on
+							)
 						}
 					}
 				}

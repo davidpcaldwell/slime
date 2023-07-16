@@ -234,7 +234,17 @@ namespace slime.jsh.shell {
 		<R>(p: oo.EngineInvocation<R>): R
 
 		src?: slime.jrunscript.file.Directory
-		require: (p: { satisfied: () => boolean, install: () => void }, events?: $api.event.Function.Receiver ) => void
+
+		require: slime.$api.fp.world.Action<{
+				satisfied: () => boolean,
+				install: () => void
+			}, {
+				installing: void
+				installed: void
+				satisfied: void
+			}
+		>
+
 		lib?: slime.jrunscript.file.Directory
 		home?: slime.jrunscript.file.Directory
 		relaunch: (p?: {
