@@ -57,6 +57,15 @@ namespace slime.$api {
 			//	TODO	could probably use parameterized types to improve accuracy
 			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.event.Function.Receiver) => R
 
+			/**
+			 * Allows a caller to create an {@link slime.$api.Events} given a {@link slime.$api.event.Handlers} and independently
+			 * manage the attachment of the `Handlers` to the event-emitting `Events` created. This can be useful in a
+			 * multithreading or asynchronous situation where a listener that attaches at the beginning of a function and detaches
+			 * at the end is not sufficient (because something created within the function outlives the function).
+			 *
+			 * @param handler
+			 * @returns
+			 */
 			toListener: <D>(handler: slime.$api.event.Handlers<D>) => {
 				emitter: slime.$api.Events<D>
 				attach: () => void
