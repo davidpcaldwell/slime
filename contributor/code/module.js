@@ -276,6 +276,28 @@
 						.argument({ recurseSubmodules: true })
 						.run()
 					;
+
+					//	TODO	redundant with lsFilesOthers in tools/code. Perhaps should become standard git command
+					/** @type { slime.jrunscript.tools.git.Command<void,string[]> } */
+					var lsFilesOthers = {
+						invocation: function() {
+							return {
+								command: "ls-files",
+								arguments: ["--others", "--exclude-standard"]
+							}
+						},
+						result: $context.library.git.commands.lsFiles.result
+					};
+
+					var untracked = $context.library.git.program({ command: "git" })
+						.repository(p.base)
+						.command(lsFilesOthers)
+						.argument()
+						.run()
+					;
+
+					files = files.concat(untracked);
+
 					var loader = $context.library.file.world.Location.directory.loader.synchronous({
 						root: $context.library.file.world.Location.from.os(p.base)
 					});
