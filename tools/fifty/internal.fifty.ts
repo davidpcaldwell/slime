@@ -10,7 +10,9 @@
  * * `./tools/fifty.jsh.js`
  *     * `view`
  *     * `test.jsh`
- *     * `test.browser`
+ *     * `test.browser` (`tools/fifty/test-browser.jsh.js`)
+ *         * Server: {@link slime.runtime.browser.test.server.Export | `loader/browser/test/server.js`}
+ *         * `loader/browser/test/handler-results.js`
  */
 namespace slime.fifty.internal {
 }
