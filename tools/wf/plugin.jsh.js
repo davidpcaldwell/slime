@@ -130,7 +130,7 @@
 						}
 					},
 					git: {
-						installHooks: function(p) {
+						installHooks: function installHooks(p) {
 							var ALL_GIT_HOOKS = [
 								"post-checkout",
 								"pre-commit",

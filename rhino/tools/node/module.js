@@ -474,10 +474,23 @@
 					return json.dependencies;
 				};
 
-				this.installed = installed();
+				this.installed = void(0);
+				Object.defineProperty(
+					this,
+					"installed",
+					{
+						get: $api.fp.impure.Input.memoized(installed)
+					}
+				);
 
 				var refresh = (function() {
-					this.installed = installed();
+					Object.defineProperty(
+						this,
+						"installed",
+						{
+							get: $api.fp.impure.Input.memoized(installed)
+						}
+					);
 				}).bind(this);
 
 				//	TODO	used in tests; see whether that's needed
