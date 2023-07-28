@@ -260,7 +260,7 @@
 		 * @param { slime.old.Loader } loader
 		 * @returns { slime.jsh.loader.internal.plugins.PluginsContent }
 		 */
-		var getPluginsContent = function(scope,loader) {
+		var getPluginsContent = function getPluginsContent(scope,loader) {
 			/** @type { slime.jsh.loader.internal.plugins.PluginsContent } */
 			var rv = {
 				plugins: [],
