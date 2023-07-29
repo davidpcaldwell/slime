@@ -103,10 +103,15 @@ namespace slime.jsh.shell {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
+			let fixtures: slime.jrunscript.jsh.test.Exports = void(0);
+			fifty.load("../fixtures.ts", "initialize", function(provided) {
+				fixtures = provided;
+			});
+
 			fifty.tests.exports.jsh.Installation = fifty.test.Parent();
 			fifty.tests.exports.jsh.Installation.from = fifty.test.Parent();
 			fifty.tests.exports.jsh.Installation.from.unbuilt = function() {
-				var src = fifty.jsh.file.relative("../../../");
+				var src = jsh.file.Location.from.os(fixtures.shells.unbuilt());
 				var diagnostic = jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")(src);
 				var intention: slime.jsh.shell.Intention = {
 					shell: {
