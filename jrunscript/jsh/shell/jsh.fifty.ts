@@ -103,34 +103,57 @@ namespace slime.jsh.shell {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			let fixtures: slime.jrunscript.jsh.test.Exports = void(0);
-			fifty.load("../fixtures.ts", "initialize", function(provided) {
-				fixtures = provided;
-			});
+			const fixtures = (function() {
+				let rv: slime.jrunscript.jsh.test.Exports = void(0);
+				fifty.load("../fixtures.ts", "initialize", function(provided) {
+					rv = provided;
+				});
+				return rv;
+			})();
 
 			fifty.tests.exports.jsh.Installation = fifty.test.Parent();
+
 			fifty.tests.exports.jsh.Installation.from = fifty.test.Parent();
-			fifty.tests.exports.jsh.Installation.from.unbuilt = function() {
-				var src = jsh.file.Location.from.os(fixtures.shells.unbuilt());
-				var diagnostic = jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")(src);
+
+			fifty.tests.exports.jsh.Installation.from.current = fifty.test.Parent();
+
+			var getInstallationFromDiagnosticOutput: (data: any) => slime.jsh.shell.Installation = $api.fp.property("installation");
+
+			var getInstallationFromIntention = $api.fp.pipe(
+				jsh.shell.Intention.from.jsh,
+				$api.fp.world.mapping(jsh.shell.subprocess.question),
+				function(result) {
+					if (result.status != 0) throw new Error("Status: " + result.status);
+					return result.stdio.output;
+				},
+				JSON.parse,
+				getInstallationFromDiagnosticOutput
+			);
+
+			fifty.tests.exports.jsh.Installation.from.current.unbuilt = function() {
+				var getDiagnosticScriptForShellAt = $api.fp.pipe(
+					jsh.file.Location.from.os,
+					jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js"),
+					$api.fp.property("pathname")
+				);
+
+				var cast: slime.js.Cast<UnbuiltInstallation> = $api.fp.cast;
+
+				var src = fixtures.shells.unbuilt();
+
 				var intention: slime.jsh.shell.Intention = {
 					shell: {
-						src: src.pathname
+						src: src
 					},
-					script: diagnostic.pathname,
+					script: getDiagnosticScriptForShellAt(src),
 					stdio: {
 						output: "string"
 					}
 				};
-				var augmented = jsh.shell.Intention.from.jsh(intention);
-				var result = $api.fp.world.now.question(
-					jsh.shell.subprocess.question,
-					augmented
-				);
-				var output = JSON.parse(result.stdio.output);
-				var installationSrc: string = (output.installation) ? output.installation.src : void(0);
 
-				verify(installationSrc).is(src.pathname);
+				var installation = getInstallationFromIntention(intention);
+
+				verify(installation).evaluate(cast).src.is(src);
 			}
 		}
 	//@ts-ignore
