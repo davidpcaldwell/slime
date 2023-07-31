@@ -23,27 +23,6 @@
 		//	TODO	would be nice to generalize this and push it back into the shell module itself
 		if (!module.properties) throw new TypeError("No properties properties.");
 
-		$exports.Intention = (function(was) {
-			/** @type { slime.js.Cast<slime.jsh.shell.Exports["Intention"]> } */
-			var toJsh = $api.fp.cast;
-
-			var is = toJsh(was);
-			is.from.jsh = function(p) {
-				return {
-					command: "bash",
-					arguments: $api.Array.build(function(rv) {
-						rv.push($context.api.file.Location.relative("jsh")($context.api.file.Location.from.os(p.shell.src)).pathname);
-						rv.push(p.script);
-						if (p.arguments) rv.push.apply(rv, p.arguments);
-					}),
-					directory: p.directory,
-					environment: p.environment,
-					stdio: p.stdio
-				}
-			};
-			return is;
-		})(module.Intention);
-
 		$exports.engine = module.properties.get("jsh.engine");
 
 		$exports.exit = $context.exit;
@@ -568,7 +547,38 @@
 				relaunch: void(0),
 				debug: void(0),
 				url: void(0),
-				Installation: void(0)
+				Installation: void(0),
+				/** @type { slime.jsh.shell.JshShellJsh["Intention" ]} */
+				Intention: {
+					toShellIntention: function(p) {
+						/** @type { (p: slime.jsh.shell.UnbuiltInstallation) => slime.jrunscript.file.Location } */
+						var getSrcLauncher = function(p) {
+							return $context.api.file.Location.directory.relativePath("jsh")($context.api.file.Location.from.os(p.src));
+						};
+
+						/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.UnbuiltInstallation } */
+						var isUnbuilt = function(shell) {
+							return Boolean(shell["src"]);
+						}
+
+						if (isUnbuilt(p.shell)) {
+							return {
+								//	TODO	will not work on Windows
+								command: "bash",
+								arguments: $api.Array.build(function(rv) {
+									rv.push(getSrcLauncher(p.shell).pathname);
+									rv.push(p.script);
+									if (p.arguments) rv.push.apply(rv, p.arguments);
+								}),
+								directory: p.directory,
+								environment: p.environment,
+								stdio: p.stdio
+							}
+						} else {
+							throw new Error("Unsupported shell.");
+						}
+					}
+				}
 			}
 		);
 		$exports.jsh.relaunch = $api.experimental(function(p) {
