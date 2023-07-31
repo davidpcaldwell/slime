@@ -548,9 +548,35 @@
 				debug: void(0),
 				url: void(0),
 				Installation: void(0),
+				/** @type { slime.jsh.shell.JshShellJsh["Intention" ]} */
 				Intention: {
 					toShellIntention: function(p) {
-						return void(0);
+						/** @type { (p: slime.jsh.shell.UnbuiltInstallation) => slime.jrunscript.file.Location } */
+						var getSrcLauncher = function(p) {
+							return $context.api.file.Location.directory.relativePath("jsh")($context.api.file.Location.from.os(p.src));
+						};
+
+						/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.UnbuiltInstallation } */
+						var isUnbuilt = function(shell) {
+							return Boolean(shell["src"]);
+						}
+
+						if (isUnbuilt(p.shell)) {
+							return {
+								//	TODO	will not work on Windows
+								command: "bash",
+								arguments: $api.Array.build(function(rv) {
+									rv.push(getSrcLauncher(p.shell).pathname);
+									rv.push(p.script);
+									if (p.arguments) rv.push.apply(rv, p.arguments);
+								}),
+								directory: p.directory,
+								environment: p.environment,
+								stdio: p.stdio
+							}
+						} else {
+							throw new Error("Unsupported shell.");
+						}
 					}
 				}
 			}
