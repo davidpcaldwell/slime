@@ -83,6 +83,16 @@ namespace slime.jsh.shell {
 
 	export type Installation = UnbuiltInstallation | BuiltInstallation | PackagedInstallation | UrlInstallation
 
+	export type Intention = (
+		{
+			shell: {
+				src: string
+			},
+			script: string
+		}
+		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "stdio" | "directory">
+	)
+
 	export interface JshShellJsh {
 		Installation: {
 			from: {
@@ -93,6 +103,10 @@ namespace slime.jsh.shell {
 				 */
 				current: slime.$api.fp.impure.Input<Installation>
 			}
+		}
+
+		Intention: {
+			toShellIntention: (p: Intention) => slime.jrunscript.shell.run.Intention
 		}
 	}
 
@@ -120,7 +134,7 @@ namespace slime.jsh.shell {
 			var getInstallationFromDiagnosticOutput: (data: any) => slime.jsh.shell.Installation = $api.fp.property("installation");
 
 			var getInstallationFromIntention = $api.fp.pipe(
-				jsh.shell.Intention.from.jsh,
+				jsh.shell.jsh.Intention.toShellIntention,
 				$api.fp.world.mapping(jsh.shell.subprocess.question),
 				function(result) {
 					if (result.status != 0) throw new Error("Status: " + result.status);
@@ -159,24 +173,6 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export type Intention = (
-		{
-			shell: {
-				src: string
-			},
-			script: string
-		}
-		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "stdio" | "directory">
-	)
-
-	export interface Exports {
-		Intention: Omit<slime.jrunscript.shell.Exports["Intention"],"from"> & {
-			from: {
-				jsh: (p: Intention) => slime.jrunscript.shell.run.Intention
-			}
-		}
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -185,7 +181,7 @@ namespace slime.jsh.shell {
 
 			fifty.tests.Intention = {};
 			fifty.tests.Intention.jsh = function() {
-				var intention = jsh.shell.Intention.from.jsh({
+				var intention = jsh.shell.jsh.Intention.toShellIntention({
 					shell: {
 						src: jsh.shell.jsh.src.toString()
 					},

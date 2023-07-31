@@ -17,7 +17,7 @@ namespace slime.jsh.shell.tools {
 		//	TODO	because this is Java, it's possible that we don't need a native filesystem to do this; we might be able to run
 		//			it directly out of other Location objects. But for now we assume a native filesystem and use only the base
 		//			property.
-		export type Installed = {
+		export interface Installed {
 			base: string
 		}
 
@@ -81,6 +81,10 @@ namespace slime.jsh.shell.tools {
 
 			Installation: {
 				from: {
+					/**
+					 *
+					 * @returns the Tomcat configuration for the currently running shell.
+					 */
 					jsh: () => slime.jsh.shell.tools.tomcat.Installed
 				}
 

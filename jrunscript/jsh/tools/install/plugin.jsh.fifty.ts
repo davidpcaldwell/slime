@@ -55,7 +55,7 @@ namespace slime.jsh.shell.tools {
 						return rv;
 					}
 				}
-				return jsh.shell.Intention.from.jsh(intention);
+				return jsh.shell.jsh.Intention.toShellIntention(intention);
 			}
 		//@ts-ignore
 		})(fifty);
