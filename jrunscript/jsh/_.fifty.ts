@@ -12,7 +12,7 @@
  *
  * ## Configuration
  *
- * See [running `jsh`](../src/jsh/launcher/api.html) for information about how to run scripts using `jsh` and configure the
+ * See [running `jsh`](../src/jrunscript/jsh/launcher/api.html) for information about how to run scripts using `jsh` and configure the
  * shell.
  *
  * ## Execution models
