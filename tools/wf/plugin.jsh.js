@@ -514,10 +514,26 @@
 										}
 									},
 									install: function() {
-										jsh.shell.tools.node.installed.modules.require({
-											name: "typescript",
-											version: version
-										});
+										$api.fp.world.now.action(
+											jsh.shell.tools.node.Installation.modules.require({
+												name: "typescript",
+												version: version
+											}),
+											installation,
+											{
+												found: function(e) {
+													if (e.detail.present) {
+														jsh.shell.console("Found TypeScript " + e.detail.value.version);
+													}
+												},
+												installing: function(e) {
+													jsh.shell.console("Installing TypeScript " + version + " ....");
+												},
+												installed: function(e) {
+													jsh.shell.console("Installed TypeScript " + version + ".");
+												}
+											}
+										);
 									}
 								}),
 								{

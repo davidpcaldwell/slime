@@ -30,6 +30,10 @@
 						if (lib.getFile("js.jar") && !p.replace) {
 							events.fire("console", "Rhino already installed at " + lib.getFile("js.jar"));
 							return;
+						} else if (p.replace) {
+							events.fire("console", "Replacing Rhino at " + lib.getRelativePath("js.jar"));
+						} else {
+							events.fire("console", "No Rhino at " + lib.getRelativePath("js.jar") + "; installing ...");
 						}
 						events.fire("console", "Installing Rhino ...");
 						var operation = "copy";
