@@ -494,11 +494,57 @@
 					return {
 						require: function(p) {
 							var project = (p && p.project) ? p.project : inputs.base();
-							$api.fp.world.execute(jsh.shell.tools.node.require());
-							jsh.shell.tools.node.installed.modules.require({
-								name: "typescript",
-								version: library.module.Project.getTypescriptVersion({ base: project.toString() })
-							});
+							$api.fp.world.now.tell(jsh.shell.tools.node.require());
+							var installation = jsh.shell.tools.node.installation;
+							var version = library.module.Project.getTypescriptVersion({ base: project.toString() });
+							//	We use jsh.shell.jsh.require to make sure shell relaunches, so that TypeScript can be
+							//	loaded by SLIME in the resulting shell.
+							//	TODO	use newer jsh.shell APIs
+							$api.fp.world.now.tell(
+								jsh.shell.jsh.require({
+									satisfied: function() {
+										var installed = $api.fp.world.now.question(
+											jsh.shell.tools.node.Installation.modules.installed("typescript"),
+											installation
+										);
+										if (installed.present) {
+											return installed.value.version == version
+										} else {
+											return false;
+										}
+									},
+									install: function() {
+										$api.fp.world.now.action(
+											jsh.shell.tools.node.Installation.modules.require({
+												name: "typescript",
+												version: version
+											}),
+											installation,
+											{
+												found: function(e) {
+													if (e.detail.present) {
+														jsh.shell.console("Found TypeScript " + e.detail.value.version);
+													}
+												},
+												installing: function(e) {
+													jsh.shell.console("Installing TypeScript " + version + " ....");
+												},
+												installed: function(e) {
+													jsh.shell.console("Installed TypeScript " + version + ".");
+												}
+											}
+										);
+									}
+								}),
+								{
+									installing: function(e) {
+										jsh.shell.console("Installing TypeScript ...");
+									},
+									installed: function(e) {
+										jsh.shell.console("Installed TypeScript " + version + ".");
+									}
+								}
+							);
 						},
 						tsc: function(p) {
 							var project = (p && p.project) ? p.project : inputs.base();

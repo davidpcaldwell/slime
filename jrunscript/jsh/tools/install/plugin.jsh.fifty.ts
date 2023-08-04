@@ -103,6 +103,96 @@ namespace slime.jsh.shell.tools {
 		}
 	}
 
+	export namespace rhino {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
+				fifty.tests.rhino = function() {
+					var Captor = function() {
+						var events: slime.$api.Event<any>[] = [];
+
+						return {
+							console: function(e) {
+								events.push(e);
+							},
+							installed: function(e) {
+								events.push(e);
+							},
+							captured: Object.assign(
+								events,
+								{
+									type: function(type) {
+										return events.filter(function(e) { return e.type == type; });
+									}
+								}
+							)
+						}
+					}
+
+					var lib = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+					var mock = {
+						lib: lib,
+						rhino: void(0)
+					};
+
+					var toConsoleEvent = function(e: slime.$api.Event<string>): slime.$api.Event<string> {
+						return e;
+					};
+
+					var readFile = function(p: slime.jrunscript.file.File) {
+						return p.read(String);
+					};
+
+					fifty.run(function alreadyInstalled() {
+						lib.getRelativePath("js.jar").write("already", { append: false });
+						var captor = Captor();
+						jsh.shell.tools.rhino.install({ mock: mock }, captor);
+						verify(captor).captured[0].type.is("console");
+						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("Rhino already installed at " + lib.getFile("js.jar"));
+						verify(lib).getFile("js.jar").evaluate(readFile).is("already");
+						verify(captor.captured.type("installed")).length.is(0);
+						lib.getFile("js.jar").remove();
+					});
+
+					fifty.run(function replace() {
+						lib.getRelativePath("js.jar").write("original", { append: false });
+						lib.getRelativePath("download").write("downloaded", { append: false });
+						mock.rhino = lib.getFile("download");
+						var captor = Captor();
+						jsh.shell.tools.rhino.install({ mock: mock, replace: true }, captor);
+						verify(captor).captured[0].type.is("console");
+						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("Replacing Rhino at " + lib.getRelativePath("js.jar") + " ...");
+						verify(captor).captured[1].type.is("console");
+						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino to " + lib.getRelativePath("js.jar") + " ...");
+						verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
+						verify(captor.captured.type("installed")).length.is(1);
+						lib.getFile("js.jar").remove();
+					});
+
+					fifty.run(function install() {
+						lib.getRelativePath("download").write("downloaded", { append: false });
+						mock.rhino = lib.getFile("download");
+						var captor = Captor();
+						jsh.shell.tools.rhino.install({ mock: mock }, captor);
+						verify(captor).captured[0].type.is("console");
+						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("No Rhino at " + lib.getRelativePath("js.jar") + "; installing ...");
+						verify(captor).captured[1].type.is("console");
+						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino to " + lib.getRelativePath("js.jar") + " ...");
+						verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
+						verify(captor.captured.type("installed")).length.is(1);
+						lib.getFile("js.jar").remove();
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export interface Exports {
 		ncdbg: any
 	}
@@ -515,6 +605,7 @@ namespace slime.jsh.shell.tools {
 			fifty.tests.suite = function() {
 				fifty.load("tomcat.fifty.ts");
 
+				fifty.run(fifty.tests.rhino);
 				fifty.run(fifty.tests.node);
 				fifty.run(fifty.tests.scala);
 			}

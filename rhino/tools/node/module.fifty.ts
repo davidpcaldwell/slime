@@ -171,11 +171,14 @@ namespace slime.jrunscript.node {
 
 				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<Installation,void>
 
-				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<Installation,{
-					found: slime.$api.fp.Maybe<Module>
-					installing: void
-					installed: Module
-				}>
+				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<
+					Installation,
+					{
+						found: slime.$api.fp.Maybe<Module>
+						installing: void
+						installed: Module
+					}
+				>
 			}
 		}
 	}

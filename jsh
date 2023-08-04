@@ -71,11 +71,13 @@ download_install() {
 	if [ ! -f "${LOCATION}" ]; then
 		>&2 echo "Downloading ${URL} ..."
 		if [ "${UNAME}" == "Darwin" ]; then
+			mkdir -p "$(dirname $LOCATION)" 2>/dev/null
 			curl -L -o ${LOCATION} ${URL}
 		elif [ "${UNAME}" == "Linux" ]; then
 			if [ ! "$(which wget)" ]; then
 				debian_install_package wget
 			fi
+			mkdir -p "$(dirname $LOCATION)" 2>/dev/null
 			wget -O ${LOCATION} ${URL}
 		fi
 	fi
