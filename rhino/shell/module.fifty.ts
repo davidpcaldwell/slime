@@ -559,7 +559,7 @@ namespace slime.jrunscript.shell {
 					/**
 					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
 					 */
-					CFBundleExecutable: string | { name: string, command: string }
+					CFBundleExecutable: string | { name?: string, command: string }
 
 					//	Added to make test pass type checking; not sure what this does
 					CFBundleIconFile?: any
