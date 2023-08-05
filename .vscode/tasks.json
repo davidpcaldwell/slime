@@ -45,7 +45,7 @@
 		},
 		{
 			"label": "Git: Create branch",
-			"detail": "Creates a new branch based on newly-fetched origin/master and checks it out.",
+			"detail": "Creates a new branch based on newly-fetched origin/main and checks it out.",
 			"type": "shell",
 			"command": "./wf git.branch ${input:branchName}",
 			"problemMatcher": []

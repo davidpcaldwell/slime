@@ -27,25 +27,40 @@
 
 							var current = jsh.shell.jsh.Installation.from.current();
 							if (isUnbuilt(current)) {
-							/** @type { slime.jsh.shell.Intention } */
-								var intention = {
-									shell: {
-										src: current.src
-									},
-									script: getBuildScript(jsh.file.Location.from.os(current.src)).pathname,
-									arguments: $api.Array.build(function(rv) {
-										rv.push(p.options.destination.toString());
-										rv.push("-notest");
-										rv.push("-nodoc");
-										if (p.options.rhino) rv.push("-rhino", p.options.rhino.toString());
+								/** @type { slime.$api.fp.Identity<slime.jsh.shell.Intention> } */
+								var asJshIntention = $api.fp.identity;
 
+								$api.fp.now.invoke(
+									asJshIntention({
+										shell: {
+											src: current.src
+										},
+										script: getBuildScript(jsh.file.Location.from.os(current.src)).pathname,
+										arguments: $api.Array.build(function(rv) {
+											rv.push(p.options.destination.toString());
+											rv.push("-notest");
+											rv.push("-nodoc");
+											if (p.options.rhino) rv.push("-rhino", p.options.rhino.toString());
+
+										}),
+										stdio: {
+											output: "line",
+											error: "line"
+										}
 									}),
-									stdio: {
-										output: "string",
-										error: "line"
-									}
-								};
-
+									jsh.shell.jsh.Intention.toShellIntention,
+									$api.fp.world.output(
+										jsh.shell.subprocess.action,
+										{
+											stdout: function(e) {
+												jsh.shell.console("jsh build STDOUT: " + e.detail.line);
+											},
+											stderr: function(e) {
+												jsh.shell.console("jsh build STDERR: " + e.detail.line);
+											}
+										}
+									)
+								)
 							} else {
 								jsh.shell.console("Only unbuilt shells can be built.");
 								jsh.shell.exit(1);

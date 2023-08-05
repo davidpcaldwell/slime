@@ -556,17 +556,44 @@
 							return $context.api.file.Location.directory.relativePath("jsh")($context.api.file.Location.from.os(p.src));
 						};
 
+						/** @type { (p: slime.jsh.shell.BuiltInstallation) => slime.jrunscript.file.Location } */
+						var getHomeLauncher = function(p) {
+							return $context.api.file.Location.directory.relativePath("jsh.bash")($context.api.file.Location.from.os(p.home));
+						}
+
 						/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.UnbuiltInstallation } */
 						var isUnbuilt = function(shell) {
 							return Boolean(shell["src"]);
+						};
+
+						/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.BuiltInstallation } */
+						var isBuilt = function(shell) {
+							return Boolean(shell["home"]);
 						}
 
-						if (isUnbuilt(p.shell)) {
+						var shell = p.shell;
+						if (isUnbuilt(shell)) {
+							//	Below is necessary for TypeScript as of 5.1.6
+							var s = shell;
 							return {
 								//	TODO	will not work on Windows
 								command: "bash",
 								arguments: $api.Array.build(function(rv) {
-									rv.push(getSrcLauncher(p.shell).pathname);
+									rv.push(getSrcLauncher(s).pathname);
+									rv.push(p.script);
+									if (p.arguments) rv.push.apply(rv, p.arguments);
+								}),
+								directory: p.directory,
+								environment: p.environment,
+								stdio: p.stdio
+							}
+						} else if (isBuilt(shell)) {
+							var downcast = shell;
+							return {
+								//	TODO	will not work on Windows
+								command: "bash",
+								arguments: $api.Array.build(function(rv) {
+									rv.push(getHomeLauncher(downcast).pathname);
 									rv.push(p.script);
 									if (p.arguments) rv.push.apply(rv, p.arguments);
 								}),
@@ -649,18 +676,30 @@
 			$exports.jsh.lib = $exports.jsh.home.getSubdirectory("lib");
 		}
 
+		var canonicalizePropertyValue = function(_value) {
+			var value = String(_value);
+			var os = $context.api.file.Location.from.os(value);
+			//	TODO	we need a wo API to canonicalize
+			var canonicalized = $context.api.file.Location.directory.relativePath("foo")(os);
+			var directory = $context.api.file.Location.parent()(canonicalized);
+			return directory.pathname;
+		}
+
 		$exports.jsh.Installation = {
 			from: {
 				current: function() {
 					if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.src) {
-						var src = String(module.properties.object.jsh.shell.src);
-						var os = $context.api.file.Location.from.os(src);
-						//	TODO	we need a wo API to canonicalize
-						var canonicalized = $context.api.file.Location.directory.relativePath("jsh")(os);
-						var directory = $context.api.file.Location.parent()(canonicalized);
+						var src = canonicalizePropertyValue(module.properties.object.jsh.shell.src);
 						if ($context.api.file.Pathname(src).directory) {
 							return {
-								src: directory.pathname
+								src: src
+							}
+						}
+					} else if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.home) {
+						var home = canonicalizePropertyValue(module.properties.object.jsh.shell.home);
+						if ($context.api.file.Pathname(home).directory) {
+							return {
+								home: home
 							}
 						}
 					}
