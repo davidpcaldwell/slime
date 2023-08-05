@@ -85,9 +85,7 @@ namespace slime.jsh.shell {
 
 	export type Intention = (
 		{
-			shell: {
-				src: string
-			},
+			shell: Installation,
 			script: string
 		}
 		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "stdio" | "directory">

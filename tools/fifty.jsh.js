@@ -90,6 +90,37 @@
 							jsh.shell.exit(p.status);
 						}
 					)
+				},
+				jsh: function(p) {
+					/** @type { (p: slime.jsh.shell.Installation) => p is slime.jsh.shell.UnbuiltInstallation } */
+					var isUnbuilt = function(p) {
+						return p["src"];
+					};
+
+					var current = jsh.shell.jsh.Installation.from.current();
+
+					/** @type { slime.$api.fp.Identity<slime.jsh.shell.Intention> } */
+					var asJshIntention = $api.fp.identity;
+
+					//	TODO	may not need to limit shells at all here
+					if (isUnbuilt(current)) {
+						$api.fp.now.invoke(
+							asJshIntention({
+								shell: {
+									src: current.src
+								},
+								script: p.arguments[0],
+								arguments: p.arguments.slice(1)
+							}),
+							jsh.shell.jsh.Intention.toShellIntention,
+							$api.fp.world.output(
+								jsh.shell.subprocess.action
+							)
+						)
+					} else {
+						jsh.shell.console("Only unbuilt shells can be built.");
+						jsh.shell.exit(1);
+					}
 				}
 			}
 		});

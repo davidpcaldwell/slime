@@ -386,6 +386,12 @@ namespace slime.jsh.script {
 			}
 
 			parser: {
+				/**
+				 * Resolves a command-line argument of type `Pathname`.
+				 *
+				 * @param argument A string, presumably provided by a command-line invoker
+				 * @returns A full `Pathname` representing the provided string, resolving relative paths as needed.
+				 */
 				pathname: (argument: string) => slime.jrunscript.file.Pathname
 			}
 
