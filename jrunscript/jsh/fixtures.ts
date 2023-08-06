@@ -6,8 +6,8 @@
 
 namespace slime.jrunscript.jsh.test {
 	export interface Shells {
-		unbuilt: slime.$api.fp.impure.Input<string>
-		built: slime.$api.fp.impure.Input<string>
+		unbuilt: slime.$api.fp.impure.Input<slime.jsh.shell.UnbuiltInstallation>
+		built: slime.$api.fp.impure.Input<slime.jsh.shell.BuiltInstallation>
 		packaged: slime.$api.fp.impure.Input<string>
 		remote: slime.$api.fp.impure.Input<string>
 	}
@@ -16,44 +16,105 @@ namespace slime.jrunscript.jsh.test {
 		shells: Shells
 	}
 
-	export type Caller = (exports: Exports) => void
-
-	export type Script = slime.loader.Script<void,Exports>;
-
 	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.initialize = function(caller: Caller) {
-				caller({
-					shells: {
-						// var getTemporaryLocationProperty: (name: string) => slime.$api.fp.impure.Input<string> = function() {
+		function($api: slime.$api.Global, jsh: slime.jsh.Global, $export: slime.loader.Export<Exports>) {
+			// var getTemporaryLocationProperty: (name: string) => slime.$api.fp.impure.Input<string> = function() {
 
-						// }
+			// }
 
-						// var inTemporaryLocation = function(p: {
-						// 	propertyName: string
-						// 	build: (destination: string) => void
-						// }) {
-						// 	var location =
-						// }
-						unbuilt: function() {
-							return fifty.jsh.file.relative("../../").pathname;
-						},
-						built: function() {
-							return void(0);
-						},
-						packaged: function() {
-							return void(0);
-						},
-						remote: function() {
-							return void(0);
+			// var inTemporaryLocation = function(p: {
+			// 	propertyName: string
+			// 	build: (destination: string) => void
+			// }) {
+			// 	var location =
+			// }
+			$export({
+				shells: {
+					unbuilt: function(): slime.jsh.shell.UnbuiltInstallation {
+						return {
+							src: jsh.shell.jsh.src.pathname.toString()
+						};
+					},
+					built: function() {
+						//	TODO	should store result in system property so that it is cached across loads of this file as well as
+						//			individual invocations
+						var TMPDIR = $api.fp.world.now.question(
+							jsh.file.Location.from.temporary(jsh.file.world.filesystems.os),
+							{
+								directory: true
+							}
+						);
+
+						var isUnbuilt = function(p: slime.jsh.shell.Installation): p is slime.jsh.shell.UnbuiltInstallation {
+							return p["src"];
+						};
+
+						var getBuildScript = jsh.file.Location.directory.relativePath("jrunscript/jsh/etc/build.jsh.js");
+
+						var current = jsh.shell.jsh.Installation.from.current();
+						if (isUnbuilt(current)) {
+							var rhino: slime.$api.fp.Maybe<slime.jrunscript.file.Location> = $api.fp.now.invoke(
+								current,
+								$api.fp.property("src"),
+								jsh.file.Location.from.os,
+								jsh.file.Location.directory.relativePath("local/jsh/lib/js.jar"),
+								function(location) {
+									var exists = $api.fp.world.mapping(jsh.file.Location.file.exists())(location);
+									return (exists) ? $api.fp.Maybe.from.some(location) : $api.fp.Maybe.from.nothing();
+								}
+							);
+
+							var asJshIntention: slime.$api.fp.Identity<slime.jsh.shell.Intention> = $api.fp.identity;
+
+							$api.fp.now.invoke(
+								asJshIntention({
+									shell: current,
+									script: getBuildScript(jsh.file.Location.from.os(current.src)).pathname,
+									arguments: $api.Array.build(function(rv) {
+										rv.push(TMPDIR.pathname);
+										rv.push("-notest");
+										rv.push("-nodoc");
+										if (rhino.present) rv.push("-rhino", rhino.value.pathname);
+									}),
+									stdio: {
+										output: "line",
+										error: "line"
+									}
+								}),
+								jsh.shell.jsh.Intention.toShellIntention,
+								$api.fp.world.output(
+									jsh.shell.subprocess.action,
+									{
+										stdout: function(e) {
+											jsh.shell.console("jsh build STDOUT: " + e.detail.line);
+										},
+										stderr: function(e) {
+											jsh.shell.console("jsh build STDERR: " + e.detail.line);
+										}
+									}
+								)
+							);
+
+							jsh.shell.console("TMPDIR = " + TMPDIR.pathname);
+							var canonical = String(jsh.file.Pathname(TMPDIR.pathname).java.adapt().getCanonicalPath());
+							return {
+								home: canonical
+							}
+						} else {
+							throw new Error();
 						}
+					},
+					packaged: function() {
+						return void(0);
+					},
+					remote: function() {
+						return void(0);
 					}
-				});
-			}
+				}
+			});
 		}
 	//@ts-ignore
-	)(fifty);
+	)($api, (function() { return this; })().jsh, $export);
 
+	export type Script = slime.loader.Script<void,Exports>;
 }
