@@ -116,11 +116,8 @@ namespace slime.jsh.shell {
 			const { $api, jsh } = fifty.global;
 
 			const fixtures = (function() {
-				let rv: slime.jrunscript.jsh.test.Exports = void(0);
-				fifty.load("../fixtures.ts", "initialize", function(provided) {
-					rv = provided;
-				});
-				return rv;
+				var script: slime.jrunscript.jsh.test.Script = fifty.$loader.script("../fixtures.ts");
+				return script();
 			})();
 
 			fifty.tests.exports.jsh.Installation = fifty.test.Parent();
@@ -142,22 +139,20 @@ namespace slime.jsh.shell {
 				getInstallationFromDiagnosticOutput
 			);
 
-			fifty.tests.exports.jsh.Installation.from.current.unbuilt = function() {
-				var getDiagnosticScriptForShellAt = $api.fp.pipe(
-					jsh.file.Location.from.os,
-					jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js"),
-					$api.fp.property("pathname")
-				);
+			var getDiagnosticScriptForShellAt = $api.fp.pipe(
+				jsh.file.Location.from.os,
+				jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js"),
+				$api.fp.property("pathname")
+			);
 
+			fifty.tests.exports.jsh.Installation.from.current.unbuilt = function() {
 				var cast: slime.js.Cast<UnbuiltInstallation> = $api.fp.cast;
 
-				var src = fixtures.shells.unbuilt();
+				var shell = fixtures.shells.unbuilt();
 
 				var intention: slime.jsh.shell.Intention = {
-					shell: {
-						src: src
-					},
-					script: getDiagnosticScriptForShellAt(src),
+					shell: shell,
+					script: getDiagnosticScriptForShellAt(shell.src),
 					stdio: {
 						output: "string"
 					}
@@ -165,8 +160,26 @@ namespace slime.jsh.shell {
 
 				var installation = getInstallationFromIntention(intention);
 
-				verify(installation).evaluate(cast).src.is(src);
-			}
+				verify(installation).evaluate(cast).src.is(shell.src);
+			};
+
+			fifty.tests.exports.jsh.Installation.from.current.built = function() {
+				var cast: slime.js.Cast<BuiltInstallation> = $api.fp.cast;
+
+				var shell = fixtures.shells.built();
+
+				var intention: slime.jsh.shell.Intention = {
+					shell: shell,
+					script: getDiagnosticScriptForShellAt(jsh.shell.jsh.src.pathname.toString()),
+					stdio: {
+						output: "string"
+					}
+				};
+
+				var installation = getInstallationFromIntention(intention);
+
+				verify(installation).evaluate(cast).home.is(shell.home);
+			};
 		}
 	//@ts-ignore
 	)(fifty);
