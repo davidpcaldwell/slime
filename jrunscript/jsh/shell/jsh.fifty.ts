@@ -168,6 +168,11 @@ namespace slime.jsh.shell {
 
 				var shell = fixtures.shells.built();
 
+				var home = jsh.shell.java.home.pathname;
+				//	TODO	workaround for JDK 8. Really, we should figure out a better API for determining Java home directory
+				//			under various versions.
+				if (home.basename == "jre") home = home.parent;
+
 				var intention: slime.jsh.shell.Intention = {
 					shell: shell,
 					script: getDiagnosticScriptForShellAt(jsh.shell.jsh.src.pathname.toString()),
@@ -175,7 +180,7 @@ namespace slime.jsh.shell {
 						return $api.Object.compose(
 							current,
 							{
-								JSH_JAVA_HOME: jsh.shell.java.home.pathname.toString()
+								JSH_JAVA_HOME: home.toString()
 							}
 						)
 					},
