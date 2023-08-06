@@ -171,6 +171,14 @@ namespace slime.jsh.shell {
 				var intention: slime.jsh.shell.Intention = {
 					shell: shell,
 					script: getDiagnosticScriptForShellAt(jsh.shell.jsh.src.pathname.toString()),
+					environment: function(current) {
+						return $api.Object.compose(
+							current,
+							{
+								JSH_JAVA_HOME: jsh.shell.java.home.pathname.toString()
+							}
+						)
+					},
 					stdio: {
 						output: "string"
 					}
