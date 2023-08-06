@@ -95,8 +95,10 @@ namespace slime.jrunscript.jsh.test {
 								)
 							);
 
+							jsh.shell.console("TMPDIR = " + TMPDIR.pathname);
+							var canonical = String(jsh.file.Pathname(TMPDIR.pathname).java.adapt().getCanonicalPath());
 							return {
-								home: TMPDIR.pathname
+								home: canonical
 							}
 						} else {
 							throw new Error();
