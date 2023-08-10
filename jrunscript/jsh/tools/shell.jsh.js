@@ -11,6 +11,33 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		/** @type { slime.$api.fp.Identity<slime.jsh.shell.Intention> } */
+		var asJshIntention = $api.fp.identity;
+
+		/** @type { slime.$api.fp.Identity<slime.jsh.shell.UnbuiltInstallation> } */
+		var asUnbuiltInstallation = $api.fp.identity;
+
+		/**
+		 *
+		 * @param { slime.jsh.shell.UnbuiltInstallation } unbuilt
+		 * @returns
+		 */
+		var getScript = $api.fp.pipe(
+			asUnbuiltInstallation,
+			$api.fp.property("src"),
+			jsh.file.Location.from.os,
+			jsh.file.Location.directory.base,
+			//	TODO	what is this pattern and can we simplify it
+			function(f) {
+				/**
+				 * @param { string } path
+				 */
+				return function(path) {
+					return f(path).pathname;
+				}
+			}
+		);
+
 		jsh.script.cli.main(
 			jsh.script.cli.program({
 				commands: {
@@ -18,24 +45,14 @@
 						jsh.script.cli.option.pathname({ longname: "destination" }),
 						jsh.script.cli.option.pathname({ longname: "rhino" }),
 						function(p) {
-							/** @type { (p: slime.jsh.shell.Installation) => p is slime.jsh.shell.UnbuiltInstallation } */
-							var isUnbuilt = function(p) {
-								return p["src"];
-							};
-
-							var getBuildScript = jsh.file.Location.directory.relativePath("jrunscript/jsh/etc/build.jsh.js");
-
 							var current = jsh.shell.jsh.Installation.from.current();
-							if (isUnbuilt(current)) {
-								/** @type { slime.$api.fp.Identity<slime.jsh.shell.Intention> } */
-								var asJshIntention = $api.fp.identity;
+							if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
+								var buildScript = getScript(current)("jrunscript/jsh/etc/build.jsh.js");
 
 								$api.fp.now.invoke(
 									asJshIntention({
-										shell: {
-											src: current.src
-										},
-										script: getBuildScript(jsh.file.Location.from.os(current.src)).pathname,
+										shell: current,
+										script: buildScript,
 										arguments: $api.Array.build(function(rv) {
 											rv.push(p.options.destination.toString());
 											rv.push("-notest");
@@ -65,6 +82,44 @@
 								jsh.shell.console("Only unbuilt shells can be built.");
 								jsh.shell.exit(1);
 							}
+						}
+					),
+					package: $api.fp.pipe(
+						jsh.script.cli.option.pathname({ longname: "script" }),
+						jsh.script.cli.option.pathname({ longname: "to" }),
+						function(p) {
+							var current = jsh.shell.jsh.Installation.from.current();
+							if (!jsh.shell.jsh.Installation.is.unbuilt(current)) {
+								jsh.shell.console("Only an unbuilt shell can be used to create a packaged script.");
+								jsh.shell.exit(1);
+							}
+
+							$api.fp.now.invoke(
+								asJshIntention({
+									shell: current,
+									script: getScript(current)("jrunscript/jsh/tools/package.jsh.js"),
+									arguments: $api.Array.build(function(rv) {
+										rv.push("-script", p.options.script.toString());
+										rv.push("-to", p.options.to.toString());
+									}),
+									stdio: {
+										output: "line",
+										error: "line"
+									}
+								}),
+								jsh.shell.jsh.Intention.toShellIntention,
+								$api.fp.world.output(
+									jsh.shell.subprocess.action,
+									{
+										stdout: function(e) {
+											jsh.shell.console("jsh package STDOUT: " + e.detail.line);
+										},
+										stderr: function(e) {
+											jsh.shell.console("jsh package STDERR: " + e.detail.line);
+										}
+									}
+								)
+							);
 						}
 					)
 				}

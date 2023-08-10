@@ -140,7 +140,7 @@ plugin({
 				})(p);
 				args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
 				args.push("jsh");
-				args.push(SLIME.getRelativePath("jsh/etc/build.jsh.js"));
+				args.push(SLIME.getRelativePath("jrunscript/jsh/etc/build.jsh.js"));
 				args.push(JSH_HOME);
 				args.push("-notest");
 				args.push("-nodoc");

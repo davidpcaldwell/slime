@@ -49,6 +49,13 @@
 						);
 						return $slime.jsh(configuration,_invocation)
 					},
+					packaged: function() {
+						if ($slime.getPackaged()) {
+							return $api.fp.Maybe.from.some(String($slime.getPackaged().getFile().getCanonicalPath()));
+						} else {
+							return $api.fp.Maybe.from.nothing();
+						}
+					},
 					module: plugins.shell
 				};
 

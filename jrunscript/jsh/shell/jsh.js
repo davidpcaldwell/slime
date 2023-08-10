@@ -569,40 +569,59 @@
 						/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.BuiltInstallation } */
 						var isBuilt = function(shell) {
 							return Boolean(shell["home"]);
+						};
+
+						/** @type { (p: slime.jsh.shell.Intention) => p is slime.jsh.shell.ExternalInstallationInvocation } */
+						var isExternalInstallationInvocation = function(p) {
+							return Boolean(p["shell"]);
 						}
 
-						var shell = p.shell;
-						if (isUnbuilt(shell)) {
-							//	Below is necessary for TypeScript as of 5.1.6
-							var s = shell;
-							return {
-								//	TODO	will not work on Windows
-								command: "bash",
-								arguments: $api.Array.build(function(rv) {
-									rv.push(getSrcLauncher(s).pathname);
-									rv.push(p.script);
-									if (p.arguments) rv.push.apply(rv, p.arguments);
-								}),
-								directory: p.directory,
-								environment: p.environment,
-								stdio: p.stdio
-							}
-						} else if (isBuilt(shell)) {
-							var downcast = shell;
-							return {
-								//	TODO	will not work on Windows
-								command: "bash",
-								arguments: $api.Array.build(function(rv) {
-									rv.push(getHomeLauncher(downcast).pathname);
-									rv.push(p.script);
-									if (p.arguments) rv.push.apply(rv, p.arguments);
-								}),
-								directory: p.directory,
-								environment: p.environment,
-								stdio: p.stdio
+						if (isExternalInstallationInvocation(p)) {
+							var shell = p.shell;
+							if (isUnbuilt(shell)) {
+								//	Below is necessary for TypeScript as of 5.1.6
+								var s = shell;
+								return {
+									//	TODO	will not work on Windows
+									command: "bash",
+									arguments: $api.Array.build(function(rv) {
+										rv.push(getSrcLauncher(s).pathname);
+										rv.push(p.script);
+										if (p.arguments) rv.push.apply(rv, p.arguments);
+									}),
+									directory: p.directory,
+									environment: p.environment,
+									stdio: p.stdio
+								}
+							} else if (isBuilt(shell)) {
+								var downcast = shell;
+								return {
+									//	TODO	will not work on Windows
+									command: "bash",
+									arguments: $api.Array.build(function(rv) {
+										rv.push(getHomeLauncher(downcast).pathname);
+										rv.push(p.script);
+										if (p.arguments) rv.push.apply(rv, p.arguments);
+									}),
+									directory: p.directory,
+									environment: p.environment,
+									stdio: p.stdio
+								}
+							} else {
+								throw new Error("Unsupported external shell.");
 							}
 						} else {
-							throw new Error("Unsupported shell.");
+							return {
+								//	TODO	allow Java to be specified
+								command: module.java.launcher.pathname.toString(),
+								arguments: $api.Array.build(function(rv) {
+									rv.push("-jar", p.package);
+									if (p.arguments) rv.push.apply(rv, p.arguments);
+								}),
+								directory: p.directory,
+								environment: p.environment,
+								stdio: p.stdio
+							}
 						}
 					}
 				}
@@ -688,6 +707,7 @@
 		$exports.jsh.Installation = {
 			from: {
 				current: function() {
+					var packaged = $context.packaged();
 					if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.src) {
 						var src = canonicalizePropertyValue(module.properties.object.jsh.shell.src);
 						if ($context.api.file.Pathname(src).directory) {
@@ -702,7 +722,17 @@
 								home: home
 							}
 						}
+					} else if (packaged.present) {
+						return {
+							package: packaged.value
+						}
 					}
+				}
+			},
+			is: {
+				/** @type { slime.jsh.shell.JshShellJsh["Installation"]["is"]["unbuilt"] } */
+				unbuilt: function(p) {
+					return Boolean(p["src"]);
 				}
 			}
 		}
