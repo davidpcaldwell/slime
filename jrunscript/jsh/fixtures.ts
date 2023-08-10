@@ -45,11 +45,10 @@ namespace slime.jrunscript.jsh.test {
 							}
 						);
 
-						var isUnbuilt = function(p: slime.jsh.shell.Installation): p is slime.jsh.shell.UnbuiltInstallation {
-							return p["src"];
-						};
+						var isUnbuilt = jsh.shell.jsh.Installation.is.unbuilt;
 
-						var getBuildScript = jsh.file.Location.directory.relativePath("jrunscript/jsh/etc/build.jsh.js");
+						//	TODO	can we use jrunscript/jsh/tools/shell.jsh.js
+						var getShellToolScript = jsh.file.Location.directory.relativePath("jrunscript/jsh/tools/shell.jsh.js");
 
 						var current = jsh.shell.jsh.Installation.from.current();
 						if (isUnbuilt(current)) {
@@ -69,12 +68,11 @@ namespace slime.jrunscript.jsh.test {
 							$api.fp.now.invoke(
 								asJshIntention({
 									shell: current,
-									script: getBuildScript(jsh.file.Location.from.os(current.src)).pathname,
+									script: getShellToolScript(jsh.file.Location.from.os(current.src)).pathname,
 									arguments: $api.Array.build(function(rv) {
-										rv.push(TMPDIR.pathname);
-										rv.push("-notest");
-										rv.push("-nodoc");
-										if (rhino.present) rv.push("-rhino", rhino.value.pathname);
+										rv.push("build");
+										rv.push("--destination", TMPDIR.pathname);
+										if (rhino.present) rv.push("--rhino", rhino.value.pathname);
 									}),
 									stdio: {
 										output: "line",
@@ -95,7 +93,6 @@ namespace slime.jrunscript.jsh.test {
 								)
 							);
 
-							jsh.shell.console("TMPDIR = " + TMPDIR.pathname);
 							var canonical = String(jsh.file.Pathname(TMPDIR.pathname).java.adapt().getCanonicalPath());
 							return {
 								home: canonical

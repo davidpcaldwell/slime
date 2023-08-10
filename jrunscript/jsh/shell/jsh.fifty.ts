@@ -16,6 +16,8 @@ namespace slime.jsh.shell {
 			 */
 			jsh: (configuration: slime.jrunscript.native.inonit.script.jsh.Shell.Environment, script: slime.jrunscript.file.File, arguments: string[]) => number
 
+			packaged: slime.$api.fp.impure.Input<slime.$api.fp.Maybe<string>>
+
 			api: {
 				js: any
 				java: slime.jrunscript.host.Exports
@@ -81,13 +83,19 @@ namespace slime.jsh.shell {
 		url: string
 	}
 
+	export type ExternalInstallation = UnbuiltInstallation | BuiltInstallation | UrlInstallation
+
 	export type Installation = UnbuiltInstallation | BuiltInstallation | PackagedInstallation | UrlInstallation
 
+	export type ExternalInstallationInvocation = {
+		shell: ExternalInstallation,
+		script: string
+	}
+
+	export type Invocation = ExternalInstallationInvocation | PackagedInstallation
+
 	export type Intention = (
-		{
-			shell: Installation,
-			script: string
-		}
+		Invocation
 		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "stdio" | "directory">
 	)
 
@@ -100,6 +108,10 @@ namespace slime.jsh.shell {
 				 * Returns the `jsh` installation that is running the current shell. Only implemented for unbuilt shells currently.
 				 */
 				current: slime.$api.fp.impure.Input<Installation>
+			}
+
+			is: {
+				unbuilt: (p: Installation) => p is UnbuiltInstallation
 			}
 		}
 
