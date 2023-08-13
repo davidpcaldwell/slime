@@ -83,6 +83,10 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Exports {
+			canonicalize: (p: Location) => Location
+		}
+
+		export interface Exports {
 			/** @deprecated Replaced by `directory.relativePath`. */
 			relative: (path: string) => (p: Location) => Location
 		}

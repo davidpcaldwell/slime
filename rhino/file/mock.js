@@ -100,6 +100,11 @@
 					pathname: SLASH,
 					searchpath: COLON
 				},
+				canonicalize: function(p) {
+					return function(events) {
+						return $api.fp.Maybe.from.some(p.pathname);
+					}
+				},
 				copy: void(0),
 				createDirectory: void(0),
 				directoryExists: directoryExists,

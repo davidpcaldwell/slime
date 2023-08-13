@@ -199,6 +199,14 @@
 					var tokens = location.pathname.split(location.filesystem.separator.pathname);
 					return tokens[tokens.length-1];
 				},
+				canonicalize: function(location) {
+					var canonicalized = $api.fp.world.now.ask(location.filesystem.canonicalize({ pathname: location.pathname }));
+					if (!canonicalized.present) return location;
+					return {
+						filesystem: location.filesystem,
+						pathname: canonicalized.value
+					}
+				},
 				file: {
 					exists: function() {
 						return Location_file_exists;

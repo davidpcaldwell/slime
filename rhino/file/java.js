@@ -16,7 +16,7 @@
 	 */
 	function(Packages,$api,$context,$loader,$export) {
 		/** @type { slime.jrunscript.file.internal.spi.Script } */
-		var code = $loader.script("spi.js");
+		var code = $loader.script("java-spi.js");
 
 		var spi = code();
 
@@ -603,6 +603,16 @@
 				separator: {
 					pathname: java.separators.pathname,
 					searchpath: java.separators.searchpath
+				},
+				canonicalize: function(p) {
+					return function(events) {
+						var peer = java.newPeer(p.pathname);
+						try {
+							return $api.fp.Maybe.from.some(String(peer.getHostFile().getCanonicalPath()));
+						} catch (e) {
+							return $api.fp.Maybe.from.nothing();
+						}
+					}
 				},
 				openInputStream: function(p) {
 					return function(events) {
