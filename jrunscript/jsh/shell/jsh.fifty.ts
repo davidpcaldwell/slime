@@ -175,15 +175,18 @@ namespace slime.jsh.shell {
 				verify(installation).evaluate(cast).src.is(shell.src);
 			};
 
+			var getJavaHome = function() {
+				var javaHome = jsh.shell.java.home.pathname;
+				//	TODO	workaround for JDK 8. Really, we should figure out a better API for determining Java home directory
+				//			under various versions.
+				if (javaHome.basename == "jre") javaHome = javaHome.parent;
+				return javaHome;
+			}
+
 			fifty.tests.exports.jsh.Installation.from.current.built = function() {
 				var cast: slime.js.Cast<BuiltInstallation> = $api.fp.cast;
 
 				var shell = fixtures.shells.built();
-
-				var home = jsh.shell.java.home.pathname;
-				//	TODO	workaround for JDK 8. Really, we should figure out a better API for determining Java home directory
-				//			under various versions.
-				if (home.basename == "jre") home = home.parent;
 
 				var intention: slime.jsh.shell.Intention = {
 					shell: shell,
@@ -192,7 +195,7 @@ namespace slime.jsh.shell {
 						return $api.Object.compose(
 							current,
 							{
-								JSH_JAVA_HOME: home.toString()
+								JSH_JAVA_HOME: getJavaHome().toString()
 							}
 						)
 					},
@@ -205,6 +208,22 @@ namespace slime.jsh.shell {
 
 				verify(installation).evaluate(cast).home.is(shell.home);
 			};
+
+			fifty.tests.exports.jsh.Installation.from.current.packaged = function() {
+				var shell = fixtures.shells.packaged();
+
+				var intention: slime.jsh.shell.Intention = {
+					package: shell,
+					stdio: {
+						output: "string"
+					}
+				};
+
+				var installation = getInstallationFromIntention(intention);
+
+				var cast: slime.js.Cast<PackagedInstallation> = $api.fp.cast;
+				verify(installation).evaluate(cast).package.is(shell);
+			}
 		}
 	//@ts-ignore
 	)(fifty);

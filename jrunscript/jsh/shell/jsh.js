@@ -695,13 +695,17 @@
 			$exports.jsh.lib = $exports.jsh.home.getSubdirectory("lib");
 		}
 
-		var canonicalizePropertyValue = function(_value) {
-			var value = String(_value);
-			var os = $context.api.file.Location.from.os(value);
+		var canonicalize = function(ospath) {
+			var os = $context.api.file.Location.from.os(ospath);
 			//	TODO	we need a wo API to canonicalize
 			var canonicalized = $context.api.file.Location.directory.relativePath("foo")(os);
 			var directory = $context.api.file.Location.parent()(canonicalized);
 			return directory.pathname;
+		}
+
+		var canonicalizePropertyValue = function(_value) {
+			var value = String(_value);
+			return canonicalize(value);
 		}
 
 		$exports.jsh.Installation = {
@@ -724,7 +728,7 @@
 						}
 					} else if (packaged.present) {
 						return {
-							package: packaged.value
+							package: canonicalize(packaged.value)
 						}
 					}
 				}

@@ -14,6 +14,10 @@ namespace slime.jrunscript.file {
 		}
 
 		export interface Filesystem {
+			canonicalize: slime.$api.fp.world.Question<{
+				pathname: string
+			},void,slime.$api.fp.Maybe<string>>
+
 			fileExists: slime.$api.fp.world.Question<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<boolean>>
@@ -84,7 +88,7 @@ namespace slime.jrunscript.file {
 				fifty.tests.spi = {};
 
 				fifty.tests.spi.filesystem = function(filesystem: Filesystem) {
-					//	TODO	need better way to run this style of test
+					//	TODO	need better way to run spi test that has subtests, like fifty.test.Parent
 					fifty.tests.spi.filesystem.openInputStreamNotFound(filesystem);
 				};
 			}
