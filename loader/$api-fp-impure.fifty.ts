@@ -373,7 +373,7 @@ namespace slime.$api.fp.world {
 			tell: <E>(tell: world.Tell<E>, handler?: slime.$api.event.Handlers<E>) => void
 		}
 
-		/** @deprecated Used almost entirely for `jsh.shwll.tools.node.require`. After refactoring that, reassess. */
+		/** @deprecated Used almost entirely for `jsh.shell.tools.node.require`. After refactoring that, reassess. */
 		execute: <E>(tell: world.Tell<E>, handler?: slime.$api.event.Handlers<E>) => void
 
 		/** @deprecated */

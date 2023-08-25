@@ -216,6 +216,7 @@
 			//	TODO	right now, we will use the mv command preferentially because it works in some situations the Java
 			//			java.io.File renameTo implementation does not (notable on our Docker setup, moving from a temporary
 			//			directory to the installation directory, as we are doing here).
+			//	TODO	however, if p.to exists and is a directory, mv has the wrong semantics here
 			if ($context.api.shell.PATH.getCommand("mv")) {
 				p.to.parent.createDirectory({
 					exists: function(dir) {

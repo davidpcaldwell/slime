@@ -334,6 +334,7 @@
 			this.version = void(0);
 			Object.defineProperty(this, "version", {
 				get: function() {
+					if (!o.directory.getFile("bin/node")) throw new Error("Node executable missing at " + o.directory);
 					return $context.library.shell.run({
 						command: o.directory.getFile("bin/node"),
 						arguments: ["--version"],
@@ -567,6 +568,7 @@
 				if (typeof(p.location) != "string") throw new TypeError("'location' property must be string.");
 				var location = $context.library.file.Pathname(p.location);
 				if (!location.directory) return null;
+				if (!location.directory.getFile("bin/node")) return null;
 				return new Installation({
 					directory: location.directory
 				})
@@ -595,18 +597,22 @@
 			from: {
 				location: function(location) {
 					return {
-						executable: $api.fp.result(location, $context.library.file.world.Location.relative("bin/node")).pathname
+						executable: $api.fp.now.invoke(
+							location,
+							$context.library.file.Location.directory.relativePath("bin/node"),
+							$api.fp.property("pathname")
+						)
 					}
 				}
 			},
 			exists: function(installation) {
 				return function(events) {
-					return $api.fp.result(
+					return $api.fp.now.invoke(
 						installation,
 						$api.fp.pipe(
 							$api.fp.property("executable"),
-							$context.library.file.world.Location.from.os,
-							$api.fp.world.mapping($context.library.file.world.Location.file.exists())
+							$context.library.file.Location.from.os,
+							$api.fp.world.mapping($context.library.file.Location.file.exists())
 						)
 					)
 				}
