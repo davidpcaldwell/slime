@@ -65,9 +65,17 @@ namespace slime.jrunscript.node {
 	export namespace functions {
 		export interface Installations {
 			from: {
+				/**
+				 * Given a Node installation location, returns the Node `Installation` corresponding to that location.
+				 *
+				 * @param home The home directory of the `Installation`.
+				 * @returns
+				 */
 				location: (home: slime.jrunscript.file.Location) => Installation
 			}
+
 			exists: slime.$api.fp.world.Question<Installation,void,boolean>
+
 			getVersion: slime.$api.fp.world.Question<Installation,void,string>
 		}
 	}

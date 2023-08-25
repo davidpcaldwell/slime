@@ -427,6 +427,7 @@ namespace slime.jsh.shell.tools {
 			installation: slime.jrunscript.node.Installation
 
 			installed: slime.jrunscript.node.object.Installation
+
 			require: slime.$api.fp.world.Action<void,slime.jrunscript.node.object.install.Events & {
 				removed: slime.jrunscript.node.object.Installation
 				found: slime.jrunscript.node.object.Installation

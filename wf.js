@@ -194,19 +194,55 @@
 
 				(
 					function node() {
+						var installation = jsh.shell.tools.node.installation;
+
 						(
 							function core() {
-								$api.fp.world.execute(jsh.shell.tools.node.require());
+								var exists = $api.fp.world.now.ask(jsh.shell.tools.node.Installation.exists(installation));
+								if (!exists) {
+									$api.fp.world.now.action(
+										jsh.shell.tools.node.install(
+											$api.fp.now.invoke(
+												installation.executable,
+												jsh.file.Location.from.os,
+												jsh.file.Location.parent(),
+												jsh.file.Location.parent(),
+												$api.fp.property("pathname")
+											)
+										),
+										{
+											//	TODO	yet another place this is hard-coded
+											version: "16.17.1"
+										}
+										//	TODO	this should probably support some events
+									);
+								}
 							}
 						)();
 						(
 							function eslint() {
-								jsh.shell.tools.node.installed.modules.require({ name: "eslint" });
+								$api.fp.world.now.action(
+									jsh.shell.tools.node.Installation.modules.require({ name: "eslint" }),
+									installation,
+									{
+										installed: function(e) {
+											jsh.shell.console("Installed eslint " + e.detail.version);
+										}
+									}
+								)
 							}
 						)();
 						(
 							function jsyaml() {
-								jsh.shell.tools.node.installed.modules.require({ name: "@types/js-yaml" });
+								$api.fp.world.now.action(
+									jsh.shell.tools.node.Installation.modules.require({ name: "@types/js-yaml" }),
+									installation,
+									{
+										installed: function(e) {
+											jsh.shell.console("Installed @types/js-yaml " + e.detail.version);
+										}
+									}
+								)
 							}
 						)();
 					}
