@@ -839,7 +839,36 @@
 							return script.join("\n");
 						}
 					}
-				}
+				},
+				environment: (
+					function() {
+						/** @type { slime.jrunscript.shell.Exports["bash"]["environment"]["is"]} */
+						var is = {
+							/** @type { slime.jrunscript.shell.Exports["bash"]["environment"]["is"]["standalone"] } */
+							standalone: function(p) {
+								return Boolean(p["only"]);
+							},
+							/** @type { slime.jrunscript.shell.Exports["bash"]["environment"]["is"]["inherited"] } */
+							inherited: function(p) {
+								return Boolean(p["set"]);
+							}
+						}
+						return {
+							is: is,
+							run: function(p) {
+								if (is.inherited(p)) {
+									return function(was) {
+										return $api.Object.compose(was, p.set);
+									}
+								} else {
+									return function(was) {
+										return p.only;
+									}
+								}
+							}
+						}
+					}
+				)()
 			},
 			Intention: {
 				from: {}

@@ -985,26 +985,6 @@ namespace slime.jrunscript.shell {
 		}
 	//@ts-ignore
 	)(fifty);
-
-
-	(
-		function(fifty: slime.fifty.test.Kit) {
-			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.listeners);
-				fifty.run(fifty.tests.environment);
-
-				fifty.run(fifty.tests.jsapi);
-
-				fifty.run(fifty.tests.invocation);
-
-				fifty.run(fifty.tests.exports);
-
-				fifty.load("run.fifty.ts");
-				fifty.load("run-old.fifty.ts");
-			}
-		}
-	//@ts-ignore
-	)(fifty)
 }
 
 namespace slime.jrunscript.shell.internal.invocation {
@@ -1135,6 +1115,9 @@ namespace slime.jrunscript.shell {
 	}
 
 	export namespace bash {
+		/**
+		 * Specifies a complete subprocess environment; no environment variables will be inherited from the parent process.
+		 */
 		export type StandaloneEnvironment = {
 			only: {
 				[x: string]: string
@@ -1154,8 +1137,18 @@ namespace slime.jrunscript.shell {
 			}
 		}
 
+		/**
+		 * A value that either specifies a subprocess environment completely, or specifies modifications to make to the parent
+		 * environment.
+		 */
 		export type Environment = StandaloneEnvironment | InheritedEnvironment
 
+		/**
+		 * A subprocess intention that can be written as a shell command. As such, it excludes stdio redirection to streams, as
+		 * only limited redirection (for example, to files) is possible using shell commands. Similarly, only limited ways of
+		 * configuring the subprocess environment can be expressed in a shell command, so the `environment` property is represented
+		 * by a more limited {@link bash.Environment}.
+		 */
 		export interface Intention {
 			/**
 			 * The command to execute.
@@ -1182,9 +1175,21 @@ namespace slime.jrunscript.shell {
 			from: {
 				/**
 				 *
-				 * @returns A function that can create `bash` script code from {@link run.Intention}-like objects.
+				 * @returns A function that can create `bash` script code from {@link bash.Intention} objects.
 				 */
 				intention: () => (p: bash.Intention) => string
+			}
+
+			environment: {
+				is: {
+					standalone: (p: bash.Environment) => p is bash.StandaloneEnvironment
+					inherited: (p: bash.Environment) => p is bash.InheritedEnvironment
+				}
+
+				/**
+				 * Given a `bash.Environment`, provides a value suitable for use with {@link run.Intention}s.
+				 */
+				run: (p: bash.Environment) => run.Intention["environment"]
 			}
 		}
 	}
@@ -1197,7 +1202,9 @@ namespace slime.jrunscript.shell {
 
 			const subject = fifty.global.jsh.shell;
 
-			fifty.tests.exports.bash = function() {
+			fifty.tests.exports.bash = fifty.test.Parent();
+
+			fifty.tests.exports.bash.from = function() {
 				var it = subject.bash.from.intention()({
 					command: "foo",
 					arguments: ["bar", "baz"],
@@ -1214,6 +1221,25 @@ namespace slime.jrunscript.shell {
 					"cd /xxx/yyy/zzz",
 					"env -u baz foo=\"bar\" foo bar baz"
 				].join("\n"));
+			};
+
+			fifty.tests.exports.bash.environment = function() {
+				var only: bash.StandaloneEnvironment = { only: { foo: "bar" } };
+				var set: bash.InheritedEnvironment = { set: { baz: "bizzy" } };
+
+				fifty.run(function standalone() {
+					var converted = subject.bash.environment.run(only);
+					var result = converted({ one: "two" });
+					verify(result).evaluate.property("foo").is("bar");
+					verify(result).evaluate.property("one").is(void(0));
+				});
+
+				fifty.run(function inherited() {
+					var converted = subject.bash.environment.run(set);
+					var result = converted({ one: "two" });
+					verify(result).evaluate.property("baz").is("bizzy");
+					verify(result).evaluate.property("one").is("two");
+				});
 			}
 		}
 	//@ts-ignore
@@ -1334,6 +1360,25 @@ namespace slime.jrunscript.shell.internal.invocation {
 
 		invocation: slime.jrunscript.shell.Exports["invocation"]
 	}
+
+	(
+		function(fifty: slime.fifty.test.Kit) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.listeners);
+				fifty.run(fifty.tests.environment);
+
+				fifty.run(fifty.tests.jsapi);
+
+				fifty.run(fifty.tests.invocation);
+
+				fifty.run(fifty.tests.exports);
+
+				fifty.load("run.fifty.ts");
+				fifty.load("run-old.fifty.ts");
+			}
+		}
+	//@ts-ignore
+	)(fifty)
 
 	export type Script = slime.loader.Script<Context,Export>
 }
