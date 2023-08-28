@@ -680,7 +680,7 @@ namespace slime.$api {
 				verify(c).evaluate(function(e) { return e instanceof Error }).is(true);
 				verify(c).properties.baz.is("bizzy");
 				verify(c).properties.evaluate.property("foo").is.type("undefined");
-				verify(c).stack.is.type("string");
+				verify(c).evaluate.property("stack").is.type("string");
 
 				var NoSupertype = $api.Error.type({
 					name: "Standalone",
