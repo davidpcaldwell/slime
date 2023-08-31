@@ -802,6 +802,9 @@
 							return {
 								is: is,
 								run: function(p) {
+									if (!p) return function(was) {
+										return was;
+									};
 									if (is.inherited(p)) {
 										return function(was) {
 											return $api.Object.compose(was, p.set);
