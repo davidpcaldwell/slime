@@ -1191,6 +1191,10 @@ namespace slime.jrunscript.shell {
 				 */
 				run: (p: bash.Environment) => run.Intention["environment"]
 			}
+
+			run: (p: {
+				stdio: run.Intention["stdio"]
+			}) => (p: bash.Intention) => run.Intention
 		}
 	}
 
