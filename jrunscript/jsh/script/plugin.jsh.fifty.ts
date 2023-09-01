@@ -424,7 +424,7 @@ namespace slime.jsh.script {
 		export type Program = (invocation: slime.jsh.script.cli.Invocation<{}>) => number | void
 
 		export interface Exports {
-			program: <T>(p: {
+			program: <T = {}>(p: {
 				commands: Commands<T>
 			}) => Program
 		}
