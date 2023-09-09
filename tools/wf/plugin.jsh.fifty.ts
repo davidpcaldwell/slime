@@ -207,13 +207,7 @@ namespace slime.jsh.wf {
 			 * Given a {@link standard.Project} defining a few simple operations, initializes the given `$exports` object
 			 * with a standard set of `wf` commands defined by {@link standard.Interface}.
 			 */
-			initialize: {
-				(
-					$context: jsh.wf.cli.Context,
-					operations: standard.Project,
-					$exports: standard.Interface
-				): void
-			}
+			initialize: standard.Export
 		}
 
 		git: {
