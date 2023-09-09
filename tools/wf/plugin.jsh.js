@@ -23,7 +23,9 @@
 					/** @type { slime.jsh.wf.internal.typescript.Script } */
 					typescript: $loader.script("typescript.js"),
 					/** @type { slime.jsh.wf.internal.module.Script } */
-					module: $loader.script("module.js")
+					module: $loader.script("module.js"),
+					/** @type { slime.jsh.wf.standard.Script } */
+					standard: $loader.script("plugin-standard.jsh.js")
 				};
 
 				var library = {
@@ -241,8 +243,26 @@
 					/**
 					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
 					 */
-					initialize: $loader.module("plugin-standard.jsh.js", {
-						jsh: jsh
+					initialize: code.standard({
+						library: {
+							file: jsh.file,
+							git: jsh.tools.git,
+						},
+						jsh: jsh,
+						api: {
+							checks: function() {
+								return jsh_wf_checks;
+							},
+							git: function() {
+								return jsh_wf_git;
+							},
+							project: function() {
+								return project;
+							},
+							typescript: function() {
+								return jsh_wf_typescript;
+							}
+						}
 					})
 				};
 
