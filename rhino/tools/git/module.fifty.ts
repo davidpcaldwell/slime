@@ -214,6 +214,11 @@ namespace slime.jrunscript.tools.git {
 			});
 		};
 
+		/**
+		 * Adds placeholder `user.name` and `user.email` values to this repository.
+		 *
+		 * @param repository
+		 */
 		function configure(repository: git.repository.Local) {
 			repository.config({
 				set: {
@@ -801,6 +806,7 @@ namespace slime.jrunscript.tools.git {
 
 			fifty.run(fifty.tests.sandbox);
 
+			fifty.load("commands.fifty.ts");
 			fifty.load("oo.fifty.ts");
 		}
 	//@ts-ignore
