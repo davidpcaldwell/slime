@@ -90,8 +90,8 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 				};
 
 				var configure = function(repository: Repository) {
-					repository.api.command(config.set).argument({ name: "user.name", value: "SLIME" });
-					repository.api.command(config.set).argument({ name: "user.email", value: "slime@example.com" });
+					repository.api.command(config.set).argument({ name: "user.name", value: "SLIME" }).run();
+					repository.api.command(config.set).argument({ name: "user.email", value: "slime@example.com" }).run();
 				}
 
 				function edit(repository: Repository, path: string, change: (before: string) => string) {
