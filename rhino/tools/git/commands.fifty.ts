@@ -64,25 +64,12 @@ namespace slime.jrunscript.tools.git {
 			};
 
 			fifty.tests.exports.status.empty = function() {
-				var it = fixtures.empty();
+				var it = fixtures.empty({ initialBranch: "main" });
 				jsh.shell.console(it.toString());
 
 				var status = it.api.command(subject.status).argument().run();
-				verify(status).branch.is("master");
+				verify(status).branch.is("main");
 				verify(status).evaluate.property("paths").is(void(0));
-			};
-
-			var commit: slime.jrunscript.tools.git.Command<{
-				message: string
-			},void> = {
-				invocation: function(p) {
-					return {
-						command: "commit",
-						arguments: $api.Array.build(function(rv) {
-							rv.push("--message", p.message);
-						})
-					}
-				}
 			};
 
 			var reset: slime.jrunscript.tools.git.Command<void,void> = {
@@ -107,7 +94,7 @@ namespace slime.jrunscript.tools.git {
 
 				fixtures.edit(it, "a", function(before) { return "a"; });
 				it.api.command(add).argument("a").run();
-				it.api.command(commit).argument({ message: "a" }).run();
+				it.api.command(fixtures.commands.commit).argument({ message: "a" }).run();
 
 				it.api.command(rename).argument({ from: "a", to: "b" }).run();
 
@@ -136,7 +123,7 @@ namespace slime.jrunscript.tools.git {
 					it.paths.b.is("??");
 				});
 				it.api.command(add).argument("b").run();
-				it.api.command(commit).argument({ message: "1" }).run();
+				it.api.command(fixtures.commands.commit).argument({ message: "1" }).run();
 				fixtures.edit(it, "a", $api.fp.returning("aa"));
 				fixtures.edit(it, "b", $api.fp.returning("bb"));
 				verify(status(), "status_after_edits", function(it) {
@@ -175,7 +162,7 @@ namespace slime.jrunscript.tools.git {
 				var it = fixtures.empty();
 				fixtures.edit(it, "a", $api.fp.mapAllTo("a"));
 				it.api.command(add).argument("a").run();
-				it.api.command(commit).argument({ message: "1" });
+				it.api.command(fixtures.commands.commit).argument({ message: "1" });
 
 				//	TODO	should recurseSubmodules have a default?
 				var before = {
@@ -201,7 +188,7 @@ namespace slime.jrunscript.tools.git {
 				verify(added).list.length.is(2);
 				verify(added).others.length.is(0);
 
-				it.api.command(commit).argument({ message: "2" }).run();
+				it.api.command(fixtures.commands.commit).argument({ message: "2" }).run();
 				var after = {
 					list: it.api.command(subject.lsFiles).argument({ recurseSubmodules: false }).run(),
 					others: it.api.command(commands.lsFilesOther).argument().run()

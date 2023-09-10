@@ -14,8 +14,6 @@ namespace slime.jsh.wf.standard {
 		jsh: {
 			shell: slime.jsh.shell.Exports
 			script: slime.jsh.script.Exports
-			wf: {//slime.jsh.wf.Exports
-			}
 		}
 
 		api: {
