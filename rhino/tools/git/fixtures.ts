@@ -26,9 +26,21 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 		}
 		commands: {
 			commit: slime.jrunscript.tools.git.Command<{ message: string }, void>
+			config: {
+				set: slime.jrunscript.tools.git.Command<{
+					name: string
+					value: string
+				}, void>
+			}
 		}
 		program: ReturnType<slime.jsh.Global["tools"]["git"]["program"]>
 		empty: (p?: { initialBranch?: string }) => Repository
+
+		/**
+		 * Adds `user.name` and `user.email` values to the given {@link Repository}.
+		 */
+		configure: (repository: Repository) => void
+
 		edit: (repository: Repository, path: string, change: (before: string) => string) => void
 		submodule: (repository: Repository, path: string) => Repository
 	}
@@ -53,6 +65,20 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 					}
 				}
 
+				var config: ReturnType<Exports>["commands"]["config"] = {
+					set: {
+						invocation: function(p) {
+							return {
+								command: "config",
+								arguments: $api.Array.build(function(rv) {
+									rv.push(p.name);
+									rv.push(p.value);
+								})
+							}
+						}
+					}
+				};
+
 				var empty: ReturnType<Exports>["empty"] = function(p) {
 					var tmp = fifty.jsh.file.temporary.directory();
 					var repository = jsh.tools.git.program({ command: "git" }).repository(tmp.pathname);
@@ -61,6 +87,11 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 						location: tmp.pathname,
 						api: repository
 					}
+				};
+
+				var configure = function(repository: Repository) {
+					repository.api.command(config.set).argument({ name: "user.name", value: "SLIME" });
+					repository.api.command(config.set).argument({ name: "user.email", value: "slime@example.com" });
 				}
 
 				function edit(repository: Repository, path: string, change: (before: string) => string) {
@@ -121,10 +152,12 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 									arguments: ["--message", p.message]
 								}
 							}
-						}
+						},
+						config: config
 					},
 					program,
 					empty,
+					configure,
 					edit,
 					submodule
 				};

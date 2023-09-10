@@ -91,6 +91,7 @@ namespace slime.jrunscript.tools.git {
 
 			fifty.tests.exports.status.rename = function() {
 				var it = fixtures.empty();
+				fixtures.configure(it);
 
 				fixtures.edit(it, "a", function(before) { return "a"; });
 				it.api.command(add).argument("a").run();
