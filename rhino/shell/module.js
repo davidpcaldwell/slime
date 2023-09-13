@@ -92,7 +92,9 @@
 			/** @type { slime.jrunscript.shell.internal.run.Script } */
 			run: $loader.script("run.js"),
 			/** @type { slime.jrunscript.shell.internal.run.old.Script } */
-			run_old: $loader.script("run-old.js")
+			run_old: $loader.script("run-old.js"),
+			/** @type { slime.jrunscript.shell.internal.console.Script } */
+			console: $loader.script("console.js")
 		};
 
 		/** @type { slime.jrunscript.shell.internal.invocation.Export } */
@@ -914,6 +916,11 @@
 			run: scripts.run_old.run,
 			PATH: $exports.PATH,
 			browser: $exports.browser,
+			Console: code.console({
+				library: {
+					file: $context.api.file
+				}
+			}),
 			test: {
 				invocation: invocation
 			}
