@@ -1379,6 +1379,8 @@ namespace slime.jrunscript.shell.internal.invocation {
 
 				fifty.load("run.fifty.ts");
 				fifty.load("run-old.fifty.ts");
+
+				fifty.load("console.fifty.ts");
 			}
 		}
 	//@ts-ignore

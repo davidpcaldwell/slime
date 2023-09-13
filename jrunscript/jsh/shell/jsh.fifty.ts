@@ -367,7 +367,7 @@ namespace slime.jsh.shell {
 			}
 		}
 
-		console: (message: string) => void
+		console: slime.jrunscript.shell.Console
 
 		//	TODO	shell?
 		rhino: {
