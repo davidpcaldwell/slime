@@ -64,7 +64,7 @@ namespace slime.jrunscript.tools.git {
 			};
 
 			fifty.tests.exports.status.empty = function() {
-				var it = fixtures.empty({ initialBranch: "main" });
+				var it = fixtures.Repository.from.empty({ initialBranch: "main" });
 				jsh.shell.console(it.toString());
 
 				var status = it.api.command(subject.status).argument().run();
@@ -90,8 +90,8 @@ namespace slime.jrunscript.tools.git {
 			};
 
 			fifty.tests.exports.status.rename = function() {
-				var it = fixtures.empty();
-				fixtures.configure(it);
+				var it = fixtures.Repository.from.empty();
+				it.api.configure();
 
 				fixtures.edit(it, "a", function(before) { return "a"; });
 				it.api.command(add).argument("a").run();
@@ -115,7 +115,7 @@ namespace slime.jrunscript.tools.git {
 					return it.api.command(jsh.tools.git.commands.status).argument().run();
 				}
 
-				var it = fixtures.empty();
+				var it = fixtures.Repository.from.empty();
 				fixtures.edit(it, "a", $api.fp.returning("a"));
 				fixtures.edit(it, "b", $api.fp.returning("b"));
 				it.api.command(add).argument("a").run();
@@ -160,7 +160,7 @@ namespace slime.jrunscript.tools.git {
 					}
 				};
 
-				var it = fixtures.empty();
+				var it = fixtures.Repository.from.empty();
 				fixtures.edit(it, "a", $api.fp.mapAllTo("a"));
 				it.api.command(add).argument("a").run();
 				it.api.command(fixtures.commands.commit).argument({ message: "1" });
