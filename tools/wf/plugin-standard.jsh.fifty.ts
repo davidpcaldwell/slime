@@ -219,10 +219,7 @@ namespace slime.jsh.wf.standard {
 						)();
 
 						function toGitFixturesRepository(p: slime.jrunscript.tools.git.repository.Local): slime.jrunscript.tools.git.test.fixtures.Repository {
-							return {
-								location: p.directory.toString(),
-								api: jsh.tools.git.program({ command: "git" }).repository(p.directory.toString())
-							}
+							return git.Repository.from.location( p.directory.pathname.os.adapt() )
 						}
 
 						return {
@@ -703,17 +700,6 @@ namespace slime.jsh.wf.standard {
 					}
 				}
 			};
-
-			// var fixtures = {
-			// 	git: (
-			// 		function() {
-			// 			var script: slime.jrunscript.tools.git.test.fixtures.Script = fifty.$loader.script("../../rhino/tools/git/fixtures.ts");
-			// 			var setup = script();
-			// 			return setup(fifty);
-			// 		}
-			// 	)(),
-			// 	subject: test.fixtures
-			// };
 
 			fifty.tests.manual.issue485 = function() {
 				var project = test.fixtures.hosted();

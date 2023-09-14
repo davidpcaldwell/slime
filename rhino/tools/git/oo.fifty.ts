@@ -352,7 +352,7 @@ namespace slime.jrunscript.tools.git {
 				const { jsh } = fifty.global;
 
 				fifty.tests.types.Repository.Local.status = function() {
-					var empty = internal.oo.fixtures.empty({ initialBranch: "trunk" });
+					var empty = internal.oo.fixtures.Repository.from.empty({ initialBranch: "trunk" });
 					var repository = internal.oo.subject.Repository({ directory: jsh.file.Pathname(empty.location).directory });
 					var status = repository.status();
 					verify(repository).status().evaluate.property("paths").is(void(0));
