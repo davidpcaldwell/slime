@@ -171,10 +171,6 @@ namespace slime.jsh.script {
 						verify(two).invocation.arguments[0].is("world");
 					});
 				};
-
-				fifty.tests.wip = function() {
-					fifty.tests.cli.Call();
-				}
 			}
 		//@ts-ignore
 		)(fifty);
@@ -554,6 +550,98 @@ namespace slime.jsh.script {
 				});
 				fifty.verify(result).status.is(1);
 			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			const fixtures = (
+				function() {
+					var script: slime.jrunscript.jsh.test.Script = fifty.$loader.script("../fixtures.ts");
+					return script();
+				}
+			)();
+
+			const unbuilt = fixtures.shells.unbuilt();
+			const built = fixtures.shells.built();
+			const packaged = (false) ? fixtures.shells.packaged() : void(0);
+			const remote = fixtures.shells.remote();
+
+			fifty.tests.jsapi = fifty.test.Parent();
+
+			fifty.tests.jsapi.file = function() {
+				var script = fifty.jsh.file.relative("../test/jsh-data.jsh.js");
+
+				var jsonOutput = function(v: slime.jrunscript.shell.run.Exit) {
+					return JSON.parse(v.stdio.output);
+				};
+
+				if (unbuilt) {
+					var intention: slime.jsh.shell.Intention = {
+						shell: unbuilt,
+						script: script.pathname,
+						stdio: {
+							output: "string"
+						}
+					};
+					var run = jsh.shell.jsh.Intention.toShellIntention(intention);
+					var data = $api.fp.world.now.question(
+						jsh.shell.subprocess.question,
+						run
+					);
+
+					verify(data).evaluate(jsonOutput)["jsh.script.file"].string.evaluate(String).is(script.pathname);
+					verify(data).evaluate(jsonOutput)["jsh.script.file"].pathname.string.evaluate(String).is(script.pathname);
+				}
+
+				if (built) {
+					var intention: slime.jsh.shell.Intention = {
+						shell: built,
+						script: script.pathname,
+						environment: function(given) {
+							var PATH = given.PATH.split(":");
+							var insert = jsh.shell.java.home.getRelativePath("bin").toString();
+							jsh.shell.console("Inserting: " + insert);
+							PATH.splice(0,0,insert);
+							jsh.shell.console("PATH = " + PATH.join(":"));
+							return $api.Object.compose(
+								given,
+								{
+									PATH: PATH.join(":")
+								}
+							)
+						},
+						stdio: {
+							output: "string"
+						}
+					};
+					var run = jsh.shell.jsh.Intention.toShellIntention(intention);
+					var data = $api.fp.world.now.question(
+						jsh.shell.subprocess.question,
+						run
+					);
+					verify(data)["jsh.script.file"].string.evaluate(String).is(script.pathname);
+					verify(data)["jsh.script.file"].pathname.string.evaluate(String).is(script.pathname);
+				}
+
+				// if (packaged) {
+				// 	var packaged = $jsapi.environment.jsh.packaged.data;
+				// 	var jar = $jsapi.environment.jsh.packaged.jar;
+				// 	verify(packaged)["jsh.script.file"].string.is(jar.toString());
+				// 	verify(packaged)["jsh.script.file"].pathname.string.is(jar.toString());
+				// }
+
+				// if ($jsapi.environment.jsh && $jsapi.environment.jsh.remote) {
+				// 	var remote = $jsapi.environment.jsh.remote.data;
+				// 	verify(remote).evaluate.property("jsh.script.file").is(void(0));
+				// }
+			}
 		}
 	//@ts-ignore
 	)(fifty);

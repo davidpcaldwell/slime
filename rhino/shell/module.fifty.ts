@@ -329,11 +329,8 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	export interface Exports {
-		/**
-		 * Launches a Java program.
-		 */
-		java: {
+	export namespace java {
+		export interface Exports {
 			//	TODO	The old comment stated that this argument was the same as the argument to `shell`, with classpath, jar, and
 			//			main added. This seems likely to be wrong but looking at the implementation may reveal whether the types
 			//			are related in the implementation.
@@ -409,6 +406,10 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
+	export interface Exports {
+		java: java.Exports
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -464,7 +465,7 @@ namespace slime.jrunscript.shell {
 			get(name: string): string
 
 			file(name: any): any
-			directory(name: any): any
+			directory(name: string): slime.jrunscript.file.Directory
 			searchpath: (name: string) => slime.jrunscript.file.Searchpath
 		}
 

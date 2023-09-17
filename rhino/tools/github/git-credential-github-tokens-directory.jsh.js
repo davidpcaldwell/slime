@@ -13,7 +13,12 @@
 	function($api,jsh) {
 		var operation = jsh.script.arguments[0];
 
-		var input = {};
+		/** @type { { host: string, password: string, username: string } } */
+		var input = {
+			host: void(0),
+			password: void(0),
+			username: void(0)
+		};
 		jsh.shell.stdio.input.character().readLines(function(line) {
 			var tokens = line.split("=");
 			if (tokens.length >= 2) {

@@ -94,7 +94,9 @@
 			/** @type { slime.jrunscript.shell.internal.run.old.Script } */
 			run_old: $loader.script("run-old.js"),
 			/** @type { slime.jrunscript.shell.internal.console.Script } */
-			console: $loader.script("console.js")
+			console: $loader.script("console.js"),
+			/** @type { slime.jrunscript.shell.java.Script } */
+			java: $loader.script("java.js")
 		};
 
 		/** @type { slime.jrunscript.shell.internal.invocation.Export } */
@@ -560,7 +562,10 @@
 				keytool: void(0),
 				launcher: void(0),
 				jrunscript: void(0),
-				home: void(0)
+				home: void(0),
+				Jdk: code.java({
+					home: function() { return properties.directory("java.home"); }
+				}).Jdk
 			}
 		);
 		(function() {
@@ -702,10 +707,15 @@
 
 			var args = vmargs.concat(launch.arguments).concat(p.arguments.map(String));
 
-			return scripts.run_old.run($api.Object.compose(p, {
-				command: launch.command,
-				arguments: args
-			}));
+			return scripts.run_old.run(
+				$api.Object.compose(
+					p,
+					{
+						command: launch.command,
+						arguments: args
+					}
+				)
+			);
 		};
 
 		if ($context.kotlin) $exports.kotlin = $api.events.Function(function(p,events) {

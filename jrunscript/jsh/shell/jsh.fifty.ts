@@ -176,11 +176,8 @@ namespace slime.jsh.shell {
 			};
 
 			var getJavaHome = function() {
-				var javaHome = jsh.shell.java.home.pathname;
-				//	TODO	workaround for JDK 8. Really, we should figure out a better API for determining Java home directory
-				//			under various versions.
-				if (javaHome.basename == "jre") javaHome = javaHome.parent;
-				return javaHome;
+				var h = jsh.shell.java.Jdk.from.javaHome();
+				return jsh.file.Pathname(h.base()).directory;
 			}
 
 			fifty.tests.exports.jsh.Installation.from.current.built = function() {

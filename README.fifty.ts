@@ -148,6 +148,8 @@ namespace slime {
 	}
 
 	export namespace js {
+		export type NotReadonly<T> = T extends Object ? { -readonly [K in keyof T]: T[K] } : T
+
 		export type Cast<T> = (p: any) => T
 
 		//	https://stackoverflow.com/questions/41253310/typescript-retrieve-element-type-information-from-array-type
