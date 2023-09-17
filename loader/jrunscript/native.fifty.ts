@@ -502,6 +502,10 @@ namespace slime.jrunscript {
 					KeyEvent: any
 				}
 				BorderLayout: any
+				datatransfer: {
+					StringSelection: any
+				}
+				Toolkit: any
 			}
 			sql: {
 				Types: any

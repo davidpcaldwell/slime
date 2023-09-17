@@ -428,7 +428,8 @@ namespace slime.$api {
 		Object: {
 			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
 			compose: {
-				<T>(t: T): T
+				<T>(t: T): slime.js.NotReadonly<T>
+				//	TODO	below should be NotReadonly also, but they currently cause problems that need to be worked through.
 				<T,U>(t: T, u: U): T & U
 				<T,U,V>(t: T, u: U, v: V): T & U & V
 				<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W

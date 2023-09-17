@@ -4,8 +4,9 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	function($api,jsh,$context,$exports) {
 		$exports.mvn = function(m) {
 			var mvn = $context.mvn;
 			var properties = (m.properties) ? (function() {
@@ -104,6 +105,7 @@
 				setElementContent(root,"version",version);
 			}
 
+			/** @returns { any[] & { one: any } } */
 			this.getDependencies = function() {
 				var filter = jsh.document.filter({ elements: "dependencies" });
 				var filter2 = jsh.document.filter({ elements: "dependency" });
@@ -117,6 +119,7 @@
 					rv = rv.concat(management.child(filter).children.filter(filter2));
 				}
 				jsh.js.Array(rv).each(function() {
+					/** @type { any } */
 					var item = this;
 					item.getGroup = function(v) {
 						return getElementContent(this,"groupId");
@@ -144,6 +147,7 @@
 						setElementContent(this,"version",v);
 					}
 				});
+				//@ts-ignore
 				return rv;
 				// if (declared) return declared;
 				// if (management) return management.child( filter );
@@ -394,4 +398,5 @@
 			$exports.Repository.LOCAL = new LocalRepository({ directory: $context.HOME.getSubdirectory(".m2/repository") });
 		}
 	}
-)();
+//@ts-ignore
+)($api,jsh,$context,$exports);
