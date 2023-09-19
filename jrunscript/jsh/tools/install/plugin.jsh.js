@@ -718,14 +718,14 @@
 						return function(events) {
 							//	TODO	this is hard-coded in several places now
 							var now = node.object.at({ location: location.toString() });
-							if (now && now.version == "v16.17.1") {
+							if (now && now.version == "v20.7.0") {
 								events.fire("found", now);
 							} else {
 								if (now) {
 									location.directory.remove();
 									events.fire("removed", now);
 								}
-								node.object.install({ version: "16.17.1", location: location })(events);
+								node.object.install({ version: "20.7.0", location: location })(events);
 							}
 						}
 					};
