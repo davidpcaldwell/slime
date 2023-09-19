@@ -212,7 +212,7 @@
 										),
 										{
 											//	TODO	yet another place this is hard-coded
-											version: "16.17.1"
+											version: "20.7.0"
 										}
 										//	TODO	this should probably support some events
 									);

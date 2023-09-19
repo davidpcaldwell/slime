@@ -27,29 +27,31 @@
 					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-darwin-x64.tar.gz" },
 					"16.15.1": { url: "https://nodejs.org/dist/v16.15.1/node-v16.15.1-darwin-x64.tar.gz" },
 					"16.17.1": { url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-darwin-x64.tar.gz" },
+					"20.7.0": { url: "https://nodejs.org/dist/v20.7.0/node-v20.7.0-darwin-x64.tar.gz" }
 				},
 				"Linux": {
 					"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-linux-x64.tar.gz" },
 					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-linux-x64.tar.gz" },
 					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-linux-x64.tar.gz" },
 					"16.15.1": { url: "https://nodejs.org/dist/v16.15.1/node-v16.15.1-linux-x64.tar.gz" },
-					"16.17.1": { url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-linux-x64.tar.gz" }
+					"16.17.1": { url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-linux-x64.tar.gz" },
+					"20.7.0": { url: "https://nodejs.org/dist/v20.7.0/node-v20.7.0-linux-x64.tar.gz" }
 				}
 			},
-			default: "16.17.1"
+			default: "20.7.0"
 		};
 
 		var getDownload = function(version, os, arch) {
 			if (os == "Mac OS X" && arch == "aarch64") {
-				if (version == "16.17.1") {
+				if (version == "20.7.0") {
 					return {
-						url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-darwin-arm64.tar.gz"
+						url: "https://nodejs.org/dist/v20.7.0/node-v20.7.0-darwin-arm64.tar.gz"
 					}
 				}
 			} else if (os == "Linux" && arch == "aarch64") {
-				if (version == "16.17.1") {
+				if (version == "20.7.0") {
 					return {
-						url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-linux-arm64.tar.gz"
+						url: "https://nodejs.org/dist/v20.7.0/node-v20.7.0-linux-arm64.tar.gz"
 					}
 				}
 			}
