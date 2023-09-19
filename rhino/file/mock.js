@@ -55,11 +55,29 @@
 				}
 			};
 
+			var parentOf = function(pathname) {
+				return pathname.split(SLASH).slice(0,-1).join(SLASH);
+			};
+
+			var hasDirectoryAt = function(pathname) {
+				return state[pathname] && state[pathname].type == "directory";
+			}
+
+			//	TODO	next three methods are inconsistent as to whether we use leading slash
+
 			/** @type { slime.jrunscript.file.world.Filesystem["openOutputStream"] } */
 			var openOutputStream = function(p) {
 				return function(events) {
 					//	TODO	append
 					if (p.append) throw new Error("Unimplemented");
+					var up = parentOf(p.pathname);
+					if (!hasDirectoryAt(up)) {
+						events.fire("parentNotFound", {
+							filesystem: rv,
+							pathname: up
+						});
+						return $api.fp.Maybe.from.nothing();
+					}
 					var buffer = new $context.library.io.Buffer();
 					var out = buffer.writeBinary();
 					/** @type { slime.jrunscript.runtime.io.OutputStream } */
@@ -95,7 +113,8 @@
 				}
 			};
 
-			return {
+			/** @type { slime.jrunscript.file.world.Filesystem } */
+			var rv = {
 				separator: {
 					pathname: SLASH,
 					searchpath: COLON
@@ -106,7 +125,13 @@
 					}
 				},
 				copy: void(0),
-				createDirectory: void(0),
+				createDirectory: function(p) {
+					return function(events) {
+						state[p.pathname] = {
+							type: "directory"
+						}
+					}
+				},
 				directoryExists: directoryExists,
 				fileExists: fileExists,
 				move: void(0),
@@ -162,7 +187,9 @@
 				File: void(0),
 				Pathname: void(0),
 				pathname: void(0)
-			}
+			};
+
+			return rv;
 		};
 
 		$export({

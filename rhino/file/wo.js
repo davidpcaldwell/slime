@@ -39,7 +39,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.file.location.Exports["relative"] } */
+		/** @type { slime.jrunscript.file.location.Exports["directory"]["relativePath"] } */
 		var Location_relative = function(path) {
 			return function(pathname) {
 				var absolute = pathname.pathname + pathname.filesystem.separator.pathname + path;
@@ -54,7 +54,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Location } location
-		 * @param { slime.$api.Events<{}> } events
+		 * @param { slime.$api.Events<slime.jrunscript.file.world.events.FileOpenForWrite> } events
 		 * @param { (to: slime.jrunscript.runtime.io.OutputStream) => void } write
 		 */
 		var Location_write = function(location,events,write) {
@@ -442,12 +442,7 @@
 										}
 										$api.fp.world.now.action(
 											location.filesystem.createDirectory,
-											{ pathname: location.pathname },
-											{
-												parentNotFound: function() {
-
-												}
-											}
+											{ pathname: location.pathname }
 										)
 										//	TODO	should push this event back into implementation
 										//			this way, we could inform of recursive creations as well

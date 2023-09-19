@@ -343,8 +343,19 @@
 			var maybeOutputStream = function(p) {
 				return function(events) {
 					var peer = java.newPeer(p.pathname);
-					var binary = peer.writeBinary(p.append || false);
-					return $api.fp.Maybe.from.some($context.api.io.Streams.java.adapt(binary));
+					try {
+						var binary = peer.writeBinary(p.append || false);
+						return $api.fp.Maybe.from.some($context.api.io.Streams.java.adapt(binary));
+					} catch (e) {
+						if (/java\.io\.FileNotFoundException\: (.*) \(No such file or directory\)/.test(e.message)) {
+							var parent = peer.getParent();
+							events.fire("parentNotFound", {
+								filesystem: filesystem,
+								pathname: String(parent.getScriptPath())
+							});
+						}
+						return $api.fp.Maybe.from.nothing();
+					}
 				}
 			}
 
