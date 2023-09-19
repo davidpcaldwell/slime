@@ -16,15 +16,12 @@
 		$export({
 			from: {
 				location: function(p) {
-					var writer;
+					var q = $context.library.file.Location.file.write(p.location).object.text;
+					var maybe = $api.fp.world.now.question(q, p.location);
+					if (!maybe.present) throw new Error("Could not open file: " + p.location.pathname);
+					var writer = maybe.value;
 
 					return function(message) {
-						if (!writer) {
-							var q = $context.library.file.Location.file.write(p.location).object.text;
-							var maybe = $api.fp.world.now.question(q, p.location);
-							if (!maybe.present) throw new Error("Could not open file: " + p.location.pathname);
-							writer = maybe.value;
-						}
 						writer.write(message);
 					}
 				}

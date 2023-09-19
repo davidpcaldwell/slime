@@ -51,37 +51,52 @@ namespace slime.jrunscript.shell.internal.console {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { verify } = fifty;
+			const { verify, run } = fifty;
 			const { $api, jsh } = fifty.global;
 			const { subject } = test;
 
 			fifty.tests.suite = function() {
-				const one = fifty.jsh.file.temporary.location();
-				var streamOne = subject.from.location({
-					location: one
-				});
-				streamOne("foo");
-				streamOne("bar");
-
 				const readFile: slime.$api.fp.Mapping<slime.jrunscript.file.Location,string> = $api.fp.Maybe.impure.exception({
 					try: $api.fp.world.mapping(jsh.file.Location.file.read.string()),
 					nothing: function(t) { throw new Error("File not present: " + t.pathname); }
 				});
 
-				var result = $api.fp.now.invoke(
-					one,
-					readFile
-				);
-				verify(result).is("foobar");
+				run(function plain() {
+					const one = fifty.jsh.file.temporary.location();
+					var streamOne = subject.from.location({
+						location: one
+					});
+					streamOne("foo");
+					streamOne("bar");
 
-				const two = fifty.jsh.file.temporary.location();
-				const streamTwo = subject.line("\n")(subject.from.location({
-					location: two
-				}));
-				streamTwo("foo");
-				streamTwo("bar");
+					var result = $api.fp.now.invoke(
+						one,
+						readFile
+					);
+					verify(result).is("foobar");
+				});
 
-				verify(two).evaluate(readFile).is("foo\nbar\n");
+				run(function line() {
+					const two = fifty.jsh.file.temporary.location();
+					const streamTwo = subject.line("\n")(subject.from.location({
+						location: two
+					}));
+					streamTwo("foo");
+					streamTwo("bar");
+
+					verify(two).evaluate(readFile).is("foo\nbar\n");
+				});
+
+				run(function parentDoesNotExist() {
+					var location = $api.fp.impure.now.input(
+						$api.fp.impure.Input.map(
+							fifty.jsh.file.temporary.directory,
+							jsh.file.Location.directory.relativePath("foo/bar")
+						)
+					);
+
+					verify({ location: location }).evaluate(subject.from.location).threw.type(Error);
+				});
 			}
 		}
 	//@ts-ignore
