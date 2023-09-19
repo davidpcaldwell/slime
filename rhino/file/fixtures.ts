@@ -205,6 +205,12 @@ namespace slime.jrunscript.file.test {
 					var name = entry[0];
 					var value = entry[1];
 					if (isTextFile(value)) {
+						var parent = (prefix + name).split("/").slice(0,-1).join("/");
+						var parentExists = $api.fp.world.now.ask(mock.directoryExists({ pathname: parent }));
+						if (!parentExists.present) throw new Error("Unreachable");
+						if (!parentExists.value) {
+							$api.fp.world.now.ask(mock.createDirectory({ pathname: parent }));
+						}
 						var o = $api.fp.world.now.question(
 							mock.openOutputStream,
 							{ pathname: prefix + name }

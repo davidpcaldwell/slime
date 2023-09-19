@@ -32,8 +32,12 @@ namespace slime.jrunscript.file.internal.mock {
 			});
 
 			fifty.tests.suite = function() {
-				fifty.load("world.fifty.ts", "spi.filesystem.openInputStreamNotFound", module.filesystem());
+				fifty.load("world.fifty.ts", "spi.filesystem", module.filesystem());
 			};
+
+			fifty.tests.wip = function() {
+				fifty.load("world.fifty.ts", "spi.filesystem.wip", module.filesystem());
+			}
 
 			fifty.tests.manual = {};
 			fifty.tests.manual.fixtures = function() {

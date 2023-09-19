@@ -308,10 +308,14 @@ namespace slime.jrunscript.file {
 				}
 
 				write: (location: Location) => {
-					string: slime.$api.fp.world.Action<{ value: string },{}>
-					stream: slime.$api.fp.world.Action<{ input: slime.jrunscript.runtime.io.InputStream },{}>
+					string: slime.$api.fp.world.Action<{ value: string }, slime.jrunscript.file.world.events.FileOpenForWrite>
+					stream: slime.$api.fp.world.Action<{ input: slime.jrunscript.runtime.io.InputStream },slime.jrunscript.file.world.events.FileOpenForWrite>
 					object: {
-						text: slime.$api.fp.world.Question<{},{},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>>
+						text: slime.$api.fp.world.Question<
+							{},
+							slime.jrunscript.file.world.events.FileOpenForWrite,
+							slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>
+						>
 					}
 				}
 			}
@@ -715,8 +719,6 @@ namespace slime.jrunscript.file {
 						//verify(simple)[3].pathname.is("/d");
 					};
 
-					fifty.tests.wip = fifty.tests.exports.Location.directory.list;
-
 					fifty.tests.manual.issue1181 = function() {
 						var location = fifty.jsh.file.temporary.location();
 						var listing = $api.fp.world.now.question(
@@ -821,9 +823,13 @@ namespace slime.jrunscript.file {
 				const { jsh } = fifty.global;
 				const { world } = jsh.file;
 
-				fifty.tests.sandbox.filesystem.openInputStreamNotFound = function() {
-					fifty.load("world.fifty.ts", "spi.filesystem.openInputStreamNotFound", world.filesystems.os);
-				}
+				fifty.tests.sandbox.filesystem.world = function() {
+					fifty.load("world.fifty.ts", "spi.filesystem", world.filesystems.os);
+				};
+
+				fifty.tests.wip = function() {
+					fifty.load("world.fifty.ts", "spi.filesystem.wip", world.filesystems.os);
+				};
 			}
 		//@ts-ignore
 		)(fifty);
