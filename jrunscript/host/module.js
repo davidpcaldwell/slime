@@ -52,14 +52,7 @@
 				var _next = _keys.next();
 				var _value = _properties.getProperty(_next);
 				var maybe = getPropertyJavascriptValue(_value);
-				if (!maybe.present) {
-					//	omit
-
-					//	TODO	we seem to still have inonit.script.jsh.Main.stdout, .stderr, and .stdin in this category,
-					//			though code searches have not yet revealed exactly how they are created. Perhaps by
-					//			Main.class.getName() + ".stdout" etc.
-					//rv[String(_next)] = "NOT STRING: " + String(_value);
-				} else {
+				if (maybe.present) {
 					rv[String(_next)] = maybe.value;
 				}
 			}
@@ -71,7 +64,12 @@
 				function() {
 					return Properties(Packages.java.lang.System.getProperties());
 				}
-			)
+			),
+			setProperty: function(name) {
+				return function(value) {
+					Packages.java.lang.System.setProperty(name, value);
+				}
+			}
 		}
 
 		var JavaArray = new function() {

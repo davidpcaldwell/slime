@@ -123,7 +123,8 @@ namespace slime.jrunscript.host {
 
 	export interface Exports {
 		vm: {
-			properties: slime.$api.fp.impure.Input<Properties>
+			properties: slime.$api.fp.impure.Input<Properties>,
+			setProperty: (name: string) => slime.$api.fp.impure.Output<string>
 		}
 	}
 
