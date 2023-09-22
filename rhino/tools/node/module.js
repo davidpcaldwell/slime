@@ -562,7 +562,9 @@
 						url: version.url,
 						to: p.location
 					});
-					events.fire("installed", $exports.object.at({ location: p.location.toString() }));
+					var installed = $exports.object.at({ location: p.location.toString() });
+					if (!installed) throw new Error("Install failed: " + p.location.toString());
+					events.fire("installed", installed);
 				}
 			},
 			at: function(p) {

@@ -198,25 +198,17 @@
 
 						(
 							function core() {
-								var exists = $api.fp.world.now.ask(jsh.shell.tools.node.Installation.exists(installation));
-								if (!exists) {
-									$api.fp.world.now.action(
-										jsh.shell.tools.node.install(
-											$api.fp.now.invoke(
-												installation.executable,
-												jsh.file.Location.from.os,
-												jsh.file.Location.parent(),
-												jsh.file.Location.parent(),
-												$api.fp.property("pathname")
-											)
-										),
-										{
-											//	TODO	yet another place this is hard-coded
-											version: "20.7.0"
-										}
-										//	TODO	this should probably support some events
-									);
-								}
+								$api.fp.world.now.tell(jsh.shell.tools.node.require(), {
+									found: function(e) {
+										jsh.shell.console("Found Node.js " + e.detail.version);
+									},
+									removed: function(e) {
+										jsh.shell.console("Removed Node.js " + e.detail.version);
+									},
+									installed: function(e) {
+										jsh.shell.console("Installed Node.js " + e.detail.version);
+									}
+								});
 							}
 						)();
 						(
