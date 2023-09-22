@@ -424,6 +424,9 @@ namespace slime.jsh.shell.tools {
 		)(fifty);
 
 		export interface Managed {
+			/**
+			 * The local installation of Node.js in the `jsh` shell. May or may not be actually present.
+			 */
 			installation: slime.jrunscript.node.Installation
 
 			installed: slime.jrunscript.node.object.Installation
