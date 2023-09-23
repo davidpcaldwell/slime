@@ -432,7 +432,10 @@ namespace slime.jsh.shell.tools {
 			installed: slime.jrunscript.node.object.Installation
 
 			require: slime.$api.fp.world.Action<void,slime.jrunscript.node.object.install.Events & {
-				removed: slime.jrunscript.node.object.Installation
+				removed: {
+					at: string
+					version: string
+				}
 				found: slime.jrunscript.node.object.Installation
 			}>
 		}
