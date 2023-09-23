@@ -200,10 +200,9 @@
 							function core() {
 								$api.fp.world.now.tell(jsh.shell.tools.node.require(), {
 									found: function(e) {
-										jsh.shell.console("Found Node.js " + e.detail.version);
 									},
 									removed: function(e) {
-										jsh.shell.console("Removed Node.js " + e.detail.version);
+										jsh.shell.console("Removed Node.js " + e.detail.version + " at " + e.detail.at);
 									},
 									installed: function(e) {
 										jsh.shell.console("Installed Node.js " + e.detail.version);

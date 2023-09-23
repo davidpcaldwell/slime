@@ -722,8 +722,12 @@
 								events.fire("found", now);
 							} else {
 								if (now) {
+									var removed = {
+										at: now.location,
+										version: now.version
+									}
 									location.directory.remove();
-									events.fire("removed", now);
+									events.fire("removed", removed);
 								}
 								node.object.install({ version: "20.7.0", location: location })(events);
 							}
