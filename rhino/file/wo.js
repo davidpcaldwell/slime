@@ -178,6 +178,66 @@
 			}
 		});
 
+		/** @type { slime.jrunscript.file.filesystem.Exports } */
+		var Filesystem = (
+			function() {
+				return {
+					copy: function(p) {
+						return function(events) {
+							$api.fp.world.now.action(
+								ensureParent,
+								{
+									filesystem: p.filesystem,
+									pathname: p.to
+								},
+								{
+									created: function(e) {
+										events.fire("created", e.detail);
+									}
+								}
+							)
+
+							p.filesystem.copy({
+								from: p.from,
+								to: p.to
+							})(events);
+						}
+					},
+					move: function(p) {
+						return function(events) {
+							//	TODO	these checks were done for directories, but when refactoring, were removed. Possibly they
+							//			should be generalized.
+
+							// var exists = $api.fp.world.now.question(
+							// 	location.filesystem.directoryExists,
+							// 	{ pathname: location.pathname }
+							// );
+							// if (!exists.present) throw new Error("Could not determine whether " + location.pathname + " exists in " + location.filesystem);
+							// if (!exists.value) throw new Error("Could not move directory: " + location.pathname + " does not exist (or is not a directory).");
+
+							$api.fp.world.now.action(
+								ensureParent,
+								{
+									filesystem: p.filesystem,
+									pathname: p.to
+								},
+								{
+									created: function(e) {
+										events.fire("created", e.detail);
+									}
+								}
+							)
+
+							p.filesystem.move({
+								from: p.from,
+								to: p.to
+							})(events);
+						}
+					}
+				}
+			}
+		)();
+
 		$export({
 			Location: {
 				from: {
@@ -352,52 +412,6 @@
 							}
 						}
 					),
-					copy: function(p) {
-						return function(location) {
-							return function(events) {
-								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
-
-								$api.fp.world.now.action(
-									ensureParent,
-									p.to,
-									{
-										created: function(e) {
-											events.fire("created", e.detail);
-										}
-									}
-								)
-
-								p.to.filesystem.copy({
-									from: location.pathname,
-									to: p.to.pathname
-								})(events);
-							}
-						}
-					},
-					move: function(p) {
-						return function(location) {
-							return function(events) {
-								//	TODO	lots of duplication with directory move()
-								//	TODO	insert existence check like there? Refactor?
-								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
-
-								$api.fp.world.now.action(
-									ensureParent,
-									p.to,
-									{
-										created: function(e) {
-											events.fire("created", e.detail);
-										}
-									}
-								)
-
-								p.to.filesystem.move({
-									from: location.pathname,
-									to: p.to.pathname
-								})(events);
-							}
-						}
-					},
 					/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
 					remove: function() {
 						return function(location) {
@@ -455,38 +469,6 @@
 								} else {
 									throw new Error("Error determining whether directory is present at " + location.pathname);
 								}
-							}
-						}
-					},
-					move: function(p) {
-						return function(location) {
-							return function(events) {
-								var exists = $api.fp.world.now.question(
-									location.filesystem.directoryExists,
-									{ pathname: location.pathname }
-								);
-								if (!exists.present) throw new Error("Could not determine whether " + location.pathname + " exists in " + location.filesystem);
-								if (!exists.value) throw new Error("Could not move directory: " + location.pathname + " does not exist (or is not a directory).");
-
-								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
-
-								$api.fp.world.now.action(
-									ensureParent,
-									p.to,
-									{
-										created: function(e) {
-											events.fire("created", e.detail);
-										}
-									}
-								);
-
-								$api.fp.world.now.action(
-									location.filesystem.move,
-									{
-										from: location.pathname,
-										to: p.to.pathname
-									}
-								);
 							}
 						}
 					},
@@ -559,7 +541,8 @@
 						}
 					}
 				}
-			}
+			},
+			Filesystem: Filesystem
 		});
 
 		//	Some old code follows

@@ -75,6 +75,7 @@
 			},
 			mock: mock,
 			Location: wo.Location,
+			Filesystem: wo.Filesystem,
 			action: oo.action,
 			filesystem: oo.filesystem,
 			filesystems: oo.filesystems,
