@@ -12,6 +12,8 @@ namespace slime.jrunscript.file {
 
 	export interface Exports {
 		Location: location.Exports
+
+		Filesystem: filesystem.Exports
 	}
 
 	(
@@ -31,7 +33,11 @@ namespace slime.jrunscript.file {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.sandbox = fifty.test.Parent();
+
 			fifty.tests.sandbox.filesystem = fifty.test.Parent();
+			fifty.tests.sandbox.filesystem.file = fifty.test.Parent();
+			fifty.tests.sandbox.filesystem.directory = fifty.test.Parent();
+
 			fifty.tests.sandbox.locations = fifty.test.Parent();
 			fifty.tests.sandbox.locations.file = fifty.test.Parent();
 			fifty.tests.sandbox.locations.directory = fifty.test.Parent();
@@ -127,33 +133,6 @@ namespace slime.jrunscript.file {
 	export namespace location {
 		export namespace file {
 			export interface Exports {
-				/**
-				 * Copies a file to a given location, creating the location's parent folders as necessary.
-				 */
-				copy: (p: {
-					to: Location
-				}) => slime.$api.fp.world.Action<
-					Location,
-					{
-						/**
-						 * Fired when a directory is created.
-						 */
-						created: string
-					}
-				>
-
-				move: (p: {
-					to: Location
-				}) => slime.$api.fp.world.Action<
-					Location,
-					{
-						/**
-						 * Fired when a directory is created.
-						 */
-						created: string
-					}
-				>
-
 				remove: () => slime.$api.fp.world.Action<Location,void>
 			}
 		}
@@ -186,7 +165,7 @@ namespace slime.jrunscript.file {
 					jsh.file.world.Location.directory.exists()
 				)
 
-				fifty.tests.sandbox.locations.file.copy = function() {
+				fifty.tests.sandbox.filesystem.file.copy = function() {
 					fifty.run(function basic() {
 						var from = fifty.jsh.file.temporary.location();
 						var to = fifty.jsh.file.temporary.location();
@@ -198,8 +177,14 @@ namespace slime.jrunscript.file {
 						verify(exists(to)).is(false);
 						verify(readText(to)).is(null);
 
-						var copy = $api.fp.world.output(jsh.file.world.Location.file.copy({ to: to }));
-						copy(from);
+						$api.fp.world.now.action(
+							jsh.file.Filesystem.copy,
+							{
+								filesystem: jsh.file.world.filesystems.os,
+								from: from.pathname,
+								to: to.pathname
+							}
+						);
 
 						verify(exists(to)).is(true);
 						verify(readText(to)).is("tocopy");
@@ -226,8 +211,15 @@ namespace slime.jrunscript.file {
 						verify(exists(to)).is(false);
 						verify(readText(to)).is(null);
 
-						var copy = $api.fp.world.output(jsh.file.world.Location.file.copy({ to: to }), captor.handler);
-						copy(from);
+						$api.fp.world.now.action(
+							jsh.file.Filesystem.copy,
+							{
+								filesystem: jsh.file.world.filesystems.os,
+								from: from.pathname,
+								to: to.pathname
+							},
+							captor.handler
+						)
 
 						verify(dExists(parent)).is(true);
 						verify(exists(to)).is(true);
@@ -236,7 +228,7 @@ namespace slime.jrunscript.file {
 					});
 				};
 
-				fifty.tests.sandbox.locations.file.move = function() {
+				fifty.tests.sandbox.filesystem.file.move = function() {
 					fifty.run(function basic() {
 						var from = fifty.jsh.file.temporary.location();
 						var to = fifty.jsh.file.temporary.location();
@@ -249,8 +241,14 @@ namespace slime.jrunscript.file {
 						verify(exists(to)).is(false);
 						verify(readText(to)).is(null);
 
-						var copy = $api.fp.world.output(jsh.file.world.Location.file.move({ to: to }));
-						copy(from);
+						$api.fp.world.now.action(
+							jsh.file.Filesystem.move,
+							{
+								filesystem: jsh.file.world.filesystems.os,
+								from: from.pathname,
+								to: to.pathname
+							}
+						);
 
 						verify(exists(from)).is(false);
 						verify(exists(to)).is(true);
@@ -279,8 +277,15 @@ namespace slime.jrunscript.file {
 						verify(exists(to)).is(false);
 						verify(readText(to)).is(null);
 
-						var copy = $api.fp.world.output(jsh.file.world.Location.file.move({ to: to }), captor.handler);
-						copy(from);
+						$api.fp.world.now.action(
+							jsh.file.Filesystem.move,
+							{
+								filesystem: jsh.file.world.filesystems.os,
+								from: from.pathname,
+								to: to.pathname
+							},
+							captor.handler
+						);
 
 						verify(exists(from)).is(false);
 						verify(dExists(parent)).is(true);
@@ -507,21 +512,6 @@ namespace slime.jrunscript.file {
 	}
 
 	export namespace location {
-		export namespace directory {
-			export interface Exports {
-				//	TODO	what if something exists at to()?
-				/**
-				 * Moves a directory.
-				 */
-				move: (p: {
-					to: world.Location
-				}) => slime.$api.fp.world.Action<
-					world.Location,
-					{ created: string }
-				>
-			}
-		}
-
 		(
 			function(
 				fifty: slime.fifty.test.Kit
@@ -529,7 +519,7 @@ namespace slime.jrunscript.file {
 				const { verify } = fifty;
 				const { $api, jsh } = fifty.global;
 
-				fifty.tests.sandbox.locations.directory.move = function() {
+				fifty.tests.sandbox.filesystem.directory.move = function() {
 					const exists = {
 						file: $api.fp.world.mapping(jsh.file.world.Location.file.exists()),
 						directory: $api.fp.world.mapping(jsh.file.world.Location.directory.exists())
@@ -568,11 +558,14 @@ namespace slime.jrunscript.file {
 							verify(to).evaluate(atFilepath).evaluate(exists.file).is(false);
 						})();
 
-						var move = $api.fp.world.output(
-							jsh.file.world.Location.directory.move({ to: to })
+						$api.fp.world.now.action(
+							jsh.file.Filesystem.move,
+							{
+								filesystem: jsh.file.world.filesystems.os,
+								from: from.pathname,
+								to: to.pathname
+							}
 						);
-
-						move(from);
 
 						(function after() {
 							verify(from).evaluate(exists.directory).is(false);
@@ -601,12 +594,15 @@ namespace slime.jrunscript.file {
 							verify(captor).events.length.is(0);
 						})();
 
-						var move = $api.fp.world.output(
-							jsh.file.world.Location.directory.move({ to: to }),
+						$api.fp.world.now.action(
+							jsh.file.Filesystem.move,
+							{
+								filesystem: jsh.file.world.filesystems.os,
+								from: from.pathname,
+								to: to.pathname
+							},
 							captor.handler
 						);
-
-						move(from);
 
 						(function after() {
 							verify(from).evaluate(exists.directory).is(false);
@@ -954,6 +950,44 @@ namespace slime.jrunscript.file {
 		)(fifty);
 	}
 
+	export namespace filesystem {
+		export interface Exports {
+			/**
+			 * Copies a filesystem node to a given location, creating the location's parent folders as necessary.
+			 */
+			copy: slime.$api.fp.world.Action<
+				{
+					filesystem: world.Filesystem
+					from: string
+					to: string
+				},
+				{
+					/**
+					 * Fired when a directory is created.
+					 */
+					created: string
+				}
+			>
+
+			/**
+			 * Moves a filesystem node to a given location, creating the location's parent folders as necessary.
+			 */
+			move: slime.$api.fp.world.Action<
+				{
+					filesystem: world.Filesystem
+					from: string
+					to: string
+				},
+				{
+					/**
+					 * Fired when a directory is created.
+					 */
+					created: string
+				}
+			>
+		}
+	}
+
 	export namespace internal.test {
 		export const fixtures = (function(fifty: slime.fifty.test.Kit) {
 			const code: slime.jrunscript.file.test.fixtures.Script = fifty.$loader.script("fixtures.ts");
@@ -977,6 +1011,7 @@ namespace slime.jrunscript.file.internal.wo {
 
 	export interface Exports {
 		Location: location.Exports
+		Filesystem: slime.jrunscript.file.filesystem.Exports
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>

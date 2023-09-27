@@ -112,11 +112,20 @@
 				$context.library.file.world.Location.directory.remove()
 			);
 
-			var moveTypedocIntoPlace = $api.fp.world.output(
-				$context.library.file.world.Location.directory.move({
-					to: documentation
-				})
-			);
+			/**
+			 *
+			 * @param { slime.jrunscript.file.Location } from
+			 */
+			var moveTypedocIntoPlace = function(from) {
+				$api.fp.world.now.action(
+					$context.library.file.Filesystem.copy,
+					{
+						filesystem: $context.library.file.world.filesystems.os,
+						from: from.pathname,
+						to: documentation.pathname
+					}
+				)
+			};
 
 			var world = {
 				lastModified: {
