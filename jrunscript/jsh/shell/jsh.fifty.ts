@@ -210,7 +210,7 @@ namespace slime.jsh.shell {
 				var shell = fixtures.shells.packaged();
 
 				var intention: slime.jsh.shell.Intention = {
-					package: shell,
+					package: shell.package,
 					stdio: {
 						output: "string"
 					}
@@ -219,7 +219,7 @@ namespace slime.jsh.shell {
 				var installation = getInstallationFromIntention(intention);
 
 				var cast: slime.js.Cast<PackagedInstallation> = $api.fp.cast;
-				verify(installation).evaluate(cast).package.is(shell);
+				verify(installation).evaluate(cast).package.is(shell.package);
 			}
 		}
 	//@ts-ignore

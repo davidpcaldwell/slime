@@ -8,7 +8,7 @@ namespace slime.jrunscript.jsh.test {
 	export interface Shells {
 		unbuilt: slime.$api.fp.impure.Input<slime.jsh.shell.UnbuiltInstallation>
 		built: slime.$api.fp.impure.Input<slime.jsh.shell.BuiltInstallation>
-		packaged: slime.$api.fp.impure.Input<string>
+		packaged: slime.$api.fp.impure.Input<slime.jsh.shell.PackagedInstallation>
 		remote: slime.$api.fp.impure.Input<string>
 	}
 
@@ -175,7 +175,9 @@ namespace slime.jrunscript.jsh.test {
 								return to.pathname;
 							}
 						});
-						return rv;
+						return {
+							package: rv
+						};
 					},
 					remote: function() {
 						return void(0);

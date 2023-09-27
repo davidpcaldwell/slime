@@ -56,7 +56,7 @@
 								//	TODO	what about VM invocation stuff
 								//	TODO	test arguments, properties, environment perhaps
 								asJshIntention({
-									package: jar,
+									package: jar.package,
 									stdio: {
 										output: "line",
 										error: "line"

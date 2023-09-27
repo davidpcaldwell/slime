@@ -18,10 +18,15 @@ namespace slime.jrunscript.jsh.test {
 		) {
 			const { verify, run } = fifty;
 
-			fifty.tests.cache = function() {
+			fifty.tests.cache = fifty.test.Parent();
+
+			fifty.tests.cache.built = function() {
 				var built1 = test.subject.shells.built();
 				var built2 = test.subject.shells.built();
 				verify(built1).home.is(built2.home);
+			};
+
+			fifty.tests.cache.packaged = function() {
 				var packaged1 = test.subject.shells.packaged();
 				var packaged2 = test.subject.shells.packaged();
 				verify(packaged1).is(packaged2);
