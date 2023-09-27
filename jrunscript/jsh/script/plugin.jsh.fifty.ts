@@ -570,78 +570,103 @@ namespace slime.jsh.script {
 
 			const unbuilt = fixtures.shells.unbuilt();
 			const built = fixtures.shells.built();
-			const packaged = (false) ? fixtures.shells.packaged() : void(0);
+			const packaged = fixtures.shells.packaged();
 			const remote = fixtures.shells.remote();
 
 			fifty.tests.jsapi = fifty.test.Parent();
 
-			fifty.tests.jsapi.file = function() {
-				var script = fifty.jsh.file.relative("../test/jsh-data.jsh.js");
+			const environmentWithJavaInPath: slime.$api.fp.Transform<slime.jrunscript.shell.run.Environment> = function(given) {
+				var PATH = given.PATH.split(":");
+				var home = jsh.shell.java.Jdk.from.javaHome();
+				var insert = jsh.file.Pathname(home.base()).directory.getRelativePath("bin").toString();
+				//var insert = jsh.shell.java.home.getRelativePath("bin").toString();
+				jsh.shell.console("Inserting: " + insert);
+				PATH.splice(0,0,insert);
+				jsh.shell.console("PATH = " + PATH.join(":"));
+				return $api.Object.compose(
+					given,
+					{
+						PATH: PATH.join(":")
+					}
+				)
+			};
 
-				var jsonOutput = function(v: slime.jrunscript.shell.run.Exit) {
-					return JSON.parse(v.stdio.output);
-				};
+			(
+				function() {
+					var script = fifty.jsh.file.relative("../test/jsh-data.jsh.js");
 
-				if (unbuilt) {
-					var intention: slime.jsh.shell.Intention = {
-						shell: unbuilt,
-						script: script.pathname,
-						stdio: {
-							output: "string"
-						}
+					var jsonOutput = function(v: slime.jrunscript.shell.run.Exit) {
+						return JSON.parse(v.stdio.output);
 					};
-					var run = jsh.shell.jsh.Intention.toShellIntention(intention);
-					var data = $api.fp.world.now.question(
-						jsh.shell.subprocess.question,
-						run
-					);
 
-					verify(data).evaluate(jsonOutput)["jsh.script.file"].string.evaluate(String).is(script.pathname);
-					verify(data).evaluate(jsonOutput)["jsh.script.file"].pathname.string.evaluate(String).is(script.pathname);
-				}
+					fifty.tests.jsapi.file = fifty.test.Parent();
 
-				if (built) {
-					var intention: slime.jsh.shell.Intention = {
-						shell: built,
-						script: script.pathname,
-						environment: function(given) {
-							var PATH = given.PATH.split(":");
-							var insert = jsh.shell.java.home.getRelativePath("bin").toString();
-							jsh.shell.console("Inserting: " + insert);
-							PATH.splice(0,0,insert);
-							jsh.shell.console("PATH = " + PATH.join(":"));
-							return $api.Object.compose(
-								given,
-								{
-									PATH: PATH.join(":")
+					if (unbuilt) {
+						fifty.tests.jsapi.file.unbuilt = function() {
+							var intention: slime.jsh.shell.Intention = {
+								shell: unbuilt,
+								script: script.pathname,
+								stdio: {
+									output: "string"
 								}
-							)
-						},
-						stdio: {
-							output: "string"
+							};
+							var run = jsh.shell.jsh.Intention.toShellIntention(intention);
+							var result = $api.fp.world.now.question(
+								jsh.shell.subprocess.question,
+								run
+							);
+
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].string.evaluate(String).is(script.pathname);
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].pathname.string.evaluate(String).is(script.pathname);
 						}
-					};
-					var run = jsh.shell.jsh.Intention.toShellIntention(intention);
-					var data = $api.fp.world.now.question(
-						jsh.shell.subprocess.question,
-						run
-					);
-					verify(data)["jsh.script.file"].string.evaluate(String).is(script.pathname);
-					verify(data)["jsh.script.file"].pathname.string.evaluate(String).is(script.pathname);
+					}
+
+					if (built) {
+						fifty.tests.jsapi.file.built = function() {
+							var intention: slime.jsh.shell.Intention = {
+								shell: built,
+								script: script.pathname,
+								environment: environmentWithJavaInPath,
+								stdio: {
+									output: "string"
+								}
+							};
+							var run = jsh.shell.jsh.Intention.toShellIntention(intention);
+							debugger;
+							var result = $api.fp.world.now.question(
+								jsh.shell.subprocess.question,
+								run
+							);
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].string.evaluate(String).is(script.pathname);
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].pathname.string.evaluate(String).is(script.pathname);
+						}
+					}
+
+					if (packaged) {
+						fifty.tests.jsapi.file.packaged = function() {
+							var intention: slime.jsh.shell.Intention = {
+								package: packaged.package,
+								environment: environmentWithJavaInPath,
+								stdio: {
+									output: "string"
+								}
+							};
+							var run = jsh.shell.jsh.Intention.toShellIntention(intention);
+							var result = $api.fp.world.now.question(
+								jsh.shell.subprocess.question,
+								run
+							);
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].string.evaluate(String).is(packaged.package);
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].pathname.string.evaluate(String).is(packaged.package);
+						}
+					}
+
+					// if ($jsapi.environment.jsh && $jsapi.environment.jsh.remote) {
+					// 	var remote = $jsapi.environment.jsh.remote.data;
+					// 	verify(remote).evaluate.property("jsh.script.file").is(void(0));
+					// }
 				}
-
-				// if (packaged) {
-				// 	var packaged = $jsapi.environment.jsh.packaged.data;
-				// 	var jar = $jsapi.environment.jsh.packaged.jar;
-				// 	verify(packaged)["jsh.script.file"].string.is(jar.toString());
-				// 	verify(packaged)["jsh.script.file"].pathname.string.is(jar.toString());
-				// }
-
-				// if ($jsapi.environment.jsh && $jsapi.environment.jsh.remote) {
-				// 	var remote = $jsapi.environment.jsh.remote.data;
-				// 	verify(remote).evaluate.property("jsh.script.file").is(void(0));
-				// }
-			}
+			)();
 		}
 	//@ts-ignore
 	)(fifty);

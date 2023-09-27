@@ -253,16 +253,20 @@
 
 				//	TODO	currently we can start firing stdio events before we fire the start event, given how this
 				//			implementation works. That's probably not ideal, a more rigorous event sequence would be better.
+				var _context = createJavaCommandContext({
+					directory: (p.directory) ? $context.api.file.Pathname(p.directory).directory : void(0),
+					environment: p.environment,
+					stdio: stdio
+				});
+
+				var _configuration = createJavaCommandConfiguration({
+					command: p.command,
+					arguments: p.arguments
+				});
+
 				var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
-					createJavaCommandContext({
-						directory: (p.directory) ? $context.api.file.Pathname(p.directory).directory : void(0),
-						environment: p.environment,
-						stdio: stdio
-					}),
-					createJavaCommandConfiguration({
-						command: p.command,
-						arguments: p.arguments
-					})
+					_context,
+					_configuration
 				);
 
 				events.fire("start", {
