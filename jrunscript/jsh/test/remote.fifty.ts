@@ -14,7 +14,7 @@ namespace slime.jsh.test.remote {
 
 			var slime = fifty.jsh.file.relative("../../..");
 
-			var loader = jsh.file.world.Location.directory.loader.synchronous({ root: slime });
+			var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
 
 			var code: {
 				testing: slime.jrunscript.tools.github.internal.test.Script
@@ -71,6 +71,10 @@ namespace slime.jsh.test.remote {
 					mock: server,
 					branch: "local"
 				};
+
+				//	When running remote shell from command line, we download the launcher script using curl and then pipe it
+				//	to `bash`, hence the two step process below in which the first download is sent as input to the second
+				//	command
 
 				var download = library.testing.getDownloadJshBashCommand(
 					jsh.shell.PATH,
