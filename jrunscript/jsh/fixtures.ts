@@ -9,7 +9,7 @@ namespace slime.jrunscript.jsh.test {
 		unbuilt: slime.$api.fp.impure.Input<slime.jsh.shell.UnbuiltInstallation>
 		built: slime.$api.fp.impure.Input<slime.jsh.shell.BuiltInstallation>
 		packaged: slime.$api.fp.impure.Input<slime.jsh.shell.PackagedInstallation>
-		remote: slime.$api.fp.impure.Input<string>
+		remote: slime.$api.fp.impure.Input<slime.jsh.shell.UrlInstallation>
 	}
 
 	export interface Exports {
@@ -180,7 +180,29 @@ namespace slime.jrunscript.jsh.test {
 						};
 					},
 					remote: function() {
-						return void(0);
+						var current = jsh.shell.jsh.Installation.from.current();
+
+						if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
+							var slime = jsh.file.Location.from.os(current.src);
+
+							var loader = jsh.file.Location.directory.loader.synchronous({ root: jsh.file.Location.from.os(current.src) });
+
+							var code: {
+								testing: slime.jrunscript.tools.github.internal.test.Script
+							} = {
+								testing: jsh.loader.synchronous.script("rhino/tools/github/test/module.js")(loader)
+							};
+
+							var library = {
+								testing: code.testing({
+									slime: jsh.file.object.directory(slime)
+								})
+							};
+
+							return void(0);
+						} else {
+							throw new Error();
+						}
 					}
 				}
 			});

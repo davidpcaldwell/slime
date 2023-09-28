@@ -85,7 +85,7 @@ namespace slime.jsh.shell {
 
 	export type ExternalInstallation = UnbuiltInstallation | BuiltInstallation | UrlInstallation
 
-	export type Installation = UnbuiltInstallation | BuiltInstallation | PackagedInstallation | UrlInstallation
+	export type Installation = ExternalInstallation | PackagedInstallation
 
 	export type ExternalInstallationInvocation = {
 		shell: ExternalInstallation,
