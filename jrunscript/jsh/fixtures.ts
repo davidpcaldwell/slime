@@ -183,6 +183,8 @@ namespace slime.jrunscript.jsh.test {
 						var current = jsh.shell.jsh.Installation.from.current();
 
 						if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
+							var slime = jsh.file.Location.from.os(current.src);
+
 							var loader = jsh.file.Location.directory.loader.synchronous({ root: jsh.file.Location.from.os(current.src) });
 
 							var code: {
