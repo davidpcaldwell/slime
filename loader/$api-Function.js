@@ -201,6 +201,13 @@
 					return v;
 				}
 			},
+			mapping: {
+				all: function(r) {
+					return function(p) {
+						return r;
+					}
+				}
+			},
 			conditional: function(test,yes,no) {
 				if (arguments.length == 3) {
 					return $context.deprecate(function() {

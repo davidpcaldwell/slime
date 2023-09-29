@@ -183,7 +183,14 @@ namespace slime.$api.fp {
 		 */
 		returning: <T>(t: T) => () => T
 
+		/**
+		 * @deprecated Replaced by `mapping.all`.
+		 */
 		mapAllTo: <P,R>(r: R) => (p: P) => R
+
+		mapping: {
+			all: <P,R>(r: R) => (p: P) => R
+		}
 
 		conditional: {
 			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R

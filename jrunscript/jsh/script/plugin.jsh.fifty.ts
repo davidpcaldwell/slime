@@ -351,7 +351,7 @@ namespace slime.jsh.script {
 		)(fifty);
 
 		export namespace fp {
-			export type OptionParser<T> = <O extends object,N extends string>(c: { longname: N, default?: slime.$api.fp.impure.Input<T> })
+			export type OptionParser<T> = <O extends object,N extends string>(c: { longname: N })
 				=> (i: cli.Invocation<O>)
 				=> cli.Invocation<O & { [n in N]: slime.$api.fp.impure.Input<slime.$api.fp.Maybe<T>> }>
 		}
@@ -369,6 +369,7 @@ namespace slime.jsh.script {
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
+				const { $api } = fifty.global;
 
 				fifty.tests.cli.fp = fifty.test.Parent();
 
@@ -379,29 +380,28 @@ namespace slime.jsh.script {
 					);
 					var fallback = fifty.jsh.file.relative("foo");
 					var at = test.subject.cli.fp.option.location({ longname: "at" });
-					var atWithDefault = test.subject.cli.fp.option.location({ longname: "at", default: fifty.global.$api.fp.impure.Input.value(fallback) });
+					var atDefault = fifty.global.$api.fp.impure.Input.value(fallback);
 
 					var withArgs = function(a: string[]): cli.Invocation<{}> { return { options: {}, arguments: a }};
 
 					var one = at(withArgs([])).options.at();
 					verify(one).present.is(false);
 
-					debugger;
 					var two = at(withArgs(["--at", "bar"])).options.at();
 					verify(two).present.is(true);
 					if (two.present) {
 						verify(two).value.pathname.is(relative.pathname);
 					}
-					var three = atWithDefault(withArgs([])).options.at();
-					verify(three).present.is(true);
-					if (three.present) {
-						verify(three).value.pathname.is(fallback.pathname);
-					}
-					var four = atWithDefault(withArgs(["--at", "bar"])).options.at();
-					verify(four).present.is(true);
-					if (four.present) {
-						verify(four).value.pathname.is(relative.pathname);
-					}
+					var three = $api.fp.impure.Input.from.partial({
+						if: at(withArgs([])).options.at,
+						else: atDefault
+					});
+					verify(three()).pathname.is(fallback.pathname);
+					var four = $api.fp.impure.Input.from.partial({
+						if: at(withArgs(["--at", "bar"])).options.at,
+						else: atDefault
+					});
+					verify(four()).pathname.is(relative.pathname);
 				}
 			}
 		//@ts-ignore

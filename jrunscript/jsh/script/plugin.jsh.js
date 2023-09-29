@@ -430,9 +430,7 @@
 										arguments: []
 									};
 
-									rv.options[c.longname] = (c.default) ? function() {
-										return $api.fp.Maybe.from.some(c.default());
-									} : $api.fp.impure.Input.value($api.fp.Maybe.from.nothing());
+									rv.options[c.longname] = $api.fp.impure.Input.value($api.fp.Maybe.from.nothing());
 
 									for (var i=0; i<p.arguments.length; i++) {
 										if (p.arguments[i] == ("--" + c.longname)) {
