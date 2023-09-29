@@ -27,11 +27,20 @@
 			},
 			Input: {
 				from: {
+					switch: function(p) {
+						return function() {
+							for (var i=0; i<p.cases.length; i++) {
+								var m = p.cases[i]();
+								if (m.present) return m.value;
+							}
+							return p.default();
+						}
+					},
 					mapping: function(p) {
 						return function() {
 							return p.mapping(p.argument);
 						}
-					}
+					},
 				},
 				value: function(v) {
 					var functions = Array.prototype.slice.call(arguments,1);

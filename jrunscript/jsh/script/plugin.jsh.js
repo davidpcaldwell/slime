@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jsh.plugin.Scope["plugins"] } plugins
-	 * @param { slime.jsh.plugin.plugin } plugin
+	 * @param { slime.jsh.plugin.Scope["plugin"] } plugin
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
@@ -209,6 +209,11 @@
 					)
 				);
 
+				/**
+				 * @template { any } T
+				 * @param { (s: string) => T } parse
+				 * @returns { slime.jsh.script.cli.OptionParser<T> }
+				 */
 				var option = function(parse) {
 					return function(o) {
 						var rv = function(p) {
@@ -415,6 +420,34 @@
 							return $api.fp.object.revise(rv);
 						}
 					},
+					fp: {
+						option: {
+							location: function(c) {
+								return function(p) {
+									var rv = {
+										/** @type { object } */
+										options: $api.Object.compose(p.options),
+										arguments: []
+									};
+
+									rv.options[c.longname] = (c.default) ? function() {
+										return $api.fp.Maybe.from.some(c.default());
+									} : $api.fp.impure.Input.value($api.fp.Maybe.from.nothing());
+
+									for (var i=0; i<p.arguments.length; i++) {
+										if (p.arguments[i] == ("--" + c.longname)) {
+											var value = p.arguments[++i];
+											var location = parser.pathname(value).os.adapt();
+											rv.options[c.longname] = $api.fp.impure.Input.value($api.fp.Maybe.from.some(location));
+										} else {
+											rv.arguments.push(p.arguments[i]);
+										}
+									}
+									return rv;
+								}
+							}
+						}
+					},
 					error: {
 						NoTargetProvided: $api.Error.old.Type({ name: "NoTargetProvided" }),
 						TargetNotFound: $api.Error.old.Type({ name: "TargetNotFound" }),
@@ -483,141 +516,9 @@
 			}
 		});
 
-		plugin({
-			isReady: function() {
-				return Boolean(jsh.web && jsh.file && jsh.script && jsh.http);
-			},
-			load: function() {
-				/**
-				 * @param { string } string
-				 */
-				var interpretModuleLocation = function(string) {
-					/** @type { slime.web.Exports } */
-					var web = jsh.web;
-
-					//	try to see whether it's an absolute path
-					var location = jsh.file.Pathname(string);
-
-					//	we don't want to use the location if it is a relative path; it will be handled later by jsh.script.loader
-					//	in the calling code
-					var isAbsolute = function(location) {
-						return location.toString() == string;
-					}
-
-					if (isAbsolute(location)) {
-						if (location.directory) {
-							return location.directory;
-						} else if (location.file) {
-							return location.file;
-						}
-					}
-
-					//	then, let's check to see if it's a URL. For now we only support URLs with schemes.
-					/** @type { slime.web.Url } */
-					var url = web.Url.parse(string);
-					if (url.scheme) {
-						return url;
-					}
-				};
-
-				/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.jrunscript.file.Directory } */
-				var isDirectory = function(location) {
-					return typeof(location["pathname"]) == "object" && location["directory"] === true;
-				}
-
-				/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.jrunscript.file.File } */
-				var isFile = function(location) {
-					return typeof(location["pathname"]) == "object" && location["directory"] === false;
-				}
-
-				/** @type { (location: ReturnType<interpretModuleLocation>) => location is slime.web.Url } */
-				var isUrl = function(location) {
-					return typeof(location["scheme"]) == "string";
-				}
-
-				jsh.loader.module = (function(was) {
-					/** @type { (p: any) => p is slime.web.Url } */
-					var isUrl = function(p) {
-						return typeof(p) == "object" && p.scheme && p.host && p.path;
-					}
-
-					/**
-					 *
-					 * @param { slime.web.Url } location
-					 * @returns
-					 */
-					var fromUrl = function(location) {
-						var object = jsh.web.Url.parse(jsh.web.Url.codec.string.encode(location));
-						var base = object.resolve("./");
-						var path = (base.toString() == location.toString()) ? "module.js" : location.toString().substring(base.toString().length);
-						var loader = new jsh.http.Client().Loader(base);
-						return function(code) {
-							code = path;
-							return loader.module.apply(loader, arguments);
-						}
-					}
-
-					return function(code) {
-						if (isUrl(code)) {
-							return fromUrl(code).apply(this, arguments);
-						}
-						if (typeof(code) == "string") {
-							var location = interpretModuleLocation(code);
-							if (location && isFile(location)) {
-								code = location.pathname;
-							} else if (location && isDirectory(location)) {
-								code = location.pathname;
-							} else if (location && isUrl(location)) {
-								return fromUrl(location).apply(this, arguments);
-							} else {
-								return jsh.script.loader.module.apply(jsh.script.loader, arguments);
-							}
-						}
-						return was.apply(this,arguments);
-					}
-				})(jsh.loader.module);
-
-				var loadUrl = function(url) {
-					var response = new jsh.http.Client().request({
-						url: url
-					});
-					//	TODO	maybe better error handling?
-					if (response.status.code != 200) return null;
-					//	TODO	the strange remapping below is because of some inconsistency between jrunscript Resource types
-					//			and HTTP client bodies. Need to do some low-level refactoring, possibly.
-					return {
-						type: response.body.type,
-						stream: {
-							binary: response.body.stream
-						}
-					}
-				};
-
-				["file","value","run"].forEach(function(operation) {
-					jsh.loader[operation] = (function(was) {
-						return function(code) {
-							if (typeof(code) == "object" && code.scheme && code.host && code.path) {
-								code = loadUrl(code);
-							}
-							if (typeof(code) == "string") {
-								var location = interpretModuleLocation(code);
-								if (location && isFile(location)) {
-									code = location.pathname;
-								} else if (location && isUrl(location)) {
-									var response = loadUrl(location);
-									if (response) code = response;
-								} else if (location && isDirectory(location)) {
-									throw new TypeError("Cannot " + operation + " code from directory " + location);
-								} else {
-									return jsh.script.loader[operation].apply(jsh.script.loader, arguments);
-								}
-							}
-							return was.apply(this, arguments);
-						}
-					})(jsh.loader[operation]);
-				})
-			}
-		})
+		/** @type { slime.jsh.script.internal.loader_old.Script } */
+		var loader_old = $loader.script("plugin-loader-old.js");
+		loader_old()(plugin, jsh);
 	}
 //@ts-ignore
 )(Packages,plugins,plugin,$slime,$api,jsh,$loader)

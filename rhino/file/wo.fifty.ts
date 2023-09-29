@@ -455,8 +455,9 @@ namespace slime.jrunscript.file {
 						var two = relativeOf(at("/b"));
 						verify(two).is("../../../b");
 						var three = relativeOf(at("/a/b/c/d"));
-						//	TODO	should this be ./d?
 						verify(three).is("d");
+						var four = relativeOf(at("/a/b/c"));
+						verify(four).is("");
 					};
 
 					fifty.tests.exports.Location.directory.harvested = function() {
