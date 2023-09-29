@@ -23,30 +23,36 @@
 
 		jsh.script.cli.main(
 			$api.fp.pipe(
-				jsh.script.cli.fp.option.location({ longname: "project", default: inputs.PWD }),
+				jsh.script.cli.fp.option.location({ longname: "project" }),
 				function(p) {
-					var project = (function() {
-						var rv = p.options.project();
-						if (!rv.present) throw new Error("Unreachable.");
-						return rv.value;
-					})();
+					var project = $api.fp.impure.Input.from.partial({
+						if: p.options.project,
+						else: inputs.PWD
+					});
+
+					var getRelativeToProject = $api.fp.impure.Input.map(
+						project,
+						jsh.file.Location.directory.relativeTo
+					);
 
 					var wfpath = $api.fp.impure.Input.map(
 						inputs.slime,
-						jsh.file.Location.directory.relativeTo(project)
+						getRelativeToProject()
 					);
 
+					/** @type { (content: string) => slime.$api.fp.Mapping<slime.jrunscript.file.Location, slime.$api.fp.world.Tell<slime.jrunscript.file.world.events.FileOpenForWrite>> } */
+					var writeStringContent = function(content) {
+						return $api.fp.pipe(
+							jsh.file.Location.file.write,
+							$api.fp.property("string"),
+							$api.fp.world.Action.tell({ value: content })
+						);
+					}
+
 					$api.fp.now.invoke(
-						project,
+						project(),
 						jsh.file.Location.directory.relativePath("wf.path"),
-						jsh.file.Location.file.write,
-						$api.fp.property("string"),
-						function(action) {
-							$api.fp.world.now.action(
-								action,
-								{ value: wfpath() }
-							)
-						}
+						$api.fp.world.output(writeStringContent(wfpath()))
 					);
 				}
 			)

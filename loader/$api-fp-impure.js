@@ -29,11 +29,16 @@
 				from: {
 					switch: function(p) {
 						return function() {
-							for (var i=0; i<p.cases.length; i++) {
-								var m = p.cases[i]();
-								if (m.present) return m.value;
+							for (var i=0; i<p.length; i++) {
+								var m = p[i]();
+								if (m.present) return {
+									present: true,
+									value: m.value
+								};
 							}
-							return p.default();
+							return {
+								present: false
+							};
 						}
 					},
 					mapping: function(p) {
@@ -41,6 +46,13 @@
 							return p.mapping(p.argument);
 						}
 					},
+					partial: function(p) {
+						return function() {
+							var a = p.if();
+							if (a.present) return a.value;
+							return p.else();
+						}
+					}
 				},
 				value: function(v) {
 					var functions = Array.prototype.slice.call(arguments,1);
@@ -175,6 +187,13 @@
 						world.Question.pipe(a, q),
 						m
 					);
+				}
+			},
+			Action: {
+				tell: function(p) {
+					return function(action) {
+						return action(p);
+					}
 				}
 			},
 			mapping: function(question, handler) {

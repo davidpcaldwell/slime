@@ -87,10 +87,12 @@ namespace slime.$api.fp.impure {
 					argument: P
 				}) => impure.Input<R>
 
-				switch: <R>(p: {
-					cases: slime.$api.fp.impure.Input<slime.$api.fp.Maybe<R>>[],
-					default: slime.$api.fp.impure.Input<R>
-				}) => slime.$api.fp.impure.Input<R>
+				switch: <R>(cases: slime.$api.fp.impure.Input<slime.$api.fp.Maybe<R>>[]) => slime.$api.fp.impure.Input<slime.$api.fp.Maybe<R>>
+
+				partial: <R>(p: {
+					if: impure.Input<slime.$api.fp.Maybe<R>>,
+					else: impure.Input<R>
+				}) => impure.Input<R>
 			}
 		}
 
@@ -107,22 +109,29 @@ namespace slime.$api.fp.impure {
 				fifty.tests.exports.impure.Input.from.switch = function() {
 					const nothing = $api.fp.Maybe.from.nothing();
 
-					var x = $api.fp.impure.Input.from.switch({
-						cases: [
-							$api.fp.impure.Input.value(nothing)
-						],
-						default: $api.fp.impure.Input.value(4)
-					});
+					var x = $api.fp.impure.Input.from.switch([
+						$api.fp.impure.Input.value(nothing)
+					]);
 
-					var y = $api.fp.impure.Input.from.switch({
-						cases: [
-							$api.fp.impure.Input.value($api.fp.Maybe.from.some(3))
-						],
-						default: $api.fp.impure.Input.value(4)
-					});
+					var y = $api.fp.impure.Input.from.switch([
+						$api.fp.impure.Input.value($api.fp.Maybe.from.some(3)),
+						$api.fp.impure.Input.value($api.fp.Maybe.from.some(4))
+					]);
 
-					verify(x()).is(4);
-					verify(y()).is(3);
+					var z = $api.fp.impure.Input.from.switch([
+						$api.fp.impure.Input.value(nothing),
+						$api.fp.impure.Input.value($api.fp.Maybe.from.some(5))
+					]);
+
+					var X = x();
+					var Y = y();
+					var Z = z();
+
+					verify(X).present.is(false);
+					verify(Y).present.is(true);
+					if (Y.present) verify(Y).value.is(3);
+					verify(Z).present.is(true);
+					if (Z.present) verify(Z).value.is(5);
 				}
 			}
 		//@ts-ignore
@@ -400,6 +409,10 @@ namespace slime.$api.fp.world {
 			pipe: <I,P,E,A>(argument: (i: I) => P, question: world.Question<P,E,A>) => world.Question<I,E,A>
 			map: <P,E,A,O>(question: world.Question<P,E,A>, map: (a: A) => O) => world.Question<P,E,O>
 			wrap: <I,P,E,A,O>(argument: (i: I) => P, question: world.Question<P,E,A>, map: (a: A) => O) => world.Question<I,E,O>
+		}
+
+		Action: {
+			tell: <P,E>(p: P) => (action: world.Action<P,E>) => world.Tell<E>
 		}
 	}
 
