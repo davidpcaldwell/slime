@@ -152,8 +152,10 @@
 					var x = function recurse(reference,location) {
 						//	TODO	make sure filesystems are the same
 						var prefix = reference.pathname + reference.filesystem.separator.pathname;
-						//	TODO	seriously, make a fp string function for this
-						if (location.pathname.substring(0, prefix.length) == prefix) {
+						if (location.pathname == reference.pathname) {
+							return "";
+						} else if (location.pathname.substring(0, prefix.length) == prefix)	{
+							//	TODO	seriously, make a fp string function for the above comparison
 							return location.pathname.substring(prefix.length);
 						} else {
 							var terms = reference.pathname.split(reference.filesystem.separator.pathname);

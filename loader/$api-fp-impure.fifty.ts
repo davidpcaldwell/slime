@@ -86,8 +86,47 @@ namespace slime.$api.fp.impure {
 					mapping: slime.$api.fp.Mapping<P,R>
 					argument: P
 				}) => impure.Input<R>
+
+				switch: <R>(p: {
+					cases: slime.$api.fp.impure.Input<slime.$api.fp.Maybe<R>>[],
+					default: slime.$api.fp.impure.Input<R>
+				}) => slime.$api.fp.impure.Input<R>
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.impure.Input.from = fifty.test.Parent();
+
+				fifty.tests.exports.impure.Input.from.switch = function() {
+					const nothing = $api.fp.Maybe.from.nothing();
+
+					var x = $api.fp.impure.Input.from.switch({
+						cases: [
+							$api.fp.impure.Input.value(nothing)
+						],
+						default: $api.fp.impure.Input.value(4)
+					});
+
+					var y = $api.fp.impure.Input.from.switch({
+						cases: [
+							$api.fp.impure.Input.value($api.fp.Maybe.from.some(3))
+						],
+						default: $api.fp.impure.Input.value(4)
+					});
+
+					verify(x()).is(4);
+					verify(y()).is(3);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 
 		export interface Input {
 
