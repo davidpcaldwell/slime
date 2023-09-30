@@ -31,44 +31,6 @@ namespace slime.jrunscript.tools.git {
 		commit: Commit
 	}
 
-	interface Daemon {
-		port: number
-		basePath?: slime.jrunscript.file.Pathname
-		kill: () => void
-	}
-
-	/**
-	 * A local installation of the `git` tool.
-	 */
-	export interface Installation {
-		daemon: (p: {
-			port?: number
-			basePath?: slime.jrunscript.file.Pathname
-			exportAll?: boolean
-		}) => Daemon
-
-		/**
-		 * @returns A `Repository` of the appropriate subtype as determined by the argument.
-		 */
-		Repository: {
-			(p: repository.argument.Directory): slime.jrunscript.tools.git.repository.Local
-			new (p: repository.argument.Directory): slime.jrunscript.tools.git.repository.Local
-			(p: repository.argument.Local): slime.jrunscript.tools.git.repository.Local
-			new (p: repository.argument.Local): slime.jrunscript.tools.git.repository.Local
-			(p: repository.argument.Remote): slime.jrunscript.tools.git.Repository
-			new (p: repository.argument.Remote): slime.jrunscript.tools.git.Repository
-		}
-
-		//	Uses Object.assign for rhino/shell run(), so should cross-check with those arguments
-		execute: (m: {
-			config?: any
-			command: string,
-			arguments?: string[]
-			environment?: any
-			directory?: slime.jrunscript.file.Directory
-		}) => void
-	}
-
 	export interface Repository {
 		reference: string
 		clone: (argument: repository.Argument & {
@@ -786,10 +748,13 @@ namespace slime.jrunscript.tools.git {
 
 		credentialHelper: CredentialHelpers
 		installation: slime.jrunscript.tools.git.Installation
+
+		//	Methods essentially copied from the default Installation
 		daemon: slime.jrunscript.tools.git.Installation["daemon"]
 		Repository: slime.jrunscript.tools.git.Installation["Repository"]
 		init: slime.jrunscript.tools.git.Installation["init"]
 		execute: slime.jrunscript.tools.git.Installation["execute"]
+
 		install: Function & { GUI: any }
 	}
 
