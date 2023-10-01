@@ -17,7 +17,7 @@
 			}
 		});
 
-		var repository = jsh.tools.git.Repository({ directory: parameters.options.repository.directory });
+		var repository = jsh.tools.git.oo.Repository({ directory: parameters.options.repository.directory });
 		var branches = repository.branch();
 		branches.forEach(function(branch,index) {
 			if (index) jsh.shell.console("");

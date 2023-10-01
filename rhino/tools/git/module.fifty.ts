@@ -31,14 +31,6 @@ namespace slime.jrunscript.tools.git {
 		commit: Commit
 	}
 
-	export interface Repository {
-		reference: string
-		clone: (argument: repository.Argument & {
-			to: slime.jrunscript.file.Pathname,
-			recurseSubmodules?: boolean
-		}, events?: object ) => slime.jrunscript.tools.git.repository.Local
-	}
-
 	export interface Submodule {
 		/**
 		 * The logical name of the submodule, as it is referenced in configuration entries.
@@ -57,40 +49,6 @@ namespace slime.jrunscript.tools.git {
 
 		repository: repository.Local
 		commit: Commit
-	}
-
-	export namespace repository {
-		export interface Argument {
-			config?: { [x: string]: string }
-			credentialHelper?: string
-			credentialHelpers?: string[]
-			directory?: slime.jrunscript.file.Directory
-		}
-
-		export namespace argument {
-			export interface Directory {
-				/**
-				 * A directory containing a local Git repository.
-				 */
-				directory: slime.jrunscript.file.Directory
-			}
-
-			/** @deprecated */
-			export interface Local {
-				/**
-				 * A directory containing a local Git repository.
-				 */
-				local: slime.jrunscript.file.Directory
-			}
-
-			export interface Remote {
-				/**
-				 * A string that is compatible with the `git` command-line tool. See [Git
-				 * URLs](https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a).
-				 */
-				remote: string
-			}
-		}
 	}
 
 	export namespace internal {
@@ -136,7 +94,7 @@ namespace slime.jrunscript.tools.git {
 
 		export namespace old {
 			export interface Fixtures {
-				init: slime.jrunscript.tools.git.Exports["init"]
+				init: slime.jrunscript.tools.git.Exports["oo"]["init"]
 				write: (p: {
 					repository?: repository.Local
 					directory?: slime.jrunscript.file.Directory
@@ -200,11 +158,11 @@ namespace slime.jrunscript.tools.git {
 			function initialize() {
 				var tmpdir = fifty.jsh.file.object.temporary.directory();
 
-				var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+				var library = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("sub") });
 				configure(library);
 				commitFile(library, "b");
 
-				var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+				var parent = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("parent") });
 				configure(parent);
 				commitFile(parent, "a");
 
@@ -240,12 +198,12 @@ namespace slime.jrunscript.tools.git {
 		fifty.tests.submoduleWithDifferentNameAndPath = function() {
 			var tmpdir = fifty.jsh.file.object.temporary.directory();
 
-			var sub = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+			var sub = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("sub") });
 			configure(sub);
 			commitFile(sub, "b");
 			var subbranch = sub.status().branch.name;
 
-			var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+			var parent = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("parent") });
 			configure(parent);
 			commitFile(parent, "a");
 
@@ -268,12 +226,12 @@ namespace slime.jrunscript.tools.git {
 		fifty.tests.submoduleStatusCached = function() {
 			var tmpdir = fifty.jsh.file.object.temporary.directory();
 
-			var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+			var library = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("sub") });
 			configure(library);
 			commitFile(library, "b");
 			var branch = library.status().branch;
 
-			var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+			var parent = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("parent") });
 			configure(parent);
 			commitFile(parent, "a");
 
@@ -750,10 +708,12 @@ namespace slime.jrunscript.tools.git {
 		installation: slime.jrunscript.tools.git.Installation
 
 		//	Methods essentially copied from the default Installation
-		daemon: slime.jrunscript.tools.git.Installation["daemon"]
-		Repository: slime.jrunscript.tools.git.Installation["Repository"]
-		init: slime.jrunscript.tools.git.Installation["init"]
-		execute: slime.jrunscript.tools.git.Installation["execute"]
+		oo: {
+			daemon: slime.jrunscript.tools.git.Installation["daemon"]
+			Repository: slime.jrunscript.tools.git.Installation["Repository"]
+			init: slime.jrunscript.tools.git.Installation["init"]
+			execute: slime.jrunscript.tools.git.Installation["execute"]
+		}
 
 		install: Function & { GUI: any }
 	}
@@ -776,6 +736,17 @@ namespace slime.jrunscript.tools.git {
 		}
 	//@ts-ignore
 	})(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.wip = function() {
+				fifty.global.jsh.shell.console("WIP!");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>
 }

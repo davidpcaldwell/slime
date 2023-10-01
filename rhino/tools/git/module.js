@@ -72,8 +72,15 @@
 
 				$exports.installation = installation;
 
+				$exports.oo = {
+					daemon: void(0),
+					Repository: void(0),
+					init: void(0),
+					execute: void(0)
+				};
+
 				["daemon","Repository","init","execute"].forEach(function(name) {
-					$exports[name] = function() {
+					$exports.oo[name] = function() {
 						return installation[name].apply(installation,arguments);
 					};
 				},this);
@@ -326,7 +333,7 @@
 			var directory = p.start;
 			while(directory) {
 				if (directory && (directory.getSubdirectory(".git") || directory.getFile(".git"))) {
-					var repository = $exports.Repository({ directory: directory });
+					var repository = $exports.oo.Repository({ directory: directory });
 					var url = repository.remote.getUrl({ name: "origin" });
 					var fullurl = $context.api.web.Url.parse(url);
 					if (p.match(fullurl)) return directory;

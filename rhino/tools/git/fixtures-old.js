@@ -15,7 +15,7 @@
 
 		$export({
 			init: function(p) {
-				var rv = module.init(p);
+				var rv = module.oo.init(p);
 				rv.execute({
 					command: "config",
 					arguments: [

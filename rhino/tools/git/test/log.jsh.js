@@ -15,7 +15,7 @@
 		$api.fp.pipe(
 			jsh.script.cli.option.string({ longname: "revisionRange" }),
 			function(p) {
-				var repository = jsh.tools.git.Repository({ directory: jsh.shell.PWD });
+				var repository = jsh.tools.git.oo.Repository({ directory: jsh.shell.PWD });
 				jsh.shell.console("revision range = " + p.options.revisionRange);
 				var log = repository.log({
 					revisionRange: p.options.revisionRange

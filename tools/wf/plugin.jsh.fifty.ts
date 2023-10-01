@@ -361,8 +361,8 @@ namespace slime.jsh.wf {
 
 			fifty.tests.exports.requireGitIdentity.first = function() {
 				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
-				jsh.tools.git.init({ pathname: directory.pathname });
-				var unconfigured = jsh.tools.git.Repository({ directory: directory });
+				jsh.tools.git.oo.init({ pathname: directory.pathname });
+				var unconfigured = jsh.tools.git.oo.Repository({ directory: directory });
 				//jsh.wf.requireGitIdentity({ repository: unconfigured });
 				//	TODO	could we get this working?:
 				//	verify(jsh.wf).requireGitIdentity( ... ).threw.type(Error)
@@ -374,8 +374,8 @@ namespace slime.jsh.wf {
 			fifty.tests.exports.requireGitIdentity.second = function() {
 				//	TODO	test callbacks
 				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
-				jsh.tools.git.init({ pathname: directory.pathname });
-				var toConfigure = jsh.tools.git.Repository({ directory: directory });
+				jsh.tools.git.oo.init({ pathname: directory.pathname });
+				var toConfigure = jsh.tools.git.oo.Repository({ directory: directory });
 				verify(jsh.wf).evaluate(function() {
 					this.requireGitIdentity({
 						repository: toConfigure,
@@ -399,8 +399,8 @@ namespace slime.jsh.wf {
 
 			fifty.tests.exports.requireGitIdentity.third = function() {
 				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
-				jsh.tools.git.init({ pathname: directory.pathname });
-				var configured = jsh.tools.git.Repository({ directory: directory });
+				jsh.tools.git.oo.init({ pathname: directory.pathname });
+				var configured = jsh.tools.git.oo.Repository({ directory: directory });
 				configured.config({
 					arguments: ["user.name", "foo"]
 				});
@@ -480,7 +480,7 @@ namespace slime.jsh.wf {
 					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
 					check("after tmpdir");
 					jsh.shell.console("directory = " + directory);
-					var parent = jsh.tools.git.init({ pathname: directory.pathname });
+					var parent = jsh.tools.git.oo.init({ pathname: directory.pathname });
 					check("after init");
 					configure(parent);
 					check("after configure parent " + parent);
@@ -491,7 +491,7 @@ namespace slime.jsh.wf {
 					parent.commit({ all: true, message: "message a" });
 					check("after repository commit a");
 					var subdirectory = directory.getRelativePath("sub").createDirectory();
-					var child = jsh.tools.git.init({ pathname: subdirectory.pathname });
+					var child = jsh.tools.git.oo.init({ pathname: subdirectory.pathname });
 					check("after init child " + child);
 					configure(child);
 					check("after configure child");

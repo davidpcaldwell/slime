@@ -272,7 +272,7 @@ namespace slime.internal.jrunscript.bootstrap {
 				web.add(jsh.unit.mock.Web.github({
 					src: {
 						davidpcaldwell: {
-							slime: jsh.tools.git.Repository({ directory: jsh.shell.jsh.src })
+							slime: jsh.tools.git.oo.Repository({ directory: jsh.shell.jsh.src })
 						}
 					}
 				}));

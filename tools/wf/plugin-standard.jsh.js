@@ -33,7 +33,7 @@
 		 * @param { slime.jrunscript.file.Directory } project
 		 */
 		function getDefaultCommitMessage(project) {
-			var repository = library.git.Repository({ directory: project });
+			var repository = library.git.oo.Repository({ directory: project });
 			var status = repository.status();
 			if (status.paths) {
 				var modified = $api.fp.result(
@@ -578,7 +578,7 @@
 				}
 
 				$exports.git.hooks["post-commit"] = function() {
-					var repository = library.git.Repository({ directory: $context.base });
+					var repository = library.git.oo.Repository({ directory: $context.base });
 
 					//	We checked for upstream changes, so now we're going to push
 					//	If we allow branching, we may or may not really want to push, or may not want to push to
@@ -620,7 +620,7 @@
 								}
 							});
 							if (result) {
-								commit(library.git.Repository({ directory: $context.base }), "Update " + p.options.path + " submodule");
+								commit(library.git.oo.Repository({ directory: $context.base }), "Update " + p.options.path + " submodule");
 							}
 						}
 					) : void(0),
@@ -634,7 +634,7 @@
 					attach: $api.fp.pipe(
 						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
-							var repository = library.git.Repository({ directory: $context.base });
+							var repository = library.git.oo.Repository({ directory: $context.base });
 							var submodule = repository.submodule({ cached: true }).find(function(submodule) {
 								return submodule.path == p.options.path;
 							});
@@ -660,7 +660,7 @@
 					reset: $api.fp.pipe(
 						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
-							var repository = library.git.Repository({ directory: $context.base });
+							var repository = library.git.oo.Repository({ directory: $context.base });
 							jsh.shell.console("repository = " + $context.base);
 							var submodules = repository.submodule({ cached: true });
 							jsh.shell.console(
@@ -741,7 +741,7 @@
 							}
 						});
 						if (check) {
-							commit(library.git.Repository({ directory: $context.base }), p.options.message);
+							commit(library.git.oo.Repository({ directory: $context.base }), p.options.message);
 							jsh.shell.console("Committed changes to " + $context.base);
 						} else {
 							jsh.shell.console("Precommit checks failed; aborting commit.");
