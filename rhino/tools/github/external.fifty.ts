@@ -30,7 +30,7 @@
 			www.add(jsh.unit.mock.Web.github({
 				src: {
 					davidpcaldwell: {
-						slime: jsh.tools.git.Repository({ directory: jsh.shell.jsh.src })
+						slime: jsh.tools.git.oo.Repository({ directory: jsh.shell.jsh.src })
 					}
 				}
 			}));
@@ -44,7 +44,7 @@
 			const plugin = fifty.global.jsh.unit.mock.Web.github({
 				src: {
 					davidpcaldwell: {
-						slime: fifty.global.jsh.tools.git.Repository({ directory: fifty.global.jsh.shell.jsh.src })
+						slime: fifty.global.jsh.tools.git.oo.Repository({ directory: fifty.global.jsh.shell.jsh.src })
 					}
 				}
 			});

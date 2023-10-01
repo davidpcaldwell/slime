@@ -32,7 +32,7 @@
 				private: false,
 				src: {
 					davidpcaldwell: {
-						slime: jsh.tools.git.Repository({ directory: $context.slime })
+						slime: jsh.tools.git.oo.Repository({ directory: $context.slime })
 					}
 				}
 			}));

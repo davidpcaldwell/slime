@@ -63,7 +63,7 @@
 
 			scope.remotes = castToDirectory(jsh.shell.TMPDIR.createTemporary({ directory: true }));
 
-			daemon = module.daemon({
+			daemon = module.oo.daemon({
 				port: jsh.ip.getEphemeralPort().number,
 				basePath: scope.remotes.pathname,
 				exportAll: true
@@ -102,7 +102,7 @@
 						}
 						return {
 							server: repository,
-							remote: module.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/" + p.name })
+							remote: module.oo.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/" + p.name })
 						};
 					};
 
@@ -134,7 +134,7 @@
 				all: true,
 				message: "RemoteRepository a"
 			});
-			var remote = module.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/RemoteRepository" });
+			var remote = module.oo.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/RemoteRepository" });
 			scope.remote = remote;
 
 			var child = scope.remotes.getRelativePath("child").createDirectory();
@@ -145,7 +145,7 @@
 				all: true,
 				message: "child b"
 			});
-			var childRemote = module.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/child" });
+			var childRemote = module.oo.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/child" });
 			scope.child = childRemote;
 
 			scope.fixture = {

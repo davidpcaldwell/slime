@@ -11,7 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var repository = jsh.tools.git.Repository({ directory: jsh.script.file.parent.parent });
+		var repository = jsh.tools.git.oo.Repository({ directory: jsh.script.file.parent.parent });
 		var log = repository.log();
 		var byCommitter = $api.fp.Array.groupBy({
 			/**

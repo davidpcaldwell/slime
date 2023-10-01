@@ -97,7 +97,7 @@
 			return git.repository.command(jsh.tools.git.commands.remote.show).argument("origin").run().head;
 		};
 
-		var repository = (jsh.tools.git.Repository) ? jsh.tools.git.Repository({ directory: $context.base }) : void(0);
+		var repository = (jsh.tools.git.oo.Repository) ? jsh.tools.git.oo.Repository({ directory: $context.base }) : void(0);
 
 		/**
 		 *
@@ -168,7 +168,7 @@
 					var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.inputs.gitIdentityProvider.gui;
 
 					var gitIdentityProvided = jsh.wf.checks.requireGitIdentity({
-						repository: jsh.tools.git.Repository({ directory: $context.base }),
+						repository: jsh.tools.git.oo.Repository({ directory: $context.base }),
 						get: gitIdentityProvider
 					})({
 						console: function(e) {
@@ -253,7 +253,7 @@
 
 				(function wiki() {
 					if (!jsh.tools.git.installation) return;
-					var remote = jsh.tools.git.Repository({ remote: "https://github.com/davidpcaldwell/slime.wiki.git" });
+					var remote = jsh.tools.git.oo.Repository({ remote: "https://github.com/davidpcaldwell/slime.wiki.git" });
 					var location = $context.base.getRelativePath("local/wiki");
 					if (!location.directory) {
 						remote.clone({ to: location });
@@ -387,7 +387,7 @@
 					var success = true;
 
 					var trunk = getTrunk();
-					var repository = jsh.tools.git.Repository({ directory: $context.base });
+					var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
 					var branch = repository.status().branch.name;
 					if (branch == trunk) {
 						events.fire("console", "Cannot commit directly to " + trunk);
@@ -455,7 +455,7 @@
 			}
 		);
 
-		if (jsh.tools.git.Repository) {
+		if (jsh.tools.git.oo.Repository) {
 			(
 				function() {
 					$exports.git.branch = $api.fp.pipe(
@@ -474,7 +474,7 @@
 						}
 					)
 
-					$exports.git.branches = (jsh.tools.git.Repository) ? {
+					$exports.git.branches = (jsh.tools.git.oo.Repository) ? {
 						list: $api.fp.pipe(
 							function(p) {
 								repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
@@ -531,7 +531,7 @@
 				return rv;
 			},
 			function(p) {
-				var repository = jsh.tools.git.Repository({ directory: $context.base });
+				var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
 				//	TODO	deal with non-zero exit code
 				repository.merge({ name: p.options.branch, noCommit: true });
 			}
@@ -714,7 +714,7 @@
 					jsh.shell.console("Required: commit message (-m <message>).");
 					jsh.shell.exit(1);
 				}
-				var repository = jsh.tools.git.Repository({ directory: $context.base });
+				var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
 
 				jsh.wf.requireGitIdentity({
 					repository: repository,

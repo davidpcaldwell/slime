@@ -102,7 +102,7 @@ namespace slime.jsh.wf.standard {
 					//	Add a sample file to the fixture
 					project.directory.getRelativePath("a.js").write("", { append: false });
 
-					var repository = jsh.tools.git.init({
+					var repository = jsh.tools.git.oo.init({
 						pathname: project
 					});
 					fixtures.configure(repository);
@@ -204,7 +204,7 @@ namespace slime.jsh.wf.standard {
 						});
 						fixtures.configure(clone);
 
-						var slime = jsh.tools.git.Repository({ directory: clone.directory.getSubdirectory("slime") });
+						var slime = jsh.tools.git.oo.Repository({ directory: clone.directory.getSubdirectory("slime") });
 						slime.checkout({ branch: "main" });
 						fixtures.configure(slime);
 
@@ -229,7 +229,7 @@ namespace slime.jsh.wf.standard {
 					},
 					adapt: {
 						repository: function(repository: slime.jrunscript.tools.git.test.fixtures.Repository): slime.jrunscript.tools.git.repository.Local {
-							return jsh.tools.git.Repository({ directory: jsh.file.Pathname(repository.location).directory });
+							return jsh.tools.git.oo.Repository({ directory: jsh.file.Pathname(repository.location).directory });
 						}
 					}
 				}

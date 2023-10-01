@@ -168,7 +168,7 @@
 							if (p.replace) {
 								if (src.directory) src.directory.remove();
 							}
-							var remote = new jsh.tools.git.Repository({
+							var remote = new jsh.tools.git.oo.Repository({
 								remote: "https://github.com/davidpcaldwell/ncdbg.git"
 							});
 							var local = remote.clone({ to: src });

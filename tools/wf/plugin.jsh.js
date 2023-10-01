@@ -144,7 +144,7 @@
 							if (inputs.gitInstalled() && inputs.isGitClone()) {
 								var path = (p) ? p.path : "local/git/hooks";
 								var repository = jsh.tools.git.program({ command: "git" }).repository(inputs.project())
-								var clone = jsh.tools.git.Repository({ directory: jsh.file.Pathname(inputs.project()).directory });
+								var clone = jsh.tools.git.oo.Repository({ directory: jsh.file.Pathname(inputs.project()).directory });
 								var config = clone.config({
 									arguments: ["--list"]
 								});
@@ -169,12 +169,12 @@
 					},
 					submodule: {
 						status: function() {
-							var repository = jsh.tools.git.Repository({ directory: inputs.base() });
+							var repository = jsh.tools.git.oo.Repository({ directory: inputs.base() });
 							var submodules = repository.submodule();
 							return submodules.map(submoduleDecorate);
 						},
 						remove: function(p) {
-							var repository = jsh.tools.git.Repository({ directory: inputs.base() });
+							var repository = jsh.tools.git.oo.Repository({ directory: inputs.base() });
 							jsh.shell.console("Removing submodule " + p.path);
 							var checkout = inputs.base().getSubdirectory(p.path);
 							if (checkout && checkout.getSubdirectory(".git")) {
@@ -213,7 +213,7 @@
 						if (!subcheckout) {
 							throw new jsh.wf.error.Failure("Submodule not found at " + p.path + " of " + inputs.base());
 						}
-						var repository = jsh.tools.git.Repository({ directory: inputs.base().getSubdirectory(p.path) });
+						var repository = jsh.tools.git.oo.Repository({ directory: inputs.base().getSubdirectory(p.path) });
 
 						jsh.shell.console("Update subrepository " + repository + " ...");
 						var current = repository.branch().filter(function(branch) {
@@ -364,7 +364,7 @@
 				var fetch = $api.fp.impure.Input.memoized(function() {
 					var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
 
-					var repository = jsh.tools.git.Repository({ directory: inputs.base() });
+					var repository = jsh.tools.git.oo.Repository({ directory: inputs.base() });
 					jsh.shell.console("Fetching all updates ...");
 					repository.fetch({
 						all: true,
@@ -1200,7 +1200,7 @@
 					 */
 					function(p,events) {
 						p.repository.submodule().forEach(function(sub) {
-							var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
+							var submodule = jsh.tools.git.oo.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
 							var status = submodule.status();
 							if (status.paths) {
 								throw new jsh.wf.error.Failure(

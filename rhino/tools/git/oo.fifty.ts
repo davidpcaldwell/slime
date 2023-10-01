@@ -5,10 +5,54 @@
 //	END LICENSE
 
 namespace slime.jrunscript.tools.git {
-	interface Daemon {
-		port: number
-		basePath?: slime.jrunscript.file.Pathname
-		kill: () => void
+	export namespace oo {
+		export interface Daemon {
+			port: number
+			basePath?: slime.jrunscript.file.Pathname
+			kill: () => void
+		}
+	}
+
+	export interface Repository {
+		reference: string
+		clone: (argument: repository.Argument & {
+			to: slime.jrunscript.file.Pathname,
+			recurseSubmodules?: boolean
+		}, events?: object ) => slime.jrunscript.tools.git.repository.Local
+	}
+
+	export namespace repository {
+		export interface Argument {
+			config?: { [x: string]: string }
+			credentialHelper?: string
+			credentialHelpers?: string[]
+			directory?: slime.jrunscript.file.Directory
+		}
+
+		export namespace argument {
+			export interface Directory {
+				/**
+				 * A directory containing a local Git repository.
+				 */
+				directory: slime.jrunscript.file.Directory
+			}
+
+			/** @deprecated */
+			export interface Local {
+				/**
+				 * A directory containing a local Git repository.
+				 */
+				local: slime.jrunscript.file.Directory
+			}
+
+			export interface Remote {
+				/**
+				 * A string that is compatible with the `git` command-line tool. See [Git
+				 * URLs](https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a).
+				 */
+				remote: string
+			}
+		}
 	}
 
 	/**
@@ -19,7 +63,7 @@ namespace slime.jrunscript.tools.git {
 			port?: number
 			basePath?: slime.jrunscript.file.Pathname
 			exportAll?: boolean
-		}) => Daemon
+		}) => oo.Daemon
 
 		/**
 		 * @returns A `Repository` of the appropriate subtype as determined by the argument.
@@ -92,7 +136,7 @@ namespace slime.jrunscript.tools.git {
 				fifty.run(function worksWhenCreatingDirectory() {
 					var location = fifty.jsh.file.object.temporary.location();
 					verify(location).directory.is(null);
-					var createdLocation = internal.oo.subject.init({
+					var createdLocation = internal.oo.subject.oo.init({
 						pathname: location
 					});
 					verify(location).directory.is.type("object");
@@ -128,7 +172,7 @@ namespace slime.jrunscript.tools.git {
 
 					var handler = captor.handler;
 
-					var repository = internal.oo.subject.init({
+					var repository = internal.oo.subject.oo.init({
 						pathname: directory.pathname
 					}, handler);
 
@@ -297,7 +341,7 @@ namespace slime.jrunscript.tools.git {
 				fifty.tests.types.Repository.Local = {};
 				fifty.tests.types.Repository.Local.config = function() {
 					fifty.run(function old() {
-						var empty = internal.oo.subject.init({
+						var empty = internal.oo.subject.oo.init({
 							pathname: fifty.jsh.file.object.temporary.location()
 						});
 						var old = empty.config({
@@ -318,7 +362,7 @@ namespace slime.jrunscript.tools.git {
 					});
 
 					fifty.run(function list() {
-						var empty = internal.oo.subject.init({
+						var empty = internal.oo.subject.oo.init({
 							pathname: fifty.jsh.file.object.temporary.location()
 						});
 						var local = empty.config({
@@ -348,7 +392,7 @@ namespace slime.jrunscript.tools.git {
 							}, {});
 						}
 
-						var empty = internal.oo.subject.init({
+						var empty = internal.oo.subject.oo.init({
 							pathname: fifty.jsh.file.object.temporary.location()
 						});
 						fifty.verify(empty).evaluate(getConfigObject).evaluate.property("foo.bar").is(void(0));
@@ -391,7 +435,7 @@ namespace slime.jrunscript.tools.git {
 
 				fifty.tests.types.Repository.Local.status = function() {
 					var empty = internal.oo.fixtures.Repository.from.empty({ initialBranch: "trunk" });
-					var repository = internal.oo.subject.Repository({ directory: jsh.file.Pathname(empty.location).directory });
+					var repository = internal.oo.subject.oo.Repository({ directory: jsh.file.Pathname(empty.location).directory });
 					var status = repository.status();
 					verify(repository).status().evaluate.property("paths").is(void(0));
 					internal.oo.old.fixtures.write({
@@ -447,7 +491,7 @@ namespace slime.jrunscript.tools.git.internal.oo {
 
 	export namespace old {
 		export interface Fixtures {
-			init: slime.jrunscript.tools.git.Exports["init"]
+			init: slime.jrunscript.tools.git.Exports["oo"]["init"]
 			write: (p: {
 				repository?: repository.Local
 				directory?: slime.jrunscript.file.Directory
