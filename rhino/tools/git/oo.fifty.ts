@@ -503,7 +503,7 @@ namespace slime.jrunscript.tools.git.internal.oo {
 
 		export const fixtures: Fixtures = (
 			function(fifty: slime.fifty.test.Kit) {
-				return fifty.$loader.file("fixtures-old.js", { module: subject });
+				return fifty.$loader.file("fixtures-old.ts", { module: subject });
 			}
 		//@ts-ignore
 		)(fifty);

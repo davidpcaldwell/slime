@@ -42,7 +42,7 @@
 
 			scope.module = module;
 
-			var fixtures = $loader.file("fixtures-old.js", { module: module });
+			var fixtures = $loader.file("fixtures-old.ts", { module: module });
 
 			scope.init = fixtures.init;
 
