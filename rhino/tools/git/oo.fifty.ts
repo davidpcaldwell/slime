@@ -5,6 +5,15 @@
 //	END LICENSE
 
 namespace slime.jrunscript.tools.git {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.jsapi = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace oo {
 		export interface Daemon {
 			port: number
@@ -20,6 +29,28 @@ namespace slime.jrunscript.tools.git {
 			recurseSubmodules?: boolean
 		}, events?: object ) => slime.jrunscript.tools.git.repository.Local
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const fixtures = (
+				function() {
+					const script: slime.jrunscript.tools.git.test.fixtures.jsapi.Script = fifty.$loader.script("fixtures-jsapi.ts");
+					return script();
+				}
+			)();
+
+			const { remote } = fixtures;
+
+			fifty.tests.jsapi._1 = function() {
+				verify(remote).reference.is.type("string");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace repository {
 		export interface Argument {
