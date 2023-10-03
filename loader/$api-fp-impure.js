@@ -119,6 +119,11 @@
 							}
 						}
 					}
+				},
+				supply: function(input) {
+					return function(output) {
+						output(input());
+					}
 				}
 			},
 			Process: {
@@ -201,6 +206,13 @@
 							var tell = action(argument);
 							var adapted = $context.events.tell(tell);
 							adapted(handler);
+						}
+					}
+				},
+				pipe: function(mapping) {
+					return function(action) {
+						return function(argument) {
+							return action(mapping(argument));
 						}
 					}
 				}

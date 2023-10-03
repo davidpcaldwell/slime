@@ -274,6 +274,38 @@ namespace slime.$api.fp.impure {
 		)(fifty);
 	}
 
+	export namespace exports {
+		export interface Input {
+			supply: <T>(input: impure.Input<T>) => (output: impure.Output<T>) => void
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.impure.Input.supply = function() {
+					var buffer: number[] = [];
+
+					var input = function() { return 2; };
+					var sendTwo = $api.fp.impure.Input.supply(input);
+
+					var output = function(n: number) { buffer.push(n); };
+
+					verify(buffer).length.is(0);
+					sendTwo(output);
+					sendTwo(output);
+					verify(buffer).length.is(2);
+					verify(buffer)[0].is(2);
+					verify(buffer)[1].is(2);
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export interface Exports {
 		Input: exports.Input
 	}
@@ -373,7 +405,7 @@ namespace slime.$api.fp.world {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.exports.world.question = function() {
+			fifty.tests.exports.world.mapping = function() {
 				var doubler: Question<number, { argument: string }, number> = function(p) {
 					return function(events) {
 						events.fire("argument", String(p));
@@ -414,8 +446,55 @@ namespace slime.$api.fp.world {
 		Action: {
 			output: <P,E>(handler?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Action<P,E>) => slime.$api.fp.impure.Output<P>
 			tell: <P,E>(p: P) => (action: world.Action<P,E>) => world.Tell<E>
+
+			/**
+			 * Transforms an `Action` into an `Action` of a different argument type using a given function to map the
+			 * argument.
+			 *
+			 * @param mapping A function that transforms a value of the desired argument type into the original Action's
+			 * argument type.
+			 *
+			 * @returns An action which accepts the desired type.
+			 */
+			pipe: <P,R,E>(mapping: slime.$api.fp.Mapping<P,R>) => (action: slime.$api.fp.world.Action<R,E>) => slime.$api.fp.world.Action<P,E>
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.world.Action = fifty.test.Parent();
+
+			fifty.tests.exports.world.Action.pipe = function() {
+				var buffer: number[] = [];
+
+				var addNext: Action<number,void> = function(p) {
+					return function(e) {
+						buffer.push(p);
+					}
+				};
+
+				var allowString = $api.fp.world.Action.pipe(function(s: string) { return Number(s); });
+
+				var addAsNumber: Action<string,void> = allowString(addNext);
+
+				verify(buffer).length.is(0);
+
+				$api.fp.world.now.action(addNext, 2);
+				verify(buffer).length.is(1);
+				verify(buffer)[0].is(2);
+
+				$api.fp.world.now.action(addAsNumber, "3");
+				verify(buffer).length.is(2);
+				verify(buffer)[1].is(3);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
 		now: {
