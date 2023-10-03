@@ -412,6 +412,7 @@ namespace slime.$api.fp.world {
 		}
 
 		Action: {
+			output: <P,E>(handler?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Action<P,E>) => slime.$api.fp.impure.Output<P>
 			tell: <P,E>(p: P) => (action: world.Action<P,E>) => world.Tell<E>
 		}
 	}

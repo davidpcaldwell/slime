@@ -194,6 +194,15 @@
 					return function(action) {
 						return action(p);
 					}
+				},
+				output: function(handler) {
+					return function(action) {
+						return function(argument) {
+							var tell = action(argument);
+							var adapted = $context.events.tell(tell);
+							adapted(handler);
+						}
+					}
 				}
 			},
 			mapping: function(question, handler) {
