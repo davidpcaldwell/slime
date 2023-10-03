@@ -40,19 +40,32 @@
 						getRelativeToProject()
 					);
 
-					/** @type { (content: string) => slime.$api.fp.Mapping<slime.jrunscript.file.Location, slime.$api.fp.world.Tell<slime.jrunscript.file.world.events.FileOpenForWrite>> } */
-					var writeStringContent = function(content) {
-						return $api.fp.pipe(
-							jsh.file.Location.file.write,
-							$api.fp.property("string"),
-							$api.fp.world.Action.tell({ value: content })
-						);
+					var Output = {
+						/** @type { <P,R>(m: slime.$api.fp.Mapping<P,R>) => (o: slime.$api.fp.impure.Output<R>) => slime.$api.fp.impure.Output<P> } */
+						map: function(m) {
+							return function(f) {
+								return function(p) {
+									return f(m(p));
+								}
+							}
+						}
 					}
+
+					var writeStringContentToFile = $api.fp.pipe(
+						jsh.file.Location.file.write,
+						$api.fp.property("string"),
+						$api.fp.world.Action.output(),
+						Output.map(
+							/** @param { string } p */
+							function(p) { return { value: p }; }
+						)
+					);
 
 					$api.fp.now.invoke(
 						project(),
 						jsh.file.Location.directory.relativePath("wf.path"),
-						$api.fp.world.output(writeStringContent(wfpath()))
+						writeStringContentToFile,
+						function(f) { f(wfpath()) }
 					);
 				}
 			)
