@@ -30,43 +30,42 @@
 						else: inputs.PWD
 					});
 
-					var getRelativeToProject = $api.fp.impure.Input.map(
-						project,
-						jsh.file.Location.directory.relativeTo
-					);
-
 					var wfpath = $api.fp.impure.Input.map(
-						inputs.slime,
-						getRelativeToProject()
+						$api.fp.impure.Input.compose({
+							slime: inputs.slime,
+							project: project
+						}),
+						function(inputs) {
+							return jsh.file.Location.directory.relativeTo(inputs.project)(inputs.slime);
+						}
 					);
 
-					var Output = {
-						/** @type { <P,R>(m: slime.$api.fp.Mapping<P,R>) => (o: slime.$api.fp.impure.Output<R>) => slime.$api.fp.impure.Output<P> } */
-						map: function(m) {
-							return function(f) {
-								return function(p) {
-									return f(m(p));
-								}
-							}
-						}
-					}
+					/** @param { string } p */
+					var mapStringToWriteArgument = function(p) { return { value: p }; }
 
 					var writeStringContentToFile = $api.fp.pipe(
 						jsh.file.Location.file.write,
 						$api.fp.property("string"),
-						$api.fp.world.Action.output(),
-						Output.map(
-							/** @param { string } p */
-							function(p) { return { value: p }; }
-						)
+						$api.fp.world.Action.pipe(mapStringToWriteArgument),
+						$api.fp.world.Action.output()
 					);
 
-					$api.fp.now.invoke(
-						project(),
-						jsh.file.Location.directory.relativePath("wf.path"),
-						writeStringContentToFile,
-						function(f) { f(wfpath()) }
+					var getWfPathDestination = $api.fp.impure.Input.map(
+						project,
+						jsh.file.Location.directory.relativePath("wf.path")
 					);
+
+					var output = $api.fp.pipe(
+						writeStringContentToFile,
+						$api.fp.impure.Input.supply(wfpath)
+					);
+
+					var process = $api.fp.impure.Process.create({
+						input: getWfPathDestination,
+						output: output
+					});
+
+					$api.fp.impure.now.process(process);
 				}
 			)
 		)
