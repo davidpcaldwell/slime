@@ -43,7 +43,7 @@
 					/** @param { string } p */
 					var mapStringToWriteArgument = function(p) { return { value: p }; }
 
-					var writeStringContentToFile = $api.fp.pipe(
+					var fileWriteStringOutput = $api.fp.pipe(
 						jsh.file.Location.file.write,
 						$api.fp.property("string"),
 						$api.fp.world.Action.pipe(mapStringToWriteArgument),
@@ -56,16 +56,14 @@
 					);
 
 					var output = $api.fp.pipe(
-						writeStringContentToFile,
-						$api.fp.impure.Input.supply(wfpath)
+						fileWriteStringOutput,
+						$api.fp.impure.Input.supply(wfpath),
+						$api.fp.impure.now.process
 					);
 
-					var process = $api.fp.impure.Process.create({
-						input: getWfPathDestination,
-						output: output
-					});
-
-					$api.fp.impure.now.process(process);
+					$api.fp.impure.now.process(
+						$api.fp.impure.Input.supply(getWfPathDestination)(output)
+					);
 				}
 			)
 		)
