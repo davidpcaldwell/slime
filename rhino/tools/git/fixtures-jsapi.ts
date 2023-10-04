@@ -23,6 +23,14 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 				exportAll: true
 			});
 
+			//	TODO	use improved file, Git APIs for the below
+			remotes.getRelativePath("RemoteRepository").createDirectory();
+			jsh.shell.run({
+				command: "git",
+				arguments: ["init"],
+				directory: remotes.getSubdirectory("RemoteRepository")
+			});
+
 			var remote = module.oo.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/RemoteRepository" });
 
 			$export({

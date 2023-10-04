@@ -48,6 +48,17 @@ namespace slime.jrunscript.tools.git {
 			fifty.tests.jsapi._1 = function() {
 				verify(remote).reference.is.type("string");
 			}
+
+			fifty.tests.jsapi._2 = function() {
+				var to = fifty.jsh.file.object.temporary.location();
+
+				fifty.global.jsh.shell.console("Cloning...");
+				var local = remote.clone({
+					to: to
+				});
+				fifty.global.jsh.shell.console("Cloned.");
+				verify(local).reference.is.type("string");
+			}
 		}
 	//@ts-ignore
 	)(fifty);
@@ -566,6 +577,8 @@ namespace slime.jrunscript.tools.git.internal.oo {
 				fifty.run(fifty.tests.Installation.init);
 				fifty.run(fifty.tests.types.Repository.Local.config);
 				fifty.run(fifty.tests.types.Repository.Local.status);
+
+				fifty.run(fifty.tests.jsapi);
 			}
 		}
 	//@ts-ignore
