@@ -122,7 +122,9 @@
 				},
 				supply: function(input) {
 					return function(output) {
-						output(input());
+						return function() {
+							output(input());
+						}
 					}
 				}
 			},

@@ -276,7 +276,7 @@ namespace slime.$api.fp.impure {
 
 	export namespace exports {
 		export interface Input {
-			supply: <T>(input: impure.Input<T>) => (output: impure.Output<T>) => void
+			supply: <T>(input: impure.Input<T>) => (output: impure.Output<T>) => impure.Process
 		}
 
 		(
@@ -295,8 +295,8 @@ namespace slime.$api.fp.impure {
 					var output = function(n: number) { buffer.push(n); };
 
 					verify(buffer).length.is(0);
-					sendTwo(output);
-					sendTwo(output);
+					sendTwo(output)();
+					sendTwo(output)();
 					verify(buffer).length.is(2);
 					verify(buffer)[0].is(2);
 					verify(buffer)[1].is(2);
