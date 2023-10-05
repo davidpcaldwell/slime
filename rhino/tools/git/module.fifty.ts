@@ -31,26 +31,6 @@ namespace slime.jrunscript.tools.git {
 		commit: Commit
 	}
 
-	export interface Submodule {
-		/**
-		 * The logical name of the submodule, as it is referenced in configuration entries.
-		 */
-		name: string
-
-		/**
-		 * The path of the submodule within its parent.
-		 */
-		path: string
-
-		/**
-		 * The branch the submodule is set up to track, if it is set up to track one.
-		 */
-		branch?: string
-
-		repository: repository.Local
-		commit: Commit
-	}
-
 	export namespace internal {
 		export interface Environment {
 			[x: string]: string
@@ -279,6 +259,10 @@ namespace slime.jrunscript.tools.git {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * A `git` command that can be configured with an (optional) value of a given type and returns an (optional) value of another
+	 * specified type.
+	 */
 	export interface Command<P,R> {
 		invocation: (parameter: P) => Invocation
 
@@ -362,6 +346,13 @@ namespace slime.jrunscript.tools.git {
 
 	export namespace exports {
 		export namespace command {
+			/**
+			 * A function that provides the ability to execute a command against a given repository.
+			 *
+			 * When the command is executed, it may assume that its working directory is also the directory in which the repository
+			 * is stored -- in other words, that it is not being executed with `-C` -- for the purposes of resolving relative paths
+			 * and so forth.
+			 */
 			export type Executor = <P,R>(command: slime.jrunscript.tools.git.Command<P,R>) => {
 				argument: (argument: P) => {
 					/**
@@ -378,6 +369,52 @@ namespace slime.jrunscript.tools.git {
 		}
 	}
 
+	export namespace submodule {
+		/**
+		 * The declared configuration of a submodule in `.gitmodules`, where all the properties for a given submodule name are pulled
+		 * together into this structure. See [the Git documentation for `.gitmodules`](https://git-scm.com/docs/gitmodules) for the
+		 * definitions of these values.
+		 */
+		export interface Configuration {
+			name: string
+
+			path: string
+			url: string
+
+			update?: string
+			branch?: string
+			fetchRecurseSubmodules?: string
+			ignore?: "all" | "dirty" | "untracked" | "none"
+			shallow?: string
+		}
+	}
+
+	export interface RepositoryView {
+		Invocation: <P,R>(p: {
+			command: slime.jrunscript.tools.git.Command<P,R>
+			argument: P
+		}) => world.Invocation<P,R>
+
+		shell: (p: {
+			invocation: slime.jrunscript.tools.git.Invocation
+			stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
+		}) => shell.run.old.Invocation
+
+		command: exports.command.Executor
+
+		run: <P,R>(p: {
+			command: slime.jrunscript.tools.git.Command<P,R>
+			input: P
+			world?: world.Invocation<P,R>["world"]
+		}) => R
+
+		/**
+		 * Determines the current submodule configuration declared for this repository, in other words, the configuration stored in
+		 * `.gitmodules`, and returns it.
+		 */
+		gitmodules: () => submodule.Configuration[]
+	}
+
 	export interface Exports {
 		program: (program: Program) => {
 			Invocation: <P,R>(p: {
@@ -386,27 +423,10 @@ namespace slime.jrunscript.tools.git {
 				argument: P
 			}) => world.Invocation<P,R>
 
-			repository: (pathname: string) => {
-				Invocation: <P,R>(p: {
-					command: slime.jrunscript.tools.git.Command<P,R>
-					argument: P
-				}) => world.Invocation<P,R>
-
-				shell: (p: {
-					invocation: slime.jrunscript.tools.git.Invocation
-					stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
-				}) => shell.run.old.Invocation
-
-				command: exports.command.Executor
-
-				run: <P,R>(p: {
-					command: slime.jrunscript.tools.git.Command<P,R>
-					input: P
-					world?: world.Invocation<P,R>["world"]
-				}) => R
-			}
+			repository: (pathname: string) => RepositoryView
 
 			config: (values: { [name: string]: string }) => {
+				//	TODO	refactor so this can return RepositoryView also
 				repository: (pathname: string) => {
 					command: exports.command.Executor
 				}
@@ -685,10 +705,12 @@ namespace slime.jrunscript.tools.git {
 	export interface Context {
 		program: slime.jrunscript.file.File
 		api: {
-			js: any
-			java: any
+			js: slime.js.old.Exports
+			java: Pick<slime.jrunscript.host.Exports,"Thread">
+			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
-			Error: any
+			//	TODO	fix this
+			Error: slime.js.old.Exports["Error"]
 			time: slime.time.Exports
 			web: slime.web.Exports
 		}
@@ -741,8 +763,15 @@ namespace slime.jrunscript.tools.git {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { jsh } = fifty.global;
+
+			var subject = jsh.tools.git;
+
 			fifty.tests.wip = function() {
-				fifty.global.jsh.shell.console("WIP!");
+				var PWD = jsh.shell.PWD.pathname.toString();
+				var repository = subject.program({ command: "git" }).repository(PWD);
+				var submodules = repository.gitmodules();
+				jsh.shell.console(JSON.stringify(submodules,void(0),4));
 			}
 		}
 	//@ts-ignore

@@ -20,6 +20,26 @@ namespace slime.jrunscript.tools.git {
 			basePath?: slime.jrunscript.file.Pathname
 			kill: () => void
 		}
+
+		export interface Submodule {
+			/**
+			 * The logical name of the submodule, as it is referenced in configuration entries.
+			 */
+			name: string
+
+			/**
+			 * The path of the submodule within its parent.
+			 */
+			path: string
+
+			/**
+			 * The branch the submodule is set up to track, if it is set up to track one.
+			 */
+			branch?: string
+
+			repository: repository.Local
+			commit: Commit
+		}
 	}
 
 	export interface Repository {
@@ -297,7 +317,7 @@ namespace slime.jrunscript.tools.git {
 				/**
 				 * Returns a list of submodules for this repository.
 				 */
-				(p?: { cached?: boolean }): Submodule[]
+				(p?: { cached?: boolean }): oo.Submodule[]
 
 				add: (p: {
 					config?: { [name: string]: string }
@@ -554,7 +574,7 @@ namespace slime.jrunscript.tools.git.internal.oo {
 	export interface Context {
 		api: {
 			js: slime.js.old.Exports
-			java: slime.jrunscript.host.Exports
+			java: Pick<slime.jrunscript.host.Exports,"Thread">
 			shell: slime.jrunscript.shell.Exports
 		}
 		library: {

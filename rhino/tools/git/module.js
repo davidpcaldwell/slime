@@ -18,6 +18,8 @@
 		var scripts = {
 			/** @type { slime.jrunscript.tools.git.internal.log.Script } */
 			log: $loader.script("log.js"),
+			/** @type { slime.jrunscript.tools.git.internal.results.Script } */
+			results: $loader.script("results.js"),
 			/** @type { slime.jrunscript.tools.git.internal.commands.Script } */
 			commands: $loader.script("commands.js"),
 			/** @type { slime.jrunscript.tools.git.internal.oo.Script } */
@@ -30,6 +32,7 @@
 					time: $context.api.time
 				}
 			}),
+			results: scripts.results(),
 			commands: scripts.commands()
 		}
 
@@ -258,6 +261,39 @@
 					}
 				}
 			};
+		};
+
+		/** @type { slime.jrunscript.tools.git.Command<void,slime.jrunscript.tools.git.submodule.Configuration[]> } */
+		var submoduleConfiguration = {
+			invocation: function() {
+				return {
+					command: "config",
+					arguments: ["--file", ".gitmodules", "--list"]
+				}
+			},
+			result: $api.fp.pipe(
+				library.results.config.list,
+				function(config) {
+					return config.reduce(function(rv,setting) {
+						var tokens = setting.name.split(".");
+						if (tokens[0] != "submodule") throw new TypeError("Not submodule: " + setting.name);
+						var name = tokens[1];
+						var property = tokens[2];
+						if (!rv[name]) rv[name] = {};
+						rv[name][property] = setting.value;
+						return rv;
+					}, {});
+				},
+				//	The reduce step above seems to be a useful way to group the values together by name; now we'll explode them
+				//	back into an array.
+				function(object) { return Object.entries(object); },
+				$api.fp.Array.map(function(entry) {
+					return $api.Object.compose(
+						{ name: entry[0] },
+						entry[1]
+					);
+				})
+			)
 		}
 
 		$exports.program = function(program) {
@@ -310,6 +346,17 @@
 								}
 							);
 							return run(invocation)
+						},
+						gitmodules: function() {
+							var gitmodulesExists = $api.fp.now.invoke(
+								pathname,
+								$context.api.file.Location.from.os,
+								$context.api.file.Location.directory.relativePath(".gitmodules"),
+								$api.fp.world.mapping($context.api.file.Location.file.exists())
+							);
+							if (!gitmodulesExists) return [];
+							var executor = commandExecutor(program, {}, pathname);
+							return executor(submoduleConfiguration).argument().run();
 						}
 					}
 				},

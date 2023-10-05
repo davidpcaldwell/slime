@@ -32,6 +32,7 @@
 						java: {
 							Thread: jsh.java.Thread
 						},
+						file: jsh.file,
 						time: jsh.time,
 						shell: jsh.shell,
 						Error: jsh.js.Error,

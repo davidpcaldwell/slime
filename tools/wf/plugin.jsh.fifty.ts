@@ -73,7 +73,7 @@ namespace slime.jsh.wf {
 		}
 	}
 
-	export interface Submodule extends slime.jrunscript.tools.git.Submodule {
+	export interface Submodule extends slime.jrunscript.tools.git.oo.Submodule {
 		status: ReturnType<slime.jrunscript.tools.git.repository.Local["status"]>
 		state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>
 	}
@@ -193,7 +193,7 @@ namespace slime.jsh.wf {
 			}
 
 			Submodule: {
-				construct: (git: slime.jrunscript.tools.git.Submodule) => Submodule
+				construct: (git: slime.jrunscript.tools.git.oo.Submodule) => Submodule
 			}
 
 			submodule: {
