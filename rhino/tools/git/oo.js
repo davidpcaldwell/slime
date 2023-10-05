@@ -193,6 +193,7 @@
 			var git = cli.old;
 
 			var configFile = {
+				//	TODO	somewhat duplicative of results.js
 				/**
 				 *
 				 * @param { slime.jrunscript.tools.git.internal.Result } result
@@ -219,6 +220,7 @@
 								}
 							},
 							createReturnValue: function(p) {
+								//	TODO	somewhat duplicative of results.js
 								return function(result) {
 									return $api.Object({
 										properties: result.output.stdout.map(function(line) {

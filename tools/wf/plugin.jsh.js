@@ -83,7 +83,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.tools.git.Submodule } submodule
+				 * @param { slime.jrunscript.tools.git.oo.Submodule } submodule
 				 * @returns { slime.jsh.wf.Submodule }
 				 */
 				var submoduleDecorate = function(submodule) {
