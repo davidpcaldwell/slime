@@ -633,28 +633,9 @@
 					),
 					attach: $api.fp.pipe(
 						jsh.script.cli.option.string({ longname: "path" }),
+						jsh.script.cli.option.boolean({ longname: "recursive" }),
 						function(p) {
-							var repository = library.git.oo.Repository({ directory: $context.base });
-							var submodule = repository.submodule({ cached: true }).find(function(submodule) {
-								return submodule.path == p.options.path;
-							});
-							if (!submodule) {
-								jsh.shell.console("ERROR: " + repository + " does not have a (direct) submodule at " + p.options.path);
-								return 1;
-							}
-							var tracking = submodule.branch;
-							var branch = submodule.repository.status().branch.name;
-							if (branch === null && tracking) {
-								submodule.repository.branch({
-									name: tracking,
-									startPoint: "HEAD",
-									force: true
-								});
-								submodule.repository.checkout({ branch: tracking });
-							} else {
-								jsh.shell.console("Submodule " + p.options.path + " of " + repository + " must be detached HEAD with tracking branch.");
-								return 1;
-							}
+							api.project().submodule.attach({ path: p.options.path, recursive: p.options.recursive });
 						}
 					),
 					reset: $api.fp.pipe(

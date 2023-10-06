@@ -274,27 +274,6 @@ namespace slime.jrunscript.tools.git {
 	}
 
 	export namespace command.status {
-		export interface Result {
-			/**
-			 * The current checked out branch, or `null` if a detached HEAD is checked out.
-			 */
-			branch: string
-
-			entries: {
-				code: string
-				path: string
-				orig_path?: string
-			}[]
-
-			/**
-			 * @deprecated Replaced by the `entries` property, which properly captures rename entries.
-			 *
-			 * An object whose keys are string paths within the repository, and whose values are the two-letter output
-			 * of the `git status --porcelain` command. This property is absent if no files have a status.
-			 */
-			paths?: { [path: string]: string }
-		}
-
 		export namespace old {
 			export type Result = Pick<command.status.Result,"branch" | "paths">
 		}

@@ -23,6 +23,7 @@ namespace slime.jsh.wf.standard {
 				submodule: {
 					remove: slime.jsh.wf.Exports["project"]["submodule"]["remove"]
 					status: slime.jsh.wf.Exports["project"]["submodule"]["status"]
+					attach: slime.jsh.wf.Exports["project"]["submodule"]["attach"]
 				}
 				lint: {
 					eslint: slime.jsh.wf.Exports["project"]["lint"]["eslint"]

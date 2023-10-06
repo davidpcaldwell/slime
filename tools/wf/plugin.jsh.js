@@ -52,7 +52,7 @@
 						var project = function() {
 							if (jsh.shell.environment.PROJECT) {
 								//	TODO	check for existence here?
-								return jsh.shell.environment.PROJECT;
+								return jsh.file.Pathname(jsh.shell.environment.PROJECT).toString();
 							}
 							return jsh.shell.PWD.pathname.toString();
 						};
@@ -108,8 +108,90 @@
 							]
 						}
 					}
-				}
+				};
 
+				var git = jsh.tools.git.program({ command: "git" });
+
+				/**
+				 *
+				 * @param { string } parent
+				 * @param { string } path
+				 * @param { boolean } recursive
+				 */
+				var submoduleAttach = function(parent,path,recursive) {
+					var pathname = $api.fp.now.invoke(
+						parent,
+						jsh.file.Location.from.os,
+						jsh.file.Location.directory.relativePath(path),
+						$api.fp.property("pathname")
+					);
+
+					var submodule = git.repository(parent).gitmodules().find(function(element) {
+						return element.path == path;
+					});
+					if (!submodule) throw new Error("ERROR: " + pathname + " does not have a (direct) submodule at " + path);
+
+					var repository = git.repository(pathname);
+
+					if (recursive) {
+						var submodules = repository.gitmodules();
+						submodules.forEach(function(submodule) {
+							submoduleAttach(pathname,submodule.path,recursive);
+						});
+					}
+
+					var tracking = submodule.branch;
+					var branch = repository.command(jsh.tools.git.commands.status).argument().run().branch;
+					if (branch == tracking) {
+						//	do nothing
+						jsh.shell.console("Branch already checked out at " + pathname + ": " + tracking);
+					} else if (branch === null && tracking) {
+						/** @type { slime.jrunscript.tools.git.Command<string,void> } */
+						var forceMoveBranch = {
+							invocation: function(p) {
+								return {
+									command: "branch",
+									arguments: ["-f", p, "HEAD"]
+								}
+							}
+						};
+
+						/** @type { slime.jrunscript.tools.git.Command<string,void> } */
+						var checkout = {
+							invocation: function(p) {
+								return {
+									command: "checkout",
+									arguments: [p]
+								}
+							}
+						};
+
+						var at = $api.fp.impure.Input.map(
+							$api.fp.impure.Input.value(parent),
+							jsh.file.Location.from.os,
+							jsh.file.Location.directory.relativePath(submodule.path),
+							function(p) { return p; },
+							$api.fp.property("pathname")
+						)
+
+						/** @type { slime.jrunscript.tools.git.RepositoryView } */
+						var subrepository = git.repository(
+							$api.fp.impure.now.input(
+								at
+							)
+						);
+
+						subrepository.command(forceMoveBranch).argument(tracking).run();
+						subrepository.command(checkout).argument(tracking).run();
+
+						jsh.shell.console("Reset " + at() + " to tracking branch " + tracking);
+					} else {
+						jsh.shell.console("Branch " + branch + " tracking " + tracking);
+						throw new Error("Submodule " + path + " of " + inputs.project() + " must be detached HEAD with tracking branch.");
+					}
+				};
+
+				/** @type { slime.jsh.wf.ProjectView } */
 				var project = {
 					base: inputs.base,
 					Submodule: {
@@ -205,6 +287,16 @@
 								module.remove();
 							} else {
 								jsh.shell.console("No modules/ directory for " + p.path + ".");
+							}
+						},
+						attach: function(p) {
+							if (p.path) {
+								submoduleAttach(inputs.project(), p.path, p.recursive);
+							} else {
+								var repository = git.repository(inputs.project());
+								repository.gitmodules().forEach(function(submodule) {
+									submoduleAttach(inputs.project(), submodule.path, p.recursive);
+								});
 							}
 						}
 					},
