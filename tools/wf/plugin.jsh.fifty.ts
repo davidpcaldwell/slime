@@ -171,6 +171,35 @@ namespace slime.jsh.wf {
 	//@ts-ignore
 	)(fifty);
 
+	export interface ProjectView {
+		base: slime.$api.fp.impure.Input<slime.jrunscript.file.Directory>
+
+		git: {
+			installHooks(p?: { path: string }): void
+		}
+
+		lint: {
+			eslint(): boolean
+		}
+
+		Submodule: {
+			construct: (git: slime.jrunscript.tools.git.oo.Submodule) => Submodule
+		}
+
+		submodule: {
+			status: () => Submodule[]
+			remove: (p: { path: string }) => void
+			attach: (p: { path: string, recursive: boolean }) => void
+		}
+
+		updateSubmodule: (p: { path: string }) => void
+
+		/**
+		 * Given a {@link standard.Project} defining a few simple operations, initializes the given `$exports` object
+		 * with a standard set of `wf` commands defined by {@link standard.Interface}.
+		 */
+		initialize: standard.Export
+	}
 
 	/**
 	 * The `project.initialize` function provides a default `wf` implementation for projects with a number of standard commands; it
@@ -181,34 +210,11 @@ namespace slime.jsh.wf {
 			Failure: $api.error.old.Type<"jsh.wf.Failure",{}>
 		}
 
-		project: {
-			base: slime.$api.fp.impure.Input<slime.jrunscript.file.Directory>
-
-			git: {
-				installHooks(p?: { path: string }): void
-			}
-
-			lint: {
-				eslint(): boolean
-			}
-
-			Submodule: {
-				construct: (git: slime.jrunscript.tools.git.oo.Submodule) => Submodule
-			}
-
-			submodule: {
-				status: () => Submodule[]
-				remove: (p: { path: string }) => void
-			}
-
-			updateSubmodule: (p: { path: string }) => void
-
-			/**
-			 * Given a {@link standard.Project} defining a few simple operations, initializes the given `$exports` object
-			 * with a standard set of `wf` commands defined by {@link standard.Interface}.
-			 */
-			initialize: standard.Export
-		}
+		/**
+		 * Provides a set of operations that can be performed on the current `Project`, where "current" is defined by the `PROJECT`
+		 * environment variable (if set), and otherwise by the current working directory.
+		 */
+		project: ProjectView
 
 		git: {
 			commands: {
