@@ -192,7 +192,12 @@ namespace slime.jsh.wf {
 			attach: (p: { path: string, recursive: boolean }) => void
 		}
 
+		//	TODO	move to submodule.update
 		updateSubmodule: (p: { path: string }) => void
+
+		subproject: {
+			initialize: slime.$api.fp.world.Action<{ path: string }, slime.jrunscript.shell.run.TellEvents>
+		}
 
 		/**
 		 * Given a {@link standard.Project} defining a few simple operations, initializes the given `$exports` object

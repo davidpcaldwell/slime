@@ -356,6 +356,28 @@ namespace slime.$api.fp.impure {
 				verify(saved).is(void(0));
 				p();
 				verify(saved).is("4");
+			};
+
+			fifty.tests.exports.Process.create = function() {
+				var buffer: number[] = [];
+
+				var input = function() { return 2; };
+
+				var output = function(n: number) { buffer.push(n); };
+
+				verify(buffer).length.is(0);
+
+				var created = $api.fp.impure.Process.create({
+					input: input,
+					output: output
+				})
+
+				created();
+				created();
+
+				verify(buffer).length.is(2);
+				verify(buffer)[0].is(2);
+				verify(buffer)[1].is(2);
 			}
 		}
 	//@ts-ignore
@@ -427,6 +449,52 @@ namespace slime.$api.fp.world {
 	)(fifty);
 
 	export interface Exports {
+		Process: {
+			action: <P,E>(p: {
+				action: Action<P,E>,
+				argument: P,
+				handlers: slime.$api.event.Handlers<E>
+			}) => impure.Process
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.world.Process = {};
+			fifty.tests.exports.world.Process.action = function() {
+				var buffer: number[] = [];
+
+				var action: world.Action<number, { got: number }> = function(p) {
+					return function(events) {
+						events.fire("got", p);
+					}
+				};
+
+				var process = $api.fp.world.Process.action({
+					action: action,
+					argument: 2,
+					handlers: {
+						got: function(e) {
+							buffer.push(e.detail);
+						}
+					}
+				});
+
+				verify(buffer).length.is(0);
+				process();
+				verify(buffer).length.is(1);
+				verify(buffer)[0].is(2);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		output: <P,E>(action: world.Action<P,E>, handler?: slime.$api.event.Handlers<E>) => impure.Output<P>
 
 		process: <E>(tell: world.Tell<E>, handler?: slime.$api.event.Handlers<E>) => impure.Process
@@ -445,6 +513,7 @@ namespace slime.$api.fp.world {
 
 		Action: {
 			output: <P,E>(handler?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Action<P,E>) => slime.$api.fp.impure.Output<P>
+
 			tell: <P,E>(p: P) => (action: world.Action<P,E>) => world.Tell<E>
 
 			/**
@@ -535,8 +604,6 @@ namespace slime.$api.fp.internal.impure {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
 			}
-
-			fifty.tests.wip = fifty.tests.suite;
 		}
 	//@ts-ignore
 	)(fifty);
