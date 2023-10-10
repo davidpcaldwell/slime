@@ -312,6 +312,7 @@
 							return branch.current;
 						})[0];
 						jsh.shell.console("Subrepository is on branch: " + current.name);
+						//	TODO	this should not hard-code master, but should use upstream default
 						if (current.name != "master") {
 							throw new jsh.wf.error.Failure("Cannot update: not on master, but " + current.name);
 						}
@@ -330,6 +331,44 @@
 							}
 						} else {
 							jsh.shell.console(repository + " is up to date.");
+						}
+					},
+					subproject: {
+						initialize: function(p) {
+							return function(events) {
+								var subproject = $api.fp.impure.Input.map(
+									inputs.base,
+									$api.fp.property("pathname"),
+									function(pathname) { return pathname.os.adapt(); },
+									jsh.file.Location.directory.relativePath(p.path)
+								);
+
+								$api.fp.impure.now.process(
+									$api.fp.impure.Process.create({
+										input: $api.fp.impure.Input.compose({
+											subproject: subproject,
+											wf: $api.fp.impure.Input.map(
+												subproject,
+												jsh.file.Location.directory.relativePath("wf"),
+												$api.fp.property("pathname")
+											)
+										}),
+										output: function(inputs) {
+											jsh.shell.subprocess.action(
+												{
+													command: "bash",
+													arguments: [inputs.wf, "initialize"],
+													directory: inputs.subproject.pathname,
+													stdio: {
+														output: "line",
+														error: "line"
+													}
+												}
+											)(events);
+										}
+									})
+								);
+							}
 						}
 					},
 					/**

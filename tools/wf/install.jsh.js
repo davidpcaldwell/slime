@@ -55,14 +55,19 @@
 						jsh.file.Location.directory.relativePath("wf.path")
 					);
 
+					/**
+					 * Writes the wf SLIME path to the given location.
+					 */
 					var output = $api.fp.pipe(
 						fileWriteStringOutput,
 						$api.fp.impure.Input.supply(wfpath),
 						$api.fp.impure.now.process
 					);
 
+					var writeWfPath = $api.fp.impure.Input.supply(getWfPathDestination)(output);
+
 					$api.fp.impure.now.process(
-						$api.fp.impure.Input.supply(getWfPathDestination)(output)
+						writeWfPath
 					);
 				}
 			)

@@ -175,6 +175,15 @@
 
 		/** @type { slime.$api.fp.world.Exports } */
 		var world = {
+			Process: {
+				action: function(p) {
+					return function() {
+						var tell = p.action(p.argument);
+						var adapted = $context.events.tell(tell);
+						adapted(p.handlers);
+					}
+				}
+			},
 			Question: {
 				pipe: function(a,q) {
 					return function(n) {
