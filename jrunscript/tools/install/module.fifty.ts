@@ -185,6 +185,7 @@ namespace slime.jrunscript.tools.install {
 	export namespace exports {
 		export interface Download {
 			from: {
+				//	TODO	guess download format?
 				url: (url: string) => install.Download
 			}
 		}
