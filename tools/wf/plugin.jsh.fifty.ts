@@ -175,7 +175,7 @@ namespace slime.jsh.wf {
 		base: slime.$api.fp.impure.Input<slime.jrunscript.file.Directory>
 
 		git: {
-			installHooks(p?: { path: string }): void
+			installHooks: slime.$api.fp.impure.Process
 		}
 
 		lint: {

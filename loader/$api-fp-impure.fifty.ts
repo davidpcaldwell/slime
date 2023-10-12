@@ -310,6 +310,54 @@ namespace slime.$api.fp.impure {
 		Input: exports.Input
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.impure.Output = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		export interface Output {
+			process: <P>(p: P) => (output: impure.Output<P>) => impure.Process
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.impure.Output.process = function() {
+					var buffer: number[] = [];
+
+					var output: impure.Output<number> = function(p) {
+						buffer.push(p);
+					};
+
+					var process = $api.fp.impure.Output.process(2)(output);
+
+					verify(buffer).length.is(0);
+
+					process();
+					process();
+
+					verify(buffer).length.is(2);
+					verify(buffer)[0].is(2);
+					verify(buffer)[1].is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Output: exports.Output
+	}
+
 	export interface Exports {
 		Process: {
 			compose: (processes: impure.Process[]) => impure.Process
