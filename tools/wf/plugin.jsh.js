@@ -214,7 +214,7 @@
 						}
 					},
 					git: {
-						installHooks: function installHooks(p) {
+						installHooks: function installHooks() {
 							var ALL_GIT_HOOKS = [
 								"post-checkout",
 								"pre-commit",
@@ -224,7 +224,7 @@
 							];
 
 							if (inputs.gitInstalled() && inputs.isGitClone()) {
-								var path = (p) ? p.path : "local/git/hooks";
+								var path = "local/git/hooks";
 								var repository = jsh.tools.git.program({ command: "git" }).repository(inputs.project())
 								var clone = jsh.tools.git.oo.Repository({ directory: jsh.file.Pathname(inputs.project()).directory });
 								var config = clone.config({
@@ -234,18 +234,16 @@
 									jsh.shell.console("Installing git hooks ...");
 									repository.command(setConfigValue).argument({ name: "core.hookspath", value: path }).run();
 								}
-								if (!p) {
-									ALL_GIT_HOOKS.forEach(function(hook) {
-										var location = inputs.base().getRelativePath(path + "/" + hook);
-										location.write("./wf " + "git.hooks." + hook + " " + "\"$@\"", { append: false, recursive: true });
-										jsh.shell.run({
-											command: "chmod",
-											arguments: $api.Array.build(function(rv) {
-												rv.push("+x", location);
-											})
+								ALL_GIT_HOOKS.forEach(function(hook) {
+									var location = inputs.base().getRelativePath(path + "/" + hook);
+									location.write("./wf " + "git.hooks." + hook + " " + "\"$@\"", { append: false, recursive: true });
+									jsh.shell.run({
+										command: "chmod",
+										arguments: $api.Array.build(function(rv) {
+											rv.push("+x", location);
 										})
-									});
-								}
+									})
+								});
 							}
 						}
 					},

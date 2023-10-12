@@ -128,6 +128,15 @@
 					}
 				}
 			},
+			Output: {
+				process: function(p) {
+					return function(output) {
+						return function() {
+							output(p);
+						}
+					}
+				}
+			},
 			Process: {
 				compose: function(processes) {
 					return function() {
