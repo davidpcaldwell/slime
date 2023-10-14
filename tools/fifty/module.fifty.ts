@@ -88,7 +88,7 @@ namespace slime.fifty {
 	 * ### Running Fifty tests in a browser
 	 *
 	 * To run a Fifty test definition under a browser:
-	 * `/fifty test.browser [--interactive] [--chrome:data pathname] [--chrome:debug:vscode] file.fifty.ts [--part part]`
+	 * `/fifty test.browser [--chrome:data pathname] [--base pathname] file.fifty.ts [--part part] [--interactive] [--chrome:debug:vscode]`
 	 *
 	 * This invokes the underlying `tools/fifty/test-browser.jsh.js` script. The
 	 * [script's code](../src/tools/fifty/test-browser.jsh.js?as=text) defines the semantics of the
