@@ -135,6 +135,13 @@
 							output(p);
 						}
 					}
+				},
+				compose: function(os) {
+					return function(p) {
+						os.forEach(function(o) {
+							o(p);
+						});
+					}
 				}
 			},
 			Process: {

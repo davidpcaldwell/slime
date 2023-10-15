@@ -352,6 +352,10 @@ namespace slime.$api.fp.impure {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface Output {
+			compose: <P>(elements: impure.Output<P>[]) => impure.Output<P>
+		}
 	}
 
 	export interface Exports {
