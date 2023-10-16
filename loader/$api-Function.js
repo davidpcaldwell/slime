@@ -286,6 +286,16 @@
 				}
 			},
 			Object: {
+				property: function(p) {
+					return function(target) {
+						var rv = Object.assign(
+							{},
+							target
+						);
+						rv[p.property] = p.change(rv[p.property]);
+						return rv;
+					}
+				},
 				entries: Object.entries,
 				fromEntries: Object.fromEntries
 			},
