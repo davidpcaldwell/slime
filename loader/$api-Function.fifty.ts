@@ -329,6 +329,11 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		Object: {
+			property: <T, K extends keyof T>(p: {
+				property: K
+				change: slime.$api.fp.Transform<T[K]>
+			}) => slime.$api.fp.Transform<T>
+
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.entries`. */
 			entries: ObjectConstructor["entries"]
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.fromEntries`. */
@@ -342,7 +347,17 @@ namespace slime.$api.fp {
 		) {
 			const { verify, run } = fifty;
 
+			const subject = fifty.global.$api.fp.Object;
+
 			fifty.tests.Object = function() {
+				type X = { a: number, b: string };
+
+				run(function properties() {
+					var before: X = { a: 2, b: "hey" };
+					verify(before).evaluate(subject.property({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+					verify(before).evaluate(subject.property({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+				});
+
 				run(function fromEntries() {
 					var array = [ ["a", 2], ["b", 3] ];
 					var result: { a: number, b: number } = fifty.global.$api.fp.result(
