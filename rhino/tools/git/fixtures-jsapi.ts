@@ -35,9 +35,25 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 			dir.getRelativePath("a").write("a", { append: false });
 			var host = module.oo.Repository({ directory: dir });
 			host.add({ path: "a" });
-			host.commit({
-				all: true,
-				message: "RemoteRepository a"
+			module.program({ command: "git" }).repository(dir.pathname.toString()).command(
+				{
+					invocation: function(p) {
+						return {
+							command: "commit",
+							arguments: [
+								"--all",
+								"--message", "RemoteRepository a"
+							]
+						}
+					}
+				}
+			).argument({}).run({
+				stdout: function(line) {
+					jsh.shell.console("STDOUT: " + line);
+				},
+				stderr: function(line) {
+					jsh.shell.console("STDERR: " + line);
+				}
 			});
 
 			var remote = module.oo.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/RemoteRepository" });
