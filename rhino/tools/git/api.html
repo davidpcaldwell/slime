@@ -68,18 +68,6 @@ END LICENSE
 								<span>The clone created by the operation.</span>
 							</div>
 						</li>
-						<script type="application/x.jsapi#tests">
-							var paths = {
-								remote: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname,
-								local: jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname
-							}
-							if (CLONE_REGRESSION_FIXED) {
-								var fromRemote = remote.clone({ to: paths.remote });
-								verify(fromRemote).getFile("a").read(String).is("a");
-								var fromLocal = fromRemote.clone({ to: paths.local });
-								verify(fromLocal).getFile("a").read(String).is("a");
-							}
-						</script>
 					</ul>
 				</div>
 				<div class="type">

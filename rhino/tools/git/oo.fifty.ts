@@ -56,6 +56,9 @@ namespace slime.jrunscript.tools.git {
 		) {
 			const { verify } = fifty;
 
+			//	This is from JSAPI, unclear to what it refers. It was false there; we've made it true here
+			const CLONE_REGRESSION_FIXED = true;
+
 			const fixtures = (
 				function() {
 					const script: slime.jrunscript.tools.git.test.fixtures.jsapi.Script = fifty.$loader.script("fixtures-jsapi.ts");
@@ -78,6 +81,20 @@ namespace slime.jrunscript.tools.git {
 				});
 				fifty.global.jsh.shell.console("Cloned.");
 				verify(local).reference.is.type("string");
+			}
+
+			fifty.tests.jsapi._3 = function() {
+				var paths = {
+					remote: fifty.jsh.file.object.temporary.directory().pathname,
+					local: fifty.jsh.file.object.temporary.directory().pathname
+				}
+				//	TODO	note that this test currently does not do anything except create temporary directories
+				if (CLONE_REGRESSION_FIXED) {
+					var fromRemote = remote.clone({ to: paths.remote });
+					verify(fromRemote).directory.getFile("a").read(String).evaluate(String).is("a");
+					var fromLocal = fromRemote.clone({ to: paths.local });
+					verify(fromLocal).directory.getFile("a").read(String).evaluate(String).is("a");
+				}
 			}
 		}
 	//@ts-ignore
