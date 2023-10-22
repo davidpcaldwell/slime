@@ -24,11 +24,48 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 			});
 
 			//	TODO	use improved file, Git APIs for the below
-			remotes.getRelativePath("RemoteRepository").createDirectory();
+			var dir = remotes.getRelativePath("RemoteRepository").createDirectory();
+
 			jsh.shell.run({
 				command: "git",
 				arguments: ["init"],
 				directory: remotes.getSubdirectory("RemoteRepository")
+			});
+
+			dir.getRelativePath("a").write("a", { append: false });
+			var host = module.oo.Repository({ directory: dir });
+			host.config({
+				set: {
+					name: "user.name",
+					value: "SLIME"
+				}
+			});
+			host.config({
+				set: {
+					name: "user.email",
+					value: "slime@example.com"
+				}
+			});
+			host.add({ path: "a" });
+			module.program({ command: "git" }).repository(dir.pathname.toString()).command(
+				{
+					invocation: function(p) {
+						return {
+							command: "commit",
+							arguments: [
+								"--all",
+								"--message", "RemoteRepository a"
+							]
+						}
+					}
+				}
+			).argument({}).run({
+				stdout: function(line) {
+					jsh.shell.console("STDOUT: " + line);
+				},
+				stderr: function(line) {
+					jsh.shell.console("STDERR: " + line);
+				}
 			});
 
 			var remote = module.oo.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/RemoteRepository" });
