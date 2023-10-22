@@ -154,6 +154,7 @@
 				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";
 				if (files[i].path == "fifty") extension = "bash";
 				if (files[i].path == "wf") extension = "bash";
+				if (files[i].path == "tools/wf/templates/wf") extension = "bash";
 				if (files[i].path == "tools/wf/test/data/plugin-standard/wf") extension = "bash";
 				if (files[i].path == "contributor/docker-compose") extension = "bash";
 				if (files[i].path == "tools/wf/install") extension = "bash";

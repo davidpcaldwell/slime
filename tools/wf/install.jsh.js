@@ -58,16 +58,89 @@
 					/**
 					 * Writes the wf SLIME path to the given location.
 					 */
-					var output = $api.fp.pipe(
+					var outputWfPathTo = $api.fp.pipe(
 						fileWriteStringOutput,
 						$api.fp.impure.Input.supply(wfpath),
 						$api.fp.impure.now.process
 					);
 
-					var writeWfPath = $api.fp.impure.Input.supply(getWfPathDestination)(output);
+					var writeWfPath = $api.fp.impure.Input.supply(getWfPathDestination)(outputWfPathTo);
 
 					$api.fp.impure.now.process(
 						writeWfPath
+					);
+
+					/**
+					 * @typedef { object } TemplatedFile
+					 * @property { string } template
+					 * @property { slime.jrunscript.file.Location } destination
+					 * @property { slime.$api.fp.Maybe<string> } existing
+					 */
+
+					/** @type { (path: string) => slime.$api.fp.impure.Input<TemplatedFile> } */
+					var getTemplatedFileState = function(path) {
+						var destination = $api.fp.impure.Input.map(
+							project,
+							jsh.file.Location.directory.relativePath(path)
+						);
+						return $api.fp.impure.Input.compose({
+							template: $api.fp.impure.Input.map(
+								inputs.slime,
+								jsh.file.Location.directory.relativePath("tools/wf/templates"),
+								jsh.file.Location.directory.relativePath(path),
+								$api.fp.Maybe.impure.exception({
+									try: $api.fp.world.mapping(jsh.file.Location.file.read.string()),
+									nothing: function(location) { throw new Error("File not found at " + location.pathname); }
+								})
+							),
+							destination: destination,
+							existing: $api.fp.impure.Input.map(
+								destination,
+								$api.fp.world.mapping(jsh.file.Location.file.read.string())
+							)
+						})
+					};
+
+					/**
+					 * @typedef { object } TemplatedFileHandler
+					 * @property { slime.$api.fp.impure.Output<TemplatedFile> } same
+					 * @property { slime.$api.fp.impure.Output<TemplatedFile> } different
+					 * @property { slime.$api.fp.impure.Output<TemplatedFile> } missing
+					 */
+
+					/** @type { (p: TemplatedFileHandler) => slime.$api.fp.impure.Output<TemplatedFile> } */
+					var getTemplatedFileHandler = function(p) {
+						return function(inputs) {
+							if (inputs.existing.present) {
+								if (inputs.existing.value == inputs.template) {
+									p.same(inputs);
+								} else {
+									p.different(inputs);
+								}
+							} else {
+								p.missing(inputs);
+							}
+						}
+					};
+
+					/** @param { TemplatedFile } inputs */
+					var writeTemplatedFile = function(inputs) {
+						jsh.shell.console("Writing templated file to " + inputs.destination.pathname);
+						fileWriteStringOutput(inputs.destination)(inputs.template);
+					}
+
+					$api.fp.impure.now.process(
+						$api.fp.impure.Input.supply(
+							getTemplatedFileState("wf")
+						)(
+							getTemplatedFileHandler({
+								same: function(t) {
+									//	do nothing
+								},
+								different: writeTemplatedFile,
+								missing: writeTemplatedFile
+							})
+						)
 					);
 				}
 			)
