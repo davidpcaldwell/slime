@@ -34,6 +34,18 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 
 			dir.getRelativePath("a").write("a", { append: false });
 			var host = module.oo.Repository({ directory: dir });
+			host.config({
+				set: {
+					name: "user.name",
+					value: "SLIME"
+				}
+			});
+			host.config({
+				set: {
+					name: "user.email",
+					value: "slime@example.com"
+				}
+			});
 			host.add({ path: "a" });
 			module.program({ command: "git" }).repository(dir.pathname.toString()).command(
 				{
