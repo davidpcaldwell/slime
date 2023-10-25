@@ -83,6 +83,12 @@
 							project,
 							jsh.file.Location.directory.relativePath(path)
 						);
+
+						/** @param { string } string */
+						var removeMpl = function(string) {
+							return string.split("\n").slice(0,1) + "\n" + string.split("\n").slice(7).join("\n") + "\n";
+						};
+
 						return $api.fp.impure.Input.compose({
 							template: $api.fp.impure.Input.map(
 								inputs.slime,
@@ -91,7 +97,8 @@
 								$api.fp.Maybe.impure.exception({
 									try: $api.fp.world.mapping(jsh.file.Location.file.read.string()),
 									nothing: function(location) { throw new Error("File not found at " + location.pathname); }
-								})
+								}),
+								removeMpl
 							),
 							destination: destination,
 							existing: $api.fp.impure.Input.map(
