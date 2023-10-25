@@ -43,62 +43,17 @@ namespace slime.jrunscript.tools.git {
 	}
 
 	export interface Repository {
+		/**
+		 * A string that can be used to refer to this repository on the Git command line. See [Git
+		 * URLs](https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a).
+		 */
 		reference: string
+
 		clone: (argument: repository.Argument & {
 			to: slime.jrunscript.file.Pathname,
 			recurseSubmodules?: boolean
 		}, events?: object ) => slime.jrunscript.tools.git.repository.Local
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			//	This is from JSAPI, unclear to what it refers. It was false there; we've made it true here
-			const CLONE_REGRESSION_FIXED = true;
-
-			const fixtures = (
-				function() {
-					const script: slime.jrunscript.tools.git.test.fixtures.jsapi.Script = fifty.$loader.script("fixtures-jsapi.ts");
-					return script();
-				}
-			)();
-
-			const { remote } = fixtures;
-
-			fifty.tests.jsapi._1 = function() {
-				verify(remote).reference.is.type("string");
-			}
-
-			fifty.tests.jsapi._2 = function() {
-				var to = fifty.jsh.file.object.temporary.location();
-
-				fifty.global.jsh.shell.console("Cloning...");
-				var local = remote.clone({
-					to: to
-				});
-				fifty.global.jsh.shell.console("Cloned.");
-				verify(local).reference.is.type("string");
-			}
-
-			fifty.tests.jsapi._3 = function() {
-				var paths = {
-					remote: fifty.jsh.file.object.temporary.directory().pathname,
-					local: fifty.jsh.file.object.temporary.directory().pathname
-				}
-				//	TODO	note that this test currently does not do anything except create temporary directories
-				if (CLONE_REGRESSION_FIXED) {
-					var fromRemote = remote.clone({ to: paths.remote });
-					verify(fromRemote).directory.getFile("a").read(String).evaluate(String).is("a");
-					var fromLocal = fromRemote.clone({ to: paths.local });
-					verify(fromLocal).directory.getFile("a").read(String).evaluate(String).is("a");
-				}
-			}
-		}
-	//@ts-ignore
-	)(fifty);
 
 	export namespace repository {
 		export interface Argument {
@@ -605,6 +560,133 @@ namespace slime.jrunscript.tools.git.internal.oo {
 	export interface Exports {
 		Installation: new (environment: Parameters<slime.jrunscript.tools.git.Exports["Installation"]>[0] ) => slime.jrunscript.tools.git.Installation
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			//	This is from JSAPI, unclear to what it refers. It was false there; we've made it true here
+			const CLONE_REGRESSION_FIXED = true;
+
+			const fixtures = (
+				function() {
+					const script: slime.jrunscript.tools.git.test.fixtures.jsapi.Script = fifty.$loader.script("fixtures-jsapi.ts");
+					return script();
+				}
+			)();
+
+			const { remote } = fixtures;
+
+			fifty.tests.jsapi._1 = function() {
+				verify(remote).reference.is.type("string");
+			}
+
+			fifty.tests.jsapi._2 = function() {
+				var to = fifty.jsh.file.object.temporary.location();
+
+				fifty.global.jsh.shell.console("Cloning...");
+				var local = remote.clone({
+					to: to
+				});
+				fifty.global.jsh.shell.console("Cloned.");
+				verify(local).reference.is.type("string");
+			}
+
+			fifty.tests.jsapi._3 = function() {
+				var paths = {
+					remote: fifty.jsh.file.object.temporary.directory().pathname,
+					local: fifty.jsh.file.object.temporary.directory().pathname
+				}
+				//	TODO	note that this test currently does not do anything except create temporary directories
+				if (CLONE_REGRESSION_FIXED) {
+					var fromRemote = remote.clone({ to: paths.remote });
+					verify(fromRemote).directory.getFile("a").read(String).evaluate(String).is("a");
+					var fromLocal = fromRemote.clone({ to: paths.local });
+					verify(fromLocal).directory.getFile("a").read(String).evaluate(String).is("a");
+				}
+			}
+
+			fifty.tests.jsapi._4 = function() {
+				var to = fifty.jsh.file.object.temporary.directory().pathname;
+				to.directory.remove();
+				if (CLONE_REGRESSION_FIXED) {
+					var repository = remote.clone({
+						to: to
+					});
+					var commits = repository.log();
+					verify(commits).length.is(1);
+
+					var commit = commits[0];
+
+					var isWhen = function(p) {
+						if (typeof(p) != "object") return false;
+						if (p === null) return false;
+						//	TODO	very dubious
+						return p instanceof fifty.global.jsh.time.When;
+					}
+
+					verify(commit).commit.hash.is.type("string");
+					verify(commit).author.name.is.type("string");
+					verify(commit).author.email.is.type("string");
+					verify(commit).author.date.evaluate.property("is").is.type("function");
+					verify(commit).author.date.evaluate(isWhen).is(true);
+					verify(commit).committer.name.is.type("string");
+					verify(commit).committer.email.is.type("string");
+					verify(commit).committer.date.evaluate.property("is").is.type("function");
+					verify(commit).committer.date.evaluate(isWhen).is(true);
+					verify(commit).subject.is.type("string");
+				}
+			};
+
+			fifty.tests.jsapi._5 = function() {
+				var location = fifty.jsh.file.object.temporary.directory().pathname;
+				var repository = internal.oo.subject.oo.init({
+					pathname: location
+				});
+				verify(repository).directory.pathname.toString().is(location.toString());
+			}
+
+			fifty.tests.jsapi._6 = function() {
+				var repository = remote.clone({ to: fifty.jsh.file.object.temporary.directory().pathname });
+				var before = repository.config({ arguments: ["-l"] });
+				verify(before).evaluate.property("user.name").is(void(0));
+				verify(before).evaluate.property("user.email").is(void(0));
+				repository.config({ arguments: ["--add", "user.name", "Name!" ]});
+				repository.config({ arguments: ["--add", "user.email", "test@example.com" ]});
+				var after = repository.config({ arguments: ["-l"] });
+				verify(after).evaluate.property("user.name").is("Name!");
+				verify(after).evaluate.property("user.email").is("test@example.com");
+			};
+
+			const newRepository = function(): repository.Local & { test?: { writeFile: (path: string, content: string) => void } } {
+				var tmpdir = fifty.jsh.file.object.temporary.directory();
+				var repository = fixtures.old.init({
+					pathname: tmpdir.pathname
+				});
+				var rv: ReturnType<typeof newRepository> = repository;
+				rv.test = {
+					writeFile: function(path,content) {
+						repository.directory.getRelativePath(path).write(content, { append: false });
+					}
+				};
+				return rv;
+			};
+
+			// scope.writeFile = function(repository,path,content) {
+			// 	repository.test.writeFile(path,content);
+			// };
+
+			fifty.tests.jsapi._7 = function() {
+				var repository = newRepository();
+				repository.test.writeFile("a","a");
+				repository.add({ path: "a" });
+				verify(repository).status().paths.evaluate.property("a").is("A ");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	(
 		function(

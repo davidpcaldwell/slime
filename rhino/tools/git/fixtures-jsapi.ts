@@ -9,11 +9,19 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 
 	export interface Exports {
 		remote: slime.jrunscript.tools.git.Repository
+		old: slime.jrunscript.tools.git.test.fixtures.old.Exports
 	}
 
 	(
-		function(jsh: slime.jsh.Global, $export: slime.loader.Export<Exports>) {
+		function(jsh: slime.jsh.Global, $loader: slime.Loader, $export: slime.loader.Export<Exports>) {
 			var module = jsh.tools.git;
+
+			const old = (function() {
+				var script: slime.jrunscript.tools.git.test.fixtures.old.Script = $loader.script("fixtures-old.ts");
+				return script({
+					module: module
+				})
+			})();
 
 			var remotes = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
@@ -71,11 +79,12 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 			var remote = module.oo.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/RemoteRepository" });
 
 			$export({
-				remote: remote
+				remote: remote,
+				old: old
 			})
 		}
 	//@ts-ignore
-	)(jsh, $export)
+	)(jsh, $loader, $export)
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
