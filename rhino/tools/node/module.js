@@ -12,53 +12,52 @@
 	 * @param {slime.jrunscript.node.Exports} $exports
 	 */
 	function($api,$context,$exports) {
-		var versions = {
-			/** @type { { [os: string]: { [version: string]: { url: string } } } } */
-			byOs: {
-				"Mac OS X": {
-					"8.16.2": { url: "https://nodejs.org/download/release/v8.16.2/node-v8.16.2-darwin-x64.tar.gz" },
-					"12.13.1": { url: "https://nodejs.org/dist/v12.13.1/node-v12.13.1-darwin-x64.tar.gz" },
-					"12.14.1": { url: "https://nodejs.org/dist/v12.14.1/node-v12.14.1-darwin-x64.tar.gz" },
-					"12.16.0": { url: "https://nodejs.org/dist/v12.16.0/node-v12.16.0-darwin-x64.tar.gz" },
-					"12.16.1": { url: "https://nodejs.org/dist/v12.16.1/node-v12.16.1-darwin-x64.tar.gz" },
-					"12.16.2": { url: "https://nodejs.org/dist/v12.16.2/node-v12.16.2-darwin-x64.tar.gz" },
-					"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-darwin-x64.tar.gz"},
-					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-darwin-x64.tar.gz" },
-					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-darwin-x64.tar.gz" },
-					"16.15.1": { url: "https://nodejs.org/dist/v16.15.1/node-v16.15.1-darwin-x64.tar.gz" },
-					"16.17.1": { url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-darwin-x64.tar.gz" },
-					"20.7.0": { url: "https://nodejs.org/dist/v20.7.0/node-v20.7.0-darwin-x64.tar.gz" }
+		/** @type { (p: { version: string, os: string, arch: string }) => slime.$api.fp.Maybe<string> } */
+		var getDownloadUrl = function(p) {
+			var toNodeVersion = function(version) { return "v" + version; };
+
+			var javaOsToNodeOs = $api.fp.pipe(
+				/** @param { string } os */
+				function(os) {
+					if (os == "Mac OS X") return "darwin";
+					if (os == "Linux") return "linux";
 				},
-				"Linux": {
-					"12.22.1": { url: "https://nodejs.org/download/release/v12.22.1/node-v12.22.1-linux-x64.tar.gz" },
-					"14.18.0": { url: "https://nodejs.org/dist/v14.18.0/node-v14.18.0-linux-x64.tar.gz" },
-					"16.13.1": { url: "https://nodejs.org/dist/v16.13.1/node-v16.13.1-linux-x64.tar.gz" },
-					"16.15.1": { url: "https://nodejs.org/dist/v16.15.1/node-v16.15.1-linux-x64.tar.gz" },
-					"16.17.1": { url: "https://nodejs.org/dist/v16.17.1/node-v16.17.1-linux-x64.tar.gz" },
-					"20.7.0": { url: "https://nodejs.org/dist/v20.7.0/node-v20.7.0-linux-x64.tar.gz" }
-				}
-			},
-			default: "20.7.0"
+				$api.fp.Maybe.from.value
+			);
+
+			var javaArchToNodeArch = $api.fp.pipe(
+				function(arch) {
+					if (arch == "amd64") return "x64";
+					if (arch == "aarch64") return "arm64";
+				},
+				$api.fp.Maybe.from.value
+			);
+
+			var version = toNodeVersion(p.version);
+			var os = javaOsToNodeOs(p.os);
+			var arch = javaArchToNodeArch(p.arch);
+
+			if (!os.present) return $api.fp.Maybe.from.nothing();
+			if (!arch.present) return $api.fp.Maybe.from.nothing();
+			return $api.fp.Maybe.from.some("https://nodejs.org/dist/" + version + "/node-" + version + "-" + os.value + "-" + arch.value + ".tar.gz");
+		};
+
+		var versions = {
+			default: "20.9.0"
 		};
 
 		var getDownload = function(version, os, arch) {
-			if (os == "Mac OS X" && arch == "aarch64") {
-				if (version == "20.7.0") {
-					return {
-						url: "https://nodejs.org/dist/v20.7.0/node-v20.7.0-darwin-arm64.tar.gz"
-					}
-				}
-			} else if (os == "Linux" && arch == "aarch64") {
-				if (version == "20.7.0") {
-					return {
-						url: "https://nodejs.org/dist/v20.7.0/node-v20.7.0-linux-arm64.tar.gz"
-					}
+			var url = getDownloadUrl({
+				version: version,
+				os: os,
+				arch: arch
+			});
+			if (url.present) {
+				return {
+					url: url.value
 				}
 			}
-			var osVersions = versions.byOs[os];
-			if (!osVersions) throw new TypeError("Unsupported operating system: " + $context.library.shell.os.name);
-			var download = osVersions[version];
-			return download;
+			throw new Error("Unsupported version-OS-arch: " + version + "-" + os + "-" + arch);
 		}
 
 		var provider = (
