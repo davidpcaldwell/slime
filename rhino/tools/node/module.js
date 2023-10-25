@@ -27,7 +27,7 @@
 
 			var javaArchToNodeArch = $api.fp.pipe(
 				function(arch) {
-					if (arch == "amd64") return "x64";
+					if (arch == "x86_64") return "x64";
 					if (arch == "aarch64") return "arm64";
 				},
 				$api.fp.Maybe.from.value
