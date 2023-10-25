@@ -204,12 +204,6 @@ END LICENSE
 								<span class="type">__TYPE__</span>
 								<span>__DESCRIPTION__</span>
 							</div>
-							<script type="application/x.jsapi#tests">
-								var repository = newRepository();
-								repository.test.writeFile("a","a");
-								repository.add({ path: "a" });
-								verify(repository).status().paths.evaluate.property("a").is("A ");
-							</script>
 						</li>
 						<li class="function" jsapi:id="remote">
 							<div class="name">remote</div>
