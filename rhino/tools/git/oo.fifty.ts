@@ -683,6 +683,70 @@ namespace slime.jrunscript.tools.git.internal.oo {
 				repository.test.writeFile("a","a");
 				repository.add({ path: "a" });
 				verify(repository).status().paths.evaluate.property("a").is("A ");
+			};
+
+			fifty.tests.jsapi._8 = function() {
+				var tmp = fifty.jsh.file.object.temporary.directory().pathname;
+				tmp.directory.remove();
+				var local = remote.clone({ to: tmp });
+				var origin = local.remote.getUrl({ name: "origin" });
+				verify(origin).is(remote.reference);
+			};
+
+			const remotes = fifty.jsh.file.object.temporary.directory();
+
+			const daemon = internal.oo.subject.oo.daemon({
+				port: fifty.global.jsh.ip.getEphemeralPort().number,
+				basePath: remotes.pathname,
+				exportAll: true
+			});
+
+
+			const child = (
+				function() {
+					var child = remotes.getRelativePath("child").createDirectory();
+					child.getRelativePath("b").write("b", { append: false });
+					var childRepository = fixtures.old.init({ pathname: child.pathname });
+					childRepository.add({ path: "b" });
+					childRepository.commit({
+						all: true,
+						message: "child b"
+					});
+					var childRemote = internal.oo.subject.oo.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/child" });
+					return childRemote;
+				}
+			)();
+
+			fifty.tests.jsapi._9 = function() {
+				var tmp = fifty.jsh.file.object.temporary.directory().pathname;
+				tmp.directory.remove();
+				var local = remote.clone({
+					to: tmp
+				});
+				local.execute({
+					command: "submodule",
+					arguments: [
+						"add",
+						child.reference
+					]
+				});
+				local.execute({
+					command: "submodule",
+					arguments: [
+						"update",
+						"--init", "--recursive"
+					]
+				});
+				verify(local).directory.getFile("a").is.type("object");
+				verify(local).directory.getFile("child/a").is.type("null");
+				verify(local).directory.getFile("child/b").is.type("object");
+				var submodules = local.submodule();
+				verify(submodules).length.is(1);
+				verify(submodules)[0].path.is("child");
+				verify(submodules)[0].repository.remote.getUrl({ name: "origin" }).is(child.reference);
+				verify(submodules)[0].commit.is.type("object");
+				verify(submodules)[0].commit.commit.hash.is.type("string");
+				verify(submodules)[0].commit.subject.is("child b");
 			}
 		}
 	//@ts-ignore

@@ -244,13 +244,6 @@ END LICENSE
 										<span class="type">__TYPE__</span>
 										<span>__DESCRIPTION__</span>
 									</div>
-									<script type="application/x.jsapi#tests">
-										var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-										tmp.directory.remove();
-										var local = remote.clone({ to: tmp });
-										var origin = local.remote.getUrl({ name: "origin" });
-										verify(origin).is(remote.reference);
-									</script>
 								</li>
 							</ul>
 						</li>
