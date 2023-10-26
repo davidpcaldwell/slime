@@ -748,6 +748,14 @@ namespace slime.jrunscript.tools.git.internal.oo {
 				verify(submodules)[0].commit.commit.hash.is.type("string");
 				verify(submodules)[0].commit.subject.is("child b");
 			}
+
+			fifty.tests.jsapi._10 = function() {
+				var tmp = fifty.jsh.file.object.temporary.location();
+				var local = remote.clone({ to: tmp });
+				var sub = local.submodule.add({ repository: child, path: "sub" });
+				verify(sub).directory.pathname.toString().is(tmp.directory.getRelativePath("sub").toString());
+				verify(sub.remote.getUrl({ name: "origin" })).is(child.reference);
+			}
 		}
 	//@ts-ignore
 	)(fifty);
