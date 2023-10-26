@@ -196,7 +196,10 @@ namespace slime.jsh.wf {
 		updateSubmodule: (p: { path: string }) => void
 
 		subproject: {
-			initialize: slime.$api.fp.world.Action<{ path: string }, slime.jrunscript.shell.run.TellEvents>
+			initialize: {
+				action: slime.$api.fp.world.Action<{ path: string }, slime.jrunscript.shell.run.TellEvents>
+				process: (path: string) => slime.$api.fp.impure.Process
+			}
 		}
 
 		/**
