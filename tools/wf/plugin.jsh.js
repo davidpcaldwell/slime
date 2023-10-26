@@ -332,42 +332,61 @@
 						}
 					},
 					subproject: {
-						initialize: function(p) {
-							return function(events) {
-								var subproject = $api.fp.impure.Input.map(
-									inputs.base,
-									$api.fp.property("pathname"),
-									function(pathname) { return pathname.os.adapt(); },
-									jsh.file.Location.directory.relativePath(p.path)
-								);
+						initialize: (
+							function() {
+								var action = function(p) {
+									return function(events) {
+										var subproject = $api.fp.impure.Input.map(
+											inputs.base,
+											$api.fp.property("pathname"),
+											function(pathname) { return pathname.os.adapt(); },
+											jsh.file.Location.directory.relativePath(p.path)
+										);
 
-								$api.fp.impure.now.process(
-									$api.fp.impure.Process.create({
-										input: $api.fp.impure.Input.compose({
-											subproject: subproject,
-											wf: $api.fp.impure.Input.map(
-												subproject,
-												jsh.file.Location.directory.relativePath("wf"),
-												$api.fp.property("pathname")
-											)
-										}),
-										output: function(inputs) {
-											jsh.shell.subprocess.action(
-												{
-													command: "bash",
-													arguments: [inputs.wf, "initialize"],
-													directory: inputs.subproject.pathname,
-													stdio: {
-														output: "line",
-														error: "line"
-													}
+										$api.fp.impure.now.process(
+											$api.fp.impure.Process.create({
+												input: $api.fp.impure.Input.compose({
+													subproject: subproject,
+													wf: $api.fp.impure.Input.map(
+														subproject,
+														jsh.file.Location.directory.relativePath("wf"),
+														$api.fp.property("pathname")
+													)
+												}),
+												output: function(inputs) {
+													jsh.shell.subprocess.action(
+														{
+															command: "bash",
+															arguments: [inputs.wf, "initialize"],
+															directory: inputs.subproject.pathname,
+															stdio: {
+																output: "line",
+																error: "line"
+															}
+														}
+													)(events);
 												}
-											)(events);
-										}
-									})
-								);
+											})
+										);
+									}
+								};
+
+								return {
+									action: action,
+									process: function(path) {
+										return $api.fp.world.Process.action({
+											action: action,
+											argument: { path: path },
+											handlers: {
+												stderr: jsh.shell.Invocation.handler.stdio.line(function(e) {
+													jsh.shell.console("submodule " + path + " initialize stderr: " + e.detail.line);
+												})
+											}
+										})
+									}
+								};
 							}
-						}
+						)()
 					},
 					/**
 					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
