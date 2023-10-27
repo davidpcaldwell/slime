@@ -756,6 +756,53 @@ namespace slime.jrunscript.tools.git.internal.oo {
 				verify(sub).directory.pathname.toString().is(tmp.directory.getRelativePath("sub").toString());
 				verify(sub.remote.getUrl({ name: "origin" })).is(child.reference);
 			}
+
+			fifty.tests.jsapi._11 = function() {
+				var parent = fixtures.fixtures.repository.remote({
+					name: "fetch-parent",
+					files: {
+						a: "a"
+					}
+				});
+				var child = fixtures.fixtures.repository.remote({
+					name: "fetch-child",
+					files: {
+						b: "b"
+					}
+				});
+
+				var local = {
+					parent: parent.remote.clone({
+						to: fifty.jsh.file.object.temporary.directory().pathname
+					})
+				};
+
+				local.parent.config({
+					arguments: [
+						"submodule.recurse", "true"
+					]
+				});
+
+				parent.server.submodule.add({
+					path: "child",
+					repository: child.remote
+				});
+				parent.server.commit({ all: true, message: "add submodule" });
+
+				//	TODO	further generalize this by either using config property or detecting it using an API rather than
+				//			assuming our Git version is new enough to have made the switch
+				const MAIN_BRANCH = "main";
+
+				local.parent.fetch({ all: true });
+				local.parent.merge({ name: "origin/" + MAIN_BRANCH });
+				local.parent.submodule.update({ init: true, recursive: true });
+
+				child.server.directory.getRelativePath("add").write("add", { append: false });
+				child.server.add({ path: "add" });
+				child.server.commit({ message: "add file to child" });
+
+				local.parent.fetch({ all: true });
+			}
 		}
 	//@ts-ignore
 	)(fifty);
