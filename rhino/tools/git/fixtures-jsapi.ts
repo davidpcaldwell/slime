@@ -9,11 +9,19 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 
 	export interface Exports {
 		remote: slime.jrunscript.tools.git.Repository
+		fixtures: {
+			repository: {
+				remote: (p: { name: string, files: { [path: string]: string }}) => {
+					server: repository.Local,
+					remote: git.Repository
+				}
+			}
+		}
 		old: slime.jrunscript.tools.git.test.fixtures.old.Exports
 	}
 
 	(
-		function(jsh: slime.jsh.Global, $loader: slime.Loader, $export: slime.loader.Export<Exports>) {
+		function($api: slime.$api.Global, jsh: slime.jsh.Global, $loader: slime.Loader, $export: slime.loader.Export<Exports>) {
 			var module = jsh.tools.git;
 
 			const old = (function() {
@@ -78,13 +86,68 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 
 			var remote = module.oo.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/RemoteRepository" });
 
+			const fixtures = (
+				function() {
+					var commit = function(repository,files,message) {
+						//	TODO	should use execute and forEach
+						$api.fp.result(
+							files,
+							Object.entries,
+							$api.fp.Array.map(function(entry) {
+								repository.directory.getRelativePath(entry[0]).write(entry[1], { append: false, recursive: true });
+								repository.add({ path: entry[0] });
+							})
+						);
+						repository.commit({ message: message });
+					}
+
+					var remote = function(p: { name: string, files: { [path: string]: string } }) {
+						var location = remotes.getRelativePath(p.name);
+						if (!location.directory) {
+							location.createDirectory();
+							var repository = old.init({ pathname: location });
+							if (p.files) {
+								commit(repository, p.files, "initial");
+							}
+						}
+						return {
+							server: repository,
+							remote: module.oo.Repository({ remote: "git://127.0.0.1:" + daemon.port + "/" + p.name })
+						};
+					};
+
+					var local = function(p) {
+						var location = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+						location.directory.remove();
+						var repository = old.init({ pathname: location });
+						if (p.files) {
+							commit(repository, p.files, "initial");
+						}
+						return repository;
+					};
+
+					var actions = {
+						commit: function(p) {
+							commit(p.repository, p.files, p.message);
+						}
+					};
+
+					return {
+						repository: {
+							remote
+						}
+					}
+				}
+			)();
+
 			$export({
 				remote: remote,
+				fixtures: fixtures,
 				old: old
 			})
 		}
 	//@ts-ignore
-	)(jsh, $loader, $export)
+	)($api, jsh, $loader, $export)
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
