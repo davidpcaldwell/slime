@@ -11,7 +11,10 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 		remote: slime.jrunscript.tools.git.Repository
 		fixtures: {
 			repository: {
-				remote: any
+				remote: (p: { name: string, files: { [path: string]: string }}) => {
+					server: repository.Local,
+					remote: git.Repository
+				}
 			}
 		}
 		old: slime.jrunscript.tools.git.test.fixtures.old.Exports
@@ -98,7 +101,7 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 						repository.commit({ message: message });
 					}
 
-					var remote = function(p) {
+					var remote = function(p: { name: string, files: { [path: string]: string } }) {
 						var location = remotes.getRelativePath(p.name);
 						if (!location.directory) {
 							location.createDirectory();

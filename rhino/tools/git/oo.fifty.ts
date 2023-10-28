@@ -789,9 +789,8 @@ namespace slime.jrunscript.tools.git.internal.oo {
 				});
 				parent.server.commit({ all: true, message: "add submodule" });
 
-				//	TODO	further generalize this by either using config property or detecting it using an API rather than
-				//			assuming our Git version is new enough to have made the switch
-				const MAIN_BRANCH = "main";
+				var status = local.parent.status();
+				const MAIN_BRANCH = status.branch.name;
 
 				local.parent.fetch({ all: true });
 				local.parent.merge({ name: "origin/" + MAIN_BRANCH });
