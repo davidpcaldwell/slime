@@ -827,6 +827,82 @@ namespace slime.jrunscript.tools.git.internal.oo {
 				verify(repository).directory.getFile("a").is.type("object");
 				repository.checkout({ branch: "b" });
 				verify(repository).directory.getFile("a").is.type("null");
+			};
+
+			fifty.tests.jsapi._13 = function() {
+				var hasBranch = function(branch) {
+					var rv = function(p) {
+						for (var i=0; i<p.length; i++) {
+							if (p[i].name == branch.name && p[i].current == branch.current) return true;
+						}
+						return false;
+					};
+					rv.toString = function() {
+						return "hasBranch: name=" + branch.name + " current=" + branch.current;
+					};
+					return rv;
+				};
+
+				var origin = fixtures.fixtures.repository.local({
+					files: {
+						a: "a"
+					}
+				});
+
+				var MAIN = (function(origin: repository.Local) {
+					var status = origin.status();
+					return status.branch.name;
+				})(origin);
+
+				var repository = origin.clone({ to: fifty.jsh.file.object.temporary.location() });
+
+				repository.branch({ name: "a" });
+				repository.branch({ name: "b" });
+
+				//	TODO	untested: startPoint property
+				//	TODO	untested: force property
+
+				var branches = repository.branch();
+
+				verify(branches).length.is(3);
+
+				verify(branches).evaluate(hasBranch({ current: false, name: "b" })).is(true);
+				verify(branches).evaluate(hasBranch({ current: false, name: "a" })).is(true);
+				verify(branches).evaluate(hasBranch({ current: true, name: MAIN })).is(true);
+				verify(branches).evaluate(hasBranch({ current: false, name: "foo" })).is(false);
+
+				var all = repository.branch({ all: true });
+				verify(all).length.is(4);
+				verify(all).evaluate(hasBranch({ current: false, name: "remotes/origin/" + MAIN })).is(true);
+
+				var remotes = repository.branch({ remote: true });
+				verify(remotes).length.is(1);
+				remotes.forEach(function(branch) {
+					fifty.global.jsh.shell.console(JSON.stringify(branch));
+				})
+				verify(remotes).evaluate(hasBranch({ current: false, name: "origin/" + MAIN })).is(true);
+
+				//	TODO	untested: delete current branch; delete --force
+
+				repository.branch({ delete: "a" });
+				var afterDelete = repository.branch();
+				verify(afterDelete).length.is(2);
+				verify(afterDelete).evaluate(hasBranch({ current: false, name: "b" })).is(true);
+				verify(afterDelete).evaluate(hasBranch({ current: false, name: "a" })).is(false);
+				verify(afterDelete).evaluate(hasBranch({ current: true, name: MAIN })).is(true);
+
+				//	TODO	untested: old form
+
+				//	ensure name of detached branch is null
+				var commit = repository.log()[0];
+				repository.checkout({ branch: commit.commit.hash });
+				var list = repository.branch();
+				verify(list).length.is(3);
+				verify(list).evaluate(hasBranch({ current: true, name: null })).is(true);
+				verify(list).evaluate(hasBranch({ current: false, name: MAIN })).is(true);
+				verify(list).evaluate(hasBranch({ current: false, name: "a" })).is(false);
+				verify(list).evaluate(hasBranch({ current: false, name: "b" })).is(true);
+				verify(list).evaluate(hasBranch({ current: false, name: "c" })).is(false);
 			}
 		}
 	//@ts-ignore
