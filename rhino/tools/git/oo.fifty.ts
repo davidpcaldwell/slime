@@ -253,7 +253,7 @@ namespace slime.jrunscript.tools.git {
 				}): void
 			}
 
-			show: (p: { object: string}  ) => Commit
+			show: (p?: { object: string}  ) => Commit
 
 			fetch: (p: Argument & {
 				all?: boolean
@@ -801,6 +801,32 @@ namespace slime.jrunscript.tools.git.internal.oo {
 				child.server.commit({ message: "add file to child" });
 
 				local.parent.fetch({ all: true });
+			};
+
+			const writeFile = function(repository,path,content) {
+				repository.test.writeFile(path,content);
+			};
+
+			fifty.tests.jsapi._12 = function() {
+				var repository = newRepository();
+
+				writeFile(repository,"start","start");
+				repository.add({ path: "start" });
+				repository.commit({ message: "start" });
+
+				repository.branch({ name: "a" });
+				repository.branch({ name: "b" });
+				repository.checkout({ branch: "a" });
+
+				var commit = repository.show();
+				verify(commit,"commit").is(commit);
+				writeFile(repository,"a","a");
+				repository.add({ path: "a" });
+				repository.commit({ message: "a" });
+
+				verify(repository).directory.getFile("a").is.type("object");
+				repository.checkout({ branch: "b" });
+				verify(repository).directory.getFile("a").is.type("null");
 			}
 		}
 	//@ts-ignore
