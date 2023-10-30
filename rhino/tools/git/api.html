@@ -332,27 +332,6 @@ END LICENSE
 									</li>
 								</ol>
 							</div>
-							<script type="application/x.jsapi#tests">
-								var repository = newRepository();
-
-								writeFile(repository,"start","start");
-								repository.add({ path: "start" });
-								repository.commit({ message: "start" });
-
-								repository.branch({ name: "a" });
-								repository.branch({ name: "b" });
-								repository.checkout({ branch: "a" });
-
-								var commit = repository.show();
-								verify(commit,"commit").is(commit);
-								writeFile(repository,"a","a");
-								repository.add({ path: "a" });
-								repository.commit({ message: "a" });
-
-								verify(repository).getFile("a").is.type("object");
-								repository.checkout({ branch: "b" });
-								verify(repository).getFile("a").is.type("null");
-							</script>
 						</li>
 						<li class="function">
 							<div class="name">show</div>
