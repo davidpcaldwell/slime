@@ -14,7 +14,8 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 				remote: (p: { name: string, files: { [path: string]: string }}) => {
 					server: repository.Local,
 					remote: git.Repository
-				}
+				},
+				local: (p: { files: { [path: string]: string }}) => repository.Local
 			}
 		}
 		old: slime.jrunscript.tools.git.test.fixtures.old.Exports
@@ -88,6 +89,12 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 
 			const fixtures = (
 				function() {
+					/**
+					 *
+					 * @param repository
+					 * @param { { [path: string]: string } } files
+					 * @param message
+					 */
 					var commit = function(repository,files,message) {
 						//	TODO	should use execute and forEach
 						$api.fp.result(
@@ -134,7 +141,8 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 
 					return {
 						repository: {
-							remote
+							remote,
+							local
 						}
 					}
 				}
