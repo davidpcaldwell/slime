@@ -864,7 +864,6 @@
 
 				//	log() in "Inspection and Comparison" below
 
-				/** @type { Function & { list: Function } } */
 				var stash = function(p) {
 					if (!p) p = {};
 					execute({

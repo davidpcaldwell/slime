@@ -273,7 +273,10 @@ namespace slime.jrunscript.tools.git {
 			checkout: (p: { branch: string, stdio?: any  }) => void
 
 			remote: ( () => void ) & { getUrl: (p: { name: string }) => string },
-			stash: any,
+			stash: {
+				(): void
+				list: () => any[]
+			},
 			push: (p?: {
 				delete?: boolean
 				setUpstream?: string
@@ -903,6 +906,103 @@ namespace slime.jrunscript.tools.git.internal.oo {
 				verify(list).evaluate(hasBranch({ current: false, name: "a" })).is(false);
 				verify(list).evaluate(hasBranch({ current: false, name: "b" })).is(true);
 				verify(list).evaluate(hasBranch({ current: false, name: "c" })).is(false);
+			};
+
+			fifty.tests.jsapi._14 = function() {
+				var repository = newRepository();
+				repository.test.writeFile("a", "a");
+				repository.add({ path: "a" });
+				repository.commit({ message: "message a" });
+				repository.branch({ name: "a" });
+				repository.branch({ name: "b" });
+				repository.checkout({ branch: "b" });
+				repository.test.writeFile("b", "b");
+				repository.add({ path: "b" });
+				repository.commit({ message: "message b" });
+
+				var branches = repository.branch();
+				var a = branches.filter(function(branch) {
+					return branch.name == "a";
+				})[0];
+				var b = branches.filter(function(branch) {
+					return branch.name == "b";
+				})[0];
+				verify(a).commit.commit.hash.is.type("string");
+				verify(b).commit.commit.hash.is.type("string");
+				verify(a).commit.commit.hash.is.not(b.commit.commit.hash);
+				fifty.global.jsh.shell.console(repository.directory.toString());
+			};
+
+			fifty.tests.jsapi._15 = function() {
+				var repository = newRepository();
+				var MAIN = repository.status().branch.name;
+				repository.test.writeFile("a", "a");
+				repository.add({ path: "a" });
+				repository.commit({ message: "message a" });
+				var a = repository.show({ object: MAIN });
+				repository.checkout({ branch: a.commit.hash });
+				var branch = repository.branch().filter(function(b) {
+					return b.current;
+				})[0];
+				verify(branch).name.is(null);
+			};
+
+			fifty.tests.jsapi._16 = function() {
+				var repository = newRepository();
+
+				repository.test.writeFile("a","a");
+				repository.add({ path: "a" });
+				repository.commit({ message: "a" });
+				repository.branch({ name: "a" });
+
+				repository.branch({ name: "b" });
+				repository.checkout({ branch: "b" });
+				repository.test.writeFile("b","b");
+				repository.add({ path: "b" });
+				repository.commit({ message: "b" });
+
+				repository.checkout({ branch: "a" });
+				repository.branch({ name: "c" });
+				repository.checkout({ branch: "c" });
+				repository.test.writeFile("c","c");
+				repository.add({ path: "c" });
+				repository.commit({ message: "c" });
+
+				var mergeBase = repository.mergeBase({ commits: ["b","c"] });
+				var a = repository.show({ object: "a" });
+				verify(a).commit.hash.is(mergeBase.commit.hash);
+			};
+
+			fifty.tests.jsapi._17 = function() {
+				var tmpdir = fifty.jsh.file.object.temporary.directory();
+				var repository = old.fixtures.init({
+					pathname: tmpdir.pathname
+				});
+				repository.directory.getRelativePath("a").write("a", { append: false });
+				repository.add({ path: "a" });
+				repository.commit({ message: "a" });
+				repository.directory.getRelativePath("b").write("b", { append: false });
+				repository.add({ path: "b" });
+				verify(repository.stash.list()).length.is(0);
+				repository.stash();
+				repository.directory.getRelativePath("c").write("c", { append: false });
+				repository.add({ path: "c" });
+				repository.stash();
+				verify(repository.stash.list()).length.is(2);
+			};
+
+			fifty.tests.jsapi._18 = function() {
+				var tmpdir = fifty.jsh.file.object.temporary.directory();
+				var repository = old.fixtures.init({
+					pathname: tmpdir.pathname
+				});
+				repository.directory.getRelativePath("a").write("a", { append: false });
+				verify(repository.status()).paths.a.is("??");
+				repository.add({ path: "a" });
+				fifty.global.jsh.shell.echo(JSON.stringify(repository.status()));
+				verify(repository.status()).paths.a.is("A ");
+				repository.commit({ message: "a" });
+				verify(repository.status()).evaluate.property("paths").is(void(0));
 			}
 		}
 	//@ts-ignore
