@@ -19,14 +19,6 @@ END LICENSE
 			Run askpass.jsh.js -script [location] to generate an askpass.bash
 			Run *that* askpass.bash with a prompt argument
 		-->
-		<script type="application/x.jsapi#initialize">
-			var tests = $jsapi.loader.module("api.html.js", { scope: scope });
-			scope.initialize();
-			scope.CLONE_REGRESSION_FIXED = false;
-		</script>
-		<script type="application/x.jsapi#destroy">
-			scope.destroy();
-		</script>
 		<div>
 			<h1>Exports</h1>
 			<div jsapi:id="exports">
@@ -74,22 +66,6 @@ END LICENSE
 					<a class="type" name="types.LocalRepository">LocalRepository</a>
 					<span class="type">supports <a href="#types.Repository">Repository</a></span>
 					<span>A <code>Repository</code> stored in a local directory.</span>
-					<script type="application/x.jsapi#initialize">
-						scope.newRepository = function() {
-							var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
-							var repository = init({
-								pathname: tmpdir.pathname
-							});
-							repository.test = {};
-							repository.test.writeFile = function(path,content) {
-								repository.directory.getRelativePath(path).write(content, { append: false });
-							}
-							return repository;
-						};
-						scope.writeFile = function(repository,path,content) {
-							repository.test.writeFile(path,content);
-						};
-					</script>
 					<div class="type" jsapi:id="commit">
 						<a class="type" name="types.commit">commit</a>
 						<span>__DESCRIPTION__</span>
