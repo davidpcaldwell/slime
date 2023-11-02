@@ -5,6 +5,7 @@
 //	END LICENSE
 
 namespace slime.$api {
+	//	TODO	finish the below comment!
 	/**
 	 * An occurrence in which other parts of a program might be interested. Events have a
 	 */
@@ -100,10 +101,18 @@ namespace slime.$api {
 			}
 		}
 
+		declare const marker: unique symbol;
+
+		/**
+		 * An opaque type indicating that the given Events<D> can be detached from its handlers using the Handlers.detach()
+		 * function.
+		 */
+		export type Attached<D> = slime.$api.Events<D> & { [marker]: true }
+
 		export interface Events {
 			Handlers: {
-				attached: <D>(handlers: slime.$api.event.Handlers<D>) => slime.$api.Events<D>
-				detach: <D>(events: slime.$api.Events<D>) => void
+				attached: <D>(handlers: slime.$api.event.Handlers<D>) => Attached<D>
+				detach: <D>(events: Attached<D>) => void
 			}
 		}
 	}

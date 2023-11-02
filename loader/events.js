@@ -254,11 +254,16 @@
 					}
 				},
 				Handlers: {
+					/** @template { any } D */
 					attached: function(handlers) {
+						//	TODO	would be nice if we had access to $api.fp.cast, but would require refactor
+						/** @type { (v: any) => slime.$api.exports.Attached<D> } */
+						var cast = function(v) { return v; };
+
 						var x = new ListenersInvocationReceiver(handlers);
 						x.attach();
 						attachedHandlers.push(x);
-						return x.emitter;
+						return cast(x.emitter);
 					},
 					detach: function(events) {
 						var match;
