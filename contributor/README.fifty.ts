@@ -19,6 +19,11 @@
  * ### Javassist
  *
  * Used in the Rhino profiler, it can be updated by editing the download URL in `rhino/tools/profiler/build.jsh.js`.
+ *
+ * ## Tools
+ *
+ * The `contributor/code/find-untyped-usages` `jsh` script can be used to search the SLIME codebase for usages of a particular
+ * construct in files without typechecking (where a standard usages search might not find them, in other words).
  */
 namespace slime.internal {
 

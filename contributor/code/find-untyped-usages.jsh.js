@@ -9,9 +9,8 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
-	 * @param { slime.jsh.script.cli.main } main
 	 */
-	function($api,jsh,main) {
+	function($api,jsh) {
 		var loader = new jsh.file.Loader({ directory: jsh.script.file.parent.parent });
 		var code = {
 			/** @type { slime.project.metrics.Script } */
@@ -33,33 +32,48 @@
 			return true;
 		}
 
-		/** @param { slime.jrunscript.file.Directory } from */
-		var search = function(from,pattern) {
-			var regexp = new RegExp(pattern);
+		/**
+		 * @typedef { object } Match
+		 * @property { string } path
+		 * @property { number } line
+		 * @property { string } text
+		 */
+
+		/** @type { slime.$api.fp.world.Question<{ from: slime.jrunscript.file.Directory, pattern: string },{ match: Match }, Match[]> } */
+		var search = function(p) {
+			var regexp = new RegExp(p.pattern);
 			/** @param { slime.$api.Events<{ match: { path: string, line: number, text: string } }> } events */
 			return function(events) {
-				var files = library.metrics.getSourceFiles(from);
+				/** @type { Match[] } */
+				var rv = [];
+				var files = library.metrics.getSourceFiles(p.from);
 				files.forEach(function(file) {
 					if (isUnchecked(file)) {
 						var lines = file.file.read(String).split("\n");
 						lines.forEach(function(line,index) {
 							if (regexp.test(line)) {
-								events.fire("match", { path: file.path, line: index+1, text: line });
+								/** @type { Match } */
+								var match = { path: file.path, line: index+1, text: line };
+								events.fire("match", match);
+								rv.push(match);
 							}
 						});
 					}
 				});
+				return rv;
 			}
 		};
 
-		main(
+		//	TODO	adapt this for usage on arbitrary codebases
+		jsh.script.cli.main(
 			$api.fp.pipe(
 				jsh.script.cli.option.string({ longname: "pattern" }),
 				function(p) {
 					var directory = jsh.script.file.parent.parent.parent;
 					jsh.shell.console("Searching for unchecked usages matching [" + p.options.pattern + "] in " + directory + " ...");
-					$api.events.invoke(
-						search(directory, p.options.pattern),
+					$api.fp.world.now.question(
+						search,
+						{ from: directory, pattern: p.options.pattern },
 						{
 							match: function(e) {
 								jsh.shell.console(e.detail.path + ":" + e.detail.line + ": " + e.detail.text);
@@ -71,4 +85,4 @@
 		)
 	}
 //@ts-ignore
-)($api,jsh,main);
+)($api,jsh);
