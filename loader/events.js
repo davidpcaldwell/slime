@@ -214,6 +214,9 @@
 			return rv;
 		}
 
+		/** @type { ListenersInvocationReceiver[] } */
+		var attachedHandlers = [];
+
 		$export({
 			api: {
 				create: function(p) {
@@ -247,6 +250,26 @@
 					attach: function(events) {
 						return function(handler) {
 							attach(events,handler);
+						}
+					}
+				},
+				Handlers: {
+					attached: function(handlers) {
+						var x = new ListenersInvocationReceiver(handlers);
+						x.attach();
+						attachedHandlers.push(x);
+						return x.emitter;
+					},
+					detach: function(events) {
+						var match;
+						for (var i=0; i<attachedHandlers.length; i++) {
+							if (attachedHandlers[i].emitter == events) {
+								match = i;
+							}
+						}
+						if (typeof(match) != "undefined") {
+							attachedHandlers[match].detach();
+							attachedHandlers.splice(match, 1);
 						}
 					}
 				}
