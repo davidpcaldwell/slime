@@ -45,7 +45,26 @@ namespace slime.$api {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace exports {
+		export interface Detachable<D> {
+		}
+
+		export interface AttachedHandlers<D> {
+			emitter: slime.$api.Events<D>
+			detachable: {
+				detach: () => void
+			}
+		}
+
 		export interface Events {
 			create: (p?: {
 				source?: any
@@ -56,6 +75,14 @@ namespace slime.$api {
 
 			//	TODO	could probably use parameterized types to improve accuracy
 			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.event.Function.Receiver) => R
+
+			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.event.Handlers<E>) => R
+
+			invoke: <E,R>(f: (events: slime.$api.Events<E>) => R, handler: slime.$api.event.Handlers<E>) => R
+
+			Handler: {
+				attach: <T>(events: slime.$api.Events<T>) => (handler: slime.$api.event.Handlers<T>) => void
+			}
 
 			/**
 			 * Allows a caller to create an {@link slime.$api.Events} given a {@link slime.$api.event.Handlers} and independently
@@ -71,13 +98,12 @@ namespace slime.$api {
 				attach: () => void
 				detach: () => void
 			}
+		}
 
-			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.event.Handlers<E>) => R
-
-			invoke: <E,R>(f: (events: slime.$api.Events<E>) => R, handler: slime.$api.event.Handlers<E>) => R
-
-			Handler: {
-				attach: <T>(events: slime.$api.Events<T>) => (handler: slime.$api.event.Handlers<T>) => void
+		export interface Events {
+			Handlers: {
+				attached: <D>(handlers: slime.$api.event.Handlers<D>) => slime.$api.Events<D>
+				detach: <D>(events: slime.$api.Events<D>) => void
 			}
 		}
 	}
@@ -95,20 +121,59 @@ namespace slime.runtime.internal.events {
 		tell: slime.$api.fp.Exports["world"]["old"]["tell"]
 	}
 
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			var code: Script = fifty.$loader.script("events.js");
+			var subject = code({
+				deprecate: fifty.global.$api.deprecate
+			});
+			return subject;
+		//@ts-ignore
+		})(fifty);
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-
-			var code: Script = fifty.$loader.script("events.js");
-			var subject = code({
-				deprecate: fifty.global.$api.deprecate
-			});
+			const { subject } = test;
 
 			var remembered;
 
+			var as: number[] = [];
+
+			fifty.tests.exports.Handlers = function() {
+				type domain = {
+					a: number
+				}
+
+				var handlers: slime.$api.event.Handlers<domain> = {
+					a: function(e) {
+						as.push(e.detail);
+					}
+				};
+
+				var attached = subject.api.Handlers.attached(handlers);
+
+				attached.fire("a", 1);
+				attached.fire("a", 2);
+
+				verify(as.length).is(2);
+				verify(as)[0].is(1);
+				verify(as)[1].is(2);
+
+				attached.fire("a", 3);
+				verify(as.length).is(3);
+
+				subject.api.Handlers.detach(attached);
+				attached.fire("a", 4);
+				verify(as.length).is(3);
+			}
+
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
+
 				var f = function(events) {
 					remembered = events;
 					events.fire("xxx", 2);
