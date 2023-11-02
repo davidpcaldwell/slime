@@ -56,16 +56,6 @@ namespace slime.$api {
 	)(fifty);
 
 	export namespace exports {
-		export interface Detachable<D> {
-		}
-
-		export interface AttachedHandlers<D> {
-			emitter: slime.$api.Events<D>
-			detachable: {
-				detach: () => void
-			}
-		}
-
 		export interface Events {
 			create: (p?: {
 				source?: any
@@ -111,7 +101,24 @@ namespace slime.$api {
 
 		export interface Events {
 			Handlers: {
+				/**
+				 * Allows a caller to create an {@link slime.$api.Events} given a {@link slime.$api.event.Handlers} and independently
+				 * manage the attachment of the `Handlers` to the event-emitting `Events` created. This can be useful in a
+				 * multithreading or asynchronous situation where a listener that attaches at the beginning of a function and detaches
+				 * at the end is not sufficient (because something created within the function outlives the function).
+				 *
+				 * @param handlers
+				 * @returns
+				 */
 				attached: <D>(handlers: slime.$api.event.Handlers<D>) => Attached<D>
+
+				/**
+				 * Detaches a previously-created {@link slime.$api.Events} from the {@link slime.$api.event.Handlers} that was used
+				 * to create it.
+				 *
+				 * @param events
+				 * @returns
+				 */
 				detach: <D>(events: Attached<D>) => void
 			}
 		}
