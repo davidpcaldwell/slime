@@ -14,7 +14,7 @@
 	function($context,$export) {
 		/**
 		 * @constructor
-		 * @param { Parameters<slime.$api.Global["Events"]>[0] } [p]
+		 * @param { Parameters<slime.$api.exports.Events["create"]>[0] } [p]
 		 */
 		var Emitter = function(p) {
 			if (!p) p = {};
@@ -235,15 +235,6 @@
 						} finally {
 							invocationReceiver.detach();
 						}
-					}
-				},
-				invoke: function(f,handler) {
-					var invocationReceiver = new ListenersInvocationReceiver(handler);
-					invocationReceiver.attach();
-					try {
-						return f.call( this, invocationReceiver.emitter );
-					} finally {
-						invocationReceiver.detach();
 					}
 				},
 				Handler: {

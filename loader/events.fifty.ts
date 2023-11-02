@@ -4,6 +4,43 @@
 //
 //	END LICENSE
 
+namespace slime.runtime.internal.events {
+	export interface Context {
+		deprecate: slime.$api.Global["deprecate"]
+	}
+
+	export interface Exports {
+		api: slime.$api.exports.Events
+
+		ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => (on?: slime.$api.event.Handlers<E>) => T
+		tell: slime.$api.fp.Exports["world"]["old"]["tell"]
+	}
+
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			var code: Script = fifty.$loader.script("events.js");
+			var subject = code({
+				deprecate: fifty.global.$api.deprecate
+			});
+			return subject;
+		//@ts-ignore
+		})(fifty);
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export type Script = slime.loader.Script<Context,Exports>
+}
+
 namespace slime.$api {
 	//	TODO	finish the below comment!
 	/**
@@ -69,8 +106,6 @@ namespace slime.$api {
 
 			action: <E,R>(f: ( events: slime.$api.Events<E> ) => R) => (handler: slime.$api.event.Handlers<E>) => R
 
-			invoke: <E,R>(f: (events: slime.$api.Events<E>) => R, handler: slime.$api.event.Handlers<E>) => R
-
 			Handler: {
 				attach: <T>(events: slime.$api.Events<T>) => (handler: slime.$api.event.Handlers<T>) => void
 			}
@@ -122,95 +157,46 @@ namespace slime.$api {
 				detach: <D>(events: Attached<D>) => void
 			}
 		}
-	}
-}
 
-namespace slime.runtime.internal.events {
-	export interface Context {
-		deprecate: slime.$api.Global["deprecate"]
-	}
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
 
-	export interface Exports {
-		api: slime.$api.exports.Events
+				const subject: slime.runtime.internal.events.Exports = slime.runtime.internal.events.test.subject;
 
-		ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => (on?: slime.$api.event.Handlers<E>) => T
-		tell: slime.$api.fp.Exports["world"]["old"]["tell"]
-	}
+				var as: number[] = [];
 
-	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.Kit) {
-			var code: Script = fifty.$loader.script("events.js");
-			var subject = code({
-				deprecate: fifty.global.$api.deprecate
-			});
-			return subject;
-		//@ts-ignore
-		})(fifty);
-	}
+				fifty.tests.exports.Handlers = function() {
+					type domain = {
+						a: number
+					}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { subject } = test;
+					var handlers: slime.$api.event.Handlers<domain> = {
+						a: function(e) {
+							as.push(e.detail);
+						}
+					};
 
-			var remembered;
+					var attached = subject.api.Handlers.attached(handlers);
 
-			var as: number[] = [];
+					attached.fire("a", 1);
+					attached.fire("a", 2);
 
-			fifty.tests.exports.Handlers = function() {
-				type domain = {
-					a: number
+					verify(as.length).is(2);
+					verify(as)[0].is(1);
+					verify(as)[1].is(2);
+
+					attached.fire("a", 3);
+					verify(as.length).is(3);
+
+					subject.api.Handlers.detach(attached);
+					attached.fire("a", 4);
+					verify(as.length).is(3);
 				}
-
-				var handlers: slime.$api.event.Handlers<domain> = {
-					a: function(e) {
-						as.push(e.detail);
-					}
-				};
-
-				var attached = subject.api.Handlers.attached(handlers);
-
-				attached.fire("a", 1);
-				attached.fire("a", 2);
-
-				verify(as.length).is(2);
-				verify(as)[0].is(1);
-				verify(as)[1].is(2);
-
-				attached.fire("a", 3);
-				verify(as.length).is(3);
-
-				subject.api.Handlers.detach(attached);
-				attached.fire("a", 4);
-				verify(as.length).is(3);
 			}
-
-			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.exports);
-
-				var f = function(events) {
-					remembered = events;
-					events.fire("xxx", 2);
-				};
-
-				var captured = [];
-
-				subject.api.invoke(f, {
-					xxx: function(e) {
-						captured.push(e);
-					}
-				});
-
-				verify(captured).length.is(1);
-
-				remembered.fire("xxx", 2);
-				verify(captured).length.is(1);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export type Script = slime.loader.Script<Context,Exports>
+		//@ts-ignore
+		)(fifty);
+	}
 }
