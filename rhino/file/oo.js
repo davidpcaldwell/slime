@@ -318,7 +318,7 @@
 		var action = {
 			delete: function(pathname) {
 				return Object.assign(
-					$api.Events.action(function(events) {
+					$api.events.action(function(events) {
 						var remove = function(node) {
 							node.remove();
 							events.fire("deleted", node.pathname.toString());
@@ -334,7 +334,7 @@
 			},
 			write: function(p) {
 				return Object.assign(
-					$api.Events.action(function(events) {
+					$api.events.action(function(events) {
 						var location = Pathname(p.location);
 						var parent = location.parent;
 						if (parent.file) throw new Error("Parent pathname " + parent + " is an ordinary file.");

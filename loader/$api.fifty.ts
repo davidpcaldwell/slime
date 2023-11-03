@@ -717,8 +717,6 @@ namespace slime.$api {
 			Function: $api.Global["events"]["Function"]
 			/** @deprecated Replaced by {@link slime.$api.Global["events"]["toHandler"]} */
 			toHandler: $api.Global["events"]["toListener"]
-			/** @deprecated Replaced by {@link slime.$api.Global["events"]["action"]} */
-			action: $api.Global["events"]["action"]
 		}
 	}
 
