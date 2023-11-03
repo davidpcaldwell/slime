@@ -7,7 +7,7 @@
 /**
  * ## `jsh` documentation
  *
- * Documentation about contributing to `jsh` can be browsed at the {@link slime.jsh.internal} TypeScript namespace.
+ * Documentation about contributing to `jsh` can be browsed at the {@link slime.jsh.internal slime.jsh.internal} TypeScript namespace.
  *
  * ## Compatibility updates
  *
@@ -22,7 +22,7 @@
  *
  * ## Tools
  *
- * The `contributor/code/find-untyped-usages` `jsh` script can be used to search the SLIME codebase for usages of a particular
+ * The `contributor/code/find-untyped-usages.jsh.js` script can be used to search the SLIME codebase for usages of a particular
  * construct in files without typechecking (where a standard usages search might not find them, in other words).
  */
 namespace slime.internal {
