@@ -614,8 +614,7 @@
 		 */
 		var parse = {
 			document: function(input) {
-				var events = $api.events.toListener(input.events);
-				events.attach();
+				var events = $api.events.Handlers.attached(input.events);
 				var state = Parser()(
 					{
 						parsed: {
@@ -627,15 +626,14 @@
 							offset: 0
 						}
 					},
-					events.emitter,
+					events,
 					State.atEnd
 				);
-				events.detach();
+				$api.events.Handlers.detach(events);
 				if (isDocument(state.parsed)) return state.parsed;
 			},
 			fragment: function(input) {
-				var events = $api.events.toListener(input.events);
-				events.attach();
+				var events = $api.events.Handlers.attached(input.events);
 				var state = Parser()(
 					{
 						parsed: {
@@ -647,10 +645,10 @@
 							offset: 0
 						}
 					},
-					events.emitter,
+					events,
 					State.atEnd
 				);
-				events.detach();
+				$api.events.Handlers.detach(events);
 				if (isFragment(state.parsed)) return state.parsed;
 			}
 		}
@@ -731,10 +729,9 @@
 		$export({
 			debug: {
 				fidelity: function(p) {
-					var events = $api.Events.toHandler(p.events);
-					events.attach();
-					var rv = debugFidelity(p.markup, events.emitter);
-					events.detach();
+					var events = $api.events.Handlers.attached(p.events);
+					var rv = debugFidelity(p.markup, events);
+					$api.events.Handlers.detach(events);
 					return rv;
 				}
 			},

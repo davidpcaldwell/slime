@@ -531,7 +531,6 @@
 			$exports.deprecate(events.api.create),
 			{
 				Function: $exports.deprecate(events.api.Function),
-				toHandler: $exports.deprecate(events.api.toListener)
 			}
 		);
 
