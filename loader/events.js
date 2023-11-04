@@ -144,21 +144,26 @@
 			}
 		}
 
-		var ListenersInvocationReceiver = function(handler) {
+		/**
+		 * @template { object } D
+		 * @param { slime.$api.event.Handlers<D> } handlers
+		 */
+		var ListenersInvocationReceiver = function(handlers) {
 			var source = {};
 			var events = new Emitter({ source: source });
 
-			this.attach = function() {
-				attach(events,handler);
-			};
-
-			this.detach = function() {
-				detach(events,handler);
-			};
-
-			this.emitter = events;
+			return {
+				attach: function() {
+					attach(events,handlers);
+				},
+				detach: function() {
+					detach(events,handlers);
+				},
+				emitter: events
+			}
 		};
 
+		/** @type { slime.$api.exports.Events["Function"] } */
 		var listening = function(f,defaultOn) {
 			var EmitterInvocationReceiver = function(emitter) {
 				this.attach = function(){};
@@ -169,7 +174,7 @@
 			return function(p,receiver) {
 				var invocationReceiver = (receiver instanceof Emitter)
 					? new EmitterInvocationReceiver(receiver)
-					: new ListenersInvocationReceiver(
+					: ListenersInvocationReceiver(
 						(function() {
 							if (receiver) return receiver;
 							if (defaultOn) return defaultOn;
@@ -189,7 +194,7 @@
 		/** @type { slime.runtime.internal.events.Exports["ask"] } */
 		function ask(f) {
 			var rv = function(on) {
-				var receiver = new ListenersInvocationReceiver(on);
+				var receiver = ListenersInvocationReceiver(on);
 				receiver.attach();
 				try {
 					return f.call(this, receiver.emitter);
@@ -203,7 +208,7 @@
 		/** @type { slime.runtime.internal.events.Exports["tell"] } */
 		function tell(f) {
 			var rv = function(on) {
-				var receiver = new ListenersInvocationReceiver(on);
+				var receiver = ListenersInvocationReceiver(on);
 				receiver.attach();
 				try {
 					f.call(this, receiver.emitter);
@@ -214,7 +219,7 @@
 			return rv;
 		}
 
-		/** @type { ListenersInvocationReceiver[] } */
+		/** @type { ReturnType<ListenersInvocationReceiver>[] } */
 		var attachedHandlers = [];
 
 		$export({
@@ -223,20 +228,6 @@
 					return new Emitter(p);
 				},
 				Function: listening,
-				toListener: function(handler) {
-					return new ListenersInvocationReceiver(handler);
-				},
-				action: function(f) {
-					return function(handler) {
-						var invocationReceiver = new ListenersInvocationReceiver(handler);
-						invocationReceiver.attach();
-						try {
-							return f.call( this, invocationReceiver.emitter );
-						} finally {
-							invocationReceiver.detach();
-						}
-					}
-				},
 				Handler: {
 					attach: function(events) {
 						return function(handler) {
@@ -251,7 +242,7 @@
 						/** @type { (v: any) => slime.$api.exports.Attached<D> } */
 						var cast = function(v) { return v; };
 
-						var x = new ListenersInvocationReceiver(handlers);
+						var x = ListenersInvocationReceiver(handlers);
 						x.attach();
 						attachedHandlers.push(x);
 						return cast(x.emitter);

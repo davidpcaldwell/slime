@@ -305,27 +305,26 @@
 			require: (Installation.from.jsh()) ? Installation.require(Installation.from.jsh()) : null,
 			old: {
 				require: function(argument, handler) {
-					var listener = $api.events.toListener(handler);
-					listener.attach();
+					var listener = $api.events.Handlers.attached(handler);
 					$api.fp.world.now.action(
 						newRequire(Installation.from.jsh()),
 						argument,
 						{
 							found: function(e) {
-								listener.emitter.fire("console", "Found Tomcat " + e.detail.version + ".");
+								listener.fire("console", "Found Tomcat " + e.detail.version + ".");
 							},
 							unzipping: function(e) {
-								listener.emitter.fire("console", "Unzipping Tomcat from " + e.detail.local + " to " + e.detail.to + " ...");
+								listener.fire("console", "Unzipping Tomcat from " + e.detail.local + " to " + e.detail.to + " ...");
 							},
 							installing: function(e) {
-								listener.emitter.fire("console", "Installing Tomcat to " + e.detail.to + " ...");
+								listener.fire("console", "Installing Tomcat to " + e.detail.to + " ...");
 							},
 							installed: function(e) {
-								listener.emitter.fire("console", "Installed Tomcat " + e.detail.version);
+								listener.fire("console", "Installed Tomcat " + e.detail.version);
 							}
 						}
 					);
-					listener.detach();
+					$api.events.Handlers.detach(listener);
 				}
 			},
 			test: {

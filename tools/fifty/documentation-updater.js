@@ -81,9 +81,7 @@
 
 		/** @type { slime.tools.documentation.updater.Exports["Updater"] } */
 		var Updater = function(settings) {
-			var eventsListener = $api.events.toListener(settings.events);
-			eventsListener.attach();
-			var events = eventsListener.emitter;
+			var events = $api.events.Handlers.attached(settings.events);
 
 			var state = {
 				/** @type { { [out: string]: slime.tools.documentation.updater.internal.Process } } */
@@ -326,7 +324,7 @@
 					events.fire("destroying");
 					lock.wait({
 						then: function() {
-							eventsListener.detach();
+							$api.events.Handlers.detach(events);
 							state.stopped = true;
 						}
 					})();
