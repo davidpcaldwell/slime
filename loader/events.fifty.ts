@@ -12,7 +12,14 @@ namespace slime.runtime.internal.events {
 	export interface Exports {
 		api: slime.$api.exports.Events
 
+		handle: <E,T>(p: {
+			implementation: (events: slime.$api.Events<E>) => T,
+			handlers: slime.$api.event.Handlers<E>
+		}) => T
+
+		//	TODO	used only by $api-fp-impure.js, re-exporting; need to investigate whether/how that export is used
 		ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => (on?: slime.$api.event.Handlers<E>) => T
+
 		tell: slime.$api.fp.Exports["world"]["old"]["tell"]
 	}
 
