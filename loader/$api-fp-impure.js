@@ -184,8 +184,10 @@
 
 		var input = function(ask, handler) {
 			return function() {
-				var adapted = $context.events.ask(ask);
-				return adapted(handler);
+				return $context.events.handle({
+					implementation: ask,
+					handlers: handler
+				});
 			}
 		};
 
@@ -194,9 +196,10 @@
 			Process: {
 				action: function(p) {
 					return function() {
-						var tell = p.action(p.argument);
-						var adapted = $context.events.tell(tell);
-						adapted(p.handlers);
+						return $context.events.handle({
+							implementation: p.action(p.argument),
+							handlers: p.handlers
+						});
 					}
 				}
 			},
@@ -230,9 +233,10 @@
 				output: function(handler) {
 					return function(action) {
 						return function(argument) {
-							var tell = action(argument);
-							var adapted = $context.events.tell(tell);
-							adapted(handler);
+							$context.events.handle({
+								implementation: action(argument),
+								handlers: handler
+							});
 						}
 					}
 				},
@@ -244,50 +248,62 @@
 					}
 				}
 			},
-			mapping: function(question, handler) {
+			mapping: function(question, handlers) {
 				return function(p) {
-					var ask = question(p);
-					var adapted = $context.events.ask(ask);
-					return adapted(handler);
+					return $context.events.handle({
+						implementation: question(p),
+						handlers: handlers
+					});
 				}
 			},
 			output: function(action, handler) {
 				return function(p) {
-					var tell = action(p);
-					var adapted = $context.events.tell(tell);
-					adapted(handler);
-				}
+					$context.events.handle({
+						implementation: action(p),
+						handlers: handler
+					});
+				};
 			},
 			input: input,
 			process: function(tell, handler) {
 				return function() {
-					var adapted = $context.events.tell(tell);
-					adapted(handler);
+					$context.events.handle({
+						implementation: tell,
+						handlers: handler
+					});
 				}
 			},
 			now: {
-				question: function(question, argument, handler) {
-					var ask = question(argument);
-					var adapted = $context.events.ask(ask);
-					return adapted(handler);
+				question: function(question, argument, handlers) {
+					return $context.events.handle({
+						implementation: question(argument),
+						handlers: handlers
+					});
 				},
 				action: function(action, argument, handler) {
-					var tell = action(argument);
-					var adapted = $context.events.tell(tell);
-					adapted(handler);
+					$context.events.handle({
+						implementation: action(argument),
+						handlers: handler
+					});
 				},
 				tell: function(tell, handler) {
-					var adapted = $context.events.tell(tell);
-					adapted(handler);
+					$context.events.handle({
+						implementation: tell,
+						handlers: handler
+					});
 				},
-				ask: function(ask, handler) {
-					var adapted = $context.events.ask(ask);
-					return adapted(handler);
+				ask: function(ask, handlers) {
+					return $context.events.handle({
+						implementation: ask,
+						handlers: handlers
+					});
 				}
 			},
 			execute: function(tell, handler) {
-				var adapted = $context.events.tell(tell);
-				adapted(handler);
+				$context.events.handle({
+					implementation: tell,
+					handlers: handler
+				});
 			},
 			old: {
 				ask: $context.events.ask,

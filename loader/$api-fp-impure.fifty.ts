@@ -629,6 +629,9 @@ namespace slime.$api.fp.world {
 		/** @deprecated Used almost entirely for `jsh.shell.tools.node.require`. After refactoring that, reassess. */
 		execute: <E>(tell: world.Tell<E>, handler?: slime.$api.event.Handlers<E>) => void
 
+	}
+
+	export interface Exports {
 		/** @deprecated */
 		old: {
 			/** @deprecated */
@@ -637,6 +640,75 @@ namespace slime.$api.fp.world {
 			tell: <E>(f: (events: slime.$api.Events<E>) => void) => world.old.Tell<E>
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.world.old = fifty.test.Parent();
+
+			fifty.tests.exports.world.old.ask = function() {
+				type E = {
+					called: void
+				};
+
+				type T = {
+					number: number
+				}
+
+				var implementation = function(events: slime.$api.Events<E>): T {
+					events.fire("called");
+					return {
+						number: 3
+					};
+				}
+
+				var captor = fifty.$api.Events.Captor({
+					called: void(0)
+				});
+
+				verify(captor).events.length.is(0);
+
+				var ask = $api.fp.world.old.ask(implementation);
+
+				var returned = ask(captor.handler);
+				verify(captor).events.length.is(1);
+				verify(returned).number.is(3);
+			}
+
+
+			fifty.tests.exports.world.old.tell = function() {
+				type E = {
+					called: void
+				};
+
+				var effects: { number: number }[] = [];
+
+				var implementation = function(events: slime.$api.Events<E>) {
+					events.fire("called");
+					effects.push({ number: 3 });
+				}
+
+				var captor = fifty.$api.Events.Captor({
+					called: void(0)
+				});
+
+				verify(captor).events.length.is(0);
+				verify(effects).length.is(0);
+
+				var tell = $api.fp.world.old.tell(implementation);
+
+				tell(captor.handler);
+				verify(captor).events.length.is(1);
+				verify(effects).length.is(1);
+				verify(effects)[0].number.is(3);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 namespace slime.$api.fp.internal.impure {

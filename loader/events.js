@@ -261,6 +261,16 @@
 					}
 				}
 			},
+			handle: function(p) {
+				var receiver = ListenersInvocationReceiver(p.handlers);
+				receiver.attach();
+				try {
+					//	TODO	'this' is almost certainly wrong. Perhaps should be optional parameter?
+					return p.implementation.call(this, receiver.emitter);
+				} finally {
+					receiver.detach();
+				}
+			},
 			ask: ask,
 			tell: tell
 		});
