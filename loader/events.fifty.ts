@@ -10,17 +10,18 @@ namespace slime.runtime.internal.events {
 	}
 
 	export interface Exports {
-		api: slime.$api.exports.Events
+		/**
+		 * Implements the `$api.events` API.
+		 */
+		exports: slime.$api.exports.Events
 
+		/**
+		 * Helper function, not exported to `$api`, which assists in implementing various wo constructs in `$api.fp.world`.
+		 */
 		handle: <E,T>(p: {
 			implementation: (events: slime.$api.Events<E>) => T,
 			handlers: slime.$api.event.Handlers<E>
 		}) => T
-
-		//	TODO	used only by $api-fp-impure.js, re-exporting; need to investigate whether/how that export is used
-		ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => (on?: slime.$api.event.Handlers<E>) => T
-
-		tell: slime.$api.fp.Exports["world"]["old"]["tell"]
 	}
 
 	export namespace test {
@@ -110,10 +111,6 @@ namespace slime.$api {
 
 			//	TODO	could probably use parameterized types to improve accuracy
 			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.event.Function.Receiver) => R
-
-			Handler: {
-				attach: <T>(events: slime.$api.Events<T>) => (handler: slime.$api.event.Handlers<T>) => void
-			}
 		}
 
 		declare const marker: unique symbol;
@@ -169,7 +166,7 @@ namespace slime.$api {
 						}
 					};
 
-					var attached = subject.api.Handlers.attached(handlers);
+					var attached = subject.exports.Handlers.attached(handlers);
 
 					attached.fire("a", 1);
 					attached.fire("a", 2);
@@ -181,7 +178,7 @@ namespace slime.$api {
 					attached.fire("a", 3);
 					verify(as.length).is(3);
 
-					subject.api.Handlers.detach(attached);
+					subject.exports.Handlers.detach(attached);
 					attached.fire("a", 4);
 					verify(as.length).is(3);
 				}

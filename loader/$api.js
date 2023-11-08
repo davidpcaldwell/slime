@@ -525,12 +525,12 @@
 			}
 		}
 
-		$exports.events = events.api;
+		$exports.events = events.exports;
 
 		$exports.Events = Object.assign(
-			$exports.deprecate(events.api.create),
+			$exports.deprecate(events.exports.create),
 			{
-				Function: $exports.deprecate(events.api.Function),
+				Function: $exports.deprecate(events.exports.Function),
 			}
 		);
 

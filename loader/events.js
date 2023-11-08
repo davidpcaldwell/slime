@@ -191,50 +191,15 @@
 			}
 		};
 
-		/** @type { slime.runtime.internal.events.Exports["ask"] } */
-		function ask(f) {
-			var rv = function(on) {
-				var receiver = ListenersInvocationReceiver(on);
-				receiver.attach();
-				try {
-					return f.call(this, receiver.emitter);
-				} finally {
-					receiver.detach();
-				}
-			}
-			return rv;
-		}
-
-		/** @type { slime.runtime.internal.events.Exports["tell"] } */
-		function tell(f) {
-			var rv = function(on) {
-				var receiver = ListenersInvocationReceiver(on);
-				receiver.attach();
-				try {
-					f.call(this, receiver.emitter);
-				} finally {
-					receiver.detach();
-				}
-			}
-			return rv;
-		}
-
 		/** @type { ReturnType<ListenersInvocationReceiver>[] } */
 		var attachedHandlers = [];
 
 		$export({
-			api: {
+			exports: {
 				create: function(p) {
 					return new Emitter(p);
 				},
 				Function: listening,
-				Handler: {
-					attach: function(events) {
-						return function(handler) {
-							attach(events,handler);
-						}
-					}
-				},
 				Handlers: {
 					/** @template { any } D */
 					attached: function(handlers) {
@@ -270,9 +235,7 @@
 				} finally {
 					receiver.detach();
 				}
-			},
-			ask: ask,
-			tell: tell
+			}
 		});
 	}
 //@ts-ignore

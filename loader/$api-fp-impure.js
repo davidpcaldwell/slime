@@ -191,6 +191,15 @@
 			}
 		};
 
+		var oldAsk = function(f) {
+			return function(handlers) {
+				return $context.events.handle({
+					implementation: f,
+					handlers: handlers
+				})
+			}
+		};
+
 		/** @type { slime.$api.fp.world.Exports } */
 		var world = {
 			Process: {
@@ -306,8 +315,8 @@
 				});
 			},
 			old: {
-				ask: $context.events.ask,
-				tell: $context.events.tell
+				ask: oldAsk,
+				tell: oldAsk
 			}
 		}
 
