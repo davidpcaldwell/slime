@@ -149,7 +149,9 @@
 		 * @param { slime.$api.event.Handlers<D> } handlers
 		 */
 		var ListenersInvocationReceiver = function(handlers) {
-			var source = {};
+			var source = {
+				listeners: void(0)
+			};
 			var events = new Emitter({ source: source });
 
 			return {
