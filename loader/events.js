@@ -77,6 +77,20 @@
 
 			this.listeners = listeners;
 
+			//	TODO	roadmap: after some uses of this have been removed, add an optional 'old' property to allow this behavior
+			//			but overall we should not be adding arbitrary properties to an object just because it is an event emitter
+			if (p.source) {
+				p.source.listeners = new function() {
+					this.add = $context.deprecate(function(name,handler) {
+						listeners.add(name, handler);
+					});
+
+					this.remove = $context.deprecate(function(name,handler) {
+						listeners.remove(name, handler);
+					})
+				};
+			}
+
 			/**
 			 *
 			 * @param { slime.$api.Event<any> } event
