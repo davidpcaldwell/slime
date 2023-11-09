@@ -50,16 +50,29 @@ namespace slime.runtime.internal.events {
 }
 
 namespace slime.$api {
-	//	TODO	finish the below comment!
 	/**
-	 * An occurrence in which other parts of a program might be interested. Events have a
+	 * An occurrence in which other parts of a program might be interested.
+	 *
+	 * Events have a string `type`; listeners can subscribe to all events of a given type for a given source.
+	 *
+	 * They also contain a reference to their source, which can be any value that makes sense to the application, and is specified
+	 * when creating an object-oriented event emitter.
+	 *
+	 * Event sources may be arranged in a hierarchy, and listeners may listen to any level of the hierarchy, in which case they will
+	 * receive events emitted by descendants of the source to which they are listening. In this case, sources through which the
+	 * event has previously passed will be contained in the `path` property.
+	 *
+	 * Events have a timestamp representing the time at which they occurred.
+	 *
+	 * An event may contain a `detail` property of an event-specific type; usually these types are constrained by the event type
+	 * (the value of the `type` property).
 	 */
 	export interface Event<T> {
 		type: string
-		source: object
+		source: any
+		path: any[]
 		timestamp: number
 		detail: T
-		path: any[]
 	}
 
 	export interface Events<D> {
@@ -86,8 +99,7 @@ namespace slime.$api {
 		}
 
 		export namespace Function {
-			//	TODO	it appears this duplicates the event.Handlers concept above
-			export type Receiver = { [x: string]: (e: Event<any>) => void } | Events<any>
+			export type Receiver<D = object> = Handlers<D> | Events<D>
 		}
 	}
 
@@ -105,9 +117,9 @@ namespace slime.$api {
 			create: <D>(p?:
 				{
 					source?: {} & {
-						listeners: any
+						listeners: slime.$api.Events<D>["listeners"]
 					}
-					on?: { [k in keyof D]: event.Handler<D[k]> }
+					on?: slime.$api.event.Handlers<D>
 				} & (
 					{
 						//	TODO	should turn this into mutually exclusive OR
@@ -117,8 +129,7 @@ namespace slime.$api {
 				)
 			) => slime.$api.Events<D>
 
-			//	TODO	could probably use parameterized types to improve accuracy
-			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.event.Function.Receiver) => R
+			Function: <P,E,R>(f: (p: P, events: slime.$api.Events<E>) => R, defaultListeners?: slime.$api.event.Handlers<E>) => (argument: P, receiver?: slime.$api.event.Function.Receiver<E>) => R
 		}
 
 		declare const marker: unique symbol;
