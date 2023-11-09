@@ -102,12 +102,20 @@ namespace slime.$api {
 
 	export namespace exports {
 		export interface Events {
-			create: (p?: {
-				source?: any
-				parent?: slime.$api.Events<any>
-				getParent?: () => slime.$api.Events<any>
-				on?: { [x: string]: any }
-			}) => slime.$api.Events<any>
+			create: <D>(p?:
+				{
+					source?: {} & {
+						listeners: any
+					}
+					on?: { [k in keyof D]: event.Handler<D[k]> }
+				} & (
+					{
+						//	TODO	should turn this into mutually exclusive OR
+						parent?: slime.$api.Events<D>
+						getParent?: () => slime.$api.Events<D>
+					}
+				)
+			) => slime.$api.Events<D>
 
 			//	TODO	could probably use parameterized types to improve accuracy
 			Function: <P,R>(f: (p: P, events: any) => R, defaultListeners?: object) => (argument: P, receiver?: slime.$api.event.Function.Receiver) => R
