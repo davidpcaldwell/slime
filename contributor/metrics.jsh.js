@@ -70,6 +70,29 @@
 						});
 
 						jsh.shell.console("Converted: " + ( data.fifty.bytes / (data.fifty.bytes + data.jsapi.bytes) * 100 ).toFixed(1) + "%");
+
+						jsh.shell.console("");
+						jsh.shell.console("JSAPI tests:");
+						var files = 0;
+						var bytes = 0;
+						data.jsapi.list().filter(function(file) {
+							if (file.tests.present && file.tests.value == 0) return false;
+							return true;
+						}).sort(function(a,b) {
+							if (!a.tests.present && !b.tests.present) return 0;
+							if (!a.tests.present && b.tests.present) return 1;
+							if (a.tests.present && !b.tests.present) return -1;
+							if (a.tests.present && b.tests.present) {
+								return b.tests.value - a.tests.value;
+							}
+						}).forEach(function(item) {
+							files += 1;
+							bytes += (item.tests.present) ? item.tests.value : 0;
+							jsh.shell.console(item.path + " " + item.bytes + " tests: " + ( (item.tests.present) ? item.tests.value : "?" ));
+						});
+						jsh.shell.console("");
+						jsh.shell.console("Files with tests: " + files);
+						jsh.shell.console("Tests: " + bytes);
 					},
 					types: function(invocation) {
 						/**
