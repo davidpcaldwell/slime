@@ -10,10 +10,12 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.jsh.unit.internal.browser.Context } $context
 	 * @param { slime.jsh.unit.Exports["browser"] } $exports
 	 */
-	function(Packages,$api,jsh,$exports) {
+	function(Packages,$api,$context,$exports) {
+		var jsh = $context.jsh;
+
 		$exports.Modules = function(slime,pathnames) {
 			var common = (function() {
 				var isCommonAncestor = function(directory,list) {
@@ -653,4 +655,4 @@
 		$exports.selenium = selenium;
 	}
 //@ts-ignore
-)(Packages,$api,jsh,$exports);
+)(Packages,$api,$context,$exports);
