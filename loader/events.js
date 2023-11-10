@@ -152,7 +152,7 @@
 		};
 
 		/** @type { slime.$api.exports.Events["Function"] } */
-		var listening = function(f,defaultOn) {
+		var Function = function(f,defaultOn) {
 			var EmitterInvocationReceiver = function(emitter) {
 				this.attach = function(){};
 				this.detach = function(){};
@@ -172,6 +172,7 @@
 				;
 				invocationReceiver.attach();
 				try {
+					debugger;
 					return f.call( this, p, invocationReceiver.emitter );
 				} finally {
 					invocationReceiver.detach();
@@ -187,7 +188,7 @@
 				create: function(p) {
 					return new Emitter(p);
 				},
-				Function: listening,
+				Function: Function,
 				Handlers: {
 					/** @template { any } D */
 					attached: function(handlers) {
