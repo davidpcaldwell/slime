@@ -655,7 +655,14 @@
 
 			Decoder: function() {
 				var rv = {
-					listeners: void(0),
+					listeners: {
+						add: function(type,handler) {
+							events.listeners.add(type,handler);
+						},
+						remove: function(type,handler) {
+							events.listeners.remove(type,handler);
+						}
+					},
 					decode: function(string) {
 						var json = JSON.parse(string);
 						events.fire(json.type, json.detail);

@@ -116,9 +116,7 @@ namespace slime.$api {
 		export interface Events {
 			create: <D>(p?:
 				{
-					source?: {} & {
-						listeners: slime.$api.Events<D>["listeners"]
-					}
+					source?: {}
 					on?: slime.$api.event.Handlers<D>
 				} & (
 					{
