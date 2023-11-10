@@ -488,45 +488,10 @@
 				p.format = algorithms.zip;
 				oldInstall(p,on);
 			}),
-			//	TODO	below seems to be used in tomcat.js
+			//	TODO	below seems to be used in tomcat.js and also in hg installation
 			$api: {
 				Events: {
-					Function: $api.deprecate(function(f,defaultOn) {
-						var Listeners = function(p) {
-							var source = {};
-							var events = $api.Events({ source: source });
-
-							this.add = function() {
-								for (var x in p.on) {
-									source.listeners.add(x,p.on[x]);
-								}
-							};
-
-							this.remove = function() {
-								for (var x in p.on) {
-									source.listeners.remove(x,p.on[x]);
-								}
-							};
-
-							this.events = events;
-						};
-
-						return function(p,on) {
-							var listeners = new Listeners({
-								on: $api.fp.evaluator(
-									function() { return on; },
-									function() { return defaultOn; },
-									function() { return {}; }
-								)()
-							});
-							listeners.add();
-							try {
-								return f(p,listeners.events);
-							} finally {
-								listeners.remove();
-							}
-						}
-					})
+					Function: $api.deprecate($api.events.Function)
 				}
 			}
 		})

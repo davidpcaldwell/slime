@@ -531,6 +531,15 @@ END LICENSE
 										var source = new function() {
 											var events = api.Events({ source: this });
 
+											this.listeners = {
+												add: function(type,handler) {
+													events.listeners.add(type,handler);
+												},
+												remove: function(type,handler) {
+													events.listeners.remove(type,handler);
+												}
+											}
+
 											this.doIt = function(p) {
 												events.fire("done", p);
 											};
