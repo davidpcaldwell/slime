@@ -161,7 +161,7 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "(Local only) Project: Run tests in Docker",
+			"label": "(Local only) Project: Run tests locally",
 			"type": "shell",
 			"command": "./wf test",
 			"problemMatcher": []
