@@ -423,8 +423,40 @@ namespace slime.$api {
 	)(fifty);
 
 	export interface Global {
-		Properties: any
+		/** @deprecated Duplicates functionality of Object.entries and (although not documented) Object.fromEntries */
+		Properties: {
+			(): { name: string, value: any }[]
+			(p: { array: { name: string, value: any }[] } | { object: object }): { name: string, value: any }[]
+		}
+	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const api = fifty.global.$api;
+
+			fifty.tests.exports.Properties = function() {
+				var empty = api.Properties();
+				verify(empty).length.is(0);
+
+				verify(api).evaluate(function(api) {
+					//@ts-ignore
+					return api.Properties(null);
+				}).threw.type(TypeError);
+
+				verify(api).Properties({ array: [ { name: "foo", value: "bar" } ] }).length.is(1);
+
+				verify(api).Properties({ object: { foo: "bar" } }).length.is(1);
+				verify(api).Properties({ object: { foo: "bar" } })[0].name.is("foo");
+				verify(api).Properties({ object: { foo: "bar" } })[0].value.evaluate(String).is("bar");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Global {
 		Object: {
 			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
 			compose: {
