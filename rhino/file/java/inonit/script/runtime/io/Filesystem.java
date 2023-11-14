@@ -166,7 +166,9 @@ public abstract class Filesystem {
 
 		public final void setPosixAttributes(String owner, String group, Set<PosixFilePermission> permissions) throws IOException {
 			//	TODO	set owner
+			//	java.nio.file.Files.setOwner(Path path, UserPrincipal owner);
 			//	TODO	set group
+			//	https://stackoverflow.com/questions/13241967/change-file-owner-group-under-linux-with-java-nio-files
 			Files.setPosixFilePermissions(
 				getHostFile().toPath(),
 				permissions
