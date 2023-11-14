@@ -249,8 +249,8 @@
 							pathname: string
 						}
 					},
-					temporary: function(provider) {
-						return filesystemFromSpiTemporary(provider);
+					temporary: function(filesystem) {
+						return filesystemFromSpiTemporary(filesystem);
 					}
 				},
 				relative: $api.deprecate(directory.navigation.relativePath),
@@ -267,6 +267,26 @@
 					return {
 						filesystem: location.filesystem,
 						pathname: canonicalized.value
+					}
+				},
+				posix: {
+					permissions: {
+						get: function(p) {
+							return function(events) {
+								p.location.filesystem
+								throw new Error("Unimplemented.");
+							}
+						},
+						set: function(p) {
+							return function(events) {
+								throw new Error("Unimplemented");
+							}
+						},
+						update: function(p) {
+							return function(events) {
+								throw new Error("Unimplemented");
+							}
+						}
 					}
 				},
 				file: {

@@ -7,7 +7,9 @@
 package inonit.script.runtime.io;
 
 import java.io.*;
+import java.util.*;
 import java.nio.file.*;
+import java.nio.file.attribute.*;
 import java.util.logging.*;
 
 public abstract class Filesystem {
@@ -23,6 +25,8 @@ public abstract class Filesystem {
 	protected abstract String getPathnameSeparatorImpl();
 	protected abstract String getSearchpathSeparatorImpl();
 	protected abstract String getLineSeparatorImpl();
+
+	public abstract boolean isPosix();
 
 	/**
 	 *	Returns a node corresponding to the given path in this filesystem.
@@ -151,9 +155,28 @@ public abstract class Filesystem {
 		//	perhaps).
 		public void invalidate() {
 		}
+
+		public final PosixFileAttributes getPosixAttributes() throws IOException {
+			return Files.readAttributes(
+				this.getHostFile().toPath(),
+				java.nio.file.attribute.PosixFileAttributes.class,
+				java.nio.file.LinkOption.NOFOLLOW_LINKS
+			);
+		}
+
+		public final void setPosixAttributes(String owner, String group, Set<PosixFilePermission> permissions) throws IOException {
+			//	TODO	set owner
+			//	TODO	set group
+			Files.setPosixFilePermissions(
+				getHostFile().toPath(),
+				permissions
+			);
+		}
 	}
 
 	private static class NativeFilesystem extends Filesystem {
+		private FileSystem nio = java.nio.file.FileSystems.getDefault();
+
 		protected Node createNode(String path) throws IOException {
 			return new NodeImpl( new File(path) );
 		}
@@ -172,6 +195,12 @@ public abstract class Filesystem {
 
 		protected Node createNode(File file) throws IOException {
 			return new NodeImpl(file);
+		}
+
+		public final boolean isPosix() {
+			Set<String> views = nio.supportedFileAttributeViews();
+			//	TODO	this does not seem robust, but seems to work
+			return views.contains("posix");
 		}
 
 		private static class NodeImpl extends Node {

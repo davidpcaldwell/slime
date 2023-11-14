@@ -86,6 +86,13 @@ namespace slime.jrunscript.file.internal.java {
 
 		list: (peer: Peer) => Peer[]
 
+		posix?: {
+			attributes: {
+				get: (peer: Peer) => posix.Attributes
+				set: (peer: Peer, value: posix.Attributes) => void
+			}
+		}
+
 		/**
 		 * @param parent The location in which to create a temporary file / directory, or `null` to create it in the default Java
 		 * location.

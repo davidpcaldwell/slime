@@ -108,6 +108,17 @@ namespace slime.jrunscript {
 					export interface FileSystem {
 						supportedFileAttributeViews(): slime.jrunscript.native.java.util.Set
 					}
+
+					export namespace attribute {
+						export interface PosixFilePermission {
+						}
+
+						export interface PosixFileAttributes {
+							owner: () => slime.jrunscript.native.java.security.Principal
+							group: () => slime.jrunscript.native.java.security.Principal
+							permissions: () => slime.jrunscript.native.java.util.Set<slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission>
+						}
+					}
 				}
 
 				export namespace charset {
@@ -159,6 +170,13 @@ namespace slime.jrunscript {
 				export interface Proxy {
 				}
 			}
+
+			export namespace security {
+				export interface Principal {
+					getName: () => slime.jrunscript.native.java.lang.String
+				}
+			}
+
 			export namespace util {
 				export interface List<T = native.java.lang.Object> {
 				}
@@ -183,12 +201,12 @@ namespace slime.jrunscript {
 					getTime(): number
 				}
 
-				export interface Iterator {
+				export interface Iterator<T = any> {
 					hasNext(): boolean
-					next(): any
+					next(): T
 				}
 
-				export interface Set {
+				export interface Set<T = slime.jrunscript.native.java.lang.Object> {
 					iterator(): Iterator
 					contains(element: any): boolean
 				}
@@ -442,7 +460,17 @@ namespace slime.jrunscript {
 					Files: any
 					attribute: {
 						FileTime: any
-						PosixFilePermission: any
+						PosixFilePermission: {
+							OWNER_READ: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							OWNER_WRITE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							OWNER_EXECUTE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							GROUP_READ: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							GROUP_WRITE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							GROUP_EXECUTE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							OTHERS_READ: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							OTHERS_WRITE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							OTHERS_EXECUTE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+						}
 					}
 					LinkOption: any
 				}
@@ -453,6 +481,7 @@ namespace slime.jrunscript {
 			}
 			util: {
 				HashMap: any
+				HashSet: any
 				ArrayList: any
 				Properties: any
 				logging: {

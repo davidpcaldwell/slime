@@ -6,6 +6,15 @@
 
 namespace slime.jrunscript.file {
 	export namespace world {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.world = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export interface Filesystem {
 			separator: {
 				pathname: string
@@ -72,6 +81,87 @@ namespace slime.jrunscript.file {
 				pathname: string
 			},void>
 		}
+
+		export interface Filesystem {
+			posix?: {
+				attributes: {
+					get: slime.$api.fp.world.Question<
+						{
+							pathname: string
+						},
+						void,
+						file.posix.Attributes
+					>
+
+					set: slime.$api.fp.world.Action<
+						{
+							pathname: string
+							attributes: file.posix.Attributes
+						},
+						void
+					>
+				}
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.world.posix = {};
+
+				fifty.tests.world.posix.get = function() {
+					var filesystem = jsh.file.world.filesystems.os;
+					jsh.shell.console("filesystem = " + filesystem);
+					jsh.shell.console("filesystem.posix = " + filesystem.posix);
+
+					var attributes = $api.fp.world.now.ask(
+						filesystem.posix.attributes.get({ pathname: fifty.jsh.file.relative("world.fifty.ts").pathname })
+					);
+					jsh.shell.console(JSON.stringify(attributes));
+				}
+
+
+				fifty.tests.world.posix.set = function() {
+					var tmp = fifty.jsh.file.temporary.location();
+					$api.fp.world.now.action(
+						jsh.file.Location.file.write(tmp).string,
+						{ value: "" }
+					);
+
+					var attributes = $api.fp.world.now.ask(
+						//	TODO	need Location API for this
+						tmp.filesystem.posix.attributes.get({ pathname: tmp.pathname })
+					);
+					jsh.shell.console(JSON.stringify(attributes));
+
+					$api.fp.world.now.action(
+						tmp.filesystem.posix.attributes.set,
+						{
+							pathname: tmp.pathname,
+							attributes: {
+								owner: attributes.owner,
+								group: attributes.group,
+								permissions: {
+									owner: { read: true, write: true, execute: true },
+									group: { read: true, write: false, execute: true },
+									others: { read: false, write: false, execute: false }
+								}
+							}
+						}
+					);
+
+					var after = $api.fp.world.now.ask(
+						tmp.filesystem.posix.attributes.get({ pathname: tmp.pathname })
+					);
+
+					jsh.shell.console(JSON.stringify(after,void(0),4));
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 
 		export interface Filesystem {
 			temporary: slime.$api.fp.world.Question<
