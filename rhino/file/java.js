@@ -34,24 +34,6 @@
 			return path.replace(/\//g, "\\");
 		}
 
-		var $$api = {
-			RegExp: {
-				/**
-				 *
-				 * @param { RegExp } r
-				 * @returns
-				 */
-				exec: function(r) {
-					/**
-					 * @param { string } s
-					 */
-					return function(s) {
-						return r.exec(s);
-					}
-				}
-			}
-		}
-
 		var systems = {
 			/** @type { slime.jrunscript.file.internal.java.System } */
 			unix: {
@@ -292,6 +274,61 @@
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["list"] } */
 				this.list = function(peer) {
 					return peer.list();
+				};
+
+				this.posix = void(0);
+
+				var posix = _peer.isPosix();
+
+				if (posix) {
+					/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["posix"] } */
+					this.posix = {
+						/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["posix"]["attributes"] } */
+						attributes: {
+							get: function(peer) {
+								var rwe = function(set,r,w,e) {
+									return {
+										read: set.contains(r),
+										write: set.contains(w),
+										execute: set.contains(e)
+									}
+								};
+
+								var _attributes = peer.getPosixAttributes();
+								var _p = _attributes.permissions();
+								var _enums = Packages.java.nio.file.attribute.PosixFilePermission;
+								/** @type { slime.jrunscript.file.posix.Permissions } */
+								var permissions = {
+									owner: rwe(_p, _enums.OWNER_READ, _enums.OWNER_WRITE, _enums.OWNER_EXECUTE),
+									group: rwe(_p, _enums.GROUP_READ, _enums.GROUP_WRITE, _enums.GROUP_EXECUTE),
+									others: rwe(_p, _enums.OTHERS_READ, _enums.OTHERS_WRITE, _enums.OTHERS_EXECUTE)
+								}
+								return {
+									owner: String(_attributes.owner().getName()),
+									group: String(_attributes.group().getName()),
+									permissions: permissions
+								}
+							},
+							set: function(peer, value) {
+								var _enums = Packages.java.nio.file.attribute.PosixFilePermission;
+								var permissions = new Packages.java.util.HashSet();
+								if (value.permissions.owner.read) permissions.add(_enums.OWNER_READ);
+								if (value.permissions.owner.write) permissions.add(_enums.OWNER_WRITE);
+								if (value.permissions.owner.execute) permissions.add(_enums.OWNER_EXECUTE);
+								if (value.permissions.group.read) permissions.add(_enums.GROUP_READ);
+								if (value.permissions.group.write) permissions.add(_enums.GROUP_WRITE);
+								if (value.permissions.group.execute) permissions.add(_enums.GROUP_EXECUTE);
+								if (value.permissions.others.read) permissions.add(_enums.OTHERS_READ);
+								if (value.permissions.others.write) permissions.add(_enums.OTHERS_WRITE);
+								if (value.permissions.others.execute) permissions.add(_enums.OTHERS_EXECUTE);
+								peer.setPosixAttributes(
+									value.owner,
+									value.group,
+									permissions
+								);
+							}
+						}
+					};
 				}
 
 				this.temporary = function(peer,parameters) {
@@ -685,6 +722,20 @@
 						java.remove(java.newPeer(p.pathname));
 					}
 				},
+				posix: (java.posix) ? {
+					attributes: {
+						get: function(p) {
+							return function(events) {
+								return java.posix.attributes.get( java.newPeer(p.pathname) );
+							}
+						},
+						set: function(p) {
+							return function(events) {
+								java.posix.attributes.set( java.newPeer(p.pathname), p.attributes );
+							}
+						}
+					}
+				} : void(0),
 				temporary: function(p) {
 					return function(events) {
 						var parent = (p.parent) ? java.newPeer(p.parent) : null;

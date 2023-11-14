@@ -136,6 +136,7 @@
 						fileWriteStringOutput(inputs.destination)(inputs.template);
 					}
 
+					//	TODO	need chmod +x
 					$api.fp.impure.now.process(
 						$api.fp.impure.Input.supply(
 							getTemplatedFileState("wf")

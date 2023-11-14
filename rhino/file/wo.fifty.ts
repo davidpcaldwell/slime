@@ -45,6 +45,34 @@ namespace slime.jrunscript.file {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace posix {
+		export interface Attributes {
+			owner: string
+			group: string
+			permissions: Permissions
+		}
+
+		export interface Permissions {
+			owner: {
+				read: boolean
+				write: boolean
+				execute: boolean
+			}
+
+			group: {
+				read: boolean
+				write: boolean
+				execute: boolean
+			}
+
+			others: {
+				read: boolean
+				write: boolean
+				execute: boolean
+			}
+		}
+	}
+
 	export namespace location {
 		export interface Exports {
 			parent: () => (p: Location) => Location
@@ -95,6 +123,26 @@ namespace slime.jrunscript.file {
 		export interface Exports {
 			/** @deprecated Replaced by `directory.relativePath`. */
 			relative: (path: string) => (p: Location) => Location
+		}
+
+		export interface Exports {
+			posix: {
+				permissions: {
+					get: slime.$api.fp.world.Question<{
+						location: Location
+					}, void, slime.$api.fp.Maybe<posix.Permissions>>
+
+					set: slime.$api.fp.world.Action<{
+						location: Location
+						permissions: posix.Permissions
+					}, void>
+
+					update: slime.$api.fp.world.Action<{
+						location: Location
+						permissions: slime.$api.fp.Transform<posix.Permissions>
+					}, void>
+				}
+			}
 		}
 	}
 

@@ -13,6 +13,8 @@ namespace slime.jrunscript.native {
 
 			getNode(path: string): Filesystem.Node
 			getNode(file: slime.jrunscript.native.java.io.File): Filesystem.Node
+
+			isPosix(): boolean
 		}
 
 		export namespace Filesystem {
@@ -41,6 +43,9 @@ namespace slime.jrunscript.native {
 
 				//	TODO	exists only for Cygwin
 				invalidate: () => void
+
+				getPosixAttributes: () => slime.jrunscript.native.java.nio.file.attribute.PosixFileAttributes
+				setPosixAttributes: (owner: string, group: string, permissions: slime.jrunscript.native.java.util.Set<slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission>) => void
 			}
 		}
 	}
