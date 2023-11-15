@@ -9,6 +9,7 @@ package inonit.script.runtime.io;
 import java.io.*;
 import java.util.*;
 import java.nio.file.*;
+import java.nio.file.FileSystem;
 import java.nio.file.attribute.*;
 import java.util.logging.*;
 
@@ -165,10 +166,11 @@ public abstract class Filesystem {
 		}
 
 		public final void setPosixAttributes(String owner, String group, Set<PosixFilePermission> permissions) throws IOException {
-			//	TODO	set owner
-			//	java.nio.file.Files.setOwner(Path path, UserPrincipal owner);
-			//	TODO	set group
-			//	https://stackoverflow.com/questions/13241967/change-file-owner-group-under-linux-with-java-nio-files
+			Path path = getHostFile().toPath();
+			UserPrincipalLookupService service = path.getFileSystem().getUserPrincipalLookupService();
+			UserPrincipal user = service.lookupPrincipalByName(owner);
+			java.nio.file.Files.setOwner(path, user);
+			Files.getFileAttributeView(path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(service.lookupPrincipalByGroupName(group));
 			Files.setPosixFilePermissions(
 				getHostFile().toPath(),
 				permissions
