@@ -127,23 +127,141 @@ namespace slime.jrunscript.file {
 
 		export interface Exports {
 			posix: {
-				permissions: {
+				attributes: {
+					/**
+					 * Returns the POSIX attributes for a given `Location`, if the `Location`'s file system supports POSIX
+					 * attributes.
+					 */
 					get: slime.$api.fp.world.Question<{
 						location: Location
-					}, void, slime.$api.fp.Maybe<posix.Permissions>>
+					}, void, slime.$api.fp.Maybe<posix.Attributes>>
 
+					//	TODO	support owner/group updates below and update comments in following two methods.
+
+					/**
+					 * Sets the POSIX attributes for the given `Location` to the given value. If the `Location`'s file system does
+					 * not support POSIX attributes, does nothing.
+					 *
+					 * Note that this implementation does not yet support updating the owner or group attributes for files.
+					 */
 					set: slime.$api.fp.world.Action<{
 						location: Location
-						permissions: posix.Permissions
+						attributes: posix.Attributes
 					}, void>
 
+					/**
+					 * Updates the POSIX attributes for the given `Location` with the given transformation. If the `Location`'s
+					 * file system does not support POSIX attributes, does nothing.
+					 *
+					 * Note that this implementation does not yet support updating the owner or group attributes for files.
+					 */
 					update: slime.$api.fp.world.Action<{
 						location: Location
-						permissions: slime.$api.fp.Transform<posix.Permissions>
+						attributes: slime.$api.fp.Transform<posix.Attributes>
 					}, void>
 				}
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.exports.Location.posix = function() {
+					var tmp = fifty.jsh.file.temporary.location();
+					if (!tmp.filesystem.posix) return;
+
+					$api.fp.world.now.action(
+						jsh.file.Location.file.write(tmp).string,
+						{ value: "" }
+					);
+
+					var getAttributes = function(tmp: Location) {
+						var rv = $api.fp.world.now.ask(jsh.file.Location.posix.attributes.get({
+							location: tmp
+						}));
+						if (!rv.present) throw new Error();
+						return rv.value;
+					};
+
+					var initial = getAttributes(tmp);
+
+					$api.fp.world.now.tell(
+						jsh.file.Location.posix.attributes.set({
+							location: tmp,
+							attributes: {
+								owner: initial.owner,
+								group: initial.group,
+								permissions: {
+									owner: { read: true, write: true, execute: false },
+									group: { read: true, write: false, execute: false },
+									others: { read: false, write: false, execute: false }
+								}
+							}
+						})
+					);
+
+					var set = getAttributes(tmp);
+					verify(set).owner.is(initial.owner);
+					verify(set).group.is(initial.group);
+					verify(set).permissions.owner.read.is(true);
+					verify(set).permissions.owner.write.is(true);
+					verify(set).permissions.owner.execute.is(false);
+					verify(set).permissions.group.read.is(true);
+					verify(set).permissions.group.write.is(false);
+					verify(set).permissions.group.execute.is(false);
+					verify(set).permissions.others.read.is(false);
+					verify(set).permissions.others.write.is(false);
+					verify(set).permissions.others.execute.is(false);
+
+					$api.fp.world.now.tell(
+						jsh.file.Location.posix.attributes.update({
+							location: tmp,
+							attributes: function(attributes) {
+								return {
+									owner: set.owner,
+									group: set.group,
+									permissions: {
+										owner: {
+											read: set.permissions.owner.read,
+											write: set.permissions.owner.write,
+											execute: true
+										},
+										group: {
+											read: set.permissions.group.read,
+											write: set.permissions.group.write,
+											execute: true
+										},
+										others: {
+											read: set.permissions.others.read,
+											write: set.permissions.others.write,
+											execute: true
+										}
+									}
+								};
+							}
+						})
+					);
+
+					var updated = getAttributes(tmp);
+					verify(updated).owner.is(initial.owner);
+					verify(updated).group.is(initial.group);
+					verify(updated).permissions.owner.read.is(true);
+					verify(updated).permissions.owner.write.is(true);
+					verify(updated).permissions.owner.execute.is(true);
+					verify(updated).permissions.group.read.is(true);
+					verify(updated).permissions.group.write.is(false);
+					verify(updated).permissions.group.execute.is(true);
+					verify(updated).permissions.others.read.is(false);
+					verify(updated).permissions.others.write.is(false);
+					verify(updated).permissions.others.execute.is(true);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace location {
