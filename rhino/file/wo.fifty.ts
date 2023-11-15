@@ -142,7 +142,8 @@ namespace slime.jrunscript.file {
 					 * Sets the POSIX attributes for the given `Location` to the given value. If the `Location`'s file system does
 					 * not support POSIX attributes, does nothing.
 					 *
-					 * Note that this implementation does not yet support updating the owner or group attributes for files.
+					 * Note that only superusers can update the owner or group for files; attempting to update these values as a
+					 * normal user will result in an exception.
 					 */
 					set: slime.$api.fp.world.Action<{
 						location: Location
@@ -153,7 +154,8 @@ namespace slime.jrunscript.file {
 					 * Updates the POSIX attributes for the given `Location` with the given transformation. If the `Location`'s
 					 * file system does not support POSIX attributes, does nothing.
 					 *
-					 * Note that this implementation does not yet support updating the owner or group attributes for files.
+					 * Note that only superusers can update the owner or group for files; attempting to update these values as a
+					 * normal user will result in an exception.
 					 */
 					update: slime.$api.fp.world.Action<{
 						location: Location
@@ -165,6 +167,7 @@ namespace slime.jrunscript.file {
 
 		(
 			function(
+				Packages: slime.jrunscript.Packages,
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
@@ -172,12 +175,37 @@ namespace slime.jrunscript.file {
 
 				fifty.tests.exports.Location.posix = function() {
 					var tmp = fifty.jsh.file.temporary.location();
-					if (!tmp.filesystem.posix) return;
-
 					$api.fp.world.now.action(
 						jsh.file.Location.file.write(tmp).string,
 						{ value: "" }
 					);
+
+					if (!tmp.filesystem.posix) return;
+
+					var _lookup;
+					try {
+						_lookup = Packages.java.nio.file.FileSystems.getDefault().getUserPrincipalLookupService();
+					} catch (e) {
+						throw e;
+					}
+
+					var ROOT = jsh.shell.USER == "root";
+
+					var getUser = function(name) {
+						try {
+							return _lookup.lookupPrincipalByName(name);
+						} catch (e) {
+							return null;
+						}
+					};
+
+					var getGroup = function(name) {
+						try {
+							return _lookup.lookupPrincipalByGroupName(name);
+						} catch (e) {
+							return null;
+						}
+					}
 
 					var getAttributes = function(tmp: Location) {
 						var rv = $api.fp.world.now.ask(jsh.file.Location.posix.attributes.get({
@@ -189,12 +217,17 @@ namespace slime.jrunscript.file {
 
 					var initial = getAttributes(tmp);
 
+					//	Only superuser can update user / group for files, roughly (actually owner can "update" owner to itself and
+					//	update group to a group to which it belongs, allegedly)
+					var otherUser = (ROOT && getUser("nobody")) ? "nobody" : initial.owner;
+					var otherGroup = (ROOT && getGroup("wheel")) ? "wheel" : initial.group;
+
 					$api.fp.world.now.tell(
 						jsh.file.Location.posix.attributes.set({
 							location: tmp,
 							attributes: {
-								owner: initial.owner,
-								group: initial.group,
+								owner: otherUser,
+								group: otherGroup,
 								permissions: {
 									owner: { read: true, write: true, execute: false },
 									group: { read: true, write: false, execute: false },
@@ -205,8 +238,8 @@ namespace slime.jrunscript.file {
 					);
 
 					var set = getAttributes(tmp);
-					verify(set).owner.is(initial.owner);
-					verify(set).group.is(initial.group);
+					verify(set).owner.is(otherUser);
+					verify(set).group.is(otherGroup);
 					verify(set).permissions.owner.read.is(true);
 					verify(set).permissions.owner.write.is(true);
 					verify(set).permissions.owner.execute.is(false);
@@ -247,8 +280,8 @@ namespace slime.jrunscript.file {
 					);
 
 					var updated = getAttributes(tmp);
-					verify(updated).owner.is(initial.owner);
-					verify(updated).group.is(initial.group);
+					verify(updated).owner.is(set.owner);
+					verify(updated).group.is(set.group);
 					verify(updated).permissions.owner.read.is(true);
 					verify(updated).permissions.owner.write.is(true);
 					verify(updated).permissions.owner.execute.is(true);
@@ -261,7 +294,7 @@ namespace slime.jrunscript.file {
 				}
 			}
 		//@ts-ignore
-		)(fifty);
+		)(Packages,fifty);
 	}
 
 	export namespace location {

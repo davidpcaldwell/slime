@@ -458,6 +458,7 @@ namespace slime.jrunscript {
 			nio: {
 				file: {
 					Files: any
+					FileSystems: any
 					attribute: {
 						FileTime: any
 						PosixFilePermission: {
