@@ -270,24 +270,54 @@
 					}
 				},
 				posix: {
-					permissions: {
-						get: function(p) {
-							return function(events) {
-								p.location.filesystem
-								throw new Error("Unimplemented.");
-							}
-						},
-						set: function(p) {
-							return function(events) {
-								throw new Error("Unimplemented");
-							}
-						},
-						update: function(p) {
-							return function(events) {
-								throw new Error("Unimplemented");
+					attributes: (function() {
+						/** @param { slime.jrunscript.file.Location } location */
+						var get = function(location) {
+							return $api.fp.world.now.ask(
+								location.filesystem.posix.attributes.get({ pathname: location.pathname })
+							)
+						};
+
+						/**
+						 * @param { slime.jrunscript.file.Location } location
+						 * @param { slime.jrunscript.file.posix.Attributes } attributes
+						 */
+						var set = function(location,attributes) {
+							$api.fp.world.now.tell(
+								location.filesystem.posix.attributes.set({
+									pathname: location.pathname,
+									attributes: attributes
+								})
+							)
+						};
+
+						return {
+							get: function(p) {
+								return function(events) {
+									if (!p.location.filesystem.posix) return $api.fp.Maybe.from.nothing();
+									return $api.fp.Maybe.from.some(
+										get(p.location)
+									);
+								}
+							},
+							set: function(p) {
+								return function(events) {
+									if (p.location.filesystem.posix) {
+										set(p.location, p.attributes);
+									}
+								}
+							},
+							update: function(p) {
+								return function(events) {
+									if (p.location.filesystem.posix) {
+										var now = get(p.location);
+										var after = p.attributes(now);
+										set(p.location, after);
+									}
+								}
 							}
 						}
-					}
+					})()
 				},
 				file: {
 					exists: function() {
