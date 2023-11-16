@@ -134,20 +134,42 @@
 					var writeTemplatedFile = function(inputs) {
 						jsh.shell.console("Writing templated file to " + inputs.destination.pathname);
 						fileWriteStringOutput(inputs.destination)(inputs.template);
-					}
+					};
 
-					//	TODO	need chmod +x
+					/**
+					 *
+					 * @param { slime.$api.fp.Transform<slime.jrunscript.file.posix.Attributes> } update
+					 */
+					var updateTemplatedFileAttributes = function(update) {
+						/**
+						 * @param { TemplatedFile } file
+						 */
+						return function(file) {
+							$api.fp.world.now.tell(
+								jsh.file.Location.posix.attributes.update({
+									location: file.destination,
+									attributes: update
+								})
+							);
+						}
+					};
+
 					$api.fp.impure.now.process(
 						$api.fp.impure.Input.supply(
 							getTemplatedFileState("wf")
 						)(
-							getTemplatedFileHandler({
-								same: function(t) {
-									//	do nothing
-								},
-								different: writeTemplatedFile,
-								missing: writeTemplatedFile
-							})
+							$api.fp.impure.Output.compose([
+								getTemplatedFileHandler({
+									same: function(t) {
+										//	do nothing
+									},
+									different: writeTemplatedFile,
+									missing: writeTemplatedFile
+								}),
+								updateTemplatedFileAttributes(
+									jsh.file.Location.posix.attributes.Update.permissions.set.executable.all(true)
+								)
+							])
 						)
 					);
 				}
