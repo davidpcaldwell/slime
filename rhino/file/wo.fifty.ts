@@ -161,6 +161,16 @@ namespace slime.jrunscript.file {
 						location: Location
 						attributes: slime.$api.fp.Transform<posix.Attributes>
 					}, void>
+
+					Update: {
+						permissions: {
+							set: {
+								executable: {
+									all: (value: boolean) => slime.$api.fp.Transform<posix.Attributes>
+								}
+							}
+						}
+					}
 				}
 			}
 		}

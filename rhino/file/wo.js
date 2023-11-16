@@ -315,6 +315,39 @@
 										set(p.location, after);
 									}
 								}
+							},
+							Update: {
+								permissions: {
+									set: {
+										executable: {
+											all: function(value) {
+												return function(attributes) {
+													return {
+														owner: attributes.owner,
+														group: attributes.group,
+														permissions: {
+															owner: {
+																read: attributes.permissions.owner.read,
+																write: attributes.permissions.owner.write,
+																execute: value
+															},
+															group: {
+																read: attributes.permissions.group.read,
+																write: attributes.permissions.group.write,
+																execute: value
+															},
+															others: {
+																read: attributes.permissions.others.read,
+																write: attributes.permissions.others.write,
+																execute: value
+															}
+														}
+													};
+												}
+											}
+										}
+									}
+								}
 							}
 						}
 					})()
