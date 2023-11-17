@@ -172,6 +172,22 @@
 							])
 						)
 					);
+
+					$api.fp.impure.now.process(
+						$api.fp.impure.Input.supply(
+							getTemplatedFileState("wf.js")
+						)(
+							getTemplatedFileHandler({
+								same: function(t) {
+									//	do nothing
+								},
+								different: function(t) {
+									jsh.shell.console("Not overwriting " + t.destination.pathname + "; files are different.");
+								},
+								missing: writeTemplatedFile
+							})
+						)
+					);
 				}
 			)
 		)
