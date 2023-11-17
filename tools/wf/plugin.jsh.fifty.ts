@@ -198,6 +198,14 @@ namespace slime.jsh.wf {
 		subproject: {
 			initialize: {
 				action: slime.$api.fp.world.Action<{ path: string }, slime.jrunscript.shell.run.TellEvents>
+
+				/**
+				 * Returns a `Process` that will execute `action` using the given path, and rerouting `stderr` events from the
+				 * initialization to the console, with a prefix identifying the subproject emitting them.
+				 *
+				 * @param path The path of the subproject to initialize
+				 * @returns A `Process` that will execute the initialization.
+				 */
 				process: (path: string) => slime.$api.fp.impure.Process
 			}
 		}

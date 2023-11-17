@@ -86,7 +86,12 @@
 
 						/** @param { string } string */
 						var removeMpl = function(string) {
-							return string.split("\n").slice(0,1) + "\n" + string.split("\n").slice(7).join("\n") + "\n";
+							var lines = string.split("\n");
+							var shebang = (lines[0].substring(0,2) == "#!");
+							return (shebang)
+								? lines.slice(0,1) + "\n" + lines.slice(7).join("\n") + "\n"
+								: lines.slice(6).join("\n") + "\n"
+							;
 						};
 
 						return $api.fp.impure.Input.compose({
@@ -170,6 +175,22 @@
 									jsh.file.Location.posix.attributes.Update.permissions.set.executable.all(true)
 								)
 							])
+						)
+					);
+
+					$api.fp.impure.now.process(
+						$api.fp.impure.Input.supply(
+							getTemplatedFileState("wf.js")
+						)(
+							getTemplatedFileHandler({
+								same: function(t) {
+									//	do nothing
+								},
+								different: function(t) {
+									jsh.shell.console("Not overwriting " + t.destination.pathname + "; files are different.");
+								},
+								missing: writeTemplatedFile
+							})
 						)
 					);
 				}
