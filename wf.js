@@ -259,6 +259,25 @@
 						remote.clone({ to: location });
 					}
 				})();
+
+				$api.fp.impure.now.process(
+					$api.fp.impure.Input.supply(
+						function() { return $context.base.pathname.os.adapt(); }
+					)(
+						$api.fp.pipe(
+							jsh.file.Location.directory.relativePath("bin"),
+							function(bin) {
+								var exists = $api.fp.world.now.question(jsh.file.Location.directory.exists(), bin);
+								if (exists) {
+									$api.fp.world.now.action(
+										jsh.file.Location.directory.remove(),
+										bin
+									);
+								}
+							}
+						)
+					)
+				)
 			}
 		);
 
