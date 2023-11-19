@@ -210,6 +210,12 @@ namespace slime.jsh.wf {
 			}
 		}
 
+		subprojects: {
+			initialize: {
+				process: slime.$api.fp.impure.Process
+			}
+		}
+
 		/**
 		 * Given a {@link standard.Project} defining a few simple operations, initializes the given `$exports` object
 		 * with a standard set of `wf` commands defined by {@link standard.Interface}.

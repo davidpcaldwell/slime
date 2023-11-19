@@ -191,6 +191,103 @@
 					}
 				};
 
+				/** @type { slime.jsh.wf.ProjectView["subproject"]["initialize"] } */
+				var project_subproject_initialize = (
+					function() {
+						var action = function(p) {
+							return function(events) {
+								var subproject = $api.fp.impure.Input.map(
+									inputs.base,
+									$api.fp.property("pathname"),
+									function(pathname) { return pathname.os.adapt(); },
+									jsh.file.Location.directory.relativePath(p.path)
+								);
+
+								$api.fp.impure.now.process(
+									$api.fp.impure.Process.create({
+										input: $api.fp.impure.Input.compose({
+											subproject: subproject,
+											wf: $api.fp.impure.Input.map(
+												subproject,
+												jsh.file.Location.directory.relativePath("wf"),
+												$api.fp.property("pathname")
+											)
+										}),
+										output: function(inputs) {
+											jsh.shell.subprocess.action(
+												{
+													command: "bash",
+													arguments: [inputs.wf, "initialize"],
+													directory: inputs.subproject.pathname,
+													stdio: {
+														output: "line",
+														error: "line"
+													}
+												}
+											)(events);
+										}
+									})
+								);
+							}
+						};
+
+						return {
+							action: action,
+							process: function(path) {
+								return $api.fp.world.Process.action({
+									action: action,
+									argument: { path: path },
+									handlers: {
+										stderr: jsh.shell.Invocation.handler.stdio.line(function(e) {
+											jsh.shell.console("submodule " + path + " initialize stderr: " + e.detail.line);
+										})
+									}
+								})
+							}
+						};
+					}
+				)();
+
+				var base = function() { return inputs.base().pathname.os.adapt(); };
+
+				var wfpath = $api.fp.impure.Input.map(
+					base,
+					jsh.file.Location.directory.relativePath("wf.path"),
+					$api.fp.Maybe.impure.exception({
+						try: $api.fp.world.mapping(jsh.file.Location.file.read.string()),
+						nothing: function(location) { return new Error("No file found at " + location.pathname); }
+					})
+				);
+
+				var submodules = $api.fp.impure.Input.map(
+					base,
+					function(base) {
+						return jsh.tools.git.program({ command: "git" }).repository(base.pathname);
+					},
+					function(repository) {
+						return repository.command(jsh.tools.git.commands.submodule.status).argument({}).run();
+					},
+					$api.fp.Array.map($api.fp.property("path"))
+				);
+
+				var initializeSubmodulesProcess = $api.fp.impure.Input.map(
+					$api.fp.impure.Input.compose({
+						wfpath: wfpath,
+						submodules: submodules
+					}),
+					function(inputs) {
+						var rv = [ inputs.wfpath ];
+						inputs.submodules.forEach(function(submodule) {
+							if (submodule != inputs.wfpath) {
+								rv.push(submodule);
+							}
+						});
+						return rv;
+					},
+					$api.fp.Array.map(project_subproject_initialize.process),
+					$api.fp.impure.Process.compose
+				);
+
 				/** @type { slime.jsh.wf.ProjectView } */
 				var project = {
 					base: inputs.base,
@@ -332,61 +429,14 @@
 						}
 					},
 					subproject: {
-						initialize: (
-							function() {
-								var action = function(p) {
-									return function(events) {
-										var subproject = $api.fp.impure.Input.map(
-											inputs.base,
-											$api.fp.property("pathname"),
-											function(pathname) { return pathname.os.adapt(); },
-											jsh.file.Location.directory.relativePath(p.path)
-										);
-
-										$api.fp.impure.now.process(
-											$api.fp.impure.Process.create({
-												input: $api.fp.impure.Input.compose({
-													subproject: subproject,
-													wf: $api.fp.impure.Input.map(
-														subproject,
-														jsh.file.Location.directory.relativePath("wf"),
-														$api.fp.property("pathname")
-													)
-												}),
-												output: function(inputs) {
-													jsh.shell.subprocess.action(
-														{
-															command: "bash",
-															arguments: [inputs.wf, "initialize"],
-															directory: inputs.subproject.pathname,
-															stdio: {
-																output: "line",
-																error: "line"
-															}
-														}
-													)(events);
-												}
-											})
-										);
-									}
-								};
-
-								return {
-									action: action,
-									process: function(path) {
-										return $api.fp.world.Process.action({
-											action: action,
-											argument: { path: path },
-											handlers: {
-												stderr: jsh.shell.Invocation.handler.stdio.line(function(e) {
-													jsh.shell.console("submodule " + path + " initialize stderr: " + e.detail.line);
-												})
-											}
-										})
-									}
-								};
+						initialize: project_subproject_initialize
+					},
+					subprojects: {
+						initialize: {
+							process: function() {
+								initializeSubmodulesProcess()();
 							}
-						)()
+						}
 					},
 					/**
 					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
@@ -405,6 +455,7 @@
 								return jsh_wf_git;
 							},
 							project: function() {
+								//	TODO	weird self-reference indicating this object should be restructured
 								return project;
 							},
 							typescript: function() {
