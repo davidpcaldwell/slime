@@ -458,7 +458,9 @@ namespace slime.$api {
 
 	export interface Global {
 		Object: {
+			/** @deprecated Replicates functionality of Object.fromEntries */
 			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
+
 			compose: {
 				<T>(t: T): slime.js.NotReadonly<T>
 				//	TODO	below should be NotReadonly also, but they currently cause problems that need to be worked through.
@@ -476,7 +478,28 @@ namespace slime.$api {
 				map: <O,T,R>(f: (t: T) => R) => (o: { [x in keyof O]: T } ) => { [x in keyof O]: R }
 			}
 		}
+	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.Object = fifty.test.Parent();
+
+			const { verify } = fifty;
+			const api = fifty.global.$api;
+
+			fifty.tests.exports.Object["()"] = function() {
+				var properties = [{ name: "foo", value: "bar" }, { name: "a", value: "b" }];
+				var object = api.Object({ properties: properties });
+				verify(object).foo.evaluate(String).is("bar");
+				verify(object).a.evaluate(String).is("b");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Global {
 		Array: {
 			/**
 			 * Creates an array by creating an empty array and passing it to the given function to populate.
