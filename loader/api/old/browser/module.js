@@ -233,6 +233,15 @@
 					this.run = function(next) {
 						set.run(next);
 					};
+
+					this.listeners = {
+						add: function(type,handler) {
+							events.listeners.add(type,handler);
+						},
+						remove: function(type,handler) {
+							events.listeners.remove(type,handler);
+						}
+					}
 				};
 
 				var global = new Tests();
