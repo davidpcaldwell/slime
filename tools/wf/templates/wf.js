@@ -14,22 +14,8 @@
 	 * @param { slime.jsh.wf.standard.Interface & { initialize: any, hello: any } } $exports
 	 */
 	function($api,jsh,$context,$exports) {
-		var wfpath = $api.fp.impure.Input.map(
-			function() { return $context.base.pathname.os.adapt(); },
-			jsh.file.Location.directory.relativePath("wf.path"),
-			$api.fp.Maybe.impure.exception({
-				try: $api.fp.world.mapping(jsh.file.Location.file.read.string()),
-				nothing: function(location) { return new Error("No file found at " + location.pathname); }
-			})
-		);
-
 		$exports.initialize = $api.fp.impure.Process.compose([
-			$api.fp.impure.now.input(
-				$api.fp.impure.Input.map(
-					wfpath,
-					jsh.wf.project.subproject.initialize.process
-				)
-			),
+			jsh.wf.project.subprojects.initialize.process,
 			jsh.wf.project.git.installHooks
 		]);
 
