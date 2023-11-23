@@ -329,6 +329,10 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		Object: {
+			/**
+			 * Given a property name and a function that transforms the value of that property, returns a function that transforms
+			 * the value of the containing object.
+			 */
 			property: <T, K extends keyof T>(p: {
 				property: K
 				change: slime.$api.fp.Transform<T[K]>
