@@ -9,28 +9,12 @@ namespace slime.jsh.test.remote {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			var fixtures: slime.jrunscript.jsh.test.Script = fifty.$loader.script("../../../jrunscript/jsh/fixtures.ts");
+			var exported = fixtures();
+			var remote = exported.shells.remote();
+
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
-
-			var slime = fifty.jsh.file.relative("../../..");
-
-			var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
-
-			var code: {
-				testing: slime.jrunscript.tools.github.internal.test.Script
-			} = {
-				testing: jsh.loader.synchronous.script("rhino/tools/github/test/module.js")(loader)
-			};
-
-			var library = {
-				testing: code.testing({
-					slime: jsh.file.object.directory(slime)
-				})
-			};
-
-			var lock = jsh.java.Thread.Lock();
-
-			var server = library.testing.startMock(jsh);
 
 			var toInvocation = function(line: string[], input?: string, environment?: { [name: string]: string }) {
 				if (!environment) environment = {};
@@ -68,7 +52,7 @@ namespace slime.jsh.test.remote {
 
 			fifty.tests.suite = function() {
 				var settings: slime.jsh.unit.mock.github.Settings = {
-					mock: server,
+					mock: remote.web,
 					branch: "local"
 				};
 
@@ -76,7 +60,7 @@ namespace slime.jsh.test.remote {
 				//	to `bash`, hence the two step process below in which the first download is sent as input to the second
 				//	command
 
-				var download = library.testing.getDownloadJshBashCommand(
+				var download = remote.library.getDownloadJshBashCommand(
 					jsh.shell.PATH,
 					settings
 				);
@@ -88,7 +72,7 @@ namespace slime.jsh.test.remote {
 				);
 				jsh.shell.console("Script starts with:\n" + launcherBashScript.split("\n").slice(0,10).join("\n"));
 
-				var invoke = library.testing.getBashInvocationCommand(settings);
+				var invoke = remote.library.getBashInvocationCommand(settings);
 				jsh.shell.console("Invoking ...");
 				jsh.shell.console(invoke.join(" "));
 				var scriptOutput = $api.fp.now.invoke(
