@@ -369,13 +369,6 @@
 			}
 			return Object.assign.apply(Object,args);
 		};
-		$exports.Object.property = function() {
-			var rv = this;
-			for (var i=0; i<arguments.length; i++) {
-				rv = rv[arguments[i]];
-			}
-			return rv;
-		};
 		$exports.Object.optional = function(v) {
 			if (arguments.length == 0) throw new TypeError();
 			if (arguments.length == 1) throw new TypeError();
@@ -424,6 +417,14 @@
 		}
 
 		$exports.Value = function(v,name) {
+			var $exports_Object_property = function() {
+				var rv = this;
+				for (var i=0; i<arguments.length; i++) {
+					rv = rv[arguments[i]];
+				}
+				return rv;
+			};
+
 			return {
 				require: function() {
 					if (!v) {
@@ -432,7 +433,7 @@
 				},
 				property: function() {
 					return $exports.Value(
-						$exports.Object.property.apply(v,arguments),
+						$exports_Object_property.apply(v,arguments),
 						( name || "" ) + "." + Array.prototype.join.call(arguments,".")
 					)
 				},
