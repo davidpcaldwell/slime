@@ -5,11 +5,23 @@
 //	END LICENSE
 
 namespace slime.jrunscript.jsh.test {
+	export namespace shells {
+		export interface Remote {
+			web: slime.jsh.unit.mock.Web
+			library: slime.jsh.unit.mock.github.Exports
+		}
+	}
+
 	export interface Shells {
 		unbuilt: slime.$api.fp.impure.Input<slime.jsh.shell.UnbuiltInstallation>
 		built: slime.$api.fp.impure.Input<slime.jsh.shell.BuiltInstallation>
 		packaged: slime.$api.fp.impure.Input<slime.jsh.shell.PackagedInstallation>
-		remote: slime.$api.fp.impure.Input<slime.jsh.shell.UrlInstallation>
+
+		//	TODO	unlike the other shell implementations, this one does no caching and will create a new server for each call
+		remote: slime.$api.fp.impure.Input<shells.Remote>
+
+		//	Would like to use something like this to match designs of others, but will need to refactor first to make it less OO
+		//	remote: slime.$api.fp.impure.Input<slime.jsh.shell.UrlInstallation>
 	}
 
 	export interface Exports {
@@ -180,6 +192,7 @@ namespace slime.jrunscript.jsh.test {
 						};
 					},
 					remote: function() {
+						//	TODO	add caching
 						var current = jsh.shell.jsh.Installation.from.current();
 
 						if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
@@ -199,7 +212,12 @@ namespace slime.jrunscript.jsh.test {
 								})
 							};
 
-							return void(0);
+							var server = library.testing.startMock(jsh);
+
+							return {
+								web: server,
+								library: library.testing
+							};
 						} else {
 							throw new Error();
 						}
