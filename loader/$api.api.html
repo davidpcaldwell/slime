@@ -36,28 +36,6 @@ END LICENSE
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
-							<div class="name">property</div>
-							<span>__DESCRIPTION__</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">__TYPE__</span>
-								<span>__DESCRIPTION__</span>
-							</div>
-							<script type="application/x.jsapi#tests">
-								verify(api.Object).is.not.equalTo(void(0));
-								verify(api.Object.property).is.not.equalTo(void(0));
-								var test = {
-									name: "value"
-								};
-								verify(api.Object.property.call(test,"name","length")).is("value".length);
-							</script>
-						</li>
-						<li class="function">
 							<div class="name">properties</div>
 							<span>Returns the list of properties for an object.</span>
 							<div class="arguments">
