@@ -29,7 +29,7 @@
 	"githubIssues.issueBranchTitle": "${user}/issue/#${issueNumber}",
 	"github.branchProtection": true,
 	"githubIssues.assignWhenWorking": true,
-	"githubIssues.workingIssueFormatScm": "Resolve #${issueNumber}",
+	"githubIssues.workingIssueFormatScm": "#${issueNumber}: ",
 	"githubPullRequests.assignCreated": "${user}",
 	"githubPullRequests.remotes": [
 		"origin"
