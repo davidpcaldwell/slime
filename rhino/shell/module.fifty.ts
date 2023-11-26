@@ -324,8 +324,8 @@ namespace slime.jrunscript.shell {
 	}
 
 	interface Result {
-		stdio: {
-			output: string
+		stdio?: {
+			output?: string
 		}
 	}
 

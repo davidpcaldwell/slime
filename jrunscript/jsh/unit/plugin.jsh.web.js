@@ -92,6 +92,7 @@
 							return "Mock client for 127.0.0.1:" + tomcat.port;
 						};
 
+						/** @type { slime.jsh.unit.mock.Web["jrunscript"] } */
 						this.jrunscript = function(o) {
 							//	TODO	perhaps need HTTPS here
 							var properties = {
@@ -99,7 +100,7 @@
 								"http.proxyPort": String(tomcat.port)
 							};
 							jsh.js.Object.set(properties, (o.properties) ? o.properties : {});
-							jsh.shell.jrunscript(jsh.js.Object.set({}, o, {
+							jsh.shell.jrunscript($api.Object.compose(o, {
 								properties: properties,
 								//	TODO	is this necessary, or can it be pushed to jrunscript method?
 								arguments: (o.arguments) ? o.arguments : []

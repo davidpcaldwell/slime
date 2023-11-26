@@ -9,10 +9,15 @@ namespace slime.jrunscript.shell {
 		export type Run<P = run.old.Argument> = {
 			<T>(
 				p: P & {
-					evaluate?: (p: run.old.Result) => T
+					evaluate: (p: run.old.Result) => T
 				},
 				events?: run.old.Handler
 			): T
+
+			(
+				p: P,
+				events?: run.old.Handler
+			): run.old.Result
 
 			(p: run.old.Argument, events?: run.old.Handler): run.old.Result
 		}
