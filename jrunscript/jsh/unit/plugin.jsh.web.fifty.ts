@@ -39,9 +39,6 @@ namespace slime.jsh.unit {
 			/** described on definition page */
 			client: slime.jrunscript.http.client.object.Client
 
-			/** described on definition page */
-			jrunscript: Function
-
 			https: {
 				port: number
 				client: slime.jrunscript.http.client.object.Client
