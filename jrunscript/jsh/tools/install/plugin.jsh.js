@@ -718,6 +718,13 @@
 						return function(events) {
 							//	TODO	this is hard-coded in several places now
 							var VERSION = "20.9.0";
+							//	TODO	horrendous, but let's go with it for now
+							if (jsh.file.Pathname("/etc/os-release").file) {
+								var string = jsh.file.Pathname("/etc/os-release").file.read(String);
+								if (string.indexOf("Amazon Linux 2") != -1) {
+									VERSION = "16.20.2";
+								}
+							}
 							var now = node.object.at({ location: location.toString() });
 							if (now && now.version == "v" + VERSION) {
 								events.fire("found", now);
