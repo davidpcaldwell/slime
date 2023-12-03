@@ -48,7 +48,6 @@
 
 					this.port = void(0);
 					this.client = void(0);
-					this.jrunscript = void(0);
 					this.https = void(0);
 					this.environment = void(0);
 					this.hg = void(0);
@@ -163,10 +162,7 @@
 				if (jsh.httpd.Tomcat) jsh.unit.mock.Web = Web;
 				if (jsh.httpd.Tomcat) jsh.unit.mock.Internet = $api.deprecate(jsh.unit.mock.Web);
 
-				/**
-				 * @param { { loopback: boolean, src: any } } o
-				 * @returns { slime.jsh.unit.mock.handler }
-				 */
+				/** @type { slime.jsh.unit.Exports["mock"]["Web"]["bitbucket"] } */
 				var MockBitbucketApi = function(o) {
 					var hgserve;
 
@@ -327,7 +323,7 @@
 												if (dir.pathname.basename == ".hg") return false;
 												return true;
 											},
-											type: SRC.list.ENTRY
+											type: SRC.directory.list.ENTRY
 										});
 										jsh.file.zip({
 											from: list.map(function(entry) {

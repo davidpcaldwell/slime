@@ -6,7 +6,6 @@
 
 namespace slime.jsh.unit {
 	export interface Exports {
-		mock: slime.jsh.unit.mock;
 		html: {
 			Part: any
 			cli: any
