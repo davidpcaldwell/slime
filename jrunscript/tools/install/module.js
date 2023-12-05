@@ -21,14 +21,16 @@
 			apache: $loader.script("apache.js")
 		}
 
+		var TGZ = /(.*)\.tgz$/;
+		var TARGZ = /(.*)\.tar\.gz$/;
+		var TARXZ = /(.*)\.tar\.xz$/;
+		var ZIP = /(.*)\.zip$/;
+
 		var algorithms = {
 			gzip: new function() {
 				var tar = $context.api.shell.PATH.getCommand("tar");
 
 				this.getDestinationPath = function(basename) {
-					var TGZ = /(.*)\.tgz$/;
-					var TARGZ = /(.*)\.tar\.gz$/;
-					var TARXZ = /(.*)\.tar\.xz$/;
 					if (TGZ.test(basename)) return TGZ.exec(basename)[1];
 					if (TARGZ.test(basename)) return TARGZ.exec(basename)[1];
 					if (TARXZ.test(basename)) return TARXZ.exec(basename)[1];
@@ -48,7 +50,6 @@
 			},
 			zip: new function() {
 				this.getDestinationPath = function(basename) {
-					var ZIP = /(.*)\.zip$/;
 					if (ZIP.test(basename)) return ZIP.exec(basename)[1];
 					//	TODO	list directory and take only option if there is only one and it is a directory?
 					throw new Error("Cannot determine destination path for " + basename);
@@ -101,9 +102,16 @@
 		 * @param { slime.mime.Type } type
 		 * @returns { slime.$api.fp.Maybe<slime.jrunscript.tools.install.download.Format> }
 		 */
-		var getFormat = function(type) {
+		var getFormatFromMimeType = function(type) {
 			if (type.media == "application" && type.subtype == "zip") return $api.fp.Maybe.from.some(newFormats.zip);
 			if (type.media == "application" && type.subtype == "gzip") return $api.fp.Maybe.from.some(newFormats.targz);
+			return $api.fp.Maybe.from.nothing();
+		}
+
+		/** @type { (url: string) => slime.$api.fp.Maybe<slime.jrunscript.tools.install.download.Format> } */
+		var getFormatFromUrl = function(url) {
+			if (ZIP.test(url)) return $api.fp.Maybe.from.some(newFormats.zip);
+			if (TARGZ.test(url) || TGZ.test(url) || TARXZ.test(url)) return $api.fp.Maybe.from.some(newFormats.targz);
 			return $api.fp.Maybe.from.nothing();
 		}
 
@@ -302,9 +310,11 @@
 			Download: {
 				from: {
 					url: function(url) {
+						var format = getFormatFromUrl(url);
 						return {
 							url: url,
-							name: getDefaultName(url)
+							name: getDefaultName(url),
+							format: (format.present) ? format.value : void(0)
 						}
 					}
 				},
@@ -354,7 +364,7 @@
 					var getArchiveFormat = function(specifiedFormat, mimeType) {
 						if (specifiedFormat) return specifiedFormat;
 						if (mimeType.present) {
-							var maybe = getFormat(mimeType.value);
+							var maybe = getFormatFromMimeType(mimeType.value);
 							if (maybe.present) return maybe.value;
 						}
 					}
@@ -391,7 +401,7 @@
 								function() {
 									var mime = getMimeType();
 									if (mime.present) {
-										return getFormat(mime.value);
+										return getFormatFromMimeType(mime.value);
 									}
 									return $api.fp.Maybe.from.nothing();
 								}
@@ -435,7 +445,7 @@
 							function() {
 								if (p.download.format) return p.download.format;
 								if (archive.type.present) {
-									var maybe = getFormat(archive.type.value);
+									var maybe = getFormatFromMimeType(archive.type.value);
 									if (maybe.present) return maybe.value;
 								}
 							}

@@ -30,9 +30,7 @@ namespace slime.jrunscript.tools.install {
 
 				var scope: {
 					downloads: slime.jrunscript.file.Directory
-					load: (p?: any) => slime.jrunscript.tools.install.Exports
-					//	TODO	load and module are redundant
-					module: (p?: any) => slime.jrunscript.tools.install.Exports
+					load: (p?: { downloads: slime.jrunscript.file.Directory }) => slime.jrunscript.tools.install.Exports
 					api: slime.jrunscript.tools.install.Exports
 					harness: {
 						local: slime.jrunscript.file.Directory
@@ -45,7 +43,6 @@ namespace slime.jrunscript.tools.install {
 				} = {
 					downloads: void(0),
 					load: void(0),
-					module: void(0),
 					api: void(0),
 					harness: void(0),
 					server: void(0),
@@ -64,7 +61,7 @@ namespace slime.jrunscript.tools.install {
 				};
 
 				scope.load = function(p) {
-					if (!p) p = {};
+					if (!p) p = { downloads: void(0) };
 					var context = $api.Object.compose(defaults);
 					context.api.shell = $api.Object.compose(context.api.shell);
 					if (p.downloads) {
@@ -72,10 +69,6 @@ namespace slime.jrunscript.tools.install {
 					}
 					return fifty.$loader.module("module.js", context);
 				}
-
-				scope.module = function(p) {
-					return scope.load(p);
-				};
 
 				scope.api = scope.load();
 
@@ -136,6 +129,15 @@ namespace slime.jrunscript.tools.install {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		test: test.Exports
 	}
@@ -163,6 +165,10 @@ namespace slime.jrunscript.tools.install {
 
 		export interface Format {
 			extract: (f: slime.jrunscript.file.File, d: slime.jrunscript.file.Directory) => void
+
+			/**
+			 * A file extension suitable for storing this format on a typical filesystem, including a leading period (`.`).
+			 */
 			extension: string
 		}
 	}
@@ -183,6 +189,15 @@ namespace slime.jrunscript.tools.install {
 	}
 
 	export namespace exports {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.Download = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export interface Download {
 			from: {
 				//	TODO	guess download format?
@@ -190,6 +205,29 @@ namespace slime.jrunscript.tools.install {
 			}
 		}
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				const subject = test.scope.load();
+
+				fifty.tests.exports.Download.from = {};
+				fifty.tests.exports.Download.from.url = function() {
+					var download = subject.Download.from.url("http://example.com/foo/bar.tar.gz");
+
+					verify(download).url.is("http://example.com/foo/bar.tar.gz");
+					verify(download).name.is("bar.tar.gz");
+					verify(download).evaluate.property("format").extension.is(".tgz");
+					verify(download).evaluate.property("format").is(subject.Download.Format.targz);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
 		export interface Download {
 			Format: {
 				zip: download.Format
@@ -488,7 +526,7 @@ namespace slime.jrunscript.tools.install {
 		) {
 			const verify = fifty.verify;
 			const jsh = fifty.global.jsh;
-			const module = test.scope.module;
+			const module = test.scope.load;
 			const server = test.scope.server;
 
 			fifty.tests.get = function() {
@@ -699,6 +737,8 @@ namespace slime.jrunscript.tools.install {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
+
 				fifty.run(fifty.tests.get);
 				fifty.run(fifty.tests.install);
 				fifty.run(fifty.tests.tar);
