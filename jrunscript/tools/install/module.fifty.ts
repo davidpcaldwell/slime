@@ -186,6 +186,8 @@ namespace slime.jrunscript.tools.install {
 		name?: string
 
 		format?: download.Format
+
+		prefix?: string
 	}
 
 	export namespace exports {
@@ -241,6 +243,56 @@ namespace slime.jrunscript.tools.install {
 				download.Events
 			>
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+				const { server, harness, load } = test.scope;
+
+				fifty.tests.exports.Download.install = function() {
+					var downloads = fifty.jsh.file.object.temporary.directory();
+					var subject = load({ downloads: downloads });
+					var url = "http://" + "127.0.0.1" + ":" + server.port + "/" + "directory.tar.gz";
+					jsh.shell.console("url = " + url);
+
+					fifty.run(function unprefixed() {
+						var download: install.Download = {
+							url: url,
+							format: subject.Download.Format.targz
+						};
+						var destination = fifty.jsh.file.object.temporary.location();
+
+						$api.fp.world.now.action(
+							subject.Download.install,
+							{ download: download, to: destination.toString() }
+						);
+						verify(destination).directory.getFile("file").is(null);
+						verify(destination).directory.getFile("directory/file").is.not(null);
+					});
+
+					fifty.run(function prefixed() {
+						var download: install.Download = {
+							url: url,
+							format: subject.Download.Format.targz,
+							prefix: "directory"
+						};
+						var destination = fifty.jsh.file.object.temporary.location();
+
+						$api.fp.world.now.action(
+							subject.Download.install,
+							{ download: download, to: destination.toString() }
+						);
+						verify(destination).directory.getFile("file").is.not(null);
+						verify(destination).directory.getFile("directory/file").is(null);
+					});
+
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Exports {
