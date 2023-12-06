@@ -13,6 +13,20 @@ namespace slime.jsh.wf.internal.typescript {
 		}
 	}
 
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			var script: Script = fifty.$loader.script("typescript.js");
+			return script({
+				library: {
+					file: fifty.global.jsh.file,
+					shell: fifty.global.jsh.shell,
+					node: fifty.global.jsh.shell.tools.node
+				}
+			});
+		//@ts-ignore
+		})(fifty);
+	}
+
 	export namespace typedoc {
 		export interface Invocation {
 			stdio: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
@@ -59,6 +73,27 @@ namespace slime.jsh.wf.internal.typescript {
 		) {
 			fifty.tests.suite = function() {
 
+			};
+
+			fifty.tests.manual = {};
+			fifty.tests.manual.typedoc = {};
+			fifty.tests.manual.typedoc.invocation = function() {
+				const { jsh } = fifty.global;
+				const { subject } = test;
+
+				const out = fifty.jsh.file.temporary.location();
+				const invocation = subject.typedoc.invocation({
+					stdio: {},
+					configuration: {
+						typescript: {
+							version: "5.0.4",
+							configuration: "jsconfig.json"
+						}
+					},
+					project: fifty.jsh.file.relative("../..").pathname,
+					out: out.pathname
+				});
+				jsh.shell.console(JSON.stringify(invocation));
 			}
 		}
 	//@ts-ignore

@@ -682,7 +682,7 @@
 
 				/**
 				 *
-				 * @param { any } stdio
+				 * @param { Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"] } stdio
 				 * @param { slime.jsh.wf.Project } project
 				 * @param { string } out
 				 * @returns
@@ -786,6 +786,7 @@
 						typedoc: {
 							now: function(p) {
 								var project = (p && p.project) ? p.project : inputs.base();
+								//@ts-ignore
 								var getShellInvocation = getTypedocCommand(p.stdio, { base: project.pathname.toString() }, void(0));
 								var exit = $api.fp.world.now.question(
 									jsh.shell.world.question,

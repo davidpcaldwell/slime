@@ -141,7 +141,7 @@
 			return target.pathname;
 		}
 
-		/** @type { (installation: slime.jrunscript.node.Installation) => (p: slime.jrunscript.node.Invocation) => slime.jrunscript.shell.invocation.Argument } */
+		/** @type { (installation: slime.jrunscript.node.Installation) => (p: slime.jrunscript.node.Intention) => slime.jrunscript.shell.invocation.Argument } */
 		var node_invocation = function(installation) {
 			return function(invocation) {
 				var command = (
@@ -581,7 +581,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.node.Invocation } nodeInvocation
+		 * @param { slime.jrunscript.node.Intention } nodeInvocation
 		 * @param { slime.jrunscript.node.Installation } installation
 		 */
 		var toShellInvocation = function(nodeInvocation,installation) {
