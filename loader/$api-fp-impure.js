@@ -257,6 +257,13 @@
 					}
 				}
 			},
+			Ask: {
+				input: function(handlers) {
+					return function(ask) {
+						return input(ask, handlers);
+					}
+				}
+			},
 			mapping: function(question, handlers) {
 				return function(p) {
 					return $context.events.handle({
