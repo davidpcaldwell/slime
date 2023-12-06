@@ -327,6 +327,7 @@ public abstract class Filesystem {
 
 			private void copy(File from, File to) throws IOException {
 				if (from.isDirectory()) {
+					to.mkdirs();
 					File[] files = from.listFiles();
 					for (File file : files) {
 						copy(file, new File(to, file.getName()));
