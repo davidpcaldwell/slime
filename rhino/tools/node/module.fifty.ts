@@ -121,7 +121,7 @@ namespace slime.jrunscript.node {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Invocation {
+	export interface Intention {
 		command?: string
 		project?: string
 		arguments?: slime.jrunscript.shell.invocation.Argument["arguments"]
@@ -132,9 +132,9 @@ namespace slime.jrunscript.node {
 
 	export namespace functions {
 		export interface Installations {
-			invocation: (argument: Invocation) => (installation: Installation) => slime.jrunscript.shell.run.old.Invocation
+			invocation: (argument: Intention) => (installation: Installation) => slime.jrunscript.shell.run.old.Invocation
 
-			question: (argument: Invocation) => slime.$api.fp.world.Question<Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
+			question: (argument: Intention) => slime.$api.fp.world.Question<Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 		}
 
 		(
