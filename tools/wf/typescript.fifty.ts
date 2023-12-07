@@ -62,7 +62,11 @@ namespace slime.jsh.wf.internal.typescript {
 					installing: void
 					installed: string
 				},
-				(node: slime.jrunscript.node.Installation) => slime.jrunscript.shell.run.old.Invocation
+				slime.$api.fp.world.Question<
+					slime.jrunscript.node.Installation,
+					slime.jrunscript.shell.run.AskEvents,
+					slime.jrunscript.shell.run.Exit
+				>
 			>
 		}
 	}

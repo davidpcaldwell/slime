@@ -54,8 +54,7 @@
 							error: "string"
 						}
 					});
-					var result = $api.fp.world.now.question(
-						jsh.shell.world.question,
+					var result = $api.fp.world.now.ask(
 						invocation
 					);
 					if (result.status != 0) {
