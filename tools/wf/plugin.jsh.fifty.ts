@@ -121,7 +121,7 @@ namespace slime.jsh.wf {
 						stdio?: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
 						out?: string
 					}
-				) => slime.jrunscript.shell.run.old.Invocation
+				) => slime.$api.fp.world.Ask<slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 			}
 		}
 	}
@@ -148,15 +148,11 @@ namespace slime.jsh.wf {
 					out: out.pathname
 				});
 				jsh.shell.console(JSON.stringify(invocation));
-				$api.fp.world.now.action(
-					jsh.shell.world.action,
+				var exit = $api.fp.world.now.ask(
 					invocation,
 					{
 						start: function(e) {
 							jsh.shell.console("PID: " + e.detail.pid);
-						},
-						exit: function(e) {
-							jsh.shell.console("Status: " + e.detail.status);
 						},
 						stdout: function(e) {
 							jsh.shell.console("STDOUT: " + e.detail.line);
@@ -166,6 +162,7 @@ namespace slime.jsh.wf {
 						}
 					}
 				);
+				jsh.shell.console("Status: " + exit.status);
 				jsh.shell.console("Output to " + out.pathname);
 			}
 		}
