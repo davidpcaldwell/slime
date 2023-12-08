@@ -153,7 +153,7 @@
 					getTypedocConfiguration
 				);
 
-				/** @type { slime.jrunscript.node.Invocation } */
+				/** @type { slime.jrunscript.node.Intention } */
 				var argument = {
 					command: "typedoc",
 					arguments: $api.Array.build(function(rv) {
@@ -204,7 +204,7 @@
 					directory: project.pathname
 				};
 
-				var invocation = $context.library.node.Installation.invocation(argument);
+				var invocation = $context.library.node.Installation.question(argument);
 
 				return invocation;
 			}

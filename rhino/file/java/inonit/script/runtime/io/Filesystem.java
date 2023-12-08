@@ -327,6 +327,14 @@ public abstract class Filesystem {
 
 			private void copy(File from, File to) throws IOException {
 				if (from.isDirectory()) {
+					if (to.exists() && to.isDirectory()) {
+						//	fine
+					} else if (to.exists() && !to.isDirectory()) {
+						throw new RuntimeException(to + " is an ordinary file; cannot copy directory " + from + " into it.");
+					} else {
+						boolean success = to.mkdir();
+						if (!success) throw new RuntimeException("Could not create " + to);
+					}
 					File[] files = from.listFiles();
 					for (File file : files) {
 						copy(file, new File(to, file.getName()));

@@ -682,7 +682,7 @@
 
 				/**
 				 *
-				 * @param { any } stdio
+				 * @param { Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"] } stdio
 				 * @param { slime.jsh.wf.Project } project
 				 * @param { string } out
 				 * @returns
@@ -786,26 +786,28 @@
 						typedoc: {
 							now: function(p) {
 								var project = (p && p.project) ? p.project : inputs.base();
+								//@ts-ignore
 								var getShellInvocation = getTypedocCommand(p.stdio, { base: project.pathname.toString() }, void(0));
-								var exit = $api.fp.world.now.question(
-									jsh.shell.world.question,
-									$api.fp.world.now.ask(
-										getShellInvocation,
-										{
-											found: function(e) {
-												jsh.shell.console("Found TypeDoc " + e.detail);
-											},
-											notFound: function(e) {
-												jsh.shell.console("TypeDoc not found.");
-											},
-											installed: function(e) {
-												jsh.shell.console("Installed TypeDoc " + e.detail);
-											},
-											installing: function(e) {
-												jsh.shell.console("Installing TypeDoc ...");
-											}
+								var question = $api.fp.world.now.ask(
+									getShellInvocation,
+									{
+										found: function(e) {
+											jsh.shell.console("Found TypeDoc " + e.detail);
+										},
+										notFound: function(e) {
+											jsh.shell.console("TypeDoc not found.");
+										},
+										installed: function(e) {
+											jsh.shell.console("Installed TypeDoc " + e.detail);
+										},
+										installing: function(e) {
+											jsh.shell.console("Installing TypeDoc ...");
 										}
-									)(jsh.shell.tools.node.installation)
+									}
+								);
+								var exit = $api.fp.world.now.question(
+									question,
+									jsh.shell.tools.node.installation
 								);
 								return exit.status == 0;
 							},
@@ -819,7 +821,7 @@
 									stdio: $api.fp.property("stdio")
 								}),
 								function(inputs) {
-									var invocation = $api.fp.world.now.ask(
+									var question = $api.fp.world.now.ask(
 										inputs.nodeCommand,
 										{
 											found: function(e) {
@@ -835,15 +837,17 @@
 												jsh.shell.console("Installing TypeDoc ...");
 											}
 										}
-									)(jsh.shell.tools.node.installation);
-									if (inputs.stdio) {
-										invocation.context.stdio = {
-											input: null,
-											output: inputs.stdio.output,
-											error: inputs.stdio.error
-										}
-									}
-									return invocation;
+									);
+
+									// if (inputs.stdio) {
+									// 	invocation.context.stdio = {
+									// 		input: null,
+									// 		output: inputs.stdio.output,
+									// 		error: inputs.stdio.error
+									// 	}
+									// }
+									// return invocation;
+									return question(jsh.shell.tools.node.installation);
 								}
 							)
 						}

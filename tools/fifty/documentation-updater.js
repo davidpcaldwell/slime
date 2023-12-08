@@ -48,8 +48,7 @@
 					}
 				};
 
-				$api.fp.world.now.action(
-					$context.library.shell.world.action,
+				var exit = $api.fp.world.now.ask(
 					invocation,
 					{
 						start: function(e) {
@@ -62,16 +61,14 @@
 						},
 						stderr: function(e) {
 							events.fire("stderr", { out: tmp.pathname, line: e.detail.line });
-						},
-						exit: function(e) {
-							if (e.detail.status == 0) {
-								events.fire("finished", object);
-							} else {
-								events.fire("errored", object);
-							}
 						}
 					}
 				);
+				if (exit.status == 0) {
+					events.fire("finished", object);
+				} else {
+					events.fire("errored", object);
+				}
 			}
 		}
 

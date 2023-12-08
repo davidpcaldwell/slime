@@ -579,6 +579,10 @@ namespace slime.$api.fp.world {
 			 */
 			pipe: <P,R,E>(mapping: slime.$api.fp.Mapping<P,R>) => (action: slime.$api.fp.world.Action<R,E>) => slime.$api.fp.world.Action<P,E>
 		}
+
+		Ask: {
+			input: <E,T>(handler?: slime.$api.event.Handlers<E>) => (ask: slime.$api.fp.world.Ask<E,T>) => slime.$api.fp.impure.Input<T>
+		}
 	}
 
 	(
