@@ -270,7 +270,7 @@
 		});
 
 		/** @type { (p: slime.jrunscript.tools.install.old.WorldInstallation) => slime.$api.fp.world.old.Tell<slime.jrunscript.tools.install.events.Console> } */
-		var newInstall = function(p) {
+		var newOldInstall = function(p) {
 			return $api.fp.world.old.tell(function(events) {
 				if (typeof(p.source.file) != "string" && typeof(p.source.file) != "undefined") {
 					throw new TypeError("source.file must be string.");
@@ -454,11 +454,33 @@
 						if (!format) throw new Error("Could not determine format of archive: " + archive.file);
 						if (!format.extract) throw new Error("No algorithm to extract " + format.extension);
 
-						var p_to = $context.api.file.Pathname(p.to);
-						//	TODO	what if directory exists? Right now will bomb, which may be OK
-						var to = p_to.createDirectory({ recursive: true });
-						//	TODO	no world-oriented equivalent
-						format.extract(archive.file, to);
+						/**
+						 *
+						 * @param { ReturnType<getArchive> } archive
+						 * @param { string } ospath
+						 */
+						var extractTo = function(archive,ospath) {
+							var p_to = $context.api.file.Pathname(ospath);
+							//	TODO	what if directory exists? Right now will bomb, which may be OK
+							var to = p_to.createDirectory({ recursive: true });
+							//	TODO	no world-oriented equivalent
+							format.extract(archive.file, to);
+						}
+
+						if (p.download.prefix) {
+							var tmp =  $context.api.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+							tmp.directory.remove();
+							extractTo(archive, tmp.toString());
+							var unzippedTo = tmp.directory.getSubdirectory(p.download.prefix);
+							unzippedTo.move($context.api.file.Pathname(p.to), {
+								//	TODO	what's the right value for overwrite?
+								overwrite: false,
+								recursive: true
+							});
+
+						} else {
+							extractTo(archive, p.to);
+						}
 					}
 				}
 			},
@@ -480,7 +502,7 @@
 					if (isOld(p)) {
 						return oldInstall(p,events);
 					} else {
-						return newInstall(p);
+						return newOldInstall(p);
 					}
 				}
 			),
