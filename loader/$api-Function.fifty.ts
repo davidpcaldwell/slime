@@ -61,8 +61,9 @@ namespace slime.$api.fp {
 	export interface Exports {
 		now: {
 			/**
-			 * Returns the result of invoking a function. `invoke(input, f)` is syntactic sugar for `f(input)` in situations where
-			 * writing the input before the function lends clarity (for example, if the function is a pipeline created by `pipe`).
+			 * Returns the result of invoking a function. `invoke(p, f)` is syntactic sugar for `f(p)` in situations where
+			 * writing the parameter before the function lends clarity (for example, if the function is a pipeline created by
+			 * `pipe`).
 			 */
 			invoke: Invoke
 		}

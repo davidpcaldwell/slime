@@ -622,11 +622,6 @@
 				}
 			},
 			getVersion: getVersion,
-			invocation: function(argument) {
-				return function(installation) {
-					return toShellInvocation(argument,installation);
-				}
-			},
 			question: function(argument) {
 				return function(installation) {
 					return function(events) {

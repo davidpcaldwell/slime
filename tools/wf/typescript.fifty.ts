@@ -59,7 +59,7 @@ namespace slime.jsh.wf.internal.typescript {
 				{
 					found: string
 					notFound: void
-					installing: void
+					installing: string
 					installed: string
 				},
 				slime.$api.fp.world.Question<
@@ -90,7 +90,7 @@ namespace slime.jsh.wf.internal.typescript {
 					stdio: {},
 					configuration: {
 						typescript: {
-							version: "5.0.4",
+							version: "5.2.2",
 							configuration: "jsconfig.json"
 						}
 					},
