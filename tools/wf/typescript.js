@@ -100,6 +100,7 @@
 			if (tsVersion == "4.9.4") return "0.23.23";
 			if (tsVersion == "5.0.2") return "0.23.28";
 			if (tsVersion == "5.0.4") return "0.23.28";
+			if (tsVersion == "5.2.2") return "0.23.28";
 			throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
 		};
 
@@ -115,7 +116,7 @@
 					$context.library.node.installation
 				);
 
-				var typedocVersion = $api.fp.result(
+				var typedocVersion = $api.fp.now.invoke(
 					p.configuration.typescript.version,
 					$api.fp.pipe(
 						typedocVersionForTypescript,
@@ -126,7 +127,7 @@
 				$api.fp.world.now.action(
 					$context.library.node.Installation.modules.require({
 						name: "typedoc",
-						version: $api.fp.result(p.configuration.typescript.version, typedocVersionForTypescript)
+						version: $api.fp.now.invoke(p.configuration.typescript.version, typedocVersionForTypescript)
 					}),
 					$context.library.node.installation,
 					{
@@ -138,7 +139,7 @@
 							}
 						},
 						installing: function(e) {
-							events.fire("installing");
+							events.fire("installing", e.detail.version);
 						},
 						installed: function(e) {
 							events.fire("installed", e.detail.version);

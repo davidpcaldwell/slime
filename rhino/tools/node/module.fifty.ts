@@ -132,8 +132,6 @@ namespace slime.jrunscript.node {
 
 	export namespace functions {
 		export interface Installations {
-			invocation: (argument: Intention) => (installation: Installation) => slime.jrunscript.shell.run.old.Invocation
-
 			question: (argument: Intention) => slime.$api.fp.world.Question<Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 		}
 
@@ -182,8 +180,19 @@ namespace slime.jrunscript.node {
 				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<
 					Installation,
 					{
+						/**
+						 * After searching for the named module in the existing installation, the module found (if any).
+						 */
 						found: slime.$api.fp.Maybe<Module>
-						installing: void
+
+						/**
+						 * Before installing the given {@link Module}.
+						 */
+						installing: Module
+
+						/**
+						 * After installing the given {@link Module}.
+						 */
 						installed: Module
 					}
 				>
