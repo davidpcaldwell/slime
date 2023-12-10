@@ -29,16 +29,11 @@
 				};
 
 				var library = {
-					typescript: code.typescript({
+					module: code.module({
 						library: {
 							file: jsh.file,
 							shell: jsh.shell,
 							node: jsh.shell.tools.node
-						}
-					}),
-					module: code.module({
-						library: {
-							file: jsh.file
 						},
 						world: {
 							filesystem: jsh.file.world.filesystems.os
@@ -704,7 +699,7 @@
 						project: project.base,
 						out: out
 					};
-					var getShellInvocation = library.typescript.typedoc.invocation(typedocInvocation);
+					var getShellInvocation = library.module.typescript.typedoc.invocation(typedocInvocation);
 					return getShellInvocation;
 				}
 

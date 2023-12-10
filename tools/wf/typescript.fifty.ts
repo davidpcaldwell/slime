@@ -4,12 +4,18 @@
 //
 //	END LICENSE
 
+namespace slime.jsh.wf.internal.module {
+	export interface Exports {
+		typescript: slime.jsh.wf.internal.typescript.Exports
+	}
+}
+
 namespace slime.jsh.wf.internal.typescript {
 	export interface Context {
 		library: {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
-			node: slime.jsh.Global["shell"]["tools"]["node"]
+			node: slime.jsh.shell.tools.node.Exports
 		}
 	}
 
@@ -54,6 +60,10 @@ namespace slime.jsh.wf.internal.typescript {
 	}
 
 	export interface Exports {
+		version: slime.$api.fp.impure.Input<string>
+	}
+
+	export interface Exports {
 		typedoc: {
 			invocation: (p: typedoc.Invocation) => slime.$api.fp.world.Ask<
 				{
@@ -90,7 +100,7 @@ namespace slime.jsh.wf.internal.typescript {
 					stdio: {},
 					configuration: {
 						typescript: {
-							version: "5.2.2",
+							version: subject.version(),
 							configuration: "jsconfig.json"
 						}
 					},

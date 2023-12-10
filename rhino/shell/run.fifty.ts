@@ -17,7 +17,9 @@ namespace slime.jrunscript.shell.internal.run {
 
 namespace slime.jrunscript.shell {
 	export interface World {
+		/** @deprecated */
 		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+		/** @deprecated */
 		action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
 	}
 
