@@ -14,6 +14,8 @@ namespace slime.jsh.wf.internal.module {
 	export interface Context {
 		library: {
 			file: slime.jrunscript.file.Exports
+			shell: slime.jrunscript.shell.Exports
+			node: slime.jsh.shell.tools.node.Exports
 		}
 
 		world?: {
@@ -27,7 +29,9 @@ namespace slime.jsh.wf.internal.module {
 			return function(filesystem: slime.jrunscript.file.world.Filesystem): Exports {
 				return script({
 					library: {
-						file: fifty.global.jsh.file
+						file: fifty.global.jsh.file,
+						shell: fifty.global.jsh.shell,
+						node: fifty.global.jsh.shell.tools.node
 					},
 					world: {
 						filesystem: filesystem

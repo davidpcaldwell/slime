@@ -100,19 +100,23 @@
 			}
 		}
 
-		/** @type { (installation: slime.jrunscript.node.Installation) => string } */
+		/**
+		 * Returns a string that can be added to the system path for this installation.
+		 *
+		 * @type { (installation: slime.jrunscript.node.Installation) => string }
+		 */
 		var getInstallationPathEntry = $api.fp.pipe(
 			$api.fp.property("executable"),
 			//	TODO	should be Location.from.os
-			$context.library.file.world.Location.from.os,
-			$context.library.file.world.Location.parent(),
+			$context.library.file.Location.from.os,
+			$context.library.file.Location.parent(),
 			$api.fp.property("pathname")
 		);
 
 		/** @type { (project: string) => string } */
 		var getProjectBin = $api.fp.pipe(
-			$context.library.file.world.Location.from.os,
-			$context.library.file.world.Location.relative(".bin"),
+			$context.library.file.Location.from.os,
+			$context.library.file.Location.directory.relativePath(".bin"),
 			$api.fp.property("pathname")
 		)
 
@@ -139,26 +143,34 @@
 			var base = $context.library.file.world.Location.from.os(parent);
 			var target = $api.fp.result(base, $context.library.file.world.Location.relative(path));
 			return target.pathname;
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.node.Installation } installation
+		 * @param { string } projectBin
+		 * @param { string } command
+		 * @returns { string }
+		 */
+		var getExecutableForCommand = function(installation, projectBin, command) {
+			var bin = getInstallationPathEntry(installation);
+			//	TODO	correct search order in project and node bin directories not known
+			if (command) {
+				if (projectBin && directoryContains(projectBin, command)) {
+					return getRelativePath(projectBin, command);
+				}
+				if (directoryContains(bin, command)) {
+					return getRelativePath(bin, command);
+				}
+			}
+			return installation.executable;
 		}
 
 		/** @type { (installation: slime.jrunscript.node.Installation) => (p: slime.jrunscript.node.Intention) => slime.jrunscript.shell.invocation.Argument } */
 		var node_invocation = function(installation) {
 			return function(invocation) {
-				var command = (
-					function(bin,projectBin,command) {
-						//	TODO	correct search order in project and node bin directories not known
-						if (command) {
-							if (projectBin && directoryContains(projectBin, command)) {
-								return getRelativePath(projectBin, command);
-							}
-							if (directoryContains(bin, command)) {
-								return getRelativePath(bin, command);
-							}
-						}
-						return installation.executable;
-					}
-				)(
-					getInstallationPathEntry(installation),
+				var command = getExecutableForCommand(
+					installation,
 					(invocation.project) ? getProjectBin(invocation.project) : void(0),
 					invocation.command
 				);
@@ -172,12 +184,12 @@
 					}
 				)();
 
-				var PATH = $api.fp.result(
+				var PATH = $api.fp.now.invoke(
 					path,
 					$api.fp.pipe(
 						$api.fp.property("pathnames"),
 						$api.fp.Array.prepend([
-							$api.fp.result(getInstallationPathEntry(installation), $context.library.file.Pathname)
+							$api.fp.now.invoke(getInstallationPathEntry(installation), $context.library.file.Pathname)
 						]),
 						$context.library.file.Searchpath,
 						String
@@ -584,7 +596,7 @@
 		 * @param { slime.jrunscript.node.Intention } nodeInvocation
 		 * @param { slime.jrunscript.node.Installation } installation
 		 */
-		var toShellInvocation = function(nodeInvocation,installation) {
+		var toShellRunOldInvocation = function(nodeInvocation,installation) {
 			var shellArgument = node_invocation(installation)(nodeInvocation);
 			return $context.library.shell.Invocation.from.argument(shellArgument);
 		};
@@ -625,7 +637,7 @@
 			question: function(argument) {
 				return function(installation) {
 					return function(events) {
-						var ask = $context.library.shell.world.question(toShellInvocation(argument,installation));
+						var ask = $context.library.shell.world.question(toShellRunOldInvocation(argument,installation));
 						return ask(events);
 					}
 				}

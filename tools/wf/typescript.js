@@ -212,6 +212,7 @@
 		}
 
 		$export({
+			version: $api.fp.impure.Input.value("5.2.2"),
 			typedoc: {
 				invocation: invocation
 			}

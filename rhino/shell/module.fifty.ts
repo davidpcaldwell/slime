@@ -681,6 +681,7 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
+		/** @deprecated */
 		Invocation: exports.Invocation
 	}
 
@@ -1087,7 +1088,9 @@ namespace slime.jrunscript.shell {
 
 	export namespace exports {
 		export interface Invocation {
+			/** @deprecated */
 			from: {
+				/** @deprecated */
 				argument: (p: invocation.Argument) => run.old.Invocation
 			}
 
