@@ -166,7 +166,7 @@
 			return installation.executable;
 		}
 
-		/** @type { (installation: slime.jrunscript.node.Installation) => (p: slime.jrunscript.node.Intention) => slime.jrunscript.shell.invocation.Argument } */
+		/** @type { (installation: slime.jrunscript.node.Installation) => (p: slime.jrunscript.node.Intention) => slime.jrunscript.shell.run.Intention } */
 		var node_invocation = function(installation) {
 			return function(invocation) {
 				var command = getExecutableForCommand(
@@ -175,42 +175,42 @@
 					invocation.command
 				);
 
-				var path = (
-					function() {
-						if (invocation.environment && invocation.environment.PATH) {
-							return $context.library.file.filesystems.os.Searchpath.parse(invocation.environment.PATH);
-						}
-						return $context.library.shell.PATH
-					}
-				)();
-
-				var PATH = $api.fp.now.invoke(
-					path,
-					$api.fp.pipe(
-						$api.fp.property("pathnames"),
-						$api.fp.Array.prepend([
-							$api.fp.now.invoke(getInstallationPathEntry(installation), $context.library.file.Pathname)
-						]),
-						$context.library.file.Searchpath,
-						String
-					)
-				);
-
-				var defaultEnvironment = (
-					function(specified,process) {
-						return specified || process;
-					}
-				)(invocation.environment,$context.library.shell.environment);
-
 				return {
 					command: command,
 					arguments: invocation.arguments,
-					environment: $api.Object.compose(
-						defaultEnvironment,
-						{
-							PATH: PATH
+					environment: function(was) {
+						var searchpath = function() {
+							if (invocation.environment && invocation.environment.PATH) {
+								return $context.library.file.filesystems.os.Searchpath.parse(invocation.environment.PATH);
+							}
+							return $context.library.shell.PATH
 						}
-					),
+
+						/** @type { slime.$api.fp.Identity<slime.jrunscript.file.Searchpath> } */
+						var asSearchpath = $api.fp.identity;
+
+						var pathWithNodeBinPrepended = $api.fp.pipe(
+							asSearchpath,
+							$api.fp.property("pathnames"),
+							$api.fp.Array.prepend([
+								$api.fp.now.invoke(getInstallationPathEntry(installation), $context.library.file.Pathname)
+							]),
+							$context.library.file.Searchpath,
+							String
+						)
+
+						return $api.Object.compose(
+							(invocation.environment) ? invocation.environment : was,
+							{
+								PATH: $api.fp.impure.now.input(
+									$api.fp.impure.Input.map(
+										searchpath,
+										pathWithNodeBinPrepended
+									)
+								)
+							}
+						)
+					},
 					directory: invocation.directory,
 					stdio: invocation.stdio
 				}
@@ -240,8 +240,8 @@
 					});
 
 					var result = $api.fp.world.now.question(
-						$context.library.shell.world.question,
-						$context.library.shell.Invocation.from.argument(invocation)
+						$context.library.shell.subprocess.question,
+						invocation
 					);
 
 					/** @type { slime.jrunscript.node.internal.NpmLsOutput } */
@@ -295,8 +295,8 @@
 					});
 
 					$api.fp.world.now.action(
-						$context.library.shell.world.action,
-						$context.library.shell.Invocation.from.argument(invocation)
+						$context.library.shell.subprocess.action,
+						invocation
 					);
 				}
 			}
@@ -591,16 +591,6 @@
 			}
 		}
 
-		/**
-		 *
-		 * @param { slime.jrunscript.node.Intention } nodeInvocation
-		 * @param { slime.jrunscript.node.Installation } installation
-		 */
-		var toShellRunOldInvocation = function(nodeInvocation,installation) {
-			var shellArgument = node_invocation(installation)(nodeInvocation);
-			return $context.library.shell.Invocation.from.argument(shellArgument);
-		};
-
 		$exports.install = function(to) {
 			return function(p) {
 				return function(events) {
@@ -637,7 +627,7 @@
 			question: function(argument) {
 				return function(installation) {
 					return function(events) {
-						var ask = $context.library.shell.world.question(toShellRunOldInvocation(argument,installation));
+						var ask = $context.library.shell.subprocess.question(node_invocation(installation)(argument));
 						return ask(events);
 					}
 				}
