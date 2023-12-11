@@ -205,7 +205,7 @@
 					directory: project.pathname
 				};
 
-				var invocation = $context.library.node.Installation.question(argument);
+				var invocation = $context.library.node.Installation.Intention.question(argument);
 
 				return invocation;
 			}
