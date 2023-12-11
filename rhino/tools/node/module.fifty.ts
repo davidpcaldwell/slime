@@ -62,8 +62,8 @@ namespace slime.jrunscript.node {
 		version: string
 	}
 
-	export namespace functions {
-		export interface Installations {
+	export namespace exports {
+		export interface Installation {
 			from: {
 				/**
 				 * Given a Node installation location, returns the Node `Installation` corresponding to that location.
@@ -71,17 +71,17 @@ namespace slime.jrunscript.node {
 				 * @param home The home directory of the `Installation`.
 				 * @returns
 				 */
-				location: (home: slime.jrunscript.file.Location) => Installation
+				location: (home: slime.jrunscript.file.Location) => slime.jrunscript.node.Installation
 			}
 
-			exists: slime.$api.fp.world.Question<Installation,void,boolean>
+			exists: slime.$api.fp.world.Question<slime.jrunscript.node.Installation,void,boolean>
 
-			getVersion: slime.$api.fp.world.Question<Installation,void,string>
+			getVersion: slime.$api.fp.world.Question<slime.jrunscript.node.Installation,void,string>
 		}
 	}
 
 	export interface Exports {
-		Installation: functions.Installations
+		Installation: exports.Installation
 	}
 
 	export interface Exports {
@@ -124,15 +124,21 @@ namespace slime.jrunscript.node {
 	export interface Intention {
 		command?: string
 		project?: string
-		arguments?: slime.jrunscript.shell.invocation.Argument["arguments"]
-		environment?: slime.jrunscript.shell.invocation.Argument["environment"]
-		directory?: slime.jrunscript.shell.invocation.Argument["directory"]
-		stdio?: slime.jrunscript.shell.invocation.Argument["stdio"]
+		arguments?: slime.jrunscript.shell.run.Intention["arguments"]
+		environment?: slime.jrunscript.shell.run.Intention["environment"]
+		directory?: slime.jrunscript.shell.run.Intention["directory"]
+		stdio?: slime.jrunscript.shell.run.Intention["stdio"]
 	}
 
-	export namespace functions {
-		export interface Installations {
-			question: (argument: Intention) => slime.$api.fp.world.Question<Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
+	export namespace exports {
+		export interface Installation {
+			Intention: {
+				shell: (argument: Intention) => (installation: slime.jrunscript.node.Installation) => slime.jrunscript.shell.run.Intention
+				question: (argument: Intention) => slime.$api.fp.world.Question<slime.jrunscript.node.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
+			}
+
+			/** @deprecated */
+			question: Installation["Intention"]["question"]
 		}
 
 		(
@@ -152,7 +158,7 @@ namespace slime.jrunscript.node {
 					var installation = test.subject.Installation.from.location(TMPDIR);
 					debugger;
 					var result = $api.fp.world.now.question(
-						test.subject.Installation.question({
+						test.subject.Installation.Intention.question({
 							arguments: [fifty.jsh.file.object.getRelativePath("test/hello.js").toString()],
 							stdio: {
 								output: "string"
@@ -168,17 +174,17 @@ namespace slime.jrunscript.node {
 
 	}
 
-	export namespace functions {
-		export interface Installations {
+	export namespace exports {
+		export interface Installation {
 			modules: {
-				list: () => slime.$api.fp.world.Question<Installation, void, Module[]>
+				list: () => slime.$api.fp.world.Question<slime.jrunscript.node.Installation, void, Module[]>
 
-				installed: (name: string) => slime.$api.fp.world.Question<Installation, void, slime.$api.fp.Maybe<Module>>
+				installed: (name: string) => slime.$api.fp.world.Question<slime.jrunscript.node.Installation, void, slime.$api.fp.Maybe<Module>>
 
-				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<Installation,void>
+				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<slime.jrunscript.node.Installation,void>
 
 				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<
-					Installation,
+					slime.jrunscript.node.Installation,
 					{
 						/**
 						 * After searching for the named module in the existing installation, the module found (if any).
@@ -256,10 +262,6 @@ namespace slime.jrunscript.node {
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export interface Functions {
-		Installation: functions.Installations
-	}
 
 	export namespace object {
 		/**

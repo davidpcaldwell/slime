@@ -82,20 +82,21 @@
 			}
 		)();
 
-		/** @type { slime.jrunscript.node.Functions["Installation"]["getVersion"] } */
+		/** @type { slime.jrunscript.node.exports.Installation["getVersion"] } */
 		function getVersion(installation) {
 			return function(events) {
-				var invocation = $context.library.shell.Invocation.from.argument({
+				/** @type { slime.jrunscript.shell.run.Intention } */
+				var intention = {
 					command: installation.executable,
 					arguments: ["--version"],
 					stdio: {
 						output: "string"
 					}
-				});
-				var getExit = $api.fp.world.mapping(
-					$context.library.shell.world.question
-				);
-				var exit = getExit(invocation);
+				};
+				var exit = $api.fp.world.now.question(
+					$context.library.shell.subprocess.question,
+					intention
+				)
 				return exit.stdio.output.split("\n")[0];
 			}
 		}
@@ -179,12 +180,9 @@
 					command: command,
 					arguments: invocation.arguments,
 					environment: function(was) {
-						var searchpath = function() {
-							if (invocation.environment && invocation.environment.PATH) {
-								return $context.library.file.filesystems.os.Searchpath.parse(invocation.environment.PATH);
-							}
-							return $context.library.shell.PATH
-						}
+						var delegated = (invocation.environment) ? invocation.environment(was) : was;
+
+						var searchpath = (delegated.PATH) ? $context.library.file.filesystems.os.Searchpath.parse(delegated.PATH) : null;
 
 						/** @type { slime.$api.fp.Identity<slime.jrunscript.file.Searchpath> } */
 						var asSearchpath = $api.fp.identity;
@@ -200,10 +198,10 @@
 						)
 
 						return $api.Object.compose(
-							(invocation.environment) ? invocation.environment : was,
+							delegated,
 							{
 								PATH: $api.fp.impure.now.input(
-									$api.fp.impure.Input.map(
+									$api.fp.impure.Input.value(
 										searchpath,
 										pathWithNodeBinPrepended
 									)
@@ -217,7 +215,7 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.node.functions.Installations["modules"]["list"] } */
+		/** @type { slime.jrunscript.node.exports.Installation["modules"]["list"] } */
 		var modules_list = function() {
 			return function(installation) {
 				var toShellInvocation = node_invocation(installation);
@@ -261,7 +259,7 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.node.functions.Installations["modules"]["installed"] } */
+		/** @type { slime.jrunscript.node.exports.Installation["modules"]["installed"] } */
 		var modules_installed = function(p) {
 			return function(installation) {
 				return function(events) {
@@ -275,7 +273,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.node.functions.Installations["modules"]["install"] } */
+		/** @type { slime.jrunscript.node.exports.Installation["modules"]["install"] } */
 		var modules_install = function(p) {
 			return function(installation) {
 				var toShellInvocation = node_invocation(installation);
@@ -302,7 +300,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.node.functions.Installations["modules"]["require"] } */
+		/** @type { slime.jrunscript.node.exports.Installation["modules"]["require"] } */
 		var modules_require = function(p) {
 			var isSatisfied = function(version) {
 				/** @type { (installed: slime.$api.fp.Maybe<slime.jrunscript.node.Module>) => boolean } */
@@ -599,6 +597,20 @@
 			}
 		};
 
+		/**
+		 *
+		 * @param { slime.jrunscript.node.Intention } argument
+		 * @returns { (installation: slime.jrunscript.node.Installation) => slime.$api.fp.world.Ask<slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit> }
+		 */
+		var Intention_question = function(argument) {
+			return function(installation) {
+				return function(events) {
+					var ask = $context.library.shell.subprocess.question(node_invocation(installation)(argument));
+					return ask(events);
+				}
+			}
+		};
+
 		$exports.Installation = {
 			from: {
 				location: function(location) {
@@ -624,13 +636,14 @@
 				}
 			},
 			getVersion: getVersion,
-			question: function(argument) {
-				return function(installation) {
-					return function(events) {
-						var ask = $context.library.shell.subprocess.question(node_invocation(installation)(argument));
-						return ask(events);
+			question: Intention_question,
+			Intention: {
+				shell: function(intention) {
+					return function(installation) {
+						return node_invocation(installation)(intention);
 					}
-				}
+				},
+				question: Intention_question
 			},
 			modules: {
 				list: modules_list,
