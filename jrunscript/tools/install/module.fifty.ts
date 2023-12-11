@@ -9,13 +9,18 @@
  */
 namespace slime.jrunscript.tools.install {
 	export interface Context {
+		/**
+		 * An HTTP client implementation to use. If not specified, one will be created.
+		 */
 		client?: slime.jrunscript.http.client.object.Client
-		api: {
+
+		library: {
 			web: slime.web.Exports
 			shell: slime.jrunscript.shell.Exports
 			file: slime.jrunscript.file.Exports
 			http: slime.jrunscript.http.client.Exports
 		}
+
 		/**
 		 * The directory in which to store downloaded files.
 		 */
@@ -51,7 +56,7 @@ namespace slime.jrunscript.tools.install {
 				scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
 				var defaults: Context = {
-					api: {
+					library: {
 						shell: jsh.shell,
 						http: jsh.http,
 						file: jsh.file,
@@ -63,7 +68,7 @@ namespace slime.jrunscript.tools.install {
 				scope.load = function(p) {
 					if (!p) p = { downloads: void(0) };
 					var context = $api.Object.compose(defaults);
-					context.api.shell = $api.Object.compose(context.api.shell);
+					context.library.shell = $api.Object.compose(context.library.shell);
 					if (p.downloads) {
 						context.downloads = p.downloads;
 					}
@@ -160,6 +165,19 @@ namespace slime.jrunscript.tools.install {
 	export namespace download {
 		export interface Events {
 			request: slime.jrunscript.http.client.spi.Events["request"]
+		}
+	}
+
+	export interface Exports {
+		download: slime.$api.fp.world.Operation<{
+			from: string
+			to: slime.jrunscript.file.Location
+		},download.Events>
+	}
+
+	export namespace distribution {
+		export interface Events {
+			request: slime.jrunscript.http.client.spi.Events["request"]
 			archive: slime.jrunscript.file.File
 		}
 
@@ -173,7 +191,7 @@ namespace slime.jrunscript.tools.install {
 		}
 	}
 
-	export interface Download {
+	export interface Distribution {
 		/**
 		 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported.
 		 */
@@ -185,7 +203,7 @@ namespace slime.jrunscript.tools.install {
 		 */
 		name?: string
 
-		format?: download.Format
+		format?: distribution.Format
 
 		prefix?: string
 	}
@@ -200,10 +218,10 @@ namespace slime.jrunscript.tools.install {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Download {
+		export interface Distribution {
 			from: {
 				//	TODO	guess download format?
-				url: (url: string) => install.Download
+				url: (url: string) => install.Distribution
 			}
 		}
 
@@ -217,12 +235,12 @@ namespace slime.jrunscript.tools.install {
 
 				fifty.tests.exports.Download.from = {};
 				fifty.tests.exports.Download.from.url = function() {
-					var download = subject.Download.from.url("http://example.com/foo/bar.tar.gz");
+					var download = subject.Distribution.from.url("http://example.com/foo/bar.tar.gz");
 
 					verify(download).url.is("http://example.com/foo/bar.tar.gz");
 					verify(download).name.is("bar.tar.gz");
 					verify(download).evaluate.property("format").extension.is(".tgz");
-					verify(download).evaluate.property("format").is(subject.Download.Format.targz);
+					verify(download).evaluate.property("format").is(subject.Distribution.Format.targz);
 				}
 			}
 		//@ts-ignore
@@ -230,17 +248,17 @@ namespace slime.jrunscript.tools.install {
 	}
 
 	export namespace exports {
-		export interface Download {
+		export interface Distribution {
 			Format: {
-				zip: download.Format
-				targz: download.Format
+				zip: distribution.Format
+				targz: distribution.Format
 			}
 		}
 
-		export interface Download {
-			install: slime.$api.fp.world.Action<
-				{ download: install.Download, to: string },
-				download.Events
+		export interface Distribution {
+			install: slime.$api.fp.world.Operation<
+				{ download: install.Distribution, to: string },
+				distribution.Events
 			>
 		}
 
@@ -259,14 +277,14 @@ namespace slime.jrunscript.tools.install {
 					jsh.shell.console("url = " + url);
 
 					fifty.run(function unprefixed() {
-						var download: install.Download = {
+						var download: install.Distribution = {
 							url: url,
-							format: subject.Download.Format.targz
+							format: subject.Distribution.Format.targz
 						};
 						var destination = fifty.jsh.file.object.temporary.location();
 
 						$api.fp.world.now.action(
-							subject.Download.install,
+							subject.Distribution.install,
 							{ download: download, to: destination.toString() }
 						);
 						verify(destination).directory.getFile("file").is(null);
@@ -274,15 +292,15 @@ namespace slime.jrunscript.tools.install {
 					});
 
 					fifty.run(function prefixed() {
-						var download: install.Download = {
+						var download: install.Distribution = {
 							url: url,
-							format: subject.Download.Format.targz,
+							format: subject.Distribution.Format.targz,
 							prefix: "directory"
 						};
 						var destination = fifty.jsh.file.object.temporary.location();
 
 						$api.fp.world.now.action(
-							subject.Download.install,
+							subject.Distribution.install,
 							{ download: download, to: destination.toString() }
 						);
 						verify(destination).directory.getFile("file").is.not(null);
@@ -296,13 +314,13 @@ namespace slime.jrunscript.tools.install {
 	}
 
 	export interface Exports {
-		Download: exports.Download
+		Distribution: exports.Distribution
 	}
 
 	export namespace events {
 		export interface Console {
 			/**
-			 * A message suitable for delay on the console.
+			 * A message suitable for display on the console.
 			 */
 			console: string
 		}
@@ -554,7 +572,7 @@ namespace slime.jrunscript.tools.install {
 			 *
 			 * @returns A local file containing the content from Apache.
 			 */
-			find: slime.$api.fp.world.Question<
+			find: slime.$api.fp.world.Instrument<
 				{
 					path: string
 					mirror?: string
@@ -753,9 +771,10 @@ namespace slime.jrunscript.tools.install {
 					var mockclient = new jsh.http.Client({
 						proxy: PROXY
 					});
-					var mockapi: slime.jrunscript.tools.install.Exports = fifty.$loader.module("module.js", {
+					var mockscript: slime.jrunscript.tools.install.Script = fifty.$loader.script("module.js");
+					var mockapi: slime.jrunscript.tools.install.Exports = mockscript({
 						client: mockclient,
-						api: {
+						library: {
 							shell: jsh.shell,
 							http: jsh.http,
 							file: jsh.file,
@@ -804,4 +823,6 @@ namespace slime.jrunscript.tools.install {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export type Script = slime.loader.Script<Context,Exports>
 }

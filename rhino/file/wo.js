@@ -109,7 +109,7 @@
 			};
 		};
 
-		/** @type { slime.$api.fp.world.Action<slime.jrunscript.file.Location, { created: string }> } */
+		/** @type { slime.$api.fp.world.Operation<slime.jrunscript.file.Location, { created: string }> } */
 		var ensureParent = function(location) {
 			var it = function(location,events) {
 				var parent = Location_relative("..")(location);

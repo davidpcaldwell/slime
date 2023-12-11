@@ -65,7 +65,7 @@
 			function() {
 				return {
 					/**
-					 * @type { slime.$api.fp.world.Action<{ location: string, version: string },void> } p
+					 * @type { slime.$api.fp.world.Operation<{ location: string, version: string },void> } p
 					 */
 					install: function(p) {
 						return function(events) {
@@ -600,7 +600,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.node.Intention } argument
-		 * @returns { (installation: slime.jrunscript.node.Installation) => slime.$api.fp.world.Ask<slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit> }
+		 * @returns { (installation: slime.jrunscript.node.Installation) => slime.$api.fp.world.Question<slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit> }
 		 */
 		var Intention_question = function(argument) {
 			return function(installation) {

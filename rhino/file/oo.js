@@ -315,7 +315,7 @@
 			}
 		}
 
-		/** @type { <E>(f: slime.$api.fp.world.Tell<E>) => (handlers: slime.$api.event.Handlers<E>) => void } */
+		/** @type { <E>(f: slime.$api.fp.world.Action<E>) => (handlers: slime.$api.event.Handlers<E>) => void } */
 		var tellToHandlersFunction = function(f) {
 			return function(handlers) {
 				$api.fp.world.now.tell(f, handlers);

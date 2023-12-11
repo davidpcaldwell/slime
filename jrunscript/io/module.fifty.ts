@@ -31,7 +31,7 @@ namespace slime.jrunscript.io {
 				string: (value: string) => slime.jrunscript.runtime.io.InputStream
 				java: (native: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.runtime.io.InputStream
 			}
-			string: slime.$api.fp.world.Question<slime.jrunscript.runtime.io.InputStream,void,string>
+			string: slime.$api.fp.world.Instrument<slime.jrunscript.runtime.io.InputStream,void,string>
 		}
 	}
 

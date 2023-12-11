@@ -38,7 +38,7 @@ namespace slime.tools.documentation.updater {
 			errored: Process
 		}
 
-		export type Update = slime.$api.fp.world.Action<
+		export type Update = slime.$api.fp.world.Operation<
 			{
 				project: slime.jrunscript.file.world.Location
 			},

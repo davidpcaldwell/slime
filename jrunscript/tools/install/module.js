@@ -13,9 +13,9 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.install.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
-		var downloads = $context.downloads ? $context.downloads : $context.api.shell.TMPDIR.createTemporary({ directory: true })
+		var downloads = $context.downloads ? $context.downloads : $context.library.shell.TMPDIR.createTemporary({ directory: true })
 
-		var client = ($context.client) ? $context.client : new $context.api.http.Client();
+		var client = ($context.client) ? $context.client : new $context.library.http.Client();
 
 		var scripts = {
 			apache: $loader.script("apache.js")
@@ -28,7 +28,7 @@
 
 		var algorithms = {
 			gzip: new function() {
-				var tar = $context.api.shell.PATH.getCommand("tar");
+				var tar = $context.library.shell.PATH.getCommand("tar");
 
 				this.getDestinationPath = function(basename) {
 					if (TGZ.test(basename)) return TGZ.exec(basename)[1];
@@ -40,8 +40,8 @@
 
 				if (tar) {
 					this.extract = function(file,to) {
-						$context.api.shell.run({
-							command: $context.api.shell.PATH.getCommand("tar"),
+						$context.library.shell.run({
+							command: $context.library.shell.PATH.getCommand("tar"),
 							arguments: ["xf", file.pathname],
 							directory: to
 						});
@@ -56,15 +56,15 @@
 				};
 
 				this.extract = function(file,to) {
-					if ($context.api.shell.PATH.getCommand("unzip")) {
-						$context.api.shell.run({
+					if ($context.library.shell.PATH.getCommand("unzip")) {
+						$context.library.shell.run({
 							command: "unzip",
 							//	TODO	added -o option to deal with strange Selenium 4.0.0 ZIP file; examine further
 							arguments: ["-o", file],
 							directory: to
 						});
 					} else {
-						$context.api.file.unzip({
+						$context.library.file.unzip({
 							zip: file,
 							to: to
 						});
@@ -100,7 +100,7 @@
 		/**
 		 *
 		 * @param { slime.mime.Type } type
-		 * @returns { slime.$api.fp.Maybe<slime.jrunscript.tools.install.download.Format> }
+		 * @returns { slime.$api.fp.Maybe<slime.jrunscript.tools.install.distribution.Format> }
 		 */
 		var getFormatFromMimeType = function(type) {
 			if (type.media == "application" && type.subtype == "zip") return $api.fp.Maybe.from.some(newFormats.zip);
@@ -108,7 +108,7 @@
 			return $api.fp.Maybe.from.nothing();
 		}
 
-		/** @type { (url: string) => slime.$api.fp.Maybe<slime.jrunscript.tools.install.download.Format> } */
+		/** @type { (url: string) => slime.$api.fp.Maybe<slime.jrunscript.tools.install.distribution.Format> } */
 		var getFormatFromUrl = function(url) {
 			if (ZIP.test(url)) return $api.fp.Maybe.from.some(newFormats.zip);
 			if (TARGZ.test(url) || TGZ.test(url) || TARXZ.test(url)) return $api.fp.Maybe.from.some(newFormats.targz);
@@ -122,16 +122,6 @@
 		function getDefaultName(url) {
 			//	TODO	does js/web have something like this? Should it?
 			return url.split("/").slice(-1)[0];
-		}
-
-		/**
-		 *
-		 * @param { string } url
-		 */
-		function getDefaultLocation(url) {
-			var filename = getDefaultName(url);
-			if ($context.downloads) return $context.downloads.getRelativePath(filename).os.adapt();
-			return $context.api.shell.TMPDIR.getRelativePath(filename).os.adapt();
 		}
 
 		/**
@@ -169,7 +159,7 @@
 		 */
 		var urlToString = function(p) {
 			if (typeof(p) == "string") return p;
-			return $context.api.web.Url.codec.string.encode(p);
+			return $context.library.web.Url.codec.string.encode(p);
 		}
 
 		/**
@@ -191,7 +181,7 @@
 		 * @returns { slime.jrunscript.file.Directory }
 		 */
 		var installLocalArchive = function(p,events) {
-			var file = $context.api.file.Pathname(String(p.file)).file;
+			var file = $context.library.file.Pathname(String(p.file)).file;
 			if (!p.format) {
 				var basename = (function() {
 					if (p.name) return p.name;
@@ -205,7 +195,7 @@
 				if (!p.format) throw new TypeError("Required: 'format' property; basename = " + basename + "name=" + p.name + " url=" + p.url + " file=" + p.file);
 			}
 			var algorithm = p.format;
-			var untardir = $context.api.shell.TMPDIR.createTemporary({ directory: true });
+			var untardir = $context.library.shell.TMPDIR.createTemporary({ directory: true });
 			events.fire("console", "Extracting " + file + " to " + untardir);
 			algorithm.extract(file,untardir);
 			var unzippedDestination = (function() {
@@ -225,13 +215,13 @@
 			//			java.io.File renameTo implementation does not (notable on our Docker setup, moving from a temporary
 			//			directory to the installation directory, as we are doing here).
 			//	TODO	however, if p.to exists and is a directory, mv has the wrong semantics here
-			if ($context.api.shell.PATH.getCommand("mv")) {
+			if ($context.library.shell.PATH.getCommand("mv")) {
 				p.to.parent.createDirectory({
 					exists: function(dir) {
 						return false;
 					}
 				});
-				$context.api.shell.run({
+				$context.library.shell.run({
 					command: "mv",
 					arguments: [unzippedTo.pathname.toString(), p.to.toString()]
 				});
@@ -278,10 +268,10 @@
 				return install({
 					url: p.source.url,
 					name: p.source.name,
-					file: (p.source.file) ? $context.api.file.Pathname(p.source.file).file : void(0),
+					file: (p.source.file) ? $context.library.file.Pathname(p.source.file).file : void(0),
 					format: (p.archive && p.archive.format),
 					getDestinationPath: (p.archive && p.archive.folder),
-					to: $context.api.file.Pathname(p.destination.location),
+					to: $context.library.file.Pathname(p.destination.location),
 					replace: p.destination.replace
 				}, events);
 			});
@@ -298,16 +288,32 @@
 				function(p,events) {
 					var source = toModernSource(p);
 					get(source,events);
-					return $context.api.file.Pathname(source.file).file;
+					return $context.library.file.Pathname(source.file).file;
 				}
 			)
 		};
+
+		/**
+		 *
+		 * @param { slime.$api.Events<slime.jrunscript.tools.install.download.Events> } events
+		 * @returns
+		 */
+		var createFetcher = function(events) {
+			return $api.fp.world.mapping(
+				$context.library.http.World.withFollowRedirects($context.library.http.world.java.urlconnection),
+				{
+					request: function(e) {
+						events.fire("request", e.detail);
+					}
+				}
+			);
+		}
 
 		$export({
 			test: {
 				getDefaultName: getDefaultName
 			},
-			Download: {
+			Distribution: {
 				from: {
 					url: function(url) {
 						var format = getFormatFromUrl(url);
@@ -341,7 +347,7 @@
 					/** @param { slime.jrunscript.http.client.spi.Response } response */
 					var getResponseMimeType = function(response) {
 						return $api.fp.result(
-							$context.api.http.Header.value("Content-Type")(response.headers),
+							$context.library.http.Header.value("Content-Type")(response.headers),
 							$api.fp.Maybe.map($api.mime.Type.codec.declaration.decode),
 							function(maybe) {
 								if (maybe.present && maybe.value.media == "application" && maybe.value.subtype == "octet-stream") return $api.fp.Maybe.from.nothing();
@@ -357,21 +363,7 @@
 
 					/**
 					 *
-					 * @param { slime.jrunscript.tools.install.download.Format } specifiedFormat
-					 * @param { slime.$api.fp.Maybe<slime.mime.Type> } mimeType
-					 * @returns
-					 */
-					var getArchiveFormat = function(specifiedFormat, mimeType) {
-						if (specifiedFormat) return specifiedFormat;
-						if (mimeType.present) {
-							var maybe = getFormatFromMimeType(mimeType.value);
-							if (maybe.present) return maybe.value;
-						}
-					}
-
-					/**
-					 *
-					 * @param { slime.jrunscript.tools.install.Download } download
+					 * @param { slime.jrunscript.tools.install.Distribution } download
 					 * @param { (argument: slime.jrunscript.http.client.spi.Argument) => slime.jrunscript.http.client.spi.Response } fetch
 					 * @returns { { file: slime.jrunscript.file.File, type: slime.$api.fp.Maybe<slime.mime.Type> } }
 					 */
@@ -385,7 +377,7 @@
 							return { file: local.file, type: getFileMimeType(local.file) };
 						}
 						var response = fetch(
-							$context.api.http.Argument.request({
+							$context.library.http.Argument.from.request({
 								url: download.url
 							})
 						);
@@ -412,28 +404,12 @@
 						// throw new Error("type = " + ((type.present) ? type.value : "(absent)"));
 						if (!format.present) throw new Error("Could not determine format of archive at: " + download.url + " (type: " + getResponseMimeType(response) + ")");
 						if (!local) {
-							local = $context.api.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("archive" + format.value.extension);
+							local = $context.library.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("archive" + format.value.extension);
 						}
 						var location = local.os.adapt();
-						var w = $context.api.file.world.Location.file.write(location);
+						var w = $context.library.file.world.Location.file.write(location);
 						$api.fp.world.now.action(w.stream, { input: response.stream });
 						return { file: local.file, type: getMimeType() };
-					}
-
-					/**
-					 *
-					 * @param { slime.$api.Events<slime.jrunscript.tools.install.download.Events> } events
-					 * @returns
-					 */
-					var createFetcher = function(events) {
-						return $api.fp.world.mapping(
-							$context.api.http.World.withFollowRedirects($context.api.http.world.java.urlconnection),
-							{
-								request: function(e) {
-									events.fire("request", e.detail);
-								}
-							}
-						);
 					}
 
 					return function(events) {
@@ -460,7 +436,7 @@
 						 * @param { string } ospath
 						 */
 						var extractTo = function(archive,ospath) {
-							var p_to = $context.api.file.Pathname(ospath);
+							var p_to = $context.library.file.Pathname(ospath);
 							//	TODO	what if directory exists? Right now will bomb, which may be OK
 							var to = p_to.createDirectory({ recursive: true });
 							//	TODO	no world-oriented equivalent
@@ -468,11 +444,11 @@
 						}
 
 						if (p.download.prefix) {
-							var tmp =  $context.api.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+							var tmp =  $context.library.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 							tmp.directory.remove();
 							extractTo(archive, tmp.toString());
 							var unzippedTo = tmp.directory.getSubdirectory(p.download.prefix);
-							unzippedTo.move($context.api.file.Pathname(p.to), {
+							unzippedTo.move($context.library.file.Pathname(p.to), {
 								//	TODO	what's the right value for overwrite?
 								overwrite: false,
 								recursive: true
@@ -524,6 +500,20 @@
 			$api: {
 				Events: {
 					Function: $api.deprecate($api.events.Function)
+				}
+			},
+			download: function(p) {
+				return function(e) {
+					var fetch = createFetcher(e);
+					/** @type { slime.jrunscript.http.client.Request } */
+					var request = {
+						url: p.from
+					};
+					var argument = $context.library.http.Argument.from.request(request);
+					var response = fetch(argument);
+					if (response.status.code != 200) throw new Error("HTTP: " + response.status.code + " for " + p.from);
+					var w = $context.library.file.Location.file.write(p.to);
+					$api.fp.world.now.action(w.stream, { input: response.stream });
 				}
 			}
 		})

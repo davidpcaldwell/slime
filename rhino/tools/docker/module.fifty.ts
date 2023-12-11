@@ -75,7 +75,7 @@ namespace slime.jrunscript.tools {
 					askpass: slime.jrunscript.file.File
 				}
 				destination: slime.jrunscript.file.Pathname
-			}) => slime.$api.fp.world.Tell<install.Events>
+			}) => slime.$api.fp.world.Action<install.Events>
 		}
 
 		export interface Engine {

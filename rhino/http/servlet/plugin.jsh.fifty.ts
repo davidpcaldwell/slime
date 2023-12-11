@@ -201,7 +201,7 @@ namespace slime.jsh.httpd {
 					url: "http://127.0.0.1:" + server.port + "/"
 				};
 				var ask = jsh.http.world.java.urlconnection(
-					jsh.http.Argument.request(request)
+					jsh.http.Argument.from.request(request)
 				);
 				var response = $api.fp.world.now.ask(ask);
 				verify(response).status.code.is(404);
