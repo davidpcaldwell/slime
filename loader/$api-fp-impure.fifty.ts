@@ -451,7 +451,7 @@ namespace slime.$api.fp.world {
 	export type Instrument<P,E,A> = (p?: P) => Question<E,A>
 	export type Operation<P,E> = (p?: P) => Action<E>
 
-	export type Effect<
+	export type Instruction<
 		X extends slime.$api.fp.world.Operation<any,any>
 	> = (
 		X extends slime.$api.fp.world.Operation<
