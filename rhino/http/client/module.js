@@ -421,7 +421,7 @@
 
 					//	TODO	should make 302 handling more explicit
 
-					if (response.status.code == 302 || response.status.code == 303) {
+					if (response.status.code == 301 || response.status.code == 302 || response.status.code == 303) {
 						return fetch(
 							$api.Object.compose(
 								argument,
@@ -503,7 +503,7 @@
 			interpretRequestBody: _interpretRequestBody
 		});
 
-		/** @type { slime.jrunscript.http.client.Exports["Argument"]["request"] } */
+		/** @type { slime.jrunscript.http.client.Exports["Argument"]["from"]["request"] } */
 		var Argument_request = function(request) {
 			/**
 			 *
@@ -544,7 +544,9 @@
 				}
 			},
 			Argument: {
-				request: Argument_request
+				from: {
+					request: Argument_request
+				}
 			},
 			Client: scripts.objects.Client,
 			Body: {

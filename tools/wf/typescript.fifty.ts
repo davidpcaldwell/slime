@@ -65,14 +65,14 @@ namespace slime.jsh.wf.internal.typescript {
 
 	export interface Exports {
 		typedoc: {
-			invocation: (p: typedoc.Invocation) => slime.$api.fp.world.Ask<
+			invocation: (p: typedoc.Invocation) => slime.$api.fp.world.Question<
 				{
 					found: string
 					notFound: void
 					installing: string
 					installed: string
 				},
-				slime.$api.fp.world.Question<
+				slime.$api.fp.world.Instrument<
 					slime.jrunscript.node.Installation,
 					slime.jrunscript.shell.run.AskEvents,
 					slime.jrunscript.shell.run.Exit

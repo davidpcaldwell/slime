@@ -132,7 +132,7 @@ namespace slime.jrunscript.file {
 					 * Returns the POSIX attributes for a given `Location`, if the `Location`'s file system supports POSIX
 					 * attributes.
 					 */
-					get: slime.$api.fp.world.Question<{
+					get: slime.$api.fp.world.Instrument<{
 						location: Location
 					}, void, slime.$api.fp.Maybe<posix.Attributes>>
 
@@ -145,7 +145,7 @@ namespace slime.jrunscript.file {
 					 * Note that only superusers can update the owner or group for files; attempting to update these values as a
 					 * normal user will result in an exception.
 					 */
-					set: slime.$api.fp.world.Action<{
+					set: slime.$api.fp.world.Operation<{
 						location: Location
 						attributes: posix.Attributes
 					}, void>
@@ -157,7 +157,7 @@ namespace slime.jrunscript.file {
 					 * Note that only superusers can update the owner or group for files; attempting to update these values as a
 					 * normal user will result in an exception.
 					 */
-					update: slime.$api.fp.world.Action<{
+					update: slime.$api.fp.world.Operation<{
 						location: Location
 						attributes: slime.$api.fp.Transform<posix.Attributes>
 					}, void>
@@ -316,7 +316,7 @@ namespace slime.jrunscript.file {
 	export namespace location {
 		export namespace file {
 			export interface Exports {
-				size: slime.$api.fp.world.Question<Location, void, number>
+				size: slime.$api.fp.world.Instrument<Location, void, number>
 			}
 
 			(
@@ -342,7 +342,7 @@ namespace slime.jrunscript.file {
 	export namespace location {
 		export namespace file {
 			export interface Exports {
-				remove: () => slime.$api.fp.world.Action<Location,void>
+				remove: () => slime.$api.fp.world.Operation<Location,void>
 			}
 		}
 
@@ -509,23 +509,23 @@ namespace slime.jrunscript.file {
 
 		export namespace file {
 			export interface Exports {
-				exists: () => slime.$api.fp.world.Question<Location, {}, boolean>
+				exists: () => slime.$api.fp.world.Instrument<Location, {}, boolean>
 
 				read: {
-					stream: () => slime.$api.fp.world.Question<Location, {
+					stream: () => slime.$api.fp.world.Instrument<Location, {
 						notFound: void
 					}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
 
-					string: () => slime.$api.fp.world.Question<Location, {
+					string: () => slime.$api.fp.world.Instrument<Location, {
 						notFound: void
 					}, slime.$api.fp.Maybe<string>>
 				}
 
 				write: (location: Location) => {
-					string: slime.$api.fp.world.Action<{ value: string }, slime.jrunscript.file.world.events.FileOpenForWrite>
-					stream: slime.$api.fp.world.Action<{ input: slime.jrunscript.runtime.io.InputStream },slime.jrunscript.file.world.events.FileOpenForWrite>
+					string: slime.$api.fp.world.Operation<{ value: string }, slime.jrunscript.file.world.events.FileOpenForWrite>
+					stream: slime.$api.fp.world.Operation<{ input: slime.jrunscript.runtime.io.InputStream },slime.jrunscript.file.world.events.FileOpenForWrite>
 					object: {
-						text: slime.$api.fp.world.Question<
+						text: slime.$api.fp.world.Instrument<
 							{},
 							slime.jrunscript.file.world.events.FileOpenForWrite,
 							slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>
@@ -686,9 +686,9 @@ namespace slime.jrunscript.file {
 			)(fifty);
 
 			export interface Exports {
-				exists: () => slime.$api.fp.world.Question<world.Location, {}, boolean>
+				exists: () => slime.$api.fp.world.Instrument<world.Location, {}, boolean>
 
-				require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Action<world.Location, {
+				require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Operation<world.Location, {
 					created: world.Location
 					found: world.Location
 				}>
@@ -831,7 +831,7 @@ namespace slime.jrunscript.file {
 	export namespace location {
 		export namespace directory {
 			export interface Exports {
-				remove: () => slime.$api.fp.world.Action<world.Location,void>
+				remove: () => slime.$api.fp.world.Operation<world.Location,void>
 			}
 		}
 
@@ -871,7 +871,7 @@ namespace slime.jrunscript.file {
 				list: {
 					stream: (p?: {
 						descend: slime.$api.fp.Predicate<Location>
-					}) => slime.$api.fp.world.Question<
+					}) => slime.$api.fp.world.Instrument<
 						slime.jrunscript.file.world.Location,
 						list.Events,
 						slime.$api.fp.Stream<Location>
@@ -962,7 +962,7 @@ namespace slime.jrunscript.file {
 			from: {
 				os: (pathname: string) => Location
 
-				temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Question<
+				temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Instrument<
 					{
 						parent?: string
 						prefix?: string
@@ -1165,7 +1165,7 @@ namespace slime.jrunscript.file {
 			/**
 			 * Copies a filesystem node to a given location, creating the location's parent folders as necessary.
 			 */
-			copy: slime.$api.fp.world.Action<
+			copy: slime.$api.fp.world.Operation<
 				{
 					filesystem: world.Filesystem
 					from: string
@@ -1182,7 +1182,7 @@ namespace slime.jrunscript.file {
 			/**
 			 * Moves a filesystem node to a given location, creating the location's parent folders as necessary.
 			 */
-			move: slime.$api.fp.world.Action<
+			move: slime.$api.fp.world.Operation<
 				{
 					filesystem: world.Filesystem
 					from: string

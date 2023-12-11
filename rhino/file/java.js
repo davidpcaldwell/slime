@@ -603,7 +603,7 @@
 			 *
 			 * @param { string } source
 			 * @param { string } destination
-			 * @returns { slime.$api.fp.world.Tell<void> }
+			 * @returns { slime.$api.fp.world.Action<void> }
 			 */
 			function copy(source,destination) {
 				return function() {

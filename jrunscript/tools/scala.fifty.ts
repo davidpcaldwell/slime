@@ -18,15 +18,15 @@ namespace slime.jrunscript.tools.scala {
 
 	export interface Exports {
 		Installation: {
-			getVersion: slime.$api.fp.world.Question<scala.Installation,void,slime.$api.fp.Maybe<string>>
+			getVersion: slime.$api.fp.world.Instrument<scala.Installation,void,slime.$api.fp.Maybe<string>>
 
-			compile: (installation: scala.Installation) => slime.$api.fp.world.Action<{
+			compile: (installation: scala.Installation) => slime.$api.fp.world.Operation<{
 				destination: slime.jrunscript.file.Pathname
 				deprecation: boolean
 				files: any[]
 			},slime.jrunscript.shell.run.TellEvents>
 
-			run: (installation: scala.Installation) => slime.$api.fp.world.Action<{
+			run: (installation: scala.Installation) => slime.$api.fp.world.Operation<{
 				deprecation: boolean
 				classpath: slime.jrunscript.file.Pathname
 				main: string

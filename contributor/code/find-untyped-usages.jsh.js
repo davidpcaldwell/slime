@@ -39,7 +39,7 @@
 		 * @property { string } text
 		 */
 
-		/** @type { slime.$api.fp.world.Question<{ from: slime.jrunscript.file.Directory, pattern: string },{ match: Match }, Match[]> } */
+		/** @type { slime.$api.fp.world.Instrument<{ from: slime.jrunscript.file.Directory, pattern: string },{ match: Match }, Match[]> } */
 		var search = function(p) {
 			var regexp = new RegExp(p.pattern);
 			/** @param { slime.$api.Events<{ match: { path: string, line: number, text: string } }> } events */

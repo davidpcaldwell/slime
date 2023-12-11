@@ -311,7 +311,7 @@ namespace slime.jsh.shell {
 
 		src?: slime.jrunscript.file.Directory
 
-		require: slime.$api.fp.world.Action<{
+		require: slime.$api.fp.world.Operation<{
 				satisfied: () => boolean,
 				install: () => void
 			}, {

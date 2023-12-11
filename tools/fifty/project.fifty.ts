@@ -44,7 +44,7 @@ namespace slime.fifty.view {
 				var server = library({ base: base });
 				var response = $api.fp.world.now.question(
 					jsh.http.world.java.urlconnection,
-					jsh.http.Argument.request({
+					jsh.http.Argument.from.request({
 						url: "http://127.0.0.1:" + server.port + "/README.html"
 					})
 				);

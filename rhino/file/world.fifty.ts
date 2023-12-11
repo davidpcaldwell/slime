@@ -29,55 +29,55 @@ namespace slime.jrunscript.file {
 		}
 
 		export interface Filesystem {
-			canonicalize: slime.$api.fp.world.Question<{
+			canonicalize: slime.$api.fp.world.Instrument<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<string>>
 
-			fileExists: slime.$api.fp.world.Question<{
+			fileExists: slime.$api.fp.world.Instrument<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<boolean>>
 
-			fileSize: slime.$api.fp.world.Question<{
+			fileSize: slime.$api.fp.world.Instrument<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<number>>
 
 			/**
 			 * Returns the time the file was last modified, in milliseconds since the UNIX epoch.
 			 */
-			fileLastModified: slime.$api.fp.world.Question<{
+			fileLastModified: slime.$api.fp.world.Instrument<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<number>>
 
-			openOutputStream: slime.$api.fp.world.Question<{
+			openOutputStream: slime.$api.fp.world.Instrument<{
 				pathname: string
 				append?: boolean
 			},events.FileOpenForWrite,slime.$api.fp.Maybe<slime.jrunscript.runtime.io.OutputStream>>
 
-			directoryExists: slime.$api.fp.world.Question<{
+			directoryExists: slime.$api.fp.world.Instrument<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<boolean>>
 
-			createDirectory: slime.$api.fp.world.Action<{
+			createDirectory: slime.$api.fp.world.Operation<{
 				pathname: string
 			},{
 			}>
 
-			listDirectory: slime.$api.fp.world.Question<{
+			listDirectory: slime.$api.fp.world.Instrument<{
 				pathname: string
 			},{
 			},slime.$api.fp.Maybe<string[]>>
 
-			copy: slime.$api.fp.world.Action<{
+			copy: slime.$api.fp.world.Operation<{
 				from: string
 				to: string
 			},void>
 
-			move: slime.$api.fp.world.Action<{
+			move: slime.$api.fp.world.Operation<{
 				from: string
 				to: string
 			},void>
 
-			remove: slime.$api.fp.world.Action<{
+			remove: slime.$api.fp.world.Operation<{
 				pathname: string
 			},void>
 		}
@@ -85,7 +85,7 @@ namespace slime.jrunscript.file {
 		export interface Filesystem {
 			posix?: {
 				attributes: {
-					get: slime.$api.fp.world.Question<
+					get: slime.$api.fp.world.Instrument<
 						{
 							pathname: string
 						},
@@ -93,7 +93,7 @@ namespace slime.jrunscript.file {
 						file.posix.Attributes
 					>
 
-					set: slime.$api.fp.world.Action<
+					set: slime.$api.fp.world.Operation<
 						{
 							pathname: string
 							attributes: file.posix.Attributes
@@ -164,7 +164,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Filesystem {
-			temporary: slime.$api.fp.world.Question<
+			temporary: slime.$api.fp.world.Instrument<
 				{
 					parent?: string
 					prefix?: string
@@ -196,7 +196,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Filesystem {
-			openInputStream: slime.$api.fp.world.Question<{
+			openInputStream: slime.$api.fp.world.Instrument<{
 				pathname: string
 			},{
 				notFound: void

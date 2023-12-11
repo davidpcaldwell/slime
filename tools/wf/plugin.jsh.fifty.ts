@@ -121,7 +121,7 @@ namespace slime.jsh.wf {
 						stdio?: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
 						out?: string
 					}
-				) => slime.$api.fp.world.Ask<slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+				) => slime.$api.fp.world.Question<slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 			}
 		}
 	}
@@ -195,7 +195,7 @@ namespace slime.jsh.wf {
 
 		subproject: {
 			initialize: {
-				action: slime.$api.fp.world.Action<{ path: string }, slime.jrunscript.shell.run.TellEvents>
+				action: slime.$api.fp.world.Operation<{ path: string }, slime.jrunscript.shell.run.TellEvents>
 
 				/**
 				 * Returns a `Process` that will execute `action` using the given path, and rerouting `stderr` events from the
@@ -606,7 +606,7 @@ namespace slime.jsh.wf {
 
 	export namespace exports {
 		export interface Checks {
-			tsc: slime.$api.fp.world.Question<void,{ console: string, output: string },boolean>
+			tsc: slime.$api.fp.world.Instrument<void,{ console: string, output: string },boolean>
 		}
 	}
 
@@ -621,19 +621,19 @@ namespace slime.jsh.wf {
 	}
 
 	export interface Lint {
-		check: slime.$api.fp.world.Ask<
+		check: slime.$api.fp.world.Question<
 			{
 				console: string
 			},
 			boolean
 		>
 
-		fix: slime.$api.fp.world.Tell<{
+		fix: slime.$api.fp.world.Action<{
 			console: string
 		}>
 	}
 
-	export type Test = slime.$api.fp.world.Ask<
+	export type Test = slime.$api.fp.world.Question<
 		{
 			output: string
 			console: string

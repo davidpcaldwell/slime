@@ -218,11 +218,13 @@ namespace slime.jrunscript.http.client {
 		World: {
 			withFollowRedirects: (implementation: spi.Implementation) => spi.Implementation
 
-			question: (implementation: spi.Implementation) => slime.$api.fp.world.Question<Request,spi.Events,spi.Response>
+			question: (implementation: spi.Implementation) => slime.$api.fp.world.Instrument<Request,spi.Events,spi.Response>
 		}
 
 		Argument: {
-			request: (request: Request) => spi.Argument
+			from: {
+				request: (request: Request) => spi.Argument
+			}
 		}
 	}
 

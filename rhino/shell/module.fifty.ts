@@ -99,8 +99,8 @@ namespace slime.jrunscript.shell {
 					process: () => slime.jrunscript.shell.run.Parent
 				}
 			}
-			action: slime.$api.fp.world.Action<run.Intention,run.TellEvents>
-			question: slime.$api.fp.world.Question<run.Intention,run.AskEvents,run.Exit>
+			action: slime.$api.fp.world.Operation<run.Intention,run.TellEvents>
+			question: slime.$api.fp.world.Instrument<run.Intention,run.AskEvents,run.Exit>
 		}
 
 		(

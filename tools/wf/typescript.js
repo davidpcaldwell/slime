@@ -101,6 +101,7 @@
 			if (tsVersion == "5.0.2") return "0.23.28";
 			if (tsVersion == "5.0.4") return "0.23.28";
 			if (tsVersion == "5.2.2") return "0.23.28";
+			if (tsVersion == "5.3.2") return "0.23.28";
 			throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
 		};
 
@@ -212,7 +213,7 @@
 		}
 
 		$export({
-			version: $api.fp.impure.Input.value("5.2.2"),
+			version: $api.fp.impure.Input.value("5.3.2"),
 			typedoc: {
 				invocation: invocation
 			}
