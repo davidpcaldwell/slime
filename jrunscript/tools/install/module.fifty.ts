@@ -771,9 +771,10 @@ namespace slime.jrunscript.tools.install {
 					var mockclient = new jsh.http.Client({
 						proxy: PROXY
 					});
-					var mockapi: slime.jrunscript.tools.install.Exports = fifty.$loader.module("module.js", {
+					var mockscript: slime.jrunscript.tools.install.Script = fifty.$loader.script("module.js");
+					var mockapi: slime.jrunscript.tools.install.Exports = mockscript({
 						client: mockclient,
-						api: {
+						library: {
 							shell: jsh.shell,
 							http: jsh.http,
 							file: jsh.file,
