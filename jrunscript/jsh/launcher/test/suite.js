@@ -32,7 +32,7 @@
 		 * @param { slime.jrunscript.file.Directory } src
 		 * @param { slime.jrunscript.file.Pathname } rhino A local location to find Rhino; if defined, this will be passed to the
 		 * build process so that it does not have to download Rhino (which is what it will do by default).
-		 * @returns { slime.$api.fp.world.Operation<slime.jrunscript.file.Directory,{ console: string }> }
+		 * @returns { slime.$api.fp.world.Means<slime.jrunscript.file.Directory,{ console: string }> }
 		 */
 		var _buildShell = function(src,rhino) {
 			return function(tmpdir) {
@@ -95,7 +95,7 @@
 			}
 		}
 
-		/** @type { slime.$api.fp.world.Instrument<slime.jsh.internal.launcher.test.BuiltShellContext,slime.jsh.internal.launcher.test.BuiltShellEvents,slime.jrunscript.file.Directory> } */
+		/** @type { slime.$api.fp.world.Meter<slime.jsh.internal.launcher.test.BuiltShellContext,slime.jsh.internal.launcher.test.BuiltShellEvents,slime.jrunscript.file.Directory> } */
 		var requireBuiltShellHomeDirectory = function(p) {
 			return function(events) {
 				if (p.specified && p.specified.directory) {
@@ -123,7 +123,7 @@
 			}
 		};
 
-		/** @type { slime.$api.fp.world.Instrument<slime.jsh.internal.launcher.test.ShellInvocation,slime.jsh.internal.launcher.test.ShellInvocationEvents,slime.jsh.internal.launcher.test.Result> } */
+		/** @type { slime.$api.fp.world.Meter<slime.jsh.internal.launcher.test.ShellInvocation,slime.jsh.internal.launcher.test.ShellInvocationEvents,slime.jsh.internal.launcher.test.Result> } */
 		var shellResultQuestion = function(p) {
 			return function(events) {
 				/** @type { slime.jrunscript.shell.invocation.old.Token[] } */

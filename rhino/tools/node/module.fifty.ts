@@ -74,9 +74,9 @@ namespace slime.jrunscript.node {
 				location: (home: slime.jrunscript.file.Location) => slime.jrunscript.node.Installation
 			}
 
-			exists: slime.$api.fp.world.Instrument<slime.jrunscript.node.Installation,void,boolean>
+			exists: slime.$api.fp.world.Meter<slime.jrunscript.node.Installation,void,boolean>
 
-			getVersion: slime.$api.fp.world.Instrument<slime.jrunscript.node.Installation,void,string>
+			getVersion: slime.$api.fp.world.Meter<slime.jrunscript.node.Installation,void,string>
 		}
 	}
 
@@ -85,7 +85,7 @@ namespace slime.jrunscript.node {
 	}
 
 	export interface Exports {
-		install: (to: string) => slime.$api.fp.world.Operation<{ version: string },void>
+		install: (to: string) => slime.$api.fp.world.Means<{ version: string },void>
 	}
 
 	(
@@ -134,7 +134,7 @@ namespace slime.jrunscript.node {
 		export interface Installation {
 			Intention: {
 				shell: (argument: Intention) => (installation: slime.jrunscript.node.Installation) => slime.jrunscript.shell.run.Intention
-				question: (argument: Intention) => slime.$api.fp.world.Instrument<slime.jrunscript.node.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
+				question: (argument: Intention) => slime.$api.fp.world.Meter<slime.jrunscript.node.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 			}
 
 			/** @deprecated */
@@ -177,13 +177,13 @@ namespace slime.jrunscript.node {
 	export namespace exports {
 		export interface Installation {
 			modules: {
-				list: () => slime.$api.fp.world.Instrument<slime.jrunscript.node.Installation, void, Module[]>
+				list: () => slime.$api.fp.world.Meter<slime.jrunscript.node.Installation, void, Module[]>
 
-				installed: (name: string) => slime.$api.fp.world.Instrument<slime.jrunscript.node.Installation, void, slime.$api.fp.Maybe<Module>>
+				installed: (name: string) => slime.$api.fp.world.Meter<slime.jrunscript.node.Installation, void, slime.$api.fp.Maybe<Module>>
 
-				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Operation<slime.jrunscript.node.Installation,void>
+				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Means<slime.jrunscript.node.Installation,void>
 
-				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Operation<
+				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Means<
 					slime.jrunscript.node.Installation,
 					{
 						/**
@@ -362,7 +362,7 @@ namespace slime.jrunscript.node {
 		object: {
 			at: (p: { location: string }) => slime.jrunscript.node.object.Installation
 
-			install: slime.$api.fp.world.Operation<{
+			install: slime.$api.fp.world.Means<{
 				version?: string
 				location: slime.jrunscript.file.Pathname
 			},object.install.Events>

@@ -95,7 +95,7 @@ namespace slime.jsh.shell.tools {
 				events?: any
 			) => void
 
-			require: slime.$api.fp.world.Operation<rhino.InstallCommand,{
+			require: slime.$api.fp.world.Means<rhino.InstallCommand,{
 				satisfied: string
 				installing: string
 				installed: string
@@ -287,7 +287,7 @@ namespace slime.jsh.shell.tools {
 
 				//	TODO	should be able to migrate this to jrunscript at some point, but currently uses a jsh-specific API for
 				//			implementation
-				install: (installation: slime.jrunscript.tools.scala.Installation) => slime.$api.fp.world.Operation<{ majorVersion: number }, void>
+				install: (installation: slime.jrunscript.tools.scala.Installation) => slime.$api.fp.world.Means<{ majorVersion: number }, void>
 			} & slime.jrunscript.tools.scala.Exports["Installation"]
 		}
 
@@ -431,7 +431,7 @@ namespace slime.jsh.shell.tools {
 
 			installed: slime.jrunscript.node.object.Installation
 
-			require: slime.$api.fp.world.Operation<void,slime.jrunscript.node.object.install.Events & {
+			require: slime.$api.fp.world.Means<void,slime.jrunscript.node.object.install.Events & {
 				removed: {
 					at: string
 					version: string

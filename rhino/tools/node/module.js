@@ -65,7 +65,7 @@
 			function() {
 				return {
 					/**
-					 * @type { slime.$api.fp.world.Operation<{ location: string, version: string },void> } p
+					 * @type { slime.$api.fp.world.Means<{ location: string, version: string },void> } p
 					 */
 					install: function(p) {
 						return function(events) {

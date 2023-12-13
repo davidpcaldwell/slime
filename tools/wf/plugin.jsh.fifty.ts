@@ -195,7 +195,7 @@ namespace slime.jsh.wf {
 
 		subproject: {
 			initialize: {
-				action: slime.$api.fp.world.Operation<{ path: string }, slime.jrunscript.shell.run.TellEvents>
+				action: slime.$api.fp.world.Means<{ path: string }, slime.jrunscript.shell.run.TellEvents>
 
 				/**
 				 * Returns a `Process` that will execute `action` using the given path, and rerouting `stderr` events from the
@@ -606,7 +606,7 @@ namespace slime.jsh.wf {
 
 	export namespace exports {
 		export interface Checks {
-			tsc: slime.$api.fp.world.Instrument<void,{ console: string, output: string },boolean>
+			tsc: slime.$api.fp.world.Meter<void,{ console: string, output: string },boolean>
 		}
 	}
 

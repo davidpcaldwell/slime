@@ -72,7 +72,7 @@ namespace slime.jsh.wf.internal.typescript {
 					installing: string
 					installed: string
 				},
-				slime.$api.fp.world.Instrument<
+				slime.$api.fp.world.Meter<
 					slime.jrunscript.node.Installation,
 					slime.jrunscript.shell.run.AskEvents,
 					slime.jrunscript.shell.run.Exit

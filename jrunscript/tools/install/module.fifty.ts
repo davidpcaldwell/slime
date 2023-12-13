@@ -169,7 +169,7 @@ namespace slime.jrunscript.tools.install {
 	}
 
 	export interface Exports {
-		download: slime.$api.fp.world.Operation<{
+		download: slime.$api.fp.world.Means<{
 			from: string
 			to: slime.jrunscript.file.Location
 		},download.Events>
@@ -256,7 +256,7 @@ namespace slime.jrunscript.tools.install {
 		}
 
 		export interface Distribution {
-			install: slime.$api.fp.world.Operation<
+			install: slime.$api.fp.world.Means<
 				{ download: install.Distribution, to: string },
 				distribution.Events
 			>
@@ -572,7 +572,7 @@ namespace slime.jrunscript.tools.install {
 			 *
 			 * @returns A local file containing the content from Apache.
 			 */
-			find: slime.$api.fp.world.Instrument<
+			find: slime.$api.fp.world.Meter<
 				{
 					path: string
 					mirror?: string

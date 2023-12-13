@@ -109,7 +109,7 @@
 		/**
 		 *
 		 * @param { slime.jsh.shell.tools.tomcat.Mock } mock
-		 * @return { slime.$api.fp.world.Instrument<number,{ online: { major: number, latest: slime.$api.fp.Maybe<string> } },string> }
+		 * @return { slime.$api.fp.world.Meter<number,{ online: { major: number, latest: slime.$api.fp.Maybe<string> } },string> }
 		 */
 		var getLatestVersionUsingWorld = function(mock) {
 			var world = getWorld(mock);
