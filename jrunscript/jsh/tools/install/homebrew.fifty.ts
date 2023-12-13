@@ -51,7 +51,7 @@ namespace slime.jrunscript.tools.homebrew {
 	}
 
 	export interface Interface {
-		command: <P,R>(command: Command<P,R>) => slime.$api.fp.world.Instrument<P,Events,R>
+		command: <P,R>(command: Command<P,R>) => slime.$api.fp.world.Meter<P,Events,R>
 	}
 
 	export interface Exports {

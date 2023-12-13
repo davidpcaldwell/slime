@@ -29,7 +29,7 @@ namespace slime.jrunscript.tools.gcloud {
 			result: (result: slime.jrunscript.shell.run.Exit) => R
 		}
 
-		export type Executor = <P,R>(command: cli.Command<P,R>) => slime.$api.fp.world.Instrument<P,cli.Events,R>
+		export type Executor = <P,R>(command: cli.Command<P,R>) => slime.$api.fp.world.Meter<P,cli.Events,R>
 
 		export type OldExecutor = <P,R>(command: cli.Command<P,R>) => {
 			argument: (p: P) => {
@@ -109,7 +109,7 @@ namespace slime.jrunscript.tools.gcloud {
 				/**
 				 * Installs the `gcloud` CLI. Currently only supported on macOS.
 				 */
-				create: slime.$api.fp.world.Operation<string,{
+				create: slime.$api.fp.world.Means<string,{
 					console: string
 				}>
 			},

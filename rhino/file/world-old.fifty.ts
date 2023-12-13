@@ -35,7 +35,7 @@ namespace slime.jrunscript.file.world {
 				 * The `Ask` also provides a `notFound` event to allow special handling of the case in which the file does not
 				 * exist.
 				 */
-				string: slime.$api.fp.world.Instrument<
+				string: slime.$api.fp.world.Meter<
 					{
 						pathname: string
 					},

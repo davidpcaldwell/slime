@@ -158,8 +158,8 @@ namespace slime.tools.code {
 
 	export interface Exports {
 		File: {
-			hasShebang: () => slime.$api.fp.world.Instrument<File,void,slime.$api.fp.Maybe<boolean>>
-			isText: () => slime.$api.fp.world.Instrument<File,void,slime.$api.fp.Maybe<boolean>>
+			hasShebang: () => slime.$api.fp.world.Meter<File,void,slime.$api.fp.Maybe<boolean>>
+			isText: () => slime.$api.fp.world.Meter<File,void,slime.$api.fp.Maybe<boolean>>
 		}
 	}
 
@@ -245,7 +245,7 @@ namespace slime.tools.code {
 			fixed: string
 		}
 
-		handleDirectoryTrailingWhitespace: slime.$api.fp.world.Operation<
+		handleDirectoryTrailingWhitespace: slime.$api.fp.world.Means<
 			{
 				base: slime.jrunscript.file.Directory
 				exclude?: old.Excludes
@@ -255,7 +255,7 @@ namespace slime.tools.code {
 			FileEvents & TrailingWhitespaceEvents
 		>
 
-		handleGitTrailingWhitespace: slime.$api.fp.world.Operation<
+		handleGitTrailingWhitespace: slime.$api.fp.world.Means<
 			{
 				repository: string
 				isText: isText
@@ -264,7 +264,7 @@ namespace slime.tools.code {
 			FileEvents & TrailingWhitespaceEvents
 		>
 
-		handleDirectoryFinalNewlines: slime.$api.fp.world.Operation<
+		handleDirectoryFinalNewlines: slime.$api.fp.world.Means<
 			{
 				base: slime.jrunscript.file.Directory
 				exclude?: old.Excludes
@@ -274,7 +274,7 @@ namespace slime.tools.code {
 			FileEvents & FinalNewlineEvents
 		>
 
-		handleGitFinalNewlines: slime.$api.fp.world.Operation<
+		handleGitFinalNewlines: slime.$api.fp.world.Means<
 			{
 				repository: string
 				isText: isText
@@ -328,7 +328,7 @@ namespace slime.tools.code {
 
 	export namespace internal {
 		export interface functions {
-			getDirectoryObjectSourceFiles: slime.$api.fp.world.Instrument<
+			getDirectoryObjectSourceFiles: slime.$api.fp.world.Meter<
 				{
 					base: slime.jrunscript.file.Directory
 					isText: isText
@@ -338,7 +338,7 @@ namespace slime.tools.code {
 				slime.tools.code.File[]
 			>
 
-			getGitSourceFiles: slime.$api.fp.world.Instrument<
+			getGitSourceFiles: slime.$api.fp.world.Meter<
 				{
 					repository: slime.jrunscript.file.Location
 					isSource: oldIsSource
@@ -349,18 +349,18 @@ namespace slime.tools.code {
 
 			handleFileTrailingWhitespace: (configuration?: {
 				nowrite?: boolean
-			}) => slime.$api.fp.world.Operation<slime.tools.code.File,TrailingWhitespaceEvents>
+			}) => slime.$api.fp.world.Means<slime.tools.code.File,TrailingWhitespaceEvents>
 
 			handleFilesTrailingWhitespace: (configuration?: {
 				nowrite?: boolean
-			}) => slime.$api.fp.world.Operation<
+			}) => slime.$api.fp.world.Means<
 				slime.tools.code.File[],
 				TrailingWhitespaceEvents
 			>
 
 			handleFileFinalNewlines: (configuration?: {
 				nowrite?: boolean
-			}) => slime.$api.fp.world.Operation<slime.tools.code.File,FinalNewlineEvents>
+			}) => slime.$api.fp.world.Means<slime.tools.code.File,FinalNewlineEvents>
 		}
 	}
 }

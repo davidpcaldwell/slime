@@ -448,33 +448,33 @@ namespace slime.$api.fp.impure {
 
 namespace slime.$api.fp.world {
 	//	Instrument
-	export type Instrument<P,E,A> = (p?: P) => Question<E,A>
-	export type Operation<P,E> = (p?: P) => Action<E>
-
-	export type Instruction<
-		X extends slime.$api.fp.world.Operation<any,any>
-	> = (
-		X extends slime.$api.fp.world.Operation<
-			infer P,
-			infer E
-		>
-		? P
-		: never
-	)
+	export type Meter<S,E,R> = (s?: S) => Question<E,R>
+	export type Means<O,E> = (o?: O) => Action<E>
 
 	export type Subject<
-		X extends slime.$api.fp.world.Instrument<any,any,any>
+		X extends slime.$api.fp.world.Meter<any,any,any>
 	> = (
-		X extends slime.$api.fp.world.Instrument<
-			infer P,
+		X extends slime.$api.fp.world.Meter<
+			infer S,
 			infer E,
-			infer A
+			infer R
 		>
-		? P
+		? S
 		: never
 	)
 
-	export type Question<E,T> = (events: slime.$api.Events<E>) => T
+	export type Order<
+		X extends slime.$api.fp.world.Means<any,any>
+	> = (
+		X extends slime.$api.fp.world.Means<
+			infer O,
+			infer E
+		>
+		? O
+		: never
+	)
+
+	export type Question<E,R> = (events: slime.$api.Events<E>) => R
 	export type Action<E> = (events: slime.$api.Events<E>) => void
 
 	/** @deprecated */
@@ -493,7 +493,7 @@ namespace slime.$api.fp.world {
 	}
 
 	export interface Exports {
-		mapping: <P,E,A>(question: world.Instrument<P,E,A>, handler?: slime.$api.event.Handlers<E>) => fp.Mapping<P,A>
+		mapping: <P,E,A>(question: world.Meter<P,E,A>, handler?: slime.$api.event.Handlers<E>) => fp.Mapping<P,A>
 	}
 
 	(
@@ -504,7 +504,7 @@ namespace slime.$api.fp.world {
 			const { $api } = fifty.global;
 
 			fifty.tests.exports.world.mapping = function() {
-				var doubler: Instrument<number, { argument: string }, number> = function(p) {
+				var doubler: Meter<number, { argument: string }, number> = function(p) {
 					return function(events) {
 						events.fire("argument", String(p));
 						return p * 2;
@@ -527,7 +527,7 @@ namespace slime.$api.fp.world {
 	export interface Exports {
 		Process: {
 			action: <P,E>(p: {
-				action: Operation<P,E>,
+				action: Means<P,E>,
 				argument: P,
 				handlers: slime.$api.event.Handlers<E>
 			}) => impure.Process
@@ -545,7 +545,7 @@ namespace slime.$api.fp.world {
 			fifty.tests.exports.world.Process.action = function() {
 				var buffer: number[] = [];
 
-				var action: world.Operation<number, { got: number }> = function(p) {
+				var action: world.Means<number, { got: number }> = function(p) {
 					return function(events) {
 						events.fire("got", p);
 					}
@@ -571,7 +571,7 @@ namespace slime.$api.fp.world {
 	)(fifty);
 
 	export interface Exports {
-		output: <P,E>(action: world.Operation<P,E>, handler?: slime.$api.event.Handlers<E>) => impure.Output<P>
+		output: <P,E>(action: world.Means<P,E>, handler?: slime.$api.event.Handlers<E>) => impure.Output<P>
 
 		process: <E>(tell: world.Action<E>, handler?: slime.$api.event.Handlers<E>) => impure.Process
 
@@ -582,15 +582,15 @@ namespace slime.$api.fp.world {
 			 * An operation equivalent to {@link Exports | pipe(argument, question)}, but limited to one argument which provides
 			 * more readable type inference, mapping the produced value to a `Question` rather than a function returning an `Ask`.
 			 */
-			pipe: <I,P,E,A>(argument: (i: I) => P, question: world.Instrument<P,E,A>) => world.Instrument<I,E,A>
-			map: <P,E,A,O>(question: world.Instrument<P,E,A>, map: (a: A) => O) => world.Instrument<P,E,O>
-			wrap: <I,P,E,A,O>(argument: (i: I) => P, question: world.Instrument<P,E,A>, map: (a: A) => O) => world.Instrument<I,E,O>
+			pipe: <I,P,E,A>(argument: (i: I) => P, question: world.Meter<P,E,A>) => world.Meter<I,E,A>
+			map: <P,E,A,O>(question: world.Meter<P,E,A>, map: (a: A) => O) => world.Meter<P,E,O>
+			wrap: <I,P,E,A,O>(argument: (i: I) => P, question: world.Meter<P,E,A>, map: (a: A) => O) => world.Meter<I,E,O>
 		}
 
 		Action: {
-			output: <P,E>(handler?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Operation<P,E>) => slime.$api.fp.impure.Output<P>
+			output: <P,E>(handler?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Means<P,E>) => slime.$api.fp.impure.Output<P>
 
-			tell: <P,E>(p: P) => (action: world.Operation<P,E>) => world.Action<E>
+			tell: <P,E>(p: P) => (action: world.Means<P,E>) => world.Action<E>
 
 			/**
 			 * Transforms an `Action` into an `Action` of a different argument type using a given function to map the
@@ -601,7 +601,7 @@ namespace slime.$api.fp.world {
 			 *
 			 * @returns An action which accepts the desired type.
 			 */
-			pipe: <P,R,E>(mapping: slime.$api.fp.Mapping<P,R>) => (action: slime.$api.fp.world.Operation<R,E>) => slime.$api.fp.world.Operation<P,E>
+			pipe: <P,R,E>(mapping: slime.$api.fp.Mapping<P,R>) => (action: slime.$api.fp.world.Means<R,E>) => slime.$api.fp.world.Means<P,E>
 		}
 
 		Ask: {
@@ -621,7 +621,7 @@ namespace slime.$api.fp.world {
 			fifty.tests.exports.world.Action.pipe = function() {
 				var buffer: number[] = [];
 
-				var addNext: Operation<number,void> = function(p) {
+				var addNext: Means<number,void> = function(p) {
 					return function(e) {
 						buffer.push(p);
 					}
@@ -629,7 +629,7 @@ namespace slime.$api.fp.world {
 
 				var allowString = $api.fp.world.Action.pipe(function(s: string) { return Number(s); });
 
-				var addAsNumber: Operation<string,void> = allowString(addNext);
+				var addAsNumber: Means<string,void> = allowString(addNext);
 
 				verify(buffer).length.is(0);
 
@@ -647,8 +647,8 @@ namespace slime.$api.fp.world {
 
 	export interface Exports {
 		now: {
-			question: <P,E,A>(question: world.Instrument<P,E,A>, argument: P, handler?: slime.$api.event.Handlers<E>) => A
-			action: <P,E>(action: world.Operation<P,E>, argument?: P, handler?: slime.$api.event.Handlers<E>) => void
+			question: <P,E,A>(question: world.Meter<P,E,A>, argument: P, handler?: slime.$api.event.Handlers<E>) => A
+			action: <P,E>(action: world.Means<P,E>, argument?: P, handler?: slime.$api.event.Handlers<E>) => void
 
 			ask: <E,A>(ask: world.Question<E,A>, handler?: slime.$api.event.Handlers<E>) => A
 			tell: <E>(tell: world.Action<E>, handler?: slime.$api.event.Handlers<E>) => void

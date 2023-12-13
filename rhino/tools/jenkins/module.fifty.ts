@@ -119,8 +119,8 @@ namespace slime.jrunscript.tools.jenkins {
 	//@ts-ignore
 	)(fifty);
 
-	export type Get<I,T extends api.Resource> = slime.$api.fp.world.Instrument<I,void,slime.$api.fp.Maybe<T>>
-	export type Fetch<T extends api.Resource> = slime.$api.fp.world.Instrument<T,void,T>
+	export type Get<I,T extends api.Resource> = slime.$api.fp.world.Meter<I,void,slime.$api.fp.Maybe<T>>
+	export type Fetch<T extends api.Resource> = slime.$api.fp.world.Meter<T,void,T>
 
 	export interface Client {
 		get: {
@@ -140,7 +140,7 @@ namespace slime.jrunscript.tools.jenkins {
 		}
 
 		Job: {
-			config: slime.$api.fp.world.Instrument<Job,void,slime.runtime.document.Document>
+			config: slime.$api.fp.world.Meter<Job,void,slime.runtime.document.Document>
 		}
 	}
 

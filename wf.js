@@ -119,7 +119,7 @@
 			}
 		}
 
-		/** @type { slime.$api.fp.world.Operation<void,void> } */
+		/** @type { slime.$api.fp.world.Means<void,void> } */
 		var cleanGitBranches = function() {
 			return function(events) {
 				repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });

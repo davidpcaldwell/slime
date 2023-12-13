@@ -27,7 +27,7 @@ namespace slime.project.code {
 
 			exclude: slime.tools.code.old.Excludes
 
-			trailingWhitespace: slime.$api.fp.world.Operation<{
+			trailingWhitespace: slime.$api.fp.world.Means<{
 				base: slime.jrunscript.file.Directory
 				nowrite?: boolean
 			},slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
