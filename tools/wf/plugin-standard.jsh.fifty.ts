@@ -493,12 +493,14 @@ namespace slime.jsh.wf.standard {
 			 *
 			 * `--path <path-to-submodule>`
 			 */
-			remove:  slime.jsh.script.cli.Command<Options>
+			remove: slime.jsh.script.cli.Command<Options & {
+				path: string
+			}>
 
 			/**
 			 * `--path <path-to-submodule>`
 			 */
-			update:  slime.jsh.script.cli.Command<Options>
+			update: slime.jsh.script.cli.Command<Options>
 
 			/**
 			 * For a submodule that is a detached HEAD that is tracking a branch, force the tracked branch to HEAD and check
