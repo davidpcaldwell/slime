@@ -113,7 +113,7 @@
 			 */
 			var moveTypedocIntoPlace = function(from) {
 				$api.fp.world.now.action(
-					$context.library.file.Filesystem.copy,
+					$context.library.file.Filesystem.move,
 					{
 						filesystem: $context.library.file.world.filesystems.os,
 						from: from.pathname,
@@ -237,7 +237,7 @@
 							if (directoryExists(documentation)) {
 								removeDirectory(documentation);
 							}
-							moveTypedocIntoPlace($context.library.file.world.Location.from.os(e.detail.out()));
+							moveTypedocIntoPlace($context.library.file.Location.from.os(e.detail.out()));
 							delete state.updates[e.detail.out()];
 							state.typedocBasedOnSrcAt = e.detail.started();
 							events.fire("finished", { out: e.detail.out() });
@@ -292,6 +292,8 @@
 											documentation: timestamps.documentation.value
 										});
 									}
+								} else if (timestamps.code.present && !timestamps.documentation.present) {
+									run();
 								}
 							}
 						})();
@@ -330,7 +332,10 @@
 		};
 
 		$export({
-			Updater: Updater
+			Updater: Updater,
+			test: {
+				Update: Update
+			}
 		});
 	}
 //@ts-ignore

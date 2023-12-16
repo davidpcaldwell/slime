@@ -19,8 +19,13 @@ namespace slime.tools.documentation.updater {
 
 	export namespace internal {
 		export type Process = {
+			/** The directory to which this process will be writing. */
 			out: () => string
+
+			/** The timestamp of the time at which ths process started. */
 			started: () => number
+
+			/** A method that will kill the process. */
 			kill: () => void
 		}
 
@@ -38,21 +43,55 @@ namespace slime.tools.documentation.updater {
 			errored: Process
 		}
 
+		/**
+		 * An internal function that implements a means for executing updates for TypeDoc. The documentation will be written to an
+		 * arbitrary temporary directory. The {@link Listener} has the ability to receive a callback with its `started` event that
+		 * gives access to an object representing the running update, including the output directory to which its output will be
+		 * written.
+		 *
+		 * This method terminates when the update process terminates, after firing either a `finished` or a `processed` event,
+		 * both of which also give access to the output directory to which TypeDoc documentation would have been written.
+		 */
 		export type Update = slime.$api.fp.world.Means<
 			{
-				project: slime.jrunscript.file.world.Location
+				project: slime.jrunscript.file.Location
 			},
 			Listener
 		>
 	}
 
+	export interface Exports {
+		test: {
+			Update: internal.Update
+		}
+	}
+
 	export interface Updater {
+		/**
+		 * Executes the `Updater` process until the `stop` method is called. Repeatedly checks the timestamps of the code and
+		 * documentation to decide whether to run TypeDoc.
+		 */
 		run: () => void
+
+		/**
+		 * Resets the interval for checking the code against the generated documentation to the minimum. Should be used by the
+		 * caller to hint that the code has changed.
+		 *
+		 * @returns
+		 */
 		update: () => void
+
 		stop: () => void
 	}
 
 	export interface Exports {
+		/**
+		 * An object creating a stateful `Updater` that will update the TypeDoc for a given project. The given `Handlers` will be
+		 * attached to the running Updater, and will not be disconnected until the `Updater` is stopped via its `stop()` method.
+		 *
+		 * @param p
+		 * @returns
+		 */
 		Updater: (p: {
 			project: string
 			events: slime.$api.event.Handlers<{
@@ -114,7 +153,7 @@ namespace slime.tools.documentation.updater {
 
 			};
 
-			var project = fifty.jsh.file.relative("../..");
+			var slime = fifty.jsh.file.relative("../..");
 
 			var timed = function<F extends (...args: any[]) => any>(f: F, callback: (elapsed: number) => void): F {
 				return function() {
@@ -131,7 +170,7 @@ namespace slime.tools.documentation.updater {
 			fifty.tests.manual.timing = function() {
 				var git = timed(jsh.project.code.git.lastModified, function(elapsed) {
 					jsh.shell.console("git took " + elapsed + " milliseconds");
-				})({ base: project.pathname });
+				})({ base: slime.pathname });
 
 				var documentation = timed(function() {
 					var loader = jsh.file.world.Location.directory.loader.synchronous({ root: fifty.jsh.file.relative("../../local/doc/typedoc") });
@@ -146,7 +185,7 @@ namespace slime.tools.documentation.updater {
 
 			var createUpdater = function() {
 				return subject.Updater({
-					project: project.pathname,
+					project: slime.pathname,
 					events: {
 						initialized: function(e) {
 							jsh.shell.console("Initialized: project=" + e.detail.project);
@@ -186,6 +225,32 @@ namespace slime.tools.documentation.updater {
 						}
 					}
 				});
+			}
+
+			fifty.tests.manual.update = function() {
+				var update = subject.test.Update({
+					project: slime
+				});
+				$api.fp.world.now.tell(
+					update,
+					{
+						started: function(e) {
+							jsh.shell.console("Started: " + JSON.stringify(e.detail));
+						},
+						stderr: function(e) {
+							jsh.shell.console("STDERR (" + e.detail.out + "): " + e.detail.line);
+						},
+						stdout: function(e) {
+							jsh.shell.console("STDOUT (" + e.detail.out + "): " + e.detail.line);
+						},
+						finished: function(e) {
+							jsh.shell.console("Finished: " + JSON.stringify(e.detail));
+						},
+						errored: function(e) {
+							jsh.shell.console("Finished: " + JSON.stringify(e.detail));
+						}
+					}
+				);
 			}
 
 			fifty.tests.manual.run = function() {
