@@ -157,9 +157,3 @@ namespace slime {
 			ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 	}
 }
-
-/**
- * Types that are defined by code external to the SLIME project.
- */
-namespace slime.external {
-}

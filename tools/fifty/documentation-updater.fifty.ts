@@ -76,8 +76,6 @@ namespace slime.tools.documentation.updater {
 		/**
 		 * Resets the interval for checking the code against the generated documentation to the minimum. Should be used by the
 		 * caller to hint that the code has changed.
-		 *
-		 * @returns
 		 */
 		update: () => void
 
@@ -167,22 +165,6 @@ namespace slime.tools.documentation.updater {
 
 			fifty.tests.manual = {};
 
-			fifty.tests.manual.timing = function() {
-				var git = timed(jsh.project.code.git.lastModified, function(elapsed) {
-					jsh.shell.console("git took " + elapsed + " milliseconds");
-				})({ base: slime.pathname });
-
-				var documentation = timed(function() {
-					var loader = jsh.file.world.Location.directory.loader.synchronous({ root: fifty.jsh.file.relative("../../local/doc/typedoc") });
-					return jsh.project.code.directory.lastModified({
-						loader: loader,
-						map: $api.fp.identity
-					})
-				}, function(elapsed) {
-					jsh.shell.console("documentation scan took " + elapsed + " milliseconds");
-				})();
-			}
-
 			var createUpdater = function() {
 				return subject.Updater({
 					project: slime.pathname,
@@ -266,6 +248,57 @@ namespace slime.tools.documentation.updater {
 				})
 				updater.run();
 			}
+
+			fifty.tests.manual.typedoc = {
+				timing: function() {
+					timed(
+						function() {
+							$api.fp.world.now.action(
+								subject.test.Update,
+								{
+									project: fifty.jsh.file.relative("../..")
+								},
+								{
+									started: function(e) {
+										jsh.shell.console("Started: " + JSON.stringify(e.detail));
+									},
+									stdout: function(e) {
+										jsh.shell.console("STDOUT: " + e.detail.line);
+									},
+									stderr: function(e) {
+										jsh.shell.console("STDERR: " + e.detail.line);
+									},
+									finished: function(e) {
+										jsh.shell.console("Finished: " + JSON.stringify(e.detail));
+									},
+									errored: function(e) {
+										jsh.shell.console("Errored: " + JSON.stringify(e.detail));
+									}
+								}
+							)
+						},
+						function(elapsed) {
+							jsh.shell.console("TypeDoc took " + (elapsed / 1000).toFixed(3) + " seconds.");
+						}
+					)();
+				}
+			}
+
+			fifty.tests.manual.timing = function() {
+				var git = timed(jsh.project.code.git.lastModified, function(elapsed) {
+					jsh.shell.console("git took " + elapsed + " milliseconds");
+				})({ base: slime.pathname });
+
+				var documentation = timed(function() {
+					var loader = jsh.file.world.Location.directory.loader.synchronous({ root: fifty.jsh.file.relative("../../local/doc/typedoc") });
+					return jsh.project.code.directory.lastModified({
+						loader: loader,
+						map: $api.fp.identity
+					})
+				}, function(elapsed) {
+					jsh.shell.console("documentation scan took " + elapsed + " milliseconds");
+				})();
+			};
 		}
 	//@ts-ignore
 	)(fifty);

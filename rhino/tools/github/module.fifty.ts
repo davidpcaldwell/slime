@@ -193,13 +193,13 @@ namespace slime.jrunscript.tools.github {
 				jsh.shell.console(JSON.stringify(
 					result.map(function(repo) {
 						return {
-							name: repo.name
+							name: repo["name"]
 						}
 					}),void(0),4)
 				);
 
 				verify(result).evaluate(function(p) { return p.length > 1 }).is(true);
-				verify(result).evaluate(function(p) { return p.find(function(item) { return item.name == "slime"; }) != null } ).is(true);
+				verify(result).evaluate(function(p) { return p.find(function(item) { return item["name"] == "slime"; }) != null } ).is(true);
 			};
 
 			fifty.tests.parsePathParameters = function() {
