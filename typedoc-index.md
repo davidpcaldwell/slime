@@ -6,4 +6,4 @@
 
 # SLIME TypeScript documentation
 
-See documentation for the [`slime` namespace](modules/slime-1.html).
+See documentation for the [`slime` namespace](modules/slime.html).
