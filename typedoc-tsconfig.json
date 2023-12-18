@@ -11,7 +11,7 @@
 		"loader/api/tools/snippets",
 		"jrunscript/jsh/test/hello.ts",
 		"jrunscript/jsh/tools/test/foo.ts",
-		"typedoc-definitions.ts"
+		"**/*.d.ts"
 	],
 	"compilerOptions": {
 		"lib": [

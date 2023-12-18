@@ -142,6 +142,7 @@
 			if (files[i].path == ".eslintrc.json") extension = "js";
 			if (files[i].path == "jsconfig.json") extension = "js";
 			if (files[i].path == "typedoc.json") extension = "js";
+			if (files[i].path == "typedoc-tsconfig.json") extension = "js";
 			if (files[i].path == ".devcontainer/devcontainer.json") extension = "js";
 			if (files[i].path == "rhino/tools/github/tools/dtsgen.json") extension = "js";
 			if (files[i].path == "rhino/tools/docker/tools/dtsgen.json") extension = "js";

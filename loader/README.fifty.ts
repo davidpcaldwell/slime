@@ -4,14 +4,8 @@
 //
 //	END LICENSE
 
-{
-	"$schema": "https://typedoc.org/schema.json",
-	"entryPoints": [
-		"README.fifty.ts"
-	],
-	"tsconfig": "typedoc-tsconfig.json",
-	"name": "SLIME",
-	"sort": [
-		"source-order"
-	]
+/**
+ * Types that are defined by code external to the SLIME project.
+ */
+namespace slime.external {
 }
