@@ -328,7 +328,9 @@
 								}
 								ALL_GIT_HOOKS.forEach(function(hook) {
 									var location = inputs.base().getRelativePath(path + "/" + hook);
-									location.write("./wf " + "git.hooks." + hook + " " + "\"$@\"", { append: false, recursive: true });
+									//	Git itself does not work correctly under git hooks, so we provide an environment variable
+									//	to detect the situation, giving hooks an opportunity to avoid operations that use git
+									location.write("env IN_GIT_HOOK=true ./wf " + "git.hooks." + hook + " " + "\"$@\"", { append: false, recursive: true });
 									jsh.shell.run({
 										command: "chmod",
 										arguments: $api.Array.build(function(rv) {
@@ -429,7 +431,7 @@
 					subprojects: {
 						initialize: {
 							process: function() {
-								initializeSubmodulesProcess()();
+								if (!jsh.shell.environment.IN_GIT_HOOK) initializeSubmodulesProcess()();
 							}
 						}
 					},
