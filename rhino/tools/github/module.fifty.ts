@@ -15,12 +15,23 @@ namespace slime.jsh.unit.mock.github {
 }
 
 /**
+ * ## API
+ *
  * The SLIME GitHub API is in a state of flux.
  *
  * GitHub types are generated using a `dtsgenerator`-based impleementation that can be run via
  * `rhino/tools/github/tools/types.jsh.js`. This emits `rhino/tools/github/tools/github-rest.d.ts`, which **should** be committed
  * to source control (as it contains the latest GitHub API, generated at the time of running the program). The generator output
  * is based on the GitHub [OpenAPI description](https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json).
+ *
+ * ## Tools
+ *
+ * SLIME also provides a Git credential helper that can look up GitHub tokens in the file system for a project. by (GitHub) user
+ * name. Tokens for users must be stored in the project's `local/github/tokens` directory, with the name of the user (so if your
+ * GitHub username is `foo`, your token would be pasted into `local/github/tokens/foo`). (Note that you must be careful with your
+ * editor not to append a trailing newline.)
+ *
+ * The credential helper can be specified as `-c credential.helper=[/path/to/slime]/rhino/tools/github/git-credential-github-tokens-directory.bash`.
  */
 namespace slime.jrunscript.tools.github {
 	export interface Context {
