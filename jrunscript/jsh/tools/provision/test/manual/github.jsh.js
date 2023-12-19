@@ -52,9 +52,6 @@
 
 		//	jsh.shell.console("curl " + "https://127.0.0.1:" + www.https.port + "/" + "davidpcaldwell/slime/master/jsh.bash");
 
-		var githubUser = "davidpcaldwell";
-		var githubToken = jsh.shell.jsh.src.getFile("local/github/tokens/davidpcaldwell").read(String);
-		var githubBasicAuthorization = githubUser + ":" + githubToken;
 		//	TODO	this implementation and the third one (but not the middle one) are duplicated in rhino/tools/github/test/manual/jsh.jsh.js
 		jsh.shell.console("Test with mock GitHub: ");
 		jsh.shell.console(
@@ -80,6 +77,10 @@
 		jsh.shell.console("Test on GitHub: ");
 		jsh.shell.console(
 			(function() {
+				var githubUser = "davidpcaldwell";
+				var githubToken = jsh.shell.jsh.src.getFile("local/github/tokens/davidpcaldwell").read(String);
+				var githubBasicAuthorization = githubUser + ":" + githubToken;
+
 				var rv = [];
 				rv.push("curl");
 				rv.push("-u", githubBasicAuthorization);

@@ -951,9 +951,53 @@ namespace slime.jrunscript.file {
 				loader: {
 					synchronous: (p: {
 						root: Location
-					}) => slime.runtime.loader.Synchronous<slime.jrunscript.file.internal.loader.Resource>
+					}) => slime.runtime.loader.Synchronous<slime.jrunscript.runtime.Resource>
 				}
 			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api, jsh } = fifty.global;
+
+					fifty.tests.sandbox.filesystem.directory.loader = fifty.test.Parent();
+					fifty.tests.sandbox.filesystem.directory.loader.synchronous = function() {
+						var dir = fifty.jsh.file.temporary.directory();
+						var loader = jsh.file.Location.directory.loader.synchronous({ root: dir });
+
+						var resource = loader.get(["a"]);
+						verify(resource).present.is(false);
+
+						$api.fp.now.invoke(
+							dir,
+							jsh.file.Location.directory.relativePath("a"),
+							jsh.file.Location.file.write,
+							$api.fp.property("string"),
+							function(means) {
+								$api.fp.world.now.action(
+									means,
+									{
+										value: "foo"
+									}
+								)
+							}
+						);
+
+						var resource = loader.get(["a"]);
+						verify(resource).present.is(true);
+						if (resource.present) {
+							var value = resource.value;
+							var stream = value.read();
+							var string = $api.fp.world.now.ask(jsh.io.InputStream.string(stream));
+							verify(string).is("foo");
+						}
+
+					}
+				}
+			//@ts-ignore
+			)(fifty);
 		}
 	}
 

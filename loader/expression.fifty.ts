@@ -399,7 +399,7 @@ namespace slime {
 
 		export namespace loader {
 			/**
-			 * An object representing code, which has a name (for tooling), and which can provide aMIME type,
+			 * An object representing code, which has a name (for tooling), and which can provide a MIME type,
 			 * and a string representing code. The most straightforward instances of this type are JavaScript scripts, but instances of
 			 * this type can also be code written in other languages that can be transpiled into JavaScript (notably, TypeScript).
 			 */
