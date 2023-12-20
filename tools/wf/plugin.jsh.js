@@ -323,7 +323,7 @@
 									arguments: ["--list"]
 								});
 								if (config["core.hookspath"] != path) {
-									jsh.shell.console("Installing git hooks ...");
+									jsh.shell.console("Installing git hooks to " + inputs.base().getRelativePath(path) + " ...");
 									repository.command(setConfigValue).argument({ name: "core.hookspath", value: path }).run();
 								}
 								ALL_GIT_HOOKS.forEach(function(hook) {
