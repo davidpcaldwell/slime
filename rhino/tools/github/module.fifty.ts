@@ -26,12 +26,8 @@ namespace slime.jsh.unit.mock.github {
  *
  * ## Tools
  *
- * SLIME also provides a Git credential helper that can look up GitHub tokens in the file system for a project. by (GitHub) user
- * name. Tokens for users must be stored in the project's `local/github/tokens` directory, with the name of the user (so if your
- * GitHub username is `foo`, your token would be pasted into `local/github/tokens/foo`). (Note that you must be careful with your
- * editor not to append a trailing newline.)
- *
- * The credential helper can be specified as `-c credential.helper=[/path/to/slime]/rhino/tools/github/git-credential-github-tokens-directory.bash`.
+ * SLIME also implements a {@link slime.jrunscript.tools.github.credential Git credential helper} that can look up GitHub and GitLab tokens in the file system for a project. by
+ * (GitHub / GitLab) user name.
  */
 namespace slime.jrunscript.tools.github {
 	export interface Context {
