@@ -68,7 +68,7 @@
 				//	TODO	the below credentialHelper code also appears to be in tools/wf/plugin.jsh.js
 
 				//	TODO	is this stuff documented anywhere?
-				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
+				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/git/git-credential-tokens-directory.bash").toString();
 
 				/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
 				var getBranches = {

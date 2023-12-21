@@ -734,6 +734,7 @@ namespace slime.jrunscript.tools.git {
 
 			fifty.load("commands.fifty.ts");
 			fifty.load("oo.fifty.ts");
+			fifty.load("git-credential-tokens-directory.fifty.ts");
 		}
 	//@ts-ignore
 	})(fifty);
