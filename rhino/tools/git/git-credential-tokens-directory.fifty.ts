@@ -6,9 +6,9 @@
 
 /**
  * Provides a Git credential helper that can look up GitHub and GitLab tokens in the file system for a project. by (GitHub / GitLab)
- * user name. Tokens for users must be stored in the project's `local/git-credential` directory, in a folder with the name of the
+ * user name. Tokens for users must be stored in the project's `local/git/credentials` directory, in a folder with the name of the
  * host containing a folder with the name of the user (so if your GitHub username is `foo`, your token would be pasted into
- * `local/git-credential/github.com/foo`). (Note that you must be careful with your editor not to append a trailing newline.)
+ * `local/git/credentials/github.com/foo`). (Note that you must be careful with your editor not to append a trailing newline.)
  *
  * The credential helper can be specified as `-c
  * credential.helper=[/path/to/slime]/rhino/tools/git/git-credential-tokens-directory.bash`.

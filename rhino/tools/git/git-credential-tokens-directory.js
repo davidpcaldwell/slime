@@ -47,7 +47,7 @@
 			return $api.fp.now.invoke(
 				p.project,
 				$api.fp.property("base"),
-				relative("local/git-credential"),
+				relative("local/git/credentials"),
 				relative(p.host),
 				relative(p.username)
 			)
