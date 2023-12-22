@@ -13,7 +13,7 @@
 	function($api,jsh) {
 		var loader = jsh.script.loader;
 
-		/** @type { slime.jrunscript.tools.github.credentials.Script } */
+		/** @type { slime.jrunscript.tools.git.credentials.Script } */
 		var script = loader.script("git-credential-tokens-directory.js");
 
 		var api = script({

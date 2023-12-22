@@ -13,7 +13,7 @@
  * The credential helper can be specified as `-c
  * credential.helper=[/path/to/slime]/rhino/tools/git/git-credential-tokens-directory.bash`.
  */
-namespace slime.jrunscript.tools.github.credentials {
+namespace slime.jrunscript.tools.git.credentials {
 	export interface Context {
 		library: {
 			file: slime.jrunscript.file.Exports

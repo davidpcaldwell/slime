@@ -23,7 +23,9 @@
 			/** @type { slime.jrunscript.tools.git.internal.commands.Script } */
 			commands: $loader.script("commands.js"),
 			/** @type { slime.jrunscript.tools.git.internal.oo.Script } */
-			oo: $loader.script("oo.js")
+			oo: $loader.script("oo.js"),
+			/** @type { slime.jrunscript.tools.git.credentials.Script } */
+			credentials: $loader.script("git-credential-tokens-directory.js")
 		};
 
 		var library = {
@@ -33,7 +35,12 @@
 				}
 			}),
 			results: scripts.results(),
-			commands: scripts.commands()
+			commands: scripts.commands(),
+			credentials: scripts.credentials({
+				library: {
+					file: $context.api.file
+				}
+			})
 		}
 
 		$exports.log = {
@@ -388,7 +395,9 @@
 				directory = directory.parent;
 			}
 			return null;
-		}
+		};
+
+		$exports.credentials = library.credentials;
 	}
 //@ts-ignore
 )($api,$context,$loader,$exports)

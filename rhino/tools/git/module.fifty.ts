@@ -719,6 +719,10 @@ namespace slime.jrunscript.tools.git {
 		install: Function & { GUI: any }
 	}
 
+	export interface Exports {
+		credentials: credentials.Exports
+	}
+
 	(function(fifty: slime.fifty.test.Kit) {
 		fifty.tests.suite = function() {
 			fifty.run(fifty.tests.submoduleStatusCached);

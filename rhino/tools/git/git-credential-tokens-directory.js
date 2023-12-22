@@ -9,8 +9,8 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jrunscript.tools.github.credentials.Context } $context
-	 * @param { slime.loader.Export<slime.jrunscript.tools.github.credentials.Exports> } $export
+	 * @param { slime.jrunscript.tools.git.credentials.Context } $context
+	 * @param { slime.loader.Export<slime.jrunscript.tools.git.credentials.Exports> } $export
 	 */
 	function($api,$context,$export) {
 		var relative = $context.library.file.Location.directory.relativePath;
@@ -41,7 +41,7 @@
 
 		/**
 		 *
-		 * @param { { project: slime.jrunscript.tools.github.credentials.Project, host: string, username: string } } p
+		 * @param { { project: slime.jrunscript.tools.git.credentials.Project, host: string, username: string } } p
 		 */
 		var getTokenLocation = function(p) {
 			return $api.fp.now.invoke(
@@ -71,7 +71,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.tools.github.credentials.Exports["update"] } */
+		/** @type { slime.jrunscript.tools.git.credentials.Exports["update"] } */
 		var update = means(
 			$api.fp.impure.Output.compose([
 				function(p) {
@@ -91,7 +91,7 @@
 			])
 		);
 
-		/** @type { slime.jrunscript.tools.github.credentials.Exports["helper"] } */
+		/** @type { slime.jrunscript.tools.git.credentials.Exports["helper"] } */
 		var helper = function(p) {
 			/** @type { { host: string, password: string, username: string } } */
 			var input = {
