@@ -334,6 +334,11 @@
 						return array.find(f, this);
 					}
 				},
+				some: function(f) {
+					return function(array) {
+						return array.some(f, this);
+					}
+				},
 				map: function(f) {
 					return function(array) {
 						return array.map(f, this);

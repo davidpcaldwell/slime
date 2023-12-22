@@ -213,6 +213,15 @@
 				}
 			},
 			Means: {
+				from: {
+					flat: function(f) {
+						return function(order) {
+							return function(events) {
+								f({ order: order, events: events });
+							}
+						}
+					}
+				},
 				map: function(p) {
 					return function(order) {
 						return function(events) {
