@@ -493,6 +493,9 @@ namespace slime.$api.fp.world {
 	}
 
 	export interface Exports {
+		/**
+		 * @deprecated Replaced by `Meter.mapping`.
+		 */
 		mapping: <P,E,A>(question: world.Meter<P,E,A>, handler?: slime.$api.event.Handlers<E>) => fp.Mapping<P,A>
 	}
 
@@ -571,6 +574,110 @@ namespace slime.$api.fp.world {
 	)(fifty);
 
 	export interface Exports {
+		Meter: {
+			mapping: <S,E,R>(p: {
+				meter: slime.$api.fp.world.Meter<S,E,R>
+				handlers?: slime.$api.event.Handlers<E>
+			}) => slime.$api.fp.Mapping<S,R>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.world.Meter = {};
+			fifty.tests.exports.world.Meter.mapping = function() {
+				var captor = fifty.$api.Events.Captor({
+					got: void(0),
+					returning: void(0)
+				});
+
+				var doubler: Meter<number,{ got: number, returning: number },number> = function(s) {
+					return function(events) {
+						events.fire("got", s);
+						var rv = s * 2;
+						events.fire("returning", rv);
+						return rv;
+					}
+				};
+
+				var mapping = $api.fp.world.Meter.mapping({
+					meter: doubler,
+					handlers: captor.handler
+				});
+
+				verify(captor).events.length.is(0);
+				verify(mapping(2)).is(4);
+				verify(captor).events[0].type.is("got");
+				verify(captor).events[0].detail.evaluate(Number).is(2);
+				verify(captor).events[1].type.is("returning");
+				verify(captor).events[1].detail.evaluate(Number).is(4);
+				verify(mapping(8)).is(16);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		Means: {
+			map: <P,R,E>(p: {
+				order: slime.$api.fp.Mapping<P,R>
+				means: slime.$api.fp.world.Means<R,E>
+			}) => slime.$api.fp.world.Means<P,E>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.world.Means = {};
+			fifty.tests.exports.world.Means.map = function() {
+				var orders: number[] = [];
+
+				var captor = fifty.$api.Events.Captor({
+					got: void(0),
+					length: void(0)
+				});
+
+				var recorder: Means<number,{ got: number, length: number }> = function(s) {
+					return function(events) {
+						events.fire("got", s);
+						orders.push(s);
+						events.fire("length", orders.length);
+					}
+				};
+
+				var mapped = $api.fp.world.Means.map({
+					order: function(s: string): number { return Number(s) * 2; },
+					means: recorder
+				});
+
+				var castToNumber: slime.js.Cast<number> = $api.fp.cast;
+
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+				$api.fp.world.now.action(mapped, "2", captor.handler);
+				verify(orders).length.is(1);
+				verify(orders)[0].is(4);
+				verify(captor).events.length.is(2);
+				verify(captor).events[0].type.is("got");
+				verify(captor).events[0].detail.evaluate(castToNumber).is(4);
+				verify(captor).events[1].type.is("length");
+				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		output: <P,E>(action: world.Means<P,E>, handler?: slime.$api.event.Handlers<E>) => impure.Output<P>
 
 		process: <E>(tell: world.Action<E>, handler?: slime.$api.event.Handlers<E>) => impure.Process
@@ -593,6 +700,8 @@ namespace slime.$api.fp.world {
 			tell: <P,E>(p: P) => (action: world.Means<P,E>) => world.Action<E>
 
 			/**
+			 * @deprecated See `Means.map`.
+			 *
 			 * Transforms an `Action` into an `Action` of a different argument type using a given function to map the
 			 * argument.
 			 *

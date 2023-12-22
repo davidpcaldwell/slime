@@ -13,30 +13,30 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.github.credentials.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var exists = $api.fp.world.mapping($context.library.file.Location.file.exists());
-
 		var relative = $context.library.file.Location.directory.relativePath;
 
-		var readString = $api.fp.world.mapping($context.library.file.Location.file.read.string());
+		var readString = $api.fp.world.Meter.mapping({
+			meter: $context.library.file.Location.file.read.string()
+		});
 
-		var requireParents = $api.fp.world.Action.pipe(
-			$context.library.file.Location.parent()
-		)(
-			$context.library.file.Location.directory.require({ recursive: true })
-		);
+		var requireParents = $api.fp.world.Means.map({
+			order: $context.library.file.Location.parent(),
+			means: $context.library.file.Location.directory.require({ recursive: true })
+		});
 
 		/**
 		 *
 		 * @param { string } string
-		 * @returns { (file: slime.jrunscript.file.Location) => void }
+		 * @returns { slime.$api.fp.impure.Output<slime.jrunscript.file.Location> }
 		 */
 		var setFileContents = function(string) {
-			return function(file) {
-				$api.fp.world.now.action(
-					$context.library.file.Location.file.write(file).string,
-					{ value: string }
-				);
-			}
+			return $api.fp.pipe(
+				$context.library.file.Location.file.write,
+				$api.fp.property("string"),
+				$api.fp.world.Action.output(),
+				$api.fp.impure.Output.process({ value: string }),
+				$api.fp.impure.now.process
+			)
 		};
 
 		/**
@@ -55,22 +55,41 @@
 
 		var readTokenLocation = $api.fp.pipe(getTokenLocation, readString);
 
-		/** @type { slime.jrunscript.tools.github.credentials.Exports["update"] } */
-		var update = function(order) {
-			return function(events) {
-				var destination = getTokenLocation(order);
-				$api.fp.impure.now.process(
-					$api.fp.impure.Process.output(
-						destination,
-						$api.fp.impure.Output.compose([
-							$api.fp.world.output(requireParents),
-							setFileContents(order.token)
-						])
-					)
-				);
-				events.fire("wrote", { username: order.username, destination: destination });
+		/**
+		 * @template { any } O
+		 * @template { any } E
+		 *
+		 * @param { (p: { order: O, events: slime.$api.Events<E> }) => void } f
+		 *
+		 * @returns { slime.$api.fp.world.Means<O,E> }
+		 */
+		var means = function(f) {
+			return function(order) {
+				return function(events) {
+					f({ order: order, events: events });
+				}
 			}
 		};
+
+		/** @type { slime.jrunscript.tools.github.credentials.Exports["update"] } */
+		var update = means(
+			$api.fp.impure.Output.compose([
+				function(p) {
+					var writeToken = $api.fp.impure.Output.compose([
+						$api.fp.world.output(requireParents),
+						setFileContents(p.order.token)
+					]);
+					$api.fp.now.invoke(
+						p.order,
+						getTokenLocation,
+						writeToken
+					);
+				},
+				function(p) {
+					p.events.fire("wrote", { username: p.order.username, destination: getTokenLocation(p.order) });
+				}
+			])
+		);
 
 		/** @type { slime.jrunscript.tools.github.credentials.Exports["helper"] } */
 		var helper = function(p) {

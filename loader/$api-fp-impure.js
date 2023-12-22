@@ -202,6 +202,25 @@
 
 		/** @type { slime.$api.fp.world.Exports } */
 		var world = {
+			Meter: {
+				mapping: function(p) {
+					return function(subject) {
+						return $context.events.handle({
+							implementation: p.meter(subject),
+							handlers: p.handlers
+						})
+					}
+				}
+			},
+			Means: {
+				map: function(p) {
+					return function(order) {
+						return function(events) {
+							p.means(p.order(order))(events);
+						}
+					}
+				}
+			},
 			Process: {
 				action: function(p) {
 					return function() {
