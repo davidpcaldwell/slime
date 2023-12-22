@@ -624,6 +624,9 @@ namespace slime.$api.fp.world {
 
 	export interface Exports {
 		Means: {
+			from: {
+				flat: <O,E>(f: (p: { order: O, events: slime.$api.Events<E> }) => void) => Means<O,E>
+			}
 			map: <P,R,E>(p: {
 				order: slime.$api.fp.Mapping<P,R>
 				means: slime.$api.fp.world.Means<R,E>

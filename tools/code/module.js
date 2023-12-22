@@ -721,7 +721,101 @@
 							files: files
 						};
 					}
-				}
+				},
+				gitignoreLocal: $api.fp.world.Means.from.flat(
+					function(p) {
+						var readString = $api.fp.world.Meter.mapping({
+							meter: $context.library.file.Location.file.read.string()
+						});
+
+						/** @param { { location: slime.jrunscript.file.Location, content: string } } p */
+						var write = function(p) {
+							var write = $api.fp.now.invoke(
+								p.location,
+								$context.library.file.Location.file.write,
+								$api.fp.property("string")
+							);
+
+							$api.fp.world.now.action(
+								write,
+								{ value: p.content }
+							);
+						};
+
+						var gitignore = $api.fp.now.invoke(p.order.base, $context.library.file.Location.directory.relativePath(".gitignore"));
+
+						var snippet = [
+							"# Local work directory for SLIME projects",
+							"/local"
+						];
+
+						//	TODO	this implementation inefficiently reads the contents multiple times
+
+						/** @type { slime.$api.fp.Partial<slime.jrunscript.file.Location,slime.$api.fp.impure.Process> } */
+						var process = $api.fp.switch([
+							$api.fp.Partial.match({
+								if: $api.fp.pipe(
+									readString,
+									$api.fp.property("present"),
+									function(b) { return !b; }
+								),
+								then: function(location) {
+									return function() {
+										p.events.fire("creating", { file: location });
+										var output = snippet.join("\n") + "\n";
+										write({ location: location, content: output });
+									}
+								}
+							}),
+							$api.fp.Partial.match({
+								if: $api.fp.pipe(
+									readString,
+									$api.fp.Maybe.map(
+										$api.fp.pipe(
+											$api.fp.string.split("\n"),
+											$api.fp.Array.some(function(item) {
+												return item == "/local";
+											})
+										)
+									),
+									$api.fp.Maybe.else( $api.fp.impure.Input.value(false) )
+								),
+								then: function(location) {
+									return function() {
+										p.events.fire("found", { file: location, pattern: "/local" });
+									}
+								}
+							}),
+							function(location) {
+								return $api.fp.Maybe.from.some(
+									function() {
+										p.events.fire("updating", { file: location });
+										var input = readString(location);
+										if (input.present) {
+											var output = snippet.concat([
+												""
+											]).join("\n") + "\n" + input.value;
+
+											write({ location: location, content: output });
+										} else {
+											throw new Error("Unreachable.");
+										}
+									}
+								)
+							}
+						]);
+
+						var effect = $api.fp.now.invoke(
+							gitignore,
+							$api.fp.Maybe.impure.exception({
+								try: process,
+								nothing: function(t) { throw new Error("Unreachable: .gitignore classification.") }
+							})
+						);
+
+						$api.fp.impure.now.process(effect);
+					}
+				)
 			},
 			jsapi: {
 				Location: jsapi.Location,

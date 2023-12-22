@@ -525,6 +525,7 @@ namespace slime.$api.fp {
 				<T>(f: fp.Predicate<T>): (ts: T[]) => T[]
 			}
 			find: <T>(f: fp.Predicate<T>) => (ts: T[]) => T | undefined
+			some: <T>(f: fp.Predicate<T>) => (ts: T[]) => boolean
 			map: <T,R>(f: (t: T) => R) => (ts: T[]) => R[]
 		}
 	}

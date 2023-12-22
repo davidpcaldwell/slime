@@ -53,6 +53,26 @@ namespace slime.tools.code {
 					excludes: Excludes
 				}) => Project
 			}
+
+			gitignoreLocal: slime.$api.fp.world.Means<
+				Project,
+				{
+					creating: {
+						file: slime.jrunscript.file.Location
+					}
+
+					//	TODO	could consider line number
+					//	TODO	what about exclusion patterns undoing what is found?
+					found: {
+						file: slime.jrunscript.file.Location
+						pattern: string
+					}
+
+					updating: {
+						file: slime.jrunscript.file.Location
+					}
+				}
+			>
 		}
 	}
 
@@ -62,7 +82,11 @@ namespace slime.tools.code {
 		) {
 			const { $api, jsh } = fifty.global;
 
-			fifty.tests.wip = function() {
+			fifty.tests.Project = fifty.test.Parent();
+
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.Project_from_directory = function() {
 				var project = test.subject.Project.from.directory({
 					root: fifty.jsh.file.relative("../.."),
 					excludes: {
@@ -75,11 +99,36 @@ namespace slime.tools.code {
 							return true;
 						},
 						isSource: function(file) {
+							if (/\.git$/.test(file.pathname)) return $api.fp.Maybe.from.some(false);
 							return $api.fp.Maybe.from.some(true);
 						}
 					}
 				});
 				jsh.shell.console(project.files.map($api.fp.property("pathname")).join(", "));
+			};
+
+			fifty.tests.manual.Project_gitignoreLocal = function() {
+				$api.fp.world.now.action(
+					test.subject.Project.gitignoreLocal,
+					test.subject.Project.from.git({
+						root: jsh.shell.PWD.pathname.os.adapt(),
+						excludes: {
+							descend: $api.fp.mapping.all(true),
+							isSource: $api.fp.mapping.all($api.fp.Maybe.from.some(true))
+						}
+					}),
+					{
+						creating: function(e) {
+							jsh.shell.console("Creating: " + e.detail.file.pathname);
+						},
+						updating: function(e) {
+							jsh.shell.console("Updating: " + e.detail.file.pathname);
+						},
+						found: function(e) {
+							jsh.shell.console("Found: " + e.detail.file.pathname);
+						}
+					}
+				);
 			}
 		}
 	//@ts-ignore
@@ -119,7 +168,7 @@ namespace slime.tools.code {
 
 	export interface File {
 		path: string
-		file: slime.jrunscript.file.world.Location
+		file: slime.jrunscript.file.Location
 	}
 
 	export type isText = (p: slime.tools.code.File) => boolean | undefined
@@ -170,7 +219,7 @@ namespace slime.tools.code {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.File = {};
+			fifty.tests.File = fifty.test.Parent();
 			fifty.tests.File.hasShebang = function() {
 				var wf = fifty.jsh.file.relative("../../wf");
 				var jxa = fifty.jsh.file.relative("../../jxa.bash");
@@ -317,6 +366,7 @@ namespace slime.tools.code {
 			}
 
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.File);
 				fifty.run(fifty.tests.filename);
 				fifty.run(fifty.tests.checkSingleFinalNewline);
 			}
