@@ -51,7 +51,7 @@
 					var filesystem = delegate.filesystem;
 					var target = $context.library.Location.relative(path.join(filesystem.separator.pathname))(delegate);
 					var nodes = $api.fp.world.now.ask(filesystem.listDirectory({ pathname: target.pathname }));
-					if (!nodes.present) throw new Error();
+					if (!nodes.present) throw new Error("Could not list: " + target.pathname);
 
 					/** @type { (pathname: string, question: slime.$api.fp.world.Meter<{ pathname: string },void,slime.$api.fp.Maybe<boolean>>) => boolean } */
 					var presentBoolean = function(pathname,question) {

@@ -319,7 +319,7 @@
 					events.fire("found", installed);
 					var satisfied = isSatisfied(p.version)(installed);
 					if (!satisfied) {
-						events.fire("installing");
+						events.fire("installing", p);
 						modules_install(p)(installation)(events);
 						installed = modules_installed(p.name)(installation)(events);
 						if (installed.present) {

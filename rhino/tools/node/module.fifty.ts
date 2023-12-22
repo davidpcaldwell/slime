@@ -194,7 +194,7 @@ namespace slime.jrunscript.node {
 						/**
 						 * Before installing the given {@link Module}.
 						 */
-						installing: Module
+						installing: { name: string, version?: string }
 
 						/**
 						 * After installing the given {@link Module}.

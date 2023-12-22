@@ -151,7 +151,8 @@ namespace slime.tools.documentation.updater {
 
 			};
 
-			var slime = fifty.jsh.file.relative("../..");
+			//var slime = fifty.jsh.file.relative("../..");
+			var project = jsh.shell.PWD.pathname.toString();
 
 			var timed = function<F extends (...args: any[]) => any>(f: F, callback: (elapsed: number) => void): F {
 				return function() {
@@ -165,9 +166,35 @@ namespace slime.tools.documentation.updater {
 
 			fifty.tests.manual = {};
 
+			fifty.tests.manual.update = function() {
+				var update = subject.test.Update({
+					project: jsh.file.Location.from.os(project)
+				});
+				$api.fp.world.now.tell(
+					update,
+					{
+						started: function(e) {
+							jsh.shell.console("Started: " + JSON.stringify(e.detail));
+						},
+						stderr: function(e) {
+							jsh.shell.console("STDERR (" + e.detail.out + "): " + e.detail.line);
+						},
+						stdout: function(e) {
+							jsh.shell.console("STDOUT (" + e.detail.out + "): " + e.detail.line);
+						},
+						finished: function(e) {
+							jsh.shell.console("Finished: " + JSON.stringify(e.detail));
+						},
+						errored: function(e) {
+							jsh.shell.console("Finished: " + JSON.stringify(e.detail));
+						}
+					}
+				);
+			}
+
 			var createUpdater = function() {
 				return subject.Updater({
-					project: slime.pathname,
+					project: project,
 					events: {
 						initialized: function(e) {
 							jsh.shell.console("Initialized: project=" + e.detail.project);
@@ -209,32 +236,6 @@ namespace slime.tools.documentation.updater {
 				});
 			}
 
-			fifty.tests.manual.update = function() {
-				var update = subject.test.Update({
-					project: slime
-				});
-				$api.fp.world.now.tell(
-					update,
-					{
-						started: function(e) {
-							jsh.shell.console("Started: " + JSON.stringify(e.detail));
-						},
-						stderr: function(e) {
-							jsh.shell.console("STDERR (" + e.detail.out + "): " + e.detail.line);
-						},
-						stdout: function(e) {
-							jsh.shell.console("STDOUT (" + e.detail.out + "): " + e.detail.line);
-						},
-						finished: function(e) {
-							jsh.shell.console("Finished: " + JSON.stringify(e.detail));
-						},
-						errored: function(e) {
-							jsh.shell.console("Finished: " + JSON.stringify(e.detail));
-						}
-					}
-				);
-			}
-
 			fifty.tests.manual.run = function() {
 				var updater = createUpdater();
 				updater.run();
@@ -249,48 +250,50 @@ namespace slime.tools.documentation.updater {
 				updater.run();
 			}
 
-			fifty.tests.manual.typedoc = {
-				timing: function() {
-					timed(
-						function() {
-							$api.fp.world.now.action(
-								subject.test.Update,
-								{
-									project: fifty.jsh.file.relative("../..")
+			fifty.tests.manual.timing = {};
+
+			fifty.tests.manual.timing.typedoc = function() {
+				timed(
+					function() {
+						$api.fp.world.now.action(
+							subject.test.Update,
+							{
+								project: jsh.file.Location.from.os(project)
+							},
+							{
+								started: function(e) {
+									jsh.shell.console("Started: " + JSON.stringify(e.detail));
 								},
-								{
-									started: function(e) {
-										jsh.shell.console("Started: " + JSON.stringify(e.detail));
-									},
-									stdout: function(e) {
-										jsh.shell.console("STDOUT: " + e.detail.line);
-									},
-									stderr: function(e) {
-										jsh.shell.console("STDERR: " + e.detail.line);
-									},
-									finished: function(e) {
-										jsh.shell.console("Finished: " + JSON.stringify(e.detail));
-									},
-									errored: function(e) {
-										jsh.shell.console("Errored: " + JSON.stringify(e.detail));
-									}
+								stdout: function(e) {
+									jsh.shell.console("STDOUT: " + e.detail.line);
+								},
+								stderr: function(e) {
+									jsh.shell.console("STDERR: " + e.detail.line);
+								},
+								finished: function(e) {
+									jsh.shell.console("Finished: " + JSON.stringify(e.detail));
+								},
+								errored: function(e) {
+									jsh.shell.console("Errored: " + JSON.stringify(e.detail));
 								}
-							)
-						},
-						function(elapsed) {
-							jsh.shell.console("TypeDoc took " + (elapsed / 1000).toFixed(3) + " seconds.");
-						}
-					)();
-				}
+							}
+						)
+					},
+					function(elapsed) {
+						jsh.shell.console("TypeDoc took " + (elapsed / 1000).toFixed(3) + " seconds.");
+					}
+				)();
 			}
 
-			fifty.tests.manual.timing = function() {
+			fifty.tests.manual.timing.scans = function() {
 				var git = timed(jsh.project.code.git.lastModified, function(elapsed) {
 					jsh.shell.console("git took " + elapsed + " milliseconds");
-				})({ base: slime.pathname });
+				})({ base: project });
 
 				var documentation = timed(function() {
-					var loader = jsh.file.world.Location.directory.loader.synchronous({ root: fifty.jsh.file.relative("../../local/doc/typedoc") });
+					var loader = jsh.file.Location.directory.loader.synchronous({
+						root: $api.fp.now.invoke(project, jsh.file.Location.from.os, jsh.file.Location.directory.relativePath("local/doc/typedoc"))
+					});
 					return jsh.project.code.directory.lastModified({
 						loader: loader,
 						map: $api.fp.identity
