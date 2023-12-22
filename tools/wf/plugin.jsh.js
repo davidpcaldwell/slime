@@ -688,7 +688,18 @@
 					var version = library.module.Project.getTypescriptVersion(project);
 					var configuration = library.module.Project.getConfigurationLocation(project);
 					$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
-					jsh.shell.tools.tomcat.old.require();
+					$api.fp.world.now.action(jsh.shell.tools.tomcat.require);
+					$api.fp.world.now.action(jsh.shell.tools.node.require, void(0), {
+						found: function(e) {
+							jsh.shell.console("Found Node.js " + e.detail.version + ".");
+						},
+						removed: function(e) {
+							jsh.shell.console("Removed Node.js " + e.detail.version);
+						},
+						installed: function(e) {
+							jsh.shell.console("Installed Node.js " + e.detail.version + ".");
+						}
+					});
 					/** @type { slime.jsh.wf.internal.typescript.typedoc.Invocation } */
 					var typedocInvocation = {
 						stdio: stdio,
@@ -792,6 +803,7 @@
 											jsh.shell.console("Found TypeDoc " + e.detail);
 										},
 										notFound: function(e) {
+											debugger;
 											jsh.shell.console("TypeDoc not found.");
 										},
 										installed: function(e) {

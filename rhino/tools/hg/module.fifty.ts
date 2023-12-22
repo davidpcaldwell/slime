@@ -41,7 +41,7 @@ namespace slime.jrunscript.tools.hg {
 		}
 	}
 
-	interface Hgrc {
+	export interface Hgrc {
 		get: (name?: string) => string | object
 
 		set: (section: string, name: string, value: string) => void
