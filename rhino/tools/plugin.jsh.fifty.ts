@@ -269,6 +269,24 @@ namespace slime.jsh.java.tools {
 						});
 						return rv;
 					};
+
+					this.Location = {
+						file: {
+							read: {
+								string: function(p) {
+									return function(e) {
+										return void(0);
+									}
+								}
+							}
+						},
+						parent: function() { return void(0); },
+						directory: {
+							require: function(p) {
+
+							}
+						}
+					}
 				};
 
 				var MockShellPlugin = function(o) {
