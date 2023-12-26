@@ -55,24 +55,15 @@
 
 		var readTokenLocation = $api.fp.pipe(getTokenLocation, readString);
 
-		/**
-		 * @template { any } O
-		 * @template { any } E
-		 *
-		 * @param { (p: { order: O, events: slime.$api.Events<E> }) => void } f
-		 *
-		 * @returns { slime.$api.fp.world.Means<O,E> }
-		 */
-		var means = function(f) {
-			return function(order) {
-				return function(events) {
-					f({ order: order, events: events });
-				}
+		var get = $api.fp.world.Meter.from.flat(
+			function(p) {
+				var location = getTokenLocation(p.subject);
+				return readString(location);
 			}
-		};
+		)
 
 		/** @type { slime.jrunscript.tools.git.credentials.Exports["update"] } */
-		var update = means(
+		var update = $api.fp.world.Means.from.flat(
 			$api.fp.impure.Output.compose([
 				function(p) {
 					var writeToken = $api.fp.impure.Output.compose([
@@ -131,6 +122,7 @@
 		}
 
 		$export({
+			get: get,
 			helper: helper,
 			update: update
 		});

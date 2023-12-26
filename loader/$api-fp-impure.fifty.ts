@@ -575,6 +575,9 @@ namespace slime.$api.fp.world {
 
 	export interface Exports {
 		Meter: {
+			from: {
+				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.Events<E> }) => R) => Meter<S,E,R>
+			}
 			mapping: <S,E,R>(p: {
 				meter: slime.$api.fp.world.Meter<S,E,R>
 				handlers?: slime.$api.event.Handlers<E>
