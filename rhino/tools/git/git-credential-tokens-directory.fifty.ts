@@ -17,6 +17,7 @@ namespace slime.jrunscript.tools.git.credentials {
 	export interface Context {
 		library: {
 			file: slime.jrunscript.file.Exports
+			shell: slime.jrunscript.shell.Exports
 		}
 	}
 
@@ -34,6 +35,17 @@ namespace slime.jrunscript.tools.git.credentials {
 			void,
 			slime.$api.fp.Maybe<string>
 		>
+
+		user: {
+			get: slime.$api.fp.world.Meter<
+				{
+					host: string
+					username: string
+				},
+				void,
+				slime.$api.fp.Maybe<string>
+			>
+		}
 
 		helper: (p: {
 			operation: string
@@ -65,7 +77,8 @@ namespace slime.jrunscript.tools.git.credentials {
 			var script: Script = fifty.$loader.script("git-credential-tokens-directory.js");
 			return script({
 				library: {
-					file: fifty.global.jsh.file
+					file: fifty.global.jsh.file,
+					shell: fifty.global.jsh.shell
 				}
 			});
 		//@ts-ignore
