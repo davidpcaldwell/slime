@@ -203,6 +203,15 @@
 		/** @type { slime.$api.fp.world.Exports } */
 		var world = {
 			Meter: {
+				from: {
+					flat: function(f) {
+						return function(subject) {
+							return function(events) {
+								return f({ subject: subject, events: events });
+							}
+						}
+					}
+				},
 				mapping: function(p) {
 					return function(subject) {
 						return $context.events.handle({

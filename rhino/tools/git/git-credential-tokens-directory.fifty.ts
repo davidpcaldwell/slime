@@ -25,6 +25,16 @@ namespace slime.jrunscript.tools.git.credentials {
 	}
 
 	export interface Exports {
+		get: slime.$api.fp.world.Meter<
+			{
+				project: Project
+				host: string
+				username: string
+			},
+			void,
+			slime.$api.fp.Maybe<string>
+		>
+
 		helper: (p: {
 			operation: string
 			project: Project
