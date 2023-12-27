@@ -18,7 +18,8 @@
 
 		var api = script({
 			library: {
-				file: jsh.file
+				file: jsh.file,
+				shell: jsh.shell
 			}
 		});
 

@@ -38,7 +38,8 @@
 			commands: scripts.commands(),
 			credentials: scripts.credentials({
 				library: {
-					file: $context.api.file
+					file: $context.api.file,
+					shell: $context.api.shell
 				}
 			})
 		}

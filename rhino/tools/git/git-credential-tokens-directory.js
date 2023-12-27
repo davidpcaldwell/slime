@@ -53,14 +53,36 @@
 			)
 		};
 
+		/**
+		 *
+		 * @param { Parameters<slime.jrunscript.tools.git.credentials.Exports["user"]["get"]>[0] } p
+		 */
+		var getUserTokenLocation = function(p) {
+			return $api.fp.now.invoke(
+				$context.library.shell.HOME.pathname.os.adapt(),
+				relative(".inonit/git/credentials"),
+				relative(p.host),
+				relative(p.username)
+			)
+		}
+
 		var readTokenLocation = $api.fp.pipe(getTokenLocation, readString);
 
+		/** @type { slime.jrunscript.tools.git.credentials.Exports["get"] } */
 		var get = $api.fp.world.Meter.from.flat(
 			function(p) {
 				var location = getTokenLocation(p.subject);
 				return readString(location);
 			}
-		)
+		);
+
+		/** @type { slime.jrunscript.tools.git.credentials.Exports["user"]["get"] } */
+		var userGet = $api.fp.world.Meter.from.flat(
+			function(p) {
+				var location = getUserTokenLocation(p.subject);
+				return readString(location);
+			}
+		);
 
 		/** @type { slime.jrunscript.tools.git.credentials.Exports["update"] } */
 		var update = $api.fp.world.Means.from.flat(
@@ -123,6 +145,9 @@
 
 		$export({
 			get: get,
+			user: {
+				get: userGet
+			},
 			helper: helper,
 			update: update
 		});
