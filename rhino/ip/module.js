@@ -144,7 +144,7 @@
 		var world = {
 			/** @type { slime.jrunscript.ip.World["isReachable"] } */
 			isReachable: function(p) {
-				return $api.fp.world.old.ask(function(events) {
+				return function(events) {
 					try {
 						if (p.port) {
 							var _socket = new Packages.java.net.Socket();
@@ -160,12 +160,12 @@
 						events.fire("error", e);
 						return false;
 					}
-				})
+				};
 			},
 			/** @type { slime.jrunscript.ip.World["tcp"] } */
 			tcp: {
 				isAvailable: function(p) {
-					return $api.fp.world.old.ask(function(events) {
+					return function(events) {
 						var number = p.port.number;
 
 						var debug = function(message) {
@@ -201,7 +201,7 @@
 							if (_server) _server.close();
 							if (_client) _client.close();
 						}
-					});
+					};
 				}
 			}
 		}
@@ -214,7 +214,7 @@
 						return {
 							run: function(p) {
 								var ask = ( (p && p.world) ? p.world : world ).tcp.isAvailable({ port: q.port });
-								return ask();
+								return $api.fp.world.now.ask(ask);
 							}
 						}
 					}
@@ -235,12 +235,18 @@
 										host: endpoint.host,
 										port: endpoint.port
 									});
-									return ask({
-										error: function(e) {
-											if (p && p.error) p.error(e.detail);
-											throw e.detail;
+									return $api.fp.world.now.ask(
+										ask,
+										{
+											error: function(e) {
+												if (p && p.error) {
+													p.error(e.detail);
+												} else {
+													throw e.detail;
+												}
+											}
 										}
-									});
+									);
 								}
 							}
 						}
