@@ -71,6 +71,15 @@ namespace slime.jrunscript.ip {
 		};
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		tcp: exports.Tcp
 
@@ -201,6 +210,26 @@ namespace slime.jrunscript.ip {
 					}
 				);
 				fifty.verify(sampleReachable,"sampleReachable").is(false);
+			};
+
+			fifty.tests.manual.reachable = function() {
+				if (!jsh.shell.environment.HOST) {
+					jsh.shell.console("Required: HOST environment variable specifying host to test.");
+					return;
+				}
+				var reachable = $api.fp.world.now.question(
+					world.isReachable,
+					{
+						timeout: { milliseconds: 1000 },
+						host: { name: jsh.shell.environment.HOST }
+					},
+					{
+						error: function(e) {
+							jsh.shell.console(e.detail.message);
+						}
+					}
+				)
+				jsh.shell.console(jsh.shell.environment.HOST + " reachable? " + reachable);
 			}
 		}
 	//@ts-ignore
