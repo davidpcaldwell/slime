@@ -101,6 +101,7 @@ namespace slime.jrunscript.ip {
 		) {
 			fifty.tests.sandbox = function() {
 				fifty.run(fifty.tests.sandbox.reachable);
+
 				if (fifty.global.jsh.shell.os.name == "Mac OS X") {
 					var canPingSelf: boolean = false;
 					if (canPingSelf) {
@@ -108,6 +109,8 @@ namespace slime.jrunscript.ip {
 					}
 					fifty.run(fifty.tests.sandbox.object.sample);
 				}
+
+				fifty.run(fifty.tests.sandbox.tcp);
 			};
 		}
 	//@ts-ignore
@@ -138,59 +141,65 @@ namespace slime.jrunscript.ip {
 				var after = Date.now();
 				verify(after - before).evaluate(function(p) { return p >= TIMEOUT_IN_SECONDS * 1000; }).is(true);
 			}
-
-			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.sandbox);
-			}
 		}
 	//@ts-ignore
 	)(fifty)
 
 	export interface World {
-		isReachable: (p: {
-			timeout: Timeout
-			host: Host
-			port?: Port
-		}) => slime.$api.fp.world.old.Ask<{
-			error: Error
-		},boolean>
+		isReachable: slime.$api.fp.world.Meter<
+			{
+				timeout: Timeout
+				host: Host
+				port?: Port
+			},
+			{
+				error: Error
+			},
+			boolean
+		>
 	}
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			var $api = fifty.global.$api;
 			var jsh = fifty.global.jsh;
 			var world = jsh.ip.world;
 
-			fifty.tests.sandbox.reachable = function() {
-				fifty.run(fifty.tests.sandbox.reachable.self);
-				fifty.run(fifty.tests.sandbox.reachable.sample);
-			}
+			fifty.tests.sandbox.reachable = fifty.test.Parent();
 
 			fifty.tests.sandbox.reachable.self = function() {
-				var loopbackReachable = world.isReachable({
-					timeout: { milliseconds: 100 },
-					host: { name: "127.0.0.1" }
-				})({
-					error: function(e) {
-						jsh.shell.console(e.detail.message);
+				var loopbackReachable = $api.fp.world.now.question(
+					world.isReachable,
+					{
+						timeout: { milliseconds: 100 },
+						host: { name: "127.0.0.1" }
+					},
+					{
+						error: function(e) {
+							jsh.shell.console(e.detail.message);
+						}
 					}
-				});
+				);
 				fifty.verify(loopbackReachable,"loopbackReachable").is(true);
 			};
 
 			fifty.tests.sandbox.reachable.sample = function() {
 				//	Example IP address; see RFC 5737, apparently
 				//	https://superuser.com/a/698392
-				var sampleReachable = world.isReachable({
-					timeout: { milliseconds: 100 },
-					host: { name: "192.0.2.1" }
-				})({
-					error: function(e) {
-						jsh.shell.console(e.detail.message);
+				var sampleReachable = $api.fp.world.now.question(
+					world.isReachable,
+					{
+						timeout: { milliseconds: 100 },
+						host: { name: "192.0.2.1" }
+					},
+					{
+						error: function(e) {
+							jsh.shell.console(e.detail.message);
+						}
 					}
-				});
+				);
 				fifty.verify(sampleReachable,"sampleReachable").is(false);
 			}
 		}
@@ -256,24 +265,24 @@ namespace slime.jrunscript.ip {
 				var mocks = {
 					success: Mock(
 						function(p) {
-							return $api.fp.world.old.ask(function(events) {
+							return function(events) {
 								return true;
-							})
+							};
 						}
 					),
 					error: Mock(
 						function(p) {
-							return $api.fp.world.old.ask(function(events) {
+							return function(events) {
 								events.fire("error", new Error("mock error message"));
 								return false;
-							})
+							};
 						}
 					),
 					failure: Mock(
 						function(p) {
-							return $api.fp.world.old.ask(function(events) {
+							return function(events) {
 								return false;
-							})
+							};
 						}
 					)
 				}
@@ -330,16 +339,20 @@ namespace slime.jrunscript.ip {
 
 	export interface World {
 		tcp: {
-			isAvailable: (p: {
-				port: Port
-			}) => slime.$api.fp.world.old.Ask<{
-				/**
-				 * An event that supplies underlying exceptions received by the JVM when attempting to open sockets.
-				 * Exceptions are expected in this situation; the implementation tries several operations, using whether
-				 * they succeed to help it determine the state of the port.
-				 */
-				exception: Error
-			}, boolean>
+			/**
+			 * Note that exception events will be fired in response to underlying Java exceptions, but that some exceptions are
+			 * expected in this situation; the implementation tries several operations, using whether they succeed to help it
+			 * determine the state of the port.
+			 */
+			isAvailable: slime.$api.fp.world.Meter<
+				{
+					port: Port
+				},
+				{
+					exception: Error
+				},
+				boolean
+			>
 		}
 	}
 
@@ -370,10 +383,10 @@ namespace slime.jrunscript.ip {
 			const { $api, jsh } = fifty.global;
 			const subject = jsh.ip;
 
-			fifty.tests.sandbox.tcp = {};
+			fifty.tests.sandbox.tcp = fifty.test.Parent();
 			fifty.tests.sandbox.tcp.isAvailable = function() {
 				var ephemeral = jsh.ip.getEphemeralPort();
-				var available = subject.world.tcp.isAvailable({ port: ephemeral });
+				var available = $api.fp.world.input(subject.world.tcp.isAvailable({ port: ephemeral }));
 				var one = available();
 				verify(one).is(true);
 				var _listener = new Packages.java.net.ServerSocket(ephemeral.number);
@@ -391,9 +404,9 @@ namespace slime.jrunscript.ip {
 				) => boolean
 			 ) {
 				var isAvailable: World["tcp"]["isAvailable"] = function(p) {
-					return $api.fp.world.old.ask(function(events) {
+					return function(events) {
 						return implementation(p, events);
-					})
+					}
 				};
 
 				var spy = test.Spy(isAvailable);
@@ -426,4 +439,18 @@ namespace slime.jrunscript.ip {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.reachable);
+				fifty.run(fifty.tests.tcp.isAvailable);
+
+				fifty.run(fifty.tests.sandbox);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }

@@ -142,11 +142,14 @@
 							var user = (p.options["chrome:data"]) ? p.options["chrome:data"] : jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 							var debugPort = (p.options["chrome:debug:vscode"]) ? 9222 : void(0);
 							if (debugPort) {
-								var available = jsh.ip.world.tcp.isAvailable({
-									port: {
-										number: debugPort
+								var available = $api.fp.world.now.question(
+									jsh.ip.world.tcp.isAvailable,
+									{
+										port: {
+											number: debugPort
+										}
 									}
-								})();
+								);
 								if (!available) {
 									jsh.shell.console("Could not open debug port " + debugPort + "; exiting.");
 									jsh.shell.exit(1);
