@@ -215,9 +215,17 @@
 				 * @returns { slime.jsh.script.cli.OptionParser<T> }
 				 */
 				var option = function(parse) {
+					/** @returns { o is slime.jsh.script.cli.OptionWithDefault<string,T> } */
+					var isWithDefault = function(o) { return o["default"]; }
+					/** @returns { o is slime.jsh.script.cli.OptionWithElse<string,T> } */
+					var isWithElse = function(o) { return o["else"]; }
+
 					return function(o) {
 						var rv = function(p) {
-							if (typeof(o.default) != "undefined") p.options[o.longname] = o.default;
+							if (isWithDefault(o)) {
+								//	we set the value to the default; it will be overwritten if specified
+								p.options[o.longname] = o.default;
+							}
 							var args = [];
 							for (var i=0; i<p.arguments.length; i++) {
 								if (o.longname && p.arguments[i] == "--" + o.longname) {
@@ -225,6 +233,9 @@
 								} else {
 									args.push(p.arguments[i]);
 								}
+							}
+							if (typeof(p.options[o.longname]) == "undefined" && isWithElse(o)) {
+								p.options[o.longname] = o.else();
 							}
 							p.arguments = args;
 						};
