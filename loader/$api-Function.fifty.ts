@@ -33,7 +33,7 @@ namespace slime.$api.fp {
 	 */
 	export type Identity<T> = Mapping<T,T>
 
-	export type Lazy<T> = () => T
+	export type Thunk<T> = () => T
 
 	export type Predicate<T> = (t: T) => boolean
 	/** @deprecated Use {@link Predicate}. */

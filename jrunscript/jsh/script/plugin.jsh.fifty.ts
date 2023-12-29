@@ -178,7 +178,12 @@ namespace slime.jsh.script {
 	}
 
 	export namespace cli {
-		export type OptionParser<T> = <O extends object,N extends string>(c: { longname: N, default?: T })
+		export type Option<N extends String,T> = { longname: N }
+		export type OptionWithDefault<N extends string,T> = { longname: N, default?: T }
+		export type OptionWithElse<N extends string,T> = { longname: N, else: slime.$api.fp.Thunk<T> }
+
+		export type OptionParser<T> = <O extends object,N extends string>
+			(c: Option<N,T> | OptionWithDefault<N,T> | OptionWithElse<N,T> )
 			=> (i: cli.Invocation<O>)
 			=> cli.Invocation<O & { [n in N]: T }>
 
@@ -240,6 +245,21 @@ namespace slime.jsh.script {
 					fifty.run(function defaults() {
 						var noDefault = subject.cli.option.number({ longname: "a" });
 						var withDefault = subject.cli.option.number({ longname: "a", default: 2 });
+
+						var one = trial(noDefault, []);
+						var two = trial(noDefault, ["--a", "1"]);
+						var three = trial(withDefault, []);
+						var four = trial(withDefault, ["--a", "1"]);
+
+						fifty.verify(one).options.evaluate.property("a").is(void(0));
+						fifty.verify(two).options.evaluate.property("a").is(1);
+						fifty.verify(three).options.evaluate.property("a").is(2);
+						fifty.verify(four).options.evaluate.property("a").is(1);
+					});
+
+					fifty.run(function elses() {
+						var noDefault = subject.cli.option.number({ longname: "a" });
+						var withDefault = subject.cli.option.number({ longname: "a", else: function() { return 2; } });
 
 						var one = trial(noDefault, []);
 						var two = trial(noDefault, ["--a", "1"]);
