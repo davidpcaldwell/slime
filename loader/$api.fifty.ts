@@ -416,8 +416,6 @@ namespace slime.$api {
 					verify(onMatch.received)[0][0].right.is.type("string");
 				})
 			}
-
-			fifty.tests.wip = fifty.tests.exports.Iterable;
 		}
 	//@ts-ignore
 	)(fifty);
@@ -456,28 +454,20 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace exports {
+		/**
+		 * Methods pertaining to the JavaScriot _object_ construct.
+		 */
+		export interface Object {
+		}
+	}
+
 	export interface Global {
-		Object: {
+		Object: exports.Object & {
 			/** @deprecated Replicates functionality of Object.fromEntries */
 			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
-
-			compose: {
-				<T>(t: T): slime.js.NotReadonly<T>
-				//	TODO	below should be NotReadonly also, but they currently cause problems that need to be worked through.
-				<T,U>(t: T, u: U): T & U
-				<T,U,V>(t: T, u: U, v: V): T & U & V
-				<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
-			}
-			properties: slime.external.lib.es5.Function
-			property: any
-			optional: any
-			values: {
-				/**
-				 * @experimental Completely untested.
-				 */
-				map: <O,T,R>(f: (t: T) => R) => (o: { [x in keyof O]: T } ) => { [x in keyof O]: R }
-			}
 		}
+
 	}
 
 	(
@@ -485,7 +475,14 @@ namespace slime.$api {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports.Object = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
 			const { verify } = fifty;
 			const api = fifty.global.$api;
 
@@ -498,6 +495,51 @@ namespace slime.$api {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace exports {
+		export interface Object {
+			/**
+			 * Takes a list of objects and composes them into a new object. Properties are copied from each source object in
+			 * succession, with values from later objects replacing those from earlier objects.
+			 */
+			compose: {
+				<T>(t: T): slime.js.NotReadonly<T>
+				//	TODO	below should be NotReadonly also, but they currently cause problems that need to be worked through.
+				<T,U>(t: T, u: U): T & U
+				<T,U,V>(t: T, u: U, v: V): T & U & V
+				<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const api = fifty.global.$api;
+
+				fifty.tests.exports.Object.compose = function() {
+					(function() {
+						var composed = api.Object.compose({ a: 1, b: 1 }, { a: 2 });
+						verify(composed).a.is(2);
+						verify(composed).b.is(1);
+					})();
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Object {
+			optional: any
+			properties: slime.external.lib.es5.Function
+			values: {
+				/**
+				 * @experimental Completely untested.
+				 */
+				map: <O,T,R>(f: (t: T) => R) => (o: { [x in keyof O]: T } ) => { [x in keyof O]: R }
+			}
+		}
+	}
 
 	export interface Global {
 		Array: {
