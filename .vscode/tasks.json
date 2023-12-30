@@ -161,7 +161,7 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "(Local only) Project: Run tests locally",
+			"label": "(Local only) Project: Run all project tests locally",
 			"type": "shell",
 			"command": "./wf test",
 			"problemMatcher": []
