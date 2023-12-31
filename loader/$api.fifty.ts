@@ -420,11 +420,18 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty);
 
+	export type Property = { name: string, value: any }
+
+	export type Properties = Omit<Array<Property>,"filter"> & {
+		filter: (f: (element: { name: string, value: any }) => boolean) => Properties
+		object: () => object
+	}
+
 	export interface Global {
-		/** @deprecated Duplicates functionality of Object.entries and (although not documented) Object.fromEntries */
+		/** @deprecated Duplicates functionality of Object.entries and Object.fromEntries */
 		Properties: {
-			(): { name: string, value: any }[]
-			(p: { array: { name: string, value: any }[] } | { object: object }): { name: string, value: any }[]
+			(): Properties
+			(p: { array: Property[] } | { object: object }): Properties
 		}
 	}
 
@@ -568,14 +575,46 @@ namespace slime.$api {
 
 					verify($api.Object.optional(null, "x")).is(void(0));
 				}
-
-				fifty.tests.wip = fifty.tests.exports.Object.optional;
 			}
 		//@ts-ignore
 		)(fifty);
 
 		export interface Object {
-			properties: slime.external.lib.es5.Function
+			/**
+			 * Returns the list of properties for an object.
+			 *
+			 * @deprecated Duplicates logic better-represented by `Object.entries`.
+			 */
+			properties: (p: object) => Properties
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const api = fifty.global.$api;
+
+				fifty.tests.exports.Object.properties = function() {
+					var o = { a: 1, b: 2 };
+					var properties = api.Object.properties(o);
+					verify(properties).length.is(2);
+
+					var rebuilt = properties.object();
+					verify(rebuilt).evaluate.property("a").is(1);
+					verify(rebuilt).evaluate.property("b").is(2);
+
+					var filtered = api.Object.properties(o).filter(function(property) {
+						return property.name == "a";
+					}).object();
+					verify(filtered).evaluate.property("a").is(1);
+					verify(filtered).evaluate.property("b").is(void(0));
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Object {
 			values: {
 				/**
 				 * @experimental Completely untested.
