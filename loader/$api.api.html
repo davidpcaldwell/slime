@@ -32,44 +32,6 @@ END LICENSE
 			</script>
 			<h2>Other APIs</h2>
 			<ul>
-				<li class="function">
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="function">
-							<div class="name">properties</div>
-							<span>Returns the list of properties for an object.</span>
-							<div class="arguments">
-								<div class="label">Arguments</div>
-								<ol>
-									<li class="value">
-										<span class="type">object</span>
-										<span>__DESCRIPTION__</span>
-									</li>
-								</ol>
-							</div>
-							<div class="returns">
-								<div class="label">Returns</div>
-								<span class="type">Array of <a href="#types.property">property</a></span>
-								<span>__DESCRIPTION__</span>
-							</div>
-							<script type="application/x.jsapi#tests">
-								var o = { a: 1, b: 2 };
-								var properties = api.Object.properties(o);
-								verify(properties).length.is(2);
-
-								var rebuilt = properties.object();
-								verify(rebuilt).a.is(1);
-								verify(rebuilt).b.is(2);
-
-								var filtered = api.Object.properties(o).filter(function(property) {
-									return property.name == "a";
-								}).object();
-								verify(filtered).a.is(1);
-								verify(filtered).evaluate.property("b").is(void(0));
-							</script>
-						</li>
-					</ul>
-				</li>
 				<li class="object">
 					<div class="name">Value</div>
 					<span>__DESCRIPTION__</span>
