@@ -31,33 +31,41 @@
 			return model.getSourceFiles(SLIME);
 		};
 
-		var jsapiAnalysis = $api.fp.pipe(
-			function(directory) { return directory.pathname.os.adapt(); },
-			function(location) {
+		/** @typedef { slime.$api.fp.Mapping<{ root: slime.jrunscript.file.Directory, excludes: slime.tools.code.Excludes }, slime.tools.code.JsapiAnalysis> } ProjectAnalysis */
+
+		/** @type { ProjectAnalysis } */
+		var projectJsapiAnalysis = $api.fp.pipe(
+			function(p) {
+				return { root: p.root.pathname.os.adapt(), excludes: p.excludes };
+			},
+			function(p) {
 				return jsh.tools.code.Project.from.directory({
-					root: location,
-					excludes: {
-						descend: function(directory) {
-							var basename = jsh.file.Location.basename(directory);
-							if (basename == ".git") return false;
-							if (basename == "bin") return false;
-							if (basename == "local") return false;
-							return true;
-						},
-						isSource: function(file) {
-							return $api.fp.Maybe.from.some(true);
-						}
-					}
+					root: p.root,
+					excludes: p.excludes
 				});
 			},
 			jsh.tools.code.jsapi.analysis
-		)
+		);
 
 		jsh.script.cli.main(
 			jsh.script.cli.program({
 				commands: {
 					jsapi: function(invocation) {
-						var data = jsapiAnalysis(SLIME);
+						var data = projectJsapiAnalysis({
+							root: SLIME,
+							excludes: {
+								descend: function(directory) {
+									var basename = jsh.file.Location.basename(directory);
+									if (basename == ".git") return false;
+									if (basename == "bin") return false;
+									if (basename == "local") return false;
+									return true;
+								},
+								isSource: function(file) {
+									return $api.fp.Maybe.from.some(true);
+								}
+							}
+						});
 
 						[data.fifty, data.jsapi].forEach(function(group) {
 							jsh.shell.console(group.name + ": " + group.files + " files, " + group.bytes + " bytes");
