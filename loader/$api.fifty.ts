@@ -645,6 +645,52 @@ namespace slime.$api {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const api = fifty.global.$api;
+
+			//	TODO	This value now appears not to exist
+			const HAS_NASHORN_ERROR_HACK = false;
+
+			fifty.tests.exports.Value = fifty.test.Parent();
+
+			fifty.tests.exports.Value.require = function() {
+				verify(api.Value).is.not.equalTo(void(0));
+				var one = {
+					name: "value1",
+					nested: {
+						value: "nested1",
+						method: function() {
+							return "method";
+						}
+					}
+				};
+				var value = api.Value(one,"one");
+
+				//	TODO	make this work?
+				var disableBreakOnExceptions = function(f) { return f; };
+
+				disableBreakOnExceptions(function() {
+					verify(value).evaluate(function() { return this.require(); }).threw.nothing();
+					verify(value).property("foo").evaluate(function() { return this.require() }).threw.type(TypeError);
+					verify(value).property("foo").evaluate(function() { return this.require(); }).threw.message.is("one.foo is required");
+					if (!HAS_NASHORN_ERROR_HACK) {
+						verify(value).evaluate(function() { return this.property("foo","bar"); }).threw.type(TypeError);
+					}
+					verify(value).property("name").evaluate(function() { return this.require() }).threw.nothing();
+					verify(value).property("name","length").evaluate(function() { return this.require() }).threw.nothing();
+					verify(value).property("nested","value").evaluate(function() { return this.require() }).threw.nothing();
+					verify(value).property("nested","value1").evaluate(function() { return this.require() }).threw.type(TypeError);
+					verify(one).nested.method().is("method");
+				})();
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace error {
 		export namespace old {
 			export type Instance<N extends string, P extends {}> = {
