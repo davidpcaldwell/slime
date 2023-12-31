@@ -496,6 +496,8 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty);
 
+	export type es5Object = Object
+
 	export namespace exports {
 		export interface Object {
 			/**
@@ -530,7 +532,49 @@ namespace slime.$api {
 		)(fifty);
 
 		export interface Object {
-			optional: any
+			/**
+			 * Provides an optional chaining API that seeks to be maximally compatible with the [standard
+			 * implementation](https://tc39.es/ecma262/multipage/ecmascript-language-expressions.html#prod-OptionalExpression).
+			 *
+			 * The first argument is an object to dereference. Further arguments are a series of properties to access. If any
+			 * property but the last is missing, `undefined` will be returned. Otherwise, the value of the last property will be
+			 * returned.
+			 *
+			 * @returns The value of the property chain for the given object, or `undefined` if the chain is incomplete.
+			 */
+			optional: {
+				<O extends es5Object, K extends keyof O>(o: O, k: K): O[K]
+				<O extends es5Object, K extends keyof O, L extends keyof O[K]>(o: O, k: K, l: L): O[K][L]
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.Object.optional = function() {
+					var a: { b: { c: number, n: number }, c?: any } = {
+						b: {
+							c: null,
+							n: 2
+						}
+					};
+					verify($api.Object.optional(a, "b", "c")).is(null);
+					verify($api.Object.optional(a, "b", "n")).is(2);
+					verify($api.Object.optional(a, "c", "x")).is(void(0));
+
+					verify($api.Object.optional(null, "x")).is(void(0));
+				}
+
+				fifty.tests.wip = fifty.tests.exports.Object.optional;
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Object {
 			properties: slime.external.lib.es5.Function
 			values: {
 				/**
