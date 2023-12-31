@@ -35,8 +35,17 @@ namespace slime.jsh.unit {
 
 				github: slime.jsh.unit.mock.web.Github
 			}
-			Internet: any
-			Hg: any
+
+			Internet: Exports["mock"]["Web"]
+
+			Hg: {
+				host: new (p: {}) => {
+					port: any
+					start: (p?: {}) => any
+					stop: () => void
+				}
+			}
+
 			git: any
 		}
 	}
