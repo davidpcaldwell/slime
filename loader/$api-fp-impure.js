@@ -179,7 +179,8 @@
 					f(t);
 					return t;
 				}
-			}
+			},
+			Stream: $context.stream
 		}
 
 		var input = function(ask, handler) {

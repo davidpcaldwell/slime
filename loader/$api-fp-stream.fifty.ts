@@ -47,6 +47,7 @@ namespace slime.$api.fp {
 		//@ts-ignore
 		})(fifty);
 	}
+
 	export interface Stream<T> {
 		(): {
 			next: Maybe<T>,
@@ -172,8 +173,6 @@ namespace slime.$api.fp {
 					verify(collected)[0].is(0);
 					verify(collected)[2].is(4);
 				}
-
-				fifty.tests.wip = fifty.tests.exports.map;
 			}
 		//@ts-ignore
 		)(fifty);
@@ -331,12 +330,61 @@ namespace slime.$api.fp {
 		Stream: stream.Exports
 	}
 
+
+	export namespace stream {
+		export namespace impure {
+			export interface Exports {
+				forEach: <T>(f: slime.$api.fp.impure.Output<T>) => slime.$api.fp.impure.Output<Stream<T>>
+			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api } = fifty.global;
+
+					const fixtures = slime.$api.fp.test.fixtures;
+
+					const subject = $api.fp.impure.Stream;
+
+					fifty.tests.impure = fifty.test.Parent();
+
+					fifty.tests.impure.forEach = function() {
+						var buffer: number[] = [];
+
+						var four = fixtures.streamTo(4);
+
+						subject.forEach(function(number: number) {
+							buffer.push(number*2);
+						})(four);
+
+						verify(buffer).length.is(4);
+
+						verify(buffer)[0].is(0);
+						verify(buffer)[1].is(2);
+						verify(buffer)[2].is(4);
+						verify(buffer)[3].is(6);
+					};
+				}
+			//@ts-ignore
+			)(fifty);
+		}
+	}
+
+	export namespace impure {
+		export interface Exports {
+			Stream: stream.impure.Exports
+		}
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
+				fifty.run(fifty.tests.impure);
 			};
 		}
 	//@ts-ignore
@@ -351,7 +399,10 @@ namespace slime.$api.fp.internal.stream {
 		}
 	}
 
-	export type Exports = slime.$api.fp.Exports["Stream"];
+	export type Exports = {
+		exports: slime.$api.fp.stream.Exports
+		impure: slime.$api.fp.stream.impure.Exports
+	};
 
 	export type Script = slime.loader.Script<Context,Exports>
 }

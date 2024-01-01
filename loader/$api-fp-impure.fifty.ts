@@ -856,6 +856,7 @@ namespace slime.$api.fp.world {
 
 namespace slime.$api.fp.internal.impure {
 	export interface Context {
+		stream: slime.$api.fp.stream.impure.Exports
 		events: slime.runtime.internal.events.Exports
 	}
 
