@@ -19,10 +19,6 @@
 			impure: $context.script("$api-fp-impure.js")
 		};
 
-		var impure = code.impure({
-			events: $context.events
-		});
-
 		var identity = function(v) { return v; };
 
 		var Maybe = (
@@ -93,6 +89,18 @@
 				return rv;
 			}
 		};
+
+		var stream = code.Stream({
+			$f: {
+				Maybe: Maybe,
+				pipe: pipe
+			}
+		});
+
+		var impure = code.impure({
+			events: $context.events,
+			stream: stream.impure
+		});
 
 		var property = function(name) {
 			return function(v) {
@@ -322,7 +330,7 @@
 					Maybe: Maybe,
 					pipe: pipe
 				}
-			}),
+			}).exports,
 			Array: {
 				filter: function(f) {
 					return function(array) {
