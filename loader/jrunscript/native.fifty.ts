@@ -207,13 +207,21 @@ namespace slime.jrunscript {
 				}
 
 				export interface Set<T = slime.jrunscript.native.java.lang.Object> {
-					iterator(): Iterator
+					iterator(): Iterator<T>
 					contains(element: any): boolean
 				}
 
-				export interface Map extends java.lang.Object {
-					keySet(): Set
-					get(key: any): any
+				export interface Map<K = slime.jrunscript.native.java.lang.Object, V = slime.jrunscript.native.java.lang.Object> extends java.lang.Object {
+					keySet(): Set<K>
+					entrySet(): Set<Map.Entry<K,V>>
+					get(key: K): V
+				}
+
+				export namespace Map {
+					export interface Entry<K,V> {
+						getKey: () => K
+						getValue: () => V
+					}
 				}
 
 				export namespace logging {
@@ -228,7 +236,24 @@ namespace slime.jrunscript {
 					export interface Level extends java.lang.Object {
 					}
 				}
+
+				export namespace jar {
+					export interface JarFile extends slime.jrunscript.native.java.lang.Object {
+						getManifest: () => Manifest
+						entries: () => any
+						getInputStream: (ze: any) => slime.jrunscript.native.java.io.InputStream
+					}
+
+					export interface Manifest extends slime.jrunscript.native.java.lang.Object {
+						getMainAttributes: () => Attributes
+						getEntries: () => slime.jrunscript.native.java.util.Map<slime.jrunscript.native.java.lang.String,Attributes>
+					}
+
+					export interface Attributes extends slime.jrunscript.native.java.util.Map {
+					}
+				}
 			}
+
 			export namespace math {
 				export interface BigDecimal extends slime.jrunscript.native.java.lang.Object {
 				}
@@ -236,6 +261,7 @@ namespace slime.jrunscript {
 				export interface MathContext extends slime.jrunscript.native.java.lang.Object {
 				}
 			}
+
 			export namespace awt {
 				export interface Desktop {
 					browse: (uri: slime.jrunscript.native.java.net.URI) => void
@@ -508,7 +534,9 @@ namespace slime.jrunscript {
 				Map: any
 				Date: any
 				zip: any
-				jar: any
+				jar: {
+					JarFile: JavaClass<slime.jrunscript.native.java.util.jar.JarFile>
+				}
 				UUID: any
 				TimeZone: any
 				Calendar: any

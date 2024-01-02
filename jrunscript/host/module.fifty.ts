@@ -177,7 +177,7 @@ namespace slime.jrunscript.host {
 			fifty.tests.exports.Environment = function() {
 				const { subject } = internal.test;
 
-				var _Environment = function(o: object, caseSensitive: boolean) {
+				var _Environment = function(o: { [key: string]: string }, caseSensitive: boolean) {
 					return subject.invoke({
 						method: {
 							class: Packages.inonit.system.OperatingSystem.Environment,
@@ -305,7 +305,7 @@ namespace slime.jrunscript.host {
 		 *
 		 * @param p
 		 */
-		Map(p: { object: object }): slime.jrunscript.native.java.util.Map
+		Map: <V>(p: { object: { [key: string]: V } }) => slime.jrunscript.native.java.util.Map<string,V>
 	}
 
 	(
@@ -315,7 +315,7 @@ namespace slime.jrunscript.host {
 			fifty.tests.exports.Map = function() {
 				const { subject } = internal.test;
 
-				var _map: slime.jrunscript.native.java.util.Map = subject.Map({ object: { foo: "bar" } } );
+				var _map: slime.jrunscript.native.java.util.Map<string,string> = subject.Map({ object: { foo: "bar" } } );
 				fifty.verify(String(_map.get("foo"))).is("bar");
 				fifty.verify(String(_map.get("baz"))).is("null");
 
