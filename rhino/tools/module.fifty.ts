@@ -6,10 +6,7 @@
 
 namespace slime.jrunscript.java.tools {
 	export interface Context {
-		api: {
-			js: {
-				constant: any
-			}
+		library: {
 			java: slime.jrunscript.host.Exports
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
@@ -22,13 +19,22 @@ namespace slime.jrunscript.java.tools {
 
 			const script: Script = fifty.$loader.script("module.js");
 			return script({
-				api: {
+				library: {
 					file: jsh.file,
 					java: jsh.java,
-					js: jsh.js,
 					shell: jsh.shell
 				}
 			});
+		//@ts-ignore
+		})(fifty);
+
+		export const jar = (function(fifty: slime.fifty.test.Kit) {
+			var jsh = fifty.global.jsh;
+
+			return jsh.file.Searchpath([
+				jsh.shell.java.home.getRelativePath("bin"),
+				jsh.shell.java.home.parent.getRelativePath("bin")
+			]).getCommand("jar");
 		//@ts-ignore
 		})(fifty);
 	}
@@ -165,6 +171,64 @@ namespace slime.jrunscript.java.tools {
 	//@ts-ignore
 	)(Packages,fifty);
 
+	export interface Manifest {
+		main: {
+			[name: string]: string
+		}
+
+		entries: {
+			[name: string]: {
+				[name: string]: string
+			}
+		}
+	}
+
+	export interface Exports {
+		jar: {
+			manifest: slime.$api.fp.world.Meter<
+				{
+					pathname: string
+				},
+				void,
+				Manifest
+			>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.jar = function() {
+				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				jsh.shell.run({
+					command: test.jar,
+					arguments: [
+						"cfm",
+						TMP.getRelativePath("foo.jar"),
+						//	https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#Manifest-Overview
+						fifty.jsh.file.object.getRelativePath("test/manifest.txt"),
+						"java"
+					],
+					directory: fifty.jsh.file.object.getRelativePath("test").directory
+				});
+
+				var manifest = $api.fp.world.now.ask(
+					test.subject.jar.manifest({
+						pathname: TMP.getRelativePath("foo.jar").toString()
+					})
+				);
+
+				verify(manifest).main.evaluate.property("Foo").is("Bar");
+				verify(manifest).main.evaluate.property("Baz").is(void(0));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		/**
 		 * Creates an object representing a [JAR file](https://docs.oracle.com/javase/8/docs/technotes/guides/jar/index.html).
@@ -197,15 +261,10 @@ namespace slime.jrunscript.java.tools {
 			const { jsh } = fifty.global;
 			const module = test.subject;
 
-			fifty.tests.jar = function() {
-				var jar = jsh.file.Searchpath([
-					jsh.shell.java.home.getRelativePath("bin"),
-					jsh.shell.java.home.parent.getRelativePath("bin")
-				]).getCommand("jar");
-
+			fifty.tests.Jar = function() {
 				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				jsh.shell.run({
-					command: jar,
+					command: test.jar,
 					arguments: [
 						"cfm",
 						TMP.getRelativePath("foo.jar"),
@@ -235,6 +294,7 @@ namespace slime.jrunscript.java.tools {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.javac);
 				fifty.run(fifty.tests.jar);
+				fifty.run(fifty.tests.Jar);
 			}
 		}
 	//@ts-ignore

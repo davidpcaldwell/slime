@@ -9,7 +9,7 @@
 		$export({
 			OperatingSystem: {
 				Environment: {
-					create: function(p: { values: object, caseSensitive: boolean }): slime.jrunscript.native.inonit.system.OperatingSystem.Environment {
+					create: function(p: { values: { [key: string]: string }, caseSensitive: boolean }): slime.jrunscript.native.inonit.system.OperatingSystem.Environment {
 						return jsh.java.invoke({
 							method: {
 								class: Packages.inonit.system.OperatingSystem.Environment,

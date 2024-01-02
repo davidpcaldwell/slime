@@ -463,6 +463,18 @@ namespace slime.$api.fp.world {
 		: never
 	)
 
+	export type Reading<
+		X extends slime.$api.fp.world.Meter<any,any,any>
+	> = (
+		X extends slime.$api.fp.world.Meter<
+			infer S,
+			infer E,
+			infer R
+		>
+		? R
+		: never
+	)
+
 	export type Order<
 		X extends slime.$api.fp.world.Means<any,any>
 	> = (

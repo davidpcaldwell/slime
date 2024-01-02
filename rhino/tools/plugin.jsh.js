@@ -47,8 +47,7 @@
 				/** @type { slime.jrunscript.java.tools.Script } */
 				var module = $loader.script("module.js");
 				jsh.java.tools = Object.assign(module({
-					api: {
-						js: jsh.js,
+					library: {
 						java: jsh.java,
 						file: jsh.file,
 						shell: jsh.shell
