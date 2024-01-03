@@ -314,6 +314,13 @@
 						var present = v.if(p);
 						return present ? Maybe.from.some(v.then(p)) : Maybe.from.nothing();
 					}
+				},
+				else: function(c) {
+					return function(p) {
+						var maybe = c.partial(p);
+						if (maybe.present) return maybe.value;
+						return c.else(p);
+					}
 				}
 			},
 			switch: function(cases) {

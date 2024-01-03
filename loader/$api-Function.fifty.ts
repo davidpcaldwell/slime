@@ -419,48 +419,99 @@ namespace slime.$api.fp {
 		then: Mapping<P,R>
 	}
 
-	export interface Exports {
-		Partial: {
-			match: <P,R>(p: Match<P,R>) => Partial<P,R>
+	export namespace exports {
+		export interface Partial {
 		}
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify, run } = fifty;
-			var subject = fifty.global.$api.fp.Partial;
+	export interface Exports {
+		Partial: exports.Partial
+	}
 
-			fifty.tests.exports.Partial = fifty.test.Parent();
+	export namespace exports {
+		export interface Partial {
+			match: <P,R>(p: Match<P,R>) => fp.Partial<P,R>
+		}
 
-			fifty.tests.exports.Partial.match = function() {
-				var ifOddThenDouble: Match<number,number> = {
-					if: function(n) {
-						return n % 2 == 1;
-					},
-					then: function(n) {
-						return n * 2;
-					}
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify, run } = fifty;
+				var subject = fifty.global.$api.fp.Partial;
+
+				fifty.tests.exports.Partial = fifty.test.Parent();
+
+				fifty.tests.exports.Partial.match = function() {
+					var ifOddThenDouble: Match<number,number> = {
+						if: function(n) {
+							return n % 2 == 1;
+						},
+						then: function(n) {
+							return n * 2;
+						}
+					};
+
+					var f = subject.match(ifOddThenDouble);
+
+					run(function odd() {
+						var x = f(1);
+						verify(x).present.is(true);
+						if (x.present) verify(x).value.is(2);
+					});
+
+					run(function even() {
+						var x = f(2);
+						verify(x).present.is(false);
+					});
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Partial {
+			else: <P,R>(p: {
+				partial: fp.Partial<P,R>
+				else: Mapping<P,R>
+			}) => Mapping<P,R>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				var subject = fifty.global.$api.fp.Partial;
+
+				fifty.tests.exports.Partial.else = function() {
+					var ifOddThenDouble: Match<number,number> = {
+						if: function(n) {
+							return n % 2 == 1;
+						},
+						then: function(n) {
+							return n * 2;
+						}
+					};
+
+					var partial = subject.match(ifOddThenDouble);
+
+					var total = subject.else({
+						partial: partial,
+						else: function(n) { return n * 3 }
+					});
+
+					verify(1).evaluate(total).is(2);
+					verify(2).evaluate(total).is(6);
 				};
 
-				var f = subject.match(ifOddThenDouble);
-
-				run(function odd() {
-					var x = f(1);
-					verify(x).present.is(true);
-					if (x.present) verify(x).value.is(2);
-				});
-
-				run(function even() {
-					var x = f(2);
-					verify(x).present.is(false);
-				});
-			};
-		}
-	//@ts-ignore
-	)(fifty);
-
+				fifty.tests.wip = fifty.tests.exports.Partial.else;
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
 	export interface Exports {
 		switch: <P,R>(cases: Partial<P,R>[]) => Partial<P,R>
@@ -507,7 +558,6 @@ namespace slime.$api.fp {
 		}
 	//@ts-ignore
 	)(fifty);
-
 
 	(
 		function(
