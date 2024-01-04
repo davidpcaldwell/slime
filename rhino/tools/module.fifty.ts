@@ -183,6 +183,8 @@ namespace slime.jrunscript.java.tools {
 		}
 	}
 
+	type Entry = any
+
 	export interface Exports {
 		jar: {
 			manifest: slime.$api.fp.world.Meter<
@@ -191,6 +193,14 @@ namespace slime.jrunscript.java.tools {
 				},
 				void,
 				Manifest
+			>
+
+			entries: slime.$api.fp.world.Meter<
+				{
+					pathname: string
+				},
+				void,
+				slime.$api.fp.Stream<Entry>
 			>
 		}
 	}
