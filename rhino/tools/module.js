@@ -170,8 +170,37 @@
 					}
 				},
 				entries: function(o) {
-					var _jarFile = _open(o.pathname);
-					throw new Error("TODO");
+					return function(events) {
+						var _jarFile = _open(o.pathname);
+						var _iterator = _jarFile.stream().iterator();
+
+						/** @type { slime.$api.fp.Mapping<slime.jrunscript.native.java.util.jar.JarEntry,slime.jrunscript.java.tools.jar.Entry> } */
+						var entry = function(_entry) {
+							if (_entry.isDirectory()) {
+								return {
+									path: String(_entry.getName()),
+									directory: true
+								}
+							} else {
+								return {
+									path: String(_entry.getName()),
+									directory: false,
+									read: function(events) {
+										var _input = _jarFile.getInputStream(_entry);
+										return $context.library.io.InputStream.from.java(_input);
+									}
+								}
+							}
+						}
+
+						/** @type { slime.$api.fp.Stream<slime.jrunscript.java.tools.jar.AnyEntry> } */
+						return function f() {
+							return {
+								next: (_iterator.hasNext()) ? $api.fp.Maybe.from.some(entry(_iterator.next())) : $api.fp.Maybe.from.nothing(),
+								remaining: f
+							}
+						}
+					}
 				}
 			};
 		})();

@@ -8,6 +8,7 @@ namespace slime.jrunscript.java.tools {
 	export interface Context {
 		library: {
 			java: slime.jrunscript.host.Exports
+			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 		}
@@ -20,6 +21,7 @@ namespace slime.jrunscript.java.tools {
 			const script: Script = fifty.$loader.script("module.js");
 			return script({
 				library: {
+					io: jsh.io,
 					file: jsh.file,
 					java: jsh.java,
 					shell: jsh.shell
@@ -171,19 +173,37 @@ namespace slime.jrunscript.java.tools {
 	//@ts-ignore
 	)(Packages,fifty);
 
-	export interface Manifest {
-		main: {
-			[name: string]: string
-		}
-
-		entries: {
-			[name: string]: {
+	export namespace jar {
+		export interface Manifest {
+			main: {
 				[name: string]: string
 			}
-		}
-	}
 
-	type Entry = any
+			entries: {
+				[name: string]: {
+					[name: string]: string
+				}
+			}
+		}
+
+		export interface AnyEntry {
+			path: string
+			directory: boolean
+		}
+
+		export interface DirectoryEntry extends AnyEntry {
+			path: string
+			directory: true
+		}
+
+		export interface FileEntry extends AnyEntry {
+			path: string
+			directory: false
+			read: slime.$api.fp.world.Question<void,slime.jrunscript.runtime.io.InputStream>
+		}
+
+		export type Entry = FileEntry | DirectoryEntry
+	}
 
 	export interface Exports {
 		jar: {
@@ -192,7 +212,7 @@ namespace slime.jrunscript.java.tools {
 					pathname: string
 				},
 				void,
-				Manifest
+				jar.Manifest
 			>
 
 			entries: slime.$api.fp.world.Meter<
@@ -200,7 +220,7 @@ namespace slime.jrunscript.java.tools {
 					pathname: string
 				},
 				void,
-				slime.$api.fp.Stream<Entry>
+				slime.$api.fp.Stream<jar.AnyEntry>
 			>
 		}
 	}
@@ -214,6 +234,7 @@ namespace slime.jrunscript.java.tools {
 
 			fifty.tests.jar = function() {
 				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
 				jsh.shell.run({
 					command: test.jar,
 					arguments: [
@@ -234,6 +255,29 @@ namespace slime.jrunscript.java.tools {
 
 				verify(manifest).main.evaluate.property("Foo").is("Bar");
 				verify(manifest).main.evaluate.property("Baz").is(void(0));
+
+				var entries = $api.fp.world.now.ask(
+					test.subject.jar.entries({ pathname: TMP.getRelativePath("foo.jar").toString() })
+				);
+
+				var array = $api.fp.Stream.collect(entries);
+				//	META-INF/, META-INF/MANIFEST.MF, java/, java/Hello.java
+				verify(array).length.is(4);
+				verify(array)[0].path.is("META-INF/");
+				verify(array)[0].directory.is(true);
+				verify(array)[0].evaluate.property("read").is(void(0));
+
+				var src = $api.fp.world.now.ask(jsh.io.InputStream.string($api.fp.world.now.ask( (array[3] as slime.jrunscript.java.tools.jar.FileEntry).read)));
+
+				var original = $api.fp.world.now.question(
+					jsh.file.Location.file.read.string(),
+					fifty.jsh.file.relative("test/java/Hello.java")
+				);
+
+				verify(original).present.is(true);
+				if (original.present) {
+					verify(src).is(original.value);
+				}
 			}
 		}
 	//@ts-ignore

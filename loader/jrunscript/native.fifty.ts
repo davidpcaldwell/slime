@@ -237,10 +237,28 @@ namespace slime.jrunscript {
 					}
 				}
 
+				export namespace stream {
+					export interface Stream<T> extends slime.jrunscript.native.java.lang.Object {
+						iterator: () => Iterator<T>
+					}
+				}
+
+				export namespace zip {
+					export interface ZipEntry extends slime.jrunscript.native.java.lang.Object {
+						getName: () => slime.jrunscript.native.java.lang.String
+						isDirectory: () => boolean
+					}
+				}
+
 				export namespace jar {
+					export interface JarEntry extends slime.jrunscript.native.java.util.zip.ZipEntry {
+
+					}
+
 					export interface JarFile extends slime.jrunscript.native.java.lang.Object {
 						getManifest: () => Manifest
 						entries: () => any
+						stream: () => slime.jrunscript.native.java.util.stream.Stream<JarEntry>
 						getInputStream: (ze: any) => slime.jrunscript.native.java.io.InputStream
 					}
 

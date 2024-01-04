@@ -75,20 +75,7 @@ namespace slime.jrunscript.io {
 		}
 		mime: slime.jrunscript.io.mime.Exports
 		archive: {
-			zip: {
-				encode: (p: {
-					entries: { path: string, resource: slime.jrunscript.runtime.old.Resource }[]
-					stream: slime.jrunscript.runtime.io.OutputStream
-				}) => void
-
-				decode: (p: {
-					stream: slime.jrunscript.runtime.io.InputStream
-					output: {
-						file: (p: { path: string }) => slime.jrunscript.runtime.io.OutputStream
-						directory: (p: { path: string }) => void
-					}
-				}) => void
-			}
+			zip: slime.jrunscript.io.zip.Exports
 		}
 		grid: any
 		system: slime.jrunscript.runtime.io.Exports["system"]
