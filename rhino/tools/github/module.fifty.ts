@@ -23,11 +23,6 @@ namespace slime.jsh.unit.mock.github {
  * `rhino/tools/github/tools/types.jsh.js`. This emits `rhino/tools/github/tools/github-rest.d.ts`, which **should** be committed
  * to source control (as it contains the latest GitHub API, generated at the time of running the program). The generator output
  * is based on the GitHub [OpenAPI description](https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json).
- *
- * ## Tools
- *
- * SLIME also implements a {@link slime.jrunscript.tools.github.credential Git credential helper} that can look up GitHub and GitLab tokens in the file system for a project. by
- * (GitHub / GitLab) user name.
  */
 namespace slime.jrunscript.tools.github {
 	export interface Context {

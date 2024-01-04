@@ -21,7 +21,6 @@
 				/** @type { slime.jsh.unit.mock } */
 				jsh.unit.mock = {
 					Web: void(0),
-					Internet: void(0),
 					Hg: void(0),
 					git: void(0)
 				};
@@ -160,7 +159,6 @@
 					};
 				}, { bitbucket: void(0), github: void(0) });
 				if (jsh.httpd.Tomcat) jsh.unit.mock.Web = Web;
-				if (jsh.httpd.Tomcat) jsh.unit.mock.Internet = $api.deprecate(jsh.unit.mock.Web);
 
 				/** @type { slime.jsh.unit.Exports["mock"]["Web"]["bitbucket"] } */
 				var MockBitbucketApi = function(o) {
@@ -379,7 +377,6 @@
 					return rv;
 				};
 				if (jsh.unit.mock.Web) jsh.unit.mock.Web.bitbucket = MockBitbucketApi;
-				if (jsh.unit.mock.Internet) jsh.unit.mock.Internet.bitbucket = $api.deprecate(jsh.unit.mock.Web.bitbucket);
 
 				jsh.unit.mock.Hg = {
 					/** @constructor */
