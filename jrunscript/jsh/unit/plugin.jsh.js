@@ -385,7 +385,7 @@
 			}
 		});
 
-		plugin($loader.value("plugin.jsh.web.js", { jsh: jsh }));
+		plugin($loader.value("plugin.jsh.web.js", { jsh: jsh, $loader: $loader }));
 	}
 //@ts-ignore
 )(Packages,$slime,$api,jsh,$loader,plugin);
