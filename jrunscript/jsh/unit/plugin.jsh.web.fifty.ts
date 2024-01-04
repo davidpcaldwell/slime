@@ -16,25 +16,15 @@ namespace slime.jsh.unit {
 					trace: boolean
 				}): slime.jsh.unit.mock.Web
 
-				bitbucket: (o: {
-					loopback: boolean
-
-					/**
-					 * An object whose properties represent Bitbucket users, and whose properties' properties represent
-					 * repositories.
-					 */
-					src: {
-						[user: string]: {
-							[repository: string]: {
-								directory: any
-								downloads: any
-							}
-						}
-					}
-				}) => slime.jsh.unit.mock.handler
+				/**
+				 * @deprecated Replaced by Exports["mock"]["bitbucket"].
+				 */
+				bitbucket: slime.jsh.unit.bitbucket.Exports
 
 				github: slime.jsh.unit.mock.web.Github
 			}
+
+			bitbucket: slime.jsh.unit.bitbucket.Exports
 
 			Hg: {
 				host: new (p: {}) => {
