@@ -12,6 +12,11 @@
  * repository), `command` (executing a specific {@link slime.jrunscript.tools.git.Command} toward that repository), `argument` (passing
  * specific information to that command), and finally, `run`, which executes the command, optionally supplying a world
  * implementation and event handlers for the `stdout` and `stderr` streams.
+ *
+ * ## Tools
+ *
+ * SLIME also implements a {@link slime.jrunscript.tools.git.credential Git credential helper} that can look up tokens or passwords
+ * in the file system for a project. by (GitHub / GitLab) user name.
  */
 namespace slime.jrunscript.tools.git {
 	export interface Commit {
