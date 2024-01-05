@@ -15,10 +15,10 @@
 	function($api,$context,$export) {
 		/**
 		 *
-		 * @param { slime.jrunscript.file.world.Location } repository
+		 * @param { slime.jrunscript.file.Location } repository
 		 * @returns { (path: string) => slime.tools.code.File }
 		 */
-		function gitPathToSourceFile(repository) {
+		function gitPathToFile(repository) {
 			return function(path) {
 				return {
 					path: path,
@@ -220,7 +220,7 @@
 					.run()
 				;
 
-				var listed = tracked.concat(untracked).map(gitPathToSourceFile(p.repository));
+				var listed = tracked.concat(untracked).map(gitPathToFile(p.repository));
 
 				var rv = [];
 				for (var i=0; i<listed.length; i++) {
@@ -722,6 +722,16 @@
 						};
 					}
 				},
+				files: function(project) {
+					return project.files.map(function(location) {
+						//	TODO	new construct for this, where we can define an object with properties via functions taking the
+						//			argument as an argument?
+						return {
+							path: $context.library.file.Location.directory.relativeTo(project.base)(location),
+							file: location
+						}
+					});
+				},
 				gitignoreLocal: $api.fp.world.Means.from.flat(
 					function(p) {
 						var readString = $api.fp.world.Meter.mapping({
@@ -824,23 +834,50 @@
 				},
 				analysis: jsapiAnalysis
 			},
-			File: {
-				hasShebang: hasShebang,
-				isText: function() {
-					return function(file) {
-						return function(events) {
-							var basename = getBasename(file.file);
-							var byExtension = filename.isText(basename);
-							if (typeof(byExtension) == "boolean") return $api.fp.Maybe.from.some(byExtension);
-							if (basename.indexOf(".") == -1) {
-								var rv = hasShebang()(file)(events);
-								if (rv.present) return rv;
+			File: (
+				function() {
+					var isJavascript = function(file) {
+						return /\.js$/.test(file.path)
+					};
+
+					var read = $api.fp.Maybe.impure.exception({
+						/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>> } */
+						try: $api.fp.world.Meter.mapping({ meter: $context.library.file.Location.file.read.string() }),
+						nothing: function(location) { return new Error("Could not read: " + location.pathname) }
+					});
+
+					return {
+						hasShebang: hasShebang,
+						isText: function() {
+							return function(file) {
+								return function(events) {
+									var basename = getBasename(file.file);
+									var byExtension = filename.isText(basename);
+									if (typeof(byExtension) == "boolean") return $api.fp.Maybe.from.some(byExtension);
+									if (basename.indexOf(".") == -1) {
+										var rv = hasShebang()(file)(events);
+										if (rv.present) return rv;
+									}
+									return $api.fp.Maybe.from.nothing();
+								}
 							}
-							return $api.fp.Maybe.from.nothing();
+						},
+						isJavascript: isJavascript,
+						isTypescript: function(file) {
+							return (/\.ts$/.test(file.path));
+						},
+						javascript: {
+							hasTypeChecking: function(file) {
+								if (isJavascript(file)) {
+									var code = read(file.file);
+									return $api.fp.Maybe.from.some(code.indexOf("ts-check") != -1);
+								}
+								return $api.fp.Maybe.from.nothing();
+							}
 						}
-					}
+					};
 				}
-			},
+			)(),
 			filename: filename,
 			directory: directory,
 			defaults: defaults,

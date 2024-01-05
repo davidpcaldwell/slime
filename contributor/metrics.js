@@ -42,10 +42,17 @@
 			},
 			SourceFile: (
 				function() {
-					/** @type { slime.project.metrics.Exports["SourceFile"]["isJavascript"] } */
-					function isJavascript(entry) {
-						return (/\.js$/.test(entry.path));
-					}
+					/** @type { slime.$api.fp.Mapping<slime.project.metrics.SourceFile,slime.tools.code.File> } */
+					var toCodeFile = function(sourceFile) {
+						return {
+							path: sourceFile.path,
+							file: sourceFile.file.pathname.os.adapt()
+						};
+					};
+
+					var isJavascript = function(sourceFile) {
+						return $context.library.code.File.isJavascript(toCodeFile(sourceFile));
+					};
 
 					return {
 						isJsapi: function(file) {
@@ -58,7 +65,7 @@
 						},
 						isJavascript: isJavascript,
 						isTypescript: function(entry) {
-							return (/\.ts$/.test(entry.path));
+							return $context.library.code.File.isTypescript(toCodeFile(entry));
 						},
 						javascript: {
 							hasTypeChecking: function(entry) {

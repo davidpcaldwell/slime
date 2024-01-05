@@ -12,6 +12,9 @@ namespace slime.project.metrics {
 		}
 	}
 
+	/**
+	 * Replaced by {@link slime.tools.code.File}.
+	 */
 	export interface SourceFile {
 		path: string
 		file: slime.jrunscript.file.File
