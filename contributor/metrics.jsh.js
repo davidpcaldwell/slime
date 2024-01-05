@@ -17,18 +17,19 @@
 
 		var code = {
 			/** @type { slime.project.metrics.Script } */
-			model: jsh.script.loader.script("metrics.js")
+			project: jsh.script.loader.script("metrics.js")
 		}
 
-		var model = code.model({
+		var project = code.project({
 			library: {
 				file: jsh.file,
 				code: jsh.tools.code
 			}
 		});
 
+		/** @deprecated Use slime.tools.code constructs. */
 		var getSourceFiles = function() {
-			return model.getSourceFiles(SLIME);
+			return project.getSourceFiles(SLIME);
 		};
 
 		/** @typedef { slime.$api.fp.Mapping<{ root: slime.jrunscript.file.Directory, excludes: slime.tools.code.Excludes }, slime.tools.code.JsapiAnalysis> } ProjectAnalysis */
@@ -47,24 +48,26 @@
 			jsh.tools.code.jsapi.analysis
 		);
 
+		var excludes = {
+			descend: function(directory) {
+				var basename = jsh.file.Location.basename(directory);
+				if (basename == ".git") return false;
+				if (basename == "bin") return false;
+				if (basename == "local") return false;
+				return true;
+			},
+			isSource: function(file) {
+				return $api.fp.Maybe.from.some(true);
+			}
+		};
+
 		jsh.script.cli.main(
 			jsh.script.cli.program({
 				commands: {
 					jsapi: function(invocation) {
 						var data = projectJsapiAnalysis({
 							root: SLIME,
-							excludes: {
-								descend: function(directory) {
-									var basename = jsh.file.Location.basename(directory);
-									if (basename == ".git") return false;
-									if (basename == "bin") return false;
-									if (basename == "local") return false;
-									return true;
-								},
-								isSource: function(file) {
-									return $api.fp.Maybe.from.some(true);
-								}
-							}
+							excludes: excludes
 						});
 
 						[data.fifty, data.jsapi].forEach(function(group) {
@@ -125,12 +128,32 @@
 							},[]);
 						};
 
-						var src = getSourceFiles();
+						/** @type { slime.$api.fp.Identity<slime.tools.code.File> } */
+						var asFile = $api.fp.identity;
+
+						var read = $api.fp.pipe(
+							asFile,
+							$api.fp.property("file"),
+							$api.fp.Maybe.impure.exception({
+								/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>>} */
+								try: $api.fp.world.Meter.mapping({
+									meter: jsh.file.Location.file.read.string()
+								}),
+								nothing: function(t) { return new Error("Could not read: " + t.pathname); }
+							})
+						);
+
+						var project = jsh.tools.code.Project.from.git({
+							root: SLIME.pathname.os.adapt(),
+							excludes: excludes
+						})
+
+						var src = $api.fp.now.invoke(project, jsh.tools.code.Project.files);
 						var grouper = $api.fp.Array.groupBy({
-							/** @type { (entry: slime.project.metrics.SourceFile) => string } */
+							/** @type { (entry: slime.tools.code.File) => string } */
 							group: function(entry) {
-								if (model.SourceFile.isJavascript(entry)) return "js";
-								if (model.SourceFile.isTypescript(entry)) return "ts";
+								if (jsh.tools.code.File.isJavascript(entry)) return "js";
+								if (jsh.tools.code.File.isTypescript(entry)) return "ts";
 								return "other";
 							}
 						});
@@ -142,10 +165,10 @@
 							return {
 								language: language.group,
 								files: language.array.map(function(entry) {
-									var code = entry.file.read(String);
+									var code = read(entry);
 									var covered = (language.group == "ts")
 										? true
-										: model.SourceFile.javascript.hasTypeChecking(entry)["value"]
+										: jsh.tools.code.File.javascript.hasTypeChecking(entry)["value"]
 									;
 									return {
 										path: entry.path,
@@ -212,8 +235,8 @@
 
 						var files = $api.fp.result(
 							getSourceFiles(),
-							$api.fp.Array.filter($api.fp.Predicate.not(model.SourceFile.isGenerated)),
-							$api.fp.Array.filter($api.fp.Predicate.not(model.SourceFile.isJsapi)),
+							$api.fp.Array.filter($api.fp.Predicate.not(project.SourceFile.isGenerated)),
+							$api.fp.Array.filter($api.fp.Predicate.not(project.SourceFile.isJsapi)),
 							$api.fp.Array.filter(function(file) {
 								return getLines(file) > 500;
 							})

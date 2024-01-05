@@ -54,6 +54,8 @@ namespace slime.tools.code {
 				}) => Project
 			}
 
+			files: (project: Project) => File[]
+
 			gitignoreLocal: slime.$api.fp.world.Means<
 				Project,
 				{
@@ -209,6 +211,13 @@ namespace slime.tools.code {
 		File: {
 			hasShebang: () => slime.$api.fp.world.Meter<File,void,slime.$api.fp.Maybe<boolean>>
 			isText: () => slime.$api.fp.world.Meter<File,void,slime.$api.fp.Maybe<boolean>>
+
+			isJavascript: slime.$api.fp.Mapping<File,boolean>
+			isTypescript: slime.$api.fp.Mapping<File,boolean>
+
+			javascript: {
+				hasTypeChecking: (file: File) => slime.$api.fp.Maybe<boolean>
+			}
 		}
 	}
 
