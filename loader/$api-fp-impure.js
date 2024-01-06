@@ -86,6 +86,13 @@
 						return rv;
 					}
 				},
+				mapping: {
+					all: function(input) {
+						return function(p) {
+							return input();
+						}
+					}
+				},
 				process: function(input, output) {
 					return function() {
 						output(input());
@@ -141,6 +148,11 @@
 						os.forEach(function(o) {
 							o(p);
 						});
+					}
+				},
+				map: function(c) {
+					return function(p) {
+						c.output(c.map(p));
 					}
 				}
 			},

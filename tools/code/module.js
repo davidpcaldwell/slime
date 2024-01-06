@@ -707,11 +707,20 @@
 						};
 					},
 					git: function(p) {
+						//	TODO	descends property is not used, but API does not reflect that
+						var excludes = (p.excludes) ? p.excludes : {
+							descend: function(directory) {
+								return true;
+							},
+							isSource: function(file) {
+								return $api.fp.Maybe.from.some(true);
+							}
+						};
 						var files = $api.fp.world.now.question(
 							getGitSourceFiles,
 							{
 								repository: p.root,
-								isSource: downgradeIsSource(p.excludes.isSource)
+								isSource: downgradeIsSource(excludes.isSource)
 							}
 						).map(function(file) {
 							return file.file;
@@ -832,7 +841,47 @@
 				Element: {
 					getTestingElements: Element.getJsapiTestingElements
 				},
-				analysis: jsapiAnalysis
+				analysis: jsapiAnalysis,
+				report: function(p) {
+					return function(project) {
+						var data = jsapiAnalysis(project);
+
+						[data.fifty, data.jsapi].forEach(function(group) {
+							p.line(group.name + ": " + group.files + " files, " + group.bytes + " bytes");
+							if (group.name == "jsapi") {
+								group.list().forEach(function(item) {
+									p.line(item.path + " " + item.bytes + " tests: " + ( (item.tests.present) ? item.tests.value : "?" ));
+								})
+							}
+							p.line("");
+						});
+
+						p.line("Converted: " + ( data.fifty.bytes / (data.fifty.bytes + data.jsapi.bytes) * 100 ).toFixed(1) + "%");
+
+						p.line("");
+						p.line("JSAPI tests:");
+						var files = 0;
+						var bytes = 0;
+						data.jsapi.list().filter(function(file) {
+							if (file.tests.present && file.tests.value == 0) return false;
+							return true;
+						}).sort(function(a,b) {
+							if (!a.tests.present && !b.tests.present) return 0;
+							if (!a.tests.present && b.tests.present) return 1;
+							if (a.tests.present && !b.tests.present) return -1;
+							if (a.tests.present && b.tests.present) {
+								return b.tests.value - a.tests.value;
+							}
+						}).forEach(function(item) {
+							files += 1;
+							bytes += (item.tests.present) ? item.tests.value : 0;
+							p.line(item.path + " " + item.bytes + " tests: " + ( (item.tests.present) ? item.tests.value : "?" ));
+						});
+						p.line("");
+						p.line("Files with tests: " + files);
+						p.line("Tests: " + bytes);
+					}
+				}
 			},
 			File: (
 				function() {
@@ -846,21 +895,29 @@
 						nothing: function(location) { return new Error("Could not read: " + location.pathname) }
 					});
 
+					/** @type { slime.tools.code.Exports["File"]["isText"]["world"] } */
+					var isText = function() {
+						return function(file) {
+							return function(events) {
+								var basename = getBasename(file.file);
+								var byExtension = filename.isText(basename);
+								if (typeof(byExtension) == "boolean") return $api.fp.Maybe.from.some(byExtension);
+								if (basename.indexOf(".") == -1) {
+									var rv = hasShebang()(file)(events);
+									if (rv.present) return rv;
+								}
+								return $api.fp.Maybe.from.nothing();
+							}
+						}
+					};
+
 					return {
 						hasShebang: hasShebang,
-						isText: function() {
-							return function(file) {
-								return function(events) {
-									var basename = getBasename(file.file);
-									var byExtension = filename.isText(basename);
-									if (typeof(byExtension) == "boolean") return $api.fp.Maybe.from.some(byExtension);
-									if (basename.indexOf(".") == -1) {
-										var rv = hasShebang()(file)(events);
-										if (rv.present) return rv;
-									}
-									return $api.fp.Maybe.from.nothing();
-								}
-							}
+						isText: {
+							world: isText,
+							basic: $api.fp.world.Meter.mapping({
+								meter: isText()
+							})
 						},
 						isJavascript: isJavascript,
 						isTypescript: function(file) {

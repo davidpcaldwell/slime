@@ -215,6 +215,14 @@ namespace slime.$api.fp.impure {
 
 	export namespace exports {
 		export interface Input {
+			mapping: {
+				all: <P,R>(p: slime.$api.fp.impure.Input<R>) => slime.$api.fp.Mapping<P,R>
+			}
+		}
+	}
+
+	export namespace exports {
+		export interface Input {
 			process: <T>(input: impure.Input<T>, output: impure.Output<T>) => impure.Process
 		}
 	}
@@ -355,6 +363,13 @@ namespace slime.$api.fp.impure {
 
 		export interface Output {
 			compose: <P>(elements: impure.Output<P>[]) => impure.Output<P>
+		}
+
+		export interface Output {
+			map: <P,R>(p: {
+				map: slime.$api.fp.Mapping<P,R>
+				output: slime.$api.fp.impure.Output<R>
+			}) => slime.$api.fp.impure.Output<P>
 		}
 	}
 

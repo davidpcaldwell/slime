@@ -50,7 +50,7 @@ namespace slime.tools.code {
 
 				git: (p: {
 					root: slime.jrunscript.file.Location
-					excludes: Excludes
+					excludes?: Excludes
 				}) => Project
 			}
 
@@ -165,6 +165,10 @@ namespace slime.tools.code {
 			}
 
 			analysis: slime.$api.fp.Mapping<slime.tools.code.Project,slime.tools.code.JsapiAnalysis>
+
+			report: (p: {
+				line: slime.$api.fp.impure.Output<string>
+			}) => slime.$api.fp.impure.Output<Project>
 		}
 	}
 
@@ -210,7 +214,10 @@ namespace slime.tools.code {
 	export interface Exports {
 		File: {
 			hasShebang: () => slime.$api.fp.world.Meter<File,void,slime.$api.fp.Maybe<boolean>>
-			isText: () => slime.$api.fp.world.Meter<File,void,slime.$api.fp.Maybe<boolean>>
+			isText: {
+				world: () => slime.$api.fp.world.Meter<File,void,slime.$api.fp.Maybe<boolean>>
+				basic: slime.$api.fp.Mapping<File,slime.$api.fp.Maybe<boolean>>
+			}
 
 			isJavascript: slime.$api.fp.Mapping<File,boolean>
 			isTypescript: slime.$api.fp.Mapping<File,boolean>

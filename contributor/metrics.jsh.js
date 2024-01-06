@@ -13,98 +13,25 @@
 	function($api,jsh) {
 		$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
 
+		/** @deprecated Should be able to use `project`. */
 		var SLIME = jsh.script.file.parent.parent;
 
-		var code = {
-			/** @type { slime.project.metrics.Script } */
-			project: jsh.script.loader.script("metrics.js")
-		}
-
-		var project = code.project({
-			library: {
-				file: jsh.file,
-				code: jsh.tools.code
-			}
-		});
-
-		/** @deprecated Use slime.tools.code constructs. */
-		var getSourceFiles = function() {
-			return project.getSourceFiles(SLIME);
-		};
-
-		/** @typedef { slime.$api.fp.Mapping<{ root: slime.jrunscript.file.Directory, excludes: slime.tools.code.Excludes }, slime.tools.code.JsapiAnalysis> } ProjectAnalysis */
-
-		/** @type { ProjectAnalysis } */
-		var projectJsapiAnalysis = $api.fp.pipe(
-			function(p) {
-				return { root: p.root.pathname.os.adapt(), excludes: p.excludes };
+		var project = $api.fp.impure.Input.value(
+			{
+				root: SLIME.pathname.os.adapt()
 			},
-			function(p) {
-				return jsh.tools.code.Project.from.directory({
-					root: p.root,
-					excludes: p.excludes
-				});
-			},
-			jsh.tools.code.jsapi.analysis
+			jsh.tools.code.Project.from.git
 		);
-
-		var excludes = {
-			descend: function(directory) {
-				var basename = jsh.file.Location.basename(directory);
-				if (basename == ".git") return false;
-				if (basename == "bin") return false;
-				if (basename == "local") return false;
-				return true;
-			},
-			isSource: function(file) {
-				return $api.fp.Maybe.from.some(true);
-			}
-		};
 
 		jsh.script.cli.main(
 			jsh.script.cli.program({
 				commands: {
-					jsapi: function(invocation) {
-						var data = projectJsapiAnalysis({
-							root: SLIME,
-							excludes: excludes
-						});
-
-						[data.fifty, data.jsapi].forEach(function(group) {
-							jsh.shell.console(group.name + ": " + group.files + " files, " + group.bytes + " bytes");
-							if (group.name == "jsapi") {
-								group.list().forEach(function(item) {
-									jsh.shell.console(item.path + " " + item.bytes + " tests: " + ( (item.tests.present) ? item.tests.value : "?" ));
-								})
-							}
-							jsh.shell.console("");
-						});
-
-						jsh.shell.console("Converted: " + ( data.fifty.bytes / (data.fifty.bytes + data.jsapi.bytes) * 100 ).toFixed(1) + "%");
-
-						jsh.shell.console("");
-						jsh.shell.console("JSAPI tests:");
-						var files = 0;
-						var bytes = 0;
-						data.jsapi.list().filter(function(file) {
-							if (file.tests.present && file.tests.value == 0) return false;
-							return true;
-						}).sort(function(a,b) {
-							if (!a.tests.present && !b.tests.present) return 0;
-							if (!a.tests.present && b.tests.present) return 1;
-							if (a.tests.present && !b.tests.present) return -1;
-							if (a.tests.present && b.tests.present) {
-								return b.tests.value - a.tests.value;
-							}
-						}).forEach(function(item) {
-							files += 1;
-							bytes += (item.tests.present) ? item.tests.value : 0;
-							jsh.shell.console(item.path + " " + item.bytes + " tests: " + ( (item.tests.present) ? item.tests.value : "?" ));
-						});
-						jsh.shell.console("");
-						jsh.shell.console("Files with tests: " + files);
-						jsh.shell.console("Tests: " + bytes);
-					},
+					jsapi: $api.fp.impure.Output.map({
+						map: $api.fp.impure.Input.mapping.all(project),
+						output: jsh.tools.code.jsapi.report({
+							line: jsh.shell.console
+						})
+					}),
 					types: function(invocation) {
 						/**
 						 *
@@ -143,12 +70,7 @@
 							})
 						);
 
-						var project = jsh.tools.code.Project.from.git({
-							root: SLIME.pathname.os.adapt(),
-							excludes: excludes
-						})
-
-						var src = $api.fp.now.invoke(project, jsh.tools.code.Project.files);
+						var src = $api.fp.now.invoke(project(), jsh.tools.code.Project.files);
 						var grouper = $api.fp.Array.groupBy({
 							/** @type { (entry: slime.tools.code.File) => string } */
 							group: function(entry) {
@@ -227,6 +149,23 @@
 						jsh.shell.console("Total @" + "ts-ignore comments violating rules: " + ignores.length);
 					},
 					size: function(invocation) {
+						var code = {
+							/** @type { slime.project.metrics.Script } */
+							project: jsh.script.loader.script("metrics.js")
+						};
+
+						var project = code.project({
+							library: {
+								file: jsh.file,
+								code: jsh.tools.code
+							}
+						});
+
+						/** @deprecated Use slime.tools.code constructs. */
+						var getSourceFiles = function() {
+							return project.getSourceFiles(SLIME);
+						};
+
 						//	TODO	could cache by path so as not to do so much re-reading while sorting etc.
 						var getLines = function(file) {
 							//	We subtract one because we assume the linter has enforced a trailing newline
