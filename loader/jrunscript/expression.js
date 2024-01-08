@@ -1000,33 +1000,6 @@
 			}
 		)($loader.getClasspath());
 
-		slime.$api.jrunscript = {
-			Properties: {
-				codec: {
-					object: {
-						encode: function(properties) {
-							var rv = new Packages.java.util.Properties();
-							for (var x in properties) {
-								rv.setProperty(x, properties[x]);
-							}
-							return rv;
-						},
-						decode: function(_properties) {
-							var _keys = _properties.propertyNames();
-							/** @type { slime.$api.jrunscript.Properties } */
-							var rv = {};
-							while(_keys.hasMoreElements()) {
-								var name = String(_keys.nextElement());
-								var value = String(_properties.getProperty(name));
-								rv[name] = value;
-							}
-							return rv;
-						}
-					}
-				}
-			}
-		}
-
 		/** @type { slime.jrunscript.runtime.Exports["jrunscript"] } */
 		var jrunscript = {
 			loader: {

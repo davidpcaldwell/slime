@@ -90,36 +90,106 @@ namespace slime.jrunscript.host {
 	}
 
 	export interface Exports {
-		Properties: {
-			value: (name: string) => (properties: Properties) => slime.$api.fp.Maybe<string>
+		Properties: exports.Properties
+	}
+
+	export namespace exports {
+		export interface Properties {
+			value: (name: string) => (properties: slime.jrunscript.host.Properties) => slime.$api.fp.Maybe<string>
 
 			/** @deprecated */
 			adapt: (_java: slime.jrunscript.native.java.util.Properties) => OldProperties
-		}
-	}
 
-	(
-		function(
-			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			const module = internal.test.subject;
-
-			fifty.tests.exports.Properties = function() {
-				var $p = new Packages.java.util.Properties();
-				$p.setProperty("a.a", "a");
-				$p.setProperty("a.b", "b");
-				$p.setProperty("a.c", "c");
-				var p = module.Properties.adapt($p);
-				//	Note that for-in loop would yield four properties, including toString(), but this seems fine
-				Packages.java.lang.System.err.println(Object.keys(p["a"]));
-				verify(p).evaluate.property("a").evaluate(function(a) { return Object.keys(a); }).length.is(3);
+			codec: {
+				java: slime.Codec<slime.jrunscript.host.Properties,slime.jrunscript.native.java.util.Properties>
 			}
 		}
-	//@ts-ignore
-	)(Packages,fifty);
+
+		(
+			function(
+				Packages: slime.jrunscript.Packages,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
+				const module = internal.test.subject;
+
+				fifty.tests.exports.Properties = fifty.test.Parent();
+
+				fifty.tests.exports.Properties.adapt = function() {
+					var $p = new Packages.java.util.Properties();
+					$p.setProperty("a.a", "a");
+					$p.setProperty("a.b", "b");
+					$p.setProperty("a.c", "c");
+					var p = module.Properties.adapt($p);
+					//	Note that for-in loop would yield four properties, including toString(), but this seems fine
+					jsh.shell.console(Object.keys(p["a"]).toString());
+					verify(p).evaluate.property("a").evaluate(function(a) { return Object.keys(a); }).length.is(3);
+				}
+
+				fifty.tests.exports.Properties.codec = function() {
+					var values = {
+						a: "1"
+					};
+
+					var encoded = module.Properties.codec.java.encode(values);
+					jsh.shell.console(String(encoded));
+					verify(encoded.getProperty("a")).evaluate(String).is("1");
+					verify(encoded.getProperty("foo")).is(null);
+
+					var decoded = module.Properties.codec.java.decode(encoded);
+					verify(decoded).a.is("1");
+					verify(decoded).evaluate.property("foo").is(void(0));
+				}
+			}
+		//@ts-ignore
+		)(Packages,fifty);
+
+		export interface Properties {
+			from: {
+				string: slime.$api.fp.Mapping<string,slime.jrunscript.host.Properties>
+			}
+
+			string: slime.$api.fp.Mapping<slime.jrunscript.host.Properties,string>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				const { subject } = internal.test;
+
+				fifty.tests.exports.Properties.string = function() {
+					var test = [
+						"#Foo",
+						"#Tue Jan 02 14:42:08 EST 2024",
+						"foo=bar",
+						"baz=bizzy"
+					].join("\n");
+
+					var object = subject.Properties.from.string(test);
+
+					verify(object).evaluate.property("foo").is("bar");
+					verify(object).evaluate.property("baz").is("bizzy");
+					verify(object).evaluate.property("nope").is(void(0));
+
+					var string = subject.Properties.string(object);
+
+					verify(string.split("\n")).length.is(3);
+					verify(string.split("\n"))[2].is("");
+
+					var parsed = subject.Properties.from.string(test);
+					verify(parsed).evaluate.property("foo").is("bar");
+					verify(parsed).evaluate.property("baz").is("bizzy");
+					verify(parsed).evaluate.property("nope").is(void(0));
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
 	export interface Exports {
 		vm: {

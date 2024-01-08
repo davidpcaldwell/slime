@@ -190,6 +190,7 @@ namespace slime.jrunscript {
 					propertyNames(): any
 					getProperty(name: string): string
 					keySet(): any
+					store: (out: slime.jrunscript.native.java.io.OutputStream, comments: string) => void
 				}
 
 				export interface Enumeration<T> {

@@ -192,19 +192,54 @@
 			return rv;
 		}
 
-		$exports.Properties = Object.assign(
-			{
-				adapt: function($properties) {
-					return adaptProperties($properties);
-				},
-				value: function(name) {
-					return function(properties) {
-						return $api.fp.Maybe.from.value(properties[name]);
+		/** @type { slime.jrunscript.host.Exports["Properties"] } */
+		$exports.Properties = {
+			adapt: function($properties) {
+				return adaptProperties($properties);
+			},
+			value: function(name) {
+				return function(properties) {
+					return $api.fp.Maybe.from.value(properties[name]);
+				}
+			},
+			codec: {
+				java: {
+					encode: function(properties) {
+						var rv = new Packages.java.util.Properties();
+						for (var x in properties) {
+							rv.setProperty(x, properties[x]);
+						}
+						return rv;
+					},
+					decode: function(_properties) {
+						var _keys = _properties.propertyNames();
+						/** @type { slime.jrunscript.host.Properties } */
+						var rv = {};
+						while(_keys.hasMoreElements()) {
+							var name = String(_keys.nextElement());
+							var value = String(_properties.getProperty(name));
+							rv[name] = value;
+						}
+						return rv;
 					}
 				}
+			},
+			from: {
+				string: function(string) {
+					var _properties = new Packages.java.util.Properties();
+					_properties.load(new Packages.java.io.StringReader(string));
+					return $exports.Properties.codec.java.decode(_properties);
+				}
+			},
+			string: function(properties) {
+				var _properties = $exports.Properties.codec.java.encode(properties);
+				var _writer = new Packages.java.io.StringWriter();
+				_properties.store(_writer, null);
+				_writer.close();
+				var string = String(_writer.toString());
+				return string.split("\n").slice(1).join("\n");
 			}
-		)
-		$api.experimental($exports,"Properties");
+		};
 
 		var errors = new function() {
 			var instance = (function _Throwables() {
