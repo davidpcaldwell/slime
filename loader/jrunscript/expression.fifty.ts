@@ -341,17 +341,6 @@ namespace slime.jrunscript.runtime {
 	)(Packages,fifty);
 }
 
-namespace slime.$api {
-	export interface Global {
-		jrunscript: {
-			Properties: {
-			}
-		}
-	}
-
-	var jrunscript: Global["jrunscript"]
-}
-
 (
 	function(
 		fifty: slime.fifty.test.Kit
@@ -362,8 +351,6 @@ namespace slime.$api {
 			verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
 
 			fifty.run(fifty.tests.exports);
-
-			fifty.run(fifty.tests.$api.jrunscript);
 
 			//	TODO	redundant? tested per-engine in contributor/suite.jsh.js
 			fifty.load("java.fifty.ts");
