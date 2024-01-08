@@ -39,14 +39,14 @@ namespace slime.jrunscript.mail {
 	export interface Exports {
 		Session: {
 			(p?: {
-				properties?: $api.jrunscript.Properties
+				properties?: slime.jrunscript.host.Properties
 				credentials?: {
 					user: string
 					password: string
 				}
 			}): Session
 			properties: {
-				GMAIL: $api.jrunscript.Properties
+				GMAIL: slime.jrunscript.host.Properties
 			}
 		}
 	}

@@ -341,52 +341,6 @@ namespace slime.jrunscript.runtime {
 	)(Packages,fifty);
 }
 
-namespace slime.$api {
-	export interface Global {
-		jrunscript: {
-			Properties: {
-				codec: {
-					object: slime.Codec<slime.$api.jrunscript.Properties,slime.jrunscript.native.java.util.Properties>
-				}
-			}
-		}
-	}
-
-	var jrunscript: Global["jrunscript"]
-
-	export namespace jrunscript {
-		export type Properties = { [x: string]: string }
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api, jsh } = fifty.global;
-
-			fifty.tests.$api = {
-				jrunscript: function() {
-					var values = {
-						a: "1"
-					};
-
-					var encoded = $api.jrunscript.Properties.codec.object.encode(values);
-					jsh.shell.console(String(encoded));
-					verify(encoded.getProperty("a")).evaluate(String).is("1");
-					verify(encoded.getProperty("foo")).is(null);
-
-					var decoded = $api.jrunscript.Properties.codec.object.decode(encoded);
-					verify(decoded).a.is("1");
-					verify(decoded).evaluate.property("foo").is(void(0));
-				}
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-}
-
 (
 	function(
 		fifty: slime.fifty.test.Kit
@@ -397,8 +351,6 @@ namespace slime.$api {
 			verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
 
 			fifty.run(fifty.tests.exports);
-
-			fifty.run(fifty.tests.$api.jrunscript);
 
 			//	TODO	redundant? tested per-engine in contributor/suite.jsh.js
 			fifty.load("java.fifty.ts");
