@@ -15,8 +15,8 @@
  *
  * ## Tools
  *
- * SLIME also implements a {@link slime.jrunscript.tools.git.credential Git credential helper} that can look up tokens or passwords
- * in the file system for a project. by (GitHub / GitLab) user name.
+ * SLIME also implements a {@link slime.jrunscript.tools.git.credentials Git credential helper} that can look up passwords (or, in
+ * the case of GitHub and GitLab, tokens) in the file system for a project by host and username.
  */
 namespace slime.jrunscript.tools.git {
 	export interface Commit {
