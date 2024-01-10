@@ -501,6 +501,25 @@ namespace slime.$api.fp.world {
 		: never
 	)
 
+	export type Events<
+		X extends slime.$api.fp.world.Meter<any,any,any> | slime.$api.fp.world.Means<any,any>
+	> = (
+		X extends slime.$api.fp.world.Meter<
+			infer S,
+			infer E,
+			infer R
+		>
+		? E
+		: (
+			X extends slime.$api.fp.world.Means<
+				infer O,
+				infer E
+			>
+			? E
+			: never
+		)
+	)
+
 	export type Question<E,R> = (events: slime.$api.Events<E>) => R
 	export type Action<E> = (events: slime.$api.Events<E>) => void
 
