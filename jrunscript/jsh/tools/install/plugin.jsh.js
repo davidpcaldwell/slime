@@ -721,7 +721,10 @@
 							//	TODO	horrendous, but let's go with it for now
 							if (jsh.file.Pathname("/etc/os-release").file) {
 								var string = jsh.file.Pathname("/etc/os-release").file.read(String);
-								if (string.indexOf("Amazon Linux 2") != -1) {
+								if (
+									string.indexOf("Amazon Linux 2") != -1
+									|| string.indexOf("CentOS Linux 7 (Core)") != -1
+								) {
 									VERSION = "16.20.2";
 								}
 							}
