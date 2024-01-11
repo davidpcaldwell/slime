@@ -18,7 +18,7 @@ namespace slime.jrunscript.shell.internal.run {
 namespace slime.jrunscript.shell {
 	export interface World {
 		/** @deprecated */
-		question: slime.$api.fp.world.Meter<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+		question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 		/** @deprecated */
 		action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
 	}
@@ -31,7 +31,7 @@ namespace slime.jrunscript.shell {
 				from: {
 					intention: (parent: run.Parent) => (plan: run.Intention) => run.Invocation
 				}
-				question: slime.$api.fp.world.Meter<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+				question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 				action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 			}
 		}

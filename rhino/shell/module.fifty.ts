@@ -100,7 +100,7 @@ namespace slime.jrunscript.shell {
 				}
 			}
 			action: slime.$api.fp.world.Means<run.Intention,run.TellEvents>
-			question: slime.$api.fp.world.Meter<run.Intention,run.AskEvents,run.Exit>
+			question: slime.$api.fp.world.Sensor<run.Intention,run.AskEvents,run.Exit>
 		}
 
 		(
@@ -1118,22 +1118,26 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	export namespace bash {
+	export namespace environment {
 		/**
-		 * Specifies a complete subprocess environment; no environment variables will be inherited from the parent process.
+		 * Specifies a complete subprocess environment; no environment variables will be inherited from the context.
 		 */
-		export type StandaloneEnvironment = {
+		export type Standalone = {
 			only: {
 				[x: string]: string
 			}
 		}
 
-		export type InheritedEnvironment = {
+		/**
+		 * Specifies certain variables and expects others to be provided by the execution context
+		 * (usually a parent shell or process).
+		 */
+		export type Inherited = {
 			/**
 			 * Environment variables to be provided to the command, or to be removed from the environment of the command.
 			 * Properties with string values represent variables to be provided to the command (potentially overriding
-			 * values from the parent shell). Properties with `null` values represent variables to be **removed** from
-			 * the command's environment (even if they are present in the parent shell). Properties that are undefined
+			 * values from the context). Properties with `null` values represent variables to be **removed** from
+			 * the command's environment (even if they are present in the context). Properties that are undefined
 			 * will have no effect.
 			 */
 			set: {
@@ -1145,7 +1149,10 @@ namespace slime.jrunscript.shell {
 		 * A value that either specifies a subprocess environment completely, or specifies modifications to make to the parent
 		 * environment.
 		 */
-		export type Environment = StandaloneEnvironment | InheritedEnvironment
+		export type Specification = Standalone | Inherited
+	}
+
+	export namespace bash {
 
 		/**
 		 * A subprocess intention that can be written as a shell command. As such, it excludes stdio redirection to streams, as
@@ -1170,7 +1177,21 @@ namespace slime.jrunscript.shell {
 			 */
 			directory?: run.Intention["directory"]
 
-			environment?: bash.Environment
+			environment?: environment.Specification
+		}
+	}
+
+	export interface Exports {
+		Environment: {
+			is: {
+				standalone: (p: environment.Specification) => p is environment.Standalone
+				inherited: (p: environment.Specification) => p is environment.Inherited
+			}
+
+			/**
+			 * Given a `bash.Environment`, provides a value suitable for use with {@link run.Intention}s.
+			 */
+			run: (p: environment.Specification) => run.Intention["environment"]
 		}
 	}
 
@@ -1182,18 +1203,6 @@ namespace slime.jrunscript.shell {
 				 * @returns A function that can create `bash` script code from {@link bash.Intention} objects.
 				 */
 				intention: () => (p: bash.Intention) => string
-			}
-
-			environment: {
-				is: {
-					standalone: (p: bash.Environment) => p is bash.StandaloneEnvironment
-					inherited: (p: bash.Environment) => p is bash.InheritedEnvironment
-				}
-
-				/**
-				 * Given a `bash.Environment`, provides a value suitable for use with {@link run.Intention}s.
-				 */
-				run: (p: bash.Environment) => run.Intention["environment"]
 			}
 
 			run: (p: {
@@ -1232,18 +1241,18 @@ namespace slime.jrunscript.shell {
 			};
 
 			fifty.tests.exports.bash.environment = function() {
-				var only: bash.StandaloneEnvironment = { only: { foo: "bar" } };
-				var set: bash.InheritedEnvironment = { set: { baz: "bizzy" } };
+				var only: environment.Standalone = { only: { foo: "bar" } };
+				var set: environment.Inherited = { set: { baz: "bizzy" } };
 
 				fifty.run(function standalone() {
-					var converted = subject.bash.environment.run(only);
+					var converted = subject.Environment.run(only);
 					var result = converted({ one: "two" });
 					verify(result).evaluate.property("foo").is("bar");
 					verify(result).evaluate.property("one").is(void(0));
 				});
 
 				fifty.run(function inherited() {
-					var converted = subject.bash.environment.run(set);
+					var converted = subject.Environment.run(set);
 					var result = converted({ one: "two" });
 					verify(result).evaluate.property("baz").is("bizzy");
 					verify(result).evaluate.property("one").is("two");
@@ -1252,6 +1261,10 @@ namespace slime.jrunscript.shell {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		ssh: slime.jrunscript.shell.ssh.Exports
+	}
 
 	export interface Exports {
 		invocation: {

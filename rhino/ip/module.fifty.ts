@@ -155,7 +155,7 @@ namespace slime.jrunscript.ip {
 	)(fifty)
 
 	export interface World {
-		isReachable: slime.$api.fp.world.Meter<
+		isReachable: slime.$api.fp.world.Sensor<
 			{
 				timeout: Timeout
 				host: Host
@@ -373,7 +373,7 @@ namespace slime.jrunscript.ip {
 			 * expected in this situation; the implementation tries several operations, using whether they succeed to help it
 			 * determine the state of the port.
 			 */
-			isAvailable: slime.$api.fp.world.Meter<
+			isAvailable: slime.$api.fp.world.Sensor<
 				{
 					port: Port
 				},

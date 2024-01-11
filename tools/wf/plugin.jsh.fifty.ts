@@ -606,7 +606,7 @@ namespace slime.jsh.wf {
 
 	export namespace exports {
 		export interface Checks {
-			tsc: slime.$api.fp.world.Meter<void,{ console: string, output: string },boolean>
+			tsc: slime.$api.fp.world.Sensor<void,{ console: string, output: string },boolean>
 		}
 	}
 

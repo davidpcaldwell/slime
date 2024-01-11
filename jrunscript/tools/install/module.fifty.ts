@@ -572,7 +572,7 @@ namespace slime.jrunscript.tools.install {
 			 *
 			 * @returns A local file containing the content from Apache.
 			 */
-			find: slime.$api.fp.world.Meter<
+			find: slime.$api.fp.world.Sensor<
 				{
 					path: string
 					mirror?: string

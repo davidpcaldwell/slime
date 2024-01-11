@@ -463,13 +463,13 @@ namespace slime.$api.fp.impure {
 
 namespace slime.$api.fp.world {
 	//	Instrument
-	export type Meter<S,E,R> = (s?: S) => Question<E,R>
+	export type Sensor<S,E,R> = (s?: S) => Question<E,R>
 	export type Means<O,E> = (o?: O) => Action<E>
 
 	export type Subject<
-		X extends slime.$api.fp.world.Meter<any,any,any>
+		X extends slime.$api.fp.world.Sensor<any,any,any>
 	> = (
-		X extends slime.$api.fp.world.Meter<
+		X extends slime.$api.fp.world.Sensor<
 			infer S,
 			infer E,
 			infer R
@@ -479,9 +479,9 @@ namespace slime.$api.fp.world {
 	)
 
 	export type Reading<
-		X extends slime.$api.fp.world.Meter<any,any,any>
+		X extends slime.$api.fp.world.Sensor<any,any,any>
 	> = (
-		X extends slime.$api.fp.world.Meter<
+		X extends slime.$api.fp.world.Sensor<
 			infer S,
 			infer E,
 			infer R
@@ -502,9 +502,9 @@ namespace slime.$api.fp.world {
 	)
 
 	export type Events<
-		X extends slime.$api.fp.world.Meter<any,any,any> | slime.$api.fp.world.Means<any,any>
+		X extends slime.$api.fp.world.Sensor<any,any,any> | slime.$api.fp.world.Means<any,any>
 	> = (
-		X extends slime.$api.fp.world.Meter<
+		X extends slime.$api.fp.world.Sensor<
 			infer S,
 			infer E,
 			infer R
@@ -542,7 +542,7 @@ namespace slime.$api.fp.world {
 		/**
 		 * @deprecated Replaced by `Meter.mapping`.
 		 */
-		mapping: <P,E,A>(question: world.Meter<P,E,A>, handler?: slime.$api.event.Handlers<E>) => fp.Mapping<P,A>
+		mapping: <P,E,A>(question: world.Sensor<P,E,A>, handler?: slime.$api.event.Handlers<E>) => fp.Mapping<P,A>
 	}
 
 	(
@@ -553,7 +553,7 @@ namespace slime.$api.fp.world {
 			const { $api } = fifty.global;
 
 			fifty.tests.exports.world.mapping = function() {
-				var doubler: Meter<number, { argument: string }, number> = function(p) {
+				var doubler: Sensor<number, { argument: string }, number> = function(p) {
 					return function(events) {
 						events.fire("argument", String(p));
 						return p * 2;
@@ -620,12 +620,19 @@ namespace slime.$api.fp.world {
 	)(fifty);
 
 	export interface Exports {
-		Meter: {
+		Sensor: {
 			from: {
-				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.Events<E> }) => R) => Meter<S,E,R>
+				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.Events<E> }) => R) => Sensor<S,E,R>
 			}
+
+			map: <NS,S,E,R,NR>(p: {
+				subject: slime.$api.fp.Mapping<NS,S>
+				sensor?: slime.$api.fp.world.Sensor<S,E,R>
+				reading?: slime.$api.fp.Mapping<R,NR>
+			}) => slime.$api.fp.world.Sensor<NS,E,NR>
+
 			mapping: <S,E,R>(p: {
-				meter: slime.$api.fp.world.Meter<S,E,R>
+				sensor: slime.$api.fp.world.Sensor<S,E,R>
 				handlers?: slime.$api.event.Handlers<E>
 			}) => slime.$api.fp.Mapping<S,R>
 		}
@@ -645,7 +652,7 @@ namespace slime.$api.fp.world {
 					returning: void(0)
 				});
 
-				var doubler: Meter<number,{ got: number, returning: number },number> = function(s) {
+				var doubler: Sensor<number,{ got: number, returning: number },number> = function(s) {
 					return function(events) {
 						events.fire("got", s);
 						var rv = s * 2;
@@ -654,8 +661,8 @@ namespace slime.$api.fp.world {
 					}
 				};
 
-				var mapping = $api.fp.world.Meter.mapping({
-					meter: doubler,
+				var mapping = $api.fp.world.Sensor.mapping({
+					sensor: doubler,
 					handlers: captor.handler
 				});
 
@@ -741,9 +748,9 @@ namespace slime.$api.fp.world {
 			 * An operation equivalent to {@link Exports | pipe(argument, question)}, but limited to one argument which provides
 			 * more readable type inference, mapping the produced value to a `Question` rather than a function returning an `Ask`.
 			 */
-			pipe: <I,P,E,A>(argument: (i: I) => P, question: world.Meter<P,E,A>) => world.Meter<I,E,A>
-			map: <P,E,A,O>(question: world.Meter<P,E,A>, map: (a: A) => O) => world.Meter<P,E,O>
-			wrap: <I,P,E,A,O>(argument: (i: I) => P, question: world.Meter<P,E,A>, map: (a: A) => O) => world.Meter<I,E,O>
+			pipe: <I,P,E,A>(argument: (i: I) => P, question: world.Sensor<P,E,A>) => world.Sensor<I,E,A>
+			map: <P,E,A,O>(question: world.Sensor<P,E,A>, map: (a: A) => O) => world.Sensor<P,E,O>
+			wrap: <I,P,E,A,O>(argument: (i: I) => P, question: world.Sensor<P,E,A>, map: (a: A) => O) => world.Sensor<I,E,O>
 		}
 
 		Action: {
@@ -808,7 +815,7 @@ namespace slime.$api.fp.world {
 
 	export interface Exports {
 		now: {
-			question: <P,E,A>(question: world.Meter<P,E,A>, argument: P, handler?: slime.$api.event.Handlers<E>) => A
+			question: <P,E,A>(question: world.Sensor<P,E,A>, argument: P, handler?: slime.$api.event.Handlers<E>) => A
 			action: <P,E>(action: world.Means<P,E>, argument?: P, handler?: slime.$api.event.Handlers<E>) => void
 
 			ask: <E,A>(ask: world.Question<E,A>, handler?: slime.$api.event.Handlers<E>) => A

@@ -132,7 +132,7 @@ namespace slime.jrunscript.file {
 					 * Returns the POSIX attributes for a given `Location`, if the `Location`'s file system supports POSIX
 					 * attributes.
 					 */
-					get: slime.$api.fp.world.Meter<{
+					get: slime.$api.fp.world.Sensor<{
 						location: Location
 					}, void, slime.$api.fp.Maybe<posix.Attributes>>
 
@@ -316,7 +316,7 @@ namespace slime.jrunscript.file {
 	export namespace location {
 		export namespace file {
 			export interface Exports {
-				size: slime.$api.fp.world.Meter<Location, void, number>
+				size: slime.$api.fp.world.Sensor<Location, void, number>
 			}
 
 			(
@@ -509,14 +509,14 @@ namespace slime.jrunscript.file {
 
 		export namespace file {
 			export interface Exports {
-				exists: () => slime.$api.fp.world.Meter<Location, {}, boolean>
+				exists: () => slime.$api.fp.world.Sensor<Location, {}, boolean>
 
 				read: {
-					stream: () => slime.$api.fp.world.Meter<Location, {
+					stream: () => slime.$api.fp.world.Sensor<Location, {
 						notFound: void
 					}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
 
-					string: () => slime.$api.fp.world.Meter<Location, {
+					string: () => slime.$api.fp.world.Sensor<Location, {
 						notFound: void
 					}, slime.$api.fp.Maybe<string>>
 				}
@@ -525,7 +525,7 @@ namespace slime.jrunscript.file {
 					string: slime.$api.fp.world.Means<{ value: string }, slime.jrunscript.file.world.events.FileOpenForWrite>
 					stream: slime.$api.fp.world.Means<{ input: slime.jrunscript.runtime.io.InputStream },slime.jrunscript.file.world.events.FileOpenForWrite>
 					object: {
-						text: slime.$api.fp.world.Meter<
+						text: slime.$api.fp.world.Sensor<
 							{},
 							slime.jrunscript.file.world.events.FileOpenForWrite,
 							slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>
@@ -686,7 +686,7 @@ namespace slime.jrunscript.file {
 			)(fifty);
 
 			export interface Exports {
-				exists: () => slime.$api.fp.world.Meter<world.Location, {}, boolean>
+				exists: () => slime.$api.fp.world.Sensor<world.Location, {}, boolean>
 
 				require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Means<world.Location, {
 					created: world.Location
@@ -871,7 +871,7 @@ namespace slime.jrunscript.file {
 				list: {
 					stream: (p?: {
 						descend: slime.$api.fp.Predicate<Location>
-					}) => slime.$api.fp.world.Meter<
+					}) => slime.$api.fp.world.Sensor<
 						slime.jrunscript.file.world.Location,
 						list.Events,
 						slime.$api.fp.Stream<Location>
@@ -1006,7 +1006,7 @@ namespace slime.jrunscript.file {
 			from: {
 				os: (pathname: string) => Location
 
-				temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Meter<
+				temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Sensor<
 					{
 						parent?: string
 						prefix?: string

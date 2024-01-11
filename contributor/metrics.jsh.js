@@ -63,8 +63,8 @@
 							$api.fp.property("file"),
 							$api.fp.Maybe.impure.exception({
 								/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>>} */
-								try: $api.fp.world.Meter.mapping({
-									meter: jsh.file.Location.file.read.string()
+								try: $api.fp.world.Sensor.mapping({
+									sensor: jsh.file.Location.file.read.string()
 								}),
 								nothing: function(t) { return new Error("Could not read: " + t.pathname); }
 							})

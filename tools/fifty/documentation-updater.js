@@ -130,7 +130,7 @@
 						})
 					},
 					documentation: function() {
-						var exists = $api.fp.world.Meter.mapping({ meter: $context.library.file.Location.directory.exists() });
+						var exists = $api.fp.world.Sensor.mapping({ sensor: $context.library.file.Location.directory.exists() });
 						if (!exists(documentation)) return $api.fp.Maybe.from.nothing();
 						var loader = $context.library.file.Location.directory.loader.synchronous({ root: documentation });
 						return $context.library.code.directory.lastModified({

@@ -207,7 +207,7 @@ namespace slime.jrunscript.java.tools {
 
 	export interface Exports {
 		jar: {
-			manifest: slime.$api.fp.world.Meter<
+			manifest: slime.$api.fp.world.Sensor<
 				{
 					pathname: string
 				},
@@ -215,7 +215,7 @@ namespace slime.jrunscript.java.tools {
 				jar.Manifest
 			>
 
-			entries: slime.$api.fp.world.Meter<
+			entries: slime.$api.fp.world.Sensor<
 				{
 					pathname: string
 				},

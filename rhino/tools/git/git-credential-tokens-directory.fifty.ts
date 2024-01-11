@@ -27,7 +27,7 @@ namespace slime.jrunscript.tools.git.credentials {
 	}
 
 	export interface Exports {
-		get: slime.$api.fp.world.Meter<
+		get: slime.$api.fp.world.Sensor<
 			{
 				project: Project
 				host: string
@@ -38,8 +38,11 @@ namespace slime.jrunscript.tools.git.credentials {
 		>
 
 		user: {
-			get: slime.$api.fp.world.Meter<
+			location: slime.$api.fp.Mapping<slime.$api.fp.world.Subject<Exports["user"]["get"]>,slime.jrunscript.file.Location>
+
+			get: slime.$api.fp.world.Sensor<
 				{
+					home?: slime.$api.fp.impure.Input<slime.jrunscript.file.Location>
 					host: string
 					username: string
 				},

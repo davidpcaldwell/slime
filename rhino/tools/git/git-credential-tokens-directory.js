@@ -15,8 +15,8 @@
 	function($api,$context,$export) {
 		var relative = $context.library.file.Location.directory.relativePath;
 
-		var readString = $api.fp.world.Meter.mapping({
-			meter: $context.library.file.Location.file.read.string()
+		var readString = $api.fp.world.Sensor.mapping({
+			sensor: $context.library.file.Location.file.read.string()
 		});
 
 		var requireParents = $api.fp.world.Means.map({
@@ -58,8 +58,9 @@
 		 * @param { Parameters<slime.jrunscript.tools.git.credentials.Exports["user"]["get"]>[0] } p
 		 */
 		var getUserTokenLocation = function(p) {
+			var home = (p.home) ? p.home() : $context.library.shell.HOME.pathname.os.adapt();
 			return $api.fp.now.invoke(
-				$context.library.shell.HOME.pathname.os.adapt(),
+				home,
 				relative(".inonit/git/credentials"),
 				relative(p.host),
 				relative(p.username)
@@ -69,7 +70,7 @@
 		var readTokenLocation = $api.fp.pipe(getTokenLocation, readString);
 
 		/** @type { slime.jrunscript.tools.git.credentials.Exports["get"] } */
-		var get = $api.fp.world.Meter.from.flat(
+		var get = $api.fp.world.Sensor.from.flat(
 			function(p) {
 				var location = getTokenLocation(p.subject);
 				return readString(location);
@@ -77,7 +78,7 @@
 		);
 
 		/** @type { slime.jrunscript.tools.git.credentials.Exports["user"]["get"] } */
-		var userGet = $api.fp.world.Meter.from.flat(
+		var userGet = $api.fp.world.Sensor.from.flat(
 			function(p) {
 				var location = getUserTokenLocation(p.subject);
 				return readString(location);
@@ -146,6 +147,7 @@
 		$export({
 			get: get,
 			user: {
+				location: getUserTokenLocation,
 				get: userGet
 			},
 			helper: helper,

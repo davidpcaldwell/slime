@@ -96,7 +96,9 @@
 			/** @type { slime.jrunscript.shell.internal.console.Script } */
 			console: $loader.script("console.js"),
 			/** @type { slime.jrunscript.shell.java.Script } */
-			java: $loader.script("java.js")
+			java: $loader.script("java.js"),
+			/** @type { slime.jrunscript.shell.ssh.Script } */
+			ssh: $loader.script("ssh.js")
 		};
 
 		/** @type { slime.jrunscript.shell.internal.invocation.Export } */
@@ -774,63 +776,100 @@
 				},
 				directory: properties.get("user.dir")
 			}
+		};
+
+		/** @type { slime.jrunscript.shell.Exports["Environment"] & { envArgs: slime.jrunscript.shell.internal.GetEnvArguments } } */
+		var Environment = (
+			function() {
+				/** @type { slime.jrunscript.shell.Exports["Environment"]["is"]} */
+				var is = {
+					/** @type { slime.jrunscript.shell.Exports["Environment"]["is"]["standalone"] } */
+					standalone: function(p) {
+						return Boolean(p["only"]);
+					},
+					/** @type { slime.jrunscript.shell.Exports["Environment"]["is"]["inherited"] } */
+					inherited: function(p) {
+						return Boolean(p["set"]);
+					}
+				}
+
+				/**
+				 * @type { getEnvArgs }
+				 */
+				var getEnvArgs = function(environment) {
+					var set = function(name,value) {
+						return name + "=" + "\"" + value + "\"";
+					};
+
+					if (is.inherited(environment)) {
+						return Object.entries(environment.set).reduce(function(rv,entry) {
+							if (entry[1] === null) return ["-u", entry[0]].concat(rv);
+							if (typeof(entry[1]) == "string") return rv.concat([set(entry[0],entry[1])]);
+							if (typeof(entry[1]) == "undefined") return rv;
+							throw new Error("Variable " + entry[0] + " has wrong type: " + typeof(entry[1]));
+						},[]);
+					} else {
+						return ["-i"].concat(
+							Object.entries(environment.only).reduce(function(rv,entry) {
+								if (typeof(entry[1]) == "string") return rv.concat([set(entry[0],entry[1])]);
+								if (typeof(entry[1]) == "undefined") return rv;
+								throw new Error("Variable " + entry[0] + " has wrong type: " + typeof(entry[1]));
+							},[])
+						);
+					}
+				};
+
+				return {
+					is: is,
+					run: function(p) {
+						if (!p) return function(was) {
+							return was;
+						};
+						if (is.inherited(p)) {
+							return function(was) {
+								return $api.Object.compose(was, p.set);
+							}
+						} else {
+							return function(was) {
+								return p.only;
+							}
+						}
+					},
+					envArgs: getEnvArgs
+				}
+			}
+		)();
+
+		var subprocess = {
+			Parent: {
+				from: {
+					process: Parent_from_process
+				}
+			},
+			Invocation: scripts.run.exports.Invocation,
+			action: function(p) {
+				return scripts.run.exports.Invocation.action(
+					scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
+				);
+			},
+			question: function(p) {
+				return scripts.run.exports.Invocation.question(
+					scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
+				);
+			}
 		}
+
+		var ssh = code.ssh({
+			getEnvArguments: Environment.envArgs,
+			subprocess: subprocess
+		});
 
 		/** @type { slime.jrunscript.shell.Exports } */
 		var x = {
-			subprocess: {
-				Parent: {
-					from: {
-						process: Parent_from_process
-					}
-				},
-				Invocation: scripts.run.exports.Invocation,
-				action: function(p) {
-					return scripts.run.exports.Invocation.action(
-						scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
-					);
-				},
-				question: function(p) {
-					return scripts.run.exports.Invocation.question(
-						scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
-					);
-				}
-			},
+			subprocess: subprocess,
+			Environment: Environment,
 			bash: (
 				function() {
-					var environment = (
-						function() {
-							/** @type { slime.jrunscript.shell.Exports["bash"]["environment"]["is"]} */
-							var is = {
-								/** @type { slime.jrunscript.shell.Exports["bash"]["environment"]["is"]["standalone"] } */
-								standalone: function(p) {
-									return Boolean(p["only"]);
-								},
-								/** @type { slime.jrunscript.shell.Exports["bash"]["environment"]["is"]["inherited"] } */
-								inherited: function(p) {
-									return Boolean(p["set"]);
-								}
-							}
-							return {
-								is: is,
-								run: function(p) {
-									if (!p) return function(was) {
-										return was;
-									};
-									if (is.inherited(p)) {
-										return function(was) {
-											return $api.Object.compose(was, p.set);
-										}
-									} else {
-										return function(was) {
-											return p.only;
-										}
-									}
-								}
-							}
-						}
-					)();
-
 					return {
 						from: {
 							intention: function() {
@@ -840,44 +879,11 @@
 									script.push("#!/bin/bash");
 									if (p.directory) script.push("cd " + p.directory);
 
-									/** @type { (e: slime.jrunscript.shell.bash.Environment) => e is slime.jrunscript.shell.bash.InheritedEnvironment } */
-									var isInheritedEnvironment = function(e) {
-										return Boolean(e["set"]);
-									}
-
-									/**
-									 *
-									 * @param { slime.jrunscript.shell.bash.Environment } environment
-									 * @returns { string[] }
-									 */
-									var getEnvArgs = function(environment) {
-										var set = function(name,value) {
-											return name + "=" + "\"" + value + "\"";
-										};
-
-										if (isInheritedEnvironment(environment)) {
-											return Object.entries(environment.set).reduce(function(rv,entry) {
-												if (entry[1] === null) return ["-u", entry[0]].concat(rv);
-												if (typeof(entry[1]) == "string") return rv.concat([set(entry[0],entry[1])]);
-												if (typeof(entry[1]) == "undefined") return rv;
-												throw new Error("Variable " + entry[0] + " has wrong type: " + typeof(entry[1]));
-											},[]);
-										} else {
-											return ["-i"].concat(
-												Object.entries(environment.only).reduce(function(rv,entry) {
-													if (typeof(entry[1]) == "string") return rv.concat([set(entry[0],entry[1])]);
-													if (typeof(entry[1]) == "undefined") return rv;
-													throw new Error("Variable " + entry[0] + " has wrong type: " + typeof(entry[1]));
-												},[])
-											);
-										}
-									};
-
 									script.push($api.Array.build(function(rv) {
 										/** @type { Parameters<ReturnType<slime.jrunscript.shell.Exports["bash"]["from"]["intention"]>>[0]["environment"]} */
 										var environment = (p.environment) || { set: {} };
 
-										var envArgs = getEnvArgs(environment);
+										var envArgs = Environment.envArgs(environment);
 										if (envArgs) rv.push.apply(rv, ["env"].concat(envArgs));
 										rv.push(p.command);
 										if (p.arguments) rv.push.apply(rv, p.arguments);
@@ -894,7 +900,7 @@
 									command: bash.command,
 									arguments: bash.arguments,
 									directory: bash.directory,
-									environment: environment.run(bash.environment),
+									environment: x.Environment.run(bash.environment),
 									stdio: p.stdio
 								}
 							}
@@ -902,6 +908,7 @@
 					}
 				}
 			)(),
+			ssh: ssh,
 			Intention: {
 				from: {}
 			},
