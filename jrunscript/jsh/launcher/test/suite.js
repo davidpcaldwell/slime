@@ -95,7 +95,7 @@
 			}
 		}
 
-		/** @type { slime.$api.fp.world.Meter<slime.jsh.internal.launcher.test.BuiltShellContext,slime.jsh.internal.launcher.test.BuiltShellEvents,slime.jrunscript.file.Directory> } */
+		/** @type { slime.$api.fp.world.Sensor<slime.jsh.internal.launcher.test.BuiltShellContext,slime.jsh.internal.launcher.test.BuiltShellEvents,slime.jrunscript.file.Directory> } */
 		var requireBuiltShellHomeDirectory = function(p) {
 			return function(events) {
 				if (p.specified && p.specified.directory) {
@@ -123,7 +123,7 @@
 			}
 		};
 
-		/** @type { slime.$api.fp.world.Meter<slime.jsh.internal.launcher.test.ShellInvocation,slime.jsh.internal.launcher.test.ShellInvocationEvents,slime.jsh.internal.launcher.test.Result> } */
+		/** @type { slime.$api.fp.world.Sensor<slime.jsh.internal.launcher.test.ShellInvocation,slime.jsh.internal.launcher.test.ShellInvocationEvents,slime.jsh.internal.launcher.test.Result> } */
 		var shellResultQuestion = function(p) {
 			return function(events) {
 				/** @type { slime.jrunscript.shell.invocation.old.Token[] } */

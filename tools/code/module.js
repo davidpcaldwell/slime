@@ -743,8 +743,8 @@
 				},
 				gitignoreLocal: $api.fp.world.Means.from.flat(
 					function(p) {
-						var readString = $api.fp.world.Meter.mapping({
-							meter: $context.library.file.Location.file.read.string()
+						var readString = $api.fp.world.Sensor.mapping({
+							sensor: $context.library.file.Location.file.read.string()
 						});
 
 						/** @param { { location: slime.jrunscript.file.Location, content: string } } p */
@@ -891,7 +891,7 @@
 
 					var read = $api.fp.Maybe.impure.exception({
 						/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>> } */
-						try: $api.fp.world.Meter.mapping({ meter: $context.library.file.Location.file.read.string() }),
+						try: $api.fp.world.Sensor.mapping({ sensor: $context.library.file.Location.file.read.string() }),
 						nothing: function(location) { return new Error("Could not read: " + location.pathname) }
 					});
 
@@ -915,8 +915,8 @@
 						hasShebang: hasShebang,
 						isText: {
 							world: isText,
-							basic: $api.fp.world.Meter.mapping({
-								meter: isText()
+							basic: $api.fp.world.Sensor.mapping({
+								sensor: isText()
 							})
 						},
 						isJavascript: isJavascript,

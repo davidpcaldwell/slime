@@ -213,9 +213,11 @@
 			}
 		};
 
+		var identity = function(p) { return p; }
+
 		/** @type { slime.$api.fp.world.Exports } */
 		var world = {
-			Meter: {
+			Sensor: {
 				from: {
 					flat: function(f) {
 						return function(subject) {
@@ -228,9 +230,18 @@
 				mapping: function(p) {
 					return function(subject) {
 						return $context.events.handle({
-							implementation: p.meter(subject),
+							implementation: p.sensor(subject),
 							handlers: p.handlers
 						})
+					}
+				},
+				map: function(p) {
+					var mapSubject = p.subject || identity;
+					var mapReading = p.reading || identity;
+					return function(subject) {
+						return function(events) {
+							return mapReading(p.sensor(mapSubject(subject))(events));
+						}
 					}
 				}
 			},

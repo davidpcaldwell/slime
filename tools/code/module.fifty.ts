@@ -213,9 +213,9 @@ namespace slime.tools.code {
 
 	export interface Exports {
 		File: {
-			hasShebang: () => slime.$api.fp.world.Meter<File,void,slime.$api.fp.Maybe<boolean>>
+			hasShebang: () => slime.$api.fp.world.Sensor<File,void,slime.$api.fp.Maybe<boolean>>
 			isText: {
-				world: () => slime.$api.fp.world.Meter<File,void,slime.$api.fp.Maybe<boolean>>
+				world: () => slime.$api.fp.world.Sensor<File,void,slime.$api.fp.Maybe<boolean>>
 				basic: slime.$api.fp.Mapping<File,slime.$api.fp.Maybe<boolean>>
 			}
 
@@ -394,7 +394,7 @@ namespace slime.tools.code {
 
 	export namespace internal {
 		export interface functions {
-			getDirectoryObjectSourceFiles: slime.$api.fp.world.Meter<
+			getDirectoryObjectSourceFiles: slime.$api.fp.world.Sensor<
 				{
 					base: slime.jrunscript.file.Directory
 					isText: isText
@@ -404,7 +404,7 @@ namespace slime.tools.code {
 				slime.tools.code.File[]
 			>
 
-			getGitSourceFiles: slime.$api.fp.world.Meter<
+			getGitSourceFiles: slime.$api.fp.world.Sensor<
 				{
 					repository: slime.jrunscript.file.Location
 					isSource: oldIsSource

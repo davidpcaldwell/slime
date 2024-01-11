@@ -18,7 +18,7 @@ namespace slime.jrunscript.tools.scala {
 
 	export interface Exports {
 		Installation: {
-			getVersion: slime.$api.fp.world.Meter<scala.Installation,void,slime.$api.fp.Maybe<string>>
+			getVersion: slime.$api.fp.world.Sensor<scala.Installation,void,slime.$api.fp.Maybe<string>>
 
 			compile: (installation: scala.Installation) => slime.$api.fp.world.Means<{
 				destination: slime.jrunscript.file.Pathname

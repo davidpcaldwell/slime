@@ -29,31 +29,31 @@ namespace slime.jrunscript.file {
 		}
 
 		export interface Filesystem {
-			canonicalize: slime.$api.fp.world.Meter<{
+			canonicalize: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<string>>
 
-			fileExists: slime.$api.fp.world.Meter<{
+			fileExists: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<boolean>>
 
-			fileSize: slime.$api.fp.world.Meter<{
+			fileSize: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<number>>
 
 			/**
 			 * Returns the time the file was last modified, in milliseconds since the UNIX epoch.
 			 */
-			fileLastModified: slime.$api.fp.world.Meter<{
+			fileLastModified: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<number>>
 
-			openOutputStream: slime.$api.fp.world.Meter<{
+			openOutputStream: slime.$api.fp.world.Sensor<{
 				pathname: string
 				append?: boolean
 			},events.FileOpenForWrite,slime.$api.fp.Maybe<slime.jrunscript.runtime.io.OutputStream>>
 
-			directoryExists: slime.$api.fp.world.Meter<{
+			directoryExists: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<boolean>>
 
@@ -62,7 +62,7 @@ namespace slime.jrunscript.file {
 			},{
 			}>
 
-			listDirectory: slime.$api.fp.world.Meter<{
+			listDirectory: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},{
 			},slime.$api.fp.Maybe<string[]>>
@@ -85,7 +85,7 @@ namespace slime.jrunscript.file {
 		export interface Filesystem {
 			posix?: {
 				attributes: {
-					get: slime.$api.fp.world.Meter<
+					get: slime.$api.fp.world.Sensor<
 						{
 							pathname: string
 						},
@@ -164,7 +164,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Filesystem {
-			temporary: slime.$api.fp.world.Meter<
+			temporary: slime.$api.fp.world.Sensor<
 				{
 					parent?: string
 					prefix?: string
@@ -196,7 +196,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Filesystem {
-			openInputStream: slime.$api.fp.world.Meter<{
+			openInputStream: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},{
 				notFound: void

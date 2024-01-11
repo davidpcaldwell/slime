@@ -218,7 +218,7 @@ namespace slime.jrunscript.http.client {
 		World: {
 			withFollowRedirects: (implementation: spi.Implementation) => spi.Implementation
 
-			question: (implementation: spi.Implementation) => slime.$api.fp.world.Meter<Request,spi.Events,spi.Response>
+			question: (implementation: spi.Implementation) => slime.$api.fp.world.Sensor<Request,spi.Events,spi.Response>
 		}
 
 		Argument: {
