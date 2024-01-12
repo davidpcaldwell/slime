@@ -5,4 +5,4 @@
 #
 #	END LICENSE
 
-$(dirname $0)/../jsh.bash $(dirname $0)/wf.jsh.js "$@"
+$(dirname $0)/../jsh $(dirname $0)/wf.jsh.js "$@"
