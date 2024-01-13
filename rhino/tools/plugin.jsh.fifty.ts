@@ -273,9 +273,11 @@ namespace slime.jsh.java.tools {
 					this.Location = {
 						file: {
 							read: {
-								string: function(p) {
-									return function(e) {
-										return void(0);
+								string: {
+									world: function(p) {
+										return function(e) {
+											return void(0);
+										}
 									}
 								}
 							}

@@ -73,7 +73,7 @@
 			}
 
 			var rv = $api.fp.world.now.question(
-				$context.library.file.Location.file.read.string(),
+				$context.library.file.Location.file.read.string.world(),
 				js
 			);
 

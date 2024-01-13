@@ -82,7 +82,7 @@
 		 */
 		var getTypedocConfiguration = $api.fp.pipe(
 			$context.library.file.Location.directory.relativePath("typedoc.json"),
-			$api.fp.world.mapping($context.library.file.Location.file.read.string()),
+			$api.fp.world.mapping($context.library.file.Location.file.read.string.world()),
 			$api.fp.Maybe.map(parseJsonc),
 			$api.fp.Maybe.else(
 				/** @type { () => { [x: string]: any } } */

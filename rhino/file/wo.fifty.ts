@@ -360,7 +360,7 @@ namespace slime.jrunscript.file {
 
 				var readText = $api.fp.pipe(
 					$api.fp.world.mapping(
-						jsh.file.world.Location.file.read.string()
+						jsh.file.world.Location.file.read.string.world()
 					),
 					$api.fp.Maybe.map(function(s) { return s; }),
 					$api.fp.Maybe.else(function(): string { return null; })
@@ -516,9 +516,13 @@ namespace slime.jrunscript.file {
 						notFound: void
 					}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
 
-					string: () => slime.$api.fp.world.Sensor<Location, {
-						notFound: void
-					}, slime.$api.fp.Maybe<string>>
+					string: {
+						world: () => slime.$api.fp.world.Sensor<Location, {
+							notFound: void
+						}, slime.$api.fp.Maybe<string>>
+
+						assert: slime.$api.fp.Mapping<Location, string>
+					}
 				}
 
 				write: (location: Location) => {
@@ -541,7 +545,7 @@ namespace slime.jrunscript.file {
 			) {
 				const { verify } = fifty;
 				const { $api, jsh } = fifty.global;
-				const subject = jsh.file.world;
+				const subject = jsh.file;
 
 				fifty.tests.sandbox.locations.file.other = function() {
 					fifty.run(function exists() {
@@ -576,7 +580,7 @@ namespace slime.jrunscript.file {
 						process();
 
 						var getText = $api.fp.world.input(
-							subject.Location.file.read.string()(at)
+							subject.Location.file.read.string.world()(at)
 						);
 
 						var maybeText = getText();

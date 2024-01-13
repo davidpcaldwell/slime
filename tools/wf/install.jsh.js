@@ -100,7 +100,7 @@
 								jsh.file.Location.directory.relativePath("tools/wf/templates"),
 								jsh.file.Location.directory.relativePath(path),
 								$api.fp.Maybe.impure.exception({
-									try: $api.fp.world.mapping(jsh.file.Location.file.read.string()),
+									try: $api.fp.world.mapping(jsh.file.Location.file.read.string.world()),
 									nothing: function(location) { throw new Error("File not found at " + location.pathname); }
 								}),
 								removeMpl
@@ -108,7 +108,7 @@
 							destination: destination,
 							existing: $api.fp.impure.Input.map(
 								destination,
-								$api.fp.world.mapping(jsh.file.Location.file.read.string())
+								$api.fp.world.mapping(jsh.file.Location.file.read.string.world())
 							)
 						})
 					};

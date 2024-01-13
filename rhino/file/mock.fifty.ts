@@ -60,7 +60,7 @@ namespace slime.jrunscript.file.internal.mock {
 				};
 
 				var text = $api.fp.world.now.question(
-					jsh.file.world.Location.file.read.string(),
+					jsh.file.world.Location.file.read.string.world(),
 					location
 				);
 
