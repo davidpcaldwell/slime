@@ -114,8 +114,16 @@ namespace slime.$api {
 
 	export namespace exports {
 		export interface Events {
+			/**
+			 * Creates an {@link slime.$api.Events} that can be used to fire events to a set of listeners. Event emitters can be
+			 * arranged in a hierarchy.
+			 *
+			 * @param p
+			 * @returns An {@link slime.$api.Events} configured using the given argument.
+			 */
 			create: <D>(p?:
 				{
+					/** (optional; default is the created {@link slime.$api.Events}) */
 					source?: {}
 					on?: slime.$api.event.Handlers<D>
 				} & (
@@ -129,6 +137,93 @@ namespace slime.$api {
 
 			Function: <P,E,R>(f: (p: P, events: slime.$api.Events<E>) => R, defaultListeners?: slime.$api.event.Handlers<E>) => (argument: P, receiver?: slime.$api.event.Function.Receiver<E>) => R
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.create = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.create.source = function() {
+					var source = {};
+
+
+					var noSource: slime.$api.Events<{ foo: void }> = $api.events.create();
+					var withSource: slime.$api.Events<{ foo: void }> = $api.events.create({ source: source });
+
+					var Captor = function() {
+						var captured = [];
+						var captor = function(e) {
+							captured.push(e);
+						}
+						return {
+							captured: captured,
+							captor: captor
+						};
+					};
+
+					var captorOne = Captor();
+					var captorTwo = Captor();
+
+					noSource.listeners.add("foo", captorOne.captor);
+					withSource.listeners.add("foo", captorTwo.captor);
+
+					noSource.fire("foo");
+					withSource.fire("foo");
+
+					verify(captorOne).captured.length.is(1);
+					verify(captorOne).captured[0].evaluate.property("source").is(noSource);
+					verify(captorTwo).captured.length.is(1);
+					verify(captorTwo).captured[0].evaluate.property("source").is(source);
+				};
+
+				fifty.tests.exports.create.parent = function() {
+					var parent: slime.$api.Events<{ aType: void }> = $api.events.create();
+					var child: slime.$api.Events<{ aType: void }> = $api.events.create({ parent: parent });
+
+					var received = {
+						parent: [],
+						child: []
+					};
+
+					var receive = function(name) {
+						return function(e) {
+							received[name].push({ source: e.source, path: e.path.slice() });
+						};
+					};
+
+					parent.listeners.add("aType", receive("parent"));
+					child.listeners.add("aType", receive("child"));
+
+					parent.fire("aType");
+					verify(received).parent.length.is(1);
+					verify(received).child.length.is(0);
+
+					child.fire("aType");
+					verify(received).parent.length.is(2);
+					verify(received).child.length.is(1);
+				}
+
+				fifty.tests.exports.create.jsapi = function() {
+					var emitter = $api.events.create();
+					verify(emitter).listeners.is.type("object");
+					verify(emitter).listeners.evaluate.property("add").is.type("function");
+					verify(emitter).listeners.evaluate.property("remove").is.type("function");
+					verify(emitter).evaluate.property("fire").is.type("function");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 
 		declare const marker: unique symbol;
 
