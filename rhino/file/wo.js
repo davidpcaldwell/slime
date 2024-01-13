@@ -54,7 +54,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Location } location
-		 * @param { slime.$api.Events<slime.jrunscript.file.world.events.FileOpenForWrite> } events
+		 * @param { slime.$api.event.Emitter<slime.jrunscript.file.world.events.FileOpenForWrite> } events
 		 * @param { (to: slime.jrunscript.runtime.io.OutputStream) => void } write
 		 */
 		var Location_write = function(location,events,write) {
@@ -582,7 +582,7 @@
 							 *
 							 * @param { slime.jrunscript.file.Location } location
 							 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-							 * @param { slime.$api.Events<slime.jrunscript.file.location.directory.list.Events> } events
+							 * @param { slime.$api.event.Emitter<slime.jrunscript.file.location.directory.list.Events> } events
 							 * @returns { slime.jrunscript.file.Location[] }
 							 */
 							var process = function(location,descend,events) {

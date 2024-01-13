@@ -163,7 +163,7 @@
 		 */
 		var basicInstall = function(p) {
 			/**
-			 * @param { slime.$api.Events<{ unzipping: { local: string, to: string }, installing: { to: string } }> } events
+			 * @param { slime.$api.event.Emitter<{ unzipping: { local: string, to: string }, installing: { to: string } }> } events
 			 */
 			return function(events) {
 				var local = p.local;

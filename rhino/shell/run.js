@@ -33,7 +33,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.shell.run.StdioConfiguration } p
-		 * @returns { (events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>) => slime.jrunscript.shell.internal.run.Stdio }
+		 * @returns { (events: slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents>) => slime.jrunscript.shell.internal.run.Stdio }
 		 */
 		function buildStdio(p) {
 			/**
@@ -59,7 +59,7 @@
 			}
 
 			/**
-			 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
+			 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
 			 * @param { "output" | "error" } stream
 			 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 			 */
@@ -129,7 +129,7 @@
 
 			/**
 			 *
-			 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
+			 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
 			 * @param { "output" | "error" } stream
 			 */
 			var destinationFactory = function(events, stream) {
@@ -325,7 +325,7 @@
 			var killed = false;
 			return $api.fp.world.old.tell(
 				/**
-				 * @param { slime.$api.Events<slime.jrunscript.shell.run.TellEvents> } events
+				 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
 				 */
 				function(events) {
 					events.fire("start", {

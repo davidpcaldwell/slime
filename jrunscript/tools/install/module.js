@@ -126,7 +126,7 @@
 
 		/**
 		 * @param { slime.jrunscript.tools.install.old.WorldSource } p
-		 * @param { slime.$api.Events<{ console: string }> } events
+		 * @param { slime.$api.event.Emitter<{ console: string }> } events
 		 */
 		var get = function(p,events) {
 			//	TODO	If typeof(p.file) is undefined, probably should try to use user downloads directory with p.name if present as default value
@@ -177,7 +177,7 @@
 
 		/**
 		 * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: slime.jrunscript.tools.install.old.Format, to: slime.jrunscript.file.Pathname, replace?: boolean } } p
-		 * @param { slime.$api.Events<{ console: string }> } events
+		 * @param { slime.$api.event.Emitter<{ console: string }> } events
 		 * @returns { slime.jrunscript.file.Directory }
 		 */
 		var installLocalArchive = function(p,events) {
@@ -236,7 +236,7 @@
 
 		/**
 		 * @param { slime.jrunscript.tools.install.old.Installation } p
-		 * @param { slime.$api.Events<{ console: string }> } events
+		 * @param { slime.$api.event.Emitter<{ console: string }> } events
 		 * @returns { slime.jrunscript.file.Directory }
 		 */
 		var install = function(p,events) {
@@ -283,7 +283,7 @@
 				/**
 				 *
 				 * @param { slime.jrunscript.tools.install.old.Source } p
-				 * @param { slime.$api.Events<slime.jrunscript.tools.install.events.Console> } events
+				 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.events.Console> } events
 				 */
 				function(p,events) {
 					var source = toModernSource(p);
@@ -295,7 +295,7 @@
 
 		/**
 		 *
-		 * @param { slime.$api.Events<slime.jrunscript.tools.install.download.Events> } events
+		 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events> } events
 		 * @returns
 		 */
 		var createFetcher = function(events) {
