@@ -207,6 +207,7 @@
 			startEndTagReplace("code", "`"),
 			startEndTagReplace("i", "*"),
 			startEndTagReplace("em", "*"),
+			startEndTagReplace("dfn", "*"),
 			startEndTagReplace("strong", "**"),
 			replaceLinks
 		);
