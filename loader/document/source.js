@@ -278,7 +278,7 @@
 
 		/**
 		 * @param { slime.runtime.document.internal.source.internal.State } state
-		 * @param { slime.$api.Events<slime.runtime.document.internal.source.ParseEvents> } events
+		 * @param { slime.$api.event.Emitter<slime.runtime.document.internal.source.ParseEvents> } events
 		 * @param { slime.runtime.document.internal.source.internal.Parser<slime.runtime.document.Parent> } recurse
 		 * @returns { slime.runtime.document.internal.source.internal.State }
 		 */
@@ -449,7 +449,7 @@
 			/**
 			 *
 			 * @param { slime.runtime.document.internal.source.internal.State } state
-			 * @param { slime.$api.Events<slime.runtime.document.internal.source.ParseEvents> } events
+			 * @param { slime.$api.event.Emitter<slime.runtime.document.internal.source.ParseEvents> } events
 			 * @param { (state: slime.runtime.document.internal.source.internal.State) => boolean } finished
 			 * @returns { slime.runtime.document.internal.source.internal.State }
 			 */
@@ -665,7 +665,7 @@
 		/**
 		 *
 		 * @param { string } input
-		 * @param { slime.$api.Events<{ console: string }> } events
+		 * @param { slime.$api.event.Emitter<{ console: string }> } events
 		 */
 		var debugFidelity = function(input, events) {
 			var console = function(string) {

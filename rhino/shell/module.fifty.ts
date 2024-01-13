@@ -159,7 +159,7 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
-		listeners: $api.Events<{
+		listeners: $api.event.Emitter<{
 			"run.start": any
 		}>["listeners"]
 	}
@@ -317,7 +317,7 @@ namespace slime.jrunscript.shell {
 				}
 			}
 
-			export type Events = slime.$api.Events<events.Events>
+			export type Events = slime.$api.event.Emitter<events.Events>
 
 			export type Handler = slime.$api.event.Handlers<events.Events>
 		}

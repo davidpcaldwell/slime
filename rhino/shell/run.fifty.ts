@@ -582,7 +582,7 @@ namespace slime.jrunscript.shell.internal.run {
 			/**
 			 * @deprecated
 			 */
-			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>) => Stdio
+			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents>) => Stdio
 
 			/**
 			 * @deprecated

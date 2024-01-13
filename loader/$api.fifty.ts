@@ -934,10 +934,10 @@ namespace slime.$api {
 			/** @deprecated Replaced by {@link slime.$api.Global["events"]["create"]} */
 			(p?: {
 				source?: any
-				parent?: slime.$api.Events<any>
-				getParent?: () => slime.$api.Events<any>
+				parent?: slime.$api.event.Emitter<any>
+				getParent?: () => slime.$api.event.Emitter<any>
 				on?: { [x: string]: any }
-			}): slime.$api.Events<any>
+			}): slime.$api.event.Emitter<any>
 
 			/** @deprecated Replaced by {@link slime.$api.Global["events"]["Function"]} */
 			Function: $api.Global["events"]["Function"]

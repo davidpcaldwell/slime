@@ -14,7 +14,7 @@
 	function($context,$export) {
 		/**
 		 * @constructor
-		 * @param { Parameters<slime.$api.exports.Events["create"]>[0] } [p]
+		 * @param { Parameters<slime.$api.exports.Events["emitter"]>[0] } [p]
 		 */
 		var Emitter = function(p) {
 			if (!p) p = {};
@@ -50,7 +50,7 @@
 			};
 
 			/**
-			 * @type { slime.$api.Events<{ [name: string]: any }>["listeners"] }
+			 * @type { slime.$api.event.Emitter<{ [name: string]: any }>["listeners"] }
 			 */
 			var listeners = {
 				add: function(name,handler) {
@@ -185,7 +185,7 @@
 
 		$export({
 			exports: {
-				create: function(p) {
+				emitter: function(p) {
 					return new Emitter(p);
 				},
 				Function: Function,

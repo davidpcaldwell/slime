@@ -206,7 +206,7 @@ namespace slime.jrunscript.shell.internal.run.old {
 			run: slime.jrunscript.shell.internal.run.Exports
 		}
 		module: {
-			events: $api.Events<any>
+			events: $api.event.Emitter<any>
 		}
 	}
 

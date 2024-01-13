@@ -23,7 +23,7 @@
 		var $exports = {};
 
 		var module = {
-			events: $api.events.create()
+			events: $api.events.emitter()
 		};
 
 		var environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );

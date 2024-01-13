@@ -564,7 +564,7 @@
 
 			/**
 			 *
-			 * @param { slime.$api.Events } scenario
+			 * @param { slime.$api.event.Emitter } scenario
 			 * @param { slime.definition.unit.View.Argument } implementation
 			 */
 			var addConsoleListener = function(scenario,implementation) {
@@ -580,7 +580,7 @@
 
 			/**
 			 *
-			 * @param { slime.$api.Events } scenario
+			 * @param { slime.$api.event.Emitter } scenario
 			 */
 			var listen = function(scenario) {
 				addConsoleListener(scenario,o);

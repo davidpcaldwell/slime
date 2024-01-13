@@ -520,8 +520,8 @@ namespace slime.$api.fp.world {
 		)
 	)
 
-	export type Question<E,R> = (events: slime.$api.Events<E>) => R
-	export type Action<E> = (events: slime.$api.Events<E>) => void
+	export type Question<E,R> = (events: slime.$api.event.Emitter<E>) => R
+	export type Action<E> = (events: slime.$api.event.Emitter<E>) => void
 
 	/** @deprecated */
 	export namespace old {
@@ -622,7 +622,7 @@ namespace slime.$api.fp.world {
 	export interface Exports {
 		Sensor: {
 			from: {
-				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.Events<E> }) => R) => Sensor<S,E,R>
+				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.event.Emitter<E> }) => R) => Sensor<S,E,R>
 			}
 
 			map: <NS,S,E,R,NR>(p: {
@@ -681,7 +681,7 @@ namespace slime.$api.fp.world {
 	export interface Exports {
 		Means: {
 			from: {
-				flat: <O,E>(f: (p: { order: O, events: slime.$api.Events<E> }) => void) => Means<O,E>
+				flat: <O,E>(f: (p: { order: O, events: slime.$api.event.Emitter<E> }) => void) => Means<O,E>
 			}
 			map: <P,R,E>(p: {
 				order: slime.$api.fp.Mapping<P,R>
@@ -831,9 +831,9 @@ namespace slime.$api.fp.world {
 		/** @deprecated */
 		old: {
 			/** @deprecated */
-			ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => world.old.Ask<E,T>
+			ask: <E,T>(f: (events: slime.$api.event.Emitter<E>) => T) => world.old.Ask<E,T>
 			/** @deprecated */
-			tell: <E>(f: (events: slime.$api.Events<E>) => void) => world.old.Tell<E>
+			tell: <E>(f: (events: slime.$api.event.Emitter<E>) => void) => world.old.Tell<E>
 		}
 	}
 
@@ -855,7 +855,7 @@ namespace slime.$api.fp.world {
 					number: number
 				}
 
-				var implementation = function(events: slime.$api.Events<E>): T {
+				var implementation = function(events: slime.$api.event.Emitter<E>): T {
 					events.fire("called");
 					return {
 						number: 3
@@ -883,7 +883,7 @@ namespace slime.$api.fp.world {
 
 				var effects: { number: number }[] = [];
 
-				var implementation = function(events: slime.$api.Events<E>) {
+				var implementation = function(events: slime.$api.event.Emitter<E>) {
 					events.fire("called");
 					effects.push({ number: 3 });
 				}

@@ -363,7 +363,7 @@
 			/**
 			 *
 			 * @param { string } pathname
-			 * @param { slime.$api.Events<{ notFound: void }> } events
+			 * @param { slime.$api.event.Emitter<{ notFound: void }> } events
 			 */
 			var openInputStream = function(pathname,events) {
 				var peer = java.newPeer(pathname);
@@ -399,7 +399,7 @@
 			/**
 			 *
 			 * @param { string } pathname
-			 * @param { slime.$api.Events<{ notFound: void }> } events
+			 * @param { slime.$api.event.Emitter<{ notFound: void }> } events
 			 * @returns
 			 */
 			var maybeInputStream = function(pathname,events) {
@@ -626,7 +626,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
-			 * @param { slime.$api.Events<{ created: string }> } events
+			 * @param { slime.$api.event.Emitter<{ created: string }> } events
 			 */
 			var createAt = function(peer,events) {
 				java.createDirectoryAt(peer);
@@ -636,7 +636,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
-			 * @param { slime.$api.Events<{ created: string }> } events
+			 * @param { slime.$api.event.Emitter<{ created: string }> } events
 			 */
 			var ensureParent = function(peer,events) {
 				var parent = java.getParent(peer);

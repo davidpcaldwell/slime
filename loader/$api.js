@@ -529,7 +529,7 @@
 		$exports.events = events.exports;
 
 		$exports.Events = Object.assign(
-			$exports.deprecate(events.exports.create),
+			$exports.deprecate(events.exports.emitter),
 			{
 				Function: $exports.deprecate(events.exports.Function),
 			}
