@@ -152,7 +152,7 @@
 					p.base,
 					$context.jsh.file.world.Location.from.os,
 					$context.jsh.file.world.Location.relative("RELEASE-NOTES"),
-					$api.fp.world.mapping($context.jsh.file.world.Location.file.read.string())
+					$api.fp.world.mapping($context.jsh.file.world.Location.file.read.string.world())
 				);
 			}
 		};

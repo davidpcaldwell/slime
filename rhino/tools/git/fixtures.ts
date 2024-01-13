@@ -110,7 +110,7 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 					var target = $api.fp.result(
 						repository.location,
 						function(pathname) {
-							return jsh.file.world.Location.from.os(pathname);
+							return jsh.file.Location.from.os(pathname);
 						},
 						jsh.file.world.Location.relative(path)
 					);
@@ -118,7 +118,7 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 					var before = $api.fp.result(
 						target,
 						$api.fp.pipe(
-							$api.fp.world.mapping(jsh.file.world.Location.file.read.string()),
+							$api.fp.world.mapping(jsh.file.world.Location.file.read.string.world()),
 							$api.fp.Maybe.else(function() {
 								return null as string;
 							})

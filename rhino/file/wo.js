@@ -352,163 +352,171 @@
 						}
 					})()
 				},
-				file: {
-					exists: function() {
-						return Location_file_exists;
-					},
-					size: function(location) {
-						return function(events) {
-							var maybe = location.filesystem.fileSize({ pathname: location.pathname })(events);
-							if (!maybe.present) throw new Error("Could not get file size for " + location.pathname);
-							return maybe.value;
+				file: (function() {
+					/** @type { slime.jrunscript.file.location.file.Exports["read"]["stream"] } */
+					var readStream = function() {
+						return function(location) {
+							return location.filesystem.openInputStream({
+								pathname: location.pathname
+							});
 						}
-					},
-					read: {
-						stream: function() {
-							return function(location) {
-								return function(events) {
-									var ask = location.filesystem.openInputStream({
-										pathname: location.pathname
-									});
-									return ask(events);
+					};
+
+					/** @type { slime.jrunscript.file.location.file.Exports["read"]["string"]["world"] } */
+					var readString = function() {
+						return $api.fp.world.Sensor.map({
+							subject: $api.fp.identity,
+							sensor: readStream(),
+							reading: $api.fp.Maybe.map(
+								function(it) {
+									return it.character().asString();
 								}
+							)
+						});
+					};
+
+					return {
+						exists: function() {
+							return Location_file_exists;
+						},
+						size: function(location) {
+							return function(events) {
+								var maybe = location.filesystem.fileSize({ pathname: location.pathname })(events);
+								if (!maybe.present) throw new Error("Could not get file size for " + location.pathname);
+								return maybe.value;
 							}
 						},
-						string: function() {
-							return function(location) {
-								return function(events) {
-									var ask = location.filesystem.openInputStream({
-										pathname: location.pathname
-									});
-									var maybe = ask(events);
-									return $api.fp.result(
-										maybe,
-										$api.fp.Maybe.map(
-											function(it) {
-												return it.character().asString()
-											}
-										)
-									)
-								}
+						read: {
+							stream: readStream,
+							string: {
+								world: readString,
+								assert: $api.fp.Maybe.impure.exception({
+									try: $api.fp.world.Sensor.mapping({
+										sensor: readString()
+									}),
+									nothing: function(location) {
+										throw new Error("Could not read: " + location.pathname);
+									}
+								})
 							}
-						}
-					},
-					write: Object.assign(
-						/**
-						 *
-						 * @param { Parameters<slime.jrunscript.file.location.file.Exports["write"]>[0] } location
-						 * @returns { ReturnType<slime.jrunscript.file.location.file.Exports["write"]> } location
-						 */
-						function(location) {
-							return {
-								string: function(p) {
-									return function(events) {
-										Location_write(
-											location,
-											events,
-											function(stream) {
-												var writer = stream.character();
-												writer.write(p.value);
-												writer.close();
+						},
+						write: Object.assign(
+							/**
+							 *
+							 * @param { Parameters<slime.jrunscript.file.location.file.Exports["write"]>[0] } location
+							 * @returns { ReturnType<slime.jrunscript.file.location.file.Exports["write"]> }
+							 */
+							function(location) {
+								return {
+									string: function(p) {
+										return function(events) {
+											Location_write(
+												location,
+												events,
+												function(stream) {
+													var writer = stream.character();
+													writer.write(p.value);
+													writer.close();
+												}
+											)
+										}
+									},
+									stream: function(p) {
+										return function(events) {
+											Location_write(
+												location,
+												events,
+												function(output) {
+													$context.library.io.Streams.binary.copy(
+														p.input,
+														output
+													)
+												}
+											)
+										}
+									},
+									object: {
+										text: function(p) {
+											return function(events) {
+												var ask = location.filesystem.openOutputStream({
+													pathname: location.pathname
+												});
+												return $api.fp.result(
+													ask(events),
+													$api.fp.Maybe.map(function(stream) {
+														return stream.character();
+													})
+												);
 											}
-										)
+										}
+									}
+								}
+							},
+							{
+								string: function(p) {
+									return function(location) {
+										return function(events) {
+											Location_write(
+												location,
+												events,
+												function(stream) {
+													var writer = stream.character();
+													writer.write(p.value);
+													writer.close();
+												}
+											);
+										}
 									}
 								},
 								stream: function(p) {
-									return function(events) {
-										Location_write(
-											location,
-											events,
-											function(output) {
-												$context.library.io.Streams.binary.copy(
-													p.input,
-													output
-												)
-											}
-										)
+									return function(location) {
+										return function(events) {
+											Location_write(
+												location,
+												events,
+												function(output) {
+													$context.library.io.Streams.binary.copy(
+														p.input,
+														output
+													)
+												}
+											)
+										}
 									}
 								},
 								object: {
-									text: function(p) {
-										return function(events) {
-											var ask = location.filesystem.openOutputStream({
-												pathname: location.pathname
-											});
-											return $api.fp.result(
-												ask(events),
-												$api.fp.Maybe.map(function(stream) {
-													return stream.character();
-												})
-											);
+									text: function() {
+										return function(location) {
+											return function(events) {
+												var ask = location.filesystem.openOutputStream({
+													pathname: location.pathname
+												});
+												return $api.fp.result(
+													ask(events),
+													$api.fp.Maybe.map(function(stream) {
+														return stream.character();
+													})
+												);
+											}
+
 										}
 									}
+								}
+							}
+						),
+						/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
+						remove: function() {
+							return function(location) {
+								return function() {
+									$api.fp.world.now.action(
+										location.filesystem.remove,
+										{ pathname: location.pathname }
+									)
 								}
 							}
 						},
-						{
-							string: function(p) {
-								return function(location) {
-									return function(events) {
-										Location_write(
-											location,
-											events,
-											function(stream) {
-												var writer = stream.character();
-												writer.write(p.value);
-												writer.close();
-											}
-										);
-									}
-								}
-							},
-							stream: function(p) {
-								return function(location) {
-									return function(events) {
-										Location_write(
-											location,
-											events,
-											function(output) {
-												$context.library.io.Streams.binary.copy(
-													p.input,
-													output
-												)
-											}
-										)
-									}
-								}
-							},
-							object: {
-								text: function() {
-									return function(location) {
-										return function(events) {
-											var ask = location.filesystem.openOutputStream({
-												pathname: location.pathname
-											});
-											return $api.fp.result(
-												ask(events),
-												$api.fp.Maybe.map(function(stream) {
-													return stream.character();
-												})
-											);
-										}
-
-									}
-								}
-							}
-						}
-					),
-					/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
-					remove: function() {
-						return function(location) {
-							return function() {
-								$api.fp.world.now.action(
-									location.filesystem.remove,
-									{ pathname: location.pathname }
-								)
-							}
-						}
-					},
-				},
+					}
+				})(),
 				directory: {
 					base: directory.navigation.base,
 					relativePath: directory.navigation.relativePath,

@@ -296,7 +296,7 @@
 
 		var readFileString = $api.fp.pipe(
 			$api.fp.world.mapping(
-				$context.library.file.world.Location.file.read.string()
+				$context.library.file.world.Location.file.read.string.world()
 			),
 			Maybe_assert
 		)
@@ -557,7 +557,7 @@
 			Location: {
 				parse: $api.fp.pipe(
 					$api.fp.Maybe.impure.exception({
-						try: $api.fp.world.mapping($context.library.file.Location.file.read.string()),
+						try: $api.fp.world.mapping($context.library.file.Location.file.read.string.world()),
 						nothing: function(e) { throw new Error("Could not read file: " + e.pathname + " in " + e.filesystem); }
 					}),
 					document.parse
@@ -744,7 +744,7 @@
 				gitignoreLocal: $api.fp.world.Means.from.flat(
 					function(p) {
 						var readString = $api.fp.world.Sensor.mapping({
-							sensor: $context.library.file.Location.file.read.string()
+							sensor: $context.library.file.Location.file.read.string.world()
 						});
 
 						/** @param { { location: slime.jrunscript.file.Location, content: string } } p */
@@ -891,7 +891,7 @@
 
 					var read = $api.fp.Maybe.impure.exception({
 						/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>> } */
-						try: $api.fp.world.Sensor.mapping({ sensor: $context.library.file.Location.file.read.string() }),
+						try: $api.fp.world.Sensor.mapping({ sensor: $context.library.file.Location.file.read.string.world() }),
 						nothing: function(location) { return new Error("Could not read: " + location.pathname) }
 					});
 

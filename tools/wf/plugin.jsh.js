@@ -249,7 +249,7 @@
 					base,
 					jsh.file.Location.directory.relativePath("wf.path"),
 					$api.fp.Maybe.impure.exception({
-						try: $api.fp.world.mapping(jsh.file.Location.file.read.string()),
+						try: $api.fp.world.mapping(jsh.file.Location.file.read.string.world()),
 						nothing: function(location) { return new Error("No file found at " + location.pathname); }
 					})
 				);

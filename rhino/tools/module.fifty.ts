@@ -270,7 +270,7 @@ namespace slime.jrunscript.java.tools {
 				var src = $api.fp.world.now.ask(jsh.io.InputStream.string($api.fp.world.now.ask( (array[3] as slime.jrunscript.java.tools.jar.FileEntry).read)));
 
 				var original = $api.fp.world.now.question(
-					jsh.file.Location.file.read.string(),
+					jsh.file.Location.file.read.string.world(),
 					fifty.jsh.file.relative("test/java/Hello.java")
 				);
 

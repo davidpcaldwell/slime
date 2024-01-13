@@ -23,6 +23,15 @@
 			jsh.tools.code.Project.from.git
 		);
 
+		/** @type { slime.$api.fp.Identity<slime.tools.code.File> } */
+		var asFile = $api.fp.identity;
+
+		var read = $api.fp.pipe(
+			asFile,
+			$api.fp.property("file"),
+			jsh.file.Location.file.read.string.assert
+		);
+
 		jsh.script.cli.main(
 			jsh.script.cli.program({
 				commands: {
@@ -33,74 +42,62 @@
 						})
 					}),
 					types: function(invocation) {
-						/**
-						 *
-						 * @param { string } code
-						 * @returns { { line: number, ignored: string }[] } The lines on which a ts-ignore occurs; lines on the
-						 * second-to-last line of a .js file are not included.
-						 */
-						var getIgnores = function(type,code) {
-							var lines = code.split("\n");
-							return lines.reduce(function(rv,line,index,array) {
-								var indexOf = line.indexOf("@" + "ts-ignore");
-								var ok = (function() {
-									if (type == "js" && index == array.length-3) return true;
-									if (type == "ts" && lines[index+1] && lines[index+1].trim() == ")(fifty);") return true;
-									return false;
-								})();
-								if (indexOf != -1 && !ok) {
-									rv.push({ line: index+1, ignored: lines[index+1] });
+						var scans = $api.fp.now.invoke(
+							project(),
+							jsh.tools.code.Project.files,
+							$api.fp.Array.groupBy({
+								/** @type { (entry: slime.tools.code.File) => string } */
+								group: function(entry) {
+									if (jsh.tools.code.File.isJavascript(entry)) return "js";
+									if (jsh.tools.code.File.isTypescript(entry)) return "ts";
+									return "other";
 								}
-								return rv;
-							},[]);
-						};
+							}),
+							$api.fp.Array.filter(function(group) {
+								return group.group != "other";
+							}),
+							$api.fp.Array.map(function(language) {
+								/**
+								 *
+								 * @param { string } code
+								 * @returns { { line: number, ignored: string }[] } The lines on which a ts-ignore occurs; lines on the
+								 * second-to-last line of a .js file are not included.
+								 */
+								var getIgnores = function(type,code) {
+									var lines = code.split("\n");
+									return lines.reduce(function(rv,line,index,array) {
+										var indexOf = line.indexOf("@" + "ts-ignore");
+										var ok = (function() {
+											if (type == "js" && index == array.length-3) return true;
+											if (type == "ts" && lines[index+1] && lines[index+1].trim() == ")(fifty);") return true;
+											return false;
+										})();
+										if (indexOf != -1 && !ok) {
+											rv.push({ line: index+1, ignored: lines[index+1] });
+										}
+										return rv;
+									},[]);
+								};
 
-						/** @type { slime.$api.fp.Identity<slime.tools.code.File> } */
-						var asFile = $api.fp.identity;
-
-						var read = $api.fp.pipe(
-							asFile,
-							$api.fp.property("file"),
-							$api.fp.Maybe.impure.exception({
-								/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>>} */
-								try: $api.fp.world.Sensor.mapping({
-									sensor: jsh.file.Location.file.read.string()
-								}),
-								nothing: function(t) { return new Error("Could not read: " + t.pathname); }
+								return {
+									language: language.group,
+									files: language.array.map(function(entry) {
+										var code = read(entry);
+										var covered = (language.group == "ts")
+											? true
+											: jsh.tools.code.File.javascript.hasTypeChecking(entry)["value"]
+										;
+										return {
+											path: entry.path,
+											ignores: getIgnores(language.group,code),
+											checked: covered,
+											lines: code.split("\n").length
+										};
+									})
+								}
 							})
 						);
 
-						var src = $api.fp.now.invoke(project(), jsh.tools.code.Project.files);
-						var grouper = $api.fp.Array.groupBy({
-							/** @type { (entry: slime.tools.code.File) => string } */
-							group: function(entry) {
-								if (jsh.tools.code.File.isJavascript(entry)) return "js";
-								if (jsh.tools.code.File.isTypescript(entry)) return "ts";
-								return "other";
-							}
-						});
-						var groups = grouper(src);
-						var languages = groups.filter(function(group) {
-							return group.group != "other";
-						});
-						var scans = languages.map(function(language) {
-							return {
-								language: language.group,
-								files: language.array.map(function(entry) {
-									var code = read(entry);
-									var covered = (language.group == "ts")
-										? true
-										: jsh.tools.code.File.javascript.hasTypeChecking(entry)["value"]
-									;
-									return {
-										path: entry.path,
-										ignores: getIgnores(language.group,code),
-										checked: covered,
-										lines: code.split("\n").length
-									};
-								})
-							}
-						});
 						var scripts = scans.find(function(scan) { return scan.language == "js"; }).files.map(function(file) {
 							return $api.Object.compose(file, {
 								uncovered: (file.checked) ? file.ignores.length : file.lines
