@@ -96,17 +96,23 @@ END LICENSE
 </head>
 <body>
 	<div>
-		<h1>Running <code>jsh</code>: <code>jsh.bash</code></h1>
+		<h1>Running <code>jsh</code>: <code>jsh</code></h1>
 		<div>
-			The easiest way to run <code>jsh</code> is via the top-level <code>jsh.bash</code> script:
+			The easiest way to run <code>jsh</code> is via the top-level <code>jsh</code> script:
 			<div class="usage">
-				<code>./jsh.bash [<i>-vmargument</i> [...<i>-vmargument</i>]] &lt;<i>path-to-script</i>> <i>[arguments]</i></code>
+				<code>./jsh [<i>-vmargument</i> [...<i>-vmargument</i>]] &lt;<i>path-to-script</i>> <i>[arguments]</i></code>
 			</div>
 			<div>
 				For example, if a suitable Java installation is available in the <code>PATH</code>, the following invocation
 				from the directory containing the SLIME code) will
 				launch a script that outputs information about the shell in JSON format:
-				<pre class="example"><code>./jsh.bash jsh/test/jsh-data.jsh.js</code></pre>
+				<pre class="example"><code>./jsh jrunscript/jsh/test/jsh-data.jsh.js</code></pre>
+			</div>
+			<div>
+				VM arguments are arguments that should be passed directly to the Java VM; so, for example, the following invocation
+				of the diagnostic script above will set the system property <code>foo</code> to the value <code>"bar"</code>
+				(you can see this in the script's output):
+				<pre class="example"><code>./jsh -Dfoo=bar jrunscript/jsh/test/jsh-data.jsh.js</code></pre>
 			</div>
 			<div>
 				<h2>How <code>jsh</code> selects a JDK</h2>
@@ -141,7 +147,7 @@ END LICENSE
 	<div>
 		<h1>Installing JDKs for <code>jsh</code></h1>
 		<div>
-			<code>jsh.bash</code> is also capable of installing JDKs in both the shell and user installation directories.
+			THe <code>jsh</code> script is also capable of installing JDKs in both the shell and user installation directories.
 			The following arguments are accepted:
 			<ul>
 				<li><code>--install-jdk</code>: Installs the default JDK (currently <a href="https://aws.amazon.com/corretto/">Amazon Corretto 8</a>) to the shell as the default.</li>
@@ -199,7 +205,7 @@ END LICENSE
 			<p>
 				Rhino may be installed into a <code>jsh</code> shell with the following command:
 				<pre><code>
-./jsh.bash jsh/tools/install/rhino.jsh.js [-version <i>version</i>]
+./jsh jrunscript/jsh/tools/install/rhino.jsh.js [-version <i>version</i>]
 				</code></pre>
 				where <i>version</i> is one of:
 				<ul>
@@ -238,14 +244,14 @@ END LICENSE
 					<td>(none)</td>
 					<td><code>JSH_LAUNCHER_BASH_DEBUG</code></td>
 					<td>
-						Enables debugging within the <code>jsh.bash</code> launcher.
+						Enables debugging within the <code>jsh</code> launcher.
 					</td>
 				</tr>
 				<tr>
 					<td>(none)</td>
 					<td><code>JSH_LAUNCHER_JDK_HOME</code></td>
 					<td>
-						Specifies a Java Development Kit that <code>jsh.bash</code> should use to execute scripts.
+						Specifies a Java Development Kit that <code>jsh</code> should use to execute scripts.
 					</td>
 				</tr>
 				<tr>
@@ -310,7 +316,7 @@ END LICENSE
 						</div>
 						<div class="debugger">
 							<h3><code>profiler</code> or <code>profiler:<i>name1</i>=<i>value1</i>,<i>name2</i>=<i>value2</i></code>: Use the SLIME profiler, which requires Rhino</h3>
-							<!--	test: jsh/launcher/test/manual/debug-profiler.bash -->
+							<!--	test: jrunscript/jsh/launcher/test/manual/debug-profiler.bash -->
 							<div>
 								<strong>
 									(Not recommended to use <code>profiler</code> or <code>profiler:...</code> settings directly.
@@ -346,7 +352,7 @@ END LICENSE
 									information is present in case the situation improves.
 								</strong>
 							</div>
-							<!--	test: jsh/launcher/test/manual/debug-ncdbg.bash -->
+							<!--	test: jrunscript/jsh/launcher/test/manual/debug-ncdbg.bash -->
 							<div class="obsolete">
 								<strong>(Not recommended to use <code>ncdbg</code> setting directly; see below.)</strong>
 							</div>
@@ -357,7 +363,7 @@ END LICENSE
 								debug <code>jsh</code> scripts.
 								But setting this variable is insufficient to do the other things needed to run <code>ncdbg</code>:
 								start its server, etc. Using the
-								<a href="../jsh/tools/ncdbg.jsh.js"><code>jsh/tools/ncdbg.jsh.js</code></a> script is recommended.
+								<a href="../../../jrunscript/jsh/tools/ncdbg.jsh.js"><code>jrunscript/jsh/tools/ncdbg.jsh.js</code></a> script is recommended.
 							</div>
 							<div class="obsolete">
 								To work in Visual Studio Code using the <code>ncdbg</code> debugger, see the <code>ncdbg</code> Visual Studio Code
@@ -371,7 +377,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
+					<!--	Tested in jrunscript/jsh/launcher/test/suite.jsh.js	-->
 					<td><code>jsh.log.java.properties</code></td>
 					<td>
 						Specifies the location of a <code>java.util.logging</code> properties file to use in configuring logging
@@ -380,7 +386,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Used in jsh/launcher/test/suite.jsh.js	-->
+					<!--	Used in jrunscript/jsh/launcher/test/suite.jsh.js	-->
 					<td><code>jsh.shell.tmpdir</code></td>
 					<td>
 						Specifies the location the shell should use for creating temporary files. This setting is used to set the
@@ -388,7 +394,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Used in jsh/launcher/test/suite.jsh.js	-->
+					<!--	Used in jrunscript/jsh/launcher/test/suite.jsh.js	-->
 					<td><code>jsh.engine</code></td>
 					<td>
 						If set to <code>rhino</code>, the shell will be run using Rhino as the JavaScript engine. If set to
@@ -399,8 +405,8 @@ END LICENSE
 				<tr>
 					<td><code>jsh.shell.lib</code></td>
 					<!--
-						TODO: untested; could be tested using jsh/test/jsh-data.jsh.js if it emitted jsh.shell.jsh.lib. Could also
-						check for executing engine if Rhino were installed in default shell
+						TODO: untested; could be tested using jrunscript/jsh/test/jsh-data.jsh.js if it emitted jsh.shell.jsh.lib.
+						Could also check for executing engine if Rhino were installed in default shell
 					-->
 					<td>
 						Sets an alternate location for the <code>lib/</code> directory. Can be used to configure a shell with a
@@ -408,7 +414,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
+					<!--	Tested in jrunscript/jsh/launcher/test/suite.jsh.js	-->
 					<td><code>jsh.engine.rhino.classpath</code></td>
 					<td>
 						Specifies the location of Rhino when running a runtime shell.
@@ -416,7 +422,7 @@ END LICENSE
 					</td>
 				</tr>
 				<tr>
-					<!--	Tested in jsh/launcher/test/suite.jsh.js	-->
+					<!--	Tested in jrunscript/jsh/launcher/test/suite.jsh.js	-->
 					<td><code>jsh.engine.rhino.optimization</code></td>
 					<td>
 						Sets the <a href="https://developer.mozilla.org/en-US/docs/Mozilla/Projects/Rhino/Optimization">Rhino optimization level</a>

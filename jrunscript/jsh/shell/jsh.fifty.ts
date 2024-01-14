@@ -97,6 +97,9 @@ namespace slime.jsh.shell {
 	export type Intention = (
 		Invocation
 		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "stdio" | "directory">
+		& {
+			properties?: { [name: string]: string }
+		}
 	)
 
 	export interface JshShellJsh {
@@ -373,8 +376,6 @@ namespace slime.jsh.shell {
 
 		/** @deprecated Replaced by `run`. */
 		shell: any
-
-		jsh: JshShellJsh
 
 		run: slime.jrunscript.shell.Exports["run"] & {
 			evaluate: {

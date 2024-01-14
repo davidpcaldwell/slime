@@ -576,6 +576,16 @@
 							return Boolean(p["shell"]);
 						}
 
+						/** @param { slime.jsh.shell.Intention["properties"] } properties */
+						var getPropertyArguments = function(properties) {
+							return Object.entries(properties).reduce(function(rv,entry) {
+								//	TODO	is any sort of escaping or anything required here? What if value has spaces? What if
+								//			name does?
+								rv.push("-D" + entry[0] + "=" + entry[1]);
+								return rv;
+							},[])
+						}
+
 						if (isExternalInstallationInvocation(p)) {
 							var shell = p.shell;
 							if (isUnbuilt(shell)) {
@@ -586,6 +596,7 @@
 									command: "bash",
 									arguments: $api.Array.build(function(rv) {
 										rv.push(getSrcLauncher(s).pathname);
+										if (p.properties) rv.push.apply(rv, getPropertyArguments(p.properties));
 										rv.push(p.script);
 										if (p.arguments) rv.push.apply(rv, p.arguments);
 									}),
@@ -594,6 +605,8 @@
 									stdio: p.stdio
 								}
 							} else if (isBuilt(shell)) {
+								//	TODO #1415	support this
+								if (p.properties) throw new TypeError("Unsupported: supplying properties to built shell.");
 								var downcast = shell;
 								return {
 									//	TODO	will not work on Windows
@@ -663,7 +676,9 @@
 			is.evaluate.wrap = function(result) {
 				$exports.exit(result.status);
 			};
-			is.evaluate.jsh = {};
+			is.evaluate.jsh = {
+				wrap: void(0)
+			};
 			is.evaluate.jsh.wrap = function(result) {
 				$exports.exit(result.status);
 			}
