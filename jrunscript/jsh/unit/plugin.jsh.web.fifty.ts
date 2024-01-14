@@ -17,14 +17,21 @@ namespace slime.jsh.unit {
 				}): slime.jsh.unit.mock.Web
 
 				/**
-				 * @deprecated Replaced by Exports["mock"]["bitbucket"].
+				 * @deprecated Replaced by Exports["mock"]["Bitbucket"].
 				 */
 				bitbucket: slime.jsh.unit.bitbucket.Exports
 
+				/**
+				 * @deprecated Replaced by Exports["web"]["Github"].
+				 */
 				github: slime.jsh.unit.mock.web.Github
 			}
 
-			bitbucket: slime.jsh.unit.bitbucket.Exports
+			web: {
+				Github: slime.jsh.unit.mock.web.Github
+				Bitbucket: slime.jsh.unit.bitbucket.Exports
+			}
+
 
 			Hg: {
 				host: new (p: {}) => {

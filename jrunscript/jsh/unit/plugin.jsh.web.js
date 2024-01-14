@@ -27,9 +27,9 @@
 				/** @type { slime.jsh.unit.mock } */
 				jsh.unit.mock = {
 					Web: void(0),
+					web: void(0),
 					Hg: void(0),
 					git: void(0),
-					bitbucket: void(0)
 				};
 
 				var Web = Object.assign(function(o) {
@@ -173,7 +173,10 @@
 					}
 				});
 
-				jsh.unit.mock.bitbucket = bitbucket;
+				jsh.unit.mock.web = {
+					Bitbucket: bitbucket,
+					Github: void(0)
+				};
 
 				if (jsh.unit.mock.Web) jsh.unit.mock.Web.bitbucket = $api.deprecate(bitbucket);
 
