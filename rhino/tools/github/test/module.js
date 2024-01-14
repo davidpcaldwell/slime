@@ -19,14 +19,13 @@
 		 * @returns
 		 */
 		var startMock = function(jsh) {
-			if (!jsh.unit.mock.Web.github) throw new Error("Required: Mock GitHub, loaded from rhino/tools/github plugin");
 			var web = new jsh.unit.mock.Web({ trace: true });
 			//	TODO	push these kinds of declarations back into a mock object that aggregates hosts and handler
 			web.addHttpsHost("127.0.0.1");
 			web.addHttpsHost("raw.githubusercontent.com");
 			web.addHttpsHost("api.github.com");
 			web.addHttpsHost("github.com");
-			web.add(jsh.unit.mock.Web.github({
+			web.add(jsh.unit.mock.web.Github({
 				//	TODO	flip to true to test possibility of accessing private repositories
 				//	TODO	this should actually be per-repository, though
 				private: false,

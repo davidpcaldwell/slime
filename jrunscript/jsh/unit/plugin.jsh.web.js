@@ -32,7 +32,7 @@
 					git: void(0),
 				};
 
-				var Web = Object.assign(function(o) {
+				var Web = function(o) {
 					if (!o) o = {
 						trace: false
 					};
@@ -164,7 +164,8 @@
 						});
 						tomcat.stop();
 					};
-				}, { bitbucket: void(0), github: void(0) });
+				};
+
 				if (jsh.httpd.Tomcat) jsh.unit.mock.Web = Web;
 
 				var bitbucket = code.bitbucket({
@@ -177,8 +178,6 @@
 					Bitbucket: bitbucket,
 					Github: void(0)
 				};
-
-				if (jsh.unit.mock.Web) jsh.unit.mock.Web.bitbucket = $api.deprecate(bitbucket);
 
 				jsh.unit.mock.Hg = {
 					/** @constructor */

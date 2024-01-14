@@ -11,21 +11,9 @@ namespace slime.jsh.unit {
 		 * Bitbucket, and Git/Mercurial hosting.
 		 */
 		mock: {
-			Web: {
-				new (o?: {
-					trace: boolean
-				}): slime.jsh.unit.mock.Web
-
-				/**
-				 * @deprecated Replaced by Exports["mock"]["Bitbucket"].
-				 */
-				bitbucket: slime.jsh.unit.bitbucket.Exports
-
-				/**
-				 * @deprecated Replaced by Exports["web"]["Github"].
-				 */
-				github: slime.jsh.unit.mock.web.Github
-			}
+			Web: new (o?: {
+				trace: boolean
+			}) => slime.jsh.unit.mock.Web
 
 			web: {
 				Github: slime.jsh.unit.mock.web.Github
