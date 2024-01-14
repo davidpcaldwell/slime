@@ -27,8 +27,6 @@
 					jsh: jsh
 				});
 
-				jsh.unit.mock.Web.github = mock;
-				$api.deprecate(jsh.unit.mock.Web, "github");
 				jsh.unit.mock.web.Github = mock;
 			}
 		})
