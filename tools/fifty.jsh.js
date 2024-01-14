@@ -55,19 +55,39 @@
 									rv[element.name] = element.value;
 									return rv;
 								},{});
-								return jsh.shell.jsh({
-									shell: SLIME,
-									script: SLIME.getFile("tools/fifty/test.jsh.js"),
-									arguments: p.arguments,
-									environment: $api.Object.compose(
-										jsh.shell.environment,
-										p.options["debug:rhino"] ? {
-											JSH_DEBUG_SCRIPT: "rhino"
-										} : {}
-									),
-									properties: properties,
-									evaluate: jsh.shell.run.evaluate.wrap
-								});
+								var installation = jsh.shell.jsh.Installation.from.current();
+								if (jsh.shell.jsh.Installation.is.unbuilt(installation)) {
+									/** @type { slime.jsh.shell.Intention } */
+									var intention = {
+										shell: installation,
+										script: SLIME.getRelativePath("tools/fifty/test.jsh.js").toString(),
+										arguments: p.arguments,
+										environment: function(inherit) {
+											return $api.Object.compose(inherit, p.options["debug:rhino"] ? {
+												JSH_DEBUG_SCRIPT: "rhino"
+											} : {});
+										},
+										properties: properties,
+										stdio: {
+											output: "line",
+											error: "line"
+										}
+									};
+									var shellIntention = jsh.shell.jsh.Intention.toShellIntention(intention);
+									var exit = $api.fp.world.now.question(
+										jsh.shell.subprocess.question,
+										shellIntention,
+										{
+											stdout: jsh.shell.Invocation.handler.stdio.line(function(e) {
+												jsh.shell.echo(e.detail.line);
+											}),
+											stderr: jsh.shell.Invocation.handler.stdio.line(function(e) {
+												jsh.shell.console(e.detail.line);
+											})
+										}
+									);
+									return exit;
+								}
 							},
 							function(p) {
 								jsh.shell.exit(p.status);
