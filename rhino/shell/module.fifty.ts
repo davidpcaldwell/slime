@@ -598,7 +598,7 @@ namespace slime.jrunscript.shell {
 					}) => system.apple.osx.ApplicationBundle
 				}
 			}
-			opendesktop: any
+			opendesktop: slime.jrunscript.shell.opendesktop.Exports
 		}
 	}
 

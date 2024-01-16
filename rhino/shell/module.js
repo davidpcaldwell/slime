@@ -510,10 +510,15 @@
 			"opendesktop",
 			{
 				get: $api.fp.impure.Input.memoized(function() {
-					return $loader.file("opendesktop.js", {
-						api: {
+					/** @type { slime.jrunscript.shell.opendesktop.Script } */
+					var script = $loader.script("opendesktop.js");
+					return script({
+						library: {
 							js: $context.api.js,
-							shell: $exports
+							shell: {
+								PATH: $exports.PATH,
+								run: scripts.run_old.run
+							}
 						}
 					});
 				})
@@ -860,8 +865,12 @@
 		}
 
 		var ssh = code.ssh({
-			getEnvArguments: Environment.envArgs,
-			subprocess: subprocess
+			library: {
+				getEnvArguments: Environment.envArgs
+			},
+			world: {
+				subprocess: subprocess
+			}
 		});
 
 		/** @type { slime.jrunscript.shell.Exports } */

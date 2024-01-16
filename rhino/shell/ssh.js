@@ -21,41 +21,50 @@
 			return (p.user) ? (p.user + "@" + p.hostname) : p.hostname;
 		};
 
-		/** @type { slime.jrunscript.shell.ssh.Exports["execute"]["intention"] } */
-		var command = function(p) {
-
-			/**
-			 *
-			 * @param { slime.jrunscript.shell.ssh.Intention } p
-			 */
-			var commands = function(p) {
-				var rv = [];
-				if (p.directory) {
-					rv.push("cd " + p.directory);
-				}
-				if (p.environment) {
-					rv.push((
-						[
-							"env"
-						].concat($context.getEnvArguments(p.environment))
-							.concat([p.command])
-							.concat(p.arguments)
-							.join(" ")
-					));
-				} else {
-					rv.push([
-						p.command
-					].concat(p.arguments).join(" "));
-				}
-				return rv;
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.ssh.Intention } p
+		 */
+		var intentionToCommand = function(p) {
+			var rv = [];
+			if (p.directory) {
+				rv.push("cd " + p.directory);
 			}
+			if (p.environment) {
+				rv.push((
+					[
+						"env"
+					].concat($context.library.getEnvArguments(p.environment))
+						.concat([p.command])
+						.concat(p.arguments)
+						.join(" ")
+				));
+			} else {
+				rv.push([
+					p.command
+				].concat(p.arguments).join(" "));
+			}
+			return rv.join("; ");
+		}
 
+		/** @type { (p: slime.$api.fp.world.Subject<slime.jrunscript.shell.ssh.Exports["execute"]["sensor"]>) => slime.jrunscript.shell.run.Intention } */
+		var toShellIntention = function(p) {
 			return {
 				command: p.client || "ssh",
 				arguments: $api.Array.build(function(rv) {
 					rv.push(login(p.remote));
-					rv.push(commands(p.command).join("; "));
+					rv.push(p.command);
 				}),
+				stdio: p.stdio
+			}
+		};
+
+		/** @type { slime.$api.fp.Mapping<slime.$api.fp.world.Subject<slime.jrunscript.shell.ssh.Exports["execute"]["intention"]>,slime.$api.fp.world.Subject<slime.jrunscript.shell.ssh.Exports["execute"]["sensor"]>> } */
+		var intentionToSubject = function(p) {
+			return {
+				client: p.client,
+				remote: p.remote,
+				command: intentionToCommand(p.command),
 				stdio: p.command.stdio
 			}
 		};
@@ -79,21 +88,100 @@
 				}),
 				stdio: p.stdio
 			};
+		};
+
+		/** @type { slime.$api.fp.Mapping<slime.$api.fp.world.Subject<slime.jrunscript.shell.ssh.Exports["file"]["exists"]["sensor"]>,slime.$api.fp.world.Subject<slime.jrunscript.shell.ssh.Exports["execute"]["sensor"]>> } */
+		var fileExistsToSubject = function(p) {
+			return {
+				client: p.client,
+				remote: p.remote,
+				command: "[ -f " + p.pathname + " ]",
+				stdio: p.stdio
+			}
+		}
+
+		/** @type { slime.$api.fp.Mapping<slime.$api.fp.world.Subject<slime.jrunscript.shell.ssh.Exports["file"]["exists"]["sensor"]>,slime.$api.fp.world.Subject<slime.jrunscript.shell.ssh.Exports["execute"]["sensor"]>> } */
+		var fileReadToSubject = function(p) {
+			return {
+				client: p.client,
+				remote: p.remote,
+				command: "cat " + p.pathname,
+				stdio: {
+					output: "string",
+					error: p.stdio.error
+				}
+			}
 		}
 
 		$export({
 			execute: {
-				intention: command,
-				meter: $api.fp.world.Sensor.map({
-					sensor: $context.subprocess.question,
-					subject: command
-				})
+				sensor: $api.fp.world.Sensor.map({
+					sensor: $context.world.subprocess.question,
+					subject: toShellIntention
+				}),
+				intention: $api.fp.world.Sensor.map({
+					sensor: $context.world.subprocess.question,
+					subject: $api.fp.pipe(
+						intentionToSubject,
+						toShellIntention
+					)
+				}),
+				test: {
+					intention: $api.fp.pipe(
+						intentionToSubject,
+						toShellIntention
+					)
+				},
+			},
+			file: {
+				exists: (function() {
+					var sensor = $api.fp.world.Sensor.map({
+						sensor: $context.world.subprocess.question,
+						subject: $api.fp.pipe(
+							fileExistsToSubject,
+							toShellIntention
+						),
+						reading: function(exit) {
+							return exit.status == 0;
+						}
+					});
+					return {
+						sensor: sensor,
+						basic: $api.fp.world.Sensor.mapping({
+							sensor: sensor
+						})
+					}
+				})(),
+				read: (function() {
+					var sensor = $api.fp.world.Sensor.map({
+						sensor: $context.world.subprocess.question,
+						subject: $api.fp.pipe(
+							fileReadToSubject,
+							toShellIntention
+						),
+						reading: function(exit) {
+							//	TODO	error handling
+							return $api.fp.Maybe.from.some(exit.stdio.output);
+						}
+					});
+
+					return {
+						sensor: sensor,
+						assert: $api.fp.Maybe.impure.exception({
+							try: $api.fp.world.Sensor.mapping({
+								sensor: sensor
+							}),
+							//	TODO	diagnostics
+							nothing: function(request) { throw new Error("Could not read."); }
+						})
+					}
+				})()
 			},
 			scp: {
 				intention: scpCommand,
 				means: $api.fp.world.Means.map({
 					order: scpCommand,
-					means: $context.subprocess.action
+					means: $context.world.subprocess.action
 				})
 			}
 		});
