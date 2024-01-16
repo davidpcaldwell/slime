@@ -6,8 +6,13 @@
 
 namespace slime.jrunscript.shell.ssh {
 	export interface Context {
-		getEnvArguments: slime.jrunscript.shell.internal.GetEnvArguments
-		subprocess: slime.jrunscript.shell.Exports["subprocess"]
+		library: {
+			getEnvArguments: slime.jrunscript.shell.internal.GetEnvArguments
+		}
+
+		world: {
+			subprocess: slime.jrunscript.shell.Exports["subprocess"]
+		}
 	}
 
 	export interface Intention {
@@ -43,24 +48,85 @@ namespace slime.jrunscript.shell.ssh {
 		to: File
 	}
 
-	type SubprocessMeter = Context["subprocess"]["question"]
-	type SubprocessMeans = Context["subprocess"]["action"]
+	type SubprocessSensor = Context["world"]["subprocess"]["question"]
+	type SubprocessMeans = Context["world"]["subprocess"]["action"]
 
 	export interface Exports {
 		execute: {
-			meter: slime.$api.fp.world.Sensor<
+			sensor: slime.$api.fp.world.Sensor<
 				{
 					client?: string
-
 					remote: Remote
-
-					command: Intention
+					command?: string
+					stdio: slime.jrunscript.shell.run.Intention["stdio"]
 				},
-				slime.$api.fp.world.Events<SubprocessMeter>,
-				slime.$api.fp.world.Reading<SubprocessMeter>
+				slime.$api.fp.world.Events<SubprocessSensor>,
+				slime.$api.fp.world.Reading<SubprocessSensor>
 			>
 
-			intention: (p: slime.$api.fp.world.Subject<Exports["execute"]["meter"]>) => slime.jrunscript.shell.run.Intention
+			intention: slime.$api.fp.world.Sensor<
+				{
+					client?: string
+					remote: Remote
+					command: Intention
+				},
+				slime.$api.fp.world.Events<SubprocessSensor>,
+				slime.$api.fp.world.Reading<SubprocessSensor>
+			>
+
+			test: {
+				intention: (p: slime.$api.fp.world.Subject<Exports["execute"]["intention"]>) => slime.jrunscript.shell.run.Intention
+			}
+		}
+	}
+
+	export interface Exports {
+		file: {
+			exists: {
+				sensor: slime.$api.fp.world.Sensor<
+					{
+						client?: string
+						remote: Remote
+						pathname: string
+						stdio: slime.jrunscript.shell.run.Intention["stdio"]
+					},
+					slime.$api.fp.world.Events<SubprocessSensor>,
+					boolean
+				>
+
+				basic: slime.$api.fp.Mapping<
+					{
+						client?: string
+						remote: Remote
+						pathname: string
+					},
+					boolean
+				>
+			}
+
+			read: {
+				sensor: slime.$api.fp.world.Sensor<
+					{
+						client?: string
+						remote: Remote
+						pathname: string
+						stdio: {
+							error: slime.jrunscript.shell.run.Intention["stdio"]["error"]
+						}
+					},
+					slime.$api.fp.world.Events<SubprocessSensor>,
+					slime.$api.fp.Maybe<string>
+				>
+
+				assert: (p: {
+					client?: string
+					remote: Remote
+					pathname: string
+					stdio: {
+						error: slime.jrunscript.shell.run.Intention["stdio"]["error"]
+					}
+				}) => string
+			}
 		}
 	}
 
@@ -137,7 +203,7 @@ namespace slime.jrunscript.shell.ssh {
 
 				var run = function(intention: ssh.Intention) {
 					return $api.fp.world.now.question(
-						subject.execute.meter,
+						subject.execute.intention,
 						{
 							remote: {
 								user: jsh.shell.environment.SSH_USER || "foo",
@@ -160,7 +226,54 @@ namespace slime.jrunscript.shell.ssh {
 				[pwd,lsL,lsEtcLongWithEnvironment].map(run).forEach(function(result) {
 					//jsh.shell.console(JSON.stringify(result));
 				});
+			}
 
+			fifty.tests.manual.file = function() {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				var remote: Remote = (jsh.shell.environment.SSH_HOSTNAME) ? {
+					user: jsh.shell.environment.SSH_USER,
+					hostname: jsh.shell.environment.SSH_HOSTNAME
+				} : void(0);
+
+				if (!remote) {
+					jsh.shell.console("No SSH_HOSTNAME specified.");
+					verify(true).is(false);
+				}
+
+				["/etc/passwd","/etc/foobarbaz"].forEach(function(pathname) {
+					var exists = $api.fp.world.now.question(
+						subject.file.exists.sensor,
+						{
+							remote: remote,
+							pathname: pathname,
+							stdio: {
+								error: "line",
+								output: "string"
+							}
+						}
+					);
+					jsh.shell.console(pathname + " exists? " + exists);
+
+					var easy = subject.file.exists.basic({
+						remote: remote,
+						pathname: pathname
+					});
+					jsh.shell.console(pathname + " exists? " + easy);
+				});
+
+				var string = $api.fp.world.now.question(
+					subject.file.read.sensor,
+					{
+						remote: remote,
+						pathname: "/etc/passwd",
+						stdio: {
+							error: "line"
+						}
+					}
+				);
+				jsh.shell.console("[" + string + "]");
 			}
 
 			fifty.tests.manual.scp = function() {
