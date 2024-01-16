@@ -27,6 +27,12 @@ namespace slime.$api {
 	)(fifty);
 
 	export interface Global {
+		global: {
+			get: <T>(propertyName: string) => T
+		}
+	}
+
+	export interface Global {
 		debug: {
 			disableBreakOnExceptionsFor: <T extends slime.external.lib.es5.Function>(f: T) => T
 		}
