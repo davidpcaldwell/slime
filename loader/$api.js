@@ -76,6 +76,14 @@
 			Object.assign($exports, { fp: current, Function: old.Function });
 		})();
 
+		$exports.global = {
+			get: function(name) {
+				//	TODO	note  that modern JavaScript also has `globalThis`
+				var global = (function() { return this; })();
+				return global[name];
+			}
+		};
+
 		$exports.debug = {
 			//	TODO	try to get rid of ignore below
 			//@ts-ignore
