@@ -513,7 +513,23 @@ namespace slime.jrunscript.shell {
 
 		rhino: any
 
-		world: World
+		/** @deprecated Replaced by the {@link slime.jrunscript.shell.exports.subprocess subprocess} APIs. */
+		world: {
+			/**
+			 * @deprecated Replaced by the {@link Context} `world.subprocess` property, which allows a mock (or other) implementation to
+			 * be used when loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
+			 *
+			 * Allows a mock implementation of the `run` action to be created using a function that receives an invocation as an
+			 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
+			 * the appropriate `Tell` and fire the appropriate events to the caller.
+			 */
+			mock: (delegate: (invocation: shell.run.old.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.old.Invocation,run.TellEvents>
+
+			/** @deprecated */
+			question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+			/** @deprecated */
+			action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
+		}
 	}
 
 	export namespace system {
@@ -683,18 +699,6 @@ namespace slime.jrunscript.shell {
 	export interface Exports {
 		/** @deprecated */
 		Invocation: exports.Invocation
-	}
-
-	export interface World {
-		/**
-		 * @deprecated Replaced by the {@link Context} `world.subprocess` property, which allows a mock (or other) implementation to
-		 * be used when loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
-		 *
-		 * Allows a mock implementation of the `run` action to be created using a function that receives an invocation as an
-		 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
-		 * the appropriate `Tell` and fire the appropriate events to the caller.
-		 */
-		mock: (delegate: (invocation: shell.run.old.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.old.Invocation,run.TellEvents>
 	}
 
 	export interface Exports {
