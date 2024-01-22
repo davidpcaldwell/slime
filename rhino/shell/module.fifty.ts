@@ -469,11 +469,61 @@ namespace slime.jrunscript.shell {
 			searchpath: (name: string) => slime.jrunscript.file.Searchpath
 		}
 
+		/**
+		 * A temporary directory that may be used by this shell.
+		 */
 		TMPDIR: slime.jrunscript.file.Directory
-		USER: string
-		HOME: slime.jrunscript.file.Directory
 
+		USER: string
+
+		/**
+		 * The home directory of the user executing this shell.
+		 */
+		HOME: slime.jrunscript.file.Directory
+	}
+
+	export interface Exports {
+		//	TODO	can this be changed while the shell is running? The manual test indicates the user.dir property can, although
+		//			that is probably some kind of fakery (or does the JVM default the working directory of subprocesses to user.dir,
+		//			rather than the "true" current working directory?)
+		/**
+		 * The current working directory.
+		 */
 		PWD: slime.jrunscript.file.Directory
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.manual.PWD = function() {
+				jsh.shell.console( String(Packages.java.lang.System.getProperty("user.dir")) );
+
+				var ls = function() {
+					return $api.fp.world.now.question(
+						jsh.shell.subprocess.question,
+						{
+							command: "ls",
+							stdio: {
+								output: "string"
+							}
+						}
+					).stdio.output;
+				};
+
+				jsh.shell.console("Before: " + ls());
+
+				Packages.java.lang.System.setProperty("user.dir", "/etc");
+				jsh.shell.console("ls: " + ls());
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+	export interface Exports {
 		PATH?: slime.jrunscript.file.Searchpath
 
 		os: {
