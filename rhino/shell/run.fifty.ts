@@ -16,13 +16,6 @@ namespace slime.jrunscript.shell.internal.run {
 }
 
 namespace slime.jrunscript.shell {
-	export interface World {
-		/** @deprecated */
-		question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
-		/** @deprecated */
-		action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
-	}
-
 	export namespace exports {
 		export interface subprocess {
 			//	We export the Invocation property from this module directly, as-is, from the containing module. We also export other
@@ -108,15 +101,16 @@ namespace slime.jrunscript.shell.run {
 		line: string
 	}
 
-	export interface AskEvents {
+	export interface OutputEvents {
+		stdout: Line
+		stderr: Line
+	}
+
+	export interface AskEvents extends OutputEvents {
 		start: {
 			pid: number
 			kill: () => void
 		}
-
-		stdout: Line
-
-		stderr: Line
 	}
 
 	//	TODO	right now we only capture output of type string; we could capture binary also
@@ -231,8 +225,8 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export interface Exports {
-		action: slime.jrunscript.shell.World["action"]
-		question: slime.jrunscript.shell.World["question"]
+		action: slime.jrunscript.shell.Exports["world"]["action"]
+		question: slime.jrunscript.shell.Exports["world"]["question"]
 	}
 
 	(
@@ -573,7 +567,7 @@ namespace slime.jrunscript.shell.internal.run {
 		 * @deprecated Replaced by the use of the {@link Context} `spi` property, which allows a mock (or alternative)
 		 * implementation to be used when executing subprocess invocations.
 		 */
-		mock: shell.World["mock"]
+		mock: shell.Exports["world"]["mock"]
 
 		/**
 		 * @deprecated
