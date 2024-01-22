@@ -85,15 +85,15 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export namespace exports {
-		export interface Subprocess {}
+		export interface subprocess {}
 	}
 
 	export interface Exports {
-		subprocess: exports.Subprocess
+		subprocess: exports.subprocess
 	}
 
 	export namespace exports {
-		export interface Subprocess {
+		export interface subprocess {
 			Parent: {
 				from: {
 					process: () => slime.jrunscript.shell.run.Parent

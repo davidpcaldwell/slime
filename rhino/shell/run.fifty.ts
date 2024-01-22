@@ -24,7 +24,7 @@ namespace slime.jrunscript.shell {
 	}
 
 	export namespace exports {
-		export interface Subprocess {
+		export interface subprocess {
 			//	We export the Invocation property from this module directly, as-is, from the containing module. We also export other
 			//	constructs defined at the module level, hence the exports.Subprocess interface (which is defined there also).
 			Invocation: {
@@ -40,7 +40,7 @@ namespace slime.jrunscript.shell {
 
 namespace slime.jrunscript.shell.internal.run {
 	export interface Exports {
-		exports: Pick<slime.jrunscript.shell.exports.Subprocess,"Invocation">
+		exports: Pick<slime.jrunscript.shell.exports.subprocess,"Invocation">
 	}
 }
 
