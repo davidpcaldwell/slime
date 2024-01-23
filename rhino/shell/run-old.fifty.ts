@@ -195,6 +195,7 @@ namespace slime.jrunscript.shell.internal.run.old {
 		environment: slime.jrunscript.host.Environment
 		stdio: slime.jrunscript.shell.invocation.Stdio
 		api: {
+			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
 		os: {
@@ -202,7 +203,6 @@ namespace slime.jrunscript.shell.internal.run.old {
 			newline: () => string
 		}
 		scripts: {
-			invocation: slime.jrunscript.shell.internal.invocation.Export
 			run: slime.jrunscript.shell.internal.run.Exports
 		}
 		module: {
@@ -213,6 +213,7 @@ namespace slime.jrunscript.shell.internal.run.old {
 	export interface Exports {
 		run: slime.jrunscript.shell.Exports["run"]
 		$run: any
+		invocation: slime.jrunscript.shell.internal.invocation.Export
 	}
 
 	(
