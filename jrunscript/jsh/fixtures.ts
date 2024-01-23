@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.jsh.test {
+namespace slime.jsh.test {
 	export namespace shells {
 		export interface Remote {
 			web: slime.jsh.unit.mock.Web
