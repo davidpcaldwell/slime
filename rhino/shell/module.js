@@ -845,13 +845,13 @@
 			}
 		)();
 
+		/** @type { slime.jrunscript.shell.exports.subprocess } */
 		var subprocess = {
 			Parent: {
 				from: {
 					process: Parent_from_process
 				}
 			},
-			Invocation: scripts.run.exports.Invocation,
 			action: function(p) {
 				return scripts.run.exports.Invocation.action(
 					scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)

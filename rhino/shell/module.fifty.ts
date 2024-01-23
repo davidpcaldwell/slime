@@ -118,15 +118,6 @@ namespace slime.jrunscript.shell {
 					jsh.shell.console(JSON.stringify(parent,void(0),4));
 				}
 
-				fifty.tests.manual.subprocess.Invocation = function() {
-					var invocation = subject.subprocess.Invocation.from.intention(
-						subject.subprocess.Parent.from.process()
-					)({
-						command: "ls"
-					});
-					jsh.shell.console(JSON.stringify(invocation));
-				}
-
 				fifty.tests.manual.subprocess.question = $api.fp.impure.Process.create({
 					input: $api.fp.impure.Input.map(
 						$api.fp.impure.Input.value({
@@ -148,11 +139,17 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
+		/**
+		 * APIs that pertain to {@link Intention}s.
+		 */
 		Intention: exports.Intention
 	}
 
 	export namespace exports {
 		export interface Intention {
+			/**
+			 * An empty object to which derivations of this module may add methods.
+			 */
 			from: {
 			}
 		}
