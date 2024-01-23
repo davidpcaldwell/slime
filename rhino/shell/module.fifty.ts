@@ -94,11 +94,6 @@ namespace slime.jrunscript.shell {
 
 	export namespace exports {
 		export interface subprocess {
-			Parent: {
-				from: {
-					process: () => slime.jrunscript.shell.run.Parent
-				}
-			}
 			action: slime.$api.fp.world.Means<run.Intention,run.TellEvents>
 			question: slime.$api.fp.world.Sensor<run.Intention,run.AskEvents,run.Exit>
 		}
@@ -112,11 +107,6 @@ namespace slime.jrunscript.shell {
 				const subject = jsh.shell;
 
 				fifty.tests.manual.subprocess = {};
-
-				fifty.tests.manual.subprocess.Parent = function() {
-					var parent = subject.subprocess.Parent.from.process();
-					jsh.shell.console(JSON.stringify(parent,void(0),4));
-				}
 
 				fifty.tests.manual.subprocess.question = $api.fp.impure.Process.create({
 					input: $api.fp.impure.Input.map(
@@ -201,9 +191,6 @@ namespace slime.jrunscript.shell {
 
 	export interface Exports {
 		/**
-		 * An object representing the environment provided via the {@link Context}, or representing the system environment if
-		 * no environment was provided via the `Context`.
-		 *
 		 * An object describing the environment provided via the {@link Context}, or the operating system process environment under
 		 * which this script was executed if no environment was provided via the `Context`.
 		 *
@@ -1318,9 +1305,10 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
+		/** @deprecated See properties for replacements. */
 		invocation: {
 			 /**
-			  * @deprecated Replaced by {@link Exports["bash"]["from"]["intention"]}.
+			  * @deprecated Replaced by {@link Exports.bash bash.from.intention()}.
 			  *
 			  * Creates the code for a `bash` script from a single Invocation-like object and returns it as a string.
 			  */
@@ -1407,7 +1395,7 @@ namespace slime.jrunscript.shell.internal.invocation {
 	}
 
 	export interface Export {
-		exports: (defaults: shell.run.Parent) => slime.jrunscript.shell.exports.Invocation
+		exports: (defaults: shell.run.internal.Parent) => slime.jrunscript.shell.exports.Invocation
 
 		internal: {
 			/**
