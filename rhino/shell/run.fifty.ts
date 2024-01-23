@@ -82,6 +82,8 @@ namespace slime.jrunscript.shell.internal.run {
 				jsh.shell.console(JSON.stringify(invocation));
 			};
 
+			fifty.tests.manual.subprocess = {};
+
 			fifty.tests.manual.subprocess.Parent = function() {
 				//	TODO	this test is basically a tautology now, testing what was passed in. What we really want to test is what
 				//			module passes in for this value. Would need to wire up this test API to the (or a) module test API, and
