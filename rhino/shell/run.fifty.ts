@@ -5,6 +5,15 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.internal.run {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Context {
 		api: {
 			java: slime.jrunscript.host.Exports
@@ -13,28 +22,52 @@ namespace slime.jrunscript.shell.internal.run {
 		}
 		spi?: slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 	}
-}
 
-namespace slime.jrunscript.shell {
-	export namespace exports {
-		export interface subprocess {
-			//	We export the Invocation property from this module directly, as-is, from the containing module. We also export other
-			//	constructs defined at the module level, hence the exports.Subprocess interface (which is defined there also).
+	export namespace test {
+		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
+			var script: Script = fifty.$loader.script("run.js");
+			return script({
+				api: {
+					java: fifty.global.jsh.java,
+					io: fifty.global.jsh.io,
+					file: fifty.global.jsh.file
+				}
+			});
+		//@ts-ignore
+		})(fifty);
+	}
+
+	export interface Exports {
+		exports: {
 			Invocation: {
 				from: {
-					intention: (parent: run.Parent) => (plan: run.Intention) => run.Invocation
+					intention: (parent: shell.run.Parent) => (plan: shell.run.Intention) => shell.run.Invocation
 				}
 				question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 				action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 			}
 		}
 	}
-}
 
-namespace slime.jrunscript.shell.internal.run {
-	export interface Exports {
-		exports: Pick<slime.jrunscript.shell.exports.subprocess,"Invocation">
-	}
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+			const module = jsh.shell;
+			const { subject } = test;
+
+			fifty.tests.manual.Invocation = function() {
+				var invocation = subject.exports.Invocation.from.intention(
+					module.subprocess.Parent.from.process()
+				)({
+					command: "ls"
+				});
+				jsh.shell.console(JSON.stringify(invocation));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 namespace slime.jrunscript.shell.run {
@@ -71,7 +104,7 @@ namespace slime.jrunscript.shell.run {
 	/**
 	 * A specification for a potential subprocess.
 	 */
-	export type Intention = {
+	export interface Intention {
 		command: string
 		arguments?: string[]
 		environment?: slime.$api.fp.Transform<Environment>
@@ -192,18 +225,6 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export namespace test {
-		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
-			var script: Script = fifty.$loader.script("run.js");
-			return script({
-				api: {
-					java: fifty.global.jsh.java,
-					io: fifty.global.jsh.io,
-					file: fifty.global.jsh.file
-				}
-			});
-		//@ts-ignore
-		})(fifty);
-
 		export const ls: shell.run.old.Invocation = (function(fifty: slime.fifty.test.Kit) {
 			return {
 				context: {
@@ -314,8 +335,6 @@ namespace slime.jrunscript.shell.internal.run {
 			const subject = fifty.global.jsh.shell;
 
 			var directory = fifty.jsh.file.object.getRelativePath(".").directory;
-
-			fifty.tests.manual = {};
 
 			fifty.tests.manual.kill = function() {
 				if (fifty.global.jsh.shell.PATH.getCommand("sleep")) {
