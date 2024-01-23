@@ -20,7 +20,7 @@ namespace slime.jrunscript.shell.internal.run {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
-		parent: slime.$api.fp.Thunk<slime.jrunscript.shell.run.Parent>
+		parent: slime.$api.fp.Thunk<slime.jrunscript.shell.run.internal.Parent>
 		world?: slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 	}
 
@@ -53,7 +53,13 @@ namespace slime.jrunscript.shell.internal.run {
 		test: {
 			Invocation: {
 				from: {
-					intention: (parent: shell.run.Parent) => (plan: shell.run.Intention) => shell.run.Invocation
+					intention: (parent: shell.run.internal.Parent) => (plan: shell.run.Intention) => shell.run.Invocation
+				}
+			}
+
+			Parent: {
+				from: {
+					process: () => slime.jrunscript.shell.run.internal.Parent
 				}
 			}
 		}
@@ -69,11 +75,21 @@ namespace slime.jrunscript.shell.internal.run {
 
 			fifty.tests.manual.Invocation = function() {
 				var invocation = subject.test.Invocation.from.intention(
-					module.subprocess.Parent.from.process()
+					subject.test.Parent.from.process()
 				)({
 					command: "ls"
 				});
 				jsh.shell.console(JSON.stringify(invocation));
+			};
+
+			fifty.tests.manual.subprocess = {};
+
+			fifty.tests.manual.subprocess.Parent = function() {
+				//	TODO	this test is basically a tautology now, testing what was passed in. What we really want to test is what
+				//			module passes in for this value. Would need to wire up this test API to the (or a) module test API, and
+				//			probably rename this test API to test.context.parent or something
+				var parent = subject.test.Parent.from.process();
+				jsh.shell.console(JSON.stringify(parent,void(0),4));
 			}
 		}
 	//@ts-ignore
@@ -134,10 +150,12 @@ namespace slime.jrunscript.shell.run {
 		arguments: Intention["arguments"]
 	}
 
-	export interface Parent {
-		environment: Environment
-		directory: Intention["directory"]
-		stdio: Pick<StdioConfiguration,"output"|"error">
+	export namespace internal {
+		export interface Parent {
+			environment: Environment
+			directory: Intention["directory"]
+			stdio: Pick<StdioConfiguration,"output"|"error">
+		}
 	}
 
 	export type Line = {

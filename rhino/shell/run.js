@@ -536,11 +536,6 @@
 
 						/** @type { slime.jrunscript.shell.exports.subprocess } */
 						var rv = {
-							Parent: {
-								from: {
-									process: $context.parent
-								}
-							},
 							action: function(p) {
 								return Invocation.action(
 									toInvocation()(p)
@@ -604,6 +599,11 @@
 				Invocation: {
 					from: {
 						intention: Invocation.from.intention
+					}
+				},
+				Parent: {
+					from: {
+						process: $context.parent
 					}
 				}
 			},

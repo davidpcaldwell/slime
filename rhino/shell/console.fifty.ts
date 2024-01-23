@@ -6,21 +6,38 @@
 
 namespace slime.jrunscript.shell {
 	/**
-	 * A `Console` is a construct used to represent somewhere where an application might send text output. One
-	 * implementation of `Console` is {@link slime.jsh.shell.Exports.console jsh.shell.console}, which allows top-level `jsh` scripts to write
-	 * text to the standard error stream. Other implementations might include files or any other locations to
-	 * which applications might wish to emit messages or logging to be immediately or later read.
+	 * A `Console` is a construct used to represent somewhere where an application might send text output. One implementation of
+	 * `Console` is {@link slime.jsh.shell.Exports.console jsh.shell.console}, which allows top-level `jsh` scripts to write text to
+	 * the standard error stream (and appends a trailing line separator to each message). Other implementations might include files
+	 * or any other locations to which applications might wish to emit messages or logging to be immediately or later read.
 	 */
 	export type Console = slime.$api.fp.impure.Output<string>;
 
 	export interface Exports {
+		/**
+		 * Functions pertaining to {@link Console}s.
+		 */
 		Console: {
 			from: {
+				/**
+				 * Creates a {@link Console} that writes strings to the given file location (overwriting the file if it exists, and
+				 * creating it if it does not), in order. Note that no delimiter is used between messages.
+				 *
+				 * @param p
+				 * @returns
+				 */
 				location: (p: {
 					location: slime.jrunscript.file.Location
 				}) => Console
 			}
 
+			/**
+			 * Creates a {@link Console} {@link slime.$api.fp.Transform Transform} that appends the given line separator to each
+			 * message written to the console.
+			 *
+			 * @param separator
+			 * @returns
+			 */
 			line: (separator: string) => slime.$api.fp.Transform<Console>
 		}
 	}

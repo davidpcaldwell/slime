@@ -237,7 +237,7 @@
 					});
 				}
 
-				/** @type { (defaults: slime.jrunscript.shell.run.Parent) => slime.jrunscript.shell.exports.Invocation["from"]["argument"] } */
+				/** @type { (defaults: slime.jrunscript.shell.run.internal.Parent) => slime.jrunscript.shell.exports.Invocation["from"]["argument"] } */
 				var create = function(defaults) {
 					return function(p) {
 						return {
@@ -378,7 +378,7 @@
 		)($api,{ library: { io: $context.api.io }})
 
 		var scripts = (function() {
-			/** @type { slime.$api.fp.impure.Input<slime.jrunscript.shell.run.Parent> } */
+			/** @type { slime.$api.fp.impure.Input<slime.jrunscript.shell.run.internal.Parent> } */
 			var Parent_from_process = function() {
 				return {
 					environment: environment,
@@ -753,7 +753,7 @@
 			}), events);
 		});
 
-		/** @type { slime.jrunscript.shell.run.Parent } */
+		/** @type { slime.jrunscript.shell.run.internal.Parent } */
 		var defaults = {
 			directory: $exports.PWD.toString(),
 			environment: environment,

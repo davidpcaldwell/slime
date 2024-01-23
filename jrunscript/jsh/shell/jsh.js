@@ -64,7 +64,7 @@
 						throw new TypeError("Not a recognized stream: " + stream);
 					})();
 					return function(message) {
-						writer.write(toString(message)+module.properties.get("line.separator"));
+						writer.write(toString(message) + module.properties.get("line.separator"));
 					}
 				}
 
