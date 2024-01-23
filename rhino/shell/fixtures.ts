@@ -15,7 +15,7 @@ namespace slime.jrunscript.shell.test {
 		load: (context: slime.jrunscript.shell.Context) => slime.jrunscript.shell.Exports
 
 		run: {
-			createMockWorld: (delegate: run.Delegate) => slime.jrunscript.shell.internal.run.Context["spi"]
+			createMockWorld: (delegate: run.Delegate) => slime.jrunscript.shell.internal.run.Context["world"]
 		}
 	}
 
@@ -33,7 +33,10 @@ namespace slime.jrunscript.shell.test {
 				}
 			};
 
-			var createMockWorld = function(delegate: slime.jrunscript.shell.test.run.Delegate): slime.jrunscript.shell.internal.run.Context["spi"] {
+			var createMockWorld = function(
+				delegate: slime.jrunscript.shell.test.run.Delegate
+			): slime.jrunscript.shell.internal.run.Context["world"]
+			{
 				return function(p) {
 					return function(events) {
 						var killed = false;

@@ -64,11 +64,11 @@
 			 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 			 */
 			var getLineBufferDestination = function(events,stream) {
-				var buffer = new $context.api.io.Buffer();
+				var buffer = new $context.library.io.Buffer();
 
 				var lines = [];
 
-				var thread = $context.api.java.Thread.start({
+				var thread = $context.library.java.Thread.start({
 					call: function() {
 						buffer.readText().readLines(function(line) {
 							lines.push(line);
@@ -84,14 +84,14 @@
 						thread.join();
 					},
 					readText: function() {
-						return lines.join($context.api.io.system.delimiter.line);
+						return lines.join($context.library.io.system.delimiter.line);
 					}
 				}
 			};
 
 			/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
 			var getStringBufferDestination = function() {
-				var buffer = new $context.api.io.Buffer();
+				var buffer = new $context.library.io.Buffer();
 				return {
 					stream: buffer.writeBinary(),
 					close: function() {
@@ -179,8 +179,8 @@
 			return returned;
 		}
 
-		/** @type { slime.jrunscript.shell.internal.run.Context["spi"] } */
-		var spi = $context.spi || function(p) {
+		/** @type { slime.jrunscript.shell.internal.run.Context["world"] } */
+		var spi = $context.world || function(p) {
 			/**
 			 *
 			 * @param { slime.jrunscript.shell.internal.run.java.Context } context
@@ -227,7 +227,7 @@
 
 				var adapted = {
 					command: toJavaString(configuration.command),
-					arguments: $context.api.java.Array.create({
+					arguments: $context.library.java.Array.create({
 						type: Packages.java.lang.String,
 						array: configuration.arguments.map(toJavaString)
 					})
@@ -254,7 +254,7 @@
 				//	TODO	currently we can start firing stdio events before we fire the start event, given how this
 				//			implementation works. That's probably not ideal, a more rigorous event sequence would be better.
 				var _context = createJavaCommandContext({
-					directory: (p.directory) ? $context.api.file.Pathname(p.directory).directory : void(0),
+					directory: (p.directory) ? $context.library.file.Pathname(p.directory).directory : void(0),
 					environment: p.environment,
 					stdio: stdio
 				});
@@ -456,74 +456,106 @@
 			return rv;
 		}
 
-		$export({
-			exports: {
-				Invocation: {
-					from: {
-						intention: function(parent) {
-							/**
-							 *
-							 * @param { string | slime.jrunscript.runtime.io.InputStream } p
-							 * @return { slime.jrunscript.runtime.io.InputStream }
-							 */
-							var toInputStream = function(p) {
-								if (typeof(p) == "string") {
-									var buffer = new $context.api.io.Buffer();
-									buffer.writeText().write(p);
-									buffer.close();
-									return buffer.readBinary();
-								} else {
-									return p;
-								}
-							};
+		var Invocation_from_intention = function(parent) {
+			/**
+			 *
+			 * @param { string | slime.jrunscript.runtime.io.InputStream } p
+			 * @return { slime.jrunscript.runtime.io.InputStream }
+			 */
+			var toInputStream = function(p) {
+				if (typeof(p) == "string") {
+					var buffer = new $context.library.io.Buffer();
+					buffer.writeText().write(p);
+					buffer.close();
+					return buffer.readBinary();
+				} else {
+					return p;
+				}
+			};
 
-							return function(plan) {
-								var environment = plan.environment || $api.fp.identity;
-								return {
-									command: plan.command,
-									arguments: plan.arguments || [],
-									environment: environment(parent.environment),
-									directory: plan.directory || parent.directory,
-									stdio: {
-										//	TODO	maybe should supply empty InputStream right here
-										input: (plan.stdio && plan.stdio.input) ? toInputStream(plan.stdio.input) : null,
-										output: (plan.stdio && plan.stdio.output) ? plan.stdio.output : parent.stdio.output,
-										error: (plan.stdio && plan.stdio.error) ? plan.stdio.error : parent.stdio.error
-									}
+			return function(plan) {
+				var environment = plan.environment || $api.fp.identity;
+				return {
+					command: plan.command,
+					arguments: plan.arguments || [],
+					environment: environment(parent.environment),
+					directory: plan.directory || parent.directory,
+					stdio: {
+						//	TODO	maybe should supply empty InputStream right here
+						input: (plan.stdio && plan.stdio.input) ? toInputStream(plan.stdio.input) : null,
+						output: (plan.stdio && plan.stdio.output) ? plan.stdio.output : parent.stdio.output,
+						error: (plan.stdio && plan.stdio.error) ? plan.stdio.error : parent.stdio.error
+					}
+				}
+			}
+		};
+
+		var Invocation = {
+			from: {
+				intention: Invocation_from_intention
+			},
+			action: function(invocation) {
+				return spi(invocation);
+			},
+			question: function(invocation) {
+				return function(events) {
+					/** @type { slime.jrunscript.shell.run.Exit } */
+					var rv;
+					$api.fp.impure.now.process(
+						$api.fp.world.process(
+							spi(invocation),
+							{
+								start: function(e) {
+									events.fire("start", e.detail);
+								},
+								stdout: function(e) {
+									events.fire("stdout", e.detail);
+								},
+								stderr: function(e) {
+									events.fire("stderr", e.detail);
+								},
+								exit: function(e) {
+									rv = e.detail;
 								}
 							}
-						}
-					},
-					action: function(invocation) {
-						return spi(invocation);
-					},
-					question: function(invocation) {
-						return function(events) {
-							/** @type { slime.jrunscript.shell.run.Exit } */
-							var rv;
-							$api.fp.impure.now.process(
-								$api.fp.world.process(
-									spi(invocation),
-									{
-										start: function(e) {
-											events.fire("start", e.detail);
-										},
-										stdout: function(e) {
-											events.fire("stdout", e.detail);
-										},
-										stderr: function(e) {
-											events.fire("stderr", e.detail);
-										},
-										exit: function(e) {
-											rv = e.detail;
-										}
-									}
-								)
-							);
-							return rv;
-						}
+						)
+					);
+					return rv;
+				}
+			}
+		};
+
+		$export({
+			exports: {
+				subprocess: (
+					function() {
+						var toInvocation = $api.fp.impure.Input.map(
+							$context.parent,
+							Invocation_from_intention
+						);
+
+						/** @type { slime.jrunscript.shell.exports.subprocess } */
+						var rv = {
+							Parent: {
+								from: {
+									process: $context.parent
+								}
+							},
+							action: function(p) {
+								return Invocation.action(
+									toInvocation()(p)
+								);
+							},
+							question: function(p) {
+								return Invocation.question(
+									toInvocation()(p)
+								);
+							}
+						};
+
+						return rv;
 					}
-				},
+				)()
 			},
 			action: function(old) {
 				return spi(modernize(old));
@@ -566,6 +598,13 @@
 			internal: {
 				mock: {
 					tell: mockTell
+				}
+			},
+			test: {
+				Invocation: {
+					from: {
+						intention: Invocation.from.intention
+					}
 				}
 			},
 			old: {

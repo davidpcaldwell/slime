@@ -15,22 +15,30 @@ namespace slime.jrunscript.shell.internal.run {
 	)(fifty);
 
 	export interface Context {
-		api: {
+		library: {
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
-		spi?: slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+		parent: slime.$api.fp.Thunk<slime.jrunscript.shell.run.Parent>
+		world?: slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 	}
 
 	export namespace test {
 		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("run.js");
 			return script({
-				api: {
+				library: {
 					java: fifty.global.jsh.java,
 					io: fifty.global.jsh.io,
 					file: fifty.global.jsh.file
+				},
+				parent: function() {
+					return {
+						environment: fifty.global.jsh.shell.environment,
+						stdio: fifty.global.jsh.shell.stdio,
+						directory: fifty.global.jsh.shell.PWD.pathname.toString()
+					}
 				}
 			});
 		//@ts-ignore
@@ -39,12 +47,14 @@ namespace slime.jrunscript.shell.internal.run {
 
 	export interface Exports {
 		exports: {
+			subprocess: slime.jrunscript.shell.exports.subprocess
+		}
+
+		test: {
 			Invocation: {
 				from: {
 					intention: (parent: shell.run.Parent) => (plan: shell.run.Intention) => shell.run.Invocation
 				}
-				question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
-				action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 			}
 		}
 	}
@@ -58,7 +68,7 @@ namespace slime.jrunscript.shell.internal.run {
 			const { subject } = test;
 
 			fifty.tests.manual.Invocation = function() {
-				var invocation = subject.exports.Invocation.from.intention(
+				var invocation = subject.test.Invocation.from.intention(
 					module.subprocess.Parent.from.process()
 				)({
 					command: "ls"

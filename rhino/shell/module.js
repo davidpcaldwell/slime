@@ -378,14 +378,28 @@
 		)($api,{ library: { io: $context.api.io }})
 
 		var scripts = (function() {
+			/** @type { slime.$api.fp.impure.Input<slime.jrunscript.shell.run.Parent> } */
+			var Parent_from_process = function() {
+				return {
+					environment: environment,
+					stdio: {
+						output: $context.stdio.output,
+						error: $context.stdio.error
+					},
+					directory: properties.get("user.dir")
+				}
+			};
+
 			var run = code.run({
-				api: {
+				library: {
 					java: $context.api.java,
 					io: $context.api.io,
 					file: $context.api.file
 				},
-				spi: ($context.world && $context.world.subprocess)
+				parent: Parent_from_process,
+				world: ($context.world && $context.world.subprocess)
 			});
+
 			return {
 				run: run,
 				run_old: code.run_old({
@@ -772,17 +786,6 @@
 
 		$exports.environment = environment;
 
-		var Parent_from_process = function() {
-			return {
-				environment: environment,
-				stdio: {
-					output: $context.stdio.output,
-					error: $context.stdio.error
-				},
-				directory: properties.get("user.dir")
-			}
-		};
-
 		/** @type { slime.jrunscript.shell.Exports["Environment"] & { envArgs: slime.jrunscript.shell.internal.GetEnvArguments } } */
 		var Environment = (
 			function() {
@@ -845,24 +848,7 @@
 			}
 		)();
 
-		/** @type { slime.jrunscript.shell.exports.subprocess } */
-		var subprocess = {
-			Parent: {
-				from: {
-					process: Parent_from_process
-				}
-			},
-			action: function(p) {
-				return scripts.run.exports.Invocation.action(
-					scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
-				);
-			},
-			question: function(p) {
-				return scripts.run.exports.Invocation.question(
-					scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
-				);
-			}
-		}
+		var subprocess = scripts.run.exports.subprocess;
 
 		var ssh = code.ssh({
 			library: {

@@ -66,7 +66,7 @@ namespace slime.jrunscript.shell {
 		}
 
 		world?: {
-			subprocess?: slime.jrunscript.shell.internal.run.Context["spi"]
+			subprocess?: slime.jrunscript.shell.internal.run.Context["world"]
 		}
 	}
 
