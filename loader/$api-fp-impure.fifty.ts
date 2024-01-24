@@ -575,6 +575,7 @@ namespace slime.$api.fp.world {
 
 	export interface Exports {
 		Process: {
+			/** @deprecated Replaced by Means.process() */
 			action: <P,E>(p: {
 				action: Means<P,E>,
 				argument: P,
@@ -687,6 +688,18 @@ namespace slime.$api.fp.world {
 				order: slime.$api.fp.Mapping<P,R>
 				means: slime.$api.fp.world.Means<R,E>
 			}) => slime.$api.fp.world.Means<P,E>
+
+			process: <O,E>(p: {
+				means: slime.$api.fp.world.Means<O,E>
+				order: O
+				handlers?: slime.$api.event.Handlers<E>
+			}) => slime.$api.fp.impure.Process
+
+			now: <O,E>(p: {
+				means: slime.$api.fp.world.Means<O,E>
+				order: O
+				handlers?: slime.$api.event.Handlers<E>
+			}) => void
 		}
 	}
 
@@ -697,14 +710,8 @@ namespace slime.$api.fp.world {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.exports.world.Means = {};
-			fifty.tests.exports.world.Means.map = function() {
+			var NumberRecorder = function() {
 				var orders: number[] = [];
-
-				var captor = fifty.$api.Events.Captor({
-					got: void(0),
-					length: void(0)
-				});
 
 				var recorder: Means<number,{ got: number, length: number }> = function(s) {
 					return function(events) {
@@ -714,12 +721,28 @@ namespace slime.$api.fp.world {
 					}
 				};
 
+				var captor = fifty.$api.Events.Captor({
+					got: void(0),
+					length: void(0)
+				});
+
+				return {
+					recorder,
+					captor,
+					orders
+				}
+			};
+
+			var castToNumber: slime.js.Cast<number> = $api.fp.cast;
+
+			fifty.tests.exports.world.Means = fifty.test.Parent();
+			fifty.tests.exports.world.Means.map = function() {
+				var { orders, captor, recorder } = NumberRecorder();
+
 				var mapped = $api.fp.world.Means.map({
 					order: function(s: string): number { return Number(s) * 2; },
 					means: recorder
 				});
-
-				var castToNumber: slime.js.Cast<number> = $api.fp.cast;
 
 				verify(orders).length.is(0);
 				verify(captor).events.length.is(0);
@@ -731,7 +754,52 @@ namespace slime.$api.fp.world {
 				verify(captor).events[0].detail.evaluate(castToNumber).is(4);
 				verify(captor).events[1].type.is("length");
 				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
-			}
+			};
+
+			fifty.tests.exports.world.Means.process = function() {
+				var { orders, captor, recorder } = NumberRecorder();
+
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+
+				var process = $api.fp.world.Means.process({
+					means: recorder,
+					order: 2,
+					handlers: captor.handler
+				});
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+
+				process();
+				verify(orders).length.is(1);
+				verify(orders)[0].is(2);
+				verify(captor).events.length.is(2);
+				verify(captor).events[0].type.is("got");
+				verify(captor).events[0].detail.evaluate(castToNumber).is(2);
+				verify(captor).events[1].type.is("length");
+				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+			};
+
+
+			fifty.tests.exports.world.Means.now = function() {
+				var { orders, captor, recorder } = NumberRecorder();
+
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+
+				$api.fp.world.Means.now({
+					means: recorder,
+					order: 2,
+					handlers: captor.handler
+				});
+				verify(orders).length.is(1);
+				verify(orders)[0].is(2);
+				verify(captor).events.length.is(2);
+				verify(captor).events[0].type.is("got");
+				verify(captor).events[0].detail.evaluate(castToNumber).is(2);
+				verify(captor).events[1].type.is("length");
+				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+			};
 		}
 	//@ts-ignore
 	)(fifty);

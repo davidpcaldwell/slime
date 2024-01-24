@@ -245,24 +245,44 @@
 					}
 				}
 			},
-			Means: {
-				from: {
-					flat: function(f) {
-						return function(order) {
-							return function(events) {
-								f({ order: order, events: events });
+			Means: (
+				function() {
+					/** @type { slime.$api.fp.world.Exports["Means"]["process"] } */
+					var toProcess = function(p) {
+						return function() {
+							var action = p.means(p.order);
+							$context.events.handle({
+								implementation: action,
+								handlers: p.handlers
+							});
+						}
+					};
+
+					return {
+						from: {
+							flat: function(f) {
+								return function(order) {
+									return function(events) {
+										f({ order: order, events: events });
+									}
+								}
 							}
+						},
+						map: function(p) {
+							return function(order) {
+								return function(events) {
+									p.means(p.order(order))(events);
+								}
+							}
+						},
+						process: toProcess,
+						now: function(p) {
+							var later = toProcess(p);
+							later();
 						}
-					}
-				},
-				map: function(p) {
-					return function(order) {
-						return function(events) {
-							p.means(p.order(order))(events);
-						}
-					}
+					};
 				}
-			},
+			)(),
 			Process: {
 				action: function(p) {
 					return function() {
