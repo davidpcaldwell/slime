@@ -12,7 +12,7 @@
 		var asJshIntention: slime.$api.fp.Identity<slime.jsh.shell.Intention> = $api.fp.identity;
 
 		var fixtures = (function() {
-			var script: slime.jrunscript.jsh.test.Script = jsh.script.loader.script("fixtures.ts");
+			var script: slime.jsh.test.Script = jsh.script.loader.script("fixtures.ts");
 			return script();
 		})();
 

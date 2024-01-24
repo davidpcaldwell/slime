@@ -9,7 +9,7 @@ namespace slime.jsh.test.remote {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			var fixtures: slime.jrunscript.jsh.test.Script = fifty.$loader.script("../../../jrunscript/jsh/fixtures.ts");
+			var fixtures: slime.jsh.test.Script = fifty.$loader.script("../../../jrunscript/jsh/fixtures.ts");
 			var exported = fixtures();
 			var remote = exported.shells.remote();
 

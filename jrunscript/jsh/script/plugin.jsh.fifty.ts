@@ -642,7 +642,7 @@ namespace slime.jsh.script {
 
 			const fixtures = (
 				function() {
-					var script: slime.jrunscript.jsh.test.Script = fifty.$loader.script("../fixtures.ts");
+					var script: slime.jsh.test.Script = fifty.$loader.script("../fixtures.ts");
 					return script();
 				}
 			)();

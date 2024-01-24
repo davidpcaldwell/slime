@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.jsh.test {
+namespace slime.jsh.test {
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			const script: Script = fifty.$loader.script("fixtures.ts");
