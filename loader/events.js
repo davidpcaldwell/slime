@@ -172,7 +172,6 @@
 				;
 				invocationReceiver.attach();
 				try {
-					debugger;
 					return f.call( this, p, invocationReceiver.emitter );
 				} finally {
 					invocationReceiver.detach();
