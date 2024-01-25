@@ -184,6 +184,9 @@
 						});
 						return rv;
 					}
+				},
+				now: function(process) {
+					process();
 				}
 			},
 			tap: function(f) {
@@ -279,6 +282,17 @@
 						now: function(p) {
 							var later = toProcess(p);
 							later();
+						},
+						Order: {
+							now: function(p) {
+								return function(o) {
+									var action = p.means(o);
+									$context.events.handle({
+										implementation: action,
+										handlers: p.handlers
+									});
+								}
+							}
 						}
 					};
 				}
