@@ -542,7 +542,7 @@ namespace slime.$api.fp.world {
 
 	export interface Exports {
 		/**
-		 * @deprecated Replaced by `Meter.mapping`.
+		 * @deprecated Replaced by `Sensor.mapping`.
 		 */
 		mapping: <P,E,A>(question: world.Sensor<P,E,A>, handler?: slime.$api.event.Handlers<E>) => fp.Mapping<P,A>
 	}
@@ -648,8 +648,9 @@ namespace slime.$api.fp.world {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.exports.world.Meter = {};
-			fifty.tests.exports.world.Meter.mapping = function() {
+			fifty.tests.exports.world.Sensor = fifty.test.Parent();
+
+			fifty.tests.exports.world.Sensor.mapping = function() {
 				var captor = fifty.$api.Events.Captor({
 					got: void(0),
 					returning: void(0)
