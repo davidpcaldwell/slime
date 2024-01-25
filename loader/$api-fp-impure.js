@@ -283,15 +283,13 @@
 							var later = toProcess(p);
 							later();
 						},
-						Order: {
-							now: function(p) {
-								return function(o) {
-									var action = p.means(o);
-									$context.events.handle({
-										implementation: action,
-										handlers: p.handlers
-									});
-								}
+						output: function(p) {
+							return function(o) {
+								var action = p.means(o);
+								$context.events.handle({
+									implementation: action,
+									handlers: p.handlers
+								});
 							}
 						}
 					};

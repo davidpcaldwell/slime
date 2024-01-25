@@ -686,6 +686,7 @@ namespace slime.$api.fp.world {
 			from: {
 				flat: <O,E>(f: (p: { order: O, events: slime.$api.event.Emitter<E> }) => void) => Means<O,E>
 			}
+
 			map: <P,R,E>(p: {
 				order: slime.$api.fp.Mapping<P,R>
 				means: slime.$api.fp.world.Means<R,E>
@@ -703,12 +704,10 @@ namespace slime.$api.fp.world {
 				handlers?: slime.$api.event.Handlers<E>
 			}) => void
 
-			Order: {
-				now: <O,E>(p: {
-					means: slime.$api.fp.world.Means<O,E>
-					handlers?: slime.$api.event.Handlers<E>
-				}) => (order: O) => void
-			}
+			output: <O,E>(p: {
+				means: slime.$api.fp.world.Means<O,E>
+				handlers?: slime.$api.event.Handlers<E>
+			}) => impure.Output<O>
 		}
 	}
 
@@ -810,12 +809,10 @@ namespace slime.$api.fp.world {
 				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
 			};
 
-			fifty.tests.exports.world.Means.Order = fifty.test.Parent();
-
-			fifty.tests.exports.world.Means.Order.now = function() {
+			fifty.tests.exports.world.Means.output = function() {
 				var { orders, captor, recorder } = NumberRecorder();
 
-				var output = $api.fp.world.Means.Order.now({
+				var output = $api.fp.world.Means.output({
 					means: recorder,
 					handlers: captor.handler
 				});
@@ -916,6 +913,10 @@ namespace slime.$api.fp.world {
 	export interface Exports {
 		now: {
 			question: <P,E,A>(question: world.Sensor<P,E,A>, argument: P, handler?: slime.$api.event.Handlers<E>) => A
+
+			/**
+			 * @deprecated Replaced by Means.now()
+			 */
 			action: <P,E>(action: world.Means<P,E>, argument?: P, handler?: slime.$api.event.Handlers<E>) => void
 
 			ask: <E,A>(ask: world.Question<E,A>, handler?: slime.$api.event.Handlers<E>) => A
