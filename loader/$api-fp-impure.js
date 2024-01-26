@@ -250,10 +250,10 @@
 			},
 			Means: (
 				function() {
-					/** @type { slime.$api.fp.world.Exports["Means"]["process"] } */
+					/** @type { slime.$api.fp.world.Exports["Means"]["order"]["process"] } */
 					var toProcess = function(p) {
 						return function() {
-							var action = p.means(p.order);
+							var action = p.means(p.order());
 							$context.events.handle({
 								implementation: action,
 								handlers: p.handlers
@@ -278,9 +278,19 @@
 								}
 							}
 						},
-						process: toProcess,
+						process: function(p) {
+							return toProcess({
+								means: p.means,
+								order: impure.Input.value(p.order),
+								handlers: p.handlers
+							});
+						},
 						now: function(p) {
-							var later = toProcess(p);
+							var later = toProcess({
+								means: p.means,
+								order: impure.Input.value(p.order),
+								handlers: p.handlers
+							});
 							later();
 						},
 						output: function(p) {
@@ -291,6 +301,9 @@
 									handlers: p.handlers
 								});
 							}
+						},
+						order: {
+							process: toProcess
 						}
 					};
 				}
