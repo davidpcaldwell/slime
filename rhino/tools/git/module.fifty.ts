@@ -414,6 +414,8 @@ namespace slime.jrunscript.tools.git {
 				repository: (pathname: string) => {
 					command: exports.command.Executor
 				}
+
+				command: exports.command.Executor
 			}
 
 			command: exports.command.Executor

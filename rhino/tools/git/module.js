@@ -321,7 +321,8 @@
 							return {
 								command: commandExecutor(program, values, pathname)
 							}
-						}
+						},
+						command: commandExecutor(program, values, void(0))
 					}
 				},
 				repository: function(pathname) {
