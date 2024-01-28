@@ -11,24 +11,10 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var loader = new jsh.file.Loader({ directory: jsh.script.file.parent.parent });
-		var code = {
-			/** @type { slime.project.metrics.Script } */
-			metrics: loader.script("metrics.js")
-		};
-		var library = {
-			metrics: code.metrics({
-				library: {
-					file: jsh.file,
-					code: jsh.tools.code
-				}
-			})
-		};
-
-		/** @param { slime.project.metrics.SourceFile } file */
+		/** @param { slime.tools.code.File } file */
 		var isUnchecked = function(file) {
-			if (library.metrics.SourceFile.isTypescript(file)) return false;
-			if (library.metrics.SourceFile.isJavascript(file)) return !library.metrics.SourceFile.javascript.hasTypeChecking(file)["value"];
+			if (jsh.tools.code.File.isTypescript(file)) return false;
+			if (jsh.tools.code.File.isJavascript(file)) return !jsh.tools.code.File.javascript.hasTypeChecking(file)["value"];
 			return true;
 		}
 
@@ -46,10 +32,34 @@
 			return function(events) {
 				/** @type { Match[] } */
 				var rv = [];
-				var files = library.metrics.getSourceFiles(p.from);
+				var project = jsh.tools.code.Project.from.directory({
+					root: p.from.pathname.os.adapt(),
+					excludes: {
+						descend: function(directory) {
+							//	TODO	SLIME-specfic use of bin
+							var basename = jsh.file.Location.basename(directory);
+							if (basename == ".git") return false;
+							if (basename == "local") return false;
+							if (basename == "bin") return false;
+							return true;
+						},
+						isSource: function(file) {
+							//	TODO	SLIME-specfic use of jsh.project.code
+							return $api.fp.Maybe.from.some(jsh.project.code.files.isText({
+								path: void(0),
+								file: file
+							}));
+						}
+					}
+				});
+				var files = jsh.tools.code.Project.files(project);
 				files.forEach(function(file) {
 					if (isUnchecked(file)) {
-						var lines = file.file.read(String).split("\n");
+						var lines = $api.fp.now.invoke(
+							file.file,
+							jsh.file.Location.file.read.string.assert,
+							$api.fp.string.split("\n")
+						);
 						lines.forEach(function(line,index) {
 							if (regexp.test(line)) {
 								/** @type { Match } */

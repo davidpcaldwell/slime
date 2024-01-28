@@ -13,12 +13,9 @@
 	function($api,jsh) {
 		$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
 
-		/** @deprecated Should be able to use `project`. */
-		var SLIME = jsh.script.file.parent.parent;
-
 		var project = $api.fp.impure.Input.value(
 			{
-				root: SLIME.pathname.os.adapt()
+				root: jsh.script.file.parent.parent.pathname.os.adapt()
 			},
 			jsh.tools.code.Project.from.git
 		);
@@ -146,34 +143,36 @@
 						jsh.shell.console("Total @" + "ts-ignore comments violating rules: " + ignores.length);
 					},
 					size: function(invocation) {
-						var code = {
-							/** @type { slime.project.metrics.Script } */
-							project: jsh.script.loader.script("metrics.js")
-						};
-
-						var project = code.project({
-							library: {
-								file: jsh.file,
-								code: jsh.tools.code
-							}
-						});
-
-						/** @deprecated Use slime.tools.code constructs. */
-						var getSourceFiles = function() {
-							return project.getSourceFiles(SLIME);
-						};
-
 						//	TODO	could cache by path so as not to do so much re-reading while sorting etc.
+						/** @type { slime.$api.fp.Mapping<slime.tools.code.File,number> } */
 						var getLines = function(file) {
 							//	We subtract one because we assume the linter has enforced a trailing newline
-							return file.file.read(String).split("\n").length - 1;
+							return read(file).split("\n").length - 1;
 						}
 
-						var files = $api.fp.result(
-							getSourceFiles(),
-							$api.fp.Array.filter($api.fp.Predicate.not(project.SourceFile.isGenerated)),
-							$api.fp.Array.filter($api.fp.Predicate.not(project.SourceFile.isJsapi)),
+						var getFiles = $api.fp.impure.Input.map(
+							project,
+							jsh.tools.code.Project.files
+						);
+
+						/** @type { slime.$api.fp.Predicate<slime.tools.code.File> } */
+						var isGenerated = function(file) {
+							if (file.path == "rhino/tools/docker/tools/docker-api.d.ts") return true;
+							if (file.path == "rhino/tools/github/tools/github-rest.d.ts") return true;
+							return false;
+						};
+
+						/** @type { slime.$api.fp.Predicate<slime.tools.code.File> } */
+						var isJsapi = function(file) {
+							return jsh.tools.code.jsapi.Location.is(file.file);
+						}
+
+						var files = $api.fp.now.invoke(
+							getFiles(),
+							$api.fp.Array.filter($api.fp.Predicate.not(isGenerated)),
+							$api.fp.Array.filter($api.fp.Predicate.not(isJsapi)),
 							$api.fp.Array.filter(function(file) {
+								//	TODO	allow higher limit for Fifty
 								return getLines(file) > 500;
 							})
 						).sort(function(a,b) {
