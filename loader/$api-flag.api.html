@@ -39,42 +39,6 @@ END LICENSE
 		<ul>
 			<li class="function" jsapi:id="deprecate">
 				<div class="name"><a name="$api.deprecate">deprecate</a></div>
-				<span>
-					A function that can be used to mark a named property on an object as a deprecated API.
-				</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">function</span>
-							<span>A function to mark.</span>
-						</li>
-					</ol>
-					-or-
-					<ol>
-						<li class="value">
-							<span class="type">object</span>
-							<span>A target object whose property will be marked.</span>
-						</li>
-						<li class="value">
-							<span class="type">string</span>
-							<span>
-								(optional) The name of the property to mark. If omitted, <strong>all</strong> properties will be
-								marked.
-							</span>
-						</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					<span class="type">function</span>
-					-or-
-					<span class="type">undefined</span>
-					<span>
-						If the argument was a function, returns a version of the function that is deprecated: that is, executes
-						the appropriate warning callback when it is executed. Otherwise, returns undefined.
-					</span>
-				</div>
 				<ul>
 					<li class="function">
 						<div class="name">warning</div>
