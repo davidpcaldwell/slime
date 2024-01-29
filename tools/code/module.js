@@ -22,7 +22,7 @@
 			return function(path) {
 				return {
 					path: path,
-					file: $context.library.file.world.Location.relative(path)(repository)
+					file: $context.library.file.Location.directory.relativePath(path)(repository)
 				}
 			}
 		}
@@ -192,8 +192,7 @@
 		function getGitSourceFiles(p) {
 			return function(events) {
 				//	We retrieve the Git source files in two steps, because the --others mechanism used to retrieve untracked files
-				//	does not work recursively. Could we use git status? Then we'd only be checking changed files, which would mean
-				//	if linting were added to the project, it would not lint all files immediately. More thinking / design to do.
+				//	does not work recursively.
 
 				var tracked = $context.library.git.program({ command: "git" })
 					.repository(p.repository.pathname)
@@ -220,7 +219,14 @@
 					.run()
 				;
 
-				var listed = tracked.concat(untracked).map(gitPathToFile(p.repository));
+				var listed = tracked.concat(untracked).map(gitPathToFile(p.repository)).filter(function(file) {
+					//	Filter out files that do not exist, perhaps because they have been removed but the remove has not been
+					//	committed, so they are still listed by ls-files
+					return $api.fp.world.now.question(
+						$context.library.file.Location.file.exists(),
+						file.file
+					);
+				});
 
 				var rv = [];
 				for (var i=0; i<listed.length; i++) {
@@ -683,6 +689,18 @@
 			}
 		);
 
+		//	TODO	should compare filesystems, or does relativeTo do that?
+		/** @param { slime.jrunscript.file.Location } base */
+		var locationToFile = function(base) {
+			/** @returns { slime.tools.code.File } */
+			return function(location) {
+				return {
+					path: $context.library.file.Location.directory.relativeTo(base)(location),
+					file: location
+				}
+			}
+		};
+
 		$export({
 			Project: {
 				from: {
@@ -732,14 +750,7 @@
 					}
 				},
 				files: function(project) {
-					return project.files.map(function(location) {
-						//	TODO	new construct for this, where we can define an object with properties via functions taking the
-						//			argument as an argument?
-						return {
-							path: $context.library.file.Location.directory.relativeTo(project.base)(location),
-							file: location
-						}
-					});
+					return project.files.map(locationToFile(project.base));
 				},
 				gitignoreLocal: $api.fp.world.Means.from.flat(
 					function(p) {
@@ -912,6 +923,9 @@
 					};
 
 					return {
+						from: {
+							location: locationToFile
+						},
 						hasShebang: hasShebang,
 						isText: {
 							world: isText,
@@ -922,6 +936,9 @@
 						isJavascript: isJavascript,
 						isTypescript: function(file) {
 							return (/\.ts$/.test(file.path));
+						},
+						isFiftyDefinition: function(file) {
+							return (/\.fifty\.ts$/.test(file.path));
 						},
 						javascript: {
 							hasTypeChecking: function(file) {
