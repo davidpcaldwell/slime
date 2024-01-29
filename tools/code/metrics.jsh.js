@@ -13,12 +13,89 @@
 	function($api,jsh) {
 		$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
 
+		var existsFile = $api.fp.world.Sensor.mapping({
+			sensor: jsh.file.Location.file.exists()
+		});
+
+		/** @type { (root: slime.jrunscript.file.Location) => slime.tools.code.metrics.Settings } */
+		var getSettings = function(root) {
+			var toFile = jsh.tools.code.File.from.location(root);
+
+			var location = $api.fp.now.invoke(root, jsh.file.Location.directory.relativePath("metrics.js"));
+
+			var set = existsFile(location);
+
+			/** @type { slime.tools.code.metrics.Settings } */
+			var defaults = {
+				excludes: {
+					descend: function(directory) {
+						var basename = jsh.file.Location.basename(directory);
+						if (basename == ".git") return false;
+						if (basename == "local") return false;
+						return true;
+					},
+					isSource: function(file) {
+						return jsh.tools.code.File.isText.basic(toFile(file));
+					}
+				},
+				isGenerated: function(file) {
+					return false;
+				}
+			};
+
+			if (set) {
+				//	TODO	switch to new loader when new loader stuff is more mature and easier to use
+				var loader = new jsh.file.Loader({ directory: jsh.file.Pathname(root.pathname).directory });
+				/** @type { slime.tools.code.metrics.Script } */
+				var script = loader.script("metrics.js");
+				var settings = script();
+				if (!settings.excludes) settings.excludes = defaults.excludes;
+				if (!settings.excludes.descend) settings.excludes.descend = defaults.excludes.descend;
+				if (!settings.excludes.isSource) settings.excludes.isSource = defaults.excludes.isSource;
+				if (!settings.isGenerated) settings.isGenerated = defaults.isGenerated;
+				return settings;
+			} else {
+				return defaults;
+			}
+		}
+
 		var project = $api.fp.impure.Input.value(
-			{
-				root: jsh.script.file.parent.parent.pathname.os.adapt()
+			jsh.shell.PWD.pathname.os.adapt(),
+			function(location) {
+				var gitRepositoryLocation = $api.fp.now.invoke(location, jsh.file.Location.directory.relativePath(".git"));
+				var existsDirectory = $api.fp.world.Sensor.mapping({
+					sensor: jsh.file.Location.directory.exists()
+				});
+				return {
+					root: location,
+					git: existsFile(gitRepositoryLocation) || existsDirectory(gitRepositoryLocation)
+				}
 			},
-			jsh.tools.code.Project.from.git
+			function(p) {
+				var settings = getSettings(p.root);
+
+				return (
+					(p.git)
+						//	TODO	this causes a crash when moving files, as files are still listed by git even if they do not
+						//			exist anymore
+						? jsh.tools.code.Project.from.git({
+							root: p.root,
+							excludes: settings.excludes
+						})
+						: jsh.tools.code.Project.from.directory({
+							root: p.root,
+							excludes: settings.excludes
+						})
+				);
+			}
 		);
+
+		//	TODO	probably should let this be project-specific
+		/** @type { slime.$api.fp.Mapping<slime.tools.code.File,number> } */
+		var getPermittedFileSize = function(file) {
+			if (jsh.tools.code.File.isFiftyDefinition(file)) return 1000;
+			return 500;
+		}
 
 		/** @type { slime.$api.fp.Identity<slime.tools.code.File> } */
 		var asFile = $api.fp.identity;
@@ -156,36 +233,36 @@
 						);
 
 						/** @type { slime.$api.fp.Predicate<slime.tools.code.File> } */
-						var isGenerated = function(file) {
-							if (file.path == "rhino/tools/docker/tools/docker-api.d.ts") return true;
-							if (file.path == "rhino/tools/github/tools/github-rest.d.ts") return true;
-							return false;
-						};
-
-						/** @type { slime.$api.fp.Predicate<slime.tools.code.File> } */
 						var isJsapi = function(file) {
 							return jsh.tools.code.jsapi.Location.is(file.file);
 						}
 
 						var files = $api.fp.now.invoke(
 							getFiles(),
-							$api.fp.Array.filter($api.fp.Predicate.not(isGenerated)),
+							//	TODO	below is awkward and redundant; perhaps input should return project and settings, or project
+							//			augmented with settings
+							$api.fp.Array.filter($api.fp.Predicate.not(getSettings(project().base).isGenerated)),
 							$api.fp.Array.filter($api.fp.Predicate.not(isJsapi)),
 							$api.fp.Array.filter(function(file) {
 								//	TODO	allow higher limit for Fifty
-								return getLines(file) > 500;
+								return getLines(file) > getPermittedFileSize(file);
 							})
 						).sort(function(a,b) {
 							//	TODO	need fp way to do this
-							return getLines(b) - getLines(a);
+							return getLines(b) / getPermittedFileSize(b) - getLines(a) / getPermittedFileSize(a);
 						});
 
+						var percentOver = function(file) {
+							var ratio = getLines(file) / getPermittedFileSize(file);
+							return ((ratio - 1) * 100).toFixed(1) + "%";
+						}
+
 						files.forEach(function(file) {
-							jsh.shell.console(file.path + ": " + getLines(file));
+							jsh.shell.console(file.path + ": " + getLines(file) + " " + percentOver(file));
 						});
 
 						jsh.shell.console("");
-						jsh.shell.console("Total files >500 lines: " + files.length);
+						jsh.shell.console("Total files exceeding maximum size: " + files.length);
 					}
 				}
 			})

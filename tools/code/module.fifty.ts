@@ -213,7 +213,12 @@ namespace slime.tools.code {
 
 	export interface Exports {
 		File: {
+			from: {
+				location: (base: slime.jrunscript.file.Location) => (location: slime.jrunscript.file.Location) => File
+			}
+
 			hasShebang: () => slime.$api.fp.world.Sensor<File,void,slime.$api.fp.Maybe<boolean>>
+
 			isText: {
 				world: () => slime.$api.fp.world.Sensor<File,void,slime.$api.fp.Maybe<boolean>>
 				basic: slime.$api.fp.Mapping<File,slime.$api.fp.Maybe<boolean>>
@@ -221,6 +226,8 @@ namespace slime.tools.code {
 
 			isJavascript: slime.$api.fp.Mapping<File,boolean>
 			isTypescript: slime.$api.fp.Mapping<File,boolean>
+
+			isFiftyDefinition: slime.$api.fp.Mapping<File,boolean>
 
 			javascript: {
 				hasTypeChecking: (file: File) => slime.$api.fp.Maybe<boolean>
