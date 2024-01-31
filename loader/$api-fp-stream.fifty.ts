@@ -154,6 +154,36 @@ namespace slime.$api.fp {
 
 	export namespace stream {
 		export interface Exports {
+			first: <T>(ts: Stream<T>) => Maybe<T>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const subject = fifty.global.$api.fp.Stream;
+
+				fifty.tests.exports.first = function() {
+					var empty = subject.from.empty();
+					var empty2 = subject.from.array([]);
+					var one = subject.from.array(["one"]);
+
+					verify(empty).evaluate(subject.first).present.is(false);
+					verify(empty2).evaluate(subject.first).present.is(false);
+					verify(one).evaluate(subject.first).present.is(true);
+					var first = subject.first(one);
+					if (first.present) {
+						verify(first).value.is("one");
+					}
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace stream {
+		export interface Exports {
 			map: <T,R>(f: (t: T) => R) => (stream: Stream<T>) => Stream<R>
 		}
 
@@ -297,41 +327,6 @@ namespace slime.$api.fp {
 	}
 
 	export namespace stream {
-		export interface Exports {
-			first: <T>(ts: Stream<T>) => Maybe<T>
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const subject = fifty.global.$api.fp.Stream;
-
-				fifty.tests.exports.first = function() {
-					var empty = subject.from.empty();
-					var empty2 = subject.from.array([]);
-					var one = subject.from.array(["one"]);
-
-					verify(empty).evaluate(subject.first).present.is(false);
-					verify(empty2).evaluate(subject.first).present.is(false);
-					verify(one).evaluate(subject.first).present.is(true);
-					var first = subject.first(one);
-					if (first.present) {
-						verify(first).value.is("one");
-					}
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-	}
-
-	export interface Exports {
-		Stream: stream.Exports
-	}
-
-
-	export namespace stream {
 		export namespace impure {
 			export interface Exports {
 				forEach: <T>(f: slime.$api.fp.impure.Output<T>) => slime.$api.fp.impure.Output<Stream<T>>
@@ -369,12 +364,6 @@ namespace slime.$api.fp {
 				}
 			//@ts-ignore
 			)(fifty);
-		}
-	}
-
-	export namespace impure {
-		export interface Exports {
-			Stream: stream.impure.Exports
 		}
 	}
 

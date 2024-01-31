@@ -554,7 +554,7 @@ namespace slime.jrunscript.tools.git.internal.oo {
 		}
 		library: {
 			log: slime.jrunscript.tools.git.internal.log.Exports
-			commands: slime.jrunscript.tools.git.internal.commands.Exports
+			commands: slime.jrunscript.tools.git.Commands
 		}
 		console: any
 		environment: any

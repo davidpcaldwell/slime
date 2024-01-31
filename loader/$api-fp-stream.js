@@ -136,6 +136,9 @@
 						}
 					}
 				},
+				first: function(stream) {
+					return stream().next;
+				},
 				map: function(mapping) {
 					/**
 					 * @template { any } T
@@ -157,9 +160,6 @@
 					return function(stream) {
 						return MappedStream(stream,mapping);
 					}
-				},
-				first: function(stream) {
-					return stream().next;
 				},
 				collect: function(stream) {
 					var rv = [];

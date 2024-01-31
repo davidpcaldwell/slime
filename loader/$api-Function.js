@@ -332,12 +332,7 @@
 					return Maybe.from.nothing();
 				}
 			},
-			Stream: code.Stream({
-				$f: {
-					Maybe: Maybe,
-					pipe: pipe
-				}
-			}).exports,
+			Stream: stream.exports,
 			Array: {
 				filter: function(f) {
 					return function(array) {
