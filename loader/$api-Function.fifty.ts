@@ -1041,6 +1041,10 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		Stream: stream.Exports
+	}
+
 	export namespace old {
 		/**
 		 * A function intended to mutate or replace a value.

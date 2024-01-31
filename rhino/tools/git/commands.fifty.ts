@@ -268,23 +268,10 @@ namespace slime.jrunscript.tools.git {
 	export interface Commands {
 		lsFiles: slime.jrunscript.tools.git.Command<{ recurseSubmodules: boolean },string[]>
 	}
-
-	export interface Exports {
-		/**
-		 * An opinionated object that provides a set of {@link Command} implementations deemed to be useful for `git` automation.
-		 * If the exact combination of git commands and options for your use case is not provided here, you can implement your own
-		 * {@link Command} which can be tailored to any set of commands, arguments, and options, any way of parsing output, and so
-		 * forth.
-		 */
-		commands: Commands
-	}
 }
 
 namespace slime.jrunscript.tools.git.internal.commands {
 	export type Context = void
-
-	export interface Exports extends slime.jrunscript.tools.git.Commands {
-	}
 
 	(
 		function(
@@ -297,5 +284,5 @@ namespace slime.jrunscript.tools.git.internal.commands {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.loader.Script<Context,slime.jrunscript.tools.git.Commands>
 }

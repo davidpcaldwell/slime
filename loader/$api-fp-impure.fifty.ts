@@ -461,6 +461,10 @@ namespace slime.$api.fp.impure {
 
 		tap: <T>(output: Output<T>) => (t: T) => T
 	}
+
+	export interface Exports {
+		Stream: stream.impure.Exports
+	}
 }
 
 namespace slime.$api.fp.world {

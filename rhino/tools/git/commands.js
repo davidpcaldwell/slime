@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.git.internal.commands.Context } $context
-	 * @param { slime.loader.Export<slime.jrunscript.tools.git.internal.commands.Exports> } $export
+	 * @param { slime.loader.Export<slime.jrunscript.tools.git.Commands> } $export
 	 */
 	function($api,$context,$export) {
 		/**
