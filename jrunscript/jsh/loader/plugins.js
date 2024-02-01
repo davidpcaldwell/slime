@@ -191,8 +191,13 @@
 			return Boolean(plugins["_file"]);
 		};
 
-		/** @type { (plugins: slime.jsh.loader.internal.plugins.Plugins) => plugins is slime.jsh.loader.internal.plugins.LoaderPlugins } */
-		var isLoaderPlugins = function(plugins) {
+		/** @type { (plugins: slime.jsh.loader.internal.plugins.Plugins) => plugins is slime.jsh.loader.internal.plugins.SynchronousLoaderPlugins } */
+		var isSynchronousLoaderPlugins = function(plugins) {
+			return Boolean(plugins["synchronous"]);
+		};
+
+		/** @type { (plugins: slime.jsh.loader.internal.plugins.Plugins) => plugins is slime.jsh.loader.internal.plugins.OldLoaderPlugins } */
+		var isOldLoaderPlugins = function(plugins) {
 			return Boolean(plugins["loader"]);
 		};
 
@@ -316,14 +321,20 @@
 				plugins: {},
 				global: (function() { return this; })(),
 				jsh: jsh
-			}
+			};
 
 			if (isJavaFilePlugins(p)) {
 				content = getPluginsContent(
 					scope,
 					new $slime.Loader({ _file: p._file })
 				);
-			} else if (isLoaderPlugins(p)) {
+			} else if (isSynchronousLoaderPlugins(p)) {
+				$slime.old.loader.source.object
+				content = getPluginsContent(
+					scope,
+					$slime.old.loader.from.synchronous(p.synchronous)
+				);
+			} else if (isOldLoaderPlugins(p)) {
 				content = getPluginsContent(
 					scope,
 					p.loader

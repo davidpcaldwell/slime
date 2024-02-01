@@ -255,7 +255,7 @@ namespace slime.jrunscript.runtime {
 	)(fifty);
 
 	/**
-	 * A standardized interface for resources that eases interoperability between various kinds of loaders.
+	 * A standardized interface for resources that eases interoperability between various kinds of Java-based loaders.
 	 */
 	export interface Resource {
 		read: () => slime.jrunscript.runtime.io.InputStream
@@ -283,7 +283,9 @@ namespace slime.jrunscript.runtime {
 		jrunscript: {
 			loader: {
 				from: {
-					java: (_loader: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.runtime.loader.Synchronous<slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource>
+					java: (
+						_loader: slime.jrunscript.native.inonit.script.engine.Code.Loader
+					) => slime.runtime.loader.Synchronous<slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource>
 				}
 				entries: <T>(
 					p: {

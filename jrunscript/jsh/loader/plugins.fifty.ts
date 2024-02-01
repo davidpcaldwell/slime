@@ -40,6 +40,30 @@
  */
 namespace slime.jsh.plugin {
 	export interface $slime extends slime.jsh.loader.internal.Runtime {
+		getSystemProperty(name: string): string
+		getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+		getInvocation(): slime.jrunscript.native.inonit.script.jsh.Shell.Invocation
+
+		getPackaged(): slime.jrunscript.native.inonit.script.jsh.Shell.Packaged
+
+		loader: slime.jrunscript.runtime.Exports["old"]["loader"]
+			& slime.jrunscript.runtime.Exports["loader"]
+			& {
+				getLoaderScript(path: string): any
+			}
+
+		/**
+		 * Returns a `java.io.File` representing a file location relative to the `jsh` library location.
+		 *
+		 * @param path A relative path.
+		 */
+		getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File
+		getInterface(): slime.jrunscript.native.inonit.script.jsh.Shell.Interface
+		getSystemProperties(): slime.jrunscript.native.java.util.Properties
+		getStdio(): Stdio
+	}
+
+	export interface $slime extends slime.jsh.loader.internal.Runtime {
 		plugins: {
 			/**
 			 * Loads a single plugin from the given loader, and applies it to the mock objects given in the argument (or real objects if
@@ -183,16 +207,17 @@ namespace slime.jsh.loader.internal.plugins {
 		classpath: slime.jrunscript.runtime.ClasspathEntry[]
 	}
 
-	export type LoaderPlugins = { loader: slime.old.Loader }
+	export type OldLoaderPlugins = { loader: slime.old.Loader }
 	export type JavaFilePlugins = { _file: slime.jrunscript.native.java.io.File }
 	export type ZipFilePlugins = { zip: { _file: slime.jrunscript.native.java.io.File } }
-	export type Plugins = LoaderPlugins | JavaFilePlugins | ZipFilePlugins
+	export type SynchronousLoaderPlugins = { synchronous: slime.runtime.loader.Synchronous<any> }
+	export type Plugins = OldLoaderPlugins | JavaFilePlugins | ZipFilePlugins | SynchronousLoaderPlugins
 
 	export interface Export {
 		/**
 		 * Loads plugins from the given location and applies them to the current shell.
 		 *
-		 * @param p if a {@link LoaderPlugins} or {@link JavaFilePlugins}, scans the given location for plugins and loads them. If a
+		 * @param p if a {@link SynchronousLoaderPlugins}, {@link OldLoaderPlugins} or {@link JavaFilePlugins}, scans the given location for plugins and loads them. If a
 		 * {@link ZipFilePlugins}, adds the contents of the given ZIP file to the Java classpath; does not interpret the file as a
 		 * JavaScript plugin or scan the file contents for JavaScript plugins.
 		 */
