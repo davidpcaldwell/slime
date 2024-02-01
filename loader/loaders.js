@@ -71,6 +71,53 @@
 			},
 			tools: {
 				toExportScope: toExportScope
+			},
+			from: {
+				synchronous: function(synchronous) {
+					/** @type { slime.old.loader.Source } */
+					var source = {
+						get: function(path) {
+							var delegate = synchronous.get(path.split("/"));
+							if (delegate.present) {
+								var code = synchronous.code(delegate.value);
+								return {
+									name: code.name,
+									type: code.type(),
+									read: {
+										string: code.read
+									}
+								};
+							} else {
+								return null;
+							}
+						},
+						list: function(path) {
+							var parsed = function(path) {
+								if (path.length == 0) return [];
+								if (!/\/$/.test(path)) throw new Error("Path must end in /");
+								return path.substring(0,path.length-1).split("/");
+							}
+							var delegate = synchronous.list(parsed(path));
+							if (delegate.present) {
+								var value = delegate.value;
+								return value.map(
+									/* @returns { slime.old.loader.source.Entry } */
+									function(node) {
+										return {
+											path: node.name,
+											loader: node.parent,
+											resource: node.resource
+										}
+									}
+								);
+							} else {
+								//	TODO	is this right?
+								return null;
+							}
+						}
+					};
+					return new Loader(source);
+				}
 			}
 		});
 	}

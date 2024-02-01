@@ -6,29 +6,6 @@
 
 namespace slime.jsh {
 	export namespace plugin {
-		export interface $slime extends slime.jsh.loader.internal.Runtime {
-			getSystemProperty(name: string): string
-			getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-			getInvocation(): slime.jrunscript.native.inonit.script.jsh.Shell.Invocation
-
-			getPackaged(): slime.jrunscript.native.inonit.script.jsh.Shell.Packaged
-
-			loader: slime.jrunscript.runtime.Exports["old"]["loader"]
-				& slime.jrunscript.runtime.Exports["loader"]
-				& {
-					getLoaderScript(path: string): any
-				}
-
-			/**
-			 * Returns a `java.io.File` representing a file location relative to the `jsh` library location.
-			 *
-			 * @param path A relative path.
-			 */
-			getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File
-			getInterface(): slime.jrunscript.native.inonit.script.jsh.Shell.Interface
-			getSystemProperties(): slime.jrunscript.native.java.util.Properties
-			getStdio(): Stdio
-		}
 	}
 
 	export namespace loader {
@@ -145,7 +122,14 @@ namespace slime.jsh {
 			/**
 			 * Loads `jsh` plugins from a given location.
 			 */
-			plugins: (p: slime.jrunscript.file.Directory | slime.jrunscript.file.Pathname | slime.Loader) => void
+			plugins: (p:
+				slime.runtime.loader.Synchronous<any>
+				| slime.jrunscript.file.Location
+				| slime.Loader
+				| slime.jrunscript.file.Pathname
+				| slime.jrunscript.file.Directory
+			) => void
+
 			addFinalizer: any
 			java: {
 				toString: () => string

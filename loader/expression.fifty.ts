@@ -644,6 +644,18 @@ namespace slime {
 					tools: {
 						toExportScope: <S extends { [x: string]: any },T>(scope: S) => S & { $export: (t: T) => void, $exports: T }
 					}
+
+					from: {
+						/**
+						 * Adapter method that implements the old loader interface in terms of the new synchronous loader, for
+						 * the purpose of using APIs that expect the old interface while using the new synchronous loader in new
+						 * code.
+						 *
+						 * @param o A synchronous loader
+						 * @returns An old loader that delegates to the synchronous loader.
+						 */
+						synchronous: (o: slime.runtime.loader.Synchronous<any>) => old.Loader
+					}
 				}
 			}
 		}

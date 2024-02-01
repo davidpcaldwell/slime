@@ -45,6 +45,30 @@
 
 				jsh.file = script(context);
 			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.file);
+			},
+			load: function() {
+				/** @type { (p: any) => p is slime.jrunscript.file.Location } */
+				var isLocation = function(p) { return p["filesystem"] && p["pathname"]; }
+
+				jsh.loader.plugins = (
+					function(was) {
+						/** @type { slime.jsh.Global["loader"]["plugins"] } */
+						return function(p) {
+							if (isLocation(p)) {
+								var synchronous = jsh.file.Location.directory.loader.synchronous({ root: p });
+								return was.apply(this, [ synchronous ]);
+							} else {
+								return was.apply(this, arguments);
+							}
+						}
+					}
+				)(jsh.loader.plugins);
+			}
 		})
 	}
 //@ts-ignore
