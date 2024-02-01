@@ -137,10 +137,8 @@
 			},
 			Output: {
 				process: function(p) {
-					return function(output) {
-						return function() {
-							output(p);
-						}
+					return function() {
+						p.output(p.value);
 					}
 				},
 				compose: function(os) {
@@ -246,6 +244,13 @@
 							return mapReading(p.sensor(mapSubject(subject))(events));
 						}
 					}
+				},
+				now: function(p) {
+					var question = p.sensor(p.subject);
+					return $context.events.handle({
+						implementation: question,
+						handlers: p.handlers
+					});
 				}
 			},
 			Means: (

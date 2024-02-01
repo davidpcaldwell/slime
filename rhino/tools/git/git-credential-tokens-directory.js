@@ -30,12 +30,18 @@
 		 * @returns { slime.$api.fp.impure.Output<slime.jrunscript.file.Location> }
 		 */
 		var setFileContents = function(string) {
+			//	TODO	pipelining is probably not the most straightforward way to do this
 			return $api.fp.pipe(
 				$context.library.file.Location.file.write,
 				$api.fp.property("string"),
 				$api.fp.world.Action.output(),
-				$api.fp.impure.Output.process({ value: string }),
-				$api.fp.impure.now.process
+				function(output) {
+					return $api.fp.impure.Output.process({
+						value: { value: string },
+						output: output
+					})
+				},
+				$api.fp.impure.Process.now
 			)
 		};
 
