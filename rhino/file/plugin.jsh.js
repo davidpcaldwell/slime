@@ -8,11 +8,12 @@
 (
 	/**
 	 * @param { slime.jsh.plugin.$slime } $slime
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
-	function($slime, jsh, plugin, $loader) {
+	function($slime, $api, jsh, plugin, $loader) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.loader && jsh.loader.addFinalizer && jsh.js && jsh.java && jsh.io);
@@ -43,15 +44,40 @@
 				/** @type { slime.jrunscript.file.Script } */
 				var script = $loader.script("module.js");
 
-				jsh.file = script(context);
-			}
-		});
+				var module = script(context);
 
-		plugin({
-			isReady: function() {
-				return Boolean(jsh.file);
-			},
-			load: function() {
+				jsh.file = Object.assign(
+					module,
+					{
+						jsh: (
+							function() {
+								var plugins = function(p) {
+									var synchronous = module.Location.directory.loader.synchronous({ root: p });
+									return jsh.loader.plugins(synchronous);
+								};
+
+								return {
+									plugins: plugins,
+									plugin: {
+										load: function(p) {
+											return $api.fp.now.invoke(
+												(function() { return this; })(),
+												$api.fp.impure.tap(
+													$api.fp.impure.Output.process({
+														value: p.from,
+														output: plugins
+													})
+												),
+												p.plugin
+											)
+										}
+									}
+								};
+							}
+						)()
+					}
+				);
+
 				/** @type { (p: any) => p is slime.jrunscript.file.Location } */
 				var isLocation = function(p) { return p["filesystem"] && p["pathname"]; }
 
@@ -69,7 +95,7 @@
 					}
 				)(jsh.loader.plugins);
 			}
-		})
+		});
 	}
 //@ts-ignore
-)($slime, jsh, plugin, $loader)
+)($slime, $api, jsh, plugin, $loader)

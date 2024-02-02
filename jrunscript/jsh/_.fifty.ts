@@ -82,7 +82,7 @@ namespace slime.jsh {
 			web: slime.web.Exports
 		}
 
-		file: slime.jrunscript.file.Exports
+		file: slime.jrunscript.file.Plugin
 		time: slime.time.Exports
 		ip: slime.jrunscript.ip.Exports
 		db: {
