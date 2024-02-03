@@ -167,6 +167,12 @@
 			}
 		};
 
+		var now_map = function() {
+			if (arguments.length == 0) throw new TypeError();
+			var items = Array.prototype.slice.call(arguments);
+			return pipe.apply(this, items.slice(1))(items[0]);
+		}
+
 		$export({
 			identity: identity,
 			cast: function(v) { return v; },
@@ -184,9 +190,14 @@
 					return Object.fromEntries(results);
 				}
 			},
-			result: function() {
-				var items = Array.prototype.slice.call(arguments);
-				return pipe.apply(this, items.slice(1))(items[0]);
+			result: now_map,
+			thunk: {
+				map: function() {
+					var args = Array.prototype.slice.call(arguments);
+					return function() {
+						return now_map.apply(this, args);
+					}
+				}
 			},
 			property: property,
 			optionalChain: function(name) {
@@ -538,15 +549,8 @@
 				}
 			},
 			now: {
-				invoke: function(p) {
-					var functions = Array.prototype.slice.call(arguments).slice(1);
-					if (functions.length == 0) throw new TypeError();
-					var rv = p;
-					functions.forEach(function(f) {
-						rv = f(rv);
-					});
-					return rv;
-				}
+				invoke: now_map,
+				map: now_map
 			},
 			impure: impure.impure,
 			world: impure.world,

@@ -61,11 +61,15 @@ namespace slime.$api.fp {
 	export interface Exports {
 		now: {
 			/**
-			 * Returns the result of invoking a function. `invoke(p, f)` is syntactic sugar for `f(p)` in situations where
-			 * writing the parameter before the function lends clarity (for example, if the function is a pipeline created by
-			 * `pipe`).
+			 * @deprecated Replaced by {@link Exports.now.map}.
 			 */
-			invoke: Invoke
+			invoke: Now_map
+
+			/**
+			 * Returns the result of invoking a function on an argument. `invoke(p, f)` is syntactic sugar for `f(p)`, and
+			 * `invoke(p, f, g) is syntactic sugar for `g(f(p))`.
+			 */
+			map: Now_map
 		}
 	}
 
@@ -85,10 +89,10 @@ namespace slime.$api.fp {
 					return "g" + s;
 				};
 
-				var result = $api.fp.now.invoke(2, f);
+				var result = $api.fp.now.map(2, f);
 				verify(result).is("2");
 
-				var result2 = $api.fp.now.invoke(2, f, g);
+				var result2 = $api.fp.now.map(2, f, g);
 				verify(result2).is("g2");
 			};
 		}
@@ -97,9 +101,9 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		/**
-		 * @deprecated Use {@link Exports["now"]["invoke"] | `$api.fp.now.invoke`}.
+		 * @deprecated Use {@link Exports["now"]["map"] | `$api.fp.now.map`}.
 		 */
-		result: Invoke
+		result: Now_map
 	}
 
 	(
@@ -132,6 +136,12 @@ namespace slime.$api.fp {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		thunk: {
+			map: Thunk_map
+		}
+	}
 
 	export interface Exports {
 		/**
