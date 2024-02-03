@@ -67,7 +67,7 @@ namespace slime.$api.fp {
 		): (a: A) => B
 	}
 
-	export type Invoke = {
+	export type Now_map = {
 		<A,B,C,D,E,F,G,H,I>(
 			a: A,
 			f: (a: A) => B,
@@ -135,6 +135,76 @@ namespace slime.$api.fp {
 			a: A,
 			f: (a: A) => B
 		): B
+	}
+
+	export type Thunk_map = {
+		<A,B,C,D,E,F,G,H,I>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G,
+			l: (g: G) => H,
+			m: (h: H) => I
+		): Thunk<I>
+
+		<A,B,C,D,E,F,G,H>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G,
+			l: (g: G) => H
+		): Thunk<H>
+
+		<A,B,C,D,E,F,G>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G
+		): Thunk<G>
+
+		<A,B,C,D,E,F>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F
+		): Thunk<F>
+
+		<A,B,C,D,E>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E
+		): Thunk<E>
+
+		<A,B,C,D>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D
+		): Thunk<D>
+
+		<A,B,C>(
+			a: A,
+			f: (a: A) => B,
+			g: (b: B) => C
+		): Thunk<C>
+
+		<A,B>(
+			a: A,
+			f: (a: A) => B
+		): Thunk<B>
 	}
 }
 

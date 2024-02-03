@@ -12,31 +12,37 @@
 	 * @param { slime.jsh.script.cli.main } main
 	 */
 	function($api,jsh,main) {
-		//	TODO	this script generates trailing whitespace
-		//	TODO	this script omits trailing newline
 		var inputs = {
 			counts: $api.fp.impure.Input.value({
 				pipe: 8,
-				invoke: 8,
+				value_map: 8,
+				thunk_map: 8,
 				input_map: 8,
 				input_value: 8,
 				process_value: 8
 			}),
-			destination: $api.fp.impure.Input.map(
-				$api.fp.impure.Input.value(jsh.script.world.file),
-				$api.fp.pipe(
-					jsh.file.world.Location.relative("../../$api-fp-generated.fifty.ts")
-				)
+			destination: $api.fp.thunk.map(
+				jsh.script.world.file,
+				jsh.file.Location.directory.relativePath("../../$api-fp-generated.fifty.ts")
+			),
+			license: $api.fp.impure.Input.value(
+				jsh.script.world.file,
+				jsh.file.Location.file.read.string.assert,
+				$api.fp.string.split("\n"),
+				function(array) { return array.slice(0,6); },
+				$api.fp.Array.join("\n")
 			)
 		};
 
+		/** @type { (location: slime.jrunscript.file.Location) => (string: string) => void } */
 		var output = function(location) {
 			return function(string) {
-				var write = jsh.file.world.Location.file.write(location);
+				var write = jsh.file.Location.file.write(location);
 				$api.fp.world.now.action(write.string, { value: string });
 			}
 		};
 
+		/** @type { (n: number) => (string: string) => string } */
 		var offset = function(n) {
 			return function(string) {
 				for (var i=0; i<n; i++) {
@@ -102,7 +108,7 @@
 			return rv;
 		};
 
-		var invokeDefinition = function(size) {
+		var valueMapDefinition = function(size) {
 			var rv = [];
 			var types = getGenericTypeList(size+1);
 			rv.push("<" + types.join(",") + ">(");
@@ -116,7 +122,23 @@
 			}
 			rv.push("): " + types[types.length-1]);
 			return rv;
-		}
+		};
+
+		var thunkMapDefinition = function(size) {
+			var rv = [];
+			var types = getGenericTypeList(size+1);
+			rv.push("<" + types.join(",") + ">(");
+			rv.push(indent("a: A,"));
+			for (var i=0; i<size; i++) {
+				var last = i+1 == size;
+				var f = getFunctionName(i);
+				var p = getParameterNameOfType(types[i]);
+				var r = types[i+1]
+				rv.push(indent(f + ": (" + p + ": " + types[i] + ") => " + r + ( last ? "" : "," )));
+			}
+			rv.push("): " + "Thunk<" + types[types.length-1] + ">");
+			return rv;
+		};
 
 		//	TODO	inputMapDefinition and inputValueDefinition are very duplicative
 
@@ -245,7 +267,7 @@
 											)
 										]
 									);
-									return [
+									return inputs.license + "\n" + [
 										namespaceDefinition(
 											"slime.$api.fp",
 											[
@@ -256,15 +278,29 @@
 													})
 												),
 												typeDefinition(
-													"Invoke",
-													indexes(inputs.counts.invoke).map(function(n,index,array) {
-														return invokeDefinition(array.length-n);
+													"Now_map",
+													indexes(inputs.counts.value_map).map(function(n,index,array) {
+														return valueMapDefinition(array.length-n);
+													})
+												),
+												typeDefinition(
+													"Thunk_map",
+													indexes(inputs.counts.thunk_map).map(function(n,index,array) {
+														return thunkMapDefinition(array.length-n);
 													})
 												)
 											]
 										).join("\n"),
 										impure.join("\n")
-									].join("\n\n");
+									].join("\n\n").split("\n").map(function(line) {
+										var pattern = /(.*?)\s+$/;
+										var match = pattern.exec(line);
+										if (match) {
+											return match[1];
+										} else {
+											return line;
+										}
+									}).join("\n") + "\n";
 								}
 							)
 						),
