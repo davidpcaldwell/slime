@@ -540,9 +540,9 @@
 						return function(a,b) {
 							var compare = ordering(a);
 							var result = compare(b);
-							if (result == "BEFORE") return -1;
+							if (result == "AFTER") return -1;
 							if (result == "EQUAL") return 0;
-							if (result == "AFTER") return 1;
+							if (result == "BEFORE") return 1;
 							throw new TypeError("Result must be BEFORE, EQUAL, or AFTER.");
 						}
 					}
