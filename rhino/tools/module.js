@@ -127,46 +127,50 @@
 
 		/** @type { slime.jrunscript.java.tools.Exports["jar"] } */
 		var jar = (function() {
+			var toScriptManifest = function(_manifest) {
+				/** @type { slime.$api.fp.world.Reading<slime.jrunscript.java.tools.Exports["jar"]["manifest"]> } */
+				var rv = {
+					main: {},
+					entries: {}
+				};
+
+				/**
+				 *
+				 * @param { object } rv
+				 * @param { slime.jrunscript.native.java.util.jar.Attributes } _attributes
+				 */
+				var addManifestEntries = function(rv, _attributes) {
+					var _entries = _attributes.entrySet().iterator();
+					while(_entries.hasNext()) {
+						var _entry = _entries.next();
+						rv[String(_entry.getKey())] = String(_entry.getValue());
+					}
+				}
+
+				addManifestEntries(rv.main, _manifest.getMainAttributes());
+
+				var _entries = _manifest.getEntries();
+				var _entriesEntries = _entries.entrySet();
+				var _entriesIterator = _entriesEntries.iterator();
+				while(_entriesIterator.hasNext()) {
+					var _entriesEntry = _entriesIterator.next();
+					var _name = _entriesEntry.getKey();
+					/** @type { { [name: string]: string }} */
+					var section = {};
+					rv.entries[String(_name)] = section;
+					addManifestEntries(section, _entriesEntry.getValue());
+				}
+
+				return rv;
+			}
+
 			return {
 				manifest: function(o) {
 					return function(e) {
-						/** @type { slime.$api.fp.world.Reading<slime.jrunscript.java.tools.Exports["jar"]["manifest"]> } */
-						var rv = {
-							main: {},
-							entries: {}
-						};
-
 						var _jarFile = _open(o.pathname);
 						var _manifest = _jarFile.getManifest();
 
-						/**
-						 *
-						 * @param { object } rv
-						 * @param { slime.jrunscript.native.java.util.jar.Attributes } _attributes
-						 */
-						var addManifestEntries = function(rv, _attributes) {
-							var _entries = _attributes.entrySet().iterator();
-							while(_entries.hasNext()) {
-								var _entry = _entries.next();
-								rv[String(_entry.getKey())] = String(_entry.getValue());
-							}
-						}
-
-						addManifestEntries(rv.main, _manifest.getMainAttributes());
-
-						var _entries = _manifest.getEntries();
-						var _entriesEntries = _entries.entrySet();
-						var _entriesIterator = _entriesEntries.iterator();
-						while(_entriesIterator.hasNext()) {
-							var _entriesEntry = _entriesIterator.next();
-							var _name = _entriesEntry.getKey();
-							/** @type { { [name: string]: string }} */
-							var section = {};
-							rv.entries[String(_name)] = section;
-							addManifestEntries(section, _entriesEntry.getValue());
-						}
-
-						return rv;
+						return toScriptManifest(_manifest);
 					}
 				},
 				entries: function(o) {
@@ -199,6 +203,16 @@
 								next: (_iterator.hasNext()) ? $api.fp.Maybe.from.some(entry(_iterator.next())) : $api.fp.Maybe.from.nothing(),
 								remaining: f
 							}
+						}
+					}
+				},
+				Manifest: {
+					from: {
+						string: function(string) {
+							var input = $context.library.io.InputStream.from.string(string);
+							var _manifest = new Packages.java.util.jar.Manifest();
+							_manifest.read(input.java.adapt());
+							return toScriptManifest(_manifest);
 						}
 					}
 				}

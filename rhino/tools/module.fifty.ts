@@ -222,6 +222,12 @@ namespace slime.jrunscript.java.tools {
 				void,
 				slime.$api.fp.Stream<jar.AnyEntry>
 			>
+
+			Manifest: {
+				from: {
+					string: (string: string) => jar.Manifest
+				}
+			}
 		}
 	}
 

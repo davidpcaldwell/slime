@@ -266,6 +266,7 @@ namespace slime.jrunscript {
 					export interface Manifest extends slime.jrunscript.native.java.lang.Object {
 						getMainAttributes: () => Attributes
 						getEntries: () => slime.jrunscript.native.java.util.Map<slime.jrunscript.native.java.lang.String,Attributes>
+						read: (_input: slime.jrunscript.native.java.io.InputStream) => void
 					}
 
 					export interface Attributes extends slime.jrunscript.native.java.util.Map {
@@ -555,6 +556,7 @@ namespace slime.jrunscript {
 				zip: any
 				jar: {
 					JarFile: JavaClass<slime.jrunscript.native.java.util.jar.JarFile>
+					Manifest: JavaClass<slime.jrunscript.native.java.util.jar.Manifest>
 				}
 				UUID: any
 				TimeZone: any
