@@ -874,6 +874,10 @@ namespace slime.jrunscript.file {
 			export interface Exports {
 				list: {
 					stream: (p?: {
+						/**
+						 * If provided, is invoked to decide whether the listing will descend into the given directory. By default,
+						 * no subdirectories will be traversed.
+						 */
 						descend: slime.$api.fp.Predicate<Location>
 					}) => slime.$api.fp.world.Sensor<
 						slime.jrunscript.file.world.Location,
