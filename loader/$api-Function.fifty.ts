@@ -826,6 +826,12 @@ namespace slime.$api.fp {
 
 	export type CompareFn<T> = (t1: T, t2: T) => number
 
+	/**
+	 * Given a subject, returns a function that, given another value:
+	 * * Returns `"BEFORE"` if the other value belongs before the subject
+	 * * Returns `"AFTER"` if the other value belongs after the subject
+	 * * Returns `"EQUAL"` if the values are the same according to this ordering
+	 */
 	export type Ordering<T> = (subject: T) => (other: T) => "BEFORE" | "EQUAL" | "AFTER"
 
 	export interface Exports {
@@ -869,9 +875,9 @@ namespace slime.$api.fp {
 			fifty.tests.compare = function() {
 				run(function orderingArray() {
 					var numbers = [1, 0, 2];
-					numbers.sort($f.comparator.from.Ordering(function(n) {
-						return function(o) {
-							var difference = n - o;
+					numbers.sort($f.comparator.from.Ordering(function(subject) {
+						return function(other) {
+							var difference = other - subject;
 							if (difference < 0) return "BEFORE";
 							if (difference > 0) return "AFTER";
 							return "EQUAL";
