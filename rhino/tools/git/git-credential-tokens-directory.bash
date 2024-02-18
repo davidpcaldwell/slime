@@ -17,4 +17,4 @@ if [ "$1" == "store" ]; then
 fi
 
 #	If PROJECT is set because wf is running, it can mess up the tools/wf plugin in the invoked shell
-env PROJECT= ${SLIME}/jsh ${DIR}/git-credential-tokens-directory.jsh.js "$@"
+env PROJECT= bash ${SLIME}/jsh ${DIR}/git-credential-tokens-directory.jsh.js "$@"
