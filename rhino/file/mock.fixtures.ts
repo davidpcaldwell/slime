@@ -40,9 +40,8 @@ namespace slime.jrunscript.file.mock {
 			const isTextFile = (p: fixtures.Node): p is fixtures.TextFile => typeof(p["text"]) == "string";
 			const isBinaryFile = (p: fixtures.Node): p is fixtures.BinaryFile => Boolean(p["binary"]);
 
-			var writeContents = function(mock: slime.jrunscript.file.world.Filesystem, prefix: string, contents: slime.jrunscript.file.internal.test.filesystem.Folder["contents"]) {
+			var writeContents = function recurse(mock: slime.jrunscript.file.world.Filesystem, prefix: string, contents: slime.jrunscript.file.internal.test.filesystem.Folder["contents"]) {
 				Object.entries(contents).forEach(function(entry) {
-					debugger;
 					var name = entry[0];
 					var value = entry[1];
 					if (isTextFile(value)) {
@@ -54,16 +53,20 @@ namespace slime.jrunscript.file.mock {
 						}
 						var o = $api.fp.world.now.question(
 							mock.openOutputStream,
-							{ pathname: prefix + name }
+							{ pathname: prefix + mock.separator.pathname + name }
 						);
 						if (!o.present) throw new Error("Unreachable");
 						o.value.character().write(value.text);
 						o.value.close();
 					} else if (isBinaryFile(value)) {
 						// write it out
+						throw new Error("Unimplemented: binary file.");
 					} else {
-						var v = value;
-						// recurse somehow
+						$api.fp.world.Means.now({
+							means: mock.createDirectory,
+							order: { pathname: prefix + mock.separator.pathname + name }
+						})
+						recurse(mock, prefix + mock.separator.pathname + name, value.contents);
 					}
 				})
 

@@ -85,7 +85,7 @@
 						character: out.character,
 						close: function() {
 							out.close();
-							state[SLASH + p.pathname] = {
+							state[p.pathname] = {
 								type: "file",
 								data: buffer.readBinary().java.array()
 							};

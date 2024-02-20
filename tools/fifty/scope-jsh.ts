@@ -12,7 +12,7 @@ namespace slime.fifty.test.kit {
 			 * Returns a filesystem pathname corresponding to the given relative path, relative to the currently executing
 			 * file.
 			 */
-			relative: (path: string) => slime.jrunscript.file.world.Location
+			relative: (path: string) => slime.jrunscript.file.Location
 
 			temporary: {
 				location: () => slime.jrunscript.file.world.object.Location
@@ -25,6 +25,10 @@ namespace slime.fifty.test.kit {
 					location: () => slime.jrunscript.file.Pathname
 					directory: () => slime.jrunscript.file.Directory
 				}
+			}
+
+			mock: {
+				fixtures: () => slime.jrunscript.file.mock.Fixtures
 			}
 		}
 		plugin: {
@@ -74,7 +78,7 @@ namespace slime.fifty.test.internal.scope.jsh {
 }
 
 (
-	function($api: slime.$api.Global, jsh: slime.jsh.Global, $export: slime.loader.Export<slime.fifty.test.internal.scope.jsh.Export>) {
+	function($api: slime.$api.Global, jsh: slime.jsh.Global, $loader: slime.Loader, $export: slime.loader.Export<slime.fifty.test.internal.scope.jsh.Export>) {
 		var tmp = {
 			location: function() {
 				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -112,6 +116,17 @@ namespace slime.fifty.test.internal.scope.jsh {
 							},
 							getRelativePath: function(path) {
 								return scope.directory.getRelativePath(path);
+							}
+						},
+						mock: {
+							fixtures: function() {
+								var script: slime.loader.Script<slime.jrunscript.file.internal.mock.Context,slime.jrunscript.file.mock.Fixtures> = $loader.script("../../rhino/file/mock.fixtures.ts");
+								return script({
+									library: {
+										java: jsh.java,
+										io: jsh.io
+									}
+								})
 							}
 						}
 					},
@@ -151,4 +166,4 @@ namespace slime.fifty.test.internal.scope.jsh {
 		);
 	}
 //@ts-ignore
-)($api, jsh, $export)
+)($api, jsh, $loader, $export)

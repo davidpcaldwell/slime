@@ -46,6 +46,13 @@ namespace slime.jrunscript.file.internal.mock {
 					contents: {
 						a: {
 							text: "aa"
+						},
+						b: {
+							contents: {
+								c: {
+									text: "cc"
+								}
+							}
 						}
 					}
 				});
@@ -64,6 +71,18 @@ namespace slime.jrunscript.file.internal.mock {
 				if (text.present) {
 					verify(text).value.is("aa");
 				}
+
+				var c: slime.jrunscript.file.Location = {
+					filesystem: x,
+					pathname: "/b/c"
+				};
+
+				var cc = $api.fp.now.map(
+					c,
+					jsh.file.world.Location.file.read.string.assert
+				);
+
+				verify(cc).is("cc");
 			}
 
 			fifty.tests.suite = function() {
