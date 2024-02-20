@@ -353,16 +353,11 @@
 			}
 		};
 
-		var global = (function() { return this; })();
-
 		var scopes = (
 			function() {
 				var rv = {};
-				/** @type { slime.fifty.test.internal.scope.jsh.Script } */
-				var script = $loader.script("scope-jsh.ts");
-				if (global.jsh) {
-					var scope = script();
-					rv.jsh = scope;
+				if ($context.jsh) {
+					rv.jsh = $context.jsh.scope;
 				}
 				return rv;
 			}
@@ -391,8 +386,8 @@
 			var fifty = {
 				global: {
 					$api: $api,
-					jsh: global.jsh,
-					window: global.window
+					jsh: ($context.jsh) ? $context.jsh.global : void(0),
+					window: ($context.window) ? $context.window.global : void(0)
 				},
 				$loader: loader,
 				promises: $context.promises,
@@ -529,7 +524,7 @@
 
 			//	TODO	deprecate
 			Object.assign(scope, {
-				jsh: global.jsh
+				jsh: ($context.jsh) ? $context.jsh.global : {}
 			});
 
 			var loaderError;

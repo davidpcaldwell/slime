@@ -26,7 +26,7 @@
 
 		var verify = code.verify();
 
-		var promises = inonit.loader.loader.module("../../loader/api/promises.js");
+		var promises = code.promises();
 
 		/**
 		 * @param { slime.fifty.browser.test.internal.Query } query
@@ -117,7 +117,7 @@
 				/**
 				 *
 				 * @param { any } delegate
-				 * @returns { slime.fifty.test.internal.Console }
+				 * @returns { slime.fifty.test.internal.Listener }
 				 */
 				function(delegate) {
 					var depth = function(scope) {
@@ -167,11 +167,14 @@
 				}
 
 				var implementation = code.test({
-					promises: promises,
 					library: {
 						Verify: verify
 					},
-					console: console
+					promises: promises,
+					console: console,
+					window: {
+						global: window
+					}
 				});
 
 				var path = (function(file) {

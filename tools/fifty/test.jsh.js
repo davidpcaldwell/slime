@@ -95,7 +95,7 @@
 					jsh.shell.console(prefix + string);
 				};
 
-				/** @type { slime.fifty.test.internal.Console } */
+				/** @type { slime.fifty.test.internal.Listener } */
 				var rv = {
 					start: function(scope,name) {
 						write(scope, "Running: " + name);
@@ -156,6 +156,10 @@
 			})()
 		};
 
+		/** @type { slime.fifty.test.internal.scope.jsh.Script } */
+		var script = jsh.script.loader.script("scope-jsh.ts");
+		var scopes = script();
+
 		var execute = function(file,part,view) {
 			var fiftyLoader = jsh.script.loader;
 
@@ -165,7 +169,11 @@
 				library: {
 					Verify: verify
 				},
-				console: view
+				console: view,
+				jsh: {
+					global: jsh,
+					scope: scopes
+				}
 			});
 
 			var loader = new jsh.file.Loader({ directory: file.parent });

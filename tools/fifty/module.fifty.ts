@@ -224,7 +224,10 @@ namespace slime.fifty {
 		)($fifty)
 
 		export namespace internal {
-			export interface Console {
+			/**
+			 * A destination to which test results and progress are sent.
+			 */
+			export interface Listener {
 				start: (scope: Scope, name: string) => void
 				test: (scope: Scope, message: string, result: boolean) => void
 				end: (scope: Scope, name: string, result: boolean) => void
