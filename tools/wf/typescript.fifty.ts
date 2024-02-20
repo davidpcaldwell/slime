@@ -35,6 +35,25 @@ namespace slime.jsh.wf.internal.typescript {
 			});
 		//@ts-ignore
 		})(fifty);
+
+		export const fixtures = (function(fifty: slime.fifty.test.Kit) {
+			var script: Script = fifty.$loader.script("typescript.js");
+			return {
+				mockedFilesystem: function(fs: slime.jrunscript.file.world.Filesystem) {
+					return script({
+						library: {
+							file: fifty.global.jsh.file,
+							shell: fifty.global.jsh.shell,
+							node: fifty.global.jsh.shell.tools.node
+						},
+						world: {
+							filesystem: fs
+						}
+					});
+				}
+			};
+		//@ts-ignore
+		})(fifty);
 	}
 
 	export namespace typedoc {
@@ -81,9 +100,42 @@ namespace slime.jsh.wf.internal.typescript {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
 
 			fifty.tests.Project = function() {
-				verify(true).is(false);
+				var fs = fifty.jsh.file.mock.fixtures().Filesystem.from.descriptor;
+
+				var defaulted = test.fixtures.mockedFilesystem(fs({
+					contents: {
+						project: {
+							contents: {}
+						}
+					}
+				}))
+				verify(defaulted).Project.typescriptVersion({
+					base: "/project"
+				}).is(defaulted.version());
+
+				const VERSION = "4.8.4";
+				var mock = fs({
+					contents: {
+						project: {
+							contents: {
+								"tsc.version": {
+									text: VERSION
+								}
+							}
+						}
+					}
+				});
+				var specified = test.fixtures.mockedFilesystem(mock);
+				var file = {
+					filesystem: mock,
+					pathname: "/project/tsc.version"
+				};
+				verify(specified).Project.typescriptVersion({
+					base: "/project"
+				}).is(VERSION);
 			}
 		}
 	//@ts-ignore
