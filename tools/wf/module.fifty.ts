@@ -70,7 +70,7 @@ namespace slime.jsh.wf.internal.module {
 
 		Project: {
 			getTypescriptVersion: (project: slime.jsh.wf.Project) => string
-			getConfigurationLocation: (project: slime.jsh.wf.Project) => slime.jrunscript.file.world.Location
+			getConfigurationLocation: (project: slime.jsh.wf.Project) => slime.jrunscript.file.Location
 		}
 	}
 

@@ -1252,7 +1252,7 @@ namespace slime.jrunscript.file {
 
 	export namespace internal.test {
 		export const fixtures = (function(fifty: slime.fifty.test.Kit) {
-			const code: slime.jrunscript.file.test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+			const code: slime.jrunscript.file.internal.test.fixtures.Script = fifty.$loader.script("fixtures.ts");
 			return code({
 				fifty: fifty
 			});

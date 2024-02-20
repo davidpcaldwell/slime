@@ -7,7 +7,7 @@
 namespace slime.jrunscript.file {
 	export namespace test {
 		export const fixtures = (function(Packages: slime.jrunscript.Packages, fifty: slime.fifty.test.Kit) {
-			var code: { fixtures: slime.jrunscript.file.test.fixtures.Script } = {
+			var code: { fixtures: slime.jrunscript.file.internal.test.fixtures.Script } = {
 				fixtures: fifty.$loader.script("fixtures.ts")
 			};
 			var context = code.fixtures({

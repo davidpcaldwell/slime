@@ -17,6 +17,10 @@ namespace slime.jsh.wf.internal.typescript {
 			shell: slime.jrunscript.shell.Exports
 			node: slime.jsh.shell.tools.node.Exports
 		}
+
+		world?: {
+			filesystem?: slime.jrunscript.file.world.Filesystem
+		}
 	}
 
 	export namespace test {
@@ -60,8 +64,30 @@ namespace slime.jsh.wf.internal.typescript {
 	}
 
 	export interface Exports {
+		/**
+		 * Returns the default version of TypeScript.
+		 */
 		version: slime.$api.fp.impure.Input<string>
 	}
+
+	export interface Exports {
+		Project: {
+			typescriptVersion: (project: Project) => string
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.Project = function() {
+				verify(true).is(false);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
 		typedoc: {

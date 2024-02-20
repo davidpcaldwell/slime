@@ -30,7 +30,7 @@ namespace slime.jrunscript.file {
 			const { $api, jsh } = fifty.global;
 
 			const fixtures = (function() {
-				var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+				var script: internal.test.fixtures.Script = fifty.$loader.script("fixtures.ts");
 				return script({
 					fifty: fifty
 				});

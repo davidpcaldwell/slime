@@ -41,7 +41,7 @@ namespace slime.jrunscript.file {
 			const { verify } = fifty;
 
 			const fixtures = (function() {
-				var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+				var script: internal.test.fixtures.Script = fifty.$loader.script("fixtures.ts");
 				return script({ fifty: fifty });
 			})();
 
