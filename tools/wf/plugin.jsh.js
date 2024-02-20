@@ -700,13 +700,14 @@
 							jsh.shell.console("Installed Node.js " + e.detail.version + ".");
 						}
 					});
+					if (!configuration.present) throw new Error("Not found: TypeScript configuration file.");
 					/** @type { slime.jsh.wf.internal.typescript.typedoc.Invocation } */
 					var typedocInvocation = {
 						stdio: stdio,
 						configuration: {
 							typescript: {
 								version: version,
-								configuration: configuration.pathname
+								configuration: configuration.value.pathname
 							}
 						},
 						project: project.base,
@@ -1434,7 +1435,10 @@
 						}
 					},
 					getTypescriptVersion: library.module.Project.getTypescriptVersion,
-					getConfigurationFile: library.module.Project.getConfigurationLocation
+					getConfigurationFile: $api.fp.Maybe.impure.exception({
+						try: library.module.Project.getConfigurationLocation,
+						nothing: function(project) { return new Error("TypeScript configuration not found for project " + project.base); }
+					})
 				};
 
 				jsh.wf = {

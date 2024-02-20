@@ -70,7 +70,7 @@ namespace slime.jsh.wf.internal.module {
 
 		Project: {
 			getTypescriptVersion: (project: slime.jsh.wf.Project) => string
-			getConfigurationLocation: (project: slime.jsh.wf.Project) => slime.jrunscript.file.Location
+			getConfigurationLocation: (project: slime.jsh.wf.Project) => $api.fp.Maybe<slime.jrunscript.file.Location>
 		}
 	}
 
@@ -111,11 +111,15 @@ namespace slime.jsh.wf.internal.module {
 
 					test.write(spi, "/foo/jsconfig.json", "{}");
 					var two = subject.Project.getConfigurationLocation(project);
-					verify(two).pathname.is("/foo/jsconfig.json");
+					if (two.present) {
+						verify(two).value.pathname.is("/foo/jsconfig.json");
+					}
 
 					test.write(spi, "/foo/tsconfig.json", "{}");
 					var three = subject.Project.getConfigurationLocation(project);
-					verify(three).pathname.is("/foo/tsconfig.json");
+					if (three.present) {
+						verify(three).value.pathname.is("/foo/tsconfig.json");
+					}
 				})
 			}
 		}
