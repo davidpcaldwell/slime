@@ -92,6 +92,7 @@ namespace slime.jsh.wf.internal.typescript {
 	export interface Exports {
 		Project: {
 			typescriptVersion: (project: Project) => string
+			configurationFile: (project: Project) => slime.$api.fp.Maybe<slime.jrunscript.file.Location>
 		}
 	}
 
@@ -105,37 +106,71 @@ namespace slime.jsh.wf.internal.typescript {
 			fifty.tests.Project = function() {
 				var fs = fifty.jsh.file.mock.fixtures().Filesystem.from.descriptor;
 
-				var defaulted = test.fixtures.mockedFilesystem(fs({
-					contents: {
-						project: {
-							contents: {}
-						}
-					}
-				}))
-				verify(defaulted).Project.typescriptVersion({
-					base: "/project"
-				}).is(defaulted.version());
-
 				const VERSION = "4.8.4";
+
 				var mock = fs({
 					contents: {
 						project: {
 							contents: {
-								"tsc.version": {
-									text: VERSION
+								empty: {
+									contents: {
+									}
+								},
+								specified: {
+									contents: {
+										"tsc.version": {
+											text: VERSION
+										}
+									}
+								},
+								js: {
+									contents: {
+										"jsconfig.json": {
+											text: ""
+										}
+									}
+								},
+								ts: {
+									contents: {
+										"tsconfig.json": {
+											text: ""
+										}
+									}
 								}
 							}
 						}
 					}
 				});
-				var specified = test.fixtures.mockedFilesystem(mock);
-				var file = {
-					filesystem: mock,
-					pathname: "/project/tsc.version"
-				};
-				verify(specified).Project.typescriptVersion({
-					base: "/project"
+
+				var subject = test.fixtures.mockedFilesystem(mock);
+
+				verify(subject).Project.typescriptVersion({
+					base: "/project/empty"
+				}).is(subject.version());
+
+				verify(subject).Project.typescriptVersion({
+					base: "/project/specified"
 				}).is(VERSION);
+
+				verify(subject).Project.configurationFile({
+					base: "/project/empty"
+				}).evaluate(function(maybe) { return maybe.present; }).is(false);
+
+				verify(subject).Project.configurationFile({
+					base: "/project/js"
+				}).evaluate(function(maybe) { return maybe.present; }).is(true);
+
+				verify(subject).Project.configurationFile({
+					base: "/project/js"
+				}).evaluate(function(maybe) { return maybe.value.pathname; }).evaluate(String).is("/project/js/jsconfig.json");
+
+				verify(subject).Project.configurationFile({
+					base: "/project/ts"
+				}).evaluate(function(maybe) { return maybe.present; }).is(true);
+
+				verify(subject).Project.configurationFile({
+					base: "/project/ts"
+				}).evaluate(function(maybe) { return maybe.value.pathname; }).evaluate(String).is("/project/ts/tsconfig.json");
 			}
 		}
 	//@ts-ignore

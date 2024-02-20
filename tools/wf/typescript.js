@@ -263,7 +263,8 @@
 		$export({
 			version: version,
 			Project: {
-				typescriptVersion: Project_getTypescriptVersion
+				typescriptVersion: Project_getTypescriptVersion,
+				configurationFile: Project_getConfigurationFile
 			},
 			typedoc: {
 				invocation: invocation
