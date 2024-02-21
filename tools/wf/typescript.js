@@ -48,7 +48,7 @@
 			};
 		};
 
-		/** @type { slime.jsh.wf.internal.module.Exports["Project"]["getTypescriptVersion"] } */
+		/** @type { slime.jsh.wf.internal.typescript.Exports["Project"]["version"] } */
 		var Project_getTypescriptVersion = $api.fp.pipe(
 			base,
 			$context.library.file.Location.directory.relativePath("tsc.version"),
@@ -153,7 +153,7 @@
 			throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
 		};
 
-		/** @type { slime.jsh.wf.internal.typescript.Exports["typedoc"]["invocation"] } */
+		/** @type { slime.jsh.wf.internal.typescript.Exports["module"]["typedoc"]["invocation"] } */
 		var invocation = function(p) {
 			return function(events) {
 				if (!p.configuration || !p.configuration.typescript || !p.configuration.typescript.version) throw new TypeError("Required: p.configuration.typescript.version");
@@ -261,14 +261,16 @@
 		}
 
 		$export({
-			version: version,
+			module: {
+				version: version,
+				typedoc: {
+					invocation: invocation
+				}
+			},
 			Project: {
-				typescriptVersion: Project_getTypescriptVersion,
+				version: Project_getTypescriptVersion,
 				configurationFile: Project_getConfigurationFile
 			},
-			typedoc: {
-				invocation: invocation
-			}
 		})
 	}
 //@ts-ignore

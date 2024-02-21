@@ -695,6 +695,8 @@ namespace slime.jsh.wf {
 			const { jsh } = fifty.global;
 
 			tests.suite = function() {
+				fifty.load("module.fifty.ts");
+
 				run(fifty.tests.exports);
 			}
 		}

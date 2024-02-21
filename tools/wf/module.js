@@ -25,18 +25,17 @@
 					file: $context.library.file,
 					shell: $context.library.shell,
 					node: $context.library.node
+				},
+				world: {
+					filesystem: ($context.world && $context.world.filesystem) ? $context.world.filesystem : void(0)
 				}
 			})
 		}
 
 		$export({
-			typescript: library.typescript,
-			input: {
-				getTypescriptVersion: library.typescript.version
-			},
+			typescript: library.typescript.module,
 			Project: {
-				getTypescriptVersion: library.typescript.Project.typescriptVersion,
-				getConfigurationLocation: library.typescript.Project.configurationFile
+				typescript: library.typescript.Project
 			}
 		})
 	}
