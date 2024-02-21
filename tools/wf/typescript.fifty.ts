@@ -5,27 +5,9 @@
 //	END LICENSE
 
 namespace slime.jsh.wf.internal.module {
-	export interface Exports {
-		typescript: slime.jsh.wf.internal.typescript.Exports
-	}
-}
-
-namespace slime.jsh.wf.internal.typescript {
-	export interface Context {
-		library: {
-			file: slime.jrunscript.file.Exports
-			shell: slime.jrunscript.shell.Exports
-			node: slime.jsh.shell.tools.node.Exports
-		}
-
-		world?: {
-			filesystem?: slime.jrunscript.file.world.Filesystem
-		}
-	}
-
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
-			var script: Script = fifty.$loader.script("typescript.js");
+			var script: Script = fifty.$loader.script("module.js");
 			return script({
 				library: {
 					file: fifty.global.jsh.file,
@@ -37,7 +19,7 @@ namespace slime.jsh.wf.internal.typescript {
 		})(fifty);
 
 		export const fixtures = (function(fifty: slime.fifty.test.Kit) {
-			var script: Script = fifty.$loader.script("typescript.js");
+			var script: Script = fifty.$loader.script("module.js");
 			return {
 				mockedFilesystem: function(fs: slime.jrunscript.file.world.Filesystem) {
 					return script({
@@ -56,45 +38,40 @@ namespace slime.jsh.wf.internal.typescript {
 		})(fifty);
 	}
 
-	export namespace typedoc {
-		export interface Invocation {
-			stdio: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
+	export interface Exports {
+		typescript: {
+			/**
+			 * Returns the default version of TypeScript.
+			 */
+			version: slime.$api.fp.impure.Input<string>
 
-			configuration: {
-				typescript: {
-					version: string
-					/**
-					 * Pathname of the project file (for example, `tsconfig.json`, `jsconfig.json`).
-					 */
-					configuration: string
-				}
+			typedoc: {
+				invocation: (p: typedoc.Invocation) => slime.$api.fp.world.Question<
+					{
+						found: string
+						notFound: void
+						installing: string
+						installed: string
+					},
+					slime.$api.fp.world.Sensor<
+						slime.jrunscript.node.Installation,
+						slime.jrunscript.shell.run.AskEvents,
+						slime.jrunscript.shell.run.Exit
+					>
+				>
 			}
-
-			/**
-			 * The pathname of the project to document.
-			 */
-			project: string
-
-			/**
-			 * Destination to provide as the `out` configuration parameter.
-			 */
-			out?: string
 		}
 	}
 
-	export interface Exports {
-		/**
-		 * Returns the default version of TypeScript.
-		 */
-		version: slime.$api.fp.impure.Input<string>
-	}
-
-	export interface Exports {
-		Project: {
-			typescriptVersion: (project: Project) => string
-			configurationFile: (project: Project) => slime.$api.fp.Maybe<slime.jrunscript.file.Location>
+	export namespace exports {
+		export interface Project {
+			typescript: {
+				version: (project: slime.jsh.wf.Project) => string
+				configurationFile: (project: slime.jsh.wf.Project) => slime.$api.fp.Maybe<slime.jrunscript.file.Location>
+			}
 		}
 	}
+
 
 	(
 		function(
@@ -144,31 +121,31 @@ namespace slime.jsh.wf.internal.typescript {
 
 				var subject = test.fixtures.mockedFilesystem(mock);
 
-				verify(subject).Project.typescriptVersion({
+				verify(subject).Project.typescript.version({
 					base: "/project/empty"
-				}).is(subject.version());
+				}).is(subject.typescript.version());
 
-				verify(subject).Project.typescriptVersion({
+				verify(subject).Project.typescript.version({
 					base: "/project/specified"
 				}).is(VERSION);
 
-				verify(subject).Project.configurationFile({
+				verify(subject).Project.typescript.configurationFile({
 					base: "/project/empty"
 				}).evaluate(function(maybe) { return maybe.present; }).is(false);
 
-				verify(subject).Project.configurationFile({
+				verify(subject).Project.typescript.configurationFile({
 					base: "/project/js"
 				}).evaluate(function(maybe) { return maybe.present; }).is(true);
 
-				verify(subject).Project.configurationFile({
+				verify(subject).Project.typescript.configurationFile({
 					base: "/project/js"
 				}).evaluate(function(maybe) { return maybe.value.pathname; }).evaluate(String).is("/project/js/jsconfig.json");
 
-				verify(subject).Project.configurationFile({
+				verify(subject).Project.typescript.configurationFile({
 					base: "/project/ts"
 				}).evaluate(function(maybe) { return maybe.present; }).is(true);
 
-				verify(subject).Project.configurationFile({
+				verify(subject).Project.typescript.configurationFile({
 					base: "/project/ts"
 				}).evaluate(function(maybe) { return maybe.value.pathname; }).evaluate(String).is("/project/ts/tsconfig.json");
 			}
@@ -176,21 +153,40 @@ namespace slime.jsh.wf.internal.typescript {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		typedoc: {
-			invocation: (p: typedoc.Invocation) => slime.$api.fp.world.Question<
-				{
-					found: string
-					notFound: void
-					installing: string
-					installed: string
-				},
-				slime.$api.fp.world.Sensor<
-					slime.jrunscript.node.Installation,
-					slime.jrunscript.shell.run.AskEvents,
-					slime.jrunscript.shell.run.Exit
-				>
-			>
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.Project);
+			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace typedoc {
+		export interface Invocation {
+			stdio: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
+
+			configuration: {
+				typescript: {
+					version: string
+					/**
+					 * Pathname of the project file (for example, `tsconfig.json`, `jsconfig.json`).
+					 */
+					configuration: string
+				}
+			}
+
+			/**
+			 * The pathname of the project to document.
+			 */
+			project: string
+
+			/**
+			 * Destination to provide as the `out` configuration parameter.
+			 */
+			out?: string
 		}
 	}
 
@@ -198,10 +194,6 @@ namespace slime.jsh.wf.internal.typescript {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.suite = function() {
-
-			};
-
 			fifty.tests.manual = {};
 			fifty.tests.manual.typedoc = {};
 			fifty.tests.manual.typedoc.invocation = function() {
@@ -209,11 +201,11 @@ namespace slime.jsh.wf.internal.typescript {
 				const { subject } = test;
 
 				const out = fifty.jsh.file.temporary.location();
-				const invocation = subject.typedoc.invocation({
+				const invocation = subject.typescript.typedoc.invocation({
 					stdio: {},
 					configuration: {
 						typescript: {
-							version: subject.version(),
+							version: subject.typescript.version(),
 							configuration: "jsconfig.json"
 						}
 					},
@@ -225,6 +217,25 @@ namespace slime.jsh.wf.internal.typescript {
 		}
 	//@ts-ignore
 	)(fifty);
+}
+
+namespace slime.jsh.wf.internal.typescript {
+	export interface Context {
+		library: {
+			file: slime.jrunscript.file.Exports
+			shell: slime.jrunscript.shell.Exports
+			node: slime.jsh.shell.tools.node.Exports
+		}
+
+		world?: {
+			filesystem?: slime.jrunscript.file.world.Filesystem
+		}
+	}
+
+	export interface Exports {
+		module: slime.jsh.wf.internal.module.Exports["typescript"]
+		Project: slime.jsh.wf.internal.module.exports.Project["typescript"]
+	}
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
