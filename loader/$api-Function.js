@@ -305,14 +305,29 @@
 				}
 			},
 			Object: {
-				property: function(p) {
-					return function(target) {
-						var rv = Object.assign(
-							{},
-							target
-						);
-						rv[p.property] = p.change(rv[p.property]);
-						return rv;
+				property: {
+					update: function(p) {
+						return function(target) {
+							var rv = Object.assign(
+								{},
+								target
+							);
+							rv[p.property] = p.change(rv[p.property]);
+							return rv;
+						}
+					},
+					maybe: function() {
+						var keys = arguments;
+						var isNothing = function(v) { return !Maybe.from.value(v).present };
+						return function(object) {
+							var rv = object;
+							for (var i=0; i<keys.length; i++) {
+								var value = rv[keys[i]];
+								if (isNothing(value)) return Maybe.from.nothing();
+								rv = value;
+							}
+							return isNothing(rv) ? Maybe.from.nothing() : Maybe.from.some(rv);
+						}
 					}
 				},
 				entries: Object.entries,
