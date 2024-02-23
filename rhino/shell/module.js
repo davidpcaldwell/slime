@@ -121,7 +121,7 @@
 					file: $context.api.file
 				},
 				parent: Parent_from_process,
-				world: ($context.world && $context.world.subprocess)
+				world: $api.fp.now.map($context, $api.fp.optionalChain("world"), $api.fp.optionalChain("subprocess"))
 			});
 
 			return {

@@ -20,8 +20,10 @@ namespace slime.jrunscript.shell.internal.run {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
+
 		parent: slime.$api.fp.Thunk<slime.jrunscript.shell.run.internal.Parent>
-		world?: slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+
+		world?: slime.jrunscript.shell.context.subprocess.World
 	}
 
 	export namespace test {
@@ -97,24 +99,6 @@ namespace slime.jrunscript.shell.internal.run {
 }
 
 namespace slime.jrunscript.shell.run {
-	export namespace old {
-		export interface Context {
-			environment: slime.jrunscript.host.Environment
-			directory: string
-			stdio: StdioConfiguration
-		}
-
-		export interface Configuration {
-			command: string
-			arguments: string[]
-		}
-
-		export interface Invocation {
-			context: Context
-			configuration: Configuration
-		}
-	}
-
 	export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
 
 	export interface StdioConfiguration {

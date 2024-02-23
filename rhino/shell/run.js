@@ -180,7 +180,7 @@
 		}
 
 		/** @type { slime.jrunscript.shell.internal.run.Context["world"] } */
-		var spi = $context.world || function(p) {
+		var world = $context.world || function(p) {
 			/**
 			 *
 			 * @param { slime.jrunscript.shell.internal.run.java.Context } context
@@ -415,7 +415,7 @@
 		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
-			var tell = spi(modernize({ context: context, configuration: configuration }));
+			var tell = world(modernize({ context: context, configuration: configuration }));
 			$api.fp.world.now.tell(
 				tell,
 				{
@@ -495,7 +495,7 @@
 				intention: Invocation_from_intention
 			},
 			action: function(invocation) {
-				return spi(invocation);
+				return world(invocation);
 			},
 			question: function(invocation) {
 				return function(events) {
@@ -503,7 +503,7 @@
 					var rv;
 					$api.fp.impure.now.process(
 						$api.fp.world.process(
-							spi(invocation),
+							world(invocation),
 							{
 								start: function(e) {
 									events.fire("start", e.detail);
@@ -553,7 +553,7 @@
 				)()
 			},
 			action: function(old) {
-				return spi(modernize(old));
+				return world(modernize(old));
 			},
 			question: function(invocation) {
 				return function(events) {
@@ -561,7 +561,7 @@
 					var rv;
 					$api.fp.impure.now.process(
 						$api.fp.world.process(
-							spi(modernize(invocation)),
+							world(modernize(invocation)),
 							{
 								start: function(e) {
 									events.fire("start", e.detail);
@@ -584,7 +584,7 @@
 			run: function(invocation) {
 				return function(handler) {
 					$api.fp.world.now.tell(
-						spi(modernize(invocation)),
+						world(modernize(invocation)),
 						handler
 					);
 				}
