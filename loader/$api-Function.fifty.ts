@@ -59,47 +59,6 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
-		now: {
-			/**
-			 * @deprecated Replaced by {@link Exports.now.map}.
-			 */
-			invoke: Now_map
-
-			/**
-			 * Returns the result of invoking a function on an argument. `invoke(p, f)` is syntactic sugar for `f(p)`, and
-			 * `invoke(p, f, g) is syntactic sugar for `g(f(p))`.
-			 */
-			map: Now_map
-		}
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api } = fifty.global;
-
-			fifty.tests.exports.now = function() {
-				var f = function(i: number): string {
-					return String(i);
-				};
-
-				var g = function(s: string): string {
-					return "g" + s;
-				};
-
-				var result = $api.fp.now.map(2, f);
-				verify(result).is("2");
-
-				var result2 = $api.fp.now.map(2, f, g);
-				verify(result2).is("g2");
-			};
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export interface Exports {
 		/**
 		 * @deprecated Use {@link Exports["now"]["map"] | `$api.fp.now.map`}.
 		 */
@@ -344,10 +303,17 @@ namespace slime.$api.fp {
 			 * Given a property name and a function that transforms the value of that property, returns a function that transforms
 			 * the value of the containing object.
 			 */
-			property: <T, K extends keyof T>(p: {
-				property: K
-				change: slime.$api.fp.Transform<T[K]>
-			}) => slime.$api.fp.Transform<T>
+			property: {
+				update: <T, K extends keyof T>(p: {
+					property: K
+					change: slime.$api.fp.Transform<T[K]>
+				}) => slime.$api.fp.Transform<T>
+
+				maybe: {
+					<T,K extends keyof T>(k: K): (t: T) => slime.$api.fp.Maybe<T[K]>
+					<T,K extends keyof T,KK extends keyof T[K]>(k: K,kk: KK): (t: T) => slime.$api.fp.Maybe<T[K][KK]>
+				}
+			}
 
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.entries`. */
 			entries: ObjectConstructor["entries"]
@@ -361,6 +327,7 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify, run } = fifty;
+			const { $api } = fifty.global;
 
 			const subject = fifty.global.$api.fp.Object;
 
@@ -369,8 +336,8 @@ namespace slime.$api.fp {
 
 				run(function properties() {
 					var before: X = { a: 2, b: "hey" };
-					verify(before).evaluate(subject.property({ property: "a", change: function(n) { return n*2; }})).a.is(4);
-					verify(before).evaluate(subject.property({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
 				});
 
 				run(function fromEntries() {
@@ -383,6 +350,47 @@ namespace slime.$api.fp {
 					verify(result).b.is(3);
 					verify(result).evaluate.property("b").is(3);
 					verify(result).evaluate.property("c").is(void(0));
+				});
+
+				run(function property_maybe() {
+					type T = { a?: { b?: number } };
+					var o: T[] = [
+						{},
+						{ a: {} },
+						{ a: { b: 0 } }
+					];
+
+					var cases = o.map(function(t) {
+						return {
+							a: $api.fp.now.map(t, subject.property.maybe("a")),
+							b1: $api.fp.now.map(t, subject.property.maybe("a"), $api.fp.Maybe.map(subject.property.maybe("b")),
+								function flatten(m) {
+									if (!m.present) return $api.fp.Maybe.from.nothing();
+									return m.value;
+								}
+							),
+							b2: $api.fp.now.map(t, subject.property.maybe("a", "b"))
+						}
+					});
+					verify(cases)[0].a.present.is(false);
+					verify(cases)[0].b1.present.is(false);
+					verify(cases)[0].b2.present.is(false);
+					verify(cases)[1].a.present.is(true);
+					verify(cases)[1].b1.present.is(false);
+					verify(cases)[1].b2.present.is(false);
+					verify(cases)[2].a.present.is(true);
+					verify(cases)[2].b1.present.is(true);
+					verify(cases)[2].b2.present.is(true);
+					var two = {
+						b1: cases[2].b1,
+						b2: cases[2].b2
+					};
+					if (two.b1.present) {
+						verify(two.b1).value.is(0);
+					}
+					if (two.b2.present) {
+						verify(two.b2).value.is(0);
+					}
 				});
 			}
 		}
@@ -931,6 +939,47 @@ namespace slime.$api.fp {
 		}
 	//@ts-ignore
 	)(fifty, $api, tests, verify);
+
+	export interface Exports {
+		now: {
+			/**
+			 * @deprecated Replaced by {@link Exports.now.map}.
+			 */
+			invoke: Now_map
+
+			/**
+			 * Returns the result of invoking a function on an argument. `invoke(p, f)` is syntactic sugar for `f(p)`, and
+			 * `invoke(p, f, g) is syntactic sugar for `g(f(p))`.
+			 */
+			map: Now_map
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.now = function() {
+				var f = function(i: number): string {
+					return String(i);
+				};
+
+				var g = function(s: string): string {
+					return "g" + s;
+				};
+
+				var result = $api.fp.now.map(2, f);
+				verify(result).is("2");
+
+				var result2 = $api.fp.now.map(2, f, g);
+				verify(result2).is("g2");
+			};
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace object {
 		export type Update<T extends Object> = (t: T) => void
