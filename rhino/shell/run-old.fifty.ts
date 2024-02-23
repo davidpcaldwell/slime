@@ -190,6 +190,24 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 }
 
+namespace slime.jrunscript.shell.run.old {
+	export interface Context {
+		environment: slime.jrunscript.host.Environment
+		directory: string
+		stdio: StdioConfiguration
+	}
+
+	export interface Configuration {
+		command: string
+		arguments: string[]
+	}
+
+	export interface Invocation {
+		context: Context
+		configuration: Configuration
+	}
+}
+
 namespace slime.jrunscript.shell.internal.run.old {
 	export interface Context {
 		environment: slime.jrunscript.host.Environment
