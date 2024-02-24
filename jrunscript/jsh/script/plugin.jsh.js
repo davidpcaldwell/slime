@@ -441,13 +441,13 @@
 										arguments: []
 									};
 
-									rv.options[c.longname] = $api.fp.impure.Input.value($api.fp.Maybe.from.nothing());
+									rv.options[c.longname] = $api.fp.Maybe.from.nothing();
 
 									for (var i=0; i<p.arguments.length; i++) {
 										if (p.arguments[i] == ("--" + c.longname)) {
 											var value = p.arguments[++i];
 											var location = parser.pathname(value).os.adapt();
-											rv.options[c.longname] = $api.fp.impure.Input.value($api.fp.Maybe.from.some(location));
+											rv.options[c.longname] = $api.fp.Maybe.from.some(location);
 										} else {
 											rv.arguments.push(p.arguments[i]);
 										}

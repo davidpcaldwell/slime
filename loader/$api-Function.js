@@ -267,6 +267,9 @@
 						return string.match(regexp);
 					}
 				},
+				trim: function(string) {
+					return string.trim();
+				},
 				startsWith: function(searchString, startPosition) {
 					startPosition = startPosition || 0;
 					return function(string) {

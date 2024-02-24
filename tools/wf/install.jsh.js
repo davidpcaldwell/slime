@@ -26,7 +26,7 @@
 				jsh.script.cli.fp.option.location({ longname: "project" }),
 				function(p) {
 					var project = $api.fp.impure.Input.from.partial({
-						if: p.options.project,
+						if: $api.fp.impure.Input.value(p.options.project),
 						else: inputs.PWD
 					});
 
