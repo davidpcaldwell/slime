@@ -373,7 +373,7 @@ namespace slime.jsh.script {
 		export namespace fp {
 			export type OptionParser<T> = <O extends object,N extends string>(c: { longname: N })
 				=> (i: cli.Invocation<O>)
-				=> cli.Invocation<O & { [n in N]: slime.$api.fp.impure.Input<slime.$api.fp.Maybe<T>> }>
+				=> cli.Invocation<O & { [n in N]: slime.$api.fp.Maybe<T> }>
 		}
 
 		export interface Exports {
@@ -404,21 +404,22 @@ namespace slime.jsh.script {
 
 					var withArgs = function(a: string[]): cli.Invocation<{}> { return { options: {}, arguments: a }};
 
-					var one = at(withArgs([])).options.at();
+					var one = at(withArgs([])).options.at;
 					verify(one).present.is(false);
 
-					var two = at(withArgs(["--at", "bar"])).options.at();
+					var two = at(withArgs(["--at", "bar"])).options.at;
 					verify(two).present.is(true);
 					if (two.present) {
 						verify(two).value.pathname.is(relative.pathname);
 					}
+
 					var three = $api.fp.impure.Input.from.partial({
-						if: at(withArgs([])).options.at,
+						if: $api.fp.impure.Input.value(at(withArgs([])).options.at),
 						else: atDefault
 					});
 					verify(three()).pathname.is(fallback.pathname);
 					var four = $api.fp.impure.Input.from.partial({
-						if: at(withArgs(["--at", "bar"])).options.at,
+						if: $api.fp.impure.Input.value(at(withArgs(["--at", "bar"])).options.at),
 						else: atDefault
 					});
 					verify(four()).pathname.is(relative.pathname);
