@@ -42,11 +42,11 @@ namespace slime.jsh.script {
 		 * A process that may return a numeric exit status that can be used as a process exit status, or may complete normally, or
 		 * may throw an uncaught exception.
 		 */
-		export interface Command<T> {
+		export interface Command<T = {}> {
 			(invocation: Invocation<T>): number | void
 		}
 
-		export interface Commands<T> {
+		export interface Commands<T = {}> {
 			[x: string]: Commands<T> | Command<T>
 		}
 
