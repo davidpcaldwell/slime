@@ -45,12 +45,29 @@
 			)
 		};
 
+		/** @type { <A,B,C,D>(f: (a: A) => B, g: (a: A) => (b: B) => C, h: (a: A) => (c: C) => D) => (a: A) => D } */
+		var $api_fp_map = function(f,g,h) {
+			return function(a) {
+				return $api.fp.now.map(
+					f(a),
+					g(a),
+					h(a)
+				)
+			}
+		};
+
+		var getTokenLocation = $api_fp_map(
+			$api.fp.property("store"),
+			$api.fp.pipe($api.fp.property("host"), relative),
+			$api.fp.pipe($api.fp.property("username"), relative)
+		);
+
 		/**
 		 *
 		 * @param { { project: slime.jrunscript.tools.git.credentials.Project, host: string, username: string } } p
 		 */
-		var getTokenLocation = function(p) {
-			return $api.fp.now.invoke(
+		var getProjectTokenLocation = function(p) {
+			return $api.fp.now.map(
 				p.project,
 				$api.fp.property("base"),
 				relative("local/git/credentials"),
@@ -73,12 +90,12 @@
 			)
 		}
 
-		var readTokenLocation = $api.fp.pipe(getTokenLocation, readString);
+		var readTokenLocation = $api.fp.pipe(getProjectTokenLocation, readString);
 
 		/** @type { slime.jrunscript.tools.git.credentials.Exports["get"] } */
 		var get = $api.fp.world.Sensor.from.flat(
 			function(p) {
-				var location = getTokenLocation(p.subject);
+				var location = getProjectTokenLocation(p.subject);
 				return readString(location);
 			}
 		);
@@ -101,12 +118,12 @@
 					]);
 					$api.fp.now.invoke(
 						p.order,
-						getTokenLocation,
+						getProjectTokenLocation,
 						writeToken
 					);
 				},
 				function(p) {
-					p.events.fire("wrote", { username: p.order.username, destination: getTokenLocation(p.order) });
+					p.events.fire("wrote", { username: p.order.username, destination: getProjectTokenLocation(p.order) });
 				}
 			])
 		);
@@ -157,7 +174,10 @@
 				get: userGet
 			},
 			helper: helper,
-			update: update
+			update: update,
+			test: {
+				getTokenLocation: getTokenLocation
+			}
 		});
 	}
 //@ts-ignore

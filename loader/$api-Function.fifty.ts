@@ -298,6 +298,11 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	export interface SetProperty<T extends object, K extends string, V> {
+		property: K
+		value: slime.$api.fp.Mapping<T,V>
+	}
+
 	export interface Exports {
 		Object: {
 			/**
@@ -309,6 +314,8 @@ namespace slime.$api.fp {
 					property: K
 					change: slime.$api.fp.Transform<T[K]>
 				}) => slime.$api.fp.Transform<T>
+
+				set: <T, K extends string, V>(p: { [k in K]: slime.$api.fp.Mapping<T,V> }) => (t: T) => (T & { [k in K]: V })
 
 				maybe: {
 					<T,K extends keyof T>(k: K): (t: T) => slime.$api.fp.Maybe<T[K]>
@@ -335,7 +342,25 @@ namespace slime.$api.fp {
 			fifty.tests.Object = function() {
 				type X = { a: number, b: string };
 
-				run(function properties() {
+				run(function property_set() {
+					var before: X = { a: 1, b: "b" };
+
+					//	TODO	for some reason type inference doesn't work for this case
+					var after = $api.fp.now.map(
+						before,
+						subject.property.set({
+							c: function(t) {
+								return true;
+							}
+						})
+					);
+
+					verify(after).a.is(1);
+					verify(after).b.is("b");
+					verify(after).c.is(true);
+				});
+
+				run(function property_update() {
 					var before: X = { a: 2, b: "hey" };
 					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
 					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
