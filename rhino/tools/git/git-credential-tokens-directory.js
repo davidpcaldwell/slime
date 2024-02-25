@@ -15,7 +15,7 @@
 	function($api,$context,$export) {
 		var relative = $context.library.file.Location.directory.relativePath;
 
-		var readString = $api.fp.world.Sensor.mapping({
+		var tryReadString = $api.fp.world.Sensor.mapping({
 			sensor: $context.library.file.Location.file.read.string.world()
 		});
 
@@ -45,8 +45,13 @@
 			)
 		};
 
+		//	Experimental FP construct
+
+		//	This approach essentially allows the function argument to be in scope for each stage of the function's pipeline
+		//	Haven't come up with a good name for it, it essentially gives the abilities of an outer scope variable without the
+		//	boilerplate lines of code
 		/** @type { <A,B,C,D>(f: (a: A) => B, g: (a: A) => (b: B) => C, h: (a: A) => (c: C) => D) => (a: A) => D } */
-		var $api_fp_map = function(f,g,h) {
+		var $api_fp_map_create = function(f,g,h) {
 			return function(a) {
 				return $api.fp.now.map(
 					f(a),
@@ -56,11 +61,25 @@
 			}
 		};
 
-		var getTokenLocation = $api_fp_map(
+		/** @type { (p: { store: slime.jrunscript.file.Location, host: string, username: string }) => slime.jrunscript.file.Location } */
+		var getTokenLocation = $api_fp_map_create(
 			$api.fp.property("store"),
 			$api.fp.pipe($api.fp.property("host"), relative),
 			$api.fp.pipe($api.fp.property("username"), relative)
 		);
+
+		// Alternate implementation of above using standard $api.fp
+
+		// /** @type { (p: { store: slime.jrunscript.file.Location, host: string, username: string }) => slime.jrunscript.file.Location } */
+		// var getTokenLocation = $api.fp.pipe(
+		// 	$api.fp.split({
+		// 		argument: $api.fp.identity,
+		// 		rv: $api.fp.property("store")
+		// 	}),
+		// 	$api.fp.Object.property.set({ rv: function(p) { return $api.fp.now.map(p.rv, relative(p.argument.host) )}}),
+		// 	$api.fp.Object.property.set({ rv: function(p) { return $api.fp.now.map(p.rv, relative(p.argument.username) )}}),
+		// 	$api.fp.property("rv")
+		// )
 
 		/**
 		 *
@@ -81,22 +100,23 @@
 		 * @param { Parameters<slime.jrunscript.tools.git.credentials.Exports["user"]["get"]>[0] } p
 		 */
 		var getUserTokenLocation = function(p) {
-			var home = (p.home) ? p.home() : $context.library.shell.HOME.pathname.os.adapt();
-			return $api.fp.now.invoke(
-				home,
+			return $api.fp.now.map(
+				p.home || $context.library.shell.HOME.pathname.os.adapt(),
 				relative(".inonit/git/credentials"),
 				relative(p.host),
 				relative(p.username)
 			)
 		}
 
-		var readTokenLocation = $api.fp.pipe(getProjectTokenLocation, readString);
+		var readProjectTokenLocation = $api.fp.pipe(getProjectTokenLocation, tryReadString);
+
+		var readUserTokenLocation = $api.fp.pipe(getUserTokenLocation, tryReadString);
 
 		/** @type { slime.jrunscript.tools.git.credentials.Exports["get"] } */
 		var get = $api.fp.world.Sensor.from.flat(
 			function(p) {
 				var location = getProjectTokenLocation(p.subject);
-				return readString(location);
+				return tryReadString(location);
 			}
 		);
 
@@ -104,7 +124,7 @@
 		var userGet = $api.fp.world.Sensor.from.flat(
 			function(p) {
 				var location = getUserTokenLocation(p.subject);
-				return readString(location);
+				return tryReadString(location);
 			}
 		);
 
@@ -146,15 +166,26 @@
 			if (p.debug) p.debug("input: " + JSON.stringify(input));
 
 			if (p.operation == "get") {
-				var token = readTokenLocation({
-					project: p.project,
+				var token = readProjectTokenLocation({
+					project: {
+						//	git credential helpers set PWD to the local checkout, even when -C is used (tested this)
+						base: $context.library.shell.PWD.pathname.os.adapt()
+					},
 					host: input.host,
 					username: input.username
 				});
 
+				if (!token.present) {
+					token = readUserTokenLocation({
+						host: input.host,
+						username: input.username
+					})
+				}
+
 				var output = $api.Object.compose(input);
 				if (token.present) {
 					output.password = token.value;
+					//	TODO	would be nice to report where it came from, maybe just in debugging though
 					p.console("Obtained " + input.host + " token for " + input.username + ".");
 				}
 				(function() {
@@ -176,7 +207,9 @@
 			helper: helper,
 			update: update,
 			test: {
-				getTokenLocation: getTokenLocation
+				getTokenLocation: getTokenLocation,
+				getProjectTokenLocation: getProjectTokenLocation,
+				getUserTokenLocation: getUserTokenLocation
 			}
 		});
 	}

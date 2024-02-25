@@ -37,12 +37,27 @@ namespace slime.jrunscript.tools.git.credentials {
 			slime.$api.fp.Maybe<string>
 		>
 
+		update: slime.$api.fp.world.Means<
+			{
+				project: Project
+				host: string
+				username: string
+				token: string
+			},
+			{
+				wrote: {
+					username: string
+					destination: slime.jrunscript.file.Location
+				}
+			}
+		>
+
 		user: {
 			location: slime.$api.fp.Mapping<slime.$api.fp.world.Subject<Exports["user"]["get"]>,slime.jrunscript.file.Location>
 
 			get: slime.$api.fp.world.Sensor<
 				{
-					home?: slime.$api.fp.impure.Input<slime.jrunscript.file.Location>
+					home?: slime.jrunscript.file.Location
 					host: string
 					username: string
 				},
@@ -69,21 +84,6 @@ namespace slime.jrunscript.tools.git.credentials {
 			console: slime.$api.fp.impure.Output<string>
 			debug?: slime.$api.fp.impure.Output<string>
 		}) => void
-
-		update: slime.$api.fp.world.Means<
-			{
-				project: Project
-				host: string
-				username: string
-				token: string
-			},
-			{
-				wrote: {
-					username: string
-					destination: slime.jrunscript.file.Location
-				}
-			}
-		>
 	}
 
 	export namespace test {
@@ -97,11 +97,28 @@ namespace slime.jrunscript.tools.git.credentials {
 			});
 		//@ts-ignore
 		})(fifty);
+
+		export const helper = (function(fifty: slime.fifty.test.Kit) {
+			return function(PWD: string) {
+				var shell = Object.assign({}, fifty.global.jsh.shell);
+				shell.PWD = fifty.global.jsh.file.Pathname(PWD).directory;
+				var script: Script = fifty.$loader.script("git-credential-tokens-directory.js");
+				return script({
+					library: {
+						file: fifty.global.jsh.file,
+						shell: shell
+					}
+				});
+			}
+		//@ts-ignore
+		})(fifty);
 	}
 
 	export interface Exports {
 		test: {
 			getTokenLocation: (p: { store: slime.jrunscript.file.Location, host: string, username: string }) => slime.jrunscript.file.Location
+			getProjectTokenLocation: (p: { project: slime.jrunscript.tools.git.credentials.Project, host: string, username: string }) => slime.jrunscript.file.Location
+			getUserTokenLocation: (p: Parameters<slime.jrunscript.tools.git.credentials.Exports["user"]["get"]>[0]) => slime.jrunscript.file.Location
 		}
 	}
 
@@ -113,11 +130,14 @@ namespace slime.jrunscript.tools.git.credentials {
 			const { jsh } = fifty.global;
 			const { subject } = test;
 
-			fifty.tests.unit = function() {
+			fifty.tests.manual = function() {
 				var tmp = fifty.jsh.file.temporary.location();
 
-				var location = subject.test.getTokenLocation({ store: tmp, host: "host.example.com", username: "user" });
+				var location = subject.test.getTokenLocation({ store: tmp, host: "git.example.com", username: "user" });
 				jsh.shell.console("location: " + location.pathname);
+
+				jsh.shell.console(subject.test.getProjectTokenLocation({ project: { base: fifty.jsh.file.relative("../../..") }, host: "git.example.com", username: "user" }).pathname );
+				jsh.shell.console(subject.test.getUserTokenLocation({ host: "git.example.com", username: "user" }).pathname );
 			}
 		}
 	//@ts-ignore
@@ -170,9 +190,11 @@ namespace slime.jrunscript.tools.git.credentials {
 					function(entries) { return Object.fromEntries(entries); }
 				)
 
+				var forHelper = test.helper(base.pathname);
+
 				fifty.run(function success() {
 					var output = "";
-					subject.helper({
+					forHelper.helper({
 						operation: "get",
 						project: { base: base },
 						input: jsh.io.InputStream.from.string(
@@ -198,7 +220,7 @@ namespace slime.jrunscript.tools.git.credentials {
 
 				fifty.run(function notFound() {
 					var output = "";
-					subject.helper({
+					forHelper.helper({
 						operation: "get",
 						project: { base: base },
 						input: jsh.io.InputStream.from.string(
