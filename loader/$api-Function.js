@@ -319,6 +319,18 @@
 							return rv;
 						}
 					},
+					//@ts-ignore
+					set: function(p) {
+						return function(target) {
+							var rv = Object.assign({}, target);
+							for (var x in p) {
+								var value = p[x](rv);
+								//@ts-ignore
+								rv[x] = value;
+							}
+							return rv;
+						}
+					},
 					maybe: function() {
 						var keys = arguments;
 						var isNothing = function(v) { return !Maybe.from.value(v).present };

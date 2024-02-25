@@ -51,6 +51,16 @@ namespace slime.jrunscript.tools.git.credentials {
 			>
 		}
 
+		/**
+		 * Implements the `git` [credential helper](https://git-scm.com/docs/gitcredentials) interface when the "operation" is
+		 * passed to it as the `operation` property of its input.
+		 *
+		 * The only operation that is implemented is `get`, which looks up credentials in the project directory at a specified
+		 * location.
+		 *
+		 * @param p
+		 * @returns
+		 */
 		helper: (p: {
 			operation: string
 			project: Project
@@ -88,6 +98,30 @@ namespace slime.jrunscript.tools.git.credentials {
 		//@ts-ignore
 		})(fifty);
 	}
+
+	export interface Exports {
+		test: {
+			getTokenLocation: (p: { store: slime.jrunscript.file.Location, host: string, username: string }) => slime.jrunscript.file.Location
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+			const { subject } = test;
+
+			fifty.tests.unit = function() {
+				var tmp = fifty.jsh.file.temporary.location();
+
+				var location = subject.test.getTokenLocation({ store: tmp, host: "host.example.com", username: "user" });
+				jsh.shell.console("location: " + location.pathname);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	(
 		function(
