@@ -302,6 +302,58 @@
 					);
 				})
 			)
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.git.Program } program
+		 * @param { { [name: string]: string; } } config
+		 * @param { string } repository
+		 * @returns { slime.jrunscript.tools.git.RepositoryView }
+		 */
+		var RepositoryView = function(program,config,repository) {
+			var Invocation = function(p) {
+				return {
+					program: program,
+					config: config,
+					pathname: repository,
+					command: p.command,
+					argument: p.argument
+				}
+			};
+			return {
+				Invocation: Invocation,
+				shell: function(invocation) {
+					return createShellInvocation(
+						program,
+						config,
+						repository,
+						invocation.invocation,
+						invocation.stdio
+					);
+				},
+				command: commandExecutor(program,config,repository),
+				run: function(p) {
+					var invocation = $api.Object.compose(
+						Invocation(p),
+						{
+							world: p.world
+						}
+					);
+					return run(invocation)
+				},
+				gitmodules: function() {
+					var gitmodulesExists = $api.fp.now.invoke(
+						repository,
+						$context.api.file.Location.from.os,
+						$context.api.file.Location.directory.relativePath(".gitmodules"),
+						$api.fp.world.mapping($context.api.file.Location.file.exists())
+					);
+					if (!gitmodulesExists) return [];
+					var executor = commandExecutor(program, config, repository);
+					return executor(submoduleConfiguration).argument().run();
+				}
+			};
 		}
 
 		$exports.program = function(program) {
@@ -318,56 +370,13 @@
 				config: function(values) {
 					return {
 						repository: function(pathname) {
-							return {
-								command: commandExecutor(program, values, pathname)
-							}
+							return RepositoryView(program,values,pathname);
 						},
 						command: commandExecutor(program, values, void(0))
 					}
 				},
 				repository: function(pathname) {
-					var Invocation = function(p) {
-						return {
-							program: program,
-							config: {},
-							pathname: pathname,
-							command: p.command,
-							argument: p.argument
-						};
-					}
-					return {
-						Invocation: Invocation,
-						shell: function(invocation) {
-							return createShellInvocation(
-								program,
-								{},
-								pathname,
-								invocation.invocation,
-								invocation.stdio
-							);
-						},
-						command: commandExecutor(program,{},pathname),
-						run: function(p) {
-							var invocation = $api.Object.compose(
-								Invocation(p),
-								{
-									world: p.world
-								}
-							);
-							return run(invocation)
-						},
-						gitmodules: function() {
-							var gitmodulesExists = $api.fp.now.invoke(
-								pathname,
-								$context.api.file.Location.from.os,
-								$context.api.file.Location.directory.relativePath(".gitmodules"),
-								$api.fp.world.mapping($context.api.file.Location.file.exists())
-							);
-							if (!gitmodulesExists) return [];
-							var executor = commandExecutor(program, {}, pathname);
-							return executor(submoduleConfiguration).argument().run();
-						}
-					}
+					return RepositoryView(program,{},pathname);
 				},
 				command: commandExecutor(program,{},void(0))
 			}

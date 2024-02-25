@@ -421,9 +421,7 @@ namespace slime.jrunscript.tools.git {
 
 			config: (values: { [name: string]: string }) => {
 				//	TODO	refactor so this can return RepositoryView also
-				repository: (pathname: string) => {
-					command: exports.command.Executor
-				}
+				repository: (pathname: string) => RepositoryView
 
 				command: exports.command.Executor
 			}
