@@ -181,6 +181,17 @@ namespace slime.$api.fp.impure {
 					var result3 = counter();
 					verify(result3).is(42);
 					verify(calls).is(2);
+
+					fifty.run(function oo() {
+						var target = function(): object { return this; };
+						var object = {
+							target: target,
+							memoized: fifty.global.$api.fp.impure.Input.memoized(target)
+						};
+
+						verify(object).target().is(object);
+						verify(object).memoized().is(object);
+					});
 				}
 			}
 		//@ts-ignore
