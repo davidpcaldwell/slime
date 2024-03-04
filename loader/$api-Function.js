@@ -433,18 +433,25 @@
 						},0);
 					}
 				},
-				first: function(ordering) {
-					return function(ts) {
-						/** @type { slime.$api.fp.Maybe<any> } */
-						var rv = Maybe.from.nothing();
-						ts.forEach(function(item) {
-							if (!rv.present) {
-								rv = Maybe.from.some(item);
-							} else if (rv.present && ordering(rv.value)(item) == "BEFORE") {
-								rv = Maybe.from.some(item);
-							}
-						});
-						return rv;
+				ordering: {
+					first: function(ordering) {
+						return function(ts) {
+							/** @type { slime.$api.fp.Maybe<any> } */
+							var rv = Maybe.from.nothing();
+							ts.forEach(function(item) {
+								if (!rv.present) {
+									rv = Maybe.from.some(item);
+								} else {
+									if (rv.present) {
+										var compared = ordering(rv.value)(item);
+										if (compared.present && compared.value === true) {
+											rv = Maybe.from.some(item);
+										}
+									}
+								}
+							});
+							return rv;
+						}
 					}
 				}
 			},
@@ -566,14 +573,15 @@
 					}
 				},
 				from: {
-					Ordering: function(ordering) {
+					Ordering: function(before) {
 						return function(a,b) {
-							var compare = ordering(a);
+							var compare = before(a);
 							var result = compare(b);
-							if (result == "AFTER") return -1;
-							if (result == "EQUAL") return 0;
-							if (result == "BEFORE") return 1;
-							throw new TypeError("Result must be BEFORE, EQUAL, or AFTER.");
+							if (result.present) {
+								return (result.value) ? 1 : -1;
+							} else {
+								return 0;
+							}
 						}
 					}
 				}
