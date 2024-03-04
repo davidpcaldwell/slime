@@ -105,6 +105,7 @@ namespace slime.project.code {
 				function(it) {
 					if (it.present) {
 						jsh.shell.console("Modified: " + it.value);
+						jsh.shell.console("Modified: " + new Date(it.value));
 						// jsh.shell.console("Latest: " + ( (it.value.path.length) ? it.value.path.join("/") + "/" : "" ) + it.value.name + " at " + JSON.stringify(it.value.resource.modified()));
 					} else {
 						jsh.shell.console("Error.");
