@@ -680,46 +680,6 @@ namespace slime.$api.fp {
 		}
 	}
 
-	export namespace exports {
-		export interface Array {
-			ordering: {
-				first: <T>(ordering: Ordering<T>) => (ts: T[]) => Maybe<T>
-			}
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { $api } = fifty.global;
-
-				fifty.tests.exports.Array.ordering = fifty.test.Parent();
-
-				fifty.tests.exports.Array.ordering.first = function() {
-					var order = (n: number) => (o: number) => (o != n) ? $api.fp.Maybe.from.some(o < n) : $api.fp.Maybe.from.nothing();
-					var ns: number[] = [1, 0, 2];
-					var first = $api.fp.Array.ordering.first(order);
-
-
-					fifty.run(function() {
-						var value = first(ns);
-						verify(value).present.is(true);
-						if (value.present) {
-							verify(value).value.is(0);
-						}
-					});
-
-					fifty.run(function() {
-						var value = first([]);
-						verify(value).present.is(false);
-					});
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-	}
-
 	export interface Exports {
 		Array: exports.Array
 	}
@@ -900,11 +860,120 @@ namespace slime.$api.fp {
 	export type CompareFn<T> = (t1: T, t2: T) => number
 
 	/**
-	 * A comparison order that can be expressed as a function that returns a partial function. The partial function should
-	 * return `true` if its argument should be placed before the subject in the ordering, `false` if it should be placed
-	 * after, and should return `$api.fp.Maybe.from.nothing()` if it cannot determine the correct order.
+	 * A comparison order that can be expressed as a partial function. The partial function should
+	 * return a {@link Maybe} with value `true` if its arguments are in the correct order and `false` if
+	 * they are not, and should return `$api.fp.Maybe.from.nothing()` if it cannot determine the correct order.
 	 */
-	export type Ordering<T> = (subject: T) => Partial<T,boolean>
+	export type Ordering<T> = Partial<[T,T],boolean>
+
+	export interface Exports {
+		Ordering: {
+			from: {
+				operators: Ordering<any>
+
+				prioritize: <T>(p: {
+					predicate: slime.$api.fp.Predicate<T>
+					value: boolean
+				}) => Ordering<T>
+
+				map: <T,V>(p: {
+					map: slime.$api.fp.Mapping<T,V>
+					ordering: Ordering<V>
+				}) => Ordering<T>
+			}
+
+			array: {
+				first: <T>(ordering: Ordering<T>) => (t: T[]) => slime.$api.fp.Maybe<T>
+
+				sort: <T>(ordering: Ordering<T>) => (t: T[]) => T[]
+			}
+		}
+	}
+
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.Ordering = fifty.test.Parent();
+
+			fifty.tests.exports.Ordering.from = fifty.test.Parent();
+
+			fifty.tests.exports.Ordering.from.operators = function() {
+				var array = [1, 0, 2];
+				verify(array)[0].is(1);
+				verify(array)[1].is(0);
+				verify(array)[2].is(2);
+				array = $api.fp.Ordering.array.sort($api.fp.Ordering.from.operators)(array);
+				verify(array)[0].is(0);
+				verify(array)[1].is(1);
+				verify(array)[2].is(2);
+			};
+
+			fifty.tests.exports.Ordering.from.prioritize = function() {
+				var array = [3, 1, 2, 4];
+				var prioritized = $api.fp.switch([
+					$api.fp.Ordering.from.prioritize({
+						predicate: function(n: number) { return n % 2 == 0; },
+						value: true
+					}),
+					$api.fp.Ordering.from.operators
+				]);
+				verify(array)[0].is(3);
+				verify(array)[1].is(1);
+				verify(array)[2].is(2);
+				verify(array)[3].is(4);
+				array = $api.fp.Ordering.array.sort(prioritized)(array);
+				verify(array)[0].is(2);
+				verify(array)[1].is(4);
+				verify(array)[2].is(1);
+				verify(array)[3].is(3);
+			};
+
+			fifty.tests.exports.Ordering.from.map = function() {
+				var array = [3, 1, 2, 4];
+				var byMod3 = $api.fp.switch([
+					$api.fp.Ordering.from.map({
+						map: function(n: number) { return n % 3; },
+						ordering: $api.fp.Ordering.from.operators
+					}),
+					$api.fp.Ordering.from.operators
+				]);
+				verify(array)[0].is(3);
+				verify(array)[1].is(1);
+				verify(array)[2].is(2);
+				verify(array)[3].is(4);
+				array = $api.fp.Ordering.array.sort(byMod3)(array);
+				verify(array)[0].is(3);
+				verify(array)[1].is(1);
+				verify(array)[2].is(4);
+				verify(array)[3].is(2);
+			};
+
+			fifty.tests.exports.Ordering.first = function() {
+				var order = (array: [number,number]) => (array[0] != array[1]) ? $api.fp.Maybe.from.some(array[0] < array[1]) : $api.fp.Maybe.from.nothing();
+				var ns: number[] = [1, 0, 2];
+				var first = $api.fp.Ordering.array.first(order);
+
+				fifty.run(function() {
+					var value = first(ns);
+					verify(value).present.is(true);
+					if (value.present) {
+						verify(value).value.is(0);
+					}
+				});
+
+				fifty.run(function() {
+					var value = first([]);
+					verify(value).present.is(false);
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
 		/**
@@ -935,7 +1004,14 @@ namespace slime.$api.fp {
 			compose: <T>(...comparators: fp.CompareFn<T>[]) => fp.CompareFn<T>
 
 			from: {
-				Ordering: <T>(b: Ordering<T>) => fp.CompareFn<T>
+				/**
+				 * Creates a standard JavaScript {@link CompareFn} from an {@link Ordering}; this function can be used as an
+				 * argument to `Array.prototype.sort`.
+				 *
+				 * To simply sort an array, `Ordering.array.sort` can be used, which will duplicate the array and return the
+				 * sorted version.
+				 */
+				Ordering: <T>(ordering: Ordering<T>) => fp.CompareFn<T>
 			}
 		}
 	}
@@ -952,12 +1028,10 @@ namespace slime.$api.fp {
 			fifty.tests.compare = function() {
 				run(function beforeArray() {
 					var numbers = [1, 0, 2];
-					numbers.sort($f.comparator.from.Ordering(function(subject) {
-						return function(other) {
-							var difference = other - subject;
-							if (difference != 0) return $api.fp.Maybe.from.some(difference < 0);
-							return $api.fp.Maybe.from.nothing();
-						}
+					numbers.sort($f.comparator.from.Ordering(function(array) {
+						var difference = array[0] - array[1];
+						if (difference != 0) return $api.fp.Maybe.from.some(difference < 0);
+						return $api.fp.Maybe.from.nothing();
 					}));
 					verify(numbers[0]).is(0);
 					verify(numbers[1]).is(1);

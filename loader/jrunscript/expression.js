@@ -1086,22 +1086,22 @@
 			},
 			Entry: {
 				mostRecentlyModified: function() {
-					var BEFORE = slime.$api.fp.Maybe.from.some(true);
-					var AFTER = slime.$api.fp.Maybe.from.some(false);
+					var CORRECT = slime.$api.fp.Maybe.from.some(true);
+					var SWAP = slime.$api.fp.Maybe.from.some(false);
 					var EQUAL = slime.$api.fp.Maybe.from.nothing();
-					return function(entry) {
-						return function(other) {
-							var m1 = entry.resource.modified();
-							var m2 = other.resource.modified();
-							if (!m1.present && !m2.present) return EQUAL;
-							if (!m1.present) return BEFORE;
-							if (!m2.present) return AFTER;
-							var eTime = m1.value;
-							var oTime = m2.value;
-							if (oTime < eTime) return AFTER;
-							if (oTime > eTime) return BEFORE;
-							return EQUAL;
-						}
+					return function(array) {
+						var entry = array[0];
+						var other = array[1];
+						var m1 = entry.resource.modified();
+						var m2 = other.resource.modified();
+						if (!m1.present && !m2.present) return EQUAL;
+						if (!m1.present) return SWAP;
+						if (!m2.present) return CORRECT;
+						var eTime = m1.value;
+						var oTime = m2.value;
+						if (oTime < eTime) return CORRECT;
+						if (oTime > eTime) return SWAP;
+						return EQUAL;
 					}
 				}
 			},

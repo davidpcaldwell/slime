@@ -173,6 +173,18 @@
 			return pipe.apply(this, items.slice(1))(items[0]);
 		}
 
+		/** @type { <T>(ordering: slime.$api.fp.Ordering<T>) => slime.$api.fp.CompareFn<T> } */
+		var orderingToJs = function(ordering) {
+			return function(a,b) {
+				var result = ordering([a,b]);
+				if (result.present) {
+					return (result.value) ? -1 : 1;
+				} else {
+					return 0;
+				}
+			}
+		};
+
 		$export({
 			identity: identity,
 			cast: function(v) { return v; },
@@ -432,27 +444,6 @@
 							return rv + attribute(element);
 						},0);
 					}
-				},
-				ordering: {
-					first: function(ordering) {
-						return function(ts) {
-							/** @type { slime.$api.fp.Maybe<any> } */
-							var rv = Maybe.from.nothing();
-							ts.forEach(function(item) {
-								if (!rv.present) {
-									rv = Maybe.from.some(item);
-								} else {
-									if (rv.present) {
-										var compared = ordering(rv.value)(item);
-										if (compared.present && compared.value === true) {
-											rv = Maybe.from.some(item);
-										}
-									}
-								}
-							});
-							return rv;
-						}
-					}
 				}
 			},
 			Arrays: {
@@ -546,6 +537,58 @@
 					}
 				}
 			},
+			Ordering: {
+				from: {
+					operators: function(two) {
+						if (two[0] < two[1]) return Maybe.from.some(true);
+						if (two[0] > two[1]) return Maybe.from.some(false);
+						return Maybe.from.nothing();
+					},
+					prioritize: function(p) {
+						return function(two) {
+							var a = p.predicate(two[0]);
+							var b = p.predicate(two[1]);
+							if (a && !b) return Maybe.from.some(true === p.value);
+							if (b && !a) return Maybe.from.some(false === p.value);
+							return Maybe.from.nothing();
+						}
+					},
+					map: function(p) {
+						return function(two) {
+							return p.ordering(
+								//@ts-ignore
+								two.map(p.map)
+							);
+						}
+					}
+				},
+				array: {
+					first: function(ordering) {
+						return function(ts) {
+							/** @type { slime.$api.fp.Maybe<any> } */
+							var rv = Maybe.from.nothing();
+							ts.forEach(function(item) {
+								if (!rv.present) {
+									rv = Maybe.from.some(item);
+								} else {
+									if (rv.present) {
+										var compared = ordering([rv.value,item]);
+										if (compared.present && compared.value === false) {
+											rv = Maybe.from.some(item);
+										}
+									}
+								}
+							});
+							return rv;
+						}
+					},
+					sort: function(ordering) {
+						return function(array) {
+							return Array.prototype.slice.call(array).sort(orderingToJs(ordering));
+						}
+					}
+				}
+			},
 			comparator: {
 				create: function(mapping, comparator) {
 					return function(a, b) {
@@ -573,17 +616,7 @@
 					}
 				},
 				from: {
-					Ordering: function(before) {
-						return function(a,b) {
-							var compare = before(a);
-							var result = compare(b);
-							if (result.present) {
-								return (result.value) ? 1 : -1;
-							} else {
-								return 0;
-							}
-						}
-					}
+					Ordering: orderingToJs
 				}
 			},
 			now: {
