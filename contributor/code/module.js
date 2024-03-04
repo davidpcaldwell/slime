@@ -253,7 +253,7 @@
 								},
 								map: p.map
 							}),
-							$api.fp.Array.first($context.library.io.Entry.mostRecentlyModified()),
+							$api.fp.Array.ordering.first($context.library.io.Entry.mostRecentlyModified()),
 							$api.fp.Maybe.map(function(latest) {
 								return latest.resource.modified();
 							}),

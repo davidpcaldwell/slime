@@ -682,8 +682,42 @@ namespace slime.$api.fp {
 
 	export namespace exports {
 		export interface Array {
-			first: <T>(ordering: Ordering<T>) => (ts: T[]) => Maybe<T>
+			ordering: {
+				first: <T>(ordering: Ordering<T>) => (ts: T[]) => Maybe<T>
+			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.Array.ordering = fifty.test.Parent();
+
+				fifty.tests.exports.Array.ordering.first = function() {
+					var order = (n: number) => (o: number) => (o != n) ? $api.fp.Maybe.from.some(o < n) : $api.fp.Maybe.from.nothing();
+					var ns: number[] = [1, 0, 2];
+					var first = $api.fp.Array.ordering.first(order);
+
+
+					fifty.run(function() {
+						var value = first(ns);
+						verify(value).present.is(true);
+						if (value.present) {
+							verify(value).value.is(0);
+						}
+					});
+
+					fifty.run(function() {
+						var value = first([]);
+						verify(value).present.is(false);
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Exports {
@@ -858,17 +892,25 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * A function with the semantics of the standard JavaScript `sort` function argument.
+	 *
+	 * See the specification for [Array.prototype.sort](https://tc39.es/ecma262/multipage/indexed-collections.html#sec-array.prototype.sort)
+	 */
 	export type CompareFn<T> = (t1: T, t2: T) => number
 
 	/**
-	 * Given a subject, returns a function that, given another value:
-	 * * Returns `"BEFORE"` if the other value belongs before the subject
-	 * * Returns `"AFTER"` if the other value belongs after the subject
-	 * * Returns `"EQUAL"` if the values are the same according to this ordering
+	 * A comparison order that can be expressed as a function that returns a partial function. The partial function should
+	 * return `true` if its argument should be placed before the subject in the ordering, `false` if it should be placed
+	 * after, and should return `$api.fp.Maybe.from.nothing()` if it cannot determine the correct order.
 	 */
-	export type Ordering<T> = (subject: T) => (other: T) => "BEFORE" | "EQUAL" | "AFTER"
+	export type Ordering<T> = (subject: T) => Partial<T,boolean>
 
 	export interface Exports {
+		/**
+		 * Operations pertaining to {@link CompareFn}s, which can be used with the standard JavaScript `Array.prototype.sort`
+		 * method.
+		 */
 		comparator: {
 			/**
 			 * Creates a comparator given a mapping (which represents some aspect of an underlying type) and a comparator that
@@ -893,28 +935,28 @@ namespace slime.$api.fp {
 			compose: <T>(...comparators: fp.CompareFn<T>[]) => fp.CompareFn<T>
 
 			from: {
-				Ordering: <T>(o: Ordering<T>) => fp.CompareFn<T>
+				Ordering: <T>(b: Ordering<T>) => fp.CompareFn<T>
 			}
 		}
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.Kit,
-			$api: slime.$api.Global
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify, run } = fifty;
+			const { $api } = fifty.global;
+
 			const $f = fifty.global.$api.fp;
 
 			fifty.tests.compare = function() {
-				run(function orderingArray() {
+				run(function beforeArray() {
 					var numbers = [1, 0, 2];
 					numbers.sort($f.comparator.from.Ordering(function(subject) {
 						return function(other) {
 							var difference = other - subject;
-							if (difference < 0) return "BEFORE";
-							if (difference > 0) return "AFTER";
-							return "EQUAL";
+							if (difference != 0) return $api.fp.Maybe.from.some(difference < 0);
+							return $api.fp.Maybe.from.nothing();
 						}
 					}));
 					verify(numbers[0]).is(0);
@@ -964,7 +1006,7 @@ namespace slime.$api.fp {
 			}
 		}
 	//@ts-ignore
-	)(fifty, $api, tests, verify);
+	)(fifty);
 
 	export interface Exports {
 		now: {
