@@ -20,9 +20,13 @@
 			},
 			load: function() {
 				if (!global.maven && !global.mvn) {
-					global.maven = $loader.module("module.js", {
+					/** @type { slime.jrunscript.tools.maven.Script } */
+					var script = $loader.script("module.js");
+					global.maven = script({
 						mvn: jsh.shell.PATH.getCommand("mvn"),
-						HOME: jsh.shell.HOME
+						HOME: jsh.shell.HOME,
+						java: jsh.shell.java,
+						jsh: jsh
 					});
 				}
 			}

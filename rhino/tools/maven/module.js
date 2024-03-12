@@ -9,11 +9,12 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.Global } jsh
-	 * @param { { HOME: slime.jrunscript.file.Directory, java: slime.jrunscript.shell.Exports["java"], mvn: any } } $context
-	 * @param { { mvn: any, Pom: any, Project: any, Repository: any } } $exports
+	 * @param { slime.jrunscript.tools.maven.Context } $context
+	 * @param { slime.jrunscript.tools.maven.Exports } $exports
 	 */
-	function($api,jsh,$context,$exports) {
+	function($api,$context,$exports) {
+		var jsh = $context.jsh;
+
 		$exports.mvn = function(m) {
 			var mvn = $context.mvn;
 			var properties = (m.properties) ? (function() {
@@ -406,4 +407,4 @@
 		}
 	}
 //@ts-ignore
-)($api,jsh,$context,$exports);
+)($api,$context,$exports);
