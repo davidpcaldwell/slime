@@ -466,10 +466,63 @@ namespace slime.$api.fp {
 	export namespace exports {
 		export interface Partial {
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.Partial = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Exports {
 		Partial: exports.Partial
+	}
+
+	export namespace exports {
+		export interface Partial {
+			from: {
+				/**
+				 * Creates a partial function from a "loose" function, where "loose" is defined as a JavaScript function that might
+				 * return `null` or the undefined value. The resulting partial function will return `Maybe.from.nothing` if the
+				 * loose function returns `null` or the undefined value, and `Maybe.from.some(v)` if the loose function returns the
+				 * value `v`.
+				 *
+				 * This allows partial functions to be defined with less-verbose JavaScript syntax; return ordinary values (rather
+				 * than `Maybe`s) for input for which they are defined, and simply not return values for input for which they are
+				 * not defined.
+				 *
+				 * @param f A JavaScript function.
+				 * @returns A partial function implemented in terms of the given JavaScript function.
+				 */
+				loose: <P,R>(f: slime.$api.fp.Mapping<P,R>) => slime.$api.fp.Partial<P,R>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.Partial.from = function() {
+					var partial = $api.fp.Partial.from.loose(function(x: number): number {
+						if (x % 2 === 0) return x / 2;
+					});
+
+					var two = partial(2);
+					verify(two).present.is(true);
+					if (two.present) verify(two.value).is(1);
+
+					var one = partial(1);
+					verify(one).present.is(false);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace exports {
@@ -483,8 +536,6 @@ namespace slime.$api.fp {
 			) {
 				const { verify, run } = fifty;
 				var subject = fifty.global.$api.fp.Partial;
-
-				fifty.tests.exports.Partial = fifty.test.Parent();
 
 				fifty.tests.exports.Partial.match = function() {
 					var ifOddThenDouble: Match<number,number> = {

@@ -362,6 +362,13 @@
 			},
 			Maybe: Maybe,
 			Partial: {
+				from: {
+					loose: function(f) {
+						return function(p) {
+							return Maybe.from.value(f(p));
+						}
+					}
+				},
 				match: function(v) {
 					return function(p) {
 						var present = v.if(p);
