@@ -410,9 +410,17 @@
 		}
 
 		var Installation = {
+			/** @type { slime.jrunscript.tools.maven.exports.Installation["exists"]["world"] } */
 			exists: function(installation) {
-				//	TODO	thunk.map should probably be thunk.value and accept 1 argument as well as multiple
-				return $api.TODO({ message: $api.fp.thunk.value("Installation.exists", $api.fp.identity) })
+				return function(events) {
+					//	TODO	currently just implemented by detecting directory existence, but could do better:
+					//	* Could check for bin/mvn
+					//	* Could check for executable bit
+					return $api.fp.world.Sensor.now({
+						sensor: $context.library.file.Location.directory.exists(),
+						subject: $api.fp.now.map(installation.home, $context.library.file.Location.from.os)
+					});
+				}
 			}
 		}
 
