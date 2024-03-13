@@ -137,7 +137,7 @@ namespace slime.$api.fp {
 		): B
 	}
 
-	export type Thunk_map = {
+	export type Thunk_value = {
 		<A,B,C,D,E,F,G,H,I>(
 			a: A,
 			f: (a: A) => B,
@@ -205,6 +205,10 @@ namespace slime.$api.fp {
 			a: A,
 			f: (a: A) => B
 		): Thunk<B>
+
+		<A>(
+			a: A
+		): Thunk<A>
 	}
 }
 

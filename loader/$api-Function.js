@@ -204,7 +204,7 @@
 			},
 			result: now_map,
 			thunk: {
-				map: function() {
+				value: function() {
 					var args = Array.prototype.slice.call(arguments);
 					return function() {
 						return now_map.apply(this, args);
@@ -236,6 +236,11 @@
 				all: function(r) {
 					return function(p) {
 						return r;
+					}
+				},
+				thunk: function(p) {
+					return function() {
+						return p.mapping(p.argument);
 					}
 				}
 			},

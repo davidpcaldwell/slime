@@ -521,6 +521,8 @@ namespace slime.jrunscript.file {
 							notFound: void
 						}, slime.$api.fp.Maybe<string>>
 
+						maybe: slime.$api.fp.Mapping<Location, slime.$api.fp.Maybe<string>>
+
 						assert: slime.$api.fp.Mapping<Location, string>
 					}
 				}
