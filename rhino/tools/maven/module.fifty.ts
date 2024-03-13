@@ -10,6 +10,10 @@ namespace slime.jrunscript.tools.maven {
 		java: slime.jrunscript.shell.Exports["java"]
 		mvn: any
 
+		library: {
+			file: slime.jrunscript.file.Exports
+		}
+
 		jsh: {
 			js: slime.js.old.Exports & {
 				document: any
@@ -26,6 +30,9 @@ namespace slime.jrunscript.tools.maven {
 				const { jsh } = fifty.global;
 				var script: Script = fifty.$loader.script("module.js");
 				return script({
+					library: {
+						file: jsh.file
+					},
 					HOME: jsh.shell.HOME,
 					java: jsh.shell.java,
 					mvn: jsh.shell.PATH.getCommand("mvn"),

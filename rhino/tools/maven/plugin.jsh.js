@@ -26,7 +26,10 @@
 						mvn: jsh.shell.PATH.getCommand("mvn"),
 						HOME: jsh.shell.HOME,
 						java: jsh.shell.java,
-						jsh: jsh
+						jsh: jsh,
+						library: {
+							file: jsh.file
+						}
 					});
 				}
 			}
