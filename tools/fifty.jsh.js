@@ -127,7 +127,7 @@
 
 							//	TODO	may not need to limit shells at all here
 							if (isUnbuilt(current)) {
-								$api.fp.now.invoke(
+								$api.fp.now.map(
 									asJshIntention({
 										shell: {
 											src: current.src

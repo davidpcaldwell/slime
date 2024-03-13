@@ -58,6 +58,7 @@
 			if (hasGit) fifty.load("../rhino/tools/git/module.fifty.ts");
 			fifty.load("../rhino/tools/gcloud/module.fifty.ts");
 			fifty.load("../rhino/tools/jenkins/module.fifty.ts");
+			fifty.load("../rhino/tools/maven/module.fifty.ts");
 			fifty.load("../jrunscript/jsh/launcher/test/suite.fifty.ts");
 			if (isMkcertImplemented) fifty.load("../jrunscript/jsh/test/remote.fifty.ts");
 			fifty.load("../jrunscript/jsh/loader/jsh.fifty.ts");

@@ -534,6 +534,20 @@
 			}
 		}
 
+		var TODO = $exports.Error.type({
+			name: "TODO",
+			/** @type { (p: { message: slime.$api.fp.Thunk<string> }) => string } */
+			getMessage: function(p) {
+				return (p && p.message) ? p.message() : "TODO";
+			}
+		})
+
+		$exports.TODO = function(p) {
+			return function() {
+				throw new TODO(p);
+			}
+		}
+
 		$exports.events = events.exports;
 
 		$exports.Events = Object.assign(

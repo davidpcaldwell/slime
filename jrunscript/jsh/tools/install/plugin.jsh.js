@@ -679,7 +679,7 @@
 				return Boolean(plugins.node && jsh.file && jsh.shell && jsh.shell.tools && jsh.tools.install);
 			},
 			load: function() {
-				/** @type { slime.jrunscript.node.internal.JshPluginInterface } */
+				/** @type { slime.jrunscript.tools.node.internal.JshPluginInterface } */
 				var helper = plugins.node;
 
 				var node = helper.module({

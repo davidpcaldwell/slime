@@ -19,7 +19,7 @@
 			load: function() {
 				plugins.node = {
 					module: function(p) {
-						/** @type { slime.jrunscript.node.Script } */
+						/** @type { slime.jrunscript.tools.node.Script } */
 						var script = $loader.script("module.js");
 						return script(p.context);
 					}

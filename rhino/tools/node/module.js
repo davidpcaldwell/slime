@@ -8,8 +8,8 @@
 (
 	/**
 	 * @param { slime.$api.Global } $api
-	 * @param {slime.jrunscript.node.Context} $context
-	 * @param {slime.jrunscript.node.Exports} $exports
+	 * @param {slime.jrunscript.tools.node.Context} $context
+	 * @param {slime.jrunscript.tools.node.Exports} $exports
 	 */
 	function($api,$context,$exports) {
 		/** @type { (p: { version: string, os: string, arch: string }) => slime.$api.fp.Maybe<string> } */
@@ -82,7 +82,7 @@
 			}
 		)();
 
-		/** @type { slime.jrunscript.node.exports.Installation["getVersion"] } */
+		/** @type { slime.jrunscript.tools.node.exports.Installation["getVersion"] } */
 		function getVersion(installation) {
 			return function(events) {
 				/** @type { slime.jrunscript.shell.run.Intention } */
@@ -104,7 +104,7 @@
 		/**
 		 * Returns a string that can be added to the system path for this installation.
 		 *
-		 * @type { (installation: slime.jrunscript.node.Installation) => string }
+		 * @type { (installation: slime.jrunscript.tools.node.Installation) => string }
 		 */
 		var getInstallationPathEntry = $api.fp.pipe(
 			$api.fp.property("executable"),
@@ -148,7 +148,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.node.Installation } installation
+		 * @param { slime.jrunscript.tools.node.Installation } installation
 		 * @param { string } projectBin
 		 * @param { string } command
 		 * @returns { string }
@@ -167,7 +167,7 @@
 			return installation.executable;
 		}
 
-		/** @type { (installation: slime.jrunscript.node.Installation) => (p: slime.jrunscript.node.Intention) => slime.jrunscript.shell.run.Intention } */
+		/** @type { (installation: slime.jrunscript.tools.node.Installation) => (p: slime.jrunscript.tools.node.Intention) => slime.jrunscript.shell.run.Intention } */
 		var node_invocation = function(installation) {
 			return function(invocation) {
 				var command = getExecutableForCommand(
@@ -215,7 +215,7 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.node.exports.Installation["modules"]["list"] } */
+		/** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["list"] } */
 		var modules_list = function() {
 			return function(installation) {
 				var toShellInvocation = node_invocation(installation);
@@ -242,7 +242,7 @@
 						invocation
 					);
 
-					/** @type { slime.jrunscript.node.internal.NpmLsOutput } */
+					/** @type { slime.jrunscript.tools.node.internal.NpmLsOutput } */
 					var npmJson = JSON.parse(result.stdio.output);
 
 					return $api.fp.result(
@@ -259,7 +259,7 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.node.exports.Installation["modules"]["installed"] } */
+		/** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["installed"] } */
 		var modules_installed = function(p) {
 			return function(installation) {
 				return function(events) {
@@ -273,7 +273,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.node.exports.Installation["modules"]["install"] } */
+		/** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["install"] } */
 		var modules_install = function(p) {
 			return function(installation) {
 				var toShellInvocation = node_invocation(installation);
@@ -300,10 +300,10 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.node.exports.Installation["modules"]["require"] } */
+		/** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["require"] } */
 		var modules_require = function(p) {
 			var isSatisfied = function(version) {
-				/** @type { (installed: slime.$api.fp.Maybe<slime.jrunscript.node.Module>) => boolean } */
+				/** @type { (installed: slime.$api.fp.Maybe<slime.jrunscript.tools.node.Module>) => boolean } */
 				return function(installed) {
 					if (version) {
 						return installed.present && installed.value.version == version;
@@ -382,7 +382,7 @@
 				return install.directory.getFile("bin/node");
 			};
 
-			/** @type { slime.jrunscript.node.object.Installation["run"] } */
+			/** @type { slime.jrunscript.tools.node.object.Installation["run"] } */
 			this.run = function(p) {
 				var command = getCommand(o, p.project, p.command);
 				// var command = (function() {
@@ -414,7 +414,7 @@
 				});
 			};
 
-			/** @type { slime.jrunscript.node.object.Installation["toBashScript"] } */
+			/** @type { slime.jrunscript.tools.node.object.Installation["toBashScript"] } */
 			this.toBashScript = function(p) {
 				var inherit = (function(environment) {
 					if (!environment) return true;
@@ -449,7 +449,7 @@
 
 			var npm = (function(run) {
 				/**
-				 * @type { slime.jrunscript.node.object.Installation["npm"]["run"] }
+				 * @type { slime.jrunscript.tools.node.object.Installation["npm"]["run"] }
 				 */
 				var rv = function(p) {
 					return run($api.Object.compose(p, {
@@ -520,7 +520,7 @@
 					}
 				};
 
-				/** @type { slime.jrunscript.node.object.Installation["modules"]["require"] } */
+				/** @type { slime.jrunscript.tools.node.object.Installation["modules"]["require"] } */
 				this.require = $api.events.Function(function(p,events) {
 					if (p.name) {
 						if (!this.installed[p.name]) {
@@ -599,8 +599,8 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.node.Intention } argument
-		 * @returns { (installation: slime.jrunscript.node.Installation) => slime.$api.fp.world.Question<slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit> }
+		 * @param { slime.jrunscript.tools.node.Intention } argument
+		 * @returns { (installation: slime.jrunscript.tools.node.Installation) => slime.$api.fp.world.Question<slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit> }
 		 */
 		var Intention_question = function(argument) {
 			return function(installation) {

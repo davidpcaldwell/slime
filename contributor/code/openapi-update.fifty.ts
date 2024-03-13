@@ -13,7 +13,7 @@ namespace slime.project.openapi {
 
 	export interface Configuration {
 		src: slime.jrunscript.file.Directory
-		node: slime.jrunscript.node.object.Installation
+		node: slime.jrunscript.tools.node.object.Installation
 	}
 
 	export interface Parameters {

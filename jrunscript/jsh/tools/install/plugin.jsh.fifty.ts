@@ -427,20 +427,20 @@ namespace slime.jsh.shell.tools {
 			/**
 			 * The local installation of Node.js in the `jsh` shell. May or may not be actually present.
 			 */
-			installation: slime.jrunscript.node.Installation
+			installation: slime.jrunscript.tools.node.Installation
 
-			installed: slime.jrunscript.node.object.Installation
+			installed: slime.jrunscript.tools.node.object.Installation
 
-			require: slime.$api.fp.world.Means<void,slime.jrunscript.node.object.install.Events & {
+			require: slime.$api.fp.world.Means<void,slime.jrunscript.tools.node.object.install.Events & {
 				removed: {
 					at: string
 					version: string
 				}
-				found: slime.jrunscript.node.object.Installation
+				found: slime.jrunscript.tools.node.object.Installation
 			}>
 		}
 
-		export interface Exports extends slime.jrunscript.node.Exports, slime.jsh.shell.tools.node.Managed {
+		export interface Exports extends slime.jrunscript.tools.node.Exports, slime.jsh.shell.tools.node.Managed {
 		}
 
 		(

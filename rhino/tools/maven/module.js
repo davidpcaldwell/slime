@@ -10,10 +10,13 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.maven.Context } $context
-	 * @param { slime.jrunscript.tools.maven.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.tools.maven.Exports> } $export
 	 */
-	function($api,$context,$exports) {
+	function($api,$context,$export) {
 		var jsh = $context.jsh;
+
+		/** @type { Partial<slime.jrunscript.tools.maven.Exports> } */
+		var $exports = {};
 
 		$exports.mvn = function(m) {
 			var mvn = $context.mvn;
@@ -405,6 +408,25 @@
 		if ($context.HOME.getSubdirectory(".m2/repository")) {
 			$exports.Repository.LOCAL = new LocalRepository({ directory: $context.HOME.getSubdirectory(".m2/repository") });
 		}
+
+		var Installation = {
+			exists: function(installation) {
+				//	TODO	thunk.map should probably be thunk.value and accept 1 argument as well as multiple
+				return $api.TODO({ message: $api.fp.thunk.map("Installation.exists", $api.fp.identity) })
+			}
+		}
+
+		$export({
+			Installation: {
+				exists: {
+					world: Installation.exists
+				}
+			},
+			mvn: $exports.mvn,
+			Pom: $exports.Pom,
+			Project: $exports.Project,
+			Repository: $exports.Repository
+		});
 	}
 //@ts-ignore
-)($api,$context,$exports);
+)($api,$context,$export);

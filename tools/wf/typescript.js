@@ -220,7 +220,7 @@
 							getTypedocConfiguration
 						);
 
-						/** @type { slime.jrunscript.node.Intention } */
+						/** @type { slime.jrunscript.tools.node.Intention } */
 						var argument = {
 							command: "typedoc",
 							arguments: $api.Array.build(function(rv) {
