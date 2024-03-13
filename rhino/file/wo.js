@@ -390,6 +390,9 @@
 							stream: readStream,
 							string: {
 								world: readString,
+								maybe: $api.fp.world.Sensor.mapping({
+									sensor: readString()
+								}),
 								assert: $api.fp.Maybe.impure.exception({
 									try: $api.fp.world.Sensor.mapping({
 										sensor: readString()

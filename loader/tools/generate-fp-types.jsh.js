@@ -16,12 +16,12 @@
 			counts: $api.fp.impure.Input.value({
 				pipe: 8,
 				value_map: 8,
-				thunk_map: 8,
+				thunk_value: 8,
 				input_map: 8,
 				input_value: 8,
 				process_value: 8
 			}),
-			destination: $api.fp.thunk.map(
+			destination: $api.fp.thunk.value(
 				jsh.script.world.file,
 				jsh.file.Location.directory.relativePath("../../$api-fp-generated.fifty.ts")
 			),
@@ -54,14 +54,15 @@
 
 		var indent = offset(1);
 
+		/**
+		 * Returns an array of length `n` containing `0..n-1`.
+		 *
+		 * @param { number } n
+		 */
 		var indexes = function(n) {
-			//	https://stackoverflow.com/questions/3746725/how-to-create-an-array-containing-1-n
-			return Array.apply(
-				null,
-				{
-					length: n
-				}
-			).map(Number.call, Number);
+			/** @type { (rv: number[], n: number) => number[] } */
+			var push = function recurse(rv,n) { return (n == 0) ? rv : recurse(rv.concat([rv.length]),n-1) };
+			return push([],n);
 		}
 
 		/**
@@ -124,7 +125,7 @@
 			return rv;
 		};
 
-		var thunkMapDefinition = function(size) {
+		var thunkValueDefinition = function(size) {
 			var rv = [];
 			var types = getGenericTypeList(size+1);
 			rv.push("<" + types.join(",") + ">(");
@@ -284,10 +285,15 @@
 													})
 												),
 												typeDefinition(
-													"Thunk_map",
-													indexes(inputs.counts.thunk_map).map(function(n,index,array) {
-														return thunkMapDefinition(array.length-n);
-													})
+													"Thunk_value",
+													indexes(inputs.counts.thunk_value).map(function(n,index,array) {
+														return thunkValueDefinition(array.length-n);
+													}).concat([
+														//	TODO	seems like this could be pushed into thunkValueDefinition
+														"<A>(",
+														indent("a: A"),
+														"): Thunk<A>"
+													])
 												)
 											]
 										).join("\n"),

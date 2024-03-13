@@ -98,7 +98,7 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		thunk: {
-			map: Thunk_map
+			value: Thunk_value
 		}
 	}
 
@@ -146,8 +146,17 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export interface Exports {
+		mapping: {
+			all: <P,R>(r: R) => (p: P) => R
+
+			thunk: <P,R>(p: {
+				mapping: Mapping<P,R>
+				argument: P
+			}) => Thunk<R>
+		}
+
 		/**
-		 * @deprecated Replaced by `Input.value` and `mapAllTo`
+		 * @deprecated Replaced by `Input.value`/`Thunk.value` and `mapping.all`
 		 * @param t
 		 * @returns
 		 */
@@ -157,11 +166,32 @@ namespace slime.$api.fp {
 		 * @deprecated Replaced by `mapping.all`.
 		 */
 		mapAllTo: <P,R>(r: R) => (p: P) => R
+	}
 
-		mapping: {
-			all: <P,R>(r: R) => (p: P) => R
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.mapping = fifty.test.Parent();
+
+			fifty.tests.exports.mapping.thunk = function() {
+				var double: Mapping<number,number> = (n: number) => n*2;
+
+				var t1 = $api.fp.mapping.thunk({
+					mapping: double,
+					argument: 2
+				});
+
+				verify(t1()).is(4);
+			}
 		}
+	//@ts-ignore
+	)(fifty);
 
+	export interface Exports {
 		conditional: {
 			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
 		}
