@@ -37,7 +37,7 @@
 				/**
 				 *
 				 * @param { any } node
-				 * @returns { node is slime.jrunscript.node.object.Installation }
+				 * @returns { node is slime.jrunscript.tools.node.object.Installation }
 				 */
 				function isInstallation(node) {
 					return true;

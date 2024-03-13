@@ -18,6 +18,8 @@ interface Function {
  * `$api`}.
  */
 namespace slime.$api {
+	export type Function = (...args: any[]) => any
+
 	(
 		function(fifty: slime.fifty.test.Kit) {
 			fifty.tests.exports = fifty.test.Parent();
@@ -927,6 +929,10 @@ namespace slime.$api {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Global {
+		TODO: (p?: { message: slime.$api.fp.Thunk<string> }) => Function
+	}
 
 	export interface Global {
 		events: exports.Events

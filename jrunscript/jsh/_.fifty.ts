@@ -50,7 +50,7 @@ namespace slime.jsh {
 
 	export interface Tools {
 		jenkins: slime.jrunscript.tools.jenkins.Exports
-		node: slime.jrunscript.node.Exports
+		node: slime.jrunscript.tools.node.Exports
 		install: slime.jrunscript.tools.install.Exports
 		github: slime.jrunscript.tools.github.Exports
 	}

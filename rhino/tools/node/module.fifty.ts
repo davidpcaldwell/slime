@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.node {
+namespace slime.jrunscript.tools.node {
 	export interface Context {
 		library: {
 			file: slime.jrunscript.file.Exports
@@ -71,12 +71,12 @@ namespace slime.jrunscript.node {
 				 * @param home The home directory of the `Installation`.
 				 * @returns
 				 */
-				location: (home: slime.jrunscript.file.Location) => slime.jrunscript.node.Installation
+				location: (home: slime.jrunscript.file.Location) => slime.jrunscript.tools.node.Installation
 			}
 
-			exists: slime.$api.fp.world.Sensor<slime.jrunscript.node.Installation,void,boolean>
+			exists: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,boolean>
 
-			getVersion: slime.$api.fp.world.Sensor<slime.jrunscript.node.Installation,void,string>
+			getVersion: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,string>
 		}
 	}
 
@@ -133,8 +133,8 @@ namespace slime.jrunscript.node {
 	export namespace exports {
 		export interface Installation {
 			Intention: {
-				shell: (argument: Intention) => (installation: slime.jrunscript.node.Installation) => slime.jrunscript.shell.run.Intention
-				question: (argument: Intention) => slime.$api.fp.world.Sensor<slime.jrunscript.node.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
+				shell: (argument: Intention) => (installation: slime.jrunscript.tools.node.Installation) => slime.jrunscript.shell.run.Intention
+				question: (argument: Intention) => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 			}
 
 			/** @deprecated */
@@ -177,14 +177,14 @@ namespace slime.jrunscript.node {
 	export namespace exports {
 		export interface Installation {
 			modules: {
-				list: () => slime.$api.fp.world.Sensor<slime.jrunscript.node.Installation, void, Module[]>
+				list: () => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation, void, Module[]>
 
-				installed: (name: string) => slime.$api.fp.world.Sensor<slime.jrunscript.node.Installation, void, slime.$api.fp.Maybe<Module>>
+				installed: (name: string) => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation, void, slime.$api.fp.Maybe<Module>>
 
-				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Means<slime.jrunscript.node.Installation,void>
+				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Means<slime.jrunscript.tools.node.Installation,void>
 
 				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Means<
-					slime.jrunscript.node.Installation,
+					slime.jrunscript.tools.node.Installation,
 					{
 						/**
 						 * After searching for the named module in the existing installation, the module found (if any).
@@ -353,14 +353,14 @@ namespace slime.jrunscript.node {
 
 		export namespace install {
 			export interface Events {
-				installed: slime.jrunscript.node.object.Installation
+				installed: slime.jrunscript.tools.node.object.Installation
 			}
 		}
 	}
 
 	export interface Exports {
 		object: {
-			at: (p: { location: string }) => slime.jrunscript.node.object.Installation
+			at: (p: { location: string }) => slime.jrunscript.tools.node.object.Installation
 
 			install: slime.$api.fp.world.Means<{
 				version?: string
@@ -400,7 +400,7 @@ namespace slime.jrunscript.node {
 	export type Script = slime.loader.Script<Context,Exports>
 }
 
-namespace slime.jrunscript.node.internal {
+namespace slime.jrunscript.tools.node.internal {
 	export interface JshPluginInterface {
 		module: (p: { context: Context }) => Exports
 	}

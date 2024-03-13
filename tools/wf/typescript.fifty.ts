@@ -54,7 +54,7 @@ namespace slime.jsh.wf.internal.module {
 						installed: string
 					},
 					slime.$api.fp.world.Sensor<
-						slime.jrunscript.node.Installation,
+						slime.jrunscript.tools.node.Installation,
 						slime.jrunscript.shell.run.AskEvents,
 						slime.jrunscript.shell.run.Exit
 					>

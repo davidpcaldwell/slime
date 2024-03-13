@@ -20,6 +20,97 @@ namespace slime.jrunscript.tools.maven {
 		}
 	}
 
+	export namespace test {
+		export const subject = (
+			function(fifty: slime.fifty.test.Kit) {
+				const { jsh } = fifty.global;
+				var script: Script = fifty.$loader.script("module.js");
+				return script({
+					HOME: jsh.shell.HOME,
+					java: jsh.shell.java,
+					mvn: jsh.shell.PATH.getCommand("mvn"),
+					jsh: jsh
+				})
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Installation {
+		home: string
+	}
+
+	export namespace exports {
+		export interface Installation {}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.Installation = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Installation: exports.Installation
+	}
+
+	export namespace exports {
+		export interface Installation {
+			exists: {
+				world: slime.$api.fp.world.Sensor<maven.Installation, void, boolean>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.Installation.exists = function() {
+
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+				const { subject } = test;
+
+				fifty.tests.manual = function() {
+					var installation: maven.Installation = {
+						home: jsh.shell.environment.MAVEN_HOME
+					};
+
+					var exists = $api.fp.world.Sensor.now({
+						sensor: subject.Installation.exists.world,
+						subject: installation
+					});
+
+					jsh.shell.console("Exists: " + installation.home + "?: " + exists);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export interface Exports {
 		mvn: any
 		Pom: any
@@ -31,8 +122,10 @@ namespace slime.jrunscript.tools.maven {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.suite = function() {
+			const { verify } = fifty;
 
+			fifty.tests.suite = function() {
+				verify(1).is(1);
 			}
 		}
 	//@ts-ignore
