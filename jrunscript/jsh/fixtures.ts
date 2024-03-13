@@ -86,7 +86,7 @@ namespace slime.jsh.test {
 										jsh.file.Location.from.os,
 										jsh.file.Location.directory.relativePath("local/jsh/lib/js.jar"),
 										function(location) {
-											var exists = $api.fp.world.mapping(jsh.file.Location.file.exists())(location);
+											var exists = $api.fp.world.mapping(jsh.file.Location.file.exists.world())(location);
 											return (exists) ? $api.fp.Maybe.from.some(location) : $api.fp.Maybe.from.nothing();
 										}
 									);

@@ -417,7 +417,7 @@
 					//	* Could check for bin/mvn
 					//	* Could check for executable bit
 					return $api.fp.world.Sensor.now({
-						sensor: $context.library.file.Location.directory.exists(),
+						sensor: $context.library.file.Location.directory.exists.world(),
 						subject: $api.fp.now.map(installation.home, $context.library.file.Location.from.os)
 					});
 				}

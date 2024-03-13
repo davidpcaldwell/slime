@@ -33,7 +33,7 @@
 						$context.library.file.world.Location.relative("bin/scala"),
 						$api.fp.switch([
 							$api.fp.Partial.match({
-								if: $api.fp.world.mapping($context.library.file.world.Location.file.exists()),
+								if: $api.fp.world.mapping($context.library.file.world.Location.file.exists.world()),
 								then: $api.fp.identity
 							})
 						]),

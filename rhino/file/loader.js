@@ -15,7 +15,7 @@
 	function($api,$context,$export) {
 		/** @type { slime.jrunscript.file.internal.loader.Exports["create"] } */
 		var adapt = function(delegate) {
-			var exists = $api.fp.world.mapping($context.library.Location.file.exists());
+			var exists = $api.fp.world.mapping($context.library.Location.file.exists.world());
 
 			return {
 				get: function(path) {

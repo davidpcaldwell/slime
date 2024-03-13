@@ -314,16 +314,29 @@
 				getDefaultName: getDefaultName
 			},
 			Distribution: {
-				from: {
-					url: function(url) {
-						var format = getFormatFromUrl(url);
+				from: (
+					function() {
+						var url = function(url) {
+							var format = getFormatFromUrl(url);
+							return {
+								url: url,
+								name: getDefaultName(url),
+								format: (format.present) ? format.value : void(0)
+							}
+						};
+
 						return {
 							url: url,
-							name: getDefaultName(url),
-							format: (format.present) ? format.value : void(0)
+							file: function(p) {
+								var rv = url(p.url);
+								return $api.Object.compose(
+									rv,
+									(p.prefix) ? { prefix: p.prefix(rv) } : {}
+								);
+							}
 						}
 					}
-				},
+				)(),
 				Format: newFormats,
 				install: function(p) {
 					/**
@@ -413,6 +426,45 @@
 					}
 
 					return function(events) {
+						var Location = $context.library.file.Location;
+
+						var ifExists = $api.fp.now.map(
+							p.clean,
+							$api.fp.Maybe.from.value,
+							$api.fp.Maybe.map(
+								$api.fp.Boolean.map({
+									true: Location.remove.simple,
+									false: $api.fp.impure.Output.nothing()
+								})
+							),
+							$api.fp.Maybe.else(
+								/**
+								 *
+								 * @returns { slime.$api.fp.impure.Output<slime.jrunscript.file.Location> }
+								 */
+								function() {
+									return function(location) {
+										throw new Error("Already exists: " + location.pathname);
+									}
+								}
+							)
+						);
+
+						var to = $api.fp.now.map(p.to, $context.library.file.Location.from.os);
+
+						var exists = $api.fp.now.map(
+							to,
+							$api.fp.Predicate.or(
+								$context.library.file.Location.file.exists.simple,
+								$context.library.file.Location.directory.exists.simple
+							)
+						);
+
+						if (exists) {
+							events.fire("exists", to);
+							ifExists(to);
+						}
+
 						var fetch = createFetcher(events);
 						var archive = getArchive(p.download,fetch);
 						events.fire("archive", archive.file);

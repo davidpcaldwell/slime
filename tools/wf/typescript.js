@@ -47,7 +47,7 @@
 
 		/** @type { (path: string) => slime.$api.fp.Partial<slime.jsh.wf.Project, slime.jrunscript.file.world.Location> } */
 		var getProjectConfigurationFile = function(path) {
-			var exists = $api.fp.world.mapping($context.library.file.world.Location.file.exists());
+			var exists = $api.fp.world.mapping($context.library.file.world.Location.file.exists.world());
 
 			return function(project) {
 				var at = $api.fp.now.invoke(
@@ -248,7 +248,7 @@
 											$context.library.file.world.Location.relative("typedoc-index.md")
 										);
 										var exists = $api.fp.world.now.question(
-											$context.library.file.world.Location.file.exists(),
+											$context.library.file.world.Location.file.exists.world(),
 											typedocIndexLocation
 										);
 										return (exists) ? typedocIndexLocation.pathname : "none";
@@ -259,7 +259,7 @@
 								if (!configuration.entryPoints && typedocVersionUsesEntryPoints(typedocVersion)) {
 									var entryPointLocation = $api.fp.result(project, $context.library.file.world.Location.relative("README.fifty.ts"));
 									var exists = $api.fp.world.now.question(
-										$context.library.file.world.Location.file.exists(),
+										$context.library.file.world.Location.file.exists.world(),
 										entryPointLocation
 									);
 									if (!exists) {

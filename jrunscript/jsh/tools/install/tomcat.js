@@ -258,7 +258,7 @@
 						if (update) {
 							//	delete existing
 							$api.fp.world.now.action(
-								$context.jsh.file.world.Location.directory.remove(),
+								$context.jsh.file.world.Location.directory.remove.world(),
 								$context.jsh.file.world.Location.from.os(installation.base)
 							);
 							proceed = true;

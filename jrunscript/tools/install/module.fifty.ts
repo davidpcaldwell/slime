@@ -222,6 +222,11 @@ namespace slime.jrunscript.tools.install {
 			from: {
 				//	TODO	guess download format?
 				url: (url: string) => install.Distribution
+
+				file: (p: {
+					url: string
+					prefix?: (p: Omit<install.Distribution,"prefix">) => string
+				}) => install.Distribution
 			}
 		}
 
@@ -230,17 +235,52 @@ namespace slime.jrunscript.tools.install {
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
+				const { $api } = fifty.global;
 
 				const subject = test.scope.load();
 
-				fifty.tests.exports.Download.from = {};
-				fifty.tests.exports.Download.from.url = function() {
-					var download = subject.Distribution.from.url("http://example.com/foo/bar.tar.gz");
+				fifty.tests.exports.Download.from = function() {
+					var URL = "http://example.com/foo/bar.tar.gz";
 
-					verify(download).url.is("http://example.com/foo/bar.tar.gz");
-					verify(download).name.is("bar.tar.gz");
-					verify(download).evaluate.property("format").extension.is(".tgz");
-					verify(download).evaluate.property("format").is(subject.Distribution.Format.targz);
+					(
+						function() {
+							var download = subject.Distribution.from.url(URL);
+
+							verify(download).url.is("http://example.com/foo/bar.tar.gz");
+							verify(download).name.is("bar.tar.gz");
+							verify(download).evaluate.property("format").extension.is(".tgz");
+							verify(download).evaluate.property("format").is(subject.Distribution.Format.targz);
+						}
+					)();
+
+					(
+						function() {
+							var download = subject.Distribution.from.file({
+								url: URL
+							});
+
+							verify(download).url.is("http://example.com/foo/bar.tar.gz");
+							verify(download).name.is("bar.tar.gz");
+							verify(download).evaluate.property("format").extension.is(".tgz");
+							verify(download).evaluate.property("format").is(subject.Distribution.Format.targz);
+							verify(download).evaluate.property("prefix").is(void(0));
+						}
+					)();
+
+					(
+						function() {
+							var download = subject.Distribution.from.file({
+								url: URL,
+								prefix: $api.fp.mapping.all("prefix/")
+							});
+
+							verify(download).url.is("http://example.com/foo/bar.tar.gz");
+							verify(download).name.is("bar.tar.gz");
+							verify(download).evaluate.property("format").extension.is(".tgz");
+							verify(download).evaluate.property("format").is(subject.Distribution.Format.targz);
+							verify(download).evaluate.property("prefix").is("prefix/");
+						}
+					)();
 				}
 			}
 		//@ts-ignore
@@ -257,8 +297,14 @@ namespace slime.jrunscript.tools.install {
 
 		export interface Distribution {
 			install: slime.$api.fp.world.Means<
-				{ download: install.Distribution, to: string },
-				distribution.Events
+				{
+					download: install.Distribution
+					to: string
+					clean?: boolean
+				},
+				distribution.Events & {
+					exists: slime.jrunscript.file.Location
+				}
 			>
 		}
 
