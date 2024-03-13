@@ -412,7 +412,7 @@
 		var Installation = {
 			exists: function(installation) {
 				//	TODO	thunk.map should probably be thunk.value and accept 1 argument as well as multiple
-				return $api.TODO({ message: $api.fp.thunk.map("Installation.exists", $api.fp.identity) })
+				return $api.TODO({ message: $api.fp.thunk.value("Installation.exists", $api.fp.identity) })
 			}
 		}
 
