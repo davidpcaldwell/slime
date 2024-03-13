@@ -347,7 +347,7 @@
 						repository,
 						$context.api.file.Location.from.os,
 						$context.api.file.Location.directory.relativePath(".gitmodules"),
-						$api.fp.world.mapping($context.api.file.Location.file.exists())
+						$api.fp.world.mapping($context.api.file.Location.file.exists.world())
 					);
 					if (!gitmodulesExists) return [];
 					var executor = commandExecutor(program, config, repository);

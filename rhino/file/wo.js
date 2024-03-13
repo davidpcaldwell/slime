@@ -73,7 +73,7 @@
 			);
 		};
 
-		/** @type { ReturnType<slime.jrunscript.file.Exports["world"]["Location"]["directory"]["exists"]> } */
+		/** @type { ReturnType<slime.jrunscript.file.Exports["Location"]["directory"]["exists"]["world"]> } */
 		var Location_directory_exists = function(location) {
 			return function(events) {
 				var rv = location.filesystem.directoryExists({
@@ -84,7 +84,7 @@
 			}
 		}
 
-		/** @type { ReturnType<slime.jrunscript.file.Exports["world"]["Location"]["file"]["exists"]> } */
+		/** @type { ReturnType<slime.jrunscript.file.Exports["Location"]["file"]["exists"]["world"]> } */
 		var Location_file_exists = function(location) {
 			return function(events) {
 				var ask = location.filesystem.fileExists({ pathname: location.pathname });
@@ -132,11 +132,25 @@
 		var Location = {
 			relative: Location_relative,
 			file: {
-				exists: function() {
-					return Location_file_exists;
+				exists: {
+					simple: $api.fp.world.mapping(Location_file_exists),
+					world: function() {
+						return Location_file_exists;
+					}
 				}
 			}
 		};
+
+		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location,void> } */
+		var remove = function(location) {
+			return function(events) {
+				$api.fp.world.Means.now({
+					means: location.filesystem.remove,
+					order: { pathname: location.pathname }
+				})
+			}
+		}
+
 
 		var directory = {
 			/** @type { Pick<slime.jrunscript.file.location.directory.Exports,"base"|"relativePath"|"relativeTo"> } */
@@ -376,9 +390,7 @@
 					};
 
 					return {
-						exists: function() {
-							return Location_file_exists;
-						},
+						exists: Location.file.exists,
 						size: function(location) {
 							return function(events) {
 								var maybe = location.filesystem.fileSize({ pathname: location.pathname })(events);
@@ -508,15 +520,13 @@
 							}
 						),
 						/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
-						remove: function() {
-							return function(location) {
-								return function() {
-									$api.fp.world.now.action(
-										location.filesystem.remove,
-										{ pathname: location.pathname }
-									)
-								}
-							}
+						remove: {
+							world: function() {
+								return remove;
+							},
+							simple: $api.fp.world.Means.output({
+								means: remove
+							})
 						},
 					}
 				})(),
@@ -525,8 +535,13 @@
 					relativePath: directory.navigation.relativePath,
 					relativeTo: directory.navigation.relativeTo,
 					/** @type { slime.jrunscript.file.location.Exports["directory"]["exists"] } */
-					exists: function() {
-						return Location_directory_exists;
+					exists: {
+						simple: $api.fp.world.Sensor.mapping({
+							sensor: Location_directory_exists
+						}),
+						world: function() {
+							return Location_directory_exists;
+						}
 					},
 					require: function(p) {
 						return function(location) {
@@ -569,15 +584,13 @@
 						}
 					},
 					/** @type { slime.jrunscript.file.location.Exports["directory"]["remove"] } */
-					remove: function() {
-						return function(location) {
-							return function() {
-								$api.fp.world.now.action(
-									location.filesystem.remove,
-									{ pathname: location.pathname }
-								)
-							}
-						}
+					remove: {
+						world: function() {
+							return remove;
+						},
+						simple: $api.fp.world.Means.output({
+							means: remove
+						})
 					},
 					list: {
 						stream: function(p) {
@@ -636,6 +649,11 @@
 							return loader.create(p.root);
 						}
 					}
+				},
+				remove: {
+					simple: $api.fp.world.Means.output({
+						means: remove
+					})
 				}
 			},
 			Filesystem: Filesystem

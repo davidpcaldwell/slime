@@ -267,10 +267,10 @@
 						$api.fp.pipe(
 							jsh.file.Location.directory.relativePath("bin"),
 							function(bin) {
-								var exists = $api.fp.world.now.question(jsh.file.Location.directory.exists(), bin);
+								var exists = $api.fp.world.now.question(jsh.file.Location.directory.exists.world(), bin);
 								if (exists) {
 									$api.fp.world.now.action(
-										jsh.file.Location.directory.remove(),
+										jsh.file.Location.directory.remove.world(),
 										bin
 									);
 								}

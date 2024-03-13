@@ -340,6 +340,10 @@ namespace slime.$api.fp.impure {
 
 	export namespace exports {
 		export interface Output {
+			nothing: <P>() => impure.Output<P>
+		}
+
+		export interface Output {
 			process: <P>(p: {
 				value: P
 				output: impure.Output<P>

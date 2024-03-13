@@ -14,7 +14,7 @@
 		$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
 
 		var existsFile = $api.fp.world.Sensor.mapping({
-			sensor: jsh.file.Location.file.exists()
+			sensor: jsh.file.Location.file.exists.world()
 		});
 
 		/** @type { (root: slime.jrunscript.file.Location) => slime.tools.code.metrics.Settings } */
@@ -64,7 +64,7 @@
 			function(location) {
 				var gitRepositoryLocation = $api.fp.now.invoke(location, jsh.file.Location.directory.relativePath(".git"));
 				var existsDirectory = $api.fp.world.Sensor.mapping({
-					sensor: jsh.file.Location.directory.exists()
+					sensor: jsh.file.Location.directory.exists.world()
 				});
 				return {
 					root: location,

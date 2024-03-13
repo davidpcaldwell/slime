@@ -130,7 +130,7 @@
 			var directory = $context.library.file.world.Location.from.os(pathname);
 			var location = $api.fp.result(directory, $context.library.file.world.Location.relative(name));
 			return $api.fp.world.now.question(
-				$context.library.file.world.Location.file.exists(),
+				$context.library.file.world.Location.file.exists.world(),
 				location
 			);
 		}
@@ -630,7 +630,7 @@
 						$api.fp.pipe(
 							$api.fp.property("executable"),
 							$context.library.file.Location.from.os,
-							$api.fp.world.mapping($context.library.file.Location.file.exists())
+							$api.fp.world.mapping($context.library.file.Location.file.exists.world())
 						)
 					)
 				}

@@ -342,7 +342,10 @@ namespace slime.jrunscript.file {
 	export namespace location {
 		export namespace file {
 			export interface Exports {
-				remove: () => slime.$api.fp.world.Means<Location,void>
+				remove: {
+					simple: slime.$api.fp.impure.Output<Location>
+					world: () => slime.$api.fp.world.Means<Location,void>
+				}
 			}
 		}
 
@@ -367,11 +370,11 @@ namespace slime.jrunscript.file {
 				);
 
 				var exists = $api.fp.world.mapping(
-					jsh.file.world.Location.file.exists()
+					jsh.file.world.Location.file.exists.world()
 				);
 
 				var dExists = $api.fp.world.mapping(
-					jsh.file.world.Location.directory.exists()
+					jsh.file.world.Location.directory.exists.world()
 				)
 
 				fifty.tests.sandbox.filesystem.file.copy = function() {
@@ -509,7 +512,10 @@ namespace slime.jrunscript.file {
 
 		export namespace file {
 			export interface Exports {
-				exists: () => slime.$api.fp.world.Sensor<Location, {}, boolean>
+				exists: {
+					simple: slime.$api.fp.Mapping<Location,boolean>
+					world: () => slime.$api.fp.world.Sensor<Location, {}, boolean>
+				}
 
 				read: {
 					stream: () => slime.$api.fp.world.Sensor<Location, {
@@ -553,7 +559,7 @@ namespace slime.jrunscript.file {
 					fifty.run(function exists() {
 						var at = fifty.jsh.file.temporary.location();
 
-						var exists = $api.fp.world.mapping(subject.Location.file.exists());
+						var exists = $api.fp.world.mapping(subject.Location.file.exists.world());
 
 						verify(exists(at)).is(false);
 
@@ -692,7 +698,10 @@ namespace slime.jrunscript.file {
 			)(fifty);
 
 			export interface Exports {
-				exists: () => slime.$api.fp.world.Sensor<world.Location, {}, boolean>
+				exists: {
+					simple: slime.$api.fp.Mapping<Location,boolean>
+					world: () => slime.$api.fp.world.Sensor<Location, {}, boolean>
+				}
 
 				require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Means<world.Location, {
 					created: world.Location
@@ -712,7 +721,7 @@ namespace slime.jrunscript.file {
 				fifty.tests.sandbox.locations.directory.exists = function() {
 					var at = fifty.jsh.file.temporary.location();
 
-					var exists = Object.assign($api.fp.world.mapping(subject.Location.directory.exists()), { toString: function() { return "exists()"; }});
+					var exists = Object.assign($api.fp.world.mapping(subject.Location.directory.exists.world()), { toString: function() { return "exists()"; }});
 
 					verify(at).evaluate(exists).is(false);
 
@@ -737,8 +746,8 @@ namespace slime.jrunscript.file {
 
 				fifty.tests.sandbox.filesystem.directory.move = function() {
 					const exists = {
-						file: $api.fp.world.mapping(jsh.file.world.Location.file.exists()),
-						directory: $api.fp.world.mapping(jsh.file.world.Location.directory.exists())
+						file: $api.fp.world.mapping(jsh.file.world.Location.file.exists.world()),
+						directory: $api.fp.world.mapping(jsh.file.world.Location.directory.exists.world())
 					};
 
 					const atFilepath = jsh.file.world.Location.relative("filepath");
@@ -837,7 +846,10 @@ namespace slime.jrunscript.file {
 	export namespace location {
 		export namespace directory {
 			export interface Exports {
-				remove: () => slime.$api.fp.world.Means<world.Location,void>
+				remove: {
+					simple: slime.$api.fp.impure.Output<Location>
+					world: () => slime.$api.fp.world.Means<Location,void>
+				}
 			}
 		}
 
@@ -849,7 +861,7 @@ namespace slime.jrunscript.file {
 				const { $api, jsh } = fifty.global;
 
 				const exists = {
-					directory: $api.fp.world.mapping(jsh.file.world.Location.directory.exists())
+					directory: $api.fp.world.mapping(jsh.file.world.Location.directory.exists.world())
 				};
 
 				fifty.tests.sandbox.locations.directory.remove = function() {
@@ -857,7 +869,7 @@ namespace slime.jrunscript.file {
 
 					verify(tmp).evaluate(exists.directory).is(true);
 
-					$api.fp.world.now.action(jsh.file.world.Location.directory.remove(), tmp);
+					$api.fp.world.now.action(jsh.file.world.Location.directory.remove.world(), tmp);
 
 					verify(tmp).evaluate(exists.directory).is(false);
 				}
@@ -1013,6 +1025,14 @@ namespace slime.jrunscript.file {
 
 	export namespace location {
 		export interface Exports {
+			remove: {
+				simple: slime.$api.fp.impure.Output<slime.jrunscript.file.Location>
+			}
+		}
+	}
+
+	export namespace location {
+		export interface Exports {
 			from: {
 				os: (pathname: string) => Location
 
@@ -1035,15 +1055,15 @@ namespace slime.jrunscript.file {
 			) {
 				const { verify } = fifty;
 				const { $api, jsh } = fifty.global;
-				const { Location } = jsh.file.world;
+				const { Location } = jsh.file;
 
 				fifty.tests.sandbox.filesystem.temporary = function() {
 					//	Really the only defined attribute of a "temporary" file is that after this method is called, it should
 					//	exist. So going to test for that, and test for files and directories.
 
 					var exists = {
-						file: $api.fp.world.mapping(Location.file.exists()),
-						directory: $api.fp.world.mapping(Location.directory.exists())
+						file: $api.fp.world.mapping(Location.file.exists.world()),
+						directory: $api.fp.world.mapping(Location.directory.exists.world())
 					};
 
 					var os = jsh.file.world.filesystems.os;

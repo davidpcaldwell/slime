@@ -223,7 +223,7 @@
 					//	Filter out files that do not exist, perhaps because they have been removed but the remove has not been
 					//	committed, so they are still listed by ls-files
 					return $api.fp.world.now.question(
-						$context.library.file.Location.file.exists(),
+						$context.library.file.Location.file.exists.world(),
 						file.file
 					);
 				});
@@ -711,7 +711,7 @@
 						var listing = $api.fp.world.now.question(question, p.root);
 						var files = $api.fp.now.invoke(
 							listing,
-							$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.Location.file.exists())),
+							$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.Location.file.exists.world())),
 							$api.fp.Stream.filter(function(location) {
 								var include = p.excludes.isSource(location);
 								if (include.present) return include.value;

@@ -136,6 +136,9 @@
 				}
 			},
 			Output: {
+				nothing: function() {
+					return function(p){};
+				},
 				process: function(p) {
 					return function() {
 						p.output(p.value);
