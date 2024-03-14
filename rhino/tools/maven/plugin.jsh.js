@@ -8,34 +8,31 @@
 (
 	/**
 	 *
-	 * @param { { maven: any, mvn: any } } global
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.Scope["plugin"] } plugin
 	 */
-	function(global,jsh,$loader,plugin) {
+	function(jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
 				return jsh.shell && Boolean(jsh.shell.PATH.getCommand("mvn"));
 			},
 			load: function() {
-				if (!global.maven && !global.mvn) {
-					/** @type { slime.jrunscript.tools.maven.Script } */
-					var script = $loader.script("module.js");
-					global.maven = script({
-						mvn: jsh.shell.PATH.getCommand("mvn"),
-						HOME: jsh.shell.HOME,
-						java: jsh.shell.java,
-						jsh: jsh,
-						library: {
-							file: jsh.file,
-							shell: jsh.shell,
-							install: jsh.tools.install
-						}
-					});
-				}
+				/** @type { slime.jrunscript.tools.maven.Script } */
+				var script = $loader.script("module.js");
+				jsh.tools.maven = script({
+					mvn: jsh.shell.PATH.getCommand("mvn"),
+					HOME: jsh.shell.HOME,
+					java: jsh.shell.java,
+					jsh: jsh,
+					library: {
+						file: jsh.file,
+						shell: jsh.shell,
+						install: jsh.tools.install
+					}
+				});
 			}
 		});
 	}
 //@ts-ignore
-)(global,jsh,$loader,plugin);
+)(jsh,$loader,plugin);
