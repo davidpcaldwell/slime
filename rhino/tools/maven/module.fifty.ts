@@ -13,6 +13,7 @@ namespace slime.jrunscript.tools.maven {
 		library: {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
+			install: slime.jrunscript.tools.install.Exports
 		}
 
 		jsh: {
@@ -33,7 +34,8 @@ namespace slime.jrunscript.tools.maven {
 				return script({
 					library: {
 						file: jsh.file,
-						shell: jsh.shell
+						shell: jsh.shell,
+						install: jsh.tools.install
 					},
 					HOME: jsh.shell.HOME,
 					java: jsh.shell.java,
@@ -78,6 +80,114 @@ namespace slime.jrunscript.tools.maven {
 
 	export interface Exports {
 		Installation: exports.Installation
+	}
+
+	export namespace exports {
+		export interface Installation {
+			require: {
+				world: slime.$api.fp.world.Means<
+					{
+						installation: maven.Installation
+						accept?: (version: string) => boolean
+						version: string
+					},
+					{
+						found: { version: string }
+						installed: { version: string }
+					}
+				>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+				const { subject } = test;
+
+				fifty.tests.exports.Installation.require = function() {
+					var tmp = fifty.jsh.file.temporary.location();
+
+					fifty.run(
+						function() {
+							var captor = fifty.$api.Events.Captor({ found: void(0), installed: void(0) });
+							$api.fp.world.Means.now({
+								means: subject.Installation.require.world,
+								order: {
+									installation: {
+										home: tmp.pathname
+									},
+									version: "3.9.6"
+								},
+								handlers: captor.handler
+							});
+							verify(captor).events.length.is(1);
+							verify(captor).events[0].type.is("installed");
+						}
+					);
+
+					fifty.run(
+						function() {
+							var captor = fifty.$api.Events.Captor({ found: void(0), installed: void(0) });
+							$api.fp.world.Means.now({
+								means: subject.Installation.require.world,
+								order: {
+									installation: {
+										home: tmp.pathname
+									},
+									version: "3.9.6"
+								},
+								handlers: captor.handler
+							});
+							verify(captor).events.length.is(1);
+							verify(captor).events[0].type.is("found");
+						}
+					);
+
+					fifty.run(
+						function() {
+							var captor = fifty.$api.Events.Captor({ found: void(0), installed: void(0) });
+							$api.fp.world.Means.now({
+								means: subject.Installation.require.world,
+								order: {
+									installation: {
+										home: tmp.pathname
+									},
+									accept: function(version) { return true; },
+									version: "3.9.5"
+								},
+								handlers: captor.handler
+							});
+							verify(captor).events.length.is(1);
+							verify(captor).events[0].type.is("found");
+						}
+					);
+
+					fifty.run(
+						function() {
+							var captor = fifty.$api.Events.Captor({ found: void(0), installed: void(0) });
+							$api.fp.world.Means.now({
+								means: subject.Installation.require.world,
+								order: {
+									installation: {
+										home: tmp.pathname
+									},
+									version: "3.9.5"
+								},
+								handlers: captor.handler
+							});
+							verify(captor).events.length.is(2);
+							verify(captor).events[0].type.is("found");
+							verify(captor).events[0].detail.evaluate.property("version").is("3.9.6");
+							verify(captor).events[1].type.is("installed");
+						}
+					);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace exports {
@@ -167,7 +277,7 @@ namespace slime.jrunscript.tools.maven {
 			const { verify } = fifty;
 
 			fifty.tests.suite = function() {
-				verify(1).is(1);
+				fifty.run(fifty.tests.exports);
 			}
 		}
 	//@ts-ignore
