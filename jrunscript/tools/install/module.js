@@ -489,8 +489,8 @@
 						 */
 						var extractTo = function(archive,ospath) {
 							var p_to = $context.library.file.Pathname(ospath);
-							//	TODO	what if directory exists? Right now will bomb, which may be OK
-							var to = p_to.createDirectory({ recursive: true });
+							if (!p_to.directory) p_to.createDirectory({ recursive: true });
+							var to = p_to.directory;
 							//	TODO	no world-oriented equivalent
 							format.extract(archive.file, to);
 						}

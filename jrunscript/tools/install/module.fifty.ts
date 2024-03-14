@@ -353,6 +353,90 @@ namespace slime.jrunscript.tools.install {
 						verify(destination).directory.getFile("directory/file").is(null);
 					});
 
+					fifty.run(function exists() {
+						var download: install.Distribution = {
+							url: url,
+							format: subject.Distribution.Format.targz
+						};
+
+						fifty.run(function error() {
+							var destination = fifty.jsh.file.object.temporary.location();
+							$api.fp.world.Means.now({
+								means: subject.Distribution.install,
+								order: { download: download, to: destination.toString() }
+							});
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+
+							var error = null;
+							try {
+								$api.fp.world.Means.now({
+									means: subject.Distribution.install,
+									order: { download: download, to: destination.toString() }
+								});
+							} catch (e) {
+								error = e;
+								jsh.shell.console(error);
+							}
+							verify(error).is.not(null);
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+						});
+
+						fifty.run(function overwrite() {
+							var destination = fifty.jsh.file.object.temporary.location();
+							$api.fp.world.Means.now({
+								means: subject.Distribution.install,
+								order: { download: download, to: destination.toString() }
+							});
+							destination.directory.getRelativePath("directory/a").write("");
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+							verify(destination).directory.getFile("directory/a").is.not(null);
+
+
+							var error = null;
+							try {
+								$api.fp.world.Means.now({
+									means: subject.Distribution.install,
+									order: { download: download, to: destination.toString(), clean: false }
+								});
+							} catch (e) {
+								error = e;
+							}
+							verify(error).is(null);
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+							verify(destination).directory.getFile("directory/a").is.not(null);
+						});
+
+						fifty.run(function clean() {
+							var destination = fifty.jsh.file.object.temporary.location();
+							$api.fp.world.Means.now({
+								means: subject.Distribution.install,
+								order: { download: download, to: destination.toString() }
+							});
+							destination.directory.getRelativePath("directory/a").write("");
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+							verify(destination).directory.getFile("directory/a").is.not(null);
+
+							var error = null;
+							try {
+								$api.fp.world.Means.now({
+									means: subject.Distribution.install,
+									order: { download: download, to: destination.toString(), clean: true }
+								});
+							} catch (e) {
+								error = e;
+							}
+							verify(error).is(null);
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+							verify(destination).directory.getFile("directory/a").is(null);
+						});
+					});
+
 				}
 			}
 		//@ts-ignore
