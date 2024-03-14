@@ -445,6 +445,9 @@
 					var intention = {
 						command: program.pathname,
 						arguments: ["--version"],
+						environment: function(existing) {
+							return $api.Object.compose(existing, { JAVA_HOME: $context.library.shell.java.home.pathname.toString() })
+						},
 						stdio: {
 							output: "string"
 						}
