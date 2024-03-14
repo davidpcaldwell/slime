@@ -12,6 +12,7 @@ namespace slime.jrunscript.tools.maven {
 
 		library: {
 			file: slime.jrunscript.file.Exports
+			shell: slime.jrunscript.shell.Exports
 		}
 
 		jsh: {
@@ -31,7 +32,8 @@ namespace slime.jrunscript.tools.maven {
 				var script: Script = fifty.$loader.script("module.js");
 				return script({
 					library: {
-						file: jsh.file
+						file: jsh.file,
+						shell: jsh.shell
 					},
 					HOME: jsh.shell.HOME,
 					java: jsh.shell.java,
@@ -51,6 +53,8 @@ namespace slime.jrunscript.tools.maven {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports = fifty.test.Parent();
+
+			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
@@ -101,7 +105,7 @@ namespace slime.jrunscript.tools.maven {
 				const { $api, jsh } = fifty.global;
 				const { subject } = test;
 
-				fifty.tests.manual = function() {
+				fifty.tests.manual.exists = function() {
 					var installation: maven.Installation = {
 						home: jsh.shell.environment.MAVEN_HOME
 					};
@@ -112,6 +116,37 @@ namespace slime.jrunscript.tools.maven {
 					});
 
 					jsh.shell.console("Exists: " + installation.home + "?: " + exists);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Installation {
+			version: {
+				world: slime.$api.fp.world.Sensor<maven.Installation, void, string>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+				const { subject } = test;
+
+				fifty.tests.manual.version = function() {
+					var installation: maven.Installation = {
+						home: jsh.shell.environment.MAVEN_HOME
+					};
+
+					var version = $api.fp.world.Sensor.now({
+						sensor: subject.Installation.version.world,
+						subject: installation
+					});
+
+					jsh.shell.console("Version: " + installation.home + ": " + version);
 				}
 			}
 		//@ts-ignore

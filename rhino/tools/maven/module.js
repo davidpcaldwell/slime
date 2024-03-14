@@ -411,23 +411,54 @@
 
 		var Installation = {
 			/** @type { slime.jrunscript.tools.maven.exports.Installation["exists"]["world"] } */
-			exists: function(installation) {
-				return function(events) {
-					//	TODO	currently just implemented by detecting directory existence, but could do better:
-					//	* Could check for bin/mvn
-					//	* Could check for executable bit
-					return $api.fp.world.Sensor.now({
-						sensor: $context.library.file.Location.directory.exists.world(),
-						subject: $api.fp.now.map(installation.home, $context.library.file.Location.from.os)
+			exists: $api.fp.world.api.single(
+				$api.fp.pipe(
+					$api.fp.property("argument"),
+					$api.fp.property("home"),
+					$context.library.file.Location.from.os,
+					$context.library.file.Location.directory.exists.simple
+				)
+			),
+			/** @type { slime.jrunscript.tools.maven.exports.Installation["version"]["world"] } */
+			version: $api.fp.world.api.single(
+				function(p) {
+					var program = $api.fp.now.map(
+						p.argument.home,
+						$context.library.file.Location.from.os,
+						$context.library.file.Location.directory.relativePath("bin/mvn")
+					);
+					/** @type { slime.jrunscript.shell.run.Intention } */
+					var intention = {
+						command: program.pathname,
+						arguments: ["--version"],
+						stdio: {
+							output: "string"
+						}
+					};
+					var result = $api.fp.world.Sensor.now({
+						sensor: $context.library.shell.subprocess.question,
+						subject: intention
 					});
+					if (result.status) throw new Error("mvn exit status: " + result.status);
+					return $api.fp.now.map(
+						result.stdio.output,
+						$api.fp.string.split("\n"),
+						$api.fp.property(0),
+						$api.fp.RegExp.exec(/Apache Maven (.*) \(.*$/),
+						$api.fp.Maybe.map(function(match) { return match[1]; }),
+						$api.fp.Maybe.else(function() { throw new Error("Cannot parse: " + result.stdio.output) })
+					);
 				}
-			}
+			)
 		}
 
 		$export({
 			Installation: {
 				exists: {
 					world: Installation.exists
+				},
+				version: {
+					world: Installation.version
 				}
 			},
 			mvn: $exports.mvn,
