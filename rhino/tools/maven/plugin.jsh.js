@@ -29,7 +29,8 @@
 						jsh: jsh,
 						library: {
 							file: jsh.file,
-							shell: jsh.shell
+							shell: jsh.shell,
+							install: jsh.tools.install
 						}
 					});
 				}

@@ -23,7 +23,7 @@
 					destination.directory.remove();
 
 					$api.fp.world.now.action(
-						jsh.tools.install.Distribution.install,
+						jsh.tools.install.Distribution.install.world,
 						{
 							download: {
 								url: p.options.url,

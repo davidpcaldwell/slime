@@ -296,16 +296,18 @@ namespace slime.jrunscript.tools.install {
 		}
 
 		export interface Distribution {
-			install: slime.$api.fp.world.Means<
-				{
-					download: install.Distribution
-					to: string
-					clean?: boolean
-				},
-				distribution.Events & {
-					exists: slime.jrunscript.file.Location
-				}
-			>
+			install: {
+				world: slime.$api.fp.world.Means<
+					{
+						download: install.Distribution
+						to: string
+						clean?: boolean
+					},
+					distribution.Events & {
+						exists: slime.jrunscript.file.Location
+					}
+				>
+			}
 		}
 
 		(
@@ -330,7 +332,7 @@ namespace slime.jrunscript.tools.install {
 						var destination = fifty.jsh.file.object.temporary.location();
 
 						$api.fp.world.now.action(
-							subject.Distribution.install,
+							subject.Distribution.install.world,
 							{ download: download, to: destination.toString() }
 						);
 						verify(destination).directory.getFile("file").is(null);
@@ -346,7 +348,7 @@ namespace slime.jrunscript.tools.install {
 						var destination = fifty.jsh.file.object.temporary.location();
 
 						$api.fp.world.now.action(
-							subject.Distribution.install,
+							subject.Distribution.install.world,
 							{ download: download, to: destination.toString() }
 						);
 						verify(destination).directory.getFile("file").is.not(null);
@@ -362,7 +364,7 @@ namespace slime.jrunscript.tools.install {
 						fifty.run(function error() {
 							var destination = fifty.jsh.file.object.temporary.location();
 							$api.fp.world.Means.now({
-								means: subject.Distribution.install,
+								means: subject.Distribution.install.world,
 								order: { download: download, to: destination.toString() }
 							});
 							verify(destination).directory.getFile("file").is(null);
@@ -371,7 +373,7 @@ namespace slime.jrunscript.tools.install {
 							var error = null;
 							try {
 								$api.fp.world.Means.now({
-									means: subject.Distribution.install,
+									means: subject.Distribution.install.world,
 									order: { download: download, to: destination.toString() }
 								});
 							} catch (e) {
@@ -386,7 +388,7 @@ namespace slime.jrunscript.tools.install {
 						fifty.run(function overwrite() {
 							var destination = fifty.jsh.file.object.temporary.location();
 							$api.fp.world.Means.now({
-								means: subject.Distribution.install,
+								means: subject.Distribution.install.world,
 								order: { download: download, to: destination.toString() }
 							});
 							destination.directory.getRelativePath("directory/a").write("");
@@ -398,7 +400,7 @@ namespace slime.jrunscript.tools.install {
 							var error = null;
 							try {
 								$api.fp.world.Means.now({
-									means: subject.Distribution.install,
+									means: subject.Distribution.install.world,
 									order: { download: download, to: destination.toString(), clean: false }
 								});
 							} catch (e) {
@@ -413,7 +415,7 @@ namespace slime.jrunscript.tools.install {
 						fifty.run(function clean() {
 							var destination = fifty.jsh.file.object.temporary.location();
 							$api.fp.world.Means.now({
-								means: subject.Distribution.install,
+								means: subject.Distribution.install.world,
 								order: { download: download, to: destination.toString() }
 							});
 							destination.directory.getRelativePath("directory/a").write("");
@@ -424,7 +426,7 @@ namespace slime.jrunscript.tools.install {
 							var error = null;
 							try {
 								$api.fp.world.Means.now({
-									means: subject.Distribution.install,
+									means: subject.Distribution.install.world,
 									order: { download: download, to: destination.toString(), clean: true }
 								});
 							} catch (e) {

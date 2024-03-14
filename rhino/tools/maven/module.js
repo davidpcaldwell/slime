@@ -409,6 +409,20 @@
 			$exports.Repository.LOCAL = new LocalRepository({ directory: $context.HOME.getSubdirectory(".m2/repository") });
 		}
 
+		/** @type { (version: string) => slime.jrunscript.tools.install.Distribution } */
+		var getDistribution = function(version) {
+			//	3.0.4 and up
+			var BASE = "https://archive.apache.org/dist/maven/maven-3/";
+
+			var url = BASE + version + "/binaries/apache-maven-" + version + "-bin.tar.gz";
+			return $context.library.install.Distribution.from.file({
+				url: url,
+				prefix: function(distribution) {
+					return "apache-maven-" + version;
+				}
+			});
+		}
+
 		var Installation = {
 			/** @type { slime.jrunscript.tools.maven.exports.Installation["exists"]["world"] } */
 			exists: $api.fp.world.api.single(
@@ -449,6 +463,38 @@
 						$api.fp.Maybe.else(function() { throw new Error("Cannot parse: " + result.stdio.output) })
 					);
 				}
+			),
+			/** @type { slime.jrunscript.tools.maven.exports.Installation["require"]["world"] } */
+			require: $api.fp.world.api.single(
+				function(p) {
+					var exists = $api.fp.world.Sensor.now({ sensor: Installation.exists, subject: p.argument.installation });
+					if (exists) {
+						var version = $api.fp.world.Sensor.now({ sensor: Installation.version, subject: p.argument.installation });
+						p.events.fire("found", { version: version });
+						if (version != p.argument.version) {
+							var accept = p.argument.accept && p.argument.accept(version);
+							if (!accept) {
+								$api.fp.now.map(
+									p.argument.installation.home,
+									$context.library.file.Location.from.os,
+									$context.library.file.Location.remove.simple
+								);
+							} else {
+								return;
+							}
+						} else {
+							return;
+						}
+					}
+
+					var distribution = getDistribution(p.argument.version);
+
+					$api.fp.world.Means.now({
+						means: $context.library.install.Distribution.install.world,
+						order: { download: distribution, to: p.argument.installation.home }
+					});
+					p.events.fire("installed", { version: p.argument.version });
+				}
 			)
 		}
 
@@ -459,6 +505,9 @@
 				},
 				version: {
 					world: Installation.version
+				},
+				require: {
+					world: Installation.require
 				}
 			},
 			mvn: $exports.mvn,
