@@ -429,6 +429,15 @@
 					});
 				}
 			},
+			api: {
+				single: function(f) {
+					return function(p) {
+						return function(e) {
+							return f({ argument: p, events: e });
+						}
+					}
+				}
+			},
 			execute: function(tell, handler) {
 				$context.events.handle({
 					implementation: tell,

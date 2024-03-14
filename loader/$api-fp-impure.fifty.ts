@@ -999,6 +999,12 @@ namespace slime.$api.fp.world {
 	}
 
 	export interface Exports {
+		api: {
+			single: <P,E,R>(f: (x: { argument: P, events: slime.$api.event.Emitter<E> }) => R) => (p: P) => (e: slime.$api.event.Emitter<E>) => R
+		}
+	}
+
+	export interface Exports {
 		/** @deprecated */
 		old: {
 			/** @deprecated */

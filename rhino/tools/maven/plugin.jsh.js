@@ -28,7 +28,8 @@
 						java: jsh.shell.java,
 						jsh: jsh,
 						library: {
-							file: jsh.file
+							file: jsh.file,
+							shell: jsh.shell
 						}
 					});
 				}
