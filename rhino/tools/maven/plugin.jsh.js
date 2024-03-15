@@ -15,7 +15,7 @@
 	function(jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return jsh.shell && Boolean(jsh.shell.PATH.getCommand("mvn"));
+				return Boolean(jsh.shell && jsh.tools && jsh.tools.install);
 			},
 			load: function() {
 				/** @type { slime.jrunscript.tools.maven.Script } */
