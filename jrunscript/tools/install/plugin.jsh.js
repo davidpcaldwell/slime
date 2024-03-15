@@ -32,6 +32,7 @@
 					code: void(0),
 					jenkins: void(0),
 					gcloud: void(0),
+					maven: void(0),
 
 
 					//	deprecated

@@ -285,3 +285,9 @@ namespace slime.jrunscript.tools.maven {
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
+
+namespace slime.jsh {
+	export interface Tools {
+		maven: slime.jrunscript.tools.maven.Exports
+	}
+}

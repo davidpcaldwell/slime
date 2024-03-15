@@ -61,6 +61,8 @@
 
 		$loader.plugin("git/");
 
+		$loader.plugin("maven/");
+
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.js && jsh.time && jsh.web && jsh.java && jsh.ip && jsh.file && jsh.shell && jsh.tools && jsh.tools.install && jsh.java.tools);
