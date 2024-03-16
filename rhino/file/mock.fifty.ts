@@ -79,7 +79,7 @@ namespace slime.jrunscript.file.internal.mock {
 
 				var cc = $api.fp.now.map(
 					c,
-					jsh.file.world.Location.file.read.string.assert
+					jsh.file.world.Location.file.read.string.simple
 				);
 
 				verify(cc).is("cc");

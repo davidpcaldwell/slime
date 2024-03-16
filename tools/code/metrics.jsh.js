@@ -103,7 +103,7 @@
 		var read = $api.fp.pipe(
 			asFile,
 			$api.fp.property("file"),
-			jsh.file.Location.file.read.string.assert
+			jsh.file.Location.file.read.string.simple
 		);
 
 		jsh.script.cli.main(
