@@ -529,7 +529,11 @@ namespace slime.jrunscript.file {
 
 						maybe: slime.$api.fp.Mapping<Location, slime.$api.fp.Maybe<string>>
 
-						assert: slime.$api.fp.Mapping<Location, string>
+						simple: slime.$api.fp.Mapping<Location, string>
+					}
+
+					properties: {
+						simple: slime.$api.fp.Mapping<Location, slime.jrunscript.host.Properties>
 					}
 				}
 
@@ -1286,6 +1290,7 @@ namespace slime.jrunscript.file {
 namespace slime.jrunscript.file.internal.wo {
 	export interface Context {
 		library: {
+			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 		}
 		filesystem: {

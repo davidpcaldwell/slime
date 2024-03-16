@@ -85,6 +85,9 @@ namespace slime.jrunscript.host {
 	 */
 	export type OldProperties = object
 
+	/**
+	 * A JavaScript representation of the `java.util.Properties` type: an object with string keys and string values.
+	 */
 	export interface Properties {
 		[name: string]: string
 	}
@@ -100,6 +103,10 @@ namespace slime.jrunscript.host {
 			/** @deprecated */
 			adapt: (_java: slime.jrunscript.native.java.util.Properties) => OldProperties
 
+			/**
+			 * A {@link Codec} which converts between a JavaScript {@link Properties} representation of Java properties and the native
+			 * `java.util.Properties` type.
+			 */
 			codec: {
 				java: slime.Codec<slime.jrunscript.host.Properties,slime.jrunscript.native.java.util.Properties>
 			}
@@ -148,9 +155,15 @@ namespace slime.jrunscript.host {
 
 		export interface Properties {
 			from: {
+				/**
+				 * Parses a file in Java properties format and returns a JavaScript {@link Properties} object.
+				 */
 				string: slime.$api.fp.Mapping<string,slime.jrunscript.host.Properties>
 			}
 
+			/**
+			 * Converts a JavaScript {@link Properties} object to the Java properties file format.
+			 */
 			string: slime.$api.fp.Mapping<slime.jrunscript.host.Properties,string>
 		}
 

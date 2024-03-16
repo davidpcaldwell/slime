@@ -57,7 +57,7 @@
 					if (isUnchecked(file)) {
 						var lines = $api.fp.now.invoke(
 							file.file,
-							jsh.file.Location.file.read.string.assert,
+							jsh.file.Location.file.read.string.simple,
 							$api.fp.string.split("\n")
 						);
 						lines.forEach(function(line,index) {

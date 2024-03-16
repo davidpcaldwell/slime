@@ -27,7 +27,7 @@
 			),
 			license: $api.fp.impure.Input.value(
 				jsh.script.world.file,
-				jsh.file.Location.file.read.string.assert,
+				jsh.file.Location.file.read.string.simple,
 				$api.fp.string.split("\n"),
 				function(array) { return array.slice(0,6); },
 				$api.fp.Array.join("\n")

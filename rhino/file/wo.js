@@ -405,12 +405,23 @@
 								maybe: $api.fp.world.Sensor.mapping({
 									sensor: readString()
 								}),
-								assert: $api.fp.Maybe.impure.exception({
+								simple: $api.fp.Maybe.impure.exception({
 									try: $api.fp.world.Sensor.mapping({
 										sensor: readString()
 									}),
 									nothing: function(location) {
-										throw new Error("Could not read: " + location.pathname);
+										return new Error("Could not read: " + location.pathname);
+									}
+								})
+							},
+							properties: {
+								simple: $api.fp.Maybe.impure.exception({
+									try: $api.fp.pipe(
+										$api.fp.world.Sensor.mapping({ sensor: readString() }),
+										$api.fp.Maybe.map( $context.library.java.Properties.from.string )
+									),
+									nothing: function(location) {
+										return new Error("Could not read: " + location.pathname);
 									}
 								})
 							}
