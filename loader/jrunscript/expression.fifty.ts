@@ -330,10 +330,15 @@ namespace slime.jrunscript.runtime {
 				)
 			);
 
+			var getType = function(value: any): { type: string } {
+				if (value === null) return { type: "null" };
+				return { type: typeof value };
+			}
+
 			fifty.tests.exports.loader = function() {
-				verify($slime).loader.is.type("object");
-				verify($slime).loader.synchronous.is.type("object");
-				verify($slime).loader.synchronous.script.is.type("function");
+				verify(getType($slime.loader)).type.is("object");
+				verify(getType($slime.loader.synchronous)).type.is("object");
+				verify(getType($slime.loader.synchronous.script)).type.is("function");
 
 				fifty.load("../Loader.fifty.ts", "script", loader);
 				fifty.load("../Loader.fifty.ts", "object", loader);
@@ -394,7 +399,8 @@ namespace slime.jrunscript.runtime {
 		}
 
 		fifty.tests.suite = function() {
-			verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
+			verify(fifty.global.jsh.unit.$slime.$platform && typeof fifty.global.jsh.unit.$slime.$platform == "object").is(true);
+			//verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
 
 			fifty.run(fifty.tests.exports);
 
