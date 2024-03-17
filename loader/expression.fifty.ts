@@ -499,15 +499,6 @@ namespace slime {
 				}
 			}
 
-			export namespace loaders {
-				export interface Scope {
-					toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
-					Loader: runtime.loader.old.Constructor
-				}
-
-				export type Script = slime.old.loader.Script<Scope,slime.runtime.Exports["old"]["loader"]>
-			}
-
 			/**
 			 * An internal object derived from {@link slime.runtime.$engine} which adds default implementations.
 			 */
@@ -607,57 +598,17 @@ namespace slime {
 		export namespace test {
 		}
 
-		export interface Exports {
-			old: {
+		export namespace exports {
+			export interface Old {
 				/**
 				 * Creates a *Loader*. A Loader loads resources from a specified source.
 				 */
 				Loader: loader.old.Constructor
-
-				loader: {
-					source: {
-						/**
-						 * Creates an loader source defined by a single JavaScript object.
-						 * @param o An object with named properties; each property either contains a loader object, in which case it
-						 * is a loader which provides its children, or a resource object, whose properties are {@link resource.Descriptor}s.
-						 */
-						object: (o: object) => slime.old.loader.Source
-					}
-
-					/**
-					 * A loader that uses a series of loaders to resolve resources. For a given path, each loader is searched in turn
-					 * until a resource is found.
-					 *
-					 * The created loaders currently have the following limitations: <!---	TODO	address them	--->
-					 *
-					 * * They are not enumerable
-					 * * They do not respect the `.child` implementations of their elements
-					 * * They do not provide a sensible `.toString` implementation.
-					 *
-					 * @param loaders A list of {@link slime.Loader}s
-					 * @returns A loader that looks up resources in the given list of underlying loaders.
-					 *
-					 * @experimental
-					 */
-					series: (loaders: old.Loader[]) => old.Loader
-
-					tools: {
-						toExportScope: <S extends { [x: string]: any },T>(scope: S) => S & { $export: (t: T) => void, $exports: T }
-					}
-
-					from: {
-						/**
-						 * Adapter method that implements the old loader interface in terms of the new synchronous loader, for
-						 * the purpose of using APIs that expect the old interface while using the new synchronous loader in new
-						 * code.
-						 *
-						 * @param o A synchronous loader
-						 * @returns An old loader that delegates to the synchronous loader.
-						 */
-						synchronous: (o: slime.runtime.loader.Synchronous<any>) => old.Loader
-					}
-				}
 			}
+		}
+
+		export interface Exports {
+			old: exports.Old
 		}
 
 		export interface Exports {
@@ -994,6 +945,7 @@ namespace slime {
 					fifty.load("$api-Function.fifty.ts");
 					fifty.load("$api-Function-old.fifty.ts");
 					fifty.load("Loader.fifty.ts");
+					fifty.load("old-loaders.fifty.ts");
 					fifty.load("events.fifty.ts");
 
 					if (fifty.global.window) {

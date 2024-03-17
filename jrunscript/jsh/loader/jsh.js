@@ -96,6 +96,7 @@
 								};
 
 								return Object.assign(
+									{},
 									runtime.old.loader,
 									runtime.loader,
 									{

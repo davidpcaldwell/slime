@@ -291,6 +291,7 @@
 					this.factory = void(0);
 					this.Child = void(0);
 					this.get = void(0);
+					this.toSynchronous = void(0);
 					runtime.old.Loader.apply(this,arguments);
 				};
 

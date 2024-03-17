@@ -6,6 +6,14 @@
 
 namespace slime.jsh {
 	export namespace plugin {
+		export interface $slime {
+			loader:
+				slime.jrunscript.runtime.Exports["old"]["loader"]
+				& slime.jrunscript.runtime.Exports["loader"]
+				& {
+					getLoaderScript(path: string): any
+				}
+		}
 	}
 
 	export namespace loader {
@@ -152,7 +160,7 @@ namespace slime.jsh {
 					}
 				) => any
 			}
-			synchronous: slime.runtime.loader.Exports["synchronous"]
+			synchronous: slime.jsh.plugin.$slime["loader"]["synchronous"]
 		}
 	}
 
