@@ -345,9 +345,53 @@ namespace slime.jrunscript.runtime {
 
 (
 	function(
+		Packages: slime.jrunscript.Packages,
 		fifty: slime.fifty.test.Kit
 	) {
 		const { verify } = fifty;
+		const { jsh } = fifty.global;
+
+		fifty.tests.jsapi = function() {
+			var $slime = jsh.unit.$slime;
+
+			//	TODO	for some reason the below does not work; the verify wrapping of the $slime object goes into some kind of
+			//			memory-exhausting loop.
+			// verify($slime,"$slime").is.type("object");
+			//	... because of what's described in the comment above, we use these two lines:
+			verify({ type: typeof $slime }).evaluate.property("type").is("object")
+			verify({ type: typeof $slime.Loader }).evaluate.property("type").is("function");
+			var tmpdir = fifty.jsh.file.object.temporary.directory();
+			tmpdir.getRelativePath("dir").createDirectory();
+			tmpdir.getRelativePath("file").write("contents", { append: false });
+			tmpdir.getRelativePath("dir/under").write("inside", { append: false });
+
+			var _source = Packages.inonit.script.engine.Code.Loader.create(tmpdir.pathname.java.adapt());
+			var loader = new $slime.Loader({
+				_source: _source
+			});
+			verify(loader).get("file").is.not(null);
+			var file = loader.get("file");
+			verify(file)["modified"].is.type("object");
+			verify(file)["modified"].evaluate(function(p) {
+				jsh.shell.console("1");
+				var dateType = (Date["was"]) ? Date["was"] : Date;
+				if (!(p instanceof dateType)) {
+					Packages.java.lang.System.err.println("modified = " + p);
+					Packages.java.lang.System.err.println("modified.constructor = " + p.constructor);
+					Packages.java.lang.System.err.println("Date = " + dateType);
+				}
+				return p instanceof dateType;
+			}).is(true);
+			verify(loader).get("dir/under").is.not(null);
+			verify(loader).get("foo").is(null);
+			verify(loader).evaluate.property("list").is.type("function");
+
+			var list = loader.list();
+			verify(loader).list().length.is(2);
+			var child = loader.Child("dir/");
+			verify(child).evaluate.property("list").is.type("function");
+			verify(child).list().length.is(1);
+		}
 
 		fifty.tests.suite = function() {
 			verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
@@ -360,7 +404,7 @@ namespace slime.jrunscript.runtime {
 		}
 	}
 //@ts-ignore
-)(fifty);
+)(Packages,fifty);
 
 
 (
