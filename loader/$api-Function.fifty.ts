@@ -55,6 +55,7 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
+		/** @deprecated Replaced by `mapping.properties`. */
 		split: <P,R>(functions: { [k in keyof R]: (p: P) => R[k] }) => (p: P) => R
 	}
 
@@ -145,15 +146,24 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		mapping: {
-			all: <P,R>(r: R) => (p: P) => R
-
-			thunk: <P,R>(p: {
-				mapping: Mapping<P,R>
-				argument: P
-			}) => Thunk<R>
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.mapping = fifty.test.Parent();
 		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		export interface mapping {
+			all: <P,R>(r: R) => (p: P) => R
+		}
+	}
+
+	export interface Exports {
+		mapping: exports.mapping
+
 
 		/**
 		 * @deprecated Replaced by `Input.value`/`Thunk.value` and `mapping.all`
@@ -168,28 +178,68 @@ namespace slime.$api.fp {
 		mapAllTo: <P,R>(r: R) => (p: P) => R
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api } = fifty.global;
-
-			fifty.tests.exports.mapping = fifty.test.Parent();
-
-			fifty.tests.exports.mapping.thunk = function() {
-				var double: Mapping<number,number> = (n: number) => n*2;
-
-				var t1 = $api.fp.mapping.thunk({
-					mapping: double,
-					argument: 2
-				});
-
-				verify(t1()).is(4);
-			}
+	export namespace exports {
+		export interface mapping {
+			thunk: <P,R>(p: {
+				mapping: Mapping<P,R>
+				argument: P
+			}) => Thunk<R>
 		}
-	//@ts-ignore
-	)(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.mapping.thunk = function() {
+					var double: Mapping<number,number> = (n: number) => n*2;
+
+					var t1 = $api.fp.mapping.thunk({
+						mapping: double,
+						argument: 2
+					});
+
+					verify(t1()).is(4);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface mapping {
+			properties: <P,R>(p: {
+				[k in keyof R]: (p: P) => R[k]
+			}) => (p: P) => R
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.mapping.properties = function() {
+					var x = $api.fp.now.map(
+						2,
+						$api.fp.mapping.properties({
+							single: function(d) { return d; },
+							double: function(d) { return d*2 },
+							triple: function(d) { return d*3 }
+						})
+					);
+
+					verify(x).single.is(2);
+					verify(x).double.is(4);
+					verify(x).triple.is(6);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
 	export interface Exports {
 		conditional: {
