@@ -242,6 +242,16 @@
 					return function() {
 						return p.mapping(p.argument);
 					}
+				},
+				properties: function(definition) {
+					return function(p) {
+						/** @type { object } */
+						var rv = {};
+						for (var x in definition) {
+							rv[x] = definition[x](p);
+						}
+						return rv;
+					}
 				}
 			},
 			conditional: function(test,yes,no) {
