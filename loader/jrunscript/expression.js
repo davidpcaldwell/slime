@@ -898,7 +898,7 @@
 			 * @param { slime.runtime.Exports["old"]["Loader"] } was
 			 * @returns
 			 */
-			function(was) {
+			function(was,api) {
 				/**
 				 * @this { slime.old.Loader }
 				 */
@@ -915,6 +915,7 @@
 					this.factory = void(0);
 					this.Child = void(0);
 					this.get = void(0);
+					this.toSynchronous = void(0);
 
 					var source = adaptLoaderArgument(p);
 
@@ -924,10 +925,10 @@
 				rv.source = void(0);
 				rv.series = void(0);
 				rv.tools = void(0);
-				Object.assign(rv, was);
+				Object.assign(rv, api);
 				return rv;
 			}
-		)(slime.old.Loader);
+		)(slime.old.Loader, slime.old.Loader["api"]);
 
 		var $exports_classpath = (
 			/**

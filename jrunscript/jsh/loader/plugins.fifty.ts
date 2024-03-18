@@ -46,12 +46,6 @@ namespace slime.jsh.plugin {
 
 		getPackaged(): slime.jrunscript.native.inonit.script.jsh.Shell.Packaged
 
-		loader: slime.jrunscript.runtime.Exports["old"]["loader"]
-			& slime.jrunscript.runtime.Exports["loader"]
-			& {
-				getLoaderScript(path: string): any
-			}
-
 		/**
 		 * Returns a `java.io.File` representing a file location relative to the `jsh` library location.
 		 *

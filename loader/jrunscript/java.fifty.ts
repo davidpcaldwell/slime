@@ -87,10 +87,15 @@ namespace slime.jrunscript.runtime.java {
 				var Foo = api.java.getClass("foo.bar.Baz");
 				verify(Foo).is(null);
 
-				verify(api).java.getClass("inonit.script.runtime.io.Streams").is.type("function");
-				verify(api).java.getClass("inonit.script.runtime.io.Streams$Null").is.type("function");
-				verify(api).java.evaluate(function() { return String(this.getClass("inonit.script.runtime.io.Streams$Null")); }).is("[JavaClass inonit.script.runtime.io.Streams$Null]");
-				verify(api).java.getClass("inonit.script.runtime.io.Streams.Null").is.type("null");
+				var getType = function(value: any): { type: string } {
+					if (value === null) return { type: "null" }
+					return { type: typeof value };
+				};
+
+				verify(getType(api.java.getClass("inonit.script.runtime.io.Streams"))).type.is("function");
+				verify(getType(api.java.getClass("inonit.script.runtime.io.Streams$Null"))).type.is("function");
+				verify(api.java).evaluate(function(p) { return String(p.getClass("inonit.script.runtime.io.Streams$Null")); }).is("[JavaClass inonit.script.runtime.io.Streams$Null]");
+				verify(getType(api.java.getClass("inonit.script.runtime.io.Streams.Null"))).type.is("null");
 			}
 		}
 	//@ts-ignore
@@ -118,22 +123,22 @@ namespace slime.jrunscript.runtime.java {
 			const { isRhino } = test;
 
 			fifty.tests.exports.isJavaObject = function() {
-				verify(api).java.isJavaObject(Packages.java.lang.Runtime.getRuntime()).is(true);
-				verify(api).java.isJavaObject(new Packages.java.lang.Object()).is(true);
-				verify(api).java.isJavaObject(Packages.java.lang.Character.UnicodeBlock.GREEK).is(true);
-				verify(api).java.isJavaObject(Packages.java.lang.reflect.Array.newInstance(api.java.toNativeClass(Packages.java.lang.Object),0)).is(true);
+				verify(api.java.isJavaObject(Packages.java.lang.Runtime.getRuntime())).is(true);
+				verify(api.java.isJavaObject(new Packages.java.lang.Object())).is(true);
+				verify(api.java.isJavaObject(Packages.java.lang.Character.UnicodeBlock.GREEK)).is(true);
+				verify(api.java.isJavaObject(Packages.java.lang.reflect.Array.newInstance(api.java.toNativeClass(Packages.java.lang.Object),0))).is(true);
 
-				verify(api).java.isJavaObject(void(0)).is(false);
-				verify(api).java.isJavaObject(null).is(false);
-				verify(api).java.isJavaObject(false).is(false);
-				verify(api).java.isJavaObject(1).is(false);
-				verify(api).java.isJavaObject(1.0).is(false);
-				verify(api).java.isJavaObject("foo").is(false);
-				verify(api).java.isJavaObject({}).is(false);
+				verify(api.java.isJavaObject(void(0))).is(false);
+				verify(api.java.isJavaObject(null)).is(false);
+				verify(api.java.isJavaObject(false)).is(false);
+				verify(api.java.isJavaObject(1)).is(false);
+				verify(api.java.isJavaObject(1.0)).is(false);
+				verify(api.java.isJavaObject("foo")).is(false);
+				verify(api.java.isJavaObject({})).is(false);
 
-				verify(api).java.isJavaObject(new Packages.java.lang.String("hello world")).is(isRhino);
-				verify(api).java.isJavaObject(new Packages.java.lang.Integer(4)).is(isRhino);
-				verify(api).java.isJavaObject(new Packages.java.lang.Boolean(true)).is(isRhino);
+				verify(api.java.isJavaObject(new Packages.java.lang.String("hello world"))).is(isRhino);
+				verify(api.java.isJavaObject(new Packages.java.lang.Integer(4))).is(isRhino);
+				verify(api.java.isJavaObject(new Packages.java.lang.Boolean(true))).is(isRhino);
 			}
 		}
 	//@ts-ignore
@@ -239,9 +244,14 @@ namespace slime.jrunscript.runtime.java {
 
 			const { isRhino } = test;
 
+			var getType = function(value: any): { type: string } {
+				if (value === null) return { type: "null" }
+				return { type: typeof value };
+			};
+
 			fifty.tests.jsapi = function() {
-				verify(api).is.type("object");
-				verify(api).java.is.type("object");
+				verify(getType(api)).type.is("object");
+				verify(getType(api.java)).type.is("object");
 
 				//	Verify and document JS engine differences
 

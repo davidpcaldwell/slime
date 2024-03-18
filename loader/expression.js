@@ -29,9 +29,9 @@
 					//@ts-ignore
 					execute: (function() {
 						if ($engine && $engine.execute) return $engine.execute;
-						//	This is the function we want, but Node.js objects to the with() statement, even if we don't execute it,
-						//	in strict mode. So we need to fall back to a dynamically created version, which follows the comment
-						//	block.
+						//	This is the function we want, but Node.js objects to the with() statement, even if we don't execute it
+						//	(because we replace it with the compliant Node.js version), in strict mode. So we need to fall back to a
+						//	dynamically created version, which follows the comment block.
 						//
 						// return (
 						// 	function(/*script{name,js},scope,target*/) {
@@ -46,7 +46,8 @@
 						// 		);
 						// 	}
 						// );
-						//	TODO	could we simply replace this with the version developed for Node.js?
+						//
+						//	TODO	could we simply replace this version with the Node.js version everywhere?
 						return new Function(
 							"script",
 							"scope",
@@ -231,8 +232,8 @@
 			scripts: script("scripts.js"),
 			/** @type { slime.runtime.internal.loader.Script } */
 			Loader: script("Loader.js"),
-			/** @type { slime.runtime.internal.loaders.Script } */
-			loaders: script("loaders.js")
+			/** @type { slime.runtime.internal.old_loaders.Script } */
+			loaders: script("old-loaders.js")
 		};
 
 		var mime = $api.mime;
@@ -313,16 +314,16 @@
 		$api.compiler = scripts.compiler.library;
 
 		var Loader = code.Loader({
-			Resource: ResourceExport,
 			methods: scripts.methods,
-			createScriptScope: scripts.createScriptScope,
 			$api: $api
 		});
 
-		/** @type { slime.runtime.Exports["old"]["loader"] } */
 		var loaders = code.loaders({
+			$api: $api,
+			Resource: ResourceExport,
+			createScriptScope: scripts.createScriptScope,
 			toExportScope: scripts.toExportScope,
-			Loader: Loader.old
+			methods: scripts.methods
 		});
 
 		/** @type { slime.runtime.Exports } */
@@ -333,20 +334,21 @@
 				},
 				/** @type { slime.runtime.Exports["run"] } */
 				run: function(code,scope,target) {
-					return scripts.methods.run.call(target,Loader.Code.from.Resource(code),scope);
+					return scripts.methods.run.call(target,loaders.Code.from.Resource(code),scope);
 				},
 				/** @type { slime.runtime.Exports["file"] } */
 				file: function(code,context,target) {
-					return scripts.methods.old.file.call(target,Loader.Code.from.Resource(code),context);
+					return scripts.methods.old.file.call(target,loaders.Code.from.Resource(code),context);
 				},
 				/** @type { slime.runtime.Exports["value"] } */
 				value: function(code,scope,target) {
-					return scripts.methods.old.value.call(target,Loader.Code.from.Resource(code),scope);
+					return scripts.methods.old.value.call(target,loaders.Code.from.Resource(code),scope);
 				},
 				Resource: ResourceExport,
 				old: {
-					Loader: Object.assign(Loader.old, loaders),
-					loader: loaders
+					//	TODO	the static type definition for this lacks the properties added by `loaders` -- are they necessary?
+					Loader: Object.assign(loaders.constructor, loaders, { constructor: null }),
+					loader: loaders.api
 				},
 				compiler: {
 					update: scripts.compiler.update
