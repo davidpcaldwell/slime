@@ -347,7 +347,7 @@
 				Resource: ResourceExport,
 				old: {
 					//	TODO	the static type definition for this lacks the properties added by `loaders` -- are they necessary?
-					Loader: Object.assign(loaders.constructor, loaders),
+					Loader: Object.assign(loaders.constructor, loaders, { constructor: null }),
 					loader: loaders.api
 				},
 				compiler: {

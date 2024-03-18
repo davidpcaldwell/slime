@@ -165,9 +165,14 @@ namespace slime {
 
 			tests.types = {};
 
-			tests.types.Loader = function(it: slime.runtime.Exports["old"]["loader"]) {
-				verify(it).is.type("function");
-				var tools: { [x: string]: any } = it.tools;
+			var getType = function(value: any): { type: string } {
+				if (value === null) return { type: "null" };
+				return { type: typeof value };
+			}
+
+			tests.types.Loader = function(it: slime.runtime.Exports["old"]["Loader"]) {
+				verify(getType(it)).type.is("function");
+				var tools: { [x: string]: any } = it["tools"];
 				verify(tools).is.type("object");
 				verify(tools).evaluate.property("toExportScope").is.type("function");
 			};
