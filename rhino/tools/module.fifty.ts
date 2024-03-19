@@ -192,12 +192,10 @@ namespace slime.jrunscript.java.tools {
 		}
 
 		export interface DirectoryEntry extends AnyEntry {
-			path: string
 			directory: true
 		}
 
 		export interface FileEntry extends AnyEntry {
-			path: string
 			directory: false
 			read: slime.$api.fp.world.Question<void,slime.jrunscript.runtime.io.InputStream>
 		}
@@ -220,12 +218,19 @@ namespace slime.jrunscript.java.tools {
 					pathname: string
 				},
 				void,
-				slime.$api.fp.Stream<jar.AnyEntry>
+				slime.$api.fp.Stream<jar.Entry>
 			>
 
 			Manifest: {
 				from: {
 					string: (string: string) => jar.Manifest
+				}
+			}
+
+			Entry: {
+				is: {
+					file: (entry: jar.Entry) => entry is jar.FileEntry
+					directory: (entry: jar.Entry) => entry is jar.DirectoryEntry
 				}
 			}
 		}

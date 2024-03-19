@@ -197,7 +197,7 @@
 							}
 						}
 
-						/** @type { slime.$api.fp.Stream<slime.jrunscript.java.tools.jar.AnyEntry> } */
+						/** @type { slime.$api.fp.Stream<slime.jrunscript.java.tools.jar.Entry> } */
 						return function f() {
 							return {
 								next: (_iterator.hasNext()) ? $api.fp.Maybe.from.some(entry(_iterator.next())) : $api.fp.Maybe.from.nothing(),
@@ -213,6 +213,18 @@
 							var _manifest = new Packages.java.util.jar.Manifest();
 							_manifest.read(input.java.adapt());
 							return toScriptManifest(_manifest);
+						}
+					}
+				},
+				Entry: {
+					is: {
+						/** @type { slime.jrunscript.java.tools.Exports["jar"]["Entry"]["is"]["file"] } */
+						file: function(entry) {
+							return !entry.directory;
+						},
+						/** @type { slime.jrunscript.java.tools.Exports["jar"]["Entry"]["is"]["directory"] } */
+						directory: function(entry) {
+							return entry.directory;
 						}
 					}
 				}
