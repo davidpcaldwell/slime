@@ -519,7 +519,53 @@ namespace slime.jrunscript.shell {
 			arch: string
 			version: string
 			newline: string
-			resolve: any
+
+			/**
+			 * @deprecated Just use `os` as input to your function.
+			 *
+			 */
+			resolve: {
+				/**
+				 * A function allowing operating system-specific code to be easily specified. Can be invoked with code like:
+				 *
+				 * ```
+				 * os.resolve(function() {
+				 *   if (this.name == "Linux") {
+				 *     return [Linux-specific value];
+				 *   }
+				 *   else {
+				 *     //	...
+				 *   }
+				 * });
+				 * ```
+				 *
+				 * @param f A function that resolves OS-specific code. It is invoked with the `os` object representing the current
+				 * operating system as `this` and can return a value accordingly.
+				 * @returns An appropriate value of an arbitrary type for the current operating system.
+				 */
+				<T>(
+					f: (
+						/** The current `os` property. */
+						this: Exports["os"]
+					) => T
+				): T
+
+				/**
+				 * An object with keys representing the names of operating systems. The value of the named property of the object
+				 * corresponding to the current operating system will be returned. In the even that a property representing the
+				 * operating system indicated by `os.name` is not present, the value `"Windows 7"` will be mapped to `Windows` and
+				 * the values `"Mac OS X"` and `"Linux"` will be mapped to `UNIX`.
+				 *
+				 * @returns the value of the appropriate property of the given object.
+				 */
+				<T>(
+					o: {
+						Windows?: T
+						UNIX?: T
+						[x: string]: T
+					}
+				): T
+			}
 
 			process?: {
 				list: slime.jrunscript.shell.system.ps
@@ -569,6 +615,43 @@ namespace slime.jrunscript.shell {
 			action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const module = fifty.global.jsh.shell;
+
+			fifty.tests.os = function() {
+				var withColon = module.os.resolve(function() {
+					return {
+						name: ":" + this.name,
+						arch: ":" + this.arch,
+						version: ":" + this.version
+					}
+				});
+				verify(withColon).name.is(":" + module.os.name);
+				verify(withColon).arch.is(":" + module.os.arch);
+				verify(withColon).version.is(":" + module.os.version);
+
+				var name = module.os.resolve({
+					"Mac OS X": "-Mac OS X",
+					"Linux": "-Linux",
+					"Windows": "-Windows"
+				});
+				//	TODO	test for Windows is terrible but this is deprecated
+				if (module.os.name == "Windows 7") {
+					verify(name).is("-Windows");
+				} else if (module.os.name == "Mac OS X") {
+					verify(name).is("-Mac OS X");
+				} else if (module.os.name == "Linux") {
+					verify(name).is("-Linux")
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace system {
 		export namespace apple {
