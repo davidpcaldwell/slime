@@ -39,6 +39,8 @@ namespace slime.$api.fp {
 	/** @deprecated Use {@link Predicate}. */
 	export type Filter<T> = (t: T) => boolean
 
+	export type TypePredicate<T,N extends T> = (t: T) => t is N
+
 	export interface Exports {
 		identity: <T>(t: T) => T
 
@@ -530,18 +532,52 @@ namespace slime.$api.fp {
 			map: <T,R>(f: (t: T) => R) => (m: Maybe<T>) => Maybe<R>
 			else: <T>(f: () => T) => (m: Maybe<T>) => T
 
+			pipe: {
+				<A,B,C>(
+					f: (a: A) => Maybe<B>,
+					g: (b: B) => Maybe<C>
+				): (a: A) => Maybe<C>
+			}
+
 			impure: {
 				exception: <T,R,E extends Error>(p: { try: (t: T) => slime.$api.fp.Maybe<R>, nothing: (t: T) => E }) => (t: T) => R
 			}
 		}
 	}
 
-	export type Partial<P,R> = (p: P) => Maybe<R>
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
 
-	export type Match<P,R> = {
-		if: Predicate<P>
-		then: Mapping<P,R>
-	}
+			fifty.tests.exports.Maybe = fifty.test.Parent();
+
+			fifty.tests.exports.Maybe.pipe = function() {
+				var halveEvenly = function(n: number): Maybe<number> {
+					if (n%2 == 0) return $api.fp.Maybe.from.some(n/2);
+					return $api.fp.Maybe.from.nothing();
+				};
+
+				var quarterEvenly = $api.fp.Maybe.pipe(halveEvenly, halveEvenly);
+
+				var halve2 = halveEvenly(2);
+				verify(halve2).present.is(true);
+				if (halve2.present) verify(halve2).value.is(1);
+				verify(halveEvenly(1)).present.is(false);
+
+				var quarter4 = quarterEvenly(4);
+				verify(quarter4).present.is(true);
+				if (quarter4.present) verify(quarter4).value.is(1);
+				verify(quarterEvenly(2)).present.is(false);
+				verify(quarterEvenly(1)).present.is(false);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export type Partial<P,R> = (p: P) => Maybe<R>
 
 	export namespace exports {
 		export interface Partial {
@@ -605,9 +641,22 @@ namespace slime.$api.fp {
 		)(fifty);
 	}
 
+	export type Match<P,R> = {
+		if: Predicate<P>
+		then: Mapping<P,R>
+	}
+
+	export type TypeMatch<P,N extends P,R> = {
+		if: TypePredicate<P,N>
+		then: Mapping<N,R>
+	}
+
 	export namespace exports {
 		export interface Partial {
-			match: <P,R>(p: Match<P,R>) => fp.Partial<P,R>
+			match: {
+				<P,N extends P,R>(p: TypeMatch<P,N,R>): fp.Partial<P,R>
+				<P,R>(p: Match<P,R>): fp.Partial<P,R>
+			}
 		}
 
 		(

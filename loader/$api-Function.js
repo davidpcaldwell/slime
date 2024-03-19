@@ -59,6 +59,19 @@
 					present: function(m) {
 						return m.present;
 					},
+					pipe: function(fs) {
+						var array = Array.prototype.slice.call(arguments);
+						return function(a) {
+							/** @type { any } */
+							var rv = a;
+							for (var i=0; i<array.length; i++) {
+								var next = array[i](rv);
+								if (!next.present) return Maybe.from.nothing();
+								rv = next.value;
+							}
+							return Maybe.from.some(rv);
+						}
+					},
 					/** @type { slime.$api.fp.Exports["Maybe"]["impure"] } */
 					impure: {
 						exception: function(p) {
