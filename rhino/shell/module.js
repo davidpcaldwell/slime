@@ -39,7 +39,7 @@
 
 		var properties = (
 			/**
-			 * @returns { slime.jrunscript.shell.Exports["properties"] }
+			 * @returns { slime.jrunscript.shell.Exports["properties"] & { set: any } }
 			 */
 			function() {
 				var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
@@ -50,6 +50,9 @@
 						var rv = _properties.getProperty(name);
 						if (!rv) return null;
 						return String(rv);
+					},
+					set: function(name,value) {
+						_properties.setProperty(name, value);
 					},
 					file: function(name) {
 						return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).file;
@@ -585,6 +588,16 @@
 
 		/** @type { slime.jrunscript.shell.Exports } */
 		var x = {
+			process: {
+				directory: {
+					get: function() {
+						return properties.get("user.dir");
+					},
+					set: function(value) {
+						properties.set("user.dir", value);
+					}
+				}
+			},
 			subprocess: subprocess,
 			Environment: Environment,
 			bash: (
