@@ -434,6 +434,66 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export interface Exports {
+		process: {
+			directory: {
+				/**
+				 * Returns the pathname of the current working directory.
+				 */
+				get: slime.$api.fp.impure.Input<string>
+
+				/**
+				 * Changes the working directory.
+				 */
+				set: slime.$api.fp.impure.Output<string>
+			}
+		}
+	}
+
+	export interface Exports {
+		/**
+		 * @deprecated Replaced by `process.directory`.
+		 *
+		 * The current working directory.
+		 */
+		PWD: slime.jrunscript.file.Directory
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.manual.process = {};
+
+			fifty.tests.manual.process.directory = function() {
+				jsh.shell.console( jsh.shell.process.directory.get() );
+
+				var ls = $api.fp.impure.Input.value(
+					{
+						command: "ls",
+						stdio: {
+							output: "string"
+						}
+					},
+					$api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question }),
+					function(p) { return p; },
+					$api.fp.property("stdio"),
+					$api.fp.property("output")
+				);
+
+				jsh.shell.console("Before: " + ls());
+
+				jsh.shell.process.directory.set("/etc");
+
+				jsh.shell.console("After: " + ls());
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+	export interface Exports {
 		/**
 		 * Provides access to Java system properties.
 		 */
@@ -469,47 +529,6 @@ namespace slime.jrunscript.shell {
 		 */
 		HOME: slime.jrunscript.file.Directory
 	}
-
-	export interface Exports {
-		//	TODO	can this be changed while the shell is running? The manual test indicates the user.dir property can, although
-		//			that is probably some kind of fakery (or does the JVM default the working directory of subprocesses to user.dir,
-		//			rather than the "true" current working directory?)
-		/**
-		 * The current working directory.
-		 */
-		PWD: slime.jrunscript.file.Directory
-	}
-
-	(
-		function(
-			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.Kit
-		) {
-			const { $api, jsh } = fifty.global;
-
-			fifty.tests.manual.PWD = function() {
-				jsh.shell.console( String(Packages.java.lang.System.getProperty("user.dir")) );
-
-				var ls = function() {
-					return $api.fp.world.now.question(
-						jsh.shell.subprocess.question,
-						{
-							command: "ls",
-							stdio: {
-								output: "string"
-							}
-						}
-					).stdio.output;
-				};
-
-				jsh.shell.console("Before: " + ls());
-
-				Packages.java.lang.System.setProperty("user.dir", "/etc");
-				jsh.shell.console("ls: " + ls());
-			}
-		}
-	//@ts-ignore
-	)(Packages,fifty);
 
 	export interface Exports {
 		PATH?: slime.jrunscript.file.Searchpath
@@ -1029,8 +1048,9 @@ namespace slime.jrunscript.shell {
 				list("",properties.java);
 			}
 
-			fifty.tests.manual.process = {};
-			fifty.tests.manual.process.list = function() {
+			fifty.tests.manual.os = {};
+			fifty.tests.manual.os.process = {};
+			fifty.tests.manual.os.process.list = function() {
 				var processes = fifty.global.jsh.shell.os.process.list().map(function(process) {
 					return {
 						id: process.id,

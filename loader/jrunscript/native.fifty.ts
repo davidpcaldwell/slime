@@ -189,6 +189,7 @@ namespace slime.jrunscript {
 					get(name: string): any
 					propertyNames(): any
 					getProperty(name: string): string
+					setProperty(name: string, value: string): void
 					keySet(): any
 					store: (out: slime.jrunscript.native.java.io.OutputStream, comments: string) => void
 				}
