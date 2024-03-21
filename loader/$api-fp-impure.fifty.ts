@@ -621,6 +621,12 @@ namespace slime.$api.fp.world {
 				handlers?: slime.$api.event.Handlers<E>
 			}) => slime.$api.fp.Mapping<S,R>
 
+			input: <S,E,R>(p: {
+				sensor: slime.$api.fp.world.Sensor<S,E,R>
+				subject: S
+				handlers?: slime.$api.event.Handlers<E>
+			}) => slime.$api.fp.impure.Input<R>
+
 			now: <S,E,R>(p: {
 				sensor: slime.$api.fp.world.Sensor<S,E,R>
 				subject: S
