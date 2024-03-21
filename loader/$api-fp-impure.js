@@ -248,6 +248,15 @@
 						}
 					}
 				},
+				input: function(p) {
+					return function() {
+						var question = p.sensor(p.subject);
+						return $context.events.handle({
+							implementation: question,
+							handlers: p.handlers
+						});
+					}
+				},
 				now: function(p) {
 					var question = p.sensor(p.subject);
 					return $context.events.handle({
