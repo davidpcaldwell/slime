@@ -399,8 +399,8 @@
 							intel: "https://desktop.docker.com/mac/stable/amd64/67351/Docker.dmg"
 						},
 						latest: {
-							intel: "https://desktop.docker.com/mac/stable/amd64/Docker.dmg",
-							apple: "https://desktop.docker.com/mac/stable/arm64/Docker.dmg"
+							intel: "https://desktop.docker.com/mac/main/amd64/Docker.dmg",
+							apple: "https://desktop.docker.com/mac/main/arm64/Docker.dmg"
 						}
 					}
 				}
@@ -419,6 +419,9 @@
 							})(p.library.shell.os.arch);
 							//	TODO	note that this will get an arbitrary version if it is cached, since the basename is
 							//			still Docker.dmg
+							//	TODO	Also should be careful to quit Docker Desktop
+							//	TODO	Also should be careful to hdiutil detach /Volumes/Docker in case multiple versions are
+							//			mounted
 							var dmg = p.library.install.get({
 								url: distribution
 							});
