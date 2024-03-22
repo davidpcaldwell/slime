@@ -322,12 +322,12 @@
 			);
 
 			events.fire("console", "Verifying MPL license headers ...");
-			var license = jsh.shell.jsh({
-				shell: jsh.shell.jsh.src,
-				script: $context.base.getFile("contributor/code/license.jsh.js"),
-				evaluate: function(result) {
-					return result;
-				}
+			var license = $api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question })({
+				command: "bash",
+				arguments: $api.Array.build(function(rv) {
+					rv.push(jsh.shell.jsh.src.getRelativePath("jsh").toString());
+					rv.push(jsh.shell.jsh.src.getRelativePath("contributor/code/license.jsh.js").toString());
+				})
 			});
 
 			if (license.status) {
