@@ -88,7 +88,7 @@ namespace slime.fifty {
 	 * ### Running Fifty tests in a browser
 	 *
 	 * To run a Fifty test definition under a browser:
-	 * `/fifty test.browser [--interactive] [--chrome:data pathname] [--chrome:debug:vscode] file.fifty.ts [--part part]`
+	 * `/fifty test.browser [--chrome:data pathname] [--base pathname] file.fifty.ts [--part part] [--interactive] [--chrome:debug:vscode]`
 	 *
 	 * This invokes the underlying `tools/fifty/test-browser.jsh.js` script. The
 	 * [script's code](../src/tools/fifty/test-browser.jsh.js?as=text) defines the semantics of the
@@ -189,47 +189,7 @@ namespace slime.fifty {
 					}
 				}
 			},
-			jsh?: {
-				$slime: jsh.plugin.$slime
-				file: {
-					/**
-					 * Returns a filesystem pathname corresponding to the given relative path, relative to the currently executing
-					 * file.
-					 */
-					relative: (path: string) => slime.jrunscript.file.world.Location
-
-					temporary: {
-						location: () => slime.jrunscript.file.world.object.Location
-						directory: () => slime.jrunscript.file.world.object.Location
-					}
-
-					object: {
-						getRelativePath: (p: string) => slime.jrunscript.file.Pathname
-						temporary: {
-							location: () => slime.jrunscript.file.Pathname
-							directory: () => slime.jrunscript.file.Directory
-						}
-					}
-				}
-				plugin: {
-					/**
-					 * Allows a test to load `jsh` plugins into a mock shell. Loads plugins from the same directory as the
-					 * shell, optionally specifying the global object, `jsh`, and the shared `plugins` object used by the jsh plugin
-					 * loader.
-					 */
-					mock: (p: {
-						global?: slime.jsh.plugin.Scope["global"]
-						jsh?: slime.jsh.plugin.Scope["jsh"]
-						plugins?: slime.jsh.plugin.plugins
-						$slime?: slime.jsh.plugin.$slime
-					}) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
-				},
-				/**
-				 * Creates a test that will run the test suite (the `suite` part) under `jsh`, and then again under the browser,
-				 * and pass only if both parts pass.
-				 */
-				platforms: (fifty: Kit) => void
-			}
+			jsh?: kit.Jsh
 		}
 
 		(
@@ -264,7 +224,10 @@ namespace slime.fifty {
 		)($fifty)
 
 		export namespace internal {
-			export interface Console {
+			/**
+			 * A destination to which test results and progress are sent.
+			 */
+			export interface Listener {
 				start: (scope: Scope, name: string) => void
 				test: (scope: Scope, message: string, result: boolean) => void
 				end: (scope: Scope, name: string, result: boolean) => void

@@ -23,20 +23,17 @@
 					/** @type { slime.jsh.wf.internal.typescript.Script } */
 					typescript: $loader.script("typescript.js"),
 					/** @type { slime.jsh.wf.internal.module.Script } */
-					module: $loader.script("module.js")
+					module: $loader.script("module.js"),
+					/** @type { slime.jsh.wf.standard.Script } */
+					standard: $loader.script("plugin-standard.jsh.js")
 				};
 
 				var library = {
-					typescript: code.typescript({
+					module: code.module({
 						library: {
 							file: jsh.file,
 							shell: jsh.shell,
 							node: jsh.shell.tools.node
-						}
-					}),
-					module: code.module({
-						library: {
-							file: jsh.file
 						},
 						world: {
 							filesystem: jsh.file.world.filesystems.os
@@ -50,7 +47,7 @@
 						var project = function() {
 							if (jsh.shell.environment.PROJECT) {
 								//	TODO	check for existence here?
-								return jsh.shell.environment.PROJECT;
+								return jsh.file.Pathname(jsh.shell.environment.PROJECT).toString();
 							}
 							return jsh.shell.PWD.pathname.toString();
 						};
@@ -81,7 +78,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.tools.git.Submodule } submodule
+				 * @param { slime.jrunscript.tools.git.oo.Submodule } submodule
 				 * @returns { slime.jsh.wf.Submodule }
 				 */
 				var submoduleDecorate = function(submodule) {
@@ -106,8 +103,187 @@
 							]
 						}
 					}
-				}
+				};
 
+				var git = jsh.tools.git.program({ command: "git" });
+
+				/**
+				 *
+				 * @param { string } parent
+				 * @param { string } path
+				 * @param { boolean } recursive
+				 */
+				var submoduleAttach = function(parent,path,recursive) {
+					var pathname = $api.fp.now.invoke(
+						parent,
+						jsh.file.Location.from.os,
+						jsh.file.Location.directory.relativePath(path),
+						$api.fp.property("pathname")
+					);
+
+					var submodule = git.repository(parent).gitmodules().find(function(element) {
+						return element.path == path;
+					});
+					if (!submodule) throw new Error("ERROR: " + pathname + " does not have a (direct) submodule at " + path);
+
+					var repository = git.repository(pathname);
+
+					if (recursive) {
+						var submodules = repository.gitmodules();
+						submodules.forEach(function(submodule) {
+							submoduleAttach(pathname,submodule.path,recursive);
+						});
+					}
+
+					var tracking = submodule.branch;
+					var branch = repository.command(jsh.tools.git.commands.status).argument().run().branch;
+					if (branch == tracking) {
+						//	do nothing
+						jsh.shell.console("Branch already checked out at " + pathname + ": " + tracking);
+					} else if (branch === null && tracking) {
+						/** @type { slime.jrunscript.tools.git.Command<string,void> } */
+						var forceMoveBranch = {
+							invocation: function(p) {
+								return {
+									command: "branch",
+									arguments: ["-f", p, "HEAD"]
+								}
+							}
+						};
+
+						/** @type { slime.jrunscript.tools.git.Command<string,void> } */
+						var checkout = {
+							invocation: function(p) {
+								return {
+									command: "checkout",
+									arguments: [p]
+								}
+							}
+						};
+
+						var at = $api.fp.impure.Input.map(
+							$api.fp.impure.Input.value(parent),
+							jsh.file.Location.from.os,
+							jsh.file.Location.directory.relativePath(submodule.path),
+							function(p) { return p; },
+							$api.fp.property("pathname")
+						)
+
+						/** @type { slime.jrunscript.tools.git.RepositoryView } */
+						var subrepository = git.repository(
+							$api.fp.impure.now.input(
+								at
+							)
+						);
+
+						subrepository.command(forceMoveBranch).argument(tracking).run();
+						subrepository.command(checkout).argument(tracking).run();
+
+						jsh.shell.console("Reset " + at() + " to tracking branch " + tracking);
+					} else {
+						jsh.shell.console("Branch " + branch + " tracking " + tracking);
+						throw new Error("Submodule " + path + " of " + inputs.project() + " must be detached HEAD with tracking branch.");
+					}
+				};
+
+				/** @type { slime.jsh.wf.ProjectView["subproject"]["initialize"] } */
+				var project_subproject_initialize = (
+					function() {
+						var action = function(p) {
+							return function(events) {
+								var subproject = $api.fp.impure.Input.map(
+									inputs.base,
+									$api.fp.property("pathname"),
+									function(pathname) { return pathname.os.adapt(); },
+									jsh.file.Location.directory.relativePath(p.path)
+								);
+
+								$api.fp.impure.now.process(
+									$api.fp.impure.Process.create({
+										input: $api.fp.impure.Input.compose({
+											subproject: subproject,
+											wf: $api.fp.impure.Input.map(
+												subproject,
+												jsh.file.Location.directory.relativePath("wf"),
+												$api.fp.property("pathname")
+											)
+										}),
+										output: function(inputs) {
+											jsh.shell.subprocess.action(
+												{
+													command: "bash",
+													arguments: [inputs.wf, "initialize"],
+													directory: inputs.subproject.pathname,
+													stdio: {
+														output: "line",
+														error: "line"
+													}
+												}
+											)(events);
+										}
+									})
+								);
+							}
+						};
+
+						return {
+							action: action,
+							process: function(path) {
+								return $api.fp.world.Process.action({
+									action: action,
+									argument: { path: path },
+									handlers: {
+										stderr: jsh.shell.Invocation.handler.stdio.line(function(e) {
+											jsh.shell.console("submodule " + path + " initialize stderr: " + e.detail.line);
+										})
+									}
+								})
+							}
+						};
+					}
+				)();
+
+				var base = function() { return inputs.base().pathname.os.adapt(); };
+
+				var wfpath = $api.fp.impure.Input.map(
+					base,
+					jsh.file.Location.directory.relativePath("wf.path"),
+					$api.fp.Maybe.impure.exception({
+						try: $api.fp.world.mapping(jsh.file.Location.file.read.string.world()),
+						nothing: function(location) { return new Error("No file found at " + location.pathname); }
+					})
+				);
+
+				var submodules = $api.fp.impure.Input.map(
+					base,
+					function(base) {
+						return jsh.tools.git.program({ command: "git" }).repository(base.pathname);
+					},
+					function(repository) {
+						return repository.command(jsh.tools.git.commands.submodule.status).argument({}).run();
+					},
+					$api.fp.Array.map($api.fp.property("path"))
+				);
+
+				var initializeSubmodulesProcess = $api.fp.impure.Input.map(
+					$api.fp.impure.Input.compose({
+						wfpath: wfpath,
+						submodules: submodules
+					}),
+					function(inputs) {
+						var rv = [ inputs.wfpath ];
+						inputs.submodules.forEach(function(submodule) {
+							if (submodule != inputs.wfpath) {
+								rv.push(submodule);
+							}
+						});
+						return rv;
+					},
+					$api.fp.Array.map(project_subproject_initialize.process),
+					$api.fp.impure.Process.compose
+				);
+
+				/** @type { slime.jsh.wf.ProjectView } */
 				var project = {
 					base: inputs.base,
 					Submodule: {
@@ -130,7 +306,7 @@
 						}
 					},
 					git: {
-						installHooks: function(p) {
+						installHooks: function installHooks() {
 							var ALL_GIT_HOOKS = [
 								"post-checkout",
 								"pre-commit",
@@ -140,39 +316,39 @@
 							];
 
 							if (inputs.gitInstalled() && inputs.isGitClone()) {
-								var path = (p) ? p.path : "local/git/hooks";
+								var path = "local/git/hooks";
 								var repository = jsh.tools.git.program({ command: "git" }).repository(inputs.project())
-								var clone = jsh.tools.git.Repository({ directory: jsh.file.Pathname(inputs.project()).directory });
+								var clone = jsh.tools.git.oo.Repository({ directory: jsh.file.Pathname(inputs.project()).directory });
 								var config = clone.config({
 									arguments: ["--list"]
 								});
 								if (config["core.hookspath"] != path) {
-									jsh.shell.console("Installing git hooks ...");
+									jsh.shell.console("Installing git hooks to " + inputs.base().getRelativePath(path) + " ...");
 									repository.command(setConfigValue).argument({ name: "core.hookspath", value: path }).run();
 								}
-								if (!p) {
-									ALL_GIT_HOOKS.forEach(function(hook) {
-										var location = inputs.base().getRelativePath(path + "/" + hook);
-										location.write("./wf " + "git.hooks." + hook + " " + "\"$@\"", { append: false, recursive: true });
-										jsh.shell.run({
-											command: "chmod",
-											arguments: $api.Array.build(function(rv) {
-												rv.push("+x", location);
-											})
+								ALL_GIT_HOOKS.forEach(function(hook) {
+									var location = inputs.base().getRelativePath(path + "/" + hook);
+									//	Git itself does not work correctly under git hooks, so we provide an environment variable
+									//	to detect the situation, giving hooks an opportunity to avoid operations that use git
+									location.write("env IN_GIT_HOOK=true ./wf " + "git.hooks." + hook + " " + "\"$@\"", { append: false, recursive: true });
+									jsh.shell.run({
+										command: "chmod",
+										arguments: $api.Array.build(function(rv) {
+											rv.push("+x", location);
 										})
-									});
-								}
+									})
+								});
 							}
 						}
 					},
 					submodule: {
 						status: function() {
-							var repository = jsh.tools.git.Repository({ directory: inputs.base() });
+							var repository = jsh.tools.git.oo.Repository({ directory: inputs.base() });
 							var submodules = repository.submodule();
 							return submodules.map(submoduleDecorate);
 						},
 						remove: function(p) {
-							var repository = jsh.tools.git.Repository({ directory: inputs.base() });
+							var repository = jsh.tools.git.oo.Repository({ directory: inputs.base() });
 							jsh.shell.console("Removing submodule " + p.path);
 							var checkout = inputs.base().getSubdirectory(p.path);
 							if (checkout && checkout.getSubdirectory(".git")) {
@@ -204,6 +380,16 @@
 							} else {
 								jsh.shell.console("No modules/ directory for " + p.path + ".");
 							}
+						},
+						attach: function(p) {
+							if (p.path) {
+								submoduleAttach(inputs.project(), p.path, p.recursive);
+							} else {
+								var repository = git.repository(inputs.project());
+								repository.gitmodules().forEach(function(submodule) {
+									submoduleAttach(inputs.project(), submodule.path, p.recursive);
+								});
+							}
 						}
 					},
 					updateSubmodule: function(p) {
@@ -211,13 +397,14 @@
 						if (!subcheckout) {
 							throw new jsh.wf.error.Failure("Submodule not found at " + p.path + " of " + inputs.base());
 						}
-						var repository = jsh.tools.git.Repository({ directory: inputs.base().getSubdirectory(p.path) });
+						var repository = jsh.tools.git.oo.Repository({ directory: inputs.base().getSubdirectory(p.path) });
 
 						jsh.shell.console("Update subrepository " + repository + " ...");
 						var current = repository.branch().filter(function(branch) {
 							return branch.current;
 						})[0];
 						jsh.shell.console("Subrepository is on branch: " + current.name);
+						//	TODO	this should not hard-code master, but should use upstream default
 						if (current.name != "master") {
 							throw new jsh.wf.error.Failure("Cannot update: not on master, but " + current.name);
 						}
@@ -238,11 +425,40 @@
 							jsh.shell.console(repository + " is up to date.");
 						}
 					},
+					subproject: {
+						initialize: project_subproject_initialize
+					},
+					subprojects: {
+						initialize: {
+							process: function() {
+								if (!jsh.shell.environment.IN_GIT_HOOK) initializeSubmodulesProcess()();
+							}
+						}
+					},
 					/**
 					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
 					 */
-					initialize: $loader.module("plugin-standard.jsh.js", {
-						jsh: jsh
+					initialize: code.standard({
+						library: {
+							file: jsh.file,
+							git: jsh.tools.git,
+						},
+						jsh: jsh,
+						api: {
+							checks: function() {
+								return jsh_wf_checks;
+							},
+							git: function() {
+								return jsh_wf_git;
+							},
+							project: function() {
+								//	TODO	weird self-reference indicating this object should be restructured
+								return project;
+							},
+							typescript: function() {
+								return jsh_wf_typescript;
+							}
+						}
 					})
 				};
 
@@ -342,9 +558,9 @@
 				};
 
 				var fetch = $api.fp.impure.Input.memoized(function() {
-					var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
+					var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/git/git-credential-tokens-directory.bash").toString();
 
-					var repository = jsh.tools.git.Repository({ directory: inputs.base() });
+					var repository = jsh.tools.git.oo.Repository({ directory: inputs.base() });
 					jsh.shell.console("Fetching all updates ...");
 					repository.fetch({
 						all: true,
@@ -463,29 +679,41 @@
 
 				/**
 				 *
-				 * @param { any } stdio
+				 * @param { Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"] } stdio
 				 * @param { slime.jsh.wf.Project } project
 				 * @param { string } out
 				 * @returns
 				 */
 				var getTypedocCommand = function(stdio,project,out) {
-					var version = library.module.Project.getTypescriptVersion(project);
-					var configuration = library.module.Project.getConfigurationLocation(project);
-					jsh.shell.tools.rhino.require();
-					jsh.shell.tools.tomcat.old.require();
-					/** @type { slime.jsh.wf.internal.typescript.typedoc.Invocation } */
+					var version = library.module.Project.typescript.version(project);
+					var configuration = library.module.Project.typescript.configurationFile(project);
+					$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
+					$api.fp.world.now.action(jsh.shell.tools.tomcat.require);
+					$api.fp.world.now.action(jsh.shell.tools.node.require, void(0), {
+						found: function(e) {
+							jsh.shell.console("Found Node.js " + e.detail.version + ".");
+						},
+						removed: function(e) {
+							jsh.shell.console("Removed Node.js " + e.detail.version);
+						},
+						installed: function(e) {
+							jsh.shell.console("Installed Node.js " + e.detail.version + ".");
+						}
+					});
+					if (!configuration.present) throw new Error("Not found: TypeScript configuration file.");
+					/** @type { slime.jsh.wf.internal.module.typedoc.Invocation } */
 					var typedocInvocation = {
 						stdio: stdio,
 						configuration: {
 							typescript: {
 								version: version,
-								configuration: configuration.pathname
+								configuration: configuration.value.pathname
 							}
 						},
 						project: project.base,
 						out: out
 					};
-					var getShellInvocation = library.typescript.typedoc.invocation(typedocInvocation);
+					var getShellInvocation = library.module.typescript.typedoc.invocation(typedocInvocation);
 					return getShellInvocation;
 				}
 
@@ -494,15 +722,61 @@
 					return {
 						require: function(p) {
 							var project = (p && p.project) ? p.project : inputs.base();
-							$api.fp.world.execute(jsh.shell.tools.node.require());
-							jsh.shell.tools.node.installed.modules.require({
-								name: "typescript",
-								version: library.module.Project.getTypescriptVersion({ base: project.toString() })
-							});
+							$api.fp.world.now.tell(jsh.shell.tools.node.require());
+							var installation = jsh.shell.tools.node.installation;
+							var version = library.module.Project.typescript.version({ base: project.toString() });
+							//	We use jsh.shell.jsh.require to make sure shell relaunches, so that TypeScript can be
+							//	loaded by SLIME in the resulting shell.
+							//	TODO	use newer jsh.shell APIs
+							$api.fp.world.now.tell(
+								jsh.shell.jsh.require({
+									satisfied: function() {
+										var installed = $api.fp.world.now.question(
+											jsh.shell.tools.node.Installation.modules.installed("typescript"),
+											installation
+										);
+										if (installed.present) {
+											return installed.value.version == version
+										} else {
+											return false;
+										}
+									},
+									install: function() {
+										$api.fp.world.now.action(
+											jsh.shell.tools.node.Installation.modules.require({
+												name: "typescript",
+												version: version
+											}),
+											installation,
+											{
+												found: function(e) {
+													if (e.detail.present) {
+														jsh.shell.console("Found TypeScript " + e.detail.value.version);
+													}
+												},
+												installing: function(e) {
+													jsh.shell.console("Installing TypeScript " + version + " ....");
+												},
+												installed: function(e) {
+													jsh.shell.console("Installed TypeScript " + version + ".");
+												}
+											}
+										);
+									}
+								}),
+								{
+									installing: function(e) {
+										jsh.shell.console("Installing TypeScript ...");
+									},
+									installed: function(e) {
+										jsh.shell.console("Installed TypeScript " + version + ".");
+									}
+								}
+							);
 						},
 						tsc: function(p) {
 							var project = (p && p.project) ? p.project : inputs.base();
-							var version = library.module.Project.getTypescriptVersion({ base: project.toString() });
+							var version = library.module.Project.typescript.version({ base: project.toString() });
 							jsh.shell.console("Compiling with TypeScript " + version + " ...");
 							var result = $api.fp.world.now.question(
 								jsh.shell.world.question,
@@ -521,26 +795,29 @@
 						typedoc: {
 							now: function(p) {
 								var project = (p && p.project) ? p.project : inputs.base();
+								//@ts-ignore
 								var getShellInvocation = getTypedocCommand(p.stdio, { base: project.pathname.toString() }, void(0));
-								var exit = $api.fp.world.now.question(
-									jsh.shell.world.question,
-									$api.fp.world.now.ask(
-										getShellInvocation,
-										{
-											found: function(e) {
-												jsh.shell.console("Found TypeDoc " + e.detail);
-											},
-											notFound: function(e) {
-												jsh.shell.console("TypeDoc not found.");
-											},
-											installed: function(e) {
-												jsh.shell.console("Installed TypeDoc " + e.detail);
-											},
-											installing: function(e) {
-												jsh.shell.console("Installing TypeDoc ...");
-											}
+								var question = $api.fp.world.now.ask(
+									getShellInvocation,
+									{
+										found: function(e) {
+											jsh.shell.console("Found TypeDoc " + e.detail);
+										},
+										notFound: function(e) {
+											debugger;
+											jsh.shell.console("TypeDoc not found.");
+										},
+										installed: function(e) {
+											jsh.shell.console("Installed TypeDoc " + e.detail);
+										},
+										installing: function(e) {
+											jsh.shell.console("Installing TypeDoc ...");
 										}
-									)(jsh.shell.tools.node.installation)
+									}
+								);
+								var exit = $api.fp.world.now.question(
+									question,
+									jsh.shell.tools.node.installation
 								);
 								return exit.status == 0;
 							},
@@ -554,7 +831,7 @@
 									stdio: $api.fp.property("stdio")
 								}),
 								function(inputs) {
-									var invocation = $api.fp.world.now.ask(
+									var question = $api.fp.world.now.ask(
 										inputs.nodeCommand,
 										{
 											found: function(e) {
@@ -570,15 +847,17 @@
 												jsh.shell.console("Installing TypeDoc ...");
 											}
 										}
-									)(jsh.shell.tools.node.installation);
-									if (inputs.stdio) {
-										invocation.context.stdio = {
-											input: null,
-											output: inputs.stdio.output,
-											error: inputs.stdio.error
-										}
-									}
-									return invocation;
+									);
+
+									// if (inputs.stdio) {
+									// 	invocation.context.stdio = {
+									// 		input: null,
+									// 		output: inputs.stdio.output,
+									// 		error: inputs.stdio.error
+									// 	}
+									// }
+									// return invocation;
+									return question(jsh.shell.tools.node.installation);
 								}
 							)
 						}
@@ -755,6 +1034,7 @@
 						events.fire("console", "Verifying up to date with origin ...");
 						var remote = "origin";
 						var origin = jsh.tools.git.program({ command: "git" })
+							.config({ "credential.helper": jsh.shell.jsh.src.getRelativePath("rhino/tools/git/git-credential-tokens-directory.bash").toString() })
 							.repository(inputs.project())
 							.command(jsh.tools.git.commands.remote.show)
 							.argument(remote)
@@ -957,7 +1237,7 @@
 					return function(events) {
 						events.fire("console", "Verifying with TypeScript compiler ...");
 						var project = inputs.base();
-						var version = library.module.Project.getTypescriptVersion({ base: project.toString() });
+						var version = library.module.Project.typescript.version({ base: project.toString() });
 						events.fire("console", "Compiling with TypeScript " + version + " ...");
 						//	TODO	create standard jsh invocation to make the terser, commented-out form below this form possible
 						var result = $api.fp.world.now.question(
@@ -1018,13 +1298,13 @@
 								}
 							});
 
-							success = success && noModifiedSubmodules({
-								repository: repository
-							})({
-								console: function(e) {
-									events.fire("console", e.detail);
-								}
-							});
+							// success = success && noModifiedSubmodules({
+							// 	repository: repository
+							// })({
+							// 	console: function(e) {
+							// 		events.fire("console", e.detail);
+							// 	}
+							// });
 
 							success = success && noDetachedHead({
 								repository: repository
@@ -1134,7 +1414,7 @@
 					 */
 					function(p,events) {
 						p.repository.submodule().forEach(function(sub) {
-							var submodule = jsh.tools.git.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
+							var submodule = jsh.tools.git.oo.Repository({ directory: p.repository.directory.getSubdirectory(sub.path) });
 							var status = submodule.status();
 							if (status.paths) {
 								throw new jsh.wf.error.Failure(
@@ -1154,8 +1434,11 @@
 							base: inputs.project()
 						}
 					},
-					getTypescriptVersion: library.module.Project.getTypescriptVersion,
-					getConfigurationFile: library.module.Project.getConfigurationLocation
+					getTypescriptVersion: library.module.Project.typescript.version,
+					getConfigurationFile: $api.fp.Maybe.impure.exception({
+						try: library.module.Project.typescript.configurationFile,
+						nothing: function(project) { return new Error("TypeScript configuration not found for project " + project.base); }
+					})
 				};
 
 				jsh.wf = {

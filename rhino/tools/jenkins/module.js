@@ -63,7 +63,7 @@
 		 * @returns { slime.jrunscript.http.client.spi.Argument }
 		 */
 		function toHttpRequest(p) {
-			return $context.library.http.Argument.request({
+			return $context.library.http.Argument.from.request({
 				method: p.method,
 				url: p.url,
 				headers: $api.Array.build(function(rv) {

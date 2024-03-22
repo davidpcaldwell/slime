@@ -6,7 +6,7 @@
 
 namespace slime.definition.test.promises {
 	export namespace internal {
-		export type Events = slime.$api.Events<{
+		export type Events = slime.$api.event.Emitter<{
 			created: Promise<any>
 			settled: Promise<any>
 		}>

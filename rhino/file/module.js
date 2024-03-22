@@ -45,6 +45,7 @@
 
 		var wo = code.wo({
 			library: {
+				java: $context.api.java,
 				io: $context.api.io
 			},
 			filesystem: {
@@ -75,6 +76,7 @@
 			},
 			mock: mock,
 			Location: wo.Location,
+			Filesystem: wo.Filesystem,
 			action: oo.action,
 			filesystem: oo.filesystem,
 			filesystems: oo.filesystems,

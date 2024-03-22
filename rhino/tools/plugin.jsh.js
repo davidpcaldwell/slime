@@ -36,7 +36,7 @@
 			//	TODO	it does not make much sense to check for jsh.shell in .isReady() and then not pass it to the plugin. Is this
 			//			method of running the compiler obsolete?
 			isReady: function() {
-				return typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined"
+				return typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined" && Boolean(jsh.io) && Boolean(jsh.file)
 					&& (
 						Packages.javax.tools.ToolProvider.getSystemToolClassLoader() != null
 						|| Boolean(jsh.file && jsh.shell && jsh.shell.java && jsh.shell.java.home && jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]).getCommand("javac"))
@@ -47,9 +47,9 @@
 				/** @type { slime.jrunscript.java.tools.Script } */
 				var module = $loader.script("module.js");
 				jsh.java.tools = Object.assign(module({
-					api: {
-						js: jsh.js,
+					library: {
 						java: jsh.java,
+						io: jsh.io,
 						file: jsh.file,
 						shell: jsh.shell
 					}
@@ -57,22 +57,11 @@
 			}
 		});
 
-		plugin({
-			isReady: function() {
-				return true;
-			},
-			load: function() {
-				plugins.node = {
-					module: function(p) {
-						/** @type { slime.jrunscript.node.Script } */
-						var script = $loader.script("node/module.js");
-						return script(p.context);
-					}
-				};
-			}
-		});
+		$loader.plugin("node/");
 
 		$loader.plugin("git/");
+
+		$loader.plugin("maven/");
 
 		plugin({
 			isReady: function() {

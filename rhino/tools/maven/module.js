@@ -4,8 +4,20 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.tools.maven.Context } $context
+	 * @param { slime.loader.Export<slime.jrunscript.tools.maven.Exports> } $export
+	 */
+	function($api,$context,$export) {
+		var jsh = $context.jsh;
+
+		/** @type { Partial<slime.jrunscript.tools.maven.Exports> } */
+		var $exports = {};
+
 		$exports.mvn = function(m) {
 			var mvn = $context.mvn;
 			var properties = (m.properties) ? (function() {
@@ -104,6 +116,7 @@
 				setElementContent(root,"version",version);
 			}
 
+			/** @returns { any[] & { one: any } } */
 			this.getDependencies = function() {
 				var filter = jsh.document.filter({ elements: "dependencies" });
 				var filter2 = jsh.document.filter({ elements: "dependency" });
@@ -117,6 +130,7 @@
 					rv = rv.concat(management.child(filter).children.filter(filter2));
 				}
 				jsh.js.Array(rv).each(function() {
+					/** @type { any } */
 					var item = this;
 					item.getGroup = function(v) {
 						return getElementContent(this,"groupId");
@@ -144,6 +158,7 @@
 						setElementContent(this,"version",v);
 					}
 				});
+				//@ts-ignore
 				return rv;
 				// if (declared) return declared;
 				// if (management) return management.child( filter );
@@ -393,5 +408,116 @@
 		if ($context.HOME.getSubdirectory(".m2/repository")) {
 			$exports.Repository.LOCAL = new LocalRepository({ directory: $context.HOME.getSubdirectory(".m2/repository") });
 		}
+
+		/** @type { (version: string) => slime.jrunscript.tools.install.Distribution } */
+		var getDistribution = function(version) {
+			//	3.0.4 and up
+			var BASE = "https://archive.apache.org/dist/maven/maven-3/";
+
+			var url = BASE + version + "/binaries/apache-maven-" + version + "-bin.tar.gz";
+			return $context.library.install.Distribution.from.file({
+				url: url,
+				prefix: function(distribution) {
+					return "apache-maven-" + version;
+				}
+			});
+		}
+
+		var Installation = {
+			/** @type { slime.jrunscript.tools.maven.exports.Installation["exists"]["world"] } */
+			exists: $api.fp.world.api.single(
+				$api.fp.pipe(
+					$api.fp.property("argument"),
+					$api.fp.property("home"),
+					$context.library.file.Location.from.os,
+					$context.library.file.Location.directory.exists.simple
+				)
+			),
+			/** @type { slime.jrunscript.tools.maven.exports.Installation["version"]["world"] } */
+			version: $api.fp.world.api.single(
+				function(p) {
+					var program = $api.fp.now.map(
+						p.argument.home,
+						$context.library.file.Location.from.os,
+						$context.library.file.Location.directory.relativePath("bin/mvn")
+					);
+					/** @type { slime.jrunscript.shell.run.Intention } */
+					var intention = {
+						command: program.pathname,
+						arguments: ["--version"],
+						environment: function(existing) {
+							return $api.Object.compose(existing, { JAVA_HOME: $context.library.shell.java.home.pathname.toString() })
+						},
+						stdio: {
+							output: "string"
+						}
+					};
+					var result = $api.fp.world.Sensor.now({
+						sensor: $context.library.shell.subprocess.question,
+						subject: intention
+					});
+					if (result.status) throw new Error("mvn exit status: " + result.status);
+					return $api.fp.now.map(
+						result.stdio.output,
+						$api.fp.string.split("\n"),
+						$api.fp.property(0),
+						$api.fp.RegExp.exec(/Apache Maven (.*) \(.*$/),
+						$api.fp.Maybe.map(function(match) { return match[1]; }),
+						$api.fp.Maybe.else(function() { throw new Error("Cannot parse: " + result.stdio.output) })
+					);
+				}
+			),
+			/** @type { slime.jrunscript.tools.maven.exports.Installation["require"]["world"] } */
+			require: $api.fp.world.api.single(
+				function(p) {
+					var exists = $api.fp.world.Sensor.now({ sensor: Installation.exists, subject: p.argument.installation });
+					if (exists) {
+						var version = $api.fp.world.Sensor.now({ sensor: Installation.version, subject: p.argument.installation });
+						p.events.fire("found", { version: version });
+						if (version != p.argument.version) {
+							var accept = p.argument.accept && p.argument.accept(version);
+							if (!accept) {
+								$api.fp.now.map(
+									p.argument.installation.home,
+									$context.library.file.Location.from.os,
+									$context.library.file.Location.remove.simple
+								);
+							} else {
+								return;
+							}
+						} else {
+							return;
+						}
+					}
+
+					var distribution = getDistribution(p.argument.version);
+
+					$api.fp.world.Means.now({
+						means: $context.library.install.Distribution.install.world,
+						order: { download: distribution, to: p.argument.installation.home }
+					});
+					p.events.fire("installed", { version: p.argument.version });
+				}
+			)
+		}
+
+		$export({
+			Installation: {
+				exists: {
+					world: Installation.exists
+				},
+				version: {
+					world: Installation.version
+				},
+				require: {
+					world: Installation.require
+				}
+			},
+			mvn: $exports.mvn,
+			Pom: $exports.Pom,
+			Project: $exports.Project,
+			Repository: $exports.Repository
+		});
 	}
-)();
+//@ts-ignore
+)($api,$context,$export);

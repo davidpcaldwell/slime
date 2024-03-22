@@ -25,9 +25,9 @@ namespace slime.project.code {
 		files: {
 			isText: slime.tools.code.isText
 
-			exclude: slime.tools.code.Excludes
+			exclude: slime.tools.code.old.Excludes
 
-			trailingWhitespace: slime.$api.fp.world.Action<{
+			trailingWhitespace: slime.$api.fp.world.Means<{
 				base: slime.jrunscript.file.Directory
 				nowrite?: boolean
 			},slime.tools.code.FileEvents & slime.tools.code.TrailingWhitespaceEvents>
@@ -105,6 +105,7 @@ namespace slime.project.code {
 				function(it) {
 					if (it.present) {
 						jsh.shell.console("Modified: " + it.value);
+						jsh.shell.console("Modified: " + new Date(it.value));
 						// jsh.shell.console("Latest: " + ( (it.value.path.length) ? it.value.path.join("/") + "/" : "" ) + it.value.name + " at " + JSON.stringify(it.value.resource.modified()));
 					} else {
 						jsh.shell.console("Error.");

@@ -19,20 +19,19 @@
 		 * @returns
 		 */
 		var startMock = function(jsh) {
-			if (!jsh.unit.mock.Web.github) throw new Error("Required: Mock GitHub, loaded from rhino/tools/github plugin");
 			var web = new jsh.unit.mock.Web({ trace: true });
 			//	TODO	push these kinds of declarations back into a mock object that aggregates hosts and handler
 			web.addHttpsHost("127.0.0.1");
 			web.addHttpsHost("raw.githubusercontent.com");
 			web.addHttpsHost("api.github.com");
 			web.addHttpsHost("github.com");
-			web.add(jsh.unit.mock.Web.github({
+			web.add(jsh.unit.mock.web.Github({
 				//	TODO	flip to true to test possibility of accessing private repositories
 				//	TODO	this should actually be per-repository, though
 				private: false,
 				src: {
 					davidpcaldwell: {
-						slime: jsh.tools.git.Repository({ directory: $context.slime })
+						slime: jsh.tools.git.oo.Repository({ directory: $context.slime })
 					}
 				}
 			}));
@@ -48,9 +47,12 @@
 		var getDownloadJshBashCommand = function(PATH,p) {
 			/** @type { string[] } */
 			var command = [];
-			var PROTOCOL = (p.mock) ? "http" : "https";
-			var branch = p.branch || "master";
-			var URL = PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/" + branch + "/jsh";
+			var URL = (
+				((p.mock) ? "http" : "https")
+					+ "://raw.githubusercontent.com/davidpcaldwell/slime/"
+					+ (p.branch || "master") + "/jsh"
+
+			);
 			if (PATH.getCommand("curl")) {
 				command.push("curl", "-v");
 				if (p.token) {

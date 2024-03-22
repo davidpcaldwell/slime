@@ -119,6 +119,7 @@
 		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
 		}));
+
 		if (!parameters.options.issue138 && jsh.shell.PATH.getCommand("git")) {
 			suite.add(
 				"jrunscript/tools/git/jsapi",
@@ -145,7 +146,7 @@
 		}));
 
 		suite.add("jsh/jsh.shell/main", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/shell/plugin.jsh.api.html"),
+			pathname: SRC.getRelativePath("jrunscript/jsh/shell/plugin.jsh.api.html"),
 			// TODO: do we actually need environment here?
 			// TODO: do we actually need noselfping here?
 			environment: Object.assign({}, environment, { noselfping: parameters.options.noselfping })

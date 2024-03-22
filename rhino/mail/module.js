@@ -149,12 +149,12 @@
 			};
 			var properties = (function() {
 				if (p.properties) return p.properties;
-				if (p["_properties"]) return $api.jrunscript.Properties.codec.object.decode(p["_properties"]);
+				if (p["_properties"]) return $context.api.java.Properties.codec.java.decode(p["_properties"]);
 				return {};
 			})();
 
 			var _session = Packages.javax.mail.Session.getInstance(
-				$api.jrunscript.Properties.codec.object.encode(properties)
+				$context.api.java.Properties.codec.java.encode(properties)
 			);
 
 			var _transport;

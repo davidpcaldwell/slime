@@ -71,11 +71,13 @@ download_install() {
 	if [ ! -f "${LOCATION}" ]; then
 		>&2 echo "Downloading ${URL} ..."
 		if [ "${UNAME}" == "Darwin" ]; then
+			mkdir -p "$(dirname $LOCATION)" 2>/dev/null
 			curl -L -o ${LOCATION} ${URL}
 		elif [ "${UNAME}" == "Linux" ]; then
 			if [ ! "$(which wget)" ]; then
 				debian_install_package wget
 			fi
+			mkdir -p "$(dirname $LOCATION)" 2>/dev/null
 			wget -O ${LOCATION} ${URL}
 		fi
 	fi
@@ -209,12 +211,39 @@ install_rhino() {
 	fi
 	# If JSR-223 Rhino worked with jrunscript ...
 	# JSH_BOOTSTRAP_RHINO_ENGINE="$(dirname $0)/local/jsh/lib/jsr223.jar"
-	RHINO_URL=$(awk '/RHINO_JAR_URL =/ {print $4}' rhino/jrunscript/api.js | cut -c 2- | rev | cut -c 3- | rev)
+	RHINO_URL=$(awk '/RHINO_JAR_URL =/ {print $4}' $(dirname $0)/rhino/jrunscript/api.js | cut -c 2- | rev | cut -c 3- | rev)
 	# If JSR-223 Rhino worked with jrunscript ...
 	# RHINO_ENGINE_URL=https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-engine-1.7.14.jar
 	download_install ${RHINO_URL} ${JSH_BOOTSTRAP_RHINO}
 	# If JSR-223 Rhino worked with jrunscript ...
 	# download_install ${RHINO_ENGINE_URL} ${JSH_BOOTSTRAP_RHINO_ENGINE}
+}
+
+get_jdk_major_version() {
+	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
+	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
+	JDK=$1
+	JAVA="${JDK}/bin/java"
+	IFS=$'\n'
+	JAVA_VERSION_OUTPUT=$(${JAVA} -version 2>&1)
+	for line in ${JAVA_VERSION_OUTPUT}; do
+		if [[ $line =~ \"(.+)\" ]]; then
+			JAVA_VERSION="${BASH_REMATCH[1]}"
+		fi
+	done
+	if [ -n ${JAVA_VERSION} ]; then
+		if [[ $JAVA_VERSION =~ ^1\.8\. ]]; then
+			echo "8"
+		elif [[ $JAVA_VERSION =~ ^11\. ]]; then
+			echo "11"
+		elif [[ $JAVA_VERSION =~ ^17\. ]]; then
+			echo "17"
+		else
+			echo "Unknown"
+		fi
+	else
+		echo "Unparsed"
+	fi
 }
 
 if [ "$1" == "--install-jdk" ]; then
@@ -256,6 +285,11 @@ fi
 
 if [ "$1" == "--install-rhino" ]; then
 	install_rhino
+	exit $?
+fi
+
+if [ "$1" == "--jdk-major-version" ]; then
+	echo $(get_jdk_major_version $2)
 	exit $?
 fi
 
@@ -346,33 +380,6 @@ HTTPS_PROXY_HOST_ARGUMENT=$(javaSystemPropertyArgument https.proxyHost ${JSH_HTT
 HTTPS_PROXY_PORT_ARGUMENT=$(javaSystemPropertyArgument https.proxyPort ${JSH_HTTPS_PROXY_PORT})
 JSH_GITHUB_USER_ARGUMENT=$(javaSystemPropertyArgument jsh.github.user ${JSH_GITHUB_USER})
 JSH_GITHUB_PASSWORD_ARGUMENT=$(javaSystemPropertyArgument jsh.github.password ${JSH_GITHUB_PASSWORD})
-
-get_jdk_major_version() {
-	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
-	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
-	JDK=$1
-	JAVA="${JDK}/bin/java"
-	IFS=$'\n'
-	JAVA_VERSION_OUTPUT=$(${JAVA} -version 2>&1)
-	for line in ${JAVA_VERSION_OUTPUT}; do
-		if [[ $line =~ \"(.+)\" ]]; then
-			JAVA_VERSION="${BASH_REMATCH[1]}"
-		fi
-	done
-	if [ -n ${JAVA_VERSION} ]; then
-		if [[ $JAVA_VERSION =~ ^1\.8\. ]]; then
-			echo "8"
-		elif [[ $JAVA_VERSION =~ ^11\. ]]; then
-			echo "11"
-		elif [[ $JAVA_VERSION =~ ^17\. ]]; then
-			echo "17"
-		else
-			echo "Unknown"
-		fi
-	else
-		echo "Unparsed"
-	fi
-}
 
 #	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
 #	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to

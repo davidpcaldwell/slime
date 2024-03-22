@@ -14,22 +14,12 @@
 	 */
 	function(Packages,JavaAdapter,$api,jsh) {
 		//	Build script for jsh
-		//
-		//	The best way to execute this script is to execute it in the Rhino shell via the jsh/etc/unbuilt.rhino.js helper script:
-		//
-		//	java -jar /path/to/rhino/js.jar -opt -1 /path/to/source/jsh/etc/unbuilt.rhino.js build <arguments>
-		//
-		//	It can also be executed directly using the Rhino shell, but it then needs assistance finding the source code, as Rhino scripts
-		//	do not know their own location. This can be done by changing the working directory to the source root:
-		//
-		//	cd /path/to/source; java -jar js.jar jsh/etc/build.jsh.js <arguments>
-		//
+
 		//	The script can be invoked in two ways. The first builds a shell to the given directory:
 		//	build.jsh.js <build-destination>
 		//
 		//	The second builds an executable JAR capable of installing the shell:
 		//	build.jsh.js -installer <installer-destination>
-
 
 		//	TODO	Eliminate launcher JAR file; seems to be used only for packaging applications now
 		//	TODO	build script should build all plugins

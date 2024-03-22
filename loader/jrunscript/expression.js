@@ -898,7 +898,7 @@
 			 * @param { slime.runtime.Exports["old"]["Loader"] } was
 			 * @returns
 			 */
-			function(was) {
+			function(was,api) {
 				/**
 				 * @this { slime.old.Loader }
 				 */
@@ -915,6 +915,7 @@
 					this.factory = void(0);
 					this.Child = void(0);
 					this.get = void(0);
+					this.toSynchronous = void(0);
 
 					var source = adaptLoaderArgument(p);
 
@@ -924,10 +925,10 @@
 				rv.source = void(0);
 				rv.series = void(0);
 				rv.tools = void(0);
-				Object.assign(rv, was);
+				Object.assign(rv, api);
 				return rv;
 			}
-		)(slime.old.Loader);
+		)(slime.old.Loader, slime.old.Loader["api"]);
 
 		var $exports_classpath = (
 			/**
@@ -999,33 +1000,6 @@
 				}
 			}
 		)($loader.getClasspath());
-
-		slime.$api.jrunscript = {
-			Properties: {
-				codec: {
-					object: {
-						encode: function(properties) {
-							var rv = new Packages.java.util.Properties();
-							for (var x in properties) {
-								rv.setProperty(x, properties[x]);
-							}
-							return rv;
-						},
-						decode: function(_properties) {
-							var _keys = _properties.propertyNames();
-							/** @type { slime.$api.jrunscript.Properties } */
-							var rv = {};
-							while(_keys.hasMoreElements()) {
-								var name = String(_keys.nextElement());
-								var value = String(_properties.getProperty(name));
-								rv[name] = value;
-							}
-							return rv;
-						}
-					}
-				}
-			}
-		}
 
 		/** @type { slime.jrunscript.runtime.Exports["jrunscript"] } */
 		var jrunscript = {
@@ -1113,19 +1087,22 @@
 			},
 			Entry: {
 				mostRecentlyModified: function() {
-					return function(entry) {
-						return function(other) {
-							var m1 = entry.resource.modified();
-							var m2 = other.resource.modified();
-							if (!m1.present && !m2.present) return "EQUAL";
-							if (!m1.present) return "BEFORE";
-							if (!m2.present) return "AFTER";
-							var eTime = m1.value;
-							var oTime = m2.value;
-							if (oTime < eTime) return "AFTER";
-							if (oTime > eTime) return "BEFORE";
-							return "EQUAL";
-						}
+					var CORRECT = slime.$api.fp.Maybe.from.some(true);
+					var SWAP = slime.$api.fp.Maybe.from.some(false);
+					var EQUAL = slime.$api.fp.Maybe.from.nothing();
+					return function(array) {
+						var entry = array[0];
+						var other = array[1];
+						var m1 = entry.resource.modified();
+						var m2 = other.resource.modified();
+						if (!m1.present && !m2.present) return EQUAL;
+						if (!m1.present) return SWAP;
+						if (!m2.present) return CORRECT;
+						var eTime = m1.value;
+						var oTime = m2.value;
+						if (oTime < eTime) return CORRECT;
+						if (oTime > eTime) return SWAP;
+						return EQUAL;
 					}
 				}
 			},

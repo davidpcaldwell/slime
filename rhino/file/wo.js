@@ -39,7 +39,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.file.location.Exports["relative"] } */
+		/** @type { slime.jrunscript.file.location.Exports["directory"]["relativePath"] } */
 		var Location_relative = function(path) {
 			return function(pathname) {
 				var absolute = pathname.pathname + pathname.filesystem.separator.pathname + path;
@@ -54,7 +54,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Location } location
-		 * @param { slime.$api.Events<{}> } events
+		 * @param { slime.$api.event.Emitter<slime.jrunscript.file.world.events.FileOpenForWrite> } events
 		 * @param { (to: slime.jrunscript.runtime.io.OutputStream) => void } write
 		 */
 		var Location_write = function(location,events,write) {
@@ -73,7 +73,7 @@
 			);
 		};
 
-		/** @type { ReturnType<slime.jrunscript.file.Exports["world"]["Location"]["directory"]["exists"]> } */
+		/** @type { ReturnType<slime.jrunscript.file.Exports["Location"]["directory"]["exists"]["world"]> } */
 		var Location_directory_exists = function(location) {
 			return function(events) {
 				var rv = location.filesystem.directoryExists({
@@ -84,7 +84,7 @@
 			}
 		}
 
-		/** @type { ReturnType<slime.jrunscript.file.Exports["world"]["Location"]["file"]["exists"]> } */
+		/** @type { ReturnType<slime.jrunscript.file.Exports["Location"]["file"]["exists"]["world"]> } */
 		var Location_file_exists = function(location) {
 			return function(events) {
 				var ask = location.filesystem.fileExists({ pathname: location.pathname });
@@ -109,7 +109,7 @@
 			};
 		};
 
-		/** @type { slime.$api.fp.world.Action<slime.jrunscript.file.Location, { created: string }> } */
+		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: string }> } */
 		var ensureParent = function(location) {
 			var it = function(location,events) {
 				var parent = Location_relative("..")(location);
@@ -132,11 +132,25 @@
 		var Location = {
 			relative: Location_relative,
 			file: {
-				exists: function() {
-					return Location_file_exists;
+				exists: {
+					simple: $api.fp.world.mapping(Location_file_exists),
+					world: function() {
+						return Location_file_exists;
+					}
 				}
 			}
 		};
+
+		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location,void> } */
+		var remove = function(location) {
+			return function(events) {
+				$api.fp.world.Means.now({
+					means: location.filesystem.remove,
+					order: { pathname: location.pathname }
+				})
+			}
+		}
+
 
 		var directory = {
 			/** @type { Pick<slime.jrunscript.file.location.directory.Exports,"base"|"relativePath"|"relativeTo"> } */
@@ -152,8 +166,10 @@
 					var x = function recurse(reference,location) {
 						//	TODO	make sure filesystems are the same
 						var prefix = reference.pathname + reference.filesystem.separator.pathname;
-						//	TODO	seriously, make a fp string function for this
-						if (location.pathname.substring(0, prefix.length) == prefix) {
+						if (location.pathname == reference.pathname) {
+							return "";
+						} else if (location.pathname.substring(0, prefix.length) == prefix)	{
+							//	TODO	seriously, make a fp string function for the above comparison
 							return location.pathname.substring(prefix.length);
 						} else {
 							var terms = reference.pathname.split(reference.filesystem.separator.pathname);
@@ -178,6 +194,66 @@
 			}
 		});
 
+		/** @type { slime.jrunscript.file.filesystem.Exports } */
+		var Filesystem = (
+			function() {
+				return {
+					copy: function(p) {
+						return function(events) {
+							$api.fp.world.now.action(
+								ensureParent,
+								{
+									filesystem: p.filesystem,
+									pathname: p.to
+								},
+								{
+									created: function(e) {
+										events.fire("created", e.detail);
+									}
+								}
+							)
+
+							p.filesystem.copy({
+								from: p.from,
+								to: p.to
+							})(events);
+						}
+					},
+					move: function(p) {
+						return function(events) {
+							//	TODO	these checks were done for directories, but when refactoring, were removed. Possibly they
+							//			should be generalized.
+
+							// var exists = $api.fp.world.now.question(
+							// 	location.filesystem.directoryExists,
+							// 	{ pathname: location.pathname }
+							// );
+							// if (!exists.present) throw new Error("Could not determine whether " + location.pathname + " exists in " + location.filesystem);
+							// if (!exists.value) throw new Error("Could not move directory: " + location.pathname + " does not exist (or is not a directory).");
+
+							$api.fp.world.now.action(
+								ensureParent,
+								{
+									filesystem: p.filesystem,
+									pathname: p.to
+								},
+								{
+									created: function(e) {
+										events.fire("created", e.detail);
+									}
+								}
+							)
+
+							p.filesystem.move({
+								from: p.from,
+								to: p.to
+							})(events);
+						}
+					}
+				}
+			}
+		)();
+
 		$export({
 			Location: {
 				from: {
@@ -187,8 +263,8 @@
 							pathname: string
 						}
 					},
-					temporary: function(provider) {
-						return filesystemFromSpiTemporary(provider);
+					temporary: function(filesystem) {
+						return filesystemFromSpiTemporary(filesystem);
 					}
 				},
 				relative: $api.deprecate(directory.navigation.relativePath),
@@ -199,209 +275,284 @@
 					var tokens = location.pathname.split(location.filesystem.separator.pathname);
 					return tokens[tokens.length-1];
 				},
-				file: {
-					exists: function() {
-						return Location_file_exists;
-					},
-					read: {
-						stream: function() {
-							return function(location) {
+				canonicalize: function(location) {
+					var canonicalized = $api.fp.world.now.ask(location.filesystem.canonicalize({ pathname: location.pathname }));
+					if (!canonicalized.present) return location;
+					return {
+						filesystem: location.filesystem,
+						pathname: canonicalized.value
+					}
+				},
+				posix: {
+					attributes: (function() {
+						/** @param { slime.jrunscript.file.Location } location */
+						var get = function(location) {
+							return $api.fp.world.now.ask(
+								location.filesystem.posix.attributes.get({ pathname: location.pathname })
+							)
+						};
+
+						/**
+						 * @param { slime.jrunscript.file.Location } location
+						 * @param { slime.jrunscript.file.posix.Attributes } attributes
+						 */
+						var set = function(location,attributes) {
+							$api.fp.world.now.tell(
+								location.filesystem.posix.attributes.set({
+									pathname: location.pathname,
+									attributes: attributes
+								})
+							)
+						};
+
+						return {
+							get: function(p) {
 								return function(events) {
-									var ask = location.filesystem.openInputStream({
-										pathname: location.pathname
-									});
-									return ask(events);
+									if (!p.location.filesystem.posix) return $api.fp.Maybe.from.nothing();
+									return $api.fp.Maybe.from.some(
+										get(p.location)
+									);
 								}
-							}
-						},
-						string: function() {
-							return function(location) {
+							},
+							set: function(p) {
 								return function(events) {
-									var ask = location.filesystem.openInputStream({
-										pathname: location.pathname
-									});
-									var maybe = ask(events);
-									return $api.fp.result(
-										maybe,
-										$api.fp.Maybe.map(
-											function(it) {
-												return it.character().asString()
+									if (p.location.filesystem.posix) {
+										set(p.location, p.attributes);
+									}
+								}
+							},
+							update: function(p) {
+								return function(events) {
+									if (p.location.filesystem.posix) {
+										var now = get(p.location);
+										var after = p.attributes(now);
+										set(p.location, after);
+									}
+								}
+							},
+							Update: {
+								permissions: {
+									set: {
+										executable: {
+											all: function(value) {
+												return function(attributes) {
+													return {
+														owner: attributes.owner,
+														group: attributes.group,
+														permissions: {
+															owner: {
+																read: attributes.permissions.owner.read,
+																write: attributes.permissions.owner.write,
+																execute: value
+															},
+															group: {
+																read: attributes.permissions.group.read,
+																write: attributes.permissions.group.write,
+																execute: value
+															},
+															others: {
+																read: attributes.permissions.others.read,
+																write: attributes.permissions.others.write,
+																execute: value
+															}
+														}
+													};
+												}
 											}
-										)
-									)
+										}
+									}
 								}
 							}
 						}
-					},
-					write: Object.assign(
-						/**
-						 *
-						 * @param { Parameters<slime.jrunscript.file.location.file.Exports["write"]>[0] } location
-						 * @returns { ReturnType<slime.jrunscript.file.location.file.Exports["write"]> } location
-						 */
-						function(location) {
-							return {
-								string: function(p) {
-									return function(events) {
-										Location_write(
-											location,
-											events,
-											function(stream) {
-												var writer = stream.character();
-												writer.write(p.value);
-												writer.close();
+					})()
+				},
+				file: (function() {
+					/** @type { slime.jrunscript.file.location.file.Exports["read"]["stream"] } */
+					var readStream = function() {
+						return function(location) {
+							return location.filesystem.openInputStream({
+								pathname: location.pathname
+							});
+						}
+					};
+
+					/** @type { slime.jrunscript.file.location.file.Exports["read"]["string"]["world"] } */
+					var readString = function() {
+						return $api.fp.world.Sensor.map({
+							subject: $api.fp.identity,
+							sensor: readStream(),
+							reading: $api.fp.Maybe.map(
+								function(it) {
+									return it.character().asString();
+								}
+							)
+						});
+					};
+
+					return {
+						exists: Location.file.exists,
+						size: function(location) {
+							return function(events) {
+								var maybe = location.filesystem.fileSize({ pathname: location.pathname })(events);
+								if (!maybe.present) throw new Error("Could not get file size for " + location.pathname);
+								return maybe.value;
+							}
+						},
+						read: {
+							stream: readStream,
+							string: {
+								world: readString,
+								maybe: $api.fp.world.Sensor.mapping({
+									sensor: readString()
+								}),
+								simple: $api.fp.Maybe.impure.exception({
+									try: $api.fp.world.Sensor.mapping({
+										sensor: readString()
+									}),
+									nothing: function(location) {
+										return new Error("Could not read: " + location.pathname);
+									}
+								})
+							},
+							properties: {
+								simple: $api.fp.Maybe.impure.exception({
+									try: $api.fp.pipe(
+										$api.fp.world.Sensor.mapping({ sensor: readString() }),
+										$api.fp.Maybe.map( $context.library.java.Properties.from.string )
+									),
+									nothing: function(location) {
+										return new Error("Could not read: " + location.pathname);
+									}
+								})
+							}
+						},
+						write: Object.assign(
+							/**
+							 *
+							 * @param { Parameters<slime.jrunscript.file.location.file.Exports["write"]>[0] } location
+							 * @returns { ReturnType<slime.jrunscript.file.location.file.Exports["write"]> }
+							 */
+							function(location) {
+								return {
+									string: function(p) {
+										return function(events) {
+											Location_write(
+												location,
+												events,
+												function(stream) {
+													var writer = stream.character();
+													writer.write(p.value);
+													writer.close();
+												}
+											)
+										}
+									},
+									stream: function(p) {
+										return function(events) {
+											Location_write(
+												location,
+												events,
+												function(output) {
+													$context.library.io.Streams.binary.copy(
+														p.input,
+														output
+													)
+												}
+											)
+										}
+									},
+									object: {
+										text: function(p) {
+											return function(events) {
+												var ask = location.filesystem.openOutputStream({
+													pathname: location.pathname
+												});
+												return $api.fp.result(
+													ask(events),
+													$api.fp.Maybe.map(function(stream) {
+														return stream.character();
+													})
+												);
 											}
-										)
+										}
+									}
+								}
+							},
+							{
+								string: function(p) {
+									return function(location) {
+										return function(events) {
+											Location_write(
+												location,
+												events,
+												function(stream) {
+													var writer = stream.character();
+													writer.write(p.value);
+													writer.close();
+												}
+											);
+										}
 									}
 								},
 								stream: function(p) {
-									return function(events) {
-										Location_write(
-											location,
-											events,
-											function(output) {
-												$context.library.io.Streams.binary.copy(
-													p.input,
-													output
-												)
-											}
-										)
+									return function(location) {
+										return function(events) {
+											Location_write(
+												location,
+												events,
+												function(output) {
+													$context.library.io.Streams.binary.copy(
+														p.input,
+														output
+													)
+												}
+											)
+										}
 									}
 								},
 								object: {
-									text: function(p) {
-										return function(events) {
-											var ask = location.filesystem.openOutputStream({
-												pathname: location.pathname
-											});
-											return $api.fp.result(
-												ask(events),
-												$api.fp.Maybe.map(function(stream) {
-													return stream.character();
-												})
-											);
+									text: function() {
+										return function(location) {
+											return function(events) {
+												var ask = location.filesystem.openOutputStream({
+													pathname: location.pathname
+												});
+												return $api.fp.result(
+													ask(events),
+													$api.fp.Maybe.map(function(stream) {
+														return stream.character();
+													})
+												);
+											}
+
 										}
 									}
 								}
 							}
+						),
+						/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
+						remove: {
+							world: function() {
+								return remove;
+							},
+							simple: $api.fp.world.Means.output({
+								means: remove
+							})
 						},
-						{
-							string: function(p) {
-								return function(location) {
-									return function(events) {
-										Location_write(
-											location,
-											events,
-											function(stream) {
-												var writer = stream.character();
-												writer.write(p.value);
-												writer.close();
-											}
-										);
-									}
-								}
-							},
-							stream: function(p) {
-								return function(location) {
-									return function(events) {
-										Location_write(
-											location,
-											events,
-											function(output) {
-												$context.library.io.Streams.binary.copy(
-													p.input,
-													output
-												)
-											}
-										)
-									}
-								}
-							},
-							object: {
-								text: function() {
-									return function(location) {
-										return function(events) {
-											var ask = location.filesystem.openOutputStream({
-												pathname: location.pathname
-											});
-											return $api.fp.result(
-												ask(events),
-												$api.fp.Maybe.map(function(stream) {
-													return stream.character();
-												})
-											);
-										}
-
-									}
-								}
-							}
-						}
-					),
-					copy: function(p) {
-						return function(location) {
-							return function(events) {
-								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
-
-								$api.fp.world.now.action(
-									ensureParent,
-									p.to,
-									{
-										created: function(e) {
-											events.fire("created", e.detail);
-										}
-									}
-								)
-
-								p.to.filesystem.copy({
-									from: location.pathname,
-									to: p.to.pathname
-								})(events);
-							}
-						}
-					},
-					move: function(p) {
-						return function(location) {
-							return function(events) {
-								//	TODO	lots of duplication with directory move()
-								//	TODO	insert existence check like there? Refactor?
-								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
-
-								$api.fp.world.now.action(
-									ensureParent,
-									p.to,
-									{
-										created: function(e) {
-											events.fire("created", e.detail);
-										}
-									}
-								)
-
-								p.to.filesystem.move({
-									from: location.pathname,
-									to: p.to.pathname
-								})(events);
-							}
-						}
-					},
-					/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
-					remove: function() {
-						return function(location) {
-							return function() {
-								$api.fp.world.now.action(
-									location.filesystem.remove,
-									{ pathname: location.pathname }
-								)
-							}
-						}
-					},
-				},
+					}
+				})(),
 				directory: {
 					base: directory.navigation.base,
 					relativePath: directory.navigation.relativePath,
 					relativeTo: directory.navigation.relativeTo,
 					/** @type { slime.jrunscript.file.location.Exports["directory"]["exists"] } */
-					exists: function() {
-						return Location_directory_exists;
+					exists: {
+						simple: $api.fp.world.Sensor.mapping({
+							sensor: Location_directory_exists
+						}),
+						world: function() {
+							return Location_directory_exists;
+						}
 					},
 					require: function(p) {
 						return function(location) {
@@ -427,12 +578,7 @@
 										}
 										$api.fp.world.now.action(
 											location.filesystem.createDirectory,
-											{ pathname: location.pathname },
-											{
-												parentNotFound: function() {
-
-												}
-											}
+											{ pathname: location.pathname }
 										)
 										//	TODO	should push this event back into implementation
 										//			this way, we could inform of recursive creations as well
@@ -448,48 +594,14 @@
 							}
 						}
 					},
-					move: function(p) {
-						return function(location) {
-							return function(events) {
-								var exists = $api.fp.world.now.question(
-									location.filesystem.directoryExists,
-									{ pathname: location.pathname }
-								);
-								if (!exists.present) throw new Error("Could not determine whether " + location.pathname + " exists in " + location.filesystem);
-								if (!exists.value) throw new Error("Could not move directory: " + location.pathname + " does not exist (or is not a directory).");
-
-								if (p.to.filesystem != location.filesystem) throw new Error("Must be same filesystem.");
-
-								$api.fp.world.now.action(
-									ensureParent,
-									p.to,
-									{
-										created: function(e) {
-											events.fire("created", e.detail);
-										}
-									}
-								);
-
-								$api.fp.world.now.action(
-									location.filesystem.move,
-									{
-										from: location.pathname,
-										to: p.to.pathname
-									}
-								);
-							}
-						}
-					},
 					/** @type { slime.jrunscript.file.location.Exports["directory"]["remove"] } */
-					remove: function() {
-						return function(location) {
-							return function() {
-								$api.fp.world.now.action(
-									location.filesystem.remove,
-									{ pathname: location.pathname }
-								)
-							}
-						}
+					remove: {
+						world: function() {
+							return remove;
+						},
+						simple: $api.fp.world.Means.output({
+							means: remove
+						})
 					},
 					list: {
 						stream: function(p) {
@@ -497,7 +609,7 @@
 							 *
 							 * @param { slime.jrunscript.file.Location } location
 							 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-							 * @param { slime.$api.Events<slime.jrunscript.file.location.directory.list.Events> } events
+							 * @param { slime.$api.event.Emitter<slime.jrunscript.file.location.directory.list.Events> } events
 							 * @returns { slime.jrunscript.file.Location[] }
 							 */
 							var process = function(location,descend,events) {
@@ -536,7 +648,7 @@
 
 							return function(location) {
 								return function(events) {
-									var descend = (p && p.descend) ? p.descend : $api.fp.mapAllTo(false);
+									var descend = (p && p.descend) ? p.descend : $api.fp.mapping.all(false);
 									var array = process(location,descend,events);
 									return $api.fp.Stream.from.array(array);
 								}
@@ -548,8 +660,14 @@
 							return loader.create(p.root);
 						}
 					}
+				},
+				remove: {
+					simple: $api.fp.world.Means.output({
+						means: remove
+					})
 				}
-			}
+			},
+			Filesystem: Filesystem
 		});
 
 		//	Some old code follows

@@ -12,6 +12,11 @@
  * repository), `command` (executing a specific {@link slime.jrunscript.tools.git.Command} toward that repository), `argument` (passing
  * specific information to that command), and finally, `run`, which executes the command, optionally supplying a world
  * implementation and event handlers for the `stdout` and `stderr` streams.
+ *
+ * ## Tools
+ *
+ * SLIME also implements a {@link slime.jrunscript.tools.git.credentials Git credential helper} that can look up passwords (or, in
+ * the case of GitHub and GitLab, tokens) in the file system for a project by host and username.
  */
 namespace slime.jrunscript.tools.git {
 	export interface Commit {
@@ -29,106 +34,6 @@ namespace slime.jrunscript.tools.git {
 		name: string
 		current: boolean
 		commit: Commit
-	}
-
-	interface Daemon {
-		port: number
-		basePath?: slime.jrunscript.file.Pathname
-		kill: () => void
-	}
-
-	/**
-	 * A local installation of the `git` tool.
-	 */
-	export interface Installation {
-		daemon: (p: {
-			port?: number
-			basePath?: slime.jrunscript.file.Pathname
-			exportAll?: boolean
-		}) => Daemon
-
-		/**
-		 * @returns A `Repository` of the appropriate subtype as determined by the argument.
-		 */
-		Repository: {
-			(p: repository.argument.Directory): slime.jrunscript.tools.git.repository.Local
-			new (p: repository.argument.Directory): slime.jrunscript.tools.git.repository.Local
-			(p: repository.argument.Local): slime.jrunscript.tools.git.repository.Local
-			new (p: repository.argument.Local): slime.jrunscript.tools.git.repository.Local
-			(p: repository.argument.Remote): slime.jrunscript.tools.git.Repository
-			new (p: repository.argument.Remote): slime.jrunscript.tools.git.Repository
-		}
-
-		//	Uses Object.assign for rhino/shell run(), so should cross-check with those arguments
-		execute: (m: {
-			config?: any
-			command: string,
-			arguments?: string[]
-			environment?: any
-			directory?: slime.jrunscript.file.Directory
-		}) => void
-	}
-
-	export interface Repository {
-		reference: string
-		clone: (argument: repository.Argument & {
-			to: slime.jrunscript.file.Pathname,
-			recurseSubmodules?: boolean
-		}, events?: object ) => slime.jrunscript.tools.git.repository.Local
-	}
-
-	export interface Submodule {
-		/**
-		 * The logical name of the submodule, as it is referenced in configuration entries.
-		 */
-		name: string
-
-		/**
-		 * The path of the submodule within its parent.
-		 */
-		path: string
-
-		/**
-		 * The branch the submodule is set up to track, if it is set up to track one.
-		 */
-		branch?: string
-
-		repository: repository.Local
-		commit: Commit
-	}
-
-	export namespace repository {
-		export interface Argument {
-			config?: { [x: string]: string }
-			credentialHelper?: string
-			credentialHelpers?: string[]
-			directory?: slime.jrunscript.file.Directory
-		}
-
-		export namespace argument {
-			export interface Directory {
-				/**
-				 * A directory containing a local Git repository.
-				 */
-				directory: slime.jrunscript.file.Directory
-			}
-
-			/** @deprecated */
-			export interface Local {
-				/**
-				 * A directory containing a local Git repository.
-				 */
-				local: slime.jrunscript.file.Directory
-			}
-
-			export interface Remote {
-				/**
-				 * A string that is compatible with the `git` command-line tool. See [Git
-				 * URLs](https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a).
-				 */
-				remote: string
-			}
-		}
 	}
 
 	export namespace internal {
@@ -174,7 +79,7 @@ namespace slime.jrunscript.tools.git {
 
 		export namespace old {
 			export interface Fixtures {
-				init: slime.jrunscript.tools.git.Exports["init"]
+				init: slime.jrunscript.tools.git.Exports["oo"]["init"]
 				write: (p: {
 					repository?: repository.Local
 					directory?: slime.jrunscript.file.Directory
@@ -186,7 +91,7 @@ namespace slime.jrunscript.tools.git {
 
 			export const fixtures: Fixtures = (
 				function(fifty: slime.fifty.test.Kit) {
-					return fifty.$loader.file("fixtures-old.js", { module: subject });
+					return fifty.$loader.file("fixtures-old.ts", { module: subject });
 				}
 			//@ts-ignore
 			)(fifty);
@@ -214,6 +119,11 @@ namespace slime.jrunscript.tools.git {
 			});
 		};
 
+		/**
+		 * Adds placeholder `user.name` and `user.email` values to this repository.
+		 *
+		 * @param repository
+		 */
 		function configure(repository: git.repository.Local) {
 			repository.config({
 				set: {
@@ -233,11 +143,11 @@ namespace slime.jrunscript.tools.git {
 			function initialize() {
 				var tmpdir = fifty.jsh.file.object.temporary.directory();
 
-				var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+				var library = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("sub") });
 				configure(library);
 				commitFile(library, "b");
 
-				var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+				var parent = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("parent") });
 				configure(parent);
 				commitFile(parent, "a");
 
@@ -273,12 +183,12 @@ namespace slime.jrunscript.tools.git {
 		fifty.tests.submoduleWithDifferentNameAndPath = function() {
 			var tmpdir = fifty.jsh.file.object.temporary.directory();
 
-			var sub = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+			var sub = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("sub") });
 			configure(sub);
 			commitFile(sub, "b");
 			var subbranch = sub.status().branch.name;
 
-			var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+			var parent = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("parent") });
 			configure(parent);
 			commitFile(parent, "a");
 
@@ -301,12 +211,12 @@ namespace slime.jrunscript.tools.git {
 		fifty.tests.submoduleStatusCached = function() {
 			var tmpdir = fifty.jsh.file.object.temporary.directory();
 
-			var library = internal.subject.init({ pathname: tmpdir.getRelativePath("sub") });
+			var library = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("sub") });
 			configure(library);
 			commitFile(library, "b");
 			var branch = library.status().branch;
 
-			var parent = internal.subject.init({ pathname: tmpdir.getRelativePath("parent") });
+			var parent = internal.subject.oo.init({ pathname: tmpdir.getRelativePath("parent") });
 			configure(parent);
 			commitFile(parent, "a");
 
@@ -354,6 +264,10 @@ namespace slime.jrunscript.tools.git {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * A `git` command that can be configured with an (optional) value of a given type and returns an (optional) value of another
+	 * specified type.
+	 */
 	export interface Command<P,R> {
 		invocation: (parameter: P) => Invocation
 
@@ -365,27 +279,6 @@ namespace slime.jrunscript.tools.git {
 	}
 
 	export namespace command.status {
-		export interface Result {
-			/**
-			 * The current checked out branch, or `null` if a detached HEAD is checked out.
-			 */
-			branch: string
-
-			entries: {
-				code: string
-				path: string
-				orig_path?: string
-			}[]
-
-			/**
-			 * @deprecated Replaced by the `entries` property, which properly captures rename entries.
-			 *
-			 * An object whose keys are string paths within the repository, and whose values are the two-letter output
-			 * of the `git status --porcelain` command. This property is absent if no files have a status.
-			 */
-			paths?: { [path: string]: string }
-		}
-
 		export namespace old {
 			export type Result = Pick<command.status.Result,"branch" | "paths">
 		}
@@ -437,6 +330,13 @@ namespace slime.jrunscript.tools.git {
 
 	export namespace exports {
 		export namespace command {
+			/**
+			 * A function that provides the ability to execute a command against a given repository.
+			 *
+			 * When the command is executed, it may assume that its working directory is also the directory in which the repository
+			 * is stored -- in other words, that it is not being executed with `-C` -- for the purposes of resolving relative paths
+			 * and so forth.
+			 */
 			export type Executor = <P,R>(command: slime.jrunscript.tools.git.Command<P,R>) => {
 				argument: (argument: P) => {
 					/**
@@ -454,6 +354,62 @@ namespace slime.jrunscript.tools.git {
 	}
 
 	export interface Exports {
+		/**
+		 * An opinionated object that provides a set of {@link Command} implementations deemed to be useful for `git` automation.
+		 * If the exact combination of git commands and options for your use case is not provided here, you can implement your own
+		 * {@link Command} which can be tailored to any set of commands, arguments, and options, any way of parsing output, and so
+		 * forth.
+		 */
+		commands: Commands
+	}
+
+	export namespace submodule {
+		/**
+		 * The declared configuration of a submodule in `.gitmodules`, where all the properties for a given submodule name are pulled
+		 * together into this structure. See [the Git documentation for `.gitmodules`](https://git-scm.com/docs/gitmodules) for the
+		 * definitions of these values.
+		 */
+		export interface Configuration {
+			name: string
+
+			path: string
+			url: string
+
+			update?: string
+			branch?: string
+			fetchRecurseSubmodules?: string
+			ignore?: "all" | "dirty" | "untracked" | "none"
+			shallow?: string
+		}
+	}
+
+	export interface RepositoryView {
+		Invocation: <P,R>(p: {
+			command: slime.jrunscript.tools.git.Command<P,R>
+			argument: P
+		}) => world.Invocation<P,R>
+
+		shell: (p: {
+			invocation: slime.jrunscript.tools.git.Invocation
+			stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
+		}) => shell.run.old.Invocation
+
+		command: exports.command.Executor
+
+		run: <P,R>(p: {
+			command: slime.jrunscript.tools.git.Command<P,R>
+			input: P
+			world?: world.Invocation<P,R>["world"]
+		}) => R
+
+		/**
+		 * Determines the current submodule configuration declared for this repository, in other words, the configuration stored in
+		 * `.gitmodules`, and returns it.
+		 */
+		gitmodules: () => submodule.Configuration[]
+	}
+
+	export interface Exports {
 		program: (program: Program) => {
 			Invocation: <P,R>(p: {
 				pathname?: string
@@ -461,30 +417,13 @@ namespace slime.jrunscript.tools.git {
 				argument: P
 			}) => world.Invocation<P,R>
 
-			repository: (pathname: string) => {
-				Invocation: <P,R>(p: {
-					command: slime.jrunscript.tools.git.Command<P,R>
-					argument: P
-				}) => world.Invocation<P,R>
-
-				shell: (p: {
-					invocation: slime.jrunscript.tools.git.Invocation
-					stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
-				}) => shell.run.old.Invocation
-
-				command: exports.command.Executor
-
-				run: <P,R>(p: {
-					command: slime.jrunscript.tools.git.Command<P,R>
-					input: P
-					world?: world.Invocation<P,R>["world"]
-				}) => R
-			}
+			repository: (pathname: string) => RepositoryView
 
 			config: (values: { [name: string]: string }) => {
-				repository: (pathname: string) => {
-					command: exports.command.Executor
-				}
+				//	TODO	refactor so this can return RepositoryView also
+				repository: (pathname: string) => RepositoryView
+
+				command: exports.command.Executor
 			}
 
 			command: exports.command.Executor
@@ -760,10 +699,12 @@ namespace slime.jrunscript.tools.git {
 	export interface Context {
 		program: slime.jrunscript.file.File
 		api: {
-			js: any
-			java: any
+			js: slime.js.old.Exports
+			java: Pick<slime.jrunscript.host.Exports,"Thread">
+			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
-			Error: any
+			//	TODO	fix this
+			Error: slime.js.old.Exports["Error"]
 			time: slime.time.Exports
 			web: slime.web.Exports
 		}
@@ -781,11 +722,20 @@ namespace slime.jrunscript.tools.git {
 
 		credentialHelper: CredentialHelpers
 		installation: slime.jrunscript.tools.git.Installation
-		daemon: slime.jrunscript.tools.git.Installation["daemon"]
-		Repository: slime.jrunscript.tools.git.Installation["Repository"]
-		init: slime.jrunscript.tools.git.Installation["init"]
-		execute: slime.jrunscript.tools.git.Installation["execute"]
+
+		//	Methods essentially copied from the default Installation
+		oo: {
+			daemon: slime.jrunscript.tools.git.Installation["daemon"]
+			Repository: slime.jrunscript.tools.git.Installation["Repository"]
+			init: slime.jrunscript.tools.git.Installation["init"]
+			execute: slime.jrunscript.tools.git.Installation["execute"]
+		}
+
 		install: Function & { GUI: any }
+	}
+
+	export interface Exports {
+		credentials: credentials.Exports
 	}
 
 	(function(fifty: slime.fifty.test.Kit) {
@@ -801,10 +751,30 @@ namespace slime.jrunscript.tools.git {
 
 			fifty.run(fifty.tests.sandbox);
 
+			fifty.load("commands.fifty.ts");
 			fifty.load("oo.fifty.ts");
+			fifty.load("git-credential-tokens-directory.fifty.ts");
 		}
 	//@ts-ignore
 	})(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+
+			var subject = jsh.tools.git;
+
+			fifty.tests.wip = function() {
+				var PWD = jsh.shell.PWD.pathname.toString();
+				var repository = subject.program({ command: "git" }).repository(PWD);
+				var submodules = repository.gitmodules();
+				jsh.shell.console(JSON.stringify(submodules,void(0),4));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>
 }

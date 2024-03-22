@@ -8,8 +8,8 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Documentation: Show",
-			"detail": "(Local only) Serves the project documentation and opens a browser to view it",
+			"label": "(Local only) Documentation: Show",
+			"detail": "Serves the project documentation and opens a browser to view it",
 			"type": "shell",
 			"command": "./wf documentation",
 			"problemMatcher": [],
@@ -26,7 +26,7 @@
 			"label": "Java: Install JDK",
 			"detail": "Installs the default JDK into this shell",
 			"type": "shell",
-			"command": "./jsh.bash --install-jdk",
+			"command": "./jsh --install-jdk",
 			"problemMatcher": []
 		},
 		{
@@ -45,7 +45,7 @@
 		},
 		{
 			"label": "Git: Create branch",
-			"detail": "Creates a new branch based on newly-fetched origin/master and checks it out.",
+			"detail": "Creates a new branch based on newly-fetched origin/main and checks it out.",
 			"type": "shell",
 			"command": "./wf git.branch ${input:branchName}",
 			"problemMatcher": []
@@ -73,7 +73,7 @@
 		{
 			"label": "ESLint: Create categorized report",
 			"type": "shell",
-			"command": "./jsh.bash contributor/eslint-report.jsh.js",
+			"command": "./jsh contributor/eslint-report.jsh.js",
 			"problemMatcher": [],
 			"presentation": {
 				"echo": false,
@@ -101,7 +101,7 @@
 		{
 			"label": "jsh: Run Current File",
 			"type": "shell",
-			"command": "./jsh.bash ${file}",
+			"command": "./jsh ${file}",
 			"problemMatcher": [],
 			"runOptions": {
 				"reevaluateOnRerun": false
@@ -111,7 +111,7 @@
 			"label": "jsh: Debug Current File",
 			"detail": "(Local only) Run the current script under the Rhino debugger",
 			"type": "shell",
-			"command": "./jsh.bash ${file}",
+			"command": "./jsh ${file}",
 			"problemMatcher": [],
 			"options": {
 				"env": {
@@ -157,11 +157,11 @@
 		{
 			"label": "Project: Update MPL headers",
 			"type": "shell",
-			"command": "./jsh.bash contributor/code/license.jsh.js --fix",
+			"command": "./jsh contributor/code/license.jsh.js --fix",
 			"problemMatcher": []
 		},
 		{
-			"label": "(Local only) Project: Run tests in Docker",
+			"label": "(Local only) Project: Run all project tests locally",
 			"type": "shell",
 			"command": "./wf test",
 			"problemMatcher": []

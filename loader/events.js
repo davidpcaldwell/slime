@@ -14,7 +14,7 @@
 	function($context,$export) {
 		/**
 		 * @constructor
-		 * @param { Parameters<slime.$api.Global["Events"]>[0] } [p]
+		 * @param { Parameters<slime.$api.exports.Events["emitter"]>[0] } [p]
 		 */
 		var Emitter = function(p) {
 			if (!p) p = {};
@@ -50,7 +50,7 @@
 			};
 
 			/**
-			 * @type { slime.$api.Events<{ [name: string]: any }>["listeners"] }
+			 * @type { slime.$api.event.Emitter<{ [name: string]: any }>["listeners"] }
 			 */
 			var listeners = {
 				add: function(name,handler) {
@@ -76,20 +76,6 @@
 			}
 
 			this.listeners = listeners;
-
-			//	TODO	roadmap: after some uses of this have been removed, add an optional 'old' property to allow this behavior
-			//			but overall we should not be adding arbitrary properties to an object just because it is an event emitter
-			if (p.source) {
-				p.source.listeners = new function() {
-					this.add = $context.deprecate(function(name,handler) {
-						listeners.add(name, handler);
-					});
-
-					this.remove = $context.deprecate(function(name,handler) {
-						listeners.remove(name, handler);
-					})
-				};
-			}
 
 			/**
 			 *
@@ -144,22 +130,29 @@
 			}
 		}
 
-		var ListenersInvocationReceiver = function(handler) {
-			var source = {};
+		/**
+		 * @template { object } D
+		 * @param { slime.$api.event.Handlers<D> } handlers
+		 */
+		var ListenersInvocationReceiver = function(handlers) {
+			var source = {
+				listeners: void(0)
+			};
 			var events = new Emitter({ source: source });
 
-			this.attach = function() {
-				attach(events,handler);
-			};
-
-			this.detach = function() {
-				detach(events,handler);
-			};
-
-			this.emitter = events;
+			return {
+				attach: function() {
+					attach(events,handlers);
+				},
+				detach: function() {
+					detach(events,handlers);
+				},
+				emitter: events
+			}
 		};
 
-		var listening = function(f,defaultOn) {
+		/** @type { slime.$api.exports.Events["Function"] } */
+		var Function = function(f,defaultOn) {
 			var EmitterInvocationReceiver = function(emitter) {
 				this.attach = function(){};
 				this.detach = function(){};
@@ -169,7 +162,7 @@
 			return function(p,receiver) {
 				var invocationReceiver = (receiver instanceof Emitter)
 					? new EmitterInvocationReceiver(receiver)
-					: new ListenersInvocationReceiver(
+					: ListenersInvocationReceiver(
 						(function() {
 							if (receiver) return receiver;
 							if (defaultOn) return defaultOn;
@@ -186,73 +179,51 @@
 			}
 		};
 
-		/** @type { slime.runtime.internal.events.Exports["ask"] } */
-		function ask(f) {
-			var rv = function(on) {
-				var receiver = new ListenersInvocationReceiver(on);
-				receiver.attach();
-				try {
-					return f.call(this, receiver.emitter);
-				} finally {
-					receiver.detach();
-				}
-			}
-			return rv;
-		}
-
-		/** @type { slime.runtime.internal.events.Exports["tell"] } */
-		function tell(f) {
-			var rv = function(on) {
-				var receiver = new ListenersInvocationReceiver(on);
-				receiver.attach();
-				try {
-					f.call(this, receiver.emitter);
-				} finally {
-					receiver.detach();
-				}
-			}
-			return rv;
-		}
+		/** @type { ReturnType<ListenersInvocationReceiver>[] } */
+		var attachedHandlers = [];
 
 		$export({
-			api: {
-				create: function(p) {
+			exports: {
+				emitter: function(p) {
 					return new Emitter(p);
 				},
-				Function: listening,
-				toListener: function(handler) {
-					return new ListenersInvocationReceiver(handler);
-				},
-				action: function(f) {
-					return function(handler) {
-						var invocationReceiver = new ListenersInvocationReceiver(handler);
-						invocationReceiver.attach();
-						try {
-							return f.call( this, invocationReceiver.emitter );
-						} finally {
-							invocationReceiver.detach();
+				Function: Function,
+				Handlers: {
+					/** @template { any } D */
+					attached: function(handlers) {
+						//	TODO	would be nice if we had access to $api.fp.cast, but would require refactor
+						/** @type { (v: any) => slime.$api.exports.Attached<D> } */
+						var cast = function(v) { return v; };
+
+						var x = ListenersInvocationReceiver(handlers);
+						x.attach();
+						attachedHandlers.push(x);
+						return cast(x.emitter);
+					},
+					detach: function(events) {
+						var match;
+						for (var i=0; i<attachedHandlers.length; i++) {
+							if (attachedHandlers[i].emitter == events) {
+								match = i;
+							}
 						}
-					}
-				},
-				invoke: function(f,handler) {
-					var invocationReceiver = new ListenersInvocationReceiver(handler);
-					invocationReceiver.attach();
-					try {
-						return f.call( this, invocationReceiver.emitter );
-					} finally {
-						invocationReceiver.detach();
-					}
-				},
-				Handler: {
-					attach: function(events) {
-						return function(handler) {
-							attach(events,handler);
+						if (typeof(match) != "undefined") {
+							attachedHandlers[match].detach();
+							attachedHandlers.splice(match, 1);
 						}
 					}
 				}
 			},
-			ask: ask,
-			tell: tell
+			handle: function(p) {
+				var receiver = ListenersInvocationReceiver(p.handlers);
+				receiver.attach();
+				try {
+					//	TODO	'this' is almost certainly wrong. Perhaps should be optional parameter?
+					return p.implementation.call(this, receiver.emitter);
+				} finally {
+					receiver.detach();
+				}
+			}
 		});
 	}
 //@ts-ignore

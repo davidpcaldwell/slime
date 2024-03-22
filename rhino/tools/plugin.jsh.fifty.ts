@@ -93,9 +93,12 @@ namespace slime.jsh.java.tools {
 						installed: { version: "4.0.1" }
 					};
 					var events = runInstall({ mock: mock }).events;
-					var last = events[events.length-1];
-					verify(last).type.is("console");
-					verify(last).detail.is("Already installed: hg 4.0.1");
+					verify(events).length.is.not(0);
+					if (events.length > 0) {
+						var last = events[events.length-1];
+						verify(last).type.is("console");
+						verify(last).detail.is("Already installed: hg 4.0.1");
+					}
 				})();
 
 				(function upgrade() {
@@ -266,6 +269,26 @@ namespace slime.jsh.java.tools {
 						});
 						return rv;
 					};
+
+					this.Location = {
+						file: {
+							read: {
+								string: {
+									world: function(p) {
+										return function(e) {
+											return void(0);
+										}
+									}
+								}
+							}
+						},
+						parent: function() { return void(0); },
+						directory: {
+							require: function(p) {
+
+							}
+						}
+					}
 				};
 
 				var MockShellPlugin = function(o) {

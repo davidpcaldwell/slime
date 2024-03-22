@@ -43,6 +43,10 @@ public class CygwinFilesystem extends Filesystem {
 		return getClass().getName() + " paths={" + paths + "}";
 	}
 
+	public boolean isPosix() {
+		return false;
+	}
+
 	public final void finalize() {
 		paths.destroy();
 	}

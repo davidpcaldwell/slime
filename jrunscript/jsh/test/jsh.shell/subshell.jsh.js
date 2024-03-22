@@ -27,7 +27,7 @@
 			jsh.script.cli.program({
 				commands: {
 					world: function() {
-						var subshell = jsh.shell.Intention.from.jsh({
+						var subshell = jsh.shell.jsh.Intention.toShellIntention({
 							shell: {
 								src: src
 							},

@@ -23,27 +23,6 @@
 		//	TODO	would be nice to generalize this and push it back into the shell module itself
 		if (!module.properties) throw new TypeError("No properties properties.");
 
-		$exports.Intention = (function(was) {
-			/** @type { slime.js.Cast<slime.jsh.shell.Exports["Intention"]> } */
-			var toJsh = $api.fp.cast;
-
-			var is = toJsh(was);
-			is.from.jsh = function(p) {
-				return {
-					command: "bash",
-					arguments: $api.Array.build(function(rv) {
-						rv.push($context.api.file.Location.relative("jsh")($context.api.file.Location.from.os(p.shell.src)).pathname);
-						rv.push(p.script);
-						if (p.arguments) rv.push.apply(rv, p.arguments);
-					}),
-					directory: p.directory,
-					environment: p.environment,
-					stdio: p.stdio
-				}
-			};
-			return is;
-		})(module.Intention);
-
 		$exports.engine = module.properties.get("jsh.engine");
 
 		$exports.exit = $context.exit;
@@ -85,7 +64,7 @@
 						throw new TypeError("Not a recognized stream: " + stream);
 					})();
 					return function(message) {
-						writer.write(toString(message)+module.properties.get("line.separator"));
+						writer.write(toString(message) + module.properties.get("line.separator"));
 					}
 				}
 
@@ -564,11 +543,101 @@
 				}
 			},
 			{
-				command: void(0),
 				require: void(0),
 				relaunch: void(0),
 				debug: void(0),
-				url: void(0)
+				url: void(0),
+				Installation: void(0),
+				/** @type { slime.jsh.shell.JshShellJsh["Intention" ]} */
+				Intention: {
+					toShellIntention: function(p) {
+						/** @type { (p: slime.jsh.shell.UnbuiltInstallation) => slime.jrunscript.file.Location } */
+						var getSrcLauncher = function(p) {
+							return $context.api.file.Location.directory.relativePath("jsh")($context.api.file.Location.from.os(p.src));
+						};
+
+						/** @type { (p: slime.jsh.shell.BuiltInstallation) => slime.jrunscript.file.Location } */
+						var getHomeLauncher = function(p) {
+							return $context.api.file.Location.directory.relativePath("jsh.bash")($context.api.file.Location.from.os(p.home));
+						}
+
+						/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.UnbuiltInstallation } */
+						var isUnbuilt = function(shell) {
+							return Boolean(shell["src"]);
+						};
+
+						/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.BuiltInstallation } */
+						var isBuilt = function(shell) {
+							return Boolean(shell["home"]);
+						};
+
+						/** @type { (p: slime.jsh.shell.Intention) => p is slime.jsh.shell.ExternalInstallationInvocation } */
+						var isExternalInstallationInvocation = function(p) {
+							return Boolean(p["shell"]);
+						}
+
+						/** @param { slime.jsh.shell.Intention["properties"] } properties */
+						var getPropertyArguments = function(properties) {
+							return Object.entries(properties).reduce(function(rv,entry) {
+								//	TODO	is any sort of escaping or anything required here? What if value has spaces? What if
+								//			name does?
+								rv.push("-D" + entry[0] + "=" + entry[1]);
+								return rv;
+							},[])
+						}
+
+						if (isExternalInstallationInvocation(p)) {
+							var shell = p.shell;
+							if (isUnbuilt(shell)) {
+								//	Below is necessary for TypeScript as of 5.1.6
+								var s = shell;
+								return {
+									//	TODO	will not work on Windows
+									command: "bash",
+									arguments: $api.Array.build(function(rv) {
+										rv.push(getSrcLauncher(s).pathname);
+										if (p.properties) rv.push.apply(rv, getPropertyArguments(p.properties));
+										rv.push(p.script);
+										if (p.arguments) rv.push.apply(rv, p.arguments);
+									}),
+									directory: p.directory,
+									environment: p.environment,
+									stdio: p.stdio
+								}
+							} else if (isBuilt(shell)) {
+								//	TODO #1415	support this
+								if (p.properties) throw new TypeError("Unsupported: supplying properties to built shell.");
+								var downcast = shell;
+								return {
+									//	TODO	will not work on Windows
+									command: "bash",
+									arguments: $api.Array.build(function(rv) {
+										rv.push(getHomeLauncher(downcast).pathname);
+										rv.push(p.script);
+										if (p.arguments) rv.push.apply(rv, p.arguments);
+									}),
+									directory: p.directory,
+									environment: p.environment,
+									stdio: p.stdio
+								}
+							} else {
+								throw new Error("Unsupported external shell.");
+							}
+						} else {
+							return {
+								//	TODO	allow Java to be specified
+								command: module.java.launcher.pathname.toString(),
+								arguments: $api.Array.build(function(rv) {
+									rv.push("-jar", p.package);
+									if (p.arguments) rv.push.apply(rv, p.arguments);
+								}),
+								directory: p.directory,
+								environment: p.environment,
+								stdio: p.stdio
+							}
+						}
+					}
+				}
 			}
 		);
 		$exports.jsh.relaunch = $api.experimental(function(p) {
@@ -585,8 +654,8 @@
 			});
 		});
 		/** @type { slime.jsh.shell.Exports["jsh"]["require"] } */
-		$exports.jsh.require = $api.events.Function(
-			function(p,events) {
+		$exports.jsh.require = function(p) {
+			return function(events) {
 				//  TODO    should develop a strategy for preventing infinite loops
 				if (!p.satisfied()) {
 					events.fire("installing");
@@ -597,7 +666,7 @@
 					events.fire("satisfied");
 				}
 			}
-		);
+		};
 
 		$exports.run = (function(was) {
 			/** @type { slime.js.Cast<slime.jsh.shell.Exports["run"]> } */
@@ -607,7 +676,9 @@
 			is.evaluate.wrap = function(result) {
 				$exports.exit(result.status);
 			};
-			is.evaluate.jsh = {};
+			is.evaluate.jsh = {
+				wrap: void(0)
+			};
 			is.evaluate.jsh.wrap = function(result) {
 				$exports.exit(result.status);
 			}
@@ -637,6 +708,52 @@
 			$exports.jsh.lib = $context.api.file.Pathname(module.properties.object.jsh.shell.lib).directory;
 		} else if ($exports.jsh.home) {
 			$exports.jsh.lib = $exports.jsh.home.getSubdirectory("lib");
+		}
+
+		var canonicalize = function(ospath) {
+			var os = $context.api.file.Location.from.os(ospath);
+			//	TODO	we need a wo API to canonicalize
+			var canonicalized = $context.api.file.Location.directory.relativePath("foo")(os);
+			var directory = $context.api.file.Location.parent()(canonicalized);
+			return directory.pathname;
+		}
+
+		var canonicalizePropertyValue = function(_value) {
+			var value = String(_value);
+			return canonicalize(value);
+		}
+
+		$exports.jsh.Installation = {
+			from: {
+				current: function() {
+					var packaged = $context.packaged();
+					if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.src) {
+						var src = canonicalizePropertyValue(module.properties.object.jsh.shell.src);
+						if ($context.api.file.Pathname(src).directory) {
+							return {
+								src: src
+							}
+						}
+					} else if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.home) {
+						var home = canonicalizePropertyValue(module.properties.object.jsh.shell.home);
+						if ($context.api.file.Pathname(home).directory) {
+							return {
+								home: home
+							}
+						}
+					} else if (packaged.present) {
+						return {
+							package: canonicalize(packaged.value)
+						}
+					}
+				}
+			},
+			is: {
+				/** @type { slime.jsh.shell.JshShellJsh["Installation"]["is"]["unbuilt"] } */
+				unbuilt: function(p) {
+					return Boolean(p["src"]);
+				}
+			}
 		}
 
 		$exports.world = (function(was) {

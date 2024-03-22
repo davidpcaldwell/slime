@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.file.test {
+namespace slime.jrunscript.file.internal.test {
 	export namespace filesystem {
 		export interface BinaryFile {
 			bytes: number[]
@@ -57,8 +57,8 @@ namespace slime.jrunscript.file.test {
 	(
 		function(
 			Packages: slime.jrunscript.Packages,
-			$context: slime.jrunscript.file.test.fixtures.Context,
-			$export: slime.loader.Export<slime.jrunscript.file.test.Fixtures>
+			$context: slime.jrunscript.file.internal.test.fixtures.Context,
+			$export: slime.loader.Export<slime.jrunscript.file.internal.test.Fixtures>
 		) {
 			const { fifty } = $context;
 			const { $api, jsh } = fifty.global;
@@ -197,40 +197,17 @@ namespace slime.jrunscript.file.test {
 
 			const { newTemporaryDirectory, createFile, createDirectory } = helpers;
 
-			const isTextFile = (p: filesystem.Node): p is filesystem.TextFile => typeof(p["text"]) == "string";
-			const isBinaryFile = (p: filesystem.Node): p is filesystem.BinaryFile => Boolean(p["binary"]);
-
-			var writeContents = function(mock: slime.jrunscript.file.world.Filesystem, prefix: string, contents: slime.jrunscript.file.test.filesystem.Folder["contents"]) {
-				Object.entries(contents).forEach(function(entry) {
-					var name = entry[0];
-					var value = entry[1];
-					if (isTextFile(value)) {
-						var o = $api.fp.world.now.question(
-							mock.openOutputStream,
-							{ pathname: prefix + name }
-						);
-						if (!o.present) throw new Error("Unreachable");
-						o.value.character().write(value.text);
-						o.value.close();
-					} else if (isBinaryFile(value)) {
-						// write it out
-					} else {
-						var v = value;
-						// recurse somehow
-					}
-				})
-
-			}
-
-			var Filesystem: Fixtures["Filesystem"] = {
-				from: {
-					descriptor: function(p) {
-						var mock = module.mock.filesystem();
-						writeContents(mock, "", p.contents);
-						return mock;
-					}
+			var mockFixtures = (
+				function() {
+					var script: slime.loader.Script<slime.jrunscript.file.internal.mock.Context,slime.jrunscript.file.mock.Fixtures> = fifty.$loader.script(prefix + "mock.fixtures.ts");
+					return script({
+						library: {
+							java: jsh.java,
+							io: jsh.io
+						}
+					})
 				}
-			}
+			)();
 
 			$export({
 				$jsapi: $jsapi,
@@ -240,7 +217,7 @@ namespace slime.jrunscript.file.test {
 				newTemporaryDirectory: helpers.newTemporaryDirectory,
 				createFile: helpers.createFile,
 				createDirectory: helpers.createDirectory,
-				Filesystem: Filesystem
+				Filesystem: mockFixtures.Filesystem
 			});
 		}
 	//@ts-ignore

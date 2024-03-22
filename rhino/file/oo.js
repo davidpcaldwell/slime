@@ -285,6 +285,7 @@
 			this.get = void(0);
 			this.factory = void(0);
 			this.script = void(0);
+			this.toSynchronous = void(0);
 			var args = Array.prototype.slice.call(arguments);
 			args.splice(0,1,a);
 			$context.api.io.Loader.apply(this,args);
@@ -315,10 +316,17 @@
 			}
 		}
 
+		/** @type { <E>(f: slime.$api.fp.world.Action<E>) => (handlers: slime.$api.event.Handlers<E>) => void } */
+		var tellToHandlersFunction = function(f) {
+			return function(handlers) {
+				$api.fp.world.now.tell(f, handlers);
+			}
+		}
+
 		var action = {
 			delete: function(pathname) {
 				return Object.assign(
-					$api.Events.action(function(events) {
+					tellToHandlersFunction(function(events) {
 						var remove = function(node) {
 							node.remove();
 							events.fire("deleted", node.pathname.toString());
@@ -334,7 +342,7 @@
 			},
 			write: function(p) {
 				return Object.assign(
-					$api.Events.action(function(events) {
+					tellToHandlersFunction(function(events) {
 						var location = Pathname(p.location);
 						var parent = location.parent;
 						if (parent.file) throw new Error("Parent pathname " + parent + " is an ordinary file.");

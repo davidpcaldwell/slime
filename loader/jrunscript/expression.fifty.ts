@@ -255,7 +255,7 @@ namespace slime.jrunscript.runtime {
 	)(fifty);
 
 	/**
-	 * A standardized interface for resources that eases interoperability between various kinds of loaders.
+	 * A standardized interface for resources that eases interoperability between various kinds of Java-based loaders.
 	 */
 	export interface Resource {
 		read: () => slime.jrunscript.runtime.io.InputStream
@@ -283,7 +283,9 @@ namespace slime.jrunscript.runtime {
 		jrunscript: {
 			loader: {
 				from: {
-					java: (_loader: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.runtime.loader.Synchronous<slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource>
+					java: (
+						_loader: slime.jrunscript.native.inonit.script.engine.Code.Loader
+					) => slime.runtime.loader.Synchronous<slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource>
 				}
 				entries: <T>(
 					p: {
@@ -328,10 +330,15 @@ namespace slime.jrunscript.runtime {
 				)
 			);
 
+			var getType = function(value: any): { type: string } {
+				if (value === null) return { type: "null" };
+				return { type: typeof value };
+			}
+
 			fifty.tests.exports.loader = function() {
-				verify($slime).loader.is.type("object");
-				verify($slime).loader.synchronous.is.type("object");
-				verify($slime).loader.synchronous.script.is.type("function");
+				verify(getType($slime.loader)).type.is("object");
+				verify(getType($slime.loader.synchronous)).type.is("object");
+				verify(getType($slime.loader.synchronous.script)).type.is("function");
 
 				fifty.load("../Loader.fifty.ts", "script", loader);
 				fifty.load("../Loader.fifty.ts", "object", loader);
@@ -341,64 +348,61 @@ namespace slime.jrunscript.runtime {
 	)(Packages,fifty);
 }
 
-namespace slime.$api {
-	export interface Global {
-		jrunscript: {
-			Properties: {
-				codec: {
-					object: slime.Codec<slime.$api.jrunscript.Properties,slime.jrunscript.native.java.util.Properties>
-				}
-			}
-		}
-	}
-
-	var jrunscript: Global["jrunscript"]
-
-	export namespace jrunscript {
-		export type Properties = { [x: string]: string }
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api, jsh } = fifty.global;
-
-			fifty.tests.$api = {
-				jrunscript: function() {
-					var values = {
-						a: "1"
-					};
-
-					var encoded = $api.jrunscript.Properties.codec.object.encode(values);
-					jsh.shell.console(String(encoded));
-					verify(encoded.getProperty("a")).evaluate(String).is("1");
-					verify(encoded.getProperty("foo")).is(null);
-
-					var decoded = $api.jrunscript.Properties.codec.object.decode(encoded);
-					verify(decoded).a.is("1");
-					verify(decoded).evaluate.property("foo").is(void(0));
-				}
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-}
-
 (
 	function(
+		Packages: slime.jrunscript.Packages,
 		fifty: slime.fifty.test.Kit
 	) {
 		const { verify } = fifty;
+		const { jsh } = fifty.global;
+
+		fifty.tests.jsapi = function() {
+			var $slime = jsh.unit.$slime;
+
+			//	TODO	for some reason the below does not work; the verify wrapping of the $slime object goes into some kind of
+			//			memory-exhausting loop.
+			// verify($slime,"$slime").is.type("object");
+			//	... because of what's described in the comment above, we use these two lines:
+			verify({ type: typeof $slime }).evaluate.property("type").is("object")
+			verify({ type: typeof $slime.Loader }).evaluate.property("type").is("function");
+			var tmpdir = fifty.jsh.file.object.temporary.directory();
+			tmpdir.getRelativePath("dir").createDirectory();
+			tmpdir.getRelativePath("file").write("contents", { append: false });
+			tmpdir.getRelativePath("dir/under").write("inside", { append: false });
+
+			var _source = Packages.inonit.script.engine.Code.Loader.create(tmpdir.pathname.java.adapt());
+			var loader = new $slime.Loader({
+				_source: _source
+			});
+			verify(loader).get("file").is.not(null);
+			var file = loader.get("file");
+			verify(file)["modified"].is.type("object");
+			verify(file)["modified"].evaluate(function(p) {
+				jsh.shell.console("1");
+				var dateType = (Date["was"]) ? Date["was"] : Date;
+				if (!(p instanceof dateType)) {
+					Packages.java.lang.System.err.println("modified = " + p);
+					Packages.java.lang.System.err.println("modified.constructor = " + p.constructor);
+					Packages.java.lang.System.err.println("Date = " + dateType);
+				}
+				return p instanceof dateType;
+			}).is(true);
+			verify(loader).get("dir/under").is.not(null);
+			verify(loader).get("foo").is(null);
+			verify(loader).evaluate.property("list").is.type("function");
+
+			var list = loader.list();
+			verify(loader).list().length.is(2);
+			var child = loader.Child("dir/");
+			verify(child).evaluate.property("list").is.type("function");
+			verify(child).list().length.is(1);
+		}
 
 		fifty.tests.suite = function() {
-			verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
+			verify(fifty.global.jsh.unit.$slime.$platform && typeof fifty.global.jsh.unit.$slime.$platform == "object").is(true);
+			//verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
 
 			fifty.run(fifty.tests.exports);
-
-			fifty.run(fifty.tests.$api.jrunscript);
 
 			//	TODO	redundant? tested per-engine in contributor/suite.jsh.js
 			fifty.load("java.fifty.ts");
@@ -406,7 +410,7 @@ namespace slime.$api {
 		}
 	}
 //@ts-ignore
-)(fifty);
+)(Packages,fifty);
 
 
 (

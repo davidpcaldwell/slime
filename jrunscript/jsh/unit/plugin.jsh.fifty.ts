@@ -5,27 +5,12 @@
 //	END LICENSE
 
 namespace slime.jsh.unit {
-	export namespace internal.remote {
-		export interface Context {
-			api: {
-				java: slime.jrunscript.host.Exports
-				unit: any
-			}
-		}
-
-		export interface Exports {
-			Events: any
-			Decoder: any
-			Stream: any
-		}
-	}
-
 	export interface Exports {
-		mock: slime.jsh.unit.mock;
 		html: {
 			Part: any
 			cli: any
 			Suite: any
+			documentation: any
 		}
 		/** @deprecated */
 		part: {
@@ -60,7 +45,12 @@ namespace slime.jsh.unit {
 		}
 		JSON: {
 			Encoder: any
+			Decoder: any
 		}
+		Scenario: any
+		view: any
+		View: any
+		getStructure: any
 	}
 }
 

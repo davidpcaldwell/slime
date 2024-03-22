@@ -30,9 +30,14 @@ namespace slime.tools.code {
 	/**
 	 * A `Project` consists of a set of source files to be processed.
 	 */
-	export type Project = {
+	export interface Project {
 		base: slime.jrunscript.file.Location
 		files: slime.jrunscript.file.Location[]
+	}
+
+	export interface Excludes {
+		descend: slime.$api.fp.Predicate<slime.jrunscript.file.Location>
+		isSource: isSource
 	}
 
 	export interface Exports {
@@ -40,15 +45,36 @@ namespace slime.tools.code {
 			from: {
 				directory: (p: {
 					root: slime.jrunscript.file.Location
-					descend: slime.$api.fp.Predicate<slime.jrunscript.file.Location>
-					isSource: isSource
+					excludes: Excludes
 				}) => Project
 
 				git: (p: {
 					root: slime.jrunscript.file.Location
-					isSource: isSource
+					excludes?: Excludes
 				}) => Project
 			}
+
+			files: (project: Project) => File[]
+
+			gitignoreLocal: slime.$api.fp.world.Means<
+				Project,
+				{
+					creating: {
+						file: slime.jrunscript.file.Location
+					}
+
+					//	TODO	could consider line number
+					//	TODO	what about exclusion patterns undoing what is found?
+					found: {
+						file: slime.jrunscript.file.Location
+						pattern: string
+					}
+
+					updating: {
+						file: slime.jrunscript.file.Location
+					}
+				}
+			>
 		}
 	}
 
@@ -58,26 +84,73 @@ namespace slime.tools.code {
 		) {
 			const { $api, jsh } = fifty.global;
 
-			fifty.tests.wip = function() {
+			fifty.tests.Project = fifty.test.Parent();
+
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.Project_from_directory = function() {
 				var project = test.subject.Project.from.directory({
 					root: fifty.jsh.file.relative("../.."),
-					descend: function(location) {
-						if (location.pathname.indexOf(".git") != -1) {
-							debugger;
+					excludes: {
+						descend: function(location) {
+							if (location.pathname.indexOf(".git") != -1) {
+								debugger;
+							}
+							if (/local$/.test(location.pathname)) return false;
+							if (/\.git$/.test(location.pathname)) return false;
+							return true;
+						},
+						isSource: function(file) {
+							if (/\.git$/.test(file.pathname)) return $api.fp.Maybe.from.some(false);
+							return $api.fp.Maybe.from.some(true);
 						}
-						if (/local$/.test(location.pathname)) return false;
-						if (/\.git$/.test(location.pathname)) return false;
-						return true;
-					},
-					isSource: function(file) {
-						return $api.fp.Maybe.from.some(true);
 					}
 				});
 				jsh.shell.console(project.files.map($api.fp.property("pathname")).join(", "));
+			};
+
+			fifty.tests.manual.Project_gitignoreLocal = function() {
+				$api.fp.world.now.action(
+					test.subject.Project.gitignoreLocal,
+					test.subject.Project.from.git({
+						root: jsh.shell.PWD.pathname.os.adapt(),
+						excludes: {
+							descend: $api.fp.mapping.all(true),
+							isSource: $api.fp.mapping.all($api.fp.Maybe.from.some(true))
+						}
+					}),
+					{
+						creating: function(e) {
+							jsh.shell.console("Creating: " + e.detail.file.pathname);
+						},
+						updating: function(e) {
+							jsh.shell.console("Updating: " + e.detail.file.pathname);
+						},
+						found: function(e) {
+							jsh.shell.console("Found: " + e.detail.file.pathname);
+						}
+					}
+				);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface JsapiMigrationData {
+		name: string
+		files: number
+		bytes: number
+		list: () => {
+			path: string
+			bytes: number
+			tests: slime.$api.fp.Maybe<number>
+		}[]
+	}
+
+	export interface JsapiAnalysis {
+		jsapi: JsapiMigrationData
+		fifty: JsapiMigrationData
+	}
 
 	export interface Exports {
 		jsapi: {
@@ -90,19 +163,25 @@ namespace slime.tools.code {
 			Element: {
 				getTestingElements: (p: slime.runtime.document.Document) => slime.runtime.document.Element[]
 			}
+
+			analysis: slime.$api.fp.Mapping<slime.tools.code.Project,slime.tools.code.JsapiAnalysis>
+
+			report: (p: {
+				line: slime.$api.fp.impure.Output<string>
+			}) => slime.$api.fp.impure.Output<Project>
 		}
 	}
 
 	export interface File {
 		path: string
-		file: slime.jrunscript.file.world.Location
+		file: slime.jrunscript.file.Location
 	}
 
 	export type isText = (p: slime.tools.code.File) => boolean | undefined
 
 	export type oldIsSource = (p: slime.tools.code.File) => slime.$api.fp.Maybe<boolean>
 
-	export type isSource = (p: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<boolean>
+	export type isSource = slime.$api.fp.Partial<slime.jrunscript.file.Location,boolean>
 
 	export interface FileEvents {
 		unknownFileType: slime.tools.code.File
@@ -125,15 +204,34 @@ namespace slime.tools.code {
 		multiple: slime.tools.code.File
 	}
 
-	export interface Excludes {
-		file?: slime.$api.fp.Predicate<slime.jrunscript.file.File>
-		directory?: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
+	export namespace old {
+		export interface Excludes {
+			file?: slime.$api.fp.Predicate<slime.jrunscript.file.File>
+			directory?: slime.$api.fp.Predicate<slime.jrunscript.file.Directory>
+		}
 	}
 
 	export interface Exports {
 		File: {
-			hasShebang: () => slime.$api.fp.world.Question<File,void,slime.$api.fp.Maybe<boolean>>
-			isText: () => slime.$api.fp.world.Question<File,void,slime.$api.fp.Maybe<boolean>>
+			from: {
+				location: (base: slime.jrunscript.file.Location) => (location: slime.jrunscript.file.Location) => File
+			}
+
+			hasShebang: () => slime.$api.fp.world.Sensor<File,void,slime.$api.fp.Maybe<boolean>>
+
+			isText: {
+				world: () => slime.$api.fp.world.Sensor<File,void,slime.$api.fp.Maybe<boolean>>
+				basic: slime.$api.fp.Mapping<File,slime.$api.fp.Maybe<boolean>>
+			}
+
+			isJavascript: slime.$api.fp.Mapping<File,boolean>
+			isTypescript: slime.$api.fp.Mapping<File,boolean>
+
+			isFiftyDefinition: slime.$api.fp.Mapping<File,boolean>
+
+			javascript: {
+				hasTypeChecking: (file: File) => slime.$api.fp.Maybe<boolean>
+			}
 		}
 	}
 
@@ -144,7 +242,7 @@ namespace slime.tools.code {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.File = {};
+			fifty.tests.File = fifty.test.Parent();
 			fifty.tests.File.hasShebang = function() {
 				var wf = fifty.jsh.file.relative("../../wf");
 				var jxa = fifty.jsh.file.relative("../../jxa.bash");
@@ -202,7 +300,7 @@ namespace slime.tools.code {
 		}
 
 		defaults: {
-			exclude: Excludes
+			exclude: old.Excludes
 		}
 
 		scanForTrailingWhitespace: (code: string) => {
@@ -219,17 +317,17 @@ namespace slime.tools.code {
 			fixed: string
 		}
 
-		handleDirectoryTrailingWhitespace: slime.$api.fp.world.Action<
+		handleDirectoryTrailingWhitespace: slime.$api.fp.world.Means<
 			{
 				base: slime.jrunscript.file.Directory
-				exclude?: Excludes
+				exclude?: old.Excludes
 				isText: isText
 				nowrite?: boolean
 			},
 			FileEvents & TrailingWhitespaceEvents
 		>
 
-		handleGitTrailingWhitespace: slime.$api.fp.world.Action<
+		handleGitTrailingWhitespace: slime.$api.fp.world.Means<
 			{
 				repository: string
 				isText: isText
@@ -238,17 +336,17 @@ namespace slime.tools.code {
 			FileEvents & TrailingWhitespaceEvents
 		>
 
-		handleDirectoryFinalNewlines: slime.$api.fp.world.Action<
+		handleDirectoryFinalNewlines: slime.$api.fp.world.Means<
 			{
 				base: slime.jrunscript.file.Directory
-				exclude?: Excludes
+				exclude?: old.Excludes
 				isText?: isText
 				nowrite?: boolean
 			},
 			FileEvents & FinalNewlineEvents
 		>
 
-		handleGitFinalNewlines: slime.$api.fp.world.Action<
+		handleGitFinalNewlines: slime.$api.fp.world.Means<
 			{
 				repository: string
 				isText: isText
@@ -291,6 +389,7 @@ namespace slime.tools.code {
 			}
 
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.File);
 				fifty.run(fifty.tests.filename);
 				fifty.run(fifty.tests.checkSingleFinalNewline);
 			}
@@ -302,17 +401,17 @@ namespace slime.tools.code {
 
 	export namespace internal {
 		export interface functions {
-			getDirectoryObjectSourceFiles: slime.$api.fp.world.Question<
+			getDirectoryObjectSourceFiles: slime.$api.fp.world.Sensor<
 				{
 					base: slime.jrunscript.file.Directory
 					isText: isText
-					exclude?: Excludes
+					exclude?: old.Excludes
 				},
 				FileEvents,
 				slime.tools.code.File[]
 			>
 
-			getGitSourceFiles: slime.$api.fp.world.Question<
+			getGitSourceFiles: slime.$api.fp.world.Sensor<
 				{
 					repository: slime.jrunscript.file.Location
 					isSource: oldIsSource
@@ -323,18 +422,18 @@ namespace slime.tools.code {
 
 			handleFileTrailingWhitespace: (configuration?: {
 				nowrite?: boolean
-			}) => slime.$api.fp.world.Action<slime.tools.code.File,TrailingWhitespaceEvents>
+			}) => slime.$api.fp.world.Means<slime.tools.code.File,TrailingWhitespaceEvents>
 
 			handleFilesTrailingWhitespace: (configuration?: {
 				nowrite?: boolean
-			}) => slime.$api.fp.world.Action<
+			}) => slime.$api.fp.world.Means<
 				slime.tools.code.File[],
 				TrailingWhitespaceEvents
 			>
 
 			handleFileFinalNewlines: (configuration?: {
 				nowrite?: boolean
-			}) => slime.$api.fp.world.Action<slime.tools.code.File,FinalNewlineEvents>
+			}) => slime.$api.fp.world.Means<slime.tools.code.File,FinalNewlineEvents>
 		}
 	}
 }

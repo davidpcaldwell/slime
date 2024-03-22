@@ -42,11 +42,11 @@ namespace slime.jsh.script {
 		 * A process that may return a numeric exit status that can be used as a process exit status, or may complete normally, or
 		 * may throw an uncaught exception.
 		 */
-		export interface Command<T> {
+		export interface Command<T = {}> {
 			(invocation: Invocation<T>): number | void
 		}
 
-		export interface Commands<T> {
+		export interface Commands<T = {}> {
 			[x: string]: Commands<T> | Command<T>
 		}
 
@@ -171,10 +171,6 @@ namespace slime.jsh.script {
 						verify(two).invocation.arguments[0].is("world");
 					});
 				};
-
-				fifty.tests.wip = function() {
-					fifty.tests.cli.Call();
-				}
 			}
 		//@ts-ignore
 		)(fifty);
@@ -182,7 +178,12 @@ namespace slime.jsh.script {
 	}
 
 	export namespace cli {
-		type OptionParser<T> = <O extends object,N extends string>(c: { longname: N, default?: T })
+		export type Option<N extends String,T> = { longname: N }
+		export type OptionWithDefault<N extends string,T> = { longname: N, default?: T }
+		export type OptionWithElse<N extends string,T> = { longname: N, else: slime.$api.fp.Thunk<T> }
+
+		export type OptionParser<T> = <O extends object,N extends string>
+			(c: Option<N,T> | OptionWithDefault<N,T> | OptionWithElse<N,T> )
 			=> (i: cli.Invocation<O>)
 			=> cli.Invocation<O & { [n in N]: T }>
 
@@ -256,6 +257,21 @@ namespace slime.jsh.script {
 						fifty.verify(four).options.evaluate.property("a").is(1);
 					});
 
+					fifty.run(function elses() {
+						var noDefault = subject.cli.option.number({ longname: "a" });
+						var withDefault = subject.cli.option.number({ longname: "a", else: function() { return 2; } });
+
+						var one = trial(noDefault, []);
+						var two = trial(noDefault, ["--a", "1"]);
+						var three = trial(withDefault, []);
+						var four = trial(withDefault, ["--a", "1"]);
+
+						fifty.verify(one).options.evaluate.property("a").is(void(0));
+						fifty.verify(two).options.evaluate.property("a").is(1);
+						fifty.verify(three).options.evaluate.property("a").is(2);
+						fifty.verify(four).options.evaluate.property("a").is(1);
+					});
+
 					var invocation: cli.Invocation<{ a: string, b: number[], c: string }> = {
 						options: {
 							a: void(0),
@@ -265,10 +281,12 @@ namespace slime.jsh.script {
 						arguments: ["--a", "A", "--b", "1", "--b", "3", "--c", "C"]
 					};
 					fifty.verify(invocation).options.b.length.is(0);
+
 					var processor: cli.Processor<{ a: string, b: number[], c: string }, { a: string, b: number[], c: string }> = subject.cli.option.array({
 						longname: "b",
 						value: Number
 					});
+
 					var after: cli.Invocation<{ a: string, b: number[], c: string }> = processor(invocation);
 					fifty.verify(after).options.b.length.is(2);
 					fifty.verify(after).options.b[0].is(1);
@@ -351,13 +369,71 @@ namespace slime.jsh.script {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export namespace fp {
+			export type OptionParser<T> = <O extends object,N extends string>(c: { longname: N })
+				=> (i: cli.Invocation<O>)
+				=> cli.Invocation<O & { [n in N]: slime.$api.fp.Maybe<T> }>
+		}
+
+		export interface Exports {
+			fp: {
+				option: {
+					location: fp.OptionParser<slime.jrunscript.file.Location>
+				}
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.cli.fp = fifty.test.Parent();
+
+				fifty.tests.cli.fp.option = function() {
+					var relative = fifty.global.$api.fp.now.invoke(
+						fifty.global.jsh.shell.PWD.pathname.os.adapt(),
+						fifty.global.jsh.file.Location.directory.relativePath("bar")
+					);
+					var fallback = fifty.jsh.file.relative("foo");
+					var at = test.subject.cli.fp.option.location({ longname: "at" });
+					var atDefault = fifty.global.$api.fp.impure.Input.value(fallback);
+
+					var withArgs = function(a: string[]): cli.Invocation<{}> { return { options: {}, arguments: a }};
+
+					var one = at(withArgs([])).options.at;
+					verify(one).present.is(false);
+
+					var two = at(withArgs(["--at", "bar"])).options.at;
+					verify(two).present.is(true);
+					if (two.present) {
+						verify(two).value.pathname.is(relative.pathname);
+					}
+
+					var three = $api.fp.impure.Input.from.partial({
+						if: $api.fp.impure.Input.value(at(withArgs([])).options.at),
+						else: atDefault
+					});
+					verify(three()).pathname.is(fallback.pathname);
+					var four = $api.fp.impure.Input.from.partial({
+						if: $api.fp.impure.Input.value(at(withArgs(["--at", "bar"])).options.at),
+						else: atDefault
+					});
+					verify(four()).pathname.is(relative.pathname);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace cli {
 		export namespace error {
-			export type NoTargetProvided = $api.error.old.Instance<"NoTargetProvided",{}>
-			export type TargetNotFound = $api.error.old.Instance<"TargetNotFound", { command: string }>
-			export type TargetNotFunction = $api.error.old.Instance<"TargetNotFunction", { command: string, target: any }>
+			export type NoTargetProvided = slime.$api.error.old.Instance<"NoTargetProvided",{}>
+			export type TargetNotFound = slime.$api.error.old.Instance<"TargetNotFound", { command: string }>
+			export type TargetNotFunction = slime.$api.error.old.Instance<"TargetNotFunction", { command: string, target: any }>
 		}
 
 		/**
@@ -386,6 +462,12 @@ namespace slime.jsh.script {
 			}
 
 			parser: {
+				/**
+				 * Resolves a command-line argument of type `Pathname`.
+				 *
+				 * @param argument A string, presumably provided by a command-line invoker
+				 * @returns A full `Pathname` representing the provided string, resolving relative paths as needed.
+				 */
 				pathname: (argument: string) => slime.jrunscript.file.Pathname
 			}
 
@@ -418,7 +500,7 @@ namespace slime.jsh.script {
 		export type Program = (invocation: slime.jsh.script.cli.Invocation<{}>) => number | void
 
 		export interface Exports {
-			program: <T>(p: {
+			program: <T = {}>(p: {
 				commands: Commands<T>
 			}) => Program
 		}
@@ -437,6 +519,7 @@ namespace slime.jsh.script {
 				var was = fifty.global.jsh.unit.$slime;
 				debugger;
 				var mocked = fifty.jsh.plugin.mock({
+					$loader: void(0),
 					jsh: fifty.global.jsh,
 					plugins: {
 						//	This is needed to load the plugin, although this is obviously a very skeletal mock of the
@@ -555,6 +638,120 @@ namespace slime.jsh.script {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			const fixtures = (
+				function() {
+					var script: slime.jsh.test.Script = fifty.$loader.script("../fixtures.ts");
+					return script();
+				}
+			)();
+
+			const { unbuilt, built, packaged, remote } = fixtures.shells;
+
+			fifty.tests.jsapi = fifty.test.Parent();
+
+			const environmentWithJavaInPath: slime.$api.fp.Transform<slime.jrunscript.shell.run.Environment> = function(given) {
+				var PATH = given.PATH.split(":");
+				var home = jsh.shell.java.Jdk.from.javaHome();
+				var insert = jsh.file.Pathname(home.base()).directory.getRelativePath("bin").toString();
+				//var insert = jsh.shell.java.home.getRelativePath("bin").toString();
+				jsh.shell.console("Inserting: " + insert);
+				PATH.splice(0,0,insert);
+				jsh.shell.console("PATH = " + PATH.join(":"));
+				return $api.Object.compose(
+					given,
+					{
+						PATH: PATH.join(":")
+					}
+				)
+			};
+
+			(
+				function() {
+					var script = fifty.jsh.file.relative("../test/jsh-data.jsh.js");
+
+					var jsonOutput = function(v: slime.jrunscript.shell.run.Exit) {
+						return JSON.parse(v.stdio.output);
+					};
+
+					fifty.tests.jsapi.file = fifty.test.Parent();
+
+					if (unbuilt) {
+						fifty.tests.jsapi.file.unbuilt = function() {
+							var intention: slime.jsh.shell.Intention = {
+								shell: unbuilt(),
+								script: script.pathname,
+								stdio: {
+									output: "string"
+								}
+							};
+							var run = jsh.shell.jsh.Intention.toShellIntention(intention);
+							var result = $api.fp.world.now.question(
+								jsh.shell.subprocess.question,
+								run
+							);
+
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].string.evaluate(String).is(script.pathname);
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].pathname.string.evaluate(String).is(script.pathname);
+						}
+					}
+
+					if (built) {
+						fifty.tests.jsapi.file.built = function() {
+							var intention: slime.jsh.shell.Intention = {
+								shell: built(),
+								script: script.pathname,
+								environment: environmentWithJavaInPath,
+								stdio: {
+									output: "string"
+								}
+							};
+							var run = jsh.shell.jsh.Intention.toShellIntention(intention);
+							debugger;
+							var result = $api.fp.world.now.question(
+								jsh.shell.subprocess.question,
+								run
+							);
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].string.evaluate(String).is(script.pathname);
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].pathname.string.evaluate(String).is(script.pathname);
+						}
+					}
+
+					if (packaged) {
+						fifty.tests.jsapi.file.packaged = function() {
+							var intention: slime.jsh.shell.Intention = {
+								package: packaged().package,
+								environment: environmentWithJavaInPath,
+								stdio: {
+									output: "string"
+								}
+							};
+							var run = jsh.shell.jsh.Intention.toShellIntention(intention);
+							var result = $api.fp.world.now.question(
+								jsh.shell.subprocess.question,
+								run
+							);
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].string.evaluate(String).is(packaged().package);
+							verify(result).evaluate(jsonOutput)["jsh.script.file"].pathname.string.evaluate(String).is(packaged().package);
+						}
+					}
+
+					// if ($jsapi.environment.jsh && $jsapi.environment.jsh.remote) {
+					// 	var remote = $jsapi.environment.jsh.remote.data;
+					// 	verify(remote).evaluate.property("jsh.script.file").is(void(0));
+					// }
+				}
+			)();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.cli);
 			}
@@ -574,7 +771,9 @@ namespace slime.jsh.script {
 		/** @deprecated */
 		addClasses: any
 		getRelativePath: any
-		Application: any
+		Application: slime.jsh.script.old.application.Constructor & {
+			run: any
+		}
 		loader: slime.old.Loader
 		Loader?: any
 		world: {
@@ -595,12 +794,12 @@ namespace slime.jsh.script.internal {
 
 	export interface Context extends Source {
 		api: {
-			js: any
+			js: slime.js.old.Exports
 			web: slime.web.Exports
 			file: slime.jrunscript.file.Exports
 			http: () => slime.jsh.Global["http"]
 			addClasses: (pathname: slime.jrunscript.file.Pathname) => void
-			parser: slime.jsh.script.Exports["cli"]["parser"]
+			parser: slime.jsh.script.cli.Exports["parser"]
 		}
 		directory: slime.jrunscript.file.Directory
 		arguments: string[]

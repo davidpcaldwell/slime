@@ -42,8 +42,7 @@
  *
  * SLIME Servlets is compatible with the Servlet 3.0.1 implementation.
  *
- * `jsh` currently supports **Tomcat 7.0.x** and is tested via the test suite. Updating to Tomcat 9 is on the roadmap via [issue
- * 209](https://github.com/davidpcaldwell/slime/issues/209).
+ * `jsh` currently uses the latest **Tomcat 9.0.x** and runs tests with it via the test suite.
  *
  * ### Browser
  *
@@ -137,6 +136,10 @@
  * *  `--chrome:debug:port *number*`: If specified, the opened Chrome will allow debuggers to connect on the given port.
  * *  `--index *path-to-index*`: (optional; defaults to `index.html`) The relative path of the index page in the directory being served.
  * *  `*directory*`: A directory to serve.
+ *
+ * ## Contributor documentation
+ *
+ * Separate documentation for project contributors can be browsed as the {@link slime.internal} TypeScript namespace.
  */
 namespace slime {
 	export interface Codec<T,E> {
@@ -145,16 +148,12 @@ namespace slime {
 	}
 
 	export namespace js {
+		export type NotReadonly<T> = T extends Object ? { -readonly [K in keyof T]: T[K] } : T
+
 		export type Cast<T> = (p: any) => T
 
 		//	https://stackoverflow.com/questions/41253310/typescript-retrieve-element-type-information-from-array-type
 		export type ArrayElement<ArrayType extends readonly unknown[]> =
 			ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 	}
-}
-
-/**
- * Types that are defined by code external to the SLIME project.
- */
-namespace slime.external {
 }

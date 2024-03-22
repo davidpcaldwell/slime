@@ -11,7 +11,7 @@ namespace slime.jrunscript.tools.gcloud {
 	export namespace cli {
 		export interface Invocation {
 			command: string
-			arguments: string[]
+			arguments?: string[]
 		}
 
 		export interface Command<P,R> {
@@ -19,26 +19,36 @@ namespace slime.jrunscript.tools.gcloud {
 			result?: (json: any) => R
 		}
 
-		export type Executor = <P,R>(command: cli.Command<P,R>) => {
+		export interface Events {
+			console: string
+		}
+
+		export type Configuration = <P,R>(command: Command<P,R>) => {
+			intention: (p: P) => slime.jrunscript.shell.run.Intention
+			handler: (events: slime.$api.event.Emitter<Events>) => slime.$api.event.Handlers<slime.jrunscript.shell.run.AskEvents>
+			result: (result: slime.jrunscript.shell.run.Exit) => R
+		}
+
+		export type Executor = <P,R>(command: cli.Command<P,R>) => slime.$api.fp.world.Sensor<P,cli.Events,R>
+
+		export type OldExecutor = <P,R>(command: cli.Command<P,R>) => {
 			argument: (p: P) => {
-				run: slime.$api.fp.world.old.Ask<{
-					console: string
-				},R>
+				run: slime.$api.fp.world.old.Ask<Events,R>
 			}
 		}
 
 		export interface Project {
-			command: cli.Executor
+			command: cli.OldExecutor
 		}
 
 		export interface Account {
 			project: (project: string) => Project
-			command: cli.Executor
+			command: cli.OldExecutor
 		}
 
 		export interface Installation {
 			account: (account: string) => Account
-			command: cli.Executor
+			command: cli.OldExecutor
 		}
 	}
 
@@ -71,30 +81,47 @@ namespace slime.jrunscript.tools.gcloud {
 				 * @param pathname A Cloud SDK installation directory.
 				 */
 				at: (pathname: string) => {
+					/**
+					 *
+					 * @param config The path of the configuration directory to use for this `gcloud` invocation. The
+					 * `CLOUDSDK_CONFIG` environment variable is set to this path.
+					 */
 					config: (config: string) => {
 						account: (account: string) => {
 							project: (project: string) => {
-								command: cli.Executor
+								command: cli.OldExecutor
 							}
-							command: cli.Executor
+							command: cli.OldExecutor
 						}
-						command: cli.Executor
+						command: cli.OldExecutor
 					}
 					account: (account: string) => {
 						project: (project: string) => {
-							command: cli.Executor
+							command: cli.OldExecutor
 						}
-						command: cli.Executor
+						command: cli.OldExecutor
 					}
-					command: cli.Executor
+					command: cli.OldExecutor
 				}
+
+				configuration: (pathname: string) => cli.Configuration
 
 				/**
 				 * Installs the `gcloud` CLI. Currently only supported on macOS.
 				 */
-				create: slime.$api.fp.world.Action<string,{
+				create: slime.$api.fp.world.Means<string,{
 					console: string
 				}>
+			},
+			Configuration: {
+				config: (config: string) => $api.fp.Transform<cli.Configuration>
+				account: (account: string) => $api.fp.Transform<cli.Configuration>
+				project: (project: string) => $api.fp.Transform<cli.Configuration>
+
+				executor: (configuration: cli.Configuration) => cli.Executor
+			},
+			commands: {
+				init: slime.jrunscript.tools.gcloud.cli.Command<void,void>
 			}
 		}
 	}
@@ -178,15 +205,18 @@ namespace slime.jrunscript.tools.gcloud {
 				}
 			});
 
-			fifty.tests.exports.cli.Installation = function() {
-				var command: cli.Command<string,{}> = {
-					invocation: function(argument: string) {
-						return {
-							command: "foo",
-							arguments: [argument]
-						}
+			fifty.tests.exports.cli.Installation = fifty.test.Parent();
+
+			var command: cli.Command<string,{}> = {
+				invocation: function(argument: string) {
+					return {
+						command: "foo",
+						arguments: [argument]
 					}
 				}
+			}
+
+			fifty.tests.exports.cli.Installation.old = function() {
 				subject.cli.Installation.at(
 					"/gcloud/at"
 				).config(
@@ -209,6 +239,50 @@ namespace slime.jrunscript.tools.gcloud {
 				verify(captor).last().configuration.arguments[5].is("json");
 				verify(captor).last().configuration.arguments[6].is("foo");
 				verify(captor).last().configuration.arguments[7].is("bar");
+			}
+
+			fifty.tests.exports.cli.Installation.configuration = function() {
+				var getIntention = function(configuration: cli.Configuration) {
+					return configuration(command).intention("bar");
+				}
+
+				var configuration = subject.cli.Installation.configuration("/gcloud/at");
+				verify(getIntention(configuration),"intention", function(it) {
+					it.arguments[0].is("--format");
+					it.arguments[1].is("json");
+					it.arguments[2].is("foo");
+					it.arguments[3].is("bar");
+				});
+
+				var withAccount = subject.cli.Configuration.account("ACCOUNT")(configuration);
+				verify(getIntention(withAccount),"intention", function(it) {
+					it.arguments[0].is("--account");
+					it.arguments[1].is("ACCOUNT");
+					it.arguments[2].is("--format");
+					it.arguments[3].is("json");
+					it.arguments[4].is("foo");
+					it.arguments[5].is("bar");
+				});
+
+				var withConfig = subject.cli.Configuration.config("/gcloud/config")(configuration);
+				verify(getIntention(withConfig),"intention", function(it) {
+					debugger;
+					var environment = it.environment({});
+					jsh.shell.console(JSON.stringify(environment));
+					verify(environment).evaluate(function(value) { return value.CLOUDSDK_CONFIG; }).is("/gcloud/config");
+				});
+
+				var withProject = subject.cli.Configuration.project("PROJECT")(withAccount);
+				verify(getIntention(withProject),"intention", function(it) {
+					it.arguments[0].is("--project");
+					it.arguments[1].is("PROJECT");
+					it.arguments[2].is("--account");
+					it.arguments[3].is("ACCOUNT");
+					it.arguments[4].is("--format");
+					it.arguments[5].is("json");
+					it.arguments[6].is("foo");
+					it.arguments[7].is("bar");
+				});
 			}
 
 			fifty.tests.manual = {};

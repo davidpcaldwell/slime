@@ -4,6 +4,30 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.tools.git.command {
+	export namespace status {
+		export interface Result {
+			/**
+			 * The current checked out branch, or `null` if a detached HEAD is checked out.
+			 */
+			branch: string
+
+			entries: {
+				code: string
+				path: string
+				orig_path?: string
+			}[]
+
+			/**
+			 * @deprecated Replaced by the `entries` property, which properly captures rename entries.
+			 *
+			 * An object whose keys are string paths within the repository, and whose values are the two-letter output
+			 * of the `git status --porcelain` command. This property is absent if no files have a status.
+			 */
+			paths?: { [path: string]: string }
+		}
+	}
+}
 namespace slime.jrunscript.tools.git.internal.commands {
 	(
 		function(
@@ -64,25 +88,12 @@ namespace slime.jrunscript.tools.git {
 			};
 
 			fifty.tests.exports.status.empty = function() {
-				var it = fixtures.empty();
+				var it = fixtures.Repository.from.empty({ initialBranch: "main" });
 				jsh.shell.console(it.toString());
 
 				var status = it.api.command(subject.status).argument().run();
-				verify(status).branch.is("master");
+				verify(status).branch.is("main");
 				verify(status).evaluate.property("paths").is(void(0));
-			};
-
-			var commit: slime.jrunscript.tools.git.Command<{
-				message: string
-			},void> = {
-				invocation: function(p) {
-					return {
-						command: "commit",
-						arguments: $api.Array.build(function(rv) {
-							rv.push("--message", p.message);
-						})
-					}
-				}
 			};
 
 			var reset: slime.jrunscript.tools.git.Command<void,void> = {
@@ -103,11 +114,12 @@ namespace slime.jrunscript.tools.git {
 			};
 
 			fifty.tests.exports.status.rename = function() {
-				var it = fixtures.empty();
+				var it = fixtures.Repository.from.empty();
+				it.api.configure();
 
 				fixtures.edit(it, "a", function(before) { return "a"; });
 				it.api.command(add).argument("a").run();
-				it.api.command(commit).argument({ message: "a" }).run();
+				it.api.command(fixtures.commands.commit).argument({ message: "a" }).run();
 
 				it.api.command(rename).argument({ from: "a", to: "b" }).run();
 
@@ -127,7 +139,7 @@ namespace slime.jrunscript.tools.git {
 					return it.api.command(jsh.tools.git.commands.status).argument().run();
 				}
 
-				var it = fixtures.empty();
+				var it = fixtures.Repository.from.empty();
 				fixtures.edit(it, "a", $api.fp.returning("a"));
 				fixtures.edit(it, "b", $api.fp.returning("b"));
 				it.api.command(add).argument("a").run();
@@ -136,7 +148,7 @@ namespace slime.jrunscript.tools.git {
 					it.paths.b.is("??");
 				});
 				it.api.command(add).argument("b").run();
-				it.api.command(commit).argument({ message: "1" }).run();
+				it.api.command(fixtures.commands.commit).argument({ message: "1" }).run();
 				fixtures.edit(it, "a", $api.fp.returning("aa"));
 				fixtures.edit(it, "b", $api.fp.returning("bb"));
 				verify(status(), "status_after_edits", function(it) {
@@ -172,10 +184,10 @@ namespace slime.jrunscript.tools.git {
 					}
 				};
 
-				var it = fixtures.empty();
+				var it = fixtures.Repository.from.empty();
 				fixtures.edit(it, "a", $api.fp.mapAllTo("a"));
 				it.api.command(add).argument("a").run();
-				it.api.command(commit).argument({ message: "1" });
+				it.api.command(fixtures.commands.commit).argument({ message: "1" });
 
 				//	TODO	should recurseSubmodules have a default?
 				var before = {
@@ -201,7 +213,7 @@ namespace slime.jrunscript.tools.git {
 				verify(added).list.length.is(2);
 				verify(added).others.length.is(0);
 
-				it.api.command(commit).argument({ message: "2" }).run();
+				it.api.command(fixtures.commands.commit).argument({ message: "2" }).run();
 				var after = {
 					list: it.api.command(subject.lsFiles).argument({ recurseSubmodules: false }).run(),
 					others: it.api.command(commands.lsFilesOther).argument().run()
@@ -256,23 +268,10 @@ namespace slime.jrunscript.tools.git {
 	export interface Commands {
 		lsFiles: slime.jrunscript.tools.git.Command<{ recurseSubmodules: boolean },string[]>
 	}
-
-	export interface Exports {
-		/**
-		 * An opinionated object that provides a set of {@link Command} implementations deemed to be useful for `git` automation.
-		 * If the exact combination of git commands and options for your use case is not provided here, you can implement your own
-		 * {@link Command} which can be tailored to any set of commands, arguments, and options, any way of parsing output, and so
-		 * forth.
-		 */
-		commands: Commands
-	}
 }
 
 namespace slime.jrunscript.tools.git.internal.commands {
 	export type Context = void
-
-	export interface Exports extends slime.jrunscript.tools.git.Commands {
-	}
 
 	(
 		function(
@@ -285,5 +284,5 @@ namespace slime.jrunscript.tools.git.internal.commands {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.loader.Script<Context,slime.jrunscript.tools.git.Commands>
 }

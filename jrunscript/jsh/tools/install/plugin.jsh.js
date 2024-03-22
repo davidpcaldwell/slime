@@ -30,8 +30,12 @@
 						if (lib.getFile("js.jar") && !p.replace) {
 							events.fire("console", "Rhino already installed at " + lib.getFile("js.jar"));
 							return;
+						} else if (p.replace) {
+							events.fire("console", "Replacing Rhino at " + lib.getRelativePath("js.jar") + " ...");
+						} else {
+							events.fire("console", "No Rhino at " + lib.getRelativePath("js.jar") + "; installing ...");
 						}
-						events.fire("console", "Installing Rhino ...");
+						events.fire("console", "Installing Rhino to " + lib.getRelativePath("js.jar") + " ...");
 						var operation = "copy";
 						if (!p.local) {
 							/**
@@ -92,12 +96,29 @@
 
 				jsh.shell.tools.rhino = {
 					install: installRhino,
-					require: $api.events.Function(function(p,events) {
-						jsh.shell.jsh.require({
-							satisfied: function() { return Boolean(jsh.shell.jsh.lib.getFile("js.jar")); },
-							install: function() { return installRhino(p); }
-						});
-					})
+					require: function(p) {
+						return function(events) {
+							var at = jsh.shell.jsh.lib.getRelativePath("js.jar")
+							$api.fp.world.now.action(
+								jsh.shell.jsh.require,
+								{
+									satisfied: function() { return Boolean(at.file); },
+									install: function() { return installRhino(p, events); }
+								},
+								{
+									installed: function(e) {
+										events.fire("installed", at.toString());
+									},
+									installing: function(e) {
+										events.fire("installing", at.toString());
+									},
+									satisfied: function() {
+										events.fire("satisfied", at.toString());
+									}
+								}
+							);
+						}
+					}
 				};
 
 				(function deprecated() {
@@ -147,7 +168,7 @@
 							if (p.replace) {
 								if (src.directory) src.directory.remove();
 							}
-							var remote = new jsh.tools.git.Repository({
+							var remote = new jsh.tools.git.oo.Repository({
 								remote: "https://github.com/davidpcaldwell/ncdbg.git"
 							});
 							var local = remote.clone({ to: src });
@@ -431,7 +452,7 @@
 										jsh.loader.java.add(node.pathname);
 									});
 								} else {
-									throw new Error("Could not be loaded; is Selenium installed? Try ./jsh.bash jsh/tools/install/selenium.jsh.js");
+									throw new Error("Could not be loaded; is Selenium installed? Try ./jsh jrunscript/jsh/tools/install/selenium.jsh.js");
 								}
 							}
 						};
@@ -549,12 +570,12 @@
 					});
 
 					rv.require = function require(p) {
-						jsh.shell.jsh.require({
+						$api.fp.world.now.tell(jsh.shell.jsh.require({
 							satisfied: function() { return Boolean(jsh.shell.jsh.lib.getFile("jsoup.jar")); },
 							install: function() {
 								return rv.install();
 							}
-						});
+						}));
 					};
 
 					return rv;
@@ -577,10 +598,10 @@
 					return (to) ? {
 						install: install,
 						require: function() {
-							jsh.shell.jsh.require({
+							$api.fp.world.now.tell(jsh.shell.jsh.require({
 								satisfied: function() { return Boolean(to.file); },
 								install: install
-							});
+							}));
 						}
 					} : void(0);
 				})();
@@ -615,10 +636,14 @@
 						});
 
 						if (location) this.require = function(p,on) {
-							jsh.shell.jsh.require({
-								satisfied: function() { return Boolean(location.file); },
-								install: function() { install(); }
-							}, on);
+							$api.fp.world.now.action(
+								jsh.shell.jsh.require,
+								{
+									satisfied: function() { return Boolean(location.file); },
+									install: function() { install(); }
+								},
+								on
+							)
 						}
 					}
 				}
@@ -654,10 +679,10 @@
 				return Boolean(plugins.node && jsh.file && jsh.shell && jsh.shell.tools && jsh.tools.install);
 			},
 			load: function() {
-				/** @type { slime.jrunscript.node.Plugin } */
-				var plugin = plugins.node;
+				/** @type { slime.jrunscript.tools.node.internal.JshPluginInterface } */
+				var helper = plugins.node;
 
-				var node = plugin.module({
+				var node = helper.module({
 					context: {
 						library: {
 							file: jsh.file,
@@ -674,7 +699,7 @@
 
 					/** @type { slime.jsh.shell.tools.node.Managed } */
 					var managed = {
-						installation: node.world.Installation.from.location({
+						installation: node.Installation.from.location({
 							filesystem: jsh.file.world.filesystems.os,
 							pathname: location.toString()
 						}),
@@ -684,7 +709,7 @@
 
 					Object.defineProperty(managed, "installed", {
 						get: function() {
-							return node.at({ location: location.toString() });
+							return node.object.at({ location: location.toString() });
 						},
 						enumerable: true
 					});
@@ -692,15 +717,30 @@
 					managed.require = function() {
 						return function(events) {
 							//	TODO	this is hard-coded in several places now
-							var now = node.at({ location: location.toString() });
-							if (now && now.version == "v16.17.1") {
+							var VERSION = "20.9.0";
+							//	TODO	horrendous, but let's go with it for now
+							if (jsh.file.Pathname("/etc/os-release").file) {
+								var string = jsh.file.Pathname("/etc/os-release").file.read(String);
+								if (
+									string.indexOf("Amazon Linux 2") != -1
+									|| string.indexOf("CentOS Linux 7 (Core)") != -1
+								) {
+									VERSION = "16.20.2";
+								}
+							}
+							var now = node.object.at({ location: location.toString() });
+							if (now && now.version == "v" + VERSION) {
 								events.fire("found", now);
 							} else {
 								if (now) {
+									var removed = {
+										at: now.location,
+										version: now.version
+									}
 									location.directory.remove();
-									events.fire("removed", now);
+									events.fire("removed", removed);
 								}
-								node.install({ version: "16.17.1", location: location })(events);
+								node.object.install({ version: VERSION, location: location })(events);
 							}
 						}
 					};

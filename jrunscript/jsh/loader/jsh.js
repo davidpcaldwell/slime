@@ -67,6 +67,7 @@
 
 					// $jsh.runtime() is essentially a SLIME Java runtime object, augmented by jsh/loader/rhino.js or jsh/loader/nashorn.js
 					var runtime = $jsh.runtime();
+
 					return Object.assign(
 						runtime,
 						{
@@ -95,6 +96,7 @@
 								};
 
 								return Object.assign(
+									{},
 									runtime.old.loader,
 									runtime.loader,
 									{
@@ -198,8 +200,10 @@
 					var isDirectory = function(from) { return Boolean(from && from.pathname && from.pathname.directory); };
 					/** @type { (from: any) => from is slime.jrunscript.file.File } */
 					var isFile = function(from) { return Boolean(from && from.pathname && from.pathname.file); };
+					/** @type { (from: any) => from is slime.runtime.loader.Synchronous } */
+					var isSynchronousLoader = function(from) { return Boolean(from.get) && Boolean(from.code); };
 					/** @type { (from: any) => from is slime.old.Loader } */
-					var isLoader = function(from) { return Boolean(from.get); };
+					var isOldLoader = function(from) { return Boolean(from.get) && !Boolean(from.code); };
 
 					/**
 					 *
@@ -419,6 +423,8 @@
 							 */
 							var loadFromPathname = function(from) {
 								if (from.file) {
+									//	TODO	the ability for this to be a file is not declared in type definition; seems to be
+									//			unused
 									//	Should we be sending a script resource, rather than a Java file? Could expose that API in loader/jrunscript/expression.js
 									plugins.load({ zip: { _file: from.java.adapt() } });
 								} else if (from.directory) {
@@ -432,8 +438,12 @@
 								loadFromPathname(from);
 							} else if (isFile(from) || isDirectory(from)) {
 								loadFromPathname(from.pathname);
-							} else if (isLoader(from)) {
+							} else if (isSynchronousLoader(from)) {
+								plugins.load({ synchronous: from });
+							} else if (isOldLoader(from)) {
 								plugins.load({ loader: from });
+							} else {
+								throw new Error("Attempt to load jsh plugins from unknown source: toString() = " + from);
 							}
 						},
 						//	TODO	check semantics; maybe this returns null on non-existence, currently not documented in

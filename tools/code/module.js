@@ -15,14 +15,14 @@
 	function($api,$context,$export) {
 		/**
 		 *
-		 * @param { slime.jrunscript.file.world.Location } repository
+		 * @param { slime.jrunscript.file.Location } repository
 		 * @returns { (path: string) => slime.tools.code.File }
 		 */
-		function gitPathToSourceFile(repository) {
+		function gitPathToFile(repository) {
 			return function(path) {
 				return {
 					path: path,
-					file: $context.library.file.world.Location.relative(path)(repository)
+					file: $context.library.file.Location.directory.relativePath(path)(repository)
 				}
 			}
 		}
@@ -192,8 +192,7 @@
 		function getGitSourceFiles(p) {
 			return function(events) {
 				//	We retrieve the Git source files in two steps, because the --others mechanism used to retrieve untracked files
-				//	does not work recursively. Could we use git status? Then we'd only be checking changed files, which would mean
-				//	if linting were added to the project, it would not lint all files immediately. More thinking / design to do.
+				//	does not work recursively.
 
 				var tracked = $context.library.git.program({ command: "git" })
 					.repository(p.repository.pathname)
@@ -220,7 +219,14 @@
 					.run()
 				;
 
-				var listed = tracked.concat(untracked).map(gitPathToSourceFile(p.repository));
+				var listed = tracked.concat(untracked).map(gitPathToFile(p.repository)).filter(function(file) {
+					//	Filter out files that do not exist, perhaps because they have been removed but the remove has not been
+					//	committed, so they are still listed by ls-files
+					return $api.fp.world.now.question(
+						$context.library.file.Location.file.exists.world(),
+						file.file
+					);
+				});
 
 				var rv = [];
 				for (var i=0; i<listed.length; i++) {
@@ -296,7 +302,7 @@
 
 		var readFileString = $api.fp.pipe(
 			$api.fp.world.mapping(
-				$context.library.file.world.Location.file.read.string()
+				$context.library.file.world.Location.file.read.string.world()
 			),
 			Maybe_assert
 		)
@@ -557,7 +563,7 @@
 			Location: {
 				parse: $api.fp.pipe(
 					$api.fp.Maybe.impure.exception({
-						try: $api.fp.world.mapping($context.library.file.Location.file.read.string()),
+						try: $api.fp.world.mapping($context.library.file.Location.file.read.string.world()),
 						nothing: function(e) { throw new Error("Could not read file: " + e.pathname + " in " + e.filesystem); }
 					}),
 					document.parse
@@ -577,23 +583,137 @@
 						var elements = Element.getJsapiTestingElements(parsed);
 						return Boolean(elements.length);
 					}
+				},
+				group: function(location) {
+					if (jsapi.Location.is(location)) return "jsapi";
+					if (/\.fifty\.ts$/.test(location.pathname)) {
+						return "fifty";
+					}
+					return "other";
 				}
 			}
 		}
+
+		/** @type { slime.$api.fp.Mapping<slime.tools.code.Project,slime.tools.code.JsapiAnalysis> } */
+		var jsapiAnalysis = $api.fp.pipe(
+			function(p) {
+				//	TODO	simplify
+				return {
+					base: p.base,
+					groups: $api.fp.Array.groupBy({
+						/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,string> } */
+						group: function(entry) {
+							return jsapi.Location.group(entry);
+						}
+					})(p.files)
+				}
+			},
+			function(p) {
+				var getPath = $context.library.file.Location.directory.relativeTo(p.base);
+
+				/**
+				 *
+				 * @param { slime.jrunscript.file.Location } entry
+				 * @returns
+				 */
+				var fileSize = function(entry) {
+					return $api.fp.world.now.ask($context.library.file.Location.file.size(entry));
+				}
+
+				/**
+				 *
+				 * @param { slime.jrunscript.file.Location[] } array
+				 * @returns
+				 */
+				var totalSize = function(array) {
+					return array.reduce(function(rv,entry) {
+						return rv + fileSize(entry);
+					},0);
+				};
+
+				/** @type { slime.$api.fp.Mapping<slime.runtime.document.Element,number> } */
+				var getTestSize = function(element) {
+					if (element.children.length > 1) throw new Error("Multiple children: " + JSON.stringify(element.children));
+					var only = element.children[0];
+					if ($context.library.document.Node.isString(only)) {
+						return only.data.length;
+					} else {
+						throw new Error("Not string: " + JSON.stringify(only));
+					}
+				};
+
+				return p.groups.map(
+					/** @returns { slime.tools.code.JsapiMigrationData } } */
+					function(group) {
+						return {
+							name: group.group,
+							files: group.array.length,
+							bytes: totalSize(group.array),
+							list: function() {
+								return group.array.map(function(file) {
+									var tests = (function() {
+										var parsed = jsapi.Location.parse(file);
+										if (parsed.present) {
+											var tests = Element.getJsapiTestingElements(parsed.value).reduce(function(rv,element) {
+												return rv + getTestSize(element);
+											}, 0);
+											return $api.fp.Maybe.from.some(tests);
+										} else {
+											return $api.fp.Maybe.from.nothing();
+										}
+									})();
+									return {
+										path: getPath(file),
+										bytes: fileSize(file),
+										tests: tests
+									}
+								}).sort(function(a,b) {
+									return b.bytes - a.bytes;
+								});
+							}
+						}
+					}
+				)
+			},
+			function(p) {
+				var byName = function(name) {
+					return p.find(function(group) {
+						return group.name == name;
+					});
+				};
+
+				return {
+					jsapi: byName("jsapi"),
+					fifty: byName("fifty")
+				}
+			}
+		);
+
+		//	TODO	should compare filesystems, or does relativeTo do that?
+		/** @param { slime.jrunscript.file.Location } base */
+		var locationToFile = function(base) {
+			/** @returns { slime.tools.code.File } */
+			return function(location) {
+				return {
+					path: $context.library.file.Location.directory.relativeTo(base)(location),
+					file: location
+				}
+			}
+		};
 
 		$export({
 			Project: {
 				from: {
 					directory: function(p) {
 						var question = $context.library.file.Location.directory.list.stream({
-							descend: p.descend
+							descend: p.excludes.descend
 						});
 						var listing = $api.fp.world.now.question(question, p.root);
 						var files = $api.fp.now.invoke(
 							listing,
-							$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.Location.file.exists())),
+							$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.Location.file.exists.world())),
 							$api.fp.Stream.filter(function(location) {
-								var include = p.isSource(location);
+								var include = p.excludes.isSource(location);
 								if (include.present) return include.value;
 								throw new TypeError("Could not determine whether source file: " + location.pathname);
 							}),
@@ -605,11 +725,20 @@
 						};
 					},
 					git: function(p) {
+						//	TODO	descends property is not used, but API does not reflect that
+						var excludes = (p.excludes) ? p.excludes : {
+							descend: function(directory) {
+								return true;
+							},
+							isSource: function(file) {
+								return $api.fp.Maybe.from.some(true);
+							}
+						};
 						var files = $api.fp.world.now.question(
 							getGitSourceFiles,
 							{
 								repository: p.root,
-								isSource: downgradeIsSource(p.isSource)
+								isSource: downgradeIsSource(excludes.isSource)
 							}
 						).map(function(file) {
 							return file.file;
@@ -619,41 +748,210 @@
 							files: files
 						};
 					}
-				}
+				},
+				files: function(project) {
+					return project.files.map(locationToFile(project.base));
+				},
+				gitignoreLocal: $api.fp.world.Means.from.flat(
+					function(p) {
+						var readString = $api.fp.world.Sensor.mapping({
+							sensor: $context.library.file.Location.file.read.string.world()
+						});
+
+						/** @param { { location: slime.jrunscript.file.Location, content: string } } p */
+						var write = function(p) {
+							var write = $api.fp.now.invoke(
+								p.location,
+								$context.library.file.Location.file.write,
+								$api.fp.property("string")
+							);
+
+							$api.fp.world.now.action(
+								write,
+								{ value: p.content }
+							);
+						};
+
+						var gitignore = $api.fp.now.invoke(p.order.base, $context.library.file.Location.directory.relativePath(".gitignore"));
+
+						var snippet = [
+							"# Local work directory for SLIME projects",
+							"/local"
+						];
+
+						//	TODO	this implementation inefficiently reads the contents multiple times
+
+						/** @type { slime.$api.fp.Partial<slime.jrunscript.file.Location,slime.$api.fp.impure.Process> } */
+						var process = $api.fp.switch([
+							$api.fp.Partial.match({
+								if: $api.fp.pipe(
+									readString,
+									$api.fp.property("present"),
+									function(b) { return !b; }
+								),
+								then: function(location) {
+									return function() {
+										p.events.fire("creating", { file: location });
+										var output = snippet.join("\n") + "\n";
+										write({ location: location, content: output });
+									}
+								}
+							}),
+							$api.fp.Partial.match({
+								if: $api.fp.pipe(
+									readString,
+									$api.fp.Maybe.map(
+										$api.fp.pipe(
+											$api.fp.string.split("\n"),
+											$api.fp.Array.some(function(item) {
+												return item == "/local";
+											})
+										)
+									),
+									$api.fp.Maybe.else( $api.fp.impure.Input.value(false) )
+								),
+								then: function(location) {
+									return function() {
+										p.events.fire("found", { file: location, pattern: "/local" });
+									}
+								}
+							}),
+							function(location) {
+								return $api.fp.Maybe.from.some(
+									function() {
+										p.events.fire("updating", { file: location });
+										var input = readString(location);
+										if (input.present) {
+											var output = snippet.concat([
+												""
+											]).join("\n") + "\n" + input.value;
+
+											write({ location: location, content: output });
+										} else {
+											throw new Error("Unreachable.");
+										}
+									}
+								)
+							}
+						]);
+
+						var effect = $api.fp.now.invoke(
+							gitignore,
+							$api.fp.Maybe.impure.exception({
+								try: process,
+								nothing: function(t) { throw new Error("Unreachable: .gitignore classification.") }
+							})
+						);
+
+						$api.fp.impure.now.process(effect);
+					}
+				)
 			},
 			jsapi: {
-				Location: {
-					is: jsapi.Location.is,
-					parse: jsapi.Location.parse,
-					group: function(location) {
-						if (jsapi.Location.is(location)) return "jsapi";
-						if (/\.fifty\.ts$/.test(location.pathname)) {
-							return "fifty";
-						}
-						return "other";
-					}
-				},
+				Location: jsapi.Location,
 				Element: {
 					getTestingElements: Element.getJsapiTestingElements
-				}
-			},
-			File: {
-				hasShebang: hasShebang,
-				isText: function() {
-					return function(file) {
-						return function(events) {
-							var basename = getBasename(file.file);
-							var byExtension = filename.isText(basename);
-							if (typeof(byExtension) == "boolean") return $api.fp.Maybe.from.some(byExtension);
-							if (basename.indexOf(".") == -1) {
-								var rv = hasShebang()(file)(events);
-								if (rv.present) return rv;
+				},
+				analysis: jsapiAnalysis,
+				report: function(p) {
+					return function(project) {
+						var data = jsapiAnalysis(project);
+
+						[data.fifty, data.jsapi].forEach(function(group) {
+							p.line(group.name + ": " + group.files + " files, " + group.bytes + " bytes");
+							if (group.name == "jsapi") {
+								group.list().forEach(function(item) {
+									p.line(item.path + " " + item.bytes + " tests: " + ( (item.tests.present) ? item.tests.value : "?" ));
+								})
 							}
-							return $api.fp.Maybe.from.nothing();
-						}
+							p.line("");
+						});
+
+						p.line("Converted: " + ( data.fifty.bytes / (data.fifty.bytes + data.jsapi.bytes) * 100 ).toFixed(1) + "%");
+
+						p.line("");
+						p.line("JSAPI tests:");
+						var files = 0;
+						var bytes = 0;
+						data.jsapi.list().filter(function(file) {
+							if (file.tests.present && file.tests.value == 0) return false;
+							return true;
+						}).sort(function(a,b) {
+							if (!a.tests.present && !b.tests.present) return 0;
+							if (!a.tests.present && b.tests.present) return 1;
+							if (a.tests.present && !b.tests.present) return -1;
+							if (a.tests.present && b.tests.present) {
+								return b.tests.value - a.tests.value;
+							}
+						}).forEach(function(item) {
+							files += 1;
+							bytes += (item.tests.present) ? item.tests.value : 0;
+							p.line(item.path + " " + item.bytes + " tests: " + ( (item.tests.present) ? item.tests.value : "?" ));
+						});
+						p.line("");
+						p.line("Files with tests: " + files);
+						p.line("Tests: " + bytes);
 					}
 				}
 			},
+			File: (
+				function() {
+					var isJavascript = function(file) {
+						return /\.js$/.test(file.path)
+					};
+
+					var read = $api.fp.Maybe.impure.exception({
+						/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>> } */
+						try: $api.fp.world.Sensor.mapping({ sensor: $context.library.file.Location.file.read.string.world() }),
+						nothing: function(location) { return new Error("Could not read: " + location.pathname) }
+					});
+
+					/** @type { slime.tools.code.Exports["File"]["isText"]["world"] } */
+					var isText = function() {
+						return function(file) {
+							return function(events) {
+								var basename = getBasename(file.file);
+								var byExtension = filename.isText(basename);
+								if (typeof(byExtension) == "boolean") return $api.fp.Maybe.from.some(byExtension);
+								if (basename.indexOf(".") == -1) {
+									var rv = hasShebang()(file)(events);
+									if (rv.present) return rv;
+								}
+								return $api.fp.Maybe.from.nothing();
+							}
+						}
+					};
+
+					return {
+						from: {
+							location: locationToFile
+						},
+						hasShebang: hasShebang,
+						isText: {
+							world: isText,
+							basic: $api.fp.world.Sensor.mapping({
+								sensor: isText()
+							})
+						},
+						isJavascript: isJavascript,
+						isTypescript: function(file) {
+							return (/\.ts$/.test(file.path));
+						},
+						isFiftyDefinition: function(file) {
+							return (/\.fifty\.ts$/.test(file.path));
+						},
+						javascript: {
+							hasTypeChecking: function(file) {
+								if (isJavascript(file)) {
+									var code = read(file.file);
+									return $api.fp.Maybe.from.some(code.indexOf("ts-check") != -1);
+								}
+								return $api.fp.Maybe.from.nothing();
+							}
+						}
+					};
+				}
+			)(),
 			filename: filename,
 			directory: directory,
 			defaults: defaults,

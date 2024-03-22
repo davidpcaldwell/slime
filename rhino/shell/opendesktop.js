@@ -4,10 +4,18 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.shell.opendesktop.Context } $context
+	 * @param { slime.loader.Export<slime.jrunscript.shell.opendesktop.Exports> } $export
+	 */
+	function($api,$context,$export) {
 		//	See http://standards.freedesktop.org/desktop-entry-spec/1.0/
-		$exports.Entry = function(p) {
+		/** @type { slime.jrunscript.shell.opendesktop.Exports["Entry"] } */
+		var Entry = function(p) {
 			var lines = [];
 
 			if (typeof(p) == "string") {
@@ -76,7 +84,7 @@
 			return topathname.directory;
 		};
 
-		$exports.install = function(p) {
+		var install = function(p) {
 			var to = p.to.createDirectory({
 				exists: function(dir) {
 					dir.remove();
@@ -89,8 +97,8 @@
 				launcher: to.getRelativePath("bin/launcher.desktop")
 			};
 			if (p.src) {
-				if (p.link && $context.api.shell.PATH.getCommand("ln")) {
-					$context.api.shell.run({
+				if (p.link && $context.library.shell.PATH.getCommand("ln")) {
+					$context.library.shell.run({
 						command: "ln",
 						arguments: ["-s", p.src, destination.src]
 					});
@@ -107,8 +115,8 @@
 				throw new Error("Unimplemented.");
 				//destination.script.write(p.code.bash, { append: false, recursive: true });
 			}
-			var desktop = new $exports.Entry(
-				$context.api.js.Object.set(
+			var desktop = new Entry(
+				$context.library.js.Object.set(
 					{
 						Type: "Application",
 						Name: p.name,
@@ -125,10 +133,16 @@
 			}
 			var launcher = (p.launcher) ? p.launcher : destination.launcher;
 			launcher.write(desktop.toString(), { append: false, recursive: true });
-			$context.api.shell.run({
+			$context.library.shell.run({
 				command: "chmod",
 				arguments: ["+x", launcher]
 			});
-		}
+		};
+
+		$export({
+			Entry: Entry,
+			install: install
+		});
 	}
-)();
+//@ts-ignore
+)($api,$context,$export);

@@ -24,7 +24,17 @@ namespace slime.fifty.test.internal.test {
 		library: {
 			Verify: slime.definition.verify.Export
 		}
-		console: slime.fifty.test.internal.Console
+
+		console: slime.fifty.test.internal.Listener
+
+		jsh?: {
+			global: slime.jsh.Global
+			scope: slime.fifty.test.internal.scope.jsh.Export
+		}
+
+		window?: {
+			global: Window & { console: typeof globalThis["console"] }
+		}
 
 		promises?: slime.definition.test.promises.Export
 	}

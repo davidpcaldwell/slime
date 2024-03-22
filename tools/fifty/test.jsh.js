@@ -14,10 +14,10 @@
 		var isTypescriptInstalled = function() {
 			var installation = jsh.shell.tools.node.installation;
 			var nodeExists = $api.fp.world.input(
-				jsh.shell.tools.node.world.Installation.exists(installation)
+				jsh.shell.tools.node.Installation.exists(installation)
 			)();
 			if (!nodeExists) return false;
-			var typescript = jsh.shell.tools.node.world.Installation.modules.installed("typescript");
+			var typescript = jsh.shell.tools.node.Installation.modules.installed("typescript");
 			var tsInstalled = $api.fp.world.now.question(
 				typescript,
 				installation
@@ -36,7 +36,7 @@
 		//	slightly differently; a `jsh` script requiring TypeScript is very foreseeable, though). Could generalize to require a
 		//	specific TypeScript version, etc.
 		//	TODO	test-browser.jsh.js uses a much simpler method; is the above comment out of date? Is the other script wrong?
-		jsh.shell.jsh.require({
+		$api.fp.world.now.tell(jsh.shell.jsh.require({
 			satisfied: $api.fp.impure.Input.map(
 				$api.fp.impure.Input.value(void(0)),
 				$api.fp.impure.tap(function() {
@@ -48,7 +48,7 @@
 				})
 			),
 			install: function() { jsh.wf.typescript.require(); }
-		});
+		}));
 
 		/** @type { slime.jsh.script.cli.Processor<any, { definition: slime.jrunscript.file.File, list: boolean, part: string, view: string }> } */
 		var processor = $api.fp.pipe(
@@ -95,7 +95,7 @@
 					jsh.shell.console(prefix + string);
 				};
 
-				/** @type { slime.fifty.test.internal.Console } */
+				/** @type { slime.fifty.test.internal.Listener } */
 				var rv = {
 					start: function(scope,name) {
 						write(scope, "Running: " + name);
@@ -156,6 +156,10 @@
 			})()
 		};
 
+		/** @type { slime.fifty.test.internal.scope.jsh.Script } */
+		var script = jsh.script.loader.script("scope-jsh.ts");
+		var scopes = script();
+
 		var execute = function(file,part,view) {
 			var fiftyLoader = jsh.script.loader;
 
@@ -165,7 +169,11 @@
 				library: {
 					Verify: verify
 				},
-				console: view
+				console: view,
+				jsh: {
+					global: jsh,
+					scope: scopes
+				}
 			});
 
 			var loader = new jsh.file.Loader({ directory: file.parent });

@@ -57,7 +57,7 @@ namespace slime.project.wf {
 	export interface Interface extends slime.jsh.wf.standard.Interface {
 		git: slime.jsh.wf.standard.Interface["git"] & {
 			/**
-			 * Creates a branch based on the current `master` from `origin` and checks it out. The first argument is used as
+			 * Creates a branch based on the current `main` from `origin` and checks it out. The first argument is used as
 			 * the branch name.
 			 */
 			branch: slime.jsh.script.cli.Command<Options>

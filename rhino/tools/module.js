@@ -11,15 +11,9 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.java.tools.Context } $context
-	 * @param { slime.jrunscript.java.tools.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.java.tools.Exports> } $export
 	 */
-	function(Packages,$api,$context,$exports) {
-		/** @type { { file: slime.jrunscript.file.Exports, shell: slime.jrunscript.shell.Exports } } */
-		var jsh = {
-			file: $context.api.file,
-			shell: $context.api.shell
-		};
-
+	function(Packages,$api,$context,$export) {
 		/**
 		 *
 		 * @returns { { command: (args: string[]) => number } }
@@ -30,7 +24,7 @@
 					this.command = function javac(args) {
 						return Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
 							null, null, null,
-							$context.api.java.Array.create({
+							$context.library.java.Array.create({
 								type: Packages.java.lang.String,
 								array: args.map(function(s) { return new Packages.java.lang.String(s); })
 							})
@@ -38,11 +32,11 @@
 					}
 				};
 			} else {
-				var toolpath = jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]);
+				var toolpath = $context.library.file.Searchpath([ $context.library.shell.java.home.getRelativePath("bin") ]);
 				if (toolpath.getCommand("javac")) {
 					return new function() {
 						this.command = function(args) {
-							return jsh.shell.run({
+							return $context.library.shell.run({
 								command: toolpath.getCommand("javac"),
 								arguments: args,
 								evaluate: function(result) {
@@ -55,9 +49,7 @@
 			}
 		}
 
-		//	We do not want to pre-load the Java compiler as it is way too slow to do so.
-		//	TODO	verify that this setup does not load it
-		$exports.__defineGetter__("javac", $api.experimental($api.fp.impure.Input.memoized(function() {
+		var javac = $api.fp.impure.Input.memoized(function() {
 			var javac = getJavaCompiler();
 
 			if (!javac) return function(){}();
@@ -120,9 +112,127 @@
 				});
 			};
 			return rv;
-		})));
+		});
 
-		$exports.Jar = function(o) {
+		/**
+		 * @param { string } pathname
+		 */
+		var _open = function(pathname) {
+			var location = $context.library.file.Location.from.os(pathname);
+			var _jarFile = new Packages.java.util.jar.JarFile(
+				location.pathname
+			);
+			return _jarFile;
+		};
+
+		/** @type { slime.jrunscript.java.tools.Exports["jar"] } */
+		var jar = (function() {
+			var toScriptManifest = function(_manifest) {
+				/** @type { slime.$api.fp.world.Reading<slime.jrunscript.java.tools.Exports["jar"]["manifest"]> } */
+				var rv = {
+					main: {},
+					entries: {}
+				};
+
+				/**
+				 *
+				 * @param { object } rv
+				 * @param { slime.jrunscript.native.java.util.jar.Attributes } _attributes
+				 */
+				var addManifestEntries = function(rv, _attributes) {
+					var _entries = _attributes.entrySet().iterator();
+					while(_entries.hasNext()) {
+						var _entry = _entries.next();
+						rv[String(_entry.getKey())] = String(_entry.getValue());
+					}
+				}
+
+				addManifestEntries(rv.main, _manifest.getMainAttributes());
+
+				var _entries = _manifest.getEntries();
+				var _entriesEntries = _entries.entrySet();
+				var _entriesIterator = _entriesEntries.iterator();
+				while(_entriesIterator.hasNext()) {
+					var _entriesEntry = _entriesIterator.next();
+					var _name = _entriesEntry.getKey();
+					/** @type { { [name: string]: string }} */
+					var section = {};
+					rv.entries[String(_name)] = section;
+					addManifestEntries(section, _entriesEntry.getValue());
+				}
+
+				return rv;
+			}
+
+			return {
+				manifest: function(o) {
+					return function(e) {
+						var _jarFile = _open(o.pathname);
+						var _manifest = _jarFile.getManifest();
+
+						return toScriptManifest(_manifest);
+					}
+				},
+				entries: function(o) {
+					return function(events) {
+						var _jarFile = _open(o.pathname);
+						var _iterator = _jarFile.stream().iterator();
+
+						/** @type { slime.$api.fp.Mapping<slime.jrunscript.native.java.util.jar.JarEntry,slime.jrunscript.java.tools.jar.Entry> } */
+						var entry = function(_entry) {
+							if (_entry.isDirectory()) {
+								return {
+									path: String(_entry.getName()),
+									directory: true
+								}
+							} else {
+								return {
+									path: String(_entry.getName()),
+									directory: false,
+									read: function(events) {
+										var _input = _jarFile.getInputStream(_entry);
+										return $context.library.io.InputStream.from.java(_input);
+									}
+								}
+							}
+						}
+
+						/** @type { slime.$api.fp.Stream<slime.jrunscript.java.tools.jar.Entry> } */
+						return function f() {
+							return {
+								next: (_iterator.hasNext()) ? $api.fp.Maybe.from.some(entry(_iterator.next())) : $api.fp.Maybe.from.nothing(),
+								remaining: f
+							}
+						}
+					}
+				},
+				Manifest: {
+					from: {
+						string: function(string) {
+							var input = $context.library.io.InputStream.from.string(string);
+							var _manifest = new Packages.java.util.jar.Manifest();
+							_manifest.read(input.java.adapt());
+							return toScriptManifest(_manifest);
+						}
+					}
+				},
+				Entry: {
+					is: {
+						/** @type { slime.jrunscript.java.tools.Exports["jar"]["Entry"]["is"]["file"] } */
+						file: function(entry) {
+							return !entry.directory;
+						},
+						/** @type { slime.jrunscript.java.tools.Exports["jar"]["Entry"]["is"]["directory"] } */
+						directory: function(entry) {
+							return entry.directory;
+						}
+					}
+				}
+			};
+		})();
+
+		/** @type { slime.jrunscript.java.tools.Exports["Jar"] } */
+		var Jar = function(o) {
 			var _peer = (function(o) {
 				if (o.file) {
 					return new Packages.java.util.jar.JarFile(
@@ -145,6 +255,24 @@
 				return rv;
 			})();
 		};
+
+		var $exports = {
+			javac: void(0),
+			jar: jar,
+			Jar: Jar
+		};
+
+		//	We do not want to pre-load the Java compiler as it is way too slow to do so.
+		//	TODO	verify that this setup does not load it
+		Object.defineProperty(
+			$exports,
+			"javac",
+			{
+				get: javac
+			}
+		);
+
+		$export($exports);
 	}
 //@ts-ignore
-)(Packages,$api,$context,$exports);
+)(Packages,$api,$context,$export);

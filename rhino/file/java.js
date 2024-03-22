@@ -16,7 +16,7 @@
 	 */
 	function(Packages,$api,$context,$loader,$export) {
 		/** @type { slime.jrunscript.file.internal.spi.Script } */
-		var code = $loader.script("spi.js");
+		var code = $loader.script("java-spi.js");
 
 		var spi = code();
 
@@ -32,24 +32,6 @@
 		 */
 		var fixWindowsForwardSlashes = function(path) {
 			return path.replace(/\//g, "\\");
-		}
-
-		var $$api = {
-			RegExp: {
-				/**
-				 *
-				 * @param { RegExp } r
-				 * @returns
-				 */
-				exec: function(r) {
-					/**
-					 * @param { string } s
-					 */
-					return function(s) {
-						return r.exec(s);
-					}
-				}
-			}
 		}
 
 		var systems = {
@@ -292,6 +274,61 @@
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["list"] } */
 				this.list = function(peer) {
 					return peer.list();
+				};
+
+				this.posix = void(0);
+
+				var posix = _peer.isPosix();
+
+				if (posix) {
+					/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["posix"] } */
+					this.posix = {
+						/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["posix"]["attributes"] } */
+						attributes: {
+							get: function(peer) {
+								var rwe = function(set,r,w,e) {
+									return {
+										read: set.contains(r),
+										write: set.contains(w),
+										execute: set.contains(e)
+									}
+								};
+
+								var _attributes = peer.getPosixAttributes();
+								var _p = _attributes.permissions();
+								var _enums = Packages.java.nio.file.attribute.PosixFilePermission;
+								/** @type { slime.jrunscript.file.posix.Permissions } */
+								var permissions = {
+									owner: rwe(_p, _enums.OWNER_READ, _enums.OWNER_WRITE, _enums.OWNER_EXECUTE),
+									group: rwe(_p, _enums.GROUP_READ, _enums.GROUP_WRITE, _enums.GROUP_EXECUTE),
+									others: rwe(_p, _enums.OTHERS_READ, _enums.OTHERS_WRITE, _enums.OTHERS_EXECUTE)
+								}
+								return {
+									owner: String(_attributes.owner().getName()),
+									group: String(_attributes.group().getName()),
+									permissions: permissions
+								}
+							},
+							set: function(peer, value) {
+								var _enums = Packages.java.nio.file.attribute.PosixFilePermission;
+								var permissions = new Packages.java.util.HashSet();
+								if (value.permissions.owner.read) permissions.add(_enums.OWNER_READ);
+								if (value.permissions.owner.write) permissions.add(_enums.OWNER_WRITE);
+								if (value.permissions.owner.execute) permissions.add(_enums.OWNER_EXECUTE);
+								if (value.permissions.group.read) permissions.add(_enums.GROUP_READ);
+								if (value.permissions.group.write) permissions.add(_enums.GROUP_WRITE);
+								if (value.permissions.group.execute) permissions.add(_enums.GROUP_EXECUTE);
+								if (value.permissions.others.read) permissions.add(_enums.OTHERS_READ);
+								if (value.permissions.others.write) permissions.add(_enums.OTHERS_WRITE);
+								if (value.permissions.others.execute) permissions.add(_enums.OTHERS_EXECUTE);
+								peer.setPosixAttributes(
+									value.owner,
+									value.group,
+									permissions
+								);
+							}
+						}
+					};
 				}
 
 				this.temporary = function(peer,parameters) {
@@ -326,7 +363,7 @@
 			/**
 			 *
 			 * @param { string } pathname
-			 * @param { slime.$api.Events<{ notFound: void }> } events
+			 * @param { slime.$api.event.Emitter<{ notFound: void }> } events
 			 */
 			var openInputStream = function(pathname,events) {
 				var peer = java.newPeer(pathname);
@@ -343,15 +380,26 @@
 			var maybeOutputStream = function(p) {
 				return function(events) {
 					var peer = java.newPeer(p.pathname);
-					var binary = peer.writeBinary(p.append || false);
-					return $api.fp.Maybe.from.some($context.api.io.Streams.java.adapt(binary));
+					try {
+						var binary = peer.writeBinary(p.append || false);
+						return $api.fp.Maybe.from.some($context.api.io.Streams.java.adapt(binary));
+					} catch (e) {
+						if (/java\.io\.FileNotFoundException\: (.*) \(No such file or directory\)/.test(e.message)) {
+							var parent = peer.getParent();
+							events.fire("parentNotFound", {
+								filesystem: filesystem,
+								pathname: String(parent.getScriptPath())
+							});
+						}
+						return $api.fp.Maybe.from.nothing();
+					}
 				}
 			}
 
 			/**
 			 *
 			 * @param { string } pathname
-			 * @param { slime.$api.Events<{ notFound: void }> } events
+			 * @param { slime.$api.event.Emitter<{ notFound: void }> } events
 			 * @returns
 			 */
 			var maybeInputStream = function(pathname,events) {
@@ -555,7 +603,7 @@
 			 *
 			 * @param { string } source
 			 * @param { string } destination
-			 * @returns { slime.$api.fp.world.Tell<void> }
+			 * @returns { slime.$api.fp.world.Action<void> }
 			 */
 			function copy(source,destination) {
 				return function() {
@@ -578,7 +626,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
-			 * @param { slime.$api.Events<{ created: string }> } events
+			 * @param { slime.$api.event.Emitter<{ created: string }> } events
 			 */
 			var createAt = function(peer,events) {
 				java.createDirectoryAt(peer);
@@ -588,7 +636,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
-			 * @param { slime.$api.Events<{ created: string }> } events
+			 * @param { slime.$api.event.Emitter<{ created: string }> } events
 			 */
 			var ensureParent = function(peer,events) {
 				var parent = java.getParent(peer);
@@ -604,6 +652,16 @@
 					pathname: java.separators.pathname,
 					searchpath: java.separators.searchpath
 				},
+				canonicalize: function(p) {
+					return function(events) {
+						var peer = java.newPeer(p.pathname);
+						try {
+							return $api.fp.Maybe.from.some(String(peer.getHostFile().getCanonicalPath()));
+						} catch (e) {
+							return $api.fp.Maybe.from.nothing();
+						}
+					}
+				},
 				openInputStream: function(p) {
 					return function(events) {
 						return maybeInputStream(p.pathname, events);
@@ -615,7 +673,7 @@
 						return $api.fp.Maybe.from.some(file_exists(p.pathname));
 					}
 				},
-				fileLength: function(p) {
+				fileSize: function(p) {
 					return function(events) {
 						return $api.fp.Maybe.from.some(length(p.pathname));
 					}
@@ -664,6 +722,20 @@
 						java.remove(java.newPeer(p.pathname));
 					}
 				},
+				posix: (java.posix) ? {
+					attributes: {
+						get: function(p) {
+							return function(events) {
+								return java.posix.attributes.get( java.newPeer(p.pathname) );
+							}
+						},
+						set: function(p) {
+							return function(events) {
+								java.posix.attributes.set( java.newPeer(p.pathname), p.attributes );
+							}
+						}
+					}
+				} : void(0),
 				temporary: function(p) {
 					return function(events) {
 						var parent = (p.parent) ? java.newPeer(p.parent) : null;

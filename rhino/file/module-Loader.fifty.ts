@@ -27,10 +27,10 @@ namespace slime.jrunscript.file {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify, run } = fifty;
-			const { $api } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			const fixtures = (function() {
-				var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+				var script: internal.test.fixtures.Script = fifty.$loader.script("fixtures.ts");
 				return script({
 					fifty: fifty
 				});
@@ -38,37 +38,58 @@ namespace slime.jrunscript.file {
 
 			const { module } = fixtures;
 
-			const loader = new fixtures.module.Loader({ directory: fifty.jsh.file.object.getRelativePath("api.html").parent.directory })
+			const loader = new fixtures.module.Loader({ directory: fifty.jsh.file.object.getRelativePath(".").directory })
 
 			fifty.tests.suite = function() {
 				run(function brittleEntries() {
-					verify(loader).get("module.fifty.ts").is.not(null);
+					//	Check whether file existence works
+					verify(loader).get("module.js").is.not(null);
 					verify(loader).get("foo.html").is(null);
 					var list = loader.list();
+
 					var map: {
-						java: slime.old.loader.LoaderEntry & slime.old.loader.ResourceEntry
-						"java.js": slime.old.loader.LoaderEntry & slime.old.loader.ResourceEntry
-					} = {
-						java: void(0),
-						"java.js": void(0)
-					};
-					list.forEach(function(item) {
-						map[item.path] = item;
-					});
-					var isLoaderEntry = function(p) {
+						java: slime.old.loader.LoaderEntry
+						"java.js": slime.old.loader.ResourceEntry
+					} = (
+						function() {
+							var rv = {
+								java: void(0),
+								"java.js": void(0)
+							};
+							list.forEach(function(item) {
+								rv[item.path] = item;
+							});
+							return rv;
+						}
+					)();
+
+					var isLoaderEntry = function(p: any): p is slime.old.loader.LoaderEntry {
 						return Boolean(p.loader);
-					}
-					var isResourceEntry = function(p) {
+					};
+
+					var isResourceEntry = function(p): p is slime.old.loader.ResourceEntry {
 						return Boolean(p.resource);
-					}
+					};
+
+					var directoryListing = $api.fp.world.Sensor.now({
+						sensor: jsh.file.Location.directory.list.stream(),
+						subject: fifty.jsh.file.relative(".")
+					});
+
 					//	TODO	this is pretty brittle
-					verify(list,"number of entries in rhino/file").length.is(27);
-					//	jsh.shell.echo(loader.list().map(function(item) { return item.path; }));
+					verify(list,"number of entries in rhino/file").length.is($api.fp.Stream.collect(directoryListing).length);
+
 					verify(map).java.evaluate(isLoaderEntry).is(true);
-					verify(map).java.evaluate(function() { return this.resource; }).is(void(0));
-					verify(map).java.evaluate($api.fp.property("resource")).is(void(0));
+					if (isLoaderEntry(map.java)) {
+						verify(map.java).evaluate.property("loader").is.not(void(0));
+						verify(map.java).evaluate.property("resource").is(void(0));
+					}
+
 					verify(map["java.js"]).evaluate(isResourceEntry).is(true);
-					verify(map["java.js"]).evaluate($api.fp.property("loader")).is(void(0));
+					if (isResourceEntry(map["java.js"])) {
+						verify(map["java.js"]).evaluate.property("resource").is.not(void(0));
+						verify(map["java.js"]).evaluate.property("loader").is(void(0));
+					}
 				});
 
 				run(function oldResourceLength() {

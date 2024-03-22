@@ -35,8 +35,6 @@ dependencies {
 sourceSets {
 	//	'main' is not really the right name for this
 	main {
-		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/main')
 		java {
 			srcDir 'rhino/system/java'
 			srcDir 'loader/jrunscript/java'
@@ -46,8 +44,6 @@ sourceSets {
 	rhino {
 		compileClasspath += configurations.rhino
 		compileClasspath += sourceSets.main.output
-		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/rhino')
 		java {
 			srcDir 'loader/jrunscript/rhino/java'
 
@@ -60,8 +56,6 @@ sourceSets {
 	graal {
 		compileClasspath += configurations.graal
 		compileClasspath += sourceSets.main.output
-		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/graal')
 		java {
 			srcDir 'loader/jrunscript/graal/java'
 		}
@@ -70,8 +64,6 @@ sourceSets {
 	servlet {
 		compileClasspath += configurations.servlet
 		compileClasspath += sourceSets.main.output
-		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/servlet')
 		java {
 			srcDir 'rhino/http/servlet/java'
 		}
@@ -83,7 +75,6 @@ sourceSets {
 		compileClasspath += sourceSets.main.output
 		compileClasspath += sourceSets.rhino.output
 		compileClasspath += sourceSets.servlet.output
-		java.outputDir = file('local/gradle/bin/rhinoServlet')
 		java {
 			srcDir 'rhino/http/servlet/rhino/java'
 		}
@@ -91,8 +82,6 @@ sourceSets {
 
 	jsh {
 		compileClasspath += sourceSets.main.output
-		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/jsh')
 		java {
 			srcDir 'jrunscript/jsh/loader/java'
 		}
@@ -103,8 +92,6 @@ sourceSets {
 		compileClasspath += sourceSets.main.output
 		compileClasspath += sourceSets.rhino.output
 		compileClasspath += sourceSets.jsh.output
-		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/jshRhino')
 		java {
 			srcDir 'jrunscript/jsh/loader/rhino/java'
 		}
@@ -115,8 +102,6 @@ sourceSets {
 		compileClasspath += sourceSets.main.output
 		compileClasspath += sourceSets.graal.output
 		compileClasspath += sourceSets.jsh.output
-		//	java.outputDir is not respected by VSCode; appears generated .classpath is wrong
-		java.outputDir = file('local/gradle/bin/jshGraal')
 		java {
 			srcDir 'jrunscript/jsh/loader/graal/java'
 		}

@@ -9,6 +9,7 @@
 	"entryPoints": [
 		"README.fifty.ts"
 	],
+	"tsconfig": "typedoc-tsconfig.json",
 	"name": "SLIME",
 	"sort": [
 		"source-order"

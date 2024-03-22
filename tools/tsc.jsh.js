@@ -35,7 +35,7 @@
 			jsh.shell.tools.node.installation,
 			$api.fp.pipe(
 				$api.fp.world.mapping(
-					jsh.shell.tools.node.world.Installation.modules.installed("typescript")
+					jsh.shell.tools.node.Installation.modules.installed("typescript")
 				),
 				$api.fp.Maybe.map(function(module) {
 					return module.version == parameters.options.version;
@@ -47,7 +47,7 @@
 		);
 		if (!typescriptVersionInstalled) {
 			$api.fp.world.now.action(
-				jsh.shell.tools.node.world.Installation.modules.install({ name: "typescript", version: parameters.options.version }),
+				jsh.shell.tools.node.Installation.modules.install({ name: "typescript", version: parameters.options.version }),
 				jsh.shell.tools.node.installation
 			);
 		}

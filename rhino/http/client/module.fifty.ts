@@ -217,10 +217,14 @@ namespace slime.jrunscript.http.client {
 	export interface Exports {
 		World: {
 			withFollowRedirects: (implementation: spi.Implementation) => spi.Implementation
+
+			question: (implementation: spi.Implementation) => slime.$api.fp.world.Sensor<Request,spi.Events,spi.Response>
 		}
 
 		Argument: {
-			request: (request: Request) => spi.Argument
+			from: {
+				request: (request: Request) => spi.Argument
+			}
 		}
 	}
 
@@ -233,7 +237,7 @@ namespace slime.jrunscript.http.client {
 			 * @param query An object specifying the form.
 			 * @returns Objects suitable as request bodies.
 			 */
-			 Form: (query: object.query) => request.Body
+			Form: (query: object.query) => request.Body
 		}
 	}
 

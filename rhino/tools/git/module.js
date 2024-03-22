@@ -18,10 +18,14 @@
 		var scripts = {
 			/** @type { slime.jrunscript.tools.git.internal.log.Script } */
 			log: $loader.script("log.js"),
+			/** @type { slime.jrunscript.tools.git.internal.results.Script } */
+			results: $loader.script("results.js"),
 			/** @type { slime.jrunscript.tools.git.internal.commands.Script } */
 			commands: $loader.script("commands.js"),
 			/** @type { slime.jrunscript.tools.git.internal.oo.Script } */
-			oo: $loader.script("oo.js")
+			oo: $loader.script("oo.js"),
+			/** @type { slime.jrunscript.tools.git.credentials.Script } */
+			credentials: $loader.script("git-credential-tokens-directory.js")
 		};
 
 		var library = {
@@ -30,7 +34,14 @@
 					time: $context.api.time
 				}
 			}),
-			commands: scripts.commands()
+			results: scripts.results(),
+			commands: scripts.commands(),
+			credentials: scripts.credentials({
+				library: {
+					file: $context.api.file,
+					shell: $context.api.shell
+				}
+			})
 		}
 
 		$exports.log = {
@@ -72,8 +83,15 @@
 
 				$exports.installation = installation;
 
+				$exports.oo = {
+					daemon: void(0),
+					Repository: void(0),
+					init: void(0),
+					execute: void(0)
+				};
+
 				["daemon","Repository","init","execute"].forEach(function(name) {
-					$exports[name] = function() {
+					$exports.oo[name] = function() {
 						return installation[name].apply(installation,arguments);
 					};
 				},this);
@@ -251,6 +269,91 @@
 					}
 				}
 			};
+		};
+
+		/** @type { slime.jrunscript.tools.git.Command<void,slime.jrunscript.tools.git.submodule.Configuration[]> } */
+		var submoduleConfiguration = {
+			invocation: function() {
+				return {
+					command: "config",
+					arguments: ["--file", ".gitmodules", "--list"]
+				}
+			},
+			result: $api.fp.pipe(
+				library.results.config.list,
+				function(config) {
+					return config.reduce(function(rv,setting) {
+						var tokens = setting.name.split(".");
+						if (tokens[0] != "submodule") throw new TypeError("Not submodule: " + setting.name);
+						var name = tokens[1];
+						var property = tokens[2];
+						if (!rv[name]) rv[name] = {};
+						rv[name][property] = setting.value;
+						return rv;
+					}, {});
+				},
+				//	The reduce step above seems to be a useful way to group the values together by name; now we'll explode them
+				//	back into an array.
+				function(object) { return Object.entries(object); },
+				$api.fp.Array.map(function(entry) {
+					return $api.Object.compose(
+						{ name: entry[0] },
+						entry[1]
+					);
+				})
+			)
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.tools.git.Program } program
+		 * @param { { [name: string]: string; } } config
+		 * @param { string } repository
+		 * @returns { slime.jrunscript.tools.git.RepositoryView }
+		 */
+		var RepositoryView = function(program,config,repository) {
+			var Invocation = function(p) {
+				return {
+					program: program,
+					config: config,
+					pathname: repository,
+					command: p.command,
+					argument: p.argument
+				}
+			};
+			return {
+				Invocation: Invocation,
+				shell: function(invocation) {
+					return createShellInvocation(
+						program,
+						config,
+						repository,
+						invocation.invocation,
+						invocation.stdio
+					);
+				},
+				command: commandExecutor(program,config,repository),
+				run: function(p) {
+					var invocation = $api.Object.compose(
+						Invocation(p),
+						{
+							world: p.world
+						}
+					);
+					return run(invocation)
+				},
+				gitmodules: function() {
+					var gitmodulesExists = $api.fp.now.invoke(
+						repository,
+						$context.api.file.Location.from.os,
+						$context.api.file.Location.directory.relativePath(".gitmodules"),
+						$api.fp.world.mapping($context.api.file.Location.file.exists.world())
+					);
+					if (!gitmodulesExists) return [];
+					var executor = commandExecutor(program, config, repository);
+					return executor(submoduleConfiguration).argument().run();
+				}
+			};
 		}
 
 		$exports.program = function(program) {
@@ -267,44 +370,13 @@
 				config: function(values) {
 					return {
 						repository: function(pathname) {
-							return {
-								command: commandExecutor(program, values, pathname)
-							}
-						}
+							return RepositoryView(program,values,pathname);
+						},
+						command: commandExecutor(program, values, void(0))
 					}
 				},
 				repository: function(pathname) {
-					var Invocation = function(p) {
-						return {
-							program: program,
-							config: {},
-							pathname: pathname,
-							command: p.command,
-							argument: p.argument
-						};
-					}
-					return {
-						Invocation: Invocation,
-						shell: function(invocation) {
-							return createShellInvocation(
-								program,
-								{},
-								pathname,
-								invocation.invocation,
-								invocation.stdio
-							);
-						},
-						command: commandExecutor(program,{},pathname),
-						run: function(p) {
-							var invocation = $api.Object.compose(
-								Invocation(p),
-								{
-									world: p.world
-								}
-							);
-							return run(invocation)
-						}
-					}
+					return RepositoryView(program,{},pathname);
 				},
 				command: commandExecutor(program,{},void(0))
 			}
@@ -326,7 +398,7 @@
 			var directory = p.start;
 			while(directory) {
 				if (directory && (directory.getSubdirectory(".git") || directory.getFile(".git"))) {
-					var repository = $exports.Repository({ directory: directory });
+					var repository = $exports.oo.Repository({ directory: directory });
 					var url = repository.remote.getUrl({ name: "origin" });
 					var fullurl = $context.api.web.Url.parse(url);
 					if (p.match(fullurl)) return directory;
@@ -334,7 +406,9 @@
 				directory = directory.parent;
 			}
 			return null;
-		}
+		};
+
+		$exports.credentials = library.credentials;
 	}
 //@ts-ignore
 )($api,$context,$loader,$exports)

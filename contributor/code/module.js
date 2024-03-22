@@ -103,9 +103,7 @@
 						if (entry.path == "wf") return true;
 					},
 					$api.fp.pipe(
-						$api.fp.world.mapping(
-							$context.library.code.File.isText()
-						),
+						$context.library.code.File.isText.basic,
 						function(maybe) {
 							if (maybe.present) return maybe.value;
 						}
@@ -255,7 +253,7 @@
 								},
 								map: p.map
 							}),
-							$api.fp.Array.first($context.library.io.Entry.mostRecentlyModified()),
+							$api.fp.Ordering.array.first($context.library.io.Entry.mostRecentlyModified()),
 							$api.fp.Maybe.map(function(latest) {
 								return latest.resource.modified();
 							}),
@@ -276,6 +274,28 @@
 						.argument({ recurseSubmodules: true })
 						.run()
 					;
+
+					//	TODO	redundant with lsFilesOthers in tools/code. Perhaps should become standard git command
+					/** @type { slime.jrunscript.tools.git.Command<void,string[]> } */
+					var lsFilesOthers = {
+						invocation: function() {
+							return {
+								command: "ls-files",
+								arguments: ["--others", "--exclude-standard"]
+							}
+						},
+						result: $context.library.git.commands.lsFiles.result
+					};
+
+					var untracked = $context.library.git.program({ command: "git" })
+						.repository(p.base)
+						.command(lsFilesOthers)
+						.argument()
+						.run()
+					;
+
+					files = files.concat(untracked);
+
 					var loader = $context.library.file.world.Location.directory.loader.synchronous({
 						root: $context.library.file.world.Location.from.os(p.base)
 					});

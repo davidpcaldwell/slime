@@ -18,6 +18,8 @@ interface Function {
  * `$api`}.
  */
 namespace slime.$api {
+	export type Function = (...args: any[]) => any
+
 	(
 		function(fifty: slime.fifty.test.Kit) {
 			fifty.tests.exports = fifty.test.Parent();
@@ -25,6 +27,12 @@ namespace slime.$api {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Global {
+		global: {
+			get: <T>(propertyName: string) => T
+		}
+	}
 
 	export interface Global {
 		debug: {
@@ -416,26 +424,205 @@ namespace slime.$api {
 					verify(onMatch.received)[0][0].right.is.type("string");
 				})
 			}
-
-			fifty.tests.wip = fifty.tests.exports.Iterable;
 		}
 	//@ts-ignore
 	)(fifty);
 
-	export interface Global {
-		Properties: any
+	export type Property = { name: string, value: any }
 
-		Object: {
+	export type Properties = Omit<Array<Property>,"filter"> & {
+		filter: (f: (element: { name: string, value: any }) => boolean) => Properties
+		object: () => object
+	}
+
+	export interface Global {
+		/** @deprecated Duplicates functionality of Object.entries and Object.fromEntries */
+		Properties: {
+			(): Properties
+			(p: { array: Property[] } | { object: object }): Properties
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const api = fifty.global.$api;
+
+			fifty.tests.exports.Properties = function() {
+				var empty = api.Properties();
+				verify(empty).length.is(0);
+
+				verify(api).evaluate(function(api) {
+					//@ts-ignore
+					return api.Properties(null);
+				}).threw.type(TypeError);
+
+				verify(api).Properties({ array: [ { name: "foo", value: "bar" } ] }).length.is(1);
+
+				verify(api).Properties({ object: { foo: "bar" } }).length.is(1);
+				verify(api).Properties({ object: { foo: "bar" } })[0].name.is("foo");
+				verify(api).Properties({ object: { foo: "bar" } })[0].value.evaluate(String).is("bar");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		/**
+		 * Methods pertaining to the JavaScriot _object_ construct.
+		 */
+		export interface Object {
+		}
+	}
+
+	export interface Global {
+		Object: exports.Object & {
+			/** @deprecated Replicates functionality of Object.fromEntries */
 			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
+		}
+
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.Object = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const api = fifty.global.$api;
+
+			fifty.tests.exports.Object["()"] = function() {
+				var properties = [{ name: "foo", value: "bar" }, { name: "a", value: "b" }];
+				var object = api.Object({ properties: properties });
+				verify(object).foo.evaluate(String).is("bar");
+				verify(object).a.evaluate(String).is("b");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export type es5Object = Object
+
+	export namespace exports {
+		export interface Object {
+			/**
+			 * Takes a list of objects and composes them into a new object. Properties are copied from each source object in
+			 * succession, with values from later objects replacing those from earlier objects.
+			 */
 			compose: {
-				<T>(t: T): T
+				<T>(t: T): slime.js.NotReadonly<T>
+				//	TODO	below should be NotReadonly also, but they currently cause problems that need to be worked through.
 				<T,U>(t: T, u: U): T & U
 				<T,U,V>(t: T, u: U, v: V): T & U & V
 				<T,U,V,W>(t: T, u: U, v: V, w: W): T & U & V & W
 			}
-			properties: slime.external.lib.es5.Function
-			property: any
-			optional: any
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const api = fifty.global.$api;
+
+				fifty.tests.exports.Object.compose = function() {
+					(function() {
+						var composed = api.Object.compose({ a: 1, b: 1 }, { a: 2 });
+						verify(composed).a.is(2);
+						verify(composed).b.is(1);
+					})();
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Object {
+			/**
+			 * Provides an optional chaining API that seeks to be maximally compatible with the [standard
+			 * implementation](https://tc39.es/ecma262/multipage/ecmascript-language-expressions.html#prod-OptionalExpression).
+			 *
+			 * The first argument is an object to dereference. Further arguments are a series of properties to access. If any
+			 * property but the last is missing, `undefined` will be returned. Otherwise, the value of the last property will be
+			 * returned.
+			 *
+			 * @returns The value of the property chain for the given object, or `undefined` if the chain is incomplete.
+			 */
+			optional: {
+				<O extends es5Object, K extends keyof O>(o: O, k: K): O[K]
+				<O extends es5Object, K extends keyof O, L extends keyof O[K]>(o: O, k: K, l: L): O[K][L]
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.Object.optional = function() {
+					var a: { b: { c: number, n: number }, c?: any } = {
+						b: {
+							c: null,
+							n: 2
+						}
+					};
+					verify($api.Object.optional(a, "b", "c")).is(null);
+					verify($api.Object.optional(a, "b", "n")).is(2);
+					verify($api.Object.optional(a, "c", "x")).is(void(0));
+
+					verify($api.Object.optional(null, "x")).is(void(0));
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Object {
+			/**
+			 * Returns the list of properties for an object.
+			 *
+			 * @deprecated Duplicates logic better-represented by `Object.entries`.
+			 */
+			properties: (p: object) => Properties
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const api = fifty.global.$api;
+
+				fifty.tests.exports.Object.properties = function() {
+					var o = { a: 1, b: 2 };
+					var properties = api.Object.properties(o);
+					verify(properties).length.is(2);
+
+					var rebuilt = properties.object();
+					verify(rebuilt).evaluate.property("a").is(1);
+					verify(rebuilt).evaluate.property("b").is(2);
+
+					var filtered = api.Object.properties(o).filter(function(property) {
+						return property.name == "a";
+					}).object();
+					verify(filtered).evaluate.property("a").is(1);
+					verify(filtered).evaluate.property("b").is(void(0));
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Object {
 			values: {
 				/**
 				 * @experimental Completely untested.
@@ -443,7 +630,9 @@ namespace slime.$api {
 				map: <O,T,R>(f: (t: T) => R) => (o: { [x in keyof O]: T } ) => { [x in keyof O]: R }
 			}
 		}
+	}
 
+	export interface Global {
 		Array: {
 			/**
 			 * Creates an array by creating an empty array and passing it to the given function to populate.
@@ -463,6 +652,52 @@ namespace slime.$api {
 			property: (...names: string[]) => ReturnType<Global["Value"]>
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const api = fifty.global.$api;
+
+			//	TODO	This value now appears not to exist
+			const HAS_NASHORN_ERROR_HACK = false;
+
+			fifty.tests.exports.Value = fifty.test.Parent();
+
+			fifty.tests.exports.Value.require = function() {
+				verify(api.Value).is.not.equalTo(void(0));
+				var one = {
+					name: "value1",
+					nested: {
+						value: "nested1",
+						method: function() {
+							return "method";
+						}
+					}
+				};
+				var value = api.Value(one,"one");
+
+				//	TODO	make this work?
+				var disableBreakOnExceptions = function(f) { return f; };
+
+				disableBreakOnExceptions(function() {
+					verify(value).evaluate(function() { return this.require(); }).threw.nothing();
+					verify(value).property("foo").evaluate(function() { return this.require() }).threw.type(TypeError);
+					verify(value).property("foo").evaluate(function() { return this.require(); }).threw.message.is("one.foo is required");
+					if (!HAS_NASHORN_ERROR_HACK) {
+						verify(value).evaluate(function() { return this.property("foo","bar"); }).threw.type(TypeError);
+					}
+					verify(value).property("name").evaluate(function() { return this.require() }).threw.nothing();
+					verify(value).property("name","length").evaluate(function() { return this.require() }).threw.nothing();
+					verify(value).property("nested","value").evaluate(function() { return this.require() }).threw.nothing();
+					verify(value).property("nested","value1").evaluate(function() { return this.require() }).threw.type(TypeError);
+					verify(one).nested.method().is("method");
+				})();
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace error {
 		export namespace old {
@@ -680,7 +915,7 @@ namespace slime.$api {
 				verify(c).evaluate(function(e) { return e instanceof Error }).is(true);
 				verify(c).properties.baz.is("bizzy");
 				verify(c).properties.evaluate.property("foo").is.type("undefined");
-				verify(c).stack.is.type("string");
+				verify(c).evaluate.property("stack").is.type("string");
 
 				var NoSupertype = $api.Error.type({
 					name: "Standalone",
@@ -696,6 +931,10 @@ namespace slime.$api {
 	)(fifty);
 
 	export interface Global {
+		TODO: (p?: { message: slime.$api.fp.Thunk<string> }) => Function
+	}
+
+	export interface Global {
 		events: exports.Events
 
 		/**
@@ -707,17 +946,13 @@ namespace slime.$api {
 			/** @deprecated Replaced by {@link slime.$api.Global["events"]["create"]} */
 			(p?: {
 				source?: any
-				parent?: slime.$api.Events<any>
-				getParent?: () => slime.$api.Events<any>
+				parent?: slime.$api.event.Emitter<any>
+				getParent?: () => slime.$api.event.Emitter<any>
 				on?: { [x: string]: any }
-			}): slime.$api.Events<any>
+			}): slime.$api.event.Emitter<any>
 
 			/** @deprecated Replaced by {@link slime.$api.Global["events"]["Function"]} */
 			Function: $api.Global["events"]["Function"]
-			/** @deprecated Replaced by {@link slime.$api.Global["events"]["toHandler"]} */
-			toHandler: $api.Global["events"]["toListener"]
-			/** @deprecated Replaced by {@link slime.$api.Global["events"]["action"]} */
-			action: $api.Global["events"]["action"]
 		}
 	}
 

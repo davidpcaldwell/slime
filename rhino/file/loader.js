@@ -15,7 +15,7 @@
 	function($api,$context,$export) {
 		/** @type { slime.jrunscript.file.internal.loader.Exports["create"] } */
 		var adapt = function(delegate) {
-			var exists = $api.fp.world.mapping($context.library.Location.file.exists());
+			var exists = $api.fp.world.mapping($context.library.Location.file.exists.world());
 
 			return {
 				get: function(path) {
@@ -33,7 +33,7 @@
 							},
 							length: function() {
 								return $api.fp.world.now.ask(
-									target.filesystem.fileLength({ pathname: target.pathname })
+									target.filesystem.fileSize({ pathname: target.pathname })
 								);
 							},
 							modified: function() {
@@ -51,9 +51,9 @@
 					var filesystem = delegate.filesystem;
 					var target = $context.library.Location.relative(path.join(filesystem.separator.pathname))(delegate);
 					var nodes = $api.fp.world.now.ask(filesystem.listDirectory({ pathname: target.pathname }));
-					if (!nodes.present) throw new Error();
+					if (!nodes.present) throw new Error("Could not list: " + target.pathname);
 
-					/** @type { (pathname: string, question: slime.$api.fp.world.Question<{ pathname: string },void,slime.$api.fp.Maybe<boolean>>) => boolean } */
+					/** @type { (pathname: string, question: slime.$api.fp.world.Sensor<{ pathname: string },void,slime.$api.fp.Maybe<boolean>>) => boolean } */
 					var presentBoolean = function(pathname,question) {
 						var maybe = $api.fp.world.now.question(question, { pathname: pathname });
 						if (!maybe.present) throw new Error();

@@ -19,12 +19,12 @@
 
 		var MAJOR_VERSION = 9;
 
-		//	As of 2022 Dec 15
 		var DEFAULT_VERSION = {
 			//	Tomcat 7 is EOL
 			7: "7.0.109",
 			8: "8.5.84",
-			9: "9.0.70"
+			//	As of 2024 Jan 3
+			9: "9.0.84"
 		};
 
 		/** @type { slime.jsh.shell.tools.tomcat.World } */
@@ -109,7 +109,7 @@
 		/**
 		 *
 		 * @param { slime.jsh.shell.tools.tomcat.Mock } mock
-		 * @return { slime.$api.fp.world.Question<number,{ online: { major: number, latest: slime.$api.fp.Maybe<string> } },string> }
+		 * @return { slime.$api.fp.world.Sensor<number,{ online: { major: number, latest: slime.$api.fp.Maybe<string> } },string> }
 		 */
 		var getLatestVersionUsingWorld = function(mock) {
 			var world = getWorld(mock);
@@ -152,7 +152,7 @@
 					p.base,
 					$context.jsh.file.world.Location.from.os,
 					$context.jsh.file.world.Location.relative("RELEASE-NOTES"),
-					$api.fp.world.mapping($context.jsh.file.world.Location.file.read.string())
+					$api.fp.world.mapping($context.jsh.file.world.Location.file.read.string.world())
 				);
 			}
 		};
@@ -163,7 +163,7 @@
 		 */
 		var basicInstall = function(p) {
 			/**
-			 * @param { slime.$api.Events<{ unzipping: { local: string, to: string }, installing: { to: string } }> } events
+			 * @param { slime.$api.event.Emitter<{ unzipping: { local: string, to: string }, installing: { to: string } }> } events
 			 */
 			return function(events) {
 				var local = p.local;
@@ -258,7 +258,7 @@
 						if (update) {
 							//	delete existing
 							$api.fp.world.now.action(
-								$context.jsh.file.world.Location.directory.remove(),
+								$context.jsh.file.world.Location.directory.remove.world(),
 								$context.jsh.file.world.Location.from.os(installation.base)
 							);
 							proceed = true;
@@ -305,27 +305,26 @@
 			require: (Installation.from.jsh()) ? Installation.require(Installation.from.jsh()) : null,
 			old: {
 				require: function(argument, handler) {
-					var listener = $api.events.toListener(handler);
-					listener.attach();
+					var listener = $api.events.Handlers.attached(handler);
 					$api.fp.world.now.action(
 						newRequire(Installation.from.jsh()),
 						argument,
 						{
 							found: function(e) {
-								listener.emitter.fire("console", "Found Tomcat " + e.detail.version + ".");
+								listener.fire("console", "Found Tomcat " + e.detail.version + ".");
 							},
 							unzipping: function(e) {
-								listener.emitter.fire("console", "Unzipping Tomcat from " + e.detail.local + " to " + e.detail.to + " ...");
+								listener.fire("console", "Unzipping Tomcat from " + e.detail.local + " to " + e.detail.to + " ...");
 							},
 							installing: function(e) {
-								listener.emitter.fire("console", "Installing Tomcat to " + e.detail.to + " ...");
+								listener.fire("console", "Installing Tomcat to " + e.detail.to + " ...");
 							},
 							installed: function(e) {
-								listener.emitter.fire("console", "Installed Tomcat " + e.detail.version);
+								listener.fire("console", "Installed Tomcat " + e.detail.version);
 							}
 						}
 					);
-					listener.detach();
+					$api.events.Handlers.detach(listener);
 				}
 			},
 			test: {

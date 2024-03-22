@@ -19,10 +19,6 @@
 			impure: $context.script("$api-fp-impure.js")
 		};
 
-		var impure = code.impure({
-			events: $context.events
-		});
-
 		var identity = function(v) { return v; };
 
 		var Maybe = (
@@ -63,6 +59,19 @@
 					present: function(m) {
 						return m.present;
 					},
+					pipe: function(fs) {
+						var array = Array.prototype.slice.call(arguments);
+						return function(a) {
+							/** @type { any } */
+							var rv = a;
+							for (var i=0; i<array.length; i++) {
+								var next = array[i](rv);
+								if (!next.present) return Maybe.from.nothing();
+								rv = next.value;
+							}
+							return Maybe.from.some(rv);
+						}
+					},
 					/** @type { slime.$api.fp.Exports["Maybe"]["impure"] } */
 					impure: {
 						exception: function(p) {
@@ -93,6 +102,18 @@
 				return rv;
 			}
 		};
+
+		var stream = code.Stream({
+			$f: {
+				Maybe: Maybe,
+				pipe: pipe
+			}
+		});
+
+		var impure = code.impure({
+			events: $context.events,
+			stream: stream.impure
+		});
 
 		var property = function(name) {
 			return function(v) {
@@ -159,6 +180,24 @@
 			}
 		};
 
+		var now_map = function() {
+			if (arguments.length == 0) throw new TypeError();
+			var items = Array.prototype.slice.call(arguments);
+			return pipe.apply(this, items.slice(1))(items[0]);
+		}
+
+		/** @type { <T>(ordering: slime.$api.fp.Ordering<T>) => slime.$api.fp.CompareFn<T> } */
+		var orderingToJs = function(ordering) {
+			return function(a,b) {
+				var result = ordering([a,b]);
+				if (result.present) {
+					return (result.value) ? -1 : 1;
+				} else {
+					return 0;
+				}
+			}
+		};
+
 		$export({
 			identity: identity,
 			cast: function(v) { return v; },
@@ -176,9 +215,14 @@
 					return Object.fromEntries(results);
 				}
 			},
-			result: function() {
-				var items = Array.prototype.slice.call(arguments);
-				return pipe.apply(this, items.slice(1))(items[0]);
+			result: now_map,
+			thunk: {
+				value: function() {
+					var args = Array.prototype.slice.call(arguments);
+					return function() {
+						return now_map.apply(this, args);
+					}
+				}
 			},
 			property: property,
 			optionalChain: function(name) {
@@ -199,6 +243,28 @@
 			mapAllTo: function(v) {
 				return function(p) {
 					return v;
+				}
+			},
+			mapping: {
+				all: function(r) {
+					return function(p) {
+						return r;
+					}
+				},
+				thunk: function(p) {
+					return function() {
+						return p.mapping(p.argument);
+					}
+				},
+				properties: function(definition) {
+					return function(p) {
+						/** @type { object } */
+						var rv = {};
+						for (var x in definition) {
+							rv[x] = definition[x](p);
+						}
+						return rv;
+					}
 				}
 			},
 			conditional: function(test,yes,no) {
@@ -241,6 +307,9 @@
 						return string.match(regexp);
 					}
 				},
+				trim: function(string) {
+					return string.trim();
+				},
 				startsWith: function(searchString, startPosition) {
 					startPosition = startPosition || 0;
 					return function(string) {
@@ -279,15 +348,66 @@
 				}
 			},
 			Object: {
+				property: {
+					update: function(p) {
+						return function(target) {
+							var rv = Object.assign(
+								{},
+								target
+							);
+							rv[p.property] = p.change(rv[p.property]);
+							return rv;
+						}
+					},
+					//@ts-ignore
+					set: function(p) {
+						return function(target) {
+							var rv = Object.assign({}, target);
+							for (var x in p) {
+								var value = p[x](rv);
+								//@ts-ignore
+								rv[x] = value;
+							}
+							return rv;
+						}
+					},
+					maybe: function() {
+						var keys = arguments;
+						var isNothing = function(v) { return !Maybe.from.value(v).present };
+						return function(object) {
+							var rv = object;
+							for (var i=0; i<keys.length; i++) {
+								var value = rv[keys[i]];
+								if (isNothing(value)) return Maybe.from.nothing();
+								rv = value;
+							}
+							return isNothing(rv) ? Maybe.from.nothing() : Maybe.from.some(rv);
+						}
+					}
+				},
 				entries: Object.entries,
 				fromEntries: Object.fromEntries
 			},
 			Maybe: Maybe,
 			Partial: {
+				from: {
+					loose: function(f) {
+						return function(p) {
+							return Maybe.from.value(f(p));
+						}
+					}
+				},
 				match: function(v) {
 					return function(p) {
 						var present = v.if(p);
 						return present ? Maybe.from.some(v.then(p)) : Maybe.from.nothing();
+					}
+				},
+				else: function(c) {
+					return function(p) {
+						var maybe = c.partial(p);
+						if (maybe.present) return maybe.value;
+						return c.else(p);
 					}
 				}
 			},
@@ -300,12 +420,7 @@
 					return Maybe.from.nothing();
 				}
 			},
-			Stream: code.Stream({
-				$f: {
-					Maybe: Maybe,
-					pipe: pipe
-				}
-			}),
+			Stream: stream.exports,
 			Array: {
 				filter: function(f) {
 					return function(array) {
@@ -315,6 +430,11 @@
 				find: function(f) {
 					return function(array) {
 						return array.find(f, this);
+					}
+				},
+				some: function(f) {
+					return function(array) {
+						return array.some(f, this);
 					}
 				},
 				map: function(f) {
@@ -358,20 +478,6 @@
 						return array.reduce(function(rv,element) {
 							return rv + attribute(element);
 						},0);
-					}
-				},
-				first: function(ordering) {
-					return function(ts) {
-						/** @type { slime.$api.fp.Maybe<any> } */
-						var rv = Maybe.from.nothing();
-						ts.forEach(function(item) {
-							if (!rv.present) {
-								rv = Maybe.from.some(item);
-							} else if (rv.present && ordering(rv.value)(item) == "BEFORE") {
-								rv = Maybe.from.some(item);
-							}
-						});
-						return rv;
 					}
 				}
 			},
@@ -466,6 +572,58 @@
 					}
 				}
 			},
+			Ordering: {
+				from: {
+					operators: function(two) {
+						if (two[0] < two[1]) return Maybe.from.some(true);
+						if (two[0] > two[1]) return Maybe.from.some(false);
+						return Maybe.from.nothing();
+					},
+					prioritize: function(p) {
+						return function(two) {
+							var a = p.predicate(two[0]);
+							var b = p.predicate(two[1]);
+							if (a && !b) return Maybe.from.some(true === p.value);
+							if (b && !a) return Maybe.from.some(false === p.value);
+							return Maybe.from.nothing();
+						}
+					},
+					map: function(p) {
+						return function(two) {
+							return p.ordering(
+								//@ts-ignore
+								two.map(p.map)
+							);
+						}
+					}
+				},
+				array: {
+					first: function(ordering) {
+						return function(ts) {
+							/** @type { slime.$api.fp.Maybe<any> } */
+							var rv = Maybe.from.nothing();
+							ts.forEach(function(item) {
+								if (!rv.present) {
+									rv = Maybe.from.some(item);
+								} else {
+									if (rv.present) {
+										var compared = ordering([rv.value,item]);
+										if (compared.present && compared.value === false) {
+											rv = Maybe.from.some(item);
+										}
+									}
+								}
+							});
+							return rv;
+						}
+					},
+					sort: function(ordering) {
+						return function(array) {
+							return Array.prototype.slice.call(array).sort(orderingToJs(ordering));
+						}
+					}
+				}
+			},
 			comparator: {
 				create: function(mapping, comparator) {
 					return function(a, b) {
@@ -493,28 +651,12 @@
 					}
 				},
 				from: {
-					Ordering: function(ordering) {
-						return function(a,b) {
-							var compare = ordering(a);
-							var result = compare(b);
-							if (result == "BEFORE") return -1;
-							if (result == "EQUAL") return 0;
-							if (result == "AFTER") return 1;
-							throw new TypeError("Result must be BEFORE, EQUAL, or AFTER.");
-						}
-					}
+					Ordering: orderingToJs
 				}
 			},
 			now: {
-				invoke: function(p) {
-					var functions = Array.prototype.slice.call(arguments).slice(1);
-					if (functions.length == 0) throw new TypeError();
-					var rv = p;
-					functions.forEach(function(f) {
-						rv = f(rv);
-					});
-					return rv;
-				}
+				invoke: now_map,
+				map: now_map
 			},
 			impure: impure.impure,
 			world: impure.world,

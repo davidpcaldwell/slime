@@ -73,13 +73,15 @@
 			}
 
 			var rv = $api.fp.world.now.question(
-				$context.library.file.Location.file.read.string(),
+				$context.library.file.Location.file.read.string.world(),
 				js
 			);
 
 			if (!rv.present) throw new Error("Error attempting to compile TypeScript.");
 
-			return rv.value;
+			var updated = rv.value.replace("export {};", "/* Removed by rhino/shell/tsc.js: export {}; */");
+
+			return updated;
 		};
 
 		$export({

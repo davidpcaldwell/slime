@@ -5,6 +5,21 @@
 //	END LICENSE
 
 namespace slime.jsh.httpd {
+	/**
+	 * The jsh Servlet Plugin allows a servlet container to be configured with SLIME servlets and embedded inside a `jsh` script, so
+	 * that the servlet container can serve HTTP requests. See the
+	 * {@link slime.servlet | SLIME servlets} documentation for details on authoring SLIME servlets and deploying them to containers
+	 * other than `jsh`.
+	 *
+	 * The jsh Servlet Plugin does not itself implement a servlet container. It relies on Apache Tomcat to be installed as part of
+	 * the shell, or for its location to be specified via the `CATALINA_HOME` environment variable.
+	 *
+	 * **If the shell does not have Tomcat installed and `CATALINA_HOME` is not specified, the jsh Servlet Plugin will not be
+	 * available.**
+	 */
+	export interface Exports {
+	}
+
 	export namespace servlet {
 		export type Parameters = { [name: string]: any }
 
@@ -186,7 +201,7 @@ namespace slime.jsh.httpd {
 					url: "http://127.0.0.1:" + server.port + "/"
 				};
 				var ask = jsh.http.world.java.urlconnection(
-					jsh.http.Argument.request(request)
+					jsh.http.Argument.from.request(request)
 				);
 				var response = $api.fp.world.now.ask(ask);
 				verify(response).status.code.is(404);

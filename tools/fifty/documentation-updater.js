@@ -48,8 +48,7 @@
 					}
 				};
 
-				$api.fp.world.now.action(
-					$context.library.shell.world.action,
+				var exit = $api.fp.world.now.ask(
 					invocation,
 					{
 						start: function(e) {
@@ -62,28 +61,24 @@
 						},
 						stderr: function(e) {
 							events.fire("stderr", { out: tmp.pathname, line: e.detail.line });
-						},
-						exit: function(e) {
-							if (e.detail.status == 0) {
-								events.fire("finished", object);
-							} else {
-								events.fire("errored", object);
-							}
 						}
 					}
 				);
+				if (exit.status == 0) {
+					events.fire("finished", object);
+				} else {
+					events.fire("errored", object);
+				}
 			}
 		}
 
 		var existsDirectory = $api.fp.world.mapping(
-			$context.library.file.world.Location.directory.exists()
+			$context.library.file.world.Location.directory.exists.world()
 		);
 
 		/** @type { slime.tools.documentation.updater.Exports["Updater"] } */
 		var Updater = function(settings) {
-			var eventsListener = $api.events.toListener(settings.events);
-			eventsListener.attach();
-			var events = eventsListener.emitter;
+			var events = $api.events.Handlers.attached(settings.events);
 
 			var state = {
 				/** @type { { [out: string]: slime.tools.documentation.updater.internal.Process } } */
@@ -105,18 +100,27 @@
 			);
 
 			var directoryExists = $api.fp.world.mapping(
-				$context.library.file.world.Location.directory.exists()
+				$context.library.file.world.Location.directory.exists.world()
 			);
 
 			var removeDirectory = $api.fp.world.output(
-				$context.library.file.world.Location.directory.remove()
+				$context.library.file.world.Location.directory.remove.world()
 			);
 
-			var moveTypedocIntoPlace = $api.fp.world.output(
-				$context.library.file.world.Location.directory.move({
-					to: documentation
-				})
-			);
+			/**
+			 *
+			 * @param { slime.jrunscript.file.Location } from
+			 */
+			var moveTypedocIntoPlace = function(from) {
+				$api.fp.world.now.action(
+					$context.library.file.Filesystem.move,
+					{
+						filesystem: $context.library.file.world.filesystems.os,
+						from: from.pathname,
+						to: documentation.pathname
+					}
+				)
+			};
 
 			var world = {
 				lastModified: {
@@ -126,7 +130,9 @@
 						})
 					},
 					documentation: function() {
-						var loader = $context.library.file.world.Location.directory.loader.synchronous({ root: documentation });
+						var exists = $api.fp.world.Sensor.mapping({ sensor: $context.library.file.Location.directory.exists.world() });
+						if (!exists(documentation)) return $api.fp.Maybe.from.nothing();
+						var loader = $context.library.file.Location.directory.loader.synchronous({ root: documentation });
 						return $context.library.code.directory.lastModified({
 							loader: loader,
 							map: $api.fp.identity
@@ -211,7 +217,7 @@
 									process.kill();
 									var location = $context.library.file.world.Location.from.os(out);
 									$api.fp.world.now.action(
-										$context.library.file.world.Location.directory.remove(),
+										$context.library.file.world.Location.directory.remove.world(),
 										location
 									);
 								}
@@ -233,7 +239,7 @@
 							if (directoryExists(documentation)) {
 								removeDirectory(documentation);
 							}
-							moveTypedocIntoPlace($context.library.file.world.Location.from.os(e.detail.out()));
+							moveTypedocIntoPlace($context.library.file.Location.from.os(e.detail.out()));
 							delete state.updates[e.detail.out()];
 							state.typedocBasedOnSrcAt = e.detail.started();
 							events.fire("finished", { out: e.detail.out() });
@@ -288,6 +294,8 @@
 											documentation: timestamps.documentation.value
 										});
 									}
+								} else if (timestamps.code.present && !timestamps.documentation.present) {
+									run();
 								}
 							}
 						})();
@@ -317,7 +325,7 @@
 					events.fire("destroying");
 					lock.wait({
 						then: function() {
-							eventsListener.detach();
+							$api.events.Handlers.detach(events);
 							state.stopped = true;
 						}
 					})();
@@ -326,7 +334,10 @@
 		};
 
 		$export({
-			Updater: Updater
+			Updater: Updater,
+			test: {
+				Update: Update
+			}
 		});
 	}
 //@ts-ignore

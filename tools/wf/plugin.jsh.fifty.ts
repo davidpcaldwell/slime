@@ -41,7 +41,8 @@ namespace slime.jsh {
  * This standard project implementation also provides implementations for `git` hooks, which can be used if they are enabled; see
  * below.
  *
- * If a project provides an `initialize` command, it is executed prior to every `wf` command (and should thus be idempotent).
+ * If a project provides an `initialize` command, it is executed prior to every `wf` command (and should thus be idempotent). When
+ * the `initialize` command is executed due to the invocation of another command, it will receive an empty argument list.
  *
  * The `jsh.wf.project.git.installHooks()` call from within `initialize` will install `git` hooks that piggyback off the standard
  * implementation operations.
@@ -73,7 +74,7 @@ namespace slime.jsh.wf {
 		}
 	}
 
-	export interface Submodule extends slime.jrunscript.tools.git.Submodule {
+	export interface Submodule extends slime.jrunscript.tools.git.oo.Submodule {
 		status: ReturnType<slime.jrunscript.tools.git.repository.Local["status"]>
 		state: ReturnType<ReturnType<Exports["git"]["compareTo"]>>
 	}
@@ -120,7 +121,7 @@ namespace slime.jsh.wf {
 						stdio?: Parameters<slime.jrunscript.shell.Exports["Invocation"]["create"]>[0]["stdio"]
 						out?: string
 					}
-				) => slime.jrunscript.shell.run.old.Invocation
+				) => slime.$api.fp.world.Question<slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 			}
 		}
 	}
@@ -147,15 +148,11 @@ namespace slime.jsh.wf {
 					out: out.pathname
 				});
 				jsh.shell.console(JSON.stringify(invocation));
-				$api.fp.world.now.action(
-					jsh.shell.world.action,
+				var exit = $api.fp.world.now.ask(
 					invocation,
 					{
 						start: function(e) {
 							jsh.shell.console("PID: " + e.detail.pid);
-						},
-						exit: function(e) {
-							jsh.shell.console("Status: " + e.detail.status);
 						},
 						stdout: function(e) {
 							jsh.shell.console("STDOUT: " + e.detail.line);
@@ -165,12 +162,64 @@ namespace slime.jsh.wf {
 						}
 					}
 				);
+				jsh.shell.console("Status: " + exit.status);
 				jsh.shell.console("Output to " + out.pathname);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
 
+	export interface ProjectView {
+		base: slime.$api.fp.impure.Input<slime.jrunscript.file.Directory>
+
+		git: {
+			installHooks: slime.$api.fp.impure.Process
+		}
+
+		lint: {
+			eslint(): boolean
+		}
+
+		Submodule: {
+			construct: (git: slime.jrunscript.tools.git.oo.Submodule) => Submodule
+		}
+
+		submodule: {
+			status: () => Submodule[]
+			remove: (p: { path: string }) => void
+			attach: (p: { path: string, recursive: boolean }) => void
+		}
+
+		//	TODO	move to submodule.update
+		updateSubmodule: (p: { path: string }) => void
+
+		subproject: {
+			initialize: {
+				action: slime.$api.fp.world.Means<{ path: string }, slime.jrunscript.shell.run.TellEvents>
+
+				/**
+				 * Returns a `Process` that will execute `action` using the given path, and rerouting `stderr` events from the
+				 * initialization to the console, with a prefix identifying the subproject emitting them.
+				 *
+				 * @param path The path of the subproject to initialize
+				 * @returns A `Process` that will execute the initialization.
+				 */
+				process: (path: string) => slime.$api.fp.impure.Process
+			}
+		}
+
+		subprojects: {
+			initialize: {
+				process: slime.$api.fp.impure.Process
+			}
+		}
+
+		/**
+		 * Given a {@link standard.Project} defining a few simple operations, initializes the given `$exports` object
+		 * with a standard set of `wf` commands defined by {@link standard.Interface}.
+		 */
+		initialize: standard.Export
+	}
 
 	/**
 	 * The `project.initialize` function provides a default `wf` implementation for projects with a number of standard commands; it
@@ -181,40 +230,11 @@ namespace slime.jsh.wf {
 			Failure: $api.error.old.Type<"jsh.wf.Failure",{}>
 		}
 
-		project: {
-			base: slime.$api.fp.impure.Input<slime.jrunscript.file.Directory>
-
-			git: {
-				installHooks(p?: { path: string }): void
-			}
-
-			lint: {
-				eslint(): boolean
-			}
-
-			Submodule: {
-				construct: (git: slime.jrunscript.tools.git.Submodule) => Submodule
-			}
-
-			submodule: {
-				status: () => Submodule[]
-				remove: (p: { path: string }) => void
-			}
-
-			updateSubmodule: (p: { path: string }) => void
-
-			/**
-			 * Given a {@link standard.Project} defining a few simple operations, initializes the given `$exports` object
-			 * with a standard set of `wf` commands defined by {@link standard.Interface}.
-			 */
-			initialize: {
-				(
-					$context: jsh.wf.cli.Context,
-					operations: standard.Project,
-					$exports: standard.Interface
-				): void
-			}
-		}
+		/**
+		 * Provides a set of operations that can be performed on the current `Project`, where "current" is defined by the `PROJECT`
+		 * environment variable (if set), and otherwise by the current working directory.
+		 */
+		project: ProjectView
 
 		git: {
 			commands: {
@@ -367,8 +387,8 @@ namespace slime.jsh.wf {
 
 			fifty.tests.exports.requireGitIdentity.first = function() {
 				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
-				jsh.tools.git.init({ pathname: directory.pathname });
-				var unconfigured = jsh.tools.git.Repository({ directory: directory });
+				jsh.tools.git.oo.init({ pathname: directory.pathname });
+				var unconfigured = jsh.tools.git.oo.Repository({ directory: directory });
 				//jsh.wf.requireGitIdentity({ repository: unconfigured });
 				//	TODO	could we get this working?:
 				//	verify(jsh.wf).requireGitIdentity( ... ).threw.type(Error)
@@ -380,8 +400,8 @@ namespace slime.jsh.wf {
 			fifty.tests.exports.requireGitIdentity.second = function() {
 				//	TODO	test callbacks
 				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
-				jsh.tools.git.init({ pathname: directory.pathname });
-				var toConfigure = jsh.tools.git.Repository({ directory: directory });
+				jsh.tools.git.oo.init({ pathname: directory.pathname });
+				var toConfigure = jsh.tools.git.oo.Repository({ directory: directory });
 				verify(jsh.wf).evaluate(function() {
 					this.requireGitIdentity({
 						repository: toConfigure,
@@ -405,8 +425,8 @@ namespace slime.jsh.wf {
 
 			fifty.tests.exports.requireGitIdentity.third = function() {
 				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
-				jsh.tools.git.init({ pathname: directory.pathname });
-				var configured = jsh.tools.git.Repository({ directory: directory });
+				jsh.tools.git.oo.init({ pathname: directory.pathname });
+				var configured = jsh.tools.git.oo.Repository({ directory: directory });
 				configured.config({
 					arguments: ["user.name", "foo"]
 				});
@@ -486,7 +506,7 @@ namespace slime.jsh.wf {
 					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
 					check("after tmpdir");
 					jsh.shell.console("directory = " + directory);
-					var parent = jsh.tools.git.init({ pathname: directory.pathname });
+					var parent = jsh.tools.git.oo.init({ pathname: directory.pathname });
 					check("after init");
 					configure(parent);
 					check("after configure parent " + parent);
@@ -497,7 +517,7 @@ namespace slime.jsh.wf {
 					parent.commit({ all: true, message: "message a" });
 					check("after repository commit a");
 					var subdirectory = directory.getRelativePath("sub").createDirectory();
-					var child = jsh.tools.git.init({ pathname: subdirectory.pathname });
+					var child = jsh.tools.git.oo.init({ pathname: subdirectory.pathname });
 					check("after init child " + child);
 					configure(child);
 					check("after configure child");
@@ -586,7 +606,7 @@ namespace slime.jsh.wf {
 
 	export namespace exports {
 		export interface Checks {
-			tsc: slime.$api.fp.world.Question<void,{ console: string, output: string },boolean>
+			tsc: slime.$api.fp.world.Sensor<void,{ console: string, output: string },boolean>
 		}
 	}
 
@@ -601,19 +621,19 @@ namespace slime.jsh.wf {
 	}
 
 	export interface Lint {
-		check: slime.$api.fp.world.Ask<
+		check: slime.$api.fp.world.Question<
 			{
 				console: string
 			},
 			boolean
 		>
 
-		fix: slime.$api.fp.world.Tell<{
+		fix: slime.$api.fp.world.Action<{
 			console: string
 		}>
 	}
 
-	export type Test = slime.$api.fp.world.Ask<
+	export type Test = slime.$api.fp.world.Question<
 		{
 			output: string
 			console: string
@@ -675,6 +695,8 @@ namespace slime.jsh.wf {
 			const { jsh } = fifty.global;
 
 			tests.suite = function() {
+				fifty.load("module.fifty.ts");
+
 				run(fifty.tests.exports);
 			}
 		}

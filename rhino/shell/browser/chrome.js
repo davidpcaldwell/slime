@@ -69,7 +69,7 @@
 				function(u) {
 					/** @type { (u: any) => u is slime.jrunscript.shell.browser.object.instance.DefaultConfiguration } */
 					var isDefaultConfiguration = function(u) {
-						return u["isntall"];
+						return u["install"];
 					};
 
 					if (u.location) {

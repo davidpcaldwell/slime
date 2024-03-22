@@ -10,10 +10,12 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.jsh.unit.internal.browser.Context } $context
 	 * @param { slime.jsh.unit.Exports["browser"] } $exports
 	 */
-	function(Packages,$api,jsh,$exports) {
+	function(Packages,$api,$context,$exports) {
+		var jsh = $context.jsh;
+
 		$exports.Modules = function(slime,pathnames) {
 			var common = (function() {
 				var isCommonAncestor = function(directory,list) {
@@ -541,7 +543,7 @@
 			function() {
 				/**
 				 * The `jsh` shell uses the Java system properties as a convenient global storage location, and puts its own
-				 * streams into properties to communicate between, if memory servers, the launcher and loader. This could perhaps
+				 * streams into properties to communicate between, if memory serves, the launcher and loader. This could perhaps
 				 * be refactored so that they were stored in a class loaded by a shared classloader, or a ThreadLocal, or something,
 				 * but for now they're there. And the Selenium remote driver loops through system properties, assuming they're
 				 * strings, and does something with them. So we need to remove these streams before creating the RemoteWebDriver
@@ -568,7 +570,9 @@
 						},
 						replace: function() {
 							streams.forEach(function(name) {
-								_properties.put("inonit.script.jsh.Main." + name, saved[name]);
+								if (saved[name] !== null) {
+									_properties.put("inonit.script.jsh.Main." + name, saved[name]);
+								}
 							})
 						}
 					}
@@ -651,4 +655,4 @@
 		$exports.selenium = selenium;
 	}
 //@ts-ignore
-)(Packages,$api,jsh,$exports);
+)(Packages,$api,$context,$exports);

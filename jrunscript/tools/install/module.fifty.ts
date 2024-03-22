@@ -9,13 +9,18 @@
  */
 namespace slime.jrunscript.tools.install {
 	export interface Context {
+		/**
+		 * An HTTP client implementation to use. If not specified, one will be created.
+		 */
 		client?: slime.jrunscript.http.client.object.Client
-		api: {
+
+		library: {
 			web: slime.web.Exports
 			shell: slime.jrunscript.shell.Exports
 			file: slime.jrunscript.file.Exports
 			http: slime.jrunscript.http.client.Exports
 		}
+
 		/**
 		 * The directory in which to store downloaded files.
 		 */
@@ -30,9 +35,7 @@ namespace slime.jrunscript.tools.install {
 
 				var scope: {
 					downloads: slime.jrunscript.file.Directory
-					load: (p?: any) => slime.jrunscript.tools.install.Exports
-					//	TODO	load and module are redundant
-					module: (p?: any) => slime.jrunscript.tools.install.Exports
+					load: (p?: { downloads: slime.jrunscript.file.Directory }) => slime.jrunscript.tools.install.Exports
 					api: slime.jrunscript.tools.install.Exports
 					harness: {
 						local: slime.jrunscript.file.Directory
@@ -45,7 +48,6 @@ namespace slime.jrunscript.tools.install {
 				} = {
 					downloads: void(0),
 					load: void(0),
-					module: void(0),
 					api: void(0),
 					harness: void(0),
 					server: void(0),
@@ -54,7 +56,7 @@ namespace slime.jrunscript.tools.install {
 				scope.downloads = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
 				var defaults: Context = {
-					api: {
+					library: {
 						shell: jsh.shell,
 						http: jsh.http,
 						file: jsh.file,
@@ -64,18 +66,14 @@ namespace slime.jrunscript.tools.install {
 				};
 
 				scope.load = function(p) {
-					if (!p) p = {};
+					if (!p) p = { downloads: void(0) };
 					var context = $api.Object.compose(defaults);
-					context.api.shell = $api.Object.compose(context.api.shell);
+					context.library.shell = $api.Object.compose(context.library.shell);
 					if (p.downloads) {
 						context.downloads = p.downloads;
 					}
 					return fifty.$loader.module("module.js", context);
 				}
-
-				scope.module = function(p) {
-					return scope.load(p);
-				};
 
 				scope.api = scope.load();
 
@@ -136,6 +134,15 @@ namespace slime.jrunscript.tools.install {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		test: test.Exports
 	}
@@ -158,16 +165,33 @@ namespace slime.jrunscript.tools.install {
 	export namespace download {
 		export interface Events {
 			request: slime.jrunscript.http.client.spi.Events["request"]
+		}
+	}
+
+	export interface Exports {
+		download: slime.$api.fp.world.Means<{
+			from: string
+			to: slime.jrunscript.file.Location
+		},download.Events>
+	}
+
+	export namespace distribution {
+		export interface Events {
+			request: slime.jrunscript.http.client.spi.Events["request"]
 			archive: slime.jrunscript.file.File
 		}
 
 		export interface Format {
 			extract: (f: slime.jrunscript.file.File, d: slime.jrunscript.file.Directory) => void
+
+			/**
+			 * A file extension suitable for storing this format on a typical filesystem, including a leading period (`.`).
+			 */
 			extension: string
 		}
 	}
 
-	export interface Download {
+	export interface Distribution {
 		/**
 		 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported.
 		 */
@@ -179,39 +203,256 @@ namespace slime.jrunscript.tools.install {
 		 */
 		name?: string
 
-		format?: download.Format
+		format?: distribution.Format
+
+		prefix?: string
 	}
 
 	export namespace exports {
-		export interface Download {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.Download = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Distribution {
 			from: {
-				url: (url: string) => install.Download
+				//	TODO	guess download format?
+				url: (url: string) => install.Distribution
+
+				file: (p: {
+					url: string
+					prefix?: (p: Omit<install.Distribution,"prefix">) => string
+				}) => install.Distribution
 			}
 		}
 
-		export interface Download {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				const subject = test.scope.load();
+
+				fifty.tests.exports.Download.from = function() {
+					var URL = "http://example.com/foo/bar.tar.gz";
+
+					(
+						function() {
+							var download = subject.Distribution.from.url(URL);
+
+							verify(download).url.is("http://example.com/foo/bar.tar.gz");
+							verify(download).name.is("bar.tar.gz");
+							verify(download).evaluate.property("format").extension.is(".tgz");
+							verify(download).evaluate.property("format").is(subject.Distribution.Format.targz);
+						}
+					)();
+
+					(
+						function() {
+							var download = subject.Distribution.from.file({
+								url: URL
+							});
+
+							verify(download).url.is("http://example.com/foo/bar.tar.gz");
+							verify(download).name.is("bar.tar.gz");
+							verify(download).evaluate.property("format").extension.is(".tgz");
+							verify(download).evaluate.property("format").is(subject.Distribution.Format.targz);
+							verify(download).evaluate.property("prefix").is(void(0));
+						}
+					)();
+
+					(
+						function() {
+							var download = subject.Distribution.from.file({
+								url: URL,
+								prefix: $api.fp.mapping.all("prefix/")
+							});
+
+							verify(download).url.is("http://example.com/foo/bar.tar.gz");
+							verify(download).name.is("bar.tar.gz");
+							verify(download).evaluate.property("format").extension.is(".tgz");
+							verify(download).evaluate.property("format").is(subject.Distribution.Format.targz);
+							verify(download).evaluate.property("prefix").is("prefix/");
+						}
+					)();
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Distribution {
 			Format: {
-				zip: download.Format
-				targz: download.Format
+				zip: distribution.Format
+				targz: distribution.Format
 			}
 		}
 
-		export interface Download {
-			install: slime.$api.fp.world.Action<
-				{ download: install.Download, to: string },
-				download.Events
-			>
+		export interface Distribution {
+			install: {
+				world: slime.$api.fp.world.Means<
+					{
+						download: install.Distribution
+						to: string
+						clean?: boolean
+					},
+					distribution.Events & {
+						exists: slime.jrunscript.file.Location
+					}
+				>
+			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+				const { server, harness, load } = test.scope;
+
+				fifty.tests.exports.Download.install = function() {
+					var downloads = fifty.jsh.file.object.temporary.directory();
+					var subject = load({ downloads: downloads });
+					var url = "http://" + "127.0.0.1" + ":" + server.port + "/" + "directory.tar.gz";
+					jsh.shell.console("url = " + url);
+
+					fifty.run(function unprefixed() {
+						var download: install.Distribution = {
+							url: url,
+							format: subject.Distribution.Format.targz
+						};
+						var destination = fifty.jsh.file.object.temporary.location();
+
+						$api.fp.world.now.action(
+							subject.Distribution.install.world,
+							{ download: download, to: destination.toString() }
+						);
+						verify(destination).directory.getFile("file").is(null);
+						verify(destination).directory.getFile("directory/file").is.not(null);
+					});
+
+					fifty.run(function prefixed() {
+						var download: install.Distribution = {
+							url: url,
+							format: subject.Distribution.Format.targz,
+							prefix: "directory"
+						};
+						var destination = fifty.jsh.file.object.temporary.location();
+
+						$api.fp.world.now.action(
+							subject.Distribution.install.world,
+							{ download: download, to: destination.toString() }
+						);
+						verify(destination).directory.getFile("file").is.not(null);
+						verify(destination).directory.getFile("directory/file").is(null);
+					});
+
+					fifty.run(function exists() {
+						var download: install.Distribution = {
+							url: url,
+							format: subject.Distribution.Format.targz
+						};
+
+						fifty.run(function error() {
+							var destination = fifty.jsh.file.object.temporary.location();
+							$api.fp.world.Means.now({
+								means: subject.Distribution.install.world,
+								order: { download: download, to: destination.toString() }
+							});
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+
+							var error = null;
+							try {
+								$api.fp.world.Means.now({
+									means: subject.Distribution.install.world,
+									order: { download: download, to: destination.toString() }
+								});
+							} catch (e) {
+								error = e;
+								jsh.shell.console(error);
+							}
+							verify(error).is.not(null);
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+						});
+
+						fifty.run(function overwrite() {
+							var destination = fifty.jsh.file.object.temporary.location();
+							$api.fp.world.Means.now({
+								means: subject.Distribution.install.world,
+								order: { download: download, to: destination.toString() }
+							});
+							destination.directory.getRelativePath("directory/a").write("");
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+							verify(destination).directory.getFile("directory/a").is.not(null);
+
+
+							var error = null;
+							try {
+								$api.fp.world.Means.now({
+									means: subject.Distribution.install.world,
+									order: { download: download, to: destination.toString(), clean: false }
+								});
+							} catch (e) {
+								error = e;
+							}
+							verify(error).is(null);
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+							verify(destination).directory.getFile("directory/a").is.not(null);
+						});
+
+						fifty.run(function clean() {
+							var destination = fifty.jsh.file.object.temporary.location();
+							$api.fp.world.Means.now({
+								means: subject.Distribution.install.world,
+								order: { download: download, to: destination.toString() }
+							});
+							destination.directory.getRelativePath("directory/a").write("");
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+							verify(destination).directory.getFile("directory/a").is.not(null);
+
+							var error = null;
+							try {
+								$api.fp.world.Means.now({
+									means: subject.Distribution.install.world,
+									order: { download: download, to: destination.toString(), clean: true }
+								});
+							} catch (e) {
+								error = e;
+							}
+							verify(error).is(null);
+							verify(destination).directory.getFile("file").is(null);
+							verify(destination).directory.getFile("directory/file").is.not(null);
+							verify(destination).directory.getFile("directory/a").is(null);
+						});
+					});
+
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Exports {
-		Download: exports.Download
+		Distribution: exports.Distribution
 	}
 
 	export namespace events {
 		export interface Console {
 			/**
-			 * A message suitable for delay on the console.
+			 * A message suitable for display on the console.
 			 */
 			console: string
 		}
@@ -463,7 +704,7 @@ namespace slime.jrunscript.tools.install {
 			 *
 			 * @returns A local file containing the content from Apache.
 			 */
-			find: slime.$api.fp.world.Question<
+			find: slime.$api.fp.world.Sensor<
 				{
 					path: string
 					mirror?: string
@@ -487,7 +728,7 @@ namespace slime.jrunscript.tools.install {
 		) {
 			const verify = fifty.verify;
 			const jsh = fifty.global.jsh;
-			const module = test.scope.module;
+			const module = test.scope.load;
 			const server = test.scope.server;
 
 			fifty.tests.get = function() {
@@ -662,9 +903,10 @@ namespace slime.jrunscript.tools.install {
 					var mockclient = new jsh.http.Client({
 						proxy: PROXY
 					});
-					var mockapi: slime.jrunscript.tools.install.Exports = fifty.$loader.module("module.js", {
+					var mockscript: slime.jrunscript.tools.install.Script = fifty.$loader.script("module.js");
+					var mockapi: slime.jrunscript.tools.install.Exports = mockscript({
 						client: mockclient,
-						api: {
+						library: {
 							shell: jsh.shell,
 							http: jsh.http,
 							file: jsh.file,
@@ -698,6 +940,8 @@ namespace slime.jrunscript.tools.install {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
+
 				fifty.run(fifty.tests.get);
 				fifty.run(fifty.tests.install);
 				fifty.run(fifty.tests.tar);
@@ -711,4 +955,6 @@ namespace slime.jrunscript.tools.install {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export type Script = slime.loader.Script<Context,Exports>
 }

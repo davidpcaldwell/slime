@@ -48,7 +48,7 @@ namespace slime.jrunscript.http.client.spi {
 		}
 	}
 
-	export type Implementation = slime.$api.fp.world.Question<Argument,Events,Response>
+	export type Implementation = slime.$api.fp.world.Sensor<Argument,Events,Response>
 
 	(
 		function(

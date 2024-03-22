@@ -5,6 +5,10 @@
 //	END LICENSE
 
 /**
+ * ## `jsh` documentation
+ *
+ * Documentation about contributing to `jsh` can be browsed at the {@link slime.jsh.internal slime.jsh.internal} TypeScript namespace.
+ *
  * ## Compatibility updates
  *
  * ### TypeScript
@@ -15,6 +19,11 @@
  * ### Javassist
  *
  * Used in the Rhino profiler, it can be updated by editing the download URL in `rhino/tools/profiler/build.jsh.js`.
+ *
+ * ## Tools
+ *
+ * The `contributor/code/find-untyped-usages.jsh.js` script can be used to search the SLIME codebase for usages of a particular
+ * construct in files without typechecking (where a standard usages search might not find them, in other words).
  */
 namespace slime.internal {
 

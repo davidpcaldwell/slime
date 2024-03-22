@@ -22,7 +22,7 @@ namespace slime.jrunscript.file.internal.loader {
 	}
 
 	export interface Exports {
-		create: (root: slime.jrunscript.file.world.Location) => slime.runtime.loader.Synchronous<Resource>
+		create: (root: slime.jrunscript.file.Location) => slime.runtime.loader.Synchronous<Resource>
 	}
 
 	(

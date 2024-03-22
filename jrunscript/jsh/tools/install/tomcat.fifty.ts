@@ -17,7 +17,7 @@ namespace slime.jsh.shell.tools {
 		//	TODO	because this is Java, it's possible that we don't need a native filesystem to do this; we might be able to run
 		//			it directly out of other Location objects. But for now we assume a native filesystem and use only the base
 		//			property.
-		export type Installed = {
+		export interface Installed {
 			base: string
 		}
 
@@ -52,7 +52,7 @@ namespace slime.jsh.shell.tools {
 		}
 
 		export interface World {
-			getLatestVersion: slime.$api.fp.world.Question<number,void,slime.$api.fp.Maybe<string>>
+			getLatestVersion: slime.$api.fp.world.Sensor<number,void,slime.$api.fp.Maybe<string>>
 			findApache: slime.jsh.Global["tools"]["install"]["apache"]["find"]
 		}
 
@@ -81,17 +81,21 @@ namespace slime.jsh.shell.tools {
 
 			Installation: {
 				from: {
+					/**
+					 *
+					 * @returns the Tomcat configuration for the currently running shell.
+					 */
 					jsh: () => slime.jsh.shell.tools.tomcat.Installed
 				}
 
 				getVersion: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.Maybe<string>
 
-				install: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Action<{
+				install: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Means<{
 					world?: tomcat.Mock
 					version?: string
 				},slime.jsh.shell.tools.tomcat.installation.Events>
 
-				require: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Action<
+				require: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Means<
 					{
 						world?: tomcat.Mock
 						version?: string
@@ -101,7 +105,7 @@ namespace slime.jsh.shell.tools {
 				>
 			}
 
-			require: slime.$api.fp.world.Action<
+			require: slime.$api.fp.world.Means<
 				{
 					world?: tomcat.Mock
 					version?: string
@@ -140,11 +144,11 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 	export interface Exports extends slime.jsh.shell.tools.tomcat.Exports {
 		test: {
 			//	TODO	world test coverage only
-			getReleaseNotes: slime.$api.fp.world.Question<slime.jsh.shell.tools.tomcat.Installed,void,slime.$api.fp.Maybe<string>>
+			getReleaseNotes: slime.$api.fp.world.Sensor<slime.jsh.shell.tools.tomcat.Installed,void,slime.$api.fp.Maybe<string>>
 
 			getVersion: (releaseNotes: string) => string
 
-			getLatestVersion: slime.$api.fp.world.Question<number,{ online: { major: number, latest: slime.$api.fp.Maybe<string> } },string>
+			getLatestVersion: slime.$api.fp.world.Sensor<number,{ online: { major: number, latest: slime.$api.fp.Maybe<string> } },string>
 		}
 	}
 

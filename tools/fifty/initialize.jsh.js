@@ -13,7 +13,7 @@
 	function(jsh) {
 		var location = jsh.shell.jsh.src.getRelativePath("local/src/typescript");
 		if (!location.directory) {
-			var typescript = jsh.tools.git.Repository({ remote: "https://github.com/microsoft/TypeScript.git" });
+			var typescript = jsh.tools.git.oo.Repository({ remote: "https://github.com/microsoft/TypeScript.git" });
 			typescript.clone({ to: location });
 		}
 	}

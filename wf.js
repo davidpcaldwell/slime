@@ -51,7 +51,7 @@
 					changed = true;
 				}
 			});
-			if (changed) jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command to update Java settings.");
+			if (changed) jsh.shell.console("VSCode: Execute the 'Java: Clean Java Language Server Workspace' command to update Java settings.");
 		}
 
 		var git = {
@@ -97,7 +97,7 @@
 			return git.repository.command(jsh.tools.git.commands.remote.show).argument("origin").run().head;
 		};
 
-		var repository = (jsh.tools.git.Repository) ? jsh.tools.git.Repository({ directory: $context.base }) : void(0);
+		var repository = (jsh.tools.git.oo.Repository) ? jsh.tools.git.oo.Repository({ directory: $context.base }) : void(0);
 
 		/**
 		 *
@@ -119,7 +119,7 @@
 			}
 		}
 
-		/** @type { slime.$api.fp.world.Action<void,void> } */
+		/** @type { slime.$api.fp.world.Means<void,void> } */
 		var cleanGitBranches = function() {
 			return function(events) {
 				repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
@@ -168,7 +168,7 @@
 					var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.inputs.gitIdentityProvider.gui;
 
 					var gitIdentityProvided = jsh.wf.checks.requireGitIdentity({
-						repository: jsh.tools.git.Repository({ directory: $context.base }),
+						repository: jsh.tools.git.oo.Repository({ directory: $context.base }),
 						get: gitIdentityProvider
 					})({
 						console: function(e) {
@@ -194,19 +194,46 @@
 
 				(
 					function node() {
+						var installation = jsh.shell.tools.node.installation;
+
 						(
 							function core() {
-								$api.fp.world.execute(jsh.shell.tools.node.require());
+								$api.fp.world.now.tell(jsh.shell.tools.node.require(), {
+									found: function(e) {
+									},
+									removed: function(e) {
+										jsh.shell.console("Removed Node.js " + e.detail.version + " at " + e.detail.at);
+									},
+									installed: function(e) {
+										jsh.shell.console("Installed Node.js " + e.detail.version);
+									}
+								});
 							}
 						)();
 						(
 							function eslint() {
-								jsh.shell.tools.node.installed.modules.require({ name: "eslint" });
+								$api.fp.world.now.action(
+									jsh.shell.tools.node.Installation.modules.require({ name: "eslint" }),
+									installation,
+									{
+										installed: function(e) {
+											jsh.shell.console("Installed eslint " + e.detail.version);
+										}
+									}
+								)
 							}
 						)();
 						(
 							function jsyaml() {
-								jsh.shell.tools.node.installed.modules.require({ name: "@types/js-yaml" });
+								$api.fp.world.now.action(
+									jsh.shell.tools.node.Installation.modules.require({ name: "@types/js-yaml" }),
+									installation,
+									{
+										installed: function(e) {
+											jsh.shell.console("Installed @types/js-yaml " + e.detail.version);
+										}
+									}
+								)
 							}
 						)();
 					}
@@ -226,12 +253,31 @@
 
 				(function wiki() {
 					if (!jsh.tools.git.installation) return;
-					var remote = jsh.tools.git.Repository({ remote: "https://github.com/davidpcaldwell/slime.wiki.git" });
+					var remote = jsh.tools.git.oo.Repository({ remote: "https://github.com/davidpcaldwell/slime.wiki.git" });
 					var location = $context.base.getRelativePath("local/wiki");
 					if (!location.directory) {
 						remote.clone({ to: location });
 					}
 				})();
+
+				$api.fp.impure.now.process(
+					$api.fp.impure.Input.supply(
+						function() { return $context.base.pathname.os.adapt(); }
+					)(
+						$api.fp.pipe(
+							jsh.file.Location.directory.relativePath("bin"),
+							function(bin) {
+								var exists = $api.fp.world.now.question(jsh.file.Location.directory.exists.world(), bin);
+								if (exists) {
+									$api.fp.world.now.action(
+										jsh.file.Location.directory.remove.world(),
+										bin
+									);
+								}
+							}
+						)
+					)
+				)
 			}
 		);
 
@@ -253,8 +299,8 @@
 					removeIfPresent("bin");
 
 					jsh.shell.console("To complete the process of re-generating the VSCode project:");
-					jsh.shell.console("VSCode: Execute the 'Java: Clean the Java language server workspace' command.");
-					jsh.shell.console("When prompted, choose Restart and delete.");
+					jsh.shell.console("VSCode: Execute the 'Java: Clean Java Language Server Workspace' command.");
+					jsh.shell.console("When prompted, choose Reload and delete.");
 					jsh.shell.console("If prompted to import Java projects in the workspace, choose Yes.");
 					jsh.shell.console("After the import is complete, run the wf initialize command and follow its instructions.");
 				}
@@ -286,7 +332,7 @@
 
 			if (license.status) {
 				events.fire("console", "License headers need to be updated; run:");
-				events.fire("console", "./jsh.bash contributor/code/license.jsh.js --fix");
+				events.fire("console", "./jsh contributor/code/license.jsh.js --fix");
 				success = false;
 			} else {
 				events.fire("console", "All license headers are correct.")
@@ -360,7 +406,7 @@
 					var success = true;
 
 					var trunk = getTrunk();
-					var repository = jsh.tools.git.Repository({ directory: $context.base });
+					var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
 					var branch = repository.status().branch.name;
 					if (branch == trunk) {
 						events.fire("console", "Cannot commit directly to " + trunk);
@@ -428,7 +474,7 @@
 			}
 		);
 
-		if (jsh.tools.git.Repository) {
+		if (jsh.tools.git.oo.Repository) {
 			(
 				function() {
 					$exports.git.branch = $api.fp.pipe(
@@ -447,7 +493,7 @@
 						}
 					)
 
-					$exports.git.branches = (jsh.tools.git.Repository) ? {
+					$exports.git.branches = (jsh.tools.git.oo.Repository) ? {
 						list: $api.fp.pipe(
 							function(p) {
 								repository.fetch({ all: true, prune: true, recurseSubmodules: true, stdio: { output: null } });
@@ -504,7 +550,7 @@
 				return rv;
 			},
 			function(p) {
-				var repository = jsh.tools.git.Repository({ directory: $context.base });
+				var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
 				//	TODO	deal with non-zero exit code
 				repository.merge({ name: p.options.branch, noCommit: true });
 			}
@@ -687,7 +733,7 @@
 					jsh.shell.console("Required: commit message (-m <message>).");
 					jsh.shell.exit(1);
 				}
-				var repository = jsh.tools.git.Repository({ directory: $context.base });
+				var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
 
 				jsh.wf.requireGitIdentity({
 					repository: repository,

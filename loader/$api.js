@@ -76,6 +76,14 @@
 			Object.assign($exports, { fp: current, Function: old.Function });
 		})();
 
+		$exports.global = {
+			get: function(name) {
+				//	TODO	note  that modern JavaScript also has `globalThis`
+				var global = (function() { return this; })();
+				return global[name];
+			}
+		};
+
 		$exports.debug = {
 			//	TODO	try to get rid of ignore below
 			//@ts-ignore
@@ -369,13 +377,6 @@
 			}
 			return Object.assign.apply(Object,args);
 		};
-		$exports.Object.property = function() {
-			var rv = this;
-			for (var i=0; i<arguments.length; i++) {
-				rv = rv[arguments[i]];
-			}
-			return rv;
-		};
 		$exports.Object.optional = function(v) {
 			if (arguments.length == 0) throw new TypeError();
 			if (arguments.length == 1) throw new TypeError();
@@ -424,6 +425,14 @@
 		}
 
 		$exports.Value = function(v,name) {
+			var $exports_Object_property = function() {
+				var rv = this;
+				for (var i=0; i<arguments.length; i++) {
+					rv = rv[arguments[i]];
+				}
+				return rv;
+			};
+
 			return {
 				require: function() {
 					if (!v) {
@@ -432,7 +441,7 @@
 				},
 				property: function() {
 					return $exports.Value(
-						$exports.Object.property.apply(v,arguments),
+						$exports_Object_property.apply(v,arguments),
 						( name || "" ) + "." + Array.prototype.join.call(arguments,".")
 					)
 				},
@@ -525,14 +534,26 @@
 			}
 		}
 
-		$exports.events = events.api;
+		var TODO = $exports.Error.type({
+			name: "TODO",
+			/** @type { (p: { message: slime.$api.fp.Thunk<string> }) => string } */
+			getMessage: function(p) {
+				return (p && p.message) ? p.message() : "TODO";
+			}
+		})
+
+		$exports.TODO = function(p) {
+			return function() {
+				throw new TODO(p);
+			}
+		}
+
+		$exports.events = events.exports;
 
 		$exports.Events = Object.assign(
-			$exports.deprecate(events.api.create),
+			$exports.deprecate(events.exports.emitter),
 			{
-				Function: $exports.deprecate(events.api.Function),
-				toHandler: $exports.deprecate(events.api.toListener),
-				action: $exports.deprecate(events.api.action)
+				Function: $exports.deprecate(events.exports.Function),
 			}
 		);
 

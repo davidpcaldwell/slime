@@ -116,27 +116,6 @@ END LICENSE
 			</ul>
 		</div>
 		<ul jsapi:id="exports">
-			<li class="value" jsapi:id="TMPDIR">
-				<div class="name">TMPDIR</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<span>A temporary directory that may be used by this shell.</span>
-			</li>
-			<li class="value" jsapi:id="HOME">
-				<div class="name">HOME</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<span>The home directory of the user executing this shell.</span>
-			</li>
-			<li class="value" jsapi:id="PWD">
-				<div class="name">PWD</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-				<!--	TODO	can this be changed while the shell is running?	-->
-				<span>The current working directory.</span>
-			</li>
-			<li class="value" jsapi:id="PATH">
-				<div class="name">PATH</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.searchpath">searchpath</a></span>
-				<span>__DESCRIPTION__</span>
-			</li>
 			<li class="object" jsapi:id="os">
 				<div class="name">os</div>
 				<span>An object representing the current operating system.</span>
@@ -161,93 +140,6 @@ END LICENSE
 						<div class="name">newline</div>
 						<span class="type">string</span>
 						<span>The line separator for this operating system.</span>
-					</li>
-					<li class="function">
-						<div class="name">resolve</div>
-						<span>
-							A function allowing operating system-specific code to be easily specified. Can be invoked with code
-							like:
-							<pre>
-os.resolve(function() {
-	if (this.name == "Linux") {
-		return /* Linux-specific value */;
-	} else {
-		//	...
-	}
-});
-							</pre>
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="function">
-									<span>
-										A function that resolves OS-specific code. It is invoked with the <code>os</code> object
-										representing the current operating system as <code>this</code> and can return a value
-										accordingly.
-									</span>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="value">
-												<span class="type">object</span>
-												<span>The <code>os</code> property</span>
-											</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type">(any)</span>
-										<span>A value for the current operating system.</span>
-									</div>
-									<script type="application/x.jsapi#tests">
-										var withColon = module.os.resolve(function() {
-											return {
-												name: ":" + this.name,
-												arch: ":" + this.arch,
-												version: ":" + this.version
-											}
-										});
-										verify(withColon).name.is(":" + module.os.name);
-										verify(withColon).arch.is(":" + module.os.arch);
-										verify(withColon).version.is(":" + module.os.version);
-									</script>
-								</li>
-							</ol>
-							- OR -
-							<ol>
-								<li class="value">
-									<span class="type">object</span>
-									<span>
-										An object with values representing the names of operating systems. The value of the
-										named property of the object corresponding to the current operating system will be
-										returned.
-									</span>
-									<script type="application/x.jsapi#tests">
-										var name = module.os.resolve({
-											"Mac OS X": "-Mac OS X",
-											"Linux": "-Linux",
-											"Windows": "-Windows"
-										});
-										if (module.os.name == "Windows 7") {
-											verify(name).is("-Windows");
-										} else if (module.os.name == "Mac OS X") {
-											verify(name).is("-Mac OS X");
-										} else if (module.os.name == "Linux") {
-											verify(name).is("-Linux")
-										}
-									</script>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">(any)</span>
-							<span>
-								The value returned by the given function, or the value of the specified property of the given
-								object.
-							</span>
-						</div>
 					</li>
 					<li class="object experimental">
 						<div class="name">process</div>

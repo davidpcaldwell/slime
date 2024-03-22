@@ -23,13 +23,16 @@ namespace slime.jrunscript.host {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports = fifty.test.Parent();
+
+			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
 
 	export namespace internal.test {
-		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
-			return fifty.$loader.module("module.js", {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			var script: Script = fifty.$loader.script("module.js");
+			return script({
 				$slime: fifty.jsh.$slime,
 				globals: false,
 				logging: {
@@ -60,6 +63,192 @@ namespace slime.jrunscript.host {
 	}
 
 	export interface Exports {
+		/** The {@link slime.jrunscript.runtime.java.Exports} `getClass()` function. */
+		getClass: slime.jrunscript.runtime.java.Exports["getClass"]
+
+		/** The {@link slime.jrunscript.runtime.java.Exports} `isJavaObject()` function. */
+		isJavaObject: slime.jrunscript.runtime.java.Exports["isJavaObject"]
+
+		/** The {@link slime.jrunscript.runtime.java.Exports} `isJavaType()` function. */
+		isJavaType: slime.jrunscript.runtime.java.Exports["isJavaType"]
+
+		/** The {@link slime.jrunscript.runtime.java.Exports} `toNativeClass()` function. */
+		toNativeClass: slime.jrunscript.runtime.java.Exports["toNativeClass"]
+	}
+
+	/**
+	 * @deprecated
+	 *
+	 * An attempt to build a group of nested JavaScript objects out of a single Java properties instance. Causes ugly edge cases
+	 * when you have properties like `a=foo`, `a.b=bar`, `a.c=baz`, in which a then has two properties `b` and `c`, but also a
+	 * value of its own. Would be easier just to use FP techniques to deal with subsets of Java properties.
+	 */
+	export type OldProperties = object
+
+	/**
+	 * A JavaScript representation of the `java.util.Properties` type: an object with string keys and string values.
+	 */
+	export interface Properties {
+		[name: string]: string
+	}
+
+	export interface Exports {
+		Properties: exports.Properties
+	}
+
+	export namespace exports {
+		export interface Properties {
+			value: (name: string) => (properties: slime.jrunscript.host.Properties) => slime.$api.fp.Maybe<string>
+
+			/** @deprecated */
+			adapt: (_java: slime.jrunscript.native.java.util.Properties) => OldProperties
+
+			/**
+			 * A {@link Codec} which converts between a JavaScript {@link Properties} representation of Java properties and the native
+			 * `java.util.Properties` type.
+			 */
+			codec: {
+				java: slime.Codec<slime.jrunscript.host.Properties,slime.jrunscript.native.java.util.Properties>
+			}
+		}
+
+		(
+			function(
+				Packages: slime.jrunscript.Packages,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
+				const module = internal.test.subject;
+
+				fifty.tests.exports.Properties = fifty.test.Parent();
+
+				fifty.tests.exports.Properties.adapt = function() {
+					var $p = new Packages.java.util.Properties();
+					$p.setProperty("a.a", "a");
+					$p.setProperty("a.b", "b");
+					$p.setProperty("a.c", "c");
+					var p = module.Properties.adapt($p);
+					//	Note that for-in loop would yield four properties, including toString(), but this seems fine
+					jsh.shell.console(Object.keys(p["a"]).toString());
+					verify(p).evaluate.property("a").evaluate(function(a) { return Object.keys(a); }).length.is(3);
+				}
+
+				fifty.tests.exports.Properties.codec = function() {
+					var values = {
+						a: "1"
+					};
+
+					var encoded = module.Properties.codec.java.encode(values);
+					jsh.shell.console(String(encoded));
+					verify(encoded.getProperty("a")).evaluate(String).is("1");
+					verify(encoded.getProperty("foo")).is(null);
+
+					var decoded = module.Properties.codec.java.decode(encoded);
+					verify(decoded).a.is("1");
+					verify(decoded).evaluate.property("foo").is(void(0));
+				}
+			}
+		//@ts-ignore
+		)(Packages,fifty);
+
+		export interface Properties {
+			from: {
+				/**
+				 * Parses a file in Java properties format and returns a JavaScript {@link Properties} object.
+				 */
+				string: slime.$api.fp.Mapping<string,slime.jrunscript.host.Properties>
+			}
+
+			/**
+			 * Converts a JavaScript {@link Properties} object to the Java properties file format.
+			 */
+			string: slime.$api.fp.Mapping<slime.jrunscript.host.Properties,string>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				const { subject } = internal.test;
+
+				fifty.tests.exports.Properties.string = function() {
+					var test = [
+						"#Foo",
+						"#Tue Jan 02 14:42:08 EST 2024",
+						"foo=bar",
+						"baz=bizzy"
+					].join("\n");
+
+					var object = subject.Properties.from.string(test);
+
+					verify(object).evaluate.property("foo").is("bar");
+					verify(object).evaluate.property("baz").is("bizzy");
+					verify(object).evaluate.property("nope").is(void(0));
+
+					var string = subject.Properties.string(object);
+
+					verify(string.split("\n")).length.is(3);
+					verify(string.split("\n"))[2].is("");
+
+					var parsed = subject.Properties.from.string(test);
+					verify(parsed).evaluate.property("foo").is("bar");
+					verify(parsed).evaluate.property("baz").is("bizzy");
+					verify(parsed).evaluate.property("nope").is(void(0));
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		vm: {
+			properties: slime.$api.fp.impure.Input<Properties>,
+			setProperty: (name: string) => slime.$api.fp.impure.Output<string>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+			const { subject } = internal.test;
+
+			fifty.tests.exports.vm = fifty.test.Parent();
+
+			fifty.tests.exports.vm.properties = fifty.test.Parent();
+
+			fifty.tests.exports.vm.properties.all = function() {
+				var value = subject.vm.properties();
+				jsh.shell.console(JSON.stringify(value,void(0),4));
+				verify(value)["java.home"].is.type("string");
+				verify(value).evaluate.property("foo").is.type("undefined");
+			}
+
+			fifty.tests.exports.vm.properties.value = function() {
+				var exists = $api.fp.now.invoke(
+					subject.vm.properties(),
+					subject.Properties.value("java.home")
+				);
+				verify(exists.present).is(true);
+				var foo = $api.fp.now.invoke(
+					subject.vm.properties(),
+					subject.Properties.value("foo")
+				);
+				verify(foo.present).is(false);
+			}
+
+			fifty.tests.manual
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		Environment: (java: slime.jrunscript.native.inonit.system.OperatingSystem.Environment) => Environment
 	}
 
@@ -71,7 +260,7 @@ namespace slime.jrunscript.host {
 			fifty.tests.exports.Environment = function() {
 				const { subject } = internal.test;
 
-				var _Environment = function(o: object, caseSensitive: boolean) {
+				var _Environment = function(o: { [key: string]: string }, caseSensitive: boolean) {
 					return subject.invoke({
 						method: {
 							class: Packages.inonit.system.OperatingSystem.Environment,
@@ -115,20 +304,6 @@ namespace slime.jrunscript.host {
 	)(Packages,fifty);
 
 	export interface Exports {
-		/** The {@link slime.jrunscript.runtime.java.Exports} `getClass()` function. */
-		getClass: slime.jrunscript.runtime.java.Exports["getClass"]
-
-		/** The {@link slime.jrunscript.runtime.java.Exports} `isJavaObject()` function. */
-		isJavaObject: slime.jrunscript.runtime.java.Exports["isJavaObject"]
-
-		/** The {@link slime.jrunscript.runtime.java.Exports} `isJavaType()` function. */
-		isJavaType: slime.jrunscript.runtime.java.Exports["isJavaType"]
-
-		/** The {@link slime.jrunscript.runtime.java.Exports} `toNativeClass()` function. */
-		toNativeClass: slime.jrunscript.runtime.java.Exports["toNativeClass"]
-	}
-
-	export interface Exports {
 		/**
 		 * Contains methods that operate on Java arrays.
 		 */
@@ -168,7 +343,8 @@ namespace slime.jrunscript.host {
 			const { verify } = fifty;
 			const module = internal.test.subject;
 
-			const isRhino = typeof(Packages.org.mozilla.javascript.Context) == "function"
+			const hasRhinoCode = Boolean(typeof(Packages.org.mozilla.javascript.Context) == "function");
+			const isRhino = hasRhinoCode
 				&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null)
 			;
 
@@ -212,7 +388,7 @@ namespace slime.jrunscript.host {
 		 *
 		 * @param p
 		 */
-		Map(p: { object: object }): slime.jrunscript.native.java.util.Map
+		Map: <V>(p: { object: { [key: string]: V } }) => slime.jrunscript.native.java.util.Map<string,V>
 	}
 
 	(
@@ -222,7 +398,7 @@ namespace slime.jrunscript.host {
 			fifty.tests.exports.Map = function() {
 				const { subject } = internal.test;
 
-				var _map: slime.jrunscript.native.java.util.Map = subject.Map({ object: { foo: "bar" } } );
+				var _map: slime.jrunscript.native.java.util.Map<string,string> = subject.Map({ object: { foo: "bar" } } );
 				fifty.verify(String(_map.get("foo"))).is("bar");
 				fifty.verify(String(_map.get("baz"))).is("null");
 
@@ -240,34 +416,6 @@ namespace slime.jrunscript.host {
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export interface Exports {
-		Properties: any
-	}
-
-	(
-		function(
-			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			const module = internal.test.subject;
-
-			fifty.tests.exports.Properties = function() {
-				var $p = new Packages.java.util.Properties();
-				$p.setProperty("a.a", "a");
-				$p.setProperty("a.b", "b");
-				$p.setProperty("a.c", "c");
-				var p = new module.Properties($p);
-				//	Note that for-in loop would yield four properties, including toString(), but this seems fine
-				Packages.java.lang.System.err.println(Object.keys(p.a));
-				verify(p).evaluate.property("a").evaluate(function(a) { return Object.keys(a); }).length.is(3);
-			}
-		}
-	//@ts-ignore
-	)(Packages,fifty);
-
 
 	export namespace logging {
 		type LevelMethod = (...args: any[]) => void

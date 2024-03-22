@@ -12,7 +12,7 @@
  *
  * ## Configuration
  *
- * See [running `jsh`](../src/jsh/launcher/api.html) for information about how to run scripts using `jsh` and configure the
+ * See [running `jsh`](../src/jrunscript/jsh/launcher/api.html) for information about how to run scripts using `jsh` and configure the
  * shell.
  *
  * ## Execution models
@@ -50,7 +50,7 @@ namespace slime.jsh {
 
 	export interface Tools {
 		jenkins: slime.jrunscript.tools.jenkins.Exports
-		node: slime.jrunscript.node.Exports
+		node: slime.jrunscript.tools.node.Exports
 		install: slime.jrunscript.tools.install.Exports
 		github: slime.jrunscript.tools.github.Exports
 	}
@@ -82,11 +82,22 @@ namespace slime.jsh {
 			web: slime.web.Exports
 		}
 
-		file: slime.jrunscript.file.Exports
+		file: slime.jrunscript.file.Plugin
 		time: slime.time.Exports
 		ip: slime.jrunscript.ip.Exports
 		db: {
 			jdbc: slime.jsh.db.jdbc.Exports
 		}
 	}
+}
+
+/**
+ * To execute a script in an ad-hoc built shell, execute:
+ * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js <script> [arguments]`
+ *
+ * To execute a script in a packaged shell, execute:
+ * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js -packaged <script> [arguments]`
+ */
+namespace slime.jsh.internal {
+
 }

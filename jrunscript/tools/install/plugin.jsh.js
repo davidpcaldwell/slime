@@ -32,6 +32,7 @@
 					code: void(0),
 					jenkins: void(0),
 					gcloud: void(0),
+					maven: void(0),
 
 
 					//	deprecated
@@ -39,8 +40,10 @@
 					tomcat: void(0),
 					ncdbg: void(0)
 				};
-				jsh.tools.install = $loader.module("module.js", {
-					api: {
+				/** @type { slime.jrunscript.tools.install.Script } */
+				var script = $loader.script("module.js");
+				jsh.tools.install = script({
+					library: {
 						shell: jsh.shell,
 						http: jsh.http,
 						file: jsh.file,

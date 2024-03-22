@@ -16,7 +16,7 @@ namespace slime.jsh {
 			desktop: {
 				clipboard: {
 					copy: {
-						string: slime.$api.fp.world.Action<string,void>
+						string: slime.$api.fp.world.Means<string,void>
 					}
 				}
 			}

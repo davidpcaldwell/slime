@@ -135,7 +135,7 @@ namespace slime.jsh.wf.test {
 							});
 						}
 					)();
-					var rv = jsh.tools.git.Repository({ directory: jsh.file.Pathname(destination.pathname).directory });
+					var rv = jsh.tools.git.oo.Repository({ directory: jsh.file.Pathname(destination.pathname).directory });
 					if (p.commit && rv.status().paths) {
 						configure(rv);
 						var repository = jsh.tools.git.program({ command: "git" }).repository(destination.pathname);

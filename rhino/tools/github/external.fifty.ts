@@ -27,10 +27,10 @@
 			www.addHttpsHost("api.github.com");
 			www.addHttpsHost("github.com");
 			www.addHttpsHost("127.0.0.1");
-			www.add(jsh.unit.mock.Web.github({
+			www.add(jsh.unit.mock.web.Github({
 				src: {
 					davidpcaldwell: {
-						slime: jsh.tools.git.Repository({ directory: jsh.shell.jsh.src })
+						slime: jsh.tools.git.oo.Repository({ directory: jsh.shell.jsh.src })
 					}
 				}
 			}));
@@ -41,10 +41,10 @@
 
 		fifty.tests.mock = function() {
 			fifty.global.jsh.loader.plugins(fifty.global.jsh.shell.jsh.src.getSubdirectory("rhino/tools/github"));
-			const plugin = fifty.global.jsh.unit.mock.Web.github({
+			const plugin = fifty.global.jsh.unit.mock.web.Github({
 				src: {
 					davidpcaldwell: {
-						slime: fifty.global.jsh.tools.git.Repository({ directory: fifty.global.jsh.shell.jsh.src })
+						slime: fifty.global.jsh.tools.git.oo.Repository({ directory: fifty.global.jsh.shell.jsh.src })
 					}
 				}
 			});

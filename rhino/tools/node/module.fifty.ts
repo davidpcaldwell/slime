@@ -4,18 +4,13 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.node {
-	export interface World {
-		install: slime.$api.fp.world.Action<{ location: string, version: string }, void>
-	}
-
+namespace slime.jrunscript.tools.node {
 	export interface Context {
 		library: {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 			install: slime.jrunscript.tools.install.Exports
 		}
-		world?: World
 	}
 
 	export namespace test {
@@ -42,8 +37,6 @@ namespace slime.jrunscript.node {
 				previous: string
 				current: string
 			}
-
-			world: World
 		}
 	}
 
@@ -56,36 +49,43 @@ namespace slime.jrunscript.node {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Functions {
+	/**
+	 * A specified installation of Node.js. When determining whether Node.js is installed at a particular location, one can
+	 * create an `Installation` using the `from.location` function, and then check for its existence with `exists`.
+	 */
+	export interface Installation {
+		executable: string
+	}
+
+	export interface Module {
+		name: string
+		version: string
+	}
+
+	export namespace exports {
+		export interface Installation {
+			from: {
+				/**
+				 * Given a Node installation location, returns the Node `Installation` corresponding to that location.
+				 *
+				 * @param home The home directory of the `Installation`.
+				 * @returns
+				 */
+				location: (home: slime.jrunscript.file.Location) => slime.jrunscript.tools.node.Installation
+			}
+
+			exists: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,boolean>
+
+			getVersion: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,string>
+		}
 	}
 
 	export interface Exports {
-		world: Functions
+		Installation: exports.Installation
 	}
 
-	export namespace world {
-		/**
-		 * A specified installation of Node.js. When determining whether Node.js is installed at a particular location, one can
-		 * create an `Installation` using the `from.location` function, and then check for its existence with `exists`.
-		 */
-		export interface Installation {
-			executable: string
-		}
-
-		export interface Module {
-			name: string
-			version: string
-		}
-	}
-
-	export namespace functions {
-		export interface Installation {
-			from: {
-				location: (home: slime.jrunscript.file.world.Location) => world.Installation
-			}
-			exists: slime.$api.fp.world.Question<world.Installation,void,boolean>
-			getVersion: slime.$api.fp.world.Question<world.Installation,void,string>
-		}
+	export interface Exports {
+		install: (to: string) => slime.$api.fp.world.Means<{ version: string },void>
 	}
 
 	(
@@ -97,49 +97,48 @@ namespace slime.jrunscript.node {
 
 			//	TODO	test still directly references world object
 			fifty.tests.sandbox.installation = function() {
+				var exists = $api.fp.world.mapping(test.subject.Installation.exists);
+				var getVersion = $api.fp.world.mapping(test.subject.Installation.getVersion);
+
 				var TMPDIR = fifty.jsh.file.temporary.location();
-				var installation = test.subject.world.Installation.from.location(TMPDIR);
-				var before = $api.fp.world.now.question(
-					test.subject.world.Installation.exists,
-					installation
-				);
+				var installation = test.subject.Installation.from.location(TMPDIR);
+
+				var before = exists(installation);
 				verify(before).is(false);
-				$api.fp.world.now.action(
-					test.subject.test.world.install,
-					{
-						location: TMPDIR.pathname,
+
+				$api.fp.world.now.tell(
+					test.subject.install(TMPDIR.pathname.toString())({
 						version: test.subject.test.versions.current
-					}
+					})
 				);
-				var after = $api.fp.world.now.question(
-					test.subject.world.Installation.exists,
-					installation
-				);
+
+				var after = exists(installation);
 				verify(after).is(true);
-				var version = $api.fp.world.now.question(
-					test.subject.world.Installation.getVersion,
-					installation
-				)
+				var version = getVersion(installation);
 				verify(version).is("v" + test.subject.test.versions.current);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
 
-	export interface Invocation {
+	export interface Intention {
 		command?: string
 		project?: string
-		arguments?: slime.jrunscript.shell.invocation.Argument["arguments"]
-		environment?: slime.jrunscript.shell.invocation.Argument["environment"]
-		directory?: slime.jrunscript.shell.invocation.Argument["directory"]
-		stdio?: slime.jrunscript.shell.invocation.Argument["stdio"]
+		arguments?: slime.jrunscript.shell.run.Intention["arguments"]
+		environment?: slime.jrunscript.shell.run.Intention["environment"]
+		directory?: slime.jrunscript.shell.run.Intention["directory"]
+		stdio?: slime.jrunscript.shell.run.Intention["stdio"]
 	}
 
-	export namespace functions {
+	export namespace exports {
 		export interface Installation {
-			invocation: (argument: Invocation) => (installation: world.Installation) => slime.jrunscript.shell.run.old.Invocation
+			Intention: {
+				shell: (argument: Intention) => (installation: slime.jrunscript.tools.node.Installation) => slime.jrunscript.shell.run.Intention
+				question: (argument: Intention) => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
+			}
 
-			question: (argument: Invocation) => slime.$api.fp.world.Question<world.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
+			/** @deprecated */
+			question: Installation["Intention"]["question"]
 		}
 
 		(
@@ -151,17 +150,15 @@ namespace slime.jrunscript.node {
 
 				fifty.tests.sandbox.question = function() {
 					var TMPDIR = fifty.jsh.file.temporary.location();
-					$api.fp.world.now.action(
-						test.subject.test.world.install,
-						{
-							location: TMPDIR.pathname,
+					$api.fp.world.now.tell(
+						test.subject.install(TMPDIR.pathname)({
 							version: test.subject.test.versions.current
-						}
+						})
 					);
-					var installation = test.subject.world.Installation.from.location(TMPDIR);
+					var installation = test.subject.Installation.from.location(TMPDIR);
 					debugger;
 					var result = $api.fp.world.now.question(
-						test.subject.world.Installation.question({
+						test.subject.Installation.Intention.question({
 							arguments: [fifty.jsh.file.object.getRelativePath("test/hello.js").toString()],
 							stdio: {
 								output: "string"
@@ -177,20 +174,34 @@ namespace slime.jrunscript.node {
 
 	}
 
-	export namespace functions {
+	export namespace exports {
 		export interface Installation {
 			modules: {
-				list: () => slime.$api.fp.world.Question<world.Installation, void, world.Module[]>
+				list: () => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation, void, Module[]>
 
-				installed: (name: string) => slime.$api.fp.world.Question<world.Installation, void, slime.$api.fp.Maybe<world.Module>>
+				installed: (name: string) => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation, void, slime.$api.fp.Maybe<Module>>
 
-				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<world.Installation,void>
+				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Means<slime.jrunscript.tools.node.Installation,void>
 
-				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<world.Installation,{
-					found: slime.$api.fp.Maybe<world.Module>
-					installing: void
-					installed: world.Module
-				}>
+				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Means<
+					slime.jrunscript.tools.node.Installation,
+					{
+						/**
+						 * After searching for the named module in the existing installation, the module found (if any).
+						 */
+						found: slime.$api.fp.Maybe<Module>
+
+						/**
+						 * Before installing the given {@link Module}.
+						 */
+						installing: { name: string, version?: string }
+
+						/**
+						 * After installing the given {@link Module}.
+						 */
+						installed: Module
+					}
+				>
 			}
 		}
 	}
@@ -207,16 +218,15 @@ namespace slime.jrunscript.node {
 			fifty.tests.wip = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
 				$api.fp.world.now.action(
-					test.subject.test.world.install,
+					test.subject.install(TMPDIR.pathname),
 					{
-						location: TMPDIR.pathname,
 						version: test.subject.test.versions.current
 					}
 				);
-				var installation = test.subject.world.Installation.from.location(TMPDIR);
+				var installation = test.subject.Installation.from.location(TMPDIR);
 
 				var installedModule = $api.fp.world.mapping(
-					test.subject.world.Installation.modules.installed("minimal-package"),
+					test.subject.Installation.modules.installed("minimal-package"),
 				)
 
 				var before = installedModule(installation);
@@ -225,7 +235,7 @@ namespace slime.jrunscript.node {
 
 				var findInListing = function() {
 					var listing = $api.fp.world.now.question(
-						test.subject.world.Installation.modules.list(),
+						test.subject.Installation.modules.list(),
 						installation
 					);
 					var found = listing.find(function(module) {
@@ -237,7 +247,7 @@ namespace slime.jrunscript.node {
 				verify(findInListing()).is(void(0));
 
 				$api.fp.world.now.action(
-					test.subject.world.Installation.modules.install({ name: "minimal-package" }),
+					test.subject.Installation.modules.install({ name: "minimal-package" }),
 					installation
 				);
 
@@ -252,10 +262,6 @@ namespace slime.jrunscript.node {
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export interface Functions {
-		Installation: functions.Installation
-	}
 
 	export namespace object {
 		/**
@@ -347,18 +353,20 @@ namespace slime.jrunscript.node {
 
 		export namespace install {
 			export interface Events {
-				installed: slime.jrunscript.node.object.Installation
+				installed: slime.jrunscript.tools.node.object.Installation
 			}
 		}
 	}
 
 	export interface Exports {
-		at: (p: { location: string }) => slime.jrunscript.node.object.Installation
+		object: {
+			at: (p: { location: string }) => slime.jrunscript.tools.node.object.Installation
 
-		install: slime.$api.fp.world.Action<{
-			version?: string
-			location: slime.jrunscript.file.Pathname
-		},object.install.Events>
+			install: slime.$api.fp.world.Means<{
+				version?: string
+				location: slime.jrunscript.file.Pathname
+			},object.install.Events>
+		}
 	}
 
 	(
@@ -373,8 +381,8 @@ namespace slime.jrunscript.node {
 
 			fifty.tests.object.installation = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
-				verify(subject).at({ location: TMPDIR.pathname }).is(null);
-				var tell = subject.install({
+				verify(subject).object.at({ location: TMPDIR.pathname }).is(null);
+				var tell = subject.object.install({
 					location: jsh.file.Pathname(TMPDIR.pathname)
 				});
 				$api.fp.world.execute(tell, {
@@ -382,21 +390,21 @@ namespace slime.jrunscript.node {
 						jsh.shell.console("Installed: Node " + e.detail.version + " at " + e.detail.location);
 					}
 				});
-				verify(subject).at({ location: TMPDIR.pathname }).is.type("object");
-				verify(subject).at({ location: TMPDIR.pathname }).version.is("v" + subject.test.versions.current);
+				verify(subject).object.at({ location: TMPDIR.pathname }).is.type("object");
+				verify(subject).object.at({ location: TMPDIR.pathname }).version.is("v" + subject.test.versions.current);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>
-
-	export interface Plugin {
-		module: (p: { context: Context }) => Exports
-	}
 }
 
-namespace slime.jrunscript.node.internal {
+namespace slime.jrunscript.tools.node.internal {
+	export interface JshPluginInterface {
+		module: (p: { context: Context }) => Exports
+	}
+
 	//	TODO	this probably has a richer structure when --depth is not 0
 	export interface NpmLsOutput {
 		name: string

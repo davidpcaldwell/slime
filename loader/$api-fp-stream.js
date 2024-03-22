@@ -79,49 +79,24 @@
 		}
 
 		$export({
-			from: {
-				empty: function() {
-					return empty;
-				},
-				array: function(array) {
-					/**
-					 * @template { any } T
-					 * @param { T[] } array
-					 * @param { number } index
-					 * @returns { slime.$api.fp.Stream<T> }
-					 */
-					var ArrayStream = function recurse(array,index) {
-						return function() {
-							if (index < array.length) {
-								return {
-									next: $f.Maybe.from.some(array[index]),
-									remaining: recurse(array, index+1)
-								}
-							} else {
-								return {
-									next: $f.Maybe.from.nothing(),
-									remaining: empty
-								}
-							}
-						};
-					}
-
-					return ArrayStream(array, 0);
-				},
-				integers: {
-					range: function(p) {
-						var IntRange = function recurse(p) {
-							var start = p.start || 0;
-							var increment = p.increment || 1;
+			exports: {
+				from: {
+					empty: function() {
+						return empty;
+					},
+					array: function(array) {
+						/**
+						 * @template { any } T
+						 * @param { T[] } array
+						 * @param { number } index
+						 * @returns { slime.$api.fp.Stream<T> }
+						 */
+						var ArrayStream = function recurse(array,index) {
 							return function() {
-								if ( (start + increment) <= p.end) {
+								if (index < array.length) {
 									return {
-										next: $f.Maybe.from.some(start),
-										remaining: recurse({
-											start: start + increment,
-											end: p.end,
-											increment: increment
-										})
+										next: $f.Maybe.from.some(array[index]),
+										remaining: recurse(array, index+1)
 									}
 								} else {
 									return {
@@ -129,60 +104,103 @@
 										remaining: empty
 									}
 								}
+							};
+						}
+
+						return ArrayStream(array, 0);
+					},
+					integers: {
+						range: function(p) {
+							var IntRange = function recurse(p) {
+								var start = p.start || 0;
+								var increment = p.increment || 1;
+								return function() {
+									if ( (start + increment) <= p.end) {
+										return {
+											next: $f.Maybe.from.some(start),
+											remaining: recurse({
+												start: start + increment,
+												end: p.end,
+												increment: increment
+											})
+										}
+									} else {
+										return {
+											next: $f.Maybe.from.nothing(),
+											remaining: empty
+										}
+									}
+								}
+							};
+							return IntRange(p);
+						}
+					}
+				},
+				first: function(stream) {
+					return stream().next;
+				},
+				map: function(mapping) {
+					/**
+					 * @template { any } T
+					 * @template { any } R
+					 * @param { slime.$api.fp.Stream<T> } stream
+					 * @param { (t: T) => R } mapping
+					 * @returns { slime.$api.fp.Stream<R> }
+					 */
+					var MappedStream = function recurse(stream,mapping) {
+						return function() {
+							var delegate = stream();
+							return {
+								//	TODO	probably a better way to write this with Maybe.else
+								next: (delegate.next.present) ? $context.$f.Maybe.from.some(mapping(delegate.next.value)) : $context.$f.Maybe.from.nothing(),
+								remaining: recurse(delegate.remaining,mapping)
 							}
 						};
-						return IntRange(p);
 					}
-				}
-			},
-			map: function(mapping) {
-				/**
-				 * @template { any } T
-				 * @template { any } R
-				 * @param { slime.$api.fp.Stream<T> } stream
-				 * @param { (t: T) => R } mapping
-				 * @returns { slime.$api.fp.Stream<R> }
-				 */
-				var MappedStream = function recurse(stream,mapping) {
-					return function() {
-						var delegate = stream();
-						return {
-							//	TODO	probably a better way to write this with Maybe.else
-							next: (delegate.next.present) ? $context.$f.Maybe.from.some(mapping(delegate.next.value)) : $context.$f.Maybe.from.nothing(),
-							remaining: recurse(delegate.remaining,mapping)
+					return function(stream) {
+						return MappedStream(stream,mapping);
+					}
+				},
+				collect: function(stream) {
+					var rv = [];
+					var more = true;
+					while(more) {
+						var current = stream();
+						if (current.next.present) {
+							rv.push(current.next.value);
+							stream = current.remaining;
+						} else {
+							more = false;
 						}
-					};
-				}
-				return function(stream) {
-					return MappedStream(stream,mapping);
+					}
+					return rv;
+				},
+				filter: filter,
+				find: function find(predicate) {
+					return $f.pipe(
+						filter(predicate),
+						first
+					)
+				},
+				join: function(streams) {
+					return StreamsStream(streams);
 				}
 			},
-			first: function(stream) {
-				return stream().next;
-			},
-			collect: function(stream) {
-				var rv = [];
-				var more = true;
-				while(more) {
-					var current = stream();
-					if (current.next.present) {
-						rv.push(current.next.value);
-						stream = current.remaining;
-					} else {
-						more = false;
+			impure: {
+				forEach: function(f) {
+					return function(stream) {
+						var more = true;
+						while(more) {
+							var current = stream();
+							if (current.next.present) {
+								f(current.next.value);
+								stream = current.remaining;
+							} else {
+								more = false;
+							}
+						}
 					}
 				}
-				return rv;
-			},
-			filter: filter,
-			find: function find(predicate) {
-				return $f.pipe(
-					filter(predicate),
-					first
-				)
-			},
-			join: function(streams) {
-				return StreamsStream(streams);
 			}
 		});
 	}

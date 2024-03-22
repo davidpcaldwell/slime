@@ -86,8 +86,56 @@ namespace slime.$api.fp.impure {
 					mapping: slime.$api.fp.Mapping<P,R>
 					argument: P
 				}) => impure.Input<R>
+
+				switch: <R>(cases: slime.$api.fp.impure.Input<slime.$api.fp.Maybe<R>>[]) => slime.$api.fp.impure.Input<slime.$api.fp.Maybe<R>>
+
+				partial: <R>(p: {
+					if: impure.Input<slime.$api.fp.Maybe<R>>,
+					else: impure.Input<R>
+				}) => impure.Input<R>
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.impure.Input.from = fifty.test.Parent();
+
+				fifty.tests.exports.impure.Input.from.switch = function() {
+					const nothing = $api.fp.Maybe.from.nothing();
+
+					var x = $api.fp.impure.Input.from.switch([
+						$api.fp.impure.Input.value(nothing)
+					]);
+
+					var y = $api.fp.impure.Input.from.switch([
+						$api.fp.impure.Input.value($api.fp.Maybe.from.some(3)),
+						$api.fp.impure.Input.value($api.fp.Maybe.from.some(4))
+					]);
+
+					var z = $api.fp.impure.Input.from.switch([
+						$api.fp.impure.Input.value(nothing),
+						$api.fp.impure.Input.value($api.fp.Maybe.from.some(5))
+					]);
+
+					var X = x();
+					var Y = y();
+					var Z = z();
+
+					verify(X).present.is(false);
+					verify(Y).present.is(true);
+					if (Y.present) verify(Y).value.is(3);
+					verify(Z).present.is(true);
+					if (Z.present) verify(Z).value.is(5);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 
 		export interface Input {
 
@@ -133,6 +181,17 @@ namespace slime.$api.fp.impure {
 					var result3 = counter();
 					verify(result3).is(42);
 					verify(calls).is(2);
+
+					fifty.run(function oo() {
+						var target = function(): object { return this; };
+						var object = {
+							target: target,
+							memoized: fifty.global.$api.fp.impure.Input.memoized(target)
+						};
+
+						verify(object).target().is(object);
+						verify(object).memoized().is(object);
+					});
 				}
 			}
 		//@ts-ignore
@@ -163,6 +222,14 @@ namespace slime.$api.fp.impure {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Input {
+			mapping: {
+				all: <P,R>(p: slime.$api.fp.impure.Input<R>) => slime.$api.fp.Mapping<P,R>
+			}
+		}
 	}
 
 	export namespace exports {
@@ -226,8 +293,109 @@ namespace slime.$api.fp.impure {
 		)(fifty);
 	}
 
+	export namespace exports {
+		export interface Input {
+			supply: <T>(input: impure.Input<T>) => (output: impure.Output<T>) => impure.Process
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.impure.Input.supply = function() {
+					var buffer: number[] = [];
+
+					var input = function() { return 2; };
+					var sendTwo = $api.fp.impure.Input.supply(input);
+
+					var output = function(n: number) { buffer.push(n); };
+
+					verify(buffer).length.is(0);
+					sendTwo(output)();
+					sendTwo(output)();
+					verify(buffer).length.is(2);
+					verify(buffer)[0].is(2);
+					verify(buffer)[1].is(2);
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export interface Exports {
 		Input: exports.Input
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.impure.Output = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		export interface Output {
+			nothing: <P>() => impure.Output<P>
+		}
+
+		export interface Output {
+			process: <P>(p: {
+				value: P
+				output: impure.Output<P>
+			}) => impure.Process
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.impure.Output.process = function() {
+					var buffer: number[] = [];
+
+					var output: impure.Output<number> = function(p) {
+						buffer.push(p);
+					};
+
+					var process = $api.fp.impure.Output.process({
+						value: 2,
+						output: output
+					});
+
+					verify(buffer).length.is(0);
+
+					process();
+					process();
+
+					verify(buffer).length.is(2);
+					verify(buffer)[0].is(2);
+					verify(buffer)[1].is(2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Output {
+			compose: <P>(elements: impure.Output<P>[]) => impure.Output<P>
+		}
+
+		export interface Output {
+			map: <P,R>(p: {
+				map: slime.$api.fp.Mapping<P,R>
+				output: slime.$api.fp.impure.Output<R>
+			}) => slime.$api.fp.impure.Output<P>
+		}
+	}
+
+	export interface Exports {
+		Output: exports.Output
 	}
 
 	export interface Exports {
@@ -241,6 +409,8 @@ namespace slime.$api.fp.impure {
 			}) => impure.Process
 
 			value: Process_value
+
+			now: (process: impure.Process) => void
 		}
 	}
 
@@ -276,6 +446,28 @@ namespace slime.$api.fp.impure {
 				verify(saved).is(void(0));
 				p();
 				verify(saved).is("4");
+			};
+
+			fifty.tests.exports.Process.create = function() {
+				var buffer: number[] = [];
+
+				var input = function() { return 2; };
+
+				var output = function(n: number) { buffer.push(n); };
+
+				verify(buffer).length.is(0);
+
+				var created = $api.fp.impure.Process.create({
+					input: input,
+					output: output
+				})
+
+				created();
+				created();
+
+				verify(buffer).length.is(2);
+				verify(buffer)[0].is(2);
+				verify(buffer)[1].is(2);
 			}
 		}
 	//@ts-ignore
@@ -285,19 +477,82 @@ namespace slime.$api.fp.impure {
 		now: {
 			input: <T>(input: impure.Input<T>) => T
 			output: <P>(p: P, f: impure.Output<P>) => void
+
+			/**
+			 * @deprecated Replaced by {@link Exports.Process.now}.
+			 */
 			process: (process: impure.Process) => void
 		}
 
 		tap: <T>(output: Output<T>) => (t: T) => T
 	}
+
+	export interface Exports {
+		Stream: stream.impure.Exports
+	}
 }
 
 namespace slime.$api.fp.world {
-	export type Question<P,E,A> = (p?: P) => Ask<E,A>
-	export type Action<P,E> = (p?: P) => Tell<E>
+	//	Instrument
+	export type Sensor<S,E,R> = (s?: S) => Question<E,R>
+	export type Means<O,E> = (o?: O) => Action<E>
 
-	export type Ask<E,T> = (events: slime.$api.Events<E>) => T
-	export type Tell<E> = (events: slime.$api.Events<E>) => void
+	export type Subject<
+		X extends slime.$api.fp.world.Sensor<any,any,any>
+	> = (
+		X extends slime.$api.fp.world.Sensor<
+			infer S,
+			infer E,
+			infer R
+		>
+		? S
+		: never
+	)
+
+	export type Reading<
+		X extends slime.$api.fp.world.Sensor<any,any,any>
+	> = (
+		X extends slime.$api.fp.world.Sensor<
+			infer S,
+			infer E,
+			infer R
+		>
+		? R
+		: never
+	)
+
+	export type Order<
+		X extends slime.$api.fp.world.Means<any,any>
+	> = (
+		X extends slime.$api.fp.world.Means<
+			infer O,
+			infer E
+		>
+		? O
+		: never
+	)
+
+	export type Events<
+		X extends slime.$api.fp.world.Sensor<any,any,any> | slime.$api.fp.world.Means<any,any>
+	> = (
+		X extends slime.$api.fp.world.Sensor<
+			infer S,
+			infer E,
+			infer R
+		>
+		? E
+		: (
+			X extends slime.$api.fp.world.Means<
+				infer O,
+				infer E
+			>
+			? E
+			: never
+		)
+	)
+
+	export type Question<E,R> = (events: slime.$api.event.Emitter<E>) => R
+	export type Action<E> = (events: slime.$api.event.Emitter<E>) => void
 
 	/** @deprecated */
 	export namespace old {
@@ -315,7 +570,10 @@ namespace slime.$api.fp.world {
 	}
 
 	export interface Exports {
-		mapping: <P,E,A>(question: world.Question<P,E,A>, handler?: slime.$api.event.Handlers<E>) => fp.Mapping<P,A>
+		/**
+		 * @deprecated Replaced by `Sensor.mapping`.
+		 */
+		mapping: <P,E,A>(question: world.Sensor<P,E,A>, handler?: slime.$api.event.Handlers<E>) => fp.Mapping<P,A>
 	}
 
 	(
@@ -325,8 +583,8 @@ namespace slime.$api.fp.world {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.exports.world.question = function() {
-				var doubler: Question<number, { argument: string }, number> = function(p) {
+			fifty.tests.exports.world.mapping = function() {
+				var doubler: Sensor<number, { argument: string }, number> = function(p) {
 					return function(events) {
 						events.fire("argument", String(p));
 						return p * 2;
@@ -347,47 +605,494 @@ namespace slime.$api.fp.world {
 	)(fifty);
 
 	export interface Exports {
-		output: <P,E>(action: world.Action<P,E>, handler?: slime.$api.event.Handlers<E>) => impure.Output<P>
+		Sensor: {
+			from: {
+				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.event.Emitter<E> }) => R) => Sensor<S,E,R>
+			}
 
-		process: <E>(tell: world.Tell<E>, handler?: slime.$api.event.Handlers<E>) => impure.Process
+			map: <NS,S,E,R,NR>(p: {
+				subject: slime.$api.fp.Mapping<NS,S>
+				sensor?: slime.$api.fp.world.Sensor<S,E,R>
+				reading?: slime.$api.fp.Mapping<R,NR>
+			}) => slime.$api.fp.world.Sensor<NS,E,NR>
 
-		input: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.event.Handlers<E>) => impure.Input<A>
+			mapping: <S,E,R>(p: {
+				sensor: slime.$api.fp.world.Sensor<S,E,R>
+				handlers?: slime.$api.event.Handlers<E>
+			}) => slime.$api.fp.Mapping<S,R>
+
+			input: <S,E,R>(p: {
+				sensor: slime.$api.fp.world.Sensor<S,E,R>
+				subject: S
+				handlers?: slime.$api.event.Handlers<E>
+			}) => slime.$api.fp.impure.Input<R>
+
+			now: <S,E,R>(p: {
+				sensor: slime.$api.fp.world.Sensor<S,E,R>
+				subject: S
+				handlers?: slime.$api.event.Handlers<E>
+			}) => R
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.world.Sensor = fifty.test.Parent();
+
+			fifty.tests.exports.world.Sensor.mapping = function() {
+				var captor = fifty.$api.Events.Captor({
+					got: void(0),
+					returning: void(0)
+				});
+
+				var doubler: Sensor<number,{ got: number, returning: number },number> = function(s) {
+					return function(events) {
+						events.fire("got", s);
+						var rv = s * 2;
+						events.fire("returning", rv);
+						return rv;
+					}
+				};
+
+				var mapping = $api.fp.world.Sensor.mapping({
+					sensor: doubler,
+					handlers: captor.handler
+				});
+
+				verify(captor).events.length.is(0);
+				verify(mapping(2)).is(4);
+				verify(captor).events[0].type.is("got");
+				verify(captor).events[0].detail.evaluate(Number).is(2);
+				verify(captor).events[1].type.is("returning");
+				verify(captor).events[1].detail.evaluate(Number).is(4);
+				verify(mapping(8)).is(16);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		Means: {
+			from: {
+				flat: <O,E>(f: (p: { order: O, events: slime.$api.event.Emitter<E> }) => void) => Means<O,E>
+			}
+
+			map: <P,R,E>(p: {
+				order: slime.$api.fp.Mapping<P,R>
+				means: slime.$api.fp.world.Means<R,E>
+			}) => slime.$api.fp.world.Means<P,E>
+
+			output: <O,E>(p: {
+				means: slime.$api.fp.world.Means<O,E>
+				handlers?: slime.$api.event.Handlers<E>
+			}) => impure.Output<O>
+
+			process: <O,E>(p: {
+				means: slime.$api.fp.world.Means<O,E>
+				order: O
+				handlers?: slime.$api.event.Handlers<E>
+			}) => slime.$api.fp.impure.Process
+
+			now: <O,E>(p: {
+				means: slime.$api.fp.world.Means<O,E>
+				order: O
+				handlers?: slime.$api.event.Handlers<E>
+			}) => void
+
+			order: {
+				process: <O,E>(p: {
+					means: slime.$api.fp.world.Means<O,E>
+					order: slime.$api.fp.impure.Input<O>
+					handlers?: slime.$api.event.Handlers<E>
+				}) => slime.$api.fp.impure.Process
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			var NumberRecorder = function() {
+				var orders: number[] = [];
+
+				var recorder: Means<number,{ got: number, length: number }> = function(s) {
+					return function(events) {
+						events.fire("got", s);
+						orders.push(s);
+						events.fire("length", orders.length);
+					}
+				};
+
+				var captor = fifty.$api.Events.Captor({
+					got: void(0),
+					length: void(0)
+				});
+
+				return {
+					recorder,
+					captor,
+					orders
+				}
+			};
+
+			var castToNumber: slime.js.Cast<number> = $api.fp.cast;
+
+			fifty.tests.exports.world.Means = fifty.test.Parent();
+			fifty.tests.exports.world.Means.map = function() {
+				var { orders, captor, recorder } = NumberRecorder();
+
+				var mapped = $api.fp.world.Means.map({
+					order: function(s: string): number { return Number(s) * 2; },
+					means: recorder
+				});
+
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+				$api.fp.world.now.action(mapped, "2", captor.handler);
+				verify(orders).length.is(1);
+				verify(orders)[0].is(4);
+				verify(captor).events.length.is(2);
+				verify(captor).events[0].type.is("got");
+				verify(captor).events[0].detail.evaluate(castToNumber).is(4);
+				verify(captor).events[1].type.is("length");
+				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+			};
+
+			fifty.tests.exports.world.Means.output = function() {
+				var { orders, captor, recorder } = NumberRecorder();
+
+				var output = $api.fp.world.Means.output({
+					means: recorder,
+					handlers: captor.handler
+				});
+
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+
+				output(2);
+				verify(orders).length.is(1);
+				verify(orders)[0].is(2);
+				verify(captor).events.length.is(2);
+				verify(captor).events[0].type.is("got");
+				verify(captor).events[0].detail.evaluate(castToNumber).is(2);
+				verify(captor).events[1].type.is("length");
+				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+			}
+
+			fifty.tests.exports.world.Means.process = function() {
+				var { orders, captor, recorder } = NumberRecorder();
+
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+
+				var process = $api.fp.world.Means.process({
+					means: recorder,
+					order: 2,
+					handlers: captor.handler
+				});
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+
+				process();
+				verify(orders).length.is(1);
+				verify(orders)[0].is(2);
+				verify(captor).events.length.is(2);
+				verify(captor).events[0].type.is("got");
+				verify(captor).events[0].detail.evaluate(castToNumber).is(2);
+				verify(captor).events[1].type.is("length");
+				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+			};
+
+			fifty.tests.exports.world.Means.order = fifty.test.Parent();
+
+			fifty.tests.exports.world.Means.order.process = function() {
+				var { orders, captor, recorder } = NumberRecorder();
+
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+
+				var process = $api.fp.world.Means.order.process({
+					means: recorder,
+					order: $api.fp.impure.Input.value(2),
+					handlers: captor.handler
+				});
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+
+				process();
+				verify(orders).length.is(1);
+				verify(orders)[0].is(2);
+				verify(captor).events.length.is(2);
+				verify(captor).events[0].type.is("got");
+				verify(captor).events[0].detail.evaluate(castToNumber).is(2);
+				verify(captor).events[1].type.is("length");
+				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+			};
+
+
+			fifty.tests.exports.world.Means.now = function() {
+				var { orders, captor, recorder } = NumberRecorder();
+
+				verify(orders).length.is(0);
+				verify(captor).events.length.is(0);
+
+				$api.fp.world.Means.now({
+					means: recorder,
+					order: 2,
+					handlers: captor.handler
+				});
+				verify(orders).length.is(1);
+				verify(orders)[0].is(2);
+				verify(captor).events.length.is(2);
+				verify(captor).events[0].type.is("got");
+				verify(captor).events[0].detail.evaluate(castToNumber).is(2);
+				verify(captor).events[1].type.is("length");
+				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		Process: {
+			/** @deprecated Replaced by Means.process() */
+			action: <P,E>(p: {
+				action: Means<P,E>,
+				argument: P,
+				handlers: slime.$api.event.Handlers<E>
+			}) => impure.Process
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.world.Process = {};
+			fifty.tests.exports.world.Process.action = function() {
+				var buffer: number[] = [];
+
+				var action: world.Means<number, { got: number }> = function(p) {
+					return function(events) {
+						events.fire("got", p);
+					}
+				};
+
+				var process = $api.fp.world.Process.action({
+					action: action,
+					argument: 2,
+					handlers: {
+						got: function(e) {
+							buffer.push(e.detail);
+						}
+					}
+				});
+
+				verify(buffer).length.is(0);
+				process();
+				verify(buffer).length.is(1);
+				verify(buffer)[0].is(2);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		output: <P,E>(action: world.Means<P,E>, handler?: slime.$api.event.Handlers<E>) => impure.Output<P>
+
+		process: <E>(tell: world.Action<E>, handler?: slime.$api.event.Handlers<E>) => impure.Process
+
+		input: <E,A>(ask: world.Question<E,A>, handler?: slime.$api.event.Handlers<E>) => impure.Input<A>
 
 		Question: {
 			/**
 			 * An operation equivalent to {@link Exports | pipe(argument, question)}, but limited to one argument which provides
 			 * more readable type inference, mapping the produced value to a `Question` rather than a function returning an `Ask`.
 			 */
-			pipe: <I,P,E,A>(argument: (i: I) => P, question: world.Question<P,E,A>) => world.Question<I,E,A>
-			map: <P,E,A,O>(question: world.Question<P,E,A>, map: (a: A) => O) => world.Question<P,E,O>
-			wrap: <I,P,E,A,O>(argument: (i: I) => P, question: world.Question<P,E,A>, map: (a: A) => O) => world.Question<I,E,O>
+			pipe: <I,P,E,A>(argument: (i: I) => P, question: world.Sensor<P,E,A>) => world.Sensor<I,E,A>
+			map: <P,E,A,O>(question: world.Sensor<P,E,A>, map: (a: A) => O) => world.Sensor<P,E,O>
+			wrap: <I,P,E,A,O>(argument: (i: I) => P, question: world.Sensor<P,E,A>, map: (a: A) => O) => world.Sensor<I,E,O>
+		}
+
+		Action: {
+			output: <P,E>(handler?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Means<P,E>) => slime.$api.fp.impure.Output<P>
+
+			tell: <P,E>(p: P) => (action: world.Means<P,E>) => world.Action<E>
+
+			/**
+			 * @deprecated See `Means.map`.
+			 *
+			 * Transforms an `Action` into an `Action` of a different argument type using a given function to map the
+			 * argument.
+			 *
+			 * @param mapping A function that transforms a value of the desired argument type into the original Action's
+			 * argument type.
+			 *
+			 * @returns An action which accepts the desired type.
+			 */
+			pipe: <P,R,E>(mapping: slime.$api.fp.Mapping<P,R>) => (action: slime.$api.fp.world.Means<R,E>) => slime.$api.fp.world.Means<P,E>
+		}
+
+		Ask: {
+			input: <E,T>(handler?: slime.$api.event.Handlers<E>) => (ask: slime.$api.fp.world.Question<E,T>) => slime.$api.fp.impure.Input<T>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.world.Action = fifty.test.Parent();
+
+			fifty.tests.exports.world.Action.pipe = function() {
+				var buffer: number[] = [];
+
+				var addNext: Means<number,void> = function(p) {
+					return function(e) {
+						buffer.push(p);
+					}
+				};
+
+				var allowString = $api.fp.world.Action.pipe(function(s: string) { return Number(s); });
+
+				var addAsNumber: Means<string,void> = allowString(addNext);
+
+				verify(buffer).length.is(0);
+
+				$api.fp.world.now.action(addNext, 2);
+				verify(buffer).length.is(1);
+				verify(buffer)[0].is(2);
+
+				$api.fp.world.now.action(addAsNumber, "3");
+				verify(buffer).length.is(2);
+				verify(buffer)[1].is(3);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		now: {
+			question: <P,E,A>(question: world.Sensor<P,E,A>, argument: P, handler?: slime.$api.event.Handlers<E>) => A
+
+			/**
+			 * @deprecated Replaced by Means.now()
+			 */
+			action: <P,E>(action: world.Means<P,E>, argument?: P, handler?: slime.$api.event.Handlers<E>) => void
+
+			ask: <E,A>(ask: world.Question<E,A>, handler?: slime.$api.event.Handlers<E>) => A
+			tell: <E>(tell: world.Action<E>, handler?: slime.$api.event.Handlers<E>) => void
+		}
+
+		/** @deprecated Used almost entirely for `jsh.shell.tools.node.require`. After refactoring that, reassess. */
+		execute: <E>(tell: world.Action<E>, handler?: slime.$api.event.Handlers<E>) => void
+
+	}
+
+	export interface Exports {
+		api: {
+			single: <P,E,R>(f: (x: { argument: P, events: slime.$api.event.Emitter<E> }) => R) => (p: P) => (e: slime.$api.event.Emitter<E>) => R
 		}
 	}
 
 	export interface Exports {
-		now: {
-			question: <P,E,A>(question: world.Question<P,E,A>, argument: P, handler?: slime.$api.event.Handlers<E>) => A
-			action: <P,E>(action: world.Action<P,E>, argument?: P, handler?: slime.$api.event.Handlers<E>) => void
-
-			ask: <E,A>(ask: world.Ask<E,A>, handler?: slime.$api.event.Handlers<E>) => A
-			tell: <E>(tell: world.Tell<E>, handler?: slime.$api.event.Handlers<E>) => void
-		}
-
-		/** @deprecated Used almost entirely for `jsh.shwll.tools.node.require`. After refactoring that, reassess. */
-		execute: <E>(tell: world.Tell<E>, handler?: slime.$api.event.Handlers<E>) => void
-
 		/** @deprecated */
 		old: {
 			/** @deprecated */
-			ask: <E,T>(f: (events: slime.$api.Events<E>) => T) => world.old.Ask<E,T>
+			ask: <E,T>(f: (events: slime.$api.event.Emitter<E>) => T) => world.old.Ask<E,T>
 			/** @deprecated */
-			tell: <E>(f: (events: slime.$api.Events<E>) => void) => world.old.Tell<E>
+			tell: <E>(f: (events: slime.$api.event.Emitter<E>) => void) => world.old.Tell<E>
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.world.old = fifty.test.Parent();
+
+			fifty.tests.exports.world.old.ask = function() {
+				type E = {
+					called: void
+				};
+
+				type T = {
+					number: number
+				}
+
+				var implementation = function(events: slime.$api.event.Emitter<E>): T {
+					events.fire("called");
+					return {
+						number: 3
+					};
+				}
+
+				var captor = fifty.$api.Events.Captor({
+					called: void(0)
+				});
+
+				verify(captor).events.length.is(0);
+
+				var ask = $api.fp.world.old.ask(implementation);
+
+				var returned = ask(captor.handler);
+				verify(captor).events.length.is(1);
+				verify(returned).number.is(3);
+			}
+
+
+			fifty.tests.exports.world.old.tell = function() {
+				type E = {
+					called: void
+				};
+
+				var effects: { number: number }[] = [];
+
+				var implementation = function(events: slime.$api.event.Emitter<E>) {
+					events.fire("called");
+					effects.push({ number: 3 });
+				}
+
+				var captor = fifty.$api.Events.Captor({
+					called: void(0)
+				});
+
+				verify(captor).events.length.is(0);
+				verify(effects).length.is(0);
+
+				var tell = $api.fp.world.old.tell(implementation);
+
+				tell(captor.handler);
+				verify(captor).events.length.is(1);
+				verify(effects).length.is(1);
+				verify(effects)[0].number.is(3);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 namespace slime.$api.fp.internal.impure {
 	export interface Context {
+		stream: slime.$api.fp.stream.impure.Exports
 		events: slime.runtime.internal.events.Exports
 	}
 
@@ -403,8 +1108,6 @@ namespace slime.$api.fp.internal.impure {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
 			}
-
-			fifty.tests.wip = fifty.tests.suite;
 		}
 	//@ts-ignore
 	)(fifty);

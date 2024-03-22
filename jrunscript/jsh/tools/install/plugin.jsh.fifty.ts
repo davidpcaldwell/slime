@@ -55,7 +55,7 @@ namespace slime.jsh.shell.tools {
 						return rv;
 					}
 				}
-				return jsh.shell.Intention.from.jsh(intention);
+				return jsh.shell.jsh.Intention.toShellIntention(intention);
 			}
 		//@ts-ignore
 		})(fifty);
@@ -94,11 +94,103 @@ namespace slime.jsh.shell.tools {
 				p?: rhino.InstallCommand,
 				events?: any
 			) => void
-			require: (
-				p?: rhino.InstallCommand,
-				events?: any
-			) => void
+
+			require: slime.$api.fp.world.Means<rhino.InstallCommand,{
+				satisfied: string
+				installing: string
+				installed: string
+			}>
 		}
+	}
+
+	export namespace rhino {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
+				fifty.tests.rhino = function() {
+					var Captor = function() {
+						var events: slime.$api.Event<any>[] = [];
+
+						return {
+							console: function(e) {
+								events.push(e);
+							},
+							installed: function(e) {
+								events.push(e);
+							},
+							captured: Object.assign(
+								events,
+								{
+									type: function(type) {
+										return events.filter(function(e) { return e.type == type; });
+									}
+								}
+							)
+						}
+					}
+
+					var lib = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+					var mock = {
+						lib: lib,
+						rhino: void(0)
+					};
+
+					var toConsoleEvent = function(e: slime.$api.Event<string>): slime.$api.Event<string> {
+						return e;
+					};
+
+					var readFile = function(p: slime.jrunscript.file.File) {
+						return p.read(String);
+					};
+
+					fifty.run(function alreadyInstalled() {
+						lib.getRelativePath("js.jar").write("already", { append: false });
+						var captor = Captor();
+						jsh.shell.tools.rhino.install({ mock: mock }, captor);
+						verify(captor).captured[0].type.is("console");
+						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("Rhino already installed at " + lib.getFile("js.jar"));
+						verify(lib).getFile("js.jar").evaluate(readFile).is("already");
+						verify(captor.captured.type("installed")).length.is(0);
+						lib.getFile("js.jar").remove();
+					});
+
+					fifty.run(function replace() {
+						lib.getRelativePath("js.jar").write("original", { append: false });
+						lib.getRelativePath("download").write("downloaded", { append: false });
+						mock.rhino = lib.getFile("download");
+						var captor = Captor();
+						jsh.shell.tools.rhino.install({ mock: mock, replace: true }, captor);
+						verify(captor).captured[0].type.is("console");
+						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("Replacing Rhino at " + lib.getRelativePath("js.jar") + " ...");
+						verify(captor).captured[1].type.is("console");
+						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino to " + lib.getRelativePath("js.jar") + " ...");
+						verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
+						verify(captor.captured.type("installed")).length.is(1);
+						lib.getFile("js.jar").remove();
+					});
+
+					fifty.run(function install() {
+						lib.getRelativePath("download").write("downloaded", { append: false });
+						mock.rhino = lib.getFile("download");
+						var captor = Captor();
+						jsh.shell.tools.rhino.install({ mock: mock }, captor);
+						verify(captor).captured[0].type.is("console");
+						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("No Rhino at " + lib.getRelativePath("js.jar") + "; installing ...");
+						verify(captor).captured[1].type.is("console");
+						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino to " + lib.getRelativePath("js.jar") + " ...");
+						verify(lib).getFile("js.jar").evaluate(readFile).is("downloaded");
+						verify(captor.captured.type("installed")).length.is(1);
+						lib.getFile("js.jar").remove();
+					});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Exports {
@@ -195,7 +287,7 @@ namespace slime.jsh.shell.tools {
 
 				//	TODO	should be able to migrate this to jrunscript at some point, but currently uses a jsh-specific API for
 				//			implementation
-				install: (installation: slime.jrunscript.tools.scala.Installation) => slime.$api.fp.world.Action<{ majorVersion: number }, void>
+				install: (installation: slime.jrunscript.tools.scala.Installation) => slime.$api.fp.world.Means<{ majorVersion: number }, void>
 			} & slime.jrunscript.tools.scala.Exports["Installation"]
 		}
 
@@ -332,16 +424,23 @@ namespace slime.jsh.shell.tools {
 		)(fifty);
 
 		export interface Managed {
-			installation: slime.jrunscript.node.world.Installation
+			/**
+			 * The local installation of Node.js in the `jsh` shell. May or may not be actually present.
+			 */
+			installation: slime.jrunscript.tools.node.Installation
 
-			installed: slime.jrunscript.node.object.Installation
-			require: slime.$api.fp.world.Action<void,slime.jrunscript.node.object.install.Events & {
-				removed: slime.jrunscript.node.object.Installation
-				found: slime.jrunscript.node.object.Installation
+			installed: slime.jrunscript.tools.node.object.Installation
+
+			require: slime.$api.fp.world.Means<void,slime.jrunscript.tools.node.object.install.Events & {
+				removed: {
+					at: string
+					version: string
+				}
+				found: slime.jrunscript.tools.node.object.Installation
 			}>
 		}
 
-		export interface Exports extends slime.jrunscript.node.Exports, slime.jsh.shell.tools.node.Managed {
+		export interface Exports extends slime.jrunscript.tools.node.Exports, slime.jsh.shell.tools.node.Managed {
 		}
 
 		(
@@ -416,7 +515,7 @@ namespace slime.jsh.shell.tools {
 				fifty.tests.manual.node.jsh = function() {
 					var installation = jsh.shell.tools.node.installation;
 					var modules = $api.fp.world.now.question(
-						jsh.shell.tools.node.world.Installation.modules.list(),
+						jsh.shell.tools.node.Installation.modules.list(),
 						installation
 					);
 					modules.forEach(function(module) {
@@ -513,6 +612,7 @@ namespace slime.jsh.shell.tools {
 			fifty.tests.suite = function() {
 				fifty.load("tomcat.fifty.ts");
 
+				fifty.run(fifty.tests.rhino);
 				fifty.run(fifty.tests.node);
 				fifty.run(fifty.tests.scala);
 			}

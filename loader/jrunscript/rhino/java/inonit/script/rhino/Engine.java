@@ -114,6 +114,7 @@ public class Engine {
 				rv.setApplicationClassLoader(getContextApplicationClassLoader());
 				rv.setErrorReporter(new Errors().getErrorReporter());
 				rv.setOptimizationLevel(getOptimizationLevel());
+				rv.setLanguageVersion(Context.VERSION_ES6);
 				return rv;
 			}
 

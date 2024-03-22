@@ -135,7 +135,7 @@
 			/**
 			 *
 			 * @param { Parameters<slime.jrunscript.tools.hg.install.Exports["install"]>[0] } p
-			 * @param { slime.$api.Events<{ console: string }> } events
+			 * @param { slime.$api.event.Emitter<{ console: string }> } events
 			 * @returns
 			 */
 			function(p,events) {

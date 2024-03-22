@@ -39,6 +39,37 @@
  * described below.
  */
 namespace slime.jsh.plugin {
+	export interface $slime extends slime.jsh.loader.internal.Runtime {
+		getSystemProperty(name: string): string
+		getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+		getInvocation(): slime.jrunscript.native.inonit.script.jsh.Shell.Invocation
+
+		getPackaged(): slime.jrunscript.native.inonit.script.jsh.Shell.Packaged
+
+		/**
+		 * Returns a `java.io.File` representing a file location relative to the `jsh` library location.
+		 *
+		 * @param path A relative path.
+		 */
+		getLibraryFile: (path: string) => slime.jrunscript.native.java.io.File
+		getInterface(): slime.jrunscript.native.inonit.script.jsh.Shell.Interface
+		getSystemProperties(): slime.jrunscript.native.java.util.Properties
+		getStdio(): Stdio
+	}
+
+	export interface $slime extends slime.jsh.loader.internal.Runtime {
+		plugins: {
+			/**
+			 * Loads a single plugin from the given loader, and applies it to the mock objects given in the argument (or real objects if
+			 * mocks are not provided), returning the modified objects for inspection by tests.
+			 *
+			 * @param p Scope objects to use when loading the plugin, and a definition of the plugin itself.
+			 * @returns objects affected by plugin loading, for evaluation
+			 */
+			mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.old.Loader, source?: () => string }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
+		}
+	}
+
 	export interface Declaration {
 		/**
 		 * (optional) A function that returns `true` if this plugin is ready to be loaded. This function should return `false` if
@@ -170,29 +201,23 @@ namespace slime.jsh.loader.internal.plugins {
 		classpath: slime.jrunscript.runtime.ClasspathEntry[]
 	}
 
-	export type LoaderPlugins = { loader: slime.old.Loader }
+	export type OldLoaderPlugins = { loader: slime.old.Loader }
 	export type JavaFilePlugins = { _file: slime.jrunscript.native.java.io.File }
 	export type ZipFilePlugins = { zip: { _file: slime.jrunscript.native.java.io.File } }
-	export type Plugins = LoaderPlugins | JavaFilePlugins | ZipFilePlugins
+	export type SynchronousLoaderPlugins = { synchronous: slime.runtime.loader.Synchronous<any> }
+	export type Plugins = OldLoaderPlugins | JavaFilePlugins | ZipFilePlugins | SynchronousLoaderPlugins
 
 	export interface Export {
 		/**
 		 * Loads plugins from the given location and applies them to the current shell.
 		 *
-		 * @param p if a {@link LoaderPlugins} or {@link JavaFilePlugins}, scans the given location for plugins and loads them. If a
+		 * @param p if a {@link SynchronousLoaderPlugins}, {@link OldLoaderPlugins} or {@link JavaFilePlugins}, scans the given location for plugins and loads them. If a
 		 * {@link ZipFilePlugins}, adds the contents of the given ZIP file to the Java classpath; does not interpret the file as a
 		 * JavaScript plugin or scan the file contents for JavaScript plugins.
 		 */
 		load: (p: Plugins) => void
 
-		/**
-		 * Loads a single plugin from the given loader, and applies it to the mock objects given in the argument (or real objects if
-		 * mocks are not provided), returning the modified objects for inspection by tests.
-		 *
-		 * @param p Scope objects to use when loading the plugin, and a definition of the plugin itself.
-		 * @returns objects affected by plugin loading, for evaluation
-		 */
-		mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.old.Loader, source?: () => string }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
+		mock: slime.jsh.plugin.$slime["plugins"]["mock"]
 	}
 
 	(
@@ -202,6 +227,9 @@ namespace slime.jsh.loader.internal.plugins {
 			const { verify } = fifty;
 			const { jsh } = fifty.global;
 
+			/**
+			 * Creates a new unbuilt shell, copies a plugin into an arbitrary location, and ensures the plugin is loaded.
+			 */
 			fifty.tests.unbuiltShell = function() {
 				//	TODO	this dance should be covered by a jsh.test API
 				var src = jsh.shell.jsh.src;

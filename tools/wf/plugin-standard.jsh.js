@@ -9,10 +9,14 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.Global } jsh
-	 * @param { slime.loader.Export<slime.jsh.wf.Exports["project"]["initialize"]> } $export
+	 * @param { slime.jsh.wf.standard.Context } $context
+	 * @param { slime.loader.Export<slime.jsh.wf.standard.Export> } $export
 	 */
-	function($api,jsh,$export) {
+	function($api,$context,$export) {
+		var library = $context.library;
+		var jsh = $context.jsh;
+		var api = $context.api;
+
 		/**
 		 *
 		 * @param { slime.jrunscript.tools.git.repository.Local } repository
@@ -29,7 +33,7 @@
 		 * @param { slime.jrunscript.file.Directory } project
 		 */
 		function getDefaultCommitMessage(project) {
-			var repository = jsh.tools.git.Repository({ directory: project });
+			var repository = library.git.oo.Repository({ directory: project });
 			var status = repository.status();
 			if (status.paths) {
 				var modified = $api.fp.result(
@@ -64,7 +68,7 @@
 				//	TODO	the below credentialHelper code also appears to be in tools/wf/plugin.jsh.js
 
 				//	TODO	is this stuff documented anywhere?
-				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/github/git-credential-github-tokens-directory.bash").toString();
+				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/git/git-credential-tokens-directory.bash").toString();
 
 				/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
 				var getBranches = {
@@ -94,7 +98,7 @@
 				 * @returns
 				 */
 				var branchExists = function(repository,base) {
-					var allBranches = jsh.tools.git.program({ command: "git" }).repository(repository).command(getBranches).argument().run()
+					var allBranches = library.git.program({ command: "git" }).repository(repository).command(getBranches).argument().run()
 						.map(function(branch) {
 							if (branch.name.substring(0,"remote/".length) == "remote/") return branch.name.substring("remote/".length);
 							if (branch.name.substring(0,"remotes/".length) == "remotes/") return branch.name.substring("remotes/".length);
@@ -104,7 +108,7 @@
 				}
 
 				if ( (project.lint || project.test) && !project.precommit ) {
-					project.precommit = jsh.wf.checks.precommit({
+					project.precommit = api.checks().precommit({
 						lint: (project.lint) ? project.lint.check : void(0),
 						test: project.test
 					})
@@ -116,9 +120,9 @@
 				 * @param { string } message
 				 */
 				var commit = function(repository,message) {
-					var target = jsh.tools.git.program({ command: "git" }).repository(repository.directory.toString());
+					var target = library.git.program({ command: "git" }).repository(repository.directory.toString());
 
-					var status = target.command(jsh.tools.git.commands.status).argument().run();
+					var status = target.command(library.git.commands.status).argument().run();
 
 					if (status.branch === null) {
 						throw new Error("Cannot commit on detached HEAD.");
@@ -144,7 +148,7 @@
 
 				if ($context.base.getFile(".eslintrc.json")) {
 					$exports.eslint = function() {
-						var result = jsh.wf.project.lint.eslint();
+						var result = api.project().lint.eslint();
 						return (result) ? 0 : 1;
 					}
 				}
@@ -202,7 +206,7 @@
 						}
 						var formatter = (p.options.vscode) ? formatForVscode : $api.fp.identity;
 						var result = $api.fp.world.now.question(
-							jsh.wf.checks.tsc,
+							api.checks().tsc,
 							void(0),
 							{
 								console: function(e) {
@@ -223,7 +227,7 @@
 				);
 
 				$exports.typedoc = function() {
-					jsh.wf.typescript.typedoc.now();
+					api.typescript().typedoc.now();
 				}
 
 				var displayBranchName = function(name) {
@@ -250,7 +254,7 @@
 							rv.push(prefix + item.path + ": locally modified");
 						}
 						if (item.repository.submodule().length) {
-							item.repository.submodule().map(jsh.wf.project.Submodule.construct).forEach(function(submodule) {
+							item.repository.submodule().map(api.project().Submodule.construct).forEach(function(submodule) {
 								var messages = submoduleStatus(prefix + item.path + "/")(submodule);
 								rv.push.apply(rv, messages);
 							});
@@ -280,18 +284,18 @@
 					};
 
 					//	TODO	add option for offline
-					var oRepository = jsh.wf.git.fetch();
-					var fRepository = jsh.tools.git.program({ command: "git" }).repository(oRepository.directory.toString());
+					var oRepository = api.git().fetch();
+					var fRepository = library.git.program({ command: "git" }).repository(oRepository.directory.toString());
 					var remote = "origin";
-					var status = fRepository.command(jsh.tools.git.commands.status).argument().run();
+					var status = fRepository.command(library.git.commands.status).argument().run();
 					var branch = status.branch;
 					var base = remote + "/" + branch;
 					if (!branchExists(oRepository.directory.toString(), base)) {
-						var origin = fRepository.command(jsh.tools.git.commands.remote.show).argument("origin").run();
+						var origin = fRepository.command(library.git.commands.remote.show).argument("origin").run();
 						var trunk = origin.head;
 						base = "origin/" + trunk;
 					}
-					var vsRemote = (branch) ? jsh.wf.git.compareTo(base)(oRepository) : null;
+					var vsRemote = (branch) ? api.git().compareTo(base)(oRepository) : null;
 					jsh.shell.console("Current branch: " + displayBranchName(status.branch));
 					if (vsRemote && vsRemote.ahead.length) jsh.shell.console("ahead of " + base + ": " + vsRemote.ahead.length);
 					if (vsRemote && vsRemote.behind.length) jsh.shell.console("behind " + base + ": " + vsRemote.behind.length);
@@ -336,7 +340,7 @@
 						if (branch.name === null) {
 							return;
 						} else {
-							var compared = jsh.wf.git.compareTo(branch.name)(oRepository);
+							var compared = api.git().compareTo(branch.name)(oRepository);
 							if (compared.behind.length) {
 								if (first) {
 									jsh.shell.console("");
@@ -352,7 +356,7 @@
 					if (oRepository.submodule().length) {
 						jsh.shell.console("");
 						jsh.shell.console("Submodules:");
-						var submodules = jsh.wf.project.submodule.status();
+						var submodules = api.project().submodule.status();
 						var messages = submodules.reduce(function(rv,submodule) {
 							return rv.concat(submoduleStatus("")(submodule))
 						}, []);
@@ -441,7 +445,7 @@
 						}
 					};
 
-					var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+					var repository = library.git.program({ command: "git" }).repository($context.base.pathname.toString());
 
 					var main = repository.command(
 						showNamedRemote
@@ -493,24 +497,24 @@
 				};
 
 				$exports.git.hooks["post-checkout"] = function() {
-					var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
-					var origin = repository.command(jsh.tools.git.commands.remote.show).argument("origin").run();
+					var repository = library.git.program({ command: "git" }).repository($context.base.pathname.toString());
+					var origin = repository.command(library.git.commands.remote.show).argument("origin").run();
 					var trunk = origin.head;
-					var status = repository.command(jsh.tools.git.commands.status).argument().run();
+					var status = repository.command(library.git.commands.status).argument().run();
 					if (status.branch == trunk) {
-						repository.command(jsh.tools.git.commands.fetch).argument().run();
-						repository.command(jsh.tools.git.commands.merge).argument({ name: "origin/" + trunk }).run();
+						repository.command(library.git.commands.fetch).argument().run();
+						repository.command(library.git.commands.merge).argument({ name: "origin/" + trunk }).run();
 						//	TODO	below is implemented in top-level wf.js, and is used in git.branches.prune
 						// cleanGitBranches()();
 					}
 					if ($context.base.getFile(".gitmodules")) {
-						repository.command(jsh.tools.git.commands.submodule.update).argument().run();
+						repository.command(library.git.commands.submodule.update).argument().run();
 					}
 				}
 
 				if (project.precommit) {
 					$exports.precommit = function() {
-						var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+						var repository = library.git.program({ command: "git" }).repository($context.base.pathname.toString());
 						var success = project.precommit({
 							console: function(e) {
 								jsh.shell.console(e.detail);
@@ -546,7 +550,7 @@
 						// jsh.shell.console("===");
 						var defaultMessage = getDefaultCommitMessage($context.base);
 						if (defaultMessage) {
-							var location = jsh.file.Pathname(messageFile);
+							var location = library.file.Pathname(messageFile);
 							var now = location.file.read(String);
 							var after = defaultMessage + "\n" + now;
 							location.write(after, { append: false });
@@ -555,9 +559,9 @@
 				}
 
 				$exports.git.hooks["post-merge"] = function() {
-					var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+					var repository = library.git.program({ command: "git" }).repository($context.base.pathname.toString());
 					if ($context.base.getFile(".gitmodules")) {
-						repository.command(jsh.tools.git.commands.submodule.update).argument().run();
+						repository.command(library.git.commands.submodule.update).argument().run();
 					}
 
 					/** @type { slime.jrunscript.tools.git.Command<void,void> } */
@@ -574,7 +578,7 @@
 				}
 
 				$exports.git.hooks["post-commit"] = function() {
-					var repository = jsh.tools.git.Repository({ directory: $context.base });
+					var repository = library.git.oo.Repository({ directory: $context.base });
 
 					//	We checked for upstream changes, so now we're going to push
 					//	If we allow branching, we may or may not really want to push, or may not want to push to
@@ -609,14 +613,14 @@
 							return rv;
 						},
 						function(p) {
-							jsh.wf.project.updateSubmodule({ path: p.options.path });
+							api.project().updateSubmodule({ path: p.options.path });
 							var result = project.precommit({
 								console: function(e) {
 									jsh.shell.console(e.detail);
 								}
 							});
 							if (result) {
-								commit(jsh.tools.git.Repository({ directory: $context.base }), "Update " + p.options.path + " submodule");
+								commit(library.git.oo.Repository({ directory: $context.base }), "Update " + p.options.path + " submodule");
 							}
 						}
 					) : void(0),
@@ -624,39 +628,20 @@
 						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
 							var path = p.options.path;
-							jsh.wf.project.submodule.remove({ path: path });
+							api.project().submodule.remove({ path: path });
 						}
 					),
 					attach: $api.fp.pipe(
 						jsh.script.cli.option.string({ longname: "path" }),
+						jsh.script.cli.option.boolean({ longname: "recursive" }),
 						function(p) {
-							var repository = jsh.tools.git.Repository({ directory: $context.base });
-							var submodule = repository.submodule({ cached: true }).find(function(submodule) {
-								return submodule.path == p.options.path;
-							});
-							if (!submodule) {
-								jsh.shell.console("ERROR: " + repository + " does not have a (direct) submodule at " + p.options.path);
-								return 1;
-							}
-							var tracking = submodule.branch;
-							var branch = submodule.repository.status().branch.name;
-							if (branch === null && tracking) {
-								submodule.repository.branch({
-									name: tracking,
-									startPoint: "HEAD",
-									force: true
-								});
-								submodule.repository.checkout({ branch: tracking });
-							} else {
-								jsh.shell.console("Submodule " + p.options.path + " of " + repository + " must be detached HEAD with tracking branch.");
-								return 1;
-							}
+							api.project().submodule.attach({ path: p.options.path, recursive: p.options.recursive });
 						}
 					),
 					reset: $api.fp.pipe(
 						jsh.script.cli.option.string({ longname: "path" }),
 						function(p) {
-							var repository = jsh.tools.git.Repository({ directory: $context.base });
+							var repository = library.git.oo.Repository({ directory: $context.base });
 							jsh.shell.console("repository = " + $context.base);
 							var submodules = repository.submodule({ cached: true });
 							jsh.shell.console(
@@ -691,7 +676,7 @@
 										}
 									}
 								}
-								var withoutHooks = jsh.tools.git.program({ command: "git" }).config({
+								var withoutHooks = library.git.program({ command: "git" }).config({
 									//	TODO	UNIX-like operating systems only
 									"core.hooksPath": "/dev/null"
 								}).repository(submodule.repository.directory.toString())
@@ -711,9 +696,9 @@
 					jsh.script.cli.option.string({ longname: "message" }),
 					jsh.script.cli.option.boolean({ longname: "notest" }),
 					function(p) {
-						var repository = jsh.tools.git.program({ command: "git" }).repository($context.base.pathname.toString());
+						var repository = library.git.program({ command: "git" }).repository($context.base.pathname.toString());
 
-						var status = repository.command(jsh.tools.git.commands.status).argument().run();
+						var status = repository.command(library.git.commands.status).argument().run();
 
 						if (status.entries.length == 0) {
 							jsh.shell.console("Cannot commit; no modified files.");
@@ -737,7 +722,7 @@
 							}
 						});
 						if (check) {
-							commit(jsh.tools.git.Repository({ directory: $context.base }), p.options.message);
+							commit(library.git.oo.Repository({ directory: $context.base }), p.options.message);
 							jsh.shell.console("Committed changes to " + $context.base);
 						} else {
 							jsh.shell.console("Precommit checks failed; aborting commit.");
@@ -784,4 +769,4 @@
 		)
 	}
 //@ts-ignore
-)($api, $context.jsh, $export);
+)($api, $context, $export);

@@ -9,8 +9,9 @@
 		"local",
 		"bin",
 		"loader/api/tools/snippets",
-		"jsh/tools/test/foo.ts",
-		//	"**/*.jsh.js"
+		"jrunscript/jsh/test/hello.ts",
+		"jrunscript/jsh/tools/test/foo.ts",
+		"typedoc-definitions.ts"
 	],
 	"compilerOptions": {
 		"lib": [

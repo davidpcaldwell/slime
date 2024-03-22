@@ -29,7 +29,7 @@ namespace slime.jsh.ui {
 		}
 
 		object: {
-			Application: slime.$api.fp.world.Question<
+			Application: slime.$api.fp.world.Sensor<
 				slime.jsh.ui.application.Configuration,
 				slime.jsh.ui.application.Events,
 				Application & {

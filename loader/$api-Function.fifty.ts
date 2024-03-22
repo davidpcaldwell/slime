@@ -33,11 +33,13 @@ namespace slime.$api.fp {
 	 */
 	export type Identity<T> = Mapping<T,T>
 
-	export type Lazy<T> = () => T
+	export type Thunk<T> = () => T
 
 	export type Predicate<T> = (t: T) => boolean
 	/** @deprecated Use {@link Predicate}. */
 	export type Filter<T> = (t: T) => boolean
+
+	export type TypePredicate<T,N extends T> = (t: T) => t is N
 
 	export interface Exports {
 		identity: <T>(t: T) => T
@@ -55,50 +57,15 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
+		/** @deprecated Replaced by `mapping.properties`. */
 		split: <P,R>(functions: { [k in keyof R]: (p: P) => R[k] }) => (p: P) => R
 	}
 
 	export interface Exports {
-		now: {
-			/**
-			 * Returns the result of invoking a function. `invoke(input, f)` is syntactic sugar for `f(input)` in situations where
-			 * writing the input before the function lends clarity (for example, if the function is a pipeline created by `pipe`).
-			 */
-			invoke: Invoke
-		}
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api } = fifty.global;
-
-			fifty.tests.exports.now = function() {
-				var f = function(i: number): string {
-					return String(i);
-				};
-
-				var g = function(s: string): string {
-					return "g" + s;
-				};
-
-				var result = $api.fp.now.invoke(2, f);
-				verify(result).is("2");
-
-				var result2 = $api.fp.now.invoke(2, f, g);
-				verify(result2).is("g2");
-			};
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export interface Exports {
 		/**
-		 * @deprecated Use {@link Exports["now"]["invoke"] | `$api.fp.now.invoke`}.
+		 * @deprecated Use {@link Exports["now"]["map"] | `$api.fp.now.map`}.
 		 */
-		result: Invoke
+		result: Now_map
 	}
 
 	(
@@ -131,6 +98,12 @@ namespace slime.$api.fp {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		thunk: {
+			value: Thunk_value
+		}
+	}
 
 	export interface Exports {
 		/**
@@ -175,16 +148,102 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.mapping = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		export interface mapping {
+			all: <P,R>(r: R) => (p: P) => R
+		}
+	}
+
 	export interface Exports {
+		mapping: exports.mapping
+
+
 		/**
-		 * @deprecated Replaced by `Input.value` and `mapAllTo`
+		 * @deprecated Replaced by `Input.value`/`Thunk.value` and `mapping.all`
 		 * @param t
 		 * @returns
 		 */
 		returning: <T>(t: T) => () => T
 
+		/**
+		 * @deprecated Replaced by `mapping.all`.
+		 */
 		mapAllTo: <P,R>(r: R) => (p: P) => R
+	}
 
+	export namespace exports {
+		export interface mapping {
+			thunk: <P,R>(p: {
+				mapping: Mapping<P,R>
+				argument: P
+			}) => Thunk<R>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.mapping.thunk = function() {
+					var double: Mapping<number,number> = (n: number) => n*2;
+
+					var t1 = $api.fp.mapping.thunk({
+						mapping: double,
+						argument: 2
+					});
+
+					verify(t1()).is(4);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface mapping {
+			properties: <P,R>(p: {
+				[k in keyof R]: (p: P) => R[k]
+			}) => (p: P) => R
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.mapping.properties = function() {
+					var x = $api.fp.now.map(
+						2,
+						$api.fp.mapping.properties({
+							single: function(d) { return d; },
+							double: function(d) { return d*2 },
+							triple: function(d) { return d*3 }
+						})
+					);
+
+					verify(x).single.is(2);
+					verify(x).double.is(4);
+					verify(x).triple.is(6);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
 		conditional: {
 			<T,R>(p: { condition: (t: T) => boolean, true: (t: T) => R, false: (t: T) => R }): (t: T) => R
 		}
@@ -209,6 +268,7 @@ namespace slime.$api.fp {
 			repeat: (count: number) => (string: string) => string
 			toUpperCase: (string: string) => string
 			match: (pattern: RegExp) => (string: string) => RegExpMatchArray
+			trim: Transform<string>
 
 			startsWith: (searchString: string, startPosition?: number) => Predicate<string>
 			endsWith: (searchString: string, endPosition?: number) => Predicate<string>
@@ -320,8 +380,31 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	export interface SetProperty<T extends object, K extends string, V> {
+		property: K
+		value: slime.$api.fp.Mapping<T,V>
+	}
+
 	export interface Exports {
 		Object: {
+			/**
+			 * Given a property name and a function that transforms the value of that property, returns a function that transforms
+			 * the value of the containing object.
+			 */
+			property: {
+				update: <T, K extends keyof T>(p: {
+					property: K
+					change: slime.$api.fp.Transform<T[K]>
+				}) => slime.$api.fp.Transform<T>
+
+				set: <T, K extends string, V>(p: { [k in K]: slime.$api.fp.Mapping<T,V> }) => (t: T) => (T & { [k in K]: V })
+
+				maybe: {
+					<T,K extends keyof T>(k: K): (t: T) => slime.$api.fp.Maybe<T[K]>
+					<T,K extends keyof T,KK extends keyof T[K]>(k: K,kk: KK): (t: T) => slime.$api.fp.Maybe<T[K][KK]>
+				}
+			}
+
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.entries`. */
 			entries: ObjectConstructor["entries"]
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.fromEntries`. */
@@ -334,8 +417,37 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify, run } = fifty;
+			const { $api } = fifty.global;
+
+			const subject = fifty.global.$api.fp.Object;
 
 			fifty.tests.Object = function() {
+				type X = { a: number, b: string };
+
+				run(function property_set() {
+					var before: X = { a: 1, b: "b" };
+
+					//	TODO	for some reason type inference doesn't work for this case
+					var after = $api.fp.now.map(
+						before,
+						subject.property.set({
+							c: function(t) {
+								return true;
+							}
+						})
+					);
+
+					verify(after).a.is(1);
+					verify(after).b.is("b");
+					verify(after).c.is(true);
+				});
+
+				run(function property_update() {
+					var before: X = { a: 2, b: "hey" };
+					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+				});
+
 				run(function fromEntries() {
 					var array = [ ["a", 2], ["b", 3] ];
 					var result: { a: number, b: number } = fifty.global.$api.fp.result(
@@ -346,6 +458,47 @@ namespace slime.$api.fp {
 					verify(result).b.is(3);
 					verify(result).evaluate.property("b").is(3);
 					verify(result).evaluate.property("c").is(void(0));
+				});
+
+				run(function property_maybe() {
+					type T = { a?: { b?: number } };
+					var o: T[] = [
+						{},
+						{ a: {} },
+						{ a: { b: 0 } }
+					];
+
+					var cases = o.map(function(t) {
+						return {
+							a: $api.fp.now.map(t, subject.property.maybe("a")),
+							b1: $api.fp.now.map(t, subject.property.maybe("a"), $api.fp.Maybe.map(subject.property.maybe("b")),
+								function flatten(m) {
+									if (!m.present) return $api.fp.Maybe.from.nothing();
+									return m.value;
+								}
+							),
+							b2: $api.fp.now.map(t, subject.property.maybe("a", "b"))
+						}
+					});
+					verify(cases)[0].a.present.is(false);
+					verify(cases)[0].b1.present.is(false);
+					verify(cases)[0].b2.present.is(false);
+					verify(cases)[1].a.present.is(true);
+					verify(cases)[1].b1.present.is(false);
+					verify(cases)[1].b2.present.is(false);
+					verify(cases)[2].a.present.is(true);
+					verify(cases)[2].b1.present.is(true);
+					verify(cases)[2].b2.present.is(true);
+					var two = {
+						b1: cases[2].b1,
+						b2: cases[2].b2
+					};
+					if (two.b1.present) {
+						verify(two.b1).value.is(0);
+					}
+					if (two.b2.present) {
+						verify(two.b2).value.is(0);
+					}
 				});
 			}
 		}
@@ -379,22 +532,16 @@ namespace slime.$api.fp {
 			map: <T,R>(f: (t: T) => R) => (m: Maybe<T>) => Maybe<R>
 			else: <T>(f: () => T) => (m: Maybe<T>) => T
 
+			pipe: {
+				<A,B,C>(
+					f: (a: A) => Maybe<B>,
+					g: (b: B) => Maybe<C>
+				): (a: A) => Maybe<C>
+			}
+
 			impure: {
 				exception: <T,R,E extends Error>(p: { try: (t: T) => slime.$api.fp.Maybe<R>, nothing: (t: T) => E }) => (t: T) => R
 			}
-		}
-	}
-
-	export type Partial<P,R> = (p: P) => Maybe<R>
-
-	export type Match<P,R> = {
-		if: Predicate<P>
-		then: Mapping<P,R>
-	}
-
-	export interface Exports {
-		Partial: {
-			match: <P,R>(p: Match<P,R>) => Partial<P,R>
 		}
 	}
 
@@ -402,38 +549,193 @@ namespace slime.$api.fp {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { verify, run } = fifty;
-			var subject = fifty.global.$api.fp.Partial;
+			const { verify } = fifty;
+			const { $api } = fifty.global;
 
-			fifty.tests.exports.Partial = fifty.test.Parent();
+			fifty.tests.exports.Maybe = fifty.test.Parent();
 
-			fifty.tests.exports.Partial.match = function() {
-				var ifOddThenDouble: Match<number,number> = {
-					if: function(n) {
-						return n % 2 == 1;
-					},
-					then: function(n) {
-						return n * 2;
-					}
+			fifty.tests.exports.Maybe.pipe = function() {
+				var halveEvenly = function(n: number): Maybe<number> {
+					if (n%2 == 0) return $api.fp.Maybe.from.some(n/2);
+					return $api.fp.Maybe.from.nothing();
 				};
 
-				var f = subject.match(ifOddThenDouble);
+				var quarterEvenly = $api.fp.Maybe.pipe(halveEvenly, halveEvenly);
 
-				run(function odd() {
-					var x = f(1);
-					verify(x).present.is(true);
-					if (x.present) verify(x).value.is(2);
-				});
+				var halve2 = halveEvenly(2);
+				verify(halve2).present.is(true);
+				if (halve2.present) verify(halve2).value.is(1);
+				verify(halveEvenly(1)).present.is(false);
 
-				run(function even() {
-					var x = f(2);
-					verify(x).present.is(false);
-				});
-			};
+				var quarter4 = quarterEvenly(4);
+				verify(quarter4).present.is(true);
+				if (quarter4.present) verify(quarter4).value.is(1);
+				verify(quarterEvenly(2)).present.is(false);
+				verify(quarterEvenly(1)).present.is(false);
+			}
 		}
 	//@ts-ignore
 	)(fifty);
 
+	export type Partial<P,R> = (p: P) => Maybe<R>
+
+	export namespace exports {
+		export interface Partial {
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.Partial = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Partial: exports.Partial
+	}
+
+	export namespace exports {
+		export interface Partial {
+			from: {
+				/**
+				 * Creates a partial function from a "loose" function, where "loose" is defined as a JavaScript function that might
+				 * return `null` or the undefined value. The resulting partial function will return `Maybe.from.nothing` if the
+				 * loose function returns `null` or the undefined value, and `Maybe.from.some(v)` if the loose function returns the
+				 * value `v`.
+				 *
+				 * This allows partial functions to be defined with less-verbose JavaScript syntax; return ordinary values (rather
+				 * than `Maybe`s) for input for which they are defined, and simply not return values for input for which they are
+				 * not defined.
+				 *
+				 * @param f A JavaScript function.
+				 * @returns A partial function implemented in terms of the given JavaScript function.
+				 */
+				loose: <P,R>(f: slime.$api.fp.Mapping<P,R>) => slime.$api.fp.Partial<P,R>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.Partial.from = function() {
+					var partial = $api.fp.Partial.from.loose(function(x: number): number {
+						if (x % 2 === 0) return x / 2;
+					});
+
+					var two = partial(2);
+					verify(two).present.is(true);
+					if (two.present) verify(two.value).is(1);
+
+					var one = partial(1);
+					verify(one).present.is(false);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export type Match<P,R> = {
+		if: Predicate<P>
+		then: Mapping<P,R>
+	}
+
+	export type TypeMatch<P,N extends P,R> = {
+		if: TypePredicate<P,N>
+		then: Mapping<N,R>
+	}
+
+	export namespace exports {
+		export interface Partial {
+			match: {
+				<P,N extends P,R>(p: TypeMatch<P,N,R>): fp.Partial<P,R>
+				<P,R>(p: Match<P,R>): fp.Partial<P,R>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify, run } = fifty;
+				var subject = fifty.global.$api.fp.Partial;
+
+				fifty.tests.exports.Partial.match = function() {
+					var ifOddThenDouble: Match<number,number> = {
+						if: function(n) {
+							return n % 2 == 1;
+						},
+						then: function(n) {
+							return n * 2;
+						}
+					};
+
+					var f = subject.match(ifOddThenDouble);
+
+					run(function odd() {
+						var x = f(1);
+						verify(x).present.is(true);
+						if (x.present) verify(x).value.is(2);
+					});
+
+					run(function even() {
+						var x = f(2);
+						verify(x).present.is(false);
+					});
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Partial {
+			else: <P,R>(p: {
+				partial: fp.Partial<P,R>
+				else: Mapping<P,R>
+			}) => Mapping<P,R>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				var subject = fifty.global.$api.fp.Partial;
+
+				fifty.tests.exports.Partial.else = function() {
+					var ifOddThenDouble: Match<number,number> = {
+						if: function(n) {
+							return n % 2 == 1;
+						},
+						then: function(n) {
+							return n * 2;
+						}
+					};
+
+					var partial = subject.match(ifOddThenDouble);
+
+					var total = subject.else({
+						partial: partial,
+						else: function(n) { return n * 3 }
+					});
+
+					verify(1).evaluate(total).is(2);
+					verify(2).evaluate(total).is(6);
+				};
+
+				fifty.tests.wip = fifty.tests.exports.Partial.else;
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
 	export interface Exports {
 		switch: <P,R>(cases: Partial<P,R>[]) => Partial<P,R>
@@ -481,7 +783,6 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -498,6 +799,7 @@ namespace slime.$api.fp {
 				<T>(f: fp.Predicate<T>): (ts: T[]) => T[]
 			}
 			find: <T>(f: fp.Predicate<T>) => (ts: T[]) => T | undefined
+			some: <T>(f: fp.Predicate<T>) => (ts: T[]) => boolean
 			map: <T,R>(f: (t: T) => R) => (ts: T[]) => R[]
 		}
 	}
@@ -555,12 +857,6 @@ namespace slime.$api.fp {
 			}) => (p: V[]) => { group: G, array: V[] }[]
 
 			sum: <T>(attribute: (t: T) => number) => (array: T[]) => number
-		}
-	}
-
-	export namespace exports {
-		export interface Array {
-			first: <T>(ordering: Ordering<T>) => (ts: T[]) => Maybe<T>
 		}
 	}
 
@@ -736,11 +1032,134 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * A function with the semantics of the standard JavaScript `sort` function argument.
+	 *
+	 * See the specification for [Array.prototype.sort](https://tc39.es/ecma262/multipage/indexed-collections.html#sec-array.prototype.sort)
+	 */
 	export type CompareFn<T> = (t1: T, t2: T) => number
 
-	export type Ordering<T> = (subject: T) => (other: T) => "BEFORE" | "EQUAL" | "AFTER"
+	/**
+	 * A comparison order that can be expressed as a partial function. The partial function should
+	 * return a {@link Maybe} with value `true` if its arguments are in the correct order and `false` if
+	 * they are not, and should return `$api.fp.Maybe.from.nothing()` if it cannot determine the correct order.
+	 */
+	export type Ordering<T> = Partial<[T,T],boolean>
 
 	export interface Exports {
+		Ordering: {
+			from: {
+				operators: Ordering<any>
+
+				prioritize: <T>(p: {
+					predicate: slime.$api.fp.Predicate<T>
+					value: boolean
+				}) => Ordering<T>
+
+				map: <T,V>(p: {
+					map: slime.$api.fp.Mapping<T,V>
+					ordering: Ordering<V>
+				}) => Ordering<T>
+			}
+
+			array: {
+				first: <T>(ordering: Ordering<T>) => (t: T[]) => slime.$api.fp.Maybe<T>
+
+				sort: <T>(ordering: Ordering<T>) => (t: T[]) => T[]
+			}
+		}
+	}
+
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.Ordering = fifty.test.Parent();
+
+			fifty.tests.exports.Ordering.from = fifty.test.Parent();
+
+			fifty.tests.exports.Ordering.from.operators = function() {
+				var array = [1, 0, 2];
+				verify(array)[0].is(1);
+				verify(array)[1].is(0);
+				verify(array)[2].is(2);
+				array = $api.fp.Ordering.array.sort($api.fp.Ordering.from.operators)(array);
+				verify(array)[0].is(0);
+				verify(array)[1].is(1);
+				verify(array)[2].is(2);
+			};
+
+			fifty.tests.exports.Ordering.from.prioritize = function() {
+				var array = [3, 1, 2, 4];
+				var prioritized = $api.fp.switch([
+					$api.fp.Ordering.from.prioritize({
+						predicate: function(n: number) { return n % 2 == 0; },
+						value: true
+					}),
+					$api.fp.Ordering.from.operators
+				]);
+				verify(array)[0].is(3);
+				verify(array)[1].is(1);
+				verify(array)[2].is(2);
+				verify(array)[3].is(4);
+				array = $api.fp.Ordering.array.sort(prioritized)(array);
+				verify(array)[0].is(2);
+				verify(array)[1].is(4);
+				verify(array)[2].is(1);
+				verify(array)[3].is(3);
+			};
+
+			fifty.tests.exports.Ordering.from.map = function() {
+				var array = [3, 1, 2, 4];
+				var byMod3 = $api.fp.switch([
+					$api.fp.Ordering.from.map({
+						map: function(n: number) { return n % 3; },
+						ordering: $api.fp.Ordering.from.operators
+					}),
+					$api.fp.Ordering.from.operators
+				]);
+				verify(array)[0].is(3);
+				verify(array)[1].is(1);
+				verify(array)[2].is(2);
+				verify(array)[3].is(4);
+				array = $api.fp.Ordering.array.sort(byMod3)(array);
+				verify(array)[0].is(3);
+				verify(array)[1].is(1);
+				verify(array)[2].is(4);
+				verify(array)[3].is(2);
+			};
+
+			fifty.tests.exports.Ordering.first = function() {
+				var order = (array: [number,number]) => (array[0] != array[1]) ? $api.fp.Maybe.from.some(array[0] < array[1]) : $api.fp.Maybe.from.nothing();
+				var ns: number[] = [1, 0, 2];
+				var first = $api.fp.Ordering.array.first(order);
+
+				fifty.run(function() {
+					var value = first(ns);
+					verify(value).present.is(true);
+					if (value.present) {
+						verify(value).value.is(0);
+					}
+				});
+
+				fifty.run(function() {
+					var value = first([]);
+					verify(value).present.is(false);
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		/**
+		 * Operations pertaining to {@link CompareFn}s, which can be used with the standard JavaScript `Array.prototype.sort`
+		 * method.
+		 */
 		comparator: {
 			/**
 			 * Creates a comparator given a mapping (which represents some aspect of an underlying type) and a comparator that
@@ -765,29 +1184,34 @@ namespace slime.$api.fp {
 			compose: <T>(...comparators: fp.CompareFn<T>[]) => fp.CompareFn<T>
 
 			from: {
-				Ordering: <T>(o: Ordering<T>) => fp.CompareFn<T>
+				/**
+				 * Creates a standard JavaScript {@link CompareFn} from an {@link Ordering}; this function can be used as an
+				 * argument to `Array.prototype.sort`.
+				 *
+				 * To simply sort an array, `Ordering.array.sort` can be used, which will duplicate the array and return the
+				 * sorted version.
+				 */
+				Ordering: <T>(ordering: Ordering<T>) => fp.CompareFn<T>
 			}
 		}
 	}
 
 	(
 		function(
-			fifty: slime.fifty.test.Kit,
-			$api: slime.$api.Global
+			fifty: slime.fifty.test.Kit
 		) {
 			const { verify, run } = fifty;
+			const { $api } = fifty.global;
+
 			const $f = fifty.global.$api.fp;
 
 			fifty.tests.compare = function() {
-				run(function orderingArray() {
+				run(function beforeArray() {
 					var numbers = [1, 0, 2];
-					numbers.sort($f.comparator.from.Ordering(function(n) {
-						return function(o) {
-							var difference = n - o;
-							if (difference < 0) return "BEFORE";
-							if (difference > 0) return "AFTER";
-							return "EQUAL";
-						}
+					numbers.sort($f.comparator.from.Ordering(function(array) {
+						var difference = array[0] - array[1];
+						if (difference != 0) return $api.fp.Maybe.from.some(difference < 0);
+						return $api.fp.Maybe.from.nothing();
 					}));
 					verify(numbers[0]).is(0);
 					verify(numbers[1]).is(1);
@@ -836,7 +1260,48 @@ namespace slime.$api.fp {
 			}
 		}
 	//@ts-ignore
-	)(fifty, $api, tests, verify);
+	)(fifty);
+
+	export interface Exports {
+		now: {
+			/**
+			 * @deprecated Replaced by {@link Exports.now.map}.
+			 */
+			invoke: Now_map
+
+			/**
+			 * Returns the result of invoking a function on an argument. `invoke(p, f)` is syntactic sugar for `f(p)`, and
+			 * `invoke(p, f, g) is syntactic sugar for `g(f(p))`.
+			 */
+			map: Now_map
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.now = function() {
+				var f = function(i: number): string {
+					return String(i);
+				};
+
+				var g = function(s: string): string {
+					return "g" + s;
+				};
+
+				var result = $api.fp.now.map(2, f);
+				verify(result).is("2");
+
+				var result2 = $api.fp.now.map(2, f, g);
+				verify(result2).is("g2");
+			};
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace object {
 		export type Update<T extends Object> = (t: T) => void
@@ -962,6 +1427,10 @@ namespace slime.$api.fp {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		Stream: stream.Exports
+	}
 
 	export namespace old {
 		/**

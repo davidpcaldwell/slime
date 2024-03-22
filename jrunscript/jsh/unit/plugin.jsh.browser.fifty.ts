@@ -22,58 +22,72 @@ namespace slime.jsh.unit {
 	}
 
 	export interface Exports {
-		browser: {
-			/**
-			 * Browsers in precedence order
-			 */
-			installed: slime.jsh.unit.old.Browser[] & {
-				[id: string]: slime.jsh.unit.old.Browser
-			}
+		browser: slime.jsh.unit.internal.browser.Exports
+	}
+}
 
-			local: {
+namespace slime.jsh.unit.internal.browser {
+	export interface Configuration {
+		program: string
+		arguments: string[]
+	}
+
+
+	export interface Context {
+		jsh: slime.jsh.Global
+	}
+
+	export interface Exports {
+		/**
+		 * Browsers in precedence order
+		 */
+		installed: slime.jsh.unit.old.Browser[] & {
+			[id: string]: slime.jsh.unit.old.Browser
+		}
+
+		local: {
+			Chrome: (configuration: {
+				program: string
+				user: string
+
+				/**
+				 * See {@link slime.jrunscript.shell.browser.Chrome}'s Instance constructor.
+				 */
+				devtools?: boolean
+				debugPort?: number
+			}) => Browser
+
+			Firefox: (configuration: {
+				program: string
+			}) => Browser
+
+			Safari: () => Browser
+		}
+
+
+		selenium: {
+			Chrome: () => Browser
+
+			remote: {
 				Chrome: (configuration: {
-					program: string
-					user: string
-
-					/**
-					 * See {@link slime.jrunscript.shell.browser.Chrome}'s Instance constructor.
-					 */
-					devtools?: boolean
-					debugPort?: number
+					host: string
+					port: number
 				}) => Browser
 
 				Firefox: (configuration: {
-					program: string
+					host: string
+					port: number
 				}) => Browser
-
-				Safari: () => Browser
 			}
-
-
-			selenium: {
-				Chrome: () => Browser
-
-				remote: {
-					Chrome: (configuration: {
-						host: string
-						port: number
-					}) => Browser
-
-					Firefox: (configuration: {
-						host: string
-						port: number
-					}) => Browser
-				}
-			}
-
-			//	TODO	below are probably unused
-			Modules: any
-			Browser: any
-			IE: any
-			Firefox: any
-			Chrome: any
-			Safari: any
 		}
+
+		//	TODO	below are probably unused
+		Modules: any
+		Browser: any
+		IE: any
+		Firefox: any
+		Chrome: any
+		Safari: any
 	}
 
 	(
@@ -219,11 +233,6 @@ namespace slime.jsh.unit {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
-}
 
-namespace slime.jsh.unit.internal.browser {
-	export interface Configuration {
-		program: string
-		arguments: string[]
-	}
+	export type Script = slime.loader.Script<Context,Exports>
 }

@@ -8,14 +8,15 @@ namespace slime.jrunscript.shell.test {
 	export type Context = void
 
 	export namespace run {
-		export type Delegate = (invocation: slime.jrunscript.shell.run.old.Invocation) => slime.jrunscript.shell.run.Mock
+		export type OldInvocationDelegate = (invocation: slime.jrunscript.shell.run.old.Invocation) => slime.jrunscript.shell.run.Mock
 	}
 
 	export interface Fixtures {
 		load: (context: slime.jrunscript.shell.Context) => slime.jrunscript.shell.Exports
 
 		run: {
-			createMockWorld: (delegate: run.Delegate) => slime.jrunscript.shell.internal.run.Context["spi"]
+			/** @deprecated Uses older constructs. */
+			createMockWorld: (delegate: run.OldInvocationDelegate) => slime.jrunscript.shell.internal.run.Context["world"]
 		}
 	}
 
@@ -33,7 +34,10 @@ namespace slime.jrunscript.shell.test {
 				}
 			};
 
-			var createMockWorld = function(delegate: slime.jrunscript.shell.test.run.Delegate): slime.jrunscript.shell.internal.run.Context["spi"] {
+			var createMockWorld = function(
+				delegate: slime.jrunscript.shell.test.run.OldInvocationDelegate
+			): slime.jrunscript.shell.internal.run.Context["world"]
+			{
 				return function(p) {
 					return function(events) {
 						var killed = false;

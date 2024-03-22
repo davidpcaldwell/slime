@@ -108,6 +108,17 @@ namespace slime.jrunscript {
 					export interface FileSystem {
 						supportedFileAttributeViews(): slime.jrunscript.native.java.util.Set
 					}
+
+					export namespace attribute {
+						export interface PosixFilePermission {
+						}
+
+						export interface PosixFileAttributes {
+							owner: () => slime.jrunscript.native.java.security.Principal
+							group: () => slime.jrunscript.native.java.security.Principal
+							permissions: () => slime.jrunscript.native.java.util.Set<slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission>
+						}
+					}
 				}
 
 				export namespace charset {
@@ -159,6 +170,13 @@ namespace slime.jrunscript {
 				export interface Proxy {
 				}
 			}
+
+			export namespace security {
+				export interface Principal {
+					getName: () => slime.jrunscript.native.java.lang.String
+				}
+			}
+
 			export namespace util {
 				export interface List<T = native.java.lang.Object> {
 				}
@@ -171,7 +189,9 @@ namespace slime.jrunscript {
 					get(name: string): any
 					propertyNames(): any
 					getProperty(name: string): string
+					setProperty(name: string, value: string): void
 					keySet(): any
+					store: (out: slime.jrunscript.native.java.io.OutputStream, comments: string) => void
 				}
 
 				export interface Enumeration<T> {
@@ -183,19 +203,27 @@ namespace slime.jrunscript {
 					getTime(): number
 				}
 
-				export interface Iterator {
+				export interface Iterator<T = any> {
 					hasNext(): boolean
-					next(): any
+					next(): T
 				}
 
-				export interface Set {
-					iterator(): Iterator
+				export interface Set<T = slime.jrunscript.native.java.lang.Object> {
+					iterator(): Iterator<T>
 					contains(element: any): boolean
 				}
 
-				export interface Map extends java.lang.Object {
-					keySet(): Set
-					get(key: any): any
+				export interface Map<K = slime.jrunscript.native.java.lang.Object, V = slime.jrunscript.native.java.lang.Object> extends java.lang.Object {
+					keySet(): Set<K>
+					entrySet(): Set<Map.Entry<K,V>>
+					get(key: K): V
+				}
+
+				export namespace Map {
+					export interface Entry<K,V> {
+						getKey: () => K
+						getValue: () => V
+					}
 				}
 
 				export namespace logging {
@@ -210,7 +238,43 @@ namespace slime.jrunscript {
 					export interface Level extends java.lang.Object {
 					}
 				}
+
+				export namespace stream {
+					export interface Stream<T> extends slime.jrunscript.native.java.lang.Object {
+						iterator: () => Iterator<T>
+					}
+				}
+
+				export namespace zip {
+					export interface ZipEntry extends slime.jrunscript.native.java.lang.Object {
+						getName: () => slime.jrunscript.native.java.lang.String
+						isDirectory: () => boolean
+					}
+				}
+
+				export namespace jar {
+					export interface JarEntry extends slime.jrunscript.native.java.util.zip.ZipEntry {
+
+					}
+
+					export interface JarFile extends slime.jrunscript.native.java.lang.Object {
+						getManifest: () => Manifest
+						entries: () => any
+						stream: () => slime.jrunscript.native.java.util.stream.Stream<JarEntry>
+						getInputStream: (ze: any) => slime.jrunscript.native.java.io.InputStream
+					}
+
+					export interface Manifest extends slime.jrunscript.native.java.lang.Object {
+						getMainAttributes: () => Attributes
+						getEntries: () => slime.jrunscript.native.java.util.Map<slime.jrunscript.native.java.lang.String,Attributes>
+						read: (_input: slime.jrunscript.native.java.io.InputStream) => void
+					}
+
+					export interface Attributes extends slime.jrunscript.native.java.util.Map {
+					}
+				}
 			}
+
 			export namespace math {
 				export interface BigDecimal extends slime.jrunscript.native.java.lang.Object {
 				}
@@ -218,6 +282,7 @@ namespace slime.jrunscript {
 				export interface MathContext extends slime.jrunscript.native.java.lang.Object {
 				}
 			}
+
 			export namespace awt {
 				export interface Desktop {
 					browse: (uri: slime.jrunscript.native.java.net.URI) => void
@@ -440,9 +505,20 @@ namespace slime.jrunscript {
 			nio: {
 				file: {
 					Files: any
+					FileSystems: any
 					attribute: {
 						FileTime: any
-						PosixFilePermission: any
+						PosixFilePermission: {
+							OWNER_READ: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							OWNER_WRITE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							OWNER_EXECUTE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							GROUP_READ: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							GROUP_WRITE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							GROUP_EXECUTE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							OTHERS_READ: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							OTHERS_WRITE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+							OTHERS_EXECUTE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
+						}
 					}
 					LinkOption: any
 				}
@@ -453,6 +529,7 @@ namespace slime.jrunscript {
 			}
 			util: {
 				HashMap: any
+				HashSet: any
 				ArrayList: any
 				Properties: any
 				logging: {
@@ -478,7 +555,10 @@ namespace slime.jrunscript {
 				Map: any
 				Date: any
 				zip: any
-				jar: any
+				jar: {
+					JarFile: JavaClass<slime.jrunscript.native.java.util.jar.JarFile>
+					Manifest: JavaClass<slime.jrunscript.native.java.util.jar.Manifest>
+				}
 				UUID: any
 				TimeZone: any
 				Calendar: any
@@ -502,6 +582,10 @@ namespace slime.jrunscript {
 					KeyEvent: any
 				}
 				BorderLayout: any
+				datatransfer: {
+					StringSelection: any
+				}
+				Toolkit: any
 			}
 			sql: {
 				Types: any

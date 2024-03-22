@@ -23,7 +23,7 @@
 		var $exports = {};
 
 		var module = {
-			events: $api.events.create()
+			events: $api.events.emitter()
 		};
 
 		var environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
@@ -39,7 +39,7 @@
 
 		var properties = (
 			/**
-			 * @returns { slime.jrunscript.shell.Exports["properties"] }
+			 * @returns { slime.jrunscript.shell.Exports["properties"] & { set: any } }
 			 */
 			function() {
 				var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
@@ -50,6 +50,9 @@
 						var rv = _properties.getProperty(name);
 						if (!rv) return null;
 						return String(rv);
+					},
+					set: function(name,value) {
+						_properties.setProperty(name, value);
 					},
 					file: function(name) {
 						return toLocalPathname($context.api.file.filesystems.os.Pathname(this.get(name))).file;
@@ -92,298 +95,43 @@
 			/** @type { slime.jrunscript.shell.internal.run.Script } */
 			run: $loader.script("run.js"),
 			/** @type { slime.jrunscript.shell.internal.run.old.Script } */
-			run_old: $loader.script("run-old.js")
+			run_old: $loader.script("run-old.js"),
+			/** @type { slime.jrunscript.shell.internal.console.Script } */
+			console: $loader.script("console.js"),
+			/** @type { slime.jrunscript.shell.java.Script } */
+			java: $loader.script("java.js"),
+			/** @type { slime.jrunscript.shell.ssh.Script } */
+			ssh: $loader.script("ssh.js")
 		};
 
-		/** @type { slime.jrunscript.shell.internal.invocation.Export } */
-		var invocation = (
-			function($api,$context) {
-				var parseCommandToken = (
-					function() {
-						var ArgumentError = $api.Error.old.Type({ name: "ArgumentError", extends: TypeError });
-
-						/**
-						 *
-						 * @param { slime.jrunscript.shell.invocation.old.Token } arg
-						 * @param { number } [index]
-						 * @returns { string }
-						 */
-						var rv = function(arg,index) {
-							if (arguments.length == 1) index = null;
-							var label = (typeof(index) == "number") ? "property 'arguments[" + String(index) + "]'" : "property 'command'";
-							if (typeof(arg) == "undefined") {
-								throw new ArgumentError(label + " cannot be undefined");
-							}
-							if (arg === null) throw new ArgumentError(label + " must not be null");
-							if (arg && typeof(arg) == "object") return String(arg);
-							//	TODO	the below check does not allow the empty string to be a token
-							if (arg && typeof(arg) == "string") return arg;
-							throw new ArgumentError(label + " is not a string nor an object that can be converted to string.");
-						}
-						rv.Error = ArgumentError;
-						return rv;
-					}
-				)();
-
-				/**
-				 *
-				 * @param { slime.jrunscript.shell.invocation.Input } p
-				 * @return { slime.jrunscript.runtime.io.InputStream }
-				 */
-				var toInputStream = function(p) {
-					if (typeof(p) == "string") {
-						var buffer = new $context.library.io.Buffer();
-						buffer.writeText().write(p);
-						buffer.close();
-						return buffer.readBinary();
-					} else {
-						return p;
-					}
-				}
-
-				/**
-				 * @param { slime.jrunscript.shell.invocation.old.Stdio } p
-				 * @return { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed }
-				 */
-				var updateForStringInput = function(p) {
-					/** @type { slime.jrunscript.shell.run.StdioConfiguration } */
-					return {
-						input: toInputStream(p.input),
-						output: p.output,
-						error: p.error
-					};
-				}
-
-				/**
-				 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
-				 * @return { configuration is slime.jrunscript.shell.invocation.old.OutputStreamToLines }
-				 */
-				var isLineListener = function(configuration) {
-					return configuration && Object.prototype.hasOwnProperty.call(configuration, "line");
-				}
-
-				/**
-				 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
-				 * @return { configuration is slime.jrunscript.shell.invocation.old.OutputStreamToString }
-				 */
-				var isString = function(configuration) {
-					return configuration === String
-				};
-
-				/**
-				 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
-				 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToStream }
-				 */
-				var isRaw = function(configuration) {
-					return true;
-				}
-
-				/** @type { (configuration: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => slime.jrunscript.shell.run.OutputCapture } */
-				var toCapture = function(configuration) {
-					if (isLineListener(configuration)) {
-						return "line";
-					} else if (isString(configuration)) {
-						return "string";
-					} else {
-						return configuration;
-					}
-				}
-
-				/**
-				 *
-				 * @param { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed } declaration
-				 * @return { slime.jrunscript.shell.run.StdioConfiguration }
-				 */
-				function toStdioConfiguration(declaration) {
-					return {
-						input: declaration.input,
-						output: toCapture(declaration.output),
-						error: toCapture(declaration.error)
-					};
-				}
-
-				/**
-				 *
-				 * @param { slime.jrunscript.host.Environment } environment
-				 * @param { slime.jrunscript.shell.sudo.Settings } settings
-				 * @returns { slime.jrunscript.host.Environment }
-				 */
-				var getEnvironmentToSudo = function(environment, settings) {
-					return $api.Object.compose(
-						environment,
-						(settings && settings.askpass) ? { SUDO_ASKPASS: settings.askpass } : {}
-					)
-				}
-
-				/**
-				 *
-				 * @param { string } command
-				 * @param { string[] } args
-				 * @param { slime.jrunscript.shell.sudo.Settings } settings
-				 * @returns { string[] }
-				 */
-				var getArgumentsToSudo = function(command, args, settings) {
-					return $api.Array.build(function(array) {
-						if (settings && settings.askpass) array.push("--askpass");
-						if (settings && settings.nocache) array.push("--reset-timestamp")
-						array.push(command);
-						array.push.apply(array, args);
-					});
-				}
-
-				/** @type { (defaults: slime.jrunscript.shell.run.Parent) => slime.jrunscript.shell.exports.Invocation["from"]["argument"] } */
-				var create = function(defaults) {
-					return function(p) {
-						return {
-							context: {
-								environment: (p.environment) ? p.environment : defaults.environment,
-								directory: (p.directory) ? p.directory.toString() : defaults.directory,
-								stdio: {
-									input: (function() {
-										if (p.stdio && p.stdio.input) return toInputStream(p.stdio.input);
-										return null;
-									})(),
-									output: (p.stdio && p.stdio.output) ? p.stdio.output : defaults.stdio.output,
-									error: (p.stdio && p.stdio.error) ? p.stdio.error : defaults.stdio.error,
-								}
-							},
-							configuration: {
-								command: String(p.command),
-								arguments: (p.arguments) ? p.arguments.map(String) : []
-							}
-						}
-					}
-				};
-
-				/** @type { slime.jrunscript.shell.internal.invocation.Export["internal"]["old"] } */
-				var internal = (
-					function() {
-						return {
-							error: {
-								BadCommandToken: parseCommandToken.Error
-							},
-							updateForStringInput: updateForStringInput,
-							toStdioConfiguration: toStdioConfiguration,
-							parseCommandToken: parseCommandToken,
-							isLineListener: isLineListener
-						}
-					}
-				)();
-
-				return {
-					exports: function(defaults) {
-						//	TODO	this being undefined is just for testing at the moment, should think through how to make this less kludgy
-						var withDefaults = (defaults) ? create(defaults) : void(0);
-						return {
-							from: {
-								argument: withDefaults
-							},
-							create: (withDefaults) ? $api.deprecate(withDefaults) : void(0),
-							//	TODO	sudo has preserve-env and preserver-env= flags. Should make the relationship more explicit
-							//			between that and the environment provided normally, e.g., how could we pass an explicit environment
-							//			to sudo? Maybe by transforming the command into an `env` command?
-							sudo: function(settings) {
-								return function(invocation) {
-									return {
-										context: {
-											environment: getEnvironmentToSudo(invocation.context.environment, settings),
-											directory: invocation.context.directory,
-											stdio: invocation.context.stdio
-										},
-										configuration: {
-											command: "sudo",
-											arguments: getArgumentsToSudo(invocation.configuration.command, invocation.configuration.arguments, settings)
-										}
-									}
-								}
-							},
-							handler: {
-								stdio: {
-									line: function(f) {
-										var lastBlank = null;
-
-										return function(e) {
-											if (lastBlank) {
-												f(lastBlank);
-												lastBlank = null;
-											}
-											if (e.detail.line == "") {
-												lastBlank = e;
-											} else {
-												f(e);
-											}
-										}
-									}
-								}
-							}
-						}
-					},
-					invocation: {
-						//	The returned function is wrapped in this function because one could envision this function someday having
-						//	arguments containing some sort of information about how the script should be authored, maybe the path
-						//	to bash (which is different on FreeBSD), and so forth.
-						toBashScript: $api.deprecate(function() {
-							/** @type { ReturnType<slime.jrunscript.shell.Exports["invocation"]["toBashScript"]> } */
-							var toScriptCode = function(invocation) {
-								return $api.Array.build(function(script) {
-									script.push("#!/bin/bash");
-
-									if (invocation.directory) {
-										if (typeof(invocation.directory) == "string") {
-											script.push("cd " + invocation.directory);
-										} else {
-											script.push("cd " + invocation.directory.pathname.toString());
-										}
-									}
-
-									/** @type { Parameters<ReturnType<slime.jrunscript.shell.Exports["invocation"]["toBashScript"]>>[0]["environment"]} */
-									var environment = (invocation.environment) || { inherit: void(0), values: {} };
-									var inherit = (typeof(environment.inherit) == "undefined") ? true : environment.inherit;
-									var values = (typeof(environment.values) == "undefined") ? {} : environment.values;
-									var set = Object.entries(values).filter(function(entry) {
-										return typeof(entry[1]) == "string";
-									});
-									var unset = Object.entries(values).filter(function(entry) {
-										return entry[1] === null;
-									});
-
-									script.push($api.Array.build(function(rv) {
-										if (!inherit || set.length || unset.length) rv.push("env");
-										unset.forEach(function(entry) {
-											rv.push("-u", entry[0]);
-										});
-										set.forEach(function(entry) {
-											rv.push(entry[0] + "=" + "\"" + entry[1] + "\"");
-										});
-										rv.push(invocation.command);
-										if (invocation.arguments) rv.push.apply(rv, invocation.arguments);
-									}).join(" "))
-								}).join("\n");
-							};
-
-							return toScriptCode;
-						})
-					},
-					internal: {
-						old: internal
-					}
-				};
-			}
-		)($api,{ library: { io: $context.api.io }})
-
 		var scripts = (function() {
+			/** @type { slime.$api.fp.impure.Input<slime.jrunscript.shell.run.internal.Parent> } */
+			var Parent_from_process = function() {
+				return {
+					environment: environment,
+					stdio: {
+						output: $context.stdio.output,
+						error: $context.stdio.error
+					},
+					directory: properties.get("user.dir")
+				}
+			};
+
 			var run = code.run({
-				api: {
+				library: {
 					java: $context.api.java,
 					io: $context.api.io,
 					file: $context.api.file
 				},
-				spi: ($context.world && $context.world.subprocess)
+				parent: Parent_from_process,
+				world: $api.fp.now.map($context, $api.fp.optionalChain("world"), $api.fp.optionalChain("subprocess"))
 			});
+
 			return {
 				run: run,
 				run_old: code.run_old({
 					api: {
+						io: $context.api.io,
 						file: $context.api.file
 					},
 					environment: environment,
@@ -397,15 +145,14 @@
 						}
 					},
 					scripts: {
-						run: run,
-						invocation: invocation
+						run: run
 					},
 					stdio: $context.stdio
 				})
 			}
 		})();
 
-		$exports.invocation = invocation.invocation;
+		$exports.invocation = scripts.run_old.invocation.invocation;
 
 		$exports.os = new function() {
 			this.name = properties.get("os.name");
@@ -504,10 +251,15 @@
 			"opendesktop",
 			{
 				get: $api.fp.impure.Input.memoized(function() {
-					return $loader.file("opendesktop.js", {
-						api: {
+					/** @type { slime.jrunscript.shell.opendesktop.Script } */
+					var script = $loader.script("opendesktop.js");
+					return script({
+						library: {
 							js: $context.api.js,
-							shell: $exports
+							shell: {
+								PATH: $exports.PATH,
+								run: scripts.run_old.run
+							}
 						}
 					});
 				})
@@ -558,7 +310,10 @@
 				keytool: void(0),
 				launcher: void(0),
 				jrunscript: void(0),
-				home: void(0)
+				home: void(0),
+				Jdk: code.java({
+					home: function() { return properties.directory("java.home"); }
+				}).Jdk
 			}
 		);
 		(function() {
@@ -700,10 +455,15 @@
 
 			var args = vmargs.concat(launch.arguments).concat(p.arguments.map(String));
 
-			return scripts.run_old.run($api.Object.compose(p, {
-				command: launch.command,
-				arguments: args
-			}));
+			return scripts.run_old.run(
+				$api.Object.compose(
+					p,
+					{
+						command: launch.command,
+						arguments: args
+					}
+				)
+			);
 		};
 
 		if ($context.kotlin) $exports.kotlin = $api.events.Function(function(p,events) {
@@ -720,7 +480,7 @@
 			}), events);
 		});
 
-		/** @type { slime.jrunscript.shell.run.Parent } */
+		/** @type { slime.jrunscript.shell.run.internal.Parent } */
 		var defaults = {
 			directory: $exports.PWD.toString(),
 			environment: environment,
@@ -730,7 +490,7 @@
 			}
 		}
 
-		$exports.Invocation = invocation.exports(defaults);
+		$exports.Invocation = scripts.run_old.invocation.exports(defaults);
 
 		$exports.world = scripts.run;
 
@@ -753,94 +513,134 @@
 
 		$exports.environment = environment;
 
-		var Parent_from_process = function() {
-			return {
-				environment: environment,
-				stdio: {
-					output: $context.stdio.output,
-					error: $context.stdio.error
-				},
-				directory: properties.get("user.dir")
+		/** @type { slime.jrunscript.shell.Exports["Environment"] & { envArgs: slime.jrunscript.shell.internal.GetEnvArguments } } */
+		var Environment = (
+			function() {
+				/** @type { slime.jrunscript.shell.Exports["Environment"]["is"]} */
+				var is = {
+					/** @type { slime.jrunscript.shell.Exports["Environment"]["is"]["standalone"] } */
+					standalone: function(p) {
+						return Boolean(p["only"]);
+					},
+					/** @type { slime.jrunscript.shell.Exports["Environment"]["is"]["inherited"] } */
+					inherited: function(p) {
+						return Boolean(p["set"]);
+					}
+				}
+
+				/**
+				 * @type { getEnvArgs }
+				 */
+				var getEnvArgs = function(environment) {
+					var set = function(name,value) {
+						return name + "=" + "\"" + value + "\"";
+					};
+
+					if (is.inherited(environment)) {
+						return Object.entries(environment.set).reduce(function(rv,entry) {
+							if (entry[1] === null) return ["-u", entry[0]].concat(rv);
+							if (typeof(entry[1]) == "string") return rv.concat([set(entry[0],entry[1])]);
+							if (typeof(entry[1]) == "undefined") return rv;
+							throw new Error("Variable " + entry[0] + " has wrong type: " + typeof(entry[1]));
+						},[]);
+					} else {
+						return ["-i"].concat(
+							Object.entries(environment.only).reduce(function(rv,entry) {
+								if (typeof(entry[1]) == "string") return rv.concat([set(entry[0],entry[1])]);
+								if (typeof(entry[1]) == "undefined") return rv;
+								throw new Error("Variable " + entry[0] + " has wrong type: " + typeof(entry[1]));
+							},[])
+						);
+					}
+				};
+
+				return {
+					is: is,
+					run: function(p) {
+						if (!p) return function(was) {
+							return was;
+						};
+						if (is.inherited(p)) {
+							return function(was) {
+								return $api.Object.compose(was, p.set);
+							}
+						} else {
+							return function(was) {
+								return p.only;
+							}
+						}
+					},
+					envArgs: getEnvArgs
+				}
 			}
-		}
+		)();
+
+		var subprocess = scripts.run.exports.subprocess;
+
+		var ssh = code.ssh({
+			library: {
+				getEnvArguments: Environment.envArgs
+			},
+			world: {
+				subprocess: subprocess
+			}
+		});
 
 		/** @type { slime.jrunscript.shell.Exports } */
 		var x = {
-			subprocess: {
-				Parent: {
-					from: {
-						process: Parent_from_process
+			process: {
+				directory: {
+					get: function() {
+						return properties.get("user.dir");
+					},
+					set: function(value) {
+						properties.set("user.dir", value);
 					}
-				},
-				Invocation: scripts.run.exports.Invocation,
-				action: function(p) {
-					return scripts.run.exports.Invocation.action(
-						scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
-					);
-				},
-				question: function(p) {
-					return scripts.run.exports.Invocation.question(
-						scripts.run.exports.Invocation.from.intention(Parent_from_process())(p)
-					);
 				}
 			},
-			bash: {
-				from: {
-					intention: function() {
-						return function(p) {
-							/** @type { string[] } */
-							var script = [];
-							script.push("#!/bin/bash");
-							if (p.directory) script.push("cd " + p.directory);
+			subprocess: subprocess,
+			Environment: Environment,
+			bash: (
+				function() {
+					return {
+						from: {
+							intention: function() {
+								return function(p) {
+									/** @type { string[] } */
+									var script = [];
+									script.push("#!/bin/bash");
+									if (p.directory) script.push("cd " + p.directory);
 
-							/** @type { (e: slime.jrunscript.shell.bash.Environment) => e is slime.jrunscript.shell.bash.InheritedEnvironment } */
-							var isInheritedEnvironment = function(e) {
-								return Boolean(e["set"]);
-							}
+									script.push($api.Array.build(function(rv) {
+										/** @type { Parameters<ReturnType<slime.jrunscript.shell.Exports["bash"]["from"]["intention"]>>[0]["environment"]} */
+										var environment = (p.environment) || { set: {} };
 
-							/**
-							 *
-							 * @param { slime.jrunscript.shell.bash.Environment } environment
-							 * @returns { string[] }
-							 */
-							var getEnvArgs = function(environment) {
-								var set = function(name,value) {
-									return name + "=" + "\"" + value + "\"";
-								};
+										var envArgs = Environment.envArgs(environment);
+										if (envArgs) rv.push.apply(rv, ["env"].concat(envArgs));
+										rv.push(p.command);
+										if (p.arguments) rv.push.apply(rv, p.arguments);
+									}).join(" "));
 
-								if (isInheritedEnvironment(environment)) {
-									return Object.entries(environment.set).reduce(function(rv,entry) {
-										if (entry[1] === null) return ["-u", entry[0]].concat(rv);
-										if (typeof(entry[1]) == "string") return rv.concat([set(entry[0],entry[1])]);
-										if (typeof(entry[1]) == "undefined") return rv;
-										throw new Error("Variable " + entry[0] + " has wrong type: " + typeof(entry[1]));
-									},[]);
-								} else {
-									return ["-i"].concat(
-										Object.entries(environment.only).reduce(function(rv,entry) {
-											if (typeof(entry[1]) == "string") return rv.concat([set(entry[0],entry[1])]);
-											if (typeof(entry[1]) == "undefined") return rv;
-											throw new Error("Variable " + entry[0] + " has wrong type: " + typeof(entry[1]));
-										},[])
-									);
+									return script.join("\n");
 								}
-							};
-
-							script.push($api.Array.build(function(rv) {
-								/** @type { Parameters<ReturnType<slime.jrunscript.shell.Exports["bash"]["from"]["intention"]>>[0]["environment"]} */
-								var environment = (p.environment) || { set: {} };
-
-								var envArgs = getEnvArgs(environment);
-								if (envArgs) rv.push.apply(rv, ["env"].concat(envArgs));
-								rv.push(p.command);
-								if (p.arguments) rv.push.apply(rv, p.arguments);
-							}).join(" "));
-
-							return script.join("\n");
+							}
+						},
+						environment: environment,
+						run: function(p) {
+							return function(bash) {
+								return {
+									command: bash.command,
+									arguments: bash.arguments,
+									directory: bash.directory,
+									environment: x.Environment.run(bash.environment),
+									stdio: p.stdio
+								}
+							}
 						}
 					}
 				}
-			},
+			)(),
+			ssh: ssh,
 			Intention: {
 				from: {}
 			},
@@ -865,8 +665,13 @@
 			run: scripts.run_old.run,
 			PATH: $exports.PATH,
 			browser: $exports.browser,
+			Console: code.console({
+				library: {
+					file: $context.api.file
+				}
+			}),
 			test: {
-				invocation: invocation
+				invocation: scripts.run_old.invocation
 			}
 		}
 

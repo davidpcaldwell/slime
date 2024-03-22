@@ -103,12 +103,6 @@ public class Main {
 		}
 
 		final Shell.Environment environment() {
-			//	TODO	what is this for?
-			String PREFIX = Main.class.getName() + ".";
-			System.getProperties().put(PREFIX + "stdin", System.in);
-			System.getProperties().put(PREFIX + "stdout", System.out);
-			System.getProperties().put(PREFIX + "stderr", System.err);
-
 			return Shell.Environment.create(
 				OperatingSystem.Environment.SYSTEM,
 				System.getProperties(),

@@ -4,9 +4,17 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	//	TODO	if port 7778 is bound, should fail immediately
-	function() {
+	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(Packages,$api,jsh) {
+		//	TODO	if port 7778 is bound, should fail immediately
+
+		/** @type { Partial<slime.jrunscript.shell.run.old.Result> } */
 		var result;
 
 		var locations = (function() {
@@ -96,7 +104,7 @@
 					properties: properties,
 					arguments: locations.launcher.concat(parameters.arguments),
 					environment: (function() {
-						var rv = Object.assign({}, jsh.shell.environment);
+						var rv = $api.Object.compose(jsh.shell.environment);
 						delete rv.JSH_DEBUG_SCRIPT;
 						return rv;
 					})(),
@@ -136,10 +144,10 @@
 				) {
 					args.push("--lazy");
 				}
-				var JAVA_HOME = (function(home) {
-					if (home.pathname.basename == "jre") return home.parent;
-					return home;
-				})(jsh.shell.java.home);
+				var JAVA_HOME = (function() {
+					var h = jsh.shell.java.Jdk.from.javaHome();
+					return jsh.file.Pathname(h.base()).directory;
+				})();
 				jsh.shell.run({
 					command: jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg"),
 					arguments: args,
@@ -206,4 +214,5 @@
 			if (result) jsh.shell.exit(result.status);
 		}
 	}
-)();
+//@ts-ignore
+)(Packages,jsh);

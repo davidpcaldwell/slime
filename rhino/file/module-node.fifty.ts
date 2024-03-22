@@ -41,7 +41,7 @@ namespace slime.jrunscript.file {
 			const { verify } = fifty;
 
 			const fixtures = (function() {
-				var script: test.fixtures.Script = fifty.$loader.script("fixtures.ts");
+				var script: internal.test.fixtures.Script = fifty.$loader.script("fixtures.ts");
 				return script({ fifty: fifty });
 			})();
 
@@ -105,17 +105,18 @@ namespace slime.jrunscript.file {
 				});
 				test(p2.file.read(String) == "f1");
 
-				test(p2.file != null);
+				verify(p2).file.is.not(null);
 				expectError(test, function() {
 					f2.move(p2, { overwrite: true });
 				}, false);
 				test(p2.file.read(String) == "f2");
 
 				//	Test recursive property
+				verify(p3).directory.is(null);
 				expectError(test, function() {
 					p1.directory.move(p3);
 				});
-				test(p3.directory == null);
+				verify(p3).directory.is(null);
 				p1.directory.move(p3, { recursive: true });
 				test(p3.directory != null);
 
@@ -124,7 +125,7 @@ namespace slime.jrunscript.file {
 				});
 				test(p4.file == null);
 				p2.file.move(p4, { recursive: true });
-				test(p4.file != null);
+				verify(p4).file.is.not(null);
 				test(p4.file.read(String) == "f2");
 
 				top.getRelativePath("f3").write("f3", { append: false });

@@ -5,62 +5,100 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.internal.run {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Context {
-		api: {
+		library: {
 			java: slime.jrunscript.host.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
-		spi?: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
-	}
-}
 
-namespace slime.jrunscript.shell {
-	export interface World {
-		question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
-		action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
+		parent: slime.$api.fp.Thunk<slime.jrunscript.shell.run.internal.Parent>
+
+		world?: slime.jrunscript.shell.context.subprocess.World
 	}
 
-	export namespace exports {
-		export interface Subprocess {
-			//	We export the Invocation property from this module directly, as-is, from the containing module. We also export other
-			//	constructs defined at the module level, hence the exports.Subprocess interface (which is defined there also).
+	export namespace test {
+		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
+			var script: Script = fifty.$loader.script("run.js");
+			return script({
+				library: {
+					java: fifty.global.jsh.java,
+					io: fifty.global.jsh.io,
+					file: fifty.global.jsh.file
+				},
+				parent: function() {
+					return {
+						environment: fifty.global.jsh.shell.environment,
+						stdio: fifty.global.jsh.shell.stdio,
+						directory: fifty.global.jsh.shell.PWD.pathname.toString()
+					}
+				}
+			});
+		//@ts-ignore
+		})(fifty);
+	}
+
+	export interface Exports {
+		exports: {
+			subprocess: slime.jrunscript.shell.exports.subprocess
+		}
+
+		test: {
 			Invocation: {
 				from: {
-					intention: (parent: run.Parent) => (plan: run.Intention) => run.Invocation
+					intention: (parent: shell.run.internal.Parent) => (plan: shell.run.Intention) => shell.run.Invocation
 				}
-				question: slime.$api.fp.world.Question<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
-				action: slime.$api.fp.world.Action<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+			}
+
+			Parent: {
+				from: {
+					process: () => slime.jrunscript.shell.run.internal.Parent
+				}
 			}
 		}
 	}
-}
 
-namespace slime.jrunscript.shell.internal.run {
-	export interface Exports {
-		exports: Pick<slime.jrunscript.shell.exports.Subprocess,"Invocation">
-	}
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+			const module = jsh.shell;
+			const { subject } = test;
+
+			fifty.tests.manual.Invocation = function() {
+				var invocation = subject.test.Invocation.from.intention(
+					subject.test.Parent.from.process()
+				)({
+					command: "ls"
+				});
+				jsh.shell.console(JSON.stringify(invocation));
+			};
+
+			fifty.tests.manual.subprocess = {};
+
+			fifty.tests.manual.subprocess.Parent = function() {
+				//	TODO	this test is basically a tautology now, testing what was passed in. What we really want to test is what
+				//			module passes in for this value. Would need to wire up this test API to the (or a) module test API, and
+				//			probably rename this test API to test.context.parent or something
+				var parent = subject.test.Parent.from.process();
+				jsh.shell.console(JSON.stringify(parent,void(0),4));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 namespace slime.jrunscript.shell.run {
-	export namespace old {
-		export interface Context {
-			environment: slime.jrunscript.host.Environment
-			directory: string
-			stdio: StdioConfiguration
-		}
-
-		export interface Configuration {
-			command: string
-			arguments: string[]
-		}
-
-		export interface Invocation {
-			context: Context
-			configuration: Configuration
-		}
-	}
-
 	export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
 
 	export interface StdioConfiguration {
@@ -76,7 +114,7 @@ namespace slime.jrunscript.shell.run {
 	/**
 	 * A specification for a potential subprocess.
 	 */
-	export type Intention = {
+	export interface Intention {
 		command: string
 		arguments?: string[]
 		environment?: slime.$api.fp.Transform<Environment>
@@ -96,25 +134,28 @@ namespace slime.jrunscript.shell.run {
 		arguments: Intention["arguments"]
 	}
 
-	export interface Parent {
-		environment: Environment
-		directory: Intention["directory"]
-		stdio: Pick<StdioConfiguration,"output"|"error">
+	export namespace internal {
+		export interface Parent {
+			environment: Environment
+			directory: Intention["directory"]
+			stdio: Pick<StdioConfiguration,"output"|"error">
+		}
 	}
 
 	export type Line = {
 		line: string
 	}
 
-	export interface AskEvents {
+	export interface OutputEvents {
+		stdout: Line
+		stderr: Line
+	}
+
+	export interface AskEvents extends OutputEvents {
 		start: {
 			pid: number
 			kill: () => void
 		}
-
-		stdout: Line
-
-		stderr: Line
 	}
 
 	//	TODO	right now we only capture output of type string; we could capture binary also
@@ -196,18 +237,6 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export namespace test {
-		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
-			var script: Script = fifty.$loader.script("run.js");
-			return script({
-				api: {
-					java: fifty.global.jsh.java,
-					io: fifty.global.jsh.io,
-					file: fifty.global.jsh.file
-				}
-			});
-		//@ts-ignore
-		})(fifty);
-
 		export const ls: shell.run.old.Invocation = (function(fifty: slime.fifty.test.Kit) {
 			return {
 				context: {
@@ -229,8 +258,8 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export interface Exports {
-		action: slime.jrunscript.shell.World["action"]
-		question: slime.jrunscript.shell.World["question"]
+		action: slime.jrunscript.shell.Exports["world"]["action"]
+		question: slime.jrunscript.shell.Exports["world"]["question"]
 	}
 
 	(
@@ -318,8 +347,6 @@ namespace slime.jrunscript.shell.internal.run {
 			const subject = fifty.global.jsh.shell;
 
 			var directory = fifty.jsh.file.object.getRelativePath(".").directory;
-
-			fifty.tests.manual = {};
 
 			fifty.tests.manual.kill = function() {
 				if (fifty.global.jsh.shell.PATH.getCommand("sleep")) {
@@ -571,7 +598,7 @@ namespace slime.jrunscript.shell.internal.run {
 		 * @deprecated Replaced by the use of the {@link Context} `spi` property, which allows a mock (or alternative)
 		 * implementation to be used when executing subprocess invocations.
 		 */
-		mock: shell.World["mock"]
+		mock: shell.Exports["world"]["mock"]
 
 		/**
 		 * @deprecated
@@ -580,7 +607,7 @@ namespace slime.jrunscript.shell.internal.run {
 			/**
 			 * @deprecated
 			 */
-			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.Events<slime.jrunscript.shell.run.TellEvents>) => Stdio
+			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents>) => Stdio
 
 			/**
 			 * @deprecated

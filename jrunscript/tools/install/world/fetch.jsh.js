@@ -23,11 +23,11 @@
 					destination.directory.remove();
 
 					$api.fp.world.now.action(
-						jsh.tools.install.Download.install,
+						jsh.tools.install.Distribution.install.world,
 						{
 							download: {
 								url: p.options.url,
-								format: (p.options.format) ? jsh.tools.install.Download.Format[p.options.format] : void(0)
+								format: (p.options.format) ? jsh.tools.install.Distribution.Format[p.options.format] : void(0)
 							},
 							to: destination.toString()
 						},

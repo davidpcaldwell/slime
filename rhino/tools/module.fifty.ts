@@ -6,11 +6,9 @@
 
 namespace slime.jrunscript.java.tools {
 	export interface Context {
-		api: {
-			js: {
-				constant: any
-			}
+		library: {
 			java: slime.jrunscript.host.Exports
+			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 		}
@@ -22,13 +20,23 @@ namespace slime.jrunscript.java.tools {
 
 			const script: Script = fifty.$loader.script("module.js");
 			return script({
-				api: {
+				library: {
+					io: jsh.io,
 					file: jsh.file,
 					java: jsh.java,
-					js: jsh.js,
 					shell: jsh.shell
 				}
 			});
+		//@ts-ignore
+		})(fifty);
+
+		export const jar = (function(fifty: slime.fifty.test.Kit) {
+			var jsh = fifty.global.jsh;
+
+			return jsh.file.Searchpath([
+				jsh.shell.java.home.getRelativePath("bin"),
+				jsh.shell.java.home.parent.getRelativePath("bin")
+			]).getCommand("jar");
 		//@ts-ignore
 		})(fifty);
 	}
@@ -165,6 +173,127 @@ namespace slime.jrunscript.java.tools {
 	//@ts-ignore
 	)(Packages,fifty);
 
+	export namespace jar {
+		export interface Manifest {
+			main: {
+				[name: string]: string
+			}
+
+			entries: {
+				[name: string]: {
+					[name: string]: string
+				}
+			}
+		}
+
+		export interface AnyEntry {
+			path: string
+			directory: boolean
+		}
+
+		export interface DirectoryEntry extends AnyEntry {
+			directory: true
+		}
+
+		export interface FileEntry extends AnyEntry {
+			directory: false
+			read: slime.$api.fp.world.Question<void,slime.jrunscript.runtime.io.InputStream>
+		}
+
+		export type Entry = FileEntry | DirectoryEntry
+	}
+
+	export interface Exports {
+		jar: {
+			manifest: slime.$api.fp.world.Sensor<
+				{
+					pathname: string
+				},
+				void,
+				jar.Manifest
+			>
+
+			entries: slime.$api.fp.world.Sensor<
+				{
+					pathname: string
+				},
+				void,
+				slime.$api.fp.Stream<jar.Entry>
+			>
+
+			Manifest: {
+				from: {
+					string: (string: string) => jar.Manifest
+				}
+			}
+
+			Entry: {
+				is: {
+					file: (entry: jar.Entry) => entry is jar.FileEntry
+					directory: (entry: jar.Entry) => entry is jar.DirectoryEntry
+				}
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.jar = function() {
+				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+				jsh.shell.run({
+					command: test.jar,
+					arguments: [
+						"cfm",
+						TMP.getRelativePath("foo.jar"),
+						//	https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#Manifest-Overview
+						fifty.jsh.file.object.getRelativePath("test/manifest.txt"),
+						"java"
+					],
+					directory: fifty.jsh.file.object.getRelativePath("test").directory
+				});
+
+				var manifest = $api.fp.world.now.ask(
+					test.subject.jar.manifest({
+						pathname: TMP.getRelativePath("foo.jar").toString()
+					})
+				);
+
+				verify(manifest).main.evaluate.property("Foo").is("Bar");
+				verify(manifest).main.evaluate.property("Baz").is(void(0));
+
+				var entries = $api.fp.world.now.ask(
+					test.subject.jar.entries({ pathname: TMP.getRelativePath("foo.jar").toString() })
+				);
+
+				var array = $api.fp.Stream.collect(entries);
+				//	META-INF/, META-INF/MANIFEST.MF, java/, java/Hello.java
+				verify(array).length.is(4);
+				verify(array)[0].path.is("META-INF/");
+				verify(array)[0].directory.is(true);
+				verify(array)[0].evaluate.property("read").is(void(0));
+
+				var src = $api.fp.world.now.ask(jsh.io.InputStream.string($api.fp.world.now.ask( (array[3] as slime.jrunscript.java.tools.jar.FileEntry).read)));
+
+				var original = $api.fp.world.now.question(
+					jsh.file.Location.file.read.string.world(),
+					fifty.jsh.file.relative("test/java/Hello.java")
+				);
+
+				verify(original).present.is(true);
+				if (original.present) {
+					verify(src).is(original.value);
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		/**
 		 * Creates an object representing a [JAR file](https://docs.oracle.com/javase/8/docs/technotes/guides/jar/index.html).
@@ -197,15 +326,10 @@ namespace slime.jrunscript.java.tools {
 			const { jsh } = fifty.global;
 			const module = test.subject;
 
-			fifty.tests.jar = function() {
-				var jar = jsh.file.Searchpath([
-					jsh.shell.java.home.getRelativePath("bin"),
-					jsh.shell.java.home.parent.getRelativePath("bin")
-				]).getCommand("jar");
-
+			fifty.tests.Jar = function() {
 				var TMP = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				jsh.shell.run({
-					command: jar,
+					command: test.jar,
 					arguments: [
 						"cfm",
 						TMP.getRelativePath("foo.jar"),
@@ -235,6 +359,7 @@ namespace slime.jrunscript.java.tools {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.javac);
 				fifty.run(fifty.tests.jar);
+				fifty.run(fifty.tests.Jar);
 			}
 		}
 	//@ts-ignore

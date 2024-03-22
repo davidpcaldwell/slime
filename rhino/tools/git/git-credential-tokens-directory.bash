@@ -8,8 +8,8 @@
 DIR="$(dirname $0)"
 SLIME="${DIR}/../../.."
 
-#	This credential helper does not store credentials; we assume the workflow is for these tokens to be obtained at github.com
-#	and then pasted into a local file. Credential helpers earlier in the process should have no way of getting at these
+#	This credential helper does not store credentials; we assume the workflow is for these tokens to be obtained from the hosting
+#	provider and then pasted into a local file. Credential helpers earlier in the process should have no way of getting at these
 #	credentials and providing them for this helper to store.
 
 if [ "$1" == "store" ]; then
@@ -17,4 +17,4 @@ if [ "$1" == "store" ]; then
 fi
 
 #	If PROJECT is set because wf is running, it can mess up the tools/wf plugin in the invoked shell
-env PROJECT= ${SLIME}/jsh.bash ${DIR}/git-credential-github-tokens-directory.jsh.js "$@"
+env PROJECT= bash ${SLIME}/jsh ${DIR}/git-credential-tokens-directory.jsh.js "$@"

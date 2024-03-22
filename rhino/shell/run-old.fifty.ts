@@ -9,10 +9,15 @@ namespace slime.jrunscript.shell {
 		export type Run<P = run.old.Argument> = {
 			<T>(
 				p: P & {
-					evaluate?: (p: run.old.Result) => T
+					evaluate: (p: run.old.Result) => T
 				},
 				events?: run.old.Handler
 			): T
+
+			(
+				p: P,
+				events?: run.old.Handler
+			): run.old.Result
 
 			(p: run.old.Argument, events?: run.old.Handler): run.old.Result
 		}
@@ -185,11 +190,30 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 }
 
+namespace slime.jrunscript.shell.run.old {
+	export interface Context {
+		environment: slime.jrunscript.host.Environment
+		directory: string
+		stdio: StdioConfiguration
+	}
+
+	export interface Configuration {
+		command: string
+		arguments: string[]
+	}
+
+	export interface Invocation {
+		context: Context
+		configuration: Configuration
+	}
+}
+
 namespace slime.jrunscript.shell.internal.run.old {
 	export interface Context {
 		environment: slime.jrunscript.host.Environment
 		stdio: slime.jrunscript.shell.invocation.Stdio
 		api: {
+			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
 		os: {
@@ -197,17 +221,17 @@ namespace slime.jrunscript.shell.internal.run.old {
 			newline: () => string
 		}
 		scripts: {
-			invocation: slime.jrunscript.shell.internal.invocation.Export
 			run: slime.jrunscript.shell.internal.run.Exports
 		}
 		module: {
-			events: $api.Events<any>
+			events: $api.event.Emitter<any>
 		}
 	}
 
 	export interface Exports {
 		run: slime.jrunscript.shell.Exports["run"]
 		$run: any
+		invocation: slime.jrunscript.shell.internal.invocation.Export
 	}
 
 	(

@@ -14,7 +14,7 @@
 		});
 
 		if (parameters.options.require) {
-			jsh.shell.tools.rhino.require();
+			$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
 		}
 
 		if (parameters.options.output) {

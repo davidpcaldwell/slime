@@ -25,5 +25,13 @@
 	//	See	https://github.com/redhat-developer/vscode-java/issues/2551 for why the below is currently needed; should be considered
 	//	temporary as presumably at some point that bug will be fixed.
 	"java.import.gradle.jvmArguments": "-XX:MaxMetaspaceSize=256m -XX:+HeapDumpOnOutOfMemoryError -Xms256m -Xmx1g",
-	"task.allowAutomaticTasks": "on"
+	"task.allowAutomaticTasks": "on",
+	"githubIssues.issueBranchTitle": "${user}/issue/#${issueNumber}",
+	"github.branchProtection": true,
+	"githubIssues.assignWhenWorking": true,
+	"githubIssues.workingIssueFormatScm": "#${issueNumber}: ",
+	"githubPullRequests.assignCreated": "${user}",
+	"githubPullRequests.remotes": [
+		"origin"
+	]
 }

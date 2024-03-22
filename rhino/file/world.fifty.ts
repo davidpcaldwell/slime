@@ -6,6 +6,15 @@
 
 namespace slime.jrunscript.file {
 	export namespace world {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.world = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export interface Filesystem {
 			separator: {
 				pathname: string
@@ -13,59 +22,149 @@ namespace slime.jrunscript.file {
 			}
 		}
 
+		export namespace events {
+			export interface FileOpenForWrite {
+				parentNotFound: slime.jrunscript.file.Location
+			}
+		}
+
 		export interface Filesystem {
-			fileExists: slime.$api.fp.world.Question<{
+			canonicalize: slime.$api.fp.world.Sensor<{
+				pathname: string
+			},void,slime.$api.fp.Maybe<string>>
+
+			fileExists: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<boolean>>
 
-			fileLength: slime.$api.fp.world.Question<{
+			fileSize: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<number>>
 
 			/**
 			 * Returns the time the file was last modified, in milliseconds since the UNIX epoch.
 			 */
-			fileLastModified: slime.$api.fp.world.Question<{
+			fileLastModified: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<number>>
 
-			openOutputStream: slime.$api.fp.world.Question<{
+			openOutputStream: slime.$api.fp.world.Sensor<{
 				pathname: string
 				append?: boolean
-			},{
-			},slime.$api.fp.Maybe<slime.jrunscript.runtime.io.OutputStream>>
+			},events.FileOpenForWrite,slime.$api.fp.Maybe<slime.jrunscript.runtime.io.OutputStream>>
 
-			directoryExists: slime.$api.fp.world.Question<{
+			directoryExists: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},void,slime.$api.fp.Maybe<boolean>>
 
-			createDirectory: slime.$api.fp.world.Action<{
+			createDirectory: slime.$api.fp.world.Means<{
 				pathname: string
 			},{
 			}>
 
-			listDirectory: slime.$api.fp.world.Question<{
+			listDirectory: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},{
 			},slime.$api.fp.Maybe<string[]>>
 
-			copy: slime.$api.fp.world.Action<{
+			copy: slime.$api.fp.world.Means<{
 				from: string
 				to: string
 			},void>
 
-			move: slime.$api.fp.world.Action<{
+			move: slime.$api.fp.world.Means<{
 				from: string
 				to: string
 			},void>
 
-			remove: slime.$api.fp.world.Action<{
+			remove: slime.$api.fp.world.Means<{
 				pathname: string
 			},void>
 		}
 
 		export interface Filesystem {
-			temporary: slime.$api.fp.world.Question<
+			posix?: {
+				attributes: {
+					get: slime.$api.fp.world.Sensor<
+						{
+							pathname: string
+						},
+						void,
+						file.posix.Attributes
+					>
+
+					set: slime.$api.fp.world.Means<
+						{
+							pathname: string
+							attributes: file.posix.Attributes
+						},
+						void
+					>
+				}
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.world.posix = {};
+
+				fifty.tests.world.posix.get = function() {
+					var filesystem = jsh.file.world.filesystems.os;
+					jsh.shell.console("filesystem = " + filesystem);
+					jsh.shell.console("filesystem.posix = " + filesystem.posix);
+
+					var attributes = $api.fp.world.now.ask(
+						filesystem.posix.attributes.get({ pathname: fifty.jsh.file.relative("world.fifty.ts").pathname })
+					);
+					jsh.shell.console(JSON.stringify(attributes));
+				}
+
+
+				fifty.tests.world.posix.set = function() {
+					var tmp = fifty.jsh.file.temporary.location();
+					$api.fp.world.now.action(
+						jsh.file.Location.file.write(tmp).string,
+						{ value: "" }
+					);
+
+					var attributes = $api.fp.world.now.ask(
+						//	TODO	need Location API for this
+						tmp.filesystem.posix.attributes.get({ pathname: tmp.pathname })
+					);
+					jsh.shell.console(JSON.stringify(attributes));
+
+					$api.fp.world.now.action(
+						tmp.filesystem.posix.attributes.set,
+						{
+							pathname: tmp.pathname,
+							attributes: {
+								owner: attributes.owner,
+								group: attributes.group,
+								permissions: {
+									owner: { read: true, write: true, execute: true },
+									group: { read: true, write: false, execute: true },
+									others: { read: false, write: false, execute: false }
+								}
+							}
+						}
+					);
+
+					var after = $api.fp.world.now.ask(
+						tmp.filesystem.posix.attributes.get({ pathname: tmp.pathname })
+					);
+
+					jsh.shell.console(JSON.stringify(after,void(0),4));
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Filesystem {
+			temporary: slime.$api.fp.world.Sensor<
 				{
 					parent?: string
 					prefix?: string
@@ -84,15 +183,20 @@ namespace slime.jrunscript.file {
 				fifty.tests.spi = {};
 
 				fifty.tests.spi.filesystem = function(filesystem: Filesystem) {
-					//	TODO	need better way to run this style of test
-					fifty.tests.spi.filesystem.openInputStreamNotFound(filesystem);
+					//	TODO	need better way to run spi test that has subtests, like fifty.test.Parent
+					fifty.run(function openInputStreamNotFound() {
+						fifty.tests.spi.filesystem.openInputStreamNotFound(filesystem)
+					});
+					fifty.run(function openOutputStream() {
+						fifty.tests.spi.filesystem.openOutputStream(filesystem)
+					});
 				};
 			}
 		//@ts-ignore
 		)(fifty);
 
 		export interface Filesystem {
-			openInputStream: slime.$api.fp.world.Question<{
+			openInputStream: slime.$api.fp.world.Sensor<{
 				pathname: string
 			},{
 				notFound: void
@@ -142,6 +246,65 @@ namespace slime.jrunscript.file {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.spi.filesystem.openOutputStream = function(subject: Filesystem) {
+					var asLocation: slime.js.Cast<slime.jrunscript.file.Location> = $api.fp.cast;
+					//	TODO	no testing for this API; does a file exist
+					var at = $api.fp.world.now.ask(subject.temporary({ directory: true }));
+					debugger;
+
+					var tmp: slime.jrunscript.file.Location = {
+						filesystem: subject,
+						pathname: at
+					};
+
+					fifty.run(
+						function happy() {
+							var captor = fifty.$api.Events.Captor({
+								parentNotFound: tmp
+							});
+
+							var openForWrite = $api.fp.world.now.ask(
+								subject.openOutputStream({
+									pathname: at + subject.separator.pathname + "baz"
+								}),
+								captor.handler
+							);
+							verify(openForWrite.present).is(true);
+							verify(captor).events.length.is(0);
+						}
+					);
+
+					fifty.run(
+						function parentNotFound() {
+							var captor = fifty.$api.Events.Captor({
+								parentNotFound: tmp
+							});
+
+							var openForWrite = $api.fp.world.now.ask(
+								subject.openOutputStream({
+									pathname: at + subject.separator.pathname + "foo" + subject.separator.pathname + "bar"
+								}),
+								captor.handler
+							);
+							verify(openForWrite.present).is(false);
+							verify(captor).events.length.is(1);
+							verify(captor).events[0].type.is("parentNotFound");
+							verify(captor).events[0].detail.evaluate(asLocation).pathname.is(at + subject.separator.pathname + "foo");
+						}
+					);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 	}
 
 	(
@@ -175,20 +338,6 @@ namespace slime.jrunscript.file {
 				jsh.shell.console(relative);
 				var relative2 = filesystems_os_relative(pathname, "foo");
 				jsh.shell.console(relative2);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { jsh } = fifty.global;
-
-			fifty.tests.suite = function() {
-				//	TODO	possibly these tests should be moved somewhere? Into the Java-specific file?
-				fifty.load("world.fifty.ts", "spi.filesystem", jsh.file.world.filesystems.os);
 			}
 		}
 	//@ts-ignore

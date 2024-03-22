@@ -15,6 +15,8 @@ namespace slime.jsh.unit.mock.github {
 }
 
 /**
+ * ## API
+ *
  * The SLIME GitHub API is in a state of flux.
  *
  * GitHub types are generated using a `dtsgenerator`-based impleementation that can be run via
@@ -193,13 +195,13 @@ namespace slime.jrunscript.tools.github {
 				jsh.shell.console(JSON.stringify(
 					result.map(function(repo) {
 						return {
-							name: repo.name
+							name: repo["name"]
 						}
 					}),void(0),4)
 				);
 
 				verify(result).evaluate(function(p) { return p.length > 1 }).is(true);
-				verify(result).evaluate(function(p) { return p.find(function(item) { return item.name == "slime"; }) != null } ).is(true);
+				verify(result).evaluate(function(p) { return p.find(function(item) { return item["name"] == "slime"; }) != null } ).is(true);
 			};
 
 			fifty.tests.parsePathParameters = function() {

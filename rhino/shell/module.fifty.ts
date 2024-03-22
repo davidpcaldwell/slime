@@ -25,6 +25,10 @@ namespace slime.jrunscript.shell {
 			output: OutputStream
 			error: OutputStream
 		}
+
+		export namespace subprocess {
+			export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+		}
 	}
 
 	export interface Context {
@@ -66,7 +70,7 @@ namespace slime.jrunscript.shell {
 		}
 
 		world?: {
-			subprocess?: slime.jrunscript.shell.internal.run.Context["spi"]
+			subprocess?: context.subprocess.World
 		}
 	}
 
@@ -85,22 +89,17 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export namespace exports {
-		export interface Subprocess {}
+		export interface subprocess {}
 	}
 
 	export interface Exports {
-		subprocess: exports.Subprocess
+		subprocess: exports.subprocess
 	}
 
 	export namespace exports {
-		export interface Subprocess {
-			Parent: {
-				from: {
-					process: () => slime.jrunscript.shell.run.Parent
-				}
-			}
-			action: slime.$api.fp.world.Action<run.Intention,run.TellEvents>
-			question: slime.$api.fp.world.Question<run.Intention,run.AskEvents,run.Exit>
+		export interface subprocess {
+			action: slime.$api.fp.world.Means<run.Intention,run.TellEvents>
+			question: slime.$api.fp.world.Sensor<run.Intention,run.AskEvents,run.Exit>
 		}
 
 		(
@@ -112,20 +111,6 @@ namespace slime.jrunscript.shell {
 				const subject = jsh.shell;
 
 				fifty.tests.manual.subprocess = {};
-
-				fifty.tests.manual.subprocess.Parent = function() {
-					var parent = subject.subprocess.Parent.from.process();
-					jsh.shell.console(JSON.stringify(parent,void(0),4));
-				}
-
-				fifty.tests.manual.subprocess.Invocation = function() {
-					var invocation = subject.subprocess.Invocation.from.intention(
-						subject.subprocess.Parent.from.process()
-					)({
-						command: "ls"
-					});
-					jsh.shell.console(JSON.stringify(invocation));
-				}
 
 				fifty.tests.manual.subprocess.question = $api.fp.impure.Process.create({
 					input: $api.fp.impure.Input.map(
@@ -148,18 +133,24 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
+		/**
+		 * APIs that pertain to {@link Intention}s.
+		 */
 		Intention: exports.Intention
 	}
 
 	export namespace exports {
 		export interface Intention {
+			/**
+			 * An empty object to which derivations of this module may add methods.
+			 */
 			from: {
 			}
 		}
 	}
 
 	export interface Exports {
-		listeners: $api.Events<{
+		listeners: $api.event.Emitter<{
 			"run.start": any
 		}>["listeners"]
 	}
@@ -204,9 +195,6 @@ namespace slime.jrunscript.shell {
 
 	export interface Exports {
 		/**
-		 * An object representing the environment provided via the {@link Context}, or representing the system environment if
-		 * no environment was provided via the `Context`.
-		 *
 		 * An object describing the environment provided via the {@link Context}, or the operating system process environment under
 		 * which this script was executed if no environment was provided via the `Context`.
 		 *
@@ -317,23 +305,20 @@ namespace slime.jrunscript.shell {
 				}
 			}
 
-			export type Events = slime.$api.Events<events.Events>
+			export type Events = slime.$api.event.Emitter<events.Events>
 
 			export type Handler = slime.$api.event.Handlers<events.Events>
 		}
 	}
 
 	interface Result {
-		stdio: {
-			output: string
+		stdio?: {
+			output?: string
 		}
 	}
 
-	export interface Exports {
-		/**
-		 * Launches a Java program.
-		 */
-		java: {
+	export namespace java {
+		export interface Exports {
 			//	TODO	The old comment stated that this argument was the same as the argument to `shell`, with classpath, jar, and
 			//			main added. This seems likely to be wrong but looking at the implementation may reveal whether the types
 			//			are related in the implementation.
@@ -409,6 +394,10 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
+	export interface Exports {
+		java: java.Exports
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -445,6 +434,66 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export interface Exports {
+		process: {
+			directory: {
+				/**
+				 * Returns the pathname of the current working directory.
+				 */
+				get: slime.$api.fp.impure.Input<string>
+
+				/**
+				 * Changes the working directory.
+				 */
+				set: slime.$api.fp.impure.Output<string>
+			}
+		}
+	}
+
+	export interface Exports {
+		/**
+		 * @deprecated Replaced by `process.directory`.
+		 *
+		 * The current working directory.
+		 */
+		PWD: slime.jrunscript.file.Directory
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.manual.process = {};
+
+			fifty.tests.manual.process.directory = function() {
+				jsh.shell.console( jsh.shell.process.directory.get() );
+
+				var ls = $api.fp.impure.Input.value(
+					{
+						command: "ls",
+						stdio: {
+							output: "string"
+						}
+					},
+					$api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question }),
+					function(p) { return p; },
+					$api.fp.property("stdio"),
+					$api.fp.property("output")
+				);
+
+				jsh.shell.console("Before: " + ls());
+
+				jsh.shell.process.directory.set("/etc");
+
+				jsh.shell.console("After: " + ls());
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+	export interface Exports {
 		/**
 		 * Provides access to Java system properties.
 		 */
@@ -464,15 +513,24 @@ namespace slime.jrunscript.shell {
 			get(name: string): string
 
 			file(name: any): any
-			directory(name: any): any
+			directory(name: string): slime.jrunscript.file.Directory
 			searchpath: (name: string) => slime.jrunscript.file.Searchpath
 		}
 
+		/**
+		 * A temporary directory that may be used by this shell.
+		 */
 		TMPDIR: slime.jrunscript.file.Directory
-		USER: string
-		HOME: slime.jrunscript.file.Directory
 
-		PWD: slime.jrunscript.file.Directory
+		USER: string
+
+		/**
+		 * The home directory of the user executing this shell.
+		 */
+		HOME: slime.jrunscript.file.Directory
+	}
+
+	export interface Exports {
 		PATH?: slime.jrunscript.file.Searchpath
 
 		os: {
@@ -480,7 +538,53 @@ namespace slime.jrunscript.shell {
 			arch: string
 			version: string
 			newline: string
-			resolve: any
+
+			/**
+			 * @deprecated Just use `os` as input to your function.
+			 *
+			 */
+			resolve: {
+				/**
+				 * A function allowing operating system-specific code to be easily specified. Can be invoked with code like:
+				 *
+				 * ```
+				 * os.resolve(function() {
+				 *   if (this.name == "Linux") {
+				 *     return [Linux-specific value];
+				 *   }
+				 *   else {
+				 *     //	...
+				 *   }
+				 * });
+				 * ```
+				 *
+				 * @param f A function that resolves OS-specific code. It is invoked with the `os` object representing the current
+				 * operating system as `this` and can return a value accordingly.
+				 * @returns An appropriate value of an arbitrary type for the current operating system.
+				 */
+				<T>(
+					f: (
+						/** The current `os` property. */
+						this: Exports["os"]
+					) => T
+				): T
+
+				/**
+				 * An object with keys representing the names of operating systems. The value of the named property of the object
+				 * corresponding to the current operating system will be returned. In the even that a property representing the
+				 * operating system indicated by `os.name` is not present, the value `"Windows 7"` will be mapped to `Windows` and
+				 * the values `"Mac OS X"` and `"Linux"` will be mapped to `UNIX`.
+				 *
+				 * @returns the value of the appropriate property of the given object.
+				 */
+				<T>(
+					o: {
+						Windows?: T
+						UNIX?: T
+						[x: string]: T
+					}
+				): T
+			}
 
 			process?: {
 				list: slime.jrunscript.shell.system.ps
@@ -512,8 +616,61 @@ namespace slime.jrunscript.shell {
 
 		rhino: any
 
-		world: World
+		/** @deprecated Replaced by the {@link slime.jrunscript.shell.exports.subprocess subprocess} APIs. */
+		world: {
+			/**
+			 * @deprecated Replaced by the {@link Context} `world.subprocess` property, which allows a mock (or other) implementation to
+			 * be used when loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
+			 *
+			 * Allows a mock implementation of the `run` action to be created using a function that receives an invocation as an
+			 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
+			 * the appropriate `Tell` and fire the appropriate events to the caller.
+			 */
+			mock: (delegate: (invocation: shell.run.old.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.old.Invocation,run.TellEvents>
+
+			/** @deprecated */
+			question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+			/** @deprecated */
+			action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
+		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const module = fifty.global.jsh.shell;
+
+			fifty.tests.os = function() {
+				var withColon = module.os.resolve(function() {
+					return {
+						name: ":" + this.name,
+						arch: ":" + this.arch,
+						version: ":" + this.version
+					}
+				});
+				verify(withColon).name.is(":" + module.os.name);
+				verify(withColon).arch.is(":" + module.os.arch);
+				verify(withColon).version.is(":" + module.os.version);
+
+				var name = module.os.resolve({
+					"Mac OS X": "-Mac OS X",
+					"Linux": "-Linux",
+					"Windows": "-Windows"
+				});
+				//	TODO	test for Windows is terrible but this is deprecated
+				if (module.os.name == "Windows 7") {
+					verify(name).is("-Windows");
+				} else if (module.os.name == "Mac OS X") {
+					verify(name).is("-Mac OS X");
+				} else if (module.os.name == "Linux") {
+					verify(name).is("-Linux")
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace system {
 		export namespace apple {
@@ -559,7 +716,7 @@ namespace slime.jrunscript.shell {
 					/**
 					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
 					 */
-					CFBundleExecutable: string | { name: string, command: string }
+					CFBundleExecutable: string | { name?: string, command: string }
 
 					//	Added to make test pass type checking; not sure what this does
 					CFBundleIconFile?: any
@@ -597,7 +754,7 @@ namespace slime.jrunscript.shell {
 					}) => system.apple.osx.ApplicationBundle
 				}
 			}
-			opendesktop: any
+			opendesktop: slime.jrunscript.shell.opendesktop.Exports
 		}
 	}
 
@@ -680,19 +837,8 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
+		/** @deprecated */
 		Invocation: exports.Invocation
-	}
-
-	export interface World {
-		/**
-		 * @deprecated Replaced by the {@link Context} `world.subprocess` property, which allows a mock (or other) implementation to
-		 * be used when loading the module. A mock implementation is provided in {@link slime.jrunscript.shell.test.Fixtures}.
-		 *
-		 * Allows a mock implementation of the `run` action to be created using a function that receives an invocation as an
-		 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
-		 * the appropriate `Tell` and fire the appropriate events to the caller.
-		 */
-		mock: (delegate: (invocation: shell.run.old.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.old.Invocation,run.TellEvents>
 	}
 
 	export interface Exports {
@@ -902,8 +1048,9 @@ namespace slime.jrunscript.shell {
 				list("",properties.java);
 			}
 
-			fifty.tests.manual.process = {};
-			fifty.tests.manual.process.list = function() {
+			fifty.tests.manual.os = {};
+			fifty.tests.manual.os.process = {};
+			fifty.tests.manual.os.process.list = function() {
 				var processes = fifty.global.jsh.shell.os.process.list().map(function(process) {
 					return {
 						id: process.id,
@@ -985,26 +1132,6 @@ namespace slime.jrunscript.shell {
 		}
 	//@ts-ignore
 	)(fifty);
-
-
-	(
-		function(fifty: slime.fifty.test.Kit) {
-			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.listeners);
-				fifty.run(fifty.tests.environment);
-
-				fifty.run(fifty.tests.jsapi);
-
-				fifty.run(fifty.tests.invocation);
-
-				fifty.run(fifty.tests.exports);
-
-				fifty.load("run.fifty.ts");
-				fifty.load("run-old.fifty.ts");
-			}
-		}
-	//@ts-ignore
-	)(fifty)
 }
 
 namespace slime.jrunscript.shell.internal.invocation {
@@ -1106,7 +1233,9 @@ namespace slime.jrunscript.shell {
 
 	export namespace exports {
 		export interface Invocation {
+			/** @deprecated */
 			from: {
+				/** @deprecated */
 				argument: (p: invocation.Argument) => run.old.Invocation
 			}
 
@@ -1134,19 +1263,26 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	export namespace bash {
-		export type StandaloneEnvironment = {
+	export namespace environment {
+		/**
+		 * Specifies a complete subprocess environment; no environment variables will be inherited from the context.
+		 */
+		export type Standalone = {
 			only: {
 				[x: string]: string
 			}
 		}
 
-		export type InheritedEnvironment = {
+		/**
+		 * Specifies certain variables and expects others to be provided by the execution context
+		 * (usually a parent shell or process).
+		 */
+		export type Inherited = {
 			/**
 			 * Environment variables to be provided to the command, or to be removed from the environment of the command.
 			 * Properties with string values represent variables to be provided to the command (potentially overriding
-			 * values from the parent shell). Properties with `null` values represent variables to be **removed** from
-			 * the command's environment (even if they are present in the parent shell). Properties that are undefined
+			 * values from the context). Properties with `null` values represent variables to be **removed** from
+			 * the command's environment (even if they are present in the context). Properties that are undefined
 			 * will have no effect.
 			 */
 			set: {
@@ -1154,8 +1290,21 @@ namespace slime.jrunscript.shell {
 			}
 		}
 
-		export type Environment = StandaloneEnvironment | InheritedEnvironment
+		/**
+		 * A value that either specifies a subprocess environment completely, or specifies modifications to make to the parent
+		 * environment.
+		 */
+		export type Specification = Standalone | Inherited
+	}
 
+	export namespace bash {
+
+		/**
+		 * A subprocess intention that can be written as a shell command. As such, it excludes stdio redirection to streams, as
+		 * only limited redirection (for example, to files) is possible using shell commands. Similarly, only limited ways of
+		 * configuring the subprocess environment can be expressed in a shell command, so the `environment` property is represented
+		 * by a more limited {@link bash.Environment}.
+		 */
 		export interface Intention {
 			/**
 			 * The command to execute.
@@ -1173,7 +1322,21 @@ namespace slime.jrunscript.shell {
 			 */
 			directory?: run.Intention["directory"]
 
-			environment?: bash.Environment
+			environment?: environment.Specification
+		}
+	}
+
+	export interface Exports {
+		Environment: {
+			is: {
+				standalone: (p: environment.Specification) => p is environment.Standalone
+				inherited: (p: environment.Specification) => p is environment.Inherited
+			}
+
+			/**
+			 * Given a `bash.Environment`, provides a value suitable for use with {@link run.Intention}s.
+			 */
+			run: (p: environment.Specification) => run.Intention["environment"]
 		}
 	}
 
@@ -1182,10 +1345,14 @@ namespace slime.jrunscript.shell {
 			from: {
 				/**
 				 *
-				 * @returns A function that can create `bash` script code from {@link run.Intention}-like objects.
+				 * @returns A function that can create `bash` script code from {@link bash.Intention} objects.
 				 */
 				intention: () => (p: bash.Intention) => string
 			}
+
+			run: (p: {
+				stdio: run.Intention["stdio"]
+			}) => (p: bash.Intention) => run.Intention
 		}
 	}
 
@@ -1197,7 +1364,9 @@ namespace slime.jrunscript.shell {
 
 			const subject = fifty.global.jsh.shell;
 
-			fifty.tests.exports.bash = function() {
+			fifty.tests.exports.bash = fifty.test.Parent();
+
+			fifty.tests.exports.bash.from = function() {
 				var it = subject.bash.from.intention()({
 					command: "foo",
 					arguments: ["bar", "baz"],
@@ -1214,15 +1383,39 @@ namespace slime.jrunscript.shell {
 					"cd /xxx/yyy/zzz",
 					"env -u baz foo=\"bar\" foo bar baz"
 				].join("\n"));
+			};
+
+			fifty.tests.exports.bash.environment = function() {
+				var only: environment.Standalone = { only: { foo: "bar" } };
+				var set: environment.Inherited = { set: { baz: "bizzy" } };
+
+				fifty.run(function standalone() {
+					var converted = subject.Environment.run(only);
+					var result = converted({ one: "two" });
+					verify(result).evaluate.property("foo").is("bar");
+					verify(result).evaluate.property("one").is(void(0));
+				});
+
+				fifty.run(function inherited() {
+					var converted = subject.Environment.run(set);
+					var result = converted({ one: "two" });
+					verify(result).evaluate.property("baz").is("bizzy");
+					verify(result).evaluate.property("one").is("two");
+				});
 			}
 		}
 	//@ts-ignore
 	)(fifty);
 
 	export interface Exports {
+		ssh: slime.jrunscript.shell.ssh.Exports
+	}
+
+	export interface Exports {
+		/** @deprecated See properties for replacements. */
 		invocation: {
 			 /**
-			  * @deprecated Replaced by {@link Exports["bash"]["from"]["intention"]}.
+			  * @deprecated Replaced by {@link Exports.bash bash.from.intention()}.
 			  *
 			  * Creates the code for a `bash` script from a single Invocation-like object and returns it as a string.
 			  */
@@ -1309,7 +1502,7 @@ namespace slime.jrunscript.shell.internal.invocation {
 	}
 
 	export interface Export {
-		exports: (defaults: shell.run.Parent) => slime.jrunscript.shell.exports.Invocation
+		exports: (defaults: shell.run.internal.Parent) => slime.jrunscript.shell.exports.Invocation
 
 		internal: {
 			/**
@@ -1334,6 +1527,27 @@ namespace slime.jrunscript.shell.internal.invocation {
 
 		invocation: slime.jrunscript.shell.Exports["invocation"]
 	}
+
+	(
+		function(fifty: slime.fifty.test.Kit) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.listeners);
+				fifty.run(fifty.tests.environment);
+
+				fifty.run(fifty.tests.jsapi);
+
+				fifty.run(fifty.tests.invocation);
+
+				fifty.run(fifty.tests.exports);
+
+				fifty.load("run.fifty.ts");
+				fifty.load("run-old.fifty.ts");
+
+				fifty.load("console.fifty.ts");
+			}
+		}
+	//@ts-ignore
+	)(fifty)
 
 	export type Script = slime.loader.Script<Context,Export>
 }

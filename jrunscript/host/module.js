@@ -24,6 +24,54 @@
 
 		$exports.toNativeClass = $context.$slime.java.toNativeClass;
 
+		/**
+		 *
+		 * @param { slime.jrunscript.native.java.util.Properties } _properties
+		 * @returns { slime.jrunscript.host.Properties }
+		 */
+		var Properties = function(_properties) {
+			/** @type { (_value: any) => slime.$api.fp.Maybe<string> } */
+			var getPropertyJavascriptValue = function(_value) {
+				if (typeof(_value) != "string" && !$exports.isJavaType(Packages.java.lang.String)(_value)) {
+					//	omit
+
+					//	TODO	we seem to still have inonit.script.jsh.Main.stdout, .stderr, and .stdin in this category,
+					//			though code searches have not yet revealed exactly how they are created. Perhaps by
+					//			Main.class.getName() + ".stdout" etc.
+					//rv[String(_next)] = "NOT STRING: " + String(_value);
+					return $api.fp.Maybe.from.nothing();
+				} else {
+					return $api.fp.Maybe.from.some(String(_value));
+				}
+			}
+
+			var _keys = _properties.keySet().iterator();
+			/** @type { slime.jrunscript.host.Properties } */
+			var rv = {};
+			while(_keys.hasNext()) {
+				var _next = _keys.next();
+				var _value = _properties.getProperty(_next);
+				var maybe = getPropertyJavascriptValue(_value);
+				if (maybe.present) {
+					rv[String(_next)] = maybe.value;
+				}
+			}
+			return rv;
+		}
+
+		$exports.vm = {
+			properties: (
+				function() {
+					return Properties(Packages.java.lang.System.getProperties());
+				}
+			),
+			setProperty: function(name) {
+				return function(value) {
+					Packages.java.lang.System.setProperty(name, value);
+				}
+			}
+		}
+
 		var JavaArray = new function() {
 			this.create = function(p) {
 				var type = (p.type) ? p.type : Packages.java.lang.Object;
@@ -95,7 +143,8 @@
 		PropertyParent.prototype.toString = function() {
 			return null;
 		};
-		$exports.Properties = function($properties) {
+
+		var adaptProperties = function($properties) {
 			var nashornTrace = function(s) {
 				//Packages.java.lang.System.err.println(s);
 			}
@@ -141,11 +190,56 @@
 			}
 			nashornTrace("Properties constructor returning");
 			return rv;
-		};
-		$api.experimental($exports,"Properties");
-		$exports.Properties.adapt = function($properties) {
-			return new $exports.Properties($properties);
 		}
+
+		/** @type { slime.jrunscript.host.Exports["Properties"] } */
+		$exports.Properties = {
+			adapt: function($properties) {
+				return adaptProperties($properties);
+			},
+			value: function(name) {
+				return function(properties) {
+					return $api.fp.Maybe.from.value(properties[name]);
+				}
+			},
+			codec: {
+				java: {
+					encode: function(properties) {
+						var rv = new Packages.java.util.Properties();
+						for (var x in properties) {
+							rv.setProperty(x, properties[x]);
+						}
+						return rv;
+					},
+					decode: function(_properties) {
+						var _keys = _properties.propertyNames();
+						/** @type { slime.jrunscript.host.Properties } */
+						var rv = {};
+						while(_keys.hasMoreElements()) {
+							var name = String(_keys.nextElement());
+							var value = String(_properties.getProperty(name));
+							rv[name] = value;
+						}
+						return rv;
+					}
+				}
+			},
+			from: {
+				string: function(string) {
+					var _properties = new Packages.java.util.Properties();
+					_properties.load(new Packages.java.io.StringReader(string));
+					return $exports.Properties.codec.java.decode(_properties);
+				}
+			},
+			string: function(properties) {
+				var _properties = $exports.Properties.codec.java.encode(properties);
+				var _writer = new Packages.java.io.StringWriter();
+				_properties.store(_writer, null);
+				_writer.close();
+				var string = String(_writer.toString());
+				return string.split("\n").slice(1).join("\n");
+			}
+		};
 
 		var errors = new function() {
 			var instance = (function _Throwables() {

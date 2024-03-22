@@ -18,7 +18,7 @@
 		window.console.log("loading loader/api/promises.js ..." + new Error("Stack trace").stack);
 
 		/** @type { slime.definition.test.promises.internal.Events } */
-		var events = $api.events.create();
+		var events = $api.events.emitter();
 
 		var RegisteredPromise = (function(was) {
 			/**

@@ -15,20 +15,35 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 		location: string
 		api: {
 			command: exports.command.Executor
+			/**
+			 * Adds `user.name` and `user.email` values to the given {@link Repository}.
+			 */
+			configure: slime.$api.fp.impure.Process
 		}
 	};
 
 	export type Exports = (fifty: slime.fifty.test.Kit) => {
+		/** A Git `program` represented by the `git` available in the system path. */
+		program: ReturnType<slime.jsh.Global["tools"]["git"]["program"]>
+
 		Repository: {
 			from: {
+				empty: (p?: { initialBranch?: string }) => Repository
+				location: (p: slime.jrunscript.file.Location) => Repository
 				old: (p: slime.jrunscript.tools.git.repository.Local) => Repository
 			}
 		}
+
 		commands: {
 			commit: slime.jrunscript.tools.git.Command<{ message: string }, void>
+			config: {
+				set: slime.jrunscript.tools.git.Command<{
+					name: string
+					value: string
+				}, void>
+			}
 		}
-		program: ReturnType<slime.jsh.Global["tools"]["git"]["program"]>
-		empty: (p?: { initialBranch?: string }) => Repository
+
 		edit: (repository: Repository, path: string, change: (before: string) => string) => void
 		submodule: (repository: Repository, path: string) => Repository
 	}
@@ -53,21 +68,49 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 					}
 				}
 
-				var empty: ReturnType<Exports>["empty"] = function(p) {
-					var tmp = fifty.jsh.file.temporary.directory();
-					var repository = jsh.tools.git.program({ command: "git" }).repository(tmp.pathname);
-					repository.command(init).argument(p).run();
+				var config: ReturnType<Exports>["commands"]["config"] = {
+					set: {
+						invocation: function(p) {
+							return {
+								command: "config",
+								arguments: $api.Array.build(function(rv) {
+									rv.push(p.name);
+									rv.push(p.value);
+								})
+							}
+						}
+					}
+				};
+
+				var configure = function(command: Repository["api"]["command"]) {
+					command(config.set).argument({ name: "user.name", value: "SLIME" }).run();
+					command(config.set).argument({ name: "user.email", value: "slime@example.com" }).run();
+				}
+
+				var Repository = function(location: slime.jrunscript.file.Location): Repository {
+					var api = jsh.tools.git.program({ command: "git" }).repository(location.pathname);
 					return {
-						location: tmp.pathname,
-						api: repository
+						location: location.pathname,
+						api: {
+							command: api.command,
+							configure: () => {
+								configure(api.command);
+							}
+						}
 					}
 				}
+
+				var empty: ReturnType<Exports>["Repository"]["from"]["empty"] = function(p) {
+					var repository = Repository(fifty.jsh.file.temporary.directory());
+					repository.api.command(init).argument(p).run();
+					return repository;
+				};
 
 				function edit(repository: Repository, path: string, change: (before: string) => string) {
 					var target = $api.fp.result(
 						repository.location,
 						function(pathname) {
-							return jsh.file.world.Location.from.os(pathname);
+							return jsh.file.Location.from.os(pathname);
 						},
 						jsh.file.world.Location.relative(path)
 					);
@@ -75,7 +118,7 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 					var before = $api.fp.result(
 						target,
 						$api.fp.pipe(
-							$api.fp.world.mapping(jsh.file.world.Location.file.read.string()),
+							$api.fp.world.mapping(jsh.file.world.Location.file.read.string.world()),
 							$api.fp.Maybe.else(function() {
 								return null as string;
 							})
@@ -93,23 +136,20 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 				}
 
 				function fromOldRepository(p: slime.jrunscript.tools.git.repository.Local): slime.jrunscript.tools.git.test.fixtures.Repository {
-					return {
-						location: p.directory.toString(),
-						api: jsh.tools.git.program({ command: "git" }).repository(p.directory.toString())
-					}
+					return Repository( p.directory.pathname.os.adapt() );
 				}
 
 				function submodule(repository: Repository, path: string): Repository {
 					var at = repository.location + "/" + path;
-					return {
-						location: at,
-						api: jsh.tools.git.program({ command: "git" }).repository(at)
-					};
+					return Repository( jsh.file.Location.from.os(at) );
 				};
 
 				return {
+					program,
 					Repository: {
 						from: {
+							empty: empty,
+							location: Repository,
 							old: fromOldRepository
 						}
 					},
@@ -121,10 +161,10 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 									arguments: ["--message", p.message]
 								}
 							}
-						}
+						},
+						config: config
 					},
-					program,
-					empty,
+					configure,
 					edit,
 					submodule
 				};
