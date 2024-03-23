@@ -21,11 +21,13 @@ if [ "$0" == "bash" ]; then
 	JSH_LOCAL_JDKS="$(mktemp -d)"
 	rmdir ${JSH_LOCAL_JDKS}
 	JDK_USER_JDKS=/dev/null
+	JSH_SHELL_LIB="$(mktemp -d)"
 	JSH_LAUNCHER_GITHUB_PROTOCOL="${JSH_LAUNCHER_GITHUB_PROTOCOL:-https}"
 	JSH_LAUNCHER_GITHUB_BRANCH="${JSH_LAUNCHER_GITHUB_BRANCH:-main}"
 else
 	JSH_LOCAL_JDKS="${JSH_LOCAL_JDKS:-$(dirname $0)/local/jdk}"
 	JDK_USER_JDKS="${JSH_USER_JDKS:-${HOME}/.slime/jdk}"
+	JSH_SHELL_LIB="${JSH_SHELL_LIB:-$(dirname $0)/local/jsh/lib}"
 fi
 
 clean_destination() {
@@ -202,7 +204,10 @@ install_jdk() {
 	install_jdk_8 "$@"
 }
 
+
 JSH_BOOTSTRAP_RHINO="$(dirname $0)/local/jsh/lib/js.jar"
+JSH_BOOTSTRAP_NASHORN="$(dirname $0)/local/jsh/lib/nashorn.jar"
+JSH_BOOTSTRAP_NASHORN_LIBRARIES=(asm asm-commons asm-tree asm-util)
 
 install_rhino() {
 	if [ "$0" == "bash" ]; then
@@ -231,14 +236,23 @@ install_maven_dependency() {
 	download_install $(get_maven_dependency $1 $2 $3) $4
 }
 
+get_bootstrap_nashorn_classpath() {
+	rv=""
+	for name in ${JSH_BOOTSTRAP_NASHORN_LIBRARIES[@]}; do
+		if [ -n "${rv}" ]; then
+			rv="${rv}:"
+		fi
+		rv="${rv}${JSH_SHELL_LIB}/${name}.jar"
+	done
+	echo ${rv}
+}
+
 install_nashorn() {
-	LIB=$(dirname ${JSH_BOOTSTRAP_RHINO})
 	#	Derived from https://repo1.maven.org/maven2/org/openjdk/nashorn/nashorn-core/15.4/nashorn-core-15.4.pom
-	install_maven_dependency org.ow2.asm asm 7.3.1 ${LIB}/asm.jar
-	install_maven_dependency org.ow2.asm asm-commons 7.3.1 ${LIB}/asm-commons.jar
-	install_maven_dependency org.ow2.asm asm-tree 7.3.1 ${LIB}/asm-tree.jar
-	install_maven_dependency org.ow2.asm asm-util 7.3.1 ${LIB}/asm-util.jar
-	install_maven_dependency org.openjdk.nashorn nashorn-core 15.4 ${LIB}/nashorn.jar
+	for name in ${JSH_BOOTSTRAP_NASHORN_LIBRARIES[@]}; do
+		install_maven_dependency org.ow2.asm ${name} 7.3.1 ${JSH_SHELL_LIB}/${name}.jar
+	done
+	install_maven_dependency org.openjdk.nashorn nashorn-core 15.4 ${JSH_SHELL_LIB}/nashorn.jar
 }
 
 get_jdk_major_version() {
@@ -318,6 +332,11 @@ fi
 if [ "$1" == "--test-get-maven-dependency" ]; then
 	shift 1
 	echo $(get_maven_dependency $@)
+	exit $?
+fi
+
+if [ "$1" == "--test-bootstrap-nashorn-classpath" ]; then
+	echo $(get_bootstrap_nashorn_classpath)
 	exit $?
 fi
 
@@ -430,8 +449,7 @@ if [ "${JDK_MAJOR_VERSION}" == "17" ]; then
 	# JRUNSCRIPT="${JRUNSCRIPT} -classpath ${JSH_BOOTSTRAP_RHINO}:${JSH_BOOTSTRAP_RHINO_ENGINE}"
 	# BIN="$(dirname ${JRUNSCRIPT})"
 	# JRUNSCRIPT="${BIN}/java -jar ${JSH_BOOTSTRAP_RHINO} -opt -1"
-	LIB=$(dirname ${JSH_BOOTSTRAP_RHINO})
-	JRUNSCRIPT="${JRUNSCRIPT} -classpath ${LIB}/asm.jar:${LIB}/asm-commons.jar:${LIB}/asm-tree.jar:${LIB}/asm-util.jar:${LIB}/nashorn.jar"
+	JRUNSCRIPT="${JRUNSCRIPT} -classpath $(get_bootstrap_nashorn_classpath):${JSH_BOOTSTRAP_NASHORN}"
 fi
 
 if [ "$0" == "bash" ]; then

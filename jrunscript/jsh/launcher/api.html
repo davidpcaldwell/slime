@@ -80,7 +80,11 @@ END LICENSE
 	<script>
 		window.addEventListener('load', function() {
 			var settings = document.getElementById("settings");
-			//	TODO	should calculate when there are only two columns and use that
+			//	TODO	should calculate when there are only two columns and use that, but for now, we know there are four rows
+			Array.prototype.slice.call(settings.tBodies[0].rows).slice(0,4).forEach(function(row) {
+				var propertyElement = row.cells[1].getElementsByTagName("code")[0];
+				propertyElement.className = "name";
+			});
 			Array.prototype.slice.call(settings.tBodies[0].rows).slice(4).forEach(function(row) {
 				var propertyElement = row.cells[0].getElementsByTagName("code")[0];
 				propertyElement.className = "name";
