@@ -13,6 +13,7 @@ namespace slime.jrunscript.native {
 		}
 	}
 
+	//	TODO	Add org.openjdk.nashorn equivalent
 	export namespace jdk.nashorn.internal.runtime {
 		export interface Context extends slime.jrunscript.native.java.lang.Object {
 		}
@@ -25,7 +26,8 @@ namespace slime.jrunscript {
 			nashorn: {
 				internal: {
 					runtime: {
-						Context: slime.jrunscript.JavaClass<slime.jrunscript.native.jdk.nashorn.internal.runtime.Context, {
+							//	TODO	Add org.openjdk.nashorn equivalent
+							Context: slime.jrunscript.JavaClass<slime.jrunscript.native.jdk.nashorn.internal.runtime.Context, {
 							class: slime.jrunscript.native.java.lang.Class
 							getContext: () => slime.jrunscript.native.java.lang.Object
 						}>
@@ -227,6 +229,7 @@ namespace slime.internal.jrunscript.bootstrap {
 
 			nashorn: {
 				isPresent: () => boolean
+				//	TODO	Add org.openjdk.nashorn equivalent
 				running: () => slime.jrunscript.native.jdk.nashorn.internal.runtime.Context
 			}
 

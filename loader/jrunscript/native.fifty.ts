@@ -594,6 +594,9 @@ namespace slime.jrunscript {
 		javax: any
 		javafx: any
 		org: {
+			openjdk: {
+				nashorn: Packages["jdk"]["nashorn"]
+			}
 			mozilla: {
 				javascript: {
 					Context: slime.jrunscript.JavaClass<slime.jrunscript.native.org.mozilla.javascript.Context,{

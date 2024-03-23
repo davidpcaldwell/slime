@@ -244,13 +244,16 @@
 
 				//	TODO	p.rhino argument is supplied by jsh/etc/build.jsh.js and is dubious
 				this.toString = function() {
-					return "Unbuilt: src=" + $$api.slime.src + " rhino=" + this.rhino;
+					return "Unbuilt: src=" + $$api.slime.src + " rhino=" + this.rhino + " nashorn=" + this.nashorn;
 				}
 
-				// TODO: this same approach for locating the lib directory should be used in $$api.jsh.Built, no?
 				var rhino = (p.rhino) ? p.rhino : null;
 
 				this.rhino = rhino;
+
+				var nashorn = (p.nashorn) ? p.nashorn : null;
+
+				this.nashorn = nashorn;
 
 				var lib = p.lib;
 
@@ -395,6 +398,12 @@
 
 				if (new Packages.java.io.File(home, "lib/js.jar").exists()) {
 					this.rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
+				}
+
+				if (new Packages.java.io.File(home, "lib/nashorn.jar").exists()) {
+					this.nashorn = ["asm", "asm-commons", "asm-tree", "asm-util", "nashorn"].map(function(name) {
+						return new Packages.java.io.File(home, "lib/" + name + ".jar").toURI().toURL()
+					});
 				}
 
 				//	TODO	should we allow Contents/Home here?
