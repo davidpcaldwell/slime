@@ -157,7 +157,32 @@
 				var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin"),jre.directory.getRelativePath("../bin")]);
 
 				var launcher = searchpath.getCommand("jrunscript");
-				var launch = (jsh.shell.jsh.home) ? [jsh.shell.jsh.home.getRelativePath("jsh.js")] : [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"), "jsh"];
+				var launch = (jsh.shell.jsh.home) ? [jsh.shell.jsh.home.getRelativePath("jsh.js").toString()] : [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js").toString(), "jsh"];
+				(
+					function addNashornBootstrapLibraries() {
+						//	TODO	Not DRY: Should parse out of ./jsh, like jrunscript/jsh/shell/jsh.js does
+						var names = ["asm","asm-commons","asm-tree","asm-util","nashorn"];
+						//	TODO	Should only be used for versions of Java that need it
+						if (jsh.shell.jsh.home && jsh.shell.jsh.home.getFile("lib/nashorn.jar")) {
+							launch = [
+								"-classpath",
+								names.map(function(name) {
+									return jsh.shell.jsh.home.getRelativePath("lib/" + name + ".jar").toString();
+								//	TODO	below is platform-specific
+								}).join(":")
+							].concat(launch)
+						} else if (jsh.shell.jsh.src && jsh.shell.jsh.src.getFile("local/jsh/lib/nashorn.jar")) {
+							//	TODO	Should only be used for versions of Java that need it
+							launch = [
+								"-classpath",
+								names.map(function(name) {
+									return jsh.shell.jsh.src.getRelativePath("local/jsh/lib/" + name + ".jar").toString();
+								//	TODO	below is platform-specific
+								}).join(":")
+							].concat(launch)
+						}
+					}
+				)();
 				var engines = jsh.shell.run({
 					command: launcher,
 					arguments: launch.concat(["-engines"]),
@@ -165,15 +190,16 @@
 						output: String
 					},
 					evaluate: function(result) {
+						if (result.status) throw new Error("-engines exit status: " + result.status);
 						return eval("(" + result.stdio.output + ")");
 					}
 				});
 
 				if (engine && engines.indexOf(engine) == -1) {
-					jsh.shell.echo("Skipping engine " + engine + "; not available under " + launcher);
+					jsh.shell.console("Skipping engine " + engine + "; not available under " + launcher);
 				} else {
 					var ENGINE = (engine) ? engine : "engine";
-					jsh.shell.echo("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
+					jsh.shell.console("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
 
 					var env = jsh.js.Object.set({}, jsh.shell.environment
 						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}

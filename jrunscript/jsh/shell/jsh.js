@@ -280,17 +280,70 @@
 					];
 				}
 
+				/** @param { slime.jrunscript.file.Directory } src */
 				var unbuilt = function(src) {
-					return [
+					var rv = [];
+					//	TODO	should only do this for post-Nashorn JDK versions
+					if (src.getFile("local/jsh/lib/nashorn.jar")) {
+						var libraries = (function() {
+							var LINE = /^JSH_BOOTSTRAP_NASHORN_LIBRARIES=\((.*)\)$/
+							return $api.fp.now.map(
+								src.pathname.os.adapt(),
+								//	TODO	create read.lines.simple
+								$context.api.file.Location.directory.relativePath("jsh"),
+								$context.api.file.Location.file.read.string.simple,
+								$api.fp.string.split("\n"),
+								$api.fp.Array.filter(function(line) {
+									return LINE.test(line);
+								}),
+								function(matches) {
+									if (matches.length != 1) throw new Error();
+									return matches[0];
+								},
+								function(line) {
+									var match = LINE.exec(line);
+									return match[1].split(" ");
+								}
+							)
+						})();
+						var lib = src.getSubdirectory("local/jsh/lib");
+						rv.push(
+							"-classpath",
+							libraries.map(function(name) {
+								return lib.getRelativePath(name + ".jar")
+							}).concat([
+								lib.getRelativePath("nashorn.jar")
+							])
+							//	TODO	this is OS-specific
+								.join(":")
+						);
+					}
+					rv.push(
 						src.getFile("rhino/jrunscript/api.js"),
 						"jsh"
-					];
+					);
+					return rv;
 				};
 
 				var built = function(home) {
-					return [
-						home.getFile("jsh.js")
-					]
+					var rv = [];
+					//	TODO	Not DRY; we should parse these out of jsh bash script, like above (but would have to figure out
+					//			where that script ends up, or create a place from which to read the library names during the build
+					//			process)
+					if (home.getFile("lib/nashorn.jar")) {
+						var lib = home.getSubdirectory("lib");
+						rv.push("-classpath");
+						rv.push([
+							lib.getRelativePath("asm.jar"),
+							lib.getRelativePath("asm-commons.jar"),
+							lib.getRelativePath("asm-tree.jar"),
+							lib.getRelativePath("asm-util.jar"),
+							lib.getRelativePath("nashorn.jar")
+						//	TODO	OS-specific
+						].join(":"))
+					}
+					rv.push(home.getFile("jsh.js"));
+					return rv;
 				};
 
 				if (shell) {

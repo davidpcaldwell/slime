@@ -306,6 +306,13 @@
 			console("Rhino libraries not present; building for Nashorn only.");
 		}
 
+		if (SLIME.getFile("local/jsh/lib/nashorn.jar")) {
+			//	TODO	Not DRY; should parse these names out of ./jsh
+			["asm.jar", "asm-commons.jar", "asm-tree.jar", "asm-util.jar", "nashorn.jar"].forEach(function(library) {
+				SLIME.getFile("local/jsh/lib/" + library).copy(destination.shell.getSubdirectory("lib"));
+			});
+		}
+
 		(function buildLoader() {
 			console("Building jsh application ...");
 			//	TODO	Do we want to cross-compile against JAVA_VERSION boot classes?
