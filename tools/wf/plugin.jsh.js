@@ -1161,21 +1161,29 @@
 
 							if (inputs.base().getFile(".eslintrc.json")) {
 								events.fire("console", "Running ESLint ...");
-								jsh.shell.jsh({
-									shell: jsh.shell.jsh.src,
-									script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
-									stdio: {
-										output: null
-									},
-									evaluate: function(result) {
-										if (result.status) {
-											events.fire("console", "ESLint status: " + result.status + "; failing.");
-											success = false;
-										} else {
-											events.fire("console", "ESLint passed.");
+								var result = $api.fp.now.map(
+									{
+										command: "bash",
+										arguments: $api.Array.build(function(rv) {
+											rv.push(jsh.shell.jsh.src.getRelativePath("jsh").toString());
+											rv.push(jsh.shell.jsh.src.getRelativePath("contributor/eslint.jsh.js").toString());
+										}),
+										stdio: {
+											//	TODO	really we want to discard this; is there no API for that?
+											output: "string"
 										}
-									}
-								});
+									},
+									$api.fp.world.Sensor.mapping({
+										sensor: jsh.shell.subprocess.question
+									})
+								);
+
+								if (result.status) {
+									events.fire("console", "ESLint status: " + result.status + "; failing.");
+									success = false;
+								} else {
+									events.fire("console", "ESLint passed.");
+								}
 							}
 
 							return success;

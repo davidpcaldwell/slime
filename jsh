@@ -219,6 +219,28 @@ install_rhino() {
 	# download_install ${RHINO_ENGINE_URL} ${JSH_BOOTSTRAP_RHINO_ENGINE}
 }
 
+get_maven_dependency() {
+	GROUP=$1
+	ARTIFACT=$2
+	VERSION=$3
+	GROUP_PREFIX="$(echo $GROUP | tr . /)"
+	echo "https://repo1.maven.org/maven2/${GROUP_PREFIX}/${ARTIFACT}/${VERSION}/${ARTIFACT}-${VERSION}.jar"
+}
+
+install_maven_dependency() {
+	download_install $(get_maven_dependency $1 $2 $3) $4
+}
+
+install_nashorn() {
+	LIB=$(dirname ${JSH_BOOTSTRAP_RHINO})
+	#	Derived from https://repo1.maven.org/maven2/org/openjdk/nashorn/nashorn-core/15.4/nashorn-core-15.4.pom
+	install_maven_dependency org.ow2.asm asm 7.3.1 ${LIB}/asm.jar
+	install_maven_dependency org.ow2.asm asm-commons 7.3.1 ${LIB}/asm-commons.jar
+	install_maven_dependency org.ow2.asm asm-tree 7.3.1 ${LIB}/asm-tree.jar
+	install_maven_dependency org.ow2.asm asm-util 7.3.1 ${LIB}/asm-util.jar
+	install_maven_dependency org.openjdk.nashorn nashorn-core 15.4 ${LIB}/nashorn.jar
+}
+
 get_jdk_major_version() {
 	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
 	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
@@ -288,8 +310,14 @@ if [ "$1" == "--install-rhino" ]; then
 	exit $?
 fi
 
-if [ "$1" == "--jdk-major-version" ]; then
+if [ "$1" == "--test-jdk-major-version" ]; then
 	echo $(get_jdk_major_version $2)
+	exit $?
+fi
+
+if [ "$1" == "--test-get-maven-dependency" ]; then
+	shift 1
+	echo $(get_maven_dependency $@)
 	exit $?
 fi
 
@@ -395,13 +423,15 @@ fi
 
 if [ "${JDK_MAJOR_VERSION}" == "17" ]; then
 	#	Currently we know that we are not running a remote shell because we would download something other than Java 17 for that.
-	if [ ! -f "${JSH_BOOTSTRAP_RHINO}" ]; then
-		install_rhino
+	if [ ! -f "${JSH_BOOTSTRAP_NASHORN}" ]; then
+		install_nashorn
 	fi
 	# If JSR-223 Rhino worked with jrunscript ...
 	# JRUNSCRIPT="${JRUNSCRIPT} -classpath ${JSH_BOOTSTRAP_RHINO}:${JSH_BOOTSTRAP_RHINO_ENGINE}"
-	BIN="$(dirname ${JRUNSCRIPT})"
-	JRUNSCRIPT="${BIN}/java -jar ${JSH_BOOTSTRAP_RHINO} -opt -1"
+	# BIN="$(dirname ${JRUNSCRIPT})"
+	# JRUNSCRIPT="${BIN}/java -jar ${JSH_BOOTSTRAP_RHINO} -opt -1"
+	LIB=$(dirname ${JSH_BOOTSTRAP_RHINO})
+	JRUNSCRIPT="${JRUNSCRIPT} -classpath ${LIB}/asm.jar:${LIB}/asm-commons.jar:${LIB}/asm-tree.jar:${LIB}/asm-util.jar:${LIB}/nashorn.jar"
 fi
 
 if [ "$0" == "bash" ]; then

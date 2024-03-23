@@ -4,4 +4,4 @@
 #
 #	END LICENSE
 
-./jsh.bash --add-jdk-17
+./jsh --add-jdk-17
