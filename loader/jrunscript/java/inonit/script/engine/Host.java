@@ -79,7 +79,7 @@ public abstract class Host {
 			this.manager = new ScriptEngineManager();
 			this.engine = manager.getEngineByName(engineName);
 			if (this.engine == null) {
-				//	this can happen in JDK 8 if the "--no-deprecation-warning" argument is passed to Nashorn
+				//	this can happen in JDK 8 or with standalone Nashorn if the "--no-deprecation-warning" argument is passed to Nashorn
 				throw new RuntimeException("No engine: " + engineName + " in " + System.getProperty("java.home") + " (" + System.getProperty("java.version") + ")");
 			}
 		}

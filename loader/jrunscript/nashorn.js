@@ -97,10 +97,19 @@
 			 * @returns { slime.jrunscript.runtime.internal.nashorn.Nashorn }
 			 */
 			function() {
+				var getNashornClass = function(name) {
+					try {
+						return Java.type("jdk.nashorn." + name);
+					} catch (e) {
+						return Java.type("org.openjdk.nashorn." + name);
+					}
+				}
+
+				//	TODO	Add org.openjdk.nashorn equivalent
 				var types = {
-					Context: Java.type("jdk.nashorn.internal.runtime.Context"),
-					Source: Java.type("jdk.nashorn.internal.runtime.Source"),
-					ScriptObject: Java.type("jdk.nashorn.internal.runtime.ScriptObject")
+					Context: getNashornClass("internal.runtime.Context"),
+					Source: getNashornClass("internal.runtime.Source"),
+					ScriptObject: getNashornClass("internal.runtime.ScriptObject")
 				};
 
 				var Context = types.Context;

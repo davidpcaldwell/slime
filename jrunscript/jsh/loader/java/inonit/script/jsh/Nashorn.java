@@ -52,6 +52,18 @@ public class Nashorn extends Shell.Engine {
 	}
 
 	public static class HostImpl extends Host {
+		private static Class getNashornClass(String name) {
+			try {
+				return Class.forName("jdk.nashorn." + name);
+			} catch (ClassNotFoundException e) {
+				try {
+					return Class.forName("org.openjdk.nashorn." + name);
+				} catch (ClassNotFoundException e2) {
+					throw new RuntimeException(e2);
+				}
+			}
+		}
+
 		private Loader.Classes classes;
 		private boolean top;
 		private Class Context;
@@ -59,11 +71,7 @@ public class Nashorn extends Shell.Engine {
 		private HostImpl(Loader.Classes classes, boolean top) {
 			this.classes = classes;
 			this.top = top;
-			try {
-				this.Context = Class.forName("jdk.nashorn.internal.runtime.Context");
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
+			this.Context = getNashornClass("internal.runtime.Context");
 		}
 
 		@Override public Loader.Classes.Interface getClasspath() {
@@ -90,7 +98,7 @@ public class Nashorn extends Shell.Engine {
 			try {
 				Class Context = context.getClass();
 				java.lang.reflect.Method getGlobal = Context.getMethod("getGlobal");
-				Class ScriptObjectMirror = Class.forName("jdk.nashorn.api.scripting.ScriptObjectMirror");
+				Class ScriptObjectMirror = getNashornClass("api.scripting.ScriptObjectMirror");
 				java.lang.reflect.Method unwrap = ScriptObjectMirror.getMethod("unwrap", Object.class, Object.class);
 				Object global = getGlobal.invoke(context);
 				Object unwrapped = unwrap.invoke(null, mirror, global);
@@ -103,6 +111,7 @@ public class Nashorn extends Shell.Engine {
 		public Object compileScript(Object context, Object source, Object scope) {
 			java.lang.reflect.Method method = null;
 			try {
+				//	TODO	Add org.openjdk.nashorn equivalent
 				Class Source = Class.forName("jdk.nashorn.internal.runtime.Source");
 				Class ScriptObject = Class.forName("jdk.nashorn.internal.runtime.ScriptObject");
 				method = context.getClass().getMethod("compileScript", Source, ScriptObject);
@@ -118,8 +127,8 @@ public class Nashorn extends Shell.Engine {
 
 		public Object apply(Object compiled, Object target) {
 			try {
-				Class ScriptFunction = Class.forName("jdk.nashorn.internal.runtime.ScriptFunction");
-				Class ScriptRuntime = Class.forName("jdk.nashorn.internal.runtime.ScriptRuntime");
+				Class ScriptFunction = getNashornClass("internal.runtime.ScriptFunction");
+				Class ScriptRuntime = getNashornClass("internal.runtime.ScriptRuntime");
 				java.lang.reflect.Method apply = ScriptRuntime.getMethod("apply", ScriptFunction, Object.class, Object[].class);
 				//System.err.println("compiled = " + compiled);
 				Object context = getContext();
