@@ -424,6 +424,7 @@ public class Profiler {
 
 		private boolean isNashornScriptFunction(javassist.CtClass type) {
 			try {
+				//	TODO	Add org.openjdk.nashorn equivalent
 				javassist.CtClass sf = classes.get("jdk.nashorn.internal.runtime.ScriptFunction");
 				return type.subclassOf(sf);
 			} catch (javassist.NotFoundException e) {

@@ -301,6 +301,17 @@
 					} catch (e) {
 						//	do nothing; $getContext will remain undefined
 					}
+				} else {
+					Context = Packages.org.openjdk.nashorn.internal.runtime.Context;
+					if (typeof(Context) == "function") {
+						try {
+							//	TODO	is there any way to avoid repeating the class name?
+							//	TODO	Add org.openjdk.nashorn equivalent
+							$getContext = Packages.java.lang.Class.forName("org.openjdk.nashorn.internal.runtime.Context").getMethod("getContext");
+						} catch (e) {
+							//	do nothing; $getContext will remain undefined
+						}
+					}
 				}
 
 				var isPresent = function() {

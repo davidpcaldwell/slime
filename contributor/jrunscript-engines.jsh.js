@@ -4,8 +4,14 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api,jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				part: String,
@@ -43,6 +49,25 @@
 						// will need to revisit this.
 						// TODO: consider migrating to and combining with jsh/launcher/internal.api.html
 						execute: function(scope,verify) {
+							//	Workaround to get prerequisites installed for standalone Nashorn shells
+							var result = $api.fp.now.map(
+								{
+									command: "bash",
+									arguments: $api.Array.build(function(rv) {
+										rv.push(environment.jsh.unbuilt.src.getRelativePath("jsh").toString());
+										rv.push(environment.jsh.src.getFile("jrunscript/jsh/test/jsh-data.jsh.js"));
+									}),
+									environment: function(existing) {
+										return $api.Object.compose(existing, {
+											JSH_ENGINE: engine
+										})
+									},
+									stdio: {
+										output: "string"
+									}
+								},
+								$api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question })
+							);
 							var output = jsh.shell.jsh({
 								shell: environment.jsh.unbuilt.src,
 								script: environment.jsh.src.getFile("jrunscript/jsh/test/jsh-data.jsh.js"),
@@ -114,4 +139,5 @@
 			view: parameters.options.view
 		});
 	}
-)();
+//@ts-ignore
+)($api,jsh);

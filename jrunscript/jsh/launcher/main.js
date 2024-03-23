@@ -103,6 +103,8 @@
 					"jsh.shell.lib",
 					$api.slime.src.getPath("local/jsh/lib")
 				);
+
+				// TODO: this same approach for locating the lib directory should be used in $$api.jsh.Built, no?
 				var lib = (function() {
 					var setting = $api.slime.settings.get("jsh.shell.lib");
 					//	TODO	setting can be null because $$api.script.resolve() doesn't find local/jsh/lib online; should refactor
@@ -125,7 +127,25 @@
 						}
 					}
 				})();
-				return new $api.jsh.Unbuilt({ lib: lib, rhino: rhino });
+
+				var nashorn = (function() {
+					if ($api.slime.settings.get("jsh.shell.lib") && lib.file) {
+						if (new Packages.java.io.File(lib.file, "nashorn.jar").exists()) {
+							$api.debug("nashorn.jar found");
+							return [
+								"asm.jar",
+								"asm-commons.jar",
+								"asm-tree.jar",
+								"asm-util.jar",
+								"nashorn.jar"
+							].map(function(filename) {
+								return new Packages.java.io.File(lib.file, filename).toURI().toURL();
+							});
+						}
+					}
+				})();
+
+				return new $api.jsh.Unbuilt({ lib: lib, rhino: rhino, nashorn: nashorn });
 			}
 		})();
 		$api.debug("shell detected = " + shell);
@@ -136,6 +156,9 @@
 		}
 		if ($api.jsh.engines.nashorn) {
 			var Context = Packages.jdk.nashorn.internal.runtime.Context;
+			if (typeof(Context) != "function") {
+				Context = Packages.org.openjdk.nashorn.internal.runtime.Context;
+			}
 			var $getContext;
 			try {
 				$getContext = Context.class.getMethod("getContext");
@@ -282,7 +305,7 @@
 
 				var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
 
-				if (javaMajorVersion > 8) {
+				if (javaMajorVersion > 8 && javaMajorVersion < 15) {
 					command.systemProperty("nashorn.args", "--no-deprecation-warning");
 				}
 			}
@@ -295,6 +318,14 @@
 			$api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(shell.rhino).local());
 			for (var i=0; i<shell.rhino.length; i++) {
 				_urls.push(shell.rhino[i]);
+			}
+		}
+
+		if (shell.nashorn) {
+			//	TODO	possibly redundant with some code in launcher.js; examine and think through
+			// $api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(shell.rhino).local());
+			for (var i=0; i<shell.nashorn.length; i++) {
+				_urls.push(shell.nashorn[i]);
 			}
 		}
 
