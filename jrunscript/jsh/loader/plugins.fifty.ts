@@ -276,6 +276,7 @@ namespace slime.jsh.loader.internal.plugins {
 					}
 				});
 
+				jsh.shell.console("Copying plugin to source tree ...");
 				src.getFile("jrunscript/jsh/loader/test/unbuilt-shell-plugins/copy-as-plugin.jsh.js").copy(copied.directory.getRelativePath("foo/plugin.jsh.js"), { recursive: true });
 				var shouldLoad = jsh.shell.jsh({
 					shell: copied.directory,
@@ -287,6 +288,7 @@ namespace slime.jsh.loader.internal.plugins {
 				});
 				verify(shouldLoad).evaluate.property("unbuilt-shell-plugins").is(true);
 
+				jsh.shell.console("Copying plugin to local/ tree ...");
 				copied.directory.getFile("foo/plugin.jsh.js").move(copied.directory.getRelativePath("local/foo/plugin.jsh.js"), { recursive: true });
 				var shouldNotLoad = jsh.shell.jsh({
 					shell: copied.directory,
