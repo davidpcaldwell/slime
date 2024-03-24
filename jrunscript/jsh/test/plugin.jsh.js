@@ -138,6 +138,15 @@ plugin({
 					if (jsh.shell.jsh.home) return jsh.shell.jsh.home.getSubdirectory("src");
 					return jsh.shell.jsh.src;
 				})(p);
+				if (SLIME.getFile("local/jsh/lib/nashorn.jar")) {
+					args.push(
+						"-classpath",
+						["asm", "asm-commons", "asm-tree", "asm-util", "nashorn"].map(function(name) {
+							return SLIME.getRelativePath("local/jsh/lib/" + name + ".jar").toString()
+						//	TODO	platform-specific
+						}).join(":")
+					);
+				}
 				args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
 				args.push("jsh");
 				args.push(SLIME.getRelativePath("jrunscript/jsh/etc/build.jsh.js"));
