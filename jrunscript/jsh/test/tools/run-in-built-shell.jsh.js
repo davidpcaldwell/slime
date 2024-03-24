@@ -56,7 +56,7 @@
 							return rv;
 						})(),
 						environment: Object.assign({}, environment, {
-							JSH_JAVA_HOME: jsh.shell.java.home.pathname.toString()
+							JSH_JAVA_HOME: jsh.shell.java.Jdk.from.javaHome().base
 						})
 					});
 				} else {

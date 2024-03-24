@@ -180,7 +180,7 @@ namespace slime.jsh.shell {
 
 			var getJavaHome = function() {
 				var h = jsh.shell.java.Jdk.from.javaHome();
-				return jsh.file.Pathname(h.base()).directory;
+				return jsh.file.Pathname(h.base).directory;
 			}
 
 			fifty.tests.exports.jsh.Installation.from.current.built = function() {

@@ -655,7 +655,7 @@ namespace slime.jsh.script {
 			const environmentWithJavaInPath: slime.$api.fp.Transform<slime.jrunscript.shell.run.Environment> = function(given) {
 				var PATH = given.PATH.split(":");
 				var home = jsh.shell.java.Jdk.from.javaHome();
-				var insert = jsh.file.Pathname(home.base()).directory.getRelativePath("bin").toString();
+				var insert = jsh.file.Pathname(home.base).directory.getRelativePath("bin").toString();
 				//var insert = jsh.shell.java.home.getRelativePath("bin").toString();
 				jsh.shell.console("Inserting: " + insert);
 				PATH.splice(0,0,insert);
