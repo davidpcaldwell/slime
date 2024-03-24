@@ -4,8 +4,14 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api,jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				packaged: false,
@@ -26,29 +32,32 @@
 		(
 			function() {
 				var SLIME = jsh.shell.jsh.src;
-				args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
-				args.push("jsh");
+				args.push(SLIME.getRelativePath("jsh"));
+				// args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
+				// args.push("jsh");
 				args.push(SLIME.getRelativePath("jrunscript/jsh/etc/build.jsh.js"));
 				args.push(JSH_HOME);
 				args.push("-notest");
 				args.push("-nodoc");
 				// TODO: Rhino; other parameters jsh/test/plugin.jsh.js
 				jsh.shell.run({
-					command: jsh.shell.java.jrunscript,
+					command: "bash",
 					arguments: args
 				});
 
 				var environment = Object.assign({}, jsh.shell.environment, (parameters.options.launcherDebug) ? {"JSH_LAUNCHER_DEBUG": "true"}: {});
 				if (!parameters.options.packaged) {
 					jsh.shell.run({
-						command: jsh.shell.java.jrunscript,
+						command: "bash",
 						arguments: (function() {
 							var rv = [];
-							rv.push(JSH_HOME.getFile("jsh.js"));
+							rv.push(JSH_HOME.getFile("jsh.bash"));
 							rv.push.apply(rv,parameters.arguments);
 							return rv;
 						})(),
-						environment: environment
+						environment: Object.assign({}, environment, {
+							JSH_JAVA_HOME: jsh.shell.java.Jdk.from.javaHome().base
+						})
 					});
 				} else {
 					//	TODO	revisit alternatives to the below
@@ -57,12 +66,13 @@
 					var script = parameters.arguments.shift();
 					jsh.shell.jsh({
 						shell: JSH_HOME,
-						script: jsh.shell.jsh.src.getRelativePath("jrunscript/jsh/tools/package.jsh.js"),
+						script: jsh.shell.jsh.src.getFile("jrunscript/jsh/tools/package.jsh.js"),
 						arguments: ([
 							"-script", script,
 							"-to", to
 						]).concat( (!rhino) ? ["-norhino"] : [] )
 					});
+					//@ts-ignore
 					jsh.shell.java({
 						jar: to.file,
 						arguments: parameters.arguments,
@@ -72,4 +82,5 @@
 			}
 		)();
 	}
-)();
+//@ts-ignore
+)($api,jsh);

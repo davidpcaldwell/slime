@@ -225,7 +225,7 @@ namespace slime.jsh.loader.internal.plugins {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			/**
 			 * Creates a new unbuilt shell, copies a plugin into an arbitrary location, and ensures the plugin is loaded.
@@ -241,11 +241,47 @@ namespace slime.jsh.loader.internal.plugins {
 						return true;
 					}
 				});
-				src.getFile("jrunscript/jsh/loader/test/unbuilt-shell-plugins/copy-as-plugin.jsh.js").copy(copied.directory.getRelativePath("foo/plugin.jsh.js"), { recursive: true });
+
 				var evaluate = function(result) {
 					jsh.shell.console("string = " + result.stdio.output);
 					return JSON.parse(result.stdio.output);
 				};
+
+				//	Add JDK 17 to shell so it can be bootstrapped
+				jsh.shell.console("Adding JDK 17 to shell ...");
+				$api.fp.world.Sensor.now({
+					sensor: jsh.shell.subprocess.question,
+					subject: {
+						command: "bash",
+						arguments: $api.Array.build(function(rv: string[]) {
+							rv.push(copied.directory.getRelativePath("jsh").toString());
+							rv.push("--add-jdk-17");
+						})
+					}
+				});
+
+				jsh.shell.console("Bootstrapping JDK 17 shell ...");
+				$api.fp.world.Sensor.now({
+					sensor: jsh.shell.subprocess.question,
+					subject: {
+						command: "bash",
+						arguments: $api.Array.build(function(rv: string[]) {
+							rv.push(copied.directory.getRelativePath("jsh").toString());
+							rv.push(copied.directory.getRelativePath("jrunscript/jsh/test/jsh-data.jsh.js").toString());
+						}),
+						environment: function(is) {
+							return $api.Object.compose(is, {
+								JSH_LAUNCHER_JDK_HOME: copied.directory.getRelativePath("local/jdk/17").toString()
+							});
+						},
+						stdio: {
+							output: "string"
+						}
+					}
+				});
+
+				jsh.shell.console("Copying plugin to source tree ...");
+				src.getFile("jrunscript/jsh/loader/test/unbuilt-shell-plugins/copy-as-plugin.jsh.js").copy(copied.directory.getRelativePath("foo/plugin.jsh.js"), { recursive: true });
 				var shouldLoad = jsh.shell.jsh({
 					shell: copied.directory,
 					script: copied.directory.getFile("jrunscript/jsh/loader/test/unbuilt-shell-plugins/output-plugin.jsh.js"),
@@ -255,6 +291,8 @@ namespace slime.jsh.loader.internal.plugins {
 					evaluate: evaluate
 				});
 				verify(shouldLoad).evaluate.property("unbuilt-shell-plugins").is(true);
+
+				jsh.shell.console("Copying plugin to local/ tree ...");
 				copied.directory.getFile("foo/plugin.jsh.js").move(copied.directory.getRelativePath("local/foo/plugin.jsh.js"), { recursive: true });
 				var shouldNotLoad = jsh.shell.jsh({
 					shell: copied.directory,
