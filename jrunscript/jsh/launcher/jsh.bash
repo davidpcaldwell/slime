@@ -20,6 +20,11 @@ else
 	JSH_JAVA_LAUNCHER=$JSH_JAVA_HOME/bin/jrunscript
 fi
 
+if [ ! -f ${JSH_JAVA_LAUNCHER} ]; then
+	>&2 echo "No launcher found at ${JSH_JAVA_LAUNCHER}."
+	exit 1
+fi
+
 if [ -f "$(dirname $0)/lib/nashorn.jar" ]; then
 	LIB="$(dirname $0)/lib"
 	JSH_JVM_OPTIONS="-classpath ${LIB}/asm.jar:${LIB}/asm-commons.jar:${LIB}/asm-tree.jar:${LIB}/asm-util.jar:${LIB}/nashorn.jar ${JSH_JVM_OPTIONS}"
