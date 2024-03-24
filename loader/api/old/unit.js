@@ -667,7 +667,7 @@
 						try {
 							var json = JSON.parse(string);
 						} catch (e) {
-							throw new Error("Could not parse JSON:\n" + string);
+							throw new Error("Could not parse JSON:\n===\n" + string + "\n===");
 						}
 						events.fire(json.type, json.detail);
 					}
