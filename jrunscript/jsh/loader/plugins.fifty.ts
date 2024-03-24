@@ -248,6 +248,7 @@ namespace slime.jsh.loader.internal.plugins {
 				};
 
 				//	Add JDK 17 to shell so it can be bootstrapped
+				jsh.shell.console("Adding JDK 17 to shell ...");
 				$api.fp.world.Sensor.now({
 					sensor: jsh.shell.subprocess.question,
 					subject: {
@@ -272,6 +273,9 @@ namespace slime.jsh.loader.internal.plugins {
 							return $api.Object.compose(is, {
 								JSH_LAUNCHER_JDK_HOME: copied.directory.getRelativePath("local/jdk/17").toString()
 							});
+						},
+						stdio: {
+							output: "string"
 						}
 					}
 				});
