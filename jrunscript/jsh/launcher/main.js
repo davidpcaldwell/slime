@@ -296,15 +296,15 @@
 			}
 		}
 
+		function javaMajorVersionString(javaVersionProperty) {
+			if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
+			return javaVersionProperty.split(".")[0];
+		}
+
+		var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
+
 		(
 			function handleNashornDeprecation() {
-				function javaMajorVersionString(javaVersionProperty) {
-					if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
-					return javaVersionProperty.split(".")[0];
-				}
-
-				var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
-
 				if (javaMajorVersion > 8 && javaMajorVersion < 15) {
 					command.systemProperty("nashorn.args", "--no-deprecation-warning");
 				}
@@ -321,7 +321,7 @@
 			}
 		}
 
-		if (shell.nashorn) {
+		if (shell.nashorn && jshJavaHomeMajorVersion >= 15) {
 			//	TODO	possibly redundant with some code in launcher.js; examine and think through
 			// $api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(shell.rhino).local());
 			for (var i=0; i<shell.nashorn.length; i++) {

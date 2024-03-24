@@ -280,11 +280,19 @@
 					];
 				}
 
+				//	TODO	next function and next variable are repeated from jrunscript/jsh/launcher/main.js
+				function javaMajorVersionString(javaVersionProperty) {
+					if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
+					return javaVersionProperty.split(".")[0];
+				}
+
+				var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
+
 				/** @param { slime.jrunscript.file.Directory } src */
 				var unbuilt = function(src) {
 					var rv = [];
 					//	TODO	should only do this for post-Nashorn JDK versions
-					if (src.getFile("local/jsh/lib/nashorn.jar")) {
+					if (javaMajorVersion >= 15 && src.getFile("local/jsh/lib/nashorn.jar")) {
 						var libraries = (function() {
 							var LINE = /^JSH_BOOTSTRAP_NASHORN_LIBRARIES=\((.*)\)$/
 							return $api.fp.now.map(
