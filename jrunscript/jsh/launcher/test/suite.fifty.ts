@@ -109,6 +109,7 @@ namespace slime.jsh.internal.launcher {
 
 		export interface Context {
 			library: {
+				file: slime.jrunscript.file.Exports
 				shell: slime.jrunscript.shell.Exports
 			}
 			script: slime.jrunscript.file.File
@@ -137,6 +138,7 @@ namespace slime.jsh.internal.launcher {
 				var library = {
 					script: code.script({
 						library: {
+							file: jsh.file,
 							shell: jsh.shell
 						},
 						script: jsh.file.Pathname(fifty.jsh.file.relative("scenario.jsh.js").pathname).file,
