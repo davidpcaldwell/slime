@@ -45,7 +45,6 @@ if [ "${SLIME_WF_JDK_VERSION}" = "8" ] || [ "${SLIME_WF_JDK_VERSION}" = "11" ] |
 		${SLIME}/jsh --install-jdk-${SLIME_WF_JDK_VERSION}
 	fi
 
-	#	Technically not needed for JDK 17, in which jsh installs it on its own
 	if [ ! -f "${JSH_SHELL_LIB}/js.jar" ]; then
 		${SLIME}/jsh --install-rhino
 	fi

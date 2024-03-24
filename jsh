@@ -299,6 +299,11 @@ if [ "$1" == "--install-jdk-11" ]; then
 	exit $?
 fi
 
+if [ "$1" == "--install-jdk-17" ]; then
+	install_jdk_17 ${JSH_LOCAL_JDKS}/default
+	exit $?
+fi
+
 if [ "$1" == "--add-jdk-8" ]; then
 	install_jdk_8 ${JSH_LOCAL_JDKS}/8
 	exit $?
