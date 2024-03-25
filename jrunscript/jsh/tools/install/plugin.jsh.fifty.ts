@@ -37,6 +37,7 @@ namespace slime.jsh.shell.tools {
 					user?: string
 				}
 				lib?: string
+				debug?: boolean
 			}) {
 				const { $api, jsh } = fifty.global;
 				const intention: slime.jsh.shell.Intention = {
@@ -52,6 +53,7 @@ namespace slime.jsh.shell.tools {
 						//	TODO	would not work on Windows
 						if (p.jdks && !p.jdks.user) rv.JSH_USER_JDKS = "/dev/null";
 						if (p.lib) rv.JSH_SHELL_LIB = p.lib;
+						if (p.debug) rv.JSH_LAUNCHER_BASH_DEBUG = "1";
 						return rv;
 					}
 				}
@@ -306,7 +308,8 @@ namespace slime.jsh.shell.tools {
 
 					var getVersionScript = test.jsh({
 						script: fifty.jsh.file.relative("test/scala-version.jsh.js").pathname,
-						lib: lib.pathname
+						lib: lib.pathname,
+						debug: false
 					});
 
 					var install = test.jsh({

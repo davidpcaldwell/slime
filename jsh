@@ -205,8 +205,8 @@ install_jdk() {
 }
 
 
-JSH_BOOTSTRAP_RHINO="$(dirname $0)/local/jsh/lib/js.jar"
-JSH_BOOTSTRAP_NASHORN="$(dirname $0)/local/jsh/lib/nashorn.jar"
+JSH_BOOTSTRAP_RHINO="${JSH_SHELL_LIB}/js.jar"
+JSH_BOOTSTRAP_NASHORN="${JSH_SHELL_LIB}/nashorn.jar"
 JSH_BOOTSTRAP_NASHORN_LIBRARIES=(asm asm-commons asm-tree asm-util)
 
 install_rhino() {
