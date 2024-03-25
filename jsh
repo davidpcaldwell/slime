@@ -205,8 +205,8 @@ install_jdk() {
 }
 
 
-JSH_BOOTSTRAP_RHINO="$(dirname $0)/local/jsh/lib/js.jar"
-JSH_BOOTSTRAP_NASHORN="$(dirname $0)/local/jsh/lib/nashorn.jar"
+JSH_BOOTSTRAP_RHINO="${JSH_SHELL_LIB}/js.jar"
+JSH_BOOTSTRAP_NASHORN="${JSH_SHELL_LIB}/nashorn.jar"
 JSH_BOOTSTRAP_NASHORN_LIBRARIES=(asm asm-commons asm-tree asm-util)
 
 install_rhino() {
@@ -296,6 +296,11 @@ fi
 
 if [ "$1" == "--install-jdk-11" ]; then
 	install_jdk_11 ${JSH_LOCAL_JDKS}/default
+	exit $?
+fi
+
+if [ "$1" == "--install-jdk-17" ]; then
+	install_jdk_17 ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
 

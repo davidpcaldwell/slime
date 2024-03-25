@@ -321,7 +321,9 @@
 			}
 		}
 
-		if (shell.nashorn && jshJavaHomeMajorVersion >= 15) {
+		$api.debug("javaMajorVersion = " + javaMajorVersion + " jshJavaHomeMajorVersion = " + jshJavaHomeMajorVersion);
+		var loaderMajorVersion = (typeof(jshJavaHomeMajorVersion) != "undefined") ? jshJavaHomeMajorVersion : javaMajorVersion;
+		if (shell.nashorn && loaderMajorVersion >= 15) {
 			//	TODO	possibly redundant with some code in launcher.js; examine and think through
 			// $api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(shell.rhino).local());
 			for (var i=0; i<shell.nashorn.length; i++) {
