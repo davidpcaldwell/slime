@@ -23,7 +23,7 @@
 						//			under various versions.
 						if (javaHome.basename == "jre") javaHome = javaHome.parent;
 						return {
-							base: $api.fp.impure.Input.value(javaHome.toString())
+							base: javaHome.toString()
 						};
 					}
 				}

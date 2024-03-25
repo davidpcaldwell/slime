@@ -29,7 +29,7 @@ namespace slime.jrunscript.shell.java {
 	)(fifty);
 
 	export interface Jdk {
-		base: slime.$api.fp.impure.Input<string>
+		base: string
 	}
 
 	export interface Exports {
@@ -49,7 +49,7 @@ namespace slime.jrunscript.shell.java {
 
 			fifty.tests.manual.Jdk = function() {
 				var jdk = subject.Jdk.from.javaHome();
-				jsh.shell.console(jdk.base());
+				jsh.shell.console(jdk.base);
 			}
 		}
 	//@ts-ignore

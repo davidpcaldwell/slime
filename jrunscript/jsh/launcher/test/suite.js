@@ -27,6 +27,34 @@
 			return engines;
 		}
 
+		/** @param { slime.jrunscript.file.Directory } src */
+		var getUnbuiltEngineArguments = function(src) {
+			return src.getFile("local/jsh/lib/nashorn.jar")
+				? [
+					"-classpath",
+					[
+						"asm", "asm-commons", "asm-tree", "asm-util", "nashorn"
+					].map(function(name) {
+						return src.getRelativePath("local/jsh/lib/" + name + ".jar").toString();
+					}).join(":")
+				]
+				: []
+		};
+
+		var getBuiltEngineArguments = function(home) {
+			return home.getFile("lib/nashorn.jar")
+				? [
+					"-classpath",
+					[
+						"asm", "asm-commons", "asm-tree", "asm-util", "nashorn"
+					].map(function(name) {
+						return home.getRelativePath("lib/" + name + ".jar").toString();
+					}).join(":")
+				]
+				: []
+			;
+		}
+
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Directory } src
@@ -39,18 +67,19 @@
 				return function(events) {
 					var buildArguments = [];
 					if (rhino) {
-						buildArguments.push("-rhino", rhino);
+						buildArguments.push("-rhino", rhino.toString());
 					}
+					var engineArguments = getUnbuiltEngineArguments(src);
 					$context.library.shell.run({
 						command: $context.library.shell.java.jrunscript,
-						arguments: [
-							src.getRelativePath("rhino/jrunscript/api.js"),
+						arguments: engineArguments.concat([
+							src.getRelativePath("rhino/jrunscript/api.js").toString(),
 							"jsh",
-							src.getRelativePath("jrunscript/jsh/etc/build.jsh.js"),
-							tmpdir,
+							src.getRelativePath("jrunscript/jsh/etc/build.jsh.js").toString(),
+							tmpdir.pathname.toString(),
 							"-notest",
 							"-nodoc"
-						].concat(buildArguments),
+						]).concat(buildArguments),
 						environment: $api.Object.compose(
 							{
 								//	TODO	next two lines duplicate logic in jsh.test plugin
@@ -150,9 +179,30 @@
 						($context.library.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: $context.library.shell.environment.JSH_SHELL_LIB } : {}
 					)
 				);
+				var unbuilt = (function() {
+					var pattern = /(.*)\/rhino\/jrunscript\/api\.js$/;
+					var arg = shell.map(String).find(function(argument) {
+						return pattern.test(String(argument));
+					});
+					return (arg) ? (pattern.exec(arg)[1]) : null;
+				})();
+
+				var built = (function() {
+					var pattern = /(.*)\/jsh\.js$/;
+					var arg = shell.map(String).find(function(argument) {
+						return pattern.test(String(argument));
+					});
+					return (arg) ? (pattern.exec(arg)[1]) : null;
+				})();
+
+				var engineArguments = (function() {
+					if (unbuilt) return getUnbuiltEngineArguments( $context.library.file.Pathname(unbuilt).directory );
+					if (built) return getBuiltEngineArguments ( $context.library.file.Pathname(built).directory );
+					return [];
+				})();
 				return $context.library.shell.run({
 					command: (p.bash) ? p.bash : $context.library.shell.java.jrunscript,
-					arguments: shell.concat([script.toString()]).concat( (p.arguments) ? p.arguments : [] ),
+					arguments: engineArguments.concat(shell.map(String)).concat([script.toString()]).concat( (p.arguments) ? p.arguments.map(String) : [] ),
 					stdio: (p.stdio) ? p.stdio : {
 						output: String
 					},

@@ -146,7 +146,7 @@
 				}
 				var JAVA_HOME = (function() {
 					var h = jsh.shell.java.Jdk.from.javaHome();
-					return jsh.file.Pathname(h.base()).directory;
+					return jsh.file.Pathname(h.base).directory;
 				})();
 				jsh.shell.run({
 					command: jsh.shell.jsh.lib.getRelativePath("ncdbg/bin/ncdbg"),
