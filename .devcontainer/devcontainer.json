@@ -14,7 +14,8 @@
 		"vscode": {
 			"extensions": [
 				"vscjava.vscode-java-pack",
-				"dbaeumer.vscode-eslint"
+				"dbaeumer.vscode-eslint",
+				"github.vscode-pull-request-github"
 			],
 			"settings": {
 				"java.jdt.ls.java.home": "/slime/local/jdk/17",
