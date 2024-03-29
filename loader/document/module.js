@@ -485,6 +485,13 @@
 						}
 					})()
 				},
+				from: {
+					string: function(settings) {
+						return function(string) {
+							return source.parse.document({ settings: settings, string: string });
+						}
+					}
+				},
 				removeWhitespaceTextNodes: function(document) {
 					/**
 					 * @template { slime.runtime.document.Node } T

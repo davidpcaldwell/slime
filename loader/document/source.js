@@ -277,12 +277,13 @@
 		}
 
 		/**
+		 * @param { slime.runtime.document.Settings } settings
 		 * @param { slime.runtime.document.internal.source.internal.State } state
 		 * @param { slime.$api.event.Emitter<slime.runtime.document.internal.source.ParseEvents> } events
 		 * @param { slime.runtime.document.internal.source.internal.Parser<slime.runtime.document.Parent> } recurse
 		 * @returns { slime.runtime.document.internal.source.internal.State }
 		 */
-		var parseElement = function(state,events,recurse) {
+		var parseElement = function(settings,state,events,recurse) {
 			//	TODO	special handling for SCRIPT
 			//	TODO	parse attributes
 			//	TODO	deal with self-closing tags
@@ -391,7 +392,7 @@
 				}
 			};
 
-			var isVoid = isVoidElement(tagName);
+			var isVoid = !settings.xml && isVoidElement(tagName);
 
 			if (!selfclosing && !isVoid) {
 				var after = recurse(
@@ -444,7 +445,10 @@
 			}
 		}
 
-		/** @returns { slime.runtime.document.internal.source.internal.Parser<slime.runtime.document.Parent> } */
+		/**
+		 * @param { slime.runtime.document.Settings } configuration
+		 * @returns { slime.runtime.document.internal.source.internal.Parser<slime.runtime.document.Parent> }
+		 */
 		var Parser = function(configuration) {
 			/**
 			 *
@@ -489,7 +493,7 @@
 				} else if (State.atDoctype(state)) {
 					next = parseDoctype(state);
 				} else if (State.atElement(state)) {
-					next = parseElement(state,events,recurse);
+					next = parseElement(configuration,state,events,recurse);
 				} else if (State.atText(state)) {
 					next = parseText(state);
 				} else {
@@ -615,7 +619,7 @@
 		var parse = {
 			document: function(input) {
 				var events = $api.events.Handlers.attached(input.events);
-				var state = Parser()(
+				var state = Parser(input.settings)(
 					{
 						parsed: {
 							type: "document",
@@ -634,7 +638,7 @@
 			},
 			fragment: function(input) {
 				var events = $api.events.Handlers.attached(input.events);
-				var state = Parser()(
+				var state = Parser(input.settings)(
 					{
 						parsed: {
 							type: "fragment",
