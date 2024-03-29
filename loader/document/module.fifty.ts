@@ -106,7 +106,11 @@ namespace slime.runtime.document {
 		$slime?: Pick<old.Context["$slime"],"java">
 	}
 
+	/**
+	 * @experimental
+	 */
 	export interface Settings {
+		xml?: boolean
 	}
 
 	export namespace exports {
@@ -115,6 +119,9 @@ namespace slime.runtime.document {
 		export interface Document {
 			codec: {
 				string: slime.Codec<slime.runtime.document.Document,string>
+			}
+			from: {
+				string: (settings: Settings) => (string: string) => slime.runtime.document.Document
 			}
 			removeWhitespaceTextNodes: transform
 			prettify: (p: { indent: string }) => transform
