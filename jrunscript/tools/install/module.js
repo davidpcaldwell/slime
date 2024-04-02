@@ -39,6 +39,11 @@
 				};
 
 				if (tar) {
+					/**
+					 *
+					 * @param { slime.jrunscript.file.File } file
+					 * @param { slime.jrunscript.file.Directory } to
+					 */
 					this.extract = function(file,to) {
 						$context.library.shell.run({
 							command: $context.library.shell.PATH.getCommand("tar"),
@@ -55,14 +60,29 @@
 					throw new Error("Cannot determine destination path for " + basename);
 				};
 
+				/**
+				 *
+				 * @param { slime.jrunscript.file.File } file
+				 * @param { slime.jrunscript.file.Directory } to
+				 */
 				this.extract = function(file,to) {
 					if ($context.library.shell.PATH.getCommand("unzip")) {
-						$context.library.shell.run({
-							command: "unzip",
-							//	TODO	added -o option to deal with strange Selenium 4.0.0 ZIP file; examine further
-							arguments: ["-o", file],
-							directory: to
+						var exit = $api.fp.world.Sensor.now({
+							sensor: $context.library.shell.subprocess.question,
+							subject: {
+								command: "unzip",
+								arguments: ["-o", file.pathname.toString()],
+								directory: to.pathname.toString(),
+								stdio: {
+									output: "string",
+									error: "string"
+								}
+							}
 						});
+						//	TODO	currently, except for this case, output is just swallowed
+						if (exit.status != 0) {
+							throw new Error("Non-zero exit status for unzip: " + exit.status + "\n" + exit.stdio.error);
+						}
 					} else {
 						$context.library.file.unzip({
 							zip: file,
@@ -86,6 +106,7 @@
 			}
 		)();
 
+		/** @type { slime.jrunscript.tools.install.exports.Distribution["Format"] } */
 		var newFormats = {
 			zip: {
 				extension: ".zip",
@@ -405,7 +426,12 @@
 						$api.fp.Maybe.from.value,
 						$api.fp.Maybe.map(
 							$api.fp.Boolean.map({
-								true: Location.remove.simple,
+								true: $api.fp.impure.Output.compose([
+									function(location) {
+										events.fire("removing", location);
+									},
+									Location.remove.simple
+								]),
 								false: $api.fp.impure.Output.nothing()
 							})
 						),
@@ -481,6 +507,7 @@
 					} else {
 						extractTo(archive, p.to);
 					}
+					events.fire("installed", p.to);
 				}
 			}
 		}

@@ -185,6 +185,7 @@ namespace slime.jrunscript.tools.install {
 		export interface Events {
 			request: slime.jrunscript.http.client.spi.Events["request"]
 			archive: slime.jrunscript.file.File
+			installed: string
 		}
 
 		export interface Format {
@@ -298,6 +299,13 @@ namespace slime.jrunscript.tools.install {
 		)(fifty);
 	}
 
+	export namespace distribution {
+		export interface InstallEvents extends Events {
+			exists: slime.jrunscript.file.Location
+			removing: slime.jrunscript.file.Location
+		}
+	}
+
 	export namespace exports {
 		export interface Distribution {
 			Format: {
@@ -314,9 +322,7 @@ namespace slime.jrunscript.tools.install {
 						to: string
 						clean?: boolean
 					},
-					distribution.Events & {
-						exists: slime.jrunscript.file.Location
-					}
+					distribution.InstallEvents
 				>
 			}
 		}
