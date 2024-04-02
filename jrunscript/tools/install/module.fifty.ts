@@ -6,14 +6,14 @@
 
 /**
  * Provides support for downloading and installing software.
+ *
+ * The module receives a {@link slime.jrunscript.tools.install.Context} that allows clients to specify a downloads directory to
+ * which the module should save files.
+ *
+ * {@link slime.jrunscript.tools.install.Exports API}
  */
 namespace slime.jrunscript.tools.install {
 	export interface Context {
-		/**
-		 * An HTTP client implementation to use. If not specified, one will be created.
-		 */
-		client?: slime.jrunscript.http.client.object.Client
-
 		library: {
 			web: slime.web.Exports
 			shell: slime.jrunscript.shell.Exports
@@ -24,7 +24,12 @@ namespace slime.jrunscript.tools.install {
 		/**
 		 * The directory in which to store downloaded files.
 		 */
-		downloads: slime.jrunscript.file.Directory
+		downloads?: slime.jrunscript.file.Directory
+
+		/**
+		 * An HTTP client implementation to use. If not specified, one will be created.
+		 */
+		client?: slime.jrunscript.http.client.object.Client
 	}
 
 	export namespace test {
@@ -132,6 +137,14 @@ namespace slime.jrunscript.tools.install {
 		export interface Exports {
 			getDefaultName: (url: string) => string
 		}
+
+		export interface Exports {
+			//	TODO	implement world test that exercises this so that downloads can be tested
+			download: slime.$api.fp.world.Means<{
+				from: string
+				to: slime.jrunscript.file.Location
+			},download.Events>
+		}
 	}
 
 	(
@@ -168,13 +181,6 @@ namespace slime.jrunscript.tools.install {
 		}
 	}
 
-	export interface Exports {
-		download: slime.$api.fp.world.Means<{
-			from: string
-			to: slime.jrunscript.file.Location
-		},download.Events>
-	}
-
 	export namespace distribution {
 		export interface Events {
 			request: slime.jrunscript.http.client.spi.Events["request"]
@@ -191,6 +197,11 @@ namespace slime.jrunscript.tools.install {
 		}
 	}
 
+	/**
+	 * A distribution (probably of software) that can be obtained as an archive from a URL. The properties of a `Distribution`
+	 * specify the URL from which it can be obtained, an optional logically-globally-unique `name` for the distribution,
+	 * the format of the archive, and a prefix within the archive at which the software can be found.
+	 */
 	export interface Distribution {
 		/**
 		 * The URL from which the file can be downloaded. Currently, only `http` and `https` URLs are supported.
@@ -449,34 +460,31 @@ namespace slime.jrunscript.tools.install {
 		Distribution: exports.Distribution
 	}
 
-	export namespace events {
-		export interface Console {
-			/**
-			 * A message suitable for display on the console.
-			 */
-			console: string
-		}
-
-		export namespace old {
-			/**
-			 * An old-style event handler that will receive `console` events with a string detail type.
-			 */
-			export type Receiver = slime.$api.event.Function.Receiver
-		}
-	}
-
 	export interface Destination {
 		location: string
 		replace?: boolean
 	}
 
 	export namespace old {
+		export namespace events {
+			export interface Console {
+				/**
+				 * A message suitable for display on the console.
+				 */
+				console: string
+			}
+
+			/**
+			 * An old-style event handler that will receive `console` events with a string detail type.
+			 */
+			export type Receiver = slime.$api.event.Function.Receiver
+		}
 		/**
 		 *
 		 * @returns The directory to which the installation was installed.
 		 */
 		export interface install {
-			(p: Installation, events?: events.old.Receiver): slime.jrunscript.file.Directory
+			(p: Installation, events?: old.events.Receiver): slime.jrunscript.file.Directory
 			(p: WorldInstallation): slime.$api.fp.world.old.Tell<events.Console>
 		}
 
@@ -584,6 +592,8 @@ namespace slime.jrunscript.tools.install {
 
 	export interface Exports {
 		/**
+		 * @deprecated Replaced by the various functions of {@link exports.Distribution Distribution}.
+		 *
 		 * This method can process both local and remote files. For remote files, it is assumed that the filename of
 		 * the file uniquely identifies the file, and that this assumption can be relied upon to determine whether the
 		 * remote file has already been downloaded. This restriction may be removed in a future release, perhaps by
@@ -659,6 +669,7 @@ namespace slime.jrunscript.tools.install {
 	)(fifty);
 
 	export interface Exports {
+		/** @deprecated */
 		format: {
 			zip: old.Format
 
@@ -668,9 +679,12 @@ namespace slime.jrunscript.tools.install {
 			gzip?: old.Format
 		}
 
-		find: (p: old.WorldSource) => slime.$api.fp.world.old.Ask<events.Console,string>
+		/** @deprecated */
+		find: (p: old.WorldSource) => slime.$api.fp.world.old.Ask<old.events.Console,string>
 
 		/**
+		 * @deprecated
+		 *
 		 * Returns a file containing an installer, either using a specified local file or a specified URL.
 		 * If `file` is absent or
 		 * `null`, the method will attempt to locate it in the
@@ -681,7 +695,7 @@ namespace slime.jrunscript.tools.install {
 		 */
 		get: (
 			p: old.Source,
-			events?: events.old.Receiver
+			events?: old.events.Receiver
 		) => slime.jrunscript.file.File
 
 		//	installation: Specifies software to be installed (including where to obtain it and how it is structured) and a
