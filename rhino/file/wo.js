@@ -39,7 +39,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.file.location.Exports["directory"]["relativePath"] } */
+		/** @type { slime.jrunscript.file.exports.Location["directory"]["relativePath"] } */
 		var Location_relative = function(path) {
 			return function(pathname) {
 				var absolute = pathname.pathname + pathname.filesystem.separator.pathname + path;
@@ -153,7 +153,7 @@
 
 
 		var directory = {
-			/** @type { Pick<slime.jrunscript.file.location.directory.Exports,"base"|"relativePath"|"relativeTo"> } */
+			/** @type { Pick<slime.jrunscript.file.exports.location.Directory,"base"|"relativePath"|"relativeTo"> } */
 			navigation: {
 				base: function(location) {
 					return function(relative) {
@@ -194,7 +194,7 @@
 			}
 		});
 
-		/** @type { slime.jrunscript.file.filesystem.Exports } */
+		/** @type { slime.jrunscript.file.exports.Filesystem } */
 		var Filesystem = (
 			function() {
 				return {
@@ -367,7 +367,7 @@
 					})()
 				},
 				file: (function() {
-					/** @type { slime.jrunscript.file.location.file.Exports["read"]["stream"] } */
+					/** @type { slime.jrunscript.file.exports.location.File["read"]["stream"] } */
 					var readStream = function() {
 						return function(location) {
 							return location.filesystem.openInputStream({
@@ -376,7 +376,7 @@
 						}
 					};
 
-					/** @type { slime.jrunscript.file.location.file.Exports["read"]["string"]["world"] } */
+					/** @type { slime.jrunscript.file.exports.location.File["read"]["string"]["world"] } */
 					var readString = function() {
 						return $api.fp.world.Sensor.map({
 							subject: $api.fp.identity,
@@ -429,8 +429,8 @@
 						write: Object.assign(
 							/**
 							 *
-							 * @param { Parameters<slime.jrunscript.file.location.file.Exports["write"]>[0] } location
-							 * @returns { ReturnType<slime.jrunscript.file.location.file.Exports["write"]> }
+							 * @param { Parameters<slime.jrunscript.file.exports.location.File["write"]>[0] } location
+							 * @returns { ReturnType<slime.jrunscript.file.exports.location.File["write"]> }
 							 */
 							function(location) {
 								return {
@@ -530,7 +530,7 @@
 								}
 							}
 						),
-						/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
+						/** @type { slime.jrunscript.file.exports.Location["file"]["remove"] } */
 						remove: {
 							world: function() {
 								return remove;
@@ -545,7 +545,7 @@
 					base: directory.navigation.base,
 					relativePath: directory.navigation.relativePath,
 					relativeTo: directory.navigation.relativeTo,
-					/** @type { slime.jrunscript.file.location.Exports["directory"]["exists"] } */
+					/** @type { slime.jrunscript.file.exports.Location["directory"]["exists"] } */
 					exists: {
 						simple: $api.fp.world.Sensor.mapping({
 							sensor: Location_directory_exists
@@ -594,7 +594,7 @@
 							}
 						}
 					},
-					/** @type { slime.jrunscript.file.location.Exports["directory"]["remove"] } */
+					/** @type { slime.jrunscript.file.exports.Location["directory"]["remove"] } */
 					remove: {
 						world: function() {
 							return remove;
@@ -609,7 +609,7 @@
 							 *
 							 * @param { slime.jrunscript.file.Location } location
 							 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-							 * @param { slime.$api.event.Emitter<slime.jrunscript.file.location.directory.list.Events> } events
+							 * @param { slime.$api.event.Emitter<slime.jrunscript.file.exports.location.list.Events> } events
 							 * @returns { slime.jrunscript.file.Location[] }
 							 */
 							var process = function(location,descend,events) {

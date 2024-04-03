@@ -480,7 +480,7 @@ namespace slime.jrunscript.file {
 			}
 
 			/** @deprecated Replaced by direct `Location` property. */
-			Location: location.Exports
+			Location: exports.Location
 		}
 
 		mock: {

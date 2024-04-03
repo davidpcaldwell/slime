@@ -11,9 +11,9 @@ namespace slime.jrunscript.file {
 	}
 
 	export interface Exports {
-		Location: location.Exports
+		Location: exports.Location
 
-		Filesystem: filesystem.Exports
+		Filesystem: exports.Filesystem
 	}
 
 	(
@@ -73,9 +73,9 @@ namespace slime.jrunscript.file {
 		}
 	}
 
-	export namespace location {
-		export interface Exports {
-			parent: () => (p: Location) => Location
+	export namespace exports {
+		export interface Location {
+			parent: () => (p: slime.jrunscript.file.Location) => slime.jrunscript.file.Location
 		}
 
 		(
@@ -95,8 +95,8 @@ namespace slime.jrunscript.file {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Exports {
-			basename: (p: Location) => string
+		export interface Location {
+			basename: (p: slime.jrunscript.file.Location) => string
 		}
 
 		(
@@ -116,16 +116,16 @@ namespace slime.jrunscript.file {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Exports {
-			canonicalize: (p: Location) => Location
+		export interface Location {
+			canonicalize: (p: slime.jrunscript.file.Location) => slime.jrunscript.file.Location
 		}
 
-		export interface Exports {
+		export interface Location {
 			/** @deprecated Replaced by `directory.relativePath`. */
-			relative: (path: string) => (p: Location) => Location
+			relative: (path: string) => (p: slime.jrunscript.file.Location) => slime.jrunscript.file.Location
 		}
 
-		export interface Exports {
+		export interface Location {
 			posix: {
 				attributes: {
 					/**
@@ -133,7 +133,7 @@ namespace slime.jrunscript.file {
 					 * attributes.
 					 */
 					get: slime.$api.fp.world.Sensor<{
-						location: Location
+						location: slime.jrunscript.file.Location
 					}, void, slime.$api.fp.Maybe<posix.Attributes>>
 
 					//	TODO	support owner/group updates below and update comments in following two methods.
@@ -146,7 +146,7 @@ namespace slime.jrunscript.file {
 					 * normal user will result in an exception.
 					 */
 					set: slime.$api.fp.world.Means<{
-						location: Location
+						location: slime.jrunscript.file.Location
 						attributes: posix.Attributes
 					}, void>
 
@@ -158,7 +158,7 @@ namespace slime.jrunscript.file {
 					 * normal user will result in an exception.
 					 */
 					update: slime.$api.fp.world.Means<{
-						location: Location
+						location: slime.jrunscript.file.Location
 						attributes: slime.$api.fp.Transform<posix.Attributes>
 					}, void>
 
@@ -217,7 +217,7 @@ namespace slime.jrunscript.file {
 						}
 					}
 
-					var getAttributes = function(tmp: Location) {
+					var getAttributes = function(tmp: slime.jrunscript.file.Location) {
 						var rv = $api.fp.world.now.ask(jsh.file.Location.posix.attributes.get({
 							location: tmp
 						}));
@@ -307,16 +307,22 @@ namespace slime.jrunscript.file {
 		)(Packages,fifty);
 	}
 
-	export namespace location {
-		export interface Exports {
-			file: file.Exports
+	export namespace exports {
+		export namespace location {
+			export interface File {}
 		}
 	}
 
-	export namespace location {
-		export namespace file {
-			export interface Exports {
-				size: slime.$api.fp.world.Sensor<Location, void, number>
+	export namespace exports {
+		export interface Location {
+			file: location.File
+		}
+	}
+
+	export namespace exports {
+		export namespace location {
+			export interface File {
+				size: slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, void, number>
 			}
 
 			(
@@ -339,12 +345,12 @@ namespace slime.jrunscript.file {
 		}
 	}
 
-	export namespace location {
-		export namespace file {
-			export interface Exports {
+	export namespace exports {
+		export namespace location {
+			export interface File {
 				remove: {
-					simple: slime.$api.fp.impure.Output<Location>
-					world: () => slime.$api.fp.world.Means<Location,void>
+					simple: slime.$api.fp.impure.Output<slime.jrunscript.file.Location>
+					world: () => slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
 				}
 			}
 		}
@@ -510,34 +516,34 @@ namespace slime.jrunscript.file {
 		//@ts-ignore
 		)(fifty);
 
-		export namespace file {
-			export interface Exports {
+		export namespace location {
+			export interface File {
 				exists: {
-					simple: slime.$api.fp.Mapping<Location,boolean>
-					world: () => slime.$api.fp.world.Sensor<Location, {}, boolean>
+					simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,boolean>
+					world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
 				}
 
 				read: {
-					stream: () => slime.$api.fp.world.Sensor<Location, {
+					stream: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {
 						notFound: void
 					}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
 
 					string: {
-						world: () => slime.$api.fp.world.Sensor<Location, {
+						world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {
 							notFound: void
 						}, slime.$api.fp.Maybe<string>>
 
-						maybe: slime.$api.fp.Mapping<Location, slime.$api.fp.Maybe<string>>
+						maybe: slime.$api.fp.Mapping<slime.jrunscript.file.Location, slime.$api.fp.Maybe<string>>
 
-						simple: slime.$api.fp.Mapping<Location, string>
+						simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location, string>
 					}
 
 					properties: {
-						simple: slime.$api.fp.Mapping<Location, slime.jrunscript.java.Properties>
+						simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location, slime.jrunscript.java.Properties>
 					}
 				}
 
-				write: (location: Location) => {
+				write: (location: slime.jrunscript.file.Location) => {
 					string: slime.$api.fp.world.Means<{ value: string }, slime.jrunscript.file.world.events.FileOpenForWrite>
 					stream: slime.$api.fp.world.Means<{ input: slime.jrunscript.runtime.io.InputStream },slime.jrunscript.file.world.events.FileOpenForWrite>
 					object: {
@@ -609,9 +615,15 @@ namespace slime.jrunscript.file {
 		)(fifty);
 	}
 
-	export namespace location {
-		export interface Exports {
-			directory: directory.Exports
+	export namespace exports {
+		export namespace location {
+			export interface Directory {}
+		}
+	}
+
+	export namespace exports {
+		export interface Location {
+			directory: location.Directory
 		}
 
 		(
@@ -623,15 +635,11 @@ namespace slime.jrunscript.file {
 		//@ts-ignore
 		)(fifty);
 
-		export namespace directory {
-			export interface Exports {}
-		}
-
-		export namespace directory {
-			export interface Exports {
-				base: (base: Location) => (relative: string) => Location
-				relativePath: (path: string) => (p: Location) => Location
-				relativeTo: (location: Location) => (p: Location) => string
+		export namespace location {
+			export interface Directory {
+				base: (base: slime.jrunscript.file.Location) => (relative: string) => slime.jrunscript.file.Location
+				relativePath: (path: string) => (p: slime.jrunscript.file.Location) => slime.jrunscript.file.Location
+				relativeTo: (location: slime.jrunscript.file.Location) => (p: slime.jrunscript.file.Location) => string
 			}
 
 			(
@@ -690,7 +698,7 @@ namespace slime.jrunscript.file {
 						var prefix = "/";
 						var base = prefix + "foo" + filesystem.separator.pathname + "bar";
 						var relative = "baz";
-						var b: Location = {
+						var b: slime.jrunscript.file.Location = {
 							filesystem: filesystem,
 							pathname: base
 						};
@@ -701,10 +709,10 @@ namespace slime.jrunscript.file {
 			//@ts-ignore
 			)(fifty);
 
-			export interface Exports {
+			export interface Directory {
 				exists: {
-					simple: slime.$api.fp.Mapping<Location,boolean>
-					world: () => slime.$api.fp.world.Sensor<Location, {}, boolean>
+					simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,boolean>
+					world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
 				}
 
 				require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Means<world.Location, {
@@ -847,12 +855,12 @@ namespace slime.jrunscript.file {
 		)(fifty);
 	}
 
-	export namespace location {
-		export namespace directory {
-			export interface Exports {
+	export namespace exports {
+		export namespace location {
+			export interface Directory {
 				remove: {
-					simple: slime.$api.fp.impure.Output<Location>
-					world: () => slime.$api.fp.world.Means<Location,void>
+					simple: slime.$api.fp.impure.Output<slime.jrunscript.file.Location>
+					world: () => slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
 				}
 			}
 		}
@@ -882,25 +890,26 @@ namespace slime.jrunscript.file {
 		)(fifty);
 	}
 
-	export namespace location {
-		export namespace directory {
+	export namespace exports {
+		export namespace location {
 			export namespace list {
 				export interface Events {
-					failed: Location
+					failed: slime.jrunscript.file.Location
 				}
 			}
-			export interface Exports {
+
+			export interface Directory {
 				list: {
 					stream: (p?: {
 						/**
 						 * If provided, is invoked to decide whether the listing will descend into the given directory. By default,
 						 * no subdirectories will be traversed.
 						 */
-						descend: slime.$api.fp.Predicate<Location>
+						descend: slime.$api.fp.Predicate<slime.jrunscript.file.Location>
 					}) => slime.$api.fp.world.Sensor<
-						slime.jrunscript.file.world.Location,
+						slime.jrunscript.file.Location,
 						list.Events,
-						slime.$api.fp.Stream<Location>
+						slime.$api.fp.Stream<slime.jrunscript.file.Location>
 					>
 				}
 			}
@@ -971,12 +980,12 @@ namespace slime.jrunscript.file {
 		}
 	}
 
-	export namespace location {
-		export namespace directory {
-			export interface Exports {
+	export namespace exports {
+		export namespace location {
+			export interface Directory {
 				loader: {
 					synchronous: (p: {
-						root: Location
+						root: slime.jrunscript.file.Location
 					}) => slime.runtime.loader.Synchronous<slime.jrunscript.runtime.Resource>
 				}
 			}
@@ -1027,18 +1036,18 @@ namespace slime.jrunscript.file {
 		}
 	}
 
-	export namespace location {
-		export interface Exports {
+	export namespace exports {
+		export interface Location {
 			remove: {
 				simple: slime.$api.fp.impure.Output<slime.jrunscript.file.Location>
 			}
 		}
 	}
 
-	export namespace location {
-		export interface Exports {
+	export namespace exports {
+		export interface Location {
 			from: {
-				os: (pathname: string) => Location
+				os: (pathname: string) => slime.jrunscript.file.Location
 
 				temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Sensor<
 					{
@@ -1048,7 +1057,7 @@ namespace slime.jrunscript.file {
 						directory: boolean
 					},
 					void,
-					Location
+					slime.jrunscript.file.Location
 				>
 			}
 		}
@@ -1131,7 +1140,7 @@ namespace slime.jrunscript.file {
 
 				const filesystem_relative = function(filesystem: world.Filesystem) {
 					return function(base: string, relative: string): string {
-						var b: Location = {
+						var b: slime.jrunscript.file.Location = {
 							filesystem: filesystem,
 							pathname: base
 						};
@@ -1238,8 +1247,8 @@ namespace slime.jrunscript.file {
 		)(fifty);
 	}
 
-	export namespace filesystem {
-		export interface Exports {
+	export namespace exports {
+		export interface Filesystem {
 			/**
 			 * Copies a filesystem node to a given location, creating the location's parent folders as necessary.
 			 */
@@ -1299,8 +1308,8 @@ namespace slime.jrunscript.file.internal.wo {
 	}
 
 	export interface Exports {
-		Location: location.Exports
-		Filesystem: slime.jrunscript.file.filesystem.Exports
+		Location: exports.Location
+		Filesystem: slime.jrunscript.file.exports.Filesystem
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
