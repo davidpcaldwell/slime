@@ -13,7 +13,7 @@ namespace slime.servlet.proxy {
 	export interface Context {
 		library: {
 			web: slime.web.Exports
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 			ip: slime.jrunscript.ip.Exports
 			http: slime.jrunscript.http.client.Exports

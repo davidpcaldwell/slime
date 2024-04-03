@@ -69,7 +69,7 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 		run: any
 		api: {
 			js: any
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			file: any
 		}
 		HOME: slime.jrunscript.file.Directory

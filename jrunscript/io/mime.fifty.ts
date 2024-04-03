@@ -11,7 +11,7 @@ namespace slime.jrunscript.io.mime {
 		nojavamail: boolean
 		$slime: Pick<slime.jsh.plugin.$slime,"mime" | "Resource">
 		api: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: {
 				Buffer: slime.jrunscript.io.Exports["Buffer"]
 				Resource: slime.jrunscript.io.Exports["Resource"]

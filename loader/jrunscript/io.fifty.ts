@@ -226,7 +226,7 @@ namespace slime.jrunscript.runtime.io {
 	export interface Context {
 		_streams: slime.jrunscript.native.inonit.script.runtime.io.Streams
 		api: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			Resource: any
 		}
 	}

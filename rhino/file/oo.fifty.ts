@@ -7,7 +7,7 @@
 namespace slime.jrunscript.file.internal.oo {
 	export interface Context {
 		api: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 		}
 

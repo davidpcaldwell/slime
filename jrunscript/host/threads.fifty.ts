@@ -4,16 +4,16 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.host.internal.threads {
+namespace slime.jrunscript.java.internal.threads {
 	export interface Context {
 		java: slime.jrunscript.runtime.MultithreadedJava
-		log: slime.jrunscript.host.logging.Logger
+		log: slime.jrunscript.java.logging.Logger
 		classpath: any
 	}
 
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
-			var script: slime.jrunscript.host.Script = fifty.$loader.script("module.js");
+			var script: slime.jrunscript.java.Script = fifty.$loader.script("module.js");
 			return script({
 				$slime: fifty.jsh.$slime,
 				globals: false,

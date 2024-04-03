@@ -128,7 +128,7 @@
 		/** @type { slime.jrunscript.java.tools.Exports["jar"] } */
 		var jar = (function() {
 			var toScriptManifest = function(_manifest) {
-				/** @type { slime.$api.fp.world.Reading<slime.jrunscript.java.tools.Exports["jar"]["manifest"]> } */
+				/** @type { slime.$api.fp.world.Reading<slime.jrunscript.java.tools.Exports["jar"]["manifest"]["world"]> } */
 				var rv = {
 					main: {},
 					entries: {}
@@ -164,7 +164,8 @@
 				return rv;
 			}
 
-			return {
+			var wo = {
+				/** @type { slime.jrunscript.java.tools.Exports["jar"]["manifest"]["world"] } */
 				manifest: function(o) {
 					return function(e) {
 						var _jarFile = _open(o.pathname);
@@ -173,6 +174,7 @@
 						return toScriptManifest(_manifest);
 					}
 				},
+				/** @type { slime.jrunscript.java.tools.Exports["jar"]["entries"]["world"] } */
 				entries: function(o) {
 					return function(events) {
 						var _jarFile = _open(o.pathname);
@@ -205,6 +207,17 @@
 							}
 						}
 					}
+				}
+			};
+
+			return {
+				manifest: {
+					world: wo.manifest,
+					simple: $api.fp.world.Sensor.mapping({ sensor: wo.manifest })
+				},
+				entries: {
+					world: wo.entries,
+					simple: $api.fp.world.Sensor.mapping({ sensor: wo.entries })
 				},
 				Manifest: {
 					from: {

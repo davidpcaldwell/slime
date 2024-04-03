@@ -7,7 +7,7 @@
 namespace slime.tools.documentation.updater {
 	export interface Context {
 		library: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 			code: slime.project.code.Exports

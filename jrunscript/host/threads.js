@@ -11,8 +11,8 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { any } JavaAdapter
-	 * @param { slime.jrunscript.host.internal.threads.Context } $context
-	 * @param { slime.jrunscript.host.internal.threads.Exports } $exports
+	 * @param { slime.jrunscript.java.internal.threads.Context } $context
+	 * @param { slime.jrunscript.java.internal.threads.Exports } $exports
 	 */
 	function(Packages,JavaAdapter,$api,$context,$exports) {
 		/**

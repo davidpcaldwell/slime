@@ -31,7 +31,7 @@ namespace slime.servlet {
 		 */
 		js: any
 
-		java: slime.jrunscript.host.Exports
+		java: slime.jrunscript.java.Exports
 		io: slime.jrunscript.io.Exports
 		web: slime.web.Exports
 
@@ -110,7 +110,7 @@ namespace slime.servlet {
 			 * @deprecated
 			 */
 			js: any
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 			web: slime.web.Exports
 			loader: {

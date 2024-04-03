@@ -28,7 +28,7 @@ namespace slime.jrunscript.http.client {
 		 */
 		api: {
 			web: slime.web.Exports
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 		}
 	}

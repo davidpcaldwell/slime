@@ -12,6 +12,8 @@
  * SLIME's Java support allows applications to be written in JavaScript that call out to Java platform libraries. As such, it is an
  * ideal platform for migrating Java software toward JavaScript.
  *
+ * Java-specific type definitions are provided in the {@link slime.jrunscript slime.jrunscript} namespace.
+ *
  * SLIME provides two Java platforms: the `jsh` scripting platform that runs on the JVM, and the Java servlet platform that runs on
  * a standard Java servlet implementation. `jsh` also provides the ability to run a servlet container from within its shell.
  *

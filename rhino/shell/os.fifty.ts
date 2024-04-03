@@ -116,7 +116,7 @@ namespace slime.jrunscript.shell.internal.os {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
-		environment: slime.jrunscript.host.Environment
+		environment: slime.jrunscript.java.Environment
 		TMPDIR: slime.jrunscript.file.Directory
 		PATH: slime.jrunscript.file.Searchpath
 

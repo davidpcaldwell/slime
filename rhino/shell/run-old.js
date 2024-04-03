@@ -122,9 +122,9 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.host.Environment } environment
+				 * @param { slime.jrunscript.java.Environment } environment
 				 * @param { slime.jrunscript.shell.sudo.Settings } settings
-				 * @returns { slime.jrunscript.host.Environment }
+				 * @returns { slime.jrunscript.java.Environment }
 				 */
 				var getEnvironmentToSudo = function(environment, settings) {
 					return $api.Object.compose(
@@ -343,7 +343,7 @@
 
 		/**
 		 * @param { Pick<slime.jrunscript.shell.invocation.old.Argument, "stdio" | "environment" | "directory"> } p
-		 * @param { slime.jrunscript.host.Environment } parentEnvironment
+		 * @param { slime.jrunscript.java.Environment } parentEnvironment
 		 * @param { slime.jrunscript.shell.invocation.Stdio } parentStdio
 		 * @returns { slime.jrunscript.shell.run.old.Context }
 		 */

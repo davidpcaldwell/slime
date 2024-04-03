@@ -131,7 +131,7 @@
 						_source: $servlet.resources
 					});
 					var code = {
-						/** @type { slime.jrunscript.host.Script } */
+						/** @type { slime.jrunscript.java.Script } */
 						java: loader.script("WEB-INF/slime/jrunscript/host/"),
 						/** @type { slime.jrunscript.io.Script } */
 						io: loader.script("WEB-INF/slime/jrunscript/io/"),

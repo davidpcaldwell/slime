@@ -23,7 +23,7 @@ namespace slime.jrunscript.tools.kubernetes.cli {
 	export interface Installation {
 		Environment: {
 			create: (p: {
-				environment: slime.jrunscript.host.Environment
+				environment: slime.jrunscript.java.Environment
 				directory: string
 				stdio: Required<slime.jrunscript.shell.invocation.Stdio>
 			}) => Environment

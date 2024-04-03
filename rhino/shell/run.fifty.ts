@@ -16,7 +16,7 @@ namespace slime.jrunscript.shell.internal.run {
 
 	export interface Context {
 		library: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}
@@ -226,7 +226,7 @@ namespace slime.jrunscript.shell.internal.run {
 	export namespace java {
 		export interface Context {
 			stdio: internal.run.Stdio
-			environment: slime.jrunscript.host.Environment
+			environment: slime.jrunscript.java.Environment
 			directory: slime.jrunscript.file.Directory
 		}
 

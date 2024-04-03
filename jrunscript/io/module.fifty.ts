@@ -8,7 +8,7 @@ namespace slime.jrunscript.io {
 	export interface Context {
 		$slime: slime.jrunscript.runtime.Exports
 		api: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 		}
 		nojavamail: boolean
 	}

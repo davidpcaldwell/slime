@@ -27,7 +27,7 @@ namespace slime.jrunscript.db.mysql {
 			Table: any
 		}
 		library: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			shell: {
 				run: slime.jrunscript.shell.Exports["run"]
 				console(message: string)
@@ -77,7 +77,7 @@ namespace slime.jrunscript.db.mysql {
 	export namespace local {
 		export interface Context {
 			library: {
-				java: slime.jrunscript.host.Exports
+				java: slime.jrunscript.java.Exports
 				shell: {
 					run: slime.jrunscript.shell.Exports["run"]
 					console(message: string)

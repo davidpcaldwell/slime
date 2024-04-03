@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.host {
+namespace slime.jrunscript.java {
 	export interface Context {
 		$slime: slime.jrunscript.runtime.Exports
 
@@ -47,7 +47,7 @@ namespace slime.jrunscript.host {
 		export interface Context {
 			api: {
 				java: {
-					Array: slime.jrunscript.host.Exports["Array"]
+					Array: slime.jrunscript.java.Exports["Array"]
 				}
 			}
 			prefix: string
@@ -98,7 +98,7 @@ namespace slime.jrunscript.host {
 
 	export namespace exports {
 		export interface Properties {
-			value: (name: string) => (properties: slime.jrunscript.host.Properties) => slime.$api.fp.Maybe<string>
+			value: (name: string) => (properties: slime.jrunscript.java.Properties) => slime.$api.fp.Maybe<string>
 
 			/** @deprecated */
 			adapt: (_java: slime.jrunscript.native.java.util.Properties) => OldProperties
@@ -108,7 +108,7 @@ namespace slime.jrunscript.host {
 			 * `java.util.Properties` type.
 			 */
 			codec: {
-				java: slime.Codec<slime.jrunscript.host.Properties,slime.jrunscript.native.java.util.Properties>
+				java: slime.Codec<slime.jrunscript.java.Properties,slime.jrunscript.native.java.util.Properties>
 			}
 		}
 
@@ -158,13 +158,13 @@ namespace slime.jrunscript.host {
 				/**
 				 * Parses a file in Java properties format and returns a JavaScript {@link Properties} object.
 				 */
-				string: slime.$api.fp.Mapping<string,slime.jrunscript.host.Properties>
+				string: slime.$api.fp.Mapping<string,slime.jrunscript.java.Properties>
 			}
 
 			/**
 			 * Converts a JavaScript {@link Properties} object to the Java properties file format.
 			 */
-			string: slime.$api.fp.Mapping<slime.jrunscript.host.Properties,string>
+			string: slime.$api.fp.Mapping<slime.jrunscript.java.Properties,string>
 		}
 
 		(

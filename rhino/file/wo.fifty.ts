@@ -533,7 +533,7 @@ namespace slime.jrunscript.file {
 					}
 
 					properties: {
-						simple: slime.$api.fp.Mapping<Location, slime.jrunscript.host.Properties>
+						simple: slime.$api.fp.Mapping<Location, slime.jrunscript.java.Properties>
 					}
 				}
 
@@ -1290,7 +1290,7 @@ namespace slime.jrunscript.file {
 namespace slime.jrunscript.file.internal.wo {
 	export interface Context {
 		library: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 		}
 		filesystem: {
