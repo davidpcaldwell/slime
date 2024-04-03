@@ -7,7 +7,7 @@
 namespace slime.jrunscript.file.internal.mock {
 	export interface Context {
 		library: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 		}
 	}

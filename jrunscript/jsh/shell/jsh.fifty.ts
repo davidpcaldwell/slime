@@ -20,7 +20,7 @@ namespace slime.jsh.shell {
 
 			api: {
 				js: any
-				java: slime.jrunscript.host.Exports
+				java: slime.jrunscript.java.Exports
 				io: slime.jrunscript.io.Exports
 				file: slime.jrunscript.file.Exports
 				script: jsh.script.Exports

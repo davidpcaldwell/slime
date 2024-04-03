@@ -10,8 +10,8 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
-	 * @param { slime.jrunscript.host.internal.logging.Context } $context
-	 * @param { slime.jrunscript.host.internal.logging.Exports } $exports
+	 * @param { slime.jrunscript.java.internal.logging.Context } $context
+	 * @param { slime.jrunscript.java.internal.logging.Exports } $exports
 	 */
 	function(Packages,JavaAdapter,$context,$exports) {
 		var _Level = Packages.java.util.logging.Level;

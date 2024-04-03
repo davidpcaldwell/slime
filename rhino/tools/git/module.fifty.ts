@@ -700,7 +700,7 @@ namespace slime.jrunscript.tools.git {
 		program: slime.jrunscript.file.File
 		api: {
 			js: slime.js.old.Exports
-			java: Pick<slime.jrunscript.host.Exports,"Thread">
+			java: Pick<slime.jrunscript.java.Exports,"Thread">
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 			//	TODO	fix this

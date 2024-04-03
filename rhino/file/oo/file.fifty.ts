@@ -1202,7 +1202,7 @@ namespace slime.jrunscript.file.internal.file {
 
 	export interface Context {
 		library: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 		}
 		Resource: slime.jrunscript.io.Exports["Resource"]
 		Streams: slime.jrunscript.io.Exports["Streams"]

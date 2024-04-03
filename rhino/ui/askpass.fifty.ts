@@ -7,7 +7,7 @@
 namespace slime.jsh.ui.askpass {
 	export interface Context {
 		api: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 		}
 	}
 

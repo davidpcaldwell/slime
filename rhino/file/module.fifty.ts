@@ -19,7 +19,7 @@ namespace slime.jrunscript.file {
 			 * @deprecated
 			 */
 			js: slime.js.old.Exports
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 		}
 

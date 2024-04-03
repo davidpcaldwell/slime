@@ -7,7 +7,7 @@
 namespace slime.jrunscript.java.tools {
 	export interface Context {
 		library: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
@@ -205,21 +205,29 @@ namespace slime.jrunscript.java.tools {
 
 	export interface Exports {
 		jar: {
-			manifest: slime.$api.fp.world.Sensor<
-				{
-					pathname: string
-				},
-				void,
-				jar.Manifest
-			>
+			manifest: {
+				world: slime.$api.fp.world.Sensor<
+					{
+						pathname: string
+					},
+					void,
+					jar.Manifest
+				>
 
-			entries: slime.$api.fp.world.Sensor<
-				{
-					pathname: string
-				},
-				void,
-				slime.$api.fp.Stream<jar.Entry>
-			>
+				simple: slime.$api.fp.world.Simple<Exports["jar"]["manifest"]["world"]>
+			}
+
+			entries: {
+				world: slime.$api.fp.world.Sensor<
+					{
+						pathname: string
+					},
+					void,
+					slime.$api.fp.Stream<jar.Entry>
+				>
+
+				simple: slime.$api.fp.world.Simple<Exports["jar"]["entries"]["world"]>
+			}
 
 			Manifest: {
 				from: {
@@ -259,7 +267,7 @@ namespace slime.jrunscript.java.tools {
 				});
 
 				var manifest = $api.fp.world.now.ask(
-					test.subject.jar.manifest({
+					test.subject.jar.manifest.world({
 						pathname: TMP.getRelativePath("foo.jar").toString()
 					})
 				);
@@ -268,7 +276,7 @@ namespace slime.jrunscript.java.tools {
 				verify(manifest).main.evaluate.property("Baz").is(void(0));
 
 				var entries = $api.fp.world.now.ask(
-					test.subject.jar.entries({ pathname: TMP.getRelativePath("foo.jar").toString() })
+					test.subject.jar.entries.world({ pathname: TMP.getRelativePath("foo.jar").toString() })
 				);
 
 				var array = $api.fp.Stream.collect(entries);

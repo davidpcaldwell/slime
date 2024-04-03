@@ -51,7 +51,7 @@ namespace slime.jrunscript.shell {
 		}
 
 		api: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 

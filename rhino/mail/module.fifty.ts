@@ -7,7 +7,7 @@
 namespace slime.jrunscript.mail {
 	export interface Context {
 		api: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 			mime: any
 			shell: slime.jsh.shell.Exports
@@ -39,14 +39,14 @@ namespace slime.jrunscript.mail {
 	export interface Exports {
 		Session: {
 			(p?: {
-				properties?: slime.jrunscript.host.Properties
+				properties?: slime.jrunscript.java.Properties
 				credentials?: {
 					user: string
 					password: string
 				}
 			}): Session
 			properties: {
-				GMAIL: slime.jrunscript.host.Properties
+				GMAIL: slime.jrunscript.java.Properties
 			}
 		}
 	}

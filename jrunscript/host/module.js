@@ -10,9 +10,9 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jrunscript.host.Context } $context
+	 * @param { slime.jrunscript.java.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.jrunscript.host.Exports } $exports
+	 * @param { slime.jrunscript.java.Exports } $exports
 	 */
 	function(Packages,JavaAdapter,$api,$context,$loader,$exports) {
 		$exports.getClass = $context.$slime.java.getClass;
@@ -27,7 +27,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.native.java.util.Properties } _properties
-		 * @returns { slime.jrunscript.host.Properties }
+		 * @returns { slime.jrunscript.java.Properties }
 		 */
 		var Properties = function(_properties) {
 			/** @type { (_value: any) => slime.$api.fp.Maybe<string> } */
@@ -46,7 +46,7 @@
 			}
 
 			var _keys = _properties.keySet().iterator();
-			/** @type { slime.jrunscript.host.Properties } */
+			/** @type { slime.jrunscript.java.Properties } */
 			var rv = {};
 			while(_keys.hasNext()) {
 				var _next = _keys.next();
@@ -192,7 +192,7 @@
 			return rv;
 		}
 
-		/** @type { slime.jrunscript.host.Exports["Properties"] } */
+		/** @type { slime.jrunscript.java.Exports["Properties"] } */
 		$exports.Properties = {
 			adapt: function($properties) {
 				return adaptProperties($properties);
@@ -213,7 +213,7 @@
 					},
 					decode: function(_properties) {
 						var _keys = _properties.propertyNames();
-						/** @type { slime.jrunscript.host.Properties } */
+						/** @type { slime.jrunscript.java.Properties } */
 						var rv = {};
 						while(_keys.hasMoreElements()) {
 							var name = String(_keys.nextElement());
@@ -459,7 +459,7 @@
 		}
 
 		$exports.Environment = function(_environment) {
-			/** @type { ReturnType<slime.jrunscript.host.Exports["Environment"] >} */
+			/** @type { ReturnType<slime.jrunscript.java.Exports["Environment"] >} */
 			var rv = {};
 			var i = _environment.getMap().keySet().iterator();
 			while(i.hasNext()) {

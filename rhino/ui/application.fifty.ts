@@ -142,7 +142,7 @@ namespace slime.jsh.ui.application {
 namespace slime.jsh.ui.internal.application {
 	export interface Context {
 		library: {
-			java: slime.jrunscript.host.Exports
+			java: slime.jrunscript.java.Exports
 			shell: slime.jrunscript.shell.Exports
 		}
 

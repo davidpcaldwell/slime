@@ -17,7 +17,7 @@ namespace slime.jrunscript.io.grid {
 
 namespace slime.jrunscript.io.internal.grid {
 	export interface Context {
-		getClass: slime.jrunscript.host.Exports["getClass"]
+		getClass: slime.jrunscript.java.Exports["getClass"]
 		Streams: slime.jrunscript.io.Exports["Streams"]
 	}
 

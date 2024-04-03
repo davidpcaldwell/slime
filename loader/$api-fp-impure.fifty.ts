@@ -551,6 +551,25 @@ namespace slime.$api.fp.world {
 		)
 	)
 
+	export type Simple<
+		X extends slime.$api.fp.world.Sensor<any,any,any> | slime.$api.fp.world.Means<any,any>
+	> = (
+		X extends slime.$api.fp.world.Sensor<
+			infer S,
+			infer E,
+			infer R
+		>
+		? slime.$api.fp.Mapping<S,R>
+		: (
+			X extends slime.$api.fp.world.Means<
+				infer O,
+				infer E
+			>
+			? slime.$api.fp.impure.Output<O>
+			: never
+		)
+	)
+
 	export type Question<E,R> = (events: slime.$api.event.Emitter<E>) => R
 	export type Action<E> = (events: slime.$api.event.Emitter<E>) => void
 
