@@ -254,6 +254,63 @@
 			}
 		)();
 
+		var wo = {
+			directory: {
+				list: {
+					stream: function(p) {
+						/**
+						 *
+						 * @param { slime.jrunscript.file.Location } location
+						 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
+						 * @param { slime.$api.event.Emitter<slime.jrunscript.file.exports.location.list.Events> } events
+						 * @returns { slime.jrunscript.file.Location[] }
+						 */
+						var process = function(location,descend,events) {
+							var listed = $api.fp.world.now.ask(
+								location.filesystem.listDirectory({ pathname: location.pathname })
+							);
+							/** @type { slime.jrunscript.file.Location[] } */
+							var rv = [];
+							if (listed.present) {
+								listed.value.forEach(function(name) {
+									var it = {
+										filesystem: location.filesystem,
+										pathname: location.pathname + location.filesystem.separator.pathname + name
+									};
+									rv.push(it);
+									var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
+									if (isDirectory.present) {
+										if (isDirectory.value) {
+											if (descend(it)) {
+												var contents = process(it,descend,events);
+												rv = rv.concat(contents);
+											}
+										} else {
+											//	ordinary file, nothing to do
+										}
+									} else {
+										//	TODO	not exactly the same situation as failing to list the directory, but close enough
+										events.fire("failed", it);
+									}
+								});
+							} else {
+								events.fire("failed", location);
+							}
+							return rv;
+						};
+
+						return function(location) {
+							return function(events) {
+								var descend = (p && p.descend) ? p.descend : $api.fp.mapping.all(false);
+								var array = process(location,descend,events);
+								return $api.fp.Stream.from.array(array);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		$export({
 			Location: {
 				from: {
@@ -604,55 +661,9 @@
 						})
 					},
 					list: {
-						stream: function(p) {
-							/**
-							 *
-							 * @param { slime.jrunscript.file.Location } location
-							 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-							 * @param { slime.$api.event.Emitter<slime.jrunscript.file.exports.location.list.Events> } events
-							 * @returns { slime.jrunscript.file.Location[] }
-							 */
-							var process = function(location,descend,events) {
-								var listed = $api.fp.world.now.ask(
-									location.filesystem.listDirectory({ pathname: location.pathname })
-								);
-								/** @type { slime.jrunscript.file.Location[] } */
-								var rv = [];
-								if (listed.present) {
-									listed.value.forEach(function(name) {
-										var it = {
-											filesystem: location.filesystem,
-											pathname: location.pathname + location.filesystem.separator.pathname + name
-										};
-										rv.push(it);
-										var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
-										if (isDirectory.present) {
-											if (isDirectory.value) {
-												if (descend(it)) {
-													var contents = process(it,descend,events);
-													rv = rv.concat(contents);
-												}
-											} else {
-												//	ordinary file, nothing to do
-											}
-										} else {
-											//	TODO	not exactly the same situation as failing to list the directory, but close enough
-											events.fire("failed", it);
-										}
-									});
-								} else {
-									events.fire("failed", location);
-								}
-								return rv;
-							};
-
-							return function(location) {
-								return function(events) {
-									var descend = (p && p.descend) ? p.descend : $api.fp.mapping.all(false);
-									var array = process(location,descend,events);
-									return $api.fp.Stream.from.array(array);
-								}
-							}
+						stream: {
+							world: wo.directory.list.stream,
+							simple: $api.fp.world.Sensor.mapping({ sensor: wo.directory.list.stream })
 						}
 					},
 					loader: {

@@ -72,7 +72,7 @@ namespace slime.jrunscript.file {
 					};
 
 					var directoryListing = $api.fp.world.Sensor.now({
-						sensor: jsh.file.Location.directory.list.stream(),
+						sensor: jsh.file.Location.directory.list.stream.world(),
 						subject: fifty.jsh.file.relative(".")
 					});
 
