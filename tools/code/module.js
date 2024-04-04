@@ -705,7 +705,7 @@
 			Project: {
 				from: {
 					directory: function(p) {
-						var question = $context.library.file.Location.directory.list.stream({
+						var question = $context.library.file.Location.directory.list.stream.world({
 							descend: p.excludes.descend
 						});
 						var listing = $api.fp.world.now.question(question, p.root);

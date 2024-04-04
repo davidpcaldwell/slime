@@ -900,17 +900,21 @@ namespace slime.jrunscript.file {
 
 			export interface Directory {
 				list: {
-					stream: (p?: {
-						/**
-						 * If provided, is invoked to decide whether the listing will descend into the given directory. By default,
-						 * no subdirectories will be traversed.
-						 */
-						descend: slime.$api.fp.Predicate<slime.jrunscript.file.Location>
-					}) => slime.$api.fp.world.Sensor<
-						slime.jrunscript.file.Location,
-						list.Events,
-						slime.$api.fp.Stream<slime.jrunscript.file.Location>
-					>
+					stream: {
+						world: (p?: {
+							/**
+							 * If provided, is invoked to decide whether the listing will descend into the given directory. By default,
+							 * no subdirectories will be traversed.
+							 */
+							descend: slime.$api.fp.Predicate<slime.jrunscript.file.Location>
+						}) => slime.$api.fp.world.Sensor<
+							slime.jrunscript.file.Location,
+							list.Events,
+							slime.$api.fp.Stream<slime.jrunscript.file.Location>
+						>,
+						simple: (p?: Parameters<Directory["list"]["stream"]["world"]>[0])
+							=> slime.$api.fp.world.Simple<ReturnType<Directory["list"]["stream"]["world"]>>
+					}
 				}
 			}
 
@@ -946,7 +950,7 @@ namespace slime.jrunscript.file {
 						});
 
 						var simple = $api.fp.Stream.collect($api.fp.world.now.question(
-							subject.Location.directory.list.stream(),
+							subject.Location.directory.list.stream.world(),
 							{
 								filesystem: fs,
 								pathname: ""
@@ -963,7 +967,7 @@ namespace slime.jrunscript.file {
 					fifty.tests.manual.issue1181 = function() {
 						var location = fifty.jsh.file.temporary.location();
 						var listing = $api.fp.world.now.question(
-							subject.Location.directory.list.stream(),
+							subject.Location.directory.list.stream.world(),
 							location,
 							{
 								failed: function(e) {
