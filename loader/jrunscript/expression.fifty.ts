@@ -338,7 +338,7 @@ namespace slime.jrunscript.runtime {
 			fifty.tests.exports.loader = function() {
 				verify(getType($slime.loader)).type.is("object");
 				verify(getType($slime.loader.synchronous)).type.is("object");
-				verify(getType($slime.loader.synchronous.script)).type.is("function");
+				verify(getType($slime.loader.synchronous.scripts)).type.is("function");
 
 				fifty.load("../Loader.fifty.ts", "script", loader);
 				fifty.load("../Loader.fifty.ts", "object", loader);

@@ -654,10 +654,10 @@
 					Ordering: orderingToJs
 				}
 			},
-			now: {
+			now: Object.assign(now_map, {
 				invoke: now_map,
 				map: now_map
-			},
+			}),
 			impure: impure.impure,
 			world: impure.world,
 			object: {

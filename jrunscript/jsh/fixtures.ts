@@ -203,7 +203,7 @@ namespace slime.jsh.test {
 							var code: {
 								testing: slime.jrunscript.tools.github.internal.test.Script
 							} = {
-								testing: jsh.loader.synchronous.script("rhino/tools/github/test/module.js")(loader)
+								testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
 							};
 
 							var library = {

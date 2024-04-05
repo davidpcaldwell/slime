@@ -18,6 +18,7 @@ namespace slime.jsh.test {
 		) {
 			const { verify, run } = fifty;
 			const { $api, jsh } = fifty.global;
+			const $f = $api.fp;
 
 			fifty.tests.cache = fifty.test.Parent();
 
@@ -40,12 +41,17 @@ namespace slime.jsh.test {
 			fifty.tests.wip = function() {
 				var slime = fifty.jsh.file.relative("../..");
 
-				var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
+				var scripts = $f.now(
+					slime,
+					$f.mapping.properties({ root: $api.fp.identity }),
+					jsh.file.Location.directory.loader.synchronous,
+					jsh.loader.synchronous.scripts
+				)
 
 				var code: {
 					testing: slime.jrunscript.tools.github.internal.test.Script
 				} = {
-					testing: jsh.loader.synchronous.script("rhino/tools/github/test/module.js")(loader)
+					testing: scripts("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
 				};
 
 				var library = {

@@ -63,7 +63,7 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		/**
-		 * @deprecated Use {@link Exports["now"]["map"] | `$api.fp.now.map`}.
+		 * @deprecated Use {@link Exports.now | `$api.fp.now.map`}.
 		 */
 		result: Now_map
 	}
@@ -1263,15 +1263,18 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export interface Exports {
-		now: {
+		/**
+		 * Returns the result of invoking a function on an argument. `now(p, f)` is syntactic sugar for `f(p)`, and
+		 * `now(p, f, g) is syntactic sugar for `g(f(p))`.
+		 */
+		now: Now_map & {
 			/**
-			 * @deprecated Replaced by {@link Exports.now.map}.
+			 * @deprecated Replaced by {@link Exports.now}.
 			 */
 			invoke: Now_map
 
 			/**
-			 * Returns the result of invoking a function on an argument. `invoke(p, f)` is syntactic sugar for `f(p)`, and
-			 * `invoke(p, f, g) is syntactic sugar for `g(f(p))`.
+			 * @deprecated Replaced by {@link Exports.now}.
 			 */
 			map: Now_map
 		}
