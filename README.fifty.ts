@@ -57,12 +57,12 @@
  * simply loads the low-level SLIME runtime (providing SLIME's object-oriented and functional programming APIs) and provides access
  * to it, as well as a simple filesystem-based {@link slime.Loader} implementation.
  *
- * ### JXA
+ * ### ~~JXA~~ (currently broken; see [issue #1506](https://github.com/davidpcaldwell/slime/issues/1506))
  *
- * {@link slime.jxa | SLIME JXA} is a SLIME environment for use in macOS automation.
+ * ~~{@link slime.jxa | SLIME JXA} is a SLIME environment for use in macOS automation.~~
  *
- * JXA support is alpha quality. That said, JXA is a very difficult environment to use, so SLIME is already extremely helpful, as it
- * provides basic abilities not provided by the platform (like the ability to load code from other source files).
+ * ~~JXA support is alpha quality. That said, JXA is a very difficult environment to use, so SLIME is already extremely helpful, as it
+ * provides basic abilities not provided by the platform (like the ability to load code from other source files).~~
  *
  * ### Creating a custom embedding
  *
