@@ -13,37 +13,41 @@
 	 * @param { slime.old.loader.Export<slime.runtime.internal.loader.Exports> } $export
 	 */
 	function(methods,$api,$export) {
+		var loadScript = function(loader,path) {
+			var resource = loader.get(path.split("/"));
+
+			if (resource.present) {
+				var code = loader.code(resource.value);
+
+				return function(context) {
+					var rv;
+
+					methods.run(
+						code,
+						{
+							$context: context,
+							$loader: void(0),
+							$export: function(v) {
+								rv = v;
+							}
+						}
+					);
+
+					return rv;
+				}
+			} else {
+				return null;
+			}
+		};
+
 		/**
 		 * @type { slime.runtime.loader.Exports }
 		 */
 		var api = {
 			synchronous: {
-				script: function(path) {
-					return function(loader) {
-						var resource = loader.get(path.split("/"));
-
-						if (resource.present) {
-							var code = loader.code(resource.value);
-
-							return function(context) {
-								var rv;
-
-								methods.run(
-									code,
-									{
-										$context: context,
-										$loader: void(0),
-										$export: function(v) {
-											rv = v;
-										}
-									}
-								);
-
-								return rv;
-							}
-						} else {
-							return null;
-						}
+				scripts: function(loader) {
+					return function(path) {
+						return loadScript(loader, path);
 					}
 				},
 				resources: function(filter) {
@@ -85,7 +89,7 @@
 				Synchronous: function(loader) {
 					return {
 						script: function(path) {
-							return api.synchronous.script(path)(loader);
+							return api.synchronous.scripts(loader)(path);
 						}
 					}
 				}

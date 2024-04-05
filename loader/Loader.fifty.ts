@@ -47,7 +47,7 @@ namespace slime {
 					parent: (path: string[]) => boolean
 				}) => (loader: Synchronous<T>) => Location[]
 
-				script: (path: string) => <T,C,E>(loader: Synchronous<T>) => slime.loader.synchronous.Script<C,E>
+				scripts: <T,C,E>(loader: Synchronous<T>) => (script: string) => slime.loader.synchronous.Script<C,E>
 			}
 		}
 
@@ -77,17 +77,15 @@ namespace slime {
 				};
 
 				fifty.tests.script.missing = function(loader: Synchronous<any>) {
-					var no = test.subject.synchronous.script("foo")(loader);
+					var no = test.subject.synchronous.scripts(loader)("foo");
 					verify(no).is(null);
 				}
 
 				fifty.tests.script.context = function(loader: Synchronous<any>) {
 					function echo<T>(t: T): T {
-						if (!test.subject.synchronous.script) throw new Error("No 'script'");
-						var at = test.subject.synchronous.script("loader/test/data/context.js");
-						if (!at) throw new Error("No 'at'");
-						debugger;
-						var script: <C>(c: C) => { provided: C } = at(loader);
+						if (!test.subject.synchronous.scripts) throw new Error("No 'scripts'");
+						var scripts = test.subject.synchronous.scripts(loader);
+						var script = scripts("loader/test/data/context.js") as <C>(c: C) => { provided: C };
 						if (!script) throw new Error("No script");
 						return script(t).provided;
 					}
