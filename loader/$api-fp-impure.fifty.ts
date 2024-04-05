@@ -31,8 +31,21 @@ namespace slime.$api.fp {
 }
 
 namespace slime.$api.fp.impure {
+	/**
+	 * A function capable of observing some kind of external state and obtaining and returning it to the caller.
+	 */
+	export type External<T> = () => T
+	/** @deprecated Replaced by `External`. */
 	export type Input<T> = () => T
+
+	/**
+	 * An impure function, with side effects, that is capable of effecting some kind of external change. Its argument
+	 * represents the change to effect.
+	 */
+	export type Effect<T> = (t: T) => void
+	/** @deprecated Replaced by `Effect` and {@link slime.$api.oo.Modifier}. */
 	export type Output<T> = (t: T) => void
+
 	export type Process = () => void
 
 	export namespace exports {

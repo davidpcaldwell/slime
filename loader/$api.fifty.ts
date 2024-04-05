@@ -977,3 +977,7 @@ namespace slime.$api {
 namespace slime.$api.internal {
 	export type script = <C,E>(name: string) => slime.loader.Script<C,E>
 }
+
+namespace slime.$api.oo {
+	export type Modifier<T extends object> = (t: T) => void
+}
