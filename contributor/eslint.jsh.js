@@ -19,7 +19,7 @@
 		});
 
 		$api.fp.world.execute(jsh.shell.tools.node.require());
-		jsh.shell.tools.node.installed.modules.require({ name: "eslint" });
+		jsh.shell.tools.node.installed.modules.require({ name: "eslint", version: "8.57.0" });
 
 		jsh.shell.tools.node.installed.run({
 			command: "eslint",

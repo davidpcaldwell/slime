@@ -26,7 +26,7 @@
 
 		var node = jsh.shell.tools.node.installed;
 
-		node.modules.require({ name: "eslint" });
+		node.modules.require({ name: "eslint", version: "8.57.0" });
 
 		var results = node.run({
 			command: "eslint",
