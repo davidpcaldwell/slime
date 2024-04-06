@@ -164,6 +164,13 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface Filesystem {
+			/**
+			 * Creates a temporary file with a generated pathname. The returned value is the full pathname of the created file.
+			 * The `parent` value specifies a directory in which to create fhe file. The `prefix` and `suffix` can be used to affect
+			 * the name of the created file. The `directory` property affects whether a directory is created at the location or an
+			 * ordinary file is created.
+			 */
+			//	TODO	what if parent does not exist?
 			temporary: slime.$api.fp.world.Sensor<
 				{
 					parent?: string
