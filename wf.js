@@ -213,7 +213,7 @@
 						(
 							function eslint() {
 								$api.fp.world.now.action(
-									jsh.shell.tools.node.Installation.modules.require({ name: "eslint" }),
+									jsh.shell.tools.node.Installation.modules.require({ name: "eslint", version: "8.57.0" }),
 									installation,
 									{
 										installed: function(e) {
