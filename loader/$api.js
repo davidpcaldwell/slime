@@ -61,7 +61,7 @@
 			/** @type { slime.$api.fp.internal.Script } */
 			Function: script("$api-Function.js"),
 			/** @type { slime.$api.fp.internal.old.Script } */
-			Function_old: script("$api-Function-old.js")
+			Function_old: script("$api-Function_old.js")
 		};
 
 		Object.assign($exports, load("$api-flag.js"));

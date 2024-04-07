@@ -115,8 +115,8 @@ namespace slime.tools.code {
 					test.subject.Project.from.git({
 						root: jsh.shell.PWD.pathname.os.adapt(),
 						excludes: {
-							descend: $api.fp.mapping.all(true),
-							isSource: $api.fp.mapping.all($api.fp.Maybe.from.some(true))
+							descend: $api.fp.Mapping.all(true),
+							isSource: $api.fp.Mapping.all($api.fp.Maybe.from.some(true))
 						}
 					}),
 					{

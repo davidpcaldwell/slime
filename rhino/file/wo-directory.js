@@ -110,7 +110,7 @@
 
 						return function(location) {
 							return function(events) {
-								var descend = (p && p.descend) ? p.descend : $api.fp.mapping.all(false);
+								var descend = (p && p.descend) ? p.descend : $api.fp.Mapping.all(false);
 								var array = process(location,descend,events);
 								return $api.fp.Stream.from.array(array);
 							}
