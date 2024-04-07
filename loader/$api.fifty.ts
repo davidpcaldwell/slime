@@ -39,14 +39,17 @@ namespace slime.$api {
 			disableBreakOnExceptionsFor: <T extends slime.external.lib.es5.Function>(f: T) => T
 		}
 
+		/**
+		 * @deprecated Use constructs from {@link slime.$api.fp.Exports.Predicate | $api.fp.Predicate}.
+		 */
 		Filter: {
 			/**
-			 * @deprecated Use {@link slime.$api.Global["filter"]["and"]}. }
+			 * @deprecated Use {@link slime.$api.fp.Exports.Predicate["and"] | $api.fp.Predicate.and }. }
 			 */
 			and: slime.$api.fp.Exports["Predicate"]["and"]
 
 			/**
-			 * @deprecated Use {@link slime.$api.Global["filter"]["or"]}. }
+			 * @deprecated Use {@link slime.$api.fp.Exports.Predicate["or"] | $api.fp.Predicate.or }. }
 			 */
 			or: slime.$api.fp.Exports["Predicate"]["or"]
 		}

@@ -43,7 +43,7 @@ namespace slime.jsh.test {
 
 				var scripts = $f.now(
 					slime,
-					$f.mapping.properties({ root: $api.fp.identity }),
+					$f.Mapping.properties({ root: $api.fp.identity }),
 					jsh.file.Location.directory.loader.synchronous,
 					jsh.loader.synchronous.scripts
 				)

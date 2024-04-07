@@ -943,7 +943,7 @@ namespace slime {
 					fifty.load("$api.fifty.ts");
 					fifty.load("mime.fifty.ts");
 					fifty.load("$api-Function.fifty.ts");
-					fifty.load("$api-Function-old.fifty.ts");
+					fifty.load("$api-Function_old.fifty.ts");
 					fifty.load("Loader.fifty.ts");
 					fifty.load("old-loaders.fifty.ts");
 					fifty.load("events.fifty.ts");

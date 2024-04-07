@@ -331,6 +331,7 @@
 					};
 				}
 
+				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["temporary"] } */
 				this.temporary = function(peer,parameters) {
 					if (!parameters) parameters = {};
 					var prefix = defined(parameters.prefix, "slime");
@@ -739,11 +740,14 @@
 				temporary: function(p) {
 					return function(events) {
 						var parent = (p.parent) ? java.newPeer(p.parent) : null;
-						var created = java.temporary(parent, {
-							prefix: p.prefix,
-							suffix: p.suffix,
-							directory: p.directory
-						});
+						var created = java.temporary(
+							parent,
+							{
+								prefix: p.prefix,
+								suffix: p.suffix,
+								directory: p.directory
+							}
+						);
 						return String(created.getScriptPath());
 					}
 				},

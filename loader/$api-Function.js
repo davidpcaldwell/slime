@@ -206,16 +206,6 @@
 				return typeof(o);
 			},
 			pipe: pipe,
-			split: function(functions) {
-				var entries = Object.entries(functions);
-				return function(p) {
-					var results = entries.map(function(entry) {
-						return [entry[0], functions[entry[0]](p)];
-					});
-					return Object.fromEntries(results);
-				}
-			},
-			result: now_map,
 			thunk: {
 				value: function() {
 					var args = Array.prototype.slice.call(arguments);
@@ -224,28 +214,7 @@
 					}
 				}
 			},
-			property: property,
-			optionalChain: function(name) {
-				return function(p) {
-					return (p == null) ? void(0) : p[name];
-				}
-			},
-			is: function(value) {
-				return function(v) {
-					return v === value;
-				}
-			},
-			returning: function(v) {
-				return function() {
-					return v;
-				};
-			},
-			mapAllTo: function(v) {
-				return function(p) {
-					return v;
-				}
-			},
-			mapping: {
+			Mapping: {
 				all: function(r) {
 					return function(p) {
 						return r;
@@ -265,6 +234,95 @@
 						}
 						return rv;
 					}
+				}
+			},
+			returning: function(v) {
+				return function() {
+					return v;
+				};
+			},
+			mapAllTo: function(v) {
+				return function(p) {
+					return v;
+				}
+			},
+			split: function(functions) {
+				var entries = Object.entries(functions);
+				return function(p) {
+					var results = entries.map(function(entry) {
+						return [entry[0], functions[entry[0]](p)];
+					});
+					return Object.fromEntries(results);
+				}
+			},
+			Predicate: {
+				is: function(value) {
+					return function(p) {
+						return p === value;
+					}
+				},
+				equals: function(value) {
+					return function(p) {
+						return p == value;
+					}
+				},
+				/** @type { slime.$api.fp.Exports["filter"]["or"] } */
+				or: function() {
+					var functions = Array.prototype.slice.call(arguments);
+					for (var i=0; i<functions.length; i++) {
+						if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
+					}
+					return function(p) {
+						for (var i=0; i<functions.length; i++) {
+							if (functions[i](p)) return true;
+						}
+						return false;
+					}
+				},
+				and: function() {
+					var functions = Array.prototype.slice.call(arguments);
+					for (var i=0; i<functions.length; i++) {
+						if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
+					}
+					return function(p) {
+						for (var i=0; i<functions.length; i++) {
+							if (!functions[i](p)) return false;
+						}
+						return true;
+					}
+				},
+				not: function(f) {
+					return function(p) {
+						return !f(p);
+					}
+				},
+				property: function(key, predicate) {
+					return pipe(
+						property(key),
+						predicate
+					);
+				}
+			},
+			filter: {
+				or: $context.deprecate(Predicate.or),
+				and: $context.deprecate(Predicate.and),
+				not: $context.deprecate(Predicate.not)
+			},
+			is: function(value) {
+				return function(v) {
+					return v === value;
+				}
+			},
+			property: property,
+			optionalChain: function(name) {
+				return function(p) {
+					return (p == null) ? void(0) : p[name];
+				}
+			},
+			curry: function(f,c) {
+				return function(p) {
+					//@ts-ignore
+					return f(Object.assign({},p,c));
 				}
 			},
 			conditional: function(test,yes,no) {
@@ -420,7 +478,6 @@
 					return Maybe.from.nothing();
 				}
 			},
-			Stream: stream.exports,
 			Array: {
 				filter: function(f) {
 					return function(array) {
@@ -488,90 +545,7 @@
 					},[]);
 				}
 			},
-			Predicate: {
-				is: function(value) {
-					return function(p) {
-						return p === value;
-					}
-				},
-				equals: function(value) {
-					return function(p) {
-						return p == value;
-					}
-				},
-				/** @type { slime.$api.fp.Exports["filter"]["or"] } */
-				or: function() {
-					var functions = Array.prototype.slice.call(arguments);
-					for (var i=0; i<functions.length; i++) {
-						if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
-					}
-					return function(p) {
-						for (var i=0; i<functions.length; i++) {
-							if (functions[i](p)) return true;
-						}
-						return false;
-					}
-				},
-				and: function() {
-					var functions = Array.prototype.slice.call(arguments);
-					for (var i=0; i<functions.length; i++) {
-						if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
-					}
-					return function(p) {
-						for (var i=0; i<functions.length; i++) {
-							if (!functions[i](p)) return false;
-						}
-						return true;
-					}
-				},
-				not: function(f) {
-					return function(p) {
-						return !f(p);
-					}
-				},
-				property: function(key, predicate) {
-					return pipe(
-						property(key),
-						predicate
-					);
-				}
-			},
-			filter: {
-				or: $context.deprecate(Predicate.or),
-				and: $context.deprecate(Predicate.and),
-				not: $context.deprecate(Predicate.not)
-			},
-			JSON: {
-				stringify: function(p) {
-					var replacer = (p && p.replacer) ? p.replacer : void(0);
-					//	TODO	is the below correct for 0 and '' ?
-					var space = (p && p.space) ? p.space : void(0);
-					return function(v) {
-						return JSON.stringify(v, replacer, space);
-					}
-				},
-				prettify: function(p) {
-					//	TODO	is the below correct for 0 and '' ?
-					var space = (p && p.space) ? p.space : void(0);
-					return function(v) {
-						return JSON.stringify(JSON.parse(v), void(0), space);
-					}
-				}
-			},
-			RegExp: {
-				modify: function(modifier) {
-					return function(regexp) {
-						return new RegExp( modifier(regexp.source) );
-					}
-				},
-				exec: function(regexp) {
-					return function(string) {
-						//	We copy the RegExp to deal with possibilities of multithreaded access
-						var copy = new RegExp(regexp.source);
-						return Maybe.from.value(copy.exec(string));
-					}
-				}
-			},
+			Stream: stream.exports,
 			Ordering: {
 				from: {
 					operators: function(two) {
@@ -654,12 +628,42 @@
 					Ordering: orderingToJs
 				}
 			},
+			JSON: {
+				stringify: function(p) {
+					var replacer = (p && p.replacer) ? p.replacer : void(0);
+					//	TODO	is the below correct for 0 and '' ?
+					var space = (p && p.space) ? p.space : void(0);
+					return function(v) {
+						return JSON.stringify(v, replacer, space);
+					}
+				},
+				prettify: function(p) {
+					//	TODO	is the below correct for 0 and '' ?
+					var space = (p && p.space) ? p.space : void(0);
+					return function(v) {
+						return JSON.stringify(JSON.parse(v), void(0), space);
+					}
+				}
+			},
+			RegExp: {
+				modify: function(modifier) {
+					return function(regexp) {
+						return new RegExp( modifier(regexp.source) );
+					}
+				},
+				exec: function(regexp) {
+					return function(string) {
+						//	We copy the RegExp to deal with possibilities of multithreaded access
+						var copy = new RegExp(regexp.source);
+						return Maybe.from.value(copy.exec(string));
+					}
+				}
+			},
 			now: Object.assign(now_map, {
 				invoke: now_map,
 				map: now_map
 			}),
-			impure: impure.impure,
-			world: impure.world,
+			result: now_map,
 			object: {
 				Update: {
 					compose: function(functions) {
@@ -739,7 +743,9 @@
 				};
 			},
 			mutating: $context.old.Function.mutating,
-			value: $context.old.Function.value
+			value: $context.old.Function.value,
+			impure: impure.impure,
+			world: impure.world
 		});
 	}
 //@ts-ignore

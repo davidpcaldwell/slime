@@ -97,11 +97,14 @@ namespace slime.jrunscript.file.internal.java {
 		 * @param parent The location in which to create a temporary file / directory, or `null` to create it in the default Java
 		 * location.
 		 */
-		temporary: (parent: Peer, parameters: {
-			prefix?: string
-			suffix?: string
-			directory?: boolean
-		}) => Peer
+		temporary: (
+			parent: Peer,
+			parameters: {
+				prefix?: string
+				suffix?: string
+				directory?: boolean
+			}
+		) => Peer
 
 		java: {
 			adapt: (_jfile: slime.jrunscript.native.java.io.File) => Peer

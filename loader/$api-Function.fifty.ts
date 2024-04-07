@@ -13,6 +13,10 @@ namespace slime.$api {
 /**
  * The {@link slime.$api.fp.Exports | Exports} member of this namespace is available as `$api.fp` in all scripts loaded by the
  * SLIME loader.
+ *
+ * The SLIME functional programming APIs strongly favor functions with a single argument, given that JavaScript has multiple ways
+ * to pass multiple values through a single argument (for example arguments can be objects with multiple properties, or arrays with
+ * multiple elements).
  */
 namespace slime.$api.fp {
 	(
@@ -39,7 +43,17 @@ namespace slime.$api.fp {
 	/** @deprecated Use {@link Predicate}. */
 	export type Filter<T> = (t: T) => boolean
 
+	/**
+	 * A special kind of `Predicate` where all values that satisfy the predicate are known to be members of a subtype of the
+	 * predicate type.
+	 */
 	export type TypePredicate<T,N extends T> = (t: T) => t is N
+
+	/**
+	 * The SLIME functional programming APIs. This object is available as `$api.fp` in all scripts loaded by the SLIME loader.
+	 */
+	export interface Exports {
+	}
 
 	export interface Exports {
 		identity: <T>(t: T) => T
@@ -49,6 +63,10 @@ namespace slime.$api.fp {
 		 */
 		cast: <T>(t: any) => T
 
+		/**
+		 * Returns a JavaScript type for the given value. This value is identical to the result of the JavaScript `typeof` operator
+		 * unless the given value is `null`, in which case it is `"null"`.
+		 */
 		type: (v: any) => string
 	}
 
@@ -57,15 +75,134 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
-		/** @deprecated Replaced by `mapping.properties`. */
-		split: <P,R>(functions: { [k in keyof R]: (p: P) => R[k] }) => (p: P) => R
+		thunk: {
+			value: Thunk_value
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.mapping = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		export interface Mapping {
+			all: <P,R>(r: R) => (p: P) => R
+		}
 	}
 
 	export interface Exports {
 		/**
-		 * @deprecated Use {@link Exports.now | `$api.fp.now.map`}.
+		 * APIs related to {@link Mapping}s.
 		 */
-		result: Now_map
+		Mapping: exports.Mapping
+
+
+		/**
+		 * @deprecated Replaced by `Input.value`/`Thunk.value` and `mapping.all`
+		 * @param t
+		 * @returns
+		 */
+		returning: <T>(t: T) => () => T
+
+		/**
+		 * @deprecated Replaced by `mapping.all`.
+		 */
+		mapAllTo: <P,R>(r: R) => (p: P) => R
+
+
+		/** @deprecated Replaced by `mapping.properties`. */
+		split: <P,R>(functions: { [k in keyof R]: (p: P) => R[k] }) => (p: P) => R
+	}
+
+	export namespace exports {
+		export interface Mapping {
+			thunk: <P,R>(p: {
+				mapping: fp.Mapping<P,R>
+				argument: P
+			}) => Thunk<R>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.mapping.thunk = function() {
+					var double: fp.Mapping<number,number> = (n: number) => n*2;
+
+					var t1 = $api.fp.Mapping.thunk({
+						mapping: double,
+						argument: 2
+					});
+
+					verify(t1()).is(4);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Predicate: {
+			and: <T>(...predicates: $api.fp.Predicate<T>[]) => $api.fp.Predicate<T>
+			or: <T>(...predicates: $api.fp.Predicate<T>[]) => $api.fp.Predicate<T>
+			not: <T>(predicate: $api.fp.Predicate<T>) => $api.fp.Predicate<T>
+			is: <T>(value: T) => fp.Predicate<T>
+			equals: <T>(value: T) => fp.Predicate<T>
+
+			property: <T, K extends keyof T>(k: K, predicate: $api.fp.Predicate<T[K]>) => $api.fp.Predicate<T>
+		}
+		/** @deprecated Use {@link Exports["Predicate"]} */
+		filter: {
+			/** @deprecated Use {@link Exports["Predicate"]["and"]}. */
+			and: Exports["Predicate"]["and"]
+			/** @deprecated Use {@link Exports["Predicate"]["or"]}. */
+			or: Exports["Predicate"]["or"]
+			/** @deprecated Use {@link Exports["Predicate"]["not"]}. */
+			not: Exports["Predicate"]["not"]
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const verify = fifty.verify;
+
+			fifty.tests.Predicate = function() {
+				fifty.run(function property() {
+					type T = { a: number, b: string };
+
+					const ts: T[] = [
+						{ a: 1, b: "a" },
+						{ a: 2, b: "b" }
+					]
+
+					const f1: Predicate<T> = fifty.global.$api.fp.Predicate.property("a", function(v) { return v == 1; });
+					const f2: Predicate<T> = fifty.global.$api.fp.Predicate.property("b", function(v) { return v == "b"; });
+
+					verify(ts).evaluate(function(ts) { return ts.filter(f1); }).length.is(1);
+					verify(ts.filter(f1))[0].a.is(1);
+					verify(ts).evaluate(function(ts) { return ts.filter(f2); }).length.is(1);
+					verify(ts.filter(f2))[0].a.is(2);
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		/**
+		 * @deprecated Use `Predicate.is`.
+		 */
+		is: <T>(value: T) => fp.Predicate<T>
 	}
 
 	(
@@ -73,37 +210,18 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			fifty.tests.result = function() {
-				var times = function(x: number) {
-					return function(v: number) {
-						return v * x;
-					}
-				};
 
-				var plus = function(x: number) {
-					return function(v: number) {
-						return v + x;
-					}
-				};
+			fifty.tests.is = function() {
+				var is2 = fifty.global.$api.fp.is(2);
 
-				var x = fifty.global.$api.fp.result(
-					2,
-					fifty.global.$api.fp.pipe(
-						times(3),
-						plus(4)
-					)
-				);
-				verify(x).is(10);
+				verify(is2(2)).is(true);
+				//@ts-ignore
+				verify(is2("2")).is(false);
+				verify(is2(3)).is(false);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export interface Exports {
-		thunk: {
-			value: Thunk_value
-		}
-	}
 
 	export interface Exports {
 		/**
@@ -127,7 +245,7 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
-		is: <T>(value: T) => fp.Predicate<T>
+		curry: <T,P extends slime.external.lib.typescript.Partial<T>,R>(f: (t: T) => R, fix: P) => (t: Omit<T, keyof P>) => R
 	}
 
 	(
@@ -135,83 +253,21 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api } = fifty.global;
 
-			fifty.tests.is = function() {
-				var is2 = fifty.global.$api.fp.is(2);
+			fifty.tests.exports.curry = function() {
+				var f: (p: { a: number, b: string, c: boolean }) => string = function(p) { return [p.a,p.b,p.c].join("/") };
+				var g = $api.fp.curry(f, { a: 2, b: "hey" });
+				verify( g({ c: true }) ).is("2/hey/true");
+			};
 
-				verify(is2(2)).is(true);
-				//@ts-ignore
-				verify(is2("2")).is(false);
-				verify(is2(3)).is(false);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports.mapping = fifty.test.Parent();
+			fifty.tests.wip = fifty.tests.exports.curry;
 		}
 	//@ts-ignore
 	)(fifty);
 
 	export namespace exports {
-		export interface mapping {
-			all: <P,R>(r: R) => (p: P) => R
-		}
-	}
-
-	export interface Exports {
-		mapping: exports.mapping
-
-
-		/**
-		 * @deprecated Replaced by `Input.value`/`Thunk.value` and `mapping.all`
-		 * @param t
-		 * @returns
-		 */
-		returning: <T>(t: T) => () => T
-
-		/**
-		 * @deprecated Replaced by `mapping.all`.
-		 */
-		mapAllTo: <P,R>(r: R) => (p: P) => R
-	}
-
-	export namespace exports {
-		export interface mapping {
-			thunk: <P,R>(p: {
-				mapping: Mapping<P,R>
-				argument: P
-			}) => Thunk<R>
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { $api } = fifty.global;
-
-				fifty.tests.exports.mapping.thunk = function() {
-					var double: Mapping<number,number> = (n: number) => n*2;
-
-					var t1 = $api.fp.mapping.thunk({
-						mapping: double,
-						argument: 2
-					});
-
-					verify(t1()).is(4);
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-	}
-
-	export namespace exports {
-		export interface mapping {
+		export interface Mapping {
 			properties: <P,R>(p: {
 				[k in keyof R]: (p: P) => R[k]
 			}) => (p: P) => R
@@ -227,7 +283,7 @@ namespace slime.$api.fp {
 				fifty.tests.exports.mapping.properties = function() {
 					var x = $api.fp.now.map(
 						2,
-						$api.fp.mapping.properties({
+						$api.fp.Mapping.properties({
 							single: function(d) { return d; },
 							double: function(d) { return d*2 },
 							triple: function(d) { return d*3 }
@@ -380,9 +436,8 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
-	export interface SetProperty<T extends object, K extends string, V> {
-		property: K
-		value: slime.$api.fp.Mapping<T,V>
+	export type DataObject = {
+		[x: string]: DataObject | string | number | boolean | null
 	}
 
 	export interface Exports {
@@ -392,7 +447,7 @@ namespace slime.$api.fp {
 			 * the value of the containing object.
 			 */
 			property: {
-				update: <T, K extends keyof T>(p: {
+				update: <T extends DataObject, K extends keyof T>(p: {
 					property: K
 					change: slime.$api.fp.Transform<T[K]>
 				}) => slime.$api.fp.Transform<T>
@@ -423,10 +478,10 @@ namespace slime.$api.fp {
 
 			fifty.tests.Object = function() {
 				type X = { a: number, b: string };
+				type Y = { a: number, b: string, foo: () => number };
 
 				run(function property_set() {
 					var before: X = { a: 1, b: "b" };
-
 					//	TODO	for some reason type inference doesn't work for this case
 					var after = $api.fp.now.map(
 						before,
@@ -446,6 +501,9 @@ namespace slime.$api.fp {
 					var before: X = { a: 2, b: "hey" };
 					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
 					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+					var disallowed: Y = { a: 2, b: "hey", foo: function() { return 3; }};
+					// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+					// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
 				});
 
 				run(function fromEntries() {
@@ -698,8 +756,8 @@ namespace slime.$api.fp {
 		export interface Partial {
 			else: <P,R>(p: {
 				partial: fp.Partial<P,R>
-				else: Mapping<P,R>
-			}) => Mapping<P,R>
+				else: fp.Mapping<P,R>
+			}) => fp.Mapping<P,R>
 		}
 
 		(
@@ -730,8 +788,6 @@ namespace slime.$api.fp {
 					verify(1).evaluate(total).is(2);
 					verify(2).evaluate(total).is(6);
 				};
-
-				fifty.tests.wip = fifty.tests.exports.Partial.else;
 			}
 		//@ts-ignore
 		)(fifty);
@@ -910,127 +966,8 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
-		Predicate: {
-			and: <T>(...predicates: $api.fp.Predicate<T>[]) => $api.fp.Predicate<T>
-			or: <T>(...predicates: $api.fp.Predicate<T>[]) => $api.fp.Predicate<T>
-			not: <T>(predicate: $api.fp.Predicate<T>) => $api.fp.Predicate<T>
-			is: <T>(value: T) => fp.Predicate<T>
-			equals: <T>(value: T) => fp.Predicate<T>
-
-			property: <T, K extends keyof T>(k: K, predicate: $api.fp.Predicate<T[K]>) => $api.fp.Predicate<T>
-		}
-		/** @deprecated Use {@link Exports["Predicate"]} */
-		filter: {
-			/** @deprecated Use {@link Exports["Predicate"]["and"]}. */
-			and: Exports["Predicate"]["and"]
-			/** @deprecated Use {@link Exports["Predicate"]["or"]}. */
-			or: Exports["Predicate"]["or"]
-			/** @deprecated Use {@link Exports["Predicate"]["not"]}. */
-			not: Exports["Predicate"]["not"]
-		}
+		Stream: stream.Exports
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const verify = fifty.verify;
-
-			fifty.tests.Predicate = function() {
-				fifty.run(function property() {
-					type T = { a: number, b: string };
-
-					const ts: T[] = [
-						{ a: 1, b: "a" },
-						{ a: 2, b: "b" }
-					]
-
-					const f1: Predicate<T> = fifty.global.$api.fp.Predicate.property("a", function(v) { return v == 1; });
-					const f2: Predicate<T> = fifty.global.$api.fp.Predicate.property("b", function(v) { return v == "b"; });
-
-					verify(ts).evaluate(function(ts) { return ts.filter(f1); }).length.is(1);
-					verify(ts.filter(f1))[0].a.is(1);
-					verify(ts).evaluate(function(ts) { return ts.filter(f2); }).length.is(1);
-					verify(ts.filter(f2))[0].a.is(2);
-				});
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export interface Exports {
-		JSON: {
-			stringify: (p?: {
-				replacer?: Parameters<JSON["stringify"]>[1]
-				space?: Parameters<JSON["stringify"]>[2]
-			}) => (v: any) => string
-
-			prettify: (p: {
-				space: Parameters<JSON["stringify"]>[2]
-			}) => (json: string) => string
-		}
-	}
-
-	export interface Exports {
-		RegExp: {
-			/**
-			 * Creates a function that can convert one `RegExp` to another using a function that operates on the `RegExp's`
-			 * pattern.
-			 *
-			 * @param modifier A function that receives the pattern of the original RegExp as an argumentt and returns a new pattern.
-			 */
-			modify: (modifier: (pattern: string) => string) => (original: RegExp) => RegExp
-
-			exec: (regexp: RegExp) => Partial<string,RegExpExecArray>
-		}
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const subject = fifty.global.$api.fp.RegExp;
-
-			fifty.tests.exports.RegExp = fifty.test.Parent();
-
-			fifty.tests.exports.RegExp.modify = function() {
-				var foo = /^(.*)foo$/;
-				var bar = subject.modify(
-					function(pattern) { return pattern.replace(/foo/g, "bar"); }
-				)(foo);
-
-				var test = function(string) {
-					return function(p) {
-						return p.test(string);
-					}
-				};
-
-				var verify = fifty.verify;
-				verify(foo).evaluate(test("foo")).is(true);
-				verify(foo).evaluate(test("bar")).is(false);
-				verify(bar).evaluate(test("foo")).is(false);
-				verify(bar).evaluate(test("bar")).is(true);
-			};
-
-			fifty.tests.exports.RegExp.exec = function() {
-				var pattern = /a(b+)c/;
-
-				var matcher = subject.exec(pattern);
-
-				var one = matcher("abbc");
-				verify(one).present.is(true);
-				if (one.present) {
-					verify(one).value[0].is("abbc");
-					verify(one).value[1].is("bb");
-				}
-
-				var two = matcher("ac");
-				verify(two).present.is(false);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
 
 	/**
 	 * A function with the semantics of the standard JavaScript `sort` function argument.
@@ -1263,6 +1200,80 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export interface Exports {
+		JSON: {
+			stringify: (p?: {
+				replacer?: Parameters<JSON["stringify"]>[1]
+				space?: Parameters<JSON["stringify"]>[2]
+			}) => (v: any) => string
+
+			prettify: (p: {
+				space: Parameters<JSON["stringify"]>[2]
+			}) => (json: string) => string
+		}
+	}
+
+	export interface Exports {
+		RegExp: {
+			/**
+			 * Creates a function that can convert one `RegExp` to another using a function that operates on the `RegExp's`
+			 * pattern.
+			 *
+			 * @param modifier A function that receives the pattern of the original RegExp as an argumentt and returns a new pattern.
+			 */
+			modify: (modifier: (pattern: string) => string) => (original: RegExp) => RegExp
+
+			exec: (regexp: RegExp) => Partial<string,RegExpExecArray>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const subject = fifty.global.$api.fp.RegExp;
+
+			fifty.tests.exports.RegExp = fifty.test.Parent();
+
+			fifty.tests.exports.RegExp.modify = function() {
+				var foo = /^(.*)foo$/;
+				var bar = subject.modify(
+					function(pattern) { return pattern.replace(/foo/g, "bar"); }
+				)(foo);
+
+				var test = function(string) {
+					return function(p) {
+						return p.test(string);
+					}
+				};
+
+				var verify = fifty.verify;
+				verify(foo).evaluate(test("foo")).is(true);
+				verify(foo).evaluate(test("bar")).is(false);
+				verify(bar).evaluate(test("foo")).is(false);
+				verify(bar).evaluate(test("bar")).is(true);
+			};
+
+			fifty.tests.exports.RegExp.exec = function() {
+				var pattern = /a(b+)c/;
+
+				var matcher = subject.exec(pattern);
+
+				var one = matcher("abbc");
+				verify(one).present.is(true);
+				if (one.present) {
+					verify(one).value[0].is("abbc");
+					verify(one).value[1].is("bb");
+				}
+
+				var two = matcher("ac");
+				verify(two).present.is(false);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		/**
 		 * Returns the result of invoking a function on an argument. `now(p, f)` is syntactic sugar for `f(p)`, and
 		 * `now(p, f, g) is syntactic sugar for `g(f(p))`.
@@ -1302,6 +1313,44 @@ namespace slime.$api.fp {
 				var result2 = $api.fp.now.map(2, f, g);
 				verify(result2).is("g2");
 			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		/**
+		 * @deprecated Use {@link Exports.now | `$api.fp.now.map`}.
+		 */
+		result: Now_map
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			fifty.tests.result = function() {
+				var times = function(x: number) {
+					return function(v: number) {
+						return v * x;
+					}
+				};
+
+				var plus = function(x: number) {
+					return function(v: number) {
+						return v + x;
+					}
+				};
+
+				var x = fifty.global.$api.fp.result(
+					2,
+					fifty.global.$api.fp.pipe(
+						times(3),
+						plus(4)
+					)
+				);
+				verify(x).is(10);
+			}
 		}
 	//@ts-ignore
 	)(fifty);
@@ -1430,10 +1479,6 @@ namespace slime.$api.fp {
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export interface Exports {
-		Stream: stream.Exports
-	}
 
 	export namespace old {
 		/**

@@ -371,6 +371,112 @@ namespace slime.jrunscript.file.world.object {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify, run } = fifty;
+			const { $api, jsh } = fifty.global;
+			const subject = jsh.file;
+			const { world } = jsh.file;
+			const filesystem = world.filesystems.os;
+
+			const filesystem_relative = function(filesystem: world.Filesystem) {
+				return function(base: string, relative: string): string {
+					var b: slime.jrunscript.file.Location = {
+						filesystem: filesystem,
+						pathname: base
+					};
+					return subject.Location.directory.base(b)(relative).pathname;
+				}
+			}
+
+			var f = filesystem_relative(filesystem);
+
+			fifty.tests.sandbox.filesystem.Pathname = {
+				isDirectory: function() {
+					var parent = fifty.jsh.file.object.getRelativePath(".").toString();
+
+					var cases = {
+						parent: parent,
+						thisFile: f(parent, "module.fifty.ts"),
+						nothing: f(parent, "foo"),
+						subfolder: f(parent, "java")
+					};
+
+					var isDirectory = function(property) {
+						return function(cases) { return filesystem.Pathname.isDirectory(cases[property]); };
+					}
+
+					verify(cases).evaluate(isDirectory("parent")).is(true);
+					verify(cases).evaluate(isDirectory("thisFile")).is(false);
+					verify(cases).evaluate(isDirectory("nothing")).is(false);
+					verify(cases).evaluate(isDirectory("subfolder")).is(true);
+				}
+			};
+
+			var here = fifty.jsh.file.object.getRelativePath(".").toString();
+
+			fifty.tests.sandbox.filesystem.File = {};
+
+			fifty.tests.sandbox.filesystem.File.read = function() {
+				var me = f(here, "module.fifty.ts");
+				var nothing = f(here, "nonono");
+				var code = $api.fp.impure.now.input(
+					$api.fp.world.input(filesystem.File.read.string({ pathname: me }))
+				);
+				verify(code,"code").is.type("string");
+				var no = $api.fp.impure.now.input(
+					$api.fp.world.input(filesystem.File.read.string({ pathname: nothing }))
+				);
+				verify(no,"no").is.type("null");
+
+				fifty.run(function string() {
+					var pathname = function(relative: string) { return fifty.jsh.file.object.getRelativePath(relative).toString(); };
+					var thisFile = pathname("module.fifty.ts");
+					var doesNotExist = pathname("foo");
+					var thisFileContents = $api.fp.impure.now.input(
+						$api.fp.world.input(
+							filesystem.File.read.string({ pathname: thisFile })
+						)
+					);
+					var doesNotExistContents = $api.fp.impure.now.input(
+						$api.fp.world.input(
+							filesystem.File.read.string({ pathname: doesNotExist })
+						)
+					);
+					verify(thisFileContents).is.type("string");
+					verify(doesNotExistContents).is.type("null");
+				});
+			}
+
+			fifty.tests.sandbox.filesystem.Directory = {};
+
+			fifty.tests.sandbox.filesystem.Directory.remove = function() {
+				var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var location = f(TMPDIR.toString(), "toRemove");
+				var exists = function(location) {
+					return filesystem.Pathname.isDirectory(location);
+				}
+				verify(location).evaluate(exists).is(false);
+				$api.fp.world.now.action(filesystem.createDirectory, { pathname: location });
+				verify(location).evaluate(exists).is(true);
+				filesystem.Directory.remove({
+					pathname: location
+				})();
+				verify(location).evaluate(exists).is(false);
+
+				var doesNotExist = f(TMPDIR.toString(), "notThere");
+				verify(doesNotExist).evaluate(exists).is(false);
+				filesystem.Directory.remove({
+					pathname: doesNotExist
+				})();
+				verify(doesNotExist).evaluate(exists).is(false);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.sandbox);
 			}

@@ -19,7 +19,9 @@
 			java: $loader.script("java.js"),
 			parts: {
 				/** @type { slime.jrunscript.file.internal.wo.directory.Script } */
-				directory: $loader.script("wo-directory.js")
+				directory: $loader.script("wo-directory.js"),
+				/** @type { slime.jrunscript.file.internal.wo.filesystem.Script } */
+				filesystem: $loader.script("wo-filesystem.js")
 			}
 		};
 
@@ -153,66 +155,6 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.file.exports.Filesystem } */
-		var Filesystem = (
-			function() {
-				return {
-					copy: function(p) {
-						return function(events) {
-							$api.fp.world.now.action(
-								ensureParent,
-								{
-									filesystem: p.filesystem,
-									pathname: p.to
-								},
-								{
-									created: function(e) {
-										events.fire("created", e.detail);
-									}
-								}
-							)
-
-							p.filesystem.copy({
-								from: p.from,
-								to: p.to
-							})(events);
-						}
-					},
-					move: function(p) {
-						return function(events) {
-							//	TODO	these checks were done for directories, but when refactoring, were removed. Possibly they
-							//			should be generalized.
-
-							// var exists = $api.fp.world.now.question(
-							// 	location.filesystem.directoryExists,
-							// 	{ pathname: location.pathname }
-							// );
-							// if (!exists.present) throw new Error("Could not determine whether " + location.pathname + " exists in " + location.filesystem);
-							// if (!exists.value) throw new Error("Could not move directory: " + location.pathname + " does not exist (or is not a directory).");
-
-							$api.fp.world.now.action(
-								ensureParent,
-								{
-									filesystem: p.filesystem,
-									pathname: p.to
-								},
-								{
-									created: function(e) {
-										events.fire("created", e.detail);
-									}
-								}
-							)
-
-							p.filesystem.move({
-								from: p.from,
-								to: p.to
-							})(events);
-						}
-					}
-				}
-			}
-		)();
-
 		var parts = {
 			directory: code.parts.directory({
 				ensureParent: ensureParent,
@@ -220,6 +162,9 @@
 				Location_directory_exists: Location_directory_exists,
 				Location_relative: Location_relative,
 				remove: remove
+			}),
+			filesystem: code.parts.filesystem({
+				ensureParent: ensureParent
 			})
 		};
 
@@ -517,7 +462,49 @@
 					})
 				}
 			},
-			Filesystem: Filesystem
+			Filesystem: parts.filesystem,
+			os: (function(world) {
+				var temporary = (
+					/**
+					 *
+					 * @param { { directory: boolean, remove: boolean }} p
+					 * @returns
+					 */
+					function(p) {
+						return function() {
+							//	TODO	not idempotent; perhaps should be a Means
+							var rv = $api.fp.world.Sensor.now({
+								sensor: $context.filesystem.os.temporary,
+								subject: {
+									directory: p.directory
+								}
+							});
+							if (p.remove) {
+								$api.fp.world.Means.now({
+									means: $context.filesystem.os.remove,
+									order: {
+										pathname: rv
+									}
+								});
+							}
+							return rv;
+						}
+					}
+				)
+
+				return {
+					temporary: {
+						pathname: temporary({ directory: false, remove: true }),
+						location: $api.fp.impure.Input.map(
+							temporary({ directory: false, remove: true }),
+							$api.fp.Mapping.properties({
+								filesystem: $api.fp.Mapping.all(world),
+								pathname: $api.fp.identity
+							})
+						)
+					}
+				}
+			})($context.filesystem.os)
 		});
 
 		//	Some old code follows
