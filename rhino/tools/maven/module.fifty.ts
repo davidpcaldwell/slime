@@ -4,6 +4,15 @@
 //
 //	END LICENSE
 
+/**
+ * Provides APIs relating to the Apache Maven build tool, including the ability to install Maven.
+ *
+ * APIs are described by the {@link slime.jrunscript.tools.maven.Exports} object. In `jsh` shells, these APIs are available as the
+ * `jsh.tools.maven` object.
+ *
+ * The module also provides a `mvnw.jsh.js` script that can be used to configure the Maven wrapper on a project, optionally first creating
+ * the project using a Maven archetype. See {@link slime.jrunscript.tools.maven.script.mvnw}.
+ */
 namespace slime.jrunscript.tools.maven {
 	export interface Context {
 		HOME: slime.jrunscript.file.Directory
