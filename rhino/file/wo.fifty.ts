@@ -697,11 +697,34 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface os {
+			directory: {
+				relativePath: (path: string) => (base: string) => string
+			}
+
 			temporary: {
 				pathname: () => string
 				location: () => slime.jrunscript.file.Location
+				directory: () => string
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.manual.os = {};
+
+				fifty.tests.manual.os.relativePath = function() {
+					var here = fifty.jsh.file.relative(".");
+					jsh.shell.console(here.pathname);
+					var there = $api.fp.now(here.pathname, jsh.file.os.directory.relativePath("foo/bar"));
+					jsh.shell.console(there);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 
 		(
 			function(

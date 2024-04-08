@@ -420,7 +420,8 @@
 								var args = [];
 								p.options[o.longname] = [];
 								for (var i=0; i<p.arguments.length; i++) {
-									if (o.longname && p.arguments[i] == "--" + o.longname) {
+									//	TODO	the String cast below is more like a TypeScript workaround; should re-examine
+									if (o.longname && p.arguments[i] == "--" + String(o.longname)) {
 										p.options[o.longname].push(o.value(p.arguments[++i]));
 									} else {
 										args.push(p.arguments[i]);

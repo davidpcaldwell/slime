@@ -493,6 +493,18 @@
 				)
 
 				return {
+					directory: {
+						relativePath: function(relative) {
+							return function(base) {
+								var f = parts.directory.relativePath(relative);
+								var location = {
+									filesystem: $context.filesystem.os,
+									pathname: base
+								};
+								return f(location).pathname;
+							}
+						}
+					},
 					temporary: {
 						pathname: temporary({ directory: false, remove: true }),
 						location: $api.fp.impure.Input.map(
@@ -501,7 +513,8 @@
 								filesystem: $api.fp.Mapping.all(world),
 								pathname: $api.fp.identity
 							})
-						)
+						),
+						directory: temporary({ directory: true, remove: false })
 					}
 				}
 			})($context.filesystem.os)

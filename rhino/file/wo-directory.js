@@ -66,6 +66,7 @@
 		var wo = {
 			directory: {
 				list: {
+					/** @type { slime.jrunscript.file.exports.location.Directory["list"]["stream"]["world"] } */
 					stream: function(p) {
 						/**
 						 *
@@ -185,7 +186,9 @@
 			list: {
 				stream: {
 					world: wo.directory.list.stream,
-					simple: $api.fp.world.Sensor.mapping({ sensor: wo.directory.list.stream })
+					simple: function(configuration) {
+						return $api.fp.world.Sensor.mapping({ sensor: wo.directory.list.stream(configuration) });
+					}
 				}
 			},
 			loader: {

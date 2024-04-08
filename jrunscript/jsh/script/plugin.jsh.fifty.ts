@@ -194,7 +194,7 @@ namespace slime.jsh.script {
 				number: OptionParser<number>
 				pathname: OptionParser<slime.jrunscript.file.Pathname>
 
-				array: <O extends object,N extends keyof any,T>(c: { longname: string, value: (s: string) => T })
+				array: <O extends object,N extends keyof any,T>(c: { longname: N, value: (s: string) => T })
 					=> (i: cli.Invocation<O>)
 					=> cli.Invocation<O & { [n in N]: T[] }>
 			}
