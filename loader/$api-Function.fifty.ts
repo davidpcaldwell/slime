@@ -436,9 +436,7 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
-	export type DataObject = {
-		[x: string]: DataObject | string | number | boolean | null
-	}
+	export type Data = { [x: string]: Data } | string | number | boolean | null | Data[]
 
 	export interface Exports {
 		Object: {
@@ -447,7 +445,7 @@ namespace slime.$api.fp {
 			 * the value of the containing object.
 			 */
 			property: {
-				update: <T extends DataObject, K extends keyof T>(p: {
+				update: <T, K extends keyof T>(p: {
 					property: K
 					change: slime.$api.fp.Transform<T[K]>
 				}) => slime.$api.fp.Transform<T>
