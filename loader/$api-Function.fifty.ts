@@ -399,6 +399,39 @@ namespace slime.$api.fp {
 		//@ts-ignore
 		)(fifty);
 
+		export interface String {
+			format: <T>(p: {
+				mask: string
+				values: ((t: T) => string)[]
+			}) => (t: T) => string
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.string.format = function() {
+					var name = { first: "David", middle: "Paul", last: "Caldwell" };
+					var asName: slime.$api.fp.Identity<typeof name> = $api.fp.identity;
+					var mi = $api.fp.pipe(asName, $api.fp.property("middle"), function(s) { return s.substring(0,1) });
+					var formatter: (t: typeof name) => string = $api.fp.string.format({
+						mask: "(), () ().",
+						values: [
+							$api.fp.pipe($api.fp.property("last"), $api.fp.string.toUpperCase),
+							$api.fp.property("first"),
+							mi
+						]
+					});
+					var formatted = formatter(name);
+					verify(formatted).is("CALDWELL, David P.");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 	}
 
 	/**
