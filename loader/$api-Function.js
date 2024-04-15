@@ -403,6 +403,18 @@
 						}
 						return string;
 					}
+				},
+				format: function(p) {
+					var content = p.mask.split("()");
+					if (content.length - 1 != p.values.length) throw new TypeError();
+					return function(t) {
+						var rv = content[0];
+						for (var i=0; i<p.values.length; i++) {
+							rv += p.values[i](t);
+							rv += content[i+1];
+						}
+						return rv;
+					}
 				}
 			},
 			Object: {
