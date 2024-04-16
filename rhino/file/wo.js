@@ -319,7 +319,7 @@
 								maybe: $api.fp.world.Sensor.mapping({
 									sensor: readString()
 								}),
-								simple: $api.fp.Maybe.impure.exception({
+								simple: $api.fp.Partial.impure.exception({
 									try: $api.fp.world.Sensor.mapping({
 										sensor: readString()
 									}),
@@ -329,7 +329,7 @@
 								})
 							},
 							properties: {
-								simple: $api.fp.Maybe.impure.exception({
+								simple: $api.fp.Partial.impure.exception({
 									try: $api.fp.pipe(
 										$api.fp.world.Sensor.mapping({ sensor: readString() }),
 										$api.fp.Maybe.map( $context.library.java.Properties.from.string )

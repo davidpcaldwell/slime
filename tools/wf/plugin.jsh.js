@@ -248,7 +248,7 @@
 				var wfpath = $api.fp.impure.Input.map(
 					base,
 					jsh.file.Location.directory.relativePath("wf.path"),
-					$api.fp.Maybe.impure.exception({
+					$api.fp.Partial.impure.exception({
 						try: $api.fp.world.mapping(jsh.file.Location.file.read.string.world()),
 						nothing: function(location) { return new Error("No file found at " + location.pathname); }
 					})
@@ -1443,7 +1443,7 @@
 						}
 					},
 					getTypescriptVersion: library.module.Project.typescript.version,
-					getConfigurationFile: $api.fp.Maybe.impure.exception({
+					getConfigurationFile: $api.fp.Partial.impure.exception({
 						try: library.module.Project.typescript.configurationFile,
 						nothing: function(project) { return new Error("TypeScript configuration not found for project " + project.base); }
 					})

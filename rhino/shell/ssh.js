@@ -167,7 +167,7 @@
 
 					return {
 						sensor: sensor,
-						assert: $api.fp.Maybe.impure.exception({
+						assert: $api.fp.Partial.impure.exception({
 							try: $api.fp.world.Sensor.mapping({
 								sensor: sensor
 							}),
