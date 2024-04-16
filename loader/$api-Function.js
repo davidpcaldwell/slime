@@ -71,16 +71,6 @@
 							}
 							return Maybe.from.some(rv);
 						}
-					},
-					/** @type { slime.$api.fp.Exports["Maybe"]["impure"] } */
-					impure: {
-						exception: function(p) {
-							return function(t) {
-								var tried = p.try(t);
-								if (tried.present) return tried.value;
-								throw p.nothing(t);
-							}
-						}
 					}
 				}
 			}
@@ -234,6 +224,13 @@
 						}
 						return rv;
 					}
+				},
+				invocation: function(p) {
+					return function(i) {
+						var invoke = p.invoke(i);
+						var argument = p.argument(i);
+						return invoke(argument);
+					}
 				}
 			},
 			returning: function(v) {
@@ -319,10 +316,23 @@
 					return (p == null) ? void(0) : p[name];
 				}
 			},
-			curry: function(f,c) {
-				return function(p) {
-					//@ts-ignore
-					return f(Object.assign({},p,c));
+			curry: function(c) {
+				return function(f) {
+					return function(p) {
+						//@ts-ignore
+						return f(Object.assign({},p,c));
+					}
+				}
+			},
+			flatten: function(k) {
+				return function(f) {
+					return function(v) {
+						return f(
+							Object.fromEntries([
+								[k,v]
+							])
+						);
+					}
 				}
 			},
 			conditional: function(test,yes,no) {
@@ -406,7 +416,9 @@
 				},
 				format: function(p) {
 					var content = p.mask.split("()");
-					if (content.length - 1 != p.values.length) throw new TypeError();
+					if (content.length - 1 != p.values.length) throw new TypeError(
+						"Mask has " + String(content.length-1) + " placeholders, but " + p.values.length + " placeholders supplied."
+					);
 					return function(t) {
 						var rv = content[0];
 						for (var i=0; i<p.values.length; i++) {
@@ -478,6 +490,16 @@
 						var maybe = c.partial(p);
 						if (maybe.present) return maybe.value;
 						return c.else(p);
+					}
+				},
+				/** @type { slime.$api.fp.Exports["Partial"]["impure"] } */
+				impure: {
+					exception: function(p) {
+						return function(t) {
+							var tried = p.try(t);
+							if (tried.present) return tried.value;
+							throw p.nothing(t);
+						}
 					}
 				}
 			},

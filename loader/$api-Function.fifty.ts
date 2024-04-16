@@ -245,7 +245,7 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
-		curry: <T,P extends slime.external.lib.typescript.Partial<T>,R>(f: (t: T) => R, fix: P) => (t: Omit<T, keyof P>) => R
+		curry: <T,P extends slime.external.lib.typescript.Partial<T>,R>(fix: P) => (f: (t: T) => R) => (t: Omit<T, keyof P>) => R
 	}
 
 	(
@@ -257,14 +257,48 @@ namespace slime.$api.fp {
 
 			fifty.tests.exports.curry = function() {
 				var f: (p: { a: number, b: string, c: boolean }) => string = function(p) { return [p.a,p.b,p.c].join("/") };
-				var g = $api.fp.curry(f, { a: 2, b: "hey" });
+				var g = $api.fp.curry({ a: 2, b: "hey" })(f);
 				verify( g({ c: true }) ).is("2/hey/true");
 			};
-
-			fifty.tests.wip = fifty.tests.exports.curry;
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		/**
+		 * Flattens a function that takes an object with a single property into a function that takes a value (for that property).
+		 *
+		 * This can be used in a situation where a function takes an object with many properties, but all the others are optional,
+		 * or perhaps on a function created with `curry`, where all the other properties required by the function have already
+		 * been fixed.
+		 */
+		flatten: <T,R,K extends keyof T>(k: K) => (f: (t: T) => R) => (v: T[K]) => R
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.flatten = function() {
+				const divide = function(p: { dividend: number, divisor: number }): number {
+					return p.dividend / p.divisor;
+				};
+
+				const halve = $api.fp.now(divide, $api.fp.curry({ divisor: 2 }), $api.fp.flatten("dividend"));
+
+				verify(halve(2)).is(1);
+			}
+
+			fifty.tests.wip = fifty.tests.exports.flatten;
+		}
+	//@ts-ignore
+	)(fifty);
+
+	//	TODO	Now that we have curry and flatten to process functions, maybe we need $api.fp.create,
+	//			analogous to $api.fp.now, with first argument as function, or maybe all arguments as functions?
 
 	export namespace exports {
 		export interface Mapping {
@@ -297,6 +331,15 @@ namespace slime.$api.fp {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Mapping {
+			invocation: <I,P,R>(p: {
+				invoke: (i: I) => slime.$api.fp.Mapping<P,R>
+				argument: (i: I) => P
+			}) => (i: I) => R
+		}
 	}
 
 	export interface Exports {
@@ -627,10 +670,6 @@ namespace slime.$api.fp {
 					g: (b: B) => Maybe<C>
 				): (a: A) => Maybe<C>
 			}
-
-			impure: {
-				exception: <T,R,E extends Error>(p: { try: (t: T) => slime.$api.fp.Maybe<R>, nothing: (t: T) => E }) => (t: T) => R
-			}
 		}
 	}
 
@@ -822,6 +861,17 @@ namespace slime.$api.fp {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Partial {
+			impure: {
+				exception: <P,R,E extends Error>(p: {
+					try: fp.Partial<P,R>
+					nothing: (p: P) => E
+				}) => fp.Mapping<P,R>
+			}
+		}
 	}
 
 	export interface Exports {

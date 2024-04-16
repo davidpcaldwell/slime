@@ -562,14 +562,14 @@
 		var jsapi = {
 			Location: {
 				parse: $api.fp.pipe(
-					$api.fp.Maybe.impure.exception({
+					$api.fp.Partial.impure.exception({
 						try: $api.fp.world.mapping($context.library.file.Location.file.read.string.world()),
 						nothing: function(e) { throw new Error("Could not read file: " + e.pathname + " in " + e.filesystem); }
 					}),
 					document.parse
 				),
 				is: function(location) {
-					var parseJsapiHtml = $api.fp.Maybe.impure.exception({
+					var parseJsapiHtml = $api.fp.Partial.impure.exception({
 						try: jsapi.Location.parse,
 						nothing: function(location) { return new Error("Could not parse: " + location.pathname); }
 					});
@@ -837,7 +837,7 @@
 
 						var effect = $api.fp.now.invoke(
 							gitignore,
-							$api.fp.Maybe.impure.exception({
+							$api.fp.Partial.impure.exception({
 								try: process,
 								nothing: function(t) { throw new Error("Unreachable: .gitignore classification.") }
 							})
@@ -900,7 +900,7 @@
 						return /\.js$/.test(file.path)
 					};
 
-					var read = $api.fp.Maybe.impure.exception({
+					var read = $api.fp.Partial.impure.exception({
 						/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>> } */
 						try: $api.fp.world.Sensor.mapping({ sensor: $context.library.file.Location.file.read.string.world() }),
 						nothing: function(location) { return new Error("Could not read: " + location.pathname) }

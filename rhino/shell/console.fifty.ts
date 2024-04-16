@@ -73,7 +73,7 @@ namespace slime.jrunscript.shell.internal.console {
 			const { subject } = test;
 
 			fifty.tests.suite = function() {
-				const readFile: slime.$api.fp.Mapping<slime.jrunscript.file.Location,string> = $api.fp.Maybe.impure.exception({
+				const readFile: slime.$api.fp.Mapping<slime.jrunscript.file.Location,string> = $api.fp.Partial.impure.exception({
 					try: $api.fp.world.mapping(jsh.file.Location.file.read.string.world()),
 					nothing: function(t) { throw new Error("File not present: " + t.pathname); }
 				});
