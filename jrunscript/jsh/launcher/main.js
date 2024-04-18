@@ -332,6 +332,10 @@
 		}
 
 		if ($api.slime.settings.get("jsh.engine") == "graal") {
+			if (javaMajorVersion < 17) {
+				Packages.java.lang.System.err.println("GraalVM cannot be launched by a launcher running a pre-17 Java VM.");
+				Packages.java.lang.System.exit(1);
+			}
 			var lib = $api.slime.settings.get("jsh.shell.lib");
 			var polyglotLib = new Packages.java.io.File(lib, "graal/lib/polyglot");
 			$api.debug("polyglotLib = " + polyglotLib);

@@ -6,6 +6,8 @@
 
 package inonit.script.graal;
 
+import org.graalvm.polyglot.HostAccess;
+
 import inonit.script.engine.*;
 
 public class HostFactory extends inonit.script.engine.Host.Factory {
@@ -19,11 +21,17 @@ public class HostFactory extends inonit.script.engine.Host.Factory {
 		Thread.currentThread().setContextClassLoader(classes);
 		//	TODO	figure out how to set classpath properly
 
-		//System.err.println("HostFactory.this.create()");
 		final org.graalvm.polyglot.Context.Builder builder = org.graalvm.polyglot.Context.newBuilder("js")
-			.allowExperimentalOptions(true)
+			//	Allow reflective access to the underlying host platform
+			.allowAllAccess(true)
+
+			//	Allow experimental options. Although some configurations result in an error message saying that js.nashorn-compat
+			//	is an experimental option and this is needed, this particular configuration does not. Perhaps .allowAllAccess()
+			//	enables it?
+			//.allowExperimentalOptions(true)
+
+			//	Allow nashorn:mozilla_compat.js to be loaded
 			.option("js.nashorn-compat", "true")
-			.allowHostAccess(true)
 		;
 
 		if (configuration.inspect() != null) {
