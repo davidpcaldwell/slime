@@ -258,11 +258,7 @@
 				var lib = p.lib;
 
 				if (lib && lib.file && new File(lib.file, "graal").exists()) {
-					if (new File(lib.file, "graal/Contents/Home").exists()) {
-						this.graal = new File(lib.file, "graal/Contents/Home");
-					} else {
-						this.graal = new File(lib.file, "graal");
-					}
+					this.graal = new File(lib.file, "graal");
 				}
 
 				this.profiler = (function() {
@@ -273,13 +269,17 @@
 
 				//	As of bbc58b79a49b6b5ae2b56c48486e85cbd1e31eb5, used by jsh/etc/build.jsh.js, as well as shellClasspath method below
 				this.compileLoader = function(p) {
+					var isGraalCompatible = Boolean(p.source >= 17 && p.target >= 17)
 					var classpath = new Classpath();
 					if (this.rhino && this.rhino.length) classpath.append(new Classpath(this.rhino));
-					if (this.graal) classpath.append(new Classpath([
-						new Packages.java.io.File(this.graal, "jre/lib/boot/graal-sdk.jar").toURI().toURL()
-						// ,new Packages.java.io.File(this.graal, "jre/lib/truffle/truffle-api.jar").toURI().toURL()
-						// ,new Packages.java.io.File(this.graal, "jre/languages/js/graaljs.jar").toURI().toURL()
-					]));
+					if (this.graal && isGraalCompatible) {
+						var _polyglotLibraries = new Packages.java.io.File(this.graal, "lib/polyglot").listFiles();
+						var polyglotLibraries = [];
+						for (var i=0; i<_polyglotLibraries.length; i++) {
+							polyglotLibraries.push(_polyglotLibraries[i]);
+						}
+						classpath.append(new Classpath(polyglotLibraries.map(function(_file) { return _file.toURI().toURL(); })));
+					}
 					if (classpath._urls.length == 0) classpath = null;
 
 					var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
@@ -291,11 +291,11 @@
 					if (!p.to) p.to = $$api.io.tmpdir();
 					var toCompile = $$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/java"));
 					if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/rhino/java")));
-					if (graal) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/graal/java")));
+					if (graal && isGraalCompatible) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/graal/java")));
 					toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("rhino/system/java")));
 					toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/java")));
 					if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/rhino/java")));
-					if (graal) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/graal/java")));
+					if (graal && isGraalCompatible) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/graal/java")));
 					var classpathArguments = (classpath) ? ["-classpath", classpath.local()] : [];
 					var targetArguments = (p && p.target) ? ["-target", p.target] : [];
 					var sourceArguments = (p && p.source) ? ["-source", p.source] : [];

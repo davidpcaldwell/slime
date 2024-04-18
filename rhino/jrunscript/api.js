@@ -109,6 +109,9 @@
 				if (Object.defineProperty) {
 					Object.defineProperty($api.debug, "on", {
 						enumerable: true,
+						get: function() {
+							return on;
+						},
 						set: function(v) {
 							on = v;
 						}
@@ -218,7 +221,6 @@
 					var command = global.Packages.java.lang.System.getProperty("sun.java.command");
 					var main = (function() {
 						var tokens = String(command).split(" ");
-						if (tokens[0] != "com.oracle.truffle.js.shell.JSLauncher") throw new Error();
 						for (var i=1; i<tokens.length; i++) {
 							var token = tokens[i];
 							if (token == "--js.nashorn-compat=true") continue;
@@ -988,7 +990,8 @@
 					for (var i=0; i<jarray.length; i++) {
 						jarray[i] = new Packages.java.lang.String(args[i]);
 					}
-					var SUPPRESS_COMPILATION_OUTPUT = true;
+					var SUPPRESS_COMPILATION_OUTPUT = !$api.debug.on;
+					$api.debug("Suppress compilation output = " + SUPPRESS_COMPILATION_OUTPUT)
 					var NOWHERE = new JavaAdapter(
 						Packages.java.io.OutputStream,
 						new function() {

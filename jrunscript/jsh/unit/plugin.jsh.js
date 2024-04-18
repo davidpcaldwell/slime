@@ -253,7 +253,11 @@
 
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.web && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.Scenario && jsh.unit.Scenario.Events && jsh.java && jsh.file);
+				return Boolean(jsh.js && jsh.web && jsh.shell && jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit
+					&& jsh.unit.Scenario && jsh.unit.Scenario.Events
+					&& jsh.java && jsh.file
+					&& jsh.java.Thread
+				);
 			},
 			load: function() {
 				/** @type { slime.jsh.unit.internal.browser.Script } */

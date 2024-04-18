@@ -80,7 +80,6 @@
 
 				jsh.shell.tools = {
 					rhino: void(0),
-					graal: void(0),
 					tomcat: void(0),
 					ncdbg: void(0),
 					kotlin: void(0),
@@ -222,32 +221,6 @@
 					jsh.tools.ncdbg = ncdbg;
 					$api.deprecate(jsh.tools,"ncdbg");
 				})();
-
-				var graal = new function() {
-					var VERSION = {
-						number: "21.0.0.2",
-						jdk: "8",
-						edition: "ce"
-					};
-					this.install = $api.events.Function(function(p,events) {
-						if (jsh.shell.os.name == "Mac OS X") {
-							jsh.tools.install.install({
-								url: "https://github.com/graalvm/graalvm-ce-builds/releases/download/"
-									+ "vm-" + VERSION.number + "/"
-									+ "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + "darwin" + "-" + "amd64" + "-" + VERSION.number + ".tar.gz"
-								,
-								getDestinationPath: function(file) {
-									return "graalvm-" + VERSION.edition + "-" + "java" + VERSION.jdk + "-" + VERSION.number;
-								},
-								to: jsh.shell.jsh.lib.getRelativePath("graal")
-							});
-						} else {
-							throw new Error("Unsupported: os " + jsh.shell.os.name);
-						}
-					});
-				};
-
-				jsh.shell.tools.graal = graal;
 
 				/** @type { slime.jsh.shell.tools.internal.tomcat.Script } */
 				var script = $loader.script("tomcat.js");

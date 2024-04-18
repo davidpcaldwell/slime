@@ -15,7 +15,7 @@ The SLIME project provides tools for JavaScript development on several platforms
 * Writing front-end code: Chrome, Firefox, Safari
 * (requires repair) ~~Using JXA, the macOS JavaScript automation framework~~
 
-The Java-based environments support Mozilla [Rhino](https://github.com/mozilla/rhino) and OpenJDK [Nashorn](https://github.com/openjdk/nashorn), including standalone Nashorn for JDK 15 and up. [GraalJS](https://github.com/oracle/graaljs) support is [under development](https://github.com/davidpcaldwell/slime/projects/10).
+The Java-based environments support Mozilla [Rhino](https://github.com/mozilla/rhino) and OpenJDK [Nashorn](https://github.com/openjdk/nashorn), including standalone Nashorn for JDK 15 and up. [GraalJS](https://github.com/oracle/graaljs) support is [under development](https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue+is%3Aopen+label%3Agraalvm).
 
 ## Getting started: run a `jsh` script without installing anything
 

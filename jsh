@@ -136,10 +136,17 @@ install_jdk_11_liberica() {
 	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
 }
 
+get_major_version() {
+	local VERSION="$1"
+	IFS='.'; local NUMBERS=($VERSION); unset IFS;
+	local MAJOR=${NUMBERS[0]}
+	echo ${MAJOR}
+}
+
 install_jdk_corretto() {
 	local VERSION="$1"
-	local MAJOR_VERSION="$2"
-	TO=$(clean_destination "$3")
+	local MAJOR_VERSION=$(get_major_version ${VERSION})
+	TO=$(clean_destination "$2")
 
 	if [ "${UNAME}" == "Darwin" ]; then
 		if [ "${ARCH}" == "arm64" ]; then
@@ -176,16 +183,53 @@ install_jdk_corretto() {
 	>&2 echo "Installed ${JDK_TARBALL_URL} at ${TO}"
 }
 
+install_graalvm() {
+	local VERSION="$1"
+	local TO=$(clean_destination "$2")
+	local MAJOR=$(get_major_version ${VERSION})
+	local JDK_TARBALL_URL=""
+	if [ "${UNAME}" == "Darwin" ]; then
+		if [ "${ARCH}" == "arm64" ]; then
+			JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_macos-aarch64_bin.tar.gz"
+		fi
+	fi
+	if [ -z "${JDK_TARBALL_URL}" ]; then
+		>&2 echo "Unsupported OS/architecture: ${UNAME} ${ARCH}"
+		exit 1
+	fi
+	IFS='/'; local PATH_COMPONENTS=($JDK_TARBALL_URL); unset IFS;
+	local JDK_TARBALL_BASENAME=${PATH_COMPONENTS[6]}
+	if [ ! -d "${HOME}/Downloads" ]; then
+		mkdir "${HOME}/Downloads"
+	fi
+	local JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
+	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
+		download_install "${JDK_TARBALL_URL}" "${JDK_TARBALL_LOCATION}"
+	fi
+	local JDK_WORKDIR=$(mktemp -d)
+	tar xf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
+	local TAR_EXIT_CODE="$?"
+	if [ "${TAR_EXIT_CODE}" -ne 0 ]; then
+		exit ${TAR_EXIT_CODE}
+	fi
+	local JDK_TARBALL_PATH="$(ls ${JDK_WORKDIR})"
+	if [ "${UNAME}" == "Darwin" ]; then
+		JDK_TARBALL_PATH="${JDK_TARBALL_PATH}/Contents/Home"
+	fi
+	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
+	>&2 echo "Installed ${JDK_TARBALL_URL} at ${TO}"
+}
+
 install_jdk_8_corretto() {
-	install_jdk_corretto "8.372.07.1" "8" $1
+	install_jdk_corretto "8.372.07.1" $1
 }
 
 install_jdk_11_corretto() {
-	install_jdk_corretto "11.0.19.7.1" "11" $1
+	install_jdk_corretto "11.0.19.7.1" $1
 }
 
 install_jdk_17_corretto() {
-	install_jdk_corretto "17.0.7.7.1" "17" $1
+	install_jdk_corretto "17.0.7.7.1" $1
 }
 
 install_jdk_8() {
@@ -301,6 +345,44 @@ fi
 
 if [ "$1" == "--install-jdk-17" ]; then
 	install_jdk_17 ${JSH_LOCAL_JDKS}/default
+	exit $?
+fi
+
+if [ "$1" == "--install-graalvm" ]; then
+	set -x
+	install_graalvm "21.0.2" ${JSH_SHELL_LIB}/graal
+	GRAAL_POLYGLOT_LIB="${JSH_SHELL_LIB}/graal/lib/polyglot"
+	#	TODO	what if this directory exists? Clear it?
+	mkdir ${GRAAL_POLYGLOT_LIB}
+
+	#	This list of dependencies was derived by:
+	#	* Creating a minimal Maven project
+	#	* Running mvnw package
+	#	* Adding dependencies for polyglot and GraalJS
+	#	* Running mvnw package again and capturing the log
+	#	* Determining what was downloaded by searching the log for JARS
+	#
+	#	TODO	An automated solution could be considered; we could either write a program to emit this list and then copy and paste
+	#			it into this script, or probably better, write a jsh script to do the whole thing (which could then be parameterized)
+	#			and invoke it here.
+	#
+	#	We are dumping all of these to a single directory by themselves, so the jsh
+	#	launcher can simply list them and add them to the classpath or modulepath
+
+	install_maven_dependency org.graalvm.polyglot polyglot 23.1.0 ${GRAAL_POLYGLOT_LIB}/polyglot.jar
+	install_maven_dependency org.graalvm.sdk collections 23.1.0 ${GRAAL_POLYGLOT_LIB}/collections.jar
+	install_maven_dependency org.graalvm.sdk word 23.1.0 ${GRAAL_POLYGLOT_LIB}/word.jar
+	install_maven_dependency org.graalvm.sdk nativeimage 23.1.0 ${GRAAL_POLYGLOT_LIB}/nativeimage.jar
+	install_maven_dependency org.graalvm.truffle truffle-api 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-api.jar
+	install_maven_dependency org.graalvm.truffle truffle-enterprise 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-enterprise.jar
+	install_maven_dependency org.graalvm.truffle truffle-compiler 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-compiler.jar
+	install_maven_dependency org.graalvm.sdk jniutils 23.1.0 ${GRAAL_POLYGLOT_LIB}/jniutils.jar
+	install_maven_dependency org.graalvm.sdk nativebridge 23.1.0 ${GRAAL_POLYGLOT_LIB}/nativebridge.jar
+	install_maven_dependency org.graalvm.regex regex 23.1.0 ${GRAAL_POLYGLOT_LIB}/regex.jar
+	install_maven_dependency org.graalvm.truffle truffle-runtime 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-runtime.jar
+
+	install_maven_dependency org.graalvm.js js-language 23.1.0 ${GRAAL_POLYGLOT_LIB}/js-language.jar
+	install_maven_dependency org.graalvm.shadowed icu4j 23.1.0 ${GRAAL_POLYGLOT_LIB}/icu4j.jar
 	exit $?
 fi
 
