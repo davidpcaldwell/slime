@@ -199,10 +199,6 @@ namespace slime.jsh.shell.tools {
 		ncdbg: any
 	}
 
-	export interface Exports {
-		graal: any
-	}
-
 	export namespace mkcert {
 		export interface Installation {
 			/**

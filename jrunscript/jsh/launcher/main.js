@@ -331,12 +331,20 @@
 			}
 		}
 
-		//	TODO	note if this code were uncommented it would need to adjust to the possibility of lib/graal/Contents/Home
-		// if ($api.slime.settings.get("jsh.engine") == "graal") {
-		// 	var lib = $api.slime.settings.get("jsh.shell.lib");
-		// 	_urls.push(new Packages.java.io.File(lib, "graal/jre/lib/truffle/truffle-api.jar").toURI().toURL());
-		// //	_urls.push(new Packages.java.io.File(lib, "graal/jre/languages/js/graaljs.jar").toURI().toURL());
-		// }
+		if ($api.slime.settings.get("jsh.engine") == "graal") {
+			var lib = $api.slime.settings.get("jsh.shell.lib");
+			var polyglotLib = new Packages.java.io.File(lib, "graal/lib/polyglot");
+			$api.debug("polyglotLib = " + polyglotLib);
+			var _polyglotLibraries = polyglotLib.listFiles();
+			var polyglotLibs = [];
+			for (var i=0; i<_polyglotLibraries.length; i++) {
+				polyglotLibs.push(_polyglotLibraries[i]);
+			}
+			polyglotLibs.forEach(function(lib) {
+				$api.debug("classpath = " + lib);
+				_urls.push(lib.toURI().toURL());
+			});
+		}
 
 		// TODO: currently there is no strategy for handling these options jsh.engine and jsh.debug.script if they conflict
 		var scriptDebugger = $api.slime.settings.get("jsh.debug.script");
@@ -392,7 +400,9 @@
 		})();
 		$api.slime.settings.sendPropertiesTo(command);
 
-		var _shellUrls = shell.shellClasspath({ source: jshJavaHomeMajorVersion, target: jshJavaHomeMajorVersion });
+		//	TODO	does not work if *our* major version is lower!
+		var compilerMajorVersion = (jshJavaHomeMajorVersion > javaMajorVersion) ? javaMajorVersion : jshJavaHomeMajorVersion;
+		var _shellUrls = shell.shellClasspath({ source: compilerMajorVersion, target: compilerMajorVersion });
 		$api.debug("_shellUrls = " + _shellUrls);
 		for (var i=0; i<_shellUrls.length; i++) {
 			_urls.push(_shellUrls[i]);
