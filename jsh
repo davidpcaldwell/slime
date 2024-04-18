@@ -383,6 +383,15 @@ if [ "$1" == "--install-graalvm" ]; then
 
 	install_maven_dependency org.graalvm.js js-language 23.1.0 ${GRAAL_POLYGLOT_LIB}/js-language.jar
 	install_maven_dependency org.graalvm.shadowed icu4j 23.1.0 ${GRAAL_POLYGLOT_LIB}/icu4j.jar
+
+	#	Note that although the documentation explicitly states these are not required --
+	#	https://www.graalvm.org/latest/tools/chrome-debugger/ says (in contract to when launching with OpenJDK):
+	#	"The Chrome Inspector tool is always available as a tool on GraalVM. No dependency needs to be explicitly declared there,"
+	#	testing indicates these absolutely are required.
+
+	install_maven_dependency org.graalvm.shadowed json 23.1.0 ${GRAAL_POLYGLOT_LIB}/json.jar
+	install_maven_dependency org.graalvm.tools profiler-tool 23.1.0 ${GRAAL_POLYGLOT_LIB}/profiler-tool.jar
+	install_maven_dependency org.graalvm.tools chromeinspector-tool 23.1.0 ${GRAAL_POLYGLOT_LIB}/chromeinspector-tool.jar
 	exit $?
 fi
 
