@@ -36,7 +36,17 @@ $jsh.setRuntime((function() {
 
 	rv.exit = function(status) {
 		if ($nashorn.isTop()) {
-			exit(status);
+			if ($graal) {
+				//	The GraalVM exit() implementation dumps a stack trace, apparently whether you like it or not.
+
+				//	So does throwing an exception:
+				//	throw new Packages.inonit.script.jsh.Graal.ExitError(status);
+
+				//	So we forcibly exit the VM
+				Packages.java.lang.System.exit(status);
+			} else {
+				exit(status);
+			}
 		} else {
 			$nashorn.exit(status);
 		}
