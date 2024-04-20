@@ -13,14 +13,19 @@
 	 */
 	function(Packages,jsh) {
 		Packages.java.lang.System.err.println("Main script executing! thread = " + Packages.java.lang.Thread.currentThread());
-		var worker = jsh.loader.worker({
+		var worker = jsh.loader.worker.create({
 			script: jsh.script.file.parent.getFile("worker.jsh.js"),
 			arguments: [],
 			onmessage: function(e) {
-				jsh.shell.console("Got event " + e.type);
+				jsh.shell.console("main script got message from worker " + JSON.stringify(e));
+				worker.terminate();
+				jsh.shell.console("Worker terminated.");
 			}
 		});
 		jsh.shell.console("Created worker: " + worker);
+		worker.postMessage(2);
+		//worker.terminate();
+		//jsh.shell.console("Terminated worker.");
 	}
 //@ts-ignore
 )(Packages,jsh)

@@ -144,7 +144,6 @@ namespace slime.jsh {
 				add: (pathname: slime.jrunscript.file.Pathname) => void
 				getClass: (name: any) => any
 			}
-			worker: any
 			kotlin: {
 				/**
 				 * **Experimental** Runs the given Kotlin script under the given bindings. See `jsh/test/manual/kotlin-jsr-223.jsh.js`

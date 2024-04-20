@@ -4,4 +4,20 @@
 //
 //	END LICENSE
 
-Packages.java.lang.System.err.println("Worker script executing! thread = " + Packages.java.lang.Thread.currentThread());
+//@ts-check
+(
+	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(Packages,$api,jsh) {
+		jsh.shell.console("Worker script executing! thread = " + Packages.java.lang.Thread.currentThread());
+		jsh.loader.worker.onmessage(function(e) {
+			jsh.shell.console("Worker script got message: " + JSON.stringify(e));
+			jsh.loader.worker.postMessage(e.detail*2);
+		});
+		jsh.shell.console("Worker script end.");
+	}
+//@ts-ignore
+)(Packages,$api,jsh);
