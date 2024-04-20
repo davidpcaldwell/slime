@@ -362,7 +362,7 @@
 
 								return {
 									create: function(p) {
-										Packages.java.lang.System.err.println("running " + p.script);
+										//Packages.java.lang.System.err.println("running " + p.script);
 										return (function() {
 											var _delegate = $jsh.worker(
 												p.script.pathname.java.adapt(),
@@ -397,7 +397,7 @@
 												},
 												postMessage: function(v) {
 													var json = JSON.stringify(v);
-													Packages.java.lang.System.err.println("Posting message to " + _delegate + ": " + json);
+													//Packages.java.lang.System.err.println("Posting message to " + _delegate + ": " + json);
 													_delegate.postMessage(json);
 												},
 												terminate: function() {
@@ -415,7 +415,7 @@
 												Packages.inonit.script.jsh.Shell.Event.Listener,
 												{
 													on: function(event) {
-														Packages.java.lang.System.err.println("Worker script onmessage got " + event);
+														//Packages.java.lang.System.err.println("Worker script onmessage got " + event);
 														f(toEvent(null, event));
 													}
 												}
@@ -563,7 +563,6 @@
 			}
 		}
 
-		Packages.java.lang.System.err.println("Starting events for " + $jsh);
 		$jsh.events();
 	}
 //@ts-ignore
