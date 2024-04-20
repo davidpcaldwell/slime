@@ -501,7 +501,7 @@ public class Shell {
 
 		EventLoop() {
 			this.index = ++INDEX;
-			LOG.log(Level.FINEST, "New EventLoop: " + this);
+			LOG.log(Level.FINEST, "Constructed EventLoop: " + this);
 		}
 
 		synchronized void post(Event.Outgoing event) {
@@ -530,6 +530,7 @@ public class Shell {
 		}
 
 		private boolean isAlive() {
+			LOG.log(Level.FINEST, this + ".isAlive(): workers=" + workers.size() + " events=" + events.size() + " canFinish=" + canFinish);
 			return !workers.isEmpty() || events.size() > 0 || !canFinish;
 		}
 
@@ -557,14 +558,17 @@ public class Shell {
 		public Runnable run() {
 			return new Runnable() {
 				public void run() {
-					LOG.log(Level.FINEST, "Starting event loop " + EventLoop.this);
+					LOG.log(Level.FINEST, "Starting event loop " + EventLoop.this + " in thread " + Thread.currentThread());
 					while(isAlive()) {
+						LOG.log(Level.FINEST, "Begin take() in " + this);
 						Event.Outgoing event = take();
+						LOG.log(Level.FINEST, "Finished take() in " + this);
 						if (event != null) {
 							LOG.log(Level.FINEST, "Event loop " + EventLoop.this + " got " + event.event.json);
 							event.dispatch();
 						}
 					}
+					LOG.log(Level.FINEST, "Finishing event loop " + EventLoop.this + " in thread " + Thread.currentThread().getName());
 				}
 			};
 		}
