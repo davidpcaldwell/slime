@@ -347,40 +347,87 @@
 							var args = [format.name].concat(Array.prototype.slice.call(arguments,1));
 							return loader.module.apply(loader,args);
 						},
-						worker: function(p) {
-							Packages.java.lang.System.err.println("running " + p.script);
-							return (function() {
-								var _delegate = $jsh.worker(
-									p.script.pathname.java.adapt(),
-									(function() {
-										var rv = Packages.java.lang.reflect.Array.newInstance(
-											$slime.java.toNativeClass(Packages.java.lang.String),
-											p.arguments.length
-										);
-										for (var i=0; i<p.arguments.length; i++) {
-											rv[i] = new Packages.java.lang.String(p.arguments[i]);
-										}
-										return rv;
-									})(),
-									new JavaAdapter(
-										Packages.inonit.script.jsh.Shell.Worker.Listener,
-										{
-											on: p.onmessage
-										}
-									)
-								);
-
-								return {
-									toString: function() {
-										return String(_delegate.toString());
-									},
-									postMessage: function(v) {
-										var json = JSON.stringify(v);
-										Packages.java.lang.System.err.println("Posting message to _delegate: " + json);
+						worker: (
+							function() {
+								/** @type { (source: any, _event: any) => slime.$api.Event<any> } */
+								var toEvent = function(source,_event) {
+									return {
+										type: "message",
+										source: source,
+										path: [],
+										timestamp: new Date().getTime(),
+										detail: JSON.parse(_event.json())
 									}
 								};
-							})();
-						},
+
+								return {
+									create: function(p) {
+										Packages.java.lang.System.err.println("running " + p.script);
+										return (function() {
+											var _delegate = $jsh.worker(
+												p.script.pathname.java.adapt(),
+												(function() {
+													var rv = Packages.java.lang.reflect.Array.newInstance(
+														$slime.java.toNativeClass(Packages.java.lang.String),
+														p.arguments.length
+													);
+													for (var i=0; i<p.arguments.length; i++) {
+														rv[i] = new Packages.java.lang.String(p.arguments[i]);
+													}
+													return rv;
+												})(),
+												new JavaAdapter(
+													Packages.inonit.script.jsh.Shell.Event.Listener,
+													{
+														on: function(e) {
+															p.onmessage(
+																toEvent(
+																	rv,
+																	e
+																)
+															);
+														}
+													}
+												)
+											);
+
+											var rv = {
+												toString: function() {
+													return String(_delegate.toString());
+												},
+												postMessage: function(v) {
+													var json = JSON.stringify(v);
+													Packages.java.lang.System.err.println("Posting message to " + _delegate + ": " + json);
+													_delegate.postMessage(json);
+												},
+												terminate: function() {
+													_delegate.terminate();
+												}
+											};
+
+											return rv;
+										})();
+									},
+									//	To be used in worker to allow it to receive messages
+									onmessage: function(f) {
+										$jsh.onMessage(
+											new JavaAdapter(
+												Packages.inonit.script.jsh.Shell.Event.Listener,
+												{
+													on: function(event) {
+														Packages.java.lang.System.err.println("Worker script onmessage got " + event);
+														f(toEvent(null, event));
+													}
+												}
+											)
+										)
+									},
+									postMessage: function(v) {
+										$jsh.postMessage(JSON.stringify(v));
+									}
+								}
+							}
+						)(),
 						//	TODO	try to bring this back? Would it be legal under Graal threading rules?
 						// //	experimental interface and therefore currently undocumented
 						addFinalizer: function(f) {
@@ -516,6 +563,7 @@
 			}
 		}
 
+		Packages.java.lang.System.err.println("Starting events for " + $jsh);
 		$jsh.events();
 	}
 //@ts-ignore
