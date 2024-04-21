@@ -254,6 +254,7 @@ public class Rhino {
 
 	public static class EngineImpl extends Shell.Engine {
 		private static void run(Shell shell) {
+			LOG.log(Level.FINEST, "Running shell", new Throwable("Stack trace for " + Thread.currentThread().getName()));
 			final Configuration engineConfiguration = Configuration.main(shell.getEnvironment());
 			try {
 				java.util.concurrent.ExecutorService service = java.util.concurrent.Executors.newSingleThreadExecutor();
@@ -269,17 +270,21 @@ public class Rhino {
 					LOG.log(Level.INFO, "Exiting via provided exit status %d.", status);
 					shell.getEnvironment().exit(status.intValue());
 				} else {
-					Set<Thread> threads = Thread.getAllStackTraces().keySet();
-					LOG.log(Level.INFO, "No exit status provided; destroying debugger (if any). JVM will exit when threads complete.", status);
-					java.util.function.Function<Thread,Boolean> isAwt = (t) -> t.getName().startsWith("AWT-");
-					for (Thread t : threads) {
-						if (t != null && t != Thread.currentThread() && !t.isDaemon() && !isAwt.apply(t)) {
-							LOG.log(Level.FINER, "Active thread: " + t + " daemon = " + t.isDaemon());
-							t.join();
+					if (isMainThread()) {
+						Set<Thread> threads = Thread.getAllStackTraces().keySet();
+						LOG.log(Level.INFO, "No exit status provided; destroying debugger (if any). JVM will exit when threads complete.", status);
+						java.util.function.Function<Thread,Boolean> isAwt = (t) -> t.getName().startsWith("AWT-");
+						for (Thread t : threads) {
+							if (t != null && t != Thread.currentThread() && !t.isDaemon() && !isAwt.apply(t)) {
+								LOG.log(Level.FINER, Thread.currentThread() + " joining active thread: " + t.getName() + " daemon = " + t.isDaemon());
+								LOG.log(Level.FINEST, Thread.currentThread().getName(), new Throwable("Stack trace for " + Thread.currentThread().getName()));
+								t.join();
+								LOG.log(Level.FINER, "Finished active thread: " + t + " daemon = " + t.isDaemon());
+							}
 						}
+						engineConfiguration.getEngine().getDebugger().destroy();
+						//	JVM will exit normally when non-daemon threads complete.
 					}
-					engineConfiguration.getEngine().getDebugger().destroy();
-					//	JVM will exit normally when non-daemon threads complete.
 				}
 			} catch (Throwable t) {
 				LOG.log(Level.SEVERE, "Exiting with throwable.", t);
@@ -338,7 +343,14 @@ public class Rhino {
 		}
 	}
 
+	private static Thread main = null;
+
+	private static boolean isMainThread() {
+		return Thread.currentThread() == main;
+	}
+
 	public static void main(String[] args) throws Throwable {
+		main = Thread.currentThread();
 		fixSetting("jsh.engine.rhino.optimization");
 		Main.cli(new EngineImpl(), args);
 	}
