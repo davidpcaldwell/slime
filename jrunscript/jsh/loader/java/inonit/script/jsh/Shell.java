@@ -593,7 +593,6 @@ public class Shell {
 
 		public static abstract class Listener {
 			public abstract void on(Event event);
-			public abstract void done();
 		}
 
 		static class Outgoing {
@@ -641,14 +640,12 @@ public class Shell {
 		void start() {
 			parent.events.add(this);
 			LOG.log(Level.FINEST, "Starting worker ...");
-			//	run worker in new thread and deliver events to events instance variable, then invoke done()
 			Invocation invocation = Shell.Invocation.create(Shell.Script.create(source), arguments);
 			this.shell = parent.subshell(parent.getEnvironment(), invocation);
 			shell.events.canFinish = false;
 			shell.parent = parent.events;
 			shell.parentListener = this.toParent;
 			LOG.log(Level.FINEST, "Created worker shell " + shell);
-			Object lock = this;
 			new Thread(
 				new Runnable() {
 					public void run() {
