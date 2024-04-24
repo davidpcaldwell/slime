@@ -20,6 +20,7 @@
 				jsh.shell.console("main script got message from worker " + JSON.stringify(e));
 				worker.terminate();
 				jsh.shell.console("Worker terminated.");
+				jsh.shell.echo(e.detail);
 			}
 		});
 		jsh.shell.console("Created worker: " + worker);

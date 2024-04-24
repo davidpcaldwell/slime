@@ -234,6 +234,7 @@ namespace slime.jsh {
 				fifty.run(fifty.tests.loader.exports);
 
 				fifty.load("plugins.fifty.ts");
+				fifty.load("test/worker/suite.fifty.ts");
 			}
 		}
 	//@ts-ignore
