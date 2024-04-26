@@ -432,14 +432,25 @@
 		//	}
 		//}
 
-		$exports.log = $loader.file("logging.java.js", {
-			prefix: $context.logging.prefix,
-			api: {
-				java: {
-					Array: JavaArray
+		var code = {
+			/** @type { slime.jrunscript.java.internal.logging.Script } */
+			logging: $loader.script("logging.js")
+		};
+
+		var scripts = {
+			logging: code.logging({
+				prefix: $context.logging.prefix,
+				api: {
+					java: {
+						Array: JavaArray
+					}
 				}
-			}
-		}).log;
+			})
+		};
+
+		$exports.log = scripts.logging.old;
+
+		$exports.logging = scripts.logging.api;
 
 		/**
 		 * @type { (java: slime.jrunscript.runtime.Exports["java"]) => java is slime.jrunscript.runtime.MultithreadedJava }

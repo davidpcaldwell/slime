@@ -59,7 +59,7 @@
 								if (p.on && p.on.error) {
 									p.on.error(error);
 								}
-								debug("Threw: " + thread);
+								debug("Threw: " + thread + " " + String(e) + "\n" + e.stack);
 								done = true;
 								synchronize.lock.notifyAll();
 							})();

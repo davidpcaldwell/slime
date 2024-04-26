@@ -10,13 +10,21 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.java.internal.logging.Context } $context
-	 * @param { slime.jrunscript.java.internal.logging.Exports } $exports
+	 * @param { slime.loader.Export<slime.jrunscript.java.internal.logging.Exports> } $export
 	 */
-	function(Packages,JavaAdapter,$context,$exports) {
+	function(Packages,JavaAdapter,$api,$context,$export) {
 		var _Level = Packages.java.util.logging.Level;
 
-		var jlog = function(name,_level,_message) {
+		/**
+		 *
+		 * @param { string } name
+		 * @param { slime.jrunscript.native.java.util.logging.Level } _level
+		 * @param { string } _message
+		 * @param { any[] } varargs
+		 */
+		var jlog = function(name, _level, _message) {
 			//	TODO	we do not provide a way to log a Throwable in the same way as inonit.system.Logging
 			Packages.java.util.logging.Logger.getLogger(name).log(_level, _message, $context.api.java.Array.create({
 				array: Array.prototype.slice.call(arguments,3)
@@ -25,34 +33,42 @@
 
 		var levels = ["SEVERE","WARNING","INFO","CONFIG","FINE","FINER","FINEST"];
 
+		/**
+		 *
+		 * @param { Pick<slime.jrunscript.java.logging.old.Logger,"log"> } object
+		 */
 		var addLevelsTo = function(object) {
+			var rv = $api.Object.compose(object);
 			levels.forEach(function(item) {
-				this[item] = function() {
+				rv[item] = function() {
 					//	TODO	hastily-added for TypeDoc upgrade from 4.0.5 to 4.5.4
 					//@ts-ignore
 					this.log.apply(this, [_Level[item]].concat(Array.prototype.slice.call(arguments)));
 				};
-			}, object);
+			});
+			return /** @type { slime.jrunscript.java.logging.old.Logger } */ (rv);
 		}
 
+		/**
+		 *
+		 * @param { string } name
+		 */
 		var jlogger = function(name) {
-			return new function() {
-				this.log = function(_level) {
+			return addLevelsTo({
+				log: function(_level) {
 					jlog.apply(null, [name,_level].concat(Array.prototype.slice.call(arguments,1)));
-				};
-
-				addLevelsTo(this);
-			};
+				}
+			});
 		};
 
-		$exports.log = function() {
+		var log = function() {
 			jlog.apply(null, [$context.prefix, _Level.INFO].concat(Array.prototype.slice.call(arguments)));
 		};
-		$exports.log.named = function(name) {
+		log.named = function(name) {
 			return jlogger($context.prefix + "." + name);
 		};
 
-		$exports.log.initialize = function(o) {
+		log.initialize = function(o) {
 			if (typeof(o) == "function") {
 				var _manager = Packages.java.util.logging.LogManager.getLogManager();
 				var _root = _manager.getLogger("");
@@ -76,10 +92,10 @@
 								logger: {
 									name: String(_record.getLoggerName())
 								},
-		//						message: String(_record.getMessage()),
+								// message: String(_record.getMessage()),
 								timestamp: Number(_record.getMillis()),
 								//	TODO	re-insert, probably with formatting
-		//						parameters: parameters,
+								// parameters: parameters,
 								//	resource bundle
 								//	resource bundle name
 								sequence: Number(_record.getSequenceNumber()),
@@ -115,7 +131,7 @@
 						}
 					}
 				);
-		//		Packages.java.lang.System.err.println("ErrorManager = " + _handler.getErrorManager());
+				// Packages.java.lang.System.err.println("ErrorManager = " + _handler.getErrorManager());
 				_root.addHandler(_handler);
 			}
 		}
@@ -129,6 +145,22 @@
 		//	jsh.shell.echo(JSON.stringify(record), { stream: stderr });
 		//});
 		//jsh.java.log.named("verify").INFO("Hey, %1$s!", "David");
+		$export({
+			old: log,
+			api: {
+				log: function(p) {
+					var _level = Packages.java.util.logging.Level[p.level];
+					(
+						Packages.java.util.logging.Logger
+							.getLogger($context.prefix + "." + p.logger)
+							.log(
+								_level,
+								p.message
+							)
+					);
+				}
+			}
+		});
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,$context,$exports)
+)(Packages,JavaAdapter,$api,$context,$export)
