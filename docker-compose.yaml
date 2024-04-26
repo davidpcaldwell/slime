@@ -49,6 +49,12 @@ services:
       <<: *environment
       SLIME_WF_JDK_VERSION: 17
 
+  test21:
+    <<: *test
+    environment:
+      <<: *environment
+      SLIME_WF_JDK_VERSION: 21
+
   # Produces a stateful, persistent SLIME container that begins as a blank box with the source directory mounted. Local changes
   # (to the local/ subdirectory, like installing JDKs, Rhino, Tomcat, and so forth) will persist between runs.
   #
