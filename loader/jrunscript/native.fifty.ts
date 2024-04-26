@@ -378,7 +378,10 @@ namespace slime.jrunscript {
 		}
 	}
 
-	export type JavaClass<O extends slime.jrunscript.native.java.lang.Object = slime.jrunscript.native.java.lang.Object, C = {}> = {
+	export type JavaClass<
+		O extends slime.jrunscript.native.java.lang.Object = slime.jrunscript.native.java.lang.Object,
+		C = {}
+	> = {
 		new (...args: any[]): O
 	} & C
 
@@ -542,9 +545,12 @@ namespace slime.jrunscript {
 					Level: JavaClass<
 						slime.jrunscript.native.java.util.logging.Level,
 						{
+							SEVERE: slime.jrunscript.native.java.util.logging.Level
 							WARNING: slime.jrunscript.native.java.util.logging.Level
 							INFO: slime.jrunscript.native.java.util.logging.Level
+							CONFIG: slime.jrunscript.native.java.util.logging.Level
 							FINE: slime.jrunscript.native.java.util.logging.Level
+							FINER: slime.jrunscript.native.java.util.logging.Level
 							FINEST: slime.jrunscript.native.java.util.logging.Level
 						}
 					>

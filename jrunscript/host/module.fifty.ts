@@ -43,21 +43,6 @@ namespace slime.jrunscript.java {
 		})(fifty)
 	}
 
-	export namespace internal.logging {
-		export interface Context {
-			api: {
-				java: {
-					Array: slime.jrunscript.java.Exports["Array"]
-				}
-			}
-			prefix: string
-		}
-
-		export interface Exports {
-			log: any
-		}
-	}
-
 	export interface Environment {
 		readonly [x: string]: string
 	}
@@ -417,27 +402,10 @@ namespace slime.jrunscript.java {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace logging {
-		type LevelMethod = (...args: any[]) => void
-
-		export interface Logger {
-			log: (level: any, ...args: any[]) => void
-			SEVERE: LevelMethod
-			WARNING: LevelMethod
-			INFO: LevelMethod
-			CONFIG: LevelMethod
-			FINE: LevelMethod
-			FINER: LevelMethod
-			FINEST: LevelMethod
-		}
-	}
-
 	export interface Exports {
-		log: {
-			(...args: any[]): void
-			named(name: string): logging.Logger
-			initialize: (f: (record: any) => void) => void
-		}
+		log: logging.old.Exports
+
+		logging: logging.Exports
 	}
 
 	(

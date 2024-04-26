@@ -48,6 +48,11 @@
 					}
 				};
 
+				$context.library.java.logging.log({
+					logger: "tools.fifty.documentation-updater",
+					level: "FINE",
+					message: "Running TypeDoc invocation: " + invocation
+				});
 				var exit = $api.fp.world.now.ask(
 					invocation,
 					{

@@ -7,7 +7,7 @@
 namespace slime.jrunscript.java.internal.threads {
 	export interface Context {
 		java: slime.jrunscript.runtime.MultithreadedJava
-		log: slime.jrunscript.java.logging.Logger
+		log: slime.jrunscript.java.logging.old.Logger
 		classpath: any
 	}
 
