@@ -221,15 +221,19 @@ install_graalvm() {
 }
 
 install_jdk_8_corretto() {
-	install_jdk_corretto "8.372.07.1" $1
+	install_jdk_corretto "8.412.08.1" $1
 }
 
 install_jdk_11_corretto() {
-	install_jdk_corretto "11.0.19.7.1" $1
+	install_jdk_corretto "11.0.23.9.1" $1
 }
 
 install_jdk_17_corretto() {
-	install_jdk_corretto "17.0.7.7.1" $1
+	install_jdk_corretto "17.0.11.9.1" $1
+}
+
+install_jdk_21_corretto() {
+	install_jdk_corretto "21.0.3.9.1" $1
 }
 
 install_jdk_8() {
@@ -244,8 +248,12 @@ install_jdk_17() {
 	install_jdk_17_corretto "$@"
 }
 
+install_jdk_21() {
+	install_jdk_21_corretto "$@"
+}
+
 install_jdk() {
-	install_jdk_8 "$@"
+	install_jdk_21 "$@"
 }
 
 
@@ -318,6 +326,8 @@ get_jdk_major_version() {
 			echo "11"
 		elif [[ $JAVA_VERSION =~ ^17\. ]]; then
 			echo "17"
+		elif [[ $JAVA_VERSION =~ ^21\. ]]; then
+			echo "21"
 		else
 			echo "Unknown"
 		fi
@@ -348,8 +358,12 @@ if [ "$1" == "--install-jdk-17" ]; then
 	exit $?
 fi
 
+if [ "$1" == "--install-jdk-21" ]; then
+	install_jdk_21 ${JSH_LOCAL_JDKS}/default
+	exit $?
+fi
+
 if [ "$1" == "--install-graalvm" ]; then
-	set -x
 	install_graalvm "21.0.2" ${JSH_SHELL_LIB}/graal
 	GRAAL_POLYGLOT_LIB="${JSH_SHELL_LIB}/graal/lib/polyglot"
 	#	TODO	what if this directory exists? Clear it?
@@ -407,6 +421,11 @@ fi
 
 if [ "$1" == "--add-jdk-17" ]; then
 	install_jdk_17 ${JSH_LOCAL_JDKS}/17
+	exit $?
+fi
+
+if [ "$1" == "--add-jdk-21" ]; then
+	install_jdk_21 ${JSH_LOCAL_JDKS}/21
 	exit $?
 fi
 
@@ -536,7 +555,7 @@ if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
 	JRUNSCRIPT="${JRUNSCRIPT} ${JSH_NASHORN_DEPRECATION_ARGUMENT}"
 fi
 
-if [ "${JDK_MAJOR_VERSION}" == "17" ]; then
+if [ "${JDK_MAJOR_VERSION}" == "17" ] || [ "${JDK_MAJOR_VERSION}" == "21" ]; then
 	#	Currently we know that we are not running a remote shell because we would download something other than Java 17 for that.
 	if [ ! -f "${JSH_BOOTSTRAP_NASHORN}" ]; then
 		install_nashorn

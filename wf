@@ -29,12 +29,12 @@ if [ "$(uname)" == "Linux" ]; then
 	fi
 fi
 
-SLIME_WF_JDK_VERSION="${SLIME_WF_JDK_VERSION:-11}"
+SLIME_WF_JDK_VERSION="${SLIME_WF_JDK_VERSION:-21}"
 
 SLIME_WF_JDK_DEFAULT="${JSH_LOCAL_JDKS}/default"
 
 #	TODO	this is very repetitive but would be cumbersome to simplify
-if [ "${SLIME_WF_JDK_VERSION}" = "8" ] || [ "${SLIME_WF_JDK_VERSION}" = "11" ] || [ "${SLIME_WF_JDK_VERSION}" = "17" ]; then
+if [ "${SLIME_WF_JDK_VERSION}" = "8" ] || [ "${SLIME_WF_JDK_VERSION}" = "11" ] || [ "${SLIME_WF_JDK_VERSION}" = "17" ] || [ "${SLIME_WF_JDK_VERSION}" = "21" ]; then
 	SLIME_WF_JDK_LOCAL="${JSH_LOCAL_JDKS}/${SLIME_WF_JDK_VERSION}"
 
 	if [ ! -d "${SLIME_WF_JDK_LOCAL}" ]; then
