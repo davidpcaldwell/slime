@@ -251,7 +251,12 @@
 					$api.fp.Partial.impure.exception({
 						try: $api.fp.world.mapping(jsh.file.Location.file.read.string.world()),
 						nothing: function(location) { return new Error("No file found at " + location.pathname); }
-					})
+					}),
+					function removeTrailingNewline(s) {
+						//	Might be inserted by some editors
+						if (s.substring(s.length-1) == "\n") return s.substring(0,s.length-1);
+						return s;
+					}
 				);
 
 				var submodules = $api.fp.impure.Input.map(
