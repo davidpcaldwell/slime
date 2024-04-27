@@ -32,6 +32,7 @@
 					git: void(0),
 				};
 
+				/** @type { slime.jsh.unit.Exports["mock"]["Web"] } */
 				var Web = function(o) {
 					if (!o) o = {
 						trace: false
@@ -42,127 +43,124 @@
 					/** @type { slime.jsh.unit.mock.handler[] } */
 					var handlers = [];
 
-					this.addHttpsHost = function(hostname) {
-						httpsHosts.push(hostname);
-					}
-
-					this.add = function(handler) {
-						handlers.push(handler);
-					}
-
 					var tomcat;
 
-					this.port = void(0);
-					this.client = void(0);
-					this.https = void(0);
-					this.environment = void(0);
-					this.hg = void(0);
+					return {
+						addHttpsHost: function(hostname) {
+							httpsHosts.push(hostname);
+						},
+						add: function(handler) {
+							handlers.push(handler);
+						},
+						port: void(0),
+						client: void(0),
+						https: void(0),
+						environment: void(0),
+						hg: void(0),
+						start: function() {
+							var https = (function() {
+								if (!httpsHosts.length) return void(0);
+								var keystore = jsh.shell.TMPDIR.createTemporary({ suffix: ".p12" }).pathname;
 
-					this.start = function() {
-						var https = (function() {
-							if (!httpsHosts.length) return void(0);
-							var keystore = jsh.shell.TMPDIR.createTemporary({ suffix: ".p12" }).pathname;
+								var mkcert = jsh.shell.tools.mkcert.require();
 
-							var mkcert = jsh.shell.tools.mkcert.require();
+								mkcert.pkcs12({ to: keystore, hosts: httpsHosts });
 
-							mkcert.pkcs12({ to: keystore, hosts: httpsHosts });
+								/** @type { slime.jsh.httpd.tomcat.Configuration["https"] } */
+								return {
+									port: void(0),
+									keystore: {
+										file: keystore.file,
+										password: "changeit"
+									}
+								};
+							})();
 
-							/** @type { slime.jsh.httpd.tomcat.Configuration["https"] } */
-							return {
-								port: void(0),
-								keystore: {
-									file: keystore.file,
-									password: "changeit"
-								}
-							};
-						})();
+							//	TODO	https doesn't really work, as CONNECT to the real destination is attempted when requests for that
+							//			host arrive
+							tomcat = jsh.httpd.Tomcat({
+								https: https
+							});
 
-						//	TODO	https doesn't really work, as CONNECT to the real destination is attempted when requests for that
-						//			host arrive
-						tomcat = jsh.httpd.Tomcat({
-							https: https
-						});
+							this.port = tomcat.port;
 
-						this.port = tomcat.port;
-
-						this.client = new jsh.http.Client({
-							proxy: {
-								http: {
-									host: "127.0.0.1",
-									port: tomcat.port
-								}
-							}
-						});
-						this.client.toString = function() {
-							return "Mock client for 127.0.0.1:" + tomcat.port;
-						};
-
-						this.https = (https) ? {
-							port: tomcat.https.port,
-							client: new jsh.http.Client({
+							this.client = new jsh.http.Client({
 								proxy: {
-									https: {
+									http: {
 										host: "127.0.0.1",
-										port: tomcat.https.port
+										port: tomcat.port
 									}
 								}
-							})
-						} : void(0);
+							});
+							this.client.toString = function() {
+								return "Mock client for 127.0.0.1:" + tomcat.port;
+							};
 
-						//	TODO	perhaps need HTTPS here
-						this.environment = {
-							"http_proxy": "http://127.0.0.1:" + tomcat.port
-						};
+							this.https = (https) ? {
+								port: tomcat.https.port,
+								client: new jsh.http.Client({
+									proxy: {
+										https: {
+											host: "127.0.0.1",
+											port: tomcat.https.port
+										}
+									}
+								})
+							} : void(0);
 
-						//	TODO	perhaps need HTTPS here
-						this.hg = {
-							config: {
-								"http_proxy.host": "127.0.0.1:" + tomcat.port
-							}
-						};
+							//	TODO	perhaps need HTTPS here
+							this.environment = {
+								"http_proxy": "http://127.0.0.1:" + tomcat.port
+							};
 
-						tomcat.map({
-							//	TODO	works with or without leading slash; document this and write a test
-							path: "",
-							servlets: {
-								"/*": {
-									//	TODO	document load method
-									load: function(scope) {
-										//	TODO	this is duplicative with httpd.Handler.series in a way; similar concept. We would not have access to httpd
-										//			variable is one difference, and the other one is immutable. So leaving both for now. This might also end
-										//			up some sort of variation in $api (although the other variety might as well)
-										scope.$exports.handle = function(request) {
-											if (o.trace) {
-												Packages.java.lang.System.err.println("Request: " + request.method + " " + request.headers.value("host") + " " + request.path);
-											}
-											for (var i=0; i<handlers.length; i++) {
-												try {
-													var rv = handlers[i](request);
-													if (typeof(rv) != "undefined") return rv;
-												} catch (e) {
-													//	if a handler throws an exception, just ignore it
+							//	TODO	perhaps need HTTPS here
+							this.hg = {
+								config: {
+									"http_proxy.host": "127.0.0.1:" + tomcat.port
+								}
+							};
+
+							tomcat.map({
+								//	TODO	works with or without leading slash; document this and write a test
+								path: "",
+								servlets: {
+									"/*": {
+										//	TODO	document load method
+										load: function(scope) {
+											//	TODO	this is duplicative with httpd.Handler.series in a way; similar concept. We would not have access to httpd
+											//			variable is one difference, and the other one is immutable. So leaving both for now. This might also end
+											//			up some sort of variation in $api (although the other variety might as well)
+											scope.$exports.handle = function(request) {
+												if (o.trace) {
+													Packages.java.lang.System.err.println("Request: " + request.method + " " + request.headers.value("host") + " " + request.path);
 												}
+												for (var i=0; i<handlers.length; i++) {
+													try {
+														var rv = handlers[i](request);
+														if (typeof(rv) != "undefined") return rv;
+													} catch (e) {
+														//	if a handler throws an exception, just ignore it
+													}
+												}
+												//	TODO	convert to appropriate 4xx or 5xx response (have not decided)
+												throw new Error("Unhandled: request: host=" + request.headers.value("host") + " path = " + request.path);
 											}
-											//	TODO	convert to appropriate 4xx or 5xx response (have not decided)
-											throw new Error("Unhandled: request: host=" + request.headers.value("host") + " path = " + request.path);
 										}
 									}
 								}
-							}
-						});
+							});
 
-						tomcat.start();
-					}
-
-					this.run = function() {
-						tomcat.run();
-					}
-
-					this.stop = function() {
-						handlers.forEach(function(handler) {
-							if (handler.stop) handler.stop();
-						});
-						tomcat.stop();
+							tomcat.start();
+						},
+						run: function() {
+							tomcat.run();
+						},
+						stop: function() {
+							handlers.forEach(function(handler) {
+								if (handler.stop) handler.stop();
+							});
+							tomcat.stop();
+						}
 					};
 				};
 

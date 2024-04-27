@@ -15,7 +15,7 @@
 			commands: {
 				test: function() {
 					var loader = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
-					var web = new jsh.unit.mock.Web({ trace: true });
+					var web = jsh.unit.mock.Web({ trace: true });
 					web.add(loader.module("test/mock-echo-handler.js"));
 					web.start();
 					var client = web.client;
@@ -26,7 +26,7 @@
 				},
 				serve: function() {
 					var loader = new jsh.file.Loader({ directory: jsh.script.file.parent.parent.parent });
-					var web = new jsh.unit.mock.Web({ trace: true });
+					var web = jsh.unit.mock.Web({ trace: true });
 					web.add(loader.module("test/mock-echo-handler.js"));
 					jsh.shell.console("HTTP port: " + web.port + " HTTPS port: " + web.https.port);
 					web.run();
