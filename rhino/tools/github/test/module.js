@@ -19,7 +19,7 @@
 		 * @returns
 		 */
 		var startMock = function(jsh) {
-			var web = new jsh.unit.mock.Web({ trace: true });
+			var web = jsh.unit.mock.Web({ trace: true });
 			//	TODO	push these kinds of declarations back into a mock object that aggregates hosts and handler
 			web.addHttpsHost("127.0.0.1");
 			web.addHttpsHost("raw.githubusercontent.com");

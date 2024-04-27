@@ -271,7 +271,7 @@ namespace slime.internal.jrunscript.bootstrap {
 			}
 
 			fifty.tests.zip = function() {
-				var web = new jsh.unit.mock.Web();
+				var web = jsh.unit.mock.Web();
 				web.add(jsh.unit.mock.web.Github({
 					src: {
 						davidpcaldwell: {

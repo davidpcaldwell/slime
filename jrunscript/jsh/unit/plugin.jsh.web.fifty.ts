@@ -11,7 +11,7 @@ namespace slime.jsh.unit {
 		 * Bitbucket, and Git/Mercurial hosting.
 		 */
 		mock: {
-			Web: new (o?: {
+			Web: (o?: {
 				trace: boolean
 			}) => slime.jsh.unit.mock.Web
 
@@ -86,7 +86,7 @@ namespace slime.jsh.unit.mock {
 				fifty.verify("mock").is("mock");
 				if (!jsh.unit.mock.Web) return;
 
-				var web = new jsh.unit.mock.Web({ trace: true });
+				var web = jsh.unit.mock.Web({ trace: true });
 				web.addHttpsHost("mockweb.xlime.com");
 				web.add(fifty.$loader.module("test/mock-echo-handler.js"));
 				web.start();
@@ -135,7 +135,7 @@ namespace slime.jsh.unit.mock {
 					jsh.shell.console("jsh.unit.mock.Web not present; skipping test.");
 					return;
 				}
-				var web = new fifty.global.jsh.unit.mock.Web();
+				var web = fifty.global.jsh.unit.mock.Web();
 				web.addHttpsHost("https.fifty.com");
 				web.add(function(request) {
 					return {
@@ -179,7 +179,7 @@ namespace slime.jsh.unit.mock {
 
 			fifty.tests.jsapi = function() {
 				if (jsh.unit.mock.Web) {
-					var web = new jsh.unit.mock.Web();
+					var web = jsh.unit.mock.Web();
 					web.add(function(request) {
 						if (request.headers.value("host") == "www.foo.com") {
 							return {

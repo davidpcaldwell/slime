@@ -22,7 +22,7 @@
 		const mock = (function() {
 			const jsh = fifty.global.jsh;
 			jsh.loader.plugins(jsh.shell.jsh.src.getSubdirectory("rhino/tools/github"));
-			var www = new jsh.unit.mock.Web({ trace: true });
+			var www = jsh.unit.mock.Web({ trace: true });
 			www.addHttpsHost("raw.githubusercontent.com");
 			www.addHttpsHost("api.github.com");
 			www.addHttpsHost("github.com");
