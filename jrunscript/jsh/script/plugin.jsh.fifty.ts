@@ -754,6 +754,8 @@ namespace slime.jsh.script {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.cli);
+
+				fifty.run(fifty.tests.jsapi);
 			}
 		}
 	//@ts-ignore
