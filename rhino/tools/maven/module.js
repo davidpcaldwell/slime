@@ -513,6 +513,61 @@
 					world: Installation.require
 				}
 			},
+			shell: {
+				Intention: function(p) {
+					var project = $api.fp.now(p.intention.project, $context.library.file.Location.from.os);
+					var projectIsDirectory = $api.fp.now(
+						project,
+						$context.library.file.Location.directory.exists.simple
+					);
+					var projectIsFile = $api.fp.now(
+						project,
+						$context.library.file.Location.file.exists.simple
+					)
+					return {
+						command: $api.fp.now(p.installation.home, $context.library.file.os.directory.relativePath("bin/mvn")),
+
+						//	See https://books.sonatype.com/mvnref-book/reference/running-sect-options.html
+						arguments: $api.Array.build(function(it) {
+							//	TODO	should be possible to implement all of this much more elegantly with Maybe
+							//			and Stream and flatMap and so forth
+							if (p.intention.properties) {
+								Object.entries(p.intention.properties).forEach(function(entry) {
+									it.push("--define", entry[0] + "=" + entry[1]);
+								});
+							}
+							if (p.intention.repository) {
+								it.push("--define", "maven.repo.local=" + p.intention.repository);
+							}
+							if (p.intention.profiles) {
+								it.push("--activate-profiles", p.intention.profiles.join(","));
+							}
+							if (projectIsFile) {
+								it.push("--file", p.intention.project);
+							}
+							if (p.intention.settings && p.intention.settings.user) {
+								it.push("--settings", p.intention.settings.user);
+							}
+							if (p.intention.settings && p.intention.settings.global) {
+								it.push("--global-settings", p.intention.settings.global);
+							}
+							if (p.intention.debug) {
+								it.push("--debug");
+							}
+							it.push.apply(it, p.intention.commands);
+						}),
+						environment: function(existing) {
+							return $api.Object.compose(
+								existing,
+								(p.javaHome) ? {
+									JAVA_HOME: p.javaHome
+								} : {}
+							)
+						},
+						directory: (projectIsDirectory) ? p.intention.project : void(0)
+					}
+				}
+			},
 			mvn: $exports.mvn,
 			Pom: $exports.Pom,
 			Project: $exports.Project,

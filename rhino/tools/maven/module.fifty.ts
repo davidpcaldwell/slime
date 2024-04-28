@@ -272,6 +272,37 @@ namespace slime.jrunscript.tools.maven {
 		)(fifty);
 	}
 
+	/**
+	 * A type representing a potential Maven invocation and providing the ability to specify some common options. This
+	 * type can be used in conjunction with `toShellIntention()` to create a
+	 * {@link slime.jrunscript.shell.run.Intention shell intention}. If less-common options
+	 * need to be passed to Maven, they can be added by post-processing the shell intention.
+	 */
+	export interface Intention {
+		project: string
+		properties?: {
+			[name: string]: string
+		}
+		repository?: string
+		profiles?: string[]
+		settings?: {
+			user?: string
+			global?: string
+		}
+		debug?: boolean
+		commands: string[]
+	}
+
+	export interface Exports {
+		shell: {
+			Intention: (p: {
+				javaHome?: string
+				installation: Installation
+				intention: Intention
+			}) => slime.jrunscript.shell.run.Intention
+		}
+	}
+
 	export interface Exports {
 		mvn: any
 		Pom: any
