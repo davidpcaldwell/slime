@@ -564,7 +564,11 @@
 								} : {}
 							)
 						},
-						directory: (projectIsDirectory) ? p.intention.project : void(0)
+						directory: (projectIsDirectory) ? p.intention.project : void(0),
+						stdio: {
+							output: "line",
+							error: "line"
+						}
 					}
 				}
 			},
