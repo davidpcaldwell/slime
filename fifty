@@ -6,4 +6,4 @@
 #	END LICENSE
 
 BASE=$(dirname $0)
-${BASE}/jsh.bash ${BASE}/tools/fifty.jsh.js "$@"
+${BASE}/jsh ${BASE}/tools/fifty.jsh.js "$@"
