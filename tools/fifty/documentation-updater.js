@@ -20,14 +20,24 @@
 					directory: true
 				}));
 
-				var invocation = $context.typedoc.invocation({
-					project: { base: p.project.pathname },
-					stdio: {
-						output: "line",
-						error: "line"
-					},
-					out: tmp.pathname
-				});
+				var invocation;
+				try {
+					invocation = $context.typedoc.invocation({
+						project: { base: p.project.pathname },
+						stdio: {
+							output: "line",
+							error: "line"
+						},
+						out: tmp.pathname
+					});
+				} catch (e) {
+					events.fire("stderr", { out: tmp.pathname, line: String(e) });
+					events.fire("errored", {
+						out: function() { return tmp.pathname; },
+						started: function() { return null; },
+						kill: function() {}
+					})
+				}
 
 				/** @type { number } */
 				var started;

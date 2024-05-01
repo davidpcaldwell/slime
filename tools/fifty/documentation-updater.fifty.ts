@@ -49,7 +49,7 @@ namespace slime.tools.documentation.updater {
 		 * gives access to an object representing the running update, including the output directory to which its output will be
 		 * written.
 		 *
-		 * This method terminates when the update process terminates, after firing either a `finished` or a `processed` event,
+		 * This method terminates when the update process terminates, after firing either a `finished` or a `errored` event,
 		 * both of which also give access to the output directory to which TypeDoc documentation would have been written.
 		 */
 		export type Update = slime.$api.fp.world.Means<
