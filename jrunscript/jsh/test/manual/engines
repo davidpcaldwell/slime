@@ -1,0 +1,11 @@
+#!/bin/bash
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+SLIME="$(dirname $0)/../../../.."
+>&2 echo "Rhino:" && env JSH_ENGINE=rhino ${SLIME}/jsh "$@" \
+	&& echo "" && echo "Nashorn:" && env JSH_ENGINE=nashorn ${SLIME}/jsh "$@" \
+	&& echo "" && echo "GraalVM:" && env JSH_ENGINE=graal ${SLIME}/jsh "$@"
