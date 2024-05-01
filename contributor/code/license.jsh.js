@@ -159,6 +159,7 @@
 				if (files[i].path == "tools/wf/test/data/plugin-standard/wf") extension = "bash";
 				if (files[i].path == "contributor/docker-compose") extension = "bash";
 				if (files[i].path == "tools/wf/install") extension = "bash";
+				if (files[i].path == "jrunscript/jsh/test/manual/engines") extension = "bash";
 				if (!extension) throw new Error("Extension null for " + files[i].path);
 			}
 			var text = toFile(file).node.read(String);
