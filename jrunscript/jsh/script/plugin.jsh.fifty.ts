@@ -763,7 +763,7 @@ namespace slime.jsh.script {
 
 	export interface Exports {
 		arguments: string[]
-		getopts: Function & { UNEXPECTED_OPTION_PARSER: any, ARRAY: any, parser: { Pathname: (s: string) => slime.jrunscript.file.Pathname } }
+		getopts: Function & { UNEXPECTED_OPTION_PARSER: any, ARRAY: any, OBJECT: any, parser: { Pathname: (s: string) => slime.jrunscript.file.Pathname } }
 		file?: slime.jrunscript.file.File
 		script?: any
 		/** @deprecated */
