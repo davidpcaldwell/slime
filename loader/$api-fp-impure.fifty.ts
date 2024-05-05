@@ -975,6 +975,11 @@ namespace slime.$api.fp.world {
 			 * @returns An action which accepts the desired type.
 			 */
 			pipe: <P,R,E>(mapping: slime.$api.fp.Mapping<P,R>) => (action: slime.$api.fp.world.Means<R,E>) => slime.$api.fp.world.Means<P,E>
+
+			process: <E>(p: {
+				action: slime.$api.fp.world.Action<E>
+				handlers?: slime.$api.event.Handlers<E>
+			}) => slime.$api.fp.impure.Process
 		}
 
 		Ask: {
