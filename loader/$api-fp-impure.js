@@ -378,6 +378,14 @@
 							return action(mapping(argument));
 						}
 					}
+				},
+				process: function(p) {
+					return function() {
+						$context.events.handle({
+							implementation: p.action,
+							handlers: p.handlers
+						});
+					}
 				}
 			},
 			Ask: {
