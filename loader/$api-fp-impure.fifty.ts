@@ -739,9 +739,8 @@ namespace slime.$api.fp.world {
 			order: {
 				process: <O,E>(p: {
 					means: slime.$api.fp.world.Means<O,E>
-					order: slime.$api.fp.impure.Input<O>
 					handlers?: slime.$api.event.Handlers<E>
-				}) => slime.$api.fp.impure.Process
+				}) => (o: O) => slime.$api.fp.impure.Process
 			}
 		}
 	}
@@ -852,11 +851,13 @@ namespace slime.$api.fp.world {
 				verify(orders).length.is(0);
 				verify(captor).events.length.is(0);
 
-				var process = $api.fp.world.Means.order.process({
-					means: recorder,
-					order: $api.fp.impure.Input.value(2),
-					handlers: captor.handler
-				});
+				var process = $api.fp.now(
+					2,
+					$api.fp.world.Means.order.process({
+						means: recorder,
+						handlers: captor.handler
+					})
+				);
 				verify(orders).length.is(0);
 				verify(captor).events.length.is(0);
 
@@ -869,6 +870,8 @@ namespace slime.$api.fp.world {
 				verify(captor).events[1].type.is("length");
 				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
 			};
+
+			fifty.tests.wip = fifty.tests.exports.world.Means.order.process;
 
 
 			fifty.tests.exports.world.Means.now = function() {
@@ -1129,6 +1132,7 @@ namespace slime.$api.fp.world {
 
 namespace slime.$api.fp.internal.impure {
 	export interface Context {
+		pipe: slime.$api.fp.Pipe
 		stream: slime.$api.fp.stream.impure.Exports
 		events: slime.runtime.internal.events.Exports
 	}
