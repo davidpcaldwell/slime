@@ -65,57 +65,53 @@
 
 		var wo = {
 			directory: {
-				list: {
-					/** @type { slime.jrunscript.file.exports.location.Directory["list"]["stream"]["world"] } */
-					stream: function(p) {
-						/**
-						 *
-						 * @param { slime.jrunscript.file.Location } location
-						 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-						 * @param { slime.$api.event.Emitter<slime.jrunscript.file.exports.location.list.Events> } events
-						 * @returns { slime.jrunscript.file.Location[] }
-						 */
-						var process = function(location,descend,events) {
-							var listed = $api.fp.world.now.ask(
-								location.filesystem.listDirectory({ pathname: location.pathname })
-							);
-							/** @type { slime.jrunscript.file.Location[] } */
-							var rv = [];
-							if (listed.present) {
-								listed.value.forEach(function(name) {
-									var it = {
-										filesystem: location.filesystem,
-										pathname: location.pathname + location.filesystem.separator.pathname + name
-									};
-									rv.push(it);
-									var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
-									if (isDirectory.present) {
-										if (isDirectory.value) {
-											if (descend(it)) {
-												var contents = process(it,descend,events);
-												rv = rv.concat(contents);
-											}
-										} else {
-											//	ordinary file, nothing to do
+				/** @type { slime.jrunscript.file.exports.location.Directory["list"]["world"] } */
+				list: function(p) {
+					/**
+					 *
+					 * @param { slime.jrunscript.file.Location } location
+					 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
+					 * @param { slime.$api.event.Emitter<slime.jrunscript.file.exports.location.list.Events> } events
+					 * @returns { slime.jrunscript.file.Location[] }
+					 */
+					var process = function(location,descend,events) {
+						var listed = $api.fp.world.now.ask(
+							location.filesystem.listDirectory({ pathname: location.pathname })
+						);
+						/** @type { slime.jrunscript.file.Location[] } */
+						var rv = [];
+						if (listed.present) {
+							listed.value.forEach(function(name) {
+								var it = {
+									filesystem: location.filesystem,
+									pathname: location.pathname + location.filesystem.separator.pathname + name
+								};
+								rv.push(it);
+								var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
+								if (isDirectory.present) {
+									if (isDirectory.value) {
+										if (descend(it)) {
+											var contents = process(it,descend,events);
+											rv = rv.concat(contents);
 										}
 									} else {
-										//	TODO	not exactly the same situation as failing to list the directory, but close enough
-										events.fire("failed", it);
+										//	ordinary file, nothing to do
 									}
-								});
-							} else {
-								events.fire("failed", location);
-							}
-							return rv;
-						};
-
-						return function(location) {
-							return function(events) {
-								var descend = (p && p.descend) ? p.descend : $api.fp.Mapping.all(false);
-								var array = process(location,descend,events);
-								return $api.fp.Stream.from.array(array);
-							}
+								} else {
+									//	TODO	not exactly the same situation as failing to list the directory, but close enough
+									events.fire("failed", it);
+								}
+							});
+						} else {
+							events.fire("failed", location);
 						}
+						return rv;
+					};
+
+					return function(events) {
+						var descend = (p && p.descend) ? p.descend : $api.fp.Mapping.all(false);
+						var array = process(p.target,descend,events);
+						return $api.fp.Stream.from.array(array);
 					}
 				}
 			}
@@ -183,14 +179,41 @@
 					means: $context.remove
 				})
 			},
-			list: {
-				stream: {
-					world: wo.directory.list.stream,
-					simple: function(configuration) {
-						return $api.fp.world.Sensor.mapping({ sensor: wo.directory.list.stream(configuration) });
+			list: (
+				function() {
+					return {
+						world: wo.directory.list,
+						iterate: {
+							simple: $api.fp.now(
+								$api.fp.world.Sensor.mapping({ sensor: wo.directory.list }),
+								$api.fp.curry({ descend: $api.fp.Mapping.all(false) }),
+								$api.fp.flatten("target")
+							)
+						},
+						stream: {
+							world: function(configuration) {
+								return function(location) {
+									return wo.directory.list({
+										target: location,
+										descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.all(false)
+									});
+								}
+							},
+							simple: function(configuration) {
+								return function(location) {
+									return $api.fp.world.Sensor.now({
+										sensor: wo.directory.list,
+										subject: {
+											target: location,
+											descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.all(false)
+										}
+									});
+								}
+							}
+						}
 					}
 				}
-			},
+			)(),
 			loader: {
 				synchronous: function(p) {
 					return loader.create(p.root);

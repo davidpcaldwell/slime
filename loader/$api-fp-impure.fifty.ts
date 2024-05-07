@@ -735,13 +735,6 @@ namespace slime.$api.fp.world {
 				order: O
 				handlers?: slime.$api.event.Handlers<E>
 			}) => void
-
-			order: {
-				process: <O,E>(p: {
-					means: slime.$api.fp.world.Means<O,E>
-					handlers?: slime.$api.event.Handlers<E>
-				}) => (o: O) => slime.$api.fp.impure.Process
-			}
 		}
 	}
 
@@ -842,37 +835,6 @@ namespace slime.$api.fp.world {
 				verify(captor).events[1].type.is("length");
 				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
 			};
-
-			fifty.tests.exports.world.Means.order = fifty.test.Parent();
-
-			fifty.tests.exports.world.Means.order.process = function() {
-				var { orders, captor, recorder } = NumberRecorder();
-
-				verify(orders).length.is(0);
-				verify(captor).events.length.is(0);
-
-				var process = $api.fp.now(
-					2,
-					$api.fp.world.Means.order.process({
-						means: recorder,
-						handlers: captor.handler
-					})
-				);
-				verify(orders).length.is(0);
-				verify(captor).events.length.is(0);
-
-				process();
-				verify(orders).length.is(1);
-				verify(orders)[0].is(2);
-				verify(captor).events.length.is(2);
-				verify(captor).events[0].type.is("got");
-				verify(captor).events[0].detail.evaluate(castToNumber).is(2);
-				verify(captor).events[1].type.is("length");
-				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
-			};
-
-			fifty.tests.wip = fifty.tests.exports.world.Means.order.process;
-
 
 			fifty.tests.exports.world.Means.now = function() {
 				var { orders, captor, recorder } = NumberRecorder();
