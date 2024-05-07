@@ -194,6 +194,20 @@ namespace slime.jrunscript.file.exports.location {
 
 	export interface Directory {
 		list: {
+			//	TODO	how do errors manifest?
+			world: slime.$api.fp.world.Sensor<
+				{
+					target: slime.jrunscript.file.Location
+					descend: slime.$api.fp.Predicate<slime.jrunscript.file.Location>
+				},
+				list.Events,
+				slime.$api.fp.Stream<slime.jrunscript.file.Location>
+			>
+
+			iterate: {
+				simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Stream<slime.jrunscript.file.Location>>
+			}
+
 			stream: {
 				world: (p?: {
 					/**
@@ -222,7 +236,6 @@ namespace slime.jrunscript.file.exports.location {
 			const { fixtures } = slime.jrunscript.file.internal.wo.directory.test;
 
 			fifty.tests.exports.Location.directory.list = function() {
-				debugger;
 				var fs = fixtures.Filesystem.from.descriptor({
 					contents: {
 						a: {
@@ -233,30 +246,75 @@ namespace slime.jrunscript.file.exports.location {
 						},
 						c: {
 							text: ""
-						}//,
-						// d: {
-						// 	contents: {
-						// 		dd: {
-						// 			text: ""
-						// 		}
-						// 	}
-						// }
+						},
+						d: {
+							contents: {
+								dd: {
+									text: ""
+								}
+							}
+						}
 					}
 				});
 
-				var simple = $api.fp.Stream.collect($api.fp.world.now.question(
-					subject.Location.directory.list.stream.world(),
-					{
-						filesystem: fs,
-						pathname: ""
-					}
-				));
+				var target = {
+					filesystem: fs,
+					pathname: ""
+				};
 
-				verify(simple).length.is(3);
-				verify(simple)[0].pathname.is("/a");
-				verify(simple)[1].pathname.is("/b");
-				verify(simple)[2].pathname.is("/c");
-				//verify(simple)[3].pathname.is("/d");
+				var stream_iterate = $api.fp.Stream.collect(
+					$api.fp.world.Sensor.now({
+						sensor: subject.Location.directory.list.stream.world(),
+						subject: target
+					})
+				);
+
+				var stream_traverse = $api.fp.Stream.collect(
+					$api.fp.world.Sensor.now({
+						sensor: subject.Location.directory.list.stream.world({
+							descend: function(into) {
+								return true;
+							}
+						}),
+						subject: target
+					})
+				);
+
+				var worldIterator = $api.fp.now(
+					target,
+					function(location) {
+						return {
+							target: location,
+							descend: $api.fp.Mapping.all(false)
+						}
+					},
+					$api.fp.world.Sensor.mapping({ sensor: subject.Location.directory.list.world }),
+					$api.fp.Stream.collect
+				);
+
+				var worldTree = $api.fp.now(
+					target,
+					function(location) {
+						return {
+							target: location,
+							descend: $api.fp.Mapping.all(true)
+						}
+					},
+					$api.fp.world.Sensor.mapping({ sensor: subject.Location.directory.list.world }),
+					$api.fp.Stream.collect
+				);
+
+				verify(stream_iterate).length.is(4);
+				verify(stream_iterate)[0].pathname.is("/a");
+				verify(stream_iterate)[1].pathname.is("/b");
+				verify(stream_iterate)[2].pathname.is("/c");
+				verify(stream_iterate)[3].pathname.is("/d");
+
+				verify(stream_traverse).length.is(5);
+
+				verify(worldIterator).length.is(4);
+
+				verify(worldTree).length.is(5);
 			};
 
 			fifty.tests.manual.issue1181 = function() {

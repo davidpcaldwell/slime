@@ -149,13 +149,14 @@
 				fileLastModified: void(0),
 				listDirectory: function(p) {
 					return function(events) {
-						debugger;
 						var prefix = p.pathname + "/";
 						return $api.fp.Maybe.from.some(
 							Object.entries(state).filter(function(entry) {
 								return entry[0].substring(0,prefix.length) == prefix;
 							}).map(function(entry) {
 								return entry[0].substring(prefix.length);
+							}).filter(function(entry) {
+								return entry.split("/").length == 1;
 							})
 						);
 					}
