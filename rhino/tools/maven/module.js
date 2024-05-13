@@ -551,6 +551,9 @@
 							if (p.intention.settings && p.intention.settings.global) {
 								it.push("--global-settings", p.intention.settings.global);
 							}
+							if (p.intention.batchMode) {
+								it.push("--batch-mode");
+							}
 							if (p.intention.debug) {
 								it.push("--debug");
 							}

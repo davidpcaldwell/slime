@@ -290,6 +290,7 @@ namespace slime.jrunscript.tools.maven {
 			global?: string
 		}
 		debug?: boolean
+		batchMode?: boolean
 		commands: string[]
 	}
 
