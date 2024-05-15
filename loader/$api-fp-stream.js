@@ -161,6 +161,40 @@
 						return MappedStream(stream,mapping);
 					}
 				},
+				flatMap: function(mapping) {
+					/**
+					 * @template { any } T
+					 * @template { any } R
+					 * @param { slime.$api.fp.Stream<T> } outer
+					 * @param { slime.$api.fp.Stream<R> } inner
+					 * @param { (t: T) => slime.$api.fp.Stream<R> } mapping
+					 * @returns { slime.$api.fp.Stream<R> }
+					 */
+					var FlatMappedStream = function recurse(outer,inner,mapping) {
+						return function() {
+							if (!inner) {
+								var out = outer();
+								if (!out.next.present) return empty();
+								var rv = recurse(out.remaining, mapping(out.next.value), mapping)();
+								return rv;
+							} else {
+								var i = inner();
+								if (!i.next.present) {
+									return recurse(outer, void(0), mapping)();
+								} else {
+									return {
+										next: i.next,
+										remaining: recurse(outer, i.remaining, mapping)
+									}
+								}
+							}
+						}
+					};
+
+					return function(stream) {
+						return FlatMappedStream(stream,void(0),mapping);
+					}
+				},
 				collect: function(stream) {
 					var rv = [];
 					var more = true;
