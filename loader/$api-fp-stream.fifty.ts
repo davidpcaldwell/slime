@@ -210,6 +210,43 @@ namespace slime.$api.fp {
 
 	export namespace stream {
 		export interface Exports {
+			flatMap: <T,R>(f: (t: T) => Stream<R>) => (stream: Stream<T>) => Stream<R>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+				const subject = $api.fp.Stream;
+
+				const returnStream = function(index: number): Stream<number> {
+					var content = [
+						[],
+						[1,2,3],
+						[],
+						[4],
+						[5,6],
+						[]
+					];
+					return subject.from.array(content[index]);
+				};
+
+				fifty.tests.exports.flatMap = function() {
+					var range = subject.from.integers.range({ end: 6 });
+					var it = subject.flatMap(returnStream)(range);
+					var collected = $api.fp.Stream.collect(it);
+					verify(collected).length.is(6);
+					verify(collected).evaluate(String).is("1,2,3,4,5,6");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace stream {
+		export interface Exports {
 			join: <T>(streams: Stream<T>[]) => Stream<T>
 		}
 
