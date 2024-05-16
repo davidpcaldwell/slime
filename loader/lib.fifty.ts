@@ -51,4 +51,7 @@ namespace slime.external.lib.typescript {
 interface Object {
 	/** @deprecated Replaced by {@link Object}'s `defineProperty` and related methods. */
 	__defineGetter__: Function
+
+	/** @deprecated Replaced by {@link Object}'s `defineProperty` and related methods. */
+	__defineSetter__: Function
 }

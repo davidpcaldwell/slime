@@ -81,6 +81,13 @@ namespace slime.runtime.document {
 			data: string
 		}
 
+		export interface ProcessingInstruction extends Node {
+			type: "xml-processing-instruction"
+			target: string
+			whitespace: string
+			data: string
+		}
+
 		export interface Cdata extends String {
 			type: "cdata",
 		}
@@ -114,8 +121,6 @@ namespace slime.runtime.document {
 	}
 
 	export namespace exports {
-		export type transform = (document: slime.runtime.document.Document) => slime.runtime.document.Document
-
 		export interface Document {
 			codec: {
 				string: slime.Codec<slime.runtime.document.Document,string>
@@ -123,8 +128,8 @@ namespace slime.runtime.document {
 			from: {
 				string: (settings: Settings) => (string: string) => slime.runtime.document.Document
 			}
-			removeWhitespaceTextNodes: transform
-			prettify: (p: { indent: string }) => transform
+			removeWhitespaceTextNodes: slime.$api.fp.Transform<slime.runtime.document.Document>
+			prettify: (p: { indent: string }) => slime.$api.fp.Transform<slime.runtime.document.Document>
 			element: (p: slime.runtime.document.Document) => slime.runtime.document.Element
 		}
 

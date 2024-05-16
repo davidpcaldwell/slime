@@ -18,6 +18,7 @@
 		);
 
 		var licenses = new jsh.document.Document({ string: jsh.script.file.parent.getFile("licenses.xml").read(String) });
+
 		var input = {
 			parameters: {
 				options: {
@@ -25,6 +26,7 @@
 				}
 			},
 			$loader: new jsh.file.Loader({ directory: jsh.script.file.parent }),
+			/** @type { (name: string) => string } */
 			getLicense: function(name) {
 				var child = licenses.document.getElement().child(jsh.js.document.filter({ elements: name }));
 				var text = child.children[0].getString();
@@ -34,6 +36,7 @@
 				jsh.shell.exit(1);
 			}
 		};
+
 		var parameters = input.parameters;
 		var getLicense = input.getLicense;
 		var $loader = input.$loader;
@@ -170,6 +173,9 @@
 			if (source.license) {
 				var UPGRADE_LICENSE = true;
 				if (UPGRADE_LICENSE) {
+					if (/1\.xml$/.test(file.path)) {
+						debugger;
+					}
 					var before = source.license;
 					source.license = source.license;
 					var after = source.license;
