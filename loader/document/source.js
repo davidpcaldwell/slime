@@ -94,6 +94,11 @@
 					)
 				),
 
+				atXmlProcessingInstruction: $api.fp.pipe(
+					remaining,
+					startsWith("<?")
+				),
+
 				//	https://www.w3.org/TR/xml/#sec-cdata-sect
 				atCdata: $api.fp.pipe(
 					remaining,
@@ -140,6 +145,47 @@
 				data: state.position.document.substring("<?xml".length, end)
 			};
 			return State.step(state, xmlDeclaration, end + "?>".length);
+		}
+
+		/**
+		 * @type { slime.runtime.document.internal.source.internal.Step }
+		 */
+		var parseXmlProcessingInstruction = function(state) {
+			var remaining = State.remaining(state);
+			var pi = {
+				type: "xml-processing-instruction",
+				target: "",
+				whitespace: "",
+				data: ""
+			};
+			var index = "<?".length;
+			while(remaining.substring(index,index+2) != "?>") {
+				var next = remaining.substring(index,index+1);
+				var isWhitespace = /\s/.test(next);
+				if (pi.whitespace.length == 0) {
+					//	still in target
+					if (isWhitespace) {
+						if (!pi.target.length) throw new Error("Processing instruction must have target.");
+						//	end target
+						pi.whitespace += next;
+					} else {
+						pi.target += next;
+					}
+				} else {
+					if (!pi.data) {
+						//	TODO	this might differ from XML spec, which I think has exactly 4 whitespace characters
+						if (isWhitespace) {
+							pi.whitespace += next;
+						} else {
+							pi.data = next;
+						}
+					} else {
+						pi.data += next;
+					}
+				}
+				index++;
+			}
+			return State.step(state, pi, index + "?>".length);
 		}
 
 		/**
@@ -486,6 +532,8 @@
 
 				if (State.atXmlDeclaration(state)) {
 					next = parseXmlDeclaration(state);
+				} else if (State.atXmlProcessingInstruction(state)) {
+					next = parseXmlProcessingInstruction(state);
 				} else if (State.atCdata(state)) {
 					next = parseCdata(state);
 				} else if (State.atComment(state)) {
@@ -556,6 +604,11 @@
 			return node.type == "xml-declaration";
 		}
 
+		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.xml.ProcessingInstruction } */
+		var isXmlProcessingInstruction = function(node) {
+			return node.type == "xml-declaration";
+		}
+
 		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Parent } */
 		var isParent = function(node) {
 			return node.type == "document" || node.type == "element" || node.type == "fragment";
@@ -592,6 +645,8 @@
 			return function recurse(node) {
 				if (isXmlDeclaration(node)) {
 					return "<?xml" + node.data + "?>";
+				} else if (isXmlProcessingInstruction(node)) {
+					return "<?" + node.target + node.whitespace + node.data + "?>";
 				} else if (isCdata(node)) {
 					return format.xml.cdata.start + node.data + format.xml.cdata.end;
 				} else if (isComment(node)) {

@@ -130,7 +130,9 @@ namespace slime.runtime.document.internal.source {
 
 			var settings: Settings = {};
 
-			fifty.tests.happy = function() {
+			fifty.tests.happy = fifty.test.Parent();
+
+			fifty.tests.happy.html = function() {
 				var input = fifty.$loader.get("test/data/1.html").read(String);
 				var page = api.parse.document({
 					settings: settings,
@@ -152,6 +154,27 @@ namespace slime.runtime.document.internal.source {
 					document: page
 				});
 				fifty.verify(serialized).is(input);
+			};
+
+			fifty.tests.happy.xml = function() {
+				var input = fifty.$loader.get("test/data/1.xml").read(String);
+				var page = api.parse.document({
+					settings: {
+						xml: true
+					},
+					string: input
+				});
+
+				//	license header
+				fifty.verify(page).children[0].type.is("xml-declaration");
+				fifty.verify(page).children[1].type.is("text");
+				fifty.verify(page).children[2].type.is("comment");
+				fifty.verify(page).children[3].type.is("text");
+				fifty.verify(page).children[4].type.is("xml-processing-instruction");
+				var pi = page.children[4] as xml.ProcessingInstruction;
+				verify(pi).target.is("slimeapp");
+				verify(pi).whitespace.is(" ");
+				verify(pi).data.is("foo=\"bar\"");
 			}
 
 			fifty.tests.attributes = Object.assign(

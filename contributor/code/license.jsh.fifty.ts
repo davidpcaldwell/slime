@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.project.license {
+namespace slime.project.license.cli {
 	(
 		function(
 			fifty: slime.fifty.test.Kit

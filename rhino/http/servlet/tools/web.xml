@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
 LICENSE
 This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
@@ -5,7 +6,6 @@ distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 END LICENSE
 -->
-<?xml version="1.0" encoding="ISO-8859-1"?>
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee" version="2.5">
 	<servlet>
 		<servlet-name>slime</servlet-name>
