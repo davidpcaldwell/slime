@@ -192,12 +192,12 @@
 					}
 				);
 
-				return implementation.run(
-					loader,
-					{},
-					path.file,
-					part
-				);
+				return implementation.run({
+					loader: loader,
+					scopes: {},
+					path: path.file,
+					part: part
+				});
 			};
 
 			//	TODO	currently result is just a boolean indicating success/failure. We may want a more sophisticated regime which

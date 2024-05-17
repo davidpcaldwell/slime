@@ -306,11 +306,11 @@
 						var relative = inonit.loader.nugget.page.relative(base)
 						var delegate = new inonit.loader.Loader(relative);
 
-						run.run(
-							(path.folder) ? delegate.Child(path.folder) : delegate,
-							{},
-							path.file
-						).then(function(result) {
+						run.run({
+							loader: (path.folder) ? delegate.Child(path.folder) : delegate,
+							scopes: {},
+							path: path.file
+						}).then(function(result) {
 							p.verify(result,"Fifty " + p.path + " result").is(true);
 						});
 					}
