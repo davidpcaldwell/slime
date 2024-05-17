@@ -70,32 +70,32 @@ namespace slime.fifty.test.internal.test {
 		current: () => AsynchronousScope
 	}
 
-	/**
-	 * Executes a Fifty page at the given path from the given loader, optionally limiting the test to a single part.
-	 */
 	export interface Exports {
-		run: (
-			loader: slime.old.Loader,
-			scopes: {
-				jsh?: {
-					directory: slime.jrunscript.file.Directory
-					loader: slime.old.Loader
-				}
-			},
-			path: string,
-			part?: string
-		) => Result
-
-		list: (
-			loader: slime.old.Loader,
-			scopes: {
-				jsh?: {
-					directory: slime.jrunscript.file.Directory
-					loader: slime.old.Loader
-				}
-			},
+		/**
+		 * Executes a Fifty page at the given path from the given loader, optionally limiting the test to a single part.
+		 */
+		run: (p: {
+			loader: slime.old.Loader
 			path: string
-		) => Manifest
+			scopes: {
+				jsh?: {
+					directory: slime.jrunscript.file.Directory
+					loader: slime.old.Loader
+				}
+			}
+			part?: string
+		}) => Result
+
+		list: (p: {
+			loader: slime.old.Loader
+			path: string
+			scopes: {
+				jsh?: {
+					directory: slime.jrunscript.file.Directory
+					loader: slime.old.Loader
+				}
+			}
+		}) => Manifest
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>

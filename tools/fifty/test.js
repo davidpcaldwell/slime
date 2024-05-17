@@ -367,7 +367,7 @@
 		 *
 		 * @param { slime.fifty.test.internal.test.AsynchronousScopes } ascopes
 		 * @param { slime.old.Loader } loader
-		 * @param { Parameters<slime.fifty.test.internal.test.Exports["run"]>[1] } contexts
+		 * @param { Parameters<slime.fifty.test.internal.test.Exports["run"]>[0]["scopes"] } contexts
 		 * @param { string } path
 		 * @param { any } [argument]
 		 * @returns { { run: (part: string) => slime.fifty.test.internal.test.Result, list: () => slime.fifty.test.internal.test.Manifest } }
@@ -607,17 +607,17 @@
 		}
 
 		$export({
-			run: function(loader,scopes,path,part) {
+			run: function(p/*loader,scopes,path,part*/) {
 				var ascopes = ($context.promises) ? AsynchronousScopes(
 					AsynchronousScope({ name: "(top)" })
 				) : void(0);
-				return load(ascopes,loader,scopes,path).run(part);
+				return load(ascopes,p.loader,p.scopes,p.path).run(p.part);
 			},
-			list: function(loader,scopes,path) {
+			list: function(p/*loader,scopes,path*/) {
 				var ascopes = ($context.promises) ? AsynchronousScopes(
 					AsynchronousScope({ name: "(top)" })
 				) : void(0);
-				return load(ascopes,loader,scopes,path).list();
+				return load(ascopes,p.loader,p.scopes,p.path).list();
 			}
 		})
 	}

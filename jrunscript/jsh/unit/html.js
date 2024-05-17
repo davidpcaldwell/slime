@@ -334,16 +334,16 @@
 						}
 					})(p.path);
 
-					var promise = run.run(
-						(path.folder) ? delegate.Child(path.folder) : delegate,
-						{
+					var promise = run.run({
+						loader: (path.folder) ? delegate.Child(path.folder) : delegate,
+						scopes: {
 							jsh: {
 								loader: (path.folder) ? delegate.Child(path.folder) : delegate,
 								directory: (path.folder) ? directory.getSubdirectory(path.folder) : directory
 							}
 						},
-						path.file
-					);
+						path: path.file
+					});
 
 					promise.then(function(result) {
 						p.verify(result,"Fifty " + p.path + " result").is(true);

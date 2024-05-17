@@ -87,6 +87,7 @@
 		/** @type { slime.definition.verify.Export } */
 		var verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"))
 
+		/** @type { { console: slime.fifty.test.internal.Listener, jsapi: slime.fifty.test.internal.Listener } } */
 		var views = {
 			console: (function() {
 				var write = function(scope,string) {
@@ -160,6 +161,13 @@
 		var script = jsh.script.loader.script("scope-jsh.ts");
 		var scopes = script();
 
+		/**
+		 *
+		 * @param { slime.jrunscript.file.File } file
+		 * @param { string } part
+		 * @param { slime.fifty.test.internal.Listener } view
+		 * @returns
+		 */
 		var execute = function(file,part,view) {
 			var fiftyLoader = jsh.script.loader;
 
@@ -178,17 +186,17 @@
 
 			var loader = new jsh.file.Loader({ directory: file.parent });
 
-			return implementation.run(
-				loader,
-				{
+			return implementation.run({
+				loader: loader,
+				scopes: {
 					jsh: {
 						directory: file.parent,
 						loader: loader
 					}
 				},
-				file.pathname.basename,
-				part
-			)
+				path: file.pathname.basename,
+				part: part
+			});
 		};
 
 		var list = function(file) {
@@ -206,16 +214,16 @@
 
 			var loader = new jsh.file.Loader({ directory: file.parent });
 
-			return implementation.list(
-				loader,
-				{
+			return implementation.list({
+				loader: loader,
+				scopes: {
 					jsh: {
 						directory: file.parent,
 						loader: loader
 					}
 				},
-				file.pathname.basename
-			);
+				path: file.pathname.basename
+			});
 		}
 
 		if (!parameters.options.list) {
