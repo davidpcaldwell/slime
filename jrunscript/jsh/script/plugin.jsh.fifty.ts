@@ -192,11 +192,16 @@ namespace slime.jsh.script {
 				string: OptionParser<string>
 				boolean: OptionParser<boolean>
 				number: OptionParser<number>
+
 				pathname: OptionParser<slime.jrunscript.file.Pathname>
 
 				array: <O extends object,N extends keyof any,T>(c: { longname: N, value: (s: string) => T })
 					=> (i: cli.Invocation<O>)
 					=> cli.Invocation<O & { [n in N]: T[] }>
+
+				map: <O extends object,N extends keyof any,T>(c: { longname: N, value: (s: string) => T })
+					=> (i: cli.Invocation<O>)
+					=> cli.Invocation<O & { [n in N]: { [k: string]: T } }>
 			}
 		}
 
@@ -362,6 +367,49 @@ namespace slime.jsh.script {
 								verify(invocation).options.b.is(true);
 								verify(invocation).options.evaluate.property("aa").is(void(0));
 								verify(invocation).options.evaluate.property("bb").is(void(0));
+							}
+						);
+
+						fifty.run(
+							function() {
+								var processor = $api.fp.pipe(
+									subject.cli.option.array({ longname: "word", value: $api.fp.identity }),
+									subject.cli.option.array({ longname: "factor", value: Number }),
+									subject.cli.option.map({ longname: "mapping", value: $api.fp.identity }),
+									subject.cli.option.map({ longname: "ascii", value: Number })
+								);
+
+								var invocation = {
+									options: {},
+									arguments: [
+										"--word", "foo",
+										"--factor", "2",
+										"--mapping", "x=X",
+										"--factor", "3",
+										"--ascii", "A=65",
+										"--mapping", "y=Y",
+										"--ascii", "C=67",
+										"--ascii", "E=69"
+									]
+								};
+
+								var after = $api.fp.now(invocation, processor);
+
+								verify(after).options.word.length.is(1);
+								verify(after).options.word[0].is("foo");
+
+								verify(after).options.factor.length.is(2);
+								verify(after).options.factor[0].is(2);
+								verify(after).options.factor[1].is(3);
+
+								verify(after).options.mapping.evaluate(Object.keys).length.is(2);
+								verify(after).options.mapping.evaluate($api.fp.property("x")).is("X");
+								verify(after).options.mapping.evaluate($api.fp.property("y")).is("Y");
+
+								verify(after).options.ascii.evaluate(Object.keys).length.is(3);
+								verify(after).options.ascii.A.is(65);
+								verify(after).options.ascii.C.is(67);
+								verify(after).options.ascii.E.is(69);
 							}
 						)
 					})

@@ -430,6 +430,39 @@
 								p.arguments = args;
 							}
 							return $api.fp.object.revise(rv);
+						},
+						map: function(o) {
+							return function(p) {
+								var map = {};
+								var args = [];
+								for (var i=0; i<p.arguments.length; i++) {
+									if (o.longname && p.arguments[i] == "--" + String(o.longname)) {
+										var next = $api.fp.now(
+											p.arguments[++i],
+											function(argument) {
+												return argument.split("=");
+											},
+											function(tokens) {
+												return {
+													name: tokens[0],
+													value: o.value(tokens[1])
+												}
+											}
+										);
+
+										map[next.name] = next.value;
+									} else {
+										args.push(p.arguments[i]);
+									}
+								}
+								/** @type { any } */
+								var added = {};
+								added[o.longname] = map;
+								return {
+									options: $api.Object.compose(p.options, added),
+									arguments: args
+								};
+							};
 						}
 					},
 					fp: {
