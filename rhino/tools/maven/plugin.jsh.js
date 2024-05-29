@@ -26,6 +26,7 @@
 					java: jsh.shell.java,
 					jsh: jsh,
 					library: {
+						document: jsh.document,
 						file: jsh.file,
 						shell: jsh.shell,
 						install: jsh.tools.install

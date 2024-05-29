@@ -55,6 +55,11 @@ namespace slime.runtime.document {
 		name: string
 		attributes: Attribute[]
 		selfClosing: boolean
+
+		/**
+		 * A string with the end tag of this element, e.g., `"</foo>"`, or `""` if the element is self-closing or otherwise has
+		 * an optional end tag.
+		 */
 		endTag: string
 	}
 

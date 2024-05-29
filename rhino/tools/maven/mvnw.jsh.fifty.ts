@@ -17,7 +17,8 @@
  * * `--archetype <name>`: The standard Maven archetype to use. Currently, only `quickstart` is supported.
  * * `--project <pathname>`: **Required.** The project to wrap (or the location at which to generate the project to wrap).
  * * `--maven:archetype:argument <argument>`: (can be repeated) Add the given argument to the arguments passed to the
- * Maven `archetype:generate` command. For `quickstart`, at least `groupId`, `artifactId`, and `version` arguments are needed.
+ * Maven `archetype:generate` command. For `quickstart`, at least `-DgroupId=`, `-DartifactId=`, and `-Dversion=` arguments are
+ * needed.
  */
 namespace slime.jrunscript.tools.maven.script.mvnw {
 	(
