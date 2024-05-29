@@ -20,6 +20,7 @@ namespace slime.jrunscript.tools.maven {
 		mvn: any
 
 		library: {
+			document: slime.runtime.document.Exports
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 			install: slime.jrunscript.tools.install.Exports
@@ -42,6 +43,7 @@ namespace slime.jrunscript.tools.maven {
 				var script: Script = fifty.$loader.script("module.js");
 				return script({
 					library: {
+						document: jsh.document,
 						file: jsh.file,
 						shell: jsh.shell,
 						install: jsh.tools.install
@@ -304,9 +306,114 @@ namespace slime.jrunscript.tools.maven {
 		}
 	}
 
+	export namespace xml {
+		export interface AnyElement {
+			name: string
+		}
+
+		export interface ParentElement extends AnyElement {
+			children: Element[]
+		}
+
+		export interface ValueElement extends AnyElement {
+			value: string
+		}
+
+		export type Element = ParentElement | ValueElement
+
+		export interface Indentation {
+			position: string
+			offset: string
+		}
+	}
+
+	export interface Exports {
+		xml: {
+			edit: {
+				insert: (p: {
+					parent: (document: slime.runtime.document.Document) => slime.runtime.document.Element
+					after: (parent: slime.runtime.document.Element) => slime.runtime.document.Element
+					lines?: number
+					indent: string
+					element: xml.Element
+				}) => (pom: string) => string
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+			const { subject } = test;
+
+			fifty.tests.manual.xml = function() {
+				var pom = $api.fp.now(
+					fifty.jsh.file.relative("test/quickstart-pom.xml"),
+					jsh.file.Location.file.read.string.simple
+				);
+
+				var child: slime.jrunscript.tools.maven.xml.Element = {
+					name: "bar",
+					value: "baz"
+				};
+
+				var descendants: slime.jrunscript.tools.maven.xml.Element = {
+					name: "bizzy",
+					children: [
+						{
+							name: "boom",
+							value: "shaka-laka"
+						}
+					]
+				};
+
+				var foo: slime.jrunscript.tools.maven.xml.Element = {
+					name: "foo",
+					children: [
+						child,
+						descendants
+					]
+				};
+
+				var getDependencies = function(parent) {
+					return parent.children.find(function(node) {
+						return jsh.document.Node.isElement(node) && jsh.document.Element.isName("dependencies")(node);
+					}) as slime.runtime.document.Element;
+				};
+
+				var after = subject.xml.edit.insert({
+					parent: jsh.document.Document.element,
+					after: getDependencies,
+					lines: 1,
+					indent: "  ",
+					element: foo
+				});
+
+				jsh.shell.console(pom);
+				jsh.shell.console("===");
+				jsh.shell.console(after(pom));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		mvn: any
-		Pom: any
+
+		/**
+		 * @deprecated
+		 */
+		Pom: new (file: slime.jrunscript.file.File) => {
+			getModules: any
+			getDependencies: any
+			getVersion: any
+			parent: {
+				version: any
+			}
+		}
+
 		Project: any
 		Repository: any
 	}
