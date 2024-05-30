@@ -66,9 +66,18 @@ namespace slime.runtime.document {
 	export interface Attribute {
 		//	TODO	may be whitespace before equals
 		//	TODO	may be whitespace after equals
+		/**
+		 * The whitespace before the attribute name.
+		 */
 		whitespace: string
+
 		name: string
+
+		/**
+		 * The quotation character (`'` or `"`) used to enclose this attribute's value.
+		 */
 		quote: string
+
 		value: string
 	}
 
