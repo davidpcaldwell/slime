@@ -606,7 +606,7 @@
 
 		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.xml.ProcessingInstruction } */
 		var isXmlProcessingInstruction = function(node) {
-			return node.type == "xml-declaration";
+			return node.type == "xml-processing-instruction";
 		}
 
 		/** @type { (node: slime.runtime.document.Node) => node is slime.runtime.document.Parent } */

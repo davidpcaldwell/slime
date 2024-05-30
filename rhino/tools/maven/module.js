@@ -580,6 +580,16 @@
 					/** @type { (p: slime.jrunscript.tools.maven.xml.Element) => p is slime.jrunscript.tools.maven.xml.ParentElement } */
 					var isParent = function(p) {
 						return Boolean(p["children"]);
+					};
+
+					/** @type { (p: slime.jrunscript.tools.maven.xml.Element) => p is slime.jrunscript.tools.maven.xml.ValueElement } */
+					var isValue = function(p) {
+						return typeof p["value"] == "string";
+					};
+
+					/** @type { (p: slime.jrunscript.tools.maven.xml.Element) => p is slime.jrunscript.tools.maven.xml.VoidElement } */
+					var isVoid = function(p) {
+						return !isParent(p) && !isValue(p);
 					}
 
 					var getIndent = function(putativeIndentNode) {
@@ -601,16 +611,25 @@
 						return function(document) {
 							var parent = p.parent(document);
 							var child = p.child(parent);
-							var index = parent.children.indexOf(child);
-							if (index == -1) throw new Error();
-							if (index == 0) throw new Error();
-							var childIndent = getIndent(parent.children[index-1]);
-							return {
-								parent: parent,
-								child: child,
-								index: index,
-								indent: childIndent
-							};
+							if (child === null) {
+								return {
+									parent: parent,
+									child: null,
+									index: null,
+									indent: getIndent(parent.children[0])
+								};
+							} else {
+								var index = parent.children.indexOf(child);
+								if (index == -1) throw new Error();
+								if (index == 0) throw new Error();
+								var childIndent = getIndent(parent.children[index-1]);
+								return {
+									parent: parent,
+									child: child,
+									index: index,
+									indent: childIndent
+								};
+							}
 						}
 					};
 
@@ -632,10 +651,17 @@
 						var rv = {
 							type: "element",
 							name: p.xml.name,
-							attributes: [],
-							selfClosing: false,
+							attributes: (p.xml.attributes || []).map(function(attribute) {
+								return {
+									whitespace: " ",
+									name: attribute.name,
+									quote: "\"",
+									value: attribute.value
+								}
+							}),
+							selfClosing: isVoid(p.xml),
 							children: [],
-							endTag: "</" + p.xml.name + ">"
+							endTag: Boolean(isVoid(p.xml)) ? ("") : ("</" + p.xml.name + ">")
 						};
 						var internalIndent = p.indent.position + p.indent.offset;
 						if (isParent(p.xml)) {
@@ -655,7 +681,7 @@
 									data: "\n" + p.indent.position
 								})
 							);
-						} else {
+						} else if (isValue(p.xml)) {
 							rv.children.push(text(p.xml.value));
 						}
 						return rv;
@@ -669,27 +695,80 @@
 							}
 						},
 						edit: {
-							insert: function(p) {
-								return function(pom) {
-									var document = $context.library.document.Document.codec.string.decode(pom);
-									var configuration = getElementIndent({
-										parent: p.parent,
-										child: p.after
-									})(document);
-									/** @type { slime.runtime.document.Text } */
-									var myIndent = { type: "text", data: $api.fp.string.repeat( p.lines || 0 )("\n") + "\n" + configuration.indent };
-									/** @type { any[] } */
-									var spliceIndexArguments = [configuration.index+1, 0, myIndent];
-									var newElement = buildElement({
-										indent: {
-											position: configuration.indent,
-											offset: p.indent
-										},
-										xml: p.element
-									});
-									var spliceArguments = spliceIndexArguments.concat( [ newElement ] );
-									configuration.parent.children.splice.apply(configuration.parent.children, spliceArguments);
-									return $context.library.document.Document.codec.string.encode(document);
+							insert: {
+								element: function(p) {
+									return function(pom) {
+										var document = $context.library.document.Document.codec.string.decode(pom);
+
+										var configuration = getElementIndent({
+											parent: p.parent,
+											child: p.after
+										})(document);
+
+										var newElement = buildElement({
+											indent: {
+												position: configuration.indent,
+												offset: p.indent
+											},
+											xml: p.element
+										});
+
+										/** @type { slime.runtime.document.Text } */
+										var myIndent = { type: "text", data: $api.fp.string.repeat( p.lines || 0 )("\n") + "\n" + configuration.indent };
+
+										configuration.parent.children.splice.apply(
+											configuration.parent.children,
+											[ (configuration.index == null) ? 0 : configuration.index+1, 0, myIndent, newElement]
+										);
+
+										return $context.library.document.Document.codec.string.encode(document);
+									}
+								}
+							},
+							replace: {
+								with: {
+									element: function(p) {
+										return function(pom) {
+											var document = $context.library.document.Document.codec.string.decode(pom);
+
+											var configuration = getElementIndent({
+												parent: p.parent,
+												child: p.target
+											})(document);
+
+											if (configuration.index === null) throw new Error();
+
+											var newElement = buildElement({
+												indent: {
+													position: configuration.indent,
+													offset: p.indent
+												},
+												xml: p.element
+											});
+
+											configuration.parent.children[configuration.index] = newElement;
+
+											return $context.library.document.Document.codec.string.encode(document);
+										}
+									}
+								}
+							},
+							remove: {
+								element: function(p) {
+									return function(pom) {
+										var document = $context.library.document.Document.codec.string.decode(pom);
+
+										var configuration = getElementIndent({
+											parent: p.parent,
+											child: p.target
+										})(document);
+
+										if (configuration.index === null) throw new Error();
+
+										configuration.parent.children.splice(configuration.index-1, 2);
+
+										return $context.library.document.Document.codec.string.encode(document);
+									}
 								}
 							}
 						},

@@ -307,19 +307,28 @@ namespace slime.jrunscript.tools.maven {
 	}
 
 	export namespace xml {
-		export interface AnyElement {
+		export interface Attribute {
 			name: string
+			value: string
 		}
 
-		export interface ParentElement extends AnyElement {
-			children: Element[]
+		export interface AnyElement {
+			name: string
+			attributes?: Attribute[]
+		}
+
+		export interface VoidElement extends AnyElement {
 		}
 
 		export interface ValueElement extends AnyElement {
 			value: string
 		}
 
-		export type Element = ParentElement | ValueElement
+		export interface ParentElement extends AnyElement {
+			children: Element[]
+		}
+
+		export type Element = ParentElement | ValueElement | VoidElement
 
 		export interface Indentation {
 			position: string
@@ -330,13 +339,33 @@ namespace slime.jrunscript.tools.maven {
 	export interface Exports {
 		xml: {
 			edit: {
-				insert: (p: {
-					parent: (document: slime.runtime.document.Document) => slime.runtime.document.Element
-					after: (parent: slime.runtime.document.Element) => slime.runtime.document.Element
-					lines?: number
-					indent: string
-					element: xml.Element
-				}) => (pom: string) => string
+				insert: {
+					element: (p: {
+						parent: (document: slime.runtime.document.Document) => slime.runtime.document.Element
+						after: (parent: slime.runtime.document.Element) => slime.runtime.document.Element
+						lines?: number
+						indent: string
+						element: xml.Element
+					}) => (pom: string) => string
+				}
+
+				replace: {
+					with: {
+						element: (p: {
+							parent: (document: slime.runtime.document.Document) => slime.runtime.document.Element
+							target: (parent: slime.runtime.document.Element) => slime.runtime.document.Element
+							indent: string
+							element: xml.Element
+						}) => (pom: string) => string
+					}
+				}
+
+				remove: {
+					element: (p: {
+						parent: (document: slime.runtime.document.Document) => slime.runtime.document.Element
+						target: (parent: slime.runtime.document.Element) => slime.runtime.document.Element
+					}) => (pom: string) => string
+				}
 			}
 		}
 	}
@@ -383,7 +412,13 @@ namespace slime.jrunscript.tools.maven {
 					}) as slime.runtime.document.Element;
 				};
 
-				var after = subject.xml.edit.insert({
+				var getProperties = function(parent) {
+					return parent.children.find(function(node) {
+						return jsh.document.Node.isElement(node) && jsh.document.Element.isName("properties")(node);
+					}) as slime.runtime.document.Element;
+				};
+
+				var after = subject.xml.edit.insert.element({
 					parent: jsh.document.Document.element,
 					after: getDependencies,
 					lines: 1,
@@ -391,9 +426,35 @@ namespace slime.jrunscript.tools.maven {
 					element: foo
 				});
 
+				var replaced = subject.xml.edit.replace.with.element({
+					parent: jsh.document.Document.element,
+					target: getProperties,
+					indent: "  ",
+					element: foo
+				})
+
+				var removed = subject.xml.edit.remove.element({
+					parent: jsh.document.Document.element,
+					target: getProperties
+				});
+
+				var atStart = subject.xml.edit.insert.element({
+					parent: jsh.document.Document.element,
+					after: $api.fp.Mapping.all(null),
+					lines: 1,
+					indent: "  ",
+					element: foo
+				});
+
 				jsh.shell.console(pom);
-				jsh.shell.console("===");
+				jsh.shell.console("=== inserted ");
 				jsh.shell.console(after(pom));
+				jsh.shell.console("=== replaced ");
+				jsh.shell.console(replaced(pom));
+				jsh.shell.console("=== removed");
+				jsh.shell.console(removed(pom));
+				jsh.shell.console("=== atStart");
+				jsh.shell.console(atStart(pom));
 			}
 		}
 	//@ts-ignore
