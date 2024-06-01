@@ -463,6 +463,13 @@
 			Parent: {
 				nodes: function(p) {
 					return NodesStream(p, []);
+				},
+				content: {
+					text: {
+						set: function(p) {
+							p.parent.children = [ /** @type { slime.runtime.document.Text } */({ type: "text", data: p.data }) ];
+						}
+					}
 				}
 			},
 			Fragment: {
