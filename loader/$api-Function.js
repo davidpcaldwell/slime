@@ -122,6 +122,7 @@
 			}
 		};
 
+		/** @type { slime.$api.fp.Exports["Predicate"] } */
 		var Predicate = {
 			is: function(value) {
 				return function(p) {
@@ -146,7 +147,10 @@
 					return false;
 				}
 			},
-			and: function() {
+			and: function recurse() {
+				if (arguments.length == 1 && arguments[0] instanceof Array) {
+					return recurse.apply(this, arguments[0]);
+				}
 				var functions = Array.prototype.slice.call(arguments);
 				for (var i=0; i<functions.length; i++) {
 					if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
@@ -253,54 +257,7 @@
 					return Object.fromEntries(results);
 				}
 			},
-			Predicate: {
-				is: function(value) {
-					return function(p) {
-						return p === value;
-					}
-				},
-				equals: function(value) {
-					return function(p) {
-						return p == value;
-					}
-				},
-				/** @type { slime.$api.fp.Exports["filter"]["or"] } */
-				or: function() {
-					var functions = Array.prototype.slice.call(arguments);
-					for (var i=0; i<functions.length; i++) {
-						if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
-					}
-					return function(p) {
-						for (var i=0; i<functions.length; i++) {
-							if (functions[i](p)) return true;
-						}
-						return false;
-					}
-				},
-				and: function() {
-					var functions = Array.prototype.slice.call(arguments);
-					for (var i=0; i<functions.length; i++) {
-						if (typeof(functions[i]) != "function") throw new TypeError("All arguments must be functions; index " + i + " is not.");
-					}
-					return function(p) {
-						for (var i=0; i<functions.length; i++) {
-							if (!functions[i](p)) return false;
-						}
-						return true;
-					}
-				},
-				not: function(f) {
-					return function(p) {
-						return !f(p);
-					}
-				},
-				property: function(key, predicate) {
-					return pipe(
-						property(key),
-						predicate
-					);
-				}
-			},
+			Predicate: Predicate,
 			filter: {
 				or: $context.deprecate(Predicate.or),
 				and: $context.deprecate(Predicate.and),

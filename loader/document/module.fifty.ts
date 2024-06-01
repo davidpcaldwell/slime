@@ -22,91 +22,6 @@
  * information about them.
  */
 namespace slime.runtime.document {
-	export interface Node {
-		type: string
-	}
-
-	export interface Parent extends Node {
-		children: Node[]
-	}
-
-	export interface String extends Node {
-		data: string
-	}
-
-	export interface Comment extends Node {
-		type: "comment"
-		data: string
-	}
-
-	export interface Text extends String {
-		type: "text"
-	}
-
-	export interface Doctype extends Node {
-		type: "doctype"
-		before: string
-		name: string
-		after: string
-	}
-
-	export interface Element extends Parent {
-		type: "element"
-		name: string
-		attributes: Attribute[]
-		selfClosing: boolean
-
-		/**
-		 * A string with the end tag of this element, e.g., `"</foo>"`, or `""` if the element is self-closing or otherwise has
-		 * an optional end tag.
-		 */
-		endTag: string
-	}
-
-	export interface Attribute {
-		//	TODO	may be whitespace before equals
-		//	TODO	may be whitespace after equals
-		/**
-		 * The whitespace before the attribute name.
-		 */
-		whitespace: string
-
-		name: string
-
-		/**
-		 * The quotation character (`'` or `"`) used to enclose this attribute's value.
-		 */
-		quote: string
-
-		value: string
-	}
-
-	export interface Document extends Parent {
-		type: "document"
-	}
-
-	export interface Fragment extends Parent {
-		type: "fragment"
-	}
-
-	export namespace xml {
-		export interface Declaration extends Node {
-			type: "xml-declaration"
-			data: string
-		}
-
-		export interface ProcessingInstruction extends Node {
-			type: "xml-processing-instruction"
-			target: string
-			whitespace: string
-			data: string
-		}
-
-		export interface Cdata extends String {
-			type: "cdata",
-		}
-	}
-
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("module.js");
@@ -179,7 +94,19 @@ namespace slime.runtime.document {
 
 	export interface Exports {
 		load: old.Exports["load"]
+	}
 
+	export namespace exports {
+		export interface Node {
+			isElementNamed: (name: string) => slime.$api.fp.TypePredicate<document.Node,document.Element>
+		}
+	}
+
+	export interface Exports {
+		Node: exports.Node
+	}
+
+	export interface Exports {
 		Parent: {
 			/**
 			 * Creates a {@link slime.$api.fp.Stream | Stream} of the descendants of this parent node. In all cases -
@@ -191,19 +118,6 @@ namespace slime.runtime.document {
 			 * contain the given node.
 			 */
 			nodes: (p: Parent) => slime.$api.fp.Stream<Node>
-		}
-
-		Document: exports.Document
-
-		Fragment: {
-			codec: {
-				string: slime.Codec<slime.runtime.document.Fragment,string>
-			}
-		}
-
-		Element: {
-			isName: (name: string) => (element: Element) => boolean
-			getAttribute: (name: string) => (element: Element) => slime.$api.fp.Maybe<string>
 		}
 	}
 
@@ -264,6 +178,27 @@ namespace slime.runtime.document {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		Document: exports.Document
+
+		Fragment: {
+			codec: {
+				string: slime.Codec<slime.runtime.document.Fragment,string>
+			}
+		}
+	}
+
+	export namespace exports {
+		export interface Element {
+			isName: (name: string) => (element: document.Element) => boolean
+			getAttribute: (name: string) => (element: document.Element) => slime.$api.fp.Maybe<string>
+			from: element.From
+		}
+	}
+
+	export interface Exports {
+		Element: exports.Element
+	}
 
 	export type Script = slime.loader.Script<Context | void,Exports>
 }

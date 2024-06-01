@@ -809,6 +809,37 @@
 				isParent: isParent,
 				isString: isString
 			},
+			Text: {
+				from: {
+					data: function(data) { return { type: "text", data: data }; }
+				}
+			},
+			Element: {
+				from: (function() {
+					/** @type { slime.$api.fp.Mapping<slime.runtime.document.element.from.Attribute,slime.runtime.document.Attribute> } */
+					var attribute = function(spec) {
+						return {
+							name: spec.name,
+							quote: "\"",
+							value: spec.value,
+							whitespace: " "
+						}
+					};
+
+					return {
+						parent: function(p) {
+							return {
+								type: "element",
+								name: p.name,
+								attributes: (p.attributes || []).map(attribute),
+								children: p.children || [],
+								endTag: "</" + p.name + ">",
+								selfClosing: false
+							}
+						}
+					};
+				})()
+			},
 			internal: {
 				parseStartTag: parseStartTag
 			}

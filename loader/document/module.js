@@ -418,6 +418,23 @@
 			}
 		)();
 
+		var Elements = {
+			isName: function(name) {
+				return function(element) {
+					return element.name == name;
+				}
+			},
+			getAttribute: function(name) {
+				return function(element) {
+					var match = element.attributes.filter(function(attribute) {
+						return attribute.name == name;
+					})[0];
+					return (match) ? $api.fp.Maybe.from.some(match.value) : $api.fp.Maybe.from.nothing();
+				}
+			},
+			from: source.Element.from
+		};
+
 		/** @type { slime.runtime.document.Exports } */
 		var rv = {
 			load: function(p) {
@@ -431,7 +448,18 @@
 					throw new TypeError();
 				}
 			},
-			Node: source.Node,
+			Node: $api.Object.compose(
+				source.Node,
+				/** @type { Pick<slime.runtime.document.exports.Node,"isElementNamed"> } */({
+					isElementNamed: function(name) {
+						return $api.fp.Predicate.and([
+							source.Node.isElement,
+							Elements.isName(name)
+						]);
+					}
+				})
+			),
+			Text: source.Text,
 			Parent: {
 				nodes: function(p) {
 					return NodesStream(p, []);
@@ -466,7 +494,8 @@
 						})[0];
 						return (match) ? $api.fp.Maybe.from.some(match.value) : $api.fp.Maybe.from.nothing();
 					}
-				}
+				},
+				from: source.Element.from
 			},
 			//	TODO	temporarily disabling TypeScript while we figure out the loader/document vs. rhino/document nightmare
 			//@ts-ignore
@@ -574,7 +603,7 @@
 					if (elements.length != 1) throw new Error("Document has " + elements.length + " root elements.");
 					return elements[0];
 				}
-			},
+			}
 		};
 
 		$export(rv);

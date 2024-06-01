@@ -5,16 +5,128 @@
 //	END LICENSE
 
 namespace slime.runtime.document {
-	export interface Exports {
-		Node: {
+	export interface Node {
+		type: string
+	}
+
+	export interface Parent extends Node {
+		children: Node[]
+	}
+
+	export interface String extends Node {
+		data: string
+	}
+
+	export interface Comment extends Node {
+		type: "comment"
+		data: string
+	}
+
+	export interface Text extends String {
+		type: "text"
+	}
+
+	export interface Doctype extends Node {
+		type: "doctype"
+		before: string
+		name: string
+		after: string
+	}
+
+	export interface Element extends Parent {
+		type: "element"
+		name: string
+		attributes: Attribute[]
+		selfClosing: boolean
+
+		/**
+		 * A string with the end tag of this element, e.g., `"</foo>"`, or `""` if the element is self-closing or otherwise has
+		 * an optional end tag.
+		 */
+		endTag: string
+	}
+
+	export interface Attribute {
+		//	TODO	may be whitespace before equals
+		//	TODO	may be whitespace after equals
+		/**
+		 * The whitespace before the attribute name.
+		 */
+		whitespace: string
+
+		name: string
+
+		/**
+		 * The quotation character (`'` or `"`) used to enclose this attribute's value.
+		 */
+		quote: string
+
+		value: string
+	}
+
+	export interface Document extends Parent {
+		type: "document"
+	}
+
+	export interface Fragment extends Parent {
+		type: "fragment"
+	}
+
+	export namespace xml {
+		export interface Declaration extends Node {
+			type: "xml-declaration"
+			data: string
+		}
+
+		export interface ProcessingInstruction extends Node {
+			type: "xml-processing-instruction"
+			target: string
+			whitespace: string
+			data: string
+		}
+
+		export interface Cdata extends String {
+			type: "cdata",
+		}
+	}
+
+	export namespace exports {
+		export interface Node {
 			isComment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment
 			isText: (node: slime.runtime.document.Node) => node is slime.runtime.document.Text
 			isDoctype: (node: slime.runtime.document.Node) => node is slime.runtime.document.Doctype
 			isDocument: (node: slime.runtime.document.Node) => node is slime.runtime.document.Document
 			isElement: (node: slime.runtime.document.Node) => node is slime.runtime.document.Element
 			isFragment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment
-			isParent: (node: Node) => node is Parent
-			isString: (node: Node) => node is String
+			isParent: (node: document.Node) => node is document.Parent
+			isString: (node: document.Node) => node is document.String
+		}
+	}
+
+	export interface Exports {
+		Text: {
+			from: {
+				data: (data: string) => slime.runtime.document.Text
+			}
+		}
+	}
+
+	export namespace element {
+		export namespace from {
+			export interface Attribute {
+				name: string
+				value: string
+			}
+
+			export interface Parent {
+				name: string
+				attributes?: Attribute[]
+				children?: Node[]
+			}
+		}
+
+		export interface From {
+			parent: (p: element.from.Parent) => Element
 		}
 	}
 }
@@ -69,7 +181,13 @@ namespace slime.runtime.document.internal.source {
 			}) => string
 		}
 
-		Node: slime.runtime.document.Exports["Node"]
+		Node: Pick<slime.runtime.document.Exports["Node"],"isComment"|"isText"|"isDoctype"|"isDocument"|"isElement"|"isFragment"|"isString"|"isParent">
+
+		Text: slime.runtime.document.Exports["Text"]
+
+		Element: {
+			from: slime.runtime.document.Exports["Element"]["from"]
+		}
 
 		/**
 		 * Methods used internally, visible for testing.
