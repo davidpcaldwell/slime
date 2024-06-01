@@ -151,7 +151,10 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		Predicate: {
-			and: <T>(...predicates: $api.fp.Predicate<T>[]) => $api.fp.Predicate<T>
+			and: {
+				<A,B extends A>(predicates: [TypePredicate<A,B>, Predicate<B>]): TypePredicate<A,B>
+				<T>(...predicates: $api.fp.Predicate<T>[]): $api.fp.Predicate<T>
+			}
 			or: <T>(...predicates: $api.fp.Predicate<T>[]) => $api.fp.Predicate<T>
 			not: <T>(predicate: $api.fp.Predicate<T>) => $api.fp.Predicate<T>
 			is: <T>(value: T) => fp.Predicate<T>
@@ -175,8 +178,38 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			const verify = fifty.verify;
+			const { $api } = fifty.global;
 
 			fifty.tests.Predicate = function() {
+				fifty.run(function and() {
+					interface A {
+						a: number
+					};
+
+					interface B extends A {
+						b: number
+					}
+
+					var isB = (a: A): a is B => {
+						return typeof(a["b"]) != "undefined";
+					}
+
+					var list: A[] = [
+						{ a: 1 },
+						{ a: 2, b: 2 } as A,
+						{ a: 3 },
+						{ a: 4, b: 4} as A,
+						{ a: 5, b: 0 } as A
+					];
+
+					var bOver3 = $api.fp.Predicate.and([ isB, (b) => b.b > 3 ]);
+
+					var bsOver3 = list.filter(bOver3);
+					verify(bsOver3).length.is(1);
+					verify(bsOver3)[0].a.is(4);
+					verify(bsOver3)[0].b.is(4);
+				});
+
 				fifty.run(function property() {
 					type T = { a: number, b: string };
 
