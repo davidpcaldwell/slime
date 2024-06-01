@@ -118,6 +118,15 @@ namespace slime.runtime.document {
 			 * contain the given node.
 			 */
 			nodes: (p: Parent) => slime.$api.fp.Stream<Node>
+
+			content: {
+				text: {
+					set: (p: {
+						parent: Parent
+						data: string
+					}) => void
+				}
+			}
 		}
 	}
 
@@ -173,6 +182,16 @@ namespace slime.runtime.document {
 				verify(elements)[1].evaluate(isElement("a")).is(true);
 				verify(elements)[2].evaluate(isElement("b")).is(true);
 				verify(elements)[3].evaluate(isElement("b2")).is(true);
+			}
+
+			fifty.tests.Parent.content = fifty.test.Parent();
+			fifty.tests.Parent.content.text = fifty.test.Parent();
+			fifty.tests.Parent.content.text.set = function() {
+				var document = subject.Document.codec.string.decode("<root><a/><b><b2/></b></root>");
+				var root = $api.fp.now(document, subject.Document.element);
+				subject.Parent.content.text.set({ parent: root, data: "foo" });
+				var after = subject.Document.codec.string.encode(document);
+				verify(after).is("<root>foo</root>");
 			}
 		}
 	//@ts-ignore
