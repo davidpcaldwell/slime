@@ -422,7 +422,7 @@
 					}
 
 					/** @type { slime.js.Cast<slime.Resource["read"]> } */
-					var cast = slime.$api.fp.cast;
+					var cast = slime.$api.fp.cast.unsafe;
 
 					this.read = cast(this.read);
 

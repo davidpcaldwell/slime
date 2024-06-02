@@ -195,7 +195,21 @@
 
 		$export({
 			identity: identity,
-			cast: function(v) { return v; },
+			cast: {
+				unsafe: identity,
+				guarded: function(guard) {
+					return function(t) {
+						if (guard(t)) return t;
+						throw new TypeError();
+					}
+				},
+				maybe: function(guard) {
+					return function(t) {
+						if (guard(t)) return Maybe.from.some(t);
+						return Maybe.from.nothing();
+					}
+				}
+			},
 			type: function(o) {
 				if (o === null) return "null";
 				return typeof(o);

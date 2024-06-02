@@ -161,7 +161,7 @@ namespace slime.jsh.shell {
 			);
 
 			fifty.tests.exports.jsh.Installation.from.current.unbuilt = function() {
-				var cast: slime.js.Cast<UnbuiltInstallation> = $api.fp.cast;
+				var cast: slime.js.Cast<UnbuiltInstallation> = $api.fp.cast.unsafe;
 
 				var shell = fixtures.shells.unbuilt();
 
@@ -184,7 +184,7 @@ namespace slime.jsh.shell {
 			}
 
 			fifty.tests.exports.jsh.Installation.from.current.built = function() {
-				var cast: slime.js.Cast<BuiltInstallation> = $api.fp.cast;
+				var cast: slime.js.Cast<BuiltInstallation> = $api.fp.cast.unsafe;
 
 				var shell = fixtures.shells.built();
 
@@ -221,7 +221,7 @@ namespace slime.jsh.shell {
 
 				var installation = getInstallationFromIntention(intention);
 
-				var cast: slime.js.Cast<PackagedInstallation> = $api.fp.cast;
+				var cast: slime.js.Cast<PackagedInstallation> = $api.fp.cast.unsafe;
 				verify(installation).evaluate(cast).package.is(shell.package);
 			}
 		}

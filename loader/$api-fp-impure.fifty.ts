@@ -768,7 +768,7 @@ namespace slime.$api.fp.world {
 				}
 			};
 
-			var castToNumber: slime.js.Cast<number> = $api.fp.cast;
+			var castToNumber: slime.js.Cast<number> = $api.fp.cast.unsafe;
 
 			fifty.tests.exports.world.Means = fifty.test.Parent();
 			fifty.tests.exports.world.Means.map = function() {

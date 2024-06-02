@@ -15,7 +15,7 @@
 	 */
 	function(Packages,JavaAdapter,$api,$context,$loader,$export) {
 		/** @type { slime.js.Cast<slime.jrunscript.bootstrap.Exports> } */
-		var after = $api.fp.cast;
+		var after = $api.fp.cast.unsafe;
 		var jrunscript = {
 			$api: {
 				debug: ($context.debug) ? function(message) {

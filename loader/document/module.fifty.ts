@@ -119,6 +119,12 @@ namespace slime.runtime.document {
 			 */
 			nodes: (p: Parent) => slime.$api.fp.Stream<Node>
 
+			child: {
+				index: {
+					simple: (index: number) => (parent: Parent) => Node
+				}
+			}
+
 			content: {
 				text: {
 					set: (p: {
@@ -140,7 +146,9 @@ namespace slime.runtime.document {
 
 			fifty.tests.Parent = fifty.test.Parent();
 
-			fifty.tests.Parent.one = function() {
+			fifty.tests.Parent.nodes = fifty.test.Parent();
+
+			fifty.tests.Parent.nodes.one = function() {
 				var document = subject.Document.codec.string.decode("<root/>");
 				var nodes = $api.fp.result(
 					subject.Parent.nodes(document),
@@ -149,7 +157,7 @@ namespace slime.runtime.document {
 				verify(nodes).length.is(2);
 			}
 
-			fifty.tests.Parent.two = function() {
+			fifty.tests.Parent.nodes.two = function() {
 				var document = subject.Document.codec.string.decode("<root><a/><b><b2/></b></root>");
 				var nodes = $api.fp.result(
 					subject.Parent.nodes(document),
@@ -182,6 +190,16 @@ namespace slime.runtime.document {
 				verify(elements)[1].evaluate(isElement("a")).is(true);
 				verify(elements)[2].evaluate(isElement("b")).is(true);
 				verify(elements)[3].evaluate(isElement("b2")).is(true);
+			}
+
+			fifty.tests.Parent.child = fifty.test.Parent();
+			fifty.tests.Parent.child.index = function() {
+				var empty = $api.fp.now("<root/>", subject.Document.codec.string.decode, subject.Document.element);
+				var notEmpty = $api.fp.now("<root><a/><b><b2/></b></root>", subject.Document.codec.string.decode, subject.Document.element);
+				verify(empty).evaluate(subject.Parent.child.index.simple(0)).threw.type(Error);
+				verify(notEmpty).evaluate(subject.Parent.child.index.simple(0)).threw.nothing();
+				verify(notEmpty).evaluate(subject.Parent.child.index.simple(0)).type.is("element");
+				verify(notEmpty).evaluate(subject.Parent.child.index.simple(0)).evaluate(function(node) { if (!subject.Node.isElement(node)) throw new Error(); return node; }).evaluate(function(e) { return e.name; }).is("a");
 			}
 
 			fifty.tests.Parent.content = fifty.test.Parent();

@@ -61,7 +61,11 @@ namespace slime.$api.fp {
 		/**
 		 * A function that can be declared as type {@link slime.js.Cast | `slime.js.Cast<T>`} and cast any value to `T`.
 		 */
-		cast: <T>(t: any) => T
+		cast: {
+			unsafe: <T>(t: any) => T
+			guarded: <T,N extends T>(predicate: TypePredicate<T,N>) => (t: T) => N
+			maybe: <T,N extends T>(predicate: TypePredicate<T,N>) => (t: T) => Maybe<N>
+		}
 
 		/**
 		 * Returns a JavaScript type for the given value. This value is identical to the result of the JavaScript `typeof` operator
@@ -69,6 +73,52 @@ namespace slime.$api.fp {
 		 */
 		type: (v: any) => string
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.cast = function() {
+				var a: any = { a: 1 };
+
+				interface A {
+					a: number
+				}
+
+				var cast: slime.js.Cast<A> = $api.fp.cast.unsafe;
+
+				var narrowed = cast(a);
+				verify(narrowed).a.is(1);
+
+				interface B extends A {
+					b: number
+				}
+
+				var b = { a: 2, b: 4 } as A;
+
+				var isB: TypePredicate<A,B> = function(a: A): a is B { return typeof a["b"] != "undefined" };
+
+				var toB = $api.fp.cast.guarded(isB);
+
+				verify(narrowed).evaluate(toB).threw.type(Error);
+				verify(b).evaluate(toB).is(b as B);
+
+				var tryB = $api.fp.cast.maybe(isB);
+
+				verify(narrowed).evaluate(tryB).present.is(false);
+				verify(b).evaluate(tryB).present.is(true);
+				var tried = tryB(b);
+				if (tried.present) {
+					verify(tried).value.is(b as B);
+				}
+
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
 		pipe: Pipe
@@ -1682,6 +1732,7 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				//	TODO	clean up tests; many should be under this test and are not
 				fifty.run(fifty.tests.exports);
 				fifty.run(fifty.tests.string);
 				fifty.run(fifty.tests.object);

@@ -322,7 +322,7 @@
 		 */
 		function NodesStream(root, cursor) {
 			/** @type { slime.js.Cast<slime.runtime.document.Parent> } */
-			var asParent = $api.fp.cast;
+			var asParent = $api.fp.cast.unsafe;
 
 			/**
 			 *
@@ -463,6 +463,17 @@
 			Parent: {
 				nodes: function(p) {
 					return NodesStream(p, []);
+				},
+				child: {
+					index: {
+						simple: function(index) {
+							if (index < 0) throw new Error();
+							return function(parent) {
+								if (index >= parent.children.length) throw new Error();
+								return parent.children[index];
+							}
+						}
+					}
 				},
 				content: {
 					text: {

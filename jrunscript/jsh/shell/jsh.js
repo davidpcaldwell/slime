@@ -731,7 +731,7 @@
 
 		$exports.run = (function(was) {
 			/** @type { slime.js.Cast<slime.jsh.shell.Exports["run"]> } */
-			var cast = $api.fp.cast;
+			var cast = $api.fp.cast.unsafe;
 
 			var is = cast(was);
 			is.evaluate.wrap = function(result) {
@@ -819,7 +819,7 @@
 
 		$exports.world = (function(was) {
 			/** @type { slime.js.Cast<slime.jsh.shell.Exports["world"]> } */
-			var cast = $api.fp.cast;
+			var cast = $api.fp.cast.unsafe;
 
 			var is = cast(was);
 			is.exit = function(status) {

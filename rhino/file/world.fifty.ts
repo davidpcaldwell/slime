@@ -262,7 +262,7 @@ namespace slime.jrunscript.file {
 				const { $api } = fifty.global;
 
 				fifty.tests.spi.filesystem.openOutputStream = function(subject: Filesystem) {
-					var asLocation: slime.js.Cast<slime.jrunscript.file.Location> = $api.fp.cast;
+					var asLocation: slime.js.Cast<slime.jrunscript.file.Location> = $api.fp.cast.unsafe;
 					//	TODO	no testing for this API; does a file exist
 					var at = $api.fp.world.now.ask(subject.temporary({ directory: true }));
 					debugger;

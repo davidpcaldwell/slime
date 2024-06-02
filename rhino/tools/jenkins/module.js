@@ -134,10 +134,10 @@
 				};
 
 				/** @type { slime.js.Cast<slime.jrunscript.tools.jenkins.Fetch<slime.jrunscript.tools.jenkins.Server>> } */
-				var castToFetchServer = $api.fp.cast;
+				var castToFetchServer = $api.fp.cast.unsafe;
 
 				/** @type { slime.js.Cast<slime.jrunscript.tools.jenkins.Fetch<slime.jrunscript.tools.jenkins.Job>> } */
-				var castToFetchJob = $api.fp.cast;
+				var castToFetchJob = $api.fp.cast.unsafe;
 
 				var get_server = function(url) {
 					return function(events) {
