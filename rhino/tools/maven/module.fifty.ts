@@ -367,6 +367,17 @@ namespace slime.jrunscript.tools.maven {
 					}) => (pom: string) => string
 				}
 			}
+
+			Element: {
+				/**
+				 * Returns a Maven element's <dfn>value</dfn>. The "value" is the text enclosed in the element; for example, for
+				 * `<artifactId>foo</artifactId>`, it is `"foo"`.
+				 *
+				 * If the element is not of the correct structure - it is empty, or has multiple children, or has a child other
+				 * than a text node - this method throws an exception.
+				 */
+				value: (element: slime.runtime.document.Element) => string
+			}
 		}
 	}
 

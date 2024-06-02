@@ -772,6 +772,14 @@
 								}
 							}
 						},
+						Element: {
+							value: function(element) {
+								if (element.children.length != 1) throw new Error("Expected exactly 1 child.");
+								var child = element.children[0];
+								if (!$context.library.document.Node.isString(child)) throw new Error("Expected child to be string.");
+								return child.data;
+							}
+						},
 						build: {
 							element: buildElement
 						}
