@@ -370,13 +370,18 @@ namespace slime.jrunscript.tools.maven {
 
 			Element: {
 				/**
-				 * Returns a Maven element's <dfn>value</dfn>. The "value" is the text enclosed in the element; for example, for
+				 * Allows the access and manipulation of a Maven element's <dfn>value</dfn>. The "value" is the text enclosed in the element; for example, for
 				 * `<artifactId>foo</artifactId>`, it is `"foo"`.
-				 *
-				 * If the element is not of the correct structure - it is empty, or has multiple children, or has a child other
-				 * than a text node - this method throws an exception.
 				 */
-				value: (element: slime.runtime.document.Element) => string
+				value: {
+					/**
+					 * Returns the given element's value. If the element is not of the correct structure - it is empty, or has
+					 * multiple children, or has a child other than a text node - this method throws an exception.
+					 */
+					get: (element: slime.runtime.document.Element) => string
+
+					set: (value: string) => (element: slime.runtime.document.Element) => void
+				}
 			}
 		}
 	}
@@ -385,8 +390,36 @@ namespace slime.jrunscript.tools.maven {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 			const { subject } = test;
+
+			var getDependencies = function(parent: slime.runtime.document.Parent) {
+				return parent.children.find(jsh.document.Node.isElementNamed("dependencies"));
+			};
+
+			var getVersion = function(parent: slime.runtime.document.Parent) {
+				return parent.children.find(jsh.document.Node.isElementNamed("version"));
+			}
+
+			fifty.tests.exports.xml = fifty.test.Parent();
+
+			fifty.tests.exports.Element = fifty.test.Parent();
+
+			fifty.tests.exports.Element.value = function() {
+				var project = $api.fp.now(
+					fifty.jsh.file.relative("test/quickstart-pom.xml"),
+					jsh.file.Location.file.read.string.simple,
+					jsh.document.Document.codec.string.decode,
+					jsh.document.Document.element
+				);
+
+				var version = getVersion(project);
+
+				verify(version).evaluate(subject.xml.Element.value.get).is("1.0.0");
+				$api.fp.now(version, subject.xml.Element.value.set("2.0.0"));
+				verify(version).evaluate(subject.xml.Element.value.get).is("2.0.0");
+			}
 
 			fifty.tests.manual.xml = function() {
 				var pom = $api.fp.now(
@@ -415,12 +448,6 @@ namespace slime.jrunscript.tools.maven {
 						child,
 						descendants
 					]
-				};
-
-				var getDependencies = function(parent) {
-					return parent.children.find(function(node) {
-						return jsh.document.Node.isElement(node) && jsh.document.Element.isName("dependencies")(node);
-					}) as slime.runtime.document.Element;
 				};
 
 				var getProperties = function(parent) {
