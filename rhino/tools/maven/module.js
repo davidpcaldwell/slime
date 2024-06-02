@@ -773,11 +773,18 @@
 							}
 						},
 						Element: {
-							value: function(element) {
-								if (element.children.length != 1) throw new Error("Expected exactly 1 child.");
-								var child = element.children[0];
-								if (!$context.library.document.Node.isString(child)) throw new Error("Expected child to be string.");
-								return child.data;
+							value: {
+								get: function(element) {
+									if (element.children.length != 1) throw new Error("Expected exactly 1 child.");
+									var child = element.children[0];
+									if (!$context.library.document.Node.isString(child)) throw new Error("Expected child to be string.");
+									return child.data;
+								},
+								set: function(value) {
+									return function(element) {
+										$context.library.document.Parent.content.text.set({ parent: element, data: value });
+									}
+								}
 							}
 						},
 						build: {
