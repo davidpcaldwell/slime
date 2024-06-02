@@ -184,7 +184,7 @@
 							});
 
 							/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
-							var castToFile = $api.fp.cast;
+							var castToFile = $api.fp.cast.unsafe;
 
 							var distribution = src.directory.getSubdirectory("build/distributions").list().map(castToFile)[0];
 							jsh.tools.install.install({

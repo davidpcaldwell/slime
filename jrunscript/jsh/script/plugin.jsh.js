@@ -142,7 +142,7 @@
 					}
 					if ($slime.getPackaged()) {
 						/** @type { slime.js.Cast<slime.old.Loader> } */
-						var toJavaLoader = $api.fp.cast;
+						var toJavaLoader = $api.fp.cast.unsafe;
 						var x = toJavaLoader(new jsh.io.Loader({ _source: $slime.getPackaged().getCode() }));
 						rv.packaged = {
 							file: jsh.file.filesystem.java.adapt($slime.getPackaged().getFile()).file,
@@ -503,7 +503,7 @@
 					 */
 					invocation: function(f) {
 						/** @type { slime.js.Cast<T> } */
-						var cast = $api.fp.cast;
+						var cast = $api.fp.cast.unsafe;
 						return f({
 							options: cast({}),
 							arguments: Array.prototype.slice.call(jsh.script.arguments)

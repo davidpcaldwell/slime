@@ -363,7 +363,7 @@
 							var toMethod = function(method, path) {
 								var defined = define({ method: method, url: path });
 								/** @type { slime.js.Cast<R> } */
-								var toR = $api.fp.cast;
+								var toR = $api.fp.cast.unsafe;
 								return function(p) {
 									/** @type { R } */
 									var rv = toR(defined(implementation, p));

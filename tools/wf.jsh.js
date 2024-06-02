@@ -47,7 +47,7 @@
 
 		/** @type { slime.jsh.script.cli.Descriptor<T> } */
 		var descriptor = {
-			options: $api.fp.cast,
+			options: $api.fp.cast.unsafe,
 			commands: new jsh.file.Loader({ directory: jsh.wf.project.base() }).module("wf.js", {
 				base: jsh.wf.project.base()
 			})
@@ -59,7 +59,7 @@
 		var invocation = jsh.script.cli.invocation(descriptor.options);
 
 		/** @type { slime.js.Cast<T> } */
-		var toT = $api.fp.cast;
+		var toT = $api.fp.cast.unsafe;
 
 		if (invocation.arguments[0] != "initialize" && project.initialize) {
 			project.initialize({

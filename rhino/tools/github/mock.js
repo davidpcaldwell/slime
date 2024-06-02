@@ -92,7 +92,7 @@
 												throw new Error();
 											}
 											/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.runtime.old.Resource } */
-											var toResource = $api.fp.cast;
+											var toResource = $api.fp.cast.unsafe;
 											if (isFile(nodeEntry.resource)) {
 												return {
 													path: nodeEntry.path,

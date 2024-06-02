@@ -115,7 +115,7 @@
 		 */
 		function getDirectoryObjectSourceFiles(p) {
 			/** @type { slime.js.Cast<slime.jrunscript.file.File> } */
-			var castToFile = $api.fp.cast;
+			var castToFile = $api.fp.cast.unsafe;
 
 			/**
 			 *
