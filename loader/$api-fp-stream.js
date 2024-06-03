@@ -139,6 +139,12 @@
 				first: function(stream) {
 					return stream().next;
 				},
+				only: function(stream) {
+					var rv = stream().next;
+					var another = stream().remaining().next;
+					if (another.present) throw new Error("Multiple elements in " + stream);
+					return rv;
+				},
 				map: function(mapping) {
 					/**
 					 * @template { any } T
