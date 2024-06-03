@@ -15,6 +15,7 @@
 	function($slime,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
+				//	Not loaded until after rhino/document
 				return Boolean(jsh.document);
 			},
 			load: function() {
@@ -30,7 +31,8 @@
 					jsh.document,
 					api,
 					{
-						Document: Object.assign(jsh.document.Document, api.Document)
+						Document: Object.assign(jsh.document.Document, api.Document),
+						Text: Object.assign(jsh.document.Text, api.Text)
 					}
 				);
 			}
