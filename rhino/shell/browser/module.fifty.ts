@@ -160,7 +160,7 @@ namespace slime.jrunscript.shell.browser {
 				/**
 				 * The Chrome executable for this installation.
 				 */
-				 program: string
+				program: string
 
 				/**
 				 * The default user data directory for this installation.

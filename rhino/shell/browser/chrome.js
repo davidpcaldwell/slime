@@ -65,14 +65,14 @@
 			//	See https://www.chromium.org/user-experience/multi-profiles
 			/** @type { slime.jrunscript.shell.browser.object.Chrome["Instance"]} */
 			this.Instance = (
-				/** @param { ConstructorParameters<slime.jrunscript.shell.browser.object.Chrome["Instance"]>[0] } u */
+				/** @param { slime.jrunscript.shell.browser.object.instance.CreatedConfiguration | slime.jrunscript.shell.browser.object.instance.DefaultConfiguration } u */
 				function(u) {
 					/** @type { (u: any) => u is slime.jrunscript.shell.browser.object.instance.DefaultConfiguration } */
 					var isDefaultConfiguration = function(u) {
 						return u["install"];
 					};
 
-					if (u.location) {
+					if (!isDefaultConfiguration(u) && u.location) {
 						u.directory = u.location.createDirectory({
 							exists: function(dir) {
 								return false;
@@ -134,14 +134,14 @@
 
 					var pacserver;
 
-					/** @type { (p: typeof u["proxy"]) => p is slime.jrunscript.shell.browser.old.ProxyTools } */
+					/** @type { (p: typeof slime.jrunscript.shell.browser.object.instance.CreatedConfiguration["proxy"]) => p is slime.jrunscript.shell.browser.old.ProxyTools } */
 					var isOldProxyImplementation = function(p) {
 						return p["Server"];
 					}
 
 					var addProfileArguments = function(args,m) {
 						if (u.directory) args.push("--user-data-dir=" + u.directory);
-						if (u.proxy) {
+						if (!isDefaultConfiguration(u) && u.proxy) {
 							var proxy = u.proxy;
 							if (isOldProxyImplementation(proxy)) {
 								pacserver = proxy.Server();
@@ -151,12 +151,12 @@
 								args.push("--proxy-pac-url=" + proxy.url);
 							}
 						}
-						if (u.hostrules) {
+						if (!isDefaultConfiguration(u) && u.hostrules) {
 							var value = u.hostrules.join(",");
 							Packages.java.lang.System.err.println("hostrules = " + value);
 							args.push("--host-resolver-rules=" + value);
 						}
-						if (u.devtools) args.push("--auto-open-devtools-for-tabs");
+						if (!isDefaultConfiguration(u) && u.devtools) args.push("--auto-open-devtools-for-tabs");
 						if (m.profile) args.push("--profile-directory=" + m.profile);
 						if (m.incognito) args.push("--incognito");
 					};
