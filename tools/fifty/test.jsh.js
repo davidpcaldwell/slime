@@ -164,11 +164,12 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.File } file
-		 * @param { string } part
 		 * @param { slime.fifty.test.internal.Listener } view
+		 * @param { "run" | "list" } method
+		 * @param { string } part
 		 * @returns
 		 */
-		var execute = function(file,part,view) {
+		var load = function(file,view,method,part) {
 			var fiftyLoader = jsh.script.loader;
 
 			/** @type { slime.fifty.test.internal.test.Script } */
@@ -186,7 +187,7 @@
 
 			var loader = new jsh.file.Loader({ directory: file.parent });
 
-			return implementation.run({
+			return implementation[method]({
 				loader: loader,
 				scopes: {
 					jsh: {
@@ -197,33 +198,28 @@
 				path: file.pathname.basename,
 				part: part
 			});
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.file.File } file
+		 * @param { string } part
+		 * @param { slime.fifty.test.internal.Listener } view
+		 * @returns { slime.fifty.test.internal.test.Result }
+		 */
+		var execute = function(file,part,view) {
+			//@ts-ignore
+			return load(file, view, "run", part);
 		};
 
+		/**
+		 *
+		 * @param { slime.jrunscript.file.File } file
+		 * @returns { slime.fifty.test.internal.test.Manifest }
+		 */
 		var list = function(file) {
-			var fiftyLoader = jsh.script.loader;
-
-			/** @type { slime.fifty.test.internal.test.Script } */
-			var script = fiftyLoader.script("test.js");
-			var implementation = script({
-				library: {
-					Verify: verify
-				},
-				//	TODO	probably can refactor so as to avoid this
-				console: void(0)
-			});
-
-			var loader = new jsh.file.Loader({ directory: file.parent });
-
-			return implementation.list({
-				loader: loader,
-				scopes: {
-					jsh: {
-						directory: file.parent,
-						loader: loader
-					}
-				},
-				path: file.pathname.basename
-			});
+			//@ts-ignore
+			return load(file, views.console, "list", void(0));
 		}
 
 		if (!parameters.options.list) {
