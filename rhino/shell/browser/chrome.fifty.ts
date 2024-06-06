@@ -31,11 +31,6 @@ namespace slime.jrunscript.shell.browser {
 		}
 
 		export namespace instance {
-			export interface DefaultConfiguration {
-				install: true
-				directory?: slime.jrunscript.file.Directory
-			}
-
 			//	TODO	review; it looks like probably this should be bifurcated for default and created instances
 			export interface CreatedConfiguration {
 				location?: slime.jrunscript.file.Pathname
@@ -52,11 +47,7 @@ namespace slime.jrunscript.shell.browser {
 		}
 
 		export interface Chrome extends slime.jrunscript.shell.browser.Chrome {
-			Instance: {
-				new (u: instance.DefaultConfiguration): DefaultInstance
-
-				new (u: instance.CreatedConfiguration): CreatedInstance
-			}
+			Instance: new (u: instance.CreatedConfiguration) => CreatedInstance
 
 			instance?: DefaultInstance
 		}
@@ -75,6 +66,16 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 		HOME: slime.jrunscript.file.Directory
 		TMPDIR: slime.jrunscript.file.Directory
 		environment: any
+	}
+
+	export interface DefaultConfiguration {
+		install: true
+		directory?: slime.jrunscript.file.Directory
+	}
+
+	export interface InstanceConstructor {
+		new (b: { program: slime.jrunscript.file.File, user?: slime.jrunscript.file.Directory }, u: DefaultConfiguration): object.DefaultInstance
+		new (b: { program: slime.jrunscript.file.File, user?: slime.jrunscript.file.Directory }, u: object.instance.CreatedConfiguration): object.CreatedInstance
 	}
 
 	export interface Exports {
