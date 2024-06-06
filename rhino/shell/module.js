@@ -211,14 +211,15 @@
 			"browser",
 			{
 				get: $api.fp.impure.Input.memoized(function() {
-					return $loader.module("browser/module.js", {
+					/** @type { slime.jrunscript.shell.browser.Script } */
+					var script = $loader.script("browser/module.js");
+					return script({
 						os: $exports.os,
 						HOME: $exports.HOME,
 						TMPDIR: $exports.TMPDIR,
 						run: scripts.run_old.run,
 						environment: environment,
 						api: {
-							js: $context.api.js,
 							java: $context.api.java,
 							file: $context.api.file,
 							httpd: $context.api.httpd

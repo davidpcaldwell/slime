@@ -7,13 +7,12 @@
 namespace slime.jrunscript.shell.browser {
 	export interface Context {
 		api: {
-			js: any
 			java: any
-			file: any
+			file: slime.jrunscript.file.Exports
 			httpd: slime.jsh.httpd.Exports
 		}
-		os: any
-		run: any
+		os: Pick<slime.jrunscript.shell.Exports["os"],"name"|"process">
+		run: slime.jrunscript.shell.internal.run.old.Exports["run"]
 		HOME: slime.jrunscript.file.Directory
 		TMPDIR: slime.jrunscript.file.Directory
 		environment: any
@@ -32,7 +31,6 @@ namespace slime.jrunscript.shell.browser {
 				run: jsh.shell.run,
 				environment: {},
 				api: {
-					js: jsh.js,
 					java: jsh.java,
 					file: jsh.file,
 					httpd: jsh.httpd
@@ -203,7 +201,6 @@ namespace slime.jrunscript.shell.browser {
 				run: jsh.shell.run,
 				environment: {},
 				api: {
-					js: jsh.js,
 					java: jsh.java,
 					file: jsh.file,
 					httpd: jsh.httpd

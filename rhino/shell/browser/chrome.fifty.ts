@@ -27,11 +27,7 @@ namespace slime.jrunscript.shell.browser {
 			run?: any
 		}
 
-		export interface Instance {
-		}
-
 		export namespace instance {
-			//	TODO	review; it looks like probably this should be bifurcated for default and created instances
 			export interface CreatedConfiguration {
 				location?: slime.jrunscript.file.Pathname
 				directory?: slime.jrunscript.file.Directory
@@ -56,12 +52,11 @@ namespace slime.jrunscript.shell.browser {
 
 namespace slime.jrunscript.shell.browser.internal.chrome {
 	export interface Context {
-		os: any
-		run: any
+		os: Pick<slime.jrunscript.shell.Exports["os"],"name"|"process">
+		run: slime.jrunscript.shell.internal.run.old.Exports["run"]
 		api: {
-			js: any
 			java: slime.jrunscript.java.Exports
-			file: any
+			file: slime.jrunscript.file.Exports
 		}
 		HOME: slime.jrunscript.file.Directory
 		TMPDIR: slime.jrunscript.file.Directory
@@ -89,7 +84,6 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 				HOME: fifty.global.jsh.shell.HOME,
 				TMPDIR: fifty.global.jsh.shell.TMPDIR,
 				api: {
-					js: fifty.global.jsh.js,
 					java: fifty.global.jsh.java,
 					file: fifty.global.jsh.file
 				},
