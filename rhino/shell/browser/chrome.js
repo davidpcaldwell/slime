@@ -305,14 +305,14 @@
 						if (isRunning()) {
 							//	On OS X, if we do not use "launch," the tabs open in the profile last used, regardless of the arguments
 							//	sent to the program
-							launch($context.api.js.Object.set({}, m, {
+							launch($api.Object.compose(m, {
 								profile: data.name,
 								//	nokill causes a thread that monitors the process list and waits for the browser window to be closed
 								//	not to be launched
 								nokill: true
 							}));
 						} else {
-							open($context.api.js.Object.set({}, m, {
+							open($api.Object.compose(m, {
 								profile: data.name
 							}));
 						}
