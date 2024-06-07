@@ -18,13 +18,57 @@ namespace slime.jrunscript.shell.browser {
 	}
 
 	export namespace object {
+		export interface RunArguments {
+			incognito?: boolean
+			profile?: string
+
+			//	TODO	document environment variable
+			disableGpu?: boolean
+
+			debug?: {
+				port?: number
+			}
+
+			arguments?: string[]
+
+			app?: string
+
+			position?: {
+				x: number
+				y: number
+			}
+
+			size?: {
+				width: number
+				height: number
+			}
+
+			newWindow?: boolean
+
+			uri?: string
+			uris?: string[]
+
+			stdio?: slime.jrunscript.shell.invocation.old.Stdio
+
+			exitOnClose?: boolean
+
+			on?: {
+				start?: (this: slime.jrunscript.shell.browser.object.RunArguments, p: slime.jrunscript.shell.run.old.events.Event & {
+					pid: number;
+					kill: () => void;
+				}) => void
+
+				close?: (this: slime.jrunscript.shell.browser.object.RunArguments) => void
+			}
+		}
+
 		export interface DefaultInstance {
-			open?: any
+			open?: (p: RunArguments) => void
 		}
 
 		export interface CreatedInstance {
-			launch?: any
-			run?: any
+			launch?: (p: RunArguments) => void
+			run?: (p: RunArguments) => void
 		}
 
 		export namespace instance {
@@ -139,6 +183,7 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 			const { subject } = test;
 
 			fifty.tests.world = function() {
+				fifty.global.jsh.shell.console("Chrome: " + subject.installed.program);
 				var version = subject.installed.version;
 				fifty.global.jsh.shell.console("Chrome version = [" + version + "]");
 			}
