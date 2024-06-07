@@ -102,6 +102,11 @@
 				return p["Server"];
 			}
 
+			/**
+			 *
+			 * @param { string[] } args
+			 * @param { { incognito?: boolean, profile?: string } } m
+			 */
 			var addProfileArguments = function(args,m) {
 				if (u.directory) args.push("--user-data-dir=" + u.directory);
 				if (!isDefaultConfiguration(u) && u.proxy) {
@@ -128,6 +133,10 @@
 				return ps.isRunning(u.directory);
 			}
 
+			/**
+			 *
+			 * @param { slime.jrunscript.shell.browser.object.RunArguments } m
+			 */
 			var launch = function(m) {
 				log.FINE("Launching Chrome browser.");
 				log.FINEST("$context.os = " + $context.os);
@@ -265,9 +274,13 @@
 			}
 
 			//	TODO	Presumably only works on OS X
+			/**
+			 *
+			 * @param { slime.jrunscript.shell.browser.object.RunArguments } m
+			 */
 			var open = function(m) {
 				if ($context.os.name == "Mac OS X") {
-					var args = [];
+					var args = /** @type { string[] } */([]);
 					args.push("-b","com.google.Chrome");
 					if (m.uri) {
 						args.push(m.uri);
