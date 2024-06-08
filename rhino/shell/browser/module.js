@@ -29,8 +29,7 @@
 		$exports.chrome = library.chrome.installed;
 
 		$exports.Chrome = {
-			getMajorVersion: library.chrome.getMajorVersion,
-			Installation: library.chrome.Installation
+			getMajorVersion: library.chrome.getMajorVersion
 		}
 
 		$exports.installed = {

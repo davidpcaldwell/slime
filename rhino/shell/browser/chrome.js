@@ -458,13 +458,15 @@
 
 		$export({
 			getMajorVersion: getMajorVersion,
-			Installation: function(p) {
-				return new Chrome({
-					program: $context.api.file.Pathname(p.program).file,
-					user: (p.user) ? $context.api.file.Pathname(p.user).directory : null
-				});
-			},
-			installed: installed
+			installed: installed,
+			test: {
+				Installation: function(p) {
+					return new Chrome({
+						program: $context.api.file.Pathname(p.program).file,
+						user: (p.user) ? $context.api.file.Pathname(p.user).directory : null
+					});
+				}
+			}
 		});
 	}
 //@ts-ignore

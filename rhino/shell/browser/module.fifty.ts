@@ -153,18 +153,6 @@ namespace slime.jrunscript.shell.browser {
 
 		Chrome: {
 			getMajorVersion: (chrome: Chrome) => number
-
-			Installation: (p: {
-				/**
-				 * The Chrome executable for this installation.
-				 */
-				program: string
-
-				/**
-				 * The default user data directory for this installation.
-				 */
-				user: string
-			}) => object.Chrome
 		}
 
 		installed: {
