@@ -151,7 +151,7 @@
 		/**
 		 *
 		 * @param { { name: string } } [p]
-		 * @returns
+		 * @returns { slime.fifty.test.internal.test.AsynchronousScope }
 		 */
 		var AsynchronousScope = function recurse(p) {
 			var name = (p && p.name);
@@ -206,6 +206,11 @@
 
 		//	We use a single `fifty` object throughout, and we can't change it across stack frames, so we cannot implement
 		//	these scopes on the stack; rather, we must implement a stack of them.
+		/**
+		 *
+		 * @param { slime.fifty.test.internal.test.AsynchronousScope } initial
+		 * @returns { slime.fifty.test.internal.test.AsynchronousScopes }
+		 */
 		var AsynchronousScopes = function(initial) {
 			var stack = [ initial ];
 
