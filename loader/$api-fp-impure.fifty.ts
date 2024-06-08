@@ -506,9 +506,8 @@ namespace slime.$api.fp.impure {
 }
 
 namespace slime.$api.fp.world {
-	//	Instrument
-	export type Sensor<S,E,R> = (s?: S) => Question<E,R>
-	export type Means<O,E> = (o?: O) => Action<E>
+	export type Sensor<S,E,R> = (s: S) => Question<E,R>
+	export type Means<O,E> = (o: O) => Action<E>
 
 	export type Subject<
 		X extends slime.$api.fp.world.Sensor<any,any,any>

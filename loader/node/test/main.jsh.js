@@ -11,7 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
+		$api.fp.world.now.tell(jsh.shell.tools.rhino.require.simple);
 		$api.fp.world.execute(jsh.shell.tools.node.require());
 		var node = jsh.shell.tools.node.installed;
 		//	TODO	this API could use better documentation, struggled to get this right
