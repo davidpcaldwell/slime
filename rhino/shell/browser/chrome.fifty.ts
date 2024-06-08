@@ -138,6 +138,18 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 			});
 		//@ts-ignore
 		})(fifty);
+
+		export type InstallationConstructor = (p: {
+			/**
+			 * The Chrome executable for this installation.
+			 */
+			program: string
+
+			/**
+			 * The default user data directory for this installation.
+			 */
+			user: string
+		}) => object.Chrome
 	}
 
 	(
@@ -155,10 +167,6 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 	)(fifty);
 
 	export interface Exports {
-		Installation: slime.jrunscript.shell.browser.Exports["Chrome"]["Installation"]
-	}
-
-	export interface Exports {
 		installed: object.Chrome
 	}
 
@@ -172,6 +180,12 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		test: {
+			Installation: test.InstallationConstructor
+		}
+	}
 
 	(
 		function(
@@ -194,7 +208,7 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 
 			fifty.tests.manual.chrome.Installation = function() {
 				//	macOS: env JSH_TEST_SHELL_CHROME_PROGRAM="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" JSH_TEST_SHELL_CHROME_USER="${HOME}/Library/Application Support/Google/Chrome"
-				var chrome = subject.Installation({
+				var chrome = subject.test.Installation({
 					program: jsh.shell.environment.JSH_TEST_SHELL_CHROME_PROGRAM,
 					user: jsh.shell.environment.JSH_TEST_SHELL_CHROME_USER
 				});
