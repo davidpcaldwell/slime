@@ -12,7 +12,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
+		$api.fp.world.now.tell(jsh.shell.tools.rhino.require.simple);
 
 		jsh.shell.tools.tomcat.old.require(void(0), {
 			console: function(e) {

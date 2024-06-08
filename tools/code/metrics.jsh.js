@@ -11,7 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
+		$api.fp.world.now.tell(jsh.shell.tools.rhino.require.simple);
 
 		var existsFile = $api.fp.world.Sensor.mapping({
 			sensor: jsh.file.Location.file.exists.world()
