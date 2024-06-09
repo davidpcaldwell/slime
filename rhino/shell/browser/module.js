@@ -12,10 +12,6 @@
 	 * @param { slime.jrunscript.shell.browser.Exports } $exports
 	 */
 	function($context,$loader,$exports) {
-		$exports.inject = function(p) {
-			$context.api.httpd = p.httpd;
-		}
-
 		var code = {
 			/** @type { slime.jrunscript.shell.browser.internal.chrome.Script } */
 			chrome: $loader.script("chrome.js")

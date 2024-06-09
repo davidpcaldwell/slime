@@ -147,8 +147,6 @@ namespace slime.jrunscript.shell.browser {
 	}
 
 	export interface Exports {
-		inject: any
-
 		chrome: object.Chrome
 
 		Chrome: {

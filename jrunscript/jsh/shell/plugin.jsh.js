@@ -126,7 +126,7 @@
 				return Boolean(jsh.shell && jsh.httpd);
 			},
 			load: function() {
-				jsh.shell.browser.inject({ httpd: jsh.httpd });
+				jsh.shell.inject.httpd(jsh.httpd);
 			}
 		});
 
