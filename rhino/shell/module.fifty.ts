@@ -55,7 +55,7 @@ namespace slime.jrunscript.shell {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 
-			httpd: any
+			//httpd: any
 
 			js: slime.js.old.Exports
 
@@ -231,7 +231,6 @@ namespace slime.jrunscript.shell {
 						file: jsh.file,
 						js: jsh.js,
 						document: void(0),
-						httpd: void(0),
 						xml: void(0)
 					},
 					_properties: void(0),
@@ -1459,6 +1458,12 @@ namespace slime.jrunscript.shell {
 					}
 				}
 			 }) => string
+		}
+	}
+
+	export interface Exports {
+		inject: {
+			httpd: (module: any) => void
 		}
 	}
 
