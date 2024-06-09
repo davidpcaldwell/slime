@@ -12,7 +12,7 @@
 	 * @param { any } JavaAdapter
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.jsh.httpd.Dependencies & { httpd: slime.jsh.httpd.Exports } } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.old.Loader } $loader
 	 */
@@ -552,6 +552,8 @@
 						tomcat.start();
 						return tomcat;
 					};
+
+					jsh.shell.inject.httpd(jsh.httpd);
 
 					jsh.httpd.plugin = {
 						tools: void(0)

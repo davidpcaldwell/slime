@@ -31,8 +31,8 @@ namespace slime.servlet {
 		 */
 		js: any
 
-		java: slime.jrunscript.java.Exports
-		io: slime.jrunscript.io.Exports
+		java: Pick<slime.jrunscript.java.Exports,"log"|"getClass"|"Thread">
+		io: Pick<slime.jrunscript.io.Exports,"mime"|"old"|"Streams"|"Loader">
 		web: slime.web.Exports
 
 		$slime: slime.jrunscript.runtime.Exports
@@ -110,8 +110,8 @@ namespace slime.servlet {
 			 * @deprecated
 			 */
 			js: any
-			java: slime.jrunscript.java.Exports
-			io: slime.jrunscript.io.Exports
+			java: httpd["java"]
+			io: httpd["io"]
 			web: slime.web.Exports
 			loader: {
 				paths: (prefix: string) => string[]

@@ -183,7 +183,6 @@ namespace slime.jrunscript.tools.gcloud {
 						io: jsh.io,
 						file: jsh.file,
 						document: void(0),
-						httpd: void(0),
 						xml: void(0)
 					},
 					kotlin: void(0),

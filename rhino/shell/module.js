@@ -206,29 +206,6 @@
 		if ($exports.HOME.getSubdirectory("Downloads")) $exports.user.downloads = $exports.HOME.getSubdirectory("Downloads");
 		//	TODO	document that this is optional; that there are some environments where "working directory" makes little sense
 
-		Object.defineProperty(
-			$exports,
-			"browser",
-			{
-				get: $api.fp.impure.Input.memoized(function() {
-					/** @type { slime.jrunscript.shell.browser.Script } */
-					var script = $loader.script("browser/module.js");
-					return script({
-						os: $exports.os,
-						HOME: $exports.HOME,
-						TMPDIR: $exports.TMPDIR,
-						run: scripts.run_old.run,
-						environment: environment,
-						api: {
-							java: $context.api.java,
-							file: $context.api.file,
-							httpd: $context.api.httpd
-						}
-					});
-				})
-			}
-		);
-
 		$exports.system = {};
 		Object.defineProperty(
 			$exports.system,
@@ -665,12 +642,30 @@
 			Tell: $exports.Tell,
 			run: scripts.run_old.run,
 			PATH: $exports.PATH,
-			browser: $exports.browser,
 			Console: code.console({
 				library: {
 					file: $context.api.file
 				}
 			}),
+			browser: void(0),
+			inject: {
+				httpd: function(module) {
+					var script = $loader.script("browser/module.js");
+					var exports = script({
+						os: $exports.os,
+						HOME: $exports.HOME,
+						TMPDIR: $exports.TMPDIR,
+						run: scripts.run_old.run,
+						environment: environment,
+						api: {
+							java: $context.api.java,
+							file: $context.api.file,
+							httpd: module
+						}
+					});
+					x.browser = exports;
+				}
+			},
 			test: {
 				invocation: scripts.run_old.invocation
 			}

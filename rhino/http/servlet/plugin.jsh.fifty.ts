@@ -5,6 +5,12 @@
 //	END LICENSE
 
 namespace slime.jsh.httpd {
+	export type Dependencies = Pick<slime.jsh.Global,"loader"|"js"|"web"|"file"> & {
+		java: Pick<slime.jsh.Global["java"],"log"|"getClass"|"Thread">
+		io: Pick<slime.jsh.Global["io"],"mime"|"old"|"Streams"|"Loader">
+		shell: Pick<slime.jsh.Global["shell"],"HOME"|"TMPDIR"|"run"|"java"|"jsh"|"environment"|"echo"|"console"|"inject">
+	}
+
 	/**
 	 * The jsh Servlet Plugin allows a servlet container to be configured with SLIME servlets and embedded inside a `jsh` script, so
 	 * that the servlet container can serve HTTP requests. See the
