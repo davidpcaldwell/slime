@@ -31,7 +31,7 @@ namespace slime.servlet {
 		 */
 		js: any
 
-		java: Pick<slime.jrunscript.java.Exports,"log"|"getClass"|"Thread">
+		java: slime.jrunscript.java.Exports
 		io: Pick<slime.jrunscript.io.Exports,"mime"|"old"|"Streams"|"Loader">
 		web: slime.web.Exports
 
