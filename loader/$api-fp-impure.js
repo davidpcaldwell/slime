@@ -308,13 +308,11 @@
 						},
 						order: {
 							process: function(p) {
-								return function(o) {
-									return toProcess({
-										means: p.means,
-										order: o,
-										handlers: p.handlers
-									});
-								}
+								return toProcess({
+									means: p.means,
+									order: p.order(),
+									handlers: p.handlers
+								});
 							}
 						}
 					};
