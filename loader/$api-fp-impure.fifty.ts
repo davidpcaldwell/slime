@@ -734,6 +734,14 @@ namespace slime.$api.fp.world {
 				order: O
 				handlers?: slime.$api.event.Handlers<E>
 			}) => void
+
+			order: {
+				process: <O,E>(p: {
+					means: slime.$api.fp.world.Means<O,E>
+					order: slime.$api.fp.Thunk<O>
+					handlers?: slime.$api.event.Handlers<E>
+				}) => slime.$api.fp.impure.Process
+			}
 		}
 	}
 
