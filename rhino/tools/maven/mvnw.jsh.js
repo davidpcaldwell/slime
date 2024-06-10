@@ -49,7 +49,7 @@
 										installation: {
 											home: tmp
 										},
-										version: "3.9.6"
+										version: "3.9.7"
 									},
 									handlers: {
 										installed: function(e) {
