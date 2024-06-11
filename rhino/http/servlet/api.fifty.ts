@@ -32,7 +32,7 @@ namespace slime.servlet {
 		js: any
 
 		java: slime.jrunscript.java.Exports
-		io: Pick<slime.jrunscript.io.Exports,"mime"|"old"|"Streams"|"Loader">
+		io: slime.jrunscript.io.Exports
 		web: slime.web.Exports
 
 		$slime: slime.jrunscript.runtime.Exports
