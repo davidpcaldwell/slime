@@ -379,6 +379,12 @@
 							handlers: p.handlers
 						});
 					}
+				},
+				now: function(p) {
+					$context.events.handle({
+						implementation: p.action,
+						handlers: p.handlers
+					});
 				}
 			},
 			Ask: {
