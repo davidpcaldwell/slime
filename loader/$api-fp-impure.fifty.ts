@@ -952,6 +952,11 @@ namespace slime.$api.fp.world {
 				action: slime.$api.fp.world.Action<E>
 				handlers?: slime.$api.event.Handlers<E>
 			}) => slime.$api.fp.impure.Process
+
+			now: <E>(p: {
+				action: slime.$api.fp.world.Action<E>
+				handlers?: slime.$api.event.Handlers<E>
+			}) => void
 		}
 
 		Ask: {
@@ -983,13 +988,46 @@ namespace slime.$api.fp.world {
 
 				verify(buffer).length.is(0);
 
-				$api.fp.world.now.action(addNext, 2);
+				$api.fp.world.Means.now({
+					means: addNext,
+					order: 2
+				});
 				verify(buffer).length.is(1);
 				verify(buffer)[0].is(2);
 
-				$api.fp.world.now.action(addAsNumber, "3");
+				$api.fp.world.Means.now({
+					means: addAsNumber,
+					order: "3"
+				});
 				verify(buffer).length.is(2);
 				verify(buffer)[1].is(3);
+			}
+
+			fifty.tests.exports.world.Action.now = function() {
+				var buffer: number[] = [];
+
+				var addTwo: Action<{ length: number }> = function(events) {
+					buffer.push(2);
+					events.fire("length", buffer.length);
+				};
+
+				$api.fp.world.Action.now({
+					action: addTwo
+				});
+
+				var lengthNow: number;
+
+				$api.fp.world.Action.now({
+					action: addTwo,
+					handlers: {
+						length: function(e) {
+							lengthNow = e.detail;
+						}
+					}
+				});
+
+				verify(buffer).length.is(2);
+				verify(lengthNow).is(2);
 			}
 		}
 	//@ts-ignore
@@ -1005,6 +1043,10 @@ namespace slime.$api.fp.world {
 			action: <P,E>(action: world.Means<P,E>, argument?: P, handler?: slime.$api.event.Handlers<E>) => void
 
 			ask: <E,A>(ask: world.Question<E,A>, handler?: slime.$api.event.Handlers<E>) => A
+
+			/**
+			 * @deprecated Replaced by Action.now()
+			 */
 			tell: <E>(tell: world.Action<E>, handler?: slime.$api.event.Handlers<E>) => void
 		}
 
