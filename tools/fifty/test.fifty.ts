@@ -4,6 +4,15 @@
 //
 //	END LICENSE
 
+/**
+ * Contains constructs that support the Fifty test implementation.
+ *
+ * Note that general Fifty implementation documentation can be reached through the {@link slime.fifty.internal | `slime.fifty.internal`} namespace.
+ *
+ * Namespaces:
+ * * The {@link slime.fifty.test.internal.scope | `scope`} namespace contains supporting definitions for {@link slime.fifty.test.Kit}.
+ * * The {@link slime.fifty.test.internal.test | `test`} namespace contains definitions for `test.js`.
+ */
 namespace slime.fifty.test.internal {
 	export interface Scope {
 		success: boolean
@@ -14,6 +23,15 @@ namespace slime.fifty.test.internal {
 		start: (name: string) => void
 		test: slime.definition.verify.Context
 		end: (name: string, result: boolean) => void
+	}
+
+	/**
+	 * A destination to which test results and progress are sent.
+	 */
+	export interface Listener {
+		start: (scope: Scope, name: string) => void
+		test: (scope: Scope, message: string, result: boolean) => void
+		end: (scope: Scope, name: string, result: boolean) => void
 	}
 
 	export type run = slime.fifty.test.internal.test.Exports["run"]
