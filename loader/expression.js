@@ -11,10 +11,13 @@
 	 * @returns { slime.runtime.Exports }
 	 */
 	function(scope) {
-		var $engine = scope.$engine;
 		var $slime = scope.$slime;
 		var Packages = scope.Packages;
 
+		/**
+		 * A local wrapper for the scope-provided `$engine` value which fills in intermediate chaining properties and provides a
+		 * default script executor that uses `eval` which is lazily-loaded in a way that is legal when loading it in strict mode.
+		 */
 		var engine = (
 			/**
 			 *
@@ -71,13 +74,7 @@
 					MetaObject: ($engine && $engine.MetaObject) ? $engine.MetaObject : void(0)
 				}
 			}
-		)($engine);
-
-		engine.execute(
-			$slime.getRuntimeScript("polyfill.js"),
-			{},
-			null
-		);
+		)(scope.$engine);
 
 		var $platform = (
 			/**
@@ -161,6 +158,12 @@
 				return $exports;
 			}
 		)(engine);
+
+		engine.execute(
+			$slime.getRuntimeScript("polyfill.js"),
+			{},
+			null
+		);
 
 		/**
 		 *
