@@ -523,9 +523,6 @@ namespace slime {
 		 * in its implementation.
 		 */
 		export interface $platform {
-			/** @deprecated */
-			execute: any
-
 			/**
 			 * An object containing properties describing the platform's capabilities for objects.
 			 */
