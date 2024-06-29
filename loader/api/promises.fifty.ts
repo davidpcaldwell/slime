@@ -28,6 +28,9 @@ namespace slime.definition.test.promises {
 	 * An object that provides a `Promise` that can be controlled by calls to its `resolve` and `reject` methods, so that tests can
 	 * reliably and synchronously set it to a given state. On creation, its `Promise` is pending, until and unless the `resolve`
 	 * or `reject` methods are called.
+	 *
+	 * Note that this construct is also provided by the standard [`Promise.withResolvers`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers)
+	 * method, with which it appears to be exactly compatible.
 	 */
 	export interface Puppet<T> {
 		promise: Promise<T>
@@ -39,6 +42,12 @@ namespace slime.definition.test.promises {
 		Registry: (p?: { name: string }) => Registry
 		Promise: PromiseConstructor
 		console: slime.external.lib.dom.Console
+
+		/**
+		 * Provides a promise that can be resolved or rejected from outside the promise. Analogous to the
+		 * [`Promise.withResolvers`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers)
+		 * method.
+		 */
 		controlled: <T>(p?: { id: string }) => Puppet<T>
 	}
 

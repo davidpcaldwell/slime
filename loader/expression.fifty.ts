@@ -40,7 +40,7 @@ namespace slime {
 		}
 
 		/**
-		 * The `$engine` object can be provided in the scope by the embedding in order to provide additional capabilities the
+		 * An object of type `$engine` can be provided in the scope by the embedding in order to provide additional capabilities the
 		 * JavaScript engine may have.
 		 */
 		export interface $engine {
@@ -880,7 +880,7 @@ namespace slime {
 					const { verify } = fifty;
 					const URL = "https://coffeescript.org/v2/browser-compiler-legacy/coffeescript.js";
 
-					var ScriptLoadPromise = function(src) {
+					var ScriptElementLoadPromise = function(src: string): Promise<void> {
 						return new Promise(function(resolve, reject) {
 							var script = fifty.global.window.document.createElement("script");
 							script.src = src;
@@ -897,7 +897,7 @@ namespace slime {
 					fifty.run(function() {
 						var w = fifty.global.window;
 						verify(w).evaluate.property("CoffeeScript").is.type("undefined");
-						ScriptLoadPromise(URL).then(function() {
+						ScriptElementLoadPromise(URL).then(function() {
 							verify(w).evaluate.property("CoffeeScript").is.type("object");
 
 							var subject = test.fixture(function(scope) {
