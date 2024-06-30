@@ -152,9 +152,6 @@
 					//	MetaObject will not be defined
 				}
 
-				//	TODO	get rid of this, but right now tests don't pass without it
-				$exports.execute = engine.execute;
-
 				return $exports;
 			}
 		)(engine);

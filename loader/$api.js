@@ -559,7 +559,9 @@
 
 		//	TODO	switch implementation to use load()
 		$exports.threads = (function($context) {
-			var $exports = {};
+			var $exports = {
+				steps: void(0)
+			};
 			$engine.execute($slime.getRuntimeScript("threads.js"), { $context: $context, $exports: $exports }, null);
 			return $exports;
 		})($exports);

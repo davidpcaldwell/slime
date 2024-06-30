@@ -7,12 +7,13 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.runtime.$platform } $platform
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.fifty.test.internal.test.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.fifty.test.internal.test.Exports> } $export
 	 */
-	function($api,$context,$loader,$export) {
+	function($platform,$api,$context,$loader,$export) {
 		//	This file has four callers:
 		//	*	fifty / jsh: test.jsh.js
 		//	*	fifty / browser: test-browser.js
@@ -390,6 +391,7 @@
 			 */
 			var fifty = {
 				global: {
+					$platform: $platform,
 					$api: $api,
 					jsh: ($context.jsh) ? $context.jsh.global : void(0),
 					window: ($context.window) ? $context.window.global : void(0)
@@ -627,4 +629,4 @@
 		})
 	}
 //@ts-ignore
-)($api,$context,$loader,$export);
+)($platform,$api,$context,$loader,$export);
