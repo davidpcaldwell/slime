@@ -378,15 +378,6 @@ namespace slime {
 		)($platform,fifty);
 	}
 
-	export namespace $api {
-		export interface Global {
-			compiler: {
-				isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
-				getTranspiler: (p: { accept: slime.$api.fp.Predicate<slime.runtime.loader.Code>, compile: slime.$api.fp.Mapping<string,string> }) => slime.runtime.loader.Compiler
-			}
-		}
-	}
-
 	export namespace runtime {
 		export interface Exports {
 			compiler: {
@@ -418,7 +409,8 @@ namespace slime {
 			}
 
 			/**
-			 * An object that is capable of taking code of some set of MIME types and translating it into JavaScript.
+			 * An object that is capable of taking selected source files (often determined by MIME type) and translating them into
+			 * JavaScript.
 			 */
 			export type Compiler = slime.$api.fp.Partial<Code,Script>;
 		}

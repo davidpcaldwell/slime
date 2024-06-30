@@ -119,7 +119,7 @@
 					server: loader.script("loader/browser/test/server.js")
 				};
 
-				var start = code.server();
+				var start = code.server().create;
 
 				var resultsPath = (p.options.interactive) ? void(0) : (function() {
 					var tokens = paths.toHtmlRunner.relative.split("/");

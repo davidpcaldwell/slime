@@ -10,11 +10,20 @@ namespace slime.runtime.browser.test.server {
 	 * @param { slime.jrunscript.file.Directory } serve The base directory to serve, which is the common root for SLIME and the test file.
 	 * @param { string } resultsPath A path, relative to the served directory, that will both accept the result via POST and return it via GET.
 	 */
-	export type Export = (
-		resources: slime.jrunscript.file.Directory,
-		serve: slime.jrunscript.file.Directory,
-		resultsPath: string
-	) => jsh.httpd.Tomcat
+	export interface Exports {
+		create: (
+			resources: slime.jrunscript.file.Directory,
+			serve: slime.jrunscript.file.Directory,
+			resultsPath: string
+		) => jsh.httpd.Tomcat
 
-	export type Script = slime.loader.Script<void,Export>
+		start: (p: {
+			tomcat: slime.jsh.httpd.Tomcat
+			resources: slime.jrunscript.file.Directory
+			serve: slime.jrunscript.file.Directory
+			resultsPath: string
+		}) => void
+	}
+
+	export type Script = slime.loader.Script<void,Exports>
 }

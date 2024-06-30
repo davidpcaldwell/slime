@@ -385,6 +385,8 @@
 				$api: $api
 			},
 			{
+				//	Set by jrunscript expression.js
+				//	TODO	May not be necessary; see inline comment in runtime expression.fifty.ts
 				typescript: void(0)
 			}
 		);

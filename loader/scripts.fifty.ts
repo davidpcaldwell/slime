@@ -4,6 +4,19 @@
 //
 //	END LICENSE
 
+namespace slime.$api {
+	export interface Global {
+		compiler: {
+			isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
+
+			/**
+			 * Convenience method that uses a code predicate and compiler implementation to create a `Compiler`.
+			 */
+			getTranspiler: (p: { accept: slime.$api.fp.Predicate<slime.runtime.loader.Code>, compile: slime.$api.fp.Mapping<string,string> }) => slime.runtime.loader.Compiler
+		}
+	}
+}
+
 namespace slime.runtime.internal.scripts {
 	export interface Scope {
 		$platform: slime.runtime.$platform
