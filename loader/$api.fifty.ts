@@ -960,14 +960,193 @@ namespace slime.$api {
 	}
 
 	export interface Global {
-		threads: any
+		threads: {
+			steps: {
+				run: (a: { steps: any[] }, something?: any) => {
+					unready: any[]
+				}
+			}
+		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const api = fifty.global.$api;
+
+			fifty.tests.jsapi = fifty.test.Parent();
+
+			fifty.tests.jsapi._1 = function() {
+				var emitter = api.Events();
+
+				var called = false;
+
+				emitter.listeners.add("aType", function() {
+					var self: event.Emitter<any> = this;
+					verify(self).is(emitter);
+					called = true;
+				});
+
+				emitter.fire("aType");
+				verify(called).is(true);
+			};
+
+			fifty.tests.jsapi._2 = function() {
+				var parent = {};
+				var child = {};
+				var emitters = {
+					parent: api.Events({ source: parent }),
+					child: void(0)
+				};
+				emitters.child = api.Events({ source: child, parent: emitters.parent });
+
+				var called = {
+					parent: false,
+					child: false
+				};
+
+				emitters.parent.listeners.add("aType", function(e) {
+					//@ts-ignore
+					verify(this).is(parent);
+					//@ts-ignore
+					verify(e).source.is(child);
+					called.parent = true;
+				});
+
+				emitters.child.listeners.add("aType", function(e) {
+					//@ts-ignore
+					verify(this).is(child);
+					//@ts-ignore
+					verify(e).source.is(child);
+					called.child = true;
+				});
+
+				emitters.child.fire("aType");
+				verify(called).parent.is(true);
+				verify(called).child.is(true);
+			};
+
+			fifty.tests.jsapi._3 = function() {
+				var source = new function() {
+					var events = api.Events({ source: this });
+
+					this.listeners = {
+						add: function(type,handler) {
+							events.listeners.add(type,handler);
+						},
+						remove: function(type,handler) {
+							events.listeners.remove(type,handler);
+						}
+					}
+
+					this.doIt = function(p) {
+						events.fire("done", p);
+					};
+				};
+
+				var received = [];
+				var counter = function(e) {
+					received.push(e);
+				};
+
+				verify(received).length.is(0);
+				source.doIt();
+				verify(received).length.is(0);
+				source.listeners.add("other", counter);
+				verify(received).length.is(0);
+				source.doIt();
+				verify(received).length.is(0);
+				source.listeners.add("done", counter);
+				source.doIt();
+				verify(received).length.is(1);
+				verify(received)[0].source.is(source);
+				source.listeners.remove("done", counter);
+				source.doIt();
+				verify(received).length.is(1);
+			}
+
+			fifty.tests.jsapi._4 = function() {
+				verify(api,"$api").threads.steps.is.not.equalTo(null);
+				verify(api,"$api").threads.steps.evaluate.property("run").is.not.equalTo(null);
+
+				var $steps = verify(api.threads.steps,"$api.threads.steps");
+				var $run = $steps.evaluate(function() { return this.run({ steps: [] }) });
+				$run.threw.nothing();
+
+				var A = function(shared) {
+					this.ready = function() {
+						return true;
+					}
+
+					this.run = function() {
+						shared.a = true;
+					}
+				};
+
+				var B = function(shared) {
+					this.ready = function() {
+						return shared.a;
+					};
+
+					this.run = function() {
+						shared.b = true;
+					}
+				}
+
+				var Shared = function() {
+					this.a = false;
+					this.b = false;
+				};
+
+				var Listener = function() {
+					var unready = [];
+
+					this.on = {
+						unready: function(e) {
+							unready.push(e.detail);
+						}
+					}
+
+					this.unready = unready;
+				}
+
+				var s1 = new Shared();
+				$steps.run({
+					steps: [ new A(s1) ]
+				});
+				verify(s1).a.is(true);
+
+				var s2 = new Shared();
+				$steps.run({
+					steps: [ new B(s2), new A(s2) ]
+				});
+				verify(s2).a.is(true);
+				verify(s2).b.is(true);
+
+				var s3 = new Shared();
+				var b3 = new B(s3);
+				var l3: { on: any, unready: any[] } = new Listener();
+				verify(api).threads.steps.run({
+					steps: [ b3 ]
+				}, l3.on).unready.length.is(1);
+				verify(s3).a.is(false);
+				verify(s3).b.is(false);
+				verify(l3).unready.length.is(1);
+				verify(l3).unready[0].is(b3);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit,
 		) {
 			fifty.tests.suite = function() {
+				fifty.load("$api-flag.fifty.ts");
+				fifty.run(fifty.tests.jsapi);
 				fifty.run(fifty.tests.exports);
 			}
 

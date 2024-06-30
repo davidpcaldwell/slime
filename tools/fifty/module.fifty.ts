@@ -173,6 +173,7 @@ namespace slime.fifty {
 			load: load
 
 			global: {
+				$platform: slime.runtime.$platform
 				$api: slime.$api.Global
 				jsh?: slime.jsh.Global
 				window?: Window
