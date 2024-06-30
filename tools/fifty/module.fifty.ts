@@ -222,17 +222,6 @@ namespace slime.fifty {
 			}
 		//@ts-ignore
 		)($fifty)
-
-		export namespace internal {
-			/**
-			 * A destination to which test results and progress are sent.
-			 */
-			export interface Listener {
-				start: (scope: Scope, name: string) => void
-				test: (scope: Scope, message: string, result: boolean) => void
-				end: (scope: Scope, name: string, result: boolean) => void
-			}
-		}
 	}
 
 	/**
