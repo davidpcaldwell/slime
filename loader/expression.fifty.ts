@@ -382,39 +382,17 @@ namespace slime {
 		export interface Exports {
 			compiler: {
 				update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler>) => void
+
+				/**
+				 *
+				 * @returns The compiler currently in use.
+				 */
+				get: () => slime.runtime.loader.Compiler
 			}
 		}
 	}
 
 	export namespace runtime {
-
-		export namespace loader {
-			/**
-			 * An object representing code, which has a name (for tooling), and which can provide a MIME type,
-			 * and a string representing code. The most straightforward instances of this type are JavaScript scripts, but instances of
-			 * this type can also be code written in other languages that can be transpiled into JavaScript (notably, TypeScript).
-			 */
-			export interface Code {
-				name: string
-				type: () => slime.mime.Type
-				read: () => string
-			}
-
-			/**
-			 * A JavaScript script, with a name (used by tooling) and a property containing JavaScript code.
-			 */
-			export interface Script {
-				name: string
-				js: string
-			}
-
-			/**
-			 * An object that is capable of taking selected source files (often determined by MIME type) and translating them into
-			 * JavaScript.
-			 */
-			export type Compiler = slime.$api.fp.Partial<Code,Script>;
-		}
-
 		export interface Exports {
 			//	TODO	scope and target parameter documentation refers to slime.Loader, but that API does not actually define
 			//			them in Fifty (probably does in JSAPI).
@@ -642,11 +620,6 @@ namespace slime {
 			 * @deprecated Replaced by `$api.mime`.
 			 */
 			mime: slime.$api.mime.Export
-
-			//	Currently this is exposed for some reason, but it seems like it should not be necessary. It is currently used in
-			//	loader/browser/test/plugin.jsh.js to implement jsh.typescript; need to figure out how/why that's used, probably for
-			//	Fifty browser testing, and probably can instead provide a compiler.compile method on $api to take care of this
-			typescript: slime.runtime.$slime.TypeScript
 		}
 
 		(

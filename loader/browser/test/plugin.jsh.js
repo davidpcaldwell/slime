@@ -14,10 +14,28 @@
 	function(jsh,$slime,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean($slime.typescript);
+				return true;
 			},
 			load: function() {
-				jsh.typescript = $slime.typescript;
+				jsh.typescript = {
+					compile: function(code) {
+						var maybe = $slime.compiler.get()({
+							name: "<jsh.typescript code>",
+							type: function() {
+								return {
+									media: "application",
+									subtype: "x.typescript",
+									parameters: {}
+								}
+							},
+							read: function() {
+								return code;
+							}
+						});
+						if (!maybe.present) throw new Error();
+						return maybe.value.js;
+					}
+				};
 			}
 		})
 	}

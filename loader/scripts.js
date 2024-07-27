@@ -186,6 +186,9 @@
 				},
 				update: function(transform) {
 					compiler = transform(compiler);
+				},
+				get: function() {
+					return compiler;
 				}
 			},
 			methods: {

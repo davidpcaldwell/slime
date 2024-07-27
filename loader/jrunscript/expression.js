@@ -177,11 +177,6 @@
 							})
 						])
 					});
-					rv.typescript = {
-						compile: function(code) {
-							return String(_typescript.compile(code));
-						}
-					};
 				}
 
 				return rv;
@@ -1138,7 +1133,6 @@
 					namespace: slime.namespace,
 					$platform: slime.$platform,
 					$api: slime.$api,
-					typescript: slime.typescript,
 
 					Loader: $exports_Loader,
 					Resource: $exports_Resource,
