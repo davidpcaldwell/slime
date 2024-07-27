@@ -4,9 +4,44 @@
 //
 //	END LICENSE
 
+namespace slime.runtime.loader {
+	/**
+	 * An object representing code, which has a name (for tooling), and which can provide a MIME type,
+	 * and a string representing code. The most straightforward instances of this type are JavaScript scripts, but instances of
+	 * this type can also be code written in other languages that can be transpiled into JavaScript (notably, TypeScript).
+	 */
+	export interface Code {
+		name: string
+		type: () => slime.mime.Type
+		read: () => string
+	}
+
+	/**
+	 * A JavaScript script, with a name (used by tooling) and a property containing JavaScript code.
+	 */
+	export interface Script {
+		name: string
+		js: string
+	}
+
+	/**
+	 * An object that is capable of taking selected source files (often determined by MIME type) and translating them into
+	 * JavaScript.
+	 */
+	export type Compiler = slime.$api.fp.Partial<Code,Script>;
+}
+
 namespace slime.$api {
 	export interface Global {
+		/**
+		 * Provides helper methods for implementing new {@link slime.runtime.loader.Compiler | Compiler}s.
+		 */
 		compiler: {
+			/**
+			 * Given a string specifying a simple MIME type (e.g., `text/plain`, with no parameters), returns a
+			 * {@link slime.$api.fp.Predicate} specifying whether a given {@link slime.runtime.loader.Code | Code} is of that
+			 * type.
+			 */
 			isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
 
 			/**
@@ -27,11 +62,18 @@ namespace slime.runtime.internal.scripts {
 	export interface Exports {
 		compiler: {
 			library: slime.$api.Global["compiler"]
+
 			update: slime.runtime.Exports["compiler"]["update"]
+			get: slime.runtime.Exports["compiler"]["get"]
 		}
 
 		methods: {
+			/**
+			 * Compiles the given `code` script, executes it in a scope containing the values provided by `scope`, and using the
+			 * `this` target with which the `run` function was invoked.
+			 */
 			run: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
+
 			old: {
 				value: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => any
 				file: (code: slime.runtime.loader.Code, context: { [name: string]: any }) => { [x: string]: any }

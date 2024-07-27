@@ -351,7 +351,8 @@
 					loader: loaders.api
 				},
 				compiler: {
-					update: scripts.compiler.update
+					update: scripts.compiler.update,
+					get: scripts.compiler.get
 				},
 				loader: Loader.api,
 				namespace: function(string) {
@@ -383,11 +384,6 @@
 				//	TODO	also used by client.html unit tests
 				//	used to allow implementations to set warnings for deprecate and experimental
 				$api: $api
-			},
-			{
-				//	Set by jrunscript expression.js
-				//	TODO	May not be necessary; see inline comment in runtime expression.fifty.ts
-				typescript: void(0)
 			}
 		);
 		return rv;
