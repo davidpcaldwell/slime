@@ -16,7 +16,7 @@
 
 		/**
 		 * A local wrapper for the scope-provided `$engine` value which fills in intermediate chaining properties and provides a
-		 * default script executor that uses `eval` which is lazily-loaded in a way that is legal when loading it in strict mode.
+		 * default script executor.
 		 */
 		var engine = (
 			/**
