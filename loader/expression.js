@@ -29,48 +29,20 @@
 					Error: {
 						decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
 					},
-					//@ts-ignore
-					execute: (function() {
-						if ($engine && $engine.execute) return $engine.execute;
-						//	This is the function we want, but Node.js objects to the with() statement, even if we don't execute it
-						//	(because we replace it with the compliant Node.js version), in strict mode. So we need to fall back to a
-						//	dynamically created version, which follows the comment block.
-						//
-						// return (
-						// 	function(/*script{name,js},scope,target*/) {
-						// 		return (function() {
-						// 			//@ts-ignore
-						// 			with( arguments[1] ) {
-						// 				return eval(arguments[0]);
-						// 			}
-						// 		}).call(
-						// 			arguments[2],
-						// 			arguments[0].js, arguments[1]
-						// 		);
-						// 	}
-						// );
-						//
-						//	TODO	could we simply replace this version with the Node.js version everywhere?
-						return new Function(
-							"script",
-							"scope",
-							"target",
-							[
-								"return(",
-								"function $engine_execute(/*script{name,js},scope,target*/) {",
-								"\treturn (function() {",
-								"\t\twith( arguments[1] ) {",
-								"\t\t\treturn eval(arguments[0]);",
-								"\t\t}",
-								"\t}).call(",
-								"\t\targuments[2],",
-								"\t\targuments[0].js, arguments[1]",
-								"\t);",
-								"}",
-								").apply(null,arguments)"
-							].join("\n")
-						)
-					})(),
+					execute: ($engine && $engine.execute)
+						? $engine.execute
+						: function(script,scope,target) {
+							var scoped = Object.keys(scope).map(function(key) {
+								return {
+									name: key,
+									value: scope[key]
+								};
+							});
+							var args = scoped.map(function(variable) { return variable.name; }).concat([ script.js ]);
+							var f = Function.apply(null, args);
+							return f.apply(target, scoped.map(function(variable) { return variable.value; }));
+						}
+					,
 					MetaObject: ($engine && $engine.MetaObject) ? $engine.MetaObject : void(0)
 				}
 			}
