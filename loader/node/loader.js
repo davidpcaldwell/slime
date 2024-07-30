@@ -26,23 +26,6 @@
 			}
 		};
 
-		/** @type { slime.runtime.$engine } */
-		var $engine = {
-			Object: void(0),
-			MetaObject: void(0),
-			execute: function(script,scope,target) {
-				var scoped = Object.keys(scope).map(function(key) {
-					return {
-						name: key,
-						value: scope[key]
-					};
-				});
-				var args = scoped.map(function(variable) { return variable.name; }).concat([ script.js ]);
-				var f = Function.apply(null, args);
-				return f.apply(target, scoped.map(function(variable) { return variable.value; }));
-			}
-		};
-
 		/** @type { slime.runtime.Exports } */
 		var runtime = (function(scope) {
 			var code = fs.readFileSync(base + "/" + "loader/expression.js").toString();
@@ -53,7 +36,6 @@
 			}
 		})({
 			$slime: $slime,
-			$engine: $engine,
 			Packages: void(0)
 		});
 
