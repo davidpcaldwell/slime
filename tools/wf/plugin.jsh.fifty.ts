@@ -17,6 +17,14 @@ namespace slime.jsh {
  * SLIME provides the `tools/wf` bash script which can be used by projects to execute `wf` commands. The script relies
  * on the project directory containing a `wf.js` file, which is used to define the implementation of the commands.
  *
+ * ## Initializing a `wf` project
+ *
+ * The easiest way to initialize a project with a simple `wf` configuration is to run the `tools/wf/install` script, either
+ * specifying the project root using its `--project` argument, or by running the script from the project's working directory.
+ * This will set up some simple defaults.
+ *
+ * ## Configuring a `wf` project
+ *
  * The `tools/wf` script expects the project to define the `PROJECT` environment variable to point to the root of the project.
  * Otherwise, it will try to use the working directory as the project root.
  *
