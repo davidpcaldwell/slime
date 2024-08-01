@@ -11,14 +11,11 @@
 	 * @returns { slime.runtime.Exports }
 	 */
 	function(scope) {
-		var $slime = scope.$slime;
-		var Packages = scope.Packages;
-
 		/**
 		 * A local wrapper for the scope-provided `$engine` value which fills in intermediate chaining properties and provides a
 		 * default script executor.
 		 */
-		var engine = (
+		var $engine = (
 			/**
 			 *
 			 * @param { slime.runtime.$engine } $engine
@@ -47,6 +44,12 @@
 				}
 			}
 		)(scope.$engine);
+
+		$engine.execute(
+			scope.$slime.getRuntimeScript("polyfill.js"),
+			{},
+			null
+		);
 
 		var $platform = (
 			/**
@@ -79,8 +82,8 @@
 					function() {
 						var getJavaClass = function(name) {
 							try {
-								if (typeof(Packages) == "undefined") return null;
-								var rv = Packages[name];
+								if (typeof(scope.Packages) == "undefined") return null;
+								var rv = scope.Packages[name];
 								if (typeof(rv) == "function") {
 									//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
 									//	following format for their String values
@@ -126,13 +129,7 @@
 
 				return $exports;
 			}
-		)(engine);
-
-		engine.execute(
-			$slime.getRuntimeScript("polyfill.js"),
-			{},
-			null
-		);
+		)($engine);
 
 		/**
 		 *
@@ -144,7 +141,7 @@
 			/** @type { any } */
 			var exported;
 
-			engine.execute(
+			$engine.execute(
 				code,
 				Object.assign(scope, {
 					$export: function(value) {
@@ -160,11 +157,11 @@
 		/**
 		 *
 		 * @param { string } path
-		 * @param { { [x: string]: any } } scope
+		 * @param { { [x: string]: any } } variables
 		 * @returns
 		 */
-		var load = function(path,scope) {
-			return execute($slime.getRuntimeScript(path), scope);
+		var load = function(path,variables) {
+			return execute(scope.$slime.getRuntimeScript(path), variables);
 		};
 
 		/**
@@ -190,11 +187,9 @@
 		var $api = load(
 			"$api.js",
 			{
-				$engine: engine,
+				$engine: $engine,
 				$slime: {
-					getRuntimeScript: function(path) {
-						return $slime.getRuntimeScript(path);
-					}
+					getRuntimeScript: scope.$slime.getRuntimeScript
 				}
 			}
 		);
@@ -279,7 +274,7 @@
 			{
 				$api: $api,
 				$platform: $platform,
-				$engine: engine
+				$engine: $engine
 			}
 		);
 
