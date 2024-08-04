@@ -362,13 +362,43 @@
 					}
 				}
 				return rv;
-			}, {
+			},
+			/** @type { slime.$api.exports.Object } */
+			({
 				compose: void(0),
 				properties: void(0),
 				property: void(0),
 				optional: void(0),
-				values: void(0)
-			}
+				values: void(0),
+				/** @type { slime.$api.exports.Object["defineProperty"] } */
+				defineProperty: function(p) {
+					return function(o) {
+						var r = Object.assign(o, Object.fromEntries([ [p.name, void(0)] ]));
+						Object.defineProperty(
+							r,
+							p.name,
+							p.descriptor
+						);
+						return r;
+					}
+				},
+				maybeDefineProperty: function(p) {
+					return function(o) {
+						//@ts-ignore
+						var m = p.descriptor(o);
+						var r = Object.assign(o);
+						if (m.present) {
+							var r = Object.assign(o, Object.fromEntries([ [p.name, void(0)] ]));
+							Object.defineProperty(
+								r,
+								p.name,
+								m.value
+							);
+						}
+						return r;
+					}
+				}
+			})
 		);
 		$exports.Object.compose = function() {
 			var args = [{}];

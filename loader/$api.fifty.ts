@@ -633,6 +633,97 @@ namespace slime.$api {
 				map: <O,T,R>(f: (t: T) => R) => (o: { [x in keyof O]: T } ) => { [x in keyof O]: R }
 			}
 		}
+
+		export interface PropertyDescriptor<T> {
+			configurable?: boolean;
+			enumerable?: boolean;
+			value?: T;
+			writable?: boolean;
+			get?(): T;
+			set?(v: T): void;
+		}
+
+		export interface Object {
+			defineProperty: <N extends string,V>(p: {
+				name: N
+				descriptor: PropertyDescriptor<V>
+			}) => <T extends object>(t: T) => T & { [n in N]: V }
+
+			maybeDefineProperty: <T extends object,N extends string,V>(p: {
+				name: N
+				descriptor: slime.$api.fp.Partial<T,PropertyDescriptor<V>>
+			}) => (t: T) => T & { [n in N]?: V }
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				type A = { a: number };
+
+				var a: A = { a: 1 };
+
+				fifty.tests.exports.Object.defineProperty = function() {
+					var bb = $api.fp.now(
+						a,
+						$api.Object.defineProperty({
+							name: "b",
+							descriptor: {
+								value: 2,
+								enumerable: true
+							}
+						})
+					);
+
+					var bbb = $api.Object.defineProperty({
+						name: "b",
+						descriptor: {
+							value: 2,
+							enumerable: true
+						}
+					})({ a: 2 });
+
+					verify(bb).b.is(2);
+					verify(bbb).b.is(2);
+				}
+
+				fifty.tests.exports.Object.maybeDefineProperty = function() {
+					var applies = function(it: A) {
+						return it.a % 2 == 0;
+					};
+
+					var withMaybeProperty = $api.Object.maybeDefineProperty({
+						name: "c",
+						descriptor: function(a: A) {
+							return applies(a) ? $api.fp.Maybe.from.some({ value: true }) : $api.fp.Maybe.from.nothing();
+						}
+					});
+
+					var hasOwnProperty: (name: string) => (o: object) => boolean = function(name) {
+						return function(o) {
+							return o.hasOwnProperty(name);
+						}
+					};
+
+					var yes = $api.fp.now(
+						a,
+						withMaybeProperty
+					);
+
+					var no = $api.fp.now(
+						{ a: 2 },
+						withMaybeProperty
+					);
+
+					verify(yes).evaluate(hasOwnProperty("c")).is(false);
+					verify(no).evaluate(hasOwnProperty("c")).is(true);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Global {

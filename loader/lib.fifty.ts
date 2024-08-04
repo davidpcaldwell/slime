@@ -25,6 +25,8 @@ namespace slime.external.lib.rename {
 namespace slime.external.lib.rename.es5 {
 	export type _Function = Function
 	export type _Date = Date
+	export type _ObjectConstructor = ObjectConstructor
+	export type _Object = Object
 }
 
 namespace slime.external.lib.rename.dom {
@@ -38,6 +40,8 @@ namespace slime.external.lib.rename.typescript {
 namespace slime.external.lib.es5 {
 	export type Function = slime.external.lib.rename.es5._Function
 	export type Date = slime.external.lib.rename.es5._Date
+	export type Object = slime.external.lib.rename.es5._Object
+	export type ObjectConstructor = slime.external.lib.rename.es5._ObjectConstructor
 }
 
 namespace slime.external.lib.dom {

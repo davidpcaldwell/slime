@@ -534,7 +534,7 @@ namespace slime {
 			) {
 				const { verify } = fifty;
 
-				fifty.tests.$platform = function() {
+				fifty.tests.runtime.exports.$platform = function() {
 					var o: { x: number } = { x: void(0) };
 					o.x = 3;
 					verify(o).x.is(3);
@@ -557,6 +557,9 @@ namespace slime {
 						const message = "setReadOnly not implemented";
 						verify(message).is(message);
 					}
+
+					if (fifty.global.jsh) verify($platform).evaluate.property("java").is.type("object");
+					if (fifty.global.window) verify($platform).evaluate.property("java").is.type("undefined");
 				}
 			}
 		//@ts-ignore
@@ -607,9 +610,11 @@ namespace slime {
 			$platform: $platform
 
 			/**
+			 * @deprecated Can be replaced by `$platform.java`.
+			 *
 			 * The same object as `$platform.java`.
 			 */
-			java?: any
+			java?: $platform["java"]
 
 			/**
 			 * An additional way for embedding environments to access the {@link slime.$api.Global | $api} object.
