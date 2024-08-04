@@ -294,7 +294,7 @@
 		});
 
 		/** @type { slime.runtime.Exports } */
-		var rv = $api.Object.compose(
+		var rv = $api.fp.now(
 			{
 				mime: {
 					Type: mime.Type
@@ -344,13 +344,21 @@
 				//	TODO	also used by client.html unit tests
 				$platform: $platform,
 			},
-			($platform.java) ? { java: $platform.java } : {},
-			{
-				//	TODO	currently used to set deprecation warning in jsh.js
-				//	TODO	currently used by jsapi in jsh/unit via jsh.js
-				//	TODO	also used by client.html unit tests
-				//	used to allow implementations to set warnings for deprecate and experimental
-				$api: $api
+			$api.Object.maybeDefineProperty({
+				name: "java",
+				descriptor: $api.fp.Partial.from.loose(function(it) {
+					return ($platform.java) ? $platform.java : void(0);
+				})
+			}),
+			function(it) {
+				return $api.Object.compose(
+					it,
+					//	TODO	currently used to set deprecation warning in jsh.js
+					//	TODO	currently used by jsapi in jsh/unit via jsh.js
+					//	TODO	also used by client.html unit tests
+					//	used to allow implementations to set warnings for deprecate and experimental
+					{ $api: $api }
+				)
 			}
 		);
 		return rv;
