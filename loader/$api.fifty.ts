@@ -672,7 +672,8 @@ namespace slime.$api {
 						$api.Object.defineProperty({
 							name: "b",
 							descriptor: {
-								value: 2
+								value: 2,
+								enumerable: true
 							}
 						})
 					);
@@ -680,9 +681,10 @@ namespace slime.$api {
 					var bbb = $api.Object.defineProperty({
 						name: "b",
 						descriptor: {
-							value: 2
+							value: 2,
+							enumerable: true
 						}
-					})(a);
+					})({ a: 2 });
 
 					verify(bb).b.is(2);
 					verify(bbb).b.is(2);
