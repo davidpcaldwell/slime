@@ -67,6 +67,17 @@ namespace slime {
 			MetaObject: any
 		}
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.runtime = {
+					exports: fifty.test.Parent()
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+
 		/**
 		 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
 		 * in its implementation.
@@ -245,17 +256,6 @@ namespace slime {
 	 * [Older documentation](src/loader/api.html)
 	 */
 	export namespace runtime {
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				fifty.tests.runtime = {
-					exports: fifty.test.Parent()
-				};
-			}
-		//@ts-ignore
-		)(fifty);
-
 		export namespace test {
 			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.Kit) {
 				var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
