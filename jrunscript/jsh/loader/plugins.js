@@ -10,7 +10,7 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.jsh.Global } jsh
-	 * @param { slime.loader.Export<slime.jsh.loader.internal.plugins.Export> } $export
+	 * @param { slime.loader.Export<slime.jsh.internal.loader.plugins.Export> } $export
 	 */
 	function(Packages,$slime,jsh,$export) {
 		//	Bootstrap some Java logging; we end up loading a plugin that does more of this in the standard jsh implementation but
@@ -38,7 +38,7 @@
 		 * implementations with 'declaration' properties representing the objects provided by the implementor and 'toString'
 		 * methods supplied by the caller of this function.
 		 *
-		 * @type { slime.jsh.loader.internal.plugins.register }
+		 * @type { slime.jsh.internal.loader.plugins.register }
 		 */
 		var register = function register(p) {
 			if (typeof(p.scope.jsh) == "undefined") throw new Error("jsh undefined");
@@ -117,7 +117,7 @@
 		 * Given an array of plugin objects returned by load(), run all of those that are ready until all have been run or are not
 		 * ready.
 		 *
-		 * @param { slime.jsh.loader.internal.plugins.Plugin[] } plugins
+		 * @param { slime.jsh.internal.loader.plugins.Plugin[] } plugins
 		 */
 		var run = function(plugins) {
 			var stop = false;
@@ -152,7 +152,7 @@
 		/**
 		 *
 		 * @param { slime.old.Loader } loader
-		 * @returns { slime.jsh.loader.internal.plugins.Source[] }
+		 * @returns { slime.jsh.internal.loader.plugins.Source[] }
 		 */
 		var scan = function(loader) {
 			/** @type { ReturnType<scan> } */
@@ -181,42 +181,42 @@
 			return rv;
 		}
 
-		/** @type { (plugins: slime.jsh.loader.internal.plugins.Plugins) => plugins is slime.jsh.loader.internal.plugins.ZipFilePlugins } */
+		/** @type { (plugins: slime.jsh.internal.loader.plugins.Plugins) => plugins is slime.jsh.internal.loader.plugins.ZipFilePlugins } */
 		var isZipFilePlugins = function(plugins) {
 			return Boolean(plugins["zip"])
 		};
 
-		/** @type { (plugins: slime.jsh.loader.internal.plugins.Plugins) => plugins is slime.jsh.loader.internal.plugins.JavaFilePlugins } */
+		/** @type { (plugins: slime.jsh.internal.loader.plugins.Plugins) => plugins is slime.jsh.internal.loader.plugins.JavaFilePlugins } */
 		var isJavaFilePlugins = function(plugins) {
 			return Boolean(plugins["_file"]);
 		};
 
-		/** @type { (plugins: slime.jsh.loader.internal.plugins.Plugins) => plugins is slime.jsh.loader.internal.plugins.SynchronousLoaderPlugins } */
+		/** @type { (plugins: slime.jsh.internal.loader.plugins.Plugins) => plugins is slime.jsh.internal.loader.plugins.SynchronousLoaderPlugins } */
 		var isSynchronousLoaderPlugins = function(plugins) {
 			return Boolean(plugins["synchronous"]);
 		};
 
-		/** @type { (plugins: slime.jsh.loader.internal.plugins.Plugins) => plugins is slime.jsh.loader.internal.plugins.OldLoaderPlugins } */
+		/** @type { (plugins: slime.jsh.internal.loader.plugins.Plugins) => plugins is slime.jsh.internal.loader.plugins.OldLoaderPlugins } */
 		var isOldLoaderPlugins = function(plugins) {
 			return Boolean(plugins["loader"]);
 		};
 
-		/** @type { (source: slime.jsh.loader.internal.plugins.Source) => source is slime.jsh.loader.internal.plugins.LoaderSource } */
+		/** @type { (source: slime.jsh.internal.loader.plugins.Source) => source is slime.jsh.internal.loader.plugins.LoaderSource } */
 		var isLoaderSource = function(source) {
 			return Boolean(source["loader"]);
 		}
 
-		/** @type { (source: slime.jsh.loader.internal.plugins.Source) => source is slime.jsh.loader.internal.plugins.SlimeSource } */
+		/** @type { (source: slime.jsh.internal.loader.plugins.Source) => source is slime.jsh.internal.loader.plugins.SlimeSource } */
 		var isSlimeSource = function(source) {
 			return Boolean(source["slime"]);
 		}
 
-		/** @type { (source: slime.jsh.loader.internal.plugins.Source) => source is slime.jsh.loader.internal.plugins.JarSource } */
+		/** @type { (source: slime.jsh.internal.loader.plugins.Source) => source is slime.jsh.internal.loader.plugins.JarSource } */
 		var isJarSource = function(source) {
 			return Boolean(source["jar"]);
 		}
 
-		/** @type { slime.$api.fp.Mapping<slime.jsh.loader.internal.plugins.Source,slime.jsh.loader.internal.plugins.SourceContent> } */
+		/** @type { slime.$api.fp.Mapping<slime.jsh.internal.loader.plugins.Source,slime.jsh.internal.loader.plugins.SourceContent> } */
 		var getContent = function(item) {
 			if (isLoaderSource(item)) {
 				return {
@@ -263,10 +263,10 @@
 		/**
 		 * @param { Parameters<register>[0]["scope"] } scope
 		 * @param { slime.old.Loader } loader
-		 * @returns { slime.jsh.loader.internal.plugins.PluginsContent }
+		 * @returns { slime.jsh.internal.loader.plugins.PluginsContent }
 		 */
 		var getPluginsContent = function getPluginsContent(scope,loader) {
-			/** @type { slime.jsh.loader.internal.plugins.PluginsContent } */
+			/** @type { slime.jsh.internal.loader.plugins.PluginsContent } */
 			var rv = {
 				plugins: [],
 				classpath: []
@@ -301,7 +301,7 @@
 		 * So for realistic purposes, this method affects the real shell's classpath, and affects whatever mocks might have been
 		 * given at load time in terms of the plugins loaded.
 		 *
-		 * @param { slime.jsh.loader.internal.plugins.PluginsContent } content
+		 * @param { slime.jsh.internal.loader.plugins.PluginsContent } content
 		 */
 		var update = function(content) {
 			content.classpath.forEach(function(entry) {
@@ -310,9 +310,9 @@
 			run(content.plugins);
 		}
 
-		/** @type { slime.jsh.loader.internal.plugins.Export["load"] } */
+		/** @type { slime.jsh.internal.loader.plugins.Export["load"] } */
 		var load = function(p) {
-			/** @type { slime.jsh.loader.internal.plugins.PluginsContent } */
+			/** @type { slime.jsh.internal.loader.plugins.PluginsContent } */
 			var content;
 
 			/** @type { Parameters<register>[0]["scope"] } */

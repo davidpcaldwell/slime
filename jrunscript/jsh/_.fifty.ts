@@ -40,6 +40,11 @@
  * ## Older documentation
  *
  * See [old JSAPI-based `jsh` documentation](../src/jsh/etc/api.html).
+ *
+ * ## Contributor documentation
+ *
+ * Documentation about `jsh` internals can be viewed at {@link slime.jsh.internal}.
+ *
  */
 namespace slime.jsh {
 	namespace db.jdbc {
@@ -92,6 +97,22 @@ namespace slime.jsh {
 }
 
 /**
+ * ## The `jsh` launcher
+ *
+ * The launcher begins with the `jsh` program, which determines which Java needs to be used (installing the default JDK if
+ * necessary). It then runs the `rhino/jrunscript/api.js` script with the `jsh` argument, which in turn calls
+ * `jsh/launcher/main.js`, which ultimately starts the `jsh` _loader_ (see below).
+ *
+ * ## The `jsh` loader
+ *
+ * The jsh _loader_ is a subsystem that can run in its own VM or within an isolated classloader, and which implements the execution
+ * of a script.  It has two implementations: a Rhino implementation (`inonit.script.jsh.Rhino`) and a Nashorn implementation
+ * (`inonit.script.jsh.Nashorn`); the entry point is chosen and executed by the launcher subsystem.
+ *
+ * It is documented at {@link slime.jsh.loader.internal}.
+ *
+ * ## Development Tools
+ *
  * To execute a script in an ad-hoc built shell, execute:
  * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js <script> [arguments]`
  *

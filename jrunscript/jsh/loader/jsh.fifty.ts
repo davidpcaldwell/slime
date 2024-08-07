@@ -27,16 +27,6 @@ namespace slime.jsh {
 		//@ts-ignore
 		)(fifty);
 
-		export namespace internal {
-			export interface Runtime extends slime.jrunscript.runtime.Exports {
-				//	implementations provided by engine-specific rhino.js and nashorn.js
-
-				exit: (status: number) => never
-
-				jsh: (configuration: slime.jrunscript.native.inonit.script.jsh.Shell.Environment, invocation: slime.jrunscript.native.inonit.script.jsh.Shell.Invocation) => number
-			}
-		}
-
 		/**
 		 * A script to be executed. Can be a {@link slime.resource.Descriptor} which fully describes the code to be executed, but
 		 * also can be specified using several other types. If the value is a {@link slime.jrunscript.file.Pathname}, the script
@@ -300,5 +290,19 @@ namespace slime.jsh {
 
 	export interface Global {
 		loader: slime.jsh.loader.Exports
+	}
+
+	export namespace internal.loader {
+		/**
+		 * Extends the {@link slime.jrunscript.runtime.Exports | SLIME Java runtime} to provide facilities for exiting a `jsh`
+		 * shell and for launching a `jsh` subshell.
+		 */
+		export interface Runtime extends slime.jrunscript.runtime.Exports {
+			//	implementations provided by engine-specific rhino.js and nashorn.js
+
+			exit: (status: number) => never
+
+			jsh: (configuration: slime.jrunscript.native.inonit.script.jsh.Shell.Environment, invocation: slime.jrunscript.native.inonit.script.jsh.Shell.Invocation) => number
+		}
 	}
 }

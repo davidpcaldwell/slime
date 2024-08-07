@@ -23,7 +23,7 @@
 						null
 					);
 
-					/** @type { (v: any) => slime.jsh.loader.internal.Runtime } */
+					/** @type { (v: any) => slime.jsh.internal.loader.Runtime } */
 					var castToJshRuntime = function(v) { return v; };
 
 					var rv = castToJshRuntime(runtime);
