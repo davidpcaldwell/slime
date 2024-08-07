@@ -166,7 +166,7 @@
 
 			var plugins = (
 				function(jsh) {
-					/** @type { slime.jsh.loader.internal.plugins.Export } */
+					/** @type { slime.jsh.internal.loader.plugins.Export } */
 					var exported;
 					$slime.run(
 						$slime.loader.getLoaderScript("plugins.js"),

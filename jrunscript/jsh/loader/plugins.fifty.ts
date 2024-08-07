@@ -39,7 +39,7 @@
  * described below.
  */
 namespace slime.jsh.plugin {
-	export interface $slime extends slime.jsh.loader.internal.Runtime {
+	export interface $slime extends slime.jsh.internal.loader.Runtime {
 		getSystemProperty(name: string): string
 		getEnvironment(): slime.jrunscript.native.inonit.system.OperatingSystem.Environment
 		getInvocation(): slime.jrunscript.native.inonit.script.jsh.Shell.Invocation
@@ -57,7 +57,7 @@ namespace slime.jsh.plugin {
 		getStdio(): Stdio
 	}
 
-	export interface $slime extends slime.jsh.loader.internal.Runtime {
+	export interface $slime extends slime.jsh.internal.loader.Runtime {
 		plugins: {
 			/**
 			 * Loads a single plugin from the given loader, and applies it to the mock objects given in the argument (or real objects if
@@ -171,7 +171,7 @@ namespace slime.jsh.plugin {
 	}
 }
 
-namespace slime.jsh.loader.internal.plugins {
+namespace slime.jsh.internal.loader.plugins {
 	export interface Plugin {
 		source: () => string
 		implementation: Required<slime.jsh.plugin.Declaration>
@@ -197,7 +197,7 @@ namespace slime.jsh.loader.internal.plugins {
 	}
 
 	export interface PluginsContent {
-		plugins: slime.jsh.loader.internal.plugins.Plugin[]
+		plugins: slime.jsh.internal.loader.plugins.Plugin[]
 		classpath: slime.jrunscript.runtime.ClasspathEntry[]
 	}
 

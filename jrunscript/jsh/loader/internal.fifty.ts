@@ -5,11 +5,6 @@
 //	END LICENSE
 
 /**
- * The `jsh`
- * _loader_ is a subsystem that can run in its own VM or within an isolated classloader, and which implements the execution
- * of a script. It has two implementations: a Rhino implementation (`inonit.script.jsh.Rhino`) and a Nashorn implementation
- * (`inonit.script.jsh.Nashorn`); the entry point is chosen and executed by the launcher subsystem.
- *
  * ## Execution
  *
  * Generally speaking, the execution of the shell is governed by the `inonit.script.jsh.Shell.Execution` class. Both the Rhino and
@@ -38,6 +33,6 @@
  *     * This runtime is provided to the various plugins that make up the shell; see the documentation on
  *       {@link slime.jsh.plugin | plugins}.
  */
-namespace slime.jsh.loader.internal {
+namespace slime.jsh.internal.loader {
 
 }

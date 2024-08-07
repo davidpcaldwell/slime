@@ -6,8 +6,8 @@
 
 namespace slime.jrunscript.native.inonit.script.jsh {
 	export interface Shell {
-		setRuntime: (value: slime.jsh.loader.internal.Runtime) => void
-		runtime: () => slime.jsh.loader.internal.Runtime
+		setRuntime: (value: slime.jsh.internal.loader.Runtime) => void
+		runtime: () => slime.jsh.internal.loader.Runtime
 
 		getLoader(): slime.jrunscript.native.inonit.script.engine.Loader
 		getEnvironment(): Shell.Environment
