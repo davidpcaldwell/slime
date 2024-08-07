@@ -102,7 +102,6 @@ namespace slime.jrunscript.runtime {
 
 	export interface $javahost {
 		script: any
-		setReadOnly: any
 		MetaObject: any
 		noEnvironmentAccess: any
 		eval(a: any, b: any, c: any, d: any): any

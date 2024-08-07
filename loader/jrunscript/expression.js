@@ -85,11 +85,6 @@
 
 				/** @type { slime.runtime.$engine } */
 				var $engine = {
-					Object: {
-						defineProperty: {
-							setReadOnly: void(0)
-						}
-					},
 					execute: function(script,scope,target) {
 						return $javahost.script(script.name,script.js,scope,target);
 					},
@@ -104,7 +99,6 @@
 				//	TODO	decorate global Error objects; see jrunscript/host/module.js
 
 				(function() {
-					if ($javahost.setReadOnly) $engine.Object.defineProperty.setReadOnly = $javahost.setReadOnly;
 					if ($javahost.MetaObject) $engine.MetaObject = $javahost.MetaObject;
 				})();
 				/** @type { slime.runtime.$slime.Deployment } */

@@ -18,10 +18,6 @@ namespace slime {
 		}
 
 		export namespace $slime {
-			export interface TypeScript {
-				compile: (code: string) => string
-			}
-
 			/**
 			 * An object providing access to the SLIME execution environment.
 			 */
@@ -44,13 +40,6 @@ namespace slime {
 		 * JavaScript engine may have.
 		 */
 		export interface $engine {
-			/**
-			 * @deprecated Possibly unused substantively (but used syntactically by loader/jrunscript, in a probably-obsolete way)
-			 */
-			Object: {
-				defineProperty: any
-			}
-
 			Error?: {
 				decorate: any
 			}
@@ -77,6 +66,57 @@ namespace slime {
 			 */
 			MetaObject: any
 		}
+
+		/**
+		 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
+		 * in its implementation.
+		 */
+		export interface $platform {
+			/**
+			 * An object containing properties describing the platform's capabilities for objects.
+			 */
+			Object: {
+				/**
+				 * An object containing properties describing the platform's meta-object capabilities.
+				 */
+				defineProperty?: {
+					/**
+					 * If `true`, the platform supports the ECMA-262 version 5 `Object.defineProperty` method.
+					 */
+					ecma?: boolean
+
+					//	TODO	rename
+					/**
+					 * If `true`, the platform supports `__defineGetter__` and `__defineSetter__` as defined by Mozilla.
+					 */
+					accessor?: boolean
+				}
+			}
+			e4x: any
+			MetaObject: any
+			java: any
+		}
+
+		(
+			function(
+				$platform: $platform,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.runtime.exports.$platform = function() {
+					var o: { x: number } = { x: void(0) };
+					o.x = 3;
+					verify(o).x.is(3);
+					o.x = 4;
+					verify(o).x.is(4);
+
+					if (fifty.global.jsh) verify($platform).evaluate.property("java").is.type("object");
+					if (fifty.global.window) verify($platform).evaluate.property("java").is.type("undefined");
+				}
+			}
+		//@ts-ignore
+		)($platform,fifty);
 	}
 
 	export namespace mime {
@@ -487,83 +527,6 @@ namespace slime {
 				getRuntimeScript: $slime.Deployment["getRuntimeScript"]
 			}
 		}
-
-		/**
-		 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
-		 * in its implementation.
-		 */
-		export interface $platform {
-			/**
-			 * An object containing properties describing the platform's capabilities for objects.
-			 */
-			Object: {
-				/**
-				 * An object containing properties describing the platform's meta-object capabilities.
-				 */
-				defineProperty?: {
-					/**
-					 * If `true`, the platform supports the ECMA-262 version 5 `Object.defineProperty` method.
-					 */
-					ecma?: boolean
-
-					//	TODO	rename
-					/**
-					 * If `true`, the platform supports `__defineGetter__` and `__defineSetter__` as defined by Mozilla.
-					 */
-					accessor?: boolean
-
-					/**
-					 * (Conditional; if platform supports it) Sets whether a named property on an object is read-only.
-					 *
-					 * @param object An object.
-					 * @param property The name of a property.
-					 * @param readonly Whether the property should be read-only (`true`) or writable (`false`).
-					 */
-					setReadOnly?: (object: object, property: string, readonly: boolean) => void
-				}
-			}
-			e4x: any
-			MetaObject: any
-			java: any
-		}
-
-		(
-			function(
-				$platform: $platform,
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-
-				fifty.tests.runtime.exports.$platform = function() {
-					var o: { x: number } = { x: void(0) };
-					o.x = 3;
-					verify(o).x.is(3);
-					o.x = 4;
-					verify(o).x.is(4);
-					var setReadOnly = (function() {
-						if ($platform.Object.defineProperty && $platform.Object.defineProperty.setReadOnly) {
-							return $platform.Object.defineProperty.setReadOnly;
-						}
-					})();
-					if (setReadOnly) {
-						setReadOnly(o,"x",true);
-						o.x = 5;
-						verify(o).x.is(4);
-						setReadOnly(o,"x",false);
-						o.x = 5;
-						verify(o).x.is(5);
-					} else {
-						//	TODO	seems to go here under Rhino; can we just remove this?
-						const message = "setReadOnly not implemented";
-						verify(message).is(message);
-					}
-
-					if (fifty.global.jsh) verify($platform).evaluate.property("java").is.type("object");
-					if (fifty.global.window) verify($platform).evaluate.property("java").is.type("undefined");
-				}
-			}
-		//@ts-ignore
-		)($platform,fifty);
 
 		export namespace test {
 		}
