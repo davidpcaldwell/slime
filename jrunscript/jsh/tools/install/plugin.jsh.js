@@ -698,8 +698,8 @@
 
 					managed.require = function() {
 						return function(events) {
-							//	TODO	this is hard-coded in several places now
-							var VERSION = "20.9.0";
+							//	TODO	this is hard-coded in two places now
+							var VERSION = "20.16.0";
 							//	TODO	horrendous, but let's go with it for now
 							if (jsh.file.Pathname("/etc/os-release").file) {
 								var string = jsh.file.Pathname("/etc/os-release").file.read(String);

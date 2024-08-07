@@ -44,7 +44,7 @@
 		};
 
 		var versions = {
-			default: "20.9.0"
+			default: "20.16.0"
 		};
 
 		var getDownload = function(version, os, arch) {
