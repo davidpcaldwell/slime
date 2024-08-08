@@ -45,9 +45,18 @@
 
 		$exports.constant = deprecate(constant);
 
-		if ($platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
+		if ($platform.Object.defineProperty) {
+			//@ts-ignore
 			$exports.lazy = function(object,name,getter) {
-				object.__defineGetter__(name, constant(getter));
+				Object.defineProperty(
+					object,
+					name,
+					{
+						enumerable: true,
+						get: constant(getter)
+					}
+				);
+				return object;
 			}
 		}
 
@@ -241,7 +250,7 @@
 			//	TODO	method install() that adds these methods (or a properties object?) to Object, making them non-enumerable if possible
 		}
 		$exports.properties = properties;
-		if ($platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
+		if ($platform && $platform.Object.defineProperty) {
 			$api.experimental($exports,"properties");
 		}
 

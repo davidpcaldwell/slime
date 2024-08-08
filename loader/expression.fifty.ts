@@ -88,21 +88,11 @@ namespace slime {
 			 */
 			Object: {
 				/**
-				 * An object containing properties describing the platform's meta-object capabilities.
+				 * If `true`, the platform supports the ECMA-262 version 5 `Object.defineProperty` method.
 				 */
-				defineProperty?: {
-					/**
-					 * If `true`, the platform supports the ECMA-262 version 5 `Object.defineProperty` method.
-					 */
-					ecma?: boolean
-
-					//	TODO	rename
-					/**
-					 * If `true`, the platform supports `__defineGetter__` and `__defineSetter__` as defined by Mozilla.
-					 */
-					accessor?: boolean
-				}
+				defineProperty: boolean
 			}
+
 			e4x: any
 			MetaObject: any
 			java: any

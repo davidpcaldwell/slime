@@ -59,14 +59,10 @@
 			function($engine) {
 				/** @type { slime.runtime.$platform } */
 				var $exports = {};
-				$exports.Object = {};
-				if (Object.defineProperty) {
-					$exports.Object.defineProperty = { ecma: true };
-				}
-				if (Object.prototype.__defineGetter__) {
-					if (!$exports.Object.defineProperty) $exports.Object.defineProperty = {};
-					$exports.Object.defineProperty.accessor = true;
-				}
+
+				$exports.Object = {
+					defineProperty: Boolean(Object.defineProperty)
+				};
 
 				var global = (function() { return this; })();
 				if (global && global.XML && global.XMLList) {
