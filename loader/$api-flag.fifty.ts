@@ -196,7 +196,7 @@ namespace slime.$api {
 					}
 				}
 
-				var accessor = $platform && $platform.Object.defineProperty && $platform.Object.defineProperty.accessor;
+				var accessor = $platform && $platform.Object.defineProperty;
 				if (accessor) {
 					deprecate(x,"foo");
 					var yes = expectWarn(true);

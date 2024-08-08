@@ -227,47 +227,6 @@ END LICENSE
 					test( f.undefinedCalculator.invocations == 1 );
 				</script>
 			</li>
-			<li class="function">
-				<div class="name">lazy</div>
-				<div>
-					Defines a property on an object which is lazy-instantiated by a function the first time it is accessed.
-				</div>
-				<div>
-					The property is effectively constant.  The first time the property is accessed, the given
-					function will be invoked to define the value, which will be returned as the value (without invoking the
-					function) each time it is accessed.  The implementation uses <code>__defineGetter__</code> to attach a constant
-					version of the given function to the given named property.
-				</div>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li><code>(object)</code> An object on which to define a property.</li>
-						<li><code>(string)</code> The name of the property to define.</li>
-						<li><code>(function)</code> The function that will be invoked to define the property's value, when/if
-							necessary.</li>
-					</ol>
-				</div>
-				<script type="application/x.jsapi#tests"><![CDATA[
-					if ($platform.Object.defineProperty && $platform.Object.defineProperty.accessor) {
-						var f = new Functions();
-
-						var math = {};
-						module.lazy(math, "four", f.calculator);
-						test( f.calculator.invocations == 0 );
-						test( math.four == 4 );
-						test( f.calculator.invocations == 1 );
-						test( math.four == 4 );
-						test( f.calculator.invocations == 1 );
-
-						module.lazy(math, "undefined", f.undefinedCalculator);
-						test( f.undefinedCalculator.invocations == 0 );
-						test( typeof(math.undefined) == "undefined" );
-						test( f.undefinedCalculator.invocations == 1 );
-						test( typeof(math.undefined) == "undefined" );
-						test( f.undefinedCalculator.invocations == 1 );
-					}
-				]]></script>
-			</li>
 			<li class="function" jsapi:id="toLiteral">
 				<div class="name">toLiteral</div>
 				<div>Converts a JavaScript value to a string literal.</div>
