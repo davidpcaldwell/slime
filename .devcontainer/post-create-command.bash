@@ -4,4 +4,7 @@
 #
 #	END LICENSE
 
+./jsh --add-jdk-8
+./jsh --add-jdk-11
 ./jsh --add-jdk-17
+./jsh --add-jdk-21
