@@ -196,13 +196,10 @@ namespace slime.$api {
 					}
 				}
 
-				var accessor = $platform && $platform.Object.defineProperty;
-				if (accessor) {
-					deprecate(x,"foo");
-					var yes = expectWarn(true);
-					var accessIt = x.foo;
-					yes.evaluate("get x.foo");
-				}
+				deprecate(x,"foo");
+				var yes = expectWarn(true);
+				var accessIt = x.foo;
+				yes.evaluate("get x.foo");
 				//test(warning.test);
 
 				//	Should FAIL
@@ -211,107 +208,103 @@ namespace slime.$api {
 				//
 
 				//console("x1.foo = " + x.foo);
-				if (accessor) {
-					var yes = expectWarn(true);
-					x.foo = "baz";
-					yes.evaluate();
-					verify_test(function() {
-						var success = x.foo == "baz";
-						var message = (success) ? "Value correct" : "Value " + x.foo;
-						return {
-							success: success,
-							message: message
-						}
-					});
-				}
+				var yes = expectWarn(true);
+				x.foo = "baz";
+				yes.evaluate();
+				verify_test(function() {
+					var success = x.foo == "baz";
+					var message = (success) ? "Value correct" : "Value " + x.foo;
+					return {
+						success: success,
+						message: message
+					}
+				});
 
 				var yes = expectWarn(false);
 				x.bar = "baz";
 				yes.evaluate();
 
-				if (accessor) {
-					//console("x1.foo = " + x.foo);
-					var x2: { foo: string } = new function() {
-						this.foo = "bar";
-						this.__defineSetter__("foo", function(value) {
-							this.$foo = value;
-						} );
+				//console("x1.foo = " + x.foo);
+				var x2: { foo: string } = new function() {
+					this.foo = "bar";
+					this.__defineSetter__("foo", function(value) {
+						this.$foo = value;
+					} );
 
-						deprecate(this, "foo");
-					}
+					deprecate(this, "foo");
+				}
 
-					var yes = expectWarn(true);
-					var access_it_2 = x2.foo;
-					yes.evaluate();
+				var yes = expectWarn(true);
+				var access_it_2 = x2.foo;
+				yes.evaluate();
 
-					var yes = expectWarn(true);
-					x2.foo = "BAR";
-					yes.evaluate();
-					verify(x2.foo, "foo is still").is(void(0));
+				var yes = expectWarn(true);
+				x2.foo = "BAR";
+				yes.evaluate();
+				verify(x2.foo, "foo is still").is(void(0));
 
-					var x3: { foo: number } = new function() {
-						this.foo = 0;
+				var x3: { foo: number } = new function() {
+					this.foo = 0;
 
-						var foo = 0;
+					var foo = 0;
 
-						this.__defineGetter__("foo", function() {
-							return ++foo;
-						} );
+					this.__defineGetter__("foo", function() {
+						return ++foo;
+					} );
 
-						deprecate(this, "foo");
-					}
+					deprecate(this, "foo");
+				}
 
-					var yes = expectWarn(true);
-					var z_ = x3.foo;
-					yes.evaluate();
-					verify(z_ > 0, "Getter-only value increasing").is(true);
-					verify(x3, "Getter-only value increasing").evaluate(function() { return this.foo > z_; }).is(true);
+				var yes = expectWarn(true);
+				var z_ = x3.foo;
+				yes.evaluate();
+				verify(z_ > 0, "Getter-only value increasing").is(true);
+				verify(x3, "Getter-only value increasing").evaluate(function() { return this.foo > z_; }).is(true);
 //							test(z > 0, "Getter-only value increasing.");
 //							test(x3.foo > z, "Getter-only value increasing.");
 
-					var yes = expectWarn(true);
-					x3.foo = 11;
-					yes.evaluate();
-					verify(x3).foo.is.not(11);
+				var yes = expectWarn(true);
+				x3.foo = 11;
+				yes.evaluate();
+				verify(x3).foo.is.not(11);
 //							test(x3.foo != 11, "Cannot re-set once getter defined.");
 
-					x3.__defineGetter__("foo", function() {
-						return 42;
-					});
-					var yes = expectWarn(false);
-					var access_it_3 = x3.foo;
-					yes.evaluate();
-					verify(x3).foo.is(42);
+				x3.__defineGetter__("foo", function() {
+					return 42;
+				});
+				var yes = expectWarn(false);
+				var access_it_3 = x3.foo;
+				yes.evaluate();
+				verify(x3).foo.is(42);
 //							test(x3.foo == 42, "Value is correct when getter redefined.");
 
-					var x4: { foo: number } = new function() {
-						var foo = 21;
+				var x4: { foo: number } = new function() {
+					var foo = 21;
 
-						this.__defineGetter__("foo", function() {
-							return foo;
-						} );
+					this.__defineGetter__("foo", function() {
+						return foo;
+					} );
 
-						this.__defineSetter__("foo", function(value) {
-							return (foo = value);
-						} );
+					this.__defineSetter__("foo", function(value) {
+						return (foo = value);
+					} );
 
-						deprecate(this, "foo");
-					}
+					deprecate(this, "foo");
+				}
 
-					var yes = expectWarn(true);
-					var access_it_4 = x4.foo;
-					yes.evaluate();
-					verify(access_it_4).is(21);
-					verify(x4).foo.is(21);
+				var yes = expectWarn(true);
+				var access_it_4 = x4.foo;
+				yes.evaluate();
+				verify(access_it_4).is(21);
+				verify(x4).foo.is(21);
 //							test(z == 21);
 //							test(x4.foo == 21);
 
-					var yes = expectWarn(true);
-					x4.foo = 14;
-					yes.evaluate();
-					verify(x4).foo.is(14);
+				var yes = expectWarn(true);
+				x4.foo = 14;
+				yes.evaluate();
+				verify(x4).foo.is(14);
 //							test(x4.foo == 14);
-				}
 
 				var x5 = new function() {
 					this.doIt = function() {

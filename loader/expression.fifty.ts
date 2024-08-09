@@ -83,16 +83,6 @@ namespace slime {
 		 * in its implementation.
 		 */
 		export interface $platform {
-			/**
-			 * An object containing properties describing the platform's capabilities for objects.
-			 */
-			Object: {
-				/**
-				 * If `true`, the platform supports the ECMA-262 version 5 `Object.defineProperty` method.
-				 */
-				defineProperty: boolean
-			}
-
 			e4x: any
 			MetaObject: any
 			java: any

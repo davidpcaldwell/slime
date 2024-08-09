@@ -60,10 +60,6 @@
 				/** @type { slime.runtime.$platform } */
 				var $exports = {};
 
-				$exports.Object = {
-					defineProperty: Boolean(Object.defineProperty)
-				};
-
 				var global = (function() { return this; })();
 				if (global && global.XML && global.XMLList) {
 					$exports.e4x = {};
