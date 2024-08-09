@@ -1267,23 +1267,18 @@
 				rhino: $engine.classpath
 			}),
 			download: function(version) {
-				var RHINO_JAR_URL = "https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-1.7.14.jar";
-				if (!version) version = "mozilla/1.7.14";
+				if (!version) version = "mozilla/1.7.15";
 				var sources = {
-					"mozilla/1.7R3": {
-						url: "http://ftp.mozilla.org/pub/mozilla.org/js/rhino1_7R3.zip",
-						format: "dist"
-					},
-					"mozilla/1.7.12": {
-						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_12_Release/rhino-1.7.12.jar",
-						format: "jar"
-					},
 					"mozilla/1.7.13": {
 						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_13_Release/rhino-1.7.13.jar",
 						format: "jar"
 					},
 					"mozilla/1.7.14": {
-						url: RHINO_JAR_URL,
+						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-1.7.14.jar",
+						format: "jar"
+					},
+					"mozilla/1.7.15": {
+						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
 						format: "jar"
 					}
 				};

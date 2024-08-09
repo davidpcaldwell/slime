@@ -45,20 +45,18 @@
 
 		$exports.constant = deprecate(constant);
 
-		if ($platform.Object.defineProperty) {
-			//@ts-ignore
-			$exports.lazy = function(object,name,getter) {
-				Object.defineProperty(
-					object,
-					name,
-					{
-						enumerable: true,
-						get: constant(getter)
-					}
-				);
-				return object;
-			}
-		}
+		//@ts-ignore
+		$exports.lazy = function(object,name,getter) {
+			Object.defineProperty(
+				object,
+				name,
+				{
+					enumerable: true,
+					get: constant(getter)
+				}
+			);
+			return object;
+		};
 
 		var toLiteral = function(value) {
 			var sourceify = function(value,references) {
@@ -250,9 +248,7 @@
 			//	TODO	method install() that adds these methods (or a properties object?) to Object, making them non-enumerable if possible
 		}
 		$exports.properties = properties;
-		if ($platform && $platform.Object.defineProperty) {
-			$api.experimental($exports,"properties");
-		}
+		$api.experimental($exports,"properties");
 
 		$exports.Object = new function() {
 			this.keys = function(o) {
