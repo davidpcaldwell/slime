@@ -270,7 +270,7 @@ install_rhino() {
 	# JSH_BOOTSTRAP_RHINO_ENGINE="$(dirname $0)/local/jsh/lib/jsr223.jar"
 	RHINO_URL=$(awk '/RHINO_JAR_URL =/ {print $4}' $(dirname $0)/rhino/jrunscript/api.js | cut -c 2- | rev | cut -c 3- | rev)
 	# If JSR-223 Rhino worked with jrunscript ...
-	# RHINO_ENGINE_URL=https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-engine-1.7.14.jar
+	# RHINO_ENGINE_URL=https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-engine-1.7.15.jar
 	download_install ${RHINO_URL} ${JSH_BOOTSTRAP_RHINO}
 	# If JSR-223 Rhino worked with jrunscript ...
 	# download_install ${RHINO_ENGINE_URL} ${JSH_BOOTSTRAP_RHINO_ENGINE}

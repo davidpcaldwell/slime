@@ -175,6 +175,9 @@
 					username: input.username
 				});
 
+				if (p.debug) p.debug("Token present in project " + $context.library.shell.PWD.pathname.os.adapt().pathname + ": " + token.present);
+
+				if (p.debug) p.debug("Checking user token location ...");
 				if (!token.present) {
 					token = readUserTokenLocation({
 						host: input.host,
@@ -182,16 +185,22 @@
 					})
 				}
 
+				if (p.debug) p.debug("Token present: " + token.present);
+
 				var output = $api.Object.compose(input);
 				if (token.present) {
 					output.password = token.value;
 					//	TODO	would be nice to report where it came from, maybe just in debugging though
 					p.console("Obtained " + input.host + " token for " + input.username + ".");
 				}
+
+				if (p.debug) p.debug("Output keys: " + Object.keys(output));
 				(function() {
 					for (var x in output) {
-						if (p.debug) p.debug(x + "=" + output[x]);
-						p.output(x + "=" + output[x]);
+						if (p.debug) p.debug("Output: " + x + "=" + output[x]);
+						if (typeof(output[x]) != "undefined") {
+							p.output(x + "=" + output[x]);
+						}
 					}
 				})();
 				p.output("");

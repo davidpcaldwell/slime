@@ -37,7 +37,7 @@
  *
  * ##### JVM JavaScript engine
  *
- * The test suite executes tests primarily with **Rhino 1.7.14**, with some tests for the **Nashorn** engine on JDK 8. **GraalVM**
+ * The test suite executes tests primarily with **Rhino 1.7.15**, with some tests for the **Nashorn** engine on JDK 8. **GraalVM**
  * is not yet supported, although [development is underway](https://github.com/davidpcaldwell/slime/projects/10).
  *
  * ##### Servlet containers
