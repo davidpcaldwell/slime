@@ -859,7 +859,7 @@ namespace slime {
 				fifty.tests.suite = function() {
 					fifty.run(fifty.tests.runtime.exports);
 					fifty.load("$api.fifty.ts");
-					fifty.load("mime.fifty.ts");
+					fifty.load("$api-mime.fifty.ts");
 					fifty.load("$api-Function.fifty.ts");
 					fifty.load("$api-Function_old.fifty.ts");
 					fifty.load("Loader.fifty.ts");
