@@ -12,7 +12,7 @@ on:
 jobs:
   jsapi:
     name: JSAPI-to-Fifty progress
-    runs-on: macos-11
+    runs-on: macos-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -21,7 +21,7 @@ jobs:
         shell: bash
   types:
     name: Coverage data for type annotations
-    runs-on: macos-11
+    runs-on: macos-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -30,7 +30,7 @@ jobs:
         shell: bash
   eslint:
     name: ESLint
-    runs-on: macos-11
+    runs-on: macos-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -42,7 +42,7 @@ jobs:
         shell: bash
   size:
     name: List source files exceeding maximum number of lines
-    runs-on: macos-11
+    runs-on: macos-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
