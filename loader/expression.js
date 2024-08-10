@@ -278,8 +278,6 @@
 			}
 		);
 
-		$api.compiler = scripts.compiler.library;
-
 		var Loader = code.Loader({
 			methods: scripts.methods,
 			$api: $api
