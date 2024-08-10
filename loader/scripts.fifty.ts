@@ -61,8 +61,6 @@ namespace slime.runtime.internal.scripts {
 
 	export interface Exports {
 		compiler: {
-			library: slime.$api.Global["compiler"]
-
 			update: slime.runtime.Exports["compiler"]["update"]
 			get: slime.runtime.Exports["compiler"]["get"]
 		}

@@ -178,12 +178,13 @@
 			return rv;
 		}
 
+		$api.compiler = {
+			isMimeType: isMimeType,
+			getTranspiler: getTranspiler
+		};
+
 		$export({
 			compiler: {
-				library: {
-					isMimeType: isMimeType,
-					getTranspiler: getTranspiler
-				},
 				update: function(transform) {
 					compiler = transform(compiler);
 				},
