@@ -78,7 +78,7 @@ namespace slime.$api {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-				var subject: slime.$api.mime.Export = fifty.$loader.module("mime.js", {
+				var subject: slime.$api.mime.Export = fifty.$loader.module("$api-mime.js", {
 					Function: fifty.global.$api.fp,
 					deprecate: function(f) {
 						return f;

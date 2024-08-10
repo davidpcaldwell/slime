@@ -55,7 +55,7 @@
 
 		var code = {
 			/** @type { slime.loader.Script<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
-			mime: script("mime.js"),
+			mime: script("$api-mime.js"),
 			/** @type { slime.loader.Script<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
 			events: script("events.js"),
 			/** @type { slime.$api.fp.internal.Script } */
