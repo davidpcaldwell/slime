@@ -154,6 +154,9 @@
 
 		/** @type { slime.$api.fp.world.Sensor<slime.jsh.internal.launcher.test.ShellInvocation,slime.jsh.internal.launcher.test.ShellInvocationEvents,slime.jsh.internal.launcher.test.Result> } */
 		var shellResultQuestion = function(p) {
+			if (p.shell && p.shell[0] === null) {
+				debugger;
+			}
 			return function(events) {
 				/** @type { slime.jrunscript.shell.invocation.old.Token[] } */
 				var vm = [];
@@ -200,6 +203,7 @@
 					if (built) return getBuiltEngineArguments ( $context.library.file.Pathname(built).directory );
 					return [];
 				})();
+				debugger;
 				return $context.library.shell.run({
 					command: (p.bash) ? p.bash : $context.library.shell.java.jrunscript,
 					arguments: engineArguments.concat(shell.map(String)).concat([script.toString()]).concat( (p.arguments) ? p.arguments.map(String) : [] ),
@@ -352,7 +356,7 @@
 										$api.Object.compose(
 											implementation,
 											{
-												shell: [builtShell.getFile("jsh")]
+												shell: [builtShell.getFile("jsh.bash")]
 											}
 										),
 										descriptorChecks
