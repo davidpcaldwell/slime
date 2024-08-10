@@ -29,15 +29,22 @@
 					execute: ($engine && $engine.execute)
 						? $engine.execute
 						: function(script,scope,target) {
-							var scoped = Object.keys(scope).map(function(key) {
+							var code = script.js;
+							var scopeVariables = Object.keys(scope).map(function(key) {
 								return {
 									name: key,
 									value: scope[key]
 								};
 							});
-							var args = scoped.map(function(variable) { return variable.name; }).concat([ script.js ]);
-							var f = Function.apply(null, args);
-							return f.apply(target, scoped.map(function(variable) { return variable.value; }));
+							var scopeNames = scopeVariables.map(function(variable) { return variable.name; });
+							var scopeValues = scopeVariables.map(function(variable) { return variable.value; });
+							Function.apply(
+								null,
+								scopeNames.concat([code])
+							).apply(
+								target,
+								scopeValues
+							);
 						}
 					,
 					MetaObject: ($engine && $engine.MetaObject) ? $engine.MetaObject : void(0)

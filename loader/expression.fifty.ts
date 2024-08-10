@@ -45,13 +45,15 @@ namespace slime {
 			}
 
 			/**
-			 * A function that can execute JavaScript code with a given scope and *target* (`this` value).
+			 * A function that can execute JavaScript code with a given scope and *target* (`this` value). A default implementation
+			 * is provided by SLIME, but engines may provide their own implementations that have advantages over SLIME's
+			 * pure-JavaScript implementation.
 			 *
 			 * @param script An object describing the file to execute.
 			 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
 			 * @param target An object that must be provided to the code as `this` while the code is executing.
 			 */
-			execute?(
+			execute?: (
 				script: {
 					name: string,
 					/** A string of JavaScript code to execute. */
@@ -59,7 +61,7 @@ namespace slime {
 				},
 				scope: { [x: string]: any },
 				target: object
-			): any
+			) => void
 
 			/**
 			 * A constructor that implements the behavior defined by {@link $platform.MetaObject}.
