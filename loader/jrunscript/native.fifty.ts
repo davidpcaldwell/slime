@@ -360,10 +360,12 @@ namespace slime.jrunscript {
 			}
 
 			export namespace rhino {
-				export namespace Engine {
-					export interface Debugger {
-					}
+				export interface Debugger {
+					isBreakOnExceptions: () => boolean
+					setBreakOnExceptions: (b: boolean) => void
+				}
 
+				export namespace Engine {
 					export interface Loader {
 						getLoaderCode(path: string): any
 					}
@@ -372,7 +374,7 @@ namespace slime.jrunscript {
 				export interface Engine {
 					script: (name: string, code: string, scope: object, target: object) => any
 					canAccessEnvironment: () => boolean
-					getDebugger: () => slime.jrunscript.native.inonit.script.rhino.Engine.Debugger
+					getDebugger: () => slime.jrunscript.native.inonit.script.rhino.Debugger
 				}
 			}
 		}
