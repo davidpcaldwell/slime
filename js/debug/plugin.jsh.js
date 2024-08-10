@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.plugin.$slime & { getDebugger: () => any } } $slime
+	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
@@ -99,18 +99,6 @@
 						})
 					}
 				)
-
-				if ($slime.getDebugger) {
-					$api.debugger = {};
-					Object.defineProperty($api.debugger, "breakOnExceptions", {
-						get: function() {
-							return $slime.getDebugger().isBreakOnExceptions();
-						},
-						set: function(v) {
-							$slime.getDebugger().setBreakOnExceptions(v);
-						}
-					});
-				}
 
 				jsh.js.Error.Type = $api.debug.disableBreakOnExceptionsFor(jsh.js.Error.Type);
 			}

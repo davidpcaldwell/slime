@@ -40,10 +40,6 @@ namespace slime {
 		 * JavaScript engine may have.
 		 */
 		export interface $engine {
-			Error?: {
-				decorate: any
-			}
-
 			/**
 			 * A function that can execute JavaScript code with a given scope and *target* (`this` value). A default implementation
 			 * is provided by SLIME, but engines may provide their own implementations that have advantages over SLIME's
@@ -62,6 +58,15 @@ namespace slime {
 				scope: { [x: string]: any },
 				target: object
 			) => void
+
+			debugger?: {
+				isBreakOnExceptions: () => boolean
+				setBreakOnExceptions: (b: boolean) => void
+			}
+
+			Error?: {
+				decorate: any
+			}
 
 			/**
 			 * A constructor that implements the behavior defined by {@link $platform.MetaObject}.
@@ -495,6 +500,7 @@ namespace slime {
 			 * An internal object derived from {@link slime.runtime.$engine} which adds default implementations.
 			 */
 			export interface Engine {
+				debugger: slime.runtime.$engine["debugger"]
 				execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: any) => any
 				Error: {
 					decorate?: <T>(errorConstructor: T) => T

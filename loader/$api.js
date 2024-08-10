@@ -88,17 +88,17 @@
 			//	TODO	try to get rid of ignore below
 			//@ts-ignore
 			disableBreakOnExceptionsFor: function(f) {
-				if ($exports.debugger) {
+				if ($engine.debugger) {
 					var rv = function() {
-						var enabled = $exports.debugger.breakOnExceptions;
+						var enabled = $engine.debugger.isBreakOnExceptions();
 						if (enabled) {
-							$exports.debugger.breakOnExceptions = false;
+							$engine.debugger.setBreakOnExceptions(false);
 						}
 						try {
 							return f.apply(this,arguments);
 						} finally {
 							if (enabled) {
-								$exports.debugger.breakOnExceptions = true;
+								$engine.debugger.setBreakOnExceptions(true);
 							}
 						}
 					}

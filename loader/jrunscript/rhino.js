@@ -15,53 +15,56 @@
 	 * @returns { slime.jrunscript.runtime.Rhino }
 	 */
 	function(Packages,sync,$rhino,$loader) {
-		var $javahost = new function() {
-			var objects;
+		var $javahost = (
+			/**
+			 *
+			 * @returns { slime.jrunscript.runtime.$javahost }
+			 */
+			function() {
+				var MetaObject = function(p) {
+					var delegate = (p.delegate) ? p.delegate : {};
+					var get = (p.get) ? p.get : function(){};
+					var set = (p.set) ? p.set : function(){};
+					return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
+				};
 
-			this.setReadOnly = function(object,name,value) {
-				if (!objects) {
-					objects = new Packages.inonit.script.rhino.Objects();
+				var script = function(name,code,scope,target) {
+					//	TODO	revisit whether some improved error reporting code inspired by the below can be re-enabled at some point;
+					//			currently it somehow breaks some automated tests
+					// try {
+						return $rhino.script(name,code,scope,target);
+					// } catch (e) {
+					// 	if (e.rhinoException) {
+					// 		if (e.rhinoException.getWrappedException) {
+					// 			if (e.rhinoException.getWrappedException().getErrors) {
+					// 				var errors = e.rhinoException.getWrappedException().getErrors();
+					// 				for (var i=0; i<errors.length; i++) {
+					// 					Packages.java.lang.System.err.println(errors[i]);
+					// 				}
+					// 			} else {
+					// 				e.rhinoException.getWrappedException().printStackTrace();
+					// 			}
+					// 		} else {
+					// 			e.rhinoException.printStackTrace();
+					// 		}
+					// 	} else if (e.javaException) {
+					// 		e.javaException.printStackTrace();
+					// 	}
+					// 	throw e;
+					// }
+				};
+
+				var noEnvironmentAccess = !$rhino.canAccessEnvironment();
+
+				return {
+					debugger: $rhino.getDebugger(),
+					script: script,
+					eval: script,
+					MetaObject: MetaObject,
+					noEnvironmentAccess: noEnvironmentAccess
 				}
-				objects.setReadOnly(object,name,value);
-			};
-
-			this.MetaObject = function(p) {
-				var delegate = (p.delegate) ? p.delegate : {};
-				var get = (p.get) ? p.get : function(){};
-				var set = (p.set) ? p.set : function(){};
-				return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
-			};
-
-			this.script = function(name,code,scope,target) {
-				//	TODO	revisit whether some improved error reporting code inspired by the below can be re-enabled at some point;
-				//			currently it somehow breaks some automated tests
-				// try {
-					return $rhino.script(name,code,scope,target);
-				// } catch (e) {
-				// 	if (e.rhinoException) {
-				// 		if (e.rhinoException.getWrappedException) {
-				// 			if (e.rhinoException.getWrappedException().getErrors) {
-				// 				var errors = e.rhinoException.getWrappedException().getErrors();
-				// 				for (var i=0; i<errors.length; i++) {
-				// 					Packages.java.lang.System.err.println(errors[i]);
-				// 				}
-				// 			} else {
-				// 				e.rhinoException.getWrappedException().printStackTrace();
-				// 			}
-				// 		} else {
-				// 			e.rhinoException.printStackTrace();
-				// 		}
-				// 	} else if (e.javaException) {
-				// 		e.javaException.printStackTrace();
-				// 	}
-				// 	throw e;
-				// }
-			};
-
-			this.eval = this.script;
-
-			this.noEnvironmentAccess = !$rhino.canAccessEnvironment();
-		};
+			}
+		)();
 
 		var $bridge = new function() {
 			var getJavaClassName = function(javaclass) {
@@ -115,10 +118,6 @@
 		var castToRhino = function(v) { return v; };
 
 		var rv = castToRhino(runtime);
-
-		rv.getDebugger = function() {
-			return $rhino.getDebugger();
-		};
 
 		rv.java.sync = function(f,lock) {
 			if (rv.java.getClass("inonit.script.runtime.Threads")) {
