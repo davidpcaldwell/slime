@@ -23,6 +23,7 @@
 			 */
 			function($engine) {
 				return {
+					debugger: ($engine && $engine.debugger) ? $engine.debugger : void(0),
 					Error: {
 						decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
 					},

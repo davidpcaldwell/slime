@@ -85,6 +85,7 @@
 
 				/** @type { slime.runtime.$engine } */
 				var $engine = {
+					debugger: $javahost.debugger,
 					execute: function(script,scope,target) {
 						return $javahost.script(script.name,script.js,scope,target);
 					},
