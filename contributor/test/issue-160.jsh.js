@@ -13,7 +13,7 @@
 	function($api,jsh) {
 		if (!jsh.shell.jsh.src.getSubdirectory("local/jdk/11")) {
 			jsh.shell.run({
-				command: jsh.shell.jsh.src.getFile("jsh.bash"),
+				command: jsh.shell.jsh.src.getFile("jsh"),
 				arguments: [
 					"--add-jdk-11"
 				]
@@ -21,7 +21,7 @@
 		}
 
 		jsh.shell.run({
-			command: jsh.shell.jsh.src.getFile("jsh.bash"),
+			command: jsh.shell.jsh.src.getFile("jsh"),
 			arguments: [ jsh.shell.jsh.src.getFile("jsh/test/jsh-data.jsh.js") ],
 			environment: $api.Object.compose(jsh.shell.environment, {
 				JSH_LAUNCHER_JDK_HOME: jsh.shell.jsh.src.getSubdirectory("local/jdk/default").toString()
@@ -29,7 +29,7 @@
 		})
 
 		jsh.shell.run({
-			command: jsh.shell.jsh.src.getFile("jsh.bash"),
+			command: jsh.shell.jsh.src.getFile("jsh"),
 			arguments: [ jsh.shell.jsh.src.getFile("jsh/test/jsh-data.jsh.js") ],
 			environment: $api.Object.compose(jsh.shell.environment, {
 				JSH_LAUNCHER_JDK_HOME: jsh.shell.jsh.src.getSubdirectory("local/jdk/11").toString(),

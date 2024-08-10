@@ -638,7 +638,7 @@ namespace slime.jsh.wf.standard {
 				$api.fp.world.now.action(
 					jsh.shell.world.action,
 					jsh.shell.Invocation.from.argument({
-						command: getSlimePath("jsh.bash").pathname,
+						command: getSlimePath("jsh").pathname,
 						arguments: $api.Array.build(function(rv) {
 							rv.push(getSlimePath("jsh/tools/install/rhino.jsh.js").pathname);
 						}),
@@ -649,7 +649,7 @@ namespace slime.jsh.wf.standard {
 				$api.fp.world.now.action(
 					jsh.shell.world.action,
 					jsh.shell.Invocation.from.argument({
-						command: getSlimePath("jsh.bash").pathname,
+						command: getSlimePath("jsh").pathname,
 						arguments: $api.Array.build(function(rv) {
 							rv.push(getSlimePath("jsh/tools/install/tomcat.jsh.js").pathname);
 						}),
@@ -660,7 +660,7 @@ namespace slime.jsh.wf.standard {
 					jsh.shell.world.action,
 					jsh.shell.Invocation.from.argument({
 						//	TODO	perhaps should accept world Pathname
-						command: getSlimePath("jsh.bash").pathname,
+						command: getSlimePath("jsh").pathname,
 						arguments: $api.Array.build(function(rv) {
 							rv.push(getSlimePath("jsh/tools/profile.jsh.js").pathname);
 							rv.push("--profiler:output:json", getSlimePath("local/wf/profile.json").pathname);

@@ -17,4 +17,4 @@ if [ -f "${HOME}/Downloads/amazon-corretto-8.282.08.1-macosx-x64.tar.gz" ]; then
 fi
 >&2 echo "Running shell, ignoring user JDKs ..."
 export JSH_USER_JDKS=/dev/null
-"${BASE}/jsh.bash" "${BASE}/jsh/test/jsh-data.jsh.js"
+"${BASE}/jsh" "${BASE}/jsh/test/jsh-data.jsh.js"

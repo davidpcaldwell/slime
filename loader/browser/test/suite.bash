@@ -6,4 +6,4 @@
 
 SUB=$(dirname $0)
 BASE=$SUB/../../..
-$BASE/jsh.bash $SUB/suite.jsh.js "$@"
+$BASE/jsh $SUB/suite.jsh.js "$@"

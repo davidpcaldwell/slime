@@ -7,4 +7,4 @@
 
 DIR="$(dirname $0)"
 BASE="${DIR}/../../../.."
-"${BASE}/jsh.bash" "${DIR}/test.jsh.js" "$@"
+"${BASE}/jsh" "${DIR}/test.jsh.js" "$@"

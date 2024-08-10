@@ -46,11 +46,11 @@
 				return v.name + "=" + v.value;
 			}));
 			rv.push("curl");
-			rv.push("http://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash")
+			rv.push("http://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh")
 			return rv;
 		};
 
-		//	jsh.shell.console("curl " + "https://127.0.0.1:" + www.https.port + "/" + "davidpcaldwell/slime/master/jsh.bash");
+		//	jsh.shell.console("curl " + "https://127.0.0.1:" + www.https.port + "/" + "davidpcaldwell/slime/master/jsh");
 
 		//	TODO	this implementation and the third one (but not the middle one) are duplicated in rhino/tools/github/test/manual/jsh.jsh.js
 		jsh.shell.console("Test with mock GitHub: ");
@@ -85,7 +85,7 @@
 				rv.push("curl");
 				rv.push("-u", githubBasicAuthorization);
 				//	TODO	with -L, specifying http:// below would work properly via redirection
-				rv.push("https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh.bash");
+				rv.push("https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh");
 				return rv;
 			})().join(" ") + " | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh/test/jsh-data.jsh.js"
 		)

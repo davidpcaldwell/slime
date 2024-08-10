@@ -21,7 +21,7 @@ namespace slime.jrunscript.tools.profiler.viewer {
 				$api.fp.world.now.action(
 					jsh.shell.world.action,
 					jsh.shell.Invocation.from.argument({
-						command: jsh.shell.jsh.src.getRelativePath("jsh.bash").toString(),
+						command: jsh.shell.jsh.src.getRelativePath("jsh").toString(),
 						arguments: $api.Array.build(function(rv) {
 							rv.push(jsh.shell.jsh.src.getRelativePath("jsh/tools/profile.jsh.js").toString());
 							rv.push("--profiler:output:json", jsh.shell.jsh.src.getRelativePath("local/profiler/profiles.json").toString());

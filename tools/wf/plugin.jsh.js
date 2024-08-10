@@ -788,7 +788,7 @@
 								jsh.shell.Invocation.from.argument({
 									command: "bash",
 									arguments: [
-										jsh.shell.jsh.src.getFile("jsh.bash"),
+										jsh.shell.jsh.src.getFile("jsh"),
 										jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
 										"-version", version,
 										"-tsconfig", typescript.getConfig(project)
@@ -1258,7 +1258,7 @@
 							jsh.shell.Invocation.from.argument({
 								command: "bash",
 								arguments: [
-									jsh.shell.jsh.src.getFile("jsh.bash"),
+									jsh.shell.jsh.src.getFile("jsh"),
 									jsh.shell.jsh.src.getFile("tools/tsc.jsh.js"),
 									"-version", version,
 									"-tsconfig", typescript.getConfig(project)

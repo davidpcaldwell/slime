@@ -5,4 +5,4 @@
 #	END LICENSE
 
 BASE="$(dirname $0)/../../../.."
-$BASE/jsh.bash $(dirname $0)/tsdoc.jsh.js "$@"
+$BASE/jsh $(dirname $0)/tsdoc.jsh.js "$@"
