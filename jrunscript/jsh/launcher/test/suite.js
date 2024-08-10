@@ -352,7 +352,7 @@
 										$api.Object.compose(
 											implementation,
 											{
-												shell: [builtShell.getFile("jsh.bash")]
+												shell: [builtShell.getFile("jsh")]
 											}
 										),
 										descriptorChecks

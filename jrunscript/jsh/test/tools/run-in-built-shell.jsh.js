@@ -51,7 +51,7 @@
 						command: "bash",
 						arguments: (function() {
 							var rv = [];
-							rv.push(JSH_HOME.getFile("jsh.bash"));
+							rv.push(JSH_HOME.getFile("jsh"));
 							rv.push.apply(rv,parameters.arguments);
 							return rv;
 						})(),

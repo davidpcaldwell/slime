@@ -166,7 +166,7 @@ namespace slime.jsh {
 					{
 						command: "bash",
 						arguments: $api.Array.build(function(rv: string[]) {
-							rv.push("jsh.bash");
+							rv.push("jsh");
 							if (built) rv.push("jrunscript/jsh/test/tools/run-in-built-shell.jsh.js");
 							rv.push("jrunscript/jsh/loader/test/global-scope.jsh.js");
 							return rv;
@@ -190,7 +190,7 @@ namespace slime.jsh {
 					{
 						command: "bash",
 						arguments: $api.Array.build(function(rv: string[]) {
-							rv.push("jsh.bash");
+							rv.push("jsh");
 							rv.push("jrunscript/jsh/loader/test/plugin-scope.jsh.js");
 							return rv;
 						}),

@@ -5,7 +5,7 @@
 #	END LICENSE
 
 #	Manual test case:
-#	rm -Rvf local/jdk/default; rm -Rvf ~/.slime/jdk/default; ./jsh.bash jsh/test/jsh-data.jsh.js; ./jsh.bash --install-user-jdk; rm -Rvf local/jdk/default; ./jsh.bash jsh/test/jsh-data.jsh.js
+#	rm -Rvf local/jdk/default; rm -Rvf ~/.slime/jdk/default; ./jsh jsh/test/jsh-data.jsh.js; ./jsh --install-user-jdk; rm -Rvf local/jdk/default; ./jsh jsh/test/jsh-data.jsh.js
 #	check java.home of last script invoked and ensure that it is the user JDK
 
 if [ -n "${JSH_LAUNCHER_BASH_DEBUG}" ]; then

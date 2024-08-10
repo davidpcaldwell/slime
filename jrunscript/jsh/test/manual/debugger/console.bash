@@ -6,4 +6,4 @@
 #	END LICENSE
 
 SRC="$(dirname $0)/../../../.."
-env JSH_DEBUG_SCRIPT=rhino ${SRC}/jsh.bash ${SRC}/jsh/test/jsh-data.jsh.js
+env JSH_DEBUG_SCRIPT=rhino ${SRC}/jsh ${SRC}/jsh/test/jsh-data.jsh.js

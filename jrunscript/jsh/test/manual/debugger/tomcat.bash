@@ -7,4 +7,4 @@
 
 HERE="$(dirname $0)"
 SRC="${HERE}/../../../.."
-env JSH_DEBUG_SCRIPT=rhino ${SRC}/jsh.bash ${HERE}/tomcat.jsh.js
+env JSH_DEBUG_SCRIPT=rhino ${SRC}/jsh ${HERE}/tomcat.jsh.js

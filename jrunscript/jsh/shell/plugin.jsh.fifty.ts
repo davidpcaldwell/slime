@@ -116,7 +116,7 @@ namespace slime.jsh.shell {
 					jsh.shell.Invocation.from.argument({
 						command: "bash",
 						arguments: [
-							jsh.shell.jsh.src.getFile("jsh.bash").toString(),
+							jsh.shell.jsh.src.getFile("jsh").toString(),
 							jsh.shell.jsh.src.getRelativePath("rhino/shell/test/stdio-close.jsh.js").toString()
 						],
 						stdio: {

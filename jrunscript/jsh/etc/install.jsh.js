@@ -130,23 +130,23 @@
 		if (parameters.options.unix) {
 			var bash = which("bash");
 			if (ISSUE_200_FIXED && bash) {
-				if (!src.getFile("jrunscript/jsh/launcher/jsh.bash")) {
+				if (!src.getFile("jrunscript/jsh/launcher/jsh")) {
 					jsh.shell.console("src: " + src);
 					jsh.shell.exit(1);
 				}
-				var code = src.getFile("jrunscript/jsh/launcher/jsh.bash").read(String);
+				var code = src.getFile("jrunscript/jsh/launcher/jsh").read(String);
 				var lines = code.split("\n");
 				var path = bash.parent.getRelativePath("bash").toString();
 				var rewritten = ["#!" + path].concat(lines).join("\n");
-				install.getRelativePath("jsh.bash").write(rewritten, { append: false });
+				install.getRelativePath("jsh").write(rewritten, { append: false });
 				var chmod = which("chmod");
 				jsh.shell.shell(
 					chmod,
 					[
-						"+x", install.getRelativePath("jsh.bash")
+						"+x", install.getRelativePath("jsh")
 					]
 				);
-				jsh.shell.console("Created bash launcher at " + install.getRelativePath("jsh.bash") + " using bash at " + bash);
+				jsh.shell.console("Created bash launcher at " + install.getRelativePath("jsh") + " using bash at " + bash);
 			} else if (!ISSUE_200_FIXED) {
 				jsh.shell.console("bash launcher disabled; see https://bitbucket.org/davidpcaldwell/slime/issues/200");
 			} else {
