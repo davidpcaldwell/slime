@@ -26,7 +26,6 @@
 			suite.part(id, part);
 		};
 
-		add("loader/browser/client.js", getSlimePart("loader/browser/client.api.html"));
 		add("js/object/", getSlimePart("js/object/api.html"));
 		add("js/document/", getSlimePart("js/document/api.html"));
 		// TODO: does js/promise have any real tests?
