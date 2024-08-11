@@ -56,13 +56,13 @@ namespace slime.definition.unit {
 		}
 	}
 
-	export type Factory = slime.loader.Script<Context,Exports>
+	export type Script = slime.loader.Script<Context,Exports>
 }
 
 namespace slime.definition.unit.internal {
 	export const { subject, types } = (function(fifty: slime.fifty.test.Kit) {
 		var Promise = (fifty.global.window) ? fifty.global.window["Promise"] : void(0);
-		const code = fifty.$loader.script("unit.js") as slime.definition.unit.Factory;
+		const code = fifty.$loader.script("unit.js") as slime.definition.unit.Script;
 
 		const scripts: { verify: slime.definition.verify.Script } = {
 			verify: fifty.$loader.script("../verify.js")
