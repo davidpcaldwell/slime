@@ -18,13 +18,24 @@
  *
  * Several additional APIs can be loaded from the `Runtime`:
  *
- * Path           | Type                               |
- * -------------- | ----------------------------------
- * `js/web/`      | {@link slime.web.Script} Web-related concepts like URLs and form data. |
- * `js/time/`     | {@link slime.time.Script} Dates and times. |
- * `js/document/` | **Deprecated.** (undocumented) XML and HTML documents |
- * `js/promise/`  | **Deprecated.** {@link slime.promise.Script} Asynchronous programming using A+-like Promises. |
- * `js/object/`   | **Deprecated.** {@link slime.$api.old.Exports} General JavaScript APIs; mostly replaced by {@link slime.$api.Exports | $api}. |
+ * Path           | Description                                                                                   | Documentation
+ * -------------- | --------------------------------------------------------------------------------------------- | ----------------------------------
+ * `js/web/`      |  Web-related concepts like URLs and form data.                                                | {@link slime.web.Script}
+ * `js/time/`     | Dates and times.                                                                              | {@link slime.time.Script}
+ * `js/document/` | **Deprecated.** (undocumented) XML and HTML documents                                         |
+ * `js/promise/`  | **Deprecated.** Asynchronous programming using A+-like Promises.                              | {@link slime.promise.Script}
+ * `js/object/`   | **Deprecated.** General JavaScript APIs; mostly replaced by {@link slime.$api.Exports | $api} | {@link slime.$api.old.Exports}
+ *
+ * There are some additional APIs, all deprecated, that pertain to testing with the deprecated JSAPI implementation:
+ *
+ * Path                                                                    | Description                                                                         | Documentation
+ * ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----
+ * `loader/api/old/unit.js`                                                | JSAPI unit testing implementation                                                   | {@link slime.definition.unit.Exports}
+ * `loader/api/api.html.js`                                                | JSAPI definition files                                                              | `loader/api/api.html`
+ * `loader/api/old/browser/module.js`                                      | Browser implementation of JSAPI unit tests; browser test suite definition           | `loader/browser/test/api.html`
+ * `loader/api/ui/loader.js`                                               | A bundle including the above two APIs, as well as a UI for executing unit tests     | `loader/api/ui/loader.api.html`
+ * `jsh/unit/plugin.jsh.browser.js`                                        | Undocumented API that allows JSAPI definition files to be executed in a browser     |
+ * `loader/browser/test/suite.jsh.js` and `loader/browser/test/suite.bash` | `jsh` script that launches a browser test suite (or an individual definition file). | `loader/browser/test/suite.jsh.api.html`
  */
 namespace slime.browser {
 	/**
