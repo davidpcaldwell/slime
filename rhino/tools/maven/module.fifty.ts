@@ -27,7 +27,7 @@ namespace slime.jrunscript.tools.maven {
 		}
 
 		jsh: {
-			js: slime.js.old.Exports & {
+			js: slime.$api.old.Exports & {
 				document: any
 			}
 			io: slime.jrunscript.io.Exports

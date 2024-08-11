@@ -699,12 +699,12 @@ namespace slime.jrunscript.tools.git {
 	export interface Context {
 		program: slime.jrunscript.file.File
 		api: {
-			js: slime.js.old.Exports
+			js: slime.$api.old.Exports
 			java: Pick<slime.jrunscript.java.Exports,"Thread">
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 			//	TODO	fix this
-			Error: slime.js.old.Exports["Error"]
+			Error: slime.$api.old.Exports["Error"]
 			time: slime.time.Exports
 			web: slime.web.Exports
 		}

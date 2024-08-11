@@ -112,7 +112,7 @@ namespace slime.jrunscript.shell.internal.os {
 			name: string
 		}
 		api: {
-			js: slime.js.old.Exports
+			js: slime.$api.old.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 		}

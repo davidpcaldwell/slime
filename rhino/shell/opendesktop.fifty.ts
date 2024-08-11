@@ -7,7 +7,7 @@
 namespace slime.jrunscript.shell.opendesktop {
 	export interface Context {
 		library: {
-			js: slime.js.old.Exports
+			js: slime.$api.old.Exports
 
 			//	TODO	used only for chmod and softlinking; should use file methods instead, although linking may not exist
 			shell: Pick<slime.jrunscript.shell.Exports,"run"|"PATH">

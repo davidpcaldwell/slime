@@ -548,7 +548,7 @@ namespace slime.jrunscript.tools.git.internal.oo {
 
 	export interface Context {
 		api: {
-			js: slime.js.old.Exports
+			js: slime.$api.old.Exports
 			java: Pick<slime.jrunscript.java.Exports,"Thread">
 			shell: slime.jrunscript.shell.Exports
 		}

@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.js.old {
+namespace slime.$api.old {
 	(
 		function(
 			fifty: slime.fifty.test.Kit
