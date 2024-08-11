@@ -6,24 +6,25 @@
 
 /**
  * The SLIME browser runtime can be loaded by executing the `loader/browser/client.js` script. The runtime can be configured by
- * creating a `window.inonit.loader` of type {@link Settings} before loading the runtime. The script also is presented the `window`
- * object itself as a value of type {@link Context}, so can be further configured by manipulating the writable properties of
- * {@link Context} on `window`.
+ * creating a `window.inonit.loader` of type {@link slime.browser.Settings} before loading the runtime. The script also is presented the `window`
+ * object itself as a value of type {@link slime.browser.Context}, so can be further configured by manipulating the writable properties of
+ * `Context` on `window`.
  *
  * Based on the configuration, a `window.inonit` object of type
- * {@link Runtime} will be created and be available to the application.
+ * {@link slime.browser.Runtime} will be created and be available to the application.
  *
- * All additional code loaded through the runtime will be provided with a {@link $api} object in its scope as `$api`.
+ * All additional code loaded through the runtime will be provided with a {@link slime.$api.Global} object in its scope as `$api`.
+ * This object is also available to code not loaded through the runtime (for example, top-level scripts) as `inonit.loader.$api`.
  *
  * Several additional APIs can be loaded from the `Runtime`:
  *
- * Path           | Type
+ * Path           | Type                               |
  * -------------- | ----------------------------------
- * `js/web/`      | {@link slime.web.Script}
- * `js/time/`     | {@link slime.time.Script}
- * `js/document/` | **Deprecated.** XML and HTML documents
- * `js/promise/`  | **Deprecated.** {@link slime.promise.Script}
- * `js/object/`   | **Deprecated.** {@link slime.runtime.old.Exports}
+ * `js/web/`      | {@link slime.web.Script} Web-related concepts like URLs and form data. |
+ * `js/time/`     | {@link slime.time.Script} Dates and times. |
+ * `js/document/` | **Deprecated.** (undocumented) XML and HTML documents |
+ * `js/promise/`  | **Deprecated.** {@link slime.promise.Script} Asynchronous programming using A+-like Promises. |
+ * `js/object/`   | **Deprecated.** {@link slime.$api.old.Exports} General JavaScript APIs; mostly replaced by {@link slime.$api.Exports | $api}. |
  */
 namespace slime.browser {
 	/**

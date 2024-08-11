@@ -57,7 +57,7 @@ namespace slime.jrunscript.shell {
 
 			//httpd: any
 
-			js: slime.js.old.Exports
+			js: slime.$api.old.Exports
 
 			/**
 			 * The `js/document` module.

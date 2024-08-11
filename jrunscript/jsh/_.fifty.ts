@@ -82,7 +82,7 @@ namespace slime.jsh {
 
 		script: slime.jsh.script.Exports
 
-		js: slime.js.old.Exports & {
+		js: slime.$api.old.Exports & {
 			document: any
 			web: slime.web.Exports
 		}

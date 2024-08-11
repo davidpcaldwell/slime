@@ -844,7 +844,7 @@ namespace slime.jsh.script.internal {
 
 	export interface Context extends Source {
 		api: {
-			js: slime.js.old.Exports
+			js: slime.$api.old.Exports
 			web: slime.web.Exports
 			file: slime.jrunscript.file.Exports
 			http: () => slime.jsh.Global["http"]

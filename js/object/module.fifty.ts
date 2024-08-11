@@ -5,9 +5,11 @@
 //	END LICENSE
 
 /**
- * An older module containing general JavaScript utilities. Replaced by {@link slime.$api.Global}.
+ * An older module containing general JavaScript utilities.
+ *
+ * @deprecated Replaced by {@link slime.$api.Global}.
  */
-namespace slime.js.old {
+namespace slime.$api.old {
 	export interface Context {
 		globals: boolean
 	}
