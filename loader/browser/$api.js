@@ -16,7 +16,7 @@
 		$export({
 			timer: {
 				schedule: function(p) {
-					var now = $context.time.Date();
+					var now = new $context.time.Date();
 					var when = p.next(now);
 					var id = $context.time.setTimeout(p.process, when.getTime() - now.getTime());
 					return {
