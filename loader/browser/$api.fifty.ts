@@ -7,7 +7,7 @@
 namespace slime.browser.internal.$api {
 	export interface Context {
 		time: {
-			Date: () => Date
+			Date: new () => Date
 			setTimeout: WindowOrWorkerGlobalScope["setTimeout"]
 			clearTimeout: WindowOrWorkerGlobalScope["clearTimeout"]
 		}
@@ -42,7 +42,7 @@ namespace slime.browser.internal.$api {
 				var constantDate = function(date: Date) {
 					return function() {
 						return date;
-					}
+					} as unknown as Context["time"]["Date"]
 				};
 
 				interface Call<F extends slime.external.lib.es5.TypescriptFunction> {
@@ -87,7 +87,9 @@ namespace slime.browser.internal.$api {
 				var clearTimeout: WindowOrWorkerGlobalScope["clearTimeout"] = function(id) {
 				}
 
-				var Process = Recorder(function() {});
+				var process = function() {};
+
+				var Process = Recorder(process);
 
 				var api = test.script({
 					time: {
@@ -109,11 +111,9 @@ namespace slime.browser.internal.$api {
 
 				verify(Process).calls.length.is(0);
 				verify(setTimeout).calls.length.is(1);
-				var check = setTimeout.calls[0];
-				var f = setTimeout.calls[0].arguments[0];
-				verify(f).is(Process.recorder);
-				verify(check).arguments[1].is(1000);
-				verify(check).arguments.length.is(2);
+				verify(setTimeout).calls[0].arguments.evaluate.property(0).is(Process.recorder);
+				verify(setTimeout).calls[0].arguments.evaluate.property(1).is(1000);
+				verify(setTimeout).calls[0].arguments.length.is(2);
 			};
 		}
 	//@ts-ignore
