@@ -39,6 +39,14 @@ namespace slime.external.lib.rename.typescript {
 
 namespace slime.external.lib.es5 {
 	export type Function = slime.external.lib.rename.es5._Function
+
+	/**
+	 * For some reason, TypeScript declares utility types like `Parameters` and `ReturnType` to refer to this, rather than its
+	 * own `Function` definition. So we reproduce this type for reuse when generically specifying functions and using those utility
+	 * types.
+	 */
+	export type TypescriptFunction = (...args: any[]) => any
+
 	export type Date = slime.external.lib.rename.es5._Date
 	export type Object = slime.external.lib.rename.es5._Object
 	export type ObjectConstructor = slime.external.lib.rename.es5._ObjectConstructor
