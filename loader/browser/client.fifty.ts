@@ -68,6 +68,9 @@ namespace slime.browser {
 	export interface Context {
 		readonly fetch: Window["fetch"]
 		readonly location: Location
+		Date: DateConstructor
+		setTimeout: Window["setTimeout"]
+		clearTimeout: Window["clearTimeout"]
 		XMLHttpRequest: typeof XMLHttpRequest
 		CoffeeScript: any
 		Packages: slime.jrunscript.Packages
@@ -288,6 +291,7 @@ namespace slime.browser {
 		fifty.tests.suite = function() {
 			fifty.run(fifty.tests.exports);
 			fifty.run(fifty.tests.bitbucketIssue296);
+			fifty.load("$api.fifty.ts");
 		}
 	}
 //@ts-ignore
