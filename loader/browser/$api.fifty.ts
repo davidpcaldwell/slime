@@ -36,6 +36,20 @@ namespace slime.browser.internal.$api {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			var { $api } = fifty.global;
+
+			fifty.tests.load = function() {
+				verify($api).evaluate.property("timer").is.type("object");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
 
 			fifty.tests.timer = fifty.test.Parent();
 			fifty.tests.timer.schedule = function() {
@@ -124,6 +138,8 @@ namespace slime.browser.internal.$api {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.load);
+				fifty.run(fifty.tests.timer);
 			}
 		}
 	//@ts-ignore

@@ -35,14 +35,15 @@
 
 		/**
 		 *
-		 * @param { string } base
+		 * @param { string } base A base URL for boostrapping SLIME, whose base is the SLIME `loader/` directory.
 		 */
 		function Bootstrap(base) {
-			this.base = base;
-
-			this.getRelativePath = function(path) {
-				return this.base + path;
-			}
+			return {
+				base: base,
+				getRelativePath: function(path) {
+					return base + path;
+				}
+			};
 		}
 
 		var getCurrentScriptElement = function() {
@@ -78,9 +79,9 @@
 
 		/**
 		 *
-		 * @param { string } base
+		 * @param { string } currentPage
 		 */
-		function getCurrent(base) {
+		function getLoaderBase(currentPage) {
 			var getBasePath = function(pathname) {
 				var path = pathname.split("?")[0];
 				var tokens = path.split("/");
@@ -91,25 +92,23 @@
 				}
 			};
 
-			var rv = getBasePath(base) + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
+			var rv = getBasePath(currentPage) + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
 			rv = canonicalize(rv);
 			return rv;
 		}
 
-		var getCurrentBase = function() {
+		var getCurrentPage = function() {
 			return window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.substring(1);
 		}
 
-		var getCurrentScript = function() {
-			var base = getCurrentBase();
-			var current = getCurrent(base);
-			return new Bootstrap(current);
+		var getBootstrap = function() {
+			var page = getCurrentPage();
+			var base = getLoaderBase(page);
+			return Bootstrap(base);
 		}
 
-		var bootstrap = getCurrentScript();
+		var bootstrap = getBootstrap();
 
-		//	Now even if the object existed before, we have obtained the specified properties and we replace the existing object with
-		//	this one
 		/** @type { slime.browser.Exports } */
 		var $exports = (
 			function() {
@@ -295,8 +294,23 @@
 					runtime.old.Loader.apply(this,arguments);
 				};
 
+				var bootstrapper = new Loader(bootstrap.base);
+
+				var code = {
+					/** @type { slime.browser.internal.$api.Script } */
+					browser: bootstrapper.script("browser/$api.js")
+				};
+
+				Object.assign(runtime.$api, code.browser({
+					time: {
+						Date: window.Date,
+						setTimeout: window.setTimeout,
+						clearTimeout: window.clearTimeout
+					}
+				}));
+
 				var getPageBase = function() {
-					return getCurrentBase().split("/").slice(0,-1).join("/") + "/";
+					return getCurrentPage().split("/").slice(0,-1).join("/") + "/";
 				};
 
 				var loaderMethods = (
@@ -341,7 +355,7 @@
 						},
 						nugget: new function() {
 							//	DRY:	Other scripts may want to use this (already have examples)
-							this.getCurrentScript = getCurrentScript;
+							this.getCurrentScript = getBootstrap;
 
 							this.page = {
 								base: getPageBase(),
