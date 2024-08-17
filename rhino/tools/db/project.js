@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-(function() {
+(function(slim) {
 	tests.rhino = {
 		modules: [
 			{
@@ -49,4 +49,5 @@
 	//	name: "postgresql",
 	//	path: "db/jdbc/postgresql/"
 	//}));
-})();
+//@ts-ignore
+})(slim);
