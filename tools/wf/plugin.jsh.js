@@ -20,8 +20,6 @@
 			},
 			load: function() {
 				var code = {
-					/** @type { slime.jsh.wf.internal.typescript.Script } */
-					typescript: $loader.script("typescript.js"),
 					/** @type { slime.jsh.wf.internal.module.Script } */
 					module: $loader.script("module.js"),
 					/** @type { slime.jsh.wf.standard.Script } */

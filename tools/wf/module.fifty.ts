@@ -28,7 +28,15 @@ namespace slime.jsh.wf.internal.module {
 		}
 	}
 
+	export namespace exports {
+		export interface Project {
+			typescript: exports.project.Typescript
+		}
+	}
+
 	export interface Exports {
+		typescript: exports.Typescript
+
 		/**
 		 * Functions that operate on `wf` {@link slime.jsh.wf.Project | Project}s.
 		 */

@@ -38,12 +38,12 @@ namespace slime.jsh.wf.internal.module {
 		})(fifty);
 	}
 
-	export interface Exports {
-		typescript: {
+	export namespace exports {
+		export interface Typescript {
 			/**
 			 * Returns the default version of TypeScript.
 			 */
-			version: slime.$api.fp.impure.Input<string>
+			version: () => string
 
 			typedoc: {
 				invocation: (p: typedoc.Invocation) => slime.$api.fp.world.Question<
@@ -61,11 +61,9 @@ namespace slime.jsh.wf.internal.module {
 				>
 			}
 		}
-	}
 
-	export namespace exports {
-		export interface Project {
-			typescript: {
+		export namespace project {
+			export interface Typescript {
 				version: (project: slime.jsh.wf.Project) => string
 				configurationFile: (project: slime.jsh.wf.Project) => slime.$api.fp.Maybe<slime.jrunscript.file.Location>
 			}
@@ -233,8 +231,8 @@ namespace slime.jsh.wf.internal.typescript {
 	}
 
 	export interface Exports {
-		module: slime.jsh.wf.internal.module.Exports["typescript"]
-		Project: slime.jsh.wf.internal.module.exports.Project["typescript"]
+		module: slime.jsh.wf.internal.module.exports.Typescript
+		Project: slime.jsh.wf.internal.module.exports.project.Typescript
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
