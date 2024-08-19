@@ -185,7 +185,21 @@
 
 				/** @type { slime.runtime.Scope } */
 				var scope = {
-					$engine: void(0),
+					$engine: {
+						execute: function(/*script{name,js},scope,target*/) {
+							return (function() {
+								//@ts-ignore
+								with( arguments[1] ) {
+									return eval(arguments[0]);
+								}
+							}).call(
+								arguments[2],
+								arguments[0].js, arguments[1]
+							);
+						},
+						//	TODO	make optional?
+						MetaObject: void(0)
+					},
 					$slime: {
 						getRuntimeScript: function(path) {
 							return {
