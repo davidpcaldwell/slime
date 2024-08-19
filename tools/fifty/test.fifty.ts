@@ -94,25 +94,25 @@ namespace slime.fifty.test.internal.test {
 		 */
 		run: (p: {
 			loader: slime.old.Loader
-			path: string
 			scopes: {
 				jsh?: {
 					directory: slime.jrunscript.file.Directory
 					loader: slime.old.Loader
 				}
 			}
+			path: string
 			part?: string
 		}) => Result
 
 		list: (p: {
 			loader: slime.old.Loader
-			path: string
 			scopes: {
 				jsh?: {
 					directory: slime.jrunscript.file.Directory
 					loader: slime.old.Loader
 				}
 			}
+			path: string
 		}) => Manifest
 	}
 

@@ -301,6 +301,7 @@
 		var runner = function(tests) {
 			/**
 			 * @template { any } T
+			 * @param { slime.fifty.test.internal.test.AsynchronousScope } ascope
 			 * @param { (t: T) => void } callable
 			 * @param { string } name essentially for display when reporting results
 			 * @param { T } [argument]
