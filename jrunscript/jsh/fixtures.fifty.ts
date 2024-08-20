@@ -39,27 +39,6 @@ namespace slime.jsh.test {
 			};
 
 			fifty.tests.wip = function() {
-				var slime = fifty.jsh.file.relative("../..");
-
-				var scripts = $f.now(
-					slime,
-					$f.Mapping.properties({ root: $api.fp.identity }),
-					jsh.file.Location.directory.loader.synchronous,
-					jsh.loader.synchronous.scripts
-				)
-
-				var code: {
-					testing: slime.jrunscript.tools.github.internal.test.Script
-				} = {
-					testing: scripts("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
-				};
-
-				var library = {
-					testing: code.testing({
-						slime: jsh.file.object.directory(slime)
-					})
-				};
-
 				var toInvocation = function(line: string[], input?: string, environment?: { [name: string]: string }) {
 					if (!environment) environment = {};
 					return jsh.shell.Invocation.from.argument({
@@ -94,11 +73,11 @@ namespace slime.jsh.test {
 					$api.fp.property("output")
 				);
 
-				var server = library.testing.startMock(jsh);
+				var it = test.subject.shells.remote();
 
 				//	TODO	duplicates jrunscript/jsh/test/remote.fifty.ts, which is in jrunscript suite; remove duplication
 				var settings: slime.jsh.unit.mock.github.Settings = {
-					mock: server,
+					mock: it.web,
 					branch: "local"
 				};
 
@@ -106,7 +85,7 @@ namespace slime.jsh.test {
 				//	to `bash`, hence the two step process below in which the first download is sent as input to the second
 				//	command
 
-				var download = library.testing.getDownloadJshBashCommand(
+				var download = it.library.getDownloadJshBashCommand(
 					jsh.shell.PATH,
 					settings
 				);
@@ -118,7 +97,7 @@ namespace slime.jsh.test {
 				);
 				jsh.shell.console("Script starts with:\n" + launcherBashScript.split("\n").slice(0,10).join("\n"));
 
-				var invoke = library.testing.getBashInvocationCommand(settings);
+				var invoke = it.library.getBashInvocationCommand(settings);
 				jsh.shell.console("Invoking ...");
 				jsh.shell.console(invoke.join(" "));
 				var scriptOutput = $api.fp.now.invoke(
