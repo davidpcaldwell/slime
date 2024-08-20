@@ -32,25 +32,28 @@ namespace slime.fifty.view {
 			const { $api, jsh } = fifty.global;
 
 			var code: Script = fifty.$loader.script("project.js");
-			var library = code({
-				library: {
-					file: jsh.file,
-					httpd: jsh.httpd
-				}
-			})
 
 			fifty.tests.suite = function() {
-				var base = fifty.jsh.file.object.getRelativePath("../..").directory;
-				var server = library({ base: base });
-				var response = $api.fp.world.now.question(
-					jsh.http.world.java.urlconnection,
-					jsh.http.Argument.from.request({
-						url: "http://127.0.0.1:" + server.port + "/README.html"
+				if (fifty.global.jsh) {
+					var library = code({
+						library: {
+							file: jsh.file,
+							httpd: jsh.httpd
+						}
 					})
-				);
-				var README = response.stream.character().asString();
-				var file = fifty.jsh.file.object.getRelativePath("../../README.html").file.read(String);
-				verify(file == README, "README.html served matches file").is(true);
+
+					var base = fifty.jsh.file.object.getRelativePath("../..").directory;
+					var server = library({ base: base });
+					var response = $api.fp.world.now.question(
+						jsh.http.world.java.urlconnection,
+						jsh.http.Argument.from.request({
+							url: "http://127.0.0.1:" + server.port + "/README.html"
+						})
+					);
+					var README = response.stream.character().asString();
+					var file = fifty.jsh.file.object.getRelativePath("../../README.html").file.read(String);
+					verify(file == README, "README.html served matches file").is(true);
+				}
 			}
 		}
 	//@ts-ignore

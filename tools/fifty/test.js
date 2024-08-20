@@ -370,6 +370,56 @@
 			}
 		)();
 
+		/** @type { slime.fifty.test.Kit["global"] } */
+		var global = $api.fp.now(
+			{},
+			$api.Object.defineProperty({
+				name: "$platform",
+				descriptor: {
+					value: $platform
+				}
+			}),
+			$api.Object.defineProperty({
+				name: "$api",
+				descriptor: {
+					value: $api
+				}
+			}),
+			$api.Object.maybeDefineProperty({
+				name: "jsh",
+				descriptor: $api.fp.Partial.from.loose(function(it) {
+					return ($context.jsh) ? { value: $context.jsh.global } : void(0)
+				})
+			}),
+			$api.Object.maybeDefineProperty({
+				name: "window",
+				descriptor: $api.fp.Partial.from.loose(function(it) {
+					return ($context.window) ? { value: $context.window.global } : void(0)
+				})
+			}),
+			$api.Object.maybeDefineProperty({
+				name: "customElements",
+				descriptor: $api.fp.Partial.from.loose(function(it) {
+					if ($context.window) {
+						var registry = (
+							function() {
+								var next = 0;
+								var prefix = "fifty-customelements-";
+								return {
+									register: function(factory) {
+										$context.window.global.customElements.define(prefix + String(next++), factory);
+									}
+								}
+							}
+						)();
+						return {
+							value: registry
+						}
+					}
+				})
+			})
+		)
+
 		/**
 		 *
 		 * @param { slime.fifty.test.internal.test.AsynchronousScopes } ascopes
@@ -391,12 +441,7 @@
 			 * @type { slime.fifty.test.Kit }
 			 */
 			var fifty = {
-				global: {
-					$platform: $platform,
-					$api: $api,
-					jsh: ($context.jsh) ? $context.jsh.global : void(0),
-					window: ($context.window) ? $context.window.global : void(0)
-				},
+				global: global,
 				$loader: loader,
 				promises: $context.promises,
 				$api: {
