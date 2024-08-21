@@ -13,6 +13,9 @@ namespace slime.jsh.unit.mock.github {
 		token?: () => string
 	}
 
+	/**
+	 * A mock hosted SLIME project; produces a mock web with a GitHub that hosts SLIME from a context-provided directory.
+	 */
 	export interface Exports {
 		startMock: (jsh: slime.jsh.Global) => slime.jsh.unit.mock.Web
 
