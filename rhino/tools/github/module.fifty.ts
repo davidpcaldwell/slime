@@ -23,6 +23,13 @@ namespace slime.jsh.unit.mock.github {
  * `rhino/tools/github/tools/types.jsh.js`. This emits `rhino/tools/github/tools/github-rest.d.ts`, which **should** be committed
  * to source control (as it contains the latest GitHub API, generated at the time of running the program). The generator output
  * is based on the GitHub [OpenAPI description](https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json).
+ *
+ * ## Contributing
+ *
+ * There are various levels of mocking available for GitHub.
+ *
+ * * An arbitrarily-configured GitHub may be mocked via {@link slime.jsh.unit.mock.web.Github}.
+ * * A GitHub configured only with SLIME (potentially for testing remote shells) is provided by {@link slime.jsh.unit.mock.github.Exports}.
  */
 namespace slime.jrunscript.tools.github {
 	export interface Context {
