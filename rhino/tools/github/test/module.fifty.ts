@@ -16,7 +16,10 @@ namespace slime.jsh.unit.mock.github {
 	export interface Exports {
 		startMock: (jsh: slime.jsh.Global) => slime.jsh.unit.mock.Web
 
-		getDownloadJshBashCommand: (PATH: slime.jrunscript.file.Searchpath, options: Pick<slime.jsh.unit.mock.github.Settings,"mock" | "token" | "branch">) => string[]
+		getDownloadJshBashCommand: (
+			PATH: slime.jrunscript.file.Searchpath,
+			options: Pick<slime.jsh.unit.mock.github.Settings,"mock" | "token" | "branch">
+		) => string[]
 
 		getBashInvocationCommand: (options: slime.jsh.unit.mock.github.Settings) => string[]
 
