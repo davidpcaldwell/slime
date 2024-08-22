@@ -25,28 +25,28 @@ namespace slime.jsh.test {
 	}
 
 	export interface Exports {
-		shells: Shells
+		shells: (fifty: slime.fifty.test.Kit) => Shells
 	}
 
 	(
 		function(Packages: slime.jrunscript.Packages, $api: slime.$api.Global, jsh: slime.jsh.Global, $export: slime.loader.Export<Exports>) {
-			var getTemporaryLocationProperty: (name: string) => slime.$api.fp.impure.Input<string> = function(name: string) {
-				return function() {
-					return jsh.java.vm.properties()[name];
-				}
-			};
+			// var getTemporaryLocationProperty: (name: string) => slime.$api.fp.impure.Input<string> = function(name: string) {
+			// 	return function() {
+			// 		return jsh.java.vm.properties()[name];
+			// 	}
+			// };
 
-			var inTemporaryLocation = function(p: {
-				propertyName: string
-				build: () => string
-			}): string {
-				var location = getTemporaryLocationProperty(p.propertyName)();
-				if (!location) {
-					location = p.build();
-					jsh.java.vm.setProperty(p.propertyName)(location);
-				}
-				return location;
-			}
+			// var inTemporaryLocation = function(p: {
+			// 	propertyName: string
+			// 	build: () => string
+			// }): string {
+			// 	var location = getTemporaryLocationProperty(p.propertyName)();
+			// 	if (!location) {
+			// 		location = p.build();
+			// 		jsh.java.vm.setProperty(p.propertyName)(location);
+			// 	}
+			// 	return location;
+			// }
 
 			var asJshIntention: slime.$api.fp.Identity<slime.jsh.shell.Intention> = $api.fp.identity;
 
@@ -57,12 +57,11 @@ namespace slime.jsh.test {
 			};
 
 			$export({
-				shells: {
-					unbuilt: unbuilt,
-					built: function() {
-						var rv = inTemporaryLocation({
-							propertyName: "slime.jrunscript.jsh.test.built",
-							build: function() {
+				shells: function(fifty) {
+					if (!fifty.global["jrunscript/jsh/fixtures.ts:shells"]) {
+						fifty.global["jrunscript/jsh/fixtures.ts:shells"] = {
+							unbuilt: unbuilt,
+							built: $api.fp.impure.Input.memoized(function() {
 								//	TODO	should store result in system property so that it is cached across loads of this file as well as
 								//			individual invocations
 								var TMPDIR = $api.fp.world.now.question(
@@ -120,20 +119,14 @@ namespace slime.jsh.test {
 									);
 
 									var canonical = String(jsh.file.Pathname(TMPDIR.pathname).java.adapt().getCanonicalPath());
-									return canonical;
+									return {
+										home: canonical
+									};
 								} else {
 									throw new Error();
 								}
-							}
-						});
-						return {
-							home: rv
-						};
-					},
-					packaged: function() {
-						var rv = inTemporaryLocation({
-							propertyName: "slime.jrunscript.jsh.test.packaged",
-							build: function() {
+							}),
+							packaged: $api.fp.impure.Input.memoized(function() {
 								var to = jsh.file.Location.canonicalize($api.fp.world.now.question(
 									jsh.file.Location.from.temporary(jsh.file.world.filesystems.os),
 									{
@@ -184,44 +177,44 @@ namespace slime.jsh.test {
 
 								if (build.status != 0) throw new Error("package.jsh.js exit status: " + build.status);
 
-								return to.pathname;
-							}
-						});
-						return {
-							package: rv
-						};
-					},
-					remote: function() {
-						//	TODO	add caching
-						var current = jsh.shell.jsh.Installation.from.current();
+								return {
+									package: to.pathname
+								};
+							}),
+							remote: $api.fp.impure.Input.memoized(function() {
+								//	TODO	add caching
+								var current = jsh.shell.jsh.Installation.from.current();
 
-						if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
-							var slime = jsh.file.Location.from.os(current.src);
+								if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
+									var slime = jsh.file.Location.from.os(current.src);
 
-							var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
+									var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
 
-							var code: {
-								testing: slime.jrunscript.tools.github.internal.test.Script
-							} = {
-								testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
-							};
+									var code: {
+										testing: slime.jrunscript.tools.github.internal.test.Script
+									} = {
+										testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
+									};
 
-							var library = {
-								testing: code.testing({
-									slime: jsh.file.object.directory(slime)
-								})
-							};
+									var library = {
+										testing: code.testing({
+											slime: jsh.file.object.directory(slime)
+										})
+									};
 
-							var server = library.testing.startMock(jsh);
+									var server = library.testing.startMock(jsh);
 
-							return {
-								web: server,
-								library: library.testing
-							};
-						} else {
-							throw new Error();
+									return {
+										web: server,
+										library: library.testing
+									};
+								} else {
+									throw new Error();
+								}
+							})
 						}
 					}
+					return fifty.global["jrunscript/jsh/fixtures.ts:shells"];
 				}
 			});
 		}

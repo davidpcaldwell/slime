@@ -16,12 +16,19 @@
 			return script();
 		})();
 
+
+		/** Mock fifty to deal with what the API looks like. TODO do we even need this file at this point? */
+		var fifty: slime.fifty.test.Kit = {
+			global: {
+			}
+		} as slime.fifty.test.Kit;
+
 		jsh.script.cli.main(
 			jsh.script.cli.program({
 				commands: {
 					run: {
 						built: function(p) {
-							var shell = fixtures.shells.built();
+							var shell = fixtures.shells(fifty).built();
 
 							var exit = $api.fp.now.invoke(
 								asJshIntention({
@@ -50,7 +57,7 @@
 							jsh.shell.exit(exit.status);
 						},
 						packaged: function(p) {
-							var jar = fixtures.shells.packaged();
+							var jar = fixtures.shells(fifty).packaged();
 
 							var exit = $api.fp.now.invoke(
 								//	TODO	what about VM invocation stuff

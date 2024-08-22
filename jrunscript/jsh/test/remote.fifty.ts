@@ -11,7 +11,7 @@ namespace slime.jsh.test.remote {
 		) {
 			var fixtures: slime.jsh.test.Script = fifty.$loader.script("../../../jrunscript/jsh/fixtures.ts");
 			var exported = fixtures();
-			var remote = exported.shells.remote();
+			var remote = exported.shells(fifty).remote();
 
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
