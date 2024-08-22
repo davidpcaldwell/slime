@@ -696,7 +696,7 @@ namespace slime.jsh.script {
 				}
 			)();
 
-			const { unbuilt, built, packaged, remote } = fixtures.shells;
+			const { unbuilt, built, packaged, remote } = fixtures.shells(fifty);
 
 			fifty.tests.jsapi = fifty.test.Parent();
 

@@ -163,7 +163,7 @@ namespace slime.jsh.shell {
 			fifty.tests.exports.jsh.Installation.from.current.unbuilt = function() {
 				var cast: slime.js.Cast<UnbuiltInstallation> = $api.fp.cast.unsafe;
 
-				var shell = fixtures.shells.unbuilt();
+				var shell = fixtures.shells(fifty).unbuilt();
 
 				var intention: slime.jsh.shell.Intention = {
 					shell: shell,
@@ -186,7 +186,7 @@ namespace slime.jsh.shell {
 			fifty.tests.exports.jsh.Installation.from.current.built = function() {
 				var cast: slime.js.Cast<BuiltInstallation> = $api.fp.cast.unsafe;
 
-				var shell = fixtures.shells.built();
+				var shell = fixtures.shells(fifty).built();
 
 				var intention: slime.jsh.shell.Intention = {
 					shell: shell,
@@ -210,7 +210,7 @@ namespace slime.jsh.shell {
 			};
 
 			fifty.tests.exports.jsh.Installation.from.current.packaged = function() {
-				var shell = fixtures.shells.packaged();
+				var shell = fixtures.shells(fifty).packaged();
 
 				var intention: slime.jsh.shell.Intention = {
 					package: shell.package,
