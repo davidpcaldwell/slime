@@ -6,7 +6,7 @@
 
 namespace slime.jsh.unit.mock.web {
 	export type Github = (p: {
-		src: slime.jsh.unit.mock.github.src
+		src: slime.jsh.unit.mock.web.github.src
 		private?: boolean
 	}) => slime.jsh.unit.mock.handler;
 

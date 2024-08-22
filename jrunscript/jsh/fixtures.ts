@@ -8,7 +8,7 @@ namespace slime.jsh.test {
 	export namespace shells {
 		export interface Remote {
 			web: slime.jsh.unit.mock.Web
-			library: slime.jsh.unit.mock.github.Exports
+			library: slime.jsh.test.remote.Exports
 		}
 	}
 

@@ -4,13 +4,13 @@
 //
 //	END LICENSE
 
-namespace slime.jsh.unit.mock.github.web {
+namespace slime.jsh.unit.mock.web.github {
 	export interface Context {
 		jsh: slime.jsh.Global
 	}
 
 	export type Exports = (p: {
-		src: slime.jsh.unit.mock.github.src
+		src: slime.jsh.unit.mock.web.github.src
 		private?: boolean
 	}) => slime.jsh.unit.mock.handler;
 

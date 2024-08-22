@@ -4,7 +4,10 @@
 //
 //	END LICENSE
 
-namespace slime.jsh.unit.mock.github {
+/**
+ * Provides constructs used for testing `jsh` remote shells.
+ */
+namespace slime.jsh.test.remote {
 	export interface Settings {
 		mock?: slime.jsh.unit.mock.Web
 		branch?: string
@@ -21,16 +24,16 @@ namespace slime.jsh.unit.mock.github {
 
 		getDownloadJshBashCommand: (
 			PATH: slime.jrunscript.file.Searchpath,
-			options: Pick<slime.jsh.unit.mock.github.Settings,"mock" | "token" | "branch">
+			options: Pick<Settings,"mock" | "token" | "branch">
 		) => string[]
 
-		getBashInvocationCommand: (options: slime.jsh.unit.mock.github.Settings) => string[]
+		getBashInvocationCommand: (options: Settings) => string[]
 
 		/**
 		 * Outputs a single string, suitable for use at the shell command line, that will invoke a shell with the given settings
 		 * using tools (`curl` or `wget`) found on the given search path.
 		 */
-		getCommandLine: (PATH: slime.jrunscript.file.Searchpath, settings: slime.jsh.unit.mock.github.Settings) => string
+		getCommandLine: (PATH: slime.jrunscript.file.Searchpath, settings: Settings) => string
 	}
 }
 
@@ -50,5 +53,5 @@ namespace slime.jrunscript.tools.github.internal.test {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.synchronous.Script<Context,slime.jsh.unit.mock.github.Exports>
+	export type Script = slime.loader.synchronous.Script<Context,slime.jsh.test.remote.Exports>
 }

@@ -76,7 +76,7 @@ namespace slime.jsh.test {
 				var it = test.subject.shells.remote();
 
 				//	TODO	duplicates jrunscript/jsh/test/remote.fifty.ts, which is in jrunscript suite; remove duplication
-				var settings: slime.jsh.unit.mock.github.Settings = {
+				var settings: slime.jsh.test.remote.Settings = {
 					mock: it.web,
 					branch: "local"
 				};
