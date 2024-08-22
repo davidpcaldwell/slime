@@ -10,15 +10,15 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.unit.mock.github.web.Context } $context
-	 * @param { slime.loader.Export<slime.jsh.unit.mock.github.web.Exports> } $export
+	 * @param { slime.jsh.unit.mock.web.github.Context } $context
+	 * @param { slime.loader.Export<slime.jsh.unit.mock.web.github.Exports> } $export
 	 */
 	function(Packages,$api,$context,$export) {
 		var jsh = $context.jsh;
 
 		$export(
 			/**
-			 * @type { slime.jsh.unit.mock.github.web.Exports }
+			 * @type { slime.jsh.unit.mock.web.github.Exports }
 			 */
 			function(o) {
 				var authorize = function(request) {

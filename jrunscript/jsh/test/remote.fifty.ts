@@ -51,7 +51,7 @@ namespace slime.jsh.test.remote {
 			)
 
 			fifty.tests.suite = function() {
-				var settings: slime.jsh.unit.mock.github.Settings = {
+				var settings: slime.jsh.test.remote.Settings = {
 					mock: remote.web,
 					branch: "local"
 				};

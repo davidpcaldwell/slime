@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jsh.unit.mock.github {
+namespace slime.jsh.unit.mock.web.github {
 	interface User {
 		[x: string]: slime.jrunscript.tools.git.repository.Local
 	}
@@ -29,7 +29,7 @@ namespace slime.jsh.unit.mock.github {
  * There are various levels of mocking available for GitHub.
  *
  * * An arbitrarily-configured GitHub may be mocked via {@link slime.jsh.unit.mock.web.Github}.
- * * A GitHub configured only with SLIME (potentially for testing remote shells) is provided by {@link slime.jsh.unit.mock.github.Exports}.
+ * * A GitHub configured only with SLIME (potentially for testing remote shells) is provided by {@link slime.jsh.test.remote.Exports}.
  */
 namespace slime.jrunscript.tools.github {
 	export interface Context {

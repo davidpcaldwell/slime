@@ -20,7 +20,7 @@
 			},
 			load: function() {
 				var code = {
-					/** @type { slime.jsh.unit.mock.github.web.Script } */
+					/** @type { slime.jsh.unit.mock.web.github.Script } */
 					mock: $loader.script("mock.js")
 				};
 				var mock = code.mock({
