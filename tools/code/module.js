@@ -197,7 +197,7 @@
 				var tracked = $context.library.git.program({ command: "git" })
 					.repository(p.repository.pathname)
 					.command($context.library.git.commands.lsFiles)
-					.argument({ recurseSubmodules: true })
+					.argument({ recurseSubmodules: p.submodules })
 					.run()
 				;
 
@@ -403,6 +403,7 @@
 					getGitSourceFiles,
 					{
 						repository: $context.library.file.world.Location.from.os(p.repository),
+						submodules: true,
 						isSource: updateIsText(p.isText)
 					},
 					{
@@ -487,6 +488,7 @@
 					getGitSourceFiles,
 					{
 						repository: $context.library.file.world.Location.from.os(p.repository),
+						submodules: true,
 						isSource: updateIsText(p.isText)
 					},
 					{
@@ -738,7 +740,8 @@
 							getGitSourceFiles,
 							{
 								repository: p.root,
-								isSource: downgradeIsSource(excludes.isSource)
+								isSource: downgradeIsSource(excludes.isSource),
+								submodules: p.submodules
 							}
 						).map(function(file) {
 							return file.file;

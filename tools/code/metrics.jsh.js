@@ -80,6 +80,7 @@
 						//			exist anymore
 						? jsh.tools.code.Project.from.git({
 							root: p.root,
+							submodules: false,
 							excludes: settings.excludes
 						})
 						: jsh.tools.code.Project.from.directory({
