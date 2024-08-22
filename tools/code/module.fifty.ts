@@ -50,7 +50,8 @@ namespace slime.tools.code {
 
 				git: (p: {
 					root: slime.jrunscript.file.Location
-					excludes?: Excludes
+					submodules: boolean
+					excludes?: Pick<Excludes,"isSource">
 				}) => Project
 			}
 
@@ -114,8 +115,8 @@ namespace slime.tools.code {
 					test.subject.Project.gitignoreLocal,
 					test.subject.Project.from.git({
 						root: jsh.shell.PWD.pathname.os.adapt(),
+						submodules: true,
 						excludes: {
-							descend: $api.fp.Mapping.all(true),
 							isSource: $api.fp.Mapping.all($api.fp.Maybe.from.some(true))
 						}
 					}),
@@ -414,6 +415,7 @@ namespace slime.tools.code {
 			getGitSourceFiles: slime.$api.fp.world.Sensor<
 				{
 					repository: slime.jrunscript.file.Location
+					submodules: boolean
 					isSource: oldIsSource
 				},
 				FileEvents,
