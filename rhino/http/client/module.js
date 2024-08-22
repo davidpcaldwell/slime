@@ -42,29 +42,33 @@
 		var allowMethods = function() {
 			var methodsField = $context.api.java.toNativeClass(Packages.java.net.HttpURLConnection).getDeclaredField("methods");
 
-			try {
-				var modifiersField = $context.api.java.toNativeClass(Packages.java.lang.reflect.Field).getDeclaredField("modifiers");
-				modifiersField.setAccessible(true);
-				modifiersField.setInt(methodsField, methodsField.getModifiers() & ~Packages.java.lang.reflect.Modifier.FINAL);
+			var permitted = Array.prototype.slice.call(arguments);
 
-				methodsField.setAccessible(true);
+			$api.debug.disableBreakOnExceptionsFor(function() {
+				try {
+					var modifiersField = $context.api.java.toNativeClass(Packages.java.lang.reflect.Field).getDeclaredField("modifiers");
+					modifiersField.setAccessible(true);
+					modifiersField.setInt(methodsField, methodsField.getModifiers() & ~Packages.java.lang.reflect.Modifier.FINAL);
 
-				var oldMethods = $context.api.java.Array.adapt(methodsField.get(null));
-				var newMethods = oldMethods.concat(Array.prototype.slice.call(arguments));
+					methodsField.setAccessible(true);
 
-				var array = newMethods.map(function(s) { return new Packages.java.lang.String(s); });
+					var oldMethods = $context.api.java.Array.adapt(methodsField.get(null));
+					var newMethods = oldMethods.concat(permitted);
 
-				methodsField.set(
-					null,
-					$context.api.java.Array.create({
-						type: Packages.java.lang.String,
-						array: array
-					})
-				);
-			} catch (e) {
-				//	TODO	will be reached in JDK 11 (Nashorn only?) as JPMS prohibits access to Field.modifiers for now
-				//	TODO	thus, PATCH will not be allowed under JDK 11. See issue #915.
-			}
+					var array = newMethods.map(function(s) { return new Packages.java.lang.String(s); });
+
+					methodsField.set(
+						null,
+						$context.api.java.Array.create({
+							type: Packages.java.lang.String,
+							array: array
+						})
+					);
+				} catch (e) {
+					//	TODO	will be reached in JDK 11 (Nashorn only?) as JPMS prohibits access to Field.modifiers for now
+					//	TODO	thus, PATCH will not be allowed under JDK 11. See issue #915.
+				}
+			})();
 		};
 
 		allowMethods("PATCH");
