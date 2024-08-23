@@ -60,7 +60,8 @@
 				}
 				if (p.mock) {
 					command.push("--proxy", "https://127.0.0.1:" + p.mock.https.port);
-					//	Inserting this to try to pass macOS tests; if this comment remains, it worked:
+					//	Inserting this to try to pass macOS tests on GitHub; if this comment remains, it worked:
+					//	TODO	--ca-native is also worth a try
 					command.push("--proxy-insecure");
 				}
 				command.push("-L");
