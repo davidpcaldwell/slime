@@ -58,8 +58,8 @@
 						return rv;
 					};
 
-					this.listLocationsForModules = function() {
-						return new Packages.java.util.ArrayList();
+					this.listLocationsForModules = function(location) {
+						return _delegate.listLocationsForModules(location);
 					}
 
 					var DirectoryDestination = function(_file) {
