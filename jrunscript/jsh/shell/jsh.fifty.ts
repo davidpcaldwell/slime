@@ -146,7 +146,13 @@ namespace slime.jsh.shell {
 			var getInstallationFromShellIntention = $api.fp.pipe(
 				$api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question }),
 				function(result) {
-					if (result.status != 0) throw new Error("Status: " + result.status);
+					if (result.status != 0) throw new Error(
+						"Status: " + result.status
+						+ "\n" + "Standard output:"
+						+ "\n" + result.stdio.output
+						+ "\n" + "Standard error:"
+						+ "\n" + result.stdio.error
+					);
 					return result.stdio.output;
 				},
 				JSON.parse,
