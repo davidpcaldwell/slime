@@ -50,9 +50,13 @@
 							NATIVE_HEADER_OUTPUT: false,
 							MODULE_SOURCE_PATH: false,
 							PATCH_MODULE_PATH: false,
-							CLASS_OUTPUT: false,
-							SYSTEM_MODULES: false
+							CLASS_OUTPUT: false
 						})[location];
+						if (typeof(rv) == "undefined") {
+							if (/^SYSTEM_MODULES\[/.test(location)) {
+								return _delegate.hasLocation(_location);
+							}
+						}
 						if (typeof(rv) == "undefined") {
 							throw new Error("Unknown hasLocation location: " + location);
 						}
