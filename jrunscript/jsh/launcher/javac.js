@@ -60,6 +60,10 @@
 
 					this.listLocationsForModules = function(location) {
 						return _delegate.listLocationsForModules(location);
+					};
+
+					this.inferModuleName = function(location) {
+						return _delegate.inferModuleName(location);
 					}
 
 					var DirectoryDestination = function(_file) {
