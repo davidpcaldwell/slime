@@ -49,7 +49,8 @@
 							SOURCE_PATH: false,
 							NATIVE_HEADER_OUTPUT: false,
 							MODULE_SOURCE_PATH: false,
-							PATCH_MODULE_PATH: false
+							PATCH_MODULE_PATH: false,
+							CLASS_OUTPUT: false
 						})[location];
 						if (typeof(rv) == "undefined") {
 							throw new Error("Unknown hasLocation location: " + location);
