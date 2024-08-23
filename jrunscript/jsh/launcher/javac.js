@@ -35,7 +35,9 @@
 						"close","flush","getClassLoader","getFileForInput","getFileForOutput","getJavaFileForInput","getJavaFileForOutput",
 						"handleOption","hasLocation","inferBinaryName","isSameFile","list","isSupportedOption"
 					].forEach(function(name) {
-						this[name] = function(){};
+						this[name] = function(){
+							return null;
+						};
 					},this);
 
 					this.flush = function() {
