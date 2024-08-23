@@ -48,7 +48,8 @@
 							ANNOTATION_PROCESSOR_MODULE_PATH: false,
 							SOURCE_PATH: false,
 							NATIVE_HEADER_OUTPUT: false,
-							MODULE_SOURCE_PATH: false
+							MODULE_SOURCE_PATH: false,
+							PATCH_MODULE_PATH: false
 						})[location];
 						if (typeof(rv) == "undefined") {
 							throw new Error("Unknown hasLocation location: " + location);
