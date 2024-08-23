@@ -45,6 +45,7 @@
 						var location = String(_location.getName());
 						var rv = ({
 							ANNOTATION_PROCESSOR_PATH: false,
+							ANNOTATION_PROCESSOR_MODULE_PATH: false,
 							SOURCE_PATH: false,
 							NATIVE_HEADER_OUTPUT: false,
 							MODULE_SOURCE_PATH: false
