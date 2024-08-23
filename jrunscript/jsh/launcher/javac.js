@@ -58,6 +58,10 @@
 						return rv;
 					};
 
+					this.listLocationsForModules = function() {
+						return new Packages.java.util.ArrayList();
+					}
+
 					var DirectoryDestination = function(_file) {
 						var ClassFile = function(_file) {
 							//Packages.java.lang.System.err.println("Writing: " + _file);
