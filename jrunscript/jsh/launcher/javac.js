@@ -371,6 +371,11 @@
 							}
 						};
 						var binarynamer = binaryNamers[location];
+						if (!binarynamer) {
+							binarynamer = function() {
+								return _delegate.inferBinaryName(_location,_jfo);
+							}
+						}
 						if (!binarynamer) throw new Error("No inferBinaryName for " + _location);
 						return binarynamer(_location,_jfo);
 					};

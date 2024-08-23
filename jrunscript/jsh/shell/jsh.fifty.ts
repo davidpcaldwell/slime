@@ -153,6 +153,10 @@ namespace slime.jsh.shell {
 						+ "\n" + "Standard error:"
 						+ "\n" + result.stdio.error
 					);
+					if (false) {
+						jsh.shell.console("Standard error: ");
+						jsh.shell.console(result.stdio.error);
+					}
 					return result.stdio.output;
 				},
 				JSON.parse,
