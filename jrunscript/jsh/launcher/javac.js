@@ -359,7 +359,7 @@
 					}
 
 					this.inferBinaryName = function(_location,_jfo) {
-						var location = String(_location.name());
+						var location = String(_location.getName());
 						var binaryNamers = new function() {
 							this.PLATFORM_CLASS_PATH = function(_location,_jfo) {
 								return _delegate.inferBinaryName(_location,_jfo);
