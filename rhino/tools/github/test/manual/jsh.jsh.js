@@ -27,7 +27,10 @@
 
 		var library = {
 			testing: code.testing({
-				slime: base
+				slime: base,
+				library: {
+					shell: jsh.shell
+				}
 			})
 		};
 
@@ -57,11 +60,15 @@
 						var web = library.testing.startMock(jsh);
 						jsh.shell.console("HTTP port: " + web.port + " HTTPS port: " + web.https.port);
 						var token = jsh.shell.jsh.src.getFile("local/github/tokens/davidpcaldwell");
-						var command = library.testing.getCommandLine(jsh.shell.PATH, {
-							mock: web,
-							optimize: p.options.optimize,
-							debug: p.options.debug,
-							token: (token) ? function() { return token.read(String); } : void(0)
+						var command = library.testing.getCommandLine({
+							PATH: jsh.shell.PATH,
+							settings: {
+								mock: web,
+								optimize: p.options.optimize,
+								debug: p.options.debug,
+								token: (token) ? function() { return token.read(String); } : void(0)
+							},
+							script: "jrunscript/jsh/test/jsh-data.jsh.js"
 						});
 						emit(command);
 						web.run();
@@ -69,8 +76,12 @@
 				),
 				remote: function() {
 					//	TODO	for now, we do not fully automate this command because of the piping
-					var command = library.testing.getCommandLine(jsh.shell.PATH, {
-						token: function() { return jsh.shell.jsh.src.getFile("local/github/tokens/davidpcaldwell").read(String); }
+					var command = library.testing.getCommandLine({
+						PATH: jsh.shell.PATH,
+						settings: {
+							token: function() { return jsh.shell.jsh.src.getFile("local/github/tokens/davidpcaldwell").read(String); }
+						},
+						script: "jrunscript/jsh/test/jsh-data.jsh.js"
 					});
 					emit(command);
 				},
@@ -78,8 +89,12 @@
 					//	turn on jsh launcher console-based debugging
 					jsh.script.cli.option.boolean({ longname: "debug" }),
 					function(p) {
-						var command = library.testing.getCommandLine(jsh.shell.PATH, {
-							debug: p.options.debug
+						var command = library.testing.getCommandLine({
+							PATH: jsh.shell.PATH,
+							settings: {
+								debug: p.options.debug
+							},
+							script: "jrunscript/jsh/test/jsh-data.jsh.js"
 						});
 						emit(command);
 					}

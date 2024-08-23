@@ -13,12 +13,12 @@ namespace slime.jsh.test {
 	}
 
 	export interface Shells {
-		unbuilt: slime.$api.fp.impure.Input<slime.jsh.shell.UnbuiltInstallation>
-		built: slime.$api.fp.impure.Input<slime.jsh.shell.BuiltInstallation>
-		packaged: slime.$api.fp.impure.Input<slime.jsh.shell.PackagedInstallation>
+		unbuilt: slime.$api.fp.Thunk<slime.jsh.shell.UnbuiltInstallation>
+		built: slime.$api.fp.impure.External<slime.jsh.shell.BuiltInstallation>
+		packaged: slime.$api.fp.impure.External<slime.jsh.shell.PackagedInstallation>
 
 		//	TODO	unlike the other shell implementations, this one does no caching and will create a new server for each call
-		remote: slime.$api.fp.impure.Input<shells.Remote>
+		remote: slime.$api.fp.impure.External<shells.Remote>
 
 		//	Would like to use something like this to match designs of others, but will need to refactor first to make it less OO
 		//	remote: slime.$api.fp.impure.Input<slime.jsh.shell.UrlInstallation>
@@ -198,7 +198,10 @@ namespace slime.jsh.test {
 
 									var library = {
 										testing: code.testing({
-											slime: jsh.file.object.directory(slime)
+											slime: jsh.file.object.directory(slime),
+											library: {
+												shell: jsh.shell
+											}
 										})
 									};
 

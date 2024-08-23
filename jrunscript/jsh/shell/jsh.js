@@ -794,6 +794,10 @@
 							return {
 								src: src
 							}
+						} else {
+							return {
+								url: src
+							}
 						}
 					} else if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.home) {
 						var home = canonicalizePropertyValue(module.properties.object.jsh.shell.home);
