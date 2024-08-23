@@ -46,7 +46,8 @@
 						var rv = ({
 							ANNOTATION_PROCESSOR_PATH: false,
 							SOURCE_PATH: false,
-							NATIVE_HEADER_OUTPUT: false
+							NATIVE_HEADER_OUTPUT: false,
+							MODULE_SOURCE_PATH: false
 						})[location];
 						if (typeof(rv) == "undefined") {
 							throw new Error("Unknown hasLocation location: " + location);
