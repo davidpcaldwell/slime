@@ -35,7 +35,9 @@
 						"close","flush","getClassLoader","getFileForInput","getFileForOutput","getJavaFileForInput","getJavaFileForOutput",
 						"handleOption","hasLocation","inferBinaryName","isSameFile","list","isSupportedOption"
 					].forEach(function(name) {
-						this[name] = function(){};
+						this[name] = function(){
+							return null;
+						};
 					},this);
 
 					this.flush = function() {
@@ -45,14 +47,31 @@
 						var location = String(_location.getName());
 						var rv = ({
 							ANNOTATION_PROCESSOR_PATH: false,
+							ANNOTATION_PROCESSOR_MODULE_PATH: false,
 							SOURCE_PATH: false,
-							NATIVE_HEADER_OUTPUT: false
+							NATIVE_HEADER_OUTPUT: false,
+							MODULE_SOURCE_PATH: false,
+							PATCH_MODULE_PATH: false,
+							CLASS_OUTPUT: false
 						})[location];
+						if (typeof(rv) == "undefined") {
+							if (/^SYSTEM_MODULES\[/.test(location)) {
+								return _delegate.hasLocation(_location);
+							}
+						}
 						if (typeof(rv) == "undefined") {
 							throw new Error("Unknown hasLocation location: " + location);
 						}
 						return rv;
 					};
+
+					this.listLocationsForModules = function(location) {
+						return _delegate.listLocationsForModules(location);
+					};
+
+					this.inferModuleName = function(location) {
+						return _delegate.inferModuleName(location);
+					}
 
 					var DirectoryDestination = function(_file) {
 						var ClassFile = function(_file) {
@@ -329,12 +348,18 @@
 							}
 						};
 						var location = String(_location.getName());
-						if (!listers[location]) throw new Error("No lister for " + location);
-						return listers[location](_location,_packageName,_setOfKinds,recurse);
+						var lister = listers[location];
+						if (!lister) {
+							lister = function() {
+								return _delegate.list(_location,_packageName,_setOfKinds,recurse);
+							};
+						}
+						if (!lister) throw new Error("No lister for " + location);
+						return lister(_location,_packageName,_setOfKinds,recurse);
 					}
 
 					this.inferBinaryName = function(_location,_jfo) {
-						var location = String(_location.name());
+						var location = String(_location.getName());
 						var binaryNamers = new function() {
 							this.PLATFORM_CLASS_PATH = function(_location,_jfo) {
 								return _delegate.inferBinaryName(_location,_jfo);
@@ -346,6 +371,11 @@
 							}
 						};
 						var binarynamer = binaryNamers[location];
+						if (!binarynamer) {
+							binarynamer = function() {
+								return _delegate.inferBinaryName(_location,_jfo);
+							}
+						}
 						if (!binarynamer) throw new Error("No inferBinaryName for " + _location);
 						return binarynamer(_location,_jfo);
 					};

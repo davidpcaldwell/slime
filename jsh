@@ -494,8 +494,8 @@ check_user() {
 check_path() {
 	local path=$(type -p jrunscript)
 	if [ -n "${path}" ]; then
-		if [ $(uname) == "Darwin" ]; then
-			#	Mac OS X uses a default stub for jrunscript; check whether there's a real JDK
+		#	Mac OS X uses a default stub for jrunscript; check whether there's a real JDK
+		if test $(uname) == "Darwin" && test $(path) == "/usr/bin/jrunscript"; then
 			local macos_java_home=$(/usr/libexec/java_home 2>/dev/null)
 			if [ "${macos_java_home}" ]; then
 				echo "${macos_java_home}/bin/jrunscript"
@@ -520,9 +520,19 @@ if [ -z "${JRUNSCRIPT}" ]; then
 	JRUNSCRIPT=$(check_path)
 fi
 
+#	If running in remote shell, and JDK is higher than 8, do not use it (the remote shell module path does not work correctly; see
+#	issue #1617)
+if test -n "${JRUNSCRIPT}" && test "$0" == "bash"; then
+	JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
+	if [ ${JDK_MAJOR_VERSION} != "8" ]; then
+		JRUNSCRIPT=""
+	fi
+fi
+
 if [ -z "${JRUNSCRIPT}" ]; then
 	if [ "$0" == "bash" ]; then
 		#	Remote shell; we default to JDK 8 for those as there is a problem with module path implementation on remote shells
+		#	TODO #1617	make it possible to use JDK 21 for remote shells
 		install_jdk_8 ${JSH_LOCAL_JDKS}/default
 	else
 		install_jdk ${JSH_LOCAL_JDKS}/default

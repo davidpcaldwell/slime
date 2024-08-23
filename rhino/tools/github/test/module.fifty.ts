@@ -22,23 +22,39 @@ namespace slime.jsh.test.remote {
 	export interface Exports {
 		startMock: (jsh: slime.jsh.Global) => slime.jsh.unit.mock.Web
 
-		getDownloadJshBashCommand: (
+		downloadJshScriptCommand: (
 			PATH: slime.jrunscript.file.Searchpath,
 			options: Pick<Settings,"mock" | "token" | "branch">
 		) => string[]
 
-		getBashInvocationCommand: (options: Settings) => string[]
+		processJshScriptCommand: (p: {
+			settings: Settings
+			script: string
+		}) => string[]
 
 		/**
 		 * Outputs a single string, suitable for use at the shell command line, that will invoke a shell with the given settings
 		 * using tools (`curl` or `wget`) found on the given search path.
 		 */
-		getCommandLine: (PATH: slime.jrunscript.file.Searchpath, settings: Settings) => string
+		getCommandLine: (p: {
+			PATH: slime.jrunscript.file.Searchpath
+			settings: Settings
+			script: string
+		}) => string
+
+		getShellIntention: (p: {
+			PATH: slime.jrunscript.file.Searchpath
+			settings: Settings
+			script: string
+		}) => slime.jrunscript.shell.run.Intention
 	}
 }
 
 namespace slime.jrunscript.tools.github.internal.test {
 	export interface Context {
+		library: {
+			shell: slime.jrunscript.shell.Exports
+		}
 		slime: slime.jrunscript.file.Directory
 	}
 

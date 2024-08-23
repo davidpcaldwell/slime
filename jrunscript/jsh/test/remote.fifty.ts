@@ -16,28 +16,16 @@ namespace slime.jsh.test.remote {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			var toInvocation = function(line: string[], input?: string, environment?: { [name: string]: string }) {
-				if (!environment) environment = {};
-				return jsh.shell.Invocation.from.argument({
-					command: line[0],
-					arguments: line.slice(1),
-					environment: $api.Object.compose(
-						jsh.shell.environment,
-						environment
-					),
-					stdio: {
-						input: input,
-						output: "string",
-						error: "string"
-					}
-				});
-			};
+			var asShellIntention: slime.$api.fp.Identity<slime.jrunscript.shell.run.Intention> = $api.fp.identity;
 
 			var getOutput = $api.fp.pipe(
+				asShellIntention,
 				$api.fp.impure.tap(function(t) {
 					debugger;
 				}),
-				$api.fp.world.mapping(jsh.shell.world.question),
+				$api.fp.world.Sensor.mapping({
+					sensor: jsh.shell.subprocess.question
+				}),
 				$api.fp.impure.tap(function(t) {
 					if (t.status != 0) {
 						jsh.shell.console("Exit status: " + t.status);
@@ -56,27 +44,14 @@ namespace slime.jsh.test.remote {
 					branch: "local"
 				};
 
-				//	When running remote shell from command line, we download the launcher script using curl and then pipe it
-				//	to `bash`, hence the two step process below in which the first download is sent as input to the second
-				//	command
+				var shellIntention = remote.library.getShellIntention({
+					PATH: jsh.shell.PATH,
+					settings: settings,
+					script: "jrunscript/jsh/test/jsh-data.jsh.js"
+				});
 
-				var download = remote.library.getDownloadJshBashCommand(
-					jsh.shell.PATH,
-					settings
-				);
-				jsh.shell.console("Downloading ...");
-				jsh.shell.console(download.join(" "));
-				var launcherBashScript = $api.fp.now.invoke(
-					toInvocation(download),
-					getOutput
-				);
-				jsh.shell.console("Script starts with:\n" + launcherBashScript.split("\n").slice(0,10).join("\n"));
-
-				var invoke = remote.library.getBashInvocationCommand(settings);
-				jsh.shell.console("Invoking ...");
-				jsh.shell.console(invoke.join(" "));
 				var scriptOutput = $api.fp.now.invoke(
-					toInvocation(invoke, launcherBashScript, { JSH_LAUNCHER_BASH_DEBUG: "1", JSH_EMBED_BOOTSTRAP_DEBUG: "true" }),
+					shellIntention,
 					getOutput
 				);
 

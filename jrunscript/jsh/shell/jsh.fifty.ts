@@ -110,7 +110,7 @@ namespace slime.jsh.shell {
 				 *
 				 * Returns the `jsh` installation that is running the current shell. Only implemented for unbuilt shells currently.
 				 */
-				current: slime.$api.fp.impure.Input<Installation>
+				current: slime.$api.fp.Thunk<Installation>
 			}
 
 			is: {
@@ -143,15 +143,29 @@ namespace slime.jsh.shell {
 
 			var getInstallationFromDiagnosticOutput: (data: any) => slime.jsh.shell.Installation = $api.fp.property("installation");
 
-			var getInstallationFromIntention = $api.fp.pipe(
-				jsh.shell.jsh.Intention.toShellIntention,
+			var getInstallationFromShellIntention = $api.fp.pipe(
 				$api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question }),
 				function(result) {
-					if (result.status != 0) throw new Error("Status: " + result.status);
+					if (result.status != 0) throw new Error(
+						"Status: " + result.status
+						+ "\n" + "Standard output:"
+						+ "\n" + result.stdio.output
+						+ "\n" + "Standard error:"
+						+ "\n" + result.stdio.error
+					);
+					if (false) {
+						jsh.shell.console("Standard error: ");
+						jsh.shell.console(result.stdio.error);
+					}
 					return result.stdio.output;
 				},
 				JSON.parse,
 				getInstallationFromDiagnosticOutput
+			)
+
+			var getInstallationFromIntention = $api.fp.pipe(
+				jsh.shell.jsh.Intention.toShellIntention,
+				getInstallationFromShellIntention
 			);
 
 			var getDiagnosticScriptForShellAt = $api.fp.pipe(
@@ -223,6 +237,24 @@ namespace slime.jsh.shell {
 
 				var cast: slime.js.Cast<PackagedInstallation> = $api.fp.cast.unsafe;
 				verify(installation).evaluate(cast).package.is(shell.package);
+			}
+
+			fifty.tests.exports.jsh.Installation.from.current.remote = function() {
+				var remote = fixtures.shells(fifty).remote();
+
+				var intention = remote.library.getShellIntention({
+					PATH: jsh.shell.PATH,
+					settings: {
+						mock: remote.web,
+						branch: "local"
+					},
+					script: "jrunscript/jsh/test/jsh-data.jsh.js"
+				});
+
+				var installation = getInstallationFromShellIntention(intention);
+
+				var cast: slime.js.Cast<UrlInstallation> = $api.fp.cast.unsafe;
+				verify(installation).evaluate(cast).url.is("http://raw.githubusercontent.com/davidpcaldwell/slime/local/");
 			}
 		}
 	//@ts-ignore
