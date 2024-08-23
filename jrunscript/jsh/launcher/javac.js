@@ -348,8 +348,14 @@
 							}
 						};
 						var location = String(_location.getName());
-						if (!listers[location]) throw new Error("No lister for " + location);
-						return listers[location](_location,_packageName,_setOfKinds,recurse);
+						var lister = listers[location];
+						if (!lister) {
+							lister = function() {
+								return _delegate.list(_location,_packageName,_setOfKinds,recurse);
+							};
+						}
+						if (!lister) throw new Error("No lister for " + location);
+						return lister(_location,_packageName,_setOfKinds,recurse);
 					}
 
 					this.inferBinaryName = function(_location,_jfo) {
