@@ -690,8 +690,8 @@
 				var getTypedocCommand = function(stdio,project,out) {
 					var version = library.module.Project.typescript.version(project);
 					var configuration = library.module.Project.typescript.configurationFile(project);
-					$api.fp.world.now.tell(jsh.shell.tools.rhino.require.simple);
-					$api.fp.world.now.action(jsh.shell.tools.tomcat.require);
+					jsh.shell.tools.rhino.require.simple();
+					$api.fp.world.now.action(jsh.shell.tools.tomcat.jsh.require.world);
 					$api.fp.world.now.action(jsh.shell.tools.node.require, void(0), {
 						found: function(e) {
 							jsh.shell.console("Found Node.js " + e.detail.version + ".");

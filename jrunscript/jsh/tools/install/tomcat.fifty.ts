@@ -105,17 +105,22 @@ namespace slime.jsh.shell.tools {
 				>
 			}
 
-			require: slime.$api.fp.world.Means<
-				{
-					world?: tomcat.Mock
-					version?: string
-					replace?: (version: string) => boolean
-				},
-				slime.jsh.shell.tools.tomcat.installation.RequireEvents
-			>
+			jsh?: {
+				require: {
+					world: slime.$api.fp.world.Means<
+						{
+							world?: tomcat.Mock
+							version?: string
+							replace?: (version: string) => boolean
+						},
+						slime.jsh.shell.tools.tomcat.installation.RequireEvents
+
+					>
+				}
+			}
 
 			old: {
-				/** @deprecated */
+				/** @deprecated Replaced by {@link Exports | Exports.Installation.require()} and {@link Exports | Exports.jsh.require() }. */
 				require: (
 					argument?: {
 						world?: tomcat.Mock

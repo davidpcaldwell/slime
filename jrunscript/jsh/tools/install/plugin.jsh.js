@@ -122,8 +122,11 @@
 						return {
 							install: installRhino,
 							require: {
-								simple: require(),
-								world: require
+								world: require,
+								action: require(),
+								simple: $api.fp.world.Action.process({
+									action: require()
+								})
 							}
 						};
 					}
