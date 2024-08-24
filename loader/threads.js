@@ -4,31 +4,42 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
-		$exports.steps = {};
+	/**
+	 *
+	 * @param { slime.$api.Global } $context
+	 * @param { slime.$api.Global["threads"] } $exports
+	 */
+	function($context,$exports) {
+		$exports.steps = {
+			run: void(0),
+			Task: void(0)
+		};
 
-		$exports.steps.run = $context.Events.Function(function(p,events) {
-			var list = p.steps.slice();
-			var more = true;
-			while(list.length && more) {
-				more = false;
-				for (var i=0; i<list.length; i++) {
-					if (list[i].ready()) {
-						list[i].run();
-						list.splice(i,1);
-						more = true;
-						break;
+		$exports.steps.run = $context.Events.Function(
+			function(p,events) {
+				var list = p.steps.slice();
+				var more = true;
+				while(list.length && more) {
+					more = false;
+					for (var i=0; i<list.length; i++) {
+						if (list[i].ready()) {
+							list[i].run();
+							list.splice(i,1);
+							more = true;
+							break;
+						}
 					}
 				}
+				list.forEach(function(item) {
+					events.fire("unready", item);
+				});
+				return {
+					unready: list
+				};
 			}
-			list.forEach(function(item) {
-				events.fire("unready", item);
-			});
-			return {
-				unready: list
-			};
-		});
+		);
 
 		$exports.steps.Task = function(p) {
 			var list = p.steps.slice();
@@ -99,4 +110,5 @@
 			return rv;
 		}
 	}
-)();
+//@ts-ignore
+)($context,$exports);

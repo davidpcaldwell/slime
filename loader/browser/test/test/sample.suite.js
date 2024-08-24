@@ -4,4 +4,4 @@
 //
 //	END LICENSE
 
-suite.part("$api", getPartDescriptor("../../../../loader/$api.api.html",{},void(0)));
+suite.part("$api", getPartDescriptor("../../../../loader/$api-flag.api.html",{},void(0)));
