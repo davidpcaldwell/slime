@@ -114,7 +114,6 @@ namespace slime.jsh.shell.tools {
 							replace?: (version: string) => boolean
 						},
 						slime.jsh.shell.tools.tomcat.installation.RequireEvents
-
 					>
 				}
 			}
@@ -315,7 +314,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				var invocation = jsh.shell.Invocation.from.argument({
 					command: "bash",
 					arguments: $api.Array.build(function(rv) {
-						rv.push(fifty.jsh.file.relative("../../../../jsh.bash").pathname);
+						rv.push(fifty.jsh.file.relative("../../../../jsh").pathname);
 						rv.push(p.script.pathname);
 					}),
 					environment: $api.Object.compose(
@@ -404,9 +403,9 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				if (!jsh.shell.environment.SLIME_TEST_NO_TOMCAT_INSTALL_TO_JSH) fifty.run(fifty.tests.addToShellAtRuntime);
 			};
 
-			fifty.tests.world = {};
+			fifty.tests.manual = {};
 
-			fifty.tests.world.getLatestVersion = function() {
+			fifty.tests.manual.getLatestVersion = function() {
 				var getLatestVersion = $api.fp.world.mapping(subject.test.getLatestVersion, {
 					online: function(e) {
 						jsh.shell.console("Latest version (via Apache): " + JSON.stringify(e.detail));
@@ -419,7 +418,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				})
 			};
 
-			fifty.tests.world.getReleaseNotes = function() {
+			fifty.tests.manual.getReleaseNotes = function() {
 				var notes = $api.fp.world.now.question(
 					subject.test.getReleaseNotes,
 					{
@@ -433,7 +432,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				}
 			};
 
-			fifty.tests.world.getInstalledVersion = function() {
+			fifty.tests.manual.getInstalledVersion = function() {
 				var installation = subject.Installation.from.jsh();
 
 				var version = subject.Installation.getVersion(installation);
