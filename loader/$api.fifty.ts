@@ -1050,12 +1050,33 @@ namespace slime.$api {
 		}
 	}
 
+	export namespace threads {
+		export interface StepRunEvents {
+			unready: void
+		}
+
+		export interface Step {
+			ready: () => boolean
+			run: () => void
+		};
+	}
+
 	export interface Global {
 		threads: {
 			steps: {
-				run: (a: { steps: any[] }, something?: any) => {
-					unready: any[]
+				run: (
+					a: { steps: threads.Step[] },
+					receiver?: slime.$api.event.Function.Receiver<{
+						unready: threads.Step
+					}>
+				) => {
+					/**
+					 * A set of steps that never executed because they were never `ready()`.
+					 */
+					unready: threads.Step[]
 				}
+
+				Task: any
 			}
 		}
 	}
