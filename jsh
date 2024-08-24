@@ -495,7 +495,7 @@ check_path() {
 	local path=$(type -p jrunscript)
 	if [ -n "${path}" ]; then
 		#	Mac OS X uses a default stub for jrunscript; check whether there's a real JDK
-		if test $(uname) == "Darwin" && test $(path) == "/usr/bin/jrunscript"; then
+		if test $(uname) == "Darwin" && test -n "${path}" && test "${path}" == "/usr/bin/jrunscript"; then
 			local macos_java_home=$(/usr/libexec/java_home 2>/dev/null)
 			if [ "${macos_java_home}" ]; then
 				echo "${macos_java_home}/bin/jrunscript"
