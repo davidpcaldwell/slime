@@ -14,6 +14,29 @@ namespace slime.$api.old {
 		globals: boolean
 	}
 
+	export namespace test {
+		export const Functions = function() {
+			var calculator = Object.assign(function() {
+				calculator.invocations++;
+				return 2*2;
+			}, {
+				invocations: 0
+			});
+
+			var undefinedCalculator = Object.assign(function() {
+				undefinedCalculator.invocations++;
+				return;
+			}, {
+				invocations: 0
+			});
+
+			return {
+				calculator: calculator,
+				undefinedCalculator: undefinedCalculator
+			};
+		};
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -93,7 +116,55 @@ namespace slime.$api.old {
 	)(fifty);
 
 	export interface Exports {
-		constant: any
+		/**
+		 * Creates a function which caches the result of an underlying function.
+		 *
+		 * It stores the result before returning it, and returns the stored result for every succeeding invocation.
+		 *
+		 * @param f A function to which the returned function will delegate the first time.
+		 * @returns The created function.
+		 */
+		constant: <T>(f: () => T) => () => T
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			var module: Exports = fifty.$loader.module("module.js");
+
+			var test = function(b) {
+				verify(b).is(true);
+			}
+
+			fifty.tests.exports.constant = function() {
+				var f = old.test.Functions();
+
+				var constantCalculator = module.constant(f.calculator);
+				verify(f.calculator.invocations).is(0);
+//					test( f.calculator.invocations == 0 );
+				verify(constantCalculator()).is(4);
+//					test( constantCalculator() == 4 );
+				verify(f.calculator.invocations).is(1);
+//					test( f.calculator.invocations == 1 );
+				verify(constantCalculator()).is(4);
+//					test( constantCalculator() == 4 );
+				verify(f.calculator.invocations).is(1);
+//					test( f.calculator.invocations == 1 );
+
+				var undefinedConstantCalculator = module.constant(f.undefinedCalculator);
+				test( f.undefinedCalculator.invocations == 0 );
+				test( typeof(undefinedConstantCalculator()) == "undefined" );
+				test( f.undefinedCalculator.invocations == 1 );
+				test( typeof(undefinedConstantCalculator()) == "undefined" );
+				test( f.undefinedCalculator.invocations == 1 );
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		toLiteral: any
 		ObjectTransformer: any
 		properties: any
