@@ -14,9 +14,6 @@
 	 * @param { slime.loader.Export<slime.jsh.shell.tools.internal.tomcat.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
-		var jsh = $context.jsh;
-		if (!jsh) throw new TypeError("No jsh.");
-
 		var MAJOR_VERSION = 9;
 
 		var DEFAULT_VERSION = {
@@ -29,12 +26,12 @@
 
 		/** @type { slime.jsh.shell.tools.tomcat.World } */
 		var world = {
-			findApache: jsh.tools.install.apache.find,
+			findApache: $context.library.install.apache.find,
 			getLatestVersion: function(major) {
 				return function(events) {
 					try {
 						//	This step would fail for Tomcat 7
-						var downloadRawHtml = new jsh.http.Client().request({
+						var downloadRawHtml = new $context.library.http.Client().request({
 							url: "http://tomcat.apache.org/download-" + major + "0.cgi",
 							evaluate: function(result) {
 								return result.body.stream.character().asString()
@@ -150,9 +147,9 @@
 			return function(events) {
 				return $api.fp.now.invoke(
 					p.base,
-					$context.jsh.file.world.Location.from.os,
-					$context.jsh.file.world.Location.relative("RELEASE-NOTES"),
-					$api.fp.world.mapping($context.jsh.file.world.Location.file.read.string.world())
+					$context.library.file.world.Location.from.os,
+					$context.library.file.world.Location.relative("RELEASE-NOTES"),
+					$api.fp.world.mapping($context.library.file.world.Location.file.read.string.world())
 				);
 			}
 		};
@@ -169,15 +166,15 @@
 				var local = p.local;
 				var p_to = p.p_to;
 				var version = p.version;
-				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var to = $context.library.shell.TMPDIR.createTemporary({ directory: true });
 				events.fire("unzipping", { local: local.pathname.toString(), to: to.pathname.toString() });
-				jsh.file.unzip({
+				$context.library.file.unzip({
 					zip: local,
 					to: to
 				});
 				events.fire("installing",{ to: p_to.toString() });
 				//	TODO	unclear what case this mv addresses; maybe something exotic like moving across filesystems?
-				if (jsh.shell.PATH.getCommand("mv")) {
+				if ($context.library.shell.PATH.getCommand("mv")) {
 					if (p_to.directory) {
 						p_to.directory.remove();
 					}
@@ -185,7 +182,7 @@
 					if (!sub) {
 						throw new Error("No subdirectory " + "apache-tomcat-" + version + " in " + to.pathname.toString());
 					}
-					jsh.shell.run({
+					$context.library.shell.run({
 						command: "mv",
 						arguments: [sub.toString(), p_to.toString()]
 					});
@@ -204,7 +201,7 @@
 		var newInstall = function(installation) {
 			return function(p) {
 				return function(events) {
-					var findApache = (p.world && p.world.findApache) ? p.world.findApache : jsh.tools.install.apache.find;
+					var findApache = (p.world && p.world.findApache) ? p.world.findApache : $context.library.install.apache.find;
 					var version = p.version || getLatestVersion(p.world)(MAJOR_VERSION);
 					var majorVersion = Number(version.split(".")[0]);
 					var mirror = (p.version) ? "https://archive.apache.org/dist/" : void(0);
@@ -218,14 +215,14 @@
 						},
 						{
 							console: function(e) {
-								jsh.shell.console(e.detail);
+								$context.console(e.detail);
 							}
 						}
 					);
 					basicInstall({
 						local: local,
 						version: version,
-						p_to: $context.jsh.file.Pathname(installation.base)
+						p_to: $context.library.file.Pathname(installation.base)
 					})(events);
 					//debugger;
 					var installed = Installation_getVersion(installation);
@@ -235,6 +232,13 @@
 				};
 			};
 		};
+
+		var Installation_from_jsh = function() {
+			if (!$context.jsh.shell.jsh.lib) return null;
+			return {
+				base: $context.jsh.shell.jsh.lib.getRelativePath("tomcat").os.adapt().pathname
+			}
+		}
 
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["require"] } */
 		var newRequire = function(installation) {
@@ -258,8 +262,8 @@
 						if (update) {
 							//	delete existing
 							$api.fp.world.now.action(
-								$context.jsh.file.world.Location.directory.remove.world(),
-								$context.jsh.file.world.Location.from.os(installation.base)
+								$context.library.file.world.Location.directory.remove.world(),
+								$context.library.file.world.Location.from.os(installation.base)
 							);
 							proceed = true;
 						} else {
@@ -270,10 +274,10 @@
 					}
 					if (proceed) {
 						newInstall(installation)({ world: p.world, version: version })(events);
-						if (installation.base == Installation.from.jsh().base) {
+						if (installation.base == Installation_from_jsh().base) {
 							//	TODO	refactor so instead of reloading plugin, plugin exposes a method allowing it to be reloaded
 							//	TODO	probably don't need to do this if it was already installed
-							jsh.loader.plugins($loader.Child("../../../../rhino/http/servlet/"));
+							$context.jsh.loader.plugins($loader.Child("../../../../rhino/http/servlet/"));
 						}
 					}
 				}
@@ -283,12 +287,7 @@
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"] } */
 		var Installation = {
 			from: {
-				jsh: function() {
-					if (!jsh.shell.jsh.lib) return null;
-					return {
-						base: jsh.shell.jsh.lib.getRelativePath("tomcat").os.adapt().pathname
-					}
-				}
+				jsh: Installation_from_jsh
 			},
 			getVersion: Installation_getVersion,
 			install: newInstall,

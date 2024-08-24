@@ -138,7 +138,23 @@ namespace slime.jsh.shell.tools {
 namespace slime.jsh.shell.tools.internal.tomcat {
 	export interface Context {
 		$api: slime.$api.Global
-		jsh: slime.jsh.Global
+		library: {
+			file: slime.jrunscript.file.Exports
+			http: slime.jrunscript.http.client.Exports
+			shell: slime.jrunscript.shell.Exports
+			install: slime.jrunscript.tools.install.Exports
+		}
+		console: slime.$api.fp.impure.Effect<string>
+		jsh: {
+			loader: {
+				plugins: slime.jsh.Global["loader"]["plugins"]
+			}
+			shell: {
+				jsh: {
+					lib?: slime.jsh.Global["shell"]["jsh"]["lib"]
+				}
+			}
+		}
 	}
 
 	export interface Exports extends slime.jsh.shell.tools.tomcat.Exports {
