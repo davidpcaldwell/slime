@@ -612,6 +612,13 @@ namespace slime.jsh.shell.tools {
 
 			const subject = script({
 				$api: fifty.global.$api,
+				library: {
+					file: fifty.global.jsh.file,
+					http: fifty.global.jsh.http,
+					install: fifty.global.jsh.tools.install,
+					shell: fifty.global.jsh.shell
+				},
+				console: fifty.global.jsh.shell.console,
 				jsh: fifty.global.jsh
 			});
 

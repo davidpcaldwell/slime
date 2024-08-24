@@ -235,6 +235,13 @@
 				var script = $loader.script("tomcat.js");
 				var tomcat = script({
 					$api: jsh.tools.install.$api,
+					console: jsh.shell.console,
+					library: {
+						file: jsh.file,
+						http: jsh.http,
+						install: jsh.tools.install,
+						shell: jsh.shell
+					},
 					jsh: jsh
 				});
 				jsh.shell.tools.tomcat = tomcat;
