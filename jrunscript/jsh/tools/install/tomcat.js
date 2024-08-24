@@ -301,7 +301,11 @@
 				}
 			},
 			Installation: Installation,
-			require: (Installation.from.jsh()) ? Installation.require(Installation.from.jsh()) : null,
+			jsh: (Installation_from_jsh()) ? {
+				require: {
+					world: Installation.require(Installation.from.jsh())
+				}
+			} : null,
 			old: {
 				require: function(argument, handler) {
 					var listener = $api.events.Handlers.attached(handler);

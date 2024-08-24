@@ -22,7 +22,7 @@
 				jsh.script.cli.option.boolean({ longname: "watch"}),
 				function(p) {
 					$api.fp.world.Means.now({
-						means: jsh.shell.tools.tomcat.require,
+						means: jsh.shell.tools.tomcat.jsh.require.world,
 						order: {}
 					});
 

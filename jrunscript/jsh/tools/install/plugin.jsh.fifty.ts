@@ -91,23 +91,27 @@ namespace slime.jsh.shell.tools {
 
 	export interface Exports {
 		rhino: {
+			//	TODO #1620	convert rhino.install to wo API
 			install: (
 				p?: rhino.InstallCommand,
 				events?: any
 			) => void
 
+			//	TODO #1621	No test coverage at all for rhino.require()
 			require: {
-				simple: slime.$api.fp.world.Action<{
-					satisfied: string
-					installing: string
-					installed: string
-				}>
-
 				world: slime.$api.fp.world.Means<rhino.InstallCommand,{
 					satisfied: string
 					installing: string
 					installed: string
 				}>
+
+				action: slime.$api.fp.world.Action<{
+					satisfied: string
+					installing: string
+					installed: string
+				}>
+
+				simple: slime.$api.fp.impure.Process
 			}
 		}
 	}
