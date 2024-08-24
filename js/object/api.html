@@ -185,48 +185,6 @@ END LICENSE
 			</ul>
 		</div>
 		<ul>
-			<li class="function">
-				<div class="name">constant</div>
-				<div>
-					Creates a function which caches the result of an underlying function.
-				</div>
-				<div>
-					It stores the result
-					before returning it, and returns the stored result for every succeeding invocation.
-				</div>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li><code>(function)</code> A function to which the returned function will delegate the first time.</li>
-					</ol>
-				</div>
-				<div class="returns">
-					<div class="label">Returns</div>
-					The created function.
-				</div>
-				<script type="application/x.jsapi#tests">
-					var f = new Functions();
-
-					var constantCalculator = module.constant(f.calculator);
-					verify(f.calculator.invocations).is(0);
-//					test( f.calculator.invocations == 0 );
-					verify(constantCalculator()).is(4);
-//					test( constantCalculator() == 4 );
-					verify(f.calculator.invocations).is(1);
-//					test( f.calculator.invocations == 1 );
-					verify(constantCalculator()).is(4);
-//					test( constantCalculator() == 4 );
-					verify(f.calculator.invocations).is(1);
-//					test( f.calculator.invocations == 1 );
-
-					var undefinedConstantCalculator = module.constant(f.undefinedCalculator);
-					test( f.undefinedCalculator.invocations == 0 );
-					test( typeof(undefinedConstantCalculator()) == "undefined" );
-					test( f.undefinedCalculator.invocations == 1 );
-					test( typeof(undefinedConstantCalculator()) == "undefined" );
-					test( f.undefinedCalculator.invocations == 1 );
-				</script>
-			</li>
 			<li class="function" jsapi:id="toLiteral">
 				<div class="name">toLiteral</div>
 				<div>Converts a JavaScript value to a string literal.</div>

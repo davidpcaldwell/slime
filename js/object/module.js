@@ -33,6 +33,9 @@
 		var deprecate = $api.deprecate;
 		var experimental = $api.experimental;
 
+		/**
+		 * @type { slime.$api.old.Exports["constant"] }
+		 */
 		var constant = function constant(f) {
 			return function() {
 				if (typeof(arguments.callee["called"]) == "undefined") {
