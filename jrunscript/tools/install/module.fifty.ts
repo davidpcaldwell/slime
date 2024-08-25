@@ -875,20 +875,7 @@ namespace slime.jrunscript.tools.install {
 										Packages.java.lang.System.err.println("Got request ...");
 										var host = request.headers.value("host");
 										Packages.java.lang.System.err.println("host = " + host);
-										if (host == "www.apache.org") {
-											if (request.path == "dyn/closer.cgi") {
-												return {
-													status: { code: 200 },
-													body: {
-														type: "application/json",
-														string: JSON.stringify({
-															preferred: "http://apache.inonit.com/"
-														})
-													}
-												};
-											}
-										}
-										if (host == "apache.inonit.com") {
+										if (host == "dlcdn.apache.org") {
 											return {
 												status: { code: 200 },
 												body: fifty.$loader.get(request.path) as slime.jrunscript.runtime.old.Resource
