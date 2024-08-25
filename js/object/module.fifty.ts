@@ -273,8 +273,119 @@ namespace slime.$api.old {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * An object capable of mapping one object type onto another.
+	 *
+	 * The object invokes a series of operations to map an input object to an output object. These operations are specified by
+	 * invoking the `add()` and `addMapping()` methods to configure the object, before invoking the `transform` method to map
+	 * objects. Each step receives a "current" object as input and emits a "next" object as output. The "current" object for the
+	 * first step is the object used as an argument to `transform()`, and the `transform()` method returns the "next" object emitted
+	 * from the last step.
+	 */
+	export interface ObjectTransformer {
+		/**
+		 * Adds a function to the mapping chain which receives the current object as an argument and returns the next object.
+		 *
+		 * @param f A function which takes a value and returns a value.
+		 */
+		add: (f: (v: any) => any) => void
+
+		/**
+		 * Adds a step to the mapping chain in which the current object is passed through the given mapping object, and each
+		 * property of the current value is transformed as follows:
+		 *
+		 * * If the named property is not present in the mapping object, it is simply passed through to the next step.
+		 * * If the named property is `null` in the mapping object, it is not passed through to the next step (it is essentially deleted).
+		 * * If the named property is a `function` in the mapping object, in the next step it will be set to the value the function returns.  The function will be invoked with two arguments.  The first argument will be the current value of the property (or `undefined` if the object in the current step does not have the given property), and the second will be the current object.
+		 *
+		 * Finally, if the mapping object contains a named property of type `function` not contained in the current object, the
+		 * value of this property will be assigned by invoking the given function with values of `undefined` and the current object.
+		 *
+		 * @param o An object which specifies the mapping to use for this step.
+		 * @returns
+		 */
+		addMapping: (o: object) => void
+
+		/**
+		 * Passes the given argument through the mapping chain, invoking each step in succession, and returning the output of the
+		 * last step.
+		 *
+		 * @param o An object to transform.
+		 * @returns The output of the transformation.
+		 */
+		transform: (o: object) => object
+
+		/**
+		 * Returns a function which wraps this object; the function takes one argument (an object) and returns the same result that
+		 * would be returned by the `transform` method of this object.
+		 *
+		 * @returns A function which transforms objects using this ObjectTransformer.
+		 */
+		toFunction: () => (o: object) => object
+	}
+
 	export interface Exports {
-		ObjectTransformer: any
+		ObjectTransformer: new () => ObjectTransformer
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			var module = fifty.$loader.module("module.js");
+
+			var test = function(b) {
+				verify(b).is(true);
+			}
+
+			fifty.tests.exports.ObjectTransformer = function() {
+				var xDoubler = function(o) {
+					return { x: o.x+o.x, y: 2, z: "David", a: true, b: true, c: true }
+				}
+
+				var hasher = {
+					a: function(v,o) {
+					},
+					b: function(v,o) {
+						return null;
+					},
+					y: null,
+					z: function(v,o) {
+						return v + v + o.x;
+					}
+				};
+
+				var input = { x: 1 };
+				var first = new module.ObjectTransformer();
+				first.add(xDoubler);
+				var output = first.transform(input);
+				test(output.x == 2);
+				test(output.y == 2);
+				test(output.z == "David");
+
+				var second = new module.ObjectTransformer();
+				second.add(xDoubler);
+				second.addMapping(hasher);
+				output = second.transform(input);
+				test(output.x == 2);
+				test(!("y" in output));
+				test(output.z == "DavidDavid2");
+				test("a" in output && typeof(output.a) == "undefined");
+				test("b" in output && output.b === null);
+				test(output.c === true);
+
+				var secondFunction = second.toFunction();
+				var fOutput = secondFunction(input);
+				test(fOutput.x == 2);
+				test(fOutput.c === true);
+				test(fOutput.z == "DavidDavid2");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		properties: any
 		Object: any
 		Filter: any
