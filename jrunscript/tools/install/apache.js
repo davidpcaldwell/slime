@@ -15,7 +15,8 @@
 	 */
 	function(Packages,$api,$context,$exports) {
 		var getMirror = function() {
-			return "https://dlcdn.apache.org/";
+			//	TODO	Apache prefers HTTPS, but let's try HTTP and see whether it passes GitHub Actions suite
+			return "http://dlcdn.apache.org/";
 		};
 
 		$exports.find = function(p) {
