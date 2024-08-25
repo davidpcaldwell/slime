@@ -127,7 +127,7 @@
 			return $api.fp.world.mapping(getLatestVersionUsingWorld(mock));
 		}
 
-		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["test"]["getVersion"] } */
+		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["test"]["getVersionFromReleaseNotes"] } */
 		var getVersion = function(releaseNotes) {
 			var lines = releaseNotes.split("\n");
 			var rv = null;
@@ -331,7 +331,7 @@
 				}
 			},
 			test: {
-				getVersion: getVersion,
+				getVersionFromReleaseNotes: getVersion,
 				getReleaseNotes: getReleaseNotes,
 				getLatestVersion: getLatestVersionUsingWorld(void(0))
 			}

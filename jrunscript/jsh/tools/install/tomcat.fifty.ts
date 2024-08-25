@@ -5,137 +5,138 @@
 //	END LICENSE
 
 namespace slime.jsh.shell.tools {
-	export namespace tomcat {
-		export type Version = {
-			toString(): string
-		}
+	export interface Exports {
+		tomcat: slime.jsh.shell.tools.tomcat.Exports
+	}
+}
 
-		export type Installation = {
-			version: Version
-		}
+namespace slime.jsh.shell.tools.tomcat {
+	export type Version = {
+		toString(): string
+	}
 
-		//	TODO	because this is Java, it's possible that we don't need a native filesystem to do this; we might be able to run
-		//			it directly out of other Location objects. But for now we assume a native filesystem and use only the base
-		//			property.
-		export interface Installed {
-			base: string
-		}
+	export type Installation = {
+		version: Version
+	}
 
-		export namespace install {
-			export type Events = {
-				console: string
-				installed: {
-					to: slime.jrunscript.file.Pathname
-				}
+	//	TODO	because this is Java, it's possible that we don't need a native filesystem to do this; we might be able to run
+	//			it directly out of other Location objects. But for now we assume a native filesystem and use only the base
+	//			property.
+	export interface Installed {
+		base: string
+	}
+
+	export namespace install {
+		export type Events = {
+			console: string
+			installed: {
+				to: slime.jrunscript.file.Pathname
+			}
+		}
+	}
+
+	export namespace installation {
+		export type Events = {
+			unzipping: {
+				local: string
+				to: string
+			}
+			installing: {
+				to: string
+			}
+			installed: {
+				version: string
 			}
 		}
 
-		export namespace installation {
-			export type Events = {
-				unzipping: {
-					local: string
-					to: string
-				}
-				installing: {
-					to: string
-				}
-				installed: {
-					version: string
-				}
-			}
-
-			export type RequireEvents = Events & {
-				found: {
-					version: string
-				}
+		export type RequireEvents = Events & {
+			found: {
+				version: string
 			}
 		}
+	}
 
-		export interface World {
-			getLatestVersion: slime.$api.fp.world.Sensor<number,void,slime.$api.fp.Maybe<string>>
-			findApache: slime.jsh.Global["tools"]["install"]["apache"]["find"]
+	export interface World {
+		getLatestVersion: slime.$api.fp.world.Sensor<number,void,slime.$api.fp.Maybe<string>>
+		findApache: slime.jsh.Global["tools"]["install"]["apache"]["find"]
+	}
+
+	export type Mock = Partial<World>
+
+	export namespace old {
+		export type Argument = {
+			mock?: {
+				lib?: slime.jrunscript.file.Directory
+				getLatestVersion?: () => string
+				findApache?: slime.jsh.Global["tools"]["install"]["apache"]["find"]
+			}
+			to?: slime.jrunscript.file.Pathname
+			replace?: boolean
+			version?: string
+			local?: slime.jrunscript.file.File
 		}
 
-		export type Mock = Partial<World>
+		export type Handler = slime.$api.event.Handlers<tomcat.install.Events>
+	}
 
-		export namespace old {
-			export type Argument = {
-				mock?: {
-					lib?: slime.jrunscript.file.Directory
-					getLatestVersion?: () => string
-					findApache?: slime.jsh.Global["tools"]["install"]["apache"]["find"]
-				}
-				to?: slime.jrunscript.file.Pathname
-				replace?: boolean
+	export interface Exports {
+		input: {
+			getDefaultMajorVersion: slime.$api.fp.impure.Input<number>
+		}
+
+		Installation: {
+			from: {
+				/**
+				 *
+				 * @returns the Tomcat configuration for the currently running shell.
+				 */
+				jsh: () => slime.jsh.shell.tools.tomcat.Installed
+			}
+
+			getVersion: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.Maybe<string>
+
+			install: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Means<{
+				world?: tomcat.Mock
 				version?: string
-				local?: slime.jrunscript.file.File
-			}
+			},slime.jsh.shell.tools.tomcat.installation.Events>
 
-			export type Handler = slime.$api.event.Handlers<tomcat.install.Events>
-		}
-
-		export interface Exports {
-			input: {
-				getDefaultMajorVersion: slime.$api.fp.impure.Input<number>
-			}
-
-			Installation: {
-				from: {
-					/**
-					 *
-					 * @returns the Tomcat configuration for the currently running shell.
-					 */
-					jsh: () => slime.jsh.shell.tools.tomcat.Installed
-				}
-
-				getVersion: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.Maybe<string>
-
-				install: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Means<{
+			require: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Means<
+				{
 					world?: tomcat.Mock
 					version?: string
-				},slime.jsh.shell.tools.tomcat.installation.Events>
+					replace?: (version: string) => boolean
+				},
+				slime.jsh.shell.tools.tomcat.installation.RequireEvents
+			>
+		}
 
-				require: (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Means<
+		jsh?: {
+			require: {
+				world: slime.$api.fp.world.Means<
 					{
 						world?: tomcat.Mock
 						version?: string
 						replace?: (version: string) => boolean
 					},
 					slime.jsh.shell.tools.tomcat.installation.RequireEvents
+
 				>
 			}
-
-			jsh?: {
-				require: {
-					world: slime.$api.fp.world.Means<
-						{
-							world?: tomcat.Mock
-							version?: string
-							replace?: (version: string) => boolean
-						},
-						slime.jsh.shell.tools.tomcat.installation.RequireEvents
-					>
-				}
-			}
-
-			old: {
-				/** @deprecated Replaced by {@link Exports | Exports.Installation.require()} and {@link Exports | Exports.jsh.require() }. */
-				require: (
-					argument?: {
-						world?: tomcat.Mock
-						version?: string
-						replace?: (version: string) => boolean
-					},
-					handler?: slime.$api.event.Handlers<{
-						console: string
-					}>
-				) => void
-			}
 		}
-	}
 
-	export interface Exports {
-		tomcat: slime.jsh.shell.tools.tomcat.Exports
+		old: {
+			/** @deprecated Replaced by {@link Exports | Exports.Installation.require()} and {@link Exports | Exports.jsh.require() }. */
+			require: (
+				argument?: {
+					world?: tomcat.Mock
+					version?: string
+					replace?: (version: string) => boolean
+				},
+				handler?: slime.$api.event.Handlers<{
+					console: string
+				}>
+			) => void
+		}
 	}
 }
 
@@ -166,7 +167,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			//	TODO	world test coverage only
 			getReleaseNotes: slime.$api.fp.world.Sensor<slime.jsh.shell.tools.tomcat.Installed,void,slime.$api.fp.Maybe<string>>
 
-			getVersion: (releaseNotes: string) => string
+			getVersionFromReleaseNotes: (releaseNotes: string) => string
 
 			getLatestVersion: slime.$api.fp.world.Sensor<number,{ online: { major: number, latest: slime.$api.fp.Maybe<string> } },string>
 		}
@@ -236,7 +237,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 			fifty.tests.getVersion = function() {
 				var notes = MockReleaseNotes("3.4.5");
-				var version = subject.test.getVersion(notes);
+				var version = subject.test.getVersionFromReleaseNotes(notes);
 				verify(version).is("3.4.5");
 			}
 
