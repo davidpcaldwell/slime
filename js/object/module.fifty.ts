@@ -165,7 +165,115 @@ namespace slime.$api.old {
 	)(fifty);
 
 	export interface Exports {
-		toLiteral: any
+		//	TODO	Can toLiteral be broken by setting up two objects that refer to one another? Or an object that refers to itself?
+
+		/**
+		 * @deprecated `JSON.stringify` is now the standard way to do this, and other code should be migrated.
+		 *
+		 * Converts a JavaScript value to a string literal.
+		 * The literal can be reconstituted into the original using `eval()`. Converts only values of types `object`, `string`,
+		 * `number`, `boolean`, and `undefined`, only including properties of `object` values which are one of those types.
+		 *
+		 * Objects are represented by the values of their enumerable properties (or, if they have properties of an object type, by
+		 * the literal resulting from calling this function with the value of that property), with the exception of `Array` and
+		 * `Date` values, which are represented by calls to the `Array` and `Date` constructors.
+		 *
+		 * @param value A value of a permitted type to convert to a string literal.
+		 * @returns A literal representation of the given value.
+		 */
+		toLiteral: (value: any) => string
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			var module = fifty.$loader.module("module.js");
+
+			var test = function(b) {
+				verify(b).is(true);
+			}
+
+			fifty.tests.exports.toLiteral = fifty.test.Parent();
+
+			fifty.tests.exports.toLiteral._1 = function() {
+				var thaw = function(v) {
+					var s = module.toLiteral(v);
+					var rv;
+					eval("rv = " + s);
+					return rv;
+				}
+
+				var toLiteral = module.toLiteral;
+
+				test(toLiteral("David") == "\"David\"");
+				test(toLiteral(2) == "2");
+				test(toLiteral(true) == "true");
+
+				var o: any | { s?: string, u?: any, a?: boolean, b?: string, c?: Date } = { s: void(0), u: void(0), a: void(0), b: void(0), c: void(0) };
+				var u;
+				o.s = "s";
+				o.u = u;
+				var t = thaw(o);
+				test("s" in t);
+				test(typeof(t.s) != "undefined");
+				test("u" in t);
+				test(typeof(t.u) == "undefined");
+
+				var now = new Date();
+				o = {
+					a: true,
+					b: "David",
+					c: now
+				};
+				t = thaw(o);
+				test(t.a === true);
+				test(t.b == "David");
+				test(t.c.getTime() == now.getTime());
+
+				o = [1, "David", true, { x: "y" }];
+				t = thaw(o);
+				test(t.length == 4);
+				test(t[0] == 1);
+				test(t[1] == "David");
+				test(t[2] === true);
+				test(t[3].x == "y");
+			}
+
+			fifty.tests.exports.toLiteral._2 = function() {
+				var reference = {
+					circular: void(0)
+				};
+				var circular = {
+					reference: reference
+				};
+				reference.circular = circular;
+
+				var expectError = function(f,filter) {
+					try {
+						f();
+						test(false);
+					} catch (e) {
+						if (!filter) {
+							test(true);
+						} else {
+							test(filter(e));
+						}
+					}
+				}
+
+				expectError(function() {
+					return module.toLiteral(circular);
+				}, function(e) {
+					return /^Recursion/.test(e.message);
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		ObjectTransformer: any
 		properties: any
 		Object: any
