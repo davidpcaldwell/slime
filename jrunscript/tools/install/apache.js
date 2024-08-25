@@ -15,13 +15,8 @@
 	 */
 	function(Packages,$api,$context,$exports) {
 		var getMirror = function() {
-			return $context.client.request({
-				url: "http://www.apache.org/dyn/closer.cgi?asjson=1",
-				evaluate: function(response) {
-					var json = eval("(" + response.body.stream.character().asString() + ")");
-					return json.preferred;
-				}
-			});
+			//	TODO	Apache prefers HTTPS, but let's try HTTP and see whether it passes GitHub Actions suite
+			return "http://dlcdn.apache.org/";
 		};
 
 		$exports.find = function(p) {
