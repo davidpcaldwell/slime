@@ -1700,8 +1700,54 @@ namespace slime.$api.fp {
 				undefined?: boolean
 			}) => (...args: any[]) => void
 		}
-		evaluator: any
 	}
+
+	export namespace evaluator {
+		export interface Invocation {
+			target: object
+			arguments: any[]
+		}
+
+		export interface Cache {
+			get: (invocation: Invocation) => any
+			set: (invocation: Invocation, value: any) => void
+		}
+	}
+
+	export interface Exports {
+		/**
+		 * Creates a function which invokes a series of operations, in order, and returns the first non-`undefined` value returned
+		 * by one of them.
+		 *
+		 * @param args Upon invocation, each argument is used, in order, until one of them produces
+		 * a value other than `undefined`.
+		 *
+		 * *  If it is a `function`, the function is invoked with the same arguments (and `this`), and the return value is used.
+		 *
+		 * *  If it is a {@link evaluator.Cache | Cache}, the `get` method of the cache is invoked with an <a href="#types.Function.invocation">invocation</a> representing the invocation of the function, and the return value of `get` is used.
+		 *  Once an operation produces a value other than `undefined`, that value will be used as the return value of the function.
+		 *
+		 * Before returning that value:
+		 *
+		 *
+		 * *  If the operation that produced the value is a {@link evaluator.Cache | Cache}, its `set` method is invoked with the <a href="#types.Function.invocation">invocation</a> and the value.
+		 *
+		 * *  Any caches *preceding* the operation that produced the value will have their `set` methods invoked with the <a href="#types.Function.invocation">invocation</a> and the value.
+		 * @returns A function that implements the algorithm described above.
+		 */
+		evaluator: (...args: (slime.external.lib.es5.Function | evaluator.Cache)[] ) => slime.external.lib.es5.Function
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.evaluator = function() {
+
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	(
 		function(
