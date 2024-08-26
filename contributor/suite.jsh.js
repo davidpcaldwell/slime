@@ -204,7 +204,7 @@
 					var env = jsh.js.Object.set({}, jsh.shell.environment
 						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
 						, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
-						, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : ""
+						, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : {}
 					);
 
 					suite.add("jrunscript/" + JRE + "/" + ENGINE, jsh.unit.Suite.Fork({

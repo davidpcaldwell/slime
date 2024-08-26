@@ -253,74 +253,147 @@
 		$exports.properties = properties;
 		$api.experimental($exports,"properties");
 
-		$exports.Object = new function() {
-			this.keys = function(o) {
-				return properties.names(o);
-			};
-
-			this.values = function(o) {
-				return properties.values(o);
-			};
-
-			this.pairs = Object.assign(function(o) {
-				return properties.pairs(o);
-			}, { create: void(0) });
-			this.pairs.create = function(array) {
-				var rv = {};
-				array.forEach(function(item) {
-					rv[item.name] = item.value;
-				});
-				return rv;
-			}
-
-			this.set = function(o) {
-				if (typeof(o) != "object" || o == null) {
-					throw new TypeError("First argument must be an object.");
-				}
-				for (var i=1; i<arguments.length; i++) {
-					for (var x in arguments[i]) {
-						o[x] = arguments[i][x];
+		$exports.Object = (
+			function() {
+				var path = new function() {
+					var find = function(o,n,create) {
+						var target = o;
+						var tokens = n.split(".");
+						for (var i=0; i<tokens.length-1; i++) {
+							if (typeof(target[tokens[i]]) == "undefined") {
+								if (create) {
+									target[tokens[i]] = {};
+								} else {
+									return {};
+								}
+							}
+							target = target[tokens[i]];
+						}
+						return {
+							target: target,
+							name: tokens[tokens.length-1]
+						};
 					}
-				}
-				return o;
-			}
 
-			this.path = new function() {
-				var find = function(o,n,create) {
-					var target = o;
-					var tokens = n.split(".");
-					for (var i=0; i<tokens.length-1; i++) {
-						if (typeof(target[tokens[i]]) == "undefined") {
-							if (create) {
-								target[tokens[i]] = {};
-							} else {
-								return {};
+					this.get = function(o,n) {
+						var location = find(o,n);
+						if (location.target) {
+							return location.target[location.name];
+						}
+					}
+
+					this.set = function(o,n,v) {
+						var location = find(o,n,true);
+						location.target[location.name] = v;
+					}
+				};
+				/** @type { slime.$api.old.object.Exports } */
+				var rv = {
+					keys: function(o) {
+						return properties.names(o);
+					},
+					values: function(o) {
+						return properties.values(o);
+					},
+					pairs: Object.assign(
+						function(o) {
+							return properties.pairs(o);
+						},
+						{
+							create: function(array) {
+								var rv = {};
+								array.forEach(function(item) {
+									rv[item.name] = item.value;
+								});
+								return rv;
 							}
 						}
-						target = target[tokens[i]];
-					}
-					return {
-						target: target,
-						name: tokens[tokens.length-1]
-					};
-				}
+					),
+					set: function(o) {
+						if (typeof(o) != "object" || o == null) {
+							throw new TypeError("First argument must be an object.");
+						}
+						for (var i=1; i<arguments.length; i++) {
+							for (var x in arguments[i]) {
+								o[x] = arguments[i][x];
+							}
+						}
+						return o;
+					},
+					path: path,
+					expando: path
+				};
+				return rv;
+				// return new function() {
+				// 	this.keys = function(o) {
+				// 		return properties.names(o);
+				// 	};
 
-				this.get = function(o,n) {
-					var location = find(o,n);
-					if (location.target) {
-						return location.target[location.name];
-					}
-				}
+				// 	this.values = function(o) {
+				// 		return properties.values(o);
+				// 	};
 
-				this.set = function(o,n,v) {
-					var location = find(o,n,true);
-					location.target[location.name] = v;
-				}
-			};
+				// 	this.pairs = Object.assign(function(o) {
+				// 		return properties.pairs(o);
+				// 	}, { create: void(0) });
+				// 	this.pairs.create = function(array) {
+				// 		var rv = {};
+				// 		array.forEach(function(item) {
+				// 			rv[item.name] = item.value;
+				// 		});
+				// 		return rv;
+				// 	}
 
-			this.expando = this.path;
-		//	$api.deprecate(this,"expando");
-		}
+				// 	this.set = function(o) {
+				// 		if (typeof(o) != "object" || o == null) {
+				// 			throw new TypeError("First argument must be an object.");
+				// 		}
+				// 		for (var i=1; i<arguments.length; i++) {
+				// 			for (var x in arguments[i]) {
+				// 				o[x] = arguments[i][x];
+				// 			}
+				// 		}
+				// 		return o;
+				// 	}
+
+				// 	this.path = new function() {
+				// 		var find = function(o,n,create) {
+				// 			var target = o;
+				// 			var tokens = n.split(".");
+				// 			for (var i=0; i<tokens.length-1; i++) {
+				// 				if (typeof(target[tokens[i]]) == "undefined") {
+				// 					if (create) {
+				// 						target[tokens[i]] = {};
+				// 					} else {
+				// 						return {};
+				// 					}
+				// 				}
+				// 				target = target[tokens[i]];
+				// 			}
+				// 			return {
+				// 				target: target,
+				// 				name: tokens[tokens.length-1]
+				// 			};
+				// 		}
+
+				// 		this.get = function(o,n) {
+				// 			var location = find(o,n);
+				// 			if (location.target) {
+				// 				return location.target[location.name];
+				// 			}
+				// 		}
+
+				// 		this.set = function(o,n,v) {
+				// 			var location = find(o,n,true);
+				// 			location.target[location.name] = v;
+				// 		}
+				// 	};
+
+				// 	this.expando = this.path;
+				// //	$api.deprecate(this,"expando");
+				// };
+			}
+		)();
 		$api.experimental($exports,"Object");
 
 		if ($context.globals) {
