@@ -147,7 +147,11 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			file: slime.jrunscript.file.Exports
 			http: slime.jrunscript.http.client.Exports
 			shell: slime.jrunscript.shell.Exports
-			install: slime.jrunscript.tools.install.Exports
+			install: {//slime.jrunscript.tools.install.Exports
+				apache: {
+					find: slime.jrunscript.tools.install.Exports["apache"]["find"]
+				}
+			}
 		}
 		console: slime.$api.fp.impure.Effect<string>
 		jsh: {
@@ -376,6 +380,54 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				verify(result).after.is(true);
 			}
 
+
+			fifty.tests.external = fifty.test.Parent();
+
+			fifty.tests.external.download = function() {
+				var installScript: slime.jrunscript.tools.install.Script = fifty.$loader.script("../../../tools/install/module.js");
+
+				var downloads = fifty.global.jsh.shell.TMPDIR.createTemporary({ directory: true });
+
+				var to = fifty.jsh.file.temporary.directory().pathname;
+
+				var mockInstall = installScript({
+					library: {
+						file: fifty.global.jsh.file,
+						http: fifty.global.jsh.http,
+						shell: fifty.global.jsh.shell,
+						web: fifty.global.jsh.web
+					},
+					downloads: downloads
+				});
+
+				var script: Script = fifty.$loader.script("tomcat.js");
+
+				var subject = script({
+					$api: fifty.global.$api,
+					library: {
+						file: fifty.global.jsh.file,
+						http: fifty.global.jsh.http,
+						shell: fifty.global.jsh.shell,
+						install: mockInstall
+					},
+					console: jsh.shell.console,
+					jsh: fifty.global.jsh
+				});
+
+				fifty.global.$api.fp.world.Means.now({
+					means: subject.Installation.require({ base: to }),
+					order: {},
+					handlers: {
+						installing: function(e) {
+							fifty.global.jsh.shell.console(e.detail.to);
+						},
+						installed: function(e) {
+							fifty.global.jsh.shell.console(e.detail.version);
+						}
+					}
+				});
+			}
+
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.getVersion);
 
@@ -402,6 +454,8 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				fifty.run(fifty.tests.replace);
 
 				if (!jsh.shell.environment.SLIME_TEST_NO_TOMCAT_INSTALL_TO_JSH) fifty.run(fifty.tests.addToShellAtRuntime);
+
+				fifty.run(fifty.tests.external);
 			};
 
 			fifty.tests.manual = {};
@@ -439,7 +493,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				var version = subject.Installation.getVersion(installation);
 
 				jsh.shell.console(JSON.stringify(version));
-			}
+			};
 		}
 	//@ts-ignore
 	)(fifty);

@@ -22,7 +22,7 @@ namespace slime.jrunscript.tools.install {
 		}
 
 		/**
-		 * The directory in which to store downloaded files.
+		 * The directory in which to store downloaded files. If not specified, a temporary directory will be used.
 		 */
 		downloads?: slime.jrunscript.file.Directory
 
