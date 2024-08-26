@@ -119,8 +119,9 @@ namespace slime.jsh.shell.tools.tomcat {
 						replace?: (version: string) => boolean
 					},
 					slime.jsh.shell.tools.tomcat.installation.RequireEvents
-
 				>
+
+				simple: slime.$api.fp.impure.Process
 			}
 		}
 
