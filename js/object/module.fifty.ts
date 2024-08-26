@@ -387,7 +387,76 @@ namespace slime.$api.old {
 
 	export interface Exports {
 		properties: any
-		Object: any
+	}
+
+	export namespace object {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.Object = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			keys: any
+			values: any
+			pairs: any
+		}
+
+		export interface Exports {
+			/**
+			 * @experimental
+			 *
+			 * Given a list of objects, uses the second and succeeding arguments to set properties of the first argument.
+			 *
+			 * @param target An object to modify (and return).
+			 * @param setters objects whose properties will be used to set the properties of the first object. Later arguments take
+			 * precedence over earlier arguments. So if there are three arguments: objects A, B, and C, and objects B and C both
+			 * contain a property *x*, then after this method is invoked, A.x == C.x (not A.x == B.x). If any of the extra arguments
+			 * is `null` or `undefined`, it is ignored.
+			 * @returns The first object.
+			 */
+			set: (target: any, ...setters: any[]) => any
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				var module = fifty.$loader.module("module.js");
+
+				var test = function(b) {
+					verify(b).is(true);
+				}
+
+				fifty.tests.exports.Object.set = function() {
+					//	TODO	test enforcement that first argument must be object and must not be null
+					var set = module.Object.set;
+					var a = set({}, { a: 2 });
+					test(a.a == 2);
+					var b = set({}, { a: 1 }, { a: 2 });
+					test(b.a == 2);
+					var c = set({}, null, { a: 2 }, (function(){})());
+					test(c.a == 2);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			path: any
+			expando: any
+		}
+	}
+
+	export interface Exports {
+		Object: object.Exports
+	}
+
+	export interface Exports {
 		Filter: any
 		Map: any
 		Order: any
