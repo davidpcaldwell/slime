@@ -301,11 +301,20 @@
 				}
 			},
 			Installation: Installation,
-			jsh: (Installation_from_jsh()) ? {
-				require: {
-					world: Installation.require(Installation.from.jsh())
+			jsh: (Installation_from_jsh()) ? (
+				function() {
+					var means = Installation.require(Installation.from.jsh())
+					return {
+						require: {
+							world: means,
+							simple: $api.fp.world.Means.process({
+								means: means,
+								order: {}
+							})
+						}
+					}
 				}
-			} : null,
+			)() : null,
 			old: {
 				require: function(argument, handler) {
 					var listener = $api.events.Handlers.attached(handler);
