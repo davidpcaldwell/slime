@@ -457,14 +457,19 @@ namespace slime.$api.old {
 	}
 
 	export interface Exports {
+		/**
+		 * @deprecated Use `$api.fp`.
+		 */
+		Function: slime.$api.Global["fp"]
+	}
+
+	export interface Exports {
 		Filter: any
 		Map: any
 		Order: any
 		Array: any
 		Error: any
 		Task: any
-
-		Function: slime.$api.Global["fp"]
 
 		/**
 		 * @deprecated
