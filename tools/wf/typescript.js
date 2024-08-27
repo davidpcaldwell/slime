@@ -175,7 +175,7 @@
 					return function(events) {
 						if (!p.configuration || !p.configuration.typescript || !p.configuration.typescript.version) throw new TypeError("Required: p.configuration.typescript.version");
 
-						$api.fp.world.now.action($context.library.node.require);
+						$context.library.node.require.simple();
 
 						$api.fp.world.now.action(
 							$context.library.node.Installation.modules.require({ name: "typescript", version: p.configuration.typescript.version }),

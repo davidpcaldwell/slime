@@ -441,13 +441,32 @@ namespace slime.jsh.shell.tools {
 
 			installed: slime.jrunscript.tools.node.object.Installation
 
-			require: slime.$api.fp.world.Means<void,slime.jrunscript.tools.node.object.install.Events & {
-				removed: {
-					at: string
-					version: string
-				}
-				found: slime.jrunscript.tools.node.object.Installation
-			}>
+			/**
+			 * Require that a managed Node.js be present. The version will be determined by examining the default version from the
+			 * {@link slime.jrunscript.tools.node.Exports | module versions.default} property and possibly revising it based on
+			 * detected local configuration (for example, the operating system and version).
+			 */
+			require: {
+				/**
+				 * Events:
+				 * * {@link slime.jrunscript.tools.node.object.install.Events}: standard installation events
+				 * * `removed`: fired if an incorrect version of Node.js is found and must be removed. Specifies the location from
+				 * which it is removed and the version that is being removed.
+				 * * `found`: fired if the correct version of Node.js is found and nothing is done.
+				 */
+				action: slime.$api.fp.world.Action<
+					slime.jrunscript.tools.node.object.install.Events
+					& {
+						removed: {
+							at: string
+							version: string
+						}
+						found: slime.jrunscript.tools.node.object.Installation
+					}
+				>
+
+				simple: slime.$api.fp.impure.Process
+			}
 		}
 
 		export interface Exports extends slime.jrunscript.tools.node.Exports, slime.jsh.shell.tools.node.Managed {
@@ -461,8 +480,8 @@ namespace slime.jsh.shell.tools {
 				const { $api, jsh } = fifty.global;
 
 				$api.fp.impure.now.process(
-					$api.fp.world.output(jsh.shell.tools.node.require)
-				)
+					jsh.shell.tools.node.require.simple
+				);
 
 				const api = jsh.shell.tools.node.installed;
 

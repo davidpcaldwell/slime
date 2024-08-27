@@ -296,7 +296,7 @@
 					},
 					lint: {
 						eslint: function() {
-							$api.fp.world.execute(jsh.shell.tools.node.require());
+							$api.fp.world.execute(jsh.shell.tools.node.require.action);
 							jsh.shell.tools.node.installed.modules.require({ name: "eslint", version: "8.57.0" });
 							return jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
@@ -692,15 +692,18 @@
 					var configuration = library.module.Project.typescript.configurationFile(project);
 					jsh.shell.tools.rhino.require.simple();
 					$api.fp.world.now.action(jsh.shell.tools.tomcat.jsh.require.world);
-					$api.fp.world.now.action(jsh.shell.tools.node.require, void(0), {
-						found: function(e) {
-							jsh.shell.console("Found Node.js " + e.detail.version + ".");
-						},
-						removed: function(e) {
-							jsh.shell.console("Removed Node.js " + e.detail.version);
-						},
-						installed: function(e) {
-							jsh.shell.console("Installed Node.js " + e.detail.version + ".");
+					$api.fp.world.Action.now({
+						action: jsh.shell.tools.node.require.action,
+						handlers: {
+							found: function(e) {
+								jsh.shell.console("Found Node.js " + e.detail.version + ".");
+							},
+							removed: function(e) {
+								jsh.shell.console("Removed Node.js " + e.detail.version);
+							},
+							installed: function(e) {
+								jsh.shell.console("Installed Node.js " + e.detail.version + ".");
+							}
 						}
 					});
 					if (!configuration.present) throw new Error("Not found: TypeScript configuration file.");
@@ -725,7 +728,7 @@
 					return {
 						require: function(p) {
 							var project = (p && p.project) ? p.project : inputs.base();
-							$api.fp.world.now.tell(jsh.shell.tools.node.require());
+							$api.fp.world.now.tell(jsh.shell.tools.node.require.action);
 							var installation = jsh.shell.tools.node.installation;
 							var version = library.module.Project.typescript.version({ base: project.toString() });
 							//	We use jsh.shell.jsh.require to make sure shell relaunches, so that TypeScript can be

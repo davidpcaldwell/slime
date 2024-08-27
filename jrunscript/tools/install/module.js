@@ -242,6 +242,12 @@
 						return false;
 					}
 				});
+				p.to.createDirectory({
+					exists: function(dir) {
+						dir.remove();
+						return true;
+					}
+				});
 				$context.library.shell.run({
 					command: "mv",
 					arguments: [unzippedTo.pathname.toString(), p.to.toString()]
@@ -493,6 +499,7 @@
 						format.extract(archive.file, to);
 					}
 
+					debugger;
 					if (p.download.prefix) {
 						var tmp =  $context.library.shell.TMPDIR.createTemporary({ directory: true }).pathname;
 						tmp.directory.remove();

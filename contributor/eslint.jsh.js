@@ -18,7 +18,7 @@
 			}
 		});
 
-		$api.fp.world.execute(jsh.shell.tools.node.require());
+		$api.fp.world.execute(jsh.shell.tools.node.require.action);
 		$api.fp.world.Means.now({
 			means: jsh.shell.tools.node.Installation.modules.require({ name: "eslint", version: "8.57.0" }),
 			order: jsh.shell.tools.node.installation

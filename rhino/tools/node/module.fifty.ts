@@ -28,18 +28,6 @@ namespace slime.jrunscript.tools.node {
 		})(fifty);
 	}
 
-	export interface Exports {
-		test: {
-			versions: {
-				/**
-				 * A previous Node version available for both macOS and Linux.
-				 */
-				previous: string
-				current: string
-			}
-		}
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -48,6 +36,12 @@ namespace slime.jrunscript.tools.node {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		versions: {
+			default: string
+		}
+	}
 
 	/**
 	 * A specified installation of Node.js. When determining whether Node.js is installed at a particular location, one can
@@ -396,6 +390,18 @@ namespace slime.jrunscript.tools.node {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		test: {
+			versions: {
+				/**
+				 * A previous Node version available for both macOS and Linux.
+				 */
+				previous: string
+				current: string
+			}
+		}
+	}
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
