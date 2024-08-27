@@ -30,7 +30,7 @@
 			jsh.shell.exit(1);
 		}
 
-		$api.fp.world.execute(jsh.shell.tools.node.require());
+		$api.fp.world.execute(jsh.shell.tools.node.require.action);
 		var typescriptVersionInstalled = $api.fp.now.invoke(
 			jsh.shell.tools.node.installation,
 			$api.fp.pipe(

@@ -198,7 +198,7 @@
 
 						(
 							function core() {
-								$api.fp.world.now.tell(jsh.shell.tools.node.require(), {
+								$api.fp.world.now.tell(jsh.shell.tools.node.require.action, {
 									found: function(e) {
 									},
 									removed: function(e) {

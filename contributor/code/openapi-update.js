@@ -27,7 +27,7 @@
 
 		$export({
 			initialize: function(jsh) {
-				$api.fp.world.execute(jsh.shell.tools.node.require());
+				$api.fp.world.execute(jsh.shell.tools.node.require.action);
 				jsh.shell.tools.node.installed.modules.require({ name: "dtsgenerator", version: "3.12.1" });
 				jsh.shell.tools.node.installed.modules.require({ name: "tslib", version: "2.3.0" });
 				jsh.shell.tools.node.installed.modules.require({ name: "@dtsgenerator/replace-namespace", version: "1.5.0" });

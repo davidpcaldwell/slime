@@ -44,8 +44,10 @@
 		};
 
 		var versions = {
-			default: "20.16.0"
+			default: "20.17.0"
 		};
+
+		$exports.versions = versions;
 
 		var getDownload = function(version, os, arch) {
 			var url = getDownloadUrl({
@@ -54,7 +56,17 @@
 				arch: arch
 			});
 			if (url.present) {
+				var prefix = $api.fp.now(
+					url.value,
+					$api.fp.string.split("/"),
+					function(array) { return array[array.length-1]; },
+					$api.fp.string.match(/(.*)\.tar.gz$/),
+					function(match) {
+						return match[1];
+					}
+				)
 				return {
+					prefix: prefix,
 					url: url.value
 				}
 			}
@@ -565,13 +577,21 @@
 				//	TODO	compute this somehow?
 				if (!p.version) p.version = versions.default;
 				return function(events) {
-					var existing = $exports.object.at({ location: p.location.toString() });
+					var existing = p.location.directory;
 					if (existing) throw new Error("Node installation directory exists: " + p.location.toString());
 					var version = getDownload(p.version, $context.library.shell.os.name, $context.library.shell.os.arch);
-					$context.library.install.install({
-						url: version.url,
-						to: p.location
+					debugger;
+					var action = $context.library.install.Distribution.install.world({
+						download: version,
+						to: p.location.toString()
 					});
+					$api.fp.world.Action.now({
+						action: action
+					});
+					// $context.library.install.install({
+					// 	url: version.url,
+					// 	to: p.location
+					// });
 					var installed = $exports.object.at({ location: p.location.toString() });
 					if (!installed) throw new Error("Install failed: " + p.location.toString());
 					events.fire("installed", installed);

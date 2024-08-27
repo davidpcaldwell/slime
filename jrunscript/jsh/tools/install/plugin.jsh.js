@@ -706,10 +706,9 @@
 						enumerable: true
 					});
 
-					managed.require = function() {
-						return function(events) {
-							//	TODO	this is hard-coded in two places now
-							var VERSION = "20.16.0";
+					managed.require = (function() {
+						var action = function(events) {
+							var VERSION = node.versions.default;
 							//	TODO	horrendous, but let's go with it for now
 							if (jsh.file.Pathname("/etc/os-release").file) {
 								var string = jsh.file.Pathname("/etc/os-release").file.read(String);
@@ -734,8 +733,13 @@
 								}
 								node.object.install({ version: VERSION, location: location })(events);
 							}
+						};
+
+						return {
+							action: action,
+							simple: $api.fp.world.Action.process({ action: action })
 						}
-					};
+					})();
 
 					var exports = Object.assign(managed, node);
 
