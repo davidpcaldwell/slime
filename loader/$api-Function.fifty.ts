@@ -1724,15 +1724,17 @@ namespace slime.$api.fp {
 		 *
 		 * *  If it is a `function`, the function is invoked with the same arguments (and `this`), and the return value is used.
 		 *
-		 * *  If it is a {@link evaluator.Cache | Cache}, the `get` method of the cache is invoked with an <a href="#types.Function.invocation">invocation</a> representing the invocation of the function, and the return value of `get` is used.
-		 *  Once an operation produces a value other than `undefined`, that value will be used as the return value of the function.
+		 * *  If it is a {@link evaluator.Cache | Cache}, the `get` method of the cache is invoked with an {@link evaluator.Invocation} representing the invocation of the function, and the return value of `get` is used.
+		 *
+		 * Once an operation produces a value other than `undefined`, that value will be used as the return value of the function.
 		 *
 		 * Before returning that value:
 		 *
 		 *
-		 * *  If the operation that produced the value is a {@link evaluator.Cache | Cache}, its `set` method is invoked with the <a href="#types.Function.invocation">invocation</a> and the value.
+		 * *  If the operation that produced the value is a {@link evaluator.Cache | Cache}, its `set` method is invoked with the {@link evaluator.Invocation} and the value.
 		 *
-		 * *  Any caches *preceding* the operation that produced the value will have their `set` methods invoked with the <a href="#types.Function.invocation">invocation</a> and the value.
+		 * *  Any caches *preceding* the operation that produced the value will have their `set` methods invoked with the {@link evaluator.Invocation} and the value.
+		 *
 		 * @returns A function that implements the algorithm described above.
 		 */
 		evaluator: (...args: (slime.external.lib.es5.Function | evaluator.Cache)[] ) => slime.external.lib.es5.Function
@@ -1742,8 +1744,59 @@ namespace slime.$api.fp {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.exports.evaluator = function() {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
 
+			const test = function(b) {
+				verify(b).is(true);
+			};
+
+			fifty.tests.exports.evaluator = function() {
+				var one = Object.assign(
+					function(n) {
+						one.calls++;
+						return n*2;
+					},
+					{
+						calls: 0
+					}
+				);
+				one.calls = 0;
+				var two = new function() {
+					var values = {};
+
+					this.get = function(p) {
+						return values[p.arguments[0]];
+					};
+
+					this.set = function(p,v) {
+						values[p.arguments[0]] = v;
+					};
+
+					this.test = {};
+					this.test.get = function(v) {
+						return values[v];
+					};
+				};
+				var evaluator = $api.fp.evaluator(two,one);
+
+				test(one.calls == 0);
+				test(typeof(two.test.get(2)) == "undefined");
+
+				test(evaluator(2) == 4);
+
+				test(one.calls == 1);
+				test(two.test.get(2) == 4);
+
+				test(evaluator(2) == 4);
+				test(one.calls == 1);
+				test(two.test.get(2) == 4);
+
+				test(evaluator(3) == 6);
+				test(one.calls == 2);
+				test(two.test.get(3) == 6);
+				//	TODO	write tests for top-level also being a cache: in other words, a convenience cache that receives
+				//			a callback to store each time it calculates a value
 			}
 		}
 	//@ts-ignore
