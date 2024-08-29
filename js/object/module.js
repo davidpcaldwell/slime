@@ -411,6 +411,7 @@
 		$api.deprecate($exports, "Function");
 
 		$exports.Filter = new function() {
+			/** @type { slime.$api.old.Exports["Filter"]["property"] } */
 			this.property = function(name,filter) {
 				if (typeof(filter) != "function") {
 					return $api.deprecate(function(o) {
@@ -423,11 +424,16 @@
 				}
 			}
 
+			/** @type { slime.$api.old.Exports["Filter"]["equals"] } */
 			this.equals = function(value) {
 				return function(v) {
 					return v == value;
 				}
-			}
+			};
+
+			this.not = void(0);
+			this.or = void(0);
+			this.and = void(0);
 		};
 		$exports.Filter.not = function(filter) {
 			return function() {
