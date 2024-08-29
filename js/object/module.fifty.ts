@@ -35,6 +35,13 @@ namespace slime.$api.old {
 				undefinedCalculator: undefinedCalculator
 			};
 		};
+
+		export const subject = (
+			function(fifty: slime.fifty.test.Kit) {
+				return fifty.$loader.module("module.js") as slime.$api.old.Exports;
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	(
@@ -464,7 +471,77 @@ namespace slime.$api.old {
 	}
 
 	export interface Exports {
-		Filter: any
+		Filter: {
+			/**
+			 *
+			 * @param name A property name applying to a type
+			 * @param filter A predicate to apply to the given property's value
+			 * @returns A predicate for the given type that returns `true` if the value of its property for the given property name
+			 * is accepted by the given Filter, and `false` otherwise.
+			 */
+			property: <T extends object,N extends keyof T>(name: N, filter: (v: T[N]) => boolean) => (t: T) => boolean
+
+			/**
+			 *
+			 * @param value A target value.
+			 * @returns A Filter that returns `true` if its argument equals the given target value, and `false` otherwise.
+			 */
+			equals: (value: any) => (v: any) => boolean
+
+			/**
+			 * Returns a filter that is the inverse of a given filter.
+			 *
+			 * @param f A filter to reverse.
+			 * @returns A `Filter` that returns `true` when the given `Filter` returns `false`, and vice-versa.
+			 */
+			not: (f: (value: any) => boolean) => (value: any) => boolean
+
+			or: any
+			and: any
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			//	When originally implemented, Array.filter did not exist and was polyfilled
+			const Array_filter = Array.prototype.filter;
+			const module = old.test.subject;
+
+			const test = function(b) {
+				fifty.verify(b).is(true);
+			}
+
+			fifty.tests.exports.Filter = fifty.test.Parent();
+
+			fifty.tests.exports.Filter.property = function() {
+				type A = { a?: number };
+				var f: (a: A) => boolean = module.Filter.property("a", module.Filter.equals(3));
+				var array: A[] = [{ a: 3 }, {}, { a: 4 }];
+				var matches = Array_filter.call(array, f);
+				test(matches.length == 1);
+				test(matches[0] == array[0]);
+
+				var isUpperCase = function(value) {
+					return value.toUpperCase() == value;
+				}
+
+				type AA = { a: string };
+
+				var filter: (a: AA) => boolean = module.Filter.property("a",isUpperCase);
+
+				var a = { a: "A" };
+				var b = { a: "a" };
+
+				test(Array_filter.call([a,b], filter).length == 1);
+				test(Array_filter.call([a,b], filter)[0] == a);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		Map: any
 		Order: any
 		Array: any
