@@ -79,10 +79,10 @@
 
 		homebrew.update();
 		homebrew.install({
-			formula: "python@3.9"
+			formula: "python@3.12"
 		});
 		homebrew.upgrade({
-			formula: "python@3.9"
+			formula: "python@3.12"
 		});
 	}
 //@ts-ignore
