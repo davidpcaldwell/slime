@@ -542,7 +542,57 @@ namespace slime.$api.old {
 	)(fifty);
 
 	export interface Exports {
-		Map: any
+		Map: {
+			/**
+			 * A *Map* is a function that implements a particular interface: it takes a single argument, and returns a value.
+			 *
+			 * This function creates a Map using a property name and an optional Map.
+			 *
+			 * @param name A property name
+			 *
+			 * @param map If specified, will map its argument first, and then extract the property specified by the `name` argument.
+			 *
+			 * @returns A Map which returns the named property of an object. If the optional Map
+			 * argument is not provided, the Map returns the named property of its argument. Otherwise, it first applies the Map
+			 * argument to its argument, and then returns the named property of the result.
+			 */
+			property: {
+				<T,R extends object,K extends keyof R>(name: K, map: (t: T) => R): (t: T) => R[K]
+				<T extends object,K extends keyof T>(name: K): (t: T) => T[K]
+			}
+
+			//	TODO Map.Categorizer?
+
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const module = old.test.subject;
+
+			const test = function(b) {
+				fifty.verify(b).is(true);
+			};
+
+			fifty.tests.exports.Map = function() {
+				var x: { b?: { a: number }, c?: number } = {
+					b: { a: 3 },
+					c: 4
+				};
+				var one: (_: typeof x) => number = module.Map.property("c");
+				var getB: (_: typeof x) => typeof x["b"] = module.Map.property("b");
+				var two: (_: typeof x) => number = module.Map.property("a", getB);
+				test(one(x) == 4);
+				test(two(x) == 3);
+				test(one({}) != 5);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		Order: any
 		Array: any
 		Error: any

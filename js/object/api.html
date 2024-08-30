@@ -139,54 +139,6 @@ END LICENSE
 		</div>
 		<ul>
 			<!--	TODO	convert Map/Order to types	-->
-			<li class="object" jsapi:id="Map">
-				<div class="name">Map</div>
-				<span>
-					A <i>Map</i> is a function that implements a particular interface: it takes a single argument, and returns
-					a value.
-				</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">property</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">string</span>
-									<span>A property name.</span>
-								</li>
-								<li class="value">
-									<span class="type">Map</span>
-									<span>(optional) A Map</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">Map</span>
-							<span>
-								A Map which returns the named property of an object. If the optional Map argument is not provided,
-								the Map returns the named property of its argument. Otherwise, it first applies the Map argument to
-								its argument, and then returns the named property of the result.
-							</span>
-						</div>
-						<script type="application/x.jsapi#tests" jsapi:id="Map">
-							var one = module.Map.property("c");
-							var two = module.Map.property("a", module.Map.property("b"));
-							var x = {
-								b: { a: 3 },
-								c: 4
-							};
-							test(one(x) == 4);
-							test(two(x) == 3);
-							test(one({}) != 5);
-						</script>
-					</li>
-				</ul>
-				<!--	TODO	decide whether Map.Categorizer is experimental; find a use of it: my guess is prop8	-->
-			</li>
 			<li class="object" jsapi:id="Order">
 				<div class="name">Order</div>
 				<span>
