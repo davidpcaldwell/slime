@@ -137,48 +137,6 @@ END LICENSE
 				</span>
 			</div>
 		</div>
-		<ul>
-			<li class="object" jsapi:id="Array">
-				<div class="name">Array</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">choose</div>
-						<span>
-							Converts an array into a single element. First applies the given Filter, if one is given: the Filter
-							should be a filter that only accepts zero or one element of the array.
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">Array</span>
-									<span>An array.</span>
-								</li>
-								<li class="value">
-									<span class="type">Filter</span>
-									<span>(optional) A Filter that is used to preprocess the array.</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span>
-								The single element of the array (after applying the given Filter, if applicable), or
-								<code>null</code> if the array has zero elements. An error is thrown if more than one element
-								matches.
-							</span>
-						</div>
-						<script type="application/x.jsapi#tests" jsapi:id="Array.choose">
-							test( module.Array.choose([ 3 ]) == 3 );
-							test( module.Array.choose([]) === null );
-							test( module.Array.choose([ 1, 2, 3 ], function(a) { return a == 3; } ) == 3 );
-						</script>
-					</li>
-				</ul>
-				<!--	TODO	decide whether Array.categorize is experimental	-->
-			</li>
-		</ul>
 	</div>
 </body>
 </html>

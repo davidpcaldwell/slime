@@ -652,7 +652,46 @@ namespace slime.$api.old {
 	)(fifty);
 
 	export interface Exports {
-		Array: any
+		Array: {
+			<T>(ts: Array<T>): Array<T> & { each: any }
+			new <T>(ts: Array<T>): Array<T>
+
+			/**
+			 * Converts an array into a single element. First applies the given Filter, if one is given: the Filter should be a
+			 * filter that only accepts zero or one element of the array.
+
+			 * @param array An array.
+			 * @param filter An optional Filter that is used to preprocess the array.
+			 * @returns The single element of the array (after applying the given Filter, if applicable), or `null` if the array has
+			 * zero elements. An error is thrown if more than one element matches.
+			 */
+			choose: <T>(array: Array<T>, filter?: (t: T) => boolean) => T
+
+			toValue: any
+			categorize: any
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const module = old.test.subject;
+
+			const test = function(b) {
+				fifty.verify(b).is(true);
+			};
+
+			fifty.tests.exports.Array = function() {
+				test( module.Array.choose([ 3 ]) == 3 );
+				test( module.Array.choose([]) === null );
+				test( module.Array.choose([ 1, 2, 3 ], function(a) { return a == 3; } ) == 3 );
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		Error: any
 		Task: any
 

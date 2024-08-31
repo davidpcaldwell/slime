@@ -612,19 +612,39 @@
 			};
 		};
 
-		$exports.Array = function(array) {
-			if (this.constructor == arguments.callee.prototype) {
-				//	called with new
-				array = array.slice();
+		//@ts-ignore Confused because of function called both as constructor and function;
+		$exports.Array = Object.assign(
+			/**
+			 * @param { Array & { one: any, each: any, fold: any, select: any } } array
+			 * @returns { Array & { one: any, each: any, fold: any, select: any } }
+			 */
+			function(array) {
+				if (this.constructor == arguments.callee.prototype) {
+					//	called with new
+					array = Object.assign(
+						array.slice(),
+						{
+							one: void(0),
+							each: void(0),
+							fold: void(0),
+							select: void(0)
+						}
+					);
+				}
+
+				array.one = ArrayMethods.one;
+				array.each = ArrayMethods.each;
+				array.fold = ArrayMethods.fold;
+				array.select = ArrayMethods.select;
+
+				return array;
+			},
+			{
+				choose: void(0),
+				toValue: void(0),
+				categorize: void(0)
 			}
-
-			array.one = ArrayMethods.one;
-			array.each = ArrayMethods.each;
-			array.fold = ArrayMethods.fold;
-			array.select = ArrayMethods.select;
-
-			return array;
-		}
+		)
 		for (var x in ArrayMethods) {
 			$exports.Array[x] = (function(underlying) {
 				return function(array) {
