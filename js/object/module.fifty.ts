@@ -592,8 +592,66 @@ namespace slime.$api.old {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * An *Order* is a function that implements a specific interface, intended for sorting: it takes two arguments and returns a
+	 * value less than zero if the first argument belongs before the second argument, and a value greater than zero if the second
+	 * argument belongs before the first argument. This is commensurate with the `Array.prototype.sort` method.
+	 */
+	export type Order<T> = Parameters<Array<T>["sort"]>[0]
+
 	export interface Exports {
-		Order: any
+		Order: {
+			/**
+			 *
+			 * @param property A property name.
+			 * @param order An Order to use to compare values of the given named property.
+			 * @returns An Order that uses the given Order to compare the value of the named property for each of its arguments and
+			 * returns the result of that comparison.
+			 */
+			property: <T extends object, N extends keyof T>(property: N, order: Order<T[N]>) => Order<T>
+
+			/**
+			 *
+			 * @param map A Map that transforms the arguments to this Order before they are compared.
+			 * @param order An Order to use to compare values produced by the given Map.
+			 * @returns An Order that uses the given Order to compare the value the given Map produces for each of its arguments and
+			 * returns the result of that comparison.
+			 */
+			map: <T extends object, A>(map: (t: T) => A, order: Order<A>) => Order<T>
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const module = old.test.subject;
+
+			const test = function(b) {
+				fifty.verify(b).is(true);
+			};
+
+			fifty.tests.exports.Order = function() {
+				var numerical: Order<number> = function(a,b) { return b - a; };
+				var ascending: Order<number> = function(a,b) { return a - b; };
+				type SV = { s: string, v: number };
+				var array: SV[] = [ { s: "a", v: 2 }, { s: "b", v: 1 }, { s: "c", v: 3 } ];
+				var propertyOrder: Order<SV> = module.Order.property("v", numerical);
+				var mapOrder: Order<SV> = module.Order.map(module.Map.property("v"), ascending);
+				array.sort( propertyOrder );
+				test(array[0].s == "c");
+				test(array[1].s == "a");
+				test(array[2].s == "b");
+				array.sort( mapOrder );
+				test(array[0].s == "b");
+				test(array[1].s == "a");
+				test(array[2].s == "c");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		Array: any
 		Error: any
 		Task: any
