@@ -79,10 +79,6 @@
 			//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 		}));
 
-		suite.add("js/object/other", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("js/object/api.html")
-		}));
-
 		suite.add("js/document", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("js/document/api.html")
 		}));

@@ -11,6 +11,14 @@
  */
 namespace slime.$api.old {
 	export interface Context {
+		/**
+		  * Whether to modify the global scope by supplying implementations of missing methods. If `true`, this module,
+		  * in addition to providing the exports below, supplies implementations of the following JavaScript constructs if they are
+		  * not supplied by the environment. These constructs do not currently have any automated tests implemented and thus should
+		  * be treated as suspect.
+		  *
+		  * <div> <ul> <li>Object <ul> <li>ECMA 262v5: Object.keys</li> </ul> </li> <li>Array <ul> <li>JS 1.6: Array.prototype.indexOf</li> <li>JS 1.6: Array.prototype.filter</li> <li>JS 1.6: Array.prototype.forEach</li> <li>JS 1.6: Array.prototype.map</li> </ul> </li> </ul> </div>
+		 */
 		globals: boolean
 	}
 
@@ -693,8 +701,25 @@ namespace slime.$api.old {
 
 	export interface Exports {
 		Error: any
-		Task: any
+	}
 
+	export interface Tell<O,T> {
+		(this: O, e: Error, t: T): void
+		(this: O, result: { threw: Error } | { returned: T }): void
+	}
+
+	export interface Exports {
+		Task: {
+			tell: <O,T>(p: {
+				target?: O
+				tell: Tell<O,T>
+				threw?: Error
+				returned?: T
+			}) => void
+		}
+	}
+
+	export interface Exports {
 		/**
 		 * @deprecated
 		 */
