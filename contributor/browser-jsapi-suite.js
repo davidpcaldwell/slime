@@ -26,7 +26,6 @@
 			suite.part(id, part);
 		};
 
-		add("js/object/", getSlimePart("js/object/api.html"));
 		add("js/document/", getSlimePart("js/document/api.html"));
 		// TODO: does js/promise have any real tests?
 		add("js/promise/", getSlimePart("js/promise/api.html"));
