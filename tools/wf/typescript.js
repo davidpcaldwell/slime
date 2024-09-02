@@ -65,8 +65,10 @@
 		/** @type { slime.jsh.wf.internal.typescript.Exports["Project"]["version"] } */
 		var Project_getTypescriptVersion = $api.fp.pipe(
 			base,
-			$context.library.file.Location.directory.relativePath("tsc.version"),
-			$api.fp.world.mapping($context.library.file.world.Location.file.read.string.world()),
+			$api.fp.pipe(
+				$context.library.file.Location.directory.relativePath("tsc.version"),
+				$context.library.file.Location.file.read.string.maybe
+			),
 			$api.fp.Maybe.else(version)
 		);
 
