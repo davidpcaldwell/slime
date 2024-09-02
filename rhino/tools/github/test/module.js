@@ -206,8 +206,6 @@
 
 		$export({
 			startMock: startMock,
-			downloadJshScriptCommand: downloadJshScriptCommand,
-			processJshScriptCommand: processJshScriptCommand,
 			getCommandLine: getCommand,
 			getShellIntention: getShellIntention
 		})

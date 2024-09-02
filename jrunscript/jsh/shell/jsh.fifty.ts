@@ -242,10 +242,9 @@ namespace slime.jsh.shell {
 			fifty.tests.exports.jsh.Installation.from.current.remote = function() {
 				var remote = fixtures.shells(fifty).remote();
 
-				var intention = remote.library.getShellIntention({
+				var intention = remote.getShellIntention({
 					PATH: jsh.shell.PATH,
 					settings: {
-						mock: remote.web,
 						branch: "local"
 					},
 					script: "jrunscript/jsh/test/jsh-data.jsh.js"

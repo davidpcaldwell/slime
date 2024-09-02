@@ -6,9 +6,24 @@
 
 namespace slime.jsh.test {
 	export namespace shells {
+		export namespace remote {
+			export type Settings = Omit<slime.jsh.test.remote.Settings,"mock">
+		}
+
 		export interface Remote {
-			web: slime.jsh.unit.mock.Web
-			library: slime.jsh.test.remote.Exports
+			/**
+			 * Creates a shell intention that represents a command that downloads the remote `jsh` launcher and then executes it
+			 * with appropriate configuration in order to run the given script.
+			 */
+			getShellIntention: (p: {
+				PATH: slime.jrunscript.file.Searchpath
+				settings: remote.Settings
+
+				/**
+				 * A path, relative within the SLIME project, of a remote script to run.
+				 */
+				script: string
+			}) => slime.jrunscript.shell.run.Intention
 		}
 	}
 
@@ -17,7 +32,6 @@ namespace slime.jsh.test {
 		built: slime.$api.fp.impure.External<slime.jsh.shell.BuiltInstallation>
 		packaged: slime.$api.fp.impure.External<slime.jsh.shell.PackagedInstallation>
 
-		//	TODO	unlike the other shell implementations, this one does no caching and will create a new server for each call
 		remote: slime.$api.fp.impure.External<shells.Remote>
 
 		//	Would like to use something like this to match designs of others, but will need to refactor first to make it less OO
@@ -181,40 +195,49 @@ namespace slime.jsh.test {
 									package: to.pathname
 								};
 							}),
-							remote: $api.fp.impure.Input.memoized(function() {
-								//	TODO	add caching
-								var current = jsh.shell.jsh.Installation.from.current();
+							remote: $api.fp.impure.Input.memoized(
+								function(): shells.Remote {
+									var current = jsh.shell.jsh.Installation.from.current();
 
-								if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
-									var slime = jsh.file.Location.from.os(current.src);
+									if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
+										var slime = jsh.file.Location.from.os(current.src);
 
-									var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
+										var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
 
-									var code: {
-										testing: slime.jrunscript.tools.github.internal.test.Script
-									} = {
-										testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
-									};
+										var code: {
+											testing: slime.jrunscript.tools.github.internal.test.Script
+										} = {
+											testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
+										};
 
-									var library = {
-										testing: code.testing({
-											slime: jsh.file.object.directory(slime),
-											library: {
-												shell: jsh.shell
+										var library = {
+											testing: code.testing({
+												slime: jsh.file.object.directory(slime),
+												library: {
+													shell: jsh.shell
+												}
+											})
+										};
+
+										var server = library.testing.startMock(jsh);
+
+										return {
+											getShellIntention: function(p) {
+												return library.testing.getShellIntention({
+													PATH: p.PATH,
+													script: p.script,
+													settings: $api.Object.compose(
+														p.settings,
+														{ mock: server }
+													)
+												})
 											}
-										})
-									};
-
-									var server = library.testing.startMock(jsh);
-
-									return {
-										web: server,
-										library: library.testing
-									};
-								} else {
-									throw new Error();
+										};
+									} else {
+										throw new Error();
+									}
 								}
-							})
+							)
 						}
 					}
 					return fifty.global["jrunscript/jsh/fixtures.ts:shells"];

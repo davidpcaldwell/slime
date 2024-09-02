@@ -116,8 +116,14 @@ namespace slime.jsh {
  * To execute a script in an ad-hoc built shell, execute:
  * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js <script> [arguments]`
  *
- * To execute a script in a packaged shell, execute:
+ * To execute a script in an ad-hoc packaged shell, execute:
  * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js -packaged <script> [arguments]`
+ *
+ * ## Testing Tools
+ *
+ * The `jrunscript/jsh/fixtures.ts` script provides an {@link slime.jsh.test.Exports} object that provides access to several shell
+ * types, as represented by the {@link slime.jsh.test.Shells} that can be created by passing the global
+ * {@link slime.fifty.test.Kit | `fifty`} object.
  */
 namespace slime.jsh.internal {
 

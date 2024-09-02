@@ -39,12 +39,12 @@ namespace slime.jsh.test.remote {
 			)
 
 			fifty.tests.suite = function() {
-				var settings: slime.jsh.test.remote.Settings = {
-					mock: remote.web,
+				var settings: slime.jsh.test.shells.remote.Settings = {
 					branch: "local"
 				};
 
-				var shellIntention = remote.library.getShellIntention({
+				debugger;
+				var shellIntention = remote.getShellIntention({
 					PATH: jsh.shell.PATH,
 					settings: settings,
 					script: "jrunscript/jsh/test/jsh-data.jsh.js"
