@@ -64,7 +64,12 @@ namespace slime.jsh.wf.internal.module {
 
 		export namespace project {
 			export interface Typescript {
+				/**
+				 * Returns the TypeScript version that should be used when processing this project. Defaults to the project version
+				 * indicated in `tsc.version`, if any; falls back to the default TypeScript version declared by SLIME.
+				 */
 				version: (project: slime.jsh.wf.Project) => string
+
 				configurationFile: (project: slime.jsh.wf.Project) => slime.$api.fp.Maybe<slime.jrunscript.file.Location>
 			}
 		}
