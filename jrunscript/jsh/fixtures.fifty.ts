@@ -29,8 +29,8 @@ namespace slime.jsh.test {
 			};
 
 			fifty.tests.cache.packaged = function() {
-				var packaged1 = test.subject.shells(fifty).packaged();
-				var packaged2 = test.subject.shells(fifty).packaged();
+				var packaged1 = test.subject.shells(fifty).packaged(fifty.jsh.file.relative("test/jsh-data.jsh.js").pathname);
+				var packaged2 = test.subject.shells(fifty).packaged(fifty.jsh.file.relative("test/jsh-data.jsh.js").pathname);
 				verify(packaged1).is(packaged2);
 			};
 

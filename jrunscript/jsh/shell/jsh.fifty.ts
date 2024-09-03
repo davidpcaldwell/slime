@@ -224,7 +224,7 @@ namespace slime.jsh.shell {
 			};
 
 			fifty.tests.exports.jsh.Installation.from.current.packaged = function() {
-				var shell = fixtures.shells(fifty).packaged();
+				var shell = fixtures.shells(fifty).packaged(getDiagnosticScriptForShellAt(fixtures.shells(fifty).unbuilt().src));
 
 				var intention: slime.jsh.shell.Intention = {
 					package: shell.package,
