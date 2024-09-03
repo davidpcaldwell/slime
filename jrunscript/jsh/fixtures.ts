@@ -6,6 +6,17 @@
 
 namespace slime.jsh.test {
 	export namespace shells {
+		export type Invocable = {
+			invoke: (
+				p: {
+					//	Not provided for packaged shells
+					script?: string
+					arguments?: string[]
+				}
+				& Partial<Pick<slime.jrunscript.shell.run.Intention,"environment"|"directory"|"stdio">>
+			) => slime.jrunscript.shell.run.Intention
+		}
+
 		export namespace remote {
 			export type Settings = Omit<slime.jsh.test.remote.Settings,"mock">
 		}
@@ -14,6 +25,8 @@ namespace slime.jsh.test {
 			/**
 			 * Creates a shell intention that represents a command that downloads the remote `jsh` launcher and then executes it
 			 * with appropriate configuration in order to run the given script.
+			 *
+			 * The `Intention` returned captures standard output and standard error as strings.
 			 */
 			getShellIntention: (p: {
 				PATH: slime.jrunscript.file.Searchpath
@@ -28,39 +41,47 @@ namespace slime.jsh.test {
 	}
 
 	export interface Shells {
-		unbuilt: slime.$api.fp.Thunk<slime.jsh.shell.UnbuiltInstallation>
-		built: slime.$api.fp.impure.External<slime.jsh.shell.BuiltInstallation>
-		packaged: slime.$api.fp.impure.External<slime.jsh.shell.PackagedInstallation>
+		unbuilt: slime.$api.fp.Thunk<
+			slime.jsh.shell.UnbuiltInstallation
+			& shells.Invocable
+		>
+
+		built: slime.$api.fp.impure.External<
+			slime.jsh.shell.BuiltInstallation
+			& shells.Invocable
+		>
+
+		packaged: slime.$api.fp.Mapping<
+			string,
+			(
+				slime.jsh.shell.PackagedInstallation
+				& shells.Invocable
+			)
+		>
 
 		remote: slime.$api.fp.impure.External<shells.Remote>
-
-		//	Would like to use something like this to match designs of others, but will need to refactor first to make it less OO
-		//	remote: slime.$api.fp.impure.Input<slime.jsh.shell.UrlInstallation>
 	}
 
 	export interface Exports {
+		/**
+		 * Returns a set of shells for this Fifty session.
+		 */
 		shells: (fifty: slime.fifty.test.Kit) => Shells
 	}
 
 	(
 		function(Packages: slime.jrunscript.Packages, $api: slime.$api.Global, jsh: slime.jsh.Global, $export: slime.loader.Export<Exports>) {
-			// var getTemporaryLocationProperty: (name: string) => slime.$api.fp.impure.Input<string> = function(name: string) {
-			// 	return function() {
-			// 		return jsh.java.vm.properties()[name];
-			// 	}
-			// };
-
-			// var inTemporaryLocation = function(p: {
-			// 	propertyName: string
-			// 	build: () => string
-			// }): string {
-			// 	var location = getTemporaryLocationProperty(p.propertyName)();
-			// 	if (!location) {
-			// 		location = p.build();
-			// 		jsh.java.vm.setProperty(p.propertyName)(location);
-			// 	}
-			// 	return location;
-			// }
+			var memoizeMap: <T,R>(f: (t: T) => R) => (t: T) => R = function<T,R>(f) {
+				var map: Map<T,R> = new Map();
+				return function(t: T) {
+					var cached = map.get(t);
+					if (!cached) {
+						cached = f(t);
+						map.set(t, cached);
+					}
+					return cached;
+				}
+			}
 
 			var asJshIntention: slime.$api.fp.Identity<slime.jsh.shell.Intention> = $api.fp.identity;
 
@@ -73,8 +94,25 @@ namespace slime.jsh.test {
 			$export({
 				shells: function(fifty) {
 					if (!fifty.global["jrunscript/jsh/fixtures.ts:shells"]) {
-						fifty.global["jrunscript/jsh/fixtures.ts:shells"] = {
-							unbuilt: unbuilt,
+						var shells: Shells = {
+							unbuilt: function() {
+								return {
+									src: unbuilt().src,
+									invoke: $api.fp.pipe(
+										function(p): slime.jsh.shell.Intention {
+											return {
+												shell: unbuilt(),
+												script: p.script,
+												arguments: p.arguments,
+												environment: p.environment,
+												directory: p.directory,
+												stdio: p.stdio
+											}
+										},
+										jsh.shell.jsh.Intention.toShellIntention
+									)
+								}
+							},
 							built: $api.fp.impure.Input.memoized(function() {
 								//	TODO	should store result in system property so that it is cached across loads of this file as well as
 								//			individual invocations
@@ -134,67 +172,96 @@ namespace slime.jsh.test {
 
 									var canonical = String(jsh.file.Pathname(TMPDIR.pathname).java.adapt().getCanonicalPath());
 									return {
-										home: canonical
+										home: canonical,
+										invoke: $api.fp.pipe(
+											function(p): slime.jsh.shell.Intention {
+												return {
+													shell: {
+														home: canonical
+													},
+													script: p.script,
+													arguments: p.arguments,
+													environment: p.environment,
+													directory: p.directory,
+													stdio: p.stdio
+												}
+											},
+											jsh.shell.jsh.Intention.toShellIntention
+										)
 									};
 								} else {
 									throw new Error();
 								}
 							}),
-							packaged: $api.fp.impure.Input.memoized(function() {
-								var to = jsh.file.Location.canonicalize($api.fp.world.now.question(
-									jsh.file.Location.from.temporary(jsh.file.world.filesystems.os),
-									{
-										directory: false,
-										suffix: ".jar"
-									}
-								));
-
-								var at = $api.fp.now.invoke(
-									unbuilt(),
-									$api.fp.property("src"),
-									jsh.file.Location.from.os,
-									jsh.file.Location.directory.base,
-									function(base) {
-										return function(path: string) {
-											return base(path).pathname;
-										}
-									}
-								);
-
-								var build = $api.fp.now.invoke(
-									asJshIntention({
-										shell: unbuilt(),
-										script: at("jrunscript/jsh/tools/shell.jsh.js"),
-										arguments: $api.Array.build(function(rv) {
-											rv.push("package");
-											rv.push("--script", at("jrunscript/jsh/test/jsh-data.jsh.js")),
-											rv.push("--to", to.pathname);
-										}),
-										stdio: {
-											output: "line",
-											error: "line"
-										}
-									}),
-									jsh.shell.jsh.Intention.toShellIntention,
-									$api.fp.world.mapping(
-										jsh.shell.subprocess.question,
+							packaged: memoizeMap(
+								function(script) {
+									var to = jsh.file.Location.canonicalize($api.fp.world.now.question(
+										jsh.file.Location.from.temporary(jsh.file.world.filesystems.os),
 										{
-											stdout: function(e) {
-												jsh.shell.console("package.jsh.js OUTPUT: " + e.detail.line);
-											},
-											stderr: function(e) {
-												jsh.shell.console("package.jsh.js CONSOLE: " + e.detail.line);
+											directory: false,
+											suffix: ".jar"
+										}
+									));
+
+									var at = $api.fp.now.invoke(
+										unbuilt(),
+										$api.fp.property("src"),
+										jsh.file.Location.from.os,
+										jsh.file.Location.directory.base,
+										function(base) {
+											return function(path: string) {
+												return base(path).pathname;
 											}
 										}
-									)
-								);
+									);
 
-								if (build.status != 0) throw new Error("package.jsh.js exit status: " + build.status);
+									var build = $api.fp.now.invoke(
+										asJshIntention({
+											shell: unbuilt(),
+											script: at("jrunscript/jsh/tools/shell.jsh.js"),
+											arguments: $api.Array.build(function(rv) {
+												rv.push("package");
+												rv.push("--script", script);
+												rv.push("--to", to.pathname);
+											}),
+											stdio: {
+												output: "line",
+												error: "line"
+											}
+										}),
+										jsh.shell.jsh.Intention.toShellIntention,
+										$api.fp.world.mapping(
+											jsh.shell.subprocess.question,
+											{
+												stdout: function(e) {
+													jsh.shell.console("package.jsh.js OUTPUT: " + e.detail.line);
+												},
+												stderr: function(e) {
+													jsh.shell.console("package.jsh.js CONSOLE: " + e.detail.line);
+												}
+											}
+										)
+									);
 
-								return {
-									package: to.pathname
-								};
-							}),
+									if (build.status != 0) throw new Error("package.jsh.js exit status: " + build.status);
+
+									return {
+										package: to.pathname,
+										invoke: $api.fp.pipe(
+											function(p): slime.jsh.shell.Intention {
+												return {
+													package: to.pathname,
+													arguments: p.arguments,
+													environment: p.environment,
+													directory: p.directory,
+													stdio: p.stdio
+												}
+											},
+											jsh.shell.jsh.Intention.toShellIntention
+										)
+									};
+								}
+							),
 							remote: $api.fp.impure.Input.memoized(
 								function(): shells.Remote {
 									var current = jsh.shell.jsh.Installation.from.current();
@@ -239,6 +306,7 @@ namespace slime.jsh.test {
 								}
 							)
 						}
+						fifty.global["jrunscript/jsh/fixtures.ts:shells"] = shells;
 					}
 					return fifty.global["jrunscript/jsh/fixtures.ts:shells"];
 				}

@@ -47,42 +47,6 @@ END LICENSE
 		<h1>Exports</h1>
 		<ul>
 			<li class="value">
-				<div class="name">file</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
-				<span>
-					(contingent)
-					The object representing the main file being executed.
-					In the case of an ordinary script, this is the script that was launched.
-					In the case of a packaged script, it is the package file (the <code>.jar</code> file).
-					In the case of a remote script, it is not present.
-				</span>
-				<script type="application/x.jsapi#tests"><![CDATA[
-					if ($jsapi.environment.jsh && $jsapi.environment.jsh.unbuilt) {
-						var unbuilt = $jsapi.environment.jsh.unbuilt.data;
-						verify(unbuilt)["jsh.script.file"].string.is($jsapi.environment.jsh.src.getRelativePath("jrunscript/jsh/test/jsh-data.jsh.js").toString());
-						verify(unbuilt)["jsh.script.file"].pathname.string.is($jsapi.environment.jsh.src.getRelativePath("jrunscript/jsh/test/jsh-data.jsh.js").toString());
-					}
-
-					if ($jsapi.environment.jsh && $jsapi.environment.jsh.built) {
-						var built = $jsapi.environment.jsh.built.data;
-						verify(built)["jsh.script.file"].string.is($jsapi.environment.jsh.src.getRelativePath("jrunscript/jsh/test/jsh-data.jsh.js").toString());
-						verify(built)["jsh.script.file"].pathname.string.is($jsapi.environment.jsh.src.getRelativePath("jrunscript/jsh/test/jsh-data.jsh.js").toString());
-					}
-
-					if ($jsapi.environment.jsh && $jsapi.environment.jsh.packaged) {
-						var packaged = $jsapi.environment.jsh.packaged.data;
-						var jar = $jsapi.environment.jsh.packaged.jar;
-						verify(packaged)["jsh.script.file"].string.is(jar.toString());
-						verify(packaged)["jsh.script.file"].pathname.string.is(jar.toString());
-					}
-
-					if ($jsapi.environment.jsh && $jsapi.environment.jsh.remote) {
-						var remote = $jsapi.environment.jsh.remote.data;
-						verify(remote).evaluate.property("jsh.script.file").is(void(0));
-					}
-				]]></script>
-			</li>
-			<li class="value">
 				<div class="name">script</div>
 				<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
 				<span>

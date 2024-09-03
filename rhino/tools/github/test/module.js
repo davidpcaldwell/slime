@@ -120,7 +120,9 @@
 			//			be fine.
 			command.push("JSH_DEBUG_SCRIPT=");
 			command.push("bash", "-s");
-			command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/" + branch + "/" + p.script);
+			command.push(p.script);
+			//	TODO	expose this somehow?
+			//command.push(PROTOCOL + "://raw.githubusercontent.com/davidpcaldwell/slime/" + branch + "/" + p.script);
 			return command;
 		}
 

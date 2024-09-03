@@ -57,7 +57,7 @@
 							jsh.shell.exit(exit.status);
 						},
 						packaged: function(p) {
-							var jar = fixtures.shells(fifty).packaged();
+							var jar = fixtures.shells(fifty).packaged(fifty.jsh.file.relative("test/jsh-data.jsh.js").pathname);
 
 							var exit = $api.fp.now.invoke(
 								//	TODO	what about VM invocation stuff
