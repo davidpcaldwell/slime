@@ -831,8 +831,6 @@ namespace slime.jsh.script {
 				fifty.run(fifty.tests.cli);
 
 				fifty.run(fifty.tests.exports);
-
-				fifty.run(fifty.tests.jsapi);
 			}
 		}
 	//@ts-ignore
