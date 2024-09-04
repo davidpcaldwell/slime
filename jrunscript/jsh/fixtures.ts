@@ -22,6 +22,9 @@ namespace slime.jsh.test {
 		}
 
 		export interface Remote {
+			//	TODO	not strictly pertaining to the shell, but rather to mock GitHub. Should refactor.
+			getLoaderProperties: () => { [name: string]: string }
+
 			/**
 			 * Creates a shell intention that represents a command that downloads the remote `jsh` launcher and then executes it
 			 * with appropriate configuration in order to run the given script.
@@ -91,6 +94,55 @@ namespace slime.jsh.test {
 				};
 			};
 
+			var remote = function(): shells.Remote {
+				var current = jsh.shell.jsh.Installation.from.current();
+
+				if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
+					var slime = jsh.file.Location.from.os(current.src);
+
+					var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
+
+					var code: {
+						testing: slime.jrunscript.tools.github.internal.test.Script
+					} = {
+						testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
+					};
+
+					var library = {
+						testing: code.testing({
+							slime: jsh.file.object.directory(slime),
+							library: {
+								shell: jsh.shell
+							}
+						})
+					};
+
+					var server = library.testing.startMock(jsh);
+
+					return {
+						getLoaderProperties: function() {
+							return {
+								"http.proxyHost": "127.0.0.1",
+								"http.proxyPort": String(server.port)
+							};
+						},
+						getShellIntention: function(p) {
+							return library.testing.getShellIntention({
+								PATH: p.PATH,
+								script: p.script,
+								settings: $api.Object.compose(
+									p.settings,
+									{ mock: server }
+								)
+							})
+						}
+					};
+				} else {
+					throw new Error();
+				}
+			}
+
+
 			$export({
 				shells: function(fifty) {
 					if (!fifty.global["jrunscript/jsh/fixtures.ts:shells"]) {
@@ -100,11 +152,14 @@ namespace slime.jsh.test {
 									src: unbuilt().src,
 									invoke: $api.fp.pipe(
 										function(p): slime.jsh.shell.Intention {
+											//	TODO	this must be elsewhere
+											var properties = /^http(s?)\:/.test(p.script) ? remote().getLoaderProperties() : {}
 											return {
 												shell: unbuilt(),
 												script: p.script,
 												arguments: p.arguments,
 												environment: p.environment,
+												properties: properties,
 												directory: p.directory,
 												stdio: p.stdio
 											}
@@ -262,49 +317,7 @@ namespace slime.jsh.test {
 									};
 								}
 							),
-							remote: $api.fp.impure.Input.memoized(
-								function(): shells.Remote {
-									var current = jsh.shell.jsh.Installation.from.current();
-
-									if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
-										var slime = jsh.file.Location.from.os(current.src);
-
-										var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
-
-										var code: {
-											testing: slime.jrunscript.tools.github.internal.test.Script
-										} = {
-											testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
-										};
-
-										var library = {
-											testing: code.testing({
-												slime: jsh.file.object.directory(slime),
-												library: {
-													shell: jsh.shell
-												}
-											})
-										};
-
-										var server = library.testing.startMock(jsh);
-
-										return {
-											getShellIntention: function(p) {
-												return library.testing.getShellIntention({
-													PATH: p.PATH,
-													script: p.script,
-													settings: $api.Object.compose(
-														p.settings,
-														{ mock: server }
-													)
-												})
-											}
-										};
-									} else {
-										throw new Error();
-									}
-								}
-							)
+							remote: $api.fp.impure.Input.memoized(remote)
 						}
 						fifty.global["jrunscript/jsh/fixtures.ts:shells"] = shells;
 					}

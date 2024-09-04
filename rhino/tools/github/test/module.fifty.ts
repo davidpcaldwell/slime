@@ -20,7 +20,23 @@ namespace slime.jsh.test.remote {
 	 * A mock hosted SLIME project; produces a mock web with a GitHub that hosts SLIME from a context-provided directory.
 	 */
 	export interface Exports {
-		startMock: (jsh: slime.jsh.Global) => slime.jsh.unit.mock.Web
+		startMock: (jsh: {
+			unit: {
+				mock: {
+					Web: slime.jsh.Global["unit"]["mock"]["Web"]
+					web: {
+						Github: slime.jsh.Global["unit"]["mock"]["web"]["Github"]
+					}
+				}
+			}
+			tools: {
+				git: {
+					oo: {
+						Repository: slime.jsh.Global["tools"]["git"]["oo"]["Repository"]
+					}
+				}
+			}
+		}) => slime.jsh.unit.mock.Web
 
 		/**
 		 * Outputs a single string, suitable for use at the shell command line, that will invoke a shell with the given settings

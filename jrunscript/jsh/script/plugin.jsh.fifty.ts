@@ -715,6 +715,7 @@ namespace slime.jsh.script {
 			const { $api, jsh } = fifty.global;
 
 			var script = fifty.jsh.file.relative("../test/jsh-data.jsh.js");
+			var scriptUrl = "http://raw.githubusercontent.com/davidpcaldwell/slime/local/jrunscript/jsh/test/jsh-data.jsh.js";
 
 			//	TODO	these tests could be better; right now, they are based on shell type, rather than script type (which is what
 			//			really matters, except in the case of packaged shells)
@@ -739,6 +740,14 @@ namespace slime.jsh.script {
 				$api.fp.world.Sensor.mapping({
 					sensor: jsh.shell.subprocess.question
 				}),
+				$api.fp.impure.tap(function(exit) {
+					if (exit.status) {
+						jsh.shell.console("Exit status: " + exit.status);
+						jsh.shell.console("Standard error:");
+						jsh.shell.console(exit.stdio.error);
+						throw new Error("Exit status: " + exit.status);
+					}
+				}),
 				$api.fp.property("stdio"),
 				$api.fp.property("output"),
 				JSON.parse,
@@ -747,7 +756,9 @@ namespace slime.jsh.script {
 
 			fifty.tests.exports.file = fifty.test.Parent();
 
-			fifty.tests.exports.file.unbuilt = function() {
+			fifty.tests.exports.file.unbuilt = fifty.test.Parent();
+
+			fifty.tests.exports.file.unbuilt.local = function() {
 				var run = test.shells.unbuilt().invoke({
 					script: script.pathname,
 					stdio: {
@@ -762,6 +773,26 @@ namespace slime.jsh.script {
 
 				verify(result).string.evaluate(String).is(script.pathname);
 				verify(result).pathname.string.evaluate(String).is(script.pathname);
+			};
+
+			fifty.tests.exports.file.unbuilt.remote = function() {
+				try {
+					var online = test.shells.unbuilt().invoke({
+						script: scriptUrl,
+						stdio: {
+							output: "string"
+						}
+					});
+				} catch (e) {
+					verify(false).is(true);
+				}
+
+				var now = $api.fp.now(
+					online,
+					getJshScriptFile
+				);
+
+				verify(now).is(void(0));
 			}
 
 			fifty.tests.exports.file.built = function() {
@@ -803,21 +834,43 @@ namespace slime.jsh.script {
 			fifty.tests.exports.file.remote = function() {
 				var remote = test.shells.remote();
 
-				var run = remote.getShellIntention({
-					PATH: jsh.shell.PATH,
-					settings: {
-						//	TODO	throws exception if this is not set; should this be hard-coded upstream?
-						branch: "local"
-					},
-					script: "http://raw.githubusercontent.com/davidpcaldwell/slime/local/jrunscript/jsh/test/jsh-data.jsh.js"
+				fifty.run(function url() {
+					var run = remote.getShellIntention({
+						PATH: jsh.shell.PATH,
+						settings: {
+							//	TODO	throws exception if this is not set; should this be hard-coded upstream?
+							branch: "local"
+						},
+						script: scriptUrl
+					});
+
+					var result = $api.fp.now(
+						run,
+						getJshScriptFile
+					);
+
+					verify(result).is(void(0));
 				});
 
-				var result = $api.fp.now(
-					run,
-					getJshScriptFile
-				);
+				fifty.run(function file() {
+					var run = remote.getShellIntention({
+						PATH: jsh.shell.PATH,
+						settings: {
+							//	TODO	throws exception if this is not set; should this be hard-coded upstream?
+							branch: "local"
+						},
+						script: script.pathname
+					});
 
-				verify(result).is(void(0));
+					var result = $api.fp.now(
+						run,
+						getJshScriptFile
+					);
+
+					verify(result).string.is(script.pathname);
+					verify(result).pathname.string.is(script.pathname);
+				});
+
 			}
 		}
 	//@ts-ignore
