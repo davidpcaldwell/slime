@@ -14,9 +14,7 @@
 	 */
 	function($api,$context,$export) {
 		/**
-		 *
-		 * @param { slime.jsh.Global } jsh
-		 * @returns
+		 * @type { slime.jsh.test.remote.Exports["startMock"] }
 		 */
 		var startMock = function(jsh) {
 			var web = jsh.unit.mock.Web({ trace: true });
@@ -25,16 +23,18 @@
 			web.addHttpsHost("raw.githubusercontent.com");
 			web.addHttpsHost("api.github.com");
 			web.addHttpsHost("github.com");
-			web.add(jsh.unit.mock.web.Github({
-				//	TODO	flip to true to test possibility of accessing private repositories
-				//	TODO	this should actually be per-repository, though
-				private: false,
-				src: {
-					davidpcaldwell: {
-						slime: jsh.tools.git.oo.Repository({ directory: $context.slime })
+			web.add(
+				jsh.unit.mock.web.Github({
+					//	TODO	flip to true to test possibility of accessing private repositories
+					//	TODO	this should actually be per-repository, though
+					private: false,
+					src: {
+						davidpcaldwell: {
+							slime: jsh.tools.git.oo.Repository({ directory: $context.slime })
+						}
 					}
-				}
-			}));
+				})
+			);
 			web.start();
 			return web;
 		};
