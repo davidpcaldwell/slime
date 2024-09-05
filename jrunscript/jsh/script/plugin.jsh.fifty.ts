@@ -23,6 +23,254 @@ namespace slime.jsh.script {
 		})(fifty);
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		/**
+		 * (contingent) The object representing the main file being executed.
+		 * * In the case of an ordinary script, this is the script that was launched.
+		 * * In the case of a packaged script, it is the package file (the `.jar` file).
+		 * * In the case of a remote script, it is not present.
+		 */
+		file?: slime.jrunscript.file.File
+	}
+
+	export interface Exports {
+		/**
+		 * (contingent) The object representing the main script being executed by the shell. In the case of a packaged script, this
+		 * value will be absent as the script is embedded in the package file itself. For remote scripts, the property is also
+		 * absent.
+		 */
+		script?: slime.jrunscript.file.File
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			var script = fifty.jsh.file.relative("../test/jsh-data.jsh.js");
+			var scriptUrl = "http://raw.githubusercontent.com/davidpcaldwell/slime/local/jrunscript/jsh/test/jsh-data.jsh.js";
+
+			//	TODO	these tests could be better; right now, they are based on shell type, rather than script type (which is what
+			//			really matters, except in the case of packaged shells)
+
+			const environmentWithJavaInPath: slime.$api.fp.Transform<slime.jrunscript.shell.run.Environment> = function(given) {
+				var PATH = given.PATH.split(":");
+				var home = jsh.shell.java.Jdk.from.javaHome();
+				var insert = jsh.file.Pathname(home.base).directory.getRelativePath("bin").toString();
+				//var insert = jsh.shell.java.home.getRelativePath("bin").toString();
+				jsh.shell.console("Inserting: " + insert);
+				PATH.splice(0,0,insert);
+				jsh.shell.console("PATH = " + PATH.join(":"));
+				return $api.Object.compose(
+					given,
+					{
+						PATH: PATH.join(":")
+					}
+				)
+			};
+
+			type FileJson = {
+				string: string
+				pathname: { string: string }
+			}
+
+			var getShellDataJson: (intention: slime.jrunscript.shell.run.Intention) => { "jsh.script.file": FileJson, "jsh.script.script": FileJson } = $api.fp.pipe(
+				$api.fp.world.Sensor.mapping({
+					sensor: jsh.shell.subprocess.question
+				}),
+				$api.fp.impure.tap(function(exit) {
+					if (exit.status) {
+						jsh.shell.console("Exit status: " + exit.status);
+						jsh.shell.console("Standard error:");
+						jsh.shell.console(exit.stdio.error);
+						throw new Error("Exit status: " + exit.status);
+					}
+				}),
+				$api.fp.property("stdio"),
+				$api.fp.property("output"),
+				JSON.parse
+			);
+
+			var getJshScriptFile: (intention: slime.jrunscript.shell.run.Intention) => FileJson = $api.fp.pipe(
+				getShellDataJson,
+				$api.fp.property("jsh.script.file")
+			);
+
+			var getJshScriptScript: (intention: slime.jrunscript.shell.run.Intention) => FileJson = $api.fp.pipe(
+				getShellDataJson,
+				$api.fp.property("jsh.script.script")
+			);
+
+			fifty.tests.exports.file = fifty.test.Parent();
+
+			fifty.tests.exports.file.unbuilt = fifty.test.Parent();
+
+			fifty.tests.exports.file.unbuilt.local = function() {
+				var run = test.shells.unbuilt().invoke({
+					script: script.pathname,
+					stdio: {
+						output: "string"
+					}
+				});
+
+				var fileProperty = $api.fp.now(
+					run,
+					getJshScriptFile
+				);
+
+				var scriptProperty = $api.fp.now(
+					run,
+					getJshScriptScript
+				);
+
+				verify(fileProperty).string.evaluate(String).is(script.pathname);
+				verify(fileProperty).pathname.string.evaluate(String).is(script.pathname);
+				verify(scriptProperty).string.evaluate(String).is(script.pathname);
+				verify(scriptProperty).pathname.string.evaluate(String).is(script.pathname);
+			};
+
+			fifty.tests.exports.file.unbuilt.remote = function() {
+				try {
+					var online = test.shells.unbuilt().invoke({
+						script: scriptUrl,
+						stdio: {
+							output: "string"
+						}
+					});
+				} catch (e) {
+					verify(false).is(true);
+				}
+
+				var fileProperty = $api.fp.now(
+					online,
+					getJshScriptFile
+				);
+
+				var scriptProperty = $api.fp.now(online, getJshScriptScript);
+
+				verify(fileProperty).is(void(0));
+				verify(scriptProperty).is(void(0));
+			}
+
+			fifty.tests.exports.file.built = function() {
+				var run = test.shells.built().invoke({
+					script: script.pathname,
+					environment: environmentWithJavaInPath,
+					stdio: {
+						output: "string"
+					}
+				});
+
+				var fileProperty = $api.fp.now(
+					run,
+					getJshScriptFile
+				);
+
+				var scriptProperty = $api.fp.now(
+					run,
+					getJshScriptScript
+				)
+
+				verify(fileProperty).string.evaluate(String).is(script.pathname);
+				verify(fileProperty).pathname.string.evaluate(String).is(script.pathname);
+				verify(scriptProperty).string.evaluate(String).is(script.pathname);
+				verify(scriptProperty).pathname.string.evaluate(String).is(script.pathname);
+			}
+
+			fifty.tests.exports.file.packaged = function() {
+				var packaged = test.shells.packaged(script.pathname);
+				var run = packaged.invoke({
+					environment: environmentWithJavaInPath,
+					stdio: {
+						output: "string"
+					}
+				});
+
+				var fileProperty = $api.fp.now(
+					run,
+					getJshScriptFile
+				);
+
+				var scriptProperty = $api.fp.now(
+					run,
+					getJshScriptScript
+				);
+
+				verify(fileProperty).string.evaluate(String).is(packaged.package);
+				verify(fileProperty).pathname.string.evaluate(String).is(packaged.package);
+
+				verify(scriptProperty).is(void(0));
+			}
+
+			fifty.tests.exports.file.remote = function() {
+				var remote = test.shells.remote();
+
+				fifty.run(function url() {
+					var run = remote.getShellIntention({
+						PATH: jsh.shell.PATH,
+						settings: {
+							//	TODO	throws exception if this is not set; should this be hard-coded upstream?
+							branch: "local"
+						},
+						script: scriptUrl
+					});
+
+					var fileProperty = $api.fp.now(
+						run,
+						getJshScriptFile
+					);
+
+					var scriptProperty = $api.fp.now(
+						run,
+						getJshScriptScript
+					);
+
+					verify(fileProperty).is(void(0));
+					verify(scriptProperty).is(void(0));
+				});
+
+				fifty.run(function file() {
+					var run = remote.getShellIntention({
+						PATH: jsh.shell.PATH,
+						settings: {
+							//	TODO	throws exception if this is not set; should this be hard-coded upstream?
+							branch: "local"
+						},
+						script: script.pathname
+					});
+
+					var fileProperty = $api.fp.now(
+						run,
+						getJshScriptFile
+					);
+
+					var scriptProperty = $api.fp.now(
+						run,
+						getJshScriptScript
+					);
+
+					verify(fileProperty).string.is(script.pathname);
+					verify(fileProperty).pathname.string.is(script.pathname);
+					verify(scriptProperty).string.is(script.pathname);
+					verify(scriptProperty).pathname.string.is(script.pathname);
+				});
+
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	/**
 	 * Provides APIs supporting command-line `jsh` applications.
 	 *
@@ -688,211 +936,9 @@ namespace slime.jsh.script {
 	//@ts-ignore
 	)(fifty);
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports = fifty.test.Parent();
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export interface Exports {
-		/**
-		 * (contingent) The object representing the main file being executed.
-		 * * In the case of an ordinary script, this is the script that was launched.
-		 * * In the case of a packaged script, it is the package file (the `.jar` file).
-		 * * In the case of a remote script, it is not present.
-		 */
-		file?: slime.jrunscript.file.File
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api, jsh } = fifty.global;
-
-			var script = fifty.jsh.file.relative("../test/jsh-data.jsh.js");
-			var scriptUrl = "http://raw.githubusercontent.com/davidpcaldwell/slime/local/jrunscript/jsh/test/jsh-data.jsh.js";
-
-			//	TODO	these tests could be better; right now, they are based on shell type, rather than script type (which is what
-			//			really matters, except in the case of packaged shells)
-
-			const environmentWithJavaInPath: slime.$api.fp.Transform<slime.jrunscript.shell.run.Environment> = function(given) {
-				var PATH = given.PATH.split(":");
-				var home = jsh.shell.java.Jdk.from.javaHome();
-				var insert = jsh.file.Pathname(home.base).directory.getRelativePath("bin").toString();
-				//var insert = jsh.shell.java.home.getRelativePath("bin").toString();
-				jsh.shell.console("Inserting: " + insert);
-				PATH.splice(0,0,insert);
-				jsh.shell.console("PATH = " + PATH.join(":"));
-				return $api.Object.compose(
-					given,
-					{
-						PATH: PATH.join(":")
-					}
-				)
-			};
-
-			var getJshScriptFile: (intention: slime.jrunscript.shell.run.Intention) => { string: string, pathname: { string: string } } = $api.fp.pipe(
-				$api.fp.world.Sensor.mapping({
-					sensor: jsh.shell.subprocess.question
-				}),
-				$api.fp.impure.tap(function(exit) {
-					if (exit.status) {
-						jsh.shell.console("Exit status: " + exit.status);
-						jsh.shell.console("Standard error:");
-						jsh.shell.console(exit.stdio.error);
-						throw new Error("Exit status: " + exit.status);
-					}
-				}),
-				$api.fp.property("stdio"),
-				$api.fp.property("output"),
-				JSON.parse,
-				$api.fp.property("jsh.script.file")
-			);
-
-			fifty.tests.exports.file = fifty.test.Parent();
-
-			fifty.tests.exports.file.unbuilt = fifty.test.Parent();
-
-			fifty.tests.exports.file.unbuilt.local = function() {
-				var run = test.shells.unbuilt().invoke({
-					script: script.pathname,
-					stdio: {
-						output: "string"
-					}
-				});
-
-				var result = $api.fp.now(
-					run,
-					getJshScriptFile
-				);
-
-				verify(result).string.evaluate(String).is(script.pathname);
-				verify(result).pathname.string.evaluate(String).is(script.pathname);
-			};
-
-			fifty.tests.exports.file.unbuilt.remote = function() {
-				try {
-					var online = test.shells.unbuilt().invoke({
-						script: scriptUrl,
-						stdio: {
-							output: "string"
-						}
-					});
-				} catch (e) {
-					verify(false).is(true);
-				}
-
-				var now = $api.fp.now(
-					online,
-					getJshScriptFile
-				);
-
-				verify(now).is(void(0));
-			}
-
-			fifty.tests.exports.file.built = function() {
-				var run = test.shells.built().invoke({
-					script: script.pathname,
-					environment: environmentWithJavaInPath,
-					stdio: {
-						output: "string"
-					}
-				});
-
-				var result = $api.fp.now(
-					run,
-					getJshScriptFile
-				);
-
-				verify(result).string.evaluate(String).is(script.pathname);
-				verify(result).pathname.string.evaluate(String).is(script.pathname);
-			}
-
-			fifty.tests.exports.file.packaged = function() {
-				var packaged = test.shells.packaged(script.pathname);
-				var run = packaged.invoke({
-					environment: environmentWithJavaInPath,
-					stdio: {
-						output: "string"
-					}
-				});
-
-				var result = $api.fp.now(
-					run,
-					getJshScriptFile
-				);
-
-				verify(result).string.evaluate(String).is(packaged.package);
-				verify(result).pathname.string.evaluate(String).is(packaged.package);
-			}
-
-			fifty.tests.exports.file.remote = function() {
-				var remote = test.shells.remote();
-
-				fifty.run(function url() {
-					var run = remote.getShellIntention({
-						PATH: jsh.shell.PATH,
-						settings: {
-							//	TODO	throws exception if this is not set; should this be hard-coded upstream?
-							branch: "local"
-						},
-						script: scriptUrl
-					});
-
-					var result = $api.fp.now(
-						run,
-						getJshScriptFile
-					);
-
-					verify(result).is(void(0));
-				});
-
-				fifty.run(function file() {
-					var run = remote.getShellIntention({
-						PATH: jsh.shell.PATH,
-						settings: {
-							//	TODO	throws exception if this is not set; should this be hard-coded upstream?
-							branch: "local"
-						},
-						script: script.pathname
-					});
-
-					var result = $api.fp.now(
-						run,
-						getJshScriptFile
-					);
-
-					verify(result).string.is(script.pathname);
-					verify(result).pathname.string.is(script.pathname);
-				});
-
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.cli);
-
-				fifty.run(fifty.tests.exports);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export interface Exports {
 		arguments: string[]
 		getopts: Function & { UNEXPECTED_OPTION_PARSER: any, ARRAY: any, OBJECT: any, parser: { Pathname: (s: string) => slime.jrunscript.file.Pathname } }
-		script?: any
 		/** @deprecated */
 		pathname: any
 		/** @deprecated */
@@ -909,6 +955,19 @@ namespace slime.jsh.script {
 			file: slime.jrunscript.file.world.Location
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.cli);
+
+				fifty.run(fifty.tests.exports);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 namespace slime.jsh.script.internal {
