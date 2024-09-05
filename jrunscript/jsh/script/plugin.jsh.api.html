@@ -47,23 +47,6 @@ END LICENSE
 		<h1>Exports</h1>
 		<ul>
 			<li class="value">
-				<div class="name">script</div>
-				<script type="application/x.jsapi#tests"><![CDATA[
-					var $jsh = $jsapi.environment.jsh;
-					if ($jsh && $jsh.src) {
-						var src = $jsh.src.getRelativePath("jrunscript/jsh/test/jsh-data.jsh.js").toString();
-
-						verify($jsh).unbuilt.data["jsh.script.script"].string.is(src);
-						verify($jsh).unbuilt.data["jsh.script.script"].pathname.string.is(src);
-
-						verify($jsh).built.data["jsh.script.script"].string.is(src);
-						verify($jsh).built.data["jsh.script.script"].pathname.string.is(src);
-
-						verify($jsh).packaged.data.evaluate.property("jsh.script.script").is(void(0));
-					}
-				]]></script>
-			</li>
-			<li class="value">
 				<div class="name">url</div>
 				<span class="type"><a href="../../js/web/api.html">Url</a></span>
 				<span>
