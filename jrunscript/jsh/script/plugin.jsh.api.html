@@ -48,13 +48,6 @@ END LICENSE
 		<ul>
 			<li class="value">
 				<div class="name">script</div>
-				<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
-				<span>
-					(contingent)
-					The object representing the main script being executed by the shell. In the case of a packaged script, this
-					value will be absent as the script is embedded in the package file itself.
-					<!--	TODO	should we use URL for remote scripts?	-->
-				</span>
 				<script type="application/x.jsapi#tests"><![CDATA[
 					var $jsh = $jsapi.environment.jsh;
 					if ($jsh && $jsh.src) {
