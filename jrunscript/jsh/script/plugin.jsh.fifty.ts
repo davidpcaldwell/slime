@@ -62,6 +62,12 @@ namespace slime.jsh.script {
 		url?: slime.web.Url
 	}
 
+	export interface Exports {
+		/** @deprecated */
+		pathname: any
+		getRelativePath: any
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -329,18 +335,96 @@ namespace slime.jsh.script {
 	)(fifty);
 
 	export interface Exports {
-		arguments: string[]
-		getopts: Function & { UNEXPECTED_OPTION_PARSER: any, ARRAY: any, OBJECT: any, parser: { Pathname: (s: string) => slime.jrunscript.file.Pathname } }
-		/** @deprecated */
-		pathname: any
 		/** @deprecated */
 		addClasses: any
-		getRelativePath: any
+	}
+
+	export interface Exports {
+		/**
+		 * An array containing the arguments passed to the shell.
+		 */
+		arguments: string[]
+	}
+
+	export interface Exports {
+		/**
+		 * An object that can be used to load code associated with this script. For packaged scripts, this object loads modules and
+		 * files packaged with the script using the packaging tool. For unpackaged scripts, this object loads modules and files
+		 * relative to the directory from which the script was run (although a script can replace this property; see `
+		 * `Loader`).
+		 */
+		loader: slime.old.Loader
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			var script = fifty.jsh.file.relative("test/loader.jsh.js");
+			var scriptUrl = "http://raw.githubusercontent.com/davidpcaldwell/slime/local/jrunscript/jsh/script/test/loader.jsh.js";
+
+			var getJson: (intention: slime.jrunscript.shell.run.Intention) => { submodule: { message: string } } = $api.fp.pipe(
+				$api.fp.world.Sensor.mapping({
+					sensor: jsh.shell.subprocess.question
+				}),
+				$api.fp.impure.tap(function(exit) {
+					if (exit.status) {
+						jsh.shell.console("Exit status: " + exit.status);
+						jsh.shell.console("Standard error:");
+						jsh.shell.console(exit.stdio.error);
+						throw new Error("Exit status: " + exit.status);
+					}
+				}),
+				$api.fp.property("stdio"),
+				$api.fp.property("output"),
+				JSON.parse
+			);
+
+			fifty.tests.exports.loader = fifty.test.Parent();
+
+			fifty.tests.exports.loader.shape = function() {
+				verify(test.subject).evaluate.property("loader").evaluate.property("get").is.type("function");
+			}
+
+			fifty.tests.exports.loader.jsapi = function() {
+				var local = test.shells.unbuilt().invoke({
+					script: script.pathname,
+					stdio: {
+						output: "string"
+					}
+				});
+
+				var json = getJson(local);
+
+				verify(json).submodule.message.is("ititit");
+
+				var remote = test.shells.unbuilt().invoke({
+					script: scriptUrl,
+					stdio: {
+						output: "string"
+					}
+				});
+
+				var json = getJson(remote);
+
+				verify(json).submodule.message.is("ititit");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		Loader?: any
+	}
+
+	export interface Exports {
+		getopts: Function & { UNEXPECTED_OPTION_PARSER: any, ARRAY: any, OBJECT: any, parser: { Pathname: (s: string) => slime.jrunscript.file.Pathname } }
 		Application: slime.jsh.script.old.application.Constructor & {
 			run: any
 		}
-		loader: slime.old.Loader
-		Loader?: any
 		world: {
 			file: slime.jrunscript.file.world.Location
 		}
