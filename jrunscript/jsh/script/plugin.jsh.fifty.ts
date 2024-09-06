@@ -51,6 +51,17 @@ namespace slime.jsh.script {
 		script?: slime.jrunscript.file.File
 	}
 
+	export interface Exports {
+		//	TODO	Additional, possibly excessive, tests are in rhino/shell/test/jsh.shell.jsh.suite.jsh.js
+
+		/**
+		 * @deprecated
+		 *
+		 * (contingent) The URL from which this script was loaded, if it is a remote script.
+		 */
+		url?: slime.web.Url
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -83,9 +94,13 @@ namespace slime.jsh.script {
 			type FileJson = {
 				string: string
 				pathname: { string: string }
-			}
+			};
 
-			var getShellDataJson: (intention: slime.jrunscript.shell.run.Intention) => { "jsh.script.file": FileJson, "jsh.script.script": FileJson } = $api.fp.pipe(
+			type UrlJson = {
+				string: string
+			};
+
+			var getShellDataJson: (intention: slime.jrunscript.shell.run.Intention) => { "jsh.script.file": FileJson, "jsh.script.script": FileJson, "jsh.script.url": UrlJson } = $api.fp.pipe(
 				$api.fp.world.Sensor.mapping({
 					sensor: jsh.shell.subprocess.question
 				}),
@@ -112,11 +127,18 @@ namespace slime.jsh.script {
 				$api.fp.property("jsh.script.script")
 			);
 
-			fifty.tests.exports.file = fifty.test.Parent();
+			var getJshScriptUrl: (intention: slime.jrunscript.shell.run.Intention) => UrlJson = $api.fp.pipe(
+				getShellDataJson,
+				$api.fp.property("jsh.script.url")
+			);
 
-			fifty.tests.exports.file.unbuilt = fifty.test.Parent();
+			fifty.tests.exports.oo = fifty.test.Parent();
 
-			fifty.tests.exports.file.unbuilt.local = function() {
+			fifty.tests.exports.oo.main = fifty.test.Parent();
+
+			fifty.tests.exports.oo.main.unbuilt = fifty.test.Parent();
+
+			fifty.tests.exports.oo.main.unbuilt.local = function() {
 				var run = test.shells.unbuilt().invoke({
 					script: script.pathname,
 					stdio: {
@@ -134,13 +156,19 @@ namespace slime.jsh.script {
 					getJshScriptScript
 				);
 
+				var urlProperty = $api.fp.now(
+					run,
+					getJshScriptUrl
+				);
+
 				verify(fileProperty).string.evaluate(String).is(script.pathname);
 				verify(fileProperty).pathname.string.evaluate(String).is(script.pathname);
 				verify(scriptProperty).string.evaluate(String).is(script.pathname);
 				verify(scriptProperty).pathname.string.evaluate(String).is(script.pathname);
+				verify(urlProperty).is(void(0));
 			};
 
-			fifty.tests.exports.file.unbuilt.remote = function() {
+			fifty.tests.exports.oo.main.unbuilt.remote = function() {
 				try {
 					var online = test.shells.unbuilt().invoke({
 						script: scriptUrl,
@@ -159,11 +187,17 @@ namespace slime.jsh.script {
 
 				var scriptProperty = $api.fp.now(online, getJshScriptScript);
 
+				var urlProperty = $api.fp.now(
+					online,
+					getJshScriptUrl
+				);
+
 				verify(fileProperty).is(void(0));
 				verify(scriptProperty).is(void(0));
+				verify(urlProperty).string.is(scriptUrl);
 			}
 
-			fifty.tests.exports.file.built = function() {
+			fifty.tests.exports.oo.main.built = function() {
 				var run = test.shells.built().invoke({
 					script: script.pathname,
 					environment: environmentWithJavaInPath,
@@ -180,15 +214,21 @@ namespace slime.jsh.script {
 				var scriptProperty = $api.fp.now(
 					run,
 					getJshScriptScript
-				)
+				);
+
+				var urlProperty = $api.fp.now(
+					run,
+					getJshScriptUrl
+				);
 
 				verify(fileProperty).string.evaluate(String).is(script.pathname);
 				verify(fileProperty).pathname.string.evaluate(String).is(script.pathname);
 				verify(scriptProperty).string.evaluate(String).is(script.pathname);
 				verify(scriptProperty).pathname.string.evaluate(String).is(script.pathname);
+				verify(urlProperty).is(void(0));
 			}
 
-			fifty.tests.exports.file.packaged = function() {
+			fifty.tests.exports.oo.main.packaged = function() {
 				var packaged = test.shells.packaged(script.pathname);
 				var run = packaged.invoke({
 					environment: environmentWithJavaInPath,
@@ -207,13 +247,19 @@ namespace slime.jsh.script {
 					getJshScriptScript
 				);
 
+				var urlProperty = $api.fp.now(
+					run,
+					getJshScriptUrl
+				);
+
 				verify(fileProperty).string.evaluate(String).is(packaged.package);
 				verify(fileProperty).pathname.string.evaluate(String).is(packaged.package);
 
 				verify(scriptProperty).is(void(0));
+				verify(urlProperty).is(void(0));
 			}
 
-			fifty.tests.exports.file.remote = function() {
+			fifty.tests.exports.oo.main.remote = function() {
 				var remote = test.shells.remote();
 
 				fifty.run(function url() {
@@ -236,8 +282,14 @@ namespace slime.jsh.script {
 						getJshScriptScript
 					);
 
+					var urlProperty = $api.fp.now(
+						run,
+						getJshScriptUrl
+					);
+
 					verify(fileProperty).is(void(0));
 					verify(scriptProperty).is(void(0));
+					verify(urlProperty).string.is(scriptUrl);
 				});
 
 				fifty.run(function file() {
@@ -260,16 +312,39 @@ namespace slime.jsh.script {
 						getJshScriptScript
 					);
 
+					var urlProperty = $api.fp.now(
+						run,
+						getJshScriptUrl
+					);
+
 					verify(fileProperty).string.is(script.pathname);
 					verify(fileProperty).pathname.string.is(script.pathname);
 					verify(scriptProperty).string.is(script.pathname);
 					verify(scriptProperty).pathname.string.is(script.pathname);
+					verify(urlProperty).is(void(0));
 				});
-
 			}
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		arguments: string[]
+		getopts: Function & { UNEXPECTED_OPTION_PARSER: any, ARRAY: any, OBJECT: any, parser: { Pathname: (s: string) => slime.jrunscript.file.Pathname } }
+		/** @deprecated */
+		pathname: any
+		/** @deprecated */
+		addClasses: any
+		getRelativePath: any
+		Application: slime.jsh.script.old.application.Constructor & {
+			run: any
+		}
+		loader: slime.old.Loader
+		Loader?: any
+		world: {
+			file: slime.jrunscript.file.world.Location
+		}
+	}
 
 	/**
 	 * Provides APIs supporting command-line `jsh` applications.
@@ -935,26 +1010,6 @@ namespace slime.jsh.script {
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export interface Exports {
-		arguments: string[]
-		getopts: Function & { UNEXPECTED_OPTION_PARSER: any, ARRAY: any, OBJECT: any, parser: { Pathname: (s: string) => slime.jrunscript.file.Pathname } }
-		/** @deprecated */
-		pathname: any
-		/** @deprecated */
-		url?: any
-		/** @deprecated */
-		addClasses: any
-		getRelativePath: any
-		Application: slime.jsh.script.old.application.Constructor & {
-			run: any
-		}
-		loader: slime.old.Loader
-		Loader?: any
-		world: {
-			file: slime.jrunscript.file.world.Location
-		}
-	}
 
 	(
 		function(

@@ -47,22 +47,6 @@ END LICENSE
 		<h1>Exports</h1>
 		<ul>
 			<li class="value">
-				<div class="name">url</div>
-				<span class="type"><a href="../../js/web/api.html">Url</a></span>
-				<span>
-					(contingent)
-					The URL from which this script was loaded, if it is a remote script.
-				</span>
-				<script type="application/x.jsapi#tests"><![CDATA[
-					var $jsh = $jsapi.environment.jsh;
-
-					if ($jsh && $jsh.remote) {
-						verify($jsh).remote.data["jsh.script.url"].string.is("http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/test/jsh-data.jsh.js");
-					}
-					//	Additional, possibly excessive, tests are in rhino/shell/test/jsh.shell.jsh.suite.jsh.js
-				]]></script>
-			</li>
-			<li class="value">
 				<div class="name">arguments</div>
 				<span class="type">Array of string</span>
 				<span>An array containing the arguments passed to the shell.</span>
