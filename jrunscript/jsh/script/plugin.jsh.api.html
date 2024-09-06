@@ -46,11 +46,6 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<ul>
-			<li class="value">
-				<div class="name">arguments</div>
-				<span class="type">Array of string</span>
-				<span>An array containing the arguments passed to the shell.</span>
-			</li>
 			<li class="constructor">
 				<div class="name"><a id="exports.Loader">Loader</a></div>
 				<span>A constructor that can be used by scripts to create <a href="#types.Loader">Loader</a>s.</span>
@@ -71,52 +66,6 @@ END LICENSE
 					<span class="type"><a href="#types.Loader">Loader</a></span>
 					<span>An object that loads code from the files and subdirectories of the given directory.</span>
 				</div>
-				<script type="application/x.jsapi#tests">
-//					test(typeof(module.loader.resource) == "function");
-				</script>
-			</li>
-			<li class="value">
-				<div class="name">loader</div>
-				<span class="type"><a href="#types.Loader">Loader</a></span>
-				<span>
-					An object that can be used to load code associated with this script. For packaged scripts, this object loads
-					modules and files packaged with the script using the packaging tool. For unpackaged scripts, this object loads
-					modules and files relative to the directory from which the script was run (although a script can replace this
-					property; see <code><a href="#exports.Loader">Loader</a></code>).
-				</span>
-				<script type="application/x.jsapi#tests" jsapi:id="loader"><![CDATA[
-					if ($jsapi.environment.jsh && $jsapi.environment.jsh.built) {
-						var a = jsh.shell.jsh({
-							shell: $jsapi.environment.jsh.built.home,
-							script: $jsapi.environment.jsh.src.getFile("jrunscript/jsh/script/test/loader.jsh.js"),
-							stdio: {
-								output: String
-							},
-							evaluate: function(result) {
-								return JSON.parse(result.stdio.output);
-							}
-						});
-						verify(a).submodule.message.is("ititit");
-					}
-
-					if ($jsapi.environment.jsh && $jsapi.environment.jsh.src) {
-						var started = jsh.httpd.Tomcat.serve({
-							directory: $jsapi.environment.jsh.src
-						});
-
-						var b = jsh.shell.jsh({
-							shell: $jsapi.environment.jsh.built.home,
-							script: "http://127.0.0.1:" + started.port + "/" + "jrunscript/jsh/script/test/loader.jsh.js",
-							stdio: {
-								output: String
-							},
-							evaluate: function(result) {
-								return JSON.parse(result.stdio.output);
-							}
-						});
-						verify(b).submodule.message.is("ititit");
-					}
-				]]></script>
 			</li>
 			<li class="function" jsapi:id="getopts">
 				<div class="name"><a id="properties.getopts">getopts</a></div>
