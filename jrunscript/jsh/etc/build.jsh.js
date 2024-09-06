@@ -44,7 +44,7 @@
 			unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 		});
 
-		jsh.script.loader = new jsh.script.Loader("../../../");
+		jsh.script.loader = jsh.script.Loader("../../../");
 
 		var jrunscript = (function() {
 			/**

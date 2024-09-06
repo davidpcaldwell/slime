@@ -417,7 +417,14 @@ namespace slime.jsh.script {
 	)(fifty);
 
 	export interface Exports {
-		Loader?: any
+		/**
+		 * Creates a {@link Loader} that loads from a location relative to this script.
+		 *
+		 * @param path A path which will be interpreted relative to this script's location.
+		 *
+		 * @returns A {@link Loader} that loads code from the location indicated by `path`.
+		 */
+		Loader?: (path: string) => slime.old.Loader
 	}
 
 	export interface Exports {
