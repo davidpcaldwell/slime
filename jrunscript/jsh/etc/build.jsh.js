@@ -163,8 +163,8 @@
 			//	http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/etc/build.jsh.js
 			var matcher = /^http(s)?\:\/\/bitbucket\.org\/api\/1.0\/repositories\/davidpcaldwell\/slime\/raw\/(.*)\/jsh\/etc\/build.jsh.js$/;
 			var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
-			if (matcher.exec(jsh.script.url)) {
-				var match = matcher.exec(jsh.script.url);
+			if (matcher.exec(jsh.script.url.toString())) {
+				var match = matcher.exec(jsh.script.url.toString());
 				jrunscript.$api.bitbucket.get({
 					protocol: "http" + ((match[1]) ? match[1] : ""),
 					revision: match[2],
@@ -200,7 +200,7 @@
 			var argument = (function() {
 				if (jsh.script.file) return { file: jsh.script.file.parent.getRelativePath("../../jsh/launcher/" + name).java.adapt() };
 				if (jsh.script.url) {
-					var _url = new Packages.java.net.URL(jsh.script.url);
+					var _url = new Packages.java.net.URL(jsh.script.url.toString());
 					var _resolved = new Packages.java.net.URL(_url, "../../jsh/launcher/" + name);
 					return { url: _resolved };
 				}
