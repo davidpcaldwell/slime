@@ -427,8 +427,66 @@ namespace slime.jsh.script {
 		Loader?: (path: string) => slime.old.Loader
 	}
 
+	declare const unexpctedOptionHandlerTag: unique symbol;
+
+	export type UnexpectedOptionHandler = { readonly [unexpctedOptionHandlerTag]: "TAG" };
+
 	export interface Exports {
-		getopts: Function & { UNEXPECTED_OPTION_PARSER: any, ARRAY: any, OBJECT: any, parser: { Pathname: (s: string) => slime.jrunscript.file.Pathname } }
+		/**
+		 * Processes an array of strings as arguments, using an object which specifies how arguments are interpreted.
+		 *
+		 * An "option" is an argument which is prefixed with a dash (`-`) character. The argument immediately following the option
+		 * is, depending on the option's type, interpreted as a value for that option.
+		 *
+		 * For example, the following code:
+		 * ```
+		 * var parameters = jsh.script.getopts({
+		 * 	options: {
+		 * 		s: String,
+		 * 		n: Number,
+		 * 		num: 8,
+		 * 		b: false,
+		 * 		p: Boolean,
+		 * 		list: jsh.script.getopts.ARRAY(String)
+		 * 	}
+		 * }, [ "-s", "aString", "-n", 42, "-b", "-list", "a", "-list", "b" ]);
+		 * ```
+		 * produces an object equivalent to:
+		 * ```
+		 * var parameters = { options: { s: "aString", n: 42, num: 8, b: true, p: false, list: ["a", "b"] } };
+		 * ```
+		 */
+		getopts:
+			(
+				(
+					settings: {
+						options: object
+						unhandled?: UnexpectedOptionHandler
+					},
+					arguments?: string[] | IArguments
+				) => {
+					options: { [name: string]: any }
+					arguments: any
+				}
+			)
+			& {
+				UNEXPECTED_OPTION_PARSER: {
+					ERROR: UnexpectedOptionHandler
+					IGNORE: UnexpectedOptionHandler
+					SKIP: UnexpectedOptionHandler
+					INTERPRET: UnexpectedOptionHandler
+				}
+				ARRAY: any
+				OBJECT: any
+				parser: {
+					Pathname: (s: string) => slime.jrunscript.file.Pathname
+				}
+			}
+	}
+
+
+
+	export interface Exports {
 		Application: slime.jsh.script.old.application.Constructor & {
 			run: any
 		}

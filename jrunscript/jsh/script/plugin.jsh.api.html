@@ -48,28 +48,6 @@ END LICENSE
 		<ul>
 			<li class="function" jsapi:id="getopts">
 				<div class="name"><a id="properties.getopts">getopts</a></div>
-				<span>
-					Processes an array of strings as arguments, using an object which specifies how arguments are interpreted.
-				</span>
-				<div>
-					An "option" is an argument which is prefixed with a dash (<code>-</code>) character. The argument immediately
-					following the option is, depending on the option's type, interpreted as a value for that option.
-				</div>
-				<div>
-					For example, the following code:
-					<pre>var parameters = jsh.script.getopts({
-	options: {
-		s: String,
-		n: Number,
-		num: 8,
-		b: false,
-		p: Boolean,
-		list: jsh.script.getopts.ARRAY(String)
-	}
-}, [ "-s", "aString", "-n", 42, "-b", "-list", "a", "-list", "b" ]);</pre>
-					produces an object equivalent to:
-					<pre>var parameters = { options: { s: "aString", n: 42, num: 8, b: true, p: false, list: ["a", "b"] } };</pre>
-				</div>
 				<div class="label">has properties:</div>
 				<ul>
 					<li class="object">
