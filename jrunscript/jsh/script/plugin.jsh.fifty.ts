@@ -740,8 +740,62 @@ namespace slime.jsh.script {
 
 	export interface Exports {
 		Application: slime.jsh.script.old.application.Constructor & {
-			run: any
+			/**
+			 * Creates and executes an Application using a descriptor. Arguments can optionally be supplied; otherwise, the global
+			 * script arguments will be used.
+			 *
+			 * @param descriptor A descriptor describing an application.
+			 * @param arguments (optional; if omitted, `jsh.script.arguments`) An array of arguments to pass to the application.
+			 * @returns The value returned by the command executed.
+			 */
+			run: (
+				descriptor: slime.jsh.script.old.application.Descriptor,
+				arguments?: string[]
+			) => any
 		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			var script = fifty.jsh.file.relative("test/Application.jsh.js");
+			var shells = test.shells;
+
+			fifty.tests.exports.Application = function() {
+				var intention = shells.unbuilt().invoke({
+					script: script.pathname,
+					arguments: ["-gstring", "gvalue", "-gboolean", "doIt", "-lboolean"],
+					stdio: {
+						output: "string"
+					}
+				});
+
+				var getJson = $api.fp.pipe(
+					$api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question }),
+					$api.fp.property("stdio"),
+					$api.fp.property("output"),
+					JSON.parse
+				);
+
+				var json = getJson(intention) as {
+					global: { gstring: string, gboolean: boolean }
+					options: { lboolean: boolean, lstring: string }
+				};
+
+				verify(json).global.gstring.is("gvalue");
+				verify(json).global.gboolean.is(true);
+				verify(json).options.lboolean.is(true);
+				verify(json).options.lstring.is("foo");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		world: {
 			file: slime.jrunscript.file.world.Location
 		}
