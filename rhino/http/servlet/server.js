@@ -237,7 +237,14 @@
 
 								if (response.body && response.body["type"]) {
 									//	Documented to accept slime.MimeType and string
-									_response.setContentType(String(response.body["type"]));
+									/** @type { string } */
+									var mimeTypeDeclaration;
+									if (typeof(response.body.type) == "string") {
+										mimeTypeDeclaration = response.body.type;
+									} else {
+										mimeTypeDeclaration = $api.mime.Type.codec.declaration.encode(response.body.type);
+									}
+									_response.setContentType(mimeTypeDeclaration);
 								}
 								if (response.body && typeof(response.body["length"]) == "number") {
 									_response.setContentLength(response.body["length"]);
