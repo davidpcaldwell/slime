@@ -11,13 +11,14 @@
 	 */
 	/**
 	 *
-	 * @param { slime.jrunscript.runtime.internal.nashorn.load } load
-	 * @param { slime.jrunscript.runtime.Java } Java
-	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { slime.jrunscript.runtime.sync } sync
-	 * @param { any } $nashorn
+	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["load"] } load
+	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["Java"] } Java
+	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["Packages"] } Packages
+	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["sync"] } sync
+	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["$nashorn"] } $nashorn
 	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["$graal"] } $graal
 	 * @param { slime.jrunscript.runtime.internal.nashorn.Scope["$loader"] } $loader
+	 *
 	 * @returns { slime.jrunscript.runtime.Nashorn | slime.jrunscript.runtime.Graal | Bootstrap }
 	 */
 	function(load,Java,Packages,sync,$nashorn,$graal,$loader) {

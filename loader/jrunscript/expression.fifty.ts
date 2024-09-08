@@ -4,6 +4,19 @@
 //
 //	END LICENSE
 
+/**
+ * The Java runtime extends the SLIME runtime to support Java-specific capabilities. Its methods are ordinarily not available to
+ * Java-based SLIME embeddings directly.
+ *
+ * The SLIME Java runtime comes with two engine embeddings: one for the Rhino JavaScript engine provided by Mozilla, and one for the
+ * Nashorn engine included with Java 8-14 (and available as a standalone library for Java 15 and up). The engine embeddings are
+ * expressions that evaluate to an object. They provide different scope variables for implementing the embedding;
+ * {@link slime.jrunscript.runtime.internal.rhino.Scope} for Rhino, and {@link slime.jrunscript.runtime.internal.nashorn.Scope} for
+ * Nashorn.
+ *
+ * For each engine, two embeddings are included: a servlet-based embedding and an embedding that supports
+ * `jsh`.
+ */
 namespace slime.jrunscript.runtime {
 	export namespace old {
 		export interface Resource<JA = (path: string) => slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource> extends slime.Resource {
@@ -354,7 +367,7 @@ namespace slime.jrunscript.runtime {
 		fifty: slime.fifty.test.Kit
 	) {
 		const { verify } = fifty;
-		const { jsh } = fifty.global;
+		const { $api, jsh } = fifty.global;
 
 		fifty.tests.jsapi = function() {
 			var $slime = jsh.unit.$slime;
@@ -398,11 +411,22 @@ namespace slime.jrunscript.runtime {
 			verify(child).list().length.is(1);
 		}
 
+		fifty.tests.decoration = fifty.test.Parent();
+
+		fifty.tests.decoration.mime = function() {
+			var xmlType = $api.mime.Type.fromName("foo.xml");
+			verify(xmlType).media.is("application");
+			verify(xmlType).subtype.is("xml");
+		}
+
 		fifty.tests.suite = function() {
 			verify(fifty.global.jsh.unit.$slime.$platform && typeof fifty.global.jsh.unit.$slime.$platform == "object").is(true);
 			//verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
 
+			fifty.run(fifty.tests.decoration);
+
 			fifty.run(fifty.tests.exports);
+			fifty.run(fifty.tests.jsapi);
 
 			//	TODO	redundant? tested per-engine in contributor/suite.jsh.js
 			fifty.load("java.fifty.ts");

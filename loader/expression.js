@@ -211,10 +211,10 @@
 		 */
 		function Resource(o) {
 			this.type = (function(type,name) {
-				if (typeof(type) == "string") return mime.Type.parse(type);
+				if (typeof(type) == "string") return $api.mime.Type.parse(type);
 				if (type && type.media && type.subtype) return type;
 				if (!type && name) {
-					var fromName = mime.Type.fromName(name);
+					var fromName = $api.mime.Type.fromName(name);
 					if (fromName) return fromName;
 				}
 				if (!type) return null;
@@ -294,9 +294,7 @@
 		/** @type { slime.runtime.Exports } */
 		var rv = $api.fp.now(
 			{
-				mime: {
-					Type: mime.Type
-				},
+				mime: $api.mime,
 				/** @type { slime.runtime.Exports["run"] } */
 				run: function(code,scope,target) {
 					return scripts.methods.run.call(target,loaders.Code.from.Resource(code),scope);

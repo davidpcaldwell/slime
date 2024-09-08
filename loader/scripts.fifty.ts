@@ -98,5 +98,9 @@ namespace slime.runtime.internal.scripts {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * Code which deals with transpiler configuration, creation of scopes for scripts, and running scripts within specified scopes
+	 * (providing `$platform` and `$api`).
+	 */
 	export type Script = slime.loader.Script<Scope,Exports>
 }

@@ -19,70 +19,96 @@
 		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
 		var _streams = new Packages.inonit.script.runtime.io.Streams();
 
+		var errorDecorate = function(implementation) {
+			var instance = (function _Throwables() {
+				return new Packages.inonit.script.runtime.Throwables();
+			})();
+
+			var rv = function() {
+				//	TODO	what if called as function?
+				var literals = Array.prototype.map.call(arguments,function(a,i) {
+					return "arguments["+i+"]";
+				}).join(",");
+				//	TODO	is this parameterized call already in js/object?
+				var created = eval("new implementation(" + literals + ")");
+
+				if (!created.stack) {
+					var tracer;
+					try {
+						instance.throwException(created.toString());
+					} catch (e) {
+						tracer = e;
+					}
+					var t = tracer.rhinoException;
+					var stack = [];
+					while(t != null) {
+						var sw = new Packages.java.io.StringWriter();
+						var pw = new Packages.java.io.PrintWriter(sw);
+						if (t == tracer.rhinoException) {
+							sw.write(t.getScriptStackTrace());
+						} else {
+							t.printStackTrace(pw);
+						}
+						pw.flush();
+						var tstack = String(sw.toString()).split(String(Packages.java.lang.System.getProperty("line.separator")));
+						if (t == tracer.rhinoException) {
+							tstack = tstack.slice(1,tstack.length);
+						}
+						for (var i=0; i<tstack.length; i++) {
+							if (/^Caused by\:/.test(tstack[i])) {
+								break;
+							}
+							stack.push(tstack[i]);
+						}
+						t = t.getCause();
+						if (t != null && String(t.getClass().getName()) == "inonit.script.runtime.Throwables$Exception") {
+							t = null;
+						}
+					}
+					//	TODO	clean up the first line, eliminating all the wrapping in WrappedException and Throwables.Exception
+					//	TODO	clean up the top of the trace, removing the irrelevant Java lines and the first script line corresponding
+					//			to this file
+					//	TODO	get full stack traces if possible, rather than the limited version being provided now (which has ...more)
+					//			however, could be impossible (getStackTrace may not be overridden while printStackTrace is).
+					created.stack = stack.join("\n");
+				}
+				return created;
+			}
+			rv.prototype = implementation.prototype;
+			return rv;
+		};
+
+		/**
+		 *
+		 * @param { slime.$api.mime.Export["Type"]["fromName"] } fromNameWas
+		 * @param { slime.$api.mime.Export["Type"]["codec"]["declaration"] } codec
+		 * @returns { slime.$api.mime.Export["Type"]["fromName"] }
+		 */
+		var mimeTypeFromNameDecorate = function(fromNameWas,codec) {
+			var guess_URLConnection = function(p) {
+				var _rv = Packages.java.net.URLConnection.getFileNameMap().getContentTypeFor(p.name);
+				if (!_rv) return function(){}();
+				return codec.decode(String(_rv));
+			};
+
+			var rv = function(p) {
+				var rv = fromNameWas.apply(this,arguments);
+				if (typeof(rv) != "undefined") return rv;
+				rv = guess_URLConnection({ name: p });
+				return rv;
+			};
+			rv.slime = fromNameWas;
+			rv.java = {
+				URLConnection: guess_URLConnection
+			};
+			return rv;
+		}
+
 		var slime = (
 			/**
 			 * @returns { slime.runtime.Exports }
 			 */
 			function() {
-				var instance = (function _Throwables() {
-					return new Packages.inonit.script.runtime.Throwables();
-				})();
-
-				var errorDecorate = function(implementation) {
-					var rv = function() {
-						//	TODO	what if called as function?
-						var literals = Array.prototype.map.call(arguments,function(a,i) {
-							return "arguments["+i+"]";
-						}).join(",");
-						//	TODO	is this parameterized call already in js/object?
-						var created = eval("new implementation(" + literals + ")");
-
-						if (!created.stack) {
-							var tracer;
-							try {
-								instance.throwException(created.toString());
-							} catch (e) {
-								tracer = e;
-							}
-							var t = tracer.rhinoException;
-							var stack = [];
-							while(t != null) {
-								var sw = new Packages.java.io.StringWriter();
-								var pw = new Packages.java.io.PrintWriter(sw);
-								if (t == tracer.rhinoException) {
-									sw.write(t.getScriptStackTrace());
-								} else {
-									t.printStackTrace(pw);
-								}
-								pw.flush();
-								var tstack = String(sw.toString()).split(String(Packages.java.lang.System.getProperty("line.separator")));
-								if (t == tracer.rhinoException) {
-									tstack = tstack.slice(1,tstack.length);
-								}
-								for (var i=0; i<tstack.length; i++) {
-									if (/^Caused by\:/.test(tstack[i])) {
-										break;
-									}
-									stack.push(tstack[i]);
-								}
-								t = t.getCause();
-								if (t != null && String(t.getClass().getName()) == "inonit.script.runtime.Throwables$Exception") {
-									t = null;
-								}
-							}
-							//	TODO	clean up the first line, eliminating all the wrapping in WrappedException and Throwables.Exception
-							//	TODO	clean up the top of the trace, removing the irrelevant Java lines and the first script line corresponding
-							//			to this file
-							//	TODO	get full stack traces if possible, rather than the limited version being provided now (which has ...more)
-							//			however, could be impossible (getStackTrace may not be overridden while printStackTrace is).
-							created.stack = stack.join("\n");
-						}
-						return created;
-					}
-					rv.prototype = implementation.prototype;
-					return rv;
-				};
-
 				/** @type { slime.runtime.$engine } */
 				var $engine = {
 					debugger: $javahost.debugger,
@@ -137,6 +163,8 @@
 					scope: scope
 				},null);
 
+				rv.$api.mime.Type.fromName = mimeTypeFromNameDecorate(rv.$api.mime.Type.fromName, rv.$api.mime.Type.codec.declaration);
+
 				var _coffeescript = $loader.getCoffeeScript();
 				if (_coffeescript) {
 					var target = {};
@@ -178,28 +206,29 @@
 			}
 		)();
 
-		var $exports_mime = (function(was) {
-			var guess_URLConnection = function(p) {
-				var _rv = Packages.java.net.URLConnection.getFileNameMap().getContentTypeFor(p.name);
-				if (!_rv) return function(){}();
-				return was.Type.parse(String(_rv));
-			};
+		// var $exports_mime = (function(was) {
+		// 	was.Type.fromName = (
+		// 		/**
+		// 		 *
+		// 		 * @param { slime.$api.mime.Export["Type"]["fromName"] } was
+		// 		 * @returns { slime.$api.mime.Export["Type"]["fromName"] }
+		// 		 */
+		// 		function(was) {
+		// 			var rv = function(p) {
+		// 				var rv = was.apply(this,arguments);
+		// 				if (typeof(rv) != "undefined") return rv;
+		// 				rv = guess_URLConnection({ name: p });
+		// 				return rv;
+		// 			};
+		// 			rv.slime = was;
+		// 			rv.java = {};
+		// 			rv.java.URLConnection = guess_URLConnection;
+		// 			return rv;
+		// 		}
+		// 	)(was.Type.fromName);
 
-			was.Type.fromName = (function(was) {
-				var rv = function(p) {
-					var rv = was.apply(this,arguments);
-					if (typeof(rv) != "undefined") return rv;
-					rv = guess_URLConnection({ name: p });
-					return rv;
-				};
-				rv.slime = was;
-				rv.java = {};
-				rv.java.URLConnection = guess_URLConnection;
-				return rv;
-			})(was.Type.fromName);
-
-			return was;
-		})(slime.$api.mime);
+		// 	return was;
+		// })(slime.$api.mime);
 
 		var $exports_java = slime.file(
 			new slime.Resource({
@@ -226,7 +255,7 @@
 		);
 
 		var getTypeFromPath = function(path) {
-			return $exports_mime.Type.fromName(path);
+			return slime.$api.mime.Type.fromName(path);
 		}
 
 		/**
@@ -348,7 +377,7 @@
 					//	TODO	probably should allow name property to be passed in and then passed through
 					if (isLoadedDescriptor(p)) {
 						if (!this.type) {
-							this.type = $exports_mime.Type.fromName(p._loaded.path);
+							this.type = slime.$api.mime.Type.fromName(p._loaded.path);
 						}
 
 						if (typeof(p.length) == "undefined") Object.defineProperty(
@@ -1118,27 +1147,35 @@
 		return (
 			/** @returns { slime.jrunscript.runtime.Exports } */
 			function() {
-				return {
-					run: slime.run,
-					old: slime.old,
-					compiler: slime.compiler,
-					loader: slime.loader,
-					file: slime.file,
-					value: slime.value,
-					namespace: slime.namespace,
-					$platform: slime.$platform,
-					$api: slime.$api,
+				var $api = slime.$api;
+				return $api.fp.now(
+					{
+						run: slime.run,
+						old: slime.old,
+						compiler: slime.compiler,
+						loader: slime.loader,
+						file: slime.file,
+						value: slime.value,
+						namespace: slime.namespace,
+						$platform: slime.$platform,
+						$api: slime.$api,
 
-					Loader: $exports_Loader,
-					Resource: $exports_Resource,
-					mime: $exports_mime,
+						Loader: $exports_Loader,
+						Resource: $exports_Resource,
 
-					java: $exports_java,
-					io: $exports_io,
-					classpath: $exports_classpath,
+						java: $exports_java,
+						io: $exports_io,
+						classpath: $exports_classpath,
 
-					jrunscript: jrunscript
-				};
+						jrunscript: jrunscript
+					},
+					$api.Object.defineProperty({
+						name: "mime",
+						descriptor: {
+							get: $api.deprecate($api.fp.thunk.value(slime.$api.mime))
+						}
+					})
+				)
 			}
 		)();
 	}
