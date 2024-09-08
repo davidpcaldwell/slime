@@ -18,31 +18,6 @@ END LICENSE
 	</style>
 </head>
 <body>
-	<script type="application/x.jsapi#initialize">
-		jsh.loader.plugins( $jsapi.loader );
-		scope.module = jsh.script;
-		scope.context = {
-			FILE: jsh.file,
-			PWD: jsh.shell.PWD,
-			$filesystem: jsh.file.filesystem
-		}
-		var mockjsh = {
-			js: jsh.js,
-			java: jsh.java,
-			file: jsh.file,
-			http: jsh.http,
-			shell: jsh.shell
-		}
-		scope.plugin = $jsapi.loader.plugin.mock({
-			global: {
-				jsh: jsh
-			},
-			jsh: jsh,
-			evaluate: function(loaded) {
-				return loaded.jsh.script;
-			}
-		});
-	</script>
 	<div>
 		<h1>Exports</h1>
 		<ul>
@@ -187,62 +162,6 @@ END LICENSE
 						</li>
 					</ul>
 				</div>
-			</li>
-			<li class="constructor">
-				<div class="name">Application</div>
-				<div jsapi:reference="getApi('Application.api.html').getElement('api')">
-					<span>See <a href="Application.api.html">detailed documentation</a>.</span>
-				</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">run</div>
-						<span>
-							Creates and executes an Application using a descriptor. Arguments can optionally be supplied;
-							otherwise, the global script arguments will be used.
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type"><a href="#types.Application.descriptor">descriptor</a></span>
-									<span>A descriptor describing an application.</span>
-								</li>
-								<li class="value">
-									<span class="type">Array of string</span>
-									<span>
-										(optional; if omitted, <code>jsh.script.arguments</code>)
-										An array of arguments to pass to the application.
-									</span>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">(any)</span>
-							<span>The value returned by the command executed.</span>
-						</div>
-					</li>
-				</ul>
-				<script type="application/x.jsapi#tests" jsapi:id="Application"><![CDATA[
-					if ($jsapi.environment.jsh && $jsapi.environment.jsh.built) {
-						var json = jsh.shell.jsh({
-							shell: $jsapi.environment.jsh.built.home,
-							script: $jsapi.environment.jsh.src.getFile("jrunscript/jsh/script/test/Application.jsh.js"),
-							arguments: ["-gstring", "gvalue", "-gboolean", "doIt", "-lboolean"],
-							stdio: {
-								output: String
-							},
-							evaluate: function(result) {
-								return JSON.parse(result.stdio.output);
-							}
-						});
-						verify(json).global.gstring.is("gvalue");
-						verify(json).global.gboolean.is(true);
-						verify(json).options.lboolean.is(true);
-						verify(json).options.lstring.is("foo");
-					}
-				]]></script>
 			</li>
 		</ul>
 	</div>
