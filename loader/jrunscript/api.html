@@ -16,11 +16,6 @@ END LICENSE
 	<h1>Overview</h1>
 	<div>
 		<h2>Embedding</h2>
-		<p>
-			The SLIME Java runtime comes with two embeddings: one for the Rhino JavaScript engine provided by Mozilla, and one for
-			the Nashorn engine included with Java 8 and up. The embeddings are expressions that evaluate to an object. They provide
-			different scope variables for implementing the embedding.
-		</p>
 		<!--
 			Move to internal documentation
 			<p>
@@ -47,79 +42,6 @@ END LICENSE
 				the engine embedding script before being returned to the shell embedding script.
 			</li>
 		-->
-		<div>
-			<h3>Rhino</h3>
-			<p>
-				The following scope variables provide the interface to the Rhino embedding:
-			</p>
-			<div class="label">has properties:</div>
-			<div class="type">
-				<a class="type" name="types.Packages.inonit.script.rhino.Engine">JavaClass inonit.script.rhino.Engine</a>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function">
-						<div class="name">script</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-					<li class="function">
-						<div class="name">getDebugger</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</div>
-					</li>
-				</ul>
-			</div>
-			<ul>
-				<li class="value">
-					<div class="name">$loader</div>
-					<span class="type"><a href="#types.Packages.inonit.script.engine.Loader">JavaClass inonit.script.engine.Loader</a></span>
-					<span>__DESCRIPTION__</span>
-				</li>
-				<li class="value">
-					<div class="name">$rhino</div>
-					<span class="type"><a href="#types.Packages.inonit.script.rhino.Engine">JavaClass inonit.script.rhino.Engine</a></span>
-					<span>__DESCRIPTION__</span>
-				</li>
-			</ul>
-		</div>
-		<div>
-			<h3>Nashorn</h3>
-			<p>
-				The following scope variables provide the interface to the Nashorn embedding:
-			</p>
-			<div class="label">has properties:</div>
-			<ul>
-				<!--	TODO	undocumented: $graal	-->
-				<li class="value">
-					<div class="name">$loader</div>
-					<span class="type"><a href="#types.Packages.inonit.script.engine.Loader">JavaClass inonit.script.engine.Loader</a></span>
-					<span>__DESCRIPTION__</span>
-				</li>
-			</ul>
-			<p>
-				The embedder currently must also provide the Nashorn global values <code>Java</code>, <code>Packages</code> and
-				<code>load</code> in the scope.
-			</p>
-		</div>
 	</div>
 	<div>
 		<script type="application/x.jsapi#initialize">
@@ -179,10 +101,6 @@ END LICENSE
 								</div>
 							</li>
 						</ul>
-						<script type="application/x.jsapi#tests">
-							var xmlType = api.mime.Type.fromName("foo.xml");
-							verify(xmlType).evaluate(function() { return this.is("application/xml"); }).is(true);
-						</script>
 					</li>
 				</ul>
 			</li>

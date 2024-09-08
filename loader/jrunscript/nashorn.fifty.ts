@@ -25,6 +25,14 @@ namespace slime.jrunscript.runtime.internal.nashorn {
 	export interface Scope {
 		$graal: Graal
 		$loader: slime.jrunscript.native.inonit.script.engine.Loader
+
+		//	TODO	define
+		$nashorn: any
+
+		load: slime.jrunscript.runtime.internal.nashorn.load
+		Java: slime.jrunscript.runtime.Java
+		Packages: slime.jrunscript.Packages
+		sync: slime.jrunscript.runtime.sync
 	}
 
 	export interface load {
