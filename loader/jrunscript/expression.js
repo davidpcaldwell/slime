@@ -82,12 +82,13 @@
 		 *
 		 * @param { slime.$api.mime.Export["Type"]["fromName"] } fromNameWas
 		 * @param { slime.$api.mime.Export["Type"]["codec"]["declaration"] } codec
-		 * @returns { slime.$api.mime.Export["Type"]["fromName"] }
+		 * @returns { slime.jrunscript.runtime.mime.FromName }
 		 */
 		var mimeTypeFromNameDecorate = function(fromNameWas,codec) {
+			/** @type { slime.jrunscript.runtime.mime.FromName["java"]["URLConnection"] } */
 			var guess_URLConnection = function(p) {
 				var _rv = Packages.java.net.URLConnection.getFileNameMap().getContentTypeFor(p.name);
-				if (!_rv) return function(){}();
+				if (!_rv) return void(0);
 				return codec.decode(String(_rv));
 			};
 
