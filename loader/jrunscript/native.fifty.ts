@@ -473,7 +473,11 @@ namespace slime.jrunscript {
 				}
 			}
 			net: {
-				URLConnection: any
+				URLConnection: {
+					getFileNameMap: () => {
+						getContentTypeFor: (fileName: string) => string
+					}
+				}
 				URI: any
 				URL: {
 					new (base: slime.jrunscript.native.java.net.URL, relative: string): slime.jrunscript.native.java.net.URL

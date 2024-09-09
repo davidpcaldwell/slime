@@ -16,8 +16,37 @@
  *
  * For each engine, two embeddings are included: a servlet-based embedding and an embedding that supports
  * `jsh`.
+ *
+ * ## Changes to `$api`
+ *
+ * The Java runtime replaces the `Type.fromName` function of {@link slime.$api.mime.Export} with a version that uses the
+ * `java.net.URLConnection` implementation to resolve MIME types unresolved by SLIME. See {@link slime.jrunscript.mime.FromName}.
  */
 namespace slime.jrunscript.runtime {
+	export namespace mime {
+		/**
+		 * Replaces `$api.mime.Type.fromName` in the SLIME Java environment.
+		 *
+		 * Delegates to the SLIME implementation, but if SLIME cannot determine the MIME type, adds the `java.net.URLConnection`
+		 * implementation as a second source of MIME types. See the
+		 * {@link slime.$api.mime.Export | SLIME runtime documentation} for details. Also adds
+		 * properties representing the separate implementations, as follows.
+		 */
+		export type FromName = slime.$api.mime.Export["Type"]["fromName"] & {
+			/**
+			 * The original SLIME implementation.
+			 */
+			slime: slime.$api.mime.Export["Type"]["fromName"]
+
+			java: {
+				URLConnection: (p: {
+					/** A filename. */
+					name: string
+				}) => slime.mime.Type
+			}
+		}
+	}
+
 	export namespace old {
 		export interface Resource<JA = (path: string) => slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource> extends slime.Resource {
 			read: slime.Resource["read"] & {
