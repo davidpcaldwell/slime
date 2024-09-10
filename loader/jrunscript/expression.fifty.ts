@@ -26,6 +26,13 @@
  * `java.net.URLConnection` implementation to resolve MIME types unresolved by SLIME. See {@link slime.jrunscript.mime.FromName}.
  */
 namespace slime.jrunscript.runtime {
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			return fifty.global.jsh.unit.$slime;
+		//@ts-ignore
+		})(fifty);
+	}
+
 	export namespace mime {
 		/**
 		 * Replaces `$api.mime.Type.fromName` in the SLIME Java environment.
@@ -51,10 +58,20 @@ namespace slime.jrunscript.runtime {
 	}
 
 	export namespace old {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.jsapi = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export interface Resource<JA = (path: string) => slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource> extends slime.Resource {
 			read: slime.Resource["read"] & {
 				binary: () => slime.jrunscript.runtime.io.InputStream
 				text: () => slime.jrunscript.runtime.io.Reader
+				lines: slime.jrunscript.runtime.io.old.ReadLines
 			}
 			length?: number
 			modified?: any
@@ -81,6 +98,97 @@ namespace slime.jrunscript.runtime {
 				adapt: JA
 			}
 		}
+
+		(
+			function(
+				Packages: slime.jrunscript.Packages,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const module = test.subject;
+
+				fifty.tests.jsapi.Resource = fifty.test.Parent();
+
+				fifty.tests.jsapi.Resource.source = fifty.test.Parent();
+
+				fifty.tests.jsapi.Resource.source._1 = function() {
+					var buffer = new module.io.Buffer();
+					var writer = buffer.writeText();
+					writer.write("Buffer");
+					buffer.close();
+					var resource = new module.Resource({
+						stream: {
+							binary: buffer.readBinary()
+						}
+					});
+					verify(resource).read(String).evaluate(String).is("Buffer");
+					verify(resource).read(String).evaluate(String).is("Buffer");
+				};
+
+				fifty.tests.jsapi.Resource.source._2 = function() {
+					var buffer = new module.io.Buffer();
+					var writer = buffer.writeText();
+					writer.write(JSON.stringify({ foo: "bar" }));
+					buffer.close();
+					var resource = new module.Resource({
+						stream: {
+							binary: buffer.readBinary()
+						}
+					});
+					verify(resource).read(JSON).foo.evaluate(String).is("bar");
+					verify(resource).read(JSON).foo.evaluate(String).is("bar");
+				}
+
+				fifty.tests.jsapi.Resource.read = fifty.test.Parent();
+
+				fifty.tests.jsapi.Resource.read.properties = function() {
+					var lines = [
+						"foo.bar=baz"
+					];
+					var resource = new module.Resource({
+						read: {
+							string: function() { return lines.join("\n"); }
+						}
+					});
+					var _properties = resource.read(Packages.java.util.Properties);
+					var properties = {
+						getProperty: function(name) {
+							var rv = _properties.getProperty(name);
+							if (rv === null) return null;
+							return String(rv);
+						}
+					};
+					verify(properties).getProperty("foo.bar").is("baz");
+					verify(properties).getProperty("foo.baz").is(null);
+					// 	TODO	write test that specifies resource by string and then reads it as character stream and gets same
+					//			string
+				};
+
+				fifty.tests.jsapi.Resource.read.lines = function() {
+					const test = function(b) {
+						verify(b).is(true);
+					};
+
+					var string = "Hello\nWorld";
+					var buffer = new module.io.Buffer();
+					// TODO: writeText() below?
+					buffer.writeBinary().character().write(string);
+					buffer.close();
+					var resource = new module.Resource({
+						stream: {
+							binary: buffer.readBinary()
+						}
+					});
+					var lines = [];
+					resource.read.lines(function(item) {
+						lines.push(item);
+					}, { ending: "\n" });
+					test(lines[0] == "Hello");
+					test(lines[1] == "World");
+				}
+			}
+		//@ts-ignore
+		)(Packages,fifty);
 
 		export namespace resource {
 			export interface Descriptor extends slime.resource.Descriptor {
@@ -401,7 +509,7 @@ namespace slime.jrunscript.runtime {
 		const { verify } = fifty;
 		const { $api, jsh } = fifty.global;
 
-		fifty.tests.jsapi = function() {
+		fifty.tests.jsapi.java_Code_Loader = function() {
 			var $slime = jsh.unit.$slime;
 
 			//	TODO	for some reason the below does not work; the verify wrapping of the $slime object goes into some kind of
@@ -458,6 +566,7 @@ namespace slime.jrunscript.runtime {
 			fifty.run(fifty.tests.decoration);
 
 			fifty.run(fifty.tests.exports);
+
 			fifty.run(fifty.tests.jsapi);
 
 			//	TODO	redundant? tested per-engine in contributor/suite.jsh.js

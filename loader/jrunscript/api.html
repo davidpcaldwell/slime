@@ -81,32 +81,6 @@ END LICENSE
 											</span>
 										</li>
 									</ul>
-									<script type="application/x.jsapi#tests">
-										var buffer = new module.io.Buffer();
-										var writer = buffer.writeText();
-										writer.write("Buffer");
-										buffer.close();
-										var resource = new module.Resource({
-											stream: {
-												binary: buffer.readBinary()
-											}
-										});
-										verify(resource).read(String).is("Buffer");
-										verify(resource).read(String).is("Buffer");
-									</script>
-									<script type="application/x.jsapi#tests">
-										var buffer = new module.io.Buffer();
-										var writer = buffer.writeText();
-										writer.write(JSON.stringify({ foo: "bar" }));
-										buffer.close();
-										var resource = new module.Resource({
-											stream: {
-												binary: buffer.readBinary()
-											}
-										});
-										verify(resource).read(JSON).foo.is("bar");
-										verify(resource).read(JSON).foo.is("bar");
-									</script>
 								</li>
 								<li class="object">
 									<div class="name">read</div>
@@ -228,28 +202,6 @@ END LICENSE
 								<span class="type"><a href="#types.binput">character input stream</a></span>
 								<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
 							</div>
-							<script type="application/x.jsapi#tests">
-								var lines = [
-									"foo.bar=baz"
-								];
-								var resource = new module.Resource({
-									read: {
-										string: function() { return lines.join("\n"); }
-									}
-								});
-								var _properties = resource.read(Packages.java.util.Properties);
-								var properties = new function() {
-									this.getProperty = function(name) {
-										var rv = _properties.getProperty(name);
-										if (rv === null) return null;
-										return String(rv);
-									}
-								};
-								verify(properties).getProperty("foo.bar").is("baz");
-								verify(properties).getProperty("foo.baz").is(null);
-								// TODO: write test that specifies resource by string and then reads it as character stream and
-								// gets same string
-							</script>
 							<div class="label">has properties:</div>
 							<ul>
 								<li class="function">
@@ -284,24 +236,6 @@ END LICENSE
 										<code>readLines</code> method defined by
 										<a href="#types.cinput">character input stream</a>.
 									</span>
-									<script type="application/x.jsapi#tests">
-										var string = "Hello\nWorld";
-										var buffer = new module.io.Buffer();
-										// TODO: writeText() below?
-										buffer.writeBinary().character().write(string);
-										buffer.close();
-										var resource = new module.Resource({
-											stream: {
-												binary: buffer.readBinary()
-											}
-										});
-										var lines = [];
-										resource.read.lines(function(item) {
-											lines.push(item);
-										}, { ending: "\n" });
-										test(lines[0] == "Hello");
-										test(lines[1] == "World");
-									</script>
 								</li>
 							</ul>
 						</li>
