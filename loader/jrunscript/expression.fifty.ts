@@ -17,6 +17,9 @@
  * For each engine, two embeddings are included: a servlet-based embedding and an embedding that supports
  * `jsh`.
  *
+ * If the underlying engine is Rhino, the {@link slime.runtime.$engine} implementation's `debugger` property is implemented in terms
+ * of the Rhino debugger.
+ *
  * ## Changes to `$api`
  *
  * The Java runtime replaces the `Type.fromName` function of {@link slime.$api.mime.Export} with a version that uses the
@@ -224,8 +227,8 @@ namespace slime.jrunscript.runtime {
 	 */
 	export interface Exports extends slime.runtime.Exports {
 		/**
-		 * The `jrunscript` implementation enhances the default MIME implementation by using the
-		 * `java.net.URLConnection.getFileNameMap()` method as an additional way to guess content types from file names.
+		 * The Java implementation enhances the default {@link slime.$api.mime.Export} implementation in the same way as the
+		 * `$api.mime` implementation is enhanced; see the {@link slime.jrunscript.runtime | "Changes to `$api`"} section.
 		 */
 		mime: slime.runtime.Exports["mime"]
 
