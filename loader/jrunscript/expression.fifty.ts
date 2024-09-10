@@ -34,6 +34,9 @@ namespace slime.jrunscript.runtime {
 	}
 
 	export namespace mime {
+		//	TODO	the customized types should probably be moved to the `jrunscript` property added to the `$api` object,
+		//			and the implementation should simply match the type of the underlying `$api` implementation
+
 		/**
 		 * Replaces `$api.mime.Type.fromName` in the SLIME Java environment.
 		 *
@@ -264,6 +267,16 @@ namespace slime.jrunscript.runtime {
 	/**
 	 * The `jrunscript` (Java) runtime is loaded by loading an engine-specific script: either the `loader/jrunscript/rhino.js`
 	 * script (for Rhino) or the `loader/jrunscript/nashorn.js` script (for Nashorn or GraalJS).
+	 *
+	 * Note that these are implemented by creating implementations of `$javahost` and `$bridge` and invoking `expression.js`.
+	 *
+	 * Then the generic container interface script `loader/jrunscript/expression.js` is evaluated, using the `$javahost` and
+	 * `$bridge` objects in scope.
+	 *
+	 * * It first invokes `loader/expression.js`, using `$javahost` to provide appropriate implementations of `$slime` and
+	 * `$engine`, to create the {@link slime.runtime.Exports | SLIME runtime}.
+	 * *  It then post-processes the SLIME runtime to provide additional
+	 * {@link slime.jrunscript.runtime.Exports | Java-specific properties}.
 	 */
 	export namespace internal {
 	}
@@ -328,6 +341,8 @@ namespace slime.jrunscript.runtime {
 	export type SrcClasspathEntry = { src: { loader: slime.old.Loader } }
 	export type ClasspathEntry = JavaFileClasspathEntry | SlimeClasspathEntry | JarFileClasspathEntry | JarResourceClasspathEntry | SrcClasspathEntry
 
+	//	TODO	probably all jrunscript-specific properties should be properties of the `jrunscript` property; all properties added
+	//			for this environment could be consolidated under that property
 	/**
 	 * The SLIME Java runtime supports a Java-based SLIME embedding, and extends the {@link slime.runtime.Exports | SLIME runtime}
 	 * to support Java-specific capabilities: a `classpath`, the `jrunscript`, `java` and `io` interfaces,
