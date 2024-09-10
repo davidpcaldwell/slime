@@ -340,10 +340,6 @@ namespace slime.jrunscript.runtime {
 		 */
 		mime: slime.runtime.Exports["mime"]
 
-		Loader: slime.runtime.Exports["old"]["Loader"] & {
-			new (p: internal.CustomSource): Loader
-		}
-
 		Resource: slime.runtime.Exports["Resource"] & {
 			new (p: old.resource.HistoricSupportedDescriptor): slime.jrunscript.runtime.old.Resource
 		}
@@ -403,6 +399,95 @@ namespace slime.jrunscript.runtime {
 
 				run(streamIsCopied);
 			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports extends slime.runtime.Exports {
+		Loader: slime.runtime.Exports["old"]["Loader"] & {
+			new (p: internal.CustomSource): Loader
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			const module = test.subject;
+
+			fifty.tests.jsapi.Loader = fifty.test.Parent();
+
+			fifty.tests.jsapi.Loader._1 = function() {
+				const test = function(b) {
+					fifty.verify(b).is(true);
+				};
+
+				var loader = new module.Loader({
+					resources: {
+						get: function(path) {
+							var file = fifty.jsh.file.object.getRelativePath(path).file;
+							if (!file) return null;
+							var type = (function() {
+								if (/\.jsh\.js$/.test(path)) {
+									return module.mime.Type("application", "x.jsh");
+								} else if (/\.js$/.test(path)) {
+									return module.mime.Type("application", "javascript");
+								} else if (/\.html$/.test(path)) {
+									return module.mime.Type("text", "html");
+								} else {
+									return module.mime.Type("application", "octet-stream");
+								}
+							})();
+							return {
+								type: type,
+								read: {
+									binary: function() {
+										return file.read(jsh.io.Streams.binary);
+									}
+								}
+							};
+						}
+					}
+				});
+
+				var api = loader.get("api.html");
+				test(api.type.toString() == "text/html");
+
+				jsh.shell.console("Loading module ...");
+				var loaderModule = loader.module("../../jrunscript/io/test/Loader.js");
+				jsh.shell.console("Read module.");
+				test(loaderModule.file.foo == "bar");
+				test(loaderModule.resource("Loader.js") != null);
+				test(loaderModule.resource("test/Loader.js") == null);
+				test(loaderModule.grandchildResource("file.js") != null);
+				test(loaderModule.grandchildResource("Loader/file.js") == null);
+				test(loaderModule.grandchildResource("test/Loader/file.js") == null);
+			};
+
+			fifty.tests.jsapi.Loader._2 = function() {
+				var sources = new function() {
+					var code = {
+
+					};
+
+					this.get = function(path) {
+						return null;
+					};
+
+					this.Loader = function(prefix) {
+						this.list = function() {
+							return [];
+						}
+					}
+				}
+				var loader = new module.Loader(sources);
+				verify(loader).evaluate(function() { return this.run; }).is.not.equalTo(null);
+				var child = loader.Child("prefix/");
+				verify(child).evaluate(function() { return this.run; }).is.not.equalTo(null);
+			}
 		}
 	//@ts-ignore
 	)(fifty);

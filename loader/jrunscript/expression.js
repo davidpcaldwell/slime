@@ -318,6 +318,10 @@
 				 * @constructor
 				 */
 				function(p) {
+					if (Object.keys(p).length == 2 && p.type && p.name) {
+						debugger;
+					}
+
 					if (isStreamDescriptor(p)) {
 						return new Resource(fromStreamDescriptor(p));
 					}
@@ -477,6 +481,7 @@
 									if (typeof(p) == "object") return String(p) + " with keys: " + Object.keys(p);
 									return String(p);
 								})();
+								debugger;
 								throw new TypeError("No compatible read() mode specified: parameters = " + parameters + " binary=" + binary + " text=" + text + " argument was " + mode
 									+ " Streams.binary " + (mode == $exports_io.Streams.binary)
 									+ " Streams.text " + (mode == $exports_io.Streams.text)
@@ -820,7 +825,7 @@
 					if (typeof(resource.name) != "undefined") rv.name = resource.name;
 					if (typeof(resource.string) != "undefined") rv.string = resource.string;
 					if (typeof(resource.type) != "undefined") rv.type = resource.type;
-					if (typeof(resource.read) == "function") {
+					if (typeof(resource.read) == "function" || (typeof(resource.read) == "object" && resource.read && typeof(resource.read.binary) == "function")) {
 						rv.read = {
 							binary: resource.read.binary,
 							string: void(0)
