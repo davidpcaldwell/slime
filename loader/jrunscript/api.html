@@ -54,20 +54,6 @@ END LICENSE
 		</p>
 		<div class="label">has properties:</div>
 		<ul>
-			<li class="object" jsapi:id="mime">
-				<div class="name"><a id="mime">mime</a></div>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<script type="application/x.jsapi#initialize">
-					scope.api = jsh.unit.$slime;
-				</script>
-			</li>
-			<li class="object">
-				<div class="name">java</div>
-				<div>
-					Provides the ability to interact with native Java constructs.
-				</div>
-			</li>
 			<li class="constructor" jsapi:id="Resource">
 				<div class="name"><a id="$exports.Resource">Resource</a></div>
 				<span>Creates a <code>Resource</code> which has additional capabilities beyond the SLIME runtime <code>Resource</code>.</span>
@@ -581,47 +567,7 @@ END LICENSE
 					verify(child).evaluate(function() { return this.run; }).is.not.equalTo(null);
 				</script>
 			</li>
-			<li class="object">
-				<div class="name">classpath</div>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-				</ul>
-			</li>
-			<li class="function" jsapi:id="namespace">
-				<div class="name">namespace</div>
-				<span>The platform loader's <a href="../api.html#exports.namespace"><code>namespace</code></a> method.</span>
-			</li>
-			<li class="function" jsapi:id="run">
-				<div class="name">run</div>
-				<span jsapi:id="description">
-					The platform loader's <a href="../api.html#exports.run"><code>run</code></a> method. Note that this version
-					accepts Java <a href="#types.script">script</a> instances as well as SLIME scripts.
-				</span>
-			</li>
-			<li class="function" jsapi:id="file">
-				<div class="name">file</div>
-				<span>
-					The platform loader's <a href="../api.html#exports.file"><code>file</code></a> method.  Note that this version
-					accepts Java <a href="#types.script">script</a> instances as well as SLIME scripts.
-				</span>
-			</li>
 		</ul>
-		<div>
-			If the underlying engine is Rhino, the following additional properties are added:
-			<div class="label">has properties:</div>
-			<ul>
-				<li class="function">
-					<div class="name">getDebugger</div>
-					<span>__DESCRIPTION__</span>
-					<div class="returns">
-						<div class="label">Returns</div>
-						<span class="type">__TYPE__</span>
-						<span>__DESCRIPTION__</span>
-					</div>
-				</li>
-			</ul>
-		</div>
 	</div>
 </body>
 </html>
