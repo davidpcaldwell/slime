@@ -207,30 +207,6 @@
 			}
 		)();
 
-		// var $exports_mime = (function(was) {
-		// 	was.Type.fromName = (
-		// 		/**
-		// 		 *
-		// 		 * @param { slime.$api.mime.Export["Type"]["fromName"] } was
-		// 		 * @returns { slime.$api.mime.Export["Type"]["fromName"] }
-		// 		 */
-		// 		function(was) {
-		// 			var rv = function(p) {
-		// 				var rv = was.apply(this,arguments);
-		// 				if (typeof(rv) != "undefined") return rv;
-		// 				rv = guess_URLConnection({ name: p });
-		// 				return rv;
-		// 			};
-		// 			rv.slime = was;
-		// 			rv.java = {};
-		// 			rv.java.URLConnection = guess_URLConnection;
-		// 			return rv;
-		// 		}
-		// 	)(was.Type.fromName);
-
-		// 	return was;
-		// })(slime.$api.mime);
-
 		var $exports_java = slime.file(
 			new slime.Resource({
 				name: "slime://loader/jrunscript/java.js",
