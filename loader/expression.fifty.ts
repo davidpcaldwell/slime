@@ -174,6 +174,26 @@ namespace slime {
 		 */
 		read?: {
 			/**
+			 * @deprecated E4X is deprecated.
+			 *
+			 * Allows the XMLList constructor as an argument, and returns the resource as an E4X `type="xml"` object.
+			 */
+			(p: slime.external.e4x.XMLListConstructor): slime.external.e4x.XMLList
+
+			/**
+			 * @deprecated E4X is deprecated.
+			 *
+			 * Allows the XML constructor as an argument, and returns the resource as an E4X `type="xml"` object.
+			 */
+			(p: slime.external.e4x.XMLConstructor): slime.external.e4x.XML
+
+			//	TODO	Java-specific
+			(p: slime.jrunscript.PropertiesJavaClass): slime.jrunscript.native.java.util.Properties
+
+			//	TODO	Java-specific
+			(p: slime.jrunscript.runtime.io.Exports["Streams"]["binary"]): slime.jrunscript.runtime.io.InputStream
+
+			/**
 			 * Returns the content of this resource as a string.
 			 */
 			(p: StringConstructor): string
@@ -181,15 +201,7 @@ namespace slime {
 			/**
 			 * Returns the content of this resource as JSON.
 			 */
-			(p: JSON): any
-
-			//  XML, XMLList allowed
-			/**
-			 * @deprecated E4X is deprecated.
-			 *
-			 * Allows the XML and XMLList constructors as arguments, and returns the resource as an E4X `type="xml"` object.
-			 */
-			(p: any): any
+			(p: JSON): slime.$api.fp.Data
 
 			string: () => string
 		}
@@ -379,15 +391,15 @@ namespace slime {
 							var resource = new api.Resource({
 								read: api.Resource.ReadInterface.string(JSON.stringify({ foo: "bar" }))
 							});
-							var json: { foo: string, baz?: any } = resource.read(JSON);
+							var json: { foo: string, baz?: any } = resource.read(JSON) as { foo: string, baz?: any };
 							verify(json).foo.is("bar");
 							verify(json).evaluate.property("baz").is(void(0));
 						})();
 
 						if ($platform.e4x) {
 							var global = (function() { return this; })();
-							var XML = global["XML"];
-							var XMLList = global["XMLList"];
+							var XML: slime.external.e4x.XMLConstructor = global["XML"];
+							var XMLList: slime.external.e4x.XMLListConstructor = global["XMLList"];
 							var resource = new api.Resource({
 								read: api.Resource.ReadInterface.string("<a><b/></a>")
 							});
@@ -780,14 +792,19 @@ namespace slime {
 							verify(listing)[2].path.is("b/c");
 						}
 						rv._3 = function() {
+							var readString = function(p) {
+								return p.read(String);
+							};
+
 							var mock1 = new Mock();
 							mock1.add("a", "sa");
 							var mock2 = new Mock();
 							mock2.add("b/c", "sb/c");
 							var series = api.old.loader.series([mock1.loader,mock2.loader]);
 							verify(series).get("foo").is(null);
-							verify(series).get("a").read(String).evaluate(String).is("sa");
-							verify(series).get("b/c").read(String).evaluate(String).is("sb/c");
+							var x = series.get("a");
+							verify(series).get("a").evaluate(readString).evaluate(String).is("sa");
+							verify(series).get("b/c").evaluate(readString).evaluate(String).is("sb/c");
 						}
 						return rv;
 					}
@@ -826,6 +843,10 @@ namespace slime {
 
 							verify(w).evaluate.property("foo").is(void(0));
 
+							var isStringConstructor = function(v): v is StringConstructor {
+								return v === String;
+							}
+
 							subject.run(
 								{
 									name: "it",
@@ -836,7 +857,7 @@ namespace slime {
 									},
 									read: Object.assign(
 										function(a) {
-											if (a === String) {
+											if (isStringConstructor(a)) {
 												//	Use list comprehension that would be invalid JavaScript
 												return "window.foo = (s.toUpperCase() for s in ['foo'])[0]";
 											}
@@ -847,7 +868,7 @@ namespace slime {
 												throw new Error();
 											}
 										}
-									)
+									) as unknown as slime.Resource["read"]
 								}
 							);
 
