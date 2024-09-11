@@ -187,12 +187,6 @@ namespace slime {
 			 */
 			(p: slime.external.e4x.XMLConstructor): slime.external.e4x.XML
 
-			//	TODO	Java-specific
-			(p: slime.jrunscript.PropertiesJavaClass): slime.jrunscript.native.java.util.Properties
-
-			//	TODO	Java-specific
-			(p: slime.jrunscript.runtime.io.Exports["Streams"]["binary"]): slime.jrunscript.runtime.io.InputStream
-
 			/**
 			 * Returns the content of this resource as a string.
 			 */

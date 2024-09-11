@@ -25,7 +25,7 @@ namespace slime.jrunscript.io.internal.grid {
 }
 
 namespace slime.jrunscript.io.grid.excel {
-	export type Format = (p: { resource: slime.Resource }) => slime.jrunscript.native.org.apache.poi.POIDocument
+	export type Format = (p: { resource: slime.jrunscript.runtime.old.Resource }) => slime.jrunscript.native.org.apache.poi.POIDocument
 
 	interface Cell {
 		getValue(): string | number
@@ -55,7 +55,7 @@ namespace slime.jrunscript.io.grid.excel {
 			xlsx: Format
 		}
 		Workbook: {
-			(p: { resource: slime.Resource, format?: Format }): Workbook
+			(p: { resource: slime.jrunscript.runtime.old.Resource, format?: Format }): Workbook
 		}
 		toJavascriptDate: (num: number) => Date
 	}
