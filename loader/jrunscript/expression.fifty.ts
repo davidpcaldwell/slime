@@ -70,13 +70,38 @@ namespace slime.jrunscript.runtime {
 		//@ts-ignore
 		)(fifty);
 
+		/**
+		 * An object describing a resource, which adds additional properties to the SLIME loader definition of the type.
+		 */
 		export interface Resource<JA = (path: string) => slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource> extends slime.Resource {
 			read: slime.Resource["read"] & {
+				/**
+				 * (if content can be read as a byte stream) Reads the content of this resource as a byte stream.
+				 * @returns A stream that can provide the content of this resource.
+				 */
 				binary: () => slime.jrunscript.runtime.io.InputStream
+
+				/**
+				 * (if content can be read as a character stream) Reads the content of this resource as a character stream.
+				 * @returns A stream that can provide the content of this resource.
+				 */
 				text: () => slime.jrunscript.runtime.io.Reader
+
+				/**
+				 * (if content can be read as a character stream) Iterates through the lines in this stream.
+				 */
 				lines: slime.jrunscript.runtime.io.old.ReadLines
 			}
+
+			/**
+			 * (conditional) The length of this resource, in bytes.
+			 */
 			length?: number
+
+			//	TODO	is this a Date? Actually, looks like a number (a Java long presumably typecast)
+			/**
+			 * The modification time of this resource. Datatype may change in future releases.
+			 */
 			modified?: any
 
 			/**
@@ -194,16 +219,49 @@ namespace slime.jrunscript.runtime {
 		)(Packages,fifty);
 
 		export namespace resource {
+			/**
+			 * An object that implements this resource, adding additional properties to the SLIME runtime definition.
+			 */
 			export interface Descriptor extends slime.resource.Descriptor {
+				/**
+				 * An object providing implementations for reading this resource. Adds two properties to the SLIME
+				 * runtime definition.
+				 */
 				read?: slime.resource.ReadInterface & {
+					/**
+					 * Returns a byte stream representing this resource. This call should be idempotent; repeated calls should
+					 * return new byte streams pointing to the beginning of the Resource's data.
+					 *
+					 * @returns A stream for reading this resource.
+					 */
 					binary?: () => slime.jrunscript.runtime.io.InputStream
+
+					/**
+					 * Returns a character stream representing this resource. This call should be idempotent; repeated calls should
+					 * return new character streams pointing to the beginning of the Resource's data.
+					 *
+					 * @returns A stream for reading this resource.
+					 */
 					text?: any
 				}
+
 				length?: number
+
 				modified?: any
+
+				/**
+				 * An object providing an implementation for writing to this resource.
+				 */
 				write?: {
-					binary?: (mode: any) => slime.jrunscript.runtime.io.OutputStream
-					text?: (mode: any) => slime.jrunscript.runtime.io.Writer
+					/**
+					 * Returns a byte stream for writing to this resource.
+					 */
+					binary?: (mode: slime.jrunscript.runtime.old.resource.WriteMode) => slime.jrunscript.runtime.io.OutputStream
+
+					/**
+					 * Returns a character stream for writing to this resource.
+					 */
+					text?: (mode: slime.jrunscript.runtime.old.resource.WriteMode) => slime.jrunscript.runtime.io.Writer
 				}
 			}
 
@@ -212,6 +270,10 @@ namespace slime.jrunscript.runtime {
 			 */
 			export interface DeprecatedStreamDescriptor extends slime.resource.Descriptor {
 				stream?: {
+					/**
+					 * A stream that can provide the source data for this resource. Note that the stream will be read and cached so
+					 * that repeated calls to `read()` will return the same data.
+					 */
 					binary: slime.jrunscript.runtime.io.InputStream
 				}
 			}
@@ -224,7 +286,7 @@ namespace slime.jrunscript.runtime {
 				}
 			}
 
-			export type HistoricSupportedDescriptor = resource.Descriptor | resource.LoadedDescriptor | slime.resource.Descriptor | DeprecatedStreamDescriptor
+			export type HistoricSupportedDescriptor = slime.resource.Descriptor | resource.Descriptor | resource.LoadedDescriptor | DeprecatedStreamDescriptor
 
 			/**
 			 * An object representing the mode of operation of {@link old.Resource} `write` operations.
@@ -356,6 +418,9 @@ namespace slime.jrunscript.runtime {
 		mime: slime.runtime.Exports["mime"]
 
 		Resource: slime.runtime.Exports["Resource"] & {
+			/**
+			 * Creates a `Resource` which has additional capabilities beyond the SLIME runtime `Resource`.
+			 */
 			new (p: old.resource.HistoricSupportedDescriptor): slime.jrunscript.runtime.old.Resource
 		}
 

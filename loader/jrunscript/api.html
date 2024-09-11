@@ -24,126 +24,9 @@ END LICENSE
 		<ul>
 			<li class="constructor" jsapi:id="Resource">
 				<div class="name"><a id="$exports.Resource">Resource</a></div>
-				<span>Creates a <code>Resource</code> which has additional capabilities beyond the SLIME runtime <code>Resource</code>.</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="object">
-							<!-- TODO: The below link gets broken when included from other pages. -->
-							<span class="type">supports SLIME <a href="../api.html#types.Resource.source">Resource.source</a></span>
-							<span>An object that implements this resource, adding additional properties to the SLIME runtime definition.</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="object">
-									<div class="name">stream</div>
-									<span>__DESCRIPTION__</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">binary</div>
-											<span class="type">byte input stream</span>
-											<span>
-												A stream that can provide the source data for this resource. Note that the stream
-												will be read and cached so that repeated calls to <code>read()</code> will return
-												the same data.
-											</span>
-										</li>
-									</ul>
-								</li>
-								<li class="object">
-									<div class="name">read</div>
-									<span>
-										An object providing implementations for reading this resource. Adds the following two
-										properties to the SLIME runtime definition.
-									</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">binary</div>
-											<span>
-												Returns a byte stream representing this resource. This call should be idempotent;
-												repeated calls should return new byte streams pointing to the beginning of the
-												Resource's data.
-											</span>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.binput">byte input stream</a></span>
-												<span>A stream for reading this resource.</span>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">text</div>
-											<span>
-												Returns a character stream representing this resource. This call should be idempotent;
-												repeated calls should return new character streams pointing to the beginning of the
-												Resource's data.
-											</span>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.cinput">character input stream</a></span>
-												<span>A stream for reading this resource.</span>
-											</div>
-										</li>
-									</ul>
-								</li>
-								<li class="object">
-									<div class="name">write</div>
-									<span>An object providing an implementation for writing to this resource.</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="function">
-											<div class="name">binary</div>
-											<span>Returns a byte stream for writing to this resource.</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type">object</span>
-														<span>
-															See <a href="#Resource.write.arguments[1]">the second argument</a> to
-															Resource.write().
-														</span>
-													</li>
-												</ol>
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.boutput">byte output stream</a></span>
-											</div>
-										</li>
-										<li class="function">
-											<div class="name">text</div>
-											<span>Returns a character stream for writing to this resource.</span>
-											<div class="arguments">
-												<div class="label">Arguments</div>
-												<ol>
-													<li class="value">
-														<span class="type">object</span>
-														<span>
-															See <a href="#Resource.write.arguments[1]">the second argument</a> to
-															Resource.write().
-														</span>
-													</li>
-												</ol>
-											</div>
-											<div class="returns">
-												<div class="label">Returns</div>
-												<span class="type"><a href="#types.coutput">character output stream</a></span>
-											</div>
-										</li>
-
-									</ul>
-								</li>
-							</ul>
-						</li>
-					</ol>
-				</div>
 				<div class="instances">
 					<div class="label">Instances</div>
 					<span class="type">supports SLIME <a href="../api.html#types.Loader.resource">resource</a></span>
-					<span>
-						An object describing a resource, which adds additional properties to the SLIME loader definition of the type.
-					</span>
 					<div class="label">has properties:</div>
 					<ul>
 						<li class="function">
@@ -171,41 +54,6 @@ END LICENSE
 								<span>Depending on the type argument given, returns the content of the resource in the given format.</span>
 							</div>
 							<div class="label">has properties:</div>
-							<ul>
-								<li class="function">
-									<div class="name">binary</div>
-									<span>
-										(if content can be read as a byte stream)
-										Reads the content of this resource as a byte stream.
-									</span>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type"><a href="#types.binput">byte input stream</a></span>
-										<span>A stream that can provide the content of this resource.</span>
-									</div>
-								</li>
-								<li class="function">
-									<div class="name">text</div>
-									<span>
-										(if content can be read as a character stream)
-										Reads the content of this resource as a character stream.
-									</span>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type"><a href="#types.cinput">character input stream</a></span>
-										<span>A stream that can provide the content of this resource.</span>
-									</div>
-								</li>
-								<li class="function">
-									<div class="name">lines</div>
-									<span>
-										(if content can be read as a character stream)
-										Iterates through the lines in this stream, with semantics equivalent to the
-										<code>readLines</code> method defined by
-										<a href="#types.cinput">character input stream</a>.
-									</span>
-								</li>
-							</ul>
 						</li>
 						<li class="value">
 							<div class="name">length</div>
@@ -214,12 +62,6 @@ END LICENSE
 								(conditional)
 								The length of this resource, in bytes.
 							</span>
-						</li>
-						<li class="value experimental">
-							<div class="name">modified</div>
-							<!--	TODO	is this a Date? Actually, looks like a number (a Java long presumably typecast) -->
-							<span class="type">Date</span>
-							<span>The modification time of this resource. Datatype may change in future releases.</span>
 						</li>
 						<li class="function">
 							<div class="name">write</div>
