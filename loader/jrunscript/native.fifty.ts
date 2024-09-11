@@ -185,7 +185,8 @@ namespace slime.jrunscript {
 					nextDouble(): number
 				}
 
-				export interface Properties {
+				export interface Properties extends native.java.lang.Object {
+					load(value: any): void
 					get(name: string): any
 					propertyNames(): any
 					getProperty(name: string): string
@@ -387,6 +388,12 @@ namespace slime.jrunscript {
 		new (...args: any[]): O
 	} & C
 
+	declare const propertiesTag: unique symbol;
+
+	export type PropertiesJavaClass = JavaClass<slime.jrunscript.native.java.util.Properties> & {
+		[propertiesTag]: "value"
+	}
+
 	export interface Packages {
 		java: {
 			lang: {
@@ -540,7 +547,7 @@ namespace slime.jrunscript {
 				HashMap: any
 				HashSet: any
 				ArrayList: any
-				Properties: any
+				Properties: PropertiesJavaClass
 				logging: {
 					Logger: JavaClass<
 						slime.jrunscript.native.java.util.logging.Logger,

@@ -74,6 +74,10 @@ namespace slime.jrunscript.runtime {
 		 * An object describing a resource, which adds additional properties to the SLIME loader definition of the type.
 		 */
 		export interface Resource<JA = (path: string) => slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource> extends slime.Resource {
+			/**
+			 * Provides the content of this resource, or a stream from which to read it. Extends the standard `read()`
+			 * implementation from the SLIME runtime Resource.
+			 */
 			read: slime.Resource["read"] & {
 				/**
 				 * (if content can be read as a byte stream) Reads the content of this resource as a byte stream.
@@ -140,6 +144,10 @@ namespace slime.jrunscript.runtime {
 				fifty.tests.jsapi.Resource.source = fifty.test.Parent();
 
 				fifty.tests.jsapi.Resource.source._1 = function() {
+					const readString = function(resource: slime.jrunscript.runtime.old.Resource) {
+						return resource.read(String);
+					};
+
 					var buffer = new module.io.Buffer();
 					var writer = buffer.writeText();
 					writer.write("Buffer");
@@ -149,11 +157,14 @@ namespace slime.jrunscript.runtime {
 							binary: buffer.readBinary()
 						}
 					});
-					verify(resource).read(String).evaluate(String).is("Buffer");
-					verify(resource).read(String).evaluate(String).is("Buffer");
+					verify(resource).evaluate(readString).evaluate(String).is("Buffer");
+					verify(resource).evaluate(readString).evaluate(String).is("Buffer");
 				};
 
 				fifty.tests.jsapi.Resource.source._2 = function() {
+					var readJson = function(resource: slime.jrunscript.runtime.old.Resource): { foo: string } {
+						return resource.read(JSON) as { foo: string };
+					}
 					var buffer = new module.io.Buffer();
 					var writer = buffer.writeText();
 					writer.write(JSON.stringify({ foo: "bar" }));
@@ -163,8 +174,8 @@ namespace slime.jrunscript.runtime {
 							binary: buffer.readBinary()
 						}
 					});
-					verify(resource).read(JSON).foo.evaluate(String).is("bar");
-					verify(resource).read(JSON).foo.evaluate(String).is("bar");
+					verify(resource).evaluate(readJson).foo.evaluate(String).is("bar");
+					verify(resource).evaluate(readJson).foo.evaluate(String).is("bar");
 				}
 
 				fifty.tests.jsapi.Resource.read = fifty.test.Parent();
@@ -782,5 +793,20 @@ namespace slime.external.e4x {
 
 	export interface XMLList extends Object {
 		length(): number
+	}
+
+	declare const tag_XML: unique symbol;
+	declare const tag_XMLList: unique symbol;
+
+	export type XMLConstructor = {
+		new (value: any): XML
+
+		readonly [tag_XML]: "value"
+	}
+
+	export type XMLListConstructor = {
+		new (value: any): XMLList
+
+		readonly [tag_XMLList]: "value"
 	}
 }
