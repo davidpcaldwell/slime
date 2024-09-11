@@ -79,6 +79,12 @@ namespace slime.jrunscript.runtime {
 			 * implementation from the SLIME runtime Resource.
 			 */
 			read: slime.Resource["read"] & {
+				//	TODO	Java-specific
+				(p: slime.jrunscript.PropertiesJavaClass): slime.jrunscript.native.java.util.Properties
+
+				//	TODO	Java-specific
+				(p: slime.jrunscript.runtime.io.Exports["Streams"]["binary"]): slime.jrunscript.runtime.io.InputStream
+
 				/**
 				 * (if content can be read as a byte stream) Reads the content of this resource as a byte stream.
 				 * @returns A stream that can provide the content of this resource.
@@ -188,7 +194,7 @@ namespace slime.jrunscript.runtime {
 						read: {
 							string: function() { return lines.join("\n"); }
 						}
-					});
+					}) as slime.jrunscript.runtime.old.Resource;
 					var _properties = resource.read(Packages.java.util.Properties);
 					var properties = {
 						getProperty: function(name) {
