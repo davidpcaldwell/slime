@@ -19,9 +19,6 @@
 		suite.add("slime", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/api.html")
 		}));
-		suite.add("jrunscript/main", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/jrunscript/api.html")
-		}));
 
 		/**
 		 *

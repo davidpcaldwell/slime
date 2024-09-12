@@ -25,4 +25,74 @@ namespace slime.jrunscript.native.inonit.script.runtime.io {
 
 		readLine: (r: java.io.Reader, terminator: string) => java.lang.String
 	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { Streams } = Packages.inonit.script.runtime.io;
+
+			const test = function(f: () => boolean) {
+				var b = f();
+				fifty.verify(b).is(true);
+			};
+
+			fifty.tests.jsapi = fifty.test.Parent();
+
+			fifty.tests.jsapi._1 = function() {
+				var buffer = new Packages.inonit.script.runtime.io.Streams.Bytes.Buffer();
+				var data = [ -3, 2, 5, -7 ];
+				var write = buffer.getOutputStream();
+				write.write(-3);
+				write.write(2);
+				write.write(5);
+				write.write(-7);
+				write.close();
+
+				var read = buffer.getInputStream();
+				var from = [];
+				var b;
+				while( (b = read.read()) != -1) {
+					if (b > 127) {
+						b -= 256;
+					}
+					from.push(b);
+				}
+
+				test( function() { return data.join(",") == from.join(","); } );
+			}
+
+			fifty.tests.jsapi._2 = function() {
+				var tokenizer = new Streams();
+
+				var s1 = "fff\nggg\nhhh";
+
+				var split = function(s1,eol) {
+					var r1 = new Packages.java.io.StringReader(s1);
+					var lines = [];
+					var line;
+					while( (line = String(tokenizer.readLine(r1, eol)) ) ) {
+						fifty.global.jsh.shell.console("[" + line + "]");
+						lines.push(line);
+					}
+					return lines;
+				}
+
+				var lines = split(s1,"\n");
+				//	TODO	WTF? trailing newlines?
+				test( function() { return lines[0] == "fff\n"; } );
+				test( function() { return lines[1] == "ggg\n"; } );
+				test( function() { return lines[2] == "hhh"; } );
+
+				var lines2 = split(s1, "\r\n");
+				test( function() { return lines2[0] == s1; } );
+			}
+
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.jsapi);
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
 }
