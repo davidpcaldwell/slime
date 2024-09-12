@@ -76,7 +76,8 @@ namespace slime.jrunscript.runtime {
 		export interface Resource<JA = (path: string) => slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource> extends slime.Resource {
 			/**
 			 * Provides the content of this resource, or a stream from which to read it. Extends the standard `read()`
-			 * implementation from the SLIME runtime Resource.
+			 * implementation from the SLIME runtime Resource with Java-specific types and the ability to obtain Java streams from
+			 * the resource.
 			 */
 			read: slime.Resource["read"] & {
 				//	TODO	Java-specific
@@ -115,10 +116,16 @@ namespace slime.jrunscript.runtime {
 			modified?: any
 
 			/**
-			 * If the first argument is is `Streams.binary` or `Streams.text`, this method opens a stream and returns it. If the argument is a
-			 * string, this method opens a character stream, writes the string to the stream, and closes the stream. If the value is
-			 * a binary or character input stream, this method reads the stream until it is exhausted and copies its contents to the
-			 * location of this file, closing the stream after doing so.
+			 * (optional: if resource is writable) Writes content to this resource, or returns a stream to which content can be
+			 * written to write content to this resource.
+			 *
+			 * If the first argument is is `Streams.binary` or `Streams.text`, this method opens a stream and returns it. If the
+			 * argument is a string, this method opens a character stream, writes the string to the stream, and closes the stream.
+			 * If the value is a {@link slime.jrunscript.native.java.util.Properties}, this method opens a character stream, writes
+			 * the properties to the resource, and closes the stream. If the value is an {@link slime.external.e4x.XML} or {@link
+			 * slime.external.e4x.XMLList}, the value is serialized as XML and written to the resource, If the value is a binary or
+			 * character input stream, this method reads the stream until it is exhausted and copies its contents to the resource,
+			 * closing the stream after doing so.
 			 *
 			 * @returns See the description of the method; the return type depends on the arguments.  May return a binary output
 			 * stream, a character output stream, or `undefined`.
@@ -130,6 +137,8 @@ namespace slime.jrunscript.runtime {
 				(input: slime.jrunscript.runtime.io.Reader, mode?: resource.WriteMode): void
 				(input: string, mode?: resource.WriteMode): void
 				(input: slime.jrunscript.native.java.util.Properties, mode?: resource.WriteMode): void
+				(input: slime.external.e4x.XML, mode?: resource.WriteMode): void
+				(input: slime.external.e4x.XMLList, mode?: resource.WriteMode): void
 			}
 
 			java?: {
