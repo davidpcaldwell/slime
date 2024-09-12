@@ -35,6 +35,7 @@
 			fifty.load("../loader/jrunscript/expression.fifty.ts");
 			fifty.load("../loader/api/old/unit.fifty.ts");
 			fifty.load("../rhino/system/test/Packages.inonit.system.fifty.ts");
+			fifty.load("../rhino/system/java/inonit/script/runtime/io/Streams.fifty.ts");
 			fifty.load("../rhino/jrunscript/api.fifty.ts");
 			if (hasJsoup) fifty.load("../loader/document/module.fifty.ts");
 			fifty.load("../js/web/module.fifty.ts");

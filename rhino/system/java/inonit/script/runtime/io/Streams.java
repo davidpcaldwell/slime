@@ -77,6 +77,7 @@ public class Streams {
 				rv += c;
 			}
 			if (i == -1 || rv.endsWith(lineTerminator)) {
+				//return (rv.endsWith(lineTerminator)) ? rv.substring(0, rv.length() - lineTerminator.length()) : rv;
 				return rv;
 			}
 		}

@@ -398,14 +398,29 @@ namespace slime.jrunscript.runtime {
 		}
 
 		export interface JavaCodeLoaderSource {
+			/**
+			 * An object representing resources that can be loaded by this Loader.
+			 */
 			_source: slime.jrunscript.native.inonit.script.engine.Code.Loader
 		}
 
-		/** @deprecated */
+		/**
+		 * @deprecated
+		 *
+		 * An object that can return resources given paths.
+		 */
 		export interface DeprecatedResourcesSource {
 			child?: any
-			resources: any
-			Loader?: any
+
+			resources: {
+				/**
+				 * Returns an implementation for a resource at the given path.
+				 * @param path A path.
+				 * @returns An argument for the `Resource` constructor that implements the resource at the given path, or `null` if
+				 * no resource is located at the given path.
+				 */
+				get: (path: string) => slime.jrunscript.runtime.old.resource.Descriptor & { string?: string }
+			}
 		}
 
 		export type CustomSource = ZipFileSource | ZipResourceSource | JavaFileSource | JavaCodeLoaderSource | DeprecatedResourcesSource

@@ -66,16 +66,9 @@
 			pathname: SRC.getRelativePath("loader/api.html")
 		}));
 
-		suite.add("internal/jrunscript/main", new jsh.unit.html.Part({
-			//	Test cases of loader implementation
-			//	TODO	redundant; now tested per-engine in contributor/suite.jsh.js
-			pathname: SRC.getRelativePath("loader/jrunscript/api.html")
-		}));
-
 		suite.add("internal/other", new jsh.unit.html.Part({
 			//	Test cases involving the HTML test runner itself
 			pathname: SRC.getRelativePath("loader/api/test/data/1/api.html")
-			//	TODO	loader/jrunscript/java has some tests
 			//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 		}));
 
