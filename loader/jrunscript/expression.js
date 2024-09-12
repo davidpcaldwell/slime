@@ -899,37 +899,38 @@
 			 * @param { slime.runtime.Exports["old"]["Loader"] } was
 			 * @returns
 			 */
-			function(was,api) {
+			function(was) {
 				/**
-				 * @this { slime.old.Loader }
+				 * @type { slime.runtime.exports.Old["Loader"] }
 				 */
-				var rv = function(p) {
-					if (!p) throw new TypeError("source argument required for Loader.");
+				var rv = Object.assign(
+					/**
+					 * @this { slime.old.Loader }
+					 */
+					function(p) {
+						if (!p) throw new TypeError("source argument required for Loader.");
 
-					//	Satisfy TypeScript
-					this.source = void(0);
-					this.run = void(0);
-					this.value = void(0);
-					this.file = void(0);
-					this.module = void(0);
-					this.script = void(0);
-					this.factory = void(0);
-					this.Child = void(0);
-					this.get = void(0);
-					this.toSynchronous = void(0);
+						//	Satisfy TypeScript
+						this.source = void(0);
+						this.run = void(0);
+						this.value = void(0);
+						this.file = void(0);
+						this.module = void(0);
+						this.script = void(0);
+						this.factory = void(0);
+						this.Child = void(0);
+						this.get = void(0);
+						this.toSynchronous = void(0);
 
-					var source = adaptLoaderArgument(p);
+						var source = adaptLoaderArgument(p);
 
-					was.call(this,source);
-				};
-				//	Satisfy TypeScript by adding properties that will be added by Object.assign below
-				rv.source = void(0);
-				rv.series = void(0);
-				rv.tools = void(0);
-				Object.assign(rv, api);
+						was.call(this,source);
+					},
+					was
+				);
 				return rv;
 			}
-		)(slime.old.Loader, slime.old.Loader["api"]);
+		)(slime.old.Loader);
 
 		var $exports_classpath = (
 			/**
