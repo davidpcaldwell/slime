@@ -26,7 +26,11 @@ namespace slime.jrunscript.shell {
 	export interface Exports {
 		run: oo.Run & {
 			evaluate: any
-			stdio: any
+			stdio: {
+				(p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]): slime.jrunscript.shell.internal.run.Stdio
+
+				LineBuffered: any
+			}
 		}
 	}
 
