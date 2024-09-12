@@ -899,7 +899,7 @@
 			 * @param { slime.runtime.Exports["old"]["Loader"] } was
 			 * @returns
 			 */
-			function(was,api) {
+			function(was/*,api*/) {
 				/**
 				 * @this { slime.old.Loader }
 				 */
@@ -922,14 +922,14 @@
 
 					was.call(this,source);
 				};
-				//	Satisfy TypeScript by adding properties that will be added by Object.assign below
-				rv.source = void(0);
-				rv.series = void(0);
-				rv.tools = void(0);
-				Object.assign(rv, api);
+				// //	Satisfy TypeScript by adding properties that will be added by Object.assign below
+				// rv.source = void(0);
+				// rv.series = void(0);
+				// rv.tools = void(0);
+				// Object.assign(rv, api);
 				return rv;
 			}
-		)(slime.old.Loader, slime.old.Loader["api"]);
+		)(slime.old.Loader/*, slime.old.Loader["api"]*/);
 
 		var $exports_classpath = (
 			/**
