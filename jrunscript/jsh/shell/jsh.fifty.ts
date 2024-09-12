@@ -34,6 +34,14 @@ namespace slime.jsh.shell {
 		export type Script = slime.loader.Script<Context,slime.jsh.shell.Exports>
 	}
 
+	export namespace test {
+		export const shells = (function(fifty: slime.fifty.test.Kit) {
+			const script: slime.jsh.test.Script = fifty.$loader.script("../fixtures.ts");
+			return script().shells(fifty);
+		//@ts-ignore
+		})(fifty);
+	}
+
 	export type Echo = (message: string, mode?: { console?: (message: string) => void, stream?: any }) => void
 
 	/**
@@ -366,13 +374,40 @@ namespace slime.jsh.shell {
 
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		/**
+		 * Exits from this shell. This ordinarily terminates the process, although some shells (for example, those launched by the
+		 * `jsh.shell.jsh` method) can sometimes be run in-process.
+		 *
+		 * @param code The exit code to return to the parent, which is ordinarily an operating system process.
+		 */
+		exit: (code: number) => never
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.exports.exit = function() {
+				var intention = test.shells.unbuilt().invoke({
+					//	TODO	shouldn't this script be here?
+					script: fifty.jsh.file.relative("test/exit.jsh.js").pathname
+				});
+				var result = $api.fp.world.Sensor.now({
+					sensor: jsh.shell.subprocess.question,
+					subject: intention
+				});
+				fifty.verify(result).status.is(3);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports extends slime.jrunscript.shell.Exports {
+		/**
 		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
 		 */
 		engine: string
-
-		//	TODO	run.evaluate.wrap is exported but not declared here (unused?)
-
-		exit: (code: number) => never
 
 		/**
 		 * The standard I/O streams for this shell.
@@ -408,6 +443,11 @@ namespace slime.jsh.shell {
 		/** @deprecated Replaced by `run`. */
 		shell: any
 
+		/**
+		 * Identical to {@link slime.jrunscript.shell.Exports | slime.jrunscript.shell.Exports `run()`} except that if the
+		 * stdio.output or stdio.error properties are omitted, the output from the subprocess will be sent to the corresponding
+		 * stream for the executing shell, rather than discarded.
+		 */
 		run: slime.jrunscript.shell.Exports["run"] & {
 			evaluate: {
 				wrap: any
