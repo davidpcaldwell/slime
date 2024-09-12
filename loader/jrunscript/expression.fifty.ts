@@ -574,8 +574,8 @@ namespace slime.jrunscript.runtime {
 					}
 				});
 
-				var api = loader.get("api.html");
-				test(api.type.toString() == "text/html");
+				var script = loader.get("expression.js");
+				verify(script).type.evaluate(String).is("application/javascript");
 
 				jsh.shell.console("Loading module ...");
 				var loaderModule = loader.module("../../jrunscript/io/test/Loader.js");
