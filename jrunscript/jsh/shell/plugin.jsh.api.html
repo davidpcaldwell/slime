@@ -169,7 +169,7 @@ END LICENSE
 					var buffer = new jsh.io.Buffer();
 					var stream = buffer.writeText();
 
-					module.echo(true, { stream: stream });
+					module.println(true, { stream: stream });
 
 					buffer.close();
 					// TODO: hard-coded line terminator below
@@ -190,8 +190,8 @@ END LICENSE
 						}
 					}
 
-					module.echo("A", { console: console.line });
-					module.echo("B", { console: console.line });
+					module.println("A", { console: console.line });
+					module.println("B", { console: console.line });
 
 					var captured = console.getLines();
 					verify(captured).length.is(2);
