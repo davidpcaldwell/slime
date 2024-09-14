@@ -401,22 +401,63 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export type Output = (
-		message: string,
-		mode: { stream: any }
-	) => void
-
 	export interface Exports extends slime.jrunscript.shell.Exports {
+		/**
+		 * Writes a message to the shell's standard output stream, followed by a line terminator.
+		 */
 		echo: slime.jrunscript.shell.Console
 
+		/**
+		 * Writes a message to the console (as represented by the shell's standard error stream), followed by a line terminator.
+		 */
 		console: slime.jrunscript.shell.Console
 
 		//	TODO	migrate jrunscript/jsh/test/manual/issue87.jsh.js here
 		/**
 		 * @deprecated Can use `jsh.shell.echo`, `jsh.shell.console`, or use stream APIs to write to other streams
+		 *
+		 * Writes a message to the console, or to another specified destination.
+		 *
+		 * @param message A message to echo.
+		 * @param mode (optional) Specifies a destination. The `stream` property specifies a stream to which to write
+		 * messages.
 		 */
-		println: Output
+		println: (
+			message: string,
+			mode: {
+				/**
+				 * A destination stream for messages.
+				 */
+				stream: any
+			}
+		) => void
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+			const module = fifty.global.jsh.shell;
+
+			fifty.tests.exports.println = function() {
+				var buffer = new jsh.io.Buffer();
+				var stream = buffer.writeText();
+
+				//@ts-ignore
+				module.println(true, { stream: stream });
+
+				buffer.close();
+				// TODO: hard-coded line terminator below
+				var buffered = buffer.readText().asString().split("\n");
+				verify(buffered).length.is(2);
+				verify(buffered)[0].is("true");
+				verify(buffered)[1].is("");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		/**
