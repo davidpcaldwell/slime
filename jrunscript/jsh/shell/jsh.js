@@ -47,7 +47,7 @@
 		$exports.stdout = $exports.stdio.output;
 		$exports.stderr = $exports.stdio.error;
 
-		/** @type { slime.jsh.shell.Output } */
+		/** @type { slime.jsh.shell.Exports["println"] } */
 		var echo = (
 			function() {
 				var toString = function(message) {
