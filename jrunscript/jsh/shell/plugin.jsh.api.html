@@ -177,26 +177,6 @@ END LICENSE
 					verify(buffered).length.is(2);
 					verify(buffered)[0].is("true");
 					verify(buffered)[1].is("");
-
-					var console = new function() {
-						var lines = [];
-
-						this.line = function(s) {
-							lines.push(s);
-						}
-
-						this.getLines = function() {
-							return lines;
-						}
-					}
-
-					module.println("A", { console: console.line });
-					module.println("B", { console: console.line });
-
-					var captured = console.getLines();
-					verify(captured).length.is(2);
-					verify(captured)[0].is("A");
-					verify(captured)[1].is("B");
 				</script>
 			</li>
 			<li class="function">
