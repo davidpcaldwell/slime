@@ -141,7 +141,7 @@ namespace slime.jsh.shell.tools {
 				 * @deprecated Use {@link Exports | rhino.require }
 				 */
 				old: (
-					argument: slime.jsh.shell.tools.rhino.OldInstallCommand,
+					argument?: slime.jsh.shell.tools.rhino.OldInstallCommand,
 					receiver?: slime.$api.event.Function.Receiver<slime.jsh.shell.tools.rhino.OldInstallEvents>
 				) => void
 			}
