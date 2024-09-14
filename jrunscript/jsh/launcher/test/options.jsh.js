@@ -4,10 +4,16 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.jsh.Global & { test: any } } jsh
+	 */
+	function(Packages,jsh) {
 		var src = (jsh.shell.jsh.src) ? jsh.shell.jsh.src : jsh.script.file.parent.parent.parent.parent;
 		jsh.loader.plugins(src.getRelativePath("jsh/test"));
+		//	TODO	remove jsh.test declaration in parameter and declare it for real if it's real
 		jsh.test.integration({
 			scenario: function(parameters) {
 				var max = Packages.java.lang.Runtime.getRuntime().maxMemory();
@@ -26,7 +32,7 @@
 									return Number(result.stdio.output);
 								}
 							});
-							jsh.shell.echo("half = " + half + " forked=" + forked, { stream: jsh.shell.stdio.error });
+							jsh.shell.console("half = " + half + " forked=" + forked);
 							verify({},"Subprocess").evaluate(function() {
 								return forked < half;
 							}).is(true);
@@ -39,4 +45,5 @@
 			}
 		})
 	}
-)();
+//@ts-ignore
+)(Packages,jsh);

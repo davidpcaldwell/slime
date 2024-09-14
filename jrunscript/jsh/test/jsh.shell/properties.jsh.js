@@ -4,12 +4,16 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { Omit<slime.jsh.Global,"shell"> & { shell: any } } jsh
+	 */
+	function(Packages,jsh) {
 		var log = function(string) {
-			jsh.shell.echo(string, {
-				stream: jsh.shell.stdio.error
-			});
+			jsh.shell.console(string);
 		}
 
 		//	TODO	could more robustly check values below; this pretty much just outputs them and makes sure the appropriate parent objects
@@ -67,10 +71,10 @@
 		}
 		log("");
 		log("System properties:");
-		var i = Packages.java.lang.System.getProperties().entrySet().iterator();
+		var ii = Packages.java.lang.System.getProperties().entrySet().iterator();
 		var ordered = [];
-		while(i.hasNext()) {
-			var next = i.next();
+		while(ii.hasNext()) {
+			var next = ii.next();
 			ordered.push({ name: String(next.getKey()), value: String(next.getValue()) });
 		}
 		ordered.sort(function(a,b) {
@@ -83,4 +87,5 @@
 		});
 		jsh.shell.echo("Completed.");
 	}
-)();
+//@ts-ignore
+)(Packages,jsh);

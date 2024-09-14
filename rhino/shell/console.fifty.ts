@@ -11,7 +11,7 @@ namespace slime.jrunscript.shell {
 	 * the standard error stream (and appends a trailing line separator to each message). Other implementations might include files
 	 * or any other locations to which applications might wish to emit messages or logging to be immediately or later read.
 	 */
-	export type Console = slime.$api.fp.impure.Output<string>;
+	export type Console = slime.$api.fp.impure.Effect<string>;
 
 	export interface Exports {
 		/**

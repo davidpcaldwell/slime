@@ -142,7 +142,7 @@
 		//	if (/^inonit\.system/.test(record.logger.name)) {
 		//		return;
 		//	}
-		//	jsh.shell.echo(JSON.stringify(record), { stream: stderr });
+		//	jsh.shell.println(JSON.stringify(record), { stream: stderr });
 		//});
 		//jsh.java.log.named("verify").INFO("Hey, %1$s!", "David");
 		$export({

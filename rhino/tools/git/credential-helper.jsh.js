@@ -14,7 +14,7 @@
 			if (tokens.length >= 2) {
 				input[tokens[0]] = tokens.slice(1).join("=");
 				if (jsh.shell.environment.GIT_DEBUG) {
-					jsh.shell.echo(tokens[0] + "=" + input[tokens[0]], { stream: jsh.shell.stdio.error });
+					jsh.shell.console(tokens[0] + "=" + input[tokens[0]]);
 				}
 			}
 		});
@@ -33,7 +33,7 @@
 			(function() {
 				for (var x in input) {
 					if (jsh.shell.environment.GIT_DEBUG) {
-						jsh.shell.echo(x + "=" + input[x], { stream: jsh.shell.stdio.error });
+						jsh.shell.console(x + "=" + input[x]);
 					}
 					jsh.shell.echo(x + "=" + input[x]);
 				}
