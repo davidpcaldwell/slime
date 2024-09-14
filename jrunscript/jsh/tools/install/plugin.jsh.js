@@ -19,11 +19,13 @@
 				return Boolean(jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install && plugins.scala);
 			},
 			load: function() {
+				//	TODO	move this implementation to jrunscript/tools/install and disentangle from `jsh`. Or should we somehow
+				//			marry it with the `bash` implementation?
 				/**
-				 * @type { slime.jsh.shell.Exports["tools"]["rhino"]["install"] }
+				 * @type { slime.$api.fp.world.Means<slime.jsh.shell.tools.rhino.OldInstallCommand,slime.jsh.shell.tools.rhino.InstallEvents> }
 				 */
-				var installRhino = $api.events.Function(
-					function(p,events) {
+				var woInstallRhino = function(p) {
+					return function(events) {
 						if (!p) p = {};
 						var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
 						if (!jsh.shell.jsh.lib) throw new Error("Shell does not have lib");
@@ -69,8 +71,30 @@
 							operation = "move";
 						}
 						p.local[operation](lib.getRelativePath("js.jar"), { recursive: true, overwrite: true });
-						events.fire("installed", { to: lib.getRelativePath("js.jar") });
+						events.fire("installed", lib.getRelativePath("js.jar").toString() );
 						events.fire("console", "Installed Rhino at " + lib.getRelativePath("js.jar"));
+					}
+				};
+
+				var installRhino = $api.events.Function(
+					/**
+					 *
+					 * @param { slime.jsh.shell.tools.rhino.OldInstallCommand } p
+					 * @param { slime.$api.event.Emitter<slime.jsh.shell.tools.rhino.OldInstallEvents> } events
+					 */
+					function(p,events) {
+						$api.fp.world.Means.now({
+							means: woInstallRhino,
+							order: p,
+							handlers: {
+								console: function(e) {
+									events.fire("console", e.detail);
+								},
+								installed: function(e) {
+									events.fire("installed", { to: jsh.file.Pathname(e.detail) });
+								}
+							}
+						});
 					}, {
 						console: function(e) {
 							jsh.shell.console(e.detail);
@@ -95,14 +119,56 @@
 
 				jsh.shell.tools.rhino = (
 					function() {
+						var installation = function() {
+							var pathname = jsh.shell.jsh.lib.getRelativePath("js.jar");
+							if (pathname.file) {
+								return $api.fp.Maybe.from.some({
+									pathname: pathname.toString(),
+									version: function() {
+										var manifest = jsh.java.tools.jar.manifest.simple({
+											pathname: pathname.toString()
+										});
+										var version = manifest.main["Implementation-Version"];
+										return $api.fp.Maybe.from.value(version);
+									}
+								});
+							} else {
+								return $api.fp.Maybe.from.nothing();
+							}
+						};
+
+						/** @type { slime.jsh.shell.tools.Exports["rhino"]["require"]["world"] } */
 						var require = function(p) {
+							var version = (p) ? p.version : void(0);
+							var replace = (p && p.replace)
+								? (
+									function() {
+										var now = installation();
+										if (now.present) {
+											var version = now.value.version();
+											return p.replace( (version.present) ? version.value : void(0) );
+										} else {
+											return true;
+										}
+									}
+								)()
+								: false
+							;
+
 							return function(events) {
 								var at = jsh.shell.jsh.lib.getRelativePath("js.jar")
 								$api.fp.world.now.action(
 									jsh.shell.jsh.require,
 									{
 										satisfied: function() { return Boolean(at.file); },
-										install: function() { return installRhino(p, events); }
+										install: function() {
+											/** @type { slime.jsh.shell.tools.rhino.OldInstallCommand } */
+											var argument = {
+												version: version,
+												replace: replace
+											}
+											woInstallRhino(argument)(events);
+										}
 									},
 									{
 										installed: function(e) {
@@ -120,12 +186,15 @@
 						};
 
 						return {
-							install: installRhino,
+							installation: installation,
+							install: {
+								old: installRhino
+							},
 							require: {
 								world: require,
-								action: require(),
+								action: require(void(0)),
 								simple: $api.fp.world.Action.process({
-									action: require()
+									action: require(void(0))
 								})
 							}
 						};
@@ -237,7 +306,6 @@
 				/** @type { slime.jsh.shell.tools.internal.tomcat.Script } */
 				var script = $loader.script("tomcat.js");
 				var tomcat = script({
-					$api: jsh.tools.install.$api,
 					console: jsh.shell.console,
 					library: {
 						file: jsh.file,
