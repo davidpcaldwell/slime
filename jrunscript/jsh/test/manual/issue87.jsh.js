@@ -4,6 +4,16 @@
 //
 //	END LICENSE
 
-var err = jsh.shell.stderr.character();
-jsh.shell.echo("Hello, Long Way! (this works)", { stream: err });
-jsh.shell.echo("Hello, World! (this does not work)", { stream: jsh.shell.stderr });
+//@ts-check
+(
+	/**
+	 *
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
+		var err = jsh.shell.stderr.character();
+		jsh.shell.println("Hello, Long Way! (this works)", { stream: err });
+		jsh.shell.println("Hello, World! (this does not work)", { stream: jsh.shell.stderr });
+	}
+//@ts-ignore
+)(jsh);

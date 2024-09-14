@@ -4,8 +4,12 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(Packages,jsh) {
 		jsh.loader.plugins(jsh.script.file.parent.parent.parent.getRelativePath("loader/api"))
 		jsh.loader.plugins(jsh.script.file.parent.pathname);
 
@@ -46,12 +50,12 @@
 		})();
 
 		if (!jsh.httpd || !jsh.httpd.Tomcat) {
-			jsh.shell.stderr.write("Cannot run browser tests; Tomcat not present.\n");
+			jsh.shell.console("Cannot run browser tests; Tomcat not present.");
 			jsh.shell.exit(1);
 		}
 
 		if (!jsh.java.Thread) {
-			jsh.shell.echo("Cannot run browser tests; jsh.java.Thread not implemented; use Rhino, not Nashorn", { stream: jsh.shell.stderr });
+			jsh.shell.console("Cannot run browser tests; jsh.java.Thread not implemented; use Rhino, not Nashorn");
 			jsh.shell.exit(1);
 		}
 
@@ -154,4 +158,5 @@
 			jsh.shell.exit(1);
 		}
 	}
-)();
+//@ts-ignore
+)(Packages,jsh);

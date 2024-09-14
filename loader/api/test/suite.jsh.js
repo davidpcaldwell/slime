@@ -6,8 +6,13 @@
 
 // TODO: Is this integrated with the test suite? Does it presently pass?
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				view: "console"
@@ -107,8 +112,9 @@
 			return rv;
 		}
 
-		jsh.shell.echo("Scan: " + JSON.stringify(scan(object), void(0), "    "), { stream: jsh.shell.stdio.error });
+		jsh.shell.console("Scan: " + JSON.stringify(scan(object), void(0), "    "));
 
 		jsh.unit.interface.create(object, { view: parameters.options.view });
 	}
-)();
+//@ts-ignore
+)(jsh);

@@ -17,7 +17,7 @@
 	function(Packages,JavaAdapter,$api,$context,$export) {
 		var module = $context.module;
 
-		/** @type { Pick<slime.jsh.shell.Exports,"Intention"|"engine"|"exit"|"stdio"|"echo"|"console"|"rhino"|"shell"|"jsh"|"run"|"world"|"stdin"|"stdout"|"stderr"> } */
+		/** @type { Pick<slime.jsh.shell.Exports,"Intention"|"engine"|"exit"|"stdio"|"echo"|"console"|"println"|"rhino"|"shell"|"jsh"|"run"|"world"|"stdin"|"stdout"|"stderr"> } */
 		var $exports = {};
 
 		//	TODO	would be nice to generalize this and push it back into the shell module itself
@@ -47,11 +47,47 @@
 		$exports.stdout = $exports.stdio.output;
 		$exports.stderr = $exports.stdio.error;
 
-		$exports.echo = Object.assign(
-			/** @type { slime.jsh.shell.Echo } */
-			function(message,mode) {
-				if (arguments.length == 0) message = "";
-				if (!mode) mode = {};
+		/** @type { slime.jsh.shell.Output } */
+		var echo = (
+			function() {
+				var toString = function(message) {
+					var convert = $api.deprecate(function(message) {
+						/** @returns { string } */
+						var getTypeof = function(v) {
+							return typeof(v);
+						};
+
+						if (false) {
+							throw new Error();
+						} else if (typeof(message) == "number") {
+							return String(message);
+						} else if (typeof(message) == "boolean") {
+							return String(message);
+						} else if (typeof(message) == "function") {
+							return message.toString();
+						} else if (getTypeof(message) == "xml") {
+							return message.toXMLString();
+						} else if (message === null) {
+							return "(null)";
+						} else if (typeof(message) == "object") {
+							return message.toString();
+						} else if (typeof(message.toString == "function")) {
+							return String(message.toString());
+						} else {
+							return "Host object: typeof = " + typeof(message);
+						}
+					});
+
+					if (typeof(message) == "string") {
+						return message;
+					} else if (message === null) {
+						return "(null)";
+					} else if (typeof(message) == "undefined") {
+						return "(undefined)";
+					} else {
+						return convert(message);
+					}
+				};
 
 				var streamToConsole = function(stream,toString) {
 					var writer = (function() {
@@ -66,60 +102,29 @@
 					return function(message) {
 						writer.write(toString(message) + module.properties.get("line.separator"));
 					}
-				}
+				};
 
-				var console;
-				if (mode.console) {
-					console = mode.console;
-				} else if (mode.stream) {
-					console = streamToConsole(mode.stream,$exports.echo.String);
-				} else {
-					console = streamToConsole($context.stdio.output,$exports.echo.String);
-				}
+				return function(message,mode) {
+					if (arguments.length == 0) message = "";
 
-				console(message);
-			},
-			{
-				String: void(0)
+					var console = streamToConsole(mode.stream,toString);
+
+					console(message);
+				};
 			}
-		);
-		$exports.echo.String = function(message) {
-			/** @returns { string } */
-			var getTypeof = function(v) {
-				return typeof(v);
-			};
+		)();
 
-			if (typeof(message) == "string") {
-				return message;
-			} else if (typeof(message) == "number") {
-				return String(message);
-			} else if (typeof(message) == "boolean") {
-				return String(message);
-			} else if (typeof(message) == "function") {
-				return message.toString();
-			} else if (getTypeof(message) == "xml") {
-				return message.toXMLString();
-			} else if (message === null) {
-				return arguments.callee["null"];
-			} else if (typeof(message) == "object") {
-				return message.toString();
-			} else if (typeof(message) == "undefined") {
-				return arguments.callee["undefined"];
-			} else {
-				if (typeof(message.toString == "function")) {
-					return message.toString();
-				} else {
-					return "Host object: typeof = " + typeof(message);
-				}
-			}
-			return message;
-		}
-		$exports.echo.String["undefined"] = "(undefined)";
-		$exports.echo.String["null"] = "(null)";
+		/** @type { slime.jsh.shell.Exports["echo"] } */
+		$exports.echo = function(message) {
+			echo(message, { stream: $context.stdio.output });
+		};
 
 		$exports.console = function(message) {
-			$exports.echo(message, { stream: $exports.stdio.error });
-		}
+			//	TODO	probably can use $context rather than $exports
+			echo(message, { stream: $exports.stdio.error });
+		};
+
+		$exports.println = echo;
 
 		var stream = function(stdio,x) {
 			if (typeof(stdio[x]) == "undefined") {

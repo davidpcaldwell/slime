@@ -42,8 +42,6 @@ namespace slime.jsh.shell {
 		})(fifty);
 	}
 
-	export type Echo = (message: string, mode?: { console?: (message: string) => void, stream?: any }) => void
-
 	/**
 	 * An implementation of {@link slime.jrunscript.shell.Exports} that adds additional APIs that are available when running under
 	 * the `jsh` shell.
@@ -403,6 +401,23 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
+	export type Output = (
+		message: string,
+		mode: { stream: any }
+	) => void
+
+	export interface Exports extends slime.jrunscript.shell.Exports {
+		echo: slime.jrunscript.shell.Console
+
+		console: slime.jrunscript.shell.Console
+
+		//	TODO	migrate jrunscript/jsh/test/manual/issue87.jsh.js here
+		/**
+		 * @deprecated Can use `jsh.shell.echo`, `jsh.shell.console`, or use stream APIs to write to other streams
+		 */
+		println: Output
+	}
+
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		/**
 		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
@@ -425,15 +440,6 @@ namespace slime.jsh.shell {
 		stdout: Exports["stdio"]["output"]
 		/** @deprecated Use {@link Exports["stdio"]["error"]} */
 		stderr: Exports["stdio"]["error"]
-
-		echo: Echo & {
-			String: (message: any) => string & {
-				undefined: string
-				null: string
-			}
-		}
-
-		console: slime.jrunscript.shell.Console
 
 		//	TODO	shell?
 		rhino: {
