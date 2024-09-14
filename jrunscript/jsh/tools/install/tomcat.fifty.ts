@@ -143,7 +143,6 @@ namespace slime.jsh.shell.tools.tomcat {
 
 namespace slime.jsh.shell.tools.internal.tomcat {
 	export interface Context {
-		$api: slime.$api.Global
 		library: {
 			file: slime.jrunscript.file.Exports
 			http: slime.jrunscript.http.client.Exports
@@ -404,7 +403,6 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				var script: Script = fifty.$loader.script("tomcat.js");
 
 				var subject = script({
-					$api: fifty.global.$api,
 					library: {
 						file: fifty.global.jsh.file,
 						http: fifty.global.jsh.http,

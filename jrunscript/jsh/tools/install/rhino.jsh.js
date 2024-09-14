@@ -22,7 +22,7 @@
 			}
 		});
 
-		jsh.shell.tools.rhino.install({
+		jsh.shell.tools.rhino.install.old({
 			local: (parameters.options.local) ? parameters.options.local.file : null,
 			replace: parameters.options.replace,
 			version: parameters.options.version

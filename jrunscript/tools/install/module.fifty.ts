@@ -739,7 +739,11 @@ namespace slime.jrunscript.tools.install {
 		/**
 		 * @deprecated
 		 */
-		$api: any
+		$api: {
+			Events: {
+				Function: any
+			}
+		}
 	}
 
 	(

@@ -64,7 +64,12 @@ namespace slime.jsh.shell.tools {
 	}
 
 	export namespace rhino {
-		export interface InstallCommand {
+		export interface Installation {
+			pathname: string
+			version: slime.$api.fp.impure.External<slime.$api.fp.Maybe<string>>
+		}
+
+		export interface OldInstallCommand {
 			mock?: { lib: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.File }
 
 			/**
@@ -87,29 +92,65 @@ namespace slime.jsh.shell.tools {
 			 */
 			replace?: boolean
 		}
+
+		export interface RequireCommand {
+			/**
+			 * A named version of Rhino to download and install; ignored if `local` is specified. Available versions include:
+			 *
+			 * * mozilla/1.7.15 (the default, and only tested/supported version)
+			 * * mozilla/1.7.14
+			 * * mozilla/1.7.13
+			 */
+			version?: string
+
+			/**
+			 * Used to decide whether to replace the existing installation if one is found. If Rhino is already present at the
+			 * installation location, this function will be invoked with the version of Rhino that is currently installed.
+			 *
+			 * @param version The version of Rhino found
+			 * @returns `true` to replace the installation; `false` to leave it in place.
+			 */
+			replace?: (version: string) => boolean
+		}
+
+		export interface OldInstallEvents {
+			console: string
+
+			installed: {
+				to: slime.jrunscript.file.Pathname
+			}
+		}
+
+		export interface InstallEvents {
+			console: string
+			installed: string
+		}
+
+		export interface RequireEvents extends InstallEvents {
+			satisfied: string
+			installing: string
+		}
 	}
 
 	export interface Exports {
 		rhino: {
-			//	TODO #1620	convert rhino.install to wo API
-			install: (
-				p?: rhino.InstallCommand,
-				events?: any
-			) => void
+			installation: slime.$api.fp.impure.External<slime.$api.fp.Maybe<rhino.Installation>>
+
+			install: {
+				/**
+				 * @deprecated Use {@link Exports | rhino.require }
+				 */
+				old: (
+					argument: slime.jsh.shell.tools.rhino.OldInstallCommand,
+					receiver?: slime.$api.event.Function.Receiver<slime.jsh.shell.tools.rhino.OldInstallEvents>
+				) => void
+			}
 
 			//	TODO #1621	No test coverage at all for rhino.require()
 			require: {
-				world: slime.$api.fp.world.Means<rhino.InstallCommand,{
-					satisfied: string
-					installing: string
-					installed: string
-				}>
+				world: slime.$api.fp.world.Means<rhino.RequireCommand,rhino.RequireEvents>
 
-				action: slime.$api.fp.world.Action<{
-					satisfied: string
-					installing: string
-					installed: string
-				}>
+				action: slime.$api.fp.world.Action<rhino.RequireEvents>
 
 				simple: slime.$api.fp.impure.Process
 			}
@@ -164,7 +205,7 @@ namespace slime.jsh.shell.tools {
 					fifty.run(function alreadyInstalled() {
 						lib.getRelativePath("js.jar").write("already", { append: false });
 						var captor = Captor();
-						jsh.shell.tools.rhino.install({ mock: mock }, captor);
+						jsh.shell.tools.rhino.install.old({ mock: mock }, captor);
 						verify(captor).captured[0].type.is("console");
 						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("Rhino already installed at " + lib.getFile("js.jar"));
 						verify(lib).getFile("js.jar").evaluate(readFile).is("already");
@@ -177,7 +218,7 @@ namespace slime.jsh.shell.tools {
 						lib.getRelativePath("download").write("downloaded", { append: false });
 						mock.rhino = lib.getFile("download");
 						var captor = Captor();
-						jsh.shell.tools.rhino.install({ mock: mock, replace: true }, captor);
+						jsh.shell.tools.rhino.install.old({ mock: mock, replace: true }, captor);
 						verify(captor).captured[0].type.is("console");
 						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("Replacing Rhino at " + lib.getRelativePath("js.jar") + " ...");
 						verify(captor).captured[1].type.is("console");
@@ -191,7 +232,7 @@ namespace slime.jsh.shell.tools {
 						lib.getRelativePath("download").write("downloaded", { append: false });
 						mock.rhino = lib.getFile("download");
 						var captor = Captor();
-						jsh.shell.tools.rhino.install({ mock: mock }, captor);
+						jsh.shell.tools.rhino.install.old({ mock: mock }, captor);
 						verify(captor).captured[0].type.is("console");
 						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("No Rhino at " + lib.getRelativePath("js.jar") + "; installing ...");
 						verify(captor).captured[1].type.is("console");
@@ -200,6 +241,18 @@ namespace slime.jsh.shell.tools {
 						verify(captor.captured.type("installed")).length.is(1);
 						lib.getFile("js.jar").remove();
 					});
+				};
+
+				fifty.tests.manual.rhino = function() {
+					var rhino = jsh.shell.tools.rhino.installation();
+					if (rhino.present) {
+						var version = rhino.value.version();
+						var manifest = jsh.java.tools.jar.manifest.simple({ pathname: rhino.value.pathname });
+						jsh.shell.console("manifest = " + manifest);
+						jsh.shell.console( (version.present) ? "Installed: " + version.value : "Installed: version Unknown" );
+					} else {
+						jsh.shell.console( "Not installed." );
+					}
 				}
 			}
 		//@ts-ignore
@@ -634,7 +687,6 @@ namespace slime.jsh.shell.tools {
 			const script: internal.tomcat.Script = fifty.$loader.script("tomcat.js");
 
 			const subject = script({
-				$api: fifty.global.$api,
 				library: {
 					file: fifty.global.jsh.file,
 					http: fifty.global.jsh.http,
