@@ -23,7 +23,7 @@ namespace slime.jsh.shell {
 				java: slime.jrunscript.java.Exports
 				io: slime.jrunscript.io.Exports
 				file: slime.jrunscript.file.Exports
-				script: jsh.script.Exports
+				script: slime.jsh.script.Exports
 			}
 
 			module: slime.jrunscript.shell.Exports
@@ -93,20 +93,31 @@ namespace slime.jsh.shell {
 
 	export type Installation = ExternalInstallation | PackagedInstallation
 
-	export type ExternalInstallationInvocation = {
+	export type ExternalInstallationProgram = {
 		shell: ExternalInstallation,
 		script: string
 	}
 
-	export type Invocation = ExternalInstallationInvocation | PackagedInstallation
+	export type Program = ExternalInstallationProgram | PackagedInstallation
 
 	export type Intention = (
-		Invocation
-		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "stdio" | "directory">
+		Program
+		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "directory">
 		& {
 			properties?: { [name: string]: string }
 		}
+		& Pick<slime.jrunscript.shell.run.Intention,"stdio">
 	)
+
+	export namespace jsh {
+		export interface Exit {
+			status: number
+			stdio?: {
+				output?: string
+				error?: string
+			}
+		}
+	}
 
 	export interface JshShellJsh {
 		Installation: {
@@ -122,10 +133,6 @@ namespace slime.jsh.shell {
 			is: {
 				unbuilt: (p: Installation) => p is UnbuiltInstallation
 			}
-		}
-
-		Intention: {
-			toShellIntention: (p: Intention) => slime.jrunscript.shell.run.Intention
 		}
 	}
 
@@ -265,14 +272,28 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
+	export interface JshShellJsh {
+		Intention: {
+			toShellIntention: (p: Intention) => slime.jrunscript.shell.run.Intention
+
+			sensor: slime.$api.fp.world.Sensor<
+				Intention,
+				{ stdout: slime.jrunscript.shell.run.Line, stderr: slime.jrunscript.shell.run.Line },
+				jsh.Exit
+			>
+		}
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			fifty.tests.Intention = {};
-			fifty.tests.Intention.jsh = function() {
+			fifty.tests.Intention = fifty.test.Parent();
+
+			fifty.tests.Intention.toShellIntention = function() {
 				var intention = jsh.shell.jsh.Intention.toShellIntention({
 					shell: {
 						src: jsh.shell.jsh.src.toString()
@@ -287,6 +308,47 @@ namespace slime.jsh.shell {
 					intention
 				);
 				jsh.shell.console(JSON.stringify(JSON.parse(result.stdio.output), void(0), 4));
+			}
+
+			fifty.tests.Intention.sensor = function() {
+				var unbuilt = test.shells.unbuilt();
+				var script = fifty.jsh.file.relative("test/jsh.jsh.js").pathname;
+				var pwd = fifty.jsh.file.relative(".");
+				var intention: slime.jsh.shell.Intention = $api.Object.compose(
+					{
+						shell: unbuilt,
+						script: script
+					},
+					{
+						arguments: ["--argument", "argValue"],
+						/** @type { slime.jsh.shell.Intention["environment"] } */
+						environment: function(it) {
+							it.Intention_sensor = "whoa";
+							return it;
+						},
+						directory: pwd.pathname,
+						properties: {
+							"inonit.foo": "inonit.bar"
+						}
+					},
+					{
+						stdio: {
+							output: "string"
+						} as { output: slime.jrunscript.shell.run.OutputCapture }
+					}
+				);
+				var exit = $api.fp.world.Sensor.now({
+					sensor: jsh.shell.jsh.Intention.sensor,
+					subject: intention
+				});
+				var output = JSON.parse(exit.stdio.output);
+				debugger;
+				verify(output).arguments[0].is("--argument");
+				verify(output).arguments[1].is("argValue");
+				verify(output).environment["Intention_sensor"].evaluate(String).is("whoa");
+				verify(output).directory.evaluate(String).is(pwd.pathname);
+				jsh.shell.console(JSON.stringify(output.properties));
+				verify(output).properties.evaluate.property("inonit").evaluate.property("foo").is("inonit.bar");
 			}
 		}
 	//@ts-ignore
@@ -345,27 +407,33 @@ namespace slime.jsh.shell {
 		}
 	}
 
-	export interface JshShellJsh {
+	export interface JshInvoke {
 		<R>(p: oo.ForkInvocation<R>): R
 		<R>(p: oo.EngineInvocation<R>): R
+	}
 
+	export interface JshShellJsh extends JshInvoke {
 		src?: slime.jrunscript.file.Directory
 
-		require: slime.$api.fp.world.Means<{
+		lib?: slime.jrunscript.file.Directory
+		home?: slime.jrunscript.file.Directory
+
+		relaunch: (p?: {
+			environment?: (initial: slime.jrunscript.shell.Exports["environment"]) => slime.jrunscript.shell.Exports["environment"]
+		}) => void
+
+		require: slime.$api.fp.world.Means<
+			{
 				satisfied: () => boolean,
 				install: () => void
-			}, {
+			},
+			{
 				installing: void
 				installed: void
 				satisfied: void
 			}
 		>
 
-		lib?: slime.jrunscript.file.Directory
-		home?: slime.jrunscript.file.Directory
-		relaunch: (p?: {
-			environment?: (initial: slime.jrunscript.shell.Exports["environment"]) => slime.jrunscript.shell.Exports["environment"]
-		}) => void
 		debug: any
 		url: any
 	}
@@ -518,6 +586,8 @@ namespace slime.jsh.shell {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.Intention);
+
 				fifty.run(fifty.tests.exports);
 			}
 		}
