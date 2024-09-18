@@ -415,11 +415,110 @@
 			return argument;
 		}
 
+		/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.UnbuiltInstallation } */
+		var isUnbuilt = function(shell) {
+			return Boolean(shell["src"]);
+		};
+
+		/** @type { (p: slime.jsh.shell.Intention) => p is slime.jsh.shell.ExternalInstallationProgram } */
+		var isExternalInstallationInvocation = function(p) {
+			return Boolean(p["shell"]);
+		}
+
+		//	TODO	can this move into unbuiltToShellIntention?
+		/** @type { (p: slime.jsh.shell.UnbuiltInstallation) => slime.jrunscript.file.Location } */
+		var getSrcLauncher = function(p) {
+			return $context.api.file.Location.directory.relativePath("jsh")($context.api.file.Location.from.os(p.src));
+		};
+
+		/** @param { slime.jsh.shell.Intention["properties"] } properties */
+		var getPropertyArguments = function(properties) {
+			return Object.entries(properties).reduce(function(rv,entry) {
+				//	TODO	is any sort of escaping or anything required here? What if value has spaces? What if
+				//			name does?
+				rv.push("-D" + entry[0] + "=" + entry[1]);
+				return rv;
+			},[])
+		}
+
+		/** @type { (s: slime.jsh.shell.UnbuiltInstallation) => (p: slime.jsh.shell.Intention) => slime.jrunscript.shell.run.Intention } */
+		var unbuiltToShellIntention = function(s) {
+			return function(p) {
+				if (!isExternalInstallationInvocation(p)) throw new Error();
+				return {
+					//	TODO	will not work on Windows
+					command: "bash",
+					arguments: $api.Array.build(function(rv) {
+						rv.push(getSrcLauncher(s).pathname);
+						if (p.properties) rv.push.apply(rv, getPropertyArguments(p.properties));
+						rv.push(p.script);
+						if (p.arguments) rv.push.apply(rv, p.arguments);
+					}),
+					directory: p.directory,
+					environment: p.environment,
+					stdio: p.stdio
+				}
+			}
+		}
+
+		/** @type { (p: slime.jsh.shell.Intention) => slime.jrunscript.shell.run.Intention } */
+		var jshIntentionToShellIntention = function(p) {
+			/** @type { (p: slime.jsh.shell.BuiltInstallation) => slime.jrunscript.file.Location } */
+			var getHomeLauncher = function(p) {
+				return $context.api.file.Location.directory.relativePath("jsh.bash")($context.api.file.Location.from.os(p.home));
+			}
+
+			/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.BuiltInstallation } */
+			var isBuilt = function(shell) {
+				return Boolean(shell["home"]);
+			};
+
+			if (isExternalInstallationInvocation(p)) {
+				var shell = p.shell;
+				if (isUnbuilt(shell)) {
+					//	Below is necessary for TypeScript as of 5.1.6
+					var s = shell;
+					return unbuiltToShellIntention(s)(p);
+				} else if (isBuilt(shell)) {
+					//	TODO #1415	support this
+					if (p.properties) throw new TypeError("Unsupported: supplying properties to built shell.");
+					var downcast = shell;
+					return {
+						//	TODO	will not work on Windows
+						command: "bash",
+						arguments: $api.Array.build(function(rv) {
+							rv.push(getHomeLauncher(downcast).pathname);
+							rv.push(p.script);
+							if (p.arguments) rv.push.apply(rv, p.arguments);
+						}),
+						directory: p.directory,
+						environment: p.environment,
+						stdio: p.stdio
+					}
+				} else {
+					throw new Error("Unsupported external shell.");
+				}
+			} else {
+				return {
+					//	TODO	allow Java to be specified
+					command: module.java.launcher.pathname.toString(),
+					arguments: $api.Array.build(function(rv) {
+						rv.push("-jar", p.package);
+						if (p.arguments) rv.push.apply(rv, p.arguments);
+					}),
+					directory: p.directory,
+					environment: p.environment,
+					stdio: p.stdio
+				}
+			}
+		}
+
 		$exports.jsh = Object.assign(
 			/**
 			 * @type { slime.jsh.shell.Exports["run"] }
 			 */
 			function(p) {
+				//	Deal with old, two-argument form
 				if (!arguments[0].script && !arguments[0].arguments) {
 					$api.deprecate(function() {
 						p = {
@@ -431,6 +530,7 @@
 						}
 					}).apply(this,arguments);
 				}
+
 				if (!p.script) {
 					throw new TypeError("Required: script property indicating script to run.");
 				}
@@ -616,90 +716,28 @@
 				Installation: void(0),
 				/** @type { slime.jsh.shell.JshShellJsh["Intention" ]} */
 				Intention: {
-					toShellIntention: function(p) {
-						/** @type { (p: slime.jsh.shell.UnbuiltInstallation) => slime.jrunscript.file.Location } */
-						var getSrcLauncher = function(p) {
-							return $context.api.file.Location.directory.relativePath("jsh")($context.api.file.Location.from.os(p.src));
-						};
-
-						/** @type { (p: slime.jsh.shell.BuiltInstallation) => slime.jrunscript.file.Location } */
-						var getHomeLauncher = function(p) {
-							return $context.api.file.Location.directory.relativePath("jsh.bash")($context.api.file.Location.from.os(p.home));
-						}
-
-						/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.UnbuiltInstallation } */
-						var isUnbuilt = function(shell) {
-							return Boolean(shell["src"]);
-						};
-
-						/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.BuiltInstallation } */
-						var isBuilt = function(shell) {
-							return Boolean(shell["home"]);
-						};
-
-						/** @type { (p: slime.jsh.shell.Intention) => p is slime.jsh.shell.ExternalInstallationInvocation } */
-						var isExternalInstallationInvocation = function(p) {
-							return Boolean(p["shell"]);
-						}
-
-						/** @param { slime.jsh.shell.Intention["properties"] } properties */
-						var getPropertyArguments = function(properties) {
-							return Object.entries(properties).reduce(function(rv,entry) {
-								//	TODO	is any sort of escaping or anything required here? What if value has spaces? What if
-								//			name does?
-								rv.push("-D" + entry[0] + "=" + entry[1]);
-								return rv;
-							},[])
-						}
-
-						if (isExternalInstallationInvocation(p)) {
-							var shell = p.shell;
-							if (isUnbuilt(shell)) {
-								//	Below is necessary for TypeScript as of 5.1.6
-								var s = shell;
-								return {
-									//	TODO	will not work on Windows
-									command: "bash",
-									arguments: $api.Array.build(function(rv) {
-										rv.push(getSrcLauncher(s).pathname);
-										if (p.properties) rv.push.apply(rv, getPropertyArguments(p.properties));
-										rv.push(p.script);
-										if (p.arguments) rv.push.apply(rv, p.arguments);
-									}),
-									directory: p.directory,
-									environment: p.environment,
-									stdio: p.stdio
-								}
-							} else if (isBuilt(shell)) {
-								//	TODO #1415	support this
-								if (p.properties) throw new TypeError("Unsupported: supplying properties to built shell.");
-								var downcast = shell;
-								return {
-									//	TODO	will not work on Windows
-									command: "bash",
-									arguments: $api.Array.build(function(rv) {
-										rv.push(getHomeLauncher(downcast).pathname);
-										rv.push(p.script);
-										if (p.arguments) rv.push.apply(rv, p.arguments);
-									}),
-									directory: p.directory,
-									environment: p.environment,
-									stdio: p.stdio
+					toShellIntention: jshIntentionToShellIntention,
+					sensor: function(p) {
+						return function(events) {
+							if (isExternalInstallationInvocation(p)) {
+								if (isUnbuilt(p.shell)) {
+									return $api.fp.world.Sensor.now({
+										sensor: $context.module.subprocess.question,
+										subject: jshIntentionToShellIntention(p),
+										handlers: {
+											stderr: function(e) {
+												events.fire("stderr", e.detail);
+											},
+											stdout: function(e) {
+												events.fire("stdout", e.detail);
+											}
+										}
+									});
+								} else {
+									throw $api.TODO()();
 								}
 							} else {
-								throw new Error("Unsupported external shell.");
-							}
-						} else {
-							return {
-								//	TODO	allow Java to be specified
-								command: module.java.launcher.pathname.toString(),
-								arguments: $api.Array.build(function(rv) {
-									rv.push("-jar", p.package);
-									if (p.arguments) rv.push.apply(rv, p.arguments);
-								}),
-								directory: p.directory,
-								environment: p.environment,
-								stdio: p.stdio
+								throw $api.TODO()();
 							}
 						}
 					}

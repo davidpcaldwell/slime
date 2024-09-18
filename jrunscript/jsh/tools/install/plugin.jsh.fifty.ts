@@ -626,7 +626,7 @@ namespace slime.jsh {
 
 namespace slime.jsh.shell {
 	export interface Exports {
-		tools: jsh.shell.tools.Exports
+		tools: slime.jsh.shell.tools.Exports
 	}
 }
 
