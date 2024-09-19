@@ -109,7 +109,7 @@ namespace slime.jsh {
  * of a script.  It has two implementations: a Rhino implementation (`inonit.script.jsh.Rhino`) and a Nashorn implementation
  * (`inonit.script.jsh.Nashorn`); the entry point is chosen and executed by the launcher subsystem.
  *
- * It is documented at {@link slime.jsh.loader.internal}.
+ * It is documented at {@link slime.jsh.internal.loader}.
  *
  * ## Development Tools
  *

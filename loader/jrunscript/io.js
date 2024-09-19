@@ -21,9 +21,17 @@
 		var _java = $context._streams;
 
 		function InputStream(peer) {
+			/**
+			 *
+			 * @param { slime.jrunscript.runtime.io.input.ReaderConfiguration } [mode]
+			 * @returns
+			 */
 			var character = function(mode) {
-				if (!mode) mode = {};
-				if (!mode.charset) mode.charset = Packages.java.nio.charset.Charset.defaultCharset().name();
+				if (!mode) mode = {
+					charset: void(0),
+					LINE_SEPARATOR: void(0)
+				};
+				if (!mode.charset) mode.charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
 				var separator = mode.LINE_SEPARATOR;
 				//	TODO	No unit test for this method currently; does it work?
 				return Reader(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});

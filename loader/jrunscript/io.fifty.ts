@@ -7,12 +7,19 @@
 namespace slime.jrunscript.runtime.io {
 	type byte = number
 
+	export namespace input {
+		export interface ReaderConfiguration {
+			charset: string
+			LINE_SEPARATOR: string
+		}
+	}
+
 	/**
 	 * A stream from which bytes may be read.
 	 */
 	export interface InputStream {
 		/** A character input stream that reads this stream. */
-		character: (mode?: any) => Reader
+		character: (mode?: input.ReaderConfiguration) => Reader
 
 		/**
 		 * Closes the underlying stream.
