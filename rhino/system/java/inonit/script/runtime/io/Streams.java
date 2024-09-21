@@ -68,6 +68,23 @@ public class Streams {
 		writer.flush();
 	}
 
+	public static abstract class ReadEvents<T> {
+		public abstract void progress(T t);
+		public abstract void error(IOException e);
+		public abstract void done();
+	}
+
+	public void readAll(java.io.Reader reader, ReadEvents<String> events) {
+		try {
+			String string = readString(reader);
+			events.progress(string);
+		} catch (IOException e) {
+			events.error(e);
+		} finally {
+			events.done();
+		}
+	}
+
 	public String readLine(java.io.Reader reader, String lineTerminator) throws IOException {
 		String rv = "";
 		while(true) {
@@ -81,6 +98,32 @@ public class Streams {
 				return rv;
 			}
 		}
+	}
+
+	public void readLines(java.io.Reader reader, String lineTerminator, ReadEvents<String> events) {
+		boolean more = true;
+		String rv = "";
+		while(more) {
+			int i;
+			try {
+				i = reader.read();
+			} catch (IOException e) {
+				events.error(e);
+				return;
+			}
+			if (i != -1) {
+				char c = (char)i;
+				rv += c;
+			}
+			if (i == -1 || rv.endsWith(lineTerminator)) {
+				events.progress(rv);
+				rv = "";
+			}
+			if (i == -1) {
+				more = false;
+			}
+		}
+		events.done();
 	}
 
 	public static class Null {
