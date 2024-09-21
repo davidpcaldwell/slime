@@ -10,12 +10,13 @@
 	 *
 	 * @param { any } $platform
 	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { any } JavaAdapter
 	 * @param { any } XMLList
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.runtime.io.Context } $context
 	 * @param { slime.loader.Export<slime.jrunscript.runtime.io.Exports> } $export
 	 */
-	function($platform,Packages,XMLList,$api,$context,$export) {
+	function($platform,Packages,JavaAdapter,XMLList,$api,$context,$export) {
 		var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
 
 		var _java = $context._streams;
@@ -393,8 +394,62 @@
 				delimiter: {
 					line: LINE_SEPARATOR
 				}
+			},
+			character: {
+				default: {
+					all: function(input) {
+						return function(events) {
+							//	TODO	or use Packages.java.nio.charset.StandardCharsets.UTF_8?
+							var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
+							var reader = input.character({ charset: charset });
+							$context._streams.readAll(
+								reader.java.adapt(),
+								new JavaAdapter(
+									Packages.inonit.script.runtime.io.Streams.ReadEvents,
+									{
+										progress: function(string) {
+											events.fire("progress", string);
+										},
+										error: function(e) {
+											//	TODO	improve
+											throw new Error();
+										},
+										done: function() {
+											events.fire("done");
+										}
+									}
+								)
+							);
+						}
+					},
+					lines: function(input) {
+						return function(events) {
+							var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
+							var reader = input.character({ charset: charset });
+							$context._streams.readLines(
+								reader.java.adapt(),
+								"\n",
+								new JavaAdapter(
+									Packages.inonit.script.runtime.io.Streams.ReadEvents,
+									{
+										progress: function(string) {
+											events.fire("progress", string);
+										},
+										error: function(e) {
+											//	TODO	improve
+											throw new Error();
+										},
+										done: function() {
+											events.fire("done");
+										}
+									}
+								)
+							);
+						}
+					}
+				}
 			}
 		});
 	}
 //@ts-ignore
-)($platform, Packages, (function() { return this.XMLList })(), $api, $context, $export);
+)($platform, Packages, JavaAdapter, (function() { return this.XMLList })(), $api, $context, $export);

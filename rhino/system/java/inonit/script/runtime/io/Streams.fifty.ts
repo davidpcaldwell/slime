@@ -5,6 +5,12 @@
 //	END LICENSE
 
 namespace slime.jrunscript.native.inonit.script.runtime.io {
+	export namespace Streams {
+		export interface Events<T> {
+			//	opaque to JavaScript
+		}
+	}
+
 	export interface Streams {
 		/**
 		 * Creates an output stream that, when written to, will write the content written to each of two output streams.
@@ -17,6 +23,16 @@ namespace slime.jrunscript.native.inonit.script.runtime.io {
 
 		//	TODO	we don't really have a great way currently to represent bytes
 		readBytes: (input: java.io.InputStream) => slime.jrunscript.Array<number>
+
+		readString: (reader: slime.jrunscript.native.java.io.Reader) => slime.jrunscript.native.java.lang.String
+
+		readAll: {
+			(reader: slime.jrunscript.native.java.io.Reader, events: slime.jrunscript.native.inonit.script.runtime.io.Streams.Events<string>): void
+		}
+
+		readLines: {
+			(reader: slime.jrunscript.native.java.io.Reader, delimiter: string, events: slime.jrunscript.native.inonit.script.runtime.io.Streams.Events<string>): void
+		}
 
 		copy: {
 			(i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream, closeInputStream?: boolean): void
