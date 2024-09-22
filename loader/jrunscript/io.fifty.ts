@@ -249,15 +249,34 @@ namespace slime.jrunscript.runtime.io {
 		onFinish: (i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream) => void
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		InputStream: {
 			from: {
 				java: (p: slime.jrunscript.native.java.io.InputStream) => InputStream
 
-				string: (p: {
-					string: string
-					charset: Charset
-				}) => InputStream
+				/**
+				 * A set of operations that allow the creation of {@link InputStream}s from strings.
+				 */
+				string: {
+					/**
+					 * A version that allows the specification of an encoding when creating the input stream.
+					 */
+					encoding: (p: {
+						string: string
+						charset: Charset
+					}) => InputStream
+
+					default: (p: string) => InputStream
+				}
 			}
 		}
 	}
@@ -271,7 +290,7 @@ namespace slime.jrunscript.runtime.io {
 			fifty.tests.InputStream = function() {
 				var utf8 = test.subject.Charset.standard.utf8;
 
-				var input = test.subject.InputStream.from.string({
+				var input = test.subject.InputStream.from.string.encoding({
 					charset: utf8,
 					string: "foo"
 				});
@@ -423,6 +442,83 @@ namespace slime.jrunscript.runtime.io {
 		}
 	}
 
+	export interface Events<T> {
+		progress: T
+		done: void
+	}
+
+	export interface LineEvents extends Events<string> {
+		line: string
+	}
+
+	export interface Exports {
+		character: {
+			default: {
+				all: slime.$api.fp.world.Means<InputStream, Events<string>>
+				lines: (ending: string) => slime.$api.fp.world.Means<InputStream, LineEvents>
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.exports.character = fifty.test.Parent();
+
+			fifty.tests.exports.character.default = fifty.test.Parent();
+
+			var original = "foo\nbar\nbaz";
+
+			fifty.tests.exports.character.default.all = function() {
+				var input = test.subject.InputStream.from.string.default(original);
+				var all: string;
+				$api.fp.world.Means.now({
+					means: test.subject.character.default.all,
+					order: input,
+					handlers: {
+						progress: function(e) {
+							all = e.detail;
+						}
+					}
+				});
+				verify(all).is(original);
+			}
+
+			var lines = function(original: string, expected: string[]) {
+				var input = test.subject.InputStream.from.string.default(original);
+				var lines: string[] = [];
+				var all: string = "";
+				$api.fp.world.Means.now({
+					means: test.subject.character.default.lines("\n"),
+					order: input,
+					handlers: {
+						progress: function(e) {
+							all += e.detail;
+						},
+						line: function(e) {
+							lines.push(e.detail);
+						}
+					}
+				});
+				verify(all).is(original);
+				verify(lines).length.is(expected.length);
+				for (var i=0; i<expected.length; i++) {
+					verify(lines)[i].is(expected[i]);
+				}
+			}
+
+			fifty.tests.exports.character.default.lines = function() {
+				lines(original, ["foo","bar","baz"]);
+				lines(original + "\n", ["foo","bar","baz",""]);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -437,31 +533,19 @@ namespace slime.jrunscript.runtime.io {
 				run(fifty.tests.InputStream);
 
 				if (fifty.tests.E4X) run(fifty.tests.E4X);
+
+				run(fifty.tests.exports);
 			}
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export interface Events<T> {
-		progress: T
-		done: void
-	}
-
-	export interface Exports {
-		character: {
-			default: {
-				all: slime.$api.fp.world.Means<InputStream, Events<string>>
-				lines: slime.$api.fp.world.Means<InputStream, Events<string>>
-			}
-		}
-	}
 
 	(
 		function(
 			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
-			const { $api, jsh } = fifty.global;
+			const { jsh } = fifty.global;
 
 			fifty.tests.manual = {};
 
@@ -474,42 +558,6 @@ namespace slime.jrunscript.runtime.io {
 				var _default = Packages.java.nio.charset.Charset.defaultCharset();
 				jsh.shell.console(String(_default));
 			};
-
-			fifty.tests.manual.character = fifty.test.Parent();
-
-			fifty.tests.manual.character.default = fifty.test.Parent();
-
-			fifty.tests.manual.character.default.all = function() {
-				var me = fifty.jsh.file.object.getRelativePath("io.fifty.ts").java.adapt();
-				var _is = new Packages.java.io.FileInputStream(me);
-				var input = test.subject.InputStream.from.java(_is);
-				var all;
-				$api.fp.world.Means.now({
-					means: test.subject.character.default.all,
-					order: input,
-					handlers: {
-						progress: function(e) {
-							all = e.detail;
-						}
-					}
-				});
-				jsh.shell.console(all);
-			}
-
-			fifty.tests.manual.character.default.lines = function() {
-				var me = fifty.jsh.file.object.getRelativePath("io.fifty.ts").java.adapt();
-				var _is = new Packages.java.io.FileInputStream(me);
-				var input = test.subject.InputStream.from.java(_is);
-				$api.fp.world.Means.now({
-					means: test.subject.character.default.lines,
-					order: input,
-					handlers: {
-						progress: function(e) {
-							jsh.shell.console("LINE: " + e.detail);
-						}
-					}
-				});
-			}
 		}
 	//@ts-ignore
 	)(Packages,fifty);

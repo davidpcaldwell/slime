@@ -371,13 +371,26 @@
 			InputStream: {
 				from: {
 					java: InputStream,
-					string: function(p) {
-						var buffer = new Buffer();
-						var writer = p.charset.write(buffer.writeBinary());
-						writer.write(p.string);
-						writer.close();
-						return buffer.readBinary();
-					}
+					string: (
+						function() {
+							var charset = Charset(Packages.java.nio.charset.Charset.defaultCharset());
+							/** @type { slime.jrunscript.runtime.io.Exports["InputStream"]["from"]["string"]["encoding"] } */
+							var encoding = function(p) {
+								var buffer = new Buffer();
+								var writer = p.charset.write(buffer.writeBinary());
+								writer.write(p.string);
+								writer.close();
+								return buffer.readBinary();
+							};
+
+							var string = $api.fp.now(encoding, $api.fp.curry({ charset: charset }), $api.fp.flatten("string"));
+
+							return {
+								encoding: encoding,
+								default: string
+							}
+						}
+					)()
 				}
 			},
 			OutputStream: OutputStream,
@@ -408,7 +421,7 @@
 									Packages.inonit.script.runtime.io.Streams.ReadEvents,
 									{
 										progress: function(string) {
-											events.fire("progress", string);
+											events.fire("progress", String(string));
 										},
 										error: function(e) {
 											//	TODO	improve
@@ -422,30 +435,35 @@
 							);
 						}
 					},
-					lines: function(input) {
-						return function(events) {
-							var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
-							var reader = input.character({ charset: charset });
-							$context._streams.readLines(
-								reader.java.adapt(),
-								"\n",
-								new JavaAdapter(
-									Packages.inonit.script.runtime.io.Streams.ReadEvents,
-									{
-										progress: function(string) {
-											events.fire("progress", string);
-										},
-										error: function(e) {
-											//	TODO	improve
-											throw new Error();
-										},
-										done: function() {
-											events.fire("done");
+					lines: function(ending) {
+						return function(input) {
+							return function(events) {
+								var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
+								var reader = input.character({ charset: charset });
+								$context._streams.readLines(
+									reader.java.adapt(),
+									ending,
+									new JavaAdapter(
+										Packages.inonit.script.runtime.io.Streams.ReadEvents,
+										{
+											progress: function(_string) {
+												var string = String(_string);
+												events.fire("progress", string);
+												var terminated = string.substring(string.length - ending.length) == ending;
+												events.fire("line", (terminated) ? string.substring(0, string.length - ending.length) : string);
+											},
+											error: function(e) {
+												//	TODO	improve
+												throw new Error();
+											},
+											done: function() {
+												events.fire("done");
+											}
 										}
-									}
-								)
-							);
-						}
+									)
+								);
+							}
+						};
 					}
 				}
 			}
