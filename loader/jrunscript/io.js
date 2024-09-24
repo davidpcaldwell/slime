@@ -367,6 +367,71 @@
 			}
 		};
 
+		var input = {
+			character: {
+				encoding: function(charset) {
+					if (!charset) charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
+					return {
+						all: function(input) {
+							return function(events) {
+								//	TODO	or use Packages.java.nio.charset.StandardCharsets.UTF_8?
+								var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
+								var reader = input.character({ charset: charset });
+								$context._streams.readAll(
+									reader.java.adapt(),
+									new JavaAdapter(
+										Packages.inonit.script.runtime.io.Streams.ReadEvents,
+										{
+											progress: function(string) {
+												events.fire("progress", String(string));
+											},
+											error: function(e) {
+												//	TODO	improve
+												throw new Error();
+											},
+											done: function() {
+												events.fire("done");
+											}
+										}
+									)
+								);
+							}
+						},
+						lines: function(ending) {
+							return function(input) {
+								return function(events) {
+									var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
+									var reader = input.character({ charset: charset });
+									$context._streams.readLines(
+										reader.java.adapt(),
+										ending,
+										new JavaAdapter(
+											Packages.inonit.script.runtime.io.Streams.ReadEvents,
+											{
+												progress: function(_string) {
+													var string = String(_string);
+													events.fire("progress", string);
+													var terminated = string.substring(string.length - ending.length) == ending;
+													events.fire("line", (terminated) ? string.substring(0, string.length - ending.length) : string);
+												},
+												error: function(e) {
+													//	TODO	improve
+													throw new Error();
+												},
+												done: function() {
+													events.fire("done");
+												}
+											}
+										)
+									);
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+
 		$export({
 			InputStream: {
 				from: {
@@ -408,62 +473,28 @@
 					line: LINE_SEPARATOR
 				}
 			},
-			character: {
-				default: {
-					all: function(input) {
-						return function(events) {
-							//	TODO	or use Packages.java.nio.charset.StandardCharsets.UTF_8?
-							var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
-							var reader = input.character({ charset: charset });
-							$context._streams.readAll(
-								reader.java.adapt(),
-								new JavaAdapter(
-									Packages.inonit.script.runtime.io.Streams.ReadEvents,
-									{
-										progress: function(string) {
-											events.fire("progress", String(string));
-										},
-										error: function(e) {
-											//	TODO	improve
-											throw new Error();
-										},
-										done: function() {
-											events.fire("done");
-										}
+			input: {
+				process: function(processor) {
+					return $api.fp.world.Means.output(processor);
+				},
+				character: {
+					encoding: function(encoding) {
+						return {
+							all: function(handlers) {
+								return {
+									means: input.character.encoding(encoding).all,
+									handlers: handlers
+								}
+							},
+							lines: function(terminator) {
+								return function(handlers) {
+									return {
+										means: input.character.encoding(encoding).lines(terminator),
+										handlers: handlers
 									}
-								)
-							);
-						}
-					},
-					lines: function(ending) {
-						return function(input) {
-							return function(events) {
-								var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
-								var reader = input.character({ charset: charset });
-								$context._streams.readLines(
-									reader.java.adapt(),
-									ending,
-									new JavaAdapter(
-										Packages.inonit.script.runtime.io.Streams.ReadEvents,
-										{
-											progress: function(_string) {
-												var string = String(_string);
-												events.fire("progress", string);
-												var terminated = string.substring(string.length - ending.length) == ending;
-												events.fire("line", (terminated) ? string.substring(0, string.length - ending.length) : string);
-											},
-											error: function(e) {
-												//	TODO	improve
-												throw new Error();
-											},
-											done: function() {
-												events.fire("done");
-											}
-										}
-									)
-								);
+								}
 							}
-						};
+						}
 					}
 				}
 			}
