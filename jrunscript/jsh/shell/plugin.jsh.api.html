@@ -126,7 +126,6 @@ END LICENSE
 			</li>
 			<li class="function">
 				<div class="name"><a id="shell">shell</a></div>
-				<span>Executes a subprocess.</span>
 				<div class="arguments">
 					<div class="label">Arguments</div>
 					<ol>
@@ -179,19 +178,6 @@ END LICENSE
 						</li>
 					</ol>
 				</div>
-				<script jsapi:id="shell" type="application/x.jsapi#tests">
-					var launcher = module.java.home.getFile("bin/java");
-					if (!launcher) launcher = module.java.home.getFile("bin/java.exe");
-					if (!launcher) throw new Error("Could not find Java launcher under " + module.java.home);
-					var success = module.shell({
-						command: launcher,
-						arguments: ["-version"],
-						evaluate: function(result) {
-							return (result.status == 0) ? "success" : "failure";
-						}
-					});
-					test(success == "success");
-				</script>
 			</li>
 			<li class="function" jsapi:id="kotlin">
 				<div class="name">kotlin</div>

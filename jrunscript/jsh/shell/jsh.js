@@ -133,59 +133,70 @@
 			return stdio[x];
 		}
 
-		$exports.shell = function(p) {
-			if (arguments.length >= 2) {
-				$api.deprecate(function() {
-					p = $context.api.js.Object.set({}, {
-						command: arguments[0],
-						arguments: arguments[1]
-					}, arguments[2]);
-				}).apply(this,arguments);
-			}
-			if (!p.command) {
-				throw new TypeError("No command given: arguments = " + Array.prototype.join.call(arguments,"|"));
-			}
-			var run = $context.api.js.Object.set({}, p);
-			(function() {
-				if (run.command.file && !run.command.pathname) {
+		$exports.shell = (
+			function(p) {
+				if (arguments.length >= 2) {
 					$api.deprecate(function() {
-						//	Pathname given; turn into file
-						run.command = run.command.file;
-					})();
+						p = $api.Object.compose(
+							{
+								command: arguments[0],
+								arguments: arguments[1]
+							},
+							arguments[2]
+						);
+					}).apply(this,arguments);
 				}
-				if (typeof(run.command) == "string") {
-					$api.deprecate(function() {
-						//	string given; mark but do nothing
-						var breakpoint = 1;
-					})();
-					return;
-				}
-				if (!run.command.pathname) {
-					throw new TypeError("command property is not a file");
-				}
-			})();
-			(function() {
-				var preprocessor = function(item) {
-					if (run.filesystem) {
-						if (item.java && item.java.adapt && run.filesystem.java && run.filesystem.java.adapt) {
-							var _file = item.java.adapt();
-							return run.filesystem.java.adapt(_file);
-						}
-					}
-					return item;
-				};
-				if (run.arguments) {
-					run.arguments = run.arguments.map(preprocessor);
-				}
-			})();
-			(function() {
-				if (!run.evaluate && run.onExit) {
-					run.evaluate = $api.deprecate(run.onExit);
-				}
-			})();
 
-			return $exports.run(run);
-		}
+				if (!p.command) {
+					throw new TypeError("No command given: arguments = " + Array.prototype.join.call(arguments,"|"));
+				}
+
+				/** @type { Parameters<slime.jsh.shell.Exports["shell"]>[0] } */
+				var run = $api.Object.compose(p);
+
+				(function() {
+					if (run.command.file && !run.command.pathname) {
+						$api.deprecate(function() {
+							//	Pathname given; turn into file
+							run.command = run.command.file;
+						})();
+					}
+					if (typeof(run.command) == "string") {
+						$api.deprecate(function() {
+							//	string given; mark but do nothing
+							var breakpoint = 1;
+						})();
+						return;
+					}
+					if (!run.command.pathname) {
+						throw new TypeError("command property is not a file");
+					}
+				})();
+
+				(function() {
+					var preprocessor = function(item) {
+						if (run.filesystem) {
+							if (item.java && item.java.adapt && run.filesystem.java && run.filesystem.java.adapt) {
+								var _file = item.java.adapt();
+								return run.filesystem.java.adapt(_file);
+							}
+						}
+						return item;
+					};
+					if (run.arguments) {
+						run.arguments = run.arguments.map(preprocessor);
+					}
+				})();
+
+				(function() {
+					if (!run.evaluate && run.onExit) {
+						run.evaluate = $api.deprecate(run.onExit);
+					}
+				})();
+
+				return $exports.run(run);
+			}
+		);
 
 		//	TODO	is rhino/file.filesystem.$jsh.os(...) still necessary? Was used here.
 
