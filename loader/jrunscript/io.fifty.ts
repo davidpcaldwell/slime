@@ -451,11 +451,22 @@ namespace slime.jrunscript.runtime.io {
 		line: string
 	}
 
+	export type Processor<E> = {
+		means: slime.$api.fp.world.Means<InputStream,E>
+		handlers?: slime.$api.event.Handlers<E>
+	}
+
+	export interface StringProcessor {
+		all: (handlers: slime.$api.event.Handlers<Events<string>>) => Processor<Events<string>>
+		lines: (terminator: string) => (handlers: slime.$api.event.Handlers<LineEvents>) => Processor<LineEvents>
+	}
+
 	export interface Exports {
-		character: {
-			default: {
-				all: slime.$api.fp.world.Means<InputStream, Events<string>>
-				lines: (ending: string) => slime.$api.fp.world.Means<InputStream, LineEvents>
+		input: {
+			process: <E>(processor: Processor<E>) => (input: InputStream) => void
+
+			character: {
+				encoding: (encoding?: string) => StringProcessor
 			}
 		}
 	}
@@ -465,55 +476,69 @@ namespace slime.jrunscript.runtime.io {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { $api, jsh } = fifty.global;
-
-			fifty.tests.exports.character = fifty.test.Parent();
-
-			fifty.tests.exports.character.default = fifty.test.Parent();
 
 			var original = "foo\nbar\nbaz";
 
-			fifty.tests.exports.character.default.all = function() {
+			fifty.tests.exports.input = fifty.test.Parent();
+
+			fifty.tests.exports.input.processor = fifty.test.Parent();
+
+			fifty.tests.exports.input.processor.string = function() {
 				var input = test.subject.InputStream.from.string.default(original);
 				var all: string;
-				$api.fp.world.Means.now({
-					means: test.subject.character.default.all,
-					order: input,
-					handlers: {
+				test.subject.input.process(
+					test.subject.input.character.encoding().all({
 						progress: function(e) {
 							all = e.detail;
 						}
-					}
-				});
+					})
+				)(input);
 				verify(all).is(original);
 			}
 
-			var lines = function(original: string, expected: string[]) {
-				var input = test.subject.InputStream.from.string.default(original);
-				var lines: string[] = [];
-				var all: string = "";
-				$api.fp.world.Means.now({
-					means: test.subject.character.default.lines("\n"),
-					order: input,
-					handlers: {
-						progress: function(e) {
-							all += e.detail;
-						},
-						line: function(e) {
-							lines.push(e.detail);
-						}
-					}
+			fifty.tests.exports.input.processor.lines = function() {
+				fifty.run(function noTerimnator() {
+					var input = test.subject.InputStream.from.string.default(original);
+					var all: string = "";
+					var lines: string[] = [];
+					test.subject.input.process(
+						test.subject.input.character.encoding().lines("\n")({
+							progress: function(e) {
+								all += e.detail;
+							},
+							line: function(e) {
+								lines.push(e.detail);
+							}
+						})
+					)(input);
+					verify(all).is(original);
+					verify(lines).length.is(3);
+					verify(lines)[0].is("foo");
+					verify(lines)[1].is("bar");
+					verify(lines)[2].is("baz");
 				});
-				verify(all).is(original);
-				verify(lines).length.is(expected.length);
-				for (var i=0; i<expected.length; i++) {
-					verify(lines)[i].is(expected[i]);
-				}
-			}
 
-			fifty.tests.exports.character.default.lines = function() {
-				lines(original, ["foo","bar","baz"]);
-				lines(original + "\n", ["foo","bar","baz",""]);
+				fifty.run(function terminator() {
+					var input = test.subject.InputStream.from.string.default(original + "\n");
+					var all: string = "";
+					var lines: string[] = [];
+					test.subject.input.process(
+						test.subject.input.character.encoding().lines("\n")({
+							progress: function(e) {
+								all += e.detail;
+							},
+							line: function(e) {
+								lines.push(e.detail);
+							}
+						})
+					)(input);
+					verify(all).is(original + "\n");
+					verify(lines).length.is(4);
+					verify(lines)[0].is("foo");
+					verify(lines)[1].is("bar");
+					verify(lines)[2].is("baz");
+					verify(lines)[3].is("");
+				})
 			}
 		}
 	//@ts-ignore
