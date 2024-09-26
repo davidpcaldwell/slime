@@ -57,6 +57,160 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports extends slime.jrunscript.shell.Exports {
+		/**
+		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
+		 */
+		engine: string
+	}
+
+	export interface Exports extends slime.jrunscript.shell.Exports {
+		/**
+		 * Exits from this shell. This ordinarily terminates the process, although some shells (for example, those launched by the
+		 * `jsh.shell.jsh` method) can sometimes be run in-process.
+		 *
+		 * @param code The exit code to return to the parent, which is ordinarily an operating system process.
+		 */
+		exit: (code: number) => never
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.exports.exit = function() {
+				var intention = test.shells.unbuilt().invoke({
+					//	TODO	shouldn't this script be here?
+					script: fifty.jsh.file.relative("test/exit.jsh.js").pathname
+				});
+				var result = $api.fp.world.Sensor.now({
+					sensor: jsh.shell.subprocess.question,
+					subject: intention
+				});
+				fifty.verify(result).status.is(3);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports extends slime.jrunscript.shell.Exports {
+		/**
+		 * The standard I/O streams for this shell.
+		 */
+		stdio: {
+			//	TODO	originally this supported methods of Reader also, should it?
+			input: slime.jrunscript.runtime.io.InputStream
+			output: slime.jrunscript.shell.context.Console
+			error: slime.jrunscript.shell.context.Console
+		}
+
+		/** @deprecated Use {@link Exports["stdio"]["input"]} */
+		stdin: Exports["stdio"]["input"]
+		/** @deprecated Use {@link Exports["stdio"]["output"]} */
+		stdout: Exports["stdio"]["output"]
+		/** @deprecated Use {@link Exports["stdio"]["error"]} */
+		stderr: Exports["stdio"]["error"]
+	}
+
+	export interface Exports extends slime.jrunscript.shell.Exports {
+		/**
+		 * Writes a message to the shell's standard output stream, followed by a line terminator.
+		 */
+		echo: slime.jrunscript.shell.Console
+
+		/**
+		 * Writes a message to the console (as represented by the shell's standard error stream), followed by a line terminator.
+		 */
+		console: slime.jrunscript.shell.Console
+
+		//	TODO	migrate jrunscript/jsh/test/manual/issue87.jsh.js here
+		/**
+		 * @deprecated Can use `jsh.shell.echo`, `jsh.shell.console`, or use stream APIs to write to other streams
+		 *
+		 * Writes a message to the console, or to another specified destination.
+		 *
+		 * @param message A message to echo.
+		 * @param mode (optional) Specifies a destination. The `stream` property specifies a stream to which to write
+		 * messages.
+		 */
+		println: (
+			message: string,
+			mode: {
+				/**
+				 * A destination stream for messages.
+				 */
+				stream: any
+			}
+		) => void
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+			const module = fifty.global.jsh.shell;
+
+			fifty.tests.exports.println = function() {
+				var buffer = new jsh.io.Buffer();
+				var stream = buffer.writeText();
+
+				//@ts-ignore
+				module.println(true, { stream: stream });
+
+				buffer.close();
+				// TODO: hard-coded line terminator below
+				var buffered = buffer.readText().asString().split("\n");
+				verify(buffered).length.is(2);
+				verify(buffered)[0].is("true");
+				verify(buffered)[1].is("");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports extends slime.jrunscript.shell.Exports {
+		/**
+		 * @deprecated Replaced by `run`.
+		 *
+		 * Executes a subprocess.
+		 */
+		shell: {
+			(p: any): any
+			(a: any, b: any, c: any): any
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const module = fifty.global.jsh.shell;
+
+			const test = function(b: boolean) {
+				fifty.verify(b).is(true);
+			}
+
+			fifty.tests.exports.shell = function() {
+				var launcher = module.java.home.getFile("bin/java");
+				if (!launcher) launcher = module.java.home.getFile("bin/java.exe");
+				if (!launcher) throw new Error("Could not find Java launcher under " + module.java.home);
+				var success = module.shell({
+					command: launcher,
+					arguments: ["-version"],
+					evaluate: function(result) {
+						return (result.status == 0) ? "success" : "failure";
+					}
+				});
+				test(success == "success");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface JshShellJsh {
 	}
 
@@ -439,124 +593,10 @@ namespace slime.jsh.shell {
 	}
 
 	export interface Exports extends slime.jrunscript.shell.Exports {
-		/**
-		 * Exits from this shell. This ordinarily terminates the process, although some shells (for example, those launched by the
-		 * `jsh.shell.jsh` method) can sometimes be run in-process.
-		 *
-		 * @param code The exit code to return to the parent, which is ordinarily an operating system process.
-		 */
-		exit: (code: number) => never
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { $api, jsh } = fifty.global;
-
-			fifty.tests.exports.exit = function() {
-				var intention = test.shells.unbuilt().invoke({
-					//	TODO	shouldn't this script be here?
-					script: fifty.jsh.file.relative("test/exit.jsh.js").pathname
-				});
-				var result = $api.fp.world.Sensor.now({
-					sensor: jsh.shell.subprocess.question,
-					subject: intention
-				});
-				fifty.verify(result).status.is(3);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export interface Exports extends slime.jrunscript.shell.Exports {
-		/**
-		 * Writes a message to the shell's standard output stream, followed by a line terminator.
-		 */
-		echo: slime.jrunscript.shell.Console
-
-		/**
-		 * Writes a message to the console (as represented by the shell's standard error stream), followed by a line terminator.
-		 */
-		console: slime.jrunscript.shell.Console
-
-		//	TODO	migrate jrunscript/jsh/test/manual/issue87.jsh.js here
-		/**
-		 * @deprecated Can use `jsh.shell.echo`, `jsh.shell.console`, or use stream APIs to write to other streams
-		 *
-		 * Writes a message to the console, or to another specified destination.
-		 *
-		 * @param message A message to echo.
-		 * @param mode (optional) Specifies a destination. The `stream` property specifies a stream to which to write
-		 * messages.
-		 */
-		println: (
-			message: string,
-			mode: {
-				/**
-				 * A destination stream for messages.
-				 */
-				stream: any
-			}
-		) => void
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { jsh } = fifty.global;
-			const module = fifty.global.jsh.shell;
-
-			fifty.tests.exports.println = function() {
-				var buffer = new jsh.io.Buffer();
-				var stream = buffer.writeText();
-
-				//@ts-ignore
-				module.println(true, { stream: stream });
-
-				buffer.close();
-				// TODO: hard-coded line terminator below
-				var buffered = buffer.readText().asString().split("\n");
-				verify(buffered).length.is(2);
-				verify(buffered)[0].is("true");
-				verify(buffered)[1].is("");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export interface Exports extends slime.jrunscript.shell.Exports {
-		/**
-		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
-		 */
-		engine: string
-
-		/**
-		 * The standard I/O streams for this shell.
-		 */
-		stdio: {
-			//	TODO	originally this supported methods of Reader also, should it?
-			input: slime.jrunscript.runtime.io.InputStream
-			output: slime.jrunscript.shell.context.Console
-			error: slime.jrunscript.shell.context.Console
-		}
-
-		/** @deprecated Use {@link Exports["stdio"]["input"]} */
-		stdin: Exports["stdio"]["input"]
-		/** @deprecated Use {@link Exports["stdio"]["output"]} */
-		stdout: Exports["stdio"]["output"]
-		/** @deprecated Use {@link Exports["stdio"]["error"]} */
-		stderr: Exports["stdio"]["error"]
-
 		//	TODO	shell?
 		rhino: {
 			classpath: slime.jrunscript.file.Searchpath
 		}
-
-		/** @deprecated Replaced by `run`. */
-		shell: any
 
 		/**
 		 * Identical to {@link slime.jrunscript.shell.Exports | slime.jrunscript.shell.Exports `run()`} except that if the
