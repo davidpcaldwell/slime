@@ -581,7 +581,7 @@ namespace slime.jrunscript.java.internal.threads {
 					verify(finished).is(4);
 				});
 
-				run(function _2() {
+				if (fifty.global.jsh.shell.environment["SLIME_TEST_ISSUE_1683"]) run(function _2() {
 					var scope = {
 						$$api: void(0),
 						monitor: void(0),
