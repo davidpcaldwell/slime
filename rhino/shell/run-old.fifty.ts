@@ -5,11 +5,15 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell {
+	export namespace run.old {
+		export type evaluate<T> = (p: run.old.Result) => T
+	}
+
 	export namespace oo {
 		export type Run<P = run.old.Argument> = {
 			<T>(
 				p: P & {
-					evaluate: (p: run.old.Result) => T
+					evaluate: run.old.evaluate<T>
 				},
 				events?: run.old.Handler
 			): T
