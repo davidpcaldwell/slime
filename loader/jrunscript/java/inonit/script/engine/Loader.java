@@ -175,6 +175,18 @@ public abstract class Loader {
 				return rv;
 			}
 
+			private java.lang.reflect.Method polyfillGetDefinedPackage() {
+				try {
+					return ClassLoader.class.getMethod("getDefinedPackage", String.class);
+				} catch (NoSuchMethodException e) {
+					try {
+						return ClassLoader.class.getDeclaredMethod("getPackage", String.class);
+					} catch (NoSuchMethodException ee) {
+						throw new RuntimeException(ee);
+					}
+				}
+			}
+
 			protected Class<?> findClass(String name) throws ClassNotFoundException {
 				//LOGGER.log(Level.FINE, "findClass(" + name + ")");
 				String path = name.replace('.', '/') + ".class";
@@ -189,11 +201,18 @@ public abstract class Loader {
 							//LOGGER.log(Level.FINE, "findClass(" + name + ") using source " + source);
 							Code.Loader.Resource in = source.getFile(path);
 							if (in != null) {
-								if (getPackage(packageName) == null) {
-									definePackage(packageName,null,null,null,null,null,null,null);
+								java.lang.reflect.Method getDefinedPackage = polyfillGetDefinedPackage();
+								try {
+									if (getDefinedPackage.invoke(this, packageName) == null) {
+										definePackage(packageName,null,null,null,null,null,null,null);
+									}
+									byte[] b = streams.readBytes(in.getInputStream());
+									return defineClass(name, b, 0, b.length);
+								} catch (IllegalAccessException e) {
+									throw new RuntimeException(e);
+								} catch (java.lang.reflect.InvocationTargetException e) {
+									throw new RuntimeException(e.getCause());
 								}
-								byte[] b = streams.readBytes(in.getInputStream());
-								return defineClass(name, b, 0, b.length);
 							}
 						} catch (IOException e) {
 							//	do nothing
