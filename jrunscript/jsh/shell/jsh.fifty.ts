@@ -172,6 +172,38 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace old {
+		export namespace shell {
+			export interface Argument {
+				/**
+				 * The executable to run, or its location
+				 */
+				command: slime.jrunscript.file.File | slime.jrunscript.file.Pathname | string
+
+				/**
+				 * An array containing strings and/or {@link slime.jrunscript.file.Pathname} objects.
+				 */
+				arguments: (string | slime.jrunscript.file.Pathname)[]
+
+				/**
+				 * If present, all arguments of type {@link slime.jrunscript.file.Pathname} are converted into pathnames in this
+				 * filesystem before the subprocess is launched.
+				 */
+				filesystem?: {
+					java: {
+						adapt: (file: slime.jrunscript.native.java.io.File) => slime.jrunscript.file.Pathname
+					}
+				}
+
+				environment?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["environment"]
+				stdio?: any
+				directory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"]
+				evaluate: slime.jrunscript.shell.run.old.evaluate<any>
+				onExit?: slime.jrunscript.shell.run.old.evaluate<any>
+			}
+		}
+	}
+
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		/**
 		 * @deprecated Replaced by `run`.
@@ -179,7 +211,8 @@ namespace slime.jsh.shell {
 		 * Executes a subprocess.
 		 */
 		shell: {
-			(p: any): any
+			(p: old.shell.Argument): any
+
 			(a: any, b: any, c: any): any
 		}
 	}

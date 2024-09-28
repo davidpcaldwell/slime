@@ -124,61 +124,6 @@ END LICENSE
 			<li jsapi:replace="window.slime.definition.inherited()">
 
 			</li>
-			<li class="function">
-				<div class="name"><a id="shell">shell</a></div>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="object">
-							<span></span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">command</div>
-									<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
-									<span>The executable to run.</span>
-								</li>
-								<li class="value">
-									<div class="name">arguments</div>
-									<span class="type">Array</span>
-									<span>
-										An array containing strings and/or
-										<a href="../../rhino/file/api.html#types.Pathname">Pathname</a>
-										objects.
-									</span>
-								</li>
-								<li class="value">
-									<div class="name">filesystem</div>
-									<span class="type"><a href="../../rhino/file/api.html#types.filesystem">filesystem</a></span>
-									<span>
-										(optional) If present, all arguments of type
-										<code><a href="../../rhino/file/api.html#types.Pathname">Pathname</a></code>
-										are converted
-										into pathnames in this filesystem before the subprocess is launched.
-									</span>
-								</li>
-								<li class="value" jsapi:reference="getApi('../../../rhino/shell/api.html').getElement('exports/run/arguments/run.environment')">
-									<div class="name">environment</div>
-									<span><a href="../../rhino/shell/api.html#run.environment">See rhino/shell</a></span>
-								</li>
-								<li class="value">
-									<div class="name">stdio</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-								<li class="value" jsapi:reference="getApi('../../../rhino/shell/api.html').getElement('exports/run/arguments/run.directory')">
-									<div class="name">directory</div>
-									<span><a href="../../rhino/shell/api.html#run.directory">See rhino/shell</a></span>
-								</li>
-								<li class="function" jsapi:reference="getApi('../../../rhino/shell/api.html').getElement('exports/run/arguments/run.evaluate')">
-									<div class="name">evaluate</div>
-									<span><a href="../../rhino/shell/api.html#run.evaluate">See rhino/shell</a></span>
-								</li>
-							</ul>
-						</li>
-					</ol>
-				</div>
-			</li>
 			<li class="function" jsapi:id="kotlin">
 				<div class="name">kotlin</div>
 				<span>Executes a Kotlin script in an external process.</span>

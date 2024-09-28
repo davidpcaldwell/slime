@@ -151,50 +151,71 @@
 					throw new TypeError("No command given: arguments = " + Array.prototype.join.call(arguments,"|"));
 				}
 
-				/** @type { Parameters<slime.jsh.shell.Exports["shell"]>[0] } */
+				/** @type { slime.jsh.shell.old.shell.Argument } */
 				var run = $api.Object.compose(p);
 
-				(function() {
-					if (run.command.file && !run.command.pathname) {
-						$api.deprecate(function() {
-							//	Pathname given; turn into file
-							run.command = run.command.file;
+				/** @typedef { slime.jsh.shell.old.shell.Argument["command"] } Command */
+
+				/** @type { (command: Command) => command is slime.jrunscript.file.Pathname } */
+				var isPathname = function(command) {
+					return Boolean(command["file"]) && !Boolean(command["pathname"]);
+				};
+
+				/** @type { (command: Command) => command is string } */
+				var isString = function(command) {
+					return typeof(command) == "string";
+				};
+
+				var file = (function() {
+					var it = run.command;
+					if (isPathname(it)) {
+						return it.file;
+					} else if (isString(it)) {
+						var s = it;
+						return $api.deprecate(function() {
+							return $context.api.file.Pathname(s).file;
 						})();
-					}
-					if (typeof(run.command) == "string") {
-						$api.deprecate(function() {
-							//	string given; mark but do nothing
-							var breakpoint = 1;
-						})();
-						return;
-					}
-					if (!run.command.pathname) {
-						throw new TypeError("command property is not a file");
+					} else {
+						return it;
 					}
 				})();
 
+				/** @type { Omit<slime.jsh.shell.old.shell.Argument,"command"> & { command: slime.jrunscript.file.File }} */
+				var now = $api.Object.compose(run, { command: file });
+
 				(function() {
+					/** @typedef { string | slime.jrunscript.file.Pathname } Argument */
+					/** @type { (item: Argument) => item is slime.jrunscript.file.Pathname } */
+					var argumentIsPathname = function(item) {
+						return Boolean(item["java"]);
+					}
+
+					/**
+					 *
+					 * @param { Argument } item
+					 * @returns { Argument }
+					 */
 					var preprocessor = function(item) {
-						if (run.filesystem) {
-							if (item.java && item.java.adapt && run.filesystem.java && run.filesystem.java.adapt) {
+						if (now.filesystem) {
+							if (argumentIsPathname(item) && now.filesystem.java && now.filesystem.java.adapt) {
 								var _file = item.java.adapt();
-								return run.filesystem.java.adapt(_file);
+								return now.filesystem.java.adapt(_file);
 							}
 						}
 						return item;
 					};
-					if (run.arguments) {
-						run.arguments = run.arguments.map(preprocessor);
+					if (now.arguments) {
+						now.arguments = now.arguments.map(preprocessor);
 					}
 				})();
 
 				(function() {
-					if (!run.evaluate && run.onExit) {
-						run.evaluate = $api.deprecate(run.onExit);
+					if (!now.evaluate && now.onExit) {
+						now.evaluate = $api.deprecate(now.onExit);
 					}
 				})();
 
-				return $exports.run(run);
+				return $exports.run(now);
 			}
 		);
 
