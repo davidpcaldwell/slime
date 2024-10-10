@@ -610,9 +610,68 @@ namespace slime.jrunscript.shell {
 				vmarguments?: string[]
 			}
 		>
+	}
 
-		kotlin: any
+	export interface Exports {
+		/**
+		 * Executes a Kotlin script in an external process.
+		 * @param p
+		 * @param receiver
+		 * @returns See {@link Exports["run"]}.
+		 */
+		kotlin: (p: Omit<Parameters<Exports["run"]>[0],"command"> & {
+			/**
+			 * The script (`.kts`) to run.
+			 */
+			script: slime.jrunscript.file.File
+		}, receiver?: any) => any
+	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.manual.kotlin = function() {
+				if (!jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
+					$api.fp.world.Sensor.now({
+						sensor: jsh.shell.jsh.Intention.sensor,
+						subject: {
+							shell: {
+								src: fifty.jsh.file.relative("../..").pathname
+							},
+							script: fifty.jsh.file.relative("../../jrunscript/jsh/tools/install/kotlin.jsh.js").pathname
+						}
+					})
+				}
+			}
+
+			fifty.tests.exports.kotlin = function() {
+				if (jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
+					var PATH = jsh.shell.PATH.pathnames;
+					PATH.unshift(jsh.shell.java.home.getRelativePath("bin"));
+					var result: { status: number, stdio: { error: string } } = jsh.shell.kotlin({
+						script: fifty.jsh.file.object.getRelativePath("test/hello.kts").file,
+						environment: $api.Object.compose(jsh.shell.environment, {
+							PATH: jsh.file.Searchpath(PATH).toString()
+						}),
+						stdio: {
+							error: String
+						}
+					});
+					verify(result).status.is(0);
+					verify(result).stdio.error.is("Hello from SLIME Kotlin!\n");
+				} else {
+					verify("No Kotlin.").is("No Kotlin.");
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		rhino: any
 
 		/** @deprecated Replaced by the {@link slime.jrunscript.shell.exports.subprocess subprocess} APIs. */

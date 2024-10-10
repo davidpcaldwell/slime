@@ -136,6 +136,14 @@ namespace slime.jsh.shell {
 				fifty.load("jsh.fifty.ts");
 				fifty.load("tsc.fifty.ts");
 			}
+
+			fifty.tests.manual = {};
+
+			fifty.tests.manual.kotlin = function() {
+				const { jsh } = fifty.global;
+
+				jsh.shell.console("jsh.shell.kotlin = " + jsh.shell.kotlin);
+			}
 		}
 	//@ts-ignore
 	)(fifty);
