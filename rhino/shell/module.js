@@ -451,10 +451,10 @@
 			}).object();
 			return scripts.run_old.$run(Object.assign({}, copy, {
 				command: $context.kotlin.compiler,
-				arguments: function(rv) {
+				arguments: $api.Array.build(function(rv) {
 					rv.push("-script", p.script);
 					if (p.arguments) rv.push.apply(rv,p.arguments);
-				}
+				})
 			}), events);
 		});
 
