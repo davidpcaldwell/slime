@@ -134,6 +134,11 @@
 		}
 
 		$exports.shell = (
+			/**
+			 *
+			 * @param { slime.jsh.shell.old.shell.Argument } p
+			 * @returns
+			 */
 			function(p) {
 				if (arguments.length >= 2) {
 					$api.deprecate(function() {
@@ -285,7 +290,7 @@
 							script: p.script,
 							arguments: p.arguments
 						};
-						result.classpath = p["classpath"];
+						result.classpath = p.classpath;
 						return p.evaluate(result);
 					}
 				}
@@ -422,8 +427,8 @@
 				}
 			};
 
-			if (p["classpath"]) {
-				launcherProperties["jsh.shell.classpath"] = String(p["classpath"]);
+			if (p.classpath) {
+				launcherProperties["jsh.shell.classpath"] = String(p.classpath);
 			}
 
 			copySystemPropertyToLauncherPropertiesIfPresent("jsh.engine.rhino.classpath");
