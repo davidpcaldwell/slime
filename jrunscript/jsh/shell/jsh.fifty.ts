@@ -568,24 +568,49 @@ namespace slime.jsh.shell {
 
 		export type Result = ForkResult | EngineResult
 
-		export interface Invocation {
+		export type evaluate<I,R> = (p: I) => R
+
+		export interface Invocation<R = Result> {
+			/**
+			 * The pathname of the script to run.
+			 */
 			script: slime.jrunscript.file.File
+
 			arguments?: Argument[]
+
+			/**
+			 * If `true`, the script is forced to execute in a separate process. Otherwise, jsh may attempt to execute it in-process
+			 * if it deems the script to be compatible with its execution environment.
+			 */
+			fork?: boolean
+
+			//	TODO	is the below comment correct, or does it pertain to the loader?
+			/**
+			 * The classpath to use when running the `jsh` launcher.
+			 */
+			classpath?: string
+
 			environment?: any
 			stdio?: any
 			directory?: any
 			workingDirectory?: any
 			properties?: { [x: string]: string }
 
+			/**
+			 * A function which is called after the script executes, and receives information about the result. It specifies the
+			 * return value of the call to `jsh` by returning a value.
+			 */
+			evaluate?: evaluate<Result,R>
+
 			on?: slime.jrunscript.shell.run.old.Argument["on"]
 		}
 
-		export interface EngineInvocation<R = EngineResult> extends Invocation {
+		export interface EngineInvocation<R = EngineResult> extends Invocation<R> {
 			fork?: false
 			evaluate?: (p: EngineResult) => R
 		}
 
-		export interface ForkInvocation<R = ForkResult> extends Invocation {
+		export interface ForkInvocation<R = ForkResult> extends Invocation<R> {
 			shell?: slime.jrunscript.file.Directory
 			fork?: true
 			vmarguments?: any
