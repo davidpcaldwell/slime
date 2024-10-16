@@ -55,10 +55,25 @@ namespace slime.jrunscript.tools.git.credentials {
 		user: {
 			location: slime.$api.fp.Mapping<slime.$api.fp.world.Subject<Exports["user"]["get"]>,slime.jrunscript.file.Location>
 
+			/**
+			 * Given a user's home directory and associated information about the credentials needed, returns a potential git
+			 * password.
+			 */
 			get: slime.$api.fp.world.Sensor<
 				{
+					/**
+					 * A directory to search for credentials information.
+					 */
 					home?: slime.jrunscript.file.Location
+
+					/**
+					 * The host name for which credentials are needed; for example, `github.com`.
+					 */
 					host: string
+
+					/**
+					 * The username that pertains to retrieving the credentials.
+					 */
 					username: string
 				},
 				void,

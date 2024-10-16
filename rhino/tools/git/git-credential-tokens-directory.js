@@ -15,9 +15,7 @@
 	function($api,$context,$export) {
 		var relative = $context.library.file.Location.directory.relativePath;
 
-		var tryReadString = $api.fp.world.Sensor.mapping({
-			sensor: $context.library.file.Location.file.read.string.world()
-		});
+		var tryReadString = $context.library.file.Location.file.read.string.maybe;
 
 		var requireParents = $api.fp.world.Means.map({
 			order: $context.library.file.Location.parent(),
