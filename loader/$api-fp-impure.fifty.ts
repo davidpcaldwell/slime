@@ -913,6 +913,68 @@ namespace slime.$api.fp.world {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace exports {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.world.Question = fifty.test.Parent();
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Question {
+			now: <E,A>(p: {
+				question: world.Question<E,A>
+				handlers?: slime.$api.event.Handlers<E>
+			}) => A
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.world.Question.now = function() {
+					interface Events {
+						intermediate: {
+							input: number
+							value: number
+						}
+					}
+
+					var sixFactorial: slime.$api.fp.world.Question<Events,number> = function(events) {
+						var rv = 1;
+						for (var i=1; i<=6; i++) {
+							rv *= i;
+							events.fire("intermediate", { input: i, value: rv });
+						}
+						return rv;
+					};
+
+					var events: Events["intermediate"][] = [];
+
+					var result = $api.fp.world.Question.now({
+						question: sixFactorial,
+						handlers: {
+							intermediate: function(e) {
+								events.push(e.detail);
+							}
+						}
+					});
+
+					verify(result).is(720);
+					verify(events).length.is(6);
+					verify(events)[2].input.is(3);
+					verify(events)[2].value.is(6);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export interface Exports {
 		output: <P,E>(action: world.Means<P,E>, handler?: slime.$api.event.Handlers<E>) => impure.Output<P>
 
@@ -920,10 +982,10 @@ namespace slime.$api.fp.world {
 
 		input: <E,A>(ask: world.Question<E,A>, handler?: slime.$api.event.Handlers<E>) => impure.Input<A>
 
-		Question: {
+		Question: exports.Question & {
 			/**
 			 * An operation equivalent to {@link Exports | pipe(argument, question)}, but limited to one argument which provides
-			 * more readable type inference, mapping the produced value to a `Question` rather than a function returning an `Ask`.
+			 * more readable type inference, mapping the produced value to a `Sensor` rather than a function returning a `Question`.
 			 */
 			pipe: <I,P,E,A>(argument: (i: I) => P, question: world.Sensor<P,E,A>) => world.Sensor<I,E,A>
 			map: <P,E,A,O>(question: world.Sensor<P,E,A>, map: (a: A) => O) => world.Sensor<P,E,O>

@@ -347,6 +347,12 @@
 						world.Question.pipe(a, q),
 						m
 					);
+				},
+				now: function(p) {
+					return $context.events.handle({
+						implementation: p.question,
+						handlers: p.handlers
+					});
 				}
 			},
 			Action: {
