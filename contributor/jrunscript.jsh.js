@@ -145,9 +145,9 @@
 			return p;
 		};
 
-		suite.add("jsh/jsh.shell/suite", new jsh.unit.Suite.Fork(withShell({
+		suite.add("jsh/jsh.shell/jsh", new jsh.unit.Suite.Fork(withShell({
 			run: jsh.shell.jsh,
-			script: SRC.getFile("rhino/shell/test/jsh.shell.jsh.suite.jsh.js"),
+			script: SRC.getFile("jrunscript/jsh/shell/test/jsh.shell.jsh.suite.jsh.js"),
 			arguments: ["-view","stdio"]
 		})));
 

@@ -35,6 +35,7 @@ namespace slime.jsh.test {
 				PATH: slime.jrunscript.file.Searchpath
 				settings: remote.Settings
 
+				//	TODO	should support local scripts, too, a real use case for remote shells
 				/**
 				 * A path, relative within the SLIME project, of a remote script to run.
 				 */
@@ -54,6 +55,9 @@ namespace slime.jsh.test {
 			& shells.Invocable
 		>
 
+		/**
+		 * Maps an operating system pathname to a packaged shell.
+		 */
 		packaged: slime.$api.fp.Mapping<
 			string,
 			(
