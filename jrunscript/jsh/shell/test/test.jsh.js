@@ -7,9 +7,9 @@
 if (!jsh.test || !jsh.test.integration) {
 	//	TODO	can this be implemented for URL-based launches?
 	if (jsh.script.file) {
-		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("loader/api"));
-		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/unit"));
-		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/test"));
+		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.parent.getRelativePath("loader/api"));
+		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.parent.getRelativePath("jsh/unit"));
+		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.parent.getRelativePath("jsh/test"));
 	} else {
 		//	URL-based launch, just mock it, essentially
 		if (!jsh.test) jsh.test = {};
@@ -22,13 +22,13 @@ if (!jsh.test || !jsh.test.integration) {
 jsh.test.integration({
 	scenario: function() {
 		var server = jsh.httpd.Tomcat.serve({ directory: jsh.script.file.parent });
-		var url = "http://127.0.0.1:" + server.port + "/jsh.jsh.js";
+		var url = "http://127.0.0.1:" + server.port + "/test.jsh.js";
 		this.part("1", {
 			name: "HTTP unforked",
 			execute: function(scope,verify) {
 				jsh.shell.jsh({
 					script: jsh.web.Url.parse(
-						"http://127.0.0.1:" + server.port + "/jsh.jsh.js"
+						"http://127.0.0.1:" + server.port + "/test.jsh.js"
 					),
 					stdio: {
 						output: String,
