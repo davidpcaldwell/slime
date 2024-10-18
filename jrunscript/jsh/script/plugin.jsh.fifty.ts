@@ -52,8 +52,6 @@ namespace slime.jsh.script {
 	}
 
 	export interface Exports {
-		//	TODO	Additional, possibly excessive, tests are in rhino/shell/test/jsh.shell.jsh.suite.jsh.js
-
 		/**
 		 * @deprecated
 		 *

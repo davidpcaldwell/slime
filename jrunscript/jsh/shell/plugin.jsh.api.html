@@ -114,137 +114,18 @@ END LICENSE
 		</script>
 		<div class="type" jsapi:replace="getApi('../../../rhino/shell/api.html').getElement('types.stdio')">
 		</div>
-		<!--
-			TODO	the below does not work for unknown reason
-			<div jsapi:reference="getApi('api.html').getElement('types.stdio')">
-				See detailed documentation.
-			</div>
-		-->
 		<ul>
 			<li jsapi:replace="window.slime.definition.inherited()">
 
 			</li>
 			<li class="function" jsapi:id="jsh">
 				<div class="name"><a id="exports.jsh">jsh</a></div>
-				<span>
-					Runs a jsh script. <a href="test/jsh.shell.jsh.suite.jsh.js">Tests</a> are in a separate file.
-				</span>
-				<div class="arguments">
-					<div class="label">Arguments</div>
-					<ol>
-						<li class="value">
-							<span class="type">object</span>
-							<span>
-								An argument with the same semantics as the argument to <code>shell</code>, except that
-								it includes the following properties in addition:
-							</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<!--
-									TODO	implement this
-								<li class="value">
-									<div class="name">shell</div>
-									<span class="type">__TYPE__</span>
-									<span>
-										A directory representing the location of a built shell, or a directory representing
-										the location of an unbuilt shell.
-									</span>
-								</li>
-								-->
-								<!--	TODO	update the below using jsapi:reference	-->
-								<li class="function">
-									<div class="name">evaluate</div>
-									<div class="arguments">
-										<div class="label">Arguments</div>
-										<ol>
-											<li class="object">
-												<span>
-													An object with the same properties as those of
-													the evaluate property of the argument to
-													<a href="#shell">shell</a>,
-													with the following differences:
-												</span>
-												<div class="label">has properties:</div>
-												<ul>
-													<li class="object">
-														<div class="name">jsh</div>
-														<span>An additional argument which describes the jsh invocation.</span>
-														<div class="label">has properties:</div>
-														<ul>
-															<li class="value">
-																<div class="name">script</div>
-																<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
-																<span>The script that was launched.</span>
-															</li>
-															<li class="value">
-																<div class="name">arguments</div>
-																<span class="type">Array of string</span>
-																<span>The arguments passed to the script.</span>
-															</li>
-														</ul>
-													</li>
-													<li class="value">
-														<div class="name">classpath</div>
-														<span class="type"><a href="../../rhino/file/api.html#types.Searchpath">Searchpath</a></span>
-														<span>The classpath supplied to the given script, as specified by the caller.</span>
-													</li>
-													<li class="value">
-														<div class="name">command</div>
-														<!--
-														<span class="type"><a href="../../rhino/file/api.html#types.file">file</a></span>
-														-->
-														<span class="type">string</span>
-														<span>
-															(if an operating system shell was created) The operating system command
-															invoked. Not present if the subshell was executed in-process.
-														</span>
-													</li>
-													<li class="value">
-														<div class="name">arguments</div>
-														<span class="type">Array of string</span>
-														<span>
-															(if an operating system shell was created) The arguments sent to the
-															operating system command. Not present if the subshell was
-															executed in-process.
-														</span>
-													</li>
-												</ul>
-											</li>
-										</ol>
-									</div>
-									<div class="returns">
-										<div class="label">Returns</div>
-										<span class="type">(any)</span>
-										<span>An arbitrary value to return from the <code>jsh</code> method.</span>
-									</div>
-								</li>
-							</ul>
-						</li>
-					</ol>
-				</div>
 				<script type="application/x.jsapi#initialize">
 					//	TODO	add packaged shell
 					//	TODO	add remote shell
 				</script>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="value">
-						<div class="name">home</div>
-						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-						<span>
-							(contingent; only present for built shells)
-							The home directory of the installed shell.
-						</span>
-						<script type="application/x.jsapi#tests">
-							var shell = $jsapi.environment.jsh;
-							verify(shell).unbuilt.data.evaluate.property("jsh.shell.jsh.home").is(void(0));
-							verify(shell).built.data.evaluate.property("jsh.shell.jsh.home").string.is(shell.built.home.toString());
-							verify(shell).packaged.data.evaluate.property("jsh.shell.jsh.home").is(void(0));
-							if (shell.remote) {
-								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.home").is(void(0));
-							}
-						</script>
-					</li>
 					<li class="value">
 						<div class="name">src</div>
 						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>

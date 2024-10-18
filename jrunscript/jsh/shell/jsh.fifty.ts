@@ -546,13 +546,30 @@ namespace slime.jsh.shell {
 	export namespace oo {
 		export interface EngineResult {
 			status: number
+
+			/**
+			 * An additional argument which describes the `jsh` invocation.
+			 */
 			jsh: {
+				/**
+				 * The script that was launched.
+				 */
 				script: Invocation["script"]
+
+				/**
+				 * The arguments passed to the script.
+				 */
 				arguments: Invocation["arguments"]
 			}
 			environment: Invocation["environment"]
 			directory: Invocation["directory"]
 			workingDirectory: Invocation["workingDirectory"]
+
+			//	TODO	is this real? Documentation brought from JSAPI.
+			// /**
+			//  * The classpath supplied to the given script, as specified by the caller.
+			//  */
+			// classpath: slime.jrunscript.file.Searchpath
 		}
 
 		// export interface ForkResult extends EngineResult {
@@ -564,12 +581,34 @@ namespace slime.jsh.shell {
 		// 	//			etc. and make sure everything was strictly encapsulated.
 		// 	stdio: Invocation["stdio"]
 		// }
-		export type ForkResult = slime.jrunscript.shell.run.old.Result
+		export type ForkResult = slime.jrunscript.shell.run.old.Result & {
+			/**
+			 * The operating system command invoked.
+			 */
+			command: string
 
+			/**
+			 * The arguments sent to the operating system command.
+			 */
+			arguments: string[]
+		}
+
+		/**
+		 * An object with the same properties as those of the evaluate property of the argument to
+		 * {@link slime.jsh.shell.Exports | Exports.shell()}, with differences specified by the {@link ForkResult} and
+		 * {@link EngineResult} types.
+		 */
 		export type Result = ForkResult | EngineResult
 
+		/**
+		 * @template R An arbitrary type to return from a `jsh` invocation that is computed using the results of the invocation.
+		 */
 		export type evaluate<I,R> = (p: I) => R
 
+		/**
+		 * An argument with the same semantics as the argument to `shell`, except that it includes some properties in
+		 * addition specific to running `jsh` scripts.
+		 */
 		export interface Invocation<R = Result> {
 			/**
 			 * The pathname of the script to run.
@@ -607,15 +646,18 @@ namespace slime.jsh.shell {
 
 		export interface EngineInvocation<R = EngineResult> extends Invocation<R> {
 			fork?: false
-			evaluate?: (p: EngineResult) => R
+			evaluate?: evaluate<EngineResult,R>
 		}
 
 		export interface ForkInvocation<R = ForkResult> extends Invocation<R> {
+			/**
+			 * A directory representing the location of a built shell, or a directory representing the location of an unbuilt shell.
+			 */
 			shell?: slime.jrunscript.file.Directory
 			fork?: true
 			vmarguments?: any
 
-			evaluate?: (p: ForkResult) => R
+			evaluate?: evaluate<ForkResult,R>
 		}
 	}
 
@@ -624,11 +666,128 @@ namespace slime.jsh.shell {
 		<R>(p: oo.EngineInvocation<R>): R
 	}
 
+	export interface JshShellJsh {
+		/**
+		 * (contingent; only present for built shells) The home directory of the installed shell.
+		 */
+		home?: slime.jrunscript.file.Directory
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.exports.jsh.home = function() {
+				var unbuilt = test.shells.unbuilt();
+				var built = test.shells.built();
+				var packaged = test.shells.packaged(
+					fifty.jsh.file.relative("../test/jsh-data.jsh.js").pathname
+				);
+				var remote = test.shells.remote();
+
+				var environment = $api.Object.compose(
+					jsh.shell.environment,
+					{
+						PATH: (function() {
+							var pathnames = jsh.shell.PATH.pathnames;
+							pathnames.unshift(
+								jsh.file.Pathname(
+									jsh.shell.java.Jdk.from.javaHome().base
+								).directory.getRelativePath("bin")
+							);
+							return jsh.file.Searchpath(pathnames).toString();
+						})()
+					}
+				);
+
+				var values: { unbuilt: any, built: string, packaged: any, remote: any } = {
+					unbuilt: $api.fp.now(
+						$api.fp.world.Sensor.now({
+							sensor: jsh.shell.subprocess.question,
+							subject: unbuilt.invoke({
+								script: fifty.jsh.file.relative("../test/jsh-data.jsh.js").pathname,
+								environment: $api.fp.thunk.value(environment),
+								stdio: {
+									output: "string"
+								}
+							})
+						}),
+						function(exit) {
+							if (exit.status != 0) throw new Error("Exit status: " + exit.status);
+							return JSON.parse(exit.stdio.output)["jsh.shell.jsh.home"];
+						}
+					),
+					built: $api.fp.now(
+						$api.fp.world.Sensor.now({
+							sensor: jsh.shell.subprocess.question,
+							subject: built.invoke({
+								script: fifty.jsh.file.relative("../test/jsh-data.jsh.js").pathname,
+								environment: $api.fp.thunk.value(environment),
+								stdio: {
+									output: "string"
+								}
+							})
+						}),
+						function(exit) {
+							if (exit.status != 0) throw new Error("Exit status: " + exit.status);
+							var json = JSON.parse(exit.stdio.output);
+							var string = json["jsh.shell.jsh.home"].string;
+							//	strip trailing slash from the emitted JSON
+							return string.substring(0,string.length-1);
+						}
+					),
+					packaged: $api.fp.now(
+						$api.fp.world.Sensor.now({
+							sensor: jsh.shell.subprocess.question,
+							subject: packaged.invoke({
+								environment: $api.fp.thunk.value(environment),
+								stdio: {
+									output: "string"
+								}
+							})
+						}),
+						function(exit) {
+							if (exit.status != 0) throw new Error("Exit status: " + exit.status);
+							return JSON.parse(exit.stdio.output)["jsh.shell.jsh.home"];
+						}
+					),
+					remote: $api.fp.now(
+						remote,
+						function(remote) {
+							var intention = remote.getShellIntention({
+								PATH: jsh.shell.PATH,
+								settings: {
+									branch: "local"
+								},
+								script: "jrunscript/jsh/test/jsh-data.jsh.js"
+							});
+							return $api.fp.world.Sensor.now({
+								sensor: jsh.shell.subprocess.question,
+								subject: intention
+							});
+						},
+						function(exit) {
+							if (exit.status != 0) throw new Error("Exit status: " + exit.status);
+							return JSON.parse(exit.stdio.output)["jsh.shell.jsh.home"];
+						}
+					)
+				};
+				verify(values).unbuilt.is(void(0));
+				verify(values).built.is(built.home);
+				verify(values).packaged.is(void(0));
+				verify(values).remote.is(void(0));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface JshShellJsh extends JshInvoke {
 		src?: slime.jrunscript.file.Directory
 
 		lib?: slime.jrunscript.file.Directory
-		home?: slime.jrunscript.file.Directory
 
 		relaunch: (p?: {
 			environment?: (initial: slime.jrunscript.shell.Exports["environment"]) => slime.jrunscript.shell.Exports["environment"]

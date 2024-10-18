@@ -26,19 +26,20 @@
 				var module = jsh.shell;
 
 				var unforked = module.jsh({
-					script: jsh.script.file.parent.getFile("jsh.jsh.js"),
+					script: jsh.script.file.parent.getFile("test.jsh.js"),
 					arguments: [],
 					evaluate: function(result) {
 						return result;
 					}
 				});
+				debugger;
 				test(unforked.status == 2);
 				test(typeof(unforked.command) == "undefined");
 				test(typeof(unforked.arguments) == "undefined");
 				test(Boolean(unforked.jsh) && Boolean(unforked.jsh.script));
 
 				var forked = module.jsh({
-					script: jsh.script.file.parent.getFile("jsh.jsh.js"),
+					script: jsh.script.file.parent.getFile("test.jsh.js"),
 					arguments: [],
 					evaluate: function(result) {
 						return result;
@@ -52,7 +53,7 @@
 				test(Boolean(forked.jsh) && Boolean(forked.jsh.script));
 
 				var issue82 = module.jsh({
-					script: jsh.script.file.parent.getFile("jsh.jsh.js"),
+					script: jsh.script.file.parent.getFile("test.jsh.js"),
 					evaluate: function(result) {
 						return (result.status == 2) ? "worked" : "did not work";
 					}
@@ -76,7 +77,7 @@
 			name: "http",
 			run: jsh.shell.jsh,
 			fork: true,
-			script: jsh.script.file.parent.getFile("jsh.jsh.js"),
+			script: jsh.script.file.parent.getFile("test.jsh.js"),
 			arguments: ["-scenario","-view","stdio"]
 		}));
 
