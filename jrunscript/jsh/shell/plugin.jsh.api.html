@@ -27,87 +27,7 @@ END LICENSE
 	</script>
 </head>
 <body>
-	<!--
-		This file cannot be run standalone but requires $jsapi.environment arguments provided by contributor/jrunscript.jsh.js
-	-->
 	<div>
-		<script type="application/x.jsapi#initialize">
-			//	TODO	this setup is horrendous, far out of date, far too complicated, and needs refactoring; currently it is part
-			//			jsh/jsh.shell of the contributor/jrunscript.jsh.js suite
-			var context = new function() {
-				var host = $jsapi.loader.module("../../../jrunscript/host/", {
-					$slime: jsh.unit.$slime,
-					logging: {
-						prefix: "slime.jsh.shell.test"
-					}
-				});
-				var file = $jsapi.loader.module("../../../rhino/file/", new function() {
-					if (jsh.shell.environment.PATHEXT) {
-						this.pathext = jsh.shell.environment.PATHEXT.split(";");
-					}
-					this.$rhino = jsh.unit.$slime;
-					this.api = {
-						io: jsh.io,
-						js: jsh.js,
-						java: jsh.java
-					};
-					this.$pwd = String(jsh.shell.properties.object.user.dir);
-					this.addFinalizer = jsh.loader.addFinalizer;
-					//	TODO	below copy-pasted from rhino/file/api.html
-					//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
-					var System = Packages.java.lang.System;
-					if (System.getProperty("cygwin.root")) {
-						this.cygwin = {
-							root: String( System.getProperty("cygwin.root") )
-						};
-						if (System.getProperty("cygwin.paths")) {
-							//	Using the paths helper currently does not seem to work in the embedded situation when running inside
-							//	the SDK server
-							//	TODO	check this
-							this.cygwin.paths = String( System.getProperty("cygwin.paths") );
-						}
-					}
-				});
-				this.host = host;
-				this.file = file;
-			};
-			debugger;
-			var plugins = $jsapi.loader.plugin.mock({
-				path: "../../../rhino/shell/",
-				jsh: {
-					js: jsh.js,
-					web: jsh.web,
-					document: jsh.document,
-					java: context.host,
-					io: jsh.io,
-					file: context.file,
-					script: jsh.script
-				},
-				evaluate: function(p) {
-					return {
-						shell: p.plugins.shell,
-						stdio: p.plugins.stdio
-					}
-				}
-			});
-			debugger;
-			scope.module = $jsapi.loader.plugin.mock({
-				plugins: plugins,
-				jsh: {
-					js: jsh.js,
-					web: jsh.web,
-					document: jsh.document,
-					java: context.host,
-					io: jsh.io,
-					file: context.file,
-					script: jsh.script
-				},
-				evaluate: function(p) {
-					return p.jsh.shell;
-				}
-			});
-			debugger;
-		</script>
 		<h1>Exports</h1>
 		<script type="application/x.jsapi#initialize" jsapi:reference="getApi('../../../rhino/shell/api.html').getElement('script.initialize')">
 			//	see code in api.html
@@ -126,39 +46,6 @@ END LICENSE
 				</script>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="value">
-						<div class="name">src</div>
-						<span class="type"><a href="../../rhino/file/api.html#types.directory">directory</a></span>
-						<span>The directory at which the source code for the shell can be found locally, if one exists.</span>
-						<script type="application/x.jsapi#tests">
-							var shell = $jsapi.environment.jsh;
-							verify(shell).unbuilt.data.evaluate.property("jsh.shell.jsh.src").string.is(shell.unbuilt.src.toString());
-							//verify(shell).built.data.evaluate.property("jsh.shell.jsh.src").is(void(0));
-							verify(shell).packaged.data.evaluate.property("jsh.shell.jsh.src").is(void(0));
-							if (shell.remote) {
-								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.src").is(void(0));
-							}
-						</script>
-					</li>
-					<li class="value">
-						<div class="name">url</div>
-						<span class="type"><a href="../../js/web/api.html#types.Url">Url</a></span>
-						<span>
-							In a remote shell, the URL at which this remote shell is hosted.
-							<!--	TODO	otherwise?	-->
-						</span>
-						<script type="application/x.jsapi#tests">
-							var shell = $jsapi.environment.jsh;
-							verify(shell).unbuilt.data.evaluate.property("jsh.shell.jsh.url").is(void(0));
-							verify(shell).built.data.evaluate.property("jsh.shell.jsh.url").is(void(0));
-							verify(shell).packaged.data.evaluate.property("jsh.shell.jsh.url").is(void(0));
-							if (shell.remote) {
-								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.url").string.is(shell.remote.url.toString());
-								//	TODO	make sure this is of type URL
-								verify(shell).remote.data.evaluate.property("jsh.shell.jsh.url").path.is.type("string");
-							}
-						</script>
-					</li>
 					<li class="function experimental">
 						<div class="name">relaunch</div>
 						<span>Forks this shell and relaunches the same program with the same arguments.</span>

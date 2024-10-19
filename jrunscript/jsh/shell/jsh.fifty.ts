@@ -671,6 +671,16 @@ namespace slime.jsh.shell {
 		 * (contingent; only present for built shells) The home directory of the installed shell.
 		 */
 		home?: slime.jrunscript.file.Directory
+
+		/**
+		 * The directory at which the source code for the shell can be found locally, if one exists.
+		 */
+		src?: slime.jrunscript.file.Directory
+
+		/**
+		 * In a remote shell, the URL at which this remote shell is hosted.
+		 */
+		url: slime.web.Url
 	}
 
 	(
@@ -680,113 +690,93 @@ namespace slime.jsh.shell {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			fifty.tests.exports.jsh.home = function() {
-				var unbuilt = test.shells.unbuilt();
-				var built = test.shells.built();
-				var packaged = test.shells.packaged(
-					fifty.jsh.file.relative("../test/jsh-data.jsh.js").pathname
-				);
-				var remote = test.shells.remote();
+			var script = fifty.jsh.file.relative("../test/jsh-data.jsh.js").pathname;
 
-				var environment = $api.Object.compose(
-					jsh.shell.environment,
-					{
-						PATH: (function() {
-							var pathnames = jsh.shell.PATH.pathnames;
-							pathnames.unshift(
-								jsh.file.Pathname(
-									jsh.shell.java.Jdk.from.javaHome().base
-								).directory.getRelativePath("bin")
-							);
-							return jsh.file.Searchpath(pathnames).toString();
-						})()
+			var environment = $api.Object.compose(
+				jsh.shell.environment,
+				{
+					PATH: (function() {
+						var pathnames = jsh.shell.PATH.pathnames;
+						pathnames.unshift(
+							jsh.file.Pathname(
+								jsh.shell.java.Jdk.from.javaHome().base
+							).directory.getRelativePath("bin")
+						);
+						return jsh.file.Searchpath(pathnames).toString();
+					})()
+				}
+			);
+
+			var stdio: { output: "string" } = {
+				output: "string"
+			};
+
+			var run: (intention: slime.jrunscript.shell.run.Intention) => { string: string } = function(intention) {
+				return $api.fp.now(
+					$api.fp.world.Sensor.now({
+						sensor: jsh.shell.subprocess.question,
+						subject: intention
+					}),
+					function(exit) {
+						if (exit.status != 0) throw new Error("Exit status: " + exit.status);
+						return JSON.parse(exit.stdio.output);
 					}
 				);
+			};
 
-				var values: { unbuilt: any, built: string, packaged: any, remote: any } = {
-					unbuilt: $api.fp.now(
-						$api.fp.world.Sensor.now({
-							sensor: jsh.shell.subprocess.question,
-							subject: unbuilt.invoke({
-								script: fifty.jsh.file.relative("../test/jsh-data.jsh.js").pathname,
-								environment: $api.fp.thunk.value(environment),
-								stdio: {
-									output: "string"
-								}
-							})
-						}),
-						function(exit) {
-							if (exit.status != 0) throw new Error("Exit status: " + exit.status);
-							return JSON.parse(exit.stdio.output)["jsh.shell.jsh.home"];
-						}
-					),
-					built: $api.fp.now(
-						$api.fp.world.Sensor.now({
-							sensor: jsh.shell.subprocess.question,
-							subject: built.invoke({
-								script: fifty.jsh.file.relative("../test/jsh-data.jsh.js").pathname,
-								environment: $api.fp.thunk.value(environment),
-								stdio: {
-									output: "string"
-								}
-							})
-						}),
-						function(exit) {
-							if (exit.status != 0) throw new Error("Exit status: " + exit.status);
-							var json = JSON.parse(exit.stdio.output);
-							var string = json["jsh.shell.jsh.home"].string;
-							//	strip trailing slash from the emitted JSON
-							return string.substring(0,string.length-1);
-						}
-					),
-					packaged: $api.fp.now(
-						$api.fp.world.Sensor.now({
-							sensor: jsh.shell.subprocess.question,
-							subject: packaged.invoke({
-								environment: $api.fp.thunk.value(environment),
-								stdio: {
-									output: "string"
-								}
-							})
-						}),
-						function(exit) {
-							if (exit.status != 0) throw new Error("Exit status: " + exit.status);
-							return JSON.parse(exit.stdio.output)["jsh.shell.jsh.home"];
-						}
-					),
-					remote: $api.fp.now(
-						remote,
-						function(remote) {
-							var intention = remote.getShellIntention({
-								PATH: jsh.shell.PATH,
-								settings: {
-									branch: "local"
-								},
-								script: "jrunscript/jsh/test/jsh-data.jsh.js"
-							});
-							return $api.fp.world.Sensor.now({
-								sensor: jsh.shell.subprocess.question,
-								subject: intention
-							});
-						},
-						function(exit) {
-							if (exit.status != 0) throw new Error("Exit status: " + exit.status);
-							return JSON.parse(exit.stdio.output)["jsh.shell.jsh.home"];
-						}
-					)
-				};
-				verify(values).unbuilt.is(void(0));
-				verify(values).built.is(built.home);
-				verify(values).packaged.is(void(0));
-				verify(values).remote.is(void(0));
+			var getString = function(value: { string: string }) {
+				if (!value) return void(0);
+				return value.string;
+			}
+
+			fifty.tests.exports.jsh.shells = function() {
+				var unbuilt = run(test.shells.unbuilt().invoke({
+					script: script,
+					environment: $api.fp.Mapping.all(environment),
+					stdio: stdio
+				}));
+
+				var built = run(test.shells.built().invoke({
+					script: script,
+					environment: $api.fp.Mapping.all(environment),
+					stdio: stdio
+				}));
+
+				var packaged = run(test.shells.packaged(script).invoke({
+					environment: $api.fp.Mapping.all(environment),
+					stdio: stdio
+				}));
+
+				var remote = run(test.shells.remote().getShellIntention({
+					PATH: jsh.shell.PATH,
+					settings: {
+						branch: "local"
+					},
+					script: "jrunscript/jsh/test/jsh-data.jsh.js"
+				}));
+
+				verify(unbuilt).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(void(0));
+				verify(built).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(test.shells.built().home + "/");
+				verify(packaged).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(void(0));
+				verify(remote).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(void(0));
+
+				verify(unbuilt).evaluate.property("jsh.shell.jsh.src").evaluate(getString).is(test.shells.unbuilt().src + "/");
+				verify(built).evaluate.property("jsh.shell.jsh.src").evaluate(getString).is(void(0));
+				verify(packaged).evaluate.property("jsh.shell.jsh.src").evaluate(getString).is(void(0));
+				verify(remote).evaluate.property("jsh.shell.jsh.src").evaluate(getString).is(void(0));
+
+				verify(unbuilt).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is(void(0));
+				verify(built).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is(void(0));
+				verify(packaged).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is(void(0));
+				//	TODO	make sure this is of type URL
+				verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is("http://raw.githubusercontent.com/davidpcaldwell/slime/local/");
+				verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate.property("path").is("/davidpcaldwell/slime/local/");
 			}
 		}
 	//@ts-ignore
 	)(fifty);
 
 	export interface JshShellJsh extends JshInvoke {
-		src?: slime.jrunscript.file.Directory
-
 		lib?: slime.jrunscript.file.Directory
 
 		relaunch: (p?: {
@@ -806,7 +796,6 @@ namespace slime.jsh.shell {
 		>
 
 		debug: any
-		url: any
 	}
 
 	export interface Exports extends slime.jrunscript.shell.Exports {
