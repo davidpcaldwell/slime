@@ -133,7 +133,7 @@
 			return stdio[x];
 		}
 
-		$exports.shell = (
+		var shell = (
 			/**
 			 *
 			 * @param { slime.jsh.shell.old.shell.Argument } p
@@ -224,6 +224,34 @@
 			}
 		);
 
+		/**
+		 * @type { (p: slime.jsh.shell.old.shell.Argument | string) => p is slime.jsh.shell.old.shell.Argument }
+		 */
+		var isSingleArgument = function(p) {
+			if (typeof(p) == "string") return false;
+			return Boolean(p.command);
+		}
+
+		//@ts-ignore
+		$exports.shell = function(command, args, mode) {
+			if (!isSingleArgument(command)) {
+				/** @type { slime.jsh.shell.old.shell.Argument } */
+				var p = $api.Object.compose(
+					{
+						command: command,
+						arguments: args,
+						evaluate: $api.fp.identity
+					},
+					mode
+				);
+				return shell(p);
+			} else {
+				/** @type { slime.jsh.shell.old.shell.Argument } */
+				var single = command;
+				return shell(single);
+			}
+		}
+
 		//	TODO	is rhino/file.filesystem.$jsh.os(...) still necessary? Was used here.
 
 		//	TODO	make sure documentation correctly reflects presence of this property: this property being present does not mean Rhino
@@ -251,7 +279,16 @@
 			return false;
 		}
 
+		/**
+		 *
+		 * @param { { shell?: slime.jrunscript.file.Directory, environment?: slime.jrunscript.shell.Exports["environment"] }} p
+		 * @param { boolean } fork
+		 * @returns { slime.jrunscript.shell.Exports["environment"] }
+		 */
 		var getJshEnvironment = function(p,fork) {
+			/** @type { slime.js.Cast<slime.jrunscript.shell.Exports["environment"]> } */
+			var toReadOnly = $api.fp.cast.unsafe;
+
 			//	TODO	Probably if p.shell is specified and p.environment is not, we should strip out all variables starting with JSH_,
 			//			which would provide the least counterintuitive behavior. For example, if called from unbuilt shell, we would want
 			//			a launched built shell to have all the unbuilt shell environment variables removed.
@@ -273,7 +310,7 @@
 						rv[x] = module.environment[x];
 					}
 				}
-				return rv;
+				return toReadOnly(rv);
 			}
 			return module.environment;
 		};
@@ -781,19 +818,20 @@
 				}
 			}
 		);
-		$exports.jsh.relaunch = $api.experimental(function(p) {
-			if (!p) p = {};
-			var environment = $api.fp.mutating(p.environment)(module.environment);
-			$exports.jsh({
-				fork: true,
-				script: $context.api.script.file,
-				arguments: $context.api.script.arguments,
-				environment: environment,
-				evaluate: function(result) {
-					$exports.exit(result.status);
-				}
-			});
-		});
+		$exports.jsh.relaunch = $api.experimental(
+			function(p) {
+				if (!p) p = {};
+				var environment = (p.environment) ? p.environment(module.environment) : module.Environment;
+				var result = $exports.jsh({
+					fork: true,
+					script: $context.api.script.file,
+					arguments: $context.api.script.arguments,
+					environment: environment
+				});
+				$exports.exit(result.status);
+			}
+		);
+
 		/** @type { slime.jsh.shell.Exports["jsh"]["require"] } */
 		$exports.jsh.require = function(p) {
 			return function(events) {

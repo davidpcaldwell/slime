@@ -174,7 +174,7 @@ namespace slime.jsh.shell {
 
 	export namespace old {
 		export namespace shell {
-			export interface Argument {
+			export interface Argument<T> {
 				/**
 				 * The executable to run, or its location
 				 */
@@ -195,11 +195,20 @@ namespace slime.jsh.shell {
 					}
 				}
 
+				/**
+				 * An object containing the environment to send to the subprocess. If `null` or `undefined`, the subprocess will
+				 * inherit this process's environment.
+				 */
 				environment?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["environment"]
-				stdio?: any
+				stdio?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["stdio"]
+
+				/**
+				 * A directory that will be used as the current working directory for the subprocess.
+				 */
 				directory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"]
-				evaluate: slime.jrunscript.shell.run.old.evaluate<any>
-				onExit?: slime.jrunscript.shell.run.old.evaluate<any>
+
+				evaluate: slime.jrunscript.shell.run.old.evaluate<T>
+				onExit?: slime.jrunscript.shell.run.old.evaluate<T>
 			}
 		}
 	}
@@ -208,12 +217,19 @@ namespace slime.jsh.shell {
 		/**
 		 * @deprecated Replaced by `run`.
 		 *
-		 * Executes a subprocess.
+		 * Launches a subprocess of this process to execute a specified command with specified arguments.
+		 *
+		 * By default, the standard input, standard output, standard error, and working directory will be inherited from this
+		 * process, unless overridden by the mode argument.
 		 */
 		shell: {
-			(p: old.shell.Argument): any
+			(p: old.shell.Argument<any>): any
 
-			(a: any, b: any, c: any): any
+			/**
+			 * @param command The command to run
+			 * @param args The arguments to pass to the subprocess
+			 */
+			(command: string, args: string[], mode: {}): any
 		}
 	}
 
@@ -779,9 +795,13 @@ namespace slime.jsh.shell {
 	export interface JshShellJsh extends JshInvoke {
 		lib?: slime.jrunscript.file.Directory
 
+		/**
+		 * Forks this shell and relaunches the same program with the same arguments. Does not return; exits the shell with the exit
+		 * status of the relaunched shell.
+		 */
 		relaunch: (p?: {
-			environment?: (initial: slime.jrunscript.shell.Exports["environment"]) => slime.jrunscript.shell.Exports["environment"]
-		}) => void
+			environment?: slime.$api.fp.Transform<slime.jrunscript.shell.Exports["environment"]>
+		}) => never
 
 		require: slime.$api.fp.world.Means<
 			{
@@ -795,6 +815,11 @@ namespace slime.jsh.shell {
 			}
 		>
 
+		//	TODO	Graal?
+		//	TODO	Does Nashorn apply?
+		/**
+		 * Relaunches the current script in a debugger appropriate to the current engine (Rhino/Nashorn)
+		 */
 		debug: any
 	}
 
