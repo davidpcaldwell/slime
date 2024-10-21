@@ -262,23 +262,54 @@ namespace slime.jrunscript.shell {
 				tokens?: any
 				/** @deprecated */
 				workingDirectory?: slime.jrunscript.file.Directory
-				/** @deprecated */
+
+				/**
+				 * @deprecated
+				 *
+				 * A stream to which the standard output stream of the subprocess will be written. If `null`, the output will be
+				 * discarded. The default is `jsh.file.Streams.stdout`.
+				 */
 				stdout?: invocation.old.Argument["stdio"]["output"]
-				/** @deprecated */
+
+				/**
+				 * @deprecated
+				 *
+				 * A stream that will be used as the standard input stream for the subprocess.
+				 */
 				stdin?: invocation.old.Argument["stdio"]["input"]
-				/** @deprecated */
+
+				/**
+				 * @deprecated
+				 *
+				 * A stream to which the standard error stream of the subprocess will be written. If `null`, the output will be
+				 * discarded. The default is `jsh.file.Streams.stderr`.
+				 */
 				stderr?: invocation.old.Argument["stdio"]["error"]
 			}
 
+			/**
+			 * Information abuot a completed subprocess.
+			 */
 			export interface Result {
-				command: any
-				arguments: any[]
+				/**
+				 * The command invoked.
+				 */
+				command: Argument["command"]
+
+				/**
+				 * The arguments sent to the command.
+				 */
+				arguments: Argument["arguments"]
+
 				environment: any
 
 				directory: slime.jrunscript.file.Directory
 				/** @deprecated */
 				workingDirectory: slime.jrunscript.file.Directory
 
+				/**
+				 * The exit status of the command.
+				 */
 				status: number
 				stdio?: run.CapturedOutput
 			}

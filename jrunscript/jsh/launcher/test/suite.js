@@ -213,7 +213,7 @@
 					environment: environment,
 					evaluate: (p.evaluate) ? p.evaluate : function(result) {
 						if (p.bash) {
-							events.fire("invocation", { command: result.command, arguments: result.arguments, environment: environment });
+							events.fire("invocation", { command: String(result.command), arguments: result.arguments.map(String), environment: environment });
 						}
 						if (result.status !== 0) {
 							throw new Error("Status is " + result.status);
