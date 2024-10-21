@@ -127,13 +127,6 @@
 			environment: environment
 		}));
 
-		suite.add("jsh/jsh.shell/main", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jrunscript/jsh/shell/plugin.jsh.api.html"),
-			// TODO: do we actually need environment here?
-			// TODO: do we actually need noselfping here?
-			environment: Object.assign({}, environment, { noselfping: parameters.options.noselfping })
-		}));
-
 		var withShell = function(p) {
 			// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
 			// using the built shell, or should be using more shells

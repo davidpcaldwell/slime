@@ -207,10 +207,21 @@ namespace slime.jsh.shell {
 				 */
 				directory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"]
 
-				evaluate: slime.jrunscript.shell.run.old.evaluate<T>
+				workingDirectory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"]
+
+				evaluate?: slime.jrunscript.shell.run.old.evaluate<T>
+
+				/**
+				 * A callback function that will be invoked when the subprocess exits. The function will be invoked with an argument
+				 * containing information about the subprocess.
+				 */
 				onExit?: slime.jrunscript.shell.run.old.evaluate<T>
 			}
 		}
+	}
+
+	export namespace exports.shell {
+		export type Mode = Omit<old.shell.Argument<any>,"command"|"arguments">
 	}
 
 	export interface Exports extends slime.jrunscript.shell.Exports {
@@ -229,7 +240,7 @@ namespace slime.jsh.shell {
 			 * @param command The command to run
 			 * @param args The arguments to pass to the subprocess
 			 */
-			(command: string, args: string[], mode: {}): any
+			(command: string, args: string[], mode: exports.shell.Mode): any
 		}
 	}
 
@@ -677,6 +688,8 @@ namespace slime.jsh.shell {
 		}
 	}
 
+	//	TODO	add tests for packaged shell
+	//	TODO	add tests for remote shell
 	export interface JshInvoke {
 		<R>(p: oo.ForkInvocation<R>): R
 		<R>(p: oo.EngineInvocation<R>): R
