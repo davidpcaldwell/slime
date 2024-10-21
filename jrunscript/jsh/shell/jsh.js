@@ -821,7 +821,7 @@
 		$exports.jsh.relaunch = $api.experimental(
 			function(p) {
 				if (!p) p = {};
-				var environment = (p.environment) ? p.environment(module.environment) : module.Environment;
+				var environment = (p.environment) ? p.environment(module.environment) : module.environment;
 				var result = $exports.jsh({
 					fork: true,
 					script: $context.api.script.file,
