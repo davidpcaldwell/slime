@@ -1134,7 +1134,7 @@ namespace slime.jrunscript.file {
 							debugger;
 							var link = function(target,link) {
 								jsh.shell.shell(
-									jsh.file.Pathname("/bin/ln"),
+									jsh.file.Pathname("/bin/ln").toString(),
 									[
 										"-s",
 										target.toString(),

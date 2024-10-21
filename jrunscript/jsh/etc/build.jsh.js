@@ -506,7 +506,7 @@
 							args.push(SLIME.getRelativePath("jrunscript/jsh/launcher/native/jsh.c").toString());
 							jsh.shell.console("Invoking gcc " + args.join(" ") + " ...");
 							jsh.shell.shell(
-								gcc,
+								gcc.pathname.toString(),
 								args,
 								{
 									workingDirectory: destination.shell,
