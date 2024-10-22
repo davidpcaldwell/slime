@@ -227,10 +227,6 @@
 			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.resources.api.html")
 		}));
 
-		suite.add("servlet/server", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/http/servlet/server/api.html")
-		}));
-
 		suite.add("servlet/jsh", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.api.html")
 		}));

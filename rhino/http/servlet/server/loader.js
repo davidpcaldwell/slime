@@ -144,8 +144,7 @@
 			}
 		};
 		$exports.Handler.HostRedirect = function(p) {
-			var redirect = function(url,parameters) {
-				//	TODO	this is terrible, ignores parameters
+			var redirect = function(url) {
 				return {
 					status: { code: 301 },
 					headers: [
@@ -168,7 +167,7 @@
 						//	TODO	query
 						//	TODO	fragment: is this even possible?
 					});
-					return redirect(to, request.parameters);
+					return redirect(to);
 				}
 			}
 		};
