@@ -10,17 +10,47 @@ namespace slime.internal.jsh.launcher {
 		built?: slime.jrunscript.native.java.io.File
 	}
 
+	export interface Source {
+		getSourceFilesUnder: {
+			(string: string): slime.jrunscript.native.java.net.URL[]
+			(dir: slime.jrunscript.native.java.io.File): slime.jrunscript.native.java.io.File[]
+		}
+
+		/**
+		 * (conditional; if underlying source root is a directory rather than a URL)
+		 */
+		File: (path: string) => slime.jrunscript.native.java.io.File
+
+		//	TODO	poaaibly equivalent to File
+		/**
+		 * (conditional; if underlying source root is a directory rather than a URL)
+		 */
+		getFile?: (path: string) => slime.jrunscript.native.java.io.File
+
+		getPath: (path: string) => string
+	}
+
 	export interface Slime {
-		launcher: any
+		launcher: {
+			getClasses: any
+		}
+
 		home: any
 
 		/**
-		 * Given a system property-style name (e.g., `foo.bar.baz`), searches for a value both in that system property and (if not
-		 * found) in a corresponding environment variable (in this case, `FOO_BAR_BAZ`).
+		 * Returns a string representing the explicit value of a named setting (for example, `foo.bar.baz`); uses first system
+		 * properties and then environment variables (for example, `FOO_BAR_BAZ`) to locate the value.
+		 *
+		 * @param name The period-delimited name of a setting.
+		 *
+		 * @returns The string value of the setting, or `null` if the setting was not explicitly provided.
 		 */
 		setting: (name: string) => string
 
 		settings: {
+			/**
+			 * Returns the effective value for a given setting.
+			 */
 			get: (name: string) => string
 			set: (name: string, value: any) => void
 
@@ -28,13 +58,9 @@ namespace slime.internal.jsh.launcher {
 			sendPropertiesTo: any
 		}
 
-		src?: {
-			getSourceFilesUnder: {
-				(string: string): slime.jrunscript.native.java.net.URL[]
-				(dir: slime.jrunscript.native.java.io.File): slime.jrunscript.native.java.io.File[]
-			}
-			File: (path: string) => slime.jrunscript.native.java.io.File
-			getPath: (path: string) => string
-		}
+		/**
+		 * (conditional; if this is an unbuilt local or remote shell)
+		 */
+		src?: Source
 	}
 }

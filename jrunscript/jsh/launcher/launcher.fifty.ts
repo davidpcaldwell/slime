@@ -13,9 +13,22 @@ namespace slime.internal.jsh.launcher {
 		shellClasspath: () => slime.jrunscript.native.java.net.URL[]
 	}
 
+	export interface Engine {
+		/**
+		 * The name of the `jsh` main class for this engine.
+		 */
+		main: string
+
+		resolve: <T>(engines: { [name: string]: T }) => T
+	}
+
 	export interface Jsh {
 		exit: any
-		engines: any
+		engines: {
+			rhino: Engine
+			nashorn: Engine
+			graal: Engine
+		}
 		engine: any
 		shell: any
 		Packaged: any
