@@ -202,7 +202,11 @@
 			});
 			//jsh.shell.console("Invoking ...");
 			//jsh.shell.console(invoke.join(" "));
-			var shellIntention = toShellIntention(invoke, launcherBashScript, { JSH_LAUNCHER_BASH_DEBUG: "1", JSH_EMBED_BOOTSTRAP_DEBUG: "true" });
+			var shellIntention = toShellIntention(
+				invoke,
+				launcherBashScript,
+				{ JSH_LAUNCHER_BASH_DEBUG: "1", JSH_EMBED_BOOTSTRAP_DEBUG: "true" }
+			);
 			return shellIntention;
 		};
 

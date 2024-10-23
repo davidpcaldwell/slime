@@ -53,6 +53,8 @@ namespace slime.jsh.shell {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports = fifty.test.Parent();
+
+			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
@@ -800,7 +802,7 @@ namespace slime.jsh.shell {
 				//	TODO	make sure this is of type URL
 				verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is("http://raw.githubusercontent.com/davidpcaldwell/slime/local/");
 				verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate.property("path").is("/davidpcaldwell/slime/local/");
-			}
+			};
 		}
 	//@ts-ignore
 	)(fifty);

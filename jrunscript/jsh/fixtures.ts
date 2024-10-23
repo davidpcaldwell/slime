@@ -37,10 +37,14 @@ namespace slime.jsh.test {
 
 				//	TODO	should support local scripts, too, a real use case for remote shells
 				/**
-				 * A path, relative within the SLIME project, of a remote script to run.
+				 * A script to run, which can represent a local pathname or URL.
 				 */
 				script: string
 			}) => slime.jrunscript.shell.run.Intention
+
+			getSlimeUrl: (p: {
+				path: string
+			}) => string
 		}
 	}
 
@@ -139,6 +143,9 @@ namespace slime.jsh.test {
 									{ mock: server }
 								)
 							})
+						},
+						getSlimeUrl: function(p) {
+							return "http://raw.githubusercontent.com/davidpcaldwell/slime/local/" + p.path
 						}
 					};
 				} else {
