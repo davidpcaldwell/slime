@@ -37,6 +37,10 @@
  *
  * TODO write documentation
  *
+ * ### Remote shells
+ *
+ * TODO write documentation
+ *
  * ## Older documentation
  *
  * See [old JSAPI-based `jsh` documentation](../src/jsh/etc/api.html).
@@ -97,11 +101,32 @@ namespace slime.jsh {
 }
 
 /**
+ * ## The `jsh` command
+ *
+ * A `jsh` script begins with the `jsh` program, which determines which Java needs to be used (installing the default JDK if
+ * necessary).
+ *
+ * It then runs the `jsh` _launcher_.
+ *
  * ## The `jsh` launcher
  *
- * The launcher begins with the `jsh` program, which determines which Java needs to be used (installing the default JDK if
- * necessary). It then runs the `rhino/jrunscript/api.js` script with the `jsh` argument, which in turn calls
- * `jsh/launcher/main.js`, which ultimately starts the `jsh` _loader_ (see below).
+ * The `jsh` launcher is a `jrunscript` script that starts an engine-specific Java program that is capable of creating a `jsh` shell
+ * and executing the indicated script inside it. Upon execution, it configures and starts the `jsh` _loader_ (see below).
+ *
+ * The launcher consists of the following components.
+ *
+ * ### `rhino/jrunscript/api.js`
+ *
+ * Creates `$api` as a property of `this` (the global object), and then invokes the bootstrap launcher at `jsh/launcher/main.js`.
+ *
+ * ### Bootstrap launcher (`jrunscript/jsh/launcher/main.js`)
+ *
+ * The bootstrap launcher prepares a Java command to launch the engine-specific shell for execution.
+ *
+ * #### `slime.js`
+ *
+ * This script, also apparently used in the `jsh` build process, creates an `$api.slime` object of type {@link
+ * slime.internal.jsh.launcher.Slime} object providing SLIME-specific functionality.
  *
  * ## The `jsh` loader
  *
