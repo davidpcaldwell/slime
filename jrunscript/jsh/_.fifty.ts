@@ -121,12 +121,60 @@ namespace slime.jsh {
  *
  * ### Bootstrap launcher (`jrunscript/jsh/launcher/main.js`)
  *
- * The bootstrap launcher prepares a Java command to launch the engine-specific shell for execution.
+ * Essentially, the bootstrap launcher creates a `java` command for running the loader, which may be run either as a subprocess, or
+ * as a Java invocation in a new class loader. The launcher calculates various named settings, which are passed to the loader as
+ * system properties. The steps involved are as follows:
+ *
+ * * If invoked with the `-engines` argument (and that argument alone), provide a list of JavaScript engines
+ * that the launcher is capable of using (because they are present either as built-in JDK engines or are installed), as a JSON array
+ * of strings.
+ * * If running an unbuilt shell, it compiles the loader classes.
+ * * If running an unbuilt shell, sets the `jsh.shell.src` setting to let the Java launcher know where to find the code.
+ * * Selects the appropriate Java implementation, and container implementation, to use if the `jsh.java.home` setting is specified.
+ * * Selects the default JavaScript engine to use for executing the loader and sets it as the `jsh.engine` setting on the Java
+ * command.
+ * * Takes *leading* arguments that begin with `-`, switches the container implementation to a VM, and passes them as arguments to
+ * the loader VM.
+ * * If running on Rhino, sets the `jsh.engine.rhino.classpath` setting to the location from which Rhino was loaded.
+ * * If running on Rhino and the profiler is invoked, sends the appropriate argument to the loader VM.
+ * * Deal with settings that must be sent to a VM container, like `jsh.jvm.options`, and both switch the container to a VM and send
+ * the arguments to that VM in an argument-appropriate way.
+ * * Send other settings to the loader process as system properties.
+ * * Run the {@link slime.jsh.internal.loader | loader}, using an engine-specific `main()` method, which ends up calling
+ * `inonit.script.jsh.Main.cli()`, and exit with the status returned by the loader.
  *
  * #### `slime.js`
  *
  * This script, also apparently used in the `jsh` build process, creates an `$api.slime` object of type {@link
  * slime.internal.jsh.launcher.Slime} object providing SLIME-specific functionality.
+ *
+ * ### Packaged application launcher (`inonit.script.jsh.launcher.Main`)
+ *
+ * The Java launcher provides the entry point for running a `jsh` script when running inside a packaged application.
+ *
+ * <!--	TODO	remaining description of this launcher may be outdated (2018 Feb 15)	-->
+ *
+ * #### Settings used
+ *
+ * | Name | Description |
+ * ======================
+ * | `jsh.shell.src` | If this is an unbuilt shell, the launcher needs to know where the root directory of the SLIME source code is. |
+ * | `jsh.engine` | If specified, will override the default mechanism for selecting a JavaScript engine and use the specified value. |
+ * | `jsh.engine.rhino.classpath` | If specified, will override the default mechanism for locating Rhino. |
+ * | `jsh.launcher.debug` | If this is present, and Rhino is used to execute the launcher script, then the launcher script will be executed in the Rhino debugger. |
+ *
+ * #### Responsibilities
+ *
+ * <!-- See Main.java -->
+ *
+ * * Configure Java default logging properties if logging was not configured on the command line.
+ * * Determine what kind of shell is being run (**note that this Java launcher is only thought to be used for packaged shells, so
+ * this code may be redundant), and put a `inonit.script.jsh.launcher.Shell` instance in the `jsh.launcher.shell` system property.
+ * This instance contains information about the locations of Rhino, the packaged file (if any), and the shell home (if any). The
+ * shell is determined by checking for the `main.jsh.js` resource in the classloader (indicating a packaged shell), and then by
+ * checking whether the launcher main class was loaded from `jsh.jar` (indicating a built shell). Otherwise an unbuilt shell is
+ * being run.
+ * * Invoke the launcher script.
  *
  * ## The `jsh` loader
  *
