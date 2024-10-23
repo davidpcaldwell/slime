@@ -44,6 +44,7 @@
 					build: $api.fp.pipe(
 						jsh.script.cli.option.pathname({ longname: "destination" }),
 						jsh.script.cli.option.pathname({ longname: "rhino" }),
+						jsh.script.cli.option.boolean({ longname: "executable" }),
 						function(p) {
 							var current = jsh.shell.jsh.Installation.from.current();
 							if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
@@ -58,7 +59,7 @@
 											rv.push("-notest");
 											rv.push("-nodoc");
 											if (p.options.rhino) rv.push("-rhino", p.options.rhino.toString());
-
+											if (p.options.executable) rv.push("-executable");
 										}),
 										stdio: {
 											output: "line",

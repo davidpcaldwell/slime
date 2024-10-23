@@ -58,6 +58,51 @@ namespace slime.jsh.test {
 				verify(remoteShellRemoteScript).evaluate.property("jsh.script.file").is.type("undefined");
 				verify(remoteShellRemoteScript).evaluate.property("jsh.script.url").is.type("object");
 			}
+
+			fifty.tests.manual = {};
+			fifty.tests.manual.executable = function() {
+				var run = function(intention: slime.jrunscript.shell.run.Intention) {
+					return $api.fp.world.Sensor.now({
+						sensor: jsh.shell.subprocess.question,
+						subject: intention
+					})
+				};
+
+				var TMPDIR = fifty.jsh.file.temporary.location();
+
+				run({
+					command: fifty.jsh.file.relative("../../jsh").pathname,
+					arguments: [
+						"jrunscript/jsh/tools/shell.jsh.js",
+						"build",
+						"--destination", TMPDIR.pathname,
+						"--rhino", fifty.jsh.file.relative("../../local/jsh/lib/js.jar").pathname,
+						"--executable"
+					]
+				});
+
+				var it = run({
+					command: $api.fp.now(TMPDIR, jsh.file.Location.directory.relativePath("jsh")).pathname,
+					arguments: [
+						fifty.jsh.file.relative("test/jsh-data.jsh.js").pathname
+					],
+					environment: function(env) {
+						return $api.Object.compose(env, {
+							//	TODO	detect Java being used to run this shell
+							JSH_JAVA_HOME: fifty.jsh.file.relative("../../local/jdk/default").pathname,
+							JSH_LAUNCHER_DEBUG: "true"
+						});
+					},
+					stdio: {
+						output: "string"
+					}
+				});
+				jsh.shell.console("exit status = " + it.status);
+				jsh.shell.console("output:");
+				jsh.shell.console(it.stdio.output);
+
+				jsh.shell.console("built = " + TMPDIR.pathname);
+			}
 		}
 	//@ts-ignore
 	)(fifty);
