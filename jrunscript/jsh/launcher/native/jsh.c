@@ -30,6 +30,7 @@ END LICENSE
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 void debug(char* mask, ...);
 
@@ -101,7 +102,8 @@ int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
 	} else {
 		execvp(args[0],args);
 	}
-	return 0;
+	debug("exec returned; errno = %s", strerror(errno));
+	return -1;
 }
 
 #define JSH_PATHNAME_BUFFER_SIZE PROC_PIDPATHINFO_MAXSIZE*sizeof(char)
@@ -199,7 +201,7 @@ int main(int argc, char **argv) {
 	if (getenv("JAVA_HOME") != NULL) {
 		JAVA_HOME = getenv("JAVA_HOME");
 	}
-	javaLaunch(JAVA_HOME,argc+1,javaArguments);
+	exit(javaLaunch(JAVA_HOME,argc+1,javaArguments));
 	/*
 	JNIEnv* env = create_vm(jar);
 	invoke_class(env, argc, argv);
