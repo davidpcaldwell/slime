@@ -54,9 +54,12 @@ namespace slime.jsh.test {
 			& shells.Invocable
 		>
 
-		built: slime.$api.fp.impure.External<
-			slime.jsh.shell.BuiltInstallation
-			& shells.Invocable
+		built: slime.$api.fp.Mapping<
+			boolean,
+			(
+				slime.jsh.shell.BuiltInstallation
+				& shells.Invocable
+			)
 		>
 
 		/**
@@ -82,7 +85,7 @@ namespace slime.jsh.test {
 
 	(
 		function(Packages: slime.jrunscript.Packages, $api: slime.$api.Global, jsh: slime.jsh.Global, $export: slime.loader.Export<Exports>) {
-			var memoizeMap: <T,R>(f: (t: T) => R) => (t: T) => R = function<T,R>(f) {
+			var memoizeMap: <T,R>(f: (t: T) => R) => (t: T) => R = function<T,R>(f: (t: T) => R) {
 				var map: Map<T,R> = new Map();
 				return function(t: T) {
 					var cached = map.get(t);
@@ -179,86 +182,89 @@ namespace slime.jsh.test {
 									)
 								}
 							},
-							built: $api.fp.impure.Input.memoized(function() {
-								//	TODO	should store result in system property so that it is cached across loads of this file as well as
-								//			individual invocations
-								var TMPDIR = $api.fp.world.now.question(
-									jsh.file.Location.from.temporary(jsh.file.world.filesystems.os),
-									{
-										directory: true
-									}
-								);
-
-								var isUnbuilt = jsh.shell.jsh.Installation.is.unbuilt;
-
-								//	TODO	can we use jrunscript/jsh/tools/shell.jsh.js
-								var getShellToolScript = jsh.file.Location.directory.relativePath("jrunscript/jsh/tools/shell.jsh.js");
-
-								var current = jsh.shell.jsh.Installation.from.current();
-
-								if (isUnbuilt(current)) {
-									var rhino: slime.$api.fp.Maybe<slime.jrunscript.file.Location> = $api.fp.now.invoke(
-										current,
-										$api.fp.property("src"),
-										jsh.file.Location.from.os,
-										jsh.file.Location.directory.relativePath("local/jsh/lib/js.jar"),
-										function(location) {
-											var exists = $api.fp.world.mapping(jsh.file.Location.file.exists.world())(location);
-											return (exists) ? $api.fp.Maybe.from.some(location) : $api.fp.Maybe.from.nothing();
+							built: memoizeMap(
+								function(executable) {
+									//	TODO	should store result in system property so that it is cached across loads of this file as well as
+									//			individual invocations
+									var TMPDIR = $api.fp.world.now.question(
+										jsh.file.Location.from.temporary(jsh.file.world.filesystems.os),
+										{
+											directory: true
 										}
 									);
 
-									$api.fp.now.invoke(
-										asJshIntention({
-											shell: current,
-											script: getShellToolScript(jsh.file.Location.from.os(current.src)).pathname,
-											arguments: $api.Array.build(function(rv) {
-												rv.push("build");
-												rv.push("--destination", TMPDIR.pathname);
-												if (rhino.present) rv.push("--rhino", rhino.value.pathname);
-											}),
-											stdio: {
-												output: "line",
-												error: "line"
-											}
-										}),
-										jsh.shell.jsh.Intention.toShellIntention,
-										$api.fp.world.output(
-											jsh.shell.subprocess.action,
-											{
-												stdout: function(e) {
-													jsh.shell.console("jsh build STDOUT: " + e.detail.line);
-												},
-												stderr: function(e) {
-													jsh.shell.console("jsh build STDERR: " + e.detail.line);
-												}
-											}
-										)
-									);
+									var isUnbuilt = jsh.shell.jsh.Installation.is.unbuilt;
 
-									var canonical = String(jsh.file.Pathname(TMPDIR.pathname).java.adapt().getCanonicalPath());
-									return {
-										home: canonical,
-										invoke: $api.fp.pipe(
-											function(p): slime.jsh.shell.Intention {
-												return {
-													shell: {
-														home: canonical
-													},
-													script: p.script,
-													arguments: p.arguments,
-													environment: p.environment,
-													directory: p.directory,
-													stdio: p.stdio
+									//	TODO	can we use jrunscript/jsh/tools/shell.jsh.js
+									var getShellToolScript = jsh.file.Location.directory.relativePath("jrunscript/jsh/tools/shell.jsh.js");
+
+									var current = jsh.shell.jsh.Installation.from.current();
+
+									if (isUnbuilt(current)) {
+										var rhino: slime.$api.fp.Maybe<slime.jrunscript.file.Location> = $api.fp.now.invoke(
+											current,
+											$api.fp.property("src"),
+											jsh.file.Location.from.os,
+											jsh.file.Location.directory.relativePath("local/jsh/lib/js.jar"),
+											function(location) {
+												var exists = $api.fp.world.mapping(jsh.file.Location.file.exists.world())(location);
+												return (exists) ? $api.fp.Maybe.from.some(location) : $api.fp.Maybe.from.nothing();
+											}
+										);
+
+										$api.fp.now.invoke(
+											asJshIntention({
+												shell: current,
+												script: getShellToolScript(jsh.file.Location.from.os(current.src)).pathname,
+												arguments: $api.Array.build(function(rv) {
+													rv.push("build");
+													rv.push("--destination", TMPDIR.pathname);
+													if (rhino.present) rv.push("--rhino", rhino.value.pathname);
+													if (executable) rv.push("--executable");
+												}),
+												stdio: {
+													output: "line",
+													error: "line"
 												}
-											},
-											jsh.shell.jsh.Intention.toShellIntention
-										)
-									};
-								} else {
-									throw new Error();
+											}),
+											jsh.shell.jsh.Intention.toShellIntention,
+											$api.fp.world.output(
+												jsh.shell.subprocess.action,
+												{
+													stdout: function(e) {
+														jsh.shell.console("jsh build STDOUT: " + e.detail.line);
+													},
+													stderr: function(e) {
+														jsh.shell.console("jsh build STDERR: " + e.detail.line);
+													}
+												}
+											)
+										);
+
+										var canonical = String(jsh.file.Pathname(TMPDIR.pathname).java.adapt().getCanonicalPath());
+										return {
+											home: canonical,
+											invoke: $api.fp.pipe(
+												function(p): slime.jsh.shell.Intention {
+													return {
+														shell: {
+															home: canonical
+														},
+														script: p.script,
+														arguments: p.arguments,
+														environment: p.environment,
+														directory: p.directory,
+														stdio: p.stdio
+													}
+												},
+												jsh.shell.jsh.Intention.toShellIntention
+											)
+										};
+									} else {
+										throw new Error();
+									}
 								}
-							}),
+							),
 							packaged: memoizeMap(
 								function(script) {
 									var to = jsh.file.Location.canonicalize($api.fp.world.now.question(

@@ -26,6 +26,8 @@ namespace slime.jsh.shell {
 				script: slime.jsh.script.Exports
 			}
 
+			PATH: slime.jrunscript.file.Searchpath
+
 			module: slime.jrunscript.shell.Exports
 		}
 
@@ -429,7 +431,7 @@ namespace slime.jsh.shell {
 			fifty.tests.exports.jsh.Installation.from.current.built = function() {
 				var cast: slime.js.Cast<BuiltInstallation> = $api.fp.cast.unsafe;
 
-				var shell = fixtures.shells(fifty).built();
+				var shell = fixtures.shells(fifty).built(false);
 
 				var intention: slime.jsh.shell.Intention = {
 					shell: shell,
@@ -767,7 +769,7 @@ namespace slime.jsh.shell {
 					stdio: stdio
 				}));
 
-				var built = run(test.shells.built().invoke({
+				var built = run(test.shells.built(false).invoke({
 					script: script,
 					environment: $api.fp.Mapping.all(environment),
 					stdio: stdio
@@ -787,7 +789,7 @@ namespace slime.jsh.shell {
 				}));
 
 				verify(unbuilt).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(void(0));
-				verify(built).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(test.shells.built().home + "/");
+				verify(built).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(test.shells.built(false).home + "/");
 				verify(packaged).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(void(0));
 				verify(remote).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(void(0));
 

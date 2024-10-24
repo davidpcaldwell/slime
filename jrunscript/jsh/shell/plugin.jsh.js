@@ -22,6 +22,8 @@
 				return Boolean(plugins.shell && plugins.stdio && jsh.script);
 			},
 			load: function() {
+				/** @type { slime.jrunscript.shell.Exports } */
+				var module = plugins.shell;
 				/**
 				 * @type { slime.jsh.shell.internal.Context }
 				 */
@@ -33,6 +35,7 @@
 						file: jsh.file,
 						script: jsh.script
 					},
+					PATH: module.PATH,
 					stdio: plugins.stdio,
 					_getSystemProperties: function() {
 						return $slime.getSystemProperties();
@@ -56,7 +59,7 @@
 							return $api.fp.Maybe.from.nothing();
 						}
 					},
-					module: plugins.shell
+					module: module
 				};
 
 				/** @type { slime.jsh.shell.internal.Script } */

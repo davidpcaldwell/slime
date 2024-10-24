@@ -28,7 +28,7 @@
 				commands: {
 					run: {
 						built: function(p) {
-							var shell = fixtures.shells(fifty).built();
+							var shell = fixtures.shells(fifty).built(false);
 
 							var exit = $api.fp.now.invoke(
 								asJshIntention({
