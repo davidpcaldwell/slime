@@ -23,6 +23,7 @@ END LICENSE
 		<div jsapi:id="hello">
 			<script type="application/x.jsapi#tests" jsapi:id="executable">
 				if ($jsapi.environment.jsh.built.home.getFile("jsh")) {
+					jsh.shell.console(String(Packages.java.lang.System.getProperties()));
 					var evaluate = function(name) {
 						return function(result) {
 							if (result.status != 0) {
