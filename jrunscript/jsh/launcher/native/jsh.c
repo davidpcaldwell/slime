@@ -256,7 +256,7 @@ int main(int argc, char **argv) {
 	if (getenv("JSH_JAVA_HOME") != NULL) {
 		JAVA_HOME = getenv("JSH_JAVA_HOME");
 	}
-	if (getenv("JAVA_HOME") != NULL) {
+	if (JAVA_HOME == NULL && getenv("JAVA_HOME") != NULL) {
 		JAVA_HOME = getenv("JAVA_HOME");
 	}
 	exit(jrunscriptLaunch(JAVA_HOME,count+argc-1,jrunscriptArguments));

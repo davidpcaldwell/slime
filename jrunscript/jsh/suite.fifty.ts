@@ -65,7 +65,10 @@ namespace slime.jsh.test {
 						}
 					};
 
-					var environment = $api.Object.compose(jsh.shell.environment, { JSH_JAVA_HOME: jdk.base });
+					var environment = $api.Object.compose(jsh.shell.environment, {
+						JSH_JAVA_HOME: jdk.base,
+						PATH: PATH.toString()
+					});
 					jsh.shell.console("environment = " + JSON.stringify(environment));
 					var output = jsh.shell.run({
 						command: home.getFile("jsh"),
