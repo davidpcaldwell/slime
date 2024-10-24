@@ -65,10 +65,12 @@ namespace slime.jsh.test {
 						}
 					};
 
+					var environment = $api.Object.compose(jsh.shell.environment, { PATH: PATH.toString() });
+					jsh.shell.console("environment = " + JSON.stringify(environment));
 					var output = jsh.shell.run({
 						command: home.getFile("jsh"),
 						arguments: [home.getFile("src/jrunscript/jsh/test/jsh-data.jsh.js")],
-						environment: $api.Object.compose(jsh.shell.environment, { PATH: PATH.toString() }),
+						environment: environment,
 						stdio: {
 							output: String
 						},
@@ -80,7 +82,7 @@ namespace slime.jsh.test {
 						var output = jsh.shell.run({
 							command: home.getFile("jsh").toString(),
 							arguments: [home.getFile("src/jrunscript/jsh/test/jsh-data.jsh.js")],
-							environment: $api.Object.compose(jsh.shell.environment, { PATH: PATH.toString() }),
+							environment: environment,
 							stdio: {
 								output: String
 							},
