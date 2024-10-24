@@ -45,6 +45,14 @@
 		$api.debug("Source: " + $api.slime.src);
 		$api.debug("Bootstrap script: " + $api.script);
 
+		(
+			function() {
+				var argv = this["javax.script.argv"];
+				$api.debug("javax.script.argv = " + JSON.stringify(argv));
+				$api.debug("$api.arguments = " + JSON.stringify($api.arguments));
+			}
+		)();
+
 		//var container = new function() {
 		//	//	TODO	jsh.tmpdir is not correctly passed to launcher in the forking scenario
 		//
@@ -225,7 +233,7 @@
 		}
 
 		//	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
-		while($api.arguments.length > 0 && $api.arguments[0].substring(0,1) == "-") {
+		while($api.arguments.length > 0 && $api.arguments[0] && $api.arguments[0].substring(0,1) == "-") {
 			command.vm($api.arguments.shift());
 		}
 
@@ -448,6 +456,7 @@
 		command.main(engine.main);
 
 		for (var i=0; i<$api.arguments.length; i++) {
+			$api.debug("argument: " + $api.arguments[i]);
 			command.argument($api.arguments[i]);
 		}
 

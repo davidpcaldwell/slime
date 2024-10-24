@@ -90,7 +90,7 @@ namespace slime.jsh.test {
 						return $api.Object.compose(env, {
 							//	TODO	detect Java being used to run this shell
 							JSH_JAVA_HOME: fifty.jsh.file.relative("../../local/jdk/default").pathname,
-							JSH_LAUNCHER_DEBUG: "true"
+							JSH_LAUNCHER_DEBUG: "1"
 						});
 					},
 					stdio: {

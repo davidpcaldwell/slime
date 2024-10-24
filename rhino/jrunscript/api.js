@@ -942,7 +942,11 @@
 						return (function(property) {
 							var rv = [];
 							for (var i=0; i<property.length; i++) {
-								rv[i] = String(property[i]);
+								if (String(property[i]) == "-classpath") {
+									i++;
+								} else {
+									rv.push(String(property[i]));
+								}
 							}
 							return rv;
 						})(this["javax.script.argv"]);
