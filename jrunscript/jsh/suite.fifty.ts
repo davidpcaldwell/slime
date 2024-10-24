@@ -101,6 +101,7 @@ namespace slime.jsh.test {
 						}
 						if (p.PATH) {
 							lines.push("export PATH=\"" + p.PATH + "\"");
+							lines.push("export -n JAVA_HOME");
 						}
 						lines.push(p.command + " " + p.arguments.join(" "));
 						var file = jsh.shell.TMPDIR.createTemporary({ suffix: ".bash" });
