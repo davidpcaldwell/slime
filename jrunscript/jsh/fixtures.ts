@@ -184,6 +184,8 @@ namespace slime.jsh.test {
 							},
 							built: memoizeMap(
 								function(executable) {
+									//	TODO #1704	in Docker test environments, provide gcc
+									if (executable && !jsh.shell.PATH.getCommand("gcc")) return null;
 									//	TODO	should store result in system property so that it is cached across loads of this file as well as
 									//			individual invocations
 									var TMPDIR = $api.fp.world.now.question(
