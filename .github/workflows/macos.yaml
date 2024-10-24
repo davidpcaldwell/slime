@@ -15,6 +15,7 @@ on:
 jobs:
   test:
     runs-on: macos-12
+    # https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2

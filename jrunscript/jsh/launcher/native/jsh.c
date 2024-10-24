@@ -32,10 +32,13 @@ END LICENSE
 #include <string.h>
 #include <errno.h>
 
+//	Forward reference so that platform-specific code can use debugging
 void debug(char* mask, ...);
 
+//	Windows-specific
 #ifdef WIN32
 const char SLASH = '\\';
+const char COLON = ';';
 #include "shlwapi.h"
 const int PATH_MAX = MAX_PATH;
 
@@ -54,13 +57,18 @@ int programAbsolutePath(char *path, char *absolute, int size) {
 	strcpy(absolute,path);
 	return 0;
 }
+
+//	TODO	JSH_PATHNAME_BUFFER_SIZE not defined for Windows
 #endif
 
+//	Unix-specific
 #if defined __unix__ || defined __APPLE__
 #include <stdlib.h>
 #include <stdarg.h>
+#include <unistd.h>
 
 const char SLASH = '/';
+const char COLON = ':';
 
 void strip_trailing_slash(char *path) {
 	if (path[strlen(path)-1] == SLASH) {
@@ -68,12 +76,7 @@ void strip_trailing_slash(char *path) {
 	}
 }
 
-#if defined __APPLE__
-#include <libproc.h>
-#include <libgen.h>
-#include <unistd.h>
-
-int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
+int jrunscriptLaunch(char *JAVA_HOME, int argc, char **argv) {
 	debug("JAVA_HOME = %s\n", JAVA_HOME);
 	char **args = malloc( (sizeof(char*) * (argc+2) ) );
 	int i;
@@ -83,16 +86,14 @@ int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
 	args[argc+1] = NULL;
 	if (JAVA_HOME != NULL) {
 		strip_trailing_slash(JAVA_HOME);
-		/*	Rather than doing this manipulation, would it be better to use execvP with JAVA_HOME/bin as PATH? */
+		/*	Rather than doing this manipulation, would it be better to use execvp with JAVA_HOME/bin as PATH? */
 		int length = strlen(JAVA_HOME) + strlen("/bin/jrunscript");
 		char* path = malloc( sizeof(char) * length );
 		sprintf(path,"%s/bin/jrunscript",JAVA_HOME);
 		debug("jrunscript path: %s\n", path);
 		args[0] = path;
-//		execv()
 	} else {
 		args[0] = "jrunscript";
-//		execvp("java",argv);
 	}
 	for (i=0; i<argc+2; i++) {
 		debug("argument %d is %s\n", i, args[i]);
@@ -106,6 +107,11 @@ int javaLaunch(char *JAVA_HOME, int argc, char **argv) {
 	return -1;
 }
 
+//	Mac OS X-specific
+#if defined __APPLE__
+#include <libproc.h>
+#include <libgen.h>
+
 #define JSH_PATHNAME_BUFFER_SIZE PROC_PIDPATHINFO_MAXSIZE*sizeof(char)
 int programAbsolutePath(char *argsv0, char *rv, int size) {
 	int status = proc_pidpath(getpid(), rv, size);
@@ -116,6 +122,7 @@ int programAbsolutePath(char *argsv0, char *rv, int size) {
 
 #endif
 
+//	UNIX-specific
 #if defined __unix__ || defined __linux__
 #include <limits.h>
 #include <libgen.h>
@@ -145,6 +152,7 @@ int programAbsolutePath(char *argsv0, char *rv, int size) {
 }
 #endif
 
+//	end if unix || apple
 #endif
 
 void debug(char* mask, ...) {
@@ -156,11 +164,34 @@ void debug(char* mask, ...) {
 	va_end(args);
 }
 
+char* path_append(char* PATH, char* element) {
+	char* rv = malloc( (strlen(PATH) + 1 + strlen(element) + 1) * sizeof(char) );
+	strcpy(rv, PATH);
+	char colon[2];
+	colon[0] = COLON;
+	strcat(rv, colon);
+	strcat(rv, element);
+	return rv;
+}
+
+char* get_shell_path(char* jsh_home, char* relative) {
+	char* rv = malloc( (strlen(jsh_home) + 1 + strlen(relative) + 1) * sizeof(char) );
+	strcpy(rv, jsh_home);
+	char slash[2];
+	slash[0] = SLASH;
+	strcat(rv, slash);
+	strcat(rv, relative);
+	return rv;
+}
+
 int main(int argc, char **argv) {
 	debug("JSH_JAVA_HOME = %s\n", getenv("JSH_JAVA_HOME"));
 
 	/*	Get the parent directory of this launcher. */
+	debug("argc = %d\n", argc);
 	debug("argv[0] = %s\n", argv[0]);
+	debug("argv[1] = %s\n", argv[1]);
+	debug("argv[2] = %s\n", argv[2]);
 	char *absolutejshpath = malloc(JSH_PATHNAME_BUFFER_SIZE);
 	if (programAbsolutePath(argv[0],absolutejshpath,JSH_PATHNAME_BUFFER_SIZE)) {
 		fprintf(stderr, "Could not locate jsh installation directory.\n");
@@ -175,33 +206,60 @@ int main(int argc, char **argv) {
 	jsh_home = dirname(realjshpath);
 	debug("jsh_home = %s\n", jsh_home);
 
-	/*	Append jsh.jar to the path of the parent directory of this launcher. */
+	/*	Append jsh.js to the path of the parent directory of this launcher. */
 	char* js = malloc(JSH_PATHNAME_BUFFER_SIZE);
 	char path[8];
 	sprintf(path, "/jsh.js");
 	path[0] = SLASH;
 	sprintf(js, "%s%s", jsh_home, path);
 
-	char** javaArguments = malloc(sizeof(char*) * (argc));
-//	javaArguments[0] = "-jar";
-//	javaArguments[1] = jar;
-	javaArguments[0] = js;
-	int i;
-	for (i=1; i<argc; i++) {
-		javaArguments[i] = argv[i];
-		debug("jrunscriptArguments[%d] = %s\n", i+1, argv[i]);
+	char** jrunscriptArguments = malloc(sizeof(char*) * (argc+3));
+	jrunscriptArguments[0] = js;
+	int count = 1;
+
+	// char* nashorn_jar = malloc(JSH_PATHNAME_BUFFER_SIZE);
+	// char relative[17];
+	// sprintf(relative, "/lib/nashorn.jar");
+	// relative[0] = SLASH;
+	// relative[4] = SLASH;
+	// sprintf(nashorn_jar, "%s%s", jsh_home, relative);
+	char* nashorn_jar = get_shell_path(jsh_home, "lib/nashorn.jar");
+	debug("nashorn.jar = %s\n", nashorn_jar);
+
+	if (!access(nashorn_jar, F_OK)) {
+		debug("nashorn.jar found; should add to classpath\n");
+		char* PATH = get_shell_path(jsh_home, "lib/asm.jar");
+		debug("PATH = %s\n", PATH);
+		PATH = path_append(PATH, get_shell_path(jsh_home, "lib/asm-commons.jar"));
+		debug("PATH = %s\n", PATH);
+		PATH = path_append(PATH, get_shell_path(jsh_home, "lib/asm-tree.jar"));
+		debug("PATH = %s\n", PATH);
+		PATH = path_append(PATH, get_shell_path(jsh_home, "lib/asm-util.jar"));
+		debug("PATH = %s\n", PATH);
+		PATH = path_append(PATH, get_shell_path(jsh_home, "lib/nashorn.jar"));
+		debug("PATH = %s\n", PATH);
+		jrunscriptArguments[1] = "-classpath";
+		jrunscriptArguments[2] = PATH;
+		count = 3;
 	}
-	javaArguments[argc] = NULL;
+
+	int i;
+	for (i=0; (i+1)<argc; i++) {
+		jrunscriptArguments[count+i] = argv[i+1];
+		debug("jrunscriptArguments[%d] = %s\n", count+i, jrunscriptArguments[count+i]);
+	}
+	debug("nulling %d\n", count+argc-1);
+	jrunscriptArguments[count+argc-1] = NULL;
 
 	debug("js = %s\n", js);
 	char *JAVA_HOME = NULL;
 	if (getenv("JSH_JAVA_HOME") != NULL) {
 		JAVA_HOME = getenv("JSH_JAVA_HOME");
 	}
-	if (getenv("JAVA_HOME") != NULL) {
+	if (JAVA_HOME == NULL && getenv("JAVA_HOME") != NULL) {
 		JAVA_HOME = getenv("JAVA_HOME");
 	}
-	exit(javaLaunch(JAVA_HOME,argc+1,javaArguments));
+	exit(jrunscriptLaunch(JAVA_HOME,count+argc-1,jrunscriptArguments));
 	/*
 	JNIEnv* env = create_vm(jar);
 	invoke_class(env, argc, argv);

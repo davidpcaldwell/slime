@@ -111,13 +111,6 @@
 			);
 		}
 
-		(function jshLauncher() {
-			suite.add("jsh/launcher/internal", new jsh.unit.html.Part({
-				pathname: environment.jsh.src.getRelativePath("jrunscript/jsh/launcher/internal.api.html"),
-				environment: environment
-			}));
-		})();
-
 		suite.add("jsh/jsh.tools.install", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jrunscript/jsh/tools/install/plugin.jsh.api.html")
 		}));

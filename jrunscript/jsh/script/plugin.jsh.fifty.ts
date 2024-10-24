@@ -202,7 +202,7 @@ namespace slime.jsh.script {
 			}
 
 			fifty.tests.exports.oo.main.built = function() {
-				var run = test.shells.built().invoke({
+				var run = test.shells.built(false).invoke({
 					script: script.pathname,
 					environment: environmentWithJavaInPath,
 					stdio: {

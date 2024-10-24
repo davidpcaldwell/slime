@@ -35,6 +35,124 @@ namespace slime.jsh.test {
 				);
 			};
 
+			fifty.tests.executable = function() {
+				var shell = fixtures.shells.built(true);
+				if (shell) {
+					var home = jsh.file.Pathname(shell.home).directory;
+					var jdk = jsh.shell.java.Jdk.from.javaHome();
+					var jdkBin = $api.fp.now(jdk.base, jsh.file.Location.from.os, jsh.file.Location.directory.relativePath("bin"));
+
+					var addJavaToPath = function(existing) {
+						var pathnames: slime.jrunscript.file.Pathname[] = [];
+						pathnames.push(jsh.file.Pathname(jdkBin.pathname));
+						pathnames = pathnames.concat(existing.pathnames);
+						return jsh.file.Searchpath(pathnames);
+					};
+
+					var PATH = addJavaToPath(jsh.shell.PATH);
+
+					var evaluate = function(name) {
+						return function(result) {
+							if (result.status != 0) {
+								throw new Error("Status: " + result.status + " output=[" + result.stdio.output + "]");
+							}
+							if (!result.stdio.output) {
+								jsh.shell.console("built = " + shell.home);
+								throw new Error(name + " status 0 but empty string emitted");
+							} else {
+								return JSON.parse(result.stdio.output);
+							}
+						}
+					};
+
+					var environment = $api.Object.compose(jsh.shell.environment, {
+						JSH_JAVA_HOME: jdk.base,
+						PATH: PATH.toString()
+					});
+					jsh.shell.console("environment = " + JSON.stringify(environment));
+					var output = jsh.shell.run({
+						command: home.getFile("jsh"),
+						arguments: [home.getFile("src/jrunscript/jsh/test/jsh-data.jsh.js")],
+						environment: environment,
+						stdio: {
+							output: String
+						},
+						evaluate: evaluate("built file")
+					});
+					verify(output)["jsh.shell.jsh.home"].string.evaluate(String).is(home.toString());
+
+					(function absolute() {
+						var output = jsh.shell.run({
+							command: home.getFile("jsh").toString(),
+							arguments: [home.getFile("src/jrunscript/jsh/test/jsh-data.jsh.js")],
+							environment: environment,
+							stdio: {
+								output: String
+							},
+							evaluate: evaluate("built string")
+						});
+						verify(output)["jsh.shell.jsh.home"].string.evaluate(String).is(home.toString());
+					})();
+
+					var shellCommand = function(p) {
+						var lines = [];
+						if (p.directory) {
+							lines.push("cd " + p.directory);
+						}
+						if (p.PATH) {
+							lines.push("export PATH=\"" + p.PATH + "\"");
+							lines.push("export -n JAVA_HOME");
+						}
+						lines.push(p.command + " " + p.arguments.join(" "));
+						var file = jsh.shell.TMPDIR.createTemporary({ suffix: ".bash" });
+						file.pathname.write(lines.join("\n"), { append: false });
+						jsh.shell.console(file + "\n" + file.read(String) + "\n\n");
+						return jsh.shell.run({
+							command: "bash",
+							arguments: [file].concat(p.arguments),
+							directory: file.parent,
+							stdio: {
+								output: String
+							},
+							evaluate: p.evaluate
+						});
+					};
+
+					(function relative() {
+						var basedir = home.pathname.basename;
+						var parent = home.parent;
+
+						var output = shellCommand({
+							command: basedir + "/" + "jsh",
+							arguments: [home.getFile("src/jrunscript/jsh/test/jsh-data.jsh.js")],
+							directory: parent,
+							stdio: {
+								output: String
+							},
+							PATH: addJavaToPath(jsh.shell.PATH),
+							evaluate: evaluate("relative")
+						});
+						verify(output)["jsh.shell.jsh.home"].string.is(home.toString());
+					})();
+
+					(function inPath() {
+						var directory = home;
+						var PATH = addJavaToPath(jsh.file.Searchpath([directory.pathname].concat(jsh.shell.PATH.pathnames)));
+						var output = shellCommand({
+							command: "jsh",
+							PATH: PATH,
+							arguments: [home.getFile("src/jrunscript/jsh/test/jsh-data.jsh.js")],
+							directory: jsh.shell.HOME,
+							stdio: {
+								output: String
+							},
+							evaluate: evaluate("inPath")
+						});
+						verify(output)["jsh.shell.jsh.home"].string.is(home.toString());
+					})();
+				}
+			}
+
 			fifty.tests.suite = function() {
 				var remoteShellLocalScript = run(shells.remote().getShellIntention({
 					PATH: jsh.shell.PATH,
@@ -57,6 +175,8 @@ namespace slime.jsh.test {
 				jsh.shell.console(JSON.stringify(remoteShellRemoteScript,void(0),4));
 				verify(remoteShellRemoteScript).evaluate.property("jsh.script.file").is.type("undefined");
 				verify(remoteShellRemoteScript).evaluate.property("jsh.script.url").is.type("object");
+
+				fifty.run(fifty.tests.executable);
 			}
 
 			fifty.tests.manual = {};
@@ -90,7 +210,7 @@ namespace slime.jsh.test {
 						return $api.Object.compose(env, {
 							//	TODO	detect Java being used to run this shell
 							JSH_JAVA_HOME: fifty.jsh.file.relative("../../local/jdk/default").pathname,
-							JSH_LAUNCHER_DEBUG: "true"
+							JSH_LAUNCHER_DEBUG: "1"
 						});
 					},
 					stdio: {

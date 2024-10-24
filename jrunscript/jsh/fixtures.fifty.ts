@@ -23,8 +23,8 @@ namespace slime.jsh.test {
 			fifty.tests.cache = fifty.test.Parent();
 
 			fifty.tests.cache.built = function() {
-				var built1 = test.subject.shells(fifty).built();
-				var built2 = test.subject.shells(fifty).built();
+				var built1 = test.subject.shells(fifty).built(false);
+				var built2 = test.subject.shells(fifty).built(false);
 				verify(built1).home.is(built2.home);
 			};
 

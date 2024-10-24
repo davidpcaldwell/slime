@@ -537,10 +537,22 @@
 
 		/** @type { (p: slime.jsh.shell.Intention) => slime.jrunscript.shell.run.Intention } */
 		var jshIntentionToShellIntention = function(p) {
-			/** @type { (p: slime.jsh.shell.BuiltInstallation) => slime.jrunscript.file.Location } */
-			var getHomeLauncher = function(p) {
-				return $context.api.file.Location.directory.relativePath("jsh.bash")($context.api.file.Location.from.os(p.home));
-			}
+			/** @type { slime.$api.fp.Identity<slime.jsh.shell.BuiltInstallation> } */
+			var asBuiltInstallation = $api.fp.identity;
+
+			var getHomeBashLauncher = $api.fp.pipe(
+				asBuiltInstallation,
+				$api.fp.property("home"),
+				$context.api.file.Location.from.os,
+				$context.api.file.Location.directory.relativePath("jsh.bash")
+			);
+
+			var getHomeNativeLauncher = $api.fp.pipe(
+				asBuiltInstallation,
+				$api.fp.property("home"),
+				$context.api.file.Location.from.os,
+				$context.api.file.Location.directory.relativePath("jsh")
+			);
 
 			/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.BuiltInstallation } */
 			var isBuilt = function(shell) {
@@ -557,17 +569,33 @@
 					//	TODO #1415	support this
 					if (p.properties) throw new TypeError("Unsupported: supplying properties to built shell.");
 					var downcast = shell;
-					return {
-						//	TODO	will not work on Windows
-						command: "bash",
-						arguments: $api.Array.build(function(rv) {
-							rv.push(getHomeLauncher(downcast).pathname);
-							rv.push(p.script);
-							if (p.arguments) rv.push.apply(rv, p.arguments);
-						}),
-						directory: p.directory,
-						environment: p.environment,
-						stdio: p.stdio
+					var bashLauncher = getHomeBashLauncher(downcast);
+					var nativeLauncher = getHomeNativeLauncher(downcast);
+					if ($api.fp.now(nativeLauncher, $context.api.file.Location.file.exists.simple)) {
+						return {
+							command: nativeLauncher.pathname,
+							arguments: $api.Array.build(function(rv) {
+								rv.push(p.script);
+								if (p.arguments) rv.push.apply(rv, p.arguments);
+							}),
+							directory: p.directory,
+							environment: p.environment,
+							stdio: p.stdio
+						};
+					} else if ($context.PATH.getCommand("bash") && $api.fp.now(bashLauncher, $context.api.file.Location.file.exists.simple)) {
+						return {
+							command: "bash",
+							arguments: $api.Array.build(function(rv) {
+								rv.push(getHomeBashLauncher(downcast).pathname);
+								rv.push(p.script);
+								if (p.arguments) rv.push.apply(rv, p.arguments);
+							}),
+							directory: p.directory,
+							environment: p.environment,
+							stdio: p.stdio
+						}
+					} else {
+						throw new Error("Built shell requires: bash with bash launcher, or native launcher.");
 					}
 				} else {
 					throw new Error("Unsupported external shell.");
