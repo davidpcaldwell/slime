@@ -254,7 +254,7 @@ namespace slime.jrunscript.file {
 				var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				var relative = tmpdir.getRelativePath("relative");
 				var endsWithSlashPattern = /\/$/;
-				var toStringMatches = function(regex) {
+				var toStringMatches = function(regex: RegExp) {
 					return function() {
 						var string = this.toString();
 						var rv = regex.test(string);

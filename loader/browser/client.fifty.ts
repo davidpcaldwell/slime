@@ -201,7 +201,7 @@ namespace slime.browser {
 			const window = $window as Window & { foo: any }
 			fifty.tests.exports.namespace = {};
 
-			const test = function(value) {
+			const test = function(value: boolean) {
 				fifty.verify(value).is(true);
 			};
 

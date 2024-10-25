@@ -61,37 +61,6 @@ END LICENSE
 			]]></script>
 			<h1>Exports</h1>
 			<div class="type">
-				<a class="type" name="types.Verify">Verify</a>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-				</ul>
-				<script type="application/x.jsapi#tests">
-					var s = function() {
-						test.apply(scope,arguments);
-					}
-					var v = new module.Verify(s);
-					v(1).is(1);
-					v("x").length.is(1);
-					var withHidden = { is: "hey", evaluate: "dude" };
-					v(withHidden,"withHidden").evaluate.property("is").is("hey");
-					v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
-
-					var methodThrows = {
-						method: function() {
-							throw new Error("Wrong again, knave!")
-						},
-						works: function() {
-
-						}
-					};
-
-					v(methodThrows).evaluate(function() { return this.method(); }).threw.type(Error);
-					v(methodThrows).evaluate(function() { return this.method(); }).threw.message.is("Wrong again, knave!");
-					v(methodThrows).evaluate(function() { return this.works(); }).threw.nothing();
-				</script>
-			</div>
-			<div class="type">
 				<a class="type" name="types.definition">definition</a>
 				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>

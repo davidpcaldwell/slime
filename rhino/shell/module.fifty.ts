@@ -1053,7 +1053,7 @@ namespace slime.jrunscript.shell {
 
 			var module = fixtures().load(context);
 
-			var test = function(b) {
+			var test = function(b: boolean) {
 				fifty.verify(b).is(true);
 			}
 

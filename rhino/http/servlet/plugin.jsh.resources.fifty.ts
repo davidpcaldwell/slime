@@ -91,6 +91,8 @@ namespace slime.jsh.httpd {
 				jsh: fifty.global.jsh
 			});
 
+			const asObject = function(p: any) { return p as object; };
+
 			fifty.tests.script = {
 				old: function() {
 					var one: { loader: slime.old.Loader } = subject.script.old(
@@ -117,7 +119,7 @@ namespace slime.jsh.httpd {
 					verify(one).loader.Child("WEB-INF/").list()[0].path.is("generic");
 					verify(one).loader.Child("WEB-INF/").list()[1].path.is("mozilla");
 					verify(one).loader.Child("WEB-INF/").list()[2].path.is("test");
-					verify(one).loader.file("WEB-INF/test/1.file.js").is.not(null);
+					verify(one).loader.file("WEB-INF/test/1.file.js").evaluate(asObject).is.not(null);
 					verify(one).loader.get("WEB-INF/test/1.txt").evaluate(read).is("1\n");
 				},
 				resources: function() {
@@ -168,7 +170,7 @@ namespace slime.jsh.httpd {
 					var first = test[0] as slime.old.loader.LoaderEntry;
 					verify(first).loader.is.not(null);
 					var file = first.loader.file("resource/1.file.js");
-					verify(file,"file").is.not(null);
+					verify(file,"file").evaluate(asObject).is.not(null);
 		//			verify(one).loader().file("WEB-INF/test/1.file.js").isNotEqualTo(null);
 		//			verify(one).loader().resource("WEB-INF/test/1.txt").read(String).is("1");
 				},

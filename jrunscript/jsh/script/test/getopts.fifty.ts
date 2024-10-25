@@ -147,10 +147,10 @@ namespace slime.jsh.script {
 				var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.IGNORE);
 				verify(parameters).arguments.length.is(0);
 				verify(parameters).options.evaluate(function() {
-					return this.boolean;
+					return this.boolean as unknown;
 				}).is(void(0));
 				verify(parameters).options.evaluate(function() {
-					return this.string;
+					return this.string as unknown;
 				}).is(void(0));
 			}
 
@@ -158,10 +158,10 @@ namespace slime.jsh.script {
 				var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.SKIP);
 				verify(parameters).arguments.length.is(3);
 				verify(parameters).options.evaluate(function() {
-					return this.boolean;
+					return this.boolean as unknown;
 				}).is(void(0));
 				verify(parameters).options.evaluate(function() {
-					return this.string;
+					return this.string as unknown;
 				}).is(void(0));
 			}
 
@@ -169,7 +169,7 @@ namespace slime.jsh.script {
 				var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.INTERPRET);
 				verify(parameters).arguments.length.is(0);
 				verify(parameters).options.evaluate(function() {
-					return this.boolean;
+					return this.boolean as boolean;
 				}).is(true);
 				verify(parameters).options.evaluate(function() {
 					return this.string as string;
@@ -196,7 +196,8 @@ namespace slime.jsh.script {
 				verify(p2).options.property.b.is(2);
 
 				var booleans = ["-property","that","-property","it"];
-				var p3 = module.getopts({
+				//@ts-ignore
+				var p3: { options: { property: { [name: string]: boolean }}} = module.getopts({
 					options: {
 						property: module.getopts.OBJECT(Boolean)
 					}
@@ -228,7 +229,7 @@ namespace slime.jsh.script {
 			}
 
 			fifty.tests.exports.getopts._1 = function() {
-				const test = function(b) {
+				const test = function(b: boolean) {
 					verify(b).is(true);
 				};
 

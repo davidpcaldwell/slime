@@ -305,7 +305,7 @@ namespace slime.jrunscript.file {
 				}
 			)();
 
-			const test = function(b) {
+			const test = function(b: boolean) {
 				verify(b).is(true);
 			}
 
@@ -394,11 +394,12 @@ namespace slime.jrunscript.file {
 					var permissionsString = String(_permissions);
 					verify(permissionsString).is(permissionsString);
 
-					verify(_permissions.contains(Packages.java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)).is(true);
+					const asBoolean = function(p: any) { return p as boolean; };
+					verify(_permissions.contains(Packages.java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)).evaluate(asBoolean).is(true);
 
 					tmpdir.getFile("a").copy(tmpdir.getRelativePath("b"));
 					var _p2 = _getPermissions(tmpdir.getFile("b"));
-					verify(_p2.contains(Packages.java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)).is(true);
+					verify(_p2.contains(Packages.java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)).evaluate(asBoolean).is(true);
 				}
 			};
 

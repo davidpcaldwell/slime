@@ -387,7 +387,7 @@ namespace slime.jrunscript.tools.install {
 							verify(destination).directory.getFile("file").is(null);
 							verify(destination).directory.getFile("directory/file").is.not(null);
 
-							var error = null;
+							var error: Error = null;
 							try {
 								$api.fp.world.Means.now({
 									means: subject.Distribution.install.world,
@@ -395,7 +395,7 @@ namespace slime.jrunscript.tools.install {
 								});
 							} catch (e) {
 								error = e;
-								jsh.shell.console(error);
+								jsh.shell.console(String(error));
 							}
 							verify(error).is.not(null);
 							verify(destination).directory.getFile("file").is(null);
@@ -414,7 +414,7 @@ namespace slime.jrunscript.tools.install {
 							verify(destination).directory.getFile("directory/a").is.not(null);
 
 
-							var error = null;
+							var error: Error = null;
 							try {
 								$api.fp.world.Means.now({
 									means: subject.Distribution.install.world,
@@ -440,7 +440,7 @@ namespace slime.jrunscript.tools.install {
 							verify(destination).directory.getFile("directory/file").is.not(null);
 							verify(destination).directory.getFile("directory/a").is.not(null);
 
-							var error = null;
+							var error: Error = null;
 							try {
 								$api.fp.world.Means.now({
 									means: subject.Distribution.install.world,
@@ -926,7 +926,7 @@ namespace slime.jrunscript.tools.install {
 						downloads: mockdownloads
 					});
 
-					var GET_API_HTML = function() { return this.getFile("module.fifty.ts") };
+					var GET_API_HTML = function(p: slime.jrunscript.file.Directory) { return p.getFile("module.fifty.ts") };
 					var EQUALS = function(string) { return function(p) { return p.read(String) == string; } };
 					verify(mockdownloads).evaluate(GET_API_HTML).is(null);
 					var file: object = $api.fp.world.now.ask(

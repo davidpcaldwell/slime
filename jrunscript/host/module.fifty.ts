@@ -333,7 +333,7 @@ namespace slime.jrunscript.java {
 				&& (Packages.org.mozilla.javascript.Context.getCurrentContext() != null)
 			;
 
-			function test(b) {
+			function test(b: boolean) {
 				verify(b).is(true);
 			}
 

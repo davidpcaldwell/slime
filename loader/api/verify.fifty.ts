@@ -102,11 +102,17 @@ namespace slime.definition.verify {
 			T extends Boolean
 			? AssertSubject<boolean>
 			: (
-				T extends (...args: any) => any
-				? MethodSubject<T>
-				: T extends Array<any>
-					? AssertSubject<T> & { length: Subject<number> }
-					: AssertSubject<T>
+				T extends String
+				? AssertSubject<string> & { length: Subject<number> }
+				: (
+					T extends (...args: any) => any
+					? MethodSubject<T>
+					: (
+						T extends Array<any>
+						? AssertSubject<T> & { length: Subject<number> }
+						: AssertSubject<T>
+					)
+				)
 			)
 		)
 	)

@@ -68,8 +68,6 @@ namespace slime.definition.unit.internal {
 			verify: fifty.$loader.script("../verify.js")
 		}
 
-		const verify = fifty.verify;
-
 		const subject = code({
 			api: {
 				Promise: Promise
@@ -81,6 +79,8 @@ namespace slime.definition.unit.internal {
 			subject: subject,
 			types: {
 				definition: function types_definition() {
+					const verify = fifty.verify;
+
 					//	TODO	add test for error being thrown
 
 					var a = {};
@@ -180,19 +180,6 @@ namespace slime.definition.unit {
 }
 
 namespace slime.definition.unit {
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.suite = function() {
-				fifty.run(internal.types.definition);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-}
-
-namespace slime.definition.unit {
 	type Verify = slime.definition.verify.Verify & {
 		test: Function
 		suite: Function
@@ -278,5 +265,97 @@ namespace slime.definition.unit {
 
 		export type Argument = Handler | Listener
 	}
+}
 
+namespace slime.definition.unit {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api } = fifty.global;
+
+			fifty.tests.jsapi = fifty.test.Parent();
+
+			var verify = fifty.$loader.module("../verify.js");
+
+			var module: slime.definition.unit.Exports = fifty.$loader.module("unit.js", {
+				api: {
+					Promise: void(0)
+				},
+				verify: verify
+			});
+
+			var a = new module.Suite({
+				name: "a",
+				parts: {
+					a: {
+						name: "aname",
+						execute: function(scope,verify) {
+							verify(1).is(1);
+						}
+					}
+				}
+			});
+
+			var b = new module.Suite({
+				name: "b",
+				parts: {
+					a: {
+						execute: function(scope,verify) {
+							verify(1).is(1);
+						}
+					}
+				}
+			});
+
+			var parameters = {
+				form: void(0)
+			};
+
+			var form = (parameters && parameters.form)
+				? $api.Object({ properties: parameters.form.controls })
+				: void(0)
+			;
+
+			fifty.tests.jsapi._1 = function() {
+				var v = fifty.verify;
+				v(1).is(1);
+				var x = v("x");
+				v("x").length.is(1);
+				var withHidden = { is: "hey", evaluate: "dude" };
+				v(withHidden,"withHidden").evaluate.property("is").is("hey");
+				v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
+
+				var methodThrows = {
+					method: function() {
+						throw new Error("Wrong again, knave!")
+					},
+					works: function() {
+
+					}
+				};
+
+				v(methodThrows).evaluate(function() { return this.method(); }).threw.type(Error);
+				v(methodThrows).evaluate(function() { return this.method(); }).threw.message.is("Wrong again, knave!");
+				v(methodThrows).evaluate(function() { return this.works(); }).threw.nothing();
+			}
+
+		}
+	//@ts-ignore
+	)(fifty);
+}
+
+namespace slime.definition.unit {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(internal.types.definition);
+
+				fifty.run(fifty.tests.jsapi);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }

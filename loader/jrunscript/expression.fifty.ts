@@ -219,7 +219,7 @@ namespace slime.jrunscript.runtime {
 				};
 
 				fifty.tests.jsapi.Resource.read.lines = function() {
-					const test = function(b) {
+					const test = function(b: boolean) {
 						verify(b).is(true);
 					};
 
@@ -542,7 +542,7 @@ namespace slime.jrunscript.runtime {
 			fifty.tests.jsapi.Loader = fifty.test.Parent();
 
 			fifty.tests.jsapi.Loader._1 = function() {
-				const test = function(b) {
+				const test = function(b: boolean) {
 					fifty.verify(b).is(true);
 				};
 
@@ -605,9 +605,9 @@ namespace slime.jrunscript.runtime {
 					}
 				}
 				var loader = new module.Loader(sources);
-				verify(loader).evaluate(function() { return this.run; }).is.not.equalTo(null);
+				verify(loader).evaluate(function(p) { return p.run; }).is.not.equalTo(null);
 				var child = loader.Child("prefix/");
-				verify(child).evaluate(function() { return this.run; }).is.not.equalTo(null);
+				verify(child).evaluate(function(p) { return p.run; }).is.not.equalTo(null);
 			}
 		}
 	//@ts-ignore
