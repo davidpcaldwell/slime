@@ -22,6 +22,54 @@ namespace slime.definition.unit {
 		}
 	}
 
+	export namespace test {
+		export const fixtures = (function(fifty: slime.fifty.test.Kit) {
+			var verify = fifty.$loader.module("../verify.js");
+
+			var module: slime.definition.unit.Exports = fifty.$loader.module("unit.js", {
+				api: {
+					Promise: void(0)
+				},
+				verify: verify
+			});
+
+			var a = new module.Suite({
+				name: "a",
+				parts: {
+					a: {
+						name: "aname",
+						execute: function(scope,verify) {
+							verify(1).is(1);
+						}
+					}
+				}
+			});
+
+			var b = new module.Suite({
+				name: "b",
+				parts: {
+					a: {
+						execute: function(scope,verify) {
+							verify(1).is(1);
+						}
+					}
+				}
+			});
+
+			var parameters = {
+				form: void(0)
+			};
+
+			var form = (parameters && parameters.form)
+				? fifty.global.$api.Object({ properties: parameters.form.controls })
+				: void(0)
+			;
+
+			return { module, a, b, form };
+		//@ts-ignore
+		})(fifty);
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -118,8 +166,91 @@ namespace slime.definition.unit.internal {
 	export type EventsScope = (o: { events: $api.event.Emitter<any> }) => slime.definition.unit.Scope
 
 	export interface Part {
+		/**
+		 * The part `id` of this part within its parent, or `null` if it is a top-level suite.
+		 */
 		id: string
-		name: any
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { module, a, b } = test.fixtures;
+
+			fifty.tests.jsapi._3 = function() {
+				const verify = fifty.verify;
+				verify(a).getParts().a.id.is("a");
+				verify(b).getParts().a.id.is("a");
+			}
+
+			fifty.tests.jsapi._4 = function() {
+				const verify = fifty.verify;
+				var suite = new module.Suite();
+				verify(suite).id.is(null);
+
+				var s2 = new module.Suite({
+					parts: {
+						a: {
+							parts: {
+								b: {
+									execute: function(scope,verify) {
+									}
+								}
+							}
+						}
+					}
+				});
+				verify(s2).id.is(null);
+				verify(s2).getParts().a.id.is("a");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Part {
+		/**
+		 * The name specified in the definition, if specified. Otherwise, the part `id` of this scenario within its parent.
+		 */
+		name: string
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { module, a, b } = test.fixtures;
+
+			fifty.tests.jsapi._5 = function() {
+				verify(a).getParts().a.name.is("aname");
+				verify(b).getParts().a.name.is("a");
+			};
+
+			fifty.tests.jsapi._6 = function() {
+				var suite = new module.Suite({
+					parts: {
+						a: {
+							parts: {
+								b: {
+									name: "bname",
+									execute: function(scope,verify) {
+									}
+								}
+							}
+						}
+					}
+				});
+				verify(suite).name.is(null);
+				verify(suite).getParts().a.name.is("a");
+				const asSuite = function(p: Part) { return p as Suite };
+				verify(suite).getParts().a.evaluate(asSuite).getParts().b.name.is("bname");
+			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Part {
 		listeners: $api.event.Emitter<any>["listeners"]
 	}
 
@@ -330,57 +461,15 @@ namespace slime.definition.unit {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { $api } = fifty.global;
-
-			var verify = fifty.$loader.module("../verify.js");
-
-			var module: slime.definition.unit.Exports = fifty.$loader.module("unit.js", {
-				api: {
-					Promise: void(0)
-				},
-				verify: verify
-			});
-
-			var a = new module.Suite({
-				name: "a",
-				parts: {
-					a: {
-						name: "aname",
-						execute: function(scope,verify) {
-							verify(1).is(1);
-						}
-					}
-				}
-			});
-
-			var b = new module.Suite({
-				name: "b",
-				parts: {
-					a: {
-						execute: function(scope,verify) {
-							verify(1).is(1);
-						}
-					}
-				}
-			});
-
-			var parameters = {
-				form: void(0)
-			};
-
-			var form = (parameters && parameters.form)
-				? $api.Object({ properties: parameters.form.controls })
-				: void(0)
-			;
+			const { verify } = fifty;
 
 			fifty.tests.jsapi._1 = function() {
-				var v = fifty.verify;
-				v(1).is(1);
-				var x = v("x");
-				v("x").length.is(1);
+				verify(1).is(1);
+				var x = verify("x");
+				verify("x").length.is(1);
 				var withHidden = { is: "hey", evaluate: "dude" };
-				v(withHidden,"withHidden").evaluate.property("is").is("hey");
-				v(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
+				verify(withHidden,"withHidden").evaluate.property("is").is("hey");
+				verify(withHidden,"withHidden").evaluate.property("evaluate").is("dude");
 
 				var methodThrows = {
 					method: function() {
@@ -391,38 +480,9 @@ namespace slime.definition.unit {
 					}
 				};
 
-				v(methodThrows).evaluate(function() { return this.method(); }).threw.type(Error);
-				v(methodThrows).evaluate(function() { return this.method(); }).threw.message.is("Wrong again, knave!");
-				v(methodThrows).evaluate(function() { return this.works(); }).threw.nothing();
-			}
-
-			//	TODO	these next two tests pertain to part.id and could move there, but that would require refactoring the a/b
-			//			fixtures, at least for the first test
-			fifty.tests.jsapi._3 = function() {
-				const verify = fifty.verify;
-				verify(a).getParts().a.id.is("a");
-				verify(b).getParts().a.id.is("a");
-			}
-
-			fifty.tests.jsapi._4 = function() {
-				const verify = fifty.verify;
-				var suite = new module.Suite();
-				verify(suite).id.is(null);
-
-				var s2 = new module.Suite({
-					parts: {
-						a: {
-							parts: {
-								b: {
-									execute: function(scope,verify) {
-									}
-								}
-							}
-						}
-					}
-				});
-				verify(s2).id.is(null);
-				verify(s2).getParts().a.id.is("a");
+				verify(methodThrows).evaluate(function() { return this.method(); }).threw.type(Error);
+				verify(methodThrows).evaluate(function() { return this.method(); }).threw.message.is("Wrong again, knave!");
+				verify(methodThrows).evaluate(function() { return this.works(); }).threw.nothing();
 			}
 		}
 	//@ts-ignore
