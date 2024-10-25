@@ -22,6 +22,15 @@ namespace slime.definition.unit {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.jsapi = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		Verify: slime.definition.verify.Export
 
@@ -109,12 +118,12 @@ namespace slime.definition.unit.internal {
 	export type EventsScope = (o: { events: $api.event.Emitter<any> }) => slime.definition.unit.Scope
 
 	export interface Part {
-		id: any
+		id: string
 		name: any
 		listeners: $api.event.Emitter<any>["listeners"]
 	}
 
-	export namespace Part {
+	export namespace part {
 		export interface Properties {
 			events: $api.event.Emitter<any>
 			scope: any
@@ -122,19 +131,68 @@ namespace slime.definition.unit.internal {
 			find: any
 			before: any
 			initialize: any
+			destroy: any
 			after: any
 		}
 
 		export interface Definition {
-			name?: any
+			/** A name for that will be used for this {@link Part}. */
+			name?: string
 			/** @deprecated */
 			create?: (this: Part) => void
+
+			/**
+			 * @param scope A scope object that is shared across the methods of this part.
+			 */
+			initialize?: (scope: { [x: string]: any }) => void
+			execute?: any
+
+			/**
+			 * @param scope A scope object that is shared across the methods of this part.
+			 */
+			destroy?: (scope: { [x: string]: any }) => void
 		}
 
 		export interface Context {
-			id: any
+			id: string
 			events: $api.event.Emitter<any>
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				var verify = fifty.$loader.module("../verify.js");
+
+				var module: slime.definition.unit.Exports = fifty.$loader.module("unit.js", {
+					api: {
+						Promise: void(0)
+					},
+					verify: verify
+				});
+
+				fifty.tests.jsapi._2 = function() {
+					var destroyed = false;
+					var suite = new module.Suite({
+						parts: {
+							a: {
+								name: "foo",
+								execute: function(scope,verify) {
+									debugger;
+									verify(true).is(true);
+								},
+								destroy: function(scope) {
+									destroyed = true;
+								}
+							}
+						}
+					});
+					suite.run();
+					fifty.verify(destroyed).is(true);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Scenario extends Part {
@@ -145,7 +203,7 @@ namespace slime.definition.unit.internal {
 
 	export interface Suite extends Part {
 		/** @deprecated */
-		getParts: any
+		getParts: () => { [id: string]: Part }
 		part: any
 		run: () => boolean
 		promise?: () => void
@@ -157,9 +215,9 @@ namespace slime.definition.unit.internal {
 		suite: any
 	}
 
-	export namespace Suite {
-		export interface Definition extends Part.Definition {
-			parts: { [x: string]: any }
+	export namespace suite {
+		export interface Definition extends part.Definition {
+			parts: { [x: string]: part.Definition | suite.Definition }
 		}
 	}
 }
@@ -168,13 +226,13 @@ namespace slime.definition.unit {
 	export interface Exports {
 		//	TODO	should not be using internal types in external definition
 		Scenario: new (
-			definition: slime.definition.unit.internal.Part.Definition,
-			context: slime.definition.unit.internal.Part.Context
+			definition: slime.definition.unit.internal.part.Definition,
+			context: slime.definition.unit.internal.part.Context
 		) => slime.definition.unit.internal.Scenario
 
 		Suite: new (
-			definition: slime.definition.unit.internal.Suite.Definition,
-			context?: slime.definition.unit.internal.Part.Context
+			definition?: slime.definition.unit.internal.suite.Definition,
+			context?: slime.definition.unit.internal.part.Context
 		) => slime.definition.unit.internal.Suite
 	}
 }
@@ -274,8 +332,6 @@ namespace slime.definition.unit {
 		) {
 			const { $api } = fifty.global;
 
-			fifty.tests.jsapi = fifty.test.Parent();
-
 			var verify = fifty.$loader.module("../verify.js");
 
 			var module: slime.definition.unit.Exports = fifty.$loader.module("unit.js", {
@@ -340,6 +396,34 @@ namespace slime.definition.unit {
 				v(methodThrows).evaluate(function() { return this.works(); }).threw.nothing();
 			}
 
+			//	TODO	these next two tests pertain to part.id and could move there, but that would require refactoring the a/b
+			//			fixtures, at least for the first test
+			fifty.tests.jsapi._3 = function() {
+				const verify = fifty.verify;
+				verify(a).getParts().a.id.is("a");
+				verify(b).getParts().a.id.is("a");
+			}
+
+			fifty.tests.jsapi._4 = function() {
+				const verify = fifty.verify;
+				var suite = new module.Suite();
+				verify(suite).id.is(null);
+
+				var s2 = new module.Suite({
+					parts: {
+						a: {
+							parts: {
+								b: {
+									execute: function(scope,verify) {
+									}
+								}
+							}
+						}
+					}
+				});
+				verify(s2).id.is(null);
+				verify(s2).getParts().a.id.is("a");
+			}
 		}
 	//@ts-ignore
 	)(fifty);
