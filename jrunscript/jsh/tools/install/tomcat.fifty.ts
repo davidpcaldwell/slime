@@ -368,7 +368,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 				jsh.shell.console("Invoking ./test/require-tomcat.jsh.js ...");
 
-				var result = $api.fp.now.invoke(
+				var result: { before: boolean, after: boolean } = $api.fp.now.invoke(
 					invokeTomcatRequire,
 					getCommandResult,
 					$api.fp.property("stdio"),

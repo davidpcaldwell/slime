@@ -1406,7 +1406,7 @@ namespace slime.$api.fp {
 				)(foo);
 
 				var test = function(string) {
-					return function(p) {
+					return function(p): boolean {
 						return p.test(string);
 					}
 				};
@@ -1747,7 +1747,7 @@ namespace slime.$api.fp {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			const test = function(b) {
+			const test = function(b: boolean) {
 				verify(b).is(true);
 			};
 

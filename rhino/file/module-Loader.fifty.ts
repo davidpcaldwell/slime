@@ -100,7 +100,8 @@ namespace slime.jrunscript.file {
 
 				run(function oldResourceMimeType() {
 					var api = loader.get("module.js");
-					verify(api).type.evaluate(function() { return this.is("application/javascript") }).is(true);
+					var asMimeObject = function(p: any) { return p as slime.mime.Object; }
+					verify(api).type.evaluate(asMimeObject).evaluate(function(p) { return p.is("application/javascript") }).is(true);
 				});
 
 				run(function oldResourceLastModified() {

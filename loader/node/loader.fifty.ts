@@ -50,11 +50,13 @@ namespace slime.node {
 								}
 							} = JSON.parse(e.detail.stdio.output);
 
+							const asObject = function(p: any) { return p as object; };
+
 							fifty.verify(output).identity.is(3);
 							fifty.verify(output).loader.type.is("object");
 							fifty.verify(output).loader.files.me.type.is("object");
 							fifty.verify(output).loader.files.me.content.is.type("string");
-							fifty.verify(output).loader.files.foo.is(null);
+							fifty.verify(output).loader.files.foo.evaluate(asObject).is(null);
 						}
 					}
 				);

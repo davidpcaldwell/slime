@@ -13,7 +13,7 @@ namespace slime.$api.old {
 
 			const module = fifty.$loader.module("Error.js");
 
-			const test = function(b) {
+			const test = function(b: boolean) {
 				verify(b).is(true);
 			};
 

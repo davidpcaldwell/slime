@@ -263,10 +263,14 @@ namespace slime.$api {
 				events.fire("aType", "aString");
 				events.fire("aType", { property: "value" });
 
-				verify(received)[0].detail.is(void(0));
-				verify(received)[1].detail.is(void(0));
-				verify(received)[2].detail.is(null);
-				verify(received)[3].detail.is(true);
+				const asUnknown = function(p: any) { return p as unknown; }
+				const asNull = function(p: any) { return p as object; }
+				const asBoolean = function(p: any) { return p as boolean; }
+
+				verify(received)[0].detail.evaluate(asUnknown).is(void(0));
+				verify(received)[1].detail.evaluate(asUnknown).is(void(0));
+				verify(received)[2].detail.evaluate(asNull).is(null);
+				verify(received)[3].detail.evaluate(asBoolean).is(true);
 				verify(received)[4].evaluate.property("detail").is(2);
 				verify(received)[5].evaluate.property("detail").is("aString");
 				verify(received)[6].evaluate.property("detail").property.is("value");

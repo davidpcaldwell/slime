@@ -173,7 +173,7 @@ namespace slime.time {
 				}
 				fifty.tests.Day.format = function() {
 					var mar1 = new old.test.subject.Day(2009,3,1);
-					const test = function(b) { return verify(b).is(true); }
+					const test = function(b: boolean) { return verify(b).is(true); }
 					test(mar1.format("yyyy mm dd") == "2009 03 01");
 					test(mar1.format("yyyy/?m/?d") == "2009/3/1");
 					test(mar1.format("Mmmm ?d, yyyy") == "March 1, 2009");

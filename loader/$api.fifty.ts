@@ -574,7 +574,7 @@ namespace slime.$api {
 				const { $api } = fifty.global;
 
 				fifty.tests.exports.Object.optional = function() {
-					var a: { b: { c: number, n: number }, c?: any } = {
+					var a: { b: { c: number, n: number }, c?: { x: string } } = {
 						b: {
 							c: null,
 							n: 2
@@ -584,7 +584,8 @@ namespace slime.$api {
 					verify($api.Object.optional(a, "b", "n")).is(2);
 					verify($api.Object.optional(a, "c", "x")).is(void(0));
 
-					verify($api.Object.optional(null, "x")).is(void(0));
+					var x: { x: string } = null;
+					verify($api.Object.optional(x, "x")).is(void(0));
 				}
 			}
 		//@ts-ignore
@@ -1158,10 +1159,14 @@ namespace slime.$api {
 					};
 				};
 
-				var received = [];
-				var counter = function(e) {
+				var received: Event<any>[] = [];
+				var counter = function(e: Event<any>) {
 					received.push(e);
 				};
+
+				const asSource = function(p: any): typeof source {
+					return p as typeof source;
+				}
 
 				verify(received).length.is(0);
 				source.doIt();
@@ -1173,7 +1178,8 @@ namespace slime.$api {
 				source.listeners.add("done", counter);
 				source.doIt();
 				verify(received).length.is(1);
-				verify(received)[0].source.is(source);
+				const asObject = function(p: any) { return p as object; }
+				verify(received)[0].source.evaluate(asObject).is(source);
 				source.listeners.remove("done", counter);
 				source.doIt();
 				verify(received).length.is(1);
@@ -1207,6 +1213,8 @@ namespace slime.$api {
 					}
 				}
 
+				type Shared = { a: boolean, b: boolean }
+
 				var Shared = function() {
 					this.a = false;
 					this.b = false;
@@ -1224,20 +1232,20 @@ namespace slime.$api {
 					this.unready = unready;
 				}
 
-				var s1 = new Shared();
+				var s1: Shared = new Shared();
 				$steps.run({
 					steps: [ new A(s1) ]
 				});
 				verify(s1).a.is(true);
 
-				var s2 = new Shared();
+				var s2: Shared = new Shared();
 				$steps.run({
 					steps: [ new B(s2), new A(s2) ]
 				});
 				verify(s2).a.is(true);
 				verify(s2).b.is(true);
 
-				var s3 = new Shared();
+				var s3: Shared = new Shared();
 				var b3 = new B(s3);
 				var l3: { on: any, unready: any[] } = new Listener();
 				verify(api).threads.steps.run({
@@ -1246,7 +1254,8 @@ namespace slime.$api {
 				verify(s3).a.is(false);
 				verify(s3).b.is(false);
 				verify(l3).unready.length.is(1);
-				verify(l3).unready[0].is(b3);
+				const asObject = function(p: any) { return p as object; }
+				verify(l3).unready[0].evaluate(asObject).is(b3);
 			}
 		}
 	//@ts-ignore

@@ -134,11 +134,11 @@ namespace slime.jsh.wf.internal.module {
 
 				verify(subject).Project.typescript.configurationFile({
 					base: "/project/empty"
-				}).evaluate(function(maybe) { return maybe.present; }).is(false);
+				}).evaluate(function(maybe: $api.fp.Maybe<jrunscript.file.Location>) { return maybe.present; }).is(false);
 
 				verify(subject).Project.typescript.configurationFile({
 					base: "/project/js"
-				}).evaluate(function(maybe) { return maybe.present; }).is(true);
+				}).evaluate(function(maybe: $api.fp.Maybe<jrunscript.file.Location>) { return maybe.present; }).is(true);
 
 				verify(subject).Project.typescript.configurationFile({
 					base: "/project/js"
@@ -146,7 +146,7 @@ namespace slime.jsh.wf.internal.module {
 
 				verify(subject).Project.typescript.configurationFile({
 					base: "/project/ts"
-				}).evaluate(function(maybe) { return maybe.present; }).is(true);
+				}).evaluate(function(maybe: $api.fp.Maybe<jrunscript.file.Location>) { return maybe.present; }).is(true);
 
 				verify(subject).Project.typescript.configurationFile({
 					base: "/project/ts"

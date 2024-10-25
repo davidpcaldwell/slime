@@ -42,7 +42,7 @@ namespace slime.jrunscript.file {
 			const { verify, run } = fifty;
 			const module: Exports = fifty.global.jsh.file;
 
-			const test = function(b) {
+			const test = function(b: boolean) {
 				verify(b).is(true);
 			}
 

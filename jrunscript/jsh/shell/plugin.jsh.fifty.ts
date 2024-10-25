@@ -24,7 +24,7 @@ namespace slime.jsh.shell {
 
 			(
 				function() {
-					const test = function(b) {
+					const test = function(b: boolean) {
 						verify(b).is(true);
 					};
 

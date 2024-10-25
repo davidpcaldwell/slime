@@ -712,6 +712,7 @@ namespace slime.jrunscript.java.internal.threads {
 
 					var steps = Steps();
 
+					//	TODO	this code tests $api.threads and so should be moved
 					var task = $$api.threads.steps.Task(steps);
 
 					var finished = false;
@@ -738,7 +739,8 @@ namespace slime.jrunscript.java.internal.threads {
 					verify(steps).unready.length.is(1);
 					//	TODO	verify(unready[0]).ready.is(steps.c.ready) does not work because ready property of the
 					//			verify object does not have is() method. Probably addressable in unit test framework.
-					verify(steps).unready[0].is(steps.c);
+					const asObject = function(p: any) { return p as object; }
+					verify(steps).unready[0].evaluate(asObject).is(steps.c);
 
 					var ssteps = Steps();
 					verify(ssteps).shared.a.is(false);
@@ -751,7 +753,7 @@ namespace slime.jrunscript.java.internal.threads {
 					verify(ssteps).shared.b.is(true);
 					verify(ssteps).unready.length.is(1);
 					if (ssteps.unready.length) {
-						verify(ssteps).unready[0].is(ssteps.c);
+						verify(ssteps).unready[0].evaluate(asObject).is(ssteps.c);
 					}
 				})
 			}
@@ -852,7 +854,7 @@ namespace slime.jrunscript.java.internal.threads {
 
 			const module = threads.test.subject;
 
-			const test = function(b) {
+			const test = function(b: boolean) {
 				verify(b).is(true);
 			}
 

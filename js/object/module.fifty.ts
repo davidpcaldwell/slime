@@ -108,7 +108,7 @@ namespace slime.$api.old {
 			fifty.tests.exports.lazy = function() {
 				var f = new Functions();
 
-				var test = function(b) {
+				var test = function(b: boolean) {
 					verify(b).is(true);
 				}
 
@@ -149,7 +149,7 @@ namespace slime.$api.old {
 			const { verify } = fifty;
 			var module: Exports = fifty.$loader.module("module.js");
 
-			var test = function(b) {
+			var test = function(b: boolean) {
 				verify(b).is(true);
 			}
 
@@ -206,7 +206,7 @@ namespace slime.$api.old {
 			const { verify } = fifty;
 			var module = fifty.$loader.module("module.js");
 
-			var test = function(b) {
+			var test = function(b: boolean) {
 				verify(b).is(true);
 			}
 
@@ -350,7 +350,7 @@ namespace slime.$api.old {
 			const { verify } = fifty;
 			var module = fifty.$loader.module("module.js");
 
-			var test = function(b) {
+			var test = function(b: boolean) {
 				verify(b).is(true);
 			}
 
@@ -443,7 +443,7 @@ namespace slime.$api.old {
 				const { verify } = fifty;
 				var module = fifty.$loader.module("module.js");
 
-				var test = function(b) {
+				var test = function(b: boolean) {
 					verify(b).is(true);
 				}
 
@@ -517,7 +517,7 @@ namespace slime.$api.old {
 			const Array_filter = Array.prototype.filter;
 			const module = old.test.subject;
 
-			const test = function(b) {
+			const test = function(b: boolean) {
 				fifty.verify(b).is(true);
 			}
 
@@ -580,7 +580,7 @@ namespace slime.$api.old {
 		) {
 			const module = old.test.subject;
 
-			const test = function(b) {
+			const test = function(b: boolean) {
 				fifty.verify(b).is(true);
 			};
 
@@ -635,7 +635,7 @@ namespace slime.$api.old {
 		) {
 			const module = old.test.subject;
 
-			const test = function(b) {
+			const test = function(b: boolean) {
 				fifty.verify(b).is(true);
 			};
 
@@ -686,7 +686,7 @@ namespace slime.$api.old {
 		) {
 			const module = old.test.subject;
 
-			const test = function(b) {
+			const test = function(b: boolean) {
 				fifty.verify(b).is(true);
 			};
 
