@@ -61,67 +61,6 @@ END LICENSE
 			]]></script>
 			<h1>Exports</h1>
 			<div class="type">
-				<a class="type" name="types.definition">definition</a>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="value">
-						<div class="name">name</div>
-						<span class="type">string</span>
-						<span>A name for that will be used for this <a href="#types.part">part</a>.</span>
-					</li>
-					<li class="function">
-						<div class="name">initialize</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">object</span>
-									<span>
-										A scope object that is shared across the methods of this part.
-									</span>
-								</li>
-							</ol>
-						</div>
-					</li>
-					<li class="function">
-						<div class="name">destroy</div>
-						<span>__DESCRIPTION__</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="value">
-									<span class="type">object</span>
-									<span>
-										A scope object that is shared across the methods of this part.
-									</span>
-								</li>
-							</ol>
-						</div>
-						<script type="application/x.jsapi#tests">
-							var destroyed = false;
-							var suite = new module.Suite({
-								parts: {
-									a: {
-										name: "foo",
-										execute: function(scope,verify) {
-											verify(true).is(true);
-										},
-										destroy: function(scope) {
-											destroyed = true;
-										}
-									}
-								}
-							});
-							suite.run();
-							verify(destroyed).is(true);
-						</script>
-						<!--	TODO	tests for suite	-->
-					</li>
-				</ul>
-			</div>
-			<div class="type">
 				<a class="type" name="types.part">part</a>
 				<span>__DESCRIPTION__</span>
 				<div class="label">has properties:</div>
@@ -133,29 +72,6 @@ END LICENSE
 							The part <code>id</code> of this part within its parent, or <code>null</code> if it is a top-level
 							suite.
 						</span>
-						<script type="application/x.jsapi#tests">
-							verify(a).getParts().a.id.is("a");
-							verify(b).getParts().a.id.is("a");
-						</script>
-						<script type="application/x.jsapi#tests">
-							var suite = new module.Suite();
-							verify(suite).id.is(null);
-
-							var s2 = new module.Suite({
-								parts: {
-									a: {
-										parts: {
-											b: {
-												execute: function(scope,verify) {
-												}
-											}
-										}
-									}
-								}
-							});
-							verify(s2).id.is(null);
-							verify(s2).getParts().a.id.is("a");
-						</script>
 					</li>
 					<li class="value">
 						<div class="name">name</div>

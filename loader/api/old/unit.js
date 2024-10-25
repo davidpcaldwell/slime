@@ -34,9 +34,9 @@
 
 			/**
 			 * @this { slime.definition.unit.internal.Part }
-			 * @param { slime.definition.unit.internal.Part.Definition } [definition]
-			 * @param { slime.definition.unit.internal.Part.Context } [context]
-			 * @returns { slime.definition.unit.internal.Part.Properties }
+			 * @param { slime.definition.unit.internal.part.Definition } [definition]
+			 * @param { slime.definition.unit.internal.part.Context } [context]
+			 * @returns { slime.definition.unit.internal.part.Properties }
 			 */
 			function Part(definition,context) {
 				//	TODO	what if caller does not use 'new'?
@@ -53,14 +53,22 @@
 					if (!context) return null;
 				})();
 
-				var find = (function(property) {
+				/**
+				 * @param { keyof slime.definition.unit.internal.part.Properties | "promise" } property
+				 */
+				var unboundFind = function(property) {
 					if (definition && definition[property]) return definition[property];
 					if (this[property] && property != "promise") {
 						return $api.deprecate(function() {
 							return this[property];
 						}).call(this);
 					}
-				}).bind(this);
+				}
+
+				/**
+				 * @type { typeof unboundFind }
+				 */
+				var find = unboundFind.bind(this);
 
 				/**
 				 * @type { () => slime.definition.unit.Event.Scenario }
@@ -120,7 +128,19 @@
 									message: "Uncaught exception in initializer: " + e,
 									error: e
 								});
+								//	TODO	looks like this is a void method, why return boolean?
 								return true;
+							}
+						}
+					}).bind(this),
+					destroy: (function(scope) {
+						var destroy = find("destroy");
+						if (destroy) {
+							try {
+								destroy(scope);
+							} catch (e) {
+								//	do nothing; we tried.
+								//	TODO	would be nice if there were some kind of error reporting.
 							}
 						}
 					}).bind(this),
@@ -135,11 +155,11 @@
 
 			/**
 			 * @this { slime.definition.unit.internal.Scenario }
-			 * @param { slime.definition.unit.internal.Part.Definition } definition
-			 * @param { slime.definition.unit.internal.Part.Context } context
+			 * @param { slime.definition.unit.internal.part.Definition } definition
+			 * @param { slime.definition.unit.internal.part.Context } context
 			 */
 			function Scenario(definition,context) {
-				/** @type { slime.definition.unit.internal.Part.Properties } */
+				/** @type { slime.definition.unit.internal.part.Properties } */
 				var part = Part.call(this,definition,context);
 
 				this.fire = function() {
@@ -309,19 +329,24 @@
 
 			/**
 			 * @this { slime.definition.unit.internal.Suite }
-			 * @param { slime.definition.unit.internal.Suite.Definition } definition
-			 * @param { slime.definition.unit.internal.Part.Context } context
+			 * @param { slime.definition.unit.internal.suite.Definition } definition
+			 * @param { slime.definition.unit.internal.part.Context } context
 			 */
 			var Suite = function Suite(definition,context) {
 				this.listeners = void(0);
 
-				/** @type { slime.definition.unit.internal.Part.Properties } */
+				/** @type { slime.definition.unit.internal.part.Properties } */
 				var part = Part.call(this,definition,context);
 
 				var events = part.events;
 
 				var parts = {};
 
+				/**
+				 *
+				 * @param { string } id
+				 * @param { any } definition
+				 */
 				var addPart = function(id,definition) {
 					var type = (definition && definition.parts) ? Suite : Scenario;
 					parts[id] = new type(definition,{ id: id, events: events });
@@ -333,7 +358,9 @@
 					}
 				}
 
+				/** @type { slime.definition.unit.internal.Suite["getParts"] } */
 				var getParts = function() {
+					/** @type { ReturnType<slime.definition.unit.internal.Suite["getParts"]> } */
 					var rv = {};
 					for (var x in parts) {
 						rv[x] = parts[x];
