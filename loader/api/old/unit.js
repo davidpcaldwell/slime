@@ -553,7 +553,7 @@
 		};
 
 		/**
-		 * @param { slime.definition.unit.View.Argument } o
+		 * @param { slime.definition.unit.view.Argument } o
 		 */
 		$exports.View = function(o) {
 			var On = function(implementation) {
@@ -592,7 +592,7 @@
 			/**
 			 *
 			 * @param { slime.$api.event.Emitter } scenario
-			 * @param { slime.definition.unit.View.Argument } implementation
+			 * @param { slime.definition.unit.view.Argument } implementation
 			 */
 			var addConsoleListener = function(scenario,implementation) {
 				if (typeof(implementation) == "function") {
@@ -634,7 +634,7 @@
 				var handler = (function() {
 					/**
 					 *
-					 * @param { slime.definition.unit.View.Error } error
+					 * @param { slime.definition.unit.view.Error } error
 					 */
 					var jsonError = function(error) {
 						if (error) {
@@ -649,7 +649,7 @@
 					}
 
 					/**
-					 * @type { slime.definition.unit.View.Handler }
+					 * @type { slime.definition.unit.view.Handler }
 					 */
 					var rv = {
 						start: function(scenario) {

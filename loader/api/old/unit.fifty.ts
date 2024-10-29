@@ -89,9 +89,12 @@ namespace slime.definition.unit {
 
 		getStructure: Function
 
+		/**
+		 * @experimental
+		 */
 		View: {
-			(o: View.Handler): View
-			(f: View.Listener): View
+			(o: view.Handler): View
+			(f: view.Listener): View
 		}
 
 		JSON: {
@@ -328,11 +331,101 @@ namespace slime.definition.unit.internal {
 		)(fifty);
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.jsapi.Scenario = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Scenario extends Part {
 		fire: $api.event.Emitter<any>["fire"]
-		run: any
 		promise: any
 	}
+
+	export interface Scenario extends Part {
+		/**
+		 * Executes the scenario.
+		 *
+		 * Executing this method may fire events as defined by {@link scenario.Events}.
+		 *
+		 * @returns Whether the scenario succeeded.
+		 */
+		run: (p: {
+			/**
+			 * The scope to use when invoking the methods of the scenario definition.
+			 */
+			scope: object
+		}) => boolean
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const { module } = test.fixtures;
+
+			fifty.tests.jsapi.Scenario.run = fifty.test.Parent();
+
+			fifty.tests.jsapi.Scenario.run._1 = function() {
+				var first = new module.Suite({
+					parts: {
+						a: {
+							execute: function(scope,verify) {
+								verify(true).is(true);
+							}
+						}
+					}
+				});
+				var success = first.run();
+				verify(success,"success").is(true);
+
+				var second = new module.Suite({
+					parts: {
+						a: {
+							execute: function(scope,verify) {
+								verify(true).is(false);
+							}
+						}
+					}
+				});
+				var result = second.run();
+				verify(result,"success").is(false);
+			}
+
+			fifty.tests.jsapi.Scenario.run._2 = function() {
+				var suite = new module.Suite({
+					parts: {
+						a: {
+							name: "foo",
+							execute: function(scope,verify) {
+								verify(true).is(true);
+							}
+						}
+					}
+				});
+				var starts: { detail: { start: { name: string } } }[] = [];
+				var ends: { detail: { end: { name: string }, success: boolean } }[] = [];
+				suite.listeners.add("scenario", function(e) {
+					if (e.detail.start) {
+						starts.push(e);
+					} else if (e.detail.end) {
+						ends.push(e);
+					}
+				});
+				var rv = suite.run();
+				verify(rv,"success").is(true);
+				verify(starts)[1].detail.start.name.is("foo");
+				verify(ends)[0].detail.end.name.is("foo");
+				verify(ends)[0].detail.success.is(true);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace scenario {
 		/**
@@ -347,6 +440,54 @@ namespace slime.definition.unit.internal {
 			 * @param verify An object that can be used to test conditions.
 			 */
 			execute: (scope: { [x: string]: any }, verify: slime.definition.verify.Verify) => void
+		}
+
+		export interface Events {
+			/**
+			 * An event of the first form, with `start`, is fired prior to the scenario executing.
+			 *
+			 * After executing, an event of the second type is fired, indicating the scenario ended and whether it succeeded.
+			 *
+			 * During execution, the verification object may fire additional `scenario` events if the scenario launches other
+			 * scenarios.
+			 */
+			scenario: (
+				{
+					start: events.Identifier
+				}
+				|
+				{
+					end: events.Identifier
+					/**
+					 * Whether the execution succeeded.
+					 */
+					success: boolean
+				}
+			)
+
+			test: {
+				success: boolean
+				message: string
+
+				/**
+				 * If present, indicates an uncaught error occurred while running the test.
+				 */
+				error?: Error
+			}
+		}
+
+		export namespace events {
+			export interface Identifier {
+				/**
+				 * The part `id` of the scenario.
+				 */
+				id: string
+
+				/**
+				 * The `name` of the scenario.
+				 */
+				name: string
+			}
 		}
 	}
 
@@ -374,6 +515,9 @@ namespace slime.definition.unit.internal {
 namespace slime.definition.unit {
 	export interface Exports {
 		//	TODO	should not be using internal types in external definition
+		/**
+		 * A single `Scenario` can also be run under some circumstances.
+		 */
 		Scenario: new (
 			definition: slime.definition.unit.internal.part.Definition,
 			context: slime.definition.unit.internal.part.Context
@@ -446,7 +590,7 @@ namespace slime.definition.unit {
 		on: Event.Handler
 	}
 
-	export namespace View {
+	export namespace view {
 		export type Error = {
 			type: string
 			message: string
