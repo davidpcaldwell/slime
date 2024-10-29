@@ -141,6 +141,9 @@ namespace slime.definition.unit.internal {
 					//	TODO	add test for error being thrown
 
 					var a = {};
+					const toObject = function(a: any) {
+						return a as {};
+					}
 					var suite = new subject.Suite({
 						parts: {
 							a: {
@@ -148,7 +151,7 @@ namespace slime.definition.unit.internal {
 									scope.a = a;
 								},
 								execute: function(scope,verify) {
-									verify(scope.a).is(a);
+									verify(scope.a).evaluate(toObject).is(a);
 								}
 							}
 						}
@@ -276,7 +279,6 @@ namespace slime.definition.unit.internal {
 			 * @param scope A scope object that is shared across the methods of this part.
 			 */
 			initialize?: (scope: { [x: string]: any }) => void
-			execute?: any
 
 			/**
 			 * @param scope A scope object that is shared across the methods of this part.
@@ -332,6 +334,22 @@ namespace slime.definition.unit.internal {
 		promise: any
 	}
 
+	export namespace scenario {
+		/**
+		 * An object specifying a {@link Scenario}.
+		 */
+		export interface Definition extends part.Definition {
+			/**
+			 * The implementation of a scenario. It can execute code, using the provided scope as necessary, and use its verifier to
+			 * test that the code works correctly.
+			 *
+			 * @param scope A scope object that is shared across the methods of this scenario.
+			 * @param verify An object that can be used to test conditions.
+			 */
+			execute: (scope: { [x: string]: any }, verify: slime.definition.verify.Verify) => void
+		}
+	}
+
 	export interface Suite extends Part {
 		/** @deprecated */
 		getParts: () => { [id: string]: Part }
@@ -348,7 +366,7 @@ namespace slime.definition.unit.internal {
 
 	export namespace suite {
 		export interface Definition extends part.Definition {
-			parts: { [x: string]: part.Definition | suite.Definition }
+			parts: { [x: string]: scenario.Definition | suite.Definition }
 		}
 	}
 }
