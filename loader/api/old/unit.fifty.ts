@@ -451,19 +451,7 @@ namespace slime.definition.unit.internal {
 			 * During execution, the verification object may fire additional `scenario` events if the scenario launches other
 			 * scenarios.
 			 */
-			scenario: (
-				{
-					start: events.Identifier
-				}
-				|
-				{
-					end: events.Identifier
-					/**
-					 * Whether the execution succeeded.
-					 */
-					success: boolean
-				}
-			)
+			scenario: events.Detail
 
 			test: {
 				success: boolean
@@ -475,6 +463,8 @@ namespace slime.definition.unit.internal {
 				error?: Error
 			}
 		}
+
+		export type Handler = slime.$api.event.Handlers<internal.scenario.Events>
 
 		export namespace events {
 			export interface Identifier {
@@ -488,14 +478,108 @@ namespace slime.definition.unit.internal {
 				 */
 				name: string
 			}
+
+			export interface Start {
+				start: events.Identifier
+			}
+
+			export interface End {
+				end: events.Identifier
+				/**
+				 * Whether the execution succeeded.
+				 */
+				success: boolean
+			}
+
+			export type Detail = Start | End
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.jsapi.Suite = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Suite extends Part {
+		/**
+		 * Adds (or replaces) a part of this suite.
+		 *
+		 * @param part A part `id`.
+		 * @param definition A part that will have that ID.
+		 */
+		part: (part: string, definition: scenario.Definition) => void
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const { module } = test.fixtures;
+
+			fifty.tests.jsapi.Suite.run = function() {
+				var suite = new module.Suite({
+					parts: {
+						a: {
+							execute: function(scope,verify) {
+								verify(1).is(1);
+							}
+						}
+					}
+				});
+
+				var before = suite.run();
+				verify(before).is(true);
+
+				suite.part("a", {
+					execute: function(scope,verify) {
+						verify(1).is(2);
+					}
+				});
+
+				var after = suite.run();
+				verify(after).is(false);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Suite extends Part {
+		/**
+		 * An object whose keys are part `id`s and whose values are {@link Part}s.
+		 */
+		parts: {
+			[id: string]: Part
 		}
 	}
 
 	export interface Suite extends Part {
 		/** @deprecated */
 		getParts: () => { [id: string]: Part }
-		part: any
-		run: () => boolean
+
+		/**
+		 * Executes this suite.
+		 * @returns
+		 */
+		run: (p?: {
+			/**
+			 * (optional; default is an empty object) A set of properties that will be passed to the parts of this test.
+			 */
+			scope?: { [x: string]: any }
+
+			/**
+			 * (optional; default is an empty array) A list of part names that will be interpreted as a "path" to the part(s) to
+			 * execute. For example, the array `["foo","bar"]` will lead to the `bar` part of the `foo` part of this suite being
+			 * executed.
+			 */
+			path?: string[]
+		}, next?: any) => boolean
+
 		promise?: () => void
 
 		/** @deprecated */
@@ -507,7 +591,15 @@ namespace slime.definition.unit.internal {
 
 	export namespace suite {
 		export interface Definition extends part.Definition {
-			parts: { [x: string]: scenario.Definition | suite.Definition }
+			/**
+			 * An object whose keys are part `id`s. The values are interpreted as follows:
+			 *
+			 * *  If the value has a `parts` property, it is interpreted as a {@link Definition | suite.Definition} and will create
+			 * a {@link Suite} with the part `id` of its key.
+			 * *  Otherwise, it is interpreted as a {@link scenario.Definition | scenario.Definition} and will create a
+			 * {@link Scenario} with the the part `id` of its key.
+			 */
+			parts?: { [x: string]: scenario.Definition | suite.Definition }
 		}
 	}
 }
@@ -560,34 +652,9 @@ namespace slime.definition.unit {
 		checkForFailure: any
 	}
 
-	export namespace Event {
-		export interface Scenario {
-			id: any
-			name: any
-		}
-
-		export namespace Scenario {
-			export type Start = {
-				start: Event.Scenario
-			}
-
-			type End = {
-				end: Event.Scenario
-				success: boolean
-			}
-
-			export type Detail = Start | End
-		}
-
-		export type Handler = slime.$api.event.Handlers<{
-			scenario: Event.Scenario.Detail
-			test: Test.Result
-		}>
-	}
-
 	export interface View {
 		listen: (scenario: $api.event.Emitter<any>) => void
-		on: Event.Handler
+		on: internal.scenario.Handler
 	}
 
 	export namespace view {
@@ -645,6 +712,94 @@ namespace slime.definition.unit {
 				verify(methodThrows).evaluate(function() { return this.method(); }).threw.type(Error);
 				verify(methodThrows).evaluate(function() { return this.method(); }).threw.message.is("Wrong again, knave!");
 				verify(methodThrows).evaluate(function() { return this.works(); }).threw.nothing();
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const { module } = test.fixtures;
+
+			fifty.tests.jsapi._7 = function() {
+				var top = new module.Suite({
+					name: "top",
+					parts: {
+						child: {
+							name: "child",
+							execute: function(scope,verify) {
+								//	TODO	apparently this legacy property still exists at runtime
+								//@ts-ignore
+								verify.test(function() {
+									return {
+										success: true,
+										message: "Hello, World!"
+									}
+								});
+							}
+						}
+					}
+				});
+				var starts = [];
+				var ends = [];
+				var tests = [];
+				top.listeners.add("scenario", function(e) {
+					if (e.detail.start) {
+						starts.push(e.detail);
+						//	jsh.shell.echo("Start: " + e.detail.start.name);
+					} else if (e.detail.end) {
+						//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
+						ends.push(e.detail);
+					}
+				});
+				top.listeners.add("test", function(e) {
+					//	jsh.shell.echo("Test: " + e.detail.message);
+					tests.push(e.detail);
+				});
+				top.run();
+				verify(starts).length.is(2);
+			}
+
+			fifty.tests.jsapi._8 = function() {
+				var top = new module.Suite({
+					name: "top"
+				});
+				var starts = [];
+				var ends = [];
+				var tests = [];
+				top.listeners.add("scenario", function(e) {
+					if (e.detail.start) {
+						starts.push(e.detail);
+						//	jsh.shell.echo("Start: " + e.detail.start.name);
+					} else if (e.detail.end) {
+						//	jsh.shell.echo("End: " + e.detail.end + " success=" + e.detail.success);
+						ends.push(e.detail);
+					}
+				});
+				top.listeners.add("test", function(e) {
+					//	jsh.shell.echo("Test: " + e.detail.message);
+					tests.push(e.detail);
+				});
+				top.scenario("child", {
+					create: function() {
+						this.name = "child";
+
+						this.execute = function(scope,verify) {
+							verify.test(function() {
+								return {
+									success: true,
+									message: "Hello, World!"
+								}
+							});
+						}
+					}
+				});
+				top.run();
+				verify(starts).length.is(2);
 			}
 		}
 	//@ts-ignore
