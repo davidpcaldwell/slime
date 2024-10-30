@@ -74,6 +74,77 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
+	export namespace test {
+		export const jsapiModule = (function(Packages: slime.jrunscript.Packages, fifty: slime.fifty.test.Kit) {
+			const { jsh } = fifty.global;
+
+			const fixtures: slime.jrunscript.shell.test.Script = fifty.$loader.script("fixtures.ts");
+
+			var context = new function() {
+				var java = fifty.$loader.module("../../jrunscript/host/", {
+					$slime: jsh.unit.$slime,
+					logging: {
+						prefix: "slime.jrunscript.shell.test"
+					}
+				});
+				var io = fifty.$loader.module("../../jrunscript/io/", {
+					api: {
+						java: java,
+						mime: jsh.unit.$slime.mime
+					},
+					$slime: jsh.unit.$slime
+				});
+				this.api = {
+					js: fifty.$loader.module("../../js/object/"),
+					java: java,
+					io: io,
+					file: fifty.$loader.module("../../rhino/file/", new function() {
+						if (jsh.shell.environment.PATHEXT) {
+							this.pathext = jsh.shell.environment.PATHEXT.split(";");
+						}
+						this.$rhino = jsh.unit.$slime;
+						this.api = {
+							io: io,
+							js: jsh.js,
+							java: jsh.java
+						};
+						this.$pwd = String(jsh.shell.properties.object.user.dir);
+						this.addFinalizer = jsh.loader.addFinalizer;
+						//	TODO	below copy-pasted from rhino/file/api.html
+						//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+						var System = Packages.java.lang.System;
+						if (System.getProperty("cygwin.root")) {
+							this.cygwin = {
+								root: String( System.getProperty("cygwin.root") )
+							};
+							if (System.getProperty("cygwin.paths")) {
+								//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+								//	the SDK server
+								//	TODO	check this
+								this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+							}
+						}
+					}),
+					document: fifty.$loader.module("../../js/document/"),
+					xml: {
+						parseFile: function(file) {
+							return new jsh.document.Document({ string: file.read(String) });
+						}
+					}
+				};
+				this._properties = Packages.java.lang.System.getProperties();
+				this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
+				this.stdio = {
+					output: jsh.shell.stdio.output,
+					error: jsh.shell.stdio.error
+				}
+			}
+
+			return fixtures().load(context);
+		//@ts-ignore
+		})(Packages, fifty);
+	}
+
 	export interface Exports {
 	}
 
@@ -562,7 +633,9 @@ namespace slime.jrunscript.shell {
 
 	export interface Exports {
 		PATH?: slime.jrunscript.file.Searchpath
+	}
 
+	export interface Exports {
 		os: {
 			name: string
 			arch: string
@@ -620,6 +693,7 @@ namespace slime.jrunscript.shell {
 				list: slime.jrunscript.shell.system.ps
 			}
 
+			//	Tested manually via the test/manual/sudo-old.jsh.js script with no arguments
 			sudo?: slime.jrunscript.shell.system.sudo
 
 			//	TODO	should not be using internal types
@@ -629,7 +703,54 @@ namespace slime.jrunscript.shell {
 			//			definition for something like slime.jrunscript.ui or something
 			inject: (dependencies: { ui: slime.jsh.Global["ui"] }) => void
 		}
+	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const module = shell.test.jsapiModule;
+
+			fifty.tests.exports.os = fifty.test.Parent();
+
+			fifty.tests.exports.os.process = fifty.test.Parent();
+
+			fifty.tests.exports.os.process.list = function() {
+				if (module.os.name == "Mac OS X") {
+					verify(module).os.process.is.type("object");
+					verify(module).os.process.evaluate.property("list").is.type("function");
+					var ps = module.os.process.list();
+					verify(ps)[0].is.type("object");
+					verify(ps)[0].id.is.type("number");
+					verify(ps)[0].command.is.type("string");
+				}
+			}
+
+			fifty.tests.exports.os.ping = function() {
+				//	TODO	this switch was put in place for some kind of VPN configuration, maybe? consider environment variable
+				const noselfping = false;
+				if (module.os.name == "Mac OS X") {
+					verify(module).os.evaluate.property("ping").is.type("function");
+					if (!noselfping) {
+						var local = module.os.ping({ host: "127.0.0.1" });
+						verify(local).status.evaluate(Number).is(0);
+						verify(local).output.is.type("object");
+						verify(local).output[0].is.type("string");
+						verify(local).success.is.type("number");
+					}
+
+					var fake = module.os.ping({ host: "198.51.100.0", timeout: 1 });
+					verify(fake).status.evaluate(Number).is(2);
+					verify(fake).evaluate.property("success").is.type("undefined");
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		user: {
 			downloads?: slime.jrunscript.file.Directory
 		}
@@ -855,62 +976,78 @@ namespace slime.jrunscript.shell {
 			const { jsh } = fifty.global;
 
 			const subject = jsh.shell;
+			const module = test.jsapiModule;
 
-			fifty.tests.exports.system = function() {
-				fifty.run(function applicationBundle() {
-					if (subject.system.apple.osx.ApplicationBundle) {
-						var tmpfile = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("tmp.icns");
-						tmpfile.write("ICONS", { append: false });
-						var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-						tmp.directory.remove();
-						var bundle = new subject.system.apple.osx.ApplicationBundle({
-							pathname: tmp,
-							info: {
-								CFBundleName: "name",
-								CFBundleIdentifier: "com.bitbucket.davidpcaldwell.slime",
-								CFBundleVersion: "1",
-								CFBundleExecutable: {
-									name: "program",
-									command: "ls"
-								},
-								CFBundleIconFile: {
-									file: tmpfile.file
-								}
+			fifty.tests.exports.system = fifty.test.Parent();
+
+			fifty.tests.exports.system.applicationBundle = function() {
+				if (subject.system.apple.osx.ApplicationBundle) {
+					var tmpfile = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("tmp.icns");
+					tmpfile.write("ICONS", { append: false });
+					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+					tmp.directory.remove();
+					var bundle = new subject.system.apple.osx.ApplicationBundle({
+						pathname: tmp,
+						info: {
+							CFBundleName: "name",
+							CFBundleIdentifier: "com.bitbucket.davidpcaldwell.slime",
+							CFBundleVersion: "1",
+							CFBundleExecutable: {
+								name: "program",
+								command: "ls"
+							},
+							CFBundleIconFile: {
+								file: tmpfile.file
 							}
-						});
-						verify(bundle).directory.evaluate(String).is(tmp.directory.toString());
-						verify(bundle).info.is.type("object");
-						//	TODO	not sure what the below is for
-						//@ts-ignore
-						bundle.info = "foo";
-						verify(bundle).info.is.type("object");
-						verify(bundle).info.CFBundleName.is("name");
-						verify(bundle).info.CFBundleIdentifier.is("com.bitbucket.davidpcaldwell.slime");
-						verify(bundle).info.CFBundleVersion.is("1");
-						verify(bundle).info.CFBundleExecutable.evaluate(String).is("program");
-						verify(bundle).directory.getFile("Contents/MacOS/program").is.type("object");
-						verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("null");
-						verify(bundle).directory.getFile("Contents/Resources/tmp.icns").is.type("object");
+						}
+					});
+					verify(bundle).directory.evaluate(String).is(tmp.directory.toString());
+					verify(bundle).info.is.type("object");
+					//	TODO	not sure what the below is for
+					//@ts-ignore
+					bundle.info = "foo";
+					verify(bundle).info.is.type("object");
+					verify(bundle).info.CFBundleName.is("name");
+					verify(bundle).info.CFBundleIdentifier.is("com.bitbucket.davidpcaldwell.slime");
+					verify(bundle).info.CFBundleVersion.is("1");
+					verify(bundle).info.CFBundleExecutable.evaluate(String).is("program");
+					verify(bundle).directory.getFile("Contents/MacOS/program").is.type("object");
+					verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("null");
+					verify(bundle).directory.getFile("Contents/Resources/tmp.icns").is.type("object");
 
-						bundle.info.CFBundleExecutable = "string";
-						verify(bundle).info.CFBundleExecutable.evaluate(String).is("string");
+					bundle.info.CFBundleExecutable = "string";
+					verify(bundle).info.CFBundleExecutable.evaluate(String).is("string");
 
-						bundle.info.CFBundleExecutable = {
-							name: "executable",
-							command: "pwd"
-						};
-						verify(bundle).directory.getFile("Contents/MacOS/program").is.type("null");
-						verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("object");
-						verify(bundle).directory.evaluate(function() {
-							var file = this.getFile("Contents/MacOS/executable");
-							if (!file) return null;
-							return { string: file.read(String) };
-						}).is.type("object");
-					} else {
-						var message = "ApplicationBundle not available on this system";
-						verify(message).is(message);
+					bundle.info.CFBundleExecutable = {
+						name: "executable",
+						command: "pwd"
+					};
+					verify(bundle).directory.getFile("Contents/MacOS/program").is.type("null");
+					verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("object");
+					verify(bundle).directory.evaluate(function() {
+						var file = this.getFile("Contents/MacOS/executable");
+						if (!file) return null;
+						return { string: file.read(String) };
+					}).is.type("object");
+				} else {
+					var message = "ApplicationBundle not available on this system";
+					verify(message).is(message);
+				}
+			}
+
+			fifty.tests.exports.system.plist = function() {
+				var object: { a: string, b: { c: string } } = {
+					a: "1",
+					b: {
+						c: "2"
 					}
-				})
+				};
+				var xml = module.system.apple.plist.xml.encode(object);
+				jsh.shell.console(xml.toString());
+				var decoded: typeof object = module.system.apple.plist.xml.decode(xml);
+				verify(decoded).a.is("1");
+				verify(decoded).b.is.type("object");
+				verify(decoded).b.c.is("2");
 			}
 		}
 	//@ts-ignore
@@ -989,69 +1126,7 @@ namespace slime.jrunscript.shell {
 
 			fifty.tests.jsapi = fifty.test.Parent();
 
-			const fixtures: slime.jrunscript.shell.test.Script = fifty.$loader.script("fixtures.ts");
-
-			var context = new function() {
-				var java = fifty.$loader.module("../../jrunscript/host/", {
-					$slime: jsh.unit.$slime,
-					logging: {
-						prefix: "slime.jrunscript.shell.test"
-					}
-				});
-				var io = fifty.$loader.module("../../jrunscript/io/", {
-					api: {
-						java: java,
-						mime: jsh.unit.$slime.mime
-					},
-					$slime: jsh.unit.$slime
-				});
-				this.api = {
-					js: fifty.$loader.module("../../js/object/"),
-					java: java,
-					io: io,
-					file: fifty.$loader.module("../../rhino/file/", new function() {
-						if (jsh.shell.environment.PATHEXT) {
-							this.pathext = jsh.shell.environment.PATHEXT.split(";");
-						}
-						this.$rhino = jsh.unit.$slime;
-						this.api = {
-							io: io,
-							js: jsh.js,
-							java: jsh.java
-						};
-						this.$pwd = String(jsh.shell.properties.object.user.dir);
-						this.addFinalizer = jsh.loader.addFinalizer;
-						//	TODO	below copy-pasted from rhino/file/api.html
-						//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
-						var System = Packages.java.lang.System;
-						if (System.getProperty("cygwin.root")) {
-							this.cygwin = {
-								root: String( System.getProperty("cygwin.root") )
-							};
-							if (System.getProperty("cygwin.paths")) {
-								//	Using the paths helper currently does not seem to work in the embedded situation when running inside
-								//	the SDK server
-								//	TODO	check this
-								this.cygwin.paths = String( System.getProperty("cygwin.paths") );
-							}
-						}
-					}),
-					document: fifty.$loader.module("../../js/document/"),
-					xml: {
-						parseFile: function(file) {
-							return new jsh.document.Document({ string: file.read(String) });
-						}
-					}
-				};
-				this._properties = Packages.java.lang.System.getProperties();
-				this._environment = Packages.inonit.system.OperatingSystem.Environment.SYSTEM;
-				this.stdio = {
-					output: jsh.shell.stdio.output,
-					error: jsh.shell.stdio.error
-				}
-			}
-
-			var module = fixtures().load(context);
+			var module = shell.test.jsapiModule;
 
 			var test = function(b: boolean) {
 				fifty.verify(b).is(true);
