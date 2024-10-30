@@ -71,14 +71,14 @@
 				var find = unboundFind.bind(this);
 
 				/**
-				 * @type { () => slime.definition.unit.Event.Scenario }
+				 * @type { () => slime.definition.unit.internal.scenario.events.Identifier }
 				 */
 				var EVENT = (
 					/**
-					 * @returns { slime.definition.unit.Event.Scenario }
+					 * @returns { slime.definition.unit.internal.scenario.events.Identifier  }
 					 */
 					function() {
-						/** @type { slime.definition.unit.Event.Scenario } */
+						/** @type { slime.definition.unit.internal.scenario.events.Identifier  } */
 						var rv = { id: (context && context.id ) ? context.id : null, name: this.name };
 						return rv;
 					}
@@ -378,6 +378,9 @@
 					addPart(id,definition);
 				};
 
+				/**
+				 * @type { slime.definition.unit.internal.Suite["run"] }
+				 */
 				this.run = function(p,next) {
 					var scope = part.before(p).scope;
 					var path = (p && p.path) ? p.path : [];
@@ -524,6 +527,7 @@
 
 			/** @constructor */
 			$exports.Suite = function(definition,context) {
+				this.parts = void(0);
 				this.getParts = void(0);
 				this.part = void(0);
 				this.run = void(0);
@@ -558,8 +562,8 @@
 		$exports.View = function(o) {
 			var On = function(implementation) {
 				/**
-				 * @param { slime.definition.unit.Event.Scenario.Detail } detail
-				 * @returns { detail is slime.definition.unit.Event.Scenario.Start }
+				 * @param { slime.definition.unit.internal.scenario.events.Detail } detail
+				 * @returns { detail is slime.definition.unit.internal.scenario.events.Start }
 				 */
 				var isStart = function(detail) {
 					return Boolean(detail["start"])
@@ -568,7 +572,7 @@
 				/**
 				 *
 				 * @type { slime.definition.unit.View["on"]["scenario"] }
-				 * @param { slime.$api.Event<slime.definition.unit.Event.Scenario.Detail> } e
+				 * @param { slime.$api.Event<slime.definition.unit.internal.scenario.events.Detail> } e
 				 */
 				var scenario = function(e) {
 					if (isStart(e.detail)) {

@@ -249,7 +249,10 @@ namespace slime.jrunscript.tools.github {
 					world: void(0)
 				})();
 
-				verify(notFound).is(null);
+				const asObject = (p: any) => p as object;
+
+				//	TODO	asObject needed for TypeDoc but not tsc
+				verify(notFound).evaluate(asObject).is(null);
 			}
 		}
 	//@ts-ignore
