@@ -1271,38 +1271,6 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	export namespace exports {
-		export interface Invocation {
-			/** @deprecated */
-			from: {
-				/** @deprecated */
-				argument: (p: invocation.Argument) => run.old.Invocation
-			}
-
-			/** @deprecated Use `from.argument`. */
-			create: Invocation["from"]["argument"]
-
-			//	TODO	probably should be conditional based on presence of sudo tool
-			/**
-			 * Given settings for `sudo`, converts an invocation into an equivalent invocation that will be run under `sudo`.
-			 *
-			 * @param settings A set of `sudo` settings.
-			 * @returns An invocation that will run the given invocation under `sudo`.
-			 */
-			sudo: (settings: sudo.Settings) => slime.$api.fp.Transform<run.old.Invocation>
-
-			handler: {
-				stdio: {
-					/**
-					 * Creates an event handler that automatically buffers trailing blank lines, so that blank lines created by the
-					 * end of a stream do not produce calls to the event handler.
-					 */
-					line: slime.$api.fp.Transform<slime.$api.event.Handler<slime.jrunscript.shell.run.Line>>
-				}
-			}
-		}
-	}
-
 	export namespace environment {
 		/**
 		 * Specifies a complete subprocess environment; no environment variables will be inherited from the context.
