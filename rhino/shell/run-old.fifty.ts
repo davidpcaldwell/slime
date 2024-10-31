@@ -9,6 +9,38 @@ namespace slime.jrunscript.shell {
 		export type evaluate<T> = (p: run.old.Result) => T
 	}
 
+	export namespace exports {
+		export interface Invocation {
+			/** @deprecated */
+			from: {
+				/** @deprecated */
+				argument: (p: invocation.Argument) => run.old.Invocation
+			}
+
+			/** @deprecated Use `from.argument`. */
+			create: Invocation["from"]["argument"]
+
+			//	TODO	probably should be conditional based on presence of sudo tool
+			/**
+			 * Given settings for `sudo`, converts an invocation into an equivalent invocation that will be run under `sudo`.
+			 *
+			 * @param settings A set of `sudo` settings.
+			 * @returns An invocation that will run the given invocation under `sudo`.
+			 */
+			sudo: (settings: sudo.Settings) => slime.$api.fp.Transform<run.old.Invocation>
+
+			handler: {
+				stdio: {
+					/**
+					 * Creates an event handler that automatically buffers trailing blank lines, so that blank lines created by the
+					 * end of a stream do not produce calls to the event handler.
+					 */
+					line: slime.$api.fp.Transform<slime.$api.event.Handler<slime.jrunscript.shell.run.Line>>
+				}
+			}
+		}
+	}
+
 	export namespace invocation {
 		export namespace old {
 			/**
@@ -197,13 +229,34 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			var x = fifty.global.jsh.shell.stdio;
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		run: oo.Run & {
 			evaluate: any
 			stdio: {
 				run: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => slime.jrunscript.shell.internal.run.Stdio
 
-				LineBuffered: any
+				/**
+				 * @deprecated Better form in Invocation.handler.stdio.line, and refers to a `jsh` type from within the non-`jsh`
+				 * shell module
+				 *
+				 * A {@link slime.jrunscript.shell.invocation.old.Stdio} implementation which buffers the output and error streams
+				 * by line so they do not get mixed together (e.g., on a console).
+				 *
+				 * See also {@link slime.jrunscript.shell.exports.Invocation | Invocation.handler.stdio.line}, which is superior
+				 * (it ignores empty lines at the end of the stream, and allows an individual stream to be buffered).
+				 *
+				 * @returns A `stdio` whose `output` and `error` streams buffer by line to the original `output` and `error`.
+				 */
+				LineBuffered: (p: { stdio: slime.jsh.shell.Exports["stdio"] }) => slime.jrunscript.shell.invocation.old.Stdio
 			}
 		}
 	}
