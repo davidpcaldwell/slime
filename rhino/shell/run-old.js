@@ -295,6 +295,9 @@
 		};
 
 		/**
+		 * Returns a stdio object given the argument, using the `stdio` property of the argument if it is available, then using
+		 * the deprecated `stdin`, `stdout`, and `stderr` if needed, and finelly returning an empty object. May return `null` if
+		 * the `stdio` property is `null`.
 		 *
 		 * @param { slime.jrunscript.shell.run.old.Argument } p
 		 * @return { slime.jrunscript.shell.invocation.old.Argument["stdio"] }
@@ -543,58 +546,48 @@
 			return result;
 		};
 
-		$exports.run.stdio = Object.assign(
-			(
-				/**
-				 *
-				 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-				 * @return { slime.jrunscript.shell.internal.run.Stdio }
-				 */
-				function getStdio(p) {
-					//	TODO	the getStdio function is currently used in jsh.js, requiring us to export it; is that the best structure?
-					var stdio = extractStdioIncludingDeprecatedForm(p);
+		$exports.run.stdio = {
+			run: function getStdio(p) {
+				//	TODO	the getStdio function is currently used in jsh.js, requiring us to export it; is that the best structure?
+				var stdio = extractStdioIncludingDeprecatedForm(p);
 
-					if (stdio) {
-						//	TODO	the below $api.Events() is highly dubious, inserted just to get past TypeScript; who knows
-						//			whether it will work but refactoring in progress may change it further
-						var fixed = invocation.internal.old.updateForStringInput(stdio);
-						fallbackToParentStdio(fixed, $context.stdio);
-						var x = invocation.internal.old.toStdioConfiguration(fixed);
-						var rv = scripts.run.old.buildStdio(x)($api.Events());
-						return rv;
-					}
-					if (!stdio) {
-						//	TODO	could be null if p.stdio === null. What would that mean? And what does $context.stdio have to do with
-						//			it?
-						if (!$context.stdio) {
-							if (p.stdio === null) {
-								//	That's what we thought
-							} else {
-								//	The only way rv should be anything other than an object is if p.stdio was null
-								throw new Error("Unreachable");
-							}
+				if (stdio) {
+					//	TODO	the below $api.Events() is highly dubious, inserted just to get past TypeScript; who knows
+					//			whether it will work but refactoring in progress may change it further
+					var fixed = invocation.internal.old.updateForStringInput(stdio);
+					fallbackToParentStdio(fixed, $context.stdio);
+					var x = invocation.internal.old.toStdioConfiguration(fixed);
+					var rv = scripts.run.old.buildStdio(x)($api.Events());
+					return rv;
+				} else {
+					//	TODO	stdio could be null if p.stdio === null. What would that mean? And what does $context.stdio have
+					//			to do with it?
+					if (!$context.stdio) {
+						if (p.stdio === null) {
+							//	That's what we thought
+						} else {
+							//	The only way rv should be anything other than an object is if p.stdio was null
+							throw new Error("Unreachable");
 						}
-						return null;
 					}
+					return null;
 				}
-			),
-			{
-				LineBuffered: function(o) {
-					return Object.assign({}, o, {
-						output: {
-							line: function(line) {
-								o.stdio.output.write(line + $context.os.newline());
-							}
-						},
-						error: {
-							line: function(line) {
-								o.stdio.error.write(line + $context.os.newline());
-							}
+			},
+			LineBuffered: function(o) {
+				return Object.assign({}, o, {
+					output: {
+						line: function(line) {
+							o.stdio.output.write(line + $context.os.newline());
 						}
-					});
-				}
+					},
+					error: {
+						line: function(line) {
+							o.stdio.error.write(line + $context.os.newline());
+						}
+					}
+				});
 			}
-		);
+		};
 
 		$export($exports);
 	}

@@ -201,7 +201,7 @@ namespace slime.jrunscript.shell {
 		run: oo.Run & {
 			evaluate: any
 			stdio: {
-				(p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]): slime.jrunscript.shell.internal.run.Stdio
+				run: (p: Parameters<slime.jrunscript.shell.Exports["run"]>[0]) => slime.jrunscript.shell.internal.run.Stdio
 
 				LineBuffered: any
 			}
