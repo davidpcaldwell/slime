@@ -318,100 +318,6 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace run {
-		export namespace old {
-			export interface Argument extends invocation.old.Argument {
-				as?: {
-					user: string
-				}
-
-				on?: {
-					start: (data: old.events.Events["start"]) => void
-				}
-
-				/** @deprecated */
-				tokens?: any
-				/** @deprecated */
-				workingDirectory?: slime.jrunscript.file.Directory
-
-				/**
-				 * @deprecated
-				 *
-				 * A stream to which the standard output stream of the subprocess will be written. If `null`, the output will be
-				 * discarded. The default is `jsh.file.Streams.stdout`.
-				 */
-				stdout?: invocation.old.Argument["stdio"]["output"]
-
-				/**
-				 * @deprecated
-				 *
-				 * A stream that will be used as the standard input stream for the subprocess.
-				 */
-				stdin?: invocation.old.Argument["stdio"]["input"]
-
-				/**
-				 * @deprecated
-				 *
-				 * A stream to which the standard error stream of the subprocess will be written. If `null`, the output will be
-				 * discarded. The default is `jsh.file.Streams.stderr`.
-				 */
-				stderr?: invocation.old.Argument["stdio"]["error"]
-			}
-
-			/**
-			 * Information abuot a completed subprocess.
-			 */
-			export interface Result {
-				/**
-				 * The command invoked.
-				 */
-				command: Argument["command"]
-
-				/**
-				 * The arguments sent to the command.
-				 */
-				arguments: Argument["arguments"]
-
-				environment: any
-
-				directory: slime.jrunscript.file.Directory
-				/** @deprecated */
-				workingDirectory: slime.jrunscript.file.Directory
-
-				/**
-				 * The exit status of the command.
-				 */
-				status: number
-				stdio?: run.CapturedOutput
-			}
-
-			export namespace events {
-				export interface Event {
-					command: slime.jrunscript.shell.invocation.old.Token
-					arguments?: slime.jrunscript.shell.invocation.old.Token[]
-					environment?: slime.jrunscript.shell.older.Invocation["environment"]
-					directory?: slime.jrunscript.file.Directory
-				}
-
-				export interface Events {
-					start: Event & {
-						pid: number
-						kill: () => void
-					}
-
-					terminate: Event & {
-						status: number
-						stdio?: slime.jrunscript.shell.run.CapturedOutput
-					}
-				}
-			}
-
-			export type Events = slime.$api.event.Emitter<events.Events>
-
-			export type Handler = slime.$api.event.Handlers<events.Events>
-		}
-	}
-
 	interface Result {
 		stdio?: {
 			output?: string
@@ -636,10 +542,17 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
+		/**
+		 * An object representing the current operating system.
+		 */
 		os: {
 			name: string
 			arch: string
 			version: string
+
+			/**
+			 * The line separator for this operating system.
+			 */
 			newline: string
 
 			/**
@@ -1335,6 +1248,7 @@ namespace slime.jrunscript.shell {
 			}
 
 			//	TODO	possibly allow Location
+			//	TODO	if this property is null, we should error, assuming the caller made a mistake passing a non-existent directory.
 			/**
 			 * The working directory in which the command will be executed. If not specified, this process's working directory
 			 * will be provided.
@@ -1345,52 +1259,6 @@ namespace slime.jrunscript.shell {
 				input?: Input
 				output?: run.OutputCapture
 				error?: run.OutputCapture
-			}
-		}
-
-		export namespace old {
-			export type Token = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node
-
-			export type OutputStreamToStream = slime.jrunscript.runtime.io.OutputStream
-			export type OutputStreamToString = StringConstructor
-			export type OutputStreamToLines = { line: (line: string) => void }
-			export type OutputStreamConfiguration = OutputStreamToStream | OutputStreamToString | OutputStreamToLines
-
-			/**
-			 * Specifies the standard input, output, and error streams to use for an invocation.
-			 *
-			 * For the output streams:
-			 * * if the global `String` object is used as the value, the stream's output will be captured as a string and returned along with the result of the subprocess.
-			 * * if an object with a `line()` function is used as the value, the output will be buffered and the given object will receive a callback for each line of output.
-			 *
-			 * For the input stream:
-			 * * if the value is a string, that string will be provided on the standard input stream for the subprocess.
-			 */
-			export interface Stdio {
-				output?: OutputStreamConfiguration
-				error?: OutputStreamConfiguration
-				input?: Input
-			}
-
-			/**
-			 * Type used by callers to specify {@link slime.jrunscript.shell.old.Invocation}s, without requiring boilerplate defaults; only the `command`
-			 * property is required.
-			 */
-			export interface Argument {
-				command: slime.jrunscript.shell.invocation.Argument["command"] | slime.jrunscript.file.Pathname | slime.jrunscript.file.File
-				arguments?: Token[]
-				environment?: slime.jrunscript.shell.invocation.Argument["environment"]
-				directory?: slime.jrunscript.file.Directory
-
-				/**
-				 * The standard I/O streams to supply to the subprocess. If unspecified, or if any properties are unspecified,
-				 * defaults will be used. The defaults are:
-				 *
-				 * * `input`: `null`
-				 * * `output`: This process's standard output stream
-				 * * `error`: This process's standard error stream
-				 */
-				stdio?: slime.jrunscript.shell.older.Invocation["stdio"]
 			}
 		}
 	}
