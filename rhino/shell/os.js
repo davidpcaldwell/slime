@@ -251,10 +251,13 @@
 				sudo.desktop = sudo_desktop;
 			}
 
+			/**
+			 * @type { slime.jrunscript.shell.internal.os.Exports["ping"] }
+			 */
 			$exports.ping = function(p) {
 				//	tested on Mac OS X
 				//	TODO	where should stderr go?
-				return $context.run({
+				var x = $context.run({
 					command: "ping",
 					arguments: (function(rv) {
 						rv.push("-c","1");
@@ -281,6 +284,7 @@
 						}
 					}
 				});
+				return x;
 			}
 		} else if ($context.os.name == "Linux") {
 

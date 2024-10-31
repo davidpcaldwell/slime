@@ -603,6 +603,11 @@ namespace slime.jrunscript.shell {
 			}
 
 			process?: {
+				/**
+				 * (Mac OS X; untested on Linux)
+				 *
+				 * @experimental
+				 */
 				list: slime.jrunscript.shell.system.ps
 			}
 
@@ -610,6 +615,9 @@ namespace slime.jrunscript.shell {
 			sudo?: slime.jrunscript.shell.system.sudo
 
 			//	TODO	should not be using internal types
+			/**
+			 * Uses the underlying operating system's `ping` command to attempt to reach another host.
+			 */
 			ping?: slime.jrunscript.shell.internal.os.Exports["ping"]
 
 			//	TODO	should not depend on jsh; need to disentangle jsh["ui"] from jsh first and have a separate TypeScript

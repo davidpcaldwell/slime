@@ -46,27 +46,6 @@ END LICENSE
 				<div class="name">os</div>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="object experimental">
-						<div class="name">process</div>
-						<span>__DESCRIPTION__</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="function">
-								<div class="name">list</div>
-								<span>(Mac OS X; untested on Linux)</span>
-								<div class="arguments">
-									<div class="label">Arguments</div>
-									<ol>
-									</ol>
-								</div>
-								<div class="returns">
-									<div class="label">Returns</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</div>
-							</li>
-						</ul>
-					</li>
 					<li class="function experimental">
 						<div class="name">sudo</div>
 						<span>(Mac OS X only) Executes a command under <code>sudo</code>.</span>
@@ -100,40 +79,6 @@ END LICENSE
 							<div class="label">Returns</div>
 							<span class="type">(any)</span>
 							<span>See the definition of <code>run</code>.</span>
-						</div>
-					</li>
-					<li class="function experimental">
-						<div class="name">ping</div>
-						<span>
-							Uses the underlying operating system's <code>ping</code> command to attempt to reach another host.
-						</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">host</div>
-											<span class="type">string</span>
-											<span>The host to which to send the <code>ECHO_REQUEST</code>.</span>
-										</li>
-										<li class="value">
-											<div class="name">timeout</div>
-											<span class="type">number</span>
-											<span>
-												A timeout, in seconds. Will be rounded down to a whole number of seconds. Must be
-												1 or greater.
-											</span>
-										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
 						</div>
 					</li>
 				</ul>

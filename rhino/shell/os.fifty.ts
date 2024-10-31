@@ -129,7 +129,21 @@ namespace slime.jrunscript.shell.internal.os {
 			[os: string]: slime.jrunscript.shell.system.ps
 		}
 		sudo: slime.jrunscript.shell.system.sudo
-		ping: any
+		ping: (p: {
+			/**
+			 * The host to which to send the `ECHO_REQUEST`.
+			 */
+			host: string
+
+			/**
+			 * A timeout, in seconds. Will be rounded down to a whole number of seconds. Must be 1 or greater.
+			 */
+			timeout?: number
+		}) => {
+			status: number
+			output: string[]
+			success: number
+		}
 		desktop: (library: slime.jsh.Global["ui"]) => void
 	}
 
