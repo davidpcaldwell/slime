@@ -676,7 +676,7 @@
 					var configuration = new JavaAdapter(
 						Packages.inonit.script.jsh.Shell.Environment,
 						new function() {
-							var specified = $exports.run.stdio(p);
+							var specified = $exports.run.stdio.run(p);
 
 							var stdio = new JavaAdapter(
 								Packages.inonit.script.jsh.Shell.Environment.Stdio,
