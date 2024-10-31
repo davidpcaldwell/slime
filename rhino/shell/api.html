@@ -17,6 +17,7 @@ END LICENSE
 		<h1>Exports</h1>
 		<div class="type" jsapi:id="types.stdio">
 			<a class="type" name="types.stdio">stdio</a>
+			<!--	TODO	merge with slime.jrunscript.shell.invocation.old.Stdio -->
 			<span>The standard I/O streams for a process.</span>
 			<div class="label">has properties:</div>
 			<ul>
@@ -43,29 +44,8 @@ END LICENSE
 		<ul jsapi:id="exports">
 			<li class="object" jsapi:id="os">
 				<div class="name">os</div>
-				<span>An object representing the current operating system.</span>
 				<div class="label">has properties:</div>
 				<ul>
-					<li class="value">
-						<div class="name">name</div>
-						<span class="type">string</span>
-						<span>__DESCRIPTION__</span>
-					</li>
-					<li class="value">
-						<div class="name">arch</div>
-						<span class="type">string</span>
-						<span>__DESCRIPTION__</span>
-					</li>
-					<li class="value">
-						<div class="name">version</div>
-						<span class="type">string</span>
-						<span>__DESCRIPTION__</span>
-					</li>
-					<li class="value">
-						<div class="name">newline</div>
-						<span class="type">string</span>
-						<span>The line separator for this operating system.</span>
-					</li>
 					<li class="object experimental">
 						<div class="name">process</div>
 						<span>__DESCRIPTION__</span>
@@ -173,30 +153,12 @@ END LICENSE
 			<li class="function" jsapi:id="run">
 				<div class="name"><a id="exports.run">run</a></div>
 				<!--	TODO	document the 'on' property	-->
-				<div jsapi:id="description">Launches a subprocess using the operating system.</div>
 				<div class="arguments">
 					<div class="label">Arguments</div>
-					<div class="type" jsapi:id="token">
-						<a class="type" name="types.token">token</a>
-						<span>
-							A value that can be used as a command token. If the value is a string, it will be used as-is. If it is an object, it will be coerced
-							to string using the String global function. Otherwise, a TypeError will be thrown.
-						</span>
-					</div>
 					<ol jsapi:id="arguments">
 						<li class="object">
 							<div class="label">has properties:</div>
 							<ul>
-								<li class="value">
-									<div class="name">command</div>
-									<span class="type"><a href="#types.token">token</a></span>
-									<span>The command to pass to the underlying operating system.</span>
-								</li>
-								<li class="value">
-									<div class="name">arguments</div>
-									<span class="type">Array of <a href="#types.token">token</a></span>
-									<span>The command arguments to pass to the underlying operating system.</span>
-								</li>
 								<li class="object">
 									<div class="name">stdio</div>
 									<span class="type"><a href="#types.stdio">stdio</a></span>
@@ -249,38 +211,11 @@ END LICENSE
 								</li>
 								<li class="value" jsapi:id="run.environment">
 									<div class="name">environment</div>
-									<div>
-										<span class="type">object</span>
-										<span>
-											(optional: If <code>null</code> or <code>undefined</code>, the module environment is used.)
-											A set of names and values that will be passed to the subprocess as its environment.
-
-											If an individual property in the object has the value <code>null</code>, the environment
-											variable is omitted from the list passed to the subprocess.
-
-											<!--
-												TODO	how are non-string property values handled? undefined, object, number, boolean
-											-->
-										</span>
-									</div>
 									- OR -
 									<div>
 										<span class="type"><a href="../../loader/$api-Function.fifty.ts?as=text#types.mutator">mutator</a></span>
 										<span>A mutator function which will receive the current process environment as its argument.</span>
 									</div>
-								</li>
-								<li class="value" jsapi:id="run.directory">
-									<div class="name">directory</div>
-									<span class="type"><a href="../file/api.html#types.directory">directory</a></span>
-									<span>
-										(optional)
-										The working directory to use for the subprocess. If not specified, the working directory
-										of the parent process will be used.
-									</span>
-									<!--
-										TODO	if this property is null, we should error, assuming the caller made a mistake
-										passing a non-existent directory.
-									-->
 								</li>
 								<li class="function" jsapi:id="run.evaluate">
 									<div class="name"><a name="run.evaluate">evaluate</a></div>
