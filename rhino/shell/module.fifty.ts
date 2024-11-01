@@ -850,7 +850,7 @@ namespace slime.jrunscript.shell {
 			fifty.tests.exports.system = fifty.test.Parent();
 
 			fifty.tests.exports.system.applicationBundle = function() {
-				if (subject.system.apple.osx.ApplicationBundle) {
+				if (subject.system.apple.osx && subject.system.apple.osx.ApplicationBundle) {
 					var tmpfile = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("tmp.icns");
 					tmpfile.write("ICONS", { append: false });
 					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
