@@ -569,9 +569,11 @@ namespace slime.jsh.shell {
 						},
 						script: fifty.jsh.file.relative("../../jsh/test/jsh-data.jsh.js").pathname,
 						environment: function(was) {
+							//	TODO	maybe we should standardize all this to make it easier to work with native executable
+							//			launcher
+							var jdk = jsh.shell.java.Jdk.from.javaHome();
 							var PATH = (function() {
 								var now = jsh.shell.PATH.pathnames;
-								var jdk = jsh.shell.java.Jdk.from.javaHome();
 								var bin = jsh.file.Pathname(jdk.base + "/" + "bin");
 								now.unshift(bin);
 								return jsh.file.Searchpath(now);
@@ -579,6 +581,7 @@ namespace slime.jsh.shell {
 							return $api.Object.compose(
 								was,
 								{
+									JSH_JAVA_HOME: jdk.base,
 									PATH: PATH.toString()
 								}
 							)
