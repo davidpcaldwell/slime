@@ -179,10 +179,9 @@
 
 						$context.library.node.require.simple();
 
-						$api.fp.world.now.action(
-							$context.library.node.Installation.modules.require({ name: "typescript", version: p.configuration.typescript.version }),
-							$context.library.node.installation
-						);
+						$api.fp.world.Action.now({
+							action: $context.library.node.Installation.modules($context.library.node.installation).require({ name: "typescript", version: p.configuration.typescript.version }),
+						});
 
 						var typedocVersion = $api.fp.now.invoke(
 							p.configuration.typescript.version,
@@ -192,13 +191,12 @@
 							)
 						);
 
-						$api.fp.world.now.action(
-							$context.library.node.Installation.modules.require({
+						$api.fp.world.Action.now({
+							action: $context.library.node.Installation.modules($context.library.node.installation).require({
 								name: "typedoc",
 								version: $api.fp.now.invoke(p.configuration.typescript.version, typedocVersionForTypescript)
 							}),
-							$context.library.node.installation,
-							{
+							handlers: {
 								found: function(e) {
 									if (e.detail.present) {
 										events.fire("found", e.detail.value.version);
@@ -213,7 +211,7 @@
 									events.fire("installed", e.detail.version);
 								}
 							}
-						);
+						});
 
 						var project = $context.library.file.world.Location.from.os(p.project);
 

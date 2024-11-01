@@ -596,10 +596,9 @@ namespace slime.jsh.shell.tools {
 				fifty.tests.manual.node = {};
 				fifty.tests.manual.node.jsh = function() {
 					var installation = jsh.shell.tools.node.installation;
-					var modules = $api.fp.world.now.question(
-						jsh.shell.tools.node.Installation.modules.list(),
-						installation
-					);
+					var modules = $api.fp.world.Question.now({
+						question: jsh.shell.tools.node.Installation.modules(installation).list(),
+					});
 					modules.forEach(function(module) {
 						jsh.shell.console(module.name + " " + module.version);
 					});

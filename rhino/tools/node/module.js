@@ -227,11 +227,15 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["list"] } */
-		var modules_list = function() {
-			return function(installation) {
-				var toShellInvocation = node_invocation(installation);
+		/**
+		 * @param { { installation: slime.jrunscript.tools.node.Installation, project?: slime.jrunscript.tools.node.Project }} p
+		 * @returns
+		 */
+		var Modules = function(p) {
+			var toShellInvocation = node_invocation(p.installation);
 
+			/** @type { slime.jrunscript.tools.node.exports.Modules["list"] } */
+			var list = function() {
 				return function(events) {
 					var invocation = toShellInvocation({
 						command: "npm",
@@ -240,10 +244,11 @@
 							//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
 							//			should check whether this has always worked or whether we need to do some kind of
 							//			npm version checking here before choosing between the two forms
-							rv.push("--global");
+							if (!p.project) rv.push("--global");
 							rv.push("--depth", "0");
 							rv.push("--json")
 						}),
+						directory: (p.project) ? p.project.base : void(0),
 						stdio: {
 							output: "string"
 						}
@@ -257,6 +262,8 @@
 					/** @type { slime.jrunscript.tools.node.internal.NpmLsOutput } */
 					var npmJson = JSON.parse(result.stdio.output);
 
+					debugger;
+					if (!npmJson.dependencies) return [];
 					return $api.fp.result(
 						npmJson,
 						$api.fp.pipe(
@@ -268,28 +275,22 @@
 						)
 					);
 				}
-			}
-		}
+			};
 
-		/** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["installed"] } */
-		var modules_installed = function(p) {
-			return function(installation) {
+			/** @type { slime.jrunscript.tools.node.exports.Modules["installed"] } */
+			var installed = function(name) {
 				return function(events) {
-					var ask = modules_list()(installation);
-					var list = ask(void(0));
-					var found = list.find(function(item) {
-						return item.name == p;
+					var ask = list();
+					var listing = ask(void(0));
+					var found = listing.find(function(item) {
+						return item.name == name;
 					});
 					return $api.fp.Maybe.from.value(found);
 				}
-			}
-		};
+			};
 
-		/** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["install"] } */
-		var modules_install = function(p) {
-			return function(installation) {
-				var toShellInvocation = node_invocation(installation);
-
+			/** @type { slime.jrunscript.tools.node.exports.Modules["install"] } */
+			var install = function(spec) {
 				return function(events) {
 					var invocation = toShellInvocation({
 						command: "npm",
@@ -298,8 +299,8 @@
 							//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
 							//			should check whether this has always worked or whether we need to do some kind of
 							//			npm version checking here before choosing between the two forms
-							rv.push("--global");
-							var package = (p.version) ? (p.name + "@" + p.version) : p.name;
+							if (!p.project) rv.push("--global");
+							var package = (spec.version) ? (spec.name + "@" + spec.version) : spec.name;
 							rv.push(package);
 						})
 					});
@@ -309,40 +310,159 @@
 						invocation
 					);
 				}
-			}
-		};
+			};
 
-		/** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["require"] } */
-		var modules_require = function(p) {
-			var isSatisfied = function(version) {
-				/** @type { (installed: slime.$api.fp.Maybe<slime.jrunscript.tools.node.Module>) => boolean } */
-				return function(installed) {
-					if (version) {
-						return installed.present && installed.value.version == version;
-					} else {
-						return installed.present;
+			return /** @type { slime.jrunscript.tools.node.exports.Modules } */({
+				list: list,
+				installed: installed,
+				install: install,
+				require: function(spec) {
+					var isSatisfied = function(version) {
+						/** @type { (installed: slime.$api.fp.Maybe<slime.jrunscript.tools.node.Module>) => boolean } */
+						return function(installed) {
+							if (version) {
+								return installed.present && installed.value.version == version;
+							} else {
+								return installed.present;
+							}
+						}
 					}
-				}
-			}
 
-			return function(installation) {
-				return function(events) {
-					var installed = modules_installed(p.name)(installation)(events);
-					events.fire("found", installed);
-					var satisfied = isSatisfied(p.version)(installed);
-					if (!satisfied) {
-						events.fire("installing", p);
-						modules_install(p)(installation)(events);
-						installed = modules_installed(p.name)(installation)(events);
-						if (installed.present) {
-							events.fire("installed", installed.value);
-						} else {
-							throw new Error("Unreachable: " + p.name + " not found after installation.");
+					return function(events) {
+						var found = installed(spec.name)(events);
+						events.fire("found", found);
+						var satisfied = isSatisfied(spec.version)(found);
+						if (!satisfied) {
+							events.fire("installing", spec);
+							install(spec)(events);
+							found = installed(spec.name)(events);
+							if (found.present) {
+								events.fire("installed", found.value);
+							} else {
+								throw new Error("Unreachable: " + spec.name + " not found after installation.");
+							}
 						}
 					}
 				}
-			}
-		}
+			});
+		};
+
+		// /** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["list"] } */
+		// var modules_list = function() {
+		// 	return function(installation) {
+		// 		var toShellInvocation = node_invocation(installation);
+
+		// 		return function(events) {
+		// 			var invocation = toShellInvocation({
+		// 				command: "npm",
+		// 				arguments: $api.Array.build(function(rv) {
+		// 					rv.push("ls");
+		// 					//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
+		// 					//			should check whether this has always worked or whether we need to do some kind of
+		// 					//			npm version checking here before choosing between the two forms
+		// 					rv.push("--global");
+		// 					rv.push("--depth", "0");
+		// 					rv.push("--json")
+		// 				}),
+		// 				stdio: {
+		// 					output: "string"
+		// 				}
+		// 			});
+
+		// 			var result = $api.fp.world.now.question(
+		// 				$context.library.shell.subprocess.question,
+		// 				invocation
+		// 			);
+
+		// 			/** @type { slime.jrunscript.tools.node.internal.NpmLsOutput } */
+		// 			var npmJson = JSON.parse(result.stdio.output);
+
+		// 			return $api.fp.result(
+		// 				npmJson,
+		// 				$api.fp.pipe(
+		// 					$api.fp.property("dependencies"),
+		// 					Object.entries,
+		// 					$api.fp.Array.map(function(entry) {
+		// 						return { name: entry[0], version: entry[1].version }
+		// 					})
+		// 				)
+		// 			);
+		// 		}
+		// 	}
+		// }
+
+		// /** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["installed"] } */
+		// var modules_installed = function(p) {
+		// 	return function(installation) {
+		// 		return function(events) {
+		// 			var ask = modules_list()(installation);
+		// 			var list = ask(void(0));
+		// 			var found = list.find(function(item) {
+		// 				return item.name == p;
+		// 			});
+		// 			return $api.fp.Maybe.from.value(found);
+		// 		}
+		// 	}
+		// };
+
+		// /** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["install"] } */
+		// var modules_install = function(p) {
+		// 	return function(installation) {
+		// 		var toShellInvocation = node_invocation(installation);
+
+		// 		return function(events) {
+		// 			var invocation = toShellInvocation({
+		// 				command: "npm",
+		// 				arguments: $api.Array.build(function(rv) {
+		// 					rv.push("install");
+		// 					//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
+		// 					//			should check whether this has always worked or whether we need to do some kind of
+		// 					//			npm version checking here before choosing between the two forms
+		// 					rv.push("--global");
+		// 					var package = (p.version) ? (p.name + "@" + p.version) : p.name;
+		// 					rv.push(package);
+		// 				})
+		// 			});
+
+		// 			$api.fp.world.now.action(
+		// 				$context.library.shell.subprocess.action,
+		// 				invocation
+		// 			);
+		// 		}
+		// 	}
+		// };
+
+		// /** @type { slime.jrunscript.tools.node.exports.Installation["modules"]["require"] } */
+		// var modules_require = function(p) {
+		// 	var isSatisfied = function(version) {
+		// 		/** @type { (installed: slime.$api.fp.Maybe<slime.jrunscript.tools.node.Module>) => boolean } */
+		// 		return function(installed) {
+		// 			if (version) {
+		// 				return installed.present && installed.value.version == version;
+		// 			} else {
+		// 				return installed.present;
+		// 			}
+		// 		}
+		// 	}
+
+		// 	return function(installation) {
+		// 		return function(events) {
+		// 			var installed = modules_installed(p.name)(installation)(events);
+		// 			events.fire("found", installed);
+		// 			var satisfied = isSatisfied(p.version)(installed);
+		// 			if (!satisfied) {
+		// 				events.fire("installing", p);
+		// 				modules_install(p)(installation)(events);
+		// 				installed = modules_installed(p.name)(installation)(events);
+		// 				if (installed.present) {
+		// 					events.fire("installed", installed.value);
+		// 				} else {
+		// 					throw new Error("Unreachable: " + p.name + " not found after installation.");
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+		// }
 
 		/**
 		 * @param { { directory: slime.jrunscript.file.Directory } } o
@@ -665,11 +785,21 @@
 				},
 				question: Intention_question
 			},
-			modules: {
-				list: modules_list,
-				installed: modules_installed,
-				install: modules_install,
-				require: modules_require
+			modules: function(installation) {
+				return Modules({
+					installation: installation
+				});
+			}
+		};
+
+		$exports.Project = {
+			modules: function(project) {
+				return function(installation) {
+					return Modules({
+						installation: installation,
+						project: project
+					})
+				}
 			}
 		};
 	}

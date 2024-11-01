@@ -32,11 +32,9 @@
 
 		$api.fp.world.execute(jsh.shell.tools.node.require.action);
 		var typescriptVersionInstalled = $api.fp.now.invoke(
-			jsh.shell.tools.node.installation,
+			void(0),
 			$api.fp.pipe(
-				$api.fp.world.mapping(
-					jsh.shell.tools.node.Installation.modules.installed("typescript")
-				),
+				jsh.shell.tools.node.Installation.modules(jsh.shell.tools.node.installation).installed("typescript"),
 				$api.fp.Maybe.map(function(module) {
 					return module.version == parameters.options.version;
 				}),
@@ -46,10 +44,9 @@
 			)
 		);
 		if (!typescriptVersionInstalled) {
-			$api.fp.world.now.action(
-				jsh.shell.tools.node.Installation.modules.install({ name: "typescript", version: parameters.options.version }),
-				jsh.shell.tools.node.installation
-			);
+			$api.fp.world.Action.now({
+				action: jsh.shell.tools.node.Installation.modules(jsh.shell.tools.node.installation).install({ name: "typescript", version: parameters.options.version })
+			});
 		}
 
 		//	TODO	should jsh.shell.tools.node.require return an installation? does it? Should the below be part of it?

@@ -82,6 +82,7 @@
 			descendants: function(dir) {
 				return dir.pathname.basename != ".git"
 					&& dir.pathname.basename != "local"
+					&& dir.pathname.basename != "node_modules"
 					&& dir.pathname.basename != ".gradle"
 					&& dir.pathname.basename != ".settings"
 					&& dir.pathname.basename != "bin"
