@@ -215,6 +215,9 @@
 								$api.fp.world.Action.now({
 									action: jsh.shell.tools.node.Installation.modules(installation).require({ name: "eslint", version: "9.13.0" }),
 									handlers: {
+										installing: function(e) {
+											//jsh.shell.console("Installing eslint " + e.detail.version);
+										},
 										installed: function(e) {
 											jsh.shell.console("Installed eslint " + e.detail.version);
 										}

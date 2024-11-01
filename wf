@@ -5,6 +5,10 @@
 #
 #	END LICENSE
 
+if [ -n "$SLIME_WF_BASH_DEBUG" ]; then
+	set -x
+fi
+
 export PROJECT="$(dirname $0)"
 
 SLIME="${PROJECT}"
