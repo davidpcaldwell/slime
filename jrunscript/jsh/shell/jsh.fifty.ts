@@ -361,11 +361,6 @@ namespace slime.jsh.shell {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			const fixtures = (function() {
-				var script: slime.jsh.test.Script = fifty.$loader.script("../fixtures.ts");
-				return script();
-			})();
-
 			fifty.tests.exports.jsh.Installation = fifty.test.Parent();
 
 			fifty.tests.exports.jsh.Installation.from = fifty.test.Parent();
@@ -408,7 +403,7 @@ namespace slime.jsh.shell {
 			fifty.tests.exports.jsh.Installation.from.current.unbuilt = function() {
 				var cast: slime.js.Cast<UnbuiltInstallation> = $api.fp.cast.unsafe;
 
-				var shell = fixtures.shells(fifty).unbuilt();
+				var shell = test.shells.unbuilt();
 
 				var intention: slime.jsh.shell.Intention = {
 					shell: shell,
@@ -431,7 +426,7 @@ namespace slime.jsh.shell {
 			fifty.tests.exports.jsh.Installation.from.current.built = function() {
 				var cast: slime.js.Cast<BuiltInstallation> = $api.fp.cast.unsafe;
 
-				var shell = fixtures.shells(fifty).built(false);
+				var shell = test.shells.built(false);
 
 				var intention: slime.jsh.shell.Intention = {
 					shell: shell,
@@ -455,7 +450,7 @@ namespace slime.jsh.shell {
 			};
 
 			fifty.tests.exports.jsh.Installation.from.current.packaged = function() {
-				var shell = fixtures.shells(fifty).packaged(getDiagnosticScriptForShellAt(fixtures.shells(fifty).unbuilt().src));
+				var shell = test.shells.packaged(getDiagnosticScriptForShellAt(test.shells.unbuilt().src));
 
 				var intention: slime.jsh.shell.Intention = {
 					package: shell.package,
@@ -471,7 +466,7 @@ namespace slime.jsh.shell {
 			}
 
 			fifty.tests.exports.jsh.Installation.from.current.remote = function() {
-				var remote = fixtures.shells(fifty).remote();
+				var remote = test.shells.remote();
 
 				var intention = remote.getShellIntention({
 					PATH: jsh.shell.PATH,
@@ -511,7 +506,9 @@ namespace slime.jsh.shell {
 
 			fifty.tests.Intention = fifty.test.Parent();
 
-			fifty.tests.Intention.toShellIntention = function() {
+			fifty.tests.Intention.toShellIntention = fifty.test.Parent();
+
+			fifty.tests.Intention.toShellIntention.unbuilt = function() {
 				var intention = jsh.shell.jsh.Intention.toShellIntention({
 					shell: {
 						src: jsh.shell.jsh.src.toString()
@@ -526,6 +523,83 @@ namespace slime.jsh.shell {
 					intention
 				);
 				jsh.shell.console(JSON.stringify(JSON.parse(result.stdio.output), void(0), 4));
+			}
+
+			fifty.tests.Intention.toShellIntention.built = function() {
+				fifty.run(function shellLaunched() {
+					var shellLaunched = jsh.shell.jsh.Intention.toShellIntention({
+						shell: {
+							home: test.shells.built(false).home
+						},
+						script: fifty.jsh.file.relative("../../jsh/test/jsh-data.jsh.js").pathname,
+						environment: function(was) {
+							var PATH = (function() {
+								var now = jsh.shell.PATH.pathnames;
+								var jdk = jsh.shell.java.Jdk.from.javaHome();
+								var bin = jsh.file.Pathname(jdk.base + "/" + "bin");
+								now.unshift(bin);
+								return jsh.file.Searchpath(now);
+							})();
+							return $api.Object.compose(
+								was,
+								{
+									PATH: PATH.toString()
+								}
+							)
+						},
+						properties: {
+							"slime.jrunscript.jsh.shell.jsh.foo": "bar"
+						},
+						stdio: {
+							output: "string"
+						}
+					});
+					var result = $api.fp.world.now.question(
+						jsh.shell.subprocess.question,
+						shellLaunched
+					);
+					var output = JSON.parse(result.stdio.output);
+					verify(output).evaluate.property("properties").evaluate.property("slime.jrunscript.jsh.shell.jsh.foo").is("bar");
+				});
+
+				if (test.shells.built(true)) fifty.run(function nativeLaunched() {
+					var shellLaunched = jsh.shell.jsh.Intention.toShellIntention({
+						shell: {
+							home: test.shells.built(true).home
+						},
+						script: fifty.jsh.file.relative("../../jsh/test/jsh-data.jsh.js").pathname,
+						environment: function(was) {
+							//	TODO	maybe we should standardize all this to make it easier to work with native executable
+							//			launcher
+							var jdk = jsh.shell.java.Jdk.from.javaHome();
+							var PATH = (function() {
+								var now = jsh.shell.PATH.pathnames;
+								var bin = jsh.file.Pathname(jdk.base + "/" + "bin");
+								now.unshift(bin);
+								return jsh.file.Searchpath(now);
+							})();
+							return $api.Object.compose(
+								was,
+								{
+									JSH_JAVA_HOME: jdk.base,
+									PATH: PATH.toString()
+								}
+							)
+						},
+						properties: {
+							"slime.jrunscript.jsh.shell.jsh.foo": "bar"
+						},
+						stdio: {
+							output: "string"
+						}
+					});
+					var result = $api.fp.world.now.question(
+						jsh.shell.subprocess.question,
+						shellLaunched
+					);
+					var output = JSON.parse(result.stdio.output);
+					verify(output).evaluate.property("properties").evaluate.property("slime.jrunscript.jsh.shell.jsh.foo").is("bar");
+				})
 			}
 
 			fifty.tests.Intention.sensor = function() {

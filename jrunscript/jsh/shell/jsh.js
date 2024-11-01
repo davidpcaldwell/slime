@@ -566,8 +566,15 @@
 					var s = shell;
 					return unbuiltToShellIntention(s)(p);
 				} else if (isBuilt(shell)) {
+					var addPropertiesArguments = function(rv,p) {
+						if (p.properties) {
+							for (var x in p.properties) {
+								rv.push("-D" + x + "=" + p.properties[x]);
+							}
+						}
+					};
+
 					//	TODO #1415	support this
-					if (p.properties) throw new TypeError("Unsupported: supplying properties to built shell.");
 					var downcast = shell;
 					var bashLauncher = getHomeBashLauncher(downcast);
 					var nativeLauncher = getHomeNativeLauncher(downcast);
@@ -575,6 +582,7 @@
 						return {
 							command: nativeLauncher.pathname,
 							arguments: $api.Array.build(function(rv) {
+								addPropertiesArguments(rv, p);
 								rv.push(p.script);
 								if (p.arguments) rv.push.apply(rv, p.arguments);
 							}),
@@ -587,6 +595,7 @@
 							command: "bash",
 							arguments: $api.Array.build(function(rv) {
 								rv.push(getHomeBashLauncher(downcast).pathname);
+								addPropertiesArguments(rv, p);
 								rv.push(p.script);
 								if (p.arguments) rv.push.apply(rv, p.arguments);
 							}),
