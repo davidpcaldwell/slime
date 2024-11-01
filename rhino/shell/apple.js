@@ -176,6 +176,8 @@
 					p.overwrite = true;
 				}
 
+				this.directory = p.pathname.directory;
+
 				if (p.pathname && p.info) {
 					var base = p.pathname.createDirectory({
 						exists: (p.overwrite) ? function(dir) {
@@ -221,8 +223,6 @@
 					base.getRelativePath("Contents/Info.plist").write(plist.toString(), { append: false });
 					return new $exports.osx.ApplicationBundle({ pathname: base.pathname });
 				} else {
-					this.directory = p.directory;
-
 					/** @type { { [x: string]: any } } */
 					var info = {};
 
@@ -235,13 +235,13 @@
 
 					var read = function() {
 						return $exports.plist.xml.decode(
-							$context.api.xml.parseFile(p.directory.getFile("Contents/Info.plist"))
+							$context.api.xml.parseFile(p.pathname.directory.getFile("Contents/Info.plist"))
 						);
 					};
 
 					var write = function(plist) {
 						var document = $exports.plist.xml.encode(plist);
-						p.directory.getRelativePath("Contents/Info.plist").write(document.toString(), { append: false });
+						p.pathname.directory.getRelativePath("Contents/Info.plist").write(document.toString(), { append: false });
 						plist = read();
 					};
 
@@ -257,13 +257,13 @@
 						if (name == "CFBundleExecutable") {
 							return function(v) {
 								var plist = read();
-								var was = p.directory.getFile("Contents/MacOS/" + plist[name]);
+								var was = p.pathname.directory.getFile("Contents/MacOS/" + plist[name]);
 								if (was) was.remove();
 								if (typeof(v) == "string") {
 									plist[name] = v;
 									write(plist);
 								} else if (typeof(v) == "object") {
-									setExecutable(p.directory,v,plist);
+									setExecutable(p.pathname.directory,v,plist);
 									write(plist);
 								} else {
 									throw new Error();
