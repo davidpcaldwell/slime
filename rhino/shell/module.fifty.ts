@@ -301,7 +301,7 @@ namespace slime.jrunscript.shell {
 						io: jsh.io,
 						file: jsh.file,
 						js: jsh.js,
-						document: void(0),
+						document: jsh.js.document,
 						xml: void(0)
 					},
 					_properties: void(0),
