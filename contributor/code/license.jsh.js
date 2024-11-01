@@ -67,6 +67,8 @@
 		var files = BASE.list({
 			filter: function(n) {
 				return !n.directory
+					&& n.pathname.basename != "package.json"
+					&& n.pathname.basename != "package-lock.json"
 					&& n.pathname.basename != ".gitignore"
 					&& n.pathname.basename != ".project"
 					&& n.pathname.basename != ".classpath"
