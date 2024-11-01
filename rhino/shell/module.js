@@ -215,7 +215,7 @@
 						//	TODO	update type definitions for apple.js and use $loader.script
 						/** @type { slime.jrunscript.shell.system.apple.Script } */
 						var script = $loader.script("apple.js");
-						return $loader.file("apple.js", {
+						var rv = $loader.file("apple.js", {
 							api: {
 								document: $context.api.document,
 								js: $context.api.js,
@@ -223,6 +223,7 @@
 								xml: $context.api.xml
 							}
 						});
+						return rv;
 					})
 				}
 			}),
@@ -673,6 +674,8 @@
 			}
 		}
 
+		if (!x.PATH) throw new Error("No PATH.");
+		if (!$exports.system.apple.plist) throw new Error("No plist.");
 		$export(x);
 	}
 //@ts-ignore

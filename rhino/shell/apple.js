@@ -329,6 +329,8 @@
 				}
 			});
 		}
+
+		$export(/** @type { slime.jrunscript.shell.system.apple.Exports } */($exports));
 	}
 //@ts-ignore
 )($api,$context,$export);
