@@ -4,8 +4,17 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.shell.system.apple.Context } $context
+	 * @param { slime.loader.Export<slime.jrunscript.shell.system.apple.Exports> } $export
+	 */
+	function($api,$context,$export) {
+		/** @type { Partial<slime.jrunscript.shell.system.apple.Exports> } */
+		var $exports = {};
 		if (!$context.api || !$context.api.document) {
 			throw new Error("Required: $context.api.document");
 		}
@@ -13,25 +22,24 @@
 		//	Apple documentation on Mac OS X filesystem hierarchy
 		//	https://developer.apple.com/library/mac/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html
 
-		/**
-		 * @typedef {Object} slime.jrunscript.shell.system.apple.plist.xml.document
-		 */
-		/**
-		 * @typedef {Object} slime.jrunscript.shell.system.apple.plist.xml
-		 * @property { (v: any) => slime.jrunscript.shell.system.apple.plist.xml.document } encode
-		 * @property { (document: slime.jrunscript.shell.system.apple.plist.xml.document) => any } decode
-		 */
-		/**
-		 * @typedef {Object} slime.jrunscript.shell.system.apple.plist
-		 * @property {Object} xml
-		 */
+		// /**
+		//  * @typedef {Object} slime.jrunscript.shell.system.apple.plist.xml.document
+		//  */
+		// /**
+		//  * @typedef {Object} slime.jrunscript.shell.system.apple.plist.xml
+		//  * @property { (v: any) => slime.jrunscript.shell.system.apple.plist.xml.document } encode
+		//  * @property { (document: slime.jrunscript.shell.system.apple.plist.xml.document) => any } decode
+		//  */
+		// /**
+		//  * @typedef {Object} slime.jrunscript.shell.system.apple.plist
+		//  * @property {Object} xml
+		//  */
 
-		/**
-		 * @typedef {Object} slime.jrunscript.shell.system.apple
-		 * @property { slime.jrunscript.shell.system.apple.plist } plist
-		 */
+		// /**
+		//  * @typedef {Object} slime.jrunscript.shell.system.apple
+		//  * @property { slime.jrunscript.shell.system.apple.plist } plist
+		//  */
 
-		/** @type { new () => slime.jrunscript.shell.system.apple.plist.xml } */
 		function PlistXmlCodec() {
 			var isArray = function(object) {
 				if (typeof(object.length) == "number" && typeof(object.splice) == "function") return true;
@@ -183,6 +191,7 @@
 						recursive: true
 					});
 
+					/** @type { { [x: string]: any } } */
 					var info = $context.api.js.Object.set({}, p.info);
 					if (!info.CFBundleSignature) info.CFBundleSignature = "????";
 					info.CFBundlePackageType = "APPL"
@@ -210,10 +219,11 @@
 
 					var plist = $exports.plist.xml.encode(info);
 					base.getRelativePath("Contents/Info.plist").write(plist.toString(), { append: false });
-					return new $exports.osx.ApplicationBundle({ directory: base });
+					return new $exports.osx.ApplicationBundle({ pathname: base.pathname });
 				} else {
 					this.directory = p.directory;
 
+					/** @type { { [x: string]: any } } */
 					var info = {};
 
 					Object.defineProperty(this,"info",{
@@ -320,4 +330,5 @@
 			});
 		}
 	}
-)();
+//@ts-ignore
+)($api,$context,$export);

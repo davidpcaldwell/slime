@@ -206,43 +206,45 @@
 		if ($exports.HOME.getSubdirectory("Downloads")) $exports.user.downloads = $exports.HOME.getSubdirectory("Downloads");
 		//	TODO	document that this is optional; that there are some environments where "working directory" makes little sense
 
-		$exports.system = {};
-		Object.defineProperty(
-			$exports.system,
-			"apple",
-			{
-				get: $api.fp.impure.Input.memoized(function() {
-					return $loader.file("apple.js", {
-						api: {
-							document: $context.api.document,
-							js: $context.api.js,
-							shell: x,
-							xml: $context.api.xml
-						}
-					});
-				})
-			}
-		)
-
-		Object.defineProperty(
-			$exports.system,
-			"opendesktop",
-			{
-				get: $api.fp.impure.Input.memoized(function() {
-					/** @type { slime.jrunscript.shell.opendesktop.Script } */
-					var script = $loader.script("opendesktop.js");
-					return script({
-						library: {
-							js: $context.api.js,
-							shell: {
-								PATH: $exports.PATH,
-								run: scripts.run_old.run
+		$exports.system = $api.fp.now(
+			{},
+			$api.Object.defineProperty({
+				name: "apple",
+				descriptor: {
+					get: $api.fp.impure.Input.memoized(function() {
+						//	TODO	update type definitions for apple.js and use $loader.script
+						/** @type { slime.jrunscript.shell.system.apple.Script } */
+						var script = $loader.script("apple.js");
+						return $loader.file("apple.js", {
+							api: {
+								document: $context.api.document,
+								js: $context.api.js,
+								shell: x,
+								xml: $context.api.xml
 							}
-						}
-					});
-				})
-			}
-		)
+						});
+					})
+				}
+			}),
+			$api.Object.defineProperty({
+				name: "opendesktop",
+				descriptor: {
+					get: $api.fp.impure.Input.memoized(function() {
+						/** @type { slime.jrunscript.shell.opendesktop.Script } */
+						var script = $loader.script("opendesktop.js");
+						return script({
+							library: {
+								js: $context.api.js,
+								shell: {
+									PATH: $exports.PATH,
+									run: scripts.run_old.run
+								}
+							}
+						});
+					})
+				}
+			})
+		);
 
 		var addPropertyArgumentsTo = function(jargs,properties) {
 			if (properties) {
