@@ -301,7 +301,7 @@ namespace slime.jrunscript.shell {
 						io: jsh.io,
 						file: jsh.file,
 						js: jsh.js,
-						document: void(0),
+						document: jsh.js.document,
 						xml: void(0)
 					},
 					_properties: void(0),
@@ -805,59 +805,6 @@ namespace slime.jrunscript.shell {
 
 	export namespace system {
 		export namespace apple {
-			export namespace osx {
-				/**
-				 * An object specifying properties to be added to the `Info.plist`. Properties with string values will be
-				 * treated as name-value pairs. Some properties allow non-string values, as specified below. The
-				 * `CFBundlePackageType` property is hard-coded to `APPL`, per Apple's specification. The following
-				 * properties are also required to be supplied, per Apple's documentation (although SLIME provides a default
-				 * value for one):
-				 */
-				export interface ApplicationBundleInfo {
-					/**
-					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html)
-					 */
-					CFBundleName: string
-
-					/**
-					 * Apple says this value is required, but it does not appear to be required.
-					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
-					 */
-					CFBundleDisplayName?: string
-
-					/**
-					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
-					 */
-					CFBundleIdentifier: string
-
-					/**
-					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
-					 */
-					CFBundleVersion: string
-
-					/**
-					 * (optional; defaults to `????`; see [Stack
-					 * Overflow](http://stackoverflow.com/questions/1875912/naming-convention-for-cfbundlesignature-and-cfbundleidentifier).)
-					 *
-					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
-					 */
-					CFBundleSignature?: string
-
-					//	TODO	document allowed object type with command (preceding comment copied from JSAPI)
-					/**
-					 * See [Apple documentation](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html).
-					 */
-					CFBundleExecutable: string | { name?: string, command: string }
-
-					//	Added to make test pass type checking; not sure what this does
-					CFBundleIconFile?: any
-				}
-
-				export interface ApplicationBundle {
-					directory: slime.jrunscript.file.Directory
-					info: ApplicationBundleInfo
-				}
-			}
 		}
 	}
 
@@ -881,9 +828,10 @@ namespace slime.jrunscript.shell {
 						 */
 						pathname: slime.jrunscript.file.Pathname
 
-						info: system.apple.osx.ApplicationBundleInfo
+						info?: system.apple.osx.ApplicationBundleInfo
 					}) => system.apple.osx.ApplicationBundle
 				}
+				bundle: any
 			}
 			opendesktop: slime.jrunscript.shell.opendesktop.Exports
 		}
@@ -902,7 +850,7 @@ namespace slime.jrunscript.shell {
 			fifty.tests.exports.system = fifty.test.Parent();
 
 			fifty.tests.exports.system.applicationBundle = function() {
-				if (subject.system.apple.osx.ApplicationBundle) {
+				if (subject.system.apple.osx && subject.system.apple.osx.ApplicationBundle) {
 					var tmpfile = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("tmp.icns");
 					tmpfile.write("ICONS", { append: false });
 					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;

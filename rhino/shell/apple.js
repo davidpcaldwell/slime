@@ -4,8 +4,17 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.shell.system.apple.Context } $context
+	 * @param { slime.loader.Export<slime.jrunscript.shell.system.apple.Exports> } $export
+	 */
+	function($api,$context,$export) {
+		/** @type { Partial<slime.jrunscript.shell.system.apple.Exports> } */
+		var $exports = {};
 		if (!$context.api || !$context.api.document) {
 			throw new Error("Required: $context.api.document");
 		}
@@ -13,25 +22,24 @@
 		//	Apple documentation on Mac OS X filesystem hierarchy
 		//	https://developer.apple.com/library/mac/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/FileSystemOverview/FileSystemOverview.html
 
-		/**
-		 * @typedef {Object} slime.jrunscript.shell.system.apple.plist.xml.document
-		 */
-		/**
-		 * @typedef {Object} slime.jrunscript.shell.system.apple.plist.xml
-		 * @property { (v: any) => slime.jrunscript.shell.system.apple.plist.xml.document } encode
-		 * @property { (document: slime.jrunscript.shell.system.apple.plist.xml.document) => any } decode
-		 */
-		/**
-		 * @typedef {Object} slime.jrunscript.shell.system.apple.plist
-		 * @property {Object} xml
-		 */
+		// /**
+		//  * @typedef {Object} slime.jrunscript.shell.system.apple.plist.xml.document
+		//  */
+		// /**
+		//  * @typedef {Object} slime.jrunscript.shell.system.apple.plist.xml
+		//  * @property { (v: any) => slime.jrunscript.shell.system.apple.plist.xml.document } encode
+		//  * @property { (document: slime.jrunscript.shell.system.apple.plist.xml.document) => any } decode
+		//  */
+		// /**
+		//  * @typedef {Object} slime.jrunscript.shell.system.apple.plist
+		//  * @property {Object} xml
+		//  */
 
-		/**
-		 * @typedef {Object} slime.jrunscript.shell.system.apple
-		 * @property { slime.jrunscript.shell.system.apple.plist } plist
-		 */
+		// /**
+		//  * @typedef {Object} slime.jrunscript.shell.system.apple
+		//  * @property { slime.jrunscript.shell.system.apple.plist } plist
+		//  */
 
-		/** @type { new () => slime.jrunscript.shell.system.apple.plist.xml } */
 		function PlistXmlCodec() {
 			var isArray = function(object) {
 				if (typeof(object.length) == "number" && typeof(object.splice) == "function") return true;
@@ -168,6 +176,8 @@
 					p.overwrite = true;
 				}
 
+				this.directory = p.pathname.directory;
+
 				if (p.pathname && p.info) {
 					var base = p.pathname.createDirectory({
 						exists: (p.overwrite) ? function(dir) {
@@ -183,6 +193,7 @@
 						recursive: true
 					});
 
+					/** @type { { [x: string]: any } } */
 					var info = $context.api.js.Object.set({}, p.info);
 					if (!info.CFBundleSignature) info.CFBundleSignature = "????";
 					info.CFBundlePackageType = "APPL"
@@ -210,10 +221,9 @@
 
 					var plist = $exports.plist.xml.encode(info);
 					base.getRelativePath("Contents/Info.plist").write(plist.toString(), { append: false });
-					return new $exports.osx.ApplicationBundle({ directory: base });
+					return new $exports.osx.ApplicationBundle({ pathname: base.pathname });
 				} else {
-					this.directory = p.directory;
-
+					/** @type { { [x: string]: any } } */
 					var info = {};
 
 					Object.defineProperty(this,"info",{
@@ -225,13 +235,13 @@
 
 					var read = function() {
 						return $exports.plist.xml.decode(
-							$context.api.xml.parseFile(p.directory.getFile("Contents/Info.plist"))
+							$context.api.xml.parseFile(p.pathname.directory.getFile("Contents/Info.plist"))
 						);
 					};
 
 					var write = function(plist) {
 						var document = $exports.plist.xml.encode(plist);
-						p.directory.getRelativePath("Contents/Info.plist").write(document.toString(), { append: false });
+						p.pathname.directory.getRelativePath("Contents/Info.plist").write(document.toString(), { append: false });
 						plist = read();
 					};
 
@@ -247,13 +257,13 @@
 						if (name == "CFBundleExecutable") {
 							return function(v) {
 								var plist = read();
-								var was = p.directory.getFile("Contents/MacOS/" + plist[name]);
+								var was = p.pathname.directory.getFile("Contents/MacOS/" + plist[name]);
 								if (was) was.remove();
 								if (typeof(v) == "string") {
 									plist[name] = v;
 									write(plist);
 								} else if (typeof(v) == "object") {
-									setExecutable(p.directory,v,plist);
+									setExecutable(p.pathname.directory,v,plist);
 									write(plist);
 								} else {
 									throw new Error();
@@ -319,5 +329,8 @@
 				}
 			});
 		}
+
+		$export(/** @type { slime.jrunscript.shell.system.apple.Exports } */($exports));
 	}
-)();
+//@ts-ignore
+)($api,$context,$export);
