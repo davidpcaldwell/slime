@@ -469,7 +469,11 @@
 			jsh.script.cli.option.boolean({ longname: "docker" }),
 			function(p) {
 				jsh.shell.console("Linting ...");
-				var lintingPassed = $api.fp.world.now.ask(lint);
+				var lintingPassed = $api.fp.world.now.ask(lint, {
+					console: function(e) {
+						jsh.shell.console(e.detail);
+					}
+				});
 				if (!lintingPassed) {
 					jsh.shell.console("Linting failed.");
 					return 1;
