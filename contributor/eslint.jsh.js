@@ -22,6 +22,9 @@
 		$api.fp.world.Action.now({
 			action: jsh.shell.tools.node.Installation.modules(jsh.shell.tools.node.installation).require({ name: "eslint", version: "9.13.0" }),
 		});
+		$api.fp.world.Action.now({
+			action: jsh.shell.tools.node.Project.modules({ base: parameters.options.project.toString() })(jsh.shell.tools.node.installation).require({ name: "@eslint/js" }),
+		});
 
 		jsh.shell.tools.node.installed.run({
 			command: "eslint",
