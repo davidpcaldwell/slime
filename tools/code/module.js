@@ -102,6 +102,7 @@
 					)
 				),
 				directory: $api.fp.Predicate.or(
+					function(directory) { return directory.pathname.basename == "node_modules" },
 					directory.isLocal,
 					directory.isVcs,
 					directory.isBuildTool

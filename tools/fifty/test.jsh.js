@@ -17,11 +17,10 @@
 				jsh.shell.tools.node.Installation.exists(installation)
 			)();
 			if (!nodeExists) return false;
-			var typescript = jsh.shell.tools.node.Installation.modules.installed("typescript");
-			var tsInstalled = $api.fp.world.now.question(
-				typescript,
-				installation
-			);
+			var typescript = jsh.shell.tools.node.Installation.modules(installation).installed("typescript");
+			var tsInstalled = $api.fp.world.Question.now({
+				question: typescript
+			});
 			//	TODO	this simply ensures that *some* version of TypeScript is installed.
 			return tsInstalled.present;
 		}

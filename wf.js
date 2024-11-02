@@ -212,28 +212,52 @@
 						)();
 						(
 							function eslint() {
-								$api.fp.world.now.action(
-									jsh.shell.tools.node.Installation.modules.require({ name: "eslint", version: "8.57.0" }),
-									installation,
-									{
+								$api.fp.world.Action.now({
+									action: jsh.shell.tools.node.Installation.modules(installation).require({ name: "eslint", version: "9.13.0" }),
+									handlers: {
+										installing: function(e) {
+											//jsh.shell.console("Installing eslint " + e.detail.version);
+										},
 										installed: function(e) {
 											jsh.shell.console("Installed eslint " + e.detail.version);
 										}
 									}
-								)
+								});
+
+								var nodeProject = { base: $context.base.pathname.toString() };
+
+								var modules = jsh.shell.tools.node.Project.modules(nodeProject)(installation);
+
+								$api.fp.world.Action.now({
+									action: modules.require({ name: "@eslint/js" }),
+									handlers: {
+										installed: function(e) {
+											jsh.shell.console("Installed @eslint/js " + e.detail.version);
+										}
+									}
+								});
+
+								// $api.fp.world.now.action(
+								// 	jsh.shell.tools.node.Installation.modules.require({ name: "@eslint/js" }),
+								// 	installation,
+								// 	{
+								// 		installed: function(e) {
+								// 			jsh.shell.console("Installed eslint " + e.detail.version);
+								// 		}
+								// 	}
+								// )
 							}
 						)();
 						(
 							function jsyaml() {
-								$api.fp.world.now.action(
-									jsh.shell.tools.node.Installation.modules.require({ name: "@types/js-yaml" }),
-									installation,
-									{
+								$api.fp.world.Action.now({
+									action: jsh.shell.tools.node.Installation.modules(installation).require({ name: "@types/js-yaml" }),
+									handlers: {
 										installed: function(e) {
 											jsh.shell.console("Installed @types/js-yaml " + e.detail.version);
 										}
 									}
-								)
+								})
 							}
 						)();
 					}
@@ -445,7 +469,11 @@
 			jsh.script.cli.option.boolean({ longname: "docker" }),
 			function(p) {
 				jsh.shell.console("Linting ...");
-				var lintingPassed = $api.fp.world.now.ask(lint);
+				var lintingPassed = $api.fp.world.now.ask(lint, {
+					console: function(e) {
+						jsh.shell.console(e.detail);
+					}
+				});
 				if (!lintingPassed) {
 					jsh.shell.console("Linting failed.");
 					return 1;

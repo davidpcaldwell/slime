@@ -67,6 +67,8 @@
 		var files = BASE.list({
 			filter: function(n) {
 				return !n.directory
+					&& n.pathname.basename != "package.json"
+					&& n.pathname.basename != "package-lock.json"
 					&& n.pathname.basename != ".gitignore"
 					&& n.pathname.basename != ".project"
 					&& n.pathname.basename != ".classpath"
@@ -82,6 +84,7 @@
 			descendants: function(dir) {
 				return dir.pathname.basename != ".git"
 					&& dir.pathname.basename != "local"
+					&& dir.pathname.basename != "node_modules"
 					&& dir.pathname.basename != ".gradle"
 					&& dir.pathname.basename != ".settings"
 					&& dir.pathname.basename != "bin"

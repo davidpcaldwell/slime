@@ -26,26 +26,33 @@
 
 		var node = jsh.shell.tools.node.installed;
 
-		node.modules.require({ name: "eslint", version: "8.57.0" });
+		node.modules.require({ name: "eslint", version: "9.13.0" });
 
-		var results = node.run({
+		var installation = jsh.shell.tools.node.installation;
+
+		var sensor = jsh.shell.tools.node.Installation.Intention.question({
 			command: "eslint",
-			arguments: [/*"--debug",*/ "--format", "json", "."],
-			directory: base,
+			arguments: ["--format", "json"],
+			directory: base.pathname.toString(),
 			stdio: {
-				output: String
-			},
-			evaluate: function(result) {
-				return JSON.parse(result.stdio.output);
+				output: "string"
 			}
 		});
 
-		// var messages = results.reduce(function(rv,item) {
-		// 	return rv.concat(item.messages);
-		// },[]);
+		var result = $api.fp.world.Sensor.now({
+			sensor: sensor,
+			subject: installation,
+			handlers: {
+				stdout: function(e) {
+					jsh.shell.console("STDOUT: " + e.detail.line);
+				},
+				stderr: function(e) {
+					jsh.shell.console("STDERR: " + e.detail.line);
+				}
+			}
+		});
 
-		// jsh.shell.console(JSON.stringify(messages));
-		// jsh.shell.console(String(messages.length));
+		var results = JSON.parse(result.stdio.output);
 
 		var warnings = results.reduce(function(rv,item) {
 			return rv.concat(
@@ -73,6 +80,8 @@
 				jsh.shell.console(violation.file + ":" + violation.line + ":" + violation.column + " " + violation.message);
 			})
 		});
+
+		jsh.shell.exit(result.status);
 	}
 //@ts-ignore
 )($api,jsh);

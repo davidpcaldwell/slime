@@ -297,7 +297,7 @@
 					lint: {
 						eslint: function() {
 							$api.fp.world.execute(jsh.shell.tools.node.require.action);
-							jsh.shell.tools.node.installed.modules.require({ name: "eslint", version: "8.57.0" });
+							jsh.shell.tools.node.installed.modules.require({ name: "eslint", version: "9.13.0" });
 							return jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
 								script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
@@ -737,10 +737,9 @@
 							$api.fp.world.now.tell(
 								jsh.shell.jsh.require({
 									satisfied: function() {
-										var installed = $api.fp.world.now.question(
-											jsh.shell.tools.node.Installation.modules.installed("typescript"),
-											installation
-										);
+										var installed = $api.fp.world.Question.now({
+											question: jsh.shell.tools.node.Installation.modules(installation).installed("typescript"),
+										});
 										if (installed.present) {
 											return installed.value.version == version
 										} else {
@@ -748,13 +747,12 @@
 										}
 									},
 									install: function() {
-										$api.fp.world.now.action(
-											jsh.shell.tools.node.Installation.modules.require({
+										$api.fp.world.Action.now({
+											action: jsh.shell.tools.node.Installation.modules(installation).require({
 												name: "typescript",
 												version: version
 											}),
-											installation,
-											{
+											handlers: {
 												found: function(e) {
 													if (e.detail.present) {
 														jsh.shell.console("Found TypeScript " + e.detail.value.version);
@@ -767,7 +765,7 @@
 													jsh.shell.console("Installed TypeScript " + version + ".");
 												}
 											}
-										);
+										});
 									}
 								}),
 								{

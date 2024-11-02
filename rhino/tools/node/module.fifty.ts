@@ -51,6 +51,10 @@ namespace slime.jrunscript.tools.node {
 		executable: string
 	}
 
+	export interface Project {
+		base: string
+	}
+
 	export interface Module {
 		name: string
 		version: string
@@ -169,34 +173,37 @@ namespace slime.jrunscript.tools.node {
 	}
 
 	export namespace exports {
+		export interface Modules {
+			list: () => slime.$api.fp.world.Question<void, Module[]>
+
+			installed: (name: string) => slime.$api.fp.world.Question<void, slime.$api.fp.Maybe<Module>>
+
+			install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<void>
+
+			require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<
+				{
+					/**
+					 * After searching for the named module in the existing installation, the module found (if any).
+					 */
+					found: slime.$api.fp.Maybe<Module>
+
+					/**
+					 * Before installing the given {@link Module}.
+					 */
+					installing: { name: string, version?: string }
+
+					/**
+					 * After installing the given {@link Module}.
+					 */
+					installed: Module
+				}
+			>
+		}
+	}
+
+	export namespace exports {
 		export interface Installation {
-			modules: {
-				list: () => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation, void, Module[]>
-
-				installed: (name: string) => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation, void, slime.$api.fp.Maybe<Module>>
-
-				install: (p: { name: string, version?: string }) => slime.$api.fp.world.Means<slime.jrunscript.tools.node.Installation,void>
-
-				require: (p: { name: string, version?: string }) => slime.$api.fp.world.Means<
-					slime.jrunscript.tools.node.Installation,
-					{
-						/**
-						 * After searching for the named module in the existing installation, the module found (if any).
-						 */
-						found: slime.$api.fp.Maybe<Module>
-
-						/**
-						 * Before installing the given {@link Module}.
-						 */
-						installing: { name: string, version?: string }
-
-						/**
-						 * After installing the given {@link Module}.
-						 */
-						installed: Module
-					}
-				>
-			}
+			modules: (installation: node.Installation) => Modules
 		}
 	}
 
@@ -219,19 +226,18 @@ namespace slime.jrunscript.tools.node {
 				);
 				var installation = test.subject.Installation.from.location(TMPDIR);
 
-				var installedModule = $api.fp.world.mapping(
-					test.subject.Installation.modules.installed("minimal-package"),
-				)
+				var modules = test.subject.Installation.modules(installation);
 
-				var before = installedModule(installation);
+				var installedModule = modules.installed("minimal-package");
+
+				var before = $api.fp.world.Question.now({ question: installedModule });
 
 				verify(before).present.is(false);
 
 				var findInListing = function() {
-					var listing = $api.fp.world.now.question(
-						test.subject.Installation.modules.list(),
-						installation
-					);
+					var listing = $api.fp.world.Question.now({
+						question: modules.list()
+					});
 					var found = listing.find(function(module) {
 						return module.name == "minimal-package";
 					});
@@ -240,12 +246,11 @@ namespace slime.jrunscript.tools.node {
 
 				verify(findInListing()).is(void(0));
 
-				$api.fp.world.now.action(
-					test.subject.Installation.modules.install({ name: "minimal-package" }),
-					installation
-				);
+				$api.fp.world.Action.now({
+					action: modules.install({ name: "minimal-package" })
+				});
 
-				var after = installedModule(installation);
+				var after = $api.fp.world.Question.now({ question: installedModule });
 				verify(after).present.is(true);
 				if (after.present) {
 					verify(after).value.version.is.type("string");
@@ -256,6 +261,16 @@ namespace slime.jrunscript.tools.node {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		Project: exports.Project
+	}
+
+	export namespace exports {
+		export interface Project {
+			modules: (project: node.Project) => (installation: node.Installation) => Modules
+		}
+	}
 
 	export namespace object {
 		/**
