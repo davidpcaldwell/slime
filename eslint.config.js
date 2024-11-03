@@ -83,7 +83,7 @@ export default [
 		files: ["**/*.node.js"],
 		languageOptions: {
 			ecmaVersion: 2017,
-			sourceType: "script"
+			sourceType: "module"
 		}
 	}
 ]
