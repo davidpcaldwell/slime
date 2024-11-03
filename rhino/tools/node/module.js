@@ -159,13 +159,16 @@
 		};
 
 		/**
+		 * Determines the shell command to use for a Node installation and intention. If a command is specified, the project
+		 * and Node bin directories will be searched for it. Otherwise, the Node.js `node` launcher will be used.
 		 *
 		 * @param { slime.jrunscript.tools.node.Installation } installation
-		 * @param { string } projectBin
-		 * @param { string } command
-		 * @returns { string }
+		 * @param { slime.jrunscript.tools.node.Intention } intention
+		 * @returns { string } The executable to use when running the command in the shell
 		 */
-		var getExecutableForCommand = function(installation, projectBin, command) {
+		var getExecutableForCommand = function(installation, intention) {
+			var projectBin = (intention.project) ? getProjectBin(intention.project) : void(0);
+			var command = intention.command
 			var bin = getInstallationPathEntry(installation);
 			//	TODO	correct search order in project and node bin directories not known
 			if (command) {
@@ -212,20 +215,19 @@
 			};
 		}
 
-		/** @type { (installation: slime.jrunscript.tools.node.Installation) => (p: slime.jrunscript.tools.node.Intention) => slime.jrunscript.shell.run.Intention } */
-		var node_invocation = function(installation) {
-			return function(invocation) {
+		/** @type { (installation: slime.jrunscript.tools.node.Installation) => (intention: slime.jrunscript.tools.node.Intention) => slime.jrunscript.shell.run.Intention } */
+		var node_intention = function(installation) {
+			return function(intention) {
 				var command = getExecutableForCommand(
 					installation,
-					(invocation.project) ? getProjectBin(invocation.project) : void(0),
-					invocation.command
+					intention
 				);
 
 				return {
 					command: command,
-					arguments: invocation.arguments,
+					arguments: intention.arguments,
 					environment: function(was) {
-						var delegated = (invocation.environment) ? invocation.environment(was) : was;
+						var delegated = (intention.environment) ? intention.environment(was) : was;
 
 						var searchpath = (delegated.PATH) ? $context.library.file.filesystems.os.Searchpath.parse(delegated.PATH) : null;
 
@@ -254,8 +256,8 @@
 							}
 						)
 					},
-					directory: invocation.directory,
-					stdio: invocation.stdio
+					directory: intention.directory,
+					stdio: intention.stdio
 				}
 			}
 		}
@@ -265,7 +267,7 @@
 		 * @returns
 		 */
 		var Modules = function(p) {
-			var toShellInvocation = node_invocation(p.installation);
+			var toShellIntention = node_intention(p.installation);
 
 			/** @type { slime.jrunscript.tools.node.exports.Modules["list"] } */
 			var list = function() {
@@ -702,7 +704,7 @@
 		var Intention_question = function(argument) {
 			return function(installation) {
 				return function(events) {
-					var ask = $context.library.shell.subprocess.question(node_invocation(installation)(argument));
+					var ask = $context.library.shell.subprocess.question(node_intention(installation)(argument));
 					return ask(events);
 				}
 			}
@@ -737,7 +739,7 @@
 			Intention: {
 				shell: function(intention) {
 					return function(installation) {
-						return node_invocation(installation)(intention);
+						return node_intention(installation)(intention);
 					}
 				},
 				question: Intention_question
