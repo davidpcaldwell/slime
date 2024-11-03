@@ -4,8 +4,16 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.loader.Export<slime.old.document.Exports> } $export
+	 */
+	function($api,$export) {
+		var $exports = /** @@type { Partial<slime.old.document.Exports> } */ {};
+
 		var namespaces = {
 			XHTML: "http://www.w3.org/1999/xhtml"
 		};
@@ -22,6 +30,10 @@
 		}
 
 		var Node = function(p) {
+			this.serialize = function() {
+				throw new Error("Unreachable.");
+			};
+
 			this.toString = function() {
 				return this.serialize();
 			};
@@ -193,6 +205,7 @@
 		var Element = function(p) {
 			Node.call(this,p);
 			//	optionally adds children upon construction
+			this.children = void(0);
 			Parent.call(this,p);
 
 			//	Much complexity seeps into the model if nodes need to be aware of their parents; now, when adding a child to a parent,
@@ -438,16 +451,19 @@
 
 				var tokens = [this.doctype.name];
 
-				var type = (function() {
-					if (this.doctype.publicId) return "PUBLIC";
-					if (this.doctype.systemId) return "SYSTEM";
-					return null;
-				}).call(this);
+				// var type = (function() {
+				// 	if (this.doctype.publicId) return "PUBLIC";
+				// 	if (this.doctype.systemId) return "SYSTEM";
+				// 	return null;
+				// }).call(this);
 
-				tokens.push(type);
+				if (type) {
+					tokens.push(type.type);
+					tokens.push(quote(type.string));
+				}
 
-				if (this.doctype.publicId) tokens.push(quote(this.doctype.publicId));
-				if (this.doctype.systemId) tokens.push(quote(this.doctype.systemId));
+				// if (this.doctype.publicId) tokens.push(quote(this.doctype.publicId));
+				// if (this.doctype.systemId) tokens.push(quote(this.doctype.systemId));
 
 				return "<!DOCTYPE " + tokens.join(" ") + ">\n";
 			};
@@ -477,6 +493,8 @@
 
 		var Document = function(p) {
 			Node.call(this,p);
+			this.child = void(0);
+			this.children = void(0);
 			Parent.call(this,p);
 
 			var self = this;
@@ -541,5 +559,8 @@
 				}
 			}
 		};
+
+		$export($exports);
 	}
-)();
+//@ts-ignore
+)($api,$export);
