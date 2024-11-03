@@ -13,22 +13,52 @@
 	function($api,jsh) {
 		var base = jsh.script.file.parent.parent;
 
-		var json = base.getFile(".eslintrc.json").read(String);
-		var configuration = eval("(" + json + ")");
-		var rules = Object.entries(configuration.rules).filter(function(entry) {
+		$api.fp.world.execute(jsh.shell.tools.node.require.action);
+
+		var old_installation_object = jsh.shell.tools.node.installed;
+		var installation = jsh.shell.tools.node.installation;
+
+		var action = jsh.shell.tools.node.Installation.modules(installation).require({ name: "eslint", version: "9.13.0" });
+
+		$api.fp.world.Action.now({
+			action: action
+		});
+
+		/** @type { slime.jrunscript.tools.node.Project } */
+		var project = {
+			base: base.pathname.toString()
+		};
+
+		var eslintInstallDefaultsAction = jsh.shell.tools.node.Project.modules(project)(installation).require({ name: "@eslint/js" });
+
+		$api.fp.world.Action.now({
+			action: eslintInstallDefaultsAction
+		});
+
+		var rulesCommand = $api.fp.world.Sensor.now({
+			sensor: jsh.shell.subprocess.question,
+			subject: $api.fp.now(
+				/** @type { slime.jrunscript.tools.node.Intention } */ ({
+					arguments: [jsh.script.file.parent.getRelativePath("eslint-report.node.js").toString()],
+					directory: base.pathname.toString(),
+					stdio: {
+						output: "string"
+					}
+				}),
+				jsh.shell.tools.node.Installation.Intention.shell,
+				function(f) {
+					return f(installation);
+				}
+			)
+		});
+
+		var rulesOutput = JSON.parse(rulesCommand.stdio.output);
+
+		var rules = Object.entries(rulesOutput).filter(function(entry) {
 			return entry[1] == "warn" || entry[1].length > 1 && entry[1][0] == "warn";
 		}).map(function(entry) {
 			return entry[0];
 		});
-		//jsh.shell.console("rules = " + Object.keys(configuration.rules));
-
-		$api.fp.world.execute(jsh.shell.tools.node.require.action);
-
-		var node = jsh.shell.tools.node.installed;
-
-		node.modules.require({ name: "eslint", version: "9.13.0" });
-
-		var installation = jsh.shell.tools.node.installation;
 
 		var sensor = jsh.shell.tools.node.Installation.Intention.question({
 			command: "eslint",
