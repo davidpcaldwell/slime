@@ -924,7 +924,7 @@
 						)
 					}
 				)();
-				var intention = p(priorIntention);
+				var intention = (p) ? p(priorIntention) : priorIntention;
 				var shellIntention = jshIntentionToShellIntention(intention);
 				var result = $api.fp.world.Sensor.now({
 					sensor: $context.module.subprocess.question,
