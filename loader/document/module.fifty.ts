@@ -245,7 +245,7 @@ namespace slime.jsh {
 		//	TODO	this nasty little workaround is needed because of name collisions between loader/document and
 		//			rhino/document
 
-		document: slime.runtime.document.Exports & slime.jrunscript.document.Export
+		document: slime.runtime.document.Exports & slime.jrunscript.document.Exports
 	}
 }
 

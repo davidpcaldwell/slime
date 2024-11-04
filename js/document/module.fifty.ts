@@ -11,6 +11,15 @@
  */
 namespace slime.old.document {
 	export interface Exports {
+		filter: any
+
+		Text: any
+		Element: any
+		Document: any
+		Cdata: any
+		Comment: any
+		Doctype: any
+		ProcessingInstruction: any
 	}
 
 	(

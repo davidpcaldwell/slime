@@ -4,8 +4,20 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { any } JavaAdapter
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.document.Context } $context
+	 * @param { slime.Loader } $loader
+	 * @param { slime.loader.Export<slime.jrunscript.document.Exports> } $export
+	 */
+	function(Packages,JavaAdapter,$api,$context,$loader,$export) {
+		/** @type { Partial<slime.jrunscript.document.Exports> } */
+		var $exports = {};
 		//	TODO	this name should be reviewed if we start supporting Nashorn
 		var toNamespace = function(v) {
 			return (v) ? String(v) : "";
@@ -88,7 +100,7 @@
 			return rv;
 		}
 
-		$exports.Document = function(p) {
+		$exports.Document = Object.assign(function(p) {
 			var parse = function(_source) {
 				var _jaxpFactory = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance();
 				_jaxpFactory.setNamespaceAware(true);
@@ -118,7 +130,7 @@
 			} else {
 				throw new TypeError();
 			}
-		};
+		});
 
 		var html = $loader.module("parser.js", {
 			api: {
@@ -155,5 +167,8 @@
 		["namespace","Doctype","Element","Text","Cdata","Comment","filter"].forEach(function(name) {
 			$exports[name] = $context.pure[name]
 		});
+
+		$export( /** @type { slime.jrunscript.document.Exports } */ ($exports));
 	}
-)();
+//@ts-ignore
+)(Packages,JavaAdapter,$api,$context,$loader,$export);

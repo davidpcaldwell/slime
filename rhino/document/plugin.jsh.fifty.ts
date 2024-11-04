@@ -15,8 +15,15 @@ namespace slime.runtime.document {
 	}
 }
 namespace slime.jrunscript.document {
+	export interface Context {
+		pure: slime.old.document.Exports
 
-	export interface Export {
+		api: {
+			java: slime.jrunscript.java.Exports
+		}
+	}
+
+	export interface Exports {
 		/** @deprecated */
 		Document: slime.runtime.document.exports.Document
 
@@ -29,4 +36,6 @@ namespace slime.jrunscript.document {
 		/** @deprecated */
 		namespace: any
 	}
+
+	export type Script = slime.loader.Script<Context,Exports>
 }
