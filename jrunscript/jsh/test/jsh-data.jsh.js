@@ -110,6 +110,7 @@
 			"jsh.script.url": (typeof(jsh.script.url) != "undefined") ? {
 				string: jsh.script.url.toString()
 			} : void(0),
+			"arguments": jsh.script.arguments,
 			"jsh.shell.jsh.src": toJsonProperty(jsh.shell.jsh.src, formatters.directory),
 			"jsh.shell.jsh.home": toJsonProperty(jsh.shell.jsh.home, formatters.directory),
 			"jsh.shell.jsh.url": toJsonProperty(jsh.shell.jsh.url, function(url) {
@@ -118,7 +119,9 @@
 					string: url.toString()
 				}
 			}),
+			environment: jsh.shell.environment,
 			properties: properties,
+			directory: jsh.shell.process.directory.get(),
 			"shellClasspath": String(jsh.loader.java.getClass("inonit.script.jsh.Shell").getProtectionDomain().getCodeSource().getLocation().toString())
 		}, void(0), "    "));
 	}

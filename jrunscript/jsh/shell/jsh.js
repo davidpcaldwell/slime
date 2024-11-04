@@ -855,15 +855,80 @@
 				}
 			}
 		);
+
+		/** @type { slime.jsh.shell.JshShellJsh["Installation"] } */
+		var Installation = {
+			from: {
+				current: function() {
+					var packaged = $context.packaged();
+					if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.src) {
+						var src = canonicalizePropertyValue(module.properties.object.jsh.shell.src);
+						if ($context.api.file.Pathname(src).directory) {
+							return {
+								src: src
+							}
+						} else {
+							return {
+								url: src
+							}
+						}
+					} else if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.home) {
+						var home = canonicalizePropertyValue(module.properties.object.jsh.shell.home);
+						if ($context.api.file.Pathname(home).directory) {
+							return {
+								home: home
+							}
+						}
+					} else if (packaged.present) {
+						return {
+							package: canonicalize(packaged.value)
+						}
+					}
+				}
+			},
+			is: {
+				/** @type { slime.jsh.shell.JshShellJsh["Installation"]["is"]["unbuilt"] } */
+				unbuilt: function(p) {
+					return Boolean(p["src"]);
+				},
+				/** @type { slime.jsh.shell.JshShellJsh["Installation"]["is"]["packaged"] } */
+				packaged: function(p) {
+					return Boolean[p["package"]];
+				}
+			}
+		};
+
 		$exports.jsh.relaunch = $api.experimental(
 			function(p) {
-				if (!p) p = {};
-				var environment = (p.environment) ? p.environment(module.environment) : module.environment;
-				var result = $exports.jsh({
-					fork: true,
-					script: $context.api.script.file,
-					arguments: $context.api.script.arguments,
-					environment: environment
+				var shell = Installation.from.current();
+				/** @type { slime.jsh.shell.Program } */
+				var program = (Installation.is.packaged(shell)) ? {
+					package: shell.package
+				} : {
+					shell: shell,
+					script: $context.api.script.file.pathname.toString()
+				};
+				/** @type { slime.jsh.shell.Intention } */
+				var priorIntention = (
+					function() {
+						return $api.Object.compose(
+							program,
+							/** @type { Partial<slime.jsh.shell.Intention> } */
+							({
+								arguments: $context.api.script.arguments,
+								environment: $api.fp.identity,
+								directory: $context.module.process.directory.get(),
+								properties: $context.api.java.vm.properties(),
+								stdio: void(0)
+							})
+						)
+					}
+				)();
+				var intention = (p) ? p(priorIntention) : priorIntention;
+				var shellIntention = jshIntentionToShellIntention(intention);
+				var result = $api.fp.world.Sensor.now({
+					sensor: $context.module.subprocess.question,
+					subject: shellIntention
 				});
 				$exports.exit(result.status);
 			}
@@ -939,42 +1004,7 @@
 			return canonicalize(value);
 		}
 
-		$exports.jsh.Installation = {
-			from: {
-				current: function() {
-					var packaged = $context.packaged();
-					if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.src) {
-						var src = canonicalizePropertyValue(module.properties.object.jsh.shell.src);
-						if ($context.api.file.Pathname(src).directory) {
-							return {
-								src: src
-							}
-						} else {
-							return {
-								url: src
-							}
-						}
-					} else if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.home) {
-						var home = canonicalizePropertyValue(module.properties.object.jsh.shell.home);
-						if ($context.api.file.Pathname(home).directory) {
-							return {
-								home: home
-							}
-						}
-					} else if (packaged.present) {
-						return {
-							package: canonicalize(packaged.value)
-						}
-					}
-				}
-			},
-			is: {
-				/** @type { slime.jsh.shell.JshShellJsh["Installation"]["is"]["unbuilt"] } */
-				unbuilt: function(p) {
-					return Boolean(p["src"]);
-				}
-			}
-		}
+		$exports.jsh.Installation = Installation;
 
 		$exports.world = (function(was) {
 			/** @type { slime.js.Cast<slime.jsh.shell.Exports["world"]> } */
