@@ -322,7 +322,7 @@ namespace slime.jsh.shell {
 		Program
 		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "directory">
 		& {
-			properties?: { [name: string]: string }
+			properties?: slime.jrunscript.java.Properties
 		}
 		& Pick<slime.jrunscript.shell.run.Intention,"stdio">
 	)
@@ -350,6 +350,7 @@ namespace slime.jsh.shell {
 
 			is: {
 				unbuilt: (p: Installation) => p is UnbuiltInstallation
+				packaged: (p: Installation) => p is PackagedInstallation
 			}
 		}
 	}
@@ -885,15 +886,69 @@ namespace slime.jsh.shell {
 
 	export interface JshShellJsh extends JshInvoke {
 		lib?: slime.jrunscript.file.Directory
+	}
 
+	export interface JshShellJsh extends JshInvoke {
 		/**
-		 * Forks this shell and relaunches the same program with the same arguments. Does not return; exits the shell with the exit
-		 * status of the relaunched shell.
+		 * Forks this shell, relaunching with the output of the given transform, if any, and exiting with the status of the shell
+		 * executed with the transformed parameters. If no argument is given, simply relaunches with the same configuration as was
+		 * provided to the launching shell. Otherwise, the transform receives an {@link slime.jsh.shell.Intention} representing the
+		 * current shell invocation:
+		 * * `package`: set to appropriate value if current invocation is a packaged script
+		 * * `shell`, `script`: set to appropriate values if current invocation is not a packaged script
+		 * * `arguments`, `directory`: set to values for the current invocation
+		 * * `environment`: set to identity function that would simply use this invocation's environment
+		 * * `properties`: set to current system properties
+		 * * `stdio`: set to `undefined`
+		 *
+		 * The value returned by the transform will be used to invoke `jsh`, and the exit status of the spawned process will be used
+		 * as the exit status of the current process.
+		 *
 		 */
-		relaunch: (p?: {
-			environment?: slime.$api.fp.Transform<slime.jrunscript.shell.Exports["environment"]>
-		}) => never
+		relaunch: (p?: slime.$api.fp.Transform<slime.jsh.shell.Intention>) => never
+	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			const subject = fifty.global.jsh.shell;
+
+			fifty.tests.exports.jsh.relaunch = function() {
+				var TMPDIR = fifty.jsh.file.temporary.directory();
+
+				verify(subject).environment.evaluate.property("FOO").is(void(0));
+
+				var relauncher = test.shells.unbuilt().invoke({
+					script: fifty.jsh.file.relative("test/relaunch.jsh.js").pathname,
+					arguments: ["--tmpdir", TMPDIR.pathname],
+					stdio: {
+						output: "string"
+					}
+				});
+
+				var result = $api.fp.world.Sensor.now({
+					sensor: jsh.shell.subprocess.question,
+					subject: relauncher
+				});
+
+				var output = JSON.parse(result.stdio.output);
+				verify(output).arguments.length.is(3);
+				verify(output).arguments[0].is("1");
+				verify(output).arguments[1].is("2");
+				verify(output).arguments[2].is("3");
+				verify(output).environment.evaluate.property("FOO").is("bar");
+				verify(output).directory.evaluate(String).is(TMPDIR.pathname);
+				verify(output).properties.evaluate.property("foo.bar").is("baz");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface JshShellJsh extends JshInvoke {
 		require: slime.$api.fp.world.Means<
 			{
 				satisfied: () => boolean,
