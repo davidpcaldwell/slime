@@ -22,7 +22,7 @@
  * -------------- | --------------------------------------------------------------------------------------------- | ----------------------------------
  * `js/web/`      |  Web-related concepts like URLs and form data.                                                | {@link slime.web.Script}
  * `js/time/`     | Dates and times.                                                                              | {@link slime.time.Script}
- * `js/document/` | **Deprecated.** (undocumented) XML and HTML documents                                         |
+ * `js/document/` | **Deprecated.** XML and HTML documents                                                        | {@link slime.old.document.Script}
  * `js/promise/`  | **Deprecated.** Asynchronous programming using A+-like Promises.                              | {@link slime.promise.Script}
  * `js/object/`   | **Deprecated.** General JavaScript APIs; mostly replaced by {@link slime.$api.Exports | $api} | {@link slime.$api.old.Exports}
  *
