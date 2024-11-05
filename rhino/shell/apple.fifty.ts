@@ -6,7 +6,14 @@
 
 namespace slime.jrunscript.shell.system.apple {
 	export interface Context {
-		api: any
+		api: {
+			js: slime.$api.old.Exports
+			document: slime.old.document.Exports
+			shell: slime.jrunscript.shell.Exports
+			xml: {
+				parseFile: (file: slime.jrunscript.file.File) => slime.runtime.document.exports.Document
+			}
+		}
 	}
 
 	export namespace osx {

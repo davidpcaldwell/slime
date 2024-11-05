@@ -313,18 +313,10 @@
 					if (p.command) {
 						var path = "MacOS/" + info.CFBundleExecutable;
 						contents.getRelativePath(path).write("#!/bin/bash\n" + p.command, { append: false, recursive: true });
-						if ($context.api.shell.shell.length == 1) {
-							$context.api.shell.shell({
-								command: "chmod",
-								arguments: ["+x", contents.getRelativePath(path)]
-							});
-						} else {
-							//	jsh 0.0.4.7 compatibility
-							$context.api.shell.shell(
-								"chmod",
-								["+x", contents.getRelativePath(path)]
-							);
-						}
+						$context.api.shell.run({
+							command: "chmod",
+							arguments: ["+x", contents.getRelativePath(path)]
+						});
 					}
 				}
 			});

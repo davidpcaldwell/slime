@@ -62,7 +62,7 @@ namespace slime.jrunscript.shell {
 			/**
 			 * The `js/document` module.
 			 */
-			document: any
+			document: slime.old.document.Exports
 
 			xml: {
 				parseFile: (file: slime.jrunscript.file.File) => slime.runtime.document.exports.Document
