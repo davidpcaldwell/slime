@@ -13,7 +13,7 @@
 	 * @param { slime.loader.Export<slime.jsh.wf.internal.typescript.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var VERSION = "5.3.2";
+		var VERSION = "5.6.3";
 
 		var version = $api.fp.impure.Input.value(VERSION);
 
@@ -144,6 +144,7 @@
 					if (tsVersion == "5.0.4") return "0.23.28";
 					if (tsVersion == "5.2.2") return "0.23.28";
 					if (tsVersion == "5.3.2") return "0.23.28";
+					if (tsVersion == "5.6.3") return "0.26.11";
 					throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
 				};
 
