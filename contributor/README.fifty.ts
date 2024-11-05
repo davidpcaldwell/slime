@@ -13,8 +13,12 @@
  *
  * ### TypeScript
  *
- * To update TypeScript, update the version in `tools/wf/module.js`, and make sure that there is a compatible TypeDoc version
- * declared for that version in `tools/wf/typescript.js`.
+ * To update TypeScript, update the version in `tools/wf/typescript.js`, and make sure that there is a compatible TypeDoc version
+ * declared for that version.
+ *
+ * ### TypeDoc
+ *
+ * To update TypeDoc, map the desired TypeScript version to updated TypeDoc versions in `tools/wf/typescript.js`.
  *
  * ### Node.js
  *
