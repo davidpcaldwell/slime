@@ -119,6 +119,58 @@ namespace slime.old.document {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * A node that can have children.
+	 */
+	export interface Parent extends Node {
+		/**
+		 * The children of this node.
+		 */
+		children: Node[]
+
+		/**
+		 * Searches the descendants of this node for a single matching node.
+		 * @param search The algorithm to use.
+		 * @returns The single node found by the search, or `null` if no nodes were found. If multiple nodes were found,
+		 * throws an error.
+		 */
+		identify: (search: parent.Search) => Node
+
+		/**
+		 * Returns a single child node of this node matching the given filter.
+		 * @param filter A filtering function.
+		 * @returns The single child of this node matching the given filter, or `null` if no child matches the filter. Throws an
+		 * error if multiple children match.
+		 */
+		child: (filter: parent.Filter) => Node
+	}
+
+	export namespace parent {
+		/**
+		 * A function that specifies an arbitrary criterion about nodes.
+		 */
+		export type Filter = slime.$api.fp.Predicate<Node>
+
+		/**
+		 * An algorithm used to find nodes. Can be fully-specified by an interface containing a filter (to include or exclude nodes)
+		 * and a `descendants` property (to decide whether a particular node's children should be searched).
+		 *
+		 * A search can also be specified via a single function, in which case the function is interpreted as the `filter` property
+		 * of the search and descendants of all nodes are searched.
+		 */
+		export type Search = {
+			/**
+			 * A function that specifies which nodes should be included in the results of the search.
+			 */
+			filter: Filter
+
+			/**
+			 * A function that specifies whether the descendants of a particular node should be searched.
+			 */
+			descendants: slime.$api.fp.Predicate<Node>
+		} | slime.$api.fp.Predicate<Node>
+	}
+
 	export interface Exports {
 		filter: any
 
