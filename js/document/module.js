@@ -40,6 +40,8 @@
 		};
 
 		var Parent = function(p) {
+			Node.call(this,p);
+
 			var traverse = function(rv,top,p) {
 				if (typeof(top.length) != "undefined") {
 					for (var i=0; i<top.length; i++) {
@@ -203,7 +205,6 @@
 		}
 
 		var Element = function(p) {
-			Node.call(this,p);
 			//	optionally adds children upon construction
 			this.children = void(0);
 			Parent.call(this,p);
@@ -492,7 +493,6 @@
 		};
 
 		var Document = function(p) {
-			Node.call(this,p);
 			this.child = void(0);
 			this.children = void(0);
 			Parent.call(this,p);
