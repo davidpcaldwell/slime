@@ -345,7 +345,7 @@ namespace slime.jrunscript.runtime {
 	}
 
 	export interface $javahost {
-		debugger: slime.runtime.$engine["debugger"]
+		debugger: slime.runtime.scope.$engine["debugger"]
 		script: any
 		MetaObject: any
 		noEnvironmentAccess: any

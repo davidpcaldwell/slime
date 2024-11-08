@@ -7,13 +7,16 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { any } JavaAdapter
+	 * @param { slime.jsh.plugin.Scope["$slime"] } $slime
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { object } plugins
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
-	function(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader) {
+	function(Packages,JavaAdapter,$slime,$api,jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install && plugins.scala);
@@ -447,7 +450,7 @@
 
 					var fetchCode = function() {
 						return new jsh.http.Client().request({
-							url: "https://raw.githubusercontent.com/nodeca/js-yaml/v3/dist/js-yaml.js",
+							url: "https://raw.githubusercontent.com/nodeca/js-yaml/refs/heads/master/dist/js-yaml.js",
 							evaluate: function(response) {
 								return response.body.stream.character().asString();
 							}
@@ -456,9 +459,16 @@
 
 					var load = function(code) {
 						return $api.debug.disableBreakOnExceptionsFor(function() {
-							var global = {};
-							eval(code);
-							return global.jsyaml;
+							//	TODO	possibly there is an easier way to invoke the script; unclear.
+							$slime.engine.execute(
+								{
+									name: "<jsyaml.js>",
+									js: code
+								},
+								{},
+								{}
+							)
+							return (function() { return this; })().jsyaml;
 						})();
 					}
 
@@ -917,4 +927,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader)
+)(Packages,JavaAdapter,$slime,$api,jsh,plugins,plugin,$loader)

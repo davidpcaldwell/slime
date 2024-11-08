@@ -334,7 +334,6 @@
 					/** @type { slime.jrunscript.tools.node.internal.NpmLsOutput } */
 					var npmJson = JSON.parse(result.stdio.output);
 
-					debugger;
 					if (!npmJson.dependencies) return [];
 					return $api.fp.result(
 						npmJson,

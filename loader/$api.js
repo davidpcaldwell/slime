@@ -8,7 +8,7 @@
 (
 //	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
-	 * @param { slime.runtime.internal.Engine } $engine
+	 * @param { slime.runtime.Engine } $engine
 	 * @param { slime.runtime.internal.Code } $slime
 	 * @param { slime.loader.Export<slime.$api.Global> } $export
 	 */

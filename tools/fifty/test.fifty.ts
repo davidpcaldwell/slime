@@ -141,7 +141,7 @@ namespace slime.fifty.test {
 		 * to a particular custom element name.
 		 */
 		global: {
-			$platform: slime.runtime.$platform
+			$platform: slime.runtime.Platform
 			$api: slime.$api.Global
 			jsh?: slime.jsh.Global
 			window?: Window

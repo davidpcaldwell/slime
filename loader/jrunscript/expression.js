@@ -110,7 +110,7 @@
 			 * @returns { slime.runtime.Exports }
 			 */
 			function() {
-				/** @type { slime.runtime.$engine } */
+				/** @type { slime.runtime.scope.$engine } */
 				var $engine = {
 					debugger: $javahost.debugger,
 					execute: function(script,scope,target) {
@@ -129,7 +129,7 @@
 				(function() {
 					if ($javahost.MetaObject) $engine.MetaObject = $javahost.MetaObject;
 				})();
-				/** @type { slime.runtime.$slime.Deployment } */
+				/** @type { slime.runtime.scope.$slime.Deployment } */
 				var $slime = {
 					getRuntimeScript: function(path) {
 						return {
@@ -1140,6 +1140,7 @@
 						file: slime.file,
 						value: slime.value,
 						namespace: slime.namespace,
+						engine: slime.engine,
 						$platform: slime.$platform,
 						$api: slime.$api,
 

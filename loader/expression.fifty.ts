@@ -7,9 +7,9 @@
 namespace slime {
 	export namespace runtime {
 		export interface Scope {
-			$slime: slime.runtime.$slime.Deployment
+			$slime: slime.runtime.scope.$slime.Deployment
 
-			$engine?: slime.runtime.$engine
+			$engine?: slime.runtime.scope.$engine
 
 			/**
 			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
@@ -17,61 +17,63 @@ namespace slime {
 			Packages?: slime.jrunscript.Packages
 		}
 
-		export namespace $slime {
-			/**
-			 * An object providing access to the SLIME execution environment.
-			 */
-			export interface Deployment {
+		export namespace scope {
+			export namespace $slime {
 				/**
-				 * Provides a component source file of the runtime.
-				 * @param path The path to a SLIME source file, relative to `expression.js`.
-				 * @returns An executable JavaScript script.
+				 * An object providing access to the SLIME execution environment.
 				 */
-				getRuntimeScript(path: string): loader.Script
+				export interface Deployment {
+					/**
+					 * Provides a component source file of the runtime.
+					 * @param path The path to a SLIME source file, relative to `expression.js`.
+					 * @returns An executable JavaScript script.
+					 */
+					getRuntimeScript(path: string): loader.Script
 
-				flags?: {
-					[name: string]: string
+					flags?: {
+						[name: string]: string
+					}
 				}
 			}
-		}
-
-		/**
-		 * An object of type `$engine` can be provided in the scope by the embedding in order to provide additional capabilities the
-		 * JavaScript engine may have.
-		 */
-		export interface $engine {
-			/**
-			 * A function that can execute JavaScript code with a given scope and *target* (`this` value). A default implementation
-			 * is provided by SLIME, but engines may provide their own implementations that have advantages over SLIME's
-			 * pure-JavaScript implementation.
-			 *
-			 * @param script An object describing the file to execute.
-			 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
-			 * @param target An object that must be provided to the code as `this` while the code is executing.
-			 */
-			execute?: (
-				script: {
-					name: string,
-					/** A string of JavaScript code to execute. */
-					js: string
-				},
-				scope: { [x: string]: any },
-				target: object
-			) => void
-
-			debugger?: {
-				isBreakOnExceptions: () => boolean
-				setBreakOnExceptions: (b: boolean) => void
-			}
-
-			Error?: {
-				decorate: any
-			}
 
 			/**
-			 * A constructor that implements the behavior defined by {@link $platform.MetaObject}.
+			 * An object of type `$engine` can be provided in the scope by the embedding in order to provide additional capabilities the
+			 * JavaScript engine may have.
 			 */
-			MetaObject: any
+			export interface $engine {
+				/**
+				 * A function that can execute JavaScript code with a given scope and *target* (`this` value). A default implementation
+				 * is provided by SLIME, but engines may provide their own implementations that have advantages over SLIME's
+				 * pure-JavaScript implementation.
+				 *
+				 * @param script An object describing the file to execute.
+				 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
+				 * @param target An object that must be provided to the code as `this` while the code is executing.
+				 */
+				execute?: (
+					script: {
+						name: string,
+						/** A string of JavaScript code to execute. */
+						js: string
+					},
+					scope: { [x: string]: any },
+					target: object
+				) => void
+
+				Error?: {
+					decorate: any
+				}
+
+				debugger?: {
+					isBreakOnExceptions: () => boolean
+					setBreakOnExceptions: (b: boolean) => void
+				}
+
+				/**
+				 * A constructor that implements the behavior defined by {@link Platform.MetaObject}.
+				 */
+				MetaObject?: any
+			}
 		}
 
 		(
@@ -89,7 +91,7 @@ namespace slime {
 		 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
 		 * in its implementation.
 		 */
-		export interface $platform {
+		export interface Platform {
 			e4x: any
 			MetaObject: any
 			java: any
@@ -97,7 +99,7 @@ namespace slime {
 
 		(
 			function(
-				$platform: $platform,
+				$platform: Platform,
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
@@ -243,7 +245,7 @@ namespace slime {
 	 * In return, the embedding will be supplied with an {@link Exports} object that provides the SLIME runtime.
 	 *
 	 * All code loaded by the SLIME runtime has access to the {@link $api} object (as `$api`), providing a basic set of JavaScript
-	 * utilities, and a {@link $platform} object (as `$platform`), providing more advanced JavaScript engine capabilities that
+	 * utilities, and a {@link Platform} object (as `$platform`), providing more advanced JavaScript engine capabilities that
 	 * depend on the underlying JavaScript engine.
 	 *
 	 * [Older documentation](src/loader/api.html)
@@ -280,6 +282,36 @@ namespace slime {
 		export interface Exports {
 		}
 
+		/**
+		 * An internal object derived from {@link slime.runtime.$engine} which adds default implementations.
+		 */
+		export interface Engine {
+			/**
+			 * Provides the ability to execute a script using the engine's default execution mechanism (using {@link Scope}'s
+			 * `$engine` property), with arbitrary script (script name for tools, plus code), scope (to provide to the script), and
+			 * target (to provide as the `this` for the script).
+			 */
+			execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: any) => any
+
+			debugger?: slime.runtime.scope.$engine["debugger"]
+			Error: {
+				decorate?: <T>(errorConstructor: T) => T
+			}
+			MetaObject: slime.runtime.scope.$engine["MetaObject"]
+		}
+
+		export interface Exports {
+			engine: Engine
+		}
+
+		export interface Exports {
+			/**
+			 * @deprecated The same object provided to scripts as `$platform`; provided here because there are limited, but likely
+			 * removable, global usages of it.
+			 */
+			$platform: Platform
+		}
+
 		export namespace resource {
 			export interface Exports {
 				new (o: slime.resource.Descriptor): slime.Resource
@@ -299,7 +331,7 @@ namespace slime {
 
 		(
 			function(
-				$platform: slime.runtime.$platform,
+				$platform: slime.runtime.Platform,
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
@@ -503,22 +535,10 @@ namespace slime {
 			}
 
 			/**
-			 * An internal object derived from {@link slime.runtime.$engine} which adds default implementations.
-			 */
-			export interface Engine {
-				debugger: slime.runtime.$engine["debugger"]
-				execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: any) => any
-				Error: {
-					decorate?: <T>(errorConstructor: T) => T
-				}
-				MetaObject: slime.runtime.$engine["MetaObject"]
-			}
-
-			/**
 			 * A subset of the {@link $slime.Deployment} interface that can load SLIME runtime scripts.
 			 */
 			export interface Code {
-				getRuntimeScript: $slime.Deployment["getRuntimeScript"]
+				getRuntimeScript: slime.runtime.scope.$slime.Deployment["getRuntimeScript"]
 			}
 		}
 
@@ -562,16 +582,11 @@ namespace slime {
 
 		export interface Exports {
 			/**
-			 * The same object as `$platform`.
-			 */
-			$platform: $platform
-
-			/**
 			 * @deprecated Can be replaced by `$platform.java`.
 			 *
 			 * The same object as `$platform.java`.
 			 */
-			java?: $platform["java"]
+			java?: Platform["java"]
 
 			/**
 			 * An additional way for embedding environments to access the {@link slime.$api.Global | $api} object.
