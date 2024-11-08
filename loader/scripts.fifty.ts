@@ -54,8 +54,8 @@ namespace slime.$api {
 
 namespace slime.runtime.internal.scripts {
 	export interface Scope {
-		$platform: slime.runtime.$platform
-		$engine: slime.runtime.internal.Engine
+		$platform: slime.runtime.Platform
+		$engine: slime.runtime.Engine
 		$api: slime.$api.Global
 	}
 

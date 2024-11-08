@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @param { slime.runtime.$platform } $platform
+	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.fifty.test.internal.test.Context } $context
 	 * @param { slime.Loader } $loader

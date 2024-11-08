@@ -18,8 +18,8 @@
 		var $engine = (
 			/**
 			 *
-			 * @param { slime.runtime.$engine } $engine
-			 * @returns { slime.runtime.internal.Engine }
+			 * @param { slime.runtime.scope.$engine } $engine
+			 * @returns { slime.runtime.Engine }
 			 */
 			function($engine) {
 				return {
@@ -62,10 +62,10 @@
 		var $platform = (
 			/**
 			 *
-			 * @param { slime.runtime.internal.Engine } $engine
+			 * @param { slime.runtime.Engine } $engine
 			 */
 			function($engine) {
-				/** @type { slime.runtime.$platform } */
+				/** @type { slime.runtime.Platform } */
 				var $exports = {};
 
 				var global = (function() { return this; })();
@@ -77,7 +77,7 @@
 
 				(
 					/**
-					 * @this { slime.runtime.$platform }
+					 * @this { slime.runtime.Platform }
 					 */
 					function() {
 						var getJavaClass = function(name) {
@@ -334,11 +334,24 @@
 						}
 					}
 					return scope;
-				},
-				//	TODO	currently only used by jsapi in jsh/unit via jsh.js, so undocumented
-				//	TODO	also used by client.html unit tests
-				$platform: $platform,
+				}
 			},
+			$api.Object.defineProperty({
+				name: "engine",
+				descriptor: {
+					value: $engine,
+					enumerable: true
+				}
+			}),
+			//	TODO	currently only used by jsapi in jsh/unit via jsh.js
+			//	TODO	also used by client.html unit tests
+			$api.Object.defineProperty({
+				name: "$platform",
+				descriptor: {
+					value: $platform,
+					enumerable: true
+				}
+			}),
 			$api.Object.maybeDefineProperty({
 				name: "java",
 				descriptor: $api.fp.Partial.from.loose(function(it) {

@@ -12,10 +12,33 @@ namespace slime.external.rename {
 
 namespace slime.external {
 	/**
-	 * The `js-yaml` v3 API; see the [README](https://github.com/nodeca/js-yaml/blob/v3/README.md).
+	 * The `js-yaml` v3 API; see the [README](https://github.com/nodeca/js-yaml/blob/master/README.md).
 	 */
 	export type jsyaml = slime.external.rename._jsyaml;
 }
+
+(
+	function(
+		fifty: slime.fifty.test.Kit
+	) {
+		const { verify } = fifty;
+		const { $api, jsh } = fifty.global;
+
+		fifty.tests.jsyaml = function() {
+			jsh.shell.tools.jsyaml.require();
+			var jsyaml = jsh.shell.tools.jsyaml.load();
+			if (typeof(jsyaml) == "undefined") throw new Error("No jsyaml.");
+			var parsed = jsyaml.load(
+				$api.fp.now(
+					fifty.jsh.file.relative("../../../../docker-compose.yaml"),
+					jsh.file.Location.file.read.string.simple
+				)
+			);
+			verify(parsed).evaluate.property("version").is("3.9");
+		}
+	}
+//@ts-ignore
+)(fifty);
 
 namespace slime.jsh.shell.tools {
 	(
@@ -699,6 +722,7 @@ namespace slime.jsh.shell.tools {
 			fifty.tests.suite = function() {
 				fifty.load("tomcat.fifty.ts");
 
+				fifty.run(fifty.tests.jsyaml);
 				fifty.run(fifty.tests.rhino);
 				fifty.run(fifty.tests.node);
 				fifty.run(fifty.tests.scala);

@@ -162,7 +162,7 @@ namespace slime.jrunscript.runtime.io {
 
 	(
 		function(
-			$platform: slime.runtime.$platform,
+			$platform: slime.runtime.Platform,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;

@@ -15,7 +15,7 @@
 		//	@ts-ignore
 		var base = fs.realpathSync(__filename + "/../../..");
 
-		/** @type { slime.runtime.$slime.Deployment } */
+		/** @type { slime.runtime.scope.$slime.Deployment } */
 		var $slime = {
 			getRuntimeScript: function(path) {
 				var location = base + "/" + "loader/" + path;
