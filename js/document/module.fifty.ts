@@ -25,7 +25,7 @@ namespace slime.old.document {
 		/**
 		 * A URI specifying an XML namespace.
 		 */
-		namespace: string
+		namespace?: string
 
 		/**
 		 * The name within the given namespace.
@@ -55,7 +55,7 @@ namespace slime.old.document {
 		 * internal and undocumented.
 		 * @returns
 		 */
-		serialize: (parameters: object) => string
+		serialize: (parameters?: object) => string
 	}
 
 	(
@@ -171,12 +171,187 @@ namespace slime.old.document {
 		} | slime.$api.fp.Predicate<Node>
 	}
 
+	/**
+	 * A node representing a comment.
+	 */
+	export interface Comment extends Node {
+		/**
+		 * Contains data about the comment.
+		 */
+		comment: {
+			/**
+			 * The text of the comment.
+			 */
+			data: string
+		}
+	}
+
+	/**
+	 * A node that contains character data.
+	 */
+	export interface Characters extends Node {
+		/**
+		 * Returns the character data represented by this node.
+		 */
+		getString: () => string
+	}
+
+	/**
+	 * A node that contains text.
+	 */
+	export interface Text extends Characters {
+		/**
+		 * Contains data about the text node.
+		 */
+		text: {
+			/**
+			 * The character data represented by this node.
+			 */
+			data: string
+		}
+	}
+
+	/**
+	 * A node that is a CDATA section.
+	 */
+	export interface Cdata extends Characters {
+		/**
+		 * Contains data about the CDATA section.
+		 */
+		cdata: {
+			/**
+			 * The character data represented by this node.
+			 */
+			data: string
+		}
+	}
+
+	/**
+	 * A node representing an element.
+	 */
+	export interface Element extends Parent {
+		/**
+		 * Contains element-specific data.
+		 */
+		element: {
+			type: Name
+
+			attributes: element.Attribute[] & {
+				/**
+				 * Returns the value of a named attribute.
+				 *
+				 * @param name An attribute name.
+				 * @returns The value of the given attribute, or `null` if the attribute is not present.
+				 */
+				get: (name: element.attribute.Name) => string
+
+				/**
+				 * Sets the value of a named attribute.
+				 *
+				 * @param name An attribute name.
+				 * @param value A value to which to set the attribute, or `null` to remove it.
+				 */
+				set: (name: element.attribute.Name, value: string) => void
+			}
+		}
+	}
+
+	export namespace element {
+		/**
+		 * A named attribute and its value; corresponds to a specific attribute declaration in a document.
+		 */
+		export interface Attribute extends Name {
+			//	TODO	nullable? undefined?
+			/**
+			 * The attribute's value.
+			 */
+			value: string
+		}
+
+		export namespace attribute {
+			/**
+			 * An attribute name to use in an operation. Is either a {@link document.Name | Name} or a `string`. If it is a
+			 * `string`, it is interpreted as a name that is not in a namespace.
+			 */
+			export type Name = document.Name | string
+		}
+	}
+
+	/**
+	 * A node representing a document type declaration.
+	 */
+	export interface Doctype extends Node {
+		/**
+		 * Contains properties information about the document type declaration. See the [DOM 3
+		 * specification](http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#ID-412266927) for additional
+		 * specification detail.
+		 */
+		doctype: {
+			/**
+			 * The name given in the DOCTYPE declaration: that is, the name immediately following the DOCTYPE keyword.
+			 */
+			name: string
+
+			/**
+			 * The public identifier given in the DOCTYPE declaration: for example, `-//W3C//DTD XHTML 1.0 Transitional//EN`.
+			 */
+			systemId: string
+
+			/**
+			 * The public identifier given in the DOCTYPE declaration: for example,
+			 * `http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd`.
+			 */
+			publicId: string
+		}
+	}
+
+	/**
+	 * A top-level node that contains other nodes and represents a well-formed document.
+	 */
+	export interface Document extends Parent {
+		/**
+		 * Contains methods that pertain to the document.
+		 */
+		document: {
+			/**
+			 * Returns the *document element* of the document.
+			 */
+			getElement: () => Element
+
+			/**
+			 * Returns the document type of this document.
+			 */
+			getType: () => Doctype
+		}
+	}
+
+	export interface Exports {
+		/**
+		 * Creates a new, empty document object.
+		 */
+		Document: new () => Document
+	}
+
+	export interface Exports {
+		Element: new (p: {
+			/**
+			 * The *type* of this element.
+			 */
+			type: document.Name
+
+			namespaces?: any
+
+			/**
+			 * Attributes to use when initializing this element.
+			 */
+			attributes?: element.Attribute[]
+		}) => Element
+	}
+
 	export interface Exports {
 		filter: any
 
 		Text: any
-		Element: any
-		Document: any
 		Cdata: any
 		Comment: any
 		Doctype: any

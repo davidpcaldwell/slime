@@ -204,9 +204,15 @@
 			}
 		}
 
+		/**
+		 *
+		 * @param { ConstructorParameters<slime.old.document.Exports["Element"]>[0] } p
+		 */
 		var Element = function(p) {
 			//	optionally adds children upon construction
 			this.children = void(0);
+			this.identify = void(0);
+			this.child = void(0);
 			Parent.call(this,p);
 
 			//	Much complexity seeps into the model if nodes need to be aware of their parents; now, when adding a child to a parent,
@@ -216,13 +222,62 @@
 
 			//	has namespace / name properties
 			this.element = {
-				type: p.type
+				type: p.type,
+				attributes: Object.assign(
+					(p.attributes) ? p.attributes : [],
+					{
+						/**
+						 * @this { slime.old.document.Element["element"]["attributes"] }
+						 * @param { slime.old.document.element.attribute.Name } p
+						 */
+						get: function(p) {
+							var match = choose(this,attributeFilter(p));
+							return (match) ? match.value : null;
+						},
+						/**
+						 * @this { slime.old.document.Element["element"]["attributes"] }
+						 * @param { slime.old.document.element.attribute.Name } p
+						 * @param { string } v
+						 */
+						set: function(p,v) {
+							//	TODO	we may need a special case to handle an attempt to set an attribute with the XML Namespaces namespace, and perhaps generally for
+							//			[xX][mM][lL]
+							var match = choose(this,attributeFilter(p));
+							if (match && v === null) {
+								for (var i=0; i<this.length; i++) {
+									if (attributeFilter(p)(this[i])) {
+										this.splice(i,1);
+										//	Probably could return here
+										i--;
+									}
+								}
+							} else if (!match && v !== null) {
+								//	TODO	with current API there is nothing to stop callers from using array methods to insert illegal attribute values
+								if (typeof(p) == "string") {
+									this.push({
+										//	TODO	namespace?
+										name: p,
+										value: v
+									})
+								} else {
+									this.push({
+										namespace: p.namespace,
+										name: p.name,
+										value: v
+									});
+								}
+							} else if (!match && v === null) {
+								//	do nothing; attribute already does not exist
+							} else {
+								match.value = v;
+							}
+						}
+					}
+				)
 			};
 
 			//	objects with prefix/uri representing namespace declarations attached to this element
 			var namespaces = (p.namespaces) ? p.namespaces : [];
-			//	objects with namespace / name / value properties
-			this.element.attributes = (p.attributes) ? p.attributes : [];
 
 			var attributeFilter = function(p) {
 				if (typeof(p) == "string") {
@@ -236,44 +291,44 @@
 				}
 			};
 
-			this.element.attributes.get = function(p) {
-				var match = choose(this,attributeFilter(p));
-				return (match) ? match.value : null;
-			};
+			// this.element.attributes.get = function(p) {
+			// 	var match = choose(this,attributeFilter(p));
+			// 	return (match) ? match.value : null;
+			// };
 
-			this.element.attributes.set = function(p,v) {
-				//	TODO	we may need a special case to handle an attempt to set an attribute with the XML Namespaces namespace, and perhaps generally for
-				//			[xX][mM][lL]
-				var match = choose(this,attributeFilter(p));
-				if (match && v === null) {
-					for (var i=0; i<this.length; i++) {
-						if (attributeFilter(p)(this[i])) {
-							this.splice(i,1);
-							//	Probably could return here
-							i--;
-						}
-					}
-				} else if (!match && v !== null) {
-					//	TODO	with current API there is nothing to stop callers from using array methods to insert illegal attribute values
-					if (typeof(p) == "string") {
-						this.push({
-							//	TODO	namespace?
-							name: p,
-							value: v
-						})
-					} else {
-						this.push({
-							namespace: p.namespace,
-							name: p.name,
-							value: v
-						});
-					}
-				} else if (!match && v === null) {
-					//	do nothing; attribute already does not exist
-				} else {
-					match.value = v;
-				}
-			};
+			// this.element.attributes.set = function(p,v) {
+			// 	//	TODO	we may need a special case to handle an attempt to set an attribute with the XML Namespaces namespace, and perhaps generally for
+			// 	//			[xX][mM][lL]
+			// 	var match = choose(this,attributeFilter(p));
+			// 	if (match && v === null) {
+			// 		for (var i=0; i<this.length; i++) {
+			// 			if (attributeFilter(p)(this[i])) {
+			// 				this.splice(i,1);
+			// 				//	Probably could return here
+			// 				i--;
+			// 			}
+			// 		}
+			// 	} else if (!match && v !== null) {
+			// 		//	TODO	with current API there is nothing to stop callers from using array methods to insert illegal attribute values
+			// 		if (typeof(p) == "string") {
+			// 			this.push({
+			// 				//	TODO	namespace?
+			// 				name: p,
+			// 				value: v
+			// 			})
+			// 		} else {
+			// 			this.push({
+			// 				namespace: p.namespace,
+			// 				name: p.name,
+			// 				value: v
+			// 			});
+			// 		}
+			// 	} else if (!match && v === null) {
+			// 		//	do nothing; attribute already does not exist
+			// 	} else {
+			// 		match.value = v;
+			// 	}
+			// };
 
 			//	TODO	what if someone wants to "suggest" a namespace prefix and not be stuck with jsdom_X?
 
@@ -495,6 +550,7 @@
 		var Document = function(p) {
 			this.child = void(0);
 			this.children = void(0);
+			this.identify = void(0);
 			Parent.call(this,p);
 
 			var self = this;
