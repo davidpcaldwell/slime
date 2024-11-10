@@ -329,7 +329,9 @@ namespace slime.old.document {
 		/**
 		 * Creates a new, empty document object.
 		 */
-		Document: new () => Document
+		Document: new (p?: {
+			children?: slime.old.document.Node[]
+		}) => Document
 	}
 
 	export interface Exports {
@@ -345,12 +347,79 @@ namespace slime.old.document {
 			 * Attributes to use when initializing this element.
 			 */
 			attributes?: element.Attribute[]
+
+			children?: Node[]
 		}) => Element
 	}
 
 	export interface Exports {
-		filter: any
+		/**
+		 * Creates a {@link slime.old.document.parent.Filter} based on the argument given.
+		 *
+		 * @param p An object describing the filter.
+		 */
+		filter: {
+			/**
+			 * Matches elements with the given local name.
+			 */
+			(p: { elements: string }): parent.Filter
+			(p: { attribute: any, value?: any }): parent.Filter
+		}
+	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const module = test.subject;
+
+			fifty.tests.Filter = function() {
+				var elements = [
+					new module.Element({
+						type: { name: "a" },
+						attributes: [{ name: "a", value: "a" }]
+					}),
+					new module.Element({
+						type: { name: "a" },
+						attributes: [{ name: "b", value: "c" },{ name: "a", value: "b" }]
+					}),
+					new module.Element({
+						type: { name: "a" },
+						attributes: [{ name: "b", value: "d" }]
+					})
+				];
+				var document = new module.Document({
+					children: [
+						new module.Element({
+							type: { name: "root" },
+							children: elements
+						})
+					]
+				});
+				var root = document.document.getElement();
+				(function() {
+					var filtered = root.children.filter(module.filter({ attribute: "a" }));
+					verify(filtered).length.is(2);
+					verify(filtered)[0].is(elements[0]);
+					verify(filtered)[1].is(elements[1]);
+				})();
+				(function() {
+					var filtered = root.children.filter(module.filter({ attribute: "a", value: "a" }));
+					verify(filtered).length.is(1);
+					verify(filtered)[0].is(elements[0]);
+				})();
+				(function() {
+					var filtered = root.children.filter(module.filter({ attribute: "b", value: "d" }));
+					verify(filtered).length.is(1);
+					verify(filtered)[0].is(elements[2]);
+				})();
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		Text: any
 		Cdata: any
 		Comment: any

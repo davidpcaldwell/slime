@@ -39,6 +39,10 @@
 			};
 		};
 
+		/**
+		 *
+		 * @param { { children?: slime.old.document.Node[] } } p
+		 */
 		var Parent = function(p) {
 			Node.call(this,p);
 
