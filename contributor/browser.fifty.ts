@@ -14,6 +14,7 @@
 			fifty.load("../loader/browser/test/events.fifty.ts");
 			fifty.load("../loader/api/old/unit.fifty.ts");
 			fifty.load("../loader/document/module.fifty.ts");
+			fifty.load("../js/document/module.fifty.ts");
 			fifty.load("../js/web/module.fifty.ts");
 			fifty.load("../js/codec/ini.fifty.ts");
 			fifty.load("../js/time/module.fifty.ts");
