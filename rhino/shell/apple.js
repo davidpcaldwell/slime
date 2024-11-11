@@ -293,33 +293,39 @@
 		$exports.bundle = {};
 		$api.deprecate($exports,"bundle");
 		if ($context.api.shell.PATH.getCommand("chmod")) {
-			$exports.bundle.osx = $api.deprecate(function(p) {
-				var info = $context.api.js.Object.set({}, p.info);
+			$exports.bundle.osx = $api.deprecate(
+				/**
+				 * @type { slime.jrunscript.shell.system.apple.Exports["bundle"]["osx"] }
+				 * @param { ConstructorParameters<slime.jrunscript.shell.system.apple.Exports["bundle"]["osx"]>[0] } p
+				 */
+				function(p) {
+					var info = $context.api.js.Object.set({}, p.info);
 
-				if (p.command) {
-					this.command = p.command;
-					if (!info.CFBundleExecutable) {
-						info.CFBundleExecutable = "script";
-					}
-				}
-
-				this.write = function(to) {
-					var contents = to.getRelativePath("Contents").createDirectory({
-						ifExists: function(dir) {
-							return false;
-						}
-					});
-					contents.getRelativePath("Info.plist").write($exports.plist.xml.encode(info).serialize({ pretty: { current: "\n", indent: "    " } }));
 					if (p.command) {
-						var path = "MacOS/" + info.CFBundleExecutable;
-						contents.getRelativePath(path).write("#!/bin/bash\n" + p.command, { append: false, recursive: true });
-						$context.api.shell.run({
-							command: "chmod",
-							arguments: ["+x", contents.getRelativePath(path)]
+						this.command = p.command;
+						if (!info.CFBundleExecutable) {
+							info.CFBundleExecutable = "script";
+						}
+					}
+
+					this.write = function(to) {
+						var contents = to.getRelativePath("Contents").createDirectory({
+							ifExists: function(dir) {
+								return false;
+							}
 						});
+						contents.getRelativePath("Info.plist").write($exports.plist.xml.encode(info).serialize({ pretty: { current: "\n", indent: "    " } }));
+						if (p.command) {
+							var path = "MacOS/" + info.CFBundleExecutable;
+							contents.getRelativePath(path).write("#!/bin/bash\n" + p.command, { append: false, recursive: true });
+							$context.api.shell.run({
+								command: "chmod",
+								arguments: ["+x", contents.getRelativePath(path)]
+							});
+						}
 					}
 				}
-			});
+			);
 		}
 
 		$export(/** @type { slime.jrunscript.shell.system.apple.Exports } */($exports));
