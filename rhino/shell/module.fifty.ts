@@ -810,29 +810,7 @@ namespace slime.jrunscript.shell {
 
 	export interface Exports {
 		system: {
-			apple: {
-				plist: {
-					xml: {
-						encode: Function
-						decode: Function
-					}
-				}
-				osx: {
-					/**
-					 * Implements the creation of OS X [Application
-					 * Bundles](https://developer.apple.com/library/mac/documentation/CoreFoundation/Conceptual/CFBundles/Introduction/Introduction.html).
-					 */
-					ApplicationBundle: new (p: {
-						/**
-						 * The location at which to create the bundle.
-						 */
-						pathname: slime.jrunscript.file.Pathname
-
-						info?: system.apple.osx.ApplicationBundleInfo
-					}) => system.apple.osx.ApplicationBundle
-				}
-				bundle: any
-			}
+			apple: slime.jrunscript.shell.system.apple.Exports
 			opendesktop: slime.jrunscript.shell.opendesktop.Exports
 		}
 	}
@@ -841,6 +819,7 @@ namespace slime.jrunscript.shell {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			//	TODO	move to apple.fifty.ts
 			const { verify } = fifty;
 			const { jsh } = fifty.global;
 
@@ -848,76 +827,6 @@ namespace slime.jrunscript.shell {
 			const module = test.jsapiModule;
 
 			fifty.tests.exports.system = fifty.test.Parent();
-
-			fifty.tests.exports.system.applicationBundle = function() {
-				if (subject.system.apple.osx && subject.system.apple.osx.ApplicationBundle) {
-					var tmpfile = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("tmp.icns");
-					tmpfile.write("ICONS", { append: false });
-					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-					tmp.directory.remove();
-					var bundle = new subject.system.apple.osx.ApplicationBundle({
-						pathname: tmp,
-						info: {
-							CFBundleName: "name",
-							CFBundleIdentifier: "com.bitbucket.davidpcaldwell.slime",
-							CFBundleVersion: "1",
-							CFBundleExecutable: {
-								name: "program",
-								command: "ls"
-							},
-							CFBundleIconFile: {
-								file: tmpfile.file
-							}
-						}
-					});
-					verify(bundle).directory.evaluate(String).is(tmp.directory.toString());
-					verify(bundle).info.is.type("object");
-					//	TODO	not sure what the below is for
-					//@ts-ignore
-					bundle.info = "foo";
-					verify(bundle).info.is.type("object");
-					verify(bundle).info.CFBundleName.is("name");
-					verify(bundle).info.CFBundleIdentifier.is("com.bitbucket.davidpcaldwell.slime");
-					verify(bundle).info.CFBundleVersion.is("1");
-					verify(bundle).info.CFBundleExecutable.evaluate(String).is("program");
-					verify(bundle).directory.getFile("Contents/MacOS/program").is.type("object");
-					verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("null");
-					verify(bundle).directory.getFile("Contents/Resources/tmp.icns").is.type("object");
-
-					bundle.info.CFBundleExecutable = "string";
-					verify(bundle).info.CFBundleExecutable.evaluate(String).is("string");
-
-					bundle.info.CFBundleExecutable = {
-						name: "executable",
-						command: "pwd"
-					};
-					verify(bundle).directory.getFile("Contents/MacOS/program").is.type("null");
-					verify(bundle).directory.getFile("Contents/MacOS/executable").is.type("object");
-					verify(bundle).directory.evaluate(function() {
-						var file = this.getFile("Contents/MacOS/executable");
-						if (!file) return null;
-						return { string: file.read(String) };
-					}).is.type("object");
-				} else {
-					var message = "ApplicationBundle not available on this system";
-					verify(message).is(message);
-				}
-			}
-
-			fifty.tests.exports.system.plist = function() {
-				var object: { a: string, b: { c: string } } = {
-					a: "1",
-					b: {
-						c: "2"
-					}
-				};
-				var xml = module.system.apple.plist.xml.encode(object);
-				jsh.shell.console(xml.toString());
-				var decoded: typeof object = module.system.apple.plist.xml.decode(xml);
-				verify(decoded).a.is("1");
-				verify(decoded).b.is.type("object");
-				verify(decoded).b.c.is("2");
-			}
 		}
 	//@ts-ignore
 	)(fifty);
@@ -1506,6 +1415,8 @@ namespace slime.jrunscript.shell.internal.invocation {
 				fifty.load("run-old.fifty.ts");
 
 				fifty.load("console.fifty.ts");
+
+				fifty.load("apple.fifty.ts");
 			}
 		}
 	//@ts-ignore
