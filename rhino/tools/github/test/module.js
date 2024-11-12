@@ -108,7 +108,8 @@
 				PROTOCOL = "http";
 			} else if (p.settings.debug) {
 				command.push("env");
-				command.push("JSH_LAUNCHER_DEBUG=true");
+				command.push("JSH_LAUNCHER_BASH_DEBUG=1");
+				command.push("JSH_LAUNCHER_DEBUG=1");
 			}
 			if (p.settings.token) {
 				command.push("JSH_GITHUB_USER=davidpcaldwell", "JSH_GITHUB_PASSWORD=" + p.settings.token());
