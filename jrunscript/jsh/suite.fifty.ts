@@ -29,10 +29,45 @@ namespace slime.jsh.test {
 						subject: intention
 					}),
 					function(exit) {
-						if (exit.status != 0) throw new Error("Exit status: " + exit.status);
+						if (exit.status != 0) {
+							jsh.shell.console("STANDARD OUTPUT");
+							jsh.shell.console(exit.stdio.output);
+							jsh.shell.console("STANDARD ERROR");
+							jsh.shell.console(exit.stdio.error);
+							throw new Error("Exit status: " + exit.status + " for intention " + JSON.stringify(intention));
+						}
 						return JSON.parse(exit.stdio.output);
 					}
 				);
+			};
+
+			fifty.tests.remote = fifty.test.Parent();
+
+			fifty.tests.remote.localScript = function() {
+				var intention = shells.remote().getShellIntention({
+					PATH: jsh.shell.PATH,
+					settings: {
+						branch: "local"
+					},
+					script: "jrunscript/jsh/test/jsh-data.jsh.js"
+				});
+				var remoteShellLocalScript = run(intention);
+				jsh.shell.console(JSON.stringify(remoteShellLocalScript,void(0),4));
+				verify(remoteShellLocalScript).evaluate.property("jsh.script.file").is.type("object");
+				verify(remoteShellLocalScript).evaluate.property("jsh.script.url").is.type("undefined");
+			};
+
+			fifty.tests.remote.remoteScript = function() {
+				var remoteShellRemoteScript = run(shells.remote().getShellIntention({
+					PATH: jsh.shell.PATH,
+					settings: {
+						branch: "local"
+					},
+					script: shells.remote().getSlimeUrl({ path: "jrunscript/jsh/test/jsh-data.jsh.js" })
+				}));
+				jsh.shell.console(JSON.stringify(remoteShellRemoteScript,void(0),4));
+				verify(remoteShellRemoteScript).evaluate.property("jsh.script.file").is.type("undefined");
+				verify(remoteShellRemoteScript).evaluate.property("jsh.script.url").is.type("object");
 			};
 
 			fifty.tests.executable = function() {
@@ -154,28 +189,7 @@ namespace slime.jsh.test {
 			}
 
 			fifty.tests.suite = function() {
-				var remoteShellLocalScript = run(shells.remote().getShellIntention({
-					PATH: jsh.shell.PATH,
-					settings: {
-						branch: "local"
-					},
-					script: "jrunscript/jsh/test/jsh-data.jsh.js"
-				}));
-				jsh.shell.console(JSON.stringify(remoteShellLocalScript,void(0),4));
-				verify(remoteShellLocalScript).evaluate.property("jsh.script.file").is.type("object");
-				verify(remoteShellLocalScript).evaluate.property("jsh.script.url").is.type("undefined");
-
-				var remoteShellRemoteScript = run(shells.remote().getShellIntention({
-					PATH: jsh.shell.PATH,
-					settings: {
-						branch: "local"
-					},
-					script: shells.remote().getSlimeUrl({ path: "jrunscript/jsh/test/jsh-data.jsh.js" })
-				}));
-				jsh.shell.console(JSON.stringify(remoteShellRemoteScript,void(0),4));
-				verify(remoteShellRemoteScript).evaluate.property("jsh.script.file").is.type("undefined");
-				verify(remoteShellRemoteScript).evaluate.property("jsh.script.url").is.type("object");
-
+				fifty.run(fifty.tests.remote);
 				fifty.run(fifty.tests.executable);
 			}
 

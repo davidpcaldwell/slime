@@ -531,7 +531,7 @@ if test -n "${JRUNSCRIPT}" && test "$0" == "bash"; then
 fi
 
 if [ -z "${JRUNSCRIPT}" ]; then
-	if [ "$0" == "bash" ]; then
+	if test "$0" == "bash" && test -z "${SLIME_TEST_ISSUE_1617}"; then
 		#	Remote shell; we default to JDK 8 for those as there is a problem with module path implementation on remote shells
 		#	TODO #1617	make it possible to use JDK 21 for remote shells
 		install_jdk_8 ${JSH_LOCAL_JDKS}/default
