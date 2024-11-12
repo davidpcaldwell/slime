@@ -1009,79 +1009,6 @@ namespace slime.jrunscript.shell {
 	export interface Exports {
 		browser: slime.jrunscript.shell.browser.Exports
 	}
-
-	export interface Exports {
-		test: {
-			invocation: slime.jrunscript.shell.internal.invocation.Export
-		}
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { jsh } = fifty.global;
-			const subject: slime.jrunscript.shell.internal.invocation.Export = fifty.global.jsh.shell.test.invocation;
-
-			fifty.tests.invocation = fifty.test.Parent();
-
-			fifty.tests.invocation.sudo = function() {
-				var sudoed = subject.exports(void(0)).sudo({})(fifty.global.jsh.shell.Invocation.from.argument({
-					command: "ls"
-				}));
-
-				fifty.verify(sudoed).configuration.command.evaluate(String).is("sudo");
-				fifty.verify(sudoed).configuration.arguments[0].is("ls");
-				fifty.verify(sudoed).context.environment.evaluate.property("SUDO_ASKPASS").is(void(0));
-			};
-
-			fifty.tests.invocation.toBashScript = function() {
-				var parent = fifty.global.jsh.shell.environment;
-				fifty.verify(parent).evaluate.property("PATH").is.type("string");
-				fifty.verify(parent).evaluate.property("TO_BASH_SCRIPT_EXAMPLE").is(void(0));
-				var script = subject.invocation.toBashScript()({
-					command: "foo",
-					arguments: ["bar", "baz"],
-					directory: "/path/to/use",
-					environment: {
-						values: {
-							PATH: null,
-							TO_BASH_SCRIPT_EXAMPLE: "example"
-						}
-					}
-				});
-				var lines = script.split("\n");
-				fifty.verify(lines[0]).is("#!/bin/bash");
-				fifty.verify(lines[1]).is("cd /path/to/use");
-				fifty.verify(lines[2]).is("env -u PATH TO_BASH_SCRIPT_EXAMPLE=\"example\" foo bar baz");
-			}
-
-			fifty.tests.invocation.suite = function() {
-				fifty.run(function askpass() {
-					var sudoed = subject.exports(void(0)).sudo({
-						askpass: "/path/to/askpass"
-					})(jsh.shell.Invocation.from.argument({
-						command: "ls"
-					}));
-
-					verify(sudoed).configuration.command.evaluate(String).is("sudo");
-					verify(sudoed).configuration.arguments[0].is("--askpass");
-					verify(sudoed).configuration.arguments[1].is("ls");
-					verify(sudoed).context.environment.SUDO_ASKPASS.is("/path/to/askpass");
-				});
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-}
-
-namespace slime.jrunscript.shell.internal.invocation {
-	export interface Context {
-		library: {
-			io: slime.jrunscript.io.Exports
-		}
-	}
 }
 
 namespace slime.jrunscript.shell {
@@ -1361,43 +1288,6 @@ namespace slime.jrunscript.shell {
 			stdio: invocation.old.Stdio
 		}
 	}
-}
-
-namespace slime.jrunscript.shell.internal.invocation {
-	export type Configuration = Pick<slime.jrunscript.shell.invocation.old.Argument, "command" | "arguments">
-
-	export type StdioWithInputFixed = {
-		input: slime.jrunscript.runtime.io.InputStream
-		output: slime.jrunscript.shell.invocation.old.Stdio["output"]
-		error: slime.jrunscript.shell.invocation.old.Stdio["error"]
-	}
-
-	export interface Export {
-		exports: (defaults: shell.run.internal.Parent) => slime.jrunscript.shell.exports.Invocation
-
-		internal: {
-			/**
-			 * Interface that is exposed because the old `run` interface uses it; see `run-old.js`.
-			 */
-			old: {
-				error: {
-					BadCommandToken: slime.$api.error.old.Type<"ArgumentError",{}>
-				}
-				updateForStringInput: (p: slime.jrunscript.shell.invocation.old.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
-
-				toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
-
-				parseCommandToken: {
-					(arg: slime.jrunscript.shell.invocation.old.Token, index?: number, ...args: any[]): string;
-					Error: slime.$api.error.old.Type<"ArgumentError", {}>;
-				}
-
-				isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
-			}
-		}
-
-		invocation: slime.jrunscript.shell.Exports["invocation"]
-	}
 
 	(
 		function(fifty: slime.fifty.test.Kit) {
@@ -1406,8 +1296,6 @@ namespace slime.jrunscript.shell.internal.invocation {
 				fifty.run(fifty.tests.environment);
 
 				fifty.run(fifty.tests.jsapi);
-
-				fifty.run(fifty.tests.invocation);
 
 				fifty.run(fifty.tests.exports);
 
@@ -1421,6 +1309,4 @@ namespace slime.jrunscript.shell.internal.invocation {
 		}
 	//@ts-ignore
 	)(fifty)
-
-	export type Script = slime.loader.Script<Context,Export>
 }
