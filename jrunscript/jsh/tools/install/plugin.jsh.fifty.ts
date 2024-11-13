@@ -118,7 +118,7 @@ namespace slime.jsh.shell.tools {
 
 		export interface RequireCommand {
 			/**
-			 * A named version of Rhino to download and install; ignored if `local` is specified. Available versions include:
+			 * A named version of Rhino to download and install if an acceptable version is not present.
 			 *
 			 * * mozilla/1.7.15 (the default, and only tested/supported version)
 			 * * mozilla/1.7.14

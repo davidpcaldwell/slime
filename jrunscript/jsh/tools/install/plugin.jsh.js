@@ -143,6 +143,7 @@
 						/** @type { slime.jsh.shell.tools.Exports["rhino"]["require"]["world"] } */
 						var require = function(p) {
 							var version = (p) ? p.version : void(0);
+
 							var replace = (p && p.replace)
 								? (
 									function() {
@@ -160,9 +161,9 @@
 
 							return function(events) {
 								var at = jsh.shell.jsh.lib.getRelativePath("js.jar")
-								$api.fp.world.now.action(
-									jsh.shell.jsh.require,
-									{
+								$api.fp.world.Means.now({
+									means: jsh.shell.jsh.require,
+									order: {
 										satisfied: function() { return Boolean(at.file); },
 										install: function() {
 											/** @type { slime.jsh.shell.tools.rhino.OldInstallCommand } */
@@ -173,7 +174,7 @@
 											woInstallRhino(argument)(events);
 										}
 									},
-									{
+									handlers: {
 										installed: function(e) {
 											events.fire("installed", at.toString());
 										},
@@ -184,7 +185,7 @@
 											events.fire("satisfied", at.toString());
 										}
 									}
-								);
+								});
 							}
 						};
 
