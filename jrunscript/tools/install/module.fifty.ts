@@ -32,6 +32,30 @@ namespace slime.jrunscript.tools.install {
 		client?: slime.jrunscript.http.client.object.Client
 	}
 
+	export interface Exports {
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace test {
+		export interface Exports {
+		}
+	}
+
+	export interface Exports {
+		/**
+		 * Parts exported only for testing.
+		 */
+		test: test.Exports
+	}
+
 	export namespace test {
 		export const scope = (
 			function(fifty: slime.fifty.test.Kit) {
@@ -138,46 +162,35 @@ namespace slime.jrunscript.tools.install {
 			getDefaultName: (url: string) => string
 		}
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				const subject = test.scope.api;
+
+				fifty.tests.getDefaultFilename = function() {
+					verify(subject).test.getDefaultName("https://www.example.com/path/dist.zip").is("dist.zip");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace download {
+		export interface Events {
+			request: slime.jrunscript.http.client.spi.Events["request"]
+		}
+	}
+
+	export namespace test {
 		export interface Exports {
 			//	TODO	implement world test that exercises this so that downloads can be tested
 			download: slime.$api.fp.world.Means<{
 				from: string
 				to: slime.jrunscript.file.Location
 			},download.Events>
-		}
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports = fifty.test.Parent();
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export interface Exports {
-		test: test.Exports
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			const subject = test.scope.api;
-
-			fifty.tests.getDefaultFilename = function() {
-				verify(subject).test.getDefaultName("https://www.example.com/path/dist.zip").is("dist.zip");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export namespace download {
-		export interface Events {
-			request: slime.jrunscript.http.client.spi.Events["request"]
 		}
 	}
 

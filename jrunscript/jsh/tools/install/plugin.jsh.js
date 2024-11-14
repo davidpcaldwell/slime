@@ -27,7 +27,7 @@
 				/**
 				 * @type { slime.$api.fp.world.Means<slime.jsh.shell.tools.rhino.OldInstallCommand,slime.jsh.shell.tools.rhino.InstallEvents> }
 				 */
-				var woInstallRhino = function(p) {
+				var woOldInstallRhino = function(p) {
 					return function(events) {
 						if (!p) p = {};
 						var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
@@ -87,7 +87,7 @@
 					 */
 					function(p,events) {
 						$api.fp.world.Means.now({
-							means: woInstallRhino,
+							means: woOldInstallRhino,
 							order: p,
 							handlers: {
 								console: function(e) {
@@ -171,7 +171,7 @@
 												version: version,
 												replace: replace
 											}
-											woInstallRhino(argument)(events);
+											woOldInstallRhino(argument)(events);
 										}
 									},
 									handlers: {
