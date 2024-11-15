@@ -213,11 +213,12 @@ namespace slime.jrunscript.shell.internal.run {
 		readText?: () => string
 	}
 
-	/**
-	 * Extends the standard shell `Stdio` type to make all fields required and add a `close()` method that closes the streams and
-	 * returns the output of the program.
-	 */
-	export type Stdio = Required<slime.jrunscript.shell.invocation.Stdio> & { close: () => slime.jrunscript.shell.run.CapturedOutput }
+	export interface Stdio {
+		input: slime.jrunscript.runtime.io.InputStream
+		output: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
+		error: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
+		close: () => slime.jrunscript.shell.run.CapturedOutput
+	}
 
 	export interface Listener {
 		close: () => void
@@ -347,43 +348,6 @@ namespace slime.jrunscript.shell.internal.run {
 			const subject = fifty.global.jsh.shell;
 
 			var directory = fifty.jsh.file.object.getRelativePath(".").directory;
-
-			fifty.tests.manual.kill = function() {
-				if (fifty.global.jsh.shell.PATH.getCommand("sleep")) {
-					var killed = subject.Invocation.from.argument({
-						command: "sleep",
-						arguments: ["1"],
-						directory: directory.toString(),
-						stdio: {
-							output: "line",
-							error: "line"
-						}
-					});
-					var events = [];
-					var subprocess;
-					var killtell = subject.world.action(killed);
-					$api.fp.world.now.tell(
-						killtell,
-						{
-							start: function(e) {
-								events.push(e);
-								subprocess = e.detail;
-								subprocess.kill();
-							},
-							stdout: function(e) {
-								events.push(e);
-							},
-							stderr: function(e) {
-								events.push(e);
-							},
-							exit: function(e) {
-								events.push(e);
-							}
-						}
-					);
-					fifty.global.jsh.shell.console(JSON.stringify(events,void(0),4));
-				}
-			};
 
 			fifty.tests.sandbox = fifty.test.Parent();
 

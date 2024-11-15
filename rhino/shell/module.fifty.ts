@@ -1013,14 +1013,6 @@ namespace slime.jrunscript.shell {
 
 namespace slime.jrunscript.shell {
 	export namespace invocation {
-		export interface Stdio {
-			input?: slime.jrunscript.runtime.io.InputStream
-			output?: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
-			error?: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
-		}
-
-		export type Input = string | slime.jrunscript.runtime.io.InputStream
-
 		export interface Argument {
 			/**
 			 * The command to run.
@@ -1201,57 +1193,6 @@ namespace slime.jrunscript.shell {
 
 	export interface Exports {
 		ssh: slime.jrunscript.shell.ssh.Exports
-	}
-
-	export interface Exports {
-		/** @deprecated See properties for replacements. */
-		invocation: {
-			 /**
-			  * @deprecated Replaced by {@link Exports.bash bash.from.intention()}.
-			  *
-			  * Creates the code for a `bash` script from a single Invocation-like object and returns it as a string.
-			  */
-			 toBashScript: () => (p: {
-				/**
-				 * The command to execute.
-				 */
-				command: string | slime.jrunscript.file.File
-
-				/**
-				 * Arguments to be sent to the command. If omitted, no arguments will be sent.
-				 */
-				arguments?: string[]
-
-				/**
-				 * The working directory to be used when executing the command. If omitted, the shell's current working directory
-				 * will be used.
-				 */
-				directory?: string | slime.jrunscript.file.Directory
-
-				/**
-				 * Configuration of the environment for the command. If omitted, the command will inherit the environment of the
-				 * invoking shell.
-				 */
-				environment?: {
-					/**
-					 * Whether to include the environment of the invoking shell. If `true`, the command's environment will include
-					 * the environment of the invoking shell. Defaults to `true`.
-					 */
-					inherit?: boolean
-
-					/**
-					 * Environment variables to be provided to the command, or to be removed from the environment of the command.
-					 * Properties with string values represent variables to be provided to the command (potentially overriding
-					 * values from the parent shell). Properties with `null` values represent variables to be **removed** from
-					 * the command's environment (even if they are present in the parent shell). Properties that are undefined
-					 * will have no effect.
-					 */
-					values: {
-						[x: string]: string | null
-					}
-				}
-			 }) => string
-		}
 	}
 
 	export interface Exports {

@@ -335,7 +335,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed } p
-		 * @param { slime.jrunscript.shell.invocation.Stdio } parent
+		 * @param { slime.jrunscript.shell.parent.Stdio } parent
 		 */
 		var fallbackToParentStdio = function(p, parent) {
 			if (typeof(p.input) == "undefined") p.input = null;
@@ -347,7 +347,7 @@
 		/**
 		 * @param { Pick<slime.jrunscript.shell.invocation.old.Argument, "stdio" | "environment" | "directory"> } p
 		 * @param { slime.jrunscript.java.Environment } parentEnvironment
-		 * @param { slime.jrunscript.shell.invocation.Stdio } parentStdio
+		 * @param { slime.jrunscript.shell.parent.Stdio } parentStdio
 		 * @returns { slime.jrunscript.shell.run.old.Context }
 		 */
 		var toContext = function(p, parentEnvironment, parentStdio) {
