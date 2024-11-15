@@ -247,20 +247,20 @@ namespace slime.jsh.internal.loader.plugins {
 					return JSON.parse(result.stdio.output);
 				};
 
-				//	Add JDK 17 to shell so it can be bootstrapped
-				jsh.shell.console("Adding JDK 17 to shell ...");
+				//	Add JDK 21 to shell so it can be bootstrapped
+				jsh.shell.console("Adding JDK 21 to shell ...");
 				$api.fp.world.Sensor.now({
 					sensor: jsh.shell.subprocess.question,
 					subject: {
 						command: "bash",
 						arguments: $api.Array.build(function(rv: string[]) {
 							rv.push(copied.directory.getRelativePath("jsh").toString());
-							rv.push("--add-jdk-17");
+							rv.push("--add-jdk-21");
 						})
 					}
 				});
 
-				jsh.shell.console("Bootstrapping JDK 17 shell ...");
+				jsh.shell.console("Bootstrapping JDK 21 shell ...");
 				$api.fp.world.Sensor.now({
 					sensor: jsh.shell.subprocess.question,
 					subject: {
@@ -271,7 +271,7 @@ namespace slime.jsh.internal.loader.plugins {
 						}),
 						environment: function(is) {
 							return $api.Object.compose(is, {
-								JSH_LAUNCHER_JDK_HOME: copied.directory.getRelativePath("local/jdk/17").toString()
+								JSH_LAUNCHER_JDK_HOME: copied.directory.getRelativePath("local/jdk/21").toString()
 							});
 						},
 						stdio: {
