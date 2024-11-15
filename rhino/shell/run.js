@@ -45,64 +45,6 @@
 				if (stream == "error") return "stderr";
 			};
 
-			/**
-			 *
-			 * @param { Omit<slime.jrunscript.runtime.io.OutputStream, "close"> } stream
-			 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
-			 */
-			var getRawDestination = function(stream) {
-				return {
-					stream: stream,
-					close: function() {
-					}
-				}
-			}
-
-			/**
-			 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
-			 * @param { "output" | "error" } stream
-			 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
-			 */
-			var getLineBufferDestination = function(events,stream) {
-				var buffer = new $context.library.io.Buffer();
-
-				var lines = [];
-
-				var thread = $context.library.java.Thread.start({
-					call: function() {
-						buffer.readText().readLines(function(line) {
-							lines.push(line);
-							events.fire(toStreamEventType(stream), { line: line });
-						});
-					}
-				});
-
-				return {
-					stream: buffer.writeBinary(),
-					close: function() {
-						buffer.close();
-						thread.join();
-					},
-					readText: function() {
-						return lines.join($context.library.io.system.delimiter.line);
-					}
-				}
-			};
-
-			/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
-			var getStringBufferDestination = function() {
-				var buffer = new $context.library.io.Buffer();
-				return {
-					stream: buffer.writeBinary(),
-					close: function() {
-						buffer.close();
-					},
-					readText: function() {
-						return buffer.readText().asString();
-					}
-				}
-			};
-
 			/** @type { slime.jrunscript.shell.internal.run.Stdio } */
 			var rv = {};
 			/** @type { { [x: string]: slime.jrunscript.shell.internal.run.OutputDestination } } */
@@ -134,6 +76,64 @@
 			 */
 			var destinationFactory = function(events, stream) {
 				/**
+				 *
+				 * @param { Omit<slime.jrunscript.runtime.io.OutputStream, "close"> } stream
+				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+				 */
+				var getRawDestination = function(stream) {
+					return {
+						stream: stream,
+						close: function() {
+						}
+					}
+				}
+
+				/**
+				 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
+				 * @param { "output" | "error" } stream
+				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+				 */
+				var getLineBufferDestination = function(events,stream) {
+					var buffer = new $context.library.io.Buffer();
+
+					var lines = [];
+
+					var thread = $context.library.java.Thread.start({
+						call: function() {
+							buffer.readText().readLines(function(line) {
+								lines.push(line);
+								events.fire(toStreamEventType(stream), { line: line });
+							});
+						}
+					});
+
+					return {
+						stream: buffer.writeBinary(),
+						close: function() {
+							buffer.close();
+							thread.join();
+						},
+						readText: function() {
+							return lines.join($context.library.io.system.delimiter.line);
+						}
+					}
+				};
+
+				/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
+				var getStringBufferDestination = function() {
+					var buffer = new $context.library.io.Buffer();
+					return {
+						stream: buffer.writeBinary(),
+						close: function() {
+							buffer.close();
+						},
+						readText: function() {
+							return buffer.readText().asString();
+						}
+					}
+				};
+
+				/**
 				 * @param { slime.jrunscript.shell.run.OutputCapture } configuration
 				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 				 */
@@ -141,19 +141,7 @@
 					if (configuration == "string") {
 						return getStringBufferDestination();
 					} else if (configuration == "line") {
-						var destination = getLineBufferDestination(events, stream);
-						// var handler = function(e) {
-						// 	configuration.line(e.detail.line);
-						// };
-						// events.listeners.add(toStreamEventType(stream), handler);
-						// destination.close = (function(was) {
-						// 	return function() {
-						// 		var rv = was.apply(this,arguments);
-						// 		events.listeners.remove(toStreamEventType(stream), handler);
-						// 		return rv;
-						// 	}
-						// })(destination.close);
-						return destination;
+						return getLineBufferDestination(events, stream);
 					} else if (true) {
 						return getRawDestination(configuration);
 					}
