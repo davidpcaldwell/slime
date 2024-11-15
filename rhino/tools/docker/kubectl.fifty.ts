@@ -25,7 +25,7 @@ namespace slime.jrunscript.tools.kubernetes.cli {
 			create: (p: {
 				environment: slime.jrunscript.java.Environment
 				directory: string
-				stdio: Required<slime.jrunscript.shell.invocation.Stdio>
+				stdio: Required<slime.jrunscript.shell.parent.Stdio>
 			}) => Environment
 		}
 	}

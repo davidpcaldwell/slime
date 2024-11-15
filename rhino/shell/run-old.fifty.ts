@@ -5,6 +5,15 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace internal.invocation {
 		export interface Context {
 			library: {
@@ -47,7 +56,113 @@ namespace slime.jrunscript.shell {
 			invocation: slime.jrunscript.shell.Exports["invocation"]
 		}
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api } = fifty.global;
+				const subject = fifty.global.jsh.shell;
+
+				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
+
+				fifty.tests.manual.kill = function() {
+					if (fifty.global.jsh.shell.PATH.getCommand("sleep")) {
+						var killed = subject.Invocation.from.argument({
+							command: "sleep",
+							arguments: ["1"],
+							directory: directory.toString(),
+							stdio: {
+								output: "line",
+								error: "line"
+							}
+						});
+						var events = [];
+						var subprocess;
+						var killtell = subject.world.action(killed);
+						$api.fp.world.now.tell(
+							killtell,
+							{
+								start: function(e) {
+									events.push(e);
+									subprocess = e.detail;
+									subprocess.kill();
+								},
+								stdout: function(e) {
+									events.push(e);
+								},
+								stderr: function(e) {
+									events.push(e);
+								},
+								exit: function(e) {
+									events.push(e);
+								}
+							}
+						);
+						fifty.global.jsh.shell.console(JSON.stringify(events,void(0),4));
+					}
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export type Script = slime.loader.Script<Context,Export>
+	}
+
+	export interface Exports {
+		/** @deprecated See properties for replacements. */
+		invocation: {
+			 /**
+			  * @deprecated Replaced by {@link Exports.bash bash.from.intention()}.
+			  *
+			  * Creates the code for a `bash` script from a single Invocation-like object and returns it as a string.
+			  */
+			 toBashScript: () => (p: {
+				/**
+				 * The command to execute.
+				 */
+				command: string | slime.jrunscript.file.File
+
+				/**
+				 * Arguments to be sent to the command. If omitted, no arguments will be sent.
+				 */
+				arguments?: string[]
+
+				/**
+				 * The working directory to be used when executing the command. If omitted, the shell's current working directory
+				 * will be used.
+				 */
+				directory?: string | slime.jrunscript.file.Directory
+
+				/**
+				 * Configuration of the environment for the command. If omitted, the command will inherit the environment of the
+				 * invoking shell.
+				 */
+				environment?: {
+					/**
+					 * Whether to include the environment of the invoking shell. If `true`, the command's environment will include
+					 * the environment of the invoking shell. Defaults to `true`.
+					 */
+					inherit?: boolean
+
+					/**
+					 * Environment variables to be provided to the command, or to be removed from the environment of the command.
+					 * Properties with string values represent variables to be provided to the command (potentially overriding
+					 * values from the parent shell). Properties with `null` values represent variables to be **removed** from
+					 * the command's environment (even if they are present in the parent shell). Properties that are undefined
+					 * will have no effect.
+					 */
+					values: {
+						[x: string]: string | null
+					}
+				}
+			 }) => string
+		}
+	}
+
+	export namespace internal.run.old {
+		export interface Exports {
+			invocation: slime.jrunscript.shell.internal.invocation.Export
+		}
 	}
 
 	export interface Exports {
@@ -148,6 +263,18 @@ namespace slime.jrunscript.shell {
 					line: slime.$api.fp.Transform<slime.$api.event.Handler<slime.jrunscript.shell.run.Line>>
 				}
 			}
+		}
+	}
+
+	export namespace invocation {
+		export type Input = string | slime.jrunscript.runtime.io.InputStream
+	}
+
+	export namespace parent {
+		export interface Stdio {
+			input?: slime.jrunscript.runtime.io.InputStream
+			output?: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
+			error?: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
 		}
 	}
 
@@ -552,7 +679,7 @@ namespace slime.jrunscript.shell.run.old {
 namespace slime.jrunscript.shell.internal.run.old {
 	export interface Context {
 		environment: slime.jrunscript.java.Environment
-		stdio: slime.jrunscript.shell.invocation.Stdio
+		stdio: slime.jrunscript.shell.parent.Stdio
 		api: {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
@@ -572,7 +699,6 @@ namespace slime.jrunscript.shell.internal.run.old {
 	export interface Exports {
 		run: slime.jrunscript.shell.Exports["run"]
 		$run: any
-		invocation: slime.jrunscript.shell.internal.invocation.Export
 	}
 
 	(
