@@ -45,18 +45,6 @@ namespace slime.jrunscript.tools.install {
 	)(fifty);
 
 	export namespace test {
-		export interface Exports {
-		}
-	}
-
-	export interface Exports {
-		/**
-		 * Parts exported only for testing.
-		 */
-		test: test.Exports
-	}
-
-	export namespace test {
 		export const scope = (
 			function(fifty: slime.fifty.test.Kit) {
 				const $api = fifty.global.$api;
@@ -176,6 +164,18 @@ namespace slime.jrunscript.tools.install {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
+
+	export namespace test {
+		export interface Exports {
+		}
+	}
+
+	export interface Exports {
+		/**
+		 * Parts exported only for testing.
+		 */
+		test: test.Exports
 	}
 
 	export namespace download {
@@ -747,15 +747,6 @@ namespace slime.jrunscript.tools.install {
 				},
 				slime.jrunscript.file.File
 			>
-		}
-
-		/**
-		 * @deprecated
-		 */
-		$api: {
-			Events: {
-				Function: any
-			}
 		}
 	}
 

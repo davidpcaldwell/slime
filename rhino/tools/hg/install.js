@@ -131,7 +131,7 @@
 		};
 
 		var GUI = $context.api.Error.Type("Please execute the graphical installer.");
-		$exports.install = $context.api.Events.Function(
+		$exports.install = Object.assign($api.events.Function(
 			/**
 			 *
 			 * @param { Parameters<slime.jrunscript.tools.hg.install.Exports["install"]>[0] } p
@@ -216,7 +216,7 @@
 					}
 				}
 			}
-		);
+		)), { GUI: void(0) };
 		$exports.install.GUI = GUI;
 
 		for (var x in $context.api.module) {
