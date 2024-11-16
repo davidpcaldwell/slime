@@ -4,6 +4,10 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.shell.context.subprocess {
+	export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+}
+
 namespace slime.jrunscript.shell.internal.run {
 	(
 		function(
@@ -111,6 +115,10 @@ namespace slime.jrunscript.shell.run {
 		readonly [name: string]: string
 	}
 
+	export namespace intention {
+		export type Input = string | slime.jrunscript.runtime.io.InputStream
+	}
+
 	/**
 	 * A specification for a potential subprocess.
 	 */
@@ -120,7 +128,7 @@ namespace slime.jrunscript.shell.run {
 		environment?: slime.$api.fp.Transform<Environment>
 		directory?: string
 		stdio?: {
-			input?: string | StdioConfiguration["input"]
+			input?: intention.Input
 			output?: StdioConfiguration["output"]
 			error?: StdioConfiguration["error"]
 		}
@@ -135,10 +143,13 @@ namespace slime.jrunscript.shell.run {
 	}
 
 	export namespace internal {
+		export type SubprocessOutputStreamIdentity = "output" | "error"
+		export type SubprocessOutputStreamEventType = "stdout" | "stderr"
+
 		export interface Parent {
 			environment: Environment
 			directory: Intention["directory"]
-			stdio: Pick<StdioConfiguration,"output"|"error">
+			stdio: Pick<StdioConfiguration,SubprocessOutputStreamIdentity>
 		}
 	}
 
@@ -213,6 +224,11 @@ namespace slime.jrunscript.shell.internal.run {
 		readText?: () => string
 	}
 
+	/**
+	 * A standard I/O configuration to supply to a subprocess; the subprocess will obtain its input from the given `InputStream`,
+	 * and send its output and error streams to the given uncloseable output streams. The configuration also has a `close()` method
+	 * which will return any output emitted which this object is configured to capture.
+	 */
 	export interface Stdio {
 		input: slime.jrunscript.runtime.io.InputStream
 		output: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
@@ -339,220 +355,14 @@ namespace slime.jrunscript.shell.internal.run {
 	//@ts-ignore
 	)(fifty);
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api } = fifty.global;
-			const subject = fifty.global.jsh.shell;
-
-			var directory = fifty.jsh.file.object.getRelativePath(".").directory;
-
-			fifty.tests.sandbox = fifty.test.Parent();
-
-			fifty.tests.sandbox.subprocess = function() {
-				const console = fifty.global.jsh.shell.console;
-
-				var ls = subject.Invocation.from.argument({
-					command: "ls",
-					directory: directory.toString(),
-					stdio: {
-						output: "line",
-						error: "line"
-					}
-				});
-
-				var tell = subject.world.action(ls);
-
-				var captor = fifty.$api.Events.Captor({
-					start: void(0),
-					exit: void(0),
-					stdout: void(0),
-					stderr: void(0)
-				} as slime.jrunscript.shell.run.TellEvents)
-
-				$api.fp.world.now.tell(
-					tell,
-					captor.handler
-				);
-
-				var isType: (type: string) => slime.$api.fp.Predicate<slime.$api.Event<any>> = function(type) {
-					return function(event: slime.$api.Event<any>) {
-						return event.type == type;
-					}
-				};
-
-				var ofType: (type: string) => (events: slime.$api.Event<any>[]) => slime.$api.Event<any>[] = function(type) {
-					return function(events) {
-						return events.filter(isType(type));
-					}
-				}
-
-				//	TODO	this is not necessarily true at the moment, given the implementation
-				//verify(captor).events[0].type.is("start");
-				verify(captor).events.evaluate(ofType("start")).length.is(1);
-
-				verify(captor).events.evaluate(ofType("stdout")).evaluate(function(stdout) {
-					return stdout.length > 0;
-				}).is(true);
-
-				verify(captor).events.evaluate(ofType("stderr")).length.is(1);
-				verify(captor).events.evaluate(ofType("stderr"))[0].evaluate(function(event) {
-					return event.detail.line == "";
-				}).is(true);
-
-				verify(captor).events[captor.events.length-1].type.is("exit");
-				verify(captor).events.evaluate(ofType("exit")).length.is(1);
-
-				captor.events.forEach(function(event) {
-					console(JSON.stringify(event));
-				});
-			};
-
-			fifty.tests.sandbox.other = function() {
-				const { jsh } = fifty.global;
-				fifty.run(function checkErrorForBogusInvocation() {
-					var bogus = subject.Invocation.from.argument({
-						command: "foobarbaz"
-					});
-
-					var tell = subject.world.action(bogus);
-					fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f); }).threw.type(Error);
-					fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f); }).threw.evaluate.property("name").is("JavaException");
-				});
-
-				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
-
-				if (fifty.global.jsh.shell.PATH.getCommand("ls")) {
-					var ls = subject.Invocation.from.argument({
-						command: "ls",
-						directory: directory.toString()
-					});
-					var status: number;
-					$api.fp.world.now.tell(
-						subject.world.action(ls),
-						{
-							exit: function(e) {
-								status = e.detail.status;
-							}
-						}
-					);
-					fifty.verify(status).is(0);
-
-					var lsIllegalArgumentStatus = (function() {
-						if (fifty.global.jsh.shell.os.name == "Mac OS X") return 1;
-						if (fifty.global.jsh.shell.os.name == "Linux") return 2;
-					})();
-
-					fifty.run(function checkExitStatus() {
-						debugger;
-						var lserror = $api.Object.compose(ls, {
-							configuration: $api.Object.compose(ls.configuration, {
-								arguments: ["--foo"]
-							})
-						});
-						var status: number;
-						$api.fp.world.now.tell(
-							subject.world.action(lserror),
-							{
-								exit: function(e) {
-									status = e.detail.status;
-								}
-							}
-						);
-						fifty.verify(status).is(lsIllegalArgumentStatus);
-					});
-
-					fifty.run(function checkErrorOnNonZero() {
-						var lserror = $api.Object.compose(ls, {
-							configuration: $api.Object.compose(ls.configuration, {
-								arguments: ["--foo"]
-							})
-						});
-						var tell = subject.world.action(lserror);
-						//	TODO	this listener functionality was previously provided by default; will want to improve API over
-						//			time so that it's harder to accidentally ignore non-zero exit status
-						var listener: slime.$api.event.Handlers<slime.jrunscript.shell.run.TellEvents> = {
-							exit: function(e) {
-								if (e.detail.status != 0) {
-									throw new Error("Non-zero exit status: " + e.detail.status);
-								}
-							}
-						}
-						fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f, listener); }).threw.type(Error);
-						fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f, listener); }).threw.message.is("Non-zero exit status: " + lsIllegalArgumentStatus);
-					});
-				}
-
-				var isDirectory = function(directory) {
-					return Object.assign(function(p) {
-						return directory.toString() == p.toString();
-					}, {
-						toString: function() {
-							return "is directory " + directory;
-						}
-					})
-				};
-
-				var it = {
-					is: function(value) {
-						return function(p) {
-							return p === value;
-						}
-					}
-				}
-
-				fifty.run(function Invocation() {
-					var directory = fifty.jsh.file.object.getRelativePath(".").directory;
-
-					//	TODO	test for missing command
-
-					fifty.run(function defaults() {
-						var argument: shell.invocation.Argument = {
-							command: "ls"
-						};
-						var invocation = fifty.global.jsh.shell.Invocation.from.argument(argument);
-						fifty.verify(invocation, "invocation", function(its) {
-							its.configuration.command.is("ls");
-							its.configuration.arguments.is.type("object");
-							its.configuration.arguments.length.is(0);
-							//	TODO	environment
-							its.context.directory.evaluate(isDirectory(fifty.global.jsh.shell.PWD)).is(true);
-							its.context.stdio.input.evaluate(it.is(null)).is(true);
-							//	TODO	appears to work in latest TypeScript
-							//@ts-ignore
-							its.context.stdio.output.evaluate(it.is(fifty.global.jsh.shell.stdio.output)).is(true);
-							//	TODO	appears to work in latest TypeScript
-							//@ts-ignore
-							its.context.stdio.error.evaluate(it.is(fifty.global.jsh.shell.stdio.error)).is(true);
-						});
-					});
-
-					fifty.run(function specified() {
-						var argument: shell.invocation.Argument = {
-							command: fifty.global.jsh.file.Pathname("/bin/ls").toString(),
-							arguments: [directory.getRelativePath("run.fifty.ts").toString()],
-							//	TODO	environment
-							directory: directory.toString()
-						};
-						var invocation = fifty.global.jsh.shell.Invocation.from.argument(argument);
-						fifty.verify(invocation, "invocation", function(its) {
-							its.configuration.command.is("/bin/ls");
-							its.configuration.arguments.is.type("object");
-							its.configuration.arguments.length.is(1);
-							its.configuration.arguments[0].is(directory.getRelativePath("run.fifty.ts").toString());
-							its.context.directory.evaluate(isDirectory(directory)).is(true);
-						});
-					});
-				});
-			}
-		}
-	//@ts-ignore
-	)($fifty);
-
 	export interface Exports {
 		internal: {
+			buildStdio: slime.$api.fp.world.Sensor<
+				slime.jrunscript.shell.run.StdioConfiguration,
+				slime.jrunscript.shell.run.TellEvents,
+				slime.jrunscript.shell.internal.run.Stdio
+			>
+
 			mock: {
 				tell: shell.Exports["Tell"]["mock"]
 			}
@@ -568,11 +378,6 @@ namespace slime.jrunscript.shell.internal.run {
 		 * @deprecated
 		 */
 		old: {
-			/**
-			 * @deprecated
-			 */
-			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents>) => Stdio
-
 			/**
 			 * @deprecated
 			 */
@@ -599,7 +404,6 @@ namespace slime.jrunscript.shell.internal.run {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.question);
 				fifty.run(fifty.tests.run);
-				fifty.run(fifty.tests.sandbox);
 			}
 		}
 	//@ts-ignore

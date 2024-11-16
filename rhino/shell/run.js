@@ -16,144 +16,128 @@
 	 */
 	function(Packages,JavaAdapter,$api,$context,$export) {
 		/**
-		 *
-		 * @param { slime.jrunscript.shell.run.old.Invocation } old
-		 * @returns { slime.jrunscript.shell.run.Invocation }
-		 */
-		var modernize = function(old) {
-			return {
-				command: old.configuration.command,
-				arguments: old.configuration.arguments,
-				environment: old.context.environment,
-				directory: old.context.directory,
-				stdio: old.context.stdio
-			}
-		};
-
-		/**
-		 *
-		 * @param { slime.jrunscript.shell.run.StdioConfiguration } p
-		 * @returns { (events: slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents>) => slime.jrunscript.shell.internal.run.Stdio }
+		 * @type { slime.jrunscript.shell.internal.run.Exports["internal"]["buildStdio"] }
 		 */
 		function buildStdio(p) {
-			/**
-			 * @param { string } stream
-			 * @returns { "stdout" | "stderr" }
-			 */
-			var toStreamEventType = function(stream) {
-				if (stream == "output") return "stdout";
-				if (stream == "error") return "stderr";
-			};
+			/** @type { ReturnType<buildStdio> }  */
+			var returned = function(events) {
+				/**
+				 * @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream
+				 * @returns { slime.jrunscript.shell.run.internal.SubprocessOutputStreamEventType }
+				 */
+				var toStreamEventType = function(stream) {
+					if (stream == "output") return "stdout";
+					if (stream == "error") return "stderr";
+				};
 
-			/** @type { slime.jrunscript.shell.internal.run.Stdio } */
-			var rv = {};
-			/** @type { { [x: string]: slime.jrunscript.shell.internal.run.OutputDestination } } */
-			var destinations = {};
+				/** @type { slime.jrunscript.shell.internal.run.Stdio } */
+				var rv = {};
 
-			rv.input = p.input;
+				/** @type { { [x: string]: slime.jrunscript.shell.internal.run.OutputDestination } } */
+				var destinations = {};
 
-			/**
-			 * @returns { { output?: string, error?: string } }
-			 */
-			rv.close = function() {
-				/** @type { { output?: string, error?: string } } */
-				var rv;
-				for (var x in destinations) {
-					destinations[x].close();
+				rv.input = p.input;
 
-					if ((x == "output" || x == "error") && destinations[x] && destinations[x].readText) {
-						if (!rv) rv = {};
-						rv[x] = destinations[x].readText();
+				/**
+				 * @returns { { output?: string, error?: string } }
+				 */
+				rv.close = function() {
+					/** @type { { output?: string, error?: string } } */
+					var rv;
+					for (var x in destinations) {
+						destinations[x].close();
+
+						if ((x == "output" || x == "error") && destinations[x] && destinations[x].readText) {
+							if (!rv) rv = {};
+							rv[x] = destinations[x].readText();
+						}
 					}
-				}
-				return rv;
-			};
+					return rv;
+				};
 
-			/**
-			 *
-			 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
-			 * @param { "output" | "error" } stream
-			 */
-			var destinationFactory = function(events, stream) {
 				/**
 				 *
-				 * @param { Omit<slime.jrunscript.runtime.io.OutputStream, "close"> } stream
-				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
-				 */
-				var getRawDestination = function(stream) {
-					return {
-						stream: stream,
-						close: function() {
-						}
-					}
-				}
-
-				/**
 				 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
-				 * @param { "output" | "error" } stream
-				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+				 * @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream
 				 */
-				var getLineBufferDestination = function(events,stream) {
-					var buffer = new $context.library.io.Buffer();
-
-					var lines = [];
-
-					var thread = $context.library.java.Thread.start({
-						call: function() {
-							buffer.readText().readLines(function(line) {
-								lines.push(line);
-								events.fire(toStreamEventType(stream), { line: line });
-							});
-						}
-					});
-
-					return {
-						stream: buffer.writeBinary(),
-						close: function() {
-							buffer.close();
-							thread.join();
-						},
-						readText: function() {
-							return lines.join($context.library.io.system.delimiter.line);
+				var destinationFactory = function(events, stream) {
+					/**
+					 *
+					 * @param { Omit<slime.jrunscript.runtime.io.OutputStream, "close"> } stream
+					 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+					 */
+					var getRawDestination = function(stream) {
+						return {
+							stream: stream,
+							close: function() {
+							}
 						}
 					}
-				};
 
-				/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
-				var getStringBufferDestination = function() {
-					var buffer = new $context.library.io.Buffer();
-					return {
-						stream: buffer.writeBinary(),
-						close: function() {
-							buffer.close();
-						},
-						readText: function() {
-							return buffer.readText().asString();
+					/**
+					 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
+					 * @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream
+					 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+					 */
+					var getLineBufferDestination = function(events,stream) {
+						var buffer = new $context.library.io.Buffer();
+
+						var lines = [];
+
+						var thread = $context.library.java.Thread.start({
+							call: function() {
+								buffer.readText().readLines(function(line) {
+									lines.push(line);
+									events.fire(toStreamEventType(stream), { line: line });
+								});
+							}
+						});
+
+						return {
+							stream: buffer.writeBinary(),
+							close: function() {
+								buffer.close();
+								thread.join();
+							},
+							readText: function() {
+								return lines.join($context.library.io.system.delimiter.line);
+							}
 						}
-					}
+					};
+
+					/** @returns { slime.jrunscript.shell.internal.run.OutputDestination } */
+					var getStringBufferDestination = function() {
+						var buffer = new $context.library.io.Buffer();
+						return {
+							stream: buffer.writeBinary(),
+							close: function() {
+								buffer.close();
+							},
+							readText: function() {
+								return buffer.readText().asString();
+							}
+						}
+					};
+
+					/**
+					 * @param { slime.jrunscript.shell.run.OutputCapture } configuration
+					 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
+					 */
+					var getDestination = function(configuration) {
+						if (configuration == "string") {
+							return getStringBufferDestination();
+						} else if (configuration == "line") {
+							return getLineBufferDestination(events, stream);
+						} else if (true) {
+							return getRawDestination(configuration);
+						}
+					};
+
+					return getDestination;
 				};
 
-				/**
-				 * @param { slime.jrunscript.shell.run.OutputCapture } configuration
-				 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
-				 */
-				var getDestination = function(configuration) {
-					if (configuration == "string") {
-						return getStringBufferDestination();
-					} else if (configuration == "line") {
-						return getLineBufferDestination(events, stream);
-					} else if (true) {
-						return getRawDestination(configuration);
-					}
-				};
-
-				return getDestination;
-			};
-
-			/** @type { ReturnType<buildStdio>}  */
-			var returned = function(events) {
 				["output","error"].forEach(
-					/** @param { "output" | "error" } stream */
+					/** @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream */
 					function(stream) {
 						var toDestination = destinationFactory(events, stream);
 						destinations[stream] = toDestination(p[stream]);
@@ -167,7 +151,7 @@
 			return returned;
 		}
 
-		/** @type { slime.jrunscript.shell.internal.run.Context["world"] } */
+		/** @type { slime.jrunscript.shell.context.subprocess.World } */
 		var world = $context.world || function(p) {
 			/**
 			 *
@@ -305,7 +289,7 @@
 
 		/**
 		 *
-		 * @param { Pick<slime.jrunscript.shell.run.StdioConfiguration,"output" | "error"> } stdio
+		 * @param { Pick<slime.jrunscript.shell.run.StdioConfiguration,slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity> } stdio
 		 * @param { slime.jrunscript.shell.run.Mock } result
 		 * @returns
 		 */
@@ -400,6 +384,21 @@
 			)
 		};
 
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.run.old.Invocation } old
+		 * @returns { slime.jrunscript.shell.run.Invocation }
+		 */
+		var modernize = function(old) {
+			return {
+				command: old.configuration.command,
+				arguments: old.configuration.arguments,
+				environment: old.context.environment,
+				directory: old.context.directory,
+				stdio: old.context.stdio
+			}
+		};
+
 		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
@@ -447,7 +446,7 @@
 		var Invocation_from_intention = function(parent) {
 			/**
 			 *
-			 * @param { string | slime.jrunscript.runtime.io.InputStream } p
+			 * @param { slime.jrunscript.shell.run.intention.Input } p
 			 * @return { slime.jrunscript.runtime.io.InputStream }
 			 */
 			var toInputStream = function(p) {
@@ -579,6 +578,7 @@
 			},
 			mock: mockRun,
 			internal: {
+				buildStdio: buildStdio,
 				mock: {
 					tell: mockTell
 				}
@@ -596,7 +596,6 @@
 				}
 			},
 			old: {
-				buildStdio: buildStdio,
 				run: oldRun
 			}
 		});

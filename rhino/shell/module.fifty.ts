@@ -25,10 +25,6 @@ namespace slime.jrunscript.shell {
 			output: OutputStream
 			error: OutputStream
 		}
-
-		export namespace subprocess {
-			export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
-		}
 	}
 
 	export interface Context {
@@ -848,7 +844,7 @@ namespace slime.jrunscript.shell {
 	export interface Exports {
 		Tell: {
 			exit: () => (tell: slime.$api.fp.world.old.Tell<run.TellEvents>) => run.TellEvents["exit"]
-			mock: (stdio: Partial<Pick<slime.jrunscript.shell.run.StdioConfiguration,"output" | "error">>, result: slime.jrunscript.shell.run.Mock) => slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents>
+			mock: (stdio: Partial<Pick<slime.jrunscript.shell.run.StdioConfiguration,slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity>>, result: slime.jrunscript.shell.run.Mock) => slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents>
 		}
 	}
 
@@ -1040,7 +1036,7 @@ namespace slime.jrunscript.shell {
 			directory?: string
 
 			stdio?: {
-				input?: Input
+				input?: slime.jrunscript.shell.run.intention.Input
 				output?: run.OutputCapture
 				error?: run.OutputCapture
 			}
