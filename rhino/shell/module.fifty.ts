@@ -25,10 +25,6 @@ namespace slime.jrunscript.shell {
 			output: OutputStream
 			error: OutputStream
 		}
-
-		export namespace subprocess {
-			export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
-		}
 	}
 
 	export interface Context {

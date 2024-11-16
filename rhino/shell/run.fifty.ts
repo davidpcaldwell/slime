@@ -4,6 +4,10 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.shell.context.subprocess {
+	export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+}
+
 namespace slime.jrunscript.shell.internal.run {
 	(
 		function(
@@ -213,6 +217,11 @@ namespace slime.jrunscript.shell.internal.run {
 		readText?: () => string
 	}
 
+	/**
+	 * A standard I/O configuration to supply to a subprocess; the subprocess will obtain its input from the given `InputStream`,
+	 * and send its output and error streams to the given uncloseable output streams. The configuration also has a `close()` method
+	 * which will return any output emitted which this object is configured to capture.
+	 */
 	export interface Stdio {
 		input: slime.jrunscript.runtime.io.InputStream
 		output: Omit<slime.jrunscript.runtime.io.OutputStream, "close">
@@ -571,7 +580,11 @@ namespace slime.jrunscript.shell.internal.run {
 			/**
 			 * @deprecated
 			 */
-			buildStdio: (p: slime.jrunscript.shell.run.StdioConfiguration) => (events: slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents>) => Stdio
+			buildStdio: slime.$api.fp.world.Sensor<
+				slime.jrunscript.shell.run.StdioConfiguration,
+				slime.jrunscript.shell.run.TellEvents,
+				slime.jrunscript.shell.internal.run.Stdio
+			>
 
 			/**
 			 * @deprecated
