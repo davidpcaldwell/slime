@@ -868,6 +868,13 @@ namespace slime.jrunscript.shell {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace sudo {
+		export interface Settings {
+			nocache?: boolean
+			askpass?: string | slime.jrunscript.file.File
+		}
+	}
 }
 
 namespace slime.jrunscript.shell.run.old {
