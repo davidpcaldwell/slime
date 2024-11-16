@@ -45,7 +45,7 @@
 
 				/**
 				 *
-				 * @param { slime.jrunscript.shell.invocation.Input } p
+				 * @param { slime.jrunscript.shell.run.intention.Input } p
 				 * @return { slime.jrunscript.runtime.io.InputStream }
 				 */
 				var toInputStream = function(p) {
@@ -339,8 +339,10 @@
 		 */
 		var fallbackToParentStdio = function(p, parent) {
 			if (typeof(p.input) == "undefined") p.input = null;
-			["output","error"].forEach(function(property) {
-				if (typeof(p[property]) == "undefined" && parent) p[property] = parent[property];
+			/** @type { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity[] } */
+			var streams = ["output","error"];
+			streams.forEach(function(property) {
+				if (typeof(p[property]) == "undefined" && parent) p[property] = $api.Object.compose(parent[property], { close: function(){} });
 			})
 		}
 
@@ -557,7 +559,7 @@
 					var fixed = invocation.internal.old.updateForStringInput(stdio);
 					fallbackToParentStdio(fixed, $context.stdio);
 					var x = invocation.internal.old.toStdioConfiguration(fixed);
-					var rv = scripts.run.old.buildStdio(x)($api.Events());
+					var rv = scripts.run.internal.buildStdio(x)($api.Events());
 					return rv;
 				} else {
 					//	TODO	stdio could be null if p.stdio === null. What would that mean? And what does $context.stdio have

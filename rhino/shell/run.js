@@ -16,14 +16,14 @@
 	 */
 	function(Packages,JavaAdapter,$api,$context,$export) {
 		/**
-		 * @type { slime.jrunscript.shell.internal.run.Exports["old"]["buildStdio"] }
+		 * @type { slime.jrunscript.shell.internal.run.Exports["internal"]["buildStdio"] }
 		 */
 		function buildStdio(p) {
 			/** @type { ReturnType<buildStdio> }  */
 			var returned = function(events) {
 				/**
-				 * @param { string } stream
-				 * @returns { "stdout" | "stderr" }
+				 * @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream
+				 * @returns { slime.jrunscript.shell.run.internal.SubprocessOutputStreamEventType }
 				 */
 				var toStreamEventType = function(stream) {
 					if (stream == "output") return "stdout";
@@ -58,7 +58,7 @@
 				/**
 				 *
 				 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
-				 * @param { "output" | "error" } stream
+				 * @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream
 				 */
 				var destinationFactory = function(events, stream) {
 					/**
@@ -76,7 +76,7 @@
 
 					/**
 					 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
-					 * @param { "output" | "error" } stream
+					 * @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream
 					 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 					 */
 					var getLineBufferDestination = function(events,stream) {
@@ -137,7 +137,7 @@
 				};
 
 				["output","error"].forEach(
-					/** @param { "output" | "error" } stream */
+					/** @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream */
 					function(stream) {
 						var toDestination = destinationFactory(events, stream);
 						destinations[stream] = toDestination(p[stream]);
@@ -289,7 +289,7 @@
 
 		/**
 		 *
-		 * @param { Pick<slime.jrunscript.shell.run.StdioConfiguration,"output" | "error"> } stdio
+		 * @param { Pick<slime.jrunscript.shell.run.StdioConfiguration,slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity> } stdio
 		 * @param { slime.jrunscript.shell.run.Mock } result
 		 * @returns
 		 */
@@ -446,7 +446,7 @@
 		var Invocation_from_intention = function(parent) {
 			/**
 			 *
-			 * @param { string | slime.jrunscript.runtime.io.InputStream } p
+			 * @param { slime.jrunscript.shell.run.intention.Input } p
 			 * @return { slime.jrunscript.runtime.io.InputStream }
 			 */
 			var toInputStream = function(p) {
@@ -578,6 +578,7 @@
 			},
 			mock: mockRun,
 			internal: {
+				buildStdio: buildStdio,
 				mock: {
 					tell: mockTell
 				}
@@ -595,7 +596,6 @@
 				}
 			},
 			old: {
-				buildStdio: buildStdio,
 				run: oldRun
 			}
 		});
