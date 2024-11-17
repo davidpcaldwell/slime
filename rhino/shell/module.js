@@ -193,7 +193,7 @@
 
 					return system;
 				}
-			)();
+			).call(this);
 
 			/** @type { slime.jrunscript.shell.system.ps } */
 			var ps = this.resolve(system.ps);
@@ -203,6 +203,7 @@
 				};
 			}
 			if (system.sudo) this.sudo = system.sudo;
+			debugger;
 			if (system.ping) this.ping = system.ping;
 			if (system.desktop) this.inject = function(inject) {
 				system.desktop(inject.ui);
