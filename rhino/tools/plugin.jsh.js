@@ -91,10 +91,7 @@
 							shell: jsh.shell,
 							ui: jsh.ui,
 							Error: jsh.js.Error,
-							install: jsh.tools.install,
-							Events: {
-								Function: jsh.tools.install.$api.Events.Function
-							}
+							install: jsh.tools.install
 						}
 					});
 
