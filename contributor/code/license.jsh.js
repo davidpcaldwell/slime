@@ -11,13 +11,19 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		/** @type { slime.js.Cast<slime.old.document.Parent> } */
+		var toParent = $api.fp.cast.unsafe;
+
+		/** @type { slime.js.Cast<slime.old.document.Characters> } */
+		var toCharacters = $api.fp.cast.unsafe;
+
 		var invocation = jsh.script.cli.invocation(
 			$api.fp.pipe(
 				jsh.script.cli.option.boolean({ longname: "fix" })
 			)
 		);
 
-		var licenses = new jsh.document.Document({ string: jsh.script.file.parent.getFile("licenses.xml").read(String) });
+		var licensesXml = new jsh.document.Document({ string: jsh.script.file.parent.getFile("licenses.xml").read(String) });
 
 		var input = {
 			parameters: {
@@ -28,8 +34,8 @@
 			$loader: new jsh.file.Loader({ directory: jsh.script.file.parent }),
 			/** @type { (name: string) => string } */
 			getLicense: function(name) {
-				var child = licenses.document.getElement().child(jsh.js.document.filter({ elements: name }));
-				var text = child.children[0].getString();
+				var child = toParent(licensesXml.document.getElement().child(jsh.js.document.filter({ elements: name })));
+				var text = toCharacters(child.children[0]).getString();
 				return text.substring(1,text.length-1);
 			},
 			fail: function() {
@@ -112,7 +118,7 @@
 			).join("\n")
 		);
 
-		var licenses = $loader.file("license.js", {
+		var licensesCode = $loader.file("license.js", {
 			getLicense: function(name) {
 				return getLicense(name);
 			}
@@ -124,7 +130,7 @@
 			return tokens[tokens.length-1];
 		}
 
-		var template = licenses.mpl["2.0"];
+		var template = licensesCode.mpl["2.0"];
 
 		// var extensions = {};
 		// for (var i=0; i<files.length; i++) {
@@ -170,8 +176,8 @@
 			}
 			var text = toFile(file).node.read(String);
 			text = text.replace(/\r\n/g, "\n");
-			if (!licenses.languages[extension]) throw new Error("Not found: " + extension + " for " + files[i].path);
-			var source = new licenses.SourceFile(text.split("\n"), licenses.languages[extension], template);
+			if (!licensesCode.languages[extension]) throw new Error("Not found: " + extension + " for " + files[i].path);
+			var source = new licensesCode.SourceFile(text.split("\n"), licensesCode.languages[extension], template);
 			if (false) jsh.shell.console("Processing: " + files[i].path + " ...");
 			if (source.license) {
 				var UPGRADE_LICENSE = true;
