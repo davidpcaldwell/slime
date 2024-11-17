@@ -170,24 +170,31 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.shell.internal.os.Script } */
-			var code = $loader.script("os.js");
+			var system = (
+				function() {
+					/** @type { slime.jrunscript.shell.internal.os.Script } */
+					var code = $loader.script("os.js");
 
-			var system = code({
-				PATH: $exports.PATH,
-				replacePath: function(PATH) {
-					$exports.PATH = PATH;
-				},
-				TMPDIR: $exports.TMPDIR,
-				os: this,
-				run: scripts.run_old.run,
-				environment: environment,
-				api: {
-					js: $context.api.js,
-					io: $context.api.io,
-					file: $context.api.file
+					var system = code({
+						PATH: $exports.PATH,
+						replacePath: function(PATH) {
+							$exports.PATH = PATH;
+						},
+						TMPDIR: $exports.TMPDIR,
+						os: this,
+						run: scripts.run_old.run,
+						environment: environment,
+						api: {
+							js: $context.api.js,
+							io: $context.api.io,
+							file: $context.api.file
+						}
+					});
+
+					return system;
 				}
-			});
+			).call(this);
+
 			/** @type { slime.jrunscript.shell.system.ps } */
 			var ps = this.resolve(system.ps);
 			if (ps) {
@@ -196,6 +203,7 @@
 				};
 			}
 			if (system.sudo) this.sudo = system.sudo;
+			debugger;
 			if (system.ping) this.ping = system.ping;
 			if (system.desktop) this.inject = function(inject) {
 				system.desktop(inject.ui);

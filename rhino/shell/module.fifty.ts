@@ -799,11 +799,6 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace system {
-		export namespace apple {
-		}
-	}
-
 	export interface Exports {
 		system: {
 			apple: slime.jrunscript.shell.system.apple.Exports
@@ -828,13 +823,6 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>;
-
-	export namespace sudo {
-		export interface Settings {
-			nocache?: boolean
-			askpass?: string | slime.jrunscript.file.File
-		}
-	}
 
 	export interface Exports {
 		/** @deprecated */
