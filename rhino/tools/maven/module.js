@@ -19,10 +19,10 @@
 		var $exports = {};
 
 		/** @type { slime.js.Cast<slime.old.document.Element> } */
-		const asElement = $api.fp.cast.unsafe;
+		var asElement = $api.fp.cast.unsafe;
 
 		/** @type { slime.js.Cast<slime.old.document.Characters> } */
-		const asCharacters = $api.fp.cast.unsafe;
+		var asCharacters = $api.fp.cast.unsafe;
 
 		$exports.mvn = function(m) {
 			var mvn = $context.mvn;
