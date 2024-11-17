@@ -83,16 +83,24 @@ namespace slime.jrunscript.shell.system {
 	//@ts-ignore
 	)(fifty);
 
-
 	export type sudo = {
 		//	TODO	relate below argument to module run() method
+		/**
+		 * Executes a command under `sudo`.
+		 *
+		 * @param p An argument compatible with the argument for {@link slime.jrunscript.shell.oo.Run}, with additional properties.
+		 * @returns See the return value of {@link slime.jrunscript.shell.oo.Run}.
+		 */
 		(p: {
-			password: string | (() => string)
+			/**
+			 * A string indicating the account password to use, or a function returning the account password to use.
+			 */
+			password: string | slime.$api.fp.impure.External<string>
 			command: string
 			arguments?: string[]
 			stdio?: any
 			evaluate?: any
-		}): void
+		}): any
 
 		initialize: (p: string) => void
 

@@ -219,8 +219,8 @@
 						}
 					}
 
-					var plist = $exports.plist.xml.encode(info);
-					base.getRelativePath("Contents/Info.plist").write(plist.toString(), { append: false });
+					var encoded = $exports.plist.xml.encode(info);
+					base.getRelativePath("Contents/Info.plist").write(encoded.toString(), { append: false });
 					return new $exports.osx.ApplicationBundle({ pathname: base.pathname });
 				} else {
 					/** @type { { [x: string]: any } } */

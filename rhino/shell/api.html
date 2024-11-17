@@ -16,47 +16,6 @@ END LICENSE
 	<div>
 		<h1>Exports</h1>
 		<ul jsapi:id="exports">
-			<li class="object" jsapi:id="os">
-				<div class="name">os</div>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="function experimental">
-						<div class="name">sudo</div>
-						<span>(Mac OS X only) Executes a command under <code>sudo</code>.</span>
-						<div class="arguments">
-							<div class="label">Arguments</div>
-							<ol>
-								<li class="object">
-									<span>
-										An argument compatible with the argument for <code>run</code>, with
-										additional properties:
-									</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">password</div>
-											<div>
-												<span class="type">string</span>
-												<span>The account password to use.</span>
-											</div>
-											-OR-
-											<div>
-												<span class="type">function</span>
-												<span>A function to invoke, with no arguments, to obtain the account password.</span>
-											</div>
-										</li>
-									</ul>
-								</li>
-							</ol>
-						</div>
-						<div class="returns">
-							<div class="label">Returns</div>
-							<span class="type">(any)</span>
-							<span>See the definition of <code>run</code>.</span>
-						</div>
-					</li>
-				</ul>
-			</li>
 			<li class="function" jsapi:id="run">
 				<div class="name"><a id="exports.run">run</a></div>
 				<!--	TODO	document the 'on' property	-->
@@ -310,73 +269,6 @@ END LICENSE
 					<span class="type">(any)</span>
 					<span>A value determined in the same way as that of <a href="#exports.run">run()</a>.</span>
 				</div>
-			</li>
-			<li class="object" jsapi:id="browser">
-				<div class="name">browser</div>
-				<span>See <a href="browser/api.html">documentation</a>.</span>
-			</li>
-			<li class="object" jsapi:id="system">
-				<div class="name">system</div>
-				<span>__DESCRIPTION__</span>
-				<div class="label">has properties:</div>
-				<ul>
-					<li class="experimental object">
-						<div class="name">apple</div>
-						<span>__DESCRIPTION__</span>
-						<div class="label">has properties:</div>
-						<ul>
-							<li class="object">
-								<div class="name">plist</div>
-								<span>__DESCRIPTION__</span>
-								<div class="label">has properties:</div>
-								<ul>
-									<li class="object">
-										<div class="name">xml</div>
-										<span>__DESCRIPTION__</span>
-										<div class="label">has properties:</div>
-										<ul>
-											<li class="function">
-												<div class="name">encode</div>
-												<span>__DESCRIPTION__</span>
-												<div class="arguments">
-													<div class="label">Arguments</div>
-													<ol>
-														<li class="value">
-															<span class="type">__TYPE__</span>
-															<span>A value to encode.</span>
-														</li>
-													</ol>
-												</div>
-												<div class="returns">
-													<div class="label">Returns</div>
-													<span class="type">document</span>
-												</div>
-											</li>
-											<li class="function">
-												<div class="name">decode</div>
-												<span>__DESCRIPTION__</span>
-												<div class="arguments">
-													<div class="label">Arguments</div>
-													<ol>
-														<li class="value">
-															<span class="type">document</span>
-															<span>An XML document representing a property list</span>
-														</li>
-													</ol>
-												</div>
-												<div class="returns">
-													<div class="label">Returns</div>
-													<span class="type">__TYPE__</span>
-													<span>The value represented by the property list.</span>
-												</div>
-											</li>
-										</ul>
-									</li>
-								</ul>
-							</li>
-						</ul>
-					</li>
-				</ul>
 			</li>
 		</ul>
 	</div>

@@ -18,6 +18,12 @@
 		/** @type { Partial<slime.jrunscript.tools.maven.Exports> } */
 		var $exports = {};
 
+		/** @type { slime.js.Cast<slime.old.document.Element> } */
+		const asElement = $api.fp.cast.unsafe;
+
+		/** @type { slime.js.Cast<slime.old.document.Characters> } */
+		const asCharacters = $api.fp.cast.unsafe;
+
 		$exports.mvn = function(m) {
 			var mvn = $context.mvn;
 			var properties = (m.properties) ? (function() {
@@ -98,7 +104,8 @@
 
 			this.getGroup = function() {
 				if (!root.child(jsh.document.filter({ elements: "groupId" }))) {
-					return parent.group;
+					throw new Error("How did the below ever work?");
+					//return parent.group;
 				}
 				return getElementContent(root,"groupId");
 			}
@@ -121,14 +128,14 @@
 			this.getDependencies = function() {
 				var filter = jsh.document.filter({ elements: "dependencies" });
 				var filter2 = jsh.document.filter({ elements: "dependency" });
-				var management = root.child(jsh.document.filter({ elements: "dependencyManagement" }));
-				var declared = root.child( filter );
+				var management = asElement(root.child(jsh.document.filter({ elements: "dependencyManagement" })));
+				var declared = asElement(root.child( filter ));
 				var rv = [];
 				if (declared) {
 					rv = rv.concat(declared.children.filter(filter2));
 				}
 				if (management) {
-					rv = rv.concat(management.child(filter).children.filter(filter2));
+					rv = rv.concat(asElement(management.child(filter)).children.filter(filter2));
 				}
 				jsh.js.Array(rv).each(function() {
 					/** @type { any } */
@@ -167,12 +174,16 @@
 			};
 
 			this.getModules = function() {
-				var modules = root.child(jsh.document.filter({ elements: "modules" }));
+				/** @type { (node: slime.old.document.Node) => node is slime.old.document.Element } */
+				var isElement = function(node) { return node["element"]; };
+
+				var modules = asElement(root.child(jsh.document.filter({ elements: "modules" })));
 				if (!modules) return null;
 				return modules.children.filter(function(child) {
-					return child.element && child.element.type.name == "module";
+					return isElement(child) && child.element.type.name == "module";
 				}).map(function(element) {
-					return element.children[0].getString();
+					if (!isElement(element)) throw new Error("Unreachable");
+					return asCharacters(element.children[0]).getString();
 				});
 			}
 
@@ -198,7 +209,7 @@
 			// 	});
 			// }
 
-			var parent = root.child( jsh.document.filter({ elements: "parent" }) );
+			var parent = asElement(root.child( jsh.document.filter({ elements: "parent" }) ));
 
 			if (parent) {
 				this.parent = new function() {
@@ -207,10 +218,10 @@
 					}
 
 					var getElementContent = function(name) {
-						var e = parent.child( jsh.document.filter({ elements: name }) );
+						var e = asElement(parent.child( jsh.document.filter({ elements: name }) ));
 						return e.children.map(function(item) {
-							if (item.getString) return item.getString();
-							if (item.comment) return "";
+							if (item["getString"]) return item["getString"]();
+							if (item["comment"]) return "";
 							throw new TypeError("Unknown content: " + item);
 						}).join("");
 					}
@@ -220,7 +231,7 @@
 					this.version = getElementContent("version");
 
 					this.setVersion = function(version) {
-						var e = parent.child( jsh.document.filter({ elements: "version" }) );
+						var e = asElement(parent.child( jsh.document.filter({ elements: "version" }) ));
 						e.children = [new jsh.js.document.Text({ text: version })];
 						this.version = version;
 					}

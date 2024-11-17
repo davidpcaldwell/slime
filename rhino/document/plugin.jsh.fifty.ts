@@ -7,9 +7,9 @@
 namespace slime.runtime.document {
 	export namespace exports {
 		export interface Document {
-			new (p: { string: string }): any
-			new (p: { file: slime.jrunscript.file.File }): any
-			new (p: { stream: any }): any
+			new (p: { string: string }): slime.old.document.Document
+			new (p: { file: slime.jrunscript.file.File }): slime.old.document.Document
+			new (p: { stream: any }): slime.old.document.Document
 			Html: any
 		}
 	}

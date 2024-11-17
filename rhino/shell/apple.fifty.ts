@@ -11,7 +11,7 @@ namespace slime.jrunscript.shell.system.apple {
 			document: slime.old.document.Exports
 			shell: slime.jrunscript.shell.Exports
 			xml: {
-				parseFile: (file: slime.jrunscript.file.File) => slime.runtime.document.exports.Document
+				parseFile: (file: slime.jrunscript.file.File) => slime.old.document.Document
 			}
 		}
 	}
@@ -82,8 +82,17 @@ namespace slime.jrunscript.shell.system.apple {
 	export interface Exports {
 		plist: {
 			xml: {
-				encode: Function
-				decode: Function
+				/**
+				 * @param v A value to encode.
+				 */
+				encode: (v: any) => slime.old.document.Document
+
+				/**
+				 *
+				 * @param xml An XML document representing a property list
+				 * @returns The value represented by the property list.
+				 */
+				decode: (xml: slime.old.document.Document) => any
 			}
 		}
 	}

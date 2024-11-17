@@ -61,7 +61,7 @@ namespace slime.jrunscript.shell {
 			document: slime.old.document.Exports
 
 			xml: {
-				parseFile: (file: slime.jrunscript.file.File) => slime.runtime.document.exports.Document
+				parseFile: (file: slime.jrunscript.file.File) => slime.old.document.Document
 			}
 		}
 
@@ -608,6 +608,7 @@ namespace slime.jrunscript.shell {
 			}
 
 			//	Tested manually via the test/manual/sudo-old.jsh.js script with no arguments
+			//	TODO	currently only implemented for Mac OS X
 			sudo?: slime.jrunscript.shell.system.sudo
 
 			//	TODO	should not be using internal types
