@@ -8,9 +8,6 @@ namespace slime.jrunscript.tools.hg.install {
 	export interface Context {
 		api: {
 			Error: any
-			Events: {
-				Function: any
-			}
 			shell: slime.jsh.Global["shell"]
 			install: any
 			ui: any
@@ -81,9 +78,6 @@ namespace slime.jrunscript.tools.hg.install {
 			const subject = script({
 				api: {
 					Error: jsh.js.Error,
-					Events: {
-						Function: jsh.tools.install.$api.Events.Function
-					},
 					shell: jsh.shell,
 					install: jsh.tools.install,
 					ui: jsh.ui,
