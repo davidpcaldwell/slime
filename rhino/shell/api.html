@@ -25,56 +25,6 @@ END LICENSE
 						<li class="object">
 							<div class="label">has properties:</div>
 							<ul>
-								<li class="object">
-									<div class="name">stdio</div>
-									<span class="type"><a href="#types.stdio">stdio</a></span>
-									<span>
-										(optional: defaults to stream-specific results as specified)
-										The streams that will be attached to the subprocess as its standard I/O streams. If the
-										value is <code>null</code> the subprocess will receive empty input and all output will be
-										discarded. Otherwise, the properties are interpreted for each stream as specified below.
-									</span>
-									<div class="label">has properties:</div>
-									<ul>
-										<li class="value">
-											<div class="name">input</div>
-											<ul>
-												<li>
-													If omitted or <code>null</code>, an empty stream is supplied as
-													input.
-												</li>
-												<li>
-													If a string, the string is supplied as input.
-												</li>
-												<li>
-													If a <a href="../io/api.html#types.binput">byte stream</a>, the stream is supplied as input.
-												</li>
-											</ul>
-										</li>
-										<li class="value">
-											<div class="name">output</div>
-											<span>(optional; if omitted, a stream that discards all output is supplied.)</span>
-											<ul>
-												<li>
-													If <code>null</code>, an stream that discards all output is supplied to the
-													subprocess.
-												</li>
-												<li>
-													If the <code>String</code> global function is supplied, subprocess output is
-													buffered and converted to a string and is returned as the output property of the
-													stdio property of the result of the subprocess.
-												</li>
-												<li>
-													If a <a href="../io/api.html#types.boutput">byte stream</a>, output from the subprocess is sent to that stream.
-												</li>
-											</ul>
-										</li>
-										<li class="value">
-											<div class="name">error</div>
-											<span>See the <code>output</code> property for detailed specification.</span>
-										</li>
-									</ul>
-								</li>
 								<li class="value" jsapi:id="run.environment">
 									<div class="name">environment</div>
 									- OR -
