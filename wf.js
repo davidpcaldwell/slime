@@ -212,8 +212,12 @@
 						)();
 						(
 							function eslint() {
+								var nodeProject = { base: $context.base.pathname.toString() };
+
+								var modules = jsh.shell.tools.node.Project.modules(nodeProject)(installation);
+
 								$api.fp.world.Action.now({
-									action: jsh.shell.tools.node.Installation.modules(installation).require({ name: "eslint", version: "9.13.0" }),
+									action: modules.require({ name: "eslint", version: "9.13.0" }),
 									handlers: {
 										installing: function(e) {
 											//jsh.shell.console("Installing eslint " + e.detail.version);
@@ -223,10 +227,6 @@
 										}
 									}
 								});
-
-								var nodeProject = { base: $context.base.pathname.toString() };
-
-								var modules = jsh.shell.tools.node.Project.modules(nodeProject)(installation);
 
 								$api.fp.world.Action.now({
 									action: modules.require({ name: "@eslint/js" }),
