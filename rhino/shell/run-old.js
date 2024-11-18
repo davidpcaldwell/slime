@@ -13,6 +13,88 @@
 	 * @param { slime.loader.Export<slime.jrunscript.shell.internal.run.old.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.run.intention.Input } p
+		 * @return { slime.jrunscript.runtime.io.InputStream }
+		 */
+		var toInputStream = (
+			function($context) {
+				return function(p) {
+					if (typeof(p) == "string") {
+						var buffer = new $context.library.io.Buffer();
+						buffer.writeText().write(p);
+						buffer.close();
+						return buffer.readBinary();
+					} else {
+						return p;
+					}
+				};
+			}
+		)({ library: { io: $context.api.io }});
+
+		/**
+		 * @param { slime.jrunscript.shell.invocation.old.Stdio } p
+		 * @return { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed }
+		 */
+		var updateForStringInput = function(p) {
+			/** @type { slime.jrunscript.shell.run.StdioConfiguration } */
+			return {
+				input: toInputStream(p.input),
+				output: p.output,
+				error: p.error
+			};
+		};
+
+		/**
+		 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
+		 * @return { configuration is slime.jrunscript.shell.invocation.old.OutputStreamToLines }
+		 */
+		var isLineListener = function(configuration) {
+			return configuration && Object.prototype.hasOwnProperty.call(configuration, "line");
+		};
+
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed } declaration
+		 * @return { slime.jrunscript.shell.run.StdioConfiguration }
+		 */
+		function toStdioConfiguration(declaration) {
+			/**
+			 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
+			 * @return { configuration is slime.jrunscript.shell.invocation.old.OutputStreamToString }
+			 */
+			var isString = function(configuration) {
+				return configuration === String
+			};
+
+			//	TODO	unused
+			/**
+			 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
+			 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToStream }
+			 */
+			var isRaw = function(configuration) {
+				return true;
+			}
+
+			/** @type { (configuration: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => slime.jrunscript.shell.run.OutputCapture } */
+			var toCapture = function(configuration) {
+				if (isLineListener(configuration)) {
+					return "line";
+				} else if (isString(configuration)) {
+					return "string";
+				} else {
+					return configuration;
+				}
+			}
+
+			return {
+				input: declaration.input,
+				output: toCapture(declaration.output),
+				error: toCapture(declaration.error)
+			};
+		}
+
 		/** @type { slime.jrunscript.shell.internal.invocation.Export } */
 		var invocation = (
 			function($api,$context) {
@@ -42,83 +124,6 @@
 						return rv;
 					}
 				)();
-
-				/**
-				 *
-				 * @param { slime.jrunscript.shell.run.intention.Input } p
-				 * @return { slime.jrunscript.runtime.io.InputStream }
-				 */
-				var toInputStream = function(p) {
-					if (typeof(p) == "string") {
-						var buffer = new $context.library.io.Buffer();
-						buffer.writeText().write(p);
-						buffer.close();
-						return buffer.readBinary();
-					} else {
-						return p;
-					}
-				}
-
-				/**
-				 * @param { slime.jrunscript.shell.invocation.old.Stdio } p
-				 * @return { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed }
-				 */
-				var updateForStringInput = function(p) {
-					/** @type { slime.jrunscript.shell.run.StdioConfiguration } */
-					return {
-						input: toInputStream(p.input),
-						output: p.output,
-						error: p.error
-					};
-				}
-
-				/**
-				 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
-				 * @return { configuration is slime.jrunscript.shell.invocation.old.OutputStreamToLines }
-				 */
-				var isLineListener = function(configuration) {
-					return configuration && Object.prototype.hasOwnProperty.call(configuration, "line");
-				}
-
-				/**
-				 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
-				 * @return { configuration is slime.jrunscript.shell.invocation.old.OutputStreamToString }
-				 */
-				var isString = function(configuration) {
-					return configuration === String
-				};
-
-				/**
-				 * @param { slime.jrunscript.shell.invocation.old.OutputStreamConfiguration } configuration
-				 * @return { configuration is slime.jrunscript.shell.invocation.OutputStreamToStream }
-				 */
-				var isRaw = function(configuration) {
-					return true;
-				}
-
-				/** @type { (configuration: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => slime.jrunscript.shell.run.OutputCapture } */
-				var toCapture = function(configuration) {
-					if (isLineListener(configuration)) {
-						return "line";
-					} else if (isString(configuration)) {
-						return "string";
-					} else {
-						return configuration;
-					}
-				}
-
-				/**
-				 *
-				 * @param { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed } declaration
-				 * @return { slime.jrunscript.shell.run.StdioConfiguration }
-				 */
-				function toStdioConfiguration(declaration) {
-					return {
-						input: declaration.input,
-						output: toCapture(declaration.output),
-						error: toCapture(declaration.error)
-					};
-				}
 
 				/**
 				 *
@@ -180,10 +185,7 @@
 							error: {
 								BadCommandToken: parseCommandToken.Error
 							},
-							updateForStringInput: updateForStringInput,
-							toStdioConfiguration: toStdioConfiguration,
-							parseCommandToken: parseCommandToken,
-							isLineListener: isLineListener
+							parseCommandToken: parseCommandToken
 						}
 					}
 				)();
@@ -289,11 +291,6 @@
 			}
 		)($api,{ library: { io: $context.api.io }})
 
-		var scripts = {
-			run: $context.scripts.run,
-			invocation: invocation
-		};
-
 		/**
 		 * Returns a stdio object given the argument, using the `stdio` property of the argument if it is available, then using
 		 * the deprecated `stdin`, `stdout`, and `stderr` if needed, and finelly returning an empty object. May return `null` if
@@ -302,7 +299,7 @@
 		 * @param { slime.jrunscript.shell.run.old.Argument } p
 		 * @return { slime.jrunscript.shell.invocation.old.Argument["stdio"] }
 		 */
-		function extractStdioIncludingDeprecatedForm(p) {
+		function extractStdioIncludingEmptyAndDeprecatedForms(p) {
 			if (typeof(p.stdio) != "undefined") return p.stdio;
 
 			if (typeof(p.stdin) != "undefined" || typeof(p.stdout) != "undefined" || typeof(p.stderr) != "undefined") {
@@ -319,6 +316,7 @@
 		}
 
 		var parseCommandToken = invocation.internal.old.parseCommandToken;
+		var BadCommandToken = invocation.internal.old.error.BadCommandToken;
 
 		/**
 		 *
@@ -333,6 +331,8 @@
 		}
 
 		/**
+		 * Fills the argument in with an empty input if the input is missing, and the parent's corresponding output/error stream if
+		 * those are missing.
 		 *
 		 * @param { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed } p
 		 * @param { slime.jrunscript.shell.parent.Stdio } parent
@@ -379,9 +379,9 @@
 				}
 			}
 
-			var stdio1 = invocation.internal.old.updateForStringInput(p.stdio);
+			var stdio1 = updateForStringInput(p.stdio);
 			fallbackToParentStdio(stdio1, parentStdio);
-			var stdio = invocation.internal.old.toStdioConfiguration(stdio1);
+			var stdio = toStdioConfiguration(stdio1);
 			return {
 				stdio: stdio,
 				environment: (function(now, argument) {
@@ -408,7 +408,7 @@
 				as = p.as;
 			}
 
-			p.stdio = extractStdioIncludingDeprecatedForm(p);
+			p.stdio = extractStdioIncludingEmptyAndDeprecatedForms(p);
 
 			var context = toContext(p, $context.environment, $context.stdio);
 
@@ -467,7 +467,7 @@
 								arguments: args
 							});
 						} catch (e) {
-							if (e instanceof scripts.invocation.internal.old.error.BadCommandToken) {
+							if (e instanceof BadCommandToken) {
 								throw new TypeError(e.message + "; full invocation = " + toErrorMessage(command, args));
 							} else {
 								throw e;
@@ -521,7 +521,7 @@
 			input.workingDirectory = directory;
 			$api.deprecate(input,"workingDirectory");
 
-			var result = scripts.run.old.run(context, invocation.configuration, $context.module, events, p, input, scripts.invocation.internal.old.isLineListener);
+			var result = $context.scripts.run.old.run(context, invocation.configuration, $context.module, events, p, input, isLineListener);
 
 			var evaluate = (p["evaluate"]) ? p["evaluate"] : $exports.run.evaluate;
 			return evaluate($api.Object.compose(input, result));
@@ -551,15 +551,15 @@
 		$exports.run.stdio = {
 			run: function getStdio(p) {
 				//	TODO	the getStdio function is currently used in jsh.js, requiring us to export it; is that the best structure?
-				var stdio = extractStdioIncludingDeprecatedForm(p);
+				var stdio = extractStdioIncludingEmptyAndDeprecatedForms(p);
 
 				if (stdio) {
 					//	TODO	the below $api.Events() is highly dubious, inserted just to get past TypeScript; who knows
 					//			whether it will work but refactoring in progress may change it further
-					var fixed = invocation.internal.old.updateForStringInput(stdio);
+					var fixed = updateForStringInput(stdio);
 					fallbackToParentStdio(fixed, $context.stdio);
-					var x = invocation.internal.old.toStdioConfiguration(fixed);
-					var rv = scripts.run.internal.buildStdio(x)($api.Events());
+					var x = toStdioConfiguration(fixed);
+					var rv = $context.scripts.run.internal.buildStdio(x)($api.Events());
 					return rv;
 				} else {
 					//	TODO	stdio could be null if p.stdio === null. What would that mean? And what does $context.stdio have

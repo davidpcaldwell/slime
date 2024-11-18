@@ -203,7 +203,6 @@
 				};
 			}
 			if (system.sudo) this.sudo = system.sudo;
-			debugger;
 			if (system.ping) this.ping = system.ping;
 			if (system.desktop) this.inject = function(inject) {
 				system.desktop(inject.ui);

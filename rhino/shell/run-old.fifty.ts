@@ -40,16 +40,11 @@ namespace slime.jrunscript.shell {
 					error: {
 						BadCommandToken: slime.$api.error.old.Type<"ArgumentError",{}>
 					}
-					updateForStringInput: (p: slime.jrunscript.shell.invocation.old.Stdio) => slime.jrunscript.shell.internal.invocation.StdioWithInputFixed
-
-					toStdioConfiguration: (declaration: slime.jrunscript.shell.internal.invocation.StdioWithInputFixed) => slime.jrunscript.shell.run.StdioConfiguration
 
 					parseCommandToken: {
 						(arg: slime.jrunscript.shell.invocation.old.Token, index?: number, ...args: any[]): string;
 						Error: slime.$api.error.old.Type<"ArgumentError", {}>;
 					}
-
-					isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
 				}
 			}
 
@@ -551,12 +546,30 @@ namespace slime.jrunscript.shell {
 				directory?: slime.jrunscript.file.Directory
 
 				/**
-				 * The standard I/O streams to supply to the subprocess. If unspecified, or if any properties are unspecified,
-				 * defaults will be used. The defaults are:
+				 * The standard I/O streams to supply to the subprocess.
+				 *
+				 * If the value is `null` the subprocess will receive empty input and all output will be discarded. Otherwise, the
+				 * properties of the given object are interpreted for each stream as specified below.
+				 *
+				 * * `input`:
+				 *     * If omitted or `null`, an empty stream is supplied as input.
+				 *     * If a string, the string is supplied as input.
+				 *     * If a {@link slime.jrunscript.runtime.io.InputStream}, the stream is supplied as input.
+				 * * `output`:
+				 *     * If `null`, a stream that discards all output is supplied to the subprocess.
+				 *     * If the `String` global function is supplied, subprocess output is buffered and converted to a string and is
+				 * returned as the `output` property of the `stdio` property of the result of the subprocess.
+				 *     * If a {@link slime.jrunscript.runtime.io.OutputStream}, output from the subprocess is sent to that stream.
+				 * * `error`: See `output` for how values are interpreted (if the output is buffered and returned, it will be the
+				 * `error` property of the `stdio` property of the result).
+				 *
+				 * If unspecified, or if any properties are unspecified, defaults will be used, which will in part by supplied by
+				 * the {@link slime.jrunscript.shell.context.Stdio | "parent"} supplied as part of the module {@link
+				 * slime.jrunscript.shell.Context}. The defaults are:
 				 *
 				 * * `input`: `null`
-				 * * `output`: This process's standard output stream
-				 * * `error`: This process's standard error stream
+				 * * `output`: The parent's output stream
+				 * * `error`: The parent's error stream
 				 */
 				stdio?: slime.jrunscript.shell.older.Invocation["stdio"]
 			}
