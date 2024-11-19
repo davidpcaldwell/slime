@@ -18,7 +18,9 @@
 		var old_installation_object = jsh.shell.tools.node.installed;
 		var installation = jsh.shell.tools.node.installation;
 
-		var action = jsh.shell.tools.node.Installation.modules(installation).require({ name: "eslint", version: "9.13.0" });
+		var modules = jsh.shell.tools.node.Project.modules(project)(installation);
+
+		var action = modules.require({ name: "eslint", version: "9.13.0" });
 
 		$api.fp.world.Action.now({
 			action: action
@@ -29,7 +31,7 @@
 			base: base.pathname.toString()
 		};
 
-		var eslintInstallDefaultsAction = jsh.shell.tools.node.Project.modules(project)(installation).require({ name: "@eslint/js" });
+		var eslintInstallDefaultsAction = modules.require({ name: "@eslint/js" });
 
 		$api.fp.world.Action.now({
 			action: eslintInstallDefaultsAction

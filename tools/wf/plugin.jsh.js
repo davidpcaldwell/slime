@@ -297,7 +297,6 @@
 					lint: {
 						eslint: function() {
 							$api.fp.world.execute(jsh.shell.tools.node.require.action);
-							jsh.shell.tools.node.installed.modules.require({ name: "eslint", version: "9.13.0" });
 							return jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
 								script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
