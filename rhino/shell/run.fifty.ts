@@ -171,7 +171,14 @@ namespace slime.jrunscript.shell.run {
 
 	//	TODO	right now we only capture output of type string; we could capture binary also
 	export interface CapturedOutput {
+		/**
+		 * The output of the subprocess, if it was buffered.
+		 */
 		output?: string
+
+		/**
+		 * The output of the subprocess that was written to the error stream, if it was buffered.
+		 */
 		error?: string
 	}
 
