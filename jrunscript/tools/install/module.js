@@ -594,13 +594,7 @@
 			zip: $api.deprecate(function(p,on) {
 				p.format = algorithms.zip;
 				oldInstall(p,on);
-			}),
-			//	TODO	below seems to be used in tomcat.js and also in hg installation
-			$api: {
-				Events: {
-					Function: $api.deprecate($api.events.Function)
-				}
-			}
+			})
 		})
 
 	}
