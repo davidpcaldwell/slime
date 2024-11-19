@@ -12,30 +12,34 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var parameters = jsh.script.getopts({
-			options: {
-				project: jsh.shell.jsh.src.pathname
-			}
-		});
+		jsh.script.cli.main(
+			$api.fp.pipe(
+				jsh.script.cli.option.pathname({ longname: "project", default: jsh.shell.PWD.pathname }),
+				function(p) {
+					var modules = jsh.shell.tools.node.Project.modules({ base: p.options.project.toString() })(jsh.shell.tools.node.installation);
 
-		var modules = jsh.shell.tools.node.Project.modules({ base: parameters.options.project.toString() })(jsh.shell.tools.node.installation);
+					jsh.shell.tools.node.require.simple();
 
-		$api.fp.world.execute(jsh.shell.tools.node.require.action);
-		$api.fp.world.Action.now({
-			action: modules.require({ name: "eslint", version: "9.13.0" }),
-		});
-		$api.fp.world.Action.now({
-			action: modules.require({ name: "@eslint/js" }),
-		});
+					$api.fp.world.Action.now({
+						action: modules.require({ name: "eslint", version: "9.13.0" }),
+					});
 
-		jsh.shell.tools.node.installed.run({
-			command: "eslint",
-			arguments: [/*"--debug",*/ "."],
-			directory: parameters.options.project.directory,
-			evaluate: function(result) {
-				jsh.shell.exit(result.status);
-			}
-		});
+					$api.fp.world.Action.now({
+						action: modules.require({ name: "@eslint/js" }),
+					});
+
+					jsh.shell.tools.node.installed.run({
+						project: p.options.project.directory,
+						command: "eslint",
+						arguments: [/*"--debug",*/ "."],
+						directory: p.options.project.directory,
+						evaluate: function(result) {
+							jsh.shell.exit(result.status);
+						}
+					});
+				}
+			)
+		);
 	}
 //@ts-ignore
 )($api,jsh);

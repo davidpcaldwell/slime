@@ -326,9 +326,9 @@
 
 					if (result.status != 0) {
 						throw new Error("npm ls exit status: " + result.status
-							+ "\n" + JSON.stringify(p.installation)
-							+ "\n" + JSON.stringify(invocation)
-							+ "\n" + result.stdio.error);
+							+ "\ninstallation: " + JSON.stringify(p.installation)
+							+ "\ninvocation: " + JSON.stringify(invocation)
+							+ "\nstderr:\n" + result.stdio.error);
 					}
 
 					/** @type { slime.jrunscript.tools.node.internal.NpmLsOutput } */

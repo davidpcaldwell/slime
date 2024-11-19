@@ -15,24 +15,25 @@
 
 		$api.fp.world.execute(jsh.shell.tools.node.require.action);
 
-		var old_installation_object = jsh.shell.tools.node.installed;
 		var installation = jsh.shell.tools.node.installation;
-
-		var modules = jsh.shell.tools.node.Project.modules(project)(installation);
-
-		var action = modules.require({ name: "eslint", version: "9.13.0" });
-
-		$api.fp.world.Action.now({
-			action: action
-		});
 
 		/** @type { slime.jrunscript.tools.node.Project } */
 		var project = {
 			base: base.pathname.toString()
 		};
 
+		var modules = jsh.shell.tools.node.Project.modules(project)(installation);
+
+		var action = modules.require({ name: "eslint", version: "9.13.0" });
+
+		jsh.shell.console("Require eslint 9.13.0 ...");
+		$api.fp.world.Action.now({
+			action: action
+		});
+
 		var eslintInstallDefaultsAction = modules.require({ name: "@eslint/js" });
 
+		jsh.shell.console("Require @eslint/js ...");
 		$api.fp.world.Action.now({
 			action: eslintInstallDefaultsAction
 		});
@@ -62,27 +63,39 @@
 			return entry[0];
 		});
 
-		var sensor = jsh.shell.tools.node.Installation.Intention.question({
+		var src = jsh.script.file.parent.parent;
+
+		var result = jsh.shell.tools.node.installed.run({
+			project: src,
 			command: "eslint",
 			arguments: ["--format", "json"],
-			directory: base.pathname.toString(),
+			directory: src,
 			stdio: {
-				output: "string"
+				output: String
 			}
+			// evaluate: function(result) {
+			// 	jsh.shell.exit(result.status);
+			// }
 		});
 
-		var result = $api.fp.world.Sensor.now({
-			sensor: sensor,
-			subject: installation,
-			handlers: {
-				stdout: function(e) {
-					jsh.shell.console("STDOUT: " + e.detail.line);
-				},
-				stderr: function(e) {
-					jsh.shell.console("STDERR: " + e.detail.line);
-				}
-			}
-		});
+		// var sensor = jsh.shell.tools.node.Installation.Intention.question({
+		// 	command: "eslint",
+		// 	arguments: ["--format", "json"],
+		// 	directory: base.pathname.toString(),
+		// 	stdio: {
+		// 		output: "string"
+		// 	}
+		// });
+
+		// var result = $api.fp.world.Sensor.now({
+		// 	sensor: sensor,
+		// 	subject: installation,
+		// 	handlers: {
+		// 		stderr: function(e) {
+		// 			jsh.shell.console("STDERR: " + e.detail.line);
+		// 		}
+		// 	}
+		// });
 
 		var results = JSON.parse(result.stdio.output);
 
