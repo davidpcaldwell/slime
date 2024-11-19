@@ -402,10 +402,10 @@
 		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
-			var tell = world(modernize({ context: context, configuration: configuration }));
-			$api.fp.world.now.tell(
-				tell,
-				{
+			var action = world(modernize({ context: context, configuration: configuration }));
+			$api.fp.world.Action.now({
+				action: action,
+				handlers: {
 					start: function(e) {
 						var startEvent = {
 							command: invocation.command,
@@ -439,7 +439,7 @@
 						events.fire("terminate", rv);
 					}
 				}
-			);
+			});
 			return rv;
 		}
 

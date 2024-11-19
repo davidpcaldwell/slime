@@ -431,6 +431,13 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export namespace run.old {
+		/**
+		 * A function that will be invoked when the subprocess terminates, will be provided with information about the result, and
+		 * specifies the return value of `run`.
+		 *
+		 * If this property is omitted, a default will be used that throws an exception if the exit status of the subprocess is not
+		 * zero or the subprocess cannot be launched, and returns its argument.
+		 */
 		export type evaluate<T> = (p: run.old.Result) => T
 	}
 
@@ -536,6 +543,10 @@ namespace slime.jrunscript.shell {
 				 *
 				 * If an individual property in the object has the value `null`, the environment variable is omitted from the list
 				 * passed to the subprocess.
+				 *
+				 * Alternatively, the code allows the use of a {@link slime.$api.fp.old.Mutator}, which is invoked with a copy of
+				 * the parent environment as an argument, though the type definition does not allow this sort of argument and it is
+				 * unclear whether it is used.
 				 */
 				environment?: slime.jrunscript.shell.invocation.Argument["environment"]
 
@@ -637,9 +648,10 @@ namespace slime.jrunscript.shell {
 				workingDirectory: slime.jrunscript.file.Directory
 
 				/**
-				 * The exit status of the command.
+				 * The exit status of the subprocess, if it was launched successfully.
 				 */
 				status: number
+
 				stdio?: run.CapturedOutput
 			}
 
