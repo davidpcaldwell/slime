@@ -673,10 +673,31 @@ namespace slime.jrunscript.shell {
 			downloads?: slime.jrunscript.file.Directory
 		}
 
+		/**
+		 * Launches a JavaScript script on a Java virtual machine.
+		 */
 		jrunscript: slime.jrunscript.shell.oo.Run<
-			Omit<slime.jrunscript.shell.run.old.Argument,"command"> & {
+			Omit<slime.jrunscript.shell.run.old.Argument,"command"|"arguments"> & {
 				jrunscript?: any
-				properties?: any
+
+				/**
+				 * Provides arguments to the script invocation (including the script as the first argument). These arguments
+				 * will be augmented by those indicated by the `vmarguments` and `properties` properties.
+				 */
+				arguments: (string | slime.jrunscript.file.Pathname)[]
+
+				/**
+				 * A set of system properties to pass to the underlying virtual machine. Each property of the object represents a
+				 * system property; the property name is the system property name, and the property value is the value of that
+				 * system property.
+				 */
+				properties?: {
+					[name: string]: string
+				}
+
+				/**
+				 * An array of arguments to pass to the virtual machine running the script.
+				 */
 				vmarguments?: string[]
 			}
 		>
