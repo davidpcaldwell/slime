@@ -437,6 +437,8 @@ namespace slime.jrunscript.shell {
 		 *
 		 * If this property is omitted, a default will be used that throws an exception if the exit status of the subprocess is not
 		 * zero or the subprocess cannot be launched, and returns its argument.
+		 *
+		 * @returns An arbitrary value to return as the return value of the subprocess.
 		 */
 		export type evaluate<T> = (p: run.old.Result) => T
 	}
@@ -632,18 +634,24 @@ namespace slime.jrunscript.shell {
 			 */
 			export interface Result {
 				/**
-				 * The command invoked.
+				 * The command that was run.
 				 */
 				command: Argument["command"]
 
 				/**
-				 * The arguments sent to the command.
+				 * The arguments that were passed to the command.
 				 */
 				arguments: Argument["arguments"]
 
-				environment: any
+				/**
+				 * The environment that was passed to the program, if any.
+				 */
+				environment?: object
 
-				directory: slime.jrunscript.file.Directory
+				/**
+				 * The working directory that was specified for running the program, if any.
+				 */
+				directory?: slime.jrunscript.file.Directory
 				/** @deprecated */
 				workingDirectory: slime.jrunscript.file.Directory
 
@@ -652,6 +660,9 @@ namespace slime.jrunscript.shell {
 				 */
 				status: number
 
+				/**
+				 * The output of the subprocess, if the caller specified that it should be buffered and returned.
+				 */
 				stdio?: run.CapturedOutput
 			}
 
@@ -664,6 +675,9 @@ namespace slime.jrunscript.shell {
 				}
 
 				export interface Events {
+					/**
+					 * Invoked when a process starts.
+					 */
 					start: Event & {
 						pid: number
 						kill: () => void
@@ -685,6 +699,9 @@ namespace slime.jrunscript.shell {
 	export namespace oo {
 		/**
 		 * Launches a subprocess using the operating system.
+		 *
+		 * @returns The value returned by the function given as the `evaluate` property of the argument, or by the default
+		 * implementation of `evaluate`.
 		 */
 		export type Run<P = run.old.Argument> = {
 			<T>(
