@@ -191,19 +191,6 @@
 			}
 		});
 
-		var requireTomcat = function() {
-			if (!environment.jsh.built.home.getSubdirectory("lib/tomcat")) {
-				jsh.shell.jsh({
-					shell: environment.jsh.built.home,
-					script: environment.jsh.src.getFile("jrunscript/jsh/tools/install/tomcat.jsh.js")
-				})
-			}
-		}
-
-		suite.add("servlet/api", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/http/servlet/api.html")
-		}));
-
 		suite.add("servlet/resources/jsapi", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.resources.api.html")
 		}));
