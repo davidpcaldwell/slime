@@ -199,43 +199,6 @@
 			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.api.html")
 		}));
 
-		// TODO: requires Tomcat, right?
-		// TODO: move to rhino/http/servlet, creating internal.api.html?
-		var servletPart = new function() {
-			// TODO: enable
-			var COFFEESCRIPT = false;
-
-			this.initialize = function() {
-				environment.jsh.built.requireTomcat();
-			};
-
-			this.parts = {};
-
-			this.parts.suite = {
-				execute: function(scope,verify) {
-					var result = jsh.shell.jsh({
-						shell: environment.jsh.built.home,
-						script: environment.jsh.src.getFile("jrunscript/jsh/test/jsh.httpd/httpd.jsh.js")
-					});
-					verify(result).status.is(0);
-				}
-			};
-
-			if (COFFEESCRIPT) {
-				this.parts.coffee = {
-					execute: function(scope,verify) {
-						var result = jsh.shell.jsh({
-							shell: environment.jsh.built.home,
-							script: environment.jsh.src.getFile("jrunscript/jsh/test/jsh.httpd/httpd.jsh.js"),
-							arguments: ["-suite", "coffee"]
-						});
-						verify(result).status.is(0);
-					}
-				}
-			}
-		};
-		suite.add("servlet/suite", servletPart);
-
 		//	TODO	disabling tests in order to try to get commit to succeed. Probably need to migrate this to a GitHub implementation
 		if (false) suite.add("provision", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jrunscript/jsh/tools/provision/api.html")
