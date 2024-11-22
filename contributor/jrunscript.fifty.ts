@@ -70,8 +70,7 @@
 			if (isMkcertImplemented) fifty.load("../jrunscript/jsh/unit/plugin.jsh.web.fifty.ts");
 			fifty.load("../jrunscript/jsh/tools/install/plugin.jsh.fifty.ts");
 			fifty.load("../rhino/http/servlet/server/loader.fifty.ts");
-			fifty.load("../rhino/http/servlet/plugin.jsh.fifty.ts");
-			fifty.load("../rhino/http/servlet/plugin.jsh.resources.fifty.ts");
+			fifty.load("../rhino/http/servlet/suite.fifty.ts");
 			fifty.load("../rhino/ui/application.fifty.ts");
 			fifty.load("../tools/code/module.fifty.ts");
 			fifty.load("../tools/fifty/module.fifty.ts");
