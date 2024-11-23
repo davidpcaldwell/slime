@@ -228,6 +228,11 @@ namespace slime.jrunscript.tools.install {
 		 */
 		name?: string
 
+		/**
+		 * The format describing the distribution; an object that knows how to extract an archive to a specified directory.
+		 * Implementations for ZIP and gzipped TAR files are provided in
+		 * {@link slime.jrunscript.tools.install.exports.Distribution | Distribution}'s `format` property.
+		 */
 		format?: distribution.Format
 
 		prefix?: string
@@ -476,6 +481,9 @@ namespace slime.jrunscript.tools.install {
 	}
 
 	export interface Exports {
+		/**
+		 * Functions that operate on {@link slime.jrunscript.tools.install.Distribution}s.
+		 */
 		Distribution: exports.Distribution
 	}
 
@@ -528,8 +536,13 @@ namespace slime.jrunscript.tools.install {
 		}
 
 		export interface Format {
-			extract: (f: slime.jrunscript.file.File, d: slime.jrunscript.file.Directory) => void
 			getDestinationPath: (basename: string) => string
+			extract: (f: slime.jrunscript.file.File, d: slime.jrunscript.file.Directory) => void
+		}
+
+		export interface Formats {
+			gzip?: Format
+			zip: Format
 		}
 
 		export interface Archive {
@@ -730,6 +743,10 @@ namespace slime.jrunscript.tools.install {
 		 */
 		zip: any
 
+		/**
+		 * @deprecated Now that Apache uses an ordinary CDN rather than a series of mirrors to store their files; can just download
+		 * Apache software like other distributions now.
+		 */
 		apache: {
 			/**
 			 * Locates a distribution from Apache, either in a local cache, or from an Apache mirror, and returns a local file
@@ -962,6 +979,8 @@ namespace slime.jrunscript.tools.install {
 				fifty.run(fifty.tests.tar);
 				fifty.run(fifty.tests.zip);
 				fifty.run(fifty.tests.apache);
+
+				fifty.load("deprecated.fifty.ts");
 
 				//	TODO	does Fifty have a destroy mechanism?
 				const scope = test.scope;
