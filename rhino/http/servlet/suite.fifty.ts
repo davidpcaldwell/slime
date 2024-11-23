@@ -95,6 +95,7 @@ namespace slime.servlet {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.load("README.fifty.ts");
 				fifty.load("api.fifty.ts");
 				fifty.load("plugin.jsh.fifty.ts");
 				fifty.load("plugin.jsh.resources.fifty.ts");

@@ -4,9 +4,6 @@
 //
 //	END LICENSE
 
-/**
- * The SLIME servlet implementation allows Java servlets to be authored in JavaScript.
- */
 namespace slime.servlet {
 	export interface Parameters {
 		[x: string]: any
@@ -290,7 +287,7 @@ namespace slime.servlet {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-
+				fifty.run(fifty.tests.jsapi);
 			}
 		}
 	//@ts-ignore
