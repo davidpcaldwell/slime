@@ -15,13 +15,13 @@ namespace slime.$api.fp.methods {
 		[x: string]: (t: T) => any
 	}
 
-	export type Initialized<C,M extends Methods<C>> = {
+	export type Specified<C,M extends Methods<C>> = {
 		[Property in keyof M]: ReturnType<M[Property]>
 	}
 
 	export namespace fixture {
 		export interface Context {
-			multiplier: number
+			scale: number
 		}
 
 		export interface Bar {
@@ -31,13 +31,14 @@ namespace slime.$api.fp.methods {
 		export interface Module {
 			foo: (context: Context) => number
 			Bar: {
-				baz: (context: Context) => (bar: Bar) => string
-				bizzy: (context: Context) => (bar: Bar) => number
+				asString: (context: Context) => (bar: Bar) => string
+				asNumber: (context: Context) => (bar: Bar) => number
+				squared: (context: Context) => (bar: Bar) => number
 			}
 		}
 
-		export type InitializedBar = Initialized<Context,Module["Bar"]>
-		export type OfBar = Initialized<Bar,Initialized<Context,Module["Bar"]>>
+		export type InitializedBar = Specified<Context,Module["Bar"]>
+		export type OfBar = Specified<Bar,Specified<Context,Module["Bar"]>>
 	}
 
 	(
@@ -46,7 +47,7 @@ namespace slime.$api.fp.methods {
 		) {
 			const { verify } = fifty;
 
-			var initialize = function<C>(c: C): <M extends Methods<C>> (methods: M) => Initialized<C,M> {
+			var specify = function<C>(c: C): <M extends Methods<C>> (methods: M) => Specified<C,M> {
 				return function(methods) {
 					return Object.fromEntries(
 						Object.entries(methods).map(function(entry) {
@@ -57,36 +58,42 @@ namespace slime.$api.fp.methods {
 								entry[1](c)
 							]
 						})
-					) as Initialized<C,typeof methods>;
+					) as Specified<C,typeof methods>;
 				}
 			};
 
 			var implementation: fixture.Module["Bar"] = {
-				baz: function(context) {
+				asString: function(context) {
 					return function(bar) {
-						return String(bar.value * context.multiplier);
+						return String(bar.value * context.scale);
 					}
 				},
-				bizzy: function(context) {
+				asNumber: function(context) {
 					return function(bar) {
-						return bar.value * context.multiplier;
+						return bar.value * context.scale;
+					}
+				},
+				squared: function(context) {
+					return function(bar) {
+						return bar.value * context.scale * bar.value * context.scale;
 					}
 				}
 			};
 
 			fifty.tests.wip = function() {
-				var contextualized = initialize({ multiplier: 2 });
+				var contextualized = specify({ scale: 2 });
 
-				var m = contextualized(implementation);
+				var configured = contextualized(implementation);
 				const bar: fixture.Bar = { value: 2 };
-				var s = m.baz(bar);
+				var s = configured.asString(bar);
 				verify(s).is("4");
-				var n = m.bizzy(bar);
+				var n = configured.asNumber(bar);
 				verify(n).is(4);
 
-				var objectified = initialize(bar)(m);
-				verify(objectified).baz.is("4");
-				verify(objectified).bizzy.is(4);
+				var targeted = specify(bar)(configured);
+				verify(targeted).asString.is("4");
+				verify(targeted).asNumber.is(4);
+				verify(targeted).squared.is(16);
 			}
 		}
 	//@ts-ignore
