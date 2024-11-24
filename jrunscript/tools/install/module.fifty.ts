@@ -966,6 +966,75 @@ namespace slime.jrunscript.tools.install {
 	//@ts-ignore
 	)(Packages,fifty);
 
+	export namespace wip {
+		export interface Methods<T> {
+			[x: string]: (t: T) => any
+		}
+
+		export type Initialized<C,M extends Methods<C>> = {
+			[Property in keyof M]: () => ReturnType<M[Property]>
+		}
+
+		export interface Context {
+			multiplier: number
+		}
+
+		export interface Bar {
+			value: number
+		}
+
+		export interface Module {
+			foo: (context: Context) => number
+			Bar: {
+				baz: (context: Context) => (bar: Bar) => string
+				bizzy: (context: Context) => (bar: Bar) => number
+			}
+		}
+
+		export type InitializedBar = Initialized<Context,Module["Bar"]>
+		export type OfBar = Initialized<Bar,Initialized<Context,Module["Bar"]>>
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				var initialize = function<C,M extends Methods<C>>(methods: M, c: C): Initialized<C,M> {
+					return Object.fromEntries(
+						Object.entries(methods).map(function(entry) {
+							return [
+								entry[0],
+								function() {
+									return entry[1](c);
+								}
+							]
+						})
+					) as Initialized<C,M>;
+				};
+
+				var implementation: Module["Bar"] = {
+					baz: function(context) {
+						return function(bar) {
+							return String(bar.value * context.multiplier);
+						}
+					},
+					bizzy: function(context) {
+						return function(bar) {
+							return bar.value * context.multiplier;
+						}
+					}
+				};
+
+				fifty.tests.wip = function() {
+					var contextualized = initialize(implementation, { multiplier: 2 });
+					var a = contextualized.baz()({ value: 2 });
+					verify(a).is("4");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
 	(
 		function(
