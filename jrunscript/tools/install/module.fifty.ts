@@ -1029,10 +1029,16 @@ namespace slime.jrunscript.tools.install {
 				fifty.tests.wip = function() {
 					var contextualized = initialize({ multiplier: 2 });
 					var m = contextualized(implementation);
-					var s = m.baz({ value: 2 });
+					const bar: Bar = { value: 2 };
+					var s = m.baz(bar);
 					verify(s).is("4");
-					var n = m.bizzy({ value: 2 });
+					var n = m.bizzy(bar);
 					verify(n).is(4);
+
+					var objectified = initialize(bar);
+					var x = objectified(m);
+					verify(x).baz.is("4");
+					verify(x).bizzy.is(4);
 				}
 			}
 		//@ts-ignore
