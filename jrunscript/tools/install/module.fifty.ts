@@ -972,7 +972,7 @@ namespace slime.jrunscript.tools.install {
 		}
 
 		export type Initialized<C,M extends Methods<C>> = {
-			[Property in keyof M]: () => ReturnType<M[Property]>
+			[Property in keyof M]: ReturnType<M[Property]>
 		}
 
 		export interface Context {
@@ -1000,17 +1000,17 @@ namespace slime.jrunscript.tools.install {
 			) {
 				const { verify } = fifty;
 
-				var initialize = function<C,M extends Methods<C>>(methods: M, c: C): Initialized<C,M> {
-					return Object.fromEntries(
-						Object.entries(methods).map(function(entry) {
-							return [
-								entry[0],
-								function() {
-									return entry[1](c);
-								}
-							]
-						})
-					) as Initialized<C,M>;
+				var initialize = function<C>(c: C): <M extends Methods<C>> (methods: M) => Initialized<C,M> {
+					return function(methods) {
+						return Object.fromEntries(
+							Object.entries(methods).map(function(entry) {
+								return [
+									entry[0],
+									entry[1](c)
+								]
+							})
+						) as Initialized<C,typeof methods>;
+					}
 				};
 
 				var implementation: Module["Bar"] = {
@@ -1027,9 +1027,12 @@ namespace slime.jrunscript.tools.install {
 				};
 
 				fifty.tests.wip = function() {
-					var contextualized = initialize(implementation, { multiplier: 2 });
-					var a = contextualized.baz()({ value: 2 });
-					verify(a).is("4");
+					var contextualized = initialize({ multiplier: 2 });
+					var m = contextualized(implementation);
+					var s = m.baz({ value: 2 });
+					verify(s).is("4");
+					var n = m.bizzy({ value: 2 });
+					verify(n).is(4);
 				}
 			}
 		//@ts-ignore
