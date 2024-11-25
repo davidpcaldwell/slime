@@ -9,7 +9,7 @@
 	/**
 	 * @param { any } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { { api: { java: any, io: any, web: slime.web.Exports } } } $context
+	 * @param { { api: { java: any, io: slime.jrunscript.io.Exports, web: slime.web.Exports } } } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.servlet.internal.server.Exports> } $export
 	 */
