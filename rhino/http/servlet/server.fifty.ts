@@ -5,35 +5,83 @@
 //	END LICENSE
 
 namespace slime.servlet {
+	/**
+	 * Represents an HTTP header. The value of the `name` property should be treated as case-insensitive.
+	 */
 	export interface Header {
+		/**
+		 * The name of the header.
+		 */
 		name: string
+
+		/**
+		 * The value of the header.
+		 */
 		value: string
 	}
 
-	export type Headers = Array<Header> & { value: Function }
+	export type Headers = (
+		Array<Header>
+		& {
+			/**
+			 * Returns the value of the given header as a string. Multiple values will be comma-delimited, per RFC 2616.
+			 *
+			 * @param name A (case-insensitive) header name.
+			 * @returns The value of that header, or `null` if it is not present.
+			 */
+			value: (name: string) => string
+		}
+	)
 
+	/**
+	 * An HTTP request from a client.
+	 */
 	export interface Request {
 		uri: slime.web.Url
 		url: slime.web.Url
 		source: {
+			/**
+			 * The remote IP address of the requestor.
+			 */
 			ip: string
 		}
 		scheme: string
+
+		/**
+		 * The HTTP method used for the request, as an uppercase string.
+		 */
 		method: string
+
+		/**
+		 * The path used for the request, relative to the webapp. Note that unlike in Java servlets, and many other HTTP server
+		 * environments, this path does not contain a leading `/`.
+		 */
 		path: string
 
 		/**
 		 * The query string; provided only if a query string is present on the request.
 		 */
 		query?: {
+			/**
+			 * The query string of the requested URL.
+			 */
 			string: string
+
 			form: {
 				(p: ObjectConstructor): slime.web.Form
 				(): slime.web.form.Control[]
 			}
 		}
 
+		// //	Commenting out the below because it is believed to be unused
+		// /** @deprecated Replaced by `query.form()` */
+		// parameters?: slime.web.form.Control[]
+
+		/**
+		 * The headers included with this request.
+		 */
 		headers: Headers
+
 		cookies: {
 			name: string
 			value: string
@@ -45,11 +93,31 @@ namespace slime.servlet {
 			//	TODO	Java does not support SameSite
 		}[]
 
+		/**
+		 * Represents a user; see
+		 * `[getUserPrincipal()](https://docs.oracle.com/javaee/7/api/javax/servlet/http/HttpServletRequest.html#getUserPrincipal--)`.
+		 */
 		user?: {
+			/**
+			 * Represents the name of the user; see
+			 * `[getUserPrincipal().getName()](https://docs.oracle.com/javase/8/docs/api/java/security/Principal.html)`
+			 */
 			name: string
 		}
+
+		/**
+		 * The body of the request.
+		 */
 		body?: {
+			/**
+			 * The MIME type of the request body.
+			 */
+			type: slime.mime.Object
 			form: () => slime.web.Form
+
+			/**
+			 * A stream from which the request body can be read.
+			 */
 			stream: slime.jrunscript.runtime.io.InputStream
 		}
 	}
