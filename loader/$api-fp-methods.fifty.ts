@@ -5,22 +5,24 @@
 //	END LICENSE
 
 namespace slime.$api.fp.methods {
-	export interface Context {
-	}
-
-	export interface Exports {
-	}
-
-	export interface Operations<T> {
-		[x: string]: (t: T) => any
-	}
-
 	export type Specified<T,O extends Operations<T>> = {
 		[Property in keyof O]: () => ReturnType<O[Property]>
 	}
 
 	export type Flattened<T,O extends Operations<T>> = {
 		[Property in keyof O]: ReturnType<O[Property]>
+	}
+
+	export interface Exports {
+		specify: <T>(t: T) => <O extends Operations<T>> (operations: O) => Specified<T,O>
+
+		flatten: <T,O extends Operations<T>>(specified: Specified<T,O>) => Flattened<T,O>
+
+		pin: <T>(t: T) => <O extends Operations<T>> (operations: O) => Flattened<T,O>
+	}
+
+	export interface Operations<T> {
+		[x: string]: (t: T) => any
 	}
 
 	export namespace fixture {
@@ -52,50 +54,16 @@ namespace slime.$api.fp.methods {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
+			const script: Script = fifty.$loader.script("$api-fp-methods.js");
+			const subject = script();
+
+			const { specify, flatten, pin } = subject;
+
 			var console = (fifty.global.jsh) ? function(message) {
 				jsh.shell.console(message);
 			} : function(message) {
 				//	do nothing in browser for now
 			}
-
-			var specify = function<T>(t: T): <O extends Operations<T>> (operations: O) => Specified<T,O> {
-				return function(methods) {
-					return Object.fromEntries(
-						Object.entries(methods).map(function(entry) {
-							return [
-								entry[0],
-								//	TODO	would be nice to defer implementation of this, but might require use of
-								//			Object.defineProperty
-								function() {
-									return entry[1](t);
-								}
-							]
-						})
-					) as Specified<T,typeof methods>;
-				}
-			};
-
-			var flatten = function<T,O extends Operations<T>>(specified: Specified<T,O>): Flattened<T,O> {
-				var rv: slime.external.lib.typescript.Partial<Flattened<T,O>> = {};
-				Object.entries(specified).forEach(function(entry) {
-					rv = $api.Object.defineProperty({
-						name: entry[0],
-						descriptor: {
-							enumerable: true,
-							get: function() {
-								return entry[1]();
-							}
-						}
-					})(rv);
-				})
-				return rv as Flattened<T,O>;
-			}
-
-			var pin = function<T>(t: T): <O extends Operations<T>> (operations: O) => Flattened<T,O> {
-				return function(operations) {
-					return flatten(specify(t)(operations));
-				}
-			};
 
 			var implementation: fixture.Module["Bar"] = {
 				asString: function(context) {
@@ -151,5 +119,5 @@ namespace slime.$api.fp.methods {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.loader.Script<void,Exports>
 }
