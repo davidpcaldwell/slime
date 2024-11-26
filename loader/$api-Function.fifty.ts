@@ -4,12 +4,6 @@
 //
 //	END LICENSE
 
-namespace slime.$api {
-	export interface Global {
-		fp: slime.$api.fp.Exports
-	}
-}
-
 /**
  * The {@link slime.$api.fp.Exports | Exports} member of this namespace is available as `$api.fp` in all scripts loaded by the
  * SLIME loader.

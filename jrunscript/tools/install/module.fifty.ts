@@ -966,7 +966,6 @@ namespace slime.jrunscript.tools.install {
 	//@ts-ignore
 	)(Packages,fifty);
 
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit

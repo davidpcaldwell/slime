@@ -157,19 +157,19 @@
 		/**
 		 *
 		 * @param { string } path
-		 * @param { { [x: string]: any } } variables
-		 * @returns
-		 */
-		var load = function(path,variables) {
-			return execute(scope.$slime.getRuntimeScript(path), variables);
-		};
-
-		/**
-		 *
-		 * @param { string } path
 		 * @returns { slime.old.loader.Script<any,any> }
 		 */
 		var script = function(path) {
+			/**
+			 *
+			 * @param { string } path
+			 * @param { { [x: string]: any } } variables
+			 * @returns
+			 */
+			var load = function(path,variables) {
+				return execute(scope.$slime.getRuntimeScript(path), variables);
+			};
+
 			return Object.assign(
 				function(scope) {
 					return load(path, scope);
@@ -184,15 +184,12 @@
 		};
 
 		/** @type { slime.$api.Global } */
-		var $api = load(
-			"$api.js",
-			{
-				$engine: $engine,
-				$slime: {
-					getRuntimeScript: scope.$slime.getRuntimeScript
-				}
+		var $api = script("$api.js")({
+			$engine: $engine,
+			$slime: {
+				getRuntimeScript: scope.$slime.getRuntimeScript
 			}
-		);
+		});
 
 		var code = {
 			/** @type { slime.runtime.internal.scripts.Script } */
@@ -202,8 +199,6 @@
 			/** @type { slime.runtime.internal.old_loaders.Script } */
 			loaders: script("old-loaders.js")
 		};
-
-		var mime = $api.mime;
 
 		/**
 		 * @param { slime.resource.Descriptor } o
