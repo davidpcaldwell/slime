@@ -266,7 +266,7 @@ namespace slime.web {
 
 	export namespace form {
 		/**
-		 * An object representing a name-value pair.
+		 * A name-value pair.
 		 */
 		export interface Control {
 			name: string

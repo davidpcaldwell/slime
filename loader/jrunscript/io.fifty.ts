@@ -319,7 +319,10 @@ namespace slime.jrunscript.runtime.io {
 				 * @param from A stream from which to copy bytes.
 				 * @param to A stream to which to copy bytes.
 				 */
-				copy: (from: slime.jrunscript.runtime.io.InputStream, to: slime.jrunscript.runtime.io.OutputStream, mode?: BinaryCopyMode) => void
+				copy: {
+					(from: slime.jrunscript.runtime.io.InputStream, to: slime.jrunscript.runtime.io.OutputStream, mode?: BinaryCopyMode): void
+					(from: slime.jrunscript.runtime.io.InputStream, to: slime.jrunscript.native.java.io.OutputStream, mode?: BinaryCopyMode): void
+				}
 			}
 
 			/**
