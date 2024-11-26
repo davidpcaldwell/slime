@@ -8,10 +8,10 @@
 (
 	/**
 	 *
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.$api.fp.internal.methods.Context } $context
 	 * @param { slime.loader.Export<slime.$api.fp.methods.Exports> } $export
 	 */
-	function($api,$export) {
+	function($context,$export) {
 		/** @type { slime.$api.fp.methods.Exports["specify"] } */
 		var specify = function(t) {
 			return function(methods) {
@@ -35,7 +35,7 @@
 			/** @type { slime.external.lib.typescript.Partial<ReturnType<typeof flatten>> } */
 			var rv = {};
 			Object.entries(specified).forEach(function(entry) {
-				rv = $api.Object.defineProperty({
+				rv = $context.library.Object.defineProperty({
 					name: entry[0],
 					descriptor: {
 						enumerable: true,
@@ -63,4 +63,4 @@
 		});
 	}
 //@ts-ignore
-)($api,$export);
+)($context,$export);

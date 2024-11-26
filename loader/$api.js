@@ -61,10 +61,25 @@
 			/** @type { slime.$api.fp.internal.Script } */
 			Function: script("$api-Function.js"),
 			/** @type { slime.$api.fp.internal.old.Script } */
-			Function_old: script("$api-Function_old.js")
+			Function_old: script("$api-Function_old.js"),
+			/** @type { slime.$api.fp.internal.methods.Script } */
+			methods: script("$api-fp-methods.js")
 		};
 
 		Object.assign($exports, load("$api-flag.js"));
+
+		/** @type { slime.$api.exports.Object["defineProperty"] } */
+		var defineProperty = function(p) {
+			return function(o) {
+				var r = Object.assign(o, Object.fromEntries([ [p.name, void(0)] ]));
+				Object.defineProperty(
+					r,
+					p.name,
+					p.descriptor
+				);
+				return r;
+			}
+		};
 
 		var events = code.events({
 			deprecate: $exports.deprecate
@@ -73,7 +88,14 @@
 		(function() {
 			var old = code.Function_old({ deprecate: $exports.deprecate });
 			var current = code.Function({ $api: $exports, events: events, old: old, deprecate: $exports.deprecate, script: script });
-			Object.assign($exports, { fp: current, Function: old.Function });
+			var methods = code.methods({
+				library: {
+					Object: {
+						defineProperty: defineProperty
+					}
+				}
+			});
+			Object.assign($exports, { fp: Object.assign(current, { methods: methods }), Function: old.Function });
 		})();
 
 		$exports.global = {
@@ -370,18 +392,7 @@
 				property: void(0),
 				optional: void(0),
 				values: void(0),
-				/** @type { slime.$api.exports.Object["defineProperty"] } */
-				defineProperty: function(p) {
-					return function(o) {
-						var r = Object.assign(o, Object.fromEntries([ [p.name, void(0)] ]));
-						Object.defineProperty(
-							r,
-							p.name,
-							p.descriptor
-						);
-						return r;
-					}
-				},
+				defineProperty: defineProperty,
 				maybeDefineProperty: function(p) {
 					return function(o) {
 						//@ts-ignore

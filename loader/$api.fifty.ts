@@ -28,6 +28,16 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace fp {
+		export interface Exports {
+			methods: slime.$api.fp.methods.Exports
+		}
+	}
+
+	export interface Global {
+		fp: fp.Exports
+	}
+
 	export interface Global {
 		global: {
 			get: <T>(propertyName: string) => T
@@ -1267,6 +1277,11 @@ namespace slime.$api {
 		) {
 			fifty.tests.suite = function() {
 				fifty.load("$api-flag.fifty.ts");
+				fifty.load("$api-mime.fifty.ts");
+				fifty.load("$api-Function.fifty.ts");
+				fifty.load("$api-Function_old.fifty.ts");
+				fifty.load("$api-fp-methods.fifty.ts");
+
 				fifty.run(fifty.tests.jsapi);
 				fifty.run(fifty.tests.exports);
 			}
