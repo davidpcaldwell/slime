@@ -166,18 +166,64 @@ namespace slime.servlet {
 		}
 	}
 
+	export namespace response {
+		export interface Properties {
+			/**
+			 * The MIME type of the request body.
+			 */
+			type?: string | slime.mime.Type
+
+			/**
+			 * The length of the content, in bytes. Used to set the `Content-Length` header in the response.
+			 */
+			length?: number
+
+			/**
+			 * The date that the content was last modified. Used to set the `Last-Modified` header.
+			 */
+			modified?: Date
+		}
+	}
+
+	/**
+	 * A response to be sent to a client in response to a request.
+	 *
+	 * The content of the body must be specified in some way. Using a resource causes the type and content to be specified; note
+	 * that using a Java {@link slime.jrunscript.runtime.old.Resource} automatically provides other capabilities (`Last-Modified`
+	 * and `Content-Length` headers).
+	 */
 	export interface Response {
-		status: { code: number }
+		/**
+		 * The status to use in the response.
+		 */
+		status: {
+			/**
+			 * The HTTP status code to use in the response to the client.
+			 */
+			code: number
+		}
+
+		/**
+		 * Headers to use in the response.
+		 */
 		headers?: Header[]
+
+		/**
+		 * The HTTP request body to send to the client.
+		 */
 		body?: (
 			slime.jrunscript.runtime.old.Resource
-			| {
-				type: string | slime.mime.Type,
+			| response.Properties & {
+				/**
+				 * The message body to send to the client, as a string.
+				 */
 				string: string
 			}
-			| {
-				type: string | slime.mime.Type,
-				stream: any
+			| response.Properties & {
+				/**
+				 * A stream from which the message body to send to the client may be read.
+				 */
+				stream: slime.jrunscript.runtime.io.InputStream
 			}
 		)
 	}
