@@ -39,6 +39,12 @@ namespace slime.servlet {
 		$reload?: () => void
 	}
 
+	/**
+	 * A function that can handle requests.
+	 *
+	 * @param request A request.
+	 * @returns A response.
+	 */
 	export type handler = (request: Request) => Response
 
 	export interface Script {
