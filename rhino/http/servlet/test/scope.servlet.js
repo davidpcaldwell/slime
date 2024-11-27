@@ -10,7 +10,7 @@
 			return httpd.http.Response.text(JSON.stringify({
 				$api: $api,
 				httpd: httpd
-			 }));
+			}));
 		}
 	}
 )();

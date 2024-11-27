@@ -1162,7 +1162,7 @@
 								}
 							}
 
-							if (inputs.base().getFile(".eslintrc.json")) {
+							if (inputs.base().getFile(".eslintrc.json") || inputs.base().getFile("eslint.config.js")) {
 								events.fire("console", "Running ESLint ...");
 								var result = $api.fp.now.map(
 									{
