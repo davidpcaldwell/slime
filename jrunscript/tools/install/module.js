@@ -176,7 +176,7 @@
 			}
 		)();
 
-		var get = deprecated.get
+		var get = deprecated.get;
 
 		// /**
 		//  * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: slime.jrunscript.tools.install.old.Format, to: slime.jrunscript.file.Pathname, replace?: boolean } } p
