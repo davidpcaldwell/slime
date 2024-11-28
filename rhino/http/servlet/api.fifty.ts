@@ -21,7 +21,12 @@ namespace slime.servlet {
 			}
 		}
 
-		loader: slime.old.Loader
+		/**
+		 * (conditional: not present if no resources specified when mapping the servlet) Loads code (and potentially other
+		 * resources) from the servlet resource loader. Note that unlike Java servlet resource loaders, SLIME loaders do not use a
+		 * leading slash as part of the resource path.
+		 */
+		loader?: slime.old.Loader
 
 		/**
 		 * @deprecated
@@ -39,6 +44,12 @@ namespace slime.servlet {
 		$reload?: () => void
 	}
 
+	/**
+	 * A function that can handle requests.
+	 *
+	 * @param request A request.
+	 * @returns A response.
+	 */
 	export type handler = (request: Request) => Response
 
 	export interface Script {
