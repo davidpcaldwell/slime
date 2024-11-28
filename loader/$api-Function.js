@@ -101,6 +101,7 @@
 		});
 
 		var impure = code.impure({
+			Maybe: Maybe,
 			pipe: pipe,
 			events: $context.events,
 			stream: stream.impure

@@ -133,6 +133,19 @@
 							output(input());
 						}
 					}
+				},
+				cache: function(cache) {
+					return function(input) {
+						return function() {
+							var cached = cache.get();
+							if (!cached.present) {
+								var value = input();
+								cache.set(value);
+								cached = $context.Maybe.from.some(value);
+							}
+							return cached.value;
+						}
+					}
 				}
 			},
 			Output: {
