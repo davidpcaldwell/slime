@@ -35,7 +35,8 @@ namespace slime.$api.fp.impure {
 	 * A function capable of observing some kind of external state and obtaining and returning it to the caller.
 	 */
 	export type External<T> = () => T
-	/** @deprecated Replaced by `External`. */
+
+	/** @deprecated Replaced by `External` and `Thunk` (for non-external operations). */
 	export type Input<T> = () => T
 
 	/**
@@ -43,6 +44,7 @@ namespace slime.$api.fp.impure {
 	 * represents the change to effect.
 	 */
 	export type Effect<T> = (t: T) => void
+
 	/** @deprecated Replaced by `Effect` and {@link slime.$api.oo.Modifier}. */
 	export type Output<T> = (t: T) => void
 
@@ -333,6 +335,95 @@ namespace slime.$api.fp.impure {
 					verify(buffer)[0].is(2);
 					verify(buffer)[1].is(2);
 				};
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace exports {
+		export interface Input {
+			cache: <T>(cache: {
+				get: () => Maybe<T>
+				set: impure.Output<T>
+			}) => slime.$api.fp.Transform<() => T>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				type Invocation<F extends slime.external.lib.es5.Function> = {
+					target: ThisParameterType<F>
+					arguments: Parameters<F>
+					returned: ReturnType<F>
+				};
+
+				fifty.tests.exports.impure.Input.cache = function() {
+					//	TODO	add to Fifty proper
+					var spy = function<F extends slime.external.lib.es5.Function>(f: F): { invoke: F, recorded: Invocation<F>[] } {
+						var recorded: Invocation<F>[] = [];
+						return {
+							invoke: function() {
+								const target: Invocation<F>["target"] = this;
+								const args: Invocation<F>["arguments"] = Array.prototype.slice.call(arguments);
+								var rv = f.apply(this, arguments);
+								recorded.push({ target, arguments: args, returned: rv });
+								return rv;
+							} as F,
+							recorded: recorded
+						};
+					};
+
+					var cache: Parameters<exports.Input["cache"]>[0] = (
+						function<T>() {
+							var value: slime.$api.fp.Maybe<T> = $api.fp.Maybe.from.nothing();
+
+							return {
+								get: function() {
+									return value;
+								},
+								set: function(v) {
+									value = $api.fp.Maybe.from.some(v) as slime.$api.fp.Maybe<T>;
+								}
+							}
+						}
+					)();
+
+					var input = function() {
+						return 2*2*2;
+					};
+
+					var spies = {
+						input: spy(input),
+						cache: {
+							get: spy(cache.get),
+							set: spy(cache.set)
+						}
+					};
+
+					var caching = $api.fp.impure.Input.cache({ get: spies.cache.get.invoke, set: spies.cache.set.invoke })(spies.input.invoke);
+
+					verify(spies).input.recorded.length.is(0);
+					verify(spies).cache.get.recorded.length.is(0);
+					verify(spies).cache.set.recorded.length.is(0);
+
+					var value = caching();
+
+					verify(value).is(8);
+					verify(spies).input.recorded.length.is(1);
+					verify(spies).cache.get.recorded.length.is(1);
+					verify(spies).cache.set.recorded.length.is(1);
+
+					value = caching();
+
+					verify(value).is(8);
+					verify(spies).input.recorded.length.is(1);
+					verify(spies).cache.get.recorded.length.is(2);
+					verify(spies).cache.set.recorded.length.is(1);
+				}
 			}
 		//@ts-ignore
 		)(fifty);
@@ -1205,6 +1296,7 @@ namespace slime.$api.fp.world {
 
 namespace slime.$api.fp.internal.impure {
 	export interface Context {
+		Maybe: slime.$api.fp.Exports["Maybe"]
 		pipe: slime.$api.fp.Pipe
 		stream: slime.$api.fp.stream.impure.Exports
 		events: slime.runtime.internal.events.Exports
