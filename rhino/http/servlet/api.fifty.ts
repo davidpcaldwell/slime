@@ -9,6 +9,9 @@ namespace slime.servlet {
 		[x: string]: any
 	}
 
+	/**
+	 * The `httpd` property represents APIs available to every servlet.
+	 */
 	export interface httpd {
 		context: {
 			/**
@@ -52,8 +55,31 @@ namespace slime.servlet {
 	 */
 	export type handler = (request: Request) => Response
 
+	//	TODO	if it doesn't assign a handle function, then what?
+	//	TODO	indentation below is lost
+	/**
+	 * The servlet interacts with its container by assigning properties to its `$exports` object, provided in the scope. Each
+	 * servlet must, at a minimum, assign a function to `$exports.handle`:
+	 *
+	 *     $exports.handle = function(request) {
+	 *         return httpd.http.Response.text("Hello, World!");
+	 *     }
+	 *
+	 * SLIME servlets do not have a separate initialization procedure as Java servlets do; they may perform any initialization in
+	 * their script.
+	 */
 	export interface Script {
+		/**
+		 * Implements the behavior of the servlet: receives a call for each request, and returns a response.
+		 *
+		 * The method must not return `undefined`; if it does, the server will return a `500 Internal Server Error` status. If the
+		 * servlet returns `null`, the server will return a `404 Not Found` status.
+		 */
 		handle: handler
+
+		/**
+		 * Called by the container when the servlet is destroyed.
+		 */
 		destroy?: () => void
 	}
 
@@ -63,7 +89,23 @@ namespace slime.servlet {
 	 */
 	export interface Scope {
 		httpd: httpd
+
+		/**
+		 * The `$loader` object is a *servlet-specific*
+		 * {@link slime.old.Loader} that loads resources *relative to the servlet's path*. The
+		 * `httpd.loader` object loads them from the application path. So if a servlet is located at `/WEB-INF/myapp/servlet.js`, it
+		 * can load a JavaScript file at `/WEB-INF/myapp/code.js` via:
+		 *
+		 * * `httpd.loader.file("WEB-INF/myapp/code.js")`, or
+		 * * `$loader.file("code.js")`.
+		 */
 		$loader: slime.old.Loader
+
+		/**
+		 * The `$parameters` object contains the set of servlet initialization parameters available to the servlet. These are set
+		 * via the `web.xml` file when the servlet is declared. `$parameters` is a JavaScript object containing a property for each
+		 * parameter whose name is the name of the parameter and whose value is the value of that parameter.
+		 */
 		$parameters: Parameters
 		$exports: Script
 	}

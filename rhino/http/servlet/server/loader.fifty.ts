@@ -33,6 +33,9 @@ namespace slime.servlet {
 	}
 
 	export interface httpd {
+		/**
+		 * Provides a set of {@link slime.servlet.handler} implementations.
+		 */
 		Handler: {
 			/**
 			 * Creates a `Handler` from an ordered list of `Handler`s. Requests received by the resulting `Handler` will be handled
@@ -301,8 +304,17 @@ namespace slime.servlet {
 	)(fifty);
 
 	export interface httpd {
+		/**
+		 * Provides HTTP constructs to be used in constructing responses.
+		 */
 		http: {
 			Response: {
+				/**
+				 * Convenience method for returning a `text/plain` response.
+				 *
+				 * @param string The text to return.
+				 * @returns A response object which returns the given response, with a `200 OK` status and no additional headers.
+				 */
 				text: (string: string) => Response
 				resource: (body: slime.jrunscript.runtime.old.Resource) => Response
 				NOT_FOUND: () => Response
