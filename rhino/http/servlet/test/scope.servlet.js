@@ -4,13 +4,26 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.servlet.Scope["httpd"] } httpd
+	 * @param { slime.servlet.Scope["$loader"] } $loader
+	 * @param { slime.servlet.Scope["$exports"] } $exports
+	 * @param { any } $export
+	 */
+	function($api,httpd,$loader,$exports,$export) {
 		$exports.handle = function(request) {
 			return httpd.http.Response.text(JSON.stringify({
 				$api: $api,
-				httpd: httpd
+				httpd: httpd,
+				$loader: typeof $loader,
+				$exports: typeof $exports,
+				$export: typeof $export
 			}));
 		}
 	}
-)();
+//@ts-ignore
+)($api,httpd,$loader,$exports,$export);
