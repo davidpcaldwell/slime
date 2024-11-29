@@ -30,6 +30,13 @@ namespace slime.jsh.httpd {
 		export type Parameters = { [name: string]: any }
 
 		type AnyDescriptor = {
+			/**
+			 * A set of servlet parameters to make available to the servlet via its `$parameters` variable. This object can contain
+			 * properties of any type, but if the servlet is deployed and run in an ordinary container, the `$parameters` variable
+			 * will contain the names and values of the servlet parameters, and hence may only have string values.
+			 *
+			 * (optional; default is an object with no properties)
+			 */
 			parameters?: Parameters
 		}
 
@@ -38,13 +45,26 @@ namespace slime.jsh.httpd {
 		}
 
 		export interface DescriptorUsingFile extends AnyDescriptor {
+			/**
+			 * The file providing the implementation of the servlet. The servlet will be supplied with a `$loader` variable that can
+			 * load resources from its parent directory.
+			 */
 			file: slime.jrunscript.file.File
 		}
 
 		export interface DescriptorUsingResourcePath extends AnyDescriptor {
+			//	TODO	is there a more specific link target for the servlet documentation pertaining to $loader?
+			/**
+			 * The path within the application's resource loader at which the servlet can be found. The servlet will be supplied
+			 * with a `$loader` that can load resources from the servlet's parent path; see the
+			 * {@link slime.servlet | SLIME servlet documentation}.
+			 */
 			resource: string
 		}
 
+		/**
+		 * A declaration for a script-based servlet.
+		 */
 		export type Descriptor = DescriptorUsingLoad | DescriptorUsingFile | DescriptorUsingResourcePath
 
 		export namespace configuration {

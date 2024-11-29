@@ -20,40 +20,11 @@ END LICENSE
 		<h1>Exports</h1>
 		<div class="type">
 			<a class="type" name="types.servlet">servlet</a>
-			<span>A declaration for a script-based servlet.</span>
 			<div class="label">has properties:</div>
 			<ul>
-				<li class="value">
-					<div class="name">parameters</div>
-					<span class="type">object</span>
-					<span>
-						<span>(optional; default is an object with no properties)</span>
-						A set of servlet parameters to make available to the servlet via its <code>$parameters</code> variable.
-						This object can contain properties of any type, but if the servlet is deployed and run in an ordinary
-						container, the <code>$parameters</code> variable will contain the names and values of the servlet
-						parameters, and hence may only have string values.
-					</span>
-				</li>
 				<li>
 					One of:
 					<ul>
-						<li class="value">
-							<div class="name">file</div>
-							<span class="type"><a href="../../../rhino/file/api.html#file">file</a></span>
-							<span>
-								The file providing the implementation of the servlet. The servlet will be supplied with a
-								<code>$loader</code> variable that can load resources from its parent directory.
-							</span>
-						</li>
-						<li class="value">
-							<div class="name">resource</div>
-							<span class="type">string</span>
-							<span>
-								The path within the application's resource loader at which the servlet can be found. The servlet
-								will be supplied with a <code>$loader</code> that can load resources from the servlet's parent
-								path; see the <a href="api.html">SLIME servlet documentation</a>.
-							</span>
-						</li>
 						<li class="function">
 							<div class="name">load</div>
 							<span>
