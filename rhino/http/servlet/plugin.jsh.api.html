@@ -204,7 +204,7 @@ END LICENSE
 						verify(type).subtype.is("javascript");
 
 						(function html() {
-							var type = jsh.httpd.nugget.getMimeType($jsapi.loader.getRelativePath("api.html").file);
+							var type = jsh.httpd.nugget.getMimeType($jsapi.loader.getRelativePath("plugin.jsh.api.html").file);
 							verify(type).media.is("text");
 							verify(type).subtype.is("html");
 						})();
