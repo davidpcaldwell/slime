@@ -26,6 +26,15 @@ namespace slime.jsh.httpd {
 	export interface Exports {
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace servlet {
 		export type Parameters = { [name: string]: any }
 
@@ -41,7 +50,11 @@ namespace slime.jsh.httpd {
 		}
 
 		export interface DescriptorUsingLoad extends AnyDescriptor {
-			load: (scope: slime.servlet.Scope) => void
+			/**
+			 * A function providing the implementation of the servlet. The servlet will not be provided with a `$loader`, although
+			 * the descriptor implementation can add one by assigning a `$loader` property to the scope argument.
+			 */
+			load: (scope: Omit<slime.servlet.Scope,"$loader"> & Pick<Partial<slime.servlet.Scope>,"$loader">) => void
 		}
 
 		export interface DescriptorUsingFile extends AnyDescriptor {
@@ -69,7 +82,17 @@ namespace slime.jsh.httpd {
 
 		export namespace configuration {
 			export interface Servlets {
+				/**
+				 * A loader that loads Java web application resources by path.
+				 */
 				resources?: slime.old.Loader
+
+				//	TODO	add reference to URL patterns from servlet specification -->
+
+				/**
+				 * An object whose property names are interpreted as URL patterns and property values are interpreted as servlet
+				 * declarations.
+				 */
 				servlets?: { [pattern: string]: servlet.Descriptor }
 			}
 
@@ -78,6 +101,7 @@ namespace slime.jsh.httpd {
 				servlet: T
 			}
 
+			//	TODO	JSAPI documentation indicates this implementation does not work; unverified
 			export interface WarFile {
 				webapp: slime.jrunscript.file.Pathname
 			}
@@ -86,7 +110,13 @@ namespace slime.jsh.httpd {
 		}
 	}
 
+	/**
+	 * A Tomcat server.
+	 */
 	export interface Tomcat {
+		/**
+		 * The base directory being used by this instance of Tomcat.
+		 */
 		base: slime.jrunscript.file.Directory
 
 		/**
@@ -100,8 +130,18 @@ namespace slime.jsh.httpd {
 
 		/**
 		 * @deprecated Webapps should be declared at the time of server creation.
+		 *
+		 * Configures the server to route requests for a particular request path to a particular webapp.
 		 */
-		map: (p: { path: string } & slime.jsh.httpd.servlet.configuration.Context) => void
+		map: (p: {
+				//	TODO	it appears that `""` works for the value of `path` as well
+				/**
+				 * The path at which to deploy the webapp specified by the given argument, including the leading `/`.
+				 */
+				path: string
+			}
+			& slime.jsh.httpd.servlet.configuration.Context
+		) => void
 
 		/**
 		 * @deprecated Webapps should be declared at the time of server creation.
@@ -110,16 +150,25 @@ namespace slime.jsh.httpd {
 		 */
 		servlet: (servlet: servlet.Descriptor & { resources?: slime.old.Loader }) => void
 
+		//	TODO	See jsh/test/manual/httpd.lifecycle.jsh.js for tests of the below.
+
 		/**
 		 * Starts the server; this method will not return until the server is ready to receive requests.
+		 *
+		 * This method does not block the `jsh` script from exiting; if the end of the script is reached, the server will be
+		 * terminated.
 		 */
 		start: () => void
 
 		/**
-		 * A method that, when invoked, starts the server if necessary and then blocks until the server is stopped.
+		 * Starts the server if necessary and then blocks until the server is stopped (for example, because `stop` is called).
+		 *
+		 * Note that if the server is started in the shell's main thread, and there are no other threads in use, the shell will
+		 * never terminate.
 		 */
 		run: () => void
 
+		//	TODO	when this method returns, has the server stopped?
 		/**
 		 * Stops the server. Note that if a call to `run()` is running in another thread, stopping the server will cause that thread
 		 * to unblock and continue.
@@ -209,9 +258,9 @@ namespace slime.jsh.httpd {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			fifty.tests.Tomcat = fifty.test.Parent();
+			fifty.tests.exports.Tomcat = fifty.test.Parent();
 
-			fifty.tests.Tomcat.lifecycle = function() {
+			fifty.tests.exports.Tomcat.lifecycle = function() {
 				var server = jsh.httpd.Tomcat();
 				server.servlet({
 					load: function(scope) {
@@ -248,8 +297,45 @@ namespace slime.jsh.httpd {
 	)(fifty);
 
 	export interface Exports {
-		nugget: any
+		/**
+		 * Re-usable methods exported by this module which may be helpful in unrelated code.
+		 */
+		nugget: {
+			/**
+			 * Attempts to determine the MIME type of a file object. Current implementation uses both the Java `jrunscript/io
+			 * mime.Type.guess` method and the `jrunscript/io mime.Type.fromName` method.
+			 *
+			 * @param file A file object.
+			 * @returns A MIME type guessed for the file, or `undefined` if no type could be guessed.
+			 */
+			getMimeType: (file: slime.jrunscript.file.File) => slime.mime.Type
+		}
+	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			fifty.tests.exports.nugget = function() {
+				var type = jsh.httpd.nugget.getMimeType(fifty.jsh.file.object.getRelativePath("api.js").file);
+				verify(type).media.is("application");
+				verify(type).subtype.is("javascript");
+
+				fifty.run(function html() {
+					//	TODO	this will not work when JSAPI is eliminated; will need new HTML file
+					var type = jsh.httpd.nugget.getMimeType(fifty.jsh.file.object.getRelativePath("../../../README.html").file);
+					verify(type).media.is("text");
+					verify(type).subtype.is("html");
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		spi: {
 			servlet: {
 				inWebapp: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.Descriptor) => servlet.configuration.WebappServlet<servlet.DescriptorUsingLoad>

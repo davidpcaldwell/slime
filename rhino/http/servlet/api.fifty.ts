@@ -107,6 +107,8 @@ namespace slime.servlet {
 		 * parameter whose name is the name of the parameter and whose value is the value of that parameter.
 		 */
 		$parameters: Parameters
+
+		//	TODO	this can also be `$export` now.
 		$exports: Script
 	}
 
