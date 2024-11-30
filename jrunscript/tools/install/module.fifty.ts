@@ -250,7 +250,6 @@ namespace slime.jrunscript.tools.install {
 
 		export interface Distribution {
 			from: {
-				//	TODO	guess download format?
 				url: (url: string) => install.Distribution
 
 				file: (p: {
