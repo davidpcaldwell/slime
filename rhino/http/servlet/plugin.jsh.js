@@ -87,8 +87,9 @@
 					if (type) return type;
 				}
 
-				jsh.httpd.nugget = {};
-				jsh.httpd.nugget.getMimeType = getMimeType;
+				jsh.httpd.nugget = {
+					getMimeType: getMimeType
+				};
 
 				jsh.httpd.spi = {
 					servlet: {
