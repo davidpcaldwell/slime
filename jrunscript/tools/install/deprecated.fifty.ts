@@ -32,6 +32,11 @@ namespace slime.jrunscript.tools.install.deprecated {
 			p: slime.jrunscript.tools.install.old.Installation,
 			events: slime.$api.event.Emitter<{ console: string }>
 		) => slime.jrunscript.file.Directory
+
+		oldInstall: (
+			p: Parameters<Exports["install"]>[0],
+			receiver: slime.$api.event.Function.Receiver<{ console: string }>
+		) => slime.jrunscript.file.Directory
 	}
 
 	(

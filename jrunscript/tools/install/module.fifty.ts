@@ -504,8 +504,9 @@ namespace slime.jrunscript.tools.install {
 			/**
 			 * An old-style event handler that will receive `console` events with a string detail type.
 			 */
-			export type Receiver = slime.$api.event.Function.Receiver
+			export type Receiver = slime.$api.event.Function.Receiver<{ console: string }>
 		}
+
 		/**
 		 *
 		 * @returns The directory to which the installation was installed.
