@@ -354,7 +354,7 @@ namespace slime.jsh.httpd {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.Tomcat);
+				fifty.run(fifty.tests.exports);
 			}
 		}
 	//@ts-ignore
