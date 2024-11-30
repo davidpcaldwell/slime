@@ -123,9 +123,14 @@
 			return installLocalArchive(p,events);
 		};
 
+		var oldInstall = $api.events.Function(function(p,events) {
+			return install(p,events);
+		});
+
 		$export({
 			get: get,
-			install: install
+			install: install,
+			oldInstall: oldInstall
 		});
 	}
 //@ts-ignore
