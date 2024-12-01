@@ -6,6 +6,9 @@
 
 namespace slime.jsh.httpd {
 	export interface Exports {
+		/**
+		 * 	A module allowing for, among other things, servlet applications to be compiled into <code>.war</code> files.
+		 */
 		tools: {
 			build: {
 				(p: {

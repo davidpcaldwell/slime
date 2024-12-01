@@ -229,25 +229,23 @@ namespace slime.jsh.httpd {
 		Tomcat?: {
 			(p?: tomcat.Configuration & tomcat.OldWebapps): Tomcat
 
-			serve: (p: tomcat.Configuration & { directory: slime.jrunscript.file.Directory }) => slime.jsh.httpd.Tomcat
-		}
-
-		tomcat: {
-			Server: {
-				from: {
-					configuration: (p: tomcat.Configuration & tomcat.Webapps) => Tomcat
+			/**
+			 * Starts a server that serves files from a particular directory.
+			 *
+			 * @param p An object that provides properties to the `Tomcat` function, as well as a `directory` property specifying
+			 * the directory to be served.
+			 *
+			 * @returns The Tomcat object that was started.
+			 */
+			serve: (p:
+				tomcat.Configuration
+				& {
+					/**
+					 * The directory whose files should be served.
+					 */
+					directory: slime.jrunscript.file.Directory
 				}
-			}
-		}
-
-		servlet: {
-			Servlets: {
-				from: {
-					//	TODO	in the given WebappServlet, it's legal to leave resources undefined. Nail down what this means and
-					//			adjust types accordingly.
-					root: (p: servlet.configuration.WebappServlet) => servlet.configuration.Servlets
-				}
-			}
+			) => slime.jsh.httpd.Tomcat
 		}
 	}
 
@@ -291,10 +289,52 @@ namespace slime.jsh.httpd {
 				jsh.shell.console("Running ...");
 				server.run();
 				jsh.shell.console("Exiting.");
+			};
+
+			fifty.tests.exports.Tomcat.serve = function() {
+				if (jsh.httpd.Tomcat) {
+					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					directory.getRelativePath("a").write("a", { append: false });
+					var tomcat = jsh.httpd.Tomcat.serve({
+						directory: directory
+					});
+					var client = new jsh.http.Client();
+					var response = client.request({
+						url: "http://127.0.0.1:" + tomcat.port + "/" + "a"
+					});
+					var content = response.body.stream.character().asString();
+					verify(response).status.code.is(200);
+					verify(content).is("a");
+					var response = client.request({
+						url: "http://127.0.0.1:" + tomcat.port + "/" + "b"
+					});
+					verify(response).status.code.is(404);
+					tomcat.stop();
+				}
 			}
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		tomcat: {
+			Server: {
+				from: {
+					configuration: (p: tomcat.Configuration & tomcat.Webapps) => Tomcat
+				}
+			}
+		}
+
+		servlet: {
+			Servlets: {
+				from: {
+					//	TODO	in the given WebappServlet, it's legal to leave resources undefined. Nail down what this means and
+					//			adjust types accordingly.
+					root: (p: servlet.configuration.WebappServlet) => servlet.configuration.Servlets
+				}
+			}
+		}
+	}
 
 	export interface Exports {
 		/**
@@ -338,6 +378,12 @@ namespace slime.jsh.httpd {
 	export interface Exports {
 		spi: {
 			servlet: {
+				/**
+				 *
+				 * @param resources The servlet container resource loader to use when implementing the servlet.
+				 * @param servlet
+				 * @returns
+				 */
 				inWebapp: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.Descriptor) => servlet.configuration.WebappServlet<servlet.DescriptorUsingLoad>
 			}
 		}
@@ -345,6 +391,9 @@ namespace slime.jsh.httpd {
 		Resources: slime.jsh.httpd.resources.Exports
 
 		plugin: {
+			/**
+			 * Loads the `jsh.httpd.tools` plugin, which is the `tools` property of {@link slime.jsh.httpd.Exports}.
+			 */
 			tools: () => void
 		}
 	}
