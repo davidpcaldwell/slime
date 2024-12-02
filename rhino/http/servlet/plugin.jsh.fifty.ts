@@ -219,14 +219,27 @@ namespace slime.jsh.httpd {
 			}
 
 			/**
-			 * The base directory against which the server should run; if omitted, a temporary directory will be used.
+			 * The directory to use as Tomcat's *base* directory. Analogous to environment variable `CATALINA_BASE`. If omitted, a
+			 * temporary directory will be used.
 			 */
 			base?: slime.jrunscript.file.Directory
 		}
 	}
 
 	export interface Exports {
+		/**
+		 * (contingent; present only if Tomcat is present in the shell. See installation {@link slime.jsh.shell.tools.tomcat.Exports
+		 * | API at `jsh.shell.tools.tomcat`} and CLI tools in the `jrunscript/jsh/tools/install` folder.)
+		 */
 		Tomcat?: {
+			/**
+			 * Creates an embedded Tomcat server that can run script-based web applications. The server must have at least one
+			 * application present, either as specified by {@link tomcat.Webapps} in the argument, or as added by the deprecated
+			 * `map` method, before it will function.
+			 *
+			 * @param p (optional; default is an object with no properties) An object specifying the configuration of the embedded
+			 * server.
+			 */
 			(p?: tomcat.Configuration & tomcat.OldWebapps): Tomcat
 
 			/**

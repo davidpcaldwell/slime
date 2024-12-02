@@ -6,6 +6,8 @@
 
 namespace slime.jsh.httpd {
 	export interface Exports {
+		//	TODO	based on old TODO comment, there is probably no test for creating a `.war` and then running it to make sure it
+		//			works
 		/**
 		 * 	A module allowing for, among other things, servlet applications to be compiled into <code>.war</code> files.
 		 */
