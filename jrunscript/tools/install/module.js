@@ -26,104 +26,77 @@
 		var TARXZ = /(.*)\.tar\.xz$/;
 		var ZIP = /(.*)\.zip$/;
 
-		/** @type { { gzip: slime.jrunscript.tools.install.old.Format, zip: slime.jrunscript.tools.install.old.Format }} */
-		var algorithms = {
-			gzip: (
-				/**
-				 * @type { () => slime.jrunscript.tools.install.old.Format }
-				 */
-				function() {
-					var tar = $context.library.shell.PATH.getCommand("tar");
-
-					/** @type { slime.jrunscript.tools.install.old.Format["getDestinationPath"] } */
-					var getDestinationPath = function(basename) {
-						if (TGZ.test(basename)) return TGZ.exec(basename)[1];
-						if (TARGZ.test(basename)) return TARGZ.exec(basename)[1];
-						if (TARXZ.test(basename)) return TARXZ.exec(basename)[1];
-						//	TODO	list directory and take only option if there is only one and it is a directory?
-						throw new Error("Cannot determine destination path for " + basename);
-					};
-
-					/** @type { slime.jrunscript.tools.install.old.Format["extract"] } */
-					var extract = (tar)
-						? function(file,to) {
-							$context.library.shell.run({
-								command: $context.library.shell.PATH.getCommand("tar"),
-								arguments: ["xf", file.pathname],
-								directory: to
-							});
-						}
-						: void(0)
-					;
-
-					/**
-					 * @type { slime.jrunscript.tools.install.old.Format }
-					 */
-					var rv = {
-						getDestinationPath: getDestinationPath,
-						extract: extract
-					};
-
-					return rv;
-				}
-			)(),
-			zip: (
-				/**
-				 * @type { () => slime.jrunscript.tools.install.old.Format }
-				 */
-				function() {
-					/** @type { slime.jrunscript.tools.install.old.Format["getDestinationPath"] } */
-					var getDestinationPath = function(basename) {
-						if (ZIP.test(basename)) return ZIP.exec(basename)[1];
-						//	TODO	list directory and take only option if there is only one and it is a directory?
-						throw new Error("Cannot determine destination path for " + basename);
-					};
-
-					/** @type { slime.jrunscript.tools.install.old.Format["extract"] } */
-					var extract = function(file,to) {
-						if ($context.library.shell.PATH.getCommand("unzip")) {
-							var exit = $api.fp.world.Sensor.now({
-								sensor: $context.library.shell.subprocess.question,
-								subject: {
-									command: "unzip",
-									arguments: ["-o", file.pathname.toString()],
-									directory: to.pathname.toString(),
-									stdio: {
-										output: "string",
-										error: "string"
-									}
-								}
-							});
-							//	TODO	currently, except for this case, output is just swallowed
-							if (exit.status != 0) {
-								throw new Error("Non-zero exit status for unzip: " + exit.status + "\n" + exit.stdio.error);
-							}
-						} else {
-							$context.library.file.unzip({
-								zip: file,
-								to: to
-							});
-						}
-					}
-
-					return {
-						getDestinationPath: getDestinationPath,
-						extract: extract
-					}
-				}
-			)()
+		/** @type { { [format: string]: (basename: string) => string } } */
+		var getPrefix = {
+			gzip: function(basename) {
+				if (TGZ.test(basename)) return TGZ.exec(basename)[1];
+				if (TARGZ.test(basename)) return TARGZ.exec(basename)[1];
+				if (TARXZ.test(basename)) return TARXZ.exec(basename)[1];
+				//	TODO	list directory and take only option if there is only one and it is a directory?
+				throw new Error("Cannot determine destination path for " + basename);
+			},
+			zip: function(basename) {
+				if (ZIP.test(basename)) return ZIP.exec(basename)[1];
+				//	TODO	list directory and take only option if there is only one and it is a directory?
+				throw new Error("Cannot determine destination path for " + basename);
+			}
 		};
+
+		var tar = $context.library.shell.PATH.getCommand("tar");
+
+		var extract = {
+			gzip: (tar)
+				? function(file,to) {
+					$context.library.shell.run({
+						command: tar,
+						arguments: ["xf", file.pathname],
+						directory: to
+					});
+				}
+				: void(0)
+			,
+			zip: function(file,to) {
+				if ($context.library.shell.PATH.getCommand("unzip")) {
+					var exit = $api.fp.world.Sensor.now({
+						sensor: $context.library.shell.subprocess.question,
+						subject: {
+							command: "unzip",
+							arguments: ["-o", file.pathname.toString()],
+							directory: to.pathname.toString(),
+							stdio: {
+								output: "string",
+								error: "string"
+							}
+						}
+					});
+					//	TODO	currently, except for this case, output is just swallowed
+					if (exit.status != 0) {
+						throw new Error("Non-zero exit status for unzip: " + exit.status + "\n" + exit.stdio.error);
+					}
+				} else {
+					$context.library.file.unzip({
+						zip: file,
+						to: to
+					});
+				}
+			}
+		}
 
 		/** @type { { gzip?: slime.jrunscript.tools.install.old.Format, zip: slime.jrunscript.tools.install.old.Format }} */
 		var formats = (
 			function() {
 				var format = {
-					zip: algorithms.zip
+					zip: {
+						getDestinationPath: getPrefix.zip,
+						extract: extract.zip
+					}
 				};
 
-				if (algorithms.gzip.extract) {
-					format.gzip = algorithms.gzip;
-				}
+				if (extract.gzip) format.gzip = {
+					getDestinationPath: getPrefix.gzip,
+					extract: extract.gzip
+				};
+
 				return format;
 			}
 		)();
@@ -136,7 +109,7 @@
 			},
 			targz: {
 				extension: ".tgz",
-				extract: algorithms.gzip.extract
+				extract: extract.gzip
 			}
 		};
 
@@ -522,12 +495,18 @@
 				get: $exports.get,
 				downloads: downloads
 			}),
-			gzip: (algorithms.gzip.extract) ? $api.deprecate(function(p,on) {
-				p.format = algorithms.gzip;
+			gzip: (extract.gzip) ? $api.deprecate(function(p,on) {
+				p.format = {
+					getDestinationPath: getPrefix.gzip,
+					extract: extract.gzip
+				};
 				oldInstall(p,on);
 			}) : void(0),
 			zip: $api.deprecate(function(p,on) {
-				p.format = algorithms.zip;
+				p.format = {
+					getDestinationPath: getPrefix.zip,
+					extract: extract.zip
+				};
 				oldInstall(p,on);
 			})
 		})
