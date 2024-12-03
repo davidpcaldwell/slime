@@ -44,6 +44,7 @@
 			fifty.load("../js/time/module.fifty.ts");
 			fifty.load("../js/object/module.fifty.ts");
 			fifty.load("../jrunscript/host/module.fifty.ts");
+			fifty.load("../jrunscript/io/module.fifty.ts");
 			fifty.load("../jrunscript/io/plugin.jsh.fifty.ts");
 			fifty.load("../jrunscript/tools/install/module.fifty.ts");
 			fifty.load("../rhino/ip/module.fifty.ts");

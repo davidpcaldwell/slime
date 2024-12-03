@@ -72,10 +72,6 @@
 			//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 		}));
 
-		suite.add("jrunscript/io/module", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jrunscript/io/api.html")
-		}));
-
 		suite.add("jrunscript/io/mime", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("jrunscript/io/mime.api.html")
 		}));
