@@ -184,10 +184,10 @@ namespace slime {
 		//	TODO	What about if $context is a number, string, or boolean?
 		script: <C,E>(path: string) => loader.Script<C,E>
 
-		//	TODO	the $platform and $api objects are not described "above" and probably should be links
 		/**
-		 * Executes code in a particular scope with a particular `this` value. The code will automatically contain the `$platform`
-		 * and `$api` objects described above in its scope.
+		 * Executes code in a particular scope with a particular `this` value. The code will automatically contain the
+		 * {@link slime.runtime.Platform | `$platform`} and {@link slime.$api.Global | `$api`} objects described in
+		 * {@link slime | Using SLIME | APIs for all platforms}.
 		 *
 		 * @param path The path of the code to execute.
 		 * @param scope The scope in which to execute the code.

@@ -81,8 +81,8 @@
  *
  * SLIME provides the {@link slime.$api.Global | `$api`} object to all code loaded with SLIME, which provides a number of
  * general-purpose constructs, including a functional programming module available as {@link slime.$api.fp.Exports | `$api.fp`}. A
- * low-level {@link slime.runtime.Platform | `$platform`} object is also provided that may provide access to engine-specific
- * capabilities.
+ * low-level {@link slime.runtime.Platform | `$platform`} object is also provided to all code loaded; `$platform` may provide access
+ * to engine-specific capabilities.
  *
  * ### SLIME definitions (documentation and testing)
  *

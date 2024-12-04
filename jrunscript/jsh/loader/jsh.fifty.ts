@@ -17,32 +17,71 @@ namespace slime.jsh {
 	}
 
 	export namespace loader {
+		/**
+		 * The `jsh` loader, exposed to scripts as `jsh.loader`, wraps the {@link slime.jrunscript.runtime.Exports | SLIME Java
+		 * runtime} which in turn augments the {@link slime.runtime.Exports | SLIME runtime}.
+		 */
+		export interface Exports {
+		}
+
 		(
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
-				fifty.tests.loader = {};
-				fifty.tests.loader.exports = fifty.test.Parent();
+				fifty.tests.exports = fifty.test.Parent();
 			}
 		//@ts-ignore
 		)(fifty);
 
 		/**
 		 * A script to be executed. Can be a {@link slime.resource.Descriptor} which fully describes the code to be executed, but
-		 * also can be specified using several other types. If the value is a {@link slime.jrunscript.file.Pathname}, the script
-		 * will be read from that location in the file system. If the value is a {@link slime.jrunscript.file.File}, the script
-		 * will be read from that file. If it is a {@link slime.web.Url}, it will be loaded over HTTP. And if it is a
+		 * also can be specified using several other types.
+		 *
+		 * * If the value is a {@link slime.jrunscript.file.Pathname}, the script
+		 * will be read from that location in the file system.
+		 * * If the value is a {@link slime.jrunscript.file.File}, the script
+		 * will be read from that file.
+		 * * If it is a {@link slime.web.Url}, it will be loaded over HTTP.
+		 * * And if it is a
 		 * `string`, the loader will:
-		 * * See whether it "looks like" a URL, and if so, try to load the script over HTTP,
-		 * * See whether it represents an absolute path on the filesystem, and if so, load the code from that file,
-		 * * Otherwise, treat it as a path relative to the main script (see {@link slime.jsh.script}) and try to load it from there.
+		 *     * See whether it "looks like" a URL, and if so, try to load the script over HTTP,
+		 *     * See whether it represents an absolute path on the filesystem, and if so, load the code from that file,
+		 *     * Otherwise, treat it as a path relative to the main script (see {@link slime.jsh.script}) and try to load it from there.
 		 */
 		export type Code = slime.resource.Descriptor | slime.jrunscript.file.Pathname | slime.jrunscript.file.File | slime.web.Url | string
 
 		export interface Exports {
+			/**
+			 * Analogous to {@link slime.runtime.Exports | SLIME runtime's run()}, except that a {@link Code} is supplied as the
+			 * first argument rather than a {@link slime.Resource}.
+			 */
 			run: (code: Code, scope?: { [name: string]: any }, target?: object) => void
+
+			/**
+			 * Analogous to {@link slime.runtime.Exports | SLIME runtime's value()}, except that a {@link Code} is supplied as the
+			 * first argument rather than a {@link slime.Resource}.
+			 */
 			value: (code: Code, scope?: { [name: string]: any }, target?: object) => any
+
+			/**
+			 * Analogous to {@link slime.runtime.Exports | SLIME runtime's file()}, except that a {@link Code} is supplied as the
+			 * first argument rather than a {@link slime.Resource}.
+			 */
 			file: (code: Code, context?: { [name: string]: any }, target?: object) => any
+
+			//	TODO	check whether returning null is also a characteristic of the underlying method called
+			/**
+			 * Analogous to {@link slime.Loader}'s `module()`, except that the first argument can be a {@link Code}, a
+			 * {@link slime.jrunscript.file.Directory}, or a {@link slime.web.Url}, rather than a path in an existing
+			 * {@link slime.Loader}.
+			 *
+			 * @param code The location of the module. If the file is a directory, it is treated as the base of an unpacked module.
+			 * If the file is a plain file, then if its name ends in `.slime`, it is treated as a packed module. Otherwise, the
+			 * given file is treated as the main file of a module whose base is the directory in which the file is located.
+			 *
+			 * @returns `null` if the module cannot be found; otherwise, a value analogous to the return value of {@link
+			 * slime.Loader}'s `module` method.
+			 */
 			module: (code: Code | slime.jrunscript.file.Directory | slime.web.Url, context?: { [name: string]: any }, target?: object) => any
 		}
 
@@ -59,7 +98,125 @@ namespace slime.jsh {
 				type pathsExports = { a: number }
 				type pathsFileExports = { value: string }
 
-				fifty.tests.loader.exports.module = function() {
+				fifty.tests.exports.run = fifty.test.Parent();
+
+				fifty.tests.exports.run.pathname = function() {
+					var pathname = fifty.jsh.file.object.getRelativePath("test/jsh-loader-code/run.js");
+
+					fifty.run(function object() {
+						var code = pathname;
+						var value: string;
+						var scope = {
+							$set: function(to) {
+								value = to;
+							}
+						};
+						jsh.loader.run(code, scope);
+						verify(value).is("it");
+					});
+
+					fifty.run(function absolute() {
+						var code = pathname.toString();
+						var value: string;
+						var scope = {
+							$set: function(to) {
+								value = to;
+							}
+						};
+						jsh.loader.run(code, scope);
+						verify(value).is("it");
+					});
+
+					fifty.run(function relative() {
+						var code = "../../jrunscript/jsh/loader/test/jsh-loader-code/run.js";
+						var value: string;
+						var scope = {
+							$set: function(to) {
+								value = to;
+							}
+						};
+						jsh.loader.run(code, scope);
+						verify(value).is("it");
+					});
+				};
+
+				fifty.tests.exports.run.file = function() {
+					var code = fifty.jsh.file.object.getRelativePath("test/jsh-loader-code/run.js").file;
+					var value: string;
+					var scope = {
+						$set: function(to) {
+							value = to;
+						}
+					};
+					jsh.loader.run(code, scope);
+					verify(value).is("it");
+				};
+
+				fifty.tests.exports.run.url = function() {
+					var server = jsh.httpd.Tomcat.serve({
+						directory: fifty.jsh.file.object.getRelativePath(".").directory
+					});
+
+					const URL = "http://127.0.0.1:" + server.port + "/test/jsh-loader-code/run.js";
+
+					fifty.run(function jshWebUrl() {
+						var code = jsh.web.Url.parse(URL);
+						var value: string;
+						var scope = {
+							$set: function(to) {
+								value = to;
+							}
+						};
+						debugger;
+						jsh.loader.run(code, scope);
+						verify(value).is("it");
+					});
+
+					fifty.run(function stringUrl() {
+						var code = URL;
+						var value: string;
+						var scope = {
+							$set: function(to) {
+								value = to;
+							}
+						};
+						jsh.loader.run(code, scope);
+						verify(value).is("it");
+					});
+				}
+
+				fifty.tests.exports.value = function() {
+					var CODE = fifty.$loader.get("../../../loader/test/data/a/value.js").read(String);
+					var Target = function() {
+						this.description = "rsi";
+						this.thisName = void(0);
+					};
+					var scope = {
+						b: "battery"
+					};
+					var target = new Target();
+					//	TODO	name is (erroneously?) required for Java-based loader
+					var NAME = "foo.js";
+					var descriptor: slime.resource.Descriptor = {
+						name: NAME,
+						read: {
+							string: () => CODE
+						}
+					}
+					var value: number = jsh.loader.value(descriptor, scope, target);
+					verify(target).thisName.evaluate(String).is("rsi:battery");
+					verify(value).is(5);
+					var t2 = new Target();
+					var FILE = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("a.js");
+					FILE.write(CODE, { append: false });
+					var v2: number = jsh.loader.value(FILE, scope, t2);
+					verify(t2).thisName.evaluate(String).is("rsi:battery");
+					verify(v2).is(5);
+				}
+
+				fifty.tests.exports.module = fifty.test.Parent();
+
+				fifty.tests.exports.module.suite = function() {
 					var byFullPathname: exports = jsh.loader.module(fifty.jsh.file.object.getRelativePath("test/code/module.js"));
 					verify(byFullPathname).foo.is("bar");
 
@@ -111,6 +268,14 @@ namespace slime.jsh {
 					verify(paths).file.absolute.value.is("kindness");
 					verify(paths).file.http.value.is("kindness");
 					verify(paths).file.url.value.is("kindness");
+				};
+
+				fifty.tests.exports.module.jsapi = function() {
+					// TODO: Unclear what this is really testing, but adapted from previous (inefficient) integration test
+					var loader = new jsh.file.Loader({ directory: fifty.jsh.file.object.getRelativePath("test/module-loader").directory });
+					var module = loader.module("module.js");
+					var method = module.$loader.get;
+					verify(module).$loader.evaluate.property("get").is.type("function");
 				}
 			}
 		//@ts-ignore
@@ -221,7 +386,7 @@ namespace slime.jsh {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.scope);
-				fifty.run(fifty.tests.loader.exports);
+				fifty.run(fifty.tests.exports);
 
 				fifty.load("plugins.fifty.ts");
 				fifty.load("test/worker/suite.fifty.ts");

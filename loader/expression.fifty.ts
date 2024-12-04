@@ -87,6 +87,11 @@ namespace slime {
 		//@ts-ignore
 		)(fifty);
 
+		// We are not going to bother documenting $platform for now. It contains things that can be inferred other ways:
+		// 	1.	A programmer can use Packages to look for LiveConnect
+		// 	2.	MetaObject is not provided another way, but should implement ECMAScript 6 Proxy and then use that
+		//	3.	E4X is very deprecated
+
 		/**
 		 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
 		 * in its implementation.

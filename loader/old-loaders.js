@@ -89,19 +89,19 @@
 				/** @type { slime.old.Loader["run"] } */
 				this.run = function retarget(path,context,target) {
 					var resource = this.get(path);
-					if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
+					if (!resource) throw new Error("Not found: " + path + " when executing " + "run" + " in " + this);
 					return methods.run.call(target,adaptResource(resource),context);
 				};
 				/** @type { slime.old.Loader["value"] } */
 				this.value = function retarget(path,context,target) {
 					var resource = this.get(path);
-					if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
+					if (!resource) throw new Error("Not found: " + path + " when executing " + "value" + " in " + this);
 					return methods.old.value.call(target,adaptResource(resource),context);
 				};
 				/** @type { slime.old.Loader["file"] } */
 				this.file = function retarget(path,context,target) {
 					var resource = this.get(path);
-					if (!resource) throw new Error("Not found: " + path + " when executing " + name + " in " + this);
+					if (!resource) throw new Error("Not found: " + path + " when executing " + "file" + " in " + this);
 					return methods.old.file.call(target,adaptResource(resource),context);
 				};
 			}
