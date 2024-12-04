@@ -294,11 +294,128 @@ namespace slime.jsh {
 			) => void
 
 			addFinalizer: any
+		}
+
+		export interface Exports {
+			//	TODO	should accept a file or directory as well, and probably should ignore null
+
+			// TODO	write tests: need to be able to compile Java classes and add them to the classpath. They
+			// probably must be jsh/test tests. Also we need to test whether the Packages variable still
+			// behaves "incorrectly," i.e., caches failed lookups, preventing new classes from being found
+			// once they've been sought.
+
+			/**
+			 * The Java code available to the script.
+			 */
 			java: {
 				toString: () => string
+
+				/**
+				 * Adds a directory or JAR file to the Java classpath of this script.
+				 *
+				 * @param pathname A {@link slime.jrunscript.file.Pathname} pointing to a directory or a JAR file containing Java
+				 * classes.
+				 */
 				add: (pathname: slime.jrunscript.file.Pathname) => void
+
 				getClass: (name: any) => any
 			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+
+				const fixtures = (function() {
+					var script: slime.jsh.test.Script = fifty.$loader.script("../fixtures.ts");
+					return script();
+				})();
+
+				const withJava = function(environment: { [name: string]: string }): { [name: string]: string } {
+					var javaBin = $api.fp.now(
+						jsh.shell.java.Jdk.from.javaHome().base,
+						jsh.file.Location.from.os,
+						jsh.file.Location.directory.relativePath("bin"),
+						$api.fp.property("pathname")
+					);
+					var PATH = [jsh.file.Pathname(javaBin)].concat(jsh.shell.PATH.pathnames);
+					return $api.Object.compose(
+						environment,
+						{
+							PATH: jsh.file.Searchpath(PATH).toString()
+						}
+					);
+				}
+
+				fifty.tests.exports.java = fifty.test.Parent();
+
+				fifty.tests.exports.java.jsapi = fifty.test.Parent();
+
+				var compileAddClasses = $api.fp.impure.Input.memoized(function() {
+					var classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					jsh.shell.console("Compiling AddClasses ...");
+					jsh.java.tools.javac({
+						destination: classes.pathname,
+						sourcepath: jsh.file.Searchpath([
+							jsh.file.Pathname(fifty.jsh.file.relative("test/addClasses/java").pathname)
+						]),
+						arguments: [
+							jsh.file.Pathname(fifty.jsh.file.relative("test/addClasses/java/test/AddClasses.java").pathname)
+						]
+					});
+					return classes;
+				});
+
+				fifty.tests.exports.java.jsapi.addClasses = function() {
+					var built = fixtures.shells(fifty).built(false);
+					var intention = built.invoke({
+						script: fifty.jsh.file.relative("test/addClasses/addClasses.jsh.js").pathname,
+						arguments: ["-scenario"],
+						environment: withJava
+					});
+					var result = $api.fp.world.Sensor.now({
+						sensor: jsh.shell.subprocess.question,
+						subject: intention
+					});
+					verify(result).status.is(0);
+				};
+
+				fifty.tests.exports.java.jsapi.jsh_loader_java = function() {
+					var built = fixtures.shells(fifty).built(false);
+					var intention = built.invoke({
+						script: fifty.jsh.file.relative("test/addClasses/addClasses.jsh.js").pathname,
+						arguments: ["-classes", compileAddClasses().pathname.toString()],
+						environment: withJava
+					});
+					var result = $api.fp.world.Sensor.now({
+						sensor: jsh.shell.subprocess.question,
+						subject: intention
+					});
+					verify(result).status.is(0);
+				};
+
+				fifty.tests.exports.java.jsapi.packaged = function() {
+					// TODO: is Rhino a part of
+					var built = fixtures.shells(fifty).built(false);
+					var intention = built.invoke({
+						script: fifty.jsh.file.relative("test/packaged/suite.jsh.js").pathname,
+						arguments: ["-classes", compileAddClasses().pathname.toString()],
+						environment: withJava
+					});
+					var result = $api.fp.world.Sensor.now({
+						sensor: jsh.shell.subprocess.question,
+						subject: intention
+					});
+					verify(result).status.is(0);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			kotlin: {
 				/**
 				 * **Experimental** Runs the given Kotlin script under the given bindings. See `jsh/test/manual/kotlin-jsr-223.jsh.js`
