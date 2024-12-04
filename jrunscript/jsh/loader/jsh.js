@@ -297,6 +297,9 @@
 						return isFile(code) || isDirectory(code);
 					}
 
+					//	TODO	the run, value, and file properties below are later decorated by jsh/script/plugin-loader-old.js,
+					//			for some reason; that decoration should probably move to this file, perhaps in a separate plugin
+
 					return {
 						run: function(code,scope,target) {
 							//	TODO	untested
