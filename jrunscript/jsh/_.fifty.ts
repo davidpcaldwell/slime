@@ -157,7 +157,7 @@ namespace slime.jsh {
  * #### Settings used
  *
  * | Name | Description |
- * ======================
+ * | ---- | ----------- |
  * | `jsh.shell.src` | If this is an unbuilt shell, the launcher needs to know where the root directory of the SLIME source code is. |
  * | `jsh.engine` | If specified, will override the default mechanism for selecting a JavaScript engine and use the specified value. |
  * | `jsh.engine.rhino.classpath` | If specified, will override the default mechanism for locating Rhino. |
@@ -194,9 +194,9 @@ namespace slime.jsh {
  *
  * ## Testing Tools
  *
- * The `jrunscript/jsh/fixtures.ts` script provides an {@link slime.jsh.test.Exports} object that provides access to several shell
- * types, as represented by the {@link slime.jsh.test.Shells} that can be created by passing the global
- * {@link slime.fifty.test.Kit | `fifty`} object.
+ * The `jrunscript/jsh/fixtures.ts` {@link slime.jsh.test.Script | script} provides an {@link slime.jsh.test.Exports} object that
+ * provides access to several shell types, as represented by the {@link slime.jsh.test.Shells} that can be created by passing the
+ * global {@link slime.fifty.test.Kit | `fifty`} object.
  */
 namespace slime.jsh.internal {
 
