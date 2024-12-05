@@ -82,30 +82,11 @@
 			}
 		}
 
-		/** @type { { gzip?: slime.jrunscript.tools.install.old.Format, zip: slime.jrunscript.tools.install.old.Format }} */
-		var formats = (
-			function() {
-				var format = {
-					zip: {
-						getDestinationPath: getPrefix.zip,
-						extract: extract.zip
-					}
-				};
-
-				if (extract.gzip) format.gzip = {
-					getDestinationPath: getPrefix.gzip,
-					extract: extract.gzip
-				};
-
-				return format;
-			}
-		)();
-
 		/** @type { slime.jrunscript.tools.install.exports.Distribution["Format"] } */
-		var newFormats = {
+		var formats = {
 			zip: {
 				extension: ".zip",
-				extract: formats.zip.extract
+				extract: extract.zip
 			},
 			targz: {
 				extension: ".tgz",
@@ -119,15 +100,15 @@
 		 * @returns { slime.$api.fp.Maybe<slime.jrunscript.tools.install.distribution.Format> }
 		 */
 		var getFormatFromMimeType = function(type) {
-			if (type.media == "application" && type.subtype == "zip") return $api.fp.Maybe.from.some(newFormats.zip);
-			if (type.media == "application" && type.subtype == "gzip") return $api.fp.Maybe.from.some(newFormats.targz);
+			if (type.media == "application" && type.subtype == "zip") return $api.fp.Maybe.from.some(formats.zip);
+			if (type.media == "application" && type.subtype == "gzip") return $api.fp.Maybe.from.some(formats.targz);
 			return $api.fp.Maybe.from.nothing();
 		}
 
 		/** @type { (url: string) => slime.$api.fp.Maybe<slime.jrunscript.tools.install.distribution.Format> } */
 		var getFormatFromUrl = function(url) {
-			if (ZIP.test(url)) return $api.fp.Maybe.from.some(newFormats.zip);
-			if (TARGZ.test(url) || TGZ.test(url) || TARXZ.test(url)) return $api.fp.Maybe.from.some(newFormats.targz);
+			if (ZIP.test(url)) return $api.fp.Maybe.from.some(formats.zip);
+			if (TARGZ.test(url) || TGZ.test(url) || TARXZ.test(url)) return $api.fp.Maybe.from.some(formats.targz);
 			return $api.fp.Maybe.from.nothing();
 		}
 
@@ -140,15 +121,6 @@
 			return url.split("/").slice(-1)[0];
 		}
 
-		/**
-		 *
-		 * @param { slime.jrunscript.http.client.request.url } p
-		 */
-		var urlToString = function(p) {
-			if (typeof(p) == "string") return p;
-			return $context.library.web.Url.codec.string.encode(p);
-		}
-
 		var deprecated = (
 			function() {
 				/** @type { slime.jrunscript.tools.install.deprecated.Script } */
@@ -156,71 +128,19 @@
 				/** @type { slime.jrunscript.tools.install.deprecated.Context } */
 				var context = {
 					library: {
+						web: $context.library.web,
 						file: $context.library.file,
 						shell: $context.library.shell
 					},
+					extract: extract,
+					getPrefix: getPrefix,
 					downloads: downloads,
 					client: client,
-					getDefaultName: getDefaultName,
-					formats: formats,
-					urlToString: urlToString
+					getDefaultName: getDefaultName
 				}
 				return script(context);
 			}
 		)();
-
-		var get = deprecated.get;
-
-		var install = deprecated.install;
-
-		var oldInstall = deprecated.oldInstall;
-
-		/** @type { (p: slime.jrunscript.tools.install.old.WorldInstallation) => slime.$api.fp.world.old.Tell<slime.jrunscript.tools.install.old.events.Console> } */
-		var newOldInstall = function(p) {
-			return $api.fp.world.old.tell(function(events) {
-				if (typeof(p.source.file) != "string" && typeof(p.source.file) != "undefined") {
-					throw new TypeError("source.file must be string.");
-				}
-				return install({
-					url: p.source.url,
-					name: p.source.name,
-					file: (p.source.file) ? $context.library.file.Pathname(p.source.file).file : void(0),
-					format: (p.archive && p.archive.format),
-					getDestinationPath: (p.archive && p.archive.folder),
-					to: $context.library.file.Pathname(p.destination.location),
-					replace: p.destination.replace
-				}, events);
-			});
-		};
-
-		var $exports = {
-			/** @type { slime.jrunscript.tools.install.Exports["get"] } */
-			get: $api.events.Function(
-				/**
-				 *
-				 * @param { slime.jrunscript.tools.install.old.Source } p
-				 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.old.events.Console> } events
-				 */
-				function(p,events) {
-					/**
-					 *
-					 * @param { slime.jrunscript.tools.install.old.Source } oldSource
-					 * @returns { slime.jrunscript.tools.install.old.WorldSource }
-					 */
-					var toModernSource = function(oldSource) {
-						return {
-							url: (oldSource.url) ? urlToString(oldSource.url) : void(0),
-							name: oldSource.name,
-							file: (oldSource.file) ? oldSource.file.toString() : void(0)
-						}
-					}
-
-					var source = toModernSource(p);
-					get(source,events);
-					return $context.library.file.Pathname(source.file).file;
-				}
-			)
-		};
 
 		/**
 		 *
@@ -462,16 +382,16 @@
 						}
 					}
 				)(),
-				Format: newFormats,
+				Format: formats,
 				install: {
 					world: wo.install
 				}
 			},
-			get: $exports.get,
+			get: deprecated.oldGet,
 			//	TODO	find is completely untested
 			find: function(p) {
 				return $api.fp.world.old.ask(function(events) {
-					get(p,events);
+					deprecated.get(p,events);
 					return p.file;
 				});
 			},
@@ -480,19 +400,37 @@
 			install: (
 				/** @type { slime.jrunscript.tools.install.Exports["install"] } */
 				function(p,events) {
+					/** @type { (p: slime.jrunscript.tools.install.old.WorldInstallation) => slime.$api.fp.world.old.Tell<slime.jrunscript.tools.install.old.events.Console> } */
+					var newOldInstall = function(p) {
+						return $api.fp.world.old.tell(function(events) {
+							if (typeof(p.source.file) != "string" && typeof(p.source.file) != "undefined") {
+								throw new TypeError("source.file must be string.");
+							}
+							return deprecated.install({
+								url: p.source.url,
+								name: p.source.name,
+								file: (p.source.file) ? $context.library.file.Pathname(p.source.file).file : void(0),
+								format: (p.archive && p.archive.format),
+								getDestinationPath: (p.archive && p.archive.folder),
+								to: $context.library.file.Pathname(p.destination.location),
+								replace: p.destination.replace
+							}, events);
+						});
+					};
+
 					/** @type { (p: any) => p is slime.jrunscript.tools.install.old.Installation } */
 					var isOld = function(p) { return Boolean(p["url"]) || Boolean(p["name"]) || Boolean(p["file"]); };
 					if (isOld(p)) {
-						return oldInstall(p,events);
+						return deprecated.oldInstall(p,events);
 					} else {
 						return newOldInstall(p);
 					}
 				}
 			),
-			format: formats,
+			format: deprecated.formats,
 			apache: scripts.apache({
 				client: client,
-				get: $exports.get,
+				get: deprecated.oldGet,
 				downloads: downloads
 			}),
 			gzip: (extract.gzip) ? $api.deprecate(function(p,on) {
@@ -500,14 +438,14 @@
 					getDestinationPath: getPrefix.gzip,
 					extract: extract.gzip
 				};
-				oldInstall(p,on);
+				deprecated.oldInstall(p,on);
 			}) : void(0),
 			zip: $api.deprecate(function(p,on) {
 				p.format = {
 					getDestinationPath: getPrefix.zip,
 					extract: extract.zip
 				};
-				oldInstall(p,on);
+				deprecated.oldInstall(p,on);
 			})
 		})
 

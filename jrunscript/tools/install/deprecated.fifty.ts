@@ -7,27 +7,32 @@
 namespace slime.jrunscript.tools.install.deprecated {
 	export interface Context {
 		library: {
+			web: slime.web.Exports
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 		}
 
-		urlToString: (url: slime.jrunscript.http.client.request.url) => string
+		extract: {
+			zip: slime.jrunscript.tools.install.distribution.Format["extract"],
+			gzip?: slime.jrunscript.tools.install.distribution.Format["extract"]
+		}
+
+		getPrefix: { [format: string]: (basename: string) => string }
+
 		getDefaultName: (url: string) => string
-		formats: slime.jrunscript.tools.install.old.Formats
 
 		downloads: slime.jrunscript.file.Directory
 		client: slime.jrunscript.http.client.object.Client
 	}
 
 	export interface Exports {
+		oldGet: slime.jrunscript.tools.install.Exports["get"]
+
 		get: (
 			p: slime.jrunscript.tools.install.old.WorldSource,
 			events: slime.$api.event.Emitter<{ console: string }>
 		) => slime.jrunscript.tools.install.old.WorldSource
 
-		// * @param { slime.jrunscript.tools.install.old.Installation } p
-		// * @param { slime.$api.event.Emitter<{ console: string }> } events
-		// * @returns { slime.jrunscript.file.Directory }
 		install: (
 			p: slime.jrunscript.tools.install.old.Installation,
 			events: slime.$api.event.Emitter<{ console: string }>
@@ -37,6 +42,8 @@ namespace slime.jrunscript.tools.install.deprecated {
 			p: Parameters<Exports["install"]>[0],
 			receiver: slime.$api.event.Function.Receiver<{ console: string }>
 		) => slime.jrunscript.file.Directory
+
+		formats: slime.jrunscript.tools.install.old.Formats
 	}
 
 	(

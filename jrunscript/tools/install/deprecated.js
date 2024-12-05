@@ -14,6 +14,15 @@
 	 */
 	function($api,$context,$export) {
 		/**
+		 *
+		 * @param { slime.jrunscript.http.client.request.url } p
+		 */
+		var urlToString = function(p) {
+			if (typeof(p) == "string") return p;
+			return $context.library.web.Url.codec.string.encode(p);
+		}
+
+		/**
 		 * @param { slime.jrunscript.tools.install.old.WorldSource } p
 		 * @param { slime.$api.event.Emitter<{ console: string }> } events
 		 */
@@ -42,6 +51,51 @@
 			return p;
 		};
 
+		var oldGet = $api.events.Function(
+			/**
+			 *
+			 * @param { slime.jrunscript.tools.install.old.Source } p
+			 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.old.events.Console> } events
+			 */
+			function(p,events) {
+				/**
+				 *
+				 * @param { slime.jrunscript.tools.install.old.Source } oldSource
+				 * @returns { slime.jrunscript.tools.install.old.WorldSource }
+				 */
+				var toWorldSource = function(oldSource) {
+					return {
+						url: (oldSource.url) ? urlToString(oldSource.url) : void(0),
+						name: oldSource.name,
+						file: (oldSource.file) ? oldSource.file.toString() : void(0)
+					}
+				}
+
+				var source = toWorldSource(p);
+				get(source,events);
+				return $context.library.file.Pathname(source.file).file;
+			}
+		);
+
+		/** @type { { gzip?: slime.jrunscript.tools.install.old.Format, zip: slime.jrunscript.tools.install.old.Format }} */
+		var formats = (
+			function() {
+				var format = {
+					zip: {
+						getDestinationPath: $context.getPrefix.zip,
+						extract: $context.extract.zip
+					}
+				};
+
+				if ($context.extract.gzip) format.gzip = {
+					getDestinationPath: $context.getPrefix.gzip,
+					extract: $context.extract.gzip
+				};
+
+				return format;
+			}
+		)();
+
 		/**
 		 * @param { { name?: string, getDestinationPath?: (file: slime.jrunscript.file.File) => string, url?: any, file?: slime.jrunscript.file.File, format?: slime.jrunscript.tools.install.old.Format, to: slime.jrunscript.file.Pathname, replace?: boolean } } p
 		 * @param { slime.$api.event.Emitter<{ console: string }> } events
@@ -50,7 +104,6 @@
 		var installLocalArchive = function(p,events) {
 			var file = $context.library.file.Pathname(String(p.file)).file;
 			if (!p.format) {
-				var formats = $context.formats;
 				var basename = (function() {
 					if (p.name) return p.name;
 					return (p.url) ? p.url.toString().split("/").slice(-1)[0] : p.file.pathname.basename;
@@ -113,7 +166,7 @@
 					p,
 					(
 						(p.url) ? {
-							url: (p.url) ? $context.urlToString(p.url) : void(0),
+							url: (p.url) ? urlToString(p.url) : void(0),
 							file: (p.file) ? p.file.toString() : void(0)
 						} : {}
 					)
@@ -128,9 +181,11 @@
 		});
 
 		$export({
+			oldGet: oldGet,
 			get: get,
 			install: install,
-			oldInstall: oldInstall
+			oldInstall: oldInstall,
+			formats: formats
 		});
 	}
 //@ts-ignore
