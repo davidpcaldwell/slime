@@ -102,11 +102,6 @@
 			pathname: SRC.getRelativePath("jrunscript/jsh/tools/install/plugin.jsh.api.html")
 		}));
 
-		suite.add("jsh/jsh.loader/jsapi", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jrunscript/jsh/loader/loader.api.html"),
-			environment: environment
-		}));
-
 		var withShell = function(p) {
 			// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
 			// using the built shell, or should be using more shells

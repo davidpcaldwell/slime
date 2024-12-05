@@ -282,8 +282,27 @@ namespace slime.jsh {
 		)(fifty);
 
 		export interface Exports {
+			//	TODO	for directories which exist, but do not have a plugin.jsh.js, figure out what the method really should do;
+			//			what it does do is counterintuitive.
+
+			//	TODO	document the use of synchronous loaders
+
+			//	TODO	document the use of Location
+
 			/**
-			 * Loads `jsh` plugins from a given location.
+			 * Loads `jsh` plugins from a specified source.
+			 *
+			 * @param p A source, interpreted as follows:
+			 *
+			 * * If a `Pathname`, and no file or directory exists at its location, do nothing
+			 * * If a `Directory`, or a `Pathname` with a directory that exists at its location,
+			 *     * and the directory has a `plugin.jsh.js` file, load the plugin from the directory.
+			 *     * otherwise, the behavior is undefined.
+			 * * If a `File`, or a `Pathname` with a file that exists at its location,
+			 *     * and it ends in `.slime`, load the plugin in SLIME format from the file.
+			 *     * and it ends in `.jar`, load the Java-only plugin.
+			 *     * otherwise, do nothing.
+			 * * If it is a `Loader`, plugins are loaded from that Loader.
 			 */
 			plugins: (p:
 				slime.runtime.loader.Synchronous<any>
@@ -292,7 +311,30 @@ namespace slime.jsh {
 				| slime.jrunscript.file.Pathname
 				| slime.jrunscript.file.Directory
 			) => void
+		}
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+
+				fifty.tests.exports.plugins = function() {
+					var global = (function() { return this; })();
+					verify(global).evaluate.property("issue249").is(void(0));
+					var directory = fifty.jsh.file.object.getRelativePath("test/plugin").directory;
+					verify(directory).directory.is(true);
+					verify(directory).pathname.is.type("object");
+					jsh.loader.plugins(directory);
+					verify(global).evaluate.property("issue249").is.type("object");
+					delete global.issue249;
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			addFinalizer: any
 		}
 
