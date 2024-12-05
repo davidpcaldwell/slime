@@ -87,8 +87,3 @@
 	}
 //@ts-ignore
 )($api,$context,$export);
-
-(
-	function() {
-	}
-)();
