@@ -4,21 +4,87 @@
 //
 //	END LICENSE
 
+/**
+ * Creates the `Application` implementation.
+ */
 namespace slime.jsh.script.old.application {
 	export interface Context {
 		getopts: slime.jsh.script.Exports["getopts"]
 	}
 
-	export type Descriptor = any
+	/**
+	 * Describes an individual command in this application.
+	 */
+	export interface Command {
+		//	TODO	should supply an empty default
+		/**
+		 * Interpreted as an argument to the `getopts` method of {@link slime.jsh.script.Exports | this module}.
+		 */
+		getopts: Parameters<slime.jsh.script.GetoptsFunction>[0]
+
+		/**
+		 * Implements a particular command in this application.
+		 * @param p The result of the getopts() call for this command. The result will have an additional property `global`
+		 * containing the global options passed to the application.
+		 * @returns A "result" of the command that can be used by the caller.
+		 */
+		run: (
+			p: (
+				ReturnType<slime.jsh.script.GetoptsFunction>
+				& { global: object }
+			)
+		) => any
+	}
+
+	export type Commands = {
+		[name: string]: Command
+	}
+
+	/**
+	 * Describes an application.
+	 */
+	export interface Descriptor {
+		//	TODO	undocumented feature of some kind; see test
+		property?: any
+
+		/**
+		 * Interpreted as the `options` property of an argument to the
+		 * `getopts()` method of {@link slime.jsh.script.Exports | this module}.
+		 */
+		options?: Parameters<slime.jsh.script.GetoptsFunction>[0]["options"]
+
+		//	TODO	What if the property is not of type command?
+		/**
+		 * Generally, an object whose properties are command names and whose values are {@link Command}s.
+		 *
+		 * However, the object may contain nested commands. For example, if it has a `foo` property with a `bar` property, a
+		 * `foo.bar` command will be created using the property.
+		 */
+		commands: {
+			[name: string]: Commands | Command
+		}
+	}
 
 	export interface Application {
 		/**
 		 * @experimental
-		 *
-		 * @returns
 		 */
-		getCommands: () => any
-		run: any
+		getCommands: () => { [name: string]: slime.jsh.script.old.application.Command }
+
+		/**
+		 * Executes the application.
+		 *
+		 * The application arguments are interpreted as follows:
+		 *
+		 * * Global arguments are interpreted,
+		 * * The first token that is not a global argument is interpreted as the <i>command</i> to run,
+		 * * All other arguments are interpreted as arguments to that command.
+		 *
+		 * @param args The list of string arguments to pass to the application.
+		 *
+		 * @return The value returned by the command that is executed.
+		 */
+		run: (...args: string[]) => any
 	}
 
 	(

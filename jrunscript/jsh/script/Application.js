@@ -45,6 +45,13 @@
 
 			this.getCommands = $api.experimental(function() {
 				//	TODO	things could go wrong; caller could set up a cyclic reference, for example
+				/**
+				 *
+				 * @param { slime.jsh.script.old.application.Command | slime.jsh.script.old.application.Commands } target
+				 * @param { { [name: string]: slime.jsh.script.old.application.Command } } [rv]
+				 * @param { string } [prefix]
+				 * @returns
+				 */
 				var get = function(target,rv,prefix) {
 					if (!rv) rv = {};
 					if (!prefix) prefix = "";
