@@ -338,7 +338,7 @@
 					enumerable: true
 				}
 			}),
-			//	TODO	currently only used by jsapi in jsh/unit via jsh.js
+			//	TODO	currently only used by jsapi in loader/api/old/jsh via jsh.js
 			//	TODO	also used by client.html unit tests
 			$api.Object.defineProperty({
 				name: "$platform",
@@ -359,7 +359,7 @@
 				return $api.Object.compose(
 					it,
 					//	TODO	currently used to set deprecation warning in jsh.js
-					//	TODO	currently used by jsapi in jsh/unit via jsh.js
+					//	TODO	currently used by jsapi in loader/api/old/jsh via jsh.js
 					//	TODO	also used by client.html unit tests
 					//	used to allow implementations to set warnings for deprecate and experimental
 					{ $api: $api }

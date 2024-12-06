@@ -269,7 +269,7 @@
 						return inonit.loader.get(base+path);
 					}
 
-					//	TODO	add this.scenario; see jsh/unit/jsapi.js
+					//	TODO	add this.scenario; see loader/api/old/jsh/jsapi.js
 
 					this.fifty = function(p) {
 						var slime = new inonit.loader.Loader(inonit.loader.base + "../");

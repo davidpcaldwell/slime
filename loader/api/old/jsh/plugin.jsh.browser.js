@@ -28,8 +28,8 @@
 					return true;
 				}
 
-				var paths = [slime.getRelativePath("jsh/unit")].concat(pathnames);
-				var directory = slime.getSubdirectory("jsh/unit");
+				var paths = [slime.getRelativePath("loader/api/old/jsh")].concat(pathnames);
+				var directory = slime.getSubdirectory("loader/api/old/jsh");
 				while(!isCommonAncestor(directory,paths)) {
 					directory = directory.parent;
 				}
@@ -69,7 +69,7 @@
 							//	callback and release lock allowing loop to proceed
 							//	TODO	should we enhance the servlet plugin interface to allow something other than a file?
 							"/*": {
-								file: slime.getFile("jsh/unit/browser.servlet.js"),
+								file: slime.getFile("loader/api/old/jsh/browser.servlet.js"),
 								parameters: parameters
 							}
 						},

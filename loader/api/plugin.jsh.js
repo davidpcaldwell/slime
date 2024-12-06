@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jsh.Global } jsh
-	 * @param { slime.old.Loader } $loader
+	 * @param { slime.jsh.plugin.Scope["$loader"] } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
  	 */
 	function(jsh,$loader,plugin) {
@@ -18,6 +18,8 @@
 				jsh.loader.plugins($loader.Child("test/fifty/"));
 			}
 		});
+
+		$loader.plugin("old/jsh/");
 
 		plugin({
 			isReady: function() {

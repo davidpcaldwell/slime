@@ -22,7 +22,7 @@
 
 		//	TODO	should have a better way of dealing with this, but for now we just reload the plugin that depended on Tomcat
 		//			and it will succeed now.
-		jsh.loader.plugins(jsh.script.file.parent.parent.getRelativePath("jrunscript/jsh/unit"));
+		jsh.loader.plugins(jsh.script.file.parent.parent.getRelativePath("loader/api/old/jsh"));
 
 		jsh.wf.typescript.require();
 

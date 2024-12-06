@@ -118,7 +118,7 @@ plugin({
 		}
 
 		var proxy = function(mock) {
-			//	TODO	logic duplicated to a degree in jsh/unit/plugin.jsh.web.js jsh.unit.mock.Web
+			//	TODO	logic duplicated to a degree in loader/api/old/jsh/plugin.jsh.web.js jsh.unit.mock.Web
 			return "export http_proxy=http://" + mock.server.host + ":" + mock.server.port;
 		}
 

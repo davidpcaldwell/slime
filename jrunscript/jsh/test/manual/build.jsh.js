@@ -11,7 +11,7 @@
 
 		var SLIME = jsh.script.file.parent.parent.parent.parent;
 		jsh.loader.plugins(SLIME.getRelativePath("loader/api"));
-		jsh.loader.plugins(SLIME.getRelativePath("jsh/unit"));
+		jsh.loader.plugins(SLIME.getRelativePath("loader/api/old/jsh"));
 		jsh.loader.plugins(SLIME.getRelativePath("jsh/test"));
 
 		var parameters = jsh.script.getopts({

@@ -565,7 +565,7 @@
 				args.push("-index",SLIME.getFile("jrunscript/jsh/etc/api.html"));
 				jsh.shell.jsh({
 					shell: destination.shell,
-					script: SLIME.getFile("jrunscript/jsh/unit/jsapi.jsh.js"),
+					script: SLIME.getFile("loader/api/old/jsh/jsapi.jsh.js"),
 					arguments: args,
 					environment: getTestEnvironment()
 				});

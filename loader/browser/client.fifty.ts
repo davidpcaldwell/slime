@@ -34,7 +34,7 @@
  * `loader/api/api.html.js`                                                | JSAPI definition files                                                              | `loader/api/api.html`
  * `loader/api/old/browser/module.js`                                      | Browser implementation of JSAPI unit tests; browser test suite definition           | `loader/browser/test/api.html`
  * `loader/api/ui/loader.js`                                               | A bundle including the above two APIs, as well as a UI for executing unit tests     | `loader/api/ui/loader.api.html`
- * `jsh/unit/plugin.jsh.browser.js`                                        | Undocumented API that allows JSAPI definition files to be executed in a browser     |
+ * `loader/api/old/jsh/plugin.jsh.browser.js`                                        | Undocumented API that allows JSAPI definition files to be executed in a browser     |
  * `loader/browser/test/suite.jsh.js` and `loader/browser/test/suite.bash` | `jsh` script that launches a browser test suite (or an individual definition file). | `loader/browser/test/suite.jsh.api.html`
  */
 namespace slime.browser {

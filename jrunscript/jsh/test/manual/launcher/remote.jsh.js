@@ -22,7 +22,7 @@
 	if (!jsh.unit || !jsh.unit.mock || !jsh.unit.mock.Web) {
 		var base = jsh.script.file.parent.parent.parent.parent;
 		jsh.loader.plugins(base.getRelativePath("loader/api"));
-		jsh.loader.plugins(base.getRelativePath("jsh/unit"));
+		jsh.loader.plugins(base.getRelativePath("loader/api/old/jsh"));
 	}
 	jsh.loader.plugins(jsh.script.file.parent.pathname);
 

@@ -43,7 +43,7 @@
 			// 		app: p.url
 			// 	});
 			// },
-			path: "slime/jsh/unit/specify/index.html"
+			path: "slime/loader/api/old/jsh/specify/index.html"
 		});
 	}
 )();

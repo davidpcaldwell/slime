@@ -122,7 +122,7 @@
 			pathname: SRC.getRelativePath("loader/api/api.html")
 		}));
 		suite.add("testing/jsh.unit/definition/jsapi", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jrunscript/jsh/unit/plugin.jsh.api.html")
+			pathname: SRC.getRelativePath("loader/api/old/jsh/plugin.jsh.api.html")
 		}));
 		suite.add("testing/fifty", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("tools/fifty/test/data/api.html")
@@ -132,7 +132,7 @@
 		if (false) suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
 			run: jsh.shell.jsh,
 			shell: (environment.jsh.built) ? environment.jsh.built.homne : environment.jsh.unbuilt.src,
-			script: SRC.getFile("jrunscript/jsh/unit/test/bitbucket.jsh.js"),
+			script: SRC.getFile("loader/api/old/jsh/test/bitbucket.jsh.js"),
 			arguments: ["-view", "stdio"]
 		}));
 		suite.add("testing/integration", new function() {
@@ -142,7 +142,7 @@
 					execute: function(scope,verify) {
 						var result = jsh.shell.jsh({
 							shell: src,
-							script: src.getFile("jrunscript/jsh/unit/test/fail.jsh.js"),
+							script: src.getFile("loader/api/old/jsh/test/fail.jsh.js"),
 							evaluate: function(result) {
 								return result;
 							}
@@ -152,7 +152,7 @@
 				},
 				// htmlReload: new ScriptPart({
 				// 	shell: src,
-				// 	script: src.getFile("jrunscript/jsh/unit/test/fail.jsh.js"),
+				// 	script: src.getFile("loader/api/old/jsh/test/fail.jsh.js"),
 				// 	check: function(verify) {
 				// 		verify(this).status.is(1);
 				// 	}
@@ -160,7 +160,7 @@
 				suiteWithScenario: new jsh.unit.Suite.Fork({
 					run: jsh.shell.jsh,
 					shell: src,
-					script: src.getFile("jrunscript/jsh/unit/test/suite.jsh.js"),
+					script: src.getFile("loader/api/old/jsh/test/suite.jsh.js"),
 					arguments: [
 						"-view", "stdio"
 					]
@@ -168,7 +168,7 @@
 				nakedScenario: new jsh.unit.Suite.Fork({
 					run: jsh.shell.jsh,
 					shell: src,
-					script: src.getFile("jrunscript/jsh/unit/test/scenario.jsh.js"),
+					script: src.getFile("loader/api/old/jsh/test/scenario.jsh.js"),
 					arguments: [
 						"-view", "stdio"
 					]

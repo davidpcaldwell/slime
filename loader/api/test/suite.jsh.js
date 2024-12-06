@@ -78,7 +78,7 @@
 			}
 		});
 
-		var html = jsh.loader.file(jsh.script.file.parent.parent.parent.parent.getRelativePath("jsh/unit/html.js"), {
+		var html = jsh.loader.file(jsh.script.file.parent.parent.parent.parent.getRelativePath("loader/api/old/jsh/html.js"), {
 			html: apiHtml,
 			$slime: jsh.unit.$slime,
 			test: true

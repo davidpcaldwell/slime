@@ -8,7 +8,7 @@ if (!jsh.test || !jsh.test.integration) {
 	//	TODO	can this be implemented for URL-based launches?
 	if (jsh.script.file) {
 		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.parent.getRelativePath("loader/api"));
-		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.parent.getRelativePath("jsh/unit"));
+		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.parent.getRelativePath("loader/api/old/jsh"));
 		jsh.loader.plugins(jsh.script.file.parent.parent.parent.parent.parent.getRelativePath("jsh/test"));
 	} else {
 		//	URL-based launch, just mock it, essentially
