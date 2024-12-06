@@ -5,6 +5,24 @@
 //	END LICENSE
 
 namespace slime.jsh.script {
+	export namespace getopts.test {
+		/**
+		 * Represents the module inside the Fifty test suite.
+		 */
+		export const subject: Exports = (function(fifty: slime.fifty.test.Kit) {
+			const jsh = fifty.global.jsh;
+			const subject = jsh.script;
+			return subject;
+		//@ts-ignore
+		})(fifty);
+
+		export const shells: slime.jsh.test.Shells = (function(fifty: slime.fifty.test.Kit) {
+			const script: slime.jsh.test.Script = fifty.$loader.script("../fixtures.ts");
+			return script().shells(fifty);
+		//@ts-ignore
+		})(fifty);
+	}
+
 	declare const unexpctedOptionHandlerTag: unique symbol;
 
 	type UnexpectedOptionHandler = { readonly [unexpctedOptionHandlerTag]: "TAG" };
@@ -46,7 +64,7 @@ namespace slime.jsh.script {
 				 * Each named property of this object is the name of a recognized option. The value of a property describes
 				 * the possible values of the option.
 				 */
-				options: object
+				options?: object
 
 				/**
 				 * (optional) One of the properties of the `UNEXPECTED_OPTION_PARSER` object.
@@ -123,7 +141,7 @@ namespace slime.jsh.script {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			const module = test.subject;
+			const module = getopts.test.subject;
 			const unexpected = ["-boolean", "-string", "string"];
 			const process = function(strategy) {
 				return module.getopts({
@@ -132,18 +150,18 @@ namespace slime.jsh.script {
 				},unexpected);
 			}
 
-			fifty.tests.exports.getopts = fifty.test.Parent();
+			fifty.tests.exports = fifty.test.Parent();
 
-			fifty.tests.exports.getopts.unexpected = fifty.test.Parent();
+			fifty.tests.exports.unexpected = fifty.test.Parent();
 
-			fifty.tests.exports.getopts.unexpected.error = function() {
+			fifty.tests.exports.unexpected.error = function() {
 				verify(module).evaluate(function() { return this.getopts({
 					options: {},
 					unhandled: module.getopts.UNEXPECTED_OPTION_PARSER.ERROR
 				}, unexpected); }).threw.type(Error);
 			};
 
-			fifty.tests.exports.getopts.unexpected.ignore = function() {
+			fifty.tests.exports.unexpected.ignore = function() {
 				var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.IGNORE);
 				verify(parameters).arguments.length.is(0);
 				verify(parameters).options.evaluate(function() {
@@ -154,7 +172,7 @@ namespace slime.jsh.script {
 				}).is(void(0));
 			}
 
-			fifty.tests.exports.getopts.unexpected.skip = function() {
+			fifty.tests.exports.unexpected.skip = function() {
 				var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.SKIP);
 				verify(parameters).arguments.length.is(3);
 				verify(parameters).options.evaluate(function() {
@@ -165,7 +183,7 @@ namespace slime.jsh.script {
 				}).is(void(0));
 			}
 
-			fifty.tests.exports.getopts.unexpected.interpret = function() {
+			fifty.tests.exports.unexpected.interpret = function() {
 				var parameters = process(module.getopts.UNEXPECTED_OPTION_PARSER.INTERPRET);
 				verify(parameters).arguments.length.is(0);
 				verify(parameters).options.evaluate(function() {
@@ -176,7 +194,7 @@ namespace slime.jsh.script {
 				}).is("string");
 			}
 
-			fifty.tests.exports.getopts.options = function() {
+			fifty.tests.exports.options = function() {
 				var strings = ["-property","foo=bar","-property","hello=world"];
 				var p1 = module.getopts({
 					options: {
@@ -228,7 +246,7 @@ namespace slime.jsh.script {
 				verify(p5).options.property.hello.is("world");
 			}
 
-			fifty.tests.exports.getopts._1 = function() {
+			fifty.tests.exports._1 = function() {
 				const test = function(b: boolean) {
 					verify(b).is(true);
 				};
@@ -366,7 +384,7 @@ namespace slime.jsh.script.internal.getopts {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-
+				fifty.run(fifty.tests.exports);
 			}
 		}
 	//@ts-ignore

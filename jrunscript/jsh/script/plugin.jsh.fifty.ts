@@ -1158,8 +1158,10 @@ namespace slime.jsh.script {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.cli);
+				fifty.load("getopts.fifty.ts");
+				fifty.load("Application.fifty.ts");
 
+				fifty.run(fifty.tests.cli);
 				fifty.run(fifty.tests.exports);
 			}
 		}
