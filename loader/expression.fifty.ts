@@ -97,9 +97,51 @@ namespace slime {
 		 * in its implementation.
 		 */
 		export interface Platform {
+			/**
+			 * (conditional) An object with properties describing the platform's Java/LiveConnect capabilities.
+			 */
+			java: {
+				/**
+				 * @param name A Java class name.
+				 * @returns A `JavaClass` object representing the class with the given name, or `null` if no class by that name can
+				 * be loaded.
+				 */
+				getClass: (name: string) => slime.jrunscript.JavaClass
+			}
+
 			e4x: any
-			MetaObject: any
-			java: any
+
+			/**
+			 * (conditional; depends on platform support) A metaobject implementation.
+			 *
+			 * @returns An object that uses the given delegate object to supply properties, but uses the given getter and setter if
+			 * the delegate is `null` or the delegate lacks the named property.
+			 */
+			MetaObject: (p: {
+				/**
+				 * A delegate object that will be used to supply implementations for properties in preference to using the
+				 * meta-object implementations.
+				 */
+				delegate?: object
+
+				/**
+				 * A function that will be called when one of this object's properties that is not defined by the delegate object is
+				 * accessed. This object will be provided as the `this` argument.
+				 *
+				 * @param name A property name
+				 * @returns A value for the named property.
+				 */
+				get: (name: string) => any
+
+				/**
+				 * A function that will be called when one of this object's properties that is not defined by the delegate object is
+				 * set. This object will be provided as the `this` argument.
+				 *
+				 * @param name A property name.
+				 * @param v The value assigned to the named property.
+				 */
+				set?: (name: string, v: any) => void
+			}) => { [name: string]: any }
 		}
 
 		(
@@ -109,7 +151,9 @@ namespace slime {
 			) {
 				const { verify } = fifty;
 
-				fifty.tests.runtime.exports.$platform = function() {
+				fifty.tests.runtime.exports.$platform = fifty.test.Parent();
+
+				fifty.tests.runtime.exports.$platform.java = function() {
 					var o: { x: number } = { x: void(0) };
 					o.x = 3;
 					verify(o).x.is(3);
@@ -118,7 +162,46 @@ namespace slime {
 
 					if (fifty.global.jsh) verify($platform).evaluate.property("java").is.type("object");
 					if (fifty.global.window) verify($platform).evaluate.property("java").is.type("undefined");
-				}
+				};
+
+				fifty.tests.runtime.exports.$platform.MetaObject = function() {
+					const test = function(b: boolean) {
+						verify(b).is(true);
+					};
+
+					if ($platform.MetaObject) {
+						var doubler = function(name) {
+							if (isNaN(Number(name))) {
+								return name + name;
+							} else {
+								return Number(name) * 2;
+							}
+						}
+
+						var a = $platform.MetaObject({ get: doubler });
+						test( a[1] == 2 );
+						test( a.name == "namename" );
+
+						var logger = new function() {
+							var log = [];
+
+							this.log = log;
+
+							this.setter = function(name,value) {
+								log.push({ target: this, name: name, value: value });
+
+								this[name] = value;
+							}
+						}
+
+						var $b = {};
+						var b = $platform.MetaObject({ delegate: $b, get: null, set: logger.setter });
+						b.foo = "bar";
+						test( logger.log[0].target == $b );
+						test( logger.log[0].name == "foo" );
+						test( logger.log[0].value == "bar" );
+					}
+				};
 			}
 		//@ts-ignore
 		)($platform,fifty);
@@ -252,8 +335,6 @@ namespace slime {
 	 * All code loaded by the SLIME runtime has access to the {@link $api} object (as `$api`), providing a basic set of JavaScript
 	 * utilities, and a {@link Platform} object (as `$platform`), providing more advanced JavaScript engine capabilities that
 	 * depend on the underlying JavaScript engine.
-	 *
-	 * [Older documentation](src/loader/api.html)
 	 */
 	export namespace runtime {
 		export namespace test {
