@@ -350,7 +350,9 @@
 			$api.Object.maybeDefineProperty({
 				name: "java",
 				descriptor: $api.fp.Partial.from.loose(function(it) {
-					return ($platform.java) ? $platform.java : void(0);
+					return {
+						value: ($platform.java) ? $platform.java : void(0)
+					};
 				})
 			}),
 			function(it) {

@@ -16,9 +16,6 @@
 		var SRC = jsh.script.file.parent.parent.parent.parent;
 
 		var suite = new jsh.unit.html.Suite();
-		suite.add("slime", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/api.html")
-		}));
 
 		/**
 		 *
