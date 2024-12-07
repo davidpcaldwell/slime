@@ -599,6 +599,14 @@
 
 		/** @type { slime.$api.fp.Mapping<slime.tools.code.Project,slime.tools.code.JsapiAnalysis> } */
 		var jsapiAnalysis = $api.fp.pipe(
+			function omitJsapiImplementationFromJsapiUsage(p) {
+				return {
+					base: p.base,
+					files: p.files.filter(function(file) {
+						return file.pathname.toString().indexOf(["loader","api","old"].join($context.library.file.world.filesystems.os.separator.pathname)) == -1;
+					})
+				}
+			},
 			function(p) {
 				//	TODO	simplify
 				return {
