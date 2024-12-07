@@ -4,6 +4,27 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.tools.install {
+	export interface Exports {
+		/**
+		 * @deprecated
+		 *
+		 * Returns a file containing an installer, either using a specified local file or a specified URL. If `file` is absent or
+		 * `null`, the method will attempt to locate it in the `$context.downloads` directory by `name`. If it is not found, and the
+		 * `url` property is provided, the file will be downloaded.
+		 *
+		 * @returns A file containing the installer.
+		 */
+		get: (
+			p: old.Source,
+			events?: old.events.Receiver
+		) => slime.jrunscript.file.File
+
+		/** @deprecated */
+		find: (p: old.WorldSource) => slime.$api.fp.world.old.Ask<old.events.Console,string>
+	}
+}
+
 namespace slime.jrunscript.tools.install.deprecated {
 	export interface Context {
 		library: {
@@ -27,6 +48,8 @@ namespace slime.jrunscript.tools.install.deprecated {
 
 	export interface Exports {
 		oldGet: slime.jrunscript.tools.install.Exports["get"]
+
+		find: slime.jrunscript.tools.install.Exports["find"]
 
 		get: (
 			p: slime.jrunscript.tools.install.old.WorldSource,

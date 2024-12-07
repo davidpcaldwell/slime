@@ -164,10 +164,13 @@ namespace slime.jrunscript.tools.install {
 			}
 		//@ts-ignore
 		)(fifty);
-	}
 
-	export namespace test {
 		export interface Exports {
+			//	TODO	implement world test that exercises this so that downloads can be tested
+			download: slime.$api.fp.world.Means<{
+				from: string
+				to: slime.jrunscript.file.Location
+			},download.Events>
 		}
 	}
 
@@ -181,16 +184,6 @@ namespace slime.jrunscript.tools.install {
 	export namespace download {
 		export interface Events {
 			request: slime.jrunscript.http.client.spi.Events["request"]
-		}
-	}
-
-	export namespace test {
-		export interface Exports {
-			//	TODO	implement world test that exercises this so that downloads can be tested
-			download: slime.$api.fp.world.Means<{
-				from: string
-				to: slime.jrunscript.file.Location
-			},download.Events>
 		}
 	}
 
@@ -710,23 +703,6 @@ namespace slime.jrunscript.tools.install {
 			 */
 			gzip?: old.Format
 		}
-
-		/** @deprecated */
-		find: (p: old.WorldSource) => slime.$api.fp.world.old.Ask<old.events.Console,string>
-
-		/**
-		 * @deprecated
-		 *
-		 * Returns a file containing an installer, either using a specified local file or a specified URL. If `file` is absent or
-		 * `null`, the method will attempt to locate it in the `$context.downloads` directory by `name`. If it is not found, and the
-		 * `url` property is provided, the file will be downloaded.
-		 *
-		 * @returns A file containing the installer.
-		 */
-		get: (
-			p: old.Source,
-			events?: old.events.Receiver
-		) => slime.jrunscript.file.File
 
 		//	installation: Specifies software to be installed (including where to obtain it and how it is structured) and a
 		//	destination to which to install it.

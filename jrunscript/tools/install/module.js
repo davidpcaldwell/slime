@@ -389,12 +389,7 @@
 			},
 			get: deprecated.oldGet,
 			//	TODO	find is completely untested
-			find: function(p) {
-				return $api.fp.world.old.ask(function(events) {
-					deprecated.get(p,events);
-					return p.file;
-				});
-			},
+			find: deprecated.find,
 			//	Just cannot get the overloading right below with TypeScript 4.0.5; it only detects the old version of the overload
 			//@ts-ignore
 			install: (
