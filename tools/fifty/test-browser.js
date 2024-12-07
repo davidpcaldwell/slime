@@ -21,7 +21,7 @@
 			/** @type { slime.definition.verify.Script } */
 			verify: inonit.loader.loader.script("../../loader/api/verify.js"),
 			/** @type { slime.definition.test.promises.Script } */
-			promises: inonit.loader.loader.script("../../loader/api/promises.js")
+			promises: inonit.loader.loader.script("../../tools/fifty/promises.js")
 		};
 
 		var verify = code.verify();
