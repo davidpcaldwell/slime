@@ -91,7 +91,9 @@
 	JSH.getSubdirectory("modules").list().forEach( function(module) {
 		var tokens = module.pathname.basename.split(".");
 		tokens = tokens.slice(0,tokens.length-1);
+		jsh.shell.console("Creating: " + tokens.join("/"));
 		var destination = to.getRelativePath("$jsh/modules/" + tokens.join("/")).createDirectory({ recursive: true });
+		jsh.shell.console("Created " + destination);
 		jsh.file.unzip({ zip: module, to: destination });
 	} );
 
