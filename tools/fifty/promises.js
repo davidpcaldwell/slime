@@ -15,7 +15,7 @@
 		//	TODO	this log message is because loading this more than once may cause it not to work; should come up with optimal
 		//			strategy for dealing with this (either making it work or a strategy to prevent multiple loads or make a second
 		//			load a no-op)
-		window.console.log("loading loader/api/promises.js ..." + new Error("Stack trace").stack);
+		window.console.log("loading tools/fifty/promises.js ..." + new Error("Stack trace").stack);
 
 		/** @type { slime.definition.test.promises.internal.Events } */
 		var events = $api.events.emitter();

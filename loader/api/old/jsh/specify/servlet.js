@@ -90,7 +90,7 @@
 						body: rv
 					};
 				} else {
-					var document = new jsh.document.Document({ string: $parameters.slime.getFile("loader/api/api.template.html").read(String) });
+					var document = new jsh.document.Document({ string: $parameters.slime.getFile("loader/api/old/api.template.html").read(String) });
 					if (document.children[0].comment) {
 						document.children.splice(0,1);
 					}

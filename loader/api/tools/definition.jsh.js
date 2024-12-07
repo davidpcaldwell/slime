@@ -20,7 +20,7 @@
 
 		var templateXml = (function() {
 			var slime = jsh.script.file.parent.parent.parent.parent;
-			var template = slime.getFile("loader/api/api.template.html").read(String);
+			var template = slime.getFile("loader/api/old/api.template.html").read(String);
 
 			(function() {
 				var slimepath = "__SLIME__";
