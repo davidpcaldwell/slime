@@ -7,7 +7,7 @@
 (
 	function() {
 		jsh.loader.plugins(jsh.script.file.getRelativePath("../../../loader/api"));
-		jsh.loader.plugins(jsh.script.file.getRelativePath("../../../jsh/unit"));
+		jsh.loader.plugins(jsh.script.file.getRelativePath("../../../loader/api/old/jsh"));
 
 		var parameters = jsh.script.getopts({
 			options: {

@@ -456,7 +456,7 @@ window.addEventListener("load", function() {
 
 		if (settings.debug) {
 			var loader = new inonit.loader.Loader(base);
-			loader.run("slime/jsh/unit/specify/index.html.test.js", {
+			loader.run("slime/loader/api/old/jsh/specify/index.html.test.js", {
 				$loader: new loader.Child("slime/")
 			});
 		}

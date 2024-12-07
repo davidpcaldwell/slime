@@ -62,7 +62,7 @@
 					if (e.stack.join) {
 						console.println(e.stack.join("\n"));
 					} else {
-						//	TODO	When running jsh/unit tests on FreeBSD this property is a string, is it ever an array? Harmonize
+						//	TODO	When running loader/api/old/jsh tests on FreeBSD this property is a string, is it ever an array? Harmonize
 						console.println(e.stack);
 					}
 				}

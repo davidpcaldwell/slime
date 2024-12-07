@@ -17,7 +17,7 @@
 		//	This file has four callers:
 		//	*	fifty / jsh: test.jsh.js
 		//	*	fifty / browser: test-browser.js
-		//	*	jsapi / jsh: jsh/unit/html.js
+		//	*	jsapi / jsh: loader/api/old/jsh/html.js
 		//	*	jsapi / browser: loader/browser/test/api.js
 
 		var console = $context.console;

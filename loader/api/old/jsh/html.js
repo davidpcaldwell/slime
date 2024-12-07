@@ -288,7 +288,7 @@
 					var tests = new $context.html.ApiHtmlTests(page,name);
 					//	TODO	currently we are setting this $jsapi.environment.file variable both here and in jsapi.jsh.js to support
 					//			HTML pages locating themselves in the file system. This is not good; we shouldn't even be treating them as
-					//			files. As of this writing, the only known use is to support the jsh/unit/api.html tests which test HTML
+					//			files. As of this writing, the only known use is to support the loader/api/old/jsh/api.html tests which test HTML
 					//			tests themselves.
 					var pageEnvironment = jsh.js.Object.set({}, environment, { file: apifile });
 					var subscope = new Scope(Suite({ pathname: suite.getRelativePath(path) }),pageEnvironment);

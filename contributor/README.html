@@ -227,12 +227,12 @@ java.lang.IllegalArgumentException: Could not find option with name inspect.Path
 							<div>
 								One other potential goal, although jsapi is going away, would be to replace DOM in
 								<code>loader/browser/test/api.js</code> and
-								JaspiHtml in jsh/unit/html.js; this feeds
+								JaspiHtml in loader/api/old/jsh/html.js; this feeds
 								into loader/api/api.html.js as the <code>html</code> argument to ApiHtmlTests.
 							</div>
 							<div>
 								First step would be to build an adapter at loader/api/document-adapter.js that converts a loader/document
-								document into a JSAPI-compatible html object. An additional property can be added to jsh/unit/html.js
+								document into a JSAPI-compatible html object. An additional property can be added to loader/api/old/jsh/html.js
 								PartDescriptor argument to specify the creation of this new kind of document in loadApiHtml().
 							</div>
 							<div>
