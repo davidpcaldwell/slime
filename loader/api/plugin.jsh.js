@@ -34,7 +34,7 @@
 				jsh.unit = $loader.module("old/unit.js", {
 					verify: code.verify()
 				});
-				jsh.unit.html = $loader.module("api.html.js", new function() {
+				jsh.unit.html = $loader.module("old/api.html.js", new function() {
 					this.api = new function() {
 						// TODO: Should be able to switch to Object.assign
 						this.assign = jsh.js.Object.set;
