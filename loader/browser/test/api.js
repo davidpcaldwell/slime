@@ -34,7 +34,7 @@
 
 			this.apiHtmlScript = (function() {
 				if ($context.api && $context.api.apiHtmlScript) return $context.api.apiHtmlScript;
-				return getLoader().file("api/api.html.js");
+				return getLoader().file("api/old/api.html.js");
 			})();
 		};
 
@@ -273,8 +273,10 @@
 
 					this.fifty = function(p) {
 						var slime = new inonit.loader.Loader(inonit.loader.base + "../");
+						console.log("inonit.loader.base", inonit.loader.base);
 
 						var verify = slime.file("loader/api/verify.js")
+						console.log("verify", verify);
 
 						/** @type { slime.fifty.test.internal.test.Exports } */
 						var run = slime.module("tools/fifty/test.js", {
@@ -305,6 +307,8 @@
 
 						var relative = inonit.loader.nugget.page.relative(base)
 						var delegate = new inonit.loader.Loader(relative);
+
+						debugger;
 
 						run.run({
 							loader: (path.folder) ? delegate.Child(path.folder) : delegate,

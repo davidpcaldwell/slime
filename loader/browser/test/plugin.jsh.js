@@ -32,7 +32,7 @@
 								return code;
 							}
 						});
-						if (!maybe.present) throw new Error();
+						if (!maybe.present) throw new Error("Unable to compile TypeScript.");
 						return maybe.value.js;
 					}
 				};
