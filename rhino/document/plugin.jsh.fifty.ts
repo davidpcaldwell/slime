@@ -4,42 +4,92 @@
 //
 //	END LICENSE
 
-namespace slime.runtime.document {
-	export namespace exports {
-		export interface Document {
-			new (p: { string: string }): slime.old.document.Document
-			new (p: { file: slime.jrunscript.file.File }): slime.old.document.Document
-			new (p: { stream: any }): slime.old.document.Document
-			Html: any
-		}
-	}
-}
+namespace slime.jsh {
+	export interface Global {
+		//	TODO	this nasty little workaround is needed because of name collisions between loader/document and
+		//			rhino/document
 
-namespace slime.jrunscript.document {
-	export interface Context {
 		/**
-		 * The `js/document` module.
+		 * `jsh` plugin for runtime and `jrunscript` document implementations.
 		 */
-		pure: slime.old.document.Exports
+		document: slime.runtime.document.Exports & slime.jrunscript.document.Exports
+	}
 
-		api: {
-			java: slime.jrunscript.java.Exports
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			const shells = (
+				function() {
+					var script: slime.jsh.test.Script = fifty.$loader.script("../../jrunscript/jsh/fixtures.ts");
+					return script().shells(fifty);
+				}
+			)();
+
+			fifty.tests.suite = function() {
+				var stdio = function(): slime.jrunscript.shell.run.Intention["stdio"] {
+					return {
+						output: "string"
+					};
+				};
+
+				var evaluate = function(result: jrunscript.shell.run.Exit) {
+					verify(result).status.is(0);
+					return JSON.parse(result.stdio.output);
+				}
+
+				var shell = shells.unbuilt();
+
+				var src = $api.fp.now(
+					shell,
+					$api.fp.property("src"),
+					jsh.file.Location.from.os
+				);
+
+				var jsoupLocation = $api.fp.now(
+					src,
+					jsh.file.Location.directory.relativePath("local/jsh/lib/jsoup.jar")
+				);
+
+				var hasJsoup = $api.fp.now(
+					jsoupLocation,
+					jsh.file.Location.file.exists.simple
+				);
+
+				if (true && hasJsoup) {
+					var intention = shell.invoke({
+						script: fifty.jsh.file.relative("test/html-parser.jsh.js").pathname,
+						stdio: stdio()
+					});
+					var result = $api.fp.world.Sensor.now({
+						sensor: jsh.shell.subprocess.question,
+						subject: intention
+					});
+					var jsoup: { parser: string } = evaluate(result);
+					verify(jsoup).parser.is("jsoup");
+				} else {
+					const message = "JSoup not present.";
+					verify(message).is(message);
+				}
+
+				//	We no longer assume the JavaFX browser is available, so do not test it
+				if (false) {
+					// var EMPTY = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					// var javafx = jsh.shell.jsh({
+					// 	shell: $jsapi.environment.jsh.unbuilt.src,
+					// 	script: $jsapi.loader.getRelativePath("test/html-parser.jsh.js").file,
+					// 	environment: Object.assign({}, jsh.shell.environment, { JSH_SHELL_LIB: EMPTY.toString() }),
+					// 	stdio: stdio(),
+					// 	evaluate: evaluate
+					// });
+					// verify(javafx).parser.is("javafx");
+					verify(false).is(true);
+				}
+			}
 		}
-	}
-
-	export interface Exports {
-		/** @deprecated */
-		Document: slime.runtime.document.exports.Document
-
-		Text: any
-		Element: any
-		Cdata: any
-
-		/** @deprecated */
-		filter: any
-		/** @deprecated */
-		namespace: any
-	}
-
-	export type Script = slime.loader.Script<Context,Exports>
+	//@ts-ignore
+	)(fifty);
 }

@@ -73,10 +73,6 @@
 		suite.add("jrunscript/document/module", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/document/api.html")
 		}));
-		suite.add("jrunscript/document/jsh", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/document/plugin.jsh.api.html"),
-			environment: environment
-		}));
 
 		// TODO: does this require hg be installed?
 		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
