@@ -183,6 +183,12 @@
 		$export({
 			oldGet: oldGet,
 			get: get,
+			find: function(p) {
+				return $api.fp.world.old.ask(function(events) {
+					get(p,events);
+					return p.file;
+				});
+			},
 			install: install,
 			oldInstall: oldInstall,
 			formats: formats
