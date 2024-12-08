@@ -240,15 +240,6 @@ namespace slime.runtime.document {
 	export type Script = slime.loader.Script<Context | void,Exports>
 }
 
-namespace slime.jsh {
-	export interface Global {
-		//	TODO	this nasty little workaround is needed because of name collisions between loader/document and
-		//			rhino/document
-
-		document: slime.runtime.document.Exports & slime.jrunscript.document.Exports
-	}
-}
-
 /**
  * The SLIME document parser is a parser and serializer that handles HTML (and XHTML/XML) documents, converting them to a
  * tree structure (which is somewhat analogous to a DOM tree).
