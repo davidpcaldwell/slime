@@ -119,7 +119,7 @@
 		}));
 
 		suite.add("testing/html", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/api/api.html")
+			pathname: SRC.getRelativePath("loader/api/old/api.html")
 		}));
 		suite.add("testing/jsh.unit/definition/jsapi", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/api/old/jsh/plugin.jsh.api.html")

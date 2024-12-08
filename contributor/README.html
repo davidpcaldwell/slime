@@ -9,7 +9,7 @@ END LICENSE
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
 		<title>SLIME: development</title>
-		<link href="../loader/api/api.css" rel="stylesheet" type="text/css" />
+		<link href="../loader/api/old/api.css" rel="stylesheet" type="text/css" />
 		<script>
 			window.slime = {
 				definition: {
@@ -19,7 +19,7 @@ END LICENSE
 				}
 			}
 		</script>
-		<script src="../loader/api/api.js"></script>
+		<script src="../loader/api/old/api.js"></script>
 		<script>
 			//	TODO	CORS
 			document.domain = document.domain;
@@ -228,7 +228,7 @@ java.lang.IllegalArgumentException: Could not find option with name inspect.Path
 								One other potential goal, although jsapi is going away, would be to replace DOM in
 								<code>loader/browser/test/api.js</code> and
 								JaspiHtml in loader/api/old/jsh/html.js; this feeds
-								into loader/api/api.html.js as the <code>html</code> argument to ApiHtmlTests.
+								into loader/api/old/api.html.js as the <code>html</code> argument to ApiHtmlTests.
 							</div>
 							<div>
 								First step would be to build an adapter at loader/api/old/document-adapter.js that converts a loader/document

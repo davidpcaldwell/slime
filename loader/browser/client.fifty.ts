@@ -31,7 +31,7 @@
  * Path                                                                    | Description                                                                         | Documentation
  * ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----
  * `loader/api/old/unit.js`                                                | JSAPI unit testing implementation                                                   | {@link slime.definition.unit.Exports}
- * `loader/api/api.html.js`                                                | JSAPI definition files                                                              | `loader/api/api.html`
+ * `loader/api/old/api.html.js`                                                | JSAPI definition files                                                              | `loader/api/old/api.html`
  * `loader/api/old/browser/module.js`                                      | Browser implementation of JSAPI unit tests; browser test suite definition           | `loader/browser/test/api.html`
  * `loader/api/ui/loader.js`                                               | A bundle including the above two APIs, as well as a UI for executing unit tests     | `loader/api/ui/loader.api.html`
  * `loader/api/old/jsh/plugin.jsh.browser.js`                                        | Undocumented API that allows JSAPI definition files to be executed in a browser     |
@@ -161,7 +161,7 @@ namespace slime.browser {
 
 				verify(inonit).loader.base.is(inonit.loader.base);
 				var js = resource("loader/expression.js");
-				var css = resource("loader/api/api.css");
+				var css = resource("loader/api/old/api.css");
 				var html = resource("README.html");
 				verify(js,"js").evaluate(hasSourceUrl).is(true);
 				verify(js).type.media.is("application");

@@ -323,7 +323,7 @@
 			}
 		});
 		link.test(new function() {
-			var githack = "http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.css";
+			var githack = "http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/old/api.css";
 
 			this.check = function(verify) {
 				verify(this).getApiCssRow().cells[0].innerHTML.is("link (stylesheet)");
@@ -385,7 +385,7 @@
 			}
 		});
 		scripts.test(new function() {
-			var githack = "http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/api.js";
+			var githack = "http://bb.githack.com/davidpcaldwell/slime/raw/tip/loader/api/old/api.js";
 
 			this.check = function(verify) {
 				verify(this).getScriptRows()[0].cells[0].innerHTML.is("script (external)");

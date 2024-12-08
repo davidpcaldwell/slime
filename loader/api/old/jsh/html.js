@@ -17,7 +17,7 @@
 		var jsh = $context.jsh;
 
 		var getApiHtml = function(moduleMainPathname) {
-			//	TODO	logic for this is largely duplicated in loader/api/api.html.js getApiHtmlPath method, which is string based while
+			//	TODO	logic for this is largely duplicated in loader/api/old/api.html.js getApiHtmlPath method, which is string based while
 			//			this is pathname- and directory- and file- based
 			if (moduleMainPathname.directory) {
 				return moduleMainPathname.directory.getFile("api.html");
