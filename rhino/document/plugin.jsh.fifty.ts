@@ -14,8 +14,12 @@ namespace slime.runtime.document {
 		}
 	}
 }
+
 namespace slime.jrunscript.document {
 	export interface Context {
+		/**
+		 * The `js/document` module.
+		 */
 		pure: slime.old.document.Exports
 
 		api: {
