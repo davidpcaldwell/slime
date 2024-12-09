@@ -105,11 +105,6 @@
 			arguments: ["-view","stdio"]
 		})));
 
-		suite.add("jsh/tools", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jrunscript/jsh/tools/internal.api.html"),
-			environment: environment
-		}));
-
 		suite.add("testing/html", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/api/old/api.html")
 		}));
