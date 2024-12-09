@@ -6,10 +6,22 @@
 
 namespace slime.runtime.document {
 	export namespace exports {
+		/**
+		 * Provides the ability to create {@link slime.old.document.Document} objects by parsing XML.
+		 */
 		export interface Document {
-			new (p: { string: string }): slime.old.document.Document
+			new (p: {
+				/** A string to parse. */
+				string: string
+			}): slime.old.document.Document
+
 			new (p: { file: slime.jrunscript.file.File }): slime.old.document.Document
-			new (p: { stream: any }): slime.old.document.Document
+
+			new (p: {
+				/** A stream from which to read the document. */
+				stream: slime.jrunscript.runtime.io.InputStream
+			}): slime.old.document.Document
+
 			Html: any
 		}
 	}
@@ -43,15 +55,4 @@ namespace slime.jrunscript.document {
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.suite = function() {
-
-			}
-		}
-	//@ts-ignore
-	)(fifty);
 }
