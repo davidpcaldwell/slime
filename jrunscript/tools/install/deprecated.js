@@ -189,8 +189,36 @@
 					return p.file;
 				});
 			},
-			install: install,
 			oldInstall: oldInstall,
+			//	TODO	just cannot get the TypeScript right with unrelated return types and the set of parameters we have
+			//@ts-ignore
+			newInstall: function(p,events) {
+				/** @type { (p: slime.jrunscript.tools.install.old.WorldInstallation) => slime.$api.fp.world.old.Tell<slime.jrunscript.tools.install.old.events.Console> } */
+				var newOldInstall = function(p) {
+					return $api.fp.world.old.tell(function(events) {
+						if (typeof(p.source.file) != "string" && typeof(p.source.file) != "undefined") {
+							throw new TypeError("source.file must be string.");
+						}
+						return install({
+							url: p.source.url,
+							name: p.source.name,
+							file: (p.source.file) ? $context.library.file.Pathname(p.source.file).file : void(0),
+							format: (p.archive && p.archive.format),
+							getDestinationPath: (p.archive && p.archive.folder),
+							to: $context.library.file.Pathname(p.destination.location),
+							replace: p.destination.replace
+						}, events);
+					});
+				};
+
+				/** @type { (p: any) => p is slime.jrunscript.tools.install.old.Installation } */
+				var isOld = function(p) { return Boolean(p["url"]) || Boolean(p["name"]) || Boolean(p["file"]); };
+				if (isOld(p)) {
+					return oldInstall(p,events);
+				} else {
+					return newOldInstall(p);
+				}
+			},
 			formats: formats
 		});
 	}

@@ -390,38 +390,7 @@
 			get: deprecated.oldGet,
 			//	TODO	find is completely untested
 			find: deprecated.find,
-			//	Just cannot get the overloading right below with TypeScript 4.0.5; it only detects the old version of the overload
-			//@ts-ignore
-			install: (
-				/** @type { slime.jrunscript.tools.install.Exports["install"] } */
-				function(p,events) {
-					/** @type { (p: slime.jrunscript.tools.install.old.WorldInstallation) => slime.$api.fp.world.old.Tell<slime.jrunscript.tools.install.old.events.Console> } */
-					var newOldInstall = function(p) {
-						return $api.fp.world.old.tell(function(events) {
-							if (typeof(p.source.file) != "string" && typeof(p.source.file) != "undefined") {
-								throw new TypeError("source.file must be string.");
-							}
-							return deprecated.install({
-								url: p.source.url,
-								name: p.source.name,
-								file: (p.source.file) ? $context.library.file.Pathname(p.source.file).file : void(0),
-								format: (p.archive && p.archive.format),
-								getDestinationPath: (p.archive && p.archive.folder),
-								to: $context.library.file.Pathname(p.destination.location),
-								replace: p.destination.replace
-							}, events);
-						});
-					};
-
-					/** @type { (p: any) => p is slime.jrunscript.tools.install.old.Installation } */
-					var isOld = function(p) { return Boolean(p["url"]) || Boolean(p["name"]) || Boolean(p["file"]); };
-					if (isOld(p)) {
-						return deprecated.oldInstall(p,events);
-					} else {
-						return newOldInstall(p);
-					}
-				}
-			),
+			install: deprecated.newInstall,
 			format: deprecated.formats,
 			apache: scripts.apache({
 				client: client,
