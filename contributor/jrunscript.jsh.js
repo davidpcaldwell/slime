@@ -70,10 +70,6 @@
 			pathname: SRC.getRelativePath("jrunscript/io/mime.api.html")
 		}));
 
-		suite.add("jrunscript/document/module", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/document/api.html")
-		}));
-
 		// TODO: does this require hg be installed?
 		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
