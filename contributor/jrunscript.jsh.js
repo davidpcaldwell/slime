@@ -66,10 +66,6 @@
 			//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 		}));
 
-		suite.add("jrunscript/io/mime", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("jrunscript/io/mime.api.html")
-		}));
-
 		// TODO: does this require hg be installed?
 		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
