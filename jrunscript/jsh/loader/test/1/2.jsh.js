@@ -15,7 +15,7 @@
 		var singleStream = buffer.writeBinary();
 
 		debugger;
-		jsh.shell.jsh(jsh.script.getRelativePath("1.jsh"), [], {
+		jsh.shell.jsh(jsh.script.getRelativePath("1.jsh.js"), [], {
 			stdout: singleStream,
 			stderr: singleStream,
 			onExit: function(result) {
