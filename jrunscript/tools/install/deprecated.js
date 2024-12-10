@@ -182,14 +182,12 @@
 
 		$export({
 			oldGet: oldGet,
-			get: get,
 			find: function(p) {
 				return $api.fp.world.old.ask(function(events) {
 					get(p,events);
 					return p.file;
 				});
 			},
-			oldInstall: oldInstall,
 			//	TODO	just cannot get the TypeScript right with unrelated return types and the set of parameters we have
 			//@ts-ignore
 			newInstall: function(p,events) {
@@ -219,7 +217,21 @@
 					return newOldInstall(p);
 				}
 			},
-			formats: formats
+			formats: formats,
+			gzip: ($context.extract.gzip) ? $api.deprecate(function(p,on) {
+				p.format = {
+					getDestinationPath: $context.getPrefix.gzip,
+					extract: $context.extract.gzip
+				};
+				oldInstall(p,on);
+			}) : void(0),
+			zip: $api.deprecate(function(p,on) {
+				p.format = {
+					getDestinationPath: $context.getPrefix.zip,
+					extract: $context.extract.zip
+				};
+				oldInstall(p,on);
+			})
 		});
 	}
 //@ts-ignore

@@ -499,16 +499,6 @@ namespace slime.jrunscript.tools.install {
 		//	destination to which to install it.
 
 		/**
-		 * @deprecated
-		 */
-		gzip: any
-
-		/**
-		 * @deprecated
-		 */
-		zip: any
-
-		/**
 		 * @deprecated Now that Apache uses an ordinary CDN rather than a series of mirrors to store their files; can just download
 		 * Apache software like other distributions now.
 		 */
