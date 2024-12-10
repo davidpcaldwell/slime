@@ -140,6 +140,8 @@ namespace slime.definition.verify {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
+
 			fifty.tests.primitivesCanHaveEvaluateCalled = function() {
 				fifty.verify(2,"2").evaluate(function(p) { return p * 2; }).is(4);
 			}
@@ -187,6 +189,20 @@ namespace slime.definition.verify {
 				fifty.verify(object).evaluate(function(o) { return o.method(); }).threw.nothing();
 			}
 
+			fifty.tests.functionsCanHaveProperties = function() {
+				var o: { x: (() => string) & { y: number }, z: number } = new function() {
+					this.x = function() {
+						return "x";
+					}
+					this.x.y = 2;
+					this.z = 3;
+				};
+				verify(o).z.is(3);
+				verify(o).evaluate(function(p) { return p.x.y }).is(2);
+				verify(o).x.evaluate(function(p) { return p.y }).is(2);
+				verify(o).x.y.is(2);
+			}
+
 			fifty.tests.suite = function() {
 				var object = {
 					method: Object.assign(function() {
@@ -203,6 +219,8 @@ namespace slime.definition.verify {
 				fifty.tests.functionsCanHaveEvaluateCalled();
 				fifty.verify(object,"object").method.foo.is("bar");
 				fifty.tests.methodsWork();
+				fifty.tests.evaluateHasThrew();
+				fifty.tests.functionsCanHaveProperties();
 			}
 		}
 	//@ts-ignore
