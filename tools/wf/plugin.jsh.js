@@ -300,7 +300,7 @@
 							return jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
 								script: jsh.shell.jsh.src.getFile("contributor/eslint.jsh.js"),
-								arguments: ["-project", inputs.project()],
+								arguments: ["--project", inputs.project()],
 								evaluate: function(result) {
 									return result.status == 0;
 								}
