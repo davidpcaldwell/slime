@@ -340,12 +340,16 @@ namespace slime.$api.fp.impure {
 		)(fifty);
 	}
 
+	export namespace input {
+		export interface Store<T> {
+			get: () => Maybe<T>
+			set: impure.Effect<T>
+		}
+	}
+
 	export namespace exports {
 		export interface Input {
-			cache: <T>(cache: {
-				get: () => Maybe<T>
-				set: impure.Output<T>
-			}) => slime.$api.fp.Transform<() => T>
+			cache: <T>(cache: input.Store<T>) => slime.$api.fp.Transform<() => T>
 		}
 
 		(

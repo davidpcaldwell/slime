@@ -18,8 +18,23 @@
 		var client = ($context.client) ? $context.client : new $context.library.http.Client();
 
 		var scripts = {
-			apache: $loader.script("apache.js")
-		}
+			apache: $loader.script("apache.js"),
+			/** @type { slime.jrunscript.tools.install.downloads.Script } */
+			downloads: $loader.script("downloads.js")
+		};
+
+		/**
+		 *
+		 * @param { string } filename
+		 * @return { slime.$api.fp.Maybe<slime.mime.Type> }
+		 */
+		var getFilenameMimeType = function(filename) {
+			var decode = $api.mime.Type.codec.declaration.decode;
+			if (/\.zip$/.test(filename)) return $api.fp.Maybe.from.some(decode("application/zip"));
+			if (/\.tgz$/.test(filename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
+			if (/\.tar.gz$/.test(filename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
+			return $api.fp.Maybe.from.nothing();
+		};
 
 		var TGZ = /(.*)\.tgz$/;
 		var TARGZ = /(.*)\.tar\.gz$/;
@@ -160,19 +175,6 @@
 		var wo = {
 			/** @type { slime.jrunscript.tools.install.exports.Distribution["install"]["world"] } */
 			install: function(p) {
-				/**
-				 *
-				 * @param { string } filename
-				 * @return { slime.$api.fp.Maybe<slime.mime.Type> }
-				 */
-				var getFilenameMimeType = function(filename) {
-					var decode = $api.mime.Type.codec.declaration.decode;
-					if (/\.zip$/.test(filename)) return $api.fp.Maybe.from.some(decode("application/zip"));
-					if (/\.tgz$/.test(filename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
-					if (/\.tar.gz$/.test(filename)) return $api.fp.Maybe.from.some(decode("application/gzip"));
-					return $api.fp.Maybe.from.nothing();
-				}
-
 				/** @param { slime.jrunscript.file.File } file */
 				var getFileMimeType = function(file) {
 					return getFilenameMimeType(file.pathname.basename);

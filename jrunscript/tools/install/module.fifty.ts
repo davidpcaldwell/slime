@@ -733,6 +733,8 @@ namespace slime.jrunscript.tools.install {
 				fifty.run(fifty.tests.zip);
 				fifty.run(fifty.tests.apache);
 
+				fifty.load("downloads.fifty.ts");
+
 				fifty.load("deprecated.fifty.ts");
 
 				//	TODO	does Fifty have a destroy mechanism?
