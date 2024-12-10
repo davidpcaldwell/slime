@@ -397,20 +397,8 @@
 				get: deprecated.oldGet,
 				downloads: downloads
 			}),
-			gzip: (extract.gzip) ? $api.deprecate(function(p,on) {
-				p.format = {
-					getDestinationPath: getPrefix.gzip,
-					extract: extract.gzip
-				};
-				deprecated.oldInstall(p,on);
-			}) : void(0),
-			zip: $api.deprecate(function(p,on) {
-				p.format = {
-					getDestinationPath: getPrefix.zip,
-					extract: extract.zip
-				};
-				deprecated.oldInstall(p,on);
-			})
+			zip: deprecated.zip,
+			gzip: deprecated.gzip
 		})
 
 	}

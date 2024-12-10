@@ -47,6 +47,12 @@ namespace slime.jrunscript.tools.install {
 		 */
 		install: old.install
 	}
+
+	export interface Exports {
+		gzip: any
+
+		zip: any
+	}
 }
 
 namespace slime.jrunscript.tools.install.old {
@@ -206,19 +212,13 @@ namespace slime.jrunscript.tools.install.deprecated {
 
 		find: slime.jrunscript.tools.install.Exports["find"]
 
-		get: (
-			p: slime.jrunscript.tools.install.old.WorldSource,
-			events: slime.$api.event.Emitter<{ console: string }>
-		) => slime.jrunscript.tools.install.old.WorldSource
-
-		oldInstall: (
-			p: Parameters<install>[0],
-			receiver: slime.$api.event.Function.Receiver<{ console: string }>
-		) => slime.jrunscript.file.Directory
-
 		newInstall: old.install
 
 		formats: slime.jrunscript.tools.install.old.Formats
+
+		gzip: slime.jrunscript.tools.install.Exports["gzip"]
+
+		zip: slime.jrunscript.tools.install.Exports["zip"]
 	}
 
 	export type install = (
