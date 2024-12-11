@@ -36,6 +36,7 @@
 			fifty.load("../loader/expression.fifty.ts");
 
 			fifty.load("../loader/jrunscript/expression.fifty.ts");
+			fifty.load("../loader/api/verify.fifty.ts");
 			fifty.load("../loader/api/old/unit.fifty.ts");
 			fifty.load("../rhino/system/test/Packages.inonit.system.fifty.ts");
 			fifty.load("../rhino/system/java/inonit/script/runtime/io/Streams.fifty.ts");
