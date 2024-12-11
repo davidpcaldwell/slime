@@ -706,6 +706,25 @@ namespace slime.jsh.shell.tools {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			fifty.tests.poi = function() {
+				var poi = jsh.shell.jsh.lib.getSubdirectory("poi");
+				if (poi) {
+					verify(jsh).io.grid.excel.is.type("object");
+				} else {
+					verify(jsh).io.grid.evaluate.property("excel").is(void(0));
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
 			const script: internal.tomcat.Script = fifty.$loader.script("tomcat.js");
 
 			const subject = script({
@@ -726,6 +745,7 @@ namespace slime.jsh.shell.tools {
 				fifty.run(fifty.tests.rhino);
 				fifty.run(fifty.tests.node);
 				fifty.run(fifty.tests.scala);
+				fifty.run(fifty.tests.poi);
 			}
 		}
 	//@ts-ignore
