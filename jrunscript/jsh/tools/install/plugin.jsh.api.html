@@ -27,9 +27,6 @@ END LICENSE
 			<div><code>jsh</code> plugin for installing external software. See TypeScript namespace <code>slime.jrunscript.tools.install</code>.</div>
 		</div>
 		<div>
-			<script tyoe="application/x.jsapi#initialize">
-				jsh.loader.plugins($jsapi.loader);
-			</script>
 			<h1><code><a id="exports.jsh.shell.tools">jsh.shell.tools</a></code></h1>
 			<ul>
 				<li class="object">
@@ -296,14 +293,6 @@ END LICENSE
 				<div>
 					POI can be installed using <code>jsh/tools/install/poi.jsh.js</code>. This will add an Excel-based grid
 					implementation to <code>jrunscript/io</code>.
-					<script type="application/x.jsapi#tests">
-						var poi = jsh.shell.jsh.lib.getSubdirectory("poi");
-						if (poi) {
-							verify(jsh).io.grid.excel.is.type("object");
-						} else {
-							verify(jsh).io.grid.evaluate.property("excel").is(void(0));
-						}
-					</script>
 				</div>
 			</div>
 		</div>
