@@ -63,7 +63,6 @@
 		suite.add("internal/other", new jsh.unit.html.Part({
 			//	Test cases involving the HTML test runner itself
 			pathname: SRC.getRelativePath("loader/api/old/test/data/1/api.html")
-			//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 		}));
 
 		// TODO: does this require hg be installed?

@@ -52,7 +52,6 @@
 	components.add("js/debug/", { jsh: { module: true }});
 
 	components.add("loader/jrunscript/", { jsh: { api: true }});
-	//	TODO	loader/jrunscript/test/data/2/ has some tests but they require some classes in classpath
 	//	TODO	jrunscript/io/mime.api.html has some tests
 
 	components.add("jrunscript/host/", { jsh: { api: true, module: { javac: true }}});

@@ -453,6 +453,11 @@
 										return $slime.classpath.toString();
 									},
 									add: function(pathname) {
+										//	TODO	#1816
+										if (pathname["src"]) {
+											//@ts-ignore
+											$slime.classpath.add(pathname);
+										}
 										if (!pathname) throw new TypeError("'pathname' must be provided and not undefined or null.");
 										if (!pathname.directory && !pathname.file) {
 											return;
