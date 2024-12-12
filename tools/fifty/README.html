@@ -30,25 +30,5 @@ END LICENSE
 			<h2>Running tests under <code>jsh</code></h2>
 			<code>tools/fifty/test.bash <i>declaration</i> [--part <i>part</i>]</code>
 		</div>
-		<div>
-		</div>
-		<div>
-			<h2>Bridging to <code>$jsapi</code></h2>
-			<div>
-				<h3>Generating a JSAPI <code>api.html</code></h3>
-				<pre>
-tools/fifty/tools/jsapi-adapter.bash -tests <i>pathname</i>.fifty.ts
-				</pre>
-			</div>
-			<div>
-				<h3>Adding an invocation to an existing file</h3>
-				<pre>
-$jsapi.loader.fifty({
-	path: "<i>path.fifty.ts</i>",
-	verify: verify
-});
-				</pre>
-			</div>
-		</div>
 	</body>
 </html>

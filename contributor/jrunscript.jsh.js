@@ -103,7 +103,7 @@
 			pathname: SRC.getRelativePath("loader/api/old/jsh/plugin.jsh.api.html")
 		}));
 		suite.add("testing/fifty", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("tools/fifty/test/data/api.html")
+			pathname: SRC.getRelativePath("loader/api/old/fifty/api.html")
 		}));
 		//	TODO	disabling Bitbucket testing to try to get tests to pass after migration to GitHub. Examine to see whether there is
 		//			something still needed, something analogous still needed, or whether this can be discarded
