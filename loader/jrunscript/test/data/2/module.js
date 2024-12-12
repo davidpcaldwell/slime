@@ -10,12 +10,23 @@
 //
 //	configuration? listener?
 //
+//@ts-check
 (
-	function() {
+	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jrunscript.runtime.test.javac.Context } $context
+	 * @param { slime.Loader } $loader
+	 * @param { slime.loader.Export<slime.jrunscript.runtime.test.javac.Exports> } $export
+	 */
+	function(Packages,$api,$context,$loader,$export) {
 		Packages.java.lang.System.err.println("Loading script.js ...");
 		var script = $loader.file("js/script.js", {
 			echo: $context.echo
 		});
-		$exports.multiply = script.multiply;
+		$export({
+			multiply: script.multiply
+		});
 	}
-)();
+//@ts-ignore
+)(Packages,$api,$context,$loader, $export);

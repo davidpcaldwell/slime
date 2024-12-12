@@ -879,6 +879,7 @@
 						var resource = self.get(path);
 						// TODO: Below inserted hastily, not sure whether it makes sense
 						if (!resource) return null;
+						//	TODO	The 'path' argument below is probably erroneous and instead should be a no-arg call
 						return resource["java"].adapt(path);
 					};
 

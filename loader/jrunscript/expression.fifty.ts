@@ -775,6 +775,8 @@ namespace slime.jrunscript.runtime {
 
 			fifty.run(fifty.tests.jsapi);
 
+			fifty.load("test/data/2/module.fifty.ts");
+
 			//	TODO	redundant? tested per-engine in contributor/suite.jsh.js
 			fifty.load("java.fifty.ts");
 			fifty.load("io.fifty.ts");
