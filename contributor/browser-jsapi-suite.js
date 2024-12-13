@@ -32,6 +32,6 @@
 		add("loader/api/", getSlimePart("loader/api/old/api.html"));
 		add("loader/api/old/test/data/1/", getSlimePart("loader/api/old/test/data/1/api.html"));
 		add("loader/browser/test/", getSlimePart("loader/api/old/browser/api.html"));
-		add("$jsapi.loader.fifty", getSlimePart("tools/fifty/test/data/api.html"));
+		add("$jsapi.loader.fifty", getSlimePart("loader/api/old/fifty/api.html"));
 	}
 )();
