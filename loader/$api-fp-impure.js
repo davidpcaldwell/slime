@@ -438,6 +438,30 @@
 					});
 				}
 			},
+			events: (
+				function() {
+					var events = function(handlers) {
+						var it = function(implementation) {
+							return function() {
+								return $context.events.handle({
+									implementation: implementation,
+									handlers: handlers
+								});
+							}
+						};
+
+						return {
+							action: it,
+							question: it
+						};
+					};
+
+					return {
+						handle: events,
+						ignore: events({})
+					};
+				}
+			)(),
 			now: {
 				question: function(question, argument, handlers) {
 					return $context.events.handle({

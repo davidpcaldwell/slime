@@ -14,12 +14,7 @@
 	function($api,jsh) {
 		jsh.shell.tools.rhino.require.simple();
 
-		jsh.shell.tools.tomcat.old.require(void(0), {
-			console: function(e) {
-				jsh.shell.console(e.detail);
-			}
-		});
-
+		jsh.shell.tools.tomcat.jsh.require.simple();
 		//	TODO	should have a better way of dealing with this, but for now we just reload the plugin that depended on Tomcat
 		//			and it will succeed now.
 		jsh.loader.plugins(jsh.script.file.parent.parent.getRelativePath("loader/api/old/jsh"));
@@ -48,24 +43,29 @@
 		});
 
 		if (parameters.options.docker) {
-			$api.fp.world.now.tell(jsh.shell.jsh.require(
-				(function() {
-					var SELENIUM = jsh.shell.jsh.lib.getRelativePath("selenium/java");
-					return {
-						satisfied: function() {
-							return Boolean(SELENIUM.directory);
-						},
-						install: function() {
-							jsh.shell.console("Installing Selenium Java driver ...");
-							jsh.tools.install.install({
-								url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.3.zip",
-								getDestinationPath: function(file) { return ""; },
-								to: SELENIUM
-							});
-						}
+			var selenium = (function() {
+				var SELENIUM = jsh.shell.jsh.lib.getRelativePath("selenium/java");
+				return {
+					satisfied: function() {
+						return Boolean(SELENIUM.directory);
+					},
+					install: function() {
+						jsh.shell.console("Installing Selenium Java driver ...");
+						jsh.tools.install.install({
+							url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.3.zip",
+							getDestinationPath: function(file) { return ""; },
+							to: SELENIUM
+						});
 					}
-				})()
-			));
+				}
+			})();
+
+			$api.fp.now(
+				selenium,
+				jsh.shell.jsh.require,
+				$api.fp.world.events.ignore.action,
+				$api.fp.impure.Process.now
+			)
 		}
 
 		jsh.java.Thread.start(
