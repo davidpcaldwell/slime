@@ -1191,6 +1191,120 @@ namespace slime.$api.fp.world {
 	)(fifty);
 
 	export interface Exports {
+		events: {
+			handle: <E>(handlers: slime.$api.event.Handlers<E>) => {
+				action: (action: Action<E>) => impure.Process
+				question: <R>(question: Question<E,R>) => impure.External<R>
+			}
+
+			ignore: {
+				action: <E>(action: Action<E>) => impure.Process
+				question: <E,R>(question: Question<E,R>) => impure.External<R>
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			interface Events {
+				console: string
+			}
+
+			var question: Question<Events,number> = function(events) {
+				events.fire("console", "asked");
+				events.fire("console", "answering 2");
+				return 2;
+			};
+
+			var action: Action<Events> = function(events) {
+				events.fire("console", "affecting");
+			};
+
+			fifty.tests.exports.world.handle = fifty.test.Parent();
+
+			fifty.tests.exports.world.handle.events = function() {
+				var castToString = function(v: any): string { return v; };
+
+				fifty.run(
+					function() {
+						var captor = fifty.$api.Events.Captor({
+							console: void(0)
+						});
+
+						//	TODO	this property should be named captor.handlers
+						var handle = $api.fp.world.events.handle(captor.handler);
+
+						var answer = $api.fp.now(
+							question,
+							handle.question,
+							//	TODO	standardize
+							function(v) {
+								debugger;
+								return v;
+							},
+							$api.fp.impure.now.input
+						);
+
+						verify(answer).is(2);
+						verify(captor).events.length.is(2);
+						//	TODO	can we make captors typesafe?
+						verify(captor).events[0].detail.evaluate(castToString).is("asked");
+
+						$api.fp.now(
+							action,
+							handle.action,
+							$api.fp.impure.Process.now
+						);
+
+						verify(captor).events.length.is(3);
+						//	TODO	can we make captors typesafe?
+						verify(captor).events[2].detail.evaluate(castToString).is("affecting");
+					}
+				);
+
+				fifty.run(
+					function() {
+						var captor = fifty.$api.Events.Captor({
+							console: void(0)
+						});
+
+						//	TODO	this property should be named captor.handlers
+						var handle = $api.fp.world.events.ignore;
+
+						var answer = $api.fp.now(
+							question,
+							handle.question,
+							//	TODO	standardize
+							function(v) {
+								debugger;
+								return v;
+							},
+							$api.fp.impure.now.input
+						);
+
+						verify(answer).is(2);
+						verify(captor).events.length.is(0);
+
+						$api.fp.now(
+							action,
+							handle.action,
+							$api.fp.impure.Process.now
+						);
+
+						verify(captor).events.length.is(0);
+					}
+				)
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		now: {
 			question: <P,E,A>(question: world.Sensor<P,E,A>, argument: P, handler?: slime.$api.event.Handlers<E>) => A
 
