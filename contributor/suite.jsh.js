@@ -8,13 +8,27 @@
 (
 	/**
 	 *
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function($api,jsh) {
+	function(Packages,$api,jsh) {
 		jsh.shell.tools.rhino.require.simple();
 
-		jsh.shell.tools.tomcat.jsh.require.simple();
+		var TOMCAT_ATTEMPTS = 5;
+		var TOMCAT_RETRY_INTERVAL = 60;
+		for (var i=0; i<TOMCAT_ATTEMPTS; i++) {
+			try {
+				jsh.shell.tools.tomcat.jsh.require.simple();
+			} catch (e) {
+				jsh.shell.console("Tomcat installation failed.");
+				if (i != (TOMCAT_ATTEMPTS - 1)) {
+					jsh.shell.console("Waiting " + TOMCAT_RETRY_INTERVAL + " seconds for retry ...");
+					Packages.java.lang.Thread.sleep(TOMCAT_RETRY_INTERVAL * 1000);
+					jsh.shell.console("Retrying Tomcat installation ...");
+				}
+			}
+		}
 		//	TODO	should have a better way of dealing with this, but for now we just reload the plugin that depended on Tomcat
 		//			and it will succeed now.
 		jsh.loader.plugins(jsh.script.file.parent.parent.getRelativePath("loader/api/old/jsh"));
@@ -398,4 +412,4 @@
 		});
 	}
 //@ts-ignore
-)($api,jsh);
+)(Packages,$api,jsh);
