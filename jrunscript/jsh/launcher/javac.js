@@ -636,8 +636,21 @@
 			$api.debug("files = \n" + p.files.join("\n"));
 			$api.debug("destination = " + p.destination);
 
-			var useNewAlgorithm = Boolean(Packages.java.lang.System.getenv("SLIME_TEST_ISSUE_1617"));
-			var algorithm = (useNewAlgorithm) ? toolProviderApiCompile : javaCompilerApiCompile;
+			//	Just could not get javaCompileApiCompile working with JPMS, so substituted system compiler and downloaded source
+			//	code to file system.
+			//
+			//	The errors that result have to do with multiple modules trying to access the unnamed package in multiple other
+			//	modules. Could not determine why that was so; couldn't figure out a way to get good diagnostics.
+			//
+			//	Wild speculation is that perhaps it has to do with the use of the Rhino / LiveConnect construct Packages -- which
+			//	does check for each element in the name being a class -- and perhaps the top level of this search looking for
+			//	(for example) classes in the unnamed package called "com" and "org" and so forth.
+			//
+			//	It'd be better not to pollute the local filesystem by downloading these, but we're going to do that so that the
+			//	implementation works.
+			var useToolProviderApi = true;
+
+			var algorithm = (useToolProviderApi) ? toolProviderApiCompile : javaCompilerApiCompile;
 
 			algorithm(p, {
 				console: Packages.java.lang.System.err,

@@ -531,13 +531,7 @@ if test -n "${JRUNSCRIPT}" && test "$0" == "bash"; then
 fi
 
 if [ -z "${JRUNSCRIPT}" ]; then
-	if test "$0" == "bash" && test -z "${SLIME_TEST_ISSUE_1617}"; then
-		#	Remote shell; we default to JDK 8 for those as there is a problem with module path implementation on remote shells
-		#	TODO #1617	make it possible to use JDK 21 for remote shells
-		install_jdk_8 ${JSH_LOCAL_JDKS}/default
-	else
-		install_jdk ${JSH_LOCAL_JDKS}/default
-	fi
+	install_jdk ${JSH_LOCAL_JDKS}/default
 	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
 fi
 
@@ -600,6 +594,7 @@ if [ "$0" == "bash" ]; then
 	#	AUTHORIZATION_SCRIPT=$(get_authorization_script authorize.js)
 	#	echo ${AUTHORIZATION_SCRIPT}
 	AUTHORIZATION_SCRIPT="//  no-op"
+	export JSH_SHELL_LIB
 	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "${AUTHORIZATION_SCRIPT}" -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
 else
 	${JRUNSCRIPT} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
