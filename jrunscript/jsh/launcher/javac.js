@@ -44,6 +44,7 @@
 					}
 
 					this.hasLocation = function(_location) {
+						$api.debug("jfm hasLocation(" + _location + ")");
 						var location = String(_location.getName());
 						var rv = ({
 							ANNOTATION_PROCESSOR_PATH: false,
@@ -56,7 +57,10 @@
 						})[location];
 						if (typeof(rv) == "undefined") {
 							if (/^SYSTEM_MODULES\[/.test(location)) {
-								return _delegate.hasLocation(_location);
+								//Packages.java.lang.System.err.println("hasLocation(" + location + ")");
+								var rv = _delegate.hasLocation(_location);
+								//Packages.java.lang.System.err.println("hasLocation(" + location + "): " + rv);
+								return rv;
 							}
 						}
 						if (typeof(rv) == "undefined") {
@@ -66,10 +70,15 @@
 					};
 
 					this.listLocationsForModules = function(location) {
-						return _delegate.listLocationsForModules(location);
+						$api.debug("jfm listLocationsForModules " + location);
+						//Packages.java.lang.System.err.println("listLocationsForModules: " + location);
+						var rv = _delegate.listLocationsForModules(location);
+						//Packages.java.lang.System.err.println("listLocationsForModules(" + location + "): " + rv);
+						return rv;
 					};
 
 					this.inferModuleName = function(location) {
+						$api.debug("jfm inferModuleName " + location);
 						return _delegate.inferModuleName(location);
 					}
 
@@ -121,6 +130,7 @@
 
 
 					this.getJavaFileForOutput = function(_location,_className,_kind,_sibling) {
+						$api.debug("jfm getJavaFileForOutput " + location);
 						var location = String(_location.name());
 						var outputs = new function() {
 							this.CLASS_OUTPUT = function(_location,_className,_kind,_sibling) {
@@ -326,6 +336,7 @@
 					$api.debug("classpath created ...");
 
 					this.getClassLoader = function(_location) {
+						$api.debug("jfm getClassLoader " + _location);
 						var location = String(_location.getName());
 						var classLoaders = new function() {
 							this.CLASS_PATH = function() {
@@ -337,7 +348,7 @@
 					};
 
 					this.list = function(_location,_packageName,_setOfKinds,recurse) {
-						//Packages.java.lang.System.err.println("list " + _location + " " + _packageName + " " + _setOfKinds + " " + recurse);
+						$api.debug("jfm list " + _location + " [" + _packageName + "] " + _setOfKinds + " " + recurse);
 						var listers = new function() {
 							this.PLATFORM_CLASS_PATH = function() {
 								return _delegate.list(_location,_packageName,_setOfKinds,recurse);
@@ -350,15 +361,17 @@
 						var location = String(_location.getName());
 						var lister = listers[location];
 						if (!lister) {
+							$api.debug("Use default lister");
 							lister = function() {
 								return _delegate.list(_location,_packageName,_setOfKinds,recurse);
 							};
 						}
 						if (!lister) throw new Error("No lister for " + location);
-						return lister(_location,_packageName,_setOfKinds,recurse);
+						return lister();
 					}
 
 					this.inferBinaryName = function(_location,_jfo) {
+						$api.debug("jfm inferBinaryName " + _location + " " + _jfo);
 						var location = String(_location.getName());
 						var binaryNamers = new function() {
 							this.PLATFORM_CLASS_PATH = function(_location,_jfo) {
@@ -483,11 +496,25 @@
 				return rv.join("|");
 			}).join("\n"));
 
-			var task = javac.getTask(_writer, _jfm, _listener, toIterable(["-Xlint:unchecked"]), _annotationProcessorClasses, toIterable(_units));
+			var compilerArguments = [
+				"-Xlint:unchecked",
+				"-verbose",
+				"-Xdiags:verbose",
+				"-Xmaxerrs", "5000"
+			];
+
+			var task = javac.getTask(
+				_writer,
+				_jfm,
+				_listener,
+				toIterable(compilerArguments),
+				_annotationProcessorClasses,
+				toIterable(_units)
+			);
 			$api.debug("task = " + task);
 			try {
 				var success = task.call();
-				$api.debug("Compilation succeeded");
+				$api.debug("Compilation finished");
 				if (!success) {
 					throw new Error("Java compilation failed.");
 				}
