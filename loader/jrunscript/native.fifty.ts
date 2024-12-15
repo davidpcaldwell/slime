@@ -78,6 +78,7 @@ namespace slime.jrunscript {
 					close: () => void
 				}
 				export interface PrintStream extends OutputStream {
+					println: (line: string) => void
 				}
 				export interface File {
 					exists(): boolean
@@ -299,6 +300,11 @@ namespace slime.jrunscript {
 			}
 		}
 
+		export namespace javax.tools {
+			export interface DiagnosticListener {}
+			export interface JavaFileManager extends java.lang.Object {}
+		}
+
 		export namespace org {
 			export namespace openqa {
 				export namespace selenium {
@@ -399,9 +405,7 @@ namespace slime.jrunscript {
 		java: {
 			lang: {
 				System: JavaClass & {
-					err: {
-						println: any
-					}
+					err: slime.jrunscript.native.java.io.PrintStream
 					out: {
 						print: any
 						println: any
@@ -583,6 +587,7 @@ namespace slime.jrunscript {
 				TimeZone: any
 				Calendar: any
 				Random: JavaClass<slime.jrunscript.native.java.util.Random>
+				spi: any
 			}
 			text: {
 				SimpleDateFormat: any
