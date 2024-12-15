@@ -14,17 +14,83 @@
 		var $api = this.$api;
 		var JavaAdapter = this.JavaAdapter;
 
-		/** @type { slime.internal.jsh.launcher.javac.compile } */
-		$api.java.compile = function(p) {
-			var toIterable = function(array) {
-				var _rv = new Packages.java.util.ArrayList();
-				for (var i=0; i<array.length; i++) {
-					_rv.add(array[i]);
-				}
-				return _rv;
-			};
+		var toJavaIterable = function(array) {
+			var _rv = new Packages.java.util.ArrayList();
+			for (var i=0; i<array.length; i++) {
+				_rv.add(array[i]);
+			}
+			return _rv;
+		};
 
+		var toJavaStringArray = function(array) {
+			var rv = Packages.java.lang.reflect.Array.newInstance(
+				Packages.java.lang.Class.forName("java.lang.String"),
+				array.length
+			);
+			for (var i=0; i<rv.length; i++) {
+				rv[i] = array[i];
+			}
+			return rv;
+		};
+
+		/** @typedef { (p: Parameters<slime.internal.jsh.launcher.javac.compile>[0], c: { console: slime.jrunscript.native.java.io.OutputStream, arguments: string[] }) => void } JavaCompiler */
+
+		/** @type { JavaCompiler } */
+		var toolProviderApiCompile = function(p,c) {
+			var _tmp = Packages.java.io.File.createTempFile("slime-remote-src", null);
+			_tmp.delete();
+			_tmp.mkdirs();
+			var files = p.files.map(function(file) {
+				var match = /^(?:.*)\/java\/(.*)/;
+				var path = match.exec(String(file.toExternalForm()))[1];
+				return {
+					url: String(file.toExternalForm()),
+					file: new Packages.java.io.File(_tmp, path)
+				};
+			});
+			$api.debug("files = " + JSON.stringify(
+				files.map(function(file) {
+					return { url: file.url, file: String(file.file) }
+				}),
+				void(0), 4)
+			);
+
+			files.forEach(function(file) {
+				var x = $api.engine.readUrl(file.url);
+				file.file.getParentFile().mkdirs();
+				var _writer = new Packages.java.io.FileWriter(file.file);
+				_writer.write(x);
+				_writer.close();
+			});
+
+			var tool = Packages.java.util.spi.ToolProvider.findFirst("javac").get();
+			$api.debug("tool = " + tool);
+
+			var javacArguments = (
+				c.arguments
+				.concat([
+					"-d", String(p.destination.getCanonicalPath()),
+				].concat(
+					files.map(function(it) {
+						return String(it.file.getCanonicalPath());
+					})
+				))
+			);
+			$api.debug("arguments = \n" + javacArguments.join("\n"));
+
+			tool.run(
+				Packages.java.lang.System.err,
+				Packages.java.lang.System.err,
+				toJavaStringArray(
+					javacArguments
+				)
+			)
+		};
+
+		/** @type { JavaCompiler } */
+		var javaCompilerApiCompile = function(p,c) {
 			var javac = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+
 			var jfm = (
 				new function() {
 					$api.debug("Java file manager constructor invoked ...");
@@ -326,7 +392,7 @@
 								// for (var i=0; i<rv.length; i++) {
 								// 	// $api.debug("classpath[" + i + "] = " + rv[i] + " keys " + Object.keys(rv[i]));
 								// }
-								var _rv = toIterable(rv);
+								var _rv = toJavaIterable(rv);
 								//Packages.java.lang.System.err.println("_rv: " + _rv);
 								// $api.debug("classpath list return " + _rv);
 								return _rv;
@@ -395,31 +461,14 @@
 					$api.debug("constructor finished ...");
 				}
 			);
+
+			//	In theory, this could work down to JDK 1.6, though this is unsupported
 			var IS_JDK_RHINO = typeof(Packages.com["sun"].script.javascript.RhinoScriptEngine) == "function";
 			if (IS_JDK_RHINO) {
 				JavaAdapter = function(type,object) {
 					return new Packages.com["sun"].script.javascript.RhinoScriptEngine().getInterface(object,type);
 				}
 			}
-			try {
-				var _jfm = new JavaAdapter(
-					Packages.javax.tools.JavaFileManager,
-					jfm
-				);
-			} catch (e) {
-				$api.debug("e = " + e + " keys=" + Object.keys(e));
-				$api.debug("e.stack = " + e.stack);
-				$api.debug("e.rhinoException = " + e.rhinoException);
-				$api.debug("Packages.javax.tools.JavaFileManager " + Packages.javax.tools.JavaFileManager);
-				$api.debug("jfm = " + jfm);
-				if (e.rhinoException) {
-					e.rhinoException.printStackTrace();
-				}
-				throw e;
-			}
-			var _writer = null;
-			var _listener = null; /* javax.tools.DiagnosticListener */
-			var _annotationProcessorClasses = null;
 
 			/**
 			 *
@@ -475,43 +524,95 @@
 				);
 			};
 
-			//	JavaFileObject
-			var _units = p.files.map(function(file) {
-				return SourceFile(file);
-			});
-			$api.debug("_jfm = " + _jfm);
-			$api.debug("_jfm.getClass() = " + _jfm.getClass());
-			$api.debug(_units.map(function(x) {
-				var rv = [];
-				var c = x.getClass();
-				while(c.getSuperclass()) {
-					rv.push(c);
-					if (c.getInterfaces()) {
-						for (var i=0; i<c.getInterfaces().length; i++) {
-							rv.push(c.getInterfaces()[i]);
-						}
-					}
-					c = c.getSuperclass();
+			/** @type { slime.jrunscript.native.java.io.Writer } */
+			var _writer = (
+				function() {
+					if (c.console == Packages.java.lang.System.err) return null;
+					throw new Error();
 				}
-				return rv.join("|");
-			}).join("\n"));
+			)();
 
-			var compilerArguments = [
-				"-Xlint:unchecked",
-				"-verbose",
-				"-Xdiags:verbose",
-				"-Xmaxerrs", "5000"
-			];
+			/** @type { slime.jrunscript.native.javax.tools.JavaFileManager } */
+			var _jfm = null;
+
+			var _units = null;
+
+			try {
+				_jfm = new JavaAdapter(
+					Packages.javax.tools.JavaFileManager,
+					jfm
+				);
+
+				//	JavaFileObject
+				_units = p.files.map(function(file) {
+					return SourceFile(file);
+				});
+
+				$api.debug("_jfm = " + _jfm);
+				$api.debug("_jfm.getClass() = " + _jfm.getClass());
+				$api.debug(_units.map(function(x) {
+					var rv = [];
+					var c = x.getClass();
+					while(c.getSuperclass()) {
+						rv.push(c);
+						if (c.getInterfaces()) {
+							for (var i=0; i<c.getInterfaces().length; i++) {
+								rv.push(c.getInterfaces()[i]);
+							}
+						}
+						c = c.getSuperclass();
+					}
+					return rv.join("|");
+				}).join("\n"));
+			} catch (e) {
+				$api.debug("e = " + e + " keys=" + Object.keys(e));
+				$api.debug("e.stack = " + e.stack);
+				$api.debug("e.rhinoException = " + e.rhinoException);
+				$api.debug("Packages.javax.tools.JavaFileManager " + Packages.javax.tools.JavaFileManager);
+				$api.debug("jfm = " + jfm);
+				if (e.rhinoException) {
+					e.rhinoException.printStackTrace();
+				}
+				throw e;
+			}
+
+			/** @type { slime.jrunscript.native.javax.tools.DiagnosticListener } */
+			var _listener = (false) ? new JavaAdapter(
+				Packages.javax.tools.DiagnosticListener,
+				new function() {
+					this.report = function(diagnostic) {
+						Packages.java.lang.System.err.println(JSON.stringify({
+							code: diagnostic.getCode(),
+							kind: String(diagnostic.getKind()),
+							message: diagnostic.getMessage(null),
+							lineNumber: diagnostic.getLineNumber(),
+							columnNumber: diagnostic.getColumnNumber(),
+							position: diagnostic.getPosition(),
+							startPosition: diagnostic.getStartPosition(),
+							endPosition: diagnostic.getEndPosition(),
+							source: diagnostic.getSource(),
+						}))
+					}
+				}
+			) : null;
 
 			var task = javac.getTask(
 				_writer,
 				_jfm,
 				_listener,
-				toIterable(compilerArguments),
-				_annotationProcessorClasses,
-				toIterable(_units)
+				toJavaIterable(c.arguments.concat(
+					[
+						"-verbose",
+						"-Xdiags:verbose",
+						"-Xmaxerrs", "5000"
+					]
+				)),
+				/** annotation processor classes */
+				null,
+				toJavaIterable(_units)
 			);
 			$api.debug("task = " + task);
+
 			try {
 				var success = task.call();
 				$api.debug("Compilation finished");
@@ -526,6 +627,35 @@
 				}
 				throw e;
 			}
+		}
+
+		/** @type { slime.internal.jsh.launcher.javac.compile } */
+		$api.java.compile = function(p) {
+			$api.debug("Java compile:");
+			$api.debug("classpath = " + p.classpath);
+			$api.debug("files = \n" + p.files.join("\n"));
+			$api.debug("destination = " + p.destination);
+
+			//	Just could not get javaCompileApiCompile working with JPMS, so substituted system compiler and downloaded source
+			//	code to file system.
+			//
+			//	The errors that result have to do with multiple modules trying to access the unnamed package in multiple other
+			//	modules. Could not determine why that was so; couldn't figure out a way to get good diagnostics.
+			//
+			//	Wild speculation is that perhaps it has to do with the use of the Rhino / LiveConnect construct Packages -- which
+			//	does check for each element in the name being a class -- and perhaps the top level of this search looking for
+			//	(for example) classes in the unnamed package called "com" and "org" and so forth.
+			//
+			//	It'd be better not to pollute the local filesystem by downloading these, but we're going to do that so that the
+			//	implementation works.
+			var useToolProviderApi = true;
+
+			var algorithm = (useToolProviderApi) ? toolProviderApiCompile : javaCompilerApiCompile;
+
+			algorithm(p, {
+				console: Packages.java.lang.System.err,
+				arguments: ["-Xlint:unchecked"]
+			});
 		}
 	}
 //@ts-ignore

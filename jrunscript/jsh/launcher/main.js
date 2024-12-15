@@ -112,6 +112,8 @@
 					$api.slime.src.getPath("local/jsh/lib")
 				);
 
+				$api.debug("jsh.shell.lib = " + $api.slime.settings.get("jsh.shell.lib"));
+
 				// TODO: this same approach for locating the lib directory should be used in $$api.jsh.Built, no?
 				var lib = (function() {
 					var setting = $api.slime.settings.get("jsh.shell.lib");
