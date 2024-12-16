@@ -15,7 +15,7 @@
 	function($api,$context,$loader,$export) {
 		var downloads = $context.downloads ? $context.downloads : $context.library.shell.TMPDIR.createTemporary({ directory: true })
 
-		var client = ($context.client) ? $context.client : new $context.library.http.Client();
+		var client = new $context.library.http.Client();
 
 		var scripts = {
 			apache: $loader.script("apache.js"),
@@ -387,6 +387,17 @@
 				Format: formats,
 				install: {
 					world: wo.install
+				},
+				methods: {
+					install: function(client) {
+						return function(downloads) {
+							return function(order) {
+								return function(events) {
+									throw new Error("Unimplemented.");
+								}
+							}
+						}
+					}
 				}
 			},
 			get: deprecated.oldGet,

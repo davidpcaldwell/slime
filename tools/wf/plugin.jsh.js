@@ -1183,6 +1183,7 @@
 
 								if (result.status) {
 									events.fire("console", "ESLint status: " + result.status + "; failing.");
+									jsh.shell.console(result.stdio.output);
 									success = false;
 								} else {
 									events.fire("console", "ESLint passed.");

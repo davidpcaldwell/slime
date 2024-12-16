@@ -21,16 +21,19 @@ namespace slime.jrunscript.tools.install {
 			http: slime.jrunscript.http.client.Exports
 		}
 
-		/**
-		 * The directory in which to store downloaded files. If not specified, a temporary directory will be used.
-		 */
-		downloads?: slime.jrunscript.file.Directory
-
+		//	TODO	switch to spi
 		/**
 		 * An HTTP client implementation to use. If not specified, one will be created.
 		 */
 		client?: slime.jrunscript.http.client.object.Client
+
+		/**
+		 * The directory in which to store downloaded files. If not specified, a temporary directory will be used.
+		 */
+		downloads?: slime.jrunscript.file.Directory
 	}
+
+	export type Cache = (name: string) => slime.$api.fp.impure.input.Store<slime.jrunscript.tools.install.downloads.Download>;
 
 	export interface Exports {
 	}
@@ -236,7 +239,7 @@ namespace slime.jrunscript.tools.install {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
-				fifty.tests.exports.Download = {};
+				fifty.tests.exports.Distribution = {};
 			}
 		//@ts-ignore
 		)(fifty);
@@ -261,7 +264,7 @@ namespace slime.jrunscript.tools.install {
 
 				const subject = test.scope.load();
 
-				fifty.tests.exports.Download.from = function() {
+				fifty.tests.exports.Distribution.from = function() {
 					var URL = "http://example.com/foo/bar.tar.gz";
 
 					(
@@ -314,6 +317,20 @@ namespace slime.jrunscript.tools.install {
 			exists: slime.jrunscript.file.Location
 			removing: slime.jrunscript.file.Location
 		}
+
+		export interface Methods {
+			install:
+				(client: slime.jrunscript.http.client.object.Client)
+				=> (downloads: slime.jrunscript.tools.install.Cache)
+				=> slime.$api.fp.world.Means<
+					{
+						download: install.Distribution
+						to: string
+						clean?: boolean
+					},
+					distribution.InstallEvents
+				>
+		}
 	}
 
 	export namespace exports {
@@ -337,6 +354,10 @@ namespace slime.jrunscript.tools.install {
 			}
 		}
 
+		export interface Distribution {
+			methods: distribution.Methods
+		}
+
 		(
 			function(
 				fifty: slime.fifty.test.Kit
@@ -345,7 +366,7 @@ namespace slime.jrunscript.tools.install {
 				const { $api, jsh } = fifty.global;
 				const { server, harness, load } = test.scope;
 
-				fifty.tests.exports.Download.install = function() {
+				fifty.tests.exports.Distribution.install = function() {
 					var downloads = fifty.jsh.file.object.temporary.directory();
 					var subject = load({ downloads: downloads });
 					var url = "http://" + "127.0.0.1" + ":" + server.port + "/" + "directory.tar.gz";
