@@ -15,7 +15,7 @@
 	function($api,$context,$loader,$export) {
 		var downloads = $context.downloads ? $context.downloads : $context.library.shell.TMPDIR.createTemporary({ directory: true })
 
-		var client = new $context.library.http.Client();
+		var client = $context.client ? $context.client : new $context.library.http.Client();
 
 		var scripts = {
 			apache: $loader.script("apache.js"),
