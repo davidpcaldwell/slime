@@ -87,7 +87,7 @@ namespace slime.jsh.unit.mock {
 				if (!jsh.unit.mock.Web) return;
 
 				var web = jsh.unit.mock.Web({ trace: true });
-				web.addHttpsHost("mockweb.xlime.com");
+				web.addHttpsHost("mockweb.slime.com");
 				web.add(fifty.$loader.module("test/mock-echo-handler.js"));
 				web.start();
 

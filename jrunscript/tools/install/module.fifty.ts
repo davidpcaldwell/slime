@@ -239,6 +239,27 @@ namespace slime.jrunscript.tools.install {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				fifty.tests.exports.Cache = {};
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Cache {
+			from: {
+				directory: (it: slime.jrunscript.file.Directory) => install.Cache
+			}
+		}
+	}
+
+	export interface Exports {
+		Cache: exports.Cache
+	}
+
+	export namespace exports {
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
 				fifty.tests.exports.Distribution = {};
 			}
 		//@ts-ignore
@@ -320,7 +341,7 @@ namespace slime.jrunscript.tools.install {
 
 		export interface Methods {
 			install:
-				(client: slime.jrunscript.http.client.object.Client)
+				(client: slime.jrunscript.http.client.spi.Implementation)
 				=> (downloads: slime.jrunscript.tools.install.Cache)
 				=> slime.$api.fp.world.Means<
 					{
@@ -593,7 +614,7 @@ namespace slime.jrunscript.tools.install {
 		) {
 			const verify = fifty.verify;
 			const { $api, jsh } = fifty.global;
-			const api: { install: any, format: any, apache: any } = test.scope.api;
+			const api = test.scope.api;
 			const server = test.scope.server;
 			const harness = test.scope.harness;
 			const tmpdir: () => slime.jrunscript.file.Pathname = test.scope.tmpdir;
@@ -660,6 +681,32 @@ namespace slime.jrunscript.tools.install {
 				}
 			};
 
+			fifty.tests.exports.Distribution.methods = fifty.test.Parent();
+			fifty.tests.exports.Distribution.methods.install = function() {
+				if (server) {
+					var client = jsh.http.world.java.urlconnection;
+					var downloads = fifty.jsh.file.object.temporary.directory();
+					var cache = api.Cache.from.directory(downloads);
+					var tmp = fifty.jsh.file.object.temporary.location();
+
+					verify(downloads).getFile("directory.zip").is(null);
+
+					$api.fp.world.Action.now({
+						action: api.Distribution.methods.install(client)(cache)({
+							//	TODO	Distribution.from.url?
+							download: {
+								url: "http://127.0.0.1:" + server.port + "/directory.zip",
+								format: api.Distribution.Format.zip,
+								name: "directory.zip"
+							},
+							to: tmp.toString()
+						})
+					});
+					verify(downloads).getFile("directory.zip").is.not(null);
+					verify(tmp).directory.getFile("directory/file").evaluate(function(p) { return p.read(String); }).is("text");
+				}
+			}
+
 			fifty.tests.apache = function() {
 				var scope = {
 					mock: void(0)
@@ -707,12 +754,15 @@ namespace slime.jrunscript.tools.install {
 						}
 					};
 
-					var mockdownloads = fifty.jsh.file.object.temporary.directory();
 					var mockclient = new jsh.http.Client({
 						proxy: PROXY
 					});
-					var mockscript: slime.jrunscript.tools.install.Script = fifty.$loader.script("module.js");
-					var mockapi: slime.jrunscript.tools.install.Exports = mockscript({
+
+					var mockdownloads = fifty.jsh.file.object.temporary.directory();
+
+					var script: slime.jrunscript.tools.install.Script = fifty.$loader.script("module.js");
+
+					var mockapi: slime.jrunscript.tools.install.Exports = script({
 						client: mockclient,
 						library: {
 							shell: jsh.shell,
@@ -723,17 +773,20 @@ namespace slime.jrunscript.tools.install {
 						downloads: mockdownloads
 					});
 
-					var GET_API_HTML = function(p: slime.jrunscript.file.Directory) { return p.getFile("module.fifty.ts") };
-					var EQUALS = function(string) { return function(p) { return p.read(String) == string; } };
-					verify(mockdownloads).evaluate(GET_API_HTML).is(null);
+					var GET_DOWNLOADED_MODULE_FIFTY_TS = function(p: slime.jrunscript.file.Directory) { return p.getFile("module.fifty.ts") };
+					var FILE_CONTENT_EQUALS = function(string) { return function(p) { return p.read(String) == string; } };
+
+					verify(mockdownloads).evaluate(GET_DOWNLOADED_MODULE_FIFTY_TS).is(null);
+
 					var file: object = $api.fp.world.now.ask(
 						mockapi.apache.find({ path: "module.fifty.ts" })
 					);
-					var string = fifty.$loader.get("module.fifty.ts").read(String);
-					verify(file).evaluate(EQUALS(string)).is(true);
-					verify(mockdownloads).evaluate(GET_API_HTML).is.not(null);
-					verify(mockdownloads).getFile("module.fifty.ts").evaluate(EQUALS(string)).is(true);
-				}
+					var stringFromSrc = fifty.$loader.get("module.fifty.ts").read(String);
+
+					verify(file).evaluate(FILE_CONTENT_EQUALS(stringFromSrc)).is(true);
+					verify(mockdownloads).evaluate(GET_DOWNLOADED_MODULE_FIFTY_TS).is.not(null);
+					verify(mockdownloads).getFile("module.fifty.ts").evaluate(FILE_CONTENT_EQUALS(stringFromSrc)).is(true);
+				};
 
 				//	TODO	does Fifty have a destroy mechanism?
 				if (scope.mock) scope.mock.stop();
