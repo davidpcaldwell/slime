@@ -600,9 +600,7 @@
 								file: $context.library.file
 							},
 							getFilenameMimeType: getFilenameMimeType
-						}).directory(
-							$context.library.file.Location.from.os(it.pathname.toString())
-						)
+						}).directory(it)
 					}
 				}
 			},

@@ -33,6 +33,9 @@ namespace slime.jrunscript.tools.install {
 		downloads?: slime.jrunscript.file.Directory
 	}
 
+	/**
+	 * A function that, for a given name, provides a store that can provide and contain the named resource.
+	 */
 	export type Cache = (name: string) => slime.$api.fp.impure.input.Store<slime.jrunscript.tools.install.downloads.Download>;
 
 	export interface Exports {
@@ -246,7 +249,7 @@ namespace slime.jrunscript.tools.install {
 
 		export interface Cache {
 			from: {
-				directory: (it: slime.jrunscript.file.Directory) => install.Cache
+				directory: (it: slime.jrunscript.file.Location) => install.Cache
 			}
 		}
 	}
@@ -685,11 +688,15 @@ namespace slime.jrunscript.tools.install {
 			fifty.tests.exports.Distribution.methods.install = function() {
 				if (server) {
 					var client = jsh.http.world.java.urlconnection;
-					var downloads = fifty.jsh.file.object.temporary.directory();
+					var downloads = fifty.jsh.file.temporary.directory();
 					var cache = api.Cache.from.directory(downloads);
 					var tmp = fifty.jsh.file.object.temporary.location();
 
-					verify(downloads).getFile("directory.zip").is(null);
+					const toOldDirectory = function(location: slime.jrunscript.file.Location): slime.jrunscript.file.Directory {
+						return jsh.file.Pathname(location.pathname).directory;
+					}
+
+					verify(downloads).evaluate(toOldDirectory).getFile("directory.zip").is(null);
 
 					$api.fp.world.Action.now({
 						action: api.Distribution.methods.install(client)(cache)({
@@ -702,7 +709,7 @@ namespace slime.jrunscript.tools.install {
 							to: tmp.toString()
 						})
 					});
-					verify(downloads).getFile("directory.zip").is.not(null);
+					verify(downloads).evaluate(toOldDirectory).getFile("directory.zip").is.not(null);
 					verify(tmp).directory.getFile("directory/file").evaluate(function(p) { return p.read(String); }).is("text");
 				}
 			}
