@@ -33,6 +33,9 @@ namespace slime.jrunscript.tools.install {
 		downloads?: slime.jrunscript.file.Directory
 	}
 
+	/**
+	 * A function that, for a given name, provides a store that can provide and contain the named resource.
+	 */
 	export type Cache = (name: string) => slime.$api.fp.impure.input.Store<slime.jrunscript.tools.install.downloads.Download>;
 
 	export interface Exports {
@@ -246,7 +249,13 @@ namespace slime.jrunscript.tools.install {
 
 		export interface Cache {
 			from: {
-				directory: (it: slime.jrunscript.file.Directory) => install.Cache
+				/**
+				 * Creates a cache implementation given a directory location in which files will be referenced by the name provided
+				 * to the {@link install.Cache}.
+				 *
+				 * @param it A directory location. If it does not exist, it will be created if a file needs to be stored.
+				 */
+				directory: (it: slime.jrunscript.file.Location) => install.Cache
 			}
 		}
 	}
@@ -338,20 +347,6 @@ namespace slime.jrunscript.tools.install {
 			exists: slime.jrunscript.file.Location
 			removing: slime.jrunscript.file.Location
 		}
-
-		export interface Methods {
-			install:
-				(client: slime.jrunscript.http.client.spi.Implementation)
-				=> (downloads: slime.jrunscript.tools.install.Cache)
-				=> slime.$api.fp.world.Means<
-					{
-						download: install.Distribution
-						to: string
-						clean?: boolean
-					},
-					distribution.InstallEvents
-				>
-		}
 	}
 
 	export namespace exports {
@@ -373,10 +368,6 @@ namespace slime.jrunscript.tools.install {
 					distribution.InstallEvents
 				>
 			}
-		}
-
-		export interface Distribution {
-			methods: distribution.Methods
 		}
 
 		(
@@ -508,6 +499,98 @@ namespace slime.jrunscript.tools.install {
 						});
 					});
 
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace distribution {
+		export namespace methods {
+			export interface Install {
+				download: install.Distribution
+
+				/**
+				 * The destination to which to install the distribution. If the location already exists, and `clean` is
+				 * not `true`, an error will be thrown.
+				 */
+				to: string
+
+				clean?: boolean
+			}
+		}
+
+		export interface Methods {
+			install:
+				(client: slime.jrunscript.http.client.spi.Implementation)
+				=> (downloads: slime.jrunscript.tools.install.Cache)
+				=> slime.$api.fp.world.Means<
+					methods.Install,
+					distribution.InstallEvents
+				>
+		}
+	}
+
+	export namespace exports {
+		export interface Distribution {
+			methods: distribution.Methods
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+				const { api, server } = test.scope;
+
+				fifty.tests.exports.Distribution.methods = fifty.test.Parent();
+				fifty.tests.exports.Distribution.methods.install = function() {
+					if (server) {
+						var client = jsh.http.world.java.urlconnection;
+
+						var scenario = function(downloads: slime.jrunscript.file.Location) {
+							const toOldDirectory = function(location: slime.jrunscript.file.Location): slime.jrunscript.file.Directory {
+								return jsh.file.Pathname(location.pathname).directory;
+							}
+
+							var tmp = fifty.jsh.file.object.temporary.location();
+
+							var cache = api.Cache.from.directory(downloads);
+
+							var downloadsDirectory = toOldDirectory(downloads);
+
+							if (downloadsDirectory) {
+								verify(downloads).evaluate(toOldDirectory).getFile("directory.zip").is(null);
+							}
+
+							$api.fp.now(
+								{
+									//	TODO	Distribution.from.url?
+									download: {
+										url: "http://127.0.0.1:" + server.port + "/directory.zip",
+										format: api.Distribution.Format.zip,
+										name: "directory.zip"
+									},
+									to: tmp.toString()
+								},
+								api.Distribution.methods.install(client)(cache),
+								$api.fp.world.events.handle({
+									exists: function(e) {
+										//@ts-ignore
+										jsh.shell.console("It exists: " + e.detail.pathname);
+									}
+								}).action,
+								$api.fp.impure.Process.now
+							);
+
+							verify(downloads).evaluate(toOldDirectory).getFile("directory.zip").is.not(null);
+							verify(tmp).directory.getFile("directory/file").evaluate(function(p) { return p.read(String); }).is("text");
+						};
+
+						scenario(fifty.jsh.file.temporary.directory());
+						scenario(fifty.jsh.file.temporary.location());
+					}
 				}
 			}
 		//@ts-ignore
@@ -680,32 +763,6 @@ namespace slime.jrunscript.tools.install {
 					})();
 				}
 			};
-
-			fifty.tests.exports.Distribution.methods = fifty.test.Parent();
-			fifty.tests.exports.Distribution.methods.install = function() {
-				if (server) {
-					var client = jsh.http.world.java.urlconnection;
-					var downloads = fifty.jsh.file.object.temporary.directory();
-					var cache = api.Cache.from.directory(downloads);
-					var tmp = fifty.jsh.file.object.temporary.location();
-
-					verify(downloads).getFile("directory.zip").is(null);
-
-					$api.fp.world.Action.now({
-						action: api.Distribution.methods.install(client)(cache)({
-							//	TODO	Distribution.from.url?
-							download: {
-								url: "http://127.0.0.1:" + server.port + "/directory.zip",
-								format: api.Distribution.Format.zip,
-								name: "directory.zip"
-							},
-							to: tmp.toString()
-						})
-					});
-					verify(downloads).getFile("directory.zip").is.not(null);
-					verify(tmp).directory.getFile("directory/file").evaluate(function(p) { return p.read(String); }).is("text");
-				}
-			}
 
 			fifty.tests.apache = function() {
 				var scope = {

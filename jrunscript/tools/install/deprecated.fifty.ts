@@ -49,8 +49,10 @@ namespace slime.jrunscript.tools.install {
 	}
 
 	export interface Exports {
+		/** @deprecated */
 		gzip: any
 
+		/** @deprecated */
 		zip: any
 	}
 }
