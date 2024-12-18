@@ -249,6 +249,12 @@ namespace slime.jrunscript.tools.install {
 
 		export interface Cache {
 			from: {
+				/**
+				 * Creates a cache implementation given a directory location in which files will be referenced by the name provided
+				 * to the {@link install.Cache}.
+				 *
+				 * @param it A directory location. If it does not exist, it will be created if a file needs to be stored.
+				 */
 				directory: (it: slime.jrunscript.file.Location) => install.Cache
 			}
 		}
@@ -342,16 +348,26 @@ namespace slime.jrunscript.tools.install {
 			removing: slime.jrunscript.file.Location
 		}
 
+		export namespace methods {
+			export interface Install {
+				download: install.Distribution
+
+				/**
+				 * The destination to which to install the distribution. If the location already exists, and `clean` is
+				 * not `true`, an error will be thrown.
+				 */
+				to: string
+
+				clean?: boolean
+			}
+		}
+
 		export interface Methods {
 			install:
 				(client: slime.jrunscript.http.client.spi.Implementation)
 				=> (downloads: slime.jrunscript.tools.install.Cache)
 				=> slime.$api.fp.world.Means<
-					{
-						download: install.Distribution
-						to: string
-						clean?: boolean
-					},
+					methods.Install,
 					distribution.InstallEvents
 				>
 		}
@@ -688,29 +704,44 @@ namespace slime.jrunscript.tools.install {
 			fifty.tests.exports.Distribution.methods.install = function() {
 				if (server) {
 					var client = jsh.http.world.java.urlconnection;
-					var downloads = fifty.jsh.file.temporary.directory();
-					var cache = api.Cache.from.directory(downloads);
-					var tmp = fifty.jsh.file.object.temporary.location();
 
-					const toOldDirectory = function(location: slime.jrunscript.file.Location): slime.jrunscript.file.Directory {
-						return jsh.file.Pathname(location.pathname).directory;
-					}
+					var scenario = function(downloads: slime.jrunscript.file.Location) {
+						const toOldDirectory = function(location: slime.jrunscript.file.Location): slime.jrunscript.file.Directory {
+							return jsh.file.Pathname(location.pathname).directory;
+						}
 
-					verify(downloads).evaluate(toOldDirectory).getFile("directory.zip").is(null);
+						var tmp = fifty.jsh.file.object.temporary.location();
 
-					$api.fp.world.Action.now({
-						action: api.Distribution.methods.install(client)(cache)({
-							//	TODO	Distribution.from.url?
-							download: {
-								url: "http://127.0.0.1:" + server.port + "/directory.zip",
-								format: api.Distribution.Format.zip,
-								name: "directory.zip"
-							},
-							to: tmp.toString()
-						})
-					});
-					verify(downloads).evaluate(toOldDirectory).getFile("directory.zip").is.not(null);
-					verify(tmp).directory.getFile("directory/file").evaluate(function(p) { return p.read(String); }).is("text");
+						var cache = api.Cache.from.directory(downloads);
+
+						var downloadsDirectory = toOldDirectory(downloads);
+
+						if (downloadsDirectory) {
+							verify(downloads).evaluate(toOldDirectory).getFile("directory.zip").is(null);
+						}
+
+						$api.fp.world.Action.now({
+							action: api.Distribution.methods.install(client)(cache)({
+								//	TODO	Distribution.from.url?
+								download: {
+									url: "http://127.0.0.1:" + server.port + "/directory.zip",
+									format: api.Distribution.Format.zip,
+									name: "directory.zip"
+								},
+								to: tmp.toString()
+							}),
+							handlers: {
+								exists: function(e) {
+									jsh.shell.console("It exists: " + e.detail.pathname);
+								}
+							}
+						});
+						verify(downloads).evaluate(toOldDirectory).getFile("directory.zip").is.not(null);
+						verify(tmp).directory.getFile("directory/file").evaluate(function(p) { return p.read(String); }).is("text");
+					};
+
+					scenario(fifty.jsh.file.temporary.directory());
+					scenario(fifty.jsh.file.temporary.location());
 				}
 			}
 
