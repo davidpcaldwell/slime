@@ -467,6 +467,11 @@ namespace slime.jsh.shell {
 			}
 
 			fifty.tests.exports.jsh.Installation.from.current.remote = function() {
+				if (!jsh.httpd.Tomcat) {
+					const message = "Cannot test remote shells; Tomcat not present.";
+					verify(message).is(message);
+					return;
+				}
 				var remote = test.shells.remote();
 
 				var intention = remote.getShellIntention({
@@ -855,30 +860,32 @@ namespace slime.jsh.shell {
 					stdio: stdio
 				}));
 
-				var remote = run(test.shells.remote().getShellIntention({
-					PATH: jsh.shell.PATH,
-					settings: {
-						branch: "local"
-					},
-					script: "jrunscript/jsh/test/jsh-data.jsh.js"
-				}));
+				if (jsh.httpd.Tomcat) {
+					var remote = run(test.shells.remote().getShellIntention({
+						PATH: jsh.shell.PATH,
+						settings: {
+							branch: "local"
+						},
+						script: "jrunscript/jsh/test/jsh-data.jsh.js"
+					}));
+				}
 
 				verify(unbuilt).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(void(0));
 				verify(built).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(test.shells.built(false).home + "/");
 				verify(packaged).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(void(0));
-				verify(remote).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(void(0));
+				if (jsh.httpd.Tomcat) verify(remote).evaluate.property("jsh.shell.jsh.home").evaluate(getString).is(void(0));
 
 				verify(unbuilt).evaluate.property("jsh.shell.jsh.src").evaluate(getString).is(test.shells.unbuilt().src + "/");
 				verify(built).evaluate.property("jsh.shell.jsh.src").evaluate(getString).is(void(0));
 				verify(packaged).evaluate.property("jsh.shell.jsh.src").evaluate(getString).is(void(0));
-				verify(remote).evaluate.property("jsh.shell.jsh.src").evaluate(getString).is(void(0));
+				if (jsh.httpd.Tomcat) verify(remote).evaluate.property("jsh.shell.jsh.src").evaluate(getString).is(void(0));
 
 				verify(unbuilt).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is(void(0));
 				verify(built).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is(void(0));
 				verify(packaged).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is(void(0));
 				//	TODO	make sure this is of type URL
-				verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is("http://raw.githubusercontent.com/davidpcaldwell/slime/local/");
-				verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate.property("path").is("/davidpcaldwell/slime/local/");
+				if (jsh.httpd.Tomcat) verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is("http://raw.githubusercontent.com/davidpcaldwell/slime/local/");
+				if (jsh.httpd.Tomcat) verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate.property("path").is("/davidpcaldwell/slime/local/");
 			};
 		}
 	//@ts-ignore

@@ -152,7 +152,7 @@
 
 						/** @type { slime.jsh.shell.tools.Exports["rhino"]["require"]["world"] } */
 						var require = function(lib) {
-							if (!lib) lib = jsh.shell.jsh.lib.toString();
+							if (!lib) lib = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.toString() : void(0);
 							var at = $api.fp.now(jsh.file.Location.from.os(lib), jsh.file.Location.directory.relativePath("js.jar"));
 							return function(p) {
 								var version = (p) ? p.version : void(0);
