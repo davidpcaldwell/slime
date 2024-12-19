@@ -22,89 +22,6 @@
 				return Boolean(jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install && plugins.scala);
 			},
 			load: function() {
-				//	TODO	move this implementation to jrunscript/tools/install and disentangle from `jsh`. Or should we somehow
-				//			marry it with the `bash` implementation?
-				/**
-				 * @type { slime.$api.fp.world.Means<slime.jsh.shell.tools.rhino.OldInstallCommand,slime.jsh.shell.tools.rhino.InstallEvents> }
-				 */
-				var woOldInstallRhino = function(p) {
-					return function(events) {
-						if (!p) p = {};
-						var lib = (p.mock && p.mock.lib) ? p.mock.lib : jsh.shell.jsh.lib;
-						if (!jsh.shell.jsh.lib) throw new Error("Shell does not have lib");
-						if (lib.getFile("js.jar") && !p.replace) {
-							events.fire("console", "Rhino already installed at " + lib.getFile("js.jar"));
-							return;
-						} else if (p.replace) {
-							events.fire("console", "Replacing Rhino at " + lib.getRelativePath("js.jar") + " ...");
-						} else {
-							events.fire("console", "No Rhino at " + lib.getRelativePath("js.jar") + "; installing ...");
-						}
-						events.fire("console", "Installing Rhino to " + lib.getRelativePath("js.jar") + " ...");
-						var operation = "copy";
-						if (!p.local) {
-							/**
-							 * @type { slime.internal.jrunscript.bootstrap.Global }
-							 */
-							var jrunscript = {
-								$api: {
-									arguments: ["api"]
-								},
-								load: function() {
-									//jsh.shell.console("load(" + Array.prototype.slice.call(arguments) + ")");
-								},
-								Packages: Packages,
-								JavaAdapter: JavaAdapter,
-								readFile: void(0),
-								readUrl: void(0),
-								Java: void(0)
-							};
-							//	TODO	push this back to jsh.shell as jsh.shell.jrunscript.api?
-							var SRC = (function() {
-								if (jsh.shell.jsh.home) return jsh.shell.jsh.home.getRelativePath("jsh.js");
-								if (jsh.shell.jsh.src) return jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js");
-							})();
-							jsh.loader.run(
-								SRC,
-								{},
-								jrunscript
-							);
-							var _rhino = (p.mock && p.mock.rhino) ? p.mock.rhino.pathname.java.adapt() : jrunscript.$api.rhino.download(p.version);
-							p.local = jsh.file.Pathname(String(_rhino.getCanonicalPath())).file;
-							operation = "move";
-						}
-						p.local[operation](lib.getRelativePath("js.jar"), { recursive: true, overwrite: true });
-						events.fire("installed", lib.getRelativePath("js.jar").toString() );
-						events.fire("console", "Installed Rhino at " + lib.getRelativePath("js.jar"));
-					}
-				};
-
-				var installRhino = $api.events.Function(
-					/**
-					 *
-					 * @param { slime.jsh.shell.tools.rhino.OldInstallCommand } p
-					 * @param { slime.$api.event.Emitter<slime.jsh.shell.tools.rhino.OldInstallEvents> } events
-					 */
-					function(p,events) {
-						$api.fp.world.Means.now({
-							means: woOldInstallRhino,
-							order: p,
-							handlers: {
-								console: function(e) {
-									events.fire("console", e.detail);
-								},
-								installed: function(e) {
-									events.fire("installed", { to: jsh.file.Pathname(e.detail) });
-								}
-							}
-						});
-					}, {
-						console: function(e) {
-							jsh.shell.console(e.detail);
-						}
-					}
-				);
-
 				jsh.shell.tools = {
 					rhino: void(0),
 					tomcat: void(0),
@@ -122,6 +39,25 @@
 
 				jsh.shell.tools.rhino = (
 					function() {
+						var client = jsh.http.World.question(
+							jsh.http.World.withFollowRedirects(jsh.http.world.java.urlconnection)
+						);
+
+						var sources = {
+							"mozilla/1.7.13": {
+								url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_13_Release/rhino-1.7.13.jar",
+								format: "jar"
+							},
+							"mozilla/1.7.14": {
+								url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-1.7.14.jar",
+								format: "jar"
+							},
+							"mozilla/1.7.15": {
+								url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
+								format: "jar"
+							}
+						};
+
 						var installation = function() {
 							var pathname = jsh.shell.jsh.lib.getRelativePath("js.jar");
 							if (pathname.file) {
@@ -140,80 +76,160 @@
 							}
 						};
 
-						/** @type { slime.jsh.shell.tools.Exports["rhino"]["require"]["world"] } */
-						var require = function(p) {
-							var version = (p) ? p.version : void(0);
-
-							var replace = (p && p.replace)
-								? (
-									function() {
-										var now = installation();
-										if (now.present) {
-											var version = now.value.version();
-											return p.replace( (version.present) ? version.value : void(0) );
-										} else {
-											return true;
-										}
+						//	TODO	move this implementation to jrunscript/tools/install and disentangle from `jsh`. Or should we somehow
+						//			marry it with the `bash` implementation?
+						/**
+						 * @type { (lib?: string) => slime.$api.fp.world.Means<slime.jsh.shell.tools.rhino.RequireCommand,slime.jsh.shell.tools.rhino.RequireEvents> }
+						 */
+						var installRhino = function(lib) {
+							if (!lib) lib = jsh.shell.jsh.lib.toString();
+							return function(p) {
+								return function(events) {
+									if (!p) p = {};
+									var ooLib = jsh.file.Pathname(lib).directory;
+									var now = installation();
+									var replace = false;
+									if (now.present && p.replace) {
+										var installedVersion = now.value.version();
+										replace = p.replace( (installedVersion.present) ? installedVersion.value : void(0) );
 									}
-								)()
-								: false
-							;
+									if (ooLib.getFile("js.jar") && !replace) {
+										events.fire("console", "Rhino already installed at " + ooLib.getFile("js.jar"));
+										return;
+									} else if (replace) {
+										events.fire("console", "Replacing Rhino at " + ooLib.getRelativePath("js.jar") + " ...");
+									} else {
+										events.fire("console", "No Rhino at " + ooLib.getRelativePath("js.jar") + "; installing ...");
+									}
+									var version = p.version || "mozilla/1.7.15";
+									events.fire("console", "Installing Rhino version " + version + " to " + ooLib.getRelativePath("js.jar") + " ...");
+									var response = $api.fp.world.Question.now({
+										question: client({
+											url: sources[version].url
+										})
+									});
+									var destination = jsh.file.Location.from.os(ooLib.getRelativePath("js.jar").toString());
+									$api.fp.world.Action.now({
+										action: jsh.file.Location.file.write(destination).stream({ input: response.stream })
+									});
+									events.fire("installed", ooLib.getRelativePath("js.jar").toString() );
+									events.fire("console", "Installed Rhino version " + version + " to " + ooLib.getRelativePath("js.jar"));
+								};
+							};
+						}
 
-							return function(events) {
-								var at = jsh.shell.jsh.lib.getRelativePath("js.jar")
+						var oldInstallRhino = $api.events.Function(
+							/**
+							 *
+							 * @param { slime.jsh.shell.tools.rhino.OldInstallCommand } p
+							 * @param { slime.$api.event.Emitter<slime.jsh.shell.tools.rhino.OldInstallEvents> } events
+							 */
+							function(p,events) {
+								var lib = (p.mock) ? p.mock.lib.toString() : void(0);
 								$api.fp.world.Means.now({
-									means: jsh.shell.jsh.require,
+									means: installRhino(lib),
 									order: {
-										satisfied: function() { return Boolean(at.file); },
-										install: function() {
-											/** @type { slime.jsh.shell.tools.rhino.OldInstallCommand } */
-											var argument = {
-												version: version,
-												replace: replace
-											}
-											woOldInstallRhino(argument)(events);
+										version: p.version,
+										replace: function(version) {
+											return p.replace;
 										}
 									},
 									handlers: {
+										console: function(e) {
+											events.fire("console", e.detail);
+										},
 										installed: function(e) {
-											events.fire("installed", at.toString());
-										},
-										installing: function(e) {
-											events.fire("installing", at.toString());
-										},
-										satisfied: function() {
-											events.fire("satisfied", at.toString());
+											events.fire("installed", { to: jsh.file.Pathname(e.detail) });
 										}
 									}
 								});
+							}, {
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
 							}
+						);
+
+						/** @type { slime.jsh.shell.tools.Exports["rhino"]["require"]["world"] } */
+						var require = function(lib) {
+							if (!lib) lib = (jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.toString() : void(0);
+							var at = $api.fp.now(jsh.file.Location.from.os(lib), jsh.file.Location.directory.relativePath("js.jar"));
+							return function(p) {
+								var version = (p) ? p.version : void(0);
+
+								var replace = (p && p.replace)
+									? (
+										function() {
+											var now = installation();
+											if (now.present) {
+												var version = now.value.version();
+												return p.replace( (version.present) ? version.value : void(0) );
+											} else {
+												return true;
+											}
+										}
+									)()
+									: false
+								;
+
+								return function(events) {
+									$api.fp.world.Means.now({
+										means: jsh.shell.jsh.require,
+										order: {
+											satisfied: function() { return $api.fp.now(at, jsh.file.Location.file.exists.simple); },
+											install: function() {
+												var argument = {
+													version: version,
+													replace: function(version) {
+														return replace;
+													}
+												}
+												installRhino(lib)(argument)(events);
+											}
+										},
+										handlers: {
+											installed: function(e) {
+												events.fire("installed", at.pathname);
+											},
+											installing: function(e) {
+												events.fire("installing", at.pathname);
+											},
+											satisfied: function() {
+												events.fire("satisfied", at.pathname);
+											}
+										}
+									});
+								};
+							};
 						};
 
+						(function deprecated() {
+							jsh.tools.rhino = new function() {
+								this.install = $api.deprecate(oldInstallRhino);
+							};
+							$api.deprecate(jsh.tools,"rhino");
+							jsh.tools.install["rhino"] = {};
+							jsh.tools.install["rhino"].install = $api.deprecate(oldInstallRhino);
+							$api.deprecate(jsh.tools.install,"rhino");
+						})();
+
 						return {
-							installation: installation,
+							installation: {
+								simple: installation
+							},
 							install: {
-								old: installRhino
+								old: oldInstallRhino
 							},
 							require: {
 								world: require,
-								action: require(void(0)),
+								action: require(void(0))(void(0)),
 								simple: $api.fp.world.Action.process({
-									action: require(void(0))
+									action: require(void(0))(void(0))
 								})
 							}
 						};
 					}
 				)();
-
-				(function deprecated() {
-					jsh.tools.rhino = new function() {
-						this.install = $api.deprecate(installRhino);
-					};
-					$api.deprecate(jsh.tools,"rhino");
-					jsh.tools.install["rhino"] = {};
-					jsh.tools.install["rhino"].install = $api.deprecate(installRhino);
-					$api.deprecate(jsh.tools.install,"rhino");
-				})();
 
 				var ncdbg = new function() {
 					Object.defineProperty(this, "installed", {
