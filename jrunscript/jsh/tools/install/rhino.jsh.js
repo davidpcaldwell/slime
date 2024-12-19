@@ -8,25 +8,46 @@
 (
 	/**
 	 *
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(jsh) {
-		//	TODO	is this script still useful? Problem is, adding Rhino to an existing built shell would mean recompiling the jsh.jar
-		//			launcher. So for a built shell, we need to add it beforehand. Perhaps this script should fail for a built shell and
-		//			be used for unbuilt shells? Or perhaps for built shells, it should overwrite jsh.jar?
-		var parameters = jsh.script.getopts({
-			options: {
-				local: jsh.file.Pathname,
-				replace: false,
-				version: String
-			}
-		});
+	function($api,jsh) {
+		jsh.script.cli.main(
+			$api.fp.pipe(
+				jsh.script.cli.option.boolean({ longname: "replace" }),
+				jsh.script.cli.option.string({ longname: "version" }),
+				function(p) {
+					$api.fp.world.Means.now({
+						means: jsh.shell.tools.rhino.require.world,
+						order: {
+							replace: $api.fp.Mapping.all(p.options.replace),
+							version: p.options.version
+						},
+						handlers: {
+							console: function(e) {
+								jsh.shell.console(e.detail);
+							}
+						}
+					})
+				}
+			)
+		);
+		// //	TODO	is this script still useful? Problem is, adding Rhino to an existing built shell would mean recompiling the jsh.jar
+		// //			launcher. So for a built shell, we need to add it beforehand. Perhaps this script should fail for a built shell and
+		// //			be used for unbuilt shells? Or perhaps for built shells, it should overwrite jsh.jar?
+		// var parameters = jsh.script.getopts({
+		// 	options: {
+		// 		local: jsh.file.Pathname,
+		// 		replace: false,
+		// 		version: String
+		// 	}
+		// });
 
-		jsh.shell.tools.rhino.install.old({
-			local: (parameters.options.local) ? parameters.options.local.file : null,
-			replace: parameters.options.replace,
-			version: parameters.options.version
-		});
+		// jsh.shell.tools.rhino.install.old({
+		// 	local: (parameters.options.local) ? parameters.options.local.file : null,
+		// 	replace: parameters.options.replace,
+		// 	version: parameters.options.version
+		// });
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);
