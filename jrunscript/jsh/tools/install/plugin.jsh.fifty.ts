@@ -176,7 +176,7 @@ namespace slime.jsh.shell.tools {
 
 			//	TODO #1621	No test coverage at all for rhino.require()
 			require: {
-				world: (lib: string) => slime.$api.fp.world.Means<rhino.RequireCommand,rhino.RequireEvents>
+				world: (lib?: string) => slime.$api.fp.world.Means<rhino.RequireCommand,rhino.RequireEvents>
 
 				action: slime.$api.fp.world.Action<rhino.RequireEvents>
 

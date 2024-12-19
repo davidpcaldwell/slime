@@ -18,7 +18,7 @@
 				jsh.script.cli.option.string({ longname: "version" }),
 				function(p) {
 					$api.fp.world.Means.now({
-						means: jsh.shell.tools.rhino.require.world,
+						means: jsh.shell.tools.rhino.require.world(),
 						order: {
 							replace: $api.fp.Mapping.all(p.options.replace),
 							version: p.options.version
