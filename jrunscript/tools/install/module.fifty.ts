@@ -528,6 +528,8 @@ namespace slime.jrunscript.tools.install {
 					methods.Install,
 					distribution.InstallEvents
 				>
+
+			[x: string]: (client: slime.jrunscript.http.client.spi.Implementation) => any
 		}
 	}
 
@@ -572,6 +574,8 @@ namespace slime.jrunscript.tools.install {
 								verify(downloads).evaluate(fileExists("directory.zip")).is(false);
 							}
 
+							var methods = $api.fp.methods.pin(cache)($api.fp.methods.pin(client)(api.Distribution.methods));
+							var install = methods.install;
 							$api.fp.now(
 								{
 									//	TODO	Distribution.from.url?
@@ -582,7 +586,7 @@ namespace slime.jrunscript.tools.install {
 									},
 									to: to.pathname
 								},
-								api.Distribution.methods.install(client)(cache),
+								install,
 								$api.fp.world.events.handle({
 									exists: function(e) {
 										//@ts-ignore
