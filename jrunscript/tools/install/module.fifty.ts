@@ -574,8 +574,14 @@ namespace slime.jrunscript.tools.install {
 								verify(downloads).evaluate(fileExists("directory.zip")).is(false);
 							}
 
-							var methods = $api.fp.methods.pin(cache)($api.fp.methods.pin(client)(api.Distribution.methods));
+							var methods = $api.fp.now(
+								api.Distribution.methods,
+								$api.fp.methods.pin(client),
+								$api.fp.methods.pin(cache)
+							);
+
 							var install = methods.install;
+
 							$api.fp.now(
 								{
 									//	TODO	Distribution.from.url?
