@@ -528,6 +528,8 @@ namespace slime.jrunscript.tools.install {
 					methods.Install,
 					distribution.InstallEvents
 				>
+
+			[x: string]: (client: slime.jrunscript.http.client.spi.Implementation) => any
 		}
 	}
 
@@ -550,19 +552,35 @@ namespace slime.jrunscript.tools.install {
 						var client = jsh.http.world.java.urlconnection;
 
 						var scenario = function(downloads: slime.jrunscript.file.Location) {
-							const toOldDirectory = function(location: slime.jrunscript.file.Location): slime.jrunscript.file.Directory {
-								return jsh.file.Pathname(location.pathname).directory;
-							}
+							const fileExists = function(name) {
+								return $api.fp.pipe(
+									jsh.file.Location.directory.relativePath(name),
+									jsh.file.Location.file.exists.simple
+								);
+							};
 
-							var tmp = fifty.jsh.file.object.temporary.location();
+							const readFile = function(name) {
+								return $api.fp.pipe(
+									jsh.file.Location.directory.relativePath(name),
+									jsh.file.Location.file.read.string.simple
+								);
+							}
 
 							var cache = api.Cache.from.directory(downloads);
 
-							var downloadsDirectory = toOldDirectory(downloads);
+							var to = fifty.jsh.file.temporary.location();
 
-							if (downloadsDirectory) {
-								verify(downloads).evaluate(toOldDirectory).getFile("directory.zip").is(null);
+							if (jsh.file.Location.directory.exists.simple(downloads)) {
+								verify(downloads).evaluate(fileExists("directory.zip")).is(false);
 							}
+
+							var methods = $api.fp.now(
+								api.Distribution.methods,
+								$api.fp.methods.pin(client),
+								$api.fp.methods.pin(cache)
+							);
+
+							var install = methods.install;
 
 							$api.fp.now(
 								{
@@ -572,9 +590,9 @@ namespace slime.jrunscript.tools.install {
 										format: api.Distribution.Format.zip,
 										name: "directory.zip"
 									},
-									to: tmp.toString()
+									to: to.pathname
 								},
-								api.Distribution.methods.install(client)(cache),
+								install,
 								$api.fp.world.events.handle({
 									exists: function(e) {
 										//@ts-ignore
@@ -584,8 +602,8 @@ namespace slime.jrunscript.tools.install {
 								$api.fp.impure.Process.now
 							);
 
-							verify(downloads).evaluate(toOldDirectory).getFile("directory.zip").is.not(null);
-							verify(tmp).directory.getFile("directory/file").evaluate(function(p) { return p.read(String); }).is("text");
+							verify(downloads).evaluate(fileExists("directory.zip")).is(true);
+							verify(to).evaluate(readFile("directory/file")).is("text");
 						};
 
 						scenario(fifty.jsh.file.temporary.directory());
