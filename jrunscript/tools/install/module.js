@@ -157,20 +157,90 @@
 			}
 		)();
 
+		var DEFAULT_CLIENT = $context.library.http.World.withFollowRedirects($context.library.http.world.java.urlconnection);
+
+		/**
+		 * @param { slime.jrunscript.http.client.spi.Implementation } client
+		 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events> } events
+		 */
+		var fetcher = function(client,events) {
+			return $api.fp.world.Sensor.mapping({
+				sensor: client,
+				handlers: {
+					request: function(e) {
+						events.fire("request", e.detail);
+					}
+				}
+			});
+		}
+
 		/**
 		 *
 		 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events> } events
 		 */
 		var createFetcher = function(events) {
-			return $api.fp.world.mapping(
-				$context.library.http.World.withFollowRedirects($context.library.http.world.java.urlconnection),
-				{
-					request: function(e) {
-						events.fire("request", e.detail);
-					}
-				}
-			);
+			return fetcher(DEFAULT_CLIENT, events);
 		};
+
+		/**
+		 * @param { { client?: slime.jrunscript.http.client.spi.Implementation, cache?: slime.jrunscript.tools.install.downloads.Cache } } c
+		 * @returns { slime.$api.fp.world.Sensor<slime.jrunscript.tools.install.Distribution,slime.jrunscript.tools.install.download.Events,slime.jrunscript.tools.install.downloads.Download> }
+		 */
+		var find = function(c) {
+			var client = c.client || DEFAULT_CLIENT;
+			var downloads = c.cache;
+			return function(distribution) {
+				return function(events) {
+					/** @param { slime.jrunscript.http.client.spi.Response } response */
+					var getResponseMimeType = function(response) {
+						return $api.fp.result(
+							$context.library.http.Header.value("Content-Type")(response.headers),
+							$api.fp.Maybe.map($api.mime.Type.codec.declaration.decode),
+							function(maybe) {
+								if (maybe.present && maybe.value.media == "application" && maybe.value.subtype == "octet-stream") return $api.fp.Maybe.from.nothing();
+								return maybe;
+							}
+						);
+					};
+
+					/** @type { () => slime.jrunscript.tools.install.downloads.Download } */
+					var get = function() {
+						var fetch = fetcher(client, events);
+
+						var getResponse = function() {
+							return fetch(
+								$context.library.http.Argument.from.request({
+									url: distribution.url
+								})
+							);
+						};
+
+						var response = getResponse();
+
+						var type = getResponseMimeType(response);
+						var stream = response.stream;
+						return {
+							type: type,
+							read: function() {
+								if (stream) {
+									var rv = stream;
+									stream = null;
+									return rv;
+								}
+								return getResponse().stream
+							}
+						};
+					};
+
+					if (distribution.name && downloads) {
+						var store = downloads(distribution.name);
+						get = $api.fp.impure.Input.cache(store)(get);
+					}
+
+					return get();
+				}
+			}
+		}
 
 		var Distribution = {
 			methods: {
@@ -181,93 +251,25 @@
 					return function(downloads) {
 						return function(order) {
 							return function(events) {
-								debugger;
-
-								var fetch = $api.fp.world.Sensor.mapping({
-									sensor: client,
-									handlers: {
-										request: function(e) {
-											events.fire("request", e.detail);
-										}
-									}
-								});
-
-								var p = order;
-
-								/** @param { slime.jrunscript.file.File } file */
-								var getFileMimeType = function(file) {
-									return getFilenameMimeType(file.pathname.basename);
-								};
-
-								/** @param { slime.jrunscript.http.client.spi.Response } response */
-								var getResponseMimeType = function(response) {
-									return $api.fp.result(
-										$context.library.http.Header.value("Content-Type")(response.headers),
-										$api.fp.Maybe.map($api.mime.Type.codec.declaration.decode),
-										function(maybe) {
-											if (maybe.present && maybe.value.media == "application" && maybe.value.subtype == "octet-stream") return $api.fp.Maybe.from.nothing();
-											return maybe;
-										}
-									);
-								};
-
-								var getUrlMimeType = function(url) {
-									var name = getDefaultName(url);
-									return getFilenameMimeType(name);
-								}
-
 								/**
 								 *
-								 * @param { slime.jrunscript.tools.install.Distribution } download
-								 * @param { (argument: slime.jrunscript.http.client.spi.Argument) => slime.jrunscript.http.client.spi.Response } fetch
+								 * @param { slime.jrunscript.tools.install.Distribution } distribution
 								 * @returns { { file: slime.jrunscript.file.File, type: slime.$api.fp.Maybe<slime.mime.Type> } }
 								 */
-								var getArchive = function(download,fetch) {
-									// /** @type { slime.jrunscript.file.Pathname } */
-									// var local;
-
-									/** @type { () => slime.jrunscript.tools.install.downloads.Download } */
-									var get = function() {
-										var response = fetch(
-											$context.library.http.Argument.from.request({
-												url: download.url
-											})
-										);
-
-										var type = getResponseMimeType(response);
-										return {
-											type: type,
-											read: function() {
-												return response.stream;
+								var getArchive = function(distribution) {
+									var d = $api.fp.world.Sensor.now({
+										sensor: find({ client: client, cache: downloads }),
+										subject: distribution,
+										handlers: {
+											request: function(e) {
+												events.fire("request", e.detail);
 											}
-										};
-									};
-
-									debugger;
-									if (download.name && downloads) {
-										var store = downloads(download.name);
-										get = $api.fp.impure.Input.cache(store)(get);
-										// local = downloads(download.name);
-									}
-									// if (local && local.file) {
-									// 	return { file: local.file, type: getFileMimeType(local.file) };
-									// }
-									// var response = fetch(
-									// 	$context.library.http.Argument.from.request({
-									// 		url: download.url
-									// 	})
-									// );
-
-									// var getMimeType = $api.fp.switch([
-									// 	function() { return getResponseMimeType(response); },
-									// 	function() { return getUrlMimeType(download.url) }
-									// ]);
-
-									var d = get();
+										}
+									});
 
 									var format = $api.fp.switch(
 										[
-											function() { return $api.fp.Maybe.from.value(download.format); },
+											function() { return $api.fp.Maybe.from.value(distribution.format); },
 											function() {
 												var mime = d.type;
 												if (mime.present) {
@@ -278,25 +280,16 @@
 										]
 									)();
 
-									// var type = $context.api.http.Header.value("Content-Type")(response.headers);
-									// throw new Error("type = " + ((type.present) ? type.value : "(absent)"));
 									if (!format.present) throw new Error(
-										"Could not determine format of archive at: " + download.url
+										"Could not determine format of archive at: " + distribution.url
 										+ " (type: " + d.type + ")"
 									);
-									// if (!local) {
-									// 	local = $context.library.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("archive" + format.value.extension);
-									// }
-									// var location = local.os.adapt();
-									// var w = $context.library.file.world.Location.file.write(location);
-									// $api.fp.world.now.action(w.stream, { input: d.read() });
-									// return { file: local.file, type: d.type };
 									var pathname = $context.library.file.os.temporary.location();
 									$api.fp.world.Action.now({
 										action: $context.library.file.Location.file.write(
 											pathname
 										).stream({
-											input: get().read()
+											input: d.read()
 										})
 									});
 									debugger;
@@ -307,96 +300,93 @@
 									};
 								}
 
-								//return function(events) {
-									var Location = $context.library.file.Location;
+								var Location = $context.library.file.Location;
 
-									var ifExists = $api.fp.now.map(
-										p.clean,
-										$api.fp.Maybe.from.value,
-										$api.fp.Maybe.map(
-											$api.fp.Boolean.map({
-												true: $api.fp.impure.Output.compose([
-													function(location) {
-														events.fire("removing", location);
-													},
-													Location.remove.simple
-												]),
-												false: $api.fp.impure.Output.nothing()
-											})
-										),
-										$api.fp.Maybe.else(
-											/**
-											 *
-											 * @returns { slime.$api.fp.impure.Output<slime.jrunscript.file.Location> }
-											 */
-											function() {
-												return function(location) {
-													throw new Error("Already exists: " + location.pathname);
-												}
-											}
-										)
-									);
-
-									var to = $api.fp.now.map(p.to, $context.library.file.Location.from.os);
-
-									var exists = $api.fp.now.map(
-										to,
-										$api.fp.Predicate.or(
-											$context.library.file.Location.file.exists.simple,
-											$context.library.file.Location.directory.exists.simple
-										)
-									);
-
-									if (exists) {
-										events.fire("exists", to);
-										ifExists(to);
-									}
-
-									var archive = getArchive(p.download,fetch);
-									// events.fire("archive", archive.file);
-
-									var format = (
+								var ifExists = $api.fp.now.map(
+									order.clean,
+									$api.fp.Maybe.from.value,
+									$api.fp.Maybe.map(
+										$api.fp.Boolean.map({
+											true: $api.fp.impure.Output.compose([
+												function(location) {
+													events.fire("removing", location);
+												},
+												Location.remove.simple
+											]),
+											false: $api.fp.impure.Output.nothing()
+										})
+									),
+									$api.fp.Maybe.else(
+										/**
+										 *
+										 * @returns { slime.$api.fp.impure.Output<slime.jrunscript.file.Location> }
+										 */
 										function() {
-											if (p.download.format) return p.download.format;
-											if (archive.type.present) {
-												var maybe = getFormatFromMimeType(archive.type.value);
-												if (maybe.present) return maybe.value;
+											return function(location) {
+												throw new Error("Already exists: " + location.pathname);
 											}
 										}
-									)();
+									)
+								);
 
-									if (!format) throw new Error("Could not determine format of archive: type=" + archive.type);
-									if (!format.extract) throw new Error("No algorithm to extract " + format.extension);
+								var to = $api.fp.now.map(order.to, $context.library.file.Location.from.os);
 
-									/**
-									 *
-									 * @param { ReturnType<getArchive> } archive
-									 * @param { string } ospath
-									 */
-									var extractTo = function(archive,ospath) {
-										var p_to = $context.library.file.Pathname(ospath);
-										if (!p_to.directory) p_to.createDirectory({ recursive: true });
-										var to = p_to.directory;
-										//	TODO	no world-oriented equivalent
-										format.extract(archive.file, to);
+								var exists = $api.fp.now.map(
+									to,
+									$api.fp.Predicate.or(
+										$context.library.file.Location.file.exists.simple,
+										$context.library.file.Location.directory.exists.simple
+									)
+								);
+
+								if (exists) {
+									events.fire("exists", to);
+									ifExists(to);
+								}
+
+								var archive = getArchive(order.download);
+
+								var format = (
+									function() {
+										if (order.download.format) return order.download.format;
+										if (archive.type.present) {
+											var maybe = getFormatFromMimeType(archive.type.value);
+											if (maybe.present) return maybe.value;
+										}
 									}
+								)();
 
-									if (p.download.prefix) {
-										var tmp =  $context.library.shell.TMPDIR.createTemporary({ directory: true }).pathname;
-										tmp.directory.remove();
-										extractTo(archive, tmp.toString());
-										var unzippedTo = tmp.directory.getSubdirectory(p.download.prefix);
-										unzippedTo.move($context.library.file.Pathname(p.to), {
-											//	TODO	what's the right value for overwrite?
-											overwrite: false,
-											recursive: true
-										});
+								if (!format) throw new Error("Could not determine format of archive: type=" + archive.type);
+								if (!format.extract) throw new Error("No algorithm to extract " + format.extension);
 
-									} else {
-										extractTo(archive, p.to);
-									}
-									events.fire("installed", p.to);
-								//}
+								/**
+								 *
+								 * @param { ReturnType<getArchive> } archive
+								 * @param { string } ospath
+								 */
+								var extractTo = function(archive,ospath) {
+									var p_to = $context.library.file.Pathname(ospath);
+									if (!p_to.directory) p_to.createDirectory({ recursive: true });
+									var to = p_to.directory;
+									//	TODO	no world-oriented equivalent
+									format.extract(archive.file, to);
+								}
+
+								if (order.download.prefix) {
+									var tmp =  $context.library.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+									tmp.directory.remove();
+									extractTo(archive, tmp.toString());
+									var unzippedTo = tmp.directory.getSubdirectory(order.download.prefix);
+									unzippedTo.move($context.library.file.Pathname(order.to), {
+										//	TODO	what's the right value for overwrite?
+										overwrite: false,
+										recursive: true
+									});
+
+								} else {
+									extractTo(archive, order.to);
+								}
+								events.fire("installed", order.to);
 							}
 						}
 					}

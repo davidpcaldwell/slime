@@ -36,8 +36,10 @@ namespace slime.jrunscript.tools.install.downloads {
 		type: slime.$api.fp.Maybe<slime.mime.Type>
 	}
 
+	export type Cache = (name: string) => slime.$api.fp.impure.input.Store<Download>;
+
 	export interface Exports {
-		directory: (directory: slime.jrunscript.file.Location) => (name: string) => slime.$api.fp.impure.input.Store<Download>
+		directory: (directory: slime.jrunscript.file.Location) => Cache
 	}
 
 	(
