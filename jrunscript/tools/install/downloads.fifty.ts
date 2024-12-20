@@ -32,8 +32,8 @@ namespace slime.jrunscript.tools.install.downloads {
 	}
 
 	export interface Download {
-		read: () => slime.jrunscript.runtime.io.InputStream
 		type: slime.$api.fp.Maybe<slime.mime.Type>
+		read: () => slime.jrunscript.runtime.io.InputStream
 	}
 
 	export type Cache = (name: string) => slime.$api.fp.impure.input.Store<Download>;
@@ -117,6 +117,13 @@ namespace slime.jrunscript.tools.install.downloads {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		finder: (
+			client: slime.jrunscript.http.client.spi.Implementation,
+			events: slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events>
+		) => slime.$api.fp.Mapping<slime.jrunscript.http.client.spi.Argument, slime.jrunscript.http.client.spi.Response>
+	}
 
 	export type Script = slime.loader.Script<Context,Exports>
 }
