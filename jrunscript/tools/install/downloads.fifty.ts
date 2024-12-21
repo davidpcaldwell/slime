@@ -8,6 +8,7 @@ namespace slime.jrunscript.tools.install.downloads {
 	export interface Context {
 		library: {
 			file: slime.jrunscript.file.Exports
+			http: slime.jrunscript.http.client.Exports
 		}
 
 		getFilenameMimeType: slime.$api.fp.Partial<string,slime.mime.Type>
@@ -18,7 +19,8 @@ namespace slime.jrunscript.tools.install.downloads {
 			const script: Script = fifty.$loader.script("downloads.js");
 			return script({
 				library: {
-					file: fifty.global.jsh.file
+					file: fifty.global.jsh.file,
+					http: fifty.global.jsh.http
 				},
 				getFilenameMimeType: function(name) {
 					if (/\.txt$/.test(name)) return fifty.global.$api.fp.Maybe.from.some(
@@ -119,10 +121,20 @@ namespace slime.jrunscript.tools.install.downloads {
 	)(fifty);
 
 	export interface Exports {
+		//	TODO	needed? now that we have find()?
 		finder: (
 			client: slime.jrunscript.http.client.spi.Implementation,
 			events: slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events>
 		) => slime.$api.fp.Mapping<slime.jrunscript.http.client.spi.Argument, slime.jrunscript.http.client.spi.Response>
+
+		find: (c: {
+			client?: slime.jrunscript.http.client.spi.Implementation;
+			cache?: slime.jrunscript.tools.install.downloads.Cache;
+		}) => slime.$api.fp.world.Sensor<
+			slime.jrunscript.tools.install.Distribution,
+			slime.jrunscript.tools.install.download.Events,
+			slime.jrunscript.tools.install.downloads.Download
+		>
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>

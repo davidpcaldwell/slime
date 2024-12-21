@@ -28,6 +28,68 @@
 			});
 		}
 
+		var DEFAULT_CLIENT = $context.library.http.World.withFollowRedirects($context.library.http.world.java.urlconnection);
+
+		/**
+		 * @param { { client?: slime.jrunscript.http.client.spi.Implementation, cache?: slime.jrunscript.tools.install.downloads.Cache } } c
+		 * @returns { slime.$api.fp.world.Sensor<slime.jrunscript.tools.install.Distribution,slime.jrunscript.tools.install.download.Events,slime.jrunscript.tools.install.downloads.Download> }
+		 */
+		var find = function(c) {
+			var client = c.client || DEFAULT_CLIENT;
+			var downloads = c.cache;
+			return function(distribution) {
+				return function(events) {
+					/** @param { slime.jrunscript.http.client.spi.Response } response */
+					var getResponseMimeType = function(response) {
+						return $api.fp.result(
+							$context.library.http.Header.value("Content-Type")(response.headers),
+							$api.fp.Maybe.map($api.mime.Type.codec.declaration.decode),
+							function(maybe) {
+								if (maybe.present && maybe.value.media == "application" && maybe.value.subtype == "octet-stream") return $api.fp.Maybe.from.nothing();
+								return maybe;
+							}
+						);
+					};
+
+					/** @type { () => slime.jrunscript.tools.install.downloads.Download } */
+					var get = function() {
+						var fetch = fetcher(client, events);
+
+						var getResponse = function() {
+							return fetch(
+								$context.library.http.Argument.from.request({
+									url: distribution.url
+								})
+							);
+						};
+
+						var response = getResponse();
+
+						var type = getResponseMimeType(response);
+						var stream = response.stream;
+						return {
+							type: type,
+							read: function() {
+								if (stream) {
+									var rv = stream;
+									stream = null;
+									return rv;
+								}
+								return getResponse().stream
+							}
+						};
+					};
+
+					if (distribution.name && downloads) {
+						var store = downloads(distribution.name);
+						get = $api.fp.impure.Input.cache(store)(get);
+					}
+
+					return get();
+				}
+			}
+		};
+
 		$export({
 			directory: function(location) {
 				return function(name) {
@@ -72,7 +134,8 @@
 					}
 				}
 			},
-			finder: fetcher
+			finder: fetcher,
+			find: find
 		});
 	}
 //@ts-ignore
