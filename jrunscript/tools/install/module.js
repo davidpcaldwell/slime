@@ -23,6 +23,15 @@
 			downloads: $loader.script("downloads.js")
 		};
 
+		var components = {
+			downloads: scripts.downloads({
+				library: {
+					file: $context.library.file
+				},
+				getFilenameMimeType: getFilenameMimeType
+			})
+		};
+
 		/**
 		 *
 		 * @param { string } filename
@@ -159,20 +168,7 @@
 
 		var DEFAULT_CLIENT = $context.library.http.World.withFollowRedirects($context.library.http.world.java.urlconnection);
 
-		/**
-		 * @param { slime.jrunscript.http.client.spi.Implementation } client
-		 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events> } events
-		 */
-		var fetcher = function(client,events) {
-			return $api.fp.world.Sensor.mapping({
-				sensor: client,
-				handlers: {
-					request: function(e) {
-						events.fire("request", e.detail);
-					}
-				}
-			});
-		}
+		var fetcher = components.downloads.finder;
 
 		/**
 		 *
@@ -585,12 +581,7 @@
 			Cache: {
 				from: {
 					directory: function(it) {
-						return scripts.downloads({
-							library: {
-								file: $context.library.file
-							},
-							getFilenameMimeType: getFilenameMimeType
-						}).directory(it)
+						return components.downloads.directory(it)
 					}
 				}
 			},

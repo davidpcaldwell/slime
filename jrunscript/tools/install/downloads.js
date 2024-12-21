@@ -13,6 +13,21 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.install.downloads.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		/**
+		 * @param { slime.jrunscript.http.client.spi.Implementation } client
+		 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events> } events
+		 */
+		var fetcher = function(client,events) {
+			return $api.fp.world.Sensor.mapping({
+				sensor: client,
+				handlers: {
+					request: function(e) {
+						events.fire("request", e.detail);
+					}
+				}
+			});
+		}
+
 		$export({
 			directory: function(location) {
 				return function(name) {
@@ -56,7 +71,8 @@
 						}
 					}
 				}
-			}
+			},
+			finder: fetcher
 		});
 	}
 //@ts-ignore
