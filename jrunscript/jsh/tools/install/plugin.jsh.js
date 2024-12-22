@@ -196,11 +196,7 @@
 								this.install = $api.deprecate(oldInstallRhino);
 							};
 							$api.deprecate(jsh.tools,"rhino");
-							jsh.tools.install["rhino"] = {
-								at: void(0)
-							};
-							jsh.tools.install["rhino"]["install"] = $api.deprecate(oldInstallRhino);
-							$api.deprecate(jsh.tools.install,"rhino");
+							jsh.tools.install.rhino["install"] = $api.deprecate(oldInstallRhino);
 						})();
 
 						/** @type { slime.jsh.shell.tools.Exports["rhino"] } */
