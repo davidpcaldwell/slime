@@ -244,7 +244,8 @@ namespace slime.jrunscript.tools.install.deprecated {
 						shell: jsh.shell,
 						http: jsh.http,
 						file: jsh.file,
-						web: jsh.web
+						web: jsh.web,
+						install: jsh.java.tools
 					},
 					downloads: downloads
 				};

@@ -395,7 +395,8 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 						file: fifty.global.jsh.file,
 						http: fifty.global.jsh.http,
 						shell: fifty.global.jsh.shell,
-						web: fifty.global.jsh.web
+						web: fifty.global.jsh.web,
+						install: fifty.global.jsh.java.tools
 					},
 					downloads: downloads
 				});

@@ -19,6 +19,7 @@ namespace slime.jrunscript.tools.install {
 			shell: slime.jrunscript.shell.Exports
 			file: slime.jrunscript.file.Exports
 			http: slime.jrunscript.http.client.Exports
+			install: slime.jrunscript.java.tools.Exports
 		}
 
 		//	TODO	switch to spi
@@ -83,7 +84,8 @@ namespace slime.jrunscript.tools.install {
 						shell: jsh.shell,
 						http: jsh.http,
 						file: jsh.file,
-						web: jsh.web
+						web: jsh.web,
+						install: void(0)
 					},
 					downloads: scope.downloads
 				};
@@ -843,7 +845,8 @@ namespace slime.jrunscript.tools.install {
 							shell: jsh.shell,
 							http: jsh.http,
 							file: jsh.file,
-							web: jsh.web
+							web: jsh.web,
+							install: jsh.java.tools
 						},
 						downloads: mockdownloads
 					});
@@ -869,6 +872,18 @@ namespace slime.jrunscript.tools.install {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
+
+	export namespace rhino {
+		export interface Installation {
+			version: slime.$api.fp.impure.External<slime.$api.fp.Maybe<string>>
+		}
+	}
+
+	export interface Exports {
+		rhino: {
+			at: (location: string) => slime.$api.fp.Maybe<rhino.Installation>
+		}
+	}
 
 	(
 		function(

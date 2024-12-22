@@ -571,7 +571,30 @@
 				downloads: downloads
 			}),
 			zip: deprecated.zip,
-			gzip: deprecated.gzip
+			gzip: deprecated.gzip,
+			rhino: {
+				at: function(pathname) {
+					var fileExists = $api.fp.pipe(
+						$context.library.file.Location.from.os,
+						$context.library.file.Location.file.exists.simple
+					);
+
+					if (fileExists(pathname)) {
+						return $api.fp.Maybe.from.some({
+							pathname: pathname.toString(),
+							version: function() {
+								var manifest = $context.library.install.jar.manifest.simple({
+									pathname: pathname.toString()
+								});
+								var version = manifest.main["Implementation-Version"];
+								return $api.fp.Maybe.from.value(version);
+							}
+						});
+					} else {
+						return $api.fp.Maybe.from.nothing();
+					}
+				}
+			}
 		})
 
 	}
