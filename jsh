@@ -261,22 +261,6 @@ JSH_BOOTSTRAP_RHINO="${JSH_SHELL_LIB}/js.jar"
 JSH_BOOTSTRAP_NASHORN="${JSH_SHELL_LIB}/nashorn.jar"
 JSH_BOOTSTRAP_NASHORN_LIBRARIES=(asm asm-commons asm-tree asm-util)
 
-install_rhino() {
-	if [ "$0" == "bash" ]; then
-		>&2 echo "Cannot install Rhino into remote shell; exiting."
-		exit 1
-	fi
-	# If JSR-223 Rhino worked with jrunscript ...
-	# JSH_BOOTSTRAP_RHINO_ENGINE="$(dirname $0)/local/jsh/lib/jsr223.jar"
-	#	TODO	redundant with rhino/jrunscript/api.js
-	RHINO_URL="https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar"
-	# If JSR-223 Rhino worked with jrunscript ...
-	# RHINO_ENGINE_URL=https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-engine-1.7.15.jar
-	download_install ${RHINO_URL} ${JSH_BOOTSTRAP_RHINO}
-	# If JSR-223 Rhino worked with jrunscript ...
-	# download_install ${RHINO_ENGINE_URL} ${JSH_BOOTSTRAP_RHINO_ENGINE}
-}
-
 get_maven_dependency() {
 	GROUP=$1
 	ARTIFACT=$2
