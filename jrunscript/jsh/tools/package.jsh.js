@@ -119,7 +119,7 @@
 
 		if (false) {
 		} else if (library.directory) {
-			jsh.shell.console("Creating " + library.directory.toString() + " as " + detination + " ...");
+			jsh.shell.console("Creating " + library.directory.toString() + " as " + destination + " ...");
 			jsh.shell.jsh(
 				jsh.script.getRelativePath("slime.jsh.js"),
 				[
