@@ -186,15 +186,7 @@
 		var defaultEngine = (function() {
 			if (shell.rhino) return "rhino";
 			if ($api.jsh.engines.nashorn) return "nashorn";
-			//	Download Rhino
-			//	TODO	documentation appears to be wrong; it warns that if the appropriate engine is not present the shell will not be
-			//			run
-			$api.console("No default engine; downloading Rhino ...");
-			var _file = $api.rhino.download();
-			$api.console("Using Rhino downloaded to " + _file + ".");
-			shell.rhino = [_file.toURI().toURL()];
-			$api.slime.settings.set("jsh.engine.rhino.classpath", String(_file.getCanonicalPath()));
-			return "rhino";
+			throw new Error("Neither Rhino nor Nashorn available; was this invoked in a way other than using the top-level jsh script?");
 		})();
 		$api.debug("shell after engine selection = " + shell);
 		if (!defaultEngine) {

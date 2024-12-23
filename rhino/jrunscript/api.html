@@ -15,51 +15,10 @@ END LICENSE
 	</head>
 	<body>
 		<div>
-			The <code>api.js</code> script configures a local jrunscript execution environment to contain APIs that are useful
-			for jrunscript-based scripts. Depending on how it is invoked, it may also execute other programs.
 		</div>
 		<div>
 			<h1>Context</h1>
-			<div>
-				The script is typically invoked with the global object as <code>this</code>, although it is compatible with using
-				any object for this purpose.
-			</div>
-			<div>
-				It can receive parameters if they are already attached to <code>this</code>:
-			</div>
 			<ul>
-				<li class="object">
-					<div class="name">$api</div>
-					<span>
-						An object providing configuration information to the script.
-						<strong>This object will be overwritten by the script itself.</strong>
-					</span>
-					<div class="label">has properties:</div>
-					<ul>
-						<li class="value">
-							<div class="name">script</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-						<li class="value">
-							<div class="name">arguments</div>
-							<span class="type">__TYPE__</span>
-							<span>__DESCRIPTION__</span>
-						</li>
-						<li class="object">
-							<div class="name">engine</div>
-							<span>__DESCRIPTION__</span>
-							<div class="label">has properties:</div>
-							<ul>
-								<li class="value">
-									<div class="name">script</div>
-									<span class="type">__TYPE__</span>
-									<span>__DESCRIPTION__</span>
-								</li>
-							</ul>
-						</li>
-					</ul>
-				</li>
 				<li class="function">
 					<div class="name">readFile</div>
 					<span>

@@ -58,7 +58,7 @@ namespace slime.jrunscript {
 namespace slime.internal.jrunscript.bootstrap {
 	/**
 	 * An object that can be used to configure the invocation of the `api.js` script, by setting the `$api` property of the global
-	 * object to an object of this type. This value will be replaced by the {@link Global} value exported by the script.
+	 * object to an object of this type. This value will be *overwritten* by the {@link Global} value exported by the script.
 	 */
 	export interface Configuration {
 		script?: {
@@ -145,8 +145,10 @@ namespace slime.internal.jrunscript.bootstrap {
 	}
 
 	/**
-	 * The `Global` is the type definition for the global `this` value (i.e., `globalThis` in other environments) in `jrunscript`
-	 * bootstrap environments.
+	 * The `Global` is the type definition that is applied to the script's `this` value. Normally, the global object (`globalThis`)
+	 * is used, but the script is compatible with any object being used for this purpose.
+	 *
+	 * The script can receive parameters if they are already attached to `this.$api`; see {@link Configuration}.
 	 *
 	 * @typeParam T - An object specifying a set of properties to add to the `$api` property.
 	 * @typeParam J - An object specifying a set of properties to add to the `$api.java` property.
@@ -222,7 +224,6 @@ namespace slime.internal.jrunscript.bootstrap {
 
 			rhino: {
 				classpath: slime.jrunscript.native.java.io.File
-				download: (version?: string) => slime.jrunscript.native.java.io.File
 				isPresent: () => boolean
 				running: () => slime.jrunscript.native.org.mozilla.javascript.Context
 			}
