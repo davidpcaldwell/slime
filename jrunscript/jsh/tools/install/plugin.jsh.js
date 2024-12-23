@@ -37,7 +37,7 @@
 					scala: void(0)
 				};
 
-				jsh.shell.tools.rhino = (
+				if (jsh.shell.jsh.lib) jsh.shell.tools.rhino = (
 					function() {
 						var PATHNAME = jsh.shell.jsh.lib.getRelativePath("js.jar");
 

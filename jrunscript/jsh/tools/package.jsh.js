@@ -115,8 +115,11 @@
 			return pathname;
 		}
 
+		var destination = "$plugins/" + String(index) + ".slime";
+
 		if (false) {
 		} else if (library.directory) {
+			jsh.shell.console("Creating " + library.directory.toString() + " as " + detination + " ...");
 			jsh.shell.jsh(
 				jsh.script.getRelativePath("slime.jsh.js"),
 				[
@@ -124,12 +127,15 @@
 					"-to", toUnixPath(to.getRelativePath("$plugins/" + String(index) + ".slime")).toString()
 				]
 			);
+			jsh.shell.console("Created " + destination);
 		} else if (/\.jar$/.test(library.basename)) {
+			jsh.shell.console("Creating " + library + " as " + destination + " ...");
 			to.getRelativePath("$plugins/" + String(index) + ".jar").write( library.file.read(jsh.file.Streams.binary), { recursive: true });
 		} else if (/\.slime/.test(library.basename)) {
+			jsh.shell.console("Creating " + library + " as " + destination + " ...");
 			to.getRelativePath("$plugins/" + String(index) + ".slime").write( library.file.read(jsh.file.Streams.binary), { recursive: true });
 		} else {
-			throw new Error("Unimplemented: not directory, not .jar, not slime: " + library);
+			throw new Error("Unimplemented: not directory, not .jar, not .slime: " + library);
 		}
 	} );
 
