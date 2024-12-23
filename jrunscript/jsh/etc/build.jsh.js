@@ -121,12 +121,8 @@
 			}
 
 			var downloadRhino = function(to) {
-				var _file = jrunscript.$api.rhino.download();
-				if (to) {
-					_file.renameTo(to.java.adapt());
-					_file = to.java.adapt();
-				}
-				return jsh.file.Searchpath([jsh.file.Pathname(String(_file.getCanonicalPath()))]);
+				jsh.shell.tools.rhino.require.simple();
+				return jsh.file.Searchpath([jsh.shell.jsh.lib.getRelativePath("js.jar")]);
 			};
 
 			if (jsh.script.url) {
@@ -159,36 +155,39 @@
 		})();
 
 		if (jsh.script.url) {
+			//	TODO	implement
+			jsh.shell.console("Building from remote shell not supported.");
+			jsh.shell.exit(1);
 			//	download source code and relaunch
 			//	http://bitbucket.org/api/1.0/repositories/davidpcaldwell/slime/raw/local/jsh/etc/build.jsh.js
 			var matcher = /^http(s)?\:\/\/bitbucket\.org\/api\/1.0\/repositories\/davidpcaldwell\/slime\/raw\/(.*)\/jsh\/etc\/build.jsh.js$/;
 			var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 			if (matcher.exec(jsh.script.url.toString())) {
-				var match = matcher.exec(jsh.script.url.toString());
-				jrunscript.$api.bitbucket.get({
-					protocol: "http" + ((match[1]) ? match[1] : ""),
-					revision: match[2],
-					destination: tmp.pathname.java.adapt()
-				});
-				var args = Array.prototype.slice.call(parameters.arguments);
-				args.push( (build.unit) ? "-unit" : "-nounit" );
-				args.push( (build.test) ? "-test" : "-notest" );
-				if (!build.doc) args.push("-nodoc");
-				/** @type { { [x: string] : string } } */
-				var properties = {};
-				if (build.rhino) {
-					args.push("-rhino", build.rhino.toString());
-					properties["jsh.engine.rhino.classpath"] = String(build.rhino);
-				}
-				jsh.shell.jsh({
-					shell: tmp,
-					properties: properties,
-					script: tmp.getFile("jrunscript/jsh/etc/build.jsh.js"),
-					arguments: args,
-					evaluate: function(result) {
-						jsh.shell.exit(result.status);
-					}
-				});
+				// var match = matcher.exec(jsh.script.url.toString());
+				// jrunscript.$api.bitbucket.get({
+				// 	protocol: "http" + ((match[1]) ? match[1] : ""),
+				// 	revision: match[2],
+				// 	destination: tmp.pathname.java.adapt()
+				// });
+				// var args = Array.prototype.slice.call(parameters.arguments);
+				// args.push( (build.unit) ? "-unit" : "-nounit" );
+				// args.push( (build.test) ? "-test" : "-notest" );
+				// if (!build.doc) args.push("-nodoc");
+				// /** @type { { [x: string] : string } } */
+				// var properties = {};
+				// if (build.rhino) {
+				// 	args.push("-rhino", build.rhino.toString());
+				// 	properties["jsh.engine.rhino.classpath"] = String(build.rhino);
+				// }
+				// jsh.shell.jsh({
+				// 	shell: tmp,
+				// 	properties: properties,
+				// 	script: tmp.getFile("jrunscript/jsh/etc/build.jsh.js"),
+				// 	arguments: args,
+				// 	evaluate: function(result) {
+				// 		jsh.shell.exit(result.status);
+				// 	}
+				// });
 			} else {
 				//	TODO	more helpful error message
 				jsh.shell.console("Executing from unknown URL: " + jsh.script.url + " ... cannot locate source distribution for version.");
