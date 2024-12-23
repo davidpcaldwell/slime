@@ -110,8 +110,8 @@ namespace slime.jsh.shell.tools {
 			version?: string
 
 			/**
-			 * Whether to replace the existing installation if one is found (`true`), or to leave it in place (`false`, the
-			 * default).
+			 * Whether to replace the existing installation in the shell if one is found (`true`), or to leave it in place (`false`,
+			 * the default).
 			 */
 			replace?: boolean
 		}
@@ -166,7 +166,9 @@ namespace slime.jsh.shell.tools {
 
 			install: {
 				/**
-				 * @deprecated Use {@link Exports | rhino.require }
+				 * @deprecated Use {@link Exports | rhino.require }.
+				 *
+				 * Installs Rhino as a JavaScript engine for the currently executing shell.
 				 */
 				old: (
 					argument?: slime.jsh.shell.tools.rhino.OldInstallCommand,

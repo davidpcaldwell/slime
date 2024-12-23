@@ -47,7 +47,8 @@
 						shell: jsh.shell,
 						http: jsh.http,
 						file: jsh.file,
-						web: jsh.web
+						web: jsh.web,
+						install: jsh.java.tools
 					},
 					downloads: jsh.shell.user.downloads
 				});

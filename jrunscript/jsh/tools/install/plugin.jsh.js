@@ -37,8 +37,10 @@
 					scala: void(0)
 				};
 
-				jsh.shell.tools.rhino = (
+				if (jsh.shell.jsh.lib) jsh.shell.tools.rhino = (
 					function() {
+						var PATHNAME = jsh.shell.jsh.lib.getRelativePath("js.jar");
+
 						var client = jsh.http.World.question(
 							jsh.http.World.withFollowRedirects(jsh.http.world.java.urlconnection)
 						);
@@ -59,21 +61,7 @@
 						};
 
 						var installation = function() {
-							var pathname = jsh.shell.jsh.lib.getRelativePath("js.jar");
-							if (pathname.file) {
-								return $api.fp.Maybe.from.some({
-									pathname: pathname.toString(),
-									version: function() {
-										var manifest = jsh.java.tools.jar.manifest.simple({
-											pathname: pathname.toString()
-										});
-										var version = manifest.main["Implementation-Version"];
-										return $api.fp.Maybe.from.value(version);
-									}
-								});
-							} else {
-								return $api.fp.Maybe.from.nothing();
-							}
+							return jsh.tools.install.rhino.at(PATHNAME.toString());
 						};
 
 						//	TODO	move this implementation to jrunscript/tools/install and disentangle from `jsh`. Or should we somehow
@@ -208,14 +196,26 @@
 								this.install = $api.deprecate(oldInstallRhino);
 							};
 							$api.deprecate(jsh.tools,"rhino");
-							jsh.tools.install["rhino"] = {};
-							jsh.tools.install["rhino"].install = $api.deprecate(oldInstallRhino);
-							$api.deprecate(jsh.tools.install,"rhino");
+							jsh.tools.install.rhino["install"] = $api.deprecate(oldInstallRhino);
 						})();
 
-						return {
+						/** @type { slime.jsh.shell.tools.Exports["rhino"] } */
+						var rv = {
 							installation: {
-								simple: installation
+								simple: function() {
+									var installed = installation();
+									if (installed.present) {
+										var value = installed.value;
+										return $api.fp.Maybe.from.some({
+											pathname: PATHNAME.toString(),
+											version: function() {
+												return value.version();
+											}
+										})
+									} else {
+										return $api.fp.Maybe.from.nothing();
+									}
+								}
 							},
 							install: {
 								old: oldInstallRhino
@@ -228,6 +228,8 @@
 								})
 							}
 						};
+
+						return rv;
 					}
 				)();
 
