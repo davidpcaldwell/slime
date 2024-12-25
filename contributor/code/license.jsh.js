@@ -164,6 +164,7 @@
 			if (files[i].path == "loader/jrunscript/test/data/ServiceLoader/META-INF/services/java.lang.Runnable") extension = "properties";
 			if (extension === null) {
 				if (files[i].path == "Dockerfile") extension = "Dockerfile";
+				if (files[i].path == "contributor/devcontainer/check") extension = "bash";
 				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";
 				if (files[i].path == "fifty") extension = "bash";
 				if (files[i].path == "wf") extension = "bash";

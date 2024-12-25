@@ -295,6 +295,29 @@
 					// 	}
 					// });
 
+					(
+						function() {
+							var invocation = invokeNpm(
+								p.installation,
+								{
+									command: "install",
+									arguments: $api.Array.build(function(rv) {
+									}),
+									directory: (p.project) ? p.project.base : void(0),
+									stdio: {
+										output: "string",
+										error: "string"
+									}
+								}
+							);
+							var result = $api.fp.world.now.question(
+								$context.library.shell.subprocess.question,
+								invocation
+							);
+							return result;
+						}
+					)();
+
 					var invocation = invokeNpm(
 						p.installation,
 						{
