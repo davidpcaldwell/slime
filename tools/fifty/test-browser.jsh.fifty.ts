@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.fifty.browser.test.internal.script {
+namespace slime.fifty.test.internal.browser.script {
 	export interface Context {
 	}
 

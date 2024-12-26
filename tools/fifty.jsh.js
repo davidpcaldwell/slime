@@ -13,11 +13,36 @@
 	function($api,jsh) {
 		var SLIME = jsh.script.file.parent.parent;
 
+		//	TODO	the below was a slog; maybe should try to generalize and build back into jsh.script.cli, maybe without the
+		// 			colons
+		/** @type { <O extends object>(invocation: slime.jsh.script.cli.Invocation<O>) => slime.jsh.script.cli.Invocation<O & { debugger: slime.fifty.test.internal.jsh.script.option.debug }> } */
+		var parseDebuggerOption = function(invocation) {
+			/** @type { ReturnType<parseDebuggerOption> } */
+			var rv = $api.Object.compose(invocation, {
+				options: $api.Object.compose(invocation.options, {
+					debugger: void(0)
+				})
+			});
+			for (var i=0; i<invocation.arguments.length; i++) {
+				if (invocation.arguments[i] == "--debug:rhino") {
+					rv.options.debugger = /** { @type slime.fifty.test.internal.jsh.script.option.debug } */("rhino");
+					invocation.arguments.splice(i,1);
+					i--;
+				} else if (invocation.arguments[i] == "--debug:none") {
+					rv.options.debugger = /** { @type slime.fifty.test.internal.jsh.script.option.debug } */("none");
+					invocation.arguments.splice(i,1);
+					i--;
+				}
+			}
+			//@ts-ignore
+			return rv;
+		}
+
 		jsh.script.cli.main(
 			jsh.script.cli.program({
 				commands: {
 					view: $api.fp.pipe(
-						jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
+						parseDebuggerOption,
 						function(p) {
 							jsh.shell.jsh({
 								shell: jsh.shell.jsh.src,
@@ -25,7 +50,7 @@
 								arguments: p.arguments,
 								environment: $api.Object.compose(
 									jsh.shell.environment,
-									(p.options["debug:rhino"]) ? {
+									(p.options.debugger == "rhino") ? {
 										JSH_DEBUG_SCRIPT: "rhino"
 									} : {}
 								),
@@ -37,7 +62,7 @@
 					),
 					test: {
 						jsh: $api.fp.pipe(
-							jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
+							parseDebuggerOption,
 							jsh.script.cli.option.array({
 								longname: "property",
 								value: function(string) {
@@ -63,7 +88,7 @@
 										script: SLIME.getRelativePath("tools/fifty/test.jsh.js").toString(),
 										arguments: p.arguments,
 										environment: function(inherit) {
-											return $api.Object.compose(inherit, p.options["debug:rhino"] ? {
+											return $api.Object.compose(inherit, (p.options.debugger == "rhino") ? {
 												JSH_DEBUG_SCRIPT: "rhino"
 											} : {});
 										},
@@ -113,7 +138,7 @@
 						)
 					},
 					jsh: $api.fp.pipe(
-						jsh.script.cli.option.boolean({ longname: "debug:rhino" }),
+						parseDebuggerOption,
 						function(p) {
 							/** @type { (p: slime.jsh.shell.Installation) => p is slime.jsh.shell.UnbuiltInstallation } */
 							var isUnbuilt = function(p) {
@@ -137,7 +162,7 @@
 										environment: function(inherit) {
 											return $api.Object.compose(
 												inherit,
-												(p.options["debug:rhino"]) ? { "JSH_DEBUG_SCRIPT": "rhino" } : {}
+												(p.options.debugger == "rhino") ? { "JSH_DEBUG_SCRIPT": "rhino" } : {}
 											)
 										}
 									}),

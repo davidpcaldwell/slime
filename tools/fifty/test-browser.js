@@ -29,7 +29,7 @@
 		var promises = code.promises();
 
 		/**
-		 * @param { slime.fifty.browser.test.internal.Query } query
+		 * @param { slime.fifty.test.internal.browser.Query } query
 		 * @returns
 		 */
 		var onload = function(query) {
@@ -236,7 +236,7 @@
 			}).then(
 				function(web) {
 					//	TODO	web module probably has easier way to parse query string
-					/** @type { slime.fifty.browser.test.internal.Query } */
+					/** @type { slime.fifty.test.internal.browser.Query } */
 					var query = $api.fp.result(
 						void(0),
 						web.window.url,

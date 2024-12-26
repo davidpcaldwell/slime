@@ -45,7 +45,7 @@
  * ### Running Fifty tests under `jsh`
  *
  * To run a Fifty test definition on the `jsh` platform:
- * `./fifty test.jsh [--debug:rhino] file.fifty.ts [--part part]`
+ * `./fifty test.jsh [--debug:rhino | --debug:none] file.fifty.ts [--part part]`
  *
  * ### Running Fifty tests in a browser
  *
