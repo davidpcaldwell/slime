@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.fifty.browser.test.internal {
+namespace slime.fifty.test.internal.browser {
 	export interface Query {
 		/** Whether to POST the result back to the server upon completion of the test suite. */
 		results: "true" | "false"

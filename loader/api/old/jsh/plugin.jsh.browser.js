@@ -580,7 +580,7 @@
 
 				/**
 				 *
-				 * @param { slime.fifty.browser.test.internal.script.SeleniumChrome } [configuration]
+				 * @param { slime.fifty.test.internal.browser.script.SeleniumChrome } [configuration]
 				 * @returns { slime.jsh.unit.Browser }
 				 */
 				var FiftySeleniumChrome = function(configuration) {
