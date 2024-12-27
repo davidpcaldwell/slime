@@ -20,6 +20,7 @@
 			fifty.load("../js/codec/ini.fifty.ts");
 			fifty.load("../js/time/module.fifty.ts");
 			fifty.load("../js/object/module.fifty.ts");
+			fifty.load("../tools/fifty/module.fifty.ts");
 		}
 	}
 //@ts-ignore

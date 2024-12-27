@@ -60,11 +60,6 @@
 			file: jsh.script.file.parent.getFile("jrunscript.fifty.ts")
 		}));
 
-		suite.add("internal/other", new jsh.unit.html.Part({
-			//	Test cases involving the HTML test runner itself
-			pathname: SRC.getRelativePath("loader/api/old/test/data/1/api.html")
-		}));
-
 		// TODO: does this require hg be installed?
 		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
@@ -72,12 +67,16 @@
 
 		if (!parameters.options.issue138 && jsh.shell.PATH.getCommand("git")) {
 			suite.add(
-				"jrunscript/tools/git/jsapi",
+				"jrunscript/tools/git",
 				new jsh.unit.html.Part({
 					pathname: SRC.getRelativePath("rhino/tools/git/api.html")
 				})
 			);
 		}
+
+		suite.add("servlet/resources", new jsh.unit.html.Part({
+			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.resources.api.html")
+		}));
 
 		var withShell = function(p) {
 			// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
@@ -96,15 +95,23 @@
 			arguments: ["-view","stdio"]
 		})));
 
-		suite.add("testing/html", new jsh.unit.html.Part({
+		suite.add("jsapi/other", new jsh.unit.html.Part({
+			//	Test cases involving the HTML test runner itself
+			pathname: SRC.getRelativePath("loader/api/old/test/data/1/api.html")
+		}));
+
+		suite.add("jsapi/html", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/api/old/api.html")
 		}));
-		suite.add("testing/jsh.unit/definition/jsapi", new jsh.unit.html.Part({
+
+		suite.add("jsapi/jsh.unit/definition", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/api/old/jsh/plugin.jsh.api.html")
 		}));
-		suite.add("testing/fifty", new jsh.unit.html.Part({
+
+		suite.add("jsapi/fifty", new jsh.unit.html.Part({
 			pathname: SRC.getRelativePath("loader/api/old/fifty/api.html")
 		}));
+
 		//	TODO	disabling Bitbucket testing to try to get tests to pass after migration to GitHub. Examine to see whether there is
 		//			something still needed, something analogous still needed, or whether this can be discarded
 		if (false) suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
@@ -113,7 +120,8 @@
 			script: SRC.getFile("loader/api/old/jsh/test/bitbucket.jsh.js"),
 			arguments: ["-view", "stdio"]
 		}));
-		suite.add("testing/integration", new function() {
+
+		suite.add("jsapi/integration", new function() {
 			var src = SRC;
 			this.parts = {
 				htmlReload: {
@@ -153,10 +161,6 @@
 				}),
 			}
 		});
-
-		suite.add("servlet/resources/jsapi", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.resources.api.html")
-		}));
 
 		jsh.unit.html.cli({
 			suite: suite,

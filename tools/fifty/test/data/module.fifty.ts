@@ -68,7 +68,10 @@ namespace slime.fifty.internal.test.data {
 				//	Small demonstration of using function name to name a subsuite
 				run(function name() {
 					verify("function name").is("function name");
-				})
+				});
+
+				load("no-suite.fifty.ts");
+				load("promises.fifty.ts");
 			}
 		}
 	//@ts-ignore
