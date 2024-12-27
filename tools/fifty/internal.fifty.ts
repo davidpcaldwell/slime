@@ -15,6 +15,12 @@
  *             * `loader/browser/test/handler-results.js`
  *         * HTML: `tools/fifty/test-browser.html`
  *         * JavaScript: `tools/fifty/test-browser.js`
+ *
+ * ## TypeScript compiler
+ *
+ * * [Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)
+ * * [(printing)](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API#re-printing-sections-of-a-typescript-file)
+ *
  */
 namespace slime.fifty.internal {
 }

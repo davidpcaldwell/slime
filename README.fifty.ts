@@ -84,38 +84,30 @@
  * low-level {@link slime.runtime.Platform | `$platform`} object is also provided to all code loaded; `$platform` may provide access
  * to engine-specific capabilities.
  *
- * ### SLIME definitions (documentation and testing)
+ * ### SLIME definitions (documentation and testing): the `fifty` tool
  *
  * SLIME has the concept of a _definition_, which is a construct that provides both documentation and a test suite for a particular
  * software module.
  *
  * Documentation for SLIME itself is mostly contained in SLIME definitions that define its APIs.
  *
- * The best way to create SLIME definitions is via the {@link slime.fifty | Fifty} definition framework, which uses TypeScript to
+ * SLIME definitions are created via the {@link slime.fifty | Fifty definition framework}, which uses TypeScript to
  * provide type definitions and `tsdoc`-compatible documentation (and uses [TypeDoc](https://typedoc.org/) to publish that
  * documentation, and the `fifty view` tool to serve it), and allows inline tests to be authored within those TypeScript
  * definitions. A simple example that contains tests for the project's `wf` commands can be found at `./wf.fifty.ts`.
  *
- * Some existing SLIME APIs are currently defined via the deprecated JSAPI definition format, which used literate definitions that
- * allowed documentation and tests to be defined via annotated HTML (typically using the file extension `.api.html`), using HTML
- * constructs for documentation and embedded scripts for testing.
+ * Fifty definition files are just TypeScript files that declare the types and exports available for an API. The `fifty` tool allows
+ * tests that are embedded in those TypeScript files to be executed. See the {@link slime.fifty.test | Fifty testing documentation}
+ * for details.
  *
- * #### Running SLIME definition tests
+ * #### Older SLIME documentation in HTML format
  *
- * ##### Running Fifty definitions
- *
- * See the {@link slime.fifty.test | Fifty documentation}.
- *
- * ##### Running JSAPI definitions
- *
- * (**deprecated**) Running individual definitions in JSAPI:
- *
- * * `jsh`: `./jsh.bash jsh/test/suite.jsh.js -definition *definition* [-part *part*]`
- * * Browser definition page: `./jsh.bash [loader/browser/test/suite.jsh.js](src/loader/browser/test/suite.jsh.api.html) -definition *pathname* [...]`
- *
- * (**deprecated**) Running a JSAPI browser suite: `./jsh.bash
- * [loader/browser/test/suite.jsh.js](src/loader/browser/test/suite.jsh.api.html) -suite *pathname* [-base *directory*]
- * [-interactive]`
+ * A few SLIME APIs (about 14% as of this writing in 2024 Deceuber) continue to have their definitions maintained via the deprecated
+ * JSAPI definition format, implemented in the `loader/api/old` folder, which used literate definitions that allowed documentation
+ * and tests to be defined via annotated HTML (typically using the file extension `.api.html`), using HTML constructs for
+ * documentation and embedded scripts for testing. This documentation is really only available by browsing the HTML files
+ * themselves. Most JSAPI-described APIs also have Fifty API definitions, but the Fifty definitions may be less complete. Migration
+ * of the remaining files is underway.
  *
  * ### SLIME projects: `wf`
  *
