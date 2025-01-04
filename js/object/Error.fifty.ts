@@ -66,7 +66,7 @@ namespace slime.$api.old {
 				}
 			};
 
-			if (fifty.global.jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);
+			if (fifty.global.jsh) fifty.tests.platforms = fifty.jsh.platforms();
 		}
 	//@ts-ignore
 	)(fifty);
