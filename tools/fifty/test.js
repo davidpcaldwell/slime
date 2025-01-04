@@ -552,12 +552,17 @@
 				verify: function() {
 					return verify.apply(this,arguments);
 				},
-				jsh: (scopes.jsh) ? scopes.jsh({
+				jsh: void(0)
+			};
+
+			if (scopes.jsh) {
+				fifty.jsh = scopes.jsh({
 					loader: contexts.jsh.loader,
 					directory: contexts.jsh.directory,
-					filename: path
-				}) : void(0)
-			};
+					filename: path,
+					fifty: fifty
+				})
+			}
 
 			var scope = {
 				fifty: fifty,

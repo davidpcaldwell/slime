@@ -46,11 +46,19 @@ namespace slime.fifty.test.kit {
 			// }) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
 		}
 
+		//	TODO	revise so that Kit is not needed as an argument; in test.js we already have it
+
 		/**
 		 * Creates a test that will run the test suite (the `suite` part) under `jsh`, and then again under the browser,
 		 * and pass only if both parts pass.
 		 */
-		platforms: (fifty: Kit) => void
+		platforms: () => void
+
+		/**
+		 * Creates a `fitty.tests.suite` on the given Kit whose implementation calls `fifty.tests.suite.jsh` and then launches
+		 * `fifty.tests.suite.browser` in the browser.
+		 */
+		multiplatform: () => void
 	}
 }
 
@@ -70,6 +78,8 @@ namespace slime.fifty.test.internal.scope.jsh {
 		 * The filename of the currently executing Fifty file.
 		 */
 		filename: string
+
+		fifty: Omit<slime.fifty.test.Kit,"jsh">
 	}
 
 	export type Export = (scope: slime.fifty.test.internal.scope.jsh.Scope) => slime.fifty.test.kit.Jsh
@@ -93,43 +103,44 @@ namespace slime.fifty.test.internal.scope.jsh {
 
 		$export(
 			function(scope) {
-				return {
-					file: {
-						relative: function(path) {
-							var page = jsh.file.world.filesystems.os.pathname(scope.directory.toString());
-							return page.relative(path);
+				var file = {
+					relative: function(path) {
+						var page = jsh.file.world.filesystems.os.pathname(scope.directory.toString());
+						return page.relative(path);
+					},
+					temporary: {
+						location: function() {
+							var object = tmp.location();
+							return jsh.file.world.filesystems.os.pathname(object.toString());
 						},
-						temporary: {
-							location: function() {
-								var object = tmp.location();
-								return jsh.file.world.filesystems.os.pathname(object.toString());
-							},
-							directory: function() {
-								var object = tmp.directory();
-								return jsh.file.world.filesystems.os.pathname(object.pathname.toString());
-							}
-						},
-						object: {
-							temporary: {
-								location: tmp.location,
-								directory: tmp.directory
-							},
-							getRelativePath: function(path) {
-								return scope.directory.getRelativePath(path);
-							}
-						},
-						mock: {
-							fixtures: function() {
-								var script: slime.loader.Script<slime.jrunscript.file.internal.mock.Context,slime.jrunscript.file.mock.Fixtures> = $loader.script("../../rhino/file/mock.fixtures.ts");
-								return script({
-									library: {
-										java: jsh.java,
-										io: jsh.io
-									}
-								})
-							}
+						directory: function() {
+							var object = tmp.directory();
+							return jsh.file.world.filesystems.os.pathname(object.pathname.toString());
 						}
 					},
+					object: {
+						temporary: {
+							location: tmp.location,
+							directory: tmp.directory
+						},
+						getRelativePath: function(path) {
+							return scope.directory.getRelativePath(path);
+						}
+					},
+					mock: {
+						fixtures: function() {
+							var script: slime.loader.Script<slime.jrunscript.file.internal.mock.Context,slime.jrunscript.file.mock.Fixtures> = $loader.script("../../rhino/file/mock.fixtures.ts");
+							return script({
+								library: {
+									java: jsh.java,
+									io: jsh.io
+								}
+							})
+						}
+					}
+				};
+				return {
+					file: file,
 					plugin: {
 						mock: function(p) {
 							return jsh.$fifty.plugin.mock(
@@ -141,8 +152,9 @@ namespace slime.fifty.test.internal.scope.jsh {
 						}
 					},
 					$slime: jsh.unit.$slime,
-					platforms: function(fifty) {
-						return function() {
+					platforms: function() {
+						var fifty = scope.fifty;
+						return (fifty.global.jsh) ? function() {
 							fifty.run(function jsh() {
 								fifty.tests.suite();
 							});
@@ -152,13 +164,40 @@ namespace slime.fifty.test.internal.scope.jsh {
 									command: fifty.global.jsh.shell.jsh.src.getRelativePath("fifty").toString(),
 									arguments: [
 										"test.browser",
-										fifty.jsh.file.relative(scope.filename).pathname
+										file.relative(scope.filename).pathname
 									]
 								})
 							);
 							var getBrowserResult = $api.fp.world.input(runBrowser);
 							var result = getBrowserResult();
 							fifty.verify(result, "browserResult").status.is(0);
+						} : function() {
+							throw new Error("fifty.jsh.platforms tests must be run under jsh.");
+						}
+					},
+					multiplatform: function() {
+						var fifty = scope.fifty;
+						fifty.tests.suite = (fifty.global.jsh) ? function() {
+							debugger;
+							if (fifty.tests.suite.jsh) fifty.run(function jsh() {
+								fifty.tests.suite.jsh
+							});
+							var runBrowser = jsh.shell.world.question(
+								jsh.shell.Invocation.from.argument({
+									//	TODO	world-oriented
+									command: fifty.global.jsh.shell.jsh.src.getRelativePath("fifty").toString(),
+									arguments: [
+										"test.browser",
+										file.relative(scope.filename).pathname,
+										"--part", "suite.browser"
+									]
+								})
+							);
+							var getBrowserResult = $api.fp.world.input(runBrowser);
+							var result = getBrowserResult();
+							fifty.verify(result, "browserResult").status.is(0);
+						} : function() {
+							throw new Error("fifty.jsh.multiplatform suite must be run under jsh.");
 						}
 					}
 				}

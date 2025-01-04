@@ -291,7 +291,7 @@ namespace slime {
 				//	TODO	tests.thread, browser only?
 			};
 
-			if (fifty.jsh) tests.platforms = fifty.jsh.platforms(fifty);
+			if (fifty.jsh) tests.platforms = fifty.jsh.platforms();
 		}
 	//@ts-ignore
 	)(fifty);
