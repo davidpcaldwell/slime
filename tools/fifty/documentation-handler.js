@@ -185,7 +185,13 @@
 								var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/(.*)/;
 								var match = typedocPattern.exec(request.path);
 								if (match) {
-									var loader = new jsh.file.Loader({ directory: base });
+									var loader = new jsh.file.Loader({
+										directory: base,
+										type: function(file) {
+											if (/\.svg$/.test(file.toString())) return "image/svg+xml";
+											return jsh.io.mime.Type.fromName(file.toString());
+										}
+									});
 									var handler = httpd.Handler.Loader({ loader: loader });
 									return handler(request);
 								}
