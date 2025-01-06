@@ -14,6 +14,7 @@
 /.project
 /.classpath
 /bin
+/build
 
 #	macOS metadata
 .DS_Store
