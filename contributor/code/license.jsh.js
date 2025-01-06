@@ -94,6 +94,7 @@
 					&& dir.pathname.basename != ".gradle"
 					&& dir.pathname.basename != ".settings"
 					&& dir.pathname.basename != "bin"
+					&& dir.pathname.basename != "build"
 					&& dir.pathname.basename != ".idea"
 			},
 			type: jsh.file.list.ENTRY

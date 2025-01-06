@@ -28,6 +28,14 @@
  *
  * Used in the Rhino profiler, it can be updated by editing the download URL in `rhino/tools/profiler/build.jsh.js`.
  *
+ * ## Testing
+ *
+ * The containerized browser tests can be run from within the devcontainer:
+ *
+ * * Restart browser-specific container in Docker
+ * * `./fifty test.browser --browser dockercompose:selenium:chrome contributor/browser.fifty.ts --interactive`
+ * * Go to appropriate VNC port using HTTP to get a VNC client and use `secret` as the password
+ *
  * ## Tools
  *
  * The `contributor/code/find-untyped-usages.jsh.js` script can be used to search the SLIME codebase for usages of a particular
