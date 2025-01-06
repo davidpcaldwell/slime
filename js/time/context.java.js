@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { slime.time.context.Java } $context
+	 * @param { slime.time.exports.Java } $context
 	 * @param { slime.loader.Export<slime.time.Context> } $export
 	 */
 	function(Packages,$context,$export) {
