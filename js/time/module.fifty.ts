@@ -21,8 +21,12 @@ namespace slime.time {
 		second: number
 	}
 
+	export interface Datetime extends Date, Time {
+	}
+
 	export namespace zone {
-		export interface Time extends slime.time.Date, slime.time.Time {
+		export interface Time extends Datetime {
+			zone: string
 		}
 	}
 
@@ -30,24 +34,12 @@ namespace slime.time {
 		/**
 		 * Given a UNIX time, in milliseconds, returns the corresponding time in this time zone.
 		 */
-		local: (unixMilliseconds: number) => zone.Time
+		local: (unixMilliseconds: number) => Datetime
 
 		/**
 		 * Returns the UNIX time, in milliseconds, for the given time in this time zone.
 		 */
-		unix: (time: zone.Time) => number
-	}
-
-	export namespace context {
-		/**
-		 * Configuration of the Java context for this module. Allows the Calendar and TimeZone Java classes to be replaced, in
-		 * scenarios where they are inaccessible but do not work. Unlikely to be needed; older versions of Google App Engine for
-		 * Java restricted reflective access to these classes.
-		 */
-		export interface Java {
-			Calendar?: slime.jrunscript.Packages["java"]["util"]["Calendar"]
-			TimeZone?: slime.jrunscript.Packages["java"]["util"]["TimeZone"]
-		}
+		unix: (time: Datetime) => number
 	}
 
 	export interface Context {
@@ -55,13 +47,32 @@ namespace slime.time {
 		 * A function that returns the number of milliseconds since the UNIX epoch. If not supplied, the standard JavaScript
 		 * implementation will be used.
 		 */
-		now?: slime.$api.fp.impure.Input<number>
+		now?: slime.$api.fp.impure.External<number>
 
 		zones?: {
 			[id: string]: Zone
 		}
 
-		java?: context.Java
+		java?: exports.Java
+	}
+
+	export namespace test {
+		export const { subject, load } = (function(fifty: slime.fifty.test.Kit) {
+			var script: Script = fifty.$loader.script("module.js");
+			var context: Context = (
+				function() {
+					if (fifty.global.window) return fifty.$loader.module("context.browser.js");
+					if (fifty.global.jsh) return fifty.$loader.module("context.java.js");
+				}
+			)();
+			return {
+				subject: script(context),
+				load: function(context: Context) {
+					return script(context);
+				}
+			};
+		//@ts-ignore
+		})(fifty);
 	}
 
 	(
@@ -73,22 +84,49 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		java?: context.Java
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.Timezone = function() {
+				fifty.run(function zones() {
+					verify(test.subject).Timezone.local.is.type("object");
+					verify(test.subject).Timezone.UTC.is.type("object");
+				});
+
+				//	TODO	get this passing under browser; passes on macOS locally, but does not pass on Docker GitHub CI
+				if (fifty.global.jsh) {
+					var depart: Datetime = { year: 2025, month: 1, day: 5, hour: 17, minute: 30, second: 40 };
+					var instant = test.subject.Timezone["Pacific/Honolulu"].unix(depart);
+					var converted = test.subject.Timezone["America/New_York"].local(instant);
+					verify(converted).year.is(2025);
+					verify(converted).month.is(1);
+					verify(converted).day.is(5);
+					verify(converted).hour.is(22);
+					verify(converted).minute.is(30);
+					verify(converted).second.is(40);
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace exports {
+		export interface Java {
+			Calendar?: slime.jrunscript.Packages["java"]["util"]["Calendar"]
+			TimeZone?: slime.jrunscript.Packages["java"]["util"]["TimeZone"]
+		}
 	}
 
-	export namespace test {
-		export const { subject, load } = (function(fifty: slime.fifty.test.Kit) {
-			var script: Script = fifty.$loader.script("module.js");
-			var jcontext: slime.loader.Script<context.Java|void,Context> = fifty.$loader.script("context.java.js");
-			return {
-				subject: (fifty.global.jsh) ? script(jcontext()) : script(),
-				load: function(context: Context) {
-					return script(context);
-				}
-			};
-		//@ts-ignore
-		})(fifty);
+	export interface Exports {
+		/**
+		 * The Java configuration for this module. The module may be configured with alternative implementations of the Calendar and
+		 * TimeZone Java classes, in scenarios where they are inaccessible but do not work. Unlikely to be needed; older versions of
+		 * Google App Engine for Java restricted reflective access to these classes.
+		 */
+		java?: exports.Java
 	}
 
 	(
@@ -523,10 +561,7 @@ namespace slime.time {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.Date);
 
-				fifty.run(function zones() {
-					verify(test.subject).Timezone.local.is.type("object");
-					verify(test.subject).Timezone.UTC.is.type("object");
-				})
+				fifty.run(fifty.tests.Timezone);
 
 				fifty.load("old.fifty.ts");
 			}
