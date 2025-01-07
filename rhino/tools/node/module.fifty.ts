@@ -198,6 +198,10 @@ namespace slime.jrunscript.tools.node {
 					installed: Module
 				}
 			>
+
+			project?: {
+				install: slime.$api.fp.impure.Process
+			}
 		}
 	}
 
