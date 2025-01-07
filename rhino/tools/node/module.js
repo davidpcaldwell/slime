@@ -441,7 +441,25 @@
 							}
 						}
 					}
-				}
+				},
+				project: (p.project) ? {
+					install: function() {
+						var invocation = invokeNpm(
+							p.installation,
+							{
+								command: "install",
+								arguments: [],
+								directory: p.project.base,
+								stdio: void(0)
+							}
+						);
+
+						$api.fp.world.now.action(
+							$context.library.shell.subprocess.action,
+							invocation
+						);
+					}
+				} : void(0)
 			});
 		};
 
