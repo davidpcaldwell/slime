@@ -118,6 +118,15 @@ namespace slime.fifty.test {
 			 * having to have the parent repeat the names of all its children.
 			 */
 			Parent: () => () => void
+
+			multiplatform: (p: {
+				jsh?: () => void
+				browser?: () => void
+			}) => {
+				(): void
+				jsh?: () => void
+				browser?: () => void
+			}
 		}
 
 		evaluate: {

@@ -25,7 +25,7 @@
 			return tsInstalled.present;
 		}
 
-		//	For debugging issue #896
+		//	For debugging issue #896, which is now closed, but leaving the code in case it recurs
 		var debug896 = function(message) {
 			if (jsh.shell.environment.SLIME_DEBUG_ISSUE_896) jsh.shell.console(message);
 		}
@@ -156,10 +156,6 @@
 			})()
 		};
 
-		/** @type { slime.fifty.test.internal.scope.jsh.Script } */
-		var script = jsh.script.loader.script("scope-jsh.ts");
-		var scopes = script();
-
 		/**
 		 *
 		 * @param { slime.jrunscript.file.File } file
@@ -169,11 +165,16 @@
 		 * @returns
 		 */
 		var load = function(file,view,method,part) {
+			/** @type { slime.fifty.test.internal.scope.jsh.Script } */
+			var scopeScript = jsh.script.loader.script("scope-jsh.ts");
+			var scopes = scopeScript();
+
 			var fiftyLoader = jsh.script.loader;
 
 			/** @type { slime.fifty.test.internal.test.Script } */
-			var script = fiftyLoader.script("test.js");
-			var implementation = script({
+			var testScript = fiftyLoader.script("test.js");
+
+			var implementation = testScript({
 				library: {
 					Verify: verify
 				},

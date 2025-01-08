@@ -58,7 +58,14 @@ namespace slime.fifty.test.kit {
 		 * Creates a `fitty.tests.suite` on the given Kit whose implementation calls `fifty.tests.suite.jsh` and then launches
 		 * `fifty.tests.suite.browser` in the browser.
 		 */
-		multiplatform: () => void
+		multiplatform: (p: {
+			jsh?: () => void
+			browser?: () => void
+		}) => {
+			(): void
+			jsh?: () => void
+			browser?: () => void
+		}
 	}
 }
 
@@ -175,30 +182,35 @@ namespace slime.fifty.test.internal.scope.jsh {
 							throw new Error("fifty.jsh.platforms tests must be run under jsh.");
 						}
 					},
-					multiplatform: function() {
+					multiplatform: function(suite) {
 						var fifty = scope.fifty;
-						fifty.tests.suite = (fifty.global.jsh) ? function() {
-							debugger;
-							if (fifty.tests.suite.jsh) fifty.run(function jsh() {
-								fifty.tests.suite.jsh
-							});
-							var runBrowser = jsh.shell.world.question(
-								jsh.shell.Invocation.from.argument({
-									//	TODO	world-oriented
-									command: fifty.global.jsh.shell.jsh.src.getRelativePath("fifty").toString(),
-									arguments: [
-										"test.browser",
-										file.relative(scope.filename).pathname,
-										"--part", "suite.browser"
-									]
-								})
-							);
-							var getBrowserResult = $api.fp.world.input(runBrowser);
-							var result = getBrowserResult();
-							fifty.verify(result, "browserResult").status.is(0);
-						} : function() {
-							throw new Error("fifty.jsh.multiplatform suite must be run under jsh.");
-						}
+						var rv = Object.assign(
+							function() {
+								debugger;
+								if (suite.jsh) fifty.run(function jsh() {
+									suite.jsh();
+								});
+								var runBrowser = jsh.shell.world.question(
+									jsh.shell.Invocation.from.argument({
+										//	TODO	world-oriented
+										command: fifty.global.jsh.shell.jsh.src.getRelativePath("fifty").toString(),
+										arguments: [
+											"test.browser",
+											file.relative(scope.filename).pathname,
+											"--part", "suite.browser"
+										]
+									})
+								);
+								var getBrowserResult = $api.fp.world.input(runBrowser);
+								var result = getBrowserResult();
+								fifty.verify(result, "browserResult").status.is(0);
+							},
+							{
+								jsh: suite.jsh,
+								browser: suite.browser
+							}
+						);
+						return rv;
 					}
 				}
 			}

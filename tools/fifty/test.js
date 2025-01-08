@@ -534,7 +534,8 @@
 							}
 						};
 						return rv;
-					}
+					},
+					multiplatform: void(0)
 				},
 				evaluate: {
 					create: function(f,string) {
@@ -556,12 +557,24 @@
 			};
 
 			if (scopes.jsh) {
-				fifty.jsh = scopes.jsh({
+				var jshScope = scopes.jsh({
 					loader: contexts.jsh.loader,
 					directory: contexts.jsh.directory,
 					filename: path,
 					fifty: fifty
-				})
+				});
+
+				fifty.test.multiplatform = jshScope.multiplatform;
+
+				fifty.jsh = jshScope;
+			} else {
+				fifty.test.multiplatform = function(p) {
+					var rv = function() {
+						if (p.browser) p.browser();
+					};
+					rv.browser = p.browser;
+					return rv;
+				};
 			}
 
 			var scope = {
