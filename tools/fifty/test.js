@@ -535,7 +535,8 @@
 						};
 						return rv;
 					},
-					multiplatform: void(0)
+					multiplatform: void(0),
+					platforms: void(0)
 				},
 				evaluate: {
 					create: function(f,string) {
@@ -573,8 +574,21 @@
 						if (p.browser) p.browser();
 					};
 					rv.browser = p.browser;
-					return rv;
+					fifty.tests[p.name] = rv;
 				};
+			}
+
+			fifty.test.platforms = function() {
+				fifty.test.multiplatform({
+					name: "platforms",
+					jsh: function() {
+						fifty.run(fifty.tests.suite);
+					},
+					browser: function() {
+						//fifty.tests.suite();
+						fifty.run(fifty.tests.suite);
+					}
+				});
 			}
 
 			var scope = {

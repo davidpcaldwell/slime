@@ -1286,7 +1286,7 @@ namespace slime.$api {
 				fifty.run(fifty.tests.exports);
 			}
 
-			if (fifty.jsh) fifty.tests.platforms = fifty.jsh.platforms();
+			fifty.test.platforms();
 		}
 	//@ts-ignore
 	)(fifty)
