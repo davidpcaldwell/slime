@@ -55,8 +55,7 @@ namespace slime.fifty.test.kit {
 		platforms: () => void
 
 		/**
-		 * Creates a `fitty.tests.suite` on the given Kit whose implementation calls `fifty.tests.suite.jsh` and then launches
-		 * `fifty.tests.suite.browser` in the browser.
+		 * Internal; used to implement `fifty.multiplatform` when running Fifty under `jsh`.
 		 */
 		multiplatform: (p: {
 			jsh?: () => void
