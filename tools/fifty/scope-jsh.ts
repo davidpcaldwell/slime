@@ -55,9 +55,7 @@ namespace slime.fifty.test.kit {
 		platforms: () => void
 
 		/**
-		 * Creates a tests whose implementation calls runs the tests specified in the `jsh` member and then launches
-		 * the tests specified in the `browser` member in the browser. Also creates `.jsh` and `.browser` tests so that the
-		 * platform suites can be run individually.
+		 * Internal; used to implement `fifty.multiplatform` when running Fifty under `jsh`.
 		 */
 		multiplatform: (p: {
 			jsh?: () => void
