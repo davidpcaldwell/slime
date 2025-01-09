@@ -49,6 +49,8 @@ namespace slime.fifty.test.kit {
 		//	TODO	revise so that Kit is not needed as an argument; in test.js we already have it
 
 		/**
+		 * @deprecated Replaced by `fifty.test.platforms()`.
+		 *
 		 * Creates a test that will run the test suite (the `suite` part) under `jsh`, and then again under the browser,
 		 * and pass only if both parts pass.
 		 */
@@ -58,13 +60,10 @@ namespace slime.fifty.test.kit {
 		 * Internal; used to implement `fifty.multiplatform` when running Fifty under `jsh`.
 		 */
 		multiplatform: (p: {
+			name: string
 			jsh?: () => void
 			browser?: () => void
-		}) => {
-			(): void
-			jsh?: () => void
-			browser?: () => void
-		}
+		}) => void
 	}
 }
 
@@ -196,7 +195,7 @@ namespace slime.fifty.test.internal.scope.jsh {
 										arguments: [
 											"test.browser",
 											file.relative(scope.filename).pathname,
-											"--part", "suite.browser"
+											"--part", suite.name + "." + "browser"
 										]
 									})
 								);
@@ -209,7 +208,7 @@ namespace slime.fifty.test.internal.scope.jsh {
 								browser: suite.browser
 							}
 						);
-						return rv;
+						fifty.tests[suite.name] = rv;
 					}
 				}
 			}

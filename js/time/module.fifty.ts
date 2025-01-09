@@ -577,7 +577,7 @@ namespace slime.time {
 				fifty.load("old.fifty.ts");
 			}
 
-			if (fifty.global.jsh) fifty.tests.platforms = fifty.jsh.platforms();
+			fifty.test.platforms();
 		}
 	//@ts-ignore
 	)(fifty);

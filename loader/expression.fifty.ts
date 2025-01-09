@@ -984,7 +984,7 @@ namespace slime {
 					}
 				}
 
-				if (jsh) fifty.tests.platforms = fifty.jsh.platforms();
+				fifty.test.platforms();
 			}
 		//@ts-ignore
 		)( (function() { return this; })().Packages, fifty)

@@ -58,19 +58,15 @@
  *
  * ### Running Fifty tests in both `jsh` and a browser
  *
- * To run a test suite that runs the same definition in both `jsh` and a browser:
- *
- * First, make sure the test suite defines a test - that runs under `jsh` only - using `fifty.jsh.platforms` (usually named
- * `fifty.tests.platforms` by convention), like this one:
- *
- * `if (fifty.jsh) fifty.tests.platforms = fifty.jsh.platforms(fifty);`
+ * To run a test suite that runs the same definition in both `jsh` and a browser, just invoke the `fifty.test.platforms()` method,
+ * which will create a test named `platforms` that runs the `suite` test in both `jsh` and a browser.
  *
  * Then, the suite can be run via:
  *
  * `./fifty test.jsh file.fifty.ts --part platforms`.
  *
  * This will run the platforms test under `jsh`, which first runs the suite under `jsh`, then launches a browser to run it
- * again. See {@link slime.fifty.test.Kit}, specifically the `jsh.platforms` method.
+ * again. See {@link slime.fifty.test.Kit}, specifically the `test.platforms` method.
  */
 namespace slime.fifty.test {
 	export type verify = slime.definition.verify.Verify
@@ -100,6 +96,12 @@ namespace slime.fifty.test {
 		(path: string, part?: string)
 	}
 
+	export interface MultiplatformTest {
+		(): void
+		jsh?: () => void
+		browser?: () => void
+	}
+
 	/**
 	 * The variable that appears as `fifty` within the scope of Fifty definition files when executing tests.
 	 */
@@ -125,13 +127,12 @@ namespace slime.fifty.test {
 			 * platform suites can be run individually.
 			 */
 			multiplatform: (p: {
+				name: string
 				jsh?: () => void
 				browser?: () => void
-			}) => {
-				(): void
-				jsh?: () => void
-				browser?: () => void
-			}
+			}) => void
+
+			platforms: () => void
 		}
 
 		evaluate: {
