@@ -49,7 +49,14 @@ namespace slime.jrunscript.tools.git {
 		 */
 		reference: string
 
+		/**
+		 * @returns The clone created by the operation.
+		 */
 		clone: (argument: repository.Argument & {
+			//	TODO	allow directory?
+			/**
+			 * A location to which to clone the repository.
+			 */
 			to: slime.jrunscript.file.Pathname,
 			recurseSubmodules?: boolean
 		}, events?: object ) => slime.jrunscript.tools.git.repository.Local
