@@ -46,16 +46,6 @@ namespace slime.fifty.test.kit {
 			// }) => ReturnType<slime.jsh.loader.internal.plugins.Export["mock"]>
 		}
 
-		//	TODO	revise so that Kit is not needed as an argument; in test.js we already have it
-
-		/**
-		 * @deprecated Replaced by `fifty.test.platforms()`.
-		 *
-		 * Creates a test that will run the test suite (the `suite` part) under `jsh`, and then again under the browser,
-		 * and pass only if both parts pass.
-		 */
-		platforms: () => void
-
 		/**
 		 * Internal; used to implement `fifty.multiplatform` when running Fifty under `jsh`.
 		 */
@@ -157,29 +147,6 @@ namespace slime.fifty.test.internal.scope.jsh {
 						}
 					},
 					$slime: jsh.unit.$slime,
-					platforms: function() {
-						var fifty = scope.fifty;
-						return (fifty.global.jsh) ? function() {
-							fifty.run(function jsh() {
-								fifty.tests.suite();
-							});
-							var runBrowser = jsh.shell.world.question(
-								jsh.shell.Invocation.from.argument({
-									//	TODO	world-oriented
-									command: fifty.global.jsh.shell.jsh.src.getRelativePath("fifty").toString(),
-									arguments: [
-										"test.browser",
-										file.relative(scope.filename).pathname
-									]
-								})
-							);
-							var getBrowserResult = $api.fp.world.input(runBrowser);
-							var result = getBrowserResult();
-							fifty.verify(result, "browserResult").status.is(0);
-						} : function() {
-							throw new Error("fifty.jsh.platforms tests must be run under jsh.");
-						}
-					},
 					multiplatform: function(suite) {
 						var fifty = scope.fifty;
 						var rv = Object.assign(
