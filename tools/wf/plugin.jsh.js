@@ -1170,6 +1170,7 @@
 										arguments: $api.Array.build(function(rv) {
 											rv.push(jsh.shell.jsh.src.getRelativePath("jsh").toString());
 											rv.push(jsh.shell.jsh.src.getRelativePath("contributor/eslint.jsh.js").toString());
+											rv.push("--project", inputs.base().pathname.toString());
 										}),
 										stdio: {
 											//	TODO	really we want to discard this; is there no API for that?
@@ -1310,13 +1311,13 @@
 								}
 							});
 
-							// success = success && noModifiedSubmodules({
-							// 	repository: repository
-							// })({
-							// 	console: function(e) {
-							// 		events.fire("console", e.detail);
-							// 	}
-							// });
+							success = success && noModifiedSubmodules({
+								repository: repository
+							})({
+								console: function(e) {
+									events.fire("console", e.detail);
+								}
+							});
 
 							success = success && noDetachedHead({
 								repository: repository
