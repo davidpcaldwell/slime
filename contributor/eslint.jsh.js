@@ -16,27 +16,53 @@
 			$api.fp.pipe(
 				jsh.script.cli.option.pathname({ longname: "project", default: jsh.shell.PWD.pathname }),
 				function(p) {
+					jsh.shell.console("Project: " + p.options.project.toString());
 					var modules = jsh.shell.tools.node.Project.modules({ base: p.options.project.toString() })(jsh.shell.tools.node.installation);
 
 					jsh.shell.tools.node.require.simple();
 
 					$api.fp.world.Action.now({
 						action: modules.require({ name: "eslint", version: "9.13.0" }),
+						handlers: {
+							found: function(e) {
+								var found = e.detail;
+								if (found.present) {
+									jsh.shell.console("Found: " + JSON.stringify(found.value));
+								} else {
+									jsh.shell.console("Found: <not present>");
+								}
+							},
+							installed: function(e) {
+								jsh.shell.console("Installed.");
+							},
+							installing: function(e) {
+								jsh.shell.console("Installing.");
+							}
+						}
 					});
 
 					$api.fp.world.Action.now({
 						action: modules.require({ name: "@eslint/js" }),
 					});
 
-					jsh.shell.tools.node.installed.run({
-						project: p.options.project.directory,
-						command: "eslint",
-						arguments: [/*"--debug",*/ "."],
-						directory: p.options.project.directory,
-						evaluate: function(result) {
-							jsh.shell.exit(result.status);
-						}
+					var module = $api.fp.world.Question.now({
+						question: modules.installed("eslint")
 					});
+
+					if (module.present) {
+						jsh.shell.tools.node.installed.run({
+							project: jsh.file.Pathname(module.value.path).parent.parent.directory,
+							command: "eslint",
+							arguments: [/*"--debug",*/ "."],
+							directory: p.options.project.directory,
+							evaluate: function(result) {
+								jsh.shell.exit(result.status);
+							}
+						});
+					} else {
+						jsh.shell.console("eslint not found.");
+						jsh.shell.exit(1);
+					}
 				}
 			)
 		);

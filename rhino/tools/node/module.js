@@ -326,6 +326,7 @@
 								//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
 								//			should check whether this has always worked or whether we need to do some kind of
 								//			npm version checking here before choosing between the two forms
+								rv.push("-l");
 								if (!p.project) rv.push("--global");
 								rv.push("--depth", "0");
 								rv.push("--json")
@@ -364,7 +365,12 @@
 							$api.fp.property("dependencies"),
 							Object.entries,
 							$api.fp.Array.map(function(entry) {
-								return { name: entry[0], version: entry[1].version }
+								return {
+									name: entry[0],
+									version: entry[1].version,
+									path: entry[1].path,
+									bin: entry[1].bin
+								}
 							})
 						)
 					);
@@ -515,6 +521,7 @@
 
 			/** @type { slime.jrunscript.tools.node.object.Installation["run"] } */
 			this.run = function(p) {
+				debugger;
 				var command = getCommand(o, p.project, p.command);
 				// var command = (function() {
 				// 	if (p.command) {

@@ -58,6 +58,10 @@ namespace slime.jrunscript.tools.node {
 	export interface Module {
 		name: string
 		version: string
+		path: string
+		bin: {
+			[name: string]: string
+		}
 	}
 
 	export namespace exports {
