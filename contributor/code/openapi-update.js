@@ -28,29 +28,16 @@
 		$export({
 			initialize: function(jsh) {
 				$api.fp.world.execute(jsh.shell.tools.node.require.action);
-				jsh.shell.tools.node.installed.modules.require({ name: "dtsgenerator", version: "3.12.1" });
-				jsh.shell.tools.node.installed.modules.require({ name: "tslib", version: "2.3.0" });
-				jsh.shell.tools.node.installed.modules.require({ name: "@dtsgenerator/replace-namespace", version: "1.5.0" });
+				jsh.shell.tools.node.installed.modules.require({ name: "dtsgenerator", version: "3.19.2" });
+				jsh.shell.tools.node.installed.modules.require({ name: "tslib", version: "2.8.1" });
+				jsh.shell.tools.node.installed.modules.require({ name: "@dtsgenerator/replace-namespace", version: "1.7.0" });
 
 				var node = jsh.shell.tools.node;
 
-				/**
-				 *
-				 * @param { any } node
-				 * @returns { node is slime.jrunscript.tools.node.object.Installation }
-				 */
-				function isInstallation(node) {
-					return true;
-				}
-
-				if (isInstallation(node)) {
-					return {
-						src: jsh.shell.jsh.src,
-						node: node
-					}
-				} else {
-					throw new Error("Unreachable.");
-				}
+				return {
+					src: jsh.shell.jsh.src,
+					node: node.installed
+				};
 			},
 			generate: function(p) {
 				var config = sanitizeJson(p.config);

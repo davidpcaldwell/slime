@@ -13,7 +13,7 @@
 	function($api,jsh) {
 		jsh.project.openapi.generate({
 			specification: {
-				url: "https://docs.docker.com/engine/api/v1.41.yaml"
+				url: "https://docs.docker.com/reference/api/engine/version/v1.43.yaml"
 			},
 			config: jsh.script.file.parent.getFile("dtsgen.json"),
 			destination: jsh.script.file.parent.getRelativePath("docker-api.d.ts")
