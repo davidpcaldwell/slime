@@ -4,6 +4,9 @@
 //
 //	END LICENSE
 
+/// <reference path="../../../local/jsh/lib/node/lib/node_modules/@octokit/types/dist-types/index.d.ts" />
+/// <reference path="./module.d.ts" />
+
 namespace slime.jsh.unit.mock.web.github {
 	interface User {
 		[x: string]: slime.jrunscript.tools.git.repository.Local
@@ -12,6 +15,10 @@ namespace slime.jsh.unit.mock.web.github {
 	export interface src {
 		[x: string]: User
 	}
+}
+
+namespace slime.external.github.rest {
+	export type Endpoints = external_github.Endpoints
 }
 
 /**
@@ -122,7 +129,7 @@ namespace slime.jrunscript.tools.github {
 		}
 
 		response: {
-			empty: (p: slime.jrunscript.http.client.spi.Response) => {}
+			empty: (p: slime.jrunscript.http.client.spi.Response) => never
 			json: {
 				resource: (status: number) => <T>(p: slime.jrunscript.http.client.spi.Response) => T
 				page: <T>(p: slime.jrunscript.http.client.spi.Response) => T
@@ -130,9 +137,18 @@ namespace slime.jrunscript.tools.github {
 		}
 
 		operation: {
-			reposGet: rest.Operation<{ owner: string, repo: string },slime.external.github.rest.paths.ReposGet.Responses.$200>
-			reposCreateForAuthenticatedUser: rest.Operation<slime.external.github.rest.paths.ReposCreateForAuthenticatedUser.RequestBody,slime.external.github.rest.paths.ReposCreateForAuthenticatedUser.Responses.$201>
-			reposDelete: rest.Operation<{ owner: string, repo: string },slime.external.github.rest.paths.ReposDelete.Responses.$204>
+			reposGet: rest.Operation<
+				slime.external.github.rest.Endpoints["GET /repos/{owner}/{repo}"]["parameters"],
+				slime.external.github.rest.Endpoints["GET /repos/{owner}/{repo}"]["response"]["data"]
+			>
+			reposCreateForAuthenticatedUser: rest.Operation<
+				slime.external.github.rest.Endpoints["POST /user/repos"]["parameters"],
+				slime.external.github.rest.Endpoints["POST /user/repos"]["response"]["data"]
+			>
+			reposDelete: rest.Operation<
+				slime.external.github.rest.Endpoints["DELETE /repos/{owner}/{repo}"]["parameters"],
+				slime.external.github.rest.Endpoints["DELETE /repos/{owner}/{repo}"]["response"]["data"]
+			>
 		}
 
 		api: (p: {
@@ -182,8 +198,8 @@ namespace slime.jrunscript.tools.github {
 
 			fifty.tests.world.ReposListForAuthenticatedUser = function() {
 				var listUserRepos: rest.Paged<
-					slime.external.github.rest.paths.ReposListForAuthenticatedUser.QueryParameters,
-					slime.js.ArrayElement<slime.external.github.rest.paths.ReposListForAuthenticatedUser.Responses.$200>
+					slime.external.github.rest.Endpoints["GET /user/repos"]["parameters"],
+					slime.external.github.rest.Endpoints["GET /user/repos"]["response"]
 				> = {
 					request: subject.request.get("user/repos"),
 					response: subject.response.json.page
@@ -229,9 +245,7 @@ namespace slime.jrunscript.tools.github {
 			}
 
 			fifty.tests.world.ReposGet = function() {
-				var reposGet: rest.Operation<{ owner: string, repo: string },slime.external.github.rest.components.Schemas.FullRepository> = subject.operation.reposGet;
-
-				var ask = server.operation(reposGet).argument({
+				var ask = server.operation(subject.operation.reposGet).argument({
 					owner: "davidpcaldwell",
 					repo: "slime"
 				}).run({
@@ -242,7 +256,7 @@ namespace slime.jrunscript.tools.github {
 
 				verify(result).is.type("object");
 
-				var notFound = server.operation(reposGet).argument({
+				var notFound = server.operation(subject.operation.reposGet).argument({
 					owner: "davidpcaldwell",
 					repo: "foo"
 				}).run({
