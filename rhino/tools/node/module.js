@@ -182,93 +182,11 @@
 			return installation.executable;
 		}
 
-		//	For now, this special way of invoking npm seems necessary to make this work on a Docker volume.
-		//	See https://stackoverflow.com/questions/79149637/on-macos-tar-x-within-docker-container-does-not-create-symlinks
-		/**
-		 * @param { slime.jrunscript.tools.node.Installation } installation
-		 * @param { { command: string, arguments: string[], directory: string, stdio: slime.jrunscript.shell.run.Intention["stdio"] }} invocation
-		 * @returns { slime.jrunscript.shell.run.Intention }
-		 */
-		var invokeNpm = function(installation,invocation) {
-			var nodeBase = $api.fp.now(
-				installation.executable,
-				$context.library.file.Location.from.os,
-				$context.library.file.Location.parent(),
-				$context.library.file.Location.parent()
-			);
-
-			return {
-				command: installation.executable,
-				arguments: $api.Array.build(function(rv) {
-					rv.push(
-						$api.fp.now(
-							nodeBase,
-							$context.library.file.Location.directory.relativePath("lib/node_modules/npm/bin/npm-cli.js"),
-							$api.fp.property("pathname")
-						)
-					);
-					rv.push(invocation.command);
-					rv.push.apply(rv, invocation.arguments);
-				}),
-				directory: invocation.directory,
-				stdio: invocation.stdio
-			};
-		}
-
-		/** @type { (installation: slime.jrunscript.tools.node.Installation) => (intention: slime.jrunscript.tools.node.Intention) => slime.jrunscript.shell.run.Intention } */
-		var node_intention = function(installation) {
-			return function(intention) {
-				var command = getExecutableForCommand(
-					installation,
-					intention
-				);
-
-				return {
-					command: command,
-					arguments: intention.arguments,
-					environment: function(was) {
-						var delegated = (intention.environment) ? intention.environment(was) : was;
-
-						var searchpath = (delegated.PATH) ? $context.library.file.filesystems.os.Searchpath.parse(delegated.PATH) : null;
-
-						/** @type { slime.$api.fp.Identity<slime.jrunscript.file.Searchpath> } */
-						var asSearchpath = $api.fp.identity;
-
-						var pathWithNodeBinPrepended = $api.fp.pipe(
-							asSearchpath,
-							$api.fp.property("pathnames"),
-							$api.fp.Array.prepend([
-								$api.fp.now.invoke(getInstallationPathEntry(installation), $context.library.file.Pathname)
-							]),
-							$context.library.file.Searchpath,
-							String
-						)
-
-						return $api.Object.compose(
-							delegated,
-							{
-								PATH: $api.fp.impure.now.input(
-									$api.fp.impure.Input.value(
-										searchpath,
-										pathWithNodeBinPrepended
-									)
-								)
-							}
-						)
-					},
-					directory: intention.directory,
-					stdio: intention.stdio
-				}
-			}
-		}
-
 		/**
 		 * @param { { installation: slime.jrunscript.tools.node.Installation, project?: slime.jrunscript.tools.node.Project }} p
 		 * @returns
 		 */
 		var Modules = function(p) {
-			var toShellIntention = node_intention(p.installation);
-
 			/** @type { slime.jrunscript.tools.node.exports.Modules["list"] } */
 			var list = function() {
 				return function(events) {
@@ -468,6 +386,39 @@
 				} : void(0)
 			});
 		};
+
+		//	For now, this special way of invoking npm seems necessary to make this work on a Docker volume.
+		//	See https://stackoverflow.com/questions/79149637/on-macos-tar-x-within-docker-container-does-not-create-symlinks
+		/**
+		 * @param { slime.jrunscript.tools.node.Installation } installation
+		 * @param { { command: string, arguments: string[], directory: string, stdio: slime.jrunscript.shell.run.Intention["stdio"] }} invocation
+		 * @returns { slime.jrunscript.shell.run.Intention }
+		 */
+		var invokeNpm = function(installation,invocation) {
+			var nodeBase = $api.fp.now(
+				installation.executable,
+				$context.library.file.Location.from.os,
+				$context.library.file.Location.parent(),
+				$context.library.file.Location.parent()
+			);
+
+			return {
+				command: installation.executable,
+				arguments: $api.Array.build(function(rv) {
+					rv.push(
+						$api.fp.now(
+							nodeBase,
+							$context.library.file.Location.directory.relativePath("lib/node_modules/npm/bin/npm-cli.js"),
+							$api.fp.property("pathname")
+						)
+					);
+					rv.push(invocation.command);
+					rv.push.apply(rv, invocation.arguments);
+				}),
+				directory: invocation.directory,
+				stdio: invocation.stdio
+			};
+		}
 
 		/**
 		 * @param { { directory: slime.jrunscript.file.Directory } } o
@@ -742,6 +693,53 @@
 				}
 			}
 		};
+
+		/** @type { (installation: slime.jrunscript.tools.node.Installation) => (intention: slime.jrunscript.tools.node.Intention) => slime.jrunscript.shell.run.Intention } */
+		var node_intention = function(installation) {
+			return function(intention) {
+				var command = getExecutableForCommand(
+					installation,
+					intention
+				);
+
+				return {
+					command: command,
+					arguments: intention.arguments,
+					environment: function(was) {
+						var delegated = (intention.environment) ? intention.environment(was) : was;
+
+						var searchpath = (delegated.PATH) ? $context.library.file.filesystems.os.Searchpath.parse(delegated.PATH) : null;
+
+						/** @type { slime.$api.fp.Identity<slime.jrunscript.file.Searchpath> } */
+						var asSearchpath = $api.fp.identity;
+
+						var pathWithNodeBinPrepended = $api.fp.pipe(
+							asSearchpath,
+							$api.fp.property("pathnames"),
+							$api.fp.Array.prepend([
+								$api.fp.now.invoke(getInstallationPathEntry(installation), $context.library.file.Pathname)
+							]),
+							$context.library.file.Searchpath,
+							String
+						)
+
+						return $api.Object.compose(
+							delegated,
+							{
+								PATH: $api.fp.impure.now.input(
+									$api.fp.impure.Input.value(
+										searchpath,
+										pathWithNodeBinPrepended
+									)
+								)
+							}
+						)
+					},
+					directory: intention.directory,
+					stdio: intention.stdio
+				}
+			}
+		}
 
 		/**
 		 *

@@ -32,16 +32,69 @@ declare namespace slime.external.docker.engine.definitions {
         email?: string;
         serveraddress?: string;
     }
+    /**
+     * BuildCache contains information about a build cache record.
+     *
+     */
     export interface BuildCache {
+        /**
+         * Unique ID of the build cache record.
+         *
+         * example:
+         * ndlpt0hhvkqcdfkputsk4cq9c
+         */
         ID?: string;
+        /**
+         * ID of the parent build cache record.
+         *
+         * > **Deprecated**: This field is deprecated, and omitted if empty.
+         *
+         * example:
+         *
+         */
         Parent?: string;
-        Type?: string;
+        /**
+         * List of parent build cache record IDs.
+         *
+         * example:
+         * [
+         *   "hw53o5aio51xtltp5xjp8v7fx"
+         * ]
+         */
+        Parents?: string[];
+        /**
+         * Cache record type.
+         *
+         * example:
+         * regular
+         */
+        Type?: "internal" | "frontend" | "source.local" | "source.git.checkout" | "exec.cachemount" | "regular";
+        /**
+         * Description of the build-step that produced the build cache.
+         *
+         * example:
+         * mount / from exec /bin/sh -c echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
+         */
         Description?: string;
+        /**
+         * Indicates if the build cache is in use.
+         *
+         * example:
+         * false
+         */
         InUse?: boolean;
+        /**
+         * Indicates if the build cache is shared.
+         *
+         * example:
+         * true
+         */
         Shared?: boolean;
         /**
          * Amount of disk space used by the build cache (in bytes).
          *
+         * example:
+         * 51
          */
         Size?: number;
         /**
@@ -60,6 +113,10 @@ declare namespace slime.external.docker.engine.definitions {
          * 2017-08-09T07:09:37.632105588Z
          */
         LastUsedAt?: string; // dateTime
+        /**
+         * example:
+         * 26
+         */
         UsageCount?: number;
     }
     export interface BuildInfo {
@@ -79,6 +136,17 @@ declare namespace slime.external.docker.engine.definitions {
          */
         ImageID;
     }
+    /**
+     * Kind of change
+     *
+     * Can be one of:
+     *
+     * - `0`: Modified ("C")
+     * - `1`: Added ("A")
+     * - `2`: Deleted ("D")
+     *
+     */
+    export type ChangeType = 0 | 1 | 2; // uint8
     /**
      * ClusterInfo represents information about the swarm as is returned by the
      * "/info" endpoint. Join-tokens are not included.
@@ -166,6 +234,256 @@ declare namespace slime.external.docker.engine.definitions {
         SubnetSize?: number; // uint32
     }
     /**
+     * Options and information specific to, and only present on, Swarm CSI
+     * cluster volumes.
+     *
+     */
+    export interface ClusterVolume {
+        /**
+         * The Swarm ID of this volume. Because cluster volumes are Swarm
+         * objects, they have an ID, unlike non-cluster volumes. This ID can
+         * be used to refer to the Volume instead of the name.
+         *
+         */
+        ID?: string;
+        Version?: /**
+         * The version number of the object such as node, service, etc. This is needed
+         * to avoid conflicting writes. The client must send the version number along
+         * with the modified specification when updating these objects.
+         *
+         * This approach ensures safe concurrency and determinism in that the change
+         * on the object may not be applied if the version number has changed from the
+         * last read. In other words, if two update requests specify the same base
+         * version, only one of the requests can succeed. As a result, two separate
+         * update requests that happen at the same time will not unintentionally
+         * overwrite each other.
+         *
+         */
+        ObjectVersion;
+        CreatedAt?: string; // dateTime
+        UpdatedAt?: string; // dateTime
+        Spec?: /**
+         * Cluster-specific options used to create the volume.
+         *
+         */
+        ClusterVolumeSpec;
+        /**
+         * Information about the global status of the volume.
+         *
+         */
+        Info?: {
+            /**
+             * The capacity of the volume in bytes. A value of 0 indicates that
+             * the capacity is unknown.
+             *
+             */
+            CapacityBytes?: number; // int64
+            /**
+             * A map of strings to strings returned from the storage plugin when
+             * the volume is created.
+             *
+             */
+            VolumeContext?: {
+                [name: string]: string;
+            };
+            /**
+             * The ID of the volume as returned by the CSI storage plugin. This
+             * is distinct from the volume's ID as provided by Docker. This ID
+             * is never used by the user when communicating with Docker to refer
+             * to this volume. If the ID is blank, then the Volume has not been
+             * successfully created in the plugin yet.
+             *
+             */
+            VolumeID?: string;
+            /**
+             * The topology this volume is actually accessible from.
+             *
+             */
+            AccessibleTopology?: /**
+             * A map of topological domains to topological segments. For in depth
+             * details, see documentation for the Topology object in the CSI
+             * specification.
+             *
+             */
+            Topology[];
+        };
+        /**
+         * The status of the volume as it pertains to its publishing and use on
+         * specific nodes
+         *
+         */
+        PublishStatus?: {
+            /**
+             * The ID of the Swarm node the volume is published on.
+             *
+             */
+            NodeID?: string;
+            /**
+             * The published state of the volume.
+             * * `pending-publish` The volume should be published to this node, but the call to the controller plugin to do so has not yet been successfully completed.
+             * * `published` The volume is published successfully to the node.
+             * * `pending-node-unpublish` The volume should be unpublished from the node, and the manager is awaiting confirmation from the worker that it has done so.
+             * * `pending-controller-unpublish` The volume is successfully unpublished from the node, but has not yet been successfully unpublished on the controller.
+             *
+             */
+            State?: "pending-publish" | "published" | "pending-node-unpublish" | "pending-controller-unpublish";
+            /**
+             * A map of strings to strings returned by the CSI controller
+             * plugin when a volume is published.
+             *
+             */
+            PublishContext?: {
+                [name: string]: string;
+            };
+        }[];
+    }
+    /**
+     * Cluster-specific options used to create the volume.
+     *
+     */
+    export interface ClusterVolumeSpec {
+        /**
+         * Group defines the volume group of this volume. Volumes belonging to
+         * the same group can be referred to by group name when creating
+         * Services.  Referring to a volume by group instructs Swarm to treat
+         * volumes in that group interchangeably for the purpose of scheduling.
+         * Volumes with an empty string for a group technically all belong to
+         * the same, emptystring group.
+         *
+         */
+        Group?: string;
+        /**
+         * Defines how the volume is used by tasks.
+         *
+         */
+        AccessMode?: {
+            /**
+             * The set of nodes this volume can be used on at one time.
+             * - `single` The volume may only be scheduled to one node at a time.
+             * - `multi` the volume may be scheduled to any supported number of nodes at a time.
+             *
+             */
+            Scope?: "single" | "multi";
+            /**
+             * The number and way that different tasks can use this volume
+             * at one time.
+             * - `none` The volume may only be used by one task at a time.
+             * - `readonly` The volume may be used by any number of tasks, but they all must mount the volume as readonly
+             * - `onewriter` The volume may be used by any number of tasks, but only one may mount it as read/write.
+             * - `all` The volume may have any number of readers and writers.
+             *
+             */
+            Sharing?: "none" | "readonly" | "onewriter" | "all";
+            /**
+             * Options for using this volume as a Mount-type volume.
+             *
+             *     Either MountVolume or BlockVolume, but not both, must be
+             *     present.
+             *   properties:
+             *     FsType:
+             *       type: "string"
+             *       description: |
+             *         Specifies the filesystem type for the mount volume.
+             *         Optional.
+             *     MountFlags:
+             *       type: "array"
+             *       description: |
+             *         Flags to pass when mounting the volume. Optional.
+             *       items:
+             *         type: "string"
+             * BlockVolume:
+             *   type: "object"
+             *   description: |
+             *     Options for using this volume as a Block-type volume.
+             *     Intentionally empty.
+             *
+             */
+            MountVolume?: {
+                [key: string]: any;
+            };
+            /**
+             * Swarm Secrets that are passed to the CSI storage plugin when
+             * operating on this volume.
+             *
+             */
+            Secrets?: {
+                /**
+                 * Key is the name of the key of the key-value pair passed to
+                 * the plugin.
+                 *
+                 */
+                Key?: string;
+                /**
+                 * Secret is the swarm Secret object from which to read data.
+                 * This can be a Secret name or ID. The Secret data is
+                 * retrieved by swarm and used as the value of the key-value
+                 * pair passed to the plugin.
+                 *
+                 */
+                Secret?: string;
+            }[];
+            /**
+             * Requirements for the accessible topology of the volume. These
+             * fields are optional. For an in-depth description of what these
+             * fields mean, see the CSI specification.
+             *
+             */
+            AccessibilityRequirements?: {
+                /**
+                 * A list of required topologies, at least one of which the
+                 * volume must be accessible from.
+                 *
+                 */
+                Requisite?: /**
+                 * A map of topological domains to topological segments. For in depth
+                 * details, see documentation for the Topology object in the CSI
+                 * specification.
+                 *
+                 */
+                Topology[];
+                /**
+                 * A list of topologies that the volume should attempt to be
+                 * provisioned in.
+                 *
+                 */
+                Preferred?: /**
+                 * A map of topological domains to topological segments. For in depth
+                 * details, see documentation for the Topology object in the CSI
+                 * specification.
+                 *
+                 */
+                Topology[];
+            };
+            /**
+             * The desired capacity that the volume should be created with. If
+             * empty, the plugin will decide the capacity.
+             *
+             */
+            CapacityRange?: {
+                /**
+                 * The volume must be at least this big. The value of 0
+                 * indicates an unspecified minimum
+                 *
+                 */
+                RequiredBytes?: number; // int64
+                /**
+                 * The volume must not be bigger than this. The value of 0
+                 * indicates an unspecified maximum.
+                 *
+                 */
+                LimitBytes?: number; // int64
+            };
+            /**
+             * The availability of the volume for use in tasks.
+             * - `active` The volume is fully available for scheduling on the cluster
+             * - `pause` No new workloads should use the volume, but existing workloads are not stopped.
+             * - `drain` All workloads using this volume should be stopped and rescheduled, and no new ones should be started.
+             *
+             */
+            Availability?: "active" | "pause" | "drain";
+        };
+    }
+    /**
      * Commit holds the Git-commit (SHA1) that a binary was built from, as
      * reported in the version-string of external tools, such as `containerd`,
      * or `runC`.
@@ -206,6 +524,22 @@ declare namespace slime.external.docker.engine.definitions {
         UpdatedAt?: string; // dateTime
         Spec?: ConfigSpec;
     }
+    /**
+     * The config-only network source to provide the configuration for
+     * this network.
+     *
+     */
+    export interface ConfigReference {
+        /**
+         * The name of the config-only network that provides the network's
+         * configuration. The specified network must be an existing config-only
+         * network. Only network names are allowed, not network IDs.
+         *
+         * example:
+         * config_only_network_01
+         */
+        Network?: string;
+    }
     export interface ConfigSpec {
         /**
          * User-defined name of the config.
@@ -234,6 +568,13 @@ declare namespace slime.external.docker.engine.definitions {
     }
     /**
      * Configuration for a container that is portable between hosts.
+     *
+     * When used as `ContainerConfig` field in an image, `ContainerConfig` is an
+     * optional field containing the configuration of the container that was last
+     * committed when creating the image.
+     *
+     * Previous versions of Docker builder used this field to store build cache,
+     * and it is not in active use anymore.
      *
      */
     export interface ContainerConfig {
@@ -401,6 +742,24 @@ declare namespace slime.external.docker.engine.definitions {
         Shell?: string[];
     }
     /**
+     * ContainerCreateResponse
+     * OK response to ContainerCreate operation
+     */
+    export interface ContainerCreateResponse {
+        /**
+         * The ID of the created container
+         * example:
+         * ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743
+         */
+        Id: string;
+        /**
+         * Warnings encountered when creating the container
+         * example:
+         * []
+         */
+        Warnings: string[];
+    }
+    /**
      * ContainerState stores container's running state. It's part of ContainerJSONBase
      * and will be returned by the "inspect" command.
      *
@@ -443,7 +802,8 @@ declare namespace slime.external.docker.engine.definitions {
          */
         Restarting?: boolean;
         /**
-         * Whether this container has been killed because it ran out of memory.
+         * Whether a process within this container has been killed because it ran
+         * out of memory since the container was last started.
          *
          * example:
          * false
@@ -580,12 +940,13 @@ declare namespace slime.external.docker.engine.definitions {
         /**
          * Exit code of the container
          */
-        StatusCode: number;
-        Error: /* container waiting error, if any */ ContainerWaitExitError;
+        StatusCode: number; // int64
+        Error?: /* container waiting error, if any */ ContainerWaitExitError;
     }
     export interface CreateImageInfo {
         id?: string;
         error?: string;
+        errorDetail?: ErrorDetail;
         status?: string;
         progress?: string;
         progressDetail?: ProgressDetail;
@@ -911,10 +1272,6 @@ declare namespace slime.external.docker.engine.definitions {
          *   },
          *   {
          *     "Type": "Log",
-         *     "Name": "logentries"
-         *   },
-         *   {
-         *     "Type": "Log",
          *     "Name": "splunk"
          *   },
          *   {
@@ -1051,6 +1408,28 @@ declare namespace slime.external.docker.engine.definitions {
         timeNano?: number; // int64
     }
     /**
+     * Change in the container's filesystem.
+     *
+     */
+    export interface FilesystemChange {
+        /**
+         * Path to file or directory that has changed.
+         *
+         */
+        Path: string;
+        Kind: /**
+         * Kind of change
+         *
+         * Can be one of:
+         *
+         * - `0`: Modified ("C")
+         * - `1`: Added ("A")
+         * - `2`: Deleted ("D")
+         *
+         */
+        ChangeType /* uint8 */;
+    }
+    /**
      * User-defined resources can be either Integer resources (e.g, `SSD=3`) or
      * String resources (e.g, `GPU=UUID1`).
      *
@@ -1167,13 +1546,13 @@ declare namespace slime.external.docker.engine.definitions {
          * least 1000000 (1 ms). 0 means inherit.
          *
          */
-        Interval?: number;
+        Interval?: number; // int64
         /**
          * The time to wait before considering the check to have hung. It should
          * be 0 or at least 1000000 (1 ms). 0 means inherit.
          *
          */
-        Timeout?: number;
+        Timeout?: number; // int64
         /**
          * The number of consecutive failures needed to consider a container as
          * unhealthy. 0 means inherit.
@@ -1186,7 +1565,7 @@ declare namespace slime.external.docker.engine.definitions {
          * 1000000 (1 ms). 0 means inherit.
          *
          */
-        StartPeriod?: number;
+        StartPeriod?: number; // int64
     }
     /**
      * HealthcheckResult stores information about a single run of a healthcheck probe
@@ -1357,19 +1736,12 @@ declare namespace slime.external.docker.engine.definitions {
          */
         DeviceRequests?: /* A request for devices to be sent to device drivers */ DeviceRequest[];
         /**
-         * Kernel memory limit in bytes.
+         * Hard limit for kernel TCP buffer memory (in bytes). Depending on the
+         * OCI runtime in use, this option may be ignored. It is no longer supported
+         * by the default (runc) runtime.
          *
-         * <p><br /></p>
+         * This field is omitted when empty.
          *
-         * > **Deprecated**: This field is deprecated as the kernel 5.4 deprecated
-         * > `kmem.limit_in_bytes`.
-         *
-         * example:
-         * 209715200
-         */
-        KernelMemory?: number; // int64
-        /**
-         * Hard limit for kernel TCP buffer memory (in bytes).
          */
         KernelMemoryTCP?: number; // int64
         /**
@@ -1595,6 +1967,22 @@ declare namespace slime.external.docker.engine.definitions {
          */
         Mounts?: Mount[];
         /**
+         * Initial console size, as an `[height, width]` array.
+         *
+         */
+        ConsoleSize?: [
+            number,
+            number
+        ];
+        /**
+         * Arbitrary non-identifying metadata attached to container and
+         * provided to the runtime when the container is started.
+         *
+         */
+        Annotations?: {
+            [name: string]: string;
+        };
+        /**
          * A list of kernel capabilities to add to the container. Conflicts
          * with option 'Capabilities'.
          *
@@ -1741,7 +2129,7 @@ declare namespace slime.external.docker.engine.definitions {
          * Size of `/dev/shm` in bytes. If omitted, the system uses 64MB.
          *
          */
-        ShmSize?: number;
+        ShmSize?: number; // int64
         /**
          * A list of kernel parameters (sysctls) to set in the container.
          * For example:
@@ -1758,14 +2146,6 @@ declare namespace slime.external.docker.engine.definitions {
          * Runtime to use with this container.
          */
         Runtime?: string;
-        /**
-         * Initial console size, as an `[height, width]` array. (Windows only)
-         *
-         */
-        ConsoleSize?: [
-            number,
-            number
-        ];
         /**
          * Isolation technology of the container. (Windows only)
          *
@@ -1787,6 +2167,8 @@ declare namespace slime.external.docker.engine.definitions {
     export interface IPAM {
         /**
          * Name of the IPAM driver to use.
+         * example:
+         * default
          */
         Driver?: string;
         /**
@@ -1800,14 +2182,30 @@ declare namespace slime.external.docker.engine.definitions {
         Config?: IPAMConfig[];
         /**
          * Driver-specific options, specified as a map.
+         * example:
+         * {
+         *   "foo": "bar"
+         * }
          */
         Options?: {
             [name: string]: string;
         };
     }
     export interface IPAMConfig {
+        /**
+         * example:
+         * 172.20.0.0/16
+         */
         Subnet?: string;
+        /**
+         * example:
+         * 172.20.10.0/24
+         */
         IPRange?: string;
+        /**
+         * example:
+         * 172.20.10.11
+         */
         Gateway?: string;
         AuxiliaryAddresses?: {
             [name: string]: string;
@@ -1821,6 +2219,306 @@ declare namespace slime.external.docker.engine.definitions {
          * The id of the newly created object.
          */
         Id: string;
+    }
+    /**
+     * Configuration of the image. These fields are used as defaults
+     * when starting a container from the image.
+     *
+     * example:
+     * {
+     *   "Hostname": "",
+     *   "Domainname": "",
+     *   "User": "web:web",
+     *   "AttachStdin": false,
+     *   "AttachStdout": false,
+     *   "AttachStderr": false,
+     *   "ExposedPorts": {
+     *     "80/tcp": {},
+     *     "443/tcp": {}
+     *   },
+     *   "Tty": false,
+     *   "OpenStdin": false,
+     *   "StdinOnce": false,
+     *   "Env": [
+     *     "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+     *   ],
+     *   "Cmd": [
+     *     "/bin/sh"
+     *   ],
+     *   "Healthcheck": {
+     *     "Test": [
+     *       "string"
+     *     ],
+     *     "Interval": 0,
+     *     "Timeout": 0,
+     *     "Retries": 0,
+     *     "StartPeriod": 0,
+     *     "StartInterval": 0
+     *   },
+     *   "ArgsEscaped": true,
+     *   "Image": "",
+     *   "Volumes": {
+     *     "/app/data": {},
+     *     "/app/config": {}
+     *   },
+     *   "WorkingDir": "/public/",
+     *   "Entrypoint": [],
+     *   "OnBuild": [],
+     *   "Labels": {
+     *     "com.example.some-label": "some-value",
+     *     "com.example.some-other-label": "some-other-value"
+     *   },
+     *   "StopSignal": "SIGTERM",
+     *   "Shell": [
+     *     "/bin/sh",
+     *     "-c"
+     *   ]
+     * }
+     */
+    export interface ImageConfig {
+        /**
+         * The hostname to use for the container, as a valid RFC 1123 hostname.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always empty and must not be used.
+         *
+         * example:
+         *
+         */
+        Hostname?: string;
+        /**
+         * The domain name to use for the container.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always empty and must not be used.
+         *
+         * example:
+         *
+         */
+        Domainname?: string;
+        /**
+         * The user that commands are run as inside the container.
+         * example:
+         * web:web
+         */
+        User?: string;
+        /**
+         * Whether to attach to `stdin`.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always false and must not be used.
+         *
+         * example:
+         * false
+         */
+        AttachStdin?: boolean;
+        /**
+         * Whether to attach to `stdout`.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always false and must not be used.
+         *
+         * example:
+         * false
+         */
+        AttachStdout?: boolean;
+        /**
+         * Whether to attach to `stderr`.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always false and must not be used.
+         *
+         * example:
+         * false
+         */
+        AttachStderr?: boolean;
+        /**
+         * An object mapping ports to an empty object in the form:
+         *
+         * `{"<port>/<tcp|udp|sctp>": {}}`
+         *
+         * example:
+         * {
+         *   "80/tcp": {},
+         *   "443/tcp": {}
+         * }
+         */
+        ExposedPorts?: {
+            [name: string]: "[object Object]";
+        };
+        /**
+         * Attach standard streams to a TTY, including `stdin` if it is not closed.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always false and must not be used.
+         *
+         * example:
+         * false
+         */
+        Tty?: boolean;
+        /**
+         * Open `stdin`
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always false and must not be used.
+         *
+         * example:
+         * false
+         */
+        OpenStdin?: boolean;
+        /**
+         * Close `stdin` after one attached client disconnects.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always false and must not be used.
+         *
+         * example:
+         * false
+         */
+        StdinOnce?: boolean;
+        /**
+         * A list of environment variables to set inside the container in the
+         * form `["VAR=value", ...]`. A variable without `=` is removed from the
+         * environment, rather than to have an empty value.
+         *
+         * example:
+         * [
+         *   "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+         * ]
+         */
+        Env?: string[];
+        /**
+         * Command to run specified as a string or an array of strings.
+         *
+         * example:
+         * [
+         *   "/bin/sh"
+         * ]
+         */
+        Cmd?: string[];
+        Healthcheck?: /* A test to perform to check that the container is healthy. */ HealthConfig;
+        /**
+         * Command is already escaped (Windows only)
+         * example:
+         * false
+         */
+        ArgsEscaped?: boolean;
+        /**
+         * The name (or reference) of the image to use when creating the container,
+         * or which was used when the container was created.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always empty and must not be used.
+         *
+         * example:
+         *
+         */
+        Image?: string;
+        /**
+         * An object mapping mount point paths inside the container to empty
+         * objects.
+         *
+         * example:
+         * {
+         *   "/app/data": {},
+         *   "/app/config": {}
+         * }
+         */
+        Volumes?: {
+            [name: string]: "[object Object]";
+        };
+        /**
+         * The working directory for commands to run in.
+         * example:
+         * /public/
+         */
+        WorkingDir?: string;
+        /**
+         * The entry point for the container as a string or an array of strings.
+         *
+         * If the array consists of exactly one empty string (`[""]`) then the
+         * entry point is reset to system default (i.e., the entry point used by
+         * docker when there is no `ENTRYPOINT` instruction in the `Dockerfile`).
+         *
+         * example:
+         * []
+         */
+        Entrypoint?: string[];
+        /**
+         * Disable networking for the container.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always omitted and must not be used.
+         *
+         * example:
+         * false
+         */
+        NetworkDisabled?: boolean;
+        /**
+         * MAC address of the container.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always omitted and must not be used.
+         *
+         * example:
+         *
+         */
+        MacAddress?: string;
+        /**
+         * `ONBUILD` metadata that were defined in the image's `Dockerfile`.
+         *
+         * example:
+         * []
+         */
+        OnBuild?: string[];
+        /**
+         * User-defined key/value metadata.
+         * example:
+         * {
+         *   "com.example.some-label": "some-value",
+         *   "com.example.some-other-label": "some-other-value"
+         * }
+         */
+        Labels?: {
+            [name: string]: string;
+        };
+        /**
+         * Signal to stop a container as a string or unsigned integer.
+         *
+         * example:
+         * SIGTERM
+         */
+        StopSignal?: string;
+        /**
+         * Timeout to stop a container in seconds.
+         *
+         * <p><br /></p>
+         *
+         * > **Note**: this field is always omitted and must not be used.
+         *
+         */
+        StopTimeout?: number;
+        /**
+         * Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell.
+         *
+         * example:
+         * [
+         *   "/bin/sh",
+         *   "-c"
+         * ]
+         */
+        Shell?: string[];
     }
     export interface ImageDeleteResponseItem {
         /**
@@ -1850,7 +2548,7 @@ declare namespace slime.external.docker.engine.definitions {
         /**
          * ID is the content-addressable ID of an image.
          *
-         * This identified is a content-addressable digest calculated from the
+         * This identifier is a content-addressable digest calculated from the
          * image's configuration (which includes the digests of layers used by
          * the image).
          *
@@ -1865,7 +2563,7 @@ declare namespace slime.external.docker.engine.definitions {
          * List of image names/tags in the local image cache that reference this
          * image.
          *
-         * Multiple image tags can refer to the same imagem and this list may be
+         * Multiple image tags can refer to the same image, and this list may be
          * empty if no tags reference the image, in which case the image is
          * "untagged", in which case it can still be referenced by its ID.
          *
@@ -1932,6 +2630,13 @@ declare namespace slime.external.docker.engine.definitions {
         ContainerConfig?: /**
          * Configuration for a container that is portable between hosts.
          *
+         * When used as `ContainerConfig` field in an image, `ContainerConfig` is an
+         * optional field containing the configuration of the container that was last
+         * committed when creating the image.
+         *
+         * Previous versions of Docker builder used this field to store build cache,
+         * and it is not in active use anymore.
+         *
          */
         ContainerConfig;
         /**
@@ -1952,10 +2657,61 @@ declare namespace slime.external.docker.engine.definitions {
          */
         Author?: string;
         Config?: /**
-         * Configuration for a container that is portable between hosts.
+         * Configuration of the image. These fields are used as defaults
+         * when starting a container from the image.
          *
+         * example:
+         * {
+         *   "Hostname": "",
+         *   "Domainname": "",
+         *   "User": "web:web",
+         *   "AttachStdin": false,
+         *   "AttachStdout": false,
+         *   "AttachStderr": false,
+         *   "ExposedPorts": {
+         *     "80/tcp": {},
+         *     "443/tcp": {}
+         *   },
+         *   "Tty": false,
+         *   "OpenStdin": false,
+         *   "StdinOnce": false,
+         *   "Env": [
+         *     "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+         *   ],
+         *   "Cmd": [
+         *     "/bin/sh"
+         *   ],
+         *   "Healthcheck": {
+         *     "Test": [
+         *       "string"
+         *     ],
+         *     "Interval": 0,
+         *     "Timeout": 0,
+         *     "Retries": 0,
+         *     "StartPeriod": 0,
+         *     "StartInterval": 0
+         *   },
+         *   "ArgsEscaped": true,
+         *   "Image": "",
+         *   "Volumes": {
+         *     "/app/data": {},
+         *     "/app/config": {}
+         *   },
+         *   "WorkingDir": "/public/",
+         *   "Entrypoint": [],
+         *   "OnBuild": [],
+         *   "Labels": {
+         *     "com.example.some-label": "some-value",
+         *     "com.example.some-other-label": "some-other-value"
+         *   },
+         *   "StopSignal": "SIGTERM",
+         *   "Shell": [
+         *     "/bin/sh",
+         *     "-c"
+         *   ]
+         * }
          */
-        ContainerConfig;
+        ImageConfig;
         /**
          * Hardware CPU architecture that the image runs on.
          *
@@ -1996,12 +2752,12 @@ declare namespace slime.external.docker.engine.definitions {
          * Total size of the image including all layers it is composed of.
          *
          * In versions of Docker before v1.10, this field was calculated from
-         * the image itself and all of its parent images. Docker v1.10 and up
-         * store images self-contained, and no longer use a parent-chain, making
-         * this field an equivalent of the Size field.
+         * the image itself and all of its parent images. Images are now stored
+         * self-contained, and no longer use a parent-chain, making this field
+         * an equivalent of the Size field.
          *
-         * This field is kept for backward compatibility, but may be removed in
-         * a future version of the API.
+         * > **Deprecated**: this field is kept for backward compatibility, but
+         * > will be removed in API v1.44.
          *
          * example:
          * 1239828
@@ -2052,17 +2808,124 @@ declare namespace slime.external.docker.engine.definitions {
         };
     }
     export interface ImageSummary {
+        /**
+         * ID is the content-addressable ID of an image.
+         *
+         * This identifier is a content-addressable digest calculated from the
+         * image's configuration (which includes the digests of layers used by
+         * the image).
+         *
+         * Note that this digest differs from the `RepoDigests` below, which
+         * holds digests of image manifests that reference the image.
+         *
+         * example:
+         * sha256:ec3f0931a6e6b6855d76b2d7b0be30e81860baccd891b2e243280bf1cd8ad710
+         */
         Id: string;
+        /**
+         * ID of the parent image.
+         *
+         * Depending on how the image was created, this field may be empty and
+         * is only set for images that were built/created locally. This field
+         * is empty if the image was pulled from an image registry.
+         *
+         * example:
+         *
+         */
         ParentId: string;
+        /**
+         * List of image names/tags in the local image cache that reference this
+         * image.
+         *
+         * Multiple image tags can refer to the same image, and this list may be
+         * empty if no tags reference the image, in which case the image is
+         * "untagged", in which case it can still be referenced by its ID.
+         *
+         * example:
+         * [
+         *   "example:1.0",
+         *   "example:latest",
+         *   "example:stable",
+         *   "internal.registry.example.com:5000/example:1.0"
+         * ]
+         */
         RepoTags: string[];
+        /**
+         * List of content-addressable digests of locally available image manifests
+         * that the image is referenced from. Multiple manifests can refer to the
+         * same image.
+         *
+         * These digests are usually only available if the image was either pulled
+         * from a registry, or if the image was pushed to a registry, which is when
+         * the manifest is generated and its digest calculated.
+         *
+         * example:
+         * [
+         *   "example@sha256:afcc7f1ac1b49db317a7196c902e61c6c3c4607d63599ee1a82d702d249a0ccb",
+         *   "internal.registry.example.com:5000/example@sha256:b69959407d21e8a062e0416bf13405bb2b71ed7a84dde4158ebafacfa06f5578"
+         * ]
+         */
         RepoDigests: string[];
+        /**
+         * Date and time at which the image was created as a Unix timestamp
+         * (number of seconds since EPOCH).
+         *
+         * example:
+         * 1644009612
+         */
         Created: number;
-        Size: number;
-        SharedSize: number;
-        VirtualSize: number;
+        /**
+         * Total size of the image including all layers it is composed of.
+         *
+         * example:
+         * 172064416
+         */
+        Size: number; // int64
+        /**
+         * Total size of image layers that are shared between this image and other
+         * images.
+         *
+         * This size is not calculated by default. `-1` indicates that the value
+         * has not been set / calculated.
+         *
+         * example:
+         * 1239828
+         */
+        SharedSize: number; // int64
+        /**
+         * Total size of the image including all layers it is composed of.
+         *
+         * In versions of Docker before v1.10, this field was calculated from
+         * the image itself and all of its parent images. Images are now stored
+         * self-contained, and no longer use a parent-chain, making this field
+         * an equivalent of the Size field.
+         *
+         * Deprecated: this field is kept for backward compatibility, and will be removed in API v1.44.
+         * example:
+         * 172064416
+         */
+        VirtualSize?: number; // int64
+        /**
+         * User-defined key/value metadata.
+         * example:
+         * {
+         *   "com.example.some-label": "some-value",
+         *   "com.example.some-other-label": "some-other-value"
+         * }
+         */
         Labels: {
             [name: string]: string;
         };
+        /**
+         * Number of containers using this image. Includes both stopped and running
+         * containers.
+         *
+         * This size is not calculated by default, and depends on which API endpoint
+         * is used. `-1` indicates that the value has not been set / calculated.
+         *
+         * example:
+         * 2
+         */
         Containers: number;
     }
     /**
@@ -2205,9 +3068,10 @@ declare namespace slime.external.docker.engine.definitions {
          * - `volume` Creates a volume with the given name and options (or uses a pre-existing volume with the same name and options). These are **not** removed when the container is removed.
          * - `tmpfs` Create a tmpfs with the given options. The mount source cannot be specified for tmpfs.
          * - `npipe` Mounts a named pipe from the host into the container. Must exist prior to creating the container.
+         * - `cluster` a Swarm cluster volume
          *
          */
-        Type?: "bind" | "volume" | "tmpfs" | "npipe";
+        Type?: "bind" | "volume" | "tmpfs" | "npipe" | "cluster";
         /**
          * Whether the mount should be read-only.
          */
@@ -2228,6 +3092,10 @@ declare namespace slime.external.docker.engine.definitions {
              * Disable recursive bind mount.
              */
             NonRecursive?: boolean;
+            /**
+             * Create mount point on host if missing
+             */
+            CreateMountpoint?: boolean;
         };
         /**
          * Optional configuration for the `volume` type.
@@ -2286,11 +3154,12 @@ declare namespace slime.external.docker.engine.definitions {
          * - `volume` a docker volume with the given `Name`.
          * - `tmpfs` a `tmpfs`.
          * - `npipe` a named pipe from the host into the container.
+         * - `cluster` a Swarm cluster volume
          *
          * example:
          * volume
          */
-        Type?: "bind" | "volume" | "tmpfs" | "npipe";
+        Type?: "bind" | "volume" | "tmpfs" | "npipe" | "cluster";
         /**
          * Name is the name reference to the underlying data defined by `Source`
          * e.g., the volume name.
@@ -2353,73 +3222,144 @@ declare namespace slime.external.docker.engine.definitions {
          */
         Propagation?: string;
     }
-    /**
-     * example:
-     * {
-     *   "Name": "net01",
-     *   "Id": "7d86d31b1478e7cca9ebed7e73aa0fdeec46c5ca29497431d3007d2d9e15ed99",
-     *   "Created": "2016-10-19T04:33:30.360899459Z",
-     *   "Scope": "local",
-     *   "Driver": "bridge",
-     *   "EnableIPv6": false,
-     *   "IPAM": {
-     *     "Driver": "default",
-     *     "Config": [
-     *       {
-     *         "Subnet": "172.19.0.0/16",
-     *         "Gateway": "172.19.0.1"
-     *       }
-     *     ],
-     *     "Options": {
-     *       "foo": "bar"
-     *     }
-     *   },
-     *   "Internal": false,
-     *   "Attachable": false,
-     *   "Ingress": false,
-     *   "Containers": {
-     *     "19a4d5d687db25203351ed79d478946f861258f018fe384f229f2efa4b23513c": {
-     *       "Name": "test",
-     *       "EndpointID": "628cadb8bcb92de107b2a1e516cbffe463e321f548feb37697cce00ad694f21a",
-     *       "MacAddress": "02:42:ac:13:00:02",
-     *       "IPv4Address": "172.19.0.2/16",
-     *       "IPv6Address": ""
-     *     }
-     *   },
-     *   "Options": {
-     *     "com.docker.network.bridge.default_bridge": "true",
-     *     "com.docker.network.bridge.enable_icc": "true",
-     *     "com.docker.network.bridge.enable_ip_masquerade": "true",
-     *     "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
-     *     "com.docker.network.bridge.name": "docker0",
-     *     "com.docker.network.driver.mtu": "1500"
-     *   },
-     *   "Labels": {
-     *     "com.example.some-label": "some-value",
-     *     "com.example.some-other-label": "some-other-value"
-     *   }
-     * }
-     */
     export interface Network {
+        /**
+         * Name of the network.
+         *
+         * example:
+         * my_network
+         */
         Name?: string;
+        /**
+         * ID that uniquely identifies a network on a single machine.
+         *
+         * example:
+         * 7d86d31b1478e7cca9ebed7e73aa0fdeec46c5ca29497431d3007d2d9e15ed99
+         */
         Id?: string;
+        /**
+         * Date and time at which the network was created in
+         * [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+         *
+         * example:
+         * 2016-10-19T04:33:30.360899459Z
+         */
         Created?: string; // dateTime
+        /**
+         * The level at which the network exists (e.g. `swarm` for cluster-wide
+         * or `local` for machine level)
+         *
+         * example:
+         * local
+         */
         Scope?: string;
+        /**
+         * The name of the driver used to create the network (e.g. `bridge`,
+         * `overlay`).
+         *
+         * example:
+         * overlay
+         */
         Driver?: string;
+        /**
+         * Whether the network was created with IPv6 enabled.
+         *
+         * example:
+         * false
+         */
         EnableIPv6?: boolean;
         IPAM?: IPAM;
+        /**
+         * Whether the network is created to only allow internal networking
+         * connectivity.
+         *
+         * example:
+         * false
+         */
         Internal?: boolean;
+        /**
+         * Whether a global / swarm scope network is manually attachable by regular
+         * containers from workers in swarm mode.
+         *
+         * example:
+         * false
+         */
         Attachable?: boolean;
+        /**
+         * Whether the network is providing the routing-mesh for the swarm cluster.
+         *
+         * example:
+         * false
+         */
         Ingress?: boolean;
+        ConfigFrom?: /**
+         * The config-only network source to provide the configuration for
+         * this network.
+         *
+         */
+        ConfigReference;
+        /**
+         * Whether the network is a config-only network. Config-only networks are
+         * placeholder networks for network configurations to be used by other
+         * networks. Config-only networks cannot be used directly to run containers
+         * or services.
+         *
+         */
+        ConfigOnly?: boolean;
+        /**
+         * Contains endpoints attached to the network.
+         *
+         * example:
+         * {
+         *   "19a4d5d687db25203351ed79d478946f861258f018fe384f229f2efa4b23513c": {
+         *     "Name": "test",
+         *     "EndpointID": "628cadb8bcb92de107b2a1e516cbffe463e321f548feb37697cce00ad694f21a",
+         *     "MacAddress": "02:42:ac:13:00:02",
+         *     "IPv4Address": "172.19.0.2/16",
+         *     "IPv6Address": ""
+         *   }
+         * }
+         */
         Containers?: {
             [name: string]: NetworkContainer;
         };
+        /**
+         * Network-specific options uses when creating the network.
+         *
+         * example:
+         * {
+         *   "com.docker.network.bridge.default_bridge": "true",
+         *   "com.docker.network.bridge.enable_icc": "true",
+         *   "com.docker.network.bridge.enable_ip_masquerade": "true",
+         *   "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
+         *   "com.docker.network.bridge.name": "docker0",
+         *   "com.docker.network.driver.mtu": "1500"
+         * }
+         */
         Options?: {
             [name: string]: string;
         };
+        /**
+         * User-defined key/value metadata.
+         * example:
+         * {
+         *   "com.example.some-label": "some-value",
+         *   "com.example.some-other-label": "some-other-value"
+         * }
+         */
         Labels?: {
             [name: string]: string;
         };
+        /**
+         * List of peer nodes for an overlay network. This field is only present
+         * for overlay networks, and omitted for other network types.
+         *
+         */
+        Peers?: /**
+         * PeerInfo represents one peer of an overlay network.
+         *
+         */
+        PeerInfo[];
     }
     /**
      * Specifies how a service should be attached to a particular network.
@@ -2445,10 +3385,30 @@ declare namespace slime.external.docker.engine.definitions {
         };
     }
     export interface NetworkContainer {
+        /**
+         * example:
+         * container_1
+         */
         Name?: string;
+        /**
+         * example:
+         * 628cadb8bcb92de107b2a1e516cbffe463e321f548feb37697cce00ad694f21a
+         */
         EndpointID?: string;
+        /**
+         * example:
+         * 02:42:ac:13:00:02
+         */
         MacAddress?: string;
+        /**
+         * example:
+         * 172.19.0.2/16
+         */
         IPv4Address?: string;
+        /**
+         * example:
+         *
+         */
         IPv6Address?: string;
     }
     /**
@@ -2456,7 +3416,7 @@ declare namespace slime.external.docker.engine.definitions {
      */
     export interface NetworkSettings {
         /**
-         * Name of the network'a bridge (for example, `docker0`).
+         * Name of the network's bridge (for example, `docker0`).
          * example:
          * docker0
          */
@@ -2979,6 +3939,24 @@ declare namespace slime.external.docker.engine.definitions {
         Index?: number; // uint64
     }
     /**
+     * PeerInfo represents one peer of an overlay network.
+     *
+     */
+    export interface PeerInfo {
+        /**
+         * ID of the peer-node in the Swarm cluster.
+         * example:
+         * 6869d7c1732b
+         */
+        Name?: string;
+        /**
+         * IP-address of the peer-node in the Swarm cluster.
+         * example:
+         * 10.133.77.91
+         */
+        IP?: string;
+    }
+    /**
      * Represents a peer-node in the swarm
      */
     export interface PeerNode {
@@ -3071,7 +4049,7 @@ declare namespace slime.external.docker.engine.definitions {
             Description: string;
             /**
              * example:
-             * /engine/extend/plugins/
+             * https://docs.docker.com/engine/extend/plugins/
              */
             Documentation: string;
             /**
@@ -3332,7 +4310,6 @@ declare namespace slime.external.docker.engine.definitions {
          *   "gelf",
          *   "journald",
          *   "json-file",
-         *   "logentries",
          *   "splunk",
          *   "syslog"
          * ]
@@ -3771,19 +4748,12 @@ declare namespace slime.external.docker.engine.definitions {
          */
         DeviceRequests?: /* A request for devices to be sent to device drivers */ DeviceRequest[];
         /**
-         * Kernel memory limit in bytes.
+         * Hard limit for kernel TCP buffer memory (in bytes). Depending on the
+         * OCI runtime in use, this option may be ignored. It is no longer supported
+         * by the default (runc) runtime.
          *
-         * <p><br /></p>
+         * This field is omitted when empty.
          *
-         * > **Deprecated**: This field is deprecated as the kernel 5.4 deprecated
-         * > `kmem.limit_in_bytes`.
-         *
-         * example:
-         * 209715200
-         */
-        KernelMemory?: number; // int64
-        /**
-         * Hard limit for kernel TCP buffer memory (in bytes).
          */
         KernelMemoryTCP?: number; // int64
         /**
@@ -4708,7 +5678,7 @@ declare namespace slime.external.docker.engine.definitions {
                  */
                 Name?: string;
                 /**
-                 * Driver-specific options for the selectd log driver, specified
+                 * Driver-specific options for the selected log driver, specified
                  * as key/value pairs.
                  *
                  * example:
@@ -4843,19 +5813,8 @@ declare namespace slime.external.docker.engine.definitions {
          */
         SwapLimit?: boolean;
         /**
-         * Indicates if the host has kernel memory limit support enabled.
-         *
-         * <p><br /></p>
-         *
-         * > **Deprecated**: This field is deprecated as the kernel 5.4 deprecated
-         * > `kmem.limit_in_bytes`.
-         *
-         * example:
-         * true
-         */
-        KernelMemory?: boolean;
-        /**
-         * Indicates if the host has kernel memory TCP limit support enabled.
+         * Indicates if the host has kernel memory TCP limit support enabled. This
+         * field is omitted if not supported.
          *
          * Kernel memory TCP limits are not supported when using cgroups v2, which
          * does not support the corresponding `memory.kmem.tcp.limit_in_bytes` cgroup.
@@ -5020,7 +5979,7 @@ declare namespace slime.external.docker.engine.definitions {
          * Go runtime (`GOOS`).
          *
          * Currently returned values are "linux" and "windows". A full list of
-         * possible values can be found in the [Go documentation](https://golang.org/doc/install/source#environment).
+         * possible values can be found in the [Go documentation](https://go.dev/doc/install/source#environment).
          *
          * example:
          * linux
@@ -5030,7 +5989,7 @@ declare namespace slime.external.docker.engine.definitions {
          * Hardware architecture of the host, as returned by the Go runtime
          * (`GOARCH`).
          *
-         * A full list of possible values can be found in the [Go documentation](https://golang.org/doc/install/source#environment).
+         * A full list of possible values can be found in the [Go documentation](https://go.dev/doc/install/source#environment).
          *
          * example:
          * x86_64
@@ -5163,48 +6122,10 @@ declare namespace slime.external.docker.engine.definitions {
         /**
          * Version string of the daemon.
          *
-         * > **Note**: the [standalone Swarm API](/swarm/swarm-api/)
-         * > returns the Swarm version instead of the daemon  version, for example
-         * > `swarm/1.2.8`.
-         *
          * example:
-         * 17.06.0-ce
+         * 24.0.2
          */
         ServerVersion?: string;
-        /**
-         * URL of the distributed storage backend.
-         *
-         *
-         * The storage backend is used for multihost networking (to store
-         * network and endpoint information) and by the node discovery mechanism.
-         *
-         * <p><br /></p>
-         *
-         * > **Deprecated**: This field is only propagated when using standalone Swarm
-         * > mode, and overlay networking using an external k/v store. Overlay
-         * > networks with Swarm mode enabled use the built-in raft store, and
-         * > this field will be empty.
-         *
-         * example:
-         * consul://consul.corp.example.com:8600/some/path
-         */
-        ClusterStore?: string;
-        /**
-         * The network endpoint that the Engine advertises for the purpose of
-         * node discovery. ClusterAdvertise is a `host:port` combination on which
-         * the daemon is reachable by other hosts.
-         *
-         * <p><br /></p>
-         *
-         * > **Deprecated**: This field is only propagated when using standalone Swarm
-         * > mode, and overlay networking using an external k/v store. Overlay
-         * > networks with Swarm mode enabled use the built-in raft store, and
-         * > this field will be empty.
-         *
-         * example:
-         * node5.corp.example.com:8000
-         */
-        ClusterAdvertise?: string;
         /**
          * List of [OCI compliant](https://github.com/opencontainers/runtime-spec)
          * runtimes configured on the daemon. Keys hold the "name" used to
@@ -5314,7 +6235,8 @@ declare namespace slime.external.docker.engine.definitions {
         Commit;
         /**
          * List of security features that are enabled on the daemon, such as
-         * apparmor, seccomp, SELinux, user-namespaces (userns), and rootless.
+         * apparmor, seccomp, SELinux, user-namespaces (userns), rootless and
+         * no-new-privileges.
          *
          * Additional configuration options for each security feature may
          * be present, and are included as a comma-separated list of key/value
@@ -6164,7 +7086,7 @@ declare namespace slime.external.docker.engine.definitions {
             /**
              * Define resources reservation.
              */
-            Reservation?: /**
+            Reservations?: /**
              * An object describing the resources which can be advertised by a node and
              * requested by a task.
              *
@@ -6320,6 +7242,15 @@ declare namespace slime.external.docker.engine.definitions {
          */
         Rate?: number; // int64
     }
+    /**
+     * A map of topological domains to topological segments. For in depth
+     * details, see documentation for the Topology object in the CSI
+     * specification.
+     *
+     */
+    export interface Topology {
+        [name: string]: string;
+    }
     export interface Volume {
         /**
          * Name of the volume.
@@ -6382,6 +7313,12 @@ declare namespace slime.external.docker.engine.definitions {
          * local
          */
         Scope: "local" | "global";
+        ClusterVolume?: /**
+         * Options and information specific to, and only present on, Swarm CSI
+         * cluster volumes.
+         *
+         */
+        ClusterVolume;
         /**
          * The driver specific options used when creating the volume.
          *
@@ -6408,13 +7345,13 @@ declare namespace slime.external.docker.engine.definitions {
              * is set to `-1` ("not available")
              *
              */
-            Size: number;
+            Size: number; // int64
             /**
              * The number of containers referencing this volume. This field
              * is set to `-1` if the reference-count is not available.
              *
              */
-            RefCount: number;
+            RefCount: number; // int64
         };
     }
     /**
@@ -6460,6 +7397,28 @@ declare namespace slime.external.docker.engine.definitions {
         Labels?: {
             [name: string]: string;
         };
+        ClusterVolumeSpec?: /**
+         * Cluster-specific options used to create the volume.
+         *
+         */
+        ClusterVolumeSpec;
+    }
+    /**
+     * VolumeListResponse
+     * Volume list response
+     */
+    export interface VolumeListResponse {
+        /**
+         * List of volumes
+         */
+        Volumes?: Volume[];
+        /**
+         * Warnings that occurred when fetching the list of volumes.
+         *
+         * example:
+         * []
+         */
+        Warnings?: string[];
     }
 }
 declare namespace slime.external.docker.engine.paths {
@@ -6475,7 +7434,7 @@ declare namespace slime.external.docker.engine.paths {
              *
              * Available filters:
              *
-             * - `until=<duration>`: duration relative to daemon's time, during which build cache was not used, in Go's duration format (e.g., '24h')
+             * - `until=<timestamp>` remove cache older than `<timestamp>`. The `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. `10m`, `1h30m`) computed relative to the daemon's local time.
              * - `id=<id>`
              * - `parent=<id>`
              * - `type=<string>`
@@ -6500,7 +7459,7 @@ declare namespace slime.external.docker.engine.paths {
              *
              * Available filters:
              *
-             * - `until=<duration>`: duration relative to daemon's time, during which build cache was not used, in Go's duration format (e.g., '24h')
+             * - `until=<timestamp>` remove cache older than `<timestamp>`. The `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. `10m`, `1h30m`) computed relative to the daemon's local time.
              * - `id=<id>`
              * - `parent=<id>`
              * - `type=<string>`
@@ -7090,16 +8049,11 @@ declare namespace slime.external.docker.engine.paths {
             id: /* ID or name of the container */ Parameters.Id;
         }
         namespace Responses {
-            export type $200 = {
-                /**
-                 * Path to file that has changed
-                 */
-                Path: string;
-                /**
-                 * Kind of change
-                 */
-                Kind: 0 | 1 | 2; // uint8
-            }[];
+            export type $200 = /**
+             * Change in the container's filesystem.
+             *
+             */
+            slime.external.docker.engine.definitions.FilesystemChange[];
             export type $404 = /**
              * Represents an error.
              * example:
@@ -7122,6 +8076,13 @@ declare namespace slime.external.docker.engine.paths {
         export interface BodyParameters {
             body: /**
              * Configuration for a container that is portable between hosts.
+             *
+             * When used as `ContainerConfig` field in an image, `ContainerConfig` is an
+             * optional field containing the configuration of the container that was last
+             * committed when creating the image.
+             *
+             * Previous versions of Docker builder used this field to store build cache,
+             * and it is not in active use anymore.
              *
              * example:
              * {
@@ -7169,7 +8130,6 @@ declare namespace slime.external.docker.engine.paths {
              *     "Memory": 0,
              *     "MemorySwap": 0,
              *     "MemoryReservation": 0,
-             *     "KernelMemory": 0,
              *     "NanoCpus": 500000,
              *     "CpuPercent": 80,
              *     "CpuShares": 512,
@@ -7306,6 +8266,13 @@ declare namespace slime.external.docker.engine.paths {
             /**
              * Configuration for a container that is portable between hosts.
              *
+             * When used as `ContainerConfig` field in an image, `ContainerConfig` is an
+             * optional field containing the configuration of the container that was last
+             * committed when creating the image.
+             *
+             * Previous versions of Docker builder used this field to store build cache,
+             * and it is not in active use anymore.
+             *
              * example:
              * {
              *   "Hostname": "",
@@ -7352,7 +8319,6 @@ declare namespace slime.external.docker.engine.paths {
              *     "Memory": 0,
              *     "MemorySwap": 0,
              *     "MemoryReservation": 0,
-             *     "KernelMemory": 0,
              *     "NanoCpus": 500000,
              *     "CpuPercent": 80,
              *     "CpuShares": 512,
@@ -7685,6 +8651,26 @@ declare namespace slime.external.docker.engine.paths {
              *
              */
             export type Name = string; // ^/?[a-zA-Z0-9][a-zA-Z0-9_.-]+$
+            /**
+             * Platform in the format `os[/arch[/variant]]` used for image lookup.
+             *
+             * When specified, the daemon checks if the requested image is present
+             * in the local image cache with the given OS and Architecture, and
+             * otherwise returns a `404` status.
+             *
+             * If the option is not set, the host's native OS and Architecture are
+             * used to look up the image in the image cache. However, if no platform
+             * is passed and the given image does exist in the local image cache,
+             * but its OS or architecture does not match, the container is created
+             * with the available image, and a warning is added to the `Warnings`
+             * field in the response, for example;
+             *
+             *     WARNING: The requested image's platform (linux/arm64/v8) does not
+             *              match the detected host platform (linux/amd64) and no
+             *              specific platform was requested
+             *
+             */
+            export type Platform = string;
         }
         export interface QueryParameters {
             name?: /**
@@ -7693,22 +8679,33 @@ declare namespace slime.external.docker.engine.paths {
              *
              */
             Parameters.Name /* ^/?[a-zA-Z0-9][a-zA-Z0-9_.-]+$ */;
+            platform?: /**
+             * Platform in the format `os[/arch[/variant]]` used for image lookup.
+             *
+             * When specified, the daemon checks if the requested image is present
+             * in the local image cache with the given OS and Architecture, and
+             * otherwise returns a `404` status.
+             *
+             * If the option is not set, the host's native OS and Architecture are
+             * used to look up the image in the image cache. However, if no platform
+             * is passed and the given image does exist in the local image cache,
+             * but its OS or architecture does not match, the container is created
+             * with the available image, and a warning is added to the `Warnings`
+             * field in the response, for example;
+             *
+             *     WARNING: The requested image's platform (linux/arm64/v8) does not
+             *              match the detected host platform (linux/amd64) and no
+             *              specific platform was requested
+             *
+             */
+            Parameters.Platform;
         }
         namespace Responses {
-            /**
+            export type $201 = /**
              * ContainerCreateResponse
              * OK response to ContainerCreate operation
              */
-            export interface $201 {
-                /**
-                 * The ID of the created container
-                 */
-                Id: string;
-                /**
-                 * Warnings encountered when creating the container
-                 */
-                Warnings: string[];
-            }
+            slime.external.docker.engine.definitions.ContainerCreateResponse;
             export type $400 = /**
              * Represents an error.
              * example:
@@ -7859,6 +8856,13 @@ declare namespace slime.external.docker.engine.paths {
                  * Attach to `stderr` of the exec command.
                  */
                 AttachStderr?: boolean;
+                /**
+                 * Initial console size, as an `[height, width]` array.
+                 */
+                ConsoleSize?: [
+                    number,
+                    number
+                ];
                 /**
                  * Override the key sequence for detaching a container. Format is
                  * a single character `[a-Z]` or `ctrl-<value>` where `<value>`
@@ -8050,6 +9054,13 @@ declare namespace slime.external.docker.engine.paths {
                 Config?: /**
                  * Configuration for a container that is portable between hosts.
                  *
+                 * When used as `ContainerConfig` field in an image, `ContainerConfig` is an
+                 * optional field containing the configuration of the container that was last
+                 * committed when creating the image.
+                 *
+                 * Previous versions of Docker builder used this field to store build cache,
+                 * and it is not in active use anymore.
+                 *
                  */
                 slime.external.docker.engine.definitions.ContainerConfig;
                 NetworkSettings?: /* NetworkSettings exposes the network settings in the API */ slime.external.docker.engine.definitions.NetworkSettings;
@@ -8079,7 +9090,8 @@ declare namespace slime.external.docker.engine.paths {
              */
             export type Id = string;
             /**
-             * Signal to send to the container as an integer or string (e.g. `SIGINT`)
+             * Signal to send to the container as an integer or string (e.g. `SIGINT`).
+             *
              */
             export type Signal = string;
         }
@@ -8087,7 +9099,11 @@ declare namespace slime.external.docker.engine.paths {
             id: /* ID or name of the container */ Parameters.Id;
         }
         export interface QueryParameters {
-            signal?: /* Signal to send to the container as an integer or string (e.g. `SIGINT`) */ Parameters.Signal;
+            signal?: /**
+             * Signal to send to the container as an integer or string (e.g. `SIGINT`).
+             *
+             */
+            Parameters.Signal;
         }
         namespace Responses {
             export type $404 = /**
@@ -8436,8 +9452,8 @@ declare namespace slime.external.docker.engine.paths {
             id: /* ID or name of the container */ Parameters.Id;
         }
         export interface QueryParameters {
-            h?: /* Height of the TTY session in characters */ Parameters.H;
-            w?: /* Width of the TTY session in characters */ Parameters.W;
+            h: /* Height of the TTY session in characters */ Parameters.H;
+            w: /* Width of the TTY session in characters */ Parameters.W;
         }
         namespace Responses {
             export type $404 = /**
@@ -8465,6 +9481,11 @@ declare namespace slime.external.docker.engine.paths {
              */
             export type Id = string;
             /**
+             * Signal to send to the container as an integer or string (e.g. `SIGINT`).
+             *
+             */
+            export type Signal = string;
+            /**
              * Number of seconds to wait before killing the container
              */
             export type T = number;
@@ -8473,6 +9494,11 @@ declare namespace slime.external.docker.engine.paths {
             id: /* ID or name of the container */ Parameters.Id;
         }
         export interface QueryParameters {
+            signal?: /**
+             * Signal to send to the container as an integer or string (e.g. `SIGINT`).
+             *
+             */
+            Parameters.Signal;
             t?: /* Number of seconds to wait before killing the container */ Parameters.T;
         }
         namespace Responses {
@@ -8603,6 +9629,11 @@ declare namespace slime.external.docker.engine.paths {
              */
             export type Id = string;
             /**
+             * Signal to send to the container as an integer or string (e.g. `SIGINT`).
+             *
+             */
+            export type Signal = string;
+            /**
              * Number of seconds to wait before killing the container
              */
             export type T = number;
@@ -8611,6 +9642,11 @@ declare namespace slime.external.docker.engine.paths {
             id: /* ID or name of the container */ Parameters.Id;
         }
         export interface QueryParameters {
+            signal?: /**
+             * Signal to send to the container as an integer or string (e.g. `SIGINT`).
+             *
+             */
+            Parameters.Signal;
             t?: /* Number of seconds to wait before killing the container */ Parameters.T;
         }
         namespace Responses {
@@ -8730,7 +9766,6 @@ declare namespace slime.external.docker.engine.paths {
              *   "Memory": 314572800,
              *   "MemorySwap": 514288000,
              *   "MemoryReservation": 209715200,
-             *   "KernelMemory": 52428800,
              *   "RestartPolicy": {
              *     "MaximumRetryCount": 4,
              *     "Name": "on-failure"
@@ -8759,7 +9794,6 @@ declare namespace slime.external.docker.engine.paths {
              *   "Memory": 314572800,
              *   "MemorySwap": 514288000,
              *   "MemoryReservation": 209715200,
-             *   "KernelMemory": 52428800,
              *   "RestartPolicy": {
              *     "MaximumRetryCount": 4,
              *     "Name": "on-failure"
@@ -8894,19 +9928,12 @@ declare namespace slime.external.docker.engine.paths {
                  */
                 DeviceRequests?: /* A request for devices to be sent to device drivers */ slime.external.docker.engine.definitions.DeviceRequest[];
                 /**
-                 * Kernel memory limit in bytes.
+                 * Hard limit for kernel TCP buffer memory (in bytes). Depending on the
+                 * OCI runtime in use, this option may be ignored. It is no longer supported
+                 * by the default (runc) runtime.
                  *
-                 * <p><br /></p>
+                 * This field is omitted when empty.
                  *
-                 * > **Deprecated**: This field is deprecated as the kernel 5.4 deprecated
-                 * > `kmem.limit_in_bytes`.
-                 *
-                 * example:
-                 * 209715200
-                 */
-                KernelMemory?: number; // int64
-                /**
-                 * Hard limit for kernel TCP buffer memory (in bytes).
                  */
                 KernelMemoryTCP?: number; // int64
                 /**
@@ -9197,8 +10224,8 @@ declare namespace slime.external.docker.engine.paths {
             id: /* Exec instance ID */ Parameters.Id;
         }
         export interface QueryParameters {
-            h?: /* Height of the TTY session in characters */ Parameters.H;
-            w?: /* Width of the TTY session in characters */ Parameters.W;
+            h: /* Height of the TTY session in characters */ Parameters.H;
+            w: /* Width of the TTY session in characters */ Parameters.W;
         }
         namespace Responses {
             export type $400 = /**
@@ -9234,7 +10261,11 @@ declare namespace slime.external.docker.engine.paths {
              * example:
              * {
              *   "Detach": false,
-             *   "Tty": false
+             *   "Tty": true,
+             *   "ConsoleSize": [
+             *     80,
+             *     64
+             *   ]
              * }
              */
             Parameters.ExecStartConfig;
@@ -9245,7 +10276,11 @@ declare namespace slime.external.docker.engine.paths {
              * example:
              * {
              *   "Detach": false,
-             *   "Tty": false
+             *   "Tty": true,
+             *   "ConsoleSize": [
+             *     80,
+             *     64
+             *   ]
              * }
              */
             export interface ExecStartConfig {
@@ -9257,6 +10292,13 @@ declare namespace slime.external.docker.engine.paths {
                  * Allocate a pseudo-TTY.
                  */
                 Tty?: boolean;
+                /**
+                 * Initial console size, as an `[height, width]` array.
+                 */
+                ConsoleSize?: [
+                    number,
+                    number
+                ];
             }
             /**
              * Exec instance ID
@@ -9380,7 +10422,7 @@ declare namespace slime.external.docker.engine.paths {
              *
              * For example, the build arg `FOO=bar` would become `{"FOO":"bar"}` in JSON. This would result in the query parameter `buildargs={"FOO":"bar"}`. Note that `{"FOO":"bar"}` should be URI component encoded.
              *
-             * [Read more about the buildargs instruction.](/engine/reference/builder/#arg)
+             * [Read more about the buildargs instruction.](https://docs.docker.com/engine/reference/builder/#arg)
              *
              */
             export type Buildargs = string;
@@ -9483,6 +10525,14 @@ declare namespace slime.external.docker.engine.paths {
              */
             export type Target = string;
             /**
+             * Version of the builder backend to use.
+             *
+             * - `1` is the first generation classic (deprecated) builder in the Docker daemon (default)
+             * - `2` is [BuildKit](https://github.com/moby/buildkit)
+             *
+             */
+            export type Version = "1" | "2";
+            /**
              * This is a base64-encoded JSON object with auth configurations for multiple registries that a build may refer to.
              *
              * The key is a registry URL, and the value is an auth configuration object, [as described in the authentication section](#section/Authentication). For example:
@@ -9527,7 +10577,7 @@ declare namespace slime.external.docker.engine.paths {
              *
              * For example, the build arg `FOO=bar` would become `{"FOO":"bar"}` in JSON. This would result in the query parameter `buildargs={"FOO":"bar"}`. Note that `{"FOO":"bar"}` should be URI component encoded.
              *
-             * [Read more about the buildargs instruction.](/engine/reference/builder/#arg)
+             * [Read more about the buildargs instruction.](https://docs.docker.com/engine/reference/builder/#arg)
              *
              */
             Parameters.Buildargs;
@@ -9545,6 +10595,14 @@ declare namespace slime.external.docker.engine.paths {
             platform?: /* Platform in the format os[/arch[/variant]] */ Parameters.Platform;
             target?: /* Target build stage */ Parameters.Target;
             outputs?: /* BuildKit output configuration */ Parameters.Outputs;
+            version?: /**
+             * Version of the builder backend to use.
+             *
+             * - `1` is the first generation classic (deprecated) builder in the Docker daemon (default)
+             * - `2` is [BuildKit](https://github.com/moby/buildkit)
+             *
+             */
+            Parameters.Version;
         }
         namespace Responses {
             export type $400 = /**
@@ -9588,6 +10646,13 @@ declare namespace slime.external.docker.engine.paths {
             export type Container = string;
             export type ContainerConfig = /**
              * Configuration for a container that is portable between hosts.
+             *
+             * When used as `ContainerConfig` field in an image, `ContainerConfig` is an
+             * optional field containing the configuration of the container that was last
+             * committed when creating the image.
+             *
+             * Previous versions of Docker builder used this field to store build cache,
+             * and it is not in active use anymore.
              *
              */
             slime.external.docker.engine.definitions.ContainerConfig;
@@ -9672,7 +10737,22 @@ declare namespace slime.external.docker.engine.paths {
              */
             export type Message = string;
             /**
-             * Platform in the format os[/arch[/variant]]
+             * Platform in the format os[/arch[/variant]].
+             *
+             * When used in combination with the `fromImage` option, the daemon checks
+             * if the given image is present in the local image cache with the given
+             * OS and Architecture, and otherwise attempts to pull the image. If the
+             * option is not set, the host's native OS and Architecture are used.
+             * If the given image does not exist in the local image cache, the daemon
+             * attempts to pull the image with the host's native OS and Architecture.
+             * If the given image does exists in the local image cache, but its OS or
+             * architecture does not match, a warning is produced.
+             *
+             * When used with the `fromSrc` option to import an image from an archive,
+             * this option sets the platform information for the imported image. If
+             * the option is not set, the host's native OS and Architecture are used
+             * for the imported image.
+             *
              */
             export type Platform = string;
             /**
@@ -9708,7 +10788,25 @@ declare namespace slime.external.docker.engine.paths {
              *
              */
             Parameters.Changes;
-            platform?: /* Platform in the format os[/arch[/variant]] */ Parameters.Platform;
+            platform?: /**
+             * Platform in the format os[/arch[/variant]].
+             *
+             * When used in combination with the `fromImage` option, the daemon checks
+             * if the given image is present in the local image cache with the given
+             * OS and Architecture, and otherwise attempts to pull the image. If the
+             * option is not set, the host's native OS and Architecture are used.
+             * If the given image does not exist in the local image cache, the daemon
+             * attempts to pull the image with the host's native OS and Architecture.
+             * If the given image does exists in the local image cache, but its OS or
+             * architecture does not match, a warning is produced.
+             *
+             * When used with the `fromSrc` option to import an image from an archive,
+             * this option sets the platform information for the imported image. If
+             * the option is not set, the host's native OS and Architecture are used
+             * for the imported image.
+             *
+             */
+            Parameters.Platform;
         }
         namespace Responses {
             export type $404 = /**
@@ -9918,6 +11016,10 @@ declare namespace slime.external.docker.engine.paths {
              *
              */
             export type Filters = string;
+            /**
+             * Compute and show shared size as a `SharedSize` field on each image.
+             */
+            export type SharedSize = boolean;
         }
         export interface QueryParameters {
             all?: /* Show all images. Only images from a final layer (no children) are shown by default. */ Parameters.All;
@@ -9935,6 +11037,7 @@ declare namespace slime.external.docker.engine.paths {
              *
              */
             Parameters.Filters;
+            "shared-size"?: /* Compute and show shared size as a `SharedSize` field on each image. */ Parameters.SharedSize;
             digests?: /* Show digest information as a `RepoDigests` field on each image. */ Parameters.Digests;
         }
         namespace Responses {
@@ -10038,11 +11141,22 @@ declare namespace slime.external.docker.engine.paths {
         }
         namespace Parameters {
             /**
-             * Image name or ID.
+             * Name of the image to push. For example, `registry.example.com/myimage`.
+             * The image must be present in the local image store with the same name.
+             *
+             * The name should be provided without tag; if a tag is provided, it
+             * is ignored. For example, `registry.example.com/myimage:latest` is
+             * considered equivalent to `registry.example.com/myimage`.
+             *
+             * Use the `tag` parameter to specify the tag to push.
+             *
              */
             export type Name = string;
             /**
-             * The tag to associate with the image on the registry.
+             * Tag of the image to push. For example, `latest`. If no tag is provided,
+             * all tags of the given image that are present in the local image store
+             * are pushed.
+             *
              */
             export type Tag = string;
             /**
@@ -10055,10 +11169,27 @@ declare namespace slime.external.docker.engine.paths {
             export type XRegistryAuth = string;
         }
         export interface PathParameters {
-            name: /* Image name or ID. */ Parameters.Name;
+            name: /**
+             * Name of the image to push. For example, `registry.example.com/myimage`.
+             * The image must be present in the local image store with the same name.
+             *
+             * The name should be provided without tag; if a tag is provided, it
+             * is ignored. For example, `registry.example.com/myimage:latest` is
+             * considered equivalent to `registry.example.com/myimage`.
+             *
+             * Use the `tag` parameter to specify the tag to push.
+             *
+             */
+            Parameters.Name;
         }
         export interface QueryParameters {
-            tag?: /* The tag to associate with the image on the registry. */ Parameters.Tag;
+            tag?: /**
+             * Tag of the image to push. For example, `latest`. If no tag is provided,
+             * all tags of the given image that are present in the local image store
+             * are pushed.
+             *
+             */
+            Parameters.Tag;
         }
         namespace Responses {
             export type $404 = /**
@@ -10190,7 +11321,7 @@ declare namespace slime.external.docker.engine.paths {
     namespace NetworkConnect {
         export interface BodyParameters {
             container: /**
-             * NetworkDisconnectRequest
+             * NetworkConnectRequest
              * example:
              * {
              *   "Container": "3613f73ba0e4",
@@ -10206,7 +11337,7 @@ declare namespace slime.external.docker.engine.paths {
         }
         namespace Parameters {
             /**
-             * NetworkDisconnectRequest
+             * NetworkConnectRequest
              * example:
              * {
              *   "Container": "3613f73ba0e4",
@@ -10262,96 +11393,17 @@ declare namespace slime.external.docker.engine.paths {
     }
     namespace NetworkCreate {
         export interface BodyParameters {
-            networkConfig: /**
-             * NetworkCreateRequest
-             * example:
-             * {
-             *   "Name": "isolated_nw",
-             *   "CheckDuplicate": false,
-             *   "Driver": "bridge",
-             *   "EnableIPv6": true,
-             *   "IPAM": {
-             *     "Driver": "default",
-             *     "Config": [
-             *       {
-             *         "Subnet": "172.20.0.0/16",
-             *         "IPRange": "172.20.10.0/24",
-             *         "Gateway": "172.20.10.11"
-             *       },
-             *       {
-             *         "Subnet": "2001:db8:abcd::/64",
-             *         "Gateway": "2001:db8:abcd::1011"
-             *       }
-             *     ],
-             *     "Options": {
-             *       "foo": "bar"
-             *     }
-             *   },
-             *   "Internal": true,
-             *   "Attachable": false,
-             *   "Ingress": false,
-             *   "Options": {
-             *     "com.docker.network.bridge.default_bridge": "true",
-             *     "com.docker.network.bridge.enable_icc": "true",
-             *     "com.docker.network.bridge.enable_ip_masquerade": "true",
-             *     "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
-             *     "com.docker.network.bridge.name": "docker0",
-             *     "com.docker.network.driver.mtu": "1500"
-             *   },
-             *   "Labels": {
-             *     "com.example.some-label": "some-value",
-             *     "com.example.some-other-label": "some-other-value"
-             *   }
-             * }
-             */
-            Parameters.NetworkConfig;
+            networkConfig: /* NetworkCreateRequest */ Parameters.NetworkConfig;
         }
         namespace Parameters {
             /**
              * NetworkCreateRequest
-             * example:
-             * {
-             *   "Name": "isolated_nw",
-             *   "CheckDuplicate": false,
-             *   "Driver": "bridge",
-             *   "EnableIPv6": true,
-             *   "IPAM": {
-             *     "Driver": "default",
-             *     "Config": [
-             *       {
-             *         "Subnet": "172.20.0.0/16",
-             *         "IPRange": "172.20.10.0/24",
-             *         "Gateway": "172.20.10.11"
-             *       },
-             *       {
-             *         "Subnet": "2001:db8:abcd::/64",
-             *         "Gateway": "2001:db8:abcd::1011"
-             *       }
-             *     ],
-             *     "Options": {
-             *       "foo": "bar"
-             *     }
-             *   },
-             *   "Internal": true,
-             *   "Attachable": false,
-             *   "Ingress": false,
-             *   "Options": {
-             *     "com.docker.network.bridge.default_bridge": "true",
-             *     "com.docker.network.bridge.enable_icc": "true",
-             *     "com.docker.network.bridge.enable_ip_masquerade": "true",
-             *     "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
-             *     "com.docker.network.bridge.name": "docker0",
-             *     "com.docker.network.driver.mtu": "1500"
-             *   },
-             *   "Labels": {
-             *     "com.example.some-label": "some-value",
-             *     "com.example.some-other-label": "some-other-value"
-             *   }
-             * }
              */
             export interface NetworkConfig {
                 /**
                  * The network's name.
+                 * example:
+                 * my_network
                  */
                 Name: string;
                 /**
@@ -10363,12 +11415,22 @@ declare namespace slime.external.docker.engine.paths {
                  * a best effort checking of any networks which has the same name
                  * but it is not guaranteed to catch all name collisions.
                  *
+                 * example:
+                 * true
                  */
                 CheckDuplicate?: boolean;
                 /**
                  * Name of the network driver plugin to use.
+                 * example:
+                 * bridge
                  */
                 Driver?: string;
+                /**
+                 * The level at which the network exists (e.g. `swarm` for cluster-wide
+                 * or `local` for machine level).
+                 *
+                 */
+                Scope?: string;
                 /**
                  * Restrict external access to the network.
                  */
@@ -10377,30 +11439,72 @@ declare namespace slime.external.docker.engine.paths {
                  * Globally scoped network is manually attachable by regular
                  * containers from workers in swarm mode.
                  *
+                 * example:
+                 * true
                  */
                 Attachable?: boolean;
                 /**
                  * Ingress network is the network which provides the routing-mesh
                  * in swarm mode.
                  *
+                 * example:
+                 * false
                  */
                 Ingress?: boolean;
+                /**
+                 * Creates a config-only network. Config-only networks are placeholder
+                 * networks for network configurations to be used by other networks.
+                 * Config-only networks cannot be used directly to run containers
+                 * or services.
+                 *
+                 * example:
+                 * false
+                 */
+                ConfigOnly?: boolean;
+                /**
+                 * Specifies the source which will provide the configuration for
+                 * this network. The specified network must be an existing
+                 * config-only network; see ConfigOnly.
+                 *
+                 */
+                ConfigFrom?: /**
+                 * The config-only network source to provide the configuration for
+                 * this network.
+                 *
+                 */
+                slime.external.docker.engine.definitions.ConfigReference;
                 /**
                  * Optional custom IP scheme for the network.
                  */
                 IPAM?: slime.external.docker.engine.definitions.IPAM;
                 /**
                  * Enable IPv6 on the network.
+                 * example:
+                 * true
                  */
                 EnableIPv6?: boolean;
                 /**
                  * Network specific options to be used by the drivers.
+                 * example:
+                 * {
+                 *   "com.docker.network.bridge.default_bridge": "true",
+                 *   "com.docker.network.bridge.enable_icc": "true",
+                 *   "com.docker.network.bridge.enable_ip_masquerade": "true",
+                 *   "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
+                 *   "com.docker.network.bridge.name": "docker0",
+                 *   "com.docker.network.driver.mtu": "1500"
+                 * }
                  */
                 Options?: {
                     [name: string]: string;
                 };
                 /**
                  * User-defined key/value metadata.
+                 * example:
+                 * {
+                 *   "com.example.some-label": "some-value",
+                 *   "com.example.some-other-label": "some-other-value"
+                 * }
                  */
                 Labels?: {
                     [name: string]: string;
@@ -10423,6 +11527,14 @@ declare namespace slime.external.docker.engine.paths {
                 Id?: string;
                 Warning?: string;
             }
+            export type $400 = /**
+             * Represents an error.
+             * example:
+             * {
+             *   "message": "Something went wrong."
+             * }
+             */
+            slime.external.docker.engine.definitions.ErrorResponse;
             export type $403 = /**
              * Represents an error.
              * example:
@@ -10488,11 +11600,11 @@ declare namespace slime.external.docker.engine.paths {
     }
     namespace NetworkDisconnect {
         export interface BodyParameters {
-            container: /* NetworkConnectRequest */ Parameters.Container;
+            container: /* NetworkDisconnectRequest */ Parameters.Container;
         }
         namespace Parameters {
             /**
-             * NetworkConnectRequest
+             * NetworkDisconnectRequest
              */
             export interface Container {
                 /**
@@ -10564,54 +11676,7 @@ declare namespace slime.external.docker.engine.paths {
             scope?: /* Filter the network by scope (swarm, global, or local) */ Parameters.Scope;
         }
         namespace Responses {
-            export type $200 = /**
-             * example:
-             * {
-             *   "Name": "net01",
-             *   "Id": "7d86d31b1478e7cca9ebed7e73aa0fdeec46c5ca29497431d3007d2d9e15ed99",
-             *   "Created": "2016-10-19T04:33:30.360899459Z",
-             *   "Scope": "local",
-             *   "Driver": "bridge",
-             *   "EnableIPv6": false,
-             *   "IPAM": {
-             *     "Driver": "default",
-             *     "Config": [
-             *       {
-             *         "Subnet": "172.19.0.0/16",
-             *         "Gateway": "172.19.0.1"
-             *       }
-             *     ],
-             *     "Options": {
-             *       "foo": "bar"
-             *     }
-             *   },
-             *   "Internal": false,
-             *   "Attachable": false,
-             *   "Ingress": false,
-             *   "Containers": {
-             *     "19a4d5d687db25203351ed79d478946f861258f018fe384f229f2efa4b23513c": {
-             *       "Name": "test",
-             *       "EndpointID": "628cadb8bcb92de107b2a1e516cbffe463e321f548feb37697cce00ad694f21a",
-             *       "MacAddress": "02:42:ac:13:00:02",
-             *       "IPv4Address": "172.19.0.2/16",
-             *       "IPv6Address": ""
-             *     }
-             *   },
-             *   "Options": {
-             *     "com.docker.network.bridge.default_bridge": "true",
-             *     "com.docker.network.bridge.enable_icc": "true",
-             *     "com.docker.network.bridge.enable_ip_masquerade": "true",
-             *     "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
-             *     "com.docker.network.bridge.name": "docker0",
-             *     "com.docker.network.driver.mtu": "1500"
-             *   },
-             *   "Labels": {
-             *     "com.example.some-label": "some-value",
-             *     "com.example.some-other-label": "some-other-value"
-             *   }
-             * }
-             */
-            slime.external.docker.engine.definitions.Network;
+            export type $200 = slime.external.docker.engine.definitions.Network;
             export type $404 = /**
              * Represents an error.
              * example:
@@ -10674,54 +11739,7 @@ declare namespace slime.external.docker.engine.paths {
             Parameters.Filters;
         }
         namespace Responses {
-            export type $200 = /**
-             * example:
-             * {
-             *   "Name": "net01",
-             *   "Id": "7d86d31b1478e7cca9ebed7e73aa0fdeec46c5ca29497431d3007d2d9e15ed99",
-             *   "Created": "2016-10-19T04:33:30.360899459Z",
-             *   "Scope": "local",
-             *   "Driver": "bridge",
-             *   "EnableIPv6": false,
-             *   "IPAM": {
-             *     "Driver": "default",
-             *     "Config": [
-             *       {
-             *         "Subnet": "172.19.0.0/16",
-             *         "Gateway": "172.19.0.1"
-             *       }
-             *     ],
-             *     "Options": {
-             *       "foo": "bar"
-             *     }
-             *   },
-             *   "Internal": false,
-             *   "Attachable": false,
-             *   "Ingress": false,
-             *   "Containers": {
-             *     "19a4d5d687db25203351ed79d478946f861258f018fe384f229f2efa4b23513c": {
-             *       "Name": "test",
-             *       "EndpointID": "628cadb8bcb92de107b2a1e516cbffe463e321f548feb37697cce00ad694f21a",
-             *       "MacAddress": "02:42:ac:13:00:02",
-             *       "IPv4Address": "172.19.0.2/16",
-             *       "IPv6Address": ""
-             *     }
-             *   },
-             *   "Options": {
-             *     "com.docker.network.bridge.default_bridge": "true",
-             *     "com.docker.network.bridge.enable_icc": "true",
-             *     "com.docker.network.bridge.enable_ip_masquerade": "true",
-             *     "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
-             *     "com.docker.network.bridge.name": "docker0",
-             *     "com.docker.network.driver.mtu": "1500"
-             *   },
-             *   "Labels": {
-             *     "com.example.some-label": "some-value",
-             *     "com.example.some-other-label": "some-other-value"
-             *   }
-             * }
-             */
-            slime.external.docker.engine.definitions.Network[];
+            export type $200 = slime.external.docker.engine.definitions.Network[];
             export type $500 = /**
              * Represents an error.
              * example:
@@ -11068,6 +12086,11 @@ declare namespace slime.external.docker.engine.paths {
     namespace PluginDisable {
         namespace Parameters {
             /**
+             * Force disable a plugin even if still in use.
+             *
+             */
+            export type Force = boolean;
+            /**
              * The name of the plugin. The `:latest` tag is optional, and is the
              * default if omitted.
              *
@@ -11081,6 +12104,13 @@ declare namespace slime.external.docker.engine.paths {
              *
              */
             Parameters.Name;
+        }
+        export interface QueryParameters {
+            force?: /**
+             * Force disable a plugin even if still in use.
+             *
+             */
+            Parameters.Force;
         }
         namespace Responses {
             export type $404 = /**
@@ -13419,7 +14449,7 @@ declare namespace slime.external.docker.engine.paths {
                 /**
                  * Address or interface to use for data path traffic (format:
                  * `<ip|interface>`), for example,  `192.168.1.1`, or an interface,
-                 * like `eth0`. If `DataPathAddr` is unspecified, the same addres
+                 * like `eth0`. If `DataPathAddr` is unspecified, the same address
                  * as `AdvertiseAddr` is used.
                  *
                  * The `DataPathAddr` specifies the address that global scope
@@ -13674,6 +14704,14 @@ declare namespace slime.external.docker.engine.paths {
                  */
                 IdentityToken?: string;
             }
+            export type $401 = /**
+             * Represents an error.
+             * example:
+             * {
+             *   "message": "Something went wrong."
+             * }
+             */
+            slime.external.docker.engine.definitions.ErrorResponse;
             export type $500 = /**
              * Represents an error.
              * example:
@@ -13685,6 +14723,20 @@ declare namespace slime.external.docker.engine.paths {
         }
     }
     namespace SystemDataUsage {
+        namespace Parameters {
+            /**
+             * Object types, for which to compute and return data.
+             *
+             */
+            export type Type = ("container" | "image" | "volume" | "build-cache")[];
+        }
+        export interface QueryParameters {
+            type?: /**
+             * Object types, for which to compute and return data.
+             *
+             */
+            Parameters.Type;
+        }
         namespace Responses {
             /**
              * SystemDataUsageResponse
@@ -13761,6 +14813,34 @@ declare namespace slime.external.docker.engine.paths {
              *         "RefCount": 2
              *       }
              *     }
+             *   ],
+             *   "BuildCache": [
+             *     {
+             *       "ID": "hw53o5aio51xtltp5xjp8v7fx",
+             *       "Parents": [],
+             *       "Type": "regular",
+             *       "Description": "pulled from docker.io/library/debian@sha256:234cb88d3020898631af0ccbbcca9a66ae7306ecd30c9720690858c1b007d2a0",
+             *       "InUse": false,
+             *       "Shared": true,
+             *       "Size": 0,
+             *       "CreatedAt": "2021-06-28T13:31:01.474619385Z",
+             *       "LastUsedAt": "2021-07-07T22:02:32.738075951Z",
+             *       "UsageCount": 26
+             *     },
+             *     {
+             *       "ID": "ndlpt0hhvkqcdfkputsk4cq9c",
+             *       "Parents": [
+             *         "ndlpt0hhvkqcdfkputsk4cq9c"
+             *       ],
+             *       "Type": "regular",
+             *       "Description": "mount / from exec /bin/sh -c echo 'Binary::apt::APT::Keep-Downloaded-Packages \"true\";' > /etc/apt/apt.conf.d/keep-cache",
+             *       "InUse": false,
+             *       "Shared": true,
+             *       "Size": 51,
+             *       "CreatedAt": "2021-06-28T13:31:03.002625487Z",
+             *       "LastUsedAt": "2021-07-07T22:02:32.773909517Z",
+             *       "UsageCount": 26
+             *     }
              *   ]
              * }
              */
@@ -13769,7 +14849,11 @@ declare namespace slime.external.docker.engine.paths {
                 Images?: slime.external.docker.engine.definitions.ImageSummary[];
                 Containers?: slime.external.docker.engine.definitions.ContainerSummary[];
                 Volumes?: slime.external.docker.engine.definitions.Volume[];
-                BuildCache?: slime.external.docker.engine.definitions.BuildCache[];
+                BuildCache?: /**
+                 * BuildCache contains information about a build cache record.
+                 *
+                 */
+                slime.external.docker.engine.definitions.BuildCache[];
             }
             export type $500 = /**
              * Represents an error.
@@ -14616,21 +15700,11 @@ declare namespace slime.external.docker.engine.paths {
             Parameters.Filters /* json */;
         }
         namespace Responses {
-            /**
+            export type $200 = /**
              * VolumeListResponse
              * Volume list response
              */
-            export interface $200 {
-                /**
-                 * List of volumes
-                 */
-                Volumes: slime.external.docker.engine.definitions.Volume[];
-                /**
-                 * Warnings that occurred when fetching the list of volumes.
-                 *
-                 */
-                Warnings: string[];
-            }
+            slime.external.docker.engine.definitions.VolumeListResponse;
             export type $500 = /**
              * Represents an error.
              * example:
@@ -14648,6 +15722,7 @@ declare namespace slime.external.docker.engine.paths {
              *
              * Available filters:
              * - `label` (`label=<key>`, `label=<key>=<value>`, `label!=<key>`, or `label!=<key>=<value>`) Prune volumes with (or without, in case `label!=...` is used) the specified labels.
+             * - `all` (`all=true`) - Consider all (local) volumes for pruning and not just anonymous volumes.
              *
              */
             export type Filters = string;
@@ -14658,6 +15733,7 @@ declare namespace slime.external.docker.engine.paths {
              *
              * Available filters:
              * - `label` (`label=<key>`, `label=<key>=<value>`, `label!=<key>`, or `label!=<key>=<value>`) Prune volumes with (or without, in case `label!=...` is used) the specified labels.
+             * - `all` (`all=true`) - Consider all (local) volumes for pruning and not just anonymous volumes.
              *
              */
             Parameters.Filters;
@@ -14677,6 +15753,80 @@ declare namespace slime.external.docker.engine.paths {
                 SpaceReclaimed?: number; // int64
             }
             export type $500 = /**
+             * Represents an error.
+             * example:
+             * {
+             *   "message": "Something went wrong."
+             * }
+             */
+            slime.external.docker.engine.definitions.ErrorResponse;
+        }
+    }
+    namespace VolumeUpdate {
+        export interface BodyParameters {
+            body?: /* Volume configuration */ Parameters.Body;
+        }
+        namespace Parameters {
+            /**
+             * Volume configuration
+             */
+            export interface Body {
+                Spec?: /**
+                 * Cluster-specific options used to create the volume.
+                 *
+                 */
+                slime.external.docker.engine.definitions.ClusterVolumeSpec;
+            }
+            /**
+             * The name or ID of the volume
+             */
+            export type Name = string;
+            /**
+             * The version number of the volume being updated. This is required to
+             * avoid conflicting writes. Found in the volume's `ClusterVolume`
+             * field.
+             *
+             */
+            export type Version = number; // int64
+        }
+        export interface PathParameters {
+            name: /* The name or ID of the volume */ Parameters.Name;
+        }
+        export interface QueryParameters {
+            version: /**
+             * The version number of the volume being updated. This is required to
+             * avoid conflicting writes. Found in the volume's `ClusterVolume`
+             * field.
+             *
+             */
+            Parameters.Version /* int64 */;
+        }
+        namespace Responses {
+            export type $400 = /**
+             * Represents an error.
+             * example:
+             * {
+             *   "message": "Something went wrong."
+             * }
+             */
+            slime.external.docker.engine.definitions.ErrorResponse;
+            export type $404 = /**
+             * Represents an error.
+             * example:
+             * {
+             *   "message": "Something went wrong."
+             * }
+             */
+            slime.external.docker.engine.definitions.ErrorResponse;
+            export type $500 = /**
+             * Represents an error.
+             * example:
+             * {
+             *   "message": "Something went wrong."
+             * }
+             */
+            slime.external.docker.engine.definitions.ErrorResponse;
+            export type $503 = /**
              * Represents an error.
              * example:
              * {
