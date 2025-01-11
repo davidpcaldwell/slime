@@ -289,8 +289,9 @@
 
 		/** @type { slime.jrunscript.tools.github.Exports["response"] } */
 		var response = {
+			/** @returns { never } */
 			empty: function(p) {
-				if (p.status.code == 204) return {};
+				if (p.status.code == 204) return /** @type { never } */(void(0));
 				var body = p.stream.character().asString();
 				throw new Error("Expected 204, got " + p.status.code + "\nbody:\n" + body);
 			},
