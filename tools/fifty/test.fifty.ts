@@ -122,9 +122,9 @@ namespace slime.fifty.test {
 			Parent: () => () => void
 
 			/**
-			 * Creates a test whose implementation calls runs the tests specified in the `jsh` member and then launches
-			 * the tests specified in the `browser` member in the browser. Also creates `.jsh` and `.browser` tests so that the
-			 * platform suites can be run individually.
+			 * Creates a test whose implementation runs the tests specified in the `jsh` member and then launches
+			 * the tests specified in the `browser` member in the browser. Also creates `.jsh` and `.browser` tests under the given
+			 * name so that the platform suites can be run individually.
 			 */
 			multiplatform: (p: {
 				name: string
