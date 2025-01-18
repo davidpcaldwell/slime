@@ -24,6 +24,12 @@
  *
  * To update Node.js, update the version in `rhino/tools/node/module.js`.
  *
+ * ### Docker
+ *
+ * To update the Docker API type definitions, update the URL in `rhino/tools/docker/tools/types.jsh.js` to specify the new
+ * OpenAPI YAML, then run the `rhino/tools/docker/tools/types.jsh.js`, which will emit a new
+ * `rhino/tools/docker/tools/docker-api.d.ts`.
+ *
  * ### Javassist
  *
  * Used in the Rhino profiler, it can be updated by editing the download URL in `rhino/tools/profiler/build.jsh.js`.
