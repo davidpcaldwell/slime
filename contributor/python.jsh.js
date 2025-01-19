@@ -7,9 +7,10 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(jsh) {
+	function($api,jsh) {
 		var homebrew = (
 			function installLocalHomebrew(base) {
 				var local = base.getRelativePath("local").createDirectory({
@@ -43,7 +44,13 @@
 								var rv = [command];
 								if (args) rv.push.apply(rv,args);
 								return rv;
-							})()
+							})(),
+							environment: $api.Object.compose(
+								jsh.shell.environment,
+								{
+									HOMEBREW_NO_AUTO_UPDATE: "1"
+								}
+							)
 						})
 					}
 
@@ -77,7 +84,9 @@
 			}
 		)(jsh.script.file.parent.parent);
 
-		homebrew.update();
+		//	TODO	somehow the Homebrew update triggers a git update on the SLIME project directory, via an unknown mechanism. So
+		//			we skip this update and disable autoupdate in the Homebrew invocations above.
+		//	homebrew.update();
 		homebrew.install({
 			formula: "python@3.12"
 		});
@@ -86,4 +95,4 @@
 		});
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);
