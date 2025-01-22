@@ -1145,8 +1145,7 @@
 				{
 					order: order
 				}
-			),
-			java: ($context.java) ? $context.java : void(0)
+			)
 		})
 	}
 //@ts-ignore
