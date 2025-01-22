@@ -9,14 +9,11 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { slime.time.exports.Java } $context
 	 * @param { slime.loader.Export<slime.time.Context> } $export
 	 */
-	function(Packages,$context,$export) {
-		var TimeZone = ($context.TimeZone) ? $context.TimeZone : Packages.java.util.TimeZone;
-		var Calendar = ($context.Calendar) ? $context.Calendar : Packages.java.util.Calendar;
-
+	function(Packages,$export) {
 		var Zone = function(peer) {
+			var Calendar = Packages.java.util.Calendar;
 			return {
 				local: function(unix) {
 					var calendar = Calendar.getInstance(peer);
@@ -48,6 +45,7 @@
 		$export({
 			zones: (
 				function() {
+					var TimeZone = Packages.java.util.TimeZone;
 					/** @type { slime.time.Context["zones"] } */
 					var rv = {};
 					var jstrings = TimeZone.getAvailableIDs();
@@ -56,12 +54,8 @@
 					}
 					return rv;
 				}
-			)(),
-			java: {
-				TimeZone: TimeZone,
-				Calendar: Calendar
-			}
+			)()
 		})
 	}
 //@ts-ignore
-)(Packages,$context,$export);
+)(Packages,$export);

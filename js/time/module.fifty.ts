@@ -52,8 +52,6 @@ namespace slime.time {
 		zones?: {
 			[id: string]: Zone
 		}
-
-		java?: exports.Java
 	}
 
 	export namespace test {
@@ -123,22 +121,6 @@ namespace slime.time {
 		}
 	//@ts-ignore
 	)(fifty);
-
-	export namespace exports {
-		export interface Java {
-			Calendar?: slime.jrunscript.Packages["java"]["util"]["Calendar"]
-			TimeZone?: slime.jrunscript.Packages["java"]["util"]["TimeZone"]
-		}
-	}
-
-	export interface Exports {
-		/**
-		 * The Java configuration for this module. The module may be configured with alternative implementations of the Calendar and
-		 * TimeZone Java classes, in scenarios where they are inaccessible but do not work. Unlikely to be needed; older versions of
-		 * Google App Engine for Java restricted reflective access to these classes.
-		 */
-		java?: exports.Java
-	}
 
 	(
 		function(
