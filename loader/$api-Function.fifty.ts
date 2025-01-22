@@ -11,6 +11,9 @@
  * The SLIME functional programming APIs strongly favor functions with a single argument, given that JavaScript has multiple ways
  * to pass multiple values through a single argument (for example arguments can be objects with multiple properties, or arrays with
  * multiple elements).
+ *
+ * The {@link slime.$api.fp.methods | methods} namespace has functions that convert functional implementations into a more
+ * object-oriented style, by pinning arguments in chains of single-argument functions.
  */
 namespace slime.$api.fp {
 	(

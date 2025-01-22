@@ -14,6 +14,9 @@ namespace slime.$api.fp.internal.methods {
 	export type Script = slime.loader.Script<Context,slime.$api.fp.methods.Exports>
 }
 
+/**
+ * See {@link Exports}.
+ */
 namespace slime.$api.fp.methods {
 	export type Specified<T,O extends Operations<T>> = {
 		[Property in keyof O]: () => ReturnType<O[Property]>
