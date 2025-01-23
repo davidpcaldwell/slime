@@ -126,6 +126,75 @@ namespace slime.time {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.Value = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		/**
+		 * Functions that pertain to "time values", as defined by the ECMAScript
+		 * [specification](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-time-values-and-time-range), representing
+		 * the number of milliseconds since the epoch (January 1, 1970, midnight, UTC).
+		 */
+		Value: exports.Values
+	}
+
+	export namespace exports {
+		export interface Values {
+			/**
+			 * Returns the current <dfn>time value</dfn>.
+			 */
+			now: slime.$api.fp.impure.External<number>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { load } = test;
+
+				fifty.tests.exports.Value.now = function() {
+					var context: Context = {
+						now: function() {
+							return 1000;
+						}
+					};
+
+					var configured = test.load(context);
+
+					verify(configured).Value.now().is(1000);
+
+					var defaulted = test.subject;
+
+					verify(defaulted).Value.now().is.type("number");
+
+					var now = defaulted.Value.now();
+					verify(now).is(now);
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Date: exports.Dates
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
 			fifty.tests.Date = fifty.test.Parent();
 		}
 	//@ts-ignore
@@ -484,10 +553,6 @@ namespace slime.time {
 		export interface Dates {
 			month: (date: slime.time.Date) => slime.time.Month
 		}
-	}
-
-	export interface Exports {
-		Date: exports.Dates
 	}
 
 	export interface Month {
