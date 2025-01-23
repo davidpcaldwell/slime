@@ -1010,7 +1010,14 @@
 			}
 		}
 
+		var Value = {
+			now: function(context) {
+				return context.now || Date.now;
+			}
+		};
+
 		$export({
+			Value: $api.fp.methods.pin($context)(Value),
 			Date: {
 				input: {
 					today: function() {
