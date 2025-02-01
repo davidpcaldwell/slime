@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-import type { Endpoints as _Endpoints } from "../../../local/jsh/lib/node/lib/node_modules/@octokit/types/dist-types/index.d.ts";
+import type { Endpoints as _Endpoints } from "../../../local/jsh/lib/node/lib/node_modules/@octokit/types/dist-types/index";
 
 export as namespace external_github;
 
