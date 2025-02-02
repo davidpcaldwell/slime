@@ -14,7 +14,7 @@
 	function($api,jsh) {
 		function getHtmlDocument() {
 			var html = new jsh.document.Document({
-				file: jsh.script.file.parent.parent.getFile("api.html")
+				file: jsh.script.file.parent.parent.getFile("old/api.html")
 			});
 			return html;
 		}
