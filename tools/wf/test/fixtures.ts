@@ -12,8 +12,10 @@ namespace slime.jsh.wf.test {
 
 	export interface Fixtures {
 		/**
-		 * Clones the repository given by p.src to a temporary directory. If p.commit is given and files are modified,
-		 * commits changes with the given p.commit.message.
+		 * Clones the repository given by p.src to a temporary directory, also copying the state of the working directory (if there
+		 * are modified files in the `src`, they will also be modified in the returned "clone").
+		 *
+		 * If p.commit is given and files are modified, commits modified files with the given p.commit.message.
 		 */
 		clone: (p: {
 			src: slime.jrunscript.file.world.Location

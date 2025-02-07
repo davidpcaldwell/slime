@@ -244,8 +244,61 @@ namespace slime.jrunscript.tools.git {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 			const subject = jsh.tools.git.commands;
+
+			var add: slime.jrunscript.tools.git.Command<{ files: string[] },void> = {
+				invocation: function(p) {
+					return {
+						command: "add",
+						arguments: p.files
+					}
+				}
+			};
+
+			var submodule_add: slime.jrunscript.tools.git.Command<{ repository: string, path: string, branch: string },void> = {
+				invocation: function(p) {
+					return {
+						command: "submodule",
+						arguments: $api.Array.build(function(rv) {
+							rv.push("add");
+							rv.push("-b", p.branch);
+							rv.push(p.repository);
+							rv.push(p.path);
+						})
+					}
+				}
+			}
+
+			fifty.tests.exports.submodule = function() {
+				const { fixtures } = internal.commands.test;
+				var parent = internal.commands.test.fixtures.Repository.from.empty();
+				//	TODO	this apparently cannot be specified on the repository level
+				//parent.api.command(internal.commands.test.fixtures.commands.config.set).argument({ name: "protocol.file.allow", value: "always" }).run();
+				var child = internal.commands.test.fixtures.Repository.from.empty();
+				fixtures.edit(
+					child,
+					"a",
+					$api.fp.Mapping.all("a")
+				);
+				child.api.command(add).argument({ files: ["a"] }).run();
+				child.api.command(fixtures.commands.commit).argument({ message: "it" }).run();
+				jsh.shell.console("parent = " + parent.location);
+				jsh.shell.console("child = " + child.location);
+				var result = parent.api.command(subject.submodule.status).argument({}).run();
+				jsh.shell.console(JSON.stringify(result));
+				//var added = parent.api.command(add).argument({ repository: child.location, path: "a" }).run();
+				jsh.shell.console("Add submodule.");
+				var added = jsh.tools.git.program({ command: "git" })
+					.config({ "protocol.file.allow": "always" })
+					.repository( parent.location )
+					.command(submodule_add)
+					.argument({ repository: child.location, path: "a", branch: "main" })
+					.run()
+				;
+				result = parent.api.command(subject.submodule.status).argument({}).run();
+				jsh.shell.console(JSON.stringify(result));
+			};
 
 			fifty.tests.manual.submodule = {};
 			fifty.tests.manual.submodule.status = function() {
