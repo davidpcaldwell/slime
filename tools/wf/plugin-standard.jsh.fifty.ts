@@ -20,11 +20,7 @@ namespace slime.jsh.wf.standard {
 			checks: slime.$api.fp.impure.Input<slime.jsh.wf.Exports["checks"]>
 			project: slime.$api.fp.impure.Input<{
 				updateSubmodule: slime.jsh.wf.Exports["project"]["updateSubmodule"]
-				submodule: {
-					remove: slime.jsh.wf.Exports["project"]["submodule"]["remove"]
-					status: slime.jsh.wf.Exports["project"]["submodule"]["status"]
-					attach: slime.jsh.wf.Exports["project"]["submodule"]["attach"]
-				}
+				submodule: Pick<slime.jsh.wf.Exports["project"]["submodule"],"remove"|"status"|"attach">
 				lint: {
 					eslint: slime.jsh.wf.Exports["project"]["lint"]["eslint"]
 				}
