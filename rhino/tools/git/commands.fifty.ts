@@ -272,10 +272,14 @@ namespace slime.jrunscript.tools.git {
 
 			fifty.tests.exports.submodule = function() {
 				const { fixtures } = internal.commands.test;
-				var parent = internal.commands.test.fixtures.Repository.from.empty();
+				var parent = internal.commands.test.fixtures.Repository.from.empty({ initialBranch: "main" });
+				parent.api.configure();
+				// parent.api.command(defaultBranch).argument({ branch: "main" }).run();
 				//	TODO	this apparently cannot be specified on the repository level
 				//parent.api.command(internal.commands.test.fixtures.commands.config.set).argument({ name: "protocol.file.allow", value: "always" }).run();
-				var child = internal.commands.test.fixtures.Repository.from.empty();
+				var child = internal.commands.test.fixtures.Repository.from.empty({ initialBranch: "main" });
+				child.api.configure();
+				// parent.api.command(defaultBranch).argument({ branch: "main" }).run();
 				fixtures.edit(
 					child,
 					"a",
