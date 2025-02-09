@@ -244,8 +244,10 @@ namespace slime.jrunscript.tools.git {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 			const subject = jsh.tools.git.commands;
+			const { fixtures } = internal.commands.test;
 
 			var add: slime.jrunscript.tools.git.Command<{ files: string[] },void> = {
 				invocation: function(p) {
@@ -270,16 +272,29 @@ namespace slime.jrunscript.tools.git {
 				}
 			}
 
+			var newEmptyRepository = function() {
+				var rv = internal.commands.test.fixtures.Repository.from.empty({ initialBranch: "main" });
+				rv.api.configure();
+				return rv;
+			}
+
+			var addSubmodule = function(parent: test.fixtures.Repository, path: string, child: test.fixtures.Repository) {
+				jsh.tools.git.program({ command: "git" })
+					.config({ "protocol.file.allow": "always" })
+					.repository( parent.location )
+					.command(submodule_add)
+					.argument({ repository: child.location, path: path, branch: "main" })
+					.run()
+				;
+			}
+
 			fifty.tests.exports.submodule = function() {
-				const { fixtures } = internal.commands.test;
 				var parent = internal.commands.test.fixtures.Repository.from.empty({ initialBranch: "main" });
 				parent.api.configure();
-				// parent.api.command(defaultBranch).argument({ branch: "main" }).run();
-				//	TODO	this apparently cannot be specified on the repository level
+				//	TODO	this apparently cannot be specified on the repository level, at least for git submodule add
 				//parent.api.command(internal.commands.test.fixtures.commands.config.set).argument({ name: "protocol.file.allow", value: "always" }).run();
 				var child = internal.commands.test.fixtures.Repository.from.empty({ initialBranch: "main" });
 				child.api.configure();
-				// parent.api.command(defaultBranch).argument({ branch: "main" }).run();
 				fixtures.edit(
 					child,
 					"a",
@@ -287,30 +302,53 @@ namespace slime.jrunscript.tools.git {
 				);
 				child.api.command(add).argument({ files: ["a"] }).run();
 				child.api.command(fixtures.commands.commit).argument({ message: "it" }).run();
-				jsh.shell.console("parent = " + parent.location);
-				jsh.shell.console("child = " + child.location);
 				var result = parent.api.command(subject.submodule.status).argument({}).run();
-				jsh.shell.console(JSON.stringify(result));
-				//var added = parent.api.command(add).argument({ repository: child.location, path: "a" }).run();
-				jsh.shell.console("Add submodule.");
-				var added = jsh.tools.git.program({ command: "git" })
-					.config({ "protocol.file.allow": "always" })
-					.repository( parent.location )
-					.command(submodule_add)
-					.argument({ repository: child.location, path: "a", branch: "main" })
-					.run()
-				;
+				verify(result).length.is(0);
+
+				addSubmodule(parent, "path", child);
+
 				result = parent.api.command(subject.submodule.status).argument({}).run();
+				verify(result).length.is(1);
+				verify(result)[0].sha1.is.type("string");
+				verify(result)[0].path.is("path");
 				jsh.shell.console(JSON.stringify(result));
 			};
 
 			fifty.tests.manual.submodule = {};
+
 			fifty.tests.manual.submodule.status = function() {
 				var repository = jsh.tools.git.program({ command: "git" }).repository(jsh.shell.PWD.toString());
 				var submodules = repository.command(subject.submodule.status).argument({}).run();
 				submodules.forEach(function(submodule) {
 					jsh.shell.console("Path: " + submodule.path + " commit: " + submodule.sha1);
 				});
+			}
+
+			fifty.tests.manual.submodule.nested = function() {
+				var top = newEmptyRepository();
+				var child = newEmptyRepository();
+				var grandchild = newEmptyRepository();
+
+				fixtures.edit(
+					grandchild,
+					"file",
+					$api.fp.Mapping.all("file")
+				);
+				grandchild.api.command(add).argument({ files: ["file"] }).run();
+				grandchild.api.command(fixtures.commands.commit).argument({ message: "message" }).run();
+
+				addSubmodule(child, "b", grandchild);
+				child.api.command(fixtures.commands.commit).argument({ message: "child" }).run();
+				jsh.shell.console("Child: " + child.location);
+
+				addSubmodule(top, "a", child);
+				top.api.command(fixtures.commands.commit).argument({ message: "parent" }).run();
+				jsh.shell.console("Parent: " + top.location);
+
+				var flat = top.api.command(subject.submodule.status).argument({}).run();
+				var nested = top.api.command(subject.submodule.status).argument({ recursive: true }).run();
+				jsh.shell.console(JSON.stringify(flat));
+				jsh.shell.console(JSON.stringify(nested));
 			}
 		}
 	//@ts-ignore
