@@ -117,15 +117,18 @@
 					};
 				},
 				result: function(output) {
-					return output.split("\n").filter(Boolean).map(function(line) {
-						return line.trim();
-					}).map(function(line) {
-						return line.split(/\s/);
-					}).map(function(tokens) {
+					return output.split("\n").slice(0,-1).map(function(line) {
+						//	TODO	state is currently ignored, pending definition of a good type to hold it, but it is documented
+						//			https://git-scm.com/docs/git-submodule
+						//
+						//			This implementation relies on the undocumented fact that the first character of the output is
+						//			a space if none of the state characters (-, +, U) is specified.
+						var state = line.substring(0,1);
+						var tokens = line.substring(1).split(/\s/);
 						return {
 							sha1: tokens[0],
 							path: tokens[1]
-						};
+						}
 					});
 				}
 			},

@@ -28,7 +28,11 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 
 		Repository: {
 			from: {
+				/**
+				 * Creates a new repository and initializes it, with optional settings.
+				 */
 				empty: (p?: { initialBranch?: string }) => Repository
+
 				location: (p: slime.jrunscript.file.Location) => Repository
 				old: (p: slime.jrunscript.tools.git.repository.Local) => Repository
 			}
