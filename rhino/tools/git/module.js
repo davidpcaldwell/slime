@@ -28,14 +28,18 @@
 			credentials: $loader.script("git-credential-tokens-directory.js")
 		};
 
+		var log = scripts.log({
+			library: {
+				time: $context.api.time
+			}
+		});
+
 		var library = {
-			log: scripts.log({
-				library: {
-					time: $context.api.time
-				}
-			}),
+			log: log,
 			results: scripts.results(),
-			commands: scripts.commands(),
+			commands: scripts.commands({
+				log: log
+			}),
 			credentials: scripts.credentials({
 				library: {
 					file: $context.api.file,

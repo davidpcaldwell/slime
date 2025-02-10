@@ -234,7 +234,13 @@
 					return (name === null) ? "(detached HEAD)" : name;
 				}
 
+				/**
+				 *
+				 * @param { string } [prefix] Used internally; external callers should omit it.
+				 * @returns An array of messages
+				 */
 				var submoduleStatus = function(prefix) {
+					if (!prefix) prefix = "";
 					/**
 					 *
 					 * @param { slime.jsh.wf.Submodule } item
@@ -358,7 +364,7 @@
 						jsh.shell.console("Submodules:");
 						var submodules = api.project().submodule.status();
 						var messages = submodules.reduce(function(rv,submodule) {
-							return rv.concat(submoduleStatus("")(submodule))
+							return rv.concat(submoduleStatus()(submodule))
 						}, []);
 						messages.forEach(jsh.shell.console);
 						if (messages.length == 0) {

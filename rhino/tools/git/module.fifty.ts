@@ -19,14 +19,6 @@
  * the case of GitHub and GitLab, tokens) in the file system for a project by host and username.
  */
 namespace slime.jrunscript.tools.git {
-	export interface Commit {
-		names: string[],
-		commit: { hash: string },
-		author: { name: string, email: string, date: any },
-		committer: { name: string, email: string, date: any },
-		subject: string
-	}
-
 	export interface Branch {
 		/**
 		 * The name of this branch. Can be `null` if this "branch" is a detached HEAD.
