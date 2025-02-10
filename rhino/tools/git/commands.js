@@ -80,14 +80,24 @@
 			}
 		}
 
-		/**
-		 * @type { slime.jrunscript.tools.git.Exports["commands"]["fetch"] }
-		 */
-		var fetch = {
-			invocation: function() {
+		/** @type { slime.jrunscript.tools.git.Commands["log"] } */
+		var log = {
+			invocation: function(p) {
 				return {
-					command: "fetch"
+					command: "log",
+					arguments: $api.Array.build(function(rv) {
+						rv.push($context.log.format.argument);
+						rv.push(p.revisionRange);
+					})
 				}
+			},
+			result: function(output) {
+				return output.split("\n").map(function(line) {
+					if (line.length == 0) return null;
+					return $context.log.format.parse(line);
+				}).filter(function(commit) {
+					return Boolean(commit && commit.subject);
+				})
 			}
 		}
 
@@ -99,6 +109,17 @@
 					arguments: $api.Array.build(function(rv) {
 						rv.push(p.name);
 					})
+				}
+			}
+		}
+
+		/**
+		 * @type { slime.jrunscript.tools.git.Exports["commands"]["fetch"] }
+		 */
+		var fetch = {
+			invocation: function() {
+				return {
+					command: "fetch"
 				}
 			}
 		}
@@ -181,8 +202,9 @@
 
 		$export({
 			status: status,
-			fetch: fetch,
 			merge: merge,
+			log: log,
+			fetch: fetch,
 			submodule: submodule,
 			remote: {
 				show: remoteShow

@@ -4,30 +4,6 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.tools.git.command {
-	export namespace status {
-		export interface Result {
-			/**
-			 * The current checked out branch, or `null` if a detached HEAD is checked out.
-			 */
-			branch: string
-
-			entries: {
-				code: string
-				path: string
-				orig_path?: string
-			}[]
-
-			/**
-			 * @deprecated Replaced by the `entries` property, which properly captures rename entries.
-			 *
-			 * An object whose keys are string paths within the repository, and whose values are the two-letter output
-			 * of the `git status --porcelain` command. This property is absent if no files have a status.
-			 */
-			paths?: { [path: string]: string }
-		}
-	}
-}
 namespace slime.jrunscript.tools.git.internal.commands {
 	(
 		function(
@@ -56,6 +32,33 @@ namespace slime.jrunscript.tools.git.internal.commands {
 }
 
 namespace slime.jrunscript.tools.git {
+	//	We try to keep the command order in sync with the order in https://git-scm.com/docs, and within categories, in CRUD order.
+
+	export namespace command {
+		export namespace status {
+			export interface Result {
+				/**
+				 * The current checked out branch, or `null` if a detached HEAD is checked out.
+				 */
+				branch: string
+
+				entries: {
+					code: string
+					path: string
+					orig_path?: string
+				}[]
+
+				/**
+				 * @deprecated Replaced by the `entries` property, which properly captures rename entries.
+				 *
+				 * An object whose keys are string paths within the repository, and whose values are the two-letter output
+				 * of the `git status --porcelain` command. This property is absent if no files have a status.
+				 */
+				paths?: { [path: string]: string }
+			}
+		}
+	}
+
 	export interface Commands {
 		status: Command<void,command.status.Result>
 	}
@@ -226,11 +229,51 @@ namespace slime.jrunscript.tools.git {
 	)(fifty);
 
 	export interface Commands {
-		fetch: Command<void,void>
+		log: Command<{ revisionRange: string },Commit[]>
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.manual.log = function() {
+				var slime = fifty.jsh.file.relative("../../..").pathname;
+
+				const log: slime.jrunscript.tools.git.Command<{ revisionRange: string },Commit[]> = {
+					invocation: function(p) {
+						return {
+							command: "log",
+							arguments: $api.Array.build(function(rv) {
+								rv.push(jsh.tools.git.log.format.argument);
+								rv.push(p.revisionRange);
+							})
+						}
+					},
+					result: function(output) {
+						return output.split("\n").map(function(line) {
+							if (line.length == 0) return null;
+							return jsh.tools.git.log.format.parse(line);
+						}).filter(function(commit) {
+							return Boolean(commit && commit.subject);
+						})
+					}
+				}
+
+				var commits = jsh.tools.git.program({ command: "git" }).repository( slime ).command(log).argument({ revisionRange: "HEAD^^^^^^^^^^..HEAD"}).run();
+				jsh.shell.console(JSON.stringify(commits,void(0),4));
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Commands {
 		merge: Command<{ name: string }, void>
+	}
+
+	export interface Commands {
+		fetch: Command<void,void>
 	}
 
 	export interface Commands {
@@ -366,7 +409,9 @@ namespace slime.jrunscript.tools.git {
 }
 
 namespace slime.jrunscript.tools.git.internal.commands {
-	export type Context = void
+	export interface Context {
+		log: slime.jrunscript.tools.git.internal.log.Exports
+	}
 
 	(
 		function(

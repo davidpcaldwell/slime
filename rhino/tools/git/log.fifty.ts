@@ -5,11 +5,30 @@
 //	END LICENSE
 
 namespace slime.jrunscript.tools.git {
+	export interface Commit {
+		names: string[],
+		commit: { hash: string },
+		author: { name: string, email: string, date: any },
+		committer: { name: string, email: string, date: any },
+		subject: string
+	}
+
 	export interface Exports {
 		log: {
 			format: {
+				/**
+				 * The mask to use for formatting `git` log messages, compatible with the `parse` method.
+				 */
 				mask: string
+
+				/**
+				 * The full argument to pass to `git log` for formatting, including `--format:format=`.
+				 */
 				argument: string
+
+				/**
+				 * Given a line emitted using the configured format mask, returns a parsed {@link Commit} representing the commit.
+				 */
 				parse: (line: string) => Commit
 			}
 		}

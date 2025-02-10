@@ -633,25 +633,7 @@
 					compareTo: function(branchName) {
 						return function(repository) {
 							/** @type { slime.jrunscript.tools.git.Command<{ revisionRange: string },slime.jrunscript.tools.git.Commit[]> } */
-							var logRange = {
-								invocation: function(p) {
-									return {
-										command: "log",
-										arguments: $api.Array.build(function(rv) {
-											rv.push(jsh.tools.git.log.format.argument);
-											rv.push(p.revisionRange);
-										})
-									}
-								},
-								result: function(output) {
-									return output.split("\n").map(function(line) {
-										if (line.length == 0) return null;
-										return jsh.tools.git.log.format.parse(line);
-									}).filter(function(commit) {
-										return Boolean(commit && commit.subject);
-									})
-								}
-							};
+							var logRange = jsh.tools.git.commands.log;
 
 							var repo = jsh.tools.git.program({ command: "git" }).repository(repository.directory.toString());
 
