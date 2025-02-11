@@ -141,7 +141,7 @@ namespace slime.project.wf {
 		 * If this project is operating as an Eclipse project (including VSCode), ensures that project-specified Eclipse settings
 		 * are provided.
 		 */
-		initialize: slime.jsh.wf.cli.Interface<any>["initialize"]
+		initialize: slime.jsh.wf.cli.Interface["initialize"]
 
 		vscode: {
 			java: {

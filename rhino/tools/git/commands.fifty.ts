@@ -397,9 +397,22 @@ namespace slime.jrunscript.tools.git {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace commands {
+		export namespace remote {
+			export namespace show {
+				export interface Result {
+					/**
+					 * The default branch for this remote, as indicated by "HEAD branch:" in the `git` output.
+					 */
+					head: string
+				}
+			}
+		}
+	}
+
 	export interface Commands {
 		remote: {
-			show: slime.jrunscript.tools.git.Command<string,{ head: string }>
+			show: slime.jrunscript.tools.git.Command<string,commands.remote.show.Result>
 		}
 	}
 
