@@ -74,11 +74,11 @@ namespace slime.jsh.wf {
 			command: string
 		}
 
-		export interface Interface<T> extends slime.jsh.script.cli.Commands<T> {
+		export interface Interface extends slime.jsh.script.cli.Commands {
 			/**
 			 * A special {@link Command} that is run each time any (other) `Command` is run.
 			 */
-			 initialize?: slime.jsh.script.cli.Command<T>
+			 initialize?: slime.jsh.script.cli.Command
 		}
 	}
 
@@ -274,15 +274,15 @@ namespace slime.jsh.wf {
 					 * @throws { slime.jsh.script.cli.error.TargetNotFound } if the specified target is not found on the interface
 					 * @throws { slime.jsh.script.cli.error.TargetNotFunction } if the specified target is not a function
 					 */
-					target: (p: { interface: cli.Interface<any>, target: string }) =>  slime.jsh.script.cli.Command<any>
+					target: (p: { interface: cli.Interface, target: string }) =>  slime.jsh.script.cli.Command<any>
 
-					process: (p: { interface: cli.Interface<any>, invocation: cli.CommandInvocation }) => void
+					process: (p: { interface: cli.Interface, invocation: cli.CommandInvocation }) => void
 
 					/**
 					 * Executes a command, derived from the first available argument, on the given interface with the remaining
 					 * arguments following the command.
 					 */
-					execute: (p: { interface: cli.Interface<any>, arguments: jsh.script.cli.Invocation<any> }) => void
+					execute: (p: { interface: cli.Interface, arguments: jsh.script.cli.Invocation<any> }) => void
 				}
 
 				/**

@@ -29,6 +29,8 @@
 			findApache: $context.library.install.apache.find,
 			getLatestVersion: function(major) {
 				return function(events) {
+					//	Work around regression under JDK 17; see https://www.mail-archive.com/users@tomcat.apache.org/msg144624.html
+					if (major == 9) return $api.fp.Maybe.from.some("9.0.98");
 					try {
 						//	This step would fail for Tomcat 7
 						var downloadRawHtml = new $context.library.http.Client().request({
