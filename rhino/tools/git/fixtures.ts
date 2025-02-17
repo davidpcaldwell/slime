@@ -5,8 +5,6 @@
 //	END LICENSE
 
 namespace slime.jrunscript.tools.git.test.fixtures {
-	export type Context = void
-
 	/**
 	 * A local git repository, with a `location` indicating the repository's world-oriented location and an `api` that allows
 	 * running git {@link slime.jrunscript.tools.git.Command}s.
@@ -178,5 +176,5 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 	//@ts-ignore
 	)($export);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.loader.Script<void,Exports>
 }
