@@ -14,10 +14,7 @@ namespace slime.project.license.cli {
 
 			const fixtures = (function() {
 				var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
-				return script({
-					$api: fifty.global.$api,
-					jsh: fifty.global.jsh
-				});
+				return script()(fifty);
 			})();
 
 			fifty.tests.issue495 = function() {

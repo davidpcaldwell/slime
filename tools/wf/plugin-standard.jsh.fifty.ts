@@ -83,15 +83,15 @@ namespace slime.jsh.wf.standard {
 				const fixtures = (
 					function() {
 						var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
-						return script({
-							$api: fifty.global.$api,
-							jsh: fifty.global.jsh
-						});
+						return script()(fifty);
 					}
 				)();
 
 				var src: slime.jrunscript.file.Directory = fifty.jsh.file.object.getRelativePath("../..").directory;
 
+				/**
+				 * Creates a repository based on the `test/data/plugin-standard` directory that has `slime` as a submodule.
+				 */
 				function fixture() {
 					var project = fifty.jsh.file.object.temporary.location();
 					fifty.jsh.file.object.getRelativePath("test/data/plugin-standard").directory.copy(project);
