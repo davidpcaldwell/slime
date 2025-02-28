@@ -11,6 +11,11 @@
  *
  * ## Compatibility updates
  *
+ * ### Java
+ *
+ * SLIME manages Java VMs based on Amazon Corretto (though it can be configured to run under any JDK). Corretto end of life
+ * information is available at [https://endoflife.date/amazon-corretto](https://endoflife.date/amazon-corretto).
+ *
  * ### TypeScript
  *
  * To update TypeScript, update the version in `tools/wf/typescript.js`, and make sure that there is a compatible TypeDoc version
