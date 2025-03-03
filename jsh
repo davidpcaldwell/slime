@@ -15,7 +15,7 @@ fi
 UNAME=$(uname)
 ARCH=$(arch)
 
-if [ "$0" == "bash" ]; then
+if test "$0" == "bash"; then
 	#	Remote shell
 	#	set -x
 	JSH_LOCAL_JDKS="$(mktemp -d)"
@@ -138,7 +138,7 @@ install_jdk_11_liberica() {
 
 get_major_version() {
 	local VERSION="$1"
-	IFS='.'; local NUMBERS=($VERSION); unset IFS;
+	IFS='.'; local NUMBERS=$VERSION; unset IFS;
 	local MAJOR=${NUMBERS[0]}
 	echo ${MAJOR}
 }
