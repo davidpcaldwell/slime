@@ -138,7 +138,7 @@ install_jdk_11_liberica() {
 
 get_major_version() {
 	local VERSION="$1"
-	IFS='.'; local NUMBERS=$VERSION; unset IFS;
+	IFS='.'; local NUMBERS="${VERSION}"; unset IFS;
 	local MAJOR=${NUMBERS[0]}
 	echo ${MAJOR}
 }
