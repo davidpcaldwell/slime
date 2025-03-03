@@ -15,7 +15,10 @@ fi
 UNAME=$(uname)
 ARCH=$(arch)
 
-if test "$0" == "bash"; then
+if test -z "$0:-"; then
+	>&2 echo "\$0 not set; exiting."
+	exit 1
+elif test "$0" == "bash"; then
 	#	Remote shell
 	#	set -x
 	JSH_LOCAL_JDKS="$(mktemp -d)"
@@ -139,8 +142,6 @@ install_jdk_11_liberica() {
 get_major_version() {
 	local VERSION="$1"
 	local MAJOR=$(echo $VERSION | cut -d'.' -f1)
-	# IFS='.'; local NUMBERS=($VERSION); unset IFS;
-	# local MAJOR=${NUMBERS[0]}
 	echo ${MAJOR}
 }
 
@@ -198,8 +199,7 @@ install_graalvm() {
 		>&2 echo "Unsupported OS/architecture: ${UNAME} ${ARCH}"
 		exit 1
 	fi
-	IFS='/'; local PATH_COMPONENTS=($JDK_TARBALL_URL); unset IFS;
-	local JDK_TARBALL_BASENAME=${PATH_COMPONENTS[6]}
+	local JDK_TARBALL_BASENAME="$(echo $JDK_TARBALL_URL | cut -d'/' -f7)"
 	if [ ! -d "${HOME}/Downloads" ]; then
 		mkdir "${HOME}/Downloads"
 	fi
