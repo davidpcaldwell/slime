@@ -263,69 +263,78 @@ namespace slime.jsh.script {
 				verify(urlProperty).is(void(0));
 			}
 
+			var remoteShellUrlScript = function(remote: jsh.test.shells.Remote, debug: boolean = false) {
+				var run = remote.getShellIntention({
+					PATH: jsh.shell.PATH,
+					settings: {
+						//	TODO	throws exception if this is not set; should this be hard-coded upstream?
+						branch: "local",
+						debug: debug
+					},
+					script: scriptUrl
+				});
+
+				var fileProperty = $api.fp.now(
+					run,
+					getJshScriptFile
+				);
+
+				var scriptProperty = $api.fp.now(
+					run,
+					getJshScriptScript
+				);
+
+				var urlProperty = $api.fp.now(
+					run,
+					getJshScriptUrl
+				);
+
+				verify(fileProperty).is(void(0));
+				verify(scriptProperty).is(void(0));
+				verify(urlProperty).string.is(scriptUrl);
+			}
+
+			var remoteShellFileScript = function(remote: jsh.test.shells.Remote) {
+				var run = remote.getShellIntention({
+					PATH: jsh.shell.PATH,
+					settings: {
+						//	TODO	throws exception if this is not set; should this be hard-coded upstream?
+						branch: "local"
+					},
+					script: script.pathname
+				});
+
+				var fileProperty = $api.fp.now(
+					run,
+					getJshScriptFile
+				);
+
+				var scriptProperty = $api.fp.now(
+					run,
+					getJshScriptScript
+				);
+
+				var urlProperty = $api.fp.now(
+					run,
+					getJshScriptUrl
+				);
+
+				verify(fileProperty).string.is(script.pathname);
+				verify(fileProperty).pathname.string.is(script.pathname);
+				verify(scriptProperty).string.is(script.pathname);
+				verify(scriptProperty).pathname.string.is(script.pathname);
+				verify(urlProperty).is(void(0));
+			}
+
 			fifty.tests.exports.oo.main.remote = function() {
 				var remote = test.shells.remote();
 
 				fifty.run(function url() {
-					var run = remote.getShellIntention({
-						PATH: jsh.shell.PATH,
-						settings: {
-							//	TODO	throws exception if this is not set; should this be hard-coded upstream?
-							branch: "local"
-						},
-						script: scriptUrl
-					});
-
-					var fileProperty = $api.fp.now(
-						run,
-						getJshScriptFile
-					);
-
-					var scriptProperty = $api.fp.now(
-						run,
-						getJshScriptScript
-					);
-
-					var urlProperty = $api.fp.now(
-						run,
-						getJshScriptUrl
-					);
-
-					verify(fileProperty).is(void(0));
-					verify(scriptProperty).is(void(0));
-					verify(urlProperty).string.is(scriptUrl);
+					remoteShellUrlScript(remote);
 				});
 
 				fifty.run(function file() {
-					var run = remote.getShellIntention({
-						PATH: jsh.shell.PATH,
-						settings: {
-							//	TODO	throws exception if this is not set; should this be hard-coded upstream?
-							branch: "local"
-						},
-						script: script.pathname
-					});
-
-					var fileProperty = $api.fp.now(
-						run,
-						getJshScriptFile
-					);
-
-					var scriptProperty = $api.fp.now(
-						run,
-						getJshScriptScript
-					);
-
-					var urlProperty = $api.fp.now(
-						run,
-						getJshScriptUrl
-					);
-
-					verify(fileProperty).string.is(script.pathname);
-					verify(fileProperty).pathname.string.is(script.pathname);
-					verify(scriptProperty).string.is(script.pathname);
-					verify(scriptProperty).pathname.string.is(script.pathname);
-					verify(urlProperty).is(void(0));
+					remoteShellFileScript(remote);
 				});
 			}
 		}
