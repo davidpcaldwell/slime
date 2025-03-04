@@ -326,6 +326,10 @@ namespace slime.jsh.script {
 				verify(urlProperty).is(void(0));
 			}
 
+			fifty.tests.wip = function() {
+				remoteShellUrlScript(test.shells.remote(), true);
+			};
+
 			fifty.tests.exports.oo.main.remote = function() {
 				var remote = test.shells.remote();
 
