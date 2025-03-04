@@ -308,23 +308,24 @@ get_jdk_major_version() {
 	JAVA="${JDK}/bin/java"
 	IFS=$'\n'
 	JAVA_VERSION_OUTPUT=$(${JAVA} -version 2>&1)
-	for line in ${JAVA_VERSION_OUTPUT}; do
-		if [[ $line =~ \"(.+)\" ]]; then
-			JAVA_VERSION="${BASH_REMATCH[1]}"
-		fi
-	done
-	if [ -n ${JAVA_VERSION} ]; then
-		if [[ $JAVA_VERSION =~ ^1\.8\. ]]; then
-			echo "8"
-		elif [[ $JAVA_VERSION =~ ^11\. ]]; then
-			echo "11"
-		elif [[ $JAVA_VERSION =~ ^17\. ]]; then
-			echo "17"
-		elif [[ $JAVA_VERSION =~ ^21\. ]]; then
-			echo "21"
-		else
-			echo "Unknown"
-		fi
+	local JAVA_VERSION=""
+	while IFS= read -r line; do
+		case "$line" in
+			*"\""*)
+				line="${line#*\"}" # Remove everything before the first quote
+				JAVA_VERSION="${line%%\"*}" # Remove everything after the first quote
+				break # Stop processing after finding the first match
+				;;
+		esac
+	done < <(echo "$JAVA_VERSION_OUTPUT")
+	if test -n "${JAVA_VERSION}"; then
+		case "${JAVA_VERSION}" in
+			1.8.*) echo "8" ;;
+			11.*) echo "11" ;;
+			17.*) echo "17" ;;
+			21.*) echo "21" ;;
+			*) echo "Unknown" ;;
+		esac
 	else
 		echo "Unparsed"
 	fi
