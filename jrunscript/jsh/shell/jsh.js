@@ -373,7 +373,7 @@
 					//	TODO	should only do this for post-Nashorn JDK versions
 					if (javaMajorVersion >= 15 && src.getFile("local/jsh/lib/nashorn.jar")) {
 						var libraries = (function() {
-							var LINE = /^JSH_BOOTSTRAP_NASHORN_LIBRARIES=\((.*)\)$/
+							var LINE = /^JSH_BOOTSTRAP_NASHORN_LIBRARIES="(.*)"$/
 							return $api.fp.now.map(
 								src.pathname.os.adapt(),
 								//	TODO	create read.lines.simple
@@ -384,7 +384,7 @@
 									return LINE.test(line);
 								}),
 								function(matches) {
-									if (matches.length != 1) throw new Error();
+									if (matches.length != 1) throw new Error("Did not find Nashorn library list in jsh bash launcher");
 									return matches[0];
 								},
 								function(line) {
