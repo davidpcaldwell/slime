@@ -260,7 +260,7 @@ install_jdk() {
 
 JSH_BOOTSTRAP_RHINO="${JSH_SHELL_LIB}/js.jar"
 JSH_BOOTSTRAP_NASHORN="${JSH_SHELL_LIB}/nashorn.jar"
-JSH_BOOTSTRAP_NASHORN_LIBRARIES=(asm asm-commons asm-tree asm-util)
+JSH_BOOTSTRAP_NASHORN_LIBRARIES="asm asm-commons asm-tree asm-util"
 
 get_maven_dependency() {
 	GROUP=$1
@@ -276,20 +276,28 @@ install_maven_dependency() {
 
 get_bootstrap_nashorn_classpath() {
 	rv=""
-	for name in ${JSH_BOOTSTRAP_NASHORN_LIBRARIES[@]}; do
+	local WAS_IFS=${IFS}
+	IFS=" "
+	set -- ${JSH_BOOTSTRAP_NASHORN_LIBRARIES}
+	for name in "$@"; do
 		if [ -n "${rv}" ]; then
 			rv="${rv}:"
 		fi
 		rv="${rv}${JSH_SHELL_LIB}/${name}.jar"
 	done
+	IFS="${WAS_IFS}"
 	echo ${rv}
 }
 
 install_nashorn() {
+	local WAS_IFS=${IFS}
+	IFS=" "
+	set -- ${JSH_BOOTSTRAP_NASHORN_LIBRARIES}
 	#	Derived from https://repo1.maven.org/maven2/org/openjdk/nashorn/nashorn-core/15.4/nashorn-core-15.4.pom
-	for name in ${JSH_BOOTSTRAP_NASHORN_LIBRARIES[@]}; do
+	for name in "$@"; do
 		install_maven_dependency org.ow2.asm ${name} 7.3.1 ${JSH_SHELL_LIB}/${name}.jar
 	done
+	IFS="${WAS_IFS}"
 	install_maven_dependency org.openjdk.nashorn nashorn-core 15.4 ${JSH_SHELL_LIB}/nashorn.jar
 }
 
