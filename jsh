@@ -308,16 +308,7 @@ get_jdk_major_version() {
 	JAVA="${JDK}/bin/java"
 	IFS=$'\n'
 	JAVA_VERSION_OUTPUT=$(${JAVA} -version 2>&1)
-	local JAVA_VERSION=""
-	while IFS= read -r line; do
-		case "$line" in
-			*"\""*)
-				line="${line#*\"}" # Remove everything before the first quote
-				JAVA_VERSION="${line%%\"*}" # Remove everything after the first quote
-				break # Stop processing after finding the first match
-				;;
-		esac
-	done < <(echo "$JAVA_VERSION_OUTPUT")
+	local JAVA_VERSION=$(echo $JAVA_VERSION_OUTPUT | awk -F'"' '/version/ {print $2}')
 	if test -n "${JAVA_VERSION}"; then
 		case "${JAVA_VERSION}" in
 			1.8.*) echo "8" ;;
