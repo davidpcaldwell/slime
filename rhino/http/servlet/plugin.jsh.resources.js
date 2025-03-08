@@ -259,8 +259,14 @@
 				}
 			};
 
+			/**
+			 *
+			 * @param { string } prefix
+			 * @returns { slime.old.Loader<slime.old.loader.Source, slime.Resource> }
+			 */
 			var OldLoader = function(prefix) {
-				var implementation = new jsh.io.Loader({
+				/** @type { slime.old.loader.Source } */
+				var source = {
 					get: function(path) {
 						return loader.get(path);
 					},
@@ -268,7 +274,8 @@
 						debugger;
 						return loader.list(path);
 					}
-				});
+				};
+				var implementation = new jsh.io.Loader(source);
 				var rv = implementation.Child(prefix);
 				//	TODO	code below failed type-checking and does not seem to make sense
 				// rv.list = function(p) {
@@ -278,7 +285,8 @@
 			};
 
 			/**
-			 * @param { any } [p]
+			 * @param { { prefix?: string } & slime.old.loader.Source<{ prefix: string }> } [p]
+			 * @returns { slime.old.Loader<any, slime.Resource> & { resource: any } }
 			 */
 			var NewLoader = function(p) {
 				if (!p) p = {};
@@ -315,16 +323,18 @@
 				p.child = function(path) {
 					return { prefix: p.prefix+path };
 				}
-				jsh.io.Loader.apply(this,[p]);
-				this.resource = function(path) {
+				/** @type { slime.old.Loader<any, slime.Resource> & { resource: any } } */
+				var rv = Object.assign(new jsh.io.Loader(p), { resource: void(0) });
+				rv.resource = function(path) {
 					return this.get(path);
 				};
 				//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
-				this.toString = function() {
+				rv.toString = function() {
 					return "plugin.jsh.resources.js NewLoader: prefix=" + p.prefix + " mapping=[" + mapping.map(function(map) {
 						return String(map);
 					}).join("\n");
 				}
+				return rv;
 				// this.list = function() {
 				// 	return loader.list("");
 				// }
