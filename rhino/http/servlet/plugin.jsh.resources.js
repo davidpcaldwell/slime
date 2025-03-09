@@ -259,8 +259,14 @@
 				}
 			};
 
+			/**
+			 *
+			 * @param { string } prefix
+			 * @returns { slime.old.Loader<slime.old.loader.Source, slime.Resource> }
+			 */
 			var OldLoader = function(prefix) {
-				var implementation = new jsh.io.Loader({
+				/** @type { slime.old.loader.Source } */
+				var source = {
 					get: function(path) {
 						return loader.get(path);
 					},
@@ -268,7 +274,8 @@
 						debugger;
 						return loader.list(path);
 					}
-				});
+				};
+				var implementation = new jsh.io.Loader(source);
 				var rv = implementation.Child(prefix);
 				//	TODO	code below failed type-checking and does not seem to make sense
 				// rv.list = function(p) {
@@ -278,7 +285,8 @@
 			};
 
 			/**
-			 * @param { any } [p]
+			 * @param { { prefix?: string } & slime.old.loader.Source<{ prefix: string }> } [p]
+			 * @this { slime.old.Loader<any, slime.Resource> & { resource: any } }
 			 */
 			var NewLoader = function(p) {
 				if (!p) p = {};
@@ -306,7 +314,7 @@
 					var rv = loader.list(prefix + arguments[0]);
 					rv.forEach(function(listed) {
 						if (listed.loader && listed.loader === true) {
-							listed.loader = new self.Child(listed.path + "/");
+							listed.loader = self.Child(listed.path + "/");
 						}
 					},this);
 					return rv;
