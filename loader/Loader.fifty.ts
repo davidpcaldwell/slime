@@ -27,6 +27,9 @@ namespace slime {
 			name: string
 		}
 
+		/**
+		 * Associated functions can be found in {@link slime.runtime.loader.Exports | `Exports.synchronous`}.
+		 */
 		export interface Synchronous<T> {
 			/**
 			 * Returns the resource associated with a given path.
@@ -180,6 +183,16 @@ namespace slime {
 		export type Export<T> = (value: T) => void
 	}
 
+	/**
+	 * An object capable of loading {@link slime.Resource}s from given paths.
+	 *
+	 * Note that two related APIs are defined:
+	 *
+	 * * {@link slime.runtime.loader.Synchronous}, which allows loading arbitrary types from paths (which can, in turn, be turned
+	 * into {@link slime.runtime.loader.Code}), and
+	 * * {@link slime.old.Loader}, which is a subtype of `Loader` that contains additional APIs related to
+	 * _sources_ (implementations), enumerability, custom children, asynchrony, and other deprecated APIs.
+	 */
 	export interface Loader {
 		//	TODO	What about if $context is a number, string, or boolean?
 		script: <C,E>(path: string) => loader.Script<C,E>
