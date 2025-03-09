@@ -286,7 +286,7 @@
 
 			/**
 			 * @param { { prefix?: string } & slime.old.loader.Source<{ prefix: string }> } [p]
-			 * @returns { slime.old.Loader<any, slime.Resource> & { resource: any } }
+			 * @this { slime.old.Loader<any, slime.Resource> & { resource: any } }
 			 */
 			var NewLoader = function(p) {
 				if (!p) p = {};
@@ -314,7 +314,7 @@
 					var rv = loader.list(prefix + arguments[0]);
 					rv.forEach(function(listed) {
 						if (listed.loader && listed.loader === true) {
-							listed.loader = new self.Child(listed.path + "/");
+							listed.loader = self.Child(listed.path + "/");
 						}
 					},this);
 					return rv;
@@ -323,18 +323,16 @@
 				p.child = function(path) {
 					return { prefix: p.prefix+path };
 				}
-				/** @type { slime.old.Loader<any, slime.Resource> & { resource: any } } */
-				var rv = Object.assign(new jsh.io.Loader(p), { resource: void(0) });
-				rv.resource = function(path) {
+				jsh.io.Loader.apply(this,[p]);
+				this.resource = function(path) {
 					return this.get(path);
 				};
 				//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
-				rv.toString = function() {
+				this.toString = function() {
 					return "plugin.jsh.resources.js NewLoader: prefix=" + p.prefix + " mapping=[" + mapping.map(function(map) {
 						return String(map);
 					}).join("\n");
 				}
-				return rv;
 				// this.list = function() {
 				// 	return loader.list("");
 				// }
