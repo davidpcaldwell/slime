@@ -230,6 +230,8 @@
 								was,
 								rv.$api.compiler.getTranspiler({
 									accept: rv.$api.compiler.isMimeType("application/vnd.coffeescript"),
+									name: function(code) { return code.name; },
+									read: function(code) { return code.read(); },
 									compile: window.CoffeeScript.compile
 								})
 							])

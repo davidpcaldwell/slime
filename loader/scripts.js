@@ -15,24 +15,17 @@
 	 */
 	function($platform,$engine,$api,$export) {
 		/**
-		 *
-		 * @param { { accept: slime.$api.fp.Predicate<slime.runtime.loader.Code>, compile: slime.$api.fp.Mapping<string,string> }} p
-		 * @returns { slime.runtime.loader.Compiler }
+		 * @type { slime.$api.Global["compiler"]["getTranspiler"] }
 		 */
 		var getTranspiler = function(p) {
-			if (p.compile) {
-				return function(script) {
-					if (p.accept(script)) {
-						return $api.fp.Maybe.from.some({
-							name: script.name,
-							js: p.compile(script.read())
-						});
-					} else {
-						return $api.fp.Maybe.from.nothing();
-					}
-				}
-			} else {
-				return function(script) {
+			return function(script) {
+				if (p.accept(script)) {
+					var code = p.read(script);
+					return $api.fp.Maybe.from.some({
+						name: p.name(script),
+						js: p.compile(code)
+					});
+				} else {
 					return $api.fp.Maybe.from.nothing();
 				}
 			}
@@ -62,7 +55,7 @@
 
 		/**
 		 *
-		 * @returns { slime.runtime.loader.Compiler }
+		 * @returns { slime.runtime.loader.Compiler<slime.runtime.loader.Code> }
 		 */
 		var getJavascriptProvider = function() {
 			return getTranspiler({
@@ -73,7 +66,9 @@
 					//			here and was causing crashes, so inserting acceptance as a workaround for now
 					isMimeType("text/javascript")
 				),
-				compile: $api.fp.identity
+				name: function(code) { return code.name; },
+				read: function(code) { return code.read(); },
+				compile: function(s) { return s; }
 			});
 		};
 
