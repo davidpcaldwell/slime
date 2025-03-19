@@ -90,9 +90,11 @@
 						}
 					});
 
-					/** @type { slime.runtime.loader.Compiler } */
+					/** @type { slime.runtime.loader.Compiler<slime.runtime.loader.Code> } */
 					var subprocess = $api.compiler.getTranspiler({
 						accept: $api.compiler.isMimeType("application/x.typescript"),
+						name: function(code) { return code.name; },
+						read: function(code) { return code.read(); },
 						compile: api.compile
 					});
 

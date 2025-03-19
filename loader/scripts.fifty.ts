@@ -28,7 +28,7 @@ namespace slime.runtime.loader {
 	 * An object that is capable of taking selected source files (often determined by MIME type) and translating them into
 	 * JavaScript.
 	 */
-	export type Compiler = slime.$api.fp.Partial<Code,Script>;
+	export type Compiler<T> = slime.$api.fp.Partial<T,Script>;
 }
 
 namespace slime.$api {
@@ -47,7 +47,12 @@ namespace slime.$api {
 			/**
 			 * Convenience method that uses a code predicate and compiler implementation to create a `Compiler`.
 			 */
-			getTranspiler: (p: { accept: slime.$api.fp.Predicate<slime.runtime.loader.Code>, compile: slime.$api.fp.Mapping<string,string> }) => slime.runtime.loader.Compiler
+			getTranspiler: <R,I>(p: {
+				accept: slime.$api.fp.Predicate<R>
+				name: (r: R) => string
+				read: (r: R) => I
+				compile: slime.$api.fp.Mapping<I,string>
+			}) => slime.runtime.loader.Compiler<R>
 		}
 	}
 }

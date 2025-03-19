@@ -532,13 +532,13 @@ namespace slime {
 	export namespace runtime {
 		export interface Exports {
 			compiler: {
-				update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler>) => void
+				update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler<slime.runtime.loader.Code>>) => void
 
 				/**
 				 *
 				 * @returns The compiler currently in use.
 				 */
-				get: () => slime.runtime.loader.Compiler
+				get: () => slime.runtime.loader.Compiler<slime.runtime.loader.Code>
 			}
 		}
 	}
