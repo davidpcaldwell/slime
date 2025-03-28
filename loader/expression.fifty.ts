@@ -531,20 +531,6 @@ namespace slime {
 
 	export namespace runtime {
 		export interface Exports {
-			compiler: {
-				update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler<slime.runtime.loader.Code>>) => void
-
-				/**
-				 *
-				 * @returns The compiler currently in use.
-				 */
-				get: () => slime.runtime.loader.Compiler<slime.runtime.loader.Code>
-			}
-		}
-	}
-
-	export namespace runtime {
-		export interface Exports {
 			//	TODO	scope and target parameter documentation refers to slime.Loader, but that API does not actually define
 			//			them in Fifty (probably does in JSAPI).
 
