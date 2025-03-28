@@ -31,6 +31,24 @@ namespace slime.runtime.loader {
 	export type Compiler<T> = slime.$api.fp.Partial<T,Script>;
 }
 
+namespace slime.runtime {
+	export interface Exports {
+		/**
+		 * A global script compiler provided by the overall SLIME runtime, which operates on {@link slime.runtime.loader.Code}
+		 * instances and can be updated with additional transpilers that also operate on those instances.
+		 */
+		compiler: {
+			update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler<slime.runtime.loader.Code>>) => void
+
+			/**
+			 *
+			 * @returns The compiler currently in use.
+			 */
+			get: () => slime.runtime.loader.Compiler<slime.runtime.loader.Code>
+		}
+	}
+}
+
 namespace slime.$api {
 	export interface Global {
 		/**
