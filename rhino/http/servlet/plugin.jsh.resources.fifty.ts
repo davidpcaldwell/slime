@@ -25,7 +25,7 @@ namespace slime.jsh.httpd {
 			scope?: { [x: string]: any }
 		) => void
 
-		loader: any
+		loader: slime.old.Loader<slime.old.loader.Source, slime.Resource> | slime.old.Loader<any, slime.Resource> & { resource: any }
 
 		build: (to: slime.jrunscript.file.Directory) => void
 	}
