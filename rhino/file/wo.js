@@ -133,8 +133,14 @@
 			}
 		}
 
+		var Location_basename = function(location) {
+			var tokens = location.pathname.split(location.filesystem.separator.pathname);
+			return tokens[tokens.length-1];
+		};
+
 		var Location = {
 			relative: Location_relative,
+			basename: Location_basename,
 			file: {
 				exists: {
 					simple: $api.fp.world.mapping(Location_file_exists),
@@ -159,6 +165,7 @@
 			directory: code.parts.directory({
 				ensureParent: ensureParent,
 				Location: Location,
+				Location_basename: Location_basename,
 				Location_directory_exists: Location_directory_exists,
 				Location_relative: Location_relative,
 				remove: remove
@@ -185,10 +192,7 @@
 				parent: function() {
 					return Location_relative("..");
 				},
-				basename: function(location) {
-					var tokens = location.pathname.split(location.filesystem.separator.pathname);
-					return tokens[tokens.length-1];
-				},
+				basename: Location_basename,
 				canonicalize: function(location) {
 					var canonicalized = $api.fp.world.now.ask(location.filesystem.canonicalize({ pathname: location.pathname }));
 					if (!canonicalized.present) return location;

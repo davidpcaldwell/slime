@@ -11,6 +11,21 @@ namespace slime {
 		}
 	}
 
+	export namespace runtime.content {
+		export type Entry<T> = {
+			name: string
+			value: T
+		} | {
+			name: string
+			store: Store<T>
+		}
+
+		export interface Store<T> {
+			get: (path: string[]) => slime.$api.fp.Maybe<T>
+			list?: (path: string[]) => slime.$api.fp.Maybe<Entry<T>[]>
+		}
+	}
+
 	export namespace runtime.loader {
 		export interface Node {
 			name: string

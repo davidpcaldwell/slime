@@ -491,11 +491,57 @@ namespace slime.jrunscript.file.exports.location {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Directory {
+		content: (root: slime.jrunscript.file.Location) => slime.runtime.content.Store<slime.jrunscript.file.Location>
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			const subject = fifty.global.jsh.file.Location.directory;
+
+			fifty.tests.exports.content = fifty.test.Parent();
+
+			fifty.tests.exports.content.wip = function() {
+				var root = fifty.jsh.file.relative(".");
+				var content = subject.content(root);
+
+				verify(content).get(["loader.js"]).present.is(true);
+				verify(content).get(["foo"]).present.is(false);
+
+				var listing = content.list([]);
+				if (!listing.present) {
+					verify(true).is(false);
+				} else {
+					debugger;
+					var script = listing.value.find(function(entry) { return entry.name == "loader.js" });
+					var absent = listing.value.find(function(entry) { return entry.name == "foo" });
+					var folder = listing.value.find(function(entry) { return entry.name == "oo" });
+
+					verify(script).evaluate.property("value").is.type("object");
+					verify(script).evaluate.property("value").evaluate.property("pathname").is.type("string");
+					verify(script).evaluate.property("value").evaluate.property("get").is.type("undefined");
+
+					verify(absent).is(void(0));
+
+					verify(folder).evaluate.property("store").is.type("object");
+					verify(folder).evaluate.property("store").evaluate.property("pathname").is.type("undefined");
+					verify(folder).evaluate.property("store").evaluate.property("get").is.type("function");
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 namespace slime.jrunscript.file.internal.wo.directory {
 	export interface Context {
 		Location: slime.jrunscript.file.internal.loader.Context["library"]["Location"]
+		Location_basename: slime.jrunscript.file.Exports["Location"]["basename"]
 		Location_relative: slime.jrunscript.file.exports.Location["directory"]["relativePath"]
 		Location_directory_exists: ReturnType<slime.jrunscript.file.Exports["Location"]["directory"]["exists"]["world"]>
 		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: string }>

@@ -434,6 +434,8 @@ namespace slime.jrunscript.file {
 				fifty.load("mock.fifty.ts");
 				fifty.load("wo.fifty.ts");
 
+				fifty.load("loader.fifty.ts");
+
 				fifty.load("oo.fifty.ts");
 				fifty.load("oo/file.fifty.ts");
 

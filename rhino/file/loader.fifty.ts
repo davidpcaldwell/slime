@@ -17,6 +17,15 @@ namespace slime.jrunscript.file.internal.loader {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Resource extends slime.jrunscript.runtime.Resource {
 		name: string
 	}
@@ -24,13 +33,12 @@ namespace slime.jrunscript.file.internal.loader {
 	export interface Exports {
 		create: (root: slime.jrunscript.file.Location) => slime.runtime.loader.Synchronous<Resource>
 	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-
+				fifty.run(fifty.tests.exports);
 			}
 		}
 	//@ts-ignore
