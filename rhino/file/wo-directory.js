@@ -117,7 +117,7 @@
 			}
 		};
 
-		var exists = {
+		var directoryExists = {
 			simple: $api.fp.world.Sensor.mapping({
 				sensor: $context.Location_directory_exists
 			}),
@@ -155,7 +155,7 @@
 
 					var targetExists = $api.fp.now(
 						target,
-						exists.simple
+						directoryExists.simple
 					);
 
 					if (targetExists) {
@@ -166,7 +166,8 @@
 							$api.fp.Stream.map(function(location) {
 								var name = $context.Location_basename(location);
 								if ($context.Location.file.exists.simple(location)) return { name: name, value: location };
-								if (exists.simple(location)) return { name: name, store: content(location) };
+								//	TODO	not sure why TypeScript requires the spurious value property below
+								if (directoryExists.simple(location)) return { name: name, store: content(location), value: void(0) };
 								throw new Error();
 							}),
 							$api.fp.Stream.collect
@@ -190,7 +191,7 @@
 			relativePath: directory.navigation.relativePath,
 			relativeTo: directory.navigation.relativeTo,
 			/** @type { slime.jrunscript.file.exports.Location["directory"]["exists"] } */
-			exists: exists,
+			exists: directoryExists,
 			require: function(p) {
 				return function(location) {
 					return function(events) {

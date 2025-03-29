@@ -493,7 +493,7 @@ namespace slime.jrunscript.file.exports.location {
 	)(fifty);
 
 	export interface Directory {
-		content: (root: slime.jrunscript.file.Location) => slime.runtime.content.Store<slime.jrunscript.file.Location>
+		content: (root: slime.jrunscript.file.Location) => slime.runtime.content.Index<slime.jrunscript.file.Location>
 	}
 
 	(

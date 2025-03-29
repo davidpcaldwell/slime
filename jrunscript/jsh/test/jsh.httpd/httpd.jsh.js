@@ -210,7 +210,7 @@
 						if (!rv.loader) {
 							throw new Error("rv.loader");
 						}
-						if (!rv.loader.resource) {
+						if (!rv.loader["resource"]) {
 							throw new Error("rv.loader.resource");
 						}
 						return rv.loader;
