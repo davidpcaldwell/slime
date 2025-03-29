@@ -117,19 +117,80 @@
 			}
 		};
 
+		var exists = {
+			simple: $api.fp.world.Sensor.mapping({
+				sensor: $context.Location_directory_exists
+			}),
+			world: function() {
+				return $context.Location_directory_exists;
+			}
+		};
+
+		/** @type { slime.jrunscript.file.Exports["Location"]["directory"]["content"] } */
+		var content = function(root) {
+			var separator = root.filesystem.separator.pathname;
+			return {
+				get: function(path) {
+					var target = $api.fp.now(
+						root,
+						$context.Location_relative(path.join(separator))
+					);
+
+					var exists = $api.fp.now(
+						target,
+						$context.Location.file.exists.simple
+					);
+
+					if (exists) {
+						return $api.fp.Maybe.from.some(target);
+					} else {
+						return $api.fp.Maybe.from.nothing();
+					}
+				},
+				list: function(path) {
+					var target = $api.fp.now(
+						root,
+						$context.Location_relative(path.join(separator))
+					);
+
+					var targetExists = $api.fp.now(
+						target,
+						exists.simple
+					);
+
+					if (targetExists) {
+						var list = list_iterate_simple;
+						var rv = $api.fp.now(
+							target,
+							list,
+							$api.fp.Stream.map(function(location) {
+								var name = $context.Location_basename(location);
+								if ($context.Location.file.exists.simple(location)) return { name: name, value: location };
+								if (exists.simple(location)) return { name: name, store: content(location) };
+								throw new Error();
+							}),
+							$api.fp.Stream.collect
+						);
+						return $api.fp.Maybe.from.some(rv);
+					} else {
+						return $api.fp.Maybe.from.nothing();
+					}
+				}
+			};
+		}
+
+		var list_iterate_simple = $api.fp.now(
+			$api.fp.world.Sensor.mapping({ sensor: wo.directory.list }),
+			$api.fp.curry({ descend: $api.fp.Mapping.all(false) }),
+			$api.fp.flatten("target")
+		);
+
 		$export({
 			base: directory.navigation.base,
 			relativePath: directory.navigation.relativePath,
 			relativeTo: directory.navigation.relativeTo,
 			/** @type { slime.jrunscript.file.exports.Location["directory"]["exists"] } */
-			exists: {
-				simple: $api.fp.world.Sensor.mapping({
-					sensor: $context.Location_directory_exists
-				}),
-				world: function() {
-					return $context.Location_directory_exists;
-				}
-			},
+			exists: exists,
 			require: function(p) {
 				return function(location) {
 					return function(events) {
@@ -184,11 +245,7 @@
 					return {
 						world: wo.directory.list,
 						iterate: {
-							simple: $api.fp.now(
-								$api.fp.world.Sensor.mapping({ sensor: wo.directory.list }),
-								$api.fp.curry({ descend: $api.fp.Mapping.all(false) }),
-								$api.fp.flatten("target")
-							)
+							simple: list_iterate_simple
 						},
 						stream: {
 							world: function(configuration) {
@@ -218,7 +275,8 @@
 				synchronous: function(p) {
 					return loader.create(p.root);
 				}
-			}
+			},
+			content: content
 		})
 	}
 //@ts-ignore
