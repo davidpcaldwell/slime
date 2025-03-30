@@ -172,7 +172,7 @@
 
 			return Object.assign(
 				function(scope) {
-					return load(path, scope);
+					return load(path, scope || {});
 				},
 				{
 					thread: function(context) {
@@ -192,6 +192,8 @@
 		});
 
 		var code = {
+			/** @type { slime.runtime.internal.content.Script } */
+			content: script("content.js"),
 			/** @type { slime.runtime.internal.scripts.Script } */
 			scripts: script("scripts.js"),
 			/** @type { slime.runtime.internal.loader.Script } */
@@ -263,7 +265,9 @@
 					}
 				}
 			}
-		)
+		);
+
+		$api.content = code.content();
 
 		var scripts = code.scripts(
 			{
