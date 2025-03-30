@@ -961,6 +961,7 @@ namespace slime {
 				fifty.tests.suite = function() {
 					fifty.run(fifty.tests.runtime.exports);
 					fifty.load("$api.fifty.ts");
+					fifty.load("content.fifty.ts");
 					fifty.load("Loader.fifty.ts");
 					fifty.load("old-loaders.fifty.ts");
 					fifty.load("events.fifty.ts");
