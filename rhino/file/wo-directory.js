@@ -126,8 +126,8 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.file.Exports["Location"]["directory"]["content"] } */
-		var content = function(root) {
+		/** @type { slime.jrunscript.file.Exports["Location"]["directory"]["content"]["Index"] } */
+		var content_Index = function(root) {
 			var separator = root.filesystem.separator.pathname;
 			return {
 				get: function(path) {
@@ -167,7 +167,7 @@
 								var name = $context.Location_basename(location);
 								if ($context.Location.file.exists.simple(location)) return { name: name, value: location };
 								//	TODO	not sure why TypeScript requires the spurious value property below
-								if (directoryExists.simple(location)) return { name: name, store: content(location), value: void(0) };
+								if (directoryExists.simple(location)) return { name: name, store: content_Index(location), value: void(0) };
 								throw new Error();
 							}),
 							$api.fp.Stream.collect
@@ -277,7 +277,9 @@
 					return loader.create(p.root);
 				}
 			},
-			content: content
+			content: {
+				Index: content_Index
+			}
 		})
 	}
 //@ts-ignore

@@ -493,7 +493,9 @@ namespace slime.jrunscript.file.exports.location {
 	)(fifty);
 
 	export interface Directory {
-		content: (root: slime.jrunscript.file.Location) => slime.runtime.content.Index<slime.jrunscript.file.Location>
+		content: {
+			Index: (root: slime.jrunscript.file.Location) => slime.runtime.content.Index<slime.jrunscript.file.Location>
+		}
 	}
 
 	(
@@ -508,7 +510,7 @@ namespace slime.jrunscript.file.exports.location {
 
 			fifty.tests.exports.content.wip = function() {
 				var root = fifty.jsh.file.relative(".");
-				var content = subject.content(root);
+				var content = subject.content.Index(root);
 
 				verify(content).get(["loader.js"]).present.is(true);
 				verify(content).get(["foo"]).present.is(false);
