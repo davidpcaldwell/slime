@@ -32,8 +32,20 @@ namespace slime.runtime.content {
 			const { verify } = fifty;
 
 			fifty.tests.mock = function() {
-				var code: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
-				var fixtures = code();
+				var api = (
+					function() {
+						var code: slime.runtime.internal.content.Script = fifty.$loader.script("content.js");
+						return code();
+					}
+				)();
+
+				var fixtures = (
+					function() {
+						var code: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+						return code();
+					}
+				)();
+
 				var content: slime.runtime.test.mock.Content<string> = fixtures.mock.content();
 
 				content.set("lower/a", "a");
@@ -58,10 +70,6 @@ namespace slime.runtime.content {
 					}
 				};
 
-				const isIndexEntry = function(i: Entry<string>): i is IndexEntry<string> {
-					return Boolean(i["index"]);
-				}
-
 				var store = content.store;
 				verify(store).get(["lower","b"]).evaluate(nullable).is("b");
 				verify(store).get(["upper","b"]).evaluate(nullable).is("B");
@@ -74,9 +82,9 @@ namespace slime.runtime.content {
 				verify(top).evaluate(hasName("upper")).is(true);
 				verify(top).evaluate(hasName("asterisk")).is(true);
 				verify(top).evaluate(hasName("aaa")).is(false);
-				verify(top).evaluate(withName("lower")).evaluate(isIndexEntry).is(true);
-				verify(top).evaluate(withName("upper")).evaluate(isIndexEntry).is(true);
-				verify(top).evaluate(withName("asterisk")).evaluate(isIndexEntry).is(false);
+				verify(top).evaluate(withName("lower")).evaluate(api.Entry.is.IndexEntry).is(true);
+				verify(top).evaluate(withName("upper")).evaluate(api.Entry.is.IndexEntry).is(true);
+				verify(top).evaluate(withName("asterisk")).evaluate(api.Entry.is.IndexEntry).is(false);
 
 				var lower = nullable(index.list(["lower"]));
 				verify(lower).length.is(2);
@@ -85,6 +93,9 @@ namespace slime.runtime.content {
 
 				var upper = nullable(index.list(["upper"]));
 				verify(upper).length.is(1);
+				verify(upper)[0].evaluate.property("name").is("b");
+				verify(upper)[0].evaluate.property("value").is("B");
+				debugger;
 
 				var no = nullable(index.list(["foo"]));
 				verify(no).is(null);
@@ -108,6 +119,12 @@ namespace slime.runtime.content {
 				path: string[]
 				store: Store<T>
 			}) => slime.$api.fp.Transform<Store<T>>
+		}
+
+		Entry: {
+			is: {
+				IndexEntry: <T>(e: Entry<T>) => e is IndexEntry<T>
+			}
 		}
 	}
 
@@ -160,6 +177,7 @@ namespace slime.runtime.internal.content {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
 				fifty.run(fifty.tests.mock);
 			}
 		}

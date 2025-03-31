@@ -71,7 +71,7 @@ namespace slime.runtime.test {
 										if (elements.length > 1) {
 											rv[elements[0]] = { name: elements[0], index: Index(prefix + elements[0] + "/") };
 										} else {
-											rv[elements[0]] = { name: elements[0], value: content[prefix + "/" + elements[0]] };
+											rv[elements[0]] = { name: elements[0], value: content[prefix + elements[0]] };
 										}
 										return rv;
 									},{});
