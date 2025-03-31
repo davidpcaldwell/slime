@@ -118,13 +118,53 @@
 		};
 
 		var directoryExists = {
-			simple: $api.fp.world.Sensor.mapping({
-				sensor: $context.Location_directory_exists
-			}),
+			simple: $context.Location_directory_exists.simple,
 			world: function() {
-				return $context.Location_directory_exists;
+				return $context.Location_directory_exists.world();
 			}
 		};
+
+		/** @type { slime.jrunscript.file.Exports["Location"]["directory"]["require"] } */
+		var require = function(p) {
+			return function(location) {
+				return function(events) {
+					var exists = location.filesystem.directoryExists({
+						pathname: location.pathname
+					})(events);
+					if (exists.present) {
+						if (!exists.value) {
+							if (p && p.recursive) {
+								$api.fp.world.now.action(
+									$context.ensureParent,
+									location,
+									{
+										created: function(e) {
+											events.fire("created", {
+												filesystem: location.filesystem,
+												pathname: e.detail
+											})
+										}
+									}
+								);
+							}
+							$api.fp.world.now.action(
+								location.filesystem.createDirectory,
+								{ pathname: location.pathname }
+							)
+							//	TODO	should push this event back into implementation
+							//			this way, we could inform of recursive creations as well
+							//			probably in the implementation, payload should be pathname, translated into
+							//			location at this layer
+							events.fire("created", location);
+						} else {
+							events.fire("found", location);
+						}
+					} else {
+						throw new Error("Error determining whether directory is present at " + location.pathname);
+					}
+				}
+			}
+		}
 
 		/** @type { slime.jrunscript.file.Exports["Location"]["directory"]["content"]["Index"] } */
 		var content_Index = function(root) {
@@ -178,6 +218,41 @@
 					}
 				}
 			};
+		};
+
+		/** @type { slime.jrunscript.file.Exports["Location"]["directory"]["content"]["mirror"] } */
+		var content_mirror = function(p) {
+			return function(events) {
+				/** @type { (path: string[]) => void } */
+				var process = function(path) {
+					var destination = $context.Location_relative(path.join(p.to.filesystem.separator.pathname))(p.to);
+
+					var entries = p.index.list(path);
+					if (!entries.present) return;
+					entries.value.forEach(function(entry) {
+						if ($api.content.Entry.is.IndexEntry(entry)) {
+							process(path.concat([entry.name]));
+						} else {
+							var target = $context.Location_relative(entry.name)(destination);
+							var parent = $context.Location_parent()(target);
+							if (!$context.Location_directory_exists.simple(parent)) {
+								$api.fp.world.Means.now({
+									means: require({ recursive: true }),
+									order: parent
+								});
+							}
+							var write = $context.Location_file_write(target);
+							p.write({
+								file: entry.value,
+								api: write
+							});
+							events.fire("mirrored", target);
+						}
+					});
+				};
+
+				process([]);
+			}
 		}
 
 		var list_iterate_simple = $api.fp.now(
@@ -192,46 +267,7 @@
 			relativeTo: directory.navigation.relativeTo,
 			/** @type { slime.jrunscript.file.exports.Location["directory"]["exists"] } */
 			exists: directoryExists,
-			require: function(p) {
-				return function(location) {
-					return function(events) {
-						var exists = location.filesystem.directoryExists({
-							pathname: location.pathname
-						})(events);
-						if (exists.present) {
-							if (!exists.value) {
-								if (p && p.recursive) {
-									$api.fp.world.now.action(
-										$context.ensureParent,
-										location,
-										{
-											created: function(e) {
-												events.fire("created", {
-													filesystem: location.filesystem,
-													pathname: e.detail
-												})
-											}
-										}
-									);
-								}
-								$api.fp.world.now.action(
-									location.filesystem.createDirectory,
-									{ pathname: location.pathname }
-								)
-								//	TODO	should push this event back into implementation
-								//			this way, we could inform of recursive creations as well
-								//			probably in the implementation, payload should be pathname, translated into
-								//			location at this layer
-								events.fire("created", location);
-							} else {
-								events.fire("found", location);
-							}
-						} else {
-							throw new Error("Error determining whether directory is present at " + location.pathname);
-						}
-					}
-				}
-			},
+			require: require,
 			/** @type { slime.jrunscript.file.exports.Location["directory"]["remove"] } */
 			remove: {
 				world: function() {
@@ -278,7 +314,8 @@
 				}
 			},
 			content: {
-				Index: content_Index
+				Index: content_Index,
+				mirror: content_mirror
 			}
 		})
 	}

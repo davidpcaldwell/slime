@@ -495,6 +495,17 @@ namespace slime.jrunscript.file.exports.location {
 	export interface Directory {
 		content: {
 			Index: (root: slime.jrunscript.file.Location) => slime.runtime.content.Index<slime.jrunscript.file.Location>
+
+			mirror: <T>(p: {
+				index: slime.runtime.content.Index<T>
+				write: (p: {
+					file: T
+					api: ReturnType<slime.jrunscript.file.exports.location.File["write"]>
+				}) => void
+				to: slime.jrunscript.file.Location
+			}) => slime.$api.fp.world.Action<{
+				mirrored: slime.jrunscript.file.Location
+			}>
 		}
 	}
 
@@ -504,11 +515,18 @@ namespace slime.jrunscript.file.exports.location {
 		) {
 			const { verify } = fifty;
 
+			const fixtures = (function() {
+				const script: slime.runtime.test.Script = fifty.$loader.script("../../loader/fixtures.ts");
+				return {
+					runtime: script()
+				}
+			})();
+
 			const subject = fifty.global.jsh.file.Location.directory;
 
 			fifty.tests.exports.content = fifty.test.Parent();
 
-			fifty.tests.exports.content.wip = function() {
+			fifty.tests.exports.content.Index = function() {
 				var root = fifty.jsh.file.relative(".");
 				var content = subject.content.Index(root);
 
@@ -535,6 +553,48 @@ namespace slime.jrunscript.file.exports.location {
 					verify(folder).evaluate.property("store").evaluate.property("get").is.type("function");
 				}
 			}
+
+			fifty.tests.exports.content.mirror = function() {
+				var content: slime.runtime.test.mock.Content<string> = fixtures.runtime.mock.content();
+				content.set("foo/bar", "bar!");
+				content.set("foo/baz", "baz!!");
+
+				var to = fifty.jsh.file.temporary.location();
+
+				var action = subject.content.mirror({
+					index: content.index,
+					write: function(p) {
+						debugger;
+						fifty.global.$api.fp.world.Means.now({
+							means: p.api.string,
+							order: {
+								value: p.file
+							}
+						});
+					},
+					to: to
+				});
+
+				fifty.global.$api.fp.world.Action.now({
+					action: action
+				});
+
+				var bar = fifty.global.$api.fp.now(
+					to,
+					fifty.global.jsh.file.Location.directory.relativePath("foo/bar"),
+					fifty.global.jsh.file.Location.file.read.string.simple,
+				);
+
+				verify(bar).is("bar!");
+
+				var baz = fifty.global.$api.fp.now(
+					to,
+					fifty.global.jsh.file.Location.directory.relativePath("foo/baz"),
+					fifty.global.jsh.file.Location.file.read.string.simple,
+				);
+
+				verify(baz).is("baz!!");
+			}
 		}
 	//@ts-ignore
 	)(fifty);
@@ -545,7 +605,9 @@ namespace slime.jrunscript.file.internal.wo.directory {
 		Location: slime.jrunscript.file.internal.loader.Context["library"]["Location"]
 		Location_basename: slime.jrunscript.file.Exports["Location"]["basename"]
 		Location_relative: slime.jrunscript.file.exports.Location["directory"]["relativePath"]
-		Location_directory_exists: ReturnType<slime.jrunscript.file.Exports["Location"]["directory"]["exists"]["world"]>
+		Location_parent: slime.jrunscript.file.exports.Location["parent"]
+		Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]
+		Location_file_write: slime.jrunscript.file.Exports["Location"]["file"]["write"]
 		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: string }>
 		remove: slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
 	}

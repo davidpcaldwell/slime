@@ -45,6 +45,14 @@
 		$export({
 			Store: {
 				map: map
+			},
+			Entry: {
+				is: {
+					/** @type { slime.runtime.content.Exports["Entry"]["is"]["IndexEntry"] } */
+					IndexEntry: function(e) {
+						return Boolean(e["index"]);
+					}
+				}
 			}
 		});
 	}
