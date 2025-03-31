@@ -54,8 +54,15 @@ namespace slime.jsh.httpd {
 
 		export interface Exports {
 			Constructor: new () => Resources
+
+			/**
+			 * @deprecated
+			 */
+			//	Search term to find usages: /(?-i)Resources\.Old/
 			Old: any
+
 			NoVcsDirectory: any
+
 			script: {
 				(...file: slime.jrunscript.file.File[]): any
 				old: any
@@ -94,34 +101,6 @@ namespace slime.jsh.httpd {
 			const asObject = function(p: any) { return p as object; };
 
 			fifty.tests.script = {
-				old: function() {
-					var one: { loader: slime.old.Loader } = subject.script.old(
-						fifty.jsh.file.object.getRelativePath("test/resource/1.old.js").file
-					);
-					var indexOf = function(value: string) {
-						return function(p: (slime.old.loader.LoaderEntry | slime.old.loader.ResourceEntry)[]) {
-							return p.map(function(entry) { return entry.path; }).indexOf(value);
-						}
-					};
-					var read = function(p: Resource) {
-						return p.read(String);
-					}
-
-					var verify = fifty.verify;
-					verify(one,"one").is.type("object");
-					verify(one).loader.Child("WEB-INF/generic/").list().length.is(1);
-					verify(one).loader.Child("WEB-INF/generic/").list()[0].path.is("inonit");
-					verify(one).loader.Child("WEB-INF/generic/inonit/script/servlet/").list().length.is(2);
-					verify(one).loader.Child("WEB-INF/generic/inonit/script/servlet/").list().evaluate(indexOf("Servlet.java")).is.not.equalTo(-1);
-					verify(one).loader.Child("WEB-INF/generic/inonit/script/servlet/").list().evaluate(indexOf("Nashorn.java")).is.not.equalTo(-1);
-					verify(one).loader.Child("WEB-INF/generic/inonit/script/servlet/").list().evaluate(indexOf("JarJarBinks.java")).is(-1);
-					verify(one).loader.Child("WEB-INF/").list().length.is(3);
-					verify(one).loader.Child("WEB-INF/").list()[0].path.is("generic");
-					verify(one).loader.Child("WEB-INF/").list()[1].path.is("mozilla");
-					verify(one).loader.Child("WEB-INF/").list()[2].path.is("test");
-					verify(one).loader.file("WEB-INF/test/1.file.js").evaluate(asObject).is.not(null);
-					verify(one).loader.get("WEB-INF/test/1.txt").evaluate(read).is("1\n");
-				},
 				resources: function() {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
@@ -210,7 +189,6 @@ namespace slime.jsh.httpd {
 				fifty.verify({ type: type1 }).type.is("object");
 				var type2: string = typeof(subject.Constructor);
 				fifty.verify({ type: type2 }).type.is("function");
-				fifty.run(fifty.tests.script.old);
 				fifty.run(fifty.tests.script.resources);
 				fifty.run(fifty.tests.script.noLocalOrVcs);
 			}
