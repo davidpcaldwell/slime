@@ -488,10 +488,6 @@
 			}
 		};
 
-		rv.script.old = function(/* mapping files */) {
-			return script(new OldResources(), Array.prototype.slice.call(arguments));
-		};
-
 		$export(rv);
 	}
 //@ts-ignore
