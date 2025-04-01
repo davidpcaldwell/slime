@@ -55,12 +55,6 @@ namespace slime.jsh.httpd {
 		export interface Exports {
 			Constructor: new () => Resources
 
-			/**
-			 * @deprecated
-			 */
-			//	Search term to find usages: /(?-i)Resources\.Old/
-			Old: any
-
 			NoVcsDirectory: any
 
 			script: {

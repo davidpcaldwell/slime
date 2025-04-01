@@ -117,94 +117,7 @@
 			}
 		};
 
-		var OldMapping = function(p) {
-			if (!p.pathname.directory) {
-				throw new Error("Unimplemented: pathname " + p.pathname + " is not directory, semantics not defined.");
-			}
-
-			Mapping.call(this,p);
-
-			this.toString = function() {
-				return p.prefix + " -> " + p.pathname;
-			};
-
-			this.get = function(path) {
-				if (path.substring(0,p.prefix.length) == p.prefix) {
-					var subpath = path.substring(p.prefix.length);
-					if (p.implementation) return p.implementation.get(subpath);
-					if (!p.pathname.directory) {
-						return null;
-					}
-					var file = p.pathname.directory.getFile(subpath);
-					return (file) ? /*new jsh.io.Resource(*/{
-						type: $context.getMimeType(file),
-						length: file.length,
-						read: {
-							binary: function() {
-								return file.read(jsh.io.Streams.binary)
-							}
-						}
-					}/*)*/ : null;
-				}
-				return null;
-			};
-
-			this.list = function(path) {
-				if (path.substring(0,p.prefix.length) == p.prefix) {
-					var subpath = path.substring(p.prefix.length);
-					if (p.implementation) return p.implementation.list(subpath);
-					if (!p.pathname.directory) {
-						throw new Error("Unimplemented.");
-					}
-					var directory = (subpath.length) ? p.pathname.directory.getSubdirectory(subpath) : p.pathname.directory;
-					return directory.list({ type: directory.list.ENTRY }).map(function(entry) {
-						return entry.path.replace(/\\/g, "/");
-					});
-				}
-				return null;
-			}
-
-			this.build = function(WEBAPP) {
-				if (p.implementation) throw new Error("Unimplemented: convert build to use list");
-				var build = function(prefix,pathname) {
-					var to = WEBAPP.getRelativePath(prefix);
-					var node = (function() {
-						if (pathname.file) return pathname.file;
-						if (pathname.directory) return pathname.directory;
-						throw new Error("Not directory or file: " + pathname);
-					})();
-
-					var copy = function(node,pathname) {
-						var recurse = arguments.callee;
-						if (node.directory) {
-							var to = pathname.createDirectory({
-								ifExists: function(dir) {
-									return false;
-								},
-								recursive: true
-							});
-							var nodes = node.list();
-							nodes.forEach(function(item) {
-								jsh.shell.echo("Copying " + item + " to " + to.getRelativePath(item.pathname.basename));
-								recurse(item,to.getRelativePath(item.pathname.basename));
-							});
-						} else {
-							node.copy(pathname, {
-								filter: function(item) {
-									return true;
-								}
-							});
-						}
-					}
-
-					copy(node,to);
-				}
-
-				build(p.prefix,p.pathname);
-			}
-		}
-
-		var Resources = function(mapping,old) {
+		var Resources = function(mapping) {
 			var loader = new function() {
 				this.get = function(path) {
 					for (var i=0; i<mapping.length; i++) {
@@ -245,7 +158,7 @@
 							rv = rv.concat(listed);
 						} else if (under) {
 							if (rv.indexOf(under) == -1) {
-								rv.push((old) ? under : { path: under.substring(0,under.length-1), loader: true  });
+								rv.push({ path: under.substring(0,under.length-1), loader: true  });
 							}
 						}
 					}
@@ -257,31 +170,6 @@
 						return item.toString();
 					}).join(", ") + "]";
 				}
-			};
-
-			/**
-			 *
-			 * @param { string } prefix
-			 * @returns { slime.old.Loader<slime.old.loader.Source, slime.Resource> }
-			 */
-			var OldLoader = function(prefix) {
-				/** @type { slime.old.loader.Source } */
-				var source = {
-					get: function(path) {
-						return loader.get(path);
-					},
-					list: function(path) {
-						debugger;
-						return loader.list(path);
-					}
-				};
-				var implementation = new jsh.io.Loader(source);
-				var rv = implementation.Child(prefix);
-				//	TODO	code below failed type-checking and does not seem to make sense
-				// rv.list = function(p) {
-				// 	return loader.list.call(loader,prefix+p.path);
-				// };
-				return rv;
 			};
 
 			/**
@@ -338,7 +226,7 @@
 				// }
 			}
 
-			this.loader = (old) ? OldLoader("") : new NewLoader();
+			this.loader = new NewLoader();
 
 			/**
 			 * @type { slime.jsh.httpd.Resources["file"] }
@@ -393,28 +281,6 @@
 			}
 		}
 
-		var OldResources = function() {
-			var mapping = [];
-
-			Resources.call(this,mapping,true);
-
-			this.map = function(prefix,pathname) {
-				mapping.push(new OldMapping({ pathname: pathname, prefix: prefix }));
-			};
-
-		//		this.Loader = function(p) {
-		//			var rv = new jsh.file.Loader(p);
-		//			rv.list = function(m) {
-		//				var directory = p.directory;
-		//				var dir = (m.path) ? directory.getSubdirectory(m.path) : directory;
-		//				return dir.list({ type: dir.list.ENTRY }).map(function(entry) {
-		//					return entry.path;
-		//				});
-		//			}
-		//			return rv;
-		//		};
-		};
-
 		/**
 		 * @type { new () => slime.jsh.httpd.Resources }
 		 */
@@ -455,7 +321,6 @@
 				script: void(0),
 				Constructor: NewResources
 			};
-			rv.Old = $api.deprecate(OldResources);
 
 			rv.NoVcsDirectory = DirectoryWithoutVcsLoader;
 

@@ -16,6 +16,11 @@
 	function(Packages,$api,$context,$exports) {
 		var jsh = $context.jsh;
 
+		/**
+		 *
+		 * @param { slime.jrunscript.file.Directory } slime
+		 * @param { slime.jrunscript.file.Pathname[] } pathnames
+		 */
 		$exports.Modules = function(slime,pathnames) {
 			var common = (function() {
 				var isCommonAncestor = function(directory,list) {
@@ -175,8 +180,8 @@
 					port: p.port,
 					browser: p.browser,
 					resources: (function() {
-						var rv = new jsh.httpd.Resources.Old();
-						rv.map("", common.pathname);
+						var rv = new jsh.httpd.Resources.Constructor();
+						rv.add({ prefix: "", directory: common });
 						return rv;
 					})(),
 					url: request.build(),
