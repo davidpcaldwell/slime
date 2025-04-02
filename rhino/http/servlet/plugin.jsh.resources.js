@@ -117,6 +117,9 @@
 			}
 		};
 
+		/**
+		 * @param { Mapping[] } mapping
+		 */
 		var Resources = function(mapping) {
 			var loader = new function() {
 				this.get = function(path) {
@@ -285,6 +288,7 @@
 		 * @type { new () => slime.jsh.httpd.Resources }
 		 */
 		var NewResources = function() {
+			/** @type { Mapping[] } */
 			var mapping = [];
 
 			this.file = void(0);
