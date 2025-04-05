@@ -162,16 +162,17 @@ namespace slime.$api.fp {
 		mapAllTo: <P,R>(r: R) => (p: P) => R
 
 
-		/** @deprecated Replaced by `mapping.properties`. */
+		/** @deprecated Replaced by `Mapping.properties`. */
 		split: <P,R>(functions: { [k in keyof R]: (p: P) => R[k] }) => (p: P) => R
 	}
 
 	export namespace exports {
 		export interface Mapping {
-			thunk: <P,R>(p: {
-				mapping: fp.Mapping<P,R>
-				argument: P
-			}) => Thunk<R>
+			/**
+			 * Given a {@link Mapping}, creates a `Mapping` that, given an argument, returns a {@link Thunk} that will, when
+			 * invoked, invoke the underlying mapping with that argument and return the result.
+			 */
+			thunk: <P,R>(p: fp.Mapping<P,R>) => fp.Mapping<P,Thunk<R>>
 		}
 
 		(
@@ -184,10 +185,7 @@ namespace slime.$api.fp {
 				fifty.tests.exports.mapping.thunk = function() {
 					var double: fp.Mapping<number,number> = (n: number) => n*2;
 
-					var t1 = $api.fp.Mapping.thunk({
-						mapping: double,
-						argument: 2
-					});
+					var t1 = $api.fp.Mapping.thunk(double)(2);
 
 					verify(t1()).is(4);
 				}
