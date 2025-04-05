@@ -230,9 +230,11 @@
 						return r;
 					}
 				},
-				thunk: function(p) {
-					return function() {
-						return p.mapping(p.argument);
+				thunk: function(mapping) {
+					return function(p) {
+						return function() {
+							return mapping(p);
+						}
 					}
 				},
 				properties: function(definition) {
