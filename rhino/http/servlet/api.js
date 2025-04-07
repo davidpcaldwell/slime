@@ -246,7 +246,7 @@
 
 		var loaders = (
 			/**
-			 * @return { { script: slime.old.Loader, container: slime.old.Loader, api: slime.Loader } }
+			 * @return { slime.servlet.internal.Loaders }
 			 */
 			function() {
 				if ($java && $servlet) {
@@ -370,8 +370,9 @@
 		)();
 
 		if (loaders.script) {
-			//	TODO	this should be a module loader, basically, for the code itself, so should somehow resolve relative paths in the
-			//			global loader; in the jsh embedding, it should resolve them relative to the current directory of the script
+			//	TODO	this should be a module loader, basically, for the code itself, so should somehow resolve relative paths in
+			// 			the global loader; in the jsh embedding, it should resolve them relative to the current directory of the
+			// 			script
 			scope.$loader = loaders.script;
 		}
 

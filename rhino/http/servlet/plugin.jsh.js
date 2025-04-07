@@ -235,12 +235,22 @@
 						return Boolean(webapps["webapps"]);
 					}
 
+					/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => webapps is slime.jsh.httpd.servlet.configuration.WebappServlet } */
+					var isServletWebapp = function(webapps) {
+						return Boolean(webapps["servlet"]);
+					}
+
 					if (isSingleWebapp(webapps)) {
 						return {
 							"": webapps.webapp
 						}
 					} else if (isMultipleWebapps(webapps)) {
 						return webapps.webapps;
+					} else if (isServletWebapp(webapps)) {
+						var servlets = jsh.httpd.servlet.Servlets.from.root(webapps);
+						return {
+							"": servlets
+						}
 					} else {
 						return {};
 					}
@@ -344,7 +354,7 @@
 
 							/**
 							 * @param { any } context Tomcat native Java context object
-							 * @param { slime.old.Loader } resources
+							 * @param { slime.old.Loader | undefined } resources
 							 * @param { string } pattern
 							 * @param { string } servletName
 							 * @param { slime.jsh.httpd.servlet.Descriptor } servletDeclaration

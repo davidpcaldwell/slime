@@ -100,7 +100,7 @@ namespace slime.jsh.httpd {
 			 * A servlet that implements an entire webapp, in contrast to a servlet that serves as part of a webapp.
 			 */
 			export interface WebappServlet<T extends Descriptor = Descriptor> {
-				resources: slime.old.Loader
+				resources?: slime.old.Loader
 				servlet: T
 			}
 
@@ -193,7 +193,7 @@ namespace slime.jsh.httpd {
 		/** @deprecated Should be declaring webapps at time of server creation. */
 		export type NoWebapps = {};
 
-		export type Webapps = SingleWebapp | MultipleWebapps
+		export type Webapps = SingleWebapp | MultipleWebapps | servlet.configuration.WebappServlet
 
 		/** @deprecated Should be declaring webapps at time of server creation. */
 		export type AcceptOldForm = Webapps | NoWebapps
