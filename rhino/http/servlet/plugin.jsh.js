@@ -223,14 +223,14 @@
 					}
 				}
 
-				/** @type { (webapps: slime.jsh.httpd.tomcat.OldWebapps) => slime.jsh.httpd.tomcat.MultipleWebapps["webapps"] } */
-				var toWebappsWithContextPath = function(webapps) {
-					/** @type { (webapps: slime.jsh.httpd.tomcat.OldWebapps) => webapps is slime.jsh.httpd.tomcat.SingleWebapp } */
+				/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => slime.jsh.httpd.tomcat.MultipleWebapps["webapps"] } */
+				var acceptOldFormToWebapps = function(webapps) {
+					/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => webapps is slime.jsh.httpd.tomcat.SingleWebapp } */
 					var isSingleWebapp = function(webapps) {
 						return Boolean(webapps["webapp"]);
 					}
 
-					/** @type { (webapps: slime.jsh.httpd.tomcat.OldWebapps) => webapps is slime.jsh.httpd.tomcat.MultipleWebapps } */
+					/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => webapps is slime.jsh.httpd.tomcat.MultipleWebapps } */
 					var isMultipleWebapps = function(webapps) {
 						return Boolean(webapps["webapps"]);
 					}
@@ -249,7 +249,7 @@
 				if (TOMCAT_CLASS) {
 					var Tomcat = (
 						/**
-						 * @param { slime.jsh.httpd.tomcat.Configuration & (slime.jsh.httpd.tomcat.Webapps | {}) } p
+						 * @param { slime.jsh.httpd.tomcat.Configuration & (slime.jsh.httpd.tomcat.AcceptOldForm) } p
 						 */
 						function(p) {
 							//	TODO	probably should not happen now that we specify webapps in the configuration
@@ -446,7 +446,7 @@
 								addServlet(addContext("",base),declaration.resources,"/*","slime",declaration);
 							};
 
-							var webapps = toWebappsWithContextPath(p);
+							var webapps = acceptOldFormToWebapps(p);
 
 							Object.entries(webapps).forEach(function(entry) {
 								map($api.Object.compose({ path: entry[0] }, entry[1]));

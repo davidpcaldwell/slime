@@ -11,28 +11,35 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var underlying = jsh.httpd.Tomcat();
-		underlying.servlet({
-			load: function(scope) {
-				scope.$exports.handle = function(request) {
-					return {
-						status: {
-							code: 200
-						},
-						body: {
-							type: "application/json",
-							string: JSON.stringify({
-								scheme: request.scheme,
-								method: request.method,
-								uri: request.uri,
-								url: request.url,
-								headers: request.headers
-							}, void(0), 4)
-						}
-					};
+		var servlets = jsh.httpd.servlet.Servlets.from.root({
+			resources: void(0),
+			servlet: {
+				load: function(scope) {
+					scope.$exports.handle = function(request) {
+						return {
+							status: {
+								code: 200
+							},
+							body: {
+								type: "application/json",
+								string: JSON.stringify({
+									scheme: request.scheme,
+									method: request.method,
+									uri: request.uri,
+									url: request.url,
+									headers: request.headers
+								}, void(0), 4)
+							}
+						};
+					}
 				}
 			}
 		});
+
+		var underlying = jsh.httpd.tomcat.Server.from.configuration({
+			webapp: servlets
+		});
+
 		underlying.start();
 
 		var direct = new jsh.http.Client().request({
@@ -41,12 +48,15 @@
 		var directResponse = JSON.parse(direct.body.stream.character().asString());
 		jsh.shell.console("DIRECT: " + JSON.stringify(directResponse));
 
+		//	TODO	requiring this call seems dubious
 		jsh.httpd.plugin.tools();
+
+		//	TODO	is there a way to make this into an automated test? Right now we examine the UI after the line below executes.
 
 		jsh.httpd.tools.proxy.application({
 			hosts: ["destination.example.com"],
-			server: {
-				http: underlying.port
+			delegate: {
+				port: underlying.port
 			},
 			chrome: {
 				location: jsh.script.file.parent.parent.parent.parent.parent.getRelativePath("local/chrome/https-proxy"),

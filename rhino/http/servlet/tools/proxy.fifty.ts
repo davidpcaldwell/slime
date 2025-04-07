@@ -24,6 +24,9 @@ namespace slime.servlet.proxy {
 		}
 	}
 
+	/**
+	 * A server that proxies requests to an underlying server via HTTP.
+	 */
 	export interface Server {
 		/**
 		 * The host names for which this server will support HTTPS.
@@ -33,11 +36,11 @@ namespace slime.servlet.proxy {
 		/**
 		 * A delegate server to which to forward all requests via HTTP.
 		 */
-		server: {
+		delegate: {
 			/**
 			 * The port number on which the underlying server listens for HTTP connections.
 			 */
-			http: number
+			port: number
 		}
 
 		override?: {
@@ -53,6 +56,15 @@ namespace slime.servlet.proxy {
 			location: slime.jrunscript.file.Pathname
 			uri: string
 		}
+	}
+
+	export namespace internal {
+		export type https = (p: {
+			/**
+			 * A set of hosts to which to support https requests.
+			 */
+			hosts: string[]
+		}) => slime.jsh.httpd.tomcat.Configuration["https"]
 	}
 
 	export interface Exports {

@@ -96,6 +96,9 @@ namespace slime.jsh.httpd {
 				servlets?: { [pattern: string]: servlet.Descriptor }
 			}
 
+			/**
+			 * A servlet that implements an entire webapp, in contrast to a servlet that serves as part of a webapp.
+			 */
 			export interface WebappServlet<T extends Descriptor = Descriptor> {
 				resources: slime.old.Loader
 				servlet: T
@@ -193,7 +196,7 @@ namespace slime.jsh.httpd {
 		export type Webapps = SingleWebapp | MultipleWebapps
 
 		/** @deprecated Should be declaring webapps at time of server creation. */
-		export type OldWebapps = Webapps | NoWebapps
+		export type AcceptOldForm = Webapps | NoWebapps
 
 		export interface Configuration {
 			/**
@@ -233,14 +236,17 @@ namespace slime.jsh.httpd {
 		 */
 		Tomcat?: {
 			/**
+			 * @deprecated tomcat.Server.from.configuration provides an interface for using current API constructs to create
+			 * instances.
+			 *
 			 * Creates an embedded Tomcat server that can run script-based web applications. The server must have at least one
-			 * application present, either as specified by {@link tomcat.Webapps} in the argument, or as added by the deprecated
+			 * application present, either as specified by {@link slime.jsh.httpd.tomcat.Webapps} in the argument, or as added by the deprecated
 			 * `map` method, before it will function.
 			 *
 			 * @param p (optional; default is an object with no properties) An object specifying the configuration of the embedded
 			 * server.
 			 */
-			(p?: tomcat.Configuration & tomcat.OldWebapps): Tomcat
+			(p?: tomcat.Configuration & tomcat.AcceptOldForm): Tomcat
 
 			/**
 			 * Starts a server that serves files from a particular directory.
