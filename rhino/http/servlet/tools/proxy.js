@@ -30,23 +30,38 @@
 		}
 
 		/**
+		 * @type { slime.servlet.proxy.internal.https }
+		 *
+		 * Creates a local HTTPS configuration, allowing HTTPS applications or tests to be run against a local HTTPS server.
+		 * The implementation creates a local HTTPS certificate store containing certificates for the given hosts.
+		 *
+		 * @param p
+		 * @returns A value for the `https` property of {@link slime.jsh.httpd.tomcat.Configuration}.
+		 */
+		function https(p) {
+			var pkcs12 = mkcert(["127.0.0.1"].concat(p.hosts)).pathname;
+
+			var port = $context.library.ip.getEphemeralPort().number;
+			return {
+				port: port,
+				keystore: {
+					file: pkcs12.file,
+					password: "changeit"
+				}
+			}
+		}
+
+		/**
 		 *
 		 * @param { slime.servlet.proxy.Server } p
 		 */
 		function createHttpServer(p) {
-			var hosts = p.hosts;
-			var pkcs12 = mkcert(["127.0.0.1"].concat(hosts)).pathname;
-
-			var port = $context.library.ip.getEphemeralPort().number;
 			var tomcat = $context.library.jsh.httpd.Tomcat({
-				https: {
-					port: port,
-					keystore: {
-						file: pkcs12.file,
-						password: "changeit"
-					}
-				}
+				https: https({
+					hosts: p.hosts
+				})
 			});
+
 			tomcat.servlet({
 				load: function(scope) {
 					//	Our HTTP *client* does not like the id-management-ui node *server*'s HTTPS
@@ -110,7 +125,7 @@
 							proxy: {
 								http: {
 									host: "127.0.0.1",
-									port: p.server.http
+									port: p.delegate.port
 								}
 							},
 							body: send.request.body,
@@ -179,7 +194,7 @@
 								if (header.name == "Location") {
 									console("===============================");
 									console("Location: " + header.value);
-									console("port = " + p.server.http);
+									console("port = " + p.delegate.port);
 									console("===============================");
 									if (p.override && p.override.redirect) {
 										header.value = p.override.redirect({
@@ -236,10 +251,10 @@
 				});
 
 				var pac = $loader.get("proxy.pac").read(String)
-					.replace(/__HTTP__/g, String(p.server.http))
+					.replace(/__HTTP__/g, String(p.delegate.port))
 				;
 
-				console("HTTP running on " + p.server.http);
+				console("HTTP running on " + p.delegate.port);
 				console("HTTPS running on " + tomcat.https.port);
 
 				var instance = new $context.library.jsh.shell.browser.chrome.Instance({
