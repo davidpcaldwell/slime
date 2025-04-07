@@ -113,6 +113,19 @@ namespace slime.servlet {
 	}
 
 	export namespace internal {
+		export interface Loaders {
+			api: slime.Loader
+
+			//	TODO absent for now in jsh-level servlets, but see comment in api.js about $loader
+			script?: slime.old.Loader
+
+			/**
+			 * The global servlet resource loader; the loader that becomes `httpd.loader`. If not present, `httpd.loader`
+			 * will not be present.
+			 */
+			container?: slime.old.Loader
+		}
+
 		export namespace $host {
 			export interface Java {
 				getClasspath?: slime.jrunscript.native.inonit.script.engine.Loader.Classes.Interface
@@ -130,11 +143,7 @@ namespace slime.servlet {
 
 				api?: slime.servlet.internal.api
 
-				loaders?: {
-					api: slime.Loader
-					script: slime.old.Loader
-					container: slime.old.Loader
-				}
+				loaders?: Loaders
 
 				Loader: {
 					tools: {

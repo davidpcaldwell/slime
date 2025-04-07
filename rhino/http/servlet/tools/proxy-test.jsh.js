@@ -11,7 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var servlets = jsh.httpd.servlet.Servlets.from.root({
+		var underlying = jsh.httpd.tomcat.Server.from.configuration({
 			resources: void(0),
 			servlet: {
 				load: function(scope) {
@@ -34,10 +34,6 @@
 					}
 				}
 			}
-		});
-
-		var underlying = jsh.httpd.tomcat.Server.from.configuration({
-			webapp: servlets
 		});
 
 		underlying.start();
