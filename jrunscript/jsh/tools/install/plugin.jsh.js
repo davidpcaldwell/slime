@@ -406,59 +406,97 @@
 						}
 					}
 
-					return {
-						install: function(p) {
-							var destination = (p && p.destination) ? p.destination : location;
+					var install = function(p) {
+						var destination = (p && p.destination) ? p.destination : location;
 
-							/**
-							 *
-							 * @param { string } os
-							 * @param { string } arch
-							 * @returns
-							 */
-							var getBinaryUrl = function(os,arch) {
-								if (os == "Linux") {
-									return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64";
-								} else if (os == "Mac OS X") {
-									if (arch == "aarch64") {
-										return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-arm64";
-									} else {
-										return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-amd64";
-									}
+						/**
+						 *
+						 * @param { string } os
+						 * @param { string } arch
+						 * @returns
+						 */
+						var getBinaryUrl = function(os,arch) {
+							if (os == "Linux") {
+								return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64";
+							} else if (os == "Mac OS X") {
+								if (arch == "aarch64") {
+									return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-arm64";
+								} else {
+									return "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-amd64";
 								}
 							}
-
-							var at = jsh.tools.install.get({ url: getBinaryUrl(jsh.shell.os.name, jsh.shell.os.arch) });
-
-							at.copy(destination, {
-								filter: function(p) {
-									return true;
-								},
-								recursive: true
-							});
-
-							jsh.shell.console("Installed mkcert to: " + destination);
-
-							jsh.shell.run({
-								command: "chmod",
-								arguments: [
-									"+x", destination
-								]
-							});
-
-							jsh.shell.run({
-								command: destination.file,
-								arguments: ["-install"]
-							});
-
-							return Installation(destination.file);
-						},
-						require: function() {
-							if (!location.file) {
-								this.install();
-							}
-							return Installation(location.file);
 						}
+
+						var at = jsh.tools.install.get({ url: getBinaryUrl(jsh.shell.os.name, jsh.shell.os.arch) });
+
+						at.copy(destination, {
+							filter: function(p) {
+								return true;
+							},
+							recursive: true
+						});
+
+						jsh.shell.console("Installed mkcert to: " + destination);
+
+						jsh.shell.run({
+							command: "chmod",
+							arguments: [
+								"+x", destination
+							]
+						});
+
+						jsh.shell.run({
+							command: destination.file,
+							arguments: ["-install"]
+						});
+
+						return Installation(destination.file);
+					};
+
+					var require = function() {
+						if (!location.file) {
+							install();
+						}
+						return Installation(location.file);
+					}
+
+					/**
+					 *
+					 * @param { string[] } hosts
+					 */
+					function run(hosts) {
+						var mkcert = jsh.shell.tools.mkcert.require();
+						var pkcs12 = jsh.shell.TMPDIR.createTemporary({ suffix: ".p12" });
+						mkcert.pkcs12({ hosts: hosts, to: pkcs12.pathname });
+						return pkcs12;
+					}
+
+					/**
+					 * @type { slime.jsh.shell.tools.Exports["mkcert"]["tomcatConfiguration"] }
+					 *
+					 * Creates a local HTTPS configuration, allowing HTTPS applications or tests to be run against a local HTTPS server.
+					 * The implementation creates a local HTTPS certificate store containing certificates for the given hosts.
+					 *
+					 * @param p
+					 * @returns A value for the `https` property of {@link slime.jsh.httpd.tomcat.Configuration}.
+					 */
+					function https(p) {
+						var pkcs12 = run(["127.0.0.1"].concat(p.hosts)).pathname;
+
+						var port = jsh.ip.getEphemeralPort().number;
+						return {
+							port: port,
+							keystore: {
+								file: pkcs12.file,
+								password: "changeit"
+							}
+						}
+					}
+
+					return {
+						install: install,
+						require: require,
+						tomcatConfiguration: https
 					}
 				})();
 
