@@ -20,6 +20,9 @@
 			log.INFO(message);
 		};
 
+		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
+		var _streams = new Packages.inonit.script.runtime.io.Streams();
+
 		var createMultipartParser = $loader.value("upload.js", { $context: $context });
 
 		var multipartParser;
@@ -265,11 +268,11 @@
 								_response.addHeader("Cache-Control", "max-age=0");
 								if (response.body && response.body["read"] && response.body["read"].binary) {
 									$context.api.io.Streams.binary.copy(response.body["read"].binary(),_response.getOutputStream());
-								// } else if (response.body && response.body.read && response.body.read.text) {
-								// 	var _stream = response.body.read.text().java.adapt();
-								// 	_streams.copy(_stream, _response.getWriter());
-								// 	_stream.close();
-								//	TODO	Not sure whether this if-else chain could open stream multiple times
+								} else if (response.body && response.body["read"] && response.body["read"].text) {
+									var _stream = response.body["read"].text().java.adapt();
+									_streams.copy(_stream, _response.getWriter());
+									_stream.close();
+									//TODO	Not sure whether this if-else chain could open stream multiple times
 								} else if (response.body && !response.body["stream"] && response.body["string"]) {
 									//	Wrap in java.lang.String because Nashorn string type does not unambiguously match .write() signature
 									_response.getWriter().write(new Packages.java.lang.String(response.body["string"]));
