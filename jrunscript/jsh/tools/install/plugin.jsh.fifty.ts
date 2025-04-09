@@ -327,6 +327,13 @@ namespace slime.jsh.shell.tools {
 		mkcert: {
 			install: (p?: { destination?: slime.jrunscript.file.Pathname, replace?: boolean }) => mkcert.Installation
 			require: () => mkcert.Installation
+
+			tomcatConfiguration: (p: {
+				/**
+				 * A set of hosts to which to support https requests.
+				 */
+				hosts: string[]
+			}) => slime.jsh.httpd.tomcat.Configuration["https"]
 		}
 	}
 
