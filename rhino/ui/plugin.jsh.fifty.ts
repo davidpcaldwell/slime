@@ -22,6 +22,7 @@ namespace slime.jsh {
 			}
 		}
 	}
+
 	export interface Global {
 		ui: slime.jsh.ui.Exports
 	}

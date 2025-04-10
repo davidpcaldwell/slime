@@ -41,6 +41,12 @@
  *
  * TODO write documentation
  *
+ * ## Application types
+ *
+ * ### User interfaces
+ *
+ * SLIME UI applications can be built via the {@link slime.jsh.ui | `jsh.ui`} APIs.
+ *
  * ## Older documentation
  *
  * See [old JSAPI-based `jsh` documentation](../src/jsh/etc/api.html).
