@@ -26,6 +26,16 @@ namespace slime.jsh.ui {
 					}
 				}
 			}
+
+			//	Implemented in plugin.jsh.js
+			https?: (p: {
+				hosts: string[]
+			}) => {
+				tomcat: slime.jsh.httpd.tomcat.Configuration["https"]
+				chrome: {
+					hostrules: string[]
+				}
+			}
 		}
 
 		object: {

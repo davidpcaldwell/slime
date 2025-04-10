@@ -126,7 +126,7 @@
 
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java);
+				return Boolean(jsh.ui && jsh.ui.javafx && jsh.ui.javafx.WebView && jsh.httpd && jsh.httpd.Tomcat && jsh.java && jsh.shell);
 			},
 			load: function() {
 				/** @type { slime.jsh.ui.internal.application.Script } */
@@ -152,6 +152,25 @@
 					Application: api.object
 				};
 				jsh.ui.configuration = api.configuration;
+			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.ui.configuration && jsh.shell && jsh.shell.tools);
+			},
+			load: function() {
+				jsh.ui.configuration.https = function(p) {
+					var tomcat = jsh.shell.tools.mkcert.tomcatConfiguration(p);
+					return {
+						tomcat: tomcat,
+						chrome: {
+							hostrules: p.hosts.map(function(host) {
+								return "MAP " + host + " 127.0.0.1:" + tomcat.port
+							})
+						}
+					}
+				}
 			}
 		})
 	}
