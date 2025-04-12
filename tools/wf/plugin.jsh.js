@@ -1025,6 +1025,11 @@
 							.argument(remote)
 							.run()
 						;
+						var originHead = (origin.head == "(unknown)") ? void(0) : origin.head;
+						if (!originHead) {
+							events.fire("console", "(no commits on origin)");
+							return true;
+						}
 						var repository = p.repository;
 						var status = repository.status();
 						var branch = status.branch.name;
@@ -1282,7 +1287,7 @@
 								}
 							});
 
-							success = success && noUntrackedFiles({
+							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_UNTRACKED_FILES) success = success && noUntrackedFiles({
 								repository: repository
 							})({
 								console: function(e) {
@@ -1293,7 +1298,7 @@
 								}
 							});
 
-							success = success && noModifiedSubmodules({
+							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_MODIFIED_SUBMODULES) success = success && noModifiedSubmodules({
 								repository: repository
 							})({
 								console: function(e) {
