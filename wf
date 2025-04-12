@@ -49,10 +49,6 @@ if [ "${SLIME_WF_JDK_VERSION}" = "8" ] || [ "${SLIME_WF_JDK_VERSION}" = "11" ] |
 		${SLIME}/jsh --install-jdk-${SLIME_WF_JDK_VERSION}
 	fi
 
-	if [ ! -f "${JSH_SHELL_LIB}/js.jar" ]; then
-		${SLIME}/jsh --install-rhino
-	fi
-
 	export JSH_LAUNCHER_JDK_HOME="${SLIME_WF_JDK_LOCAL}"
 else
 	>&2 echo "Unsupported JDK version ${SLIME_WF_JDK_VERSION}; exiting."

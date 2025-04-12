@@ -13,6 +13,8 @@
 	 * @template { {} } T
 	 */
 	function($api,jsh) {
+		jsh.shell.tools.rhino.require.simple();
+
 		var $$api = {
 			Function: {
 				RegExp: {
