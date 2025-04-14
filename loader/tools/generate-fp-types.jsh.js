@@ -141,6 +141,22 @@
 			return rv;
 		};
 
+		var thunkNowDefinition = function(size) {
+			var rv = [];
+			var types = getGenericTypeList(size+1);
+			rv.push("<" + types.join(",") + ">(");
+			rv.push(indent("a: Thunk<A>,"));
+			for (var i=0; i<size; i++) {
+				var last = i+1 == size;
+				var f = getFunctionName(i);
+				var p = getParameterNameOfType(types[i]);
+				var r = types[i+1]
+				rv.push(indent(f + ": (" + p + ": " + types[i] + ") => " + r + ( last ? "" : "," )));
+			}
+			rv.push("): " + types[types.length-1]);
+			return rv;
+		};
+
 		//	TODO	inputMapDefinition and inputValueDefinition are very duplicative
 
 		var inputMapDefinition = function(size) {
@@ -282,6 +298,12 @@
 													"Now_map",
 													indexes(inputs.counts.value_map).map(function(n,index,array) {
 														return valueMapDefinition(array.length-n);
+													})
+												),
+												typeDefinition(
+													"Thunk_now",
+													indexes(inputs.counts.thunk_value).map(function(n,index,array) {
+														return thunkNowDefinition(array.length-n);
 													})
 												),
 												typeDefinition(
