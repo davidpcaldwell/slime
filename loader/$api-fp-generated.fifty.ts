@@ -137,6 +137,76 @@ namespace slime.$api.fp {
 		): B
 	}
 
+	export type Thunk_now = {
+		<A,B,C,D,E,F,G,H,I>(
+			a: Thunk<A>,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G,
+			l: (g: G) => H,
+			m: (h: H) => I
+		): I
+
+		<A,B,C,D,E,F,G,H>(
+			a: Thunk<A>,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G,
+			l: (g: G) => H
+		): H
+
+		<A,B,C,D,E,F,G>(
+			a: Thunk<A>,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F,
+			k: (f: F) => G
+		): G
+
+		<A,B,C,D,E,F>(
+			a: Thunk<A>,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E,
+			j: (e: E) => F
+		): F
+
+		<A,B,C,D,E>(
+			a: Thunk<A>,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D,
+			i: (d: D) => E
+		): E
+
+		<A,B,C,D>(
+			a: Thunk<A>,
+			f: (a: A) => B,
+			g: (b: B) => C,
+			h: (c: C) => D
+		): D
+
+		<A,B,C>(
+			a: Thunk<A>,
+			f: (a: A) => B,
+			g: (b: B) => C
+		): C
+
+		<A,B>(
+			a: Thunk<A>,
+			f: (a: A) => B
+		): B
+	}
+
 	export type Thunk_value = {
 		<A,B,C,D,E,F,G,H,I>(
 			a: A,

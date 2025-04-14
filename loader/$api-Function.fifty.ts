@@ -121,11 +121,44 @@ namespace slime.$api.fp {
 		pipe: Pipe
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.thunk = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		thunk: {
 			value: Thunk_value
+
+			now: Thunk_now
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.thunk.now = function() {
+				const one: Thunk<number> = $api.fp.thunk.value(1);
+
+				const double = function(n: number): number { return n*2; };
+
+				var a = $api.fp.thunk.now(one, double);
+				verify(a).is(2);
+
+				var b = $api.fp.thunk.now(one, double, double);
+				verify(b).is(4);
+			};
+		}
+	//@ts-ignore
+	)(fifty);
 
 	(
 		function(

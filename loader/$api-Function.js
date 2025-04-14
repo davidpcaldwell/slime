@@ -222,6 +222,14 @@
 					return function() {
 						return now_map.apply(this, args);
 					}
+				},
+				now: function(thunk) {
+					var maps = Array.prototype.slice.call(arguments, 1);
+					var rv = thunk();
+					maps.forEach(function(map) {
+						rv = map(rv);
+					});
+					return rv;
 				}
 			},
 			Mapping: {
