@@ -341,7 +341,7 @@
 					return getFilenameMimeType(file.pathname.basename);
 				};
 
-				/** @param { slime.jrunscript.http.client.spi.Response } response */
+				/** @param { slime.jrunscript.http.client.Response } response */
 				var getResponseMimeType = function(response) {
 					return $api.fp.result(
 						$context.library.http.Header.value("Content-Type")(response.headers),
@@ -361,7 +361,7 @@
 				/**
 				 *
 				 * @param { slime.jrunscript.tools.install.Distribution } download
-				 * @param { (argument: slime.jrunscript.http.client.spi.Argument) => slime.jrunscript.http.client.spi.Response } fetch
+				 * @param { (argument: slime.jrunscript.http.client.spi.Argument) => slime.jrunscript.http.client.Response } fetch
 				 * @returns { { file: slime.jrunscript.file.File, type: slime.$api.fp.Maybe<slime.mime.Type> } }
 				 */
 				var getArchive = function(download,fetch) {

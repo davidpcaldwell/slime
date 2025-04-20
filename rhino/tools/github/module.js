@@ -225,7 +225,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.http.client.spi.Response } response
+		 * @param { slime.jrunscript.http.client.Response } response
 		 * @returns { slime.jrunscript.tools.github.rest.Pagination }
 		 */
 		function links(response) {

@@ -5,15 +5,10 @@
 //	END LICENSE
 
 /**
+ * APIs for functional programming.
+ *
  * The {@link slime.$api.fp.Exports | Exports} member of this namespace is available as `$api.fp` in all scripts loaded by the
  * SLIME loader.
- *
- * The SLIME functional programming APIs strongly favor functions with a single argument, given that JavaScript has multiple ways
- * to pass multiple values through a single argument (for example arguments can be objects with multiple properties, or arrays with
- * multiple elements).
- *
- * The {@link slime.$api.fp.methods | methods} namespace has functions that convert functional implementations into a more
- * object-oriented style, by pinning arguments in chains of single-argument functions.
  */
 namespace slime.$api.fp {
 	(
@@ -48,6 +43,13 @@ namespace slime.$api.fp {
 
 	/**
 	 * The SLIME functional programming APIs. This object is available as `$api.fp` in all scripts loaded by the SLIME loader.
+	 *
+	 * The APIs strongly favor functions with a single argument, given that JavaScript has multiple ways
+	 * to pass multiple values through a single argument (for example arguments can be objects with multiple properties, or arrays with
+	 * multiple elements).
+	 *
+	 * The {@link slime.$api.fp.methods | methods} namespace provides the ability to convert functional implementations into a more
+	 * object-oriented style, by pinning arguments in chains of single-argument functions.
 	 */
 	export interface Exports {
 	}
@@ -588,9 +590,6 @@ namespace slime.$api.fp {
 
 	}
 
-	/**
-	 * This object is available as `$api.fp` in all scripts loaded by the SLIME loader.
-	 */
 	export interface Exports {
 		string: exports.String
 	}

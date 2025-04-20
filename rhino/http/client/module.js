@@ -95,12 +95,7 @@
 			//	TODO	Does not handle stream/$stream from rhino/mime
 			//			above is a very old comment; may no longer apply
 
-			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Stream } */
-			var isStream = function(body) {
-				return Boolean(body["stream"]);
-			}
-
-			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Binary } */
+			/** @type { (body: slime.jrunscript.http.client.request.Body) => body is slime.jrunscript.http.client.request.body.Resource } */
 			var isBinary = function(body) {
 				return Boolean(body["read"] && body["read"].binary);
 			}
@@ -110,7 +105,6 @@
 				return typeof body["string"] != "undefined";
 			}
 
-			if (isStream(body)) return body.stream;
 			if (isBinary(body)) return body.read.binary();
 			if (isString(body)) {
 				var buffer = new $context.api.io.Buffer();
@@ -127,16 +121,15 @@
 		 * @returns { slime.jrunscript.http.client.spi.request.Body }
 		 */
 		var _interpretRequestBody = function(p) {
-			if (!p) return null;
 			return {
 				type: _getRequestBodyType(p),
 				stream: _getRequestBodyStream(p)
-			};
+			}
 		}
 
 		/**
 		 *
-		 * @param { slime.jrunscript.http.client.request.Body } body
+		 * @param { slime.jrunscript.http.client.spi.request.Body } body
 		 */
 		function getRequestBodyType(body) {
 			if (typeof(body.type) == "string") {
@@ -232,7 +225,7 @@
 			 *
 			 * @param { slime.web.Url } url
 			 * @param { slime.jrunscript.http.client.Proxies } proxy
-			 * @param { slime.$api.event.Emitter<slime.jrunscript.http.client.spi.Events> } events
+			 * @param { slime.$api.event.Emitter<slime.jrunscript.http.client.Events> } events
 			 * @returns
 			 */
 			var openUrlConnection = function(url,proxy,events) {
@@ -291,7 +284,7 @@
 			var execute = (
 				/**
 				 *
-				 * @param { slime.$api.event.Emitter<slime.jrunscript.http.client.spi.Events> } e
+				 * @param { slime.$api.event.Emitter<slime.jrunscript.http.client.Events> } e
 				 */
 				function(e) {
 					var url = p.request.url;
@@ -393,7 +386,7 @@
 		 * @param { slime.jrunscript.http.client.spi.Implementation } implementation
 		 */
 		var withFollowRedirects = function(implementation) {
-			/** @param { slime.jrunscript.http.client.spi.Response } response */
+			/** @param { slime.jrunscript.http.client.Response } response */
 			var getLocation = function(response) {
 				var value = Header.value("Location")(response.headers);
 				if (value.present) {
@@ -508,7 +501,7 @@
 		});
 
 		/** @type { slime.jrunscript.http.client.Exports["Argument"]["from"]["request"] } */
-		var Argument_request = function(request) {
+		var Request_to_Argument = function(request) {
 			/**
 			 *
 			 * @param { slime.jrunscript.http.client.request.url } value
@@ -534,6 +527,13 @@
 			}
 		}
 
+		var Implementation_operations = {
+			withFollowRedirects: withFollowRedirects,
+			sensor: function(implementation) {
+				return $api.fp.world.Question.pipe(Request_to_Argument, implementation);
+			}
+		}
+
 		$export({
 			Header: Header,
 			world: {
@@ -541,15 +541,29 @@
 					urlconnection: urlConnectionImplementation
 				}
 			},
-			World: {
-				withFollowRedirects: withFollowRedirects,
-				question: function(implementation) {
-					return $api.fp.world.Question.pipe(Argument_request, implementation);
+			Implementation: {
+				from: {
+					java: {
+						urlconnection: urlConnectionImplementation
+					}
+				},
+				operations: Implementation_operations,
+				methods: function(implementation) {
+					return $api.fp.methods.pin(implementation)(Implementation_operations);
 				}
+			},
+			Request: {
+				spi: Request_to_Argument
 			},
 			Argument: {
 				from: {
-					request: Argument_request
+					request: Request_to_Argument
+				}
+			},
+			World: {
+				withFollowRedirects: withFollowRedirects,
+				question: function(implementation) {
+					return $api.fp.world.Question.pipe(Request_to_Argument, implementation);
 				}
 			},
 			Client: scripts.objects.Client,
