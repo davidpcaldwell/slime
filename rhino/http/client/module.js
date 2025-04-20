@@ -121,6 +121,8 @@
 		 * @returns { slime.jrunscript.http.client.spi.request.Body }
 		 */
 		var _interpretRequestBody = function(p) {
+			if (typeof(p) == "undefined") return void(0);
+			if (p === null) return null;
 			return {
 				type: _getRequestBodyType(p),
 				stream: _getRequestBodyStream(p)
