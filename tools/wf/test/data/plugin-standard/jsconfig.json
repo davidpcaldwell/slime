@@ -6,14 +6,16 @@
 
 {
 	"exclude": [
-		"slime/loader/api/tools/snippets"
+		"slime/loader/api/tools/snippets",
+		"slime/typedoc-definitions.ts"
 	],
 	"compilerOptions": {
 		"lib": [
 			"ES5",
 			"DOM",
 			"ES2015.Iterable",
-			"ES2015.Symbol"
+			"ES2015.Symbol",
+			"ES2015.Collection"
 		]
 	}
 }

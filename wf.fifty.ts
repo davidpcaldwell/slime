@@ -217,7 +217,7 @@ namespace slime.project.wf {
 					var fresh = test.fixtures.clone();
 					test.fixtures.configure(fresh);
 
-					fifty.verify(fresh).directory.getSubdirectory("local/jsh/lib/node/lib/node_modules/eslint").is.type("null");
+					fifty.verify(fresh).directory.getSubdirectory("node_modules/eslint").is.type("null");
 
 					var result = test.fixtures.wf(fresh, {
 						arguments: ["initialize"]
@@ -227,7 +227,7 @@ namespace slime.project.wf {
 						fifty.global.jsh.shell.console(result.stdio.output);
 						fifty.global.jsh.shell.console(result.stdio.error);
 					}
-					fifty.verify(fresh).directory.getSubdirectory("local/jsh/lib/node/lib/node_modules/eslint").is.type("object");
+					fifty.verify(fresh).directory.getSubdirectory("node_modules/eslint").is.type("object");
 				});
 
 				fifty.run(fifty.tests.requireGitIdentityDuringInitialize);

@@ -32,22 +32,6 @@ namespace slime.jrunscript.http.client.spi {
 		timeout: Timeouts
 	}
 
-	export interface Response {
-		status: {
-			code: number
-			reason: string
-		}
-		headers: Header[]
-		stream: slime.jrunscript.runtime.io.InputStream
-	}
-
-	export type Events = {
-		request: {
-			url: slime.web.Url
-			proxy: Proxies
-		}
-	}
-
 	export type Implementation = slime.$api.fp.world.Sensor<Argument,Events,Response>
 
 	(
@@ -99,7 +83,7 @@ namespace slime.jrunscript.http.client.spi {
 			method: string
 			url: slime.web.Url
 			headers: Header[]
-			body: request.Body
+			body: client.request.Body
 			proxy: Proxies
 			timeout: Timeouts
 		}

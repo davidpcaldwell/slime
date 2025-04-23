@@ -8,12 +8,13 @@
 (
 	/**
 	 *
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.servlet.proxy.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.servlet.proxy.Exports> } $export
 	 */
-	function($api,$context,$loader,$export) {
+	function(Packages,$api,$context,$loader,$export) {
 		var console = function(message) {
 			$context.library.jsh.shell.console(message);
 		}
@@ -128,7 +129,22 @@
 									port: p.delegate.port
 								}
 							},
-							body: send.request.body,
+							body: {
+								type: send.request.body.type,
+								read: (function() {
+									var buffer = new Packages.java.io.ByteArrayOutputStream();
+									$context.library.io.Streams.binary.copy(
+										send.request.body.stream,
+										buffer
+									);
+									return {
+										binary: function() {
+											var _input = new Packages.java.io.ByteArrayInputStream(buffer.toByteArray());
+											return $context.library.io.InputStream.from.java(_input);
+										}
+									};
+								})()
+							},
 							on: {
 								redirect: function(p) {
 									p.response.headers.forEach(function(header) {
@@ -274,4 +290,4 @@
 		})
 	}
 //@ts-ignore
-)($api,$context,$loader,$export);
+)(Packages,$api,$context,$loader,$export);

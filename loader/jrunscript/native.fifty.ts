@@ -65,9 +65,14 @@ namespace slime.jrunscript {
 					getClass(): any
 					close()
 				}
+				export interface ByteArrayInputStream extends InputStream {
+				}
 				export interface OutputStream {
 					write(b: number)
 					close()
+				}
+				export interface ByteArrayOutputStream extends OutputStream {
+					toByteArray: () => any
 				}
 				export interface Reader {
 					close()
@@ -454,8 +459,8 @@ namespace slime.jrunscript {
 				Number: JavaClass
 			}
 			io: {
-				ByteArrayInputStream: any
-				ByteArrayOutputStream: any
+				ByteArrayInputStream: new (bytes: any) => slime.jrunscript.native.java.io.ByteArrayInputStream
+				ByteArrayOutputStream: new () => slime.jrunscript.native.java.io.ByteArrayOutputStream
 				File: JavaClass & {
 					new (parent: slime.jrunscript.native.java.io.File, path: string): slime.jrunscript.native.java.io.File
 					new (parent: string, path: string): slime.jrunscript.native.java.io.File

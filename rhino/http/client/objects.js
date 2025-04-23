@@ -64,7 +64,7 @@
 
 		var Client = (function() {
 			/**
-			 * @this { slime.jrunscript.http.client.spi.Response["headers"] }
+			 * @this { slime.jrunscript.http.client.Response["headers"] }
 			 * @param { string } name
 			 */
 			function headersImplementationForGet(name) {
@@ -79,7 +79,7 @@
 
 			/**
 			 *
-			 * @param { slime.jrunscript.http.client.spi.Response["headers"] } headers
+			 * @param { slime.jrunscript.http.client.Response["headers"] } headers
 			 * @returns { slime.jrunscript.http.client.object.Response["headers"] }
 			 */
 			function withHeadersGet(headers) {
@@ -91,7 +91,7 @@
 
 			/**
 			 *
-			 * @param { slime.jrunscript.http.client.spi.Response } spiresponse
+			 * @param { slime.jrunscript.http.client.Response } spiresponse
 			 * @param { slime.jrunscript.http.client.object.Request } request
 			 * @returns { slime.jrunscript.http.client.object.Response }
 			 */
@@ -172,11 +172,38 @@
 			 * @returns { slime.jrunscript.http.client.spi.old.Request }
 			 */
 			function toOldRequest(argument) {
+				var getBufferedStream = (function() {
+					var buffer;
+					return function() {
+						if (!buffer) {
+							buffer = new Packages.java.io.ByteArrayOutputStream();
+							var stream = argument.request.body.stream;
+							$context.api.io.Streams.binary.copy(stream, buffer, {
+								onFinish: function(i,o) {
+									i.close();
+									o.close();
+								}
+							});
+						}
+						return buffer;
+					}
+				})();
+
 				return {
 					method: argument.request.method,
 					url: argument.request.url,
 					headers: argument.request.headers,
-					body: argument.request.body,
+					body: (argument.request.body) ? {
+						type: argument.request.body.type,
+						read: {
+							binary: function() {
+								var buffer = getBufferedStream();
+								var bytes = buffer.toByteArray();
+								var _i = new Packages.java.io.ByteArrayInputStream(bytes);
+								return $context.api.io.InputStream.from.java(_i);
+							}
+						}
+					} : void(0),
 					proxy: argument.proxy,
 					timeout: argument.timeout
 				}
@@ -184,7 +211,6 @@
 
 			/**
 			 * @type { slime.jrunscript.http.client.spi.old.implementation }
-			 * @returns { slime.jrunscript.http.client.spi.Response }
 			 */
 			function oldspi(p) {
 				var body = $context.interpretRequestBody(p.body);

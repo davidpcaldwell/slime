@@ -143,6 +143,19 @@ namespace slime.jrunscript.http.client {
 
 	export namespace exports {
 		export interface Body {
+			/**
+			 * Creates request bodies representing HTML non-multipart (`application/x-www-form-urlencoded`) forms.
+			 * See [HTML 4.01 section 17.13.3](http://www.w3.org/TR/html401/interact/forms.html#h-17.13.3).
+			 *
+			 * @param query An object specifying the form.
+			 * @returns Objects suitable as request bodies.
+			 */
+			Form: (query: object.query) => request.Body
+		}
+	}
+
+	export namespace exports {
+		export interface Body {
 			json: () => (value: any) => spi.request.Body
 		}
 
@@ -174,23 +187,19 @@ namespace slime.jrunscript.http.client {
 		/**
 		 * A message body.
 		 */
-		export type Body = body.Stream | body.Binary | body.String
+		export type Body = body.Resource | body.String
 
 		export namespace body {
-			type Type = {
+			type WithMimeType = {
 				/**
 				 * The MIME type of the message body.
 				 */
 				type: slime.mime.Type | string
 			}
-			export type Stream = Type & {
-				/**
-				 * A stream from which the content of the message body can be read.
-				 */
-				stream: slime.jrunscript.runtime.io.InputStream
-			}
-			export type Binary = Type & { read: { binary: () => slime.jrunscript.runtime.io.InputStream } }
-			export type String = Type & {
+
+			export type Resource = WithMimeType & { read: { binary: () => slime.jrunscript.runtime.io.InputStream } }
+
+			export type String = WithMimeType & {
 				/**
 				 * The content of the message body, as a string.
 				 */
@@ -206,38 +215,64 @@ namespace slime.jrunscript.http.client {
 		body?: request.Body
 	}
 
+	export interface Events {
+		request: {
+			url: slime.web.Url
+			proxy: Proxies
+		}
+	}
+
+	export interface Response {
+		status: {
+			code: number
+			reason: string
+		}
+		headers: Header[]
+		stream: slime.jrunscript.runtime.io.InputStream
+	}
+
 	export interface Exports {
 		world: {
 			java: {
+				/** @deprecated Replaced by `Implementation.from.java`. */
 				urlconnection: spi.Implementation
 			}
 		}
 	}
 
 	export interface Exports {
+		Implementation: {
+			from: {
+				java: {
+					urlconnection: spi.Implementation
+				}
+			}
+
+			operations: {
+				sensor: (implementation: spi.Implementation) => slime.$api.fp.world.Sensor<Request,Events,Response>
+				withFollowRedirects: (implementation: spi.Implementation) => spi.Implementation
+			}
+
+			methods: (implementation: spi.Implementation) => slime.$api.fp.methods.Flattened<spi.Implementation,Exports["Implementation"]["operations"]>
+		}
+
+		Request: {
+			spi: (request: Request) => spi.Argument
+		}
+
 		World: {
+			/** @deprecated Use `Implementation.operations.withFollowRedirects`. */
 			withFollowRedirects: (implementation: spi.Implementation) => spi.Implementation
 
-			question: (implementation: spi.Implementation) => slime.$api.fp.world.Sensor<Request,spi.Events,spi.Response>
+			/** @deprecated Use `Implementation.operations.sensor`. */
+			question: (implementation: spi.Implementation) => slime.$api.fp.world.Sensor<Request,Events,Response>
 		}
 
 		Argument: {
 			from: {
+				/** @deprecated Use `Request.spi`. */
 				request: (request: Request) => spi.Argument
 			}
-		}
-	}
-
-	export namespace exports {
-		export interface Body {
-			/**
-			 * Creates request bodies representing HTML non-multipart (`application/x-www-form-urlencoded`) forms.
-			 * See [HTML 4.01 section 17.13.3](http://www.w3.org/TR/html401/interact/forms.html#h-17.13.3).
-			 *
-			 * @param query An object specifying the form.
-			 * @returns Objects suitable as request bodies.
-			 */
-			Form: (query: object.query) => request.Body
 		}
 	}
 

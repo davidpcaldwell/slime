@@ -15,7 +15,19 @@ namespace slime.$api.fp.internal.methods {
 }
 
 /**
- * See {@link Exports}.
+ * Provides facilities for creating world-oriented "methods."
+ *
+ * World-oriented methods provide some of the benefits of object-oriented methods -- binding functions to a particular value of
+ * a type -- without requiring object-oriented programming, where objects have encapsulated, perhaps mutable, state and methods
+ * operate on that state. World-oriented methods operate on data structures that have public state but provide the same sort
+ * of benefits in terms of producing a defined API for a given type that can be easily discovered and manipulate instances of
+ * that type.
+ *
+ * The fundamental type in this namespace is the {@link Operations} type, which represents a set of common
+ * operations on a single type.
+ *
+ * The {@link Exports} in this namespace provide APIs that can transform `Operations` in various ways, allowing the use of
+ * method-like constructs on world-oriented types.
  */
 namespace slime.$api.fp.methods {
 	export type Specified<T,O extends Operations<T>> = {
@@ -27,13 +39,6 @@ namespace slime.$api.fp.methods {
 	}
 
 	/**
-	 * Provides a facility for creating world-oriented "methods."
-	 *
-	 * World-oriented methods provide some of the benefits of object-oriented methods -- binding functions to a particular value of
-	 * a type -- without requiring object-oriented programming, where objects have encapsulated, perhaps mutable, state and methods
-	 * operate on that state. World-oriented methods operate on data structures that have public state but provide the same sort
-	 * of benefits in terms of producing a defined API for a given type that can be easily discovered and manipulate instances of
-	 * that type.
 	 */
 	export interface Exports {
 		/**
@@ -58,6 +63,9 @@ namespace slime.$api.fp.methods {
 		pin: <T>(t: T) => <O extends Operations<T>> (operations: O) => Flattened<T,O>
 	}
 
+	/**
+	 * A set of operations that operate on a common type.
+	 */
 	export interface Operations<T> {
 		[x: string]: (t: T) => any
 	}

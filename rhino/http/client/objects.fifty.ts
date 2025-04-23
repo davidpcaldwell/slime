@@ -14,7 +14,7 @@ namespace slime.jrunscript.http.client.object {
 	 */
 	export type query = parameters | string
 
-	export type Implementation = (argument: spi.Argument) => spi.Response
+	export type Implementation = (argument: spi.Argument) => Response
 
 	export interface Request {
 		/**
@@ -72,7 +72,7 @@ namespace slime.jrunscript.http.client.object {
 			 */
 			redirect: (p: {
 				request: slime.jrunscript.http.client.object.Request
-				response: slime.jrunscript.http.client.spi.Response
+				response: slime.jrunscript.http.client.Response
 
 				/**
 				 * This property may be removed from the object in order to stop the client from following the redirect.

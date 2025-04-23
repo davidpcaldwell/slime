@@ -191,13 +191,13 @@ namespace slime.jrunscript.tools.install {
 
 	export namespace download {
 		export interface Events {
-			request: slime.jrunscript.http.client.spi.Events["request"]
+			request: slime.jrunscript.http.client.Events["request"]
 		}
 	}
 
 	export namespace distribution {
 		export interface Events {
-			request: slime.jrunscript.http.client.spi.Events["request"]
+			request: slime.jrunscript.http.client.Events["request"]
 			archive: slime.jrunscript.file.File
 			installed: string
 		}

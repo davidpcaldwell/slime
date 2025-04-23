@@ -673,17 +673,22 @@
 					var configuration = library.module.Project.typescript.configurationFile(project);
 					jsh.shell.tools.rhino.require.simple();
 					$api.fp.world.now.action(jsh.shell.tools.tomcat.jsh.require.world);
+
+					var getVersion = $api.fp.world.Sensor.mapping({
+						sensor: jsh.shell.tools.node.Installation.getVersion
+					});
+
 					$api.fp.world.Action.now({
 						action: jsh.shell.tools.node.require.action,
 						handlers: {
 							found: function(e) {
-								jsh.shell.console("Found Node.js " + e.detail.version + ".");
+								jsh.shell.console("Found Node.js " + getVersion(e.detail) + ".");
 							},
 							removed: function(e) {
 								jsh.shell.console("Removed Node.js " + e.detail.version);
 							},
 							installed: function(e) {
-								jsh.shell.console("Installed Node.js " + e.detail.version + ".");
+								jsh.shell.console("Installed Node.js " + getVersion(e.detail) + ".");
 							}
 						}
 					});

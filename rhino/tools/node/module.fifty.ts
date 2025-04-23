@@ -33,6 +33,8 @@ namespace slime.jrunscript.tools.node {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.sandbox = fifty.test.Parent();
+
+			fifty.tests.manual = {};
 		}
 	//@ts-ignore
 	)(fifty);
@@ -118,6 +120,18 @@ namespace slime.jrunscript.tools.node {
 				verify(after).is(true);
 				var version = getVersion(installation);
 				verify(version).is("v" + test.subject.test.versions.current);
+			}
+
+			fifty.tests.manual.install = function() {
+				const { jsh } = fifty.global;
+
+				var TO = (jsh.shell.environment.SLIME_TEST_MANUAL_INSTALL) ? jsh.shell.environment.SLIME_TEST_MANUAL_INSTALL : fifty.jsh.file.temporary.location().pathname;
+				var install = test.subject.install(TO);
+				$api.fp.world.Means.now({
+					means: install,
+					order: { version: test.subject.test.versions.current }
+				})
+				jsh.shell.console("TO = " + TO);
 			}
 		}
 	//@ts-ignore

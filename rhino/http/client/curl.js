@@ -25,7 +25,7 @@
 			 */
 			function implementation(argument) {
 				return function(events) {
-					/** @type { slime.jrunscript.http.client.spi.Response } */
+					/** @type { slime.jrunscript.http.client.Response } */
 					var response;
 
 					$api.fp.world.now.action(

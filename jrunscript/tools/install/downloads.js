@@ -39,7 +39,7 @@
 			var downloads = c.cache;
 			return function(distribution) {
 				return function(events) {
-					/** @param { slime.jrunscript.http.client.spi.Response } response */
+					/** @param { slime.jrunscript.http.client.Response } response */
 					var getResponseMimeType = function(response) {
 						return $api.fp.result(
 							$context.library.http.Header.value("Content-Type")(response.headers),

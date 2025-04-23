@@ -25,7 +25,7 @@
 			$context.library.document.Document.codec.string.decode
 		);
 
-		/** @type { slime.$api.fp.Mapping<slime.jrunscript.http.client.spi.Response,slime.$api.fp.Maybe<string>> } */
+		/** @type { slime.$api.fp.Mapping<slime.jrunscript.http.client.Response,slime.$api.fp.Maybe<string>> } */
 		var getResponseVersion = $api.fp.pipe(
 			$api.fp.property("headers"),
 			$api.fp.Stream.from.array,
@@ -35,7 +35,7 @@
 			$api.fp.Maybe.map($api.fp.property("value"))
 		);
 
-		/** @type { slime.$api.fp.Mapping<slime.jrunscript.http.client.spi.Response,slime.jrunscript.runtime.io.InputStream> } */
+		/** @type { slime.$api.fp.Mapping<slime.jrunscript.http.client.Response,slime.jrunscript.runtime.io.InputStream> } */
 		var getResponseStream = $api.fp.pipe(
 			function(response) {
 				if (response.status.code != 200) throw new Error("Response status: " + response.status.code);

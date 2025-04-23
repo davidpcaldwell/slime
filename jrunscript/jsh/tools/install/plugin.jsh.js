@@ -842,6 +842,10 @@
 					});
 
 					managed.require = (function() {
+						/**
+						 *
+						 * @param { slime.$api.event.Emitter<slime.jsh.shell.tools.node.RequireEvents> } events
+						 */
 						var action = function(events) {
 							var VERSION = node.versions.default;
 							//	TODO	horrendous, but let's go with it for now
@@ -854,19 +858,33 @@
 									VERSION = "16.20.2";
 								}
 							}
-							var now = node.object.at({ location: location.toString() });
-							if (now && now.version == "v" + VERSION) {
+
+							var now = jsh.shell.tools.node.installation;
+
+							var exists = $api.fp.world.Sensor.mapping({
+								sensor: jsh.shell.tools.node.Installation.exists
+							});
+
+							var getVersion = $api.fp.world.Sensor.mapping({
+								sensor: jsh.shell.tools.node.Installation.getVersion
+							});
+
+							//var now = node.object.at({ location: location.toString() });
+							if (exists(now) && getVersion(now) == "v" + VERSION) {
 								events.fire("found", now);
 							} else {
-								if (now) {
+								if (exists(now)) {
 									var removed = {
-										at: now.location,
-										version: now.version
+										version: getVersion(now)
 									}
 									location.directory.remove();
 									events.fire("removed", removed);
 								}
-								node.object.install({ version: VERSION, location: location })(events);
+								$api.fp.world.Means.now({
+									means: node.install(location.os.adapt().pathname),
+									order: { version: VERSION }
+								});
+								events.fire("installed", jsh.shell.tools.node.installation);
 							}
 						};
 

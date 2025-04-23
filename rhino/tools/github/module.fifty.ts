@@ -69,7 +69,7 @@ namespace slime.jrunscript.tools.github {
 
 		export interface Operation<I,O> {
 			request: (p: I) => Request
-			response: (p: slime.jrunscript.http.client.spi.Response) => O
+			response: (p: slime.jrunscript.http.client.Response) => O
 		}
 
 		export interface Invocation<I,E,O> {
@@ -129,10 +129,10 @@ namespace slime.jrunscript.tools.github {
 		}
 
 		response: {
-			empty: (p: slime.jrunscript.http.client.spi.Response) => never
+			empty: (p: slime.jrunscript.http.client.Response) => never
 			json: {
-				resource: (status: number) => <T>(p: slime.jrunscript.http.client.spi.Response) => T
-				page: <T>(p: slime.jrunscript.http.client.spi.Response) => T
+				resource: (status: number) => <T>(p: slime.jrunscript.http.client.Response) => T
+				page: <T>(p: slime.jrunscript.http.client.Response) => T
 			}
 		}
 
