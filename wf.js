@@ -198,29 +198,41 @@
 
 						(
 							function core() {
+								var getVersion = $api.fp.world.Sensor.mapping({
+									sensor: jsh.shell.tools.node.Installation.getVersion
+								});
+
 								$api.fp.world.now.tell(jsh.shell.tools.node.require.action, {
 									found: function(e) {
 									},
 									removed: function(e) {
-										jsh.shell.console("Removed Node.js " + e.detail.version + " at " + e.detail.at);
+										jsh.shell.console("Removed Node.js " + e.detail.version);
 									},
 									installed: function(e) {
-										jsh.shell.console("Installed Node.js " + e.detail.version);
+										jsh.shell.console("Installed Node.js " + getVersion(e.detail));
 									}
 								});
 							}
 						)();
 						(
 							function eslint() {
+								jsh.shell.console("ESLINT!!");
 								var nodeProject = { base: $context.base.pathname.toString() };
 
+								jsh.shell.console("Project: " + nodeProject.base);
 								var modules = jsh.shell.tools.node.Project.modules(nodeProject)(installation);
 
 								$api.fp.world.Action.now({
 									action: modules.require({ name: "eslint", version: "9.13.0" }),
 									handlers: {
+										found: function(e) {
+											jsh.shell.console("Present: " + e.detail.present);
+											if (e.detail.present) {
+												jsh.shell.console(JSON.stringify(e.detail.value));
+											}
+										},
 										installing: function(e) {
-											//jsh.shell.console("Installing eslint " + e.detail.version);
+											jsh.shell.console("Installing eslint " + e.detail.version);
 										},
 										installed: function(e) {
 											jsh.shell.console("Installed eslint " + e.detail.version);

@@ -522,6 +522,14 @@ namespace slime.jsh.shell.tools {
 		//@ts-ignore
 		)(fifty);
 
+		export interface RequireEvents {
+			installed: slime.jrunscript.tools.node.Installation
+			removed: {
+				version: string
+			}
+			found: slime.jrunscript.tools.node.Installation
+		}
+
 		export interface Managed {
 			/**
 			 * The local installation of Node.js in the `jsh` shell. May or may not be actually present.
@@ -544,14 +552,7 @@ namespace slime.jsh.shell.tools {
 				 * * `found`: fired if the correct version of Node.js is found and nothing is done.
 				 */
 				action: slime.$api.fp.world.Action<
-					slime.jrunscript.tools.node.object.install.Events
-					& {
-						removed: {
-							at: string
-							version: string
-						}
-						found: slime.jrunscript.tools.node.object.Installation
-					}
+					RequireEvents
 				>
 
 				simple: slime.$api.fp.impure.Process
@@ -568,9 +569,24 @@ namespace slime.jsh.shell.tools {
 				const { verify } = fifty;
 				const { $api, jsh } = fifty.global;
 
-				$api.fp.impure.now.process(
-					jsh.shell.tools.node.require.simple
-				);
+				var getVersion = function(install: slime.jrunscript.tools.node.Installation) {
+					return $api.fp.world.Sensor.now({
+						sensor: jsh.shell.tools.node.Installation.getVersion,
+						subject: install
+					});
+				}
+
+				$api.fp.world.Action.now({
+					action: jsh.shell.tools.node.require.action,
+					handlers: {
+						found: function(e) {
+							jsh.shell.console("Found Node.js: " + getVersion(e.detail));
+						},
+						installed: function(e) {
+							jsh.shell.console("Installed node: " + getVersion(e.detail));
+						}
+					}
+				});
 
 				const api = jsh.shell.tools.node.installed;
 
@@ -630,7 +646,8 @@ namespace slime.jsh.shell.tools {
 				}
 
 				fifty.tests.manual.node = {};
-				fifty.tests.manual.node.jsh = function() {
+				fifty.tests.manual.node.jsh = {};
+				fifty.tests.manual.node.jsh.modules = function() {
 					var installation = jsh.shell.tools.node.installation;
 					var modules = $api.fp.world.Question.now({
 						question: jsh.shell.tools.node.Installation.modules(installation).list(),
@@ -638,6 +655,16 @@ namespace slime.jsh.shell.tools {
 					modules.forEach(function(module) {
 						jsh.shell.console(module.name + " " + module.version);
 					});
+				}
+				fifty.tests.manual.node.jsh.require = function() {
+					//	remove existing
+					var existing = fifty.jsh.file.relative("../../../../local/jsh/lib/node");
+					jsh.shell.console("Checking " + existing.pathname);
+					if (jsh.file.Location.directory.exists.simple(existing)) {
+						jsh.shell.console("Removing " + existing.pathname);
+						jsh.file.Location.directory.remove.simple(existing);
+					}
+					jsh.shell.tools.node.require.simple();
 				}
 			}
 		//@ts-ignore

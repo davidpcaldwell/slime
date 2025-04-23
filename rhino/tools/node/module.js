@@ -44,7 +44,7 @@
 		};
 
 		var versions = {
-			default: "22.11.0"
+			default: "22.14.0"
 		};
 
 		$exports.versions = versions;

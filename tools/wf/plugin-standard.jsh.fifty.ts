@@ -89,6 +89,16 @@ namespace slime.jsh.wf.standard {
 
 				var src: slime.jrunscript.file.Directory = fifty.jsh.file.object.getRelativePath("../..").directory;
 
+				var getCurrentBranch = function() {
+					return jsh.tools.git.program({ command: "git" })
+						.repository(src.toString())
+						.command(jsh.tools.git.commands.status)
+						.argument()
+						.run()
+						.branch
+					;
+				}
+
 				/**
 				 * Creates a repository based on the `test/data/plugin-standard` directory that has `slime` as a submodule.
 				 */
@@ -112,17 +122,20 @@ namespace slime.jsh.wf.standard {
 					repository.add({
 						path: "."
 					});
+					jsh.shell.console("'Cloning' slime from " + src.pathname + " ...");
 					var slime = fixtures.clone({
 						src: jsh.file.world.filesystems.os.pathname(src.toString()),
 						commit: {
 							message: "Local modifications"
 						}
 					});
+					var branch = getCurrentBranch();
+					jsh.shell.console("slime = " + slime.directory.pathname);
 					fixtures.configure(slime);
 					var slime = repository.submodule.add({
 						repository: slime,
 						path: "slime",
-						branch: "main",
+						branch: branch,
 						config: {
 							//	See https://vielmetti.typepad.com/logbook/2022/10/git-security-fixes-lead-to-fatal-transport-file-not-allowed-error-in-ci-systems-cve-2022-39253.html
 							"protocol.file.allow": "always"
@@ -189,6 +202,7 @@ namespace slime.jsh.wf.standard {
 					hosted: function project(p?: { noInitialize?: boolean }) {
 						if (!p) p = {};
 						var origin = fixture();
+						jsh.shell.console("origin = " + origin.directory.pathname);
 						var clone = fixtures.clone({
 							src: jsh.file.world.filesystems.os.pathname(origin.directory.toString())
 						});
@@ -201,8 +215,9 @@ namespace slime.jsh.wf.standard {
 						});
 						fixtures.configure(clone);
 
+						if (!clone.directory.getSubdirectory("slime")) throw new Error("Could not update slime submodule in " + clone.directory.pathname.toString());
 						var slime = jsh.tools.git.oo.Repository({ directory: clone.directory.getSubdirectory("slime") });
-						slime.checkout({ branch: "main" });
+						slime.checkout({ branch: "origin/" + getCurrentBranch() });
 						fixtures.configure(slime);
 
 						//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
@@ -543,7 +558,17 @@ namespace slime.jsh.wf.standard {
 				var it = test.fixtures.hosted().clone;
 				var slime = test.fixtures.git.standard.submodule(it, "slime");
 
-				var before = slime.api.command(test.fixtures.git.local.getCurrentCommit).argument().run();
+				var branch = jsh.tools.git.program({ command: "git" })
+					.repository(fifty.jsh.file.relative("../..").pathname)
+					.command(jsh.tools.git.commands.status)
+					.argument()
+					.run()
+					.branch
+				;
+
+				var before = {
+					commit: slime.api.command(test.fixtures.git.local.getCurrentCommit).argument().run()
+				};
 
 				slime.api.command(createSlimeBranch).argument({ name: "submodule-reset" }).run();
 				test.fixtures.git.standard.edit(slime, "wf.js", code => code + "\n" + "//foo\n");
@@ -560,7 +585,7 @@ namespace slime.jsh.wf.standard {
 
 				var after = slime.api.command(test.fixtures.git.local.getCurrentCommit).argument().run();
 
-				verify(after).is.not(before);
+				verify(after).is.not(before.commit);
 
 				jsh.shell.console("Running wf submodule.reset ...");
 				$api.fp.world.now.action(
@@ -578,8 +603,8 @@ namespace slime.jsh.wf.standard {
 				var afterResetCommit = slime.api.command(test.fixtures.git.local.getCurrentCommit).argument().run();
 				var afterResetBranch = slime.api.command(jsh.tools.git.commands.status).argument().run();
 
-				verify(afterResetBranch).branch.is("main");
-				verify(afterResetCommit).is(before);
+				verify(afterResetBranch).branch.is(branch);
+				verify(afterResetCommit).is(before.commit);
 
 				jsh.shell.console("cd " + it.location);
 			};

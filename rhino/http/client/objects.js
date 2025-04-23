@@ -172,29 +172,38 @@
 			 * @returns { slime.jrunscript.http.client.spi.old.Request }
 			 */
 			function toOldRequest(argument) {
-				var stream = argument.request.body.stream;
-				var buffer = new Packages.java.io.ByteArrayOutputStream();
-				$context.api.io.Streams.binary.copy(stream, buffer, {
-					onFinish: function(i,o) {
-						i.close();
-						o.close();
+				var getBufferedStream = (function() {
+					var buffer;
+					return function() {
+						if (!buffer) {
+							buffer = new Packages.java.io.ByteArrayOutputStream();
+							var stream = argument.request.body.stream;
+							$context.api.io.Streams.binary.copy(stream, buffer, {
+								onFinish: function(i,o) {
+									i.close();
+									o.close();
+								}
+							});
+						}
+						return buffer;
 					}
-				});
+				})();
 
 				return {
 					method: argument.request.method,
 					url: argument.request.url,
 					headers: argument.request.headers,
-					body: {
+					body: (argument.request.body) ? {
 						type: argument.request.body.type,
 						read: {
 							binary: function() {
+								var buffer = getBufferedStream();
 								var bytes = buffer.toByteArray();
 								var _i = new Packages.java.io.ByteArrayInputStream(bytes);
 								return $context.api.io.InputStream.from.java(_i);
 							}
 						}
-					},
+					} : void(0),
 					proxy: argument.proxy,
 					timeout: argument.timeout
 				}

@@ -13,7 +13,7 @@ namespace slime.jsh.wf.test {
 		 * If p.commit is given and files are modified, commits modified files with the given p.commit.message.
 		 */
 		clone: (p: {
-			src: slime.jrunscript.file.world.Location
+			src: slime.jrunscript.file.Location
 			commit?: {
 				message: string
 			}
@@ -77,9 +77,9 @@ namespace slime.jsh.wf.test {
 							}
 						};
 
-						var src: slime.jrunscript.file.world.Location = p.src;
+						var src: slime.jrunscript.file.Location = p.src;
 
-						var destination = $api.fp.world.now.ask(jsh.file.world.Location.from.temporary(jsh.file.world.filesystems.os)({ directory: true }));
+						var destination = $api.fp.world.now.ask(jsh.file.Location.from.temporary(jsh.file.world.filesystems.os)({ directory: true }));
 
 						jsh.tools.git.program({ command: "git" }).command(clone).argument({
 							repository: src.pathname,
@@ -100,6 +100,7 @@ namespace slime.jsh.wf.test {
 								//	Prevents copying of files under the submodule path
 								//	TODO	this is not very generalized; it does allow the standard wf plugin tests to pass
 								if (/slime\//.test(p.entry.path)) return false;
+								if (/node_modules\//.test(p.entry.path)) return false;
 
 								//	If we are a directory but the clone contains a file, remove the file and overwrite
 								if (p.exists && !p.exists.directory && p.entry.node.directory) {
@@ -170,5 +171,5 @@ namespace slime.jsh.wf.test {
 			})
 		}
 	//@ts-ignore
-	)($context,$export);
+	)($export);
 }
