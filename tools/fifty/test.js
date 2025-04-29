@@ -337,14 +337,28 @@
 					if (e.javaException) {
 						error.push("Java exception:");
 						var ex = e.javaException;
-						while(ex != null) {
-							error.push(ex.getClass().getName() + ": " + ex.getMessage());
-							var _stack = ex.getStackTrace();
-							for (var i=0; i<_stack.length; i++) {
-								error.push("\t" + String(_stack[i].toString()));
+						if (String(ex) == "inonit.script.rhino.Errors") {
+							var Packages = (function() { return this; })().Packages;
+							var JavaAdapter = (function() { return this; })().JavaAdapter;
+							var _log = new JavaAdapter(
+								Packages.inonit.script.rhino.Engine.Log,
+								{
+									println: function(s) {
+										error.push(String(s));
+									}
+								}
+							)
+							ex.dump(_log, "[fifty] ");
+						} else {
+							while(ex != null) {
+								error.push(ex.getClass().getName() + ": " + ex.getMessage());
+								var _stack = ex.getStackTrace();
+								for (var i=0; i<_stack.length; i++) {
+									error.push("\t" + String(_stack[i].toString()));
+								}
+								ex = ex.getCause();
+								if (ex) error.push("");
 							}
-							ex = ex.getCause();
-							if (ex) error.push("");
 						}
 					}
 					verify(error.join("\n")).is("Successfully loaded tests");
