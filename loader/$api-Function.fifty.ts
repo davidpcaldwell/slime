@@ -134,8 +134,8 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		thunk: {
+			map: Thunk_map
 			value: Thunk_value
-
 			now: Thunk_now
 		}
 	}

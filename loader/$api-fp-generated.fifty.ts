@@ -137,7 +137,7 @@ namespace slime.$api.fp {
 		): B
 	}
 
-	export type Thunk_now = {
+	export type Thunk_map = {
 		<A,B,C,D,E,F,G,H,I>(
 			a: Thunk<A>,
 			f: (a: A) => B,
@@ -148,7 +148,7 @@ namespace slime.$api.fp {
 			k: (f: F) => G,
 			l: (g: G) => H,
 			m: (h: H) => I
-		): I
+		): Thunk<I>
 
 		<A,B,C,D,E,F,G,H>(
 			a: Thunk<A>,
@@ -159,7 +159,7 @@ namespace slime.$api.fp {
 			j: (e: E) => F,
 			k: (f: F) => G,
 			l: (g: G) => H
-		): H
+		): Thunk<H>
 
 		<A,B,C,D,E,F,G>(
 			a: Thunk<A>,
@@ -169,7 +169,7 @@ namespace slime.$api.fp {
 			i: (d: D) => E,
 			j: (e: E) => F,
 			k: (f: F) => G
-		): G
+		): Thunk<G>
 
 		<A,B,C,D,E,F>(
 			a: Thunk<A>,
@@ -178,7 +178,7 @@ namespace slime.$api.fp {
 			h: (c: C) => D,
 			i: (d: D) => E,
 			j: (e: E) => F
-		): F
+		): Thunk<F>
 
 		<A,B,C,D,E>(
 			a: Thunk<A>,
@@ -186,25 +186,25 @@ namespace slime.$api.fp {
 			g: (b: B) => C,
 			h: (c: C) => D,
 			i: (d: D) => E
-		): E
+		): Thunk<E>
 
 		<A,B,C,D>(
 			a: Thunk<A>,
 			f: (a: A) => B,
 			g: (b: B) => C,
 			h: (c: C) => D
-		): D
+		): Thunk<D>
 
 		<A,B,C>(
 			a: Thunk<A>,
 			f: (a: A) => B,
 			g: (b: B) => C
-		): C
+		): Thunk<C>
 
 		<A,B>(
 			a: Thunk<A>,
 			f: (a: A) => B
-		): B
+		): Thunk<B>
 	}
 
 	export type Thunk_value = {
@@ -280,12 +280,10 @@ namespace slime.$api.fp {
 			a: A
 		): Thunk<A>
 	}
-}
 
-namespace slime.$api.fp.impure {
-	export type Input_map = {
+	export type Thunk_now = {
 		<A,B,C,D,E,F,G,H,I>(
-			a: Input<A>,
+			a: Thunk<A>,
 			f: (a: A) => B,
 			g: (b: B) => C,
 			h: (c: C) => D,
@@ -294,10 +292,10 @@ namespace slime.$api.fp.impure {
 			k: (f: F) => G,
 			l: (g: G) => H,
 			m: (h: H) => I
-		): Input<I>
+		): I
 
 		<A,B,C,D,E,F,G,H>(
-			a: Input<A>,
+			a: Thunk<A>,
 			f: (a: A) => B,
 			g: (b: B) => C,
 			h: (c: C) => D,
@@ -305,54 +303,56 @@ namespace slime.$api.fp.impure {
 			j: (e: E) => F,
 			k: (f: F) => G,
 			l: (g: G) => H
-		): Input<H>
+		): H
 
 		<A,B,C,D,E,F,G>(
-			a: Input<A>,
+			a: Thunk<A>,
 			f: (a: A) => B,
 			g: (b: B) => C,
 			h: (c: C) => D,
 			i: (d: D) => E,
 			j: (e: E) => F,
 			k: (f: F) => G
-		): Input<G>
+		): G
 
 		<A,B,C,D,E,F>(
-			a: Input<A>,
+			a: Thunk<A>,
 			f: (a: A) => B,
 			g: (b: B) => C,
 			h: (c: C) => D,
 			i: (d: D) => E,
 			j: (e: E) => F
-		): Input<F>
+		): F
 
 		<A,B,C,D,E>(
-			a: Input<A>,
+			a: Thunk<A>,
 			f: (a: A) => B,
 			g: (b: B) => C,
 			h: (c: C) => D,
 			i: (d: D) => E
-		): Input<E>
+		): E
 
 		<A,B,C,D>(
-			a: Input<A>,
+			a: Thunk<A>,
 			f: (a: A) => B,
 			g: (b: B) => C,
 			h: (c: C) => D
-		): Input<D>
+		): D
 
 		<A,B,C>(
-			a: Input<A>,
+			a: Thunk<A>,
 			f: (a: A) => B,
 			g: (b: B) => C
-		): Input<C>
+		): C
 
 		<A,B>(
-			a: Input<A>,
+			a: Thunk<A>,
 			f: (a: A) => B
-		): Input<B>
+		): B
 	}
+}
 
+namespace slime.$api.fp.impure {
 	export type Input_value = {
 		<A,B,C,D,E,F,G,H,I>(
 			a: A,
