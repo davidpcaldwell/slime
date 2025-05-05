@@ -217,6 +217,16 @@
 			},
 			pipe: pipe,
 			thunk: {
+				map: function(thunk) {
+					var functions = Array.prototype.slice.call(arguments,1);
+					return function() {
+						var rv = thunk();
+						functions.forEach(function(f) {
+							rv = f(rv);
+						});
+						return rv;
+					}
+				},
 				value: function() {
 					var args = Array.prototype.slice.call(arguments);
 					return function() {

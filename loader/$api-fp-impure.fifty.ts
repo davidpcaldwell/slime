@@ -215,7 +215,7 @@ namespace slime.$api.fp.impure {
 
 	export namespace exports {
 		export interface Input {
-			map: impure.Input_map
+			map: Thunk_map
 		}
 
 		(

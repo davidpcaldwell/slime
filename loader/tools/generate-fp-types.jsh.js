@@ -16,8 +16,8 @@
 			counts: $api.fp.impure.Input.value({
 				pipe: 8,
 				value_map: 8,
+				thunk_map: 8,
 				thunk_value: 8,
-				input_map: 8,
 				input_value: 8,
 				process_value: 8
 			}),
@@ -159,11 +159,11 @@
 
 		//	TODO	inputMapDefinition and inputValueDefinition are very duplicative
 
-		var inputMapDefinition = function(size) {
+		var thunkMapDefinition = function(size) {
 			var rv = [];
 			var types = getGenericTypeList(size+1);
 			rv.push("<" + types.join(",") + ">(");
-			rv.push(indent("a: Input<A>,"));
+			rv.push(indent("a: Thunk<A>,"));
 			for (var i=0; i<size; i++) {
 				var last = i+1 == size;
 				var f = getFunctionName(i);
@@ -171,7 +171,7 @@
 				var r = types[i+1]
 				rv.push(indent(f + ": (" + p + ": " + types[i] + ") => " + r + ( last ? "" : "," )));
 			}
-			rv.push("): " + "Input<" + types[types.length-1] + ">");
+			rv.push("): " + "Thunk<" + types[types.length-1] + ">");
 			return rv;
 		};
 
@@ -260,12 +260,6 @@
 										"slime.$api.fp.impure",
 										[
 											typeDefinition(
-												"Input_map",
-												indexes(inputs.counts.input_map).map(function(n,index,array) {
-													return inputMapDefinition(array.length-n);
-												})
-											),
-											typeDefinition(
 												"Input_value",
 												indexes(inputs.counts.input_value).map(function(n,index,array) {
 													return inputValueDefinition(array.length-n);
@@ -301,9 +295,9 @@
 													})
 												),
 												typeDefinition(
-													"Thunk_now",
-													indexes(inputs.counts.thunk_value).map(function(n,index,array) {
-														return thunkNowDefinition(array.length-n);
+													"Thunk_map",
+													indexes(inputs.counts.thunk_map).map(function(n,index,array) {
+														return thunkMapDefinition(array.length-n);
 													})
 												),
 												typeDefinition(
@@ -316,7 +310,13 @@
 														indent("a: A"),
 														"): Thunk<A>"
 													])
-												)
+												),
+												typeDefinition(
+													"Thunk_now",
+													indexes(inputs.counts.thunk_value).map(function(n,index,array) {
+														return thunkNowDefinition(array.length-n);
+													})
+												),
 											]
 										).join("\n"),
 										impure.join("\n")
