@@ -504,7 +504,8 @@
 						//	TODO	check semantics; maybe this returns null on non-existence, currently not documented in
 						//			slime.jsh.plugin documentation
 						kotlin: ($slime.getLibraryFile("kotlin") && $slime.getLibraryFile("kotlin").exists()) ? kotlin() : void(0),
-						synchronous: $slime.loader.synchronous
+						synchronous: $slime.loader.synchronous,
+						Store: $slime.loader.Store
 					}
 				}
 			)();

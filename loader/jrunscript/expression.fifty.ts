@@ -17,7 +17,7 @@
  * For each engine, two embeddings are included: a servlet-based embedding and an embedding that supports
  * `jsh`.
  *
- * If the underlying engine is Rhino, the {@link slime.runtime.$engine} implementation's `debugger` property is implemented in terms
+ * If the underlying engine is Rhino, the {@link slime.runtime.Engine} implementation's `debugger` property is implemented in terms
  * of the Rhino debugger.
  *
  * ## Changes to `$api`

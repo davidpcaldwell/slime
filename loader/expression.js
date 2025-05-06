@@ -199,7 +199,7 @@
 			/** @type { slime.runtime.internal.loader.Script } */
 			Loader: script("Loader.js"),
 			/** @type { slime.runtime.internal.old_loaders.Script } */
-			loaders: script("old-loaders.js")
+			oldLoaders: script("old-loaders.js")
 		};
 
 		/**
@@ -279,10 +279,11 @@
 
 		var Loader = code.Loader({
 			methods: scripts.methods,
-			$api: $api
+			$api: $api,
+			createScriptScope: scripts.createScriptScope
 		});
 
-		var loaders = code.loaders({
+		var loaders = code.oldLoaders({
 			$api: $api,
 			Resource: ResourceExport,
 			createScriptScope: scripts.createScriptScope,

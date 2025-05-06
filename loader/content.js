@@ -42,9 +42,21 @@
 			}
 		};
 
+		/** @type { slime.runtime.content.Exports["Store"]["path"] } */
+		var path = function(p) {
+			/** @type { Store } */
+			var rv = {
+				get: function(path) {
+					return p.store.get(p.path.concat(path));
+				}
+			}
+			return rv;
+		};
+
 		$export({
 			Store: {
-				map: map
+				map: map,
+				path: path
 			},
 			Entry: {
 				is: {

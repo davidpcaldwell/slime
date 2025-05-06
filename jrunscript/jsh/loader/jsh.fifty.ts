@@ -474,6 +474,7 @@ namespace slime.jsh {
 				) => any
 			}
 			synchronous: slime.jsh.plugin.$slime["loader"]["synchronous"]
+			Store: slime.jsh.plugin.$slime["loader"]["Store"]
 		}
 	}
 

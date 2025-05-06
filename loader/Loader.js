@@ -9,10 +9,11 @@
 	/**
 	 *
 	 * @param { slime.runtime.internal.loader.Scope["methods"] } methods
-	 * @param { slime.runtime.internal.loader.Scope["$api"] } $api
+	 * @param { slime.runtime.internal.loader.Scope["createScriptScope"] } createScriptScope
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.old.loader.Export<slime.runtime.internal.loader.Exports> } $export
 	 */
-	function(methods,$api,$export) {
+	function(methods,createScriptScope,$api,$export) {
 		var loadScript = function(loader,path) {
 			var resource = loader.get(path.split("/"));
 
@@ -41,9 +42,51 @@
 		};
 
 		/**
+		 * @type { slime.runtime.loader.Exports["Store"] }
+		 */
+		var Store = {
+			from: {
+				default: function(p) {
+					return {
+						script: function(path) {
+							debugger;
+							var elements = path.split("/");
+							var script = p.store.get(elements);
+							if (!script.present) throw new Error("Script " + path + " missing.");
+							var code = p.adapt(script.value);
+							return function(context) {
+								debugger;
+								//	Need to use Object.assign rather than $api.Object.compose because createScriptScope creates
+								//	an object where `$export` operates on that object.
+								var scope = Object.assign(
+									createScriptScope(context),
+									{
+										$loader: Store.from.default({
+											store: $api.content.Store.path({
+												store: p.store,
+												path: elements.slice(0, elements.length-1)
+											}),
+											adapt: p.adapt
+										})
+									}
+								);
+								methods.run(
+									code,
+									scope
+								);
+								return scope.$exports;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		/**
 		 * @type { slime.runtime.loader.Exports }
 		 */
 		var api = {
+			Store: Store,
 			synchronous: {
 				scripts: function(loader) {
 					return function(path) {
@@ -101,4 +144,4 @@
 		});
 	}
 //@ts-ignore
-)(methods,$api,$export);
+)(methods,createScriptScope,$api,$export);
