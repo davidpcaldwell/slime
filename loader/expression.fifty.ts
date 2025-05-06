@@ -369,7 +369,7 @@ namespace slime {
 		}
 
 		/**
-		 * An internal object derived from {@link slime.runtime.$engine} which adds default implementations.
+		 * An internal object derived from {@link slime.runtime.Engine} which adds default implementations.
 		 */
 		export interface Engine {
 			/**

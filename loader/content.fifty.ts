@@ -115,10 +115,26 @@ namespace slime.runtime.content {
 
 	export interface Exports {
 		Store: {
+			/**
+			 * Given a mapping consisting of a path and a `Store` to map to that path, returns a transform.
+			 *
+			 * The transform, given an existing `Store`, returns a `Store` that uses the given mapping for requests for the mapped
+			 * path, and the existing Store for all other requests.
+			 *
+			 * @param p A mapping specifying a path and a store to which to map requests for that path.
+			 *
+			 * @returns A transform that, given an existing Store, can return a Store that is the same, but has the mapping added to
+			 * it.
+			 */
 			map: <T>(p: {
 				path: string[]
 				store: Store<T>
 			}) => slime.$api.fp.Transform<Store<T>>
+
+			path: <T>(p: {
+				path: string[]
+				store: Store<T>
+			}) => Store<T>
 		}
 
 		Entry: {
@@ -134,12 +150,17 @@ namespace slime.runtime.content {
 		) {
 			const { verify } = fifty;
 
+			var code: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+			var fixtures = code();
+
+			const nullable = <T>(m: slime.$api.fp.Maybe<T>): T => {
+				if (m.present) return m.value;
+				return null;
+			}
+
 			fifty.tests.exports.Store = fifty.test.Parent();
 
 			fifty.tests.exports.Store.map = function() {
-				var code: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
-				var fixtures = code();
-
 				var mappedContent: slime.runtime.test.mock.Content<string> = fixtures.mock.content();
 				mappedContent.set("baz/bizzy", "busy!");
 
@@ -149,12 +170,20 @@ namespace slime.runtime.content {
 					store: mappedContent.store
 				})(content.store);
 
-				const nullable = <T>(m: slime.$api.fp.Maybe<T>): T => {
-					if (m.present) return m.value;
-					return null;
-				}
-
 				verify(after).get(["foo", "bar", "baz", "bizzy"]).evaluate(nullable).is("busy!");
+			}
+
+			fifty.tests.exports.Store.path = function() {
+				var mappedContent: slime.runtime.test.mock.Content<string> = fixtures.mock.content();
+				mappedContent.set("foo/bar/baz", "busy!");
+
+				var foobar = fifty.global.$api.content.Store.path({
+					store: mappedContent.store,
+					path: ["foo","bar"]
+				});
+
+				verify(foobar).get(["foo", "bar", "baz"]).evaluate(nullable).is(null);
+				verify(foobar).get(["baz"]).evaluate(nullable).is("busy!");
 			}
 		}
 	//@ts-ignore

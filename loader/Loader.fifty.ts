@@ -5,6 +5,71 @@
 //	END LICENSE
 
 namespace slime {
+	export namespace runtime.loader.test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			const runtime: slime.runtime.Exports = fifty.$loader.module("fixtures.ts").subject(fifty);
+			return runtime.loader;
+		//@ts-ignore
+		})(fifty);
+	}
+
+	export namespace runtime.loader {
+		export type Module<C,E> = ($context: C) => E
+
+		export interface Store {
+			script: <C,E>(path: string) => ($context: C) => E
+		}
+
+		export interface Exports {
+			Store: {
+				from: {
+					default: <T>(p: {
+						store: slime.runtime.content.Store<T>
+						adapt: (t: T) => Code
+					}) => Store
+				}
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.Store = fifty.test.Parent();
+				fifty.tests.Store.from = fifty.test.Parent();
+
+				fifty.tests.Store.from.default = function() {
+					const { verify } = fifty;
+					const { jsh } = fifty.global;
+
+					if (jsh) {
+						var $loader = jsh.loader.Store.from.default({
+							store: jsh.file.Location.directory.content.Index( fifty.jsh.file.relative(".") ),
+							adapt: function(t) {
+								return {
+									name: t.pathname,
+									type: function() {
+										return fifty.global.$api.mime.Type.fromName( jsh.file.Location.basename(t) )
+									},
+									read: function() {
+										return jsh.file.Location.file.read.string.simple(t);
+									}
+								}
+							}
+						});
+						var code: slime.runtime.loader.internal.test.store.Script = $loader.script("test/data/store/module.js");
+						var api = code({
+							n: 8
+						});
+						verify(api).calculated.doubled.is(16);
+						verify(api).calculated.squared.is(64);
+					}
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export namespace loader {
 		export namespace synchronous {
 			export type Script<C,E> = (c: C) => E
@@ -52,14 +117,6 @@ namespace slime {
 
 				scripts: <T,C,E>(loader: Synchronous<T>) => (script: string) => slime.loader.synchronous.Script<C,E>
 			}
-		}
-
-		export namespace test {
-			export const subject = (function(fifty: slime.fifty.test.Kit) {
-				const runtime: slime.runtime.Exports = fifty.$loader.module("fixtures.ts").subject(fifty);
-				return runtime.loader;
-			//@ts-ignore
-			})(fifty);
 		}
 
 		(
@@ -272,6 +329,7 @@ namespace slime.runtime.internal.loader {
 	export interface Scope {
 		$api: slime.$api.Global
 		methods: scripts.Exports["methods"]
+		createScriptScope: scripts.Exports["createScriptScope"]
 	}
 
 	export interface Exports {

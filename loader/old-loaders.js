@@ -106,6 +106,11 @@
 				};
 			}
 
+			/**
+			 *
+			 * @param { string } path
+			 * @returns { { prefix: string, main: string } }
+			 */
 			var getModuleLocations = function(path) {
 				var tokens = path.split("/");
 				var prefix = (tokens.length > 1) ? tokens.slice(0,tokens.length-1).join("/") + "/" : "";
