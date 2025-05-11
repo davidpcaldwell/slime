@@ -480,7 +480,7 @@ namespace slime.jrunscript.shell {
 							output: "string"
 						}
 					},
-					$api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question }),
+					$api.fp.world.Sensor.old.mapping({ sensor: jsh.shell.subprocess.question }),
 					function(p) { return p; },
 					$api.fp.property("stdio"),
 					$api.fp.property("output")

@@ -246,7 +246,7 @@
 				var wfpath = $api.fp.impure.Input.map(
 					base,
 					jsh.file.Location.directory.relativePath("wf.path"),
-					$api.fp.Partial.impure.exception({
+					$api.fp.Partial.impure.old.exception({
 						try: $api.fp.world.mapping(jsh.file.Location.file.read.string.world()),
 						nothing: function(location) { return new Error("No file found at " + location.pathname); }
 					}),
@@ -674,7 +674,7 @@
 					jsh.shell.tools.rhino.require.simple();
 					$api.fp.world.now.action(jsh.shell.tools.tomcat.jsh.require.world);
 
-					var getVersion = $api.fp.world.Sensor.mapping({
+					var getVersion = $api.fp.world.Sensor.old.mapping({
 						sensor: jsh.shell.tools.node.Installation.getVersion
 					});
 
@@ -1169,7 +1169,7 @@
 											output: "string"
 										}
 									},
-									$api.fp.world.Sensor.mapping({
+									$api.fp.world.Sensor.old.mapping({
 										sensor: jsh.shell.subprocess.question
 									})
 								);
@@ -1440,7 +1440,7 @@
 						}
 					},
 					getTypescriptVersion: library.module.Project.typescript.version,
-					getConfigurationFile: $api.fp.Partial.impure.exception({
+					getConfigurationFile: $api.fp.Partial.impure.old.exception({
 						try: library.module.Project.typescript.configurationFile,
 						nothing: function(project) { return new Error("TypeScript configuration not found for project " + project.base); }
 					})

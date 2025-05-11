@@ -265,12 +265,8 @@
 						return rv;
 					}
 				},
-				invocation: function(p) {
-					return function(i) {
-						var invoke = p.invoke(i);
-						var argument = p.argument(i);
-						return invoke(argument);
-					}
+				invocation: function(i) {
+					return i.mapping(i.argument);
 				}
 			},
 			returning: function(v) {
@@ -487,11 +483,25 @@
 				},
 				/** @type { slime.$api.fp.Exports["Partial"]["impure"] } */
 				impure: {
-					exception: function(p) {
-						return function(t) {
-							var tried = p.try(t);
-							if (tried.present) return tried.value;
-							throw p.nothing(t);
+					exception: function(nothing) {
+						return function(partial) {
+							return function(p) {
+								var maybe = partial(p);
+								if (!maybe.present) {
+									var error = nothing(p);
+									throw error;
+								}
+								return maybe.value;
+							}
+						}
+					},
+					old: {
+						exception: function(p) {
+							return function(t) {
+								var tried = p.try(t);
+								if (tried.present) return tried.value;
+								throw p.nothing(t);
+							}
 						}
 					}
 				}

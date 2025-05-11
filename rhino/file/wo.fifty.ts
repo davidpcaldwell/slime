@@ -128,6 +128,12 @@ namespace slime.jrunscript.file {
 		}
 
 		export interface Location {
+			lastModified: {
+				simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,number>
+			}
+		}
+
+		export interface Location {
 			posix: {
 				attributes: {
 					/**

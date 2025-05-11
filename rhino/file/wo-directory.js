@@ -256,7 +256,7 @@
 		}
 
 		var list_iterate_simple = $api.fp.now(
-			$api.fp.world.Sensor.mapping({ sensor: wo.directory.list }),
+			$api.fp.world.Sensor.old.mapping({ sensor: wo.directory.list }),
 			$api.fp.curry({ descend: $api.fp.Mapping.all(false) }),
 			$api.fp.flatten("target")
 		);

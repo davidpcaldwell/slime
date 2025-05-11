@@ -565,14 +565,14 @@
 		var jsapi = {
 			Location: {
 				parse: $api.fp.pipe(
-					$api.fp.Partial.impure.exception({
+					$api.fp.Partial.impure.old.exception({
 						try: $api.fp.world.mapping($context.library.file.Location.file.read.string.world()),
 						nothing: function(e) { throw new Error("Could not read file: " + e.pathname + " in " + e.filesystem); }
 					}),
 					document.parse
 				),
 				is: function(location) {
-					var parseJsapiHtml = $api.fp.Partial.impure.exception({
+					var parseJsapiHtml = $api.fp.Partial.impure.old.exception({
 						try: jsapi.Location.parse,
 						nothing: function(location) { return new Error("Could not parse: " + location.pathname); }
 					});
@@ -766,7 +766,7 @@
 				},
 				gitignoreLocal: $api.fp.world.Means.from.flat(
 					function(p) {
-						var readString = $api.fp.world.Sensor.mapping({
+						var readString = $api.fp.world.Sensor.old.mapping({
 							sensor: $context.library.file.Location.file.read.string.world()
 						});
 
@@ -849,7 +849,7 @@
 
 						var effect = $api.fp.now.invoke(
 							gitignore,
-							$api.fp.Partial.impure.exception({
+							$api.fp.Partial.impure.old.exception({
 								try: process,
 								nothing: function(t) { throw new Error("Unreachable: .gitignore classification.") }
 							})
@@ -912,9 +912,9 @@
 						return /\.js$/.test(file.path)
 					};
 
-					var read = $api.fp.Partial.impure.exception({
+					var read = $api.fp.Partial.impure.old.exception({
 						/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>> } */
-						try: $api.fp.world.Sensor.mapping({ sensor: $context.library.file.Location.file.read.string.world() }),
+						try: $api.fp.world.Sensor.old.mapping({ sensor: $context.library.file.Location.file.read.string.world() }),
 						nothing: function(location) { return new Error("Could not read: " + location.pathname) }
 					});
 
@@ -941,7 +941,7 @@
 						hasShebang: hasShebang,
 						isText: {
 							world: isText,
-							basic: $api.fp.world.Sensor.mapping({
+							basic: $api.fp.world.Sensor.old.mapping({
 								sensor: isText()
 							})
 						},

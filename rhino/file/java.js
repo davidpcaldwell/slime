@@ -501,7 +501,9 @@
 
 			function last_modified(pathname) {
 				var peer = java.newPeer(pathname);
-				return peer.getHostFile().lastModified();
+				var rv = peer.getHostFile().lastModified();
+				if (rv === 0) return $api.fp.Maybe.from.nothing();
+				return $api.fp.Maybe.from.some(rv);
 			}
 
 			function length(pathname) {
@@ -681,7 +683,7 @@
 				},
 				fileLastModified: function(p) {
 					return function(events) {
-						return $api.fp.Maybe.from.some(last_modified(p.pathname));
+						return last_modified(p.pathname);
 					}
 				},
 				directoryExists: function(p) {

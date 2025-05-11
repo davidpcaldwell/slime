@@ -23,7 +23,7 @@ namespace slime.jsh.test.remote {
 				$api.fp.impure.tap(function(t) {
 					debugger;
 				}),
-				$api.fp.world.Sensor.mapping({
+				$api.fp.world.Sensor.old.mapping({
 					sensor: jsh.shell.subprocess.question
 				}),
 				$api.fp.impure.tap(function(t) {

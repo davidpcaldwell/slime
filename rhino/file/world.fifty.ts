@@ -42,7 +42,12 @@ namespace slime.jrunscript.file {
 			},void,slime.$api.fp.Maybe<number>>
 
 			/**
-			 * Returns the time the file was last modified, in milliseconds since the UNIX epoch.
+			 * Returns the time the file was last modified, as a JavaScript
+			 * [_time value_](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-time-values-and-time-range).
+			 *
+			 * Will return `Maybe.from.nothing()` if the file does not exist.
+			 *
+			 * Some filesystems may not be able to return a last modified date, so this returns a `Maybe`.
 			 */
 			fileLastModified: slime.$api.fp.world.Sensor<{
 				pathname: string

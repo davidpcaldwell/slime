@@ -18,7 +18,7 @@
 		 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events> } events
 		 */
 		var fetcher = function(client,events) {
-			return $api.fp.world.Sensor.mapping({
+			return $api.fp.world.Sensor.old.mapping({
 				sensor: client,
 				handlers: {
 					request: function(e) {

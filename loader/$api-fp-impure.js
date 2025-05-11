@@ -244,12 +244,15 @@
 						}
 					}
 				},
-				mapping: function(p) {
-					return function(subject) {
-						return $context.events.handle({
-							implementation: p.sensor(subject),
-							handlers: p.handlers
-						})
+				mapping: function(handlers) {
+					return function(sensor) {
+						return function(subject) {
+							var question = sensor(subject);
+							return $context.events.handle({
+								implementation: question,
+								handlers: handlers
+							});
+						}
 					}
 				},
 				map: function(p) {
@@ -276,6 +279,16 @@
 						implementation: question,
 						handlers: p.handlers
 					});
+				},
+				old: {
+					mapping: function(p) {
+						return function(subject) {
+							return $context.events.handle({
+								implementation: p.sensor(subject),
+								handlers: p.handlers
+							})
+						}
+					}
 				}
 			},
 			Means: (

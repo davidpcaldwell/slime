@@ -861,11 +861,11 @@
 
 							var now = jsh.shell.tools.node.installation;
 
-							var exists = $api.fp.world.Sensor.mapping({
+							var exists = $api.fp.world.Sensor.old.mapping({
 								sensor: jsh.shell.tools.node.Installation.exists
 							});
 
-							var getVersion = $api.fp.world.Sensor.mapping({
+							var getVersion = $api.fp.world.Sensor.old.mapping({
 								sensor: jsh.shell.tools.node.Installation.getVersion
 							});
 

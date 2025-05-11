@@ -143,9 +143,36 @@
 			return tokens[tokens.length-1];
 		};
 
+		/** @type { slime.$api.fp.Identity<slime.jrunscript.file.Location> } */
+		var asLocation = $api.fp.identity;
+
+		var lastModifiedSimple = $api.fp.pipe(
+			asLocation,
+			$api.fp.Mapping.properties({
+				argument: function(p) { return { pathname: p.pathname }},
+				partial: $api.fp.pipe(
+					$api.fp.property("filesystem"),
+					$api.fp.property("fileLastModified"),
+					$api.fp.world.Sensor.mapping()
+				)
+			}),
+			$api.fp.Mapping.properties({
+				argument: $api.fp.property("argument"),
+				mapping: $api.fp.pipe(
+					$api.fp.property("partial"),
+					$api.fp.Partial.impure.exception( function(p) { return new Error("Could not obtain last modified date for " + p.pathname); })
+				)
+			}),
+			$api.fp.Mapping.invocation
+		)
+
 		var Location = {
 			relative: Location_relative,
 			basename: Location_basename,
+			/** @type { slime.jrunscript.file.exports.Location["lastModified"] } */
+			lastModified: {
+				simple: lastModifiedSimple
+			},
 			file: {
 				exists: {
 					simple: $api.fp.world.mapping(Location_file_exists),
@@ -278,7 +305,7 @@
 				Location_parent: Location_parent,
 				Location_basename: Location_basename,
 				Location_directory_exists: {
-					simple: $api.fp.world.Sensor.mapping({ sensor: Location_directory_exists }),
+					simple: $api.fp.world.Sensor.old.mapping({ sensor: Location_directory_exists }),
 					world: function() { return Location_directory_exists; }
 				},
 				Location_relative: Location_relative,
@@ -304,6 +331,7 @@
 					}
 				},
 				relative: $api.deprecate(parts.directory.relativePath),
+				lastModified: Location.lastModified,
 				parent: Location_parent,
 				basename: Location_basename,
 				canonicalize: function(location) {
@@ -433,11 +461,11 @@
 							stream: readStream,
 							string: {
 								world: readString,
-								maybe: $api.fp.world.Sensor.mapping({
+								maybe: $api.fp.world.Sensor.old.mapping({
 									sensor: readString()
 								}),
-								simple: $api.fp.Partial.impure.exception({
-									try: $api.fp.world.Sensor.mapping({
+								simple: $api.fp.Partial.impure.old.exception({
+									try: $api.fp.world.Sensor.old.mapping({
 										sensor: readString()
 									}),
 									nothing: function(location) {
@@ -446,9 +474,9 @@
 								})
 							},
 							properties: {
-								simple: $api.fp.Partial.impure.exception({
+								simple: $api.fp.Partial.impure.old.exception({
 									try: $api.fp.pipe(
-										$api.fp.world.Sensor.mapping({ sensor: readString() }),
+										$api.fp.world.Sensor.old.mapping({ sensor: readString() }),
 										$api.fp.Maybe.map( $context.library.java.Properties.from.string )
 									),
 									nothing: function(location) {

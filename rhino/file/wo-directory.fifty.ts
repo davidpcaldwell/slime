@@ -288,7 +288,7 @@ namespace slime.jrunscript.file.exports.location {
 							descend: $api.fp.Mapping.all(false)
 						}
 					},
-					$api.fp.world.Sensor.mapping({ sensor: subject.Location.directory.list.world }),
+					$api.fp.world.Sensor.old.mapping({ sensor: subject.Location.directory.list.world }),
 					$api.fp.Stream.collect
 				);
 
@@ -300,7 +300,7 @@ namespace slime.jrunscript.file.exports.location {
 							descend: $api.fp.Mapping.all(true)
 						}
 					},
-					$api.fp.world.Sensor.mapping({ sensor: subject.Location.directory.list.world }),
+					$api.fp.world.Sensor.old.mapping({ sensor: subject.Location.directory.list.world }),
 					$api.fp.Stream.collect
 				);
 

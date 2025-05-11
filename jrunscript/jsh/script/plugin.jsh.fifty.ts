@@ -105,7 +105,7 @@ namespace slime.jsh.script {
 			};
 
 			var getShellDataJson: (intention: slime.jrunscript.shell.run.Intention) => { "jsh.script.file": FileJson, "jsh.script.script": FileJson, "jsh.script.url": UrlJson } = $api.fp.pipe(
-				$api.fp.world.Sensor.mapping({
+				$api.fp.world.Sensor.old.mapping({
 					sensor: jsh.shell.subprocess.question
 				}),
 				$api.fp.impure.tap(function(exit) {
@@ -378,7 +378,7 @@ namespace slime.jsh.script {
 			var scriptUrl = "http://raw.githubusercontent.com/davidpcaldwell/slime/local/jrunscript/jsh/script/test/loader.jsh.js";
 
 			var getJson: (intention: slime.jrunscript.shell.run.Intention) => { submodule: { message: string } } = $api.fp.pipe(
-				$api.fp.world.Sensor.mapping({
+				$api.fp.world.Sensor.old.mapping({
 					sensor: jsh.shell.subprocess.question
 				}),
 				$api.fp.impure.tap(function(exit) {
@@ -475,7 +475,7 @@ namespace slime.jsh.script {
 				});
 
 				var getJson = $api.fp.pipe(
-					$api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question }),
+					$api.fp.world.Sensor.old.mapping({ sensor: jsh.shell.subprocess.question }),
 					$api.fp.property("stdio"),
 					$api.fp.property("output"),
 					JSON.parse

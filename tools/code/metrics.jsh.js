@@ -13,7 +13,7 @@
 	function($api,jsh) {
 		jsh.shell.tools.rhino.require.simple();
 
-		var existsFile = $api.fp.world.Sensor.mapping({
+		var existsFile = $api.fp.world.Sensor.old.mapping({
 			sensor: jsh.file.Location.file.exists.world()
 		});
 
@@ -63,7 +63,7 @@
 			jsh.shell.PWD.pathname.os.adapt(),
 			function(location) {
 				var gitRepositoryLocation = $api.fp.now.invoke(location, jsh.file.Location.directory.relativePath(".git"));
-				var existsDirectory = $api.fp.world.Sensor.mapping({
+				var existsDirectory = $api.fp.world.Sensor.old.mapping({
 					sensor: jsh.file.Location.directory.exists.world()
 				});
 				return {
