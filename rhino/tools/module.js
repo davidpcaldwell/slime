@@ -213,11 +213,11 @@
 			return {
 				manifest: {
 					world: wo.manifest,
-					simple: $api.fp.world.Sensor.mapping({ sensor: wo.manifest })
+					simple: $api.fp.world.Sensor.old.mapping({ sensor: wo.manifest })
 				},
 				entries: {
 					world: wo.entries,
-					simple: $api.fp.world.Sensor.mapping({ sensor: wo.entries })
+					simple: $api.fp.world.Sensor.old.mapping({ sensor: wo.entries })
 				},
 				Manifest: {
 					from: {

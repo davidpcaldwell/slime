@@ -99,7 +99,7 @@
 								inputs.slime,
 								jsh.file.Location.directory.relativePath("tools/wf/templates"),
 								jsh.file.Location.directory.relativePath(path),
-								$api.fp.Partial.impure.exception({
+								$api.fp.Partial.impure.old.exception({
 									try: $api.fp.world.mapping(jsh.file.Location.file.read.string.world()),
 									nothing: function(location) { throw new Error("File not found at " + location.pathname); }
 								}),

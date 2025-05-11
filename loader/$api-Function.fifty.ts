@@ -358,7 +358,11 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
-		curry: <T,P extends slime.external.lib.typescript.Partial<T>,R>(fix: P) => (f: (t: T) => R) => (t: Omit<T, keyof P>) => R
+		/**
+		 * Converts a function that takes an argument with a set of properties to a function that takes an argument with fewer
+		 * properties, by fixing some of the properties in advance.
+		 */
+		curry: <T,P extends { [K in keyof T]?: T[K] },R>(fix: P) => (f: (t: T) => R) => (t: Omit<T, keyof P>) => R
 	}
 
 	(
@@ -448,10 +452,14 @@ namespace slime.$api.fp {
 
 	export namespace exports {
 		export interface Mapping {
-			invocation: <I,P,R>(p: {
-				invoke: (i: I) => slime.$api.fp.Mapping<P,R>
-				argument: (i: I) => P
-			}) => (i: I) => R
+			/**
+			 * Given a Mapping invocation (consisting of a mapping and an argument), return the result of the mapping for the
+			 * argument.
+			 */
+			invocation: <P,R>(p: {
+				mapping: slime.$api.fp.Mapping<P,R>
+				argument: P
+			}) => R
 		}
 	}
 
@@ -818,7 +826,7 @@ namespace slime.$api.fp {
 	export type Partial<P,R> = (p: P) => Maybe<R>
 
 	export namespace exports {
-		export interface Partial {
+		export interface Partials {
 		}
 
 		(
@@ -832,11 +840,11 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
-		Partial: exports.Partial
+		Partial: exports.Partials
 	}
 
 	export namespace exports {
-		export interface Partial {
+		export interface Partials {
 			from: {
 				/**
 				 * Creates a partial function from a "loose" function, where "loose" is defined as a JavaScript function that might
@@ -851,7 +859,7 @@ namespace slime.$api.fp {
 				 * @param f A JavaScript function.
 				 * @returns A partial function implemented in terms of the given JavaScript function.
 				 */
-				loose: <P,R>(f: slime.$api.fp.Mapping<P,R>) => slime.$api.fp.Partial<P,R>
+				loose: <P,R>(f: slime.$api.fp.Mapping<P,R>) => Partial<P,R>
 			}
 		}
 
@@ -890,7 +898,7 @@ namespace slime.$api.fp {
 	}
 
 	export namespace exports {
-		export interface Partial {
+		export interface Partials {
 			match: {
 				<P,N extends P,R>(p: TypeMatch<P,N,R>): fp.Partial<P,R>
 				<P,R>(p: Match<P,R>): fp.Partial<P,R>
@@ -933,7 +941,7 @@ namespace slime.$api.fp {
 	}
 
 	export namespace exports {
-		export interface Partial {
+		export interface Partials {
 			else: <P,R>(p: {
 				partial: fp.Partial<P,R>
 				else: fp.Mapping<P,R>
@@ -974,12 +982,22 @@ namespace slime.$api.fp {
 	}
 
 	export namespace exports {
-		export interface Partial {
+		export interface Partials {
 			impure: {
-				exception: <P,R,E extends Error>(p: {
-					try: fp.Partial<P,R>
-					nothing: (p: P) => E
-				}) => fp.Mapping<P,R>
+				old: {
+					/**
+					 * Converts a partial function into a total function that throws an exception if the partial function returns
+					 * `Maybe.nothing`; essentially the resulting function asserts the the partial function will return a value.
+					 * @param p
+					 * @returns
+					 */
+					exception: <P,R,E extends Error>(p: {
+						try: fp.Partial<P,R>
+						nothing: (p: P) => E
+					}) => fp.Mapping<P,R>
+				}
+
+				exception: <P,R,E extends Error>(nothing: (p: P) => E) => (partial: fp.Partial<P,R>) => fp.Mapping<P,R>
 			}
 		}
 	}

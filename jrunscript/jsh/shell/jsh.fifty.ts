@@ -371,7 +371,7 @@ namespace slime.jsh.shell {
 			var getInstallationFromDiagnosticOutput: (data: any) => slime.jsh.shell.Installation = $api.fp.property("installation");
 
 			var getInstallationFromShellIntention = $api.fp.pipe(
-				$api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question }),
+				$api.fp.world.Sensor.old.mapping({ sensor: jsh.shell.subprocess.question }),
 				function(result) {
 					if (result.status != 0) throw new Error(
 						"Status: " + result.status

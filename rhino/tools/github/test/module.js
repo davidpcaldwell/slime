@@ -167,7 +167,7 @@
 
 		var getOutput = $api.fp.pipe(
 			asShellIntention,
-			$api.fp.world.Sensor.mapping({
+			$api.fp.world.Sensor.old.mapping({
 				sensor: $context.library.shell.subprocess.question
 			}),
 			$api.fp.impure.tap(function(t) {

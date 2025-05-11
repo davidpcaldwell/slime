@@ -145,7 +145,7 @@
 						})
 					},
 					documentation: function() {
-						var exists = $api.fp.world.Sensor.mapping({ sensor: $context.library.file.Location.directory.exists.world() });
+						var exists = $api.fp.world.Sensor.old.mapping({ sensor: $context.library.file.Location.directory.exists.world() });
 						if (!exists(documentation)) return $api.fp.Maybe.from.nothing();
 						var loader = $context.library.file.Location.directory.loader.synchronous({ root: documentation });
 						return $context.library.code.directory.lastModified({

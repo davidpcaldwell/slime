@@ -736,16 +736,15 @@ namespace slime.$api.fp.world {
 				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.event.Emitter<E> }) => R) => Sensor<S,E,R>
 			}
 
+			mapping: <S,E,R>(events?: slime.$api.event.Handlers<E>)
+				=> (sensor: slime.$api.fp.world.Sensor<S,E,R>)
+				=> slime.$api.fp.Mapping<S,R>
+
 			map: <NS,S,E,R,NR>(p: {
 				subject: slime.$api.fp.Mapping<NS,S>
 				sensor?: slime.$api.fp.world.Sensor<S,E,R>
 				reading?: slime.$api.fp.Mapping<R,NR>
 			}) => slime.$api.fp.world.Sensor<NS,E,NR>
-
-			mapping: <S,E,R>(p: {
-				sensor: slime.$api.fp.world.Sensor<S,E,R>
-				handlers?: slime.$api.event.Handlers<E>
-			}) => slime.$api.fp.Mapping<S,R>
 
 			input: <S,E,R>(p: {
 				sensor: slime.$api.fp.world.Sensor<S,E,R>
@@ -758,6 +757,13 @@ namespace slime.$api.fp.world {
 				subject: S
 				handlers?: slime.$api.event.Handlers<E>
 			}) => R
+
+			old: {
+				mapping: <S,E,R>(p: {
+					sensor: slime.$api.fp.world.Sensor<S,E,R>
+					handlers?: slime.$api.event.Handlers<E>
+				}) => slime.$api.fp.Mapping<S,R>
+			}
 		}
 	}
 
@@ -785,7 +791,7 @@ namespace slime.$api.fp.world {
 					}
 				};
 
-				var mapping = $api.fp.world.Sensor.mapping({
+				var mapping = $api.fp.world.Sensor.old.mapping({
 					sensor: doubler,
 					handlers: captor.handler
 				});

@@ -66,7 +66,7 @@
 										output: "string"
 									}
 								},
-								$api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question })
+								$api.fp.world.Sensor.old.mapping({ sensor: jsh.shell.subprocess.question })
 							);
 							var output = jsh.shell.jsh({
 								shell: environment.jsh.unbuilt.src,

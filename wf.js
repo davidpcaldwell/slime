@@ -198,7 +198,7 @@
 
 						(
 							function core() {
-								var getVersion = $api.fp.world.Sensor.mapping({
+								var getVersion = $api.fp.world.Sensor.old.mapping({
 									sensor: jsh.shell.tools.node.Installation.getVersion
 								});
 
@@ -362,7 +362,7 @@
 			);
 
 			events.fire("console", "Verifying MPL license headers ...");
-			var license = $api.fp.world.Sensor.mapping({ sensor: jsh.shell.subprocess.question })({
+			var license = $api.fp.world.Sensor.old.mapping({ sensor: jsh.shell.subprocess.question })({
 				command: "bash",
 				arguments: $api.Array.build(function(rv) {
 					rv.push(jsh.shell.jsh.src.getRelativePath("jsh").toString());

@@ -147,7 +147,7 @@
 					});
 					return {
 						sensor: sensor,
-						basic: $api.fp.world.Sensor.mapping({
+						basic: $api.fp.world.Sensor.old.mapping({
 							sensor: sensor
 						})
 					}
@@ -167,8 +167,8 @@
 
 					return {
 						sensor: sensor,
-						assert: $api.fp.Partial.impure.exception({
-							try: $api.fp.world.Sensor.mapping({
+						assert: $api.fp.Partial.impure.old.exception({
+							try: $api.fp.world.Sensor.old.mapping({
 								sensor: sensor
 							}),
 							//	TODO	diagnostics
