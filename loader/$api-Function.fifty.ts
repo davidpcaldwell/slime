@@ -1408,15 +1408,19 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace json {
+		export type Parser<T> = (json: string) => T
+	}
+
 	export interface Exports {
 		JSON: {
 			stringify: (p?: {
-				replacer?: Parameters<JSON["stringify"]>[1]
-				space?: Parameters<JSON["stringify"]>[2]
+				replacer?: Parameters<slime.external.lib.es5.JSON["stringify"]>[1]
+				space?: Parameters<slime.external.lib.es5.JSON["stringify"]>[2]
 			}) => (v: any) => string
 
 			prettify: (p: {
-				space: Parameters<JSON["stringify"]>[2]
+				space: Parameters<slime.external.lib.es5.JSON["stringify"]>[2]
 			}) => (json: string) => string
 		}
 	}

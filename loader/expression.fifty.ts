@@ -285,7 +285,7 @@ namespace slime {
 			/**
 			 * Returns the content of this resource as JSON.
 			 */
-			(p: JSON): slime.$api.fp.Data
+			(p: slime.external.lib.es5.JSON): slime.$api.fp.Data
 
 			string: () => string
 		}
