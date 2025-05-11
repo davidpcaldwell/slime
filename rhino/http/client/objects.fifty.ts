@@ -171,7 +171,7 @@ namespace slime.jrunscript.http.client.object {
 		 * is returned.
 		 */
 		request: {
-			(p: Request & { evaluate: JSON }): any
+			(p: Request & { evaluate: slime.external.lib.es5.JSON }): any
 
 			<T>(p: Request & {
 				/**
