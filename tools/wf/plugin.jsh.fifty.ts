@@ -41,6 +41,11 @@ namespace slime.jsh {
  * {@link slime.jsh.script.cli.Command}. Commands can use the {@link slime.jsh.wf.Exports | `jsh.wf`} APIs
  * as part of their implementation.
  *
+ * If a project provides an `initialize` command, it is executed prior to every `wf` command (and should thus be idempotent). When
+ * the `initialize` command is executed due to the invocation of another command, it will receive an empty argument list.
+ *
+ * ## Using the standard project implementation and `git` hooks
+ *
  * In particular, `jsh.wf` provides the
  * {@link slime.jsh.wf.Exports | project.initialize} method that
  * enables authors to provide a {@link slime.jsh.wf.standard.Interface | standard set} of `wf` commands given a
@@ -48,9 +53,6 @@ namespace slime.jsh {
  *
  * This standard project implementation also provides implementations for `git` hooks, which can be used if they are enabled; see
  * below.
- *
- * If a project provides an `initialize` command, it is executed prior to every `wf` command (and should thus be idempotent). When
- * the `initialize` command is executed due to the invocation of another command, it will receive an empty argument list.
  *
  * The `jsh.wf.project.git.installHooks()` call from within `initialize` will install `git` hooks that piggyback off the standard
  * implementation operations.

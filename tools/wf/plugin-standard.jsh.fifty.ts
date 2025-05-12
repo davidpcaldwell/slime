@@ -287,14 +287,18 @@ namespace slime.jsh.wf.standard {
 
 		precommit: slime.jsh.script.cli.Command<Options>
 
-		documentation:  slime.jsh.script.cli.Command<Options>
+		/**
+		 * Serves the project's documentation, with the `fifty view --base <project-location> --host <provided-or-basename>`
+		 * command.
+		 */
+		documentation:  slime.jsh.script.cli.Command<Options & { host: string }>
 
 		/**
 		 * Intended to support interactively writing documentation; executes `fifty view` with the `--watch` option enabled.
 		 * **This process is currently very inefficient; it re-generates the project documentation for each request for a
 		 * `.html` URL.**
 		 */
-		document:  slime.jsh.script.cli.Command<Options>
+		document:  slime.jsh.script.cli.Command<Options & { host: string }>
 
 		git: {
 			hooks: {
