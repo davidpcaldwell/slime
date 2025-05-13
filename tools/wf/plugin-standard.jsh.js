@@ -737,33 +737,37 @@
 					}
 				);
 
+				/** @type { (c: { watch: boolean }) => slime.jsh.script.cli.Command<slime.jsh.wf.standard.Options> } */
 				var serveDocumentation = function(c) {
 					return $api.fp.pipe(
+						jsh.script.cli.option.string({ longname: "host" }),
 						function(p) {
-							jsh.shell.run({
-								command: jsh.shell.jsh.src.getFile("fifty"),
-								//	TODO	make functional implementation of below simpler
-								arguments: (function() {
-									var rv = [];
+							var run = $api.fp.now(
+								jsh.shell.subprocess.question,
+								$api.fp.world.Sensor.mapping()
+							);
+
+							var result = run({
+								command: "bash",
+								arguments: $api.Array.build(function(rv) {
+									rv.push(jsh.shell.jsh.src.getFile("fifty").pathname.toString());
 
 									rv.push("view");
 
-									rv.push("--base", $context.base);
+									rv.push("--base", $context.base.pathname.toString());
 
 									var host = (function(provided) {
 										if (provided) return provided;
 										return $context.base.pathname.basename;
 									})(p.options.host);
+
 									rv.push("--host", host);
 
 									if (c.watch) rv.push("--watch");
-
-									return rv;
-								})(),
-								evaluate: function(result) {
-									jsh.shell.exit(result.status);
-								}
+								})
 							});
+
+							return result.status;
 						}
 					)
 				}
