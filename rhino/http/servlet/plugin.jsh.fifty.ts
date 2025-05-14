@@ -339,6 +339,10 @@ namespace slime.jsh.httpd {
 		tomcat: {
 			Server: {
 				from: {
+					/**
+					 * Returns a Tomcat server, which will not yet be running, configured using the given argument. The server can
+					 * be managed using its lifecycle methods `start()`, `run()`, and `stop()`.
+					 */
 					configuration: (p: tomcat.Configuration & tomcat.Webapps) => Tomcat
 				}
 			}

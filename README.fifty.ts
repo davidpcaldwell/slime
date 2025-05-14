@@ -93,7 +93,7 @@
  *
  * SLIME definitions are created via the {@link slime.fifty | Fifty definition framework}, which uses TypeScript to
  * provide type definitions and `tsdoc`-compatible documentation (and uses [TypeDoc](https://typedoc.org/) to publish that
- * documentation, and the `fifty view` tool to serve it), and allows inline tests to be authored within those TypeScript
+ * documentation, and the {@link slime.fifty.view.cli.Program | `fifty view` tool} to serve it), and allows inline tests to be authored within those TypeScript
  * definitions. A simple example that contains tests for the project's `wf` commands can be found at `./wf.fifty.ts`.
  *
  * Fifty definition files are just TypeScript files that declare the types and exports available for an API. The `fifty` tool allows

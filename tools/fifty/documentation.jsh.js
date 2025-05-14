@@ -13,21 +13,40 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {
+		var $loader = $api.fp.now(
+			jsh.script.world.file,
+			jsh.file.Location.parent(),
+			jsh.file.Location.directory.content.Index,
+			function(store) {
+				return jsh.loader.Store.from.default({
+					store: store,
+					//	TODO	promote to shared
+					adapt: function(t) {
+						return {
+							name: t.pathname,
+							type: function() {
+								return $api.mime.Type.fromName( jsh.file.Location.basename(t) )
+							},
+							read: function() {
+								return jsh.file.Location.file.read.string.simple(t);
+							}
+						}
+					}
+				});
+			}
+		);
+
 		jsh.script.cli.main(
 			$api.fp.pipe(
-				jsh.script.cli.option.pathname({ longname: "base" }),
+				jsh.script.cli.fp.option.location({ longname: "base" }),
 				jsh.script.cli.option.string({ longname: "chrome:id" }),
 				jsh.script.cli.option.string({ longname: "host" }),
 				jsh.script.cli.option.string({ longname: "index" }),
 				jsh.script.cli.option.boolean({ longname: "watch"}),
 				function(p) {
-					$api.fp.world.Means.now({
-						means: jsh.shell.tools.tomcat.jsh.require.world,
-						order: {}
-					});
+					jsh.shell.tools.tomcat.jsh.require.simple();
 
-					/** @type { slime.jrunscript.file.Directory } */
-					var base = (p.options.base) ? p.options.base.directory : jsh.shell.PWD;
+					var base = (p.options.base.present) ? p.options.base.value : jsh.shell.PWD.pathname.os.adapt();
 
 					var operation = (p.options.watch) ? "document" : "documentation";
 
@@ -36,21 +55,20 @@
 						return operation;
 					})(p.options["chrome:id"], operation);
 
-					var host = (function(host,operation) {
-						if (host) return operation + "." + host;
-						return operation;
-					})(p.options.host, operation);
+					var host = (function(specified,operation,basename) {
+						if (specified) return specified;
+						return operation + "." + basename;
+					})(p.options.host, operation, jsh.file.Location.basename(base));
 
 					var index = p.options.index || "README.html";
 
-					var loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
 					var code = {
 						/** @type { slime.fifty.view.Script } */
-						project: loader.script("project.js")
+						view: $loader.script("view.js")
 					};
 
 					var library = {
-						project: code.project({
+						view: code.view({
 							library: {
 								file: jsh.file,
 								httpd: jsh.httpd
@@ -58,8 +76,8 @@
 						})
 					};
 
-					var server = library.project({
-						base: base,
+					var server = library.view({
+						base: jsh.file.Pathname(base.pathname).directory,
 						watch: p.options.watch
 					});
 
@@ -70,7 +88,7 @@
 							.replace(/__PORT__/g, String(server.port))
 						;
 						var instance = new jsh.shell.browser.chrome.Instance({
-							location: base.getRelativePath("local/chrome/" + chromeId),
+							location: jsh.file.Pathname(base.pathname).directory.getRelativePath("local/chrome/" + chromeId),
 							proxy: jsh.shell.browser.ProxyConfiguration({
 								code: pac
 							})
@@ -95,4 +113,4 @@
 		);
 	}
 //@ts-ignore
-)(Packages,$api,jsh)
+)(Packages,$api,jsh);
