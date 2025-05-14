@@ -64,7 +64,7 @@ namespace slime.fifty {
 		) {
 			fifty.tests.suite = function() {
 				fifty.load("test.fifty.ts");
-				fifty.load("project.fifty.ts");
+				fifty.load("view.fifty.ts");
 				fifty.load("test/data/module.fifty.ts");
 			}
 		}

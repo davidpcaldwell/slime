@@ -756,12 +756,9 @@
 
 									rv.push("--base", $context.base.pathname.toString());
 
-									var host = (function(provided) {
-										if (provided) return provided;
-										return $context.base.pathname.basename;
-									})(p.options.host);
-
-									rv.push("--host", host);
+									if (p.options.host) {
+										rv.push("--host", p.options.host);
+									}
 
 									if (c.watch) rv.push("--watch");
 								})

@@ -31,7 +31,7 @@ namespace slime.fifty.view {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			var code: Script = fifty.$loader.script("project.js");
+			var code: Script = fifty.$loader.script("view.js");
 
 			fifty.tests.suite = function() {
 				if (fifty.global.jsh) {
@@ -59,5 +59,5 @@ namespace slime.fifty.view {
 	//@ts-ignore
 	)($fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 }
