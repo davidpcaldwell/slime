@@ -176,12 +176,16 @@
 				/** @type { slime.jsh.wf.internal.typescript.Exports["module"]["typedoc"]["invocation"] } */
 				var invocation = function(p) {
 					return function(events) {
-						if (!p.configuration || !p.configuration.typescript || !p.configuration.typescript.version) throw new TypeError("Required: p.configuration.typescript.version");
+						if (!p.configuration || !p.configuration.typescript || !p.configuration.typescript.version) {
+							throw new TypeError("Required: p.configuration.typescript.version");
+						}
 
 						$context.library.node.require.simple();
 
 						$api.fp.world.Action.now({
-							action: $context.library.node.Installation.modules($context.library.node.installation).require({ name: "typescript", version: p.configuration.typescript.version }),
+							action: $context.library.node.Installation.modules($context.library.node.installation)
+								.require({ name: "typescript", version: p.configuration.typescript.version })
+							,
 						});
 
 						var typedocVersion = $api.fp.now.invoke(
