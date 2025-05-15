@@ -9,7 +9,7 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.plugin.$slime } $slime
-	 * @param { slime.jsh.Global } jsh
+	 * @param { Readonly<Pick<slime.jsh.Global,"file"|"shell"|"ui"|"tools"|"script"|"project">> & Pick<slime.jsh.Global,"wf"> } jsh
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
