@@ -148,7 +148,7 @@
 
 		var lastModifiedSimple = $api.fp.pipe(
 			asLocation,
-			$api.fp.Mapping.properties({
+			$api.fp.mapping.properties({
 				argument: function(p) { return { pathname: p.pathname }},
 				partial: $api.fp.pipe(
 					$api.fp.property("filesystem"),
@@ -156,14 +156,14 @@
 					$api.fp.world.Sensor.mapping()
 				)
 			}),
-			$api.fp.Mapping.properties({
+			$api.fp.mapping.properties({
 				argument: $api.fp.property("argument"),
 				mapping: $api.fp.pipe(
 					$api.fp.property("partial"),
 					$api.fp.Partial.impure.exception( function(p) { return new Error("Could not obtain last modified date for " + p.pathname); })
 				)
 			}),
-			$api.fp.Mapping.invocation
+			$api.fp.mapping.invocation
 		)
 
 		var Location = {
@@ -551,8 +551,8 @@
 						pathname: temporary({ directory: false, remove: true }),
 						location: $api.fp.impure.Input.map(
 							temporary({ directory: false, remove: true }),
-							$api.fp.Mapping.properties({
-								filesystem: $api.fp.Mapping.all(world),
+							$api.fp.mapping.properties({
+								filesystem: $api.fp.mapping.all(world),
 								pathname: $api.fp.identity
 							})
 						),

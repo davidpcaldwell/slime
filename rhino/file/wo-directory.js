@@ -109,7 +109,7 @@
 					};
 
 					return function(events) {
-						var descend = (p && p.descend) ? p.descend : $api.fp.Mapping.all(false);
+						var descend = (p && p.descend) ? p.descend : $api.fp.mapping.all(false);
 						var array = process(p.target,descend,events);
 						return $api.fp.Stream.from.array(array);
 					}
@@ -257,7 +257,7 @@
 
 		var list_iterate_simple = $api.fp.now(
 			$api.fp.world.Sensor.old.mapping({ sensor: wo.directory.list }),
-			$api.fp.curry({ descend: $api.fp.Mapping.all(false) }),
+			$api.fp.curry({ descend: $api.fp.mapping.all(false) }),
 			$api.fp.flatten("target")
 		);
 
@@ -289,7 +289,7 @@
 								return function(location) {
 									return wo.directory.list({
 										target: location,
-										descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.all(false)
+										descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.mapping.all(false)
 									});
 								}
 							},
@@ -299,7 +299,7 @@
 										sensor: wo.directory.list,
 										subject: {
 											target: location,
-											descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.all(false)
+											descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.mapping.all(false)
 										}
 									});
 								}

@@ -242,13 +242,25 @@
 					return rv;
 				}
 			},
-			Mapping: {
-				all: function(r) {
+			mapping: {
+				from: {
+					value: function(r) {
+						return function(p) {
+							return r;
+						}
+					},
+					thunk: function(f) {
+						return function(p) {
+							return f();
+						}
+					}
+				},
+				all: $context.deprecate(function(r) {
 					return function(p) {
 						return r;
 					}
-				},
-				thunk: function(mapping) {
+				}),
+				thunks: function(mapping) {
 					return function(p) {
 						return function() {
 							return mapping(p);
