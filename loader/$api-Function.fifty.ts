@@ -172,7 +172,38 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export namespace exports {
-		export interface Mapping {
+		export interface mapping {
+			from: {
+				value: <P,R>(r: R) => (p: P) => R
+				thunk: <P,R>(thunk: fp.Thunk<R>) => Mapping<P,R>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.mapping.from = function() {
+					const value = 2;
+					const thunkValue = 3;
+
+					const byValue = $api.fp.mapping.from.value(value);
+					const byThunk = $api.fp.mapping.from.thunk( () => thunkValue );
+
+					verify(byValue(8)).is(value);
+					verify(byValue(10)).is(value);
+					verify(byThunk(9)).is(thunkValue);
+					verify(byThunk(11)).is(thunkValue);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface mapping {
+			/** @deprecated Use `from.value()`. */
 			all: <P,R>(r: R) => (p: P) => R
 		}
 	}
@@ -181,7 +212,7 @@ namespace slime.$api.fp {
 		/**
 		 * APIs related to {@link Mapping}s.
 		 */
-		Mapping: exports.Mapping
+		mapping: exports.mapping
 
 
 		/**
@@ -202,12 +233,12 @@ namespace slime.$api.fp {
 	}
 
 	export namespace exports {
-		export interface Mapping {
+		export interface mapping {
 			/**
-			 * Given a {@link Mapping}, creates a `Mapping` that, given an argument, returns a {@link Thunk} that will, when
+			 * Given a {@link mapping}, creates a `Mapping` that, given an argument, returns a {@link Thunk} that will, when
 			 * invoked, invoke the underlying mapping with that argument and return the result.
 			 */
-			thunk: <P,R>(p: fp.Mapping<P,R>) => fp.Mapping<P,Thunk<R>>
+			thunks: <P,R>(p: fp.Mapping<P,R>) => fp.Mapping<P,Thunk<R>>
 		}
 
 		(
@@ -217,10 +248,10 @@ namespace slime.$api.fp {
 				const { verify } = fifty;
 				const { $api } = fifty.global;
 
-				fifty.tests.exports.mapping.thunk = function() {
+				fifty.tests.exports.mapping.thunks = function() {
 					var double: fp.Mapping<number,number> = (n: number) => n*2;
 
-					var t1 = $api.fp.Mapping.thunk(double)(2);
+					var t1 = $api.fp.mapping.thunks(double)(2);
 
 					verify(t1()).is(4);
 				}
@@ -418,7 +449,7 @@ namespace slime.$api.fp {
 	//			analogous to $api.fp.now, with first argument as function, or maybe all arguments as functions?
 
 	export namespace exports {
-		export interface Mapping {
+		export interface mapping {
 			properties: <P,R>(p: {
 				[k in keyof R]: (p: P) => R[k]
 			}) => (p: P) => R
@@ -434,7 +465,7 @@ namespace slime.$api.fp {
 				fifty.tests.exports.mapping.properties = function() {
 					var x = $api.fp.now.map(
 						2,
-						$api.fp.Mapping.properties({
+						$api.fp.mapping.properties({
 							single: function(d) { return d; },
 							double: function(d) { return d*2 },
 							triple: function(d) { return d*3 }
@@ -451,7 +482,7 @@ namespace slime.$api.fp {
 	}
 
 	export namespace exports {
-		export interface Mapping {
+		export interface mapping {
 			/**
 			 * Given a Mapping invocation (consisting of a mapping and an argument), return the result of the mapping for the
 			 * argument.

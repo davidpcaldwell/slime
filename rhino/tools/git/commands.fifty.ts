@@ -341,7 +341,7 @@ namespace slime.jrunscript.tools.git {
 				fixtures.edit(
 					child,
 					"a",
-					$api.fp.Mapping.all("a")
+					$api.fp.mapping.all("a")
 				);
 				child.api.command(add).argument({ files: ["a"] }).run();
 				child.api.command(fixtures.commands.commit).argument({ message: "it" }).run();
@@ -375,7 +375,7 @@ namespace slime.jrunscript.tools.git {
 				fixtures.edit(
 					grandchild,
 					"file",
-					$api.fp.Mapping.all("file")
+					$api.fp.mapping.all("file")
 				);
 				grandchild.api.command(add).argument({ files: ["file"] }).run();
 				grandchild.api.command(fixtures.commands.commit).argument({ message: "message" }).run();

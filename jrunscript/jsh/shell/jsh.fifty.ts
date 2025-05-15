@@ -845,18 +845,18 @@ namespace slime.jsh.shell {
 			fifty.tests.exports.jsh.shells = function() {
 				var unbuilt = run(test.shells.unbuilt().invoke({
 					script: script,
-					environment: $api.fp.Mapping.all(environment),
+					environment: $api.fp.mapping.all(environment),
 					stdio: stdio
 				}));
 
 				var built = run(test.shells.built(false).invoke({
 					script: script,
-					environment: $api.fp.Mapping.all(environment),
+					environment: $api.fp.mapping.all(environment),
 					stdio: stdio
 				}));
 
 				var packaged = run(test.shells.packaged(script).invoke({
-					environment: $api.fp.Mapping.all(environment),
+					environment: $api.fp.mapping.all(environment),
 					stdio: stdio
 				}));
 
