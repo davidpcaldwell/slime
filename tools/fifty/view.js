@@ -29,10 +29,11 @@
 			});
 			/** @type { slime.tools.documentation.Export } */
 			var documentationHandler = code.documentationHandler();
-			var documentationFactory = documentationHandler({
+			var configuredDocumentationHandler = documentationHandler({
 				base: p.base,
 				watch: p.watch
 			});
+			var documentationHandlerServlet = configuredDocumentationHandler(p.httpd);
 			var wikiHandler = code.wiki({
 				httpd: p.httpd,
 				library: {
@@ -42,14 +43,14 @@
 			});
 			return {
 				handle: p.httpd.Handler.series(
-					documentationFactory.handler(p.httpd),
+					documentationHandlerServlet.handle,
 					wikiHandler,
 					asTextHandler({
 						loader: new $context.library.file.Loader({ directory: p.base })
 					})
 				),
 				destroy: function() {
-					documentationFactory.stop();
+					documentationHandlerServlet.destroy();
 				}
 			}
 		}

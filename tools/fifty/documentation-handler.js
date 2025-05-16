@@ -120,11 +120,11 @@
 					}
 				});
 
-				return {
-					handler: function(httpd) {
-						var asTextHandler = code.asTextHandler({ httpd: httpd });
+				return function(httpd) {
+					var asTextHandler = code.asTextHandler({ httpd: httpd });
 
-						return httpd.Handler.series(
+					return {
+						handle: httpd.Handler.series(
 							//	Allows links to src/path/to/file.ext within Typedoc
 							function(request) {
 								var typedocPattern = /^(?:(.+)\/)?local\/doc\/typedoc\/src\/(.*)/;
@@ -196,12 +196,12 @@
 									return handler(request);
 								}
 							}
-						)
-					},
-					stop: function() {
-						updater.stop();
+						),
+						destroy: function() {
+							updater.stop();
+						}
 					}
-				};
+				}
 			}
 		)
 	}
