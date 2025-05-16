@@ -26,6 +26,11 @@ namespace slime.jrunscript.file {
 		 * appended to the given command name in succession in an attempt to locate the file. If this variable is not present, the
 		 * system simply looks for raw files with the given name in each directory in the Searchpath.
 		 *
+		 * On macOS, which has stubs for various developer tools that offer to install the Xcode Command Line Tools, this method
+		 * will detect those stubs and not return them. So `getCommand("git")` will not return `/usr/bin/git` unless `git` is
+		 * actually installed. Note that in the existing implementation, this means if `/usr/bin/git` occurs earlier in the search
+		 * path than a "real" `git`, the real one will not be found.
+		 *
 		 * @param name A name representing an executable command.
 		 *
 		 * @returns A file object corresponding to the given command, or `null` if no corresponding command could be found in this

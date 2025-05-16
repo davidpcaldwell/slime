@@ -292,27 +292,43 @@
 
 		if ($context.os.name == "Mac OS X") {
 			$context.api.file.Searchpath = (function(was) {
-				var rv = function() {
-					var rv = was.apply(this,arguments);
-					rv.getCommand = (function(was) {
-						return function(name) {
-							var directoryExists = function(path) {
-								return $context.api.file.Pathname(path).directory;
-							}
+				return Object.assign(
+					function() {
+						/** @type { slime.jrunscript.file.Searchpath } */
+						var rv = was.apply(this,arguments);
 
-							if (name == "git" || name == "gcc" || name == "clang++") {
-								if (!directoryExists("/Applications/Xcode.app") && !directoryExists("/Library/Developer/CommandLineTools")) {
-									return null;
+						rv.getCommand = (function(was) {
+							return function(name) {
+								var directoryExists = function(path) {
+									return $context.api.file.Pathname(path).directory;
 								}
+
+								/** @type { slime.jrunscript.file.File } */
+								var rv = was.apply(this,arguments);
+
+								var found = (rv) ? rv.pathname.toString() : void(0);
+
+								//	TODO	note that if the macOS version occurs earlier in the path than a real version, this
+								//			search algorithm will not find it. We would need to modify the internals of Searchpath
+								//			to make this work correctly.
+								if (found == "/usr/bin/git" || found == "/usr/bin/gcc" || found == "/usr/bin/clang++") {
+									if (!directoryExists("/Applications/Xcode.app") && !directoryExists("/Library/Developer/CommandLineTools")) {
+										return null;
+									}
+								}
+
+								return rv;
 							}
-							return was.apply(this,arguments);
-						}
-					})(rv.getCommand);
-					return rv;
-				}
-				rv.createEmpty = was.createEmpty;
-				return rv;
+						})(rv.getCommand);
+
+						return rv;
+					},
+					{
+						createEmpty: was.createEmpty
+					}
+				);
 			})($context.api.file.Searchpath);
+
 			$context.replacePath($context.api.file.Searchpath($context.PATH.pathnames));
 		}
 	}
