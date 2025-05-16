@@ -12,7 +12,11 @@ namespace slime.jsh.wf.internal.module {
 				library: {
 					file: fifty.global.jsh.file,
 					shell: fifty.global.jsh.shell,
-					node: fifty.global.jsh.shell.tools.node
+					git: fifty.global.jsh.tools.git,
+					jsh: {
+						node: fifty.global.jsh.shell.tools.node,
+						shell: fifty.global.jsh.shell
+					}
 				}
 			});
 		//@ts-ignore
@@ -26,7 +30,11 @@ namespace slime.jsh.wf.internal.module {
 						library: {
 							file: fifty.global.jsh.file,
 							shell: fifty.global.jsh.shell,
-							node: fifty.global.jsh.shell.tools.node
+							git: fifty.global.jsh.tools.git,
+							jsh: {
+								shell: fifty.global.jsh.shell,
+								node: fifty.global.jsh.shell.tools.node
+							}
 						},
 						world: {
 							filesystem: fs
@@ -124,31 +132,31 @@ namespace slime.jsh.wf.internal.module {
 
 				var subject = test.fixtures.mockedFilesystem(mock);
 
-				verify(subject).Project.typescript.version({
+				verify(subject).project.typescript.version({
 					base: "/project/empty"
 				}).is(subject.typescript.version());
 
-				verify(subject).Project.typescript.version({
+				verify(subject).project.typescript.version({
 					base: "/project/specified"
 				}).is(VERSION);
 
-				verify(subject).Project.typescript.configurationFile({
+				verify(subject).project.typescript.configurationFile({
 					base: "/project/empty"
 				}).evaluate(function(maybe: $api.fp.Maybe<jrunscript.file.Location>) { return maybe.present; }).is(false);
 
-				verify(subject).Project.typescript.configurationFile({
+				verify(subject).project.typescript.configurationFile({
 					base: "/project/js"
 				}).evaluate(function(maybe: $api.fp.Maybe<jrunscript.file.Location>) { return maybe.present; }).is(true);
 
-				verify(subject).Project.typescript.configurationFile({
+				verify(subject).project.typescript.configurationFile({
 					base: "/project/js"
 				}).evaluate(function(maybe) { return maybe.value.pathname; }).evaluate(String).is("/project/js/jsconfig.json");
 
-				verify(subject).Project.typescript.configurationFile({
+				verify(subject).project.typescript.configurationFile({
 					base: "/project/ts"
 				}).evaluate(function(maybe: $api.fp.Maybe<jrunscript.file.Location>) { return maybe.present; }).is(true);
 
-				verify(subject).Project.typescript.configurationFile({
+				verify(subject).project.typescript.configurationFile({
 					base: "/project/ts"
 				}).evaluate(function(maybe) { return maybe.value.pathname; }).evaluate(String).is("/project/ts/tsconfig.json");
 			}

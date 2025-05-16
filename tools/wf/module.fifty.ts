@@ -15,7 +15,13 @@ namespace slime.jsh.wf.internal.module {
 		library: {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
-			node: slime.jsh.shell.tools.node.Exports
+			git: slime.jrunscript.tools.git.Exports
+
+			jsh: {
+				shell: slime.jsh.shell.Exports
+				//	TODO	probably not ideal to require jsh type, what is this being used for?
+				node: slime.jsh.shell.tools.node.Exports
+			}
 		}
 
 		world?: {
@@ -24,13 +30,28 @@ namespace slime.jsh.wf.internal.module {
 	}
 
 	export namespace exports {
-		export interface Project {
+		export interface project {
 		}
 	}
 
 	export namespace exports {
-		export interface Project {
+		export interface project {
 			typescript: exports.project.Typescript
+		}
+	}
+
+	export namespace exports {
+		export interface project {
+			git: {
+				installSlimeCredentialHelper: {
+					wo: slime.$api.fp.world.Means<Project,{
+						gitNotInstalled: {
+							PATH: string
+						}
+						jshNotUnbuilt: slime.jsh.shell.Installation
+					}>
+				}
+			}
 		}
 	}
 
@@ -40,7 +61,7 @@ namespace slime.jsh.wf.internal.module {
 		/**
 		 * Functions that operate on `wf` {@link slime.jsh.wf.Project | Project}s.
 		 */
-		Project: exports.Project
+		project: exports.project
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>

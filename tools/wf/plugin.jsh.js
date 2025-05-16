@@ -31,7 +31,11 @@
 						library: {
 							file: jsh.file,
 							shell: jsh.shell,
-							node: jsh.shell.tools.node
+							git: jsh.tools.git,
+							jsh: {
+								shell: jsh.shell,
+								node: jsh.shell.tools.node
+							}
 						},
 						world: {
 							filesystem: jsh.file.world.filesystems.os
@@ -341,6 +345,14 @@
 									})
 								});
 							}
+						},
+						installSlimeCredentialHelper: function() {
+							$api.fp.world.Means.now({
+								means: library.module.project.git.installSlimeCredentialHelper.wo,
+								order: {
+									base: inputs.base().pathname.toString()
+								}
+							})
 						}
 					},
 					submodule: {
@@ -669,8 +681,8 @@
 				 * @returns
 				 */
 				var getTypedocCommand = function(stdio,project,out) {
-					var version = library.module.Project.typescript.version(project);
-					var configuration = library.module.Project.typescript.configurationFile(project);
+					var version = library.module.project.typescript.version(project);
+					var configuration = library.module.project.typescript.configurationFile(project);
 					jsh.shell.tools.rhino.require.simple();
 					$api.fp.world.now.action(jsh.shell.tools.tomcat.jsh.require.world);
 
@@ -716,7 +728,7 @@
 							var project = (p && p.project) ? p.project : inputs.base();
 							$api.fp.world.now.tell(jsh.shell.tools.node.require.action);
 							var installation = jsh.shell.tools.node.installation;
-							var version = library.module.Project.typescript.version({ base: project.toString() });
+							var version = library.module.project.typescript.version({ base: project.toString() });
 							//	We use jsh.shell.jsh.require to make sure shell relaunches, so that TypeScript can be
 							//	loaded by SLIME in the resulting shell.
 							//	TODO	use newer jsh.shell APIs
@@ -766,7 +778,7 @@
 						},
 						tsc: function(p) {
 							var project = (p && p.project) ? p.project : inputs.base();
-							var version = library.module.Project.typescript.version({ base: project.toString() });
+							var version = library.module.project.typescript.version({ base: project.toString() });
 							jsh.shell.console("Compiling with TypeScript " + version + " ...");
 							var result = $api.fp.world.now.question(
 								jsh.shell.world.question,
@@ -1242,7 +1254,7 @@
 					return function(events) {
 						events.fire("console", "Verifying with TypeScript compiler ...");
 						var project = inputs.base();
-						var version = library.module.Project.typescript.version({ base: project.toString() });
+						var version = library.module.project.typescript.version({ base: project.toString() });
 						events.fire("console", "Compiling with TypeScript " + version + " ...");
 						//	TODO	create standard jsh invocation to make the terser, commented-out form below this form possible
 						var result = $api.fp.world.now.question(
@@ -1439,9 +1451,9 @@
 							base: inputs.project()
 						}
 					},
-					getTypescriptVersion: library.module.Project.typescript.version,
+					getTypescriptVersion: library.module.project.typescript.version,
 					getConfigurationFile: $api.fp.Partial.impure.old.exception({
-						try: library.module.Project.typescript.configurationFile,
+						try: library.module.project.typescript.configurationFile,
 						nothing: function(project) { return new Error("TypeScript configuration not found for project " + project.base); }
 					})
 				};

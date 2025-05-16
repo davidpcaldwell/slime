@@ -184,6 +184,7 @@ namespace slime.jsh.wf {
 
 		git: {
 			installHooks: slime.$api.fp.impure.Process
+			installSlimeCredentialHelper: slime.$api.fp.impure.Process
 		}
 
 		lint: {
