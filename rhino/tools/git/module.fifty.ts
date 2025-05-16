@@ -13,6 +13,9 @@
  * specific information to that command), and finally, `run`, which executes the command, optionally supplying a world
  * implementation and event handlers for the `stdout` and `stderr` streams.
  *
+ * Several opinionated `Command` implementations for specific `git` commands are provided by the
+ * {@link slime.jrunscript.tools.git.Commands | `commands` export}.
+ *
  * ## Tools
  *
  * SLIME also implements a {@link slime.jrunscript.tools.git.credentials Git credential helper} that can look up passwords (or, in

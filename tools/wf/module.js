@@ -24,7 +24,7 @@
 				library: {
 					file: $context.library.file,
 					shell: $context.library.shell,
-					node: $context.library.node
+					node: $context.library.jsh.node
 				},
 				world: {
 					filesystem: ($context.world && $context.world.filesystem) ? $context.world.filesystem : void(0)
@@ -32,10 +32,59 @@
 			})
 		}
 
+		var project = {
+			git: {
+				/** @type { slime.jsh.wf.internal.module.Exports["project"]["git"]["installSlimeCredentialHelper"]["wo"] } */
+				installSlimeCredentialHelper: function(project) {
+					/** @type { slime.jrunscript.tools.git.Command<{ helper: string },void> } */
+					var gitConfig = {
+						invocation: function(p) {
+							return {
+								command: "config",
+								arguments: $api.Array.build(function(it) {
+									it.push("credential.helper", p.helper);
+								})
+							}
+						}
+					}
+
+					return function(events) {
+						if (!$context.library.shell.PATH.getCommand("git")) {
+							events.fire("gitNotInstalled", { PATH: $context.library.shell.PATH.toString() });
+							return;
+						}
+						var shell = $context.library.jsh.shell.jsh.Installation.from.current();
+						if (!$context.library.jsh.shell.jsh.Installation.is.unbuilt(shell)) {
+							events.fire("jshNotUnbuilt", shell);
+							return;
+						}
+						$context.library.git.program({ command: "git" })
+							.repository(project.base)
+							.command(gitConfig)
+							.argument({
+								helper: $api.fp.now(
+									shell.src,
+									$context.library.file.Location.from.os,
+									$context.library.file.Location.directory.relativePath("rhino/tools/git/git-credential-tokens-directory.bash"),
+									$api.fp.property("pathname")
+								)
+							})
+							.run()
+						;
+					}
+				}
+			}
+		};
+
 		$export({
 			typescript: library.typescript.module,
-			Project: {
-				typescript: library.typescript.Project
+			project: {
+				typescript: library.typescript.Project,
+				git: {
+					installSlimeCredentialHelper: {
+						wo: project.git.installSlimeCredentialHelper
+					}
+				}
 			}
 		})
 	}
