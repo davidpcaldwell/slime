@@ -231,7 +231,7 @@ namespace slime.jrunscript.java.internal.threads {
 				/**
 				 * (optional) A timeout, in milliseconds.
 				 */
-				timeout: number
+				timeout?: number
 			}
 		) => T
 	}
