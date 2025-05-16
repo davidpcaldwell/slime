@@ -19,10 +19,17 @@ namespace slime.fifty.view {
 	 * * Makes wiki page requests for `local/wiki/pagename` work for `local/wiki/pagename.md` files,
 	 * * Serves project files, respecting the `as=text` query parameter to serve them as text.
 	 */
-	export type Exports = (p: {
-		base: slime.jrunscript.file.Directory
-		watch?: boolean
-	}) => slime.jsh.httpd.Tomcat
+	export interface Exports {
+		servlet: (p: {
+			base: slime.jrunscript.file.Directory
+			watch?: boolean
+		}) => (httpd: slime.servlet.httpd) => slime.servlet.Script
+
+		server: (p: {
+			base: slime.jrunscript.file.Directory
+			watch?: boolean
+		}) => slime.jsh.httpd.Tomcat
+	}
 
 	(
 		function(
@@ -43,7 +50,7 @@ namespace slime.fifty.view {
 					})
 
 					var base = fifty.jsh.file.object.getRelativePath("../..").directory;
-					var server = library({ base: base });
+					var server = library.server({ base: base });
 					var response = $api.fp.world.now.question(
 						jsh.http.world.java.urlconnection,
 						jsh.http.Argument.from.request({

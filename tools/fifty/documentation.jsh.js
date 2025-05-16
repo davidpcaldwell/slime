@@ -76,7 +76,7 @@
 						})
 					};
 
-					var server = library.view({
+					var server = library.view.server({
 						base: jsh.file.Pathname(base.pathname).directory,
 						watch: p.options.watch
 					});
