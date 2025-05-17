@@ -586,6 +586,15 @@ namespace slime.jrunscript.runtime.io {
 				var _default = Packages.java.nio.charset.Charset.defaultCharset();
 				jsh.shell.console(String(_default));
 			};
+
+			fifty.tests.manual.engine = function() {
+				var global = (function() { return this; })();
+				//	Next two present in both Rhino 1.7.15 and Nashorn 15.4
+				jsh.shell.console("ArrayBuffer: " + global["ArrayBuffer"]);
+				jsh.shell.console("Uint8Array: " + global["Uint8Array"]);
+				jsh.shell.console("Blob: " + global["Blob"]);
+				jsh.shell.console("File: " + global["File"]);
+			}
 		}
 	//@ts-ignore
 	)(Packages,fifty);
