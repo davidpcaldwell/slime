@@ -31,14 +31,17 @@
  *
  * ##### JDK
  *
- * Current goal is to be compatible with version used by most Java developers per most recent [JetBrains
- * survey](https://www.jetbrains.com/lp/devecosystem-2021/java/), which (as of 2021; 2022 survey is not out as of 2022 Nov 13) is
- * currently **Java 8**.
+ * The current goal is to be compatible with versions used by most Java developers. As of New Relic's
+ * [2024 survey](https://newrelic.com/resources/report/2024-state-of-the-java-ecosystem#new-java-versions-being-adopted-faster),
+ * **Java 17** was the leading version, with 35.4% of monitored applications using it. **Java 11** followed with 32.9%, and
+ * **Java 8** was still used by 28.8%. SLIME is also tested against **Java 21**.
  *
  * ##### JVM JavaScript engine
  *
- * The test suite executes tests primarily with **Rhino 1.7.15**, with some tests for the **Nashorn** engine on JDK 8. **GraalVM**
- * is not yet supported, although [development is underway](https://github.com/davidpcaldwell/slime/projects/10).
+ * The test suite executes tests primarily with **Rhino 1.7.15**, with some tests for the **Nashorn** engine; for JDK versions
+ * including Nashorn, the **built-in JDK 8-14 Nashorn** is used, while for JDK versions subsequent to Nashorn's removal, standalone
+ * **Nashorn 15.4** is used. **GraalVM** is not yet supported, although
+ * [development is underway](https://github.com/davidpcaldwell/slime/projects/10).
  *
  * ##### Servlet containers
  *
