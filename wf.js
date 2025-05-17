@@ -10,9 +10,10 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.wf.cli.Context } $context
+	 * @param { slime.Loader } $loader
 	 * @param { slime.project.wf.Interface } $exports
 	 */
-	function($api,jsh,$context,$exports) {
+	function($api,jsh,$context,$loader,$exports) {
 		var $$api = {
 			Function: {
 				switch: function() {
@@ -481,6 +482,26 @@
 			$exports
 		);
 
+		$exports.documentation = (
+			function(was) {
+				return function(invocation) {
+					/** @type { slime.project.dependencies.Script } */
+					var code = $loader.script("contributor/dependencies.js");
+					var api = code({
+						library: {
+							file: jsh.file
+						}
+					});
+					var to = $api.fp.now( $context.base.pathname.os.adapt(), jsh.file.Location.directory.relativePath("local/typedoc/dependencies.md") );
+					api.typedoc.generate(
+						to
+					);
+					jsh.shell.console("Wrote new dependencies TypeDoc includes to " + to.pathname);
+					return was(invocation);
+				}
+			}
+		)($exports.documentation);
+
 		$exports.check = $api.fp.pipe(
 			jsh.script.cli.option.boolean({ longname: "docker" }),
 			function(p) {
@@ -922,4 +943,4 @@
 		}
 	}
 //@ts-ignore
-)($api,jsh,$context,$exports);
+)($api,jsh,$context,$loader,$exports);
