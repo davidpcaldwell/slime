@@ -52,28 +52,39 @@
 			fifty.verify(type).is("function");
 
 			var zip = mock.request({
-				url: "https://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip"
+				url: "https://github.com/davidpcaldwell/slime/archive/refs/heads/main.zip"
 			});
 			fifty.verify(zip).status.code.is(200);
 			fifty.verify(zip).body.type.media.is("application");
 			fifty.verify(zip).body.type.subtype.is("zip");
 			var buffers = {};
 			var contents = fifty.global.jsh.io.archive.zip.decode({
-				stream: zip.body.stream,
-				output: {
-					file: function(p) {
-						buffers[p.path] = new fifty.global.jsh.io.Buffer();
-						return buffers[p.path].writeBinary();
-					},
-					directory: function(p) {
-						fifty.global.jsh.shell.console("Creating directory: " + p.path);
-					}
-				}
+				stream: zip.body.stream
 			});
-			var jshBash = buffers["slime-master/jsh.bash"];
+			const $api = fifty.global.$api;
+
+			var isFileEntry = function(p: slime.jrunscript.io.archive.Entry<{}>): p is slime.jrunscript.io.archive.File<{}> {
+				return Boolean(p["content"]);
+			};
+
+			$api.fp.now(
+				contents,
+				$api.fp.impure.Stream.forEach(function(entry) {
+					if (isFileEntry(entry)) {
+						buffers[entry.path] = new fifty.global.jsh.io.Buffer();
+						fifty.global.jsh.io.Streams.binary.copy(
+							entry.content,
+							buffers[entry.path].writeBinary()
+						);
+					} else {
+						fifty.global.jsh.shell.console("Creating directory: " + entry.path);
+					}
+				})
+			);
+			var jshBash = buffers["slime-main/jsh"];
 			fifty.verify(jshBash).is.type("object");
-			fifty.verify(buffers["slime-master/foo.bash"]).is(void(0));
-			fifty.verify(buffers["slime-master/jsh/loader/nashorn.js"]).is.type("object");
+			fifty.verify(buffers["slime-main/foo"]).is(void(0));
+			fifty.verify(buffers["slime-main/jrunscript/jsh/loader/nashorn.js"]).is.type("object");
 		};
 
 		var file = function(client: slime.jrunscript.http.client.object.Client) {

@@ -4,8 +4,13 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api,jsh) {
 		jsh.loader.plugins(jsh.script.file.parent.pathname);
 
 		var parameters = jsh.script.getopts({
@@ -52,9 +57,12 @@
 			destination: destination,
 			rhino: !parameters.options.norhino,
 			libraries: (function() {
+				/** @type { { [x: string]: slime.jrunscript.file.Pathname } } */
+				var options = parameters.options.library;
+				/** @type { Parameters<slime.jsh.httpd.Exports["tools"]["build"]>[0]["libraries"] } */
 				var rv = {};
-				for (var x in parameters.options.library) {
-					rv[x] = parameters.options.library[x].file;
+				for (var x in options) {
+					rv[x] = options[x].file;
 				}
 				return rv;
 			})(),
@@ -65,9 +73,12 @@
 				},this);
 			},
 			compile: (function() {
+				/** @type { slime.jrunscript.file.Pathname[] } */
+				var options = parameters.options.compile;
+				/** @type { slime.jrunscript.file.File[] } */
 				var args = [];
-				parameters.options.compile.forEach(function(pathname) {
-					args.push.apply(args,jsh.httpd.tools.build.getJavaSourceFiles(pathname));
+				options.forEach(function(pathname) {
+					args.push.apply(args,jsh.httpd.tools.getJavaSourceFiles(pathname));
 				});
 				return args;
 			})(),
@@ -75,4 +86,5 @@
 			parameters: parameters.options.parameter
 		});
 	}
-)();
+//@ts-ignore
+)($api,jsh);

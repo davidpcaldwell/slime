@@ -14,9 +14,6 @@
 	 */
 	function(jsh,$loader,plugin) {
 		plugin({
-			isReady: function() {
-				return true;
-			},
 			load: function() {
 				if (!jsh.httpd) {
 					jsh.httpd = {
@@ -31,7 +28,8 @@
 				}
 				jsh.httpd.tools = {
 					build: void(0),
-					proxy: void(0)
+					proxy: void(0),
+					getJavaSourceFiles: void(0)
 				};
 				jsh.httpd.tools.build = Object.assign(
 					/**
@@ -203,31 +201,27 @@
 								to: p.destination.war
 							});
 						}
-					},
-					{
-						/**
-						 * @type { slime.jsh.httpd.Exports["tools"]["build"]["getJavaSourceFiles"] }
-						 */
-						getJavaSourceFiles: function(pathname) {
-							/** @type { (node: slime.jrunscript.file.Node) => node is slime.jrunscript.file.File } */
-							var isFile = function(node) { return true; };
-							var toFile = function(node) { if (isFile(node)) return node; }
-							if (pathname.directory) {
-								var nodes = pathname.directory.list({
-									recursive: true,
-									type: pathname.directory.list.ENTRY
-								}).filter(function(entry) {
-									return /\.java/.test(entry.node.pathname.basename);
-								}).map(function(entry) {
-									return entry.node;
-								}).map(toFile);
-								return nodes;
-							} else {
-								return [pathname.file];
-							}
-						}
 					}
 				);
+
+				jsh.httpd.tools.getJavaSourceFiles = function(pathname) {
+					/** @type { (node: slime.jrunscript.file.Node) => node is slime.jrunscript.file.File } */
+					var isFile = function(node) { return true; };
+					var toFile = function(node) { if (isFile(node)) return node; }
+					if (pathname.directory) {
+						var nodes = pathname.directory.list({
+							recursive: true,
+							type: pathname.directory.list.ENTRY
+						}).filter(function(entry) {
+							return /\.java/.test(entry.node.pathname.basename);
+						}).map(function(entry) {
+							return entry.node;
+						}).map(toFile);
+						return nodes;
+					} else {
+						return [pathname.file];
+					}
+				};
 			}
 		});
 

@@ -68,36 +68,51 @@ namespace slime.jrunscript.io {
 		Resource: slime.jrunscript.runtime.Exports["Resource"] & slime.jrunscript.runtime.Exports["jrunscript"]["Resource"]
 	}
 
-	/**
-	 * A format that can encode a series of resources with paths (like a directory structure) as a single stream, and decode that
-	 * stream into a series of resources with paths.
-	 */
-	export interface ArchiveFormat {
-		encode: (p: {
-			entries: { path: string, resource: slime.jrunscript.runtime.old.Resource }[]
-			stream: slime.jrunscript.runtime.io.OutputStream
-		}) => void
+	export namespace archive {
+		type AnyEntry = {
+			path: string
+		}
 
-		decode: (p: {
-			stream: slime.jrunscript.runtime.io.InputStream
-			output: {
-				/**
-				 * Callback method which requests an output stream to which to write the contents of a file within the ZIP.
-				 *
-				 * @param p A path in the ZIP file reprsenting a file
-				 * @returns An output stream to which the contents of the file should be written
-				 */
-				file: (p: { path: string }) => slime.jrunscript.runtime.io.OutputStream
+		export type Directory<X extends {}> = AnyEntry & X
 
-				/**
-				 * Callback method encountered when the decoder encounters a path in the ZIP file representing a folder.
-				 *
-				 * @param p A path in the ZIP file representing a folder
-				 */
-				directory: (p: { path: string }) => void
-			}
-		}) => void
+		export type File<X extends {}> = AnyEntry & {
+			content: slime.jrunscript.runtime.io.InputStream
+		} & X
+
+		export type Entry<X extends {}> = Directory<X> | File<X>
+
+		/**
+		 * A format that can encode a series of resources with paths (like a directory structure) as a single stream, and decode that
+		 * stream into a series of resources with paths.
+		 */
+		export interface Format<X extends {} = {}> {
+			encode: (p: {
+				entries: slime.$api.fp.Stream<Entry<X>>
+				to: slime.jrunscript.runtime.io.OutputStream
+			}) => void
+
+			decode: (p: {
+				stream: slime.jrunscript.runtime.io.InputStream
+				// output: {
+				// 	/**
+				// 	 * Callback method which requests an output stream to which to write the contents of a file within the ZIP.
+				// 	 *
+				// 	 * @param p A path in the ZIP file reprsenting a file
+				// 	 * @returns An output stream to which the contents of the file should be written
+				// 	 */
+				// 	file: (p: { path: string }) => slime.jrunscript.runtime.io.OutputStream
+
+				// 	/**
+				// 	 * Callback method encountered when the decoder encounters a path in the ZIP file representing a folder.
+				// 	 *
+				// 	 * @param p A path in the ZIP file representing a folder
+				// 	 */
+				// 	directory: (p: { path: string }) => void
+				// }
+			}) => slime.$api.fp.Stream<Entry<X>>
+		}
 	}
+
 
 	export interface Exports {
 		Streams: slime.jrunscript.runtime.io.Exports["Streams"]
@@ -118,7 +133,7 @@ namespace slime.jrunscript.io {
 		}
 		mime: slime.jrunscript.io.mime.Exports
 		archive: {
-			zip: ArchiveFormat
+			zip: archive.Format
 		}
 		grid: slime.jrunscript.io.grid.Exports
 		system: slime.jrunscript.runtime.io.Exports["system"]

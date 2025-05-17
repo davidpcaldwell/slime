@@ -25,15 +25,19 @@ namespace slime.jrunscript.io.zip {
 	//@ts-ignore
 	)(fifty);
 
-	export type Exports = slime.jrunscript.io.ArchiveFormat;
+	export type Exports = slime.jrunscript.io.archive.Format<{}>;
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 			const module = jsh.io;
+
+			var isFileEntry = function(p: slime.jrunscript.io.archive.Entry<{}>): p is slime.jrunscript.io.archive.File<{}> {
+				return Boolean(p["content"]);
+			};
 
 			fifty.tests.exports.encode = function() {
 				var expanded = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -42,25 +46,28 @@ namespace slime.jrunscript.io.zip {
 				var zip = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
 				zip.file.remove();
 				var unzip = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				debugger;
 				module.archive.zip.encode({
-					stream: zip.write(jsh.io.Streams.binary),
-					entries: [
-						//	TODO	why are these casts necessary
-						{ path: "a", resource: expanded.getFile("a") as unknown as slime.jrunscript.runtime.old.Resource },
-						{ path: "b/c", resource: expanded.getFile("b/c") as unknown as slime.jrunscript.runtime.old.Resource }
-					]
+					to: zip.write(jsh.io.Streams.binary),
+					entries: $api.fp.Stream.from.array([
+						{ path: "a", content: expanded.getFile("a").read(jsh.io.Streams.binary) },
+						{ path: "b/c", content: expanded.getFile("b/c").read(jsh.io.Streams.binary) }
+					])
 				});
-				module.archive.zip.decode({
+				var entries = module.archive.zip.decode({
 					stream: zip.file.read(jsh.io.Streams.binary),
-					output: {
-						directory: function(p) {
-							unzip.getRelativePath(p.path).createDirectory();
-						},
-						file: function(p) {
-							return unzip.getRelativePath(p.path).write(jsh.io.Streams.binary, { append: false });
-						}
-					}
 				});
+
+				$api.fp.now(
+					entries,
+					$api.fp.impure.Stream.forEach(function(entry) {
+						if (isFileEntry(entry)) {
+							unzip.getRelativePath(entry.path).write(entry.content);
+						} else {
+							unzip.getRelativePath(entry.path).createDirectory();
+						}
+					})
+				);
 				verify(unzip).getFile("a").evaluate(test.readFile).is("aa");
 				verify(unzip).getFile("b/c").evaluate(test.readFile).is("cc");
 			}
@@ -78,18 +85,20 @@ namespace slime.jrunscript.io.zip {
 					arguments: ["cf", zipped, "a", "b"],
 					directory: expanded
 				});
-				module.archive.zip.decode(
+				var entries = module.archive.zip.decode(
 					{
-						stream: zipped.file.read(jsh.io.Streams.binary),
-						output: {
-							directory: function(p) {
-								to.getRelativePath(p.path).createDirectory();
-							},
-							file: function(p) {
-								return to.getRelativePath(p.path).write(jsh.io.Streams.binary, { append: false });
-							}
-						}
+						stream: zipped.file.read(jsh.io.Streams.binary)
 					}
+				);
+				$api.fp.now(
+					entries,
+					$api.fp.impure.Stream.forEach(function(entry) {
+						if (!isFileEntry(entry)) {
+							to.getRelativePath(entry.path).createDirectory();
+						} else {
+							to.getRelativePath(entry.path).write(entry.content);
+						}
+					})
 				);
 				verify(to).getFile("a").is.type("object");
 				verify(to).getFile("aa").is.type("null");
