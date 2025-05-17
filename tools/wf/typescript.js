@@ -13,7 +13,7 @@
 	 * @param { slime.loader.Export<slime.jsh.wf.internal.typescript.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var VERSION = "5.6.3";
+		var VERSION = "5.8.3";
 
 		var version = $api.fp.impure.Input.value(VERSION);
 

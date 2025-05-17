@@ -113,7 +113,7 @@ namespace slime.jrunscript.file {
 		readonly directory: Directory
 
 		os: {
-			adapt: () => slime.jrunscript.file.world.Location
+			adapt: () => slime.jrunscript.file.Location
 		}
 
 		java: {
