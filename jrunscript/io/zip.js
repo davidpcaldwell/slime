@@ -9,63 +9,22 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { { Streams: any, InputStream: slime.jrunscript.runtime.io.Exports["InputStream"]["from"]["java"] } } $context
 	 * @param { slime.jrunscript.io.Exports["archive"]["zip"] } $exports
 	 */
-	function(Packages,$context,$exports) {
-		$exports.encode = function(p) {
-			//	var from;
-			//
-			//	var fromDirectory = function(directory) {
-			//		return directory.list({
-			//			filter: function(node) { return true; },
-			//			descendants: function(dir) { return true; },
-			//			type: directory.list.ENTRY
-			//		}).map( function(item) {
-			//			if (item.node.directory) return { directory: item.path.substring(0,item.path.length-1).replace(/\\/g, "/") };
-			//			var rv = {
-			//				path: item.path.replace(/\\/g, "/")//,
-			//				//$stream: item.node.read($context.Streams.binary).java.adapt()
-			//			};
-			//			rv.__defineGetter__("$stream", function() {
-			//				return item.node.read($context.Streams.binary).java.adapt();
-			//			});
-			//			return rv;
-			//		});
-			//	}
-			//
-			//	if (p.from instanceof Array) {
-			//		from = p.from;
-			//	} else if (p.from instanceof $context.Pathname && p.from.directory) {
-			//		from = fromDirectory(p.from.directory);
-			//	} else if (p.from.pathname && p.from.pathname.directory) {
-			//		from = fromDirectory(p.from);
-			//	} else if (p.from instanceof $context.Pathname && p.from.file) {
-			//		throw new Error("Unimplemented: from file");
-			//	} else {
-			//		throw new Error("Unimplemented: from " + p.from);
-			//	}
+	function(Packages,$api,$context,$exports) {
+		var _streams = new Packages.inonit.script.runtime.io.Streams();
 
-			//	var _getInputStream = function(item) {
-			//		if (item.stream) return item.stream.java.adapt();
-			//		var _stream = item.$stream;
-			//		if (_stream) return _stream;
-			//		if (item.node && item.node.read($context.Streams.binary)) return item.node.read($context.Streams.binary).java.adapt();
-			//		throw new Error("Unimplemented: item lacks input stream: " + item + " [" + item.directory + "]");
-			//	}
-			//
-			//	var $to;
-			//
-			//	if (p.to instanceof $context.Pathname) {
-			//		$to = p.to.write($context.Streams.binary, { append: false }).java.adapt();
-			//	} else if (p.to.java && p.to.java.adapt) {
-			//		//	TODO	should do a type check here
-			//		$to = p.to.java.adapt();
-			//	} else {
-			//		debugger;
-			//		throw new Error("Unimplemented: to " + p.to);
-			//	}
-			var _out = p.stream.java.adapt();
+		/**
+		 * @type { (p: slime.jrunscript.io.archive.Entry<{}>) => p is slime.jrunscript.io.archive.File<{}> }
+		 */
+		var isFileEntry = function(p) {
+			return Boolean(p["content"]);
+		}
+
+		$exports.encode = function(p) {
+			var _out = p.to.java.adapt();
 
 			//	TODO	(Possibly obsolete comment) Much of this logic is reproduced in the jsh build process
 			var zipOutputStream = new function() {
@@ -106,6 +65,11 @@
 					// peer.closeEntry();
 				}
 
+				/**
+				 *
+				 * @param { string } name
+				 * @param { slime.jrunscript.runtime.io.InputStream } $stream
+				 */
 				this.addEntry = function(name,$stream) {
 					createDirectory(directoryNameFor(name));
 					var entry = new Packages.java.util.zip.ZipEntry(name);
@@ -116,8 +80,17 @@
 				}
 			};
 
+			$api.fp.now(
+				p.entries,
+				$api.fp.impure.Stream.forEach(function(entry) {
+					if (isFileEntry(entry)) {
+						zipOutputStream.addEntry(entry.path, entry.content);
+					}
+				})
+			);
+
 			for (var i=0; i<p.entries.length; i++) {
-				zipOutputStream.addEntry(p.entries[i].path,p.entries[i].resource.read.binary());
+				zipOutputStream.addEntry(p.entries[i].path,p.entries[i].content());
 			}
 
 			zipOutputStream.close();
@@ -126,24 +99,19 @@
 		$exports.decode = function(p) {
 			var _zipstream = new Packages.java.util.zip.ZipInputStream(p.stream.java.adapt());
 			var entry;
+			/** @type { slime.jrunscript.io.archive.Entry<{}>[] } */
+			var array = [];
 			while( (entry = _zipstream.getNextEntry()) != null ) {
 				var name = String(entry.getName());
 				if (name.substring(name.length-1) == "/") {
-					p.output.directory({ path: name.substring(0,name.length-1) });
+					array.push({ path: name.substring(0,name.length-1) });
 				} else {
-					var to = p.output.file({ path: name });
-					$context.Streams.binary.copy(
-						$context.InputStream(_zipstream),
-						to,
-						{
-							onFinish: function(_r,_w) {
-								_w.close();
-							}
-						}
-					);
+					var _bytes = _streams.readBytes(_zipstream, false);
+					array.push({ path: name, content: $context.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes)) });
 				}
 			}
+			return $api.fp.Stream.from.array(array);
 		};
 	}
 //@ts-ignore
-)(Packages,$context,$exports);
+)(Packages,$api,$context,$exports);

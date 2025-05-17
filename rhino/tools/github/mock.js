@@ -79,7 +79,7 @@
 										/**
 										 *
 										 * @param { { path: string, resource: slime.jrunscript.file.Node }} nodeEntry
-										 * @returns { { path: string, resource: slime.jrunscript.runtime.old.Resource } }
+										 * @returns { slime.jrunscript.io.archive.File<{}> }
 										 */
 										var toFileEntry = function(nodeEntry) {
 											/** @type { (node: slime.jrunscript.file.Node) => node is slime.jrunscript.file.File } */
@@ -91,12 +91,10 @@
 												if (isFile(node)) return node;
 												throw new Error();
 											}
-											/** @type { (file: slime.jrunscript.file.File) => slime.jrunscript.runtime.old.Resource } */
-											var toResource = $api.fp.cast.unsafe;
 											if (isFile(nodeEntry.resource)) {
 												return {
 													path: nodeEntry.path,
-													resource: toResource(toFile(nodeEntry.resource))
+													content: toFile(nodeEntry.resource).read($context.jsh.io.Streams.binary)
 												};
 											} else {
 												throw new Error();
@@ -104,8 +102,8 @@
 										}
 
 										jsh.io.archive.zip.encode({
-											stream: buffer.writeBinary(),
-											entries: entries.map(toFileEntry)
+											to: buffer.writeBinary(),
+											entries: $api.fp.Stream.from.array(entries.map(toFileEntry))
 										});
 										return {
 											status: { code: 200 },

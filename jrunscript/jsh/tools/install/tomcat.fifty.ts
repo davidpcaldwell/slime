@@ -204,13 +204,11 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 					dist.getRelativePath("RELEASE-NOTES").write(MockReleaseNotes(version), { append: false });
 					var rv = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
 					jsh.io.archive.zip.encode({
-						stream: rv.write(jsh.io.Streams.binary, { append: false }),
-						entries: [
-							//@ts-ignore
-							{ path: "apache-tomcat-" + version + "/" + "RELEASE-NOTES", resource: dist.getFile("RELEASE-NOTES") },
-							//@ts-ignore
-							{ path: "apache-tomcat-" + version + "/" + "a", resource: dist.getFile("a") }
-						]
+						to: rv.write(jsh.io.Streams.binary, { append: false }),
+						entries: $api.fp.Stream.from.array([
+							{ path: "apache-tomcat-" + version + "/" + "RELEASE-NOTES", content: dist.getFile("RELEASE-NOTES").read(jsh.io.Streams.binary) },
+							{ path: "apache-tomcat-" + version + "/" + "a", content: dist.getFile("a").read(jsh.io.Streams.binary) }
+						])
 					});
 					return rv.file;
 				}
