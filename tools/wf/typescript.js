@@ -140,11 +140,10 @@
 					if (tsVersion == "4.7.3") return "0.23.5";
 					if (tsVersion == "4.8.4") return "0.23.19";
 					if (tsVersion == "4.9.4") return "0.23.23";
-					if (tsVersion == "5.0.2") return "0.23.28";
-					if (tsVersion == "5.0.4") return "0.23.28";
-					if (tsVersion == "5.2.2") return "0.23.28";
-					if (tsVersion == "5.3.2") return "0.23.28";
-					if (tsVersion == "5.6.3") return "0.26.11";
+
+					//	0.28.4 supports TypeScript 5, according to release notes
+					if (/5\./.test(tsVersion)) return "0.28.4";
+
 					throw new Error("Unspecified TypeDoc version for TypeScript " + tsVersion);
 				};
 
