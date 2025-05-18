@@ -14,7 +14,17 @@ namespace slime.project.dependencies {
 	export interface Exports {
 		data: {
 			rhino: {
-				version: string
+				version: {
+					number: string
+					id: string
+				}
+
+				sources: {
+					[version: string]: {
+						url: string
+						format: string
+					}
+				}
 			}
 
 			nashorn: {

@@ -196,6 +196,17 @@ namespace slime.jsh.shell.tools {
 				const { jsh } = fifty.global;
 
 				fifty.tests.rhino = function() {
+					const dependencies = (
+						function() {
+							const script: slime.project.dependencies.Script = fifty.$loader.script("../../../../contributor/dependencies.js");
+							return script({
+								library: {
+									file: jsh.file
+								}
+							})
+						}
+					)();
+
 					var Captor = function() {
 						var events: slime.$api.Event<any>[] = [];
 
@@ -253,7 +264,7 @@ namespace slime.jsh.shell.tools {
 						verify(captor).captured[0].type.is("console");
 						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("Replacing Rhino at " + lib.getRelativePath("js.jar") + " ...");
 						verify(captor).captured[1].type.is("console");
-						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino version mozilla/1.7.15 to " + lib.getRelativePath("js.jar") + " ...");
+						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino version " + dependencies.data.rhino.version.id + " to " + lib.getRelativePath("js.jar") + " ...");
 						//verify(lib).getFile("js.jar").evaluate(readFile).is.not("original");
 						verify(captor.captured.type("installed")).length.is(1);
 						lib.getFile("js.jar").remove();
@@ -265,7 +276,7 @@ namespace slime.jsh.shell.tools {
 						verify(captor).captured[0].type.is("console");
 						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("No Rhino at " + lib.getRelativePath("js.jar") + "; installing ...");
 						verify(captor).captured[1].type.is("console");
-						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino version mozilla/1.7.15 to " + lib.getRelativePath("js.jar") + " ...");
+						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino version " + dependencies.data.rhino.version.id + " to " + lib.getRelativePath("js.jar") + " ...");
 						verify(lib).getFile("js.jar").is.not(null);
 						verify(captor.captured.type("installed")).length.is(1);
 						lib.getFile("js.jar").remove();

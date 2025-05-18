@@ -22,6 +22,18 @@
 				return Boolean(jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install && plugins.scala);
 			},
 			load: function() {
+				var dependencies = (
+					function() {
+						/** @type { slime.project.dependencies.Script } */
+						var code = $loader.script("../../../../contributor/dependencies.js");
+						return code({
+							library: {
+								file: jsh.file
+							}
+						})
+					}
+				)();
+
 				jsh.shell.tools = {
 					rhino: void(0),
 					tomcat: void(0),
@@ -44,21 +56,6 @@
 						var client = jsh.http.World.question(
 							jsh.http.World.withFollowRedirects(jsh.http.world.java.urlconnection)
 						);
-
-						var sources = {
-							"mozilla/1.7.13": {
-								url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_13_Release/rhino-1.7.13.jar",
-								format: "jar"
-							},
-							"mozilla/1.7.14": {
-								url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-1.7.14.jar",
-								format: "jar"
-							},
-							"mozilla/1.7.15": {
-								url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
-								format: "jar"
-							}
-						};
 
 						var installation = function() {
 							return jsh.tools.install.rhino.at(PATHNAME.toString());
@@ -89,11 +86,11 @@
 									} else {
 										events.fire("console", "No Rhino at " + ooLib.getRelativePath("js.jar") + "; installing ...");
 									}
-									var version = p.version || "mozilla/1.7.15";
+									var version = p.version || dependencies.data.rhino.version.id;
 									events.fire("console", "Installing Rhino version " + version + " to " + ooLib.getRelativePath("js.jar") + " ...");
 									var response = $api.fp.world.Question.now({
 										question: client({
-											url: sources[version].url
+											url: dependencies.data.rhino.sources[version].url
 										})
 									});
 									var destination = jsh.file.Location.from.os(ooLib.getRelativePath("js.jar").toString());
