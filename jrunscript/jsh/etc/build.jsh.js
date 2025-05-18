@@ -348,7 +348,7 @@
 			SLIME.getSubdirectory("jrunscript/jsh/loader").copy(destination.shell.getRelativePath("script/jsh"));
 		})();
 
-		var modules = (function createModules() {
+		(function createModules() {
 			console("Creating bundled modules ...")
 			//	TODO	remove or modify this; appears to redefine the slime global object
 			var slime = jsh.script.loader.file("jrunscript/jsh/tools/slime.js").slime;

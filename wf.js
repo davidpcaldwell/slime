@@ -486,7 +486,7 @@
 			function(was) {
 				return function(invocation) {
 					/** @type { slime.project.dependencies.Script } */
-					var code = $loader.script("contributor/dependencies.js");
+					var code = $loader.script("contributor/dependencies/module.js");
 					var api = code({
 						library: {
 							file: jsh.file

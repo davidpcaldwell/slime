@@ -59,6 +59,7 @@
 	//	Servlet module has Java classes but we do not compile them here
 	//	servlet classes are provided by webapp.jsh.js when building a webapp, and classpath with servlet API is supplied by invoker
 	[
+		"contributor/dependencies/",
 		"jrunscript/io/",
 		"jrunscript/tools/",
 		"rhino/document/",

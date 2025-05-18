@@ -14,7 +14,17 @@ namespace slime.project.dependencies {
 	export interface Exports {
 		data: {
 			rhino: {
-				version: string
+				version: {
+					number: string
+					id: string
+				}
+
+				sources: {
+					[version: string]: {
+						url: string
+						format: string
+					}
+				}
 			}
 
 			nashorn: {
@@ -42,7 +52,7 @@ namespace slime.project.dependencies {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const code: Script = fifty.$loader.script("dependencies.js");
+			const code: Script = fifty.$loader.script("module.js");
 			const subject = code({
 				library: {
 					file: fifty.global.jsh.file
@@ -54,7 +64,7 @@ namespace slime.project.dependencies {
 			}
 
 			fifty.tests.manual = function() {
-				subject.typedoc.generate( fifty.jsh.file.relative("../local/typedoc/dependencies.md") );
+				subject.typedoc.generate( fifty.jsh.file.relative("../../local/typedoc/dependencies.md") );
 			}
 		}
 	//@ts-ignore

@@ -23,15 +23,55 @@
 				// jrunscript/jsh/tools/install/plugin.jsh.fifty.ts
 				// jrunscript/jsh/tools/install/plugin.jsh.js
 
-				version: "1.7.15"
+				version: {
+					number: "1.7.15",
+					id: "mozilla/1.7.15"
+				},
+				sources: {
+					"mozilla/1.7.13": {
+						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_13_Release/rhino-1.7.13.jar",
+						format: "jar"
+					},
+					"mozilla/1.7.14": {
+						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-1.7.14.jar",
+						format: "jar"
+					},
+					"mozilla/1.7.15": {
+						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
+						format: "jar"
+					}
+				}
 			},
 			nashorn: {
 				standalone: {
-					// Current standalone Nashorn version is also referenced in:
-
-					// jsh
-
-					version: "15.6"
+					//	Not stored here; parsed from jsh launcher
+					version: $api.fp.now(
+						$loader.get("../../jsh"),
+						$api.fp.Maybe.from.value,
+						$api.fp.Maybe.map(
+							$api.fp.pipe(
+								function(file) { return file.read(String); },
+								$api.fp.string.split("\n"),
+								$api.fp.Stream.from.array,
+								$api.fp.Stream.flatMap(
+									$api.fp.pipe(
+										$api.fp.RegExp.exec(/^\s*NASHORN_VERSION=(\S+)/),
+										/** @returns { slime.$api.fp.Stream<string> } */
+										function(match) {
+											if (match.present) return $api.fp.Stream.from.array([match.value[1]]);
+											return $api.fp.Stream.from.array([]);
+										}
+									)
+								),
+								$api.fp.Stream.first,
+								function(it) {
+									if (!it.present) throw new Error();
+									return it.value;
+								}
+							)
+						),
+						$api.fp.Maybe.else($api.fp.thunk.value(null))
+					)
 				}
 			},
 			typedoc: {
@@ -42,7 +82,7 @@
 		var getTypedocIncludes = $api.fp.thunk.value(
 			//	TODO	figure out better way to manage retrieval of non-code content; using older loader constructs for now
 			$loader.get("dependencies.md").read(String),
-			function(s) { return s.replace(/\{rhino\.version\}/, data.rhino.version ) },
+			function(s) { return s.replace(/\{rhino\.version\.number}/, data.rhino.version.number ) },
 			function(s) { return s.replace(/\{nashorn\.standalone\.version\}/, data.nashorn.standalone.version ) }
 		);
 

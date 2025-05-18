@@ -6,9 +6,9 @@
 
 # Versions
 
-<!-- #region rhino.version -->
-{rhino.version}
-<!-- #endregion rhino.version -->
+<!-- #region rhino.version.number -->
+{rhino.version.number}
+<!-- #endregion rhino.version.number -->
 
 <!-- #region nashorn.standalone.version -->
 {nashorn.standalone.version}
