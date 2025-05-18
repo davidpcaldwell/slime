@@ -46,24 +46,31 @@
 				standalone: {
 					//	Not stored here; parsed from jsh launcher
 					version: $api.fp.now(
-						$loader.get("../jsh").read(String),
-						$api.fp.string.split("\n"),
-						$api.fp.Stream.from.array,
-						$api.fp.Stream.flatMap(
+						$loader.get("../../jsh"),
+						$api.fp.Maybe.from.value,
+						$api.fp.Maybe.map(
 							$api.fp.pipe(
-								$api.fp.RegExp.exec(/^\s*NASHORN_VERSION=(\S+)/),
-								/** @returns { slime.$api.fp.Stream<string> } */
-								function(match) {
-									if (match.present) return $api.fp.Stream.from.array([match.value[1]]);
-									return $api.fp.Stream.from.array([]);
+								function(file) { return file.read(String); },
+								$api.fp.string.split("\n"),
+								$api.fp.Stream.from.array,
+								$api.fp.Stream.flatMap(
+									$api.fp.pipe(
+										$api.fp.RegExp.exec(/^\s*NASHORN_VERSION=(\S+)/),
+										/** @returns { slime.$api.fp.Stream<string> } */
+										function(match) {
+											if (match.present) return $api.fp.Stream.from.array([match.value[1]]);
+											return $api.fp.Stream.from.array([]);
+										}
+									)
+								),
+								$api.fp.Stream.first,
+								function(it) {
+									if (!it.present) throw new Error();
+									return it.value;
 								}
 							)
 						),
-						$api.fp.Stream.first,
-						function(it) {
-							if (!it.present) throw new Error();
-							return it.value;
-						}
+						$api.fp.Maybe.else($api.fp.thunk.value(null))
 					)
 				}
 			},

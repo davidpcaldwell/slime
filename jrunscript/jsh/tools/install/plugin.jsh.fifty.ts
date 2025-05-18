@@ -198,7 +198,7 @@ namespace slime.jsh.shell.tools {
 				fifty.tests.rhino = function() {
 					const dependencies = (
 						function() {
-							const script: slime.project.dependencies.Script = fifty.$loader.script("../../../../contributor/dependencies.js");
+							const script: slime.project.dependencies.Script = fifty.$loader.script("../../../../contributor/dependencies/module.js");
 							return script({
 								library: {
 									file: jsh.file

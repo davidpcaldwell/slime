@@ -19,20 +19,23 @@
 	function(Packages,JavaAdapter,$slime,$api,jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.web && jsh.java && jsh.ip && jsh.time && jsh.file && jsh.http && jsh.shell && jsh.java.tools && jsh.tools && jsh.tools.install && plugins.scala);
+				return Boolean(
+					jsh.js
+					&& jsh.web
+					&& jsh.java
+					&& jsh.ip
+					&& jsh.time
+					&& jsh.file
+					&& jsh.http
+					&& jsh.shell
+					&& jsh.java.tools
+					&& jsh.tools && jsh.tools.install
+					&& jsh.project && jsh.project.dependencies
+					&& plugins.scala
+				);
 			},
 			load: function() {
-				var dependencies = (
-					function() {
-						/** @type { slime.project.dependencies.Script } */
-						var code = $loader.script("../../../../contributor/dependencies.js");
-						return code({
-							library: {
-								file: jsh.file
-							}
-						})
-					}
-				)();
+				var dependencies = jsh.project.dependencies;
 
 				jsh.shell.tools = {
 					rhino: void(0),
