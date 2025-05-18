@@ -31,7 +31,7 @@
 
 					// jsh
 
-					version: "15.4"
+					version: "15.6"
 				}
 			},
 			typedoc: {
