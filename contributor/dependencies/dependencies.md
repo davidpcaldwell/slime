@@ -10,6 +10,10 @@
 {rhino.version.number}
 <!-- #endregion rhino.version.number -->
 
+<!-- #region rhino.version.jdk8.number -->
+{rhino.version.jdk8.number}
+<!-- #endregion rhino.version.jdk8.number -->
+
 <!-- #region nashorn.standalone.version -->
 {nashorn.standalone.version}
 <!-- #endregion nashorn.standalone.version -->

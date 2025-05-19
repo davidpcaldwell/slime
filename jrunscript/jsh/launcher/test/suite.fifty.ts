@@ -20,6 +20,7 @@ namespace slime.jsh.internal.launcher.test {
 		tmp: string
 		rhino: {
 			running: boolean
+			version: string
 			optimization: number
 			classpath: string
 		}

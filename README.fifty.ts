@@ -38,9 +38,15 @@
  *
  * ##### JVM JavaScript engine
  *
- * The test suite executes tests primarily with **Rhino {@include ./local/typedoc/dependencies.md#rhino.version}**, with some tests for the **Nashorn** engine; for JDK versions
+ * The test suite executes tests primarily with **Rhino {@include ./local/typedoc/dependencies.md#rhino.version.number}**. Since Rhino,
+ * starting with version 1.8.0, does not support JDK 8, Rhino {@include ./local/typedoc/dependencies.md#rhino.version.jdk8.number} is used
+ * for JDK 8.
+ *
+ * THe test suite also has some tests for the **Nashorn** engine; for JDK versions
  * including Nashorn, the **built-in JDK 8-14 Nashorn** is used, while for JDK versions subsequent to Nashorn's removal, standalone
- * **Nashorn {@include ./local/typedoc/dependencies.md#nashorn.standalone.version}** is used. **GraalVM** is not yet supported, although
+ * **Nashorn {@include ./local/typedoc/dependencies.md#nashorn.standalone.version}** is used.
+ *
+ * **GraalVM** is not yet supported, although
  * [development is underway](https://github.com/davidpcaldwell/slime/projects/10).
  *
  * ##### Servlet containers

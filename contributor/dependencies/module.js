@@ -23,9 +23,22 @@
 				// jrunscript/jsh/tools/install/plugin.jsh.fifty.ts
 				// jrunscript/jsh/tools/install/plugin.jsh.js
 
-				version: {
-					number: "1.7.15",
-					id: "mozilla/1.7.15"
+				version: function() {
+					if (/^1\.8/.test($context.java.version)) {
+						return {
+							number: "1.7.15",
+							id: "mozilla/1.7.15"
+						};
+					} else {
+						return {
+							number: "1.8.0",
+							id: "mozilla/1.8.0"
+						};
+					}
+				},
+				versions: {
+					jdk8: "1.7.15",
+					default: "1.8.0"
 				},
 				sources: {
 					"mozilla/1.7.13": {
@@ -38,6 +51,10 @@
 					},
 					"mozilla/1.7.15": {
 						url: "https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
+						format: "jar"
+					},
+					"mozilla/1.8.0": {
+						url: "https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.8.0/rhino-all-1.8.0.jar",
 						format: "jar"
 					}
 				}
@@ -82,7 +99,8 @@
 		var getTypedocIncludes = $api.fp.thunk.value(
 			//	TODO	figure out better way to manage retrieval of non-code content; using older loader constructs for now
 			$loader.get("dependencies.md").read(String),
-			function(s) { return s.replace(/\{rhino\.version\.number}/, data.rhino.version.number ) },
+			function(s) { return s.replace(/\{rhino\.version\.number}/, data.rhino.versions.default ) },
+			function(s) { return s.replace(/\{rhino\.version\.jdk8\.number}/, data.rhino.versions.jdk8 ) },
 			function(s) { return s.replace(/\{nashorn\.standalone\.version\}/, data.nashorn.standalone.version ) }
 		);
 

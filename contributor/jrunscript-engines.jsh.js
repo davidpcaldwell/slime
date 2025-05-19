@@ -110,6 +110,8 @@
 									jsh.shell.console("Skipping Rhino optimization tests for level " + level + "; CoffeeScript present.");
 									return;
 								}
+
+								//	TODO	would be nice to have type safety here
 								var result = jsh.shell.jsh({
 									shell: environment.jsh.unbuilt.src,
 									script: environment.jsh.src.getFile("jrunscript/jsh/test/jsh-data.jsh.js"),
@@ -124,8 +126,34 @@
 										return JSON.parse(result.stdio.output);
 									}
 								});
+
+								/**
+								 * @param { string } implementationVersion
+								 * @param { number } specified
+								 */
+								var expectedRhinoOptimizationLevel = function(implementationVersion,specified) {
+									var parseRhinoVersion = $api.fp.pipe(
+										$api.fp.RegExp.exec(/^Rhino (.*)/),
+										$api.fp.Maybe.map(
+											$api.fp.pipe(
+												function(match) { return match[1]; },
+												$api.fp.string.split("."),
+												$api.fp.Array.map(Number)
+											)
+										)
+									);
+
+									if (specified == -1) return -1;
+									var version = parseRhinoVersion(implementationVersion);
+									if (version.present) {
+										if (version.value[0] > 1) return 9;
+										if (version.value[1] >= 8) return 9;
+									}
+									return specified;
+								};
+
 								verify(result).engines.current.name.is("rhino");
-								verify(result).engines.current.optimization.is(level);
+								verify(result).engines.current.optimization.is(expectedRhinoOptimizationLevel(result.engines.current.version,level));
 							});
 						}
 					}

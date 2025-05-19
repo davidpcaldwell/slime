@@ -89,7 +89,7 @@
 									} else {
 										events.fire("console", "No Rhino at " + ooLib.getRelativePath("js.jar") + "; installing ...");
 									}
-									var version = p.version || dependencies.data.rhino.version.id;
+									var version = p.version || dependencies.data.rhino.version().id;
 									events.fire("console", "Installing Rhino version " + version + " to " + ooLib.getRelativePath("js.jar") + " ...");
 									var response = $api.fp.world.Question.now({
 										question: client({

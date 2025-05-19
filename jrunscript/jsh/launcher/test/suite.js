@@ -13,6 +13,9 @@
 	 * @param { slime.loader.Export<slime.jsh.internal.launcher.test.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		//	TODO	this setup is a total mess, and the companion scenario.jsh.js it is running is duplicative with
+		//			jrunscript/jsh/test/jsh-data.jsh.js
+
 		var getJavascriptEngines = function(src) {
 			var engines = $context.library.shell.run({
 				command: "bash",
@@ -333,11 +336,39 @@
 					}
 				};
 
+
 				/** @type { (level: number) => slime.jsh.internal.launcher.test.Checks } */
 				var checkRhinoOptimizationIs = function(level) {
+					//	TODO	copy-pasted from contributor/jrunscript-engine.jsh.js
+					/**
+					 * @param { string } implementationVersion
+					 * @param { number } specified
+					 */
+					var expectedRhinoOptimizationLevel = function(implementationVersion,specified) {
+						var parseRhinoVersion = $api.fp.pipe(
+							$api.fp.RegExp.exec(/^Rhino (.*)/),
+							$api.fp.Maybe.map(
+								$api.fp.pipe(
+									function(match) { return match[1]; },
+									$api.fp.string.split("."),
+									$api.fp.Array.map(Number)
+								)
+							)
+						);
+
+						if (specified == -1) return -1;
+						var version = parseRhinoVersion(implementationVersion);
+						if (version.present) {
+							if (version.value[0] > 1) return 9;
+							if (version.value[1] >= 8) return 9;
+						}
+						return specified;
+					};
+
 					return function(result) {
 						return function(verify) {
-							verify(result).rhino.optimization.is(level);
+							var expected = expectedRhinoOptimizationLevel(result.rhino.version,level);
+							verify(result).rhino.optimization.is(expected);
 						}
 					}
 				}
