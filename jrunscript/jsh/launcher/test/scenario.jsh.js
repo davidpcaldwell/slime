@@ -31,6 +31,7 @@
 							return Boolean(Packages.org.mozilla.javascript.Context.getCurrentContext());
 						})()
 					};
+					rv.version = (rv.running) ? String(Packages.org.mozilla.javascript.Context.getCurrentContext().getImplementationVersion()) : null;
 					rv.optimization = (rv.running) ? Number(Packages.org.mozilla.javascript.Context.getCurrentContext().getOptimizationLevel()) : null;
 					rv.classpath = (jsh.shell.rhino && jsh.shell.rhino.classpath) ? String(jsh.shell.rhino.classpath) : null;
 					return rv;
