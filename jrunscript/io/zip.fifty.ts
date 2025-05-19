@@ -7,7 +7,7 @@
 namespace slime.jrunscript.io.zip {
 	export interface Context {
 		Streams: slime.jrunscript.runtime.io.Exports["Streams"]
-		InputStream: slime.jrunscript.runtime.io.Exports["InputStream"]["from"]["java"]
+		InputStream: slime.jrunscript.runtime.io.Exports["InputStream"]["java"]
 	}
 
 	export namespace test {

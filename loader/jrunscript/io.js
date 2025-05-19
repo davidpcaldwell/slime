@@ -17,14 +17,42 @@
 	 * @param { slime.loader.Export<slime.jrunscript.runtime.io.Exports> } $export
 	 */
 	function($platform,Packages,JavaAdapter,XMLList,$api,$context,$export) {
-		var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
-
 		var _java = $context._streams;
+
+		var inputs = {
+			line: {
+				separator: function() {
+					//	Should we use jrunscript/host module?
+					return String(Packages.java.lang.System.getProperty("line.separator"));
+				}
+			},
+			charset: function() {
+				return String(Packages.java.nio.charset.Charset.defaultCharset().name());
+			}
+		};
+
+		var Charset = {
+			/**
+			 *
+			 * @param { slime.jrunscript.native.java.nio.charset.Charset } _peer
+			 * @return { slime.jrunscript.runtime.io.Charset }
+			 */
+			java: function(_peer) {
+				return {
+					read: function(input) {
+						return Reader.java(new Packages.java.io.InputStreamReader(input.java.adapt(), _peer));
+					},
+					write: function(output) {
+						return Writer(new Packages.java.io.OutputStreamWriter(output.java.adapt(), _peer));
+					}
+				}
+			}
+		}
 
 		function InputStream(peer) {
 			/**
 			 *
-			 * @param { slime.jrunscript.runtime.io.input.ReaderConfiguration } [mode]
+			 * @param { slime.jrunscript.runtime.io.reader.Configuration } [mode]
 			 * @returns
 			 */
 			var character = function(mode) {
@@ -35,7 +63,7 @@
 				if (!mode.charset) mode.charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
 				var separator = mode.LINE_SEPARATOR;
 				//	TODO	No unit test for this method currently; does it work?
-				return Reader(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
+				return Reader.java(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
 			};
 
 			//	TODO	this operation existed at one time and perhaps should be resurrected in some form, perhaps via a function
@@ -106,92 +134,103 @@
 
 		/**
 		 * @type { slime.jrunscript.runtime.io.Exports["Reader"] }
-		 * @param { Parameters<slime.jrunscript.runtime.io.Exports["Reader"]>[0] } peer
-		 * @param { Parameters<slime.jrunscript.runtime.io.Exports["Reader"]>[1] } properties
 		 */
-		var Reader = function(peer,properties) {
-			var readLines = Object.assign(
-				/**
-				 * @type { slime.jrunscript.runtime.io.Reader["readLines"] }
-				 */
-				function(callback,mode) {
-					if (!mode) mode = {};
-					//	TODO	should we retrieve properties from the jrunscript/host module, or is this sufficient?
-					if (!mode.ending && properties && properties.LINE_SEPARATOR) mode.ending = properties.LINE_SEPARATOR;
-					if (!mode.ending) mode.ending = LINE_SEPARATOR;
-					if (!mode.onEnd) mode.onEnd = function() { peer.close(); return void(0); }
+		var Reader = {
+			inputStream: function(p) {
+				var mode = p.configuration;
+				if (!mode) mode = {
+					charset: void(0),
+					LINE_SEPARATOR: void(0)
+				};
+				if (!mode.charset) mode.charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
+				var separator = mode.LINE_SEPARATOR;
+				//	TODO	No unit test for this method currently; does it work?
+				return Reader.java(new Packages.java.io.InputStreamReader(p.stream,mode.charset), {LINE_SEPARATOR: separator});
+			},
+			java: function(peer,properties) {
+				var readLines = Object.assign(
+					/**
+					 * @type { slime.jrunscript.runtime.io.Reader["readLines"] }
+					 */
+					function(callback,mode) {
+						if (!mode) mode = {};
+						//	TODO	should we retrieve properties from the jrunscript/host module, or is this sufficient?
+						if (!mode.ending && properties && properties.LINE_SEPARATOR) mode.ending = properties.LINE_SEPARATOR;
+						if (!mode.ending) mode.ending = inputs.line.separator();
+						if (!mode.onEnd) mode.onEnd = function() { peer.close(); return void(0); }
 
-					/** @type { string } */
-					var read;
-					var result;
-					var more = true;
-					while( more ) {
-						read = String(_java.readLine(peer,mode.ending));
-						var hasEnding = read.substring(read.length - mode.ending.length) == mode.ending;
-						var line;
-						if (!hasEnding) {
-							//	eof was reached
-							more = false;
-							line = read;
-						} else {
-							line = read.substring(0,read.length-mode.ending.length);
-						}
-						result = callback( line );
-						if (typeof(result) != "undefined") {
-							break;
-						}
-					}
-					if (typeof(result) == "undefined") {
-						mode.onEnd.call(this);
-					} else {
-						mode.onEnd.call(this,result);
-					}
-					//@ts-ignore
-					return result;
-				},
-				{
-					UNIX: "\n",
-					DOS: "\r\n"
-				}
-			);
-
-			$api.deprecate(readLines, "UNIX");
-			$api.deprecate(readLines, "DOS");
-
-			return $api.Object.compose(
-				{
-					close: function() {
-						peer.close();
-					},
-					readLines: readLines,
-					asString: function() {
-						var buffer = new Packages.java.io.StringWriter();
-						_java.copy(
-							peer,
-							buffer
-						);
-						return String( buffer.toString() );
-					},
-					java: {
-						adapt: function() {
-							return peer;
-						}
-					}
-				},
-				($platform.e4x) ? {
-					asXml: $api.deprecate(function() {
-						var string = this.asString();
-						var resource = new $context.api.Resource({
-							read: {
-								string: function() { return string; }
+						/** @type { string } */
+						var read;
+						var result;
+						var more = true;
+						while( more ) {
+							read = String(_java.readLine(peer,mode.ending));
+							var hasEnding = read.substring(read.length - mode.ending.length) == mode.ending;
+							var line;
+							if (!hasEnding) {
+								//	eof was reached
+								more = false;
+								line = read;
+							} else {
+								line = read.substring(0,read.length-mode.ending.length);
 							}
-						});
-						return resource.read(XMLList);
-					})
-				} : {
-				}
-			);
-		};
+							result = callback( line );
+							if (typeof(result) != "undefined") {
+								break;
+							}
+						}
+						if (typeof(result) == "undefined") {
+							mode.onEnd.call(this);
+						} else {
+							mode.onEnd.call(this,result);
+						}
+						//@ts-ignore
+						return result;
+					},
+					{
+						UNIX: "\n",
+						DOS: "\r\n"
+					}
+				);
+
+				$api.deprecate(readLines, "UNIX");
+				$api.deprecate(readLines, "DOS");
+
+				return $api.Object.compose(
+					{
+						close: function() {
+							peer.close();
+						},
+						readLines: readLines,
+						asString: function() {
+							var buffer = new Packages.java.io.StringWriter();
+							_java.copy(
+								peer,
+								buffer
+							);
+							return String( buffer.toString() );
+						},
+						java: {
+							adapt: function() {
+								return peer;
+							}
+						}
+					},
+					($platform.e4x) ? {
+						asXml: $api.deprecate(function() {
+							var string = this.asString();
+							var resource = new $context.api.Resource({
+								read: {
+									string: function() { return string; }
+								}
+							});
+							return resource.read(XMLList);
+						})
+					} : {
+					}
+				);
+			}
+		}
 
 		/** @type { slime.jrunscript.runtime.io.Exports["Writer"] } */
 		var Writer = function(peer) {
@@ -229,22 +268,6 @@
 				}
 			};
 		};
-
-		/**
-		 *
-		 * @param { slime.jrunscript.native.java.nio.charset.Charset } _peer
-		 * @return { slime.jrunscript.runtime.io.Charset }
-		 */
-		function Charset(_peer) {
-			return {
-				read: function(input) {
-					return Reader(new Packages.java.io.InputStreamReader(input.java.adapt(), _peer));
-				},
-				write: function(output) {
-					return Writer(new Packages.java.io.OutputStreamWriter(output.java.adapt(), _peer));
-				}
-			}
-		}
 
 		var Streams = (function() {
 			return {
@@ -318,7 +341,7 @@
 						} else if ($context.api.java.isJavaObject(object) && isJavaOutputStream(object)) {
 							return OutputStream(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaReader(object)) {
-							return Reader(object);
+							return Reader.java(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaWriter(object)) {
 							return Writer(object);
 						} else {
@@ -367,11 +390,36 @@
 			}
 		};
 
-		var input = {
+		/**
+		 *
+		 * @param { slime.jrunscript.runtime.io.InputStream } stream
+		 * @returns
+		 */
+		var readToArrayBuffer = function(stream) {
+			var _bytes = _java.readBytes(stream.java.adapt());
+			var rv = new ArrayBuffer(_bytes.length);
+			var i8 = new Int8Array(rv);
+			for (var i=0; i<_bytes.length; i++) {
+				i8[i] = _bytes[i];
+			}
+			return rv;
+		}
+
+		var wo = {
 			character: {
+				/**
+				 *
+				 * @param { string } charset
+				 * @returns { { all: slime.$api.fp.world.Means<slime.jrunscript.runtime.io.InputStream, slime.jrunscript.runtime.io.Events<string>>, lines: (terminator: string) => slime.$api.fp.world.Means<slime.jrunscript.runtime.io.InputStream, slime.jrunscript.runtime.io.LineEvents> }}
+				 */
 				encoding: function(charset) {
 					if (!charset) charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
 					return {
+						/**
+						 *
+						 * @param { slime.jrunscript.runtime.io.InputStream } input
+						 * @returns
+						 */
 						all: function(input) {
 							return function(events) {
 								//	TODO	or use Packages.java.nio.charset.StandardCharsets.UTF_8?
@@ -433,47 +481,48 @@
 		};
 
 		$export({
+			ArrayBuffer: {
+				read: readToArrayBuffer
+			},
 			InputStream: {
-				from: {
-					java: InputStream,
-					string: (
-						function() {
-							var charset = Charset(Packages.java.nio.charset.Charset.defaultCharset());
-							/** @type { slime.jrunscript.runtime.io.Exports["InputStream"]["from"]["string"]["encoding"] } */
-							var encoding = function(p) {
-								var buffer = new Buffer();
-								var writer = p.charset.write(buffer.writeBinary());
-								writer.write(p.string);
-								writer.close();
-								return buffer.readBinary();
-							};
+				java: InputStream,
+				string: (
+					function() {
+						var charset = Charset.java(Packages.java.nio.charset.Charset.defaultCharset());
+						/** @type { slime.jrunscript.runtime.io.Exports["InputStream"]["string"]["encoding"] } */
+						var encoding = function(p) {
+							var buffer = new Buffer();
+							var writer = p.charset.write(buffer.writeBinary());
+							writer.write(p.string);
+							writer.close();
+							return buffer.readBinary();
+						};
 
-							var string = $api.fp.now(encoding, $api.fp.curry({ charset: charset }), $api.fp.flatten("string"));
+						var string = $api.fp.now(encoding, $api.fp.curry({ charset: charset }), $api.fp.flatten("string"));
 
-							return {
-								encoding: encoding,
-								default: string
-							}
+						return {
+							encoding: encoding,
+							default: string
 						}
-					)()
-				}
+					}
+				)()
 			},
 			OutputStream: OutputStream,
 			Reader: Reader,
 			Writer: Writer,
 			Charset: {
 				standard: {
-					utf8: Charset(Packages.java.nio.charset.StandardCharsets.UTF_8)
+					utf8: Charset.java(Packages.java.nio.charset.StandardCharsets.UTF_8)
 				}
 			},
 			Streams: Streams,
 			Buffer: Buffer,
 			system: {
 				delimiter: {
-					line: LINE_SEPARATOR
+					line: inputs.line.separator()
 				}
 			},
-			input: {
+			wo: {
 				process: function(processor) {
 					return $api.fp.world.Means.output(processor);
 				},
@@ -482,14 +531,14 @@
 						return {
 							all: function(handlers) {
 								return {
-									means: input.character.encoding(encoding).all,
+									means: wo.character.encoding(encoding).all,
 									handlers: handlers
 								}
 							},
 							lines: function(terminator) {
 								return function(handlers) {
 									return {
-										means: input.character.encoding(encoding).lines(terminator),
+										means: wo.character.encoding(encoding).lines(terminator),
 										handlers: handlers
 									}
 								}

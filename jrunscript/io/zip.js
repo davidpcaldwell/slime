@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { { Streams: any, InputStream: slime.jrunscript.runtime.io.Exports["InputStream"]["from"]["java"] } } $context
+	 * @param { { Streams: any, InputStream: slime.jrunscript.runtime.io.Exports["InputStream"]["java"] } } $context
 	 * @param { slime.jrunscript.io.Exports["archive"]["zip"] } $exports
 	 */
 	function(Packages,$api,$context,$exports) {

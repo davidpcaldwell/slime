@@ -32,7 +32,7 @@
 
 		var library = {
 			zip: code.zip({
-				InputStream: $context.$slime.io.InputStream.from.java,
+				InputStream: $context.$slime.io.InputStream.java,
 				Streams: $context.$slime.io.Streams
 			}),
 			grid: code.grid({
@@ -70,7 +70,7 @@
 					return buffer.readBinary();
 				},
 				java: function(native) {
-					return $context.$slime.io.InputStream.from.java(native);
+					return $context.$slime.io.InputStream.java(native);
 				}
 			}
 		};
