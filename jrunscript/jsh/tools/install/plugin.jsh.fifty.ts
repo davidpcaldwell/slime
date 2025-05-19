@@ -103,9 +103,10 @@ namespace slime.jsh.shell.tools {
 			/**
 			 * A named version of Rhino to download and install; ignored if `local` is specified. Available versions include:
 			 *
-			 * * mozilla/1.7.15 (the default, and only tested/supported version)
-			 * * mozilla/1.7.14
-			 * * mozilla/1.7.13
+			 * * mozilla/1.8.0 (the default)
+			 * * mozilla/1.7.15 (the default for JDK 8)
+			 * * mozilla/1.7.14 (unsupported)
+			 * * mozilla/1.7.13 (unsupported)
 			 */
 			version?: string
 
@@ -190,6 +191,7 @@ namespace slime.jsh.shell.tools {
 	export namespace rhino {
 		(
 			function(
+				Packages: slime.jrunscript.Packages,
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
@@ -200,6 +202,9 @@ namespace slime.jsh.shell.tools {
 						function() {
 							const script: slime.project.dependencies.Script = fifty.$loader.script("../../../../contributor/dependencies/module.js");
 							return script({
+								java: {
+									version: String(Packages.java.lang.System.getProperty("java.version"))
+								},
 								library: {
 									file: jsh.file
 								}
@@ -264,7 +269,7 @@ namespace slime.jsh.shell.tools {
 						verify(captor).captured[0].type.is("console");
 						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("Replacing Rhino at " + lib.getRelativePath("js.jar") + " ...");
 						verify(captor).captured[1].type.is("console");
-						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino version " + dependencies.data.rhino.version.id + " to " + lib.getRelativePath("js.jar") + " ...");
+						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino version " + dependencies.data.rhino.version().id + " to " + lib.getRelativePath("js.jar") + " ...");
 						//verify(lib).getFile("js.jar").evaluate(readFile).is.not("original");
 						verify(captor.captured.type("installed")).length.is(1);
 						lib.getFile("js.jar").remove();
@@ -276,7 +281,7 @@ namespace slime.jsh.shell.tools {
 						verify(captor).captured[0].type.is("console");
 						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("No Rhino at " + lib.getRelativePath("js.jar") + "; installing ...");
 						verify(captor).captured[1].type.is("console");
-						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino version " + dependencies.data.rhino.version.id + " to " + lib.getRelativePath("js.jar") + " ...");
+						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino version " + dependencies.data.rhino.version().id + " to " + lib.getRelativePath("js.jar") + " ...");
 						verify(lib).getFile("js.jar").is.not(null);
 						verify(captor.captured.type("installed")).length.is(1);
 						lib.getFile("js.jar").remove();
@@ -296,7 +301,7 @@ namespace slime.jsh.shell.tools {
 				}
 			}
 		//@ts-ignore
-		)(fifty);
+		)(Packages,fifty);
 	}
 
 	export interface Exports {

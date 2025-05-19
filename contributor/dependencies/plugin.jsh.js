@@ -7,12 +7,13 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.Scope["plugin"] } plugin
 	 */
-	function($api,jsh,$loader,plugin) {
+	function(Packages,$api,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() { return Boolean(jsh.file); },
 			load: function() {
@@ -26,6 +27,9 @@
 				/** @type { slime.project.dependencies.Script } */
 				var code = $loader.script("module.js");
 				jsh.project.dependencies = code({
+					java: {
+						version: String(Packages.java.lang.System.getProperty("java.version"))
+					},
 					library: {
 						file: jsh.file
 					}
@@ -34,4 +38,4 @@
 		});
 	}
 //@ts-ignore
-)($api,jsh,$loader,plugin);
+)(Packages,$api,jsh,$loader,plugin);

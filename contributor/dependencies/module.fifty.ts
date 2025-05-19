@@ -6,6 +6,10 @@
 
 namespace slime.project.dependencies {
 	export interface Context {
+		java: {
+			version: string
+		}
+
 		library: {
 			file: slime.jrunscript.file.Exports
 		}
@@ -14,9 +18,14 @@ namespace slime.project.dependencies {
 	export interface Exports {
 		data: {
 			rhino: {
-				version: {
+				version: slime.$api.fp.Thunk<{
 					number: string
 					id: string
+				}>
+
+				versions: {
+					jdk8: string
+					default: string
 				}
 
 				sources: {
@@ -50,10 +59,14 @@ namespace slime.project.dependencies {
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const code: Script = fifty.$loader.script("module.js");
 			const subject = code({
+				java: {
+					version: String(Packages.java.lang.System.getProperty("java.version"))
+				},
 				library: {
 					file: fifty.global.jsh.file
 				}
@@ -68,7 +81,7 @@ namespace slime.project.dependencies {
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
 	export type Script = slime.loader.Script<Context,Exports>
 }

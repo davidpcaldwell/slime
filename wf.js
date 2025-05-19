@@ -7,13 +7,14 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.wf.cli.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.project.wf.Interface } $exports
 	 */
-	function($api,jsh,$context,$loader,$exports) {
+	function(Packages,$api,jsh,$context,$loader,$exports) {
 		var $$api = {
 			Function: {
 				switch: function() {
@@ -488,6 +489,9 @@
 					/** @type { slime.project.dependencies.Script } */
 					var code = $loader.script("contributor/dependencies/module.js");
 					var api = code({
+						java: {
+							version: String(Packages.java.lang.System.getProperty("java.version"))
+						},
 						library: {
 							file: jsh.file
 						}
@@ -943,4 +947,4 @@
 		}
 	}
 //@ts-ignore
-)($api,jsh,$context,$loader,$exports);
+)(Packages,$api,jsh,$context,$loader,$exports);

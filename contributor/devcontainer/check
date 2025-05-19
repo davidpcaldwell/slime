@@ -5,11 +5,15 @@
 #
 #	END LICENSE
 
+#	Specify SLIME_WF_JDK_VERSION=n to run with different JDK; for example, SLIME_WF_JDK_VERSION=8
+
 SLIME="$(dirname $0)/../.."
+
 rm -Rf ${SLIME}/local/*
+
 ${SLIME}/jsh --add-jdk-8
 ${SLIME}/jsh --add-jdk-11
 ${SLIME}/jsh --add-jdk-17
 ${SLIME}/jsh --add-jdk-21
-#rm -Rvf ${SLIME}/local/jsh/lib/node ${SLIME}/node_modules
+
 env JSH_LAUNCHER_BASH_DEBUG=1 SLIME_WF_BASH_DEBUG=1 ${SLIME}/wf check --docker >${SLIME}/local/devcontainer-check.txt 2>&1
