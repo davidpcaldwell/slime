@@ -7,9 +7,17 @@
 namespace slime.jrunscript.runtime.io {
 	export interface Context {
 		_streams: slime.jrunscript.native.inonit.script.runtime.io.Streams
+
 		api: {
 			java: Pick<slime.jrunscript.java.Exports,"isJavaObject"|"isJavaType">
-			Resource: any
+
+			Resource: new (p: {
+				read: {
+					string: () => string
+				}
+			}) => {
+				read: (XMLList: slime.external.e4x.XMLListConstructor) => slime.external.e4x.XMLList
+			}
 		}
 	}
 
@@ -18,23 +26,83 @@ namespace slime.jrunscript.runtime.io {
 			return fifty.global.jsh.unit.$slime.io;
 		//@ts-ignore
 		})(fifty);
+
+		export const toSignedByte = (b: number) => (b >= 128) ? (b-256) : b;
+
+		export const inputStreamOf = (function(Packages: slime.jrunscript.Packages) {
+			return (b: number[]) => new Packages.java.io.ByteArrayInputStream(b.map(toSignedByte));
+		//@ts-ignore
+		})(Packages)
 	}
 
 	type byte = number
 
-	export namespace input {
-		export interface ReaderConfiguration {
-			charset: string
-			LINE_SEPARATOR?: string
+	export interface Exports {
+		Charset: {
+			standard: {
+				utf8: Charset
+			}
 		}
 	}
+
+	export interface Charset {
+		read: (input: InputStream) => Reader
+		write: (output: OutputStream) => Writer
+	}
+
+	export interface Exports {
+		InputStream: {
+			java: (p: slime.jrunscript.native.java.io.InputStream) => InputStream
+
+			/**
+			 * A set of operations that allow the creation of {@link InputStream}s from strings.
+			 */
+			string: {
+				/**
+				 * A version that allows the specification of an encoding when creating the input stream.
+				 */
+				encoding: (p: {
+					string: string
+					charset: Charset
+				}) => InputStream
+
+				default: (p: string) => InputStream
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.InputStream = function() {
+				var utf8 = test.subject.Charset.standard.utf8;
+
+				var input = test.subject.InputStream.string.encoding({
+					charset: utf8,
+					string: "foo"
+				});
+
+				var reader = utf8.read(input);
+				var string = reader.asString();
+				verify(string).is("foo");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	/**
 	 * A stream from which bytes may be read.
 	 */
 	export interface InputStream {
-		/** A character input stream that reads this stream. */
-		character: (mode?: input.ReaderConfiguration) => Reader
+		/**
+		 * @deprecated Use `Reader.inputStream` to create a `Reader` from an `InputStream`.
+		 *
+		 * A character input stream that reads this stream.
+		 */
+		character: (mode?: reader.Configuration) => Reader
 
 		/**
 		 * Closes the underlying stream.
@@ -116,6 +184,24 @@ namespace slime.jrunscript.runtime.io {
 			callback: ReadLinesCallback<T>,
 			mode?: ReadLinesMode<T>
 		) => T
+	}
+
+	export namespace reader {
+		export interface Configuration {
+			charset: string
+			LINE_SEPARATOR?: string
+		}
+	}
+
+	export interface Exports {
+		Reader: {
+			inputStream: (p: {
+				stream: InputStream
+				configuration?: reader.Configuration
+			}) => Reader
+
+			java: (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
+		}
 	}
 
 	/**
@@ -212,11 +298,6 @@ namespace slime.jrunscript.runtime.io {
 		}
 	}
 
-	export interface Charset {
-		read: (input: InputStream) => Reader
-		write: (output: OutputStream) => Writer
-	}
-
 	export interface Buffer {
 		/**
 		 * Closes the buffer so that no additional bytes can be written to it.  Until the buffer is closed, an attempt to read from
@@ -259,50 +340,10 @@ namespace slime.jrunscript.runtime.io {
 	)(fifty);
 
 	export interface Exports {
-		InputStream: {
-			from: {
-				java: (p: slime.jrunscript.native.java.io.InputStream) => InputStream
-
-				/**
-				 * A set of operations that allow the creation of {@link InputStream}s from strings.
-				 */
-				string: {
-					/**
-					 * A version that allows the specification of an encoding when creating the input stream.
-					 */
-					encoding: (p: {
-						string: string
-						charset: Charset
-					}) => InputStream
-
-					default: (p: string) => InputStream
-				}
-			}
+		ArrayBuffer: {
+			read: (stream: InputStream) => ArrayBuffer
 		}
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			fifty.tests.InputStream = function() {
-				var utf8 = test.subject.Charset.standard.utf8;
-
-				var input = test.subject.InputStream.from.string.encoding({
-					charset: utf8,
-					string: "foo"
-				});
-
-				var reader = utf8.read(input);
-				var string = reader.asString();
-				verify(string).is("foo");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
 
 	export interface Exports {
 		/**
@@ -429,14 +470,7 @@ namespace slime.jrunscript.runtime.io {
 	export interface Exports {
 		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
 
-		Reader: (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
 		Writer: (p: slime.jrunscript.native.java.io.Writer) => Writer
-
-		Charset: {
-			standard: {
-				utf8: Charset
-			}
-		}
 
 		system: {
 			delimiter: {
@@ -465,7 +499,7 @@ namespace slime.jrunscript.runtime.io {
 	}
 
 	export interface Exports {
-		input: {
+		wo: {
 			process: <E>(processor: Processor<E>) => (input: InputStream) => void
 
 			character: {
@@ -487,10 +521,10 @@ namespace slime.jrunscript.runtime.io {
 			fifty.tests.exports.input.processor = fifty.test.Parent();
 
 			fifty.tests.exports.input.processor.string = function() {
-				var input = test.subject.InputStream.from.string.default(original);
+				var input = test.subject.InputStream.string.default(original);
 				var all: string;
-				test.subject.input.process(
-					test.subject.input.character.encoding().all({
+				test.subject.wo.process(
+					test.subject.wo.character.encoding().all({
 						progress: function(e) {
 							all = e.detail;
 						}
@@ -501,11 +535,11 @@ namespace slime.jrunscript.runtime.io {
 
 			fifty.tests.exports.input.processor.lines = function() {
 				fifty.run(function noTerimnator() {
-					var input = test.subject.InputStream.from.string.default(original);
+					var input = test.subject.InputStream.string.default(original);
 					var all: string = "";
 					var lines: string[] = [];
-					test.subject.input.process(
-						test.subject.input.character.encoding().lines("\n")({
+					test.subject.wo.process(
+						test.subject.wo.character.encoding().lines("\n")({
 							progress: function(e) {
 								all += e.detail;
 							},
@@ -522,11 +556,11 @@ namespace slime.jrunscript.runtime.io {
 				});
 
 				fifty.run(function terminator() {
-					var input = test.subject.InputStream.from.string.default(original + "\n");
+					var input = test.subject.InputStream.string.default(original + "\n");
 					var all: string = "";
 					var lines: string[] = [];
-					test.subject.input.process(
-						test.subject.input.character.encoding().lines("\n")({
+					test.subject.wo.process(
+						test.subject.wo.character.encoding().lines("\n")({
 							progress: function(e) {
 								all += e.detail;
 							},
@@ -594,6 +628,51 @@ namespace slime.jrunscript.runtime.io {
 				jsh.shell.console("Uint8Array: " + global["Uint8Array"]);
 				jsh.shell.console("Blob: " + global["Blob"]);
 				jsh.shell.console("File: " + global["File"]);
+			}
+
+			fifty.tests.manual.ArrayBuffer = function() {
+				var buffer = new ArrayBuffer(16);
+				var write = new Int8Array(buffer);
+				for (var i=0; i<16; i++) {
+					write[i] = i*2;
+				}
+				var read = new Int8Array(buffer);
+				var out = (fifty.global.jsh) ? jsh.shell.console : console.log;
+				out( Array.prototype.join.call(read, " ") );
+			}
+
+			fifty.tests.manual.wip = function() {
+				var len = 256;
+				var array = [];
+				for (var i=0; i<len; i++) {
+					array[i] = i;
+				}
+				var _bytes = jsh.java.Array.create({
+					type: Packages.java.lang.Byte.TYPE,
+					array: array.map(test.toSignedByte)
+				});
+				for (var i=0; i<_bytes.length; i++) {
+					jsh.shell.console(String(_bytes[i]));
+				}
+
+				var stream = test.inputStreamOf(array);
+				var r: number;
+				while((r = stream.read()) != -1) {
+					jsh.shell.console("read: " + r);
+				}
+
+				var java = test.inputStreamOf(array);
+				var jrunscript = test.subject.InputStream.java(java);
+				var ab = test.subject.ArrayBuffer.read(jrunscript);
+				jsh.shell.console("length = " + ab.byteLength);
+
+				var i8 = new Uint8Array(ab);
+				for (var i=0; i<i8.length; i++) {
+					jsh.shell.console("i8[" + i + "] = " + i8[i]);
+				}
+
+				var _streams = new Packages.inonit.script.runtime.io.Streams();
+
 			}
 		}
 	//@ts-ignore
