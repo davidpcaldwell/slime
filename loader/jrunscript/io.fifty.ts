@@ -46,8 +46,25 @@ namespace slime.jrunscript.runtime.io {
 	}
 
 	export interface Charset {
-		read: (input: InputStream) => Reader
-		write: (output: OutputStream) => Writer
+		name: string
+
+		java: {
+			adapt: () => slime.jrunscript.native.java.nio.charset.Charset
+		}
+	}
+
+	export namespace reader {
+		export interface Configuration {
+			charset: string
+			LINE_SEPARATOR?: string
+		}
+	}
+
+	export namespace text {
+		export interface Configuration {
+			charset: Charset
+			newline: string
+		}
 	}
 
 	export interface Exports {
@@ -71,32 +88,16 @@ namespace slime.jrunscript.runtime.io {
 		}
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			fifty.tests.InputStream = function() {
-				var utf8 = test.subject.Charset.standard.utf8;
-
-				var input = test.subject.InputStream.string.encoding({
-					charset: utf8,
-					string: "foo"
-				});
-
-				var reader = utf8.read(input);
-				var string = reader.asString();
-				verify(string).is("foo");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
 	/**
 	 * A stream from which bytes may be read.
 	 */
 	export interface InputStream {
+		content: {
+			string: {
+				simple: (charset: Charset) => string
+			}
+		}
+
 		/**
 		 * @deprecated Use `Reader.inputStream` to create a `Reader` from an `InputStream`.
 		 *
@@ -116,6 +117,34 @@ namespace slime.jrunscript.runtime.io {
 			array: () => slime.jrunscript.Array<byte>
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.InputStream = function() {
+				var utf8 = test.subject.Charset.standard.utf8;
+
+				var input = test.subject.InputStream.string.encoding({
+					charset: utf8,
+					string: "foo"
+				});
+
+				var reader = test.subject.Reader.stream({
+					stream: input,
+					configuration: {
+						charset: utf8.name,
+						LINE_SEPARATOR: "\n"
+					}
+				});
+				var string = reader.asString();
+				verify(string).is("foo");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	/**
 	 * A stream to which bytes may be written.
@@ -186,16 +215,9 @@ namespace slime.jrunscript.runtime.io {
 		) => T
 	}
 
-	export namespace reader {
-		export interface Configuration {
-			charset: string
-			LINE_SEPARATOR?: string
-		}
-	}
-
 	export interface Exports {
 		Reader: {
-			inputStream: (p: {
+			stream: (p: {
 				stream: InputStream
 				configuration?: reader.Configuration
 			}) => Reader
@@ -266,6 +288,23 @@ namespace slime.jrunscript.runtime.io {
 	//@ts-ignore
 	)($platform,fifty);
 
+	export interface Exports {
+		Writer: {
+			old: (p: slime.jrunscript.native.java.io.Writer) => OldWriter
+
+			java: (p: {
+				java: slime.jrunscript.native.java.io.Writer
+				newline: string
+			}) => Writer
+
+			stream: (p: {
+				stream: OutputStream
+				charset: Charset
+				newline: string
+			}) => Writer
+		}
+	}
+
 	/**
 	 * A stream to which characters can be written.
 	 */
@@ -278,9 +317,12 @@ namespace slime.jrunscript.runtime.io {
 			 * @param string A string to write to the stream.
 			 */
 			(string: string): void
+
 			/** @deprecated */
 			(e4x: slime.external.e4x.Object): void
 		}
+
+		line: (p: string) => void
 
 		/**
 		 * Closes the underlying stream.
@@ -297,6 +339,8 @@ namespace slime.jrunscript.runtime.io {
 			adapt: () => slime.jrunscript.native.java.io.Writer
 		}
 	}
+
+	export type OldWriter = Omit<Writer, "line">
 
 	export interface Buffer {
 		/**
@@ -455,11 +499,22 @@ namespace slime.jrunscript.runtime.io {
 				var utf8 = test.subject.Charset.standard.utf8;
 				var b = new test.subject.Buffer();
 				var write = b.writeBinary();
-				var writer = utf8.write(write);
+				var writer = test.subject.Writer.stream({
+					stream: write,
+					charset: utf8,
+					newline: "\n"
+				});
 				writer.write("bar!");
 				writer.close();
 				var read = b.readBinary();
-				var text = utf8.read(read);
+				var text = test.subject.Reader.stream({
+					stream: read,
+					configuration: {
+						charset: utf8.name,
+						LINE_SEPARATOR: "\n"
+					}
+				})
+				// var text = utf8.read(read);
 				var string = text.asString();
 				verify(string).is("bar!");
 			}
@@ -469,8 +524,6 @@ namespace slime.jrunscript.runtime.io {
 
 	export interface Exports {
 		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
-
-		Writer: (p: slime.jrunscript.native.java.io.Writer) => Writer
 
 		system: {
 			delimiter: {
