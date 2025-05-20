@@ -42,10 +42,17 @@ public class Streams {
 		return Bytes.Splitter.create(one, two);
 	}
 
-	public byte[] readBytes(InputStream in, boolean closeInputStream) throws IOException {
+	//	Analogous to java.io.InputStream.readAllBytes(). Implemented because that method was introduced in Java 9.
+	private byte[] readAllBytes(InputStream in) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		copy(in, out, closeInputStream);
+		copy(in, out, false);
 		return out.toByteArray();
+	}
+
+	public byte[] readBytes(InputStream in, boolean closeInputStream) throws IOException {
+		byte[] rv = readAllBytes(in);
+		if (closeInputStream) in.close();
+		return rv;
 	}
 
 	public byte[] readBytes(InputStream in) throws IOException {

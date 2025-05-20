@@ -12,6 +12,11 @@ namespace slime.jrunscript.native.inonit.script.runtime.io {
 	}
 
 	export interface Streams {
+		copy: {
+			(i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream, closeInputStream?: boolean): void
+			(r: slime.jrunscript.native.java.io.Reader, w: slime.jrunscript.native.java.io.Writer): void
+		}
+
 		/**
 		 * Creates an output stream that, when written to, will write the content written to each of two output streams.
 		 *
@@ -32,11 +37,6 @@ namespace slime.jrunscript.native.inonit.script.runtime.io {
 
 		readLines: {
 			(reader: slime.jrunscript.native.java.io.Reader, delimiter: string, events: slime.jrunscript.native.inonit.script.runtime.io.Streams.Events<string>): void
-		}
-
-		copy: {
-			(i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream, closeInputStream?: boolean): void
-			(r: slime.jrunscript.native.java.io.Reader, w: slime.jrunscript.native.java.io.Writer): void
 		}
 
 		readLine: (r: java.io.Reader, terminator: string) => java.lang.String
