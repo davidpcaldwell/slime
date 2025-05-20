@@ -4,7 +4,7 @@
 #
 #	END LICENSE
 
-version: '3.9'
+name: slime
 
 x-base-box: &box
     build: .

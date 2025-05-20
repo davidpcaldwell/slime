@@ -9,4 +9,4 @@ COPY . /slime
 
 FROM bare AS test
 RUN apt update && apt install -y git
-RUN /bin/bash /slime/contributor/devcontainer/docker-x-libraries
+RUN /bin/bash /slime/contributor/devcontainer/install-x-libraries

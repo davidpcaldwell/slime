@@ -11,6 +11,13 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		$api.fp.world.Action.now({
+			action: jsh.shell.tools.rhino.require.action,
+			handlers: {
+				console: $api.fp.pipe($api.fp.property("detail"), jsh.shell.console)
+			}
+		});
+
 		jsh.script.cli.main(function() {
 			debugger;
 		});

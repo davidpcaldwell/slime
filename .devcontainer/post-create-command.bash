@@ -4,7 +4,9 @@
 #
 #	END LICENSE
 
-./jsh --add-jdk-8
-./jsh --add-jdk-11
-./jsh --add-jdk-17
-./jsh --add-jdk-21
+SLIME=$(dirname $0)/..
+
+${SLIME}/jsh --add-jdk-8
+${SLIME}/jsh --add-jdk-11
+${SLIME}/jsh --add-jdk-17
+${SLIME}/jsh --add-jdk-21

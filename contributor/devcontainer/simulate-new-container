@@ -5,8 +5,8 @@
 #
 #	END LICENSE
 
-$(dirname $0)/simulate-new-container
 
 SLIME="$(dirname $0)/../.."
-/bin/bash ${SLIME}/jsh ${SLIME}/contributor/devcontainer/rhino-debugger.jsh.js
-env JSH_DEBUG_SCRIPT=rhino /bin/bash ${SLIME}/jsh ${SLIME}/contributor/devcontainer/rhino-debugger.jsh.js
+
+rm -Rf ${SLIME}/local/*
+${SLIME}/.devcontainer/post-create-command.bash
