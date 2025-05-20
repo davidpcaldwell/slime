@@ -175,6 +175,8 @@
 				if (files[i].path == "tools/wf/install") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/manual/engines") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/issue1254") extension = "bash";
+				if (files[i].path == "contributor/devcontainer/install-x-libraries") extension = "bash";
+				if (files[i].path == "contributor/devcontainer/rhino-debugger-test") extension = "bash";
 				if (!extension) throw new Error("Extension null for " + files[i].path);
 			}
 			var text = toFile(file).node.read(String);

@@ -18,6 +18,7 @@ x-base-box: &box
     depends_on:
       - chrome
       - firefox
+      - novnc
 
 x-base-test: &test
     <<: *box
@@ -64,6 +65,7 @@ services:
     environment:
       <<: *environment
       TZ: ${TZ}
+      DISPLAY: novnc:0.0
     command: /bin/bash
     volumes:
       - type: bind
@@ -83,6 +85,13 @@ services:
     image: seleniarm/standalone-firefox
     ports:
       - 7901:7900
+
+  novnc:
+    image: theasp/novnc:latest
+    environment:
+      RUN_XTERM: no
+    ports:
+      - 7902:8080
 
 volumes:
   local:

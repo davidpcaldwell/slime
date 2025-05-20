@@ -1,0 +1,17 @@
+#!/bin/bash
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+BASIC_X_LIBRARIES="libxext6 libxrender1 libxtst6 libxi6"
+FONT_X_LIBRARIES="fontconfig libfreetype6 libfontconfig1"
+TEST_X_LIBRARIES="x11-utils iputils-ping"
+
+apt update \
+    && apt install -y \
+	$BASIC_X_LIBRARIES \
+	$FONT_X_LIBRARIES \
+	$TEST_X_LIBRARIES \
+    && rm -rf /var/lib/apt/lists/*
