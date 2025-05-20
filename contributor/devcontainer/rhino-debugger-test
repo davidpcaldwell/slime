@@ -5,10 +5,8 @@
 #
 #	END LICENSE
 
-#	Specify SLIME_WF_JDK_VERSION=n to run with different JDK; for example, SLIME_WF_JDK_VERSION=8
-
 $(dirname $0)/simulate-new-container
 
 SLIME="$(dirname $0)/../.."
-
-env JSH_LAUNCHER_BASH_DEBUG=1 SLIME_WF_BASH_DEBUG=1 ${SLIME}/wf check --docker >${SLIME}/local/devcontainer-check.txt 2>&1
+/bin/bash ${SLIME}/jsh ${SLIME}/contributor/devcontainer/rhino-debugger.jsh.js
+env JSH_DEBUG_SCRIPT=rhino /bin/bash ${SLIME}/jsh ${SLIME}/contributor/devcontainer/rhino-debugger.jsh.js

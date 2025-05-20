@@ -34,7 +34,7 @@ namespace slime.external {
 					jsh.file.Location.file.read.string.simple
 				)
 			);
-			verify(parsed).evaluate.property("version").is("3.9");
+			verify(parsed).evaluate.property("name").is("slime");
 		}
 	}
 //@ts-ignore

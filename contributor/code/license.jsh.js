@@ -175,6 +175,9 @@
 				if (files[i].path == "tools/wf/install") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/manual/engines") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/issue1254") extension = "bash";
+				if (files[i].path == "contributor/devcontainer/install-x-libraries") extension = "bash";
+				if (files[i].path == "contributor/devcontainer/rhino-debugger-test") extension = "bash";
+				if (files[i].path == "contributor/devcontainer/simulate-new-container") extension = "bash";
 				if (!extension) throw new Error("Extension null for " + files[i].path);
 			}
 			var text = toFile(file).node.read(String);
@@ -215,6 +218,7 @@
 			if (current != proposed) {
 				if (!invocation.options.fix) {
 					jsh.shell.echo("Would update license in " + file.node.pathname);
+					jsh.shell.console("Before:\n" + current + "\n" + "After:\n" + proposed + "\n");
 					updated = true;
 				} else {
 					file.node.pathname.write(proposed, { append: false });
