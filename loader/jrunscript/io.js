@@ -39,16 +39,19 @@
 			 */
 			java: function(_peer) {
 				return {
-					read: function(input) {
-						return Reader.java(new Packages.java.io.InputStreamReader(input.java.adapt(), _peer));
-					},
-					write: function(output) {
-						return Writer(new Packages.java.io.OutputStreamWriter(output.java.adapt(), _peer));
+					name: String(_peer.name()),
+					java: {
+						adapt: function() {
+							return _peer;
+						}
 					}
 				}
 			}
 		}
 
+		/**
+		 * @type { slime.jrunscript.runtime.io.Exports["InputStream"]["java"] }
+		 */
 		function InputStream(peer) {
 			/**
 			 *
@@ -66,29 +69,15 @@
 				return Reader.java(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
 			};
 
-			//	TODO	this operation existed at one time and perhaps should be resurrected in some form, perhaps via a function
-			//			that caches an InputStream: that is of type (input: InputStream) => () => InputStream
-			// <ul>
-			// 	<li class="constructor">
-			// 		<div class="name">Resource</div>
-			// 		<span>Creates a resource that contains the contents of this stream.</span>
-			// 		<div class="arguments">
-			// 			<div class="label">Arguments</div>
-			// 			<ol>
-			// 				<li class="value">
-			// 					<span class="type"><a href="local/doc/typedoc/interfaces/slime.mimetype.html">type</a></span>
-			// 					<span>The MIME type of the data in this stream.</span>
-			// 				</li>
-			// 			</ol>
-			// 		</div>
-			// 		<div class="instances">
-			// 			<div class="label">Instances</div>
-			// 			<span class="type"><a href="#types.Resource">Resource</a></span>
-			// 		</div>
-			// 	</li>
-			// </ul>
-
 			return {
+				content: {
+					string: {
+						simple: function(charset) {
+							var _reader = new Packages.java.io.InputStreamReader(peer, charset.java.adapt());
+							return String(_java.readString(_reader));
+						}
+					}
+				},
 				close: function() {
 					peer.close();
 				},
@@ -100,8 +89,7 @@
 					array: function() {
 						return _java.readBytes(peer);
 					}
-				},
-				characters: $api.deprecate(character)
+				}
 			}
 		}
 
@@ -119,7 +107,7 @@
 					return OutputStream(_java.split(peer,otherPeer))
 				},
 				character: function() {
-					return Writer(new Packages.java.io.OutputStreamWriter(peer));
+					return Writer(new Packages.java.io.OutputStreamWriter(peer), void(0));
 				},
 				close: function() {
 					peer.close();
@@ -136,7 +124,7 @@
 		 * @type { slime.jrunscript.runtime.io.Exports["Reader"] }
 		 */
 		var Reader = {
-			inputStream: function(p) {
+			stream: function(p) {
 				var mode = p.configuration;
 				if (!mode) mode = {
 					charset: void(0),
@@ -145,7 +133,7 @@
 				if (!mode.charset) mode.charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
 				var separator = mode.LINE_SEPARATOR;
 				//	TODO	No unit test for this method currently; does it work?
-				return Reader.java(new Packages.java.io.InputStreamReader(p.stream,mode.charset), {LINE_SEPARATOR: separator});
+				return Reader.java(new Packages.java.io.InputStreamReader(p.stream.java.adapt(),mode.charset), {LINE_SEPARATOR: separator});
 			},
 			java: function(peer,properties) {
 				var readLines = Object.assign(
@@ -232,8 +220,12 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.runtime.io.Exports["Writer"] } */
-		var Writer = function(peer) {
+		/**
+		 *
+		 * @param { slime.jrunscript.native.java.io.Writer } peer
+		 * @returns { slime.jrunscript.runtime.io.OldWriter }
+		 */
+		var OldWriter = function(peer) {
 			/** @returns { string } */
 			var getTypeof = function(value) {
 				return typeof(value);
@@ -264,6 +256,33 @@
 				java: {
 					adapt: function() {
 						return peer;
+					}
+				}
+			};
+		}
+
+		/**
+		 *
+		 * @param { slime.jrunscript.native.java.io.Writer } peer
+		 * @param { string } newline
+		 * @returns { slime.jrunscript.runtime.io.Writer }
+		 */
+		var Writer = function(peer,newline) {
+			var old = OldWriter(peer);
+
+			return {
+				close: function() {
+					old.close();
+				},
+				write: function(string) {
+					old.write(string);
+				},
+				line: function(line) {
+					old.write( line + newline );
+				},
+				java: {
+					adapt: function() {
+						return old.java.adapt();
 					}
 				}
 			};
@@ -343,7 +362,7 @@
 						} else if ($context.api.java.isJavaObject(object) && isJavaReader(object)) {
 							return Reader.java(object);
 						} else if ($context.api.java.isJavaObject(object) && isJavaWriter(object)) {
-							return Writer(object);
+							return OldWriter(object);
 						} else {
 							var type = (function() {
 								if (object.getClass) {
@@ -389,6 +408,31 @@
 				return this.readBinary().character();
 			}
 		};
+
+		//	TODO	this operation existed at one time and perhaps should be resurrected in some form, perhaps via a function
+		//			that caches an InputStream: that is of type (input: InputStream) => () => InputStream
+		//
+		//			Could be implemented in terms of ArrayBuffer below
+		//
+		// <ul>
+		// 	<li class="constructor">
+		// 		<div class="name">Resource</div>
+		// 		<span>Creates a resource that contains the contents of this stream.</span>
+		// 		<div class="arguments">
+		// 			<div class="label">Arguments</div>
+		// 			<ol>
+		// 				<li class="value">
+		// 					<span class="type"><a href="local/doc/typedoc/interfaces/slime.mimetype.html">type</a></span>
+		// 					<span>The MIME type of the data in this stream.</span>
+		// 				</li>
+		// 			</ol>
+		// 		</div>
+		// 		<div class="instances">
+		// 			<div class="label">Instances</div>
+		// 			<span class="type"><a href="#types.Resource">Resource</a></span>
+		// 		</div>
+		// 	</li>
+		// </ul>
 
 		/**
 		 *
@@ -489,12 +533,13 @@
 				string: (
 					function() {
 						var charset = Charset.java(Packages.java.nio.charset.Charset.defaultCharset());
+
 						/** @type { slime.jrunscript.runtime.io.Exports["InputStream"]["string"]["encoding"] } */
 						var encoding = function(p) {
 							var buffer = new Buffer();
-							var writer = p.charset.write(buffer.writeBinary());
-							writer.write(p.string);
-							writer.close();
+							var _writer = new Packages.java.io.OutputStreamWriter(buffer.writeBinary().java.adapt(), p.charset.java.adapt());
+							_writer.write(p.string);
+							_writer.close();
 							return buffer.readBinary();
 						};
 
@@ -509,7 +554,16 @@
 			},
 			OutputStream: OutputStream,
 			Reader: Reader,
-			Writer: Writer,
+			Writer: {
+				old: OldWriter,
+				java: function(p) {
+					return Writer(p.java, p.newline);
+				},
+				stream: function(p) {
+					var _writer = new Packages.java.io.OutputStreamWriter(p.stream.java.adapt(), p.charset.java.adapt());
+					return Writer(_writer, p.newline);
+				}
+			},
 			Charset: {
 				standard: {
 					utf8: Charset.java(Packages.java.nio.charset.StandardCharsets.UTF_8)

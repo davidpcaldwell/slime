@@ -129,6 +129,7 @@ namespace slime.jrunscript {
 
 				export namespace charset {
 					export interface Charset {
+						name: () => slime.jrunscript.native.java.lang.String
 					}
 				}
 			}
