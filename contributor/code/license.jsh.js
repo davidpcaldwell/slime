@@ -218,6 +218,7 @@
 			if (current != proposed) {
 				if (!invocation.options.fix) {
 					jsh.shell.echo("Would update license in " + file.node.pathname);
+					jsh.shell.console("Before:\n" + current + "\n" + "After:\n" + proposed + "\n");
 					updated = true;
 				} else {
 					file.node.pathname.write(proposed, { append: false });

@@ -5,7 +5,6 @@
 #
 #	END LICENSE
 
-
 SLIME="$(dirname $0)/../.."
 
 rm -Rf ${SLIME}/local/*
