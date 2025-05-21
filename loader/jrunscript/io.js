@@ -50,6 +50,21 @@
 		}
 
 		/**
+		 *
+		 * @param { slime.jrunscript.native.java.io.InputStream } stream
+		 * @returns
+		 */
+		var readToArrayBuffer = function(stream) {
+			var _bytes = _java.readBytes(stream);
+			var rv = new ArrayBuffer(_bytes.length);
+			var i8 = new Int8Array(rv);
+			for (var i=0; i<_bytes.length; i++) {
+				i8[i] = _bytes[i];
+			}
+			return rv;
+		}
+
+		/**
 		 * @type { slime.jrunscript.runtime.io.Exports["InputStream"]["java"] }
 		 */
 		function InputStream(peer) {
@@ -75,6 +90,11 @@
 						simple: function(charset) {
 							var _reader = new Packages.java.io.InputStreamReader(peer, charset.java.adapt());
 							return String(_java.readString(_reader));
+						}
+					},
+					ArrayBuffer: {
+						simple: function() {
+							return readToArrayBuffer(peer)
 						}
 					}
 				},
@@ -434,21 +454,6 @@
 		// 	</li>
 		// </ul>
 
-		/**
-		 *
-		 * @param { slime.jrunscript.runtime.io.InputStream } stream
-		 * @returns
-		 */
-		var readToArrayBuffer = function(stream) {
-			var _bytes = _java.readBytes(stream.java.adapt());
-			var rv = new ArrayBuffer(_bytes.length);
-			var i8 = new Int8Array(rv);
-			for (var i=0; i<_bytes.length; i++) {
-				i8[i] = _bytes[i];
-			}
-			return rv;
-		}
-
 		var wo = {
 			character: {
 				/**
@@ -526,13 +531,15 @@
 
 		$export({
 			ArrayBuffer: {
-				read: readToArrayBuffer
+				read: function(stream) {
+					return readToArrayBuffer(stream.java.adapt());
+				}
 			},
 			InputStream: {
 				java: InputStream,
 				string: (
 					function() {
-						var charset = Charset.java(Packages.java.nio.charset.Charset.defaultCharset());
+						var javaDefault = Charset.java(Packages.java.nio.charset.Charset.defaultCharset());
 
 						/** @type { slime.jrunscript.runtime.io.Exports["InputStream"]["string"]["encoding"] } */
 						var encoding = function(p) {
@@ -543,11 +550,9 @@
 							return buffer.readBinary();
 						};
 
-						var string = $api.fp.now(encoding, $api.fp.curry({ charset: charset }), $api.fp.flatten("string"));
-
 						return {
 							encoding: encoding,
-							default: string
+							default: $api.fp.now(encoding, $api.fp.curry({ charset: javaDefault }), $api.fp.flatten("string"))
 						}
 					}
 				)()

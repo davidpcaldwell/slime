@@ -29,10 +29,10 @@ namespace slime.jrunscript.runtime.io {
 
 		export const toSignedByte = (b: number) => (b >= 128) ? (b-256) : b;
 
-		export const inputStreamOf = (function(Packages: slime.jrunscript.Packages) {
+		export const javaInputStreamOf = (function(Packages: slime.jrunscript.Packages) {
 			return (b: number[]) => new Packages.java.io.ByteArrayInputStream(b.map(toSignedByte));
 		//@ts-ignore
-		})(Packages)
+		})(Packages);
 	}
 
 	type byte = number
@@ -126,14 +126,11 @@ namespace slime.jrunscript.runtime.io {
 			string: {
 				simple: (charset: Charset) => string
 			}
-		}
 
-		/**
-		 * @deprecated Use `Reader.inputStream` to create a `Reader` from an `InputStream`.
-		 *
-		 * A character input stream that reads this stream.
-		 */
-		character: (mode?: reader.Configuration) => Reader
+			ArrayBuffer: {
+				simple: () => ArrayBuffer
+			}
+		}
 
 		/**
 		 * Closes the underlying stream.
@@ -144,17 +141,36 @@ namespace slime.jrunscript.runtime.io {
 		java: {
 			/** Returns a Java `java.io.InputStream` equivalent to this stream. */
 			adapt: () => slime.jrunscript.native.java.io.InputStream
+
+			// /** @deprecated Use `content.ArrayBuffer.simple` to get the content as an `ArrayBuffer`. */
+			//	TODO	would like to deprecate this, see above, but this is used in other places to retrieve native Java byte
+			//			arrays to create new streams. What we need is a stream implementation backed by an `ArrayBuffer`, and then
+			//			callers can switch to that.
 			array: () => slime.jrunscript.Array<byte>
 		}
+
+		/**
+		 * @deprecated Use `Reader.stream` to create a `Reader` from an `InputStream`.
+		 *
+		 * A character input stream that reads this stream.
+		 */
+		character: (mode?: reader.Configuration) => Reader
 	}
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 
-			fifty.tests.InputStream = function() {
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.InputStream = fifty.test.Parent();
+
+			fifty.tests.exports.InputStream.string = fifty.test.Parent();
+
+			fifty.tests.exports.InputStream.string.encoding = function() {
 				var utf8 = test.subject.Charset.standard.utf8;
 
 				var input = test.subject.InputStream.string.encoding({
@@ -162,19 +178,51 @@ namespace slime.jrunscript.runtime.io {
 					string: "foo"
 				});
 
-				var reader = test.subject.Reader.stream({
-					stream: input,
-					configuration: {
-						charset: utf8.name,
-						LINE_SEPARATOR: "\n"
-					}
-				});
-				var string = reader.asString();
+				var string = input.content.string.simple(utf8);
+
 				verify(string).is("foo");
+			}
+
+			fifty.tests.exports.InputStream.object = fifty.test.Parent();
+
+			fifty.tests.exports.InputStream.object.content = fifty.test.Parent();
+
+			fifty.tests.exports.InputStream.object.content.ArrayBuffer = fifty.test.Parent();
+
+			fifty.tests.exports.InputStream.object.content.ArrayBuffer.simple = function() {
+				var len = 19;
+				var array = [];
+				for (var i=0; i<len; i++) {
+					array[i] = i;
+				}
+
+				var inputStream = test.subject.InputStream.java(
+					test.javaInputStreamOf(array)
+				);
+
+				var ab = inputStream.content.ArrayBuffer.simple();
+
+				verify(ab).evaluate($api.fp.property("byteLength")).is(len);
+
+				var i8 = new Uint8Array(ab);
+				for (var i=0; i<len; i++) {
+					verify(i8)[i].is(i);
+				}
+			}
+
+			fifty.tests.exports.InputStream.object.close = function() {
+				var input = test.subject.InputStream.string.default("it");
+				input.close();
+				//	TODO	looks like test would fail under Nashorn, which propagates errors differently
+				verify(input).evaluate( function(i) { return i.content.string.simple(test.subject.Charset.standard.utf8); }).threw.type(Error);
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
+
+	export interface Exports {
+		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
+	}
 
 	/**
 	 * A stream to which bytes may be written.
@@ -544,8 +592,6 @@ namespace slime.jrunscript.runtime.io {
 	)(fifty);
 
 	export interface Exports {
-		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
-
 		system: {
 			delimiter: {
 				line: string
@@ -668,7 +714,6 @@ namespace slime.jrunscript.runtime.io {
 
 				run(fifty.tests.Streams);
 				run(fifty.tests.Buffer);
-				run(fifty.tests.InputStream);
 
 				if (fifty.tests.E4X) run(fifty.tests.E4X);
 
@@ -717,37 +762,6 @@ namespace slime.jrunscript.runtime.io {
 			}
 
 			fifty.tests.manual.wip = function() {
-				var len = 256;
-				var array = [];
-				for (var i=0; i<len; i++) {
-					array[i] = i;
-				}
-				var _bytes = jsh.java.Array.create({
-					type: Packages.java.lang.Byte.TYPE,
-					array: array.map(test.toSignedByte)
-				});
-				for (var i=0; i<_bytes.length; i++) {
-					jsh.shell.console(String(_bytes[i]));
-				}
-
-				var stream = test.inputStreamOf(array);
-				var r: number;
-				while((r = stream.read()) != -1) {
-					jsh.shell.console("read: " + r);
-				}
-
-				var java = test.inputStreamOf(array);
-				var jrunscript = test.subject.InputStream.java(java);
-				var ab = test.subject.ArrayBuffer.read(jrunscript);
-				jsh.shell.console("length = " + ab.byteLength);
-
-				var i8 = new Uint8Array(ab);
-				for (var i=0; i<i8.length; i++) {
-					jsh.shell.console("i8[" + i + "] = " + i8[i]);
-				}
-
-				var _streams = new Packages.inonit.script.runtime.io.Streams();
-
 			}
 		}
 	//@ts-ignore
