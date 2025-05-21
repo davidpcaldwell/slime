@@ -164,7 +164,7 @@ namespace slime.jrunscript.runtime.io {
 		) {
 			const { verify } = fifty;
 
-			const { jsh } = fifty.global;
+			const { $api } = fifty.global;
 
 			fifty.tests.exports.InputStream = fifty.test.Parent();
 
@@ -202,7 +202,7 @@ namespace slime.jrunscript.runtime.io {
 
 				var ab = inputStream.content.ArrayBuffer.simple();
 
-				verify(ab).byteLength.is(len);
+				verify(ab).evaluate($api.fp.property("byteLength")).is(len);
 
 				var i8 = new Uint8Array(ab);
 				for (var i=0; i<len; i++) {
@@ -213,6 +213,7 @@ namespace slime.jrunscript.runtime.io {
 			fifty.tests.exports.InputStream.object.close = function() {
 				var input = test.subject.InputStream.string.default("it");
 				input.close();
+				//	TODO	looks like test would fail under Nashorn, which propagates errors differently
 				verify(input).evaluate( function(i) { return i.content.string.simple(test.subject.Charset.standard.utf8); }).threw.type(Error);
 			}
 		}
