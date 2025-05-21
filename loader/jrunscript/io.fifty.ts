@@ -37,6 +37,15 @@ namespace slime.jrunscript.runtime.io {
 
 	type byte = number
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		Charset: {
 			standard: {
@@ -52,6 +61,27 @@ namespace slime.jrunscript.runtime.io {
 			adapt: () => slime.jrunscript.native.java.nio.charset.Charset
 		}
 	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+
+			fifty.tests.exports.Charset = fifty.test.Parent();
+
+			fifty.tests.exports.Charset.utf8 = function() {
+				verify(test.subject.Charset.standard.utf8, "Charset.standard.utf8", it => {
+					it.is.type("object");
+					it.name.is.type("string");
+					it.java.adapt().evaluate( jsh.java.isJavaType(Packages.java.nio.charset.Charset) ).is(true);
+				});
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
 
 	export namespace reader {
 		export interface Configuration {
@@ -374,15 +404,6 @@ namespace slime.jrunscript.runtime.io {
 		onFinish: (i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream) => void
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports = fifty.test.Parent();
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export interface Exports {
 		ArrayBuffer: {
 			read: (stream: InputStream) => ArrayBuffer
@@ -643,13 +664,14 @@ namespace slime.jrunscript.runtime.io {
 			fifty.tests.suite = function() {
 				verify(test.subject,"subject").is.type("object");
 
+				run(fifty.tests.exports);
+
 				run(fifty.tests.Streams);
 				run(fifty.tests.Buffer);
 				run(fifty.tests.InputStream);
 
 				if (fifty.tests.E4X) run(fifty.tests.E4X);
 
-				run(fifty.tests.exports);
 			}
 		}
 	//@ts-ignore
