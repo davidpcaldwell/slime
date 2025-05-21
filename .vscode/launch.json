@@ -33,7 +33,31 @@
 			"name": "Java JDWP Debug (attach 8000)",
 			"request": "attach",
 			"hostName": "localhost",
-			"port": 8000
+			"port": 8000,
+			"sourcePaths": [
+				"${workspaceFolder}/jrunscript/host/rhino/java",
+				"${workspaceFolder}/jrunscript/jsh/launcher/java",
+				"${workspaceFolder}/jrunscript/jsh/test/manual/issue109/java",
+				"${workspaceFolder}/jrunscript/jsh/loader/test/addClasses/java",
+				"${workspaceFolder}/jrunscript/jsh/loader/java",
+				"${workspaceFolder}/jrunscript/jsh/loader/rhino/java",
+				"${workspaceFolder}/jrunscript/jsh/loader/graal/java",
+				"${workspaceFolder}/loader/jrunscript/test/data/1/java",
+				"${workspaceFolder}/loader/jrunscript/test/data/2/java",
+				"${workspaceFolder}/loader/jrunscript/java",
+				"${workspaceFolder}/loader/jrunscript/rhino/java",
+				"${workspaceFolder}/loader/jrunscript/graal/java",
+				"${workspaceFolder}/rhino/ui/java",
+				"${workspaceFolder}/rhino/tools/test/java",
+				"${workspaceFolder}/rhino/tools/profiler/test/java",
+				"${workspaceFolder}/rhino/tools/profiler/java",
+				"${workspaceFolder}/rhino/file/java",
+				"${workspaceFolder}/rhino/shell/test/java",
+				"${workspaceFolder}/rhino/system/java",
+				"${workspaceFolder}/rhino/http/servlet/java",
+				"${workspaceFolder}/rhino/http/servlet/rhino/java",
+				"${workspaceFolder}/jrunscript/jsh/launcher/java"
+			]
 		},
 		{
 			"type": "chrome",

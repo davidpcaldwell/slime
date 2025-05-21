@@ -329,7 +329,9 @@
 
 		console("Building launcher ...");
 		(function buildLauncher() {
+			console("Compiling ...");
 			var _tmp = jrunscript.$api.slime.launcher.compile();
+			console("Compiled.");
 			var tmp = jsh.file.Pathname(String(_tmp.getCanonicalPath())).directory;
 			//	TODO	assume manifest uses \n always, does it?
 			tmp.getRelativePath("META-INF/MANIFEST.MF").write([

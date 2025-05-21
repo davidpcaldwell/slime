@@ -75,6 +75,8 @@ services:
         source: local
         target: /slime/local
       - ./local/docker/home:/root
+    ports:
+      - 8000:8000
 
   chrome:
     image: seleniarm/standalone-chromium
