@@ -169,7 +169,8 @@ public class Streams {
 	public static class Bytes {
 		public static class Buffer {
 			private LinkedList<Byte> bytes = new LinkedList<Byte>();
-			private boolean closed;
+			private boolean inputClosed;
+			private boolean outputClosed;
 
 			private MyInputStream in = new MyInputStream();
 			private MyOutputStream out = new MyOutputStream();
@@ -190,15 +191,18 @@ public class Streams {
 				return bytes.size();
 			}
 
-			private synchronized int read() {
-				while (bytes.size() == 0 && !closed) {
+			private synchronized int read() throws IOException {
+				while (bytes.size() == 0 && !outputClosed && !inputClosed) {
 					try {
 						wait();
 					} catch (InterruptedException e) {
 						throw new RuntimeException(e);
 					}
 				}
-				if (bytes.size() == 0 && closed) return -1;
+				if (inputClosed) {
+					throw new IOException(this.toString() + ": Stream closed.");
+				}
+				if (bytes.size() == 0 && outputClosed) return -1;
 				Byte bObject = (Byte)bytes.removeFirst();
 				int b = bObject.byteValue();
 				if (b < 0) {
@@ -207,7 +211,7 @@ public class Streams {
 				return b;
 			}
 
-			private synchronized int read(byte[] b, int off, int len) {
+			private synchronized int read(byte[] b, int off, int len) throws IOException {
 				int i = this.read();
 				if (i == -1) {
 					return -1;
@@ -222,22 +226,27 @@ public class Streams {
 				notifyAll();
 			}
 
-			private synchronized void close() {
-				closed = true;
+			private synchronized void closeInput() {
+				inputClosed = true;
+				Buffer.this.notifyAll();
+			}
+
+			private synchronized void closeOutput() {
+				outputClosed = true;
 				Buffer.this.notifyAll();
 			}
 
 			private class MyInputStream extends InputStream {
-				public int read() {
+				public int read() throws IOException {
 					return Buffer.this.read();
 				}
 
-				public int read(byte[] b, int off, int len) {
+				public int read(byte[] b, int off, int len) throws IOException {
 					return Buffer.this.read(b,off,len);
 				}
 
-				public int read(byte[] b) {
-					return this.read(b,0,1);
+				public int read(byte[] b) throws IOException {
+					return this.read(b,0,b.length);
 				}
 
 				public int available() {
@@ -245,7 +254,7 @@ public class Streams {
 				}
 
 				public void close() {
-					Buffer.this.close();
+					Buffer.this.closeInput();
 				}
 			}
 
@@ -255,7 +264,7 @@ public class Streams {
 				}
 
 				public void close() {
-					Buffer.this.close();
+					Buffer.this.closeOutput();
 				}
 			}
 		}
