@@ -660,11 +660,13 @@
 			browser: void(0),
 			inject: {
 				httpd: function(module) {
+					/** @type { slime.jrunscript.shell.browser.Script } */
 					var script = $loader.script("browser/module.js");
 					var exports = script({
 						os: $exports.os,
 						HOME: $exports.HOME,
 						TMPDIR: $exports.TMPDIR,
+						USER: $exports.USER,
 						run: scripts.run_old.run,
 						environment: environment,
 						api: {

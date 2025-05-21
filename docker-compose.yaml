@@ -18,7 +18,6 @@ x-base-box: &box
     depends_on:
       - chrome
       - firefox
-      - novnc
 
 x-base-test: &test
     <<: *box
@@ -60,6 +59,10 @@ services:
   # (to the local/ subdirectory, like installing JDKs, Rhino, Tomcat, and so forth) will persist between runs.
   #
   # Also used by the devcontainer implementation.
+  #
+  # The primary user interface for the container is the novnc interface, which can be reached at http://localhost:7902/vnc.html.
+  # The chrome and firefox services are still started so that the container can emulate the CI tests for debugging CI-only failures
+  # via the contributor/devcomtainer/check script.
   local:
     <<: *box
     environment:
@@ -77,6 +80,10 @@ services:
       - ./local/docker/home:/root
     ports:
       - 8000:8000
+    depends_on:
+      - novnc
+      - chrome
+      - firefox
 
   chrome:
     image: seleniarm/standalone-chromium
@@ -92,6 +99,9 @@ services:
     image: theasp/novnc:latest
     environment:
       RUN_XTERM: no
+    env_file:
+      # Can specify DISPLAY_WIDTH and DISPLAY_HEIGHT for the desktop in the below file; defaults are 1024 and 768.
+      - local/devcontainer/novnc.env
     ports:
       - 7902:8080
 

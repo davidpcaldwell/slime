@@ -82,6 +82,7 @@
 				if (exit.status == 0) {
 					events.fire("finished", object);
 				} else {
+					events.fire("stderr", { out: tmp.pathname, line: "TypeDoc exit code: " + exit.status });
 					events.fire("errored", object);
 				}
 			}
