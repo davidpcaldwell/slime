@@ -41,6 +41,7 @@
 		}
 	},
 	"service": "local",
+	"runServices": ["local"],
 	"workspaceFolder": "/slime",
 	"postCreateCommand": "/bin/bash .devcontainer/post-create-command.bash"
 }

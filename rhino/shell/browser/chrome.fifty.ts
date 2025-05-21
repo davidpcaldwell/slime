@@ -104,6 +104,7 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 		}
 		HOME: slime.jrunscript.file.Directory
 		TMPDIR: slime.jrunscript.file.Directory
+		USER: string
 		environment: any
 	}
 
@@ -127,6 +128,7 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 			return script({
 				HOME: fifty.global.jsh.shell.HOME,
 				TMPDIR: fifty.global.jsh.shell.TMPDIR,
+				USER: fifty.global.jsh.shell.USER,
 				api: {
 					java: fifty.global.jsh.java,
 					file: fifty.global.jsh.file

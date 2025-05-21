@@ -176,6 +176,9 @@
 				if (m.arguments) {
 					args.push.apply(args,m.arguments);
 				}
+				if ($context.USER == "root") {
+					args.push("--no-sandbox");
+				}
 				if (m.app) {
 					if (m.position || m.size) {
 						var script = [];
@@ -450,6 +453,13 @@
 						return new Chrome({
 							program: $context.api.file.Pathname("/opt/google/chrome/chrome").file,
 							user: $context.HOME.getSubdirectory(".config/google-chrome")
+						});
+					}
+
+					if ($context.api.file.Pathname("/usr/bin/chromium").file) {
+						return new Chrome({
+							program: $context.api.file.Pathname("/usr/bin/chromium").file,
+							user: $context.HOME.getSubdirectory(".config/chromium")
 						});
 					}
 				}

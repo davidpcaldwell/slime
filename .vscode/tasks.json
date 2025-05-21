@@ -8,7 +8,7 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "(Local only) Documentation: Show",
+			"label": "Documentation: Show",
 			"detail": "Serves the project documentation and opens a browser to view it",
 			"type": "shell",
 			"command": "./wf documentation",
@@ -135,7 +135,7 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "(Local only) Fifty (browser): Run wip() Test in Current File",
+			"label": "Fifty (browser): Run wip() Test in Current File",
 			"type": "shell",
 			"command": "./fifty",
 			"args": [

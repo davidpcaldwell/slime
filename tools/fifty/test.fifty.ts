@@ -53,8 +53,9 @@
  * `/fifty test.browser [--chrome:data pathname] [--base pathname] file.fifty.ts [--part part] [--interactive] [--chrome:debug:vscode]`
  *
  * This invokes the underlying `tools/fifty/test-browser.jsh.js` script. The
- * [script's code](../src/tools/fifty/test-browser.jsh.js?as=text) defines the semantics of the
- * command-line arguments.
+ * script itself, included below, defines the semantics of the command-line arguments.
+ *
+ * {@includeCode ./test-browser.jsh.js}
  *
  * ### Running Fifty tests in both `jsh` and a browser
  *

@@ -15,6 +15,7 @@ namespace slime.jrunscript.shell.browser {
 		run: slime.jrunscript.shell.internal.run.old.Exports["run"]
 		HOME: slime.jrunscript.file.Directory
 		TMPDIR: slime.jrunscript.file.Directory
+		USER: string
 		environment: any
 	}
 
@@ -28,6 +29,7 @@ namespace slime.jrunscript.shell.browser {
 				os: jsh.shell.os,
 				HOME: jsh.shell.HOME,
 				TMPDIR: jsh.shell.TMPDIR,
+				USER: jsh.shell.USER,
 				run: jsh.shell.run,
 				environment: {},
 				api: {
@@ -184,6 +186,7 @@ namespace slime.jrunscript.shell.browser {
 				os: jsh.shell.os,
 				HOME: jsh.shell.HOME,
 				TMPDIR: jsh.shell.TMPDIR,
+				USER: jsh.shell.USER,
 				run: jsh.shell.run,
 				environment: {},
 				api: {
