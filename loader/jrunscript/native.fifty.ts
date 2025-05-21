@@ -69,6 +69,7 @@ namespace slime.jrunscript {
 				}
 				export interface OutputStream {
 					write(b: number)
+					flush()
 					close()
 				}
 				export interface ByteArrayOutputStream extends OutputStream {

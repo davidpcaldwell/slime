@@ -482,6 +482,14 @@
 					}
 					return rv;
 				})();
+
+				/**
+				 *
+				 * @param { slime.jrunscript.native.java.io.InputStream } _in
+				 * @param { slime.jrunscript.native.java.io.OutputStream } _out
+				 * @param { boolean } closeOnEnd
+				 * @param { boolean } flush
+				 */
 				var Spooler = function(_in,_out,closeOnEnd,flush) {
 					var buffer = [];
 
@@ -519,7 +527,17 @@
 						}
 					}
 				};
-				Spooler.start = function(_in,_out,closeOnEnd,flush,name) {
+
+				/**
+				 *
+				 * @param { slime.jrunscript.native.java.io.InputStream } _in
+				 * @param { slime.jrunscript.native.java.io.OutputStream } _out
+				 * @param { boolean } closeOnEnd
+				 * @param { boolean } flush
+				 * @param { boolean } daemon
+				 * @param { string } name
+				 */
+				Spooler.start = function(_in,_out,closeOnEnd,flush,daemon,name) {
 					var s = new Spooler(_in, _out, closeOnEnd,flush);
 					//	TODO	Graal has JavaAdapter bug: https://github.com/oracle/graal/issues/541
 					var JAdapter = $engine.resolve({
@@ -537,7 +555,8 @@
 						)
 					);
 					$api.debug("Constructed (Spooler.start): " + name);
-					t.setName(t.getName() + ":" + name);
+					t.setName(t.getName() + ": Spooler for " + name);
+					t.setDaemon(daemon);
 					$api.debug("Starting (Spooler.start): " + name);
 					t.start();
 					$api.debug("Started (Spooler.start): " + name);
@@ -549,12 +568,12 @@
 				$api.debug("Started.");
 				var hasConsole = Packages.java.lang.System.console();
 				$api.debug("hasConsole = " + Boolean(hasConsole));
-				var _in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, !hasConsole, "stdout: " + spoolName);
+				var _in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, !hasConsole, false, "stdout: " + spoolName);
 				$api.debug("Started spooler for " + _in);
-				var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, !hasConsole, "stderr: " + spoolName);
+				var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, !hasConsole, false, "stderr: " + spoolName);
 				$api.debug("Started spoolers.");
 				var _stdin = context.getStandardInput();
-				var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, true, "stdin from " + _stdin + ": " + spoolName);
+				var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, true, true, "stdin from " + _stdin + ": " + spoolName);
 				var rv = delegate.waitFor();
 				$api.debug("Started; before join()");
 				var join = function() {
@@ -1011,6 +1030,7 @@
 					if (status) {
 						var error = new Error("Compiler exited with status " + status + " with inputs " + args.join(" ")
 							+ " and java.class.path=" + Packages.java.lang.System.getProperty("java.class.path"));
+						Packages.java.lang.System.err.println(String(error));
 						Packages.java.lang.System.err.println(error.stack);
 						throw error;
 					}

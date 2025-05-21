@@ -10,4 +10,4 @@ TO=${DIR}/issue1254.jar
 SLIME="$(dirname $0)/../../.."
 ${SLIME}/jsh ${SLIME}/jrunscript/jsh/tools/shell.jsh.js package --script ${SLIME}/jrunscript/jsh/test/jsh-data.jsh.js --to ${TO}
 echo ${TO}
-${SLIME}/local/jdk/default/bin/java -jar ${TO}
+${SLIME}/local/jdk/default/bin/java -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=y -jar ${TO}

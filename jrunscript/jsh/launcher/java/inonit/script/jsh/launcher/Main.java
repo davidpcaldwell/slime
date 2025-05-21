@@ -132,5 +132,6 @@ public class Main {
 			configuration,
 			args
 		);
+		LOG.log(Level.FINEST, "Launcher Main done executing.");
 	}
 }
