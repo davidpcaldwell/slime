@@ -10,7 +10,7 @@
 	 *
 	 * @param { { jsh: Partial<slime.jsh.Global> } } global
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
+	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.jrunscript.native.inonit.script.jsh.Shell } $jsh
 	 */
 	function(global,Packages,JavaAdapter,$jsh) {

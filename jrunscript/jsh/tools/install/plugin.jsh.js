@@ -8,7 +8,7 @@
 (
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
+	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.jsh.plugin.Scope["$slime"] } $slime
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh

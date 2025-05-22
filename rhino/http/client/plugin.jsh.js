@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
+	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin

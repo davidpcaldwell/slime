@@ -8,7 +8,7 @@
 (
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
+	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.io.mime.Context } $context
 	 * @param { slime.jrunscript.io.mime.Exports } $exports

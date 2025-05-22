@@ -6,6 +6,7 @@
 
 //@ts-check
 (
+//	TODO	Redefine JavaAdapter to be slime.jrunscript.JavaAdapter
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages

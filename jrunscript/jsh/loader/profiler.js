@@ -12,7 +12,7 @@
 	 *
 	 * @param { slime.jrunscript.native.java.util.Properties } _properties
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
+	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(_properties,Packages,JavaAdapter,jsh) {
