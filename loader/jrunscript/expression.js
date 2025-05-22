@@ -887,8 +887,8 @@
 						return resource["java"].adapt(path);
 					};
 
-					this.getClasses = function() {
-						throw new Error("Unimplemented: getClasses");
+					this.getLocator = function() {
+						return null;
 					};
 
 					this.getEnumerator = function() {
