@@ -233,7 +233,7 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 	//@ts-ignore
-	)(Packages,fifty);
+	)(fifty);
 
 	export interface Exports {
 		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
