@@ -705,6 +705,18 @@ namespace slime.jrunscript.runtime {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
+
+	export interface Exports extends slime.runtime.Exports {
+		$api: slime.$api.jrunscript.Global
+	}
+}
+
+namespace slime.$api.jrunscript {
+	export interface Global extends slime.$api.Global {
+		jrunscript: {
+			io: slime.jrunscript.runtime.io.Exports
+		}
+	}
 }
 
 (

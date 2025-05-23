@@ -1133,10 +1133,12 @@
 			}
 		};
 
+		/** @type { slime.jrunscript.runtime.Exports["$api"]} */
+		var $api = Object.assign(slime.$api, { jrunscript: { io: $exports_io } });
+
 		return (
 			/** @returns { slime.jrunscript.runtime.Exports } */
 			function() {
-				var $api = slime.$api;
 				return $api.fp.now(
 					{
 						run: slime.run,
@@ -1148,7 +1150,7 @@
 						namespace: slime.namespace,
 						engine: slime.engine,
 						$platform: slime.$platform,
-						$api: slime.$api,
+						$api: $api,
 
 						Loader: $exports_Loader,
 						Resource: $exports_Resource,

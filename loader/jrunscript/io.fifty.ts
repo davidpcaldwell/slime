@@ -23,7 +23,7 @@ namespace slime.jrunscript.runtime.io {
 
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
-			return fifty.global.jsh.unit.$slime.io;
+			return (fifty.global.$api as slime.$api.jrunscript.Global).jrunscript.io;
 		//@ts-ignore
 		})(fifty);
 
