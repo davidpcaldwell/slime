@@ -350,7 +350,7 @@ namespace slime.jrunscript {
 			//	TODO	move this to where these classes actually are
 			export namespace servlet {
 				export namespace Servlet {
-					export interface Script {
+					export interface Script extends slime.jrunscript.native.java.lang.Object {
 						service: (_request: any, _response: any) => void
 						destroy: () => void
 					}
@@ -408,27 +408,35 @@ namespace slime.jrunscript {
 		[propertiesTag]: "value"
 	}
 
+	export type JavaAdapter = new <O extends slime.jrunscript.native.java.lang.Object,C> (
+		type: JavaClass<O,C>,
+		delegate: object
+	) => O
+
 	export interface Packages {
 		java: {
 			lang: {
-				System: JavaClass & {
-					err: slime.jrunscript.native.java.io.PrintStream
-					out: {
-						print: any
-						println: any
-					}
-					console: () => any
-					currentTimeMillis(): number
-					setProperty(name: string, value: string)
-					getProperty(name: string): slime.jrunscript.native.java.lang.String
-					getProperties(): slime.jrunscript.native.java.util.Properties
-					exit(status: number): never
-					getenv(name: string): string
-					getenv(): any
-					identityHashCode(o: any): number
+				System: JavaClass<
+					slime.jrunscript.native.java.lang.Object,
+					{
+						err: slime.jrunscript.native.java.io.PrintStream
+						out: {
+							print: any
+							println: any
+						}
+						console: () => any
+						currentTimeMillis(): number
+						setProperty(name: string, value: string)
+						getProperty(name: string): slime.jrunscript.native.java.lang.String
+						getProperties(): slime.jrunscript.native.java.util.Properties
+						exit(status: number): never
+						getenv(name: string): string
+						getenv(): any
+						identityHashCode(o: any): number
 
-					gc(): void
-				}
+						gc(): void
+					}
+				>
 				Math: JavaClass<slime.jrunscript.native.java.lang.Object,{
 					random(): number
 				}>,
@@ -691,7 +699,9 @@ namespace slime.jrunscript {
 					launcher: any
 				}
 				servlet: {
-					Servlet: any
+					Servlet: JavaClass<slime.jrunscript.native.java.lang.Object, {
+						Script: JavaClass<slime.jrunscript.native.inonit.script.servlet.Servlet.Script>
+					}>
 				}
 			}
 			system: {

@@ -10,7 +10,7 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
+	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.ui.askpass.Context } $context
 	 * @param { slime.loader.Export<slime.jsh.ui.askpass.Exports> } $export

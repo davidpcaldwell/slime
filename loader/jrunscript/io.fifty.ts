@@ -97,6 +97,15 @@ namespace slime.jrunscript.runtime.io {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.InputStream = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		InputStream: {
 			java: (p: slime.jrunscript.native.java.io.InputStream) => InputStream
@@ -117,6 +126,30 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.exports.InputStream.string = fifty.test.Parent();
+
+			fifty.tests.exports.InputStream.string.encoding = function() {
+				var utf8 = test.subject.Charset.standard.utf8;
+
+				var input = test.subject.InputStream.string.encoding({
+					charset: utf8,
+					string: "foo"
+				});
+
+				var string = input.content.string.simple(utf8);
+
+				verify(string).is("foo");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	/**
 	 * A stream from which bytes may be read.
@@ -159,29 +192,11 @@ namespace slime.jrunscript.runtime.io {
 
 	(
 		function(
-			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 
 			const { $api } = fifty.global;
-
-			fifty.tests.exports.InputStream = fifty.test.Parent();
-
-			fifty.tests.exports.InputStream.string = fifty.test.Parent();
-
-			fifty.tests.exports.InputStream.string.encoding = function() {
-				var utf8 = test.subject.Charset.standard.utf8;
-
-				var input = test.subject.InputStream.string.encoding({
-					charset: utf8,
-					string: "foo"
-				});
-
-				var string = input.content.string.simple(utf8);
-
-				verify(string).is("foo");
-			}
 
 			fifty.tests.exports.InputStream.object = fifty.test.Parent();
 
@@ -218,7 +233,7 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 	//@ts-ignore
-	)(Packages,fifty);
+	)(fifty);
 
 	export interface Exports {
 		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream

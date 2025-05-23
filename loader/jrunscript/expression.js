@@ -6,6 +6,7 @@
 
 //@ts-check
 (
+//	TODO	Redefine JavaAdapter to be slime.jrunscript.JavaAdapter and XML to be slime.external.e4x.XMLConstructor
 	/**
 	 * @param { slime.jrunscript.runtime.$javahost } $javahost
 	 * @param { slime.jrunscript.runtime.java.context.Engine } $bridge

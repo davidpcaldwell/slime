@@ -209,6 +209,9 @@
 			 */
 			function(script) {
 				return {
+					getClass: function() {
+						return Packages.inonit.script.servlet.Servlet.Script;
+					},
 					reload: function(reloaded) {
 						script = reloaded;
 					},

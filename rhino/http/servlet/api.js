@@ -8,7 +8,7 @@
 (
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
+	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.servlet.internal.$host } $host
 	 */
 	function(Packages,JavaAdapter,$host) {

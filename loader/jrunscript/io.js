@@ -8,10 +8,10 @@
 (
 	/**
 	 *
-	 * @param { any } $platform
+	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
-	 * @param { any } XMLList
+	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
+	 * @param { slime.external.e4x.XMLListConstructor } XMLList
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.runtime.io.Context } $context
 	 * @param { slime.loader.Export<slime.jrunscript.runtime.io.Exports> } $export
