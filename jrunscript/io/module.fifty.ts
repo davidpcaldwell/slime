@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.io {
 	export interface Context {
-		$slime: slime.jrunscript.runtime.Exports
+		$slime: Pick<slime.jrunscript.runtime.Exports,"Resource"|"mime"|"jrunscript"|"Loader"|"old">
 		api: {
 			/**
 			 * The `jrunscript/host` module.

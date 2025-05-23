@@ -8,7 +8,7 @@
 (
 	/**
 	 *
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.$api.jrunscript.Global } $api
 	 * @param { slime.jrunscript.io.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.io.Exports> } $export
@@ -25,21 +25,21 @@
 
 		/** @type { slime.jrunscript.io.mime.Context["api"]["io"] } */
 		var mimeIoContext = {
-			Buffer: $context.$slime.io.Buffer,
+			Buffer: $api.jrunscript.io.Buffer,
 			Resource: Object.assign($context.$slime.Resource, { from: void(0) }),
-			Streams: $context.$slime.io.Streams
+			Streams: $api.jrunscript.io.Streams
 		};
 
 		var library = {
 			zip: code.zip({
-				InputStream: $context.$slime.io.InputStream.java,
-				Streams: $context.$slime.io.Streams
+				InputStream: $api.jrunscript.io.InputStream.java,
+				Streams: $api.jrunscript.io.Streams
 			}),
 			grid: code.grid({
 				getClass: function(name) {
 					return $context.api.java.getClass(name);
 				},
-				Streams: $context.$slime.io.Streams
+				Streams: $api.jrunscript.io.Streams
 			}),
 			mime: code.mime({
 				nojavamail: $context.nojavamail,
@@ -64,20 +64,20 @@
 			},
 			from: {
 				string: function(value) {
-					var buffer = new $context.$slime.io.Buffer();
+					var buffer = new $api.jrunscript.io.Buffer();
 					buffer.writeText().write(value);
 					buffer.close();
 					return buffer.readBinary();
 				},
 				java: function(native) {
-					return $context.$slime.io.InputStream.java(native);
+					return $api.jrunscript.io.InputStream.java(native);
 				}
 			}
 		};
 
 		$export({
-			Streams: $context.$slime.io.Streams,
-			Buffer: $context.$slime.io.Buffer,
+			Streams: $api.jrunscript.io.Streams,
+			Buffer: $api.jrunscript.io.Buffer,
 			Resource: Object.assign(
 				$context.$slime.Resource,
 				$context.$slime.jrunscript.Resource
@@ -86,7 +86,7 @@
 			old: $context.$slime.old,
 			InputStream: InputStream,
 			java: {
-				adapt: $context.$slime.io.Streams.java.adapt
+				adapt: $api.jrunscript.io.Streams.java.adapt
 			},
 			mime: library.mime,
 			archive: {
@@ -96,9 +96,9 @@
 				getClass: function(name) {
 					return $context.api.java.getClass(name);
 				},
-				Streams: $context.$slime.io.Streams
+				Streams: $api.jrunscript.io.Streams
 			}),
-			system: $context.$slime.io.system,
+			system: $api.jrunscript.io.system,
 			loader: $context.$slime.jrunscript.loader,
 			Entry: $context.$slime.jrunscript.Entry
 		});
