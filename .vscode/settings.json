@@ -32,5 +32,25 @@
 	"githubPullRequests.assignCreated": "${user}",
 	"githubPullRequests.remotes": [
 		"origin"
-	]
+	],
+    "githubIssues.queries": [
+        {
+            "label": "My Issues",
+            "query": "is:open assignee:${user} repo:${owner}/${repository}",
+            "groupBy": [
+                "milestone"
+            ]
+        },
+        {
+            "label": "Recent Issues",
+            "query": "state:open repo:${owner}/${repository} sort:updated-desc",
+			"groupBy": [
+				"milestone"
+			]
+        },
+        {
+            "label": "Created Issues",
+            "query": "author:${user} state:open repo:${owner}/${repository} sort:created-desc"
+        }
+    ]
 }
