@@ -28,7 +28,7 @@ namespace slime.jsh.internal.launcher.test {
 
 	export interface ShellInvocation {
 		vmarguments?: slime.jrunscript.shell.invocation.old.Token[]
-		bash?: string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Directory
+		bash?: string | slime.jrunscript.file.Pathname
 		logging?: string
 		properties?: { [name: string]: string }
 		shell?: slime.jrunscript.shell.invocation.old.Token[]
