@@ -388,7 +388,7 @@ namespace slime.jrunscript.shell {
 			 */
 			launcher: slime.jrunscript.file.File
 
-			jrunscript: any
+			jrunscript: slime.jrunscript.file.File
 
 			/**
 			 * The home directory of the Java installation used to run this shell.
@@ -515,8 +515,10 @@ namespace slime.jrunscript.shell {
 			 */
 			get(name: string): string
 
-			file(name: any): any
-			directory(name: string): slime.jrunscript.file.Directory
+			file: (name: string) => slime.jrunscript.file.File
+
+			directory: (name: string) => slime.jrunscript.file.Directory
+
 			searchpath: (name: string) => slime.jrunscript.file.Searchpath
 		}
 
@@ -678,7 +680,7 @@ namespace slime.jrunscript.shell {
 		 */
 		jrunscript: slime.jrunscript.shell.oo.Run<
 			Omit<slime.jrunscript.shell.run.old.Argument,"command"|"arguments"> & {
-				jrunscript?: any
+				jrunscript?: slime.jrunscript.file.File
 
 				/**
 				 * Provides arguments to the script invocation (including the script as the first argument). These arguments

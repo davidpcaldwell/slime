@@ -402,7 +402,7 @@
 				//	This argument serves mostly to allow the jsh launcher to specify the jrunscript to use, since in Graal
 				//	shells the JDK's jrunscript does not work and we need to use the bootstrapping JDK
 				if (p.jrunscript) return {
-					command: p.jrunscript,
+					command: /** @type { slime.jrunscript.file.File } */(p.jrunscript),
 					arguments: [],
 					vmArgumentPrefix: "-J"
 				};
@@ -432,6 +432,45 @@
 			})();
 
 			var vmargs = [];
+
+			var nashornDeprecationArguments = (
+				function() {
+					/** @type { slime.jrunscript.shell.run.Intention } */
+					var versionIntention = {
+						command: launch.command.pathname.toString(),
+						arguments: $api.Array.build(function(rv) {
+							rv.push("-e", "print(java.lang.System.getProperty(\"java.version\"))");
+						}),
+						stdio: {
+							output: "string"
+						}
+					};
+
+					var it = $api.fp.world.Sensor.now({
+						sensor: scripts.run.exports.subprocess.question,
+						subject: versionIntention
+					});
+
+					var version = it.stdio.output.trim();
+
+					//Packages.java.lang.System.err.println("version = " + version);
+
+					var major = (function(version) {
+						if (/^1\.8./.test(version)) return 8;
+						return Number(version.split(".")[0]);
+					})(version);
+
+					if (major > 8 && major < 15) {
+						return ["-Dnashorn.args=--no-deprecation-warning"];
+					}
+
+					return [];
+				}
+			)();
+
+			Packages.java.lang.System.err.println("jrunscript: " + nashornDeprecationArguments.join(" "));
+
+			vmargs.push.apply(vmargs, nashornDeprecationArguments);
 
 			addPropertyArgumentsTo(vmargs,p.properties);
 
