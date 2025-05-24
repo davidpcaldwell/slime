@@ -468,8 +468,6 @@
 				}
 			)();
 
-			Packages.java.lang.System.err.println("jrunscript: " + nashornDeprecationArguments.join(" "));
-
 			vmargs.push.apply(vmargs, nashornDeprecationArguments);
 
 			addPropertyArgumentsTo(vmargs,p.properties);

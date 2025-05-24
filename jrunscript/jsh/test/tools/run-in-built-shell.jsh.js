@@ -44,21 +44,17 @@
 					command: "bash",
 					arguments: args
 				});
+				jsh.shell.console("Completed build.");
 
 				var environment = Object.assign({}, jsh.shell.environment, (parameters.options.launcherDebug) ? {"JSH_LAUNCHER_DEBUG": "true"}: {});
 				if (!parameters.options.packaged) {
-					jsh.shell.run({
-						command: "bash",
-						arguments: (function() {
-							var rv = [];
-							rv.push(JSH_HOME.getFile("jsh.bash"));
-							rv.push.apply(rv,parameters.arguments);
-							return rv;
-						})(),
-						environment: Object.assign({}, environment, {
-							JSH_JAVA_HOME: jsh.shell.java.Jdk.from.javaHome().base
-						})
+					jsh.shell.console("Running in built shell ...");
+					jsh.shell.jsh({
+						shell: JSH_HOME,
+						script: jsh.file.Pathname(parameters.arguments[0]).file,
+						arguments: parameters.arguments.slice(1)
 					});
+					jsh.shell.console("Ran in built shell.");
 				} else {
 					//	TODO	revisit alternatives to the below
 					var rhino = true;
