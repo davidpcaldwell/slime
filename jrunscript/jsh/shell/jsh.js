@@ -368,8 +368,15 @@
 
 				var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
 
+				//	Also in rhino/shell/module.js
+				var getNashornDeprecationArguments = function() {
+					if (javaMajorVersion >= 9 && javaMajorVersion <= 14) return ["-Dnashorn.args=--no-deprecation-warning"];
+					return [];
+				}
+
 				/** @param { slime.jrunscript.file.Directory } src */
 				var unbuilt = function(src) {
+					/** @type { string[] } */
 					var rv = [];
 					//	TODO	should only do this for post-Nashorn JDK versions
 					if (javaMajorVersion >= 15 && src.getFile("local/jsh/lib/nashorn.jar")) {
@@ -407,13 +414,14 @@
 						);
 					}
 					rv.push(
-						src.getFile("rhino/jrunscript/api.js"),
+						src.getFile("rhino/jrunscript/api.js").pathname.toString(),
 						"jsh"
 					);
 					return rv;
 				};
 
 				var built = function(home) {
+					/** @type { string[] } */
 					var rv = [];
 					//	TODO	Not DRY; we should parse these out of jsh bash script, like above (but would have to figure out
 					//			where that script ends up, or create a place from which to read the library names during the build
@@ -445,9 +453,9 @@
 					throw new Error("Shell not found: " + shell);
 				}
 
-				if ($exports.jsh.home) return built($exports.jsh.home);
-				if ($exports.jsh.src) return unbuilt($exports.jsh.src);
-				if ($exports.jsh.url) return remote($exports.jsh.url);
+				if ($exports.jsh.home) return getNashornDeprecationArguments().concat(built($exports.jsh.home));
+				if ($exports.jsh.src) return getNashornDeprecationArguments().concat(unbuilt($exports.jsh.src));
+				if ($exports.jsh.url) return getNashornDeprecationArguments().concat(remote($exports.jsh.url));
 
 				//	TODO	would unbuilt remote shells have a src property, and would it work?
 				throw new Error("Currently running jsh shell lacks home, src, and url properties; bug.");

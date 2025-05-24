@@ -440,6 +440,7 @@
 					script: destination.shell.getFile("etc/install.jsh.js"),
 					arguments: destination.arguments
 				});
+				console("Ran post-installer.");
 			})();
 
 			//	Build native launcher
