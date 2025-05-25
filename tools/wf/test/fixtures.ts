@@ -166,7 +166,7 @@ namespace slime.jsh.wf.test {
 								directory: {
 									pathname: {
 										os: {
-											adapt: destination
+											adapt: function() { return destination; }
 										}
 									}
 								}
