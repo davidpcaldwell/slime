@@ -442,7 +442,8 @@
 							rv.push("-e", "print(java.lang.System.getProperty(\"java.version\"))");
 						}),
 						stdio: {
-							output: "string"
+							output: "string",
+							error: "string"
 						}
 					};
 

@@ -266,7 +266,7 @@
 		/**
 		 * @type { (p: slime.jsh.shell.oo.Invocation) => p is slime.jsh.shell.oo.ForkInvocation }
 		 */
-		var getJshFork = function(p) {
+		var isForkInvocation = function(p) {
 			if (p["fork"]) return true;
 			//	Was documented but unused; could re-implement
 			//if (p.classpath) return true;
@@ -352,28 +352,21 @@
 				return jargs;
 			}
 
-			var bootstrapShellInvocationArguments = (function(shell) {
-				var remote = function(url) {
-					return [
-						"-e",
-						"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
-					];
-				}
+			//	TODO	next function and next variable are repeated from jrunscript/jsh/launcher/main.js
+			function javaMajorVersionString(javaVersionProperty) {
+				if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
+				return javaVersionProperty.split(".")[0];
+			}
 
-				//	TODO	next function and next variable are repeated from jrunscript/jsh/launcher/main.js
-				function javaMajorVersionString(javaVersionProperty) {
-					if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
-					return javaVersionProperty.split(".")[0];
-				}
+			var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
 
-				var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
+			//	Also in rhino/shell/module.js
+			var getNashornDeprecationArguments = function() {
+				if (javaMajorVersion >= 9 && javaMajorVersion <= 14) return ["-Dnashorn.args=--no-deprecation-warning"];
+				return [];
+			}
 
-				//	Also in rhino/shell/module.js
-				var getNashornDeprecationArguments = function() {
-					if (javaMajorVersion >= 9 && javaMajorVersion <= 14) return ["-Dnashorn.args=--no-deprecation-warning"];
-					return [];
-				}
-
+			var bootstrapShellInvocationArguments = getNashornDeprecationArguments().concat((function(shell) {
 				/** @param { slime.jrunscript.file.Directory } src */
 				var unbuilt = function(src) {
 					/** @type { string[] } */
@@ -442,6 +435,13 @@
 					return rv;
 				};
 
+				var remote = function(url) {
+					return [
+						"-e",
+						"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
+					];
+				}
+
 				if (shell) {
 					//	TODO	should contemplate possibility of URL, I suppose
 					if (shell.getFile("jsh.js")) {
@@ -453,13 +453,13 @@
 					throw new Error("Shell not found: " + shell);
 				}
 
-				if ($exports.jsh.home) return getNashornDeprecationArguments().concat(built($exports.jsh.home));
-				if ($exports.jsh.src) return getNashornDeprecationArguments().concat(unbuilt($exports.jsh.src));
-				if ($exports.jsh.url) return getNashornDeprecationArguments().concat(remote($exports.jsh.url));
+				if ($exports.jsh.home) return built($exports.jsh.home);
+				if ($exports.jsh.src) return unbuilt($exports.jsh.src);
+				if ($exports.jsh.url) return remote($exports.jsh.url);
 
 				//	TODO	would unbuilt remote shells have a src property, and would it work?
 				throw new Error("Currently running jsh shell lacks home, src, and url properties; bug.");
-			})(p.shell);
+			})(p.shell));
 
 			var isRemoteShell = bootstrapShellInvocationArguments[0] == "-e";
 
@@ -667,7 +667,7 @@
 
 				//var fork = getJshFork(p);
 
-				if (getJshFork(p)) {
+				if (isForkInvocation(p)) {
 					var jrunscriptForkConfiguration = getJrunscriptForkCommand(p);
 
 					// var bashResult = module.run({

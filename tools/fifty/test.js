@@ -334,6 +334,9 @@
 						String(e),
 						e.stack
 					];
+					if (e["printStackTrace"]) {
+						e.printStackTrace();
+					}
 					if (e.javaException) {
 						error.push("Java exception:");
 						var ex = e.javaException;
