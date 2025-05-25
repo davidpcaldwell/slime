@@ -242,6 +242,7 @@ namespace slime.jsh.test {
 					subject: runInBuiltShell
 				});
 
+				verify(result).status.is(0);
 				verify(result).stdio.output.evaluate(function(string) { return string.indexOf(message) == -1; }).is(true);
 				verify(result).stdio.error.evaluate(function(string) { return string.indexOf(message) == -1; }).is(true);
 			}

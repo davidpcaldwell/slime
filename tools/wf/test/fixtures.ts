@@ -79,12 +79,22 @@ namespace slime.jsh.wf.test {
 
 						var src: slime.jrunscript.file.Location = p.src;
 
+						var gitdir = $api.fp.now(p.src, jsh.file.Location.directory.relativePath(".git"));
+
+						var isGitClone = (
+							$api.fp.now(gitdir, jsh.file.Location.file.exists.simple)
+							|| $api.fp.now(gitdir, jsh.file.Location.directory.exists.simple)
+						);
+
 						var destination = $api.fp.world.now.ask(jsh.file.Location.from.temporary(jsh.file.world.filesystems.os)({ directory: true }));
 
-						jsh.tools.git.program({ command: "git" }).command(clone).argument({
-							repository: src.pathname,
-							to: destination.pathname
-						}).run();
+						if (isGitClone) {
+							jsh.tools.git.program({ command: "git" }).command(clone).argument({
+								repository: src.pathname,
+								to: destination.pathname
+							}).run();
+						}
+
 						//	copy code so that we get local modifications in our "clone"
 						//	TODO	this is horrendouly inefficient, listing and iterating through lots of directories we are not
 						//			going to copy. We should rather filter the directory listing and then only copy
@@ -111,8 +121,10 @@ namespace slime.jsh.wf.test {
 								return true;
 							}
 						});
+
 						(
 							function removeLocallyRemovedFilesFromClone() {
+								if (!isGitClone) return;
 								var cloned = jsh.file.object.directory(destination).list({
 									type: jsh.file.list.ENTRY,
 									filter: function(node) {
@@ -133,19 +145,22 @@ namespace slime.jsh.wf.test {
 								});
 							}
 						)();
-						var rv = jsh.tools.git.oo.Repository({ directory: jsh.file.Pathname(destination.pathname).directory });
-						if (p.commit && rv.status().paths) {
-							configure(rv);
-							var repository = jsh.tools.git.program({ command: "git" }).repository(destination.pathname);
-							//	Add untracked files
-							repository.command(addAll).argument().run();
-							repository.command(commitAll).argument({ message: p.commit.message }).run({
-								stderr: function(line) {
-									jsh.shell.console(line);
-								}
-							});
+
+						if (isGitClone) {
+							var rv = jsh.tools.git.oo.Repository({ directory: jsh.file.Pathname(destination.pathname).directory });
+							if (p.commit && rv.status().paths) {
+								configure(rv);
+								var repository = jsh.tools.git.program({ command: "git" }).repository(destination.pathname);
+								//	Add untracked files
+								repository.command(addAll).argument().run();
+								repository.command(commitAll).argument({ message: p.commit.message }).run({
+									stderr: function(line) {
+										jsh.shell.console(line);
+									}
+								});
+							}
+							return rv;
 						}
-						return rv;
 						//	good utility functions for git module?
 						// function unset(repository,setting) {
 						// 	jsh.shell.console("Unset: " + repository.directory);
