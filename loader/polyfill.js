@@ -98,6 +98,77 @@
 				writable: true
 			});
 		}
+
+		var global = (function() { return this; })();
+		if (!global.Map) {
+			function Map() {
+				this._keys = [];
+				this._values = [];
+			}
+
+			Map.prototype.set = function(key, value) {
+				var index = this._keys.indexOf(key);
+				if (index === -1) {
+					this._keys.push(key);
+					this._values.push(value);
+				} else {
+					this._values[index] = value;
+				}
+				return this;
+			};
+
+			Map.prototype.get = function(key) {
+				var index = this._keys.indexOf(key);
+				return index === -1 ? undefined : this._values[index];
+			};
+
+			Map.prototype.has = function(key) {
+				return this._keys.indexOf(key) !== -1;
+			};
+
+			Map.prototype.delete = function(key) {
+				var index = this._keys.indexOf(key);
+				if (index !== -1) {
+					this._keys.splice(index, 1);
+					this._values.splice(index, 1);
+					return true;
+				}
+				return false;
+			};
+
+			Map.prototype.clear = function() {
+				this._keys = [];
+				this._values = [];
+			};
+
+			Map.prototype.size = function() {
+				return this._keys.length;
+			};
+
+			Map.prototype.forEach = function(callbackFn, thisArg) {
+				for (var i = 0; i < this._keys.length; i++) {
+					callbackFn.call(thisArg, this._values[i], this._keys[i], this);
+				}
+			};
+
+			Map.prototype.keys = function() {
+				return this._keys.slice();
+			};
+
+			Map.prototype.values = function() {
+				return this._values.slice();
+			};
+
+			Map.prototype.entries = function() {
+				var entries = [];
+				for (var i = 0; i < this._keys.length; i++) {
+					entries.push([this._keys[i], this._values[i]]);
+				}
+				return entries;
+			};
+
+			global.Map = Map;
+		}
 	}
 //@ts-ignore
 )();

@@ -188,7 +188,67 @@ namespace slime.jsh.test {
 				}
 			}
 
+			fifty.tests.nashornDeprecation = function() {
+				const { jsh } = fifty.global;
+
+				const message = "Warning: Nashorn engine is planned to be removed from a future JDK release";
+
+				var fixtures = (() => {
+					var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
+					var exported = script();
+					return exported(fifty);
+				})();
+
+				var clean = fixtures.clone({
+					src: fifty.jsh.file.relative("../..")
+				}).directory.pathname.os.adapt();
+
+				var installJdk: slime.jrunscript.shell.run.Intention = {
+					command: "bash",
+					arguments: [
+						$api.fp.now(clean, jsh.file.Location.directory.relativePath("jsh"), $api.fp.property("pathname")),
+						"--install-jdk-11"
+					]
+				};
+
+				var runInBuiltShell: slime.jrunscript.shell.run.Intention = {
+					command: "bash",
+					arguments: [
+						$api.fp.now(clean, jsh.file.Location.directory.relativePath("jsh"), $api.fp.property("pathname")),
+						$api.fp.now(
+							clean,
+							jsh.file.Location.directory.relativePath("jrunscript/jsh/test/tools/run-in-built-shell.jsh.js"),
+							$api.fp.property("pathname")
+						),
+						$api.fp.now(
+							clean,
+							jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js"),
+							$api.fp.property("pathname")
+						)
+					],
+					stdio: {
+						output: "string",
+						error: "string"
+					}
+				};
+
+				$api.fp.world.Means.now({
+					means: jsh.shell.subprocess.action,
+					order: installJdk
+				});
+
+				var result = $api.fp.world.Sensor.now({
+					sensor: jsh.shell.subprocess.question,
+					subject: runInBuiltShell
+				});
+
+				verify(result).status.is(0);
+				verify(result).stdio.output.evaluate(function(string) { return string.indexOf(message) == -1; }).is(true);
+				verify(result).stdio.error.evaluate(function(string) { return string.indexOf(message) == -1; }).is(true);
+			}
+
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.nashornDeprecation);
 				fifty.run(fifty.tests.remote);
 				fifty.run(fifty.tests.executable);
 			}
