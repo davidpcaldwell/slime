@@ -160,6 +160,17 @@ namespace slime.jsh.wf.test {
 								});
 							}
 							return rv;
+						} else {
+							//	TODO	horrendous
+							return {
+								directory: {
+									pathname: {
+										os: {
+											adapt: destination
+										}
+									}
+								}
+							} as unknown as slime.jrunscript.tools.git.repository.Local
 						}
 						//	good utility functions for git module?
 						// function unset(repository,setting) {
