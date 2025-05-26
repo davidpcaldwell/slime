@@ -228,6 +228,7 @@ int main(int argc, char **argv) {
 
 	if (!access(nashorn_jar, F_OK)) {
 		debug("nashorn.jar found; should add to classpath\n");
+		//	@notdry nashorn-dependencies
 		char* PATH = get_shell_path(jsh_home, "lib/asm.jar");
 		debug("PATH = %s\n", PATH);
 		PATH = path_append(PATH, get_shell_path(jsh_home, "lib/asm-commons.jar"));

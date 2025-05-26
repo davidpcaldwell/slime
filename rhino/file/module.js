@@ -46,7 +46,8 @@
 		var wo = code.wo({
 			library: {
 				java: $context.api.java,
-				io: $context.api.io
+				io: $context.api.io,
+				loader: $context.api.loader
 			},
 			filesystem: {
 				os: world.filesystems.os

@@ -316,6 +316,27 @@
 			content: {
 				Index: content_Index,
 				mirror: content_mirror
+			},
+			Loader: {
+				simple: function(root) {
+					return $context.Store.content({
+						//	@notdry Search for all instances of Store.content and have them share implementation
+						store: content_Index(
+							root
+						),
+						adapt: function(t) {
+							return {
+								name: t.pathname,
+								type: function() {
+									return $api.mime.Type.fromName( $context.Location_basename(t) )
+								},
+								read: function() {
+									return $context.Location_file_read_string.simple(t);
+								}
+							}
+						}
+					})
+				}
 			}
 		})
 	}

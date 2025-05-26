@@ -174,8 +174,7 @@
 				var launch = (jsh.shell.jsh.home) ? [jsh.shell.jsh.home.getRelativePath("jsh.js").toString()] : [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js").toString(), "jsh"];
 				(
 					function addNashornBootstrapLibraries() {
-						//	TODO	Not DRY: Should parse out of ./jsh, like jrunscript/jsh/shell/jsh.js does
-						var names = ["asm","asm-commons","asm-tree","asm-util","nashorn"];
+						var names = jsh.internal.bootstrap.nashorn.dependencies.names.concat(["nashorn"]);
 						//	TODO	Should only be used for versions of Java that need it
 						if (jsh.shell.jsh.home && jsh.shell.jsh.home.getFile("lib/nashorn.jar")) {
 							launch = [

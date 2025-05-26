@@ -20,7 +20,7 @@
 					$api.fp.world.Means.now({
 						means: jsh.shell.tools.rhino.require.world(),
 						order: {
-							replace: $api.fp.mapping.all(p.options.replace),
+							replace: $api.fp.mapping.from.value(p.options.replace),
 							version: p.options.version
 						},
 						handlers: {

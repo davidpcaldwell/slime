@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @this { slime.internal.jrunscript.bootstrap.Global<{},{ compile: slime.internal.jsh.launcher.javac.compile }> }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{},{ compile: slime.jsh.internal.launcher.javac.compile }> }
 	 */
 	function() {
 		var Packages = this.Packages;
@@ -33,7 +33,7 @@
 			return rv;
 		};
 
-		/** @typedef { (p: Parameters<slime.internal.jsh.launcher.javac.compile>[0], c: { console: slime.jrunscript.native.java.io.OutputStream, arguments: string[] }) => void } JavaCompiler */
+		/** @typedef { (p: Parameters<slime.jsh.internal.launcher.javac.compile>[0], c: { console: slime.jrunscript.native.java.io.OutputStream, arguments: string[] }) => void } JavaCompiler */
 
 		/** @type { JavaCompiler } */
 		var toolProviderApiCompile = function(p,c) {
@@ -629,7 +629,7 @@
 			}
 		}
 
-		/** @type { slime.internal.jsh.launcher.javac.compile } */
+		/** @type { slime.jsh.internal.launcher.javac.compile } */
 		$api.java.compile = function(p) {
 			$api.debug("Java compile:");
 			$api.debug("classpath = " + p.classpath);

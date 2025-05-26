@@ -21,6 +21,9 @@ namespace slime.jrunscript.file {
 			js: slime.$api.old.Exports
 			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
+			loader: {
+				Store: slime.runtime.loader.Exports["Store"]
+			}
 		}
 
 		/**

@@ -598,6 +598,12 @@ namespace slime.jrunscript.file.exports.location {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Directory {
+		Loader: {
+			simple: (root: slime.jrunscript.file.Location) => slime.runtime.loader.Store
+		}
+	}
 }
 
 namespace slime.jrunscript.file.internal.wo.directory {
@@ -607,9 +613,11 @@ namespace slime.jrunscript.file.internal.wo.directory {
 		Location_relative: slime.jrunscript.file.exports.Location["directory"]["relativePath"]
 		Location_parent: slime.jrunscript.file.exports.Location["parent"]
 		Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]
+		Location_file_read_string: slime.jrunscript.file.Exports["Location"]["file"]["read"]["string"]
 		Location_file_write: slime.jrunscript.file.Exports["Location"]["file"]["write"]
 		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: string }>
 		remove: slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
+		Store: slime.runtime.loader.Exports["Store"]
 	}
 
 	export type Exports = slime.jrunscript.file.exports.location.Directory

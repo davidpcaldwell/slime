@@ -373,27 +373,7 @@
 					var rv = [];
 					//	TODO	should only do this for post-Nashorn JDK versions
 					if (javaMajorVersion >= 15 && src.getFile("local/jsh/lib/nashorn.jar")) {
-						var libraries = (function() {
-							var LINE = /^JSH_BOOTSTRAP_NASHORN_LIBRARIES="(.*)"$/
-							return $api.fp.now.map(
-								src.pathname.os.adapt(),
-								//	TODO	create read.lines.simple
-								$context.api.file.Location.directory.relativePath("jsh"),
-								$context.api.file.Location.file.read.string.simple,
-								$api.fp.string.split("\n"),
-								$api.fp.Array.filter(function(line) {
-									return LINE.test(line);
-								}),
-								function(matches) {
-									if (matches.length != 1) throw new Error("Did not find Nashorn library list in jsh bash launcher");
-									return matches[0];
-								},
-								function(line) {
-									var match = LINE.exec(line);
-									return match[1].split(" ");
-								}
-							)
-						})();
+						var libraries = $context.api.bootstrap.nashorn.dependencies.names;
 						var lib = src.getSubdirectory("local/jsh/lib");
 						rv.push(
 							"-classpath",
@@ -413,25 +393,24 @@
 					return rv;
 				};
 
+				/**
+				 *
+				 * @param { slime.jrunscript.file.Directory } home
+				 */
 				var built = function(home) {
 					/** @type { string[] } */
 					var rv = [];
-					//	TODO	Not DRY; we should parse these out of jsh bash script, like above (but would have to figure out
-					//			where that script ends up, or create a place from which to read the library names during the build
-					//			process)
 					if (home.getFile("lib/nashorn.jar")) {
 						var lib = home.getSubdirectory("lib");
 						rv.push("-classpath");
-						rv.push([
-							lib.getRelativePath("asm.jar"),
-							lib.getRelativePath("asm-commons.jar"),
-							lib.getRelativePath("asm-tree.jar"),
-							lib.getRelativePath("asm-util.jar"),
-							lib.getRelativePath("nashorn.jar")
-						//	TODO	OS-specific
-						].join(":"))
+						rv.push(
+							$context.api.bootstrap.nashorn.dependencies.jarNames
+								.map(function(name) { return lib.getRelativePath(name); })
+								.concat([lib.getRelativePath("nashorn.jar")])
+								.join(":")
+						)
 					}
-					rv.push(home.getFile("jsh.js"));
+					rv.push(home.getFile("jsh.js").pathname.toString());
 					return rv;
 				};
 

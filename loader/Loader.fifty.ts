@@ -17,17 +17,23 @@ namespace slime {
 		export type Module<C,E> = ($context: C) => E
 
 		export interface Store {
-			script: <C,E>(path: string) => ($context: C) => E
+			script: <C,E>(path: string) => Module<C,E>
+
+			/**
+			 * @deprecated Exists for compatibility with {@link slime.Loader} and likely to be removed.
+			 *
+			 * Immediately executes the script at the given path, using the given scope as the script's scope, and the given target
+			 * as the `this` target for the script.
+			 */
+			run: <S,T>(path: string, scope: S, target: T) => void
 		}
 
 		export interface Exports {
 			Store: {
-				from: {
-					default: <T>(p: {
-						store: slime.runtime.content.Store<T>
-						adapt: (t: T) => Code
-					}) => Store
-				}
+				content: <T>(p: {
+					store: slime.runtime.content.Store<T>
+					adapt: (t: T) => Code
+				}) => Store
 			}
 		}
 
@@ -43,7 +49,7 @@ namespace slime {
 					const { jsh } = fifty.global;
 
 					if (jsh) {
-						var $loader = jsh.loader.Store.from.default({
+						var $loader = jsh.loader.Store.content({
 							store: jsh.file.Location.directory.content.Index( fifty.jsh.file.relative(".") ),
 							adapt: function(t) {
 								return {

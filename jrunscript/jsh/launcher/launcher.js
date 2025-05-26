@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @this { slime.internal.jsh.launcher.Global }
+	 * @this { slime.jsh.internal.launcher.Global }
 	 */
 	function() {
 		//	NOTES ABOUT UNSUPPORTED PLATFORMS
@@ -234,8 +234,8 @@
 			$$api.script.resolve("javac.js").load();
 
 			/**
-			 * @type { slime.internal.jsh.launcher.Jsh["Unbuilt"] }
-			 * @param { ConstructorParameters<slime.internal.jsh.launcher.Jsh["Unbuilt"]>[0] } p
+			 * @type { slime.jsh.internal.launcher.Jsh["Unbuilt"] }
+			 * @param { ConstructorParameters<slime.jsh.internal.launcher.Jsh["Unbuilt"]>[0] } p
 			 */
 			$$api.jsh.Unbuilt = function(p) {
 				if (!p) throw new TypeError("Required: arguments[0]");
@@ -401,7 +401,7 @@
 				}
 
 				if (new Packages.java.io.File(home, "lib/nashorn.jar").exists()) {
-					this.nashorn = ["asm", "asm-commons", "asm-tree", "asm-util", "nashorn"].map(function(name) {
+					this.nashorn = $$api.nashorn.dependencies.names.concat(["nashorn"]).map(function(name) {
 						return new Packages.java.io.File(home, "lib/" + name + ".jar").toURI().toURL()
 					});
 				}

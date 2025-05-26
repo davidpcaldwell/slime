@@ -27,6 +27,7 @@ fi
 
 if [ -f "$(dirname $0)/lib/nashorn.jar" ]; then
 	LIB="$(dirname $0)/lib"
+	# @notdry nashorn-dependencies
 	JSH_JVM_OPTIONS="-classpath ${LIB}/asm.jar:${LIB}/asm-commons.jar:${LIB}/asm-tree.jar:${LIB}/asm-util.jar:${LIB}/nashorn.jar ${JSH_JVM_OPTIONS}"
 fi
 
