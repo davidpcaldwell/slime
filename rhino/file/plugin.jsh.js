@@ -26,7 +26,10 @@
 					api: {
 						js: jsh.js,
 						java: jsh.java,
-						io: jsh.io
+						io: jsh.io,
+						loader: {
+							Store: jsh.loader.Store
+						}
 					},
 					pathext: void(0),
 					cygwin: void(0)

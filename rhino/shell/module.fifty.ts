@@ -90,37 +90,59 @@ namespace slime.jrunscript.shell {
 					},
 					$slime: jsh.unit.$slime
 				});
+				const file: slime.jrunscript.file.Script = fifty.$loader.script("../../rhino/file/");
 				this.api = {
 					js: fifty.$loader.module("../../js/object/"),
 					java: java,
 					io: io,
-					file: fifty.$loader.module("../../rhino/file/", new function() {
-						if (jsh.shell.environment.PATHEXT) {
-							this.pathext = jsh.shell.environment.PATHEXT.split(";");
-						}
-						this.$rhino = jsh.unit.$slime;
-						this.api = {
-							io: io,
-							js: jsh.js,
-							java: jsh.java
-						};
-						this.$pwd = String(jsh.shell.properties.object.user.dir);
-						this.addFinalizer = jsh.loader.addFinalizer;
-						//	TODO	below copy-pasted from rhino/file/api.html
-						//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
-						var System = Packages.java.lang.System;
-						if (System.getProperty("cygwin.root")) {
-							this.cygwin = {
-								root: String( System.getProperty("cygwin.root") )
-							};
-							if (System.getProperty("cygwin.paths")) {
-								//	Using the paths helper currently does not seem to work in the embedded situation when running inside
-								//	the SDK server
-								//	TODO	check this
-								this.cygwin.paths = String( System.getProperty("cygwin.paths") );
+					file: file(
+						(
+							function() {
+								var pathext = void(0);
+								if (jsh.shell.environment.PATHEXT) {
+									pathext = jsh.shell.environment.PATHEXT.split(";");
+								}
+								this.$rhino = jsh.unit.$slime;
+								this.api = {
+									io: io,
+									js: jsh.js,
+									java: jsh.java
+								};
+								this.$pwd = String(jsh.shell.properties.object.user.dir);
+								this.addFinalizer = jsh.loader.addFinalizer;
+								//	TODO	below copy-pasted from rhino/file/api.html
+								//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
+								var System = Packages.java.lang.System;
+								var cygwin = void(0);
+								if (System.getProperty("cygwin.root")) {
+									cygwin = {
+										root: String( System.getProperty("cygwin.root") )
+									};
+									if (System.getProperty("cygwin.paths")) {
+										//	Using the paths helper currently does not seem to work in the embedded situation when running inside
+										//	the SDK server
+										//	TODO	check this
+										cygwin.paths = String( System.getProperty("cygwin.paths") );
+									}
+								}
+								return {
+									pathext: pathext,
+									$rhino: jsh.unit.$slime,
+									api: {
+										io: io,
+										js: jsh.js,
+										java: jsh.java,
+										loader: {
+											Store: jsh.loader.Store
+										}
+									},
+									$pwd: String(jsh.shell.properties.object.user.dir),
+									addFinalizer: jsh.loader.addFinalizer,
+									cygwin: cygwin
+								}
 							}
-						}
-					}),
+						)()
+					),
 					document: fifty.$loader.module("../../js/document/"),
 					xml: {
 						parseFile: function(file) {

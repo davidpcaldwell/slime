@@ -93,7 +93,7 @@ namespace slime.runtime.internal.scripts {
 			 * Compiles the given `code` script, executes it in a scope containing the values provided by `scope`, and using the
 			 * `this` target with which the `run` function was invoked.
 			 */
-			run: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
+			run: (this: { [name: string]: any }, code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
 
 			old: {
 				value: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => any

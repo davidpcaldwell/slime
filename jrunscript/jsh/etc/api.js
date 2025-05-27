@@ -69,6 +69,7 @@
 		"rhino/ip/",
 		"jrunscript/jsh/shell/",
 		"jrunscript/jsh/script/",
+		"rhino/jrunscript/",
 	].forEach(function(path) {
 		components.add(path, { jsh: { api: true, module: true }});
 	});

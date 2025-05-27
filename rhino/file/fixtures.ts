@@ -111,7 +111,10 @@ namespace slime.jrunscript.file.internal.test {
 								java: java,
 								mime: jsh.unit.$slime.mime
 							}
-						})
+						}),
+						loader: {
+							Store: jsh.loader.Store
+						}
 					}
 				}
 			)();

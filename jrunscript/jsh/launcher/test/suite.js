@@ -30,27 +30,36 @@
 			return engines;
 		}
 
-		/** @param { slime.jrunscript.file.Directory } src */
-		var getUnbuiltEngineArguments = function(src) {
+		/**
+		 * @param { slime.jsh.Global } jsh
+		 * @param { slime.jrunscript.file.Directory } src
+		 */
+		var getUnbuiltEngineArguments = function(jsh,src) {
 			return src.getFile("local/jsh/lib/nashorn.jar")
 				? [
 					"-classpath",
-					[
-						"asm", "asm-commons", "asm-tree", "asm-util", "nashorn"
-					].map(function(name) {
+					jsh.internal.bootstrap.nashorn.dependencies.names.concat([
+						"nashorn"
+					]).map(function(name) {
 						return src.getRelativePath("local/jsh/lib/" + name + ".jar").toString();
 					}).join(":")
 				]
 				: []
 		};
 
-		var getBuiltEngineArguments = function(home) {
+		/**
+		 *
+		 * @param { slime.jsh.Global } jsh
+		 * @param { slime.jrunscript.file.Directory } home
+		 * @returns
+		 */
+		var getBuiltEngineArguments = function(jsh,home) {
 			return home.getFile("lib/nashorn.jar")
 				? [
 					"-classpath",
-					[
-						"asm", "asm-commons", "asm-tree", "asm-util", "nashorn"
-					].map(function(name) {
+					jsh.internal.bootstrap.nashorn.dependencies.names.concat([
+						"nashorn"
+					]).map(function(name) {
 						return home.getRelativePath("lib/" + name + ".jar").toString();
 					}).join(":")
 				]
@@ -60,19 +69,20 @@
 
 		/**
 		 *
+		 * @param { slime.jsh.Global } jsh
 		 * @param { slime.jrunscript.file.Directory } src
 		 * @param { slime.jrunscript.file.Pathname } rhino A local location to find Rhino; if defined, this will be passed to the
 		 * build process so that it does not have to download Rhino (which is what it will do by default).
 		 * @returns { slime.$api.fp.world.Means<slime.jrunscript.file.Directory,{ console: string }> }
 		 */
-		var _buildShell = function(src,rhino) {
+		var _buildShell = function(jsh,src,rhino) {
 			return function(tmpdir) {
 				return function(events) {
 					var buildArguments = [];
 					if (rhino) {
 						buildArguments.push("-rhino", rhino.toString());
 					}
-					var engineArguments = getUnbuiltEngineArguments(src);
+					var engineArguments = getUnbuiltEngineArguments(jsh, src);
 					$context.library.shell.run({
 						command: $context.library.shell.java.jrunscript,
 						arguments: engineArguments.concat([
@@ -127,120 +137,132 @@
 			}
 		}
 
-		/** @type { slime.$api.fp.world.Sensor<slime.jsh.internal.launcher.test.BuiltShellContext,slime.jsh.internal.launcher.test.BuiltShellEvents,slime.jrunscript.file.Directory> } */
-		var requireBuiltShellHomeDirectory = function(p) {
-			return function(events) {
-				if (p.specified && p.specified.directory) {
-					events.fire("specified", p.specified);
-					return p.specified.directory;
-				}
-				if (p.home) {
-					events.fire("current", p.home);
-					return p.home;
-				}
-				events.fire("buildStart");
-				var tmpdir = $context.library.shell.TMPDIR.createTemporary({ directory: true });
-				events.fire("buildLocation", tmpdir);
-				$api.fp.world.now.action(
-					_buildShell(p.src, void(0)),
-					tmpdir,
-					{
-						//	TODO	Probably need to come up with event forwarding API
-						console: function(e) {
-							events.fire("buildOutput", e.detail);
-						}
+		/**
+		 * @param { slime.jsh.Global } jsh
+		 */
+		var requireBuiltShellHomeDirectory = function(jsh) {
+			/** @type { slime.$api.fp.world.Sensor<slime.jsh.internal.launcher.test.BuiltShellContext,slime.jsh.internal.launcher.test.BuiltShellEvents,slime.jrunscript.file.Directory> } */
+			return function(p) {
+				return function(events) {
+					if (p.specified && p.specified.directory) {
+						events.fire("specified", p.specified);
+						return p.specified.directory;
 					}
-				);
-				return tmpdir;
+					if (p.home) {
+						events.fire("current", p.home);
+						return p.home;
+					}
+					events.fire("buildStart");
+					var tmpdir = $context.library.shell.TMPDIR.createTemporary({ directory: true });
+					events.fire("buildLocation", tmpdir);
+					$api.fp.world.now.action(
+						_buildShell(jsh, p.src, void(0)),
+						tmpdir,
+						{
+							//	TODO	Probably need to come up with event forwarding API
+							console: function(e) {
+								events.fire("buildOutput", e.detail);
+							}
+						}
+					);
+					return tmpdir;
+				}
 			}
 		};
 
-		/** @type { slime.$api.fp.world.Sensor<slime.jsh.internal.launcher.test.ShellInvocation,slime.jsh.internal.launcher.test.ShellInvocationEvents,slime.jsh.internal.launcher.test.Result> } */
-		var shellResultQuestion = function(p) {
-			if (p.shell && p.shell[0] === null) {
-				debugger;
-			}
-			return function(events) {
-				/** @type { slime.jrunscript.shell.invocation.old.Token[] } */
-				var vm = [];
-				if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
-				if (!p.bash) {
-					if (p.logging) {
-						p.properties["jsh.log.java.properties"] = p.logging;
-					}
+		var shellResultQuestion = function(jsh) {
+			/** @type { slime.$api.fp.world.Sensor<slime.jsh.internal.launcher.test.ShellInvocation,slime.jsh.internal.launcher.test.ShellInvocationEvents,slime.jsh.internal.launcher.test.Result> } */
+			return function(p) {
+				if (p.shell && p.shell[0] === null) {
+					debugger;
 				}
-				for (var x in p.properties) {
-					vm.push("-D" + x + "=" + p.properties[x]);
-				}
-				var shell = (p.bash) ? p.shell : vm.concat(p.shell)
-				var script = (p.script) ? p.script : $context.script;
-				var environment = $api.Object.compose(
-					p.environment,
-					//	TODO	considered passing the location of jrunscript directly but it might affect native launcher, which
-					//			currently contains its own logic for locating jrunscript. So for now we pass this (somewhat
-					//			inaccurately-named, since it might not really be JAVA_HOME) value
-					{ JSH_JAVA_HOME: $context.library.shell.java.jrunscript.parent.parent.pathname.toString() },
-					$api.Object.compose(
-						(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
-						($context.library.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: $context.library.shell.environment.JSH_SHELL_LIB } : {}
-					)
-				);
-				var unbuilt = (function() {
-					var pattern = /(.*)\/rhino\/jrunscript\/api\.js$/;
-					var arg = shell.map(String).find(function(argument) {
-						return pattern.test(String(argument));
-					});
-					return (arg) ? (pattern.exec(arg)[1]) : null;
-				})();
-
-				var built = (function() {
-					var pattern = /(.*)\/jsh\.js$/;
-					var arg = shell.map(String).find(function(argument) {
-						return pattern.test(String(argument));
-					});
-					return (arg) ? (pattern.exec(arg)[1]) : null;
-				})();
-
-				var engineArguments = (function() {
-					if (unbuilt) return getUnbuiltEngineArguments( $context.library.file.Pathname(unbuilt).directory );
-					if (built) return getBuiltEngineArguments ( $context.library.file.Pathname(built).directory );
-					return [];
-				})();
-				debugger;
-				return $context.library.shell.run({
-					command: (p.bash) ? p.bash : $context.library.shell.java.jrunscript,
-					arguments: engineArguments.concat(shell.map(String)).concat([script.toString()]).concat( (p.arguments) ? p.arguments.map(String) : [] ),
-					stdio: (p.stdio) ? p.stdio : {
-						output: String
-					},
-					environment: environment,
-					evaluate: (p.evaluate) ? p.evaluate : function(result) {
-						if (p.bash) {
-							events.fire("invocation", { command: String(result.command), arguments: result.arguments.map(String), environment: environment });
+				return function(events) {
+					/** @type { slime.jrunscript.shell.invocation.old.Token[] } */
+					var vm = [];
+					if (p.vmarguments) vm.push.apply(vm,p.vmarguments);
+					if (!p.bash) {
+						if (p.logging) {
+							p.properties["jsh.log.java.properties"] = p.logging;
 						}
-						if (result.status !== 0) {
-							throw new Error("Status is " + result.status);
-						}
-						events.fire("output", result.stdio.output);
-						return JSON.parse(result.stdio.output);
 					}
-				});
+					for (var x in p.properties) {
+						vm.push("-D" + x + "=" + p.properties[x]);
+					}
+					var shell = (p.bash) ? p.shell : vm.concat(p.shell)
+					var script = (p.script) ? p.script : $context.script;
+					var environment = $api.Object.compose(
+						p.environment,
+						//	TODO	considered passing the location of jrunscript directly but it might affect native launcher, which
+						//			currently contains its own logic for locating jrunscript. So for now we pass this (somewhat
+						//			inaccurately-named, since it might not really be JAVA_HOME) value
+						{ JSH_JAVA_HOME: $context.library.shell.java.jrunscript.parent.parent.pathname.toString() },
+						$api.Object.compose(
+							(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
+							($context.library.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: $context.library.shell.environment.JSH_SHELL_LIB } : {}
+						)
+					);
+					var unbuilt = (function() {
+						var pattern = /(.*)\/rhino\/jrunscript\/api\.js$/;
+						var arg = shell.map(String).find(function(argument) {
+							return pattern.test(String(argument));
+						});
+						return (arg) ? (pattern.exec(arg)[1]) : null;
+					})();
+
+					var built = (function() {
+						var pattern = /(.*)\/jsh\.js$/;
+						var arg = shell.map(String).find(function(argument) {
+							return pattern.test(String(argument));
+						});
+						return (arg) ? (pattern.exec(arg)[1]) : null;
+					})();
+
+					var engineArguments = (function() {
+						if (unbuilt) return getUnbuiltEngineArguments( jsh, $context.library.file.Pathname(unbuilt).directory );
+						if (built) return getBuiltEngineArguments ( jsh, $context.library.file.Pathname(built).directory );
+						return [];
+					})();
+					debugger;
+					return $context.library.shell.run({
+						command: (p.bash) ? p.bash : $context.library.shell.java.jrunscript,
+						arguments: engineArguments.concat(shell.map(String)).concat([script.toString()]).concat( (p.arguments) ? p.arguments.map(String) : [] ),
+						stdio: (p.stdio) ? p.stdio : {
+							output: String
+						},
+						environment: environment,
+						evaluate: (p.evaluate) ? p.evaluate : function(result) {
+							if (p.bash) {
+								events.fire("invocation", { command: String(result.command), arguments: result.arguments.map(String), environment: environment });
+							}
+							if (result.status !== 0) {
+								throw new Error("Status is " + result.status);
+							}
+							events.fire("output", result.stdio.output);
+							return JSON.parse(result.stdio.output);
+						}
+					});
+				}
 			}
 		};
 
-		/** @type { (invocation: slime.jsh.internal.launcher.test.ShellInvocation) => slime.jsh.internal.launcher.test.Result } */
-		var getShellResultFor = $api.fp.world.mapping(shellResultQuestion, {
-			invocation: function(e) {
-				//	TODO	can we use console for this and the next call?
-				$context.console("Command: " + e.detail.command + " " + e.detail.arguments.join(" ") + " environment=" + JSON.stringify(e.detail.environment));
-			},
-			output: function(e) {
-				$context.console("Output: " + e.detail);
-			}
-		});
+		/**
+		 * @param { slime.jsh.Global } jsh
+		 */
+		var getShellResultFor = function(jsh) {
+			/** @type { (invocation: slime.jsh.internal.launcher.test.ShellInvocation) => slime.jsh.internal.launcher.test.Result } */
+			return $api.fp.world.mapping(shellResultQuestion(jsh), {
+				invocation: function(e) {
+					//	TODO	can we use console for this and the next call?
+					$context.console("Command: " + e.detail.command + " " + e.detail.arguments.join(" ") + " environment=" + JSON.stringify(e.detail.environment));
+				},
+				output: function(e) {
+					$context.console("Output: " + e.detail);
+				}
+			});
+		}
 
-		/** @type { (invocation: slime.jsh.internal.launcher.test.ShellInvocation, implementation: slime.jsh.internal.launcher.test.ShellImplementation) => slime.jsh.internal.launcher.test.Result } */
-		var getShellResult = function(invocation,implementation) {
+		/** @type { (jsh: slime.jsh.Global, invocation: slime.jsh.internal.launcher.test.ShellInvocation, implementation: slime.jsh.internal.launcher.test.ShellImplementation) => slime.jsh.internal.launcher.test.Result } */
+		var getShellResult = function(jsh, invocation,implementation) {
 			/**
 			 *
 			 * @param { slime.jsh.internal.launcher.test.ShellInvocation } invocation
@@ -253,16 +275,17 @@
 				})
 			};
 
-			return getShellResultFor(toInvocation(invocation, implementation));
+			return getShellResultFor(jsh)(toInvocation(invocation, implementation));
 		}
 
 		/**
+		 * @param { slime.jsh.Global } jsh
 		 * @param { slime.jrunscript.file.Pathname } rhinoLocation Currently always undefined, but probably was to help with
 		 * performance by making it possible not to download and install Rhino in Rhino shells?
 		 * @param { slime.jrunscript.file.Directory } builtShell
 		 * @param { slime.jrunscript.file.Directory } tmp
 		 */
-		var toScenario = function(rhinoLocation,builtShell,tmp) {
+		var toScenario = function(jsh,rhinoLocation,builtShell,tmp) {
 			//	TODO	this was used to locate RHino, apparently, in the old JSAPI version of the suite:
 			//			var rhinoArgs = (jsh.shell.rhino) ? ["-rhino", jsh.shell.rhino.classpath.toString()] : [];
 
@@ -323,7 +346,7 @@
 				 * @param { slime.jsh.internal.launcher.test.Checks } checks
 				 */
 				var checkShellOutput = function(invocation, implementation, checks) {
-					var result = getShellResult(invocation, implementation);
+					var result = getShellResult(jsh, invocation, implementation);
 					return function(verify) {
 						checks(result)(verify);
 					}
@@ -442,14 +465,15 @@
 
 		/**
 		 *
+		 * @param { slime.jsh.Global } jsh
 		 * @param { slime.jsh.internal.launcher.test.ShellContext } context
 		 * @param { slime.jrunscript.file.Pathname } built
 		 * @param { (message: string) => void } console
 		 * @returns
 		 */
-		var getHome = function(context,built,console) {
+		var getHome = function(jsh,context,built,console) {
 			return $api.fp.world.now.question(
-				requireBuiltShellHomeDirectory,
+				requireBuiltShellHomeDirectory(jsh),
 				$api.Object.compose(context, {
 					specified: built
 				}),
@@ -478,8 +502,14 @@
 			return $api.fp.impure.Input.memoized(input);
 		}
 
-		var getBuiltShellHomeDirectory = function(p) {
-			return getHome(p.context, p.built, p.console);
+		/**
+		 *
+		 * @param { slime.jsh.Global } jsh
+		 * @param { { context: slime.jsh.internal.launcher.test.ShellContext, built: slime.jrunscript.file.Pathname, console: (message: string) => void } } p
+		 * @returns
+		 */
+		var getBuiltShellHomeDirectory = function(jsh,p) {
+			return getHome(jsh,p.context, p.built, p.console);
 		};
 
 		var createTestSuite = (
@@ -527,7 +557,7 @@
 
 				/** @type { slime.$api.fp.impure.Input<slime.jrunscript.file.Directory> } */
 				var getHome = memoized(function() {
-					return getBuiltShellHomeDirectory({
+					return getBuiltShellHomeDirectory(jsh, {
 						context: getContext(),
 						built: options.built,
 						console: jsh.shell.console
@@ -558,6 +588,7 @@
 						if (!UNSUPPORTED) {
 							runner.addScenario(
 								toScenario(
+									jsh,
 									void(0),
 									getHome(),
 									tmp

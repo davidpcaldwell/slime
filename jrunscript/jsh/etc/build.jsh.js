@@ -306,8 +306,7 @@
 		}
 
 		if (SLIME.getFile("local/jsh/lib/nashorn.jar")) {
-			//	TODO	Not DRY; should parse these names out of ./jsh
-			["asm.jar", "asm-commons.jar", "asm-tree.jar", "asm-util.jar", "nashorn.jar"].forEach(function(library) {
+			jsh.internal.bootstrap.nashorn.dependencies.jarNames.concat(["nashorn.jar"]).forEach(function(library) {
 				SLIME.getFile("local/jsh/lib/" + library).copy(destination.shell.getSubdirectory("lib"));
 			});
 		}

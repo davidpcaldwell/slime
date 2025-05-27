@@ -116,17 +116,22 @@
 		/**
 		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
 		 */
-		function run(script,scope) {
-			if (!script || typeof(script) != "object") {
-				throw new TypeError("'object' must be an object, not " + script);
+		function run(code,scope) {
+			if (!code || typeof(code) != "object") {
+				throw new TypeError("'object' must be a slime.runtime.loader.Code object, not " + code);
 			}
-			if (typeof(script.read) != "function") throw new Error("Not resource: no read() function");
+			if (typeof(code.read) != "function") throw new Error("Not slime.runtime.loader.Code: no read() function");
 
-			var code = compiler(script);
+			var compile = $api.fp.now(
+				compiler,
+				$api.fp.Partial.impure.exception(
+					function(code) {
+						return new TypeError("Code " + code.name + " cannot be converted to JavaScript; type = " + code.type())
+					}
+				)
+			);
 
-			if (!code.present) {
-				throw new TypeError("Resource " + script.name + " cannot be converted to JavaScript; type = " + script.type());
-			}
+			var script = compile(code);
 
 			var target = this;
 
@@ -145,7 +150,7 @@
 			scope.$api = $api;
 
 			$engine.execute(
-				code.value,
+				script,
 				scope,
 				target
 			);

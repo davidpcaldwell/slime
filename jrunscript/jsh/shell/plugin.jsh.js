@@ -19,7 +19,7 @@
 	function(Packages,$api,plugins,jsh,$slime,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(plugins.shell && plugins.stdio && jsh.script);
+				return Boolean(plugins.shell && plugins.stdio && jsh.internal && jsh.internal.bootstrap && jsh.script);
 			},
 			load: function() {
 				/** @type { slime.jrunscript.shell.Exports } */
@@ -33,7 +33,8 @@
 						java: jsh.java,
 						io: jsh.io,
 						file: jsh.file,
-						script: jsh.script
+						script: jsh.script,
+						bootstrap: jsh.internal.bootstrap
 					},
 					PATH: module.PATH,
 					stdio: plugins.stdio,

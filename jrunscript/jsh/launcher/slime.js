@@ -7,18 +7,18 @@
 //@ts-check
 (
 	/**
-	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: slime.internal.jsh.launcher.Slime }> }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: slime.jsh.internal.launcher.Slime }> }
 	 */
 	function() {
 		var Packages = this.Packages;
 		var $$api = this.$api;
 
-		/** @type { (p: any) => slime.internal.jsh.launcher.SlimeConfiguration } */
+		/** @type { (p: any) => slime.jsh.internal.launcher.SlimeConfiguration } */
 		function toSlimeConfiguration(p) {
 			return p;
 		}
 
-		/** @type { slime.internal.jsh.launcher.SlimeConfiguration } */
+		/** @type { slime.jsh.internal.launcher.SlimeConfiguration } */
 		var configuration = toSlimeConfiguration($$api.slime);
 
 		//	Provide better implementation that uses Java delegate, replacing pure JavaScript version supplied by api.js
@@ -41,7 +41,7 @@
 		}
 
 		$$api.slime = (function(was) {
-			/** @type { slime.internal.jsh.launcher.Slime } */
+			/** @type { slime.jsh.internal.launcher.Slime } */
 			var rv;
 			if (was && was.built) {
 				rv = {
@@ -70,7 +70,7 @@
 				var isHttp = $$api.script.url && /^http/.test(String($$api.script.url.getProtocol()));
 				if (isSourceFile || isHttp) {
 					rv.src = (function() {
-						/** @type { Partial<slime.internal.jsh.launcher.Slime["src"]> } */
+						/** @type { Partial<slime.jsh.internal.launcher.Slime["src"]> } */
 						var rv;
 						if ($$api.script.file) {
 							rv = (function() {
@@ -190,12 +190,12 @@
 
 						/**
 						 *
-						 * @param { Partial<slime.internal.jsh.launcher.Slime["src"]> } partial
-						 * @returns { slime.internal.jsh.launcher.Slime["src"] }
+						 * @param { Partial<slime.jsh.internal.launcher.Slime["src"]> } partial
+						 * @returns { slime.jsh.internal.launcher.Slime["src"] }
 						 */
 						function complete(partial) {
 							/**
-							 * @type { (partial: Partial<slime.internal.jsh.launcher.Slime["src"]>) => partial is slime.internal.jsh.launcher.Slime["src"] } partial
+							 * @type { (partial: Partial<slime.jsh.internal.launcher.Slime["src"]>) => partial is slime.jsh.internal.launcher.Slime["src"] } partial
 							 */
 							function isComplete(partial) {
 								return true;

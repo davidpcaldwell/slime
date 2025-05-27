@@ -298,6 +298,61 @@
 			}
 		);
 
+		var Location_file_read = (
+			function() {
+				/** @type { slime.jrunscript.file.exports.location.File["read"]["stream"] } */
+				var readStream = function() {
+					return function(location) {
+						return location.filesystem.openInputStream({
+							pathname: location.pathname
+						});
+					}
+				};
+
+				/** @type { slime.jrunscript.file.exports.location.File["read"]["string"]["world"] } */
+				var readString = function() {
+					return $api.fp.world.Sensor.map({
+						subject: $api.fp.identity,
+						sensor: readStream(),
+						reading: $api.fp.Maybe.map(
+							function(it) {
+								return it.character().asString();
+							}
+						)
+					});
+				};
+
+				return {
+					stream: readStream,
+					string: {
+						world: readString,
+						maybe: $api.fp.world.Sensor.old.mapping({
+							sensor: readString()
+						}),
+						simple: $api.fp.Partial.impure.old.exception({
+							try: $api.fp.world.Sensor.old.mapping({
+								sensor: readString()
+							}),
+							nothing: function(location) {
+								return new Error("Could not read: " + location.pathname);
+							}
+						})
+					},
+					properties: {
+						simple: $api.fp.Partial.impure.old.exception({
+							try: $api.fp.pipe(
+								$api.fp.world.Sensor.old.mapping({ sensor: readString() }),
+								$api.fp.Maybe.map( $context.library.java.Properties.from.string )
+							),
+							nothing: function(location) {
+								return new Error("Could not read: " + location.pathname);
+							}
+						})
+					}
+				}
+			}
+		)();
+
 		var parts = {
 			directory: code.parts.directory({
 				ensureParent: ensureParent,
@@ -310,7 +365,9 @@
 				},
 				Location_relative: Location_relative,
 				Location_file_write: Location_file_write,
-				remove: remove
+				Location_file_read_string: Location_file_read.string,
+				remove: remove,
+				Store: $context.library.loader.Store
 			}),
 			filesystem: code.parts.filesystem({
 				ensureParent: ensureParent
@@ -426,28 +483,6 @@
 					})()
 				},
 				file: (function() {
-					/** @type { slime.jrunscript.file.exports.location.File["read"]["stream"] } */
-					var readStream = function() {
-						return function(location) {
-							return location.filesystem.openInputStream({
-								pathname: location.pathname
-							});
-						}
-					};
-
-					/** @type { slime.jrunscript.file.exports.location.File["read"]["string"]["world"] } */
-					var readString = function() {
-						return $api.fp.world.Sensor.map({
-							subject: $api.fp.identity,
-							sensor: readStream(),
-							reading: $api.fp.Maybe.map(
-								function(it) {
-									return it.character().asString();
-								}
-							)
-						});
-					};
-
 					return {
 						exists: Location.file.exists,
 						size: function(location) {
@@ -457,34 +492,7 @@
 								return maybe.value;
 							}
 						},
-						read: {
-							stream: readStream,
-							string: {
-								world: readString,
-								maybe: $api.fp.world.Sensor.old.mapping({
-									sensor: readString()
-								}),
-								simple: $api.fp.Partial.impure.old.exception({
-									try: $api.fp.world.Sensor.old.mapping({
-										sensor: readString()
-									}),
-									nothing: function(location) {
-										return new Error("Could not read: " + location.pathname);
-									}
-								})
-							},
-							properties: {
-								simple: $api.fp.Partial.impure.old.exception({
-									try: $api.fp.pipe(
-										$api.fp.world.Sensor.old.mapping({ sensor: readString() }),
-										$api.fp.Maybe.map( $context.library.java.Properties.from.string )
-									),
-									nothing: function(location) {
-										return new Error("Could not read: " + location.pathname);
-									}
-								})
-							}
-						},
+						read: Location_file_read,
 						write: Location_file_write,
 						/** @type { slime.jrunscript.file.exports.Location["file"]["remove"] } */
 						remove: {

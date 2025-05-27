@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.internal.jsh.launcher {
+namespace slime.jsh.internal.launcher {
 	export namespace test {
 		export const shells = (function(fifty: slime.fifty.test.Kit) {
 			var script: slime.jsh.test.Script = fifty.$loader.script("../fixtures.ts");

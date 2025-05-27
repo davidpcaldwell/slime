@@ -24,6 +24,7 @@ namespace slime.jsh.shell {
 				io: slime.jrunscript.io.Exports
 				file: slime.jrunscript.file.Exports
 				script: slime.jsh.script.Exports
+				bootstrap: slime.internal.jrunscript.bootstrap.Api<{}>
 			}
 
 			PATH: slime.jrunscript.file.Searchpath

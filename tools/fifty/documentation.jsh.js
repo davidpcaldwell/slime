@@ -16,24 +16,7 @@
 		var $loader = $api.fp.now(
 			jsh.script.world.file,
 			jsh.file.Location.parent(),
-			jsh.file.Location.directory.content.Index,
-			function(store) {
-				return jsh.loader.Store.from.default({
-					store: store,
-					//	TODO	promote to shared
-					adapt: function(t) {
-						return {
-							name: t.pathname,
-							type: function() {
-								return $api.mime.Type.fromName( jsh.file.Location.basename(t) )
-							},
-							read: function() {
-								return jsh.file.Location.file.read.string.simple(t);
-							}
-						}
-					}
-				});
-			}
+			jsh.file.Location.directory.Loader.simple
 		);
 
 		jsh.script.cli.main(

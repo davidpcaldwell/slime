@@ -62,8 +62,6 @@
 
 		/** @type { slime.internal.jrunscript.bootstrap.Configuration } */
 		var configuration = toConfiguration(this["$api"]);
-		var $script = (configuration && configuration.script) ? configuration.script : null;
-		var $arguments = (configuration && configuration.arguments) ? configuration.arguments : null;
 
 		/**
 		 * @type { slime.internal.jrunscript.bootstrap.Global<{},{}>["$api"] }
@@ -290,6 +288,7 @@
 		var JavaAdapter = this.JavaAdapter;
 
 		var nashorn = (
+			/** @returns { slime.internal.jrunscript.bootstrap.Api<{}>["nashorn"] } */
 			function() {
 				//	TODO	A little bit of this logic is duplicated in loader/jrunscript/nashorn.js; we could make this method
 				//			available there somehow, perhaps, although it might be tricky getting things organized between
@@ -328,7 +327,21 @@
 					return true;
 				}
 
+				/** @notdry nashorn-dependencies reference */
+				var mavenDependencies = ["asm","asm-commons","asm-tree","asm-util"].map(function(name) {
+					return {
+						group: "org.ow2.asm",
+						artifact: name,
+						version: "7.3.1"
+					}
+				});
+
 				return {
+					dependencies: {
+						maven: mavenDependencies,
+						names: mavenDependencies.map(function(dependency) { return dependency.artifact; }),
+						jarNames: mavenDependencies.map(function(dependency) { return dependency.artifact + ".jar"; })
+					},
 					isPresent: isPresent,
 					running: function() {
 						if ($getContext) {
@@ -652,7 +665,7 @@
 						if (e.javaException) {
 							e.javaException.printStackTrace();
 						}
-						throw new Error("Could not parse: " + string);
+						throw new Error("Could not parse: " + string + " $engine.script = " + $engine.script);
 					}
 					if (String(url.getProtocol()) == "file") {
 						return {
@@ -931,14 +944,26 @@
 				interpret: interpret
 			}
 
-			if ($script && $script.url) {
+			if (configuration && configuration.script && configuration.script.url) {
 				$api.script = new $api.Script({
-					url: new Packages.java.net.URL($script.url)
+					url: new Packages.java.net.URL(configuration.script.url)
 				});
-			} else if ($script && $script.file) {
+			} else if (configuration && configuration.script && configuration.script.file) {
 				$api.script = new $api.Script({
-					file: new Packages.java.io.File($script.file)
+					file: new Packages.java.io.File(configuration.script.file)
 				});
+			} else if (/\.slime\!api\.js$/.test($engine.script)) {
+				//	Indicates this is embedded API in a built shell.
+				$api.script = null;
+				if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
+					throw new Error("Loading api.js from .slime should be done only for embedding API.");
+				}
+			} else if (/\.zip\!(.*)\/rhino\/jrunscript\/api\.js$/.test($engine.script)) {
+				//	Indicates this is embedded API in a remote shell.
+				$api.script = null;
+				if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
+					throw new Error("Loading api.js from .zip should be done only for embedding API.");
+				}
 			} else {
 				$api.script = new $api.Script({
 					string: $engine.script
@@ -951,8 +976,8 @@
 				}
 			}
 
-			if ($arguments) {
-				$api.arguments = $arguments;
+			if (configuration && configuration.arguments) {
+				$api.arguments = configuration.arguments;
 			} else {
 				$api.arguments = (function() {
 					//	TODO	Use $api.engine.resolve
@@ -1430,7 +1455,21 @@
 	function() {
 		var Packages = this.Packages;
 		var $api = this.$api;
+
+		/**
+		 * The script's "query string," which has different meanings based on how the script is invoked.
+		 *
+		 * * If it is invoked by URL, the actual query string, excluding the `?`.
+		 * * If it is invoked with arguments, and the first argument starts with `?`, that argument, excluding the `?`
+		 * * If it is invoked with arguments, and the first argument is `jsh`, `jsh`.
+		 * * If it is invoked with arguments, and the first argument is `api`, `api`.
+		 */
 		var $query = (function() {
+			//	The only way we presently don't have a script is in the embedding-in-built-shell scenario
+			if (!$api.script) {
+				return $api.arguments.shift();
+			}
+
 			if ($api.script.url && $api.script.url.getQuery()) {
 				return String($api.script.url.getQuery());
 			}

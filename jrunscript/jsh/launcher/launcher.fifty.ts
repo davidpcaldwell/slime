@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.internal.jsh.launcher {
+namespace slime.jsh.internal.launcher {
 	export interface Installation {
 		rhino: slime.jrunscript.native.java.net.URL[]
 		nashorn: slime.jrunscript.native.java.net.URL[]
@@ -49,12 +49,12 @@ namespace slime.internal.jsh.launcher {
 	}
 
 	interface Additions {
-		slime: slime.internal.jsh.launcher.Slime
-		jsh: slime.internal.jsh.launcher.Jsh
+		slime: slime.jsh.internal.launcher.Slime
+		jsh: slime.jsh.internal.launcher.Jsh
 	}
 
 	interface JavaAdditions {
-		compile: slime.internal.jsh.launcher.javac.compile
+		compile: slime.jsh.internal.launcher.javac.compile
 	}
 
 	export type Global = slime.internal.jrunscript.bootstrap.Global<Additions,JavaAdditions>

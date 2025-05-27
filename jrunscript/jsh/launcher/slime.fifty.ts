@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.internal.jsh.launcher {
+namespace slime.jsh.internal.launcher {
 	//	would like to use namespace slime but that conflicts with same name of top-level namespace
 	export interface SlimeConfiguration {
 		built?: slime.jrunscript.native.java.io.File

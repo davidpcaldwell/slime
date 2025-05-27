@@ -45,38 +45,54 @@
 		 * @type { slime.runtime.loader.Exports["Store"] }
 		 */
 		var Store = {
-			from: {
-				default: function(p) {
+			content: function(p) {
+				/**
+				 *
+				 * @param { string } path
+				 */
+				var getScript = function(path) {
+					var elements = path.split("/");
+					var script = p.store.get(elements);
+					if (!script.present) throw new Error("Script " + path + " missing.");
+					var code = p.adapt(script.value);
 					return {
-						script: function(path) {
-							debugger;
-							var elements = path.split("/");
-							var script = p.store.get(elements);
-							if (!script.present) throw new Error("Script " + path + " missing.");
-							var code = p.adapt(script.value);
-							return function(context) {
-								debugger;
-								//	Need to use Object.assign rather than $api.Object.compose because createScriptScope creates
-								//	an object where `$export` operates on that object.
-								var scope = Object.assign(
-									createScriptScope(context),
-									{
-										$loader: Store.from.default({
-											store: $api.content.Store.path({
-												store: p.store,
-												path: elements.slice(0, elements.length-1)
-											}),
-											adapt: p.adapt
-										})
-									}
-								);
-								methods.run(
-									code,
-									scope
-								);
-								return scope.$exports;
-							}
+						code: code,
+						$loader: Store.content({
+							store: $api.content.Store.path({
+								store: p.store,
+								path: elements.slice(0, elements.length-1)
+							}),
+							adapt: p.adapt
+						})
+					};
+				};
+
+				return {
+					script: function(path) {
+						var script = getScript(path);
+						return function(context) {
+							//	Need to use Object.assign rather than $api.Object.compose because createScriptScope creates
+							//	an object where `$export` operates on that object.
+							var scope = Object.assign(
+								createScriptScope(context),
+								{
+									$loader: script.$loader
+								}
+							);
+							methods.run(
+								script.code,
+								scope
+							);
+							return scope.$exports;
 						}
+					},
+					run: function(path, scope, target) {
+						var script = getScript(path);
+						methods.run.call(
+							target,
+							script.code,
+							scope
+						);
 					}
 				}
 			}

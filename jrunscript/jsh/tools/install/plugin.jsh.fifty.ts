@@ -131,6 +131,8 @@ namespace slime.jsh.shell.tools {
 			 * Used to decide whether to replace the existing installation if one is found. If Rhino is already present at the
 			 * installation location, this function will be invoked with the version of Rhino that is currently installed.
 			 *
+			 * If this function is not omitted, the default is not to replace the existing version.
+			 *
 			 * @param version The version of Rhino found
 			 * @returns `true` to replace the installation; `false` to leave it in place.
 			 */

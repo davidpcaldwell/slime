@@ -152,7 +152,7 @@ namespace slime.jsh {
  * #### `slime.js`
  *
  * This script, also apparently used in the `jsh` build process, creates an `$api.slime` object of type {@link
- * slime.internal.jsh.launcher.Slime} object providing SLIME-specific functionality.
+ * slime.jsh.internal.launcher.Slime} object providing SLIME-specific functionality.
  *
  * ### Packaged application launcher (`inonit.script.jsh.launcher.Main`)
  *

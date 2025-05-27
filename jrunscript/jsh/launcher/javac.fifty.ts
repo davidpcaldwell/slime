@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.internal.jsh.launcher.javac {
+namespace slime.jsh.internal.launcher.javac {
 	export type compile = (p: {
 		files: slime.jrunscript.native.java.net.URL[]
 		destination: slime.jrunscript.native.java.io.File

@@ -11,7 +11,7 @@
 (
 	/**
 	 *
-	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: slime.internal.jsh.launcher.Slime, jsh: any }> }
+	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: slime.jsh.internal.launcher.Slime, jsh: any }> }
 	 */
 	function() {
 		var Java = this.Java;
@@ -29,7 +29,7 @@
 			} else {
 				//	TODO	hard-codes assumption of built shell and hard-codes assumption unbuilt shell will arrive via launcher script; should
 				//			tighten this implementation
-				/** @type { slime.internal.jsh.launcher.SlimeConfiguration } */
+				/** @type { slime.jsh.internal.launcher.SlimeConfiguration } */
 				var slimeConfiguration = {
 					built: $api.script.file.getParentFile()
 				};
@@ -142,13 +142,7 @@
 					if ($api.slime.settings.get("jsh.shell.lib") && lib.file) {
 						if (new Packages.java.io.File(lib.file, "nashorn.jar").exists()) {
 							$api.debug("nashorn.jar found");
-							return [
-								"asm.jar",
-								"asm-commons.jar",
-								"asm-tree.jar",
-								"asm-util.jar",
-								"nashorn.jar"
-							].map(function(filename) {
+							return $api.nashorn.dependencies.jarNames.concat(["nashorn.jar"]).map(function(filename) {
 								return new Packages.java.io.File(lib.file, filename).toURI().toURL();
 							});
 						}

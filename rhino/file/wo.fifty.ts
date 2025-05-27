@@ -782,6 +782,9 @@ namespace slime.jrunscript.file.internal.wo {
 		library: {
 			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
+			loader: {
+				Store: slime.runtime.loader.Exports["Store"]
+			}
 		}
 		filesystem: {
 			os: slime.jrunscript.file.world.Filesystem

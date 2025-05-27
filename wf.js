@@ -397,6 +397,8 @@
 		var test = function(p) {
 			if (!p) p = {};
 			return function(events) {
+				//	This invocation will install the JDK if necessary, and then ensure the version of Rhino is the correct one for
+				//	that JDK
 				jsh.shell.run({
 					command: "bash",
 					arguments: [
