@@ -665,7 +665,7 @@
 						if (e.javaException) {
 							e.javaException.printStackTrace();
 						}
-						throw new Error("Could not parse: " + string);
+						throw new Error("Could not parse: " + string + " $engine.script = " + $engine.script);
 					}
 					if (String(url.getProtocol()) == "file") {
 						return {
@@ -957,6 +957,12 @@
 				$api.script = null;
 				if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
 					throw new Error("Loading api.js from .slime should be done only for embedding API.");
+				}
+			} else if (/\.zip\!(.*)\/rhino\/jrunscript\/api\.js$/.test($engine.script)) {
+				//	Indicates this is embedded API in a remote shell.
+				$api.script = null;
+				if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
+					throw new Error("Loading api.js from .zip should be done only for embedding API.");
 				}
 			} else {
 				$api.script = new $api.Script({
