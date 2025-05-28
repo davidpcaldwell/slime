@@ -286,7 +286,7 @@ namespace slime.jrunscript.java.tools {
 				verify(array)[0].directory.is(true);
 				verify(array)[0].evaluate.property("read").is(void(0));
 
-				var src = $api.fp.world.now.ask(jsh.io.InputStream.string($api.fp.world.now.ask( (array[3] as slime.jrunscript.java.tools.jar.FileEntry).read)));
+				var src = $api.fp.world.now.ask(jsh.io.InputStream.old.string($api.fp.world.now.ask( (array[3] as slime.jrunscript.java.tools.jar.FileEntry).read)));
 
 				var original = $api.fp.world.now.question(
 					jsh.file.Location.file.read.string.world(),

@@ -31,23 +31,30 @@
 			}
 		};
 
-		var Charset = {
-			/**
-			 *
-			 * @param { slime.jrunscript.native.java.nio.charset.Charset } _peer
-			 * @return { slime.jrunscript.runtime.io.Charset }
-			 */
-			java: function(_peer) {
-				return {
-					name: String(_peer.name()),
-					java: {
-						adapt: function() {
-							return _peer;
+		var Charset = (
+			function() {
+				/**
+				 *
+				 * @param { slime.jrunscript.native.java.nio.charset.Charset } _peer
+				 * @return { slime.jrunscript.runtime.io.Charset }
+				 */
+				var wrap = function(_peer) {
+					return {
+						name: String(_peer.name()),
+						java: {
+							adapt: function() {
+								return _peer;
+							}
 						}
 					}
-				}
+				};
+
+				return {
+					java: wrap,
+					default: wrap(Packages.java.nio.charset.Charset.defaultCharset())
+				};
 			}
-		}
+		)();
 
 		/**
 		 *
@@ -572,7 +579,8 @@
 			Charset: {
 				standard: {
 					utf8: Charset.java(Packages.java.nio.charset.StandardCharsets.UTF_8)
-				}
+				},
+				default: Charset.default
 			},
 			Streams: Streams,
 			Buffer: Buffer,

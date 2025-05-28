@@ -200,7 +200,7 @@
 								var buffer = getBufferedStream();
 								var bytes = buffer.toByteArray();
 								var _i = new Packages.java.io.ByteArrayInputStream(bytes);
-								return $context.api.io.InputStream.from.java(_i);
+								return $context.api.io.InputStream.old.from.java(_i);
 							}
 						}
 					} : void(0),

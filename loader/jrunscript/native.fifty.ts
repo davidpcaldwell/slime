@@ -129,7 +129,7 @@ namespace slime.jrunscript {
 				}
 
 				export namespace charset {
-					export interface Charset {
+					export interface Charset extends slime.jrunscript.native.java.lang.Object {
 						name: () => slime.jrunscript.native.java.lang.String
 					}
 				}
@@ -559,7 +559,10 @@ namespace slime.jrunscript {
 					LinkOption: any
 				}
 				charset: {
-					Charset: any
+					Charset: JavaClass<slime.jrunscript.native.java.nio.charset.Charset, {
+						defaultCharset: () => slime.jrunscript.native.java.nio.charset.Charset
+						availableCharsets(): slime.jrunscript.native.java.util.Map<slime.jrunscript.native.java.lang.String,slime.jrunscript.native.java.nio.charset.Charset>
+					}>
 					StandardCharsets: any
 				}
 			}
