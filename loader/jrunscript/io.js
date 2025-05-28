@@ -155,12 +155,12 @@
 				var mode = p.configuration;
 				if (!mode) mode = {
 					charset: void(0),
-					LINE_SEPARATOR: void(0)
+					newline: void(0)
 				};
-				if (!mode.charset) mode.charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
-				var separator = mode.LINE_SEPARATOR;
+				if (!mode.charset) mode.charset = Charset.default;
+				var separator = mode.newline;
 				//	TODO	No unit test for this method currently; does it work?
-				return Reader.java(new Packages.java.io.InputStreamReader(p.stream.java.adapt(),mode.charset), {LINE_SEPARATOR: separator});
+				return Reader.java(new Packages.java.io.InputStreamReader(p.stream.java.adapt(),mode.charset.java.adapt()), {LINE_SEPARATOR: separator});
 			},
 			java: function(peer,properties) {
 				var readLines = Object.assign(
@@ -461,75 +461,75 @@
 		// 	</li>
 		// </ul>
 
+		/** @type { slime.jrunscript.runtime.io.Exports["wo"] } */
 		var wo = {
-			character: {
-				/**
-				 *
-				 * @param { string } charset
-				 * @returns { { all: slime.$api.fp.world.Means<slime.jrunscript.runtime.io.InputStream, slime.jrunscript.runtime.io.Events<string>>, lines: (terminator: string) => slime.$api.fp.world.Means<slime.jrunscript.runtime.io.InputStream, slime.jrunscript.runtime.io.LineEvents> }}
-				 */
-				encoding: function(charset) {
-					if (!charset) charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
-					return {
-						/**
-						 *
-						 * @param { slime.jrunscript.runtime.io.InputStream } input
-						 * @returns
-						 */
-						all: function(input) {
-							return function(events) {
-								//	TODO	or use Packages.java.nio.charset.StandardCharsets.UTF_8?
-								var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
-								var reader = input.character({ charset: charset });
-								$context._streams.readAll(
-									reader.java.adapt(),
-									new JavaAdapter(
-										Packages.inonit.script.runtime.io.Streams.ReadEvents,
-										{
-											progress: function(string) {
-												events.fire("progress", String(string));
-											},
-											error: function(e) {
-												//	TODO	improve
-												throw new Error();
-											},
-											done: function() {
-												events.fire("done");
-											}
+			text: function(configuration) {
+				return {
+					/**
+					 *
+					 * @param { slime.jrunscript.runtime.io.InputStream } input
+					 * @returns
+					 */
+					all: function(input) {
+						return function(events) {
+							var reader = Reader.stream({
+								stream: input,
+								configuration: configuration
+							});
+							var rv = reader.asString();
+							events.fire("progress", rv);
+							events.fire("done");
+
+							//	TODO	switch to Java implementation to be consistent with lines?
+
+							//	TODO	or use Packages.java.nio.charset.StandardCharsets.UTF_8?
+							// var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
+							// var reader = input.character({ charset: charset });
+							// $context._streams.readAll(
+							// 	reader.java.adapt(),
+							// 	new JavaAdapter(
+							// 		Packages.inonit.script.runtime.io.Streams.ReadEvents,
+							// 		{
+							// 			progress: function(string) {
+							// 				events.fire("progress", String(string));
+							// 			},
+							// 			error: function(e) {
+							// 				//	TODO	improve
+							// 				throw new Error();
+							// 			},
+							// 			done: function() {
+							// 				events.fire("done");
+							// 			}
+							// 		}
+							// 	)
+							// );
+						}
+					},
+					lines: function(input) {
+						return function(events) {
+							var reader = Reader.stream({ stream: input, configuration: configuration });
+							$context._streams.readLines(
+								reader.java.adapt(),
+								configuration.newline,
+								new JavaAdapter(
+									Packages.inonit.script.runtime.io.Streams.ReadEvents,
+									{
+										progress: function(_string) {
+											var string = String(_string);
+											events.fire("progress", string);
+											var terminated = string.substring(string.length - configuration.newline.length) == configuration.newline;
+											events.fire("line", (terminated) ? string.substring(0, string.length - configuration.newline.length) : string);
+										},
+										error: function(e) {
+											//	TODO	improve
+											throw new Error();
+										},
+										done: function() {
+											events.fire("done");
 										}
-									)
-								);
-							}
-						},
-						lines: function(ending) {
-							return function(input) {
-								return function(events) {
-									var charset = String(Packages.java.nio.charset.Charset.defaultCharset().name());
-									var reader = input.character({ charset: charset });
-									$context._streams.readLines(
-										reader.java.adapt(),
-										ending,
-										new JavaAdapter(
-											Packages.inonit.script.runtime.io.Streams.ReadEvents,
-											{
-												progress: function(_string) {
-													var string = String(_string);
-													events.fire("progress", string);
-													var terminated = string.substring(string.length - ending.length) == ending;
-													events.fire("line", (terminated) ? string.substring(0, string.length - ending.length) : string);
-												},
-												error: function(e) {
-													//	TODO	improve
-													throw new Error();
-												},
-												done: function() {
-													events.fire("done");
-												}
-											}
-										)
-									);
-								}
-							}
+									}
+								)
+							);
 						}
 					}
 				}
@@ -590,28 +590,11 @@
 				}
 			},
 			wo: {
-				process: function(processor) {
-					return $api.fp.world.Means.output(processor);
-				},
-				character: {
-					encoding: function(encoding) {
-						return {
-							all: function(handlers) {
-								return {
-									means: wo.character.encoding(encoding).all,
-									handlers: handlers
-								}
-							},
-							lines: function(terminator) {
-								return function(handlers) {
-									return {
-										means: wo.character.encoding(encoding).lines(terminator),
-										handlers: handlers
-									}
-								}
-							}
-						}
-					}
+				// process: function(processor) {
+				// 	return $api.fp.world.Means.output(processor);
+				// },
+				text: function(configuration) {
+					return wo.text(configuration);
 				}
 			}
 		});
