@@ -332,6 +332,16 @@
 								});
 							}
 						},
+						effect: function(handlers) {
+							return function(means) {
+								return function(output) {
+									$context.events.handle({
+										implementation: means(output),
+										handlers: handlers
+									});
+								}
+							}
+						},
 						order: {
 							process: function(p) {
 								return toProcess({

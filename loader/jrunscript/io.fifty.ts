@@ -313,7 +313,7 @@ namespace slime.jrunscript.runtime.io {
 		Reader: {
 			stream: (p: {
 				stream: InputStream
-				configuration?: reader.Configuration
+				configuration?: text.Configuration
 			}) => Reader
 
 			java: (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
@@ -464,14 +464,14 @@ namespace slime.jrunscript.runtime.io {
 		readText: () => Reader
 	}
 
-	type BinaryCopyMode = {
-		onFinish: (i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream) => void
-	}
-
 	export interface Exports {
 		ArrayBuffer: {
 			read: (stream: InputStream) => ArrayBuffer
 		}
+	}
+
+	type BinaryCopyMode = {
+		onFinish: (i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream) => void
 	}
 
 	export interface Exports {
@@ -595,8 +595,8 @@ namespace slime.jrunscript.runtime.io {
 				var text = test.subject.Reader.stream({
 					stream: read,
 					configuration: {
-						charset: utf8.name,
-						LINE_SEPARATOR: "\n"
+						charset: utf8,
+						newline: "\n"
 					}
 				})
 				// var text = utf8.read(read);
@@ -624,23 +624,16 @@ namespace slime.jrunscript.runtime.io {
 		line: string
 	}
 
-	export type Processor<E> = {
-		means: slime.$api.fp.world.Means<InputStream,E>
-		handlers?: slime.$api.event.Handlers<E>
-	}
+	export type Processor<E> = slime.$api.fp.world.Means<InputStream,E>
 
 	export interface StringProcessor {
-		all: (handlers: slime.$api.event.Handlers<Events<string>>) => Processor<Events<string>>
-		lines: (terminator: string) => (handlers: slime.$api.event.Handlers<LineEvents>) => Processor<LineEvents>
+		all: Processor<Events<string>>
+		lines: Processor<LineEvents>
 	}
 
 	export interface Exports {
 		wo: {
-			process: <E>(processor: Processor<E>) => (input: InputStream) => void
-
-			character: {
-				encoding: (encoding?: string) => StringProcessor
-			}
+			text: (configuration: text.Configuration) => StringProcessor
 		}
 	}
 
@@ -649,6 +642,7 @@ namespace slime.jrunscript.runtime.io {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api } = fifty.global;
 
 			var original = "foo\nbar\nbaz";
 
@@ -659,23 +653,34 @@ namespace slime.jrunscript.runtime.io {
 			fifty.tests.exports.input.processor.string = function() {
 				var input = test.subject.InputStream.string.default(original);
 				var all: string;
-				test.subject.wo.process(
-					test.subject.wo.character.encoding().all({
+				var processor = $api.fp.now(
+					test.subject.wo.text({
+						charset: test.subject.Charset.default,
+						newline: "\n"
+					}),
+					$api.fp.property("all"),
+					$api.fp.world.Means.effect({
 						progress: function(e) {
 							all = e.detail;
 						}
 					})
-				)(input);
+				);
+				processor(input);
 				verify(all).is(original);
 			}
 
 			fifty.tests.exports.input.processor.lines = function() {
-				fifty.run(function noTerimnator() {
+				fifty.run(function noTerminator() {
 					var input = test.subject.InputStream.string.default(original);
 					var all: string = "";
 					var lines: string[] = [];
-					test.subject.wo.process(
-						test.subject.wo.character.encoding().lines("\n")({
+					var processor = $api.fp.now(
+						test.subject.wo.text({
+							charset: test.subject.Charset.default,
+							newline: "\n"
+						}),
+						$api.fp.property("lines"),
+						$api.fp.world.Means.effect({
 							progress: function(e) {
 								all += e.detail;
 							},
@@ -683,7 +688,8 @@ namespace slime.jrunscript.runtime.io {
 								lines.push(e.detail);
 							}
 						})
-					)(input);
+					);
+					processor(input);
 					verify(all).is(original);
 					verify(lines).length.is(3);
 					verify(lines)[0].is("foo");
@@ -695,8 +701,13 @@ namespace slime.jrunscript.runtime.io {
 					var input = test.subject.InputStream.string.default(original + "\n");
 					var all: string = "";
 					var lines: string[] = [];
-					test.subject.wo.process(
-						test.subject.wo.character.encoding().lines("\n")({
+					var processor = $api.fp.now(
+						test.subject.wo.text({
+							charset: test.subject.Charset.default,
+							newline: "\n"
+						}),
+						$api.fp.property("lines"),
+						$api.fp.world.Means.effect({
 							progress: function(e) {
 								all += e.detail;
 							},
@@ -704,7 +715,8 @@ namespace slime.jrunscript.runtime.io {
 								lines.push(e.detail);
 							}
 						})
-					)(input);
+					);
+					processor(input);
 					verify(all).is(original + "\n");
 					verify(lines).length.is(4);
 					verify(lines)[0].is("foo");
