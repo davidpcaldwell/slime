@@ -17,11 +17,13 @@
 		var MAJOR_VERSION = 9;
 
 		var DEFAULT_VERSION = {
-			//	Tomcat 7 is EOL
+			//	Tomcat 7/8 are EOL
 			7: "7.0.109",
-			8: "8.5.84",
-			//	As of 2024 Jan 3
-			9: "9.0.84"
+			8: "8.5.100",
+			//	As of 2025 May 27
+			9: "9.0.105", // JDK 8+
+			10: "10.1.41", // JDK 11+
+			11: "11.0.7" // JDK 17+
 		};
 
 		/** @type { slime.jsh.shell.tools.tomcat.World } */
