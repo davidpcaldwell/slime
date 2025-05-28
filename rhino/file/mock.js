@@ -46,7 +46,7 @@
 					}
 					if (!isFile(at)) throw new Error("TODO");
 					return $api.fp.Maybe.from.some(
-						$context.library.io.InputStream.from.java(
+						$context.library.io.InputStream.old.from.java(
 							new Packages.java.io.ByteArrayInputStream(
 								at.data
 							)

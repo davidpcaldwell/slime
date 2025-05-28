@@ -34,12 +34,15 @@ namespace slime.jrunscript.io {
 	)(fifty);
 
 	export interface Exports {
-		InputStream: {
-			from: {
-				string: (value: string) => slime.jrunscript.runtime.io.InputStream
-				java: (native: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.runtime.io.InputStream
+		InputStream: slime.jrunscript.runtime.io.Exports["InputStream"] & {
+			old: {
+				from: {
+					/** @deprecated Use `InputStream.java`. */
+					java: (native: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.runtime.io.InputStream
+				}
+				/** @deprecated Use the stream's `content.string.simple($api.jrunscript.io.Charset.default)` method. */
+				string: slime.$api.fp.world.Sensor<slime.jrunscript.runtime.io.InputStream,void,string>
 			}
-			string: slime.$api.fp.world.Sensor<slime.jrunscript.runtime.io.InputStream,void,string>
 		}
 	}
 
@@ -51,7 +54,7 @@ namespace slime.jrunscript.io {
 			const { jsh } = fifty.global;
 
 			fifty.tests.exports.InputStream = function() {
-				var stream = jsh.io.InputStream.from.string("Hey");
+				var stream = jsh.io.InputStream.string.default("Hey");
 				var read = stream.character().asString();
 				verify(read).is("Hey");
 			}

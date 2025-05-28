@@ -51,6 +51,7 @@ namespace slime.jrunscript.runtime.io {
 			standard: {
 				utf8: Charset
 			}
+			default: Charset
 		}
 	}
 

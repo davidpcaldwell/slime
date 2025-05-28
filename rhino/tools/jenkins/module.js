@@ -13,7 +13,7 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.jenkins.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var readStringStream = $api.fp.world.mapping($context.library.io.InputStream.string);
+		var readStringStream = $api.fp.world.mapping($context.library.io.InputStream.old.string);
 
 		var readJsonStream = $api.fp.pipe(
 			readStringStream,

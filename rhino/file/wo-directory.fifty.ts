@@ -378,7 +378,7 @@ namespace slime.jrunscript.file.exports.location {
 				if (resource.present) {
 					var value = resource.value;
 					var stream = value.read();
-					var string = $api.fp.world.now.ask(jsh.io.InputStream.string(stream));
+					var string = $api.fp.world.now.ask(jsh.io.InputStream.old.string(stream));
 					verify(string).is("foo");
 				}
 

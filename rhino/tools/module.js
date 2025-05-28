@@ -193,7 +193,7 @@
 									directory: false,
 									read: function(events) {
 										var _input = _jarFile.getInputStream(_entry);
-										return $context.library.io.InputStream.from.java(_input);
+										return $context.library.io.InputStream.old.from.java(_input);
 									}
 								}
 							}
@@ -222,7 +222,7 @@
 				Manifest: {
 					from: {
 						string: function(string) {
-							var input = $context.library.io.InputStream.from.string(string);
+							var input = $context.library.io.InputStream.string.default(string);
 							var _manifest = new Packages.java.util.jar.Manifest();
 							_manifest.read(input.java.adapt());
 							return toScriptManifest(_manifest);

@@ -212,7 +212,7 @@ namespace slime.jrunscript.tools.git.credentials {
 					forHelper.helper({
 						operation: "get",
 						project: { base: base },
-						input: jsh.io.InputStream.from.string(
+						input: jsh.io.InputStream.string.default(
 							$api.Array.build(function(lines) {
 								lines.push("host=example.com");
 								lines.push("username=foo");
@@ -238,7 +238,7 @@ namespace slime.jrunscript.tools.git.credentials {
 					forHelper.helper({
 						operation: "get",
 						project: { base: base },
-						input: jsh.io.InputStream.from.string(
+						input: jsh.io.InputStream.string.default(
 							$api.Array.build(function(lines) {
 								lines.push("host=sub.example.com");
 								lines.push("username=foo");

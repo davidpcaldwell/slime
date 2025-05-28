@@ -55,27 +55,22 @@
 		}
 
 
-		/** @type { slime.jrunscript.io.Exports["InputStream"] } */
+		/** @type { slime.jrunscript.io.Exports["InputStream"]["old"] } */
 		var InputStream = {
 			string: function(stream) {
 				return function() {
-					return stream.character().asString();
+					return stream.content.string.simple($api.jrunscript.io.Charset.default);
 				};
 			},
 			from: {
-				string: function(value) {
-					var buffer = new $api.jrunscript.io.Buffer();
-					buffer.writeText().write(value);
-					buffer.close();
-					return buffer.readBinary();
-				},
-				java: function(native) {
-					return $api.jrunscript.io.InputStream.java(native);
-				}
+				java: $api.deprecate($api.jrunscript.io.InputStream.java)
 			}
 		};
 
 		$export({
+			InputStream: $api.Object.compose($api.jrunscript.io.InputStream, {
+				old: InputStream
+			}),
 			Streams: $api.jrunscript.io.Streams,
 			Buffer: $api.jrunscript.io.Buffer,
 			Resource: Object.assign(
@@ -84,7 +79,6 @@
 			),
 			Loader: $context.$slime.Loader,
 			old: $context.$slime.old,
-			InputStream: InputStream,
 			java: {
 				adapt: $api.jrunscript.io.Streams.java.adapt
 			},

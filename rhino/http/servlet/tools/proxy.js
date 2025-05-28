@@ -140,7 +140,7 @@
 									return {
 										binary: function() {
 											var _input = new Packages.java.io.ByteArrayInputStream(buffer.toByteArray());
-											return $context.library.io.InputStream.from.java(_input);
+											return $context.library.io.InputStream.old.from.java(_input);
 										}
 									};
 								})()

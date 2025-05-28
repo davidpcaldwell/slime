@@ -65,7 +65,7 @@ namespace slime.jrunscript.tools.install.downloads {
 
 				const fetch = function(): Download {
 					return {
-						read: () => jsh.io.InputStream.from.string("Hello, World!"),
+						read: () => jsh.io.InputStream.string.default("Hello, World!"),
 						type: $api.fp.Maybe.from.some($api.mime.Type.codec.declaration.decode("text/plain"))
 					};
 				};
