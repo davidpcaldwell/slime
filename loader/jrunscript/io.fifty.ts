@@ -92,7 +92,7 @@ namespace slime.jrunscript.runtime.io {
 	}
 
 	export namespace text {
-		export interface Configuration {
+		export interface Encoding {
 			charset: Charset
 			newline: string
 		}
@@ -152,6 +152,11 @@ namespace slime.jrunscript.runtime.io {
 	//@ts-ignore
 	)(fifty);
 
+	export interface PipeEvents {
+		progress: number
+		done: void
+	}
+
 	/**
 	 * A stream from which bytes may be read.
 	 */
@@ -170,25 +175,6 @@ namespace slime.jrunscript.runtime.io {
 		 * Closes the underlying stream.
 		 */
 		close: () => void
-
-		/** Operations that bridge to Java constructs. */
-		java: {
-			/** Returns a Java `java.io.InputStream` equivalent to this stream. */
-			adapt: () => slime.jrunscript.native.java.io.InputStream
-
-			// /** @deprecated Use `content.ArrayBuffer.simple` to get the content as an `ArrayBuffer`. */
-			//	TODO	would like to deprecate this, see above, but this is used in other places to retrieve native Java byte
-			//			arrays to create new streams. What we need is a stream implementation backed by an `ArrayBuffer`, and then
-			//			callers can switch to that.
-			array: () => slime.jrunscript.Array<byte>
-		}
-
-		/**
-		 * @deprecated Use `Reader.stream` to create a `Reader` from an `InputStream`.
-		 *
-		 * A character input stream that reads this stream.
-		 */
-		character: (mode?: reader.Configuration) => Reader
 	}
 
 	(
@@ -235,6 +221,74 @@ namespace slime.jrunscript.runtime.io {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface InputStream {
+		pipe: {
+			all: $api.fp.world.Means<OutputStream, PipeEvents>
+		}
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.InputStream.object.pipe = fifty.test.Parent();
+
+			fifty.tests.exports.InputStream.object.pipe.all = function() {
+				var captor = fifty.$api.Events.Captor({
+					progress: void(0),
+					done: void(0)
+				});
+
+				const bytes = [0,1,2,3];
+
+				var input = test.subject.InputStream.java(test.javaInputStreamOf(bytes));
+
+				var _output = new Packages.java.io.ByteArrayOutputStream();
+				var output = test.subject.OutputStream(_output);
+
+				var action = input.pipe.all(output);
+
+				$api.fp.world.Action.now({
+					action: action,
+					handlers: captor.handler
+				});
+
+				verify(_output.toByteArray().length).evaluate(Number).is(4);
+
+				verify(captor).events.length.is(2);
+				verify(captor).events[0].type.is("progress");
+				verify(captor).events[0].detail.evaluate(Number).is(4);
+				verify(captor).events[1].type.is("done");
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+	export interface InputStream {
+		/** Operations that bridge to Java constructs. */
+		java: {
+			/** Returns a Java `java.io.InputStream` equivalent to this stream. */
+			adapt: () => slime.jrunscript.native.java.io.InputStream
+
+			// /** @deprecated Use `content.ArrayBuffer.simple` to get the content as an `ArrayBuffer`. */
+			//	TODO	would like to deprecate this, see above, but this is used in other places to retrieve native Java byte
+			//			arrays to create new streams. What we need is a stream implementation backed by an `ArrayBuffer`, and then
+			//			callers can switch to that.
+			array: () => slime.jrunscript.Array<byte>
+		}
+
+		/**
+		 * @deprecated Use `Reader.stream` to create a `Reader` from an `InputStream`.
+		 *
+		 * A character input stream that reads this stream.
+		 */
+		character: (mode?: reader.Configuration) => Reader
+	}
 
 	export interface Exports {
 		OutputStream: (p: slime.jrunscript.native.java.io.OutputStream) => OutputStream
@@ -313,7 +367,7 @@ namespace slime.jrunscript.runtime.io {
 		Reader: {
 			stream: (p: {
 				stream: InputStream
-				configuration?: text.Configuration
+				encoding?: text.Encoding
 			}) => Reader
 
 			java: (p: slime.jrunscript.native.java.io.Reader, properties?: { LINE_SEPARATOR?: string }) => Reader
@@ -594,7 +648,7 @@ namespace slime.jrunscript.runtime.io {
 				var read = b.readBinary();
 				var text = test.subject.Reader.stream({
 					stream: read,
-					configuration: {
+					encoding: {
 						charset: utf8,
 						newline: "\n"
 					}
@@ -633,7 +687,7 @@ namespace slime.jrunscript.runtime.io {
 
 	export interface Exports {
 		wo: {
-			text: (configuration: text.Configuration) => StringProcessor
+			text: (configuration: text.Encoding) => StringProcessor
 		}
 	}
 

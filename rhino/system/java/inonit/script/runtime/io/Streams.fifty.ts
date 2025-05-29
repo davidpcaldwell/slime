@@ -6,12 +6,22 @@
 
 namespace slime.jrunscript.native.inonit.script.runtime.io {
 	export namespace Streams {
-		export interface Events<T> {
+		export interface ReadEvents<T> {
 			//	opaque to JavaScript
+		}
+
+		export interface PipeEvents {
 		}
 	}
 
 	export interface Streams {
+		pipeAll: (
+			i: slime.jrunscript.native.java.io.InputStream,
+			o: slime.jrunscript.native.java.io.OutputStream,
+			events: slime.jrunscript.native.inonit.script.runtime.io.Streams.PipeEvents,
+			closeInputStream: boolean
+		) => void
+
 		copy: {
 			(i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream, closeInputStream?: boolean): void
 			(r: slime.jrunscript.native.java.io.Reader, w: slime.jrunscript.native.java.io.Writer): void
@@ -32,11 +42,11 @@ namespace slime.jrunscript.native.inonit.script.runtime.io {
 		readString: (reader: slime.jrunscript.native.java.io.Reader) => slime.jrunscript.native.java.lang.String
 
 		readAll: {
-			(reader: slime.jrunscript.native.java.io.Reader, events: slime.jrunscript.native.inonit.script.runtime.io.Streams.Events<string>): void
+			(reader: slime.jrunscript.native.java.io.Reader, events: slime.jrunscript.native.inonit.script.runtime.io.Streams.ReadEvents<string>): void
 		}
 
 		readLines: {
-			(reader: slime.jrunscript.native.java.io.Reader, delimiter: string, events: slime.jrunscript.native.inonit.script.runtime.io.Streams.Events<string>): void
+			(reader: slime.jrunscript.native.java.io.Reader, delimiter: string, events: slime.jrunscript.native.inonit.script.runtime.io.Streams.ReadEvents<string>): void
 		}
 
 		readLine: (r: java.io.Reader, terminator: string) => java.lang.String

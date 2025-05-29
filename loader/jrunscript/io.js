@@ -108,6 +108,36 @@
 				close: function() {
 					peer.close();
 				},
+				pipe: {
+					all: function(o) {
+						return function(events) {
+							_java.pipeAll(
+								peer,
+								o.java.adapt(),
+								new JavaAdapter(
+									Packages.inonit.script.runtime.io.Streams.PipeEvents,
+									{
+										/**
+										 *
+										 * @param { number } count
+										 */
+										progress: function(count) {
+											events.fire("progress", count);
+										},
+										error: function(e) {
+											//	TODO	improve
+											throw new Error();
+										},
+										done: function() {
+											events.fire("done");
+										}
+									}
+								),
+								true
+							);
+						}
+					}
+				},
 				character: character,
 				java: {
 					adapt: function() {
@@ -152,7 +182,7 @@
 		 */
 		var Reader = {
 			stream: function(p) {
-				var mode = p.configuration;
+				var mode = p.encoding;
 				if (!mode) mode = {
 					charset: void(0),
 					newline: void(0)
@@ -474,7 +504,7 @@
 						return function(events) {
 							var reader = Reader.stream({
 								stream: input,
-								configuration: configuration
+								encoding: configuration
 							});
 							var rv = reader.asString();
 							events.fire("progress", rv);
@@ -507,7 +537,7 @@
 					},
 					lines: function(input) {
 						return function(events) {
-							var reader = Reader.stream({ stream: input, configuration: configuration });
+							var reader = Reader.stream({ stream: input, encoding: configuration });
 							$context._streams.readLines(
 								reader.java.adapt(),
 								configuration.newline,
