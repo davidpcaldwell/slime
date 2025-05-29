@@ -10,17 +10,70 @@ import java.io.*;
 import java.util.*;
 
 public class Streams {
-	public void copy(InputStream in, OutputStream out, boolean closeInputStream) throws IOException {
+	public static abstract class PipeEvents {
+		public abstract void progress(long count);
+		public abstract void error(IOException e) throws IOException;
+		public abstract void done();
+	}
+
+	private static class CountingOutputStream extends java.io.OutputStream {
+		private OutputStream o;
+		private long count;
+
+		CountingOutputStream(OutputStream o) {
+			this.o = o;
+		}
+
+		@Override public void write(int b) throws IOException {
+			o.write(b);
+			o.flush();
+			count++;
+		}
+
+		@Override public void write(byte[] b) throws IOException {
+			o.write(b);
+			o.flush();
+			count += b.length;
+		}
+
+		@Override public void write(byte[] b, int off, int len) throws IOException {
+			o.write(b, off, len);
+			o.flush();
+			count += len;
+		}
+
+		long count() {
+			return count;
+		}
+	}
+
+	public void pipeAll(InputStream in, OutputStream out, PipeEvents events, boolean closeInputStream) throws IOException {
 		in = new BufferedInputStream(in);
-		out = new BufferedOutputStream(out);
+		CountingOutputStream cout = new CountingOutputStream(new BufferedOutputStream(out));
 		int i;
-		while((i = in.read()) != -1) {
-			out.write(i);
+		try {
+			while((i = in.read()) != -1) {
+				cout.write(i);
+			}
+			cout.flush();
+			if (closeInputStream) {
+				in.close();
+			}
+			events.progress(cout.count());
+			events.done();
+		} catch (IOException e) {
+			events.error(e);
 		}
-		out.flush();
-		if (closeInputStream) {
-			in.close();
-		}
+	}
+
+	public void copy(InputStream in, OutputStream out, boolean closeInputStream) throws IOException {
+		final IOException[] exception = new IOException[1];
+		pipeAll(in, out, new PipeEvents() {
+			@Override public void progress(long count) {}
+			@Override public void done() {}
+			@Override public void error(IOException e) { exception[0] = e; }
+		}, closeInputStream);
+		if (exception[0] != null) throw exception[0];
 	}
 
 	public void copy(InputStream in, OutputStream out) throws IOException {
