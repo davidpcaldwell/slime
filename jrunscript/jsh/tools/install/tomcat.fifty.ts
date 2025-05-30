@@ -11,6 +11,98 @@ namespace slime.jsh.shell.tools {
 }
 
 namespace slime.jsh.shell.tools.tomcat {
+	export interface World {
+		getDefaultMajorVersion: slime.$api.fp.Thunk<number>
+		getLatestVersion: slime.$api.fp.world.Sensor<number,void,slime.$api.fp.Maybe<string>>
+		findApache: slime.jsh.Global["tools"]["install"]["apache"]["find"]
+	}
+
+	export namespace old {
+		export type World = Pick<slime.jsh.shell.tools.tomcat.World,"getLatestVersion"|"findApache">
+	}
+
+	export interface Api {
+		world: World
+	}
+
+	export interface Exports {
+		world: {
+			getDefaultMajorVersion: World["getDefaultMajorVersion"]
+			getLatestVersion: World["getLatestVersion"]
+			findApache: World["findApache"]
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+			const subject = jsh.shell.tools.tomcat as Exports;
+
+			fifty.tests.world = fifty.test.Parent();
+			fifty.tests.manual = {};
+
+			fifty.tests.world.getDefaultMajorVersion = function() {
+				jsh.shell.console(String(subject.world.getDefaultMajorVersion()));
+			}
+
+			fifty.tests.world.getLatestVersion = function() {
+				$api.fp.now(
+					9,
+					$api.fp.now(
+						subject.world.getLatestVersion,
+						$api.fp.world.Sensor.mapping(void(0))
+					),
+					JSON.stringify,
+					jsh.shell.console
+				);
+			}
+
+			fifty.tests.manual.hello = function() {
+				var location = $api.fp.now(
+					"../../../../local/jsh/lib/tomcat",
+					fifty.jsh.file.relative
+				);
+				if ($api.fp.now(location, jsh.file.Location.directory.exists.simple)) {
+					jsh.shell.console("Removing Tomcat ...");
+					$api.fp.now(
+						location,
+						jsh.file.Location.directory.remove.simple
+					);
+				}
+
+				var run = $api.fp.now(
+					jsh.shell.subprocess.question,
+					$api.fp.world.Sensor.mapping()
+				);
+
+				jsh.shell.console("Running tomcat-hello.jsh.js ...");
+				run({
+					command: "bash",
+					arguments: $api.Array.build(function(rv) {
+						rv.push(fifty.jsh.file.relative("../../../../jsh").pathname);
+						rv.push(fifty.jsh.file.relative("test/tomcat-hello.jsh.js").pathname);
+					})
+				});
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		api: (world: World) => Api
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.api = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export type Version = {
 		toString(): string
 	}
@@ -56,34 +148,13 @@ namespace slime.jsh.shell.tools.tomcat {
 		}
 	}
 
-	export interface World {
-		getLatestVersion: slime.$api.fp.world.Sensor<number,void,slime.$api.fp.Maybe<string>>
-		findApache: slime.jsh.Global["tools"]["install"]["apache"]["find"]
-	}
-
-	export type Mock = Partial<World>
+	export type Mock = Partial<old.World>
 
 	export namespace old {
-		export type Argument = {
-			mock?: {
-				lib?: slime.jrunscript.file.Directory
-				getLatestVersion?: () => string
-				findApache?: slime.jsh.Global["tools"]["install"]["apache"]["find"]
-			}
-			to?: slime.jrunscript.file.Pathname
-			replace?: boolean
-			version?: string
-			local?: slime.jrunscript.file.File
-		}
-
 		export type Handler = slime.$api.event.Handlers<tomcat.install.Events>
 	}
 
 	export interface Exports {
-		input: {
-			getDefaultMajorVersion: slime.$api.fp.impure.Input<number>
-		}
-
 		Installation: {
 			from: {
 				/**
@@ -185,7 +256,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			const { $api, jsh } = fifty.global;
 			const subject = jsh.shell.tools.tomcat as Exports;
 
-			var majorVersion = subject.input.getDefaultMajorVersion();
+			var majorVersion = subject.world.getDefaultMajorVersion();
 
 			var orNull = function<T>(maybe: slime.$api.fp.Maybe<T>): T {
 				if (maybe.present) return maybe.value;
@@ -455,8 +526,6 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 				fifty.run(fifty.tests.external);
 			};
-
-			fifty.tests.manual = {};
 
 			fifty.tests.manual.getLatestVersion = function() {
 				var getLatestVersion = $api.fp.world.mapping(subject.test.getLatestVersion, {

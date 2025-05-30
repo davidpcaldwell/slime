@@ -199,6 +199,12 @@
 					}
 				}
 				log.FINE("Created request body.");
+
+				this.java = {
+					adapt: function() {
+						return _request;
+					}
+				}
 			}
 		);
 

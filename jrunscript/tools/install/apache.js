@@ -10,8 +10,8 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { { client: slime.jrunscript.http.client.object.Client, downloads: slime.jrunscript.file.Directory, get: slime.jrunscript.tools.install.Exports["get"] } } $context
-	 * @param { { find: slime.jrunscript.tools.install.Exports["apache"]["find"] } } $exports
+	 * @param { slime.jrunscript.tools.install.apache.Context } $context
+	 * @param { slime.jrunscript.tools.install.apache.Exports } $exports
 	 */
 	function(Packages,$api,$context,$exports) {
 		var getMirror = function() {
@@ -40,6 +40,7 @@
 						return mirror + p.path
 					})
 				});
+				events.fire("console", "Downloading from " + argument.url + " ...");
 				return $context.get(argument);
 			};
 		};

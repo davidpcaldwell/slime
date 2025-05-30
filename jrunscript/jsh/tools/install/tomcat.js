@@ -26,13 +26,11 @@
 			11: "11.0.7" // JDK 17+
 		};
 
-		/** @type { slime.jsh.shell.tools.tomcat.World } */
+		/** @type { slime.jsh.shell.tools.tomcat.old.World } */
 		var world = {
 			findApache: $context.library.install.apache.find,
 			getLatestVersion: function(major) {
 				return function(events) {
-					//	Work around regression under JDK 17; see https://www.mail-archive.com/users@tomcat.apache.org/msg144624.html
-					if (major == 9) return $api.fp.Maybe.from.some("9.0.98");
 					try {
 						//	This step would fail for Tomcat 7
 						var downloadRawHtml = new $context.library.http.Client().request({
@@ -98,7 +96,7 @@
 		/**
 		 *
 		 * @param { slime.jsh.shell.tools.tomcat.Mock } mock
-		 * @returns { slime.jsh.shell.tools.tomcat.World }
+		 * @returns { slime.jsh.shell.tools.tomcat.old.World }
 		 */
 		var getWorld = function(mock) {
 			return {
@@ -299,11 +297,6 @@
 		};
 
 		$export({
-			input: {
-				getDefaultMajorVersion: function() {
-					return MAJOR_VERSION;
-				}
-			},
 			Installation: Installation,
 			jsh: (Installation_from_jsh()) ? (
 				function() {
@@ -342,6 +335,18 @@
 					);
 					$api.events.Handlers.detach(listener);
 				}
+			},
+			world: {
+				getDefaultMajorVersion: function() {
+					return MAJOR_VERSION;
+				},
+				getLatestVersion: world.getLatestVersion,
+				findApache: world.findApache
+			},
+			api: function(world) {
+				return {
+					world: world
+				};
 			},
 			test: {
 				getVersionFromReleaseNotes: getVersion,
