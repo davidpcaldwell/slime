@@ -1097,7 +1097,7 @@ namespace slime.$api.fp.world {
 		}
 
 		Action: {
-			output: <P,E>(handler?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Means<P,E>) => slime.$api.fp.impure.Output<P>
+			output: <P,E>(handlers?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Means<P,E>) => slime.$api.fp.impure.Output<P>
 
 			tell: <P,E>(p: P) => (action: world.Means<P,E>) => world.Action<E>
 
@@ -1114,10 +1114,14 @@ namespace slime.$api.fp.world {
 			 */
 			pipe: <P,R,E>(mapping: slime.$api.fp.Mapping<P,R>) => (action: slime.$api.fp.world.Means<R,E>) => slime.$api.fp.world.Means<P,E>
 
-			process: <E>(p: {
-				action: slime.$api.fp.world.Action<E>
-				handlers?: slime.$api.event.Handlers<E>
-			}) => slime.$api.fp.impure.Process
+			process: <E>(events?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Action<E>) => slime.$api.fp.impure.Process
+
+			old: {
+				process: <E>(p: {
+					action: slime.$api.fp.world.Action<E>
+					handlers?: slime.$api.event.Handlers<E>
+				}) => slime.$api.fp.impure.Process
+			}
 
 			now: <E>(p: {
 				action: slime.$api.fp.world.Action<E>
