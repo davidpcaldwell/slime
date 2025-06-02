@@ -1114,7 +1114,7 @@ namespace slime.$api.fp.world {
 			 */
 			pipe: <P,R,E>(mapping: slime.$api.fp.Mapping<P,R>) => (action: slime.$api.fp.world.Means<R,E>) => slime.$api.fp.world.Means<P,E>
 
-			process: <E>(events: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Action<E>) => slime.$api.fp.impure.Process
+			process: <E>(events?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Action<E>) => slime.$api.fp.impure.Process
 
 			old: {
 				process: <E>(p: {
