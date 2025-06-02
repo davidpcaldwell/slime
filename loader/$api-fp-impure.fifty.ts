@@ -824,7 +824,8 @@ namespace slime.$api.fp.world {
 				handlers?: slime.$api.event.Handlers<E>
 			}) => impure.Output<O>
 
-			effect: <O,E>(events: slime.$api.event.Handlers<E>) => (means: slime.$api.fp.world.Means<O,E>) => impure.Effect<O>
+			effect: <O,E>(events?: slime.$api.event.Handlers<E>)
+				=> (means: slime.$api.fp.world.Means<O,E>) => impure.Effect<O>
 
 			process: <O,E>(p: {
 				means: slime.$api.fp.world.Means<O,E>
