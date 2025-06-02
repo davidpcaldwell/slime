@@ -223,7 +223,7 @@
 							require: {
 								world: require,
 								action: require(void(0))(void(0)),
-								simple: $api.fp.world.Action.process({
+								simple: $api.fp.world.Action.old.process({
 									action: require(void(0))(void(0))
 								})
 							}
@@ -890,7 +890,7 @@
 
 						return {
 							action: action,
-							simple: $api.fp.world.Action.process({ action: action })
+							simple: $api.fp.world.Action.old.process({ action: action })
 						}
 					})();
 

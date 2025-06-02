@@ -414,12 +414,24 @@
 						}
 					}
 				},
-				process: function(p) {
-					return function() {
-						$context.events.handle({
-							implementation: p.action,
-							handlers: p.handlers
-						});
+				process: function(h) {
+					return function(a) {
+						return function() {
+							$context.events.handle({
+								implementation: a,
+								handlers: h
+							});
+						}
+					}
+				},
+				old: {
+					process: function(p) {
+						return function() {
+							$context.events.handle({
+								implementation: p.action,
+								handlers: p.handlers
+							});
+						}
 					}
 				},
 				now: function(p) {
