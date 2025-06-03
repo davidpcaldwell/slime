@@ -20,6 +20,36 @@
 	 * @this { slime.internal.jrunscript.bootstrap.Global<{}> }
 	 */
 	function() {
+		var ToObject = function(v) {
+			//	https://www.ecma-international.org/ecma-262/6.0/#sec-toobject
+			if (typeof(v) == "undefined" || v === null) throw new TypeError("ToObject() cannot be invoked with argument " + v);
+			if (typeof(v) == "boolean") return Boolean(v);
+			if (typeof(v) == "number") return Number(v);
+			if (typeof(v) == "string") return String(v);
+			return v;
+		}
+
+		//	TODO	duplicated in loader/polyfill.js
+		if (!Object.assign) {
+			//	https://www.ecma-international.org/ecma-262/6.0/#sec-object.assign
+			//	TODO	currently the basics can be tested manually with loader/test/test262.jsh.js -file local/test262/test/built-ins/Object/assign/Target-Object.js
+			Object.defineProperty(Object, "assign", {
+				value: function assign(target,firstSource /* to set function .length properly*/) {
+					var rv = ToObject(target);
+					if (arguments.length == 1) return rv;
+					for (var i=1; i<arguments.length; i++) {
+						var source = (typeof(arguments[i]) == "undefined" || arguments[i] === null) ? {} : ToObject(arguments[i]);
+						for (var x in source) {
+							rv[x] = source[x];
+						}
+					}
+					return rv;
+				},
+				writable: true,
+				configurable: true
+			});
+		}
+
 		var load = this.load;
 
 		//	TODO	seems to assume the presence of a global function called 'load' -- should handle this more like other global
@@ -1004,66 +1034,85 @@
 		})();
 
 		$api.java = {
+			version: {
+				property: {
+					major: function(javaVersionProperty) {
+						var oneDotPattern = /^1\.(.*)\./;
+						var majorVersionPattern = /^(\d+)\./;
+						if (oneDotPattern.test(javaVersionProperty)) {
+							return Number(oneDotPattern.exec(javaVersionProperty)[1]);
+						} else if (majorVersionPattern.test(javaVersionProperty)) {
+							return Number(majorVersionPattern.exec(javaVersionProperty)[1])
+						}
+					}
+				}
+			},
 			Install: void(0),
 			install: void(0),
 			getClass: void(0),
 			Array: void(0),
 			Command: void(0)
 		};
-		$api.java.Install = function(home) {
-			var File = Packages.java.io.File;
 
-			this.toString = function() {
-				return "Java home: " + home;
-			}
+		$api.java.Install = (
+			/**
+			 * @type { slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Install"] }
+			 */
+			function(home) {
+				var File = Packages.java.io.File;
 
-			this.home = home;
-			this.launcher = (function() {
-				if (new File(home, "bin/java").exists()) return new File(home, "bin/java");
-				if (new File(home, "bin/java.exe").exists()) return new File(home, "bin/java.exe");
-			})();
-			this.jrunscript = (function() {
-				if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
-				if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
-				if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
-				if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
-			})();
-
-			(function addCompileMethod() {
-				var tried = false;
-				var compiler;
-
-				var implementation = function(args) {
-					var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
-					for (var i=0; i<jarray.length; i++) {
-						jarray[i] = new Packages.java.lang.String(args[i]);
-					}
-					var SUPPRESS_COMPILATION_OUTPUT = !$api.debug.on;
-					$api.debug("Suppress compilation output = " + SUPPRESS_COMPILATION_OUTPUT)
-					var NOWHERE = new JavaAdapter(
-						Packages.java.io.OutputStream,
-						new function() {
-							this.write = function(b){}
-						}
-					);
-					var status = compiler.run(
-						Packages.java.lang.System["in"],
-						Packages.java.lang.System.out,
-						(SUPPRESS_COMPILATION_OUTPUT) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
-						jarray
-					);
-					if (status) {
-						var error = new Error("Compiler exited with status " + status + " with inputs " + args.join(" ")
-							+ " and java.class.path=" + Packages.java.lang.System.getProperty("java.class.path"));
-						Packages.java.lang.System.err.println(String(error));
-						Packages.java.lang.System.err.println(error.stack);
-						throw error;
-					}
+				/** @type { ReturnType<slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Install"]> } */
+				var basic = {
+					toString: function() {
+						return "Java home: " + home;
+					},
+					home: home,
+					launcher: (function() {
+						if (new File(home, "bin/java").exists()) return new File(home, "bin/java");
+						if (new File(home, "bin/java.exe").exists()) return new File(home, "bin/java.exe");
+					})(),
+					jrunscript: (function() {
+						if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
+						if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
+						if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
+						if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
+					})(),
+					compile: void(0)
 				};
 
-				//	TODO	refactor into making the getter a separate function and reusing it: as getting in if and invoked in else
-				if (Object.defineProperty) {
-					Object.defineProperty(this, "compile", {
+				(function addCompileMethod(rv) {
+					var implementation = function(args) {
+						var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
+						for (var i=0; i<jarray.length; i++) {
+							jarray[i] = new Packages.java.lang.String(args[i]);
+						}
+						var SUPPRESS_COMPILATION_OUTPUT = !$api.debug.on;
+						$api.debug("Suppress compilation output = " + SUPPRESS_COMPILATION_OUTPUT)
+						var NOWHERE = new JavaAdapter(
+							Packages.java.io.OutputStream,
+							new function() {
+								this.write = function(b){}
+							}
+						);
+						var status = compiler.run(
+							Packages.java.lang.System["in"],
+							Packages.java.lang.System.out,
+							(SUPPRESS_COMPILATION_OUTPUT) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
+							jarray
+						);
+						if (status) {
+							var error = new Error("Compiler exited with status " + status + " with inputs " + args.join(" ")
+								+ " and java.class.path=" + Packages.java.lang.System.getProperty("java.class.path"));
+							Packages.java.lang.System.err.println(String(error));
+							Packages.java.lang.System.err.println(error.stack);
+							throw error;
+						}
+					};
+
+					var tried = false;
+					var compiler;
+
+					Object.defineProperty(rv, "compile", {
 						get: function() {
 							if (!tried) {
 								compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
@@ -1075,14 +1124,23 @@
 							return void(0);
 						}
 					});
-				} else {
-					compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-					this.compile = implementation;
-				}
-			}).call(this);
-		};
+				})(basic);
 
-		$api.java.install = new $api.java.Install(new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home")));
+				return basic;
+			}
+		);
+
+		$api.java.install = Object.assign(
+			$api.java.Install(new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"))),
+			{
+				version: {
+					major: function() {
+						return $api.java.version.property.major(String(Packages.java.lang.System.getProperty("java.version")));
+					}
+				}
+			}
+		);
+
 		$api.java.getClass = function(name) {
 			return $engine.getClass(name);
 		}

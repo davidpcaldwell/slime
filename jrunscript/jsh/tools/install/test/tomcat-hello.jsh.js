@@ -57,12 +57,17 @@
 			url: "http://127.0.0.1:" + tomcat.port + "/foo"
 		});
 		var string = answer.stream.content.string.simple($api.jrunscript.io.Charset.default);
-		//jsh.shell.console(string);
-		jsh.shell.echo(JSON.stringify({
-			status: answer.status,
-			headers: answer.headers,
-			body: JSON.parse(string)
-		},void(0),4));
+		try {
+			var body = JSON.parse(string);
+			jsh.shell.echo(JSON.stringify({
+				status: answer.status,
+				headers: answer.headers,
+				body: JSON.parse(string)
+			},void(0),4));
+		} catch (e) {
+			jsh.shell.console("Could not parse JSON: " + string);
+			throw new Error();
+		}
 		tomcat.stop();
 	}
 //@ts-ignore

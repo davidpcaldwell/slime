@@ -14,7 +14,25 @@
 	 * @param { slime.loader.Export<slime.jsh.shell.tools.internal.tomcat.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
-		var MAJOR_VERSION = 9;
+		var getDefaultMajorVersion = function() {
+			var javaMajorVersion = $context.jsh.internal.bootstrap.java.install.version.major();
+			if (javaMajorVersion >= 17) return 11;
+			if (javaMajorVersion >= 11) return 10;
+			if (javaMajorVersion >= 8) return 9;
+			throw new Error("Unsupported Java version " + javaMajorVersion);
+		};
+
+		/**
+		 * @param { { tomcat: string, java: string } } p
+		 */
+		var isCompatible = function(p) {
+			var tomcat = $api.fp.now(p.tomcat.split(".")[0], Number);
+			var java = $context.jsh.internal.bootstrap.java.install.version.major();
+			if (tomcat == 11) return java >= 17;
+			if (tomcat == 10) return java >= 11;
+			if (tomcat == 9) return java >= 8;
+			throw new Error("Unsupported Tomcat version: " + p.tomcat);
+		};
 
 		var DEFAULT_VERSION = {
 			//	Tomcat 7/8 are EOL
@@ -32,9 +50,10 @@
 			getLatestVersion: function(major) {
 				return function(events) {
 					try {
+						var suffix = (major < 10) ? "0" : "";
 						//	This step would fail for Tomcat 7
 						var downloadRawHtml = new $context.library.http.Client().request({
-							url: "http://tomcat.apache.org/download-" + major + "0.cgi",
+							url: "http://tomcat.apache.org/download-" + major + suffix + ".cgi",
 							evaluate: function(result) {
 								return result.body.stream.character().asString()
 							}
@@ -201,6 +220,7 @@
 
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["install"] } */
 		var newInstall = function(installation) {
+			var MAJOR_VERSION = 9;
 			return function(p) {
 				return function(events) {
 					var findApache = (p.world && p.world.findApache) ? p.world.findApache : $context.library.install.apache.find;
@@ -242,10 +262,9 @@
 			}
 		}
 
-		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["require"] } */
-		var newRequire = function(installation) {
+		/** @type { slime.jsh.shell.tools.internal.tomcat.require } */
+		var newRequireGeneralize = function(installation) {
 			return function(p) {
-				if (!p) p = {};
 				return function(events) {
 					var replace = p.replace || (function() {
 						return p.version ? function(version) {
@@ -254,6 +273,7 @@
 							return false;
 						}
 					})();
+					var MAJOR_VERSION = p.world.getDefaultMajorVersion();
 					var version = p.version || getLatestVersion(p.world)(MAJOR_VERSION);
 					var installed = Installation_getVersion(installation);
 					/** @type { boolean } Whether to install the provided version. */
@@ -283,6 +303,27 @@
 						}
 					}
 				}
+			}
+		};
+
+		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["require"] } */
+		var newRequire = function(installation) {
+			return function(p) {
+				if (!p) p = {};
+				return newRequireGeneralize(installation)({
+					world: (
+						function() {
+							var was = getWorld(p.world);
+							return {
+								getDefaultMajorVersion: getDefaultMajorVersion,
+								getLatestVersion: was.getLatestVersion,
+								findApache: was.findApache
+							}
+						}
+					)(),
+					replace: p.replace,
+					version: p.version
+				});
 			}
 		}
 
@@ -337,9 +378,7 @@
 				}
 			},
 			world: {
-				getDefaultMajorVersion: function() {
-					return MAJOR_VERSION;
-				},
+				getDefaultMajorVersion: getDefaultMajorVersion,
 				getLatestVersion: world.getLatestVersion,
 				findApache: world.findApache
 			},

@@ -467,6 +467,7 @@ namespace slime.jrunscript {
 					TYPE: any
 				}
 				Number: JavaClass
+				AssertionError: any
 			}
 			io: {
 				ByteArrayInputStream: new (bytes: any) => slime.jrunscript.native.java.io.ByteArrayInputStream
@@ -635,6 +636,9 @@ namespace slime.jrunscript {
 			}
 		}
 		javax: any
+		jakarta: {
+			servlet: any
+		}
 		javafx: any
 		org: {
 			openjdk: {

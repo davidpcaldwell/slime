@@ -47,7 +47,7 @@ namespace slime.jsh.shell.tools.tomcat {
 				jsh.shell.console(String(subject.world.getDefaultMajorVersion()));
 			}
 
-			fifty.tests.world.getLatestVersion = function() {
+			fifty.tests.world.getLatestVersion9 = function() {
 				$api.fp.now(
 					9,
 					$api.fp.now(
@@ -83,7 +83,10 @@ namespace slime.jsh.shell.tools.tomcat {
 					arguments: $api.Array.build(function(rv) {
 						rv.push(fifty.jsh.file.relative("../../../../jsh").pathname);
 						rv.push(fifty.jsh.file.relative("test/tomcat-hello.jsh.js").pathname);
-					})
+					}),
+					environment: function(was) {
+						return $api.Object.compose(was, { JSH_DEBUG_SCRIPT: "rhino" })
+					}
 				});
 			}
 		}
@@ -226,6 +229,9 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 		}
 		console: slime.$api.fp.impure.Effect<string>
 		jsh: {
+			internal: {
+				bootstrap: slime.jsh.Global["internal"]["bootstrap"]
+			}
 			loader: {
 				plugins: slime.jsh.Global["loader"]["plugins"]
 			}
@@ -236,6 +242,15 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			}
 		}
 	}
+
+	export type require = (installation: slime.jsh.shell.tools.tomcat.Installed) => slime.$api.fp.world.Means<
+		{
+			world: slime.jsh.shell.tools.tomcat.World
+			version?: string
+			replace?: (version: string) => boolean
+		},
+		slime.jsh.shell.tools.tomcat.installation.RequireEvents
+	>
 
 	export interface Exports extends slime.jsh.shell.tools.tomcat.Exports {
 		test: {
