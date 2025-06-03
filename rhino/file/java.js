@@ -273,7 +273,10 @@
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["list"] } */
 				this.list = function(peer) {
-					return peer.list();
+					//	Can this be null?
+					var _array = peer.list();
+					if (_array === null) return null;
+					return $context.api.java.Array.adapt(_array);
 				};
 
 				this.posix = void(0);
@@ -558,7 +561,7 @@
 				return function() {
 					return $api.fp.world.old.ask(function(events) {
 						var peer = java.newPeer(pathname);
-						return peer.list().map(function(node) {
+						return $context.api.java.Array.adapt(peer.list()).map(function(node) {
 							return pathname_create(String(node.getScriptPath()));
 						})
 					});
@@ -703,7 +706,7 @@
 						if (!peer.exists()) return $api.fp.Maybe.from.nothing();
 						var list = peer.list();
 						return $api.fp.Maybe.from.some(
-							list.map(
+							$context.api.java.Array.adapt(list).map(
 								/** @type { slime.$api.fp.Mapping<slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node,string> } */
 								function(node) {
 									return String(node.getHostFile().getName());

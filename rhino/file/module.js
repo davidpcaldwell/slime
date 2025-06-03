@@ -32,6 +32,7 @@
 
 		var world = code.java({
 			api: {
+				java: $context.api.java,
 				io: $context.api.io
 			}
 		});

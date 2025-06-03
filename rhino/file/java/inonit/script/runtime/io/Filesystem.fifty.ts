@@ -39,7 +39,7 @@ namespace slime.jrunscript.native {
 				delete: () => void
 				move: (to: Node) => void
 
-				list: () => Node[]
+				list: () => slime.jrunscript.Array<Node>
 
 				//	TODO	exists only for Cygwin
 				invalidate: () => void
