@@ -7,6 +7,7 @@
 namespace slime.jrunscript.file.internal.java {
 	export interface Context {
 		api: {
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 		}
 	}
@@ -154,6 +155,7 @@ namespace slime.jrunscript.file.internal.java {
 
 			var subject = code({
 				api: {
+					java: fifty.global.jsh.java,
 					io: fifty.global.jsh.io
 				}
 			});

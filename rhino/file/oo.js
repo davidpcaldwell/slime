@@ -60,6 +60,7 @@
 								var code = $loader.script("java.js");
 								return code({
 									api: {
+										java: $context.api.java,
 										io: $context.api.io
 									}
 								})
