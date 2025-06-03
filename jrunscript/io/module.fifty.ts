@@ -136,7 +136,7 @@ namespace slime.jrunscript.io {
 		}
 		mime: slime.jrunscript.io.mime.Exports
 		archive: {
-			zip: archive.Format
+			zip: zip.Exports
 		}
 		grid: slime.jrunscript.io.grid.Exports
 		system: slime.jrunscript.runtime.io.Exports["system"]

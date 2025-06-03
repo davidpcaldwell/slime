@@ -10,8 +10,8 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { { Streams: any, InputStream: slime.jrunscript.runtime.io.Exports["InputStream"]["java"] } } $context
-	 * @param { slime.jrunscript.io.Exports["archive"]["zip"] } $exports
+	 * @param { slime.jrunscript.io.zip.Context } $context
+	 * @param { slime.jrunscript.io.zip.Exports } $exports
 	 */
 	function(Packages,$api,$context,$exports) {
 		var _streams = new Packages.inonit.script.runtime.io.Streams();
@@ -99,15 +99,26 @@
 		$exports.decode = function(p) {
 			var _zipstream = new Packages.java.util.zip.ZipInputStream(p.stream.java.adapt());
 			var entry;
-			/** @type { slime.jrunscript.io.archive.Entry<{}>[] } */
+			/** @type { slime.jrunscript.io.archive.Entry<slime.jrunscript.io.zip.Entries>[] } */
 			var array = [];
 			while( (entry = _zipstream.getNextEntry()) != null ) {
 				var name = String(entry.getName());
 				if (name.substring(name.length-1) == "/") {
-					array.push({ path: name.substring(0,name.length-1) });
+					array.push({
+						path: name.substring(0,name.length-1),
+						time: {
+							modified: entry.getTime
+						}
+					});
 				} else {
 					var _bytes = _streams.readBytes(_zipstream, false);
-					array.push({ path: name, content: $context.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes)) });
+					array.push({
+						path: name,
+						time: {
+							modified: entry.getTime
+						},
+						content: $context.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes))
+					});
 				}
 			}
 			return $api.fp.Stream.from.array(array);

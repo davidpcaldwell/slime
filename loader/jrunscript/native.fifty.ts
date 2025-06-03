@@ -24,6 +24,7 @@ namespace slime.jrunscript {
 					equals(other: any): boolean
 					toCharArray(): any
 					getBytes(): any
+					endsWith(suffix: java.lang.String): boolean
 				}
 
 				export interface Class {
@@ -67,7 +68,7 @@ namespace slime.jrunscript {
 				}
 				export interface ByteArrayInputStream extends InputStream {
 				}
-				export interface OutputStream {
+				export interface OutputStream extends java.lang.Object {
 					write(b: number)
 					flush()
 					close()
@@ -259,6 +260,14 @@ namespace slime.jrunscript {
 					export interface ZipEntry extends slime.jrunscript.native.java.lang.Object {
 						getName: () => slime.jrunscript.native.java.lang.String
 						isDirectory: () => boolean
+						getTime: () => number
+					}
+					export interface ZipInputStream extends slime.jrunscript.native.java.io.InputStream {
+						getNextEntry: () => ZipEntry
+					}
+					export interface ZipOutputStream extends slime.jrunscript.native.java.io.OutputStream {
+						putNextEntry: (entry: ZipEntry) => void
+						closeEntry: () => void
 					}
 				}
 
@@ -596,7 +605,11 @@ namespace slime.jrunscript {
 				Base64: any
 				Map: any
 				Date: any
-				zip: any
+				zip: {
+					ZipInputStream: JavaClass<slime.jrunscript.native.java.util.zip.ZipInputStream>
+					ZipOutputStream: JavaClass<slime.jrunscript.native.java.util.zip.ZipOutputStream>
+					ZipEntry: JavaClass<slime.jrunscript.native.java.util.zip.ZipEntry>
+				}
 				jar: {
 					JarFile: JavaClass<slime.jrunscript.native.java.util.jar.JarFile>
 					Manifest: JavaClass<slime.jrunscript.native.java.util.jar.Manifest>
