@@ -622,6 +622,7 @@
 			zip: {
 				parse: function(_stream,destination) {
 					var _zipstream = new Packages.java.util.zip.ZipInputStream(_stream);
+					/** @type { slime.jrunscript.native.java.util.zip.ZipEntry } */
 					var _entry;
 					while(_entry = _zipstream.getNextEntry()) {
 						var isDirectory = _entry.getName().endsWith(new Packages.java.lang.String("/"));

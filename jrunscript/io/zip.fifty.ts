@@ -25,7 +25,13 @@ namespace slime.jrunscript.io.zip {
 	//@ts-ignore
 	)(fifty);
 
-	export type Exports = slime.jrunscript.io.archive.Format<{}>;
+	export type Entries = {
+		time: {
+			modified: () => number
+		}
+	}
+
+	export type Exports = slime.jrunscript.io.archive.Format<Entries>;
 
 	(
 		function(
@@ -43,15 +49,32 @@ namespace slime.jrunscript.io.zip {
 				var expanded = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				expanded.getRelativePath("a").write("aa", { append: false });
 				expanded.getRelativePath("b/c").write("cc", { append: false, recursive: true });
+				var forList = $api.fp.now(
+					expanded.pathname.os.adapt(),
+					jsh.file.Location.directory.list.stream.simple({ descend: location => true })
+				);
+				debugger;
 				var zip = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
 				zip.file.remove();
 				var unzip = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				debugger;
+				var now = jsh.time.Value.now();
 				module.archive.zip.encode({
 					to: zip.write(jsh.io.Streams.binary),
 					entries: $api.fp.Stream.from.array([
-						{ path: "a", content: expanded.getFile("a").read(jsh.io.Streams.binary) },
-						{ path: "b/c", content: expanded.getFile("b/c").read(jsh.io.Streams.binary) }
+						{
+							path: "a",
+							time: {
+								modified: $api.fp.thunk.value(now)
+							},
+							content: expanded.getFile("a").read(jsh.io.Streams.binary)
+						},
+						{
+							path: "b/c",
+							time: {
+								modified: $api.fp.thunk.value(now)
+							},
+							content: expanded.getFile("b/c").read(jsh.io.Streams.binary)
+						}
 					])
 				});
 				var entries = module.archive.zip.decode({
