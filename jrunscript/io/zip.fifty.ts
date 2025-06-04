@@ -25,13 +25,16 @@ namespace slime.jrunscript.io.zip {
 	//@ts-ignore
 	)(fifty);
 
-	export type Entries = {
+	export type Entry = {
+		comment: slime.$api.fp.Maybe<string>
 		time: {
-			modified: () => number
+			modified: slime.$api.fp.Maybe<number>
+			created: slime.$api.fp.Maybe<number>
+			accessed: slime.$api.fp.Maybe<number>
 		}
 	}
 
-	export type Exports = slime.jrunscript.io.archive.Format<Entries>;
+	export type Exports = slime.jrunscript.io.archive.Format<Entry>;
 
 	(
 		function(
@@ -64,15 +67,21 @@ namespace slime.jrunscript.io.zip {
 						{
 							path: "a",
 							time: {
-								modified: $api.fp.thunk.value(now)
+								modified: $api.fp.Maybe.from.some(now),
+								accessed: $api.fp.Maybe.from.some(now),
+								created: $api.fp.Maybe.from.some(now)
 							},
+							comment: $api.fp.Maybe.from.nothing(),
 							content: expanded.getFile("a").read(jsh.io.Streams.binary)
 						},
 						{
 							path: "b/c",
 							time: {
-								modified: $api.fp.thunk.value(now)
+								modified: $api.fp.Maybe.from.some(now),
+								accessed: $api.fp.Maybe.from.some(now),
+								created: $api.fp.Maybe.from.some(now)
 							},
+							comment: $api.fp.Maybe.from.nothing(),
 							content: expanded.getFile("b/c").read(jsh.io.Streams.binary)
 						}
 					])

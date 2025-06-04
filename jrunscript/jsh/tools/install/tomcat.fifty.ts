@@ -268,7 +268,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			}
 
 			var MockDistribution = function(version) {
-				const now = $api.fp.impure.Input.value(jsh.time.Value.now());
+				const now = jsh.time.Value.now();
 				return function(events) {
 					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					var dist = tmpdir.getRelativePath("apache-tomcat-" + version).createDirectory();
@@ -282,15 +282,21 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 								path: "apache-tomcat-" + version + "/" + "RELEASE-NOTES",
 								content: dist.getFile("RELEASE-NOTES").read(jsh.io.Streams.binary),
 								time: {
-									modified: now
-								}
+									modified: $api.fp.Maybe.from.some(now),
+									accessed: $api.fp.Maybe.from.nothing(),
+									created: $api.fp.Maybe.from.nothing()
+								},
+								comment: $api.fp.Maybe.from.nothing()
 							},
 							{
 								path: "apache-tomcat-" + version + "/" + "a",
 								content: dist.getFile("a").read(jsh.io.Streams.binary),
 								time: {
-									modified: now
-								}
+									modified: $api.fp.Maybe.from.some(now),
+									accessed: $api.fp.Maybe.from.nothing(),
+									created: $api.fp.Maybe.from.nothing()
+								},
+								comment: $api.fp.Maybe.from.nothing()
 							}
 						])
 					});
