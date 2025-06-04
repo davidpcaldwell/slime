@@ -118,6 +118,10 @@ namespace slime.jrunscript {
 					}
 
 					export namespace attribute {
+						export interface FileTime {
+							toMillis: () => number
+						}
+
 						export interface PosixFilePermission {
 						}
 
@@ -261,6 +265,10 @@ namespace slime.jrunscript {
 						getName: () => slime.jrunscript.native.java.lang.String
 						isDirectory: () => boolean
 						getTime: () => number
+						getCreationTime: () => java.nio.file.attribute.FileTime,
+						getLastModifiedTime: () => java.nio.file.attribute.FileTime,
+						getLastAccessTime: () => java.nio.file.attribute.FileTime,
+						getComment: () => string
 					}
 					export interface ZipInputStream extends slime.jrunscript.native.java.io.InputStream {
 						getNextEntry: () => ZipEntry

@@ -99,24 +99,35 @@
 		$exports.decode = function(p) {
 			var _zipstream = new Packages.java.util.zip.ZipInputStream(p.stream.java.adapt());
 			var entry;
-			/** @type { slime.jrunscript.io.archive.Entry<slime.jrunscript.io.zip.Entries>[] } */
+			/** @type { slime.jrunscript.io.archive.Entry<slime.jrunscript.io.zip.Entry>[] } */
 			var array = [];
 			while( (entry = _zipstream.getNextEntry()) != null ) {
 				var name = String(entry.getName());
+				/** @type { (time: slime.jrunscript.native.java.nio.file.attribute.FileTime) => slime.$api.fp.Maybe<number> } */
+				var fileTimeToMaybe = function(value) {
+					if (value === null) return $api.fp.Maybe.from.nothing();
+					return $api.fp.Maybe.from.some(value.toMillis());
+				}
 				if (name.substring(name.length-1) == "/") {
 					array.push({
 						path: name.substring(0,name.length-1),
 						time: {
-							modified: entry.getTime
-						}
+							modified: fileTimeToMaybe(entry.getLastModifiedTime()),
+							created: fileTimeToMaybe(entry.getCreationTime()),
+							accessed: fileTimeToMaybe(entry.getLastAccessTime())
+						},
+						comment: $api.fp.Maybe.from.value(entry.getComment())
 					});
 				} else {
 					var _bytes = _streams.readBytes(_zipstream, false);
 					array.push({
 						path: name,
 						time: {
-							modified: entry.getTime
+							modified: fileTimeToMaybe(entry.getLastModifiedTime()),
+							created: fileTimeToMaybe(entry.getCreationTime()),
+							accessed: fileTimeToMaybe(entry.getLastAccessTime())
 						},
+						comment: $api.fp.Maybe.from.value(entry.getComment()),
 						content: $context.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes))
 					});
 				}
