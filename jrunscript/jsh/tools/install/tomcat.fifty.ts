@@ -85,6 +85,36 @@ namespace slime.jsh.shell.tools.tomcat {
 						rv.push(fifty.jsh.file.relative("test/tomcat-hello.jsh.js").pathname);
 					})
 				});
+			};
+
+			fifty.tests.manual.downloadPerformance = function() {
+				var pathnames = $api.fp.now(
+					jsh.shell.HOME.pathname.os.adapt(),
+					jsh.file.Location.directory.relativePath("Downloads"),
+					jsh.file.Location.directory.list.stream.simple({
+						descend: $api.fp.thunk.value(false)
+					}),
+					$api.fp.Stream.filter(
+						$api.fp.pipe(
+							jsh.file.Location.basename,
+							$api.fp.RegExp.exec(/^apache-tomcat/),
+							$api.fp.property("present")
+						)
+					),
+					$api.fp.Stream.collect,
+					$api.fp.Array.map($api.fp.property("pathname"))
+				);
+				pathnames.forEach(
+					$api.fp.pipe(
+						jsh.file.Location.from.os,
+						function(it) {
+							//	TODO	standard composition for this
+							jsh.shell.console("Removing: " + it.pathname);
+							jsh.file.Location.file.remove.simple(it);
+						}
+					)
+				);
+				fifty.tests.manual.hello();
 			}
 		}
 	//@ts-ignore

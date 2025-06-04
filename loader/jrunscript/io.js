@@ -111,25 +111,20 @@
 				pipe: {
 					all: function(o) {
 						return function(events) {
+							var error = function(e) { throw new Error(); };
+							var progress = function(name) { return function(count) { events.fire(name, count); } };
 							_java.pipeAll(
 								peer,
 								o.java.adapt(),
 								new JavaAdapter(
 									Packages.inonit.script.runtime.io.Streams.PipeEvents,
 									{
-										/**
-										 *
-										 * @param { number } count
-										 */
-										progress: function(count) {
-											events.fire("progress", count);
-										},
-										error: function(e) {
-											//	TODO	improve
-											throw new Error();
-										},
+										readProgress: progress("readProgress"),
+										writeProgress: progress("writeProgress"),
+										readError: error,
+										writeError: error,
 										done: function() {
-											events.fire("done");
+											events.fire("done")
 										}
 									}
 								),

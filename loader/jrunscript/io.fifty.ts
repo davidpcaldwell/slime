@@ -240,7 +240,8 @@ namespace slime.jrunscript.runtime.io {
 
 			fifty.tests.exports.InputStream.object.pipe.all = function() {
 				var captor = fifty.$api.Events.Captor({
-					progress: void(0),
+					readProgress: void(0),
+					writeProgress: void(0),
 					done: void(0)
 				});
 
@@ -260,10 +261,12 @@ namespace slime.jrunscript.runtime.io {
 
 				verify(_output.toByteArray().length).evaluate(Number).is(4);
 
-				verify(captor).events.length.is(2);
-				verify(captor).events[0].type.is("progress");
+				verify(captor).events.length.is(3);
+				verify(captor).events[0].type.is("readProgress");
 				verify(captor).events[0].detail.evaluate(Number).is(4);
-				verify(captor).events[1].type.is("done");
+				verify(captor).events[1].type.is("writeProgress");
+				verify(captor).events[1].detail.evaluate(Number).is(4);
+				verify(captor).events[2].type.is("done");
 			}
 		}
 	//@ts-ignore
