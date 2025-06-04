@@ -525,6 +525,7 @@ namespace slime.jrunscript {
 				URI: any
 				URL: {
 					new (base: slime.jrunscript.native.java.net.URL, relative: string): slime.jrunscript.native.java.net.URL
+					new (url: slime.jrunscript.native.java.lang.String): slime.jrunscript.native.java.net.URL
 					new (url: string): slime.jrunscript.native.java.net.URL
 				}
 				URLEncoder: any

@@ -369,16 +369,6 @@
 			resolve: function(p) {
 				return $engine.resolve(p);
 			},
-			readFile: (this.readFile) ? this.readFile : function(path) {
-				var rv = "";
-				var reader = new Packages.java.io.FileReader(path);
-				var c;
-				while((c = reader.read()) != -1) {
-					var _character = new Packages.java.lang.Character(c);
-					rv += _character.toString();
-				}
-				return rv;
-			},
 			readUrl: (this.readUrl) ? this.readUrl : function(path) {
 				var rv = "";
 				var connection = new Packages.java.net.URL(path).openConnection();
@@ -1322,7 +1312,11 @@
 
 		$api.nashorn = nashorn;
 
-		$api.shell = {};
+		$api.shell = {
+			environment: void(0),
+			HOME: void(0),
+			exec: void(0)
+		};
 		$api.shell.environment = (function() {
 			var rv = {};
 			var _map = Packages.java.lang.System.getenv();
@@ -1415,34 +1409,6 @@
 			});
 			return result;
 		}
-		$api.shell.rhino = function(p) {
-			//	p:
-			//		rhino (Packages.java.io.File): Rhino js.jar
-			//		script (Packages.java.io.File): main script to run
-			//		arguments (Array): arguments to send to script
-			//		directory (optional Packages.java.io.File): working directory in which to run it
-			//		properties: (Object): keys are keys, values are values
-			var dashD = [];
-			if (p.properties) {
-				for (var x in p.properties) {
-					dashD.push("-D" + x + "=" + p.properties[x]);
-				}
-			}
-			var args = []
-				.concat(dashD)
-				.concat([
-					"-jar", p.rhino.getCanonicalPath(),
-					"-opt", "-1",
-					p.script.getCanonicalPath()
-				]).concat((p.arguments) ? p.arguments : [])
-			;
-
-			$api.shell.exec({
-				command: $api.java.install.launcher.getCanonicalPath(),
-				arguments: args,
-				directory: p.directory
-			});
-		};
 
 		this.$api = $api;
 	}

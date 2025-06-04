@@ -59,7 +59,6 @@
 						jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
 					}
 				},
-				readFile: void(0),
 				readUrl: void(0),
 				$api: void(0),
 				launcher: void(0),

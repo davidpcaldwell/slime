@@ -258,7 +258,8 @@ install_jdk() {
 }
 
 
-JSH_BOOTSTRAP_RHINO="${JSH_SHELL_LIB}/js.jar"
+#	Possible basis for supporting Rhino as bootstrap engine via JSR-223
+#	JSH_BOOTSTRAP_RHINO="${JSH_SHELL_LIB}/js.jar"
 JSH_BOOTSTRAP_NASHORN="${JSH_SHELL_LIB}/nashorn.jar"
 # @notdry nashorn-dependencies
 JSH_BOOTSTRAP_NASHORN_LIBRARIES_GROUP=org.ow2.asm
