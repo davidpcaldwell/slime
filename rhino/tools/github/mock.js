@@ -80,7 +80,7 @@
 										/**
 										 *
 										 * @param { { path: string, lastModified: Date, resource: slime.jrunscript.file.Node }} nodeEntry
-										 * @returns { slime.jrunscript.io.archive.File<slime.jrunscript.io.zip.Entries> }
+										 * @returns { slime.jrunscript.io.archive.File<slime.jrunscript.io.zip.Entry> }
 										 */
 										var toFileEntry = function(nodeEntry) {
 											/** @type { (node: slime.jrunscript.file.Node) => node is slime.jrunscript.file.File } */
@@ -96,8 +96,11 @@
 												return {
 													path: nodeEntry.path,
 													time: {
-														modified: function() { return nodeEntry.lastModified.getTime(); }
+														modified: $api.fp.Maybe.from.some(nodeEntry.lastModified.getTime()),
+														accessed: $api.fp.Maybe.from.nothing(),
+														created: $api.fp.Maybe.from.nothing()
 													},
+													comment: $api.fp.Maybe.from.nothing(),
 													content: toFile(nodeEntry.resource).read($context.jsh.io.Streams.binary)
 												};
 											} else {
