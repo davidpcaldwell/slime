@@ -77,7 +77,9 @@ services:
       - type: volume
         source: local
         target: /slime/local
-      - ./local/docker/home:/root
+      - type: bind
+        source: ./local/docker/home
+        target: /root
     ports:
       - 8000:8000
     depends_on:
