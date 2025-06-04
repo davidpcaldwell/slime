@@ -11,9 +11,52 @@ import java.util.*;
 
 public class Streams {
 	public static abstract class PipeEvents {
-		public abstract void progress(long count);
-		public abstract void error(IOException e) throws IOException;
+		public abstract void readProgress(long count);
+		public abstract void writeProgress(long count);
+		public abstract void readError(IOException e);
+		public abstract void writeError(IOException e);
 		public abstract void done();
+	}
+
+	private static class CountingInputStream extends java.io.InputStream {
+		private InputStream i;
+		private long count;
+
+		CountingInputStream(InputStream i) {
+			this.i = i;
+		}
+
+		@Override public int read() throws IOException {
+			int rv = i.read();
+			if (rv != -1) {
+				count++;
+			}
+			return rv;
+		}
+
+		@Override public int read(byte[] bytes) throws IOException {
+			int rv = i.read(bytes);
+			if (rv != -1) {
+				count += rv;
+			}
+			return rv;
+		}
+
+		@Override public int read(byte[] bytes, int off, int len) throws IOException {
+			int rv = i.read(bytes, off, len);
+			if (rv != -1) {
+				count += rv;
+			}
+			return rv;
+		}
+
+		@Override public void close() throws IOException {
+			i.close();
+		}
+
+		long count() {
+			return count;
+		}
 	}
 
 	private static class CountingOutputStream extends java.io.OutputStream {
@@ -42,38 +85,57 @@ public class Streams {
 			count += len;
 		}
 
+		@Override public void close() throws IOException {
+			o.close();
+		}
+
 		long count() {
 			return count;
 		}
 	}
 
 	public void pipeAll(InputStream in, OutputStream out, PipeEvents events, boolean closeInputStream) throws IOException {
-		in = new BufferedInputStream(in);
-		CountingOutputStream cout = new CountingOutputStream(new BufferedOutputStream(out));
-		int i;
-		try {
-			while((i = in.read()) != -1) {
-				cout.write(i);
+		CountingInputStream cin = new CountingInputStream(in);
+		CountingOutputStream cout = new CountingOutputStream(out);
+		InputStream bin = new BufferedInputStream(cin);
+		OutputStream bout = new BufferedOutputStream(cout);
+		boolean more = true;
+		while(more) {
+			//	TODO	should we report progress when an exception is thrown?
+			try {
+				int i = bin.read();
+				if (i == -1) {
+					more = false;
+				} else {
+					try {
+						bout.write(i);
+					} catch (IOException e) {
+						events.writeError(e);
+						throw e;
+					}
+				}
+			} catch (IOException e) {
+				events.readError(e);
+				throw e;
 			}
-			cout.flush();
-			if (closeInputStream) {
-				in.close();
-			}
-			events.progress(cout.count());
-			events.done();
-		} catch (IOException e) {
-			events.error(e);
 		}
+		events.readProgress(cin.count());
+		bout.flush();
+		events.writeProgress(cout.count());
+		if (closeInputStream) {
+			bin.close();
+		}
+		events.done();
 	}
 
 	public void copy(InputStream in, OutputStream out, boolean closeInputStream) throws IOException {
-		final IOException[] exception = new IOException[1];
 		pipeAll(in, out, new PipeEvents() {
-			@Override public void progress(long count) {}
+			@Override public void readProgress(long count) {}
+			@Override public void writeProgress(long count) {}
+			@Override public void readError(IOException e) {}
+			@Override public void writeError(IOException e) {}
 			@Override public void done() {}
-			@Override public void error(IOException e) { exception[0] = e; }
 		}, closeInputStream);
-		if (exception[0] != null) throw exception[0];
 	}
 
 	public void copy(InputStream in, OutputStream out) throws IOException {
