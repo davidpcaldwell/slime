@@ -847,8 +847,10 @@
 						 * @param { slime.$api.event.Emitter<slime.jsh.shell.tools.node.RequireEvents> } events
 						 */
 						var action = function(events) {
-							var VERSION = node.versions.default;
+							var VERSION = node.versions.default();
 							//	TODO	horrendous, but let's go with it for now
+							//	TODO	now can move this to node module itself; this value is now a function, as is the practice
+							//			for other dependencies, for this exact reason
 							if (jsh.file.Pathname("/etc/os-release").file) {
 								var string = jsh.file.Pathname("/etc/os-release").file.read(String);
 								if (
@@ -861,9 +863,7 @@
 
 							var now = jsh.shell.tools.node.installation;
 
-							var exists = $api.fp.world.Sensor.old.mapping({
-								sensor: jsh.shell.tools.node.Installation.exists
-							});
+							var exists = jsh.shell.tools.node.Installation.exists.simple
 
 							var getVersion = $api.fp.world.Sensor.old.mapping({
 								sensor: jsh.shell.tools.node.Installation.getVersion

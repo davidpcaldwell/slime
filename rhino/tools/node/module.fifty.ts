@@ -4,6 +4,9 @@
 //
 //	END LICENSE
 
+/**
+ * Tools for creating and interacting with Node.js installations.
+ */
 namespace slime.jrunscript.tools.node {
 	export interface Context {
 		library: {
@@ -39,9 +42,19 @@ namespace slime.jrunscript.tools.node {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * Quick guide:
+	 *
+	 * * Install Node.js with the `install` function
+	 * * You can do things with Node installations with the `Installation` functions
+	 * * You can do things with Node projects the `Project` functions
+	 */
 	export interface Exports {
 		versions: {
-			default: string
+			/**
+			 * The default version of Node.js used by this SLIME installation.
+			 */
+			default: () => string
 		}
 	}
 
@@ -67,7 +80,7 @@ namespace slime.jrunscript.tools.node {
 	}
 
 	export namespace exports {
-		export interface Installation {
+		export interface Installations {
 			from: {
 				/**
 				 * Given a Node installation location, returns the Node `Installation` corresponding to that location.
@@ -78,14 +91,20 @@ namespace slime.jrunscript.tools.node {
 				location: (home: slime.jrunscript.file.Location) => slime.jrunscript.tools.node.Installation
 			}
 
-			exists: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,boolean>
+			exists: {
+				wo: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,boolean>
+				simple: (installation: Installation) => boolean
+			}
 
 			getVersion: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,string>
 		}
 	}
 
 	export interface Exports {
-		Installation: exports.Installation
+		/**
+		 * Functions relating to {@link Installation} types.
+		 */
+		Installation: exports.Installations
 	}
 
 	export interface Exports {
@@ -101,7 +120,7 @@ namespace slime.jrunscript.tools.node {
 
 			//	TODO	test still directly references world object
 			fifty.tests.sandbox.installation = function() {
-				var exists = $api.fp.world.mapping(test.subject.Installation.exists);
+				var exists = $api.fp.now(test.subject.Installation.exists.wo, $api.fp.world.Sensor.mapping());
 				var getVersion = $api.fp.world.mapping(test.subject.Installation.getVersion);
 
 				var TMPDIR = fifty.jsh.file.temporary.location();
@@ -147,14 +166,14 @@ namespace slime.jrunscript.tools.node {
 	}
 
 	export namespace exports {
-		export interface Installation {
+		export interface Installations {
 			Intention: {
 				shell: (argument: Intention) => (installation: slime.jrunscript.tools.node.Installation) => slime.jrunscript.shell.run.Intention
 				question: (argument: Intention) => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 			}
 
 			/** @deprecated */
-			question: Installation["Intention"]["question"]
+			question: Installations["Intention"]["question"]
 		}
 
 		(
@@ -224,7 +243,7 @@ namespace slime.jrunscript.tools.node {
 	}
 
 	export namespace exports {
-		export interface Installation {
+		export interface Installations {
 			modules: (installation: node.Installation) => Modules
 		}
 	}
