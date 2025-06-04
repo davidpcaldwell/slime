@@ -446,6 +446,18 @@ namespace slime.$api.fp.impure {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		Effect: exports.Effects
+	}
+
+	export namespace exports {
+		export interface Effects {
+			process: <P>(p: Effect<P>) => (p: P) => Process
+
+			now: <P>(p: P) => (f: Effect<P>) => void
+		}
+	}
+
 	export namespace exports {
 		export interface Output {
 			nothing: <P>() => impure.Output<P>

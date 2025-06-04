@@ -148,6 +148,20 @@
 					}
 				}
 			},
+			Effect: {
+				process: function(effect) {
+					return function(p) {
+						return function() {
+							effect(p);
+						}
+					}
+				},
+				now: function(p) {
+					return function(effect) {
+						effect(p);
+					}
+				}
+			},
 			Output: {
 				nothing: function() {
 					return function(p){};
