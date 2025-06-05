@@ -103,7 +103,8 @@ namespace slime.internal.jrunscript.bootstrap {
 	 */
 	export interface Environment {
 		/**
-		 * A function compatible with the [Nashorn shell `load()` function](https://docs.oracle.com/javase/10/nashorn/nashorn-and-shell-scripting.htm)
+		 * A function compatible with the
+		 * [Nashorn shell `load()` function](https://docs.oracle.com/javase/10/nashorn/nashorn-and-shell-scripting.htm).
 		 */
 		load: {
 			(fileOrUrl: string): void
@@ -112,7 +113,7 @@ namespace slime.internal.jrunscript.bootstrap {
 
 		//	Rhino compatibility
 		Packages: slime.jrunscript.Packages
-		JavaAdapter?: any
+		JavaAdapter?: slime.jrunscript.JavaAdapter
 
 		/**
 		 * Reads a URL in a way compatible with the Rhino shell. See the
@@ -239,7 +240,7 @@ namespace slime.internal.jrunscript.bootstrap {
 		java: {
 			Install: any
 			install: any
-			getClass: any
+			getClass: (name: string) => slime.jrunscript.JavaClass
 			Array: any
 			Command: any
 		} & J
@@ -252,8 +253,19 @@ namespace slime.internal.jrunscript.bootstrap {
 		}
 
 		rhino: {
+			/**
+			 * The location from which Rhino was loaded, specifically the `org.mozilla.javascript.Context` class.
+			 */
 			classpath: slime.jrunscript.native.java.io.File
+
+			/**
+			 * Whether Rhino is currently available on the classpath.
+			 */
 			isPresent: () => boolean
+
+			/**
+			 * Whether Rhino is the engine currently executing JavaScript.
+			 */
 			running: () => slime.jrunscript.native.org.mozilla.javascript.Context
 		}
 
