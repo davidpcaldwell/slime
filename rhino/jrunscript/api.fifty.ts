@@ -179,6 +179,30 @@ namespace slime.internal.jrunscript.bootstrap {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace java {
+		export interface Install {
+			toString: () => string
+
+			home: slime.jrunscript.native.java.io.File
+			launcher: slime.jrunscript.native.java.io.File
+			jrunscript: slime.jrunscript.native.java.io.File
+
+			//	typeof Packages.javax.tools.ToolProvider.getSystemJavaCompiler
+			compile: any
+		}
+	}
+
+	export interface Api<J> {
+		java: {
+			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
+			install: java.Install
+
+			getClass: (name: string) => slime.jrunscript.JavaClass
+			Array: any
+			Command: any
+		} & J
+	}
+
 	export interface Api<J> {
 		debug: {
 			(message: string): void
@@ -236,14 +260,6 @@ namespace slime.internal.jrunscript.bootstrap {
 		script: Script
 
 		arguments: string[]
-
-		java: {
-			Install: any
-			install: any
-			getClass: (name: string) => slime.jrunscript.JavaClass
-			Array: any
-			Command: any
-		} & J
 
 		io: {
 			tmpdir: (p?: { prefix?: string, suffix?: string }) => slime.jrunscript.native.java.io.File
