@@ -1004,21 +1004,23 @@
 		$api.java.Install = function(home) {
 			var File = Packages.java.io.File;
 
-			this.toString = function() {
-				return "Java home: " + home;
-			}
-
-			this.home = home;
-			this.launcher = (function() {
-				if (new File(home, "bin/java").exists()) return new File(home, "bin/java");
-				if (new File(home, "bin/java.exe").exists()) return new File(home, "bin/java.exe");
-			})();
-			this.jrunscript = (function() {
-				if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
-				if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
-				if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
-				if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
-			})();
+			var rv = {
+				toString: function() {
+					return "Java home: " + home;
+				},
+				home: home,
+				launcher: (function() {
+					if (new File(home, "bin/java").exists()) return new File(home, "bin/java");
+					if (new File(home, "bin/java.exe").exists()) return new File(home, "bin/java.exe");
+				})(),
+				jrunscript: (function() {
+					if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
+					if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
+					if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
+					if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
+				})(),
+				compile: void(0)
+			};
 
 			(function addCompileMethod() {
 				var tried = false;
@@ -1070,10 +1072,12 @@
 					compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
 					this.compile = implementation;
 				}
-			}).call(this);
+			}).call(rv);
+
+			return rv;
 		};
 
-		$api.java.install = new $api.java.Install(new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home")));
+		$api.java.install = $api.java.Install(new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home")));
 		$api.java.getClass = function(name) {
 			return $engine.getClass(name);
 		}

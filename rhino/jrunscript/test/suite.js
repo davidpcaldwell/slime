@@ -56,7 +56,7 @@
 			var environments = [];
 			for (var i=0; i<$api.arguments.length; i++) {
 				if ($api.arguments[i] == "-jdk") {
-					environments.push({ jdk: new $api.java.Install(new Packages.java.io.File($api.arguments[++i])) });
+					environments.push({ jdk: $api.java.Install(new Packages.java.io.File($api.arguments[++i])) });
 				} else if ($api.arguments[i] == "-rhino") {
 					environments.push({ rhino: new Packages.java.io.File($api.arguments[++i]) });
 				} else {

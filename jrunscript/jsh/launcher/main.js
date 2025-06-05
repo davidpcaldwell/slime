@@ -209,7 +209,7 @@
 
 		if ($api.slime.settings.get("jsh.java.home")) {
 			$api.debug("setting jsh.java.home = " + $api.slime.settings.get("jsh.java.home"));
-			command.home(new $api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
+			command.home($api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
 		}
 
 		if ($api.arguments[0] == "-engines") {
