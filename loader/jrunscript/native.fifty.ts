@@ -32,6 +32,8 @@ namespace slime.jrunscript {
 					getDeclaredField(name: string): reflect.Field
 					getDeclaredMethod(name: string, types?: slime.jrunscript.native.java.lang.Class[]): reflect.Method
 					getMethod(name: string): reflect.Method
+					getSuperclass(): Class
+					getInterfaces(): Class[]
 				}
 
 				export interface ClassLoader {
@@ -505,7 +507,7 @@ namespace slime.jrunscript {
 				PrintWriter: any
 				Reader: any
 				Writer: any
-				OutputStream: any
+				OutputStream: JavaClass<slime.jrunscript.native.java.io.OutputStream>
 				FileInputStream: any
 				FileReader: any
 				InputStreamReader: any

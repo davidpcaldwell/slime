@@ -465,6 +465,7 @@
 			//	In theory, this could work down to JDK 1.6, though this is unsupported
 			var IS_JDK_RHINO = typeof(Packages.com["sun"].script.javascript.RhinoScriptEngine) == "function";
 			if (IS_JDK_RHINO) {
+				//@ts-ignore
 				JavaAdapter = function(type,object) {
 					return new Packages.com["sun"].script.javascript.RhinoScriptEngine().getInterface(object,type);
 				}
