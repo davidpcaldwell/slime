@@ -77,6 +77,8 @@ public abstract class Loader {
 					return Classes.this.getClassLoader().loadClass(name);
 				} catch (ClassNotFoundException e) {
 					return null;
+				} catch (java.lang.UnsupportedClassVersionError e) {
+					return null;
 				}
 			}
 
