@@ -15,9 +15,6 @@
 	 */
 	function(Packages,$api,$context,$loader,$export) {
 		if (!$context.api) throw new Error("Missing 'api' member of context");
-		if ($context.$pwd && typeof($context.$pwd) != "string") {
-			throw new Error("$pwd is " + typeof($context.$pwd) + ".");
-		}
 
 		var code = {
 			/** @type { slime.jrunscript.file.internal.java.Script } */
@@ -77,9 +74,13 @@
 				Location: wo.Location
 			},
 			mock: mock,
+
+			//	wo
 			Location: wo.Location,
 			Filesystem: wo.Filesystem,
 			os: wo.os,
+
+			//	oo
 			action: oo.action,
 			filesystem: oo.filesystem,
 			filesystems: oo.filesystems,
@@ -90,6 +91,8 @@
 			Pathname: oo.Pathname,
 			Searchpath: oo.Searchpath,
 			state: oo.state,
+
+			//	deprecated
 			zip: oo.zip,
 			unzip: oo.unzip,
 			Streams: oo.Streams,

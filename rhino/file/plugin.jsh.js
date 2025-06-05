@@ -21,7 +21,6 @@
 			load: function() {
 				/** @type { slime.jrunscript.file.Context } */
 				var context = {
-					$pwd: $slime.getSystemProperty("user.dir"),
 					addFinalizer: jsh.loader.addFinalizer,
 					api: {
 						js: jsh.js,
