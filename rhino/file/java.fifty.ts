@@ -112,14 +112,6 @@ namespace slime.jrunscript.file.internal.java {
 		}
 	}
 
-	export interface System {
-		separator: {
-			file: string
-		}
-		isAbsolute: (pathname: string) => boolean
-		isRootPath: (pathname: string) => boolean
-	}
-
 	export interface Exports {
 		//	TODO	this provider object is still used internally by oo/filesystem.js, but it seems like refactoring to remove this
 		//			export would be a goal
@@ -132,8 +124,16 @@ namespace slime.jrunscript.file.internal.java {
 		}
 	}
 
-	export interface Exports {
-		test: {
+	export namespace internal {
+		export interface System {
+			separator: {
+				file: string
+			}
+			isAbsolute: (pathname: string) => boolean
+			isRootPath: (pathname: string) => boolean
+		}
+
+		export interface Testing {
 			FilesystemProvider: new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => FilesystemProvider
 			unix: System
 			windows: System
@@ -141,6 +141,10 @@ namespace slime.jrunscript.file.internal.java {
 			trailingSeparatorRemover: (system: System) => (pathname: string) => string
 			nodeCreator: (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => (path: string) => Peer
 		}
+	}
+
+	export interface Exports {
+		test: internal.Testing
 	}
 
 	(

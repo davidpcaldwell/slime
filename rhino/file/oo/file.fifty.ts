@@ -1220,13 +1220,9 @@ namespace slime.jrunscript.file.internal.file {
 		//	TODO	the constructor for Pathname is really filesystem/peer or filesystem/path
 
 		Pathname: new (parameters: {
-			filesystem: slime.jrunscript.file.internal.java.FilesystemProvider
+			provider: slime.jrunscript.file.internal.java.FilesystemProvider
 			peer?: slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node
 			path?: string
-
-			$filesystem?: slime.jrunscript.file.internal.java.FilesystemProvider
-			$peer?: slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node
-			$path?: any
 		}) => Pathname
 
 		isPathname: (item: any) => item is slime.jrunscript.file.Pathname

@@ -73,38 +73,24 @@
 		 * @param { ConstructorParameters<slime.jrunscript.file.internal.file.Exports["Pathname"]>[0] } parameters
 		 */
 		function Pathname(parameters) {
-			if (parameters["directory"]) {
-				$api.deprecate(function directorySpecified() {
-				})();
-			}
-			if (!parameters) {
-				fail("Missing argument to new Pathname()");
-			}
-
-			//	Removing these deprecated properties significantly improves performance under Rhino when dealing with many files
-			// $api.deprecate(parameters,"$filesystem");
-			// $api.deprecate(parameters,"$path");
-			// $api.deprecate(parameters,"$peer");
-			// $api.deprecate(parameters,"path");
-
 			/** @type { slime.jrunscript.file.internal.java.FilesystemProvider } */
-			var $filesystem = firstDefined(parameters, "filesystem", "$filesystem");
-			if (!$filesystem.peerToString) throw new Error("Internal error; Pathname constructed incorrectly: " + parameters);
+			var provider = parameters.provider;
+			if (!provider.peerToString) throw new Error("Internal error; Pathname constructed incorrectly: " + parameters);
 
 			/** @type { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } */
 			var peer = (function () {
-				var peer = firstDefined(parameters, "peer", "$peer");
+				var peer = parameters.peer;
 				if (peer) return peer;
-				var path = firstDefined(parameters, "path", "$path");
-				if (typeof(path) == "string") return $filesystem.newPeer(path);
+				var path = parameters.path;
+				if (typeof(path) == "string") return provider.newPeer(path);
 				throw new TypeError("Missing new Pathname() arguments.");
 			})();
 
 			var toString = constant(function () {
-				var rv = $filesystem.peerToString(peer);
-				if (rv.substring(rv.length - $filesystem.separators.pathname.length) == $filesystem.separators.pathname) {
+				var rv = provider.peerToString(peer);
+				if (rv.substring(rv.length - provider.separators.pathname.length) == provider.separators.pathname) {
 					$api.deprecate(function () {
-						rv = rv.substring(0, rv.length - $filesystem.separators.pathname.length);
+						rv = rv.substring(0, rv.length - provider.separators.pathname.length);
 					})();
 				}
 				return rv;
@@ -117,19 +103,19 @@
 				//	TODO	maybe should be considered wrong?
 				//	$ basename /foo
 				//	foo
-				if ($filesystem.isRootPath(path)) return path;
-				if (path.substring(path.length - 1) == $filesystem.separators.pathname) {
+				if (provider.isRootPath(path)) return path;
+				if (path.substring(path.length - 1) == provider.separators.pathname) {
 					path = path.substring(0, path.length - 1);
 				}
-				var tokens = path.split($filesystem.separators.pathname);
+				var tokens = path.split(provider.separators.pathname);
 				return tokens.pop();
 			});
 			this.basename = void(0);
 			this.__defineGetter__("basename", getBasename);
 
 			var getParent = constant(function () {
-				var parent = $filesystem.getParent(peer);
-				return (parent) ? new Pathname({ filesystem: $filesystem, peer: parent }) : null;
+				var parent = provider.getParent(peer);
+				return (parent) ? new Pathname({ provider: provider, peer: parent }) : null;
 			});
 			this.parent = void(0);
 			this.__defineGetter__("parent", getParent);
@@ -138,17 +124,17 @@
 				if (arguments.length > 0) {
 					throw new TypeError("No arguments expected to Pathname.getFile");
 				}
-				if (!$filesystem.exists(peer)) return null;
-				if ($filesystem.isDirectory(peer)) return null;
+				if (!provider.exists(peer)) return null;
+				if (provider.isDirectory(peer)) return null;
 				return new File(this, peer);
 			}
 			this.file = void (0);
 			this.__defineGetter__("file", getFile);
 
 			var getDirectory = function () {
-				if (!$filesystem.exists(peer)) return null;
-				if (!$filesystem.isDirectory(peer)) return null;
-				var pathname = new Pathname({ filesystem: $filesystem, peer: peer });
+				if (!provider.exists(peer)) return null;
+				if (!provider.isDirectory(peer)) return null;
+				var pathname = new Pathname({ provider: provider, peer: peer });
 				return new Directory(pathname, peer);
 			}
 			this.directory = void (0);
@@ -168,7 +154,7 @@
 					$api.deprecate(mode, "overwrite");
 					//	TODO	Right now we can specify a file where we do not want to create its directory, and a file where we do want to
 					//			create it, but not one where we are willing to create its directory but not parent directories.  Is that OK?
-					if ($filesystem.exists(peer)) {
+					if (provider.exists(peer)) {
 						var append = mode.append;
 						if (typeof (append) == "undefined") {
 							if (mode.overwrite) {
@@ -199,7 +185,7 @@
 					read: void(0),
 					write: {
 						binary: function (mode) {
-							return $filesystem.write.binary(peer, Boolean(mode.append));
+							return provider.write.binary(peer, Boolean(mode.append));
 						}
 					}
 				});
@@ -216,9 +202,9 @@
 					if (mode.ifExists) return $api.deprecate(mode.ifExists);
 					return function () { throw new Error("Cannot create directory; already exists: " + toString()); };
 				})(mode);
-				if ($filesystem.exists(peer)) {
+				if (provider.exists(peer)) {
 					var getNode = function () {
-						if ($filesystem.isDirectory(peer)) return getDirectory();
+						if (provider.isDirectory(peer)) return getDirectory();
 						return getFile.call(this);
 					}
 					var proceed = exists(getNode.call(this));
@@ -232,12 +218,12 @@
 					if (!getParent().directory) {
 						getParent().createDirectory(mode);
 					}
-					$filesystem.createDirectoryAt(peer);
+					provider.createDirectoryAt(peer);
 				} else {
 					if (!getParent().directory) {
 						throw new Error("Could not create: " + toString() + "; parent directory does not exist.");
 					}
-					$filesystem.createDirectoryAt(peer);
+					provider.createDirectoryAt(peer);
 				}
 				return getDirectory();
 			};
@@ -297,11 +283,11 @@
 				this.__defineGetter__("parent", getParent);
 
 				var getLastModified = function () {
-					return $filesystem.getLastModified(_peer);
+					return provider.getLastModified(_peer);
 				}
 
 				var setLastModified = function (date) {
-					$filesystem.setLastModified(_peer, date);
+					provider.setLastModified(_peer, date);
 				}
 
 				Object.defineProperty(this, "modified", {
@@ -316,14 +302,14 @@
 				 * @returns
 				 */
 				var getRelativePath = function (pathString) {
-					return new Pathname({ filesystem: $filesystem, path: pathname.toString() + relativePathPrefix + pathString });
+					return new Pathname({ provider: provider, path: pathname.toString() + relativePathPrefix + pathString });
 				}
 				this.getRelativePath = getRelativePath;
 
 				this.remove = function () {
 					//	TODO	Should probably invalidate this object somehow
 					//	TODO	Should this return a value of some kind?
-					$filesystem.remove(_peer);
+					provider.remove(_peer);
 				}
 
 				this.move = function (toPathname, mode) {
@@ -352,7 +338,7 @@
 					if (toPathname.java["invalidate"]) {
 						toPathname.java["invalidate"]();
 					}
-					$filesystem.move(_peer, toPathname.java.getPeer());
+					provider.move(_peer, toPathname.java.getPeer());
 					if (toPathname.file) {
 						return toPathname.file;
 					} else if (toPathname.directory) {
@@ -486,13 +472,13 @@
 			}
 
 			var Link = function (pathname, peer) {
-				Node.call(this, pathname, $filesystem.separators.pathname + ".." + $filesystem.separators.pathname, peer);
+				Node.call(this, pathname, provider.separators.pathname + ".." + provider.separators.pathname, peer);
 
 				this.directory = null;
 			}
 
 			var File = function File(pathname, peer) {
-				Node.call(this, pathname, $filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
+				Node.call(this, pathname, provider.separators.pathname + ".." + provider.separators.pathname);
 
 				this.directory = false;
 
@@ -500,10 +486,10 @@
 					name: pathname.toString(),
 					read: {
 						binary: function () {
-							return $filesystem.read.binary(peer);
+							return provider.read.binary(peer);
 						},
 						text: function () {
-							return $filesystem.read.character(peer);
+							return provider.read.character(peer);
 						}
 					}
 				};
@@ -544,7 +530,7 @@
 				this.move = void(0);
 				this.copy = void(0);
 				this.modified = void(0);
-				Node.call(this, pathname, $filesystem.separators.pathname + "." + $filesystem.separators.pathname);
+				Node.call(this, pathname, provider.separators.pathname + "." + provider.separators.pathname);
 
 				this.toString = (function (was) {
 					return function () {
@@ -555,13 +541,13 @@
 				this.directory = true;
 
 				this.getFile = function (name) {
-					return new Pathname({ filesystem: $filesystem, path: this.getRelativePath(name).toString() }).file;
+					return new Pathname({ provider: provider, path: this.getRelativePath(name).toString() }).file;
 				}
 
 				this.getSubdirectory = function (name) {
 					if (typeof (name) == "string" && !name.length) return this;
 					if (!name) throw new TypeError("Missing: subdirectory name.");
-					return new Pathname({ filesystem: $filesystem, path: this.getRelativePath(name).toString() }).directory;
+					return new Pathname({ provider: provider, path: this.getRelativePath(name).toString() }).directory;
 				}
 
 				var toFilter = function (regexp) {
@@ -645,7 +631,7 @@
 							//	required to have
 							var rv = [];
 							for (var i = 0; i < peers.length; i++) {
-								var pathname = new Pathname({ filesystem: $filesystem, peer: peers[i] });
+								var pathname = new Pathname({ provider: provider, peer: peers[i] });
 								if (pathname.directory) {
 									rv.push(pathname.directory);
 								} else if (pathname.file) {
@@ -657,7 +643,7 @@
 							}
 							return rv;
 						}
-						var peers = $filesystem.list(peer);
+						var peers = provider.list(peer);
 						rv = createNodesFromPeers(peers);
 						rv = rv.filter(filter);
 						return toReturn(rv);
@@ -674,10 +660,10 @@
 					RESOURCE: $exports_list.RESOURCE
 				});
 
-				if ($filesystem.temporary) {
+				if (provider.temporary) {
 					this.createTemporary = function (parameters) {
-						var _peer = $filesystem.temporary(peer, parameters);
-						var pathname = new Pathname({ filesystem: $filesystem, peer: _peer });
+						var _peer = provider.temporary(peer, parameters);
+						var pathname = new Pathname({ provider: provider, peer: _peer });
 						if (pathname.directory) return pathname.directory;
 						if (pathname.file) return pathname.file;
 						throw new Error();
@@ -744,7 +730,7 @@
 						debugger;
 					}
 					var peer = filesystem.java.adapt(pathname.java.adapt());
-					var mapped = new Pathname({ filesystem: filesystem, peer: peer });
+					var mapped = new Pathname({ provider: filesystem, peer: peer });
 					return mapped.toString();
 				}).join(filesystem.separators.searchpath);
 			}
