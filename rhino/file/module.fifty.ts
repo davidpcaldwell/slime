@@ -6,8 +6,6 @@
 
 namespace slime.jrunscript.file {
 	export interface Context {
-		$pwd: string
-
 		/**
 		 * A list of file extensions that should be considered "executable." Corresponds to the PATHEXT environment variable
 		 * present on Microsoft Windows systems.

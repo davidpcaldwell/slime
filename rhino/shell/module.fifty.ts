@@ -108,7 +108,6 @@ namespace slime.jrunscript.shell {
 									js: jsh.js,
 									java: jsh.java
 								};
-								this.$pwd = String(jsh.shell.properties.object.user.dir);
 								this.addFinalizer = jsh.loader.addFinalizer;
 								//	TODO	below copy-pasted from rhino/file/api.html
 								//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
@@ -136,7 +135,6 @@ namespace slime.jrunscript.shell {
 											Store: jsh.loader.Store
 										}
 									},
-									$pwd: String(jsh.shell.properties.object.user.dir),
 									addFinalizer: jsh.loader.addFinalizer,
 									cygwin: cygwin
 								}
