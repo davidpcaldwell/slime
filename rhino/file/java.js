@@ -35,7 +35,7 @@
 		}
 
 		var systems = {
-			/** @type { slime.jrunscript.file.internal.java.System } */
+			/** @type { slime.jrunscript.file.internal.java.internal.System } */
 			unix: {
 				separator: {
 					file: "/"
@@ -52,7 +52,7 @@
 					return ( string == "" || string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
 				}
 			},
-			/** @type { slime.jrunscript.file.internal.java.System } */
+			/** @type { slime.jrunscript.file.internal.java.internal.System } */
 			windows: {
 				separator: {
 					file: "\\"
@@ -100,7 +100,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.file.internal.java.System } system
+		 * @param { slime.jrunscript.file.internal.java.internal.System } system
 		 * @returns
 		 */
 		function trailingSeparatorRemover(system) {

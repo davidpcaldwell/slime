@@ -17,57 +17,57 @@
 		 * @param { string } string
 		 */
 		function newPathname(system, string) {
-			return new $context.Pathname({ filesystem: system, peer: system.newPeer(string) });
+			return new $context.Pathname({ provider: system, peer: system.newPeer(string) });
 		}
 
 		/**
 		 *
-		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } system
+		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } provider
 		 * @param { { interpretNativePathname: any } } [o] Used only for Cygwin.
 		 */
-		var Filesystem = function(system,o) {
+		var Filesystem = function(provider,o) {
 			this.toString = function() {
-				return "Filesystem: provider=" + system;
+				return "Filesystem: provider=" + provider;
 			}
 
 			//	TODO	we add createEmpty below, but do not seem to define it. Is it defined elsewhere, maybe?
 			this.Searchpath = Object.assign(function(array) {
-				return new $context.Searchpath({ filesystem: system, array: array });
+				return new $context.Searchpath({ filesystem: provider, array: array });
 			}, { parse: void(0), createEmpty: void(0) });
 			this.Searchpath.prototype = $context.Searchpath.prototype;
 			this.Searchpath.parse = function(string) {
 				if (!string) {
 					throw new Error("No string to parse in Searchpath.parse");
 				}
-				var elements = string.split(system.separators.searchpath);
+				var elements = string.split(provider.separators.searchpath);
 				var array = elements.map(function(element) {
-					return newPathname(system, element);
+					return newPathname(provider, element);
 				});
-				return new $context.Searchpath({ filesystem: system, array: array });
+				return new $context.Searchpath({ filesystem: provider, array: array });
 			}
 
 			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem["Pathname"] } */
 			this.Pathname = function(string) {
-				return newPathname(system, string);
+				return newPathname(provider, string);
 			}
 
 			this.$unit = new function() {
 				//	Used by unit tests for getopts as well as unit tests for this module
 				this.getSearchpathSeparator = function() {
-					return system.separators.searchpath;
+					return provider.separators.searchpath;
 				}
 				this.getPathnameSeparator = function() {
-					return system.separators.pathname;
+					return provider.separators.pathname;
 				}
 				this.temporary = function(parent,parameters) {
-					var peer = system.temporary(parent,parameters);
-					var pathname = new $context.Pathname({ filesystem: system, peer: peer });
+					var peer = provider.temporary(parent,parameters);
+					var pathname = new $context.Pathname({ provider: provider, peer: peer });
 					if (pathname.directory) return pathname.directory;
 					if (pathname.file) return pathname.file;
 					throw new Error();
 				}
 				this.Pathname = function(peer) {
-					return new $context.Pathname({ filesystem: system, peer: peer });
+					return new $context.Pathname({ provider: provider, peer: peer });
 				}
 			}
 
@@ -75,14 +75,14 @@
 
 			this.java = {
 				adapt: function(_file) {
-					var peer = system.java.adapt(_file);
-					return new $context.Pathname({ filesystem: system, peer: peer });
+					var peer = provider.java.adapt(_file);
+					return new $context.Pathname({ provider: provider, peer: peer });
 				}
 			};
 
 			this.$jsh = new function() {
 				//	Currently used by jsh.script.getopts for Pathname
-				this.PATHNAME_SEPARATOR = system.separators.pathname;
+				this.PATHNAME_SEPARATOR = provider.separators.pathname;
 
 				//	Interprets an OS Pathname in this filesystem. Used, at least, for calculation of jsh.shell.PATH
 				//	TODO	could/should this be replaced with something that uses a java.io.File?
