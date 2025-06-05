@@ -114,9 +114,14 @@ namespace slime.internal.jrunscript.bootstrap {
 		Packages: slime.jrunscript.Packages
 		JavaAdapter?: any
 
-		//	Rhino-provided
-		readFile?: any
-		readUrl?: any
+		/**
+		 * Reads a URL in a way compatible with the Rhino shell. See the
+		 * [Rhino documentation](https://rhino.github.io/tools/shell/).
+		 *
+		 * If provided in the global scope (the Rhino engine provides it), the existing implementation will be used. Otherwise, a
+		 * compatible implementation will be supplied.
+		 */
+		readUrl?: (url: string) => string
 
 		//	Nashorn-provided
 		//	Used to provide debug output before Packages is loaded
@@ -186,8 +191,8 @@ namespace slime.internal.jrunscript.bootstrap {
 		engine: {
 			toString: () => string
 			resolve: any
-			readFile: any
-			readUrl: any
+
+			readUrl: Environment["readUrl"]
 
 			/**
 			 * Attempts to be compatible with the old Rhino shell `runCommand` implementation.
@@ -270,7 +275,11 @@ namespace slime.internal.jrunscript.bootstrap {
 			running: () => slime.jrunscript.native.jdk.nashorn.internal.runtime.Context
 		}
 
-		shell: any
+		shell: {
+			environment: any
+			HOME: any
+			exec: any
+		}
 	}
 
 	(
