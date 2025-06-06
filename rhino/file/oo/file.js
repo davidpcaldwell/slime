@@ -245,6 +245,8 @@
 				}
 			}
 
+			var __peer = _peer;
+
 			/**
 			 *
 			 * @param { any } pathname
@@ -253,7 +255,7 @@
 			 */
 			var Node = function Node(pathname, relativePathPrefix, _peer) {
 				if (!_peer) {
-					_peer = _peer;
+					_peer = __peer;
 				}
 				this.toString = function () {
 					return pathname.toString();
