@@ -73,21 +73,11 @@
 		 * @param { ConstructorParameters<slime.jrunscript.file.internal.file.Exports["Pathname"]>[0] } parameters
 		 */
 		function Pathname(parameters) {
-			/** @type { slime.jrunscript.file.internal.java.FilesystemProvider } */
 			var provider = parameters.provider;
-			if (!provider.peerToString) throw new Error("Internal error; Pathname constructed incorrectly: " + parameters);
-
-			/** @type { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } */
-			var peer = (function () {
-				var peer = parameters.peer;
-				if (peer) return peer;
-				var path = parameters.path;
-				if (typeof(path) == "string") return provider.newPeer(path);
-				throw new TypeError("Missing new Pathname() arguments.");
-			})();
+			var _peer = provider.newPeer(parameters.path);
 
 			var toString = constant(function () {
-				var rv = provider.peerToString(peer);
+				var rv = provider.peerToString(_peer);
 				if (rv.substring(rv.length - provider.separators.pathname.length) == provider.separators.pathname) {
 					$api.deprecate(function () {
 						rv = rv.substring(0, rv.length - provider.separators.pathname.length);
@@ -114,8 +104,8 @@
 			this.__defineGetter__("basename", getBasename);
 
 			var getParent = constant(function () {
-				var parent = provider.getParent(peer);
-				return (parent) ? new Pathname({ provider: provider, peer: parent }) : null;
+				var parent = provider.getParent(_peer);
+				return (parent) ? new Pathname({ provider: provider, path: String(parent.getScriptPath()) }) : null;
 			});
 			this.parent = void(0);
 			this.__defineGetter__("parent", getParent);
@@ -124,18 +114,18 @@
 				if (arguments.length > 0) {
 					throw new TypeError("No arguments expected to Pathname.getFile");
 				}
-				if (!provider.exists(peer)) return null;
-				if (provider.isDirectory(peer)) return null;
-				return new File(this, peer);
+				if (!provider.exists(_peer)) return null;
+				if (provider.isDirectory(_peer)) return null;
+				return new File(this, _peer);
 			}
 			this.file = void (0);
 			this.__defineGetter__("file", getFile);
 
 			var getDirectory = function () {
-				if (!provider.exists(peer)) return null;
-				if (!provider.isDirectory(peer)) return null;
-				var pathname = new Pathname({ provider: provider, peer: peer });
-				return new Directory(pathname, peer);
+				if (!provider.exists(_peer)) return null;
+				if (!provider.isDirectory(_peer)) return null;
+				var pathname = new Pathname({ provider: provider, path: String(_peer.getScriptPath()) });
+				return new Directory(pathname, _peer);
 			}
 			this.directory = void (0);
 			this.__defineGetter__("directory", getDirectory);
@@ -154,7 +144,7 @@
 					$api.deprecate(mode, "overwrite");
 					//	TODO	Right now we can specify a file where we do not want to create its directory, and a file where we do want to
 					//			create it, but not one where we are willing to create its directory but not parent directories.  Is that OK?
-					if (provider.exists(peer)) {
+					if (provider.exists(_peer)) {
 						var append = mode.append;
 						if (typeof (append) == "undefined") {
 							if (mode.overwrite) {
@@ -185,7 +175,7 @@
 					read: void(0),
 					write: {
 						binary: function (mode) {
-							return provider.write.binary(peer, Boolean(mode.append));
+							return provider.write.binary(_peer, Boolean(mode.append));
 						}
 					}
 				});
@@ -202,9 +192,9 @@
 					if (mode.ifExists) return $api.deprecate(mode.ifExists);
 					return function () { throw new Error("Cannot create directory; already exists: " + toString()); };
 				})(mode);
-				if (provider.exists(peer)) {
+				if (provider.exists(_peer)) {
 					var getNode = function () {
-						if (provider.isDirectory(peer)) return getDirectory();
+						if (provider.isDirectory(_peer)) return getDirectory();
 						return getFile.call(this);
 					}
 					var proceed = exists(getNode.call(this));
@@ -218,12 +208,12 @@
 					if (!getParent().directory) {
 						getParent().createDirectory(mode);
 					}
-					provider.createDirectoryAt(peer);
+					provider.createDirectoryAt(_peer);
 				} else {
 					if (!getParent().directory) {
 						throw new Error("Could not create: " + toString() + "; parent directory does not exist.");
 					}
-					provider.createDirectoryAt(peer);
+					provider.createDirectoryAt(_peer);
 				}
 				return getDirectory();
 			};
@@ -241,16 +231,16 @@
 			this.java = new function () {
 				//	Undocumented; used only by mapPathname, which is used only by Searchpath, all of which are dubious
 				this.getPeer = function () {
-					return peer;
+					return _peer;
 				}
 
 				this.adapt = function () {
-					return peer.getHostFile();
+					return _peer.getHostFile();
 				}
 
-				if (peer.invalidate) {
+				if (_peer.invalidate) {
 					this.invalidate = function () {
-						peer.invalidate();
+						_peer.invalidate();
 					}
 				}
 			}
@@ -263,7 +253,7 @@
 			 */
 			var Node = function Node(pathname, relativePathPrefix, _peer) {
 				if (!_peer) {
-					_peer = peer;
+					_peer = _peer;
 				}
 				this.toString = function () {
 					return pathname.toString();
@@ -625,19 +615,26 @@
 							return toReturn(rv);
 						}).call(this);
 					} else {
+						/**
+						 *
+						 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node[] } peers
+						 * @returns { slime.jrunscript.file.Node[] }
+						 */
 						var createNodesFromPeers = function (peers) {
 							//	This function is written with this kind of for loop to allow accessing a Java array directly
 							//	It also uses an optimization, using the peer's directory property if it has one, which a peer would not be
 							//	required to have
+							/** @type { slime.jrunscript.file.Node[] } */
 							var rv = [];
 							for (var i = 0; i < peers.length; i++) {
-								var pathname = new Pathname({ provider: provider, peer: peers[i] });
+								var pathname = new Pathname({ provider: provider, path: String(peers[i].getScriptPath()) });
 								if (pathname.directory) {
 									rv.push(pathname.directory);
 								} else if (pathname.file) {
 									rv.push(pathname.file);
 								} else {
 									//	broken softlink, apparently
+									//@ts-ignore
 									rv.push(new Link(pathname, peers[i]));
 								}
 							}
@@ -663,7 +660,7 @@
 				if (provider.temporary) {
 					this.createTemporary = function (parameters) {
 						var _peer = provider.temporary(peer, parameters);
-						var pathname = new Pathname({ provider: provider, peer: _peer });
+						var pathname = new Pathname({ provider: provider, path: String(_peer.getScriptPath()) });
 						if (pathname.directory) return pathname.directory;
 						if (pathname.file) return pathname.file;
 						throw new Error();
@@ -730,7 +727,7 @@
 						debugger;
 					}
 					var peer = filesystem.java.adapt(pathname.java.adapt());
-					var mapped = new Pathname({ provider: filesystem, peer: peer });
+					var mapped = new Pathname({ provider: filesystem, path: String(peer.getScriptPath()) });
 					return mapped.toString();
 				}).join(filesystem.separators.searchpath);
 			}

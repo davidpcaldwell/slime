@@ -1221,8 +1221,7 @@ namespace slime.jrunscript.file.internal.file {
 
 		Pathname: new (parameters: {
 			provider: slime.jrunscript.file.internal.java.FilesystemProvider
-			peer?: slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node
-			path?: string
+			path: string
 		}) => Pathname
 
 		isPathname: (item: any) => item is slime.jrunscript.file.Pathname

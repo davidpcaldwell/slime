@@ -17,7 +17,7 @@
 		 * @param { string } string
 		 */
 		function newPathname(system, string) {
-			return new $context.Pathname({ provider: system, peer: system.newPeer(string) });
+			return new $context.Pathname({ provider: system, path: string });
 		}
 
 		/**
@@ -61,13 +61,13 @@
 				}
 				this.temporary = function(parent,parameters) {
 					var peer = provider.temporary(parent,parameters);
-					var pathname = new $context.Pathname({ provider: provider, peer: peer });
+					var pathname = new $context.Pathname({ provider: provider, path: String(peer.getScriptPath()) });
 					if (pathname.directory) return pathname.directory;
 					if (pathname.file) return pathname.file;
 					throw new Error();
 				}
 				this.Pathname = function(peer) {
-					return new $context.Pathname({ provider: provider, peer: peer });
+					return new $context.Pathname({ provider: provider, path: String(peer.getScriptPath()) });
 				}
 			}
 
@@ -76,7 +76,7 @@
 			this.java = {
 				adapt: function(_file) {
 					var peer = provider.java.adapt(_file);
-					return new $context.Pathname({ provider: provider, peer: peer });
+					return new $context.Pathname({ provider: provider, path: String(peer.getScriptPath()) });
 				}
 			};
 
