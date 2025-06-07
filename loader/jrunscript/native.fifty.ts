@@ -27,6 +27,10 @@ namespace slime.jrunscript {
 					endsWith(suffix: java.lang.String): boolean
 				}
 
+				export interface Number extends Object {}
+
+				export interface Byte extends Number {}
+
 				export interface Class {
 					isInstance(object: any): boolean
 					getDeclaredField(name: string): reflect.Field
@@ -329,6 +333,18 @@ namespace slime.jrunscript {
 		export namespace javax.tools {
 			export interface DiagnosticListener {}
 			export interface JavaFileManager extends java.lang.Object {}
+			export interface JavaCompiler extends java.lang.Object {
+				run: (
+					input: java.io.InputStream,
+					out: java.io.OutputStream,
+					err: java.io.OutputStream,
+					args: slime.jrunscript.Array<slime.jrunscript.native.java.lang.String>
+				) => number
+
+				getStandardFileManager: any
+
+				getTask: any
+			}
 		}
 
 		export namespace org {
@@ -465,10 +481,9 @@ namespace slime.jrunscript {
 					Modifier: any
 					Array: any
 				}
-				String: {
-					new (string: string): slime.jrunscript.native.java.lang.String
+				String: JavaClass<slime.jrunscript.native.java.lang.String,{
 					format: any
-				}
+				}>
 				Character: any
 				Thread: any
 				Runnable: any
@@ -482,7 +497,7 @@ namespace slime.jrunscript {
 				RuntimeException: any
 				ProcessBuilder: any
 				StringBuilder: any
-				Byte: JavaClass & {
+				Byte: JavaClass<slime.jrunscript.native.java.lang.Byte> & {
 					TYPE: any
 				}
 				Number: JavaClass
@@ -658,7 +673,24 @@ namespace slime.jrunscript {
 				Types: any
 			}
 		}
-		javax: any
+		javax: {
+			tools: {
+				ToolProvider: {
+					getSystemJavaCompiler: () => slime.jrunscript.native.javax.tools.JavaCompiler
+					getSystemToolClassLoader: any
+				}
+				JavaFileObject: any
+				JavaFileManager: any
+				DiagnosticListener: any
+			}
+			script: any
+			mail: any
+			activation: any
+			servlet: any
+			swing: any
+			net: any
+			xml: any
+		}
 		javafx: any
 		org: {
 			openjdk: {

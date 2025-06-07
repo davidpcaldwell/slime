@@ -23,7 +23,7 @@
 			var SLASH = (p && p.separator && p.separator.pathname) ? p.separator.pathname : "/";
 			var COLON = (p && p.separator && p.separator.searchpath) ? p.separator.searchpath : ":";
 
-			/** @typedef { { type: "file", data: slime.jrunscript.Array<number> } } File */
+			/** @typedef { { type: "file", data: slime.jrunscript.Array<slime.jrunscript.native.java.lang.Byte> } } File */
 			/** @typedef { { type: "directory" } } Directory */
 			/** @typedef { File | Directory } Node */
 
@@ -179,7 +179,8 @@
 						if (p.directory) {
 							state[name] = { type: "directory" };
 						} else {
-							state[name] = { type: "file", data: $context.library.java.Array.create({ type: Packages.java.lang.Byte, array: [] }) };
+							var bytes = $context.library.java.Array.create({ type: Packages.java.lang.Byte, array: [] })
+							state[name] = { type: "file", data: bytes };
 						}
 						return name;
 					}
