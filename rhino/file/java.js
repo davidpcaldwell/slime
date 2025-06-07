@@ -128,10 +128,10 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _peer
+		 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _fs
 		 */
-		function nodeCreator(_peer) {
-			var os = systemForFilesystem(_peer);
+		function nodeCreator(_fs) {
+			var os = systemForFilesystem(_fs);
 			/**
 			 *
 			 * @param { string } path
@@ -139,9 +139,9 @@
 			function createNode(path) {
 				if (os.isAbsolute(path)) {
 					path = spi.canonicalize(path, os.separator.file);
-					return _peer.getNode(path);
+					return _fs.getNode(path);
 				} else {
-					return _peer.getNode(new Packages.java.io.File(path));
+					return _fs.getNode(new Packages.java.io.File(path));
 				}
 			}
 			return createNode;

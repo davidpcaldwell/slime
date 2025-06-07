@@ -273,7 +273,9 @@ public abstract class Filesystem {
 				String rv = file.getPath();
 				if (rv.endsWith(File.separator)) {
 					if (rv.equals(File.separator)) {
-						rv = "";
+						//	used to be the below; no idea why. Going to try removing it and see whether all tests pass.
+						//rv = "";
+						rv = File.separator;
 					} else {
 						//	TODO	should never happen on UNIX; maybe on Windows?
 						rv = rv.substring(0, rv.length() - File.separator.length());
