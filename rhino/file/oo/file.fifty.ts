@@ -5,6 +5,15 @@
 //	END LICENSE
 
 namespace slime.jrunscript.file {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	/**
 	 * An object representing a path in the local file system.
 	 */
@@ -1037,8 +1046,16 @@ namespace slime.jrunscript.file {
 				// test( linkToLink != null );
 			}
 
+			var getFilesystem = function() {
+				return (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+			}
+
+			fifty.tests.manual.fstest = function() {
+				fifty.tests.filesystem(getFilesystem());
+			}
+
 			fifty.tests.suite = function() {
-				var filesystem = (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
+				var filesystem = getFilesystem();
 
 				var fx = local.fixtures(module.filesystems.os);
 				//	TODO	if Cygwin is present, we want to run on module.filesystems.cygwin, too, but that will require further
