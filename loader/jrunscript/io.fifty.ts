@@ -282,7 +282,7 @@ namespace slime.jrunscript.runtime.io {
 			//	TODO	would like to deprecate this, see above, but this is used in other places to retrieve native Java byte
 			//			arrays to create new streams. What we need is a stream implementation backed by an `ArrayBuffer`, and then
 			//			callers can switch to that.
-			array: () => slime.jrunscript.Array<byte>
+			array: () => slime.jrunscript.Array<slime.jrunscript.native.java.lang.Byte>
 		}
 
 		/**

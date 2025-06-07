@@ -306,17 +306,29 @@ namespace slime.jrunscript.java {
 			 *
 			 * @returns A Java array containing the elements in the JavaScript array.
 			 */
-			create: <T>(p: {
-				/**
-				 * A reference to a Java class, e.g., `Packages.java.lang.Object`, representing the type of the array to create.
-				 */
-				type?: JavaClass
+			create: {
+				(p: {
+					type?: JavaClass<slime.jrunscript.native.java.lang.Number>
+					array: number[]
+				}): slime.jrunscript.Array<slime.jrunscript.native.java.lang.Number>
 
-				/**
-				 * A JavaScript array to be converted.
-				 */
-				array: T[]
-			}) => slime.jrunscript.Array<T>
+				(p: {
+					type?: JavaClass<slime.jrunscript.native.java.lang.String>
+					array: string[]
+				}): slime.jrunscript.native.java.lang.String[]
+
+				<T extends slime.jrunscript.native.java.lang.Object>(p: {
+					/**
+					 * A reference to a Java class, e.g., `Packages.java.lang.Object`, representing the type of the array to create.
+					 */
+					type?: JavaClass<T>
+
+					/**
+					 * A JavaScript array to be converted.
+					 */
+					array: T[]
+				}): slime.jrunscript.Array<T>
+			}
 		}
 	}
 

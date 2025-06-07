@@ -37,7 +37,7 @@ namespace slime.jrunscript.native.inonit.script.runtime.io {
 		split: (one: java.io.OutputStream, two: java.io.OutputStream) => java.io.OutputStream
 
 		//	TODO	we don't really have a great way currently to represent bytes
-		readBytes: (input: java.io.InputStream) => slime.jrunscript.Array<number>
+		readBytes: (input: java.io.InputStream) => slime.jrunscript.Array<slime.jrunscript.native.java.lang.Byte>
 
 		readString: (reader: slime.jrunscript.native.java.io.Reader) => slime.jrunscript.native.java.lang.String
 

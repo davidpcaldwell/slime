@@ -66,7 +66,7 @@
 			var rv = new ArrayBuffer(_bytes.length);
 			var i8 = new Int8Array(rv);
 			for (var i=0; i<_bytes.length; i++) {
-				i8[i] = _bytes[i];
+				i8[i] = Number(_bytes[i]);
 			}
 			return rv;
 		}
