@@ -26,6 +26,7 @@
 				arguments: ["api"]
 			},
 			load: function(script) {
+				if (script == "nashorn:mozilla_compat.js") return;
 				//	for unbuilt / built, script is an absolute path to a file
 				var _file = new Packages.java.io.File(script);
 				if (_file.exists()) {
