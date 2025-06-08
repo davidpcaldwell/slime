@@ -1520,7 +1520,10 @@
 				return rv;
 			})();
 			if ($query == "api") {
-				if (!$api.script) throw new Error("No $api.script");
+				if (!$api.script) {
+					//	TODO	#1961
+					$api.embed = {};
+				}
 				if ($api.script.resolve("main.js")) {
 					//	built shell
 					$api.embed = {
