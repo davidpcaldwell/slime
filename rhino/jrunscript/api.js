@@ -79,7 +79,8 @@
 			arguments: void(0),
 			shell: void(0),
 			io: void(0),
-			Script: void(0)
+			Script: void(0),
+			embed: void(0)
 		};
 
 		(
@@ -188,8 +189,7 @@
 			rv.resolve = function(options) {
 				return options[name];
 			};
-			$api.debug("Getting main engine script ...");
-			rv.script = rv.resolve({
+			rv.getScript = rv.resolve({
 				nashorn: function() {
 					return new global.Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
 				},
@@ -232,7 +232,9 @@
 				jdkrhino: function() {
 					return global[String(global.Packages.javax.script.ScriptEngine.FILENAME)];
 				}
-			})();
+			});
+			$api.debug("Getting main engine script ...");
+			rv.script = rv.getScript();
 			$api.debug("Main engine script is [" + rv.script + "]");
 			rv.newArray = function(type,length) {
 				var argument = this.resolve({
@@ -1004,6 +1006,90 @@
 		$api.java.Install = function(home) {
 			var File = Packages.java.io.File;
 
+			/** @type { typeof Packages.javax.tools.ToolProvider["getSystemJavaCompiler"] } */
+			var getSystemJavaCompiler = (
+				function() {
+					var tried = false;
+
+					/** @type { slime.jrunscript.native.javax.tools.JavaCompiler } */
+					var compiler;
+
+					return function() {
+						if (!tried) {
+							compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+							tried = true;
+						}
+						return compiler;
+					}
+				}
+			)();
+
+			/**
+			 * @type { (args: string[]) => void }
+			 */
+			var compile = function(args) {
+				var compiler = getSystemJavaCompiler();
+				if (!compiler) throw new Error("No Java compiler available on this platform.");
+				var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
+				for (var i=0; i<jarray.length; i++) {
+					jarray[i] = new Packages.java.lang.String(args[i]);
+				}
+				var SUPPRESS_COMPILATION_OUTPUT = !$api.debug.on;
+				$api.debug("Suppress compilation output = " + SUPPRESS_COMPILATION_OUTPUT)
+				var NOWHERE = new JavaAdapter(
+					Packages.java.io.OutputStream,
+					new function() {
+						this.write = function(b){}
+					}
+				);
+				var status = compiler.run(
+					Packages.java.lang.System["in"],
+					Packages.java.lang.System.out,
+					(SUPPRESS_COMPILATION_OUTPUT) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
+					jarray
+				);
+				if (status) {
+					var error = new Error("Compiler exited with status " + status + " with inputs " + args.join(" ")
+						+ " and java.class.path=" + Packages.java.lang.System.getProperty("java.class.path"));
+					Packages.java.lang.System.err.println(String(error));
+					Packages.java.lang.System.err.println(error.stack);
+					throw error;
+				}
+			};
+
+			var getMajorVersion = function() {
+				var mode = {
+					output: "",
+					err: ""
+				}
+				var status = $api.engine.runCommand(
+					new File(home, "bin/java"),
+					"-version",
+					mode
+				);
+				if (status) throw new Error(
+					"Error determining Java version for loader; exit status " + status
+					+ " stdout: " + mode.output
+					+ " stderr: " + mode.err
+				);
+				var pattern = /\"(.+)\"/;
+				var oneDotPattern = /^1\.(.*)\./;
+				var majorVersionPattern = /^(\d+)\./;
+				var version;
+				var majorVersion;
+				mode.err.split("\n").forEach(function(line) {
+					var match = pattern.exec(line);
+					if (match) version = match[1];
+				});
+				if (!version) throw new Error("Could not detect Java version.");
+				if (oneDotPattern.test(version)) {
+					majorVersion = Number(oneDotPattern.exec(version)[1]);
+				} else if (majorVersionPattern.test(version)) {
+					majorVersion = Number(majorVersionPattern.exec(version)[1])
+				}
+				return majorVersion;
+			};
+
 			var rv = {
 				toString: function() {
 					return "Java home: " + home;
@@ -1019,60 +1105,26 @@
 					if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
 					if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
 				})(),
-				compile: void(0)
+				compile: void(0),
+				getMajorVersion: getMajorVersion
 			};
 
-			(function addCompileMethod() {
-				var tried = false;
-				var compiler;
+			rv.compile = void(0);
 
-				var implementation = function(args) {
-					var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
-					for (var i=0; i<jarray.length; i++) {
-						jarray[i] = new Packages.java.lang.String(args[i]);
+			//	TODO	refactor into making the getter a separate function and reusing it: as getting in if and invoked in else
+			if (Object.defineProperty) {
+				Object.defineProperty(rv, "compile", {
+					get: function() {
+						var compiler = getSystemJavaCompiler();
+						if (compiler) return compile;
+						return void(0);
 					}
-					var SUPPRESS_COMPILATION_OUTPUT = !$api.debug.on;
-					$api.debug("Suppress compilation output = " + SUPPRESS_COMPILATION_OUTPUT)
-					var NOWHERE = new JavaAdapter(
-						Packages.java.io.OutputStream,
-						new function() {
-							this.write = function(b){}
-						}
-					);
-					var status = compiler.run(
-						Packages.java.lang.System["in"],
-						Packages.java.lang.System.out,
-						(SUPPRESS_COMPILATION_OUTPUT) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
-						jarray
-					);
-					if (status) {
-						var error = new Error("Compiler exited with status " + status + " with inputs " + args.join(" ")
-							+ " and java.class.path=" + Packages.java.lang.System.getProperty("java.class.path"));
-						Packages.java.lang.System.err.println(String(error));
-						Packages.java.lang.System.err.println(error.stack);
-						throw error;
-					}
-				};
+				});
+			} else {
+				rv.compile = compile;
+			}
 
-				//	TODO	refactor into making the getter a separate function and reusing it: as getting in if and invoked in else
-				if (Object.defineProperty) {
-					Object.defineProperty(this, "compile", {
-						get: function() {
-							if (!tried) {
-								compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-								tried = true;
-							}
-							if (compiler) {
-								return implementation;
-							}
-							return void(0);
-						}
-					});
-				} else {
-					compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-					this.compile = implementation;
-				}
-			}).call(rv);
+
 
 			return rv;
 		};
@@ -1455,7 +1507,6 @@
 			}
 		})();
 
-		var embed = false;
 		if ($query) {
 			var parameters = (function() {
 				//	Only allows single value for each name; surely sufficient for this purpose
@@ -1469,7 +1520,17 @@
 				return rv;
 			})();
 			if ($query == "api") {
-				embed = true;
+				if (!$api.script) throw new Error("No $api.script");
+				if ($api.script.resolve("main.js")) {
+					//	built shell
+					$api.embed = {
+						jsh: $api.script.resolve("main.js")
+					};
+				} else {
+					$api.embed = {
+						jsh: $api.script.resolve("../../jrunscript/jsh/launcher/main.js")
+					};
+				}
 			} else if ($query == "jsh") {
 				$api.script.resolve("../../jrunscript/jsh/launcher/main.js").load();
 			} else if ($query == "jsh/install") {
@@ -1499,10 +1560,9 @@
 		} else if ($api.arguments.length) {
 			$api.Script.run({ string: $api.arguments.shift() });
 		} else {
-			embed = true;
-			//	if there are no arguments, we will settle for putting $api in the scope
+			$api.embed = {};
 		}
-		if (!embed) {
+		if (!$api.embed) {
 			$api.debug("Waiting for threads to terminate.");
 			(function preventJrunscriptTermination() {
 				//	See https://stackoverflow.com/questions/50958644/threading-in-jrunscript-vs-jjs

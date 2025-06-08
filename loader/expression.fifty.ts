@@ -976,4 +976,14 @@ namespace slime {
 		//@ts-ignore
 		)( (function() { return this; })().Packages, fifty)
 	}
+
+	export namespace $api {
+		export interface Global {
+			engine: {
+				execute: slime.runtime.Engine["execute"]
+			}
+
+			content: slime.runtime.content.Exports
+		}
+	}
 }

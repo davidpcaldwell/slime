@@ -15,7 +15,8 @@
 		var parameters = jsh.script.getopts({
 			options: {
 				packaged: false,
-				launcherDebug: false
+				launcherDebug: false,
+				rhinoDebug: false
 			},
 			unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 		});
@@ -52,7 +53,10 @@
 					jsh.shell.jsh({
 						shell: JSH_HOME,
 						script: jsh.file.Pathname(parameters.arguments[0]).file,
-						arguments: parameters.arguments.slice(1)
+						arguments: parameters.arguments.slice(1),
+						environment: $api.Object.compose(jsh.shell.environment, (parameters.options.rhinoDebug) ? {
+							JSH_DEBUG_SCRIPT: "rhino"
+						} : {})
 					});
 					jsh.shell.console("Ran in built shell.");
 				} else {

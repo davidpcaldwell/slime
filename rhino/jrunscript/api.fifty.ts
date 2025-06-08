@@ -179,30 +179,6 @@ namespace slime.internal.jrunscript.bootstrap {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace java {
-		export interface Install {
-			toString: () => string
-
-			home: slime.jrunscript.native.java.io.File
-			launcher: slime.jrunscript.native.java.io.File
-			jrunscript: slime.jrunscript.native.java.io.File
-
-			//	typeof Packages.javax.tools.ToolProvider.getSystemJavaCompiler
-			compile: any
-		}
-	}
-
-	export interface Api<J> {
-		java: {
-			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
-			install: java.Install
-
-			getClass: (name: string) => slime.jrunscript.JavaClass
-			Array: any
-			Command: any
-		} & J
-	}
-
 	export interface Api<J> {
 		debug: {
 			(message: string): void
@@ -260,7 +236,66 @@ namespace slime.internal.jrunscript.bootstrap {
 		script: Script
 
 		arguments: string[]
+	}
 
+	export namespace java {
+		export interface Install {
+			toString: () => string
+
+			home: slime.jrunscript.native.java.io.File
+			launcher: slime.jrunscript.native.java.io.File
+			jrunscript: slime.jrunscript.native.java.io.File
+
+			compile: (args: string[]) => void
+
+			getMajorVersion: () => number
+		}
+
+		(
+			function(
+				Packages: slime.jrunscript.Packages,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.manual.java = {};
+				fifty.tests.manual.java.Install = {};
+				fifty.tests.manual.java.Install.getMajorVersion = function() {
+					var jdk = $api.fp.now(fifty.jsh.file.relative("../../local/jdk"), jsh.file.Location.directory.base);
+					//	TODO	is there no API for this?
+					var toJavaFile = function(location: slime.jrunscript.file.Location) { return new Packages.java.io.File(location.pathname); };
+					var toJavaInstall = jsh.internal.bootstrap.java.Install;
+					var getMajorVersion = function(it: Install) {
+						return {
+							version: it.getMajorVersion(),
+							home: it.home
+						}
+					};
+					var console = function(p: ReturnType<typeof getMajorVersion>) { jsh.shell.console("Major version at " + p.home + " is " + p.version)};
+					var process = $api.fp.pipe(jdk, toJavaFile, toJavaInstall, getMajorVersion, console);
+					process("8");
+					process("11");
+					process("17");
+					process("21");
+				}
+			}
+		//@ts-ignore
+		)(Packages,fifty);
+
+	}
+
+	export interface Api<J> {
+		java: {
+			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
+			install: java.Install
+
+			getClass: (name: string) => slime.jrunscript.JavaClass
+			Array: any
+			Command: any
+		} & J
+	}
+
+	export interface Api<J> {
 		io: {
 			tmpdir: (p?: { prefix?: string, suffix?: string }) => slime.jrunscript.native.java.io.File
 			copy: any
@@ -308,6 +343,10 @@ namespace slime.internal.jrunscript.bootstrap {
 			HOME: any
 			exec: any
 		}
+
+		embed: {
+			jsh?: Script
+		}
 	}
 
 	(
@@ -338,7 +377,7 @@ namespace slime.internal.jrunscript.bootstrap {
 	 * @typeParam T - An object specifying a set of properties to add to the `$api` property.
 	 * @typeParam J - An object specifying a set of properties to add to the `$api.java` property.
 	 */
-	export interface Global<T,J> extends Omit<Environment,"$api"> {
+	export interface Global<T,J = {}> extends Omit<Environment,"$api"> {
 		$api: Api<J> & T
 	}
 
