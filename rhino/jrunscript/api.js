@@ -1521,10 +1521,9 @@
 			})();
 			if ($query == "api") {
 				if (!$api.script) {
-					//	TODO	#1961
+					//	TODO	#1961 Embedding in built shell
 					$api.embed = {};
-				}
-				if ($api.script.resolve("main.js")) {
+				} else if ($api.script.resolve("main.js")) {
 					//	built shell
 					$api.embed = {
 						jsh: $api.script.resolve("main.js")
