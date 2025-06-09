@@ -108,6 +108,7 @@ namespace slime.jrunscript.file.internal.oo {
 			fifty.tests.suite = function() {
 				verify(jsh.file.Streams).is.type("object");
 
+				fifty.run(fifty.tests.filetime);
 				fifty.run(fifty.tests.exports);
 
 				fifty.load("oo/file.fifty.ts");

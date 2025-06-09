@@ -190,6 +190,8 @@ namespace slime.jrunscript.file {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { $api } = fifty.global;
+
 			fifty.tests.state = {};
 			fifty.tests.state.list = function() {
 				var subject = fifty.global.jsh.file;
@@ -201,12 +203,14 @@ namespace slime.jrunscript.file {
 					if (b.relative < a.relative) return 1;
 					throw new Error();
 				});
-				fifty.global.jsh.shell.console(listing.toString());
+				fifty.global.jsh.shell.console(listing.map($api.fp.property("absolute")).join(" "));
+				fifty.global.jsh.shell.console(listing.map($api.fp.property("relative")).join(" "));
 				//	TODO	brittle; changing structure of module can break it
 				fifty.verify(listing)[0].relative.is("_.fifty.ts");
 				fifty.verify(listing)[0].absolute.is(prefix + "/" + "_.fifty.ts");
-				fifty.verify(listing)[6].relative.is("java/");
-				fifty.verify(listing)[6].absolute.is(prefix + "/" + "java/");
+				//	sort order for these is actually different from the macOS (and maybe others'?) sort order
+				fifty.verify(listing)[8].relative.is("java/");
+				fifty.verify(listing)[8].absolute.is(prefix + "/" + "java/");
 			}
 
 			fifty.tests.action = {};
@@ -356,7 +360,6 @@ namespace slime.jrunscript.file {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.filetime);
 				fifty.run(fifty.tests.state.list);
 				fifty.run(fifty.tests.action.delete);
 
