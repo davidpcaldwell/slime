@@ -22,7 +22,7 @@
 			);
 			var ts = $context.library.file.Location.relative("code.ts")(tmp);
 			$api.fp.world.now.action(
-				$context.library.file.Location.file.write(ts).string,
+				$context.library.file.Location.file.write.old(ts).string,
 				{ value: code }
 			);
 

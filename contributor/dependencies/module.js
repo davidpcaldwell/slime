@@ -120,7 +120,7 @@
 							order: parent
 						});
 						$api.fp.world.Action.now({
-							action: $context.library.file.Location.file.write( p.to ).string({ value: p.text })
+							action: $context.library.file.Location.file.write.old( p.to ).string({ value: p.text })
 						});
 					}
 				)

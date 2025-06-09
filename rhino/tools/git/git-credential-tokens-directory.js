@@ -30,7 +30,7 @@
 		var setFileContents = function(string) {
 			//	TODO	pipelining is probably not the most straightforward way to do this
 			return $api.fp.pipe(
-				$context.library.file.Location.file.write,
+				$context.library.file.Location.file.write.old,
 				$api.fp.property("string"),
 				$api.fp.world.Action.output(),
 				function(output) {

@@ -98,7 +98,7 @@
 									});
 									var destination = jsh.file.Location.from.os(ooLib.getRelativePath("js.jar").toString());
 									$api.fp.world.Action.now({
-										action: jsh.file.Location.file.write(destination).stream({ input: response.stream })
+										action: jsh.file.Location.file.write.old(destination).stream({ input: response.stream })
 									});
 									events.fire("installed", ooLib.getRelativePath("js.jar").toString() );
 									events.fire("console", "Installed Rhino version " + version + " to " + ooLib.getRelativePath("js.jar"));

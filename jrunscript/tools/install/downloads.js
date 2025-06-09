@@ -123,7 +123,7 @@
 							$api.fp.world.Action.now({
 								action: it
 							});
-							var means = $context.library.file.Location.file.write(file).stream;
+							var means = $context.library.file.Location.file.write.old(file).stream;
 							$api.fp.world.Means.now({
 								means: means,
 								order: {
