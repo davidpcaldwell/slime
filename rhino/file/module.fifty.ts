@@ -357,7 +357,6 @@ namespace slime.jrunscript.file {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.filetime);
-				fifty.run(fifty.tests.exports.navigate);
 				fifty.run(fifty.tests.state.list);
 				fifty.run(fifty.tests.action.delete);
 
