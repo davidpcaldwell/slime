@@ -10,23 +10,23 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.jsh.plugin.Scope["plugins"] } plugins
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.Scope["plugin"] } plugin
 	 */
-	function($api,jsh,$loader,plugin) {
+	function($api,jsh,plugins,$loader,plugin) {
 		plugin({
 			load: function() {
+
 				/** @type { slime.jrunscript.bootstrap.Script } */
 				var jrunscriptBootstrap = $loader.script("embed.js");
 				var jrunscriptBootstrapApis = jrunscriptBootstrap({
 					debug: false,
 					script: {}
 				});
-				jsh.internal = {
-					bootstrap: jrunscriptBootstrapApis
-				};
+				plugins.launcher = jrunscriptBootstrapApis;
 			}
 		})
 	}
 //@ts-ignore
-)($api,jsh,$loader,plugin);
+)($api,jsh,plugins,$loader,plugin);

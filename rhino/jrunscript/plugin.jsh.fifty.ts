@@ -8,6 +8,8 @@ namespace slime.jsh {
 	export interface Global {
 		internal: {
 			bootstrap: slime.internal.jrunscript.bootstrap.Api<{}>
+			//	#1961
+			//bootstrap: slime.jsh.internal.launcher.Global["$api"]
 		}
 	}
 

@@ -267,6 +267,10 @@
 			}
 		);
 
+		$api.engine = {
+			execute: $engine.execute
+		};
+
 		$api.content = code.content();
 
 		var scripts = code.scripts(

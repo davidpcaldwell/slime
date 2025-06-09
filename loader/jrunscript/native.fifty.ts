@@ -91,6 +91,7 @@ namespace slime.jrunscript {
 					close: () => void
 				}
 				export interface PrintStream extends OutputStream {
+					print: (string: string) => void
 					println: (line: string) => void
 				}
 				export interface File {
@@ -455,10 +456,7 @@ namespace slime.jrunscript {
 					slime.jrunscript.native.java.lang.Object,
 					{
 						err: slime.jrunscript.native.java.io.PrintStream
-						out: {
-							print: any
-							println: any
-						}
+						out: slime.jrunscript.native.java.io.PrintStream
 						console: () => any
 						currentTimeMillis(): number
 						setProperty(name: string, value: string)

@@ -190,12 +190,6 @@ namespace slime.runtime.content {
 	)(fifty);
 }
 
-namespace slime.$api {
-	export interface Global {
-		content: slime.runtime.content.Exports
-	}
-}
-
 namespace slime.runtime.internal.content {
 	export type Context = void
 
