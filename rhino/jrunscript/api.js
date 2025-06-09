@@ -355,6 +355,13 @@
 						} else {
 							return null;
 						}
+					},
+					getDeprecationArguments: function(javaMajorVersion) {
+						if (javaMajorVersion > 8 && javaMajorVersion < 15) {
+							return ["-Dnashorn.args=--no-deprecation-warning"];
+						}
+
+						return [];
 					}
 				}
 			}
@@ -996,320 +1003,348 @@
 			}
 		})();
 
-		$api.java = {
-			Install: void(0),
-			install: void(0),
-			getClass: void(0),
-			Array: void(0),
-			Command: void(0)
-		};
-		$api.java.Install = function(home) {
-			var File = Packages.java.io.File;
+		$api.java = (
+			function() {
+				var getMajorVersion = (function() {
+					var oneDotPattern = /^1\.(.*)\./;
+					var majorVersionPattern = /^(\d+)\./;
 
-			/** @type { typeof Packages.javax.tools.ToolProvider["getSystemJavaCompiler"] } */
-			var getSystemJavaCompiler = (
-				function() {
-					var tried = false;
-
-					/** @type { slime.jrunscript.native.javax.tools.JavaCompiler } */
-					var compiler;
-
-					return function() {
-						if (!tried) {
-							compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
-							tried = true;
+					/**
+					 * @type { (javaVersionNumber: string) => number }
+					 */
+					return function(javaVersionNumber) {
+						if (oneDotPattern.test(javaVersionNumber)) {
+							return Number(oneDotPattern.exec(javaVersionNumber)[1]);
+						} else if (majorVersionPattern.test(javaVersionNumber)) {
+							return Number(majorVersionPattern.exec(javaVersionNumber)[1])
 						}
-						return compiler;
-					}
-				}
-			)();
+					};
+				})();
 
-			/**
-			 * @type { (args: string[]) => void }
-			 */
-			var compile = function(args) {
-				var compiler = getSystemJavaCompiler();
-				if (!compiler) throw new Error("No Java compiler available on this platform.");
-				var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
-				for (var i=0; i<jarray.length; i++) {
-					jarray[i] = new Packages.java.lang.String(args[i]);
-				}
-				var SUPPRESS_COMPILATION_OUTPUT = !$api.debug.on;
-				$api.debug("Suppress compilation output = " + SUPPRESS_COMPILATION_OUTPUT)
-				var NOWHERE = new JavaAdapter(
-					Packages.java.io.OutputStream,
-					new function() {
-						this.write = function(b){}
-					}
-				);
-				var status = compiler.run(
-					Packages.java.lang.System["in"],
-					Packages.java.lang.System.out,
-					(SUPPRESS_COMPILATION_OUTPUT) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
-					jarray
-				);
-				if (status) {
-					var error = new Error("Compiler exited with status " + status + " with inputs " + args.join(" ")
-						+ " and java.class.path=" + Packages.java.lang.System.getProperty("java.class.path"));
-					Packages.java.lang.System.err.println(String(error));
-					Packages.java.lang.System.err.println(error.stack);
-					throw error;
-				}
-			};
+				var Install = function(home) {
+					var File = Packages.java.io.File;
 
-			var getMajorVersion = function() {
-				var mode = {
-					output: "",
-					err: ""
-				}
-				var status = $api.engine.runCommand(
-					new File(home, "bin/java"),
-					"-version",
-					mode
-				);
-				if (status) throw new Error(
-					"Error determining Java version for loader; exit status " + status
-					+ " stdout: " + mode.output
-					+ " stderr: " + mode.err
-				);
-				var pattern = /\"(.+)\"/;
-				var oneDotPattern = /^1\.(.*)\./;
-				var majorVersionPattern = /^(\d+)\./;
-				var version;
-				var majorVersion;
-				mode.err.split("\n").forEach(function(line) {
-					var match = pattern.exec(line);
-					if (match) version = match[1];
-				});
-				if (!version) throw new Error("Could not detect Java version.");
-				if (oneDotPattern.test(version)) {
-					majorVersion = Number(oneDotPattern.exec(version)[1]);
-				} else if (majorVersionPattern.test(version)) {
-					majorVersion = Number(majorVersionPattern.exec(version)[1])
-				}
-				return majorVersion;
-			};
+					/** @type { typeof Packages.javax.tools.ToolProvider["getSystemJavaCompiler"] } */
+					var getSystemJavaCompiler = (
+						function() {
+							var tried = false;
 
-			var rv = {
-				toString: function() {
-					return "Java home: " + home;
-				},
-				home: home,
-				launcher: (function() {
-					if (new File(home, "bin/java").exists()) return new File(home, "bin/java");
-					if (new File(home, "bin/java.exe").exists()) return new File(home, "bin/java.exe");
-				})(),
-				jrunscript: (function() {
-					if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
-					if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
-					if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
-					if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
-				})(),
-				compile: void(0),
-				getMajorVersion: getMajorVersion
-			};
+							/** @type { slime.jrunscript.native.javax.tools.JavaCompiler } */
+							var compiler;
 
-			rv.compile = void(0);
+							return function() {
+								if (!tried) {
+									compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+									tried = true;
+								}
+								return compiler;
+							}
+						}
+					)();
 
-			//	TODO	refactor into making the getter a separate function and reusing it: as getting in if and invoked in else
-			if (Object.defineProperty) {
-				Object.defineProperty(rv, "compile", {
-					get: function() {
+					/**
+					 * @type { (args: string[]) => void }
+					 */
+					var compile = function(args) {
 						var compiler = getSystemJavaCompiler();
-						if (compiler) return compile;
-						return void(0);
-					}
-				});
-			} else {
-				rv.compile = compile;
-			}
-
-
-
-			return rv;
-		};
-
-		$api.java.install = $api.java.Install(new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home")));
-		$api.java.getClass = function(name) {
-			return $engine.getClass(name);
-		}
-		$api.java.Array = function(p) {
-			return $engine.newArray(p.type,p.length);
-		}
-		$api.java.Command = function() {
-			var vmArguments = [];
-			var properties = {};
-			var classpath = [];
-			var main;
-			var mainArguments = [];
-
-			var launchers = {};
-			launchers.Vm = function(home) {
-				if (!home) home = $api.java.install;
-				return function(mode) {
-					if (!mode) mode = {};
-					if (!mode.input) mode.input = Packages.java.lang.System["in"];
-					$api.debug("Invoking launcher: " + home.launcher);
-					var tokens = [home.launcher];
-					tokens.push.apply(tokens,vmArguments);
-					for (var x in properties) {
-						tokens.push("-D" + x + "=" + properties[x]);
-					}
-					if (!classpath.map) {
-						Array.prototype.map = function(f,target) {
-							if (!target) target = {};
-							var rv = [];
-							for (var i=0; i<this.length; i++) {
-								rv[i] = f.call(target,this[i],i,this);
+						if (!compiler) throw new Error("No Java compiler available on this platform.");
+						var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
+						for (var i=0; i<jarray.length; i++) {
+							jarray[i] = new Packages.java.lang.String(args[i]);
+						}
+						var SUPPRESS_COMPILATION_OUTPUT = !$api.debug.on;
+						$api.debug("Suppress compilation output = " + SUPPRESS_COMPILATION_OUTPUT)
+						var NOWHERE = new JavaAdapter(
+							Packages.java.io.OutputStream,
+							new function() {
+								this.write = function(b){}
 							}
-							return rv;
+						);
+						var status = compiler.run(
+							Packages.java.lang.System["in"],
+							Packages.java.lang.System.out,
+							(SUPPRESS_COMPILATION_OUTPUT) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
+							jarray
+						);
+						if (status) {
+							var error = new Error("Compiler exited with status " + status + " with inputs " + args.join(" ")
+								+ " and java.class.path=" + Packages.java.lang.System.getProperty("java.class.path"));
+							Packages.java.lang.System.err.println(String(error));
+							Packages.java.lang.System.err.println(error.stack);
+							throw error;
+						}
+					};
+
+					var getMajorVersionForJdkViaJavaDashVersion = function() {
+						//	TODO	possibly should consider jrunscript invocation
+						//			jrunscript -e print(java.lang.System.getProperty(\"java.version\"))
+						var mode = {
+							output: "",
+							err: ""
+						}
+						var status = $api.engine.runCommand(
+							new File(home, "bin/java"),
+							"-version",
+							mode
+						);
+						if (status) throw new Error(
+							"Error determining Java version for loader; exit status " + status
+							+ " stdout: " + mode.output
+							+ " stderr: " + mode.err
+						);
+						var pattern = /\"(.+)\"/;
+						var version;
+						var majorVersion;
+						mode.err.split("\n").forEach(function(line) {
+							var match = pattern.exec(line);
+							if (match) version = match[1];
+						});
+						if (!version) throw new Error("Could not detect Java version.");
+						return getMajorVersion(version);
+					};
+
+					var rv = {
+						toString: function() {
+							return "Java home: " + home;
+						},
+						home: home,
+						launcher: (function() {
+							if (new File(home, "bin/java").exists()) return new File(home, "bin/java");
+							if (new File(home, "bin/java.exe").exists()) return new File(home, "bin/java.exe");
+						})(),
+						jrunscript: (function() {
+							if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
+							if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
+							if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
+							if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
+						})(),
+						compile: void(0),
+						getMajorVersion: getMajorVersionForJdkViaJavaDashVersion
+					};
+
+					rv.compile = void(0);
+
+					//	TODO	refactor into making the getter a separate function and reusing it: as getting in if and invoked in else
+					if (Object.defineProperty) {
+						Object.defineProperty(rv, "compile", {
+							get: function() {
+								var compiler = getSystemJavaCompiler();
+								if (compiler) return compile;
+								return void(0);
+							}
+						});
+					} else {
+						rv.compile = compile;
+					}
+
+
+
+					return rv;
+				};
+
+				var install = Install(new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home")));
+				var getClass = function(name) {
+					return $engine.getClass(name);
+				}
+				var Array = function(p) {
+					return $engine.newArray(p.type,p.length);
+				}
+				var Command = function() {
+					var vmArguments = [];
+					var properties = {};
+					var classpath = [];
+					var main;
+					var mainArguments = [];
+
+					var launchers = {};
+					launchers.Vm = function(home) {
+						if (!home) home = $api.java.install;
+						return function(mode) {
+							if (!mode) mode = {};
+							if (!mode.input) mode.input = Packages.java.lang.System["in"];
+							$api.debug("Invoking launcher: " + home.launcher);
+							var tokens = [home.launcher];
+							tokens.push.apply(tokens,vmArguments);
+							for (var x in properties) {
+								tokens.push("-D" + x + "=" + properties[x]);
+							}
+							if (!classpath.map) {
+								Array.prototype.map = function(f,target) {
+									if (!target) target = {};
+									var rv = [];
+									for (var i=0; i<this.length; i++) {
+										rv[i] = f.call(target,this[i],i,this);
+									}
+									return rv;
+								}
+							}
+							tokens.push(
+								"-classpath",
+								classpath.map(function(_url) {
+									if (String(_url.getProtocol()) == "file") {
+										return String(new Packages.java.io.File(_url.toURI()).getCanonicalPath());
+									} else {
+										throw new Error("Cannot fork VM with remote URL in classpath.");
+									}
+								}).join(String(Packages.java.io.File.pathSeparator))
+							)
+							tokens.push(main);
+							tokens.push.apply(tokens,mainArguments);
+							tokens.push( (mode) ? mode : {} );
+							$api.debug("Invoking runCommand");
+							return $api.engine.runCommand.apply(null,tokens);
+						}
+					};
+					launchers.ClassLoader = function(mode) {
+						$api.debug("Running in ClassLoader ...");
+						for (var x in properties) {
+							if (properties[x]) {
+								Packages.java.lang.System.setProperty(x, properties[x]);
+							}
+						}
+						var ClassLoader = function(elements) {
+							var _urls = $api.java.Array({ type: Packages.java.net.URL, length: elements.length });
+							for (var i=0; i<elements.length; i++) {
+								//_urls[i] = new Packages.java.io.File(elements[i]).toURI().toURL();
+								_urls[i] = elements[i];
+								//debug("classpath: " + elements[i]);
+							}
+							var _classloader = new Packages.java.net.URLClassLoader(_urls);
+							return _classloader;
+						}
+						$api.debug("ClassLoader classpath=" + classpath);
+						var _classloader = ClassLoader(classpath);
+						$api.debug("ClassLoader _classloader=" + _classloader);
+						var _main = _classloader.loadClass(main);
+						$api.debug("main: " + _main);
+						$api.debug("inonit.system.Logging launcher = " + Packages.inonit.system.Logging);
+						$api.debug("inonit.system.Logging loaded = " + _classloader.loadClass("inonit.system.Logging"));
+						// var _class = _classloader.loadClass(main);
+						// var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
+						// var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
+
+						var loaderArguments = [];
+						// if (script && typeof(script.path) != "undefined") {
+						// 	loaderArguments.push(script.path);
+						// } else if (script && typeof(script) == "string") {
+						// 	loaderArguments.push(script);
+						// }
+						loaderArguments.push.apply(loaderArguments,mainArguments);
+
+						var _arguments = $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });
+						for (var i=0; i<loaderArguments.length; i++) {
+							_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
+						}
+
+						var _argumentTypes = $api.java.Array({ type: Packages.java.lang.Class, length: 1 });
+						var _invokeArguments = $api.java.Array({ type: Packages.java.lang.Object, length: 1 });
+						_invokeArguments[0] = _arguments;
+						_argumentTypes[0] = _arguments.getClass();
+						var _method = _main.getMethod("main",_argumentTypes);
+						$api.debug("Invoking " + _method + " ...");
+						try {
+							_method.invoke(null,_invokeArguments);
+							$api.debug("Returned.");
+							return void(0);
+						} catch (e) {
+							$api.debug("Returned with error.");
+							return 1;
 						}
 					}
-					tokens.push(
-						"-classpath",
-						classpath.map(function(_url) {
-							if (String(_url.getProtocol()) == "file") {
-								return String(new Packages.java.io.File(_url.toURI()).getCanonicalPath());
-							} else {
-								throw new Error("Cannot fork VM with remote URL in classpath.");
+
+					var launcher = launchers.ClassLoader;
+
+					this.toString = function() {
+						var p = "{";
+						for (var x in properties) {
+							if (p.length > 1) {
+								p += ", ";
 							}
-						}).join(String(Packages.java.io.File.pathSeparator))
-					)
-					tokens.push(main);
-					tokens.push.apply(tokens,mainArguments);
-					tokens.push( (mode) ? mode : {} );
-					$api.debug("Invoking runCommand");
-					return $api.engine.runCommand.apply(null,tokens);
-				}
-			};
-			launchers.ClassLoader = function(mode) {
-				$api.debug("Running in ClassLoader ...");
-				for (var x in properties) {
-					if (properties[x]) {
-						Packages.java.lang.System.setProperty(x, properties[x]);
+							p += x;
+							p += " : ";
+							p += properties[x];
+						}
+						p += "}";
+						return [
+							"JavaCommand"
+							//	TODO	below used to use JSON.stringify(properties) but did not work on 1.7
+							,"properties=" + p
+							,"classpath=" + classpath.join(",")
+							,"main=" + main
+							,"arguments=" + mainArguments.join(",")
+						].join(" ");
+					}
+
+					this.fork = function() {
+						if (launcher == launchers.ClassLoader) {
+							$api.debug("Running in VM because of fork() ...");
+							launcher = launchers.Vm();
+						}
+					}
+
+					this.home = function(home) {
+						$api.debug("Running in VM because of home() ...");
+						launcher = launchers.Vm(home);
+					}
+
+					this.vm = function(argument) {
+						if (launcher == launchers.ClassLoader) {
+							$api.debug("Running in VM because of VM argument " + argument + " ...");
+							launcher = launchers.Vm();
+						}
+						vmArguments.push(argument);
+					}
+
+					this.systemProperty = function(name,value) {
+						if (typeof(value) != "undefined") {
+							properties[name] = value;
+						}
+					}
+
+					this.classpath = function(element) {
+						classpath.push(element);
+					}
+
+					this.main = function(className) {
+						main = className;
+					}
+
+					this.argument = function() {
+						mainArguments.push(arguments[0]);
+					}
+
+					this.run = function(mode) {
+						$api.debug("Running");
+						if (mode && launcher == launchers.ClassLoader) {
+							$api.debug("Running in VM because of run(mode) ...");
+							launcher = launchers.Vm();
+						}
+						$api.debug("running in launcher = " + launcher);
+						return launcher(mode);
 					}
 				}
-				var ClassLoader = function(elements) {
-					var _urls = $api.java.Array({ type: Packages.java.net.URL, length: elements.length });
-					for (var i=0; i<elements.length; i++) {
-						//_urls[i] = new Packages.java.io.File(elements[i]).toURI().toURL();
-						_urls[i] = elements[i];
-						//debug("classpath: " + elements[i]);
+
+				/** @type { slime.internal.jrunscript.bootstrap.Api<{}>["java"]["versions"] } */
+				var versions = {
+					getMajorVersion: {
+						forJavaVersionProperty: getMajorVersion
 					}
-					var _classloader = new Packages.java.net.URLClassLoader(_urls);
-					return _classloader;
-				}
-				$api.debug("ClassLoader classpath=" + classpath);
-				var _classloader = ClassLoader(classpath);
-				$api.debug("ClassLoader _classloader=" + _classloader);
-				var _main = _classloader.loadClass(main);
-				$api.debug("main: " + _main);
-				$api.debug("inonit.system.Logging launcher = " + Packages.inonit.system.Logging);
-				$api.debug("inonit.system.Logging loaded = " + _classloader.loadClass("inonit.system.Logging"));
-				// var _class = _classloader.loadClass(main);
-				// var _factory = _class.getMethod("engine",new $api.java.Array({ type: Packages.java.lang.Class, length: 0 }));
-				// var _engine = _factory.invoke(null,new $api.java.Array({ type: Packages.java.lang.Object, length: 0 }));
+				};
 
-				var loaderArguments = [];
-				// if (script && typeof(script.path) != "undefined") {
-				// 	loaderArguments.push(script.path);
-				// } else if (script && typeof(script) == "string") {
-				// 	loaderArguments.push(script);
-				// }
-				loaderArguments.push.apply(loaderArguments,mainArguments);
-
-				var _arguments = $api.java.Array({ type: Packages.java.lang.String, length: loaderArguments.length });
-				for (var i=0; i<loaderArguments.length; i++) {
-					_arguments[i] = new Packages.java.lang.String(loaderArguments[i]);
-				}
-
-				var _argumentTypes = $api.java.Array({ type: Packages.java.lang.Class, length: 1 });
-				var _invokeArguments = $api.java.Array({ type: Packages.java.lang.Object, length: 1 });
-				_invokeArguments[0] = _arguments;
-				_argumentTypes[0] = _arguments.getClass();
-				var _method = _main.getMethod("main",_argumentTypes);
-				$api.debug("Invoking " + _method + " ...");
-				try {
-					_method.invoke(null,_invokeArguments);
-					$api.debug("Returned.");
-					return void(0);
-				} catch (e) {
-					$api.debug("Returned with error.");
-					return 1;
-				}
-			}
-
-			var launcher = launchers.ClassLoader;
-
-			this.toString = function() {
-				var p = "{";
-				for (var x in properties) {
-					if (p.length > 1) {
-						p += ", ";
+				return {
+					Install: Install,
+					install: install,
+					getClass: getClass,
+					Array: Array,
+					Command: Command,
+					versions: versions,
+					getMajorVersion: function() {
+						return getMajorVersion(String(Packages.java.lang.System.getProperty("java.version")));
 					}
-					p += x;
-					p += " : ";
-					p += properties[x];
-				}
-				p += "}";
-				return [
-					"JavaCommand"
-					//	TODO	below used to use JSON.stringify(properties) but did not work on 1.7
-					,"properties=" + p
-					,"classpath=" + classpath.join(",")
-					,"main=" + main
-					,"arguments=" + mainArguments.join(",")
-				].join(" ");
-			}
-
-			this.fork = function() {
-				if (launcher == launchers.ClassLoader) {
-					$api.debug("Running in VM because of fork() ...");
-					launcher = launchers.Vm();
 				}
 			}
+		)();
 
-			this.home = function(home) {
-				$api.debug("Running in VM because of home() ...");
-				launcher = launchers.Vm(home);
-			}
-
-			this.vm = function(argument) {
-				if (launcher == launchers.ClassLoader) {
-					$api.debug("Running in VM because of VM argument " + argument + " ...");
-					launcher = launchers.Vm();
-				}
-				vmArguments.push(argument);
-			}
-
-			this.systemProperty = function(name,value) {
-				if (typeof(value) != "undefined") {
-					properties[name] = value;
-				}
-			}
-
-			this.classpath = function(element) {
-				classpath.push(element);
-			}
-
-			this.main = function(className) {
-				main = className;
-			}
-
-			this.argument = function() {
-				mainArguments.push(arguments[0]);
-			}
-
-			this.run = function(mode) {
-				$api.debug("Running");
-				if (mode && launcher == launchers.ClassLoader) {
-					$api.debug("Running in VM because of run(mode) ...");
-					launcher = launchers.Vm();
-				}
-				$api.debug("running in launcher = " + launcher);
-				return launcher(mode);
-			}
-		}
 		$api.io = {
 			copy: io.copy,
 			tmpdir: void(0),

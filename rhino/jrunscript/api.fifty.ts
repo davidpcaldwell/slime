@@ -292,6 +292,17 @@ namespace slime.internal.jrunscript.bootstrap {
 			getClass: (name: string) => slime.jrunscript.JavaClass
 			Array: any
 			Command: any
+
+			versions: {
+				getMajorVersion: {
+					forJavaVersionProperty: (value: string) => number
+				}
+			}
+
+			/**
+			 * Returns ths major version number for the currently running Java virtual machine.
+			 */
+			getMajorVersion: () => number
 		} & J
 	}
 
@@ -336,6 +347,8 @@ namespace slime.internal.jrunscript.bootstrap {
 			isPresent: () => boolean
 			//	TODO	Add org.openjdk.nashorn equivalent
 			running: () => slime.jrunscript.native.jdk.nashorn.internal.runtime.Context
+
+			getDeprecationArguments: (javaMajorVersion: number) => string[]
 		}
 
 		shell: {
