@@ -24,7 +24,9 @@
 			/** @type { slime.jrunscript.file.internal.mock.Script } */
 			mock: $loader.script("mock.js"),
 			/** @type { slime.jrunscript.file.internal.oo.Script } */
-			oo: $loader.script("oo.js")
+			oo: $loader.script("oo.js"),
+			/** @type { slime.jrunscript.file.internal.archive.Script } */
+			archive: $loader.script("archive.js")
 		}
 
 		var world = code.java({
@@ -96,7 +98,9 @@
 			zip: oo.zip,
 			unzip: oo.unzip,
 			Streams: oo.Streams,
-			java: oo.java
+			java: oo.java,
+
+			archive: code.archive({})
 		});
 	}
 //@ts-ignore

@@ -37,7 +37,7 @@
 		/** @type { (location: slime.jrunscript.file.Location) => (string: string) => void } */
 		var output = function(location) {
 			return function(string) {
-				var write = jsh.file.Location.file.write(location);
+				var write = jsh.file.Location.file.write.old(location);
 				$api.fp.world.now.action(write.string, { value: string });
 			}
 		};

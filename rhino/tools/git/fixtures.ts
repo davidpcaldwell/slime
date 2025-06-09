@@ -130,7 +130,7 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 					var edited = change(before);
 
 					var writeEdited = function(location: slime.jrunscript.file.world.Location) {
-						var write = jsh.file.world.Location.file.write(location);
+						var write = jsh.file.world.Location.file.write.old(location);
 						$api.fp.world.now.action(write.string, { value: edited });
 					}
 

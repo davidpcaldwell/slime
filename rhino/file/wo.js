@@ -196,8 +196,8 @@
 		var Location_file_write = Object.assign(
 			/**
 			 *
-			 * @param { Parameters<slime.jrunscript.file.exports.location.File["write"]>[0] } location
-			 * @returns { ReturnType<slime.jrunscript.file.exports.location.File["write"]> }
+			 * @param { Parameters<slime.jrunscript.file.exports.location.File["write"]["old"]>[0] } location
+			 * @returns { ReturnType<slime.jrunscript.file.exports.location.File["write"]["old"]> }
 			 */
 			function(location) {
 				return {
@@ -493,7 +493,9 @@
 							}
 						},
 						read: Location_file_read,
-						write: Location_file_write,
+						write: {
+							old: Location_file_write
+						},
 						/** @type { slime.jrunscript.file.exports.Location["file"]["remove"] } */
 						remove: {
 							world: function() {

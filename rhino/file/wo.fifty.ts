@@ -194,7 +194,7 @@ namespace slime.jrunscript.file {
 				fifty.tests.exports.Location.posix = function() {
 					var tmp = fifty.jsh.file.temporary.location();
 					$api.fp.world.now.action(
-						jsh.file.Location.file.write(tmp).string,
+						jsh.file.Location.file.write.old(tmp).string,
 						{ value: "" }
 					);
 
@@ -371,7 +371,7 @@ namespace slime.jrunscript.file {
 				const { $api, jsh } = fifty.global;
 
 				var writeText = function(location: slime.jrunscript.file.Location) {
-					var write = jsh.file.world.Location.file.write(location);
+					var write = jsh.file.world.Location.file.write.old(location);
 					$api.fp.world.now.action(write.string, { value: "tocopy" });
 				};
 
@@ -551,15 +551,17 @@ namespace slime.jrunscript.file {
 					}
 				}
 
-				write: (location: slime.jrunscript.file.Location) => {
-					string: slime.$api.fp.world.Means<{ value: string }, slime.jrunscript.file.world.events.FileOpenForWrite>
-					stream: slime.$api.fp.world.Means<{ input: slime.jrunscript.runtime.io.InputStream },slime.jrunscript.file.world.events.FileOpenForWrite>
-					object: {
-						text: slime.$api.fp.world.Sensor<
-							{},
-							slime.jrunscript.file.world.events.FileOpenForWrite,
-							slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>
-						>
+				write: {
+					old: (location: slime.jrunscript.file.Location) => {
+						string: slime.$api.fp.world.Means<{ value: string }, slime.jrunscript.file.world.events.FileOpenForWrite>
+						stream: slime.$api.fp.world.Means<{ input: slime.jrunscript.runtime.io.InputStream },slime.jrunscript.file.world.events.FileOpenForWrite>
+						object: {
+							text: slime.$api.fp.world.Sensor<
+								{},
+								slime.jrunscript.file.world.events.FileOpenForWrite,
+								slime.$api.fp.Maybe<slime.jrunscript.runtime.io.Writer>
+							>
+						}
 					}
 				}
 			}
@@ -582,7 +584,7 @@ namespace slime.jrunscript.file {
 						verify(exists(at)).is(false);
 
 						var writeA = function(location: slime.jrunscript.file.Location) {
-							var write = jsh.file.world.Location.file.write(location);
+							var write = jsh.file.world.Location.file.write.old(location);
 							$api.fp.world.now.action(write.string, { value: "a" });
 						}
 
@@ -599,7 +601,7 @@ namespace slime.jrunscript.file {
 						buffer.close();
 
 						var process = function() {
-							var write = subject.Location.file.write(at);
+							var write = subject.Location.file.write.old(at);
 							$api.fp.world.now.action(write.stream, { input: buffer.readBinary() });
 						};
 

@@ -40,6 +40,8 @@ namespace slime.jrunscript.io.zip {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			//	TODO	fix this test not to use files, which are tested downstream
+
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 			const module = jsh.io;

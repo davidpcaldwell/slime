@@ -16,7 +16,7 @@
 		$export({
 			from: {
 				location: function(p) {
-					var q = $context.library.file.Location.file.write(p.location).object.text;
+					var q = $context.library.file.Location.file.write.old(p.location).object.text;
 					var maybe = $api.fp.world.now.question(q, p.location);
 					if (!maybe.present) throw new Error("Could not open file: " + p.location.pathname);
 					var writer = maybe.value;

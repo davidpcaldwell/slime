@@ -132,7 +132,7 @@ namespace slime.jrunscript.file {
 				fifty.tests.world.posix.set = function() {
 					var tmp = fifty.jsh.file.temporary.location();
 					$api.fp.world.now.action(
-						jsh.file.Location.file.write(tmp).string,
+						jsh.file.Location.file.write.old(tmp).string,
 						{ value: "" }
 					);
 

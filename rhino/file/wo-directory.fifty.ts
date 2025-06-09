@@ -361,7 +361,7 @@ namespace slime.jrunscript.file.exports.location {
 				$api.fp.now.invoke(
 					dir,
 					jsh.file.Location.directory.relativePath("a"),
-					jsh.file.Location.file.write,
+					jsh.file.Location.file.write.old,
 					$api.fp.property("string"),
 					function(means) {
 						$api.fp.world.now.action(
@@ -413,7 +413,7 @@ namespace slime.jrunscript.file.exports.location {
 							$api.fp.pipe(
 								atFilepath,
 								function(location: slime.jrunscript.file.world.Location) {
-									var write = jsh.file.world.Location.file.write(location);
+									var write = jsh.file.world.Location.file.write.old(location);
 									$api.fp.world.now.action(write.string, { value: "contents" })
 								}
 							)
@@ -500,7 +500,7 @@ namespace slime.jrunscript.file.exports.location {
 				index: slime.runtime.content.Index<T>
 				write: (p: {
 					file: T
-					api: ReturnType<slime.jrunscript.file.exports.location.File["write"]>
+					api: ReturnType<slime.jrunscript.file.exports.location.File["write"]["old"]>
 				}) => void
 				to: slime.jrunscript.file.Location
 			}) => slime.$api.fp.world.Action<{
@@ -614,7 +614,7 @@ namespace slime.jrunscript.file.internal.wo.directory {
 		Location_parent: slime.jrunscript.file.exports.Location["parent"]
 		Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]
 		Location_file_read_string: slime.jrunscript.file.Exports["Location"]["file"]["read"]["string"]
-		Location_file_write: slime.jrunscript.file.Exports["Location"]["file"]["write"]
+		Location_file_write: slime.jrunscript.file.Exports["Location"]["file"]["write"]["old"]
 		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: string }>
 		remove: slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
 		Store: slime.runtime.loader.Exports["Store"]

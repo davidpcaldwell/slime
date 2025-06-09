@@ -44,7 +44,7 @@
 					var mapStringToWriteArgument = function(p) { return { value: p }; }
 
 					var fileWriteStringOutput = $api.fp.pipe(
-						jsh.file.Location.file.write,
+						jsh.file.Location.file.write.old,
 						$api.fp.property("string"),
 						$api.fp.world.Action.pipe(mapStringToWriteArgument),
 						$api.fp.world.Action.output()

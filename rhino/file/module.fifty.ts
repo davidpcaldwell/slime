@@ -353,76 +353,6 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			Packages: slime.jrunscript.Packages,
-			jsh: slime.jsh.Global,
-			tests: slime.fifty.test.tests,
-			verify: slime.fifty.test.verify,
-			fifty: slime.fifty.test.Kit
-		) {
-			var MODIFIED_TIME = new jsh.time.When({ unix: 1599862384355 });
-
-			tests.filetime = function() {
-				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.directory;
-				directory.getRelativePath("file").write("foo");
-				var file = directory.getFile("file");
-
-				file.modified = jsh.time.When.codec.Date.encode(MODIFIED_TIME);
-				var isNearestSecond = file.modified.getTime() == Math.floor(MODIFIED_TIME.unix / 1000) * 1000;
-				var isMillisecond = file.modified.getTime() == MODIFIED_TIME.unix;
-				verify(isNearestSecond || isMillisecond, "sNearestSecond || isMillisecond").is(true);
-			}
-
-			tests.filetime.testbed = function() {
-				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.directory;
-				directory.getRelativePath("file").write("foo");
-				var file = directory.getFile("file");
-
-				var nio = file.pathname.java.adapt().toPath();
-				jsh.shell.console(String(nio));
-				Packages.java.nio.file.Files.setLastModifiedTime(nio, Packages.java.nio.file.attribute.FileTime.fromMillis(MODIFIED_TIME.unix));
-				var _modified = Packages.java.nio.file.Files.getLastModifiedTime(nio);
-				jsh.shell.console(_modified.toMillis());
-			}
-
-			tests.exports = {
-				navigate: function() {
-					var module = jsh.file;
-					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
-
-					var toString = function(o) {
-						return String(o);
-					}
-
-					tmp.getRelativePath("a/b/c").write("c", { append: false, recursive: true });
-					tmp.getRelativePath("a/c/c").write("c", { append: false, recursive: true });
-
-					var first = tmp.getRelativePath("a/b/c");
-					var second = tmp.getRelativePath("a/c/c");
-
-					var minimal = module.navigate({
-						from: first,
-						to: second
-					});
-
-					verify(minimal).base.evaluate(toString).is(tmp.getSubdirectory("a").toString());
-					verify(minimal).relative.is("../c/c");
-
-					var top = module.navigate({
-						from: first,
-						to: second,
-						base: tmp
-					});
-
-					verify(top).base.evaluate(toString).is(tmp.toString());
-					verify(top).relative.is("../../a/c/c");
-				}
-			}
-		}
-	//@ts-ignore
-	)(Packages,global.jsh,tests,verify,fifty);
-
-	(
-		function(
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
@@ -490,6 +420,10 @@ namespace slime.jrunscript.file {
 			/** @deprecated Use `Exports["world"]["filesystems"]["mock"]. */
 			filesystem: Exports["world"]["filesystems"]["mock"]
 		}
+	}
+
+	export interface Exports {
+		archive: slime.jrunscript.file.archive.Exports
 	}
 
 	export interface Exports {
