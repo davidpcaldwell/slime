@@ -178,6 +178,7 @@ namespace slime.jrunscript.tools.gcloud {
 					_environment: void(0),
 					_properties: void(0),
 					api: {
+						bootstrap: jsh.internal.bootstrap,
 						js: jsh.js,
 						java: jsh.java,
 						io: jsh.io,

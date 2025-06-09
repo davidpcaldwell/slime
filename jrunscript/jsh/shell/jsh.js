@@ -319,6 +319,7 @@
 		/**
 		 *
 		 * @param { slime.jsh.shell.oo.ForkInvocation } p
+		 * @returns { slime.jrunscript.shell.JrunscriptInvocation }
 		 */
 		var getJrunscriptForkCommand = function(p) {
 			var newEvaluateWithInvocationDataAdded = function(evaluate) {
@@ -352,25 +353,13 @@
 				return jargs;
 			}
 
-			//	TODO	next function and next variable are repeated from jrunscript/jsh/launcher/main.js
-			function javaMajorVersionString(javaVersionProperty) {
-				if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
-				return javaVersionProperty.split(".")[0];
-			}
-
-			var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
-
-			//	Also in rhino/shell/module.js
-			var getNashornDeprecationArguments = function() {
-				if (javaMajorVersion >= 9 && javaMajorVersion <= 14) return ["-Dnashorn.args=--no-deprecation-warning"];
-				return [];
-			}
-
-			var bootstrapShellInvocationArguments = getNashornDeprecationArguments().concat((function(shell) {
+			var bootstrapShellInvocationArguments = $context.api.bootstrap.nashorn.getDeprecationArguments($context.api.bootstrap.java.getMajorVersion()).concat((function(shell) {
 				/** @param { slime.jrunscript.file.Directory } src */
 				var unbuilt = function(src) {
 					/** @type { string[] } */
 					var rv = [];
+
+					var javaMajorVersion = $context.api.bootstrap.java.getMajorVersion();
 					//	TODO	should only do this for post-Nashorn JDK versions
 					if (javaMajorVersion >= 15 && src.getFile("local/jsh/lib/nashorn.jar")) {
 						var libraries = $context.api.bootstrap.nashorn.dependencies.names;
@@ -614,7 +603,7 @@
 
 		$exports.jsh = Object.assign(
 			/**
-			 * @type { slime.jsh.shell.Exports["run"] }
+			 * @type { slime.jsh.shell.JshInvoke }
 			 */
 			function(p) {
 				//	Deal with old, two-argument form

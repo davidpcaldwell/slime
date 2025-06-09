@@ -50,6 +50,7 @@
 
 				var mContext = {
 					api: {
+						bootstrap: jsh.internal.bootstrap,
 						js: jsh.js,
 						java: jsh.java,
 						io: jsh.io,
