@@ -53,7 +53,9 @@
 									arguments: p.arguments.slice(1),
 									environment: $api.Object.compose(jsh.shell.environment, (p.options.rhinoDebug) ? {
 										JSH_DEBUG_SCRIPT: "rhino"
-									} : {})
+									} : {
+										JSH_DEBUG_SCRIPT: null
+									})
 								});
 								jsh.shell.console("Ran in built shell.");
 							} else {
