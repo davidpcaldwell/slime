@@ -353,81 +353,86 @@
 				return jargs;
 			}
 
-			var bootstrapShellInvocationArguments = $context.api.bootstrap.nashorn.getDeprecationArguments($context.api.bootstrap.java.getMajorVersion()).concat((function(shell) {
-				/** @param { slime.jrunscript.file.Directory } src */
-				var unbuilt = function(src) {
-					/** @type { string[] } */
-					var rv = [];
+			var bootstrapShellInvocationArguments = (
+				$context.api.bootstrap.nashorn.getDeprecationArguments($context.api.bootstrap.java.getMajorVersion())
+					.concat(
+						(function(shell) {
+							/** @param { slime.jrunscript.file.Directory } src */
+							var unbuilt = function(src) {
+								/** @type { string[] } */
+								var rv = [];
 
-					var javaMajorVersion = $context.api.bootstrap.java.getMajorVersion();
-					//	TODO	should only do this for post-Nashorn JDK versions
-					if (javaMajorVersion >= 15 && src.getFile("local/jsh/lib/nashorn.jar")) {
-						var libraries = $context.api.bootstrap.nashorn.dependencies.names;
-						var lib = src.getSubdirectory("local/jsh/lib");
-						rv.push(
-							"-classpath",
-							libraries.map(function(name) {
-								return lib.getRelativePath(name + ".jar")
-							}).concat([
-								lib.getRelativePath("nashorn.jar")
-							])
-							//	TODO	this is OS-specific
-								.join(":")
-						);
-					}
-					rv.push(
-						src.getFile("rhino/jrunscript/api.js").pathname.toString(),
-						"jsh"
-					);
-					return rv;
-				};
+								var javaMajorVersion = $context.api.bootstrap.java.getMajorVersion();
+								//	TODO	should only do this for post-Nashorn JDK versions
+								if (javaMajorVersion >= 15 && src.getFile("local/jsh/lib/nashorn.jar")) {
+									var libraries = $context.api.bootstrap.nashorn.dependencies.names;
+									var lib = src.getSubdirectory("local/jsh/lib");
+									rv.push(
+										"-classpath",
+										libraries.map(function(name) {
+											return lib.getRelativePath(name + ".jar")
+										}).concat([
+											lib.getRelativePath("nashorn.jar")
+										])
+										//	TODO	this is OS-specific
+											.join(":")
+									);
+								}
+								rv.push(
+									src.getFile("rhino/jrunscript/api.js").pathname.toString(),
+									"jsh"
+								);
+								return rv;
+							};
 
-				/**
-				 *
-				 * @param { slime.jrunscript.file.Directory } home
-				 */
-				var built = function(home) {
-					/** @type { string[] } */
-					var rv = [];
-					if (home.getFile("lib/nashorn.jar")) {
-						var lib = home.getSubdirectory("lib");
-						rv.push("-classpath");
-						rv.push(
-							$context.api.bootstrap.nashorn.dependencies.jarNames
-								.map(function(name) { return lib.getRelativePath(name); })
-								.concat([lib.getRelativePath("nashorn.jar")])
-								.join(":")
-						)
-					}
-					rv.push(home.getFile("jsh.js").pathname.toString());
-					return rv;
-				};
+							/**
+							 *
+							 * @param { slime.jrunscript.file.Directory } home
+							 */
+							var built = function(home) {
+								/** @type { string[] } */
+								var rv = [];
+								if (home.getFile("lib/nashorn.jar")) {
+									var lib = home.getSubdirectory("lib");
+									rv.push("-classpath");
+									rv.push(
+										$context.api.bootstrap.nashorn.dependencies.jarNames
+											.map(function(name) { return lib.getRelativePath(name); })
+											.concat([lib.getRelativePath("nashorn.jar")])
+											.join(":")
+									)
+								}
+								rv.push(home.getFile("jsh.js").pathname.toString());
+								return rv;
+							};
 
-				var remote = function(url) {
-					return [
-						"-e",
-						"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
-					];
-				}
+							var remote = function(url) {
+								return [
+									"-e",
+									"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
+								];
+							}
 
-				if (shell) {
-					//	TODO	should contemplate possibility of URL, I suppose
-					if (shell.getFile("jsh.js")) {
-						return built(shell);
-					}
-					if (shell.getFile("rhino/jrunscript/api.js")) {
-						return unbuilt(shell);
-					}
-					throw new Error("Shell not found: " + shell);
-				}
+							if (shell) {
+								//	TODO	should contemplate possibility of URL, I suppose
+								if (shell.getFile("jsh.js")) {
+									return built(shell);
+								}
+								if (shell.getFile("rhino/jrunscript/api.js")) {
+									return unbuilt(shell);
+								}
+								throw new Error("Shell not found: " + shell);
+							}
 
-				if ($exports.jsh.home) return built($exports.jsh.home);
-				if ($exports.jsh.src) return unbuilt($exports.jsh.src);
-				if ($exports.jsh.url) return remote($exports.jsh.url);
+							if ($exports.jsh.home) return built($exports.jsh.home);
+							if ($exports.jsh.src) return unbuilt($exports.jsh.src);
+							if ($exports.jsh.url) return remote($exports.jsh.url);
 
-				//	TODO	would unbuilt remote shells have a src property, and would it work?
-				throw new Error("Currently running jsh shell lacks home, src, and url properties; bug.");
-			})(p.shell));
+							//	TODO	would unbuilt remote shells have a src property, and would it work?
+							throw new Error("Currently running jsh shell lacks home, src, and url properties; bug.");
+						})(p.shell)
+					)
+			);
 
 			var isRemoteShell = bootstrapShellInvocationArguments[0] == "-e";
 
@@ -804,31 +809,7 @@
 				Installation: void(0),
 				/** @type { slime.jsh.shell.JshShellJsh["Intention" ]} */
 				Intention: {
-					toShellIntention: jshIntentionToShellIntention,
-					sensor: function(p) {
-						return function(events) {
-							if (isExternalInstallationInvocation(p)) {
-								if (isUnbuilt(p.shell)) {
-									return $api.fp.world.Sensor.now({
-										sensor: $context.module.subprocess.question,
-										subject: jshIntentionToShellIntention(p),
-										handlers: {
-											stderr: function(e) {
-												events.fire("stderr", e.detail);
-											},
-											stdout: function(e) {
-												events.fire("stdout", e.detail);
-											}
-										}
-									});
-								} else {
-									throw $api.TODO()();
-								}
-							} else {
-								throw $api.TODO()();
-							}
-						}
-					}
+					toShellIntention: jshIntentionToShellIntention
 				}
 			}
 		);

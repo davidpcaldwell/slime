@@ -753,15 +753,15 @@ namespace slime.jrunscript.shell {
 
 			fifty.tests.manual.kotlin = function() {
 				if (!jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
-					$api.fp.world.Sensor.now({
-						sensor: jsh.shell.jsh.Intention.sensor,
-						subject: {
-							shell: {
-								src: fifty.jsh.file.relative("../..").pathname
-							},
-							script: fifty.jsh.file.relative("../../jrunscript/jsh/tools/install/kotlin.jsh.js").pathname
-						}
-					})
+					var intention: slime.jsh.shell.Intention = {
+						shell: {
+							src: fifty.jsh.file.relative("../..").pathname
+						},
+						script: fifty.jsh.file.relative("../../jrunscript/jsh/tools/install/kotlin.jsh.js").pathname
+					};
+					var shellIntention = jsh.shell.jsh.Intention.toShellIntention(intention);
+					var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+					run(shellIntention);
 				}
 			}
 

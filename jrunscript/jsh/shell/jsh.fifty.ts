@@ -280,7 +280,7 @@ namespace slime.jsh.shell {
 	}
 
 	export interface Exports {
-		jsh: JshShellJsh
+		jsh: JshInvoke & JshShellJsh
 	}
 
 	(
@@ -327,16 +327,6 @@ namespace slime.jsh.shell {
 		}
 		& Pick<slime.jrunscript.shell.run.Intention,"stdio">
 	)
-
-	export namespace jsh {
-		export interface Exit {
-			status: number
-			stdio?: {
-				output?: string
-				error?: string
-			}
-		}
-	}
 
 	export interface JshShellJsh {
 		Installation: {
@@ -495,12 +485,6 @@ namespace slime.jsh.shell {
 	export interface JshShellJsh {
 		Intention: {
 			toShellIntention: (p: Intention) => slime.jrunscript.shell.run.Intention
-
-			sensor: slime.$api.fp.world.Sensor<
-				Intention,
-				{ stdout: slime.jrunscript.shell.run.Line, stderr: slime.jrunscript.shell.run.Line },
-				jsh.Exit
-			>
 		}
 	}
 
@@ -636,10 +620,9 @@ namespace slime.jsh.shell {
 						} as { output: slime.jrunscript.shell.run.OutputCapture }
 					}
 				);
-				var exit = $api.fp.world.Sensor.now({
-					sensor: jsh.shell.jsh.Intention.sensor,
-					subject: intention
-				});
+				var shellIntention = jsh.shell.jsh.Intention.toShellIntention(intention);
+				var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+				var exit = run(shellIntention);
 				var output = JSON.parse(exit.stdio.output);
 				debugger;
 				verify(output).arguments[0].is("--argument");
@@ -892,11 +875,11 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export interface JshShellJsh extends JshInvoke {
+	export interface JshShellJsh {
 		lib?: slime.jrunscript.file.Directory
 	}
 
-	export interface JshShellJsh extends JshInvoke {
+	export interface JshShellJsh {
 		/**
 		 * Forks this shell, relaunching with the output of the given transform, if any, and exiting with the status of the shell
 		 * executed with the transformed parameters. If no argument is given, simply relaunches with the same configuration as was
@@ -956,7 +939,7 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export interface JshShellJsh extends JshInvoke {
+	export interface JshShellJsh {
 		require: slime.$api.fp.world.Means<
 			{
 				satisfied: () => boolean,
