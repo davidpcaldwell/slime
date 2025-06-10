@@ -99,18 +99,6 @@
 			}
 		);
 
-		$exports.Function.preprocessing = $context.deprecate(function(f,preprocessor) {
-			return function() {
-				var overrides = preprocessor.apply(this,arguments);
-				if (overrides && overrides.return) return overrides.return;
-				var target = this;
-				var args = arguments;
-				if (overrides && overrides.target) target = overrides.target;
-				if (overrides && overrides.arguments) args = overrides.arguments;
-				return f.apply(target,args);
-			}
-		});
-
 		$exports.Function.value = {
 			UNDEFINED: {
 				toString: function() {
@@ -137,12 +125,10 @@
 			} else if (typeof(v) == "undefined") {
 				implementation = function(v) { return v; };
 			}
-			return $exports.Function.preprocessing(
-				implementation,
-				function() {
-					if (arguments.length != 1) throw new TypeError("mutating() must be invoked with one argument representing the value to mutate.");
-				}
-			)
+			return function() {
+				if (arguments.length != 1) throw new TypeError("mutating() must be invoked with one argument representing the value to mutate.");
+				return implementation.apply(this, arguments);
+			}
 		});
 
 		$exports.Function.Basic = $context.deprecate(function(f) {

@@ -281,6 +281,13 @@
 		}
 
 		/**
+		 * @type { (p: slime.jsh.shell.oo.Invocation) => p is slime.jsh.shell.oo.EngineInvocation }
+		 */
+		var isEngineInvocation = function(p) {
+			return !isForkInvocation(p);
+		}
+
+		/**
 		 *
 		 * @param { { shell?: slime.jrunscript.file.Directory, environment?: slime.jrunscript.shell.Exports["environment"] }} p
 		 * @param { boolean } fork
@@ -624,11 +631,17 @@
 					}).apply(this,arguments);
 				}
 
+				var invocation = /** @type { slime.jsh.shell.oo.Invocation } */((
+					function() {
+						if (isForkInvocation(p)) return p;
+						if (isEngineInvocation(p)) return p;
+					}
+				)());
+
 				if (!p.script) {
 					throw new TypeError("Required: script property indicating script to run.");
 				}
-				var argumentsFactory = $api.fp.mutating(p.arguments);
-				p.arguments = argumentsFactory([]);
+				p.arguments = invocation.arguments;
 
 				if (p.script["file"] && !p.script.pathname) {
 					$api.deprecate(function() {

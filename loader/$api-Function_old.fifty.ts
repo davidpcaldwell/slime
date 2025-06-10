@@ -59,8 +59,6 @@ namespace slime.$api.fp.internal.old {
 
 	export interface Exports {
 		Function: {
-			preprocessing: any
-
 			value: slime.$api.fp.Exports["value"]
 			mutating: slime.$api.fp.Exports["mutating"]
 
