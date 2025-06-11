@@ -124,7 +124,7 @@
 										readError: error,
 										writeError: error,
 										done: function() {
-											events.fire("done")
+											events.fire("done");
 										}
 									}
 								),

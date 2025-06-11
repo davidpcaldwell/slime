@@ -35,23 +35,29 @@ namespace slime.jrunscript.file.archive {
 			// };
 
 			fifty.tests.exports.encode = function() {
-				const simpleWriter = (location: slime.jrunscript.file.Location) => {
-					const write = $api.fp.now(location, jsh.file.Location.file.write.old);
-					const wstring = $api.fp.now(write.string, $api.fp.world.Means.effect());
+				const require = jsh.file.Location.directory.require({ recursive: true });
+				const ezrequire = $api.fp.now(require, $api.fp.world.Means.effect());
+
+				const newSimpleWriter = (location: slime.jrunscript.file.Location) => {
 					return function(string: string) {
-						const require = jsh.file.Location.directory.require({ recursive: true });
-						const ezrequire = $api.fp.now(require, $api.fp.world.Means.effect());
 						$api.fp.now(location, jsh.file.Location.parent(), ezrequire);
-						wstring({ value: string });
-					}
+
+						var input = ($api as slime.$api.jrunscript.Global).jrunscript.io.InputStream.string.default(string);
+						var out = jsh.file.Location.file.write.open.simple(location)({ append: false });
+						var operation = $api.fp.now(
+							input.pipe.all,
+							$api.fp.world.Action.output()
+						);
+						operation(out);
+					};
 				};
 
 				var expanded = fifty.jsh.file.temporary.directory();
-				var writeA = $api.fp.now(expanded, jsh.file.Location.directory.relativePath("a"), simpleWriter);
+				var writeA = $api.fp.now(expanded, jsh.file.Location.directory.relativePath("a"), newSimpleWriter);
 				writeA("aa");
-				var writeC = $api.fp.now(expanded, jsh.file.Location.directory.relativePath("b/c"), simpleWriter);
+				var writeC = $api.fp.now(expanded, jsh.file.Location.directory.relativePath("b/c"), newSimpleWriter);
 				writeC("cc");
-				var writeF = $api.fp.now(expanded, jsh.file.Location.directory.relativePath("d/e/f"), simpleWriter);
+				var writeF = $api.fp.now(expanded, jsh.file.Location.directory.relativePath("d/e/f"), newSimpleWriter);
 				writeF("ff");
 
 				var forList = $api.fp.now(

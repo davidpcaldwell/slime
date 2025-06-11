@@ -60,6 +60,16 @@
 			}
 		}
 
+		/** @type { slime.jrunscript.file.exports.location.File["write"]["open"]["wo"] } */
+		var Location_write_open_wo = function(location) {
+			return function(settings) {
+				return location.filesystem.openOutputStream({
+					pathname: location.pathname,
+					append: settings.append
+				});
+			}
+		}
+
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Location } location
@@ -494,7 +504,10 @@
 						},
 						read: Location_file_read,
 						write: {
-							old: Location_file_write
+							old: Location_file_write,
+							open: $api.fp.world.Sensor.api.maybe({
+								operation: Location_write_open_wo
+							})
 						},
 						/** @type { slime.jrunscript.file.exports.Location["file"]["remove"] } */
 						remove: {

@@ -303,6 +303,31 @@
 							})
 						}
 					}
+				},
+				api: {
+					maybe: function(p) {
+						var toSensor = p.operation;
+						return {
+							wo: toSensor,
+							maybe: function(t) {
+								var maybe = $context.now(t, toSensor, world.Sensor.mapping());
+								return maybe;
+							},
+							simple: function(t) {
+								var total = $context.now(
+									t,
+									toSensor,
+									world.Sensor.mapping(),
+									$context.Partial.impure.exception(
+										function(p) {
+											return new Error(String(p));
+										}
+									)
+								);
+								return total;
+							}
+						}
+					}
 				}
 			},
 			Means: (
