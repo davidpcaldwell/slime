@@ -742,40 +742,19 @@ namespace slime.$api.fp.world {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		Sensor: {
+	export namespace sensor {
+		export interface Exports {
 			from: {
 				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.event.Emitter<E> }) => R) => Sensor<S,E,R>
 			}
+		}
+	}
 
+	export namespace sensor {
+		export interface Exports {
 			mapping: <S,E,R>(events?: slime.$api.event.Handlers<E>)
 				=> (sensor: slime.$api.fp.world.Sensor<S,E,R>)
 				=> slime.$api.fp.Mapping<S,R>
-
-			map: <NS,S,E,R,NR>(p: {
-				subject: slime.$api.fp.Mapping<NS,S>
-				sensor?: slime.$api.fp.world.Sensor<S,E,R>
-				reading?: slime.$api.fp.Mapping<R,NR>
-			}) => slime.$api.fp.world.Sensor<NS,E,NR>
-
-			input: <S,E,R>(p: {
-				sensor: slime.$api.fp.world.Sensor<S,E,R>
-				subject: S
-				handlers?: slime.$api.event.Handlers<E>
-			}) => slime.$api.fp.impure.Input<R>
-
-			now: <S,E,R>(p: {
-				sensor: slime.$api.fp.world.Sensor<S,E,R>
-				subject: S
-				handlers?: slime.$api.event.Handlers<E>
-			}) => R
-
-			old: {
-				mapping: <S,E,R>(p: {
-					sensor: slime.$api.fp.world.Sensor<S,E,R>
-					handlers?: slime.$api.event.Handlers<E>
-				}) => slime.$api.fp.Mapping<S,R>
-			}
 		}
 	}
 
@@ -819,6 +798,57 @@ namespace slime.$api.fp.world {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace sensor {
+		export interface Exports {
+			map: <NS,S,E,R,NR>(p: {
+				subject: slime.$api.fp.Mapping<NS,S>
+				sensor?: slime.$api.fp.world.Sensor<S,E,R>
+				reading?: slime.$api.fp.Mapping<R,NR>
+			}) => slime.$api.fp.world.Sensor<NS,E,NR>
+
+			input: <S,E,R>(p: {
+				sensor: slime.$api.fp.world.Sensor<S,E,R>
+				subject: S
+				handlers?: slime.$api.event.Handlers<E>
+			}) => slime.$api.fp.impure.Input<R>
+
+			now: <S,E,R>(p: {
+				sensor: slime.$api.fp.world.Sensor<S,E,R>
+				subject: S
+				handlers?: slime.$api.event.Handlers<E>
+			}) => R
+
+			old: {
+				mapping: <S,E,R>(p: {
+					sensor: slime.$api.fp.world.Sensor<S,E,R>
+					handlers?: slime.$api.event.Handlers<E>
+				}) => slime.$api.fp.Mapping<S,R>
+			}
+		}
+	}
+
+	export namespace sensor {
+		export namespace api {
+			export type Maybe<T,S,E,R> = {
+				wo: (t: T) => Sensor<S,E,slime.$api.fp.Maybe<R>>
+				maybe: (t: T) => Partial<S,R>
+				simple: (t: T) => Mapping<S,R>
+			}
+		}
+
+		export interface Exports {
+			api: {
+				maybe: <T,S,E,R>(p: {
+					operation: (t: T) => Sensor<S,E,Maybe<R>>
+				}) => api.Maybe<T,S,E,R>
+			}
+		}
+	}
+
+	export interface Exports {
+		Sensor: sensor.Exports
+	}
 
 	export interface Exports {
 		Means: {
@@ -1439,7 +1469,9 @@ namespace slime.$api.fp.world {
 
 namespace slime.$api.fp.internal.impure {
 	export interface Context {
+		now: slime.$api.fp.Now_map
 		Maybe: slime.$api.fp.Exports["Maybe"]
+		Partial: slime.$api.fp.Exports["Partial"]
 		pipe: slime.$api.fp.Pipe
 		stream: slime.$api.fp.stream.impure.Exports
 		events: slime.runtime.internal.events.Exports
