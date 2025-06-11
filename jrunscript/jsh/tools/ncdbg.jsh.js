@@ -100,7 +100,7 @@
 			};
 
 			try {
-				jsh.shell.jrunscript({
+				jsh.shell.jrunscript.old({
 					properties: properties,
 					arguments: locations.launcher.concat(parameters.arguments),
 					environment: (function() {

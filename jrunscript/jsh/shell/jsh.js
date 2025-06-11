@@ -664,7 +664,7 @@
 					// 	})
 					// })
 
-					return module.jrunscript(
+					return module.jrunscript.old(
 						$api.Object.compose(
 							jrunscriptForkConfiguration,
 							{

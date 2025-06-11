@@ -134,7 +134,7 @@
 						}
 						var JSH_HOME = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						//	TODO	locate jrunscript using Java home
-						//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript
+						//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript.old
 						var args = [];
 						if (parameters.options.downloads) {
 							args.push("-Djsh.build.downloads=" + parameters.options.downloads);

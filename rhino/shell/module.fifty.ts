@@ -692,6 +692,12 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {
+		user: {
+			downloads?: slime.jrunscript.file.Directory
+		}
+	}
+
 	export type JrunscriptInvocation = Omit<slime.jrunscript.shell.run.old.Argument,"command"|"arguments"> & {
 		//	This argument serves mostly to allow the jsh launcher to specify the jrunscript to use, since in Graal
 		//	shells the JDK's jrunscript does not work and we need to use the bootstrapping JDK
@@ -719,14 +725,12 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
-		user: {
-			downloads?: slime.jrunscript.file.Directory
+		jrunscript: {
+			/**
+			 * Launches a JavaScript script on a Java virtual machine.
+			 */
+			old: slime.jrunscript.shell.oo.Run<JrunscriptInvocation>
 		}
-
-		/**
-		 * Launches a JavaScript script on a Java virtual machine.
-		 */
-		jrunscript: slime.jrunscript.shell.oo.Run<JrunscriptInvocation>
 	}
 
 	export interface Exports {

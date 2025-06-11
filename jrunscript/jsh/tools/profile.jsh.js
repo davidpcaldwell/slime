@@ -122,12 +122,12 @@
 					}
 
 					if (!parameters.options["profiler:built"]) {
-						jsh.shell.jrunscript({
+						jsh.shell.jrunscript.old({
 							properties: properties,
 							arguments: [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),"jsh"].concat(parameters.arguments)
 						});
 					} else {
-						jsh.shell.jrunscript({
+						jsh.shell.jrunscript.old({
 							properties: properties,
 							arguments: [home.getRelativePath("jsh.js").toString()].concat(parameters.arguments)
 						});
