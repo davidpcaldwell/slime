@@ -281,6 +281,13 @@
 		}
 
 		/**
+		 * @type { (p: slime.jsh.shell.oo.Invocation) => p is slime.jsh.shell.oo.EngineInvocation }
+		 */
+		var isEngineInvocation = function(p) {
+			return !isForkInvocation(p);
+		}
+
+		/**
 		 *
 		 * @param { { shell?: slime.jrunscript.file.Directory, environment?: slime.jrunscript.shell.Exports["environment"] }} p
 		 * @param { boolean } fork
@@ -489,12 +496,13 @@
 
 		/** @param { slime.jsh.shell.Intention["properties"] } properties */
 		var getPropertyArguments = function(properties) {
+			if (typeof(properties) == "undefined") return [];
 			return Object.entries(properties).reduce(function(rv,entry) {
 				//	TODO	is any sort of escaping or anything required here? What if value has spaces? What if
 				//			name does?
 				rv.push("-D" + entry[0] + "=" + entry[1]);
 				return rv;
-			},[])
+			},/** @type { string[] } */([]))
 		}
 
 		/** @type { (s: slime.jsh.shell.UnbuiltInstallation) => (p: slime.jsh.shell.Intention) => slime.jrunscript.shell.run.Intention } */
@@ -544,16 +552,18 @@
 			if (isExternalInstallationInvocation(p)) {
 				var shell = p.shell;
 				if (isUnbuilt(shell)) {
-					//	Below is necessary for TypeScript as of 5.1.6
-					var s = shell;
-					return unbuiltToShellIntention(s)(p);
+					return unbuiltToShellIntention(shell)(p);
 				} else if (isBuilt(shell)) {
-					var addPropertiesArguments = function(rv,p) {
-						if (p.properties) {
-							for (var x in p.properties) {
-								rv.push("-D" + x + "=" + p.properties[x]);
-							}
-						}
+					/** @type { (rv: string[], properties: slime.jsh.shell.Intention["properties"]) => void } */
+					var addPropertiesArguments = function(rv,properties) {
+						rv.push.apply(rv, getPropertyArguments(properties));
+					};
+
+					/** @type { (rv: string[]) => void } */
+					var addStandardArguments = function(rv) {
+						addPropertiesArguments(rv, p.properties);
+						rv.push(p.script);
+						if (p.arguments) rv.push.apply(rv, p.arguments);
 					};
 
 					//	TODO #1415	support this
@@ -563,10 +573,8 @@
 					if ($api.fp.now(nativeLauncher, $context.api.file.Location.file.exists.simple)) {
 						return {
 							command: nativeLauncher.pathname,
-							arguments: $api.Array.build(function(rv) {
-								addPropertiesArguments(rv, p);
-								rv.push(p.script);
-								if (p.arguments) rv.push.apply(rv, p.arguments);
+							arguments: $api.Array.build(function(/** @type { string[] } */rv) {
+								addStandardArguments(rv);
 							}),
 							directory: p.directory,
 							environment: p.environment,
@@ -577,9 +585,7 @@
 							command: "bash",
 							arguments: $api.Array.build(function(rv) {
 								rv.push(getHomeBashLauncher(downcast).pathname);
-								addPropertiesArguments(rv, p);
-								rv.push(p.script);
-								if (p.arguments) rv.push.apply(rv, p.arguments);
+								addStandardArguments(rv);
 							}),
 							directory: p.directory,
 							environment: p.environment,
@@ -624,18 +630,26 @@
 					}).apply(this,arguments);
 				}
 
-				if (!p.script) {
-					throw new TypeError("Required: script property indicating script to run.");
-				}
-				var argumentsFactory = $api.fp.mutating(p.arguments);
-				p.arguments = argumentsFactory([]);
-
 				if (p.script["file"] && !p.script.pathname) {
 					$api.deprecate(function() {
 						//	User supplied Pathname; should have supplied file
 						p.script = p.script["file"];
 					})();
 				}
+
+				if (!p.script) {
+					throw new TypeError("Required: script property indicating script to run.");
+				}
+
+				var invocation = /** @type { slime.jsh.shell.oo.Invocation } */((
+					function() {
+						if (isForkInvocation(p)) return p;
+						if (isEngineInvocation(p)) return p;
+					}
+				)());
+
+				p.arguments = invocation.arguments || [];
+
 				//	TODO	need to detect directives in the given script and fork if they are present
 
 				//var fork = getJshFork(p);
