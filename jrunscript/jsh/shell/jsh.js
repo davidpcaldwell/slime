@@ -648,7 +648,7 @@
 					}
 				)());
 
-				p.arguments = invocation.arguments;
+				p.arguments = invocation.arguments || [];
 
 				//	TODO	need to detect directives in the given script and fork if they are present
 
