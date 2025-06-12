@@ -33,21 +33,24 @@ namespace slime.jrunscript.file.archive {
 			fifty.tests.exports.encode = function() {
 				const { io } = ($api as slime.$api.jrunscript.Global).jrunscript;
 
-				const openFile = $api.fp.pipe(
-					//	TODO	we model this as a Mapping, but is it a good one? If you call it twice, you'll get two different
-					//			things (which on the other hand will behave identically)
-					jsh.file.Location.file.write.open.simple,
-					$api.fp.Mapping.now({ append: false, recursive: true })
-				);
-
-				const stringWriter = (location: slime.jrunscript.file.Location) => {
-					return function(string: string) {
-						var input = io.InputStream.string.default(string);
-						var out = openFile(location);
-						//	TODO	create symmetrical out.pipe
-						input.pipe.simple(out);
-					};
+				//	TODO	move to $api.fp.Mapping
+				const applyResultWith: <T,P,R>(p: P) => (f: (t: T) => slime.$api.fp.Mapping<P,R>) => slime.$api.fp.Mapping<T,R> = function(p) {
+					return function(f) {
+						return function(t) {
+							return f(t)(p);
+						}
+					}
 				};
+
+				//	TODO	we model jsh.file.Location.file.write.open.simple as a Mapping, but is it a good one? If you call it
+				// 			twice, you'll get two different things (which on the other hand will behave identically)
+				const openFile = $api.fp.now(jsh.file.Location.file.write.open.simple, applyResultWith({ append: false, recursive: true }));
+
+				// const stringWriter = (location: slime.jrunscript.file.Location) => {
+				// 	return function(string: string) {
+				// 		openFile(location).pipe.simple(io.InputStream.string.default(string));
+				// 	};
+				// };
 
 				const readString = (location: slime.jrunscript.file.Location) => {
 					if (jsh.file.Location.directory.exists.simple(location)) return "(directory)";
@@ -57,15 +60,14 @@ namespace slime.jrunscript.file.archive {
 					);
 				}
 
-				var scratchpad = fifty.jsh.file.temporary.directory();
-				var base = $api.fp.now(scratchpad, jsh.file.Location.directory.base);
+				var base = $api.fp.now(fifty.jsh.file.temporary.directory(), jsh.file.Location.directory.base);
 
 				const write = function(p: { path: string, content: string }): void {
 					$api.fp.now(
 						p.path,
 						base,
-						stringWriter,
-						$api.fp.impure.Effect.now(p.content)
+						openFile,
+						function(out) { out.pipe.simple(io.InputStream.string.default(p.content)) },
 					)
 				};
 
@@ -74,7 +76,7 @@ namespace slime.jrunscript.file.archive {
 				write({ path: "d/e/f", content: "ff" });
 
 				var forList = $api.fp.now(
-					scratchpad,
+					base(""),
 					jsh.file.Location.directory.list.stream.simple({ descend: location => true }),
 					$api.fp.Stream.collect
 				);

@@ -28,6 +28,7 @@
 				 */
 				var toShellContextOutputStream = function(outputStream) {
 					return {
+						pipe: outputStream.pipe,
 						character: function() {
 							return outputStream.character();
 						},

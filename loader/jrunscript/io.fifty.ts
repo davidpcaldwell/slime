@@ -304,6 +304,11 @@ namespace slime.jrunscript.runtime.io {
 	 * A stream to which bytes may be written.
 	 */
 	export interface OutputStream {
+		pipe: {
+			simple: $api.fp.impure.Effect<InputStream>
+			all: $api.fp.world.Means<InputStream, PipeEvents>
+		}
+
 		/**
 		 * Returns a character output stream that writes to this stream.
 		 */
