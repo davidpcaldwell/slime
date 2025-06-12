@@ -284,8 +284,10 @@ namespace slime.jsh.java.tools {
 						},
 						parent: function() { return void(0); },
 						directory: {
-							require: function(p) {
+							require: {
+								old: function(p) {
 
+								}
 							}
 						}
 					}
