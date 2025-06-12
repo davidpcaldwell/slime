@@ -563,6 +563,13 @@ namespace slime.jrunscript.file {
 							>
 						}
 					}
+
+					open: slime.$api.fp.world.sensor.api.Maybe<
+						slime.jrunscript.file.Location,
+						{ append?: boolean, recursive?: boolean } | void,
+						slime.jrunscript.file.world.events.FileOpenForWrite,
+						slime.jrunscript.runtime.io.OutputStream
+					>
 				}
 			}
 		}

@@ -45,7 +45,7 @@ namespace slime.jrunscript.file.exports {
 
 namespace slime.jrunscript.file.internal.wo.filesystem {
 	export interface Context {
-		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: string }>
+		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }>
 	}
 
 	export type Exports = slime.jrunscript.file.exports.Filesystem;

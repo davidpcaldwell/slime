@@ -447,12 +447,12 @@ namespace slime.$api.fp.impure {
 	)(fifty);
 
 	export interface Exports {
-		Effect: exports.Effects
+		Effect: effect.Exports
 	}
 
-	export namespace exports {
-		export interface Effects {
-			process: <P>(p: Effect<P>) => (p: P) => Process
+	export namespace effect {
+		export interface Exports {
+			process: <P>(p: P) => (f: Effect<P>) => Process
 
 			now: <P>(p: P) => (f: Effect<P>) => void
 		}
@@ -742,40 +742,19 @@ namespace slime.$api.fp.world {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		Sensor: {
+	export namespace sensor {
+		export interface Exports {
 			from: {
 				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.event.Emitter<E> }) => R) => Sensor<S,E,R>
 			}
+		}
+	}
 
+	export namespace sensor {
+		export interface Exports {
 			mapping: <S,E,R>(events?: slime.$api.event.Handlers<E>)
 				=> (sensor: slime.$api.fp.world.Sensor<S,E,R>)
 				=> slime.$api.fp.Mapping<S,R>
-
-			map: <NS,S,E,R,NR>(p: {
-				subject: slime.$api.fp.Mapping<NS,S>
-				sensor?: slime.$api.fp.world.Sensor<S,E,R>
-				reading?: slime.$api.fp.Mapping<R,NR>
-			}) => slime.$api.fp.world.Sensor<NS,E,NR>
-
-			input: <S,E,R>(p: {
-				sensor: slime.$api.fp.world.Sensor<S,E,R>
-				subject: S
-				handlers?: slime.$api.event.Handlers<E>
-			}) => slime.$api.fp.impure.Input<R>
-
-			now: <S,E,R>(p: {
-				sensor: slime.$api.fp.world.Sensor<S,E,R>
-				subject: S
-				handlers?: slime.$api.event.Handlers<E>
-			}) => R
-
-			old: {
-				mapping: <S,E,R>(p: {
-					sensor: slime.$api.fp.world.Sensor<S,E,R>
-					handlers?: slime.$api.event.Handlers<E>
-				}) => slime.$api.fp.Mapping<S,R>
-			}
 		}
 	}
 
@@ -820,8 +799,59 @@ namespace slime.$api.fp.world {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace sensor {
+		export interface Exports {
+			map: <NS,S,E,R,NR>(p: {
+				subject: slime.$api.fp.Mapping<NS,S>
+				sensor?: slime.$api.fp.world.Sensor<S,E,R>
+				reading?: slime.$api.fp.Mapping<R,NR>
+			}) => slime.$api.fp.world.Sensor<NS,E,NR>
+
+			input: <S,E,R>(p: {
+				sensor: slime.$api.fp.world.Sensor<S,E,R>
+				subject: S
+				handlers?: slime.$api.event.Handlers<E>
+			}) => slime.$api.fp.impure.Input<R>
+
+			now: <S,E,R>(p: {
+				sensor: slime.$api.fp.world.Sensor<S,E,R>
+				subject: S
+				handlers?: slime.$api.event.Handlers<E>
+			}) => R
+
+			old: {
+				mapping: <S,E,R>(p: {
+					sensor: slime.$api.fp.world.Sensor<S,E,R>
+					handlers?: slime.$api.event.Handlers<E>
+				}) => slime.$api.fp.Mapping<S,R>
+			}
+		}
+	}
+
+	export namespace sensor {
+		export namespace api {
+			export type Maybe<T,S,E,R> = {
+				wo: (t: T) => Sensor<S,E,slime.$api.fp.Maybe<R>>
+				maybe: (t: T) => Partial<S,R>
+				simple: (t: T) => Mapping<S,R>
+			}
+		}
+
+		export interface Exports {
+			api: {
+				maybe: <T,S,E,R>(p: {
+					operation: (t: T) => Sensor<S,E,Maybe<R>>
+				}) => api.Maybe<T,S,E,R>
+			}
+		}
+	}
+
 	export interface Exports {
-		Means: {
+		Sensor: sensor.Exports
+	}
+
+	export namespace means {
+		export interface Exports {
 			from: {
 				flat: <O,E>(f: (p: { order: O, events: slime.$api.event.Emitter<E> }) => void) => Means<O,E>
 			}
@@ -859,128 +889,149 @@ namespace slime.$api.fp.world {
 				}) => slime.$api.fp.impure.Process
 			}
 		}
-	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api } = fifty.global;
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
 
-			var NumberRecorder = function() {
-				var orders: number[] = [];
+				var NumberRecorder = function() {
+					var orders: number[] = [];
 
-				var recorder: Means<number,{ got: number, length: number }> = function(s) {
-					return function(events) {
-						events.fire("got", s);
-						orders.push(s);
-						events.fire("length", orders.length);
+					var recorder: Means<number,{ got: number, length: number }> = function(s) {
+						return function(events) {
+							events.fire("got", s);
+							orders.push(s);
+							events.fire("length", orders.length);
+						}
+					};
+
+					var captor = fifty.$api.Events.Captor({
+						got: void(0),
+						length: void(0)
+					});
+
+					return {
+						recorder,
+						captor,
+						orders
 					}
 				};
 
-				var captor = fifty.$api.Events.Captor({
-					got: void(0),
-					length: void(0)
-				});
+				var castToNumber: slime.js.Cast<number> = $api.fp.cast.unsafe;
 
-				return {
-					recorder,
-					captor,
-					orders
+				fifty.tests.exports.world.Means = fifty.test.Parent();
+				fifty.tests.exports.world.Means.map = function() {
+					var { orders, captor, recorder } = NumberRecorder();
+
+					var mapped = $api.fp.world.Means.map({
+						order: function(s: string): number { return Number(s) * 2; },
+						means: recorder
+					});
+
+					verify(orders).length.is(0);
+					verify(captor).events.length.is(0);
+					$api.fp.world.now.action(mapped, "2", captor.handler);
+					verify(orders).length.is(1);
+					verify(orders)[0].is(4);
+					verify(captor).events.length.is(2);
+					verify(captor).events[0].type.is("got");
+					verify(captor).events[0].detail.evaluate(castToNumber).is(4);
+					verify(captor).events[1].type.is("length");
+					verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+				};
+
+				fifty.tests.exports.world.Means.output = function() {
+					var { orders, captor, recorder } = NumberRecorder();
+
+					var output = $api.fp.world.Means.output({
+						means: recorder,
+						handlers: captor.handler
+					});
+
+					verify(orders).length.is(0);
+					verify(captor).events.length.is(0);
+
+					output(2);
+					verify(orders).length.is(1);
+					verify(orders)[0].is(2);
+					verify(captor).events.length.is(2);
+					verify(captor).events[0].type.is("got");
+					verify(captor).events[0].detail.evaluate(castToNumber).is(2);
+					verify(captor).events[1].type.is("length");
+					verify(captor).events[1].detail.evaluate(castToNumber).is(1);
 				}
-			};
 
-			var castToNumber: slime.js.Cast<number> = $api.fp.cast.unsafe;
+				fifty.tests.exports.world.Means.process = function() {
+					var { orders, captor, recorder } = NumberRecorder();
 
-			fifty.tests.exports.world.Means = fifty.test.Parent();
-			fifty.tests.exports.world.Means.map = function() {
-				var { orders, captor, recorder } = NumberRecorder();
+					verify(orders).length.is(0);
+					verify(captor).events.length.is(0);
 
-				var mapped = $api.fp.world.Means.map({
-					order: function(s: string): number { return Number(s) * 2; },
-					means: recorder
-				});
+					var process = $api.fp.world.Means.process({
+						means: recorder,
+						order: 2,
+						handlers: captor.handler
+					});
+					verify(orders).length.is(0);
+					verify(captor).events.length.is(0);
 
-				verify(orders).length.is(0);
-				verify(captor).events.length.is(0);
-				$api.fp.world.now.action(mapped, "2", captor.handler);
-				verify(orders).length.is(1);
-				verify(orders)[0].is(4);
-				verify(captor).events.length.is(2);
-				verify(captor).events[0].type.is("got");
-				verify(captor).events[0].detail.evaluate(castToNumber).is(4);
-				verify(captor).events[1].type.is("length");
-				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
-			};
+					process();
+					verify(orders).length.is(1);
+					verify(orders)[0].is(2);
+					verify(captor).events.length.is(2);
+					verify(captor).events[0].type.is("got");
+					verify(captor).events[0].detail.evaluate(castToNumber).is(2);
+					verify(captor).events[1].type.is("length");
+					verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+				};
 
-			fifty.tests.exports.world.Means.output = function() {
-				var { orders, captor, recorder } = NumberRecorder();
+				fifty.tests.exports.world.Means.now = function() {
+					var { orders, captor, recorder } = NumberRecorder();
 
-				var output = $api.fp.world.Means.output({
-					means: recorder,
-					handlers: captor.handler
-				});
+					verify(orders).length.is(0);
+					verify(captor).events.length.is(0);
 
-				verify(orders).length.is(0);
-				verify(captor).events.length.is(0);
-
-				output(2);
-				verify(orders).length.is(1);
-				verify(orders)[0].is(2);
-				verify(captor).events.length.is(2);
-				verify(captor).events[0].type.is("got");
-				verify(captor).events[0].detail.evaluate(castToNumber).is(2);
-				verify(captor).events[1].type.is("length");
-				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+					$api.fp.world.Means.now({
+						means: recorder,
+						order: 2,
+						handlers: captor.handler
+					});
+					verify(orders).length.is(1);
+					verify(orders)[0].is(2);
+					verify(captor).events.length.is(2);
+					verify(captor).events[0].type.is("got");
+					verify(captor).events[0].detail.evaluate(castToNumber).is(2);
+					verify(captor).events[1].type.is("length");
+					verify(captor).events[1].detail.evaluate(castToNumber).is(1);
+				};
 			}
+		//@ts-ignore
+		)(fifty);
+	}
 
-			fifty.tests.exports.world.Means.process = function() {
-				var { orders, captor, recorder } = NumberRecorder();
-
-				verify(orders).length.is(0);
-				verify(captor).events.length.is(0);
-
-				var process = $api.fp.world.Means.process({
-					means: recorder,
-					order: 2,
-					handlers: captor.handler
-				});
-				verify(orders).length.is(0);
-				verify(captor).events.length.is(0);
-
-				process();
-				verify(orders).length.is(1);
-				verify(orders)[0].is(2);
-				verify(captor).events.length.is(2);
-				verify(captor).events[0].type.is("got");
-				verify(captor).events[0].detail.evaluate(castToNumber).is(2);
-				verify(captor).events[1].type.is("length");
-				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
-			};
-
-			fifty.tests.exports.world.Means.now = function() {
-				var { orders, captor, recorder } = NumberRecorder();
-
-				verify(orders).length.is(0);
-				verify(captor).events.length.is(0);
-
-				$api.fp.world.Means.now({
-					means: recorder,
-					order: 2,
-					handlers: captor.handler
-				});
-				verify(orders).length.is(1);
-				verify(orders)[0].is(2);
-				verify(captor).events.length.is(2);
-				verify(captor).events[0].type.is("got");
-				verify(captor).events[0].detail.evaluate(castToNumber).is(2);
-				verify(captor).events[1].type.is("length");
-				verify(captor).events[1].detail.evaluate(castToNumber).is(1);
-			};
+	export namespace means {
+		export namespace api {
+			export type Simple<T,O,E> = {
+				wo: (t: T) => Means<O,E>
+				simple: (t: T) => slime.$api.fp.impure.Effect<O>
+			}
 		}
-	//@ts-ignore
-	)(fifty);
+
+		export interface Exports {
+			api: {
+				simple: <T,O,E>(p: {
+					operation: (t: T) => Means<O,E>
+				}) => api.Simple<T,O,E>
+			}
+		}
+	}
+
+	export interface Exports {
+		Means: means.Exports
+	}
 
 	export interface Exports {
 		Process: {
@@ -1109,6 +1160,7 @@ namespace slime.$api.fp.world {
 		}
 
 		Action: {
+			/** @deprecated Use `Means.effect`. */
 			output: <P,E>(handlers?: slime.$api.event.Handlers<E>) => (action: slime.$api.fp.world.Means<P,E>) => slime.$api.fp.impure.Output<P>
 
 			tell: <P,E>(p: P) => (action: world.Means<P,E>) => world.Action<E>
@@ -1439,7 +1491,9 @@ namespace slime.$api.fp.world {
 
 namespace slime.$api.fp.internal.impure {
 	export interface Context {
+		now: slime.$api.fp.Now_map
 		Maybe: slime.$api.fp.Exports["Maybe"]
+		Partial: slime.$api.fp.Exports["Partial"]
 		pipe: slime.$api.fp.Pipe
 		stream: slime.$api.fp.stream.impure.Exports
 		events: slime.runtime.internal.events.Exports

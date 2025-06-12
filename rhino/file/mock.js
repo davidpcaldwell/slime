@@ -82,6 +82,10 @@
 					var out = buffer.writeBinary();
 					/** @type { slime.jrunscript.runtime.io.OutputStream } */
 					var wrap = {
+						pipe: {
+							all: out.pipe.all,
+							simple: out.pipe.simple
+						},
 						character: out.character,
 						close: function() {
 							out.close();

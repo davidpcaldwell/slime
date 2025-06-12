@@ -25,6 +25,7 @@ namespace slime.jrunscript.file {
 		export namespace events {
 			export interface FileOpenForWrite {
 				parentNotFound: slime.jrunscript.file.Location
+				createdFolder: slime.jrunscript.file.Location
 			}
 		}
 

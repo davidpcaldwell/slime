@@ -123,10 +123,15 @@ namespace slime.jrunscript.file.exports.location {
 			world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
 		}
 
-		require: (p?: { recursive?: boolean }) => slime.$api.fp.world.Means<world.Location, {
-			created: world.Location
-			found: world.Location
-		}>
+		require: slime.$api.fp.world.means.api.Simple<slime.jrunscript.file.Location,{ recursive?: boolean },{
+			created: slime.jrunscript.file.Location
+			found: slime.jrunscript.file.Location
+		}> & {
+			old: (p?: { recursive?: boolean }) => slime.$api.fp.world.Means<slime.jrunscript.file.Location, {
+				created: slime.jrunscript.file.Location
+				found: slime.jrunscript.file.Location
+			}>
+		}
 	}
 
 
@@ -145,10 +150,10 @@ namespace slime.jrunscript.file.exports.location {
 
 				verify(at).evaluate(exists).is(false);
 
-				$api.fp.world.process(subject.Location.directory.require()(at))();
+				$api.fp.world.process(subject.Location.directory.require.old()(at))();
 				verify(at).evaluate(exists).is(true);
 
-				$api.fp.world.process(subject.Location.directory.require()(at))();
+				$api.fp.world.process(subject.Location.directory.require.old()(at))();
 				verify(at).evaluate(exists).is(true);
 			}
 		}
@@ -285,7 +290,7 @@ namespace slime.jrunscript.file.exports.location {
 					function(location) {
 						return {
 							target: location,
-							descend: $api.fp.mapping.all(false)
+							descend: $api.fp.Mapping.all(false)
 						}
 					},
 					$api.fp.world.Sensor.old.mapping({ sensor: subject.Location.directory.list.world }),
@@ -297,7 +302,7 @@ namespace slime.jrunscript.file.exports.location {
 					function(location) {
 						return {
 							target: location,
-							descend: $api.fp.mapping.all(true)
+							descend: $api.fp.Mapping.all(true)
 						}
 					},
 					$api.fp.world.Sensor.old.mapping({ sensor: subject.Location.directory.list.world }),
@@ -407,7 +412,7 @@ namespace slime.jrunscript.file.exports.location {
 					$api.fp.pipe(
 						//	TODO	Output.compose?
 						$api.fp.impure.tap(
-							$api.fp.world.output(jsh.file.world.Location.directory.require())
+							$api.fp.world.output(jsh.file.world.Location.directory.require.old())
 						),
 						$api.fp.impure.tap(
 							$api.fp.pipe(
@@ -615,7 +620,7 @@ namespace slime.jrunscript.file.internal.wo.directory {
 		Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]
 		Location_file_read_string: slime.jrunscript.file.Exports["Location"]["file"]["read"]["string"]
 		Location_file_write: slime.jrunscript.file.Exports["Location"]["file"]["write"]["old"]
-		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: string }>
+		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }>
 		remove: slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
 		Store: slime.runtime.loader.Exports["Store"]
 	}

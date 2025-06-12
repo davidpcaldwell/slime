@@ -60,6 +60,46 @@
 			}
 		}
 
+		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }> } */
+		var ensureParent = function(location) {
+			var it = function(location,events) {
+				var parent = Location_relative("..")(location);
+				var exists = Location_directory_exists(parent)(events);
+				if (!exists) {
+					it(parent, events);
+					$api.fp.world.now.action(
+						location.filesystem.createDirectory,
+						{ pathname: parent.pathname }
+					);
+					events.fire("created", parent);
+				}
+			};
+
+			return function(events) {
+				it(location,events);
+			}
+		}
+
+		/** @type { slime.jrunscript.file.exports.location.File["write"]["open"]["wo"] } */
+		var Location_write_open_wo = function(location) {
+			return function(settings) {
+				return function(events) {
+					var recurse = (settings && settings.recursive) ? $api.fp.now(ensureParent, $api.fp.world.Means.effect({
+						created: function(e) {
+							events.fire("createdFolder", e.detail);
+						}
+					})) : function(parent) {};
+
+					recurse(location);
+
+					return location.filesystem.openOutputStream({
+						pathname: location.pathname,
+						append: settings && settings.append
+					})(events);
+				}
+			}
+		}
+
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Location } location
@@ -118,26 +158,6 @@
 			};
 		};
 
-		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: string }> } */
-		var ensureParent = function(location) {
-			var it = function(location,events) {
-				var parent = Location_relative("..")(location);
-				var exists = Location_directory_exists(parent)(events);
-				if (!exists) {
-					it(parent, events);
-					$api.fp.world.now.action(
-						location.filesystem.createDirectory,
-						{ pathname: parent.pathname }
-					);
-					events.fire("created", parent.pathname);
-				}
-			};
-
-			return function(events) {
-				it(location,events);
-			}
-		}
-
 		var Location_basename = function(location) {
 			var tokens = location.pathname.split(location.filesystem.separator.pathname);
 			return tokens[tokens.length-1];
@@ -148,7 +168,7 @@
 
 		var lastModifiedSimple = $api.fp.pipe(
 			asLocation,
-			$api.fp.mapping.properties({
+			$api.fp.Mapping.properties({
 				argument: function(p) { return { pathname: p.pathname }},
 				partial: $api.fp.pipe(
 					$api.fp.property("filesystem"),
@@ -156,14 +176,14 @@
 					$api.fp.world.Sensor.mapping()
 				)
 			}),
-			$api.fp.mapping.properties({
+			$api.fp.Mapping.properties({
 				argument: $api.fp.property("argument"),
 				mapping: $api.fp.pipe(
 					$api.fp.property("partial"),
 					$api.fp.Partial.impure.exception( function(p) { return new Error("Could not obtain last modified date for " + p.pathname); })
 				)
 			}),
-			$api.fp.mapping.invocation
+			$api.fp.Mapping.invocation
 		)
 
 		var Location = {
@@ -193,7 +213,7 @@
 			}
 		}
 
-		var Location_file_write = Object.assign(
+		var Location_file_write_old = Object.assign(
 			/**
 			 *
 			 * @param { Parameters<slime.jrunscript.file.exports.location.File["write"]["old"]>[0] } location
@@ -244,58 +264,58 @@
 						}
 					}
 				}
-			},
-			{
-				string: function(p) {
-					return function(location) {
-						return function(events) {
-							Location_write(
-								location,
-								events,
-								function(stream) {
-									var writer = stream.character();
-									writer.write(p.value);
-									writer.close();
-								}
-							);
-						}
-					}
-				},
-				stream: function(p) {
-					return function(location) {
-						return function(events) {
-							Location_write(
-								location,
-								events,
-								function(output) {
-									$context.library.io.Streams.binary.copy(
-										p.input,
-										output
-									)
-								}
-							)
-						}
-					}
-				},
-				object: {
-					text: function() {
-						return function(location) {
-							return function(events) {
-								var ask = location.filesystem.openOutputStream({
-									pathname: location.pathname
-								});
-								return $api.fp.result(
-									ask(events),
-									$api.fp.Maybe.map(function(stream) {
-										return stream.character();
-									})
-								);
-							}
+			}//,
+			// {
+			// 	string: function(p) {
+			// 		return function(location) {
+			// 			return function(events) {
+			// 				Location_write(
+			// 					location,
+			// 					events,
+			// 					function(stream) {
+			// 						var writer = stream.character();
+			// 						writer.write(p.value);
+			// 						writer.close();
+			// 					}
+			// 				);
+			// 			}
+			// 		}
+			// 	},
+			// 	stream: function(p) {
+			// 		return function(location) {
+			// 			return function(events) {
+			// 				Location_write(
+			// 					location,
+			// 					events,
+			// 					function(output) {
+			// 						$context.library.io.Streams.binary.copy(
+			// 							p.input,
+			// 							output
+			// 						)
+			// 					}
+			// 				)
+			// 			}
+			// 		}
+			// 	},
+			// 	object: {
+			// 		text: function() {
+			// 			return function(location) {
+			// 				return function(events) {
+			// 					var ask = location.filesystem.openOutputStream({
+			// 						pathname: location.pathname
+			// 					});
+			// 					return $api.fp.result(
+			// 						ask(events),
+			// 						$api.fp.Maybe.map(function(stream) {
+			// 							return stream.character();
+			// 						})
+			// 					);
+			// 				}
 
-						}
-					}
-				}
-			}
+			// 			}
+			// 		}
+			// 	}
+			// }
 		);
 
 		var Location_file_read = (
@@ -364,7 +384,7 @@
 					world: function() { return Location_directory_exists; }
 				},
 				Location_relative: Location_relative,
-				Location_file_write: Location_file_write,
+				Location_file_write: Location_file_write_old,
 				Location_file_read_string: Location_file_read.string,
 				remove: remove,
 				Store: $context.library.loader.Store
@@ -494,7 +514,10 @@
 						},
 						read: Location_file_read,
 						write: {
-							old: Location_file_write
+							old: Location_file_write_old,
+							open: $api.fp.world.Sensor.api.maybe({
+								operation: Location_write_open_wo
+							})
 						},
 						/** @type { slime.jrunscript.file.exports.Location["file"]["remove"] } */
 						remove: {
@@ -561,8 +584,8 @@
 						pathname: temporary({ directory: false, remove: true }),
 						location: $api.fp.impure.Input.map(
 							temporary({ directory: false, remove: true }),
-							$api.fp.mapping.properties({
-								filesystem: $api.fp.mapping.all(world),
+							$api.fp.Mapping.properties({
+								filesystem: $api.fp.Mapping.all(world),
 								pathname: $api.fp.identity
 							})
 						),

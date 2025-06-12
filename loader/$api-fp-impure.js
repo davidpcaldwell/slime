@@ -149,8 +149,8 @@
 				}
 			},
 			Effect: {
-				process: function(effect) {
-					return function(p) {
+				process: function(p) {
+					return function(effect) {
 						return function() {
 							effect(p);
 						}
@@ -303,6 +303,28 @@
 							})
 						}
 					}
+				},
+				api: {
+					maybe: function(p) {
+						var toSensor = p.operation;
+						return {
+							wo: toSensor,
+							maybe: $context.pipe(toSensor, world.Sensor.mapping()),
+							simple: function(t) {
+								var total = $context.now(
+									t,
+									toSensor,
+									world.Sensor.mapping(),
+									$context.Partial.impure.exception(
+										function(p) {
+											return new Error(String(p));
+										}
+									)
+								);
+								return total;
+							}
+						}
+					}
 				}
 			},
 			Means: (
@@ -363,6 +385,15 @@
 									order: p.order(),
 									handlers: p.handlers
 								});
+							}
+						},
+						api: {
+							simple: function(p) {
+								var toMeans = p.operation;
+								return {
+									wo: toMeans,
+									simple: $context.pipe(toMeans, world.Means.effect())
+								}
 							}
 						}
 					};

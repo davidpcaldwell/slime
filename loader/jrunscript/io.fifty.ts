@@ -152,11 +152,6 @@ namespace slime.jrunscript.runtime.io {
 	//@ts-ignore
 	)(fifty);
 
-	export interface PipeEvents {
-		progress: number
-		done: void
-	}
-
 	/**
 	 * A stream from which bytes may be read.
 	 */
@@ -222,8 +217,15 @@ namespace slime.jrunscript.runtime.io {
 	//@ts-ignore
 	)(fifty);
 
+	export interface PipeEvents {
+		readProgress: number
+		writeProgress: number
+		done: void
+	}
+
 	export interface InputStream {
 		pipe: {
+			simple: $api.fp.impure.Effect<OutputStream>
 			all: $api.fp.world.Means<OutputStream, PipeEvents>
 		}
 	}
@@ -239,11 +241,12 @@ namespace slime.jrunscript.runtime.io {
 			fifty.tests.exports.InputStream.object.pipe = fifty.test.Parent();
 
 			fifty.tests.exports.InputStream.object.pipe.all = function() {
-				var captor = fifty.$api.Events.Captor({
+				var shape: PipeEvents = {
 					readProgress: void(0),
 					writeProgress: void(0),
 					done: void(0)
-				});
+				}
+				var captor = fifty.$api.Events.Captor(shape);
 
 				const bytes = [0,1,2,3];
 
@@ -301,6 +304,11 @@ namespace slime.jrunscript.runtime.io {
 	 * A stream to which bytes may be written.
 	 */
 	export interface OutputStream {
+		pipe: {
+			simple: $api.fp.impure.Effect<InputStream>
+			all: $api.fp.world.Means<InputStream, PipeEvents>
+		}
+
 		/**
 		 * Returns a character output stream that writes to this stream.
 		 */

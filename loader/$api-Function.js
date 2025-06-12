@@ -76,6 +76,54 @@
 			}
 		)();
 
+		/** @type { slime.$api.fp.Exports["Partial"] } */
+		var Partial = {
+			from: {
+				loose: function(f) {
+					return function(p) {
+						return Maybe.from.value(f(p));
+					}
+				}
+			},
+			match: function(v) {
+				return function(p) {
+					var present = v.if(p);
+					return present ? Maybe.from.some(v.then(p)) : Maybe.from.nothing();
+				}
+			},
+			else: function(c) {
+				return function(p) {
+					var maybe = c.partial(p);
+					if (maybe.present) return maybe.value;
+					return c.else(p);
+				}
+			},
+			/** @type { slime.$api.fp.Exports["Partial"]["impure"] } */
+			impure: {
+				exception: function(nothing) {
+					return function(partial) {
+						return function(p) {
+							var maybe = partial(p);
+							if (!maybe.present) {
+								var error = nothing(p);
+								throw error;
+							}
+							return maybe.value;
+						}
+					}
+				},
+				old: {
+					exception: function(p) {
+						return function(t) {
+							var tried = p.try(t);
+							if (tried.present) return tried.value;
+							throw p.nothing(t);
+						}
+					}
+				}
+			}
+		};
+
 		var pipe = function() {
 			var items = Array.prototype.slice.call(arguments);
 			return function(v) {
@@ -98,13 +146,6 @@
 				Maybe: Maybe,
 				pipe: pipe
 			}
-		});
-
-		var impure = code.impure({
-			Maybe: Maybe,
-			pipe: pipe,
-			events: $context.events,
-			stream: stream.impure
 		});
 
 		var property = function(name) {
@@ -194,6 +235,15 @@
 			}
 		};
 
+		var impure = code.impure({
+			now: now_map,
+			Maybe: Maybe,
+			Partial: Partial,
+			pipe: pipe,
+			events: $context.events,
+			stream: stream.impure
+		});
+
 		$export({
 			identity: identity,
 			cast: {
@@ -242,7 +292,7 @@
 					return rv;
 				}
 			},
-			mapping: {
+			Mapping: {
 				from: {
 					value: function(r) {
 						return function(p) {
@@ -253,6 +303,18 @@
 						return function(p) {
 							return f();
 						}
+					}
+				},
+				thunk: function(p) {
+					return function(m) {
+						return function() {
+							return m(p);
+						}
+					}
+				},
+				now: function(p) {
+					return function(m) {
+						return m(p);
 					}
 				},
 				all: $context.deprecate(function(r) {
@@ -472,52 +534,7 @@
 				fromEntries: Object.fromEntries
 			},
 			Maybe: Maybe,
-			Partial: {
-				from: {
-					loose: function(f) {
-						return function(p) {
-							return Maybe.from.value(f(p));
-						}
-					}
-				},
-				match: function(v) {
-					return function(p) {
-						var present = v.if(p);
-						return present ? Maybe.from.some(v.then(p)) : Maybe.from.nothing();
-					}
-				},
-				else: function(c) {
-					return function(p) {
-						var maybe = c.partial(p);
-						if (maybe.present) return maybe.value;
-						return c.else(p);
-					}
-				},
-				/** @type { slime.$api.fp.Exports["Partial"]["impure"] } */
-				impure: {
-					exception: function(nothing) {
-						return function(partial) {
-							return function(p) {
-								var maybe = partial(p);
-								if (!maybe.present) {
-									var error = nothing(p);
-									throw error;
-								}
-								return maybe.value;
-							}
-						}
-					},
-					old: {
-						exception: function(p) {
-							return function(t) {
-								var tried = p.try(t);
-								if (tried.present) return tried.value;
-								throw p.nothing(t);
-							}
-						}
-					}
-				}
-			},
+			Partial: Partial,
 			switch: function(cases) {
 				return function(p) {
 					for (var i=0; i<cases.length; i++) {

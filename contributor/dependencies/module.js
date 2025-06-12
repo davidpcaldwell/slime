@@ -108,13 +108,13 @@
 			data: data,
 			typedoc: {
 				generate: $api.fp.pipe(
-					$api.fp.mapping.properties({
+					$api.fp.Mapping.properties({
 						to: $api.fp.identity,
-						text: $api.fp.mapping.from.thunk(getTypedocIncludes)
+						text: $api.fp.Mapping.from.thunk(getTypedocIncludes)
 					}),
 					function(p) {
 						var parent = $context.library.file.Location.parent()(p.to);
-						var means = $context.library.file.Location.directory.require({ recursive: true });
+						var means = $context.library.file.Location.directory.require.old({ recursive: true });
 						$api.fp.world.Means.now({
 							means: means,
 							order: parent
