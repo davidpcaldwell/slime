@@ -326,7 +326,7 @@
 		/**
 		 *
 		 * @param { slime.jsh.shell.oo.ForkInvocation } p
-		 * @returns { slime.jrunscript.shell.JrunscriptInvocation }
+		 * @returns { slime.jrunscript.shell.jrunscript.old.Invocation }
 		 */
 		var getJrunscriptForkCommand = function(p) {
 			var newEvaluateWithInvocationDataAdded = function(evaluate) {
