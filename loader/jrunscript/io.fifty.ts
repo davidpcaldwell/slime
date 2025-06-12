@@ -225,6 +225,7 @@ namespace slime.jrunscript.runtime.io {
 
 	export interface InputStream {
 		pipe: {
+			simple: $api.fp.impure.Effect<OutputStream>
 			all: $api.fp.world.Means<OutputStream, PipeEvents>
 		}
 	}

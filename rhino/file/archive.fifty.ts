@@ -30,43 +30,56 @@ namespace slime.jrunscript.file.archive {
 			const module = jsh.file;
 			const subject = jsh.file.archive;
 
-			// var isFileEntry = function(p: slime.jrunscript.io.archive.Entry<{}>): p is slime.jrunscript.io.archive.File<{}> {
-			// 	return Boolean(p["content"]);
-			// };
-
 			fifty.tests.exports.encode = function() {
-				const require = jsh.file.Location.directory.require({ recursive: true });
-				const ezrequire = $api.fp.now(require, $api.fp.world.Means.effect());
+				const { io } = ($api as slime.$api.jrunscript.Global).jrunscript;
 
-				const newSimpleWriter = (location: slime.jrunscript.file.Location) => {
+				const openFile = $api.fp.pipe(
+					//	TODO	we model this as a Mapping, but is it a good one? If you call it twice, you'll get two different
+					//			things (which on the other hand will behave identically)
+					jsh.file.Location.file.write.open.simple,
+					$api.fp.Mapping.now({ append: false, recursive: true })
+				);
+
+				const stringWriter = (location: slime.jrunscript.file.Location) => {
 					return function(string: string) {
-						$api.fp.now(location, jsh.file.Location.parent(), ezrequire);
-
-						var input = ($api as slime.$api.jrunscript.Global).jrunscript.io.InputStream.string.default(string);
-						var out = jsh.file.Location.file.write.open.simple(location)({ append: false });
-						var operation = $api.fp.now(
-							input.pipe.all,
-							$api.fp.world.Action.output()
-						);
-						operation(out);
+						var input = io.InputStream.string.default(string);
+						var out = openFile(location);
+						//	TODO	create symmetrical out.pipe
+						input.pipe.simple(out);
 					};
 				};
 
-				var expanded = fifty.jsh.file.temporary.directory();
-				var writeA = $api.fp.now(expanded, jsh.file.Location.directory.relativePath("a"), newSimpleWriter);
-				writeA("aa");
-				var writeC = $api.fp.now(expanded, jsh.file.Location.directory.relativePath("b/c"), newSimpleWriter);
-				writeC("cc");
-				var writeF = $api.fp.now(expanded, jsh.file.Location.directory.relativePath("d/e/f"), newSimpleWriter);
-				writeF("ff");
+				const readString = (location: slime.jrunscript.file.Location) => {
+					if (jsh.file.Location.directory.exists.simple(location)) return "(directory)";
+					return $api.fp.now(
+						location,
+						jsh.file.Location.file.read.string.simple
+					);
+				}
+
+				var scratchpad = fifty.jsh.file.temporary.directory();
+				var base = $api.fp.now(scratchpad, jsh.file.Location.directory.base);
+
+				const write = function(p: { path: string, content: string }): void {
+					$api.fp.now(
+						p.path,
+						base,
+						stringWriter,
+						$api.fp.impure.Effect.now(p.content)
+					)
+				};
+
+				write({ path: "a", content: "aa" });
+				write({ path: "b/c", content: "cc" });
+				write({ path: "d/e/f", content: "ff" });
 
 				var forList = $api.fp.now(
-					expanded,
+					scratchpad,
 					jsh.file.Location.directory.list.stream.simple({ descend: location => true }),
 					$api.fp.Stream.collect
 				);
 
-				jsh.shell.console("list = " + forList.map( location => location.pathname ).join(" "));
+				jsh.shell.console("list = \n" + forList.map( location => (location.pathname + ": " + readString(location)) ).join("\n"));
 
 				// var zip = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
 				// zip.file.remove();

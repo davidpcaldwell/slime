@@ -478,7 +478,7 @@ namespace slime.jrunscript.tools.maven {
 
 				var atStart = subject.xml.edit.insert.element({
 					parent: jsh.document.Document.element,
-					after: $api.fp.mapping.all(null),
+					after: $api.fp.Mapping.all(null),
 					lines: 1,
 					indent: "  ",
 					element: foo

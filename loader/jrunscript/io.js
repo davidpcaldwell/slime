@@ -91,6 +91,31 @@
 				return Reader.java(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
 			};
 
+			/** @type { slime.jrunscript.runtime.io.InputStream["pipe"]["all"] } */
+			var pipe_all = function(o) {
+				return function(events) {
+					var error = function(e) { throw new Error(); };
+					var progress = function(name) { return function(count) { events.fire(name, count); } };
+					_java.pipeAll(
+						peer,
+						o.java.adapt(),
+						new JavaAdapter(
+							Packages.inonit.script.runtime.io.Streams.PipeEvents,
+							{
+								readProgress: progress("readProgress"),
+								writeProgress: progress("writeProgress"),
+								readError: error,
+								writeError: error,
+								done: function() {
+									events.fire("done");
+								}
+							}
+						),
+						true
+					);
+				}
+			};
+
 			return {
 				content: {
 					string: {
@@ -109,29 +134,8 @@
 					peer.close();
 				},
 				pipe: {
-					all: function(o) {
-						return function(events) {
-							var error = function(e) { throw new Error(); };
-							var progress = function(name) { return function(count) { events.fire(name, count); } };
-							_java.pipeAll(
-								peer,
-								o.java.adapt(),
-								new JavaAdapter(
-									Packages.inonit.script.runtime.io.Streams.PipeEvents,
-									{
-										readProgress: progress("readProgress"),
-										writeProgress: progress("writeProgress"),
-										readError: error,
-										writeError: error,
-										done: function() {
-											events.fire("done");
-										}
-									}
-								),
-								true
-							);
-						}
-					}
+					all: pipe_all,
+					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effect())
 				},
 				character: character,
 				java: {
