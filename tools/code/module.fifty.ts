@@ -117,7 +117,7 @@ namespace slime.tools.code {
 						root: jsh.shell.PWD.pathname.os.adapt(),
 						submodules: true,
 						excludes: {
-							isSource: $api.fp.mapping.all($api.fp.Maybe.from.some(true))
+							isSource: $api.fp.Mapping.all($api.fp.Maybe.from.some(true))
 						}
 					}),
 					{

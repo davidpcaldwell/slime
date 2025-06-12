@@ -149,8 +149,8 @@
 				}
 			},
 			Effect: {
-				process: function(effect) {
-					return function(p) {
+				process: function(p) {
+					return function(effect) {
 						return function() {
 							effect(p);
 						}
@@ -309,10 +309,7 @@
 						var toSensor = p.operation;
 						return {
 							wo: toSensor,
-							maybe: function(t) {
-								var maybe = $context.now(t, toSensor, world.Sensor.mapping());
-								return maybe;
-							},
+							maybe: $context.pipe(toSensor, world.Sensor.mapping()),
 							simple: function(t) {
 								var total = $context.now(
 									t,
@@ -388,6 +385,15 @@
 									order: p.order(),
 									handlers: p.handlers
 								});
+							}
+						},
+						api: {
+							simple: function(p) {
+								var toMeans = p.operation;
+								return {
+									wo: toMeans,
+									simple: $context.pipe(toMeans, world.Means.effect())
+								}
 							}
 						}
 					};

@@ -292,7 +292,7 @@
 					return rv;
 				}
 			},
-			mapping: {
+			Mapping: {
 				from: {
 					value: function(r) {
 						return function(p) {
@@ -303,6 +303,18 @@
 						return function(p) {
 							return f();
 						}
+					}
+				},
+				thunk: function(p) {
+					return function(m) {
+						return function() {
+							return m(p);
+						}
+					}
+				},
+				now: function(p) {
+					return function(m) {
+						return m(p);
 					}
 				},
 				all: $context.deprecate(function(r) {

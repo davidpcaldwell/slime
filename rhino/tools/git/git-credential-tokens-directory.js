@@ -19,7 +19,7 @@
 
 		var requireParents = $api.fp.world.Means.map({
 			order: $context.library.file.Location.parent(),
-			means: $context.library.file.Location.directory.require({ recursive: true })
+			means: $context.library.file.Location.directory.require.old({ recursive: true })
 		});
 
 		/**

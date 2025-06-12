@@ -171,8 +171,8 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
-		export interface mapping {
+	export namespace mapping {
+		export interface Exports {
 			from: {
 				value: <P,R>(r: R) => (p: P) => R
 				thunk: <P,R>(thunk: fp.Thunk<R>) => Mapping<P,R>
@@ -190,8 +190,8 @@ namespace slime.$api.fp {
 					const value = 2;
 					const thunkValue = 3;
 
-					const byValue = $api.fp.mapping.from.value(value);
-					const byThunk = $api.fp.mapping.from.thunk( () => thunkValue );
+					const byValue = $api.fp.Mapping.from.value(value);
+					const byThunk = $api.fp.Mapping.from.thunk( () => thunkValue );
 
 					verify(byValue(8)).is(value);
 					verify(byValue(10)).is(value);
@@ -202,7 +202,7 @@ namespace slime.$api.fp {
 		//@ts-ignore
 		)(fifty);
 
-		export interface mapping {
+		export interface Exports {
 			/** @deprecated Use `from.value()`. */
 			all: <P,R>(r: R) => (p: P) => R
 		}
@@ -212,7 +212,7 @@ namespace slime.$api.fp {
 		/**
 		 * APIs related to {@link Mapping}s.
 		 */
-		mapping: exports.mapping
+		Mapping: mapping.Exports
 
 
 		/**
@@ -232,8 +232,14 @@ namespace slime.$api.fp {
 		split: <P,R>(functions: { [k in keyof R]: (p: P) => R[k] }) => (p: P) => R
 	}
 
-	export namespace exports {
-		export interface mapping {
+	export namespace mapping {
+		export interface Exports {
+			thunk: <P,R>(p: P) => (p: fp.Mapping<P,R>) => Thunk<R>
+
+			now: <P,R>(p: P) => (p: fp.Mapping<P,R>) => R
+		}
+
+		export interface Exports {
 			/**
 			 * Given a {@link mapping}, creates a `Mapping` that, given an argument, returns a {@link Thunk} that will, when
 			 * invoked, invoke the underlying mapping with that argument and return the result.
@@ -251,7 +257,7 @@ namespace slime.$api.fp {
 				fifty.tests.exports.mapping.thunks = function() {
 					var double: fp.Mapping<number,number> = (n: number) => n*2;
 
-					var t1 = $api.fp.mapping.thunks(double)(2);
+					var t1 = $api.fp.Mapping.thunks(double)(2);
 
 					verify(t1()).is(4);
 				}
@@ -448,8 +454,8 @@ namespace slime.$api.fp {
 	//	TODO	Now that we have curry and flatten to process functions, maybe we need $api.fp.create,
 	//			analogous to $api.fp.now, with first argument as function, or maybe all arguments as functions?
 
-	export namespace exports {
-		export interface mapping {
+	export namespace mapping {
+		export interface Exports {
 			properties: <P,R>(p: {
 				[k in keyof R]: (p: P) => R[k]
 			}) => (p: P) => R
@@ -465,7 +471,7 @@ namespace slime.$api.fp {
 				fifty.tests.exports.mapping.properties = function() {
 					var x = $api.fp.now.map(
 						2,
-						$api.fp.mapping.properties({
+						$api.fp.Mapping.properties({
 							single: function(d) { return d; },
 							double: function(d) { return d*2 },
 							triple: function(d) { return d*3 }
@@ -481,8 +487,8 @@ namespace slime.$api.fp {
 		)(fifty);
 	}
 
-	export namespace exports {
-		export interface mapping {
+	export namespace mapping {
+		export interface Exports {
 			/**
 			 * Given a Mapping invocation (consisting of a mapping and an argument), return the result of the mapping for the
 			 * argument.

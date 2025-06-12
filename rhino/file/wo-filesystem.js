@@ -27,7 +27,7 @@
 								},
 								{
 									created: function(e) {
-										events.fire("created", e.detail);
+										events.fire("created", e.detail.pathname);
 									}
 								}
 							)
@@ -58,7 +58,7 @@
 								},
 								{
 									created: function(e) {
-										events.fire("created", e.detail);
+										events.fire("created", e.detail.pathname);
 									}
 								}
 							)
