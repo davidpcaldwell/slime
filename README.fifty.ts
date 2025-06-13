@@ -47,7 +47,7 @@
  * **Nashorn {@include ./local/typedoc/dependencies.md#nashorn.standalone.version}** is used.
  *
  * **GraalVM** is not yet supported, although
- * [development is underway](https://github.com/davidpcaldwell/slime/projects/10).
+ * [development is underway](https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue%20state%3Aopen%20graal%20label%3Agraalvm).
  *
  * ##### Servlet containers
  *

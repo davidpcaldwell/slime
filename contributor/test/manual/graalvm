@@ -1,0 +1,9 @@
+#!/bin/bash
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+cd $(dirname $0)/../../..
+rm -Rvf local/jsh/lib/graal; ./jsh --install-graalvm; env JSH_ENGINE=graal /bin/bash ./jsh ./jrunscript/jsh/test/jsh-data.jsh.js

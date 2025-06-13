@@ -190,10 +190,11 @@ install_graalvm() {
 	local TO=$(clean_destination "$2")
 	local MAJOR=$(get_major_version ${VERSION})
 	local JDK_TARBALL_URL=""
+	#	See https://www.oracle.com/java/technologies/downloads/archive/#GraalVM for information about versions
 	if [ "${UNAME}" == "Darwin" ]; then
-		if [ "${ARCH}" == "arm64" ]; then
-			JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_macos-aarch64_bin.tar.gz"
-		fi
+		JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_macos-${ARCH}_bin.tar.gz"
+	elif [ "${UNAME}" == "Linux" ]; then
+		JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_linux-${ARCH}_bin.tar.gz"
 	fi
 	if [ -z "${JDK_TARBALL_URL}" ]; then
 		>&2 echo "Unsupported OS/architecture: ${UNAME} ${ARCH}"
@@ -362,8 +363,9 @@ if [ "$1" == "--install-jdk-21" ]; then
 fi
 
 if [ "$1" == "--install-graalvm" ]; then
-	install_graalvm "21.0.2" ${JSH_SHELL_LIB}/graal
+	install_graalvm "21.0.7" ${JSH_SHELL_LIB}/graal
 	GRAAL_POLYGLOT_LIB="${JSH_SHELL_LIB}/graal/lib/polyglot"
+	GRAALJS_VERSION="23.1.7"
 	#	TODO	what if this directory exists? Clear it?
 	mkdir ${GRAAL_POLYGLOT_LIB}
 
@@ -381,29 +383,29 @@ if [ "$1" == "--install-graalvm" ]; then
 	#	We are dumping all of these to a single directory by themselves, so the jsh
 	#	launcher can simply list them and add them to the classpath or modulepath
 
-	install_maven_dependency org.graalvm.polyglot polyglot 23.1.0 ${GRAAL_POLYGLOT_LIB}/polyglot.jar
-	install_maven_dependency org.graalvm.sdk collections 23.1.0 ${GRAAL_POLYGLOT_LIB}/collections.jar
-	install_maven_dependency org.graalvm.sdk word 23.1.0 ${GRAAL_POLYGLOT_LIB}/word.jar
-	install_maven_dependency org.graalvm.sdk nativeimage 23.1.0 ${GRAAL_POLYGLOT_LIB}/nativeimage.jar
-	install_maven_dependency org.graalvm.truffle truffle-api 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-api.jar
-	install_maven_dependency org.graalvm.truffle truffle-enterprise 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-enterprise.jar
-	install_maven_dependency org.graalvm.truffle truffle-compiler 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-compiler.jar
-	install_maven_dependency org.graalvm.sdk jniutils 23.1.0 ${GRAAL_POLYGLOT_LIB}/jniutils.jar
-	install_maven_dependency org.graalvm.sdk nativebridge 23.1.0 ${GRAAL_POLYGLOT_LIB}/nativebridge.jar
-	install_maven_dependency org.graalvm.regex regex 23.1.0 ${GRAAL_POLYGLOT_LIB}/regex.jar
-	install_maven_dependency org.graalvm.truffle truffle-runtime 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-runtime.jar
+	install_maven_dependency org.graalvm.polyglot polyglot ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/polyglot.jar
+	install_maven_dependency org.graalvm.sdk collections ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/collections.jar
+	install_maven_dependency org.graalvm.sdk word ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/word.jar
+	install_maven_dependency org.graalvm.sdk nativeimage ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/nativeimage.jar
+	install_maven_dependency org.graalvm.truffle truffle-api ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/truffle-api.jar
+	install_maven_dependency org.graalvm.truffle truffle-enterprise ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/truffle-enterprise.jar
+	install_maven_dependency org.graalvm.truffle truffle-compiler ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/truffle-compiler.jar
+	install_maven_dependency org.graalvm.sdk jniutils ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/jniutils.jar
+	install_maven_dependency org.graalvm.sdk nativebridge ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/nativebridge.jar
+	install_maven_dependency org.graalvm.regex regex ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/regex.jar
+	install_maven_dependency org.graalvm.truffle truffle-runtime ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/truffle-runtime.jar
 
-	install_maven_dependency org.graalvm.js js-language 23.1.0 ${GRAAL_POLYGLOT_LIB}/js-language.jar
-	install_maven_dependency org.graalvm.shadowed icu4j 23.1.0 ${GRAAL_POLYGLOT_LIB}/icu4j.jar
+	install_maven_dependency org.graalvm.js js-language ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/js-language.jar
+	install_maven_dependency org.graalvm.shadowed icu4j ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/icu4j.jar
 
 	#	Note that although the documentation explicitly states these are not required --
 	#	https://www.graalvm.org/latest/tools/chrome-debugger/ says (in contract to when launching with OpenJDK):
 	#	"The Chrome Inspector tool is always available as a tool on GraalVM. No dependency needs to be explicitly declared there,"
 	#	testing indicates these absolutely are required.
 
-	install_maven_dependency org.graalvm.shadowed json 23.1.0 ${GRAAL_POLYGLOT_LIB}/json.jar
-	install_maven_dependency org.graalvm.tools profiler-tool 23.1.0 ${GRAAL_POLYGLOT_LIB}/profiler-tool.jar
-	install_maven_dependency org.graalvm.tools chromeinspector-tool 23.1.0 ${GRAAL_POLYGLOT_LIB}/chromeinspector-tool.jar
+	install_maven_dependency org.graalvm.shadowed json ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/json.jar
+	install_maven_dependency org.graalvm.tools profiler-tool ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/profiler-tool.jar
+	install_maven_dependency org.graalvm.tools chromeinspector-tool ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/chromeinspector-tool.jar
 	exit $?
 fi
 

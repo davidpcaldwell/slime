@@ -178,6 +178,7 @@
 				if (files[i].path == "contributor/devcontainer/install-x-libraries") extension = "bash";
 				if (files[i].path == "contributor/devcontainer/rhino-debugger-test") extension = "bash";
 				if (files[i].path == "contributor/devcontainer/simulate-new-container") extension = "bash";
+				if (files[i].path == "contributor/test/manual/graalvm") extension = "bash";
 				if (!extension) throw new Error("Extension null for " + files[i].path);
 			}
 			var text = toFile(file).node.read(String);
