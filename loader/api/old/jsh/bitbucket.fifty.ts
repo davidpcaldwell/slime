@@ -12,7 +12,7 @@ namespace slime.jsh.unit.bitbucket {
 	}
 
 	export type Exports = (o: {
-		loopback: boolean
+		loopback?: boolean
 
 		/**
 		 * An object whose properties represent Bitbucket users, and whose properties' properties represent

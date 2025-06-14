@@ -692,41 +692,60 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export type JrunscriptInvocation = Omit<slime.jrunscript.shell.run.old.Argument,"command"|"arguments"> & {
-		//	This argument serves mostly to allow the jsh launcher to specify the jrunscript to use, since in Graal
-		//	shells the JDK's jrunscript does not work and we need to use the bootstrapping JDK
-		//jrunscript?: slime.jrunscript.file.File
-
-		/**
-		 * Provides arguments to the script invocation (including the script as the first argument). These arguments
-		 * will be augmented by those indicated by the `vmarguments` and `properties` properties.
-		 */
-		arguments: (string | slime.jrunscript.file.Pathname)[]
-
-		/**
-		 * A set of system properties to pass to the underlying virtual machine. Each property of the object represents a
-		 * system property; the property name is the system property name, and the property value is the value of that
-		 * system property.
-		 */
-		properties?: {
-			[name: string]: string
-		}
-
-		/**
-		 * An array of arguments to pass to the virtual machine running the script.
-		 */
-		vmarguments?: string[]
-	}
-
 	export interface Exports {
 		user: {
 			downloads?: slime.jrunscript.file.Directory
 		}
+	}
 
-		/**
-		 * Launches a JavaScript script on a Java virtual machine.
-		 */
-		jrunscript: slime.jrunscript.shell.oo.Run<JrunscriptInvocation>
+	export namespace jrunscript {
+		export namespace old {
+			export type Invocation = Omit<slime.jrunscript.shell.run.old.Argument,"command"|"arguments"> & {
+				/**
+				 * Provides arguments to the script invocation (including the script as the first argument). These arguments
+				 * will be augmented by those indicated by the `vmarguments` and `properties` properties.
+				 */
+				arguments: (string | slime.jrunscript.file.Pathname)[]
+
+				/**
+				 * A set of system properties to pass to the underlying virtual machine. Each property of the object represents a
+				 * system property; the property name is the system property name, and the property value is the value of that
+				 * system property.
+				 */
+				properties?: {
+					[name: string]: string
+				}
+
+				/**
+				 * An array of arguments to pass to the virtual machine running the script.
+				 */
+				vmarguments?: string[]
+			}
+
+			export interface Intention extends Omit<slime.jrunscript.shell.run.Intention,"command"> {
+				//	TODO	do we want a `jrunscript` property? Or a `command` property? See comment below, copied from
+				//			old.Invocation
+
+				//jrunscript?: slime.jrunscript.file.File
+				//	This argument serves mostly to allow the jsh launcher to specify the jrunscript to use, since in Graal
+				//	shells the JDK's jrunscript does not work and we need to use the bootstrapping JDK
+
+				vmarguments?: string[]
+
+				properties?: {
+					[name: string]: string
+				}
+			}
+		}
+	}
+
+	export interface Exports {
+		jrunscript: {
+			/**
+			 * Launches a JavaScript script on a Java virtual machine.
+			 */
+			old: slime.jrunscript.shell.oo.Run<jrunscript.old.Invocation>
+		}
 	}
 
 	export interface Exports {

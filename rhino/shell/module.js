@@ -397,93 +397,95 @@
 		}).call($exports.java);
 
 		/** @type { slime.jrunscript.shell.Exports["jrunscript"] } */
-		$exports.jrunscript = function(p) {
-			var launch = (function() {
-				if (p.jrunscript) return {
-					command: /** @type { slime.jrunscript.file.File } */(p.jrunscript),
-					arguments: [],
-					vmArgumentPrefix: "-J"
-				};
-				if (false && $exports.rhino && $exports.rhino.classpath) {
-					//	TODO	implicit jsh dependency, because rhino.classpath not set in this file
-					return {
-						command: $exports.java.launcher,
-						arguments: [
-							"-jar", $exports.rhino.classpath.pathnames[0],
-							"-opt", "-1"
-						],
-						vmArgumentPrefix: ""
-					};
-				} else {
-					if (!$exports.java.jrunscript) {
-						var searchpath = $context.api.file.Searchpath([$exports.java.home.getRelativePath("bin"),$exports.java.home.getRelativePath("../bin")]);
-						Packages.java.lang.System.err.println("path = " + searchpath);
-						Packages.java.lang.System.err.println("path = " + searchpath.getCommand("jrunscript"));
-						throw new Error("No jrunscript in " + $exports.java.home);
-					}
-					return {
-						command: $exports.java.jrunscript,
+		$exports.jrunscript = {
+			old: function(p) {
+				var launch = (function() {
+					if (p.jrunscript) return {
+						command: /** @type { slime.jrunscript.file.File } */(p.jrunscript),
 						arguments: [],
 						vmArgumentPrefix: "-J"
-					}
-				}
-			})();
-
-			var vmargs = [];
-
-			var nashornDeprecationArguments = (
-				function() {
-					//	TODO	for now we can't simplify this, because we might be using a custom jrunscript that is not even from
-					//			the JDK we are invoking, due to Graal. But is this valid? Can it happen? Need to investigate.
-					//
-					//			Once we eliminate that situation, we can build a bootstrap method that executes this command for the
-					//			appropriate jrunscript and returns the major version number in one step
-					/** @type { slime.jrunscript.shell.run.Intention } */
-					var versionIntention = {
-						command: launch.command.pathname.toString(),
-						arguments: $api.Array.build(function(rv) {
-							rv.push("-e", "print(java.lang.System.getProperty(\"java.version\"))");
-						}),
-						stdio: {
-							output: "string",
-							error: "string"
-						}
 					};
-
-					var it = $api.fp.world.Sensor.now({
-						sensor: scripts.run.exports.subprocess.question,
-						subject: versionIntention
-					});
-
-					var version = it.stdio.output.trim();
-
-					var major = $context.api.bootstrap.java.versions.getMajorVersion.forJavaVersionProperty(version);
-
-					return $context.api.bootstrap.nashorn.getDeprecationArguments(major);
-				}
-			)();
-
-			vmargs.push.apply(vmargs, nashornDeprecationArguments);
-
-			addPropertyArgumentsTo(vmargs,p.properties);
-
-			if (p.vmarguments) {
-				for (var i=0; i<p.vmarguments.length; i++) {
-					vmargs.push(launch.vmArgumentPrefix + p.vmarguments[i]);
-				}
-			}
-
-			var args = vmargs.concat(launch.arguments).concat(p.arguments.map(String));
-
-			return scripts.run_old.run(
-				$api.Object.compose(
-					p,
-					{
-						command: launch.command,
-						arguments: args
+					if (false && $exports.rhino && $exports.rhino.classpath) {
+						//	TODO	implicit jsh dependency, because rhino.classpath not set in this file
+						return {
+							command: $exports.java.launcher,
+							arguments: [
+								"-jar", $exports.rhino.classpath.pathnames[0],
+								"-opt", "-1"
+							],
+							vmArgumentPrefix: ""
+						};
+					} else {
+						if (!$exports.java.jrunscript) {
+							var searchpath = $context.api.file.Searchpath([$exports.java.home.getRelativePath("bin"),$exports.java.home.getRelativePath("../bin")]);
+							Packages.java.lang.System.err.println("path = " + searchpath);
+							Packages.java.lang.System.err.println("path = " + searchpath.getCommand("jrunscript"));
+							throw new Error("No jrunscript in " + $exports.java.home);
+						}
+						return {
+							command: $exports.java.jrunscript,
+							arguments: [],
+							vmArgumentPrefix: "-J"
+						}
 					}
-				)
-			);
+				})();
+
+				var vmargs = [];
+
+				var nashornDeprecationArguments = (
+					function() {
+						//	TODO	for now we can't simplify this, because we might be using a custom jrunscript that is not even from
+						//			the JDK we are invoking, due to Graal. But is this valid? Can it happen? Need to investigate.
+						//
+						//			Once we eliminate that situation, we can build a bootstrap method that executes this command for the
+						//			appropriate jrunscript and returns the major version number in one step
+						/** @type { slime.jrunscript.shell.run.Intention } */
+						var versionIntention = {
+							command: launch.command.pathname.toString(),
+							arguments: $api.Array.build(function(rv) {
+								rv.push("-e", "print(java.lang.System.getProperty(\"java.version\"))");
+							}),
+							stdio: {
+								output: "string",
+								error: "string"
+							}
+						};
+
+						var it = $api.fp.world.Sensor.now({
+							sensor: scripts.run.exports.subprocess.question,
+							subject: versionIntention
+						});
+
+						var version = it.stdio.output.trim();
+
+						var major = $context.api.bootstrap.java.versions.getMajorVersion.forJavaVersionProperty(version);
+
+						return $context.api.bootstrap.nashorn.getDeprecationArguments(major);
+					}
+				)();
+
+				vmargs.push.apply(vmargs, nashornDeprecationArguments);
+
+				addPropertyArgumentsTo(vmargs,p.properties);
+
+				if (p.vmarguments) {
+					for (var i=0; i<p.vmarguments.length; i++) {
+						vmargs.push(launch.vmArgumentPrefix + p.vmarguments[i]);
+					}
+				}
+
+				var args = vmargs.concat(launch.arguments).concat(p.arguments.map(String));
+
+				return scripts.run_old.run(
+					$api.Object.compose(
+						p,
+						{
+							command: launch.command,
+							arguments: args
+						}
+					)
+				);
+			}
 		};
 
 		if ($context.kotlin) $exports.kotlin = $api.events.Function(function(p,events) {

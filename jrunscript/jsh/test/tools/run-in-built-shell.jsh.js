@@ -20,7 +20,7 @@
 				function(p) {
 					var JSH_HOME = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					//	TODO	locate jrunscript using Java home
-					//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript
+					//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript.old
 					var args = [];
 					//				if (parameters.options.rhino) {
 					//					args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
