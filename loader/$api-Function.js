@@ -235,6 +235,14 @@
 			}
 		};
 
+		var mapping = (function() {
+			/** @type { slime.$api.fp.internal.mapping.Script } */
+			var script = $context.script("$api-fp-Mapping.js");
+			return script({
+				deprecate: $context.deprecate
+			});
+		})();
+
 		var impure = code.impure({
 			now: now_map,
 			Maybe: Maybe,
@@ -265,8 +273,28 @@
 				if (o === null) return "null";
 				return typeof(o);
 			},
+			Mapping: mapping.Mapping,
+			returning: function(v) {
+				return function() {
+					return v;
+				};
+			},
+			mapAllTo: function(v) {
+				return function(p) {
+					return v;
+				}
+			},
+			split: function(functions) {
+				var entries = Object.entries(functions);
+				return function(p) {
+					var results = entries.map(function(entry) {
+						return [entry[0], functions[entry[0]](p)];
+					});
+					return Object.fromEntries(results);
+				}
+			},
 			pipe: pipe,
-			thunk: {
+			Thunk: {
 				map: function(thunk) {
 					var functions = Array.prototype.slice.call(arguments,1);
 					return function() {
@@ -290,76 +318,6 @@
 						rv = map(rv);
 					});
 					return rv;
-				}
-			},
-			Mapping: {
-				from: {
-					value: function(r) {
-						return function(p) {
-							return r;
-						}
-					},
-					thunk: function(f) {
-						return function(p) {
-							return f();
-						}
-					}
-				},
-				thunk: function(p) {
-					return function(m) {
-						return function() {
-							return m(p);
-						}
-					}
-				},
-				now: function(p) {
-					return function(m) {
-						return m(p);
-					}
-				},
-				all: $context.deprecate(function(r) {
-					return function(p) {
-						return r;
-					}
-				}),
-				thunks: function(mapping) {
-					return function(p) {
-						return function() {
-							return mapping(p);
-						}
-					}
-				},
-				properties: function(definition) {
-					return function(p) {
-						/** @type { object } */
-						var rv = {};
-						for (var x in definition) {
-							rv[x] = definition[x](p);
-						}
-						return rv;
-					}
-				},
-				invocation: function(i) {
-					return i.mapping(i.argument);
-				}
-			},
-			returning: function(v) {
-				return function() {
-					return v;
-				};
-			},
-			mapAllTo: function(v) {
-				return function(p) {
-					return v;
-				}
-			},
-			split: function(functions) {
-				var entries = Object.entries(functions);
-				return function(p) {
-					var results = entries.map(function(entry) {
-						return [entry[0], functions[entry[0]](p)];
-					});
-					return Object.fromEntries(results);
 				}
 			},
 			Predicate: Predicate,

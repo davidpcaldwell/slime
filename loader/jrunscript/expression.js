@@ -1164,7 +1164,7 @@
 					$api.Object.defineProperty({
 						name: "mime",
 						descriptor: {
-							get: $api.deprecate($api.fp.thunk.value(slime.$api.mime))
+							get: $api.deprecate($api.fp.Thunk.value(slime.$api.mime))
 						}
 					})
 				)

@@ -33,18 +33,9 @@ namespace slime.jrunscript.file.archive {
 			fifty.tests.exports.encode = function() {
 				const { io } = ($api as slime.$api.jrunscript.Global).jrunscript;
 
-				//	TODO	move to $api.fp.Mapping
-				const applyResultWith: <T,P,R>(p: P) => (f: (t: T) => slime.$api.fp.Mapping<P,R>) => slime.$api.fp.Mapping<T,R> = function(p) {
-					return function(f) {
-						return function(t) {
-							return f(t)(p);
-						}
-					}
-				};
-
 				//	TODO	we model jsh.file.Location.file.write.open.simple as a Mapping, but is it a good one? If you call it
 				// 			twice, you'll get two different things (which on the other hand will behave identically)
-				const openFile = $api.fp.now(jsh.file.Location.file.write.open.simple, applyResultWith({ append: false, recursive: true }));
+				const openFile = $api.fp.now(jsh.file.Location.file.write.open.simple, $api.fp.Mapping.applyResultWith({ append: false, recursive: true }));
 
 				const readString = $api.fp.now(
 					//	TODO	definitely need to build a file API that matches this idea, where we have a processor for files and

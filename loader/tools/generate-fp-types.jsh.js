@@ -21,7 +21,7 @@
 				input_value: 8,
 				process_value: 8
 			}),
-			destination: $api.fp.thunk.value(
+			destination: $api.fp.Thunk.value(
 				jsh.script.world.file,
 				jsh.file.Location.directory.relativePath("../../$api-fp-generated.fifty.ts")
 			),

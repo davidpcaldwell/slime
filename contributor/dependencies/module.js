@@ -87,7 +87,7 @@
 								}
 							)
 						),
-						$api.fp.Maybe.else($api.fp.thunk.value(null))
+						$api.fp.Maybe.else($api.fp.Thunk.value(null))
 					)
 				}
 			},
@@ -96,7 +96,7 @@
 			}
 		};
 
-		var getTypedocIncludes = $api.fp.thunk.value(
+		var getTypedocIncludes = $api.fp.Thunk.value(
 			//	TODO	figure out better way to manage retrieval of non-code content; using older loader constructs for now
 			$loader.get("dependencies.md").read(String),
 			function(s) { return s.replace(/\{rhino\.version\.number}/, data.rhino.versions.default ) },

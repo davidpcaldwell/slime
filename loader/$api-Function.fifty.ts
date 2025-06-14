@@ -11,36 +11,6 @@
  * SLIME loader.
  */
 namespace slime.$api.fp {
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports = fifty.test.Parent();
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export type Mapping<P,R> = (p: P) => R
-	export type Transform<T> = Mapping<T,T>
-
-	/**
-	 * A type definition that can be attached to the `$api.fp.identity` function to create a function that acts as a type hint
-	 * for pipelining.
-	 */
-	export type Identity<T> = Mapping<T,T>
-
-	export type Thunk<T> = () => T
-
-	export type Predicate<T> = (t: T) => boolean
-	/** @deprecated Use {@link Predicate}. */
-	export type Filter<T> = (t: T) => boolean
-
-	/**
-	 * A special kind of `Predicate` where all values that satisfy the predicate are known to be members of a subtype of the
-	 * predicate type.
-	 */
-	export type TypePredicate<T,N extends T> = (t: T) => t is N
-
 	/**
 	 * The SLIME functional programming APIs. This object is available as `$api.fp` in all scripts loaded by the SLIME loader.
 	 *
@@ -54,18 +24,68 @@ namespace slime.$api.fp {
 	export interface Exports {
 	}
 
-	export interface Exports {
-		identity: <T>(t: T) => T
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
 
+	export interface Exports {
 		/**
-		 * A function that can be declared as type {@link slime.js.Cast | `slime.js.Cast<T>`} and cast any value to `T`.
+		 * The identity function, which returns the argument it was passed.
 		 */
+		identity: <T>(t: T) => T
+	}
+
+	/**
+	 * A function that, given a single argument, returns a single result.
+	 */
+	export type Mapping<P,R> = (p: P) => R
+
+	/**
+	 * A function that, given a single argument, returns a single result of the same type as that argument.
+	 */
+	export type Transform<T> = Mapping<T,T>
+
+	/**
+	 * A type definition that can be attached to the `$api.fp.identity` function to create a function that acts as a type hint
+	 * for pipelining.
+	 */
+	export type Identity<T> = Mapping<T,T>
+
+	export type Predicate<T> = (t: T) => boolean
+
+	/**
+	 * A special kind of `Predicate` where all values that satisfy the predicate are known to be members of a subtype of the
+	 * predicate type.
+	 */
+	export type TypePredicate<T,N extends T> = (t: T) => t is N
+
+	export interface Exports {
 		cast: {
+			/**
+			 * A function that can be declared as type {@link slime.js.Cast | `slime.js.Cast<T>`} and cast any value to `T`. The
+			 * cast is simply asserted, so it is the caller's responsibility to know the cast is valid.
+			 */
 			unsafe: <T>(t: any) => T
+
+			/**
+			 * Performs a cast that relies on the given `TypePredicate` to determine whether the value can really be cast to the
+			 * desired subtype. If the TypePredicate does not accept the value, an error is thrown.
+			 */
 			guarded: <T,N extends T>(predicate: TypePredicate<T,N>) => (t: T) => N
+
+			/**
+			 * Tries to perform a cast, using the given `TypePredicate` to determine whether the given value is of the desired
+			 * subtype. If it is, it will be returned; otherwise, `Maybe.from.nothing` will be returned.
+			 */
 			maybe: <T,N extends T>(predicate: TypePredicate<T,N>) => (t: T) => Maybe<N>
 		}
 
+		//	TODO	is this even an fp construct?
 		/**
 		 * Returns a JavaScript type for the given value. This value is identical to the result of the JavaScript `typeof` operator
 		 * unless the given value is `null`, in which case it is `"null"`.
@@ -120,20 +140,41 @@ namespace slime.$api.fp {
 	)(fifty);
 
 	export interface Exports {
-		pipe: Pipe
+		/**
+		 * APIs related to {@link Mapping}s.
+		 */
+		Mapping: mapping.Exports
+
+		/**
+		 * @deprecated Replaced by `impure.External.value`/`Thunk.value` and `Mapping.from.all`
+		 * @param t
+		 * @returns
+		 */
+		returning: <T>(t: T) => () => T
+
+		/**
+		 * @deprecated Replaced by `Mapping.from.value`.
+		 */
+		mapAllTo: <P,R>(r: R) => (p: P) => R
+
+
+		/** @deprecated Replaced by `Mapping.properties`. */
+		split: <P,R>(functions: { [k in keyof R]: (p: P) => R[k] }) => (p: P) => R
 	}
 
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			fifty.tests.exports.thunk = fifty.test.Parent();
+			fifty.tests.exports.Thunk = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
 
+	export type Thunk<T> = () => T
+
 	export interface Exports {
-		thunk: {
+		Thunk: {
 			map: Thunk_map
 			value: Thunk_value
 			now: Thunk_now
@@ -147,124 +188,20 @@ namespace slime.$api.fp {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.exports.thunk.now = function() {
-				const one: Thunk<number> = $api.fp.thunk.value(1);
+			fifty.tests.exports.Thunk.now = function() {
+				const one: Thunk<number> = $api.fp.Thunk.value(1);
 
 				const double = function(n: number): number { return n*2; };
 
-				var a = $api.fp.thunk.now(one, double);
+				var a = $api.fp.Thunk.now(one, double);
 				verify(a).is(2);
 
-				var b = $api.fp.thunk.now(one, double, double);
+				var b = $api.fp.Thunk.now(one, double, double);
 				verify(b).is(4);
 			};
 		}
 	//@ts-ignore
 	)(fifty);
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports.mapping = fifty.test.Parent();
-		}
-	//@ts-ignore
-	)(fifty);
-
-	export namespace mapping {
-		export interface Exports {
-			from: {
-				value: <P,R>(r: R) => (p: P) => R
-				thunk: <P,R>(thunk: fp.Thunk<R>) => Mapping<P,R>
-			}
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { $api } = fifty.global;
-
-				fifty.tests.exports.mapping.from = function() {
-					const value = 2;
-					const thunkValue = 3;
-
-					const byValue = $api.fp.Mapping.from.value(value);
-					const byThunk = $api.fp.Mapping.from.thunk( () => thunkValue );
-
-					verify(byValue(8)).is(value);
-					verify(byValue(10)).is(value);
-					verify(byThunk(9)).is(thunkValue);
-					verify(byThunk(11)).is(thunkValue);
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-
-		export interface Exports {
-			/** @deprecated Use `from.value()`. */
-			all: <P,R>(r: R) => (p: P) => R
-		}
-	}
-
-	export interface Exports {
-		/**
-		 * APIs related to {@link Mapping}s.
-		 */
-		Mapping: mapping.Exports
-
-
-		/**
-		 * @deprecated Replaced by `Input.value`/`Thunk.value` and `mapping.all`
-		 * @param t
-		 * @returns
-		 */
-		returning: <T>(t: T) => () => T
-
-		/**
-		 * @deprecated Replaced by `mapping.all`.
-		 */
-		mapAllTo: <P,R>(r: R) => (p: P) => R
-
-
-		/** @deprecated Replaced by `Mapping.properties`. */
-		split: <P,R>(functions: { [k in keyof R]: (p: P) => R[k] }) => (p: P) => R
-	}
-
-	export namespace mapping {
-		export interface Exports {
-			thunk: <P,R>(p: P) => (p: fp.Mapping<P,R>) => Thunk<R>
-
-			now: <P,R>(p: P) => (p: fp.Mapping<P,R>) => R
-		}
-
-		export interface Exports {
-			/**
-			 * Given a {@link mapping}, creates a `Mapping` that, given an argument, returns a {@link Thunk} that will, when
-			 * invoked, invoke the underlying mapping with that argument and return the result.
-			 */
-			thunks: <P,R>(p: fp.Mapping<P,R>) => fp.Mapping<P,Thunk<R>>
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { $api } = fifty.global;
-
-				fifty.tests.exports.mapping.thunks = function() {
-					var double: fp.Mapping<number,number> = (n: number) => n*2;
-
-					var t1 = $api.fp.Mapping.thunks(double)(2);
-
-					verify(t1()).is(4);
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-	}
 
 	export interface Exports {
 		Predicate: {
@@ -454,50 +391,8 @@ namespace slime.$api.fp {
 	//	TODO	Now that we have curry and flatten to process functions, maybe we need $api.fp.create,
 	//			analogous to $api.fp.now, with first argument as function, or maybe all arguments as functions?
 
-	export namespace mapping {
-		export interface Exports {
-			properties: <P,R>(p: {
-				[k in keyof R]: (p: P) => R[k]
-			}) => (p: P) => R
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { $api } = fifty.global;
-
-				fifty.tests.exports.mapping.properties = function() {
-					var x = $api.fp.now.map(
-						2,
-						$api.fp.Mapping.properties({
-							single: function(d) { return d; },
-							double: function(d) { return d*2 },
-							triple: function(d) { return d*3 }
-						})
-					);
-
-					verify(x).single.is(2);
-					verify(x).double.is(4);
-					verify(x).triple.is(6);
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-	}
-
-	export namespace mapping {
-		export interface Exports {
-			/**
-			 * Given a Mapping invocation (consisting of a mapping and an argument), return the result of the mapping for the
-			 * argument.
-			 */
-			invocation: <P,R>(p: {
-				mapping: slime.$api.fp.Mapping<P,R>
-				argument: P
-			}) => R
-		}
+	export interface Exports {
+		pipe: Pipe
 	}
 
 	export interface Exports {
@@ -1928,6 +1823,7 @@ namespace slime.$api.fp {
 				fifty.run(fifty.tests.deprecated);
 				fifty.run(fifty.tests.series);
 
+				fifty.load("$api-fp-Mapping.fifty.ts");
 				fifty.load("$api-fp-stream.fifty.ts");
 				fifty.load("$api-fp-impure.fifty.ts");
 			}

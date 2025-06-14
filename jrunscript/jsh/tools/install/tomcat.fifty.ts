@@ -92,7 +92,7 @@ namespace slime.jsh.shell.tools.tomcat {
 					jsh.shell.HOME.pathname.os.adapt(),
 					jsh.file.Location.directory.relativePath("Downloads"),
 					jsh.file.Location.directory.list.stream.simple({
-						descend: $api.fp.thunk.value(false)
+						descend: $api.fp.Thunk.value(false)
 					}),
 					$api.fp.Stream.filter(
 						$api.fp.pipe(

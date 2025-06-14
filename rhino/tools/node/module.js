@@ -44,7 +44,7 @@
 		};
 
 		var versions = {
-			default: $api.fp.thunk.value("22.16.0")
+			default: $api.fp.Thunk.value("22.16.0")
 		};
 
 		$exports.versions = versions;
