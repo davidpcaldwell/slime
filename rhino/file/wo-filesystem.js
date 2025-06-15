@@ -13,7 +13,7 @@
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.wo.filesystem.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		/** @type { slime.jrunscript.file.exports.Filesystem } */
+		/** @type { slime.jrunscript.file.location.Filesystem } */
 		var Filesystem = (
 			function() {
 				return {

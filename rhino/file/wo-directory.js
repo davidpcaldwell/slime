@@ -28,7 +28,7 @@
 		});
 
 		var directory = {
-			/** @type { Pick<slime.jrunscript.file.exports.location.Directory,"base"|"relativePath"|"relativeTo"> } */
+			/** @type { Pick<slime.jrunscript.file.location.directory.Exports,"base"|"relativePath"|"relativeTo"> } */
 			navigation: {
 				base: function(location) {
 					return function(relative) {
@@ -65,13 +65,13 @@
 
 		var wo = {
 			directory: {
-				/** @type { slime.jrunscript.file.exports.location.Directory["list"]["world"] } */
+				/** @type { slime.jrunscript.file.location.directory.Exports["list"]["world"] } */
 				list: function(p) {
 					/**
 					 *
 					 * @param { slime.jrunscript.file.Location } location
 					 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-					 * @param { slime.$api.event.Emitter<slime.jrunscript.file.exports.location.list.Events> } events
+					 * @param { slime.$api.event.Emitter<slime.jrunscript.file.location.directory.list.Events> } events
 					 * @returns { slime.jrunscript.file.Location[] }
 					 */
 					var process = function(location,descend,events) {
@@ -127,8 +127,8 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Location } location
-		 * @param { slime.$api.fp.world.Order<ReturnType<slime.jrunscript.file.exports.location.Directory["require"]["wo"]>> } p
-		 * @returns { ReturnType<ReturnType<slime.jrunscript.file.exports.location.Directory["require"]["wo"]>> }
+		 * @param { slime.$api.fp.world.Order<ReturnType<slime.jrunscript.file.location.directory.Exports["require"]["wo"]>> } p
+		 * @returns { ReturnType<ReturnType<slime.jrunscript.file.location.directory.Exports["require"]["wo"]>> }
 		 */
 		var require_shared = function(location,p) {
 			return function(events) {
@@ -282,7 +282,7 @@
 			base: directory.navigation.base,
 			relativePath: directory.navigation.relativePath,
 			relativeTo: directory.navigation.relativeTo,
-			/** @type { slime.jrunscript.file.exports.Location["directory"]["exists"] } */
+			/** @type { slime.jrunscript.file.location.Exports["directory"]["exists"] } */
 			exists: directoryExists,
 			require: $api.Object.compose(
 				$api.fp.world.Means.api.simple({ operation: require }),
@@ -290,7 +290,7 @@
 					old: require_old
 				}
 			),
-			/** @type { slime.jrunscript.file.exports.Location["directory"]["remove"] } */
+			/** @type { slime.jrunscript.file.location.Exports["directory"]["remove"] } */
 			remove: {
 				world: function() {
 					return $context.remove;

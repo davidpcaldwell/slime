@@ -128,7 +128,7 @@
 						return $api.fp.Maybe.from.some(p.pathname);
 					}
 				},
-				copy: void(0),
+				copy: $api.TODO(),
 				createDirectory: function(p) {
 					return function(events) {
 						state[p.pathname] = {
@@ -138,7 +138,7 @@
 				},
 				directoryExists: directoryExists,
 				fileExists: fileExists,
-				move: void(0),
+				move: $api.TODO(),
 				remove: function(p) {
 					return function(events) {
 						//	TODO	what should happen if it doesn't exist?
@@ -149,8 +149,8 @@
 						}
 					}
 				},
-				fileSize: void(0),
-				fileLastModified: void(0),
+				fileSize: $api.TODO(),
+				fileLastModified: $api.TODO(),
 				listDirectory: function(p) {
 					return function(events) {
 						var prefix = p.pathname + "/";
@@ -189,10 +189,22 @@
 						return name;
 					}
 				},
-				Directory: void(0),
-				File: void(0),
-				Pathname: void(0),
-				pathname: void(0)
+				Directory: {
+					remove: $api.TODO()
+				},
+				File: {
+					read: {
+						stream: {
+							bytes: $api.TODO()
+						},
+						string: $api.TODO()
+					},
+					copy: $api.TODO()
+				},
+				Pathname: {
+					isDirectory: $api.TODO()
+				},
+				pathname: $api.TODO()
 			};
 
 			return rv;
