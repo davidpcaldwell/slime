@@ -14,7 +14,7 @@ namespace slime.jrunscript.file.internal.wo.directory.test {
 	})(fifty);
 }
 
-namespace slime.jrunscript.file.exports.location {
+namespace slime.jrunscript.file.location.directory {
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -42,9 +42,9 @@ namespace slime.jrunscript.file.exports.location {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Directory {}
+	export interface Exports {}
 
-	export interface Directory {
+	export interface Exports {
 		base: (base: slime.jrunscript.file.Location) => (relative: string) => slime.jrunscript.file.Location
 		relativePath: (path: string) => (p: slime.jrunscript.file.Location) => slime.jrunscript.file.Location
 		relativeTo: (location: slime.jrunscript.file.Location) => (p: slime.jrunscript.file.Location) => string
@@ -117,7 +117,7 @@ namespace slime.jrunscript.file.exports.location {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Directory {
+	export interface Exports {
 		exists: {
 			simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,boolean>
 			world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
@@ -160,7 +160,7 @@ namespace slime.jrunscript.file.exports.location {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Directory {
+	export interface Exports {
 		remove: {
 			simple: slime.$api.fp.impure.Output<slime.jrunscript.file.Location>
 			world: () => slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
@@ -197,7 +197,7 @@ namespace slime.jrunscript.file.exports.location {
 		}
 	}
 
-	export interface Directory {
+	export interface Exports {
 		list: {
 			//	TODO	how do errors manifest?
 			world: slime.$api.fp.world.Sensor<
@@ -225,8 +225,8 @@ namespace slime.jrunscript.file.exports.location {
 					list.Events,
 					slime.$api.fp.Stream<slime.jrunscript.file.Location>
 				>,
-				simple: (p?: Parameters<Directory["list"]["stream"]["world"]>[0])
-					=> slime.$api.fp.world.Simple<ReturnType<Directory["list"]["stream"]["world"]>>
+				simple: (p?: Parameters<Exports["list"]["stream"]["world"]>[0])
+					=> slime.$api.fp.world.Simple<ReturnType<Exports["list"]["stream"]["world"]>>
 			}
 		}
 	}
@@ -340,7 +340,7 @@ namespace slime.jrunscript.file.exports.location {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Directory {
+	export interface Exports {
 		loader: {
 			synchronous: (p: {
 				root: slime.jrunscript.file.Location
@@ -497,7 +497,7 @@ namespace slime.jrunscript.file.exports.location {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Directory {
+	export interface Exports {
 		content: {
 			Index: (root: slime.jrunscript.file.Location) => slime.runtime.content.Index<slime.jrunscript.file.Location>
 
@@ -505,7 +505,7 @@ namespace slime.jrunscript.file.exports.location {
 				index: slime.runtime.content.Index<T>
 				write: (p: {
 					file: T
-					api: ReturnType<slime.jrunscript.file.exports.location.File["write"]["old"]>
+					api: ReturnType<slime.jrunscript.file.location.file.Exports["write"]["old"]>
 				}) => void
 				to: slime.jrunscript.file.Location
 			}) => slime.$api.fp.world.Action<{
@@ -604,7 +604,7 @@ namespace slime.jrunscript.file.exports.location {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Directory {
+	export interface Exports {
 		Loader: {
 			simple: (root: slime.jrunscript.file.Location) => slime.runtime.loader.Store
 		}
@@ -615,8 +615,8 @@ namespace slime.jrunscript.file.internal.wo.directory {
 	export interface Context {
 		Location: slime.jrunscript.file.internal.loader.Context["library"]["Location"]
 		Location_basename: slime.jrunscript.file.Exports["Location"]["basename"]
-		Location_relative: slime.jrunscript.file.exports.Location["directory"]["relativePath"]
-		Location_parent: slime.jrunscript.file.exports.Location["parent"]
+		Location_relative: slime.jrunscript.file.location.Exports["directory"]["relativePath"]
+		Location_parent: slime.jrunscript.file.location.Exports["parent"]
 		Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]
 		Location_file_read_string: slime.jrunscript.file.Exports["Location"]["file"]["read"]["string"]
 		Location_file_write: slime.jrunscript.file.Exports["Location"]["file"]["write"]["old"]
@@ -625,7 +625,7 @@ namespace slime.jrunscript.file.internal.wo.directory {
 		Store: slime.runtime.loader.Exports["Store"]
 	}
 
-	export type Exports = slime.jrunscript.file.exports.location.Directory
+	export type Exports = slime.jrunscript.file.location.directory.Exports
 
 	(
 		function(

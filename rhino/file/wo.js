@@ -43,12 +43,12 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.file.exports.Location["parent"] } */
+		/** @type { slime.jrunscript.file.location.Exports["parent"] } */
 		var Location_parent = function() {
 			return Location_relative("..");
 		};
 
-		/** @type { slime.jrunscript.file.exports.Location["directory"]["relativePath"] } */
+		/** @type { slime.jrunscript.file.location.Exports["directory"]["relativePath"] } */
 		var Location_relative = function(path) {
 			return function(pathname) {
 				var absolute = pathname.pathname + pathname.filesystem.separator.pathname + path;
@@ -80,7 +80,7 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.file.exports.location.File["write"]["open"]["wo"] } */
+		/** @type { slime.jrunscript.file.location.file.Exports["write"]["open"]["wo"] } */
 		var Location_write_open_wo = function(location) {
 			return function(settings) {
 				return function(events) {
@@ -189,7 +189,7 @@
 		var Location = {
 			relative: Location_relative,
 			basename: Location_basename,
-			/** @type { slime.jrunscript.file.exports.Location["lastModified"] } */
+			/** @type { slime.jrunscript.file.location.Exports["lastModified"] } */
 			lastModified: {
 				simple: lastModifiedSimple
 			},
@@ -216,8 +216,8 @@
 		var Location_file_write_old = Object.assign(
 			/**
 			 *
-			 * @param { Parameters<slime.jrunscript.file.exports.location.File["write"]["old"]>[0] } location
-			 * @returns { ReturnType<slime.jrunscript.file.exports.location.File["write"]["old"]> }
+			 * @param { Parameters<slime.jrunscript.file.location.file.Exports["write"]["old"]>[0] } location
+			 * @returns { ReturnType<slime.jrunscript.file.location.file.Exports["write"]["old"]> }
 			 */
 			function(location) {
 				return {
@@ -264,63 +264,12 @@
 						}
 					}
 				}
-			}//,
-			// {
-			// 	string: function(p) {
-			// 		return function(location) {
-			// 			return function(events) {
-			// 				Location_write(
-			// 					location,
-			// 					events,
-			// 					function(stream) {
-			// 						var writer = stream.character();
-			// 						writer.write(p.value);
-			// 						writer.close();
-			// 					}
-			// 				);
-			// 			}
-			// 		}
-			// 	},
-			// 	stream: function(p) {
-			// 		return function(location) {
-			// 			return function(events) {
-			// 				Location_write(
-			// 					location,
-			// 					events,
-			// 					function(output) {
-			// 						$context.library.io.Streams.binary.copy(
-			// 							p.input,
-			// 							output
-			// 						)
-			// 					}
-			// 				)
-			// 			}
-			// 		}
-			// 	},
-			// 	object: {
-			// 		text: function() {
-			// 			return function(location) {
-			// 				return function(events) {
-			// 					var ask = location.filesystem.openOutputStream({
-			// 						pathname: location.pathname
-			// 					});
-			// 					return $api.fp.result(
-			// 						ask(events),
-			// 						$api.fp.Maybe.map(function(stream) {
-			// 							return stream.character();
-			// 						})
-			// 					);
-			// 				}
-
-			// 			}
-			// 		}
-			// 	}
-			// }
+			}
 		);
 
 		var Location_file_read = (
 			function() {
-				/** @type { slime.jrunscript.file.exports.location.File["read"]["stream"] } */
+				/** @type { slime.jrunscript.file.location.file.Exports["read"]["stream"] } */
 				var readStream = function() {
 					return function(location) {
 						return location.filesystem.openInputStream({
@@ -329,7 +278,7 @@
 					}
 				};
 
-				/** @type { slime.jrunscript.file.exports.location.File["read"]["string"]["world"] } */
+				/** @type { slime.jrunscript.file.location.file.Exports["read"]["string"]["world"] } */
 				var readString = function() {
 					return $api.fp.world.Sensor.map({
 						subject: $api.fp.identity,
@@ -393,6 +342,19 @@
 				ensureParent: ensureParent
 			})
 		};
+
+		/** @type { slime.jrunscript.file.location.Exports["Function"] } */
+		var Location_Function = function(p) {
+			return function(location) {
+				if (Location.file.exists.simple(location)) {
+					return p.file(location);
+				} else if (parts.directory.exists.simple(location)) {
+					return p.directory(location);
+				} else {
+					throw new Error("Neither file nor directory: " + location.pathname + " in " + location.filesystem);
+				}
+			}
+		}
 
 		$export({
 			Location: {
@@ -502,6 +464,7 @@
 						}
 					})()
 				},
+				Function: Location_Function,
 				file: (function() {
 					return {
 						exists: Location.file.exists,
@@ -519,7 +482,7 @@
 								operation: Location_write_open_wo
 							})
 						},
-						/** @type { slime.jrunscript.file.exports.Location["file"]["remove"] } */
+						/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
 						remove: {
 							world: function() {
 								return remove;

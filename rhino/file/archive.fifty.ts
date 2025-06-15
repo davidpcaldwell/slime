@@ -37,21 +37,10 @@ namespace slime.jrunscript.file.archive {
 				// 			twice, you'll get two different things (which on the other hand will behave identically)
 				const openFile = $api.fp.now(jsh.file.Location.file.write.open.simple, $api.fp.Mapping.applyResultWith({ append: false, recursive: true }));
 
-				const readString = $api.fp.now(
-					//	TODO	definitely need to build a file API that matches this idea, where we have a processor for files and
-					//			one for directories, and possibly standardize the exception handling as well
-					$api.fp.switch([
-						$api.fp.Partial.match({
-							if: jsh.file.Location.directory.exists.simple,
-							then: $api.fp.Mapping.from.value("(directory)")
-						}),
-						$api.fp.Partial.match({
-							if: jsh.file.Location.file.exists.simple,
-							then: jsh.file.Location.file.read.string.simple
-						})
-					]),
-					$api.fp.Partial.impure.exception( (p: Location) => new Error("Cannot find: " + p.pathname + "; not a file or directory") )
-				);
+				const readString = jsh.file.Location.Function({
+					directory: $api.fp.Mapping.from.value("(directory)"),
+					file: jsh.file.Location.file.read.string.simple
+				});
 
 				var base = $api.fp.now(fifty.jsh.file.temporary.directory(), jsh.file.Location.directory.base);
 
