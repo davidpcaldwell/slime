@@ -10,10 +10,10 @@
  *
  * `jsh` scripts have access to the global `jsh` object, which is of type {@link Global}.
  *
- * ## Configuration
- *
- * See [running `jsh`](../src/jrunscript/jsh/launcher/api.html) for information about how to run scripts using `jsh` and configure the
- * shell.
+ * The easiest way to run `jsh` is via the top-level `jsh` script:
+ * ```sh
+ * ./jsh [-<JVM-argument> [...-<JVM-argument>]] <path-to-script> [arguments]
+ * ```
  *
  * ## Execution models
  *
@@ -40,6 +40,11 @@
  * ### Remote shells
  *
  * TODO write documentation
+ *
+ * ## Configuration
+ *
+ * See the older [Running `jsh`](../src/jrunscript/jsh/launcher/api.html) page for (possibly outdated) additional information about
+ * how to run scripts using `jsh` and configure the shell.
  *
  * ## Application types
  *

@@ -123,10 +123,15 @@ namespace slime.jrunscript.file.location.directory {
 			world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
 		}
 
-		require: slime.$api.fp.world.means.api.Simple<slime.jrunscript.file.Location,{ recursive?: boolean },{
-			created: slime.jrunscript.file.Location
-			found: slime.jrunscript.file.Location
-		}> & {
+		require: {
+			(location: slime.jrunscript.file.Location): slime.$api.fp.world.means.api.Simple<
+				{ recursive?: boolean },
+				{
+					created: slime.jrunscript.file.Location
+					found: slime.jrunscript.file.Location
+				}
+			>
+
 			old: (p?: { recursive?: boolean }) => slime.$api.fp.world.Means<slime.jrunscript.file.Location, {
 				created: slime.jrunscript.file.Location
 				found: slime.jrunscript.file.Location
@@ -146,7 +151,12 @@ namespace slime.jrunscript.file.location.directory {
 			fifty.tests.sandbox.locations.directory.exists = function() {
 				var at = fifty.jsh.file.temporary.location();
 
-				var exists = Object.assign($api.fp.world.mapping(subject.Location.directory.exists.world()), { toString: function() { return "exists()"; }});
+				var exists = Object.assign(
+					$api.fp.world.mapping(
+						subject.Location.directory.exists.world()
+					),
+					{ toString: function() { return "exists()"; }}
+				);
 
 				verify(at).evaluate(exists).is(false);
 

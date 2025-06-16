@@ -830,18 +830,16 @@ namespace slime.$api.fp.world {
 
 	export namespace sensor {
 		export namespace api {
-			export type Maybe<T,S,E,R> = {
-				wo: (t: T) => Sensor<S,E,slime.$api.fp.Maybe<R>>
-				maybe: (t: T) => Partial<S,R>
-				simple: (t: T) => Mapping<S,R>
+			export type Maybe<S,E,R> = {
+				wo: Sensor<S,E,slime.$api.fp.Maybe<R>>
+				maybe: Partial<S,R>
+				simple: Mapping<S,R>
 			}
 		}
 
 		export interface Exports {
 			api: {
-				maybe: <T,S,E,R>(p: {
-					operation: (t: T) => Sensor<S,E,Maybe<R>>
-				}) => api.Maybe<T,S,E,R>
+				maybe: <S,E,R>(p: Sensor<S,E,Maybe<R>>) => api.Maybe<S,E,R>
 			}
 		}
 	}
@@ -1014,17 +1012,15 @@ namespace slime.$api.fp.world {
 
 	export namespace means {
 		export namespace api {
-			export type Simple<T,O,E> = {
-				wo: (t: T) => Means<O,E>
-				simple: (t: T) => slime.$api.fp.impure.Effect<O>
+			export type Simple<O,E> = {
+				wo: Means<O,E>
+				simple: slime.$api.fp.impure.Effect<O>
 			}
 		}
 
 		export interface Exports {
 			api: {
-				simple: <T,O,E>(p: {
-					operation: (t: T) => Means<O,E>
-				}) => api.Simple<T,O,E>
+				simple: <O,E>(p: Means<O,E>) => api.Simple<O,E>
 			}
 		}
 	}

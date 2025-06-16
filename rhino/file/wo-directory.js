@@ -127,8 +127,8 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Location } location
-		 * @param { slime.$api.fp.world.Order<ReturnType<slime.jrunscript.file.location.directory.Exports["require"]["wo"]>> } p
-		 * @returns { ReturnType<ReturnType<slime.jrunscript.file.location.directory.Exports["require"]["wo"]>> }
+		 * @param { slime.$api.fp.world.Order<ReturnType<slime.jrunscript.file.location.directory.Exports["require"]>["wo"]> } p
+		 * @returns { ReturnType<ReturnType<slime.jrunscript.file.location.directory.Exports["require"]>["wo"]> }
 		 */
 		var require_shared = function(location,p) {
 			return function(events) {
@@ -169,7 +169,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.file.Exports["Location"]["directory"]["require"]["wo"] } */
+		/** @type { (location: slime.jrunscript.file.Location) => ReturnType<slime.jrunscript.file.Exports["Location"]["directory"]["require"]>["wo"] } */
 		var require = function(location) {
 			return function(p) {
 				return require_shared(location,p);
@@ -284,8 +284,11 @@
 			relativeTo: directory.navigation.relativeTo,
 			/** @type { slime.jrunscript.file.location.Exports["directory"]["exists"] } */
 			exists: directoryExists,
-			require: $api.Object.compose(
-				$api.fp.world.Means.api.simple({ operation: require }),
+			require: Object.assign(
+				function(location) {
+					var means = require(location);
+					return $api.fp.world.Means.api.simple(means)
+				},
 				{
 					old: require_old
 				}

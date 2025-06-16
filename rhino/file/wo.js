@@ -80,7 +80,7 @@
 			}
 		}
 
-		/** @type { slime.jrunscript.file.location.file.Exports["write"]["open"]["wo"] } */
+		/** @type { (location: slime.jrunscript.file.Location) => ReturnType<slime.jrunscript.file.location.file.Exports["write"]["open"]>["wo"] } */
 		var Location_write_open_wo = function(location) {
 			return function(settings) {
 				return function(events) {
@@ -478,9 +478,9 @@
 						read: Location_file_read,
 						write: {
 							old: Location_file_write_old,
-							open: $api.fp.world.Sensor.api.maybe({
-								operation: Location_write_open_wo
-							})
+							open: function(location) {
+								return $api.fp.world.Sensor.api.maybe(Location_write_open_wo(location));
+							}
 						},
 						/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
 						remove: {

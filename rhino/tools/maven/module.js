@@ -435,7 +435,7 @@
 		}
 
 		var Installation = {
-			/** @type { slime.jrunscript.tools.maven.exports.Installation["exists"]["world"] } */
+			/** @type { slime.jrunscript.tools.maven.installation.Exports["exists"]["world"] } */
 			exists: $api.fp.world.api.single(
 				$api.fp.pipe(
 					$api.fp.property("argument"),
@@ -444,7 +444,7 @@
 					$context.library.file.Location.directory.exists.simple
 				)
 			),
-			/** @type { slime.jrunscript.tools.maven.exports.Installation["version"]["world"] } */
+			/** @type { slime.jrunscript.tools.maven.installation.Exports["version"]["world"] } */
 			version: $api.fp.world.api.single(
 				function(p) {
 					var program = $api.fp.now.map(
@@ -478,7 +478,7 @@
 					);
 				}
 			),
-			/** @type { slime.jrunscript.tools.maven.exports.Installation["require"]["world"] } */
+			/** @type { slime.jrunscript.tools.maven.installation.Exports["require"]["world"] } */
 			require: $api.fp.world.api.single(
 				function(p) {
 					var exists = $api.fp.world.Sensor.now({ sensor: Installation.exists, subject: p.argument.installation });
