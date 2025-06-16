@@ -35,7 +35,11 @@ namespace slime.jrunscript.file.archive {
 
 				//	TODO	we model jsh.file.Location.file.write.open.simple as a Mapping, but is it a good one? If you call it
 				// 			twice, you'll get two different things (which on the other hand will behave identically)
-				const openFile = $api.fp.now(jsh.file.Location.file.write.open.simple, $api.fp.Mapping.applyResultWith({ append: false, recursive: true }));
+				const openFile = $api.fp.pipe(
+					jsh.file.Location.file.write.open,
+					$api.fp.property("simple"),
+					$api.fp.Mapping.now({ append: false, recursive: true })
+				);
 
 				const readString = jsh.file.Location.Function({
 					directory: $api.fp.Mapping.from.value("(directory)"),

@@ -305,24 +305,19 @@
 					}
 				},
 				api: {
-					maybe: function(p) {
-						var toSensor = p.operation;
+					maybe: function(toSensor) {
 						return {
 							wo: toSensor,
-							maybe: $context.pipe(toSensor, world.Sensor.mapping()),
-							simple: function(t) {
-								var total = $context.now(
-									t,
-									toSensor,
-									world.Sensor.mapping(),
-									$context.Partial.impure.exception(
-										function(p) {
-											return new Error(String(p));
-										}
-									)
-								);
-								return total;
-							}
+							maybe: $context.now(toSensor, world.Sensor.mapping()),
+							simple: $context.now(
+								toSensor,
+								world.Sensor.mapping(),
+								$context.Partial.impure.exception(
+									function(p) {
+										return new Error(String(p));
+									}
+								)
+							)
 						}
 					}
 				}
@@ -388,8 +383,7 @@
 							}
 						},
 						api: {
-							simple: function(p) {
-								var toMeans = p.operation;
+							simple: function(toMeans) {
 								return {
 									wo: toMeans,
 									simple: $context.pipe(toMeans, world.Means.effect())

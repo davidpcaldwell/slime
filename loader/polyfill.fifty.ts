@@ -111,3 +111,28 @@ interface Array<T> {
     find<S extends T>(predicate: (this: void, value: T, index: number, obj: T[]) => value is S, thisArg?: any): S | undefined;
     find(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): T | undefined;
 }
+
+(
+    function(
+        fifty: slime.fifty.test.Kit
+    ) {
+        const console = (fifty.global.jsh) ? fifty.global.jsh.shell.console : fifty.global.window["console"].log;
+
+        fifty.tests.manual = {};
+
+        //  Rhino 1.8.0: natively supports all
+        //  Rhino 1.7.15: untested
+        //  Nashorn 15.6: lacks all
+
+        fifty.tests.manual.engine = function() {
+            console("Object.assign: " + Object.assign);
+            console("Object.fromEntries: " + Object.fromEntries);
+            console("Object.entries: " + Object.entries);
+            console("Object.values: " + Object.values);
+            console("String.prototype.endsWith: " + String.prototype.endsWith);
+            console("Array.prototype.find: " + Array.prototype.find);
+            console("Map: " + Map);
+        }
+    }
+//@ts-ignore
+)(fifty);

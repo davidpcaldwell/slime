@@ -13,7 +13,6 @@
 	function($api,jsh) {
 		jsh.script.cli.main(
 			$api.fp.pipe(
-				//	TODO	use fp.option.pathname
 				jsh.script.cli.fp.option.location({ longname: "maven:program" }),
 				jsh.script.cli.option.string({ longname: "archetype" }),
 				jsh.script.cli.fp.option.location({ longname: "project" }),
