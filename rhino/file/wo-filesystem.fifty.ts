@@ -4,8 +4,8 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.file.location {
-	export interface Filesystem {
+namespace slime.jrunscript.file.filesystem {
+	export interface Exports {
 		/**
 		 * Copies a filesystem node to a given location, creating the location's parent folders as necessary.
 		 */
@@ -48,7 +48,7 @@ namespace slime.jrunscript.file.internal.wo.filesystem {
 		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }>
 	}
 
-	export type Exports = slime.jrunscript.file.location.Filesystem;
+	export type Exports = slime.jrunscript.file.filesystem.Exports;
 
 	(
 		function(

@@ -793,6 +793,21 @@
 							if (peer.exists() && peer.isDirectory()) java.remove(peer);
 						});
 					}
+				},
+				java: {
+					codec: {
+						File: {
+							encode: function(p) {
+								//	possibly not the most direct way to create this object, but follows the conventions of the rest of the
+								//	implementation
+								return java.newPeer(p.pathname).getHostFile();
+							},
+							decode: function(_file) {
+								var _peer = java.java.adapt(_file);
+								return { pathname: java.peerToString(_peer) };
+							}
+						}
+					}
 				}
 			};
 

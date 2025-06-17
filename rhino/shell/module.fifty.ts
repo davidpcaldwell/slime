@@ -721,20 +721,15 @@ namespace slime.jrunscript.shell {
 				 */
 				vmarguments?: string[]
 			}
+		}
 
-			export interface Intention extends Omit<slime.jrunscript.shell.run.Intention,"command"> {
-				//	TODO	do we want a `jrunscript` property? Or a `command` property? See comment below, copied from
-				//			old.Invocation
+		export interface Intention extends Omit<slime.jrunscript.shell.run.Intention,"command"> {
+			jdk?: java.Jdk
 
-				//jrunscript?: slime.jrunscript.file.File
-				//	This argument serves mostly to allow the jsh launcher to specify the jrunscript to use, since in Graal
-				//	shells the JDK's jrunscript does not work and we need to use the bootstrapping JDK
+			vmarguments?: string[]
 
-				vmarguments?: string[]
-
-				properties?: {
-					[name: string]: string
-				}
+			properties?: {
+				[name: string]: string
 			}
 		}
 	}
@@ -745,8 +740,48 @@ namespace slime.jrunscript.shell {
 			 * Launches a JavaScript script on a Java virtual machine.
 			 */
 			old: slime.jrunscript.shell.oo.Run<jrunscript.old.Invocation>
+
+			Intention: {
+				shell: (intention: jrunscript.Intention) => slime.jrunscript.shell.run.Intention
+			}
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			//	Test actually seems to work but is not in the pipeline, so will commit and then work to improve
+			fifty.tests.manual.jrunscript = function() {
+				var lib = $api.fp.now(
+					fifty.jsh.file.relative("../../local/jsh/lib"),
+					jsh.file.Location.directory.base,
+					//	TODO	seems like there should be an FP API for this operation, pipeResultTo or something
+					function(f) { return $api.fp.pipe(f, $api.fp.property("pathname"), function(s) { return s + ".jar" }); }
+				);
+
+				var intention: jrunscript.Intention = {
+					properties: { foo: "bar" },
+					vmarguments: ["-Xmx128m"],
+					arguments: [
+						"-classpath", [lib("asm"), lib("asm-commons"), lib("asm-tree"), lib("asm-util"), lib("nashorn")].join(":"),
+						fifty.jsh.file.relative("../../rhino/jrunscript/api.js").pathname,
+						"jsh",
+						fifty.jsh.file.relative("../../jrunscript/jsh/test/jsh-data.jsh.js").pathname
+					]
+				};
+
+				var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+				var toRun = jsh.shell.jrunscript.Intention.shell(intention);
+				var exit = run( toRun );
+				verify(exit).status.is(0);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
 		/**

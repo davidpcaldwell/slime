@@ -29,7 +29,23 @@ namespace slime.jrunscript.file.internal.oo {
 	//@ts-ignore
 	)(fifty);
 
-	export type Exports = Pick<slime.jrunscript.file.Exports,"filesystems"|"filesystem"|"Pathname"|"navigate"|"Searchpath"|"Loader"|"zip"|"unzip"|"list"|"state"|"action"|"object"|"Streams"|"java">
+	export type Exports = Pick<
+		slime.jrunscript.file.Exports,
+		"filesystems"
+		| "filesystem"
+		| "Pathname"
+		| "navigate"
+		| "Searchpath"
+		| "Loader"
+		| "zip"
+		| "unzip"
+		| "list"
+		| "state"
+		| "action"
+		| "object"
+		| "Streams"
+		| "java"
+	>
 
 	(
 		function(

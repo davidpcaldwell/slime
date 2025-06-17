@@ -367,6 +367,14 @@
 					},
 					temporary: function(filesystem) {
 						return filesystemFromSpiTemporary(filesystem);
+					},
+					java: {
+						File: function(_file) {
+							return {
+								filesystem: $context.filesystem.os,
+								pathname: $context.filesystem.os.java.codec.File.decode(_file).pathname
+							}
+						}
 					}
 				},
 				relative: $api.deprecate(parts.directory.relativePath),
@@ -381,7 +389,10 @@
 						pathname: canonicalized.value
 					}
 				},
+				Function: Location_Function,
 				posix: {
+					//	TODO	this implementation assumes the filesystem supports POSIX; all of those .posix properties below are
+					//			actually optional
 					attributes: (function() {
 						/** @param { slime.jrunscript.file.Location } location */
 						var get = function(location) {
@@ -464,7 +475,31 @@
 						}
 					})()
 				},
-				Function: Location_Function,
+				java: {
+					File: (
+						function() {
+							/** @type { (location: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<slime.jrunscript.native.java.io.File> } */
+							var maybe = function(location) {
+								if (location.filesystem.java) return $api.fp.Maybe.from.some(location.filesystem.java.codec.File.encode(location));
+								return $api.fp.Maybe.from.nothing();
+							}
+							return {
+								maybe: maybe,
+								simple: $api.fp.now(
+									maybe,
+									$api.fp.Partial.impure.exception(
+										function(location) {
+											throw new Error(
+												location + " is not from a filesystem that can map pathnames to" +
+												" java.io.File objects."
+											);
+										}
+									)
+								)
+							}
+						}
+					)()
+				},
 				file: (function() {
 					return {
 						exists: Location.file.exists,

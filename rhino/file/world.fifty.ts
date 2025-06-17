@@ -86,6 +86,16 @@ namespace slime.jrunscript.file {
 			remove: slime.$api.fp.world.Means<{
 				pathname: string
 			},void>
+
+			java?: {
+				codec: {
+					/**
+					 * If this filesystem represents a filesystem consisting of actual Java files, this operation supports the
+					 * conversion of pathname strings to native `java.io.File` objects.
+					 */
+					File: slime.Codec<{ pathname: string },slime.jrunscript.native.java.io.File>
+				}
+			}
 		}
 
 		export interface Filesystem {

@@ -485,6 +485,39 @@
 						}
 					)
 				);
+			},
+			Intention: {
+				shell: function(j) {
+					//	TODO	at one point we would check to see if Rhino was available and if so, invoke the Rhino executable
+					//			JAR using Java instead of using jrunscript. That's been disabled for a while but we could consider
+					//			bringing it back.
+					//
+					//			That's one of the reasons the VM arguments are split out; they need to be prefixed with `-J` in
+					//			`jrunscript` but not for the `java` launcher.
+
+					var jdk = (j.jdk) ? j.jdk : $exports.java.Jdk.from.javaHome();
+					var jdkBase = $context.api.file.Location.from.os(jdk.base);
+					var _jdkBase = $context.api.file.Location.java.File.simple(jdkBase);
+					var jdkInstall = $context.api.bootstrap.java.Install(_jdkBase);
+					var _jrunscript = jdkInstall.jrunscript;
+					var jrunscript = $context.api.file.Location.from.java.File(_jrunscript);
+					return {
+						command: jrunscript.pathname,
+						//	TODO	use .flat when available
+						arguments: $api.Array.build(function(rv) {
+							if (j.vmarguments) j.vmarguments.forEach(function(arg) { rv.push("-J" + arg ) });
+							if (j.properties) {
+								for (var x in j.properties) {
+									rv.push("-D" + x + "=" + j.properties[x]);
+								}
+							}
+							if (j.arguments) j.arguments.forEach(function(arg) { rv.push(arg); })
+						}),
+						environment: j.environment,
+						directory: j.directory,
+						stdio: j.stdio
+					}
+				}
 			}
 		};
 
