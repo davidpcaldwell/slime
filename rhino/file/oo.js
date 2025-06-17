@@ -25,22 +25,23 @@
 			Searchpath: {}
 		};
 
-		var file = code.file({
-			//	Only use of $context.pathext in the module
-			library: {
-				java: $context.api.java
-			},
-			Streams: $context.api.io.Streams,
-			Resource: $context.api.io.Resource,
-			filesystems: $context.library.world.filesystems,
-			pathext: $context.pathext
-		});
-		file.Searchpath.prototype = prototypes.Searchpath;
 
 		//	Object-oriented filesystem implementations.
-
-		var filesystems = (
+		var api = (
+			/** @returns { { file: Pick<slime.jrunscript.file.internal.file.Exports,"isPathname"|"Pathname"|"list">, filesystems: slime.jrunscript.file.Exports["filesystems"] } } */
 			function() {
+				var file = code.file({
+					library: {
+						java: $context.api.java
+					},
+					Streams: $context.api.io.Streams,
+					Resource: $context.api.io.Resource,
+					filesystems: $context.library.world.filesystems,
+					//	Only use of $context.pathext in the module
+					pathext: $context.pathext
+				});
+				file.Searchpath.prototype = prototypes.Searchpath;
+
 				var os = code.filesystem({
 					Pathname: file.Pathname,
 					Searchpath: file.Searchpath
@@ -72,9 +73,11 @@
 					}) : void(0)
 				};
 
-				return filesystems;
+				return { file: file, filesystems: filesystems };
 			}
 		)();
+		var file = api.file;
+		var filesystems = api.filesystems;
 
 		//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
 		var filesystem = (filesystems.cygwin) ? filesystems.cygwin : filesystems.os;

@@ -13,7 +13,7 @@ namespace slime.jrunscript.file {
 	export interface Exports {
 		Location: location.Exports
 
-		Filesystem: location.Filesystem
+		Filesystem: filesystem.Exports
 
 		os: location.os
 	}
@@ -315,6 +315,23 @@ namespace slime.jrunscript.file {
 			}
 		//@ts-ignore
 		)(Packages,fifty);
+	}
+
+	export namespace location {
+		export interface From {
+			java: {
+				File: (_file: slime.jrunscript.native.java.io.File) => Location
+			}
+		}
+
+		export interface Exports {
+			java?: {
+				File: {
+					simple: (location: Location) => slime.jrunscript.native.java.io.File
+					maybe: (location: Location) => slime.$api.fp.Maybe<slime.jrunscript.native.java.io.File>
+				}
+			}
+		}
 	}
 
 	export namespace location {
@@ -657,21 +674,23 @@ namespace slime.jrunscript.file {
 	}
 
 	export namespace location {
-		export interface Exports {
-			from: {
-				os: (pathname: string) => slime.jrunscript.file.Location
+		export interface From {
+			os: (pathname: string) => slime.jrunscript.file.Location
 
-				temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Sensor<
-					{
-						parent?: string
-						prefix?: string
-						suffix?: string
-						directory: boolean
-					},
-					void,
-					slime.jrunscript.file.Location
-				>
-			}
+			temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Sensor<
+				{
+					parent?: string
+					prefix?: string
+					suffix?: string
+					directory: boolean
+				},
+				void,
+				slime.jrunscript.file.Location
+			>
+		}
+
+		export interface Exports {
+			from: From
 		}
 
 		(
@@ -812,7 +831,7 @@ namespace slime.jrunscript.file.internal.wo {
 
 	export interface Exports {
 		Location: location.Exports
-		Filesystem: location.Filesystem
+		Filesystem: filesystem.Exports
 		os: location.os
 	}
 

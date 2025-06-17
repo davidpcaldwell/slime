@@ -181,10 +181,6 @@ public abstract class Filesystem {
 	private static class NativeFilesystem extends Filesystem {
 		private FileSystem nio = java.nio.file.FileSystems.getDefault();
 
-		protected Node createNode(String path) throws IOException {
-			return new NodeImpl( new File(path) );
-		}
-
 		protected String getPathnameSeparatorImpl() {
 			return File.separator;
 		}
@@ -201,6 +197,10 @@ public abstract class Filesystem {
 			return new NodeImpl(file);
 		}
 
+		protected Node createNode(String path) throws IOException {
+			return createNode(new File(path));
+		}
+
 		public final boolean isPosix() {
 			Set<String> views = nio.supportedFileAttributeViews();
 			//	TODO	this does not seem robust, but seems to work
@@ -210,6 +210,8 @@ public abstract class Filesystem {
 		private static class NodeImpl extends Node {
 			private File file;
 
+			//	TODO	not totally sure why this is not just file.getCanonicalFile(); it is not Java API versions because that has
+			//			been around since 1.2
 			private File canonicalize(File file) {
 				String absolute = file.getAbsolutePath();
 				String[] tokens = absolute.split("\\" + File.separator);
