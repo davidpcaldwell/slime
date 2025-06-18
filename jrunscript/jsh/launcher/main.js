@@ -11,7 +11,7 @@
 (
 	/**
 	 *
-	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: slime.jsh.internal.launcher.Slime, jsh: any },{}> }
+	 * @this { slime.jsh.internal.launcher.Global }
 	 */
 	function() {
 		var Java = this.Java;
@@ -109,7 +109,7 @@
 		//	If we have a sibling named jsh.jar, we are a built shell
 		var shell = (function() {
 			if ($api.script.resolve("jsh.jar")) {
-				return new $api.jsh.Built($api.script.file.getParentFile());
+				return $api.jsh.Built($api.script.file.getParentFile());
 			} else {
 				$api.slime.settings["default"](
 					"jsh.shell.lib",
@@ -153,7 +153,7 @@
 					}
 				})();
 
-				return new $api.jsh.Unbuilt({ lib: lib, rhino: rhino, nashorn: nashorn });
+				return $api.jsh.Unbuilt({ lib: lib, rhino: rhino, nashorn: nashorn });
 			}
 		})();
 		$api.debug("shell detected = " + shell);
@@ -399,7 +399,7 @@
 		$api.slime.settings.sendPropertiesTo(command);
 
 		var compilerMajorVersion = (jshLoaderJavaMajorVersion < jshLauncherJavaMajorVersion) ? jshLoaderJavaMajorVersion : jshLauncherJavaMajorVersion;
-		var _shellUrls = shell.shellClasspath({ source: compilerMajorVersion, target: compilerMajorVersion });
+		var _shellUrls = shell.shellClasspath({ source: String(compilerMajorVersion), target: String(compilerMajorVersion) });
 		$api.debug("_shellUrls = " + _shellUrls);
 		for (var i=0; i<_shellUrls.length; i++) {
 			_urls.push(_shellUrls[i]);

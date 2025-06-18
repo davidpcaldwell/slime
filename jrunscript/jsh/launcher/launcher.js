@@ -235,7 +235,6 @@
 
 			/**
 			 * @type { slime.jsh.internal.launcher.Jsh["Unbuilt"] }
-			 * @param { ConstructorParameters<slime.jsh.internal.launcher.Jsh["Unbuilt"]>[0] } p
 			 */
 			$$api.jsh.Unbuilt = function(p) {
 				if (!p) throw new TypeError("Required: arguments[0]");
@@ -243,37 +242,34 @@
 				var File = Packages.java.io.File;
 
 				//	TODO	p.rhino argument is supplied by jsh/etc/build.jsh.js and is dubious
-				this.toString = function() {
-					return "Unbuilt: src=" + $$api.slime.src + " rhino=" + this.rhino + " nashorn=" + this.nashorn;
+				var toString = function() {
+					return "Unbuilt: src=" + $$api.slime.src + " rhino=" + rhino + " nashorn=" + nashorn;
 				}
 
 				var rhino = (p.rhino) ? p.rhino : null;
 
-				this.rhino = rhino;
-
 				var nashorn = (p.nashorn) ? p.nashorn : null;
-
-				this.nashorn = nashorn;
 
 				var lib = p.lib;
 
+				var graal = null;
 				if (lib && lib.file && new File(lib.file, "graal").exists()) {
-					this.graal = new File(lib.file, "graal");
+					graal = new File(lib.file, "graal");
 				}
 
-				this.profiler = (function() {
+				var profiler = (function() {
 					if ($$api.slime.settings.get("jsh.shell.profiler")) {
 						return new Packages.java.io.File($$api.slime.settings.get("jsh.shell.profiler"));
 					}
 				})();
 
 				//	As of bbc58b79a49b6b5ae2b56c48486e85cbd1e31eb5, used by jsh/etc/build.jsh.js, as well as shellClasspath method below
-				this.compileLoader = function(p) {
+				var compileLoader = function(p) {
 					var isGraalCompatible = Boolean(p.source >= 17 && p.target >= 17)
 					var classpath = new Classpath();
-					if (this.rhino && this.rhino.length) classpath.append(new Classpath(this.rhino));
-					if (this.graal && isGraalCompatible) {
-						var _polyglotLibraries = new Packages.java.io.File(this.graal, "lib/polyglot").listFiles();
+					if (rhino && rhino.length) classpath.append(new Classpath(rhino));
+					if (graal && isGraalCompatible) {
+						var _polyglotLibraries = new Packages.java.io.File(graal, "lib/polyglot").listFiles();
 						var polyglotLibraries = [];
 						for (var i=0; i<_polyglotLibraries.length; i++) {
 							polyglotLibraries.push(_polyglotLibraries[i]);
@@ -282,11 +278,11 @@
 					}
 					if (classpath._urls.length == 0) classpath = null;
 
-					var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
+					//var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
 					// TODO: below will probably eventually be a classpath, but it may be more complex if graal javac is required to compile
 					// graal classes
 					// TODO: should we be compiling classes for engines we are not using?
-					var graal = this.graal;
+					//var graal = this.graal;
 					if (!p) p = {};
 					if (!p.to) p.to = $$api.io.tmpdir();
 					var toCompile = $$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/java"));
@@ -314,7 +310,8 @@
 					return p.to;
 				};
 
-				this.shellClasspath = function(p) {
+				/** @param { { source: string, target: string } } [p] */
+				var shellClasspath = function(p) {
 					var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
 
 					if (!$$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
@@ -386,37 +383,61 @@
 					$$api.debug("Returning shellClasspath: " + LOADER_CLASSES.toURI().toURL());
 					return [LOADER_CLASSES.toURI().toURL()];
 				};
+
+				return {
+					toString: toString,
+					rhino: rhino,
+					nashorn: nashorn,
+					graal: graal,
+					profiler: profiler,
+					shellClasspath: shellClasspath,
+					compileLoader: compileLoader
+				};
 			};
 
+			/**
+			 * @type { slime.jsh.internal.launcher.Jsh["Built"] }
+			 */
 			$$api.jsh.Built = function(home) {
-				this.toString = function() {
+				var toString = function() {
 					var rhino = (new Packages.java.io.File(home, "lib/js.jar").exists()) ? new Packages.java.io.File(home, "lib/js.jar") : void(0);
 					return "Built: " + home + " rhino=" + rhino;
 				}
 
-				this.home = home;
-
+				var rhino = null;
 				if (new Packages.java.io.File(home, "lib/js.jar").exists()) {
-					this.rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
+					rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
 				}
 
+				var nashorn = null;
 				if (new Packages.java.io.File(home, "lib/nashorn.jar").exists()) {
-					this.nashorn = $$api.nashorn.dependencies.names.concat(["nashorn"]).map(function(name) {
+					nashorn = $$api.nashorn.dependencies.names.concat(["nashorn"]).map(function(name) {
 						return new Packages.java.io.File(home, "lib/" + name + ".jar").toURI().toURL()
 					});
 				}
 
 				//	TODO	should we allow Contents/Home here?
+				var graal = null;
 				if (new Packages.java.io.File(home, "lib/graal").exists()) {
-					this.graal = new Packages.java.io.File(home, "lib/graal");
+					graal = new Packages.java.io.File(home, "lib/graal");
 				}
 
+				var profiler = null;
 				if (new Packages.java.io.File(home, "tools/profiler.jar").exists()) {
-					this.profiler = new Packages.java.io.File(home, "tools/profiler.jar");
+					profiler = new Packages.java.io.File(home, "tools/profiler.jar");
 				}
 
-				this.shellClasspath = function() {
+				var shellClasspath = function() {
 					return [new Packages.java.io.File(home, "lib/jsh.jar").toURI().toURL()];
+				}
+
+				return {
+					toString: toString,
+					rhino: rhino,
+					nashorn: nashorn,
+					graal: graal,
+					profiler: profiler,
+					shellClasspath: shellClasspath
 				}
 			};
 
