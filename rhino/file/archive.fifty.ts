@@ -33,21 +33,26 @@ namespace slime.jrunscript.file.archive {
 			fifty.tests.exports.encode = function() {
 				const { io } = ($api as slime.$api.jrunscript.Global).jrunscript;
 
-				type TypedFunction<T extends any[], R> = (...args: T) => R
+				//	TODO	generalize the next three constructs to slime.external.lib.es5.Function type, and then implement in
+				// 			$api.fp (perhaps as Function.invoke)
 
-				type Invocation<F extends TypedFunction<any,any>> = (
+				type TypedFunction<T,P extends any[], R> = (this: T, ...args: P) => R
+
+				type Invocation<F extends TypedFunction<any,any,any>> = (
 					F extends TypedFunction<
 						infer FT,
+						infer FP,
 						infer FR
 					>
 					? {
-						function: TypedFunction<FT,FR>,
-						arguments: FT
+						target: FT,
+						function: TypedFunction<FT,FP,FR>,
+						arguments: FP
 					}
 					: never
 				);
 
-				const invoke = function<T extends any[],R>(p: Invocation<TypedFunction<T,R>>) {
+				const invoke = function<T,P extends any[],R>(p: Invocation<TypedFunction<T,P,R>>) {
 					return p.function.apply(null, p.arguments) as R
 				}
 
@@ -66,28 +71,23 @@ namespace slime.jrunscript.file.archive {
 
 				var base = $api.fp.now(fifty.jsh.file.temporary.directory(), jsh.file.Location.directory.base);
 
-				const write2 = $api.fp.pipe(
+				const write = $api.fp.pipe(
 					$api.fp.identity as slime.$api.fp.Identity<{ path: string, content: string}>,
-					function(p) { return { base: base(p.path), content: p.content } },
-					function(p) { return { stream: openFile(p.base), content: p.content }},
-					function(p) { return { pipeToFile: p.stream.pipe.simple, content: p.content }},
-					function(p) { return { function: p.pipeToFile, arguments: [io.InputStream.string.default(p.content)] }},
-					invoke
+					$api.fp.Mapping.properties({
+						effect: $api.fp.pipe(
+							$api.fp.property("path"),
+							base,
+							openFile,
+							$api.fp.property("pipe"),
+							$api.fp.property("simple")
+						),
+						argument: $api.fp.pipe(
+							$api.fp.property("content"),
+							io.InputStream.string.default
+						)
+					}),
+					$api.fp.impure.Effect.invoke
 				);
-
-				//	also works
-				const write1 = function(p: { path: string, content: string }): void {
-					$api.fp.now(
-						p.path,
-						base,
-						openFile,
-						$api.fp.property("pipe"),
-						$api.fp.property("simple"),
-						$api.fp.impure.Effect.now(io.InputStream.string.default(p.content))
-					)
-				};
-
-				const write = write2;
 
 				write({ path: "a", content: "aa" });
 				write({ path: "b/c", content: "cc" });

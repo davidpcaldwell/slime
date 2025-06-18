@@ -67,7 +67,7 @@
 						return rv;
 					}
 				},
-				invocation: function(i) {
+				invoke: function(i) {
 					return i.mapping(i.argument);
 				}
 			}

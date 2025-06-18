@@ -183,7 +183,7 @@
 					$api.fp.Partial.impure.exception( function(p) { return new Error("Could not obtain last modified date for " + p.pathname); })
 				)
 			}),
-			$api.fp.Mapping.invocation
+			$api.fp.Mapping.invoke
 		)
 
 		var Location = {

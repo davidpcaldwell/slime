@@ -757,8 +757,8 @@ namespace slime.$api.fp {
 
 	export type Partial<P,R> = (p: P) => Maybe<R>
 
-	export namespace exports {
-		export interface Partials {
+	export namespace partial {
+		export interface Exports {
 		}
 
 		(
@@ -772,11 +772,11 @@ namespace slime.$api.fp {
 	}
 
 	export interface Exports {
-		Partial: exports.Partials
+		Partial: partial.Exports
 	}
 
-	export namespace exports {
-		export interface Partials {
+	export namespace partial {
+		export interface Exports {
 			from: {
 				/**
 				 * Creates a partial function from a "loose" function, where "loose" is defined as a JavaScript function that might
@@ -829,8 +829,8 @@ namespace slime.$api.fp {
 		then: Mapping<N,R>
 	}
 
-	export namespace exports {
-		export interface Partials {
+	export namespace partial {
+		export interface Exports {
 			match: {
 				<P,N extends P,R>(p: TypeMatch<P,N,R>): fp.Partial<P,R>
 				<P,R>(p: Match<P,R>): fp.Partial<P,R>
@@ -872,8 +872,8 @@ namespace slime.$api.fp {
 		)(fifty);
 	}
 
-	export namespace exports {
-		export interface Partials {
+	export namespace partial {
+		export interface Exports {
 			else: <P,R>(p: {
 				partial: fp.Partial<P,R>
 				else: fp.Mapping<P,R>
@@ -913,8 +913,8 @@ namespace slime.$api.fp {
 		)(fifty);
 	}
 
-	export namespace exports {
-		export interface Partials {
+	export namespace partial {
+		export interface Exports {
 			impure: {
 				old: {
 					/**
