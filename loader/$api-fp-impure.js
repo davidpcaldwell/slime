@@ -160,6 +160,9 @@
 					return function(effect) {
 						effect(p);
 					}
+				},
+				invoke: function(p) {
+					p.effect(p.argument);
 				}
 			},
 			Output: {

@@ -453,8 +453,8 @@ namespace slime.$api.fp.impure {
 	export namespace effect {
 		export interface Exports {
 			process: <P>(p: P) => (f: Effect<P>) => Process
-
 			now: <P>(p: P) => (f: Effect<P>) => void
+			invoke: <P>(p: { effect: Effect<P>, argument: P }) => void
 		}
 	}
 

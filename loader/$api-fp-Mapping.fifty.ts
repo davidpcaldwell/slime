@@ -119,12 +119,13 @@ namespace slime.$api.fp.mapping {
 
 	export interface Exports {
 		/**
-		 * @deprecated Can be replaced with `now(argument)(mapping)`.
-		 *
 		 * Given a Mapping invocation (consisting of a mapping and an argument), return the result of the mapping for the
 		 * argument.
+		 *
+		 * This function can be useful when running a function pipeline that is computing a function to execute and an argument
+		 * to that function separately in order to invoke the function with the argument.
 		 */
-		invocation: <P,R>(p: {
+		invoke: <P,R>(p: {
 			mapping: slime.$api.fp.Mapping<P,R>
 			argument: P
 		}) => R
