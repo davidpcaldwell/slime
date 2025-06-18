@@ -6,11 +6,17 @@
 
 namespace slime.jsh.internal.launcher {
 	export interface Installation {
+		toString: () => string
+
+		/**
+		 * The classpath from which Rhino can be loaded, or `null`/`undefined` if it is not present.
+		 */
 		rhino: slime.jrunscript.native.java.net.URL[]
+
 		nashorn: slime.jrunscript.native.java.net.URL[]
 		graal?: slime.jrunscript.native.java.io.File
 		profiler: slime.jrunscript.native.java.io.File
-		shellClasspath: () => slime.jrunscript.native.java.net.URL[]
+		shellClasspath: (p?: { source: string, target: string }) => slime.jrunscript.native.java.net.URL[]
 	}
 
 	export interface Engine {
@@ -34,7 +40,7 @@ namespace slime.jsh.internal.launcher {
 		Packaged: any
 		Classpath: any
 
-		Unbuilt: new (p: {
+		Unbuilt: (p: {
 			lib: {
 				url?: string
 				file?: slime.jrunscript.native.java.io.File
@@ -45,7 +51,7 @@ namespace slime.jsh.internal.launcher {
 			compileLoader: any
 		}
 
-		Built: new (p: slime.jrunscript.native.java.io.File) => Installation
+		Built: (p: slime.jrunscript.native.java.io.File) => Installation
 	}
 
 	interface Additions {
