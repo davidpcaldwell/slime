@@ -1718,7 +1718,7 @@ namespace slime.$api.fp {
 		 *
 		 * @returns A function that implements the algorithm described above.
 		 */
-		evaluator: (...args: (slime.external.lib.es5.Function | evaluator.Cache)[] ) => slime.external.lib.es5.Function
+		evaluator: <T,P extends any[],R>(...args: (slime.external.lib.es5.Function<T,P,R> | evaluator.Cache)[] ) => slime.external.lib.es5.Function<T,P,R>
 	}
 
 	(

@@ -38,7 +38,7 @@ namespace slime.external.lib.rename.typescript {
 }
 
 namespace slime.external.lib.es5 {
-	export type Function = (...args: any) => any
+	export type Function<T,P extends any[],R> = (this: T, ...args: P) => R
 
 	/**
 	 * For some reason, TypeScript declares utility types like `Parameters` and `ReturnType` to refer to this, rather than its

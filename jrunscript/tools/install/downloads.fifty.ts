@@ -52,11 +52,13 @@ namespace slime.jrunscript.tools.install.downloads {
 			const { $api, jsh } = fifty.global;
 			const { subject } = test;
 
-			type Invocation<F extends slime.external.lib.es5.Function> = {
-				target: ThisParameterType<F>
-				arguments: Parameters<F>
-				returned: ReturnType<F>
-			};
+			type Invocation<F extends slime.external.lib.es5.Function<any,any,any>> = (
+				F extends slime.external.lib.es5.Function<infer T, infer P, infer R> ? {
+					target: T
+					arguments: P
+					returned: R
+				} : never
+			)
 
 			fifty.tests.suite = function() {
 				var tmp = fifty.jsh.file.temporary.location();
@@ -71,14 +73,14 @@ namespace slime.jrunscript.tools.install.downloads {
 				};
 
 				//	TODO	add to Fifty proper
-				var spy = function<F extends slime.external.lib.es5.Function>(f: F): { invoke: F, recorded: Invocation<F>[] } {
+				var spy = function<F extends slime.external.lib.es5.Function<any,any,any>>(f: F): { invoke: F, recorded: Invocation<F>[] } {
 					var recorded: Invocation<F>[] = [];
 					return {
 						invoke: function() {
 							const target: Invocation<F>["target"] = this;
 							const args: Invocation<F>["arguments"] = Array.prototype.slice.call(arguments);
 							var rv = f.apply(this, arguments);
-							recorded.push({ target, arguments: args, returned: rv });
+							recorded.push({ target, arguments: args, returned: rv } as Invocation<F>);
 							return rv;
 						} as F,
 						recorded: recorded

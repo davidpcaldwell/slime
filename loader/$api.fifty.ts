@@ -46,7 +46,7 @@ namespace slime.$api {
 
 	export interface Global {
 		debug: {
-			disableBreakOnExceptionsFor: <T extends slime.external.lib.es5.Function>(f: T) => T
+			disableBreakOnExceptionsFor: <T,P extends any[],R,F extends slime.external.lib.es5.Function<T,P,R>>(f: F) => F
 		}
 
 		/**
