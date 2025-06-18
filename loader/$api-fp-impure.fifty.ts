@@ -359,22 +359,31 @@ namespace slime.$api.fp.impure {
 				const { verify } = fifty;
 				const { $api } = fifty.global;
 
-				type Invocation<F extends slime.external.lib.es5.Function> = {
-					target: ThisParameterType<F>
-					arguments: Parameters<F>
-					returned: ReturnType<F>
-				};
+				type Invocation<F extends slime.external.lib.es5.Function<any,any,any>> = (
+					F extends slime.external.lib.es5.Function<
+						infer T,
+						infer P,
+						infer R
+					> ? {
+						target: T
+						arguments: P
+						returned: R
+						// target: ThisParameterType<F>
+						// arguments: Parameters<F>
+						// returned: ReturnType<F>
+					} : never
+				);
 
 				fifty.tests.exports.impure.Input.cache = function() {
 					//	TODO	add to Fifty proper
-					var spy = function<F extends slime.external.lib.es5.Function>(f: F): { invoke: F, recorded: Invocation<F>[] } {
+					var spy = function<T,P extends any[],R,F extends slime.external.lib.es5.Function<T,P,R>>(f: F): { invoke: F, recorded: Invocation<F>[] } {
 						var recorded: Invocation<F>[] = [];
 						return {
 							invoke: function() {
 								const target: Invocation<F>["target"] = this;
 								const args: Invocation<F>["arguments"] = Array.prototype.slice.call(arguments);
-								var rv = f.apply(this, arguments);
-								recorded.push({ target, arguments: args, returned: rv });
+								var rv = f.apply(this, arguments) as Invocation<F>["returned"];
+								recorded.push({ target, arguments: args, returned: rv } as Invocation<F>);
 								return rv;
 							} as F,
 							recorded: recorded
