@@ -157,6 +157,7 @@
 
 						(function() {
 							//	Obviously using an XML parser would be beneficial here if this begins to get more complex
+							//	TODO	re-write this; we have an XML parser and we are getting spurious failures here
 
 							var xml = SLIME.getFile("rhino/http/servlet/tools/web.xml").read(String);
 							if (!p.servlet) throw new TypeError("Required: p.servlet indicating webapp path of servlet to use.");
@@ -171,8 +172,14 @@
 									nextInitParamIndex = i+1;
 								}
 							}
+							jsh.shell.console("Rhino? " + Boolean(jsh.internal.bootstrap.rhino.running()));
+							if (jsh.internal.bootstrap.rhino.running()) {
+								jsh.shell.console("Rhino version " + jsh.internal.bootstrap.rhino.running().getImplementationVersion());
+							}
+							jsh.shell.console("nextInitParamIndex = " + nextInitParamIndex);
 							var initParamLines = [];
 							for (var x in p.parameters) {
+								jsh.shell.console("init param " + x + " " + p.parameters[x]);
 								initParamLines = initParamLines.concat([
 									"\t\t<init-param>",
 									"\t\t\t<param-name>" + x + "</param-name>",
@@ -180,10 +187,17 @@
 									"\t\t</init-param>"
 								]);
 							}
+							jsh.shell.console("initParamLines = " + initParamLines.join("\n"));
+							//	TODO	this code is intermittently failing, leaving the array unmodified at times
 							var spliceArgs = [nextInitParamIndex,0].concat(initParamLines);
+							jsh.shell.console("lines = " + lines);
+							jsh.shell.console("spliceArgs = " + spliceArgs);
 							lines.splice.apply(lines,spliceArgs);
+							jsh.shell.console("lines = " + lines);
 							xml = lines.join("\n");
 
+							jsh.shell.console("Writing web.xml to " + WEBAPP + " with parameters: " + JSON.stringify(p.parameters));
+							jsh.shell.console(xml);
 							WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
 						})();
 
