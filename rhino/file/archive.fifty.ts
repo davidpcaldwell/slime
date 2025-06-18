@@ -33,6 +33,24 @@ namespace slime.jrunscript.file.archive {
 			fifty.tests.exports.encode = function() {
 				const { io } = ($api as slime.$api.jrunscript.Global).jrunscript;
 
+				type TypedFunction<T extends any[], R> = (...args: T) => R
+
+				type Invocation<F extends TypedFunction<any,any>> = (
+					F extends TypedFunction<
+						infer FT,
+						infer FR
+					>
+					? {
+						function: TypedFunction<FT,FR>,
+						arguments: FT
+					}
+					: never
+				);
+
+				const invoke = function<T extends any[],R>(p: Invocation<TypedFunction<T,R>>) {
+					return p.function.apply(null, p.arguments) as R
+				}
+
 				//	TODO	we model jsh.file.Location.file.write.open.simple as a Mapping, but is it a good one? If you call it
 				// 			twice, you'll get two different things (which on the other hand will behave identically)
 				const openFile = $api.fp.pipe(
@@ -48,7 +66,17 @@ namespace slime.jrunscript.file.archive {
 
 				var base = $api.fp.now(fifty.jsh.file.temporary.directory(), jsh.file.Location.directory.base);
 
-				const write = function(p: { path: string, content: string }): void {
+				const write2 = $api.fp.pipe(
+					$api.fp.identity as slime.$api.fp.Identity<{ path: string, content: string}>,
+					function(p) { return { base: base(p.path), content: p.content } },
+					function(p) { return { stream: openFile(p.base), content: p.content }},
+					function(p) { return { pipeToFile: p.stream.pipe.simple, content: p.content }},
+					function(p) { return { function: p.pipeToFile, arguments: [io.InputStream.string.default(p.content)] }},
+					invoke
+				);
+
+				//	also works
+				const write1 = function(p: { path: string, content: string }): void {
 					$api.fp.now(
 						p.path,
 						base,
@@ -58,6 +86,8 @@ namespace slime.jrunscript.file.archive {
 						$api.fp.impure.Effect.now(io.InputStream.string.default(p.content))
 					)
 				};
+
+				const write = write2;
 
 				write({ path: "a", content: "aa" });
 				write({ path: "b/c", content: "cc" });
