@@ -333,7 +333,7 @@
 					all[name].value = value;
 				}
 
-				this["default"] = function(name,value) {
+				this.default = function(name,value) {
 					if (typeof(value) == "undefined") return;
 					if (typeof(value) != "function") {
 						value = (function(rv) {
@@ -342,7 +342,7 @@
 							}
 						})(value);
 					}
-					all[name]["default"] = value;
+					all[name].default = value;
 				};
 
 				var get = function(name) {
