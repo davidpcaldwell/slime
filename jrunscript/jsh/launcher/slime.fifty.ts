@@ -53,6 +53,7 @@ namespace slime.jsh.internal.launcher {
 			 */
 			get: (name: string) => string
 			set: (name: string, value: any) => void
+			default: (name: any, value: any) => void
 
 			getContainerArguments: any
 			sendPropertiesTo: any

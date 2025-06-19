@@ -99,10 +99,10 @@
 
 		//	If Rhino location not specified, and we are running this script inside Rhino, set that to be the default Rhino location for the
 		//	shell
-		$api.slime.settings["default"]("jsh.engine.rhino.classpath", $api.rhino.classpath);
+		$api.slime.settings.default("jsh.engine.rhino.classpath", $api.rhino.classpath);
 
 		//	If SLIME source location not specified, and we can determine it, supply it to the shell
-		$api.slime.settings["default"]("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
+		$api.slime.settings.default("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
 
 		$api.script.resolve("launcher.js").load();
 
@@ -111,7 +111,7 @@
 			if ($api.script.resolve("jsh.jar")) {
 				return $api.jsh.Built($api.script.file.getParentFile());
 			} else {
-				$api.slime.settings["default"](
+				$api.slime.settings.default(
 					"jsh.shell.lib",
 					$api.slime.src.getPath("local/jsh/lib")
 				);
@@ -193,7 +193,7 @@
 			Packages.java.lang.System.err.println("No compatible JavaScript engine found.");
 			Packages.java.lang.System.exit(1);
 		}
-		$api.slime.settings["default"]("jsh.engine", defaultEngine);
+		$api.slime.settings.default("jsh.engine", defaultEngine);
 
 		if ($api.slime.settings.get("jsh.engine") == "graal") {
 			$api.debug("Engine is Graal.js");
