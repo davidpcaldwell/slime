@@ -450,7 +450,7 @@
 			},
 			Node: $api.Object.compose(
 				source.Node,
-				/** @type { Pick<slime.runtime.document.exports.Node,"isElementNamed"> } */({
+				/** @type { Pick<slime.runtime.document.node.Exports,"isElementNamed"> } */({
 					isElementNamed: function(name) {
 						return $api.fp.Predicate.and([
 							source.Node.isElement,

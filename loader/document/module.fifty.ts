@@ -10,6 +10,10 @@
  * {@link slime.runtime.document.exports.Document | `Document.codec.string`} and
  * {@link slime.runtime.document.Exports | `Fragment.codec.string`}.
  *
+ * For `jsh`, the {@link Exports} are available as `jsh.document` (along with other, older exports from other modules). For the
+ * browser and servlet environments, the `loader/document/module.js` module can be loaded in order to receive the
+ * platform-independent parser.
+ *
  * Note that the "objects" returned by this parser are "dumb" objects, and are not really designed to be used by the application.
  * Rather, the application should use the functional interfaces provided for operating on these objects. For example:
  *
@@ -22,6 +26,13 @@
  * information about them.
  */
 namespace slime.runtime.document {
+	export interface Context {
+		/**
+		 * If present, its `java` property allows the use of the older JSoup-based Java document parsing.
+		 */
+		$slime?: Pick<old.Context["$slime"],"java">
+	}
+
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("module.js");
@@ -35,13 +46,6 @@ namespace slime.runtime.document {
 		})(fifty);
 	}
 
-	export interface Context {
-		/**
-		 * If present, its `java` property allows the use of the older JSoup-based Java document parsing.
-		 */
-		$slime?: Pick<old.Context["$slime"],"java">
-	}
-
 	/**
 	 * @experimental
 	 */
@@ -49,8 +53,8 @@ namespace slime.runtime.document {
 		xml?: boolean
 	}
 
-	export namespace exports {
-		export interface Document {
+	export namespace document {
+		export interface Exports {
 			codec: {
 				string: slime.Codec<slime.runtime.document.Document,string>
 			}
@@ -93,17 +97,21 @@ namespace slime.runtime.document {
 	}
 
 	export interface Exports {
+		Document: document.Exports
+	}
+
+	export interface Exports {
 		load: old.Exports["load"]
 	}
 
-	export namespace exports {
-		export interface Node {
-			isElementNamed: (name: string) => slime.$api.fp.TypePredicate<document.Node,document.Element>
+	export namespace node {
+		export interface Exports {
+			isElementNamed: (name: string) => slime.$api.fp.TypePredicate<runtime.document.Node,runtime.document.Element>
 		}
 	}
 
 	export interface Exports {
-		Node: exports.Node
+		Node: node.Exports
 	}
 
 	export interface Exports {
@@ -216,8 +224,6 @@ namespace slime.runtime.document {
 	)(fifty);
 
 	export interface Exports {
-		Document: exports.Document
-
 		Fragment: {
 			codec: {
 				string: slime.Codec<slime.runtime.document.Fragment,string>
@@ -225,16 +231,16 @@ namespace slime.runtime.document {
 		}
 	}
 
-	export namespace exports {
-		export interface Element {
-			isName: (name: string) => (element: document.Element) => boolean
-			getAttribute: (name: string) => (element: document.Element) => slime.$api.fp.Maybe<string>
+	export namespace element {
+		export interface Exports {
+			isName: (name: string) => (element: runtime.document.Element) => boolean
+			getAttribute: (name: string) => (element: runtime.document.Element) => slime.$api.fp.Maybe<string>
 			from: element.From
 		}
 	}
 
 	export interface Exports {
-		Element: exports.Element
+		Element: element.Exports
 	}
 
 	export type Script = slime.loader.Script<Context | void,Exports>
