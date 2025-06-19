@@ -21,10 +21,7 @@ namespace slime.runtime.document.old {
 	export interface Exports {
 		//	TODO	one remaining use of this, in loader/api/old/jsh/html.js. Is that code dead?
 		//			looks like it is probably used as part of running JSAPI tests
-		/**
-		 * @deprecated
-		 */
-		load: any
+		load: (p: { string: string }) => any
 	}
 
 	export namespace test {
@@ -71,18 +68,9 @@ namespace slime.runtime.document.old {
 					fifty.verify(missing).is.type("null");
 				});
 
-				fifty.run(function parse() {
-					var page = api.load({
-						loader: fifty.$loader,
-						path: "test/data/1.html"
-					});
-					testsFor1(page,fifty.verify,true);
-				});
-
 				fifty.run(function codec() {
 					var page = api.load({
-						loader: fifty.$loader,
-						path: "test/data/1.html"
+						string: fifty.$loader.get("test/data/1.html").read(String)
 					});
 					var string: string = page.serialize();
 					var reparsed = api.load({

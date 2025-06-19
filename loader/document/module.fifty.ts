@@ -116,6 +116,9 @@ namespace slime.runtime.document {
 	}
 
 	export interface Exports {
+		/**
+		 * @deprecated
+		 */
 		load: old.Exports["load"]
 	}
 

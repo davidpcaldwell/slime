@@ -316,14 +316,7 @@
 
 		$export({
 			load: (parser) ? function(p) {
-				if (p.loader && p.path) {
-					var html = p.loader.get(p.path).read(String);
-					return parser(html);
-				} else if (p.string) {
-					return parser(p.string);
-				} else {
-					throw new TypeError();
-				}
+				return parser(p.string);
 			} : void(0)
 		})
 	}

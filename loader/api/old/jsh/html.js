@@ -57,7 +57,7 @@
 								return new JsapiHtml(file.parent,doc);
 							} else {
 								var doc = (function() {
-									return jsh.document.load({
+									return /** @type { slime.jsh.Global }*/(jsh).document.load({
 										//	TODO	there is a loader/path version of this instead of string
 										string: file.read(String)
 									});
