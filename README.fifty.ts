@@ -93,6 +93,12 @@
  * low-level {@link slime.runtime.Platform | `$platform`} object is also provided to all code loaded; `$platform` may provide access
  * to engine-specific capabilities.
  *
+ * #### HTML / XML document codec
+ *
+ * SLIME provides a pure JavaScript parser and serializer for HTML and XML that is lossless; unlike a standard DOM parser, it will
+ * output the same string of characters on serialization that it read on parse. The implementation provides a DOM-like API for
+ * manipulating parsed documents. See the {@link slime.runtime.document} namespace.
+ *
  * ### SLIME definitions (documentation and testing): the `fifty` tool
  *
  * SLIME has the concept of a _definition_, which is a construct that provides both documentation and a test suite for a particular
@@ -128,7 +134,7 @@
  *
  * ### Bundled tools and examples
  *
- * SLIME has several potentially useful programs bundled in its distribution
+ * SLIME has several potentially useful programs bundled in its distribution.
  *
  * #### Serve a directory (and optionally open a Chrome browser to browse it)
  *
