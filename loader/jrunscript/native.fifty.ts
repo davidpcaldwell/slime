@@ -38,6 +38,7 @@ namespace slime.jrunscript {
 					getMethod(name: string): reflect.Method
 					getSuperclass(): Class
 					getInterfaces(): Class[]
+					getProtectionDomain(): any
 				}
 
 				export interface ClassLoader {

@@ -26,7 +26,7 @@ namespace slime.jrunscript.bootstrap {
 					script: void(0)
 				});
 				jsh.shell.console(Object.keys(bootstrap).toString());
-				var rhino = bootstrap.rhino.running();
+				var rhino = bootstrap.engine.rhino.running();
 				jsh.shell.console("Rhino context: " + String(rhino));
 				if (rhino) jsh.shell.console("Rhino optimization: " + String(rhino.getOptimizationLevel()));
 			}

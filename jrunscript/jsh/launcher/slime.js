@@ -35,9 +35,11 @@
 			})();
 		}
 
+		//	TODO	not sure this makes any sense at all; why are we replacing the classpath from which Rhino can be loaded in this
+		//			circumstance? How is this used?
 		if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 			//	TODO	hard-coded assumption that this is file
-			$$api.rhino.classpath = function() {
+			$$api.engine.rhino.classpath = function() {
 				return new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"))
 			};
 		}

@@ -27,12 +27,64 @@
 		//			have load()? Does Graal?
 		if (!load) throw new Error("No load()");
 
-		var Java = this.Java;
+		//	Declare local variable for Packages for convenience; will be populated either when JavaClasspath below executes, or
+		//	when Nashorn / Graal execute their Mozilla compatibility layer and call JavaClasspath.update()
+		/** @type { slime.jrunscript.Packages } */
+		var Packages;
+
+		/** @type { slime.jrunscript.JavaAdapter } */
+		var JavaAdapter;
+
+		//	TODO	it is possible that the Packages part of this is obsolete. Just tested using the most braindead-simple test case imaginable
+		//			local/jdk/8/bin/jrunscript -e "Packages.java.lang.System.err.println('foobarbaz')"
+		//			... and Packages appears to be there, in both built-in and standalone Nahorn, even on JDK 8, even without
+		//			executing the compatibility script.
+		//
+		//			In that case, if we test on Graal, I guess we could take the Packages portion of this out? But Graal may need
+		// 			it.
+		//
+		//			In contrast, JavaAdapter is *not* present:
+		//			$ local/jdk/8/bin/jrunscript -e "var r = new JavaAdapter(Packages.java.lang.Runnable, { run: function() { print("hey"); } }); r.run()"
+		//			script error: ReferenceError: "JavaAdapter" is not defined in <string> at line number 1
+		//
+		/**
+		 * Object which helps bootstrap interfacing with Java classes before the compatible-with-all `Packages` implementation is
+		 * present (for example, before Nashorn or GraalVM have executed their Rhino compatibility scripts.)
+		 */
+		var JavaClasspath = (
+			function(global) {
+				/** @type { slime.internal.jrunscript.bootstrap.JavaClasspath } */
+				var rv = {
+					liveconnect: function(name) {
+						if (global.Packages[name]) return global.Packages[name];
+						if (global.Java) return global.Java.type(name);
+					},
+					nativeClass: function(name) {
+						if (global.Packages) {
+							try {
+								return global.Packages.java.lang.Class.forName(name);
+							} catch (e) {
+								return null;
+							}
+						}
+						if (global.Java) return global.Java.type(name).class;
+					},
+					update: function() {
+						Packages = global.Packages;
+						JavaAdapter = global.JavaAdapter;
+					}
+				};
+				rv.update();
+				return rv;
+			}
+		)(this);
 
 		//	The below would initialize the logging configuration to be empty, rather than the JDK default. The only logging done is for
 		//	remote shells, which otherwise would produce an uncomfortably long silence before the program started running. So they are
 		//	instead a little bit chatty. A user could configure this by configuring Java logging. Alternatively, I suppose we could
 		//	provide a way to configure it by providing the ability to configure it via a URL for a logging properties file
+
+		//	If it were ever uncommented, we'd want to remove all the `Packages` references and use `JavaClasspath` above.
 
 		// (function initializeLogging() {
 		// 	var System = Packages.java.lang.System;
@@ -56,12 +108,10 @@
 		// })();
 
 		/** @type { (p: any) => slime.internal.jrunscript.bootstrap.Configuration } */
-		function toConfiguration(p) {
-			return p;
-		}
+		function asInitialConfiguration(p) { return p; }
 
 		/** @type { slime.internal.jrunscript.bootstrap.Configuration } */
-		var configuration = toConfiguration(this["$api"]);
+		var configuration = asInitialConfiguration(this["$api"]);
 
 		/**
 		 * @type { slime.internal.jrunscript.bootstrap.Global<{},{}>["$api"] }
@@ -73,7 +123,6 @@
 			engine: void(0),
 			github: void(0),
 			script: void(0),
-			rhino: void(0),
 			nashorn: void(0),
 			java: void(0),
 			arguments: void(0),
@@ -88,55 +137,70 @@
 			function defineLogging() {
 				var on = false;
 
+				var console = function(message) {
+					JavaClasspath.liveconnect("java.lang.System").err.println(message);
+				}
+
+				var log = function(message,level) {
+					JavaClasspath.liveconnect("java.util.logging.Logger").getLogger("inonit.jrunscript").log(
+						JavaClasspath.liveconnect("java.util.logging.Level")[level],
+						message
+					);
+				}
+
 				//	TODO	could define an Object.assign-like function here and then use it to build the implementation to satisfy
 				//			TypeScript, but not right now.
-				//@ts-ignore
-				$api.debug = function(message) {
-					//@ts-ignore
-					if (configuration && typeof(configuration.debug) == "function") configuration.debug(message);
-					//	TODO	note that we are disabling this until Packages is provided, which means we presently can't log until
-					//			the engine compatibility is loaded unless print is present
-					if (on && Packages) Packages.java.lang.System.err.println(message);
-					//@ts-ignore
-					if (on && !Packages && Java) Java.type("java.lang.System").err.println(message);
-					if (Packages) Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.FINE, message);
-				};
+				$api.debug = (
+					function() {
+						var rv = function(message) {
+							//	TODO	right now the debug property can be either a function or a boolean initially, and then we don't
+							//			manage the state super-well after that. Revisit.
+							//@ts-ignore
+							if (configuration && typeof(configuration.debug) == "function") configuration.debug(message);
+							if (on) console(message);
+							log(message,"FINE");
+						};
+
+						//	TODO	determine whether this if is necessary, may be true that all platforms support it
+						if (Object.defineProperty) {
+							Object.defineProperty(rv, "on", {
+								enumerable: true,
+								get: function() {
+									return on;
+								},
+								set: function(v) {
+									on = v;
+								}
+							});
+						}
+
+						return rv;
+					}
+				)();
+
 				if (configuration && configuration.debug) {
 					on = true;
 					$api.debug("Debug enabled via $api.debug configuration value");
 				}
-				if (Object.defineProperty) {
-					Object.defineProperty($api.debug, "on", {
-						enumerable: true,
-						get: function() {
-							return on;
-						},
-						set: function(v) {
-							on = v;
-						}
-					});
-				}
 
-				$api.console = function(message) {
-					Packages.java.lang.System.err.println(message);
-				}
+				$api.console = console;
 
 				$api.log = function(message) {
-					Packages.java.util.logging.Logger.getLogger("inonit.jrunscript").log(Packages.java.util.logging.Level.INFO, message);
+					log(message,"INFO");
 				}
 			}
 		).call(this);
 
 		/**
-		 * Returns information about Rhino as it pertains to the currently running script.
+		 * Information about Rhino as it pertains to the currently running script.
 		 */
 		var rhino = (
 			function(global) {
 				var isPresent = function() {
-					return typeof(global.Packages.org.mozilla.javascript.Context.getCurrentContext) == "function";
+					return JavaClasspath.nativeClass("org.mozilla.javascript.Context") != null;
 				};
 				var isRunning = function() {
-					return global.Packages.org.mozilla.javascript.Context.getCurrentContext();
+					return JavaClasspath.liveconnect("org.mozilla.javascript.Context").getCurrentContext();
 				}
 				return {
 					/**
@@ -152,14 +216,66 @@
 					 * If Rhino is on the classpath, the file from which it can be loaded.
 					 */
 					classpath: function() {
-						return (isPresent()) ? new global.Packages.java.io.File(
-							global.Packages.java.lang.Class.forName("org.mozilla.javascript.Context")
+						var File = JavaClasspath.liveconnect("java.io.File");
+						return (isPresent()) ? new File(
+							JavaClasspath.nativeClass("org.mozilla.javascript.Context")
 								.getProtectionDomain().getCodeSource().getLocation().toURI()
 						) : null;
 					}
 				}
 			}
 		)(this);
+
+		/**
+		 * Information about Nashorn as it pertains to the currently running script.
+		 */
+		var nashorn = (
+			/** @returns { slime.internal.jrunscript.bootstrap.Api<{}>["engine"]["nashorn"] } */
+			function() {
+				//	TODO	A little bit of this logic is duplicated in loader/jrunscript/nashorn.js; we could make this method
+				//			available there somehow, perhaps, although it might be tricky getting things organized between
+				//			bootstrapping Nashorn in the loader and loading the launcher bootstrap script
+				/** @type { { type: slime.jrunscript.Packages["jdk"]["nashorn"]["internal"]["runtime"]["Context"], method: any } } */
+				var engine = (
+					function() {
+						var rv = JavaClasspath.nativeClass("jdk.nashorn.internal.runtime.Context");
+						if (rv) {
+							return {
+								type: Packages.jdk.nashorn.internal.runtime.Context,
+								method: rv.getMethod("getContext")
+							};
+						}
+						rv = JavaClasspath.nativeClass("org.openjdk.nashorn.internal.runtime.Context");
+						if (rv) {
+							return {
+								type: Packages.org.openjdk.nashorn.internal.runtime.Context,
+								method: rv.getMethod("getContext")
+							};
+						}
+					}
+				)();
+
+				var isPresent = function() {
+					var ScriptEngineManager = JavaClasspath.liveconnect("javax.script.ScriptEngineManager");
+					return Boolean(new ScriptEngineManager().getEngineByName("nashorn"));
+				}
+
+				return {
+					isPresent: isPresent,
+					running: function() {
+						if (engine) {
+							try {
+								return engine.method.invoke(null);
+							} catch (e) {
+								return null;
+							}
+						} else {
+							return null;
+						}
+					}
+				}
+			}
+		)();
 
 		/**
 		 * The currently executing JavaScript engine.
@@ -295,341 +411,265 @@
 			rv.resolve({
 				nashorn: function() {
 					load("nashorn:mozilla_compat.js");
+					JavaClasspath.update();
 				},
 				jdkrhino: function() {
-
 				},
 				rhino: function() {
-					rv.classpath = new global.Packages.java.io.File(global.Packages.java.lang.Class.forName("org.mozilla.javascript.Context").getProtectionDomain().getCodeSource().getLocation().toURI());
 				},
 				graal: function() {
 					load("nashorn:mozilla_compat.js");
+					JavaClasspath.update();
 				}
 			})();
 			return rv;
 		})(this);
 
-		//	Now that Nashorn / Graal have loaded mozilla_compat.js, we can access these
-		var Packages = this.Packages;
-		var JavaAdapter = this.JavaAdapter;
-
-		var nashorn = (
-			/** @returns { slime.internal.jrunscript.bootstrap.Api<{}>["nashorn"] } */
-			function() {
-				//	TODO	A little bit of this logic is duplicated in loader/jrunscript/nashorn.js; we could make this method
-				//			available there somehow, perhaps, although it might be tricky getting things organized between
-				//			bootstrapping Nashorn in the loader and loading the launcher bootstrap script
-				var Context = Packages.jdk.nashorn.internal.runtime.Context;
-				var $getContext;
-				if (typeof(Context) == "function") {
-					try {
-						//	TODO	is there any way to avoid repeating the class name?
-						$getContext = Packages.java.lang.Class.forName("jdk.nashorn.internal.runtime.Context").getMethod("getContext");
-					} catch (e) {
-						//	do nothing; $getContext will remain undefined
-					}
-				} else {
-					Context = Packages.org.openjdk.nashorn.internal.runtime.Context;
-					if (typeof(Context) == "function") {
-						try {
-							//	TODO	is there any way to avoid repeating the class name?
-							//	TODO	Add org.openjdk.nashorn equivalent
-							$getContext = Packages.java.lang.Class.forName("org.openjdk.nashorn.internal.runtime.Context").getMethod("getContext");
-						} catch (e) {
-							//	do nothing; $getContext will remain undefined
-						}
-					}
-				}
-
-				var isPresent = function() {
-					if (!new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
-						$api.debug("Nashorn not detected via javax.script; removing.");
-						return false;
-					}
-					if (typeof(Context.getContext) != "function" && !$getContext) {
-						$api.debug("jdk.nashorn.internal.runtime.Context.getContext not accessible; removing Nashorn.")
-						return false;
-					}
-					return true;
-				}
-
-				/** @notdry nashorn-dependencies reference */
-				var mavenDependencies = ["asm","asm-commons","asm-tree","asm-util"].map(function(name) {
-					return {
-						group: "org.ow2.asm",
-						artifact: name,
-						version: "7.3.1"
-					}
-				});
-
-				return {
-					dependencies: {
-						maven: mavenDependencies,
-						names: mavenDependencies.map(function(dependency) { return dependency.artifact; }),
-						jarNames: mavenDependencies.map(function(dependency) { return dependency.artifact + ".jar"; })
-					},
-					isPresent: isPresent,
-					running: function() {
-						if ($getContext) {
-							try {
-								return $getContext.invoke(null);
-							} catch (e) {
-								return null;
-							}
-						} else {
-							return null;
-						}
-					},
-					getDeprecationArguments: function(javaMajorVersion) {
-						if (javaMajorVersion > 8 && javaMajorVersion < 15) {
-							return ["-Dnashorn.args=--no-deprecation-warning"];
-						}
-
-						return [];
-					}
-				}
-			}
-		)();
-
 		if (configuration && configuration.engine && configuration.engine.script) {
 			$engine.script = configuration.engine.script;
 		}
 
-		$api.engine = {
-			toString: function() {
-				return $engine.toString();
-			},
-			resolve: function(p) {
-				return $engine.resolve(p);
-			},
-			readUrl: (this.readUrl) ? this.readUrl : function(path) {
-				var rv = "";
-				var connection = new Packages.java.net.URL(path).openConnection();
-				var reader = new Packages.java.io.InputStreamReader(connection.getInputStream());
-				var c;
-				while((c = reader.read()) != -1) {
-					var _character = new Packages.java.lang.Character(c);
-					rv += _character.toString();
-				}
-				return rv;
-			},
-			//	TODO	much of this is redundant with inonit.system.Command, but we preserve it here because we are trying to remain
-			//			dependent only on Rhino, which apparently has a bug(?) making its own runCommand() not work correctly in this
-			//			scenario when an InputStream is provided: even when underlying process terminates, command does not return
-			//	TODO	this has the potential to run really slowly when written in JavaScript
-			//	TODO	Graal cannot correctly run this function because of the multithreading involved; see https://github.com/graalvm/graaljs/issues/30
-			runCommand: function() {
-				var Buffer = function(initial) {
-					var _bytes = new Packages.java.io.ByteArrayOutputStream();
-
-					var string = initial;
-
-					this.stream = _bytes;
-
-					this.finish = function() {
-						_bytes.close();
-						var _reader = new Packages.java.io.InputStreamReader(new Packages.java.io.ByteArrayInputStream(_bytes.toByteArray()));
+		$api.engine = (
+			function(global) {
+				return {
+					toString: function() {
+						return $engine.toString();
+					},
+					resolve: function(p) {
+						return $engine.resolve(p);
+					},
+					readUrl: (this.readUrl) ? this.readUrl : function(path) {
+						var rv = "";
+						var connection = new Packages.java.net.URL(path).openConnection();
+						var reader = new Packages.java.io.InputStreamReader(connection.getInputStream());
 						var c;
-						while((c = _reader.read()) != -1) {
-							string += new Packages.java.lang.Character(c).toString();
+						while((c = reader.read()) != -1) {
+							var _character = new Packages.java.lang.Character(c);
+							rv += _character.toString();
 						}
-						return string;
-					}
-				}
+						return rv;
+					},
+					//	TODO	much of this is redundant with inonit.system.Command, but we preserve it here because we are trying to remain
+					//			dependent only on Rhino, which apparently has a bug(?) making its own runCommand() not work correctly in this
+					//			scenario when an InputStream is provided: even when underlying process terminates, command does not return
+					//	TODO	this has the potential to run really slowly when written in JavaScript
+					//	TODO	Graal cannot correctly run this function because of the multithreading involved; see https://github.com/graalvm/graaljs/issues/30
+					runCommand: function() {
+						var Buffer = function(initial) {
+							var _bytes = new Packages.java.io.ByteArrayOutputStream();
 
-				var buffers = {};
-				var context = new function() {
-					var mode;
+							var string = initial;
 
-					this.setMode = function(value) {
-						mode = value;
-						if (typeof(mode.output) == "string") {
-							buffers.output = new Buffer(mode.output);
+							this.stream = _bytes;
+
+							this.finish = function() {
+								_bytes.close();
+								var _reader = new Packages.java.io.InputStreamReader(new Packages.java.io.ByteArrayInputStream(_bytes.toByteArray()));
+								var c;
+								while((c = _reader.read()) != -1) {
+									string += new Packages.java.lang.Character(c).toString();
+								}
+								return string;
+							}
 						}
-						if (typeof(mode.err) == "string") {
-							buffers.err = new Buffer(mode.err);
-						}
-					}
 
-					this.environment = function(_environment) {
-						if (mode && mode.env) {
-							_environment.clear();
-							for (var x in mode.env) {
-								if (mode.env[x]) {
-									_environment.put(new Packages.java.lang.String(x), new Packages.java.lang.String(mode.env[x]));
+						var buffers = {};
+						var context = new function() {
+							var mode;
+
+							this.setMode = function(value) {
+								mode = value;
+								if (typeof(mode.output) == "string") {
+									buffers.output = new Buffer(mode.output);
+								}
+								if (typeof(mode.err) == "string") {
+									buffers.err = new Buffer(mode.err);
 								}
 							}
-						} else {
-						}
-					}
 
-					this.getStandardOutput = function() {
-						if (buffers.output) return buffers.output.stream;
-						if (mode && mode.output) return mode.output;
-						return Packages.java.lang.System.out;
-					};
-					this.getStandardError = function() {
-						if (buffers.err) return buffers.err.stream;
-						if (mode && mode.err) return mode.err;
-						return Packages.java.lang.System.err;
-					};
-					this.getStandardInput = function() {
-						if (mode && mode.input) return mode.input;
-						return new JavaAdapter(
-							Packages.java.io.InputStream,
-							new function() {
-								this.read = function() {
-									return -1;
-								}
-							}
-						);
-					};
-
-					this.finish = function() {
-						if (buffers.output) mode.output = buffers.output.finish();
-						if (buffers.err) mode.err = buffers.err.finish();
-					}
-				}
-				var list = new Packages.java.util.ArrayList();
-				for (var i=0; i<arguments.length; i++) {
-					if (typeof(arguments[i]) == "string") {
-						list.add(new Packages.java.lang.String(arguments[i]));
-					} else if (i < arguments.length-1) {
-						list.add(new Packages.java.lang.String(String(arguments[i])));
-					} else {
-						//	TODO	in Rhino-compatible runCommand this should only work if it is the last argument
-						$api.debug("Setting runCommand mode ...");
-						context.setMode(arguments[i]);
-					}
-				}
-				var _builder = new Packages.java.lang.ProcessBuilder(list);
-				context.environment(_builder.environment());
-				//	TODO	this terminator/buffer stuff seems like it might be really slow; should try to figure out a way to profile it
-				//			and speed it up if necessary
-				var terminator = (function() {
-					var output = new Packages.java.io.ByteArrayOutputStream();
-					var writer = new Packages.java.io.OutputStreamWriter(output);
-					writer.write(Packages.java.lang.System.getProperty("line.separator"));
-					writer.flush();
-					var bytes = output.toByteArray();
-					var rv = [];
-					for (var i=0; i<bytes.length; i++) {
-						rv[i] = bytes[i];
-					}
-					return rv;
-				})();
-
-				/**
-				 *
-				 * @param { slime.jrunscript.native.java.io.InputStream } _in
-				 * @param { slime.jrunscript.native.java.io.OutputStream } _out
-				 * @param { boolean } closeOnEnd
-				 * @param { boolean } flush
-				 */
-				var Spooler = function(_in,_out,closeOnEnd,flush) {
-					var buffer = [];
-
-					var bufferIsTerminator = function() {
-						for (var i=0; i<terminator.length; i++) {
-							if (terminator[i] != buffer[i]) return false;
-						}
-						return true;
-					}
-
-					this.run = function() {
-						var i;
-						try {
-							while( (i = _in.read()) != -1 ) {
-								if (flush) {
-									if (buffer.length < terminator.length) {
-										buffer.push(i);
-									} else {
-										buffer.shift();
-										buffer[buffer.length-1] = i;
+							this.environment = function(_environment) {
+								if (mode && mode.env) {
+									_environment.clear();
+									for (var x in mode.env) {
+										if (mode.env[x]) {
+											_environment.put(new Packages.java.lang.String(x), new Packages.java.lang.String(mode.env[x]));
+										}
 									}
-								}
-								_out.write(i);
-								//	TODO	This flush, which essentially turns off buffering, is necessary for at least some classes of
-								//			applications that are waiting on input in order to decide how to proceed.
-								if (flush || bufferIsTerminator()) {
-									_out.flush();
+								} else {
 								}
 							}
-							if (closeOnEnd) {
-								_out.close();
-							}
-						} catch (e) {
-							this._e = e;
-						}
-					}
-				};
 
-				/**
-				 *
-				 * @param { slime.jrunscript.native.java.io.InputStream } _in
-				 * @param { slime.jrunscript.native.java.io.OutputStream } _out
-				 * @param { boolean } closeOnEnd
-				 * @param { boolean } flush
-				 * @param { boolean } daemon
-				 * @param { string } name
-				 */
-				Spooler.start = function(_in,_out,closeOnEnd,flush,daemon,name) {
-					var s = new Spooler(_in, _out, closeOnEnd,flush);
-					//	TODO	Graal has JavaAdapter bug: https://github.com/oracle/graal/issues/541
-					var JAdapter = $engine.resolve({
-						rhino: JavaAdapter,
-						nashorn: JavaAdapter,
-						jdkrhino: JavaAdapter,
-						graal: function(type,implementation) {
-							return new type(implementation);
+							this.getStandardOutput = function() {
+								if (buffers.output) return buffers.output.stream;
+								if (mode && mode.output) return mode.output;
+								return Packages.java.lang.System.out;
+							};
+							this.getStandardError = function() {
+								if (buffers.err) return buffers.err.stream;
+								if (mode && mode.err) return mode.err;
+								return Packages.java.lang.System.err;
+							};
+							this.getStandardInput = function() {
+								if (mode && mode.input) return mode.input;
+								return new JavaAdapter(
+									Packages.java.io.InputStream,
+									new function() {
+										this.read = function() {
+											return -1;
+										}
+									}
+								);
+							};
+
+							this.finish = function() {
+								if (buffers.output) mode.output = buffers.output.finish();
+								if (buffers.err) mode.err = buffers.err.finish();
+							}
 						}
-					})
-					var t = new Packages.java.lang.Thread(
-						new JAdapter(
-							Packages.java.lang.Runnable,
-							s
-						)
-					);
-					$api.debug("Constructed (Spooler.start): " + name);
-					t.setName(t.getName() + ": Spooler for " + name);
-					t.setDaemon(daemon);
-					$api.debug("Starting (Spooler.start): " + name);
-					t.start();
-					$api.debug("Started (Spooler.start): " + name);
-					return t;
+						var list = new Packages.java.util.ArrayList();
+						for (var i=0; i<arguments.length; i++) {
+							if (typeof(arguments[i]) == "string") {
+								list.add(new Packages.java.lang.String(arguments[i]));
+							} else if (i < arguments.length-1) {
+								list.add(new Packages.java.lang.String(String(arguments[i])));
+							} else {
+								//	TODO	in Rhino-compatible runCommand this should only work if it is the last argument
+								$api.debug("Setting runCommand mode ...");
+								context.setMode(arguments[i]);
+							}
+						}
+						var _builder = new Packages.java.lang.ProcessBuilder(list);
+						context.environment(_builder.environment());
+						//	TODO	this terminator/buffer stuff seems like it might be really slow; should try to figure out a way to profile it
+						//			and speed it up if necessary
+						var terminator = (function() {
+							var output = new Packages.java.io.ByteArrayOutputStream();
+							var writer = new Packages.java.io.OutputStreamWriter(output);
+							writer.write(Packages.java.lang.System.getProperty("line.separator"));
+							writer.flush();
+							var bytes = output.toByteArray();
+							var rv = [];
+							for (var i=0; i<bytes.length; i++) {
+								rv[i] = bytes[i];
+							}
+							return rv;
+						})();
+
+						/**
+						 *
+						 * @param { slime.jrunscript.native.java.io.InputStream } _in
+						 * @param { slime.jrunscript.native.java.io.OutputStream } _out
+						 * @param { boolean } closeOnEnd
+						 * @param { boolean } flush
+						 */
+						var Spooler = function(_in,_out,closeOnEnd,flush) {
+							var buffer = [];
+
+							var bufferIsTerminator = function() {
+								for (var i=0; i<terminator.length; i++) {
+									if (terminator[i] != buffer[i]) return false;
+								}
+								return true;
+							}
+
+							this.run = function() {
+								var i;
+								try {
+									while( (i = _in.read()) != -1 ) {
+										if (flush) {
+											if (buffer.length < terminator.length) {
+												buffer.push(i);
+											} else {
+												buffer.shift();
+												buffer[buffer.length-1] = i;
+											}
+										}
+										_out.write(i);
+										//	TODO	This flush, which essentially turns off buffering, is necessary for at least some classes of
+										//			applications that are waiting on input in order to decide how to proceed.
+										if (flush || bufferIsTerminator()) {
+											_out.flush();
+										}
+									}
+									if (closeOnEnd) {
+										_out.close();
+									}
+								} catch (e) {
+									this._e = e;
+								}
+							}
+						};
+
+						/**
+						 *
+						 * @param { slime.jrunscript.native.java.io.InputStream } _in
+						 * @param { slime.jrunscript.native.java.io.OutputStream } _out
+						 * @param { boolean } closeOnEnd
+						 * @param { boolean } flush
+						 * @param { boolean } daemon
+						 * @param { string } name
+						 */
+						Spooler.start = function(_in,_out,closeOnEnd,flush,daemon,name) {
+							var s = new Spooler(_in, _out, closeOnEnd,flush);
+							//	TODO	Graal has JavaAdapter bug: https://github.com/oracle/graal/issues/541
+							var JAdapter = $engine.resolve({
+								rhino: JavaAdapter,
+								nashorn: JavaAdapter,
+								jdkrhino: JavaAdapter,
+								graal: function(type,implementation) {
+									return new type(implementation);
+								}
+							})
+							var t = new Packages.java.lang.Thread(
+								new JAdapter(
+									Packages.java.lang.Runnable,
+									s
+								)
+							);
+							$api.debug("Constructed (Spooler.start): " + name);
+							t.setName(t.getName() + ": Spooler for " + name);
+							t.setDaemon(daemon);
+							$api.debug("Starting (Spooler.start): " + name);
+							t.start();
+							$api.debug("Started (Spooler.start): " + name);
+							return t;
+						};
+						var spoolName = Array.prototype.join.call(arguments, ",");
+						$api.debug("Forking a command ... " + Array.prototype.slice.call(arguments).join(" "));
+						var delegate = _builder.start();
+						$api.debug("Started.");
+						var hasConsole = Packages.java.lang.System.console();
+						$api.debug("hasConsole = " + Boolean(hasConsole));
+						var _in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, !hasConsole, false, "stdout: " + spoolName);
+						$api.debug("Started spooler for " + _in);
+						var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, !hasConsole, false, "stderr: " + spoolName);
+						$api.debug("Started spoolers.");
+						var _stdin = context.getStandardInput();
+						var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, true, true, "stdin from " + _stdin + ": " + spoolName);
+						var rv = delegate.waitFor();
+						$api.debug("Started; before join()");
+						var join = function() {
+							_in.join();
+							_err.join();
+						};
+						$engine.resolve({
+							rhino: join,
+							jdkrhino: join,
+							nashorn: join,
+							graal: function() {
+							}
+						})();
+						// _in.join();
+						// _err.join();
+						$api.debug("Started; after join(): alive _in=" + _in.isAlive() + " err=" + _err.isAlive());
+						context.finish();
+						return rv;
+					},
+					rhino: rhino,
+					nashorn: nashorn
 				};
-				var spoolName = Array.prototype.join.call(arguments, ",");
-				$api.debug("Forking a command ... " + Array.prototype.slice.call(arguments).join(" "));
-				var delegate = _builder.start();
-				$api.debug("Started.");
-				var hasConsole = Packages.java.lang.System.console();
-				$api.debug("hasConsole = " + Boolean(hasConsole));
-				var _in = Spooler.start(delegate.getInputStream(), context.getStandardOutput(), false, !hasConsole, false, "stdout: " + spoolName);
-				$api.debug("Started spooler for " + _in);
-				var _err = Spooler.start(delegate.getErrorStream(), context.getStandardError(), false, !hasConsole, false, "stderr: " + spoolName);
-				$api.debug("Started spoolers.");
-				var _stdin = context.getStandardInput();
-				var _out = Spooler.start(_stdin, delegate.getOutputStream(), true, true, true, "stdin from " + _stdin + ": " + spoolName);
-				var rv = delegate.waitFor();
-				$api.debug("Started; before join()");
-				var join = function() {
-					_in.join();
-					_err.join();
-				};
-				$engine.resolve({
-					rhino: join,
-					jdkrhino: join,
-					nashorn: join,
-					graal: function() {
-					}
-				})();
-				// _in.join();
-				// _err.join();
-				$api.debug("Started; after join(): alive _in=" + _in.isAlive() + " err=" + _err.isAlive());
-				context.finish();
-				return rv;
 			}
-		};
+		)(this);
 
 		/**
 		 * @type { slime.internal.jrunscript.bootstrap.internal.Io }
@@ -1415,13 +1455,33 @@
 		};
 		$api.io.readJavaString = io.readJavaString;
 
-		$api.rhino = {
-			classpath: rhino.classpath,
-			isPresent: rhino.isPresent,
-			running: rhino.running
-		};
+		$api.nashorn = (
+			function() {
+				/** @notdry nashorn-dependencies reference */
+				var mavenDependencies = ["asm","asm-commons","asm-tree","asm-util"].map(function(name) {
+					return {
+						group: "org.ow2.asm",
+						artifact: name,
+						version: "7.3.1"
+					}
+				});
 
-		$api.nashorn = nashorn;
+				return {
+					dependencies: {
+						maven: mavenDependencies,
+						names: mavenDependencies.map(function(dependency) { return dependency.artifact; }),
+						jarNames: mavenDependencies.map(function(dependency) { return dependency.artifact + ".jar"; })
+					},
+					getDeprecationArguments: function(javaMajorVersion) {
+						if (javaMajorVersion > 8 && javaMajorVersion < 15) {
+							return ["-Dnashorn.args=--no-deprecation-warning"];
+						}
+
+						return [];
+					}
+				};
+			}
+		)();
 
 		$api.shell = {
 			environment: void(0),

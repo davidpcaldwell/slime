@@ -54,19 +54,19 @@
 		};
 
 		var engines = {};
-		if (bootstrap && bootstrap.rhino.isPresent()) {
+		if (bootstrap && bootstrap.engine.rhino.isPresent()) {
 			engines.rhino = true;
-			if (bootstrap && bootstrap.rhino.running()) {
+			if (bootstrap && bootstrap.engine.rhino.running()) {
 				engines.current = {
 					name: "rhino",
-					version: String(bootstrap.rhino.running().getImplementationVersion()),
-					optimization: bootstrap.rhino.running().getOptimizationLevel()
+					version: String(bootstrap.engine.rhino.running().getImplementationVersion()),
+					optimization: bootstrap.engine.rhino.running().getOptimizationLevel()
 				};
 			}
 		}
-		if (bootstrap && bootstrap.nashorn.isPresent()) {
+		if (bootstrap && bootstrap.engine.nashorn.isPresent()) {
 			engines.nashorn = true;
-			if (bootstrap && bootstrap.nashorn.running()) {
+			if (bootstrap && bootstrap.engine.nashorn.running()) {
 				engines.current = {
 					name: "nashorn"
 				};
