@@ -94,7 +94,7 @@ namespace slime.jrunscript {
 					print: (string: string) => void
 					println: (line: string) => void
 				}
-				export interface File {
+				export interface File extends slime.jrunscript.native.java.lang.Object {
 					exists(): boolean
 					isDirectory(): boolean
 					toPath(): slime.jrunscript.native.java.nio.file.Path

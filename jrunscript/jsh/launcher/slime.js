@@ -37,7 +37,9 @@
 
 		if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
 			//	TODO	hard-coded assumption that this is file
-			$$api.rhino.classpath = new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
+			$$api.rhino.classpath = function() {
+				return new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"))
+			};
 		}
 
 		$$api.slime = (function(was) {

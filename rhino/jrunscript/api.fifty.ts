@@ -191,7 +191,23 @@ namespace slime.internal.jrunscript.bootstrap {
 
 		engine: {
 			toString: () => string
-			resolve: any
+
+			/**
+			 * A method which, given values for each potential JavaScript engine, returns the value for the engine that is actually
+			 * running.
+			 *
+			 * @param option An object with a property for each potential JavaScript engine
+			 *
+			 * @returns The value of the property representing the JavaScript engine which is running.
+			 */
+			resolve: <T>(option: {
+				rhino: T
+				nashorn: T
+				graal: T
+
+				//	legacy compatibility with pre-JDK 8 Rhino; now unsupported
+				jdkrhino?: T
+			}) => T
 
 			readUrl: Environment["readUrl"]
 
@@ -318,7 +334,7 @@ namespace slime.internal.jrunscript.bootstrap {
 			/**
 			 * The location from which Rhino was loaded, specifically the `org.mozilla.javascript.Context` class.
 			 */
-			classpath: slime.jrunscript.native.java.io.File
+			classpath: () => slime.jrunscript.native.java.io.File
 
 			/**
 			 * Whether Rhino is currently available on the classpath.
@@ -326,7 +342,7 @@ namespace slime.internal.jrunscript.bootstrap {
 			isPresent: () => boolean
 
 			/**
-			 * Whether Rhino is the engine currently executing JavaScript.
+			 * If Rhino is currently running this script, the current Rhino script context.
 			 */
 			running: () => slime.jrunscript.native.org.mozilla.javascript.Context
 		}

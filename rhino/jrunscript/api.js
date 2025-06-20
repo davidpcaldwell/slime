@@ -127,19 +127,43 @@
 			}
 		).call(this);
 
+		/**
+		 * Returns information about Rhino as it pertains to the currently running script.
+		 */
 		var rhino = (
 			function(global) {
+				var isPresent = function() {
+					return typeof(global.Packages.org.mozilla.javascript.Context.getCurrentContext) == "function";
+				};
+				var isRunning = function() {
+					return global.Packages.org.mozilla.javascript.Context.getCurrentContext();
+				}
 				return {
-					isPresent: function() {
-						return typeof(global.Packages.org.mozilla.javascript.Context.getCurrentContext) == "function";
-					},
-					running: function() {
-						return global.Packages.org.mozilla.javascript.Context.getCurrentContext();
+					/**
+					 * Whether Rhino is available on the current classpath.
+					 */
+					isPresent: isPresent,
+					/**
+					 * If Rhino is executing the current script, the Rhino `org.mozilla.javascript.Context` in which this script is
+					 * executing.
+					 */
+					running: isRunning,
+					/**
+					 * If Rhino is on the classpath, the file from which it can be loaded.
+					 */
+					classpath: function() {
+						return (isPresent()) ? new global.Packages.java.io.File(
+							global.Packages.java.lang.Class.forName("org.mozilla.javascript.Context")
+								.getProtectionDomain().getCodeSource().getLocation().toURI()
+						) : null;
 					}
 				}
 			}
 		)(this);
 
+		/**
+		 * The currently executing JavaScript engine.
+		 */
 		var $engine = (function(global) {
 			var Nashorn = function() {
 				this.toString = function() {
@@ -1392,11 +1416,7 @@
 		$api.io.readJavaString = io.readJavaString;
 
 		$api.rhino = {
-			classpath: $engine.resolve({
-				jdkrhino: null,
-				nashorn: null,
-				rhino: $engine.classpath
-			}),
+			classpath: rhino.classpath,
 			isPresent: rhino.isPresent,
 			running: rhino.running
 		};

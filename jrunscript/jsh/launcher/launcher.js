@@ -148,6 +148,12 @@
 					if (status !== null) {
 						Packages.java.lang.System.exit(status);
 					}
+				},
+				//	TODO	the below is untested
+				graal: function(status) {
+					if (status !== null) {
+						Packages.java.lang.System.exit(status);
+					}
 				}
 			});
 
