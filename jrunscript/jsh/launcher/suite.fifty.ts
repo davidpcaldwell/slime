@@ -39,6 +39,12 @@ namespace slime.jsh.internal.launcher {
 
 				verify(data).shellClasspath.is(classpathUri);
 			}
+
+			fifty.tests.manual = function() {
+				const { jsh } = fifty.global;
+
+				jsh.shell.console("jsh = " + jsh.internal.bootstrap["jsh"]);
+			}
 		}
 	//@ts-ignore
 	)(fifty);

@@ -8,7 +8,7 @@
 (
 	/**
 	 *
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.$api.jrunscript.Global } $api
 	 * @param { slime.jrunscript.bootstrap.Context } $context
 	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.bootstrap.Exports> } $export
@@ -38,8 +38,23 @@
 						{},
 						jrunscript
 					)
+				} else if (true) {
+					var _url = new Packages.java.net.URL(script);
+					var _connection = _url.openConnection();
+					/** @type { slime.jrunscript.native.java.io.InputStream } */
+					var _stream = _connection.getInputStream();
+					var input = $api.jrunscript.io.InputStream.java(_stream);
+					var code = input.content.string.simple($api.jrunscript.io.Charset.default);
+					$api.engine.execute(
+						{
+							name: script,
+							js: code
+						},
+						{},
+						jrunscript
+					);
 				} else {
-					throw new Error("load(" + script + ")");
+					throw new Error("No implementation to load script [" + script + "]");
 				}
 			},
 			Packages: Packages,

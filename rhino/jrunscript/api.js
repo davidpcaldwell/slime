@@ -947,9 +947,16 @@
 								if (connection.getResponseCode) {
 									if (connection.getResponseCode() == 404) return null;
 									if (connection.getResponseCode() == 500) return null;
+								} else {
+									try {
+										var _stream = connection.getInputStream();
+									} catch (e) {
+										return null;
+									}
 								}
 							} catch (e) {
-								// Packages.java.lang.System.err.println("stack: " + e.stack);
+								Packages.java.lang.System.err.println(e);
+								Packages.java.lang.System.err.println("stack: " + e.stack);
 								return null;
 							}
 							return new Script({ url: url, connection: connection });
@@ -977,6 +984,9 @@
 								if (protocol == "http" || protocol == "https") {
 									$api.log("Reading from " + p.url + " ...");
 								}
+								$api.debug("opening input stream");
+								var _stream = p.connection.getInputStream();
+								$api.debug("opened input stream");
 								var code = $api.io.readJavaString(p.connection.getInputStream());
 								if (protocol == "http" || protocol == "https") {
 									$api.log("Loaded [" + p.url + "].");
@@ -1009,26 +1019,51 @@
 			}
 
 			if (configuration && configuration.script && configuration.script.url) {
+				$api.debug("configuration.script.url = " + configuration.script.url);
 				$api.script = new $api.Script({
 					url: new Packages.java.net.URL(configuration.script.url)
 				});
 			} else if (configuration && configuration.script && configuration.script.file) {
+				$api.debug("configuration.script.file = " + configuration.script.file);
 				$api.script = new $api.Script({
 					file: new Packages.java.io.File(configuration.script.file)
 				});
-			} else if (/\.slime\!api\.js$/.test($engine.script)) {
+			} else if (/18\.slime\!api\.js$/.test($engine.script)) {
+				//	TODO	FFS
+				//	these IDs do appear stable as long as plugins do not change but this is horrendous and should be reworked,
+				//	perhaps by reworking how packaged scripts work
+				$api.debug("PACKAGED? engine.script " + $engine.script + " so $api.script null");
+				var script = "jar:file:" + $engine.script.split("/").slice(0,-1).join("/") + "/" + "5.slime!/main.js";
 				//	Indicates this is embedded API in a built shell.
+				//	We could set the below, but it is not apparent it would have an effect
 				$api.script = null;
+				$api.embed = {
+					jsh: new $api.Script({ url: new Packages.java.net.URL(script) })
+				};
+				if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
+					throw new Error("Loading api.js from .slime should be done only for embedding API.");
+				}
+			} else if (/\.slime\!api\.js$/.test($engine.script)) {
+				$api.console("engine.script " + $engine.script + " so $api.script null");
+				var script = "jar:file:" + $engine.script.split("/").slice(0,-1).join("/") + "/" + "jrunscript.jsh.launcher.slime!/main.js";
+				//	Indicates this is embedded API in a built shell.
+				//	We could set the below, but it is not apparent it would have an effect
+				$api.script = null;
+				$api.embed = {
+					jsh: new $api.Script({ url: new Packages.java.net.URL(script) })
+				};
 				if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
 					throw new Error("Loading api.js from .slime should be done only for embedding API.");
 				}
 			} else if (/\.zip\!(.*)\/rhino\/jrunscript\/api\.js$/.test($engine.script)) {
+				$api.debug("engine.script .zip! so null");
 				//	Indicates this is embedded API in a remote shell.
 				$api.script = null;
 				if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
 					throw new Error("Loading api.js from .zip should be done only for embedding API.");
 				}
 			} else {
+				$api.debug("$engine.script = " + $engine.script);
 				$api.script = new $api.Script({
 					string: $engine.script
 				});
@@ -1635,8 +1670,11 @@
 				return rv;
 			})();
 			if ($query == "api") {
-				if (!$api.script) {
+				if ($api.embed && $api.embed.jsh) {
+					//	already set; do nothing
+				} else if (!$api.script) {
 					//	TODO	#1961 Embedding in built shell
+					$api.console("$api.script null; likely embedding in built shell ...");
 					$api.embed = {};
 				} else if ($api.script.resolve("main.js")) {
 					//	built shell
