@@ -80,6 +80,12 @@ namespace slime.internal.jrunscript.bootstrap {
 		debug?: boolean
 	}
 
+	export interface JavaClasspath {
+		liveconnect: (name: string) => slime.jrunscript.JavaClass<any,any>
+		nativeClass: (name: string) => slime.jrunscript.native.java.lang.Class
+		update: () => void
+	}
+
 	/**
 	 * Refers to the currently executing script.
 	 */
@@ -129,7 +135,7 @@ namespace slime.internal.jrunscript.bootstrap {
 		//	Used in jsh/launcher/main.js
 		Java?: {
 			type: (name: string) => slime.jrunscript.JavaClass & {
-				class: any
+				class: slime.jrunscript.native.java.lang.Class
 			}
 		}
 
@@ -191,7 +197,23 @@ namespace slime.internal.jrunscript.bootstrap {
 
 		engine: {
 			toString: () => string
-			resolve: any
+
+			/**
+			 * A method which, given values for each potential JavaScript engine, returns the value for the engine that is actually
+			 * running.
+			 *
+			 * @param option An object with a property for each potential JavaScript engine
+			 *
+			 * @returns The value of the property representing the JavaScript engine which is running.
+			 */
+			resolve: <T>(option: {
+				rhino: T
+				nashorn: T
+				graal: T
+
+				//	legacy compatibility with pre-JDK 8 Rhino; now unsupported
+				jdkrhino?: T
+			}) => T
 
 			readUrl: Environment["readUrl"]
 
@@ -202,6 +224,29 @@ namespace slime.internal.jrunscript.bootstrap {
 			 * @returns The exit status of the command
 			 */
 			runCommand: (...arguments: any[]) => number
+
+			rhino: {
+				/**
+				 * The location from which Rhino was loaded, specifically the `org.mozilla.javascript.Context` class.
+				 */
+				classpath: () => slime.jrunscript.native.java.io.File
+
+				/**
+				 * Whether Rhino is currently available on the classpath.
+				 */
+				isPresent: () => boolean
+
+				/**
+				 * If Rhino is currently running this script, the current Rhino script context.
+				 */
+				running: () => slime.jrunscript.native.org.mozilla.javascript.Context
+			}
+
+			nashorn: {
+				isPresent: () => boolean
+				//	TODO	Add org.openjdk.nashorn equivalent? Or is the fact that the types are equivalent enough?
+				running: () => slime.jrunscript.native.jdk.nashorn.internal.runtime.Context
+			}
 		}
 
 		github: {
@@ -314,23 +359,6 @@ namespace slime.internal.jrunscript.bootstrap {
 			readJavaString: (from: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String
 		}
 
-		rhino: {
-			/**
-			 * The location from which Rhino was loaded, specifically the `org.mozilla.javascript.Context` class.
-			 */
-			classpath: slime.jrunscript.native.java.io.File
-
-			/**
-			 * Whether Rhino is currently available on the classpath.
-			 */
-			isPresent: () => boolean
-
-			/**
-			 * Whether Rhino is the engine currently executing JavaScript.
-			 */
-			running: () => slime.jrunscript.native.org.mozilla.javascript.Context
-		}
-
 		nashorn: {
 			dependencies: {
 				maven: {
@@ -343,10 +371,6 @@ namespace slime.internal.jrunscript.bootstrap {
 
 				jarNames: string[]
 			}
-
-			isPresent: () => boolean
-			//	TODO	Add org.openjdk.nashorn equivalent
-			running: () => slime.jrunscript.native.jdk.nashorn.internal.runtime.Context
 
 			getDeprecationArguments: (javaMajorVersion: number) => string[]
 		}

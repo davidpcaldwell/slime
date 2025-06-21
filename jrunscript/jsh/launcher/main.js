@@ -99,7 +99,7 @@
 
 		//	If Rhino location not specified, and we are running this script inside Rhino, set that to be the default Rhino location for the
 		//	shell
-		$api.slime.settings.default("jsh.engine.rhino.classpath", $api.rhino.classpath);
+		$api.slime.settings.default("jsh.engine.rhino.classpath", $api.engine.rhino.classpath);
 
 		//	If SLIME source location not specified, and we can determine it, supply it to the shell
 		$api.slime.settings.default("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);

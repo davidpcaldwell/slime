@@ -172,9 +172,9 @@
 									nextInitParamIndex = i+1;
 								}
 							}
-							jsh.shell.console("Rhino? " + Boolean(jsh.internal.bootstrap.rhino.running()));
-							if (jsh.internal.bootstrap.rhino.running()) {
-								jsh.shell.console("Rhino version " + jsh.internal.bootstrap.rhino.running().getImplementationVersion());
+							jsh.shell.console("Rhino? " + Boolean(jsh.internal.bootstrap.engine.rhino.running()));
+							if (jsh.internal.bootstrap.engine.rhino.running()) {
+								jsh.shell.console("Rhino version " + jsh.internal.bootstrap.engine.rhino.running().getImplementationVersion());
 							}
 							jsh.shell.console("nextInitParamIndex = " + nextInitParamIndex);
 							var initParamLines = [];

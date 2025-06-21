@@ -122,9 +122,13 @@ interface Array<T> {
 
         //  Rhino 1.8.0: natively supports all
         //  Rhino 1.7.15: untested
-        //  Nashorn 15.6: lacks all
+        //  Nashorn 15.6: supports only Object.defineProperty, but does support it all the way back to Java 8
 
         fifty.tests.manual.engine = function() {
+            if (fifty.global.jsh) {
+                fifty.global.jsh.shell.console("java version = " + fifty.global.jsh.shell.java.version);
+            }
+            console("Object.defineProperty: " + Object.defineProperty);
             console("Object.assign: " + Object.assign);
             console("Object.fromEntries: " + Object.fromEntries);
             console("Object.entries: " + Object.entries);
