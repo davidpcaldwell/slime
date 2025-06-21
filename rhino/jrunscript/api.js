@@ -1028,11 +1028,24 @@
 				$api.script = new $api.Script({
 					file: new Packages.java.io.File(configuration.script.file)
 				});
+			} else if (/18\.slime\!api\.js$/.test($engine.script)) {
+				//	TODO	FFS
+				//	these IDs do appear stable as long as plugins do not change but this is horrendous and should be reworked,
+				//	perhaps by reworking how packaged scripts work
+				$api.debug("PACKAGED? engine.script " + $engine.script + " so $api.script null");
+				var script = "jar:file:" + $engine.script.split("/").slice(0,-1).join("/") + "/" + "5.slime!/main.js";
+				//	Indicates this is embedded API in a built shell.
+				//	We could set the below, but it is not apparent it would have an effect
+				$api.script = null;
+				$api.embed = {
+					jsh: new $api.Script({ url: new Packages.java.net.URL(script) })
+				};
+				if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
+					throw new Error("Loading api.js from .slime should be done only for embedding API.");
+				}
 			} else if (/\.slime\!api\.js$/.test($engine.script)) {
-				$api.debug("engine.script " + $engine.script + " so $api.script null");
+				$api.console("engine.script " + $engine.script + " so $api.script null");
 				var script = "jar:file:" + $engine.script.split("/").slice(0,-1).join("/") + "/" + "jrunscript.jsh.launcher.slime!/main.js";
-				//var url = "jar:file:" + script;
-				// $api.console("possible = [" + script + "]");
 				//	Indicates this is embedded API in a built shell.
 				//	We could set the below, but it is not apparent it would have an effect
 				$api.script = null;
