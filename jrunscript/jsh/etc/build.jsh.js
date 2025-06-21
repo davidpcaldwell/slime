@@ -54,7 +54,7 @@
 				Packages: Packages,
 				JavaAdapter: JavaAdapter,
 				load: function(url) {
-					jsh.shell.console("Loading " + url);
+					jsh.shell.console("build.jsh.js loading " + url);
 					if (jsh.file.Pathname(url).file) {
 						jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
 					}

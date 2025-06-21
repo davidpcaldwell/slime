@@ -106,9 +106,19 @@
 
 		$api.script.resolve("launcher.js").load();
 
+		if ($api.embed) {
+			return;
+		}
+
 		//	If we have a sibling named jsh.jar, we are a built shell
 		var shell = (function() {
-			if ($api.script.resolve("jsh.jar")) {
+			var builtShellJar = $api.script.resolve("jsh.jar");
+			if (builtShellJar) {
+				$api.debug(
+					"script file: " + $api.script.file + " url: " + $api.script.url
+					+ " resolved file= " + $api.script.resolve("jsh.jar").file
+					+ " resolved url = " + $api.script.resolve("jsh.jar").url
+				);
 				return $api.jsh.Built($api.script.file.getParentFile());
 			} else {
 				$api.slime.settings.default(
@@ -162,6 +172,7 @@
 			$api.debug("Nashorn not detected via javax.script; removing.");
 			delete $api.jsh.engines.nashorn;
 		}
+
 		if ($api.jsh.engines.nashorn) {
 			var Context = Packages.jdk.nashorn.internal.runtime.Context;
 			if (typeof(Context) != "function") {

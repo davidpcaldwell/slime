@@ -22,12 +22,10 @@
 			load: function() {
 				var target = {
 					$api: plugins.launcher,
-					Packages: Packages,
-					embed: true
+					Packages: Packages
 				};
 
-				//	#1961: enable
-				//$loader.run("main.js", {}, target);
+				$loader.run("main.js", {}, target);
 
 				jsh.internal = {
 					bootstrap: target.$api
