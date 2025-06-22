@@ -225,6 +225,8 @@ namespace slime.internal.jrunscript.bootstrap {
 			 */
 			runCommand: (...arguments: any[]) => number
 
+			getCallingScript: () => string
+
 			rhino: {
 				/**
 				 * The location from which Rhino was loaded, specifically the `org.mozilla.javascript.Context` class.
@@ -264,6 +266,7 @@ namespace slime.internal.jrunscript.bootstrap {
 		}
 
 		Script: {
+			new (p: { caller: true }): Script
 			new (p: { string: string }): Script
 			new (p: { file: slime.jrunscript.native.java.io.File }): Script
 			new (p: { url: slime.jrunscript.native.java.net.URL }): Script

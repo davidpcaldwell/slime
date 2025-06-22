@@ -19,7 +19,8 @@
 		var $api = this.$api;
 
 		if ($api.embed) {
-			$api.script = $api.embed.jsh;
+			var current = new $api.Script({ caller: true });
+			$api.script = current;
 		}
 
 		if (!$api.slime) {
@@ -42,7 +43,11 @@
 				}
 				setProperty($api, "slime", slimeConfiguration);
 			}
-			$api.script.resolve("slime.js").load();
+			var slimeScript = $api.script.resolve("slime.js");
+			if (slimeScript == null) {
+				throw new Error("Cound not resolve `slime.js` from " + $api.script);
+			}
+			slimeScript.load();
 		}
 
 		$api.debug.on = Boolean($api.slime.settings.get("jsh.launcher.debug"));
