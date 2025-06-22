@@ -51,6 +51,11 @@ namespace slime.jrunscript {
 				export interface Thread {
 				}
 
+				export interface ThreadLocal<T> extends slime.jrunscript.native.java.lang.Object {
+					get(): T
+					set: (t: T) => void
+				}
+
 				export namespace reflect {
 					export interface Field {
 						setAccessible(flag: boolean): void
@@ -208,13 +213,16 @@ namespace slime.jrunscript {
 
 				export interface Properties extends native.java.lang.Object {
 					load(value: any): void
-					get(name: string): any
 					propertyNames(): any
 					getProperty(name: string): string
 					setProperty(name: string, value: string): void
 					keySet(): any
 					entrySet(): any
 					store: (out: slime.jrunscript.native.java.io.OutputStream, comments: string) => void
+
+					//	Map, should actually just extend
+					get(name: string): any
+					put(name: string, value: any): void
 				}
 
 				export interface Enumeration<T> {
@@ -500,6 +508,7 @@ namespace slime.jrunscript {
 					TYPE: any
 				}
 				Number: JavaClass
+				ThreadLocal: JavaClass<slime.jrunscript.native.java.lang.ThreadLocal<any>>
 			}
 			io: {
 				ByteArrayInputStream: new (bytes: any) => slime.jrunscript.native.java.io.ByteArrayInputStream

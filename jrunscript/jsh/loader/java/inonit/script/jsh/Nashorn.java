@@ -59,7 +59,7 @@ public class Nashorn extends Shell.Engine {
 				try {
 					return Class.forName("org.openjdk.nashorn." + name);
 				} catch (ClassNotFoundException e2) {
-					throw new RuntimeException(e2);
+					throw new RuntimeException("Java version: " + System.getProperty("java.version"), e2);
 				}
 			}
 		}

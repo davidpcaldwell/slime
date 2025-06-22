@@ -25,8 +25,10 @@
 					Packages: Packages
 				};
 
-				//	#1961 enable
-				//	$loader.run("main.js", {}, target);
+				//	#1961
+				if (Packages.java.lang.System.getenv("SLIME_ISSUE_1961")) {
+					$loader.run("main.js", {}, target);
+				}
 
 				jsh.internal = {
 					bootstrap: target.$api

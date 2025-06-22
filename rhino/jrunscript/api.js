@@ -329,7 +329,48 @@
 			rv.resolve = function(options) {
 				return options[name];
 			};
-			rv.getScript = rv.resolve({
+
+			var rhinoStackPattern = /^(?:\s+)(?:at )(.*)\:(\d+)(?: \(.*\))?$/;
+
+			var rhinoStackFrames = function(string) {
+				var LINE_SEPARATOR = String(global.Packages.java.lang.System.getProperty("line.separator"));
+				var trace = string.split(LINE_SEPARATOR);
+				var rv = [];
+				for (var i=0; i<trace.length; i++) {
+					if (trace[i].length) {
+						var match = rhinoStackPattern.exec(trace[i]);
+						if (match) {
+							rv.push({ file: match[1] });
+						}
+					}
+				}
+				return rv;
+			}
+
+			rv.getCallingScript = rv.resolve({
+				nashorn: function() {
+					var trace = new global.Packages.java.lang.Throwable().getStackTrace();
+					for (var i=0; i<trace.length; i++) {
+						$api.debug(i + ": " + trace[i]);
+					}
+					return trace[2].getFileName();
+				},
+				rhino: function() {
+					var stackTrace = String(new global.Packages.org.mozilla.javascript.WrappedException(new global.Packages.java.lang.RuntimeException()).getScriptStackTrace());
+					$api.debug("rhino trace = [" + stackTrace + "]");
+					var frames = rhinoStackFrames(stackTrace);
+					$api.debug("frames = " + JSON.stringify(frames));
+					return (frames.length > 2) ? frames[2].file : null;
+				},
+				graal: function() {
+					throw new Error("Unimplemented.");
+				},
+				jdkrhino: function() {
+					throw new Error("Unimplemented.");
+				}
+			});
+
+			var getScript = rv.resolve({
 				nashorn: function() {
 					return new global.Packages.java.lang.Throwable().getStackTrace()[0].getFileName();
 				},
@@ -338,7 +379,7 @@
 					var trace = String(new global.Packages.org.mozilla.javascript.WrappedException(new global.Packages.java.lang.RuntimeException()).getScriptStackTrace()).split(LINE_SEPARATOR);
 					for (var i=0; i<trace.length; i++) {
 						if (trace[i].length) {
-							var pattern = /^(?:\s+)(?:at )(.*)\:(\d+)(?: \(.*\))?$/;
+							var pattern = rhinoStackPattern;
 							var parsed = pattern.exec(trace[i]);
 							if (!parsed) {
 								throw new Error("Rhino stack trace frame [" + trace[i] + " does not match expected pattern: [" + parsed + "]");
@@ -373,8 +414,10 @@
 					return global[String(global.Packages.javax.script.ScriptEngine.FILENAME)];
 				}
 			});
+
 			$api.debug("Getting main engine script ...");
-			rv.script = rv.getScript();
+			rv.script = getScript();
+
 			$api.debug("Main engine script is [" + rv.script + "]");
 			rv.newArray = function(type,length) {
 				var argument = this.resolve({
@@ -665,6 +708,9 @@
 						context.finish();
 						return rv;
 					},
+					getCallingScript: function() {
+						return $engine.getCallingScript();
+					},
 					rhino: rhino,
 					nashorn: nashorn
 				};
@@ -714,6 +760,16 @@
 		};
 
 		(function() {
+			var jarUrl = function(string) {
+				if (string.indexOf("!") != -1) {
+					var tokens = string.split("!");
+					if (tokens.length == 2) {
+						if (new Packages.java.io.File(tokens[0]).exists()) {
+							return "jar:file:" + tokens[0] + "!" + "/" + tokens[1];
+						}
+					}
+				}
+			}
 			//	Given a string, returns either { file: absolute java.io.File } or { url: java.net.URL }
 			var interpret = function(string) {
 				if (new Packages.java.io.File(string).exists()) {
@@ -721,6 +777,10 @@
 					var file = new Packages.java.io.File(string).getAbsoluteFile();
 					return {
 						file: file
+					};
+				} else if (jarUrl(string)) {
+					return {
+						url: new Packages.java.net.URL(jarUrl(string))
 					};
 				} else {
 					try {
@@ -910,6 +970,10 @@
 			$api.Script = withRunProperty(
 				/** @this { slime.internal.jrunscript.bootstrap.Script } */
 				function Script(p) {
+					if (p.caller) {
+						var caller = $engine.getCallingScript();
+						return new Script(interpret(caller));
+					}
 					if (p.string) {
 						return new Script(interpret(p.string));
 					}
@@ -1028,30 +1092,30 @@
 				$api.script = new $api.Script({
 					file: new Packages.java.io.File(configuration.script.file)
 				});
-			} else if (/18\.slime\!api\.js$/.test($engine.script)) {
-				//	TODO	FFS
-				//	these IDs do appear stable as long as plugins do not change but this is horrendous and should be reworked,
-				//	perhaps by reworking how packaged scripts work
-				$api.debug("PACKAGED? engine.script " + $engine.script + " so $api.script null");
-				var script = "jar:file:" + $engine.script.split("/").slice(0,-1).join("/") + "/" + "5.slime!/main.js";
-				//	Indicates this is embedded API in a built shell.
-				//	We could set the below, but it is not apparent it would have an effect
-				$api.script = null;
-				$api.embed = {
-					jsh: new $api.Script({ url: new Packages.java.net.URL(script) })
-				};
-				if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
-					throw new Error("Loading api.js from .slime should be done only for embedding API.");
-				}
+			// } else if (/18\.slime\!api\.js$/.test($engine.script)) {
+			// 	//	TODO	FFS
+			// 	//	these IDs do appear stable as long as plugins do not change but this is horrendous and should be reworked,
+			// 	//	perhaps by reworking how packaged scripts work
+			// 	$api.debug("PACKAGED? engine.script " + $engine.script + " so $api.script null");
+			// 	var script = "jar:file:" + $engine.script.split("/").slice(0,-1).join("/") + "/" + "5.slime!/main.js";
+			// 	//	Indicates this is embedded API in a built shell.
+			// 	//	We could set the below, but it is not apparent it would have an effect
+			// 	$api.script = null;
+			// 	$api.embed = {
+			// 		jsh: new $api.Script({ url: new Packages.java.net.URL(script) })
+			// 	};
+			// 	if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
+			// 		throw new Error("Loading api.js from .slime should be done only for embedding API.");
+			// 	}
 			} else if (/\.slime\!api\.js$/.test($engine.script)) {
 				$api.console("engine.script " + $engine.script + " so $api.script null");
-				var script = "jar:file:" + $engine.script.split("/").slice(0,-1).join("/") + "/" + "jrunscript.jsh.launcher.slime!/main.js";
+				// var script = "jar:file:" + $engine.script.split("/").slice(0,-1).join("/") + "/" + "jrunscript.jsh.launcher.slime!/main.js";
 				//	Indicates this is embedded API in a built shell.
 				//	We could set the below, but it is not apparent it would have an effect
 				$api.script = null;
-				$api.embed = {
-					jsh: new $api.Script({ url: new Packages.java.net.URL(script) })
-				};
+				// $api.embed = {
+				// 	jsh: new $api.Script({ url: new Packages.java.net.URL(script) })
+				// };
 				if (configuration.arguments.length != 1 || configuration.arguments[0] != "api") {
 					throw new Error("Loading api.js from .slime should be done only for embedding API.");
 				}
