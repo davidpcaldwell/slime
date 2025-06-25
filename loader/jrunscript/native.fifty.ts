@@ -531,6 +531,8 @@ namespace slime.jrunscript {
 				Reader: any
 				Writer: any
 				OutputStream: JavaClass<slime.jrunscript.native.java.io.OutputStream>
+				BufferedInputStream: JavaClass<slime.jrunscript.native.java.io.InputStream>
+				BufferedOutputStream: JavaClass<slime.jrunscript.native.java.io.OutputStream>
 				FileInputStream: any
 				FileReader: any
 				InputStreamReader: any
