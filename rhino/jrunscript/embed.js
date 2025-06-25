@@ -38,7 +38,17 @@
 						{},
 						jrunscript
 					)
+				} else if (typeof(script) == "object" && script && script.name && script.script) {
+					$api.engine.execute(
+						{
+							name: script.name,
+							js: script.script
+						},
+						{},
+						jrunscript
+					)
 				} else if (true) {
+					Packages.java.lang.System.err.println("script = " + JSON.stringify(script));
 					var _url = new Packages.java.net.URL(script);
 					var _connection = _url.openConnection();
 					/** @type { slime.jrunscript.native.java.io.InputStream } */

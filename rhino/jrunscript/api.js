@@ -806,28 +806,45 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.java.net.URL } url
-			 * @returns { { zip: slime.jrunscript.native.java.net.URL, branch: string, path: string } }
+			 * @returns { { zipUrl: slime.jrunscript.native.java.net.URL, branch: string, path: string } }
 			 */
 			var toGithubArchiveLocation = function(url) {
 				var string = String(url);
-				var githubPattern = /http(s?)\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/([^\/]*)\/(.*)$/;
-				var githubMatch = githubPattern.exec(string);
-				if (githubMatch) {
+				var githubRawPattern = /http(s?)\:\/\/raw.githubusercontent.com\/davidpcaldwell\/slime\/([^\/]*)\/(.*)$/;
+				var githubRawPatternMatch = githubRawPattern.exec(string);
+				var githubArchivePattern = /http(s?)\:\/\/github\.com\/davidpcaldwell\/slime\/archive\/refs\/heads\/(.*)\.zip\!(?:[^\/]*)\/(.*)/;
+				var githubArchiveMatch = githubArchivePattern.exec(string);
+				if (githubRawPatternMatch) {
 					//	need to intercede with ZIP file
 					var zipurl = new Packages.java.net.URL(
-						"http" + githubMatch[1] + "://github.com/davidpcaldwell/slime/archive/refs/heads/" + githubMatch[2] + ".zip"
+						"http" + githubRawPatternMatch[1] + "://github.com/davidpcaldwell/slime/archive/refs/heads/" + githubRawPatternMatch[2] + ".zip"
 					);
 					return {
-						zip: zipurl,
-						branch: githubMatch[2],
-						path: githubMatch[3]
+						zipUrl: zipurl,
+						//	branch is needed because downloaded .zip files use the branch as part of the zip prefix inside the file
+						branch: githubRawPatternMatch[2],
+						path: githubRawPatternMatch[3]
 					}
+				} else if (githubArchiveMatch) {
+					var zipUrl = new Packages.java.net.URL(
+						"http" + githubArchiveMatch[1] + "://github.com/davidpcaldwell/slime/archive/refs/heads/" + githubArchiveMatch[2] + ".zip"
+					);
+					var branch = githubArchiveMatch[2];
+					var path = githubArchiveMatch[3];
+					return {
+						zipUrl: zipUrl,
+						branch: branch,
+						path: path
+					};
 				} else {
 					return null;
 				}
 			}
 
 			/**
+			 * Creates an in-memory object that represents the contents of a GitHub source archive. The given `InputStream` is read
+			 * and parsed into its file entries; the directory structure is also captured to provide the ability to list a folder
+			 * within an archive.
 			 *
 			 * @param { slime.jrunscript.native.java.io.InputStream } _stream
 			 */
@@ -880,6 +897,8 @@
 					}
 				});
 
+				_stream.close();
+
 				return {
 					read: function(name) {
 						if (!files[name]) return null;
@@ -893,22 +912,52 @@
 			};
 
 			var githubArchives = (function() {
-				/** @type { { [url: string]: slime.internal.jrunscript.bootstrap.github.Archive } } */
-				var archives = {};
+				var archives = (
+					function() {
+						/** @type { { [url: string]: slime.internal.jrunscript.bootstrap.github.Archive } } */
+						var cache = {};
+
+						/** @type { { [url: string]: slime.jrunscript.native.java.io.File } } */
+						var downloaded = {};
+
+						return {
+							get: function(_url) {
+								var url = String(_url.toExternalForm());
+								if (!cache[url]) {
+									var property = Packages.java.lang.System.getProperty(
+										"slime.bootstrap.githubArchive." + _url.toExternalForm()
+									);
+									var file;
+									if (property) {
+										file = new Packages.java.io.File(String(property))
+									} else {
+										var tmp = Packages.java.io.File.createTempFile("github-archive-", ".zip");
+										io.copy(
+											new Packages.java.io.BufferedInputStream(_url.openStream()),
+											new Packages.java.io.BufferedOutputStream(new Packages.java.io.FileOutputStream(tmp))
+										);
+										downloaded[url] = tmp;
+										file = tmp;
+									}
+									cache[url] = GithubArchive(new Packages.java.io.FileInputStream(file));
+								}
+								return cache[url];
+							},
+							properties: function() {
+								throw new Error("Unimplemented.");
+							}
+						}
+					}
+				)();
 
 				return {
-					/**
-					 *
-					 * @param { slime.jrunscript.native.java.net.URL } _url
-					 */
-					add: function(_url) {
-						archives[String(_url.toExternalForm())] = GithubArchive(_url.openStream());
-					},
 					getSourceFile: function(_url) {
 						var location = toGithubArchiveLocation(_url);
 						if (location) {
-							var archive = archives[String(location.zip.toExternalForm())];
+							$api.debug("Checking archive " + JSON.stringify({ url: String(location.zipUrl), branch: location.branch, path: location.path }));
+							var archive = archives.get(location.zipUrl);
 							if (archive) {
+								$api.debug("Archive found (of course) at " + location);
 								var _inputStream = archive.read("slime-" + location.branch + "/" + location.path);
 								if (!_inputStream) {
 									$api.debug("Not found in " + archive + ": " + "slime-" + location.branch + "/" + location.path);
@@ -919,13 +968,14 @@
 								return void(0);
 							}
 						} else {
+							$api.debug("No location for " + _url);
 							return void(0);
 						}
 					},
 					getSourceFilesUnder: function(_url) {
 						var location = toGithubArchiveLocation(_url);
 						if (location) {
-							var archive = archives[String(location.zip.toExternalForm())];
+							var archive = archives.get(location.zipUrl);
 							if (archive) {
 								$api.debug("Listing URL " + _url + " path " + location.path);
 								//	TODO	should not hard-code master
@@ -994,7 +1044,9 @@
 						this.resolve = function(path) {
 							$api.debug("Resolving " + path + " from " + p.url + " ...");
 							var url = new Packages.java.net.URL(p.url, path);
+							$api.debug("Resolving " + url + " ...");
 							var archiveCode = $api.github.archives.getSourceFile(url);
+							$api.debug("archiveCode = " + archiveCode);
 							if (archiveCode) {
 								return new Script({ url: url, code: archiveCode });
 							} else if (archiveCode === null) {
@@ -1051,7 +1103,7 @@
 								$api.debug("opening input stream");
 								var _stream = p.connection.getInputStream();
 								$api.debug("opened input stream");
-								var code = $api.io.readJavaString(p.connection.getInputStream());
+								var code = $api.io.readJavaString(_stream);
 								if (protocol == "http" || protocol == "https") {
 									$api.log("Loaded [" + p.url + "].");
 								}
@@ -1062,6 +1114,11 @@
 								});
 							}
 						} else if (p.code) {
+							//	Not a documented form of Rhino load(); see rhino.github.io/tools/shell, but might be valid
+							//	Or possibly we invented this. But in any case we use it in embedding.
+							//	Quick test from Rhino prompt indicates we probably simply invented this form
+							//	Ah, no, *Nashorn* supports this form.
+							//	https://docs.oracle.com/javase/8/docs/technotes/guides/scripting/nashorn/shell.html
 							load({
 								name: this.toString(),
 								script: p.code
@@ -1108,7 +1165,7 @@
 			// 		throw new Error("Loading api.js from .slime should be done only for embedding API.");
 			// 	}
 			} else if (/\.slime\!api\.js$/.test($engine.script)) {
-				$api.console("engine.script " + $engine.script + " so $api.script null");
+				$api.debug("engine.script " + $engine.script + " so $api.script null");
 				// var script = "jar:file:" + $engine.script.split("/").slice(0,-1).join("/") + "/" + "jrunscript.jsh.launcher.slime!/main.js";
 				//	Indicates this is embedded API in a built shell.
 				//	We could set the below, but it is not apparent it would have an effect
@@ -1131,12 +1188,12 @@
 				$api.script = new $api.Script({
 					string: $engine.script
 				});
-				if ($api.script.url) {
-					if (toGithubArchiveLocation($api.script.url)) {
-						var zip = toGithubArchiveLocation($api.script.url).zip;
-						githubArchives.add(zip);
-					}
-				}
+				// if ($api.script.url) {
+				// 	if (toGithubArchiveLocation($api.script.url)) {
+				// 		var zipUrl = toGithubArchiveLocation($api.script.url).zipUrl;
+				// 		githubArchives.download(zipUrl);
+				// 	}
+				// }
 			}
 
 			if (configuration && configuration.arguments) {
@@ -1738,7 +1795,7 @@
 					//	already set; do nothing
 				} else if (!$api.script) {
 					//	TODO	#1961 Embedding in built shell
-					$api.console("$api.script null; likely embedding in built shell ...");
+					$api.debug("$api.script null; likely embedding in built shell ...");
 					$api.embed = {};
 				} else if ($api.script.resolve("main.js")) {
 					//	built shell

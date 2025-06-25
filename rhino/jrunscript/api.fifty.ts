@@ -114,6 +114,7 @@ namespace slime.internal.jrunscript.bootstrap {
 		 */
 		load: {
 			(fileOrUrl: string): void
+			//	TODO	would like to name script property to js but it caused regression
 			(p: { name: string, script: slime.jrunscript.native.java.lang.String })
 		}
 
@@ -151,10 +152,15 @@ namespace slime.internal.jrunscript.bootstrap {
 		}
 
 		export type Io = {
+			/**
+			 * Copies `from` to `to`. Closes output stream but not input stream.
+			 */
 			copy: (from: slime.jrunscript.native.java.io.InputStream, to: slime.jrunscript.native.java.io.OutputStream) => void
+
 			zip: {
 				parse: (_stream: slime.jrunscript.native.java.io.InputStream, destination: io.zip.Processor) => void
 			}
+
 			readJavaString: (from: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String
 		}
 	}
@@ -253,13 +259,21 @@ namespace slime.internal.jrunscript.bootstrap {
 
 		github: {
 			archives: {
+				/**
+				 * Given the URL of a raw source file on GitHub, returns the string content of that file.
+				 */
 				getSourceFile: (url: slime.jrunscript.native.java.net.URL) => slime.jrunscript.native.java.lang.String
+
+				/**
+				 * Given a base GitHub URL under which raw source files may be found, returns a list of URLs containing raw source
+				 * files that are under that base.
+				 */
 				getSourceFilesUnder: (url: slime.jrunscript.native.java.net.URL) => slime.jrunscript.native.java.net.URL[]
 			}
 			test: {
 				zip: (_stream: slime.jrunscript.native.java.io.InputStream) => github.Archive
 				toArchiveLocation: (url: slime.jrunscript.native.java.net.URL) => {
-					zip: slime.jrunscript.native.java.net.URL
+					zipUrl: slime.jrunscript.native.java.net.URL
 					path: string
 				}
 			}
