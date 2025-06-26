@@ -155,7 +155,7 @@ namespace slime.internal.jrunscript.bootstrap {
 			/**
 			 * Copies `from` to `to`. Closes output stream but not input stream.
 			 */
-			copy: (from: slime.jrunscript.native.java.io.InputStream, to: slime.jrunscript.native.java.io.OutputStream) => void
+			copy: slime.internal.jrunscript.bootstrap.Api<{}>["io"]["copy"]
 
 			zip: {
 				parse: (_stream: slime.jrunscript.native.java.io.InputStream, destination: io.zip.Processor) => void
@@ -371,11 +371,19 @@ namespace slime.internal.jrunscript.bootstrap {
 	export interface Api<J> {
 		io: {
 			tmpdir: (p?: { prefix?: string, suffix?: string }) => slime.jrunscript.native.java.io.File
-			copy: any
+			copy: (from: slime.jrunscript.native.java.io.InputStream, to: slime.jrunscript.native.java.io.OutputStream) => void
 			unzip: any
 			readJavaString: (from: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String
 		}
+	}
 
+	export interface Api<J> {
+		rhino: {
+			version: (jdkMajorVersion: number) => string
+		}
+	}
+
+	export interface Api<J> {
 		nashorn: {
 			dependencies: {
 				maven: {

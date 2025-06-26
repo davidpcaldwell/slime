@@ -123,6 +123,7 @@
 			engine: void(0),
 			github: void(0),
 			script: void(0),
+			rhino: void(0),
 			nashorn: void(0),
 			java: void(0),
 			arguments: void(0),
@@ -1610,6 +1611,17 @@
 			io.zip.parse(_stream, destination);
 		};
 		$api.io.readJavaString = io.readJavaString;
+
+		$api.rhino = (
+			function() {
+				return {
+					version: function(jdkVersion) {
+						if (jdkVersion < 11) return "1.7.15";
+						return "1.8.0";
+					}
+				}
+			}
+		)();
 
 		$api.nashorn = (
 			function() {
