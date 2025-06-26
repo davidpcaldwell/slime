@@ -337,6 +337,9 @@
 					all[name].value = value;
 				}
 
+				/**
+				 * @type { slime.jsh.internal.launcher.Slime["settings"]["default"] }
+				 */
 				this.default = function(name,value) {
 					if (typeof(value) == "undefined") return;
 					if (typeof(value) != "function") {

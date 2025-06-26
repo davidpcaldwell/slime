@@ -392,7 +392,9 @@
 
 				return {
 					toString: toString,
-					rhino: rhino,
+					rhino: function(version) {
+						return rhino;
+					},
 					nashorn: nashorn,
 					graal: graal,
 					profiler: profiler,
@@ -406,8 +408,7 @@
 			 */
 			$$api.jsh.Built = function(home) {
 				var toString = function() {
-					var rhino = (new Packages.java.io.File(home, "lib/js.jar").exists()) ? new Packages.java.io.File(home, "lib/js.jar") : void(0);
-					return "Built: " + home + " rhino=" + rhino;
+					return "Built: home=" + home;
 				}
 
 				var rhino = null;
@@ -439,7 +440,9 @@
 
 				return {
 					toString: toString,
-					rhino: rhino,
+					rhino: function(version) {
+						return rhino;
+					},
 					nashorn: nashorn,
 					graal: graal,
 					profiler: profiler,

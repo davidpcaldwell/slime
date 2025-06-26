@@ -197,54 +197,11 @@
 			}
 		}
 
-		// TODO: delete Graal if it is not available
-
-		var defaultEngine = (function() {
-			if (shell.rhino) return "rhino";
-			if ($api.jsh.engines.nashorn) return "nashorn";
-			throw new Error("Neither Rhino nor Nashorn available; was this invoked in a way other than using the top-level jsh script?");
-		})();
-		$api.debug("shell after engine selection = " + shell);
-		if (!defaultEngine) {
-			Packages.java.lang.System.err.println("No compatible JavaScript engine found.");
-			Packages.java.lang.System.exit(1);
-		}
-		$api.slime.settings.default("jsh.engine", defaultEngine);
-
-		if ($api.slime.settings.get("jsh.engine") == "graal") {
-			$api.debug("Engine is Graal.js");
-			var lib = $api.slime.settings.get("jsh.shell.lib");
-			if (new Packages.java.io.File(lib, "graal").exists()) {
-				//	TODO	this logic is duplicated in launcher.js
-				if (new Packages.java.io.File(lib, "graal/Contents/Home").exists()) {
-					$api.slime.settings.set("jsh.java.home", String(new Packages.java.io.File(lib, "graal/Contents/Home")));
-				} else {
-					$api.slime.settings.set("jsh.java.home", String(new Packages.java.io.File(lib, "graal")));
-				}
-			} else {
-				Packages.java.lang.System.err.println("Graal.js specified as engine but not found.");
-				Packages.java.lang.System.exit(1);
-			}
-		}
-
 		var command = new $api.java.Command();
 
 		if ($api.slime.settings.get("jsh.java.home")) {
 			$api.debug("setting jsh.java.home = " + $api.slime.settings.get("jsh.java.home"));
 			command.home($api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
-		}
-
-		if ($api.arguments[0] == "-engines") {
-			var engines = [];
-			if (shell.rhino) engines.push("rhino");
-			if ($api.jsh.engines.nashorn) engines.push("nashorn");
-			Packages.java.lang.System.out.print(JSON.stringify(engines));
-			Packages.java.lang.System.exit(0);
-		}
-
-		//	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
-		while($api.arguments.length > 0 && $api.arguments[0] && $api.arguments[0].substring(0,1) == "-") {
-			command.vm($api.arguments.shift());
 		}
 
 		var jshLauncherJavaMajorVersion = (
@@ -283,6 +240,51 @@
 				}
 			}
 		)();
+
+		// TODO: delete Graal if it is not available
+
+		var loaderRhino = shell.rhino($api.rhino.version(jshLoaderJavaMajorVersion));
+
+		var defaultEngine = (function() {
+			if (loaderRhino) return "rhino";
+			if ($api.jsh.engines.nashorn) return "nashorn";
+			throw new Error("Neither Rhino nor Nashorn available; was this invoked in a way other than using the top-level jsh script?");
+		})();
+		$api.debug("shell after engine selection = " + shell);
+		if (!defaultEngine) {
+			Packages.java.lang.System.err.println("No compatible JavaScript engine found.");
+			Packages.java.lang.System.exit(1);
+		}
+		$api.slime.settings.default("jsh.engine", defaultEngine);
+
+		if ($api.slime.settings.get("jsh.engine") == "graal") {
+			$api.debug("Engine is Graal.js");
+			var lib = $api.slime.settings.get("jsh.shell.lib");
+			if (new Packages.java.io.File(lib, "graal").exists()) {
+				//	TODO	this logic is duplicated in launcher.js
+				if (new Packages.java.io.File(lib, "graal/Contents/Home").exists()) {
+					$api.slime.settings.set("jsh.java.home", String(new Packages.java.io.File(lib, "graal/Contents/Home")));
+				} else {
+					$api.slime.settings.set("jsh.java.home", String(new Packages.java.io.File(lib, "graal")));
+				}
+			} else {
+				Packages.java.lang.System.err.println("Graal.js specified as engine but not found.");
+				Packages.java.lang.System.exit(1);
+			}
+		}
+
+		if ($api.arguments[0] == "-engines") {
+			var engines = [];
+			if (loaderRhino) engines.push("rhino");
+			if ($api.jsh.engines.nashorn) engines.push("nashorn");
+			Packages.java.lang.System.out.print(JSON.stringify(engines));
+			Packages.java.lang.System.exit(0);
+		}
+
+		//	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
+		while($api.arguments.length > 0 && $api.arguments[0] && $api.arguments[0].substring(0,1) == "-") {
+			command.vm($api.arguments.shift());
+		}
 
 		//var loaderMajorVersion = jshLoaderJavaMajorVersion;
 
@@ -325,11 +327,11 @@
 
 		var _urls = [];
 
-		if (shell.rhino) {
+		if (loaderRhino) {
 			//	TODO	possibly redundant with some code in launcher.js; examine and think through
-			$api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(shell.rhino).local());
-			for (var i=0; i<shell.rhino.length; i++) {
-				_urls.push(shell.rhino[i]);
+			$api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(loaderRhino).local());
+			for (var i=0; i<loaderRhino.length; i++) {
+				_urls.push(loaderRhino[i]);
 			}
 		}
 
@@ -381,7 +383,7 @@
 				Packages.java.lang.System.exit(1);
 			}
 		} else if (scriptDebugger == "rhino") {
-			if (!shell.rhino) {
+			if (!loaderRhino) {
 				Packages.java.lang.System.err.println("Rhino engine not present, but Rhino debugger specified. Exiting.");
 				Packages.java.lang.System.exit(1);
 			}
