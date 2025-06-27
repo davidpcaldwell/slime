@@ -90,6 +90,8 @@ namespace slime.internal.jrunscript.bootstrap {
 	 * Refers to the currently executing script.
 	 */
 	export interface Script {
+		toString: () => string
+
 		load: () => void
 
 		/**

@@ -239,18 +239,74 @@
 
 			$$api.script.resolve("javac.js").load();
 
+			/** @type { (p: { setting: string, rhino?: slime.jrunscript.native.java.net.URL[] }) => slime.jsh.internal.launcher.Libraries } */
+			var Libraries = function(p) {
+				var setting = p.setting;
+				// TODO: this same approach for locating the lib directory should be used in $$api.jsh.Built, no?
+				var lib = (function() {
+					//	TODO	setting can be null because $$api.script.resolve() doesn't find local/jsh/lib online; should refactor
+					if (!setting) return null;
+					if (/^http/.test(setting)) {
+						return { url: setting }
+					} else {
+						var file = new Packages.java.io.File(setting);
+						if (!file.exists()) file.mkdirs();
+						return { file: file };
+					}
+				})();
+
+				var rhino = function(version) {
+					if (p.rhino) return p.rhino;
+					if ($$api.slime.settings.get("jsh.engine.rhino.classpath")) {
+						return [new Packages.java.io.File($$api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
+					} else if (setting && lib.file) {
+						if (new Packages.java.io.File(lib.file, "js.jar").exists()) {
+							return [new Packages.java.io.File(lib.file, "js.jar").toURI().toURL()];
+						}
+					}
+				};
+
+				var nashorn = (function() {
+					if (setting && lib.file) {
+						if (new Packages.java.io.File(lib.file, "nashorn.jar").exists()) {
+							$$api.debug("nashorn.jar found");
+							return $$api.nashorn.dependencies.jarNames.concat(["nashorn.jar"]).map(function(filename) {
+								return new Packages.java.io.File(lib.file, filename).toURI().toURL();
+							});
+						}
+					}
+				})();
+
+				return {
+					rhino: rhino,
+					nashorn: nashorn
+				}
+			}
+
 			/**
 			 * @type { slime.jsh.internal.launcher.Jsh["Unbuilt"] }
 			 */
 			$$api.jsh.Unbuilt = function(p) {
 				if (!p) throw new TypeError("Required: arguments[0]");
 
+				var src = p.src || $$api.slime.src;
+
 				var File = Packages.java.io.File;
 
 				//	TODO	p.rhino argument is supplied by jsh/etc/build.jsh.js and is dubious
 				var toString = function() {
-					return "Unbuilt: src=" + $$api.slime.src + " rhino=" + rhino + " nashorn=" + nashorn;
+					return "Unbuilt: src=" + src + " rhino=" + rhino + " nashorn=" + nashorn;
 				}
+
+				$$api.slime.settings.default(
+					"jsh.shell.lib",
+					src.getPath("local/jsh/lib")
+				);
+
+				var libraries = Libraries({
+					setting: $$api.slime.settings.get("jsh.shell.lib"),
+					rhino: p.rhino
+				})
 
 				var rhino = (p.rhino) ? p.rhino : null;
 
@@ -291,13 +347,13 @@
 					//var graal = this.graal;
 					if (!p) p = {};
 					if (!p.to) p.to = $$api.io.tmpdir();
-					var toCompile = $$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/java"));
-					if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/rhino/java")));
-					if (graal && isGraalCompatible) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/graal/java")));
-					toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("rhino/system/java")));
-					toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/java")));
-					if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/rhino/java")));
-					if (graal && isGraalCompatible) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/graal/java")));
+					var toCompile = src.getSourceFilesUnder(src.File("loader/jrunscript/java"));
+					if (rhino) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("loader/jrunscript/rhino/java")));
+					if (graal && isGraalCompatible) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("loader/jrunscript/graal/java")));
+					toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("rhino/system/java")));
+					toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("jrunscript/jsh/loader/java")));
+					if (rhino) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("jrunscript/jsh/loader/rhino/java")));
+					if (graal && isGraalCompatible) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("jrunscript/jsh/loader/graal/java")));
 					var classpathArguments = (classpath) ? ["-classpath", classpath.local()] : [];
 					var targetArguments = (p && p.target) ? ["-target", p.target] : [];
 					var sourceArguments = (p && p.source) ? ["-source", p.source] : [];
@@ -320,12 +376,12 @@
 				var shellClasspath = function(p) {
 					var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
 
-					if (!$$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
+					if (!src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 					var setting = $$api.slime.settings.get("jsh.shell.classes");
 					/** @type { slime.jrunscript.native.java.io.File } */
 					var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $$api.io.tmpdir();
 					if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
-					if ($$api.slime.src.File) {
+					if (src.File) {
 						if (setting && LOADER_CLASSES.exists() && new Packages.java.io.File(LOADER_CLASSES, "inonit/script/engine/Code.class").exists()) {
 							$$api.debug("Found already-compiled files.");
 						} else {
@@ -336,7 +392,7 @@
 							});
 						}
 					} else {
-						$$api.log("Looking for loader source files under " + $$api.slime.src + " ...");
+						$$api.log("Looking for loader source files under " + src + " ...");
 
 						var getLoaderSourceFiles = function(p) {
 							var directories = [];
@@ -368,7 +424,7 @@
 
 						var toCompile = getLoaderSourceFiles({
 							list: function(string) {
-								return $$api.slime.src.getSourceFilesUnder(string);
+								return src.getSourceFilesUnder(string);
 							},
 							rhino: rhinoClasspath,
 							on: {
@@ -392,10 +448,7 @@
 
 				return {
 					toString: toString,
-					rhino: function(version) {
-						return rhino;
-					},
-					nashorn: nashorn,
+					libraries: libraries,
 					graal: graal,
 					profiler: profiler,
 					shellClasspath: shellClasspath,
@@ -411,17 +464,26 @@
 					return "Built: home=" + home;
 				}
 
-				var rhino = null;
-				if (new Packages.java.io.File(home, "lib/js.jar").exists()) {
-					rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
-				}
+				$$api.slime.settings.default(
+					"jsh.shell.lib",
+					String(new Packages.java.io.File(home, "lib").getCanonicalPath())
+				);
 
-				var nashorn = null;
-				if (new Packages.java.io.File(home, "lib/nashorn.jar").exists()) {
-					nashorn = $$api.nashorn.dependencies.names.concat(["nashorn"]).map(function(name) {
-						return new Packages.java.io.File(home, "lib/" + name + ".jar").toURI().toURL()
-					});
-				}
+				var libraries = Libraries({
+					setting: $$api.slime.settings.get("jsh.shell.lib"),
+				});
+
+				// var rhino = null;
+				// if (new Packages.java.io.File(home, "lib/js.jar").exists()) {
+				// 	rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
+				// }
+
+				// var nashorn = null;
+				// if (new Packages.java.io.File(home, "lib/nashorn.jar").exists()) {
+				// 	nashorn = $$api.nashorn.dependencies.names.concat(["nashorn"]).map(function(name) {
+				// 		return new Packages.java.io.File(home, "lib/" + name + ".jar").toURI().toURL()
+				// 	});
+				// }
 
 				//	TODO	should we allow Contents/Home here?
 				var graal = null;
@@ -440,10 +502,7 @@
 
 				return {
 					toString: toString,
-					rhino: function(version) {
-						return rhino;
-					},
-					nashorn: nashorn,
+					libraries: libraries,
 					graal: graal,
 					profiler: profiler,
 					shellClasspath: shellClasspath

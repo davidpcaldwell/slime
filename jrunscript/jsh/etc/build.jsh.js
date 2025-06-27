@@ -46,43 +46,10 @@
 
 		jsh.script.loader = jsh.script.Loader("../../../");
 
-		var jrunscript = (function() {
-			/**
-			 * @type { slime.internal.jrunscript.bootstrap.Global & { launcher: any } }
-			 */
-			var THIS = {
-				Packages: Packages,
-				JavaAdapter: JavaAdapter,
-				load: function(url) {
-					jsh.shell.console("build.jsh.js loading " + url);
-					if (jsh.file.Pathname(url).file) {
-						jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
-					}
-				},
-				readUrl: void(0),
-				$api: void(0),
-				launcher: void(0),
-				Java: void(0)
-			};
-			THIS.$api = {
-				toString: function() { return "it"; },
-				script: (jsh.script.url) ? { url: jsh.script.url } : { file: jsh.script.file.toString() },
-				arguments: [],
-				debug: false,
-				engine: {
-					script: (jsh.script.file) ? jsh.script.file.parent.parent.getRelativePath("rhino/jrunscript/api.js").toString() : null
-				},
-				load: function(url) {
-					jsh.shell.console("Loading " + url);
-					if (jsh.file.Pathname(url).file) {
-						jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
-					}
-				}
-			};
-			jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
-			THIS.$api.arguments = [];
-			return THIS;
-		})();
+		/** @type { { $api: typeof jsh.internal.bootstrap } } */
+		var jrunscript = {
+			$api: jsh.internal.bootstrap
+		}
 
 		var build = (function() {
 			var bothError = function(name) {
@@ -194,34 +161,58 @@
 			}
 		}
 
-		var loadLauncherScript = function(name) {
-			var argument = (function() {
-				if (jsh.script.file) return { file: jsh.script.file.parent.getRelativePath("../../jsh/launcher/" + name).java.adapt() };
-				if (jsh.script.url) {
-					var _url = new Packages.java.net.URL(jsh.script.url.toString());
-					var _resolved = new Packages.java.net.URL(_url, "../../jsh/launcher/" + name);
-					return { url: _resolved };
+		// var loadLauncherScript = function(name) {
+		// 	var argument = (function() {
+		// 		if (jsh.script.file) return { file: jsh.script.file.parent.getRelativePath("../../jsh/launcher/" + name).java.adapt() };
+		// 		if (jsh.script.url) {
+		// 			var _url = new Packages.java.net.URL(jsh.script.url.toString());
+		// 			var _resolved = new Packages.java.net.URL(_url, "../../jsh/launcher/" + name);
+		// 			return { url: _resolved };
+		// 		}
+		// 	})();
+		// 	jrunscript.$api.script = new jrunscript.$api.Script(argument);
+		// 	jsh.script.loader.run("jrunscript/jsh/launcher/" + name, { $api: jrunscript.$api }, jrunscript);
+		// }
+
+		// loadLauncherScript("slime.js");
+		// loadLauncherScript("launcher.js");
+
+		var SLIME = jsh.script.file.parent.parent.parent.parent;
+
+		var launcher = {
+			src: jrunscript.$api.slime.Src({
+				file: SLIME.getRelativePath("jrunscript/jsh/launcher/slime.js").java.adapt(),
+				resolve: function(path) {
+					jsh.shell.console("Resolving: " + path + " ...");
+					var _file = SLIME.getSubdirectory("jrunscript/jsh/launcher").getRelativePath(path).java.adapt();
+					jsh.shell.console("Resolved to " + _file);
+					if (_file.exists()) {
+						return {
+							toString: function() { return String(_file.getCanonicalPath()); },
+							file: _file
+						};
+					} else {
+						return null;
+					}
 				}
-			})();
-			jrunscript.$api.script = new jrunscript.$api.Script(argument);
-			jsh.script.loader.run("jrunscript/jsh/launcher/" + name, { $api: jrunscript.$api }, jrunscript);
-		}
-
-		loadLauncherScript("slime.js");
-		loadLauncherScript("launcher.js");
-
-		jrunscript.launcher = {};
-		jrunscript.launcher.buildLoader = function(rhino) {
-			//	Converts jsh searchpath to launcher classpath
-			var _rhino = (rhino) ? (function() {
-				var _urls = rhino.pathnames.map(function(pathname) {
-					return pathname.java.adapt().toURI().toURL();
+			}),
+			buildLoader: function(rhino) {
+				//	Converts jsh searchpath to launcher classpath
+				/** @type { slime.jrunscript.native.java.net.URL[] } */
+				var _rhino = (rhino) ? (function() {
+					var _urls = rhino.pathnames.map(function(pathname) {
+						return pathname.java.adapt().toURI().toURL();
+					});
+					return _urls;
+				})() : null;
+				var unbuilt = jrunscript.$api.jsh.Unbuilt({
+					src: launcher.src,
+					rhino: _rhino
 				});
-				return _urls;
-			})() : null;
-			var unbuilt = new jrunscript.$api.jsh.Unbuilt({ rhino: _rhino });
-			return unbuilt.compileLoader({ source: JAVA_VERSION, target: JAVA_VERSION });
-		}
+				return unbuilt.compileLoader({ source: JAVA_VERSION, target: JAVA_VERSION });
+
+			}
+		};
 
 		var console = jrunscript.$api.console;
 		var debug = jrunscript.$api.debug;
@@ -233,9 +224,9 @@
 			(
 				function() {
 					console = jsh.shell.console;
-					debug = function(s) {
+					debug = Object.assign(function(s) {
 						if (parameters.options.verbose) jsh.shell.console(s);
-					};
+					}, { on: false });
 				}
 			)();
 		}
@@ -280,8 +271,6 @@
 			}
 		})(parameters);
 
-		var SLIME = jsh.script.file.parent.parent.parent.parent;
-
 		console("Creating directories ...");
 		["lib","script","script/launcher","modules","src"].forEach(function(path) {
 			destination.shell.getRelativePath(path).createDirectory();
@@ -316,7 +305,7 @@
 			//	TODO	test coverage for Nashorn
 			//	TODO	target/source ignored; -g possibly not present
 			//	TODO	May want to emit compiler information when running from build script
-			var tmpClasses = jrunscript.launcher.buildLoader(build.rhino);
+			var tmpClasses = launcher.buildLoader(build.rhino);
 			jsh.file.zip({
 				//	TODO	still need jsh.file java.adapt()
 				from: jsh.file.Pathname( String(tmpClasses.getCanonicalPath()) ).directory,
@@ -328,7 +317,7 @@
 		console("Building launcher ...");
 		(function buildLauncher() {
 			console("Compiling ...");
-			var _tmp = jrunscript.$api.slime.launcher.compile();
+			var _tmp = jrunscript.$api.slime.launcher.compile({ src: launcher.src });
 			console("Compiled.");
 			var tmp = jsh.file.Pathname(String(_tmp.getCanonicalPath())).directory;
 			//	TODO	assume manifest uses \n always, does it?

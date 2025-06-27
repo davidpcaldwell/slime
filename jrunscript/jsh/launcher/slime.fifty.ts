@@ -19,7 +19,7 @@ namespace slime.jsh.internal.launcher {
 		/**
 		 * (conditional; if underlying source root is a directory rather than a URL)
 		 */
-		File: (path: string) => slime.jrunscript.native.java.io.File
+		File?: (path: string) => slime.jrunscript.native.java.io.File
 
 		//	TODO	poaaibly equivalent to File
 		/**
@@ -33,6 +33,7 @@ namespace slime.jsh.internal.launcher {
 	export interface Slime {
 		launcher: {
 			getClasses: any
+			compile: any
 		}
 
 		home: any
@@ -58,6 +59,12 @@ namespace slime.jsh.internal.launcher {
 			getContainerArguments: any
 			sendPropertiesTo: any
 		}
+
+		Src: (p: {
+			file?: slime.jrunscript.native.java.io.File
+			url?: slime.jrunscript.native.java.net.URL
+			resolve: (path: string) => Pick<slime.internal.jrunscript.bootstrap.Script,"toString"|"file">
+		}) => Source
 
 		/**
 		 * (conditional; if this is an unbuilt local or remote shell)
