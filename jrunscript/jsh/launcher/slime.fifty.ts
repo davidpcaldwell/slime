@@ -33,6 +33,7 @@ namespace slime.jsh.internal.launcher {
 	export interface Slime {
 		launcher: {
 			getClasses: any
+			compile: any
 		}
 
 		home: any

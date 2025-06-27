@@ -5,15 +5,20 @@
 //	END LICENSE
 
 namespace slime.jsh.internal.launcher {
-	export interface Installation {
-		toString: () => string
-
+	export interface Libraries {
 		/**
 		 * The classpath from which the given Rhino version can be loaded, or `null`/`undefined` if it is not present.
 		 */
 		rhino: (version: string) => slime.jrunscript.native.java.net.URL[]
 
 		nashorn: slime.jrunscript.native.java.net.URL[]
+	}
+
+	export interface Installation {
+		toString: () => string
+
+		libraries: Libraries
+
 		graal?: slime.jrunscript.native.java.io.File
 		profiler: slime.jrunscript.native.java.io.File
 		shellClasspath: (p?: { source: string, target: string }) => slime.jrunscript.native.java.net.URL[]
@@ -41,12 +46,12 @@ namespace slime.jsh.internal.launcher {
 		Classpath: any
 
 		Unbuilt: (p: {
-			lib: {
+			lib?: {
 				url?: string
 				file?: slime.jrunscript.native.java.io.File
 			}
 			rhino: slime.jrunscript.native.java.net.URL[]
-			nashorn: slime.jrunscript.native.java.net.URL[]
+			nashorn?: slime.jrunscript.native.java.net.URL[]
 		}) => Installation & {
 			compileLoader: any
 		}

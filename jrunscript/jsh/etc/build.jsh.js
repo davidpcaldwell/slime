@@ -46,43 +46,47 @@
 
 		jsh.script.loader = jsh.script.Loader("../../../");
 
-		var jrunscript = (function() {
-			/**
-			 * @type { slime.internal.jrunscript.bootstrap.Global & { launcher: any } }
-			 */
-			var THIS = {
-				Packages: Packages,
-				JavaAdapter: JavaAdapter,
-				load: function(url) {
-					jsh.shell.console("build.jsh.js loading " + url);
-					if (jsh.file.Pathname(url).file) {
-						jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
-					}
-				},
-				readUrl: void(0),
-				$api: void(0),
-				launcher: void(0),
-				Java: void(0)
-			};
-			THIS.$api = {
-				toString: function() { return "it"; },
-				script: (jsh.script.url) ? { url: jsh.script.url } : { file: jsh.script.file.toString() },
-				arguments: [],
-				debug: false,
-				engine: {
-					script: (jsh.script.file) ? jsh.script.file.parent.parent.getRelativePath("rhino/jrunscript/api.js").toString() : null
-				},
-				load: function(url) {
-					jsh.shell.console("Loading " + url);
-					if (jsh.file.Pathname(url).file) {
-						jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
-					}
-				}
-			};
-			jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
-			THIS.$api.arguments = [];
-			return THIS;
-		})();
+		var jrunscript = {
+			$api: jsh.internal.bootstrap
+		}
+
+		// var jrunscript = (function() {
+		// 	/**
+		// 	 * @type { slime.internal.jrunscript.bootstrap.Global & { launcher: any } }
+		// 	 */
+		// 	var THIS = {
+		// 		Packages: Packages,
+		// 		JavaAdapter: JavaAdapter,
+		// 		load: function(url) {
+		// 			jsh.shell.console("build.jsh.js loading " + url);
+		// 			if (jsh.file.Pathname(url).file) {
+		// 				jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
+		// 			}
+		// 		},
+		// 		readUrl: void(0),
+		// 		$api: void(0),
+		// 		launcher: void(0),
+		// 		Java: void(0)
+		// 	};
+		// 	THIS.$api = {
+		// 		toString: function() { return "it"; },
+		// 		script: (jsh.script.url) ? { url: jsh.script.url } : { file: jsh.script.file.toString() },
+		// 		arguments: [],
+		// 		debug: false,
+		// 		engine: {
+		// 			script: (jsh.script.file) ? jsh.script.file.parent.parent.getRelativePath("rhino/jrunscript/api.js").toString() : null
+		// 		},
+		// 		load: function(url) {
+		// 			jsh.shell.console("Loading " + url);
+		// 			if (jsh.file.Pathname(url).file) {
+		// 				jsh.loader.run(jsh.file.Pathname(url), {}, THIS);
+		// 			}
+		// 		}
+		// 	};
+		// 	jsh.script.loader.run("rhino/jrunscript/api.js", {}, THIS);
+		// 	THIS.$api.arguments = [];
+		// 	return THIS;
+		// })();
 
 		var build = (function() {
 			var bothError = function(name) {
@@ -194,32 +198,33 @@
 			}
 		}
 
-		var loadLauncherScript = function(name) {
-			var argument = (function() {
-				if (jsh.script.file) return { file: jsh.script.file.parent.getRelativePath("../../jsh/launcher/" + name).java.adapt() };
-				if (jsh.script.url) {
-					var _url = new Packages.java.net.URL(jsh.script.url.toString());
-					var _resolved = new Packages.java.net.URL(_url, "../../jsh/launcher/" + name);
-					return { url: _resolved };
-				}
-			})();
-			jrunscript.$api.script = new jrunscript.$api.Script(argument);
-			jsh.script.loader.run("jrunscript/jsh/launcher/" + name, { $api: jrunscript.$api }, jrunscript);
-		}
+		// var loadLauncherScript = function(name) {
+		// 	var argument = (function() {
+		// 		if (jsh.script.file) return { file: jsh.script.file.parent.getRelativePath("../../jsh/launcher/" + name).java.adapt() };
+		// 		if (jsh.script.url) {
+		// 			var _url = new Packages.java.net.URL(jsh.script.url.toString());
+		// 			var _resolved = new Packages.java.net.URL(_url, "../../jsh/launcher/" + name);
+		// 			return { url: _resolved };
+		// 		}
+		// 	})();
+		// 	jrunscript.$api.script = new jrunscript.$api.Script(argument);
+		// 	jsh.script.loader.run("jrunscript/jsh/launcher/" + name, { $api: jrunscript.$api }, jrunscript);
+		// }
 
-		loadLauncherScript("slime.js");
-		loadLauncherScript("launcher.js");
+		// loadLauncherScript("slime.js");
+		// loadLauncherScript("launcher.js");
 
 		jrunscript.launcher = {};
 		jrunscript.launcher.buildLoader = function(rhino) {
 			//	Converts jsh searchpath to launcher classpath
+			/** @type { slime.jrunscript.native.java.net.URL[] } */
 			var _rhino = (rhino) ? (function() {
 				var _urls = rhino.pathnames.map(function(pathname) {
 					return pathname.java.adapt().toURI().toURL();
 				});
 				return _urls;
 			})() : null;
-			var unbuilt = new jrunscript.$api.jsh.Unbuilt({ rhino: _rhino });
+			var unbuilt = jrunscript.$api.jsh.Unbuilt({ rhino: _rhino });
 			return unbuilt.compileLoader({ source: JAVA_VERSION, target: JAVA_VERSION });
 		}
 
@@ -233,9 +238,9 @@
 			(
 				function() {
 					console = jsh.shell.console;
-					debug = function(s) {
+					debug = Object.assign(function(s) {
 						if (parameters.options.verbose) jsh.shell.console(s);
-					};
+					}, { on: false });
 				}
 			)();
 		}

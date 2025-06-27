@@ -58,6 +58,8 @@
 					this.getClasses = function() {
 						return new Packages.java.io.File($$api.script.file.getParentFile(), "jsh.jar");
 					};
+
+					this.compile = void(0);
 				};
 
 				rv.home = $$api.script.file.getParentFile();

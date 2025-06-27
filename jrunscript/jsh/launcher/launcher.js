@@ -239,6 +239,50 @@
 
 			$$api.script.resolve("javac.js").load();
 
+			/** @type { (p: { setting: string, rhino?: slime.jrunscript.native.java.net.URL[] }) => slime.jsh.internal.launcher.Libraries } */
+			var Libraries = function(p) {
+				var setting = p.setting;
+				// TODO: this same approach for locating the lib directory should be used in $$api.jsh.Built, no?
+				var lib = (function() {
+					//	TODO	setting can be null because $$api.script.resolve() doesn't find local/jsh/lib online; should refactor
+					if (!setting) return null;
+					if (/^http/.test(setting)) {
+						return { url: setting }
+					} else {
+						var file = new Packages.java.io.File(setting);
+						if (!file.exists()) file.mkdirs();
+						return { file: file };
+					}
+				})();
+
+				var rhino = function(version) {
+					if (p.rhino) return p.rhino;
+					if ($$api.slime.settings.get("jsh.engine.rhino.classpath")) {
+						return [new Packages.java.io.File($$api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
+					} else if (setting && lib.file) {
+						if (new Packages.java.io.File(lib.file, "js.jar").exists()) {
+							return [new Packages.java.io.File(lib.file, "js.jar").toURI().toURL()];
+						}
+					}
+				};
+
+				var nashorn = (function() {
+					if (setting && lib.file) {
+						if (new Packages.java.io.File(lib.file, "nashorn.jar").exists()) {
+							$$api.debug("nashorn.jar found");
+							return $$api.nashorn.dependencies.jarNames.concat(["nashorn.jar"]).map(function(filename) {
+								return new Packages.java.io.File(lib.file, filename).toURI().toURL();
+							});
+						}
+					}
+				})();
+
+				return {
+					rhino: rhino,
+					nashorn: nashorn
+				}
+			}
+
 			/**
 			 * @type { slime.jsh.internal.launcher.Jsh["Unbuilt"] }
 			 */
@@ -251,6 +295,16 @@
 				var toString = function() {
 					return "Unbuilt: src=" + $$api.slime.src + " rhino=" + rhino + " nashorn=" + nashorn;
 				}
+
+				$$api.slime.settings.default(
+					"jsh.shell.lib",
+					$$api.slime.src.getPath("local/jsh/lib")
+				);
+
+				var libraries = Libraries({
+					setting: $$api.slime.settings.get("jsh.shell.lib"),
+					rhino: p.rhino
+				})
 
 				var rhino = (p.rhino) ? p.rhino : null;
 
@@ -392,10 +446,7 @@
 
 				return {
 					toString: toString,
-					rhino: function(version) {
-						return rhino;
-					},
-					nashorn: nashorn,
+					libraries: libraries,
 					graal: graal,
 					profiler: profiler,
 					shellClasspath: shellClasspath,
@@ -411,17 +462,26 @@
 					return "Built: home=" + home;
 				}
 
-				var rhino = null;
-				if (new Packages.java.io.File(home, "lib/js.jar").exists()) {
-					rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
-				}
+				$$api.slime.settings.default(
+					"jsh.shell.lib",
+					String(new Packages.java.io.File(home, "lib").getCanonicalPath())
+				);
 
-				var nashorn = null;
-				if (new Packages.java.io.File(home, "lib/nashorn.jar").exists()) {
-					nashorn = $$api.nashorn.dependencies.names.concat(["nashorn"]).map(function(name) {
-						return new Packages.java.io.File(home, "lib/" + name + ".jar").toURI().toURL()
-					});
-				}
+				var libraries = Libraries({
+					setting: $$api.slime.settings.get("jsh.shell.lib"),
+				});
+
+				// var rhino = null;
+				// if (new Packages.java.io.File(home, "lib/js.jar").exists()) {
+				// 	rhino = [new Packages.java.io.File(home, "lib/js.jar").toURI().toURL()];
+				// }
+
+				// var nashorn = null;
+				// if (new Packages.java.io.File(home, "lib/nashorn.jar").exists()) {
+				// 	nashorn = $$api.nashorn.dependencies.names.concat(["nashorn"]).map(function(name) {
+				// 		return new Packages.java.io.File(home, "lib/" + name + ".jar").toURI().toURL()
+				// 	});
+				// }
 
 				//	TODO	should we allow Contents/Home here?
 				var graal = null;
@@ -440,10 +500,7 @@
 
 				return {
 					toString: toString,
-					rhino: function(version) {
-						return rhino;
-					},
-					nashorn: nashorn,
+					libraries: libraries,
 					graal: graal,
 					profiler: profiler,
 					shellClasspath: shellClasspath

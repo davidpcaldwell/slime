@@ -243,7 +243,7 @@
 
 		// TODO: delete Graal if it is not available
 
-		var loaderRhino = shell.rhino($api.rhino.version(jshLoaderJavaMajorVersion));
+		var loaderRhino = shell.libraries.rhino($api.rhino.version(jshLoaderJavaMajorVersion));
 
 		var defaultEngine = (function() {
 			if (loaderRhino) return "rhino";
@@ -335,11 +335,11 @@
 			}
 		}
 
-		if (shell.nashorn && jshLoaderJavaMajorVersion >= 15) {
+		if (shell.libraries.nashorn && jshLoaderJavaMajorVersion >= 15) {
 			//	TODO	possibly redundant with some code in launcher.js; examine and think through
 			// $api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(shell.rhino).local());
-			for (var i=0; i<shell.nashorn.length; i++) {
-				_urls.push(shell.nashorn[i]);
+			for (var i=0; i<shell.libraries.nashorn.length; i++) {
+				_urls.push(shell.libraries.nashorn[i]);
 			}
 		}
 
