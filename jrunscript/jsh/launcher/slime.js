@@ -46,14 +46,151 @@
 
 		$$api.slime = (function(was) {
 			/** @type { slime.jsh.internal.launcher.Slime } */
-			var rv;
+			var rv = {
+				launcher: void(0),
+				home: void(0),
+				setting: void(0),
+				settings: void(0),
+				Src: function(src) {
+					/** @type { Partial<slime.jsh.internal.launcher.Slime["src"]> } */
+					var rv;
+					if (src.file) {
+						rv = (function() {
+							var File = function(path) {
+								$$api.debug("File: path = " + path + " src.file=" + src.file);
+								return new Packages.java.io.File(src.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile(), path);
+							}
+
+							var getSourceFilesUnderFile = function getSourceFilesUnderFile(dir,rv) {
+								if (typeof(rv) == "undefined") {
+									rv = [];
+								}
+								if (typeof(dir) == "string") {
+									dir = File(dir);
+								}
+								var files = dir.listFiles();
+								//$api.log("files: " + files.length);
+								if (!files) return [];
+								for (var i=0; i<files.length; i++) {
+									if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
+										getSourceFilesUnderFile(files[i],rv);
+									} else {
+										if (files[i].getName().endsWith(".java")) {
+											rv.push(files[i]);
+										}
+									}
+								}
+								return rv;
+							}
+
+							return {
+								toString: function() {
+									return src.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile().toString();
+								},
+								File: File,
+								//	TODO	it appears that this method is equivalent to File, should test that
+								getFile: function(path) {
+									return src.resolve("../../../" + path).file;
+								},
+								getSourceFilesUnder: function(dir) {
+									return getSourceFilesUnderFile(dir, []);
+								}
+							}
+						})()
+					} else {
+						rv = (function() {
+							var base = new Packages.java.net.URL(src.url, "../../../");
+
+							var bitbucketGetSourceFilesUnder = function(url,rv) {
+								//	Bitbucket raw URLs allow essentially listing the directory with a newline-delimited list of names,
+								//	with directories ending with /.
+								var string = $$api.engine.readUrl(url.toExternalForm());
+								var lines = string.split("\n");
+								for (var i=0; i<lines.length; i++) {
+									if (/\/$/.test(lines[i])) {
+										getSourceFilesUnder(new Packages.java.net.URL(url,lines[i]), rv);
+									} else {
+										if (/\.java$/.test(lines[i])) {
+											rv.push(new Packages.java.net.URL(url, lines[i]));
+										}
+									}
+								}
+							}
+
+							/**
+							 *
+							 * @param { slime.jrunscript.native.java.net.URL } url
+							 * @param { slime.jrunscript.native.java.net.URL[] } rv
+							 */
+							var getSourceFilesUnder = function(url,rv) {
+								var list = $$api.github.archives.getSourceFilesUnder(url);
+								var endsWithSlash = function(url) {
+									return /\/$/.test(url.toString());
+								};
+								var isJava = function(url) {
+									return /\.java$/.test(url.toString());
+								}
+								list.forEach(function(url) {
+									if (endsWithSlash(url)) {
+										getSourceFilesUnder(url,rv);
+									} else {
+										if (isJava(url)) {
+											rv.push(url);
+										}
+									}
+								});
+							}
+
+							return {
+								toString: function() {
+									return base.toExternalForm();
+								},
+								getSourceFilesUnder: function(path) {
+									var under = new Packages.java.net.URL(base, path);
+									var rv = [];
+									getSourceFilesUnder(under,rv);
+									return rv;
+								}
+							}
+						})()
+					}
+
+					rv.getPath = function(path) {
+						$$api.debug("getPath: " + path);
+						var resolved = src.resolve("../../../" + path);
+						//	TODO	this needs simplification
+						if (resolved == null) {
+							if (this.File) {
+								return String(this.File(path).getAbsolutePath().toString())
+							} else {
+								$$api.debug("getPath return null for: " + path);
+								return null;
+							}
+						} else {
+							return resolved.toString();
+						}
+					}
+
+					/**
+					 *
+					 * @param { Partial<slime.jsh.internal.launcher.Slime["src"]> } partial
+					 * @returns { slime.jsh.internal.launcher.Slime["src"] }
+					 */
+					function complete(partial) {
+						/**
+						 * @type { (partial: Partial<slime.jsh.internal.launcher.Slime["src"]>) => partial is slime.jsh.internal.launcher.Slime["src"] } partial
+						 */
+						function isComplete(partial) {
+							return true;
+						}
+						if (isComplete(partial)) return partial;
+						throw new Error("Unreachable");
+					}
+
+					return complete(rv);
+				}
+			};
 			if (was && was.built) {
-				rv = {
-					launcher: void(0),
-					home: void(0),
-					setting: void(0),
-					settings: void(0)
-				};
 				rv.launcher = new function() {
 					this.getClasses = function() {
 						return new Packages.java.io.File($$api.script.file.getParentFile(), "jsh.jar");
@@ -64,169 +201,37 @@
 
 				rv.home = $$api.script.file.getParentFile();
 			} else {
-				rv = {
-					launcher: void(0),
-					src: void(0),
-					home: void(0),
-					setting: void(0),
-					settings: void(0)
-				};
-
 				var isSourceFile = $$api.script.file && String($$api.script.file.getParentFile().getName()) == "launcher";
 				var isHttp = $$api.script.url && /^http/.test(String($$api.script.url.getProtocol()));
+
 				if (isSourceFile || isHttp) {
-					rv.src = (function() {
-						/** @type { Partial<slime.jsh.internal.launcher.Slime["src"]> } */
-						var rv;
-						if ($$api.script.file) {
-							rv = (function() {
-								var File = function(path) {
-									return new Packages.java.io.File($$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile(), path);
-								}
-
-								var getSourceFilesUnderFile = function getSourceFilesUnderFile(dir,rv) {
-									if (typeof(rv) == "undefined") {
-										rv = [];
-									}
-									if (typeof(dir) == "string") {
-										dir = File(dir);
-									}
-									var files = dir.listFiles();
-									//$api.log("files: " + files.length);
-									if (!files) return [];
-									for (var i=0; i<files.length; i++) {
-										if (files[i].isDirectory() && String(files[i].getName()) != ".hg") {
-											getSourceFilesUnderFile(files[i],rv);
-										} else {
-											if (files[i].getName().endsWith(".java")) {
-												rv.push(files[i]);
-											}
-										}
-									}
-									return rv;
-								}
-
-								return {
-									toString: function() {
-										return $$api.script.file.getAbsoluteFile().getParentFile().getParentFile().getParentFile().getParentFile().toString();
-									},
-									File: File,
-									//	TODO	it appears that this method is equivalent to File, should test that
-									getFile: function(path) {
-										return $$api.script.resolve("../../../" + path).file;
-									},
-									getSourceFilesUnder: function(dir) {
-										return getSourceFilesUnderFile(dir, []);
-									}
-								}
-							})()
-						} else {
-							rv = (function() {
-								var base = new Packages.java.net.URL($$api.script.url, "../../../");
-
-								var bitbucketGetSourceFilesUnder = function(url,rv) {
-									//	Bitbucket raw URLs allow essentially listing the directory with a newline-delimited list of names,
-									//	with directories ending with /.
-									var string = $$api.engine.readUrl(url.toExternalForm());
-									var lines = string.split("\n");
-									for (var i=0; i<lines.length; i++) {
-										if (/\/$/.test(lines[i])) {
-											getSourceFilesUnder(new Packages.java.net.URL(url,lines[i]), rv);
-										} else {
-											if (/\.java$/.test(lines[i])) {
-												rv.push(new Packages.java.net.URL(url, lines[i]));
-											}
-										}
-									}
-								}
-
-								/**
-								 *
-								 * @param { slime.jrunscript.native.java.net.URL } url
-								 * @param { slime.jrunscript.native.java.net.URL[] } rv
-								 */
-								var getSourceFilesUnder = function(url,rv) {
-									var list = $$api.github.archives.getSourceFilesUnder(url);
-									var endsWithSlash = function(url) {
-										return /\/$/.test(url.toString());
-									};
-									var isJava = function(url) {
-										return /\.java$/.test(url.toString());
-									}
-									list.forEach(function(url) {
-										if (endsWithSlash(url)) {
-											getSourceFilesUnder(url,rv);
-										} else {
-											if (isJava(url)) {
-												rv.push(url);
-											}
-										}
-									});
-								}
-
-								return {
-									toString: function() {
-										return base.toExternalForm();
-									},
-									getSourceFilesUnder: function(path) {
-										var under = new Packages.java.net.URL(base, path);
-										var rv = [];
-										getSourceFilesUnder(under,rv);
-										return rv;
-									}
-								}
-							})()
-						}
-
-						rv.getPath = function(path) {
-							$$api.debug("getPath: " + path);
-							var resolved = $$api.script.resolve("../../" + path);
-							//	TODO	this needs simplification
-							if (resolved == null) {
-								if (this.File) {
-									return String(this.File(path).getAbsolutePath().toString())
-								} else {
-									$$api.debug("getPath return null for: " + path);
-									return null;
-								}
-							} else {
-								return resolved.toString();
-							}
-						}
-
-						/**
-						 *
-						 * @param { Partial<slime.jsh.internal.launcher.Slime["src"]> } partial
-						 * @returns { slime.jsh.internal.launcher.Slime["src"] }
-						 */
-						function complete(partial) {
-							/**
-							 * @type { (partial: Partial<slime.jsh.internal.launcher.Slime["src"]>) => partial is slime.jsh.internal.launcher.Slime["src"] } partial
-							 */
-							function isComplete(partial) {
-								return true;
-							}
-							if (isComplete(partial)) return partial;
-							throw new Error("Unreachable");
-						}
-
-						return complete(rv);
-					})();
+					rv.src = rv.Src($$api.script);
 				}
 
 				rv.launcher = new function() {
 					//	Exposed because it is used by jsh build script
 					this.compile = function(p) {
+						var src = p.src || rv.src;
+						if (!src) throw new Error("No src: " + $$api.script);
 						var to = (p && p.to) ? p.to : $$api.io.tmpdir();
 						var args = [
 							"-Xlint:deprecation",
 							"-Xlint:unchecked",
 							"-d", to,
-							"-sourcepath", rv.src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + rv.src.getPath("jsh/launcher/java"),
-							rv.src.getPath("jsh/launcher/java/inonit/script/jsh/launcher/Main.java")
+							"-sourcepath", src.getPath("rhino/system/java") + Packages.java.io.File.pathSeparator + src.getPath("jrunscript/jsh/launcher/java"),
+							src.getPath("jrunscript/jsh/launcher/java/inonit/script/jsh/launcher/Main.java")
 						];
-						args.push.apply(args,rv.src.getSourceFilesUnder(rv.src.File("rhino/system/java")));
+
+						//	Thinking maybe the below line was put in when the bug was introduced into getPath, which caused it to
+						//	search relative to jrunscript/ rather than the top-level directory, which nevertheless worked because
+						//	it resulted from moving jsh under jrunscript in the first place, so the only files the implementation
+						//	would no longer find were these (because it would look under jrunscript/rhino/system/java isntead).
+						//
+						//	So commenting out to see what happens
+						//args.push.apply(args,rv.src.getSourceFilesUnder(rv.src.File("rhino/system/java")));
+
 						$$api.java.install.compile(args);
+
 						if (!p || !p.to) return to;
 					};
 

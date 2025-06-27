@@ -44,6 +44,7 @@
 				setProperty($api, "slime", slimeConfiguration);
 			}
 			var slimeScript = $api.script.resolve("slime.js");
+			$api.debug("slimeScript = " + slimeScript);
 			if (slimeScript == null) {
 				throw new Error("Cound not resolve `slime.js` from " + $api.script);
 			}

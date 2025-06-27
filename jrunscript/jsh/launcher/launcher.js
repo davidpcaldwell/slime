@@ -289,16 +289,18 @@
 			$$api.jsh.Unbuilt = function(p) {
 				if (!p) throw new TypeError("Required: arguments[0]");
 
+				var src = p.src || $$api.slime.src;
+
 				var File = Packages.java.io.File;
 
 				//	TODO	p.rhino argument is supplied by jsh/etc/build.jsh.js and is dubious
 				var toString = function() {
-					return "Unbuilt: src=" + $$api.slime.src + " rhino=" + rhino + " nashorn=" + nashorn;
+					return "Unbuilt: src=" + src + " rhino=" + rhino + " nashorn=" + nashorn;
 				}
 
 				$$api.slime.settings.default(
 					"jsh.shell.lib",
-					$$api.slime.src.getPath("local/jsh/lib")
+					src.getPath("local/jsh/lib")
 				);
 
 				var libraries = Libraries({
@@ -345,13 +347,13 @@
 					//var graal = this.graal;
 					if (!p) p = {};
 					if (!p.to) p.to = $$api.io.tmpdir();
-					var toCompile = $$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/java"));
-					if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/rhino/java")));
-					if (graal && isGraalCompatible) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("loader/jrunscript/graal/java")));
-					toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("rhino/system/java")));
-					toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/java")));
-					if (rhino) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/rhino/java")));
-					if (graal && isGraalCompatible) toCompile = toCompile.concat($$api.slime.src.getSourceFilesUnder($$api.slime.src.File("jrunscript/jsh/loader/graal/java")));
+					var toCompile = src.getSourceFilesUnder(src.File("loader/jrunscript/java"));
+					if (rhino) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("loader/jrunscript/rhino/java")));
+					if (graal && isGraalCompatible) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("loader/jrunscript/graal/java")));
+					toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("rhino/system/java")));
+					toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("jrunscript/jsh/loader/java")));
+					if (rhino) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("jrunscript/jsh/loader/rhino/java")));
+					if (graal && isGraalCompatible) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("jrunscript/jsh/loader/graal/java")));
 					var classpathArguments = (classpath) ? ["-classpath", classpath.local()] : [];
 					var targetArguments = (p && p.target) ? ["-target", p.target] : [];
 					var sourceArguments = (p && p.source) ? ["-source", p.source] : [];
@@ -374,12 +376,12 @@
 				var shellClasspath = function(p) {
 					var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
 
-					if (!$$api.slime.src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
+					if (!src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
 					var setting = $$api.slime.settings.get("jsh.shell.classes");
 					/** @type { slime.jrunscript.native.java.io.File } */
 					var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $$api.io.tmpdir();
 					if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
-					if ($$api.slime.src.File) {
+					if (src.File) {
 						if (setting && LOADER_CLASSES.exists() && new Packages.java.io.File(LOADER_CLASSES, "inonit/script/engine/Code.class").exists()) {
 							$$api.debug("Found already-compiled files.");
 						} else {
@@ -390,7 +392,7 @@
 							});
 						}
 					} else {
-						$$api.log("Looking for loader source files under " + $$api.slime.src + " ...");
+						$$api.log("Looking for loader source files under " + src + " ...");
 
 						var getLoaderSourceFiles = function(p) {
 							var directories = [];
@@ -422,7 +424,7 @@
 
 						var toCompile = getLoaderSourceFiles({
 							list: function(string) {
-								return $$api.slime.src.getSourceFilesUnder(string);
+								return src.getSourceFilesUnder(string);
 							},
 							rhino: rhinoClasspath,
 							on: {

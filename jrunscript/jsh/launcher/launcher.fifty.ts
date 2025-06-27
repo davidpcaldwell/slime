@@ -46,6 +46,7 @@ namespace slime.jsh.internal.launcher {
 		Classpath: any
 
 		Unbuilt: (p: {
+			src?: Source
 			lib?: {
 				url?: string
 				file?: slime.jrunscript.native.java.io.File
