@@ -245,6 +245,9 @@ namespace slime.jsh.test {
 				verify(result).status.is(0);
 				verify(result).stdio.output.evaluate(function(string) { return string.indexOf(message) == -1; }).is(true);
 				verify(result).stdio.error.evaluate(function(string) { return string.indexOf(message) == -1; }).is(true);
+				if (result.status != 0) {
+					jsh.shell.console("Directory: " + clean.pathname);
+				}
 			}
 
 			fifty.tests.suite = function() {

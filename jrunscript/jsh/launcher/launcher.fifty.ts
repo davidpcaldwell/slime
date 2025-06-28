@@ -21,7 +21,7 @@ namespace slime.jsh.internal.launcher {
 
 		graal?: slime.jrunscript.native.java.io.File
 		profiler: slime.jrunscript.native.java.io.File
-		shellClasspath: (p?: { source: string, target: string }) => slime.jrunscript.native.java.net.URL[]
+		shellClasspath: (p?: { source: number, target: number }) => slime.jrunscript.native.java.net.URL[]
 	}
 
 	export interface Engine {
@@ -52,9 +52,12 @@ namespace slime.jsh.internal.launcher {
 				file?: slime.jrunscript.native.java.io.File
 			}
 			rhino: slime.jrunscript.native.java.net.URL[]
-			nashorn?: slime.jrunscript.native.java.net.URL[]
 		}) => Installation & {
-			compileLoader: any
+			compileLoader: (p?: {
+				to?: slime.jrunscript.native.java.io.File
+				source?: number
+				target?: number
+			}) => slime.jrunscript.native.java.io.File
 		}
 
 		Built: (p: slime.jrunscript.native.java.io.File) => Installation
