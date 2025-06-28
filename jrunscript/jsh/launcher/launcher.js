@@ -342,6 +342,9 @@
 						}
 					)();
 
+					//	fix things up for what the below is expecting, though I'm sure it won't look like this as we refactor
+					if (rhino && !rhino.length) rhino = null;
+
 					var isGraalCompatible = Boolean(p.source >= 17 && p.target >= 17)
 					var classpath = new Classpath();
 					if (rhino && rhino.length) classpath.append(new Classpath(rhino));

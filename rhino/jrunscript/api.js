@@ -1281,15 +1281,23 @@
 								this.write = function(b){}
 							}
 						);
-						var status = compiler.run(
-							Packages.java.lang.System["in"],
-							Packages.java.lang.System.out,
-							(SUPPRESS_COMPILATION_OUTPUT) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
-							jarray
-						);
+
+						var run = function(suppressOutput) {
+							return compiler.run(
+								Packages.java.lang.System["in"],
+								Packages.java.lang.System.out,
+								suppressOutput ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
+								jarray
+							);
+						}
+						var status = run(SUPPRESS_COMPILATION_OUTPUT);
 						if (status) {
-							var error = new Error("Compiler exited with status " + status + " with inputs " + args.join(" ")
-								+ " and java.class.path=" + Packages.java.lang.System.getProperty("java.class.path"));
+							var error = new Error("Compiler exited with status " + status + " with inputs:\n"
+								+ "-classpath" + " " + Packages.java.lang.System.getProperty("java.class.path")
+								+ " "
+								+ args.join(" ")
+							);
+							run(false);
 							Packages.java.lang.System.err.println(String(error));
 							Packages.java.lang.System.err.println(error.stack);
 							throw error;

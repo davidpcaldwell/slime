@@ -18,7 +18,10 @@
 	function($api,plugins,jsh,$slime,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.document && jsh.js.document && jsh.web && jsh.java && jsh.io && jsh.file);
+				return Boolean(
+					jsh.js && jsh.document && jsh.js.document && jsh.web && jsh.java && jsh.io && jsh.file
+					&& jsh.internal && jsh.internal.bootstrap
+				);
 			},
 			load: function() {
 				/**
