@@ -127,6 +127,9 @@
 				);
 				return $api.jsh.Built($api.script.file.getParentFile());
 			} else {
+				//	TODO	much of this logic is reproduced in the launcher.js Libraries construct, and this should be removed
+				//			after merging in any differences from here and refining the implementation
+
 				$api.slime.settings.default(
 					"jsh.shell.lib",
 					$api.slime.src.getPath("local/jsh/lib")
@@ -158,18 +161,7 @@
 					}
 				})();
 
-				var nashorn = (function() {
-					if ($api.slime.settings.get("jsh.shell.lib") && lib.file) {
-						if (new Packages.java.io.File(lib.file, "nashorn.jar").exists()) {
-							$api.debug("nashorn.jar found");
-							return $api.nashorn.dependencies.jarNames.concat(["nashorn.jar"]).map(function(filename) {
-								return new Packages.java.io.File(lib.file, filename).toURI().toURL();
-							});
-						}
-					}
-				})();
-
-				return $api.jsh.Unbuilt({ lib: lib, rhino: rhino, nashorn: nashorn });
+				return $api.jsh.Unbuilt({ lib: lib, rhino: rhino });
 			}
 		})();
 		$api.debug("shell detected = " + shell);
@@ -205,19 +197,7 @@
 			command.home($api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
 		}
 
-		var jshLauncherJavaMajorVersion = (
-			function() {
-				//	TODO	move logic to $api.java
-				function javaMajorVersionString(javaVersionProperty) {
-					if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
-					return javaVersionProperty.split(".")[0];
-				}
-
-				var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
-
-				return javaMajorVersion;
-			}
-		)();
+		var jshLauncherJavaMajorVersion = $api.java.getMajorVersion();
 
 		var jshLoaderJavaMajorVersion = (
 			function() {
@@ -418,7 +398,7 @@
 		$api.slime.settings.sendPropertiesTo(command);
 
 		var compilerMajorVersion = (jshLoaderJavaMajorVersion < jshLauncherJavaMajorVersion) ? jshLoaderJavaMajorVersion : jshLauncherJavaMajorVersion;
-		var _shellUrls = shell.shellClasspath({ source: String(compilerMajorVersion), target: String(compilerMajorVersion) });
+		var _shellUrls = shell.shellClasspath({ source: compilerMajorVersion, target: compilerMajorVersion });
 		$api.debug("_shellUrls = " + _shellUrls);
 		for (var i=0; i<_shellUrls.length; i++) {
 			_urls.push(_shellUrls[i]);

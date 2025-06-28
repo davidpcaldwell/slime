@@ -25,7 +25,7 @@
 		//	TODO	build script should build all plugins
 
 		//	Policy decision to support 8 and up
-		var JAVA_VERSION = "1.8";
+		var JAVA_VERSION = 8;
 
 		jsh.shell.console("Building jsh with arguments [" + jsh.script.arguments.join(" ") + "]");
 		var parameters = jsh.script.getopts({
@@ -161,22 +161,6 @@
 			}
 		}
 
-		// var loadLauncherScript = function(name) {
-		// 	var argument = (function() {
-		// 		if (jsh.script.file) return { file: jsh.script.file.parent.getRelativePath("../../jsh/launcher/" + name).java.adapt() };
-		// 		if (jsh.script.url) {
-		// 			var _url = new Packages.java.net.URL(jsh.script.url.toString());
-		// 			var _resolved = new Packages.java.net.URL(_url, "../../jsh/launcher/" + name);
-		// 			return { url: _resolved };
-		// 		}
-		// 	})();
-		// 	jrunscript.$api.script = new jrunscript.$api.Script(argument);
-		// 	jsh.script.loader.run("jrunscript/jsh/launcher/" + name, { $api: jrunscript.$api }, jrunscript);
-		// }
-
-		// loadLauncherScript("slime.js");
-		// loadLauncherScript("launcher.js");
-
 		var SLIME = jsh.script.file.parent.parent.parent.parent;
 
 		var launcher = {
@@ -204,13 +188,12 @@
 						return pathname.java.adapt().toURI().toURL();
 					});
 					return _urls;
-				})() : null;
+				})() : [];
 				var unbuilt = jrunscript.$api.jsh.Unbuilt({
 					src: launcher.src,
 					rhino: _rhino
 				});
 				return unbuilt.compileLoader({ source: JAVA_VERSION, target: JAVA_VERSION });
-
 			}
 		};
 
