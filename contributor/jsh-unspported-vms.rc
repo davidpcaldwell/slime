@@ -1,0 +1,56 @@
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+install_jdk_8_adoptopenjdk() {
+	TO=$(clean_destination $1)
+
+	JDK_TARBALL_URL="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u232-b09/OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
+	JDK_TARBALL_BASENAME="OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
+	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
+	JDK_TARBALL_PATH="jdk8u232-b09"
+
+	announce_install "${JDK_TARBALL_URL}" "${TO}"
+
+	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
+		echo "Downloading ${JDK_TARBALL_URL} ..."
+		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
+	fi
+	JDK_WORKDIR=$(mktemp -d)
+	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
+	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
+}
+
+install_jdk_8_liberica() {
+	TO=$(clean_destination $1)
+
+	JDK_ZIP_URL="https://download.bell-sw.com/java/8u232+10/bellsoft-jdk8u232+10-macos-amd64.zip"
+	JDK_ZIP_BASENAME="bellsoft-jdk8u232+10-macos-amd64.zip"
+	JDK_ZIP_PATH="jdk8u232"
+	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
+
+	announce_install "${JDK_ZIP_URL}" "${TO}"
+	download_install "${JDK_ZIP_URL}" "${JDK_ZIP_LOCATION}"
+
+	JDK_WORKDIR=$(mktemp -d)
+	unzip -q ${JDK_ZIP_LOCATION} -d ${JDK_WORKDIR}
+	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
+}
+
+install_jdk_11_liberica() {
+	TO=$(clean_destination $1)
+
+	JDK_ZIP_URL="https://download.bell-sw.com/java/11.0.7+10/bellsoft-jdk11.0.7+10-macos-amd64.zip"
+	JDK_ZIP_BASENAME="bellsoft-jdk11.0.7+10-macos-amd64.zip"
+	JDK_ZIP_PATH="jdk-11.0.7.jdk"
+	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
+	if [ ! -f "${JDK_ZIP_LOCATION}" ]; then
+		echo "Downloading ${JDK_ZIP_URL} ..."
+		curl -o ${HOME}/Downloads/${JDK_ZIP_BASENAME} ${JDK_ZIP_URL}
+	fi
+	JDK_WORKDIR=$(mktemp -d)
+	unzip -q ${JDK_ZIP_LOCATION} -d ${JDK_WORKDIR}
+	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
+}

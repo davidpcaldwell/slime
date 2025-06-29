@@ -299,6 +299,7 @@
 			this.gradle = cplusplus;
 			this.py = new Line("#");
 			this.bashrc = new Line("#");
+			this.rc = new Line("#");
 			this.kts = cplusplus;
 			this.yaml = new Line("#");
 			this.yml = new Line("#");

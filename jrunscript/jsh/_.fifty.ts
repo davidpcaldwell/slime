@@ -112,19 +112,37 @@ namespace slime.jsh {
 }
 
 /**
- * ## The `jsh` command
+ * ## Invoking the `jsh` shell
  *
- * A `jsh` script begins with the `jsh` program, which determines which Java needs to be used (installing the default JDK if
- * necessary).
+ * There are various ways to invoke the `jsh` shell as of this writing.
+ *
+ * For unbuilt shells, we use the top-level `jsh` script provided with the repository. The script determines which Java needs to be
+ * used, installing the default JDK if necessary
+ *
+ * For built shells with no native launcher, we use the `jsh.bash` script that is installed to the build directory. It ultimately
+ * comes from `jrunscript/jsh/launcher/jsh.bash`.
+ *
+ * For built shells with a native launcher, we use the `jsh` program that is installed to the build directory.
  *
  * It then runs the `jsh` _launcher_.
  *
  * ## The `jsh` launcher
  *
- * The `jsh` launcher is a `jrunscript` script that starts an engine-specific Java program that is capable of creating a `jsh` shell
- * and executing the indicated script inside it. Upon execution, it configures and starts the `jsh` _loader_ (see below).
+ * The `jsh` launcher is responsible for executing a `jrunscript` script that starts an engine-specific Java program that is
+ * capable of creating a `jsh` shell and executing the indicated script inside it. Upon execution, it configures and starts the
+ * `jsh` _loader_ (see below).
  *
  * The launcher consists of the following components.
+ *
+ * ### Unbuilt shells only
+ *
+ * #### The `jsh` shell script
+ *
+ * ### Built shells only
+ *
+ * #### The `jsh.bash` shell script and `jsh` native launcher
+ *
+ * TODO
  *
  * ### `rhino/jrunscript/api.js`
  *
