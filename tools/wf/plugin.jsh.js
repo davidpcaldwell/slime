@@ -1129,7 +1129,7 @@
 								events.fire("console", "Handling final newlines ...");
 								var newlineHandler = {
 									unknownFileType: function(e) {
-										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+										events.fire("console", " whether file is text or binary: " + e.detail.path);
 										success = false;
 									},
 									missing: function(e) {

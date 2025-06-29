@@ -33,6 +33,7 @@ else
 	JSH_SHELL_LIB="${JSH_SHELL_LIB:-$(dirname $0)/local/jsh/lib}"
 fi
 
+#	In preparation for installing software at a given location, remove whatever is there
 clean_destination() {
 	TO="$1"
 	if [ -d "${TO}" ]; then
@@ -88,58 +89,8 @@ download_install() {
 	fi
 }
 
-install_jdk_8_adoptopenjdk() {
-	TO=$(clean_destination $1)
-
-	JDK_TARBALL_URL="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u232-b09/OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
-	JDK_TARBALL_BASENAME="OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
-	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
-	JDK_TARBALL_PATH="jdk8u232-b09"
-
-	announce_install "${JDK_TARBALL_URL}" "${TO}"
-
-	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
-		echo "Downloading ${JDK_TARBALL_URL} ..."
-		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
-	fi
-	JDK_WORKDIR=$(mktemp -d)
-	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
-	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
-}
-
-install_jdk_8_liberica() {
-	TO=$(clean_destination $1)
-
-	JDK_ZIP_URL="https://download.bell-sw.com/java/8u232+10/bellsoft-jdk8u232+10-macos-amd64.zip"
-	JDK_ZIP_BASENAME="bellsoft-jdk8u232+10-macos-amd64.zip"
-	JDK_ZIP_PATH="jdk8u232"
-	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
-
-	announce_install "${JDK_ZIP_URL}" "${TO}"
-	download_install "${JDK_ZIP_URL}" "${JDK_ZIP_LOCATION}"
-
-	JDK_WORKDIR=$(mktemp -d)
-	unzip -q ${JDK_ZIP_LOCATION} -d ${JDK_WORKDIR}
-	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
-}
-
-install_jdk_11_liberica() {
-	TO=$(clean_destination $1)
-
-	JDK_ZIP_URL="https://download.bell-sw.com/java/11.0.7+10/bellsoft-jdk11.0.7+10-macos-amd64.zip"
-	JDK_ZIP_BASENAME="bellsoft-jdk11.0.7+10-macos-amd64.zip"
-	JDK_ZIP_PATH="jdk-11.0.7.jdk"
-	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
-	if [ ! -f "${JDK_ZIP_LOCATION}" ]; then
-		echo "Downloading ${JDK_ZIP_URL} ..."
-		curl -o ${HOME}/Downloads/${JDK_ZIP_BASENAME} ${JDK_ZIP_URL}
-	fi
-	JDK_WORKDIR=$(mktemp -d)
-	unzip -q ${JDK_ZIP_LOCATION} -d ${JDK_WORKDIR}
-	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
-}
-
-get_major_version() {
+#	Returns the major version of a JDK (including GraalVM) given its full version number
+get_major_version_from_jdk_version() {
 	local VERSION="$1"
 	local MAJOR=$(echo $VERSION | cut -d'.' -f1)
 	echo ${MAJOR}
@@ -147,7 +98,7 @@ get_major_version() {
 
 install_jdk_corretto() {
 	local VERSION="$1"
-	local MAJOR_VERSION=$(get_major_version ${VERSION})
+	local MAJOR_VERSION=$(get_major_version_from_jdk_version ${VERSION})
 	TO=$(clean_destination "$2")
 
 	if [ "${UNAME}" == "Darwin" ]; then
@@ -168,6 +119,9 @@ install_jdk_corretto() {
 		fi
 	fi
 	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/${VERSION}/${JDK_TARBALL_BASENAME}"
+
+	announce_install "${JDK_TARBALL_URL}" "${TO}"
+
 	if [ ! -d "${HOME}/Downloads" ]; then
 		mkdir "${HOME}/Downloads"
 	fi
@@ -188,7 +142,7 @@ install_jdk_corretto() {
 install_graalvm() {
 	local VERSION="$1"
 	local TO=$(clean_destination "$2")
-	local MAJOR=$(get_major_version ${VERSION})
+	local MAJOR=$(get_major_version_from_jdk_version ${VERSION})
 	local JDK_TARBALL_URL=""
 	#	See https://www.oracle.com/java/technologies/downloads/archive/#GraalVM for information about versions
 	if [ "${UNAME}" == "Darwin" ]; then
@@ -200,6 +154,9 @@ install_graalvm() {
 		>&2 echo "Unsupported OS/architecture: ${UNAME} ${ARCH}"
 		exit 1
 	fi
+
+	announce_install "${JDK_TARBALL_URL}" "${TO}"
+
 	local JDK_TARBALL_BASENAME="$(echo $JDK_TARBALL_URL | cut -d'/' -f7)"
 	if [ ! -d "${HOME}/Downloads" ]; then
 		mkdir "${HOME}/Downloads"
@@ -314,10 +271,16 @@ install_nashorn() {
 	install_maven_dependency org.openjdk.nashorn nashorn-core ${NASHORN_VERSION} ${JSH_SHELL_LIB}/nashorn.jar
 }
 
-get_jdk_major_version() {
+get_jrunscript_java_major_version() {
+	#	It would be more straightforward to just do jrunscript -e "print(Packages.java.lang.System.getProperty('java.version'))"
+	#	and then parse that. But with Nashorn 11, there's deprecation output, and with 17/21, there's no Nashorn so you can't
+	#	execute the script. So we fall back to Java and hope our jrunscript is installed normally, rather than in /usr/bin or
+	#	something
+
 	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
 	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
-	JDK=$1
+	JRUNSCRIPT=$1
+	JDK=$(dirname $JRUNSCRIPT)/..
 	JAVA="${JDK}/bin/java"
 	IFS=$'\n'
 	JAVA_VERSION_OUTPUT=$(${JAVA} -version 2>&1)
@@ -434,13 +397,15 @@ if [ "$1" == "--install-user-jdk" ]; then
 	exit $?
 fi
 
-if [ "$1" == "--install-rhino" ]; then
-	install_rhino
-	exit $?
-fi
+#	This capability was removed and to bring it back would require changes due to supporting multiple Rhino versions for Java
+#	version compatibility
+# if [ "$1" == "--install-rhino" ]; then
+# 	install_rhino
+# 	exit $?
+# fi
 
 if [ "$1" == "--test-jdk-major-version" ]; then
-	echo $(get_jdk_major_version $2)
+	echo $(get_jrunscript_java_major_version $2)
 	exit $?
 fi
 
@@ -523,7 +488,7 @@ fi
 #	If running in remote shell, and JDK is higher than 8, do not use it (the remote shell module path does not work correctly; see
 #	issue #1617)
 if test -n "${JRUNSCRIPT}" && test "$0" == "bash"; then
-	JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
+	JDK_MAJOR_VERSION=$(get_jrunscript_java_major_version $(dirname ${JRUNSCRIPT})/..)
 	if [ ${JDK_MAJOR_VERSION} != "8" ]; then
 		JRUNSCRIPT=""
 	fi
@@ -553,7 +518,7 @@ JSH_GITHUB_PASSWORD_ARGUMENT=$(javaSystemPropertyArgument jsh.github.password ${
 #	with SLIME-supported Amazon Corretto JDK 8, JDK 11, and JDK 17, and hasn't yet been tested with anything else.
 #
 #	But it works with JDK 8, 11, and 17, so it's better than nothing.
-JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
+JDK_MAJOR_VERSION=$(get_jrunscript_java_major_version ${JRUNSCRIPT})
 if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
 	JRUNSCRIPT="${JRUNSCRIPT} ${JSH_NASHORN_DEPRECATION_ARGUMENT}"

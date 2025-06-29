@@ -162,11 +162,8 @@
 			};
 		};
 
-		/** @type { slime.$api.fp.Identity<slime.jrunscript.shell.run.Intention> } */
-		var asShellIntention = $api.fp.identity;
-
 		var getOutput = $api.fp.pipe(
-			asShellIntention,
+			/** @type { slime.$api.fp.Identity<slime.jrunscript.shell.run.Intention> } */($api.fp.identity),
 			$api.fp.world.Sensor.old.mapping({
 				sensor: $context.library.shell.subprocess.question
 			}),

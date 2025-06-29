@@ -567,6 +567,7 @@
 					};
 
 					//	TODO #1415	support this
+					//	TODO	check the above, seems to be implemented; has to do with property arguments to built shells
 					var downcast = shell;
 					var bashLauncher = getHomeBashLauncher(downcast);
 					var nativeLauncher = getHomeNativeLauncher(downcast);

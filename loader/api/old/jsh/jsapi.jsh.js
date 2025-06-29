@@ -14,7 +14,7 @@
 		var parameters = jsh.script.getopts({
 			options: {
 				//	See api.html for documentation of these options
-				jsapi: jsh.script.file.parent.getRelativePath("../../../loader/api"),
+				jsapi: jsh.script.file.parent.getRelativePath("../../../../loader/api"),
 
 				api: jsh.script.getopts.ARRAY( jsh.file.Pathname ),
 				test: jsh.script.getopts.ARRAY( String ),

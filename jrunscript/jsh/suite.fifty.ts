@@ -22,7 +22,7 @@ namespace slime.jsh.test {
 
 			const { shells } = fixtures;
 
-			var run: (intention: slime.jrunscript.shell.run.Intention) => { string: string } = function(intention) {
+			var run: (intention: slime.jrunscript.shell.run.Intention) => any = function(intention) {
 				return $api.fp.now(
 					$api.fp.world.Sensor.now({
 						sensor: jsh.shell.subprocess.question,
