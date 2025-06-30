@@ -8,11 +8,12 @@
 (
 	/**
 	 *
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.Loader } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function(jsh,$loader,plugin) {
+	function($api,jsh,$loader,plugin) {
 		plugin({
 			load: function() {
 				if (!jsh.httpd) {
@@ -29,13 +30,174 @@
 				jsh.httpd.tools = {
 					build: void(0),
 					proxy: void(0),
-					getJavaSourceFiles: void(0)
+					getJavaSourceFiles: void(0),
+					test: void(0)
 				};
-				jsh.httpd.tools.build = Object.assign(
+
+
+				/** @type { slime.jsh.httpd.tools.test.Exports["getWebXml"] } */
+				var getWebXml = function(p) {
+					if (!p.servlet) throw new TypeError("Required: p.servlet indicating webapp path of servlet to use.");
+
+					//	Obviously using an XML parser would be beneficial here if this begins to get more complex
+					//	TODO	re-write this; we have an XML parser and we are getting spurious failures here
+
+					var xml = $loader.get("web.xml").read(String);
+
+					xml = $api.fp.now(
+						xml,
+						jsh.document.Document.edit(
+							jsh.document.Parent.content.set.nodes(function(document) {
+								return [
+									document.children[0],
+									document.children[1],
+									document.children[4],
+									document.children[5]
+								]
+							})
+						)
+					);
+
 					/**
 					 *
-					 * @param { Parameters<slime.jsh.httpd.Exports["tools"]["build"]>[0] } p
+					 * @param { string } message
 					 */
+					var assertOnly = function(message) {
+						//	Possibly this function should be called Stream.single? Stream.one?
+						return $api.fp.now(
+							$api.fp.Stream.only,
+							$api.fp.Partial.impure.exception(function(stream) { return new Error(message); })
+						);
+					}
+
+					var assertOne = function(message) {
+						return $api.fp.now(
+							$api.fp.Stream.first,
+							$api.fp.Partial.impure.exception(function(stream) { return new Error(message); })
+						);
+					}
+
+					xml = $api.fp.now(
+						xml,
+						jsh.document.Document.edit(
+							$api.fp.pipe(
+								jsh.document.Parent.nodes,
+								$api.fp.Stream.filter(jsh.document.Node.isElementNamed("init-param")),
+								$api.fp.Stream.filter(jsh.document.Node.hasChild(
+									$api.fp.Predicate.and(
+										jsh.document.Node.isElementNamed("param-name"),
+										function(node) {
+											if (!jsh.document.Node.isParent(node)) return false;
+											return jsh.document.Parent.content.get.string.simple(node) == "script";
+										}
+									)
+								)),
+								assertOnly("Expected init-param with param-name = script"),
+								function(/** @type { slime.runtime.document.Parent } */parent) {
+									return $api.fp.Stream.from.array(
+										parent.children.filter(jsh.document.Node.isElementNamed("param-value"))
+									);
+								},
+								assertOnly("Expected init-param to have param-value child"),
+								function(/** @type { slime.runtime.document.Parent } */parent) {
+									jsh.document.Parent.content.set.text(p.servlet)(parent);
+								}
+							)
+						)
+					);
+
+					xml = $api.fp.now(
+						xml,
+						jsh.document.Document.edit(
+							$api.fp.pipe(
+								jsh.document.Parent.nodes,
+								$api.fp.Stream.filter(jsh.document.Node.hasChild(jsh.document.Node.isElementNamed("init-param"))),
+								assertOne("Should have at least one element that has an <init-param> child"),
+								$api.fp.Mapping.properties({
+									initParamIndent: function(/** @type { slime.runtime.document.Parent } */parent) {
+										//	TODO	could use some unit tests
+										var index = parent.children.findIndex(jsh.document.Node.isElementNamed("init-param"));
+										if (index == -1) throw new Error("Not found");
+										if (index == 0) return $api.fp.Maybe.from.nothing();
+										var previous = parent.children[index-1];
+										if (!jsh.document.Node.isString(previous)) return $api.fp.Maybe.from.nothing();
+										if (index > 1 && jsh.document.Node.isString(parent.children[index-2])) throw new Error("Unimplemented: multiple preceding string nodes");
+										if (previous.data.indexOf("\n") == -1) return $api.fp.Maybe.from.nothing();
+										var lines = previous.data.split("\n");
+										var lineBefore = lines[lines.length - 1];
+										if (!/^(\s*)$/.test(lineBefore)) return $api.fp.Maybe.from.nothing();
+										return $api.fp.Maybe.from.some(lineBefore);
+									},
+									parent: function(/** @type { slime.runtime.document.Parent } */parent) {
+										return parent;
+									}
+								}),
+								function(arg) {
+									//	TODO	except now we would actually want the last one
+									var index = arg.parent.children.findIndex(jsh.document.Node.isElementNamed("init-param"));
+									var at = index + 1;
+									for (var name in p.parameters) {
+										var initParamIndent = (arg.initParamIndent.present) ? { type: "text", data: "\n" + arg.initParamIndent.value } : { type: "text", data: "" };
+										var initParamChildIndent = (arg.initParamIndent.present) ? { type: "text", data: "\n" + "\t" + arg.initParamIndent.value }: { type: "text", data: "" };
+										arg.parent.children.splice(at++,0,initParamIndent);
+										arg.parent.children.splice(at++,0,
+											/** @type { slime.runtime.document.Element } */({
+												type: "element",
+												name: "init-param",
+												attributes: [],
+												children: [
+													initParamChildIndent,
+													/** @type { slime.runtime.document.Element } */({
+														type: "element",
+														name: "param-name",
+														attributes: [],
+														children: [
+															/** @type { slime.runtime.document.Text } */({
+																type: "text",
+																data: name
+															})
+														],
+														endTag: "</param-name>",
+														selfClosing: false
+													}),
+													initParamChildIndent,
+													/** @type { slime.runtime.document.Element } */({
+														type: "element",
+														name: "param-value",
+														attributes: [],
+														children: [
+															/** @type { slime.runtime.document.Text } */({
+																type: "text",
+																data: p.parameters[name]
+															})
+														],
+														endTag: "</param-value>",
+														selfClosing: false
+													}),
+													initParamIndent
+												],
+												endTag: "</init-param>",
+												selfClosing: false
+											})
+										);
+									}
+								}
+							)
+						)
+					);
+
+					return xml;
+				}
+
+				jsh.httpd.tools.test = {
+					getWebXml: getWebXml
+				}
+
+				/**
+				 *
+				 * @type { slime.jsh.httpd.Exports["tools"]["build"] }
+				 */
+				jsh.httpd.tools.build = Object.assign(
 					function(p) {
 						if (!p.destination.directory) {
 							p.destination.directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -156,48 +318,7 @@
 						})();
 
 						(function() {
-							//	Obviously using an XML parser would be beneficial here if this begins to get more complex
-							//	TODO	re-write this; we have an XML parser and we are getting spurious failures here
-
-							var xml = SLIME.getFile("rhino/http/servlet/tools/web.xml").read(String);
-							if (!p.servlet) throw new TypeError("Required: p.servlet indicating webapp path of servlet to use.");
-							xml = xml.replace(/__SCRIPT__/, p.servlet);
-							//	The below line removes the license, because Tomcat cannot parse it; this may or may not be what we want
-							xml = xml.substring(xml.indexOf("-->") + "-->".length + 1);
-
-							var nextInitParamIndex;
-							var lines = xml.split("\n");
-							for (var i=0; i<lines.length; i++) {
-								if (/\<\/init-param\>/.test(lines[i])) {
-									nextInitParamIndex = i+1;
-								}
-							}
-							jsh.shell.console("Rhino? " + Boolean(jsh.internal.bootstrap.engine.rhino.running()));
-							if (jsh.internal.bootstrap.engine.rhino.running()) {
-								jsh.shell.console("Rhino version " + jsh.internal.bootstrap.engine.rhino.running().getImplementationVersion());
-							}
-							jsh.shell.console("nextInitParamIndex = " + nextInitParamIndex);
-							var initParamLines = [];
-							for (var x in p.parameters) {
-								jsh.shell.console("init param " + x + " " + p.parameters[x]);
-								initParamLines = initParamLines.concat([
-									"\t\t<init-param>",
-									"\t\t\t<param-name>" + x + "</param-name>",
-									"\t\t\t<param-value>" + p.parameters[x] + "</param-value>",
-									"\t\t</init-param>"
-								]);
-							}
-							jsh.shell.console("initParamLines = " + initParamLines.join("\n"));
-							//	TODO	this code is intermittently failing, leaving the array unmodified at times
-							var spliceArgs = [nextInitParamIndex,0].concat(initParamLines);
-							jsh.shell.console("lines = " + lines);
-							jsh.shell.console("spliceArgs = " + spliceArgs);
-							lines.splice.apply(lines,spliceArgs);
-							jsh.shell.console("lines = " + lines);
-							xml = lines.join("\n");
-
-							jsh.shell.console("Writing web.xml to " + WEBAPP + " with parameters: " + JSON.stringify(p.parameters));
-							jsh.shell.console(xml);
+							var xml = getWebXml(p);
 							WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
 						})();
 
@@ -265,4 +386,4 @@
 		})
 	}
 //@ts-ignore
-)(jsh,$loader,plugin);
+)($api,jsh,$loader,plugin);
