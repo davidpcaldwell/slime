@@ -400,7 +400,6 @@ namespace slime.runtime.document.internal.source {
 				var fragment = api.parse.fragment({ settings: settings, string: html });
 				var serialized = api.serialize.fragment({ settings: settings, fragment: fragment });
 				fifty.verify(serialized).is(html);
-				debugger;
 			}
 
 			fifty.tests.optionalTags = function() {
