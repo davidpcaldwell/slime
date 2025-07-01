@@ -11,4 +11,4 @@ $(dirname $0)/simulate-new-container
 
 SLIME="$(dirname $0)/../.."
 
-env JSH_LAUNCHER_BASH_DEBUG=1 SLIME_WF_BASH_DEBUG=1 ${SLIME}/wf check --docker >${SLIME}/local/devcontainer-check.txt 2>&1
+env JSH_LAUNCHER_COMMAND_DEBUG=1 SLIME_WF_BASH_DEBUG=1 ${SLIME}/wf check --docker >${SLIME}/local/devcontainer-check.txt 2>&1

@@ -4,12 +4,12 @@
 #
 #	END LICENSE
 
-if [ -n "$JSH_LAUNCHER_DEBUG" ]; then
+if [ -n "$JSH_LAUNCHER_COMMAND_DEBUG" ]; then
 	set -x
 fi
 
-if [ -z "$JSH_JAVA_HOME" ]; then
-	JSH_LAUNCHER_JRUNSCRIPT=$(which jrunscript 2>/dev/null)
+if [ -z "$JSH_LAUNCHER_JDK_HOME" ]; then
+	JRUNSCRIPT=$(which jrunscript 2>/dev/null)
 	if [ "0" = "$?" ]; then
 		true
 	else
@@ -17,11 +17,11 @@ if [ -z "$JSH_JAVA_HOME" ]; then
 		exit 1
 	fi
 else
-	JSH_LAUNCHER_JRUNSCRIPT=$JSH_JAVA_HOME/bin/jrunscript
+	JRUNSCRIPT=$JSH_LAUNCHER_JDK_HOME/bin/jrunscript
 fi
 
-if [ ! -f ${JSH_LAUNCHER_JRUNSCRIPT} ]; then
-	>&2 echo "No jrunscript command found at ${JSH_LAUNCHER_JRUNSCRIPT}."
+if [ ! -f ${JRUNSCRIPT} ]; then
+	>&2 echo "No jrunscript command found at ${JRUNSCRIPT}."
 	exit 1
 fi
 
@@ -43,5 +43,5 @@ case "`uname`" in
 	;;
 esac
 
-"$JSH_LAUNCHER_JRUNSCRIPT" $JSH_JVM_OPTIONS $JSH_LAUNCHER_SCRIPT "$@"
+"$JRUNSCRIPT" $JSH_JVM_OPTIONS $JSH_LAUNCHER_SCRIPT "$@"
 exit $?

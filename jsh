@@ -8,7 +8,7 @@
 #	rm -Rvf local/jdk/default; rm -Rvf ~/.slime/jdk/default; ./jsh jsh/test/jsh-data.jsh.js; ./jsh --install-user-jdk; rm -Rvf local/jdk/default; ./jsh jsh/test/jsh-data.jsh.js
 #	check java.home of last script invoked and ensure that it is the user JDK
 
-if [ -n "${JSH_LAUNCHER_BASH_DEBUG}" ]; then
+if [ -n "${JSH_LAUNCHER_COMMAND_DEBUG}" ]; then
 	set -x
 fi
 

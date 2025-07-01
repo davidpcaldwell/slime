@@ -251,6 +251,7 @@ namespace slime.jsh.test {
 			}
 
 			fifty.tests.suite = function() {
+				fifty.load("_.fifty.ts");
 				fifty.run(fifty.tests.nashornDeprecation);
 				fifty.run(fifty.tests.remote);
 				fifty.run(fifty.tests.executable);
