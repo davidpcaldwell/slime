@@ -110,6 +110,17 @@ interface Array<T> {
      */
     find<S extends T>(predicate: (this: void, value: T, index: number, obj: T[]) => value is S, thisArg?: any): S | undefined;
     find(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): T | undefined;
+
+    /**
+     * Returns the index of the first element in the array where predicate is true, and -1
+     * otherwise.
+     * @param predicate find calls predicate once for each element of the array, in ascending
+     * order, until it finds one where predicate returns true. If such an element is found,
+     * findIndex immediately returns that element index. Otherwise, findIndex returns -1.
+     * @param thisArg If provided, it will be used as the this value for each invocation of
+     * predicate. If it is not provided, undefined is used instead.
+     */
+    findIndex(predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any): number;
 }
 
 (
@@ -128,6 +139,9 @@ interface Array<T> {
             if (fifty.global.jsh) {
                 fifty.global.jsh.shell.console("java version = " + fifty.global.jsh.shell.java.version);
             }
+            if (fifty.global.jsh.internal.bootstrap.engine.rhino.running()) {
+                fifty.global.jsh.shell.console("Rhino version " + fifty.global.jsh.internal.bootstrap.engine.rhino.running().getImplementationVersion());
+            }
             console("Object.defineProperty: " + Object.defineProperty);
             console("Object.assign: " + Object.assign);
             console("Object.fromEntries: " + Object.fromEntries);
@@ -135,6 +149,7 @@ interface Array<T> {
             console("Object.values: " + Object.values);
             console("String.prototype.endsWith: " + String.prototype.endsWith);
             console("Array.prototype.find: " + Array.prototype.find);
+            console("Array.prototype.findIndex: " + Array.prototype.findIndex);
             console("Map: " + Map);
         }
     }

@@ -99,6 +99,20 @@
 			});
 		}
 
+		if (!Array.prototype.findIndex) {
+			Object.defineProperty(Array.prototype, "findIndex", {
+				value: function(f, target) {
+					for (var i=0; i<this.length; i++) {
+						var match = f.call(target, this[i], i, this);
+						if (match) return i;
+					}
+					return -1;
+				},
+				configurable: true,
+				writable: true
+			});
+		}
+
 		var global = (function() { return this; })();
 		if (!global.Map) {
 			function Map() {

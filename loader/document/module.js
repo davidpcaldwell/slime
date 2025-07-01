@@ -150,12 +150,18 @@
 			load: code.old($context).load,
 			Node: $api.Object.compose(
 				source.Node,
-				/** @type { Pick<slime.runtime.document.node.Exports,"isElementNamed"> } */({
+				/** @type { Pick<slime.runtime.document.node.Exports,"isElementNamed"|"hasChild"> } */({
 					isElementNamed: function(name) {
 						return $api.fp.Predicate.and([
 							source.Node.isElement,
 							Elements.isName(name)
 						]);
+					},
+					hasChild: function(f) {
+						return function(node) {
+							if (!source.Node.isParent(node)) return false;
+							return Boolean(node.children.find(f));
+						}
 					}
 				})
 			),
@@ -176,6 +182,31 @@
 					}
 				},
 				content: {
+					set: {
+						nodes: function(get) {
+							return function(p) {
+								p.children = get(p);
+							}
+						},
+						text: function(s) {
+							return function(p) {
+								p.children = [ /** @type { slime.runtime.document.Text } */({ type: "text", data: s }) ];
+							}
+						}
+					},
+					get: {
+						string: {
+							simple: function(p) {
+								var rv = "";
+								for (var i=0; i<p.children.length; i++) {
+									var child = p.children[i];
+									if (!source.Node.isString(child)) throw new Error("Expected child " + i + " to be string.");
+									rv += child.data;
+								}
+								return rv;
+							}
+						}
+					},
 					text: {
 						set: function(p) {
 							p.parent.children = [ /** @type { slime.runtime.document.Text } */({ type: "text", data: p.data }) ];
@@ -215,9 +246,16 @@
 				},
 				from: source.Element.from
 			},
-			//	TODO	temporarily disabling TypeScript while we figure out the loader/document vs. rhino/document nightmare
-			//@ts-ignore
 			Document: {
+				edit: function(f) {
+					/** @type { slime.runtime.document.Settings } */
+					var settings = {};
+					return function(string) {
+						var document = source.parse.document({ settings: settings, string: string });
+						f(document);
+						return source.serialize.document({ settings: settings, document: document });
+					}
+				},
 				codec: {
 					string: (function() {
 						/** @type { slime.runtime.document.Settings } */
