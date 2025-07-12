@@ -5,6 +5,15 @@
 //	END LICENSE
 
 namespace slime.jsh.httpd {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Build {
 		destination: {
 			directory?: slime.jrunscript.file.Directory
@@ -27,13 +36,48 @@ namespace slime.jsh.httpd {
 
 		compile?: slime.jrunscript.file.File[]
 
-		parameters: {
+		parameters?: {
 			[x: string]: string
 		}
 
 		servlet: string
 
 		Resources: (this: slime.jsh.httpd.Resources) => void
+	}
+
+	export namespace tools.test {
+		export interface Exports {
+			getWebXml: (p: Pick<Build,"servlet"|"parameters">) => string
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { jsh } = fifty.global;
+
+			//	TODO	this API is weird; is it smart?
+			jsh.httpd.plugin.tools();
+			const subject = jsh.httpd.tools;
+
+			fifty.tests.manual.getWebXml = function() {
+				jsh.shell.console("subject = " + subject);
+				var webxml = subject.test.getWebXml({
+					servlet: "WEB-INF/path/to/servlet.js",
+					parameters: {
+						foo: "bar",
+						baz: "bizzy"
+					}
+				});
+				jsh.shell.console(webxml);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+
 	}
 
 	export interface Exports {
@@ -48,6 +92,8 @@ namespace slime.jsh.httpd {
 			build: slime.$api.fp.impure.Effect<Build>
 
 			proxy: slime.servlet.proxy.Exports
+
+			test: tools.test.Exports
 		}
 	}
 }
