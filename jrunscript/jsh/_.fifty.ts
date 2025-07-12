@@ -337,10 +337,10 @@ namespace slime.jsh {
  * ## Development Tools
  *
  * To execute a script in an ad-hoc built shell, execute:
- * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js <script> [arguments]`
+ * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js [--launcherCommandDebug] [--launcherScriptDebug] [--rhinoDebug] <script> [arguments]`
  *
  * To execute a script in an ad-hoc packaged shell, execute:
- * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js -packaged <script> [arguments]`
+ * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js [--launcherCommandDebug] [--launcherScriptDebug]  [--rhinoDebug] --packaged <script> [arguments]`
  *
  * ## Testing Tools
  *
