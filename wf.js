@@ -150,7 +150,25 @@
 					}
 				});
 			}
-		}
+		};
+
+		var generateTypedocIncludes = function() {
+			/** @type { slime.project.dependencies.Script } */
+			var code = $loader.script("contributor/dependencies/module.js");
+			var api = code({
+				java: {
+					version: String(Packages.java.lang.System.getProperty("java.version"))
+				},
+				library: {
+					file: jsh.file
+				}
+			});
+			var to = $api.fp.now( $context.base.pathname.os.adapt(), jsh.file.Location.directory.relativePath("local/typedoc/dependencies.md") );
+			api.typedoc.generate(
+				to
+			);
+			jsh.shell.console("Wrote new dependencies TypeDoc includes to " + to.pathname);
+		};
 
 		$exports.initialize = $api.fp.pipe(
 			function initialize(p) {
@@ -302,6 +320,7 @@
 					}
 				})();
 
+				//	TODO	below is messy; think it just removes ./bin?
 				$api.fp.impure.now.process(
 					$api.fp.impure.Input.supply(
 						function() { return $context.base.pathname.os.adapt(); }
@@ -319,7 +338,9 @@
 							}
 						)
 					)
-				)
+				);
+
+				generateTypedocIncludes();
 			}
 		);
 
@@ -484,29 +505,6 @@
 			project,
 			$exports
 		);
-
-		$exports.documentation = (
-			function(was) {
-				return function(invocation) {
-					/** @type { slime.project.dependencies.Script } */
-					var code = $loader.script("contributor/dependencies/module.js");
-					var api = code({
-						java: {
-							version: String(Packages.java.lang.System.getProperty("java.version"))
-						},
-						library: {
-							file: jsh.file
-						}
-					});
-					var to = $api.fp.now( $context.base.pathname.os.adapt(), jsh.file.Location.directory.relativePath("local/typedoc/dependencies.md") );
-					api.typedoc.generate(
-						to
-					);
-					jsh.shell.console("Wrote new dependencies TypeDoc includes to " + to.pathname);
-					return was(invocation);
-				}
-			}
-		)($exports.documentation);
 
 		$exports.check = $api.fp.pipe(
 			jsh.script.cli.option.boolean({ longname: "docker" }),
