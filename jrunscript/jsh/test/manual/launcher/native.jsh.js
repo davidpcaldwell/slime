@@ -35,7 +35,7 @@
 				"a", "b"
 			],
 			environment: jsh.js.Object.set({}, jsh.shell.environment, {
-				JSH_LAUNCHER_CONSOLE_DEBUG: "true",
+				JSH_LAUNCHER_COMMAND_DEBUG: "1",
 				JSH_JAVA_HOME: JSH_JAVA_HOME
 			})
 		});

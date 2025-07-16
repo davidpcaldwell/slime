@@ -158,7 +158,7 @@ int programAbsolutePath(char *argsv0, char *rv, int size) {
 void debug(char* mask, ...) {
 	va_list args;
 	va_start(args, mask);
-	if (getenv("JSH_LAUNCHER_DEBUG") != NULL || getenv("JSH_LAUNCHER_CONSOLE_DEBUG") != NULL) {
+	if (getenv("JSH_LAUNCHER_COMMAND_DEBUG") != NULL) {
 		vprintf(mask, args);
 	}
 	va_end(args);

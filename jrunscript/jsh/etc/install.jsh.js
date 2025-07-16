@@ -207,10 +207,10 @@
 			}
 			jsh.shell.jsh({
 				fork: true,
-		//		jar: install.getFile("jsh.jar"),
+				// jar: install.getFile("jsh.jar"),
 				properties: properties,
 				script: install.getFile("etc/install/" + name + ".jsh.js")
-		//		arguments: [install.getRelativePath("etc/install/" + name + ".jsh.js")]
+				// arguments: [install.getRelativePath("etc/install/" + name + ".jsh.js")]
 			});
 		});
 

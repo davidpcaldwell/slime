@@ -76,7 +76,7 @@ namespace slime.jsh.shell.tools {
 						//	TODO	would not work on Windows
 						if (p.jdks && !p.jdks.user) rv.JSH_USER_JDKS = "/dev/null";
 						if (p.lib) rv.JSH_SHELL_LIB = p.lib;
-						if (p.debug) rv.JSH_LAUNCHER_BASH_DEBUG = "1";
+						if (p.debug) rv.JSH_LAUNCHER_COMMAND_DEBUG = "1";
 						return rv;
 					}
 				}

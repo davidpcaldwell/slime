@@ -103,12 +103,12 @@
 				command.push("JSH_GITHUB_API_PROTOCOL=http");
 				command.push("JSH_DISABLE_HTTPS_SECURITY=true");
 				if (p.settings.optimize) command.push("JSH_OPTIMIZE_REMOTE_SHELL=true");
-				if (p.settings.debug) command.push("JSH_LAUNCHER_BASH_DEBUG=true");
+				if (p.settings.debug) command.push("JSH_LAUNCHER_COMMAND_DEBUG=true");
 				if (p.settings.debug) command.push("JSH_LAUNCHER_DEBUG=true");
 				PROTOCOL = "http";
 			} else if (p.settings.debug) {
 				command.push("env");
-				command.push("JSH_LAUNCHER_BASH_DEBUG=1");
+				command.push("JSH_LAUNCHER_COMMAND_DEBUG=1");
 				command.push("JSH_LAUNCHER_DEBUG=1");
 			}
 			if (p.settings.token) {
@@ -203,7 +203,7 @@
 			var shellIntention = toShellIntention(
 				invoke,
 				launcherBashScript,
-				{ JSH_LAUNCHER_BASH_DEBUG: "1", JSH_EMBED_BOOTSTRAP_DEBUG: "true" }
+				{ JSH_LAUNCHER_COMMAND_DEBUG: "1", JSH_EMBED_BOOTSTRAP_DEBUG: "true" }
 			);
 			return shellIntention;
 		};

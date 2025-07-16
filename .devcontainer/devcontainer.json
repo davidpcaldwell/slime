@@ -36,14 +36,7 @@
 						"name": "JavaSE-21",
 						"path": "/slime/local/jdk/21"
 					}
-				],
-				"graalvm.home": "/slime/local/jsh/lib/graal",
-				"graalvm.installations": [
-					"/slime/local/jsh/lib/graal"
-				],
-				"terminal.integrated.env.linux": {
-					"GRAALVM_HOME": "/slime/local/jsh/lib/graal"
-				}
+				]
 			}
 		}
 	},
