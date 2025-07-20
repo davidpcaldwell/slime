@@ -19,4 +19,4 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Use Docker to create image, and then run the linting and tests
-        run: contributor/docker-compose run test8
+        run: contributor/docker-suite 8

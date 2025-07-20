@@ -1,0 +1,15 @@
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+#	Script takes one argument: the JDK version to use
+if [ -z "$1" ]; then
+	>&2 echo "One argument required: JDK version to use."
+	exit 1
+fi
+
+#	TODO	should fail with multiple arguments
+
+$(dirname $0)/test-command-docker $1 /bin/bash /slime/wf check --docker

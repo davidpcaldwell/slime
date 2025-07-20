@@ -109,6 +109,7 @@ namespace slime.jsh.internal.launcher.test {
 
 	export interface Context {
 		library: {
+			bootstrap: slime.jsh.internal.launcher.Global["$api"]
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 		}
@@ -138,6 +139,7 @@ namespace slime.jsh.internal.launcher.test {
 			var library = {
 				script: code.script({
 					library: {
+						bootstrap: jsh.internal.bootstrap,
 						file: jsh.file,
 						shell: jsh.shell
 					},

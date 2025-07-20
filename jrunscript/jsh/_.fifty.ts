@@ -138,9 +138,20 @@ namespace slime.jsh {
 			}
 
 			fifty.tests.setting.JSH_LAUNCHER_JDK_HOME = function() {
+				var fixtures: slime.jsh.wf.test.Fixtures = (function() {
+					var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
+					return script()(fifty);
+				})();
+
+				var repository = fixtures.clone({
+					src: fifty.jsh.file.relative("../.."),
+				});
+
+				var cloneSrc = repository.directory.pathname.os.adapt();
+
 				//	TODO	unbuilt shell only
 				var jdk = $api.fp.now(
-					src,
+					cloneSrc,
 					jsh.file.Location.directory.relativePath("local/jdk/17")
 				);
 				if (!$api.fp.now(
@@ -150,7 +161,7 @@ namespace slime.jsh {
 					run({
 						command: "bash",
 						arguments: [
-							$api.fp.now(src, jsh.file.Location.directory.relativePath("jsh")).pathname,
+							$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
 							"--add-jdk-17"
 						]
 					});
@@ -160,8 +171,8 @@ namespace slime.jsh {
 					var output = run({
 						command: "bash",
 						arguments: [
-							$api.fp.now(src, jsh.file.Location.directory.relativePath("jsh")).pathname,
-							$api.fp.now(src, jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")).pathname,
+							$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
+							$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")).pathname,
 						],
 						environment: function(was) {
 							return $api.Object.compose(was, {

@@ -78,7 +78,7 @@ namespace slime.jsh.wf.standard {
 
 		export const fixtures: Fixtures = (
 			function(fifty: slime.fifty.test.Kit) {
-				const jsh = fifty.global.jsh;
+				const { $api, jsh } = fifty.global;
 
 				const fixtures = (
 					function() {
@@ -223,10 +223,18 @@ namespace slime.jsh.wf.standard {
 						//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
 						if (!p.noInitialize) (
 							function wfInitialize() {
+								jsh.shell.console("Initializing " + clone.directory.pathname.toString() + " ...");
 								jsh.shell.run({
 									command: clone.directory.getFile("wf"),
-									arguments: ["initialize"]
+									arguments: ["initialize"],
+									environment: $api.Object.compose(
+										jsh.shell.environment,
+										{
+											JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base
+										}
+									)
 								});
+								jsh.shell.console("Initialized " + clone.directory.pathname.toString() + ".");
 							}
 						)();
 
@@ -366,7 +374,10 @@ namespace slime.jsh.wf.standard {
 							//	TODO	add access to $api.Object in Fifty tests
 							environment: Object.assign({},
 								jsh.shell.environment,
-								{ PROJECT: repository.directory.toString() },
+								{
+									JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base,
+									PROJECT: repository.directory.toString()
+								},
 								environment
 							),
 							stdio: {

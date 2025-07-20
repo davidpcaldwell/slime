@@ -384,7 +384,8 @@
 							};
 						}
 
-						if ($context.library.shell.PATH.getCommand("curl") && $context.library.file.world.filesystems.os.pathname("/var/run/docker.sock").file.exists()) {
+						var DOCKER_SOCKET = $context.library.file.Location.from.os("/var/run/docker.sock");
+						if ($context.library.shell.PATH.getCommand("curl") && $context.library.file.Location.file.exists.simple(DOCKER_SOCKET)) {
 							return Api($context.library.curl({
 								unixSocket: "/var/run/docker.sock"
 							}))

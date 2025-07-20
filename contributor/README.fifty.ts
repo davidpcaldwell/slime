@@ -41,6 +41,12 @@
  *
  * ## Testing
  *
+ * ### Creating fresh "clones" of the current source directory
+ *
+ * See {@link slime.jsh.wf.test.Fixtures}, specifically `clone()`, to set up mirrors of the current source code.
+ *
+ * ### Browser tests
+ *
  * The containerized browser tests can be run from within the devcontainer:
  *
  * * Restart browser-specific container in Docker
