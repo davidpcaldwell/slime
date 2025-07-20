@@ -185,7 +185,15 @@ namespace slime.jsh {
 					});
 
 					var json = JSON.parse(output.stdio.output);
-					verify(json).properties["java.home"].evaluate(String).is(jdk.pathname)
+					verify(json).properties["java.home"].evaluate(String).is(
+						//	TODO	find a way to avoid this rigamarole of converting to Java, canonical path, etc.; what parts can
+						//			the new Location implementation do, what can the native Java filesystem implementation do, and
+						//			so forth
+						//
+						//			The test case is that on macOS one of these is /var, and the other is /private/var, and /var
+						//			symlinks to /private/var on that platform
+						String(jsh.file.Pathname(jdk.pathname).java.adapt().getCanonicalPath())
+					)
 				});
 
 				//	TODO	built.bash?, built.native?, packaged?, remote
