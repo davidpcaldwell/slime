@@ -23,7 +23,10 @@ set -x
 docker compose -f docker-compose.yaml -f docker-compose.test.yaml \
 	run \
 	--build \
-	-e DOCKER_HOST_UNAME=$(uname) -e SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT=1 -e SLIME_WF_JDK_VERSION=$JDK_VERSION \
+	-e DOCKER_HOST_UNAME=$(uname) \
+	-e SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT=1 \
+	-e SLIME_WF_JDK_VERSION=$JDK_VERSION \
+	-e SLIME_TEST_NO_WF_SUBMODULE_RESET \
 	-e JDK_VERSION \
 	-e SLIME_WF_BASH_DEBUG \
 	local \
