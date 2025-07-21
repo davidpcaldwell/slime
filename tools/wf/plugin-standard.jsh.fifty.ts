@@ -560,6 +560,7 @@ namespace slime.jsh.wf.standard {
 			fifty.tests.interface.submodule = fifty.test.Parent();
 
 			fifty.tests.interface.submodule.reset = function() {
+				if (jsh.shell.environment.SLIME_TEST_NO_WF_SUBMODULE_RESET) return;
 				var createSlimeBranch: slime.jrunscript.tools.git.Command<{ name: string },void> = {
 					invocation: function(p) {
 						return {
