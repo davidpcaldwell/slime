@@ -217,7 +217,9 @@ namespace slime.jsh.wf.standard {
 
 						if (!clone.directory.getSubdirectory("slime")) throw new Error("Could not update slime submodule in " + clone.directory.pathname.toString());
 						var slime = jsh.tools.git.oo.Repository({ directory: clone.directory.getSubdirectory("slime") });
-						slime.checkout({ branch: "origin/" + getCurrentBranch() });
+						var branch = getCurrentBranch();
+						jsh.shell.console("Current branch: " + JSON.stringify(branch));
+						if (branch) slime.checkout({ branch: "origin/" + branch });
 						fixtures.configure(slime);
 
 						//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
