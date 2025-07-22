@@ -530,20 +530,6 @@
 			/** @type { slime.$api.fp.Identity<slime.jsh.shell.BuiltInstallation> } */
 			var asBuiltInstallation = $api.fp.identity;
 
-			var getHomeBashLauncher = $api.fp.pipe(
-				asBuiltInstallation,
-				$api.fp.property("home"),
-				$context.api.file.Location.from.os,
-				$context.api.file.Location.directory.relativePath("jsh.bash")
-			);
-
-			var getHomeNativeLauncher = $api.fp.pipe(
-				asBuiltInstallation,
-				$api.fp.property("home"),
-				$context.api.file.Location.from.os,
-				$context.api.file.Location.directory.relativePath("jsh")
-			);
-
 			/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.BuiltInstallation } */
 			var isBuilt = function(shell) {
 				return Boolean(shell["home"]);
@@ -554,6 +540,20 @@
 				if (isUnbuilt(shell)) {
 					return unbuiltToShellIntention(shell)(p);
 				} else if (isBuilt(shell)) {
+					var getHomeBashLauncher = $api.fp.pipe(
+						asBuiltInstallation,
+						$api.fp.property("home"),
+						$context.api.file.Location.from.os,
+						$context.api.file.Location.directory.relativePath("jsh.bash")
+					);
+
+					var getHomeNativeLauncher = $api.fp.pipe(
+						asBuiltInstallation,
+						$api.fp.property("home"),
+						$context.api.file.Location.from.os,
+						$context.api.file.Location.directory.relativePath("jsh")
+					);
+
 					/** @type { (rv: string[], properties: slime.jsh.shell.Intention["properties"]) => void } */
 					var addPropertiesArguments = function(rv,properties) {
 						rv.push.apply(rv, getPropertyArguments(properties));

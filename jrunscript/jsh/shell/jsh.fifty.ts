@@ -427,7 +427,7 @@ namespace slime.jsh.shell {
 						return $api.Object.compose(
 							current,
 							{
-								JSH_JAVA_HOME: getJavaHome().toString()
+								JSH_LAUNCHER_JDK_HOME: getJavaHome().toString()
 							}
 						)
 					},

@@ -35,7 +35,7 @@
 		 * @param { slime.jrunscript.file.Directory } src
 		 */
 		var getUnbuiltEngineArguments = function(jsh,src) {
-			return src.getFile("local/jsh/lib/nashorn.jar")
+			return $context.library.bootstrap.java.getMajorVersion() >= 17 && src.getFile("local/jsh/lib/nashorn.jar")
 				? [
 					"-classpath",
 					jsh.internal.bootstrap.nashorn.dependencies.names.concat([
@@ -54,7 +54,7 @@
 		 * @returns
 		 */
 		var getBuiltEngineArguments = function(jsh,home) {
-			return home.getFile("lib/nashorn.jar")
+			return $context.library.bootstrap.java.getMajorVersion() >= 17 && home.getFile("lib/nashorn.jar")
 				? [
 					"-classpath",
 					jsh.internal.bootstrap.nashorn.dependencies.names.concat([
@@ -195,7 +195,7 @@
 						//	TODO	considered passing the location of jrunscript directly but it might affect native launcher, which
 						//			currently contains its own logic for locating jrunscript. So for now we pass this (somewhat
 						//			inaccurately-named, since it might not really be JAVA_HOME) value
-						{ JSH_JAVA_HOME: $context.library.shell.java.jrunscript.parent.parent.pathname.toString() },
+						{ JSH_LAUNCHER_JDK_HOME: $context.library.shell.java.Jdk.from.javaHome().base },
 						$api.Object.compose(
 							(p.bash && p.logging) ? { JSH_LOG_JAVA_PROPERTIES: p.logging } : {},
 							($context.library.shell.environment.JSH_SHELL_LIB) ? { JSH_SHELL_LIB: $context.library.shell.environment.JSH_SHELL_LIB } : {}
@@ -346,6 +346,7 @@
 				 * @param { slime.jsh.internal.launcher.test.Checks } checks
 				 */
 				var checkShellOutput = function(invocation, implementation, checks) {
+					$context.console("Getting shell result for " + implementation.type + " " + implementation.shell.join(" "));
 					var result = getShellResult(jsh, invocation, implementation);
 					return function(verify) {
 						checks(result)(verify);

@@ -15,7 +15,8 @@
 		jsh.script.cli.main(
 			$api.fp.pipe(
 				jsh.script.cli.option.boolean({ longname: "packaged" }),
-				jsh.script.cli.option.boolean({ longname: "launcherDebug" }),
+				jsh.script.cli.option.boolean({ longname: "launcherCommandDebug" }),
+				jsh.script.cli.option.boolean({ longname: "launcherScriptDebug" }),
 				jsh.script.cli.option.boolean({ longname: "rhinoDebug" }),
 				function(p) {
 					var JSH_HOME = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -44,18 +45,21 @@
 							});
 							jsh.shell.console("Completed build.");
 
-							var environment = Object.assign({}, jsh.shell.environment, (p.options.launcherDebug) ? {"JSH_LAUNCHER_DEBUG": "true"}: {});
+							var environment = $api.Object.compose(
+								jsh.shell.environment,
+								(p.options.launcherCommandDebug) ? {"JSH_LAUNCHER_COMMAND_DEBUG": "true"}: {},
+								(p.options.launcherScriptDebug) ? {"JSH_LAUNCHER_DEBUG": "true"}: {},
+								(p.options.rhinoDebug) ? { JSH_DEBUG_SCRIPT: "rhino" } : { JSH_DEBUG_SCRIPT: null }
+							);
 							if (!p.options.packaged) {
 								jsh.shell.console("Running in built shell ...");
+								//	TODO	note that this uses the old API for built shells
+								//			the newer one is the Intention one
 								jsh.shell.jsh({
 									shell: JSH_HOME,
 									script: jsh.file.Pathname(p.arguments[0]).file,
 									arguments: p.arguments.slice(1),
-									environment: $api.Object.compose(jsh.shell.environment, (p.options.rhinoDebug) ? {
-										JSH_DEBUG_SCRIPT: "rhino"
-									} : {
-										JSH_DEBUG_SCRIPT: null
-									})
+									environment: environment
 								});
 								jsh.shell.console("Ran in built shell.");
 							} else {

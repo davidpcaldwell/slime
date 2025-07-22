@@ -43,6 +43,21 @@
  *
  * ## Configuration
  *
+ * ### Settings
+ *
+ * <table>
+ * <thead>
+ * <tr><th colspan="2">Setting name</th><th rowspan="2">Description</th></tr>
+ * <tr><th>System environment variable</th><th>Java system property</th></tr>
+ * </thead>
+ * <tbody>
+ * <tr><td><code>JSH_LAUNCHER_COMMAND_DEBUG</code></td><td>(none)</td><td>Enables debugging within the shell script or native system
+ * portion of the <code>jsh</code> launcher</td></tr>
+ * <tr><td><code>JSH_LAUNCHER_JDK_HOME</code></td><td>(none)</td><td>Specifies a Java Development Kit that <code>jsh</code> should
+ * use to execute the Java-based portion of the <code>jsh</code> launcher</td></tr>
+ * </tbody>
+ * </table>
+ *
  * See the older [Running `jsh`](../src/jrunscript/jsh/launcher/api.html) page for (possibly outdated) additional information about
  * how to run scripts using `jsh` and configure the shell.
  *
@@ -62,6 +77,131 @@
  *
  */
 namespace slime.jsh {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.setting = fifty.test.Parent();
+
+			var src = fifty.jsh.file.relative("../..");
+
+			var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+
+			//	TODO	JSH_LAUNCHER_COMMAND_DEBUG
+			fifty.tests.setting.JSH_LAUNCHER_COMMAND_DEBUG = function() {
+				fifty.run(function unbuilt() {
+					var nodebug = run({
+						command: "bash",
+						arguments: [
+							$api.fp.now(src, jsh.file.Location.directory.relativePath("jsh")).pathname,
+							$api.fp.now(src, jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")).pathname,
+						],
+						stdio: {
+							output: "string",
+							error: "string"
+						}
+					});
+
+					verify(nodebug).stdio.error.is("");
+
+					var debug = run({
+						command: "bash",
+						arguments: [
+							$api.fp.now(src, jsh.file.Location.directory.relativePath("jsh")).pathname,
+							$api.fp.now(src, jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")).pathname,
+						],
+						environment: function(was) {
+							return $api.Object.compose(
+								was,
+								{
+									JSH_LAUNCHER_COMMAND_DEBUG: "1"
+								}
+							)
+						},
+						stdio: {
+							output: "string",
+							error: "string"
+						}
+					});
+
+					jsh.shell.console("stderr = [\n" + debug.stdio.error + "\n]");
+
+					verify(debug).stdio.error.evaluate(function(stderr) {
+						return stderr.split("\n")[0]
+					}).is("++ uname");
+				});
+
+				//	TODO built.bash?, built.native?, packaged?, remote?
+			}
+
+			fifty.tests.setting.JSH_LAUNCHER_JDK_HOME = function() {
+				var fixtures: slime.jsh.wf.test.Fixtures = (function() {
+					var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
+					return script()(fifty);
+				})();
+
+				var repository = fixtures.clone({
+					src: fifty.jsh.file.relative("../.."),
+				});
+
+				var cloneSrc = repository.directory.pathname.os.adapt();
+
+				//	TODO	unbuilt shell only
+				var jdk = $api.fp.now(
+					cloneSrc,
+					jsh.file.Location.directory.relativePath("local/jdk/17")
+				);
+				if (!$api.fp.now(
+					jdk,
+					jsh.file.Location.directory.exists.simple
+				)) {
+					run({
+						command: "bash",
+						arguments: [
+							$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
+							"--add-jdk-17"
+						]
+					});
+				}
+
+				fifty.run(function unbuilt() {
+					var output = run({
+						command: "bash",
+						arguments: [
+							$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
+							$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")).pathname,
+						],
+						environment: function(was) {
+							return $api.Object.compose(was, {
+								JSH_LAUNCHER_JDK_HOME: jdk.pathname
+							});
+						},
+						stdio: {
+							output: "string"
+						}
+					});
+
+					var json = JSON.parse(output.stdio.output);
+					verify(json).properties["java.home"].evaluate(String).is(
+						//	TODO	find a way to avoid this rigamarole of converting to Java, canonical path, etc.; what parts can
+						//			the new Location implementation do, what can the native Java filesystem implementation do, and
+						//			so forth
+						//
+						//			The test case is that on macOS one of these is /var, and the other is /private/var, and /var
+						//			symlinks to /private/var on that platform
+						String(jsh.file.Pathname(jdk.pathname).java.adapt().getCanonicalPath())
+					)
+				});
+
+				//	TODO	built.bash?, built.native?, packaged?, remote
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	namespace db.jdbc {
 		interface Exports {
 			//	interface is built out via Declaration Merging (https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
@@ -216,10 +356,10 @@ namespace slime.jsh {
  * ## Development Tools
  *
  * To execute a script in an ad-hoc built shell, execute:
- * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js <script> [arguments]`
+ * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js [--launcherCommandDebug] [--launcherScriptDebug] [--rhinoDebug] <script> [arguments]`
  *
  * To execute a script in an ad-hoc packaged shell, execute:
- * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js -packaged <script> [arguments]`
+ * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js [--launcherCommandDebug] [--launcherScriptDebug]  [--rhinoDebug] --packaged <script> [arguments]`
  *
  * ## Testing Tools
  *
@@ -228,5 +368,14 @@ namespace slime.jsh {
  * global {@link slime.fifty.test.Kit | `fifty`} object.
  */
 namespace slime.jsh.internal {
-
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.setting);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }

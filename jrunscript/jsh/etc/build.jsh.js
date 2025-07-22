@@ -396,7 +396,6 @@
 		if (!destination.installer) {
 			//	Decision as of now is not to build these platform-specific components if building an installer
 
-			// TODO: probably should just move this functionality into this file
 			(function postInstaller() {
 				console("Running post-installer with arguments [" + destination.arguments.join(" ") + "] ... ");
 				/** @type { { [x: string]: string } } */

@@ -78,7 +78,7 @@ namespace slime.jsh.wf.standard {
 
 		export const fixtures: Fixtures = (
 			function(fifty: slime.fifty.test.Kit) {
-				const jsh = fifty.global.jsh;
+				const { $api, jsh } = fifty.global;
 
 				const fixtures = (
 					function() {
@@ -217,16 +217,26 @@ namespace slime.jsh.wf.standard {
 
 						if (!clone.directory.getSubdirectory("slime")) throw new Error("Could not update slime submodule in " + clone.directory.pathname.toString());
 						var slime = jsh.tools.git.oo.Repository({ directory: clone.directory.getSubdirectory("slime") });
-						slime.checkout({ branch: "origin/" + getCurrentBranch() });
+						var branch = getCurrentBranch();
+						jsh.shell.console("Current branch: " + JSON.stringify(branch));
+						if (branch) slime.checkout({ branch: "origin/" + branch });
 						fixtures.configure(slime);
 
 						//	Initialize SLIME external types (e.g., jsyaml) so that tsc will pass
 						if (!p.noInitialize) (
 							function wfInitialize() {
+								jsh.shell.console("Initializing " + clone.directory.pathname.toString() + " ...");
 								jsh.shell.run({
 									command: clone.directory.getFile("wf"),
-									arguments: ["initialize"]
+									arguments: ["initialize"],
+									environment: $api.Object.compose(
+										jsh.shell.environment,
+										{
+											JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base
+										}
+									)
 								});
+								jsh.shell.console("Initialized " + clone.directory.pathname.toString() + ".");
 							}
 						)();
 
@@ -366,7 +376,10 @@ namespace slime.jsh.wf.standard {
 							//	TODO	add access to $api.Object in Fifty tests
 							environment: Object.assign({},
 								jsh.shell.environment,
-								{ PROJECT: repository.directory.toString() },
+								{
+									JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base,
+									PROJECT: repository.directory.toString()
+								},
 								environment
 							),
 							stdio: {
@@ -547,6 +560,12 @@ namespace slime.jsh.wf.standard {
 			fifty.tests.interface.submodule = fifty.test.Parent();
 
 			fifty.tests.interface.submodule.reset = function() {
+				jsh.shell.console("SLIME_TEST_NO_WF_SUBMODULE_RESET=" + jsh.shell.environment.SLIME_TEST_NO_WF_SUBMODULE_RESET);
+				jsh.shell.console(JSON.stringify(jsh.shell.environment));
+				if (jsh.shell.environment.SLIME_TEST_NO_WF_SUBMODULE_RESET) {
+					return;
+				}
+
 				var createSlimeBranch: slime.jrunscript.tools.git.Command<{ name: string },void> = {
 					invocation: function(p) {
 						return {

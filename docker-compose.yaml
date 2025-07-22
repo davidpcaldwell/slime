@@ -6,55 +6,10 @@
 
 name: slime
 
-x-base-box: &box
-    build: .
-    environment: &environment
-      SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
-      # The HOST_UNAME variable is set via the contributor/docker-compose command-line program and will not be present when
-      # Docker Compose is invoked directly (unless you supply it). It is used to disable tests that are unstable on certain host
-      # operating systems running Docker Desktop.
-      DOCKER_HOST_UNAME: ${DOCKER_HOST_UNAME}
-    working_dir: /slime
-    depends_on:
-      - chrome
-      - firefox
-
-x-base-test: &test
-    <<: *box
-    command: /bin/bash /slime/wf check --docker
-
+# SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
+# command: /bin/bash /slime/wf check --docker
+# SLIME_WF_JDK_VERSION = 8 | 11 | 17 | 21
 services:
-  # Produces a blank SLIME container for development (along with Chrome and Firefox browsers ready to be driven by it)
-  box:
-    <<: *box
-
-  # Produces a SLIME container for testing under JDK 8
-  test8:
-    <<: *test
-    environment:
-      <<: *environment
-      SLIME_WF_JDK_VERSION: 8
-
-  # Produces a SLIME container for testing under JDK 11
-  test11:
-    <<: *test
-    environment:
-      <<: *environment
-      SLIME_WF_JDK_VERSION: 11
-
-  # Produces a SLIME container for testing under JDK 17
-  test17:
-    <<: *test
-    environment:
-      <<: *environment
-      SLIME_WF_JDK_VERSION: 17
-
-  test21:
-    <<: *test
-    environment:
-      <<: *environment
-      SLIME_WF_JDK_VERSION: 21
-
   # Produces a stateful, persistent SLIME container that begins as a blank box with the source directory mounted. Local changes
   # (to the local/ subdirectory, like installing JDKs, Rhino, Tomcat, and so forth) will persist between runs.
   #
@@ -64,12 +19,12 @@ services:
   # The chrome and firefox services are still started so that the container can emulate the CI tests for debugging CI-only failures
   # via the contributor/devcomtainer/check script.
   local:
-    <<: *box
+    build: .
     environment:
-      <<: *environment
       TZ: ${TZ}
-      DISPLAY: novnc:0.0
-    command: /bin/bash
+      DISPLAY: desktop:0.0
+    command: sleep infinity
+    working_dir: /slime
     volumes:
       - type: bind
         source: .
@@ -83,7 +38,7 @@ services:
     ports:
       - 8000:8000
     depends_on:
-      - novnc
+      - desktop
       - chrome
       - firefox
 
@@ -97,13 +52,14 @@ services:
     ports:
       - 7901:7900
 
-  novnc:
+  desktop:
     image: theasp/novnc:latest
     environment:
       RUN_XTERM: no
     env_file:
       # Can specify DISPLAY_WIDTH and DISPLAY_HEIGHT for the desktop in the below file; defaults are 1024 and 768.
-      - local/devcontainer/novnc.env
+      - path: local/devcontainer/desktop.env
+        required: false
     ports:
       - 7902:8080
 

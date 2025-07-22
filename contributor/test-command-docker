@@ -1,0 +1,33 @@
+#!/bin/bash
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+#	First argument is the JDK version to use
+if [ -z "$1" ]; then
+	>&2 echo "Required: JDK version to use."
+	exit 1
+fi
+
+export JDK_VERSION="$1"
+shift 1
+
+SLIME="$(dirname $0)/.."
+
+# The DOCKER_HOST_UNAME variable is used to disable tests that are unstable on certain host operating systems running Docker
+# Desktop.
+cd ${SLIME}
+set -x
+docker compose -f docker-compose.yaml -f docker-compose.test.yaml \
+	run \
+	--build \
+	-e DOCKER_HOST_UNAME=$(uname) \
+	-e SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT=1 \
+	-e SLIME_WF_JDK_VERSION=$JDK_VERSION \
+	-e SLIME_TEST_NO_WF_SUBMODULE_RESET \
+	-e JDK_VERSION \
+	-e SLIME_WF_BASH_DEBUG \
+	local \
+	/bin/bash -c './jsh --install-jdk-$JDK_VERSION; "$@"' -- "$@"

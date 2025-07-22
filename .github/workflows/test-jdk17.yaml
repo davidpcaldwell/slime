@@ -19,4 +19,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Use Docker to create image, and then run the linting and tests
-        run: contributor/docker-compose run test17
+        env:
+          SLIME_TEST_NO_WF_SUBMODULE_RESET: 1
+        run: contributor/suite-docker 17

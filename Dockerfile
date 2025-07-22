@@ -4,9 +4,13 @@
 #
 #	END LICENSE
 
-FROM debian AS bare
-COPY . /slime
+#	Currently, the purpose of this Docker image is to provide facilities for developing SLIME itself; the image is not intended to
+#	support any deployment use cases.
 
-FROM bare AS test
-RUN apt update && apt install -y git
-RUN /bin/bash /slime/contributor/devcontainer/install-x-libraries
+FROM debian
+RUN apt update && apt install -y git chromium curl
+#	Why running apt update again is necessary and this needs to be a separate layer is completely unknown as of this writing
+# RUN apt update && apt install -y chromium
+COPY contributor/devcontainer/boot /boot
+RUN /bin/bash /boot/install-x-libraries
+COPY . /slime
