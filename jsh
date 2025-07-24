@@ -52,19 +52,26 @@ announce_install() {
 
 APT_UPDATED=
 debian_install_package() {
-	local SUDO=""
-	local sudo="$(which sudo)"
-	if [ ${sudo} ]; then
-		SUDO="${sudo}"
-	fi
 	local package="$1"
-	if [ "$(which apt-get)" ]; then
+	if [ "$(id -u)" -eq 0 ]; then
+		#	root
+		SUDO=""
+	else
+		local sudo="$(which sudo)"
+		if [ ${sudo} ]; then
+			SUDO="${sudo}"
+		else
+			>&2 echo "Could not install $package without sudo."
+			exit 1
+		fi
+	fi
+	if [ "$(which apt)" ]; then
 		if [ -z "${APT_UPDATED}" ]; then
-			${SUDO} apt-get -y update
-			${SUDO} apt-get -y upgrade
+			${SUDO} apt -y update
+			${SUDO} apt -y upgrade
 			APT_UPDATED=true
 		fi
-		${SUDO} apt-get -y install $package
+		${SUDO} apt -y install $package
 	else
 		exit 1
 	fi
@@ -75,12 +82,18 @@ download_install() {
 	LOCATION="$2"
 	if [ ! -f "${LOCATION}" ]; then
 		>&2 echo "Downloading ${URL} ..."
-		if [ "${UNAME}" == "Darwin" ]; then
+		if command -v curl &> /dev/null; then
 			mkdir -p "$(dirname $LOCATION)" 2>/dev/null
 			curl -L -o ${LOCATION} ${URL}
-		elif [ "${UNAME}" == "Linux" ]; then
-			if [ ! "$(which wget)" ]; then
-				debian_install_package wget
+		else
+			if ! command -v wget &> /dev/null; then
+				if command -v apt &>/dev/null; then
+					debian_install_package wget
+				else
+					>&2 echo "Could not install wget; only Debian / apt is supported for package management."
+					>&2 echo "Install curl or wget and re-run."
+					exit 1
+				fi
 			fi
 			mkdir -p "$(dirname $LOCATION)" 2>/dev/null
 			wget -O ${LOCATION} ${URL}
