@@ -176,7 +176,12 @@
 				if (m.arguments) {
 					args.push.apply(args,m.arguments);
 				}
-				if ($context.USER == "root") {
+				var isDocker = $api.fp.Thunk.value(
+					"/.dockerenv",
+					$context.api.file.Location.from.os,
+					$context.api.file.Location.file.exists.simple
+				)
+				if ($context.USER == "root" || isDocker()) {
 					args.push("--no-sandbox");
 				}
 				if (m.app) {
