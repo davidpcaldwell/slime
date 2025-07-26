@@ -21,7 +21,7 @@
 		jsh.loader.plugins(api);
 
 		var code = {
-			/** @type { slime.jrunscript.tools.github.internal.test.Script } */
+			/** @type { slime.jrunscript.tools.github.mock.project.Script } */
 			testing: loader.script("test/module.js")
 		};
 

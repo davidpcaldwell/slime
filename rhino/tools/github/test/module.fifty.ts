@@ -8,14 +8,6 @@
  * Provides constructs used for testing `jsh` remote shells.
  */
 namespace slime.jsh.test.remote {
-	export interface Settings {
-		mock?: slime.jsh.unit.mock.Web
-		branch?: string
-		optimize?: boolean
-		debug?: boolean
-		token?: () => string
-	}
-
 	/**
 	 * A mock hosted SLIME project; produces a mock web with a GitHub that hosts SLIME from a context-provided directory.
 	 */
@@ -37,7 +29,17 @@ namespace slime.jsh.test.remote {
 				}
 			}
 		}) => slime.jsh.unit.mock.Web
+	}
 
+	export interface Settings {
+		mock?: slime.jsh.unit.mock.Web
+		branch?: string
+		optimize?: boolean
+		debug?: boolean
+		token?: () => string
+	}
+
+	export interface Exports {
 		/**
 		 * Outputs a single string, suitable for use at the shell command line, that will invoke a shell with the given settings
 		 * using tools (`curl` or `wget`) found on the given search path.
@@ -47,12 +49,14 @@ namespace slime.jsh.test.remote {
 			settings: Settings
 			script: string
 		}) => string
+	}
 
+	export interface Exports {
 		getShellIntention: slime.jsh.test.shells.Remote["getShellIntention"]
 	}
 }
 
-namespace slime.jrunscript.tools.github.internal.test {
+namespace slime.jrunscript.tools.github.mock.project {
 	export interface Context {
 		library: {
 			shell: slime.jrunscript.shell.Exports

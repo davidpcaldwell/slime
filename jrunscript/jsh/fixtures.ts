@@ -113,9 +113,9 @@ namespace slime.jsh.test {
 					var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
 
 					var code: {
-						testing: slime.jrunscript.tools.github.internal.test.Script
+						testing: slime.jrunscript.tools.github.mock.project.Script
 					} = {
-						testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
+						testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.mock.project.Script
 					};
 
 					var library = {
