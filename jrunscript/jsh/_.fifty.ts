@@ -17,9 +17,9 @@
  *
  * ## Execution models
  *
- * `jsh` supports three execution models: an "unbuilt" shell executed directly from source, a "built" shell in which `jsh`
- * components are preprocessed and deployed to support faster startup, and a "packaged" shell in which a `jsh` script is packaged
- * into a standalone executable JAR file.
+ * `jsh` supports three execution models: an "unbuilt" shell executed directly from source (which may be hosted locally or executed
+ * directly from GitHub), a "built" shell in which `jsh` components are preprocessed and deployed to support faster startup, and a
+ * "packaged" shell in which a `jsh` script is packaged into a standalone executable JAR file.
  *
  * ### Unbuilt shells
  *
@@ -257,7 +257,7 @@ namespace slime.jsh {
  * There are various ways to invoke the `jsh` shell as of this writing.
  *
  * For unbuilt shells, we use the top-level `jsh` script provided with the repository. The script determines which Java needs to be
- * used, installing the default JDK if necessary
+ * used, installing the default JDK if necessary, and then runs the unbuilt shell.
  *
  * For built shells with no native launcher, we use the `jsh.bash` script that is installed to the build directory. It ultimately
  * comes from `jrunscript/jsh/launcher/jsh.bash`.

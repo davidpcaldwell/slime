@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jrunscript.tools.github.internal.test.Context } $context
+	 * @param { slime.jrunscript.tools.github.mock.project.Context } $context
 	 * @param { slime.loader.Export<slime.jsh.test.remote.Exports> } $export
 	 */
 	function($api,$context,$export) {
@@ -40,6 +40,8 @@
 		};
 
 		/**
+		 * Returns a command line (as a `string[]`) that can be used to download the main `jsh` script.
+		 *
 		 * @param { slime.jrunscript.file.Searchpath } PATH
 		 * @param { Pick<slime.jsh.test.remote.Settings,"mock" | "token" | "branch"> } p
 		 * @returns
