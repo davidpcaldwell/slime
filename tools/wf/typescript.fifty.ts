@@ -54,7 +54,8 @@ namespace slime.jsh.wf.internal.module {
 			version: () => string
 
 			typedoc: {
-				invocation: (p: typedoc.Invocation) => slime.$api.fp.world.Question<
+				invocation: slime.$api.fp.world.Sensor<
+					typedoc.Invocation,
 					{
 						found: string
 						notFound: void
@@ -78,6 +79,10 @@ namespace slime.jsh.wf.internal.module {
 				 */
 				version: (project: slime.jsh.wf.Project) => string
 
+				/**
+				 * The applicable TypeScript configuration file for this project; `tsconfig.json` if it exists,
+				 * otherwise `jsconfig.json` if that exists, otherwise nothing.
+				 */
 				configurationFile: (project: slime.jsh.wf.Project) => slime.$api.fp.Maybe<slime.jrunscript.file.Location>
 			}
 		}
