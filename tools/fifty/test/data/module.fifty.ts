@@ -31,47 +31,49 @@ namespace slime.fifty.internal.test.data {
 			Database: new () => Database
 		}
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			fifty.tests.types.Database = function(database: slime.fifty.internal.test.data.shopping.Database) {
-				var before = database.items.length;
-				database.add({ item: { name: "foo" }});
-				verify(database).items.length.is(before + 1);
-				verify(database).items[0].name.is("foo");
-			}
-
-			fifty.tests.types.Exports = function(exports: slime.fifty.internal.test.data.shopping.Exports) {
-				var db = new exports.Database();
-				fifty.tests.types.Database(db);
-			}
-
-			fifty.tests.subsuite = function() {
-				verify(1).is(1);
-			}
-
-			fifty.tests.suite = function() {
-				//	TODO	use more modern script loading techniques
-				var module: slime.fifty.internal.test.data.shopping.Exports = fifty.$loader.module("module.js");
-				fifty.run(function() {
-					fifty.tests.types.Exports(module);
-				});
-				fifty.run(fifty.tests.subsuite);
-				fifty.load("load/child.fifty.ts");
-
-				//	Small demonstration of using function name to name a subsuite
-				fifty.run(function name() {
-					verify("function name").is("function name");
-				});
-
-				fifty.load("no-suite.fifty.ts");
-				fifty.load("promises.fifty.ts");
-			}
-		}
-	//@ts-ignore
-	)(fifty, verify, tests, $loader, run, load)
 }
+
+(
+	function(
+		fifty: slime.fifty.test.Kit
+	) {
+		const { verify } = fifty;
+
+		fifty.tests.types = {};
+
+		fifty.tests.types.Database = function(database: slime.fifty.internal.test.data.shopping.Database) {
+			var before = database.items.length;
+			database.add({ item: { name: "foo" }});
+			verify(database).items.length.is(before + 1);
+			verify(database).items[0].name.is("foo");
+		}
+
+		fifty.tests.types.Exports = function(exports: slime.fifty.internal.test.data.shopping.Exports) {
+			var db = new exports.Database();
+			fifty.tests.types.Database(db);
+		}
+
+		fifty.tests.subsuite = function() {
+			verify(1).is(1);
+		}
+
+		fifty.tests.suite = function() {
+			//	TODO	use more modern script loading techniques
+			var module: slime.fifty.internal.test.data.shopping.Exports = fifty.$loader.module("module.js");
+			fifty.run(function() {
+				fifty.tests.types.Exports(module);
+			});
+			fifty.run(fifty.tests.subsuite);
+			fifty.load("load/child.fifty.ts");
+
+			//	Small demonstration of using function name to name a subsuite
+			fifty.run(function name() {
+				verify("function name").is("function name");
+			});
+
+			fifty.load("no-suite.fifty.ts");
+			fifty.load("promises.fifty.ts");
+		}
+	}
+//@ts-ignore
+)(fifty);
