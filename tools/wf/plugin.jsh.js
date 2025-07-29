@@ -681,10 +681,10 @@
 				 * @returns
 				 */
 				var getTypedocCommand = function(stdio,project,out) {
-					var version = library.module.project.typescript.version(project);
-					var configuration = library.module.project.typescript.configurationFile(project);
 					jsh.shell.tools.rhino.require.simple();
-					$api.fp.world.now.action(jsh.shell.tools.tomcat.jsh.require.world);
+
+					//	TODO	would this really be required? To serve it, maybe, but to run it?
+					jsh.shell.tools.tomcat.jsh.require.simple();
 
 					var getVersion = $api.fp.world.Sensor.old.mapping({
 						sensor: jsh.shell.tools.node.Installation.getVersion
@@ -704,7 +704,12 @@
 							}
 						}
 					});
+
+					var version = library.module.project.typescript.version(project);
+
+					var configuration = library.module.project.typescript.configurationFile(project);
 					if (!configuration.present) throw new Error("Not found: TypeScript configuration file.");
+
 					/** @type { slime.jsh.wf.internal.module.typedoc.Invocation } */
 					var typedocInvocation = {
 						stdio: stdio,

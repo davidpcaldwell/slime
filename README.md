@@ -20,7 +20,7 @@ The Java-based environments support Mozilla [Rhino](https://github.com/mozilla/r
 ## Getting started: run a `jsh` script without installing anything
 
 The following script runs the `master` version of the shell remotely and runs the remotely-hosted
-[`jsh/test/jsh-data.jsh.js`](jsh/test/jsh-data.jsh.js) script which emits information about the executed shell:
+[`jrunscript/jsh/test/jsh-data.jsh.js`](jrunscript/jsh/test/jsh-data.jsh.js) script which emits information about the executed shell:
 
 ### Using `curl` (installed on macOS)
 
