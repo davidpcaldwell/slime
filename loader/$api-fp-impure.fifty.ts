@@ -375,21 +375,6 @@ namespace slime.$api.fp.impure {
 				);
 
 				fifty.tests.exports.impure.Input.cache = function() {
-					//	TODO	add to Fifty proper
-					var spy = function<T,P extends any[],R,F extends slime.external.lib.es5.Function<T,P,R>>(f: F): { invoke: F, recorded: Invocation<F>[] } {
-						var recorded: Invocation<F>[] = [];
-						return {
-							invoke: function() {
-								const target: Invocation<F>["target"] = this;
-								const args: Invocation<F>["arguments"] = Array.prototype.slice.call(arguments);
-								var rv = f.apply(this, arguments) as Invocation<F>["returned"];
-								recorded.push({ target, arguments: args, returned: rv } as Invocation<F>);
-								return rv;
-							} as F,
-							recorded: recorded
-						};
-					};
-
 					var cache: Parameters<exports.Input["cache"]>[0] = (
 						function<T>() {
 							var value: slime.$api.fp.Maybe<T> = $api.fp.Maybe.from.nothing();
@@ -410,32 +395,32 @@ namespace slime.$api.fp.impure {
 					};
 
 					var spies = {
-						input: spy(input),
+						input: fifty.spy.create(input),
 						cache: {
-							get: spy(cache.get),
-							set: spy(cache.set)
+							get: fifty.spy.create(cache.get),
+							set: fifty.spy.create(cache.set)
 						}
 					};
 
-					var caching = $api.fp.impure.Input.cache({ get: spies.cache.get.invoke, set: spies.cache.set.invoke })(spies.input.invoke);
+					var caching = $api.fp.impure.Input.cache({ get: spies.cache.get.function, set: spies.cache.set.function })(spies.input.function);
 
-					verify(spies).input.recorded.length.is(0);
-					verify(spies).cache.get.recorded.length.is(0);
-					verify(spies).cache.set.recorded.length.is(0);
+					verify(spies).input.invocations.length.is(0);
+					verify(spies).cache.get.invocations.length.is(0);
+					verify(spies).cache.set.invocations.length.is(0);
 
 					var value = caching();
 
 					verify(value).is(8);
-					verify(spies).input.recorded.length.is(1);
-					verify(spies).cache.get.recorded.length.is(1);
-					verify(spies).cache.set.recorded.length.is(1);
+					verify(spies).input.invocations.length.is(1);
+					verify(spies).cache.get.invocations.length.is(1);
+					verify(spies).cache.set.invocations.length.is(1);
 
 					value = caching();
 
 					verify(value).is(8);
-					verify(spies).input.recorded.length.is(1);
-					verify(spies).cache.get.recorded.length.is(2);
-					verify(spies).cache.set.recorded.length.is(1);
+					verify(spies).input.invocations.length.is(1);
+					verify(spies).cache.get.invocations.length.is(2);
+					verify(spies).cache.set.invocations.length.is(1);
 				}
 			}
 		//@ts-ignore
