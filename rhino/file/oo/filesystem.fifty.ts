@@ -11,7 +11,10 @@ namespace slime.jrunscript.file.internal.filesystem {
 	}
 
 	export interface Exports {
-		Filesystem: new (provider: slime.jrunscript.file.internal.java.FilesystemProvider) => Filesystem
+		Filesystem: new (
+			filesystem: slime.jrunscript.file.world.Filesystem,
+			provider: slime.jrunscript.file.internal.java.FilesystemProvider
+		) => Filesystem
 	}
 
 	/**

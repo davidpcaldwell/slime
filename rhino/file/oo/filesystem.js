@@ -22,12 +22,13 @@
 
 		/**
 		 *
+		 * @param { slime.jrunscript.file.world.Filesystem } fs
 		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } provider
 		 * @param { { interpretNativePathname: any } } [o] Used only for Cygwin.
 		 */
-		var Filesystem = function(provider,o) {
+		var Filesystem = function(fs,provider,o) {
 			this.toString = function() {
-				return "Filesystem: provider=" + provider;
+				return "Filesystem: fs=" + fs + " provider=" + provider;
 			}
 
 			//	TODO	we add createEmpty below, but do not seem to define it. Is it defined elsewhere, maybe?

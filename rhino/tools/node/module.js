@@ -44,7 +44,19 @@
 		};
 
 		var versions = {
-			default: $api.fp.Thunk.value("22.16.0")
+			default: function() {
+				if ($context.library.file.Pathname("/etc/os-release").file) {
+					var string = $context.library.file.Pathname("/etc/os-release").file.read(String);
+					if (
+						string.indexOf("Amazon Linux 2") != -1
+						|| string.indexOf("CentOS Linux 7 (Core)") != -1
+					) {
+						return "16.20.2";
+					}
+				}
+
+				return "22.16.0";
+			}
 		};
 
 		$exports.versions = versions;

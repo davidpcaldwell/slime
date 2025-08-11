@@ -18,22 +18,6 @@
 
 		var constant = $api.fp.impure.Input.memoized;
 
-		var fail = function(message) {
-			throw new Error(message);
-		};
-
-		/**
-		 * @type { slime.jrunscript.file.internal.file.firstDefined }
-		 */
-		var firstDefined = function (object/*, names */) {
-			for (var i = 1; i < arguments.length; i++) {
-				if (typeof (object[arguments[i]]) != "undefined") {
-					return object[arguments[i]];
-				}
-			}
-			return function () { }();
-		}
-
 		var $exports_list = {
 			NODE: {
 				create: function (d, n) {

@@ -848,18 +848,6 @@
 						 */
 						var action = function(events) {
 							var VERSION = node.versions.default();
-							//	TODO	horrendous, but let's go with it for now
-							//	TODO	now can move this to node module itself; this value is now a function, as is the practice
-							//			for other dependencies, for this exact reason
-							if (jsh.file.Pathname("/etc/os-release").file) {
-								var string = jsh.file.Pathname("/etc/os-release").file.read(String);
-								if (
-									string.indexOf("Amazon Linux 2") != -1
-									|| string.indexOf("CentOS Linux 7 (Core)") != -1
-								) {
-									VERSION = "16.20.2";
-								}
-							}
 
 							var now = jsh.shell.tools.node.installation;
 
