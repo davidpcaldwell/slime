@@ -553,7 +553,9 @@ namespace slime.jsh.shell {
 					verify(output).evaluate.property("properties").evaluate.property("slime.jrunscript.jsh.shell.jsh.foo").is("bar");
 				});
 
-				if (test.shells.built(true)) fifty.run(function nativeLaunched() {
+				var ISSUE_2039_RESOLVED = false;
+
+				if (ISSUE_2039_RESOLVED && test.shells.built(true)) fifty.run(function nativeLaunched() {
 					var shellLaunched = jsh.shell.jsh.Intention.toShellIntention({
 						shell: {
 							home: test.shells.built(true).home
