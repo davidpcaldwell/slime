@@ -567,6 +567,32 @@
 						)
 					}
 				},
+				spy: {
+					/**
+					 * @template { any } T
+					 * @template { any[] } P
+					 * @template { any } R
+					 * @template { slime.external.lib.es5.Function<T,P,R> } F
+					 * @param { F } f
+					 * @returns { { function: F, invocations: slime.fifty.test.spy.Invocation<F>[] } }
+					 */
+					create: function(f) {
+						/** @type { slime.fifty.test.spy.Invocation<F>[] } */
+						var recorded = [];
+						return {
+							function: /** @type { F } */(function() {
+								/** @tyoe { T } */
+								var target = this;
+								var args = Array.prototype.slice.call(arguments);
+								var rv = f.apply(this, arguments);
+								var invocation = /** @type { slime.fifty.test.spy.Invocation<F> }*/({ target: target, arguments: args, returned: rv });
+								recorded.push(invocation);
+								return rv;
+							}),
+							invocations: recorded
+						};
+					}
+				},
 				tests: tests,
 				verify: function() {
 					return verify.apply(this,arguments);
