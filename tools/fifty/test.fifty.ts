@@ -70,8 +70,6 @@
  * again. See {@link slime.fifty.test.Kit}, specifically the `test.platforms` method.
  */
 namespace slime.fifty.test {
-	export type verify = slime.definition.verify.Verify
-
 	export type tests = {
 		[x: string]: any
 	}
@@ -107,13 +105,38 @@ namespace slime.fifty.test {
 	 * The variable that appears as `fifty` within the scope of Fifty definition files when executing tests.
 	 */
 	export interface Kit {
+		$loader: slime.old.Loader
+
+		/**
+		 * Provides access to Fifty global constructs for this execution. `$platform` and `$api` are available. If running under
+		 * `jsh`, the `jsh` global is available as the `jsh` property. If running in the browser, the global `window` property is
+		 * available, as well as a global `customElements` that can be used to register custom element constructors and bind them
+		 * to a particular custom element name.
+		 */
+		global: {
+			$platform: slime.runtime.Platform
+			$api: slime.$api.Global
+
+			jsh?: slime.jsh.Global
+			window?: Window
+
+			customElements?: {
+				register: (factory: CustomElementConstructor) => void
+			}
+		}
+
 		/**
 		 * A function that can be used to create subjects and make assertions about them. See {@link slime.definition.verify.Verify}.
 		 */
-		verify: verify
-		$loader: slime.old.Loader
-		run: (f: () => void, name?: string) => void
+		verify: slime.definition.verify.Verify
 
+		run: (f: () => void, name?: string) => void
+		/**
+		 * Allows a Fifty test file to execute test parts from other files.
+		 */
+		load: load
+
+		tests: tests
 		test: {
 			/**
 			 * Creates a test that simply loops through its own properties (and if its properties are objects, those properties'
@@ -146,30 +169,6 @@ namespace slime.fifty.test {
 			) => (t: T) => R
 		}
 
-		tests: tests
-
-		/**
-		 * Allows a Fifty test file to execute test parts from other files.
-		 */
-		load: load
-
-		/**
-		 * Provides access to Fifty global constructs for this execution. `$platform` and `$api` are available. If running under
-		 * `jsh`, the `jsh` global is available as the `jsh` property. If running in the browser, the global `window` property is
-		 * available, as well as a global `customElements` that can be used to register custom element constructors and bind them
-		 * to a particular custom element name.
-		 */
-		global: {
-			$platform: slime.runtime.Platform
-			$api: slime.$api.Global
-			jsh?: slime.jsh.Global
-			window?: Window
-
-			customElements?: {
-				register: (factory: CustomElementConstructor) => void
-			}
-		}
-
 		promises: slime.definition.test.promises.Export
 
 		$api: {
@@ -183,7 +182,32 @@ namespace slime.fifty.test {
 				}
 			}
 		}
+	}
 
+	export namespace spy {
+		export type Invocation<F extends slime.external.lib.es5.Function<any,any,any>> = (
+			F extends slime.external.lib.es5.Function<
+				infer T,
+				infer P,
+				infer R
+			> ? {
+				target: T
+				arguments: P
+				returned: R
+				// target: ThisParameterType<F>
+				// arguments: Parameters<F>
+				// returned: ReturnType<F>
+			} : never
+		);
+	}
+
+	export interface Kit {
+		spy: {
+			create: <T,P extends any[],R,F extends slime.external.lib.es5.Function<T,P,R>>(f: F) => { function: F, invocations: spy.Invocation<F>[] }
+		}
+	}
+
+	export interface Kit {
 		jsh?: kit.Jsh
 	}
 

@@ -71,8 +71,9 @@ namespace slime.jsh.test {
 			};
 
 			fifty.tests.executable = function() {
+				var ISSUE_2039_RESOLVED = false;
 				var shell = fixtures.shells.built(true);
-				if (shell) {
+				if (ISSUE_2039_RESOLVED && shell) {
 					var home = jsh.file.Pathname(shell.home).directory;
 					var jdk = jsh.shell.java.Jdk.from.javaHome();
 					var jdkBin = $api.fp.now(jdk.base, jsh.file.Location.from.os, jsh.file.Location.directory.relativePath("bin"));

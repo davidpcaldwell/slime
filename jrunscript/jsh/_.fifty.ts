@@ -17,21 +17,23 @@
  *
  * ## Execution models
  *
- * `jsh` supports three execution models: an "unbuilt" shell executed directly from source (which may be hosted locally or executed
- * directly from GitHub), a "built" shell in which `jsh` components are preprocessed and deployed to support faster startup, and a
- * "packaged" shell in which a `jsh` script is packaged into a standalone executable JAR file.
+ * `jsh` supports three execution models:
+ *
+ * * an "unbuilt" shell executed directly from source
+ * * a "built" shell in which `jsh` components are preprocessed and deployed to support faster startup
+ * * a "packaged" shell in which a `jsh` script is packaged into a standalone executable JAR file.
+ * * a "remote" shell allowing a `jsh` script to be executed with no installation at all, via an online bootstrapping script
  *
  * ### Unbuilt shells
  *
  * Unbuilt shells can be executed from a source checkout (or over the internet, directly from GitHub). They are executed by
- * invoking the `bash` launcher at `./jsh` in the source tree. Currently, only macOS and Linux are supported.
+ * invoking the `bash` launcher at `./jsh` in the source tree. Currently, only macOS and Linux (including WSL2) are supported.
  *
  * ### Built shells
  *
- * A built shell can be created by executing the `jrunscript/jsh/etc/build.jsh.js` script.
- *
- * In built shells, the `bash` launcher is located at `./jsh.bash` in the build directory, and the native launcher (if specified)
- * is located at `./jsh`. Both launchers expect the Java binaries to be in the `PATH`.
+ * A built shell can be created by executing the `jrunscript/jsh/etc/build.jsh.js` script. They create an installation with a main
+ * script at `./jsh.bash`, which can be executed similarly to the unbuilt launcher, and also requires `bash`, and therefore macOS
+ * or Linux.
  *
  * ### Packaged applications
  *
