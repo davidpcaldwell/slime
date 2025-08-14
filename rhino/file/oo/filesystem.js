@@ -33,7 +33,7 @@
 
 			//	TODO	we add createEmpty below, but do not seem to define it. Is it defined elsewhere, maybe?
 			this.Searchpath = Object.assign(function(array) {
-				return new $context.Searchpath({ filesystem: provider, array: array });
+				return new $context.Searchpath({ provider: provider, array: array });
 			}, { parse: void(0), createEmpty: void(0) });
 			this.Searchpath.prototype = $context.Searchpath.prototype;
 			this.Searchpath.parse = function(string) {
@@ -44,7 +44,7 @@
 				var array = elements.map(function(element) {
 					return newPathname(provider, element);
 				});
-				return new $context.Searchpath({ filesystem: provider, array: array });
+				return new $context.Searchpath({ provider: provider, array: array });
 			}
 
 			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem["Pathname"] } */
