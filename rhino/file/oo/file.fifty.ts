@@ -1229,17 +1229,18 @@ namespace slime.jrunscript.file.internal.file {
 	}
 
 	export interface Exports {
-		Searchpath: new (parameters: {
-			filesystem: slime.jrunscript.file.internal.java.FilesystemProvider
-			array: slime.jrunscript.file.Pathname[]
-		}) => any
-
-		//	TODO	the constructor for Pathname is really filesystem/peer or filesystem/path
-
 		Pathname: new (parameters: {
 			provider: slime.jrunscript.file.internal.java.FilesystemProvider
 			path: string
 		}) => Pathname
+
+		Searchpath: new (parameters: {
+			fs?: slime.jrunscript.file.world.Filesystem
+			provider: slime.jrunscript.file.internal.java.FilesystemProvider
+			array: slime.jrunscript.file.Pathname[]
+		}) => any
+
+		//	TODO	the constructor for Pathname is really filesystem/peer or filesystem/path
 
 		isPathname: (item: any) => item is slime.jrunscript.file.Pathname
 

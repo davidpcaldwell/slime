@@ -662,16 +662,19 @@
 			return item && item.java && item.java.adapt() && $context.library.java.isJavaType(Packages.java.io.File)(item.java.adapt());
 		}
 
-		var Searchpath = function (parameters) {
+		/**
+		 *
+		 * @param { ConstructorParameters<slime.jrunscript.file.internal.file.Exports["Searchpath"]>[0] } parameters
+		 */
+		var Searchpath = function(parameters) {
 			if (!parameters || !parameters.array) {
 				throw new TypeError("Illegal argument to new Searchpath(): " + parameters);
 			}
 
-			if (!parameters.filesystem) {
-				throw new TypeError("Required: filesystem property to Searchpath constructor.");
+			if (!parameters.provider) {
+				throw new TypeError("Required: provider property to Searchpath constructor.");
 			}
 			var array = parameters.array.slice(0);
-			var filesystem = parameters.filesystem;
 
 			this.append = function (pathname) {
 				//	TODO	Check to make sure pathname filesystem matches filesystem?
@@ -708,18 +711,19 @@
 			}
 
 			this.toString = function () {
+				var provider = parameters.provider;
 				return getPathnames().map(function (pathname) {
-					if (!filesystem.java) {
+					if (!provider.java) {
 						debugger;
 					}
-					var peer = filesystem.java.adapt(pathname.java.adapt());
-					var mapped = new Pathname({ provider: filesystem, path: String(peer.getScriptPath()) });
+					var peer = provider.java.adapt(pathname.java.adapt());
+					var mapped = new Pathname({ provider: provider, path: String(peer.getScriptPath()) });
 					return mapped.toString();
-				}).join(filesystem.separators.searchpath);
+				}).join(provider.separators.searchpath);
 			}
 		}
 		Searchpath.createEmpty = function () {
-			return new Searchpath({ array: [] });
+			return new Searchpath({ provider: void(0), array: [] });
 		}
 
 		$export({
