@@ -37,10 +37,10 @@
 					Streams: $context.api.io.Streams,
 					Resource: $context.api.io.Resource,
 					filesystems: $context.library.world.filesystems,
+					prototypes: prototypes,
 					//	Only use of $context.pathext in the module
 					pathext: $context.pathext
 				});
-				file.Searchpath.prototype = prototypes.Searchpath;
 
 				var os = code.filesystem({
 					Pathname: file.Pathname,
