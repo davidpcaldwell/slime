@@ -725,6 +725,7 @@
 		Searchpath.createEmpty = function () {
 			return new Searchpath({ provider: void(0), array: [] });
 		}
+		Searchpath.prototype = $context.prototypes.Searchpath;
 
 		$export({
 			Searchpath: Searchpath,
