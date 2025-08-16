@@ -51,14 +51,6 @@ namespace slime.jrunscript.io.zip {
 			};
 
 			fifty.tests.exports.encode = function() {
-				var expanded = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				expanded.getRelativePath("a").write("aa", { append: false });
-				expanded.getRelativePath("b/c").write("cc", { append: false, recursive: true });
-				var forList = $api.fp.now(
-					expanded.pathname.os.adapt(),
-					jsh.file.Location.directory.list.stream.simple({ descend: location => true })
-				);
-				debugger;
 				var zip = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
 				zip.file.remove();
 				var unzip = jsh.shell.TMPDIR.createTemporary({ directory: true });
@@ -74,7 +66,7 @@ namespace slime.jrunscript.io.zip {
 								created: $api.fp.Maybe.from.some(now)
 							},
 							comment: $api.fp.Maybe.from.nothing(),
-							content: expanded.getFile("a").read(jsh.io.Streams.binary)
+							content: jsh.io.InputStream.string.default("aa")
 						},
 						{
 							path: "b/c",
@@ -84,7 +76,7 @@ namespace slime.jrunscript.io.zip {
 								created: $api.fp.Maybe.from.some(now)
 							},
 							comment: $api.fp.Maybe.from.nothing(),
-							content: expanded.getFile("b/c").read(jsh.io.Streams.binary)
+							content: jsh.io.InputStream.string.default("cc")
 						}
 					])
 				});
