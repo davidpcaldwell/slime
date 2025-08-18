@@ -18,7 +18,7 @@
 		var $engine = (
 			/**
 			 *
-			 * @param { slime.runtime.scope.$engine } $engine
+			 * @param { slime.runtime.scope.Engine } $engine
 			 * @returns { slime.runtime.Engine }
 			 */
 			function($engine) {
@@ -370,7 +370,7 @@
 					//	TODO	currently used to set deprecation warning in jsh.js
 					//	TODO	currently used by jsapi in loader/api/old/jsh via jsh.js
 					//	TODO	also used by client.html unit tests
-					//	used to allow implementations to set warnings for deprecate and experimental
+					//	used to allow embeddings to set warnings for deprecate and experimental
 					{ $api: $api }
 				)
 			}

@@ -15,7 +15,7 @@
 		//	@ts-ignore
 		var base = fs.realpathSync(__filename + "/../../..");
 
-		/** @type { slime.runtime.scope.$slime.Deployment } */
+		/** @type { slime.runtime.scope.Deployment } */
 		var $slime = {
 			getRuntimeScript: function(path) {
 				var location = base + "/" + "loader/" + path;
@@ -27,14 +27,21 @@
 		};
 
 		/** @type { slime.runtime.Exports } */
-		var runtime = (function(scope) {
-			var code = fs.readFileSync(base + "/" + "loader/expression.js").toString();
-			try {
-				return eval(code);
-			} catch (e) {
-				var ex = e;
+		var runtime = (
+			/**
+			 *
+			 * @param { slime.runtime.Scope } scope
+			 * @returns
+			 */
+			function(scope) {
+				var code = fs.readFileSync(base + "/" + "loader/expression.js").toString();
+				try {
+					return eval(code);
+				} catch (e) {
+					var ex = e;
+				}
 			}
-		})({
+		)({
 			$slime: $slime,
 			Packages: void(0)
 		});

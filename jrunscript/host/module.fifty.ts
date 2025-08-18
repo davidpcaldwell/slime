@@ -4,9 +4,12 @@
 //
 //	END LICENSE
 
+/**
+ * A module providing interoperability with Java.
+ */
 namespace slime.jrunscript.java {
 	export interface Context {
-		$slime: slime.jrunscript.runtime.Exports
+		$slime: Pick<slime.jrunscript.runtime.Exports,"java"|"classpath">
 
 		/**
 		 * If `true`, this module modifies global JavaScript objects.

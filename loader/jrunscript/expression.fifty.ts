@@ -17,8 +17,8 @@
  * For each engine, two embeddings are included: a servlet-based embedding and an embedding that supports
  * `jsh`.
  *
- * If the underlying engine is Rhino, the {@link slime.runtime.Engine} implementation's `debugger` property is implemented in terms
- * of the Rhino debugger.
+ * If the underlying engine is Rhino, the {@link slime.runtime.scope.Engine} implementation's `debugger` property is implemented in
+ * terms of the Rhino debugger.
  *
  * ## Changes to `$api`
  *
@@ -345,7 +345,7 @@ namespace slime.jrunscript.runtime {
 	}
 
 	export interface $javahost {
-		debugger: slime.runtime.scope.$engine["debugger"]
+		debugger: slime.runtime.scope.Engine["debugger"]
 		script: any
 		MetaObject: any
 		noEnvironmentAccess: any
