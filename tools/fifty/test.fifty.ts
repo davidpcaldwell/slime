@@ -157,7 +157,7 @@ namespace slime.fifty.test {
 			}) => void
 
 			/**
-			 * A multiplatform test that runs the `suite` test under both `jsh` and the browser.
+			 * Defines a multiplatform test named `platforms` that runs the `suite` test under both `jsh` and the browser.
 			 */
 			platforms: () => void
 		}

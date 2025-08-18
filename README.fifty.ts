@@ -12,7 +12,7 @@
  * SLIME's Java support allows applications to be written in JavaScript that call out to Java platform libraries. As such, it is an
  * ideal platform for migrating Java software toward JavaScript.
  *
- * Java-specific type definitions are provided in the {@link slime.jrunscript slime.jrunscript} namespace.
+ * Type definitions specific to the Java implementation are provided in the {@link slime.jrunscript slime.jrunscript} namespace.
  *
  * SLIME provides two Java platforms: the `jsh` scripting platform that runs on the JVM, and the Java servlet platform that runs on
  * a standard Java servlet implementation. `jsh` also provides the ability to run a servlet container from within its shell.
@@ -73,16 +73,19 @@
  * ~~JXA support is alpha quality. That said, JXA is a very difficult environment to use, so SLIME is already extremely helpful, as it
  * provides basic abilities not provided by the platform (like the ability to load code from other source files).~~
  *
- * ### Creating a custom embedding
+ * ### Creating a custom embedding for the SLIME runtime
  *
- * SLIME provides several embeddings (`jsh`, a Java servlet-based embedding, a browser embedding, a JXA embedding for macOS
- * automation), and a simple Node.js embedding.
+ * SLIME provides several embeddings of the SLIME runtime, as listed above. The runtime implementation provides an interface
+ * embedders can use to create a runtime for a specific platform, but the embedder makes the decision about how to provide access to
+ * the runtime interface, and the various SLIME embeddings listed above differ in how they do so. This makes it hard to write
+ * cross-platform code that uses constructs from the common runtime, so Work is underway to provide more standard access to the
+ * runtime by moving elements of the runtime interface to the shared `$api` object provided to all code loaded by the runtime.
+ * (`jsh`, a Java servlet-based embedding, a browser embedding, a JXA embedding for macOS automation), and a simple Node.js
+ * embedding.
  *
  * Custom SLIME embeddings may be developed by creating a suitable implementation of {@link slime.runtime.Scope} and putting that
- * object in scope when evaluating `loader/expression.js`, which yields an object of type {@link slime.runtime.Exports}.
- *
- * The SLIME {@link slime.runtime.Exports | runtime} provides APIs that are ordinarily not available to application code directly, but are
- * provided to support embedders (who can provide them, in turn, to application code).
+ * object in scope when evaluating `loader/expression.js`, which yields an object of type {@link slime.runtime.Exports}. The
+ * embedding can then use the `slime.runtime.Exports` to provide arbitrary APIs for users of the embedding.
  *
  * ## Using SLIME
  *

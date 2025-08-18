@@ -80,9 +80,11 @@ namespace slime.jrunscript.io.zip {
 						}
 					])
 				});
-				var entries = module.archive.zip.decode({
-					stream: zip.file.read(jsh.io.Streams.binary),
-				});
+
+				var entries = $api.fp.now(
+					{ stream: zip.file.read(jsh.io.Streams.binary) },
+					module.archive.zip.decode
+				);
 
 				$api.fp.now(
 					entries,

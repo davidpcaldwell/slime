@@ -4,6 +4,12 @@
 //
 //	END LICENSE
 
+/**
+ * The SLIME runtime I/O module provides input and output constructs based on Java streams.
+ *
+ * Many of the constructs, including {@link slime.jrunscript.runtime.io.Charset Charset}, parallel the Java constructs with the
+ * same names.
+ */
 namespace slime.jrunscript.runtime.io {
 	export interface Context {
 		_streams: slime.jrunscript.native.inonit.script.runtime.io.Streams
@@ -501,40 +507,6 @@ namespace slime.jrunscript.runtime.io {
 
 	export type OldWriter = Omit<Writer, "line">
 
-	export interface Buffer {
-		/**
-		 * Closes the buffer so that no additional bytes can be written to it.  Until the buffer is closed, an attempt to read from
-		 * it cannot reach the end of the stream, but will instead block waiting for more input.
-		 */
-		close: () => void
-
-		/**
-		 * A stream which inserts bytes written to it into this buffer.
-		 */
-		writeBinary: () => OutputStream
-
-		/**
-		 * A stream which inserts characters written to it into this buffer.
-		 */
-		writeText: () => Writer
-
-		/**
-		 * A stream from which the bytes in this buffer may be read.
-		 */
-		readBinary: () => InputStream
-
-		/**
-		 * A stream from which the characters in this buffer may be read.
-		 */
-		readText: () => Reader
-	}
-
-	export interface Exports {
-		ArrayBuffer: {
-			read: (stream: InputStream) => ArrayBuffer
-		}
-	}
-
 	type BinaryCopyMode = {
 		onFinish: (i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream) => void
 	}
@@ -603,6 +575,34 @@ namespace slime.jrunscript.runtime.io {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
+
+	export interface Buffer {
+		/**
+		 * Closes the buffer so that no additional bytes can be written to it.  Until the buffer is closed, an attempt to read from
+		 * it cannot reach the end of the stream, but will instead block waiting for more input.
+		 */
+		close: () => void
+
+		/**
+		 * A stream which inserts bytes written to it into this buffer.
+		 */
+		writeBinary: () => OutputStream
+
+		/**
+		 * A stream which inserts characters written to it into this buffer.
+		 */
+		writeText: () => Writer
+
+		/**
+		 * A stream from which the bytes in this buffer may be read.
+		 */
+		readBinary: () => InputStream
+
+		/**
+		 * A stream from which the characters in this buffer may be read.
+		 */
+		readText: () => Reader
+	}
 
 	export interface Exports {
 		/**

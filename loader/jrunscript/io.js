@@ -595,11 +595,6 @@
 		};
 
 		$export({
-			ArrayBuffer: {
-				read: function(stream) {
-					return readToArrayBuffer(stream.java.adapt());
-				}
-			},
 			InputStream: {
 				java: InputStream,
 				string: (

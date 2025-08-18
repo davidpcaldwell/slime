@@ -129,6 +129,9 @@ interface Array<T> {
     ) {
         const console = (fifty.global.jsh) ? fifty.global.jsh.shell.console : fifty.global.window["console"].log;
 
+        fifty.tests.suite = function() {
+        }
+
         fifty.tests.manual = {};
 
         //  Rhino 1.8.0: natively supports all

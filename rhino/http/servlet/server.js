@@ -85,8 +85,8 @@
 					)
 					+ (
 						(_request.getQueryString() != null)
-						? ("?" + String(_request.getQueryString()))
-						: ""
+							? ("?" + String(_request.getQueryString()))
+							: ""
 					)
 				);
 
