@@ -24,9 +24,6 @@
 			function($engine) {
 				return {
 					debugger: ($engine && $engine.debugger) ? $engine.debugger : void(0),
-					Error: {
-						decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
-					},
 					execute: ($engine && $engine.execute)
 						? $engine.execute
 						: function(script,scope,target) {

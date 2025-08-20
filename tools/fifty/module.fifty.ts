@@ -53,7 +53,9 @@
  * * The {@link slime.jsh.Global#ui | `jsh.ui`} API provides the ablity to launch SLIME applications with a UI, and can incorporate the
  * documentation servlet handler implementation defined above.
  *
- * ### [TypeDoc](https://typedoc.org/) resources
+ * ### [TypeDoc](https://typedoc.org/) information
+ *
+ * Note that TypeDoc does not support Markdown footnotes.
  *
  * * [TSDoc advanced demo](https://github.com/microsoft/tsdoc/blob/master/api-demo/src/advancedDemo.ts)
  *

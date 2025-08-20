@@ -7,20 +7,27 @@
 namespace slime {
 	export namespace runtime {
 		export interface Scope {
-			$slime: slime.runtime.scope.Deployment
-
-			$engine?: slime.runtime.scope.Engine
-
-			/**
-			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
-			 */
-			Packages?: slime.jrunscript.Packages
-		}
-
-		export namespace scope {
 			/**
 			 * An object providing access to the SLIME execution environment.
 			 */
+			$slime: slime.runtime.scope.Deployment
+
+			/**
+			 * An object provided by the JavaScript runtime that represents the set of Java classes available. Ordinarily only
+			 * present in `jrunscript` environments.
+			 *
+			 * But note that in the rare case of a browser with Java, `Packages` may be
+			 * present but not include `inonit.*` classes.
+			 */
+			Packages?: slime.jrunscript.Packages
+
+			/**
+			 * An object that provides additional capabilities the JavaScript engine may have.
+			 */
+			$engine?: slime.runtime.scope.Engine
+		}
+
+		export namespace scope {
 			export interface Deployment {
 				/**
 				 * Provides a component source file of the runtime.
@@ -34,12 +41,10 @@ namespace slime {
 				}
 			}
 
-			/**
-			 * An object of type `$engine` can be provided in the scope by the embedding in order to provide additional capabilities the
-			 * JavaScript engine may have.
-			 */
 			export interface Engine {
 				/**
+				 * An optional function providing the behavior for {@link slime.runtime.Engine.execute}.
+				 *
 				 * A function that can execute JavaScript code with a given scope and *target* (`this` value). A default implementation
 				 * is provided by SLIME, but engines may provide their own implementations that have advantages over SLIME's
 				 * pure-JavaScript implementation.
@@ -49,18 +54,10 @@ namespace slime {
 				 * @param target An object that must be provided to the code as `this` while the code is executing.
 				 */
 				execute?: (
-					script: {
-						name: string,
-						/** A string of JavaScript code to execute. */
-						js: string
-					},
+					script: slime.runtime.loader.Script,
 					scope: { [x: string]: any },
 					target: object
 				) => void
-
-				Error?: {
-					decorate: any
-				}
 
 				debugger?: {
 					isBreakOnExceptions: () => boolean
@@ -143,14 +140,18 @@ namespace slime {
 			 * Provides the ability to execute a script using the engine's default execution mechanism (using {@link Scope}'s
 			 * `$engine` property), with arbitrary script (script name for tools, plus code), scope (to provide to the script), and
 			 * target (to provide as the `this` for the script).
+			 *
+			 * A function that can execute JavaScript code with a given scope and *target* (`this` value). A default implementation
+			 * is provided by SLIME, but engines may provide their own implementations that have advantages over SLIME's
+			 * pure-JavaScript implementation.
+			 *
+			 * @param script An object describing the file to execute.
+			 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
+			 * @param target An object that must be provided to the code as `this` while the code is executing.
 			 */
 			execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: any) => any
 
 			debugger?: slime.runtime.scope.Engine["debugger"]
-
-			Error: {
-				decorate?: <T>(errorConstructor: T) => T
-			}
 
 			MetaObject?: slime.runtime.scope.Engine["MetaObject"]
 		}
@@ -158,7 +159,6 @@ namespace slime {
 		export interface Exports {
 			engine: Engine
 		}
-
 
 		// We are not going to bother documenting $platform for now. It contains things that can be inferred other ways:
 		// 	1.	A programmer can use Packages to look for LiveConnect

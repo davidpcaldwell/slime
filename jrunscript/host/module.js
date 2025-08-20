@@ -302,59 +302,6 @@
 			};
 		}
 
-		//	TODO	The below probably only needs to execute under Rhino, but need to figure out how to do that. For now it is effectively
-		//			disabled for Nashorn by checking for existence of stack property in errors.decorate
-		if ($context.globals) {
-			var global = (function() {
-				var rv = this;
-				while(rv.__parent__) {
-					rv = rv.__parent__;
-				}
-				return rv;
-			})();
-
-			var errorNames = (function() {
-				if (false) {
-					//	Does not work; these properties are not enumerable, apparently
-					var rv = [];
-					for (var x in global) {
-						if (global[x].prototype.__proto__ == global[x].prototype) {
-							rv.push(x);
-						}
-					}
-					return rv;
-				} else {
-					//	TODO	What is ConversionError? Does not seem to appear in the ECMA standard; is it a Rhino thing?
-					//	TODO	What is InternalError? Does not seem to appear in the ECMA standard; is it a Rhino thing?
-					return [
-						"Error","ConversionError","EvalError","InternalError","RangeError","ReferenceError","SyntaxError","TypeError"
-						,"URIError"
-					];
-				}
-			})();
-
-			errorNames.forEach( function(name) {
-				if (!global[name]) {
-					//	Probably just not defined in this engine
-					//	TODO	log message or synthesize error or something
-				} else {
-					global[name] = errors.decorate(global[name]);
-				}
-			});
-		}
-
-		var createErrorType = function(p) {
-			var f = function(message) {
-				this.message = message;
-				this.name = p.name;
-			};
-			f.prototype = new Error();
-			var rv = errors.decorate(rv);
-			return rv;
-		}
-		$exports.ErrorType = createErrorType;
-		$api.experimental($exports,"ErrorType");
-
 		// var experimental = function(name) {
 		// 	$exports[name] = items[name];
 		// 	$api.experimental($exports, name);
