@@ -20,65 +20,6 @@
 		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
 		var _streams = new Packages.inonit.script.runtime.io.Streams();
 
-		var errorDecorate = function(implementation) {
-			var instance = (function _Throwables() {
-				return new Packages.inonit.script.runtime.Throwables();
-			})();
-
-			var rv = function() {
-				//	TODO	what if called as function?
-				var literals = Array.prototype.map.call(arguments,function(a,i) {
-					return "arguments["+i+"]";
-				}).join(",");
-				//	TODO	is this parameterized call already in js/object?
-				var created = eval("new implementation(" + literals + ")");
-
-				if (!created.stack) {
-					var tracer;
-					try {
-						instance.throwException(created.toString());
-					} catch (e) {
-						tracer = e;
-					}
-					var t = tracer.rhinoException;
-					var stack = [];
-					while(t != null) {
-						var sw = new Packages.java.io.StringWriter();
-						var pw = new Packages.java.io.PrintWriter(sw);
-						if (t == tracer.rhinoException) {
-							sw.write(t.getScriptStackTrace());
-						} else {
-							t.printStackTrace(pw);
-						}
-						pw.flush();
-						var tstack = String(sw.toString()).split(String(Packages.java.lang.System.getProperty("line.separator")));
-						if (t == tracer.rhinoException) {
-							tstack = tstack.slice(1,tstack.length);
-						}
-						for (var i=0; i<tstack.length; i++) {
-							if (/^Caused by\:/.test(tstack[i])) {
-								break;
-							}
-							stack.push(tstack[i]);
-						}
-						t = t.getCause();
-						if (t != null && String(t.getClass().getName()) == "inonit.script.runtime.Throwables$Exception") {
-							t = null;
-						}
-					}
-					//	TODO	clean up the first line, eliminating all the wrapping in WrappedException and Throwables.Exception
-					//	TODO	clean up the top of the trace, removing the irrelevant Java lines and the first script line corresponding
-					//			to this file
-					//	TODO	get full stack traces if possible, rather than the limited version being provided now (which has ...more)
-					//			however, could be impossible (getStackTrace may not be overridden while printStackTrace is).
-					created.stack = stack.join("\n");
-				}
-				return created;
-			}
-			rv.prototype = implementation.prototype;
-			return rv;
-		};
-
 		/**
 		 *
 		 * @param { slime.$api.mime.Export["Type"]["fromName"] } fromNameWas
@@ -116,12 +57,6 @@
 					debugger: $javahost.debugger,
 					execute: function(script,scope,target) {
 						return $javahost.script(script.name,script.js,scope,target);
-					},
-					Error: {
-						decorate: function(was) {
-							return errorDecorate(was);
-							// throw new TypeError("Can't decorate nothing was: " + was);
-						}
 					},
 					MetaObject: void(0)
 				};

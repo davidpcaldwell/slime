@@ -820,14 +820,30 @@ namespace slime.$api {
 		}
 
 		export interface Custom<N extends string,P extends {}> extends Error {
+			name: N
 			properties: P
 		}
 
+		export type CustomDefinition<N extends string, S extends Error = Error, P extends {} = {}> = {
+			name: N
+			extends?: S,
+			getMessage: (p?: P) => string
+		}
+
 		export type CustomType<N extends string,P extends {}> = {
-			new (p?: P): Custom<N,P>;
+			//new (p?: P): Custom<N,P>;
 			(p?: P): Custom<N,P>;
 			readonly prototype: Custom<N,P>;
 		}
+
+		export type CustomTypeMapping<T extends CustomDefinition<any,any,any>> =
+			T extends CustomDefinition<
+				infer N,
+				infer S,
+				infer P
+			>
+			? CustomType<N,P>
+			: never
 	}
 
 	export interface Global {
@@ -868,11 +884,7 @@ namespace slime.$api {
 			 * these properties are used to generate the error message via the `getMessage` provided when creating the type, and are
 			 * available on error instances via the `properties` property.
 			 */
-			type: <N extends string,S extends () => Error,P extends {}>(p: {
-				name: N
-				extends?: S,
-				getMessage: (p?: P) => string
-			}) => error.CustomType<N,P>
+			type: <N extends string,S extends Error,P extends {}>(p: error.CustomDefinition<N,S,P>) => error.CustomType<N,P>
 		}
 	}
 
@@ -881,44 +893,7 @@ namespace slime.$api {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { $api } = fifty.global;
-
-			fifty.tests.manual.Error = {
-				//	Given that stack is non-standard, not adding this to suite and not really asserting on its format
-				//	TODO	*is* stack still non-standard?
-				stack: function() {
-					var OldType = $api.Error.old.Type({
-						name: "foo",
-						extends: TypeError
-					});
-
-					try {
-						throw new OldType("bar");
-					} catch (e) {
-						var error: Error = e;
-						verify(error).stack.is.not(void(0));
-					}
-
-					var Type = $api.Error.type({
-						name: "Foo",
-						extends: TypeError,
-						getMessage: function() {
-							return "bar";
-						}
-					});
-
-					try {
-						throw new Type();
-					} catch (e) {
-						var error: Error = e;
-						verify(e).stack.is.type("string");
-						//	TODO	in jsh (at least under Rhino), this stack trace does not include the error's toString(); in Chrome, it
-						//			does. Other platforms untested.
-						if (fifty.global.jsh) fifty.global.jsh.shell.console(e.stack);
-						if (fifty.global.window) fifty.global.window["console"].log(e.stack);
-					}
-				}
-			};
+			const { $api, jsh } = fifty.global;
 
 			fifty.tests.exports.Error = function() {
 				var CustomError = $api.Error.old.Type({
@@ -985,17 +960,18 @@ namespace slime.$api {
 			fifty.tests.exports.Error.type = function() {
 				var Parent = $api.Error.type({
 					name: "Foo",
-					extends: TypeError,
+					extends: TypeError.prototype,
 					getMessage: function(p: { foo: string, bar: number }): string {
 						return (p) ? "baz: foo=" + p.foo + " bar=" + p.bar : "baz: no p";
 					}
 				});
 
-				var e = new Parent({ foo: "foo", bar: 8 });
+				var e = Parent({ foo: "foo", bar: 8 });
+				verify(Parent.prototype == Object.getPrototypeOf(e)).is(true);
 
 				var Child = $api.Error.type({
 					name: "Bar",
-					extends: Parent,
+					extends: Parent.prototype,
 					getMessage: function(p: { baz: string }): string {
 						return "hey, it is " + p.baz;
 					}
@@ -1010,7 +986,7 @@ namespace slime.$api {
 				verify(e).properties.foo.is("foo");
 				verify(e).properties.bar.is(8);
 
-				var c = new Child({ baz: "bizzy" });
+				var c = Child({ baz: "bizzy" });
 				verify(c).message.is("hey, it is bizzy");
 				verify(c).evaluate(String).is("Bar: hey, it is bizzy");
 				verify(c).evaluate(function(e) { return e instanceof Child }).is(true);
@@ -1028,8 +1004,81 @@ namespace slime.$api {
 						return "foo";
 					}
 				});
-				var n = new NoSupertype();
+				var n = NoSupertype();
 				verify(n).is.type("object");
+				if (fifty.global.jsh) {
+					var rhino = fifty.global.jsh.internal.bootstrap.engine.rhino.running();
+					if (rhino) {
+						var rhinoVersion = rhino.getImplementationVersion();
+						verify(rhinoVersion).is(rhinoVersion);
+					}
+				}
+			}
+
+			fifty.tests.manual.Error = {};
+			fifty.tests.manual.Error.stack = function() {
+				debugger;
+				var stack = new Error().stack;
+
+				verify(stack).is.type("string");
+				//	In Rhino, this line should be something like:
+				//	at /[absolute-path]/slime/loader/jrunscript/expression.fifty.ts:51
+				jsh.shell.console("Error stack = [" + stack + "]");
+
+				var Custom = $api.Error.type({
+					name: "Custom",
+					getMessage: function(p) {
+						return "Custom";
+					}
+				});
+				var customMessage = Custom().message;
+				var customStack = Custom().stack;
+				var rhino = jsh.internal.bootstrap.engine.rhino.running();
+				var rhinoVersion = (rhino) ? rhino.getImplementationVersion() : void(0);
+				jsh.shell.console("Custom message = [" + customMessage + "]");
+				jsh.shell.console("Custom stack = [" + customStack + "]");
+				jsh.shell.console("Rhino version = " + rhinoVersion);
+
+				//	TODO	for custom errors, not sure how Rhino / Nashorn handle these
+				//			see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/captureStackTrace
+				jsh.shell.console("Error.captureStackTrace: type " + typeof(Error["captureStackTrace"]));
+				jsh.shell.console("Error.stackTraceLimit: type " + typeof(Error["stackTraceLimit"]));
+				//	See https://esdiscuss.org/topic/getownpropertydescriptor-side-effects
+				jsh.shell.console("Error.prepareStackTrace: type " + typeof(Error["prepareStackTrace"]));
+
+				fifty.run(function old() {
+					var OldType = $api.Error.old.Type({
+						name: "foo",
+						extends: TypeError
+					});
+
+					try {
+						throw new OldType("bar");
+					} catch (e) {
+						var error: Error = e;
+						verify(error).evaluate.property("stack").is.type("string");
+						//verify(error).stack.is.not(void(0));
+					}
+
+					var Type = $api.Error.type({
+						name: "Foo",
+						extends: TypeError.prototype,
+						getMessage: function() {
+							return "bar";
+						}
+					});
+
+					try {
+						throw Type();
+					} catch (e) {
+						var error: Error = e;
+						verify(error).evaluate.property("stack").is.type("string");
+						//	TODO	in jsh (at least under Rhino), this stack trace does not include the error's toString(); in Chrome, it
+						//			does. Other platforms untested.
+						if (fifty.global.jsh) fifty.global.jsh.shell.console(e.stack);
+						if (fifty.global.window) fifty.global.window["console"].log(e.stack);
+					}
+				});
 			}
 		}
 	//@ts-ignore

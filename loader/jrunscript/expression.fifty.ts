@@ -33,6 +33,15 @@ namespace slime.jrunscript.runtime {
 		})(fifty);
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export namespace mime {
 		//	TODO	the customized types should probably be moved to the `jrunscript` property added to the `$api` object,
 		//			and the implementation should simply match the type of the underlying `$api` implementation
@@ -804,7 +813,6 @@ namespace slime.$api.jrunscript {
 	) {
 		const { $api, jsh } = fifty.global;
 
-		fifty.tests.manual = {};
 		fifty.tests.manual.issue22 = function() {
 			//	This test enables checking to see whether the stack trace emitted uses reasonable file names for files from the
 			//	SLIME runtime.

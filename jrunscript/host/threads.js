@@ -151,7 +151,7 @@
 				this.evaluate = function() {
 					if (result.returned) return result.returned.value;
 					if (result.threw) throw result.threw;
-					if (result.timedOut) throw new TIMED_OUT();
+					if (result.timedOut) throw TIMED_OUT();
 				}
 			};
 			var o = {};

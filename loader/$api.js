@@ -530,9 +530,6 @@
 				return rv;
 			})();
 			var rv = Subtype;
-			if ($engine.Error && $engine.Error.decorate) {
-				rv = $engine.Error.decorate(rv);
-			}
 			//@ts-ignore
 			return rv;
 		};
@@ -550,27 +547,64 @@
 					}
 				}
 			},
-			/** @type { slime.$api.Global["Error"]["type"] } */
-			type: function(p) {
-				var CustomError = function(properties) {
+			/**
+			 * @template { string } N
+			 * @template { Error } S
+			 * @template { {} } P
+			 *
+			 * @param { slime.$api.error.CustomDefinition<N,S,P> } p
+			 * @returns { slime.$api.error.CustomType<N,P> }
+			 */
+			type: function me(p) {
+				/** @type { slime.$api.error.CustomType<N,P> } */
+				var CustomError = function factory(properties) {
 					var invokedAsConstructor = this instanceof CustomError;
-					if (invokedAsConstructor) {
-						this.name = p.name;
-						this.message = p.getMessage(properties);
-						var stack = new Error("__message__").stack;
-						var elements = stack.split("\n");
-						if (elements[0] == "Error: __message__") {
-							elements[0] = this.message;
-							stack = elements.join("\n");
+					if (!invokedAsConstructor) {
+						var message = p.getMessage(properties);
+						/** @type { slime.$api.error.Custom<N,P> } */
+						var rv = Object.assign(
+							Object.create(prototype),
+							{
+								name: void(0),
+								message: void(0),
+								properties: void(0)
+							}
+						);
+						rv.name = p.name;
+						rv.message = message;
+						if (Error["captureStackTrace"]) {
+							Error["captureStackTrace"](rv, CustomError);
+						} else if (rv.stack) {
+							//	do nothing
+						} else {
+							//	do nothing for now
 						}
-						this.stack = stack;
-						this.properties = properties;
+						rv.properties = properties;
+						return rv;
 					} else {
-						return new CustomError(properties);
+						return CustomError(properties);
 					}
-				}
-				var prototypeFactory = p.extends || Error;
-				CustomError.prototype = Object.assign(prototypeFactory(), { properties: void(0) });
+				};
+
+				var prototype = Object.create(
+					p.extends || Error.prototype,
+					{
+						constructor: {
+							value: CustomError,
+							enumerable: false,
+							writable: true,
+							configurable: true
+						}
+					}
+				);
+
+				Object.defineProperty(CustomError, "prototype", {
+					value: prototype,
+					enumerable: false,
+					writable: false,
+					configurable: false
+				});
+
 				return CustomError;
 			}
 		}
@@ -585,7 +619,7 @@
 
 		$exports.TODO = function(p) {
 			return function() {
-				throw new TODO(p);
+				throw TODO(p);
 			}
 		}
 

@@ -137,6 +137,7 @@ namespace slime.fifty.test {
 		load: load
 
 		tests: tests
+
 		test: {
 			/**
 			 * Creates a test that simply loops through its own properties (and if its properties are objects, those properties'
