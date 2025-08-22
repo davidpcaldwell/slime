@@ -22,9 +22,9 @@ namespace slime {
 			Packages?: slime.jrunscript.Packages
 
 			/**
-			 * An object that provides additional capabilities the JavaScript engine may have.
+			 * An object that overrides properties of {@link slime.runtime.Engine} with embedding-specific replacements.
 			 */
-			$engine?: slime.runtime.scope.Engine
+			$engine?: Partial<slime.runtime.Engine>
 		}
 
 		export namespace scope {
@@ -39,35 +39,6 @@ namespace slime {
 				flags?: {
 					[name: string]: string
 				}
-			}
-
-			export interface Engine {
-				/**
-				 * An optional function providing the behavior for {@link slime.runtime.Engine.execute}.
-				 *
-				 * A function that can execute JavaScript code with a given scope and *target* (`this` value). A default implementation
-				 * is provided by SLIME, but engines may provide their own implementations that have advantages over SLIME's
-				 * pure-JavaScript implementation.
-				 *
-				 * @param script An object describing the file to execute.
-				 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
-				 * @param target An object that must be provided to the code as `this` while the code is executing.
-				 */
-				execute?: (
-					script: slime.runtime.loader.Script,
-					scope: { [x: string]: any },
-					target: object
-				) => void
-
-				debugger?: {
-					isBreakOnExceptions: () => boolean
-					setBreakOnExceptions: (b: boolean) => void
-				}
-
-				/**
-				 * A constructor that implements the behavior defined by {@link Platform.MetaObject}.
-				 */
-				MetaObject?: any
 			}
 		}
 	}
@@ -133,31 +104,32 @@ namespace slime {
 		}
 
 		/**
-		 * An internal object derived from {@link slime.runtime.scope.Engine} which adds default implementations.
+		 * An internal object that implements functionality for the current JavaScript engine. Created by combining the `$engine`
+		 * property provided as part of {@link slime.runtime.Scope} with default implementations provided by the SLIME runtime.
 		 */
 		export interface Engine {
 			/**
-			 * Provides the ability to execute a script using the engine's default execution mechanism (using {@link Scope}'s
-			 * `$engine` property), with arbitrary script (script name for tools, plus code), scope (to provide to the script), and
-			 * target (to provide as the `this` for the script).
+			 * A function that can execute JavaScript code with a given script (script name for tools, plus code), scope (to provide to the script), and
+			 * *target* (to provide as the `this` value to the script).
 			 *
-			 * A function that can execute JavaScript code with a given scope and *target* (`this` value). A default implementation
-			 * is provided by SLIME, but engines may provide their own implementations that have advantages over SLIME's
-			 * pure-JavaScript implementation.
+			 * A default implementation is provided by SLIME, but embeddings may provide their own implementations that have
+			 * advantages over SLIME's pure-JavaScript implementation via {@link slime.runtime.scope.Engine.execute scope.Engine}.
 			 *
 			 * @param script An object describing the file to execute.
 			 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
 			 * @param target An object that must be provided to the code as `this` while the code is executing.
 			 */
-			execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: any) => any
+			execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: object) => void
 
-			debugger?: slime.runtime.scope.Engine["debugger"]
+			debugger?: {
+				isBreakOnExceptions: () => boolean
+				setBreakOnExceptions: (b: boolean) => void
+			}
 
-			MetaObject?: slime.runtime.scope.Engine["MetaObject"]
-		}
-
-		export interface Exports {
-			engine: Engine
+			/**
+			 * A function which, if present, implements the behavior defined by {@link Platform.MetaObject}.
+			 */
+			MetaObject?: Platform["MetaObject"]
 		}
 
 		// We are not going to bother documenting $platform for now. It contains things that can be inferred other ways:
@@ -171,9 +143,20 @@ namespace slime {
 		 */
 		export interface Platform {
 			/**
-			 * (conditional) An object with properties describing the platform's Java/LiveConnect capabilities.
+			 * @deprecated E4X is deprecated; see [Wikipedia](https://en.wikipedia.org/wiki/ECMAScript_for_XML).
+			 *
+			 * Provides access to the [E4X](https://en.wikipedia.org/wiki/ECMAScript_for_XML) implementation for this engine, if one
+			 * is present.
 			 */
-			java: {
+			e4x?: {
+				XML: any
+				XMLList: any
+			}
+
+			/**
+			 * If present, an object with properties describing the platform's Java/LiveConnect capabilities.
+			 */
+			java?: {
 				/**
 				 * @param name A Java class name.
 				 * @returns A `JavaClass` object representing the class with the given name, or `null` if no class by that name can
@@ -181,8 +164,6 @@ namespace slime {
 				 */
 				getClass: (name: string) => slime.jrunscript.JavaClass
 			}
-
-			e4x: any
 
 			/**
 			 * (conditional; depends on platform support) A metaobject implementation.
@@ -982,10 +963,7 @@ namespace slime {
 
 	export namespace $api {
 		export interface Global {
-			engine: {
-				execute: slime.runtime.Engine["execute"]
-			}
-
+			engine: slime.runtime.Engine
 			content: slime.runtime.content.Exports
 		}
 	}
