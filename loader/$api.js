@@ -13,26 +13,23 @@
 	 * @param { slime.loader.Export<slime.$api.Global> } $export
 	 */
 	function($engine,$slime,$export) {
-		/** @type { slime.$api.Global } */
-		var $exports = {};
-
-		var load = function(name,$context) {
-			var $exports = {};
-			$engine.execute(
-				$slime.getRuntimeScript(name),
-				{
-					$context: $context,
-					$exports: $exports,
-					$export: function(v) {
-						$exports = v;
-					}
-				},
-				null
-			);
-			return $exports;
-		};
-
 		var script = function(name) {
+			var load = function(name,$context) {
+				var $exports = {};
+				$engine.execute(
+					$slime.getRuntimeScript(name),
+					{
+						$context: $context,
+						$exports: $exports,
+						$export: function(v) {
+							$exports = v;
+						}
+					},
+					null
+				);
+				return $exports;
+			};
+
 			/**
 			 *
 			 * @param { any } $context
@@ -53,6 +50,8 @@
 		}
 
 		var code = {
+			/** @type { slime.loader.Script<void,slime.$api.internal.flag.Exports> } */
+			flag: script("$api-flag.js"),
 			/** @type { slime.loader.Script<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
 			mime: script("$api-mime.js"),
 			/** @type { slime.loader.Script<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
@@ -65,136 +64,13 @@
 			methods: script("$api-fp-methods.js")
 		};
 
-		Object.assign($exports, load("$api-flag.js"));
-
-		/** @type { slime.$api.exports.Object["defineProperty"] } */
-		var defineProperty = function(p) {
-			return function(o) {
-				var r = Object.assign(o, Object.fromEntries([ [p.name, void(0)] ]));
-				Object.defineProperty(
-					r,
-					p.name,
-					p.descriptor
-				);
-				return r;
-			}
-		};
+		var flag = code.flag();
 
 		var events = code.events({
-			deprecate: $exports.deprecate
+			deprecate: flag.deprecate
 		});
 
-		(function() {
-			var old = code.Function_old({ deprecate: $exports.deprecate });
-			var current = code.Function({ $api: $exports, events: events, old: old, deprecate: $exports.deprecate, script: script });
-			var methods = code.methods({
-				library: {
-					Object: {
-						defineProperty: defineProperty
-					}
-				}
-			});
-			Object.assign($exports, { fp: Object.assign(current, { methods: methods }), Function: old.Function });
-		})();
-
-		$exports.global = {
-			get: function(name) {
-				//	TODO	note  that modern JavaScript also has `globalThis`
-				var global = (function() { return this; })();
-				return global[name];
-			}
-		};
-
-		$exports.debug = {
-			//	TODO	try to get rid of ignore below
-			//@ts-ignore
-			disableBreakOnExceptionsFor: function(f) {
-				if ($engine.debugger) {
-					var rv = function() {
-						var enabled = $engine.debugger.isBreakOnExceptions();
-						if (enabled) {
-							$engine.debugger.setBreakOnExceptions(false);
-						}
-						try {
-							return f.apply(this,arguments);
-						} finally {
-							if (enabled) {
-								$engine.debugger.setBreakOnExceptions(true);
-							}
-						}
-					}
-					return rv;
-				} else {
-					//	TODO	unclear what should be done here, but forcing a debugger pause is probably not right
-					//	debugger;
-					return f;
-				}
-			}
-		};
-
-		$exports.Filter = {
-			and: $exports.deprecate($exports.fp.Predicate.and),
-			or: $exports.deprecate($exports.fp.Predicate.or),
-		};
-
-		$exports.Constructor = {};
-
-		$exports.Constructor.invoke = function(p) {
-			if (!p.arguments) p.arguments = [];
-			var code = "new p.constructor(" +
-				p.arguments.map(function() {
-					return "p.arguments[" + arguments[1] + "]";
-				}).join(",")
-			+ ")";
-			//	TODO	in contexts like Nashorn, can we use a different API to execute this script? Currently, ncdbg rejects the script name created by this.
-			return eval(code);
-		};
-
-		$exports.Key = {};
-		/** @type { slime.$api.Global["Key"]["by"] } */
-		//@ts-ignore
-		$exports.Key.by = function(p) {
-			/** @type { ReturnType<slime.$api.Global["Key"]["by"]> } */
-			var rv = {};
-
-			var create = function(key) {
-				//@ts-ignore
-				rv[key] = (p.count) ? 0 : [];
-			};
-
-			var add = function(key,value) {
-				if (p.count) {
-					//@ts-ignore
-					rv[key]++;
-				} else {
-					rv[key].push(value);
-				}
-			};
-
-			var toStringKey = function(key) {
-				if (p.codec) {
-					key = p.codec.encode(key);
-				}
-				return key;
-			}
-
-			if (p.keys) {
-				p.keys.forEach(function(key) {
-					create(toStringKey(key));
-				});
-			}
-
-			p.array.forEach(function(element) {
-				var key = toStringKey(p.key(element));
-				if (!rv[key]) create(key);
-				add(key,element);
-			});
-
-			//@ts-ignore
-			return rv;
-		};
-
-		$exports.Iterable = new function() {
+		var Iterable = new function() {
 			var getIterator = function(p) {
 				if (p.array) {
 					return new function() {
@@ -325,6 +201,157 @@
 					matched: pairs
 				};
 			};
+		};
+
+		/** @type { slime.$api.exports.Object["defineProperty"] } */
+		var defineProperty = function(p) {
+			return function(o) {
+				var r = Object.assign(o, Object.fromEntries([ [p.name, void(0)] ]));
+				Object.defineProperty(
+					r,
+					p.name,
+					p.descriptor
+				);
+				return r;
+			}
+		};
+
+		/** @type { Partial<slime.$api.Global> } */
+		var $exports = {
+			deprecate: flag.deprecate,
+			experimental: flag.experimental,
+			flag: flag.flag
+		};
+
+		(function() {
+			var old = code.Function_old({ deprecate: flag.deprecate });
+
+			var current = code.Function({
+				$api: { Iterable: Iterable },
+				events: events,
+				old: old,
+				deprecate: flag.deprecate,
+				script: script
+			});
+
+			var methods = code.methods({
+				library: {
+					Object: {
+						defineProperty: defineProperty
+					}
+				}
+			});
+
+			Object.assign(
+				$exports,
+				{
+					fp: Object.assign(current, { methods: methods }),
+					Function: old.Function
+				}
+			);
+		})();
+
+		$exports.global = {
+			get: function(name) {
+				//	TODO	note  that modern JavaScript also has `globalThis`
+				var global = (function() { return this; })();
+				return global[name];
+			}
+		};
+
+		$exports.debug = {
+			//	TODO	try to get rid of ignore below
+			//@ts-ignore
+			disableBreakOnExceptionsFor: function(f) {
+				if ($engine.debugger) {
+					var rv = function() {
+						var enabled = $engine.debugger.isBreakOnExceptions();
+						if (enabled) {
+							$engine.debugger.setBreakOnExceptions(false);
+						}
+						try {
+							return f.apply(this,arguments);
+						} finally {
+							if (enabled) {
+								$engine.debugger.setBreakOnExceptions(true);
+							}
+						}
+					}
+					return rv;
+				} else {
+					//	TODO	unclear what should be done here, but forcing a debugger pause is probably not right
+					//	debugger;
+					return f;
+				}
+			}
+		};
+
+		$exports.Filter = {
+			and: $exports.deprecate($exports.fp.Predicate.and),
+			or: $exports.deprecate($exports.fp.Predicate.or),
+		};
+
+		$exports.Constructor = {
+			invoke: void(0)
+		};
+
+		$exports.Constructor.invoke = function(p) {
+			//	TODO	sometimes, empty arguments may not be legal, but we put this here for now
+			//@ts-ignore
+			if (!p.arguments) p.arguments = [];
+			var code = "new p.constructor(" +
+				p.arguments.map(function() {
+					return "p.arguments[" + arguments[1] + "]";
+				}).join(",")
+			+ ")";
+			//	TODO	in contexts like Nashorn, can we use a different API to execute this script? Currently, ncdbg rejects the script name created by this.
+			return eval(code);
+		};
+
+		$exports.Key = {
+			by: void(0)
+		};
+		/** @type { slime.$api.Global["Key"]["by"] } */
+		//@ts-ignore
+		$exports.Key.by = function(p) {
+			/** @type { ReturnType<slime.$api.Global["Key"]["by"]> } */
+			var rv = {};
+
+			var create = function(key) {
+				//@ts-ignore
+				rv[key] = (p.count) ? 0 : [];
+			};
+
+			var add = function(key,value) {
+				if (p.count) {
+					//@ts-ignore
+					rv[key]++;
+				} else {
+					rv[key].push(value);
+				}
+			};
+
+			var toStringKey = function(key) {
+				if (p.codec) {
+					key = p.codec.encode(key);
+				}
+				return key;
+			}
+
+			if (p.keys) {
+				p.keys.forEach(function(key) {
+					create(toStringKey(key));
+				});
+			}
+
+			p.array.forEach(function(element) {
+				var key = toStringKey(p.key(element));
+				if (!rv[key]) create(key);
+				add(key,element);
+			});
+
+			//@ts-ignore
+			return rv;
 		};
 
 		var Properties = (function implementProperties() {
