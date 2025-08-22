@@ -18,7 +18,7 @@
 		var $engine = (
 			/**
 			 *
-			 * @param { slime.runtime.scope.Engine } $engine
+			 * @param { slime.runtime.Scope["$engine"] } $engine
 			 * @returns { slime.runtime.Engine }
 			 */
 			function($engine) {
@@ -130,33 +130,33 @@
 
 		/**
 		 *
-		 * @param { { name: string, js: string } } code
-		 * @param { { [x: string]: any } } scope
-		 * @returns
-		 */
-		var execute = function(code,scope) {
-			/** @type { any } */
-			var exported;
-
-			$engine.execute(
-				code,
-				Object.assign(scope, {
-					$export: function(value) {
-						exported = value;
-					}
-				}),
-				null
-			);
-
-			return exported;
-		}
-
-		/**
-		 *
 		 * @param { string } path
 		 * @returns { slime.old.loader.Script<any,any> }
 		 */
 		var script = function(path) {
+			/**
+			 *
+			 * @param { { name: string, js: string } } code
+			 * @param { { [x: string]: any } } scope
+			 * @returns
+			 */
+			var execute = function(code,scope) {
+				/** @type { any } */
+				var exported;
+
+				$engine.execute(
+					code,
+					Object.assign(scope, {
+						$export: function(value) {
+							exported = value;
+						}
+					}),
+					null
+				);
+
+				return exported;
+			}
+
 			/**
 			 *
 			 * @param { string } path
@@ -264,9 +264,7 @@
 			}
 		);
 
-		$api.engine = {
-			execute: $engine.execute
-		};
+		$api.engine = $engine;
 
 		$api.content = code.content();
 
@@ -337,13 +335,6 @@
 					return scope;
 				}
 			},
-			$api.Object.defineProperty({
-				name: "engine",
-				descriptor: {
-					value: $engine,
-					enumerable: true
-				}
-			}),
 			//	TODO	currently only used by jsapi in loader/api/old/jsh via jsh.js
 			//	TODO	also used by client.html unit tests
 			$api.Object.defineProperty({

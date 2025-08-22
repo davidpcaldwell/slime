@@ -196,9 +196,7 @@
 								arguments[2],
 								arguments[0].js, arguments[1]
 							);
-						},
-						//	TODO	make optional?
-						MetaObject: void(0)
+						}
 					},
 					$slime: {
 						getRuntimeScript: function(path) {

@@ -8,7 +8,7 @@
 (
 //	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
-	 * @param { slime.runtime.Engine } $engine
+	 * @param { Pick<slime.runtime.Engine,"execute"|"debugger"> } $engine
 	 * @param { slime.runtime.internal.Code } $slime
 	 * @param { slime.loader.Export<slime.$api.Global> } $export
 	 */
@@ -21,7 +21,6 @@
 			$engine.execute(
 				$slime.getRuntimeScript(name),
 				{
-					$platform: $engine,
 					$context: $context,
 					$exports: $exports,
 					$export: function(v) {

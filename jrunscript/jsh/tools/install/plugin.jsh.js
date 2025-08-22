@@ -9,14 +9,13 @@
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
-	 * @param { slime.jsh.plugin.Scope["$slime"] } $slime
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { object } plugins
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
-	function(Packages,JavaAdapter,$slime,$api,jsh,plugins,plugin,$loader) {
+	function(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
 				return Boolean(
@@ -517,7 +516,7 @@
 					var load = function(code) {
 						return $api.debug.disableBreakOnExceptionsFor(function() {
 							//	TODO	possibly there is an easier way to invoke the script; unclear.
-							$slime.engine.execute(
+							$api.engine.execute(
 								{
 									name: "<jsyaml.js>",
 									js: code
@@ -990,4 +989,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,$slime,$api,jsh,plugins,plugin,$loader)
+)(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader)

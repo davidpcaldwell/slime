@@ -73,7 +73,10 @@
 			Java: void(0)
 		};
 
+		var isBreakOnExceptions = $api.engine.debugger ? $api.engine.debugger.isBreakOnExceptions : void(0);
+		if (isBreakOnExceptions) $api.engine.debugger.setBreakOnExceptions(false);
 		$loader.run("api.js", {}, jrunscript);
+		if (isBreakOnExceptions) $api.engine.debugger.setBreakOnExceptions(true);
 		$export(after(jrunscript.$api));
 	}
 //@ts-ignore

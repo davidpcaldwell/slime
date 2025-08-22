@@ -13,9 +13,8 @@
  *
  * ## Java stream I/O support: {@link slime.jrunscript.runtime.io.Exports `$api.jrunscript.io`}
  *
- * The module that supports Java stream I/O, {@link slime.jrunscript.runtime.io}, is available as `$api.jrunscript.io`, which provides the
- * {@link slime.runtime.io.Exports} in Java-based
- * embeddings.
+ * The module that supports Java stream I/O, {@link slime.jrunscript.runtime.io}, is available as `$api.jrunscript.io`, which provides
+ * {@link slime.jrunscript.runtime.io.Exports} in Java-based embeddings.
  *
  * ## Other modules
  *

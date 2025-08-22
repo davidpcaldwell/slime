@@ -9,9 +9,10 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(Packages,jsh) {
+	function(Packages,$api,jsh) {
 		var code = {
 			/** @type { slime.jrunscript.bootstrap.Script } */
 			bootstrap: jsh.script.loader.script("../../../rhino/jrunscript/embed.js")
@@ -66,11 +67,14 @@
 		}
 		if (bootstrap && bootstrap.engine.nashorn.isPresent()) {
 			engines.nashorn = true;
+			var isBreakOnExceptions = $api.engine.debugger ? $api.engine.debugger.isBreakOnExceptions() : void(0);
+			if (isBreakOnExceptions) $api.engine.debugger.setBreakOnExceptions(false);
 			if (bootstrap && bootstrap.engine.nashorn.running()) {
 				engines.current = {
 					name: "nashorn"
 				};
 			}
+			if (isBreakOnExceptions) $api.engine.debugger.setBreakOnExceptions(true);
 		}
 
 		if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("graal")) {
@@ -126,4 +130,4 @@
 		}, void(0), "    "));
 	}
 //@ts-ignore
-)(Packages,jsh);
+)(Packages,$api,jsh);
