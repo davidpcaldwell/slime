@@ -220,7 +220,8 @@
 		var $exports = {
 			deprecate: flag.deprecate,
 			experimental: flag.experimental,
-			flag: flag.flag
+			flag: flag.flag,
+			Iterable: Iterable
 		};
 
 		(function() {
