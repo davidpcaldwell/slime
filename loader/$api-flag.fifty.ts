@@ -42,6 +42,10 @@ namespace slime.$api {
 		 * Allows the runtime marking of particular API constructs as experimental.
 		 */
 		experimental: Flagger
+
+		flag: {
+			once: (warning: Flagger["warning"]) => Flagger["warning"]
+		}
 	}
 
 	(
@@ -338,4 +342,8 @@ namespace slime.$api {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace internal.flag {
+		export type Exports = Pick<slime.$api.Global,"deprecate"|"experimental"|"flag">
+	}
 }

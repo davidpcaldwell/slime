@@ -199,6 +199,24 @@
 			oldLoaders: script("old-loaders.js")
 		};
 
+		$api.engine = $engine;
+
+		$api.content = code.content();
+
+		var scripts = code.scripts(
+			{
+				$engine: $engine,
+				$platform: $platform,
+				$api: $api
+			}
+		);
+
+		var Loader = code.Loader({
+			methods: scripts.methods,
+			$api: $api,
+			createScriptScope: scripts.createScriptScope
+		});
+
 		/**
 		 * @param { slime.resource.Descriptor } o
 		 * @this { slime.Resource }
@@ -263,24 +281,6 @@
 				}
 			}
 		);
-
-		$api.engine = $engine;
-
-		$api.content = code.content();
-
-		var scripts = code.scripts(
-			{
-				$api: $api,
-				$platform: $platform,
-				$engine: $engine
-			}
-		);
-
-		var Loader = code.Loader({
-			methods: scripts.methods,
-			$api: $api,
-			createScriptScope: scripts.createScriptScope
-		});
 
 		var loaders = code.oldLoaders({
 			$api: $api,

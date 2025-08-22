@@ -1834,9 +1834,7 @@ namespace slime.$api.fp {
 
 namespace slime.$api.fp.internal {
 	export interface Context {
-		$api: {
-			Iterable: any
-		}
+		$api: Pick<slime.$api.Global,"Iterable">
 
 		old: slime.$api.fp.internal.old.Exports
 
