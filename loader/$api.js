@@ -216,15 +216,7 @@
 			}
 		};
 
-		/** @type { Partial<slime.$api.Global> } */
-		var $exports = {
-			deprecate: flag.deprecate,
-			experimental: flag.experimental,
-			flag: flag.flag,
-			Iterable: Iterable
-		};
-
-		(function() {
+		var fp = (function() {
 			var old = code.Function_old({ deprecate: flag.deprecate });
 
 			var current = code.Function({
@@ -243,14 +235,17 @@
 				}
 			});
 
-			Object.assign(
-				$exports,
-				{
-					fp: Object.assign(current, { methods: methods }),
-					Function: old.Function
-				}
-			);
+			return /** @type { slime.$api.Global["fp"] } */(Object.assign(current, { methods: methods }));
 		})();
+
+		/** @type { Partial<slime.$api.Global> } */
+		var $exports = {
+			deprecate: flag.deprecate,
+			experimental: flag.experimental,
+			flag: flag.flag,
+			Iterable: Iterable,
+			fp: fp
+		};
 
 		$exports.global = {
 			get: function(name) {
