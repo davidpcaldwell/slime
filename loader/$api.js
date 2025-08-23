@@ -645,6 +645,15 @@
 			deprecate: flag.deprecate
 		});
 
+		//	TODO	switch implementation to use load()
+		var threads = (function($context) {
+			var $exports = {
+				steps: void(0)
+			};
+			$engine.execute($slime.getRuntimeScript("threads.js"), { $context: $context, $exports: $exports }, null);
+			return $exports;
+		})({ Events: Events });
+
 		/** @type { Omit<slime.$api.Global,"compiler"> } */
 		var $exports = {
 			engine: $engine,
@@ -667,20 +676,9 @@
 			Error: _Error,
 			TODO: TODO,
 			Events: Events,
-			threads: void(0),
+			threads: threads,
 			mime: mime
 		};
-
-		//	TODO	switch implementation to use load()
-		var threads = (function($context) {
-			var $exports = {
-				steps: void(0)
-			};
-			$engine.execute($slime.getRuntimeScript("threads.js"), { $context: $context, $exports: $exports }, null);
-			return $exports;
-		})($exports);
-
-		$exports.threads = threads;
 
 		$export($exports);
 	}

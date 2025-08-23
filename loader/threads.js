@@ -8,7 +8,7 @@
 (
 	/**
 	 *
-	 * @param { slime.$api.Global } $context
+	 * @param { Pick<slime.$api.Global,"Events"> } $context
 	 * @param { slime.$api.Global["threads"] } $exports
 	 */
 	function($context,$exports) {
