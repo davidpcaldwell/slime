@@ -189,8 +189,6 @@
 		});
 
 		var code = {
-			/** @type { slime.runtime.internal.content.Script } */
-			content: script("content.js"),
 			/** @type { slime.runtime.internal.scripts.Script } */
 			scripts: script("scripts.js"),
 			/** @type { slime.runtime.internal.loader.Script } */
@@ -198,10 +196,6 @@
 			/** @type { slime.runtime.internal.old_loaders.Script } */
 			oldLoaders: script("old-loaders.js")
 		};
-
-		$api.engine = $engine;
-
-		$api.content = code.content();
 
 		var scripts = code.scripts(
 			{

@@ -10,7 +10,7 @@
 	/**
 	 * @param { Pick<slime.runtime.Engine,"execute"|"debugger"> } $engine
 	 * @param { slime.runtime.internal.Code } $slime
-	 * @param { slime.loader.Export<slime.$api.Global> } $export
+	 * @param { slime.loader.Export<Omit<slime.$api.Global,"compiler">> } $export
 	 */
 	function($engine,$slime,$export) {
 		var script = function(name) {
@@ -50,6 +50,8 @@
 		}
 
 		var code = {
+			/** @type { slime.runtime.internal.content.Script } */
+			content: script("content.js"),
 			/** @type { slime.loader.Script<void,slime.$api.internal.flag.Exports> } */
 			flag: script("$api-flag.js"),
 			/** @type { slime.loader.Script<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
@@ -63,6 +65,8 @@
 			/** @type { slime.$api.fp.internal.methods.Script } */
 			methods: script("$api-fp-methods.js")
 		};
+
+		var content = code.content();
 
 		var flag = code.flag();
 
@@ -238,16 +242,7 @@
 			return /** @type { slime.$api.Global["fp"] } */(Object.assign(current, { methods: methods }));
 		})();
 
-		/** @type { Partial<slime.$api.Global> } */
-		var $exports = {
-			deprecate: flag.deprecate,
-			experimental: flag.experimental,
-			flag: flag.flag,
-			Iterable: Iterable,
-			fp: fp
-		};
-
-		$exports.global = {
+		var global = {
 			get: function(name) {
 				//	TODO	note  that modern JavaScript also has `globalThis`
 				var global = (function() { return this; })();
@@ -255,7 +250,7 @@
 			}
 		};
 
-		$exports.debug = {
+		var debug = {
 			//	TODO	try to get rid of ignore below
 			//@ts-ignore
 			disableBreakOnExceptionsFor: function(f) {
@@ -282,75 +277,72 @@
 			}
 		};
 
-		$exports.Filter = {
-			and: $exports.deprecate($exports.fp.Predicate.and),
-			or: $exports.deprecate($exports.fp.Predicate.or),
+		var Filter = {
+			and: flag.deprecate(fp.Predicate.and),
+			or: flag.deprecate(fp.Predicate.or),
 		};
 
-		$exports.Constructor = {
-			invoke: void(0)
-		};
-
-		$exports.Constructor.invoke = function(p) {
-			//	TODO	sometimes, empty arguments may not be legal, but we put this here for now
-			//@ts-ignore
-			if (!p.arguments) p.arguments = [];
-			var code = "new p.constructor(" +
-				p.arguments.map(function() {
-					return "p.arguments[" + arguments[1] + "]";
-				}).join(",")
-			+ ")";
-			//	TODO	in contexts like Nashorn, can we use a different API to execute this script? Currently, ncdbg rejects the script name created by this.
-			return eval(code);
-		};
-
-		$exports.Key = {
-			by: void(0)
-		};
-		/** @type { slime.$api.Global["Key"]["by"] } */
-		//@ts-ignore
-		$exports.Key.by = function(p) {
-			/** @type { ReturnType<slime.$api.Global["Key"]["by"]> } */
-			var rv = {};
-
-			var create = function(key) {
+		var Constructor = {
+			invoke: function(p) {
+				//	TODO	sometimes, empty arguments may not be legal, but we put this here for now
 				//@ts-ignore
-				rv[key] = (p.count) ? 0 : [];
-			};
-
-			var add = function(key,value) {
-				if (p.count) {
-					//@ts-ignore
-					rv[key]++;
-				} else {
-					rv[key].push(value);
-				}
-			};
-
-			var toStringKey = function(key) {
-				if (p.codec) {
-					key = p.codec.encode(key);
-				}
-				return key;
+				if (!p.arguments) p.arguments = [];
+				var code = "new p.constructor(" +
+					p.arguments.map(function() {
+						return "p.arguments[" + arguments[1] + "]";
+					}).join(",")
+				+ ")";
+				//	TODO	in contexts like Nashorn, can we use a different API to execute this script? Currently, ncdbg rejects the script name created by this.
+				return eval(code);
 			}
-
-			if (p.keys) {
-				p.keys.forEach(function(key) {
-					create(toStringKey(key));
-				});
-			}
-
-			p.array.forEach(function(element) {
-				var key = toStringKey(p.key(element));
-				if (!rv[key]) create(key);
-				add(key,element);
-			});
-
-			//@ts-ignore
-			return rv;
 		};
 
-		var Properties = (function implementProperties() {
+		var Key = {
+			/** @type { slime.$api.Global["Key"]["by"] } */
+			//@ts-ignore
+			by: function(p) {
+				/** @type { ReturnType<slime.$api.Global["Key"]["by"]> } */
+				var rv = {};
+
+				var create = function(key) {
+					//@ts-ignore
+					rv[key] = (p.count) ? 0 : [];
+				};
+
+				var add = function(key,value) {
+					if (p.count) {
+						//@ts-ignore
+						rv[key]++;
+					} else {
+						rv[key].push(value);
+					}
+				};
+
+				var toStringKey = function(key) {
+					if (p.codec) {
+						key = p.codec.encode(key);
+					}
+					return key;
+				}
+
+				if (p.keys) {
+					p.keys.forEach(function(key) {
+						create(toStringKey(key));
+					});
+				}
+
+				p.array.forEach(function(element) {
+					var key = toStringKey(p.key(element));
+					if (!rv[key]) create(key);
+					add(key,element);
+				});
+
+				//@ts-ignore
+				return rv;
+			}
+		};
+
+		var arrayToOldProperties = (function implementProperties() {
 			var withPropertiesResult = function(was) {
 				return function() {
 					var rv = was.apply(this,arguments);
@@ -364,7 +356,7 @@
 					array[name] = withPropertiesResult(Array.prototype[name]);
 				});
 				array.object = function() {
-					return $exports.Object({ properties: this });
+					return _Object({ properties: this });
 				};
 			};
 
@@ -374,7 +366,7 @@
 			}
 		})();
 
-		$exports.Properties = function() {
+		var Properties = function() {
 			var array = (function() {
 				if (arguments.length == 0) return [];
 				if (!arguments[0]) throw new TypeError("Must be object.");
@@ -390,10 +382,10 @@
 				throw new Error();
 			}).apply(null, arguments);
 
-			return Properties(array);
+			return arrayToOldProperties(array);
 		};
 
-		$exports.Object = Object.assign(
+		var _Object = Object.assign(
 			/**
 			 * @param { { properties: {name: string, value: any }[] } } p
 			 * @returns { { [x: string]: any } }
@@ -409,11 +401,51 @@
 			},
 			/** @type { slime.$api.exports.Object } */
 			({
-				compose: void(0),
-				properties: void(0),
-				property: void(0),
-				optional: void(0),
-				values: void(0),
+				compose: function() {
+					var args = [{}];
+					for (var i=0; i<arguments.length; i++) {
+						args.push(arguments[i]);
+					}
+					return Object.assign.apply(Object,args);
+				},
+				properties: function(o) {
+					//	Returns an array consisting of:
+					//	name:
+					//	value:
+					//		See http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1 property accessors
+					//		Name 'value' comes because these are defined in terms of [[GetValue]]
+					var rv = [];
+					for (var x in o) {
+						//	TODO	could use Object.defineProperty to defer evaluation of o[x]
+						rv.push({ name: x, value: o[x] });
+					}
+					return arrayToOldProperties(rv);
+				},
+				optional: function(v) {
+					if (arguments.length == 0) throw new TypeError();
+					if (arguments.length == 1) throw new TypeError();
+					var rv = v;
+					for (var i=1; i<arguments.length; i++) {
+						if (rv === null || typeof(rv) == "undefined") return void(0);
+						//	string, boolean, number; just fail for now, pending further definition
+						if (typeof(rv) != "object") throw new TypeError();
+						rv = rv[arguments[i]];
+					}
+					return rv;
+				},
+				values: {
+					//@ts-ignore
+					map: function(f) {
+						return function(o) {
+							var rv = {};
+							for (var x in o) {
+								//@ts-ignore
+								rv[x] = f(o[x]);
+							}
+							return rv;
+						}
+					}
+				},
 				defineProperty: defineProperty,
 				maybeDefineProperty: function(p) {
 					return function(o) {
@@ -433,61 +465,16 @@
 				}
 			})
 		);
-		$exports.Object.compose = function() {
-			var args = [{}];
-			for (var i=0; i<arguments.length; i++) {
-				args.push(arguments[i]);
-			}
-			return Object.assign.apply(Object,args);
-		};
-		$exports.Object.optional = function(v) {
-			if (arguments.length == 0) throw new TypeError();
-			if (arguments.length == 1) throw new TypeError();
-			var rv = v;
-			for (var i=1; i<arguments.length; i++) {
-				if (rv === null || typeof(rv) == "undefined") return void(0);
-				//	string, boolean, number; just fail for now, pending further definition
-				if (typeof(rv) != "object") throw new TypeError();
-				rv = rv[arguments[i]];
-			}
-			return rv;
-		};
-		$exports.Object.properties = function(o) {
-			//	Returns an array consisting of:
-			//	name:
-			//	value:
-			//		See http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1 property accessors
-			//		Name 'value' comes because these are defined in terms of [[GetValue]]
-			var rv = [];
-			for (var x in o) {
-				//	TODO	could use Object.defineProperty to defer evaluation of o[x]
-				rv.push({ name: x, value: o[x] });
-			}
-			return Properties(rv);
-		};
-		$exports.Object.values = {
-			//@ts-ignore
-			map: function(f) {
-				return function(o) {
-					var rv = {};
-					for (var x in o) {
-						//@ts-ignore
-						rv[x] = f(o[x]);
-					}
-					return rv;
-				}
-			}
-		}
 
-		$exports.Array = {
+		var _Array = {
 			build: function(f) {
 				var rv = [];
 				f(rv);
 				return rv;
 			}
-		}
+		};
 
-		$exports.Value = function(v,name) {
+		var Value = function(v,name) {
 			var $exports_Object_property = function() {
 				var rv = this;
 				for (var i=0; i<arguments.length; i++) {
@@ -503,7 +490,7 @@
 					}
 				},
 				property: function() {
-					return $exports.Value(
+					return Value(
 						$exports_Object_property.apply(v,arguments),
 						( name || "" ) + "." + Array.prototype.join.call(arguments,".")
 					)
@@ -546,7 +533,7 @@
 					return new Subtype(message);
 				}
 			}
-			Subtype.prototype = $exports.debug.disableBreakOnExceptionsFor(function() {
+			Subtype.prototype = debug.disableBreakOnExceptionsFor(function() {
 				var rv = new Supertype();
 				//delete rv.stack;
 				return rv;
@@ -556,7 +543,8 @@
 			return rv;
 		};
 
-		$exports.Error = {
+		/** @type { slime.$api.Global["Error"] } */
+		var _Error = {
 			old: {
 				//	TODO	see whether we can get rid of this
 				//@ts-ignore
@@ -631,31 +619,60 @@
 			}
 		}
 
-		var TODO = $exports.Error.type({
-			name: "TODO",
-			/** @type { (p: { message: slime.$api.fp.Thunk<string> }) => string } */
-			getMessage: function(p) {
-				return (p && p.message) ? p.message() : "TODO";
-			}
-		})
+		var TODO = function(p) {
+			var Type = _Error.type({
+				name: "TODO",
+				/** @type { (p: { message: slime.$api.fp.Thunk<string> }) => string } */
+				getMessage: function(p) {
+					return (p && p.message) ? p.message() : "TODO";
+				}
+			})
 
-		$exports.TODO = function(p) {
 			return function() {
-				throw TODO(p);
+				throw Type(p);
 			}
 		}
 
-		$exports.events = events.exports;
-
-		$exports.Events = Object.assign(
-			$exports.deprecate(events.exports.emitter),
+		var Events = Object.assign(
+			flag.deprecate(events.exports.emitter),
 			{
-				Function: $exports.deprecate(events.exports.Function),
+				Function: flag.deprecate(events.exports.Function),
 			}
 		);
 
+		var mime = code.mime({
+			Function: fp,
+			deprecate: flag.deprecate
+		});
+
+		/** @type { Omit<slime.$api.Global,"compiler"> } */
+		var $exports = {
+			engine: $engine,
+			content: content,
+			deprecate: flag.deprecate,
+			experimental: flag.experimental,
+			flag: flag.flag,
+			events: events.exports,
+			Iterable: Iterable,
+			fp: fp,
+			global: global,
+			debug: debug,
+			Filter: Filter,
+			Constructor: Constructor,
+			Key: Key,
+			Properties: Properties,
+			Object: _Object,
+			Array: _Array,
+			Value: Value,
+			Error: _Error,
+			TODO: TODO,
+			Events: Events,
+			threads: void(0),
+			mime: mime
+		};
+
 		//	TODO	switch implementation to use load()
-		$exports.threads = (function($context) {
+		var threads = (function($context) {
 			var $exports = {
 				steps: void(0)
 			};
@@ -663,13 +680,8 @@
 			return $exports;
 		})($exports);
 
-		$exports.mime = code.mime({
-			Function: $exports.fp,
-			deprecate: $exports.deprecate
-		});
+		$exports.threads = threads;
 
-		//	TODO	we can refactor typechecking another day; for now we know this works
-		//@ts-ignore
 		$export($exports);
 	}
 //@ts-ignore
