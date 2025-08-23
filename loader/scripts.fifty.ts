@@ -63,8 +63,12 @@ namespace slime.$api {
 			isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
 
 			/**
-			 * Convenience method that uses a code predicate and compiler implementation to create a `Compiler`.
+			 * Convenience method that, given a code predicate and compiler implementation, creates a `Compiler`.
+			 *
+			 * @template R A "resource" type used by some underlying representation of a code source
+			 * @template I Some intermediate representation of the resource which can be used as input to the transpilation process
 			 */
+			//	TODO	can we figure out how to get the above template definitions to render in TypeDoc?
 			getTranspiler: <R,I>(p: {
 				accept: slime.$api.fp.Predicate<R>
 				name: (r: R) => string

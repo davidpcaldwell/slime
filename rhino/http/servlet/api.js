@@ -12,12 +12,12 @@
 	 * @param { slime.servlet.internal.$host } $host
 	 */
 	function(Packages,JavaAdapter,$host) {
-		/** @type { ($host: slime.servlet.internal.$host) => $host is slime.servlet.internal.$host.Java } */
+		/** @type { ($host: slime.servlet.internal.$host) => $host is slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */
 		var isJava = function($host) {
 			return $host["register"];
 		};
 
-		/** @type { ($host: slime.servlet.internal.$host) => $host is slime.servlet.internal.$host.Rhino } */
+		/** @type { ($host: slime.servlet.internal.$host) => $host is slime.jrunscript.native.inonit.script.servlet.Rhino.Host } */
 		var isRhino = function($host) {
 			return isJava($host) && $host["getEngine"];
 		};
@@ -38,7 +38,7 @@
 				//			Need also to identify test case
 				return $host.getEngine().script(
 					"jrunscript/rhino.js",
-					$host.getLoader().getLoaderCode("jrunscript/rhino.js"),
+					String($host.getLoader().getLoaderCode("jrunscript/rhino.js")),
 					{
 						$loader: $host.getLoader(),
 						$rhino: $host.getEngine()
@@ -48,7 +48,7 @@
 			} else if (isJava($host)) {
 				//	TODO	implement along with Graal servlets
 				var $graal;
-				var scripts = eval($host.getLoader().getLoaderCode("jrunscript/nashorn.js"));
+				var scripts = eval(String($host.getLoader().getLoaderCode("jrunscript/nashorn.js")));
 
 				var rv = scripts.script(
 					"jrunscript/nashorn.js",

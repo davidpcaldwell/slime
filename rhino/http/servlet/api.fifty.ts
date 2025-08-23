@@ -127,17 +127,6 @@ namespace slime.servlet {
 		}
 
 		export namespace $host {
-			export interface Java {
-				getClasspath?: slime.jrunscript.native.inonit.script.engine.Loader.Classes.Interface
-				register: (_script: slime.jrunscript.native.inonit.script.servlet.Servlet.Script) => void
-				getLoader(): slime.jrunscript.native.inonit.script.rhino.Engine.Loader
-				getServlet(): slime.jrunscript.native.inonit.script.servlet.Servlet
-			}
-
-			export interface Rhino extends Java {
-				getEngine(): slime.jrunscript.native.inonit.script.rhino.Engine
-			}
-
 			export interface jsh {
 				context: slime.servlet.httpd["context"]
 
@@ -179,7 +168,7 @@ namespace slime.servlet {
 			}
 		}
 
-		export type $host = $host.Java | $host.jsh
+		export type $host = slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject | $host.jsh
 	}
 
 	(

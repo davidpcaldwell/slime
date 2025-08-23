@@ -399,6 +399,12 @@ namespace slime.jrunscript {
 						service: (_request: any, _response: any) => void
 						destroy: () => void
 					}
+
+					export interface HostObject {
+						register: (_script: slime.jrunscript.native.inonit.script.servlet.Servlet.Script) => void
+						getLoader: () => slime.jrunscript.native.inonit.script.engine.Loader
+						getServlet: () => slime.jrunscript.native.inonit.script.servlet.Servlet
+					}
 				}
 
 				export interface Servlet {
@@ -417,6 +423,12 @@ namespace slime.jrunscript {
 					}
 					getServletContext(): any
 				}
+
+				export namespace Rhino {
+					export interface Host extends Servlet.HostObject {
+						getEngine: () => slime.jrunscript.native.inonit.script.rhino.Engine
+					}
+				}
 			}
 
 			export namespace rhino {
@@ -426,9 +438,6 @@ namespace slime.jrunscript {
 				}
 
 				export namespace Engine {
-					export interface Loader {
-						getLoaderCode(path: string): any
-					}
 				}
 
 				export interface Engine {
