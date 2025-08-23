@@ -77,12 +77,14 @@ namespace slime.$api {
 
 namespace slime.runtime.internal.scripts {
 	export interface Scope {
-		$platform: slime.runtime.Platform
+		Packages: slime.runtime.Scope["Packages"]
 		$engine: slime.runtime.Engine
 		$api: slime.$api.Global
 	}
 
 	export interface Exports {
+		platform: slime.runtime.Platform
+
 		compiler: {
 			update: slime.runtime.Exports["compiler"]["update"]
 			get: slime.runtime.Exports["compiler"]["get"]

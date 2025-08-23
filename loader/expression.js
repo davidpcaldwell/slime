@@ -56,78 +56,6 @@
 			null
 		);
 
-		var $platform = (
-			/**
-			 *
-			 * @param { slime.runtime.Engine } $engine
-			 */
-			function($engine) {
-				/** @type { slime.runtime.Platform } */
-				var $exports = {};
-
-				var global = (function() { return this; })();
-				if (global && global.XML && global.XMLList) {
-					$exports.e4x = {};
-					$exports.e4x.XML = global.XML;
-					$exports.e4x.XMLList = global.XMLList;
-				}
-
-				(
-					/**
-					 * @this { slime.runtime.Platform }
-					 */
-					function() {
-						var getJavaClass = function(name) {
-							try {
-								if (typeof(scope.Packages) == "undefined") return null;
-								var rv = scope.Packages[name];
-								if (typeof(rv) == "function") {
-									//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
-									//	following format for their String values
-									try {
-										var prefix = "[Java Package";
-										if (String(rv).substring(0, prefix.length) == prefix) {
-											return null;
-										}
-									} catch (e) {
-										//	The string value of Packages.java.lang.Object and Packages.java.lang.Number throws a string (the
-										//	below) if you attempt to evaluate it.
-										if (e == "java.lang.NullPointerException") {
-											return rv;
-										}
-									}
-									return rv;
-								}
-								return null;
-							} catch (e) {
-								return null;
-							}
-						}
-
-						if (getJavaClass("java.lang.Object")) {
-							this.java = new function() {
-								this.getClass = function(name) {
-									return getJavaClass(name);
-								}
-							};
-						}
-					}
-				).call($exports);
-
-				try {
-					if (typeof($engine) != "undefined") {
-						if ($engine.MetaObject) {
-							$exports.MetaObject = $engine.MetaObject;
-						}
-					}
-				} catch (e) {
-					//	MetaObject will not be defined
-				}
-
-				return $exports;
-			}
-		)($engine);
-
 		/**
 		 *
 		 * @param { string } path
@@ -199,8 +127,8 @@
 
 		var scripts = code.scripts(
 			{
+				Packages: scope.Packages,
 				$engine: $engine,
-				$platform: $platform,
 				$api: $api
 			}
 		);
@@ -232,6 +160,8 @@
 			if (o.read && o.read.string) {
 				this.read = Object.assign(
 					function(v) {
+						var $platform = scripts.platform;
+
 						if (v === String) {
 							var rv = o.read.string();
 							return rv;
@@ -334,7 +264,7 @@
 			$api.Object.defineProperty({
 				name: "$platform",
 				descriptor: {
-					value: $platform,
+					value: scripts.platform,
 					enumerable: true
 				}
 			}),
@@ -342,7 +272,7 @@
 				name: "java",
 				descriptor: $api.fp.Partial.from.loose(function(it) {
 					return {
-						value: ($platform.java) ? $platform.java : void(0)
+						value: (scripts.platform.java) ? scripts.platform.java : void(0)
 					};
 				})
 			}),
