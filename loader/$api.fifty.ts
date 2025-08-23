@@ -28,6 +28,11 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Global {
+		engine: slime.runtime.Engine
+		content: slime.runtime.content.Exports
+	}
+
 	export namespace fp {
 		export interface Exports {
 			methods: slime.$api.fp.methods.Exports
@@ -46,6 +51,7 @@ namespace slime.$api {
 
 	export interface Global {
 		debug: {
+			//	TODO	simplify below?
 			disableBreakOnExceptionsFor: <T,P extends any[],R,F extends slime.external.lib.es5.Function<T,P,R>>(f: F) => F
 		}
 

@@ -960,11 +960,4 @@ namespace slime {
 		//@ts-ignore
 		)( (function() { return this; })().Packages, fifty)
 	}
-
-	export namespace $api {
-		export interface Global {
-			engine: slime.runtime.Engine
-			content: slime.runtime.content.Exports
-		}
-	}
 }
