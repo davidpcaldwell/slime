@@ -226,8 +226,8 @@
 						rv.compiler.update(function(was) {
 							return rv.$api.fp.switch([
 								was,
-								rv.$api.compiler.getTranspiler({
-									accept: rv.$api.compiler.isMimeType("application/vnd.coffeescript"),
+								rv.$api.Compiler.from.simple({
+									accept: rv.$api.compiler.Code.isMimeType("application/vnd.coffeescript"),
 									name: function(code) { return code.name; },
 									read: function(code) { return code.read(); },
 									compile: window.CoffeeScript.compile

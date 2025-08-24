@@ -10,9 +10,10 @@
 	/**
 	 * @param { Pick<slime.runtime.Engine,"execute"|"debugger"> } $engine
 	 * @param { slime.runtime.internal.Code } $slime
-	 * @param { slime.loader.Export<Omit<slime.$api.Global,"compiler">> } $export
+	 * @param { slime.runtime.Scope["Packages"] } Packages
+	 * @param { slime.loader.Export<slime.$api.internal.Exports> } $export
 	 */
-	function($engine,$slime,$export) {
+	function($engine,$slime,Packages,$export) {
 		var script = function(name) {
 			var load = function(name,$context) {
 				var $exports = {};
@@ -654,7 +655,30 @@
 			return $exports;
 		})({ Events: Events });
 
-		/** @type { Omit<slime.$api.Global,"compiler"> } */
+		var scripts = (
+			function() {
+				/** @type { slime.runtime.internal.scripts.Exports } */
+				var rv;
+				$engine.execute(
+					$slime.getRuntimeScript("scripts.js"),
+					{
+						Packages: Packages,
+						$engine: $engine,
+						fp: fp,
+						apiForScripts: function() {
+							return $exports;
+						},
+						$export: function(v) {
+							rv = v;
+						}
+					},
+					null
+				);
+				return rv;
+			}
+		)();
+
+		/** @type { Parameters<typeof $export>[0]["exports"] } */
 		var $exports = {
 			engine: $engine,
 			content: content,
@@ -677,10 +701,15 @@
 			TODO: TODO,
 			Events: Events,
 			threads: threads,
-			mime: mime
+			mime: mime,
+			compiler: scripts.api.compiler,
+			Compiler: scripts.api.Compiler
 		};
 
-		$export($exports);
+		$export({
+			scripts: scripts,
+			exports: $exports
+		});
 	}
 //@ts-ignore
-)($engine,$slime,$export)
+)($engine,$slime,Packages,$export)
