@@ -100,25 +100,27 @@ namespace slime.runtime.internal.scripts {
 
 		compiler: slime.runtime.Exports["compiler"]
 
-		methods: {
-			/**
-			 * Compiles the given `code` script, executes it in a scope containing the values provided by `scope`, and using the
-			 * `this` target with which the `run` function was invoked.
-			 */
-			run: (this: { [name: string]: any }, code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
+		internal: {
+			toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
 
-			old: {
-				value: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => any
-				file: (code: slime.runtime.loader.Code, context: { [name: string]: any }) => { [x: string]: any }
+			createScriptScope: <C extends { [x: string]: any },T>($context: C) => {
+				$context: C
+				$export: (t: T) => void
+				$exports: T
 			}
-		}
 
-		toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
+			methods: {
+				/**
+				 * Compiles the given `code` script, executes it in a scope containing the values provided by `scope`, and using the
+				 * `this` target with which the `run` function was invoked.
+				 */
+				run: (this: { [name: string]: any }, code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
 
-		createScriptScope: <C extends { [x: string]: any },T>($context: C) => {
-			$context: C
-			$export: (t: T) => void
-			$exports: T
+				old: {
+					value: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => any
+					file: (code: slime.runtime.loader.Code, context: { [name: string]: any }) => { [x: string]: any }
+				}
+			}
 		}
 	}
 

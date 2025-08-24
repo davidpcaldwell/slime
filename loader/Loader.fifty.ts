@@ -334,8 +334,8 @@ namespace slime.runtime.loader.old {
 namespace slime.runtime.internal.loader {
 	export interface Scope {
 		$api: slime.$api.Global
-		methods: scripts.Exports["methods"]
-		createScriptScope: scripts.Exports["createScriptScope"]
+		methods: scripts.Exports["internal"]["methods"]
+		createScriptScope: scripts.Exports["internal"]["createScriptScope"]
 	}
 
 	export interface Exports {
