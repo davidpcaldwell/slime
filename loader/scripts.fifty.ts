@@ -55,26 +55,32 @@ namespace slime.$api {
 		 * Provides helper methods for implementing new {@link slime.runtime.loader.Compiler | Compiler}s.
 		 */
 		compiler: {
-			/**
-			 * Given a string specifying a simple MIME type (e.g., `text/plain`, with no parameters), returns a
-			 * {@link slime.$api.fp.Predicate} specifying whether a given {@link slime.runtime.loader.Code | Code} is of that
-			 * type.
-			 */
-			isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
+			Code: {
+				/**
+				 * Given a string specifying a simple MIME type (e.g., `text/plain`, with no parameters), returns a
+				 * {@link slime.$api.fp.Predicate} specifying whether a given {@link slime.runtime.loader.Code | Code} is of that
+				 * type.
+				 */
+				isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
+			}
+		}
 
-			/**
-			 * Convenience method that, given a code predicate and compiler implementation, creates a `Compiler`.
-			 *
-			 * @template R A "resource" type used by some underlying representation of a code source
-			 * @template I Some intermediate representation of the resource which can be used as input to the transpilation process
-			 */
-			//	TODO	can we figure out how to get the above template definitions to render in TypeDoc?
-			getTranspiler: <R,I>(p: {
-				accept: slime.$api.fp.Predicate<R>
-				name: (r: R) => string
-				read: (r: R) => I
-				compile: slime.$api.fp.Mapping<I,string>
-			}) => slime.runtime.loader.Compiler<R>
+		Compiler: {
+			from: {
+				/**
+				 * Convenience method that, given a code predicate and compiler implementation, creates a `Compiler`.
+				 *
+				 * @template R A "resource" type used by some underlying representation of a code source
+				 * @template I Some intermediate representation of the resource which can be used as input to the transpilation process
+				 */
+				//	TODO	can we figure out how to get the above template definitions to render in TypeDoc?
+				simple: <R,I>(p: {
+					accept: slime.$api.fp.Predicate<R>
+					name: (r: R) => string
+					read: (r: R) => I
+					compile: slime.$api.fp.Mapping<I,string>
+				}) => slime.runtime.loader.Compiler<R>
+			}
 		}
 	}
 }
@@ -83,16 +89,16 @@ namespace slime.runtime.internal.scripts {
 	export interface Scope {
 		Packages: slime.runtime.Scope["Packages"]
 		$engine: slime.runtime.Engine
-		$api: slime.$api.Global
+		fp: slime.$api.fp.Exports
+		apiForScripts: () => slime.$api.Global
 	}
 
 	export interface Exports {
+		api: Pick<slime.$api.Global,"compiler"|"Compiler">
+
 		platform: slime.runtime.Platform
 
-		compiler: {
-			update: slime.runtime.Exports["compiler"]["update"]
-			get: slime.runtime.Exports["compiler"]["get"]
-		}
+		compiler: slime.runtime.Exports["compiler"]
 
 		methods: {
 			/**

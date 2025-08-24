@@ -10,10 +10,11 @@
 	 *
 	 * @param { slime.runtime.Scope["Packages"] } Packages
 	 * @param { slime.runtime.internal.scripts.Scope["$engine"] } $engine
-	 * @param { slime.runtime.internal.scripts.Scope["$api"] } $api
+	 * @param { slime.runtime.internal.scripts.Scope["fp"] } fp
+	 * @param { slime.runtime.internal.scripts.Scope["apiForScripts"]} apiForScripts
 	 * @param { slime.loader.Export<slime.runtime.internal.scripts.Exports> } $export
 	 */
-	function(Packages,$engine,$api,$export) {
+	function(Packages,$engine,fp,apiForScripts,$export) {
 		/** @type { slime.runtime.Platform } */
 		var $platform = (
 			/**
@@ -88,18 +89,18 @@
 		)($engine);
 
 		/**
-		 * @type { slime.$api.Global["compiler"]["getTranspiler"] }
+		 * @type { slime.$api.Global["Compiler"]["from"]["simple"] }
 		 */
 		var getTranspiler = function(p) {
 			return function(script) {
 				if (p.accept(script)) {
 					var code = p.read(script);
-					return $api.fp.Maybe.from.some({
+					return fp.Maybe.from.some({
 						name: p.name(script),
 						js: p.compile(code)
 					});
 				} else {
-					return $api.fp.Maybe.from.nothing();
+					return fp.Maybe.from.nothing();
 				}
 			}
 		};
@@ -132,7 +133,7 @@
 		 */
 		var getJavascriptProvider = function() {
 			return getTranspiler({
-				accept: $api.fp.Predicate.or(
+				accept: fp.Predicate.or(
 					isMimeType("application/javascript"),
 					isMimeType("application/x-javascript"),
 					//	TODO	unclear whether text/javascript should be accepted, but we had a situation where it was being passed
@@ -195,9 +196,9 @@
 			}
 			if (typeof(code.read) != "function") throw new Error("Not slime.runtime.loader.Code: no read() function");
 
-			var compile = $api.fp.now(
+			var compile = fp.now(
 				compiler,
-				$api.fp.Partial.impure.exception(
+				fp.Partial.impure.exception(
 					function(code) {
 						return new TypeError("Code " + code.name + " cannot be converted to JavaScript; type = " + code.type())
 					}
@@ -220,7 +221,7 @@
 			}
 
 			scope.$platform = $platform;
-			scope.$api = $api;
+			scope.$api = apiForScripts();
 
 			$engine.execute(
 				script,
@@ -251,12 +252,19 @@
 			return rv;
 		}
 
-		$api.compiler = {
-			isMimeType: isMimeType,
-			getTranspiler: getTranspiler
-		};
-
 		$export({
+			api: {
+				compiler: {
+					Code: {
+						isMimeType: isMimeType
+					}
+				},
+				Compiler: {
+					from: {
+						simple: getTranspiler
+					}
+				}
+			},
 			platform: $platform,
 			compiler: {
 				update: function(transform) {
@@ -278,4 +286,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$engine,$api,$export);
+)(Packages,$engine,fp,apiForScripts,$export);

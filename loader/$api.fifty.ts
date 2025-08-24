@@ -1349,6 +1349,16 @@ namespace slime.$api {
 
 namespace slime.$api.internal {
 	export type script = <C,E>(name: string) => slime.loader.Script<C,E>
+
+	export interface Scope {
+	}
+
+	export interface Exports {
+		scripts: slime.runtime.internal.scripts.Exports
+		exports: slime.$api.Global
+	}
+
+	export type Script = slime.loader.Script<Scope,Exports>
 }
 
 namespace slime.$api.oo {

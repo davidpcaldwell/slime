@@ -108,30 +108,31 @@
 			)
 		};
 
-		/** @type { slime.$api.Global } */
-		var $api = script("$api.js")({
-			$engine: $engine,
-			$slime: {
-				getRuntimeScript: scope.$slime.getRuntimeScript
+		var api = (
+			function() {
+				/** @type { slime.$api.internal.Script } */
+				var code = script("$api.js");
+				return code({
+					$engine: $engine,
+					$slime: {
+						getRuntimeScript: scope.$slime.getRuntimeScript
+					},
+					Packages: scope.Packages
+				});
 			}
-		});
+		)();
+
+		/** @type { slime.$api.Global } */
+		var $api = api.exports;
+
+		var scripts = api.scripts;
 
 		var code = {
-			/** @type { slime.runtime.internal.scripts.Script } */
-			scripts: script("scripts.js"),
 			/** @type { slime.runtime.internal.loader.Script } */
 			Loader: script("Loader.js"),
 			/** @type { slime.runtime.internal.old_loaders.Script } */
 			oldLoaders: script("old-loaders.js")
 		};
-
-		var scripts = code.scripts(
-			{
-				Packages: scope.Packages,
-				$engine: $engine,
-				$api: $api
-			}
-		);
 
 		var Loader = code.Loader({
 			methods: scripts.methods,
