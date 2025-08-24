@@ -135,9 +135,9 @@
 		};
 
 		var Loader = code.Loader({
-			methods: scripts.methods,
+			methods: scripts.internal.methods,
 			$api: $api,
-			createScriptScope: scripts.createScriptScope
+			createScriptScope: scripts.internal.createScriptScope
 		});
 
 		/**
@@ -210,9 +210,9 @@
 		var loaders = code.oldLoaders({
 			$api: $api,
 			Resource: ResourceExport,
-			createScriptScope: scripts.createScriptScope,
-			toExportScope: scripts.toExportScope,
-			methods: scripts.methods
+			createScriptScope: scripts.internal.createScriptScope,
+			toExportScope: scripts.internal.toExportScope,
+			methods: scripts.internal.methods
 		});
 
 		/** @type { slime.runtime.Exports } */
@@ -221,15 +221,15 @@
 				mime: $api.mime,
 				/** @type { slime.runtime.Exports["run"] } */
 				run: function(code,scope,target) {
-					return scripts.methods.run.call(target,loaders.Code.from.Resource(code),scope);
+					return scripts.internal.methods.run.call(target,loaders.Code.from.Resource(code),scope);
 				},
 				/** @type { slime.runtime.Exports["file"] } */
 				file: function(code,context,target) {
-					return scripts.methods.old.file.call(target,loaders.Code.from.Resource(code),context);
+					return scripts.internal.methods.old.file.call(target,loaders.Code.from.Resource(code),context);
 				},
 				/** @type { slime.runtime.Exports["value"] } */
 				value: function(code,scope,target) {
-					return scripts.methods.old.value.call(target,loaders.Code.from.Resource(code),scope);
+					return scripts.internal.methods.old.value.call(target,loaders.Code.from.Resource(code),scope);
 				},
 				Resource: ResourceExport,
 				old: {

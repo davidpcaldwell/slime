@@ -172,7 +172,7 @@
 			return rv;
 		};
 
-		/** @type { slime.runtime.internal.scripts.Exports["createScriptScope"] } */
+		/** @type { slime.runtime.internal.scripts.Exports["internal"]["createScriptScope"] } */
 		var createScriptScope = function($context) {
 			var toT = function(any) { return any; };
 
@@ -188,7 +188,7 @@
 		//	TODO	re-work resource.js
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["run"] }
+		 * @type { slime.runtime.internal.scripts.Exports["internal"]["methods"]["run"] }
 		 */
 		function run(code,scope) {
 			if (!code || typeof(code) != "object") {
@@ -231,7 +231,7 @@
 		}
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["file"] }
+		 * @type { slime.runtime.internal.scripts.Exports["internal"]["methods"]["old"]["file"] }
 		 */
 		function file(code,$context) {
 			var inner = createScriptScope($context);
@@ -240,7 +240,7 @@
 		}
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["methods"]["old"]["value"] }
+		 * @type { slime.runtime.internal.scripts.Exports["internal"]["methods"]["old"]["value"] }
 		 */
 		function value(code,scope) {
 			var rv;
@@ -274,15 +274,17 @@
 					return compiler;
 				}
 			},
-			methods: {
-				old: {
-					file: file,
-					value: value
+			internal: {
+				methods: {
+					old: {
+						file: file,
+						value: value
+					},
+					run: run
 				},
-				run: run
-			},
-			toExportScope: toExportScope,
-			createScriptScope: createScriptScope
+				toExportScope: toExportScope,
+				createScriptScope: createScriptScope
+			}
 		});
 	}
 //@ts-ignore
