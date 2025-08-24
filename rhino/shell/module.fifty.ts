@@ -4,6 +4,9 @@
 //
 //	END LICENSE
 
+/**
+ * APIs related to the surrounding shell for jrunscript-based embeddings.
+ */
 namespace slime.jrunscript.shell {
 	export namespace context {
 		export type OutputStream = Omit<slime.jrunscript.runtime.io.OutputStream, "close">
@@ -162,6 +165,9 @@ namespace slime.jrunscript.shell {
 		})(Packages, fifty);
 	}
 
+	/**
+	 * Provides access to APIs relating to the operating system environment surrounding `jrunscript` shells.
+	 */
 	export interface Exports {
 	}
 

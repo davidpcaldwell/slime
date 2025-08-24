@@ -964,6 +964,8 @@ namespace slime.jsh.shell {
 
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		//	TODO	shell?
+		//	TODO	deprecate this after possibly creating, and then definitely pointing to some kind of replacement, probably
+		// 			based on jsh.internal.bootstrap
 		rhino: {
 			classpath: slime.jrunscript.file.Searchpath
 		}
