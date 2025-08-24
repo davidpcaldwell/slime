@@ -55,6 +55,7 @@ namespace slime.servlet {
 
 			fifty.tests.main = function() {
 				requireTomcat(jsh.file.Pathname(shells.built(false).home).directory);
+
 				var intention = shells.built(false).invoke({
 					script: fifty.jsh.file.relative("../../../jrunscript/jsh/test/jsh.httpd/httpd.jsh.js").pathname,
 					environment: environmentWithJavaInPath
@@ -95,6 +96,8 @@ namespace slime.servlet {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				fifty.load("server/loader.fifty.ts");
+
 				fifty.load("README.fifty.ts");
 				fifty.load("api.fifty.ts");
 				fifty.load("plugin.jsh.fifty.ts");
