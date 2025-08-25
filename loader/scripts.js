@@ -89,7 +89,7 @@
 		)($engine);
 
 		/**
-		 * @type { slime.$api.Global["Compiler"]["from"]["simple"] }
+		 * @type { slime.$api.Global["scripts"]["Compiler"]["from"]["simple"] }
 		 */
 		var getTranspiler = function(p) {
 			return function(script) {
@@ -105,48 +105,50 @@
 			}
 		};
 
-		/**
-		 *
-		 * @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.mime.Type>> }
-		 */
-		function mimeTypeIs(string) {
+		var Code = {
+			/** @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>> } */
+			isMimeType: function(string) {
+				//	TODO	is there no standard, available API that does this?
+				/**
+				 *
+				 * @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.mime.Type>> }
+				 */
+				function mimeTypeIs(string) {
+					/**
+					 *
+					 * @param { slime.mime.Type } type
+					 */
+					function rv(type) {
+						return (type.media + "/" + type.subtype) == string;
+					}
+					return rv;
+				}
+
+				return function(script) {
+					return mimeTypeIs(string)(script.type());
+				}
+			},
 			/**
 			 *
-			 * @param { slime.mime.Type } type
+			 * @returns { slime.runtime.loader.Compiler<slime.runtime.loader.Code> }
 			 */
-			function rv(type) {
-				return (type.media + "/" + type.subtype) == string;
+			Compiler: function() {
+				return getTranspiler({
+					accept: fp.Predicate.or(
+						Code.isMimeType("application/javascript"),
+						Code.isMimeType("application/x-javascript"),
+						//	TODO	unclear whether text/javascript should be accepted, but we had a situation where it was being passed
+						//			here and was causing crashes, so inserting acceptance as a workaround for now
+						Code.isMimeType("text/javascript")
+					),
+					name: function(code) { return code.name; },
+					read: function(code) { return code.read(); },
+					compile: function(s) { return s; }
+				});
 			}
-			return rv;
 		}
 
-		/** @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>> } */
-		var isMimeType = function(string) {
-			return function(script) {
-				return mimeTypeIs(string)(script.type());
-			}
-		}
-
-		/**
-		 *
-		 * @returns { slime.runtime.loader.Compiler<slime.runtime.loader.Code> }
-		 */
-		var getJavascriptProvider = function() {
-			return getTranspiler({
-				accept: fp.Predicate.or(
-					isMimeType("application/javascript"),
-					isMimeType("application/x-javascript"),
-					//	TODO	unclear whether text/javascript should be accepted, but we had a situation where it was being passed
-					//			here and was causing crashes, so inserting acceptance as a workaround for now
-					isMimeType("text/javascript")
-				),
-				name: function(code) { return code.name; },
-				read: function(code) { return code.read(); },
-				compile: function(s) { return s; }
-			});
-		};
-
-		var compiler = getJavascriptProvider();
+		var compiler = Code.Compiler();
 
 		/**
 		 * @type { slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"] }
@@ -254,10 +256,8 @@
 
 		$export({
 			api: {
-				compiler: {
-					Code: {
-						isMimeType: isMimeType
-					}
+				Code: {
+					isMimeType: Code.isMimeType
 				},
 				Compiler: {
 					from: {

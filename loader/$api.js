@@ -702,8 +702,7 @@
 			Events: Events,
 			threads: threads,
 			mime: mime,
-			compiler: scripts.api.compiler,
-			Compiler: scripts.api.Compiler
+			scripts: scripts.api
 		};
 
 		$export({

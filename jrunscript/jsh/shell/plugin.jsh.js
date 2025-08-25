@@ -92,8 +92,8 @@
 					});
 
 					/** @type { slime.runtime.loader.Compiler<slime.runtime.loader.Code> } */
-					var subprocess = $api.Compiler.from.simple({
-						accept: $api.compiler.Code.isMimeType("application/x.typescript"),
+					var subprocess = $api.scripts.Compiler.from.simple({
+						accept: $api.scripts.Code.isMimeType("application/x.typescript"),
 						name: function(code) { return code.name; },
 						read: function(code) { return code.read(); },
 						compile: api.compile

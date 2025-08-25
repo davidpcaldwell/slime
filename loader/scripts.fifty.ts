@@ -51,10 +51,10 @@ namespace slime.runtime {
 
 namespace slime.$api {
 	export interface Global {
-		/**
-		 * Provides helper methods for implementing new {@link slime.runtime.loader.Compiler | Compiler}s.
-		 */
-		compiler: {
+		scripts: {
+			/**
+			 * Provides helper methods for implementing new {@link slime.runtime.loader.Compiler | Compiler}s.
+			 */
 			Code: {
 				/**
 				 * Given a string specifying a simple MIME type (e.g., `text/plain`, with no parameters), returns a
@@ -63,23 +63,23 @@ namespace slime.$api {
 				 */
 				isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
 			}
-		}
 
-		Compiler: {
-			from: {
-				/**
-				 * Convenience method that, given a code predicate and compiler implementation, creates a `Compiler`.
-				 *
-				 * @template R A "resource" type used by some underlying representation of a code source
-				 * @template I Some intermediate representation of the resource which can be used as input to the transpilation process
-				 */
-				//	TODO	can we figure out how to get the above template definitions to render in TypeDoc?
-				simple: <R,I>(p: {
-					accept: slime.$api.fp.Predicate<R>
-					name: (r: R) => string
-					read: (r: R) => I
-					compile: slime.$api.fp.Mapping<I,string>
-				}) => slime.runtime.loader.Compiler<R>
+			Compiler: {
+				from: {
+					/**
+					 * Convenience method that, given a code predicate and compiler implementation, creates a `Compiler`.
+					 *
+					 * @template R A "resource" type used by some underlying representation of a code source
+					 * @template I Some intermediate representation of the resource which can be used as input to the transpilation process
+					 */
+					//	TODO	can we figure out how to get the above template definitions to render in TypeDoc?
+					simple: <R,I>(p: {
+						accept: slime.$api.fp.Predicate<R>
+						name: (r: R) => string
+						read: (r: R) => I
+						compile: slime.$api.fp.Mapping<I,string>
+					}) => slime.runtime.loader.Compiler<R>
+				}
 			}
 		}
 	}
@@ -94,7 +94,7 @@ namespace slime.runtime.internal.scripts {
 	}
 
 	export interface Exports {
-		api: Pick<slime.$api.Global,"compiler"|"Compiler">
+		api: slime.$api.Global["scripts"]
 
 		platform: slime.runtime.Platform
 
