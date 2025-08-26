@@ -11,10 +11,9 @@
 	 * @param { slime.runtime.Scope["Packages"] } Packages
 	 * @param { slime.runtime.internal.scripts.Scope["$engine"] } $engine
 	 * @param { slime.runtime.internal.scripts.Scope["fp"] } fp
-	 * @param { slime.runtime.internal.scripts.Scope["apiForScripts"]} apiForScripts
 	 * @param { slime.loader.Export<slime.runtime.internal.scripts.Exports> } $export
 	 */
-	function(Packages,$engine,fp,apiForScripts,$export) {
+	function(Packages,$engine,fp,$export) {
 		/** @type { slime.runtime.Platform } */
 		var $platform = (
 			/**
@@ -91,7 +90,7 @@
 		/**
 		 * @type { slime.$api.Global["scripts"]["Compiler"]["from"]["simple"] }
 		 */
-		var getTranspiler = function(p) {
+		var Transpiler = function(p) {
 			return function(script) {
 				if (p.accept(script)) {
 					var code = p.read(script);
@@ -105,50 +104,66 @@
 			}
 		};
 
-		var Code = {
-			/** @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>> } */
-			isMimeType: function(string) {
-				//	TODO	is there no standard, available API that does this?
-				/**
-				 *
-				 * @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.mime.Type>> }
-				 */
-				function mimeTypeIs(string) {
+		var Code = (
+			function() {
+				/** @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>> } */
+				var isMimeType = function(string) {
+					//	TODO	is there no standard, available API that does this?
 					/**
 					 *
-					 * @param { slime.mime.Type } type
+					 * @type { slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.mime.Type>> }
 					 */
-					function rv(type) {
-						return (type.media + "/" + type.subtype) == string;
+					function mimeTypeIs(string) {
+						/**
+						 *
+						 * @param { slime.mime.Type } type
+						 */
+						function rv(type) {
+							return (type.media + "/" + type.subtype) == string;
+						}
+						return rv;
 					}
-					return rv;
-				}
 
-				return function(script) {
-					return mimeTypeIs(string)(script.type());
-				}
-			},
-			/**
-			 *
-			 * @returns { slime.runtime.loader.Compiler<slime.runtime.loader.Code> }
-			 */
-			Compiler: function() {
-				return getTranspiler({
+					return function(script) {
+						return mimeTypeIs(string)(script.type());
+					}
+				};
+
+				var JavascriptCompiler = Transpiler({
 					accept: fp.Predicate.or(
-						Code.isMimeType("application/javascript"),
-						Code.isMimeType("application/x-javascript"),
+						isMimeType("application/javascript"),
+						isMimeType("application/x-javascript"),
 						//	TODO	unclear whether text/javascript should be accepted, but we had a situation where it was being passed
 						//			here and was causing crashes, so inserting acceptance as a workaround for now
-						Code.isMimeType("text/javascript")
+						isMimeType("text/javascript")
 					),
 					name: function(code) { return code.name; },
 					read: function(code) { return code.read(); },
 					compile: function(s) { return s; }
 				});
-			}
-		}
 
-		var compiler = Code.Compiler();
+				var GlobalCompiler = function() {
+					/** @type { slime.runtime.loader.Compiler<slime.runtime.loader.Code> } */
+					var compiler = JavascriptCompiler;
+
+					return {
+						/** @type { slime.runtime.Exports["compiler"]["update"] } */
+						update: function(transform) {
+							compiler = transform(compiler);
+						},
+						/** @type { slime.runtime.loader.Compiler<slime.runtime.loader.Code> } */
+						compile: function(code) {
+							return compiler(code);
+						}
+					}
+				};
+
+				return {
+					isMimeType: isMimeType,
+					global: GlobalCompiler()
+				}
+			}
+		)();
 
 		/**
 		 * @type { slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"] }
@@ -183,75 +198,86 @@
 			});
 		};
 
-		//	resource.type: optional, but if it is not a recognized type, this method will error
-		//	resource.name: optional, but used to determine default type if type is absent, and used for resource.js.name
-		//	resource.string: optional, but used to determine code
-		//	resource.js { name, code }: forcibly set based on other properties
-		//	TODO	re-work resource.js
-
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["internal"]["methods"]["run"] }
+		 * @template { any } R
+		 * @param { slime.runtime.internal.scripts.executor.Parameters<R> } p
+		 * @returns { slime.runtime.internal.scripts.executor.Returns<R> }
 		 */
-		function run(code,scope) {
-			if (!code || typeof(code) != "object") {
-				throw new TypeError("'object' must be a slime.runtime.loader.Code object, not " + code);
+		var Executor = function(p) {
+			/**
+			 * @type { slime.runtime.internal.scripts.executor.Returns<R>["run"] }
+			 */
+			function run(code,scope) {
+				// if (!code || typeof(code) != "object") {
+				// 	throw new TypeError("'object' must be a slime.runtime.loader.Code object, not " + code);
+				// }
+				// if (typeof(code.read) != "function") throw new Error("Not slime.runtime.loader.Code: no read() function");
+
+				var compile = fp.now(
+					p.compiler,
+					fp.Partial.impure.exception(
+						function(code) {
+							return new TypeError(p.unsupported(code));
+						}
+					)
+				);
+
+				var script = compile(code);
+
+				var target = this;
+
+				//	TODO	why is this present? I guess so we can't accidentally load scripts into the global scope, even if we say
+				//			we want to do that?
+				var global = (function() { return this; })();
+				if (scope === global) {
+					scope = {};
+				}
+
+				if (scope === void(0)) {
+					scope = {};
+				}
+
+				for (var x in p.scope) {
+					scope[x] = p.scope[x];
+				}
+
+				$engine.execute(
+					script,
+					scope,
+					target
+				);
 			}
-			if (typeof(code.read) != "function") throw new Error("Not slime.runtime.loader.Code: no read() function");
 
-			var compile = fp.now(
-				compiler,
-				fp.Partial.impure.exception(
-					function(code) {
-						return new TypeError("Code " + code.name + " cannot be converted to JavaScript; type = " + code.type())
-					}
-				)
-			);
-
-			var script = compile(code);
-
-			var target = this;
-
-			//	TODO	why is this present? I guess so we can't accidentally load scripts into the global scope, even if we say
-			//			we want to do that?
-			var global = (function() { return this; })();
-			if (scope === global) {
-				scope = {};
+			return {
+				run: run
 			}
-
-			if (scope === void(0)) {
-				scope = {};
-			}
-
-			scope.$platform = $platform;
-			scope.$api = apiForScripts();
-
-			$engine.execute(
-				script,
-				scope,
-				target
-			);
 		}
 
 		/**
-		 * @type { slime.runtime.internal.scripts.Exports["internal"]["methods"]["old"]["file"] }
+		 * @template { any } R
+		 * @param { slime.runtime.internal.scripts.executor.Returns<R> } executor
 		 */
-		function file(code,$context) {
-			var inner = createScriptScope($context);
-			run.call(this,code,inner);
-			return inner.$exports;
-		}
+		var OldMethods = function(executor) {
+			function file(code,$context) {
+				var inner = createScriptScope($context);
+				executor.run.call(this,code,inner);
+				return inner.$exports;
+			}
 
-		/**
-		 * @type { slime.runtime.internal.scripts.Exports["internal"]["methods"]["old"]["value"] }
-		 */
-		function value(code,scope) {
-			var rv;
-			if (!scope) scope = {};
-			scope.$set = function(v) {
-				rv = v;
-			};
-			run.call(this,code,scope);
-			return rv;
+			function value(code,scope) {
+				var rv;
+				if (!scope) scope = {};
+				scope.$set = function(v) {
+					rv = v;
+				};
+				executor.run.call(this,code,scope);
+				return rv;
+			}
+
+			return {
+				file: file,
+				value: value
+			}
 		}
 
 		$export({
@@ -261,31 +287,37 @@
 				},
 				Compiler: {
 					from: {
-						simple: getTranspiler
+						simple: Transpiler
 					}
 				}
 			},
 			platform: $platform,
-			compiler: {
-				update: function(transform) {
-					compiler = transform(compiler);
-				},
-				get: function() {
-					return compiler;
-				}
-			},
 			internal: {
-				methods: {
-					old: {
-						file: file,
-						value: value
-					},
-					run: run
+				old: {
+					toExportScope: toExportScope,
 				},
-				toExportScope: toExportScope,
 				createScriptScope: createScriptScope
+			},
+			runtime: function($api) {
+				var executor = Executor({
+					compiler: Code.global.compile,
+					unsupported: function(code) { return "Code " + code.name + " cannot be converted to JavaScript; type = " + code.type() },
+					scope: {
+						$platform: $platform,
+						$api: $api
+					}
+				});
+				return {
+					compiler: Code.global,
+					internal: {
+						methods: {
+							old: OldMethods(executor),
+							run: executor.run
+						},
+					}
+				};
 			}
 		});
 	}
 //@ts-ignore
-)(Packages,$engine,fp,apiForScripts,$export);
+)(Packages,$engine,fp,$export);

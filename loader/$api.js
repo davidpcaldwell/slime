@@ -706,7 +706,11 @@
 		};
 
 		$export({
-			scripts: scripts,
+			scripts: {
+				runtime: scripts.runtime($exports),
+				internal: scripts.internal,
+				platform: scripts.platform
+			},
 			exports: $exports
 		});
 	}

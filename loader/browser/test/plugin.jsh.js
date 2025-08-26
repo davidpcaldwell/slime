@@ -19,7 +19,7 @@
 			load: function() {
 				jsh.typescript = {
 					compile: function(code) {
-						var maybe = $slime.compiler.get()({
+						var maybe = $slime.compiler.compile({
 							name: "<jsh.typescript code>",
 							type: function() {
 								return {

@@ -135,7 +135,7 @@
 		};
 
 		var Loader = code.Loader({
-			methods: scripts.internal.methods,
+			methods: scripts.runtime.internal.methods,
 			$api: $api,
 			createScriptScope: scripts.internal.createScriptScope
 		});
@@ -177,9 +177,9 @@
 						};
 
 						if ($platform.e4x && v == $platform.e4x.XML) {
-							return $platform.e4x.XML( e4xRead.call(this) );
+							return new $platform.e4x.XML( e4xRead.call(this) );
 						} else if ($platform.e4x && v == $platform.e4x.XMLList) {
-							return $platform.e4x.XMLList( e4xRead.call(this) );
+							return new $platform.e4x.XMLList( e4xRead.call(this) );
 						}
 					},
 					{
@@ -211,8 +211,8 @@
 			$api: $api,
 			Resource: ResourceExport,
 			createScriptScope: scripts.internal.createScriptScope,
-			toExportScope: scripts.internal.toExportScope,
-			methods: scripts.internal.methods
+			toExportScope: scripts.internal.old.toExportScope,
+			methods: scripts.runtime.internal.methods
 		});
 
 		/** @type { slime.runtime.Exports } */
@@ -221,25 +221,22 @@
 				mime: $api.mime,
 				/** @type { slime.runtime.Exports["run"] } */
 				run: function(code,scope,target) {
-					return scripts.internal.methods.run.call(target,loaders.Code.from.Resource(code),scope);
+					return scripts.runtime.internal.methods.run.call(target,loaders.Code.from.Resource(code),scope);
 				},
 				/** @type { slime.runtime.Exports["file"] } */
 				file: function(code,context,target) {
-					return scripts.internal.methods.old.file.call(target,loaders.Code.from.Resource(code),context);
+					return scripts.runtime.internal.methods.old.file.call(target,loaders.Code.from.Resource(code),context);
 				},
 				/** @type { slime.runtime.Exports["value"] } */
 				value: function(code,scope,target) {
-					return scripts.internal.methods.old.value.call(target,loaders.Code.from.Resource(code),scope);
+					return scripts.runtime.internal.methods.old.value.call(target,loaders.Code.from.Resource(code),scope);
 				},
 				Resource: ResourceExport,
 				old: {
 					Loader: Object.assign(loaders.constructor, loaders.api, { constructor: null }),
 					loader: loaders.api
 				},
-				compiler: {
-					update: scripts.compiler.update,
-					get: scripts.compiler.get
-				},
+				compiler: scripts.runtime.compiler,
 				loader: Loader.api,
 				namespace: function(string) {
 					//	This construct returns the top-level global object, e.g., window in the browser

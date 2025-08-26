@@ -41,10 +41,9 @@ namespace slime.runtime {
 			update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler<slime.runtime.loader.Code>>) => void
 
 			/**
-			 *
-			 * @returns The compiler currently in use.
+			 * A `Compiler` which uses the currently configured settings.
 			 */
-			get: () => slime.runtime.loader.Compiler<slime.runtime.loader.Code>
+			compile: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
 		}
 	}
 }
@@ -90,7 +89,41 @@ namespace slime.runtime.internal.scripts {
 		Packages: slime.runtime.Scope["Packages"]
 		$engine: slime.runtime.Engine
 		fp: slime.$api.fp.Exports
-		apiForScripts: () => slime.$api.Global
+	}
+
+	export type Executor = <R>(p: executor.Parameters<R>) => executor.Returns<R>
+
+	export namespace executor {
+		export interface Parameters<R> {
+			compiler: slime.runtime.loader.Compiler<R>
+			unsupported: (r: R) => string
+			scope: { [x: string]: any }
+		}
+
+		export interface Returns<R> {
+			run: (this: { [name: string]: any }, code: R, scope: { [name: string]: any }) => void
+		}
+	}
+
+	export type GlobalExecutorMethods = {
+		/**
+		 * Compiles the given `code` script, executes it in a scope containing the values provided by `scope`, and using the
+		 * `this` target with which the `run` function was invoked.
+		 */
+		run: (this: { [name: string]: any }, code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
+
+		old: {
+			value: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => any
+			file: (code: slime.runtime.loader.Code, context: { [name: string]: any }) => { [x: string]: any }
+		}
+	}
+
+	export interface Runtime {
+		compiler: slime.runtime.Exports["compiler"]
+
+		internal: {
+			methods: GlobalExecutorMethods
+		}
 	}
 
 	export interface Exports {
@@ -98,30 +131,19 @@ namespace slime.runtime.internal.scripts {
 
 		platform: slime.runtime.Platform
 
-		compiler: slime.runtime.Exports["compiler"]
-
 		internal: {
-			toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
-
 			createScriptScope: <C extends { [x: string]: any },T>($context: C) => {
 				$context: C
 				$export: (t: T) => void
 				$exports: T
 			}
 
-			methods: {
-				/**
-				 * Compiles the given `code` script, executes it in a scope containing the values provided by `scope`, and using the
-				 * `this` target with which the `run` function was invoked.
-				 */
-				run: (this: { [name: string]: any }, code: slime.runtime.loader.Code, scope: { [name: string]: any }) => void
-
-				old: {
-					value: (code: slime.runtime.loader.Code, scope: { [name: string]: any }) => any
-					file: (code: slime.runtime.loader.Code, context: { [name: string]: any }) => { [x: string]: any }
-				}
+			old: {
+				toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
 			}
 		}
+
+		runtime: ($api: slime.$api.Global) => Runtime
 	}
 
 	(
