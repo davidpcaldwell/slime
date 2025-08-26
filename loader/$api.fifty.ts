@@ -1354,7 +1354,9 @@ namespace slime.$api.internal {
 	}
 
 	export interface Exports {
-		scripts: slime.runtime.internal.scripts.Exports
+		scripts: Pick<slime.runtime.internal.scripts.Exports,"internal"|"platform"> & {
+			runtime: slime.runtime.internal.scripts.Runtime
+		}
 		exports: slime.$api.Global
 	}
 

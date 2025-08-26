@@ -149,8 +149,8 @@ namespace slime {
 			 * is present.
 			 */
 			e4x?: {
-				XML: any
-				XMLList: any
+				XML: slime.external.e4x.XMLConstructor
+				XMLList: slime.external.e4x.XMLListConstructor
 			}
 
 			/**
