@@ -122,10 +122,24 @@
 			}
 		)();
 
-		/** @type { slime.$api.Global } */
-		var $api = api.exports;
+		var scripts = {
+			platform: api.scripts.platform,
+			internal: api.scripts.internal,
+			runtime: api.scripts.internal.runtime(api.exports)
+		};
 
-		var scripts = api.scripts;
+		/** @type { slime.$api.Global } */
+		var $api = Object.assign(
+			api.exports,
+			{
+				scripts: Object.assign(
+					api.exports.scripts,
+					{
+						compiler: scripts.runtime.compiler.compile
+					}
+				)
+			}
+		);
 
 		var code = {
 			/** @type { slime.runtime.internal.loader.Script } */
@@ -135,6 +149,7 @@
 		};
 
 		var Loader = code.Loader({
+			Executor: scripts.internal.Executor,
 			methods: scripts.runtime.internal.methods,
 			$api: $api,
 			createScriptScope: scripts.internal.createScriptScope

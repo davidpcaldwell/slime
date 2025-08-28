@@ -6,17 +6,6 @@
 
 namespace slime.runtime.loader {
 	/**
-	 * An object representing code, which has a name (for tooling), and which can provide a MIME type,
-	 * and a string representing code. The most straightforward instances of this type are JavaScript scripts, but instances of
-	 * this type can also be code written in other languages that can be transpiled into JavaScript (notably, TypeScript).
-	 */
-	export interface Code {
-		name: string
-		type: () => slime.mime.Type
-		read: () => string
-	}
-
-	/**
 	 * A JavaScript script, with a name (used by tooling) and a property containing JavaScript code.
 	 */
 	export interface Script {
@@ -29,9 +18,24 @@ namespace slime.runtime.loader {
 	 * JavaScript.
 	 */
 	export type Compiler<T> = slime.$api.fp.Partial<T,Script>;
+
+	export type Executor<R> = (this: { [name: string]: any }, code: R, scope: { [name: string]: any }) => void
 }
 
 namespace slime.runtime {
+	export namespace loader {
+		/**
+		 * An object representing code, which has a name (for tooling), and which can provide a MIME type,
+		 * and a string representing code. The most straightforward instances of this type are JavaScript scripts, but instances of
+		 * this type can also be code written in other languages that can be transpiled into JavaScript (notably, TypeScript).
+		 */
+		export interface Code {
+			name: string
+			type: () => slime.mime.Type
+			read: () => string
+		}
+	}
+
 	export interface Exports {
 		/**
 		 * A global script compiler provided by the overall SLIME runtime, which operates on {@link slime.runtime.loader.Code}
@@ -49,38 +53,40 @@ namespace slime.runtime {
 }
 
 namespace slime.$api {
-	export interface Global {
-		scripts: {
+	export interface Scripts {
+		/**
+		 * Provides helper methods for implementing new {@link slime.runtime.loader.Compiler | Compiler}s.
+		 */
+		Code: {
 			/**
-			 * Provides helper methods for implementing new {@link slime.runtime.loader.Compiler | Compiler}s.
+			 * Given a string specifying a simple MIME type (e.g., `text/plain`, with no parameters), returns a
+			 * {@link slime.$api.fp.Predicate} specifying whether a given {@link slime.runtime.loader.Code | Code} is of that
+			 * type.
 			 */
-			Code: {
-				/**
-				 * Given a string specifying a simple MIME type (e.g., `text/plain`, with no parameters), returns a
-				 * {@link slime.$api.fp.Predicate} specifying whether a given {@link slime.runtime.loader.Code | Code} is of that
-				 * type.
-				 */
-				isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
-			}
+			isMimeType: slime.$api.fp.Mapping<string,slime.$api.fp.Predicate<slime.runtime.loader.Code>>
+		}
 
-			Compiler: {
-				from: {
-					/**
-					 * Convenience method that, given a code predicate and compiler implementation, creates a `Compiler`.
-					 *
-					 * @template R A "resource" type used by some underlying representation of a code source
-					 * @template I Some intermediate representation of the resource which can be used as input to the transpilation process
-					 */
-					//	TODO	can we figure out how to get the above template definitions to render in TypeDoc?
-					simple: <R,I>(p: {
-						accept: slime.$api.fp.Predicate<R>
-						name: (r: R) => string
-						read: (r: R) => I
-						compile: slime.$api.fp.Mapping<I,string>
-					}) => slime.runtime.loader.Compiler<R>
-				}
+		Compiler: {
+			from: {
+				/**
+				 * Convenience method that, given a code predicate and compiler implementation, creates a `Compiler`.
+				 *
+				 * @template R A "resource" type used by some underlying representation of a code source
+				 * @template I Some intermediate representation of the resource which can be used as input to the transpilation process
+				 */
+				//	TODO	can we figure out how to get the above template definitions to render in TypeDoc?
+				simple: <R,I>(p: {
+					accept: slime.$api.fp.Predicate<R>
+					name: (r: R) => string
+					read: (r: R) => I
+					compile: slime.$api.fp.Mapping<I,string>
+				}) => slime.runtime.loader.Compiler<R>
 			}
 		}
+	}
+
+	export interface Global {
+		scripts: Scripts
 	}
 }
 
@@ -91,19 +97,16 @@ namespace slime.runtime.internal.scripts {
 		fp: slime.$api.fp.Exports
 	}
 
-	export type Executor = <R>(p: executor.Parameters<R>) => executor.Returns<R>
-
 	export namespace executor {
-		export interface Parameters<R> {
+		export type Configuration<R> = {
 			compiler: slime.runtime.loader.Compiler<R>
 			unsupported: (r: R) => string
 			scope: { [x: string]: any }
 		}
 
-		export interface Returns<R> {
-			run: (this: { [name: string]: any }, code: R, scope: { [name: string]: any }) => void
-		}
+		export type Constructor = <R>(p: Configuration<R>) => slime.runtime.loader.Executor<R>
 	}
+
 
 	export type GlobalExecutorMethods = {
 		/**
@@ -118,6 +121,12 @@ namespace slime.runtime.internal.scripts {
 		}
 	}
 
+	export type ScriptScope<C extends { [x: string]: any },T> = {
+		$context: C
+		$export: (t: T) => void
+		$exports: T
+	}
+
 	export interface Runtime {
 		compiler: slime.runtime.Exports["compiler"]
 
@@ -127,23 +136,21 @@ namespace slime.runtime.internal.scripts {
 	}
 
 	export interface Exports {
-		api: slime.$api.Global["scripts"]
+		api: Omit<slime.$api.Global["scripts"],"compiler">
 
 		platform: slime.runtime.Platform
 
 		internal: {
-			createScriptScope: <C extends { [x: string]: any },T>($context: C) => {
-				$context: C
-				$export: (t: T) => void
-				$exports: T
-			}
+			Executor: executor.Constructor
+
+			createScriptScope: <C extends { [x: string]: any },T>($context: C) => ScriptScope<C,T>
+
+			runtime: ($api: slime.$api.internal.Exports["exports"]) => Runtime
 
 			old: {
 				toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
 			}
 		}
-
-		runtime: ($api: slime.$api.Global) => Runtime
 	}
 
 	(

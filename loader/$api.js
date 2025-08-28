@@ -707,9 +707,8 @@
 
 		$export({
 			scripts: {
-				runtime: scripts.runtime($exports),
-				internal: scripts.internal,
-				platform: scripts.platform
+				platform: scripts.platform,
+				internal: scripts.internal
 			},
 			exports: $exports
 		});

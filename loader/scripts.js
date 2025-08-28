@@ -189,23 +189,29 @@
 			return rv;
 		};
 
-		/** @type { slime.runtime.internal.scripts.Exports["internal"]["createScriptScope"] } */
+		/**
+		 * @template { { [x: string]: any; } } C
+		 * @template { any } T
+		 * @param { C } $context
+		 * @returns { slime.runtime.internal.scripts.ScriptScope<C,T> }
+		 */
 		var createScriptScope = function($context) {
-			var toT = function(any) { return any; };
+			/** @type { slime.js.Cast<C> } */
+			var toC = function(any) { return any; };
 
 			return toExportScope({
-				$context: ($context) ? $context : toT({})
+				$context: ($context) ? $context : toC({})
 			});
 		};
 
 		/**
 		 * @template { any } R
-		 * @param { slime.runtime.internal.scripts.executor.Parameters<R> } p
-		 * @returns { slime.runtime.internal.scripts.executor.Returns<R> }
+		 * @param { slime.runtime.internal.scripts.executor.Configuration<R> } p
+		 * @returns { slime.runtime.loader.Executor<R> }
 		 */
 		var Executor = function(p) {
 			/**
-			 * @type { slime.runtime.internal.scripts.executor.Returns<R>["run"] }
+			 * @type { slime.runtime.loader.Executor<R>}
 			 */
 			function run(code,scope) {
 				// if (!code || typeof(code) != "object") {
@@ -248,19 +254,17 @@
 				);
 			}
 
-			return {
-				run: run
-			}
+			return run;
 		}
 
 		/**
 		 * @template { any } R
-		 * @param { slime.runtime.internal.scripts.executor.Returns<R> } executor
+		 * @param { slime.runtime.loader.Executor<R> } executor
 		 */
 		var OldMethods = function(executor) {
 			function file(code,$context) {
 				var inner = createScriptScope($context);
-				executor.run.call(this,code,inner);
+				executor.call(this,code,inner);
 				return inner.$exports;
 			}
 
@@ -270,7 +274,7 @@
 				scope.$set = function(v) {
 					rv = v;
 				};
-				executor.run.call(this,code,scope);
+				executor.call(this,code,scope);
 				return rv;
 			}
 
@@ -296,26 +300,27 @@
 				old: {
 					toExportScope: toExportScope,
 				},
-				createScriptScope: createScriptScope
-			},
-			runtime: function($api) {
-				var executor = Executor({
-					compiler: Code.global.compile,
-					unsupported: function(code) { return "Code " + code.name + " cannot be converted to JavaScript; type = " + code.type() },
-					scope: {
-						$platform: $platform,
-						$api: $api
-					}
-				});
-				return {
-					compiler: Code.global,
-					internal: {
-						methods: {
-							old: OldMethods(executor),
-							run: executor.run
-						},
-					}
-				};
+				createScriptScope: createScriptScope,
+				Executor: Executor,
+				runtime: function($api) {
+					var executor = Executor({
+						compiler: Code.global.compile,
+						unsupported: function(code) { return "Code " + code.name + " cannot be converted to JavaScript; type = " + code.type() },
+						scope: {
+							$platform: $platform,
+							$api: $api
+						}
+					});
+					return {
+						compiler: Code.global,
+						internal: {
+							methods: {
+								old: OldMethods(executor),
+								run: executor
+							},
+						}
+					};
+				}
 			}
 		});
 	}

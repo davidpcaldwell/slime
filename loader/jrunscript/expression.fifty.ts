@@ -324,7 +324,7 @@ namespace slime.jrunscript.runtime {
 			export type HistoricSupportedDescriptor = slime.resource.Descriptor | resource.Descriptor | resource.LoadedDescriptor | DeprecatedStreamDescriptor
 
 			/**
-			 * An object representing the mode of operation of {@link old.Resource} `write` operations.
+			 * An object representing the mode of operation of {@link old.Resource<any>} `write` operations.
 			 */
 			export interface WriteMode {
 				/**
