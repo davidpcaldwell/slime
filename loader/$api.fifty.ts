@@ -1354,10 +1354,8 @@ namespace slime.$api.internal {
 	}
 
 	export interface Exports {
-		scripts: Pick<slime.runtime.internal.scripts.Exports,"internal"|"platform"> & {
-			runtime: slime.runtime.internal.scripts.Runtime
-		}
-		exports: slime.$api.Global
+		scripts: Pick<slime.runtime.internal.scripts.Exports,"internal"|"platform">
+		exports: Omit<slime.$api.Global,"scripts"> & { scripts: Omit<slime.$api.Global["scripts"],"compiler"> }
 	}
 
 	export type Script = slime.loader.Script<Scope,Exports>

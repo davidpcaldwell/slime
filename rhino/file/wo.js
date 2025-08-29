@@ -159,6 +159,7 @@
 		};
 
 		var Location_basename = function(location) {
+			if (!location.pathname) throw new TypeError("Does not appear to be location: " + location);
 			var tokens = location.pathname.split(location.filesystem.separator.pathname);
 			return tokens[tokens.length-1];
 		};

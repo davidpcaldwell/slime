@@ -269,6 +269,12 @@ namespace slime {
 		}
 	}
 
+	export namespace $api {
+		export interface Scripts {
+			compiler: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
+		}
+	}
+
 	export namespace mime {
 		/**
 		 * A MIME type.
@@ -319,7 +325,7 @@ namespace slime {
 		 * The type of the resource, or `null` if the type cannot be determined. If no type was specified, and a name
 		 * was specified, the implementation will attempt to deduce the type from the name.
 		 */
-		type: mime.Type,
+		type: mime.Type
 
 		/**
 		 * Provides the content of this resource in a format specified by its argument.

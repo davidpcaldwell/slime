@@ -9,11 +9,12 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
+	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.jrunscript.file.internal.wo.directory.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.wo.directory.Exports> } $export
 	 */
-	function($api,$context,$loader,$export) {
+	function($api,$platform,$context,$loader,$export) {
 		var code = {
 			// /** @type { slime.jrunscript.file.internal.java.Script } */
 			// java: $loader.script("java.js"),
@@ -344,21 +345,37 @@
 			},
 			Loader: {
 				simple: function(root) {
+					/**
+					 *
+					 * @param { slime.jrunscript.file.Location } t
+					 * @returns { slime.runtime.loader.Code }
+					 */
+					var adapt = function(t) {
+						if (!t.pathname) throw new TypeError("Not location: " + t);
+						return {
+							name: t.pathname,
+							type: function() {
+								return $api.mime.Type.fromName( $context.Location_basename(t) )
+							},
+							read: function() {
+								return $context.Location_file_read_string.simple(t);
+							}
+						}
+					};
+
 					return $context.Store.content({
 						//	@notdry Search for all instances of Store.content and have them share implementation
 						store: content_Index(
 							root
 						),
-						adapt: function(t) {
-							return {
-								name: t.pathname,
-								type: function() {
-									return $api.mime.Type.fromName( $context.Location_basename(t) )
-								},
-								read: function() {
-									return $context.Location_file_read_string.simple(t);
-								}
-							}
+						compiler: function(location) {
+							if (!location.pathname) throw new Error("Not location: keys = " + Object.keys(location));
+							return $api.scripts.compiler(adapt(location))
+						},
+						unsupported: function(code) { return null; },
+						scope: {
+							$api: $api,
+							$platform: $platform
 						}
 					})
 				}
@@ -366,4 +383,4 @@
 		})
 	}
 //@ts-ignore
-)($api,$context,$loader,$export);
+)($api,$platform,$context,$loader,$export);
