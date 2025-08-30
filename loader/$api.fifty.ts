@@ -18,8 +18,6 @@ interface Function {
  * `$api`}.
  */
 namespace slime.$api {
-	export type Function = (...args: any[]) => any
-
 	(
 		function(fifty: slime.fifty.test.Kit) {
 			fifty.tests.exports = fifty.test.Parent();
@@ -488,16 +486,16 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
+	export namespace object {
 		/**
 		 * Methods pertaining to the JavaScriot _object_ construct.
 		 */
-		export interface Object {
+		export interface Exports {
 		}
 	}
 
 	export interface Global {
-		Object: exports.Object & {
+		Object: object.Exports & {
 			/** @deprecated Replicates functionality of Object.fromEntries */
 			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
 		}
@@ -532,8 +530,8 @@ namespace slime.$api {
 
 	export type es5Object = Object
 
-	export namespace exports {
-		export interface Object {
+	export namespace object {
+		export interface Exports {
 			/**
 			 * Takes a list of objects and composes them into a new object. Properties are copied from each source object in
 			 * succession, with values from later objects replacing those from earlier objects.
@@ -565,7 +563,7 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Object {
+		export interface Exports {
 			/**
 			 * Provides an optional chaining API that seeks to be maximally compatible with the [standard
 			 * implementation](https://tc39.es/ecma262/multipage/ecmascript-language-expressions.html#prod-OptionalExpression).
@@ -607,7 +605,7 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Object {
+		export interface Exports {
 			/**
 			 * Returns the list of properties for an object.
 			 *
@@ -642,7 +640,7 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Object {
+		export interface Exports {
 			values: {
 				/**
 				 * @experimental Completely untested.
@@ -660,7 +658,7 @@ namespace slime.$api {
 			set?(v: T): void;
 		}
 
-		export interface Object {
+		export interface Exports {
 			defineProperty: <N extends string,V>(p: {
 				name: N
 				descriptor: PropertyDescriptor<V>
@@ -742,6 +740,38 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 	}
+
+	export interface Global {
+		Function: {
+			call: <T,P extends any[],R>(f: slime.external.lib.es5.Function<T,P,R>, target: T, ...args: P) => R
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.Function = fifty.test.Parent();
+
+			fifty.tests.exports.Function.call = function() {
+				type T = { n: number };
+				type P = [ { a: string }, { b: boolean } ]
+				type R = { target: T, arguments: P }
+				const f = function(this: T, ...args: P): R {
+					return { target: this, arguments: args };
+				};
+
+				const r = $api.Function.call(f, { n: 2 }, { a: "foo" }, { b: false });
+				verify(r).target.n.is(2);
+				verify(r).arguments[0].a.is("foo");
+				verify(r).arguments[1].b.is(false);
+			};
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Global {
 		Array: {
@@ -1091,7 +1121,7 @@ namespace slime.$api {
 	)(fifty);
 
 	export interface Global {
-		TODO: (p?: { message: slime.$api.fp.Thunk<string> }) => Function
+		TODO: (p?: { message: slime.$api.fp.Thunk<string> }) => () => never
 	}
 
 	export interface Global {

@@ -70,17 +70,23 @@
 								}
 							);
 							var THIS = {};
-							executor.call(THIS, script.resource, scope);
+							$api.Function.call(executor, THIS, script.resource, scope);
 							return scope.$exports;
 						}
 					},
 					run: function(path, scope, target) {
 						var script = getScript(path);
-						methods.run.call(
-							target,
-							script.code,
-							scope
-						);
+						/** @type { slime.runtime.loader.Code } */
+						var code = {
+							name: path,
+							type: function() {
+								return $api.mime.Type("application", "javascript")
+							},
+							read: function() {
+								return script.code.js;
+							}
+						}
+						$api.Function.call(methods.run, target, code, scope);
 					}
 				}
 			}

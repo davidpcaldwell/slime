@@ -208,7 +208,7 @@
 			};
 		};
 
-		/** @type { slime.$api.exports.Object["defineProperty"] } */
+		/** @type { slime.$api.object.Exports["defineProperty"] } */
 		var defineProperty = function(p) {
 			return function(o) {
 				var r = Object.assign(o, Object.fromEntries([ [p.name, void(0)] ]));
@@ -400,7 +400,7 @@
 				}
 				return rv;
 			},
-			/** @type { slime.$api.exports.Object } */
+			/** @type { slime.$api.object.Exports } */
 			({
 				compose: function() {
 					var args = [{}];
@@ -466,6 +466,12 @@
 				}
 			})
 		);
+
+		var _Function = {
+			call: function(f,target) {
+				return f.apply(target, Array.prototype.slice.call(arguments).slice(2));
+			}
+		}
 
 		var _Array = {
 			build: function(f) {
@@ -695,6 +701,7 @@
 			Key: Key,
 			Properties: Properties,
 			Object: _Object,
+			Function: _Function,
 			Array: _Array,
 			Value: Value,
 			Error: _Error,
