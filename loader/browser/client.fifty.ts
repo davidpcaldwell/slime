@@ -271,7 +271,12 @@ namespace slime {
 					relative: (path: string) => string
 				}
 			}
+
 			$api: slime.$api.Global
+
+			test: {
+				run: slime.runtime.Exports["run"]
+			}
 
 			//	(undocumented) According to very old documentation, used to support development-related functions.
 			$sdk: any

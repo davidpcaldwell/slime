@@ -916,7 +916,9 @@ namespace slime {
 								return v === String;
 							}
 
-							subject.run(
+							var exports: slime.browser.Exports = w["inonit"].loader;
+
+							exports.test.run(
 								{
 									name: "it",
 									type: {
@@ -942,6 +944,8 @@ namespace slime {
 							);
 
 							verify(w).evaluate.property("foo").is("FOO");
+						}).catch(function(it) {
+							verify(it).evaluate(String).is("Should not be error.");
 						});
 					});
 				};
