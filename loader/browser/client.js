@@ -222,19 +222,23 @@
 						//	Can set breakpoint here to pop into debugger on experimental accesses
 						var breakpoint = null;
 					}
-					if (window.CoffeeScript) {
-						rv.compiler.update(function(was) {
-							return rv.$api.fp.switch([
-								was,
-								rv.$api.scripts.Compiler.from.simple({
-									accept: rv.$api.scripts.Code.isMimeType("application/vnd.coffeescript"),
-									name: function(code) { return code.name; },
-									read: function(code) { return code.read(); },
-									compile: window.CoffeeScript.compile
-								})
-							])
-						})
-					}
+					rv.compiler.update(function(was) {
+						return rv.$api.fp.switch([
+							was,
+							rv.$api.scripts.Compiler.from.simple({
+								accept: rv.$api.fp.Predicate.and(
+									rv.$api.scripts.Code.isMimeType("application/vnd.coffeescript"),
+									//	TODO	is there a way to create a Mapping from a Thunk?
+									rv.$api.fp.Mapping.from.thunk(function() { return Boolean(window.CoffeeScript); })
+								),
+								name: function(code) { return code.name; },
+								read: function(code) { return code.read(); },
+								compile: function(script) {
+									return window.CoffeeScript.compile(script);
+								}
+							})
+						])
+					});
 					return rv;
 				})(scope);
 
@@ -384,6 +388,9 @@
 						base: bootstrap.base,
 						//	For use in scripts that are loaded directly by the browser rather than via this loader
 						$api: runtime.$api,
+						test: {
+							run: runtime.run
+						},
 						//	(Possibly obsolete comment to follow) Used by loader/browser/tools/offline.html, which may be obsolete
 						$sdk: new function() {
 							//	Used via inonit.loader.$sdk.fetch call in loader/browser/test somehow

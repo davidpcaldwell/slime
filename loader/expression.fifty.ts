@@ -916,7 +916,9 @@ namespace slime {
 								return v === String;
 							}
 
-							subject.run(
+							var exports: slime.browser.Exports = w["inonit"].loader;
+
+							exports.test.run(
 								{
 									name: "it",
 									type: {
@@ -928,7 +930,7 @@ namespace slime {
 										function(a) {
 											if (isStringConstructor(a)) {
 												//	Use list comprehension that would be invalid JavaScript
-												return "window.foo = (s.toUpperCase() for s in ['foo'])[0]";
+												return "window.coffeeScriptListComprehension = (s.toUpperCase() for s in ['foo'])[0]";
 											}
 											throw new Error();
 										},
@@ -941,7 +943,9 @@ namespace slime {
 								}
 							);
 
-							verify(w).evaluate.property("foo").is("FOO");
+							verify(w).evaluate.property("coffeeScriptListComprehension").is("FOO");
+						}).catch(function(it) {
+							verify(it).evaluate(String).is("Should not be error.");
 						});
 					});
 				};

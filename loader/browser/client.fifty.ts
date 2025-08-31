@@ -195,11 +195,10 @@ namespace slime {
 
 		(
 			function(
-				$window: Window,
 				fifty: slime.fifty.test.Kit
 			) {
-				const inonit: Runtime = $window["inonit"];
-				const window = $window as Window & { foo: any }
+				const inonit: Runtime = fifty.global.window["inonit"];
+				const window = fifty.global.window as Window & { testNamespaces: any }
 				fifty.tests.exports.namespace = {};
 
 				const test = function(value: boolean) {
@@ -207,9 +206,9 @@ namespace slime {
 				};
 
 				fifty.tests.exports.namespace.happy = function() {
-					test(typeof(window.foo) == "undefined");
-					var ns = inonit.loader.namespace("foo.bar.baz");
-					test(ns == window.foo.bar.baz);
+					test(typeof(window.testNamespaces) == "undefined");
+					var ns = inonit.loader.namespace("testNamespaces.foo.bar.baz");
+					test(ns == window.testNamespaces.foo.bar.baz);
 				}
 
 				fifty.tests.exports.namespace.topLevelScope = function() {
@@ -226,7 +225,7 @@ namespace slime {
 				}
 			}
 		//@ts-ignore
-		)(window,fifty);
+		)(fifty);
 
 		export interface Exports {
 			/**
@@ -271,7 +270,12 @@ namespace slime {
 					relative: (path: string) => string
 				}
 			}
+
 			$api: slime.$api.Global
+
+			test: {
+				run: slime.runtime.Exports["run"]
+			}
 
 			//	(undocumented) According to very old documentation, used to support development-related functions.
 			$sdk: any
