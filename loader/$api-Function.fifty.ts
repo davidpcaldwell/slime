@@ -1845,7 +1845,7 @@ namespace slime.$api.fp.internal {
 		script: slime.$api.internal.script
 	}
 
-	export type Exports = slime.external.lib.typescript.Partial<slime.$api.fp.Exports>
+	export type Exports = Omit<slime.$api.fp.Exports,"methods">
 
 	export type Script = slime.loader.Script<Context,Exports>
 }

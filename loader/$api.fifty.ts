@@ -742,7 +742,7 @@ namespace slime.$api {
 	}
 
 	export interface Global {
-		Function: {
+		Function: slime.$api.fp.internal.old.Create & {
 			call: <T,P extends any[],R>(f: slime.external.lib.es5.Function<T,P,R>, target: T, ...args: P) => R
 		}
 	}
