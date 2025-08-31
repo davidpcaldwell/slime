@@ -200,7 +200,7 @@ namespace slime.jsh.test {
 					return exported(fifty);
 				})();
 
-				var clean = fixtures.clone({
+				var clean = fixtures.old.clone({
 					src: fifty.jsh.file.relative("../..")
 				}).directory.pathname.os.adapt();
 

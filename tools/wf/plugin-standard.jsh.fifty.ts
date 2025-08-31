@@ -123,7 +123,7 @@ namespace slime.jsh.wf.standard {
 						path: "."
 					});
 					jsh.shell.console("'Cloning' slime from " + src.pathname + " ...");
-					var slime = fixtures.clone({
+					var slime = fixtures.old.clone({
 						src: jsh.file.world.filesystems.os.pathname(src.toString()),
 						commit: {
 							message: "Local modifications"
@@ -203,7 +203,7 @@ namespace slime.jsh.wf.standard {
 						if (!p) p = {};
 						var origin = fixture();
 						jsh.shell.console("origin = " + origin.directory.pathname);
-						var clone = fixtures.clone({
+						var clone = fixtures.old.clone({
 							src: jsh.file.world.filesystems.os.pathname(origin.directory.toString())
 						});
 						clone.submodule.update({

@@ -19,7 +19,7 @@ namespace slime.project.license.cli {
 
 			fifty.tests.issue495 = function() {
 				//	TODO	fix this to allow Location rather than object
-				var cloned = fixtures.clone({
+				var cloned = fixtures.old.clone({
 					src: jsh.file.world.filesystems.os.pathname(fifty.jsh.file.relative("../..").pathname),
 					commit: {
 						message: "Local modifications"
