@@ -109,17 +109,10 @@
 		// loader/browser/test/test/sample.suite.js
 		// $HOME/.bash_profile
 
-		var $loader = new jsh.file.Loader({ directory: jsh.script.file.parent });
-
 		var tomcat = jsh.httpd.Tomcat();
 
-		var code = {
-			/** @type { slime.runtime.browser.test.server.Script } */
-			server: jsh.script.loader.script("server.js")
-		};
-
 		var library = {
-			server: code.server()
+			server: jsh.$fifty.browser.test.server
 		}
 
 		/**
@@ -134,81 +127,6 @@
 				serve: toShell.base,
 				resultsPath: url
 			});
-			// //	TODO	first two lines are now copied to loader/browser/test/server.js
-			// tomcat.map({
-			// 	// TODO: make the below the default for goodness' sake
-			// 	path: "",
-			// 	resources: new jsh.file.Loader({
-			// 		directory: toShell.base
-			// 	}),
-			// 	servlets: {
-			// 		"/*": {
-			// 			load: function(scope) {
-			// 				//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
-			// 				delete scope.httpd.$reload;
-
-			// 				jsh.shell.console("Serving " + toShell.base);
-
-			// 				scope.$exports.handle = scope.httpd.Handler.series(
-			// 					function(request) {
-			// 						jsh.shell.console("REQUEST: " + request.method + " " + request.path);
-			// 						return void(0);
-			// 					},
-			// 					(
-			// 						(jsh.typescript)
-			// 							? (function() {
-			// 								var filesystemLoader = new jsh.file.Loader({
-			// 									directory: toResult.base
-			// 								});
-
-			// 								return function handleTypescript(request) {
-			// 									if (/\.ts$/.test(request.path)) {
-			// 										var resource = filesystemLoader.get(request.path);
-			// 										if (resource) {
-			// 											var compiled = jsh.typescript.compile(resource.read(String));
-			// 											return {
-			// 												status: { code: 200 },
-			// 												body: {
-			// 													type: "application/javascript",
-			// 													string: compiled
-			// 												}
-			// 											}
-			// 										}
-			// 									}
-			// 								}
-			// 							})()
-			// 							: $api.fp.returning(void(0))
-			// 					),
-			// 					(
-			// 						(!parameters.options.interactive)
-			// 							? (function createResultHandler() {
-			// 								/** @type { slime.loader.Script<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
-			// 								var resultServletFactory = $loader.factory("handler-results.js");
-
-			// 								var resultServletFile = resultServletFactory({
-			// 									library: {
-			// 										java: jsh.java,
-			// 										shell: jsh.shell
-			// 									}
-			// 								});
-
-			// 								return resultServletFile({
-			// 									url: url
-			// 								})
-			// 							})()
-			// 							: $api.fp.returning(void(0))
-			// 					),
-			// 					scope.httpd.Handler.Loader({
-			// 						loader: new jsh.file.Loader({
-			// 							directory: toResult.base
-			// 						})
-			// 					})
-			// 				)
-			// 			}
-			// 		}
-			// 	}
-			// });
-			// tomcat.start();
 			jsh.shell.console("port = " + tomcat.port);
 			jsh.shell.console("path = " + url);
 			var command = (parameters.options.interactive) ? "" : "&command=run";
