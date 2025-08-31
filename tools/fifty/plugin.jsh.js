@@ -20,7 +20,8 @@
 						mock: function(p) {
 							return $slime.plugins.mock(p);
 						}
-					}
+					},
+					browser: void(0)
 				};
 			}
 		})
