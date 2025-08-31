@@ -170,7 +170,9 @@ namespace slime.jsh.shell.tools {
 				const { verify } = fifty;
 				const { jsh } = fifty.global;
 
-				fifty.tests.rhino = function() {
+				fifty.tests.rhino = fifty.test.Parent();
+
+				fifty.tests.rhino.old = function() {
 					const dependencies = (
 						function() {
 							const script: slime.project.dependencies.Script = fifty.$loader.script("../../../../contributor/dependencies/module.js");

@@ -145,7 +145,7 @@ namespace slime.jsh {
 					return script()(fifty);
 				})();
 
-				var repository = fixtures.clone({
+				var repository = fixtures.old.clone({
 					src: fifty.jsh.file.relative("../.."),
 				});
 

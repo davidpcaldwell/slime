@@ -25,7 +25,7 @@ namespace slime.project.wf {
 			)();
 			return {
 				clone: function() {
-					return fixtures.clone({
+					return fixtures.old.clone({
 						src: jsh.file.world.filesystems.os.pathname(fifty.jsh.file.relative(".").pathname)
 					});
 				},
