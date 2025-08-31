@@ -221,7 +221,7 @@
 			}
 		};
 
-		var fp = (function() {
+		var functions = (function() {
 			var old = code.Function_old({ deprecate: flag.deprecate });
 
 			var current = code.Function({
@@ -240,8 +240,18 @@
 				}
 			});
 
-			return /** @type { slime.$api.Global["fp"] } */(Object.assign(current, { methods: methods }));
+			/** @type { slime.$api.Global["fp"] } */
+			var fp = Object.assign(current, { methods: methods });
+
+			/** @type { slime.$api.Global["Function"] } */
+			var Function = Object.assign(old.create, old.Function);
+
+			return /** @type { { fp: slime.$api.Global["fp"], Function: slime.$api.Global["Function"] } } */(
+				{ fp: fp, Function: Function }
+			);
 		})();
+
+		var fp = functions.fp;
 
 		var global = {
 			get: function(name) {
@@ -701,7 +711,7 @@
 			Key: Key,
 			Properties: Properties,
 			Object: _Object,
-			Function: _Function,
+			Function: Object.assign(functions.Function, _Function),
 			Array: _Array,
 			Value: Value,
 			Error: _Error,

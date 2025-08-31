@@ -12,6 +12,80 @@
 	 * @param { slime.$api.fp.internal.old.Exports } $exports
 	 */
 	function($context,$exports) {
+		var create = 			$context.deprecate(function() {
+			var UNDEFINED = {};
+
+			var Result = function() {
+				this.error = void(0);
+				this.throwing = void(0);
+				this.returning = void(0);
+
+				this.resolve = function() {
+					if (this.error) {
+						throw this.throwing;
+					} else {
+						if (this.returning === UNDEFINED) return void(0);
+						return this.returning;
+					}
+				};
+			};
+
+			var Situation = function() {
+				var result = new Result();
+
+				this.target = arguments[0];
+				this.arguments = arguments[1];
+
+				this.setReturn = function(v) {
+					result.error = false;
+					result.returning = v;
+				};
+
+				this.setThrow = function(v) {
+					result.error = true;
+					result.throwing = v;
+				};
+
+				this.result = result;
+
+				this.resolve = function() {
+					return result.resolve();
+				};
+			};
+
+			var components = [];
+
+			if (arguments.length != 1) {
+				throw new TypeError("$api.Function expected 1 argument.");
+			} else {
+				components.push(new $exports.Function.Basic(arguments[0]));
+			}
+
+			var rv = function() {
+				var situation = new Situation(this,Array.prototype.slice.call(arguments));
+				components.forEach(function(component) {
+					component.call(situation);
+				});
+				return situation.resolve();
+			};
+
+			rv.prepare = function() {
+				for (var i=0; i<arguments.length; i++) {
+					components.splice(i,0,new $exports.Function.Prepare(arguments[i]));
+				}
+				return this;
+			}
+
+			rv.revise = function() {
+				for (var i=0; i<arguments.length; i++) {
+					components.push(new $exports.Function.Revise(arguments[i]));
+				}
+				return this;
+			}
+
+			return rv;
+		});
+
 		$exports.Function = Object.assign(
 			$context.deprecate(function() {
 				var UNDEFINED = {};
@@ -186,6 +260,8 @@
 				}
 			};
 		});
+
+		$exports.create = create;
 	}
 //@ts-ignore
 )($context,$exports);
