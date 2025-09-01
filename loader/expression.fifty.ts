@@ -412,6 +412,7 @@ namespace slime {
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
+				const { $api } = fifty.global;
 
 				var api = test.subject;
 
@@ -425,7 +426,7 @@ namespace slime {
 						})();
 						(function() {
 							var resource = new api.Resource({
-								type: api.mime.Type.parse("application/json")
+								type: $api.mime.Type.parse("application/json")
 							});
 							verify(resource).type.evaluate(toString).is("application/json");
 						})();
@@ -652,11 +653,6 @@ namespace slime {
 			 * An additional way for embedding environments to access the {@link slime.$api.Global | $api} object.
 			 */
 			$api: slime.$api.Global
-
-			/**
-			 * @deprecated Replaced by `$api.mime`.
-			 */
-			mime: slime.$api.mime.Export
 		}
 
 		(

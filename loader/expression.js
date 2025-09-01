@@ -233,7 +233,6 @@
 		/** @type { slime.runtime.Exports } */
 		var rv = $api.fp.now(
 			{
-				mime: $api.mime,
 				/** @type { slime.runtime.Exports["run"] } */
 				run: function(code,scope,target) {
 					return scripts.runtime.internal.methods.run.call(target,loaders.Code.from.Resource(code),scope);

@@ -76,7 +76,7 @@ namespace slime.jrunscript.shell {
 
 	export namespace test {
 		export const jsapiModule = (function(Packages: slime.jrunscript.Packages, fifty: slime.fifty.test.Kit) {
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			const fixtures: slime.jrunscript.shell.test.Script = fifty.$loader.script("fixtures.ts");
 
@@ -90,7 +90,7 @@ namespace slime.jrunscript.shell {
 				var io = fifty.$loader.module("../../jrunscript/io/", {
 					api: {
 						java: java,
-						mime: jsh.unit.$slime.mime
+						mime: $api.mime
 					},
 					$slime: jsh.unit.$slime
 				});

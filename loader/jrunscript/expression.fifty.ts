@@ -461,11 +461,7 @@ namespace slime.jrunscript.runtime {
 	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
 	 */
 	export interface Exports extends slime.runtime.Exports {
-		/**
-		 * The Java implementation enhances the default {@link slime.$api.mime.Export} implementation in the same way as the
-		 * `$api.mime` implementation is enhanced; see the {@link slime.jrunscript.runtime | "Changes to `$api`"} section.
-		 */
-		mime: slime.runtime.Exports["mime"]
+		mime: slime.$api.mime.Export
 
 		Resource: slime.runtime.Exports["Resource"] & {
 			/**
@@ -489,13 +485,13 @@ namespace slime.jrunscript.runtime {
 			fifty: slime.fifty.test.Kit,
 		) {
 			const { verify, run } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 			const { $slime } = jsh.unit;
 
 			fifty.tests.exports.Resource = function() {
 				var file: slime.jrunscript.runtime.old.resource.Descriptor = fifty.$loader.source.get("expression.fifty.ts") as slime.jrunscript.runtime.old.resource.Descriptor;
 				var resource = new $slime.Resource({
-					type: $slime.mime.Type.parse("application/x.typescript"),
+					type: $api.mime.Type.parse("application/x.typescript"),
 					read: {
 						binary: function() {
 							return file.read.binary();
@@ -544,7 +540,7 @@ namespace slime.jrunscript.runtime {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			const module = test.subject;
 
@@ -562,13 +558,13 @@ namespace slime.jrunscript.runtime {
 							if (!file) return null;
 							var type = (function() {
 								if (/\.jsh\.js$/.test(path)) {
-									return module.mime.Type("application", "x.jsh");
+									return $api.mime.Type("application", "x.jsh");
 								} else if (/\.js$/.test(path)) {
-									return module.mime.Type("application", "javascript");
+									return $api.mime.Type("application", "javascript");
 								} else if (/\.html$/.test(path)) {
-									return module.mime.Type("text", "html");
+									return $api.mime.Type("text", "html");
 								} else {
-									return module.mime.Type("application", "octet-stream");
+									return $api.mime.Type("application", "octet-stream");
 								}
 							})();
 							return {
@@ -725,6 +721,12 @@ namespace slime.$api.jrunscript {
 		jrunscript: {
 			io: slime.jrunscript.runtime.io.Exports
 		}
+
+		/**
+		 * The Java implementation enhances the default {@link slime.$api.mime.Export} implementation in the same way as the
+		 * `$api.mime` implementation is enhanced; see the {@link slime.jrunscript.runtime | "Changes to `$api`"} section.
+		 */
+		mime: slime.$api.mime.Export
 	}
 }
 
