@@ -129,7 +129,7 @@
 						stream: {
 							binary: stream
 						},
-						type: $context.$slime.mime.Type("multipart", subtype, { boundary: BOUNDARY })
+						type: $api.mime.Type("multipart", subtype, { boundary: BOUNDARY })
 					}),
 					{
 						java: {
@@ -188,7 +188,7 @@
 				/** @type { slime.jrunscript.io.mime.Multipart } */
 				var rv = Object.assign(
 					new $context.api.io.Resource({
-						type: $context.$slime.mime.Type.parse(String($multipart.getContentType())),
+						type: $api.mime.Type.parse(String($multipart.getContentType())),
 						read: {
 							binary: function() {
 								var buffer = new $context.api.io.Buffer();
@@ -211,14 +211,14 @@
 		};
 
 		$exports.Type = Object.assign(
-			$context.$slime.mime.Type,
+			$api.mime.Type,
 			{
 				guess: $api.deprecate(
 					function(p) {
 						if (!p.name) throw new TypeError("argument must be a string.");
 						var _rv = Packages.java.net.URLConnection.getFileNameMap().getContentTypeFor(p.name);
 						if (!_rv) return void(0);
-						return $context.$slime.mime.Type.parse(String(_rv));
+						return $api.mime.Type.parse(String(_rv));
 					}
 				)
 			}

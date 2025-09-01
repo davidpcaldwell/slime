@@ -41,7 +41,7 @@ namespace slime.jrunscript.http.client.test {
 	}
 
 	(
-		function($export: slime.loader.Export<slime.jrunscript.http.client.test.Fixtures>) {
+		function($api: slime.$api.Global, $export: slime.loader.Export<slime.jrunscript.http.client.test.Fixtures>) {
 			$export(
 				function(
 					Packages: slime.jrunscript.Packages,
@@ -155,7 +155,7 @@ namespace slime.jrunscript.http.client.test {
 						var io = $jsapi.loader.module("../../../jrunscript/io/", {
 							api: {
 								java: java,
-								mime: jsh.unit.$slime.mime
+								mime: $api.mime
 							},
 							//	TODO	huh? See below
 			//				$java: new Packages.inonit.script.runtime.io.Streams(),
@@ -219,6 +219,6 @@ namespace slime.jrunscript.http.client.test {
 				}
 			);
 		//@ts-ignore
-		}($export)
+		}($api,$export)
 	)
 }

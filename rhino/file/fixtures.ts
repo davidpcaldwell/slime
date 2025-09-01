@@ -109,7 +109,7 @@ namespace slime.jrunscript.file.internal.test {
 							$slime: jsh.unit.$slime,
 							api: {
 								java: java,
-								mime: jsh.unit.$slime.mime
+								mime: $api.mime
 							}
 						}),
 						loader: {

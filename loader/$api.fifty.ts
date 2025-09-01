@@ -1381,6 +1381,9 @@ namespace slime.$api.internal {
 	export type script = <C,E>(name: string) => slime.loader.Script<C,E>
 
 	export interface Scope {
+		$engine: Pick<slime.runtime.Engine,"execute"|"debugger">
+		$slime: Pick<slime.runtime.scope.Deployment,"getRuntimeScript">
+		Packages: slime.jrunscript.Packages
 	}
 
 	export interface Exports {
