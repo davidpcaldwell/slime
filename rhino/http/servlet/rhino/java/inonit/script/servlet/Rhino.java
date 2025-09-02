@@ -26,7 +26,6 @@ public class Rhino extends Servlet.ScriptContainer {
 
 	private Servlet servlet;
 	private Engine engine;
-	private inonit.script.engine.Host.Program program;
 
 	Rhino() {
 	}
@@ -54,19 +53,7 @@ public class Rhino extends Servlet.ScriptContainer {
 			debugger,
  			new Engine.Configuration() {
 				@Override public Loader.Classes.Configuration getClassesConfiguration() {
-					return new Loader.Classes.Configuration() {
-						@Override public boolean canCreateClassLoaders() {
-							return true;
-						}
-
-						@Override public ClassLoader getApplicationClassLoader() {
-							return Servlet.class.getClassLoader();
-						}
-
-						@Override public File getLocalClassCache() {
-							return null;
-						}
-					};
+					return getLoaderClassesConfiguration();
 				}
 
 				@Override public boolean canAccessEnvironment() {
@@ -81,42 +68,13 @@ public class Rhino extends Servlet.ScriptContainer {
 
 		this.servlet = servlet;
 		this.engine = engine;
-		this.program = new inonit.script.engine.Host.Program();
 	}
 
 	Servlet.HostObject getServletHostObject() {
 		return new Host(servlet, engine);
 	}
 
-	void setVariable(String name, Object value) {
-		try {
-			inonit.script.engine.Host.Binding jsh = inonit.script.engine.Host.Binding.create(
-				name,
-				value
-			);
-			program.bind(jsh);
-		} catch (Errors errors) {
-			errors.dump(
-				new Engine.Log() {
-					@Override public void println(String message) {
-						System.err.println(message);
-					}
-				},
-				"[slime] "
-			);
-			throw errors;
-		}
-	}
-
-	void addScript(Code.Loader.Resource resource) {
-		try {
-			program.run(inonit.script.engine.Host.Script.create(resource));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	void execute() {
+	void execute(inonit.script.engine.Host.Program program) {
 		try {
 			System.err.println("Executing JavaScript program ...");
 			engine.execute(program);
