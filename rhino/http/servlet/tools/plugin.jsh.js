@@ -39,9 +39,6 @@
 				var getWebXml = function(p) {
 					if (!p.servlet) throw new TypeError("Required: p.servlet indicating webapp path of servlet to use.");
 
-					//	Obviously using an XML parser would be beneficial here if this begins to get more complex
-					//	TODO	re-write this; we have an XML parser and we are getting spurious failures here
-
 					var xml = $loader.get("web.xml").read(String);
 
 					xml = $api.fp.now(
