@@ -9,7 +9,7 @@ namespace slime.jrunscript.io.mime {
 		/** @deprecated */
 		gae?: boolean
 		nojavamail: boolean
-		$slime: Pick<slime.jsh.plugin.$slime,"mime" | "Resource">
+		$slime: Pick<slime.jsh.plugin.$slime,"Resource">
 		api: {
 			java: slime.jrunscript.java.Exports
 			io: {

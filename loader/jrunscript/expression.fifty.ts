@@ -461,8 +461,6 @@ namespace slime.jrunscript.runtime {
 	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
 	 */
 	export interface Exports extends slime.runtime.Exports {
-		mime: slime.$api.mime.Export
-
 		Resource: slime.runtime.Exports["Resource"] & {
 			/**
 			 * Creates a `Resource` which has additional capabilities beyond the SLIME runtime `Resource`.
