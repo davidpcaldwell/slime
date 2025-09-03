@@ -49,16 +49,18 @@ namespace slime {
 	 * The SLIME runtime (`expression.js`) is an expression that evaluates to an object providing its capabilities to
 	 * the embedder.
 	 *
-	 * Embeddings must supply two values in the scope when executing the runtime. They must supply a value for `$engine` that is
-	 * either `undefined` or is a value of type {@link slime.runtime.scope.Engine | scope.Engine} specifying information about the
-	 * underlying JavaScript engine, and they must supply a value for `$slime` of type
-	 * {@link slime.runtime.scope.Deployment | scope.Deployment} that provides information about the SLIME installation.
+	 * Embeddings configure the runtime by configuring the JavaScript scope in which it executes, which must be of type
+	 * {@link slime.runtime.Scope}, and defines how to load the SLIME runtime itself, as well as optionally providing
+	 * additional information about the surrounding JavaScript engine's capabilities and configuration for the runtime itself.
 	 *
-	 * In return, the embedding will be supplied with an {@link Exports} object that provides the SLIME runtime.
+	 * In return, the embedding will be supplied with an {@link Exports} object that the embedding can use to provide its own API
+	 * to applications.
 	 *
-	 * All code loaded by the SLIME runtime has access to the {@link $api} object (as `$api`), providing a basic set of JavaScript
-	 * utilities, and a {@link Platform} object (as `$platform`), providing more advanced JavaScript engine capabilities that
-	 * depend on the underlying JavaScript engine.
+	 * All code loaded by the SLIME runtime has access to the {@link slime.$api.Global} object (as `$api`), providing a standard
+	 * SLIME API that embeddings on all platforms can use.
+	 *
+	 * Code is also provided by a {@link Platform} object (as `$platform`), providing more advanced JavaScript engine capabilities
+	 * that depend on the underlying JavaScript engine, though `$platform` properties are likely to migrate to `$api` in the future.
 	 */
 	export namespace runtime {
 		(
