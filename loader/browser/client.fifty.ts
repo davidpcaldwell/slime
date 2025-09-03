@@ -66,16 +66,23 @@ namespace slime {
 		/**
 		 * The state of the `window` object prior to loading the `loader/browser/client.js` script.
 		 */
-		export interface Context {
-			readonly fetch: Window["fetch"]
-			readonly location: Location
-			Date: DateConstructor
-			setTimeout: Window["setTimeout"]
-			clearTimeout: Window["clearTimeout"]
-			XMLHttpRequest: typeof XMLHttpRequest
-			CoffeeScript: any
-			Packages: slime.jrunscript.Packages
-		}
+		export type Context = (
+			//	ECMAScript
+			& { Date: typeof Date, XMLHttpRequest: typeof XMLHttpRequest }
+
+			//	DOM
+			& Pick<Window,"location">
+			& Pick<Window,"setTimeout"|"clearTimeout">
+			& Pick<Window,"fetch">
+
+			//	LiveConnect
+			//	See https://efs.kb.esignal.com/hc/en-us/articles/6363020595867-Core-JavaScript-1-5-Guide-Ch-9-LiveConnect-Overview
+			//	... which may or may not accurately describe the real world; untested
+			& { Packages: slime.jrunscript.Packages }
+
+			//	Third-party
+			& { CoffeeScript: { compile: (js: string) => string } }
+		)
 
 		interface Bootstrap {
 			/**
@@ -288,6 +295,13 @@ namespace slime {
 			loader: Exports
 		}
 
+		export interface Slime {
+			inonit: Runtime
+		}
+
+		export interface Window extends slime.external.lib.dom.Window {
+			inonit: Slime["inonit"]
+		}
 	}
 }
 

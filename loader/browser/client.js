@@ -7,8 +7,9 @@
 //@ts-check
 (
 	/**
-	 * @param { slime.browser.Context & { inonit: slime.browser.Runtime } } window
-	 * @param { slime.browser.Settings } $context - provided by setting `inonit.loader` before loading this script
+	 * @param { slime.browser.Context & slime.browser.Slime } window A view of the DOM window object, consisting of JavaScript
+	 * globals, DOM globals, Java LiveConnect globals, and third-party globals, along with the globals associated with SLIME.
+	 * @param { slime.browser.Settings } $context Provided by setting `inonit.loader` before loading this script.
 	 */
 	function(window,$context) {
 		(
@@ -40,7 +41,7 @@
 		function Bootstrap(base) {
 			return {
 				base: base,
-				getRelativePath: function(path) {
+				getRelativePath: function(/** @type { string } */path) {
 					return base + path;
 				}
 			};
@@ -52,29 +53,30 @@
 		}
 
 		var getCurrentScriptSrc = function() {
+			//	The below appears to be used somehow in the rhino/ui implementation
 			if (getCurrentScriptElement().getAttribute("inonit.loader.src")) return getCurrentScriptElement().getAttribute("inonit.loader.src");
 			return getCurrentScriptElement().getAttribute("src");
 		};
 
 		/**
 		 *
-		 * @param { string } current
+		 * @param { string } url
 		 * @returns { string }
 		 */
-		function canonicalize(current) {
+		function canonicalize(url) {
 			//	TODO	The next block is not very robust but probably works for most, or even all, cases. That said, the js/web
 			//			module has a better implementation of URL canonicalization.
 			//			This mostly matters for debuggers that try to map URLs to files or whatever; they may not be able to handle
 			//			paths with .. correctly (Google Chrome, for example, does not).
-			var tokens = current.split("/");
+			var tokens = url.split("/");
 			for (var i=0; i<tokens.length; i++) {
 				if (tokens[i] == "..") {
 					tokens.splice(i-1,2);
 					i = i - 2;
 				}
 			}
-			current = tokens.join("/");
-			return current;
+			url = tokens.join("/");
+			return url;
 		}
 
 		/**
@@ -83,6 +85,7 @@
 		 */
 		function getLoaderBase(currentPage) {
 			var getBasePath = function(pathname) {
+				//	TODO	must be a better way to parse this
 				var path = pathname.split("?")[0];
 				var tokens = path.split("/");
 				if (tokens.length > 1) {
@@ -186,6 +189,7 @@
 				/** @type { slime.runtime.Scope } */
 				var scope = {
 					$engine: {
+						//	TODO	actually, should we fall back to the default implementation?
 						execute: function(/*script{name,js},scope,target*/) {
 							return (function() {
 								//@ts-ignore

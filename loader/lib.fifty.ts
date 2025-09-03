@@ -31,6 +31,7 @@ namespace slime.external.lib.rename.es5 {
 
 namespace slime.external.lib.rename.dom {
 	export type _Console = Console
+	export type _Window = Window
 }
 
 namespace slime.external.lib.rename.typescript {
@@ -55,6 +56,7 @@ namespace slime.external.lib.es5 {
 
 namespace slime.external.lib.dom {
 	export type Console = slime.external.lib.rename.dom._Console
+	export type Window = slime.external.lib.rename.dom._Window
 }
 
 namespace slime.external.lib.typescript {
