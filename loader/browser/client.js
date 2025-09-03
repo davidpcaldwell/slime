@@ -186,23 +186,11 @@
 					this.getCode = getCode;
 				}
 
+				//	As of now (2025 Sep 3), the entire runtime is still loaded using the synchronous HTTP requests provided by
+				// 	fetcher.getCode(), even as we work toward creating asynchronous solutions for modules beyond the runtime.
+
 				/** @type { slime.runtime.Scope } */
 				var scope = {
-					$engine: {
-						//	TODO	actually, should we fall back to the default implementation?
-						execute: function(/*script{name,js},scope,target*/) {
-							if (false) throw new Error();
-							return (function() {
-								//@ts-ignore
-								with( arguments[1] ) {
-									return eval(arguments[0]);
-								}
-							}).call(
-								arguments[2],
-								arguments[0].js, arguments[1]
-							);
-						}
-					},
 					$slime: {
 						getRuntimeScript: function(path) {
 							return {
