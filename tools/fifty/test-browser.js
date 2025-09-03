@@ -159,7 +159,7 @@
 			 * @param { string } part
 			 */
 			var execute = function(file,part) {
-				var fiftyLoader = new inonit.loader.Loader(inonit.loader.nugget.page.base);
+				var fiftyLoader = new inonit.loader.Loader(inonit.loader.Base.page.url);
 
 				var code = {
 					/** @type { slime.fifty.test.internal.test.Script } */
@@ -184,7 +184,7 @@
 						parent: parent,
 						file: elements[elements.length-1]
 					}
-				})(inonit.loader.nugget.page.relative(file));
+				})(inonit.loader.Base.page.relative(file));
 
 				var loader = Object.assign(
 					new inonit.loader.Loader(path.parent),

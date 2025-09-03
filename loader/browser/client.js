@@ -36,30 +36,6 @@
 
 		/**
 		 *
-		 * @param { string } base A base URL for boostrapping SLIME, whose base is the SLIME `loader/` directory.
-		 */
-		function Bootstrap(base) {
-			return {
-				base: base,
-				getRelativePath: function(/** @type { string } */path) {
-					return base + path;
-				}
-			};
-		}
-
-		var getCurrentScriptElement = function() {
-			var scripts = document.getElementsByTagName("script");
-			return scripts[scripts.length-1];
-		}
-
-		var getCurrentScriptSrc = function() {
-			//	The below appears to be used somehow in the rhino/ui implementation
-			if (getCurrentScriptElement().getAttribute("inonit.loader.src")) return getCurrentScriptElement().getAttribute("inonit.loader.src");
-			return getCurrentScriptElement().getAttribute("src");
-		};
-
-		/**
-		 *
 		 * @param { string } url
 		 * @returns { string }
 		 */
@@ -73,6 +49,9 @@
 				if (tokens[i] == "..") {
 					tokens.splice(i-1,2);
 					i = i - 2;
+				} else if (tokens[i] == ".") {
+					tokens.splice(i,1);
+					i = i - 1;
 				}
 			}
 			url = tokens.join("/");
@@ -81,36 +60,55 @@
 
 		/**
 		 *
-		 * @param { string } currentPage
+		 * @param { string } url The URL of a file
+		 * @returns { slime.browser.Base } A {@link Base} representing the file's parent path.
 		 */
-		function getLoaderBase(currentPage) {
-			var getBasePath = function(pathname) {
-				//	TODO	must be a better way to parse this
-				var path = pathname.split("?")[0];
-				var tokens = path.split("/");
-				if (tokens.length > 1) {
-					return tokens.slice(0,-1).join("/") + "/";
-				} else {
-					return "";
-				}
+		function Base(url) {
+			var getUrlBase = function(url) {
+				return url.split("/").slice(0,-1).join("/") + "/";
 			};
 
-			var rv = getBasePath(currentPage) + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
-			rv = canonicalize(rv);
-			return rv;
+			var base = getUrlBase(url);
+
+			return {
+				url: base,
+				relative: function(/** @type { string } */path) {
+					return canonicalize(base + path);
+				}
+			};
 		}
 
-		var getCurrentPage = function() {
-			return window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.substring(1);
+		var getCurrentPageBase = function() {
+			var getCurrentPage = function() {
+				return window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.substring(1);
+			}
+
+			return Base(getCurrentPage());
+		};
+
+		var getCurrentScriptBase = function() {
+			var getCurrentScriptSrc = function() {
+				var getCurrentScriptElement = function() {
+					var scripts = document.getElementsByTagName("script");
+					return scripts[scripts.length-1];
+				};
+
+				//	The below appears to be used somehow in the rhino/ui implementation
+				if (getCurrentScriptElement().getAttribute("inonit.loader.src")) return getCurrentScriptElement().getAttribute("inonit.loader.src");
+				return getCurrentScriptElement().getAttribute("src");
+			};
+
+			return Base(getCurrentPageBase().relative(getCurrentScriptSrc()));
 		}
 
-		var getBootstrap = function() {
-			var page = getCurrentPage();
-			var base = getLoaderBase(page);
-			return Bootstrap(base);
-		}
-
-		var bootstrap = getBootstrap();
+		var bootstrap = (
+			function() {
+				//	The current script at this point is this script, client.js, so we navigate to the main runtime script
+				return Base(
+					getCurrentScriptBase().relative("../expression.js")
+				);
+			}
+		)();
 
 		/** @type { slime.browser.Exports } */
 		var $exports = (
@@ -194,8 +192,8 @@
 					$slime: {
 						getRuntimeScript: function(path) {
 							return {
-								name: bootstrap.getRelativePath(path),
-								js: fetcher.getCode(bootstrap.getRelativePath(path))
+								name: bootstrap.relative(path),
+								js: fetcher.getCode(bootstrap.relative(path))
 							}
 						}
 					}
@@ -205,7 +203,7 @@
 				var runtime = (function(scope) {
 					//	TODO	still uses synchronous API
 					/** @type { slime.runtime.Exports } */
-					var rv = eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
+					var rv = eval(fetcher.getCode(bootstrap.relative("expression.js")));
 					rv.$api.deprecate.warning = function(access) {
 						debugger;
 					}
@@ -304,7 +302,7 @@
 					runtime.old.Loader.apply(this,arguments);
 				};
 
-				var bootstrapper = new Loader(bootstrap.base);
+				var bootstrapper = new Loader(bootstrap.url);
 
 				var code = {
 					/** @type { slime.browser.internal.$api.Script } */
@@ -318,10 +316,6 @@
 						clearTimeout: window.clearTimeout
 					}
 				}));
-
-				var getPageBase = function() {
-					return getCurrentPage().split("/").slice(0,-1).join("/") + "/";
-				};
 
 				var loaderMethods = (
 					function() {
@@ -350,7 +344,7 @@
 
 				return Object.assign(
 					{
-						loader: new Loader(getPageBase()),
+						loader: new Loader(getCurrentPageBase().url),
 						Loader: Object.assign(
 							Loader,
 							{
@@ -363,21 +357,13 @@
 						namespace: function(name) {
 							return runtime.namespace(name);
 						},
-						nugget: new function() {
-							//	DRY:	Other scripts may want to use this (already have examples)
-							this.getCurrentScript = getBootstrap;
-
-							this.page = {
-								base: getPageBase(),
-								relative: function(path) {
-									return canonicalize(getPageBase() + path);
-								}
-							};
+						Base: {
+							script: getCurrentScriptBase,
+							page: getCurrentPageBase()
 						},
 						//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
 						//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
-						//	Undocumented
-						base: bootstrap.base,
+						base: bootstrap.url,
 						//	For use in scripts that are loaded directly by the browser rather than via this loader
 						$api: runtime.$api,
 						test: {

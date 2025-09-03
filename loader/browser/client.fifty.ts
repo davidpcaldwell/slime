@@ -79,20 +79,24 @@ namespace slime {
 			& { CoffeeScript: { compile: (js: string) => string } }
 		)
 
-		interface Bootstrap {
+		export interface Base {
 			/**
 			 * The base URL of this script: the URL of the script, excluding the file name.
 			 */
-			base: string
+			url: string
 
 			/**
 			 * @param path A relative path.
 			 * @returns A full path representing the specified relative path relative to the base URL of this script.
 			 */
-			getRelativePath: (path: string) => string
+			relative: (path: string) => string
 		}
 
 		export interface Exports {
+			/**
+			 * Specifies the base URL from which the SLIME runtime was loaded.
+			 */
+			//	TODO	but who needs this? Who is using it and why? Should it be a Base object instead?
 			base: string
 		}
 
@@ -260,17 +264,14 @@ namespace slime {
 			/**
 			 * Contains useful pieces of code that are exported for general use.
 			 */
-			nugget: {
+			Base: {
 				/**
 				 * Returns an object based on the current script being loaded (that is, the script from which the method is invoked).
 				 */
-				getCurrentScript: () => Bootstrap
+				script: () => Base
 
 				//	TODO	this structure is almost the same as the Bootstrap structure above; can we combine them?
-				page: {
-					base: string
-					relative: (path: string) => string
-				}
+				page: Base
 			}
 
 			$api: slime.$api.Global
