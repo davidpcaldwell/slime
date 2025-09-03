@@ -75,11 +75,6 @@ namespace slime {
 			& Pick<Window,"setTimeout"|"clearTimeout">
 			& Pick<Window,"fetch">
 
-			//	LiveConnect
-			//	See https://efs.kb.esignal.com/hc/en-us/articles/6363020595867-Core-JavaScript-1-5-Guide-Ch-9-LiveConnect-Overview
-			//	... which may or may not accurately describe the real world; untested
-			& { Packages: slime.jrunscript.Packages }
-
 			//	Third-party
 			& { CoffeeScript: { compile: (js: string) => string } }
 		)

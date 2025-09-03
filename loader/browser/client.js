@@ -191,6 +191,7 @@
 					$engine: {
 						//	TODO	actually, should we fall back to the default implementation?
 						execute: function(/*script{name,js},scope,target*/) {
+							if (false) throw new Error();
 							return (function() {
 								//@ts-ignore
 								with( arguments[1] ) {
@@ -209,8 +210,7 @@
 								js: fetcher.getCode(bootstrap.getRelativePath(path))
 							}
 						}
-					},
-					Packages: window.Packages
+					}
 				};
 
 				/** @type { slime.runtime.Exports } */
