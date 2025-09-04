@@ -66,31 +66,37 @@ namespace slime {
 		/**
 		 * The state of the `window` object prior to loading the `loader/browser/client.js` script.
 		 */
-		export interface Context {
-			readonly fetch: Window["fetch"]
-			readonly location: Location
-			Date: DateConstructor
-			setTimeout: Window["setTimeout"]
-			clearTimeout: Window["clearTimeout"]
-			XMLHttpRequest: typeof XMLHttpRequest
-			CoffeeScript: any
-			Packages: slime.jrunscript.Packages
-		}
+		export type Context = (
+			//	ECMAScript
+			& { Date: typeof Date, XMLHttpRequest: typeof XMLHttpRequest }
 
-		interface Bootstrap {
+			//	DOM
+			& Pick<Window,"location">
+			& Pick<Window,"setTimeout"|"clearTimeout">
+			& Pick<Window,"fetch">
+
+			//	Third-party
+			& { CoffeeScript: { compile: (js: string) => string } }
+		)
+
+		export interface Base {
 			/**
 			 * The base URL of this script: the URL of the script, excluding the file name.
 			 */
-			base: string
+			url: string
 
 			/**
 			 * @param path A relative path.
 			 * @returns A full path representing the specified relative path relative to the base URL of this script.
 			 */
-			getRelativePath: (path: string) => string
+			relative: (path: string) => string
 		}
 
 		export interface Exports {
+			/**
+			 * Specifies the base URL from which the SLIME runtime was loaded.
+			 */
+			//	TODO	but who needs this? Who is using it and why? Should it be a Base object instead?
 			base: string
 		}
 
@@ -132,9 +138,8 @@ namespace slime {
 				new (p: slime.old.loader.Source): slime.old.Loader
 
 				series: slime.runtime.Exports["old"]["loader"]["series"]
-				//	TODO	JSAPI-declared properties below
-				//	getCode
-				//	fetch
+				getCode: any
+				fetch: any
 			}
 		}
 
@@ -258,17 +263,14 @@ namespace slime {
 			/**
 			 * Contains useful pieces of code that are exported for general use.
 			 */
-			nugget: {
+			Base: {
 				/**
 				 * Returns an object based on the current script being loaded (that is, the script from which the method is invoked).
 				 */
-				getCurrentScript: () => Bootstrap
+				script: () => Base
 
 				//	TODO	this structure is almost the same as the Bootstrap structure above; can we combine them?
-				page: {
-					base: string
-					relative: (path: string) => string
-				}
+				page: Base
 			}
 
 			$api: slime.$api.Global
@@ -288,6 +290,13 @@ namespace slime {
 			loader: Exports
 		}
 
+		export interface Slime {
+			inonit: Runtime
+		}
+
+		export interface Window extends slime.external.lib.dom.Window {
+			inonit: Slime["inonit"]
+		}
 	}
 }
 

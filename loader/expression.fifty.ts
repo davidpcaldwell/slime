@@ -13,11 +13,8 @@ namespace slime {
 			$slime: slime.runtime.scope.Deployment
 
 			/**
-			 * An object provided by the JavaScript runtime that represents the set of Java classes available. Ordinarily only
-			 * present in `jrunscript` environments.
-			 *
-			 * But note that in the rare case of a browser with Java, `Packages` may be
-			 * present but not include `inonit.*` classes.
+			 * An object provided by the JavaScript runtime that represents the set of Java classes available. Only
+			 * present in `jrunscript` environments; browsers have dropped LiveConnect support.
 			 */
 			Packages?: slime.jrunscript.Packages
 
