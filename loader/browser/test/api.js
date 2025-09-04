@@ -12,7 +12,7 @@
 (
 	/**
 	 *
-	 * @param { any } inonit
+	 * @param { slime.browser.Runtime } inonit
 	 * @param { { api: { ui: any, apiHtmlScript: any }, old: any } } $context
 	 * @param { { getPartDescriptor: any, suite: any, setPath: any } } $exports
 	 */
@@ -305,7 +305,7 @@
 							}
 						})(p.path);
 
-						var relative = inonit.loader.nugget.page.relative(base)
+						var relative = inonit.loader.Base.page.relative(base)
 						var delegate = new inonit.loader.Loader(relative);
 
 						debugger;

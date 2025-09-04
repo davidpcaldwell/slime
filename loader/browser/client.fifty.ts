@@ -138,9 +138,8 @@ namespace slime {
 				new (p: slime.old.loader.Source): slime.old.Loader
 
 				series: slime.runtime.Exports["old"]["loader"]["series"]
-				//	TODO	JSAPI-declared properties below
-				//	getCode
-				//	fetch
+				getCode: any
+				fetch: any
 			}
 		}
 
