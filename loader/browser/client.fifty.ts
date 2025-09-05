@@ -254,7 +254,31 @@ namespace slime {
 			value: slime.old.Loader["value"]
 
 			get: slime.Loader["get"]
+		}
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				//	TODO	update definition so that this is unnecessary?
+				const inonit: Runtime = fifty.global.window["inonit"];
+				const { verify } = fifty;
+
+				fifty.tests.exports.run = function() {
+					let x = 0;
+					var scope = { e: 2, set: (v: number) => x = v };
+					var target = { f: 0 };
+					//	In the case of our tests, the "current page" is tools/fifty/test-browser.html, so we need to load the run
+					//	script appropriately
+					inonit.loader.run("../../loader/test/data/a/run.js", scope, target);
+					verify(x).is(4);
+					verify(target).f.is(6);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			/**
 			 * A loader that loads resources using the current page as the base URL for the loader.
 			 */
