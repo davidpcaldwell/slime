@@ -199,10 +199,9 @@
 					}
 				};
 
-				/** @type { slime.runtime.Exports } */
 				var runtime = (function(scope) {
 					//	TODO	still uses synchronous API
-					/** @type { slime.runtime.Exports } */
+					/** @type { Omit<slime.runtime.Exports,"$api"> & { $api: slime.$api.browser.Global } } */
 					var rv = eval(fetcher.getCode(bootstrap.relative("expression.js")));
 					rv.$api.deprecate.warning = function(access) {
 						debugger;

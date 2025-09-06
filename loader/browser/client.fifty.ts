@@ -14,7 +14,7 @@ namespace slime {
 	 * Based on the configuration, a `window.inonit` object of type
 	 * {@link slime.browser.Runtime} will be created and be available to the application.
 	 *
-	 * All additional code loaded through the runtime will be provided with a {@link slime.$api.Global} object in its scope as `$api`.
+	 * All additional code loaded through the runtime will be provided with a {@link slime.$api.browser.Global} object in its scope as `$api`.
 	 * This object is also available to code not loaded through the runtime (for example, top-level scripts) as `inonit.loader.$api`.
 	 *
 	 * Several additional APIs can be loaded from the `Runtime`:
@@ -81,13 +81,13 @@ namespace slime {
 
 		export interface Base {
 			/**
-			 * The base URL of this script: the URL of the script, excluding the file name.
+			 * The base URL for this base; relative URLs are calculated relative to this value.
 			 */
 			url: string
 
 			/**
 			 * @param path A relative path.
-			 * @returns A full path representing the specified relative path relative to the base URL of this script.
+			 * @returns A full URL representing the specified relative path relative to the `url` property.
 			 */
 			relative: (path: string) => string
 		}
@@ -122,6 +122,41 @@ namespace slime {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface Exports {
+			$api: slime.$api.browser.Global
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.$api = function() {
+					fifty.load("$api.fifty.ts");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			/**
+			 * Provides implementations of {@link Base}, which are useful for creating URLs.
+			 */
+			Base: {
+				/**
+				 * Returns an object based on the location of the current script being loaded into the DOM (that is, the last
+				 * <script> element currently in the DOM document).
+				 */
+				script: () => Base
+
+				/**
+				 * Returns a {@link Base} that calculates URLs based on the location of the current page.
+				 */
+				page: Base
+			}
+		}
+
+		//	TODO	content
 
 		export interface Exports {
 			Loader: {
@@ -284,21 +319,6 @@ namespace slime {
 			 */
 			loader: slime.old.Loader
 
-			/**
-			 * Contains useful pieces of code that are exported for general use.
-			 */
-			Base: {
-				/**
-				 * Returns an object based on the current script being loaded (that is, the script from which the method is invoked).
-				 */
-				script: () => Base
-
-				//	TODO	this structure is almost the same as the Bootstrap structure above; can we combine them?
-				page: Base
-			}
-
-			$api: slime.$api.Global
-
 			test: {
 				run: slime.runtime.Exports["run"]
 			}
@@ -331,7 +351,6 @@ namespace slime {
 		fifty.tests.suite = function() {
 			fifty.run(fifty.tests.exports);
 			fifty.run(fifty.tests.bitbucketIssue296);
-			fifty.load("$api.fifty.ts");
 		}
 	}
 //@ts-ignore
