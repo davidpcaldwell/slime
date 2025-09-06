@@ -39,7 +39,9 @@ wget https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh -O - | ba
 ### TL;DR
 
 * `git clone https://github.com/davidpcaldwell/slime.git; cd slime`
-* `./jsh jrunscript/jsh/test/jsh-data.jsh.js` - runs a sample program emitting information about the installed `jsh` shell.
+* `./jsh jrunscript/jsh/test/jsh-data.jsh.js` - runs a sample program emitting information about the installed `jsh` shell; will
+bootstrap Java if needed, install a JVM JavaScript engine if needed, and then run the `jsh` shell using the Java and engine it
+obtained (or found).
 * `./fifty view` - runs a server that serves the SLIME documentation and opens an instance of Google Chrome to browse it.
 
 ### Getting the code
