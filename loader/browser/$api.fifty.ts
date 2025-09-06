@@ -4,6 +4,27 @@
 //
 //	END LICENSE
 
+namespace slime.$api.browser {
+	export interface Global extends slime.$api.Global {
+		timer: slime.browser.internal.$api.Exports["timer"]
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			var { $api } = fifty.global;
+
+			fifty.tests.load = function() {
+				verify($api).content.is.type("object");
+				verify($api).evaluate.property("timer").is.type("object");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+}
+
 namespace slime.browser.internal.$api {
 	export interface Context {
 		time: {
@@ -30,20 +51,6 @@ namespace slime.browser.internal.$api {
 			}
 		}
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			var { $api } = fifty.global;
-
-			fifty.tests.load = function() {
-				verify($api).evaluate.property("timer").is.type("object");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
 
 	(
 		function(
