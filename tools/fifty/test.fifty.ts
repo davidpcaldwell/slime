@@ -74,25 +74,17 @@ namespace slime.fifty.test {
 		[x: string]: any
 	}
 
-	/**
-	 * Executes a test part from another file. The version that takes a third argument allows an argument of that type
-	 * to be created and passed to the test part. This can be used so that Fifty test files can define
-	 * conformance tests for a type and Fifty tests that provide implementations of that type can pass them as arguments
-	 * to those tests.
-	 *
-	 * The other form simply executes an arbitrary test part, defaulting to the entire suite (the `suite` part) for the
-	 * indicated file.
-	 */
 	export interface load {
 		/**
-		 * Executes a test part from another file that accepts an argument.
+		 * Executes a test part from another file. The version that takes a third argument allows an argument of that type
+		 * to be created and passed to the test part. This can be used so that Fifty test files can define
+		 * conformance tests for a type and Fifty tests that provide implementations of that type can pass them as arguments
+		 * to those tests.
+		 *
+		 * The other form simply executes an arbitrary test part, defaulting to the entire suite (the `suite` part) for the
+		 * indicated file.
 		 */
-		<T>(path: string, part: string, t: T)
-
-		/**
-		 * Executes a test part from another file. Defaults to the `suite` part.
-		 */
-		(path: string, part?: string)
+		<T>(path: string, part?: string, t?: T)
 	}
 
 	export interface MultiplatformTest {
@@ -131,10 +123,18 @@ namespace slime.fifty.test {
 		verify: slime.definition.verify.Verify
 
 		run: (f: () => void, name?: string) => void
+
 		/**
-		 * Allows a Fifty test file to execute test parts from other files.
+		 * Executes a test part from another file.
+		 *
+		 * The second argument indicates the part to use, and defaults to `suite`.
+		 *
+		 * The third part is an optional argument that can be passed to the part. This can be used so that Fifty test files can
+		 * define conformance tests for a type and Fifty tests that provide implementations of that type can pass them as arguments
+		 * to those tests.
+		 *
 		 */
-		load: load
+		load: <T>(path: string, part?: string, t?: T) => void
 
 		tests: tests
 

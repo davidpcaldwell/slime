@@ -53,68 +53,10 @@
 
 					var nativeThen = nativePromise.then;
 
-					// var addSettling = function(handler) {
-					// 	return function(value) {
-					// 		onSettled();
-					// 		if (handler) return handler(value);
-					// 		return Promise.resolve(void(0));
-					// 	}
-					// }
-
-					// return nativePromise.then(
-					// 	function success(value) {
-					// 		onSettled();
-					// 		return onFulfilled(value);
-					// 	},
-					// 	function failure(error) {
-					// 		onSettled();
-					// 		onRejected(error);
-					// 	}
-					// );
-
 					var newThen = function(onFulfilled,onRejected) {
-						// var onSettled = function() {
-						// 	events.fire("settled",nativeResultingPromise);
-						// };
-						// var nativeResultingPromise = new NativePromiseConstructor(
-						// 	function(resolve,reject) {
-						// 		nativePromise.then(
-						// 			function(value) {
-						// 				if (value == 2) debugger;
-						// 				onSettled();
-						// 				resolve(value);
-						// 			},
-						// 			function(error) {
-						// 				onSettled();
-						// 				reject(error);
-						// 			}
-						// 		);
-						// 	}
-						// ).then(onFulfilled, onRejected);
-						// Object.assign(nativeResultingPromise, {
-						// 	thenPromise: nativePromise,
-						// 	onFulfilled: onFulfilled,
-						// 	onRejected: onRejected
-						// });
-						// return RegisteredPromise(nativeResultingPromise);
 						return nativeThen.call(nativePromise, onFulfilled, onRejected);
 					};
-					// 	if (isOne) {
-					// 		debugger;
-					// 	}
-					// 	if (!onFulfilled) debugger;
-					// 	var nativeResultingPromise = nativeThen.call(nativePromise, addSettling(onFulfilled), addSettling(onRejected));
-					// 	Object.assign(nativeResultingPromise, {
-					// 		thenPromise: nativePromise,
-					// 		onFulfilled: onFulfilled,
-					// 		onRejected: onRejected
-					// 	});
-					// 	var rv = RegisteredPromise(nativeResultingPromise);
-					// 	return rv;
-					// 	//return nativeResultingPromise.then(onSettled,onSettled);
-					// };
 
-					//nativePromise.then = newThen;
 					nativePromise["id"] = ++ordinal;
 					return Object.assign(
 						{},

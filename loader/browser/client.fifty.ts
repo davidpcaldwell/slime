@@ -159,9 +159,9 @@ namespace slime {
 		//	TODO	content
 
 		export interface Exports {
-			// Content: {
-			// 	page: slime.thread.type.Asynchronous<slime.runtime.content.Store<string>>
-			// }
+			Content: {
+				page: slime.thread.type.Asynchronous<slime.runtime.content.Store<string>>
+			}
 		}
 
 		(
@@ -173,6 +173,7 @@ namespace slime {
 				const inonit = fifty.global.window["inonit"] as slime.browser.Runtime;
 				const Promise: PromiseConstructor = fifty.global.window["Promise"]
 
+				//	TODO	Move to Fifty itself; this is really a test of Fifty's asynchrony handling
 				fifty.tests.wip = function() {
 					fifty.run(function two() {
 						Promise.resolve(2).then(function checkTwo(value) {
@@ -181,20 +182,20 @@ namespace slime {
 					});
 				}
 
-				// fifty.tests.exports.Content = function() {
-				// 	fifty.run(function one() {
-				// 		console.log("Fetching via Content.page.get ...");
-				// 		inonit.loader.Content.page.get("../../loader/browser/test/data/a.txt".split("/")).then(function(it) {
-				// 			console.log("Fetched text", it);
-				// 			debugger;
-				// 			if (it.present) {
-				// 				verify(it).value.is("AAA\n");
-				// 			} else {
-				// 				verify("present").is("true");
-				// 			}
-				// 		})
-				// 	});
-				// }
+				fifty.tests.exports.Content = function() {
+					fifty.run(function one() {
+						console.log("Fetching via Content.page.get ...");
+						inonit.loader.Content.page.get("../../loader/browser/test/data/a.txt".split("/")).then(function(it) {
+							console.log("Fetched text", it);
+							debugger;
+							if (it.present) {
+								verify(it).value.is("AAA\n");
+							} else {
+								verify("present").is("true");
+							}
+						})
+					});
+				}
 			}
 		//@ts-ignore
 		)(fifty);

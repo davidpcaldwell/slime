@@ -395,9 +395,9 @@
 							script: getCurrentScriptBase,
 							page: getCurrentPageBase()
 						},
-						// Content: {
-						// 	page: Content(getCurrentPageBase())
-						// },
+						Content: {
+							page: Content(getCurrentPageBase())
+						},
 						//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
 						//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
 						base: bootstrap.url,
