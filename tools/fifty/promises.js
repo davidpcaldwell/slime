@@ -32,26 +32,23 @@
 		var RegisteredPromise = (
 			function(NativePromiseConstructor) {
 				return function RegisteredPromise(nativePromise) {
-					console.log("Created RegisteredPromise wrapping", nativePromise);
-
-					var nativeThen = nativePromise.then;
-
-					var newThen = function(onFulfilled,onRejected) {
-						return nativeThen.call(nativePromise, onFulfilled, onRejected);
-					};
+					// var newThen = function(onFulfilled,onRejected) {
+					// 	return nativePromise.then.call(nativePromise, onFulfilled, onRejected);
+					// };
 
 					nativePromise["id"] = ++ordinal;
-					return Object.assign(
-						{},
-						{
-							catch: nativePromise.catch
-						},
-						{
-							id: nativePromise["id"],
-							then: newThen,
-							native: nativePromise
-						}
-					);
+					return nativePromise;
+					// return Object.assign(
+					// 	{},
+					// 	{
+					// 		catch: nativePromise.catch
+					// 	},
+					// 	{
+					// 		id: nativePromise["id"],
+					// 		then: newThen,
+					// 		native: nativePromise
+					// 	}
+					// );
 				};
 			}
 		)(window.Promise);
@@ -286,9 +283,9 @@
 			var controlled = ControlledPromise({ id: "Promise for Registry " + name});
 			//	We used to use our own promises here and did not want the ControlledPromise to count as "registered." Now we just
 			//	use the out-of-the-box Promise implementation for ControlledPromise objects.
-			remove(controlled.promise["native"]);
+			remove(controlled.promise);
 			list = list.filter(function(item) {
-				return item.promise != controlled.promise["native"];
+				return item.promise != controlled.promise;
 			});
 			if (list.length) debugger;
 
@@ -299,7 +296,7 @@
 						console.log("resolving empty wait", name);
 						controlled.resolve(void(0));
 					}
-					return controlled.promise["native"].then(function() {
+					return controlled.promise.then(function() {
 						console.log("wait promise resolved for", name);
 						events.listeners.remove("created", created);
 						events.listeners.remove("settled", created);

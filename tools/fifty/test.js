@@ -284,7 +284,6 @@
 
 				ascope.test.log("async tests: creating promise for scope", name);
 				return new $context.promises.Promise(executor).then(function(executed) {
-					if (name == "two") debugger;
 					ascope.test.log("async tests: waiting for scope", name);
 					return ascope.wait();
 				}).then(function done(done) {
