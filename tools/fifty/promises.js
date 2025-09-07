@@ -24,35 +24,6 @@
 
 		var ordinal = 0;
 
-		/**
-		 *
-		 * @param { Promise } nativePromise
-		 * @returns { Promise }
-		 */
-		var RegisteredPromise = (
-			function(NativePromiseConstructor) {
-				return function RegisteredPromise(nativePromise) {
-					// var newThen = function(onFulfilled,onRejected) {
-					// 	return nativePromise.then.call(nativePromise, onFulfilled, onRejected);
-					// };
-
-					nativePromise["id"] = ++ordinal;
-					return nativePromise;
-					// return Object.assign(
-					// 	{},
-					// 	{
-					// 		catch: nativePromise.catch
-					// 	},
-					// 	{
-					// 		id: nativePromise["id"],
-					// 		then: newThen,
-					// 		native: nativePromise
-					// 	}
-					// );
-				};
-			}
-		)(window.Promise);
-
 		var RegisteredPromiseConstructor = (function(NativePromiseConstructor) {
 			/**
 			 * @constructor
@@ -86,6 +57,7 @@
 
 				var underlying = new NativePromiseConstructor(RegisteringExecutor(executor));
 				underlying["executor"] = executor.toString();
+				underlying["id"] = ++ordinal;
 				identifier.promise = underlying.then(
 					function(value) {
 						events.fire("settled", identifier);
@@ -97,7 +69,7 @@
 					}
 				);
 
-				var rv = RegisteredPromise(identifier.promise);
+				var rv = identifier.promise;
 
 				return rv;
 			}
