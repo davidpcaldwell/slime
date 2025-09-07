@@ -34,23 +34,6 @@
 				return function RegisteredPromise(nativePromise) {
 					console.log("Created RegisteredPromise wrapping", nativePromise);
 
-					var isOne = nativePromise["executor"] && nativePromise["executor"].indexOf("<one>") != -1;
-					var isTwo = nativePromise["executor"] && nativePromise["executor"].indexOf("(2)") != -1;
-					if (isTwo) debugger;
-
-					//debugger;
-					//events.fire("created", nativePromise);
-
-					var onSettled = function() {
-						if (isOne) {
-							debugger;
-						}
-						if (isTwo) {
-							debugger;
-						}
-						events.fire("settled", nativePromise);
-					};
-
 					var nativeThen = nativePromise.then;
 
 					var newThen = function(onFulfilled,onRejected) {
