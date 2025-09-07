@@ -159,6 +159,47 @@ namespace slime {
 		//	TODO	content
 
 		export interface Exports {
+			// Content: {
+			// 	page: slime.thread.type.Asynchronous<slime.runtime.content.Store<string>>
+			// }
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const window = fifty.global.window;
+				const inonit = fifty.global.window["inonit"] as slime.browser.Runtime;
+				const Promise: PromiseConstructor = fifty.global.window["Promise"]
+
+				fifty.tests.wip = function() {
+					fifty.run(function two() {
+						Promise.resolve(2).then(function checkTwo(value) {
+							verify(value).is(2);
+						})
+					});
+				}
+
+				// fifty.tests.exports.Content = function() {
+				// 	fifty.run(function one() {
+				// 		console.log("Fetching via Content.page.get ...");
+				// 		inonit.loader.Content.page.get("../../loader/browser/test/data/a.txt".split("/")).then(function(it) {
+				// 			console.log("Fetched text", it);
+				// 			debugger;
+				// 			if (it.present) {
+				// 				verify(it).value.is("AAA\n");
+				// 			} else {
+				// 				verify("present").is("true");
+				// 			}
+				// 		})
+				// 	});
+				// }
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			Loader: {
 				/**
 				 * Creates a SLIME {@link slime.Loader | Loader}.
