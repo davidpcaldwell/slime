@@ -90,7 +90,6 @@
 
 		var NativePromise = window.Promise;
 
-		//@ts-ignore
 		window.Promise = RegisteredPromiseConstructor;
 
 		var controlledPromiseId = 0;
@@ -142,7 +141,7 @@
 		};
 
 		var RegisteredFetch = (
-			function(was) {
+			function(nativeFetch) {
 				var PuppetWrapper = function(promise,id) {
 					var pid = "fetch " + id + ":" + ++controlledPromiseId;
 					var puppet = ControlledPromise({ id: pid });
@@ -162,47 +161,95 @@
 					return puppet.promise;
 				};
 
+				var PromiseExecutor = function(promise) {
+					var rv = function(resolve,reject) {
+						promise.then(
+							function(value) {
+								resolve(value);
+							},
+							function(error) {
+								reject(error);
+							}
+						)
+					};
+					rv.original = promise;
+					return rv;
+				};
+
 				var ResponseWrapper = function(response) {
-					var MethodPuppetWrapper = function(object,methodName) {
+					var MethodWrapper = function(object,methodName) {
 						var was = object[methodName];
 						return function() {
-							return PuppetWrapper(was.call(object), methodName);
+							//return PuppetWrapper(was.call(object), methodName);
+							/** @type { Promise<any> } */
+							var promise = was.call(object);
+							return new RegisteredPromiseConstructor(PromiseExecutor(promise));
 						}
 					};
 
 					return Object.assign(response, {
-						text: MethodPuppetWrapper(response, "text")
+						text: MethodWrapper(response, "text")
 					});
 				}
 
 				/** @type { Window["fetch"] } */
 				return function(path, init) {
-					var puppet = ControlledPromise({ id: "fetch " + ++controlledPromiseId });
-					console.log("fetch - created");
-					//events.fire("created", puppet.promise);
-					var nativeFetch = was(path, init);
-					nativeFetch.then(function(value) {
-						console.log("fetch - settled - fulfilled", nativeFetch, value);
-						puppet.resolve(value);
-						return ResponseWrapper(value);
-					}).catch(function(error) {
-						console.log("fetch - settled - rejected", nativeFetch, error);
-						puppet.reject(error);
-						//events.fire("settled", registered);
-						throw error;
-					});
-					//	Doesn't like that puppet.promise is not parameterized
-					//@ts-ignore
-					return puppet.promise;
+					return new RegisteredPromiseConstructor(
+						PromiseExecutor(
+							nativeFetch(path, init).then(function(/** @type { Response } */response) {
+								return ResponseWrapper(response);
+							})
+						)
+					);
+					// var puppet = ControlledPromise({ id: "fetch " + ++controlledPromiseId });
+					// console.log("fetch - created");
+					// //events.fire("created", puppet.promise);
+					// var nativeFetch = was(path, init);
+					// nativeFetch.then(function(value) {
+					// 	console.log("fetch - settled - fulfilled", nativeFetch, value);
+					// 	puppet.resolve(value);
+					// 	return ResponseWrapper(value);
+					// }).catch(function(error) {
+					// 	console.log("fetch - settled - rejected", nativeFetch, error);
+					// 	puppet.reject(error);
+					// 	//events.fire("settled", registered);
+					// 	throw error;
+					// });
+					// //	Doesn't like that puppet.promise is not parameterized
+					// //@ts-ignore
+					// return puppet.promise;
 				}
+				// /** @type { Window["fetch"] } */
+				// return function(path, init) {
+				// 	var puppet = ControlledPromise({ id: "fetch " + ++controlledPromiseId });
+				// 	console.log("fetch - created");
+				// 	//events.fire("created", puppet.promise);
+				// 	var nativeFetch = was(path, init);
+				// 	nativeFetch.then(function(value) {
+				// 		console.log("fetch - settled - fulfilled", nativeFetch, value);
+				// 		puppet.resolve(value);
+				// 		return ResponseWrapper(value);
+				// 	}).catch(function(error) {
+				// 		console.log("fetch - settled - rejected", nativeFetch, error);
+				// 		puppet.reject(error);
+				// 		//events.fire("settled", registered);
+				// 		throw error;
+				// 	});
+				// 	//	Doesn't like that puppet.promise is not parameterized
+				// 	//@ts-ignore
+				// 	return puppet.promise;
+				// }
 			}
 		)(window.fetch);
 
-		//window.fetch = RegisteredFetch;
+		window.fetch = RegisteredFetch;
 
 		var Registry = function(p) {
 			var name = (p && p.name);
 			console.log("Created registry", name);
+			var isUnderTest = function() {
+				return (name == "one") || (name == "two")
+			};
 			var list = [];
 
 			var created = function(e) {
@@ -234,15 +281,15 @@
 			var settled = function(e) {
 				if (e.detail.promise == controlled.promise["native"]) return;
 				console.log("Settled in " + name, e.detail);
-				// if (name == "two") {
-				// 	debugger;
-				// }
+				if (isUnderTest) {
+					debugger;
+				}
 				remove(e.detail);
-				if (name == "two") {
+				if (isUnderTest) {
 					console.log("Removed; now " + name + ":", list);
 				}
 				if (list.length == 0) {
-					console.log("Last promise removed from registry " + name, e.detail, "resolving", controlled.promise);
+					console.log("All promises removed from registry " + name, e.detail, "resolving", controlled.promise);
 					debugger;
 					controlled.resolve(void(0));
 				} else {

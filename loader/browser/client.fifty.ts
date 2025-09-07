@@ -171,10 +171,10 @@ namespace slime {
 				const { verify } = fifty;
 				const window = fifty.global.window;
 				const inonit = fifty.global.window["inonit"] as slime.browser.Runtime;
-				const Promise: PromiseConstructor = fifty.global.window["Promise"]
+				const Promise: PromiseConstructor = fifty.global.window["Promise"];
 
 				//	TODO	Move to Fifty itself; this is really a test of Fifty's asynchrony handling
-				fifty.tests.wip = function() {
+				fifty.tests.regression = function() {
 					fifty.run(function two() {
 						Promise.resolve(2).then(function checkTwo(value) {
 							verify(value).is(2);
@@ -195,6 +195,13 @@ namespace slime {
 							}
 						})
 					});
+				};
+
+				fifty.tests.wip = fifty.tests.exports.Content;
+
+				fifty.tests.commit = function() {
+					fifty.run(fifty.tests.regression);
+					fifty.run(fifty.tests.exports.Content);
 				}
 			}
 		//@ts-ignore

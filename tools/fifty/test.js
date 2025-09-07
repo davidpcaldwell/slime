@@ -176,7 +176,7 @@
 				start: function() {
 					//	It appears need to launch a null promise here to trigger the flow in case there are no other asynhronous
 					//	promises involved
-					var executor = function promises(resolve,reject) {
+					var executor = function nullPromise(resolve,reject) {
 						resolve(void(0));
 					};
 					executor.toString = function() {
@@ -273,7 +273,7 @@
 			}
 
 			if (ascope) {
-				var executor = function(resolve,reject) {
+				var executor = function synchronous(resolve,reject) {
 					execute();
 					ascope.test.log("Resolving executeTestScope<" + name + ">");
 					resolve(void(0));
