@@ -7,8 +7,8 @@
 namespace slime.definition.test.promises {
 	export namespace internal {
 		export type Events = slime.$api.event.Emitter<{
-			created: Promise<any>
-			settled: Promise<any>
+			created: any
+			settled: any
 		}>
 	}
 
@@ -41,6 +41,7 @@ namespace slime.definition.test.promises {
 	export interface Export {
 		Registry: (p?: { name: string }) => Registry
 		Promise: PromiseConstructor
+		NativePromise: PromiseConstructor
 		console: slime.external.lib.dom.Console
 
 		/**

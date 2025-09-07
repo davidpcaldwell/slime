@@ -110,6 +110,41 @@
 			}
 		)();
 
+		/**
+		 * @param { slime.browser.Base } base
+		 * @returns { slime.thread.type.Asynchronous<slime.runtime.content.Store<string>> }
+		 */
+		var Content = function(base) {
+			return {
+				get: function(path) {
+					console.log("Fetching Content ...");
+					var x = window.fetch(base.relative(path.join("/")))
+						.then(function(response) {
+							console.log("Fetched headers; status = " + response.status);
+							if (response.status >= 400) throw new Error("HTTP status: " + response.status);
+							var rv = response.text();
+							// debugger;
+							return rv;
+						})
+						.then(function(string) {
+							return {
+								present: true,
+								value: string
+							}
+						});
+					debugger;
+					//	TODO	get catch working
+					return x
+					// .catch(function(reason) {
+					// 	return {
+					// 		present: false
+					// 	}
+					// })
+					;
+				}
+			}
+		};
+
 		/** @type { slime.browser.Exports } */
 		var $exports = (
 			function() {
@@ -360,6 +395,9 @@
 							script: getCurrentScriptBase,
 							page: getCurrentPageBase()
 						},
+						// Content: {
+						// 	page: Content(getCurrentPageBase())
+						// },
 						//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
 						//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
 						base: bootstrap.url,

@@ -242,6 +242,7 @@
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
 		var executeTestScope = function(ascope,name,execute) {
+			debugger;
 			if (ascope) ascope.test.log("async tests: starting scope", name, ascope.test.depth());
 			if (ascope) ascope.start();
 			if (ascope) ascope.test.setName(name);
@@ -274,16 +275,19 @@
 			if (ascope) {
 				var executor = function(resolve,reject) {
 					execute();
+					ascope.test.log("Resolving executeTestScope<" + name + ">");
 					resolve(void(0));
 				};
 				executor.toString = function() {
 					return "executeTestScope <" + name + ">";
 				}
 
+				ascope.test.log("async tests: creating promise for scope", name);
 				return new $context.promises.Promise(executor).then(function(executed) {
+					if (name == "two") debugger;
 					ascope.test.log("async tests: waiting for scope", name);
 					return ascope.wait();
-				}).then(function(done) {
+				}).then(function done(done) {
 					$context.promises.console.log("async tests: computing after() for", name);
 					return Promise.resolve(after());
 				});
