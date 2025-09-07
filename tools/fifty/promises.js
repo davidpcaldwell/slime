@@ -20,7 +20,8 @@
 		/** @type { slime.definition.test.promises.internal.Events } */
 		var events = $api.events.emitter();
 
-		/** @typedef { ConstructorParameters<PromiseConstructor>[0] } Executor */
+		/** @typedef { slime.definition.test.promises.internal.Executor } Executor */
+		/** @typedef { slime.definition.test.promises.internal.Identifier } Identifier */
 
 		var ordinal = 0;
 
@@ -35,6 +36,7 @@
 				this.then = void(0);
 				this.catch = void(0);
 
+				/** @type { Identifier } */
 				var identifier = {
 					executor: executor,
 					promise: void(0)
@@ -250,8 +252,10 @@
 			var isUnderTest = function() {
 				return (name == "one") || (name == "two")
 			};
+			/** @type { slime.definition.test.promises.internal.Identifier[] } */
 			var list = [];
 
+			/** @type { slime.$api.event.Handler<slime.definition.test.promises.internal.Identifier> } */
 			var created = function(e) {
 				console.log("registering created promise with", name, e.detail);
 				// if (name == "two") debugger;
@@ -264,7 +268,10 @@
 
 			events.listeners.add("created", created);
 
-			//	Unused but could be used to remove promises when they are resolved / caught, should that become necessary
+			/**
+			 *
+			 * @param { slime.definition.test.promises.internal.Identifier } instance
+			 */
 			var remove = function(instance) {
 				var index = list.indexOf(instance);
 				if (index == -1) {
@@ -278,14 +285,15 @@
 				}
 			};
 
+			/** @type { slime.$api.event.Handler<slime.definition.test.promises.internal.Identifier> } */
 			var settled = function(e) {
 				if (e.detail.promise == controlled.promise["native"]) return;
 				console.log("Settled in " + name, e.detail);
-				if (isUnderTest) {
+				if (isUnderTest()) {
 					debugger;
 				}
 				remove(e.detail);
-				if (isUnderTest) {
+				if (isUnderTest()) {
 					console.log("Removed; now " + name + ":", list);
 				}
 				if (list.length == 0) {
@@ -302,7 +310,6 @@
 			var controlled = ControlledPromise({ id: "Promise for Registry " + name});
 			//	We used to use our own promises here and did not want the ControlledPromise to count as "registered." Now we just
 			//	use the out-of-the-box Promise implementation for ControlledPromise objects.
-			remove(controlled.promise);
 			list = list.filter(function(item) {
 				return item.promise != controlled.promise;
 			});
