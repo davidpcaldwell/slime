@@ -60,7 +60,7 @@
 
 				var nativePromise = new NativePromiseConstructor(RegisteringExecutor(executor));
 
-				var decorate = function(nativePromise,executor) {
+				var decorate = function recurse(nativePromise,executor) {
 					var rv = nativePromise.then(
 						function(value) {
 							events.fire("settled", identifier);
@@ -75,17 +75,24 @@
 					rv["executor"] = (executor) ? executor.toString() : void(0);
 					rv["id"] = ++ordinal;
 
+					rv.then = function(onfulfilled, onrejected) {
+						var rv = NativePromiseConstructor.prototype.then.call(this, onfulfilled, onrejected);
+						rv = recurse(rv, void(0));
+						rv["chainedFrom"] = this;
+						return rv;
+					};
+
 					return rv;
 				}
 
 				identifier.promise = decorate(nativePromise, executor);
 
-				identifier.promise.then = function(onfulfilled, onrejected) {
-					var rv = NativePromiseConstructor.prototype.then.call(identifier.promise, onfulfilled, onrejected);
-					rv = decorate(rv, void(0));
-					rv["chainedFrom"] = identifier.promise;
-					return rv;
-				}
+				// identifier.promise.then = function(onfulfilled, onrejected) {
+				// 	var rv = NativePromiseConstructor.prototype.then.call(identifier.promise, onfulfilled, onrejected);
+				// 	rv = decorate(rv, void(0));
+				// 	rv["chainedFrom"] = identifier.promise;
+				// 	return rv;
+				// }
 
 				return identifier.promise;
 			}
