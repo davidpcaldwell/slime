@@ -82,6 +82,7 @@
 
 				identifier.promise.then = function(onfulfilled, onrejected) {
 					var rv = NativePromiseConstructor.prototype.then.call(identifier.promise, onfulfilled, onrejected);
+					rv = decorate(rv, void(0));
 					rv["chainedFrom"] = identifier.promise;
 					return rv;
 				}
