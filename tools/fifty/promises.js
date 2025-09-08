@@ -58,23 +58,35 @@
 					}
 				};
 
-				var underlying = new NativePromiseConstructor(RegisteringExecutor(executor));
-				underlying["executor"] = executor.toString();
-				underlying["id"] = ++ordinal;
-				identifier.promise = underlying.then(
-					function(value) {
-						events.fire("settled", identifier);
-						return value;
-					},
-					function(error) {
-						events.fire("settled", identifier);
-						throw error;
-					}
-				);
+				var nativePromise = new NativePromiseConstructor(RegisteringExecutor(executor));
 
-				var rv = identifier.promise;
+				var decorate = function(nativePromise,executor) {
+					var rv = nativePromise.then(
+						function(value) {
+							events.fire("settled", identifier);
+							return value;
+						},
+						function(error) {
+							events.fire("settled", identifier);
+							throw error;
+						}
+					);
 
-				return rv;
+					rv["executor"] = (executor) ? executor.toString() : void(0);
+					rv["id"] = ++ordinal;
+
+					return rv;
+				}
+
+				identifier.promise = decorate(nativePromise, executor);
+
+				identifier.promise.then = function(onfulfilled, onrejected) {
+					var rv = NativePromiseConstructor.prototype.then.call(identifier.promise, onfulfilled, onrejected);
+					rv["chainedFrom"] = identifier.promise;
+					return rv;
+				}
+
+				return identifier.promise;
 			}
 			//	Copy all properties
 			for (var x in NativePromiseConstructor) {
