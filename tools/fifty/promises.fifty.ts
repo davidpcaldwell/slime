@@ -9,6 +9,7 @@ namespace slime.definition.test.promises {
 		export type Executor = ConstructorParameters<PromiseConstructor>[0]
 
 		export interface Identifier {
+			id: number
 			executor: Executor
 			promise: Promise<any>
 		}

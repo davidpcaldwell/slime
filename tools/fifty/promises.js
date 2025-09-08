@@ -38,6 +38,7 @@
 
 				/** @type { Identifier } */
 				var identifier = {
+					id: ++ordinal,
 					executor: executor,
 					promise: void(0)
 				};
@@ -128,7 +129,6 @@
 				return "<ControlledPromise " + id + ">";
 			}
 			var promise = new RegisteredPromiseConstructor(executor);
-			promise.toString = executor.toString;
 			//	TODO	seems like a race condition, how can we assume resolver and rejector have been initialized?
 			return {
 				//@ts-ignore
@@ -287,7 +287,7 @@
 
 			/** @type { slime.$api.event.Handler<slime.definition.test.promises.internal.Identifier> } */
 			var settled = function(e) {
-				if (e.detail.promise == controlled.promise["native"]) return;
+				//if (e.detail.promise == controlled.promise["native"]) return;
 				console.log("Settled in " + name, e.detail);
 				if (isUnderTest()) {
 					debugger;
