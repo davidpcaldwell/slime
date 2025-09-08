@@ -37,13 +37,13 @@
 				this.catch = void(0);
 
 				/** @type { Identifier } */
-				var identifier = {
+				var executorIdentifier = {
 					id: ++ordinal,
 					executor: executor,
 					promise: void(0)
 				};
 
-				events.fire("created", identifier);
+				events.fire("created", executorIdentifier);
 
 				var RegisteringExecutor = function(executor) {
 					return function(resolve,reject) {
@@ -60,7 +60,7 @@
 
 				var nativePromise = new NativePromiseConstructor(RegisteringExecutor(executor));
 
-				var decorate = function recurse(nativePromise,executor) {
+				var decorate = function recurse(nativePromise,identifier,executor) {
 					var rv = nativePromise.then(
 						function(value) {
 							events.fire("settled", identifier);
@@ -77,17 +77,23 @@
 
 					rv.then = function(onfulfilled, onrejected) {
 						var rv = NativePromiseConstructor.prototype.then.call(this, onfulfilled, onrejected);
-						rv = recurse(rv, void(0));
+						/** @type { Identifier } */
+						var thenIdentifier = {
+							id: ++ordinal,
+							executor: void(0),
+							promise: rv,
+						}
+						rv = recurse(rv, thenIdentifier, void(0));
 						rv["chainedFrom"] = this;
 						return rv;
 					};
 
+					identifier.promise = rv;
+
 					return rv;
 				}
 
-				identifier.promise = decorate(nativePromise, executor);
-
-				return identifier.promise;
+				return decorate(nativePromise, executorIdentifier, executor);
 			}
 			//	Copy all properties
 			for (var x in NativePromiseConstructor) {
