@@ -180,6 +180,12 @@ namespace slime {
 							verify(value).is(2);
 						})
 					});
+
+					fifty.run(function one() {
+						Promise.resolve(3).then( x => x * 2 ).then( x => x + 2 ).then(function(value) {
+							verify(value).is(8);
+						})
+					})
 				}
 
 				fifty.tests.exports.Content = function() {
@@ -197,7 +203,9 @@ namespace slime {
 					});
 				};
 
-				fifty.tests.wip = fifty.tests.exports.Content;
+				fifty.tests.wip = function() {
+					fifty.run(fifty.tests.exports.Content);
+				};
 
 				fifty.tests.commit = function() {
 					fifty.run(fifty.tests.regression);
