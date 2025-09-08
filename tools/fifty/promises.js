@@ -73,7 +73,7 @@
 					);
 
 					rv["executor"] = (executor) ? executor.toString() : void(0);
-					rv["id"] = ++ordinal;
+					rv["id"] = identifier.id;
 
 					rv.then = function(onfulfilled, onrejected) {
 						var rv = NativePromiseConstructor.prototype.then.call(this, onfulfilled, onrejected);
