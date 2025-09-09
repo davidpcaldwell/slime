@@ -48,7 +48,7 @@
 		 * @returns { Executor }
 		 */
 		var RegisteringExecutor = function(executor, identifier) {
-			if (identifier.id == 14) debugger;
+			if (identifier.id == 38) debugger;
 			return function(resolve,reject) {
 				executor(
 					function(value) {
@@ -100,7 +100,7 @@
 					promise: this,
 					from: {
 						id: defaulted["id"],
-						onfulfilled: onfulfilled.toString(),
+						onfulfilled: (onfulfilled) ? onfulfilled.toString() : void(0),
 						onrejected: (onrejected) ? onrejected.toString() : void(0),
 						promise: defaulted
 					}
@@ -284,94 +284,94 @@
 			}
 		};
 
-		// var RegisteredFetch = (
-		// 	function(nativeFetch) {
-		// 		var PuppetWrapper = function(promise,id) {
-		// 			var pid = "fetch " + id + ":" + ++controlledPromiseId;
-		// 			var puppet = ControlledPromise({ id: pid });
-		// 			console.log("PuppetWrapper " + pid + " - created");
-		// 			promise
-		// 				.then(function(value) {
-		// 					console.log("PuppetWrapper " + pid + " - settled - fulfilled", { promise: promise, value: value });
-		// 					puppet.resolve(value);
-		// 					return value;
-		// 				})
-		// 				.catch(function(error) {
-		// 					console.log("PuppetWrapper " + pid + " - settled - rejected", { promise: promise, error: error });
-		// 					puppet.reject(error);
-		// 					throw error;
-		// 				})
-		// 			;
-		// 			return puppet.promise;
-		// 		};
+		var RegisteredFetch = (
+			function(nativeFetch) {
+				var PuppetWrapper = function(promise,id) {
+					var pid = "fetch " + id + ":" + ++controlledPromiseId;
+					var puppet = ControlledPromise({ id: function() { return pid; } });
+					console.log("PuppetWrapper " + pid + " - created");
+					promise
+						.then(function(value) {
+							console.log("PuppetWrapper " + pid + " - settled - fulfilled", { promise: promise, value: value });
+							puppet.resolve(value);
+							return value;
+						})
+						.catch(function(error) {
+							console.log("PuppetWrapper " + pid + " - settled - rejected", { promise: promise, error: error });
+							puppet.reject(error);
+							throw error;
+						})
+					;
+					return puppet.promise;
+				};
 
-		// 		var ResponseWrapper = function(response) {
-		// 			var MethodWrapper = function(object,methodName) {
-		// 				var was = object[methodName];
-		// 				return function() {
-		// 					//return PuppetWrapper(was.call(object), methodName);
-		// 					/** @type { Promise<any> } */
-		// 					var promise = was.call(object);
-		// 					return new RegisteredPromiseConstructor(PromiseExecutor(promise));
-		// 				}
-		// 			};
+				var ResponseWrapper = function(response) {
+					var MethodWrapper = function(object,methodName) {
+						var was = object[methodName];
+						return function() {
+							//return PuppetWrapper(was.call(object), methodName);
+							/** @type { Promise<any> } */
+							var promise = was.call(object);
+							return new MyPromise(PromiseExecutor(promise));
+						}
+					};
 
-		// 			return Object.assign(response, {
-		// 				text: MethodWrapper(response, "text")
-		// 			});
-		// 		}
+					return Object.assign(response, {
+						text: MethodWrapper(response, "text")
+					});
+				}
 
-		// 		/** @type { Window["fetch"] } */
-		// 		return function(path, init) {
-		// 			return new RegisteredPromiseConstructor(
-		// 				PromiseExecutor(
-		// 					nativeFetch(path, init).then(function(/** @type { Response } */response) {
-		// 						return ResponseWrapper(response);
-		// 					})
-		// 				)
-		// 			);
-		// 			// var puppet = ControlledPromise({ id: "fetch " + ++controlledPromiseId });
-		// 			// console.log("fetch - created");
-		// 			// //events.fire("created", puppet.promise);
-		// 			// var nativeFetch = was(path, init);
-		// 			// nativeFetch.then(function(value) {
-		// 			// 	console.log("fetch - settled - fulfilled", nativeFetch, value);
-		// 			// 	puppet.resolve(value);
-		// 			// 	return ResponseWrapper(value);
-		// 			// }).catch(function(error) {
-		// 			// 	console.log("fetch - settled - rejected", nativeFetch, error);
-		// 			// 	puppet.reject(error);
-		// 			// 	//events.fire("settled", registered);
-		// 			// 	throw error;
-		// 			// });
-		// 			// //	Doesn't like that puppet.promise is not parameterized
-		// 			// //@ts-ignore
-		// 			// return puppet.promise;
-		// 		}
-		// 		// /** @type { Window["fetch"] } */
-		// 		// return function(path, init) {
-		// 		// 	var puppet = ControlledPromise({ id: "fetch " + ++controlledPromiseId });
-		// 		// 	console.log("fetch - created");
-		// 		// 	//events.fire("created", puppet.promise);
-		// 		// 	var nativeFetch = was(path, init);
-		// 		// 	nativeFetch.then(function(value) {
-		// 		// 		console.log("fetch - settled - fulfilled", nativeFetch, value);
-		// 		// 		puppet.resolve(value);
-		// 		// 		return ResponseWrapper(value);
-		// 		// 	}).catch(function(error) {
-		// 		// 		console.log("fetch - settled - rejected", nativeFetch, error);
-		// 		// 		puppet.reject(error);
-		// 		// 		//events.fire("settled", registered);
-		// 		// 		throw error;
-		// 		// 	});
-		// 		// 	//	Doesn't like that puppet.promise is not parameterized
-		// 		// 	//@ts-ignore
-		// 		// 	return puppet.promise;
-		// 		// }
-		// 	}
-		// )(window.fetch);
+				/** @type { Window["fetch"] } */
+				return function(path, init) {
+					return new MyPromise(
+						PromiseExecutor(
+							nativeFetch(path, init).then(function(/** @type { Response } */response) {
+								return ResponseWrapper(response);
+							})
+						)
+					);
+					// var puppet = ControlledPromise({ id: "fetch " + ++controlledPromiseId });
+					// console.log("fetch - created");
+					// //events.fire("created", puppet.promise);
+					// var nativeFetch = was(path, init);
+					// nativeFetch.then(function(value) {
+					// 	console.log("fetch - settled - fulfilled", nativeFetch, value);
+					// 	puppet.resolve(value);
+					// 	return ResponseWrapper(value);
+					// }).catch(function(error) {
+					// 	console.log("fetch - settled - rejected", nativeFetch, error);
+					// 	puppet.reject(error);
+					// 	//events.fire("settled", registered);
+					// 	throw error;
+					// });
+					// //	Doesn't like that puppet.promise is not parameterized
+					// //@ts-ignore
+					// return puppet.promise;
+				}
+				// /** @type { Window["fetch"] } */
+				// return function(path, init) {
+				// 	var puppet = ControlledPromise({ id: "fetch " + ++controlledPromiseId });
+				// 	console.log("fetch - created");
+				// 	//events.fire("created", puppet.promise);
+				// 	var nativeFetch = was(path, init);
+				// 	nativeFetch.then(function(value) {
+				// 		console.log("fetch - settled - fulfilled", nativeFetch, value);
+				// 		puppet.resolve(value);
+				// 		return ResponseWrapper(value);
+				// 	}).catch(function(error) {
+				// 		console.log("fetch - settled - rejected", nativeFetch, error);
+				// 		puppet.reject(error);
+				// 		//events.fire("settled", registered);
+				// 		throw error;
+				// 	});
+				// 	//	Doesn't like that puppet.promise is not parameterized
+				// 	//@ts-ignore
+				// 	return puppet.promise;
+				// }
+			}
+		)(window.fetch);
 
-		//window.fetch = RegisteredFetch;
+		window.fetch = RegisteredFetch;
 
 		var Registry = function(p) {
 			var name = (p && p.name);
@@ -384,6 +384,9 @@
 			/** @type { slime.definition.test.promises.internal.Dependency[] } */
 			var dependencies = [];
 
+			/** @type { Promise<any>[] } */
+			var external = [];
+
 			// /** @type { slime.$api.event.Handler<slime.definition.test.promises.internal.Identifier> } */
 			// var created = function(e) {
 			// 	promises.push(e.detail);
@@ -395,7 +398,11 @@
 			var needed = function(e) {
 				var it = e.detail;
 				if (!it.on.settled) {
-					dependencies.push(e.detail);
+					if (external.indexOf(it.promise) == -1) {
+						dependencies.push(e.detail);
+					} else {
+						debugger;
+					}
 				}
 				console.log("Needed in " + name, it, "now", dependencies.slice());
 			};
@@ -461,6 +468,9 @@
 						events.listeners.remove("settled", settled);
 					});
 				},
+				external: function(promise) {
+					external.push(promise);
+				},
 				test: {
 					list: function() {
 						debugger;
@@ -485,7 +495,7 @@
 			Promise: window.Promise,
 			//@ts-ignore
 			controlled: function(p) {
-				return ControlledPromise({ id: function() { return p.id; }})
+				return ControlledPromise({ id: function() { return (p && p.id) ? p.id : void(0); }})
 			},
 			Registry: Registry,
 			console: console

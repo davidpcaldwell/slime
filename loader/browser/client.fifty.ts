@@ -173,6 +173,7 @@ namespace slime {
 				const inonit = fifty.global.window["inonit"] as slime.browser.Runtime;
 				const Promise: PromiseConstructor = fifty.global.window["Promise"];
 
+				//	TODO	Move to Fifty itself; this is really a test of Fifty's asynchrony handling
 				fifty.tests.hello = function() {
 					fifty.run(function two() {
 						debugger;
@@ -191,9 +192,7 @@ namespace slime {
 					});
 
 					fifty.run(function two() {
-						debugger;
 						Promise.resolve(3).then( x => x * 2 ).then( x => x + 2 ).then(function(value) {
-							debugger;
 							verify(value).is(8);
 						})
 					})
@@ -213,15 +212,6 @@ namespace slime {
 						})
 					});
 				};
-
-				fifty.tests.wip = function() {
-					fifty.run(fifty.tests.exports.Content);
-				};
-
-				fifty.tests.commit = function() {
-					fifty.run(fifty.tests.regression);
-					fifty.run(fifty.tests.exports.Content);
-				}
 			}
 		//@ts-ignore
 		)(fifty);

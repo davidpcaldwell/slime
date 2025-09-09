@@ -39,6 +39,8 @@ namespace slime.definition.test.promises {
 	export interface Registry {
 		wait: () => Promise<any>
 
+		external: (promise: Promise<any>) => void
+
 		test: {
 			//	TODO	how is this used? just to check length? Or do we need to expose that type?
 			list: () => internal.Dependency[]

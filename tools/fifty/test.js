@@ -203,6 +203,9 @@
 				},
 				child: function() {
 					return recurse({ parent: this, name: name + "/" + String(nextChild++) });
+				},
+				external: function(promise) {
+					registry.external(promise);
 				}
 			}
 		};
@@ -276,7 +279,6 @@
 
 			if (ascope) {
 				var executor = function synchronous(resolve,reject) {
-					debugger;
 					execute();
 					ascope.test.log("Resolving executeTestScope<" + name + ">");
 					resolve(void(0));
@@ -295,9 +297,9 @@
 
 				ascope.subscopes().forEach(function(subscope) {
 					rv = rv.then(function(ignore) {
-						return new Promise(
+						return new $context.promises.NativePromise(
 							function(resolve,reject) {
-								subscope().then(function(success) {
+								subscope().then(function forwardTestResult(success) {
 									resolve(success);
 								})
 							}
@@ -305,12 +307,22 @@
 					});
 				});
 
+				// rv = $context.promises.NativePromise.prototype.then.call(
+				// 	rv,
+				// 	function done(done) {
+				// 		$context.promises.console.log("async tests: computing after() for", name);
+				// 		return Promise.resolve(after());
+				// 	}
+				// )
+				debugger;
 				rv = rv
 					.then(function done(done) {
 						$context.promises.console.log("async tests: computing after() for", name);
 						return Promise.resolve(after());
 					})
 				;
+
+				ascope.external(rv);
 
 				return rv;
 			} else {

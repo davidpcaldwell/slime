@@ -325,6 +325,12 @@ namespace slime.fifty.test.internal.test {
 		child: () => AsynchronousScope
 		wait: () => Promise<any>
 
+		/**
+		 * Marks the given Promise as "external" to this scope (for example, the return Promise of the scope). Promises depending
+		 * on this promise will *not* block exit from the scope.
+		 */
+		external: (p: Promise<any>) => void
+
 		test: {
 			log: (...a: any[]) => void
 			depth: () => number
