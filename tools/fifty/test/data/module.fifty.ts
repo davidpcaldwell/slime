@@ -72,6 +72,8 @@ namespace slime.fifty.internal.test.data {
 			});
 
 			fifty.load("no-suite.fifty.ts");
+			//	TODO	this suite is run by a JSAPI call into Fifty at loader/api/old/fifty/api.html, but seems like the execution
+			//			can't possibly be working because the below suite should fail
 			fifty.load("promises.fifty.ts");
 		}
 	}

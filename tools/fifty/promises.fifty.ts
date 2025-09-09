@@ -122,6 +122,7 @@ namespace slime.definition.test.promises {
 				var registry = subject.Registry();
 				fifty.verify(registry).test.list().length.is(0);
 
+				//	TODO	this test appears wrong, it seems like the list length should be zero because of the lack of .then()
 				var a = Promise.resolve(3);
 				var b = Promise.resolve(4);
 				var c = Promise.reject(new Error("5"));

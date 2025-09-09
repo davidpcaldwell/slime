@@ -48,7 +48,6 @@
 		 * @returns { Executor }
 		 */
 		var RegisteringExecutor = function(executor, identifier) {
-			if (identifier.id == 38) debugger;
 			return function(resolve,reject) {
 				executor(
 					function(value) {
@@ -69,11 +68,6 @@
 			}
 		};
 
-		var NormalExecutor = function(executor, identifier) {
-			return executor;
-		}
-
-		// eslint-disable-next-line
 		class MyPromise extends Promise {
 			//@ts-ignore
 			#identifier;
@@ -113,120 +107,10 @@
 			}
 		}
 
-		// var RegisteredPromiseConstructor = (function(NativePromiseConstructor) {
-		// 	/**
-		// 	 * @constructor
-		// 	 * @param { Executor } executor
-		// 	 */
-		// 	function RegisteredPromiseConstructor(executor) {
-		// 		console.log("Invoked RegisteredPromiseConstructor with executor", executor.toString() + " at " + new Error("Stack trace").stack);
-
-		// 		this.then = void(0);
-		// 		this.catch = void(0);
-
-		// 		var MyExecutor = function(executor) {
-		// 			return function(resolve,reject) {
-		// 				executor(
-		// 					function(value) {
-		// 						resolve(value);
-		// 					},
-		// 					function(error) {
-		// 						reject(error);
-		// 					}
-		// 				);
-		// 			}
-		// 		};
-
-		// 		// NativePromiseConstructor.call(this, executor);
-		// 		// var nativePromise = this;
-		// 		var nativePromise = new NativePromiseConstructor(MyExecutor(executor));
-
-		// 		/**
-		// 		 * @this { Promise }
-		// 		 * @param { Promise } nativePromise
-		// 		 * @param { Executor } executor
-		// 		 * @returns
-		// 		 */
-		// 		var decorate = function recurse(nativePromise,executor) {
-		// 			/** @type { Identifier } */
-		// 			var identifier = {
-		// 				id: ++ordinal,
-		// 				executor: void(0),
-		// 				promise: this,
-		// 				pending: false,
-		// 				settled: false
-		// 			};
-
-		// 			if (identifier.id == 16) debugger;
-
-		// 			this["executor"] = (executor) ? executor.toString() : void(0);
-		// 			this["id"] = identifier.id;
-		// 			this["nativePromise"] = nativePromise;
-
-		// 			events.fire("created", identifier);
-
-		// 			this.then = function(onfulfilled, onrejected) {
-		// 				var rv = NativePromiseConstructor.prototype.then.call(
-		// 					nativePromise,
-		// 					function(value) {
-		// 						try {
-		// 							var rv = onfulfilled(value);
-		// 							return rv;
-		// 						} finally {
-		// 							console.log("Settled promise " + identifier.id);
-		// 							events.fire("settled", identifier);
-		// 						}
-		// 					},
-		// 					function(error) {
-		// 						try {
-		// 							var rv = onrejected(error);
-		// 							return rv;
-		// 						} finally {
-		// 							events.fire("settled", identifier);
-		// 						}
-		// 					}
-		// 				);
-		// 				var registered = Object.create(RegisteredPromiseConstructor.prototype);
-		// 				recurse.call(registered, rv, void(0));
-		// 				registered["chainedFrom"] = this;
-		// 				registered["onfulfilled"] = onfulfilled;
-		// 				registered["onrejected"] = onrejected;
-		// 				return registered;
-		// 			};
-		// 		}
-
-		// 		decorate.call(this, nativePromise, executor);
-		// 	}
-		// 	RegisteredPromiseConstructor.prototype = Object.create(NativePromiseConstructor.prototype);
-		// 	RegisteredPromiseConstructor.constructor = RegisteredPromiseConstructor;
-
-		// 	//	Copy all properties
-		// 	for (var x in NativePromiseConstructor) {
-		// 		RegisteredPromiseConstructor[x] = NativePromiseConstructor[x];
-		// 	}
-		// 	//	Make typescript happy if above didn't work
-
-		// 	//	At least in Chrome, this calls Promise constructor
-		// 	RegisteredPromiseConstructor.resolve = function(value) {
-		// 		return new RegisteredPromiseConstructor(function(resolve,reject) {
-		// 			resolve(value);
-		// 		});
-		// 	};
-		// 	RegisteredPromiseConstructor.reject = NativePromiseConstructor.reject;
-
-		// 	RegisteredPromiseConstructor.race = NativePromiseConstructor.race;
-		// 	RegisteredPromiseConstructor.all = function() {
-		// 		return NativePromiseConstructor.all.apply(NativePromiseConstructor, arguments);
-		// 	};
-		// 	return RegisteredPromiseConstructor;
-		// })(window.Promise);
-
 		var NativePromise = window.Promise;
 
-		//window.Promise = RegisteredPromiseConstructor;
 		window.Promise = MyPromise;
 
-		var controlledPromiseId = 0;
 		/**
 		 *
 		 * @param { { id: () => string } } [p]
@@ -286,25 +170,6 @@
 
 		var RegisteredFetch = (
 			function(nativeFetch) {
-				var PuppetWrapper = function(promise,id) {
-					var pid = "fetch " + id + ":" + ++controlledPromiseId;
-					var puppet = ControlledPromise({ id: function() { return pid; } });
-					console.log("PuppetWrapper " + pid + " - created");
-					promise
-						.then(function(value) {
-							console.log("PuppetWrapper " + pid + " - settled - fulfilled", { promise: promise, value: value });
-							puppet.resolve(value);
-							return value;
-						})
-						.catch(function(error) {
-							console.log("PuppetWrapper " + pid + " - settled - rejected", { promise: promise, error: error });
-							puppet.reject(error);
-							throw error;
-						})
-					;
-					return puppet.promise;
-				};
-
 				var ResponseWrapper = function(response) {
 					var MethodWrapper = function(object,methodName) {
 						var was = object[methodName];
@@ -330,44 +195,7 @@
 							})
 						)
 					);
-					// var puppet = ControlledPromise({ id: "fetch " + ++controlledPromiseId });
-					// console.log("fetch - created");
-					// //events.fire("created", puppet.promise);
-					// var nativeFetch = was(path, init);
-					// nativeFetch.then(function(value) {
-					// 	console.log("fetch - settled - fulfilled", nativeFetch, value);
-					// 	puppet.resolve(value);
-					// 	return ResponseWrapper(value);
-					// }).catch(function(error) {
-					// 	console.log("fetch - settled - rejected", nativeFetch, error);
-					// 	puppet.reject(error);
-					// 	//events.fire("settled", registered);
-					// 	throw error;
-					// });
-					// //	Doesn't like that puppet.promise is not parameterized
-					// //@ts-ignore
-					// return puppet.promise;
 				}
-				// /** @type { Window["fetch"] } */
-				// return function(path, init) {
-				// 	var puppet = ControlledPromise({ id: "fetch " + ++controlledPromiseId });
-				// 	console.log("fetch - created");
-				// 	//events.fire("created", puppet.promise);
-				// 	var nativeFetch = was(path, init);
-				// 	nativeFetch.then(function(value) {
-				// 		console.log("fetch - settled - fulfilled", nativeFetch, value);
-				// 		puppet.resolve(value);
-				// 		return ResponseWrapper(value);
-				// 	}).catch(function(error) {
-				// 		console.log("fetch - settled - rejected", nativeFetch, error);
-				// 		puppet.reject(error);
-				// 		//events.fire("settled", registered);
-				// 		throw error;
-				// 	});
-				// 	//	Doesn't like that puppet.promise is not parameterized
-				// 	//@ts-ignore
-				// 	return puppet.promise;
-				// }
 			}
 		)(window.fetch);
 
@@ -378,21 +206,11 @@
 
 			console.log("Created registry: " + name);
 
-			// /** @type { slime.definition.test.promises.internal.Identifier[] } */
-			// var promises = [];
-
 			/** @type { slime.definition.test.promises.internal.Dependency[] } */
 			var dependencies = [];
 
 			/** @type { Promise<any>[] } */
 			var external = [];
-
-			// /** @type { slime.$api.event.Handler<slime.definition.test.promises.internal.Identifier> } */
-			// var created = function(e) {
-			// 	promises.push(e.detail);
-			// };
-
-			// events.listeners.add("created", created);
 
 			/** @type { slime.$api.event.Handler<slime.definition.test.promises.internal.Dependency> } */
 			var needed = function(e) {
@@ -434,9 +252,6 @@
 					debugger;
 					controlled.resolve(void(0));
 				} else {
-					if (name.indexOf("hello") != -1) {
-						debugger;
-					}
 					console.log("still waiting in " + name, dependencies.slice());
 				}
 			}
@@ -453,9 +268,6 @@
 
 			return {
 				wait: function() {
-					if (name.indexOf("hello") != -1) {
-						debugger;
-					}
 					console.log(name, "waiting for list with length", dependencies.length, ":", dependencies.slice());
 					if (dependencies.length == 0) {
 						debugger;
@@ -473,14 +285,10 @@
 				},
 				test: {
 					list: function() {
-						debugger;
-						throw new Error();
-						//return list;
+						return dependencies;
 					},
 					clear: function() {
-						debugger;
-						throw new Error();
-						//list.splice(0,list.length);
+						dependencies.splice(0,dependencies.length);
 					},
 					setName: function(value) {
 						console.log("set name of " + name + " to " + value);
