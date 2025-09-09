@@ -159,9 +159,9 @@ namespace slime {
 		//	TODO	content
 
 		export interface Exports {
-			// Content: {
-			// 	page: slime.thread.type.Asynchronous<slime.runtime.content.Store<string>>
-			// }
+			Content: {
+				page: slime.thread.type.Asynchronous<slime.runtime.content.Store<string>>
+			}
 		}
 
 		(
@@ -171,30 +171,47 @@ namespace slime {
 				const { verify } = fifty;
 				const window = fifty.global.window;
 				const inonit = fifty.global.window["inonit"] as slime.browser.Runtime;
-				const Promise: PromiseConstructor = fifty.global.window["Promise"]
+				const Promise: PromiseConstructor = fifty.global.window["Promise"];
 
-				fifty.tests.wip = function() {
+				//	TODO	Move to Fifty itself; this is really a test of Fifty's asynchrony handling
+				fifty.tests.hello = function() {
 					fifty.run(function two() {
-						Promise.resolve(2).then(function checkTwo(value) {
-							verify(value).is(2);
+						debugger;
+						Promise.resolve("hello").then(function checkTwo(value) {
+							verify(value).is("hello");
 						})
 					});
 				}
 
-				// fifty.tests.exports.Content = function() {
-				// 	fifty.run(function one() {
-				// 		console.log("Fetching via Content.page.get ...");
-				// 		inonit.loader.Content.page.get("../../loader/browser/test/data/a.txt".split("/")).then(function(it) {
-				// 			console.log("Fetched text", it);
-				// 			debugger;
-				// 			if (it.present) {
-				// 				verify(it).value.is("AAA\n");
-				// 			} else {
-				// 				verify("present").is("true");
-				// 			}
-				// 		})
-				// 	});
-				// }
+				//	TODO	Move to Fifty itself; this is really a test of Fifty's asynchrony handling
+				fifty.tests.regression = function() {
+					fifty.run(function one() {
+						Promise.resolve(2).then(function checkTwo(value) {
+							verify(value).is(2);
+						})
+					});
+
+					fifty.run(function two() {
+						Promise.resolve(3).then( x => x * 2 ).then( x => x + 2 ).then(function(value) {
+							verify(value).is(8);
+						})
+					})
+				}
+
+				fifty.tests.exports.Content = function() {
+					fifty.run(function one() {
+						console.log("Fetching via Content.page.get ...");
+						inonit.loader.Content.page.get("../../loader/browser/test/data/a.txt".split("/")).then(function(it) {
+							console.log("Fetched text", it);
+							debugger;
+							if (it.present) {
+								verify(it).value.is("AAA\n");
+							} else {
+								verify("present").is("true");
+							}
+						})
+					});
+				};
 			}
 		//@ts-ignore
 		)(fifty);

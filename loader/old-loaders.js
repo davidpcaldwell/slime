@@ -82,7 +82,9 @@
 			};
 
 			if (p.thread) this.thread.get = function(path) {
-				return p.thread.get(path).then(get);
+				return p.thread.get(path).then(function(value) {
+					return get(value)
+				});
 			}
 
 			if (p.get) {

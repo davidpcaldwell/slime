@@ -118,29 +118,32 @@
 			return {
 				get: function(path) {
 					console.log("Fetching Content ...");
-					var x = window.fetch(base.relative(path.join("/")))
-						.then(function(response) {
-							console.log("Fetched headers; status = " + response.status);
-							if (response.status >= 400) throw new Error("HTTP status: " + response.status);
-							var rv = response.text();
-							// debugger;
-							return rv;
-						})
-						.then(function(string) {
-							return {
-								present: true,
-								value: string
-							}
-						});
+					debugger;
+					var first = window.fetch(base.relative(path.join("/")));
+					//	TODO	key problem with this code is first.then does not create a registered promise, still figuring out
+					//			why
+					var second = first.then(function(response) {
+						console.log("Fetched headers; status = " + response.status);
+						if (response.status >= 400) throw new Error("HTTP status: " + response.status);
+						var rv = response.text();
+						// debugger;
+						return rv;
+					});
+					var third = second.then(function(string) {
+						return {
+							present: true,
+							value: string
+						}
+					});
 					debugger;
 					//	TODO	get catch working
-					return x
+					return third;
 					// .catch(function(reason) {
 					// 	return {
 					// 		present: false
 					// 	}
 					// })
-					;
+					// ;
 				}
 			}
 		};
@@ -395,9 +398,9 @@
 							script: getCurrentScriptBase,
 							page: getCurrentPageBase()
 						},
-						// Content: {
-						// 	page: Content(getCurrentPageBase())
-						// },
+						Content: {
+							page: Content(getCurrentPageBase())
+						},
 						//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
 						//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
 						base: bootstrap.url,

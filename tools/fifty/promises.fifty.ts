@@ -6,17 +6,44 @@
 
 namespace slime.definition.test.promises {
 	export namespace internal {
+		export type Executor = ConstructorParameters<PromiseConstructor>[0]
+
+		export interface Identifier {
+			id: number
+
+			executor: Executor
+
+			settled: boolean
+		}
+
+		export interface Dependency {
+			on: Identifier
+
+			promise: Promise<any>
+
+			from: {
+				id: number
+				onfulfilled: string
+				onrejected: string
+				promise: Promise<any>
+			}
+		}
+
 		export type Events = slime.$api.event.Emitter<{
-			created: any
-			settled: any
+			//created: Identifier
+			needed: Dependency
+			settled: Identifier
 		}>
 	}
 
 	export interface Registry {
 		wait: () => Promise<any>
 
+		external: (promise: Promise<any>) => void
+
 		test: {
-			list: () => Promise<any>[]
+			//	TODO	how is this used? just to check length? Or do we need to expose that type?
+			list: () => internal.Dependency[]
 			clear: () => void
 			setName: (name: string) => void
 		}
