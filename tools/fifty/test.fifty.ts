@@ -299,7 +299,7 @@ namespace slime.fifty.test.internal.test {
 	}
 
 	export type Result = {
-		then: (f: (success: boolean) => any) => any
+		then: (f: (success: boolean) => void) => void
 	}
 
 	export interface Manifest {
@@ -309,12 +309,21 @@ namespace slime.fifty.test.internal.test {
 		}
 	}
 
+	export type AsynchronousSubscope = () => slime.fifty.test.internal.test.Result
+
 	export interface AsynchronousScope {
 		start: () => void
-		then: (v: any) => any
+
+		/**
+		 * Informs this scope of an asynchronous subscope that must be run after its synchronous execution is complete, supplying
+		 * the subscope implementation.
+		 */
+		then: (v: AsynchronousSubscope) => void
+
+		subscopes: () => AsynchronousSubscope[]
+
 		child: () => AsynchronousScope
 		wait: () => Promise<any>
-		now: () => Promise<any>
 
 		test: {
 			log: (...a: any[]) => void

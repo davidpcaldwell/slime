@@ -205,14 +205,15 @@
 
 			var result = (function() {
 				try {
-					return execute(query.file, query.part);
+					var rv = execute(query.file, query.part);
+					return rv;
 				} catch (e) {
 					window.alert(e);
 					return Promise.resolve(false);
 				}
 			})();
 
-			result.then(function(result) {
+			var onResult = function(result) {
 				if (query.results == "true") {
 					var xhr = new XMLHttpRequest();
 					xhr.open("POST","result",false);
@@ -221,7 +222,11 @@
 				} else {
 					window.console.log("result = ", result);
 				}
-			});
+			};
+
+			promises.NativePromise.prototype.then.call(result, onResult);
+
+			//result.then(onResult);
 		};
 
 		window.addEventListener("load", function() {

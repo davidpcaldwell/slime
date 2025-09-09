@@ -10,12 +10,28 @@ namespace slime.definition.test.promises {
 
 		export interface Identifier {
 			id: number
+
 			executor: Executor
+
+			settled: boolean
+		}
+
+		export interface Dependency {
+			on: Identifier
+
 			promise: Promise<any>
+
+			from: {
+				id: number
+				onfulfilled: string
+				onrejected: string
+				promise: Promise<any>
+			}
 		}
 
 		export type Events = slime.$api.event.Emitter<{
-			created: Identifier
+			//created: Identifier
+			needed: Dependency
 			settled: Identifier
 		}>
 	}
@@ -25,7 +41,7 @@ namespace slime.definition.test.promises {
 
 		test: {
 			//	TODO	how is this used? just to check length? Or do we need to expose that type?
-			list: () => internal.Identifier[]
+			list: () => internal.Dependency[]
 			clear: () => void
 			setName: (name: string) => void
 		}
