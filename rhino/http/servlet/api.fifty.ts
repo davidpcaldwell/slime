@@ -34,7 +34,7 @@ namespace slime.servlet {
 		/**
 		 * @deprecated
 		 */
-		js: any
+		js: slime.$api.old.Exports
 
 		java: slime.jrunscript.java.Exports
 		io: slime.jrunscript.io.Exports
@@ -54,6 +54,12 @@ namespace slime.servlet {
 	 * @returns A response.
 	 */
 	export type handler = (request: Request) => Response
+
+	/**
+	 * A partial function that can handle some requests (and decline others). `Handler`s can be assembled into larger handlers,
+	 * and eventually (with a default) be used to create a total function that can handle all requests.
+	 */
+	export type Handler = slime.$api.fp.Partial<Request,Response>
 
 	//	TODO	if it doesn't assign a handle function, then what?
 	//	TODO	indentation below is lost

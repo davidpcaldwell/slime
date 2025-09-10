@@ -874,10 +874,7 @@ namespace slime.$api.fp {
 
 	export namespace partial {
 		export interface Exports {
-			else: <P,R>(p: {
-				partial: fp.Partial<P,R>
-				else: fp.Mapping<P,R>
-			}) => fp.Mapping<P,R>
+			else: <P,R>(p: fp.Mapping<P,R>) => fp.Mapping<fp.Partial<P,R>,fp.Mapping<P,R>>
 		}
 
 		(
@@ -885,6 +882,7 @@ namespace slime.$api.fp {
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
+				const { $api } = fifty.global;
 
 				var subject = fifty.global.$api.fp.Partial;
 
@@ -900,10 +898,10 @@ namespace slime.$api.fp {
 
 					var partial = subject.match(ifOddThenDouble);
 
-					var total = subject.else({
-						partial: partial,
-						else: function(n) { return n * 3 }
-					});
+					var total = $api.fp.now(
+						partial,
+						$api.fp.Partial.else(function(n) { return n * 3 })
+					);
 
 					verify(1).evaluate(total).is(2);
 					verify(2).evaluate(total).is(6);

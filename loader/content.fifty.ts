@@ -4,6 +4,16 @@
 //
 //	END LICENSE
 
+/**
+ * Provides a set of common types for representing hierarchies of contents: for example, filesystems, URL spaces, searchpaths,
+ * archives like TAR and ZIP files, and so forth.
+ *
+ * The `$api.content` APIs provide no implementations of these constructs, but other namespaces do. What the `$api.content` APIs
+ * do provide are a standard set of operations for manipulating these hierarchies, so that you can use the same constructs to
+ * set up a searchpath in any hierarchy, or the same constructs to do MIME-type analysis in any hierarchy.
+ *
+ * The {@link Exports} type, presented to applications as `$api.content`, provides interfaces for using these types.
+ */
 namespace slime.runtime.content {
 	export interface Store<T> {
 		get: (path: string[]) => slime.$api.fp.Maybe<T>
@@ -131,6 +141,9 @@ namespace slime.runtime.content {
 				store: Store<T>
 			}) => slime.$api.fp.Transform<Store<T>>
 
+			/**
+			 * Given a `Store` and a path within it, returns a `Store` that uses that path as the root for a new `Store`.
+			 */
 			path: <T>(p: {
 				path: string[]
 				store: Store<T>
@@ -139,6 +152,9 @@ namespace slime.runtime.content {
 
 		Entry: {
 			is: {
+				/**
+				 * A TypeScript type predicate indicating whether the given `Entry` is an `IndexEntry`.
+				 */
 				IndexEntry: <T>(e: Entry<T>) => e is IndexEntry<T>
 			}
 		}

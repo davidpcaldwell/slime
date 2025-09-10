@@ -11,12 +11,15 @@ namespace slime.runtime.browser.test.server {
 	 * @param { string } resultsPath A path, relative to the served directory, that will both accept the result via POST and return it via GET.
 	 */
 	export interface Exports {
-		create: (
-			resources: slime.jrunscript.file.Directory,
-			serve: slime.jrunscript.file.Directory,
+		create: (p: {
+			resources: slime.jrunscript.file.Directory
+			serve: slime.jrunscript.file.Directory
 			resultsPath: string
-		) => jsh.httpd.Tomcat
+		}) => jsh.httpd.Tomcat
 
+		/**
+		 * Older interface used by loader/browser/test/suite.jsh.js for running JSAPI suites
+		 */
 		start: (p: {
 			tomcat: slime.jsh.httpd.Tomcat
 			resources: slime.jrunscript.file.Directory

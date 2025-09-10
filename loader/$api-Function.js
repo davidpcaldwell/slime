@@ -91,11 +91,13 @@
 					return present ? Maybe.from.some(v.then(p)) : Maybe.from.nothing();
 				}
 			},
-			else: function(c) {
-				return function(p) {
-					var maybe = c.partial(p);
-					if (maybe.present) return maybe.value;
-					return c.else(p);
+			else: function(f) {
+				return function(partial) {
+					return function(p) {
+						var maybe = partial(p);
+						if (maybe.present) return maybe.value;
+						return f(p);
+					}
 				}
 			},
 			/** @type { slime.$api.fp.Exports["Partial"]["impure"] } */

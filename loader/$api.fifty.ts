@@ -9,9 +9,21 @@ interface Function {
 }
 
 /**
- * The `$api` object is provided to all code loaded by the platform loader. It provides basic JavaScript language functionality.
+ *
+ * The `$api` object is provided to all code loaded by the platform loader. It represents the SLIME APIs available on all platforms.
+ * (Some platform-specific APIs are available through properties of the `$api` object, sucn as `$api.jrunscript` and `$api.browser`.)
+ *
+ * ## Functional programming: {@link slime.$api.fp `$api.fp`}
  *
  * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
+ *
+ * ## Handling content: {@link slime.runtime.content `$api.content`}
+ *
+ * The `$api.content` namespace provides the ability to handle _content_. *Content* is defined in SLIME as a hierarchical structure
+ * with a root and containing paths. It can represent a filesystem, a URL space, a ZIP/TAR file, or any other logically hierarchical
+ * structure.
+ *
+ * ## Handling deprecation and API usage
  *
  * Various `$api` methods can "flag" APIs for callers, causing a configurable callback to be executed when they are invoked, to warn
  * the users that the APIs are deprecated or experimental. See the `deprecate` and `experimental` functions of {@link slime.$api.Global |

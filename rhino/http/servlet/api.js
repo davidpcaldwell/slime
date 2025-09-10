@@ -352,20 +352,20 @@
 		};
 
 		(
-			function loadLoaderScript() {
+			function loadServerApi() {
 				//	Populates the Request, http and Handler properties of httpd
-				var loader = (
+				var api = (
 					function() {
-						/** @type { slime.servlet.internal.server.loader.Script } */
-						var script = loaders.api.script("loader.js");
+						/** @type { slime.servlet.internal.server.api.Script } */
+						var script = loaders.api.script("module.js");
 						return script({
-							api: {
+							library: {
 								web: scope.httpd.web
 							}
 						});
 					}
 				)();
-				Object.assign(scope.httpd, loader);
+				Object.assign(scope.httpd, api);
 			}
 		)();
 

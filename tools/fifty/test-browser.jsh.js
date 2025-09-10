@@ -112,8 +112,6 @@
 					};
 				})();
 
-				var loader = new jsh.file.Loader({ directory: jsh.shell.jsh.src });
-
 				var start = jsh.$fifty.browser.test.server.create;
 
 				var resultsPath = (p.options.interactive) ? void(0) : (function() {
@@ -122,7 +120,12 @@
 					return tokens.join("/");
 				})();
 
-				var tomcat = start(paths.toShell.base, paths.toResult.base, resultsPath);
+				var tomcat = start({
+					resources: paths.toShell.base,
+					serve: paths.toResult.base,
+					resultsPath: resultsPath
+				});
+				tomcat.start();
 
 				var host = (function() {
 					if (p.options.browser == "dockercompose:selenium:chrome" || p.options.browser == "dockercompose:selenium:firefox") {
