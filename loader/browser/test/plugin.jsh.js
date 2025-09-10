@@ -39,6 +39,114 @@
 					}
 				};
 
+				//	TODO	rename 'httpd' to 'Global'
+				/**
+				 * @param { slime.servlet.httpd } httpd
+				 * @param { slime.jrunscript.file.Location } serve
+				 * @param { string } resultPath
+				 * @returns { slime.servlet.handler }
+				 */
+				var handler = function(httpd,serve,resultPath) {
+					var content = jsh.file.Location.directory.content.Index(serve);
+
+					/** @type { slime.servlet.Handler } */
+					var contentHandler = httpd.Handler.content({
+						store: content,
+						map: function(location) {
+							var length = $api.fp.now(
+								jsh.file.Location.file.size,
+								$api.fp.world.Sensor.mapping()
+							);
+							/** @type { slime.servlet.response.Properties } */
+							var properties = $api.fp.now(
+								location,
+								$api.fp.Mapping.properties({
+									modified: $api.fp.pipe(jsh.file.Location.lastModified.simple, function(tv) { return new Date(tv); }),
+									length: length,
+									type: $api.fp.pipe( jsh.file.Location.basename, $api.mime.Type.fromName )
+								})
+							);
+							var open = $api.fp.now(
+								jsh.file.Location.file.read.stream(),
+								$api.fp.world.Sensor.mapping(),
+								$api.fp.Partial.impure.exception(function(location) { return new Error("File not found: " + location.pathname )})
+							);
+							return {
+								body: {
+									modified: properties.modified,
+									length: properties.length,
+									type: properties.type,
+									stream: open(location)
+								}
+							}
+						}
+					});
+
+					/** @type { slime.servlet.Handler } */
+					var resultsHandler = (function createResultHandler() {
+						if (!resultPath) return $api.fp.Partial.from.loose(function(request) { return void(0); })
+						/** @type { slime.loader.Script<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
+						var resultServletFactory = $loader.script("handler-results.js");
+
+						var resultServletFile = resultServletFactory({
+							library: {
+								java: jsh.java,
+								shell: jsh.shell
+							}
+						});
+
+						return $api.fp.Partial.from.loose(resultServletFile({
+							url: resultPath
+						}));
+					})()
+
+					/** @type { slime.servlet.Handler } */
+					var typescriptHandler = (function() {
+						var filesystemLoader = new jsh.file.Loader({
+							directory: jsh.file.Pathname(serve.pathname).directory
+						});
+
+						var loose = function handleTypescript(request) {
+							if (/\.ts$/.test(request.path)) {
+								var resource = filesystemLoader.get(request.path);
+								if (resource) {
+									var compiled = typescript.compile(resource.read(String));
+									return {
+										status: { code: 200 },
+										body: {
+											type: "application/javascript",
+											string: compiled
+										}
+									}
+								}
+							}
+						}
+
+						return $api.fp.Partial.from.loose(loose);
+					})();
+
+					return $api.fp.pipe(
+						/** @type { slime.$api.fp.Identity<slime.servlet.Request> } */($api.fp.identity),
+						$api.fp.impure.tap(function(request) {
+							jsh.shell.console("REQUEST: " + request.method + " " + request.path);
+						}),
+						$api.fp.now(
+							$api.fp.switch([
+								typescriptHandler,
+								resultsHandler,
+								contentHandler
+							]),
+							$api.fp.Partial.else(function(request) {
+								return {
+									status: {
+										code: 404
+									}
+								}
+							})
+						)
+					);
+				};
+
 				/**
 				 *
 				 * @param { slime.jrunscript.file.Directory } serve
@@ -53,61 +161,7 @@
 
 						jsh.shell.console("Serving " + serve);
 
-						scope.$exports.handle = scope.httpd.Handler.series(
-							function(request) {
-								jsh.shell.console("REQUEST: " + request.method + " " + request.path);
-								return void(0);
-							},
-							(
-								(typescript)
-									? (function() {
-										var filesystemLoader = new jsh.file.Loader({
-											directory: serve
-										});
-
-										return function handleTypescript(request) {
-											if (/\.ts$/.test(request.path)) {
-												var resource = filesystemLoader.get(request.path);
-												if (resource) {
-													var compiled = typescript.compile(resource.read(String));
-													return {
-														status: { code: 200 },
-														body: {
-															type: "application/javascript",
-															string: compiled
-														}
-													}
-												}
-											}
-										}
-									})()
-									: $api.fp.returning(void(0))
-							),
-							(
-								(resultsPath)
-									? (function createResultHandler() {
-										/** @type { slime.loader.Script<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
-										var resultServletFactory = $loader.script("handler-results.js");
-
-										var resultServletFile = resultServletFactory({
-											library: {
-												java: jsh.java,
-												shell: jsh.shell
-											}
-										});
-
-										return resultServletFile({
-											url: resultsPath
-										})
-									})()
-									: $api.fp.returning(void(0))
-							),
-							scope.httpd.Handler.Loader({
-								loader: new jsh.file.Loader({
-									directory: serve
-								})
-							})
-						)
+						scope.$exports.handle = handler(scope.httpd, serve.pathname.os.adapt(), resultsPath);
 					}
 				};
 

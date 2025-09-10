@@ -43,8 +43,7 @@ namespace slime.jrunscript.file {
 			},void,slime.$api.fp.Maybe<number>>
 
 			/**
-			 * Returns the time the file was last modified, as a JavaScript
-			 * [_time value_](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-time-values-and-time-range).
+			 * Returns the time the file was last modified.
 			 *
 			 * Will return `Maybe.from.nothing()` if the file does not exist.
 			 *
@@ -52,7 +51,7 @@ namespace slime.jrunscript.file {
 			 */
 			fileLastModified: slime.$api.fp.world.Sensor<{
 				pathname: string
-			},void,slime.$api.fp.Maybe<number>>
+			},void,slime.$api.fp.Maybe<slime.external.lib.es5.TimeValue>>
 
 			openOutputStream: slime.$api.fp.world.Sensor<{
 				pathname: string

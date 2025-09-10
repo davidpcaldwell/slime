@@ -4,6 +4,14 @@
 //
 //	END LICENSE
 
+namespace slime.servlet.handler {
+	export interface Exports {
+		content: <T>(p: {
+			store: slime.runtime.content.Store<T>
+			map: slime.$api.fp.Mapping<T,Pick<slime.servlet.Response,"headers"|"body">>
+		}) => slime.servlet.Handler
+	}
+}
 namespace slime.servlet.internal.server.api {
 	export interface Context {
 		library: {

@@ -110,7 +110,8 @@
 			series: void(0),
 			HostRedirect: void(0),
 			Proxy: void(0),
-			Loader: void(0)
+			Loader: void(0),
+			content: void(0)
 		});
 		$exports.Handler.series = function() {
 			var delegates = arguments;
