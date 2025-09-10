@@ -38,13 +38,16 @@ namespace slime.servlet {
 	 */
 	export interface Request {
 		uri: slime.web.Url
+
 		url: slime.web.Url
+
 		source: {
 			/**
 			 * The remote IP address of the requestor.
 			 */
 			ip: string
 		}
+
 		scheme: string
 
 		/**
@@ -113,6 +116,7 @@ namespace slime.servlet {
 			 * The MIME type of the request body.
 			 */
 			type: slime.mime.Object
+
 			form: () => slime.web.Form
 
 			/**
@@ -141,6 +145,9 @@ namespace slime.servlet {
 				getOutputStream(): slime.jrunscript.native.java.io.OutputStream
 			}
 
+			//	This type seems to maybe be the slime.jrunscript.native.inonit.script.servlet.Servlet.Script type?
+			//	TODO	possibly the types in this namespace predate the slime.jrunscript.native convention for dealing with Java
+			//			types and should be merged with their Java equivalents and migrated
 			export namespace Servlet {
 				export interface Script {
 					service(_request: HttpServletRequest, _response: HttpServletResponse)

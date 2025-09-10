@@ -91,10 +91,15 @@
  *
  * ### APIs for all platforms
  *
- * SLIME provides the {@link slime.$api.Global | `$api`} object to all code loaded with SLIME, which provides a number of
- * general-purpose constructs, including a functional programming module available as {@link slime.$api.fp.Exports | `$api.fp`}. A
- * low-level {@link slime.runtime.Platform | `$platform`} object is also provided to all code loaded; `$platform` may provide access
- * to engine-specific capabilities.
+ * SLIME provides its platform-independent {@link slime.$api API} to all code loaded with SLIME via the {@link slime.$api.Global | `$api`}
+ * object, which provides a number of general-purpose constructs, including a functional programming module available as
+ * {@link slime.$api.fp.Exports | `$api.fp`}. A low-level {@link slime.runtime.Platform | `$platform`} object is also provided to
+ * all code loaded; `$platform` may provide access to engine-specific capabilities, but it is likely that `$platform` will be folded
+ * into `$api` in the future.
+ *
+ * Similarly, the SLIME runtime also provides some common tools to runtime embedders, for historical reasons. So in some areas,
+ * multiple embeddings share implementations and specifications of the same functionality, presented in the same or similar ways.
+ * Going forward, the intent is to fold these APIs into the `$api` construct also.
  *
  * #### HTML / XML document codec
  *

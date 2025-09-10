@@ -115,134 +115,138 @@ END LICENSE
 		<div>
 			<h2>Project Management</h2>
 			<div>
-				GitHub <a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">projects</a> are
-				things that can get done; they're releases, as well as projects that are orthogonal to releases and
-				<em>that have an endpoint</em>, and a Backlog project for unscheduled items.
-				Issues should be assigned to at least one project.
+				<h3><a href="https://github.com/davidpcaldwell/slime/milestones?sort=title&direction=asc">Milestones</a></h3>
 			</div>
-			<h3><a href="https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue+is%3Aopen+no%3Aproject">Issues with no assigned project</a></h3>
 			<div>
-				<h3><a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">Open Projects</a></h3>
-				<div id="jsapi">
-					<h4><a href="https://github.com/davidpcaldwell/slime/projects/13">jsapi</a>: migrate old tests to Fifty</h4>
-					<div>
-						The current state of interoperability between the old jsapi tests and the new Fifty tests is as follows:
-						<table>
-							<thead>
-								<tr>
-									<th>Parent</th>
-									<th>Child</th>
-									<th>In-process</th>
-									<th>Fork</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td>jsapi</td>
-									<td>jsapi</td>
-									<td>
-										Supported in a variety of ways, including <code>jsh.unit.html.Suite</code>
-										<code>add()</code>
-									</td>
-									<td>
-										Supported via <code>-stdio</code> protocol
-									</td>
-								</tr>
-								<tr>
-									<td>jsapi</td>
-									<td>Fifty</td>
-									<td>
-										<code>$jsapi.loader.fifty({ path: <i>path</i>, verify: verify })</code>
-									</td>
-									<td>
-										The <code>tools/fifty/test.jsh.js</code> script provides a
-										<code>--view jsapi</code> argument that allows the executed Fifty script to broadcast its
-										results via <code>stdio</code> in a way compatible with jsapi. For jsapi-based tests, this is encapsulated in
-										<code>jsh.unit.fifty.Part(p)</code>, which takes <code>shell</code>, <code>script</code>,
-										and <code>file</code> as properties.
-									</td>
-								</tr>
-								<tr>
-									<td>Fifty</td>
-									<td>jsapi</td>
-									<td>No support; jsapi suites can be replaced by Fifty bottom-up</td>
-									<td>Minimal support: could read exit status</td>
-								</tr>
-								<tr>
-									<td>Fifty</td>
-									<td>Fifty</td>
-									<td>
-										Fifty kit <a href="../local/doc/typedoc/interfaces/slime.fifty.test.kit.html#load">load()</a>
-										methods
-									</td>
-									<td>
-										Minimal support currently: could read exit status. Unclear whether more is needed.
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
+				<h3><a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">Projects</a></h3>
+				<div>
+					GitHub <a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">projects</a> are
+					things that can get done. They are orthogonal to releases but must be things
+					<em>that have an endpoint</em>.
 				</div>
 				<div>
-					<h4><a href="https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue+is%3Aopen+label%3Agraalvm">GraalVM</a>: get SLIME running on GraalVM</h4>
-					<div>
-						To install: <code>./jsh --install-graalvm</code>.
-					</div>
-					<div>
-						To run sample script:
-						<code>env JSH_ENGINE=graal ./jsh jrunscript/jsh/test/jsh-data.jsh.js</code>
-					</div>
-					<div>
-						To run sample script in debugger (currently does not work; needs updating):
-						<code>env JSH_ENGINE=graal JSH_DEBUG_SCRIPT=graal ./jsh.bash jrunscript/jsh/test/jsh-data.jsh.js</code>
-						fails with:
+					<h4><a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">Open Projects</a></h3>
+					<div id="jsapi">
+						<h4><a href="https://github.com/davidpcaldwell/slime/projects/13">jsapi</a>: migrate old tests to Fifty</h4>
 						<div>
-							<pre>
-java.lang.IllegalArgumentException: Could not find option with name inspect.Path
-							</pre>
-						</div>
-						<div>
-							It could be there are additional dependencies needed in the `--install-graalvm` process in
-							the `./jsh` script. To investigate, here is
-							<a href="https://docs.oracle.com/en/graalvm/enterprise/22/docs/tools/chrome-debugger/#inspect-options">Oracle's documentation</a>
-							for reference.
+							The current state of interoperability between the old jsapi tests and the new Fifty tests is as follows:
+							<table>
+								<thead>
+									<tr>
+										<th>Parent</th>
+										<th>Child</th>
+										<th>In-process</th>
+										<th>Fork</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>jsapi</td>
+										<td>jsapi</td>
+										<td>
+											Supported in a variety of ways, including <code>jsh.unit.html.Suite</code>
+											<code>add()</code>
+										</td>
+										<td>
+											Supported via <code>-stdio</code> protocol
+										</td>
+									</tr>
+									<tr>
+										<td>jsapi</td>
+										<td>Fifty</td>
+										<td>
+											<code>$jsapi.loader.fifty({ path: <i>path</i>, verify: verify })</code>
+										</td>
+										<td>
+											The <code>tools/fifty/test.jsh.js</code> script provides a
+											<code>--view jsapi</code> argument that allows the executed Fifty script to broadcast its
+											results via <code>stdio</code> in a way compatible with jsapi. For jsapi-based tests, this is encapsulated in
+											<code>jsh.unit.fifty.Part(p)</code>, which takes <code>shell</code>, <code>script</code>,
+											and <code>file</code> as properties.
+										</td>
+									</tr>
+									<tr>
+										<td>Fifty</td>
+										<td>jsapi</td>
+										<td>No support; jsapi suites can be replaced by Fifty bottom-up</td>
+										<td>Minimal support: could read exit status</td>
+									</tr>
+									<tr>
+										<td>Fifty</td>
+										<td>Fifty</td>
+										<td>
+											Fifty kit <a href="../local/doc/typedoc/interfaces/slime.fifty.test.kit.html#load">load()</a>
+											methods
+										</td>
+										<td>
+											Minimal support currently: could read exit status. Unclear whether more is needed.
+										</td>
+									</tr>
+								</tbody>
+							</table>
 						</div>
 					</div>
-				</div>
-				<div>
-					<h4><a href="https://github.com/davidpcaldwell/slime/projects/4">Reorganize source tree</a>: better names in better locations</h4>
-				</div>
-				<div>
-					<h4><a href="https://github.com/davidpcaldwell/slime/projects/7">JCEF</a>: Use an embedded Chromium rather than a forked Chrome for UIs</h4>
-				</div>
-				<div>
-					<h4><a href="https://github.com/davidpcaldwell/slime/projects/19">loader/document</a>: improve HTML parsing</h4>
 					<div>
-						<h5><a href="../local/doc/typedoc/interfaces/slime.runtime.document.source.export.html">Source-level parser</a></h5>
+						<h4><a href="https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue+is%3Aopen+label%3Agraalvm">GraalVM</a>: get SLIME running on GraalVM</h4>
 						<div>
-							Work is ongoing at <code>loader/document/source.js</code>.
+							To install: <code>./jsh --install-graalvm</code>.
 						</div>
 						<div>
-							<h6>Replacing JSAPI</h6>
+							To run sample script:
+							<code>env JSH_ENGINE=graal ./jsh jrunscript/jsh/test/jsh-data.jsh.js</code>
+						</div>
+						<div>
+							To run sample script in debugger (currently does not work; needs updating):
+							<code>env JSH_ENGINE=graal JSH_DEBUG_SCRIPT=graal ./jsh.bash jrunscript/jsh/test/jsh-data.jsh.js</code>
+							fails with:
 							<div>
-								One other potential goal, although jsapi is going away, would be to replace DOM in
-								<code>loader/browser/test/api.js</code> and
-								JsapiHtml in loader/api/old/jsh/html.js; this feeds
-								into loader/api/old/api.html.js as the <code>html</code> argument to ApiHtmlTests.
+								<pre>
+	java.lang.IllegalArgumentException: Could not find option with name inspect.Path
+								</pre>
 							</div>
 							<div>
-								First step would be to build an adapter at loader/api/old/document-adapter.js that converts a loader/document
-								document into a JSAPI-compatible html object. An additional property can be added to loader/api/old/jsh/html.js
-								PartDescriptor argument to specify the creation of this new kind of document in loadApiHtml().
-							</div>
-							<div>
-								An equivalent browser migration for replacing the JSAPI DOM in loader/browser/test/api.js is then needed.
+								It could be there are additional dependencies needed in the `--install-graalvm` process in
+								the `./jsh` script. To investigate, here is
+								<a href="https://docs.oracle.com/en/graalvm/enterprise/22/docs/tools/chrome-debugger/#inspect-options">Oracle's documentation</a>
+								for reference.
 							</div>
 						</div>
 					</div>
 					<div>
-						<h5><a href="https://jsoup.org/">JSoup</a></h5>
-						<a href="https://jsoup.org/apidocs/overview-summary.html">API</a>
+						<h4><a href="https://github.com/davidpcaldwell/slime/projects/4">Reorganize source tree</a>: better names in better locations</h4>
+					</div>
+					<div>
+						<h4><a href="https://github.com/davidpcaldwell/slime/projects/7">JCEF</a>: Use an embedded Chromium rather than a forked Chrome for UIs</h4>
+					</div>
+					<div>
+						<h4><a href="https://github.com/davidpcaldwell/slime/projects/19">loader/document</a>: improve HTML parsing</h4>
+						<div>
+							<h5><a href="../local/doc/typedoc/interfaces/slime.runtime.document.source.export.html">Source-level parser</a></h5>
+							<div>
+								Work is ongoing at <code>loader/document/source.js</code>.
+							</div>
+							<div>
+								<h6>Replacing JSAPI</h6>
+								<div>
+									One other potential goal, although jsapi is going away, would be to replace DOM in
+									<code>loader/browser/test/api.js</code> and
+									JsapiHtml in loader/api/old/jsh/html.js; this feeds
+									into loader/api/old/api.html.js as the <code>html</code> argument to ApiHtmlTests.
+								</div>
+								<div>
+									First step would be to build an adapter at loader/api/old/document-adapter.js that converts a loader/document
+									document into a JSAPI-compatible html object. An additional property can be added to loader/api/old/jsh/html.js
+									PartDescriptor argument to specify the creation of this new kind of document in loadApiHtml().
+								</div>
+								<div>
+									An equivalent browser migration for replacing the JSAPI DOM in loader/browser/test/api.js is then needed.
+								</div>
+							</div>
+						</div>
+						<div>
+							<h5><a href="https://jsoup.org/">JSoup</a></h5>
+							<a href="https://jsoup.org/apidocs/overview-summary.html">API</a>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -270,9 +274,12 @@ java.lang.IllegalArgumentException: Could not find option with name inspect.Path
 			<div>
 				<h3><a href="typescript.api.html">TypeScript integration</a></h3>
 			</div>
+			<!--
+				Broken link below
 			<div>
 				<h3><a href="../tools/fifty/project.html">Fifty contributor documentation</a></h3>
 			</div>
+			-->
 			<div>
 				<h3><a href="../local/wiki/Home">Wiki</a> (local copy; recommended to install
 					<a href="https://chrome.google.com/webstore/detail/markdown-preview-plus/febilkbfcbhebfnokafefeacimjdckgl?hl=en-US">Markdown Preview Plus</a>

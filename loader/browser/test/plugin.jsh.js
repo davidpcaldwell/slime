@@ -41,6 +41,79 @@
 
 				/**
 				 *
+				 * @param { slime.jrunscript.file.Directory } serve
+				 * @param { string } resultsPath
+				 * @returns { slime.jsh.httpd.servlet.DescriptorUsingLoad["load"] }
+				 */
+				var load = function(serve,resultsPath) {
+					if (!serve) debugger;
+					return function(scope) {
+						//	This disables reloading for unit tests; should find a better way to do this rather than just ripping out the method
+						delete scope.httpd.$reload;
+
+						jsh.shell.console("Serving " + serve);
+
+						scope.$exports.handle = scope.httpd.Handler.series(
+							function(request) {
+								jsh.shell.console("REQUEST: " + request.method + " " + request.path);
+								return void(0);
+							},
+							(
+								(typescript)
+									? (function() {
+										var filesystemLoader = new jsh.file.Loader({
+											directory: serve
+										});
+
+										return function handleTypescript(request) {
+											if (/\.ts$/.test(request.path)) {
+												var resource = filesystemLoader.get(request.path);
+												if (resource) {
+													var compiled = typescript.compile(resource.read(String));
+													return {
+														status: { code: 200 },
+														body: {
+															type: "application/javascript",
+															string: compiled
+														}
+													}
+												}
+											}
+										}
+									})()
+									: $api.fp.returning(void(0))
+							),
+							(
+								(resultsPath)
+									? (function createResultHandler() {
+										/** @type { slime.loader.Script<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
+										var resultServletFactory = $loader.script("handler-results.js");
+
+										var resultServletFile = resultServletFactory({
+											library: {
+												java: jsh.java,
+												shell: jsh.shell
+											}
+										});
+
+										return resultServletFile({
+											url: resultsPath
+										})
+									})()
+									: $api.fp.returning(void(0))
+							),
+							scope.httpd.Handler.Loader({
+								loader: new jsh.file.Loader({
+									directory: serve
+								})
+							})
+						)
+					}
+				};
+
+				/**
+				 * @deprecated Replaced by duplicative method `load` above
+				 *
 				 * @param { slime.jsh.httpd.Tomcat } tomcat
 				 * @param { slime.jrunscript.file.Directory } resources
 				 * @param { slime.jrunscript.file.Directory } serve
@@ -129,10 +202,18 @@
 							start: function(p) {
 								configure(p.tomcat, p.resources, p.serve, p.resultsPath);
 							},
-							create: function(resources,serve,resultsPath) {
-								var tomcat = jsh.httpd.Tomcat();
-								configure(tomcat, resources, serve, resultsPath);
-								return tomcat;
+							create: function(p) {
+								var resources = p.resources;
+								var serve = p.serve;
+								var resultsPath = p.resultsPath;
+								return jsh.httpd.tomcat.Server.from.configuration({
+									resources: new jsh.file.Loader({
+										directory: resources
+									}),
+									servlet: {
+										load: load(serve, resultsPath)
+									}
+								})
 							}
 						}
 					}
