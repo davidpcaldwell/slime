@@ -5,8 +5,11 @@
 //	END LICENSE
 
 namespace slime.jrunscript.native.inonit.script.engine {
+
 	/**
-	 * An object that can load the SLIME Java runtime.
+	 * A Java object that can load the SLIME Java runtime.
+	 *
+	 * See [Loader.java]({@link ./Loader.java}). (file://./Loader.java}
 	 */
 	export interface Loader {
 		//	TODO	rename to inonit.script.engine.Runtime? Or something clearer? Maybe rename methods to getSlimeRuntimeCode() and
@@ -30,6 +33,9 @@ namespace slime.jrunscript.native.inonit.script.engine {
 		 */
 		getCoffeeScript: () => slime.jrunscript.native.java.lang.String
 
+		/**
+		 * Returns a {@link Loader.Typescript} if one is available; otherwise returns `null`.
+		 */
 		getTypescript: () => Loader.Typescript
 	}
 

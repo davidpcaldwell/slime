@@ -75,7 +75,9 @@
 				}
 				return $api.fp.Maybe.from.nothing()
 			};
-		}
+		};
+
+		api.loader.Handler.content = ContentHandler;
 
 		$export({
 			Handler: api.loader.Handler,

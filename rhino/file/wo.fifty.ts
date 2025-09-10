@@ -100,8 +100,11 @@ namespace slime.jrunscript.file {
 		}
 
 		export interface Exports {
+			/**
+			 * See {@link slime.jrunscript.file.world.Filesystem.fileLastModified} for the semantics of this number.
+			 */
 			lastModified: {
-				simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,number>
+				simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.external.lib.es5.TimeValue>
 			}
 		}
 	}

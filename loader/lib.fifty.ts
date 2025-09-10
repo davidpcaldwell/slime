@@ -52,6 +52,11 @@ namespace slime.external.lib.es5 {
 	export type Object = slime.external.lib.rename.es5._Object
 	export type ObjectConstructor = slime.external.lib.rename.es5._ObjectConstructor
 	export type JSON = slime.external.lib.rename.es5._JSON
+
+	/**
+	 * An ECMAScript [_time value_](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-time-values-and-time-range).
+	 */
+	export type TimeValue = number
 }
 
 namespace slime.external.lib.dom {
