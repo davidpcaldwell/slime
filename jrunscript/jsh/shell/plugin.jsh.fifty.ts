@@ -6,14 +6,14 @@
 
 namespace slime.jsh {
 	export interface Global {
+		/**
+		 * APIs related to the external operating system environment. Builds on {@link slime.jrunscript.shell}, but provides
+		 * additional capabilities tied directly to the `jsh` execution environment.
+		 */
 		shell: slime.jsh.shell.Exports
 	}
 }
 
-/**
- * APIs related to the external operating system environment. Builds on {@link slime.jrunscript.shell}, but provides additional
- * capabilities tied directly to the `jsh` execution environment.
- */
 namespace slime.jsh.shell {
 	(
 		function(

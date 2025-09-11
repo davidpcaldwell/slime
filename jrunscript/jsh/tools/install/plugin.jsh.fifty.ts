@@ -724,6 +724,10 @@ namespace slime.jsh {
 
 namespace slime.jsh.shell {
 	export interface Exports {
+		/**
+		 * APIs pertaining to tools that can be installed into the `jsh` shell, like Mozilla Rhino, Apache Tomcat, Node.js,
+		 * Kotlin and Scala, and other development tools.
+		 */
 		tools: slime.jsh.shell.tools.Exports
 	}
 }

@@ -63,6 +63,11 @@
  * See the older [Running `jsh`](../src/jrunscript/jsh/launcher/api.html) page for (possibly outdated) additional information about
  * how to run scripts using `jsh` and configure the shell.
  *
+ * ## Provided APIs
+ *
+ * The APIs available to all SLIME scripts are the SLIME runtime, along with `jrunscript` APIs, available as
+ * {@link slime.$api.jrunscript.Global | `$api`}, and the `jsh` API, available as {@link slime.jsh.Global | `jsh`}.
+ *
  * ## Application types
  *
  * ### User interfaces
