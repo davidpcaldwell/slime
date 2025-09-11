@@ -144,7 +144,6 @@
 						globals: true
 					});
 					rv.java = code.java({
-						globals: true,
 						$slime: $java,
 						logging: {
 							prefix: "slime.servlet"
