@@ -1184,7 +1184,7 @@ namespace slime.$api.fp.world {
 		}
 
 		Ask: {
-			input: <E,T>(handler?: slime.$api.event.Handlers<E>) => (ask: slime.$api.fp.world.Question<E,T>) => slime.$api.fp.impure.Input<T>
+			input: <E,T>(handler?: slime.$api.event.Handlers<E>) => (ask: slime.$api.fp.world.Question<E,T>) => slime.$api.fp.impure.External<T>
 		}
 	}
 

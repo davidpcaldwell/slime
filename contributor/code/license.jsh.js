@@ -154,6 +154,7 @@
 			if (files[i].path == "jsh") extension = "bash";
 			if (files[i].path == ".eslintrc.json") extension = "js";
 			if (files[i].path == "jsconfig.json") extension = "js";
+			if (files[i].path == "jsconfig-fifty-browser-test.json") extension = "js";
 			if (files[i].path == "typedoc.json") extension = "js";
 			if (files[i].path == "typedoc-tsconfig.json") extension = "js";
 			if (files[i].path == ".devcontainer/devcontainer.json") extension = "js";

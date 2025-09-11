@@ -99,7 +99,7 @@ namespace slime.browser.internal.$api {
 					(function() {
 						var counter = 0;
 
-						return function(handler: slime.external.lib.es5.TypescriptFunction, timeout: number, ...arguments) {
+						return function(handler: slime.external.lib.es5.TypescriptFunction, timeout: number, ...rest) {
 							return counter++;
 						};
 					})()

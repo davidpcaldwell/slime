@@ -106,7 +106,7 @@
 			}
 		)();
 
-		/** @type { slime.jrunscript.tools.node.exports.Installations["getVersion"] } */
+		/** @type { slime.jrunscript.tools.node.installation.Exports["getVersion"] } */
 		function getVersion(installation) {
 			return function(events) {
 				/** @type { slime.jrunscript.shell.run.Intention } */
@@ -199,7 +199,7 @@
 		 * @returns
 		 */
 		var Modules = function(p) {
-			/** @type { slime.jrunscript.tools.node.exports.Modules["list"] } */
+			/** @type { slime.jrunscript.tools.node.modules.Exports["list"] } */
 			var list = function() {
 				return function(events) {
 					// var invocation = toShellInvocation({
@@ -308,7 +308,7 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.tools.node.exports.Modules["installed"] } */
+			/** @type { slime.jrunscript.tools.node.modules.Exports["installed"] } */
 			var installed = function(name) {
 				return function(events) {
 					var ask = list();
@@ -320,7 +320,7 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.tools.node.exports.Modules["install"] } */
+			/** @type { slime.jrunscript.tools.node.modules.Exports["install"] } */
 			var install = function(spec) {
 				return function(events) {
 					var invocation = invokeNpm(
@@ -347,7 +347,7 @@
 				}
 			};
 
-			return /** @type { slime.jrunscript.tools.node.exports.Modules } */({
+			return /** @type { slime.jrunscript.tools.node.modules.Exports } */({
 				list: list,
 				installed: installed,
 				install: install,
@@ -782,7 +782,7 @@
 			},
 			exists: (
 				function() {
-					/** @type { slime.jrunscript.tools.node.exports.Installations["exists"]["wo"] } */
+					/** @type { slime.jrunscript.tools.node.installation.Exports["exists"]["wo"] } */
 					var wo = function(installation) {
 						return function(events) {
 							return $api.fp.now.invoke(
