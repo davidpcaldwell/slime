@@ -11,11 +11,6 @@ namespace slime.jrunscript.java {
 	export interface Context {
 		$slime: Pick<slime.jrunscript.runtime.Exports,"java"|"classpath">
 
-		/**
-		 * If `true`, this module modifies global JavaScript objects.
-		 */
-		globals: boolean
-
 		logging: {
 			prefix: string
 		}
@@ -37,7 +32,6 @@ namespace slime.jrunscript.java {
 			var script: Script = fifty.$loader.script("module.js");
 			return script({
 				$slime: fifty.jsh.$slime,
-				globals: false,
 				logging: {
 					prefix: "slime.jrunscript.host.test"
 				}

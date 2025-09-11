@@ -13,10 +13,6 @@ namespace slime.jrunscript.file {
 		pathext: string[]
 
 		api: {
-			/**
-			 * @deprecated
-			 */
-			js: slime.$api.old.Exports
 			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 			loader: {
