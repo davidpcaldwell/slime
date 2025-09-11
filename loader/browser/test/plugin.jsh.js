@@ -132,67 +132,69 @@
 					})();
 
 					//	TODO	existing tests do not pass with this formulation; see #2083
+					//	Even instantiating it runs tsc, so we comment it out for now
+					//	TODO	also it assumes the existence of the given .json at the project root. More design required.
 					/** @type { slime.servlet.Handler } */
-					var tscHandler = (
-						function() {
-							var typescriptCompilerPath = "node/bin/tsc";
-							//typescriptCompilerPath = "node/lib/node_modules/typescript/bin/tsc";
-							var tsc = jsh.shell.jsh.lib.getRelativePath(typescriptCompilerPath);
-							//	TODO	what if tsc does not exist? how would we even tell?
+					// var tscHandler = (
+					// 	function() {
+					// 		var typescriptCompilerPath = "node/bin/tsc";
+					// 		//typescriptCompilerPath = "node/lib/node_modules/typescript/bin/tsc";
+					// 		var tsc = jsh.shell.jsh.lib.getRelativePath(typescriptCompilerPath);
+					// 		//	TODO	what if tsc does not exist? how would we even tell?
 
-							var mkdir = $api.fp.now(
-								jsh.file.world.filesystems.os.temporary({ directory: true }),
-								$api.fp.world.Ask.input()
-							);
-							//	TODO	should be simpler and more directly accessible
-							var tmp = mkdir();
-							jsh.shell.console("output = " + tmp);
-							/** @type { slime.jrunscript.tools.node.Intention } */
-							var intention = {
-								command: "tsc",
-								arguments: [
-									//	TODO	should detect tsconfig.json also; think this code already exists
-									"-p", $api.fp.now(serve, jsh.file.Location.directory.relativePath("jsconfig-fifty-browser-test.json")).pathname,
-									"--outDir", tmp
-								],
-								directory: serve.pathname
-							};
-							var run = $api.fp.now(
-								jsh.shell.tools.node.Installation.Intention.question(intention),
-								$api.fp.world.Sensor.mapping()
-							);
+					// 		var mkdir = $api.fp.now(
+					// 			jsh.file.world.filesystems.os.temporary({ directory: true }),
+					// 			$api.fp.world.Ask.input()
+					// 		);
+					// 		//	TODO	should be simpler and more directly accessible
+					// 		var tmp = mkdir();
+					// 		jsh.shell.console("output = " + tmp);
+					// 		/** @type { slime.jrunscript.tools.node.Intention } */
+					// 		var intention = {
+					// 			command: "tsc",
+					// 			arguments: [
+					// 				//	TODO	should detect tsconfig.json also; think this code already exists
+					// 				"-p", $api.fp.now(serve, jsh.file.Location.directory.relativePath("jsconfig-fifty-browser-test.json")).pathname,
+					// 				"--outDir", tmp
+					// 			],
+					// 			directory: serve.pathname
+					// 		};
+					// 		var run = $api.fp.now(
+					// 			jsh.shell.tools.node.Installation.Intention.question(intention),
+					// 			$api.fp.world.Sensor.mapping()
+					// 		);
 
-							var result = run(jsh.shell.tools.node.installation);
-							if (result.status) {
-								throw new Error("TypeScript compilation errors; status = " + result.status);
-							}
+					// 		var result = run(jsh.shell.tools.node.installation);
+					// 		if (result.status) {
+					// 			throw new Error("TypeScript compilation errors; status = " + result.status);
+					// 		}
 
-							var tsPattern = /^(.*)\.ts$/;
+					// 		var tsPattern = /^(.*)\.ts$/;
 
-							return $api.fp.Partial.from.loose(function(request) {
-								//	TODO	use FP implementation
-								if (!tsPattern.test(request.path)) return void(0);
-								var match = tsPattern.exec(request.path);
-								if (!match) throw new Error("Unreachable, hopefully.");
-								var jspath = match[1] + ".js";
-								debugger;
-								var jsLocation = $api.fp.now(
-									tmp,
-									jsh.file.Location.from.os,
-									jsh.file.Location.directory.relativePath(jspath)
-								);
-								//	TODO	toResponse?
-								//	TODO	check for existence?
-								return {
-									status: { code: 200 },
-									body: {
-										type: "application/javascript",
-										string: jsh.file.Location.file.read.string.simple(jsLocation)
-									}
-								}
-							})
-						}
-					)();
+					// 		return $api.fp.Partial.from.loose(function(request) {
+					// 			//	TODO	use FP implementation
+					// 			if (!tsPattern.test(request.path)) return void(0);
+					// 			var match = tsPattern.exec(request.path);
+					// 			if (!match) throw new Error("Unreachable, hopefully.");
+					// 			var jspath = match[1] + ".js";
+					// 			debugger;
+					// 			var jsLocation = $api.fp.now(
+					// 				tmp,
+					// 				jsh.file.Location.from.os,
+					// 				jsh.file.Location.directory.relativePath(jspath)
+					// 			);
+					// 			//	TODO	toResponse?
+					// 			//	TODO	check for existence?
+					// 			return {
+					// 				status: { code: 200 },
+					// 				body: {
+					// 					type: "application/javascript",
+					// 					string: jsh.file.Location.file.read.string.simple(jsLocation)
+					// 				}
+					// 			}
+					// 		})
+					// 	}
+					// )();
 
 					return $api.fp.pipe(
 						/** @type { slime.$api.fp.Identity<slime.servlet.Request> } */($api.fp.identity),
