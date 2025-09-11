@@ -49,37 +49,43 @@
 				var handler = function(httpd,serve,resultPath) {
 					var content = jsh.file.Location.directory.content.Index(serve);
 
+					/**
+					 * @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location, Pick<slime.servlet.Response, "headers" | "body">> }
+					 */
+					var toResponse = function(location) {
+						if (!jsh.file.Location.file.exists.simple(location)) throw new Error("Unreachable.");
+						var length = $api.fp.now(
+							jsh.file.Location.file.size,
+							$api.fp.world.Sensor.mapping()
+						);
+						/** @type { slime.servlet.response.Properties } */
+						var properties = $api.fp.now(
+							location,
+							$api.fp.Mapping.properties({
+								modified: $api.fp.pipe(jsh.file.Location.lastModified.simple, function(tv) { return new Date(tv); }),
+								length: length,
+								type: $api.fp.pipe( jsh.file.Location.basename, $api.mime.Type.fromName )
+							})
+						);
+						var open = $api.fp.now(
+							jsh.file.Location.file.read.stream(),
+							$api.fp.world.Sensor.mapping(),
+							$api.fp.Partial.impure.exception(function(location) { return new Error("File not found: " + location.pathname )})
+						);
+						return {
+							body: {
+								modified: properties.modified,
+								length: properties.length,
+								type: properties.type,
+								stream: open(location)
+							}
+						}
+					}
+
 					/** @type { slime.servlet.Handler } */
 					var contentHandler = httpd.Handler.content({
 						store: content,
-						map: function(location) {
-							var length = $api.fp.now(
-								jsh.file.Location.file.size,
-								$api.fp.world.Sensor.mapping()
-							);
-							/** @type { slime.servlet.response.Properties } */
-							var properties = $api.fp.now(
-								location,
-								$api.fp.Mapping.properties({
-									modified: $api.fp.pipe(jsh.file.Location.lastModified.simple, function(tv) { return new Date(tv); }),
-									length: length,
-									type: $api.fp.pipe( jsh.file.Location.basename, $api.mime.Type.fromName )
-								})
-							);
-							var open = $api.fp.now(
-								jsh.file.Location.file.read.stream(),
-								$api.fp.world.Sensor.mapping(),
-								$api.fp.Partial.impure.exception(function(location) { return new Error("File not found: " + location.pathname )})
-							);
-							return {
-								body: {
-									modified: properties.modified,
-									length: properties.length,
-									type: properties.type,
-									stream: open(location)
-								}
-							}
-						}
+						map: toResponse
 					});
 
 					/** @type { slime.servlet.Handler } */
@@ -125,6 +131,69 @@
 						return $api.fp.Partial.from.loose(loose);
 					})();
 
+					//	TODO	existing tests do not pass with this formulation; see #2083
+					/** @type { slime.servlet.Handler } */
+					var tscHandler = (
+						function() {
+							var typescriptCompilerPath = "node/bin/tsc";
+							//typescriptCompilerPath = "node/lib/node_modules/typescript/bin/tsc";
+							var tsc = jsh.shell.jsh.lib.getRelativePath(typescriptCompilerPath);
+							//	TODO	what if tsc does not exist? how would we even tell?
+
+							var mkdir = $api.fp.now(
+								jsh.file.world.filesystems.os.temporary({ directory: true }),
+								$api.fp.world.Ask.input()
+							);
+							//	TODO	should be simpler and more directly accessible
+							var tmp = mkdir();
+							jsh.shell.console("output = " + tmp);
+							/** @type { slime.jrunscript.tools.node.Intention } */
+							var intention = {
+								command: "tsc",
+								arguments: [
+									//	TODO	should detect tsconfig.json also; think this code already exists
+									"-p", $api.fp.now(serve, jsh.file.Location.directory.relativePath("jsconfig-fifty-browser-test.json")).pathname,
+									"--outDir", tmp
+								],
+								directory: serve.pathname
+							};
+							var run = $api.fp.now(
+								jsh.shell.tools.node.Installation.Intention.question(intention),
+								$api.fp.world.Sensor.mapping()
+							);
+
+							var result = run(jsh.shell.tools.node.installation);
+							if (result.status) {
+								throw new Error("TypeScript compilation errors; status = " + result.status);
+							}
+
+							var tsPattern = /^(.*)\.ts$/;
+
+							return $api.fp.Partial.from.loose(function(request) {
+								//	TODO	use FP implementation
+								if (!tsPattern.test(request.path)) return void(0);
+								var match = tsPattern.exec(request.path);
+								if (!match) throw new Error("Unreachable, hopefully.");
+								var jspath = match[1] + ".js";
+								debugger;
+								var jsLocation = $api.fp.now(
+									tmp,
+									jsh.file.Location.from.os,
+									jsh.file.Location.directory.relativePath(jspath)
+								);
+								//	TODO	toResponse?
+								//	TODO	check for existence?
+								return {
+									status: { code: 200 },
+									body: {
+										type: "application/javascript",
+										string: jsh.file.Location.file.read.string.simple(jsLocation)
+									}
+								}
+							})
+						}
+					)();
+
 					return $api.fp.pipe(
 						/** @type { slime.$api.fp.Identity<slime.servlet.Request> } */($api.fp.identity),
 						$api.fp.impure.tap(function(request) {
@@ -133,6 +202,7 @@
 						$api.fp.now(
 							$api.fp.switch([
 								typescriptHandler,
+								//tscHandler,
 								resultsHandler,
 								contentHandler
 							]),

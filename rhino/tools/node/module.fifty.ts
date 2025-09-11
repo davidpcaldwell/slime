@@ -79,8 +79,8 @@ namespace slime.jrunscript.tools.node {
 		}
 	}
 
-	export namespace exports {
-		export interface Installations {
+	export namespace installation {
+		export interface Exports {
 			from: {
 				/**
 				 * Given a Node installation location, returns the Node `Installation` corresponding to that location.
@@ -104,7 +104,7 @@ namespace slime.jrunscript.tools.node {
 		/**
 		 * Functions relating to {@link Installation} types.
 		 */
-		Installation: exports.Installations
+		Installation: installation.Exports
 	}
 
 	export interface Exports {
@@ -165,15 +165,15 @@ namespace slime.jrunscript.tools.node {
 		stdio?: slime.jrunscript.shell.run.Intention["stdio"]
 	}
 
-	export namespace exports {
-		export interface Installations {
+	export namespace installation {
+		export interface Exports {
 			Intention: {
 				shell: (argument: Intention) => (installation: slime.jrunscript.tools.node.Installation) => slime.jrunscript.shell.run.Intention
 				question: (argument: Intention) => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 			}
 
 			/** @deprecated */
-			question: Installations["Intention"]["question"]
+			question: Exports["Intention"]["question"]
 		}
 
 		(
@@ -209,8 +209,8 @@ namespace slime.jrunscript.tools.node {
 
 	}
 
-	export namespace exports {
-		export interface Modules {
+	export namespace modules {
+		export interface Exports {
 			list: () => slime.$api.fp.world.Question<void, Module[]>
 
 			installed: (name: string) => slime.$api.fp.world.Question<void, slime.$api.fp.Maybe<Module>>
@@ -242,9 +242,9 @@ namespace slime.jrunscript.tools.node {
 		}
 	}
 
-	export namespace exports {
-		export interface Installations {
-			modules: (installation: node.Installation) => Modules
+	export namespace installation {
+		export interface Exports {
+			modules: (installation: node.Installation) => modules.Exports
 		}
 	}
 
@@ -303,14 +303,14 @@ namespace slime.jrunscript.tools.node {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		Project: exports.Project
+	export namespace project {
+		export interface Exports {
+			modules: (project: node.Project) => (installation: node.Installation) => modules.Exports
+		}
 	}
 
-	export namespace exports {
-		export interface Project {
-			modules: (project: node.Project) => (installation: node.Installation) => Modules
-		}
+	export interface Exports {
+		Project: project.Exports
 	}
 
 	export namespace object {

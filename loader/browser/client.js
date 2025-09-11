@@ -234,6 +234,24 @@
 								js: fetcher.getCode(bootstrap.relative(path))
 							}
 						}
+					},
+					$engine: {
+						//	The default implementation (used for Node.js, for example) is compliant with strict mode and implements
+						//	this using a new Function(...) call. But the default toString() messes up the line numbers for tools
+						//	when debugging. Not sure whether there's a way to have it both ways, so for now, we return to using
+						//	eval().
+						execute: function(/*script{name,js},scope,target*/) {
+							if (false) throw new Error();
+							return (function() {
+								//@ts-ignore
+								with( arguments[1] ) {
+									return eval(arguments[0]);
+								}
+							}).call(
+								arguments[2],
+								arguments[0].js, arguments[1]
+							);
+						}
 					}
 				};
 
