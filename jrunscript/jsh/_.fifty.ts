@@ -8,7 +8,7 @@
  * `jsh` is a shell environment which allows JavaScript programs to be written which execute in the Java virtual machine and thus
  * can interact with Java platform classes and libraries written in Java or other JVM languages.
  *
- * `jsh` scripts have access to the global `jsh` object, which is of type {@link Global}.
+ * `jsh` provides an extensive API for scripting tasks via the global {@link slime.jsh.Global | `jsh`} object.
  *
  * The easiest way to run `jsh` is via the top-level `jsh` script:
  * ```sh
