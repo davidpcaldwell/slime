@@ -51,6 +51,11 @@ namespace slime {
 			 * in the browser (including ActiveX implementations).
 			 */
 			XMLHttpRequest?: typeof XMLHttpRequest
+
+			/**
+			 * A configuration to pass through to the SLIME runtime via {@link slime.runtime.scope.Deployment.configuration}.
+			 */
+			configuration: slime.runtime.scope.Deployment["configuration"]
 		}
 
 		(

@@ -100,7 +100,8 @@
 							name: path,
 							js: load(slime+"loader/" + path).code
 						}
-					}
+					},
+					configuration: {}
 				},
 				$engine: void(0)
 			}

@@ -8,15 +8,15 @@
 (
 //	TODO	Redefine JavaAdapter to be slime.jrunscript.JavaAdapter and XML to be slime.external.e4x.XMLConstructor
 	/**
-	 * @param { slime.jrunscript.runtime.$javahost } $javahost
-	 * @param { slime.jrunscript.runtime.java.context.Engine } $bridge
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { any } XML
-	 * @param { slime.jrunscript.native.inonit.script.engine.Loader } $loader
+	 * @param { slime.jrunscript.runtime.Scope["$loader"] } $loader
+	 * @param { slime.jrunscript.runtime.Scope["$javahost"] } $javahost
+	 * @param { slime.jrunscript.runtime.Scope["$bridge"] } $bridge
 	 * @returns { slime.jrunscript.runtime.Exports }
 	 */
-	function($javahost,$bridge,Packages,JavaAdapter,XML,$loader) {
+	function(Packages,JavaAdapter,XML,$loader,$javahost,$bridge) {
 		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
 		var _streams = new Packages.inonit.script.runtime.io.Streams();
 
@@ -69,25 +69,31 @@
 				var $slime = {
 					getRuntimeScript: function(path) {
 						return {
+							//	TODO	maybe the engine could provide an improved URL here to use as the base
 							name: "slime://loader/" + path,
 							js: String($loader.getLoaderCode(path))
 						};
-					}
-				};
-				if (!$javahost.noEnvironmentAccess) {
-					var flagPattern = /^SLIME_(.*)$/;
-					var _entries = Packages.java.lang.System.getenv().entrySet().iterator();
-					while(_entries.hasNext()) {
-						var _entry = _entries.next();
-						var name = String(_entry.getKey());
-						var value = String(_entry.getValue());
-						var match = flagPattern.exec(name);
-						if (match) {
-							if (!$slime.flags) $slime.flags = {};
-							$slime.flags[match[1]] = value;
+					},
+					configuration: (
+						function() {
+							if ($javahost.noEnvironmentAccess) return {};
+							var rv = {};
+							var flagPattern = /^SLIME_(.*)$/;
+							var _entries = Packages.java.lang.System.getenv().entrySet().iterator();
+							while(_entries.hasNext()) {
+								var _entry = _entries.next();
+								var name = String(_entry.getKey()).toUpperCase();
+								var value = String(_entry.getValue());
+								var match = flagPattern.exec(name);
+								if (match) {
+									//	check for duplicates?
+									rv[match[1]] = value;
+								}
+							}
+							return rv;
 						}
-					}
-				}
+					)()
+				};
 				/** @type { slime.runtime.Scope } */
 				var scope = {
 					$engine: $engine,
@@ -873,6 +879,7 @@
 			}
 		)(slime.old.Loader);
 
+		/** @type { slime.jrunscript.runtime.Exports["classpath"] } */
 		var $exports_classpath = (
 			/**
 			 *
@@ -1106,4 +1113,4 @@
 		)();
 	}
 //@ts-ignore
-)($javahost,$bridge,Packages,JavaAdapter, (function() { return this.XML })(),$loader)
+)(Packages,JavaAdapter, (function() { return this.XML })(),$loader,$javahost,$bridge)

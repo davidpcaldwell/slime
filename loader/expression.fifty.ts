@@ -33,8 +33,12 @@ namespace slime {
 				 */
 				getRuntimeScript(path: string): loader.Script
 
-				flags?: {
-					[name: string]: string
+				/**
+				 * An arbitrary set of configuration values that are intended to be used in a platform-independent way to configure
+				 * the engine itself or applications. All property should be uppercase.
+				 */
+				configuration: {
+					readonly [name: string]: string
 				}
 			}
 		}
