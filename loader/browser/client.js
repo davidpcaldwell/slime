@@ -233,10 +233,10 @@
 								name: bootstrap.relative(path),
 								js: fetcher.getCode(bootstrap.relative(path))
 							}
-						}
+						},
+						configuration: $context.configuration
 					},
 					$engine: {
-
 						//	The default implementation (used for Node.js, for example) is compliant with strict mode and implements
 						//	this using a new Function(...) call. But the default toString() messes up the line numbers for tools
 						//	when debugging. Overriding Function.toString() upon creation does not seem to fix it in tools; nor does

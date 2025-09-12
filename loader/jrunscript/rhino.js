@@ -66,6 +66,7 @@
 			}
 		)();
 
+		//	TODO	do not use constructor-style creation
 		var $bridge = new function() {
 			var getJavaClassName = function(javaclass) {
 				var toString = "" + javaclass;
@@ -110,7 +111,7 @@
 		var runtime = $rhino.script(
 			"jrunscript/expression.js",
 			String($loader.getLoaderCode("jrunscript/expression.js")),
-			{ $loader: $loader, $javahost: $javahost, $bridge: $bridge },
+			/** @type { slime.jrunscript.runtime.Scope } */({ $loader: $loader, $javahost: $javahost, $bridge: $bridge }),
 			null
 		);
 

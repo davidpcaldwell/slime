@@ -11,6 +11,11 @@
  */
 namespace slime.node {
 	export interface Exports {
+		/**
+		 * The SLIME runtime, configured with the environment variables from this process which start with the
+		 * (case-insensitive) `SLIME_` prefix. See the jrunscript runtime for details on the algorithm used to create the
+		 * configuration.
+		 */
 		runtime: slime.runtime.Exports
 		fs: {
 			Loader: (p: {
