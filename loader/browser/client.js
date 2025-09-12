@@ -236,10 +236,16 @@
 						}
 					},
 					$engine: {
+
 						//	The default implementation (used for Node.js, for example) is compliant with strict mode and implements
 						//	this using a new Function(...) call. But the default toString() messes up the line numbers for tools
-						//	when debugging. Not sure whether there's a way to have it both ways, so for now, we return to using
-						//	eval().
+						//	when debugging. Overriding Function.toString() upon creation does not seem to fix it in tools; nor does
+						//	changing Function.prototype.toString(). So I think we're stuck with this.
+						//
+						//	We might possibly be able to isolate this further in its own scope by changing this file to use
+						// 	non-hoisted variables via let and const.
+						//
+						//	Unclear whether the jrunscript implementation ever loads this file in the test suite.
 						execute: function(/*script{name,js},scope,target*/) {
 							if (false) throw new Error();
 							return (function() {
