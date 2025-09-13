@@ -6,4 +6,7 @@
 #	END LICENSE
 
 cd $(dirname $0)/../../..
-rm -Rvf local/jsh/lib/graal; ./jsh --install-graalvm; env JSH_ENGINE=graal /bin/bash ./jsh ./jrunscript/jsh/test/jsh-data.jsh.js
+if [ "$1" == "--clean" ]; then
+	rm -Rvf local/jsh/lib/graal; ./jsh --install-graalvm;
+fi
+env JSH_ENGINE=graal /bin/bash ./jsh ./jrunscript/jsh/test/jsh-data.jsh.js

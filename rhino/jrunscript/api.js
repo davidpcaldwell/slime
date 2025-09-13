@@ -280,6 +280,8 @@
 
 		/**
 		 * The currently executing JavaScript engine.
+		 *
+		 * @type { slime.internal.jrunscript.bootstrap.Api<{}>["engine"] & { script: any, getClass: any, newArray: any } }
 		 */
 		var $engine = (function(global) {
 			var Nashorn = function() {
@@ -346,7 +348,9 @@
 					}
 				}
 				return rv;
-			}
+			};
+
+			var graalStackPattern = /^(?:\s+)(?:at (\S+) )\((.*)\:(\d+)\)$/
 
 			rv.getCallingScript = rv.resolve({
 				nashorn: function() {
@@ -364,7 +368,10 @@
 					return (frames.length > 2) ? frames[2].file : null;
 				},
 				graal: function() {
-					throw new Error("Unimplemented.");
+					var stack = new Error().stack;
+					var line = stack.split("\n")[3];
+					var file = graalStackPattern.exec(line)[2];
+					return file;
 				},
 				jdkrhino: function() {
 					throw new Error("Unimplemented.");
@@ -660,9 +667,10 @@
 								rhino: JavaAdapter,
 								nashorn: JavaAdapter,
 								jdkrhino: JavaAdapter,
-								graal: function(type,implementation) {
+								//@ts-ignore
+								graal: /** @type { slime.jrunscript.JavaAdapter } */(function(type,implementation) {
 									return new type(implementation);
-								}
+								})
 							})
 							var t = new Packages.java.lang.Thread(
 								new JAdapter(
