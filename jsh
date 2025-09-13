@@ -156,11 +156,15 @@ install_graalvm() {
 	local TO=$(clean_destination "$2")
 	local MAJOR=$(get_major_version_from_jdk_version ${VERSION})
 	local JDK_TARBALL_URL=""
+	local GRAAL_ARCH=${ARCH}
+	if [ "${GRAAL_ARCH}" = "arm64" ]; then
+		GRAAL_ARCH=aarch64
+	fi
 	#	See https://www.oracle.com/java/technologies/downloads/archive/#GraalVM for information about versions
 	if [ "${UNAME}" == "Darwin" ]; then
-		JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_macos-${ARCH}_bin.tar.gz"
+		JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_macos-${GRAAL_ARCH}_bin.tar.gz"
 	elif [ "${UNAME}" == "Linux" ]; then
-		JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_linux-${ARCH}_bin.tar.gz"
+		JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_linux-${GRAAL_ARCH}_bin.tar.gz"
 	fi
 	if [ -z "${JDK_TARBALL_URL}" ]; then
 		>&2 echo "Unsupported OS/architecture: ${UNAME} ${ARCH}"
