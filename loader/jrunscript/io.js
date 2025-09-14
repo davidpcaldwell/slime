@@ -17,6 +17,7 @@
 	 * @param { slime.loader.Export<slime.jrunscript.runtime.io.Exports> } $export
 	 */
 	function($platform,Packages,JavaAdapter,XMLList,$api,$context,$export) {
+		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
 		var _java = $context._streams;
 
 		var inputs = {
@@ -373,6 +374,9 @@
 			};
 		};
 
+		/**
+		 * @type { slime.jrunscript.runtime.io.Exports["Streams"] }
+		 */
 		var Streams = (function() {
 			return {
 				binary: new function() {

@@ -5,14 +5,14 @@
 //	END LICENSE
 
 namespace slime.jsh {
-	export namespace exports {
-		export interface project {
+	export namespace project {
+		export interface Exports {
 			code: slime.project.code.Exports
 			openapi: slime.project.openapi.Plugin
 		}
 	}
 
 	export interface Global {
-		project: slime.jsh.exports.project
+		project: slime.jsh.project.Exports
 	}
 }

@@ -162,6 +162,8 @@ namespace slime.jrunscript.runtime.io {
 	 * A stream from which bytes may be read.
 	 */
 	export interface InputStream {
+		//	TODO	rename to read, we have overloaded content to represent a tree
+
 		content: {
 			string: {
 				simple: (charset: Charset) => string
@@ -656,16 +658,7 @@ namespace slime.jrunscript.runtime.io {
 				});
 				writer.write("bar!");
 				writer.close();
-				var read = b.readBinary();
-				var text = test.subject.Reader.stream({
-					stream: read,
-					encoding: {
-						charset: utf8,
-						newline: "\n"
-					}
-				})
-				// var text = utf8.read(read);
-				var string = text.asString();
+				var string = b.readBinary().content.string.simple(utf8);
 				verify(string).is("bar!");
 			}
 		}
