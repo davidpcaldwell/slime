@@ -165,6 +165,14 @@ namespace slime.internal.jrunscript.bootstrap {
 
 			readJavaString: (from: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String
 		}
+
+		export interface Engine {
+			resolve: Api<any>["engine"]["resolve"]
+			getCallingScript: Api<any>["engine"]["getCallingScript"]
+			getClass: <T extends slime.jrunscript.native.java.lang.Object,C>(name: string) => slime.jrunscript.JavaClass<T,C>
+			newArray: <T extends slime.jrunscript.native.java.lang.Object,C>(type: slime.jrunscript.JavaClass<T,C>, length: number)
+				=> slime.jrunscript.Array<T>
+			script: string		}
 	}
 
 
@@ -350,7 +358,14 @@ namespace slime.internal.jrunscript.bootstrap {
 
 	export interface Api<J> {
 		java: {
+			/**
+			 * @param home A directory containing a Java installation
+			 */
 			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
+
+			/**
+			 * The Java installation used to run this script.
+			 */
 			install: java.Install
 
 			getClass: (name: string) => slime.jrunscript.JavaClass

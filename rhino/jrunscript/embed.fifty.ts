@@ -4,7 +4,14 @@
 //
 //	END LICENSE
 
+/**
+ * The SLIME `jrunscript` bootstrap API, which is used to provide the API for the `jsh` launcher; some of these APIs may be useful
+ * to other callers.
+ */
 namespace slime.jrunscript.bootstrap {
+	/**
+	 * A SLIME {@link slime.loader.Script} context used when embedding the bootstrap API.
+	 */
 	export interface Context {
 		debug: boolean
 		script: slime.internal.jrunscript.bootstrap.Configuration["script"]

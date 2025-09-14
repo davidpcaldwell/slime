@@ -279,9 +279,10 @@
 		)();
 
 		/**
-		 * The currently executing JavaScript engine.
+		 * The currently executing JavaScript engine. For the `jsh` launcher, this should always be Nashorn in the current design.
+		 * But `jsh` also embeds the bootstrap API in the shell, so in those cases, any of these engines could be present.
 		 *
-		 * @type { slime.internal.jrunscript.bootstrap.Api<{}>["engine"] & { script: any, getClass: any, newArray: any } }
+		 * @type { slime.internal.jrunscript.bootstrap.internal.Engine }
 		 */
 		var $engine = (function(global) {
 			var Nashorn = function() {
