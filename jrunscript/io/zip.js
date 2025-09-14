@@ -67,16 +67,23 @@
 
 				/**
 				 *
-				 * @param { string } name
-				 * @param { slime.jrunscript.runtime.io.InputStream } $stream
+				 * @param { slime.jrunscript.io.archive.File<slime.jrunscript.io.zip.Entry> } file
 				 */
-				this.addEntry = function(name,$stream) {
-					createDirectory(directoryNameFor(name));
-					var entry = new Packages.java.util.zip.ZipEntry(name);
+				this.addEntry = function(file) {
+					createDirectory(directoryNameFor(file.path));
+					var entry = new Packages.java.util.zip.ZipEntry(file.path);
+					if (file.time.modified.present) {
+						entry.setLastModifiedTime(Packages.java.nio.file.attribute.FileTime.fromMillis(file.time.modified.value));
+					}
+					if (file.time.created.present) {
+						entry.setCreationTime(Packages.java.nio.file.attribute.FileTime.fromMillis(file.time.created.value));
+					}
+					if (file.time.accessed.present) {
+						entry.setLastAccessTime(Packages.java.nio.file.attribute.FileTime.fromMillis(file.time.accessed.value));
+					}
 					peer.putNextEntry(entry);
-					$context.Streams.binary.copy($stream, peer);
+					$context.Streams.binary.copy(file.content, peer);
 					peer.closeEntry();
-					$stream.close();
 				}
 			};
 
@@ -84,14 +91,10 @@
 				p.entries,
 				$api.fp.impure.Stream.forEach(function(entry) {
 					if (isFileEntry(entry)) {
-						zipOutputStream.addEntry(entry.path, entry.content);
+						zipOutputStream.addEntry(entry);
 					}
 				})
 			);
-
-			for (var i=0; i<p.entries.length; i++) {
-				zipOutputStream.addEntry(p.entries[i].path,p.entries[i].content());
-			}
 
 			zipOutputStream.close();
 		};

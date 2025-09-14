@@ -281,9 +281,16 @@ namespace slime.jrunscript {
 						getName: () => slime.jrunscript.native.java.lang.String
 						isDirectory: () => boolean
 						getTime: () => number
-						getCreationTime: () => java.nio.file.attribute.FileTime,
-						getLastModifiedTime: () => java.nio.file.attribute.FileTime,
-						getLastAccessTime: () => java.nio.file.attribute.FileTime,
+
+						getCreationTime: () => java.nio.file.attribute.FileTime
+						setCreationTime: (time: java.nio.file.attribute.FileTime) => void
+
+						getLastModifiedTime: () => java.nio.file.attribute.FileTime
+						setLastModifiedTime: (time: java.nio.file.attribute.FileTime) => void
+
+						getLastAccessTime: () => java.nio.file.attribute.FileTime
+						setLastAccessTime: (time: java.nio.file.attribute.FileTime) => void
+
 						getComment: () => string
 					}
 					export interface ZipInputStream extends slime.jrunscript.native.java.io.InputStream {

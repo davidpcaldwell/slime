@@ -8,12 +8,15 @@
  * `jsh` is a shell environment which allows JavaScript programs to be written which execute in the Java virtual machine and thus
  * can interact with Java platform classes and libraries written in Java or other JVM languages.
  *
- * `jsh` provides an extensive API for scripting tasks via the global {@link slime.jsh.Global | `jsh`} object.
- *
  * The easiest way to run `jsh` is via the top-level `jsh` script:
  * ```sh
  * ./jsh [-<JVM-argument> [...-<JVM-argument>]] <path-to-script> [arguments]
  * ```
+ *
+ * ## Provided APIs
+ *
+ * The APIs available to all SLIME scripts are the SLIME runtime, along with `jrunscript` APIs, available as
+ * {@link slime.$api.jrunscript.Global | `$api`}, and the `jsh` API, available as {@link slime.jsh.Global | `jsh`}.
  *
  * ## Execution models
  *
@@ -62,11 +65,6 @@
  *
  * See the older [Running `jsh`](../src/jrunscript/jsh/launcher/api.html) page for (possibly outdated) additional information about
  * how to run scripts using `jsh` and configure the shell.
- *
- * ## Provided APIs
- *
- * The APIs available to all SLIME scripts are the SLIME runtime, along with `jrunscript` APIs, available as
- * {@link slime.$api.jrunscript.Global | `$api`}, and the `jsh` API, available as {@link slime.jsh.Global | `jsh`}.
  *
  * ## Application types
  *
