@@ -122,14 +122,14 @@
 			log: void(0),
 			engine: void(0),
 			github: void(0),
+			Script: void(0),
 			script: void(0),
+			arguments: void(0),
+			java: void(0),
+			io: void(0),
+			shell: void(0),
 			rhino: void(0),
 			nashorn: void(0),
-			java: void(0),
-			arguments: void(0),
-			shell: void(0),
-			io: void(0),
-			Script: void(0),
 			embed: void(0)
 		};
 
@@ -1629,45 +1629,6 @@
 		};
 		$api.io.readJavaString = io.readJavaString;
 
-		$api.rhino = (
-			function() {
-				return {
-					version: function(jdkVersion) {
-						if (jdkVersion < 11) return "1.7.15";
-						return "1.8.0";
-					}
-				}
-			}
-		)();
-
-		$api.nashorn = (
-			function() {
-				/** @notdry nashorn-dependencies reference */
-				var mavenDependencies = ["asm","asm-commons","asm-tree","asm-util"].map(function(name) {
-					return {
-						group: "org.ow2.asm",
-						artifact: name,
-						version: "7.3.1"
-					}
-				});
-
-				return {
-					dependencies: {
-						maven: mavenDependencies,
-						names: mavenDependencies.map(function(dependency) { return dependency.artifact; }),
-						jarNames: mavenDependencies.map(function(dependency) { return dependency.artifact + ".jar"; })
-					},
-					getDeprecationArguments: function(javaMajorVersion) {
-						if (javaMajorVersion > 8 && javaMajorVersion < 15) {
-							return ["-Dnashorn.args=--no-deprecation-warning"];
-						}
-
-						return [];
-					}
-				};
-			}
-		)();
-
 		$api.shell = {
 			environment: void(0),
 			HOME: void(0),
@@ -1764,7 +1725,46 @@
 				}
 			});
 			return result;
-		}
+		};
+
+		$api.rhino = (
+			function() {
+				return {
+					version: function(jdkVersion) {
+						if (jdkVersion < 11) return "1.7.15";
+						return "1.8.0";
+					}
+				}
+			}
+		)();
+
+		$api.nashorn = (
+			function() {
+				/** @notdry nashorn-dependencies reference */
+				var mavenDependencies = ["asm","asm-commons","asm-tree","asm-util"].map(function(name) {
+					return {
+						group: "org.ow2.asm",
+						artifact: name,
+						version: "7.3.1"
+					}
+				});
+
+				return {
+					dependencies: {
+						maven: mavenDependencies,
+						names: mavenDependencies.map(function(dependency) { return dependency.artifact; }),
+						jarNames: mavenDependencies.map(function(dependency) { return dependency.artifact + ".jar"; })
+					},
+					getDeprecationArguments: function(javaMajorVersion) {
+						if (javaMajorVersion > 8 && javaMajorVersion < 15) {
+							return ["-Dnashorn.args=--no-deprecation-warning"];
+						}
+
+						return [];
+					}
+				};
+			}
+		)();
 
 		this.$api = $api;
 	}

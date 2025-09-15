@@ -24,6 +24,7 @@
 				// jrunscript/jsh/tools/install/plugin.jsh.js
 
 				version: function() {
+					//	TODO	duplicative of code in the bootstrap API
 					if (/^1\.8/.test($context.java.version)) {
 						return {
 							number: "1.7.15",
