@@ -239,6 +239,7 @@
 
 			$$api.script.resolve("javac.js").load();
 
+			//	setting is a string representing the jsh.shell.lib property value
 			/** @type { (p: { setting: string, rhino?: slime.jrunscript.native.java.net.URL[] }) => slime.jsh.internal.launcher.Libraries } */
 			var Libraries = function(p) {
 				var setting = p.setting;

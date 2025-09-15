@@ -154,10 +154,6 @@
 				var rhino = (function() {
 					if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
 						return [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
-					} else if ($api.slime.settings.get("jsh.shell.lib") && lib.file) {
-						if (new Packages.java.io.File(lib.file, "js.jar").exists()) {
-							return [new Packages.java.io.File(lib.file, "js.jar").toURI().toURL()];
-						}
 					}
 				})();
 
@@ -258,6 +254,7 @@
 			var engines = [];
 			if (loaderRhino) engines.push("rhino");
 			if ($api.jsh.engines.nashorn) engines.push("nashorn");
+			//	TODO	graal
 			Packages.java.lang.System.out.print(JSON.stringify(engines));
 			Packages.java.lang.System.exit(0);
 		}
@@ -417,6 +414,7 @@
 		var classpath = new $api.jsh.Classpath(_urls);
 
 		var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
+
 		if (!engine) throw new Error("Specified engine [" + $api.slime.settings.get("jsh.engine") + "]" + " not found;"
 			+ " JSH_ENGINE=" + $api.shell.environment.JSH_ENGINE
 			+ " jsh.engine=" + Packages.java.lang.System.getProperty("jsh.engine")

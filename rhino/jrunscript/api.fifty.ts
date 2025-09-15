@@ -64,6 +64,24 @@ namespace slime.jrunscript {
  * of the `jsh` loader process and launches the `jsh` loader configured appropriately.
  */
 namespace slime.internal.jrunscript.bootstrap {
+	export namespace test {
+		export const jar = (function(fifty: slime.fifty.test.Kit) {
+			var jsh = fifty.global.jsh;
+
+			//	TODO	believe there is a better way to do this now, maybe with a jsh.shell.java.Jdk call of some kind
+			return jsh.file.Searchpath([
+				jsh.shell.java.home.getRelativePath("bin"),
+				jsh.shell.java.home.parent.getRelativePath("bin")
+			]).getCommand("jar");
+		//@ts-ignore
+		})(fifty);
+
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			return fifty.global.jsh.internal.bootstrap;
+		//@ts-ignore
+		})(fifty);
+	}
+
 	/**
 	 * An object that can be used to configure the invocation of the `api.js` script, by setting the `$api` property of the global
 	 * object to an object of this type. This value will be *overwritten* by the {@link Global} value exported by the script.

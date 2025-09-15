@@ -39,6 +39,7 @@ namespace slime.jsh.internal.launcher {
 			rhino: Engine
 			nashorn: Engine
 			graal: Engine
+			[name: string]: Engine
 		}
 		engine: any
 		shell: any
@@ -51,6 +52,7 @@ namespace slime.jsh.internal.launcher {
 				url?: string
 				file?: slime.jrunscript.native.java.io.File
 			}
+			//	If Rhino was explicitly provided via a jsh setting
 			rhino: slime.jrunscript.native.java.net.URL[]
 		}) => Installation & {
 			compileLoader: (p?: {
