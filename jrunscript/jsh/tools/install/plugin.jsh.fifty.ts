@@ -268,8 +268,8 @@ namespace slime.jsh.shell.tools {
 				fifty.tests.manual.rhino.install = function() {
 					var jdk = jsh.internal.bootstrap.java.getMajorVersion();
 					jsh.shell.console("jdk = " + jdk);
-					var version = jsh.internal.bootstrap.rhino.version(jdk);
-					jsh.shell.console("rhino = " + version);
+					var version = jsh.internal.bootstrap.rhino.forJava(jdk);
+					jsh.shell.console("rhino = " + version.version);
 				}
 
 				fifty.tests.manual.rhino.show = function() {
