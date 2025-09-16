@@ -41,7 +41,6 @@ namespace slime.jsh.internal.launcher {
 			graal: Engine
 			[name: string]: Engine
 		}
-		engine: any
 		shell: any
 		Packaged: any
 		Classpath: any
