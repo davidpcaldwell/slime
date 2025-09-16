@@ -125,7 +125,6 @@
 
 			$$api.jsh = {
 				exit: void(0),
-				engine: void(0),
 				engines: void(0),
 				shell: void(0),
 				Built: void(0),
@@ -177,16 +176,6 @@
 					}
 				}
 			};
-
-			$$api.jsh.engine = (function() {
-				var engines = $$api.jsh.engines;
-				if ($$api.slime.settings.get("jsh.engine")) {
-					return (function(setting) {
-						return engines[setting];
-					})($$api.slime.settings.get("jsh.engine"));
-				}
-				return $$api.engine.resolve(engines);
-			})();
 
 			var Classpath = function(_urls) {
 				var colon = String(Packages.java.io.File.pathSeparator);
@@ -240,6 +229,8 @@
 			$$api.script.resolve("javac.js").load();
 
 			//	setting is a string representing the jsh.shell.lib property value
+			//	rhino is an explicitly-set classpath for Rhino, which we currently do only on unbuilt shells since that would be
+			//	a development-time-only thing (maybe you're co-developing with a custom Rhino)
 			/** @type { (p: { setting: string, rhino?: slime.jrunscript.native.java.net.URL[] }) => slime.jsh.internal.launcher.Libraries } */
 			var Libraries = function(p) {
 				var setting = p.setting;
@@ -543,9 +534,24 @@
 				};
 			};
 
+			//	This appears to deal solely with packaged shells, using the "magic system property" approach where the Java program
+			//	stashes an object in the below system property for use here
 			//	TODO	it seems like the below should migrate to main.js where similar code is already present, and packaged applications
 			//			should launch that script
 			if (Packages.java.lang.System.getProperties().get("jsh.launcher.shell") && Packages.java.lang.System.getProperties().get("jsh.launcher.shell").getPackaged()) {
+				//	For a packaged shell, we allow the selection of an engine via the property, and default to the currently
+				//	executing engine
+				var $$api_jsh_engine = (function() {
+					var engines = $$api.jsh.engines;
+					var specified = $$api.slime.settings.get("jsh.engine");
+					if (specified) {
+						return (function(setting) {
+							return engines[setting];
+						})(specified);
+					}
+					return $$api.engine.resolve(engines);
+				})();
+
 				$$api.jsh.shell = new (function(peer) {
 					var getRhinoClasspath = function() {
 						var classpath = peer.getRhinoClasspath();
@@ -577,7 +583,7 @@
 					this.classpath = function() {
 						var rv = new Classpath();
 
-						$$api.jsh.engine.resolve({
+						$$api_jsh_engine.resolve({
 							rhino: function() {
 								rv.append(getRhinoClasspath());
 							},
@@ -637,7 +643,7 @@
 					command.classpath(classpath[i]);
 				}
 
-				command.main($$api.jsh.engine.main);
+				command.main($$api_jsh_engine.main);
 
 				for (var i=0; i<$$api.arguments.length; i++) {
 					command.argument($$api.arguments[i]);
