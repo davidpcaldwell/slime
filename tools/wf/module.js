@@ -26,6 +26,7 @@
 					shell: $context.library.shell,
 					node: $context.library.jsh.node
 				},
+				configuration: $context.configuration.typescript,
 				world: {
 					filesystem: ($context.world && $context.world.filesystem) ? $context.world.filesystem : void(0)
 				}

@@ -92,6 +92,9 @@
 					)
 				}
 			},
+			typescript: {
+				version: "5.9.2"
+			},
 			typedoc: {
 				version: "0.28.4"
 			}
@@ -102,7 +105,9 @@
 			$loader.get("dependencies.md").read(String),
 			function(s) { return s.replace(/\{rhino\.version\.number}/, data.rhino.versions.default ) },
 			function(s) { return s.replace(/\{rhino\.version\.jdk8\.number}/, data.rhino.versions.jdk8 ) },
-			function(s) { return s.replace(/\{nashorn\.standalone\.version\}/, data.nashorn.standalone.version ) }
+			function(s) { return s.replace(/\{nashorn\.standalone\.version\}/, data.nashorn.standalone.version ) },
+			function(s) { return s.replace(/\{typescript\.version\}/, data.typescript.version ) },
+			function(s) { return s.replace(/\{typedoc\.version\}/, data.typedoc.version ) }
 		);
 
 		$export({

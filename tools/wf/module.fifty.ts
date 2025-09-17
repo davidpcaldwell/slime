@@ -24,6 +24,12 @@ namespace slime.jsh.wf.internal.module {
 			}
 		}
 
+		configuration: {
+			typescript: {
+				version: () => string
+			}
+		}
+
 		world?: {
 			filesystem?: slime.jrunscript.file.world.Filesystem
 		}

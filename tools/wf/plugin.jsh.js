@@ -16,7 +16,7 @@
 	function($api,$slime,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.file && jsh.shell && jsh.shell.tools && jsh.ui && jsh.tools && jsh.tools.git);
+				return Boolean(jsh.file && jsh.shell && jsh.shell.tools && jsh.ui && jsh.tools && jsh.tools.git && jsh.project && jsh.project.dependencies);
 			},
 			load: function() {
 				var code = {
@@ -35,6 +35,13 @@
 							jsh: {
 								shell: jsh.shell,
 								node: jsh.shell.tools.node
+							}
+						},
+						configuration: {
+							typescript: {
+								version: function() {
+									return jsh.project.dependencies.data.typescript.version;
+								}
 							}
 						},
 						world: {

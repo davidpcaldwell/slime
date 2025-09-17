@@ -13,10 +13,6 @@
 	 * @param { slime.loader.Export<slime.jsh.wf.internal.typescript.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		var VERSION = "5.8.3";
-
-		var version = $api.fp.impure.Input.value(VERSION);
-
 		var base = (
 			function() {
 				var filesystem = $api.fp.now.map(
@@ -69,7 +65,7 @@
 				$context.library.file.Location.directory.relativePath("tsc.version"),
 				$context.library.file.Location.file.read.string.maybe
 			),
-			$api.fp.Maybe.else(version)
+			$api.fp.Maybe.else($context.configuration.version)
 		);
 
 		var Project_getConfigurationFile = $api.fp.switch([
@@ -289,8 +285,10 @@
 
 		$export({
 			module: {
-				version: version,
-				typedoc: typedoc
+				typedoc: typedoc,
+				test: {
+					version: $context.configuration.version
+				}
 			},
 			Project: {
 				version: Project_getTypescriptVersion,
