@@ -17,6 +17,11 @@ namespace slime.jsh.wf.internal.module {
 						node: fifty.global.jsh.shell.tools.node,
 						shell: fifty.global.jsh.shell
 					}
+				},
+				configuration: {
+					typescript: {
+						version: fifty.global.$api.fp.Thunk.value(fifty.global.jsh.project.dependencies.data.typescript.version)
+					}
 				}
 			});
 		//@ts-ignore
@@ -36,6 +41,11 @@ namespace slime.jsh.wf.internal.module {
 								node: fifty.global.jsh.shell.tools.node
 							}
 						},
+						configuration: {
+							typescript: {
+								version: fifty.global.$api.fp.Thunk.value(fifty.global.jsh.project.dependencies.data.typescript.version)
+							}
+						},
 						world: {
 							filesystem: fs
 						}
@@ -48,11 +58,6 @@ namespace slime.jsh.wf.internal.module {
 
 	export namespace exports {
 		export interface Typescript {
-			/**
-			 * Returns the default version of TypeScript.
-			 */
-			version: () => string
-
 			typedoc: {
 				invocation: slime.$api.fp.world.Sensor<
 					typedoc.Invocation,
@@ -68,6 +73,14 @@ namespace slime.jsh.wf.internal.module {
 						slime.jrunscript.shell.run.Exit
 					>
 				>
+			}
+
+			test: {
+				/**
+				 * Temporary method left over from when this file decided its own default version; delegates to implementation provided
+				 * in `$context.configuration`.
+				 */
+				version: () => string
 			}
 		}
 
@@ -139,7 +152,7 @@ namespace slime.jsh.wf.internal.module {
 
 				verify(subject).project.typescript.version({
 					base: "/project/empty"
-				}).is(subject.typescript.version());
+				}).is(subject.typescript.test.version());
 
 				verify(subject).project.typescript.version({
 					base: "/project/specified"
@@ -221,7 +234,7 @@ namespace slime.jsh.wf.internal.module {
 					stdio: {},
 					configuration: {
 						typescript: {
-							version: subject.typescript.version(),
+							version: subject.typescript.test.version(),
 							configuration: "jsconfig.json"
 						}
 					},
@@ -241,6 +254,13 @@ namespace slime.jsh.wf.internal.typescript {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 			node: slime.jsh.shell.tools.node.Exports
+		}
+
+		configuration: {
+			/**
+			 * Provides the default version of TypeScript to use for this environment.
+			 */
+			version: () => string
 		}
 
 		world?: {
