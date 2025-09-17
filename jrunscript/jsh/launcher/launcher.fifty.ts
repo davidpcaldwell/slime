@@ -9,7 +9,10 @@ namespace slime.jsh.internal.launcher {
 		/**
 		 * The classpath from which the given Rhino version can be loaded, or `null`/`undefined` if it is not present.
 		 */
-		rhino: (version: string) => slime.jrunscript.native.java.net.URL[]
+		rhino: (jdkMajorVersion: number) => {
+			local: () => slime.jrunscript.native.java.net.URL[]
+			download: () => slime.jrunscript.native.java.net.URL[]
+		}
 
 		nashorn: slime.jrunscript.native.java.net.URL[]
 	}
