@@ -232,7 +232,7 @@ namespace slime.jrunscript.file.internal.java {
 
 				var removeUnixSlashes = subject.test.trailingSeparatorRemover(subject.test.unix);
 				verify(removeUnixSlashes("/foo/bar/")).is("/foo/bar");
-				verify(removeUnixSlashes("/foo/bar/")).is("/foo/bar");
+				verify(removeUnixSlashes("/foo/bar")).is("/foo/bar");
 
 				var removeWindowsSlashes = subject.test.trailingSeparatorRemover(subject.test.windows);
 				verify(removeWindowsSlashes("C:\\foo\\bar\\")).is("C:\\foo\\bar");

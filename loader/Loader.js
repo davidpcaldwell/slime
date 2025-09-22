@@ -41,7 +41,7 @@
 							)
 						),
 						$loader: Store.content({
-							store: $api.content.Store.path({
+							store: $api.content.Store.at({
 								store: p.store,
 								path: elements.slice(0, elements.length-1)
 							}),

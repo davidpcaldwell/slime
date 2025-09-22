@@ -14,10 +14,11 @@
 	function($context,$exports) {
 		/**
 		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } system
+		 * @param { slime.jrunscript.file.world.Filesystem } filesystem
 		 * @param { string } string
 		 */
-		function newPathname(system, string) {
-			return new $context.Pathname({ provider: system, path: string });
+		function newPathname(system, filesystem, string) {
+			return new $context.Pathname({ provider: system, filesystem: filesystem, path: string });
 		}
 
 		/**
@@ -33,7 +34,7 @@
 
 			//	TODO	we add createEmpty below, but do not seem to define it. Is it defined elsewhere, maybe?
 			this.Searchpath = Object.assign(function(array) {
-				return new $context.Searchpath({ provider: provider, array: array });
+				return new $context.Searchpath({ provider: provider, filesystem: fs, array: array });
 			}, { parse: void(0), createEmpty: void(0) });
 			this.Searchpath.prototype = $context.Searchpath.prototype;
 			this.Searchpath.parse = function(string) {
@@ -42,14 +43,14 @@
 				}
 				var elements = string.split(provider.separators.searchpath);
 				var array = elements.map(function(element) {
-					return newPathname(provider, element);
+					return newPathname(provider, fs, element);
 				});
-				return new $context.Searchpath({ provider: provider, array: array });
+				return new $context.Searchpath({ provider: provider, filesystem: fs, array: array });
 			}
 
 			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem["Pathname"] } */
 			this.Pathname = function(string) {
-				return newPathname(provider, string);
+				return newPathname(provider, fs, string);
 			}
 
 			this.$unit = new function() {
@@ -62,13 +63,13 @@
 				}
 				this.temporary = function(parent,parameters) {
 					var peer = provider.temporary(parent,parameters);
-					var pathname = new $context.Pathname({ provider: provider, path: String(peer.getScriptPath()) });
+					var pathname = new $context.Pathname({ provider: provider, filesystem: fs, path: String(peer.getScriptPath()) });
 					if (pathname.directory) return pathname.directory;
 					if (pathname.file) return pathname.file;
 					throw new Error();
 				}
 				this.Pathname = function(peer) {
-					return new $context.Pathname({ provider: provider, path: String(peer.getScriptPath()) });
+					return new $context.Pathname({ provider: provider, filesystem: fs, path: String(peer.getScriptPath()) });
 				}
 			}
 
@@ -77,7 +78,7 @@
 			this.java = {
 				adapt: function(_file) {
 					var peer = provider.java.adapt(_file);
-					return new $context.Pathname({ provider: provider, path: String(peer.getScriptPath()) });
+					return new $context.Pathname({ provider: provider, filesystem: fs, path: String(peer.getScriptPath()) });
 				}
 			};
 

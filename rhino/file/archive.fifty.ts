@@ -7,7 +7,7 @@
 namespace slime.jrunscript.file.archive {
 	export interface Exports {
 		zip: {
-			map: (p: Location) => slime.jrunscript.io.zip.Entry
+			map: (base: Location) => (p: Location) => slime.jrunscript.io.archive.Entry<slime.jrunscript.io.zip.Entry>
 		}
 	}
 
@@ -33,26 +33,24 @@ namespace slime.jrunscript.file.archive {
 			fifty.tests.exports.encode = function() {
 				const { io } = ($api as slime.$api.jrunscript.Global).jrunscript;
 
-				//	TODO	generalize the next three constructs to slime.external.lib.es5.Function type, and then implement in
+				//	TODO	generalize the next two constructs, and then implement in
 				// 			$api.fp (perhaps as Function.invoke)
 
-				type TypedFunction<T,P extends any[], R> = (this: T, ...args: P) => R
-
-				type Invocation<F extends TypedFunction<any,any,any>> = (
-					F extends TypedFunction<
+				type Invocation<F extends slime.external.lib.es5.Function<any,any,any>> = (
+					F extends slime.external.lib.es5.Function<
 						infer FT,
 						infer FP,
 						infer FR
 					>
 					? {
 						target: FT,
-						function: TypedFunction<FT,FP,FR>,
+						function: slime.external.lib.es5.Function<FT,FP,FR>,
 						arguments: FP
 					}
 					: never
 				);
 
-				const invoke = function<T,P extends any[],R>(p: Invocation<TypedFunction<T,P,R>>) {
+				const invoke = function<T,P extends any[],R>(p: Invocation<slime.external.lib.es5.Function<T,P,R>>) {
 					return p.function.apply(null, p.arguments) as R
 				}
 
@@ -96,10 +94,17 @@ namespace slime.jrunscript.file.archive {
 				var forList = $api.fp.now(
 					base(""),
 					jsh.file.Location.directory.list.stream.simple({ descend: location => true }),
-					$api.fp.Stream.collect
 				);
 
-				jsh.shell.console("list = \n" + forList.map( location => (location.pathname + ": " + readString(location)) ).join("\n"));
+				jsh.shell.console(
+					"list = \n" +
+					$api.fp.now(
+						forList,
+						$api.fp.Stream.map( location => (location.pathname + ": " + readString(location)) ),
+						$api.fp.Stream.collect,
+						$api.fp.Array.join("\n")
+					)
+				);
 
 				// var zip = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
 				// zip.file.remove();
@@ -186,6 +191,9 @@ namespace slime.jrunscript.file.archive {
 
 namespace slime.jrunscript.file.internal.archive {
 	export interface Context {
+		library: {
+			file: Pick<slime.jrunscript.file.Exports,"Location">
+		}
 	}
 
 	export interface Exports extends slime.jrunscript.file.archive.Exports {

@@ -13,7 +13,7 @@
 	 * @param { slime.jrunscript.file.internal.file.Context } $context
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.file.Exports> } $export
 	 */
-	function (Packages, $api, $context, $export) {
+	function (Packages,$api,$context,$export) {
 		if (!$context.Resource) throw new Error();
 
 		var constant = $api.fp.impure.Input.memoized;
@@ -89,7 +89,7 @@
 
 			var getParent = constant(function () {
 				var parent = provider.getParent(_peer);
-				return (parent) ? new Pathname({ provider: provider, path: String(parent.getScriptPath()) }) : null;
+				return (parent) ? new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(parent.getScriptPath()) }) : null;
 			});
 			this.parent = void(0);
 			this.__defineGetter__("parent", getParent);
@@ -108,7 +108,7 @@
 			var getDirectory = function () {
 				if (!provider.exists(_peer)) return null;
 				if (!provider.isDirectory(_peer)) return null;
-				var pathname = new Pathname({ provider: provider, path: String(_peer.getScriptPath()) });
+				var pathname = new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(_peer.getScriptPath()) });
 				return new Directory(pathname, _peer);
 			}
 			this.directory = void (0);
@@ -278,7 +278,7 @@
 				 * @returns
 				 */
 				var getRelativePath = function (pathString) {
-					return new Pathname({ provider: provider, path: pathname.toString() + relativePathPrefix + pathString });
+					return new Pathname({ provider: provider, filesystem: parameters.filesystem, path: pathname.toString() + relativePathPrefix + pathString });
 				}
 				this.getRelativePath = getRelativePath;
 
@@ -517,13 +517,13 @@
 				this.directory = true;
 
 				this.getFile = function (name) {
-					return new Pathname({ provider: provider, path: this.getRelativePath(name).toString() }).file;
+					return new Pathname({ provider: provider, filesystem: parameters.filesystem, path: this.getRelativePath(name).toString() }).file;
 				}
 
 				this.getSubdirectory = function (name) {
 					if (typeof (name) == "string" && !name.length) return this;
 					if (!name) throw new TypeError("Missing: subdirectory name.");
-					return new Pathname({ provider: provider, path: this.getRelativePath(name).toString() }).directory;
+					return new Pathname({ provider: provider, filesystem: parameters.filesystem, path: this.getRelativePath(name).toString() }).directory;
 				}
 
 				var toFilter = function (regexp) {
@@ -613,7 +613,7 @@
 							/** @type { slime.jrunscript.file.Node[] } */
 							var rv = [];
 							for (var i = 0; i < peers.length; i++) {
-								var pathname = new Pathname({ provider: provider, path: String(peers[i].getScriptPath()) });
+								var pathname = new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(peers[i].getScriptPath()) });
 								if (pathname.directory) {
 									rv.push(pathname.directory);
 								} else if (pathname.file) {
@@ -646,7 +646,7 @@
 				if (provider.temporary) {
 					this.createTemporary = function (parameters) {
 						var _peer = provider.temporary(peer, parameters);
-						var pathname = new Pathname({ provider: provider, path: String(_peer.getScriptPath()) });
+						var pathname = new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(_peer.getScriptPath()) });
 						if (pathname.directory) return pathname.directory;
 						if (pathname.file) return pathname.file;
 						throw new Error();
@@ -717,13 +717,13 @@
 						debugger;
 					}
 					var peer = provider.java.adapt(pathname.java.adapt());
-					var mapped = new Pathname({ provider: provider, path: String(peer.getScriptPath()) });
+					var mapped = new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(peer.getScriptPath()) });
 					return mapped.toString();
 				}).join(provider.separators.searchpath);
 			}
 		}
 		Searchpath.createEmpty = function () {
-			return new Searchpath({ provider: void(0), array: [] });
+			return new Searchpath({ provider: void(0), filesystem: void(0), array: [] });
 		}
 		Searchpath.prototype = $context.prototypes.Searchpath;
 

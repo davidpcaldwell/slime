@@ -130,40 +130,6 @@ namespace slime.jrunscript.io.zip {
 					}).evaluate(withinTwoSecondsOf(arbitrary_times[property])).is(true);
 				});
 			}
-
-			//	TODO	this will really end up moving as it pertains to files, not streams, so will move to the file module where
-			//			we convert files to entries
-			fifty.tests.exports.decode = function() {
-				var expanded = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				expanded.getRelativePath("a").write("a", { append: false });
-				expanded.getRelativePath("b/c").write("c", { append: false, recursive: true });
-				var zipped = jsh.shell.TMPDIR.createTemporary({ suffix: ".zip" }).pathname;
-				zipped.file.remove();
-				var to = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				var path = jsh.file.Searchpath([jsh.shell.java.home.getRelativePath("bin"),jsh.shell.java.home.parent.getRelativePath("bin")]);
-				jsh.shell.run({
-					command: path.getCommand("jar"),
-					arguments: ["cf", zipped, "a", "b"],
-					directory: expanded
-				});
-				var entries = module.archive.zip.decode(
-					{
-						stream: zipped.file.read(jsh.io.Streams.binary)
-					}
-				);
-				$api.fp.now(
-					entries,
-					$api.fp.impure.Stream.forEach(function(entry) {
-						if (!isFileEntry(entry)) {
-							to.getRelativePath(entry.path).createDirectory();
-						} else {
-							to.getRelativePath(entry.path).write(entry.content);
-						}
-					})
-				);
-				verify(to).getFile("a").is.type("object");
-				verify(to).getFile("aa").is.type("null");
-			}
 		}
 	//@ts-ignore
 	)(fifty);
