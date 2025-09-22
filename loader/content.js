@@ -19,8 +19,8 @@
 			return Boolean(store["list"]);
 		}
 
-		/** @type { slime.runtime.content.Exports["Store"]["map"] } */
-		var map = function(p) {
+		/** @type { slime.runtime.content.Exports["Store"]["set"] } */
+		var set = function(p) {
 			return function(store) {
 				/** @type { Store } */
 				var rv = {
@@ -42,8 +42,8 @@
 			}
 		};
 
-		/** @type { slime.runtime.content.Exports["Store"]["path"] } */
-		var path = function(p) {
+		/** @type { slime.runtime.content.Exports["Store"]["at"] } */
+		var at = function(p) {
 			/** @type { Store } */
 			var rv = {
 				get: function(path) {
@@ -53,10 +53,33 @@
 			return rv;
 		};
 
+		/** @type { slime.runtime.content.Exports["Store"]["map"] } */
+		var map = function(map) {
+			return function(store) {
+				return {
+					get: function(path) {
+						var delegate = store.get(path);
+						//	TODO	as of now, $api.fp.Maybe is not available here. Perhaps we could rearrange things
+						if (delegate.present) {
+							return {
+								present: true,
+								value: map(delegate.value)
+							}
+						} else {
+							return {
+								present: false
+							}
+						}
+					}
+				}
+			};
+		};
+
 		$export({
 			Store: {
-				map: map,
-				path: path
+				set: set,
+				at: at,
+				map: map
 			},
 			Entry: {
 				is: {

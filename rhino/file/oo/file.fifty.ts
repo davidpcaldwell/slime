@@ -1234,12 +1234,13 @@ namespace slime.jrunscript.file.internal.file {
 	export interface Exports {
 		Pathname: new (parameters: {
 			provider: slime.jrunscript.file.internal.java.FilesystemProvider
+			filesystem: slime.jrunscript.file.world.Filesystem
 			path: string
 		}) => Pathname
 
 		Searchpath: new (parameters: {
-			fs?: slime.jrunscript.file.world.Filesystem
 			provider: slime.jrunscript.file.internal.java.FilesystemProvider
+			filesystem: slime.jrunscript.file.world.Filesystem
 			array: slime.jrunscript.file.Pathname[]
 		}) => any
 

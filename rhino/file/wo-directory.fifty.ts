@@ -46,9 +46,105 @@ namespace slime.jrunscript.file.location.directory {
 
 	export interface Exports {
 		base: (base: slime.jrunscript.file.Location) => (relative: string) => slime.jrunscript.file.Location
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const subject = fifty.global.jsh.file;
+			const filesystem = subject.world.filesystems.mock();
+
+			const at = (path: string): slime.jrunscript.file.Location => {
+				return {
+					filesystem: filesystem,
+					pathname: path
+				}
+			}
+
+			fifty.tests.exports.Location.directory.base = function() {
+				var directory = subject.Location.directory.base(at("/a/b/c"));
+
+				var one = directory("d");
+				verify(one).pathname.is("/a/b/c/d");
+				var two = directory("./d");
+				verify(two).pathname.is("/a/b/c/d");
+				var three = directory("../d");
+				verify(three).pathname.is("/a/b/d");
+			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		relativePath: (path: string) => (p: slime.jrunscript.file.Location) => slime.jrunscript.file.Location
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const subject = fifty.global.jsh.file;
+			const filesystem = subject.world.filesystems.mock();
+
+			const at = (path: string): slime.jrunscript.file.Location => {
+				return {
+					filesystem: filesystem,
+					pathname: path
+				}
+			}
+
+			fifty.tests.exports.Location.directory.relativePath = function() {
+				var d = subject.Location.directory.relativePath("d");
+				var target = d(at("/a/b/c"));
+				verify(target).pathname.is("/a/b/c/d");
+			};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		/**
+		 * Given a base (directory) location, returns a function that converts a filesystem location to a path relative to the base
+		 * loation.
+		 */
 		relativeTo: (location: slime.jrunscript.file.Location) => (p: slime.jrunscript.file.Location) => string
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const subject = fifty.global.jsh.file;
+			const filesystem = subject.world.filesystems.mock();
+
+			const at = (path: string): slime.jrunscript.file.Location => {
+				return {
+					filesystem: filesystem,
+					pathname: path
+				}
+			}
+
+			fifty.tests.exports.Location.directory.relativeTo = function() {
+				var target = at("/a/b/c");
+				var relativeOf = subject.Location.directory.relativeTo(target);
+				var one = relativeOf(at("/a/b/d"));
+				verify(one).is("../d");
+				var oneA = relativeOf(at("/a/c"));
+				verify(oneA).is("../../c");
+				var two = relativeOf(at("/b"));
+				verify(two).is("../../../b");
+				var three = relativeOf(at("/a/b/c/d"));
+				verify(three).is("d");
+				var four = relativeOf(at("/a/b/c"));
+				verify(four).is("");
+			};
+		}
+	//@ts-ignore
+	)(fifty);
 
 	(
 		function(
@@ -66,40 +162,6 @@ namespace slime.jrunscript.file.location.directory {
 					pathname: path
 				}
 			}
-
-			//	TODO	these tests might not pass on Windows
-
-			fifty.tests.exports.Location.directory.relativePath = function() {
-				var d = subject.Location.directory.relativePath("d");
-				var target = d(at("/a/b/c"));
-				verify(target).pathname.is("/a/b/c/d");
-			};
-
-			fifty.tests.exports.Location.directory.base = function() {
-				var directory = subject.Location.directory.base(at("/a/b/c"));
-
-				var one = directory("d");
-				verify(one).pathname.is("/a/b/c/d");
-				var two = directory("./d");
-				verify(two).pathname.is("/a/b/c/d");
-				var three = directory("../d");
-				verify(three).pathname.is("/a/b/d");
-			};
-
-			fifty.tests.exports.Location.directory.relativeTo = function() {
-				var target = at("/a/b/c");
-				var relativeOf = subject.Location.directory.relativeTo(target);
-				var one = relativeOf(at("/a/b/d"));
-				verify(one).is("../d");
-				var oneA = relativeOf(at("/a/c"));
-				verify(oneA).is("../../c");
-				var two = relativeOf(at("/b"));
-				verify(two).is("../../../b");
-				var three = relativeOf(at("/a/b/c/d"));
-				verify(three).is("d");
-				var four = relativeOf(at("/a/b/c"));
-				verify(four).is("");
-			};
 
 			fifty.tests.exports.Location.directory.harvested = function() {
 				//	TODO	Not a very good test for Windows filesystem
