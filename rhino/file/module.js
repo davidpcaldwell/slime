@@ -100,7 +100,13 @@
 			Streams: oo.Streams,
 			java: oo.java,
 
-			archive: code.archive({})
+			archive: code.archive({
+				library: {
+					file: {
+						Location: wo.Location
+					}
+				}
+			})
 		});
 	}
 //@ts-ignore

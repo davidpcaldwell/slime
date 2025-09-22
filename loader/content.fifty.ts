@@ -136,7 +136,7 @@ namespace slime.runtime.content {
 			 * @returns A transform that, given an existing Store, can return a Store that is the same, but has the mapping added to
 			 * it.
 			 */
-			map: <T>(p: {
+			set: <T>(p: {
 				path: string[]
 				store: Store<T>
 			}) => slime.$api.fp.Transform<Store<T>>
@@ -144,10 +144,12 @@ namespace slime.runtime.content {
 			/**
 			 * Given a `Store` and a path within it, returns a `Store` that uses that path as the root for a new `Store`.
 			 */
-			path: <T>(p: {
+			at: <T>(p: {
 				path: string[]
 				store: Store<T>
 			}) => Store<T>
+
+			map: <T,R>(f: (t: T) => R) => (store: Store<T>) => Store<R>
 		}
 
 		Entry: {
@@ -174,14 +176,16 @@ namespace slime.runtime.content {
 				return null;
 			}
 
+			const subject = fifty.global.$api.content;
+
 			fifty.tests.exports.Store = fifty.test.Parent();
 
-			fifty.tests.exports.Store.map = function() {
+			fifty.tests.exports.Store.set = function() {
 				var mappedContent: slime.runtime.test.mock.Content<string> = fixtures.mock.content();
 				mappedContent.set("baz/bizzy", "busy!");
 
 				var content: slime.runtime.test.mock.Content<string> = fixtures.mock.content();
-				var after = fifty.global.$api.content.Store.map({
+				var after = fifty.global.$api.content.Store.set({
 					path: ["foo","bar"],
 					store: mappedContent.store
 				})(content.store);
@@ -189,17 +193,34 @@ namespace slime.runtime.content {
 				verify(after).get(["foo", "bar", "baz", "bizzy"]).evaluate(nullable).is("busy!");
 			}
 
-			fifty.tests.exports.Store.path = function() {
+			fifty.tests.exports.Store.at = function() {
 				var mappedContent: slime.runtime.test.mock.Content<string> = fixtures.mock.content();
 				mappedContent.set("foo/bar/baz", "busy!");
 
-				var foobar = fifty.global.$api.content.Store.path({
+				var foobar = fifty.global.$api.content.Store.at({
 					store: mappedContent.store,
 					path: ["foo","bar"]
 				});
 
 				verify(foobar).get(["foo", "bar", "baz"]).evaluate(nullable).is(null);
 				verify(foobar).get(["baz"]).evaluate(nullable).is("busy!");
+			}
+
+			fifty.tests.exports.Store.map = function() {
+				var mappedContent: slime.runtime.test.mock.Content<number> = fixtures.mock.content();
+
+				mappedContent.set("washington", 1);
+				mappedContent.set("jefferson", 3);
+
+				var cubed = subject.Store.map( (n: number) => n*n*n )(mappedContent.store);
+
+				var assert = function(m: slime.$api.fp.Maybe<number>): number {
+					if (!m.present) throw new Error();
+					return m.value;
+				}
+
+				verify(cubed).get(["washington"]).evaluate(assert).is(1);
+				verify(cubed).get(["jefferson"]).evaluate(assert).is(27);
 			}
 		}
 	//@ts-ignore
