@@ -615,6 +615,8 @@
 					 * @param { F } f
 					 * @returns { { function: F, invocations: slime.fifty.test.spy.Invocation<F>[] } }
 					 */
+					//	sometimes when this is embedded in another project, an error results here, so we ignore it
+					//@ts-ignore
 					create: function(f) {
 						/** @type { slime.fifty.test.spy.Invocation<F>[] } */
 						var recorded = [];

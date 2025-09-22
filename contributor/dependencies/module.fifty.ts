@@ -45,6 +45,10 @@ namespace slime.project.dependencies {
 				}
 			}
 
+			typescript: {
+				version: string
+			}
+
 			typedoc: {
 				version: string
 			}
