@@ -134,7 +134,7 @@
 					//	TODO	existing tests do not pass with this formulation; see #2083
 					//	Even instantiating it runs tsc, so we comment it out for now
 					//	TODO	also it assumes the existence of the given .json at the project root. More design required.
-					/** @type { slime.servlet.Handler } */
+					///** @type { slime.servlet.Handler } */
 					// var tscHandler = (
 					// 	function() {
 					// 		var typescriptCompilerPath = "node/bin/tsc";
