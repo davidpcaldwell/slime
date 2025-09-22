@@ -58,6 +58,7 @@
 		 */
 		function Pathname(parameters) {
 			var provider = parameters.provider;
+			var filesystem = parameters.filesystem;
 			var _peer = provider.newPeer(parameters.path);
 
 			var toString = constant(function () {
@@ -644,9 +645,9 @@
 				});
 
 				if (provider.temporary) {
-					this.createTemporary = function (parameters) {
+					this.createTemporary = function(parameters) {
 						var _peer = provider.temporary(peer, parameters);
-						var pathname = new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(_peer.getScriptPath()) });
+						var pathname = new Pathname({ provider: provider, filesystem: filesystem, path: String(_peer.getScriptPath()) });
 						if (pathname.directory) return pathname.directory;
 						if (pathname.file) return pathname.file;
 						throw new Error();
