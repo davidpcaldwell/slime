@@ -259,11 +259,12 @@
 			destination.shell.getRelativePath(path).createDirectory();
 		});
 
-		console("Copying launcher scripts ...");
-		SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath("jsh.js"));
-		["slime.js","javac.js","launcher.js","main.js"].forEach(function(name) {
-			SLIME.getFile("jrunscript/jsh/launcher/" + name).copy(destination.shell);
-		});
+		jsh.shell.jsh.tools.copyLauncherScripts(SLIME, destination);
+		// console("Copying launcher scripts ...");
+		// SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath("jsh.js"));
+		// ["slime.js","javac.js","launcher.js","main.js"].forEach(function(name) {
+		// 	SLIME.getFile("jrunscript/jsh/launcher/" + name).copy(destination.shell);
+		// });
 
 		if (build.rhino) {
 			console("Copying Rhino libraries ...");
