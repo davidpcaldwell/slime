@@ -12,3 +12,5 @@ services:
       - type: bind
         source: .
         target: /slime
+      - type: volume
+        target: /slime/local
