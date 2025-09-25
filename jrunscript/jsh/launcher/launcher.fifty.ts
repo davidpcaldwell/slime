@@ -9,7 +9,10 @@ namespace slime.jsh.internal.launcher {
 		/**
 		 * The classpath from which the given Rhino version can be loaded, or `null`/`undefined` if it is not present.
 		 */
-		rhino: (version: string) => slime.jrunscript.native.java.net.URL[]
+		rhino: (jdkMajorVersion: number) => {
+			local: () => slime.jrunscript.native.java.net.URL[]
+			download: () => slime.jrunscript.native.java.net.URL[]
+		}
 
 		nashorn: slime.jrunscript.native.java.net.URL[]
 	}
@@ -24,6 +27,10 @@ namespace slime.jsh.internal.launcher {
 		shellClasspath: (p?: { source: number, target: number }) => slime.jrunscript.native.java.net.URL[]
 	}
 
+	export interface Jsh {
+		exit: any
+	}
+
 	export interface Engine {
 		/**
 		 * The name of the `jsh` main class for this engine.
@@ -34,15 +41,19 @@ namespace slime.jsh.internal.launcher {
 	}
 
 	export interface Jsh {
-		exit: any
 		engines: {
 			rhino: Engine
 			nashorn: Engine
 			graal: Engine
 			[name: string]: Engine
 		}
+	}
+
+	export interface Jsh {
 		shell: any
+
 		Packaged: any
+
 		Classpath: any
 
 		Unbuilt: (p: {
