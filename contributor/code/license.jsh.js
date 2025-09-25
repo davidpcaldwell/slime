@@ -173,7 +173,8 @@
 				if (files[i].path == "tools/wf/install") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/manual/engines") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/issue1254") extension = "bash";
-				if (files[i].path == "contributor/test-command-docker") extension = "bash";
+				if (files[i].path == "contributor/test-docker-command") extension = "bash";
+				if (files[i].path == "contributor/test-docker-clean") extension = "bash";
 				if (files[i].path == "contributor/suite-docker") extension = "bash";
 				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";
 				if (files[i].path == "contributor/devcontainer/check") extension = "bash";
