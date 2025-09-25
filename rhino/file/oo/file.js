@@ -61,14 +61,19 @@
 			var filesystem = parameters.filesystem;
 			var _peer = provider.newPeer(parameters.path);
 
-			var toString = constant(function () {
-				var rv = provider.peerToString(_peer);
-				if (rv.substring(rv.length - provider.separators.pathname.length) == provider.separators.pathname) {
-					$api.deprecate(function () {
-						rv = rv.substring(0, rv.length - provider.separators.pathname.length);
-					})();
-				}
-				return rv;
+			var canonicalize = $api.fp.now(
+				filesystem.canonicalize,
+				$api.fp.world.Sensor.mapping()
+			);
+
+			var toString = constant(function() {
+				return $api.fp.now(
+					canonicalize({ pathname: parameters.path }),
+					function(maybe) {
+						if (!maybe.present) throw new Error("Unreachable");
+						return maybe.value;
+					}
+				);
 			});
 
 			this.toString = toString;
