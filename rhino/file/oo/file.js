@@ -57,24 +57,14 @@
 		 * @param { ConstructorParameters<slime.jrunscript.file.internal.file.Exports["Pathname"]>[0] } parameters
 		 */
 		function Pathname(parameters) {
-			var provider = parameters.provider;
 			var filesystem = parameters.filesystem;
-			var _peer = provider.newPeer(parameters.path);
 
-			var canonicalize = $api.fp.now(
-				filesystem.canonicalize,
-				$api.fp.world.Sensor.mapping()
-			);
-
-			var toString = constant(function() {
-				return $api.fp.now(
-					canonicalize({ pathname: parameters.path }),
-					function(maybe) {
-						if (!maybe.present) throw new Error("Unreachable");
-						return maybe.value;
-					}
-				);
+			var toString = constant(function () {
+				return parameters.filesystem.os.toString(parameters.path);
 			});
+
+			var provider = parameters.provider;
+			var _peer = provider.newPeer(parameters.path);
 
 			this.toString = toString;
 
