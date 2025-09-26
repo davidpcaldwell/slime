@@ -112,6 +112,10 @@ namespace slime.jrunscript.file.internal.java {
 		}
 	}
 
+	export interface OsFilesystem {
+		toString: (path: string) => string
+	}
+
 	export interface Exports {
 		//	TODO	this provider object is still used internally by oo/filesystem.js, but it seems like refactoring to remove this
 		//			export would be a goal
@@ -120,7 +124,13 @@ namespace slime.jrunscript.file.internal.java {
 		}
 
 		filesystems: {
-			os: slime.jrunscript.file.world.Filesystem
+			os: slime.jrunscript.file.world.Filesystem & {
+				/**
+				 * Bridging APIs that apply only to the OS-level file system, and are currently used in the rhino/file OO APIs that
+				 * do not contemplate arbitrary filesystem implementations.
+				 */
+				os: OsFilesystem
+			}
 		}
 	}
 
