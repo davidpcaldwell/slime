@@ -825,7 +825,8 @@
 				/** @type { slime.jsh.shell.JshShellJsh["Intention" ]} */
 				Intention: {
 					toShellIntention: jshIntentionToShellIntention
-				}
+				},
+				tools: void(0)
 			}
 		);
 
