@@ -63,22 +63,19 @@
 				return parameters.filesystem.os.toString(parameters.path);
 			});
 
+			this.toString = toString;
+
+			/** @type { slime.jrunscript.file.Location } */
+			var location = {
+				filesystem: parameters.filesystem,
+				pathname: toString()
+			}
+
 			var provider = parameters.provider;
 			var _peer = provider.newPeer(parameters.path);
 
-			this.toString = toString;
-
 			var getBasename = constant(function () {
-				var path = toString();
-				//	TODO	maybe should be considered wrong?
-				//	$ basename /foo
-				//	foo
-				if (provider.isRootPath(path)) return path;
-				if (path.substring(path.length - 1) == provider.separators.pathname) {
-					path = path.substring(0, path.length - 1);
-				}
-				var tokens = path.split(provider.separators.pathname);
-				return tokens.pop();
+				return $context.library.Location.basename(location);
 			});
 			this.basename = void(0);
 			this.__defineGetter__("basename", getBasename);

@@ -32,7 +32,8 @@
 			function() {
 				var file = code.file({
 					library: {
-						java: $context.api.java
+						java: $context.api.java,
+						Location: $context.library.Location
 					},
 					Streams: $context.api.io.Streams,
 					Resource: $context.api.io.Resource,
