@@ -361,7 +361,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } java
-		 * @returns { slime.jrunscript.file.world.Filesystem }
+		 * @returns { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] }
 		 */
 		function toWorldFilesystem(java) {
 			/**
@@ -652,7 +652,7 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.file.world.Filesystem } */
+			/** @type { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] } */
 			var filesystem = {
 				separator: {
 					pathname: java.separators.pathname,
@@ -662,7 +662,10 @@
 					return function(events) {
 						var peer = java.newPeer(p.pathname);
 						try {
-							return $api.fp.Maybe.from.some(String(peer.getHostFile().getCanonicalPath()));
+							//	TODO	all quite dubious, why would this work like this? Think it through.
+							var hostCanonicalPath = String(peer.getHostFile().getCanonicalPath());
+							if (hostCanonicalPath == "/") return $api.fp.Maybe.from.some("");
+							return $api.fp.Maybe.from.some(hostCanonicalPath);
 						} catch (e) {
 							return $api.fp.Maybe.from.nothing();
 						}
@@ -792,6 +795,20 @@
 							if (peer.exists() && !peer.isDirectory()) throw new Error();
 							if (peer.exists() && peer.isDirectory()) java.remove(peer);
 						});
+					}
+				},
+				os: {
+					toString: function(path) {
+						var provider = java;
+						var parameters = { path: path }
+						var _peer = provider.newPeer(parameters.path);
+						var rv = provider.peerToString(_peer);
+						if (rv.substring(rv.length - provider.separators.pathname.length) == provider.separators.pathname) {
+							$api.deprecate(function () {
+								rv = rv.substring(0, rv.length - provider.separators.pathname.length);
+							})();
+						}
+						return rv;
 					}
 				},
 				java: {

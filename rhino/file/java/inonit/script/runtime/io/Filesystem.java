@@ -208,10 +208,13 @@ public abstract class Filesystem {
 		}
 
 		private static class NodeImpl extends Node {
-			private File file;
+			private File canonicalizedAbsoluteFile;
 
 			//	TODO	not totally sure why this is not just file.getCanonicalFile(); it is not Java API versions because that has
 			//			been around since 1.2
+			//
+			//			Possible answer to above: when working on this API, using truly canonical files in another layer broke
+			//			softlink-related tests
 			private File canonicalize(File file) {
 				String absolute = file.getAbsolutePath();
 				String[] tokens = absolute.split("\\" + File.separator);
@@ -244,35 +247,35 @@ public abstract class Filesystem {
 			}
 
 			NodeImpl(File file) throws IOException {
-				this.file = canonicalize(file);
+				this.canonicalizedAbsoluteFile = canonicalize(file);
 			}
 
 			public String toString() {
-				return getClass().getName() + " file=" + file;
+				return getClass().getName() + " file=" + canonicalizedAbsoluteFile;
 			}
 
 			public boolean exists() {
-				return file.exists();
+				return canonicalizedAbsoluteFile.exists();
 			}
 
 			public boolean isDirectory() {
-				return file.isDirectory();
+				return canonicalizedAbsoluteFile.isDirectory();
 			}
 
 			public Node getParent() throws IOException {
-				return new NodeImpl(file.getParentFile());
+				return new NodeImpl(canonicalizedAbsoluteFile.getParentFile());
 			}
 
 			public File getHostFile() throws IOException {
 				try {
-					return file.getCanonicalFile();
+					return canonicalizedAbsoluteFile.getCanonicalFile();
 				} catch (IOException e) {
-					throw new IOException(e.getMessage() + " path=[" + file.getPath() + "]", e);
+					throw new IOException(e.getMessage() + " path=[" + canonicalizedAbsoluteFile.getPath() + "]", e);
 				}
 			}
 
 			public String getScriptPath() {
-				String rv = file.getPath();
+				String rv = canonicalizedAbsoluteFile.getPath();
 				if (rv.endsWith(File.separator)) {
 					if (rv.equals(File.separator)) {
 						//	used to be the below; no idea why. Going to try removing it and see whether all tests pass.
@@ -287,8 +290,8 @@ public abstract class Filesystem {
 			}
 
 			public Node[] list() throws IOException {
-				File[] files = this.file.listFiles();
-				if (files == null) throw new RuntimeException("listing is null for " + this.file);
+				File[] files = this.canonicalizedAbsoluteFile.listFiles();
+				if (files == null) throw new RuntimeException("listing is null for " + this.canonicalizedAbsoluteFile);
 				Node[] rv = new Node[files.length];
 				for (int i=0; i<files.length; i++) {
 					rv[i] = new NodeImpl(files[i]);
@@ -326,8 +329,8 @@ public abstract class Filesystem {
 			}
 
 			public void delete() throws IOException {
-				boolean success = delete(this.file);
-				if (!success) throw new IOException("Failed to delete: " + this.file);
+				boolean success = delete(this.canonicalizedAbsoluteFile);
+				if (!success) throw new IOException("Failed to delete: " + this.canonicalizedAbsoluteFile);
 			}
 
 			private void copy(File from, File to) throws IOException {
@@ -351,18 +354,18 @@ public abstract class Filesystem {
 
 			public void move(Node to) throws IOException {
 				NodeImpl toNode = (NodeImpl)to;
-				boolean success = file.renameTo(toNode.file);
+				boolean success = canonicalizedAbsoluteFile.renameTo(toNode.canonicalizedAbsoluteFile);
 				if (!success) {
 					//	TODO	this does not work for symlinks; it appears to copy them "by value"
-					copy(file, toNode.file);
-					file.delete();
+					copy(canonicalizedAbsoluteFile, toNode.canonicalizedAbsoluteFile);
+					canonicalizedAbsoluteFile.delete();
 				}
 			}
 
 			public void mkdir() throws IOException {
-				if (this.file.exists()) throw new IOException("Already exists: " + this.file);
-				boolean success = this.file.mkdir();
-				if (!success) throw new IOException("Failed to create: " + this.file);
+				if (this.canonicalizedAbsoluteFile.exists()) throw new IOException("Already exists: " + this.canonicalizedAbsoluteFile);
+				boolean success = this.canonicalizedAbsoluteFile.mkdir();
+				if (!success) throw new IOException("Failed to create: " + this.canonicalizedAbsoluteFile);
 			}
 
 			public final OutputStream writeBinary(boolean append) throws IOException {

@@ -57,19 +57,14 @@
 		 * @param { ConstructorParameters<slime.jrunscript.file.internal.file.Exports["Pathname"]>[0] } parameters
 		 */
 		function Pathname(parameters) {
-			var provider = parameters.provider;
 			var filesystem = parameters.filesystem;
-			var _peer = provider.newPeer(parameters.path);
 
 			var toString = constant(function () {
-				var rv = provider.peerToString(_peer);
-				if (rv.substring(rv.length - provider.separators.pathname.length) == provider.separators.pathname) {
-					$api.deprecate(function () {
-						rv = rv.substring(0, rv.length - provider.separators.pathname.length);
-					})();
-				}
-				return rv;
+				return parameters.filesystem.os.toString(parameters.path);
 			});
+
+			var provider = parameters.provider;
+			var _peer = provider.newPeer(parameters.path);
 
 			this.toString = toString;
 
