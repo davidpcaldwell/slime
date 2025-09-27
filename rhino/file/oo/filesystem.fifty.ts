@@ -70,6 +70,7 @@ namespace slime.jrunscript.file.internal.filesystem {
 				if (UNIX) {
 					test( Pathname("/home/inonit").basename == "inonit" );
 					test( Pathname("/home").basename == "home" );
+					verify("now").is("now");
 					test( Pathname("/").basename == "" );
 				} else {
 					test( Pathname("C:\\cygwin\\tmp").basename == "tmp" );

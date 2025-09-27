@@ -60,7 +60,8 @@
 				io: $context.api.io
 			},
 			library: {
-				world: world
+				world: world,
+				Location: wo.Location
 			},
 			pathext: $context.pathext,
 			cygwin: $context.cygwin,
