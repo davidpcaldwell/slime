@@ -58,6 +58,7 @@
 		);
 	}
 
+	/** @type { slime.jrunscript.file.Directory } */
 	var to = (function() {
 		if (parameters.options.directory) return parameters.options.to.createDirectory({ ifExists: function(d) { d.remove(); return true; }, recursive: true });
 		return jsh.file.filesystems.os.Pathname(String(jsh.shell.properties.object.java.io.tmpdir)).directory.createTemporary({ directory: true });
@@ -68,6 +69,7 @@
 	jsh.shell.console("Using built shell at " + JSH + " to package.");
 
 	if (UNZIP_RHINO_WHEN_PACKAGING) {
+		if (!jsh.shell.jsh.lib.getFile("js.jar")) throw new Error("No Rhino present.");
 		jsh.file.unzip({ zip: jsh.shell.jsh.lib.getFile("js.jar"), to: to });
 	}
 	if (!parameters.options.norhino) {
@@ -92,7 +94,10 @@
 		var tokens = module.pathname.basename.split(".");
 		tokens = tokens.slice(0,tokens.length-1);
 		jsh.shell.console("Creating: " + tokens.join("/"));
-		var destination = to.getRelativePath("$jsh/modules/" + tokens.join("/")).createDirectory({ recursive: true });
+		var destination = to
+			.getRelativePath("$jsh/modules/" + tokens.join("/"))
+			.createDirectory({ exists: function(dir) { return false; }, recursive: true })
+		;
 		jsh.shell.console("Created " + destination);
 		jsh.file.unzip({ zip: module, to: destination });
 	} );

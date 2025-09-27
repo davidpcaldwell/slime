@@ -6,6 +6,11 @@
 
 services:
   local:
-    # In the test scenario, we do not want the named volume 'local' mounted; we want a clean install. We also do not want the user
+    # In the clean scenario, we do not want the named volume 'local' mounted; we want a clean install. We also do not want the user
     # home directory to be bind-mounted
-    volumes: !reset []
+    volumes: !override
+      - type: bind
+        source: .
+        target: /slime
+      - type: volume
+        target: /slime/local
