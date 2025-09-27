@@ -84,6 +84,7 @@
 	components.add("jrunscript/jsh/loader/loader.api.html", { jsh: { api: true } });
 	components.add("rhino/shell/plugin.jsh.api.html", { jsh: { api: true } });
 	components.add("jrunscript/jsh/launcher/", { jsh: { api: true, module: true } });
+	components.add("jrunscript/jsh/tools/", { jsh: { api: true, module: true } });
 
 	components.add("jrunscript/jsh/tools/install/", { jsh: { api: true, module: true } });
 

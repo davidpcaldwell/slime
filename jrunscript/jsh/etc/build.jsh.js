@@ -27,6 +27,7 @@
 		//	Policy decision to support 8 and up
 		var JAVA_VERSION = 8;
 
+		jsh.shell.console("Current shell: " + JSON.stringify(jsh.shell.jsh.Installation.from.current()));
 		jsh.shell.console("Building jsh with arguments [" + jsh.script.arguments.join(" ") + "]");
 		var parameters = jsh.script.getopts({
 			options: {
@@ -259,6 +260,7 @@
 			destination.shell.getRelativePath(path).createDirectory();
 		});
 
+		jsh.shell.console("Copying launcher scripts from " + JSON.stringify(jsh.shell.jsh.Installation.from.current()));
 		jsh.shell.jsh.tools.copyLauncherScripts(SLIME, destination);
 		// console("Copying launcher scripts ...");
 		// SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath("jsh.js"));
