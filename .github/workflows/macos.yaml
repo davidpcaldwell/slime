@@ -28,5 +28,5 @@ jobs:
           SLIME_TEST_NO_GIT: 1
           SLIME_TEST_NO_TOMCAT_INSTALL_TO_JSH: 1
           SLIME_TEST_NO_BROWSER: 1
-        run: ./wf check
+        run: contributor/suite-macos
         shell: bash

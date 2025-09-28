@@ -196,6 +196,7 @@
 						}
 					}
 				)();
+
 				var engines = jsh.shell.run({
 					command: launcher,
 					arguments: launch.concat(["-engines"]),
