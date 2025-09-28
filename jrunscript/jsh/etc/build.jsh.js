@@ -32,11 +32,6 @@
 		var parameters = jsh.script.getopts({
 			options: {
 				verbose: false,
-				nounit: false,
-				notest: false,
-				unit: false,
-				test: false,
-				nodoc: false,
 				rhino: jsh.file.Pathname,
 				norhino: false,
 				executable: false,
@@ -52,30 +47,14 @@
 			$api: jsh.internal.bootstrap
 		}
 
+		/** @type { { rhino: slime.jrunscript.file.Searchpath } } */
 		var build = (function() {
 			var bothError = function(name) {
 				throw new Error("Specified both -" + name + " and -no" + name + "; specify one or the other.");
 			}
 
-			var setBoolean = function(rv,name) {
-				if (parameters.options[name] && parameters.options["no" + name]) {
-					bothError(name);
-				}
-				if (parameters.options[name]) rv[name] = true;
-				if (parameters.options["no" + name]) rv[name] = false;
-			};
-
-			var otherwise = function(o,property,value) {
-				if (typeof(o[property]) == "undefined") {
-					o[property] = value;
-				}
-			};
-
 			var rv = {};
-			setBoolean(rv,"test");
-			setBoolean(rv,"unit");
 			if (rv.test === false && typeof(rv.unit) == "undefined") rv.unit = false;
-			setBoolean(rv,"doc");
 			if (parameters.options.rhino && parameters.options.norhino) {
 				bothError("rhino");
 			}
@@ -93,17 +72,10 @@
 			};
 
 			if (jsh.script.url) {
-				otherwise(rv,"unit",false);
-				otherwise(rv,"test",false);
-				otherwise(rv,"doc",true);
 				if (typeof(rv.rhino) == "undefined") {
 					rv.rhino = downloadRhino();
 				}
 			} else if (jsh.script.file) {
-				otherwise(rv,"unit",true);
-				otherwise(rv,"test",true);
-				//	Should the default for doc be false?
-				otherwise(rv,"doc",true);
 				if (typeof(rv.rhino) == "undefined") {
 					if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 						if (parameters.options.rhino) {
@@ -262,11 +234,6 @@
 
 		jsh.shell.console("Copying launcher scripts from " + JSON.stringify(jsh.shell.jsh.Installation.from.current()));
 		jsh.shell.jsh.tools.copyLauncherScripts(SLIME, destination);
-		// console("Copying launcher scripts ...");
-		// SLIME.getFile("rhino/jrunscript/api.js").copy(destination.shell.getRelativePath("jsh.js"));
-		// ["slime.js","javac.js","launcher.js","main.js"].forEach(function(name) {
-		// 	SLIME.getFile("jrunscript/jsh/launcher/" + name).copy(destination.shell);
-		// });
 
 		if (build.rhino) {
 			console("Copying Rhino libraries ...");
@@ -505,46 +472,6 @@
 
 			//	TODO	run test cases given in jsh.c
 		}
-
-		var getTestEnvironment = $api.fp.impure.Input.memoized(function() {
-			var subenv = {};
-			for (var x in jsh.shell.environment) {
-				if (!/^JSH_/.test(x)) {
-					subenv[x] = jsh.shell.environment[x];
-				}
-			}
-			//	TODO	test whether Tomcat tests work in shells where -install tomcat is indicated
-			//	TODO	ensure that user plugins are disabled; the below probably does not work. See inonit.jsh.script.Main, which
-			//			automatically uses user plugins
-			if (typeof(subenv.JSH_PLUGINS) != "undefined") delete subenv.JSH_PLUGINS;
-			return subenv;
-		});
-
-		(function() {
-			// TODO: unit and integration tests used to be separate, and could again be; right now integration tests are embedded in unit
-			// tests
-			if (build.unit || build.test) {
-				console("Running unit tests ...");
-				jsh.shell.jsh({
-					shell: destination.shell,
-					script: destination.shell.getFile("src/jsh/test/unit.jsh.js"),
-					environment: getTestEnvironment()
-				});
-			}
-			if (build.doc) {
-				var args = [];
-				console("Running jsapi.jsh.js to generate documentation ...");
-				args.push("-notest");
-				args.push("-doc",destination.shell.getRelativePath("doc/api"));
-				args.push("-index",SLIME.getFile("jrunscript/jsh/etc/api.html"));
-				jsh.shell.jsh({
-					shell: destination.shell,
-					script: SLIME.getFile("loader/api/old/jsh/jsapi.jsh.js"),
-					arguments: args,
-					environment: getTestEnvironment()
-				});
-			}
-		})();
 
 		if (destination.installer) {
 			(
