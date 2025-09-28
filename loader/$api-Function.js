@@ -297,6 +297,16 @@
 			},
 			pipe: pipe,
 			Thunk: {
+				memoize: function(f) {
+					/** @type { slime.$api.fp.Maybe<any> } */
+					var result = Maybe.from.nothing();
+					return function() {
+						if (!result.present) {
+							result = Maybe.from.some(f());
+						}
+						return result.value;
+					}
+				},
 				map: function(thunk) {
 					var functions = Array.prototype.slice.call(arguments,1);
 					return function() {
