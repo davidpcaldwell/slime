@@ -155,6 +155,8 @@ namespace slime.$api.fp.impure {
 		export interface Input {
 
 			/**
+			 * @deprecated Replaced by {@link slime.$api.fp.Exports["Thunk"]["memoize"] }
+			 *
 			 * A function that takes an {@link impure.Input | Input} as an argument and returns a memoized version of that `Input`.
 			 *
 			 * @param i An `Input` to memoize

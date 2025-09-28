@@ -16,8 +16,6 @@
 	function (Packages,$api,$context,$export) {
 		if (!$context.Resource) throw new Error();
 
-		var constant = $api.fp.impure.Input.memoized;
-
 		var $exports_list = {
 			NODE: {
 				create: function (d, n) {
@@ -59,7 +57,7 @@
 		function Pathname(parameters) {
 			var filesystem = parameters.filesystem;
 
-			var toString = constant(function () {
+			var toString = $api.fp.Thunk.memoize(function () {
 				return parameters.filesystem.os.toString(parameters.path);
 			});
 
@@ -69,18 +67,26 @@
 			var location = {
 				filesystem: parameters.filesystem,
 				pathname: toString()
-			}
+			};
+
+			Object.defineProperty(
+				this,
+				"basename",
+				{
+					enumerable: true,
+					get: function() {
+						return $context.library.Location.basename(location);
+					}
+				}
+			);
+
+			/** @type { string } */
+			this.basename = void(0);
 
 			var provider = parameters.provider;
 			var _peer = provider.newPeer(parameters.path);
 
-			var getBasename = constant(function () {
-				return $context.library.Location.basename(location);
-			});
-			this.basename = void(0);
-			this.__defineGetter__("basename", getBasename);
-
-			var getParent = constant(function () {
+			var getParent = $api.fp.Thunk.memoize(function () {
 				var parent = provider.getParent(_peer);
 				return (parent) ? new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(parent.getScriptPath()) }) : null;
 			});
