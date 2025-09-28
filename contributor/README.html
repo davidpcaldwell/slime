@@ -66,7 +66,7 @@ END LICENSE
 					var button = typedoc.querySelector("[data-name='update']");
 					var output = typedoc.querySelector("[data-name='console']");
 					button.addEventListener("click", function(e) {
-						output.innerHTML = "Running TypeDoc ... (started at " + new Date() + ")";
+						output.innerHTML = "Telling server to update TypeDoc at " + new Date() + ")";
 						button.disabled = true;
 						fetch("../local/doc/typedoc/update", {
 							method: "POST"
@@ -80,25 +80,13 @@ END LICENSE
 				});
 			</script>
 			<div data-name="typedoc">
-				<h3><a href="../local/doc/typedoc/index.html">TypeDoc</a></h3>
+				<h3><a href="../local/doc/typedoc/modules/slime.internal.html">SLIME internal TypeDoc</a></h3>
 				<div>
-					<h4>Namespaces split across multiple files</h4>
-					<p>
-						For namespace comments, the current version of TypeDoc as of this writing, 0.22.11, will handle namespaces
-						split across multiple files by using the comment from the "first" file declaring the namespace. The ordering
-						of the files appears to be related to alphabetical order and perhaps a depth search starting from the root
-						(perhaps related to the location of jsconfig.json, or perhaps related to <code>entryPoints</code>).
-					</p>
-					<p>
-						As of this writing, for namespaces split across multiple files, SLIME adopts a workaround of creating a
-						file called <code>_.fifty.ts</code> to contain simply a namespace declaration and the top-level namespace comment.
-					</p>
-				</div>
-				<div>
+					<!--	This will go away with Issue #2077: https://github.com/davidpcaldwell/slime/issues/2077 -->
 					<h4>Re-generating the documentation</h4>
 					<p>
 						Although the TypeDoc documentation will be updated automatically when the documentation server is running via
-						`fifty view`, it uses exponential backoff when scanning the file system for changes in order to avoid overusing
+						<code>fifty view</code>, it uses exponential backoff when scanning the file system for changes in order to avoid overusing
 						local system resources. To hint to the server that it should begin checking for updates more frequently again,
 						this <button data-name="update">Update</button> button may be clicked and the server response to the update
 						request will be rendered below.
@@ -116,6 +104,10 @@ END LICENSE
 			<h2>Project Management</h2>
 			<div>
 				<h3><a href="https://github.com/davidpcaldwell/slime/milestones?sort=title&direction=asc">Milestones</a></h3>
+				<div>
+					GitHub milestones are akin to "releases" (although they undergo no additional testing). They group together
+					a series of issues, often with a theme to help improve project focus.
+				</div>
 			</div>
 			<div>
 				<h3><a href="https://github.com/davidpcaldwell/slime/projects?query=is%3Aopen+sort%3Aname-asc">Projects</a></h3>
