@@ -29,6 +29,7 @@
 
 		jsh.shell.console("Current shell: " + JSON.stringify(jsh.shell.jsh.Installation.from.current()));
 		jsh.shell.console("Building jsh with arguments [" + jsh.script.arguments.join(" ") + "]");
+
 		var parameters = jsh.script.getopts({
 			options: {
 				verbose: false,
@@ -77,7 +78,7 @@
 				}
 			} else if (jsh.script.file) {
 				if (typeof(rv.rhino) == "undefined") {
-					if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+					if (jsh.internal.bootstrap.engine.nashorn.running()) {
 						if (parameters.options.rhino) {
 							rv.rhino = downloadRhino(parameters.options.rhino);
 						} else {
