@@ -196,6 +196,8 @@
 
 				this.isRootPath = os.isRootPath;
 
+				this.isAbsolutePath = os.isAbsolute;
+
 				/**
 				 *
 				 * @param { string } path
@@ -809,6 +811,9 @@
 							})();
 						}
 						return rv;
+					},
+					isAbsolutePath: function(path) {
+						return java.isAbsolutePath(path);
 					}
 				},
 				java: {

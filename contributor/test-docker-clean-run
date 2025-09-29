@@ -5,4 +5,4 @@
 #
 #	END LICENSE
 
-docker compose -f docker-compose.yaml -f docker-compose.test.yaml run local /bin/bash
+docker compose -f docker-compose.yaml -f docker-compose.clean.yaml run local /bin/bash

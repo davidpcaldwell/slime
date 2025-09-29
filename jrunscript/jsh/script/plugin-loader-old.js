@@ -27,16 +27,14 @@
 							/** @type { slime.web.Exports } */
 							var web = jsh.web;
 
-							//	try to see whether it's an absolute path
-							var location = jsh.file.Pathname(string);
-
 							//	we don't want to use the location if it is a relative path; it will be handled later by jsh.script.loader
 							//	in the calling code
-							var isAbsolute = function(location) {
-								return location.toString() == string;
+							var isAbsolute = function(path) {
+								return jsh.file.filesystems.os.isAbsolutePath(path);
 							}
 
-							if (isAbsolute(location)) {
+							if (isAbsolute(string)) {
+								var location = jsh.file.Pathname(string);
 								if (location.directory) {
 									return location.directory;
 								} else if (location.file) {
