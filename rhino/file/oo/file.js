@@ -55,10 +55,25 @@
 		 * @param { ConstructorParameters<slime.jrunscript.file.internal.file.Exports["Pathname"]>[0] } parameters
 		 */
 		function Pathname(parameters) {
+			(function assertCanonicalized() {
+				var maybeCanonicalize = $api.fp.now(
+					parameters.filesystem.canonicalize,
+					$api.fp.world.Sensor.mapping()
+				);
+				var maybeCanonicalized = maybeCanonicalize({ pathname: parameters.pathname });
+				if (!maybeCanonicalized.present) throw new Error("This constructor now accepts only canonicalized paths");
+				if (parameters.pathname != maybeCanonicalized.value) {
+					throw new Error(
+						"This constructor now accepts only canonicalized paths, not " + parameters.pathname
+						+ ", which canonicalizes to " + maybeCanonicalized.value
+					);
+				}
+			})();
+
 			var filesystem = parameters.filesystem;
 
 			var toString = $api.fp.Thunk.memoize(function () {
-				return parameters.filesystem.os.toString(parameters.path);
+				return parameters.pathname;
 			});
 
 			this.toString = toString;
@@ -68,6 +83,9 @@
 				filesystem: parameters.filesystem,
 				pathname: toString()
 			};
+
+			/** @type { string } */
+			this.basename = void(0);
 
 			Object.defineProperty(
 				this,
@@ -80,18 +98,23 @@
 				}
 			);
 
-			/** @type { string } */
-			this.basename = void(0);
-
 			var provider = parameters.provider;
-			var _peer = provider.newPeer(parameters.path);
+			var _peer = parameters.provider.newPeer(parameters.pathname);
 
-			var getParent = $api.fp.Thunk.memoize(function () {
-				var parent = provider.getParent(_peer);
-				return (parent) ? new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(parent.getScriptPath()) }) : null;
-			});
+			/** @type { slime.jrunscript.file.Pathname } */
 			this.parent = void(0);
-			this.__defineGetter__("parent", getParent);
+			var getParent = $api.fp.Thunk.memoize(function () {
+				var parent = $context.library.Location.parent()(location);
+				return (parent) ? new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: parent.pathname }) : null;
+			});
+			Object.defineProperty(
+				this,
+				"parent",
+				{
+					enumerable: true,
+					get: getParent
+				}
+			);
 
 			var getFile = function () {
 				if (arguments.length > 0) {
@@ -107,7 +130,8 @@
 			var getDirectory = function () {
 				if (!provider.exists(_peer)) return null;
 				if (!provider.isDirectory(_peer)) return null;
-				var pathname = new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(_peer.getScriptPath()) });
+				//	TODO	were we trying to make a copy of ourselves here? Is any of this mutable?
+				var pathname = new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: parameters.pathname });
 				return new Directory(pathname, _peer);
 			}
 			this.directory = void (0);
@@ -277,7 +301,20 @@
 				 * @returns
 				 */
 				var getRelativePath = function (pathString) {
-					return new Pathname({ provider: provider, filesystem: parameters.filesystem, path: pathname.toString() + relativePathPrefix + pathString });
+					var canonicalize = $api.fp.now(
+						parameters.filesystem.canonicalize,
+						$api.fp.world.Sensor.mapping(),
+						function(f) {
+							/** @param { string } string */
+							return function(string) {
+								return f({ pathname: string })
+							}
+						},
+						$api.fp.Partial.impure.exception(function(pathname) {
+							return new Error("Could not canonicalize " + pathname);
+						})
+					);
+					return new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: canonicalize(pathname.toString() + relativePathPrefix + pathString) });
 				}
 				this.getRelativePath = getRelativePath;
 
@@ -516,13 +553,13 @@
 				this.directory = true;
 
 				this.getFile = function (name) {
-					return new Pathname({ provider: provider, filesystem: parameters.filesystem, path: this.getRelativePath(name).toString() }).file;
+					return new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: this.getRelativePath(name).toString() }).file;
 				}
 
 				this.getSubdirectory = function (name) {
 					if (typeof (name) == "string" && !name.length) return this;
 					if (!name) throw new TypeError("Missing: subdirectory name.");
-					return new Pathname({ provider: provider, filesystem: parameters.filesystem, path: this.getRelativePath(name).toString() }).directory;
+					return new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: this.getRelativePath(name).toString() }).directory;
 				}
 
 				var toFilter = function (regexp) {
@@ -612,7 +649,7 @@
 							/** @type { slime.jrunscript.file.Node[] } */
 							var rv = [];
 							for (var i = 0; i < peers.length; i++) {
-								var pathname = new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(peers[i].getScriptPath()) });
+								var pathname = new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: String(peers[i].getScriptPath()) });
 								if (pathname.directory) {
 									rv.push(pathname.directory);
 								} else if (pathname.file) {
@@ -645,7 +682,7 @@
 				if (provider.temporary) {
 					this.createTemporary = function(parameters) {
 						var _peer = provider.temporary(peer, parameters);
-						var pathname = new Pathname({ provider: provider, filesystem: filesystem, path: String(_peer.getScriptPath()) });
+						var pathname = new Pathname({ provider: provider, filesystem: filesystem, pathname: String(_peer.getScriptPath()) });
 						if (pathname.directory) return pathname.directory;
 						if (pathname.file) return pathname.file;
 						throw new Error();
@@ -716,7 +753,7 @@
 						debugger;
 					}
 					var peer = provider.java.adapt(pathname.java.adapt());
-					var mapped = new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(peer.getScriptPath()) });
+					var mapped = new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: String(peer.getScriptPath()) });
 					return mapped.toString();
 				}).join(provider.separators.searchpath);
 			}

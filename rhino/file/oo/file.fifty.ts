@@ -1222,7 +1222,7 @@ namespace slime.jrunscript.file.internal.file {
 		Pathname: new (parameters: {
 			provider: slime.jrunscript.file.internal.java.FilesystemProvider
 			filesystem: slime.jrunscript.file.internal.java.Exports["filesystems"]["os"]
-			path: string
+			pathname: string
 		}) => Pathname
 
 		Searchpath: new (parameters: {

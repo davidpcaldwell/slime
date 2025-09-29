@@ -115,7 +115,7 @@ public abstract class Filesystem {
 			tokens.remove(tokens.size()-1);
 			if (tokens.size() == 1) {
 				if (separator.equals("/")) {
-					return "/";
+					return "";
 				} else {
 					return tokens.get(0) + separator;
 				}
@@ -198,6 +198,7 @@ public abstract class Filesystem {
 		}
 
 		protected Node createNode(String path) throws IOException {
+			if (path.length() == 0 && File.separator.equals("/")) return createNode(new File("/"));
 			return createNode(new File(path));
 		}
 
@@ -267,20 +268,14 @@ public abstract class Filesystem {
 			}
 
 			public File getHostFile() throws IOException {
-				try {
-					return canonicalizedAbsoluteFile.getCanonicalFile();
-				} catch (IOException e) {
-					throw new IOException(e.getMessage() + " path=[" + canonicalizedAbsoluteFile.getPath() + "]", e);
-				}
+				return canonicalizedAbsoluteFile;
 			}
 
 			public String getScriptPath() {
 				String rv = canonicalizedAbsoluteFile.getPath();
 				if (rv.endsWith(File.separator)) {
 					if (rv.equals(File.separator)) {
-						//	used to be the below; no idea why. Going to try removing it and see whether all tests pass.
-						//rv = "";
-						rv = File.separator;
+						rv = "";
 					} else {
 						//	TODO	should never happen on UNIX; maybe on Windows?
 						rv = rv.substring(0, rv.length() - File.separator.length());
