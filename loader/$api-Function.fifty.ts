@@ -175,6 +175,7 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		Thunk: {
+			memoize: <T>(f: Thunk<T>) => Thunk<T>
 			map: Thunk_map
 			value: Thunk_value
 			now: Thunk_now
@@ -187,6 +188,17 @@ namespace slime.$api.fp {
 		) {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
+
+			fifty.tests.exports.Thunk.memoize = function() {
+				const one = fifty.spy.create($api.fp.Thunk.value(1));
+				const memoized = fifty.spy.create($api.fp.Thunk.memoize(one.function));
+
+				var x = memoized.function();
+				var y = memoized.function();
+
+				verify(one).invocations.length.is(1);
+				verify(memoized).invocations.length.is(2);
+			}
 
 			fifty.tests.exports.Thunk.now = function() {
 				const one: Thunk<number> = $api.fp.Thunk.value(1);

@@ -14,7 +14,7 @@
 	function($context,$exports) {
 		/**
 		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } system
-		 * @param { slime.jrunscript.file.world.Filesystem } filesystem
+		 * @param { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] } filesystem
 		 * @param { string } string
 		 */
 		function newPathname(system, filesystem, string) {
@@ -23,7 +23,7 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.file.world.Filesystem } fs
+		 * @param { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] } fs
 		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } provider
 		 * @param { { interpretNativePathname: any } } [o] Used only for Cygwin.
 		 */

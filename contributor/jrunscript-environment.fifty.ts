@@ -24,7 +24,7 @@ namespace slime.project.internal.jrunscript_environment {
 		 */
 		noselfping: boolean
 
-		tomcat: boolean
+		tomcat?: boolean
 	}
 
 	export interface Environment {

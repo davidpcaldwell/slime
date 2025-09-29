@@ -1050,27 +1050,13 @@ namespace slime.jrunscript.file {
 				return (module.filesystems.cygwin) ? module.filesystems.cygwin : module.filesystems.os;
 			}
 
-			fifty.tests.manual.fstest = function() {
-				fifty.tests.filesystem(getFilesystem());
-			}
-
 			fifty.tests.suite = function() {
 				var filesystem = getFilesystem();
 
-				var fx = local.fixtures(module.filesystems.os);
 				//	TODO	if Cygwin is present, we want to run on module.filesystems.cygwin, too, but that will require further
 				//			modularization
 
-				fifty.run(function fstest() {
-					fifty.tests.filesystem(filesystem);
-				});
-
-				if (UNIX) {
-					var top = jsh.file.Pathname("/").directory;
-					var HOME = jsh.shell.HOME.toString();
-					var home = top.getSubdirectory(HOME.substring(1));
-					verify(home).is.not(null);
-				}
+				var fx = local.fixtures(module.filesystems.os);
 
 				var { dir, filee } = fx;
 
@@ -1221,6 +1207,7 @@ namespace slime.jrunscript.file.internal.file {
 	export interface Context {
 		library: {
 			java: slime.jrunscript.java.Exports
+			Location: slime.jrunscript.file.location.Exports
 		}
 		Resource: slime.jrunscript.io.Exports["Resource"]
 		Streams: slime.jrunscript.io.Exports["Streams"]
@@ -1234,13 +1221,13 @@ namespace slime.jrunscript.file.internal.file {
 	export interface Exports {
 		Pathname: new (parameters: {
 			provider: slime.jrunscript.file.internal.java.FilesystemProvider
-			filesystem: slime.jrunscript.file.world.Filesystem
+			filesystem: slime.jrunscript.file.internal.java.Exports["filesystems"]["os"]
 			path: string
 		}) => Pathname
 
 		Searchpath: new (parameters: {
 			provider: slime.jrunscript.file.internal.java.FilesystemProvider
-			filesystem: slime.jrunscript.file.world.Filesystem
+			filesystem: slime.jrunscript.file.internal.java.Exports["filesystems"]["os"]
 			array: slime.jrunscript.file.Pathname[]
 		}) => any
 

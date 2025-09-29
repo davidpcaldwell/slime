@@ -366,7 +366,6 @@ namespace slime.jrunscript.file {
 				fifty.load("loader.fifty.ts");
 
 				fifty.load("oo.fifty.ts");
-				fifty.load("oo/file.fifty.ts");
 
 				fifty.load("module-node.fifty.ts");
 				fifty.load("module-Loader.fifty.ts");

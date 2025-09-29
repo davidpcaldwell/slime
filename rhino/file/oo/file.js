@@ -16,8 +16,6 @@
 	function (Packages,$api,$context,$export) {
 		if (!$context.Resource) throw new Error();
 
-		var constant = $api.fp.impure.Input.memoized;
-
 		var $exports_list = {
 			NODE: {
 				create: function (d, n) {
@@ -57,38 +55,38 @@
 		 * @param { ConstructorParameters<slime.jrunscript.file.internal.file.Exports["Pathname"]>[0] } parameters
 		 */
 		function Pathname(parameters) {
-			var provider = parameters.provider;
 			var filesystem = parameters.filesystem;
-			var _peer = provider.newPeer(parameters.path);
 
-			var toString = constant(function () {
-				var rv = provider.peerToString(_peer);
-				if (rv.substring(rv.length - provider.separators.pathname.length) == provider.separators.pathname) {
-					$api.deprecate(function () {
-						rv = rv.substring(0, rv.length - provider.separators.pathname.length);
-					})();
-				}
-				return rv;
+			var toString = $api.fp.Thunk.memoize(function () {
+				return parameters.filesystem.os.toString(parameters.path);
 			});
 
 			this.toString = toString;
 
-			var getBasename = constant(function () {
-				var path = toString();
-				//	TODO	maybe should be considered wrong?
-				//	$ basename /foo
-				//	foo
-				if (provider.isRootPath(path)) return path;
-				if (path.substring(path.length - 1) == provider.separators.pathname) {
-					path = path.substring(0, path.length - 1);
-				}
-				var tokens = path.split(provider.separators.pathname);
-				return tokens.pop();
-			});
-			this.basename = void(0);
-			this.__defineGetter__("basename", getBasename);
+			/** @type { slime.jrunscript.file.Location } */
+			var location = {
+				filesystem: parameters.filesystem,
+				pathname: toString()
+			};
 
-			var getParent = constant(function () {
+			Object.defineProperty(
+				this,
+				"basename",
+				{
+					enumerable: true,
+					get: function() {
+						return $context.library.Location.basename(location);
+					}
+				}
+			);
+
+			/** @type { string } */
+			this.basename = void(0);
+
+			var provider = parameters.provider;
+			var _peer = provider.newPeer(parameters.path);
+
+			var getParent = $api.fp.Thunk.memoize(function () {
 				var parent = provider.getParent(_peer);
 				return (parent) ? new Pathname({ provider: provider, filesystem: parameters.filesystem, path: String(parent.getScriptPath()) }) : null;
 			});

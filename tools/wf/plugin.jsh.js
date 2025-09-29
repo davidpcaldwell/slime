@@ -1343,7 +1343,7 @@
 								}
 							});
 
-							success = success && upToDateWiithOrigin({
+							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_OLD_BRANCH) success = success && upToDateWiithOrigin({
 								repository: repository
 							})({
 								console: function(e) {
