@@ -174,7 +174,8 @@
 				if (files[i].path == "jrunscript/jsh/test/manual/engines") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/issue1254") extension = "bash";
 				if (files[i].path == "contributor/test-docker-command") extension = "bash";
-				if (files[i].path == "contributor/test-docker-clean") extension = "bash";
+				if (files[i].path == "contributor/test-docker-clean-run") extension = "bash";
+				if (files[i].path == "contributor/test-docker-clean-start") extension = "bash";
 				if (files[i].path == "contributor/suite-docker") extension = "bash";
 				if (files[i].path == "contributor/suite-macos") extension = "bash";
 				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";

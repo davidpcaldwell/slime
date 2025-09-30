@@ -59,6 +59,7 @@ namespace slime.jrunscript.file.internal.java {
 		peerToString: (peer: Peer) => string
 
 		isRootPath: (path: string) => boolean
+		isAbsolutePath: (path: string) => boolean
 
 		getParent: (peer: Peer) => Peer
 
@@ -114,6 +115,7 @@ namespace slime.jrunscript.file.internal.java {
 
 	export interface OsFilesystem {
 		toString: (path: string) => string
+		isAbsolutePath: (path: string) => boolean
 	}
 
 	export interface Exports {

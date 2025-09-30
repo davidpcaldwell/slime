@@ -833,6 +833,7 @@ namespace slime.jrunscript.shell {
 					}).threw.message.is("property 'arguments[0]' must not be null; full invocation = java (null)");
 				});
 
+				//	TODO	probably should get rid of this style now and replace with fifty.test.Parent() construct
 				fifty.run(fifty.tests.run.stdio);
 
 				fifty.run(function directory() {
@@ -850,7 +851,7 @@ namespace slime.jrunscript.shell {
 						directory: dir
 					});
 					var workdir = result.stdio.output;
-					fifty.verify(workdir).is(dir.toString());
+					fifty.verify(workdir).is(String(dir.pathname.java.adapt().getCanonicalPath()));
 				})
 			}
 			fifty.tests.run.stdio = function() {

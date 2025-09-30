@@ -30,16 +30,24 @@
 			return function(pathname) {
 				var terms = pathname.split(filesystem.separator.pathname);
 				var rv = [];
+				var RETURN_NULL = false;
 				terms.forEach(function(term) {
+					if (RETURN_NULL) return;
 					if (term == ".") {
 						return;
 					} else if (term == "..") {
-						rv.pop();
+						//	TODO	This seems brittle but causes tests to pass on UNIX-like filesystems. Probably need to revisit.
+						if (rv.length == 1 && rv[0] === "") {
+							RETURN_NULL = true;
+							return;
+						} else {
+							rv.pop();
+						}
 					} else {
 						rv.push(term);
 					}
 				});
-				return rv.join(filesystem.separator.pathname);
+				return (RETURN_NULL) ? null : rv.join(filesystem.separator.pathname);
 			}
 		};
 
@@ -53,6 +61,7 @@
 			return function(pathname) {
 				var absolute = pathname.pathname + pathname.filesystem.separator.pathname + path;
 				var canonical = canonicalize(pathname.filesystem)(absolute);
+				if (canonical === null) return null;
 				return {
 					filesystem: pathname.filesystem,
 					pathname: canonical

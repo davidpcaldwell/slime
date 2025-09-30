@@ -70,6 +70,10 @@ namespace slime.jrunscript.file {
 		$jsh: any
 	}
 
+	export interface OsFilesystem extends Filesystem {
+		isAbsolutePath: (path: string) => boolean
+	}
+
 	export interface Exports {
 		/**
 		 * Implementations of an abstract filesystem API that are available to scripts.
@@ -78,7 +82,7 @@ namespace slime.jrunscript.file {
 			/**
 			 * The underlying operating system's filesystem.
 			 */
-			os: Filesystem
+			os: OsFilesystem
 
 			/**
 			 * A Cygwin file system that interoperates with an underlying Windows file system.

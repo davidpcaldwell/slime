@@ -42,7 +42,7 @@
 				},
 				isAbsolute: function isAbsolute(string) {
 					if (typeof(string) == "undefined") throw new TypeError("'string' must not be undefined.");
-					return string.substring(0,1) == "/";
+					return string.length == 0 || string.substring(0,1) == "/";
 				},
 				isRootPath: function(string) {
 					return ( string == "" || string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
@@ -195,6 +195,8 @@
 				this.peerToString = peerToString;
 
 				this.isRootPath = os.isRootPath;
+
+				this.isAbsolutePath = os.isAbsolute;
 
 				/**
 				 *
@@ -663,7 +665,7 @@
 						var peer = java.newPeer(p.pathname);
 						try {
 							//	TODO	all quite dubious, why would this work like this? Think it through.
-							var hostCanonicalPath = String(peer.getHostFile().getCanonicalPath());
+							var hostCanonicalPath = String(peer.getHostFile().getAbsolutePath());
 							if (hostCanonicalPath == "/") return $api.fp.Maybe.from.some("");
 							return $api.fp.Maybe.from.some(hostCanonicalPath);
 						} catch (e) {
@@ -809,6 +811,9 @@
 							})();
 						}
 						return rv;
+					},
+					isAbsolutePath: function(path) {
+						return java.isAbsolutePath(path);
 					}
 				},
 				java: {
