@@ -348,6 +348,7 @@ namespace slime.jsh.shell {
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
@@ -451,10 +452,14 @@ namespace slime.jsh.shell {
 					}
 				};
 
+				var toCanonicalPath = function(path: string) {
+					return String(new Packages.java.io.File(path).getCanonicalPath());
+				}
+
 				var installation = getInstallationFromIntention(intention);
 
 				var cast: slime.js.Cast<PackagedInstallation> = $api.fp.cast.unsafe;
-				verify(installation).evaluate(cast).package.is(shell.package);
+				verify(installation).evaluate(cast).package.is(toCanonicalPath(shell.package));
 			}
 
 			fifty.tests.exports.jsh.Installation.from.current.remote = function() {
@@ -480,7 +485,7 @@ namespace slime.jsh.shell {
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
 	export interface JshShellJsh {
 		Intention: {
@@ -903,12 +908,17 @@ namespace slime.jsh.shell {
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
 			const subject = fifty.global.jsh.shell;
+
+			var toCanonicalPath = function(path: string) {
+				return String(new Packages.java.io.File(path).getCanonicalPath());
+			}
 
 			fifty.tests.exports.jsh.relaunch = function() {
 				var TMPDIR = fifty.jsh.file.temporary.directory();
@@ -934,12 +944,12 @@ namespace slime.jsh.shell {
 				verify(output).arguments[1].is("2");
 				verify(output).arguments[2].is("3");
 				verify(output).environment.evaluate.property("FOO").is("bar");
-				verify(output).directory.evaluate(String).is(TMPDIR.pathname);
+				verify(output).directory.evaluate(String).is(toCanonicalPath(TMPDIR.pathname));
 				verify(output).properties.evaluate.property("foo.bar").is("baz");
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
 	export interface JshShellJsh {
 		require: slime.$api.fp.world.Means<

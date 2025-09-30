@@ -68,6 +68,7 @@ namespace slime.jsh.script {
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
@@ -256,8 +257,14 @@ namespace slime.jsh.script {
 					getJshScriptUrl
 				);
 
-				verify(fileProperty).string.evaluate(String).is(packaged.package);
-				verify(fileProperty).pathname.string.evaluate(String).is(packaged.package);
+				var canonicalized = function(string: string) {
+					return String(new Packages.java.io.File(string).getCanonicalPath());
+				}
+
+				var canonicalJar = canonicalized(packaged.package);
+
+				verify(fileProperty).string.evaluate(String).is(canonicalJar);
+				verify(fileProperty).pathname.string.evaluate(String).is(canonicalJar);
 
 				verify(scriptProperty).is(void(0));
 				verify(urlProperty).is(void(0));
@@ -343,7 +350,7 @@ namespace slime.jsh.script {
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
 	export interface Exports {
 		/** @deprecated */
