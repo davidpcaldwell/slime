@@ -314,7 +314,7 @@
 		 * @param { string } string
 		 */
 		var writeFileString = function(file,string) {
-			var write = $context.library.file.world.Location.file.write(file);
+			var write = $context.library.file.world.Location.file.write.old(file);
 			$api.fp.world.now.action(write.string, { value: string });
 		};
 
@@ -774,7 +774,7 @@
 						var write = function(p) {
 							var write = $api.fp.now.invoke(
 								p.location,
-								$context.library.file.Location.file.write,
+								$context.library.file.Location.file.write.old,
 								$api.fp.property("string")
 							);
 

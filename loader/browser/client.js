@@ -7,8 +7,9 @@
 //@ts-check
 (
 	/**
-	 * @param { slime.browser.Context & { inonit: slime.browser.Runtime } } window
-	 * @param { slime.browser.Settings } $context - provided by setting `inonit.loader` before loading this script
+	 * @param { slime.browser.Context & slime.browser.Slime } window A view of the DOM window object, consisting of JavaScript
+	 * globals, DOM globals, Java LiveConnect globals, and third-party globals, along with the globals associated with SLIME.
+	 * @param { slime.browser.Settings } $context Provided by setting `inonit.loader` before loading this script.
 	 */
 	function(window,$context) {
 		(
@@ -35,79 +36,117 @@
 
 		/**
 		 *
-		 * @param { string } base A base URL for boostrapping SLIME, whose base is the SLIME `loader/` directory.
-		 */
-		function Bootstrap(base) {
-			return {
-				base: base,
-				getRelativePath: function(path) {
-					return base + path;
-				}
-			};
-		}
-
-		var getCurrentScriptElement = function() {
-			var scripts = document.getElementsByTagName("script");
-			return scripts[scripts.length-1];
-		}
-
-		var getCurrentScriptSrc = function() {
-			if (getCurrentScriptElement().getAttribute("inonit.loader.src")) return getCurrentScriptElement().getAttribute("inonit.loader.src");
-			return getCurrentScriptElement().getAttribute("src");
-		};
-
-		/**
-		 *
-		 * @param { string } current
+		 * @param { string } url
 		 * @returns { string }
 		 */
-		function canonicalize(current) {
+		function canonicalize(url) {
 			//	TODO	The next block is not very robust but probably works for most, or even all, cases. That said, the js/web
 			//			module has a better implementation of URL canonicalization.
 			//			This mostly matters for debuggers that try to map URLs to files or whatever; they may not be able to handle
 			//			paths with .. correctly (Google Chrome, for example, does not).
-			var tokens = current.split("/");
+			var tokens = url.split("/");
 			for (var i=0; i<tokens.length; i++) {
 				if (tokens[i] == "..") {
 					tokens.splice(i-1,2);
 					i = i - 2;
+				} else if (tokens[i] == ".") {
+					tokens.splice(i,1);
+					i = i - 1;
 				}
 			}
-			current = tokens.join("/");
-			return current;
+			url = tokens.join("/");
+			return url;
 		}
 
 		/**
 		 *
-		 * @param { string } currentPage
+		 * @param { string } url The URL of a file
+		 * @returns { slime.browser.Base } A {@link Base} representing the file's parent path.
 		 */
-		function getLoaderBase(currentPage) {
-			var getBasePath = function(pathname) {
-				var path = pathname.split("?")[0];
-				var tokens = path.split("/");
-				if (tokens.length > 1) {
-					return tokens.slice(0,-1).join("/") + "/";
-				} else {
-					return "";
-				}
+		function Base(url) {
+			var getUrlBase = function(url) {
+				return url.split("/").slice(0,-1).join("/") + "/";
 			};
 
-			var rv = getBasePath(currentPage) + getCurrentScriptSrc().split("/").slice(0,-2).join("/") + "/";
-			rv = canonicalize(rv);
-			return rv;
+			var base = getUrlBase(url);
+
+			return {
+				url: base,
+				relative: function(/** @type { string } */path) {
+					return canonicalize(base + path);
+				}
+			};
 		}
 
-		var getCurrentPage = function() {
-			return window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.substring(1);
+		var getCurrentPageBase = function() {
+			var getCurrentPage = function() {
+				return window.location.protocol + "//" + window.location.host + "/" + window.location.pathname.substring(1);
+			}
+
+			return Base(getCurrentPage());
+		};
+
+		var getCurrentScriptBase = function() {
+			var getCurrentScriptSrc = function() {
+				var getCurrentScriptElement = function() {
+					var scripts = document.getElementsByTagName("script");
+					return scripts[scripts.length-1];
+				};
+
+				//	The below appears to be used somehow in the rhino/ui implementation
+				if (getCurrentScriptElement().getAttribute("inonit.loader.src")) return getCurrentScriptElement().getAttribute("inonit.loader.src");
+				return getCurrentScriptElement().getAttribute("src");
+			};
+
+			return Base(getCurrentPageBase().relative(getCurrentScriptSrc()));
 		}
 
-		var getBootstrap = function() {
-			var page = getCurrentPage();
-			var base = getLoaderBase(page);
-			return Bootstrap(base);
-		}
+		var bootstrap = (
+			function() {
+				//	The current script at this point is this script, client.js, so we navigate to the main runtime script
+				return Base(
+					getCurrentScriptBase().relative("../expression.js")
+				);
+			}
+		)();
 
-		var bootstrap = getBootstrap();
+		/**
+		 * @param { slime.browser.Base } base
+		 * @returns { slime.thread.type.Asynchronous<slime.runtime.content.Store<string>> }
+		 */
+		var Content = function(base) {
+			return {
+				get: function(path) {
+					console.log("Fetching Content ...");
+					debugger;
+					var first = window.fetch(base.relative(path.join("/")));
+					//	TODO	key problem with this code is first.then does not create a registered promise, still figuring out
+					//			why
+					var second = first.then(function(response) {
+						console.log("Fetched headers; status = " + response.status);
+						if (response.status >= 400) throw new Error("HTTP status: " + response.status);
+						var rv = response.text();
+						// debugger;
+						return rv;
+					});
+					var third = second.then(function(string) {
+						return {
+							present: true,
+							value: string
+						}
+					});
+					debugger;
+					//	TODO	get catch working
+					return third;
+					// .catch(function(reason) {
+					// 	return {
+					// 		present: false
+					// 	}
+					// })
+					// ;
+				}
+			}
+		};
 
 		/** @type { slime.browser.Exports } */
 		var $exports = (
@@ -183,10 +222,32 @@
 					this.getCode = getCode;
 				}
 
+				//	As of now (2025 Sep 3), the entire runtime is still loaded using the synchronous HTTP requests provided by
+				// 	fetcher.getCode(), even as we work toward creating asynchronous solutions for modules beyond the runtime.
+
 				/** @type { slime.runtime.Scope } */
 				var scope = {
+					$slime: {
+						getRuntimeScript: function(path) {
+							return {
+								name: bootstrap.relative(path),
+								js: fetcher.getCode(bootstrap.relative(path))
+							}
+						},
+						configuration: $context.configuration
+					},
 					$engine: {
+						//	The default implementation (used for Node.js, for example) is compliant with strict mode and implements
+						//	this using a new Function(...) call. But the default toString() messes up the line numbers for tools
+						//	when debugging. Overriding Function.toString() upon creation does not seem to fix it in tools; nor does
+						//	changing Function.prototype.toString(). So I think we're stuck with this.
+						//
+						//	We might possibly be able to isolate this further in its own scope by changing this file to use
+						// 	non-hoisted variables via let and const.
+						//
+						//	Unclear whether the jrunscript implementation ever loads this file in the test suite.
 						execute: function(/*script{name,js},scope,target*/) {
+							if (false) throw new Error();
 							return (function() {
 								//@ts-ignore
 								with( arguments[1] ) {
@@ -196,26 +257,14 @@
 								arguments[2],
 								arguments[0].js, arguments[1]
 							);
-						},
-						//	TODO	make optional?
-						MetaObject: void(0)
-					},
-					$slime: {
-						getRuntimeScript: function(path) {
-							return {
-								name: bootstrap.getRelativePath(path),
-								js: fetcher.getCode(bootstrap.getRelativePath(path))
-							}
 						}
-					},
-					Packages: window.Packages
+					}
 				};
 
-				/** @type { slime.runtime.Exports } */
 				var runtime = (function(scope) {
 					//	TODO	still uses synchronous API
-					/** @type { slime.runtime.Exports } */
-					var rv = eval(fetcher.getCode(bootstrap.getRelativePath("expression.js")));
+					/** @type { Omit<slime.runtime.Exports,"$api"> & { $api: slime.$api.browser.Global } } */
+					var rv = eval(fetcher.getCode(bootstrap.relative("expression.js")));
 					rv.$api.deprecate.warning = function(access) {
 						debugger;
 					}
@@ -224,19 +273,23 @@
 						//	Can set breakpoint here to pop into debugger on experimental accesses
 						var breakpoint = null;
 					}
-					if (window.CoffeeScript) {
-						rv.compiler.update(function(was) {
-							return rv.$api.fp.switch([
-								was,
-								rv.$api.compiler.getTranspiler({
-									accept: rv.$api.compiler.isMimeType("application/vnd.coffeescript"),
-									name: function(code) { return code.name; },
-									read: function(code) { return code.read(); },
-									compile: window.CoffeeScript.compile
-								})
-							])
-						})
-					}
+					rv.compiler.update(function(was) {
+						return rv.$api.fp.switch([
+							was,
+							rv.$api.scripts.Compiler.from.simple({
+								accept: rv.$api.fp.Predicate.and(
+									rv.$api.scripts.Code.isMimeType("application/vnd.coffeescript"),
+									//	TODO	is there a way to create a Mapping from a Thunk?
+									rv.$api.fp.Mapping.from.thunk(function() { return Boolean(window.CoffeeScript); })
+								),
+								name: function(code) { return code.name; },
+								read: function(code) { return code.read(); },
+								compile: function(script) {
+									return window.CoffeeScript.compile(script);
+								}
+							})
+						])
+					});
 					return rv;
 				})(scope);
 
@@ -310,7 +363,7 @@
 					runtime.old.Loader.apply(this,arguments);
 				};
 
-				var bootstrapper = new Loader(bootstrap.base);
+				var bootstrapper = new Loader(bootstrap.url);
 
 				var code = {
 					/** @type { slime.browser.internal.$api.Script } */
@@ -324,10 +377,6 @@
 						clearTimeout: window.clearTimeout
 					}
 				}));
-
-				var getPageBase = function() {
-					return getCurrentPage().split("/").slice(0,-1).join("/") + "/";
-				};
 
 				var loaderMethods = (
 					function() {
@@ -356,7 +405,7 @@
 
 				return Object.assign(
 					{
-						loader: new Loader(getPageBase()),
+						loader: new Loader(getCurrentPageBase().url),
 						Loader: Object.assign(
 							Loader,
 							{
@@ -369,23 +418,21 @@
 						namespace: function(name) {
 							return runtime.namespace(name);
 						},
-						nugget: new function() {
-							//	DRY:	Other scripts may want to use this (already have examples)
-							this.getCurrentScript = getBootstrap;
-
-							this.page = {
-								base: getPageBase(),
-								relative: function(path) {
-									return canonicalize(getPageBase() + path);
-								}
-							};
+						Base: {
+							script: getCurrentScriptBase,
+							page: getCurrentPageBase()
+						},
+						Content: {
+							page: Content(getCurrentPageBase())
 						},
 						//	TODO	we may want a base attribute; the below is one way to do it which should work under most circumstances.
 						//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
-						//	Undocumented
-						base: bootstrap.base,
+						base: bootstrap.url,
 						//	For use in scripts that are loaded directly by the browser rather than via this loader
 						$api: runtime.$api,
+						test: {
+							run: runtime.run
+						},
 						//	(Possibly obsolete comment to follow) Used by loader/browser/tools/offline.html, which may be obsolete
 						$sdk: new function() {
 							//	Used via inonit.loader.$sdk.fetch call in loader/browser/test somehow

@@ -4,6 +4,10 @@
 //
 //	END LICENSE
 
+/**
+ * Defines basic APIs for serving a project UI; see {@link slime.fifty.view.Exports}. These APIs are used by the `fifty view`
+ * command and can also be used to create more complex servers for project UIs.
+ */
 namespace slime.fifty.view {
 	export interface Context {
 		library: {

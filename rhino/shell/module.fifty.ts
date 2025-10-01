@@ -4,6 +4,9 @@
 //
 //	END LICENSE
 
+/**
+ * APIs related to the surrounding shell for jrunscript-based embeddings.
+ */
 namespace slime.jrunscript.shell {
 	export namespace context {
 		export type OutputStream = Omit<slime.jrunscript.runtime.io.OutputStream, "close">
@@ -47,6 +50,7 @@ namespace slime.jrunscript.shell {
 		}
 
 		api: {
+			bootstrap: slime.internal.jrunscript.bootstrap.Global<{}>["$api"]
 			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
@@ -72,7 +76,7 @@ namespace slime.jrunscript.shell {
 
 	export namespace test {
 		export const jsapiModule = (function(Packages: slime.jrunscript.Packages, fifty: slime.fifty.test.Kit) {
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			const fixtures: slime.jrunscript.shell.test.Script = fifty.$loader.script("fixtures.ts");
 
@@ -86,7 +90,7 @@ namespace slime.jrunscript.shell {
 				var io = fifty.$loader.module("../../jrunscript/io/", {
 					api: {
 						java: java,
-						mime: jsh.unit.$slime.mime
+						mime: $api.mime
 					},
 					$slime: jsh.unit.$slime
 				});
@@ -108,7 +112,6 @@ namespace slime.jrunscript.shell {
 									js: jsh.js,
 									java: jsh.java
 								};
-								this.$pwd = String(jsh.shell.properties.object.user.dir);
 								this.addFinalizer = jsh.loader.addFinalizer;
 								//	TODO	below copy-pasted from rhino/file/api.html
 								//	TODO	switch to use appropriate jsh properties, rather than accessing Java system properties directly
@@ -136,7 +139,6 @@ namespace slime.jrunscript.shell {
 											Store: jsh.loader.Store
 										}
 									},
-									$pwd: String(jsh.shell.properties.object.user.dir),
 									addFinalizer: jsh.loader.addFinalizer,
 									cygwin: cygwin
 								}
@@ -163,6 +165,9 @@ namespace slime.jrunscript.shell {
 		})(Packages, fifty);
 	}
 
+	/**
+	 * Provides access to APIs relating to the operating system environment surrounding `jrunscript` shells.
+	 */
 	export interface Exports {
 	}
 
@@ -315,6 +320,7 @@ namespace slime.jrunscript.shell {
 				var module: Exports = script({
 					_environment: o,
 					api: {
+						bootstrap: jsh.internal.bootstrap,
 						java: jsh.java,
 						io: jsh.io,
 						file: jsh.file,
@@ -696,14 +702,11 @@ namespace slime.jrunscript.shell {
 		user: {
 			downloads?: slime.jrunscript.file.Directory
 		}
+	}
 
-		/**
-		 * Launches a JavaScript script on a Java virtual machine.
-		 */
-		jrunscript: slime.jrunscript.shell.oo.Run<
-			Omit<slime.jrunscript.shell.run.old.Argument,"command"|"arguments"> & {
-				jrunscript?: slime.jrunscript.file.File
-
+	export namespace jrunscript {
+		export namespace old {
+			export type Invocation = Omit<slime.jrunscript.shell.run.old.Argument,"command"|"arguments"> & {
 				/**
 				 * Provides arguments to the script invocation (including the script as the first argument). These arguments
 				 * will be augmented by those indicated by the `vmarguments` and `properties` properties.
@@ -724,8 +727,67 @@ namespace slime.jrunscript.shell {
 				 */
 				vmarguments?: string[]
 			}
-		>
+		}
+
+		export interface Intention extends Omit<slime.jrunscript.shell.run.Intention,"command"> {
+			jdk?: java.Jdk
+
+			vmarguments?: string[]
+
+			properties?: {
+				[name: string]: string
+			}
+		}
 	}
+
+	export interface Exports {
+		jrunscript: {
+			/**
+			 * Launches a JavaScript script on a Java virtual machine.
+			 */
+			old: slime.jrunscript.shell.oo.Run<jrunscript.old.Invocation>
+
+			Intention: {
+				shell: (intention: jrunscript.Intention) => slime.jrunscript.shell.run.Intention
+			}
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			//	Test actually seems to work but is not in the pipeline, so will commit and then work to improve
+			fifty.tests.manual.jrunscript = function() {
+				var lib = $api.fp.now(
+					fifty.jsh.file.relative("../../local/jsh/lib"),
+					jsh.file.Location.directory.base,
+					//	TODO	seems like there should be an FP API for this operation, pipeResultTo or something
+					function(f) { return $api.fp.pipe(f, $api.fp.property("pathname"), function(s) { return s + ".jar" }); }
+				);
+
+				var intention: jrunscript.Intention = {
+					properties: { foo: "bar" },
+					vmarguments: ["-Xmx128m"],
+					arguments: [
+						"-classpath", [lib("asm"), lib("asm-commons"), lib("asm-tree"), lib("asm-util"), lib("nashorn")].join(":"),
+						fifty.jsh.file.relative("../../rhino/jrunscript/api.js").pathname,
+						"jsh",
+						fifty.jsh.file.relative("../../jrunscript/jsh/test/jsh-data.jsh.js").pathname
+					]
+				};
+
+				var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+				var toRun = jsh.shell.jrunscript.Intention.shell(intention);
+				var exit = run( toRun );
+				verify(exit).status.is(0);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Exports {
 		/**
@@ -751,15 +813,15 @@ namespace slime.jrunscript.shell {
 
 			fifty.tests.manual.kotlin = function() {
 				if (!jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
-					$api.fp.world.Sensor.now({
-						sensor: jsh.shell.jsh.Intention.sensor,
-						subject: {
-							shell: {
-								src: fifty.jsh.file.relative("../..").pathname
-							},
-							script: fifty.jsh.file.relative("../../jrunscript/jsh/tools/install/kotlin.jsh.js").pathname
-						}
-					})
+					var intention: slime.jsh.shell.Intention = {
+						shell: {
+							src: fifty.jsh.file.relative("../..").pathname
+						},
+						script: fifty.jsh.file.relative("../../jrunscript/jsh/tools/install/kotlin.jsh.js").pathname
+					};
+					var shellIntention = jsh.shell.jsh.Intention.toShellIntention(intention);
+					var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+					run(shellIntention);
 				}
 			}
 

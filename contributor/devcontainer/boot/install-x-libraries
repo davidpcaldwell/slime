@@ -13,5 +13,4 @@ apt update \
     && apt install -y \
 	$BASIC_X_LIBRARIES \
 	$FONT_X_LIBRARIES \
-	$TEST_X_LIBRARIES \
-    && rm -rf /var/lib/apt/lists/*
+	$TEST_X_LIBRARIES

@@ -18,7 +18,7 @@ namespace slime.jsh.$fifty {
 namespace slime.jsh {
 	export interface Global {
 		/**
-		 * Unsupported API. Used in implementation of supported `fifty.jsh` APIs.
+		 * Unsupported API. Used in implementation of the {@link slime.fifty Fifty} tools.
 		 */
 		$fifty: slime.jsh.$fifty.Exports
 	}

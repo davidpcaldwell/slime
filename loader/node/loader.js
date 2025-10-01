@@ -7,15 +7,18 @@
 //@ts-check
 (
 	function() {
-		//	TODO	figure out why next two ts-ignore are necessary; without them, a tsc-related test fails
+		//	TODO	Add @types/node to project so that below ts-ignore are not necessary
 
 		//	@ts-ignore
 		var fs = require("fs");
 
 		//	@ts-ignore
+		var process = require("process");
+
+		//	@ts-ignore
 		var base = fs.realpathSync(__filename + "/../../..");
 
-		/** @type { slime.runtime.scope.$slime.Deployment } */
+		/** @type { slime.runtime.scope.Deployment } */
 		var $slime = {
 			getRuntimeScript: function(path) {
 				var location = base + "/" + "loader/" + path;
@@ -23,20 +26,39 @@
 					name: path,
 					js: fs.readFileSync(location).toString()
 				};
-			}
+			},
+			configuration: (
+				function() {
+					const pattern = /^SLIME_(.*)$/;
+					return Object.entries(process.env).reduce(function(rv,entry) {
+						const name = entry[0].toUpperCase();
+						const value = entry[1];
+						if (pattern.test(name)) {
+							//	check for duplicates?
+							rv[name] = value;
+						}
+						return rv;
+					}, {});
+				}
+			)()
 		};
 
-		/** @type { slime.runtime.Exports } */
-		var runtime = (function(scope) {
-			var code = fs.readFileSync(base + "/" + "loader/expression.js").toString();
-			try {
-				return eval(code);
-			} catch (e) {
-				var ex = e;
+		var runtime = (
+			/**
+			 *
+			 * @param { slime.runtime.Scope } scope
+			 * @returns { slime.runtime.Exports }
+			 */
+			function(scope) {
+				var code = fs.readFileSync(base + "/" + "loader/expression.js").toString();
+				try {
+					return eval(code);
+				} catch (e) {
+					var ex = e;
+				}
 			}
-		})({
-			$slime: $slime,
-			Packages: void(0)
+		)({
+			$slime: $slime
 		});
 
 		/**

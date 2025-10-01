@@ -14,7 +14,7 @@ namespace slime {
 	 * Based on the configuration, a `window.inonit` object of type
 	 * {@link slime.browser.Runtime} will be created and be available to the application.
 	 *
-	 * All additional code loaded through the runtime will be provided with a {@link slime.$api.Global} object in its scope as `$api`.
+	 * All additional code loaded through the runtime will be provided with a {@link slime.$api.browser.Global} object in its scope as `$api`.
 	 * This object is also available to code not loaded through the runtime (for example, top-level scripts) as `inonit.loader.$api`.
 	 *
 	 * Several additional APIs can be loaded from the `Runtime`:
@@ -51,6 +51,11 @@ namespace slime {
 			 * in the browser (including ActiveX implementations).
 			 */
 			XMLHttpRequest?: typeof XMLHttpRequest
+
+			/**
+			 * A configuration to pass through to the SLIME runtime via {@link slime.runtime.scope.Deployment.configuration}.
+			 */
+			configuration: slime.runtime.scope.Deployment["configuration"]
 		}
 
 		(
@@ -66,31 +71,37 @@ namespace slime {
 		/**
 		 * The state of the `window` object prior to loading the `loader/browser/client.js` script.
 		 */
-		export interface Context {
-			readonly fetch: Window["fetch"]
-			readonly location: Location
-			Date: DateConstructor
-			setTimeout: Window["setTimeout"]
-			clearTimeout: Window["clearTimeout"]
-			XMLHttpRequest: typeof XMLHttpRequest
-			CoffeeScript: any
-			Packages: slime.jrunscript.Packages
-		}
+		export type Context = (
+			//	ECMAScript
+			& { Date: typeof Date, XMLHttpRequest: typeof XMLHttpRequest }
 
-		interface Bootstrap {
+			//	DOM
+			& Pick<Window,"location">
+			& Pick<Window,"setTimeout"|"clearTimeout">
+			& Pick<Window,"fetch">
+
+			//	Third-party
+			& { CoffeeScript: { compile: (js: string) => string } }
+		)
+
+		export interface Base {
 			/**
-			 * The base URL of this script: the URL of the script, excluding the file name.
+			 * The base URL for this base; relative URLs are calculated relative to this value.
 			 */
-			base: string
+			url: string
 
 			/**
 			 * @param path A relative path.
-			 * @returns A full path representing the specified relative path relative to the base URL of this script.
+			 * @returns A full URL representing the specified relative path relative to the `url` property.
 			 */
-			getRelativePath: (path: string) => string
+			relative: (path: string) => string
 		}
 
 		export interface Exports {
+			/**
+			 * Specifies the base URL from which the SLIME runtime was loaded.
+			 */
+			//	TODO	but who needs this? Who is using it and why? Should it be a Base object instead?
 			base: string
 		}
 
@@ -118,6 +129,99 @@ namespace slime {
 		)(fifty);
 
 		export interface Exports {
+			$api: slime.$api.browser.Global
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				fifty.tests.exports.$api = function() {
+					fifty.load("$api.fifty.ts");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			/**
+			 * Provides implementations of {@link Base}, which are useful for creating URLs.
+			 */
+			Base: {
+				/**
+				 * Returns an object based on the location of the current script being loaded into the DOM (that is, the last
+				 * <script> element currently in the DOM document).
+				 */
+				script: () => Base
+
+				/**
+				 * Returns a {@link Base} that calculates URLs based on the location of the current page.
+				 */
+				page: Base
+			}
+		}
+
+		//	TODO	content
+
+		export interface Exports {
+			Content: {
+				page: slime.thread.type.Asynchronous<slime.runtime.content.Store<string>>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const window = fifty.global.window;
+				const inonit = fifty.global.window["inonit"] as slime.browser.Runtime;
+				const Promise: PromiseConstructor = fifty.global.window["Promise"];
+
+				//	TODO	Move to Fifty itself; this is really a test of Fifty's asynchrony handling
+				fifty.tests.hello = function() {
+					fifty.run(function two() {
+						debugger;
+						Promise.resolve("hello").then(function checkTwo(value) {
+							verify(value).is("hello");
+						})
+					});
+				}
+
+				//	TODO	Move to Fifty itself; this is really a test of Fifty's asynchrony handling
+				fifty.tests.regression = function() {
+					fifty.run(function one() {
+						Promise.resolve(2).then(function checkTwo(value) {
+							verify(value).is(2);
+						})
+					});
+
+					fifty.run(function two() {
+						Promise.resolve(3).then( x => x * 2 ).then( x => x + 2 ).then(function(value) {
+							verify(value).is(8);
+						})
+					})
+				}
+
+				fifty.tests.exports.Content = function() {
+					fifty.run(function one() {
+						console.log("Fetching via Content.page.get ...");
+						inonit.loader.Content.page.get("../../loader/browser/test/data/a.txt".split("/")).then(function(it) {
+							console.log("Fetched text", it);
+							debugger;
+							if (it.present) {
+								verify(it).value.is("AAA\n");
+							} else {
+								verify("present").is("true");
+							}
+						})
+					});
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			Loader: {
 				/**
 				 * Creates a SLIME {@link slime.Loader | Loader}.
@@ -132,9 +236,8 @@ namespace slime {
 				new (p: slime.old.loader.Source): slime.old.Loader
 
 				series: slime.runtime.Exports["old"]["loader"]["series"]
-				//	TODO	JSAPI-declared properties below
-				//	getCode
-				//	fetch
+				getCode: any
+				fetch: any
 			}
 		}
 
@@ -195,11 +298,10 @@ namespace slime {
 
 		(
 			function(
-				$window: Window,
 				fifty: slime.fifty.test.Kit
 			) {
-				const inonit: Runtime = $window["inonit"];
-				const window = $window as Window & { foo: any }
+				const inonit: Runtime = fifty.global.window["inonit"];
+				const window = fifty.global.window as Window & { testNamespaces: any }
 				fifty.tests.exports.namespace = {};
 
 				const test = function(value: boolean) {
@@ -207,9 +309,9 @@ namespace slime {
 				};
 
 				fifty.tests.exports.namespace.happy = function() {
-					test(typeof(window.foo) == "undefined");
-					var ns = inonit.loader.namespace("foo.bar.baz");
-					test(ns == window.foo.bar.baz);
+					test(typeof(window.testNamespaces) == "undefined");
+					var ns = inonit.loader.namespace("testNamespaces.foo.bar.baz");
+					test(ns == window.testNamespaces.foo.bar.baz);
 				}
 
 				fifty.tests.exports.namespace.topLevelScope = function() {
@@ -226,7 +328,7 @@ namespace slime {
 				}
 			}
 		//@ts-ignore
-		)(window,fifty);
+		)(fifty);
 
 		export interface Exports {
 			/**
@@ -250,28 +352,39 @@ namespace slime {
 			value: slime.old.Loader["value"]
 
 			get: slime.Loader["get"]
+		}
 
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				//	TODO	update definition so that this is unnecessary?
+				const inonit: Runtime = fifty.global.window["inonit"];
+				const { verify } = fifty;
+
+				fifty.tests.exports.run = function() {
+					let x = 0;
+					var scope = { e: 2, set: (v: number) => x = v };
+					var target = { f: 0 };
+					//	In the case of our tests, the "current page" is tools/fifty/test-browser.html, so we need to load the run
+					//	script appropriately
+					inonit.loader.run("../../loader/test/data/a/run.js", scope, target);
+					verify(x).is(4);
+					verify(target).f.is(6);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			/**
 			 * A loader that loads resources using the current page as the base URL for the loader.
 			 */
 			loader: slime.old.Loader
 
-			/**
-			 * Contains useful pieces of code that are exported for general use.
-			 */
-			nugget: {
-				/**
-				 * Returns an object based on the current script being loaded (that is, the script from which the method is invoked).
-				 */
-				getCurrentScript: () => Bootstrap
-
-				//	TODO	this structure is almost the same as the Bootstrap structure above; can we combine them?
-				page: {
-					base: string
-					relative: (path: string) => string
-				}
+			test: {
+				run: slime.runtime.Exports["run"]
 			}
-			$api: slime.$api.Global
 
 			//	(undocumented) According to very old documentation, used to support development-related functions.
 			$sdk: any
@@ -284,6 +397,13 @@ namespace slime {
 			loader: Exports
 		}
 
+		export interface Slime {
+			inonit: Runtime
+		}
+
+		export interface Window extends slime.external.lib.dom.Window {
+			inonit: Slime["inonit"]
+		}
 	}
 }
 
@@ -294,7 +414,6 @@ namespace slime {
 		fifty.tests.suite = function() {
 			fifty.run(fifty.tests.exports);
 			fifty.run(fifty.tests.bitbucketIssue296);
-			fifty.load("$api.fifty.ts");
 		}
 	}
 //@ts-ignore

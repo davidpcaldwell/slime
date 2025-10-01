@@ -17,3 +17,11 @@
 <!-- #region nashorn.standalone.version -->
 {nashorn.standalone.version}
 <!-- #endregion nashorn.standalone.version -->
+
+<!-- #region typescript.version -->
+{typescript.version}
+<!-- #endregion typescript.version -->
+
+<!-- #region typedoc.version -->
+{typedoc.version}
+<!-- #endregion typedoc.version -->

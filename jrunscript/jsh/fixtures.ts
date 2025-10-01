@@ -35,7 +35,6 @@ namespace slime.jsh.test {
 				PATH: slime.jrunscript.file.Searchpath
 				settings: remote.Settings
 
-				//	TODO	should support local scripts, too, a real use case for remote shells
 				/**
 				 * A script to run, which can represent a local pathname or URL.
 				 */
@@ -114,9 +113,9 @@ namespace slime.jsh.test {
 					var loader = jsh.file.Location.directory.loader.synchronous({ root: slime });
 
 					var code: {
-						testing: slime.jrunscript.tools.github.internal.test.Script
+						testing: slime.jrunscript.tools.github.mock.project.Script
 					} = {
-						testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.internal.test.Script
+						testing: jsh.loader.synchronous.scripts(loader)("rhino/tools/github/test/module.js") as slime.jrunscript.tools.github.mock.project.Script
 					};
 
 					var library = {

@@ -31,6 +31,7 @@ namespace slime.external.lib.rename.es5 {
 
 namespace slime.external.lib.rename.dom {
 	export type _Console = Console
+	export type _Window = Window
 }
 
 namespace slime.external.lib.rename.typescript {
@@ -38,7 +39,7 @@ namespace slime.external.lib.rename.typescript {
 }
 
 namespace slime.external.lib.es5 {
-	export type Function = (...args: any) => any
+	export type Function<T,P extends any[],R> = (this: T, ...args: P) => R
 
 	/**
 	 * For some reason, TypeScript declares utility types like `Parameters` and `ReturnType` to refer to this, rather than its
@@ -51,10 +52,16 @@ namespace slime.external.lib.es5 {
 	export type Object = slime.external.lib.rename.es5._Object
 	export type ObjectConstructor = slime.external.lib.rename.es5._ObjectConstructor
 	export type JSON = slime.external.lib.rename.es5._JSON
+
+	/**
+	 * An ECMAScript [_time value_](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-time-values-and-time-range).
+	 */
+	export type TimeValue = number
 }
 
 namespace slime.external.lib.dom {
 	export type Console = slime.external.lib.rename.dom._Console
+	export type Window = slime.external.lib.rename.dom._Window
 }
 
 namespace slime.external.lib.typescript {

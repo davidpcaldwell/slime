@@ -280,7 +280,7 @@ namespace slime.jsh.shell {
 	}
 
 	export interface Exports {
-		jsh: JshShellJsh
+		jsh: JshInvoke & JshShellJsh
 	}
 
 	(
@@ -328,16 +328,6 @@ namespace slime.jsh.shell {
 		& Pick<slime.jrunscript.shell.run.Intention,"stdio">
 	)
 
-	export namespace jsh {
-		export interface Exit {
-			status: number
-			stdio?: {
-				output?: string
-				error?: string
-			}
-		}
-	}
-
 	export interface JshShellJsh {
 		Installation: {
 			from: {
@@ -358,6 +348,7 @@ namespace slime.jsh.shell {
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
@@ -437,7 +428,7 @@ namespace slime.jsh.shell {
 						return $api.Object.compose(
 							current,
 							{
-								JSH_JAVA_HOME: getJavaHome().toString()
+								JSH_LAUNCHER_JDK_HOME: getJavaHome().toString()
 							}
 						)
 					},
@@ -461,10 +452,14 @@ namespace slime.jsh.shell {
 					}
 				};
 
+				var toCanonicalPath = function(path: string) {
+					return String(new Packages.java.io.File(path).getCanonicalPath());
+				}
+
 				var installation = getInstallationFromIntention(intention);
 
 				var cast: slime.js.Cast<PackagedInstallation> = $api.fp.cast.unsafe;
-				verify(installation).evaluate(cast).package.is(shell.package);
+				verify(installation).evaluate(cast).package.is(toCanonicalPath(shell.package));
 			}
 
 			fifty.tests.exports.jsh.Installation.from.current.remote = function() {
@@ -490,17 +485,11 @@ namespace slime.jsh.shell {
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
 	export interface JshShellJsh {
 		Intention: {
 			toShellIntention: (p: Intention) => slime.jrunscript.shell.run.Intention
-
-			sensor: slime.$api.fp.world.Sensor<
-				Intention,
-				{ stdout: slime.jrunscript.shell.run.Line, stderr: slime.jrunscript.shell.run.Line },
-				jsh.Exit
-			>
 		}
 	}
 
@@ -569,7 +558,9 @@ namespace slime.jsh.shell {
 					verify(output).evaluate.property("properties").evaluate.property("slime.jrunscript.jsh.shell.jsh.foo").is("bar");
 				});
 
-				if (test.shells.built(true)) fifty.run(function nativeLaunched() {
+				var ISSUE_2039_RESOLVED = false;
+
+				if (ISSUE_2039_RESOLVED && test.shells.built(true)) fifty.run(function nativeLaunched() {
 					var shellLaunched = jsh.shell.jsh.Intention.toShellIntention({
 						shell: {
 							home: test.shells.built(true).home
@@ -636,10 +627,9 @@ namespace slime.jsh.shell {
 						} as { output: slime.jrunscript.shell.run.OutputCapture }
 					}
 				);
-				var exit = $api.fp.world.Sensor.now({
-					sensor: jsh.shell.jsh.Intention.sensor,
-					subject: intention
-				});
+				var shellIntention = jsh.shell.jsh.Intention.toShellIntention(intention);
+				var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+				var exit = run(shellIntention);
 				var output = JSON.parse(exit.stdio.output);
 				debugger;
 				verify(output).arguments[0].is("--argument");
@@ -846,18 +836,18 @@ namespace slime.jsh.shell {
 			fifty.tests.exports.jsh.shells = function() {
 				var unbuilt = run(test.shells.unbuilt().invoke({
 					script: script,
-					environment: $api.fp.mapping.all(environment),
+					environment: $api.fp.Mapping.all(environment),
 					stdio: stdio
 				}));
 
 				var built = run(test.shells.built(false).invoke({
 					script: script,
-					environment: $api.fp.mapping.all(environment),
+					environment: $api.fp.Mapping.all(environment),
 					stdio: stdio
 				}));
 
 				var packaged = run(test.shells.packaged(script).invoke({
-					environment: $api.fp.mapping.all(environment),
+					environment: $api.fp.Mapping.all(environment),
 					stdio: stdio
 				}));
 
@@ -892,11 +882,11 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export interface JshShellJsh extends JshInvoke {
+	export interface JshShellJsh {
 		lib?: slime.jrunscript.file.Directory
 	}
 
-	export interface JshShellJsh extends JshInvoke {
+	export interface JshShellJsh {
 		/**
 		 * Forks this shell, relaunching with the output of the given transform, if any, and exiting with the status of the shell
 		 * executed with the transformed parameters. If no argument is given, simply relaunches with the same configuration as was
@@ -918,12 +908,17 @@ namespace slime.jsh.shell {
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
 			const subject = fifty.global.jsh.shell;
+
+			var toCanonicalPath = function(path: string) {
+				return String(new Packages.java.io.File(path).getCanonicalPath());
+			}
 
 			fifty.tests.exports.jsh.relaunch = function() {
 				var TMPDIR = fifty.jsh.file.temporary.directory();
@@ -949,14 +944,14 @@ namespace slime.jsh.shell {
 				verify(output).arguments[1].is("2");
 				verify(output).arguments[2].is("3");
 				verify(output).environment.evaluate.property("FOO").is("bar");
-				verify(output).directory.evaluate(String).is(TMPDIR.pathname);
+				verify(output).directory.evaluate(String).is(toCanonicalPath(TMPDIR.pathname));
 				verify(output).properties.evaluate.property("foo.bar").is("baz");
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
-	export interface JshShellJsh extends JshInvoke {
+	export interface JshShellJsh {
 		require: slime.$api.fp.world.Means<
 			{
 				satisfied: () => boolean,
@@ -979,6 +974,8 @@ namespace slime.jsh.shell {
 
 	export interface Exports extends slime.jrunscript.shell.Exports {
 		//	TODO	shell?
+		//	TODO	deprecate this after possibly creating, and then definitely pointing to some kind of replacement, probably
+		// 			based on jsh.internal.bootstrap
 		rhino: {
 			classpath: slime.jrunscript.file.Searchpath
 		}

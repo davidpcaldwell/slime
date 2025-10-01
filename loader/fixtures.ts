@@ -38,7 +38,8 @@ namespace slime.runtime.test {
 								getRuntimeScript: function(path) {
 									var resource = fifty.$loader.get(path);
 									return { name: resource.name, js: resource.read(String) }
-								}
+								},
+								configuration: {}
 							}
 						});
 						return eval(js);

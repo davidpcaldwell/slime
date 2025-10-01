@@ -8,7 +8,7 @@
 (
 	/**
 	 *
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.$api.jrunscript.Global } $api
 	 * @param { slime.jrunscript.bootstrap.Context } $context
 	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.bootstrap.Exports> } $export
@@ -16,6 +16,7 @@
 	function(Packages,JavaAdapter,$api,$context,$loader,$export) {
 		/** @type { slime.js.Cast<slime.jrunscript.bootstrap.Exports> } */
 		var after = $api.fp.cast.unsafe;
+
 		var jrunscript = {
 			$api: {
 				debug: ($context.debug) ? function(message) {
@@ -24,9 +25,46 @@
 				script: $context.script,
 				arguments: ["api"]
 			},
-			load: function() {
-				//	TODO	we can probably implement load() using $loader ...
-				//jsh.shell.console("load(" + Array.prototype.slice.call(arguments) + ")");
+			load: function(script) {
+				if (script == "nashorn:mozilla_compat.js") return;
+				//	for unbuilt / built, script is an absolute path to a file
+				var _file = new Packages.java.io.File(script);
+				if (_file.exists()) {
+					$api.engine.execute(
+						{
+							name: script,
+							js: new Packages.java.lang.String(Packages.java.nio.file.Files.readAllBytes(_file.toPath()))
+						},
+						{},
+						jrunscript
+					)
+				} else if (typeof(script) == "object" && script && script.name && script.script) {
+					$api.engine.execute(
+						{
+							name: script.name,
+							js: script.script
+						},
+						{},
+						jrunscript
+					)
+				} else if (true) {
+					var _url = new Packages.java.net.URL(script);
+					var _connection = _url.openConnection();
+					/** @type { slime.jrunscript.native.java.io.InputStream } */
+					var _stream = _connection.getInputStream();
+					var input = $api.jrunscript.io.InputStream.java(_stream);
+					var code = input.content.string.simple($api.jrunscript.io.Charset.default);
+					$api.engine.execute(
+						{
+							name: script,
+							js: code
+						},
+						{},
+						jrunscript
+					);
+				} else {
+					throw new Error("No implementation to load script [" + script + "]");
+				}
 			},
 			Packages: Packages,
 			JavaAdapter: JavaAdapter,
@@ -34,7 +72,11 @@
 			readUrl: void(0),
 			Java: void(0)
 		};
+
+		var isBreakOnExceptions = $api.engine.debugger ? $api.engine.debugger.isBreakOnExceptions : void(0);
+		if (isBreakOnExceptions) $api.engine.debugger.setBreakOnExceptions(false);
 		$loader.run("api.js", {}, jrunscript);
+		if (isBreakOnExceptions) $api.engine.debugger.setBreakOnExceptions(true);
 		$export(after(jrunscript.$api));
 	}
 //@ts-ignore

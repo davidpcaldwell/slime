@@ -4,6 +4,9 @@
 //
 //	END LICENSE
 
+/**
+ * Tools for creating and interacting with Node.js installations.
+ */
 namespace slime.jrunscript.tools.node {
 	export interface Context {
 		library: {
@@ -39,9 +42,19 @@ namespace slime.jrunscript.tools.node {
 	//@ts-ignore
 	)(fifty);
 
+	/**
+	 * Quick guide:
+	 *
+	 * * Install Node.js with the `install` function
+	 * * You can do things with Node installations with the `Installation` functions
+	 * * You can do things with Node projects the `Project` functions
+	 */
 	export interface Exports {
 		versions: {
-			default: string
+			/**
+			 * The default version of Node.js used by this SLIME installation.
+			 */
+			default: () => string
 		}
 	}
 
@@ -66,8 +79,8 @@ namespace slime.jrunscript.tools.node {
 		}
 	}
 
-	export namespace exports {
-		export interface Installation {
+	export namespace installation {
+		export interface Exports {
 			from: {
 				/**
 				 * Given a Node installation location, returns the Node `Installation` corresponding to that location.
@@ -78,14 +91,20 @@ namespace slime.jrunscript.tools.node {
 				location: (home: slime.jrunscript.file.Location) => slime.jrunscript.tools.node.Installation
 			}
 
-			exists: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,boolean>
+			exists: {
+				wo: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,boolean>
+				simple: (installation: Installation) => boolean
+			}
 
 			getVersion: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,string>
 		}
 	}
 
 	export interface Exports {
-		Installation: exports.Installation
+		/**
+		 * Functions relating to {@link Installation} types.
+		 */
+		Installation: installation.Exports
 	}
 
 	export interface Exports {
@@ -101,7 +120,7 @@ namespace slime.jrunscript.tools.node {
 
 			//	TODO	test still directly references world object
 			fifty.tests.sandbox.installation = function() {
-				var exists = $api.fp.world.mapping(test.subject.Installation.exists);
+				var exists = $api.fp.now(test.subject.Installation.exists.wo, $api.fp.world.Sensor.mapping());
 				var getVersion = $api.fp.world.mapping(test.subject.Installation.getVersion);
 
 				var TMPDIR = fifty.jsh.file.temporary.location();
@@ -146,15 +165,15 @@ namespace slime.jrunscript.tools.node {
 		stdio?: slime.jrunscript.shell.run.Intention["stdio"]
 	}
 
-	export namespace exports {
-		export interface Installation {
+	export namespace installation {
+		export interface Exports {
 			Intention: {
 				shell: (argument: Intention) => (installation: slime.jrunscript.tools.node.Installation) => slime.jrunscript.shell.run.Intention
 				question: (argument: Intention) => slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,slime.jrunscript.shell.run.AskEvents,slime.jrunscript.shell.run.Exit>
 			}
 
 			/** @deprecated */
-			question: Installation["Intention"]["question"]
+			question: Exports["Intention"]["question"]
 		}
 
 		(
@@ -190,8 +209,8 @@ namespace slime.jrunscript.tools.node {
 
 	}
 
-	export namespace exports {
-		export interface Modules {
+	export namespace modules {
+		export interface Exports {
 			list: () => slime.$api.fp.world.Question<void, Module[]>
 
 			installed: (name: string) => slime.$api.fp.world.Question<void, slime.$api.fp.Maybe<Module>>
@@ -223,9 +242,9 @@ namespace slime.jrunscript.tools.node {
 		}
 	}
 
-	export namespace exports {
-		export interface Installation {
-			modules: (installation: node.Installation) => Modules
+	export namespace installation {
+		export interface Exports {
+			modules: (installation: node.Installation) => modules.Exports
 		}
 	}
 
@@ -284,14 +303,14 @@ namespace slime.jrunscript.tools.node {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		Project: exports.Project
+	export namespace project {
+		export interface Exports {
+			modules: (project: node.Project) => (installation: node.Installation) => modules.Exports
+		}
 	}
 
-	export namespace exports {
-		export interface Project {
-			modules: (project: node.Project) => (installation: node.Installation) => Modules
-		}
+	export interface Exports {
+		Project: project.Exports
 	}
 
 	export namespace object {

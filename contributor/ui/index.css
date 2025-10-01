@@ -1,0 +1,23 @@
+/*
+LICENSE
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+END LICENSE
+*/
+body { font-family: verdana }
+body { font-size: 11pt; }
+
+h1 { font-size: 14pt; }
+h2 { font-size: 13pt; }
+
+div { margin: 0.5em 0em; }
+
+#typedoc, #links {
+	border: 1px solid black;
+	padding: 1em;
+}
+
+pre {
+	tab-size: 4;
+}

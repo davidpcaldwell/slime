@@ -102,13 +102,9 @@ END LICENSE
 	<div>
 		<h1>Running <code>jsh</code>: <code>jsh</code></h1>
 		<div>
-			The easiest way to run <code>jsh</code> is via the top-level <code>jsh</code> script:
-			<div class="usage">
-				<code>./jsh [<i>-vmargument</i> [...<i>-vmargument</i>]] &lt;<i>path-to-script</i>> <i>[arguments]</i></code>
-			</div>
 			<div>
 				For example, if a suitable Java installation is available in the <code>PATH</code>, the following invocation
-				from the directory containing the SLIME code) will
+				from the directory containing the SLIME code will
 				launch a script that outputs information about the shell in JSON format:
 				<pre class="example"><code>./jsh jrunscript/jsh/test/jsh-data.jsh.js</code></pre>
 			</div>
@@ -230,20 +226,6 @@ END LICENSE
 				-->
 				<tr>
 					<td>(none)</td>
-					<td><code>JSH_LAUNCHER_BASH_DEBUG</code></td>
-					<td>
-						Enables debugging within the <code>jsh</code> launcher.
-					</td>
-				</tr>
-				<tr>
-					<td>(none)</td>
-					<td><code>JSH_LAUNCHER_JDK_HOME</code></td>
-					<td>
-						Specifies a Java Development Kit that <code>jsh</code> should use to execute scripts.
-					</td>
-				</tr>
-				<tr>
-					<td>(none)</td>
 					<td><code>JSH_LOCAL_JDKS</code></td>
 					<td>
 						Specifies the directory in which the shell should look for shell-local JDKs. Defaults to
@@ -254,7 +236,7 @@ END LICENSE
 					<td>(none)</td>
 					<td><code>JSH_USER_JDKS</code></td>
 					<td>
-						Specifies the directory in which the shell should look for shell-local JDKs. Defaults to
+						Specifies the directory in which the shell should look for user-local JDKs. Defaults to
 						<code>${HOME}/.slime/jdk</code>.
 					</td>
 				</tr>

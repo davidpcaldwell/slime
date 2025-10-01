@@ -13,7 +13,6 @@
 	function($api,jsh) {
 		jsh.script.cli.main(
 			$api.fp.pipe(
-				//	TODO	use fp.option.pathname
 				jsh.script.cli.fp.option.location({ longname: "maven:program" }),
 				jsh.script.cli.option.string({ longname: "archetype" }),
 				jsh.script.cli.fp.option.location({ longname: "project" }),
@@ -39,9 +38,9 @@
 
 					var mvn = $api.fp.now(
 						p.options["maven:program"],
-						$api.fp.Partial.else({
-							partial: $api.fp.Maybe.map($api.fp.property("pathname")),
-							else: function() {
+						$api.fp.now(
+							$api.fp.Maybe.map($api.fp.property("pathname")),
+							$api.fp.Partial.else(function() {
 								var tmp = jsh.file.os.temporary.pathname();
 								$api.fp.world.Means.now({
 									means: jsh.tools.maven.Installation.require.world,
@@ -59,9 +58,9 @@
 								});
 
 								return $api.fp.now(tmp, jsh.file.os.directory.relativePath("bin/mvn"));
-							}
-						})
-					)
+							})
+						)
+					);
 
 					var jdk = jsh.shell.java.Jdk.from.javaHome();
 

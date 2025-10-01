@@ -328,7 +328,7 @@ namespace slime.jrunscript.tools.install {
 						function() {
 							var download = subject.Distribution.from.file({
 								url: URL,
-								prefix: $api.fp.mapping.all("prefix/")
+								prefix: $api.fp.Mapping.all("prefix/")
 							});
 
 							verify(download).url.is("http://example.com/foo/bar.tar.gz");

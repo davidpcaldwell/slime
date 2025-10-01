@@ -16,15 +16,13 @@
 	function($slime, $api, jsh, plugin, $loader) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.loader && jsh.loader.addFinalizer && jsh.js && jsh.java && jsh.io);
+				return Boolean(jsh.loader && jsh.loader.addFinalizer && jsh.java && jsh.io);
 			},
 			load: function() {
 				/** @type { slime.jrunscript.file.Context } */
 				var context = {
-					$pwd: $slime.getSystemProperty("user.dir"),
 					addFinalizer: jsh.loader.addFinalizer,
 					api: {
-						js: jsh.js,
 						java: jsh.java,
 						io: jsh.io,
 						loader: {

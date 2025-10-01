@@ -11,12 +11,17 @@
 (
 	/**
 	 *
-	 * @this { slime.internal.jrunscript.bootstrap.Global<{ slime: slime.jsh.internal.launcher.Slime, jsh: any }> }
+	 * @this { slime.jsh.internal.launcher.Global }
 	 */
 	function() {
 		var Java = this.Java;
 		var Packages = this.Packages;
 		var $api = this.$api;
+
+		if ($api.embed) {
+			var current = new $api.Script({ caller: true });
+			$api.script = current;
+		}
 
 		if (!$api.slime) {
 			if ($api.script.url) {
@@ -38,7 +43,12 @@
 				}
 				setProperty($api, "slime", slimeConfiguration);
 			}
-			$api.script.resolve("slime.js").load();
+			var slimeScript = $api.script.resolve("slime.js");
+			$api.debug("slimeScript = " + slimeScript);
+			if (slimeScript == null) {
+				throw new Error("Cound not resolve `slime.js` from " + $api.script);
+			}
+			slimeScript.load();
 		}
 
 		$api.debug.on = Boolean($api.slime.settings.get("jsh.launcher.debug"));
@@ -95,19 +105,32 @@
 
 		//	If Rhino location not specified, and we are running this script inside Rhino, set that to be the default Rhino location for the
 		//	shell
-		$api.slime.settings["default"]("jsh.engine.rhino.classpath", $api.rhino.classpath);
+		$api.slime.settings.default("jsh.engine.rhino.classpath", $api.engine.rhino.classpath);
 
 		//	If SLIME source location not specified, and we can determine it, supply it to the shell
-		$api.slime.settings["default"]("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
+		$api.slime.settings.default("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
 
 		$api.script.resolve("launcher.js").load();
 
+		if ($api.embed) {
+			return;
+		}
+
 		//	If we have a sibling named jsh.jar, we are a built shell
 		var shell = (function() {
-			if ($api.script.resolve("jsh.jar")) {
-				return new $api.jsh.Built($api.script.file.getParentFile());
+			var builtShellJar = $api.script.resolve("jsh.jar");
+			if (builtShellJar) {
+				$api.debug(
+					"script file: " + $api.script.file + " url: " + $api.script.url
+					+ " resolved file= " + $api.script.resolve("jsh.jar").file
+					+ " resolved url = " + $api.script.resolve("jsh.jar").url
+				);
+				return $api.jsh.Built($api.script.file.getParentFile());
 			} else {
-				$api.slime.settings["default"](
+				//	TODO	much of this logic is reproduced in the launcher.js Libraries construct, and this should be removed
+				//			after merging in any differences from here and refining the implementation
+
+				$api.slime.settings.default(
 					"jsh.shell.lib",
 					$api.slime.src.getPath("local/jsh/lib")
 				);
@@ -131,25 +154,10 @@
 				var rhino = (function() {
 					if ($api.slime.settings.get("jsh.engine.rhino.classpath")) {
 						return [new Packages.java.io.File($api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
-					} else if ($api.slime.settings.get("jsh.shell.lib") && lib.file) {
-						if (new Packages.java.io.File(lib.file, "js.jar").exists()) {
-							return [new Packages.java.io.File(lib.file, "js.jar").toURI().toURL()];
-						}
 					}
 				})();
 
-				var nashorn = (function() {
-					if ($api.slime.settings.get("jsh.shell.lib") && lib.file) {
-						if (new Packages.java.io.File(lib.file, "nashorn.jar").exists()) {
-							$api.debug("nashorn.jar found");
-							return $api.nashorn.dependencies.jarNames.concat(["nashorn.jar"]).map(function(filename) {
-								return new Packages.java.io.File(lib.file, filename).toURI().toURL();
-							});
-						}
-					}
-				})();
-
-				return new $api.jsh.Unbuilt({ lib: lib, rhino: rhino, nashorn: nashorn });
+				return $api.jsh.Unbuilt({ lib: lib, rhino: rhino });
 			}
 		})();
 		$api.debug("shell detected = " + shell);
@@ -158,6 +166,7 @@
 			$api.debug("Nashorn not detected via javax.script; removing.");
 			delete $api.jsh.engines.nashorn;
 		}
+
 		if ($api.jsh.engines.nashorn) {
 			var Context = Packages.jdk.nashorn.internal.runtime.Context;
 			if (typeof(Context) != "function") {
@@ -165,6 +174,8 @@
 			}
 			var $getContext;
 			try {
+				//	TODO	When executed under Rhino, this .class syntax is not available; believe there is an $api method to deal
+				// 			with this already
 				$getContext = Context.class.getMethod("getContext");
 			} catch (e) {
 				//	do nothing; $getContext will remain undefined
@@ -175,10 +186,44 @@
 			}
 		}
 
+		var command = new $api.java.Command();
+
+		if ($api.slime.settings.get("jsh.java.home")) {
+			$api.debug("setting jsh.java.home = " + $api.slime.settings.get("jsh.java.home"));
+			command.home($api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
+		}
+
+		var jshLauncherJavaMajorVersion = $api.java.getMajorVersion();
+
+		var jshLoaderJavaMajorVersion = (
+			function() {
+				if ($api.slime.settings.get("jsh.java.home")) {
+					var majorVersion = $api.java.Install(
+						new Packages.java.io.File(
+							$api.slime.settings.get("jsh.java.home")
+						)
+					).getMajorVersion();
+					$api.debug("jsh.java.home major version detected: [" + majorVersion + "]");
+					return majorVersion;
+				} else {
+					function javaMajorVersionString(javaVersionProperty) {
+						if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
+						return javaVersionProperty.split(".")[0];
+					}
+
+					var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
+
+					return javaMajorVersion;
+				}
+			}
+		)();
+
 		// TODO: delete Graal if it is not available
 
+		var loaderRhino = shell.libraries.rhino($api.rhino.version(jshLoaderJavaMajorVersion));
+
 		var defaultEngine = (function() {
-			if (shell.rhino) return "rhino";
+			if (loaderRhino) return "rhino";
 			if ($api.jsh.engines.nashorn) return "nashorn";
 			throw new Error("Neither Rhino nor Nashorn available; was this invoked in a way other than using the top-level jsh script?");
 		})();
@@ -187,7 +232,7 @@
 			Packages.java.lang.System.err.println("No compatible JavaScript engine found.");
 			Packages.java.lang.System.exit(1);
 		}
-		$api.slime.settings["default"]("jsh.engine", defaultEngine);
+		$api.slime.settings.default("jsh.engine", defaultEngine);
 
 		if ($api.slime.settings.get("jsh.engine") == "graal") {
 			$api.debug("Engine is Graal.js");
@@ -205,17 +250,11 @@
 			}
 		}
 
-		var command = new $api.java.Command();
-
-		if ($api.slime.settings.get("jsh.java.home")) {
-			$api.debug("setting jsh.java.home = " + $api.slime.settings.get("jsh.java.home"));
-			command.home($api.java.Install(new Packages.java.io.File($api.slime.settings.get("jsh.java.home"))));
-		}
-
 		if ($api.arguments[0] == "-engines") {
 			var engines = [];
-			if (shell.rhino) engines.push("rhino");
+			if (loaderRhino) engines.push("rhino");
 			if ($api.jsh.engines.nashorn) engines.push("nashorn");
+			//	TODO	graal
 			Packages.java.lang.System.out.print(JSON.stringify(engines));
 			Packages.java.lang.System.exit(0);
 		}
@@ -225,54 +264,18 @@
 			command.vm($api.arguments.shift());
 		}
 
-		var jshJavaHomeMajorVersion = (
-			function() {
-				if ($api.slime.settings.get("jsh.java.home")) {
-					var mode = {
-						output: "",
-						err: ""
-					}
-					var status = $api.engine.runCommand(
-						$api.slime.settings.get("jsh.java.home") + "/bin/java",
-						"-version",
-						mode
-					);
-					if (status) throw new Error(
-						"Error determining Java version for loader; exit status " + status
-						+ " stdout: " + mode.output
-						+ " stderr: " + mode.err
-					);
-					var pattern = /\"(.+)\"/;
-					var oneDotPattern = /^1\.(.*)\./;
-					var majorVersionPattern = /^(\d+)\./;
-					var version;
-					var majorVersion;
-					mode.err.split("\n").forEach(function(line) {
-						var match = pattern.exec(line);
-						if (match) version = match[1];
-					});
-					if (!version) throw new Error("Could not detect Java version for loader.");
-					if (oneDotPattern.test(version)) {
-						majorVersion = Number(oneDotPattern.exec(version)[1]);
-					} else if (majorVersionPattern.test(version)) {
-						majorVersion = Number(majorVersionPattern.exec(version)[1])
-					}
-					$api.debug("jsh.java.home major version detected: [" + majorVersion + "]");
-					return majorVersion;
-				}
-			}
-		)();
+		//var loaderMajorVersion = jshLoaderJavaMajorVersion;
 
-		var hasJavaPlatformModuleSystem = (function() {
+		var jshLoaderJavaHasJavaPlatformModuleSystem = (function() {
 			if ($api.slime.settings.get("jsh.java.home")) {
-				return jshJavaHomeMajorVersion > 8;
+				return jshLoaderJavaMajorVersion > 8;
 			} else {
 				var javaLangObjectClass = Packages.java.lang.Class.forName("java.lang.Object");
 				return typeof(javaLangObjectClass.getModule) == "function";
 			}
 		})();
 
-		if (hasJavaPlatformModuleSystem) {
+		if (jshLoaderJavaHasJavaPlatformModuleSystem) {
 			command.vm("--add-opens");
 			command.vm("java.base/java.lang=ALL-UNNAMED");
 			command.vm("--add-opens");
@@ -286,22 +289,15 @@
 			command.vm("--add-opens");
 			command.vm("jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED");
 
-			if (jshJavaHomeMajorVersion < 15) {
+			if (jshLoaderJavaMajorVersion < 15) {
 				command.vm("--add-opens");
 				command.vm("jdk.scripting.nashorn/jdk.nashorn.internal.runtime=ALL-UNNAMED");
 			}
 		}
 
-		function javaMajorVersionString(javaVersionProperty) {
-			if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
-			return javaVersionProperty.split(".")[0];
-		}
-
-		var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
-
 		(
 			function handleNashornDeprecation() {
-				if (javaMajorVersion > 8 && javaMajorVersion < 15) {
+				if (jshLoaderJavaMajorVersion > 8 && jshLoaderJavaMajorVersion < 15) {
 					command.systemProperty("nashorn.args", "--no-deprecation-warning");
 				}
 			}
@@ -309,26 +305,24 @@
 
 		var _urls = [];
 
-		if (shell.rhino) {
+		if (loaderRhino) {
 			//	TODO	possibly redundant with some code in launcher.js; examine and think through
-			$api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(shell.rhino).local());
-			for (var i=0; i<shell.rhino.length; i++) {
-				_urls.push(shell.rhino[i]);
+			$api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(loaderRhino).local());
+			for (var i=0; i<loaderRhino.length; i++) {
+				_urls.push(loaderRhino[i]);
 			}
 		}
 
-		$api.debug("javaMajorVersion = " + javaMajorVersion + " jshJavaHomeMajorVersion = " + jshJavaHomeMajorVersion);
-		var loaderMajorVersion = (typeof(jshJavaHomeMajorVersion) != "undefined") ? jshJavaHomeMajorVersion : javaMajorVersion;
-		if (shell.nashorn && loaderMajorVersion >= 15) {
+		if (shell.libraries.nashorn && jshLoaderJavaMajorVersion >= 15) {
 			//	TODO	possibly redundant with some code in launcher.js; examine and think through
 			// $api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(shell.rhino).local());
-			for (var i=0; i<shell.nashorn.length; i++) {
-				_urls.push(shell.nashorn[i]);
+			for (var i=0; i<shell.libraries.nashorn.length; i++) {
+				_urls.push(shell.libraries.nashorn[i]);
 			}
 		}
 
 		if ($api.slime.settings.get("jsh.engine") == "graal") {
-			if (javaMajorVersion < 17) {
+			if (jshLoaderJavaMajorVersion < 17) {
 				Packages.java.lang.System.err.println("GraalVM cannot be launched by a launcher running a pre-17 Java VM.");
 				Packages.java.lang.System.exit(1);
 			}
@@ -367,7 +361,7 @@
 				Packages.java.lang.System.exit(1);
 			}
 		} else if (scriptDebugger == "rhino") {
-			if (!shell.rhino) {
+			if (!loaderRhino) {
 				Packages.java.lang.System.err.println("Rhino engine not present, but Rhino debugger specified. Exiting.");
 				Packages.java.lang.System.exit(1);
 			}
@@ -400,8 +394,7 @@
 		})();
 		$api.slime.settings.sendPropertiesTo(command);
 
-		//	TODO	does not work if *our* major version is lower!
-		var compilerMajorVersion = (jshJavaHomeMajorVersion > javaMajorVersion) ? javaMajorVersion : jshJavaHomeMajorVersion;
+		var compilerMajorVersion = (jshLoaderJavaMajorVersion < jshLauncherJavaMajorVersion) ? jshLoaderJavaMajorVersion : jshLauncherJavaMajorVersion;
 		var _shellUrls = shell.shellClasspath({ source: compilerMajorVersion, target: compilerMajorVersion });
 		$api.debug("_shellUrls = " + _shellUrls);
 		for (var i=0; i<_shellUrls.length; i++) {
@@ -421,6 +414,7 @@
 		var classpath = new $api.jsh.Classpath(_urls);
 
 		var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
+
 		if (!engine) throw new Error("Specified engine [" + $api.slime.settings.get("jsh.engine") + "]" + " not found;"
 			+ " JSH_ENGINE=" + $api.shell.environment.JSH_ENGINE
 			+ " jsh.engine=" + Packages.java.lang.System.getProperty("jsh.engine")
@@ -461,6 +455,8 @@
 				command.systemProperty(passthrough[i], Packages.java.lang.System.getProperty(passthrough[i]));
 			}
 		}
+
+		if ($api.embed) return;
 
 		$api.debug("command = " + command);
 		var status = command.run();

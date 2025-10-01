@@ -5,33 +5,62 @@
 //	END LICENSE
 
 /**
- * The Java runtime extends the SLIME runtime to support Java-specific capabilities. Its methods are ordinarily not available to
- * Java-based SLIME embeddings directly.
+ * The Java runtime extends the SLIME runtime to support Java-specific capabilities.
  *
- * The SLIME Java runtime comes with two engine embeddings: one for the Rhino JavaScript engine provided by Mozilla, and one for the
- * Nashorn engine included with Java 8-14 (and available as a standalone library for Java 15 and up). The engine embeddings are
- * expressions that evaluate to an object. They provide different scope variables for implementing the embedding;
- * {@link slime.jrunscript.runtime.internal.rhino.Scope} for Rhino, and {@link slime.jrunscript.runtime.internal.nashorn.Scope} for
- * Nashorn.
+ * ## Configuring the runtime
  *
- * For each engine, two embeddings are included: a servlet-based embedding and an embedding that supports
- * `jsh`.
+ * The Java runtime configures the SLIME runtime by passing all environment variables starting with the (case-insensitive) prefix
+ * `SLIME_` to the runtime as {@link configuration | slime.runtime.scope.Deployment.configuration } parameters; all environment
+ * variable names will be converted to uppercase and the prefix will be stripped.
  *
- * If the underlying engine is Rhino, the {@link slime.runtime.Engine} implementation's `debugger` property is implemented in terms
- * of the Rhino debugger.
+ * So the environment:
+ *
+ * ```
+ * SLIME_FOO=bar
+ * slime_baz=bizzy
+ * EDITOR=vi
+ * ```
+ *
+ * would result in the configuration:
+ *
+ * ```
+ * { FOO: "bar", BAZ: "bizzy" }
+ * ```
+ *
  *
  * ## Changes to `$api`
  *
  * The Java runtime replaces the `Type.fromName` function of {@link slime.$api.mime.Export} with a version that uses the
  * `java.net.URLConnection` implementation to resolve MIME types unresolved by SLIME. See {@link slime.jrunscript.mime.FromName}.
+ *
+ * It adds a {@link slime.$api.jrunscript.Global.jrunscript | `$api.jrunscript`} property containing various Java-specific APIs.
+ *
+ * ## For contributors
+ *
+ * Implementation details can be found in the {@link slime.jrunscript.runtime.internal internal} namespace.
  */
 namespace slime.jrunscript.runtime {
+	export interface Scope {
+		$loader: slime.jrunscript.native.inonit.script.engine.Loader
+		$javahost: slime.jrunscript.runtime.$javahost
+		$bridge: slime.jrunscript.runtime.java.context.Engine
+	}
+
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			return fifty.global.jsh.unit.$slime;
 		//@ts-ignore
 		})(fifty);
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace mime {
 		//	TODO	the customized types should probably be moved to the `jrunscript` property added to the `$api` object,
@@ -315,7 +344,7 @@ namespace slime.jrunscript.runtime {
 			export type HistoricSupportedDescriptor = slime.resource.Descriptor | resource.Descriptor | resource.LoadedDescriptor | DeprecatedStreamDescriptor
 
 			/**
-			 * An object representing the mode of operation of {@link old.Resource} `write` operations.
+			 * An object representing the mode of operation of {@link old.Resource<any>} `write` operations.
 			 */
 			export interface WriteMode {
 				/**
@@ -345,7 +374,7 @@ namespace slime.jrunscript.runtime {
 	}
 
 	export interface $javahost {
-		debugger: slime.runtime.scope.$engine["debugger"]
+		debugger: slime.runtime.Engine["debugger"]
 		script: any
 		MetaObject: any
 		noEnvironmentAccess: any
@@ -452,12 +481,6 @@ namespace slime.jrunscript.runtime {
 	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
 	 */
 	export interface Exports extends slime.runtime.Exports {
-		/**
-		 * The Java implementation enhances the default {@link slime.$api.mime.Export} implementation in the same way as the
-		 * `$api.mime` implementation is enhanced; see the {@link slime.jrunscript.runtime | "Changes to `$api`"} section.
-		 */
-		mime: slime.runtime.Exports["mime"]
-
 		Resource: slime.runtime.Exports["Resource"] & {
 			/**
 			 * Creates a `Resource` which has additional capabilities beyond the SLIME runtime `Resource`.
@@ -480,13 +503,13 @@ namespace slime.jrunscript.runtime {
 			fifty: slime.fifty.test.Kit,
 		) {
 			const { verify, run } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 			const { $slime } = jsh.unit;
 
 			fifty.tests.exports.Resource = function() {
 				var file: slime.jrunscript.runtime.old.resource.Descriptor = fifty.$loader.source.get("expression.fifty.ts") as slime.jrunscript.runtime.old.resource.Descriptor;
 				var resource = new $slime.Resource({
-					type: $slime.mime.Type.parse("application/x.typescript"),
+					type: $api.mime.Type.parse("application/x.typescript"),
 					read: {
 						binary: function() {
 							return file.read.binary();
@@ -535,7 +558,7 @@ namespace slime.jrunscript.runtime {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { jsh } = fifty.global;
+			const { $api, jsh } = fifty.global;
 
 			const module = test.subject;
 
@@ -553,13 +576,13 @@ namespace slime.jrunscript.runtime {
 							if (!file) return null;
 							var type = (function() {
 								if (/\.jsh\.js$/.test(path)) {
-									return module.mime.Type("application", "x.jsh");
+									return $api.mime.Type("application", "x.jsh");
 								} else if (/\.js$/.test(path)) {
-									return module.mime.Type("application", "javascript");
+									return $api.mime.Type("application", "javascript");
 								} else if (/\.html$/.test(path)) {
-									return module.mime.Type("text", "html");
+									return $api.mime.Type("text", "html");
 								} else {
-									return module.mime.Type("application", "octet-stream");
+									return $api.mime.Type("application", "octet-stream");
 								}
 							})();
 							return {
@@ -716,6 +739,12 @@ namespace slime.$api.jrunscript {
 		jrunscript: {
 			io: slime.jrunscript.runtime.io.Exports
 		}
+
+		/**
+		 * The Java implementation enhances the default {@link slime.$api.mime.Export} implementation in the same way as the
+		 * `$api.mime` implementation is enhanced; see the {@link slime.jrunscript.runtime | "Changes to `$api`"} section.
+		 */
+		mime: slime.$api.mime.Export
 	}
 }
 
@@ -804,7 +833,6 @@ namespace slime.$api.jrunscript {
 	) {
 		const { $api, jsh } = fifty.global;
 
-		fifty.tests.manual = {};
 		fifty.tests.manual.issue22 = function() {
 			//	This test enables checking to see whether the stack trace emitted uses reasonable file names for files from the
 			//	SLIME runtime.

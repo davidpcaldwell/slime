@@ -76,6 +76,56 @@
 			}
 		)();
 
+		/** @type { slime.$api.fp.Exports["Partial"] } */
+		var Partial = {
+			from: {
+				loose: function(f) {
+					return function(p) {
+						return Maybe.from.value(f(p));
+					}
+				}
+			},
+			match: function(v) {
+				return function(p) {
+					var present = v.if(p);
+					return present ? Maybe.from.some(v.then(p)) : Maybe.from.nothing();
+				}
+			},
+			else: function(f) {
+				return function(partial) {
+					return function(p) {
+						var maybe = partial(p);
+						if (maybe.present) return maybe.value;
+						return f(p);
+					}
+				}
+			},
+			/** @type { slime.$api.fp.Exports["Partial"]["impure"] } */
+			impure: {
+				exception: function(nothing) {
+					return function(partial) {
+						return function(p) {
+							var maybe = partial(p);
+							if (!maybe.present) {
+								var error = nothing(p);
+								throw error;
+							}
+							return maybe.value;
+						}
+					}
+				},
+				old: {
+					exception: function(p) {
+						return function(t) {
+							var tried = p.try(t);
+							if (tried.present) return tried.value;
+							throw p.nothing(t);
+						}
+					}
+				}
+			}
+		};
+
 		var pipe = function() {
 			var items = Array.prototype.slice.call(arguments);
 			return function(v) {
@@ -98,13 +148,6 @@
 				Maybe: Maybe,
 				pipe: pipe
 			}
-		});
-
-		var impure = code.impure({
-			Maybe: Maybe,
-			pipe: pipe,
-			events: $context.events,
-			stream: stream.impure
 		});
 
 		var property = function(name) {
@@ -194,6 +237,23 @@
 			}
 		};
 
+		var mapping = (function() {
+			/** @type { slime.$api.fp.internal.mapping.Script } */
+			var script = $context.script("$api-fp-Mapping.js");
+			return script({
+				deprecate: $context.deprecate
+			});
+		})();
+
+		var impure = code.impure({
+			now: now_map,
+			Maybe: Maybe,
+			Partial: Partial,
+			pipe: pipe,
+			events: $context.events,
+			stream: stream.impure
+		});
+
 		$export({
 			identity: identity,
 			cast: {
@@ -215,8 +275,38 @@
 				if (o === null) return "null";
 				return typeof(o);
 			},
+			Mapping: mapping.Mapping,
+			returning: function(v) {
+				return function() {
+					return v;
+				};
+			},
+			mapAllTo: function(v) {
+				return function(p) {
+					return v;
+				}
+			},
+			split: function(functions) {
+				var entries = Object.entries(functions);
+				return function(p) {
+					var results = entries.map(function(entry) {
+						return [entry[0], functions[entry[0]](p)];
+					});
+					return Object.fromEntries(results);
+				}
+			},
 			pipe: pipe,
-			thunk: {
+			Thunk: {
+				memoize: function(f) {
+					/** @type { slime.$api.fp.Maybe<any> } */
+					var result = Maybe.from.nothing();
+					return function() {
+						if (!result.present) {
+							result = Maybe.from.some(f());
+						}
+						return result.value;
+					}
+				},
 				map: function(thunk) {
 					var functions = Array.prototype.slice.call(arguments,1);
 					return function() {
@@ -240,64 +330,6 @@
 						rv = map(rv);
 					});
 					return rv;
-				}
-			},
-			mapping: {
-				from: {
-					value: function(r) {
-						return function(p) {
-							return r;
-						}
-					},
-					thunk: function(f) {
-						return function(p) {
-							return f();
-						}
-					}
-				},
-				all: $context.deprecate(function(r) {
-					return function(p) {
-						return r;
-					}
-				}),
-				thunks: function(mapping) {
-					return function(p) {
-						return function() {
-							return mapping(p);
-						}
-					}
-				},
-				properties: function(definition) {
-					return function(p) {
-						/** @type { object } */
-						var rv = {};
-						for (var x in definition) {
-							rv[x] = definition[x](p);
-						}
-						return rv;
-					}
-				},
-				invocation: function(i) {
-					return i.mapping(i.argument);
-				}
-			},
-			returning: function(v) {
-				return function() {
-					return v;
-				};
-			},
-			mapAllTo: function(v) {
-				return function(p) {
-					return v;
-				}
-			},
-			split: function(functions) {
-				var entries = Object.entries(functions);
-				return function(p) {
-					var results = entries.map(function(entry) {
-						return [entry[0], functions[entry[0]](p)];
-					});
-					return Object.fromEntries(results);
 				}
 			},
 			Predicate: Predicate,
@@ -472,52 +504,7 @@
 				fromEntries: Object.fromEntries
 			},
 			Maybe: Maybe,
-			Partial: {
-				from: {
-					loose: function(f) {
-						return function(p) {
-							return Maybe.from.value(f(p));
-						}
-					}
-				},
-				match: function(v) {
-					return function(p) {
-						var present = v.if(p);
-						return present ? Maybe.from.some(v.then(p)) : Maybe.from.nothing();
-					}
-				},
-				else: function(c) {
-					return function(p) {
-						var maybe = c.partial(p);
-						if (maybe.present) return maybe.value;
-						return c.else(p);
-					}
-				},
-				/** @type { slime.$api.fp.Exports["Partial"]["impure"] } */
-				impure: {
-					exception: function(nothing) {
-						return function(partial) {
-							return function(p) {
-								var maybe = partial(p);
-								if (!maybe.present) {
-									var error = nothing(p);
-									throw error;
-								}
-								return maybe.value;
-							}
-						}
-					},
-					old: {
-						exception: function(p) {
-							return function(t) {
-								var tried = p.try(t);
-								if (tried.present) return tried.value;
-								throw p.nothing(t);
-							}
-						}
-					}
-				}
-			},
+			Partial: Partial,
 			switch: function(cases) {
 				return function(p) {
 					for (var i=0; i<cases.length; i++) {

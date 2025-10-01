@@ -4,6 +4,12 @@
 //
 //	END LICENSE
 
+/**
+ * The SLIME runtime I/O module provides input and output constructs based on Java streams.
+ *
+ * Many of the constructs, including {@link slime.jrunscript.runtime.io.Charset Charset}, parallel the Java constructs with the
+ * same names.
+ */
 namespace slime.jrunscript.runtime.io {
 	export interface Context {
 		_streams: slime.jrunscript.native.inonit.script.runtime.io.Streams
@@ -152,15 +158,12 @@ namespace slime.jrunscript.runtime.io {
 	//@ts-ignore
 	)(fifty);
 
-	export interface PipeEvents {
-		progress: number
-		done: void
-	}
-
 	/**
 	 * A stream from which bytes may be read.
 	 */
 	export interface InputStream {
+		//	TODO	rename to read, we have overloaded content to represent a tree
+
 		content: {
 			string: {
 				simple: (charset: Charset) => string
@@ -222,8 +225,15 @@ namespace slime.jrunscript.runtime.io {
 	//@ts-ignore
 	)(fifty);
 
+	export interface PipeEvents {
+		readProgress: number
+		writeProgress: number
+		done: void
+	}
+
 	export interface InputStream {
 		pipe: {
+			simple: $api.fp.impure.Effect<OutputStream>
 			all: $api.fp.world.Means<OutputStream, PipeEvents>
 		}
 	}
@@ -239,10 +249,12 @@ namespace slime.jrunscript.runtime.io {
 			fifty.tests.exports.InputStream.object.pipe = fifty.test.Parent();
 
 			fifty.tests.exports.InputStream.object.pipe.all = function() {
-				var captor = fifty.$api.Events.Captor({
-					progress: void(0),
+				var shape: PipeEvents = {
+					readProgress: void(0),
+					writeProgress: void(0),
 					done: void(0)
-				});
+				}
+				var captor = fifty.$api.Events.Captor(shape);
 
 				const bytes = [0,1,2,3];
 
@@ -260,10 +272,12 @@ namespace slime.jrunscript.runtime.io {
 
 				verify(_output.toByteArray().length).evaluate(Number).is(4);
 
-				verify(captor).events.length.is(2);
-				verify(captor).events[0].type.is("progress");
+				verify(captor).events.length.is(3);
+				verify(captor).events[0].type.is("readProgress");
 				verify(captor).events[0].detail.evaluate(Number).is(4);
-				verify(captor).events[1].type.is("done");
+				verify(captor).events[1].type.is("writeProgress");
+				verify(captor).events[1].detail.evaluate(Number).is(4);
+				verify(captor).events[2].type.is("done");
 			}
 		}
 	//@ts-ignore
@@ -279,7 +293,7 @@ namespace slime.jrunscript.runtime.io {
 			//	TODO	would like to deprecate this, see above, but this is used in other places to retrieve native Java byte
 			//			arrays to create new streams. What we need is a stream implementation backed by an `ArrayBuffer`, and then
 			//			callers can switch to that.
-			array: () => slime.jrunscript.Array<byte>
+			array: () => slime.jrunscript.Array<slime.jrunscript.native.java.lang.Byte>
 		}
 
 		/**
@@ -298,6 +312,11 @@ namespace slime.jrunscript.runtime.io {
 	 * A stream to which bytes may be written.
 	 */
 	export interface OutputStream {
+		pipe: {
+			simple: $api.fp.impure.Effect<InputStream>
+			all: $api.fp.world.Means<InputStream, PipeEvents>
+		}
+
 		/**
 		 * Returns a character output stream that writes to this stream.
 		 */
@@ -490,40 +509,6 @@ namespace slime.jrunscript.runtime.io {
 
 	export type OldWriter = Omit<Writer, "line">
 
-	export interface Buffer {
-		/**
-		 * Closes the buffer so that no additional bytes can be written to it.  Until the buffer is closed, an attempt to read from
-		 * it cannot reach the end of the stream, but will instead block waiting for more input.
-		 */
-		close: () => void
-
-		/**
-		 * A stream which inserts bytes written to it into this buffer.
-		 */
-		writeBinary: () => OutputStream
-
-		/**
-		 * A stream which inserts characters written to it into this buffer.
-		 */
-		writeText: () => Writer
-
-		/**
-		 * A stream from which the bytes in this buffer may be read.
-		 */
-		readBinary: () => InputStream
-
-		/**
-		 * A stream from which the characters in this buffer may be read.
-		 */
-		readText: () => Reader
-	}
-
-	export interface Exports {
-		ArrayBuffer: {
-			read: (stream: InputStream) => ArrayBuffer
-		}
-	}
-
 	type BinaryCopyMode = {
 		onFinish: (i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream) => void
 	}
@@ -593,6 +578,34 @@ namespace slime.jrunscript.runtime.io {
 	//@ts-ignore
 	)(Packages,fifty);
 
+	export interface Buffer {
+		/**
+		 * Closes the buffer so that no additional bytes can be written to it.  Until the buffer is closed, an attempt to read from
+		 * it cannot reach the end of the stream, but will instead block waiting for more input.
+		 */
+		close: () => void
+
+		/**
+		 * A stream which inserts bytes written to it into this buffer.
+		 */
+		writeBinary: () => OutputStream
+
+		/**
+		 * A stream which inserts characters written to it into this buffer.
+		 */
+		writeText: () => Writer
+
+		/**
+		 * A stream from which the bytes in this buffer may be read.
+		 */
+		readBinary: () => InputStream
+
+		/**
+		 * A stream from which the characters in this buffer may be read.
+		 */
+		readText: () => Reader
+	}
+
 	export interface Exports {
 		/**
 		 * Creates a buffer to which bytes can be written, and later read.
@@ -645,16 +658,7 @@ namespace slime.jrunscript.runtime.io {
 				});
 				writer.write("bar!");
 				writer.close();
-				var read = b.readBinary();
-				var text = test.subject.Reader.stream({
-					stream: read,
-					encoding: {
-						charset: utf8,
-						newline: "\n"
-					}
-				})
-				// var text = utf8.read(read);
-				var string = text.asString();
+				var string = b.readBinary().content.string.simple(utf8);
 				verify(string).is("bar!");
 			}
 		}

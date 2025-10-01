@@ -8,30 +8,35 @@
  * `jsh` is a shell environment which allows JavaScript programs to be written which execute in the Java virtual machine and thus
  * can interact with Java platform classes and libraries written in Java or other JVM languages.
  *
- * `jsh` scripts have access to the global `jsh` object, which is of type {@link Global}.
+ * The easiest way to run `jsh` is via the top-level `jsh` script:
+ * ```sh
+ * ./jsh [-<JVM-argument> [...-<JVM-argument>]] <path-to-script> [arguments]
+ * ```
  *
- * ## Configuration
+ * ## Provided APIs
  *
- * See [running `jsh`](../src/jrunscript/jsh/launcher/api.html) for information about how to run scripts using `jsh` and configure the
- * shell.
+ * The APIs available to all SLIME scripts are the SLIME runtime, along with `jrunscript` APIs, available as
+ * {@link slime.$api.jrunscript.Global | `$api`}, and the `jsh` API, available as {@link slime.jsh.Global | `jsh`}.
  *
  * ## Execution models
  *
- * `jsh` supports three execution models: an "unbuilt" shell executed directly from source, a "built" shell in which `jsh`
- * components are preprocessed and deployed to support faster startup, and a "packaged" shell in which a `jsh` script is packaged
- * into a standalone executable JAR file.
+ * `jsh` supports three execution models:
+ *
+ * * an "unbuilt" shell executed directly from source
+ * * a "built" shell in which `jsh` components are preprocessed and deployed to support faster startup
+ * * a "packaged" shell in which a `jsh` script is packaged into a standalone executable JAR file.
+ * * a "remote" shell allowing a `jsh` script to be executed with no installation at all, via an online bootstrapping script
  *
  * ### Unbuilt shells
  *
  * Unbuilt shells can be executed from a source checkout (or over the internet, directly from GitHub). They are executed by
- * invoking the `bash` launcher at `./jsh` in the source tree. Currently, only macOS and Linux are supported.
+ * invoking the `bash` launcher at `./jsh` in the source tree. Currently, only macOS and Linux (including WSL2) are supported.
  *
  * ### Built shells
  *
- * A built shell can be created by executing the `jrunscript/jsh/etc/build.jsh.js` script.
- *
- * In built shells, the `bash` launcher is located at `./jsh.bash` in the build directory, and the native launcher (if specified)
- * is located at `./jsh`. Both launchers expect the Java binaries to be in the `PATH`.
+ * A built shell can be created by executing the `jrunscript/jsh/etc/build.jsh.js` script. They create an installation with a main
+ * script at `./jsh.bash`, which can be executed similarly to the unbuilt launcher, and also requires `bash`, and therefore macOS
+ * or Linux.
  *
  * ### Packaged applications
  *
@@ -40,6 +45,26 @@
  * ### Remote shells
  *
  * TODO write documentation
+ *
+ * ## Configuration
+ *
+ * ### Settings
+ *
+ * <table>
+ * <thead>
+ * <tr><th colspan="2">Setting name</th><th rowspan="2">Description</th></tr>
+ * <tr><th>System environment variable</th><th>Java system property</th></tr>
+ * </thead>
+ * <tbody>
+ * <tr><td><code>JSH_LAUNCHER_COMMAND_DEBUG</code></td><td>(none)</td><td>Enables debugging within the shell script or native system
+ * portion of the <code>jsh</code> launcher</td></tr>
+ * <tr><td><code>JSH_LAUNCHER_JDK_HOME</code></td><td>(none)</td><td>Specifies a Java Development Kit that <code>jsh</code> should
+ * use to execute the Java-based portion of the <code>jsh</code> launcher</td></tr>
+ * </tbody>
+ * </table>
+ *
+ * See the older [Running `jsh`](../src/jrunscript/jsh/launcher/api.html) page for (possibly outdated) additional information about
+ * how to run scripts using `jsh` and configure the shell.
  *
  * ## Application types
  *
@@ -57,6 +82,131 @@
  *
  */
 namespace slime.jsh {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.setting = fifty.test.Parent();
+
+			var src = fifty.jsh.file.relative("../..");
+
+			var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+
+			//	TODO	JSH_LAUNCHER_COMMAND_DEBUG
+			fifty.tests.setting.JSH_LAUNCHER_COMMAND_DEBUG = function() {
+				fifty.run(function unbuilt() {
+					var nodebug = run({
+						command: "bash",
+						arguments: [
+							$api.fp.now(src, jsh.file.Location.directory.relativePath("jsh")).pathname,
+							$api.fp.now(src, jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")).pathname,
+						],
+						stdio: {
+							output: "string",
+							error: "string"
+						}
+					});
+
+					verify(nodebug).stdio.error.is("");
+
+					var debug = run({
+						command: "bash",
+						arguments: [
+							$api.fp.now(src, jsh.file.Location.directory.relativePath("jsh")).pathname,
+							$api.fp.now(src, jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")).pathname,
+						],
+						environment: function(was) {
+							return $api.Object.compose(
+								was,
+								{
+									JSH_LAUNCHER_COMMAND_DEBUG: "1"
+								}
+							)
+						},
+						stdio: {
+							output: "string",
+							error: "string"
+						}
+					});
+
+					jsh.shell.console("stderr = [\n" + debug.stdio.error + "\n]");
+
+					verify(debug).stdio.error.evaluate(function(stderr) {
+						return stderr.split("\n")[0]
+					}).is("++ uname");
+				});
+
+				//	TODO built.bash?, built.native?, packaged?, remote?
+			}
+
+			fifty.tests.setting.JSH_LAUNCHER_JDK_HOME = function() {
+				var fixtures: slime.jsh.wf.test.Fixtures = (function() {
+					var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
+					return script()(fifty);
+				})();
+
+				var repository = fixtures.old.clone({
+					src: fifty.jsh.file.relative("../.."),
+				});
+
+				var cloneSrc = repository.directory.pathname.os.adapt();
+
+				//	TODO	unbuilt shell only
+				var jdk = $api.fp.now(
+					cloneSrc,
+					jsh.file.Location.directory.relativePath("local/jdk/17")
+				);
+				if (!$api.fp.now(
+					jdk,
+					jsh.file.Location.directory.exists.simple
+				)) {
+					run({
+						command: "bash",
+						arguments: [
+							$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
+							"--add-jdk-17"
+						]
+					});
+				}
+
+				fifty.run(function unbuilt() {
+					var output = run({
+						command: "bash",
+						arguments: [
+							$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
+							$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")).pathname,
+						],
+						environment: function(was) {
+							return $api.Object.compose(was, {
+								JSH_LAUNCHER_JDK_HOME: jdk.pathname
+							});
+						},
+						stdio: {
+							output: "string"
+						}
+					});
+
+					var json = JSON.parse(output.stdio.output);
+					verify(json).properties["java.home"].evaluate(String).is(
+						//	TODO	find a way to avoid this rigamarole of converting to Java, canonical path, etc.; what parts can
+						//			the new Location implementation do, what can the native Java filesystem implementation do, and
+						//			so forth
+						//
+						//			The test case is that on macOS one of these is /var, and the other is /private/var, and /var
+						//			symlinks to /private/var on that platform
+						String(jsh.file.Pathname(jdk.pathname).java.adapt().getCanonicalPath())
+					)
+				});
+
+				//	TODO	built.bash?, built.native?, packaged?, remote
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	namespace db.jdbc {
 		interface Exports {
 			//	interface is built out via Declaration Merging (https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
@@ -107,19 +257,37 @@ namespace slime.jsh {
 }
 
 /**
- * ## The `jsh` command
+ * ## Invoking the `jsh` shell
  *
- * A `jsh` script begins with the `jsh` program, which determines which Java needs to be used (installing the default JDK if
- * necessary).
+ * There are various ways to invoke the `jsh` shell as of this writing.
+ *
+ * For unbuilt shells, we use the top-level `jsh` script provided with the repository. The script determines which Java needs to be
+ * used, installing the default JDK if necessary, and then runs the unbuilt shell.
+ *
+ * For built shells with no native launcher, we use the `jsh.bash` script that is installed to the build directory. It ultimately
+ * comes from `jrunscript/jsh/launcher/jsh.bash`.
+ *
+ * For built shells with a native launcher, we use the `jsh` program that is installed to the build directory.
  *
  * It then runs the `jsh` _launcher_.
  *
  * ## The `jsh` launcher
  *
- * The `jsh` launcher is a `jrunscript` script that starts an engine-specific Java program that is capable of creating a `jsh` shell
- * and executing the indicated script inside it. Upon execution, it configures and starts the `jsh` _loader_ (see below).
+ * The `jsh` launcher is responsible for executing a `jrunscript` script that starts an engine-specific Java program that is
+ * capable of creating a `jsh` shell and executing the indicated script inside it. Upon execution, it configures and starts the
+ * `jsh` _loader_ (see below).
  *
  * The launcher consists of the following components.
+ *
+ * ### Unbuilt shells only
+ *
+ * #### The `jsh` shell script
+ *
+ * ### Built shells only
+ *
+ * #### The `jsh.bash` shell script and `jsh` native launcher
+ *
+ * TODO
  *
  * ### `rhino/jrunscript/api.js`
  *
@@ -193,10 +361,10 @@ namespace slime.jsh {
  * ## Development Tools
  *
  * To execute a script in an ad-hoc built shell, execute:
- * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js <script> [arguments]`
+ * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js [--launcherCommandDebug] [--launcherScriptDebug] [--rhinoDebug] <script> [arguments]`
  *
  * To execute a script in an ad-hoc packaged shell, execute:
- * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js -packaged <script> [arguments]`
+ * `./jsh jrunscript/jsh/test/tools/run-in-built-shell.jsh.js [--launcherCommandDebug] [--launcherScriptDebug]  [--rhinoDebug] --packaged <script> [arguments]`
  *
  * ## Testing Tools
  *
@@ -205,5 +373,14 @@ namespace slime.jsh {
  * global {@link slime.fifty.test.Kit | `fifty`} object.
  */
 namespace slime.jsh.internal {
-
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.setting);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }

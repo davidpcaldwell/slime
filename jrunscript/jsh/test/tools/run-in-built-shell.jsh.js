@@ -12,71 +12,81 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var parameters = jsh.script.getopts({
-			options: {
-				packaged: false,
-				launcherDebug: false
-			},
-			unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
-		});
+		jsh.script.cli.main(
+			$api.fp.pipe(
+				jsh.script.cli.option.boolean({ longname: "packaged" }),
+				jsh.script.cli.option.boolean({ longname: "launcherCommandDebug" }),
+				jsh.script.cli.option.boolean({ longname: "launcherScriptDebug" }),
+				jsh.script.cli.option.boolean({ longname: "rhinoDebug" }),
+				function(p) {
+					var JSH_HOME = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					//	TODO	locate jrunscript using Java home
+					//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript.old
+					var args = [];
+					//				if (parameters.options.rhino) {
+					//					args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
+					//				} else if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
+					//					args.push("-Djsh.engine.rhino.classpath=" + Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
+					//				}
+					(
+						function() {
+							var SLIME = jsh.shell.jsh.src;
+							args.push(SLIME.getRelativePath("jsh"));
+							// args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
+							// args.push("jsh");
+							args.push(SLIME.getRelativePath("jrunscript/jsh/etc/build.jsh.js"));
+							args.push(JSH_HOME);
+							args.push("-notest");
+							args.push("-nodoc");
+							// TODO: Rhino; other parameters jsh/test/plugin.jsh.js
+							jsh.shell.run({
+								command: "bash",
+								arguments: args
+							});
+							jsh.shell.console("Completed build.");
 
-		var JSH_HOME = jsh.shell.TMPDIR.createTemporary({ directory: true });
-		//	TODO	locate jrunscript using Java home
-		//	TODO	add these APIs for properties, etc., to jsh.shell.jrunscript
-		var args = [];
-		//				if (parameters.options.rhino) {
-		//					args.push("-Djsh.build.rhino.jar=" + parameters.options.rhino);
-		//				} else if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
-		//					args.push("-Djsh.engine.rhino.classpath=" + Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"));
-		//				}
-		(
-			function() {
-				var SLIME = jsh.shell.jsh.src;
-				args.push(SLIME.getRelativePath("jsh"));
-				// args.push(SLIME.getRelativePath("rhino/jrunscript/api.js"));
-				// args.push("jsh");
-				args.push(SLIME.getRelativePath("jrunscript/jsh/etc/build.jsh.js"));
-				args.push(JSH_HOME);
-				args.push("-notest");
-				args.push("-nodoc");
-				// TODO: Rhino; other parameters jsh/test/plugin.jsh.js
-				jsh.shell.run({
-					command: "bash",
-					arguments: args
-				});
-				jsh.shell.console("Completed build.");
-
-				var environment = Object.assign({}, jsh.shell.environment, (parameters.options.launcherDebug) ? {"JSH_LAUNCHER_DEBUG": "true"}: {});
-				if (!parameters.options.packaged) {
-					jsh.shell.console("Running in built shell ...");
-					jsh.shell.jsh({
-						shell: JSH_HOME,
-						script: jsh.file.Pathname(parameters.arguments[0]).file,
-						arguments: parameters.arguments.slice(1)
-					});
-					jsh.shell.console("Ran in built shell.");
-				} else {
-					//	TODO	revisit alternatives to the below
-					var rhino = true;
-					var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("packaged.jar");
-					var script = parameters.arguments.shift();
-					jsh.shell.jsh({
-						shell: JSH_HOME,
-						script: jsh.shell.jsh.src.getFile("jrunscript/jsh/tools/package.jsh.js"),
-						arguments: ([
-							"-script", script,
-							"-to", to
-						]).concat( (!rhino) ? ["-norhino"] : [] )
-					});
-					//@ts-ignore
-					jsh.shell.java({
-						jar: to.file,
-						arguments: parameters.arguments,
-						environment: environment
-					});
+							var environment = $api.Object.compose(
+								jsh.shell.environment,
+								(p.options.launcherCommandDebug) ? {"JSH_LAUNCHER_COMMAND_DEBUG": "true"}: {},
+								(p.options.launcherScriptDebug) ? {"JSH_LAUNCHER_DEBUG": "true"}: {},
+								(p.options.rhinoDebug) ? { JSH_DEBUG_SCRIPT: "rhino" } : { JSH_DEBUG_SCRIPT: null }
+							);
+							if (!p.options.packaged) {
+								jsh.shell.console("Running in built shell ...");
+								//	TODO	note that this uses the old API for built shells
+								//			the newer one is the Intention one
+								jsh.shell.jsh({
+									shell: JSH_HOME,
+									script: jsh.file.Pathname(p.arguments[0]).file,
+									arguments: p.arguments.slice(1),
+									environment: environment
+								});
+								jsh.shell.console("Ran in built shell.");
+							} else {
+								//	TODO	revisit alternatives to the below
+								var rhino = true;
+								var to = jsh.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("packaged.jar");
+								var script = p.arguments.shift();
+								jsh.shell.jsh({
+									shell: JSH_HOME,
+									script: jsh.shell.jsh.src.getFile("jrunscript/jsh/tools/package.jsh.js"),
+									arguments: ([
+										"-script", script,
+										"-to", to
+									]).concat( (!rhino) ? ["-norhino"] : [] )
+								});
+								//@ts-ignore
+								jsh.shell.java({
+									jar: to.file,
+									arguments: p.arguments,
+									environment: environment
+								});
+							}
+						}
+					)();
 				}
-			}
-		)();
+			)
+		)
 	}
 //@ts-ignore
 )($api,jsh);

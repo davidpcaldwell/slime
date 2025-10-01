@@ -151,7 +151,7 @@
 
 		/**
 		 *
-		 * @param { { name: string } } [p]
+		 * @param { { parent: slime.fifty.test.internal.test.AsynchronousScope, name: string } } [p]
 		 * @returns { slime.fifty.test.internal.test.AsynchronousScope }
 		 */
 		var AsynchronousScope = function recurse(p) {
@@ -159,8 +159,11 @@
 			$context.promises.console.log("creating scope", name);
 			var nextChild = 0;
 
+			/** @type { slime.definition.test.promises.Registry } */
 			var registry;
-			var promises;
+
+			/** @type { slime.fifty.test.internal.test.AsynchronousSubscope[] } */
+			var subscopes = [];
 
 			return {
 				test: {
@@ -176,13 +179,13 @@
 				start: function() {
 					//	It appears need to launch a null promise here to trigger the flow in case there are no other asynhronous
 					//	promises involved
-					var executor = function promises(resolve,reject) {
+					var executor = function nullPromise(resolve,reject) {
 						resolve(void(0));
 					};
 					executor.toString = function() {
 						return "Null promise for AsynchronousScope <" + name + ">";
 					}
-					promises = new Promise(executor);
+					var nullPromise = new Promise(executor);
 
 					$context.promises.console.log("creating registry", name);
 					registry = $context.promises.Registry({ name: name });
@@ -190,17 +193,19 @@
 					$context.promises.console.log("created registry", name);
 				},
 				then: function(v) {
-					promises = promises.then(v);
-					return promises;
+					subscopes.push(v);
 				},
-				now: function() {
-					return promises;
+				subscopes: function() {
+					return subscopes;
 				},
 				wait: function() {
 					return registry.wait();
 				},
 				child: function() {
-					return recurse({ name: name + "/" + String(nextChild++) });
+					return recurse({ parent: this, name: name + "/" + String(nextChild++) });
+				},
+				external: function(promise) {
+					registry.external(promise);
 				}
 			}
 		};
@@ -242,6 +247,7 @@
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
 		var executeTestScope = function(ascope,name,execute) {
+			debugger;
 			if (ascope) ascope.test.log("async tests: starting scope", name, ascope.test.depth());
 			if (ascope) ascope.start();
 			if (ascope) ascope.test.setName(name);
@@ -272,21 +278,53 @@
 			}
 
 			if (ascope) {
-				var executor = function(resolve,reject) {
+				var executor = function synchronous(resolve,reject) {
 					execute();
+					ascope.test.log("Resolving executeTestScope<" + name + ">");
 					resolve(void(0));
 				};
 				executor.toString = function() {
 					return "executeTestScope <" + name + ">";
 				}
 
-				return new $context.promises.Promise(executor).then(function(executed) {
-					ascope.test.log("async tests: waiting for scope", name);
-					return ascope.wait();
-				}).then(function(done) {
-					$context.promises.console.log("async tests: computing after() for", name);
-					return Promise.resolve(after());
+				ascope.test.log("async tests: creating promise for scope", name);
+				var rv = new $context.promises.Promise(executor)
+					.then(function(executed) {
+						ascope.test.log("async tests: waiting for scope synchronous execution", name);
+						return ascope.wait();
+					})
+				;
+
+				ascope.subscopes().forEach(function(subscope) {
+					rv = rv.then(function(ignore) {
+						return new $context.promises.NativePromise(
+							function(resolve,reject) {
+								subscope().then(function forwardTestResult(success) {
+									resolve(success);
+								})
+							}
+						);
+					});
 				});
+
+				// rv = $context.promises.NativePromise.prototype.then.call(
+				// 	rv,
+				// 	function done(done) {
+				// 		$context.promises.console.log("async tests: computing after() for", name);
+				// 		return Promise.resolve(after());
+				// 	}
+				// )
+				debugger;
+				rv = rv
+					.then(function done(done) {
+						$context.promises.console.log("async tests: computing after() for", name);
+						return Promise.resolve(after());
+					})
+				;
+
+				ascope.external(rv);
+
+				return rv;
 			} else {
 				execute();
 				return toResult(after());
@@ -492,6 +530,7 @@
 						if (ascopes) ascopes.pop();
 						return rv;
 					};
+
 					if (ascopes) {
 						if ($context.promises) $context.promises.console.log("ascope", ascopes.current().test.depth(), ascopes.current());
 						ascopes.current().then(run);
@@ -565,6 +604,34 @@
 								}
 							}
 						)
+					}
+				},
+				spy: {
+					/**
+					 * @template { any } T
+					 * @template { any[] } P
+					 * @template { any } R
+					 * @template { slime.external.lib.es5.Function<T,P,R> } F
+					 * @param { F } f
+					 * @returns { { function: F, invocations: slime.fifty.test.spy.Invocation<F>[] } }
+					 */
+					//	sometimes when this is embedded in another project, an error results here, so we ignore it
+					//@ts-ignore
+					create: function(f) {
+						/** @type { slime.fifty.test.spy.Invocation<F>[] } */
+						var recorded = [];
+						return {
+							function: /** @type { F } */(function() {
+								/** @tyoe { T } */
+								var target = this;
+								var args = Array.prototype.slice.call(arguments);
+								var rv = f.apply(this, arguments);
+								var invocation = /** @type { slime.fifty.test.spy.Invocation<F> }*/({ target: target, arguments: args, returned: rv });
+								recorded.push(invocation);
+								return rv;
+							}),
+							invocations: recorded
+						};
 					}
 				},
 				tests: tests,
@@ -711,13 +778,13 @@
 		$export({
 			run: function(p/*loader,scopes,path,part*/) {
 				var ascopes = ($context.promises) ? AsynchronousScopes(
-					AsynchronousScope({ name: "(top)" })
+					AsynchronousScope({ parent: null, name: "(top)" })
 				) : void(0);
 				return load(ascopes,p.loader,p.scopes,p.path).run(p.part);
 			},
 			list: function(p/*loader,scopes,path*/) {
 				var ascopes = ($context.promises) ? AsynchronousScopes(
-					AsynchronousScope({ name: "(top)" })
+					AsynchronousScope({ parent: null, name: "(top)" })
 				) : void(0);
 				return load(ascopes,p.loader,p.scopes,p.path).list();
 			}

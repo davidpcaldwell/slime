@@ -35,34 +35,26 @@
 		}
 
 		var systems = {
-			/** @type { slime.jrunscript.file.internal.java.System } */
+			/** @type { slime.jrunscript.file.internal.java.internal.System } */
 			unix: {
 				separator: {
 					file: "/"
 				},
 				isAbsolute: function isAbsolute(string) {
-					if (typeof(string) == "undefined") throw new TypeError("'string' must not be undefined.")
-					if (string.substring(0,1) != "/") {
-						return false;
-					} else {
-						return true;
-					}
+					if (typeof(string) == "undefined") throw new TypeError("'string' must not be undefined.");
+					return string.length == 0 || string.substring(0,1) == "/";
 				},
 				isRootPath: function(string) {
 					return ( string == "" || string == "/" ) || (string.substring(0,2) == "//" && string.substring(2).indexOf("/") == -1);
 				}
 			},
-			/** @type { slime.jrunscript.file.internal.java.System } */
+			/** @type { slime.jrunscript.file.internal.java.internal.System } */
 			windows: {
 				separator: {
 					file: "\\"
 				},
 				isAbsolute: $api.fp.pipe(fixWindowsForwardSlashes, function(string) {
-					if (string[1] == ":" || string.substring(0,2) == "\\\\") {
-						return true;
-					} else {
-						return false;
-					}
+					return (string[1] == ":" || string.substring(0,2) == "\\\\");
 				}),
 				isRootPath: $api.fp.pipe(fixWindowsForwardSlashes, function(string) {
 					if (string.substring(1,2) == ":") {
@@ -93,14 +85,14 @@
 		 *
 		 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _peer
 		 */
-		var systemForFilesystem = function(_peer) {
+		var systemForSlimeJavaFilesystem = function(_peer) {
 			var separator = String(_peer.getPathnameSeparator());
 			return systemForPathnameSeparator(separator);
 		}
 
 		/**
 		 *
-		 * @param { slime.jrunscript.file.internal.java.System } system
+		 * @param { slime.jrunscript.file.internal.java.internal.System } system
 		 * @returns
 		 */
 		function trailingSeparatorRemover(system) {
@@ -128,23 +120,22 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _peer
+		 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _fs
 		 */
-		function nodeCreator(_peer) {
-			var os = systemForFilesystem(_peer);
+		function slimeJavaNodeCreator(_fs) {
+			var system = systemForSlimeJavaFilesystem(_fs);
+
 			/**
 			 *
 			 * @param { string } path
 			 */
-			function createNode(path) {
-				if (os.isAbsolute(path)) {
-					path = spi.canonicalize(path, os.separator.file);
-					return _peer.getNode(path);
+			return function createNode(path) {
+				if (system.isAbsolute(path)) {
+					return _fs.getNode(spi.canonicalize(path, system.separator.file));
 				} else {
-					return _peer.getNode(new Packages.java.io.File(path));
+					return _fs.getNode(new Packages.java.io.File(path));
 				}
 			}
-			return createNode;
 		}
 
 		var FilesystemProvider = (
@@ -154,7 +145,7 @@
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem } _peer
 			 */
 			function(_peer) {
-				var os = systemForFilesystem(_peer);
+				var os = systemForSlimeJavaFilesystem(_peer);
 
 				var separators = {
 					pathname: String(_peer.getPathnameSeparator()),
@@ -164,7 +155,7 @@
 
 				this.separators = separators;
 
-				var newPeer = nodeCreator(_peer);
+				var peerFromPath = slimeJavaNodeCreator(_peer);
 
 				var peerToString = function(peer) {
 					return String( peer.getScriptPath() );
@@ -173,16 +164,19 @@
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["newPeer"] } */
 				this.newPeer = function this_newPeer(string) {
 					if (typeof(string) == "undefined") throw new TypeError("'string' must not be undefined.");
-					return newPeer(string);
+					return peerFromPath(string);
 				};
 
+				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["relative"] } */
 				this.relative = function relative(parent, relative) {
 					if (typeof(parent) == "undefined") throw new TypeError("'parent' must not be undefined.");
-					var folder = newPeer(parent);
+					var folder = peerFromPath(parent);
 					var _file = new Packages.java.io.File(folder.getHostFile(), relative);
 					return _peer.getNode(_file);
 				}
 
+				//	Was used in Cygwin implementation, keeping it around on the off chance that that or something like it is
+				//	resurrected for Cygwin and/or WSL
 				this.importPathname = function(pathname) {
 					throw new Error("Theorized to be unused, at least excluding Cygwin.");
 					//return new $context.Pathname({ filesystem: this, peer: peer.getNode( pathname.java.adapt() ) });
@@ -201,6 +195,8 @@
 				this.peerToString = peerToString;
 
 				this.isRootPath = os.isRootPath;
+
+				this.isAbsolutePath = os.isAbsolute;
 
 				/**
 				 *
@@ -245,21 +241,6 @@
 					}
 				}
 
-				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["getLastModified"] } */
-				this.getLastModified = function(peer) {
-					var modified = peer.getHostFile().lastModified();
-					if (typeof(modified) == "object") {
-						//	Nashorn treats it as object
-						modified = Number(String(modified));
-					}
-					return new Date( modified );
-				}
-
-				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["setLastModified"] } */
-				this.setLastModified = function(peer,date) {
-					peer.getHostFile().setLastModified( date.getTime() );
-				}
-
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["remove"] } */
 				this.remove = function(peer) {
 					peer["delete"]();
@@ -273,24 +254,47 @@
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["list"] } */
 				this.list = function(peer) {
-					return peer.list();
+					//	Can this be null?
+					var _array = peer.list();
+					if (_array === null) return null;
+					return $context.api.java.Array.adapt(_array);
 				};
 
-				this.posix = void(0);
+				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["getLastModified"] } */
+				this.getLastModified = function(peer) {
+					//	TODO	use java.nio here
+					var modified = peer.getHostFile().lastModified();
+					if (typeof(modified) == "object") {
+						//	Nashorn treats it as object
+						modified = Number(String(modified));
+					}
+					return new Date( modified );
+				}
 
-				var posix = _peer.isPosix();
+				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["setLastModified"] } */
+				this.setLastModified = function(peer,date) {
+					peer.getHostFile().setLastModified( date.getTime() );
+				}
 
-				if (posix) {
-					/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["posix"] } */
-					this.posix = {
+				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["posix"] } */
+				this.posix = (_peer.isPosix())
+					? {
 						/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["posix"]["attributes"] } */
 						attributes: {
 							get: function(peer) {
-								var rwe = function(set,r,w,e) {
+								/**
+								 *
+								 * @param { slime.jrunscript.native.java.util.Set<slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission> } set
+								 * @param { slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission } r
+								 * @param { slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission } w
+								 * @param { slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission } x
+								 * @returns { { read: boolean, write: boolean, execute: boolean } }
+								 */
+								var rwe = function(set,r,w,x) {
 									return {
 										read: set.contains(r),
 										write: set.contains(w),
-										execute: set.contains(e)
+										execute: set.contains(x)
 									}
 								};
 
@@ -328,8 +332,9 @@
 								);
 							}
 						}
-					};
-				}
+					}
+					: void(0)
+				;
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["temporary"] } */
 				this.temporary = function(peer,parameters) {
@@ -358,7 +363,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } java
-		 * @returns { slime.jrunscript.file.world.Filesystem }
+		 * @returns { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] }
 		 */
 		function toWorldFilesystem(java) {
 			/**
@@ -558,7 +563,7 @@
 				return function() {
 					return $api.fp.world.old.ask(function(events) {
 						var peer = java.newPeer(pathname);
-						return peer.list().map(function(node) {
+						return $context.api.java.Array.adapt(peer.list()).map(function(node) {
 							return pathname_create(String(node.getScriptPath()));
 						})
 					});
@@ -649,7 +654,7 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.file.world.Filesystem } */
+			/** @type { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] } */
 			var filesystem = {
 				separator: {
 					pathname: java.separators.pathname,
@@ -659,7 +664,10 @@
 					return function(events) {
 						var peer = java.newPeer(p.pathname);
 						try {
-							return $api.fp.Maybe.from.some(String(peer.getHostFile().getCanonicalPath()));
+							//	TODO	all quite dubious, why would this work like this? Think it through.
+							var hostCanonicalPath = String(peer.getHostFile().getAbsolutePath());
+							if (hostCanonicalPath == "/") return $api.fp.Maybe.from.some("");
+							return $api.fp.Maybe.from.some(hostCanonicalPath);
 						} catch (e) {
 							return $api.fp.Maybe.from.nothing();
 						}
@@ -703,7 +711,7 @@
 						if (!peer.exists()) return $api.fp.Maybe.from.nothing();
 						var list = peer.list();
 						return $api.fp.Maybe.from.some(
-							list.map(
+							$context.api.java.Array.adapt(list).map(
 								/** @type { slime.$api.fp.Mapping<slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node,string> } */
 								function(node) {
 									return String(node.getHostFile().getName());
@@ -790,6 +798,38 @@
 							if (peer.exists() && peer.isDirectory()) java.remove(peer);
 						});
 					}
+				},
+				os: {
+					toString: function(path) {
+						var provider = java;
+						var parameters = { path: path }
+						var _peer = provider.newPeer(parameters.path);
+						var rv = provider.peerToString(_peer);
+						if (rv.substring(rv.length - provider.separators.pathname.length) == provider.separators.pathname) {
+							$api.deprecate(function () {
+								rv = rv.substring(0, rv.length - provider.separators.pathname.length);
+							})();
+						}
+						return rv;
+					},
+					isAbsolutePath: function(path) {
+						return java.isAbsolutePath(path);
+					}
+				},
+				java: {
+					codec: {
+						File: {
+							encode: function(p) {
+								//	possibly not the most direct way to create this object, but follows the conventions of the rest of the
+								//	implementation
+								return java.newPeer(p.pathname).getHostFile();
+							},
+							decode: function(_file) {
+								var _peer = java.java.adapt(_file);
+								return { pathname: java.peerToString(_peer) };
+							}
+						}
+					}
 				}
 			};
 
@@ -814,7 +854,7 @@
 				windows: systems.windows,
 				systemForPathnameSeparator: systemForPathnameSeparator,
 				trailingSeparatorRemover: trailingSeparatorRemover,
-				nodeCreator: nodeCreator
+				nodeCreator: slimeJavaNodeCreator
 			}
 		});
 	}

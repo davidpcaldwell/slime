@@ -225,7 +225,7 @@
 									);
 									var pathname = $context.library.file.os.temporary.location();
 									$api.fp.world.Action.now({
-										action: $context.library.file.Location.file.write(
+										action: $context.library.file.Location.file.write.old(
 											pathname
 										).stream({
 											input: d.read()
@@ -404,7 +404,7 @@
 						local = $context.library.shell.TMPDIR.createTemporary({ directory: true }).getRelativePath("archive" + format.value.extension);
 					}
 					var location = local.os.adapt();
-					var w = $context.library.file.world.Location.file.write(location);
+					var w = $context.library.file.world.Location.file.write.old(location);
 					$api.fp.world.now.action(w.stream, { input: response.stream });
 					return { file: local.file, type: getMimeType() };
 				}
@@ -516,7 +516,7 @@
 						var argument = $context.library.http.Argument.from.request(request);
 						var response = fetch(argument);
 						if (response.status.code != 200) throw new Error("HTTP: " + response.status.code + " for " + p.from);
-						var w = $context.library.file.Location.file.write(p.to);
+						var w = $context.library.file.Location.file.write.old(p.to);
 						$api.fp.world.now.action(w.stream, { input: response.stream });
 					}
 				}

@@ -15,9 +15,6 @@
 	 */
 	function(Packages,$api,$context,$loader,$export) {
 		if (!$context.api) throw new Error("Missing 'api' member of context");
-		if ($context.$pwd && typeof($context.$pwd) != "string") {
-			throw new Error("$pwd is " + typeof($context.$pwd) + ".");
-		}
 
 		var code = {
 			/** @type { slime.jrunscript.file.internal.java.Script } */
@@ -27,11 +24,14 @@
 			/** @type { slime.jrunscript.file.internal.mock.Script } */
 			mock: $loader.script("mock.js"),
 			/** @type { slime.jrunscript.file.internal.oo.Script } */
-			oo: $loader.script("oo.js")
+			oo: $loader.script("oo.js"),
+			/** @type { slime.jrunscript.file.internal.archive.Script } */
+			archive: $loader.script("archive.js")
 		}
 
 		var world = code.java({
 			api: {
+				java: $context.api.java,
 				io: $context.api.io
 			}
 		});
@@ -60,7 +60,8 @@
 				io: $context.api.io
 			},
 			library: {
-				world: world
+				world: world,
+				Location: wo.Location
 			},
 			pathext: $context.pathext,
 			cygwin: $context.cygwin,
@@ -76,9 +77,13 @@
 				Location: wo.Location
 			},
 			mock: mock,
+
+			//	wo
 			Location: wo.Location,
 			Filesystem: wo.Filesystem,
 			os: wo.os,
+
+			//	oo
 			action: oo.action,
 			filesystem: oo.filesystem,
 			filesystems: oo.filesystems,
@@ -89,10 +94,20 @@
 			Pathname: oo.Pathname,
 			Searchpath: oo.Searchpath,
 			state: oo.state,
+
+			//	deprecated
 			zip: oo.zip,
 			unzip: oo.unzip,
 			Streams: oo.Streams,
-			java: oo.java
+			java: oo.java,
+
+			archive: code.archive({
+				library: {
+					file: {
+						Location: wo.Location
+					}
+				}
+			})
 		});
 	}
 //@ts-ignore

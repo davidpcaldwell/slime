@@ -21,13 +21,18 @@
 		function getJavaCompiler() {
 			if (Packages.javax.tools.ToolProvider.getSystemJavaCompiler()) {
 				return new function() {
+					/**
+					 * @param { string[] } args
+					 * @returns
+					 */
 					this.command = function javac(args) {
+						var array = args.map(function(s) { return new Packages.java.lang.String(s); });
+						var _array = $context.library.java.Array.create({
+							type: Packages.java.lang.String,
+							array: array
+						});
 						return Packages.javax.tools.ToolProvider.getSystemJavaCompiler().run(
-							null, null, null,
-							$context.library.java.Array.create({
-								type: Packages.java.lang.String,
-								array: args.map(function(s) { return new Packages.java.lang.String(s); })
-							})
+							null, null, null, _array
 						)
 					}
 				};

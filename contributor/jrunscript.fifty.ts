@@ -76,11 +76,13 @@
 			if (isMkcertImplemented) fifty.load("../loader/api/old/jsh/plugin.jsh.web.fifty.ts");
 			fifty.load("../jrunscript/jsh/tools/suite.fifty.ts");
 			fifty.load("../jrunscript/jsh/tools/install/plugin.jsh.fifty.ts");
-			fifty.load("../rhino/http/servlet/server/loader.fifty.ts");
+
 			fifty.load("../rhino/http/servlet/suite.fifty.ts");
 			fifty.load("../rhino/ui/application.fifty.ts");
+
 			fifty.load("../tools/code/module.fifty.ts");
 			fifty.load("../tools/fifty/module.fifty.ts");
+
 			//	TODO	For reasons that are baffling, merely loading this file (even though all its tests are conditionally
 			//			disabled) seems to cause issue #896
 			if (false) fifty.load("../tools/wf/plugin.jsh.fifty.ts");

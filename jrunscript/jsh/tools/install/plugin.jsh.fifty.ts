@@ -6,50 +6,16 @@
 
 /// <reference path="../../../../local/jsh/lib/node/lib/node_modules/@types/js-yaml/index.d.ts" />
 
-namespace slime.external.rename {
-	export type _jsyaml = typeof jsyaml;
-}
-
-namespace slime.external {
-	/**
-	 * The `js-yaml` v3 API; see the [README](https://github.com/nodeca/js-yaml/blob/master/README.md).
-	 */
-	export type jsyaml = slime.external.rename._jsyaml;
-}
-
 (
 	function(
 		fifty: slime.fifty.test.Kit
 	) {
-		const { verify } = fifty;
-		const { $api, jsh } = fifty.global;
-
-		fifty.tests.jsyaml = function() {
-			jsh.shell.tools.jsyaml.require();
-			var jsyaml = jsh.shell.tools.jsyaml.load();
-			if (typeof(jsyaml) == "undefined") throw new Error("No jsyaml.");
-			var parsed = jsyaml.load(
-				$api.fp.now(
-					fifty.jsh.file.relative("../../../../docker-compose.yaml"),
-					jsh.file.Location.file.read.string.simple
-				)
-			);
-			verify(parsed).evaluate.property("name").is("slime");
-		}
+		fifty.tests.manual = {};
 	}
 //@ts-ignore
 )(fifty);
 
 namespace slime.jsh.shell.tools {
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.manual = {};
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export namespace test {
 		export const jsh = (function(fifty: slime.fifty.test.Kit) {
 			return function(p: {
@@ -76,7 +42,7 @@ namespace slime.jsh.shell.tools {
 						//	TODO	would not work on Windows
 						if (p.jdks && !p.jdks.user) rv.JSH_USER_JDKS = "/dev/null";
 						if (p.lib) rv.JSH_SHELL_LIB = p.lib;
-						if (p.debug) rv.JSH_LAUNCHER_BASH_DEBUG = "1";
+						if (p.debug) rv.JSH_LAUNCHER_COMMAND_DEBUG = "1";
 						return rv;
 					}
 				}
@@ -85,7 +51,9 @@ namespace slime.jsh.shell.tools {
 		//@ts-ignore
 		})(fifty);
 	}
+}
 
+namespace slime.jsh.shell.tools {
 	export namespace rhino {
 		export interface Installation {
 			pathname: string
@@ -159,6 +127,9 @@ namespace slime.jsh.shell.tools {
 	}
 
 	export interface Exports {
+		/**
+		 * Operations pertaining to this shell's installation of Mozilla Rhino.
+		 */
 		rhino: {
 			/**
 			 * Returns the installation of Rhino for the current shell, if one exists.
@@ -199,7 +170,9 @@ namespace slime.jsh.shell.tools {
 				const { verify } = fifty;
 				const { jsh } = fifty.global;
 
-				fifty.tests.rhino = function() {
+				fifty.tests.rhino = fifty.test.Parent();
+
+				fifty.tests.rhino.old = function() {
 					const dependencies = (
 						function() {
 							const script: slime.project.dependencies.Script = fifty.$loader.script("../../../../contributor/dependencies/module.js");
@@ -290,12 +263,21 @@ namespace slime.jsh.shell.tools {
 					});
 				};
 
-				fifty.tests.manual.rhino = function() {
+				fifty.tests.manual.rhino = {};
+
+				fifty.tests.manual.rhino.install = function() {
+					var jdk = jsh.internal.bootstrap.java.getMajorVersion();
+					jsh.shell.console("jdk = " + jdk);
+					var version = jsh.internal.bootstrap.rhino.version(jdk);
+					jsh.shell.console("rhino = " + version);
+				}
+
+				fifty.tests.manual.rhino.show = function() {
 					var rhino = jsh.shell.tools.rhino.installation.simple();
 					if (rhino.present) {
 						var version = rhino.value.version();
 						var manifest = jsh.java.tools.jar.manifest.simple({ pathname: rhino.value.pathname });
-						jsh.shell.console("manifest = " + manifest);
+						jsh.shell.console("manifest = " + JSON.stringify(manifest));
 						jsh.shell.console( (version.present) ? "Installed: " + version.value : "Installed: version Unknown" );
 					} else {
 						jsh.shell.console( "Not installed." );
@@ -305,7 +287,43 @@ namespace slime.jsh.shell.tools {
 		//@ts-ignore
 		)(Packages,fifty);
 	}
+}
 
+namespace slime.external.rename {
+	export type _jsyaml = typeof jsyaml;
+}
+
+namespace slime.external {
+	/**
+	 * The `js-yaml` v3 API; see the [README](https://github.com/nodeca/js-yaml/blob/master/README.md).
+	 */
+	export type jsyaml = slime.external.rename._jsyaml;
+}
+
+(
+	function(
+		fifty: slime.fifty.test.Kit
+	) {
+		const { verify } = fifty;
+		const { $api, jsh } = fifty.global;
+
+		fifty.tests.jsyaml = function() {
+			jsh.shell.tools.jsyaml.require();
+			var jsyaml = jsh.shell.tools.jsyaml.load();
+			if (typeof(jsyaml) == "undefined") throw new Error("No jsyaml.");
+			var parsed = jsyaml.load(
+				$api.fp.now(
+					fifty.jsh.file.relative("../../../../docker-compose.yaml"),
+					jsh.file.Location.file.read.string.simple
+				)
+			);
+			verify(parsed).evaluate.property("name").is("slime");
+		}
+	}
+//@ts-ignore
+)(fifty);
+
+namespace slime.jsh.shell.tools {
 	export interface Exports {
 		ncdbg: any
 	}
@@ -706,6 +724,10 @@ namespace slime.jsh {
 
 namespace slime.jsh.shell {
 	export interface Exports {
+		/**
+		 * APIs pertaining to tools that can be installed into the `jsh` shell, like Mozilla Rhino, Apache Tomcat, Node.js,
+		 * Kotlin and Scala, and other development tools.
+		 */
 		tools: slime.jsh.shell.tools.Exports
 	}
 }
@@ -767,6 +789,7 @@ namespace slime.jsh.shell.tools {
 			const { verify } = fifty;
 			const { jsh } = fifty.global;
 
+			//	TODO	this test appears clearly misplaced; is there now a jrunscript/io in which to put this?
 			fifty.tests.poi = function() {
 				var poi = jsh.shell.jsh.lib.getSubdirectory("poi");
 				if (poi) {
@@ -797,12 +820,11 @@ namespace slime.jsh.shell.tools {
 			});
 
 			fifty.tests.suite = function() {
-				fifty.load("tomcat.fifty.ts");
-
-				fifty.run(fifty.tests.jsyaml);
 				fifty.run(fifty.tests.rhino);
-				fifty.run(fifty.tests.node);
+				fifty.load("tomcat.fifty.ts");
+				fifty.run(fifty.tests.jsyaml);
 				fifty.run(fifty.tests.scala);
+				fifty.run(fifty.tests.node);
 				fifty.run(fifty.tests.poi);
 			}
 		}

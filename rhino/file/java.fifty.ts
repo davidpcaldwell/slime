@@ -7,6 +7,7 @@
 namespace slime.jrunscript.file.internal.java {
 	export interface Context {
 		api: {
+			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 		}
 	}
@@ -58,6 +59,7 @@ namespace slime.jrunscript.file.internal.java {
 		peerToString: (peer: Peer) => string
 
 		isRootPath: (path: string) => boolean
+		isAbsolutePath: (path: string) => boolean
 
 		getParent: (peer: Peer) => Peer
 
@@ -111,12 +113,9 @@ namespace slime.jrunscript.file.internal.java {
 		}
 	}
 
-	export interface System {
-		separator: {
-			file: string
-		}
-		isAbsolute: (pathname: string) => boolean
-		isRootPath: (pathname: string) => boolean
+	export interface OsFilesystem {
+		toString: (path: string) => string
+		isAbsolutePath: (path: string) => boolean
 	}
 
 	export interface Exports {
@@ -127,12 +126,26 @@ namespace slime.jrunscript.file.internal.java {
 		}
 
 		filesystems: {
-			os: slime.jrunscript.file.world.Filesystem
+			os: slime.jrunscript.file.world.Filesystem & {
+				/**
+				 * Bridging APIs that apply only to the OS-level file system, and are currently used in the rhino/file OO APIs that
+				 * do not contemplate arbitrary filesystem implementations.
+				 */
+				os: OsFilesystem
+			}
 		}
 	}
 
-	export interface Exports {
-		test: {
+	export namespace internal {
+		export interface System {
+			separator: {
+				file: string
+			}
+			isAbsolute: (pathname: string) => boolean
+			isRootPath: (pathname: string) => boolean
+		}
+
+		export interface Testing {
 			FilesystemProvider: new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => FilesystemProvider
 			unix: System
 			windows: System
@@ -140,6 +153,10 @@ namespace slime.jrunscript.file.internal.java {
 			trailingSeparatorRemover: (system: System) => (pathname: string) => string
 			nodeCreator: (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => (path: string) => Peer
 		}
+	}
+
+	export interface Exports {
+		test: internal.Testing
 	}
 
 	(
@@ -154,6 +171,7 @@ namespace slime.jrunscript.file.internal.java {
 
 			var subject = code({
 				api: {
+					java: fifty.global.jsh.java,
 					io: fifty.global.jsh.io
 				}
 			});
@@ -226,7 +244,7 @@ namespace slime.jrunscript.file.internal.java {
 
 				var removeUnixSlashes = subject.test.trailingSeparatorRemover(subject.test.unix);
 				verify(removeUnixSlashes("/foo/bar/")).is("/foo/bar");
-				verify(removeUnixSlashes("/foo/bar/")).is("/foo/bar");
+				verify(removeUnixSlashes("/foo/bar")).is("/foo/bar");
 
 				var removeWindowsSlashes = subject.test.trailingSeparatorRemover(subject.test.windows);
 				verify(removeWindowsSlashes("C:\\foo\\bar\\")).is("C:\\foo\\bar");

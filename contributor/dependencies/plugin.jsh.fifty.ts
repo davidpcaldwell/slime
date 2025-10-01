@@ -4,8 +4,8 @@
 //
 //	END LICENSE
 
-namespace slime.jsh.exports {
-	export interface project {
+namespace slime.jsh.project {
+	export interface Exports {
 		dependencies: slime.project.dependencies.Exports
 	}
 }

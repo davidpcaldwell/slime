@@ -24,13 +24,21 @@ namespace slime.jrunscript {
 					equals(other: any): boolean
 					toCharArray(): any
 					getBytes(): any
+					endsWith(suffix: java.lang.String): boolean
 				}
+
+				export interface Number extends Object {}
+
+				export interface Byte extends Number {}
 
 				export interface Class {
 					isInstance(object: any): boolean
 					getDeclaredField(name: string): reflect.Field
 					getDeclaredMethod(name: string, types?: slime.jrunscript.native.java.lang.Class[]): reflect.Method
 					getMethod(name: string): reflect.Method
+					getSuperclass(): Class
+					getInterfaces(): Class[]
+					getProtectionDomain(): any
 				}
 
 				export interface ClassLoader {
@@ -41,6 +49,11 @@ namespace slime.jrunscript {
 				}
 
 				export interface Thread {
+				}
+
+				export interface ThreadLocal<T> extends slime.jrunscript.native.java.lang.Object {
+					get(): T
+					set: (t: T) => void
 				}
 
 				export namespace reflect {
@@ -67,7 +80,7 @@ namespace slime.jrunscript {
 				}
 				export interface ByteArrayInputStream extends InputStream {
 				}
-				export interface OutputStream {
+				export interface OutputStream extends java.lang.Object {
 					write(b: number)
 					flush()
 					close()
@@ -84,14 +97,16 @@ namespace slime.jrunscript {
 					close: () => void
 				}
 				export interface PrintStream extends OutputStream {
+					print: (string: string) => void
 					println: (line: string) => void
 				}
-				export interface File {
+				export interface File extends slime.jrunscript.native.java.lang.Object {
 					exists(): boolean
 					isDirectory(): boolean
 					toPath(): slime.jrunscript.native.java.nio.file.Path
 					getName(): slime.jrunscript.native.java.lang.String
 					getCanonicalPath(): slime.jrunscript.native.java.lang.String
+					getCanonicalFile(): slime.jrunscript.native.java.io.File
 					listFiles(): slime.jrunscript.native.java.io.File[]
 					getAbsolutePath(): slime.jrunscript.native.java.lang.String
 					renameTo(file: File)
@@ -117,6 +132,10 @@ namespace slime.jrunscript {
 					}
 
 					export namespace attribute {
+						export interface FileTime {
+							toMillis: () => number
+						}
+
 						export interface PosixFilePermission {
 						}
 
@@ -195,13 +214,16 @@ namespace slime.jrunscript {
 
 				export interface Properties extends native.java.lang.Object {
 					load(value: any): void
-					get(name: string): any
 					propertyNames(): any
 					getProperty(name: string): string
 					setProperty(name: string, value: string): void
 					keySet(): any
 					entrySet(): any
 					store: (out: slime.jrunscript.native.java.io.OutputStream, comments: string) => void
+
+					//	Map, should actually just extend
+					get(name: string): any
+					put(name: string, value: any): void
 				}
 
 				export interface Enumeration<T> {
@@ -259,6 +281,25 @@ namespace slime.jrunscript {
 					export interface ZipEntry extends slime.jrunscript.native.java.lang.Object {
 						getName: () => slime.jrunscript.native.java.lang.String
 						isDirectory: () => boolean
+						getTime: () => number
+
+						getCreationTime: () => java.nio.file.attribute.FileTime
+						setCreationTime: (time: java.nio.file.attribute.FileTime) => void
+
+						getLastModifiedTime: () => java.nio.file.attribute.FileTime
+						setLastModifiedTime: (time: java.nio.file.attribute.FileTime) => void
+
+						getLastAccessTime: () => java.nio.file.attribute.FileTime
+						setLastAccessTime: (time: java.nio.file.attribute.FileTime) => void
+
+						getComment: () => string
+					}
+					export interface ZipInputStream extends slime.jrunscript.native.java.io.InputStream {
+						getNextEntry: () => ZipEntry
+					}
+					export interface ZipOutputStream extends slime.jrunscript.native.java.io.OutputStream {
+						putNextEntry: (entry: ZipEntry) => void
+						closeEntry: () => void
 					}
 				}
 
@@ -310,6 +351,18 @@ namespace slime.jrunscript {
 		export namespace javax.tools {
 			export interface DiagnosticListener {}
 			export interface JavaFileManager extends java.lang.Object {}
+			export interface JavaCompiler extends java.lang.Object {
+				run: (
+					input: java.io.InputStream,
+					out: java.io.OutputStream,
+					err: java.io.OutputStream,
+					args: slime.jrunscript.Array<slime.jrunscript.native.java.lang.String>
+				) => number
+
+				getStandardFileManager: any
+
+				getTask: any
+			}
 		}
 
 		export namespace org {
@@ -354,6 +407,12 @@ namespace slime.jrunscript {
 						service: (_request: any, _response: any) => void
 						destroy: () => void
 					}
+
+					export interface HostObject {
+						register: (_script: slime.jrunscript.native.inonit.script.servlet.Servlet.Script) => void
+						getLoader: () => slime.jrunscript.native.inonit.script.engine.Loader
+						getServlet: () => slime.jrunscript.native.inonit.script.servlet.Servlet
+					}
 				}
 
 				export interface Servlet {
@@ -372,6 +431,12 @@ namespace slime.jrunscript {
 					}
 					getServletContext(): any
 				}
+
+				export namespace Rhino {
+					export interface Host extends Servlet.HostObject {
+						getEngine: () => slime.jrunscript.native.inonit.script.rhino.Engine
+					}
+				}
 			}
 
 			export namespace rhino {
@@ -381,9 +446,6 @@ namespace slime.jrunscript {
 				}
 
 				export namespace Engine {
-					export interface Loader {
-						getLoaderCode(path: string): any
-					}
 				}
 
 				export interface Engine {
@@ -420,10 +482,7 @@ namespace slime.jrunscript {
 					slime.jrunscript.native.java.lang.Object,
 					{
 						err: slime.jrunscript.native.java.io.PrintStream
-						out: {
-							print: any
-							println: any
-						}
+						out: slime.jrunscript.native.java.io.PrintStream
 						console: () => any
 						currentTimeMillis(): number
 						setProperty(name: string, value: string)
@@ -446,10 +505,9 @@ namespace slime.jrunscript {
 					Modifier: any
 					Array: any
 				}
-				String: {
-					new (string: string): slime.jrunscript.native.java.lang.String
+				String: JavaClass<slime.jrunscript.native.java.lang.String,{
 					format: any
-				}
+				}>
 				Character: any
 				Thread: any
 				Runnable: any
@@ -463,11 +521,12 @@ namespace slime.jrunscript {
 				RuntimeException: any
 				ProcessBuilder: any
 				StringBuilder: any
-				Byte: JavaClass & {
+				Byte: JavaClass<slime.jrunscript.native.java.lang.Byte> & {
 					TYPE: any
 				}
 				Number: JavaClass
 				AssertionError: any
+				ThreadLocal: JavaClass<slime.jrunscript.native.java.lang.ThreadLocal<any>>
 			}
 			io: {
 				ByteArrayInputStream: new (bytes: any) => slime.jrunscript.native.java.io.ByteArrayInputStream
@@ -489,7 +548,9 @@ namespace slime.jrunscript {
 				PrintWriter: any
 				Reader: any
 				Writer: any
-				OutputStream: any
+				OutputStream: JavaClass<slime.jrunscript.native.java.io.OutputStream>
+				BufferedInputStream: JavaClass<slime.jrunscript.native.java.io.InputStream>
+				BufferedOutputStream: JavaClass<slime.jrunscript.native.java.io.OutputStream>
 				FileInputStream: any
 				FileReader: any
 				InputStreamReader: any
@@ -509,6 +570,7 @@ namespace slime.jrunscript {
 				URI: any
 				URL: {
 					new (base: slime.jrunscript.native.java.net.URL, relative: string): slime.jrunscript.native.java.net.URL
+					new (url: slime.jrunscript.native.java.lang.String): slime.jrunscript.native.java.net.URL
 					new (url: string): slime.jrunscript.native.java.net.URL
 				}
 				URLEncoder: any
@@ -597,7 +659,11 @@ namespace slime.jrunscript {
 				Base64: any
 				Map: any
 				Date: any
-				zip: any
+				zip: {
+					ZipInputStream: JavaClass<slime.jrunscript.native.java.util.zip.ZipInputStream>
+					ZipOutputStream: JavaClass<slime.jrunscript.native.java.util.zip.ZipOutputStream>
+					ZipEntry: JavaClass<slime.jrunscript.native.java.util.zip.ZipEntry>
+				}
 				jar: {
 					JarFile: JavaClass<slime.jrunscript.native.java.util.jar.JarFile>
 					Manifest: JavaClass<slime.jrunscript.native.java.util.jar.Manifest>
@@ -635,9 +701,26 @@ namespace slime.jrunscript {
 				Types: any
 			}
 		}
-		javax: any
 		jakarta: {
 			servlet: any
+		}
+		javax: {
+			tools: {
+				ToolProvider: {
+					getSystemJavaCompiler: () => slime.jrunscript.native.javax.tools.JavaCompiler
+					getSystemToolClassLoader: any
+				}
+				JavaFileObject: any
+				JavaFileManager: any
+				DiagnosticListener: any
+			}
+			script: any
+			mail: any
+			activation: any
+			servlet: any
+			swing: any
+			net: any
+			xml: any
 		}
 		javafx: any
 		org: {

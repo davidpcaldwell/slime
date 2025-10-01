@@ -25,6 +25,7 @@ namespace slime.jrunscript.file {
 		export namespace events {
 			export interface FileOpenForWrite {
 				parentNotFound: slime.jrunscript.file.Location
+				createdFolder: slime.jrunscript.file.Location
 			}
 		}
 
@@ -42,8 +43,7 @@ namespace slime.jrunscript.file {
 			},void,slime.$api.fp.Maybe<number>>
 
 			/**
-			 * Returns the time the file was last modified, as a JavaScript
-			 * [_time value_](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-time-values-and-time-range).
+			 * Returns the time the file was last modified.
 			 *
 			 * Will return `Maybe.from.nothing()` if the file does not exist.
 			 *
@@ -51,7 +51,7 @@ namespace slime.jrunscript.file {
 			 */
 			fileLastModified: slime.$api.fp.world.Sensor<{
 				pathname: string
-			},void,slime.$api.fp.Maybe<number>>
+			},void,slime.$api.fp.Maybe<slime.external.lib.es5.TimeValue>>
 
 			openOutputStream: slime.$api.fp.world.Sensor<{
 				pathname: string
@@ -85,6 +85,16 @@ namespace slime.jrunscript.file {
 			remove: slime.$api.fp.world.Means<{
 				pathname: string
 			},void>
+
+			java?: {
+				codec: {
+					/**
+					 * If this filesystem represents a filesystem consisting of actual Java files, this operation supports the
+					 * conversion of pathname strings to native `java.io.File` objects.
+					 */
+					File: slime.Codec<{ pathname: string },slime.jrunscript.native.java.io.File>
+				}
+			}
 		}
 
 		export interface Filesystem {
@@ -132,7 +142,7 @@ namespace slime.jrunscript.file {
 				fifty.tests.world.posix.set = function() {
 					var tmp = fifty.jsh.file.temporary.location();
 					$api.fp.world.now.action(
-						jsh.file.Location.file.write(tmp).string,
+						jsh.file.Location.file.write.old(tmp).string,
 						{ value: "" }
 					);
 

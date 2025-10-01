@@ -32,7 +32,12 @@ namespace slime {
 			Store: {
 				content: <T>(p: {
 					store: slime.runtime.content.Store<T>
-					adapt: (t: T) => Code
+					compiler: slime.runtime.loader.Compiler<T>
+					//	TODO	this generates an error; should the caller actually be able to configure that behavior? Should this
+					//			just be a void method where the caller can choose not to do anything? But then what should the
+					//			attempt to load the script do? What should the attempt to execute the script do?
+					unsupported: (t: T) => string
+					scope: { [x: string]: any }
 				}) => Store
 			}
 		}
@@ -41,6 +46,8 @@ namespace slime {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				const { $api } = fifty.global;
+
 				fifty.tests.Store = fifty.test.Parent();
 				fifty.tests.Store.from = fifty.test.Parent();
 
@@ -49,19 +56,20 @@ namespace slime {
 					const { jsh } = fifty.global;
 
 					if (jsh) {
+						//	TODO	this implementation does not currently support the usage of the global transpiler
 						var $loader = jsh.loader.Store.content({
 							store: jsh.file.Location.directory.content.Index( fifty.jsh.file.relative(".") ),
-							adapt: function(t) {
+							compiler: function(t) {
 								return {
-									name: t.pathname,
-									type: function() {
-										return fifty.global.$api.mime.Type.fromName( jsh.file.Location.basename(t) )
-									},
-									read: function() {
-										return jsh.file.Location.file.read.string.simple(t);
+									present: true,
+									value: {
+										name: t.pathname,
+										js: $api.fp.now(t, jsh.file.Location.file.read.string.simple)
 									}
-								}
-							}
+								};
+							},
+							unsupported: function(t) { return "Unreachable."; },
+							scope: {}
 						});
 						var code: slime.runtime.loader.internal.test.store.Script = $loader.script("test/data/store/module.js");
 						var api = code({
@@ -333,9 +341,10 @@ namespace slime.runtime.loader.old {
 
 namespace slime.runtime.internal.loader {
 	export interface Scope {
-		$api: slime.$api.Global
-		methods: scripts.Exports["methods"]
-		createScriptScope: scripts.Exports["createScriptScope"]
+		$api: Pick<slime.$api.Global,"fp"|"content"|"mime"|"Function">
+		methods: scripts.GlobalExecutorMethods
+		Executor: scripts.executor.Constructor
+		createScriptScope: scripts.Exports["internal"]["createScriptScope"]
 	}
 
 	export interface Exports {

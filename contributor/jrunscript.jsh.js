@@ -31,6 +31,7 @@
 			}
 		});
 
+		/** @type { slime.project.internal.jrunscript_environment.Exports } */
 		var Environment = jsh.script.loader.module("jrunscript-environment.js");
 
 		var environment = new Environment({
@@ -116,7 +117,7 @@
 		//			something still needed, something analogous still needed, or whether this can be discarded
 		if (false) suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
 			run: jsh.shell.jsh,
-			shell: (environment.jsh.built) ? environment.jsh.built.homne : environment.jsh.unbuilt.src,
+			shell: (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src,
 			script: SRC.getFile("loader/api/old/jsh/test/bitbucket.jsh.js"),
 			arguments: ["-view", "stdio"]
 		}));

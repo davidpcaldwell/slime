@@ -154,6 +154,7 @@
 			if (files[i].path == "jsh") extension = "bash";
 			if (files[i].path == ".eslintrc.json") extension = "js";
 			if (files[i].path == "jsconfig.json") extension = "js";
+			if (files[i].path == "jsconfig-fifty-browser-test.json") extension = "js";
 			if (files[i].path == "typedoc.json") extension = "js";
 			if (files[i].path == "typedoc-tsconfig.json") extension = "js";
 			if (files[i].path == ".devcontainer/devcontainer.json") extension = "js";
@@ -165,19 +166,26 @@
 			if (files[i].path == "loader/jrunscript/test/data/ServiceLoader/META-INF/services/java.lang.Runnable") extension = "properties";
 			if (extension === null) {
 				if (files[i].path == "Dockerfile") extension = "Dockerfile";
-				if (files[i].path == "contributor/devcontainer/check") extension = "bash";
-				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";
 				if (files[i].path == "fifty") extension = "bash";
 				if (files[i].path == "wf") extension = "bash";
 				if (files[i].path == "tools/wf/templates/wf") extension = "bash";
 				if (files[i].path == "tools/wf/test/data/plugin-standard/wf") extension = "bash";
-				if (files[i].path == "contributor/docker-compose") extension = "bash";
 				if (files[i].path == "tools/wf/install") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/manual/engines") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/issue1254") extension = "bash";
+				if (files[i].path == "contributor/test-docker-command") extension = "bash";
+				if (files[i].path == "contributor/test-docker-clean-run") extension = "bash";
+				if (files[i].path == "contributor/test-docker-clean-start") extension = "bash";
+				if (files[i].path == "contributor/suite-docker") extension = "bash";
+				if (files[i].path == "contributor/suite-macos") extension = "bash";
+				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";
+				if (files[i].path == "contributor/devcontainer/check") extension = "bash";
 				if (files[i].path == "contributor/devcontainer/install-x-libraries") extension = "bash";
 				if (files[i].path == "contributor/devcontainer/rhino-debugger-test") extension = "bash";
 				if (files[i].path == "contributor/devcontainer/simulate-new-container") extension = "bash";
+				if (files[i].path == "contributor/devcontainer/boot/install-x-libraries") extension = "bash";
+				if (files[i].path == "contributor/test/manual/graalvm") extension = "bash";
+				if (files[i].path == "contributor/test/manual/graalvm-debug") extension = "bash";
 				if (!extension) throw new Error("Extension null for " + files[i].path);
 			}
 			var text = toFile(file).node.read(String);
@@ -218,7 +226,9 @@
 			if (current != proposed) {
 				if (!invocation.options.fix) {
 					jsh.shell.echo("Would update license in " + file.node.pathname);
+					debugger;
 					jsh.shell.console("Before:\n" + current + "\n" + "After:\n" + proposed + "\n");
+					jsh.shell.console("Before:\n" + JSON.stringify(current) + "\n" + "After:\n" + JSON.stringify(proposed) + "\n");
 					updated = true;
 				} else {
 					file.node.pathname.write(proposed, { append: false });

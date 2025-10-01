@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.io {
 	export interface Context {
-		$slime: Pick<slime.jrunscript.runtime.Exports,"Resource"|"mime"|"jrunscript"|"Loader"|"old">
+		$slime: Pick<slime.jrunscript.runtime.Exports,"Resource"|"jrunscript"|"Loader"|"old">
 		api: {
 			/**
 			 * The `jrunscript/host` module.
@@ -136,7 +136,7 @@ namespace slime.jrunscript.io {
 		}
 		mime: slime.jrunscript.io.mime.Exports
 		archive: {
-			zip: archive.Format
+			zip: zip.Exports
 		}
 		grid: slime.jrunscript.io.grid.Exports
 		system: slime.jrunscript.runtime.io.Exports["system"]

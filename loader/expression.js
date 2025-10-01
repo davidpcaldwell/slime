@@ -18,15 +18,12 @@
 		var $engine = (
 			/**
 			 *
-			 * @param { slime.runtime.scope.$engine } $engine
+			 * @param { slime.runtime.Scope["$engine"] } $engine
 			 * @returns { slime.runtime.Engine }
 			 */
 			function($engine) {
 				return {
 					debugger: ($engine && $engine.debugger) ? $engine.debugger : void(0),
-					Error: {
-						decorate: ($engine && $engine.Error) ? $engine.Error.decorate : void(0)
-					},
 					execute: ($engine && $engine.execute)
 						? $engine.execute
 						: function(script,scope,target) {
@@ -59,107 +56,35 @@
 			null
 		);
 
-		var $platform = (
-			/**
-			 *
-			 * @param { slime.runtime.Engine } $engine
-			 */
-			function($engine) {
-				/** @type { slime.runtime.Platform } */
-				var $exports = {};
-
-				var global = (function() { return this; })();
-				if (global && global.XML && global.XMLList) {
-					$exports.e4x = {};
-					$exports.e4x.XML = global.XML;
-					$exports.e4x.XMLList = global.XMLList;
-				}
-
-				(
-					/**
-					 * @this { slime.runtime.Platform }
-					 */
-					function() {
-						var getJavaClass = function(name) {
-							try {
-								if (typeof(scope.Packages) == "undefined") return null;
-								var rv = scope.Packages[name];
-								if (typeof(rv) == "function") {
-									//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
-									//	following format for their String values
-									try {
-										var prefix = "[Java Package";
-										if (String(rv).substring(0, prefix.length) == prefix) {
-											return null;
-										}
-									} catch (e) {
-										//	The string value of Packages.java.lang.Object and Packages.java.lang.Number throws a string (the
-										//	below) if you attempt to evaluate it.
-										if (e == "java.lang.NullPointerException") {
-											return rv;
-										}
-									}
-									return rv;
-								}
-								return null;
-							} catch (e) {
-								return null;
-							}
-						}
-
-						if (getJavaClass("java.lang.Object")) {
-							this.java = new function() {
-								this.getClass = function(name) {
-									return getJavaClass(name);
-								}
-							};
-						}
-					}
-				).call($exports);
-
-				try {
-					if (typeof($engine) != "undefined") {
-						if ($engine.MetaObject) {
-							$exports.MetaObject = $engine.MetaObject;
-						}
-					}
-				} catch (e) {
-					//	MetaObject will not be defined
-				}
-
-				return $exports;
-			}
-		)($engine);
-
-		/**
-		 *
-		 * @param { { name: string, js: string } } code
-		 * @param { { [x: string]: any } } scope
-		 * @returns
-		 */
-		var execute = function(code,scope) {
-			/** @type { any } */
-			var exported;
-
-			$engine.execute(
-				code,
-				Object.assign(scope, {
-					$export: function(value) {
-						exported = value;
-					}
-				}),
-				null
-			);
-
-			return exported;
-		}
-
 		/**
 		 *
 		 * @param { string } path
 		 * @returns { slime.old.loader.Script<any,any> }
 		 */
 		var script = function(path) {
+			/**
+			 *
+			 * @param { { name: string, js: string } } code
+			 * @param { { [x: string]: any } } scope
+			 * @returns
+			 */
+			var execute = function(code,scope) {
+				/** @type { any } */
+				var exported;
+
+				$engine.execute(
+					code,
+					Object.assign(scope, {
+						$export: function(value) {
+							exported = value;
+						}
+					}),
+					null
+				);
+
+				return exported;
+			}
+
 			/**
 			 *
 			 * @param { string } path
@@ -183,24 +108,52 @@
 			)
 		};
 
-		/** @type { slime.$api.Global } */
-		var $api = script("$api.js")({
-			$engine: $engine,
-			$slime: {
-				getRuntimeScript: scope.$slime.getRuntimeScript
+		var api = (
+			function() {
+				/** @type { slime.$api.internal.Script } */
+				var code = script("$api.js");
+				return code({
+					$engine: $engine,
+					$slime: {
+						getRuntimeScript: scope.$slime.getRuntimeScript
+					},
+					Packages: scope.Packages
+				});
 			}
-		});
+		)();
+
+		var scripts = {
+			platform: api.scripts.platform,
+			internal: api.scripts.internal,
+			runtime: api.scripts.internal.runtime(api.exports)
+		};
+
+		/** @type { slime.$api.Global } */
+		var $api = Object.assign(
+			api.exports,
+			{
+				scripts: Object.assign(
+					api.exports.scripts,
+					{
+						compiler: scripts.runtime.compiler.compile
+					}
+				)
+			}
+		);
 
 		var code = {
-			/** @type { slime.runtime.internal.content.Script } */
-			content: script("content.js"),
-			/** @type { slime.runtime.internal.scripts.Script } */
-			scripts: script("scripts.js"),
 			/** @type { slime.runtime.internal.loader.Script } */
 			Loader: script("Loader.js"),
 			/** @type { slime.runtime.internal.old_loaders.Script } */
 			oldLoaders: script("old-loaders.js")
 		};
+
+		var Loader = code.Loader({
+			Executor: scripts.internal.Executor,
+			methods: scripts.runtime.internal.methods,
+			$api: $api,
+			createScriptScope: scripts.internal.createScriptScope
+		});
 
 		/**
 		 * @param { slime.resource.Descriptor } o
@@ -223,6 +176,8 @@
 			if (o.read && o.read.string) {
 				this.read = Object.assign(
 					function(v) {
+						var $platform = scripts.platform;
+
 						if (v === String) {
 							var rv = o.read.string();
 							return rv;
@@ -237,9 +192,9 @@
 						};
 
 						if ($platform.e4x && v == $platform.e4x.XML) {
-							return $platform.e4x.XML( e4xRead.call(this) );
+							return new $platform.e4x.XML( e4xRead.call(this) );
 						} else if ($platform.e4x && v == $platform.e4x.XMLList) {
-							return $platform.e4x.XMLList( e4xRead.call(this) );
+							return new $platform.e4x.XMLList( e4xRead.call(this) );
 						}
 					},
 					{
@@ -267,55 +222,35 @@
 			}
 		);
 
-		$api.content = code.content();
-
-		var scripts = code.scripts(
-			{
-				$api: $api,
-				$platform: $platform,
-				$engine: $engine
-			}
-		);
-
-		var Loader = code.Loader({
-			methods: scripts.methods,
-			$api: $api,
-			createScriptScope: scripts.createScriptScope
-		});
-
 		var loaders = code.oldLoaders({
 			$api: $api,
 			Resource: ResourceExport,
-			createScriptScope: scripts.createScriptScope,
-			toExportScope: scripts.toExportScope,
-			methods: scripts.methods
+			createScriptScope: scripts.internal.createScriptScope,
+			toExportScope: scripts.internal.old.toExportScope,
+			methods: scripts.runtime.internal.methods
 		});
 
 		/** @type { slime.runtime.Exports } */
 		var rv = $api.fp.now(
 			{
-				mime: $api.mime,
 				/** @type { slime.runtime.Exports["run"] } */
 				run: function(code,scope,target) {
-					return scripts.methods.run.call(target,loaders.Code.from.Resource(code),scope);
+					return scripts.runtime.internal.methods.run.call(target,loaders.Code.from.Resource(code),scope);
 				},
 				/** @type { slime.runtime.Exports["file"] } */
 				file: function(code,context,target) {
-					return scripts.methods.old.file.call(target,loaders.Code.from.Resource(code),context);
+					return scripts.runtime.internal.methods.old.file.call(target,loaders.Code.from.Resource(code),context);
 				},
 				/** @type { slime.runtime.Exports["value"] } */
 				value: function(code,scope,target) {
-					return scripts.methods.old.value.call(target,loaders.Code.from.Resource(code),scope);
+					return scripts.runtime.internal.methods.old.value.call(target,loaders.Code.from.Resource(code),scope);
 				},
 				Resource: ResourceExport,
 				old: {
 					Loader: Object.assign(loaders.constructor, loaders.api, { constructor: null }),
 					loader: loaders.api
 				},
-				compiler: {
-					update: scripts.compiler.update,
-					get: scripts.compiler.get
-				},
+				compiler: scripts.runtime.compiler,
 				loader: Loader.api,
 				namespace: function(string) {
 					//	This construct returns the top-level global object, e.g., window in the browser
@@ -336,19 +271,12 @@
 					return scope;
 				}
 			},
-			$api.Object.defineProperty({
-				name: "engine",
-				descriptor: {
-					value: $engine,
-					enumerable: true
-				}
-			}),
 			//	TODO	currently only used by jsapi in loader/api/old/jsh via jsh.js
 			//	TODO	also used by client.html unit tests
 			$api.Object.defineProperty({
 				name: "$platform",
 				descriptor: {
-					value: $platform,
+					value: scripts.platform,
 					enumerable: true
 				}
 			}),
@@ -356,7 +284,7 @@
 				name: "java",
 				descriptor: $api.fp.Partial.from.loose(function(it) {
 					return {
-						value: ($platform.java) ? $platform.java : void(0)
+						value: (scripts.platform.java) ? scripts.platform.java : void(0)
 					};
 				})
 			}),
@@ -366,7 +294,7 @@
 					//	TODO	currently used to set deprecation warning in jsh.js
 					//	TODO	currently used by jsapi in loader/api/old/jsh via jsh.js
 					//	TODO	also used by client.html unit tests
-					//	used to allow implementations to set warnings for deprecate and experimental
+					//	used to allow embeddings to set warnings for deprecate and experimental
 					{ $api: $api }
 				)
 			}

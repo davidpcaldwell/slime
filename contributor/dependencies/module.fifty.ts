@@ -18,6 +18,9 @@ namespace slime.project.dependencies {
 	export interface Exports {
 		data: {
 			rhino: {
+				/**
+				 * Returns the preferred version of Rhino for the running version of Java.
+				 */
 				version: slime.$api.fp.Thunk<{
 					number: string
 					id: string
@@ -40,6 +43,10 @@ namespace slime.project.dependencies {
 				standalone: {
 					version: string
 				}
+			}
+
+			typescript: {
+				version: string
 			}
 
 			typedoc: {

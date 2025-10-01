@@ -19,7 +19,7 @@
 
 		var requireParents = $api.fp.world.Means.map({
 			order: $context.library.file.Location.parent(),
-			means: $context.library.file.Location.directory.require({ recursive: true })
+			means: $context.library.file.Location.directory.require.old({ recursive: true })
 		});
 
 		/**
@@ -30,7 +30,7 @@
 		var setFileContents = function(string) {
 			//	TODO	pipelining is probably not the most straightforward way to do this
 			return $api.fp.pipe(
-				$context.library.file.Location.file.write,
+				$context.library.file.Location.file.write.old,
 				$api.fp.property("string"),
 				$api.fp.world.Action.output(),
 				function(output) {

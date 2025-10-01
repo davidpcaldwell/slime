@@ -88,6 +88,36 @@ namespace slime.jsh.shell.tools.tomcat {
 						return $api.Object.compose(was, { JSH_DEBUG_SCRIPT: "rhino" })
 					}
 				});
+			};
+
+			fifty.tests.manual.downloadPerformance = function() {
+				var pathnames = $api.fp.now(
+					jsh.shell.HOME.pathname.os.adapt(),
+					jsh.file.Location.directory.relativePath("Downloads"),
+					jsh.file.Location.directory.list.stream.simple({
+						descend: $api.fp.Thunk.value(false)
+					}),
+					$api.fp.Stream.filter(
+						$api.fp.pipe(
+							jsh.file.Location.basename,
+							$api.fp.RegExp.exec(/^apache-tomcat/),
+							$api.fp.property("present")
+						)
+					),
+					$api.fp.Stream.collect,
+					$api.fp.Array.map($api.fp.property("pathname"))
+				);
+				pathnames.forEach(
+					$api.fp.pipe(
+						jsh.file.Location.from.os,
+						function(it) {
+							//	TODO	standard composition for this
+							jsh.shell.console("Removing: " + it.pathname);
+							jsh.file.Location.file.remove.simple(it);
+						}
+					)
+				);
+				fifty.tests.manual.hello();
 			}
 		}
 	//@ts-ignore
@@ -283,6 +313,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			}
 
 			var MockDistribution = function(version) {
+				const now = jsh.time.Value.now();
 				return function(events) {
 					var tmpdir = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					var dist = tmpdir.getRelativePath("apache-tomcat-" + version).createDirectory();
@@ -292,8 +323,26 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 					jsh.io.archive.zip.encode({
 						to: rv.write(jsh.io.Streams.binary, { append: false }),
 						entries: $api.fp.Stream.from.array([
-							{ path: "apache-tomcat-" + version + "/" + "RELEASE-NOTES", content: dist.getFile("RELEASE-NOTES").read(jsh.io.Streams.binary) },
-							{ path: "apache-tomcat-" + version + "/" + "a", content: dist.getFile("a").read(jsh.io.Streams.binary) }
+							{
+								path: "apache-tomcat-" + version + "/" + "RELEASE-NOTES",
+								content: dist.getFile("RELEASE-NOTES").read(jsh.io.Streams.binary),
+								time: {
+									modified: $api.fp.Maybe.from.some(now),
+									accessed: $api.fp.Maybe.from.nothing(),
+									created: $api.fp.Maybe.from.nothing()
+								},
+								comment: $api.fp.Maybe.from.nothing()
+							},
+							{
+								path: "apache-tomcat-" + version + "/" + "a",
+								content: dist.getFile("a").read(jsh.io.Streams.binary),
+								time: {
+									modified: $api.fp.Maybe.from.some(now),
+									accessed: $api.fp.Maybe.from.nothing(),
+									created: $api.fp.Maybe.from.nothing()
+								},
+								comment: $api.fp.Maybe.from.nothing()
+							}
 						])
 					});
 					return rv.file;

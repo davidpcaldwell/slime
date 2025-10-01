@@ -41,9 +41,9 @@ public abstract class Loader {
 		public abstract ClassLoader getApplicationClassLoader();
 
 		/**
-		 * Provides an interface to class loading capabilities if they are available
+		 * Provides an interface to class loading capabilities if they are available.
 		 *
-		 * @return An {@Interface}, if configuration allows classes to be loaded, or <code>null</code> if it does not.
+		 * @return An {@link Interface}, if configuration allows classes to be loaded, or {@code null} if it does not.
 		 */
 		public abstract Interface getInterface();
 

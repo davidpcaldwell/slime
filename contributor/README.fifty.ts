@@ -41,11 +41,67 @@
  *
  * ## Testing
  *
+ * ### Continuous integration
+ *
+ * Testing is done via GitHub Actions, whose configuration is specified in the `.github` directory.
+ *
+ * Currently, the GitHub Actions use an older approach to test suite management; they essentially run a single command designed to
+ * test the entire project on a given platform, where a platform includes:
+ *
+ * * For macOS
+ *     * Java 21
+ *
+ * * For Linux
+ *     * A version of Java
+ *     * Chrome
+ *     * Firefox
+ *
+ * The test suite should be broken up into better-defined segments; each platform combination should be a separate job, but that
+ * would take some reorganization (and simultaneously the project is
+ * [being transitioned](https://github.com/users/davidpcaldwell/projects/21) from the older JSAPI framework to the Fifty definition
+ * framework, complicating matters.)
+ *
+ * Generally speaking, a specific GitHub action is specified by:
+ *
+ * * The top-level GitHub YAML file, which invokes:
+ * * `contributor/suite-[platform]`, which invokes:
+ * * `./wf check` (with `--docker` for Docker test environments), which invokes:
+ *     * the linter
+ *     * the TypeScript compiler
+ *     * Rhino installation into the shell
+ *     * the test suite at `contributor/suite.jsh.js` (passing through the Docker flag if it was present on `./wf check`)
+ * * The test suite:
+ *     * Installs Tomcat and TypeScript
+ *     * If running in Docker, installs Selenium
+ *     * Runs a suite of tests designed to test all available JavaScript engines, implemented in `contributor/jrunscript-engines.jsh.js`
+ *     * Runs a suite of tests using a single engine (designed to test the `jrunscript`-based API at `contributor/jrunscript.jsh.js`)
+ *     * If on Docker, runs Selenium tests on the Chrome and Firefox browsers
+ *     * Runs a very brief set of tests of the Node.js SLIME runtime
+ *
+ * ### Testing specific scenarios
+ *
+ * #### Creating fresh "clones" of the current source directory
+ *
+ * See {@link slime.jsh.wf.test.Fixtures}, specifically `clone()`, to set up mirrors of the current source code.
+ *
+ * ### Browser tests
+ *
  * The containerized browser tests can be run from within the devcontainer:
  *
  * * Restart browser-specific container in Docker
  * * `./fifty test.browser --browser dockercompose:selenium:chrome contributor/browser.fifty.ts --interactive`
  * * Go to appropriate VNC port using HTTP to get a VNC client and use `secret` as the password
+ *
+ * ## Documentation
+ *
+ * ### Namespaces split across multiple files
+ *
+ * For namespace comments TypeDoc will handle namespaces split across multiple files by using, it seems, the longest comment
+ * declaring the namespace; see [GitHub issue](https://github.com/TypeStrong/typedoc/issues/1855).
+ *
+ * For namespaces split across multiple files, SLIME adopts a convention of creating a file called `_.fifty.ts`
+ * to contain simply a namespace declaration and the top-level namespace comment, to try to eliminate guesswork about which
+ * file should contain the namespace comment.
  *
  * ## Tools
  *

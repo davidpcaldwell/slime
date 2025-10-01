@@ -100,7 +100,7 @@
 									runtime.old.loader,
 									runtime.loader,
 									{
-										getLoaderScript: function(path) {
+										getLoaderScript: function(/** @type { string }*/path) {
 											return new $slime.Resource({
 												name: "jsh://" + path,
 												read: $slime.Resource.ReadInterface.string(getLoaderCode(path))

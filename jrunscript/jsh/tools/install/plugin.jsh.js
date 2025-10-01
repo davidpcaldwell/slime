@@ -9,14 +9,13 @@
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
-	 * @param { slime.jsh.plugin.Scope["$slime"] } $slime
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { object } plugins
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.Loader } $loader
 	 */
-	function(Packages,JavaAdapter,$slime,$api,jsh,plugins,plugin,$loader) {
+	function(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader) {
 		plugin({
 			isReady: function() {
 				return Boolean(
@@ -99,7 +98,7 @@
 									});
 									var destination = jsh.file.Location.from.os(ooLib.getRelativePath("js.jar").toString());
 									$api.fp.world.Action.now({
-										action: jsh.file.Location.file.write(destination).stream({ input: response.stream })
+										action: jsh.file.Location.file.write.old(destination).stream({ input: response.stream })
 									});
 									events.fire("installed", ooLib.getRelativePath("js.jar").toString() );
 									events.fire("console", "Installed Rhino version " + version + " to " + ooLib.getRelativePath("js.jar"));
@@ -518,7 +517,7 @@
 					var load = function(code) {
 						return $api.debug.disableBreakOnExceptionsFor(function() {
 							//	TODO	possibly there is an easier way to invoke the script; unclear.
-							$slime.engine.execute(
+							$api.engine.execute(
 								{
 									name: "<jsyaml.js>",
 									js: code
@@ -848,23 +847,11 @@
 						 * @param { slime.$api.event.Emitter<slime.jsh.shell.tools.node.RequireEvents> } events
 						 */
 						var action = function(events) {
-							var VERSION = node.versions.default;
-							//	TODO	horrendous, but let's go with it for now
-							if (jsh.file.Pathname("/etc/os-release").file) {
-								var string = jsh.file.Pathname("/etc/os-release").file.read(String);
-								if (
-									string.indexOf("Amazon Linux 2") != -1
-									|| string.indexOf("CentOS Linux 7 (Core)") != -1
-								) {
-									VERSION = "16.20.2";
-								}
-							}
+							var VERSION = node.versions.default();
 
 							var now = jsh.shell.tools.node.installation;
 
-							var exists = $api.fp.world.Sensor.old.mapping({
-								sensor: jsh.shell.tools.node.Installation.exists
-							});
+							var exists = jsh.shell.tools.node.Installation.exists.simple
 
 							var getVersion = $api.fp.world.Sensor.old.mapping({
 								sensor: jsh.shell.tools.node.Installation.getVersion
@@ -1003,4 +990,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,JavaAdapter,$slime,$api,jsh,plugins,plugin,$loader)
+)(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader)

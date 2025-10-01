@@ -18,7 +18,10 @@
 	function($api,plugins,jsh,$slime,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.document && jsh.js.document && jsh.web && jsh.java && jsh.io && jsh.file);
+				return Boolean(
+					jsh.js && jsh.document && jsh.js.document && jsh.web && jsh.java && jsh.io && jsh.file
+					&& jsh.internal && jsh.internal.bootstrap
+				);
 			},
 			load: function() {
 				/**
@@ -28,6 +31,7 @@
 				 */
 				var toShellContextOutputStream = function(outputStream) {
 					return {
+						pipe: outputStream.pipe,
 						character: function() {
 							return outputStream.character();
 						},
@@ -50,6 +54,7 @@
 
 				var mContext = {
 					api: {
+						bootstrap: jsh.internal.bootstrap,
 						js: jsh.js,
 						java: jsh.java,
 						io: jsh.io,

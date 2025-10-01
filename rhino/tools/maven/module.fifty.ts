@@ -76,8 +76,8 @@ namespace slime.jrunscript.tools.maven {
 		home: string
 	}
 
-	export namespace exports {
-		export interface Installation {}
+	export namespace installation {
+		export interface Exports {}
 
 		(
 			function(
@@ -90,11 +90,11 @@ namespace slime.jrunscript.tools.maven {
 	}
 
 	export interface Exports {
-		Installation: exports.Installation
+		Installation: installation.Exports
 	}
 
-	export namespace exports {
-		export interface Installation {
+	export namespace installation {
+		export interface Exports {
 			require: {
 				world: slime.$api.fp.world.Means<
 					{
@@ -201,8 +201,8 @@ namespace slime.jrunscript.tools.maven {
 		)(fifty);
 	}
 
-	export namespace exports {
-		export interface Installation {
+	export namespace installation {
+		export interface Exports {
 			exists: {
 				world: slime.$api.fp.world.Sensor<maven.Installation, void, boolean>
 			}
@@ -243,8 +243,8 @@ namespace slime.jrunscript.tools.maven {
 		)(fifty);
 	}
 
-	export namespace exports {
-		export interface Installation {
+	export namespace installation {
+		export interface Exports {
 			version: {
 				world: slime.$api.fp.world.Sensor<maven.Installation, void, string>
 			}
@@ -478,7 +478,7 @@ namespace slime.jrunscript.tools.maven {
 
 				var atStart = subject.xml.edit.insert.element({
 					parent: jsh.document.Document.element,
-					after: $api.fp.mapping.all(null),
+					after: $api.fp.Mapping.all(null),
 					lines: 1,
 					indent: "  ",
 					element: foo

@@ -4,64 +4,77 @@
 //
 //	END LICENSE
 
-plugin({
-	isReady: function() {
-		return jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.mock && jsh.unit.mock.Web;
-	},
-	load: function() {
-		if (!jsh.test) jsh.test = {};
-		if (!jsh.test.launcher) jsh.test.launcher = {};
-		jsh.test.launcher.MockRemote = function(o) {
-			var delegate = new jsh.unit.mock.Web();
-			delegate.add(jsh.unit.mock.Web.bitbucket({
-				src: o.src
-			}));
-			delegate.add(function(request) {
-				//	TODO	basically we are proxying the below and should create an API for it
-				if (request.headers.value("host") == "ftp.mozilla.org") {
-					//	TODO	make it possible to reconstruct this from server information
-					var url = "http://" + request.headers.value("host") + "/" + request.path;
-					return new jsh.http.Client().request({
-						url: url
+//@ts-check
+(
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.jsh.plugin.Scope["plugin"] } plugin
+	 */
+	function($api,jsh,plugin) {
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.mock && jsh.unit.mock.Web);
+			},
+			load: function() {
+				if (!jsh.test) jsh.test = {};
+				if (!jsh.test.launcher) jsh.test.launcher = {};
+				jsh.test.launcher.MockRemote = function(o) {
+					var delegate = jsh.unit.mock.Web();
+					delegate.add(jsh.unit.mock.web.Bitbucket({
+						src: o.src
+					}));
+					delegate.add(function(request) {
+						//	TODO	basically we are proxying the below and should create an API for it
+						if (request.headers.value("host") == "ftp.mozilla.org") {
+							//	TODO	make it possible to reconstruct this from server information
+							var url = "http://" + request.headers.value("host") + "/" + request.path;
+							return new jsh.http.Client().request({
+								url: url
+							});
+							return {
+								status: { code: 500 }
+							};
+						}
 					});
-					return {
-						status: { code: 500 }
-					};
-				}
-			});
-			delegate.start();
-			return new function() {
-				this.port = delegate.port;
+					delegate.start();
+					return new function() {
+						this.port = delegate.port;
 
-				this.client = delegate.client;
+						this.client = delegate.client;
 
-				this.jsh = function(o) {
-					return this.jrunscript(jsh.js.Object.set({}, o, {
-						arguments: [
-							"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
-							o.script
-						].concat( (o.arguments) ? o.arguments : [] )
-					}));
-				}
+						this.jsh = function(o) {
+							return this.jrunscript(jsh.js.Object.set({}, o, {
+								arguments: [
+									"-e", "load('http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/rhino/jrunscript/api.js?jsh')",
+									o.script
+								].concat( (o.arguments) ? o.arguments : [] )
+							}));
+						}
 
-				//	TODO	https?
+						//	TODO	https?
 
-				this.jrunscript = function(o) {
-					var properties = {
-						"http.proxyHost": "127.0.0.1",
-						"http.proxyPort": String(delegate.port)
-					};
-					jsh.js.Object.set(properties, (o.properties) ? o.properties : {});
-					return jsh.shell.jrunscript(jsh.js.Object.set({}, o, {
-						properties: properties,
-						arguments: (o.arguments) ? o.arguments : []
-					}));
-				}
+						this.jrunscript = function(o) {
+							var properties = {
+								"http.proxyHost": "127.0.0.1",
+								"http.proxyPort": String(delegate.port)
+							};
+							jsh.js.Object.set(properties, (o.properties) ? o.properties : {});
+							return jsh.shell.jrunscript.old(jsh.js.Object.set({}, o, {
+								properties: properties,
+								arguments: (o.arguments) ? o.arguments : []
+							}));
+						}
 
-				this.stop = function() {
-					delegate.stop();
+						this.stop = function() {
+							delegate.stop();
+						}
+					}
 				}
 			}
-		}
+		})
+
 	}
-})
+//@ts-ignore
+)($api,$context,$export);

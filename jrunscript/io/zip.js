@@ -10,8 +10,8 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { { Streams: any, InputStream: slime.jrunscript.runtime.io.Exports["InputStream"]["java"] } } $context
-	 * @param { slime.jrunscript.io.Exports["archive"]["zip"] } $exports
+	 * @param { slime.jrunscript.io.zip.Context } $context
+	 * @param { slime.jrunscript.io.zip.Exports } $exports
 	 */
 	function(Packages,$api,$context,$exports) {
 		var _streams = new Packages.inonit.script.runtime.io.Streams();
@@ -67,16 +67,23 @@
 
 				/**
 				 *
-				 * @param { string } name
-				 * @param { slime.jrunscript.runtime.io.InputStream } $stream
+				 * @param { slime.jrunscript.io.archive.File<slime.jrunscript.io.zip.Entry> } file
 				 */
-				this.addEntry = function(name,$stream) {
-					createDirectory(directoryNameFor(name));
-					var entry = new Packages.java.util.zip.ZipEntry(name);
+				this.addEntry = function(file) {
+					createDirectory(directoryNameFor(file.path));
+					var entry = new Packages.java.util.zip.ZipEntry(file.path);
+					if (file.time.modified.present) {
+						entry.setLastModifiedTime(Packages.java.nio.file.attribute.FileTime.fromMillis(file.time.modified.value));
+					}
+					if (file.time.created.present) {
+						entry.setCreationTime(Packages.java.nio.file.attribute.FileTime.fromMillis(file.time.created.value));
+					}
+					if (file.time.accessed.present) {
+						entry.setLastAccessTime(Packages.java.nio.file.attribute.FileTime.fromMillis(file.time.accessed.value));
+					}
 					peer.putNextEntry(entry);
-					$context.Streams.binary.copy($stream, peer);
+					$context.Streams.binary.copy(file.content, peer);
 					peer.closeEntry();
-					$stream.close();
 				}
 			};
 
@@ -84,14 +91,10 @@
 				p.entries,
 				$api.fp.impure.Stream.forEach(function(entry) {
 					if (isFileEntry(entry)) {
-						zipOutputStream.addEntry(entry.path, entry.content);
+						zipOutputStream.addEntry(entry);
 					}
 				})
 			);
-
-			for (var i=0; i<p.entries.length; i++) {
-				zipOutputStream.addEntry(p.entries[i].path,p.entries[i].content());
-			}
 
 			zipOutputStream.close();
 		};
@@ -99,15 +102,37 @@
 		$exports.decode = function(p) {
 			var _zipstream = new Packages.java.util.zip.ZipInputStream(p.stream.java.adapt());
 			var entry;
-			/** @type { slime.jrunscript.io.archive.Entry<{}>[] } */
+			/** @type { slime.jrunscript.io.archive.Entry<slime.jrunscript.io.zip.Entry>[] } */
 			var array = [];
 			while( (entry = _zipstream.getNextEntry()) != null ) {
 				var name = String(entry.getName());
+				/** @type { (time: slime.jrunscript.native.java.nio.file.attribute.FileTime) => slime.$api.fp.Maybe<number> } */
+				var fileTimeToMaybe = function(value) {
+					if (value === null) return $api.fp.Maybe.from.nothing();
+					return $api.fp.Maybe.from.some(value.toMillis());
+				}
 				if (name.substring(name.length-1) == "/") {
-					array.push({ path: name.substring(0,name.length-1) });
+					array.push({
+						path: name.substring(0,name.length-1),
+						time: {
+							modified: fileTimeToMaybe(entry.getLastModifiedTime()),
+							created: fileTimeToMaybe(entry.getCreationTime()),
+							accessed: fileTimeToMaybe(entry.getLastAccessTime())
+						},
+						comment: $api.fp.Maybe.from.value(entry.getComment())
+					});
 				} else {
 					var _bytes = _streams.readBytes(_zipstream, false);
-					array.push({ path: name, content: $context.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes)) });
+					array.push({
+						path: name,
+						time: {
+							modified: fileTimeToMaybe(entry.getLastModifiedTime()),
+							created: fileTimeToMaybe(entry.getCreationTime()),
+							accessed: fileTimeToMaybe(entry.getLastAccessTime())
+						},
+						comment: $api.fp.Maybe.from.value(entry.getComment()),
+						content: $context.InputStream(new Packages.java.io.ByteArrayInputStream(_bytes))
+					});
 				}
 			}
 			return $api.fp.Stream.from.array(array);

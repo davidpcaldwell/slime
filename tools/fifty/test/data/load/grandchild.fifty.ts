@@ -6,7 +6,7 @@
 
 (
 	function(
-		verify: slime.fifty.test.verify,
+		verify: slime.definition.verify.Verify,
 		tests: slime.fifty.test.tests
 	) {
 		tests.types.Object = function(object: { a: number }) {

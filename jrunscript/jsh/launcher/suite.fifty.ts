@@ -25,7 +25,7 @@ namespace slime.jsh.internal.launcher {
 				var jshDataScript = fifty.jsh.file.relative("../test/jsh-data.jsh.js").pathname;
 				var packaged = test.shells.packaged(jshDataScript);
 				var classpathOsLocation = packaged.package;
-				var classpathUri = String(jsh.file.Pathname(classpathOsLocation).java.adapt().toURI().toString());
+				var classpathUri = String(jsh.file.Pathname(classpathOsLocation).java.adapt().getCanonicalFile().toURI().toString());
 				var intention = packaged.invoke({
 					stdio: {
 						output: "string"
@@ -38,6 +38,12 @@ namespace slime.jsh.internal.launcher {
 				var data: { shellClasspath: string } = JSON.parse(result.stdio.output);
 
 				verify(data).shellClasspath.is(classpathUri);
+			}
+
+			fifty.tests.manual = function() {
+				const { jsh } = fifty.global;
+
+				jsh.shell.console("jsh = " + jsh.internal.bootstrap["jsh"]);
 			}
 		}
 	//@ts-ignore

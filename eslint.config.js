@@ -16,7 +16,8 @@ export default [
 		//	files
 		//	ignores
 		languageOptions: {
-			ecmaVersion: 5,
+			//	TODO	revisit, should probably be directory-specific
+			ecmaVersion: 2022,
 			sourceType: "script"
 		},
 		rules: {

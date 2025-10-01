@@ -9,17 +9,27 @@ interface Function {
 }
 
 /**
- * The `$api` object is provided to all code loaded by the platform loader. It provides basic JavaScript language functionality.
+ *
+ * The `$api` object is provided to all code loaded by the platform loader. It represents the SLIME APIs available on all platforms.
+ * (Some platform-specific APIs are available through properties of the `$api` object, sucn as `$api.jrunscript` and `$api.browser`.)
+ *
+ * ## Functional programming: {@link slime.$api.fp `$api.fp`}
  *
  * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
+ *
+ * ## Handling content: {@link slime.runtime.content `$api.content`}
+ *
+ * The `$api.content` namespace provides the ability to handle _content_. *Content* is defined in SLIME as a hierarchical structure
+ * with a root and containing paths. It can represent a filesystem, a URL space, a ZIP/TAR file, or any other logically hierarchical
+ * structure.
+ *
+ * ## Handling deprecation and API usage
  *
  * Various `$api` methods can "flag" APIs for callers, causing a configurable callback to be executed when they are invoked, to warn
  * the users that the APIs are deprecated or experimental. See the `deprecate` and `experimental` functions of {@link slime.$api.Global |
  * `$api`}.
  */
 namespace slime.$api {
-	export type Function = (...args: any[]) => any
-
 	(
 		function(fifty: slime.fifty.test.Kit) {
 			fifty.tests.exports = fifty.test.Parent();
@@ -27,6 +37,11 @@ namespace slime.$api {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Global {
+		engine: slime.runtime.Engine
+		content: slime.runtime.content.Exports
+	}
 
 	export namespace fp {
 		export interface Exports {
@@ -46,7 +61,8 @@ namespace slime.$api {
 
 	export interface Global {
 		debug: {
-			disableBreakOnExceptionsFor: <T extends slime.external.lib.es5.Function>(f: T) => T
+			//	TODO	simplify below?
+			disableBreakOnExceptionsFor: <T,P extends any[],R,F extends slime.external.lib.es5.Function<T,P,R>>(f: F) => F
 		}
 
 		/**
@@ -482,16 +498,16 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
+	export namespace object {
 		/**
 		 * Methods pertaining to the JavaScriot _object_ construct.
 		 */
-		export interface Object {
+		export interface Exports {
 		}
 	}
 
 	export interface Global {
-		Object: exports.Object & {
+		Object: object.Exports & {
 			/** @deprecated Replicates functionality of Object.fromEntries */
 			(p: { properties: {name: string, value: any }[] }): { [x: string]: any }
 		}
@@ -526,8 +542,8 @@ namespace slime.$api {
 
 	export type es5Object = Object
 
-	export namespace exports {
-		export interface Object {
+	export namespace object {
+		export interface Exports {
 			/**
 			 * Takes a list of objects and composes them into a new object. Properties are copied from each source object in
 			 * succession, with values from later objects replacing those from earlier objects.
@@ -559,7 +575,7 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Object {
+		export interface Exports {
 			/**
 			 * Provides an optional chaining API that seeks to be maximally compatible with the [standard
 			 * implementation](https://tc39.es/ecma262/multipage/ecmascript-language-expressions.html#prod-OptionalExpression).
@@ -601,7 +617,7 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Object {
+		export interface Exports {
 			/**
 			 * Returns the list of properties for an object.
 			 *
@@ -636,7 +652,7 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Object {
+		export interface Exports {
 			values: {
 				/**
 				 * @experimental Completely untested.
@@ -654,7 +670,7 @@ namespace slime.$api {
 			set?(v: T): void;
 		}
 
-		export interface Object {
+		export interface Exports {
 			defineProperty: <N extends string,V>(p: {
 				name: N
 				descriptor: PropertyDescriptor<V>
@@ -736,6 +752,38 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 	}
+
+	export interface Global {
+		Function: slime.$api.fp.internal.old.Create & {
+			call: <T,P extends any[],R>(f: slime.external.lib.es5.Function<T,P,R>, target: T, ...args: P) => R
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.Function = fifty.test.Parent();
+
+			fifty.tests.exports.Function.call = function() {
+				type T = { n: number };
+				type P = [ { a: string }, { b: boolean } ]
+				type R = { target: T, arguments: P }
+				const f = function(this: T, ...args: P): R {
+					return { target: this, arguments: args };
+				};
+
+				const r = $api.Function.call(f, { n: 2 }, { a: "foo" }, { b: false });
+				verify(r).target.n.is(2);
+				verify(r).arguments[0].a.is("foo");
+				verify(r).arguments[1].b.is(false);
+			};
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Global {
 		Array: {
@@ -820,14 +868,30 @@ namespace slime.$api {
 		}
 
 		export interface Custom<N extends string,P extends {}> extends Error {
+			name: N
 			properties: P
 		}
 
+		export type CustomDefinition<N extends string, S extends Error = Error, P extends {} = {}> = {
+			name: N
+			extends?: S,
+			getMessage: (p?: P) => string
+		}
+
 		export type CustomType<N extends string,P extends {}> = {
-			new (p?: P): Custom<N,P>;
+			//new (p?: P): Custom<N,P>;
 			(p?: P): Custom<N,P>;
 			readonly prototype: Custom<N,P>;
 		}
+
+		export type CustomTypeMapping<T extends CustomDefinition<any,any,any>> =
+			T extends CustomDefinition<
+				infer N,
+				infer S,
+				infer P
+			>
+			? CustomType<N,P>
+			: never
 	}
 
 	export interface Global {
@@ -868,11 +932,7 @@ namespace slime.$api {
 			 * these properties are used to generate the error message via the `getMessage` provided when creating the type, and are
 			 * available on error instances via the `properties` property.
 			 */
-			type: <N extends string,S extends () => Error,P extends {}>(p: {
-				name: N
-				extends?: S,
-				getMessage: (p?: P) => string
-			}) => error.CustomType<N,P>
+			type: <N extends string,S extends Error,P extends {}>(p: error.CustomDefinition<N,S,P>) => error.CustomType<N,P>
 		}
 	}
 
@@ -881,44 +941,7 @@ namespace slime.$api {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
-			const { $api } = fifty.global;
-
-			fifty.tests.manual.Error = {
-				//	Given that stack is non-standard, not adding this to suite and not really asserting on its format
-				//	TODO	*is* stack still non-standard?
-				stack: function() {
-					var OldType = $api.Error.old.Type({
-						name: "foo",
-						extends: TypeError
-					});
-
-					try {
-						throw new OldType("bar");
-					} catch (e) {
-						var error: Error = e;
-						verify(error).stack.is.not(void(0));
-					}
-
-					var Type = $api.Error.type({
-						name: "Foo",
-						extends: TypeError,
-						getMessage: function() {
-							return "bar";
-						}
-					});
-
-					try {
-						throw new Type();
-					} catch (e) {
-						var error: Error = e;
-						verify(e).stack.is.type("string");
-						//	TODO	in jsh (at least under Rhino), this stack trace does not include the error's toString(); in Chrome, it
-						//			does. Other platforms untested.
-						if (fifty.global.jsh) fifty.global.jsh.shell.console(e.stack);
-						if (fifty.global.window) fifty.global.window["console"].log(e.stack);
-					}
-				}
-			};
+			const { $api, jsh } = fifty.global;
 
 			fifty.tests.exports.Error = function() {
 				var CustomError = $api.Error.old.Type({
@@ -985,17 +1008,18 @@ namespace slime.$api {
 			fifty.tests.exports.Error.type = function() {
 				var Parent = $api.Error.type({
 					name: "Foo",
-					extends: TypeError,
+					extends: TypeError.prototype,
 					getMessage: function(p: { foo: string, bar: number }): string {
 						return (p) ? "baz: foo=" + p.foo + " bar=" + p.bar : "baz: no p";
 					}
 				});
 
-				var e = new Parent({ foo: "foo", bar: 8 });
+				var e = Parent({ foo: "foo", bar: 8 });
+				verify(Parent.prototype == Object.getPrototypeOf(e)).is(true);
 
 				var Child = $api.Error.type({
 					name: "Bar",
-					extends: Parent,
+					extends: Parent.prototype,
 					getMessage: function(p: { baz: string }): string {
 						return "hey, it is " + p.baz;
 					}
@@ -1010,7 +1034,7 @@ namespace slime.$api {
 				verify(e).properties.foo.is("foo");
 				verify(e).properties.bar.is(8);
 
-				var c = new Child({ baz: "bizzy" });
+				var c = Child({ baz: "bizzy" });
 				verify(c).message.is("hey, it is bizzy");
 				verify(c).evaluate(String).is("Bar: hey, it is bizzy");
 				verify(c).evaluate(function(e) { return e instanceof Child }).is(true);
@@ -1028,15 +1052,88 @@ namespace slime.$api {
 						return "foo";
 					}
 				});
-				var n = new NoSupertype();
+				var n = NoSupertype();
 				verify(n).is.type("object");
+				if (fifty.global.jsh) {
+					var rhino = fifty.global.jsh.internal.bootstrap.engine.rhino.running();
+					if (rhino) {
+						var rhinoVersion = rhino.getImplementationVersion();
+						verify(rhinoVersion).is(rhinoVersion);
+					}
+				}
+			}
+
+			fifty.tests.manual.Error = {};
+			fifty.tests.manual.Error.stack = function() {
+				debugger;
+				var stack = new Error().stack;
+
+				verify(stack).is.type("string");
+				//	In Rhino, this line should be something like:
+				//	at /[absolute-path]/slime/loader/jrunscript/expression.fifty.ts:51
+				jsh.shell.console("Error stack = [" + stack + "]");
+
+				var Custom = $api.Error.type({
+					name: "Custom",
+					getMessage: function(p) {
+						return "Custom";
+					}
+				});
+				var customMessage = Custom().message;
+				var customStack = Custom().stack;
+				var rhino = jsh.internal.bootstrap.engine.rhino.running();
+				var rhinoVersion = (rhino) ? rhino.getImplementationVersion() : void(0);
+				jsh.shell.console("Custom message = [" + customMessage + "]");
+				jsh.shell.console("Custom stack = [" + customStack + "]");
+				jsh.shell.console("Rhino version = " + rhinoVersion);
+
+				//	TODO	for custom errors, not sure how Rhino / Nashorn handle these
+				//			see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/captureStackTrace
+				jsh.shell.console("Error.captureStackTrace: type " + typeof(Error["captureStackTrace"]));
+				jsh.shell.console("Error.stackTraceLimit: type " + typeof(Error["stackTraceLimit"]));
+				//	See https://esdiscuss.org/topic/getownpropertydescriptor-side-effects
+				jsh.shell.console("Error.prepareStackTrace: type " + typeof(Error["prepareStackTrace"]));
+
+				fifty.run(function old() {
+					var OldType = $api.Error.old.Type({
+						name: "foo",
+						extends: TypeError
+					});
+
+					try {
+						throw new OldType("bar");
+					} catch (e) {
+						var error: Error = e;
+						verify(error).evaluate.property("stack").is.type("string");
+						//verify(error).stack.is.not(void(0));
+					}
+
+					var Type = $api.Error.type({
+						name: "Foo",
+						extends: TypeError.prototype,
+						getMessage: function() {
+							return "bar";
+						}
+					});
+
+					try {
+						throw Type();
+					} catch (e) {
+						var error: Error = e;
+						verify(error).evaluate.property("stack").is.type("string");
+						//	TODO	in jsh (at least under Rhino), this stack trace does not include the error's toString(); in Chrome, it
+						//			does. Other platforms untested.
+						if (fifty.global.jsh) fifty.global.jsh.shell.console(e.stack);
+						if (fifty.global.window) fifty.global.window["console"].log(e.stack);
+					}
+				});
 			}
 		}
 	//@ts-ignore
 	)(fifty);
 
 	export interface Global {
-		TODO: (p?: { message: slime.$api.fp.Thunk<string> }) => Function
+		TODO: (p?: { message: slime.$api.fp.Thunk<string> }) => () => never
 	}
 
 	export interface Global {
@@ -1294,6 +1391,19 @@ namespace slime.$api {
 
 namespace slime.$api.internal {
 	export type script = <C,E>(name: string) => slime.loader.Script<C,E>
+
+	export interface Scope {
+		$engine: Pick<slime.runtime.Engine,"execute"|"debugger">
+		$slime: Pick<slime.runtime.scope.Deployment,"getRuntimeScript">
+		Packages: slime.jrunscript.Packages
+	}
+
+	export interface Exports {
+		scripts: Pick<slime.runtime.internal.scripts.Exports,"internal"|"platform">
+		exports: Omit<slime.$api.Global,"scripts"> & { scripts: Omit<slime.$api.Global["scripts"],"compiler"> }
+	}
+
+	export type Script = slime.loader.Script<Scope,Exports>
 }
 
 namespace slime.$api.oo {

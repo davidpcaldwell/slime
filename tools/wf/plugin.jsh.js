@@ -16,7 +16,7 @@
 	function($api,$slime,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.file && jsh.shell && jsh.shell.tools && jsh.ui && jsh.tools && jsh.tools.git);
+				return Boolean(jsh.file && jsh.shell && jsh.shell.tools && jsh.ui && jsh.tools && jsh.tools.git && jsh.project && jsh.project.dependencies);
 			},
 			load: function() {
 				var code = {
@@ -35,6 +35,13 @@
 							jsh: {
 								shell: jsh.shell,
 								node: jsh.shell.tools.node
+							}
+						},
+						configuration: {
+							typescript: {
+								version: function() {
+									return jsh.project.dependencies.data.typescript.version;
+								}
 							}
 						},
 						world: {
@@ -681,10 +688,10 @@
 				 * @returns
 				 */
 				var getTypedocCommand = function(stdio,project,out) {
-					var version = library.module.project.typescript.version(project);
-					var configuration = library.module.project.typescript.configurationFile(project);
 					jsh.shell.tools.rhino.require.simple();
-					$api.fp.world.now.action(jsh.shell.tools.tomcat.jsh.require.world);
+
+					//	TODO	would this really be required? To serve it, maybe, but to run it?
+					jsh.shell.tools.tomcat.jsh.require.simple();
 
 					var getVersion = $api.fp.world.Sensor.old.mapping({
 						sensor: jsh.shell.tools.node.Installation.getVersion
@@ -704,7 +711,12 @@
 							}
 						}
 					});
+
+					var version = library.module.project.typescript.version(project);
+
+					var configuration = library.module.project.typescript.configurationFile(project);
 					if (!configuration.present) throw new Error("Not found: TypeScript configuration file.");
+
 					/** @type { slime.jsh.wf.internal.module.typedoc.Invocation } */
 					var typedocInvocation = {
 						stdio: stdio,
@@ -1129,7 +1141,7 @@
 								events.fire("console", "Handling final newlines ...");
 								var newlineHandler = {
 									unknownFileType: function(e) {
-										events.fire("console", "Could not determine whether file is text or binary: " + e.detail.path);
+										events.fire("console", " whether file is text or binary: " + e.detail.path);
 										success = false;
 									},
 									missing: function(e) {
@@ -1331,7 +1343,7 @@
 								}
 							});
 
-							success = success && upToDateWiithOrigin({
+							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_OUTDATED_BRANCH) success = success && upToDateWiithOrigin({
 								repository: repository
 							})({
 								console: function(e) {

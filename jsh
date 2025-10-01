@@ -8,7 +8,7 @@
 #	rm -Rvf local/jdk/default; rm -Rvf ~/.slime/jdk/default; ./jsh jsh/test/jsh-data.jsh.js; ./jsh --install-user-jdk; rm -Rvf local/jdk/default; ./jsh jsh/test/jsh-data.jsh.js
 #	check java.home of last script invoked and ensure that it is the user JDK
 
-if [ -n "${JSH_LAUNCHER_BASH_DEBUG}" ]; then
+if [ -n "${JSH_LAUNCHER_COMMAND_DEBUG}" ]; then
 	set -x
 fi
 
@@ -19,8 +19,7 @@ if test -z "$0:-"; then
 	>&2 echo "\$0 not set; exiting."
 	exit 1
 elif test "$0" == "bash"; then
-	#	Remote shell
-	#	set -x
+	#	Remote shell; this code is being piped to standard input
 	JSH_LOCAL_JDKS="$(mktemp -d)"
 	rmdir ${JSH_LOCAL_JDKS}
 	JDK_USER_JDKS=/dev/null
@@ -33,6 +32,7 @@ else
 	JSH_SHELL_LIB="${JSH_SHELL_LIB:-$(dirname $0)/local/jsh/lib}"
 fi
 
+#	In preparation for installing software at a given location, remove whatever is there
 clean_destination() {
 	TO="$1"
 	if [ -d "${TO}" ]; then
@@ -52,19 +52,26 @@ announce_install() {
 
 APT_UPDATED=
 debian_install_package() {
-	local SUDO=""
-	local sudo="$(which sudo)"
-	if [ ${sudo} ]; then
-		SUDO="${sudo}"
-	fi
 	local package="$1"
-	if [ "$(which apt-get)" ]; then
+	if [ "$(id -u)" -eq 0 ]; then
+		#	root
+		SUDO=""
+	else
+		local sudo="$(which sudo)"
+		if [ ${sudo} ]; then
+			SUDO="${sudo}"
+		else
+			>&2 echo "Could not install $package without sudo."
+			exit 1
+		fi
+	fi
+	if [ "$(which apt)" ]; then
 		if [ -z "${APT_UPDATED}" ]; then
-			${SUDO} apt-get -y update
-			${SUDO} apt-get -y upgrade
+			${SUDO} apt -y update
+			${SUDO} apt -y upgrade
 			APT_UPDATED=true
 		fi
-		${SUDO} apt-get -y install $package
+		${SUDO} apt -y install $package
 	else
 		exit 1
 	fi
@@ -75,12 +82,18 @@ download_install() {
 	LOCATION="$2"
 	if [ ! -f "${LOCATION}" ]; then
 		>&2 echo "Downloading ${URL} ..."
-		if [ "${UNAME}" == "Darwin" ]; then
+		if command -v curl &> /dev/null; then
 			mkdir -p "$(dirname $LOCATION)" 2>/dev/null
 			curl -L -o ${LOCATION} ${URL}
-		elif [ "${UNAME}" == "Linux" ]; then
-			if [ ! "$(which wget)" ]; then
-				debian_install_package wget
+		else
+			if ! command -v wget &> /dev/null; then
+				if command -v apt &>/dev/null; then
+					debian_install_package wget
+				else
+					>&2 echo "Could not install wget; only Debian / apt is supported for package management."
+					>&2 echo "Install curl or wget and re-run."
+					exit 1
+				fi
 			fi
 			mkdir -p "$(dirname $LOCATION)" 2>/dev/null
 			wget -O ${LOCATION} ${URL}
@@ -88,58 +101,8 @@ download_install() {
 	fi
 }
 
-install_jdk_8_adoptopenjdk() {
-	TO=$(clean_destination $1)
-
-	JDK_TARBALL_URL="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u232-b09/OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
-	JDK_TARBALL_BASENAME="OpenJDK8U-jdk_x64_mac_hotspot_8u232b09.tar.gz"
-	JDK_TARBALL_LOCATION="${HOME}/Downloads/${JDK_TARBALL_BASENAME}"
-	JDK_TARBALL_PATH="jdk8u232-b09"
-
-	announce_install "${JDK_TARBALL_URL}" "${TO}"
-
-	if [ ! -f "${JDK_TARBALL_LOCATION}" ]; then
-		echo "Downloading ${JDK_TARBALL_URL} ..."
-		curl -L -o ${HOME}/Downloads/${JDK_TARBALL_BASENAME} ${JDK_TARBALL_URL}
-	fi
-	JDK_WORKDIR=$(mktemp -d)
-	tar xvf ${JDK_TARBALL_LOCATION} -C ${JDK_WORKDIR}
-	mv ${JDK_WORKDIR}/${JDK_TARBALL_PATH} ${TO}
-}
-
-install_jdk_8_liberica() {
-	TO=$(clean_destination $1)
-
-	JDK_ZIP_URL="https://download.bell-sw.com/java/8u232+10/bellsoft-jdk8u232+10-macos-amd64.zip"
-	JDK_ZIP_BASENAME="bellsoft-jdk8u232+10-macos-amd64.zip"
-	JDK_ZIP_PATH="jdk8u232"
-	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
-
-	announce_install "${JDK_ZIP_URL}" "${TO}"
-	download_install "${JDK_ZIP_URL}" "${JDK_ZIP_LOCATION}"
-
-	JDK_WORKDIR=$(mktemp -d)
-	unzip -q ${JDK_ZIP_LOCATION} -d ${JDK_WORKDIR}
-	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
-}
-
-install_jdk_11_liberica() {
-	TO=$(clean_destination $1)
-
-	JDK_ZIP_URL="https://download.bell-sw.com/java/11.0.7+10/bellsoft-jdk11.0.7+10-macos-amd64.zip"
-	JDK_ZIP_BASENAME="bellsoft-jdk11.0.7+10-macos-amd64.zip"
-	JDK_ZIP_PATH="jdk-11.0.7.jdk"
-	JDK_ZIP_LOCATION="${HOME}/Downloads/${JDK_ZIP_BASENAME}"
-	if [ ! -f "${JDK_ZIP_LOCATION}" ]; then
-		echo "Downloading ${JDK_ZIP_URL} ..."
-		curl -o ${HOME}/Downloads/${JDK_ZIP_BASENAME} ${JDK_ZIP_URL}
-	fi
-	JDK_WORKDIR=$(mktemp -d)
-	unzip -q ${JDK_ZIP_LOCATION} -d ${JDK_WORKDIR}
-	mv ${JDK_WORKDIR}/${JDK_ZIP_PATH} ${TO}
-}
-
-get_major_version() {
+#	Returns the major version of a JDK (including GraalVM) given its full version number
+get_major_version_from_jdk_version() {
 	local VERSION="$1"
 	local MAJOR=$(echo $VERSION | cut -d'.' -f1)
 	echo ${MAJOR}
@@ -147,7 +110,7 @@ get_major_version() {
 
 install_jdk_corretto() {
 	local VERSION="$1"
-	local MAJOR_VERSION=$(get_major_version ${VERSION})
+	local MAJOR_VERSION=$(get_major_version_from_jdk_version ${VERSION})
 	TO=$(clean_destination "$2")
 
 	if [ "${UNAME}" == "Darwin" ]; then
@@ -168,6 +131,9 @@ install_jdk_corretto() {
 		fi
 	fi
 	JDK_TARBALL_URL="https://corretto.aws/downloads/resources/${VERSION}/${JDK_TARBALL_BASENAME}"
+
+	announce_install "${JDK_TARBALL_URL}" "${TO}"
+
 	if [ ! -d "${HOME}/Downloads" ]; then
 		mkdir "${HOME}/Downloads"
 	fi
@@ -188,17 +154,25 @@ install_jdk_corretto() {
 install_graalvm() {
 	local VERSION="$1"
 	local TO=$(clean_destination "$2")
-	local MAJOR=$(get_major_version ${VERSION})
+	local MAJOR=$(get_major_version_from_jdk_version ${VERSION})
 	local JDK_TARBALL_URL=""
+	local GRAAL_ARCH=${ARCH}
+	if [ "${GRAAL_ARCH}" = "arm64" ]; then
+		GRAAL_ARCH=aarch64
+	fi
+	#	See https://www.oracle.com/java/technologies/downloads/archive/#GraalVM for information about versions
 	if [ "${UNAME}" == "Darwin" ]; then
-		if [ "${ARCH}" == "arm64" ]; then
-			JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_macos-aarch64_bin.tar.gz"
-		fi
+		JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_macos-${GRAAL_ARCH}_bin.tar.gz"
+	elif [ "${UNAME}" == "Linux" ]; then
+		JDK_TARBALL_URL="https://download.oracle.com/graalvm/${MAJOR}/archive/graalvm-jdk-${VERSION}_linux-${GRAAL_ARCH}_bin.tar.gz"
 	fi
 	if [ -z "${JDK_TARBALL_URL}" ]; then
 		>&2 echo "Unsupported OS/architecture: ${UNAME} ${ARCH}"
 		exit 1
 	fi
+
+	announce_install "${JDK_TARBALL_URL}" "${TO}"
+
 	local JDK_TARBALL_BASENAME="$(echo $JDK_TARBALL_URL | cut -d'/' -f7)"
 	if [ ! -d "${HOME}/Downloads" ]; then
 		mkdir "${HOME}/Downloads"
@@ -258,7 +232,8 @@ install_jdk() {
 }
 
 
-JSH_BOOTSTRAP_RHINO="${JSH_SHELL_LIB}/js.jar"
+#	Possible basis for supporting Rhino as bootstrap engine via JSR-223
+#	JSH_BOOTSTRAP_RHINO="${JSH_SHELL_LIB}/js.jar"
 JSH_BOOTSTRAP_NASHORN="${JSH_SHELL_LIB}/nashorn.jar"
 # @notdry nashorn-dependencies
 JSH_BOOTSTRAP_NASHORN_LIBRARIES_GROUP=org.ow2.asm
@@ -312,10 +287,16 @@ install_nashorn() {
 	install_maven_dependency org.openjdk.nashorn nashorn-core ${NASHORN_VERSION} ${JSH_SHELL_LIB}/nashorn.jar
 }
 
-get_jdk_major_version() {
+get_jrunscript_java_major_version() {
+	#	It would be more straightforward to just do jrunscript -e "print(Packages.java.lang.System.getProperty('java.version'))"
+	#	and then parse that. But with Nashorn 11, there's deprecation output, and with 17/21, there's no Nashorn so you can't
+	#	execute the script. So we fall back to Java and hope our jrunscript is installed normally, rather than in /usr/bin or
+	#	something
+
 	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
 	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
-	JDK=$1
+	JRUNSCRIPT=$1
+	JDK=$(dirname $JRUNSCRIPT)/..
 	JAVA="${JDK}/bin/java"
 	IFS=$'\n'
 	JAVA_VERSION_OUTPUT=$(${JAVA} -version 2>&1)
@@ -361,8 +342,9 @@ if [ "$1" == "--install-jdk-21" ]; then
 fi
 
 if [ "$1" == "--install-graalvm" ]; then
-	install_graalvm "21.0.2" ${JSH_SHELL_LIB}/graal
+	install_graalvm "21.0.7" ${JSH_SHELL_LIB}/graal
 	GRAAL_POLYGLOT_LIB="${JSH_SHELL_LIB}/graal/lib/polyglot"
+	GRAALJS_VERSION="23.1.7"
 	#	TODO	what if this directory exists? Clear it?
 	mkdir ${GRAAL_POLYGLOT_LIB}
 
@@ -380,29 +362,29 @@ if [ "$1" == "--install-graalvm" ]; then
 	#	We are dumping all of these to a single directory by themselves, so the jsh
 	#	launcher can simply list them and add them to the classpath or modulepath
 
-	install_maven_dependency org.graalvm.polyglot polyglot 23.1.0 ${GRAAL_POLYGLOT_LIB}/polyglot.jar
-	install_maven_dependency org.graalvm.sdk collections 23.1.0 ${GRAAL_POLYGLOT_LIB}/collections.jar
-	install_maven_dependency org.graalvm.sdk word 23.1.0 ${GRAAL_POLYGLOT_LIB}/word.jar
-	install_maven_dependency org.graalvm.sdk nativeimage 23.1.0 ${GRAAL_POLYGLOT_LIB}/nativeimage.jar
-	install_maven_dependency org.graalvm.truffle truffle-api 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-api.jar
-	install_maven_dependency org.graalvm.truffle truffle-enterprise 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-enterprise.jar
-	install_maven_dependency org.graalvm.truffle truffle-compiler 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-compiler.jar
-	install_maven_dependency org.graalvm.sdk jniutils 23.1.0 ${GRAAL_POLYGLOT_LIB}/jniutils.jar
-	install_maven_dependency org.graalvm.sdk nativebridge 23.1.0 ${GRAAL_POLYGLOT_LIB}/nativebridge.jar
-	install_maven_dependency org.graalvm.regex regex 23.1.0 ${GRAAL_POLYGLOT_LIB}/regex.jar
-	install_maven_dependency org.graalvm.truffle truffle-runtime 23.1.0 ${GRAAL_POLYGLOT_LIB}/truffle-runtime.jar
+	install_maven_dependency org.graalvm.polyglot polyglot ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/polyglot.jar
+	install_maven_dependency org.graalvm.sdk collections ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/collections.jar
+	install_maven_dependency org.graalvm.sdk word ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/word.jar
+	install_maven_dependency org.graalvm.sdk nativeimage ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/nativeimage.jar
+	install_maven_dependency org.graalvm.truffle truffle-api ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/truffle-api.jar
+	install_maven_dependency org.graalvm.truffle truffle-enterprise ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/truffle-enterprise.jar
+	install_maven_dependency org.graalvm.truffle truffle-compiler ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/truffle-compiler.jar
+	install_maven_dependency org.graalvm.sdk jniutils ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/jniutils.jar
+	install_maven_dependency org.graalvm.sdk nativebridge ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/nativebridge.jar
+	install_maven_dependency org.graalvm.regex regex ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/regex.jar
+	install_maven_dependency org.graalvm.truffle truffle-runtime ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/truffle-runtime.jar
 
-	install_maven_dependency org.graalvm.js js-language 23.1.0 ${GRAAL_POLYGLOT_LIB}/js-language.jar
-	install_maven_dependency org.graalvm.shadowed icu4j 23.1.0 ${GRAAL_POLYGLOT_LIB}/icu4j.jar
+	install_maven_dependency org.graalvm.js js-language ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/js-language.jar
+	install_maven_dependency org.graalvm.shadowed icu4j ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/icu4j.jar
 
 	#	Note that although the documentation explicitly states these are not required --
 	#	https://www.graalvm.org/latest/tools/chrome-debugger/ says (in contract to when launching with OpenJDK):
 	#	"The Chrome Inspector tool is always available as a tool on GraalVM. No dependency needs to be explicitly declared there,"
 	#	testing indicates these absolutely are required.
 
-	install_maven_dependency org.graalvm.shadowed json 23.1.0 ${GRAAL_POLYGLOT_LIB}/json.jar
-	install_maven_dependency org.graalvm.tools profiler-tool 23.1.0 ${GRAAL_POLYGLOT_LIB}/profiler-tool.jar
-	install_maven_dependency org.graalvm.tools chromeinspector-tool 23.1.0 ${GRAAL_POLYGLOT_LIB}/chromeinspector-tool.jar
+	install_maven_dependency org.graalvm.shadowed json ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/json.jar
+	install_maven_dependency org.graalvm.tools profiler-tool ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/profiler-tool.jar
+	install_maven_dependency org.graalvm.tools chromeinspector-tool ${GRAALJS_VERSION} ${GRAAL_POLYGLOT_LIB}/chromeinspector-tool.jar
 	exit $?
 fi
 
@@ -431,13 +413,15 @@ if [ "$1" == "--install-user-jdk" ]; then
 	exit $?
 fi
 
-if [ "$1" == "--install-rhino" ]; then
-	install_rhino
-	exit $?
-fi
+#	This capability was removed and to bring it back would require changes due to supporting multiple Rhino versions for Java
+#	version compatibility
+# if [ "$1" == "--install-rhino" ]; then
+# 	install_rhino
+# 	exit $?
+# fi
 
 if [ "$1" == "--test-jdk-major-version" ]; then
-	echo $(get_jdk_major_version $2)
+	echo $(get_jrunscript_java_major_version $2)
 	exit $?
 fi
 
@@ -520,7 +504,7 @@ fi
 #	If running in remote shell, and JDK is higher than 8, do not use it (the remote shell module path does not work correctly; see
 #	issue #1617)
 if test -n "${JRUNSCRIPT}" && test "$0" == "bash"; then
-	JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
+	JDK_MAJOR_VERSION=$(get_jrunscript_java_major_version $(dirname ${JRUNSCRIPT})/..)
 	if [ ${JDK_MAJOR_VERSION} != "8" ]; then
 		JRUNSCRIPT=""
 	fi
@@ -547,10 +531,10 @@ JSH_GITHUB_PASSWORD_ARGUMENT=$(javaSystemPropertyArgument jsh.github.password ${
 #	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
 #	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to
 #	be found with JDK 8. So we have to version-check the JDK to determine whether to supply the argument. This version test works
-#	with SLIME-supported Amazon Corretto JDK 8, JDK 11, and JDK 17, and hasn't yet been tested with anything else.
+#	with SLIME-supported Amazon Corretto JDK 8, JDK 11, JDK 17, and JDK 21, and hasn't yet been tested with anything else.
 #
-#	But it works with JDK 8, 11, and 17, so it's better than nothing.
-JDK_MAJOR_VERSION=$(get_jdk_major_version $(dirname ${JRUNSCRIPT})/..)
+#	But it works with JDK 8, 11, 17, and 21, so it's better than nothing.
+JDK_MAJOR_VERSION=$(get_jrunscript_java_major_version ${JRUNSCRIPT})
 if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
 	JRUNSCRIPT="${JRUNSCRIPT} ${JSH_NASHORN_DEPRECATION_ARGUMENT}"
@@ -566,6 +550,11 @@ if [ "${JDK_MAJOR_VERSION}" == "17" ] || [ "${JDK_MAJOR_VERSION}" == "21" ]; the
 	# BIN="$(dirname ${JRUNSCRIPT})"
 	# JRUNSCRIPT="${BIN}/java -jar ${JSH_BOOTSTRAP_RHINO} -opt -1"
 	JRUNSCRIPT="${JRUNSCRIPT} -classpath $(get_bootstrap_nashorn_classpath):${JSH_BOOTSTRAP_NASHORN}"
+fi
+
+if [ "$1" == "--shell-configure" ]; then
+	export JRUNSCRIPT
+	return 0
 fi
 
 if [ "$0" == "bash" ]; then

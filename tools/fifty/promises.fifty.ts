@@ -6,17 +6,44 @@
 
 namespace slime.definition.test.promises {
 	export namespace internal {
+		export type Executor = ConstructorParameters<PromiseConstructor>[0]
+
+		export interface Identifier {
+			id: number
+
+			executor: Executor
+
+			settled: boolean
+		}
+
+		export interface Dependency {
+			on: Identifier
+
+			promise: Promise<any>
+
+			from: {
+				id: number
+				onfulfilled: string
+				onrejected: string
+				promise: Promise<any>
+			}
+		}
+
 		export type Events = slime.$api.event.Emitter<{
-			created: Promise<any>
-			settled: Promise<any>
+			//created: Identifier
+			needed: Dependency
+			settled: Identifier
 		}>
 	}
 
 	export interface Registry {
 		wait: () => Promise<any>
 
+		external: (promise: Promise<any>) => void
+
 		test: {
-			list: () => Promise<any>[]
+			//	TODO	how is this used? just to check length? Or do we need to expose that type?
+			list: () => internal.Dependency[]
 			clear: () => void
 			setName: (name: string) => void
 		}
@@ -41,6 +68,7 @@ namespace slime.definition.test.promises {
 	export interface Export {
 		Registry: (p?: { name: string }) => Registry
 		Promise: PromiseConstructor
+		NativePromise: PromiseConstructor
 		console: slime.external.lib.dom.Console
 
 		/**
@@ -94,6 +122,7 @@ namespace slime.definition.test.promises {
 				var registry = subject.Registry();
 				fifty.verify(registry).test.list().length.is(0);
 
+				//	TODO	this test appears wrong, it seems like the list length should be zero because of the lack of .then()
 				var a = Promise.resolve(3);
 				var b = Promise.resolve(4);
 				var c = Promise.reject(new Error("5"));

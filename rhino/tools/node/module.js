@@ -44,7 +44,19 @@
 		};
 
 		var versions = {
-			default: "22.14.0"
+			default: function() {
+				if ($context.library.file.Pathname("/etc/os-release").file) {
+					var string = $context.library.file.Pathname("/etc/os-release").file.read(String);
+					if (
+						string.indexOf("Amazon Linux 2") != -1
+						|| string.indexOf("CentOS Linux 7 (Core)") != -1
+					) {
+						return "16.20.2";
+					}
+				}
+
+				return "22.16.0";
+			}
 		};
 
 		$exports.versions = versions;
@@ -94,7 +106,7 @@
 			}
 		)();
 
-		/** @type { slime.jrunscript.tools.node.exports.Installation["getVersion"] } */
+		/** @type { slime.jrunscript.tools.node.installation.Exports["getVersion"] } */
 		function getVersion(installation) {
 			return function(events) {
 				/** @type { slime.jrunscript.shell.run.Intention } */
@@ -187,7 +199,7 @@
 		 * @returns
 		 */
 		var Modules = function(p) {
-			/** @type { slime.jrunscript.tools.node.exports.Modules["list"] } */
+			/** @type { slime.jrunscript.tools.node.modules.Exports["list"] } */
 			var list = function() {
 				return function(events) {
 					// var invocation = toShellInvocation({
@@ -270,6 +282,7 @@
 						throw new Error("npm ls exit status: " + result.status
 							+ "\ninstallation: " + JSON.stringify(p.installation)
 							+ "\ninvocation: " + JSON.stringify(invocation)
+							+ "\nstdout:\n" + result.stdio.output
 							+ "\nstderr:\n" + result.stdio.error);
 					}
 
@@ -295,7 +308,7 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.tools.node.exports.Modules["installed"] } */
+			/** @type { slime.jrunscript.tools.node.modules.Exports["installed"] } */
 			var installed = function(name) {
 				return function(events) {
 					var ask = list();
@@ -307,7 +320,7 @@
 				}
 			};
 
-			/** @type { slime.jrunscript.tools.node.exports.Modules["install"] } */
+			/** @type { slime.jrunscript.tools.node.modules.Exports["install"] } */
 			var install = function(spec) {
 				return function(events) {
 					var invocation = invokeNpm(
@@ -334,7 +347,7 @@
 				}
 			};
 
-			return /** @type { slime.jrunscript.tools.node.exports.Modules } */({
+			return /** @type { slime.jrunscript.tools.node.modules.Exports } */({
 				list: list,
 				installed: installed,
 				install: install,
@@ -644,7 +657,7 @@
 		$exports.test = {
 			versions: {
 				previous: "14.18.0",
-				current: versions.default
+				current: versions.default()
 			}
 		};
 
@@ -652,7 +665,7 @@
 			install: function(p) {
 				if (!p) throw new TypeError();
 				//	TODO	compute this somehow?
-				if (!p.version) p.version = versions.default;
+				if (!p.version) p.version = versions.default();
 				return function(events) {
 					var existing = p.location.directory;
 					if (existing) throw new Error("Node installation directory exists: " + p.location.toString());
@@ -767,18 +780,28 @@
 					}
 				}
 			},
-			exists: function(installation) {
-				return function(events) {
-					return $api.fp.now.invoke(
-						installation,
-						$api.fp.pipe(
-							$api.fp.property("executable"),
-							$context.library.file.Location.from.os,
-							$api.fp.world.mapping($context.library.file.Location.file.exists.world())
-						)
-					)
+			exists: (
+				function() {
+					/** @type { slime.jrunscript.tools.node.installation.Exports["exists"]["wo"] } */
+					var wo = function(installation) {
+						return function(events) {
+							return $api.fp.now.invoke(
+								installation,
+								$api.fp.pipe(
+									$api.fp.property("executable"),
+									$context.library.file.Location.from.os,
+									$api.fp.world.mapping($context.library.file.Location.file.exists.world())
+								)
+							)
+						}
+					};
+
+					return {
+						wo: wo,
+						simple: $api.fp.now(wo, $api.fp.world.Sensor.mapping())
+					};
 				}
-			},
+			)(),
 			getVersion: getVersion,
 			question: Intention_question,
 			Intention: {

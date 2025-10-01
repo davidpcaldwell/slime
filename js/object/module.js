@@ -8,13 +8,12 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.$api.old.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.$api.old.Exports } $exports
 	 */
-	function($platform,$api,$context,$loader,$exports) {
+	function($api,$context,$loader,$exports) {
 		var globals = $loader.file("global.js");
 
 		if ($context.globals) {
@@ -700,4 +699,4 @@
 		$exports.deprecate = $api.deprecate($api.deprecate);
 	}
 //@ts-ignore
-)($platform,$api,$context,$loader,$exports);
+)($api,$context,$loader,$exports);

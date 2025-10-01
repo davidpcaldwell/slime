@@ -193,7 +193,7 @@
 			mock.jsh({
 				script: "http://bitbucket.org/" + "api/1.0/repositories/davidpcaldwell/slime/raw/local/" + "jsh/test/manual/remote-jsh.shell.jsh.jsh.js"
 			});
-			// jsh.shell.jrunscript({
+			// jsh.shell.jrunscript.old({
 			// 	properties: {
 			// 		"http.proxyHost": "127.0.0.1",
 			// 		"http.proxyPort": String(tomcat.port)

@@ -57,10 +57,13 @@ namespace slime.$api.fp.internal.old {
 	 */
 	export type Postprocessor = (p: any) => any
 
+	export type Create =(f: slime.external.lib.es5.Function<any,any[],any>) => {
+		prepare: any
+		revise: any
+	};
+
 	export interface Exports {
 		Function: {
-			preprocessing: any
-
 			value: slime.$api.fp.Exports["value"]
 			mutating: slime.$api.fp.Exports["mutating"]
 
@@ -70,6 +73,8 @@ namespace slime.$api.fp.internal.old {
 			singleton: any
 			set: any
 		}
+
+		create: Create
 	}
 
 	(

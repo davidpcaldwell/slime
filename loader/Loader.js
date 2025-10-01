@@ -8,39 +8,14 @@
 (
 	/**
 	 *
+	 * @param { slime.runtime.internal.loader.Scope["Executor"] } Executor
 	 * @param { slime.runtime.internal.loader.Scope["methods"] } methods
 	 * @param { slime.runtime.internal.loader.Scope["createScriptScope"] } createScriptScope
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.runtime.internal.loader.Scope["$api"] } $api
+	 *
 	 * @param { slime.old.loader.Export<slime.runtime.internal.loader.Exports> } $export
 	 */
-	function(methods,createScriptScope,$api,$export) {
-		var loadScript = function(loader,path) {
-			var resource = loader.get(path.split("/"));
-
-			if (resource.present) {
-				var code = loader.code(resource.value);
-
-				return function(context) {
-					var rv;
-
-					methods.run(
-						code,
-						{
-							$context: context,
-							$loader: void(0),
-							$export: function(v) {
-								rv = v;
-							}
-						}
-					);
-
-					return rv;
-				}
-			} else {
-				return null;
-			}
-		};
-
+	function(Executor,methods,createScriptScope,$api,$export) {
 		/**
 		 * @type { slime.runtime.loader.Exports["Store"] }
 		 */
@@ -54,15 +29,25 @@
 					var elements = path.split("/");
 					var script = p.store.get(elements);
 					if (!script.present) throw new Error("Script " + path + " missing.");
-					var code = p.adapt(script.value);
 					return {
-						code: code,
+						resource: script.value,
+						code: $api.fp.now(
+							script.value,
+							$api.fp.now(
+								p.compiler,
+								$api.fp.Partial.impure.exception(
+									function(it) { return new Error(); }
+								)
+							)
+						),
 						$loader: Store.content({
-							store: $api.content.Store.path({
+							store: $api.content.Store.at({
 								store: p.store,
 								path: elements.slice(0, elements.length-1)
 							}),
-							adapt: p.adapt
+							compiler: p.compiler,
+							unsupported: p.unsupported,
+							scope: p.scope
 						})
 					};
 				};
@@ -70,6 +55,11 @@
 				return {
 					script: function(path) {
 						var script = getScript(path);
+						var executor = Executor({
+							compiler: p.compiler,
+							scope: p.scope,
+							unsupported: p.unsupported
+						})
 						return function(context) {
 							//	Need to use Object.assign rather than $api.Object.compose because createScriptScope creates
 							//	an object where `$export` operates on that object.
@@ -79,20 +69,24 @@
 									$loader: script.$loader
 								}
 							);
-							methods.run(
-								script.code,
-								scope
-							);
+							var THIS = {};
+							$api.Function.call(executor, THIS, script.resource, scope);
 							return scope.$exports;
 						}
 					},
 					run: function(path, scope, target) {
 						var script = getScript(path);
-						methods.run.call(
-							target,
-							script.code,
-							scope
-						);
+						/** @type { slime.runtime.loader.Code } */
+						var code = {
+							name: path,
+							type: function() {
+								return $api.mime.Type("application", "javascript")
+							},
+							read: function() {
+								return script.code.js;
+							}
+						}
+						$api.Function.call(methods.run, target, code, scope);
 					}
 				}
 			}
@@ -105,6 +99,33 @@
 			Store: Store,
 			synchronous: {
 				scripts: function(loader) {
+					var loadScript = function(loader,path) {
+						var resource = loader.get(path.split("/"));
+
+						if (resource.present) {
+							var code = loader.code(resource.value);
+
+							return function(context) {
+								var rv;
+
+								methods.run(
+									code,
+									{
+										$context: context,
+										$loader: void(0),
+										$export: function(v) {
+											rv = v;
+										}
+									}
+								);
+
+								return rv;
+							}
+						} else {
+							return null;
+						}
+					};
+
 					return function(path) {
 						return loadScript(loader, path);
 					}
@@ -160,4 +181,4 @@
 		});
 	}
 //@ts-ignore
-)(methods,createScriptScope,$api,$export);
+)(Executor,methods,createScriptScope,$api,$export);

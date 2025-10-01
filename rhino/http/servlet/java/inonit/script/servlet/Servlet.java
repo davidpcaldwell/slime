@@ -7,6 +7,7 @@
 package inonit.script.servlet;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.*;
 
 import javax.servlet.http.*;
@@ -32,11 +33,47 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 	}
 
 	static abstract class ScriptContainer {
+		private inonit.script.engine.Host.Program program = new inonit.script.engine.Host.Program();
+
+		private Loader.Classes.Configuration classes = new Loader.Classes.Configuration() {
+			@Override public boolean canCreateClassLoaders() {
+				return true;
+			}
+
+			@Override public ClassLoader getApplicationClassLoader() {
+				return Servlet.class.getClassLoader();
+			}
+
+			@Override public File getLocalClassCache() {
+				return null;
+			}
+		};
+
 		abstract void initialize(Servlet servlet);
+
+		protected final Loader.Classes.Configuration getLoaderClassesConfiguration() {
+			return classes;
+		}
+
 		abstract HostObject getServletHostObject();
-		abstract void setVariable(String name, Object value);
-		abstract void addScript(Code.Loader.Resource resource);
-		abstract void execute();
+
+		final void setVariable(String name, Object value) {
+			program.bind(Host.Binding.create(name, value));
+		}
+
+		final void addScript(Code.Loader.Resource resource) {
+			try {
+				program.run(Host.Script.create(resource));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		final void execute() {
+			execute(program);
+		}
+
+		abstract void execute(inonit.script.engine.Host.Program program);
 	}
 
 	protected final Script script() {
@@ -67,12 +104,19 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			engine = "Rhino";
 		}
 		try {
-			return (ScriptContainer)getClass().getClassLoader().loadClass("inonit.script.servlet." + engine).newInstance();
-		} catch (InstantiationException e) {
-			throw new RuntimeException(e);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
+			//	Method used in Java 8. By Java 11, it had been deprecated. However, I think the replacement (explicitly invoking the
+			//	no-argument constructor) works in JDK 8. Going to try it
+			return (ScriptContainer)getClass().getClassLoader().loadClass("inonit.script.servlet." + engine)
+				.getDeclaredConstructor().newInstance()
+			;
+		} catch (
+			InstantiationException
+			| ClassNotFoundException
+			| IllegalAccessException
+			| NoSuchMethodException
+			| InvocationTargetException
+			e
+		) {
 			throw new RuntimeException(e);
 		}
 	}

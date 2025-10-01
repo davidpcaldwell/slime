@@ -30,32 +30,81 @@
 			return function(pathname) {
 				var terms = pathname.split(filesystem.separator.pathname);
 				var rv = [];
+				var RETURN_NULL = false;
 				terms.forEach(function(term) {
+					if (RETURN_NULL) return;
 					if (term == ".") {
 						return;
 					} else if (term == "..") {
-						rv.pop();
+						//	TODO	This seems brittle but causes tests to pass on UNIX-like filesystems. Probably need to revisit.
+						if (rv.length == 1 && rv[0] === "") {
+							RETURN_NULL = true;
+							return;
+						} else {
+							rv.pop();
+						}
 					} else {
 						rv.push(term);
 					}
 				});
-				return rv.join(filesystem.separator.pathname);
+				return (RETURN_NULL) ? null : rv.join(filesystem.separator.pathname);
 			}
 		};
 
-		/** @type { slime.jrunscript.file.exports.Location["parent"] } */
+		/** @type { slime.jrunscript.file.location.Exports["parent"] } */
 		var Location_parent = function() {
 			return Location_relative("..");
 		};
 
-		/** @type { slime.jrunscript.file.exports.Location["directory"]["relativePath"] } */
+		/** @type { slime.jrunscript.file.location.Exports["directory"]["relativePath"] } */
 		var Location_relative = function(path) {
 			return function(pathname) {
 				var absolute = pathname.pathname + pathname.filesystem.separator.pathname + path;
 				var canonical = canonicalize(pathname.filesystem)(absolute);
+				if (canonical === null) return null;
 				return {
 					filesystem: pathname.filesystem,
 					pathname: canonical
+				}
+			}
+		}
+
+		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }> } */
+		var ensureParent = function(location) {
+			var it = function(location,events) {
+				var parent = Location_relative("..")(location);
+				var exists = Location_directory_exists(parent)(events);
+				if (!exists) {
+					it(parent, events);
+					$api.fp.world.now.action(
+						location.filesystem.createDirectory,
+						{ pathname: parent.pathname }
+					);
+					events.fire("created", parent);
+				}
+			};
+
+			return function(events) {
+				it(location,events);
+			}
+		}
+
+		/** @type { (location: slime.jrunscript.file.Location) => ReturnType<slime.jrunscript.file.location.file.Exports["write"]["open"]>["wo"] } */
+		var Location_write_open_wo = function(location) {
+			return function(settings) {
+				return function(events) {
+					var recurse = (settings && settings.recursive) ? $api.fp.now(ensureParent, $api.fp.world.Means.effect({
+						created: function(e) {
+							events.fire("createdFolder", e.detail);
+						}
+					})) : function(parent) {};
+
+					recurse(location);
+
+					return location.filesystem.openOutputStream({
+						pathname: location.pathname,
+						append: settings && settings.append
+					})(events);
 				}
 			}
 		}
@@ -118,27 +167,8 @@
 			};
 		};
 
-		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: string }> } */
-		var ensureParent = function(location) {
-			var it = function(location,events) {
-				var parent = Location_relative("..")(location);
-				var exists = Location_directory_exists(parent)(events);
-				if (!exists) {
-					it(parent, events);
-					$api.fp.world.now.action(
-						location.filesystem.createDirectory,
-						{ pathname: parent.pathname }
-					);
-					events.fire("created", parent.pathname);
-				}
-			};
-
-			return function(events) {
-				it(location,events);
-			}
-		}
-
 		var Location_basename = function(location) {
+			if (typeof(location.pathname) != "string") throw new TypeError("Does not appear to be location: " + location);
 			var tokens = location.pathname.split(location.filesystem.separator.pathname);
 			return tokens[tokens.length-1];
 		};
@@ -148,7 +178,7 @@
 
 		var lastModifiedSimple = $api.fp.pipe(
 			asLocation,
-			$api.fp.mapping.properties({
+			$api.fp.Mapping.properties({
 				argument: function(p) { return { pathname: p.pathname }},
 				partial: $api.fp.pipe(
 					$api.fp.property("filesystem"),
@@ -156,20 +186,20 @@
 					$api.fp.world.Sensor.mapping()
 				)
 			}),
-			$api.fp.mapping.properties({
+			$api.fp.Mapping.properties({
 				argument: $api.fp.property("argument"),
 				mapping: $api.fp.pipe(
 					$api.fp.property("partial"),
 					$api.fp.Partial.impure.exception( function(p) { return new Error("Could not obtain last modified date for " + p.pathname); })
 				)
 			}),
-			$api.fp.mapping.invocation
+			$api.fp.Mapping.invoke
 		)
 
 		var Location = {
 			relative: Location_relative,
 			basename: Location_basename,
-			/** @type { slime.jrunscript.file.exports.Location["lastModified"] } */
+			/** @type { slime.jrunscript.file.location.Exports["lastModified"] } */
 			lastModified: {
 				simple: lastModifiedSimple
 			},
@@ -193,11 +223,11 @@
 			}
 		}
 
-		var Location_file_write = Object.assign(
+		var Location_file_write_old = Object.assign(
 			/**
 			 *
-			 * @param { Parameters<slime.jrunscript.file.exports.location.File["write"]>[0] } location
-			 * @returns { ReturnType<slime.jrunscript.file.exports.location.File["write"]> }
+			 * @param { Parameters<slime.jrunscript.file.location.file.Exports["write"]["old"]>[0] } location
+			 * @returns { ReturnType<slime.jrunscript.file.location.file.Exports["write"]["old"]> }
 			 */
 			function(location) {
 				return {
@@ -244,63 +274,12 @@
 						}
 					}
 				}
-			},
-			{
-				string: function(p) {
-					return function(location) {
-						return function(events) {
-							Location_write(
-								location,
-								events,
-								function(stream) {
-									var writer = stream.character();
-									writer.write(p.value);
-									writer.close();
-								}
-							);
-						}
-					}
-				},
-				stream: function(p) {
-					return function(location) {
-						return function(events) {
-							Location_write(
-								location,
-								events,
-								function(output) {
-									$context.library.io.Streams.binary.copy(
-										p.input,
-										output
-									)
-								}
-							)
-						}
-					}
-				},
-				object: {
-					text: function() {
-						return function(location) {
-							return function(events) {
-								var ask = location.filesystem.openOutputStream({
-									pathname: location.pathname
-								});
-								return $api.fp.result(
-									ask(events),
-									$api.fp.Maybe.map(function(stream) {
-										return stream.character();
-									})
-								);
-							}
-
-						}
-					}
-				}
 			}
 		);
 
 		var Location_file_read = (
 			function() {
-				/** @type { slime.jrunscript.file.exports.location.File["read"]["stream"] } */
+				/** @type { slime.jrunscript.file.location.file.Exports["read"]["stream"] } */
 				var readStream = function() {
 					return function(location) {
 						return location.filesystem.openInputStream({
@@ -309,7 +288,7 @@
 					}
 				};
 
-				/** @type { slime.jrunscript.file.exports.location.File["read"]["string"]["world"] } */
+				/** @type { slime.jrunscript.file.location.file.Exports["read"]["string"]["world"] } */
 				var readString = function() {
 					return $api.fp.world.Sensor.map({
 						subject: $api.fp.identity,
@@ -364,7 +343,7 @@
 					world: function() { return Location_directory_exists; }
 				},
 				Location_relative: Location_relative,
-				Location_file_write: Location_file_write,
+				Location_file_write: Location_file_write_old,
 				Location_file_read_string: Location_file_read.string,
 				remove: remove,
 				Store: $context.library.loader.Store
@@ -373,6 +352,19 @@
 				ensureParent: ensureParent
 			})
 		};
+
+		/** @type { slime.jrunscript.file.location.Exports["Function"] } */
+		var Location_Function = function(p) {
+			return function(location) {
+				if (Location.file.exists.simple(location)) {
+					return p.file(location);
+				} else if (parts.directory.exists.simple(location)) {
+					return p.directory(location);
+				} else {
+					throw new Error("Neither file nor directory: " + location.pathname + " in " + location.filesystem);
+				}
+			}
+		}
 
 		$export({
 			Location: {
@@ -385,6 +377,14 @@
 					},
 					temporary: function(filesystem) {
 						return filesystemFromSpiTemporary(filesystem);
+					},
+					java: {
+						File: function(_file) {
+							return {
+								filesystem: $context.filesystem.os,
+								pathname: $context.filesystem.os.java.codec.File.decode(_file).pathname
+							}
+						}
 					}
 				},
 				relative: $api.deprecate(parts.directory.relativePath),
@@ -399,7 +399,10 @@
 						pathname: canonicalized.value
 					}
 				},
+				Function: Location_Function,
 				posix: {
+					//	TODO	this implementation assumes the filesystem supports POSIX; all of those .posix properties below are
+					//			actually optional
 					attributes: (function() {
 						/** @param { slime.jrunscript.file.Location } location */
 						var get = function(location) {
@@ -482,6 +485,31 @@
 						}
 					})()
 				},
+				java: {
+					File: (
+						function() {
+							/** @type { (location: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<slime.jrunscript.native.java.io.File> } */
+							var maybe = function(location) {
+								if (location.filesystem.java) return $api.fp.Maybe.from.some(location.filesystem.java.codec.File.encode(location));
+								return $api.fp.Maybe.from.nothing();
+							}
+							return {
+								maybe: maybe,
+								simple: $api.fp.now(
+									maybe,
+									$api.fp.Partial.impure.exception(
+										function(location) {
+											throw new Error(
+												location + " is not from a filesystem that can map pathnames to" +
+												" java.io.File objects."
+											);
+										}
+									)
+								)
+							}
+						}
+					)()
+				},
 				file: (function() {
 					return {
 						exists: Location.file.exists,
@@ -493,8 +521,13 @@
 							}
 						},
 						read: Location_file_read,
-						write: Location_file_write,
-						/** @type { slime.jrunscript.file.exports.Location["file"]["remove"] } */
+						write: {
+							old: Location_file_write_old,
+							open: function(location) {
+								return $api.fp.world.Sensor.api.maybe(Location_write_open_wo(location));
+							}
+						},
+						/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
 						remove: {
 							world: function() {
 								return remove;
@@ -559,8 +592,8 @@
 						pathname: temporary({ directory: false, remove: true }),
 						location: $api.fp.impure.Input.map(
 							temporary({ directory: false, remove: true }),
-							$api.fp.mapping.properties({
-								filesystem: $api.fp.mapping.all(world),
+							$api.fp.Mapping.properties({
+								filesystem: $api.fp.Mapping.all(world),
 								pathname: $api.fp.identity
 							})
 						),

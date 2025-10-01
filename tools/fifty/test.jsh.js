@@ -14,7 +14,7 @@
 		var isTypescriptInstalled = function() {
 			var installation = jsh.shell.tools.node.installation;
 			var nodeExists = $api.fp.world.input(
-				jsh.shell.tools.node.Installation.exists(installation)
+				jsh.shell.tools.node.Installation.exists.wo(installation)
 			)();
 			if (!nodeExists) return false;
 			var typescript = jsh.shell.tools.node.Installation.modules(installation).installed("typescript");

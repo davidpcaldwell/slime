@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jrunscript.tools.github.internal.test.Context } $context
+	 * @param { slime.jrunscript.tools.github.mock.project.Context } $context
 	 * @param { slime.loader.Export<slime.jsh.test.remote.Exports> } $export
 	 */
 	function($api,$context,$export) {
@@ -40,6 +40,8 @@
 		};
 
 		/**
+		 * Returns a command line (as a `string[]`) that can be used to download the main `jsh` script.
+		 *
 		 * @param { slime.jrunscript.file.Searchpath } PATH
 		 * @param { Pick<slime.jsh.test.remote.Settings,"mock" | "token" | "branch"> } p
 		 * @returns
@@ -103,12 +105,12 @@
 				command.push("JSH_GITHUB_API_PROTOCOL=http");
 				command.push("JSH_DISABLE_HTTPS_SECURITY=true");
 				if (p.settings.optimize) command.push("JSH_OPTIMIZE_REMOTE_SHELL=true");
-				if (p.settings.debug) command.push("JSH_LAUNCHER_BASH_DEBUG=true");
+				if (p.settings.debug) command.push("JSH_LAUNCHER_COMMAND_DEBUG=true");
 				if (p.settings.debug) command.push("JSH_LAUNCHER_DEBUG=true");
 				PROTOCOL = "http";
 			} else if (p.settings.debug) {
 				command.push("env");
-				command.push("JSH_LAUNCHER_BASH_DEBUG=1");
+				command.push("JSH_LAUNCHER_COMMAND_DEBUG=1");
 				command.push("JSH_LAUNCHER_DEBUG=1");
 			}
 			if (p.settings.token) {
@@ -162,11 +164,8 @@
 			};
 		};
 
-		/** @type { slime.$api.fp.Identity<slime.jrunscript.shell.run.Intention> } */
-		var asShellIntention = $api.fp.identity;
-
 		var getOutput = $api.fp.pipe(
-			asShellIntention,
+			/** @type { slime.$api.fp.Identity<slime.jrunscript.shell.run.Intention> } */($api.fp.identity),
 			$api.fp.world.Sensor.old.mapping({
 				sensor: $context.library.shell.subprocess.question
 			}),
@@ -206,7 +205,7 @@
 			var shellIntention = toShellIntention(
 				invoke,
 				launcherBashScript,
-				{ JSH_LAUNCHER_BASH_DEBUG: "1", JSH_EMBED_BOOTSTRAP_DEBUG: "true" }
+				{ JSH_LAUNCHER_COMMAND_DEBUG: "1", JSH_EMBED_BOOTSTRAP_DEBUG: "true" }
 			);
 			return shellIntention;
 		};

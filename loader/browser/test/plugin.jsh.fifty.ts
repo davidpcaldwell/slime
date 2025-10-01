@@ -4,14 +4,37 @@
 //
 //	END LICENSE
 
-namespace slime.jsh.typescript {
+namespace slime.runtime.browser.test.server {
+	/**
+	 * @param { slime.jrunscript.file.Directory } resources The directory to use when serving servlet resources, which is the SLIME directory for this purpose.
+	 * @param { slime.jrunscript.file.Directory } serve The base directory to serve, which is the common root for SLIME and the test file.
+	 * @param { string } resultsPath A path, relative to the served directory, that will both accept the result via POST and return it via GET.
+	 */
 	export interface Exports {
-		compile: (code: string) => string
+		create: (p: {
+			resources: slime.jrunscript.file.Directory
+			serve: slime.jrunscript.file.Directory
+			resultsPath: string
+		}) => jsh.httpd.Tomcat
+
+		/**
+		 * Older interface used by loader/browser/test/suite.jsh.js for running JSAPI suites
+		 */
+		start: (p: {
+			tomcat: slime.jsh.httpd.Tomcat
+			resources: slime.jrunscript.file.Directory
+			serve: slime.jrunscript.file.Directory
+			resultsPath: string
+		}) => void
 	}
 }
 
-namespace slime.jsh {
-	export interface Global {
-		typescript: slime.jsh.typescript.Exports
+namespace slime.jsh.$fifty {
+	export interface Exports {
+		browser: {
+			test: {
+				server: slime.runtime.browser.test.server.Exports
+			}
+		}
 	}
 }

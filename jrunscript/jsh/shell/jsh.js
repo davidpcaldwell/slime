@@ -281,6 +281,13 @@
 		}
 
 		/**
+		 * @type { (p: slime.jsh.shell.oo.Invocation) => p is slime.jsh.shell.oo.EngineInvocation }
+		 */
+		var isEngineInvocation = function(p) {
+			return !isForkInvocation(p);
+		}
+
+		/**
 		 *
 		 * @param { { shell?: slime.jrunscript.file.Directory, environment?: slime.jrunscript.shell.Exports["environment"] }} p
 		 * @param { boolean } fork
@@ -319,6 +326,7 @@
 		/**
 		 *
 		 * @param { slime.jsh.shell.oo.ForkInvocation } p
+		 * @returns { slime.jrunscript.shell.jrunscript.old.Invocation }
 		 */
 		var getJrunscriptForkCommand = function(p) {
 			var newEvaluateWithInvocationDataAdded = function(evaluate) {
@@ -352,93 +360,86 @@
 				return jargs;
 			}
 
-			//	TODO	next function and next variable are repeated from jrunscript/jsh/launcher/main.js
-			function javaMajorVersionString(javaVersionProperty) {
-				if (/^1\./.test(javaVersionProperty)) return javaVersionProperty.substring(2,3);
-				return javaVersionProperty.split(".")[0];
-			}
+			var bootstrapShellInvocationArguments = (
+				$context.api.bootstrap.nashorn.getDeprecationArguments($context.api.bootstrap.java.getMajorVersion())
+					.concat(
+						(function(shell) {
+							/** @param { slime.jrunscript.file.Directory } src */
+							var unbuilt = function(src) {
+								/** @type { string[] } */
+								var rv = [];
 
-			var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
+								var javaMajorVersion = $context.api.bootstrap.java.getMajorVersion();
+								//	TODO	should only do this for post-Nashorn JDK versions
+								if (javaMajorVersion >= 15 && src.getFile("local/jsh/lib/nashorn.jar")) {
+									var libraries = $context.api.bootstrap.nashorn.dependencies.names;
+									var lib = src.getSubdirectory("local/jsh/lib");
+									rv.push(
+										"-classpath",
+										libraries.map(function(name) {
+											return lib.getRelativePath(name + ".jar")
+										}).concat([
+											lib.getRelativePath("nashorn.jar")
+										])
+										//	TODO	this is OS-specific
+											.join(":")
+									);
+								}
+								rv.push(
+									src.getFile("rhino/jrunscript/api.js").pathname.toString(),
+									"jsh"
+								);
+								return rv;
+							};
 
-			//	Also in rhino/shell/module.js
-			var getNashornDeprecationArguments = function() {
-				if (javaMajorVersion >= 9 && javaMajorVersion <= 14) return ["-Dnashorn.args=--no-deprecation-warning"];
-				return [];
-			}
+							/**
+							 *
+							 * @param { slime.jrunscript.file.Directory } home
+							 */
+							var built = function(home) {
+								/** @type { string[] } */
+								var rv = [];
+								if (home.getFile("lib/nashorn.jar")) {
+									var lib = home.getSubdirectory("lib");
+									rv.push("-classpath");
+									rv.push(
+										$context.api.bootstrap.nashorn.dependencies.jarNames
+											.map(function(name) { return lib.getRelativePath(name); })
+											.concat([lib.getRelativePath("nashorn.jar")])
+											.join(":")
+									)
+								}
+								rv.push(home.getFile("jsh.js").pathname.toString());
+								return rv;
+							};
 
-			var bootstrapShellInvocationArguments = getNashornDeprecationArguments().concat((function(shell) {
-				/** @param { slime.jrunscript.file.Directory } src */
-				var unbuilt = function(src) {
-					/** @type { string[] } */
-					var rv = [];
-					//	TODO	should only do this for post-Nashorn JDK versions
-					if (javaMajorVersion >= 15 && src.getFile("local/jsh/lib/nashorn.jar")) {
-						var libraries = $context.api.bootstrap.nashorn.dependencies.names;
-						var lib = src.getSubdirectory("local/jsh/lib");
-						rv.push(
-							"-classpath",
-							libraries.map(function(name) {
-								return lib.getRelativePath(name + ".jar")
-							}).concat([
-								lib.getRelativePath("nashorn.jar")
-							])
-							//	TODO	this is OS-specific
-								.join(":")
-						);
-					}
-					rv.push(
-						src.getFile("rhino/jrunscript/api.js").pathname.toString(),
-						"jsh"
-					);
-					return rv;
-				};
+							var remote = function(url) {
+								return [
+									"-e",
+									"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
+								];
+							}
 
-				/**
-				 *
-				 * @param { slime.jrunscript.file.Directory } home
-				 */
-				var built = function(home) {
-					/** @type { string[] } */
-					var rv = [];
-					if (home.getFile("lib/nashorn.jar")) {
-						var lib = home.getSubdirectory("lib");
-						rv.push("-classpath");
-						rv.push(
-							$context.api.bootstrap.nashorn.dependencies.jarNames
-								.map(function(name) { return lib.getRelativePath(name); })
-								.concat([lib.getRelativePath("nashorn.jar")])
-								.join(":")
-						)
-					}
-					rv.push(home.getFile("jsh.js").pathname.toString());
-					return rv;
-				};
+							if (shell) {
+								//	TODO	should contemplate possibility of URL, I suppose
+								if (shell.getFile("jsh.js")) {
+									return built(shell);
+								}
+								if (shell.getFile("rhino/jrunscript/api.js")) {
+									return unbuilt(shell);
+								}
+								throw new Error("Shell not found: " + shell);
+							}
 
-				var remote = function(url) {
-					return [
-						"-e",
-						"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
-					];
-				}
+							if ($exports.jsh.home) return built($exports.jsh.home);
+							if ($exports.jsh.src) return unbuilt($exports.jsh.src);
+							if ($exports.jsh.url) return remote($exports.jsh.url);
 
-				if (shell) {
-					//	TODO	should contemplate possibility of URL, I suppose
-					if (shell.getFile("jsh.js")) {
-						return built(shell);
-					}
-					if (shell.getFile("rhino/jrunscript/api.js")) {
-						return unbuilt(shell);
-					}
-					throw new Error("Shell not found: " + shell);
-				}
-
-				if ($exports.jsh.home) return built($exports.jsh.home);
-				if ($exports.jsh.src) return unbuilt($exports.jsh.src);
-				if ($exports.jsh.url) return remote($exports.jsh.url);
-
-				//	TODO	would unbuilt remote shells have a src property, and would it work?
-				throw new Error("Currently running jsh shell lacks home, src, and url properties; bug.");
-			})(p.shell));
+							//	TODO	would unbuilt remote shells have a src property, and would it work?
+							throw new Error("Currently running jsh shell lacks home, src, and url properties; bug.");
+						})(p.shell)
+					)
+			);
 
 			var isRemoteShell = bootstrapShellInvocationArguments[0] == "-e";
 
@@ -495,12 +496,13 @@
 
 		/** @param { slime.jsh.shell.Intention["properties"] } properties */
 		var getPropertyArguments = function(properties) {
+			if (typeof(properties) == "undefined") return [];
 			return Object.entries(properties).reduce(function(rv,entry) {
 				//	TODO	is any sort of escaping or anything required here? What if value has spaces? What if
 				//			name does?
 				rv.push("-D" + entry[0] + "=" + entry[1]);
 				return rv;
-			},[])
+			},/** @type { string[] } */([]))
 		}
 
 		/** @type { (s: slime.jsh.shell.UnbuiltInstallation) => (p: slime.jsh.shell.Intention) => slime.jrunscript.shell.run.Intention } */
@@ -528,20 +530,6 @@
 			/** @type { slime.$api.fp.Identity<slime.jsh.shell.BuiltInstallation> } */
 			var asBuiltInstallation = $api.fp.identity;
 
-			var getHomeBashLauncher = $api.fp.pipe(
-				asBuiltInstallation,
-				$api.fp.property("home"),
-				$context.api.file.Location.from.os,
-				$context.api.file.Location.directory.relativePath("jsh.bash")
-			);
-
-			var getHomeNativeLauncher = $api.fp.pipe(
-				asBuiltInstallation,
-				$api.fp.property("home"),
-				$context.api.file.Location.from.os,
-				$context.api.file.Location.directory.relativePath("jsh")
-			);
-
 			/** @type { (shell: slime.jsh.shell.Installation) => shell is slime.jsh.shell.BuiltInstallation } */
 			var isBuilt = function(shell) {
 				return Boolean(shell["home"]);
@@ -550,29 +538,44 @@
 			if (isExternalInstallationInvocation(p)) {
 				var shell = p.shell;
 				if (isUnbuilt(shell)) {
-					//	Below is necessary for TypeScript as of 5.1.6
-					var s = shell;
-					return unbuiltToShellIntention(s)(p);
+					return unbuiltToShellIntention(shell)(p);
 				} else if (isBuilt(shell)) {
-					var addPropertiesArguments = function(rv,p) {
-						if (p.properties) {
-							for (var x in p.properties) {
-								rv.push("-D" + x + "=" + p.properties[x]);
-							}
-						}
+					var getHomeBashLauncher = $api.fp.pipe(
+						asBuiltInstallation,
+						$api.fp.property("home"),
+						$context.api.file.Location.from.os,
+						$context.api.file.Location.directory.relativePath("jsh.bash")
+					);
+
+					var getHomeNativeLauncher = $api.fp.pipe(
+						asBuiltInstallation,
+						$api.fp.property("home"),
+						$context.api.file.Location.from.os,
+						$context.api.file.Location.directory.relativePath("jsh")
+					);
+
+					/** @type { (rv: string[], properties: slime.jsh.shell.Intention["properties"]) => void } */
+					var addPropertiesArguments = function(rv,properties) {
+						rv.push.apply(rv, getPropertyArguments(properties));
+					};
+
+					/** @type { (rv: string[]) => void } */
+					var addStandardArguments = function(rv) {
+						addPropertiesArguments(rv, p.properties);
+						rv.push(p.script);
+						if (p.arguments) rv.push.apply(rv, p.arguments);
 					};
 
 					//	TODO #1415	support this
+					//	TODO	check the above, seems to be implemented; has to do with property arguments to built shells
 					var downcast = shell;
 					var bashLauncher = getHomeBashLauncher(downcast);
 					var nativeLauncher = getHomeNativeLauncher(downcast);
 					if ($api.fp.now(nativeLauncher, $context.api.file.Location.file.exists.simple)) {
 						return {
 							command: nativeLauncher.pathname,
-							arguments: $api.Array.build(function(rv) {
-								addPropertiesArguments(rv, p);
-								rv.push(p.script);
-								if (p.arguments) rv.push.apply(rv, p.arguments);
+							arguments: $api.Array.build(function(/** @type { string[] } */rv) {
+								addStandardArguments(rv);
 							}),
 							directory: p.directory,
 							environment: p.environment,
@@ -583,9 +586,7 @@
 							command: "bash",
 							arguments: $api.Array.build(function(rv) {
 								rv.push(getHomeBashLauncher(downcast).pathname);
-								addPropertiesArguments(rv, p);
-								rv.push(p.script);
-								if (p.arguments) rv.push.apply(rv, p.arguments);
+								addStandardArguments(rv);
 							}),
 							directory: p.directory,
 							environment: p.environment,
@@ -614,7 +615,7 @@
 
 		$exports.jsh = Object.assign(
 			/**
-			 * @type { slime.jsh.shell.Exports["run"] }
+			 * @type { slime.jsh.shell.JshInvoke }
 			 */
 			function(p) {
 				//	Deal with old, two-argument form
@@ -630,18 +631,26 @@
 					}).apply(this,arguments);
 				}
 
-				if (!p.script) {
-					throw new TypeError("Required: script property indicating script to run.");
-				}
-				var argumentsFactory = $api.fp.mutating(p.arguments);
-				p.arguments = argumentsFactory([]);
-
 				if (p.script["file"] && !p.script.pathname) {
 					$api.deprecate(function() {
 						//	User supplied Pathname; should have supplied file
 						p.script = p.script["file"];
 					})();
 				}
+
+				if (!p.script) {
+					throw new TypeError("Required: script property indicating script to run.");
+				}
+
+				var invocation = /** @type { slime.jsh.shell.oo.Invocation } */((
+					function() {
+						if (isForkInvocation(p)) return p;
+						if (isEngineInvocation(p)) return p;
+					}
+				)());
+
+				p.arguments = invocation.arguments || [];
+
 				//	TODO	need to detect directives in the given script and fork if they are present
 
 				//var fork = getJshFork(p);
@@ -656,7 +665,7 @@
 					// 	})
 					// })
 
-					return module.jrunscript(
+					return module.jrunscript.old(
 						$api.Object.compose(
 							jrunscriptForkConfiguration,
 							{
@@ -815,32 +824,9 @@
 				Installation: void(0),
 				/** @type { slime.jsh.shell.JshShellJsh["Intention" ]} */
 				Intention: {
-					toShellIntention: jshIntentionToShellIntention,
-					sensor: function(p) {
-						return function(events) {
-							if (isExternalInstallationInvocation(p)) {
-								if (isUnbuilt(p.shell)) {
-									return $api.fp.world.Sensor.now({
-										sensor: $context.module.subprocess.question,
-										subject: jshIntentionToShellIntention(p),
-										handlers: {
-											stderr: function(e) {
-												events.fire("stderr", e.detail);
-											},
-											stdout: function(e) {
-												events.fire("stdout", e.detail);
-											}
-										}
-									});
-								} else {
-									throw $api.TODO()();
-								}
-							} else {
-								throw $api.TODO()();
-							}
-						}
-					}
-				}
+					toShellIntention: jshIntentionToShellIntention
+				},
+				tools: void(0)
 			}
 		);
 

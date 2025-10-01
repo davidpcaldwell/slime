@@ -90,16 +90,16 @@ namespace slime.runtime.document {
 		}
 	}
 
-	export namespace exports {
-		export interface Node {
+	export namespace node {
+		export interface Exports {
 			isComment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Comment
 			isText: (node: slime.runtime.document.Node) => node is slime.runtime.document.Text
 			isDoctype: (node: slime.runtime.document.Node) => node is slime.runtime.document.Doctype
 			isDocument: (node: slime.runtime.document.Node) => node is slime.runtime.document.Document
 			isElement: (node: slime.runtime.document.Node) => node is slime.runtime.document.Element
 			isFragment: (node: slime.runtime.document.Node) => node is slime.runtime.document.Fragment
-			isParent: (node: document.Node) => node is document.Parent
-			isString: (node: document.Node) => node is document.String
+			isParent: (node: runtime.document.Node) => node is runtime.document.Parent
+			isString: (node: runtime.document.Node) => node is runtime.document.String
 		}
 	}
 
@@ -400,7 +400,6 @@ namespace slime.runtime.document.internal.source {
 				var fragment = api.parse.fragment({ settings: settings, string: html });
 				var serialized = api.serialize.fragment({ settings: settings, fragment: fragment });
 				fifty.verify(serialized).is(html);
-				debugger;
 			}
 
 			fifty.tests.optionalTags = function() {

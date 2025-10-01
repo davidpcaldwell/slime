@@ -108,6 +108,7 @@ namespace slime.jrunscript.shell.system.apple {
 
 			const module = fixtures().load({
 				api: {
+					bootstrap: jsh.internal.bootstrap,
 					document: jsh.js.document,
 					file: jsh.file,
 					io: jsh.io,

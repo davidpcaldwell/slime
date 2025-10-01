@@ -44,7 +44,6 @@
 			mime: code.mime({
 				nojavamail: $context.nojavamail,
 				$slime: {
-					mime: $context.$slime.mime,
 					Resource: $context.$slime.Resource
 				},
 				api: {

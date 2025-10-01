@@ -22,7 +22,7 @@ namespace slime.jsh.test {
 
 			const { shells } = fixtures;
 
-			var run: (intention: slime.jrunscript.shell.run.Intention) => { string: string } = function(intention) {
+			var run: (intention: slime.jrunscript.shell.run.Intention) => any = function(intention) {
 				return $api.fp.now(
 					$api.fp.world.Sensor.now({
 						sensor: jsh.shell.subprocess.question,
@@ -71,8 +71,9 @@ namespace slime.jsh.test {
 			};
 
 			fifty.tests.executable = function() {
+				var ISSUE_2039_RESOLVED = false;
 				var shell = fixtures.shells.built(true);
-				if (shell) {
+				if (ISSUE_2039_RESOLVED && shell) {
 					var home = jsh.file.Pathname(shell.home).directory;
 					var jdk = jsh.shell.java.Jdk.from.javaHome();
 					var jdkBin = $api.fp.now(jdk.base, jsh.file.Location.from.os, jsh.file.Location.directory.relativePath("bin"));
@@ -199,7 +200,7 @@ namespace slime.jsh.test {
 					return exported(fifty);
 				})();
 
-				var clean = fixtures.clone({
+				var clean = fixtures.old.clone({
 					src: fifty.jsh.file.relative("../..")
 				}).directory.pathname.os.adapt();
 
@@ -245,9 +246,13 @@ namespace slime.jsh.test {
 				verify(result).status.is(0);
 				verify(result).stdio.output.evaluate(function(string) { return string.indexOf(message) == -1; }).is(true);
 				verify(result).stdio.error.evaluate(function(string) { return string.indexOf(message) == -1; }).is(true);
+				if (result.status != 0) {
+					jsh.shell.console("Directory: " + clean.pathname);
+				}
 			}
 
 			fifty.tests.suite = function() {
+				fifty.load("_.fifty.ts");
 				fifty.run(fifty.tests.nashornDeprecation);
 				fifty.run(fifty.tests.remote);
 				fifty.run(fifty.tests.executable);

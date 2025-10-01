@@ -70,31 +70,21 @@
  * again. See {@link slime.fifty.test.Kit}, specifically the `test.platforms` method.
  */
 namespace slime.fifty.test {
-	export type verify = slime.definition.verify.Verify
-
 	export type tests = {
 		[x: string]: any
 	}
 
-	/**
-	 * Executes a test part from another file. The version that takes a third argument allows an argument of that type
-	 * to be created and passed to the test part. This can be used so that Fifty test files can define
-	 * conformance tests for a type and Fifty tests that provide implementations of that type can pass them as arguments
-	 * to those tests.
-	 *
-	 * The other form simply executes an arbitrary test part, defaulting to the entire suite (the `suite` part) for the
-	 * indicated file.
-	 */
 	export interface load {
 		/**
-		 * Executes a test part from another file that accepts an argument.
+		 * Executes a test part from another file. The version that takes a third argument allows an argument of that type
+		 * to be created and passed to the test part. This can be used so that Fifty test files can define
+		 * conformance tests for a type and Fifty tests that provide implementations of that type can pass them as arguments
+		 * to those tests.
+		 *
+		 * The other form simply executes an arbitrary test part, defaulting to the entire suite (the `suite` part) for the
+		 * indicated file.
 		 */
-		<T>(path: string, part: string, t: T)
-
-		/**
-		 * Executes a test part from another file. Defaults to the `suite` part.
-		 */
-		(path: string, part?: string)
+		<T>(path: string, part?: string, t?: T)
 	}
 
 	export interface MultiplatformTest {
@@ -107,12 +97,46 @@ namespace slime.fifty.test {
 	 * The variable that appears as `fifty` within the scope of Fifty definition files when executing tests.
 	 */
 	export interface Kit {
+		$loader: slime.old.Loader
+
+		/**
+		 * Provides access to Fifty global constructs for this execution. `$platform` and `$api` are available. If running under
+		 * `jsh`, the `jsh` global is available as the `jsh` property. If running in the browser, the global `window` property is
+		 * available, as well as a global `customElements` that can be used to register custom element constructors and bind them
+		 * to a particular custom element name.
+		 */
+		global: {
+			$platform: slime.runtime.Platform
+			$api: slime.$api.Global
+
+			jsh?: slime.jsh.Global
+			window?: Window
+
+			customElements?: {
+				register: (factory: CustomElementConstructor) => void
+			}
+		}
+
 		/**
 		 * A function that can be used to create subjects and make assertions about them. See {@link slime.definition.verify.Verify}.
 		 */
-		verify: verify
-		$loader: slime.old.Loader
+		verify: slime.definition.verify.Verify
+
 		run: (f: () => void, name?: string) => void
+
+		/**
+		 * Executes a test part from another file.
+		 *
+		 * The second argument indicates the part to use, and defaults to `suite`.
+		 *
+		 * The third part is an optional argument that can be passed to the part. This can be used so that Fifty test files can
+		 * define conformance tests for a type and Fifty tests that provide implementations of that type can pass them as arguments
+		 * to those tests.
+		 *
+		 */
+		load: <T>(path: string, part?: string, t?: T) => void
+
+		tests: tests
 
 		test: {
 			/**
@@ -134,7 +158,7 @@ namespace slime.fifty.test {
 			}) => void
 
 			/**
-			 * A multiplatform test that runs the `suite` test under both `jsh` and the browser.
+			 * Defines a multiplatform test named `platforms` that runs the `suite` test under both `jsh` and the browser.
 			 */
 			platforms: () => void
 		}
@@ -144,30 +168,6 @@ namespace slime.fifty.test {
 				f: (t: T) => R,
 				string: string
 			) => (t: T) => R
-		}
-
-		tests: tests
-
-		/**
-		 * Allows a Fifty test file to execute test parts from other files.
-		 */
-		load: load
-
-		/**
-		 * Provides access to Fifty global constructs for this execution. `$platform` and `$api` are available. If running under
-		 * `jsh`, the `jsh` global is available as the `jsh` property. If running in the browser, the global `window` property is
-		 * available, as well as a global `customElements` that can be used to register custom element constructors and bind them
-		 * to a particular custom element name.
-		 */
-		global: {
-			$platform: slime.runtime.Platform
-			$api: slime.$api.Global
-			jsh?: slime.jsh.Global
-			window?: Window
-
-			customElements?: {
-				register: (factory: CustomElementConstructor) => void
-			}
 		}
 
 		promises: slime.definition.test.promises.Export
@@ -183,7 +183,32 @@ namespace slime.fifty.test {
 				}
 			}
 		}
+	}
 
+	export namespace spy {
+		export type Invocation<F extends slime.external.lib.es5.Function<any,any,any>> = (
+			F extends slime.external.lib.es5.Function<
+				infer T,
+				infer P,
+				infer R
+			> ? {
+				target: T
+				arguments: P
+				returned: R
+				// target: ThisParameterType<F>
+				// arguments: Parameters<F>
+				// returned: ReturnType<F>
+			} : never
+		);
+	}
+
+	export interface Kit {
+		spy: {
+			create: <T,P extends any[],R,F extends slime.external.lib.es5.Function<T,P,R>>(f: F) => { function: F, invocations: spy.Invocation<F>[] }
+		}
+	}
+
+	export interface Kit {
 		jsh?: kit.Jsh
 	}
 
@@ -274,7 +299,7 @@ namespace slime.fifty.test.internal.test {
 	}
 
 	export type Result = {
-		then: (f: (success: boolean) => any) => any
+		then: (f: (success: boolean) => void) => void
 	}
 
 	export interface Manifest {
@@ -284,12 +309,27 @@ namespace slime.fifty.test.internal.test {
 		}
 	}
 
+	export type AsynchronousSubscope = () => slime.fifty.test.internal.test.Result
+
 	export interface AsynchronousScope {
 		start: () => void
-		then: (v: any) => any
+
+		/**
+		 * Informs this scope of an asynchronous subscope that must be run after its synchronous execution is complete, supplying
+		 * the subscope implementation.
+		 */
+		then: (v: AsynchronousSubscope) => void
+
+		subscopes: () => AsynchronousSubscope[]
+
 		child: () => AsynchronousScope
 		wait: () => Promise<any>
-		now: () => Promise<any>
+
+		/**
+		 * Marks the given Promise as "external" to this scope (for example, the return Promise of the scope). Promises depending
+		 * on this promise will *not* block exit from the scope.
+		 */
+		external: (p: Promise<any>) => void
 
 		test: {
 			log: (...a: any[]) => void

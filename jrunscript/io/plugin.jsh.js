@@ -10,11 +10,12 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jsh.plugin.$slime } $slime
-	 * @param { slime.jsh.plugin.plugin } plugin
-	 * @param { slime.Loader } $loader
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
+	 * @param { slime.Loader } $loader
+	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
-	function(Packages,$slime,plugin,$loader,jsh) {
+	function(Packages,$slime,$api,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.js && jsh.java);
@@ -40,7 +41,7 @@
 					$slime: {
 						io: $slime.io,
 						old: $slime.old,
-						mime: $slime.mime,
+						mime: $api.mime,
 						Loader: $slime.Loader,
 						Resource: $slime.Resource,
 						jrunscript: $slime.jrunscript
@@ -88,4 +89,4 @@
 		})
 	}
 //@ts-ignore
-)(Packages,$slime,plugin,$loader,jsh);
+)(Packages,$slime,$api,jsh,$loader,plugin);

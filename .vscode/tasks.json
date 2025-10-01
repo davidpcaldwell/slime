@@ -109,7 +109,7 @@
 		},
 		{
 			"label": "jsh: Debug Current File",
-			"detail": "(Local only) Run the current script under the Rhino debugger",
+			"detail": "Run the current script under the Rhino debugger",
 			"type": "shell",
 			"command": "./jsh ${file}",
 			"problemMatcher": [],
@@ -132,6 +132,19 @@
 			"label": "Fifty (jsh): Debug wip() Test in Current File",
 			"type": "shell",
 			"command": "./fifty test.jsh --debug:rhino ${file} --part wip",
+			"problemMatcher": []
+		},
+		{
+			"label": "Fifty (browser): Run tests in current file",
+			"type": "shell",
+			"command": "./fifty",
+			"args": [
+				"test.browser",
+				"--chrome:data", "local/chrome/fifty",
+				"'${relativeFile}'",
+				"--interactive",
+				"--chrome:debug:vscode"
+			],
 			"problemMatcher": []
 		},
 		{

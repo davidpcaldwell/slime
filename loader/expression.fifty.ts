@@ -7,75 +7,63 @@
 namespace slime {
 	export namespace runtime {
 		export interface Scope {
-			$slime: slime.runtime.scope.$slime.Deployment
-
-			$engine?: slime.runtime.scope.$engine
+			/**
+			 * An object providing access to the SLIME execution environment.
+			 */
+			$slime: slime.runtime.scope.Deployment
 
 			/**
-			 * Note that in the rare case of a browser with Java, Packages may not include inonit.* classes
+			 * An object provided by the JavaScript runtime that represents the set of Java classes available. Only
+			 * present in `jrunscript` environments; browsers have dropped LiveConnect support.
 			 */
 			Packages?: slime.jrunscript.Packages
+
+			/**
+			 * An object that overrides properties of {@link slime.runtime.Engine} with embedding-specific replacements.
+			 */
+			$engine?: Partial<slime.runtime.Engine>
 		}
 
 		export namespace scope {
-			export namespace $slime {
+			export interface Deployment {
 				/**
-				 * An object providing access to the SLIME execution environment.
+				 * Provides a component source file of the runtime.
+				 * @param path The path to a SLIME source file, relative to `expression.js`.
+				 * @returns An executable JavaScript script.
 				 */
-				export interface Deployment {
-					/**
-					 * Provides a component source file of the runtime.
-					 * @param path The path to a SLIME source file, relative to `expression.js`.
-					 * @returns An executable JavaScript script.
-					 */
-					getRuntimeScript(path: string): loader.Script
-
-					flags?: {
-						[name: string]: string
-					}
-				}
-			}
-
-			/**
-			 * An object of type `$engine` can be provided in the scope by the embedding in order to provide additional capabilities the
-			 * JavaScript engine may have.
-			 */
-			export interface $engine {
-				/**
-				 * A function that can execute JavaScript code with a given scope and *target* (`this` value). A default implementation
-				 * is provided by SLIME, but engines may provide their own implementations that have advantages over SLIME's
-				 * pure-JavaScript implementation.
-				 *
-				 * @param script An object describing the file to execute.
-				 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
-				 * @param target An object that must be provided to the code as `this` while the code is executing.
-				 */
-				execute?: (
-					script: {
-						name: string,
-						/** A string of JavaScript code to execute. */
-						js: string
-					},
-					scope: { [x: string]: any },
-					target: object
-				) => void
-
-				Error?: {
-					decorate: any
-				}
-
-				debugger?: {
-					isBreakOnExceptions: () => boolean
-					setBreakOnExceptions: (b: boolean) => void
-				}
+				getRuntimeScript(path: string): loader.Script
 
 				/**
-				 * A constructor that implements the behavior defined by {@link Platform.MetaObject}.
+				 * An arbitrary set of configuration values that are intended to be used in a platform-independent way to configure
+				 * the engine itself or applications. All property should be uppercase.
 				 */
-				MetaObject?: any
+				configuration: {
+					readonly [name: string]: string
+				}
 			}
 		}
+	}
 
+	/**
+	 * Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
+	 *
+	 * The SLIME runtime (`expression.js`) is an expression that evaluates to an object providing its capabilities to
+	 * the embedder.
+	 *
+	 * Embeddings configure the runtime by configuring the JavaScript scope in which it executes, which must be of type
+	 * {@link slime.runtime.Scope}, and defines how to load the SLIME runtime itself, as well as optionally providing
+	 * additional information about the surrounding JavaScript engine's capabilities and configuration for the runtime itself.
+	 *
+	 * In return, the embedding will be supplied with an {@link Exports} object that the embedding can use to provide its own API
+	 * to applications.
+	 *
+	 * All code loaded by the SLIME runtime has access to the {@link slime.$api.Global} object (as `$api`), providing a standard
+	 * SLIME API that embeddings on all platforms can use.
+	 *
+	 * Code is also provided by a {@link Platform} object (as `$platform`), providing more advanced JavaScript engine capabilities
+	 * that depend on the underlying JavaScript engine, though `$platform` properties are likely to migrate to `$api` in the future.
+	 */
+	export namespace runtime {
 		(
 			function(
 				fifty: slime.fifty.test.Kit
@@ -86,6 +74,66 @@ namespace slime {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export namespace test {
+			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.Kit) {
+				var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+				return script().subject(fifty);
+			//@ts-ignore
+			})(fifty);
+
+			export const fixture = (function(fifty: slime.fifty.test.Kit) {
+				return function(fixture: slime.$api.fp.Transform<slime.runtime.Scope>) {
+					var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+					return script().subject(fifty, fixture);
+				}
+			//@ts-ignore
+			})(fifty);
+		}
+
+		/**
+		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
+		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
+		 *
+		 * ## Loading code
+		 *
+		 * Note that although there are global `run()`, `file()`, and `value()` methods that
+		 * can be used to execute code, there is no global `module()` method. Since modules themselves load code, in
+		 * order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to
+		 * load modules via first creating a {@link slime.Loader} implementation and then using the
+		 * `module()` method of the `Loader`.
+		 */
+		export interface Exports {
+		}
+
+		/**
+		 * An internal object that implements functionality for the current JavaScript engine. Created by combining the `$engine`
+		 * property provided as part of {@link slime.runtime.Scope} with default implementations provided by the SLIME runtime.
+		 */
+		export interface Engine {
+			/**
+			 * A function that can execute JavaScript code with a given script (script name for tools, plus code), scope (to provide to the script), and
+			 * *target* (to provide as the `this` value to the script).
+			 *
+			 * A default implementation is provided by SLIME, but embeddings may provide their own implementations that have
+			 * advantages over SLIME's pure-JavaScript implementation via {@link slime.runtime.scope.Engine.execute scope.Engine}.
+			 *
+			 * @param script An object describing the file to execute.
+			 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
+			 * @param target An object that must be provided to the code as `this` while the code is executing.
+			 */
+			execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: object) => void
+
+			debugger?: {
+				isBreakOnExceptions: () => boolean
+				setBreakOnExceptions: (b: boolean) => void
+			}
+
+			/**
+			 * A function which, if present, implements the behavior defined by {@link Platform.MetaObject}.
+			 */
+			MetaObject?: Platform["MetaObject"]
+		}
 
 		// We are not going to bother documenting $platform for now. It contains things that can be inferred other ways:
 		// 	1.	A programmer can use Packages to look for LiveConnect
@@ -98,9 +146,20 @@ namespace slime {
 		 */
 		export interface Platform {
 			/**
-			 * (conditional) An object with properties describing the platform's Java/LiveConnect capabilities.
+			 * @deprecated E4X is deprecated; see [Wikipedia](https://en.wikipedia.org/wiki/ECMAScript_for_XML).
+			 *
+			 * Provides access to the [E4X](https://en.wikipedia.org/wiki/ECMAScript_for_XML) implementation for this engine, if one
+			 * is present.
 			 */
-			java: {
+			e4x?: {
+				XML: slime.external.e4x.XMLConstructor
+				XMLList: slime.external.e4x.XMLListConstructor
+			}
+
+			/**
+			 * If present, an object with properties describing the platform's Java/LiveConnect capabilities.
+			 */
+			java?: {
 				/**
 				 * @param name A Java class name.
 				 * @returns A `JavaClass` object representing the class with the given name, or `null` if no class by that name can
@@ -108,8 +167,6 @@ namespace slime {
 				 */
 				getClass: (name: string) => slime.jrunscript.JavaClass
 			}
-
-			e4x: any
 
 			/**
 			 * (conditional; depends on platform support) A metaobject implementation.
@@ -205,6 +262,20 @@ namespace slime {
 			}
 		//@ts-ignore
 		)($platform,fifty);
+
+		export interface Exports {
+			/**
+			 * @deprecated The same object provided to scripts as `$platform`; provided here because there are limited, but likely
+			 * removable, global usages of it.
+			 */
+			$platform: Platform
+		}
+	}
+
+	export namespace $api {
+		export interface Scripts {
+			compiler: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
+		}
 	}
 
 	export namespace mime {
@@ -257,7 +328,7 @@ namespace slime {
 		 * The type of the resource, or `null` if the type cannot be determined. If no type was specified, and a name
 		 * was specified, the implementation will attempt to deduce the type from the name.
 		 */
-		type: mime.Type,
+		type: mime.Type
 
 		/**
 		 * Provides the content of this resource in a format specified by its argument.
@@ -320,84 +391,7 @@ namespace slime {
 		}
 	}
 
-	/**
-	 * Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
-	 *
-	 * The SLIME runtime (`expression.js`) is an expression that evaluates to an object providing its capabilities to
-	 * the embedder.
-	 *
-	 * Embeddings must supply two values in the scope when executing the runtime. They must supply a value for `$engine` that is either
-	 * `undefined` or is a value of type {@link $engine} specifying information about the underlying JavaScript engine, and
-	 * they must supply a value for `$slime` of type {@link slime.runtime.$slime.Deployment | $slime.Deployment} that provides information about the SLIME installation.
-	 *
-	 * In return, the embedding will be supplied with an {@link Exports} object that provides the SLIME runtime.
-	 *
-	 * All code loaded by the SLIME runtime has access to the {@link $api} object (as `$api`), providing a basic set of JavaScript
-	 * utilities, and a {@link Platform} object (as `$platform`), providing more advanced JavaScript engine capabilities that
-	 * depend on the underlying JavaScript engine.
-	 */
 	export namespace runtime {
-		export namespace test {
-			export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.Kit) {
-				var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
-				return script().subject(fifty);
-			//@ts-ignore
-			})(fifty);
-
-			export const fixture = (function(fifty: slime.fifty.test.Kit) {
-				return function(fixture: slime.$api.fp.Transform<slime.runtime.Scope>) {
-					var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
-					return script().subject(fifty, fixture);
-				}
-			//@ts-ignore
-			})(fifty);
-		}
-
-		/**
-		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
-		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
-		 *
-		 * ## Loading code
-		 *
-		 * Note that although there are global `run()`, `file()`, and `value()` methods that
-		 * can be used to execute code, there is no global `module()` method. Since modules themselves load code, in
-		 * order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to
-		 * load modules via first creating a {@link slime.Loader} implementation and then using the
-		 * `module()` method of the `Loader`.
-		 */
-		export interface Exports {
-		}
-
-		/**
-		 * An internal object derived from {@link slime.runtime.Engine} which adds default implementations.
-		 */
-		export interface Engine {
-			/**
-			 * Provides the ability to execute a script using the engine's default execution mechanism (using {@link Scope}'s
-			 * `$engine` property), with arbitrary script (script name for tools, plus code), scope (to provide to the script), and
-			 * target (to provide as the `this` for the script).
-			 */
-			execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: any) => any
-
-			debugger?: slime.runtime.scope.$engine["debugger"]
-			Error: {
-				decorate?: <T>(errorConstructor: T) => T
-			}
-			MetaObject: slime.runtime.scope.$engine["MetaObject"]
-		}
-
-		export interface Exports {
-			engine: Engine
-		}
-
-		export interface Exports {
-			/**
-			 * @deprecated The same object provided to scripts as `$platform`; provided here because there are limited, but likely
-			 * removable, global usages of it.
-			 */
-			$platform: Platform
-		}
-
 		export namespace resource {
 			export interface Exports {
 				new (o: slime.resource.Descriptor): slime.Resource
@@ -421,6 +415,7 @@ namespace slime {
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
+				const { $api } = fifty.global;
 
 				var api = test.subject;
 
@@ -434,7 +429,7 @@ namespace slime {
 						})();
 						(function() {
 							var resource = new api.Resource({
-								type: api.mime.Type.parse("application/json")
+								type: $api.mime.Type.parse("application/json")
 							});
 							verify(resource).type.evaluate(toString).is("application/json");
 						})();
@@ -610,11 +605,8 @@ namespace slime {
 			 * A subset of the {@link $slime.Deployment} interface that can load SLIME runtime scripts.
 			 */
 			export interface Code {
-				getRuntimeScript: slime.runtime.scope.$slime.Deployment["getRuntimeScript"]
+				getRuntimeScript: slime.runtime.scope.Deployment["getRuntimeScript"]
 			}
-		}
-
-		export namespace test {
 		}
 
 		export namespace exports {
@@ -664,11 +656,6 @@ namespace slime {
 			 * An additional way for embedding environments to access the {@link slime.$api.Global | $api} object.
 			 */
 			$api: slime.$api.Global
-
-			/**
-			 * @deprecated Replaced by `$api.mime`.
-			 */
-			mime: slime.$api.mime.Export
 		}
 
 		(
@@ -928,7 +915,9 @@ namespace slime {
 								return v === String;
 							}
 
-							subject.run(
+							var exports: slime.browser.Exports = w["inonit"].loader;
+
+							exports.test.run(
 								{
 									name: "it",
 									type: {
@@ -940,7 +929,7 @@ namespace slime {
 										function(a) {
 											if (isStringConstructor(a)) {
 												//	Use list comprehension that would be invalid JavaScript
-												return "window.foo = (s.toUpperCase() for s in ['foo'])[0]";
+												return "window.coffeeScriptListComprehension = (s.toUpperCase() for s in ['foo'])[0]";
 											}
 											throw new Error();
 										},
@@ -953,13 +942,17 @@ namespace slime {
 								}
 							);
 
-							verify(w).evaluate.property("foo").is("FOO");
+							verify(w).evaluate.property("coffeeScriptListComprehension").is("FOO");
+						}).catch(function(it) {
+							verify(it).evaluate(String).is("Should not be error.");
 						});
 					});
 				};
 
 				fifty.tests.suite = function() {
 					fifty.run(fifty.tests.runtime.exports);
+
+					fifty.load("polyfill.fifty.ts");
 					fifty.load("$api.fifty.ts");
 					fifty.load("content.fifty.ts");
 					fifty.load("Loader.fifty.ts");

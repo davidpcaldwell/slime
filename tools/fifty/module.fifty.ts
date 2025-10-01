@@ -7,10 +7,22 @@
 /**
  * **Fifty** is an authoring framework for SLIME _definitions_: constructs containing both documentation and tests.
  *
+ * The documentation is created using ordinary TypeScript type definitions, along with {@link https://tsdoc.org/ | TSDoc}
+ * documentation.[<sup>(details)</sup>](#format)
+ *
+ * Tests are created by writing inline TypeScript IIFEs which will be executed when tests are run.
+ *
+ * So with Fifty, tests that enforce behavior defined in the documentation can be placed directly adjacent to the documentation
+ * itself.
+ *
+ * Here is a working example that uses various techniques (and functions as an automated test of Fifty itself):
+ *
+ * {@includeCode ./test/data/module.fifty.ts}
+ *
  * ## Fifty definitions: authoring documentation
  *
- * Fifty uses the {@link https://tsdoc.org/ | TSDoc } documentation format, and its results are published using
- * {@link https://github.com/TypeStrong/typedoc | TypeDoc }.
+ * Fifty uses the {@link https://tsdoc.org/ | TSDoc} documentation format, and its results are published using
+ * {@link https://github.com/TypeStrong/typedoc | TypeDoc}.
  *
  * ## Fifty definitions: authoring tests
  *
@@ -25,11 +37,11 @@
  * be generated if necessary and served for both the top-level repository and subrepositories at `local/doc/typedoc` (it will be
  * re-generated for each request if `--watch` is used).
  *
- * *  `--base *directory*`: top-level directory of the project; defaults to the current working directory.
- * *  `--host *hostname*`: hostname suffix to use in the browser's address bar when serving pages. If omitted, the script will provide a host name.
- * * `--index *path*`: relative path to the index page; defaults to `README.html`.
- * *  `--watch`: if present, causes documentation to be re-generated for every HTML page requested; helpful when authoring docunmentation.
- * *  `--chrome:id *name*`: the private Chrome directory to use (under `local/chrome`); defaults to `documentation`, or `document` if `--watch` is set).
+ * * `--base <directory>`: top-level directory of the project; defaults to the current working directory.
+ * * `--host <hostname>`: hostname suffix to use in the browser's address bar when serving pages. If omitted, the script will provide a host name.
+ * * `--index <path>`: relative path to the index page; defaults to `README.html`.
+ * * `--watch`: if present, causes documentation to be re-generated for every HTML page requested; helpful when authoring docunmentation.
+ * * `--chrome:id <name>`: the private Chrome directory to use (under `local/chrome`); defaults to `documentation`, or `document` if `--watch` is set).
  *
  * ### Embedding `fifty view`
  *
@@ -41,23 +53,20 @@
  * * The {@link slime.jsh.Global#ui | `jsh.ui`} API provides the ablity to launch SLIME applications with a UI, and can incorporate the
  * documentation servlet handler implementation defined above.
  *
- * ### [TypeDoc](https://typedoc.org/) resources
+ * ### [TypeDoc](https://typedoc.org/) information
+ *
+ * Note that TypeDoc does not support Markdown footnotes.
  *
  * * [TSDoc advanced demo](https://github.com/microsoft/tsdoc/blob/master/api-demo/src/advancedDemo.ts)
+ *
+ * ## Notes
+ *
+ * * <a name="format"></a> Technically, since TypeDoc is used to generate the output, currently Fifty documentation can be written in any format
+ * understood by TypeDoc. TypeDoc's documentation provides additional information about its support for
+ * [JSDoc](https://typedoc.org/documents/Doc_Comments.JSDoc_Support.html)
+ * and [TSDoc](https://typedoc.org/documents/Doc_Comments.TSDoc_Support.html).
  */
 namespace slime.fifty {
-	/**
-	 * Types related to a **currently-inactive** project to build a custom UI for serving Fifty definitions (and perhaps running their
-	 * tests). See {@link https://github.com/davidpcaldwell/slime/projects/11 | the closed GitHub project}.
-	 */
-	export namespace ui {
-		export interface Exports {
-			ast: (p: { node: { script: slime.jrunscript.file.Pathname, debug?: boolean }, ast: slime.jrunscript.file.Pathname, file: slime.jrunscript.file.Pathname }) => object
-
-			interpret: (p: { ast: object }) => object
-		}
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit

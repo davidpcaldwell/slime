@@ -135,7 +135,7 @@
 					environment: jsh.js.Object.set({}, jsh.shell.environment, {
 						JSH_SHELL_CONTAINER: launcher,
 						JSH_SCRIPT_DEBUGGER: "profiler" + ((profilerSettings) ? ":" + profilerSettings : ""),
-						// JSH_LAUNCHER_CONSOLE_DEBUG: "true",
+						// JSH_LAUNCHER_COMMAND_DEBUG: "1",
 						JSH_JVM_OPTIONS: (launcher == "jvm") ? vmarguments.join(" ") : "",
 						JSH_ENGINE: (engine) ? engine : "",
 						JSH_PROFILER_MODULE: jsh.script.file.getRelativePath("../viewer/module.js").toString()

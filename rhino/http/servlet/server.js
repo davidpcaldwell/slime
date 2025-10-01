@@ -90,8 +90,8 @@
 					)
 					+ (
 						(_request.getQueryString() != null)
-						? ("?" + String(_request.getQueryString()))
-						: ""
+							? ("?" + String(_request.getQueryString()))
+							: ""
 					)
 				);
 
@@ -215,7 +215,7 @@
 
 		var Servlet = (
 			/**
-			 * @param { slime.servlet.Scope["$exports"] } script
+			 * @param { slime.servlet.Script } script
 			 * @returns { slime.servlet.internal.server.Servlet }
 			 */
 			function(script) {

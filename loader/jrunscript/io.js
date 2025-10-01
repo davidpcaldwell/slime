@@ -17,6 +17,7 @@
 	 * @param { slime.loader.Export<slime.jrunscript.runtime.io.Exports> } $export
 	 */
 	function($platform,Packages,JavaAdapter,XMLList,$api,$context,$export) {
+		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
 		var _java = $context._streams;
 
 		var inputs = {
@@ -66,9 +67,37 @@
 			var rv = new ArrayBuffer(_bytes.length);
 			var i8 = new Int8Array(rv);
 			for (var i=0; i<_bytes.length; i++) {
-				i8[i] = _bytes[i];
+				i8[i] = Number(_bytes[i]);
 			}
 			return rv;
+		}
+
+		/** @typedef { slime.jrunscript.native.java.io.InputStream } JavaInputStream */
+		/** @typedef { slime.jrunscript.native.java.io.OutputStream } JavaOutputStream */
+		/** @typedef { slime.jrunscript.runtime.io.PipeEvents } PipeEvents */
+
+		/** @type { (i: JavaInputStream, o: JavaOutputStream, events: slime.$api.event.Emitter<PipeEvents> ) => void } */
+		var pipe_all_native = function(i,o,events) {
+			//	TODO	do better error handling; this essentially swallows everything
+			var error = function(e) { throw new Error(); };
+			var progress = function(name) { return function(count) { events.fire(name, count); } };
+			_java.pipeAll(
+				i,
+				o,
+				new JavaAdapter(
+					Packages.inonit.script.runtime.io.Streams.PipeEvents,
+					{
+						readProgress: progress("readProgress"),
+						writeProgress: progress("writeProgress"),
+						readError: error,
+						writeError: error,
+						done: function() {
+							events.fire("done");
+						}
+					}
+				),
+				true
+			);
 		}
 
 		/**
@@ -91,6 +120,17 @@
 				return Reader.java(new Packages.java.io.InputStreamReader(peer,mode.charset), {LINE_SEPARATOR: separator});
 			};
 
+			/** @type { slime.jrunscript.runtime.io.InputStream["pipe"]["all"] } */
+			var pipe_all = function(o) {
+				return function(events) {
+					pipe_all_native(
+						peer,
+						o.java.adapt(),
+						events
+					);
+				}
+			};
+
 			return {
 				content: {
 					string: {
@@ -109,34 +149,8 @@
 					peer.close();
 				},
 				pipe: {
-					all: function(o) {
-						return function(events) {
-							_java.pipeAll(
-								peer,
-								o.java.adapt(),
-								new JavaAdapter(
-									Packages.inonit.script.runtime.io.Streams.PipeEvents,
-									{
-										/**
-										 *
-										 * @param { number } count
-										 */
-										progress: function(count) {
-											events.fire("progress", count);
-										},
-										error: function(e) {
-											//	TODO	improve
-											throw new Error();
-										},
-										done: function() {
-											events.fire("done");
-										}
-									}
-								),
-								true
-							);
-						}
-					}
+					all: pipe_all,
+					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effect())
 				},
 				character: character,
 				java: {
@@ -152,7 +166,22 @@
 
 		/** @type { slime.jrunscript.runtime.io.Exports["OutputStream"] } */
 		function OutputStream(peer) {
+			/** @type { slime.jrunscript.runtime.io.OutputStream["pipe"]["all"] } */
+			var pipe_all = function(i) {
+				return function(events) {
+					pipe_all_native(
+						i.java.adapt(),
+						peer,
+						events
+					);
+				}
+			};
+
 			return {
+				pipe: {
+					all: pipe_all,
+					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effect())
+				},
 				split: function(other) {
 					var otherPeer = other.java.adapt();
 
@@ -345,6 +374,9 @@
 			};
 		};
 
+		/**
+		 * @type { slime.jrunscript.runtime.io.Exports["Streams"] }
+		 */
 		var Streams = (function() {
 			return {
 				binary: new function() {
@@ -567,11 +599,6 @@
 		};
 
 		$export({
-			ArrayBuffer: {
-				read: function(stream) {
-					return readToArrayBuffer(stream.java.adapt());
-				}
-			},
 			InputStream: {
 				java: InputStream,
 				string: (

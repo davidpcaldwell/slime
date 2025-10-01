@@ -25,22 +25,24 @@
 			Searchpath: {}
 		};
 
-		var file = code.file({
-			//	Only use of $context.pathext in the module
-			library: {
-				java: $context.api.java
-			},
-			Streams: $context.api.io.Streams,
-			Resource: $context.api.io.Resource,
-			filesystems: $context.library.world.filesystems,
-			pathext: $context.pathext
-		});
-		file.Searchpath.prototype = prototypes.Searchpath;
 
 		//	Object-oriented filesystem implementations.
-
-		var filesystems = (
+		var api = (
+			/** @returns { { file: Pick<slime.jrunscript.file.internal.file.Exports,"isPathname"|"Pathname"|"list">, filesystems: slime.jrunscript.file.Exports["filesystems"] } } */
 			function() {
+				var file = code.file({
+					library: {
+						java: $context.api.java,
+						Location: $context.library.Location
+					},
+					Streams: $context.api.io.Streams,
+					Resource: $context.api.io.Resource,
+					filesystems: $context.library.world.filesystems,
+					prototypes: prototypes,
+					//	Only use of $context.pathext in the module
+					pathext: $context.pathext
+				});
+
 				var os = code.filesystem({
 					Pathname: file.Pathname,
 					Searchpath: file.Searchpath
@@ -50,7 +52,7 @@
 				 * @type { slime.jrunscript.file.Exports["filesystems"] }
 				 */
 				var filesystems = {
-					os: new os.Filesystem($context.library.world.providers.os),
+					os: new os.Filesystem($context.library.world.filesystems.os, $context.library.world.providers.os),
 					cygwin: ($context.cygwin) ? $loader.file("cygwin.js", {
 						cygwin: $context.cygwin,
 						Filesystem: os.Filesystem,
@@ -60,6 +62,7 @@
 								var code = $loader.script("java.js");
 								return code({
 									api: {
+										java: $context.api.java,
 										io: $context.api.io
 									}
 								})
@@ -71,9 +74,11 @@
 					}) : void(0)
 				};
 
-				return filesystems;
+				return { file: file, filesystems: filesystems };
 			}
 		)();
+		var file = api.file;
+		var filesystems = api.filesystems;
 
 		//	By policy, default filesystem is cygwin filesystem if it is present.  Default can be set through module's filesystem property
 		var filesystem = (filesystems.cygwin) ? filesystems.cygwin : filesystems.os;

@@ -19,7 +19,7 @@ namespace slime.$api {
 		 * @param f A function to mark
 		 * @returns A marked version of the function that invokes the `Flagger`'s callback for each access
 		 */
-		<T extends slime.external.lib.es5.Function>(f: T): T
+		<F extends slime.external.lib.es5.Function<any,any,any>>(f: F): F
 
 		/**
 		 * A function that can be used to flag a named property on an object.
@@ -42,6 +42,10 @@ namespace slime.$api {
 		 * Allows the runtime marking of particular API constructs as experimental.
 		 */
 		experimental: Flagger
+
+		flag: {
+			once: (warning: Flagger["warning"]) => Flagger["warning"]
+		}
 	}
 
 	(
@@ -338,4 +342,8 @@ namespace slime.$api {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace internal.flag {
+		export type Exports = Pick<slime.$api.Global,"deprecate"|"experimental"|"flag">
+	}
 }

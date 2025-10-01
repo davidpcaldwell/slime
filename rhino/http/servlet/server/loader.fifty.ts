@@ -32,11 +32,8 @@ namespace slime.servlet {
 		}
 	}
 
-	export interface httpd {
-		/**
-		 * Provides a set of {@link slime.servlet.handler} implementations.
-		 */
-		Handler: {
+	export namespace handler {
+		export interface Exports {
 			/**
 			 * Creates a `Handler` from an ordered list of `Handler`s. Requests received by the resulting `Handler` will be handled
 			 * by invoking each provided `Handler` in order and returning the first result that is not `undefined`.
@@ -82,6 +79,13 @@ namespace slime.servlet {
 				index?: string
 			}) => slime.servlet.handler
 		}
+	}
+
+	export interface httpd {
+		/**
+		 * Provides a set of {@link slime.servlet.handler} implementations.
+		 */
+		Handler: handler.Exports
 	}
 
 	(

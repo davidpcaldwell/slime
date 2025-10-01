@@ -23,7 +23,7 @@
 			var SLASH = (p && p.separator && p.separator.pathname) ? p.separator.pathname : "/";
 			var COLON = (p && p.separator && p.separator.searchpath) ? p.separator.searchpath : ":";
 
-			/** @typedef { { type: "file", data: slime.jrunscript.Array<number> } } File */
+			/** @typedef { { type: "file", data: slime.jrunscript.Array<slime.jrunscript.native.java.lang.Byte> } } File */
 			/** @typedef { { type: "directory" } } Directory */
 			/** @typedef { File | Directory } Node */
 
@@ -82,6 +82,10 @@
 					var out = buffer.writeBinary();
 					/** @type { slime.jrunscript.runtime.io.OutputStream } */
 					var wrap = {
+						pipe: {
+							all: out.pipe.all,
+							simple: out.pipe.simple
+						},
 						character: out.character,
 						close: function() {
 							out.close();
@@ -124,7 +128,7 @@
 						return $api.fp.Maybe.from.some(p.pathname);
 					}
 				},
-				copy: void(0),
+				copy: $api.TODO(),
 				createDirectory: function(p) {
 					return function(events) {
 						state[p.pathname] = {
@@ -134,7 +138,7 @@
 				},
 				directoryExists: directoryExists,
 				fileExists: fileExists,
-				move: void(0),
+				move: $api.TODO(),
 				remove: function(p) {
 					return function(events) {
 						//	TODO	what should happen if it doesn't exist?
@@ -145,8 +149,8 @@
 						}
 					}
 				},
-				fileSize: void(0),
-				fileLastModified: void(0),
+				fileSize: $api.TODO(),
+				fileLastModified: $api.TODO(),
 				listDirectory: function(p) {
 					return function(events) {
 						var prefix = p.pathname + "/";
@@ -179,15 +183,28 @@
 						if (p.directory) {
 							state[name] = { type: "directory" };
 						} else {
-							state[name] = { type: "file", data: $context.library.java.Array.create({ type: Packages.java.lang.Byte, array: [] }) };
+							var bytes = $context.library.java.Array.create({ type: Packages.java.lang.Byte, array: [] })
+							state[name] = { type: "file", data: bytes };
 						}
 						return name;
 					}
 				},
-				Directory: void(0),
-				File: void(0),
-				Pathname: void(0),
-				pathname: void(0)
+				Directory: {
+					remove: $api.TODO()
+				},
+				File: {
+					read: {
+						stream: {
+							bytes: $api.TODO()
+						},
+						string: $api.TODO()
+					},
+					copy: $api.TODO()
+				},
+				Pathname: {
+					isDirectory: $api.TODO()
+				},
+				pathname: $api.TODO()
 			};
 
 			return rv;

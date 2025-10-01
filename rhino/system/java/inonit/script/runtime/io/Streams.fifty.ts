@@ -23,6 +23,10 @@ namespace slime.jrunscript.native.inonit.script.runtime.io {
 		) => void
 
 		copy: {
+			/**
+			 * @param closeInputStream Whether to close the input stream after copying. The default is `true`. The output stream is
+			 * flushed, but not closed.
+			 */
 			(i: slime.jrunscript.native.java.io.InputStream, o: slime.jrunscript.native.java.io.OutputStream, closeInputStream?: boolean): void
 			(r: slime.jrunscript.native.java.io.Reader, w: slime.jrunscript.native.java.io.Writer): void
 		}
@@ -37,7 +41,7 @@ namespace slime.jrunscript.native.inonit.script.runtime.io {
 		split: (one: java.io.OutputStream, two: java.io.OutputStream) => java.io.OutputStream
 
 		//	TODO	we don't really have a great way currently to represent bytes
-		readBytes: (input: java.io.InputStream) => slime.jrunscript.Array<number>
+		readBytes: (input: java.io.InputStream) => slime.jrunscript.Array<slime.jrunscript.native.java.lang.Byte>
 
 		readString: (reader: slime.jrunscript.native.java.io.Reader) => slime.jrunscript.native.java.lang.String
 

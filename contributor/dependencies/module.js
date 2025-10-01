@@ -24,6 +24,7 @@
 				// jrunscript/jsh/tools/install/plugin.jsh.js
 
 				version: function() {
+					//	TODO	duplicative of code in the bootstrap API
 					if (/^1\.8/.test($context.java.version)) {
 						return {
 							number: "1.7.15",
@@ -87,40 +88,45 @@
 								}
 							)
 						),
-						$api.fp.Maybe.else($api.fp.thunk.value(null))
+						$api.fp.Maybe.else($api.fp.Thunk.value(null))
 					)
 				}
+			},
+			typescript: {
+				version: "5.9.2"
 			},
 			typedoc: {
 				version: "0.28.4"
 			}
 		};
 
-		var getTypedocIncludes = $api.fp.thunk.value(
+		var getTypedocIncludes = $api.fp.Thunk.value(
 			//	TODO	figure out better way to manage retrieval of non-code content; using older loader constructs for now
 			$loader.get("dependencies.md").read(String),
 			function(s) { return s.replace(/\{rhino\.version\.number}/, data.rhino.versions.default ) },
 			function(s) { return s.replace(/\{rhino\.version\.jdk8\.number}/, data.rhino.versions.jdk8 ) },
-			function(s) { return s.replace(/\{nashorn\.standalone\.version\}/, data.nashorn.standalone.version ) }
+			function(s) { return s.replace(/\{nashorn\.standalone\.version\}/, data.nashorn.standalone.version ) },
+			function(s) { return s.replace(/\{typescript\.version\}/, data.typescript.version ) },
+			function(s) { return s.replace(/\{typedoc\.version\}/, data.typedoc.version ) }
 		);
 
 		$export({
 			data: data,
 			typedoc: {
 				generate: $api.fp.pipe(
-					$api.fp.mapping.properties({
+					$api.fp.Mapping.properties({
 						to: $api.fp.identity,
-						text: $api.fp.mapping.from.thunk(getTypedocIncludes)
+						text: $api.fp.Mapping.from.thunk(getTypedocIncludes)
 					}),
 					function(p) {
 						var parent = $context.library.file.Location.parent()(p.to);
-						var means = $context.library.file.Location.directory.require({ recursive: true });
+						var means = $context.library.file.Location.directory.require.old({ recursive: true });
 						$api.fp.world.Means.now({
 							means: means,
 							order: parent
 						});
 						$api.fp.world.Action.now({
-							action: $context.library.file.Location.file.write( p.to ).string({ value: p.text })
+							action: $context.library.file.Location.file.write.old( p.to ).string({ value: p.text })
 						});
 					}
 				)

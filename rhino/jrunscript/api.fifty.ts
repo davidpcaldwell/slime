@@ -64,6 +64,24 @@ namespace slime.jrunscript {
  * of the `jsh` loader process and launches the `jsh` loader configured appropriately.
  */
 namespace slime.internal.jrunscript.bootstrap {
+	export namespace test {
+		export const jar = (function(fifty: slime.fifty.test.Kit) {
+			var jsh = fifty.global.jsh;
+
+			//	TODO	believe there is a better way to do this now, maybe with a jsh.shell.java.Jdk call of some kind
+			return jsh.file.Searchpath([
+				jsh.shell.java.home.getRelativePath("bin"),
+				jsh.shell.java.home.parent.getRelativePath("bin")
+			]).getCommand("jar");
+		//@ts-ignore
+		})(fifty);
+
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			return fifty.global.jsh.internal.bootstrap;
+		//@ts-ignore
+		})(fifty);
+	}
+
 	/**
 	 * An object that can be used to configure the invocation of the `api.js` script, by setting the `$api` property of the global
 	 * object to an object of this type. This value will be *overwritten* by the {@link Global} value exported by the script.
@@ -80,10 +98,18 @@ namespace slime.internal.jrunscript.bootstrap {
 		debug?: boolean
 	}
 
+	export interface JavaClasspath {
+		liveconnect: (name: string) => slime.jrunscript.JavaClass<any,any>
+		nativeClass: (name: string) => slime.jrunscript.native.java.lang.Class
+		update: () => void
+	}
+
 	/**
 	 * Refers to the currently executing script.
 	 */
 	export interface Script {
+		toString: () => string
+
 		load: () => void
 
 		/**
@@ -103,27 +129,34 @@ namespace slime.internal.jrunscript.bootstrap {
 	 */
 	export interface Environment {
 		/**
-		 * A function compatible with the [Nashorn shell `load()` function](https://docs.oracle.com/javase/10/nashorn/nashorn-and-shell-scripting.htm)
+		 * A function compatible with the
+		 * [Nashorn shell `load()` function](https://docs.oracle.com/javase/10/nashorn/nashorn-and-shell-scripting.htm).
 		 */
 		load: {
 			(fileOrUrl: string): void
+			//	TODO	would like to name script property to js but it caused regression
 			(p: { name: string, script: slime.jrunscript.native.java.lang.String })
 		}
 
 		//	Rhino compatibility
 		Packages: slime.jrunscript.Packages
-		JavaAdapter?: any
+		JavaAdapter?: slime.jrunscript.JavaAdapter
 
-		//	Rhino-provided
-		readFile?: any
-		readUrl?: any
+		/**
+		 * Reads a URL in a way compatible with the Rhino shell. See the
+		 * [Rhino documentation](https://rhino.github.io/tools/shell/).
+		 *
+		 * If provided in the global scope (the Rhino engine provides it), the existing implementation will be used. Otherwise, a
+		 * compatible implementation will be supplied.
+		 */
+		readUrl?: (url: string) => string
 
 		//	Nashorn-provided
 		//	Used to provide debug output before Packages is loaded
 		//	Used in jsh/launcher/main.js
 		Java?: {
 			type: (name: string) => slime.jrunscript.JavaClass & {
-				class: any
+				class: slime.jrunscript.native.java.lang.Class
 			}
 		}
 
@@ -139,12 +172,25 @@ namespace slime.internal.jrunscript.bootstrap {
 		}
 
 		export type Io = {
-			copy: (from: slime.jrunscript.native.java.io.InputStream, to: slime.jrunscript.native.java.io.OutputStream) => void
+			/**
+			 * Copies `from` to `to`. Closes output stream but not input stream.
+			 */
+			copy: slime.internal.jrunscript.bootstrap.Api<{}>["io"]["copy"]
+
 			zip: {
 				parse: (_stream: slime.jrunscript.native.java.io.InputStream, destination: io.zip.Processor) => void
 			}
+
 			readJavaString: (from: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String
 		}
+
+		export interface Engine {
+			resolve: Api<any>["engine"]["resolve"]
+			getCallingScript: Api<any>["engine"]["getCallingScript"]
+			getClass: <T extends slime.jrunscript.native.java.lang.Object,C>(name: string) => slime.jrunscript.JavaClass<T,C>
+			newArray: <T extends slime.jrunscript.native.java.lang.Object,C>(type: slime.jrunscript.JavaClass<T,C>, length: number)
+				=> slime.jrunscript.Array<T>
+			script: string		}
 	}
 
 
@@ -178,7 +224,6 @@ namespace slime.internal.jrunscript.bootstrap {
 			home: slime.jrunscript.native.java.io.File
 			launcher: slime.jrunscript.native.java.io.File
 			jrunscript: slime.jrunscript.native.java.io.File
-			compile: any
 			toString: () => string
 		}
 	}
@@ -195,9 +240,25 @@ namespace slime.internal.jrunscript.bootstrap {
 
 		engine: {
 			toString: () => string
-			resolve: any
-			readFile: any
-			readUrl: any
+
+			/**
+			 * A method which, given values for each potential JavaScript engine, returns the value for the engine that is actually
+			 * running.
+			 *
+			 * @param option An object with a property for each potential JavaScript engine
+			 *
+			 * @returns The value of the property representing the JavaScript engine which is running.
+			 */
+			resolve: <T>(option: {
+				rhino: T
+				nashorn: T
+				graal: T
+
+				//	legacy compatibility with pre-JDK 8 Rhino; now unsupported
+				jdkrhino?: T
+			}) => T
+
+			readUrl: Environment["readUrl"]
 
 			/**
 			 * Attempts to be compatible with the old Rhino shell `runCommand` implementation.
@@ -206,23 +267,57 @@ namespace slime.internal.jrunscript.bootstrap {
 			 * @returns The exit status of the command
 			 */
 			runCommand: (...arguments: any[]) => number
+
+			getCallingScript: () => string
+
+			rhino: {
+				/**
+				 * The location from which Rhino was loaded, specifically the `org.mozilla.javascript.Context` class.
+				 */
+				classpath: () => slime.jrunscript.native.java.io.File
+
+				/**
+				 * Whether Rhino is currently available on the classpath.
+				 */
+				isPresent: () => boolean
+
+				/**
+				 * If Rhino is currently running this script, the current Rhino script context.
+				 */
+				running: () => slime.jrunscript.native.org.mozilla.javascript.Context
+			}
+
+			nashorn: {
+				isPresent: () => boolean
+				//	TODO	Add org.openjdk.nashorn equivalent? Or is the fact that the types are equivalent enough?
+				running: () => slime.jrunscript.native.jdk.nashorn.internal.runtime.Context
+			}
 		}
 
 		github: {
 			archives: {
+				/**
+				 * Given the URL of a raw source file on GitHub, returns the string content of that file.
+				 */
 				getSourceFile: (url: slime.jrunscript.native.java.net.URL) => slime.jrunscript.native.java.lang.String
+
+				/**
+				 * Given a base GitHub URL under which raw source files may be found, returns a list of URLs containing raw source
+				 * files that are under that base.
+				 */
 				getSourceFilesUnder: (url: slime.jrunscript.native.java.net.URL) => slime.jrunscript.native.java.net.URL[]
 			}
 			test: {
 				zip: (_stream: slime.jrunscript.native.java.io.InputStream) => github.Archive
 				toArchiveLocation: (url: slime.jrunscript.native.java.net.URL) => {
-					zip: slime.jrunscript.native.java.net.URL
+					zipUrl: slime.jrunscript.native.java.net.URL
 					path: string
 				}
 			}
 		}
 
 		Script: {
+			new (p: { caller: true }): Script
 			new (p: { string: string }): Script
 			new (p: { file: slime.jrunscript.native.java.io.File }): Script
 			new (p: { url: slime.jrunscript.native.java.net.URL }): Script
@@ -240,7 +335,55 @@ namespace slime.internal.jrunscript.bootstrap {
 		script: Script
 
 		arguments: string[]
+	}
 
+	export namespace java {
+		export interface Install {
+			toString: () => string
+
+			home: slime.jrunscript.native.java.io.File
+			launcher: slime.jrunscript.native.java.io.File
+			jrunscript: slime.jrunscript.native.java.io.File
+
+			compile: (args: string[]) => void
+
+			getMajorVersion: () => number
+		}
+
+		(
+			function(
+				Packages: slime.jrunscript.Packages,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.manual.java = {};
+				fifty.tests.manual.java.Install = {};
+				fifty.tests.manual.java.Install.getMajorVersion = function() {
+					var jdk = $api.fp.now(fifty.jsh.file.relative("../../local/jdk"), jsh.file.Location.directory.base);
+					//	TODO	is there no API for this?
+					var toJavaFile = function(location: slime.jrunscript.file.Location) { return new Packages.java.io.File(location.pathname); };
+					var toJavaInstall = jsh.internal.bootstrap.java.Install;
+					var getMajorVersion = function(it: Install) {
+						return {
+							version: it.getMajorVersion(),
+							home: it.home
+						}
+					};
+					var console = function(p: ReturnType<typeof getMajorVersion>) { jsh.shell.console("Major version at " + p.home + " is " + p.version)};
+					var process = $api.fp.pipe(jdk, toJavaFile, toJavaInstall, getMajorVersion, console);
+					process("8");
+					process("11");
+					process("17");
+					process("21");
+				}
+			}
+		//@ts-ignore
+		)(Packages,fifty);
+
+	}
+
+	export interface Api<J> {
 		java: {
 			version: {
 				property: {
@@ -248,32 +391,53 @@ namespace slime.internal.jrunscript.bootstrap {
 				}
 			}
 
-			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
-
+			/**
+			 * The Java installation used to run this script.
+			 */
 			install: java.Install & {
 				version: {
 					major: () => number
 				}
 			}
 
-			getClass: any
+			/**
+			 * @param home A directory containing a Java installation
+			 */
+			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
+
+			getClass: (name: string) => slime.jrunscript.JavaClass
 			Array: any
 			Command: any
-		} & J
 
+			versions: {
+				getMajorVersion: {
+					forJavaVersionProperty: (value: string) => number
+				}
+			}
+
+			/**
+			 * Returns ths major version number for the currently running Java virtual machine.
+			 */
+			getMajorVersion: () => number
+		} & J
+	}
+
+	export interface Api<J> {
 		io: {
 			tmpdir: (p?: { prefix?: string, suffix?: string }) => slime.jrunscript.native.java.io.File
-			copy: any
+			copy: (from: slime.jrunscript.native.java.io.InputStream, to: slime.jrunscript.native.java.io.OutputStream) => void
 			unzip: any
 			readJavaString: (from: slime.jrunscript.native.java.io.InputStream) => slime.jrunscript.native.java.lang.String
 		}
+	}
 
+	export interface Api<J> {
 		rhino: {
-			classpath: slime.jrunscript.native.java.io.File
-			isPresent: () => boolean
-			running: () => slime.jrunscript.native.org.mozilla.javascript.Context
+			version: (jdkMajorVersion: number) => string
 		}
+	}
 
+	export interface Api<J> {
 		nashorn: {
 			dependencies: {
 				maven: {
@@ -287,12 +451,18 @@ namespace slime.internal.jrunscript.bootstrap {
 				jarNames: string[]
 			}
 
-			isPresent: () => boolean
-			//	TODO	Add org.openjdk.nashorn equivalent
-			running: () => slime.jrunscript.native.jdk.nashorn.internal.runtime.Context
+			getDeprecationArguments: (javaMajorVersion: number) => string[]
 		}
 
-		shell: any
+		shell: {
+			environment: any
+			HOME: any
+			exec: any
+		}
+
+		embed: {
+			jsh?: Script
+		}
 	}
 
 	(
@@ -323,7 +493,7 @@ namespace slime.internal.jrunscript.bootstrap {
 	 * @typeParam T - An object specifying a set of properties to add to the `$api` property.
 	 * @typeParam J - An object specifying a set of properties to add to the `$api.java` property.
 	 */
-	export interface Global<T,J> extends Omit<Environment,"$api"> {
+	export interface Global<T,J = {}> extends Omit<Environment,"$api"> {
 		$api: Api<J> & T
 	}
 

@@ -34,7 +34,7 @@ namespace slime.servlet {
 		/**
 		 * @deprecated
 		 */
-		js: any
+		js: slime.$api.old.Exports
 
 		java: slime.jrunscript.java.Exports
 		io: slime.jrunscript.io.Exports
@@ -54,6 +54,12 @@ namespace slime.servlet {
 	 * @returns A response.
 	 */
 	export type handler = (request: Request) => Response
+
+	/**
+	 * A partial function that can handle some requests (and decline others). `Handler`s can be assembled into larger handlers,
+	 * and eventually (with a default) be used to create a total function that can handle all requests.
+	 */
+	export type Handler = slime.$api.fp.Partial<Request,Response>
 
 	//	TODO	if it doesn't assign a handle function, then what?
 	//	TODO	indentation below is lost
@@ -127,17 +133,6 @@ namespace slime.servlet {
 		}
 
 		export namespace $host {
-			export interface Java {
-				getClasspath?: slime.jrunscript.native.inonit.script.engine.Loader.Classes.Interface
-				register: (_script: slime.jrunscript.native.inonit.script.servlet.Servlet.Script) => void
-				getLoader(): slime.jrunscript.native.inonit.script.rhino.Engine.Loader
-				getServlet(): slime.jrunscript.native.inonit.script.servlet.Servlet
-			}
-
-			export interface Rhino extends Java {
-				getEngine(): slime.jrunscript.native.inonit.script.rhino.Engine
-			}
-
 			export interface jsh {
 				context: slime.servlet.httpd["context"]
 
@@ -179,7 +174,7 @@ namespace slime.servlet {
 			}
 		}
 
-		export type $host = $host.Java | $host.jsh
+		export type $host = slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject | $host.jsh
 	}
 
 	(

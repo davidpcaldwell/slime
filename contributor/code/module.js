@@ -57,8 +57,10 @@
 				/** @type { slime.tools.code.isText } */
 				var isText = $api.fp.series(
 					function(entry) {
-						if (entry.path == "contributor/docker-compose-run") return true;
 						if (entry.path == "tools/wf/test/data/plugin-standard/wf") return true;
+					},
+					function added(entry) {
+						if (/\.rc$/.test(entry.path)) return true;
 					},
 					function wasFromWf(entry) {
 						if (/\.def$/.test(entry.path)) return true;

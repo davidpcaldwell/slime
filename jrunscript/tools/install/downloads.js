@@ -119,11 +119,11 @@
 						set: function(v) {
 							if (!v) throw new Error("!v!");
 							if (!v.read()) throw new Error("!v.read()!");
-							var it = $context.library.file.Location.directory.require()(location);
+							var it = $context.library.file.Location.directory.require.old()(location);
 							$api.fp.world.Action.now({
 								action: it
 							});
-							var means = $context.library.file.Location.file.write(file).stream;
+							var means = $context.library.file.Location.file.write.old(file).stream;
 							$api.fp.world.Means.now({
 								means: means,
 								order: {

@@ -48,15 +48,17 @@ namespace slime.jrunscript.tools.install.downloads {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { verify } = fifty;
+			const { verify, spy } = fifty;
 			const { $api, jsh } = fifty.global;
 			const { subject } = test;
 
-			type Invocation<F extends slime.external.lib.es5.Function> = {
-				target: ThisParameterType<F>
-				arguments: Parameters<F>
-				returned: ReturnType<F>
-			};
+			type Invocation<F extends slime.external.lib.es5.Function<any,any,any>> = (
+				F extends slime.external.lib.es5.Function<infer T, infer P, infer R> ? {
+					target: T
+					arguments: P
+					returned: R
+				} : never
+			)
 
 			fifty.tests.suite = function() {
 				var tmp = fifty.jsh.file.temporary.location();
@@ -70,31 +72,16 @@ namespace slime.jrunscript.tools.install.downloads {
 					};
 				};
 
-				//	TODO	add to Fifty proper
-				var spy = function<F extends slime.external.lib.es5.Function>(f: F): { invoke: F, recorded: Invocation<F>[] } {
-					var recorded: Invocation<F>[] = [];
-					return {
-						invoke: function() {
-							const target: Invocation<F>["target"] = this;
-							const args: Invocation<F>["arguments"] = Array.prototype.slice.call(arguments);
-							var rv = f.apply(this, arguments);
-							recorded.push({ target, arguments: args, returned: rv });
-							return rv;
-						} as F,
-						recorded: recorded
-					};
-				};
-
-				const watched = spy(fetch);
+				const watched = spy.create(fetch);
 
 				const store = cache(name);
 
-				const get = $api.fp.impure.Input.cache(store)(watched.invoke);
+				const get = $api.fp.impure.Input.cache(store)(watched.function);
 
-				const watched2 = spy(get);
+				const watched2 = spy.create(get);
 
-				verify(watched, "fetch").recorded.length.is(0);
-				verify(watched2, "get").recorded.length.is(0);
+				verify(watched, "fetch").invocations.length.is(0);
+				verify(watched2, "get").invocations.length.is(0);
 
 				const yesType = function(v: Download) {
 					if (!v.type.present) throw new Error();
@@ -102,19 +89,19 @@ namespace slime.jrunscript.tools.install.downloads {
 				}
 
 				debugger;
-				const first = watched2.invoke();
+				const first = watched2.function();
 				verify(first).read().character().asString().is("Hello, World!");
 				verify(first).evaluate(yesType).media.is("text");
 				verify(first).evaluate(yesType).subtype.is("plain");
-				verify(watched, "fetch").recorded.length.is(1);
-				verify(watched2, "get").recorded.length.is(1);
+				verify(watched, "fetch").invocations.length.is(1);
+				verify(watched2, "get").invocations.length.is(1);
 
-				const second = watched2.invoke();
+				const second = watched2.function();
 				verify(second).read().character().asString().is("Hello, World!");
 				verify(second).evaluate(yesType).media.is("text");
 				verify(second).evaluate(yesType).subtype.is("plain");
-				verify(watched, "fetch").recorded.length.is(1);
-				verify(watched2, "get").recorded.length.is(2);
+				verify(watched, "fetch").invocations.length.is(1);
+				verify(watched2, "get").invocations.length.is(2);
 			}
 		}
 	//@ts-ignore

@@ -20,137 +20,278 @@
 		/** @type { slime.definition.test.promises.internal.Events } */
 		var events = $api.events.emitter();
 
-		var RegisteredPromise = (function(was) {
-			/**
-			 * @constructor
-			 */
-			function RegisteredPromise(executor) {
-				console.log("Created RegisteredPromise with executor", executor.toString() + " from " + new Error("Stack trace").stack);
-				this.then = void(0);
-				this.catch = void(0);
-				var rv = new was(executor);
-				rv["executor"] = executor.toString();
-				events.fire("created", rv);
-				rv.then(function(value) {
-					console.log("settled - fulfilled", rv, value);
-					events.fire("settled", rv);
-					return value;
-				}).catch(function(error) {
-					console.log("settled - rejected", rv, error);
-					events.fire("settled", rv);
-					throw error;
-				})
-				return rv;
-			}
-			//	Copy all properties
-			for (var x in was) {
-				RegisteredPromise[x] = was[x];
-			}
-			//	Make typescript happy if above didn't work
+		/** @typedef { slime.definition.test.promises.internal.Executor } Executor */
+		/** @typedef { slime.definition.test.promises.internal.Identifier } Identifier */
+		/** @typedef { slime.definition.test.promises.internal.Dependency } Dependency */
 
-			//	At least in Chrome, this calls Promise constructor
-			RegisteredPromise.resolve = was.resolve;
-			RegisteredPromise.reject = was.reject;
+		var ordinal = 0;
 
-			RegisteredPromise.race = was.race;
-			RegisteredPromise.all = was.all;
-			return RegisteredPromise;
-		})(window.Promise);
+		var PromiseExecutor = function(promise) {
+			var rv = function(resolve,reject) {
+				promise.then(
+					function(value) {
+						resolve(value);
+					},
+					function(error) {
+						reject(error);
+					}
+				)
+			};
+			rv.original = promise;
+			return rv;
+		};
 
-		//@ts-ignore
-		window.Promise = RegisteredPromise;
-
-		var controlledPromiseId = 0;
 		/**
 		 *
-		 * @param { { id: string } } [p]
-		 * @returns { ReturnType<slime.definition.test.promises.Export["controlled"]> }
+		 * @param { Executor } executor
+		 * @param { Identifier } identifier
+		 * @returns { Executor }
 		 */
-		var ControlledPromise = function(p) {
-			var id = (p && p.id) ? p.id : String(++controlledPromiseId);
-			var resolver;
-			var rejector;
-			var executor = function(resolve,reject) {
-				resolver = function(value) {
-					console.log("resolving ControlledPromise", id, value);
-					resolve(value);
-				};
-				rejector = reject;
-			}
-			executor.toString = function() {
-				return "<ControlledPromise " + id + ">";
-			}
-			var promise = new RegisteredPromise(executor);
-			promise.toString = executor.toString;
-			//	TODO	seems like a race condition, how can we assume resolver and rejector have been initialized?
-			return {
-				//@ts-ignore
-				promise: promise,
-				resolve: resolver,
-				reject: rejector
+		var RegisteringExecutor = function(executor, identifier) {
+			return function(resolve,reject) {
+				executor(
+					function(value) {
+						resolve(value);
+						if (!identifier.settled) {
+							identifier.settled = true;
+							events.fire("settled", identifier);
+						}
+					},
+					function(error) {
+						reject(error);
+						if (!identifier.settled) {
+							identifier.settled = true;
+							events.fire("settled", identifier);
+						}
+					}
+				);
 			}
 		};
 
+		class MyPromise extends Promise {
+			//@ts-ignore
+			#identifier;
+
+			constructor(executor) {
+				/** @type { Identifier } */
+				var identifier = {
+					id: ++ordinal,
+					executor: executor,
+					settled: false
+				};
+				//events.fire("created", identifier);
+				super(RegisteringExecutor(executor, identifier));
+				this.#identifier = identifier;
+				identifier["code"] = identifier.executor.toString();
+				this["id"] = identifier.id;
+			}
+
+			then(onfulfilled,onrejected) {
+				var defaulted = super.then(onfulfilled,onrejected);
+				/** @type { Dependency } */
+				var dependency = {
+					on: this.#identifier,
+					promise: this,
+					from: {
+						id: defaulted["id"],
+						onfulfilled: (onfulfilled) ? onfulfilled.toString() : void(0),
+						onrejected: (onrejected) ? onrejected.toString() : void(0),
+						promise: defaulted
+					}
+				}
+				defaulted["dependency"] = dependency;
+				if (!this.#identifier.settled) {
+					events.fire("needed", dependency);
+				}
+				return defaulted;
+			}
+		}
+
+		var NativePromise = window.Promise;
+
+		window.Promise = MyPromise;
+
+		/**
+		 *
+		 * @param { { id: () => string } } [p]
+		 * @returns { ReturnType<slime.definition.test.promises.Export["controlled"]> }
+		 */
+		var ControlledPromise = function(p) {
+			var resolver;
+			var rejector;
+			var settled = function() {
+				resolver = function() {
+					console.log("Cannot resolve; already settled.");
+				};
+				rejector = function() {
+					console.log("Cannot resolve; already settled.");
+				};
+			};
+			var id;
+			var executor = function(resolve,reject) {
+				resolver = function(value) {
+					console.log("resolving ControlledPromise " + executor.toString(), id, value);
+					settled();
+					resolve(value);
+				};
+				rejector = function(error) {
+					console.log("rejecting ControlledPromise", id, error);
+					settled();
+					reject(error);
+				}
+			}
+			executor.toString = function() {
+				return "<ControlledPromise " + id + " for " + p.id() + ">";
+			}
+			//var MainConstructor = RegisteredPromiseConstructor;
+			//	var MainConstructor = MyPromise;
+			var MainConstructor = NativePromise;
+			var promise = new MainConstructor(executor);
+			promise["id"] = ++ordinal;
+			id = promise["id"];
+			promise["controlled"] = executor.toString();
+			//var id = (p && p.id) ? p.id : String(++controlledPromiseId);
+			//	TODO	seems like a race condition, how can we assume resolver and rejector have been initialized?
+			return {
+				//@ts-ignore
+				toString: function() {
+					return executor.toString()
+				},
+				//@ts-ignore
+				promise: promise,
+				resolve: function(value) {
+					resolver(value);
+				},
+				reject: function(error) {
+					rejector(error);
+				}
+			}
+		};
+
+		var RegisteredFetch = (
+			function(nativeFetch) {
+				var ResponseWrapper = function(response) {
+					var MethodWrapper = function(object,methodName) {
+						var was = object[methodName];
+						return function() {
+							//return PuppetWrapper(was.call(object), methodName);
+							/** @type { Promise<any> } */
+							var promise = was.call(object);
+							return new MyPromise(PromiseExecutor(promise));
+						}
+					};
+
+					return Object.assign(response, {
+						text: MethodWrapper(response, "text")
+					});
+				}
+
+				/** @type { Window["fetch"] } */
+				return function(path, init) {
+					return new MyPromise(
+						PromiseExecutor(
+							nativeFetch(path, init).then(function(/** @type { Response } */response) {
+								return ResponseWrapper(response);
+							})
+						)
+					);
+				}
+			}
+		)(window.fetch);
+
+		window.fetch = RegisteredFetch;
+
 		var Registry = function(p) {
 			var name = (p && p.name);
-			console.log("Created registry", name);
-			var list = [];
 
-			var created = function(e) {
-				console.log("registering created promise with", name, e.detail);
-				list.push(e.detail);
-			};
+			console.log("Created registry: " + name);
 
-			events.listeners.add("created", created);
+			/** @type { slime.definition.test.promises.internal.Dependency[] } */
+			var dependencies = [];
 
-			//	Unused but could be used to remove promises when they are ressolved / caught, should that become necessary
-			var remove = function(instance) {
-				var index = list.indexOf(instance);
-				if (index == -1) {
-					console.log("Not registered with", name, instance, instance.toString());
-				} else {
-					console.log("Removing from registry", name, list[index]);
-					list.splice(index,1);
+			/** @type { Promise<any>[] } */
+			var external = [];
+
+			/** @type { slime.$api.event.Handler<slime.definition.test.promises.internal.Dependency> } */
+			var needed = function(e) {
+				var it = e.detail;
+				if (!it.on.settled) {
+					if (external.indexOf(it.promise) == -1) {
+						dependencies.push(e.detail);
+					} else {
+						debugger;
+					}
 				}
+				console.log("Needed in " + name, it, "now", dependencies.slice());
 			};
 
+			events.listeners.add("needed", needed);
+
+			/**
+			 *
+			 * @param { slime.definition.test.promises.internal.Identifier } settled
+			 */
+			var remove = function(settled) {
+				dependencies = dependencies.filter(function(dependency) {
+					if (dependency.on == settled) {
+						console.log("Removing dependency", dependency.on, "because", settled, "settled");
+						return false;
+					}
+					return true;
+				});
+			};
+
+			/** @type { slime.$api.event.Handler<slime.definition.test.promises.internal.Identifier> } */
 			var settled = function(e) {
+				//if (e.detail.promise == controlled.promise["native"]) return;
+				console.log("Promise " + e.detail.id + " settled in " + name, e.detail);
 				remove(e.detail);
-				if (list.length == 0) {
+				console.log("Settled", e.detail, "now", dependencies.slice());
+				if (dependencies.length == 0) {
+					console.log("All dependencies removed from registry " + name, e.detail, "resolving", controlled.promise);
+					debugger;
 					controlled.resolve(void(0));
 				} else {
-					console.log("pending", name, list);
+					console.log("still waiting in " + name, dependencies.slice());
 				}
 			}
 
 			events.listeners.add("settled", settled);
 
-			var controlled = ControlledPromise({ id: "Promise for Registry " + name});
+			var controlled = ControlledPromise({ id: function() { return "Promise for Registry " + name }});
 			//	We used to use our own promises here and did not want the ControlledPromise to count as "registered." Now we just
 			//	use the out-of-the-box Promise implementation for ControlledPromise objects.
-			remove(controlled.promise);
+			// list = list.filter(function(item) {
+			// 	return item.promise != controlled.promise;
+			// });
+			if (dependencies.length) debugger;
 
 			return {
 				wait: function() {
-					console.log("waiting for list with length", list.length, name, list);
-					if (list.length == 0) {
+					console.log(name, "waiting for list with length", dependencies.length, ":", dependencies.slice());
+					if (dependencies.length == 0) {
+						debugger;
 						console.log("resolving empty wait", name);
 						controlled.resolve(void(0));
 					}
 					return controlled.promise.then(function() {
-						console.log("wait promise resolved for", name);
-						events.listeners.remove("created", created);
-						events.listeners.remove("settled", created);
+						console.log("controlled promise was resolved for " + name + "; proceeding.");
+						events.listeners.remove("needed", needed);
+						events.listeners.remove("settled", settled);
 					});
+				},
+				external: function(promise) {
+					external.push(promise);
 				},
 				test: {
 					list: function() {
-						return list;
+						return dependencies;
 					},
 					clear: function() {
-						list.splice(0,list.length);
+						dependencies.splice(0,dependencies.length);
 					},
 					setName: function(value) {
+						console.log("set name of " + name + " to " + value);
 						name = value;
 					}
 				}
@@ -158,9 +299,12 @@
 		};
 
 		$export({
+			NativePromise: NativePromise,
 			Promise: window.Promise,
 			//@ts-ignore
-			controlled: ControlledPromise,
+			controlled: function(p) {
+				return ControlledPromise({ id: function() { return (p && p.id) ? p.id : void(0); }})
+			},
 			Registry: Registry,
 			console: console
 		})

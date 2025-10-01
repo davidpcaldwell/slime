@@ -16,7 +16,6 @@ namespace slime.jrunscript.java.internal.threads {
 			var script: slime.jrunscript.java.Script = fifty.$loader.script("module.js");
 			return script({
 				$slime: fifty.jsh.$slime,
-				globals: false,
 				logging: {
 					prefix: "slime.jrunscript.host.test"
 				}

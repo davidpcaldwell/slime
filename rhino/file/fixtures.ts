@@ -109,7 +109,7 @@ namespace slime.jrunscript.file.internal.test {
 							$slime: jsh.unit.$slime,
 							api: {
 								java: java,
-								mime: jsh.unit.$slime.mime
+								mime: $api.mime
 							}
 						}),
 						loader: {
@@ -139,7 +139,6 @@ namespace slime.jrunscript.file.internal.test {
 						return {
 							api: api,
 							pathext: (jsh.shell.environment.PATHEXT) ? jsh.shell.environment.PATHEXT.split(";") : void(0),
-							$pwd: String(jsh.shell.properties.object.user.dir),
 							$slime: jsh.unit.$slime,
 							addFinalizer: jsh.loader.addFinalizer,
 							cygwin: cygwin,

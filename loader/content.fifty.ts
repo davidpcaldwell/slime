@@ -4,6 +4,16 @@
 //
 //	END LICENSE
 
+/**
+ * Provides a set of common types for representing hierarchies of contents: for example, filesystems, URL spaces, searchpaths,
+ * archives like TAR and ZIP files, and so forth.
+ *
+ * The `$api.content` APIs provide no implementations of these constructs, but other namespaces do. What the `$api.content` APIs
+ * do provide are a standard set of operations for manipulating these hierarchies, so that you can use the same constructs to
+ * set up a searchpath in any hierarchy, or the same constructs to do MIME-type analysis in any hierarchy.
+ *
+ * The {@link Exports} type, presented to applications as `$api.content`, provides interfaces for using these types.
+ */
 namespace slime.runtime.content {
 	export interface Store<T> {
 		get: (path: string[]) => slime.$api.fp.Maybe<T>
@@ -126,19 +136,27 @@ namespace slime.runtime.content {
 			 * @returns A transform that, given an existing Store, can return a Store that is the same, but has the mapping added to
 			 * it.
 			 */
-			map: <T>(p: {
+			set: <T>(p: {
 				path: string[]
 				store: Store<T>
 			}) => slime.$api.fp.Transform<Store<T>>
 
-			path: <T>(p: {
+			/**
+			 * Given a `Store` and a path within it, returns a `Store` that uses that path as the root for a new `Store`.
+			 */
+			at: <T>(p: {
 				path: string[]
 				store: Store<T>
 			}) => Store<T>
+
+			map: <T,R>(f: (t: T) => R) => (store: Store<T>) => Store<R>
 		}
 
 		Entry: {
 			is: {
+				/**
+				 * A TypeScript type predicate indicating whether the given `Entry` is an `IndexEntry`.
+				 */
 				IndexEntry: <T>(e: Entry<T>) => e is IndexEntry<T>
 			}
 		}
@@ -158,14 +176,16 @@ namespace slime.runtime.content {
 				return null;
 			}
 
+			const subject = fifty.global.$api.content;
+
 			fifty.tests.exports.Store = fifty.test.Parent();
 
-			fifty.tests.exports.Store.map = function() {
+			fifty.tests.exports.Store.set = function() {
 				var mappedContent: slime.runtime.test.mock.Content<string> = fixtures.mock.content();
 				mappedContent.set("baz/bizzy", "busy!");
 
 				var content: slime.runtime.test.mock.Content<string> = fixtures.mock.content();
-				var after = fifty.global.$api.content.Store.map({
+				var after = fifty.global.$api.content.Store.set({
 					path: ["foo","bar"],
 					store: mappedContent.store
 				})(content.store);
@@ -173,11 +193,11 @@ namespace slime.runtime.content {
 				verify(after).get(["foo", "bar", "baz", "bizzy"]).evaluate(nullable).is("busy!");
 			}
 
-			fifty.tests.exports.Store.path = function() {
+			fifty.tests.exports.Store.at = function() {
 				var mappedContent: slime.runtime.test.mock.Content<string> = fixtures.mock.content();
 				mappedContent.set("foo/bar/baz", "busy!");
 
-				var foobar = fifty.global.$api.content.Store.path({
+				var foobar = fifty.global.$api.content.Store.at({
 					store: mappedContent.store,
 					path: ["foo","bar"]
 				});
@@ -185,15 +205,26 @@ namespace slime.runtime.content {
 				verify(foobar).get(["foo", "bar", "baz"]).evaluate(nullable).is(null);
 				verify(foobar).get(["baz"]).evaluate(nullable).is("busy!");
 			}
+
+			fifty.tests.exports.Store.map = function() {
+				var mappedContent: slime.runtime.test.mock.Content<number> = fixtures.mock.content();
+
+				mappedContent.set("washington", 1);
+				mappedContent.set("jefferson", 3);
+
+				var cubed = subject.Store.map( (n: number) => n*n*n )(mappedContent.store);
+
+				var assert = function(m: slime.$api.fp.Maybe<number>): number {
+					if (!m.present) throw new Error();
+					return m.value;
+				}
+
+				verify(cubed).get(["washington"]).evaluate(assert).is(1);
+				verify(cubed).get(["jefferson"]).evaluate(assert).is(27);
+			}
 		}
 	//@ts-ignore
 	)(fifty);
-}
-
-namespace slime.$api {
-	export interface Global {
-		content: slime.runtime.content.Exports
-	}
 }
 
 namespace slime.runtime.internal.content {

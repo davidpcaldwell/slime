@@ -13,7 +13,7 @@
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.wo.filesystem.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		/** @type { slime.jrunscript.file.exports.Filesystem } */
+		/** @type { slime.jrunscript.file.filesystem.Exports } */
 		var Filesystem = (
 			function() {
 				return {
@@ -27,7 +27,7 @@
 								},
 								{
 									created: function(e) {
-										events.fire("created", e.detail);
+										events.fire("created", e.detail.pathname);
 									}
 								}
 							)
@@ -58,7 +58,7 @@
 								},
 								{
 									created: function(e) {
-										events.fire("created", e.detail);
+										events.fire("created", e.detail.pathname);
 									}
 								}
 							)

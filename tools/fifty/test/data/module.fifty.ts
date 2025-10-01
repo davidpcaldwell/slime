@@ -31,49 +31,51 @@ namespace slime.fifty.internal.test.data {
 			Database: new () => Database
 		}
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit,
-			verify: slime.fifty.test.verify,
-			tests: slime.fifty.test.tests,
-			$loader: slime.Loader,
-			run: slime.fifty.test.Kit["run"],
-			load: slime.fifty.test.load
-		) {
-			tests.types.Database = function(database: slime.fifty.internal.test.data.shopping.Database) {
-				var before = database.items.length;
-				database.add({ item: { name: "foo" }});
-				verify(database).items.length.is(before + 1);
-				verify(database).items[0].name.is("foo");
-			}
-
-			tests.types.Exports = function(exports: slime.fifty.internal.test.data.shopping.Exports) {
-				var db = new exports.Database();
-				tests.types.Database(db);
-			}
-
-			tests.subsuite = function() {
-				verify(1).is(1);
-			}
-
-			tests.suite = function() {
-				var module: slime.fifty.internal.test.data.shopping.Exports = $loader.module("module.js");
-				run(function() {
-					tests.types.Exports(module);
-				});
-				run(tests.subsuite);
-				load("load/child.fifty.ts");
-
-				//	Small demonstration of using function name to name a subsuite
-				run(function name() {
-					verify("function name").is("function name");
-				});
-
-				load("no-suite.fifty.ts");
-				load("promises.fifty.ts");
-			}
-		}
-	//@ts-ignore
-	)(fifty, verify, tests, $loader, run, load)
 }
+
+(
+	function(
+		fifty: slime.fifty.test.Kit
+	) {
+		const { verify } = fifty;
+
+		fifty.tests.types = {};
+
+		fifty.tests.types.Database = function(database: slime.fifty.internal.test.data.shopping.Database) {
+			var before = database.items.length;
+			database.add({ item: { name: "foo" }});
+			verify(database).items.length.is(before + 1);
+			verify(database).items[0].name.is("foo");
+		}
+
+		fifty.tests.types.Exports = function(exports: slime.fifty.internal.test.data.shopping.Exports) {
+			var db = new exports.Database();
+			fifty.tests.types.Database(db);
+		}
+
+		fifty.tests.subsuite = function() {
+			verify(1).is(1);
+		}
+
+		fifty.tests.suite = function() {
+			//	TODO	use more modern script loading techniques
+			var module: slime.fifty.internal.test.data.shopping.Exports = fifty.$loader.module("module.js");
+			fifty.run(function() {
+				fifty.tests.types.Exports(module);
+			});
+			fifty.run(fifty.tests.subsuite);
+			fifty.load("load/child.fifty.ts");
+
+			//	Small demonstration of using function name to name a subsuite
+			fifty.run(function name() {
+				verify("function name").is("function name");
+			});
+
+			fifty.load("no-suite.fifty.ts");
+			//	TODO	this suite is run by a JSAPI call into Fifty at loader/api/old/fifty/api.html, but seems like the execution
+			//			can't possibly be working because the below suite should fail
+			fifty.load("promises.fifty.ts");
+		}
+	}
+//@ts-ignore
+)(fifty);

@@ -9,36 +9,15 @@ END LICENSE
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:jsapi="http://www.inonit.com/jsapi">
 	<head>
 		<title>SLIME</title>
-		<link href="loader/api/old/api.css" rel="stylesheet" type="text/css" />
+		<link href="contributor/ui/index.css" rel="stylesheet" type="text/css" />
+		<script src="loader/browser/client.js"></script>
 		<script>
-			window.slime = {
-				definition: {
-					settings: {
-						isHomePage: true
-					}
-				}
-			};
-		</script>
-		<!--	the below script, along with the above global property, sets all links to _target="blank" -->
-		<script src="loader/api/old/api.js"></script>
-		<style>
-			/*	Try to undo some of the unfortunate stuff in api.css inherited from JSAPI */
-			ol { counter-reset: item 0 }
-			ol>li { display: block; }
-			ol>li:before { content: "arguments[" counter(item) "] "; counter-increment: item; }
-			ol>li:before { content: counter(item) ". "; counter-increment: item; }
-			ol>li:before { font-family: inherit; font-weight: normal }
-
-			#steps code { background-color: black; color: white; padding: 0.3em 0.5em 0.1em 0.5em; font-weight: bold; }
-
-			#what, #quickstart, #platforms, #platforms>div, #java-compatibility, #typedoc, #projects, #tools, #links {
-				border: 1px solid black;
-				padding: 1em;
-			}
-		</style>
-		<script>
-			//	TODO	CORS
-			document.domain = document.domain;
+			window.addEventListener("load", function() {
+				document.querySelectorAll("a").forEach(function(link) {
+					link.target = "_blank";
+				});
+				debugger;
+			});
 		</script>
 	</head>
 	<body>
@@ -63,6 +42,12 @@ END LICENSE
 				<p>
 					A page containing resources that will be useful primarily if you want to contribute to SLIME.
 				</p>
+				<div>
+					<h3><a href="https://github.com/davidpcaldwell/slime/issues">Issues</a></h3>
+					<div>
+						<a href="https://github.com/davidpcaldwell/slime/issues/new">New issue</a>
+					</div>
+				</div>
 			</div>
 		</div>
 	</body>

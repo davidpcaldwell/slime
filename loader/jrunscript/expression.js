@@ -8,76 +8,17 @@
 (
 //	TODO	Redefine JavaAdapter to be slime.jrunscript.JavaAdapter and XML to be slime.external.e4x.XMLConstructor
 	/**
-	 * @param { slime.jrunscript.runtime.$javahost } $javahost
-	 * @param { slime.jrunscript.runtime.java.context.Engine } $bridge
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { any } JavaAdapter
 	 * @param { any } XML
-	 * @param { slime.jrunscript.native.inonit.script.engine.Loader } $loader
+	 * @param { slime.jrunscript.runtime.Scope["$loader"] } $loader
+	 * @param { slime.jrunscript.runtime.Scope["$javahost"] } $javahost
+	 * @param { slime.jrunscript.runtime.Scope["$bridge"] } $bridge
 	 * @returns { slime.jrunscript.runtime.Exports }
 	 */
-	function($javahost,$bridge,Packages,JavaAdapter,XML,$loader) {
+	function(Packages,JavaAdapter,XML,$loader,$javahost,$bridge) {
 		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
 		var _streams = new Packages.inonit.script.runtime.io.Streams();
-
-		var errorDecorate = function(implementation) {
-			var instance = (function _Throwables() {
-				return new Packages.inonit.script.runtime.Throwables();
-			})();
-
-			var rv = function() {
-				//	TODO	what if called as function?
-				var literals = Array.prototype.map.call(arguments,function(a,i) {
-					return "arguments["+i+"]";
-				}).join(",");
-				//	TODO	is this parameterized call already in js/object?
-				var created = eval("new implementation(" + literals + ")");
-
-				if (!created.stack) {
-					var tracer;
-					try {
-						instance.throwException(created.toString());
-					} catch (e) {
-						tracer = e;
-					}
-					var t = tracer.rhinoException;
-					var stack = [];
-					while(t != null) {
-						var sw = new Packages.java.io.StringWriter();
-						var pw = new Packages.java.io.PrintWriter(sw);
-						if (t == tracer.rhinoException) {
-							sw.write(t.getScriptStackTrace());
-						} else {
-							t.printStackTrace(pw);
-						}
-						pw.flush();
-						var tstack = String(sw.toString()).split(String(Packages.java.lang.System.getProperty("line.separator")));
-						if (t == tracer.rhinoException) {
-							tstack = tstack.slice(1,tstack.length);
-						}
-						for (var i=0; i<tstack.length; i++) {
-							if (/^Caused by\:/.test(tstack[i])) {
-								break;
-							}
-							stack.push(tstack[i]);
-						}
-						t = t.getCause();
-						if (t != null && String(t.getClass().getName()) == "inonit.script.runtime.Throwables$Exception") {
-							t = null;
-						}
-					}
-					//	TODO	clean up the first line, eliminating all the wrapping in WrappedException and Throwables.Exception
-					//	TODO	clean up the top of the trace, removing the irrelevant Java lines and the first script line corresponding
-					//			to this file
-					//	TODO	get full stack traces if possible, rather than the limited version being provided now (which has ...more)
-					//			however, could be impossible (getStackTrace may not be overridden while printStackTrace is).
-					created.stack = stack.join("\n");
-				}
-				return created;
-			}
-			rv.prototype = implementation.prototype;
-			return rv;
-		};
 
 		/**
 		 *
@@ -111,17 +52,11 @@
 			 * @returns { slime.runtime.Exports }
 			 */
 			function() {
-				/** @type { slime.runtime.scope.$engine } */
+				/** @type { slime.runtime.Engine } */
 				var $engine = {
 					debugger: $javahost.debugger,
 					execute: function(script,scope,target) {
 						return $javahost.script(script.name,script.js,scope,target);
-					},
-					Error: {
-						decorate: function(was) {
-							return errorDecorate(was);
-							// throw new TypeError("Can't decorate nothing was: " + was);
-						}
 					},
 					MetaObject: void(0)
 				};
@@ -130,29 +65,35 @@
 				(function() {
 					if ($javahost.MetaObject) $engine.MetaObject = $javahost.MetaObject;
 				})();
-				/** @type { slime.runtime.scope.$slime.Deployment } */
+				/** @type { slime.runtime.scope.Deployment } */
 				var $slime = {
 					getRuntimeScript: function(path) {
 						return {
+							//	TODO	maybe the engine could provide an improved URL here to use as the base
 							name: "slime://loader/" + path,
 							js: String($loader.getLoaderCode(path))
 						};
-					}
-				};
-				if (!$javahost.noEnvironmentAccess) {
-					var flagPattern = /^SLIME_(.*)$/;
-					var _entries = Packages.java.lang.System.getenv().entrySet().iterator();
-					while(_entries.hasNext()) {
-						var _entry = _entries.next();
-						var name = String(_entry.getKey());
-						var value = String(_entry.getValue());
-						var match = flagPattern.exec(name);
-						if (match) {
-							if (!$slime.flags) $slime.flags = {};
-							$slime.flags[match[1]] = value;
+					},
+					configuration: (
+						function() {
+							if ($javahost.noEnvironmentAccess) return {};
+							var rv = {};
+							var flagPattern = /^SLIME_(.*)$/;
+							var _entries = Packages.java.lang.System.getenv().entrySet().iterator();
+							while(_entries.hasNext()) {
+								var _entry = _entries.next();
+								var name = String(_entry.getKey()).toUpperCase();
+								var value = String(_entry.getValue());
+								var match = flagPattern.exec(name);
+								if (match) {
+									//	check for duplicates?
+									rv[match[1]] = value;
+								}
+							}
+							return rv;
 						}
-					}
-				}
+					)()
+				};
 				/** @type { slime.runtime.Scope } */
 				var scope = {
 					$engine: $engine,
@@ -174,8 +115,8 @@
 					rv.compiler.update(function(was) {
 						return rv.$api.fp.switch([
 							was,
-							rv.$api.compiler.getTranspiler({
-								accept: rv.$api.compiler.isMimeType("application/vnd.coffeescript"),
+							rv.$api.scripts.Compiler.from.simple({
+								accept: rv.$api.scripts.Code.isMimeType("application/vnd.coffeescript"),
 								name: function(code) { return code.name; },
 								read: function(code) { return code.read(); },
 								compile: target.CoffeeScript.compile
@@ -198,8 +139,8 @@
 					rv.compiler.update(function(was) {
 						return rv.$api.fp.switch([
 							was,
-							rv.$api.compiler.getTranspiler({
-								accept: rv.$api.compiler.isMimeType("application/x.typescript"),
+							rv.$api.scripts.Compiler.from.simple({
+								accept: rv.$api.scripts.Code.isMimeType("application/x.typescript"),
 								name: function(code) { return code.name; },
 								read: function(code) { return code.read(); },
 								compile: function(code) { return String(_typescript.compile(code)); }
@@ -938,6 +879,7 @@
 			}
 		)(slime.old.Loader);
 
+		/** @type { slime.jrunscript.runtime.Exports["classpath"] } */
 		var $exports_classpath = (
 			/**
 			 *
@@ -1148,7 +1090,6 @@
 						file: slime.file,
 						value: slime.value,
 						namespace: slime.namespace,
-						engine: slime.engine,
 						$platform: slime.$platform,
 						$api: $api,
 
@@ -1164,7 +1105,7 @@
 					$api.Object.defineProperty({
 						name: "mime",
 						descriptor: {
-							get: $api.deprecate($api.fp.thunk.value(slime.$api.mime))
+							get: $api.deprecate($api.fp.Thunk.value(slime.$api.mime))
 						}
 					})
 				)
@@ -1172,4 +1113,4 @@
 		)();
 	}
 //@ts-ignore
-)($javahost,$bridge,Packages,JavaAdapter, (function() { return this.XML })(),$loader)
+)(Packages,JavaAdapter, (function() { return this.XML })(),$loader,$javahost,$bridge)

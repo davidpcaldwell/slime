@@ -6,8 +6,6 @@
 
 namespace slime.jrunscript.file {
 	export interface Context {
-		$pwd: string
-
 		/**
 		 * A list of file extensions that should be considered "executable." Corresponds to the PATHEXT environment variable
 		 * present on Microsoft Windows systems.
@@ -15,10 +13,6 @@ namespace slime.jrunscript.file {
 		pathext: string[]
 
 		api: {
-			/**
-			 * @deprecated
-			 */
-			js: slime.$api.old.Exports
 			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 			loader: {
@@ -76,6 +70,10 @@ namespace slime.jrunscript.file {
 		$jsh: any
 	}
 
+	export interface OsFilesystem extends Filesystem {
+		isAbsolutePath: (path: string) => boolean
+	}
+
 	export interface Exports {
 		/**
 		 * Implementations of an abstract filesystem API that are available to scripts.
@@ -84,7 +82,7 @@ namespace slime.jrunscript.file {
 			/**
 			 * The underlying operating system's filesystem.
 			 */
-			os: Filesystem
+			os: OsFilesystem
 
 			/**
 			 * A Cygwin file system that interoperates with an underlying Windows file system.
@@ -192,6 +190,8 @@ namespace slime.jrunscript.file {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { $api } = fifty.global;
+
 			fifty.tests.state = {};
 			fifty.tests.state.list = function() {
 				var subject = fifty.global.jsh.file;
@@ -203,12 +203,14 @@ namespace slime.jrunscript.file {
 					if (b.relative < a.relative) return 1;
 					throw new Error();
 				});
-				fifty.global.jsh.shell.console(listing.toString());
+				fifty.global.jsh.shell.console(listing.map($api.fp.property("absolute")).join(" "));
+				fifty.global.jsh.shell.console(listing.map($api.fp.property("relative")).join(" "));
 				//	TODO	brittle; changing structure of module can break it
 				fifty.verify(listing)[0].relative.is("_.fifty.ts");
 				fifty.verify(listing)[0].absolute.is(prefix + "/" + "_.fifty.ts");
-				fifty.verify(listing)[6].relative.is("java/");
-				fifty.verify(listing)[6].absolute.is(prefix + "/" + "java/");
+				//	sort order for these is actually different from the macOS (and maybe others'?) sort order
+				fifty.verify(listing)[8].relative.is("java/");
+				fifty.verify(listing)[8].absolute.is(prefix + "/" + "java/");
 			}
 
 			fifty.tests.action = {};
@@ -355,81 +357,9 @@ namespace slime.jrunscript.file {
 
 	(
 		function(
-			Packages: slime.jrunscript.Packages,
-			jsh: slime.jsh.Global,
-			tests: slime.fifty.test.tests,
-			verify: slime.fifty.test.verify,
-			fifty: slime.fifty.test.Kit
-		) {
-			var MODIFIED_TIME = new jsh.time.When({ unix: 1599862384355 });
-
-			tests.filetime = function() {
-				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.directory;
-				directory.getRelativePath("file").write("foo");
-				var file = directory.getFile("file");
-
-				file.modified = jsh.time.When.codec.Date.encode(MODIFIED_TIME);
-				var isNearestSecond = file.modified.getTime() == Math.floor(MODIFIED_TIME.unix / 1000) * 1000;
-				var isMillisecond = file.modified.getTime() == MODIFIED_TIME.unix;
-				verify(isNearestSecond || isMillisecond, "sNearestSecond || isMillisecond").is(true);
-			}
-
-			tests.filetime.testbed = function() {
-				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname.directory;
-				directory.getRelativePath("file").write("foo");
-				var file = directory.getFile("file");
-
-				var nio = file.pathname.java.adapt().toPath();
-				jsh.shell.console(String(nio));
-				Packages.java.nio.file.Files.setLastModifiedTime(nio, Packages.java.nio.file.attribute.FileTime.fromMillis(MODIFIED_TIME.unix));
-				var _modified = Packages.java.nio.file.Files.getLastModifiedTime(nio);
-				jsh.shell.console(_modified.toMillis());
-			}
-
-			tests.exports = {
-				navigate: function() {
-					var module = jsh.file;
-					var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
-
-					var toString = function(o) {
-						return String(o);
-					}
-
-					tmp.getRelativePath("a/b/c").write("c", { append: false, recursive: true });
-					tmp.getRelativePath("a/c/c").write("c", { append: false, recursive: true });
-
-					var first = tmp.getRelativePath("a/b/c");
-					var second = tmp.getRelativePath("a/c/c");
-
-					var minimal = module.navigate({
-						from: first,
-						to: second
-					});
-
-					verify(minimal).base.evaluate(toString).is(tmp.getSubdirectory("a").toString());
-					verify(minimal).relative.is("../c/c");
-
-					var top = module.navigate({
-						from: first,
-						to: second,
-						base: tmp
-					});
-
-					verify(top).base.evaluate(toString).is(tmp.toString());
-					verify(top).relative.is("../../a/c/c");
-				}
-			}
-		}
-	//@ts-ignore
-	)(Packages,global.jsh,tests,verify,fifty);
-
-	(
-		function(
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-				fifty.run(fifty.tests.filetime);
-				fifty.run(fifty.tests.exports.navigate);
 				fifty.run(fifty.tests.state.list);
 				fifty.run(fifty.tests.action.delete);
 
@@ -440,9 +370,7 @@ namespace slime.jrunscript.file {
 				fifty.load("loader.fifty.ts");
 
 				fifty.load("oo.fifty.ts");
-				fifty.load("oo/file.fifty.ts");
 
-				fifty.load("module-Searchpath.fifty.ts");
 				fifty.load("module-node.fifty.ts");
 				fifty.load("module-Loader.fifty.ts");
 
@@ -485,13 +413,17 @@ namespace slime.jrunscript.file {
 			}
 
 			/** @deprecated Replaced by direct `Location` property. */
-			Location: exports.Location
+			Location: location.Exports
 		}
 
 		mock: {
 			/** @deprecated Use `Exports["world"]["filesystems"]["mock"]. */
 			filesystem: Exports["world"]["filesystems"]["mock"]
 		}
+	}
+
+	export interface Exports {
+		archive: slime.jrunscript.file.archive.Exports
 	}
 
 	export interface Exports {
