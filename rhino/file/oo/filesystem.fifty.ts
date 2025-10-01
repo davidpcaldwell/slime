@@ -14,7 +14,7 @@ namespace slime.jrunscript.file.internal.filesystem {
 		Filesystem: new (
 			filesystem: slime.jrunscript.file.world.Filesystem,
 			provider: slime.jrunscript.file.internal.java.FilesystemProvider
-		) => Filesystem
+		) => OsFilesystem
 	}
 
 	/**

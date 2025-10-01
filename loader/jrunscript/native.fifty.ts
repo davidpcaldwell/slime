@@ -106,6 +106,7 @@ namespace slime.jrunscript {
 					toPath(): slime.jrunscript.native.java.nio.file.Path
 					getName(): slime.jrunscript.native.java.lang.String
 					getCanonicalPath(): slime.jrunscript.native.java.lang.String
+					getCanonicalFile(): slime.jrunscript.native.java.io.File
 					listFiles(): slime.jrunscript.native.java.io.File[]
 					getAbsolutePath(): slime.jrunscript.native.java.lang.String
 					renameTo(file: File)

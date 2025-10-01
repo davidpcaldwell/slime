@@ -32,6 +32,11 @@
 		};
 
 		var packaged = {
+			/**
+			 *
+			 * @param {*} p
+			 * @returns { { jar: slime.jrunscript.file.File, run: any } }
+			 */
 			build: function(p) {
 				var TEST = src.getSubdirectory("jsh/loader/test/packaged");
 				var invocation = [];
@@ -233,13 +238,21 @@
 				},
 				"jsh.script.file": {
 					execute: function(scope,verify) {
+						/**
+						 *
+						 * @param { slime.jrunscript.file.File } file
+						 */
+						var toCanonicalPath = function(file) {
+							return String(file.pathname.java.adapt().getCanonicalPath());
+						}
+
 						var jar = packaged.build({
 							script: "jsh.script.file.jsh.js"
 						});
 						var result = jar.run({ json: true });
 						verify(result).status.is(0);
-						verify(result).output.file.is(jar.jar.toString());
-						verify(result).output.resolved.is(jar.jar.toString());
+						verify(result).output.file.is(toCanonicalPath(jar.jar));
+						verify(result).output.resolved.is(toCanonicalPath(jar.jar));
 					}
 				}
 			}

@@ -13,12 +13,14 @@
 	 */
 	function($context,$exports) {
 		/**
-		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } system
+		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } provider
 		 * @param { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] } filesystem
-		 * @param { string } string
+		 * @param { string } path
 		 */
-		function newPathname(system, filesystem, string) {
-			return new $context.Pathname({ provider: system, filesystem: filesystem, path: string });
+		function newPathname(provider, filesystem, path) {
+			var _peer = provider.newPeer(path);
+			var rv = provider.peerToString(_peer);
+			return new $context.Pathname({ provider: provider, filesystem: filesystem, pathname: rv });
 		}
 
 		/**
@@ -63,13 +65,13 @@
 				}
 				this.temporary = function(parent,parameters) {
 					var peer = provider.temporary(parent,parameters);
-					var pathname = new $context.Pathname({ provider: provider, filesystem: fs, path: String(peer.getScriptPath()) });
+					var pathname = new $context.Pathname({ provider: provider, filesystem: fs, pathname: String(peer.getScriptPath()) });
 					if (pathname.directory) return pathname.directory;
 					if (pathname.file) return pathname.file;
 					throw new Error();
 				}
 				this.Pathname = function(peer) {
-					return new $context.Pathname({ provider: provider, filesystem: fs, path: String(peer.getScriptPath()) });
+					return new $context.Pathname({ provider: provider, filesystem: fs, pathname: String(peer.getScriptPath()) });
 				}
 			}
 
@@ -78,7 +80,7 @@
 			this.java = {
 				adapt: function(_file) {
 					var peer = provider.java.adapt(_file);
-					return new $context.Pathname({ provider: provider, filesystem: fs, path: String(peer.getScriptPath()) });
+					return new $context.Pathname({ provider: provider, filesystem: fs, pathname: String(peer.getScriptPath()) });
 				}
 			};
 
@@ -97,6 +99,10 @@
 						return o.interpretNativePathname.call(self,pathname);
 					}
 				}
+			}
+
+			this.isAbsolutePath = function(path) {
+				return fs.os.isAbsolutePath(path);
 			}
 		}
 
