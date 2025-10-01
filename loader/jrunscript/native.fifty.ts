@@ -525,6 +525,7 @@ namespace slime.jrunscript {
 					TYPE: any
 				}
 				Number: JavaClass
+				AssertionError: any
 				ThreadLocal: JavaClass<slime.jrunscript.native.java.lang.ThreadLocal<any>>
 			}
 			io: {
@@ -699,6 +700,9 @@ namespace slime.jrunscript {
 			sql: {
 				Types: any
 			}
+		}
+		jakarta: {
+			servlet: any
 		}
 		javax: {
 			tools: {
