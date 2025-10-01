@@ -1343,6 +1343,8 @@
 								}
 							});
 
+							//	Without this, we can't merge an updated main branch into a feature branch; this perhaps is a logical
+							//	error in the check itself
 							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_OUTDATED_BRANCH) success = success && upToDateWiithOrigin({
 								repository: repository
 							})({
