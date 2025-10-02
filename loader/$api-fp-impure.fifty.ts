@@ -1016,6 +1016,7 @@ namespace slime.$api.fp.world {
 
 		export interface Exports {
 			api: {
+				//	TODO	no test coverage, and had bug
 				simple: <O,E>(p: Means<O,E>) => api.Simple<O,E>
 			}
 		}
