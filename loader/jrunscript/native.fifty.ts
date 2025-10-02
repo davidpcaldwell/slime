@@ -445,12 +445,15 @@ namespace slime.jrunscript {
 					setBreakOnExceptions: (b: boolean) => void
 				}
 
-				export namespace Engine {
-				}
-
 				export interface Engine {
 					script: (name: string, code: string, scope: object, target: object) => any
+
+					/**
+					 * Whether the engine should be allowed to access the system environment (in other words, the values returned
+					 * by `java.lang.System.getenv()`).
+					 */
 					canAccessEnvironment: () => boolean
+
 					getDebugger: () => slime.jrunscript.native.inonit.script.rhino.Debugger
 				}
 			}
