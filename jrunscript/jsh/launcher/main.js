@@ -220,19 +220,44 @@
 
 		// TODO: delete Graal if it is not available
 
-		var loaderRhino = shell.libraries.rhino($api.rhino.version(jshLoaderJavaMajorVersion));
+var localRhino = function() {
+			return shell.libraries.rhino(jshLoaderJavaMajorVersion).local();
+		};
+
+		if ($api.arguments[0] == "-engines") {
+			(
+				function() {
+					var engines = [];
+					if (localRhino()) engines.push("rhino");
+					if ($api.jsh.engines.nashorn) engines.push("nashorn");
+					//	TODO	graal
+					Packages.java.lang.System.out.print(JSON.stringify(engines));
+					Packages.java.lang.System.exit(0);
+				}
+			)();
+		}
 
 		var defaultEngine = (function() {
-			if (loaderRhino) return "rhino";
+			if (localRhino()) return "rhino";
+
+			//	With current architecture, this should always be present, as the jsh bash launcher downloads it
 			if ($api.jsh.engines.nashorn) return "nashorn";
+
 			throw new Error("Neither Rhino nor Nashorn available; was this invoked in a way other than using the top-level jsh script?");
 		})();
+
 		$api.debug("shell after engine selection = " + shell);
+
 		if (!defaultEngine) {
 			Packages.java.lang.System.err.println("No compatible JavaScript engine found.");
 			Packages.java.lang.System.exit(1);
 		}
+
 		$api.slime.settings.default("jsh.engine", defaultEngine);
+
+		if ($api.slime.settings.get("jsh.engine") == "rhino") {
+			shell.libraries.rhino(jshLoaderJavaMajorVersion).download();
+		}
 
 		if ($api.slime.settings.get("jsh.engine") == "graal") {
 			$api.debug("Engine is Graal.js");
@@ -248,15 +273,6 @@
 				Packages.java.lang.System.err.println("Graal.js specified as engine but not found.");
 				Packages.java.lang.System.exit(1);
 			}
-		}
-
-		if ($api.arguments[0] == "-engines") {
-			var engines = [];
-			if (loaderRhino) engines.push("rhino");
-			if ($api.jsh.engines.nashorn) engines.push("nashorn");
-			//	TODO	graal
-			Packages.java.lang.System.out.print(JSON.stringify(engines));
-			Packages.java.lang.System.exit(0);
 		}
 
 		//	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
@@ -305,11 +321,11 @@
 
 		var _urls = [];
 
-		if (loaderRhino) {
+		if (localRhino()) {
 			//	TODO	possibly redundant with some code in launcher.js; examine and think through
-			$api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(loaderRhino).local());
-			for (var i=0; i<loaderRhino.length; i++) {
-				_urls.push(loaderRhino[i]);
+			$api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(localRhino()).local());
+			for (var i=0; i<localRhino().length; i++) {
+				_urls.push(localRhino()[i]);
 			}
 		}
 
@@ -361,7 +377,7 @@
 				Packages.java.lang.System.exit(1);
 			}
 		} else if (scriptDebugger == "rhino") {
-			if (!loaderRhino) {
+			if (!localRhino()) {
 				Packages.java.lang.System.err.println("Rhino engine not present, but Rhino debugger specified. Exiting.");
 				Packages.java.lang.System.exit(1);
 			}

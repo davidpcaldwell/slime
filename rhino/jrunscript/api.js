@@ -1805,49 +1805,54 @@
 
 		$api.io = {
 			copy: io.copy,
-			tmpdir: void(0),
-			unzip: void(0),
-			readJavaString: void(0)
-		};
-		$api.io.tmpdir = function(p) {
-			if (!p) p = {};
-			var rv = Packages.java.io.File.createTempFile(
-				(p.prefix) ? p.prefix : "jrunscript.",
-				(p.suffix) ? p.suffix : ".tmp"
-			);
-			rv["delete"]();
-			rv.mkdirs();
-			return rv;
-		}
-		$api.io.unzip = function(p) {
-			var _stream = (function() {
-				if (p.from.url) {
-					return new Packages.java.net.URL(p.from.url).openConnection().getInputStream();
-				}
-			})();
-			/** @type { slime.internal.jrunscript.bootstrap.internal.io.zip.Processor } */
-			var destination = (function() {
-				if (p.to._directory) {
-					if (p.to._directory.exists()) throw new Error("Cannot unzip to " + p.to._directory + "; already exists.");
-					//	TODO	currently creates recursively regardless
-					p.to._directory.mkdirs();
-				}
-				return new function() {
-					this.write = function(path,data) {
-						var to = new Packages.java.io.File(p.to._directory, path);
-						to.getParentFile().mkdirs();
-						var out = new Packages.java.io.FileOutputStream(to);
-						$api.io.copy(data,out);
+			tmpdir: function(p) {
+				if (!p) p = {};
+				var rv = Packages.java.io.File.createTempFile(
+					(p.prefix) ? p.prefix : "jrunscript.",
+					(p.suffix) ? p.suffix : ".tmp"
+				);
+				rv["delete"]();
+				rv.mkdirs();
+				return rv;
+			},
+			download: function(p) {
+				var _in = new Packages.java.net.URL(p.url).openStream();
+				p.to.getParentFile().mkdirs();
+				var _out = new Packages.java.io.FileOutputStream(p.to);
+				io.copy(
+					new Packages.java.io.BufferedInputStream(_in),
+					new Packages.java.io.BufferedOutputStream(_out)
+				);
+			},
+			unzip: function(p) {
+				var _stream = (function() {
+					if (p.from.url) {
+						return new Packages.java.net.URL(p.from.url).openConnection().getInputStream();
 					}
-
-					this.directory = function(path) {
-						new Packages.java.io.File(p.to._directory, path).mkdirs();
+				})();
+				/** @type { slime.internal.jrunscript.bootstrap.internal.io.zip.Processor } */
+				var destination = (function() {
+					if (p.to._directory) {
+						if (p.to._directory.exists()) throw new Error("Cannot unzip to " + p.to._directory + "; already exists.");
+						//	TODO	currently creates recursively regardless
+						p.to._directory.mkdirs();
 					}
-				}
-			})();
-			io.zip.parse(_stream, destination);
+					return new function() {
+						this.write = function(path,data) {
+							var to = new Packages.java.io.File(p.to._directory, path);
+							to.getParentFile().mkdirs();
+							var out = new Packages.java.io.FileOutputStream(to);
+							$api.io.copy(data,out);
+						}
+						this.directory = function(path) {
+							new Packages.java.io.File(p.to._directory, path).mkdirs();
+						}
+					}
+				})();
+				io.zip.parse(_stream, destination);
+			},
+			readJavaString: io.readJavaString
 		};
-		$api.io.readJavaString = io.readJavaString;
 
 		$api.shell = {
 			environment: void(0),
@@ -1949,10 +1954,58 @@
 
 		$api.rhino = (
 			function() {
+				/**
+				 *
+				 * @param { string } version
+				 * @param { string } url
+				 * @param { string } jarname
+				 * @returns { slime.internal.jrunscript.bootstrap.Library }
+				 */
+				var SingleJarDownload = function(version,url,jarname) {
+					var File = Packages.java.io.File;
+
+					var JarLocation = function(_directory, jarname) {
+						return new File(_directory, jarname + ".jar");
+					};
+
+					var get = function(download) {
+						return function(_directory) {
+							var location = JarLocation(_directory, jarname);
+							if (!location.exists()) {
+								if (download) {
+									$api.io.download({
+										url: url,
+										to: location
+									});
+								} else {
+									return null;
+								}
+							}
+							return [location.toURI().toURL()];
+						};
+					};
+
+					return {
+						version: version,
+						download: get(true),
+						local: get(false)
+					}
+				}
+
 				return {
-					version: function(jdkVersion) {
-						if (jdkVersion < 11) return "1.7.15";
-						return "1.8.0";
+					forJava: function(jdkVersion) {
+						if (jdkVersion < 11) {
+							return SingleJarDownload(
+								"1.7.15",
+								"https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
+								"js"
+							);
+						}
+						return SingleJarDownload(
+							"1.8.0",
+							"https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.8.0/rhino-all-1.8.0.jar",
+							"js"
+						);
 					}
 				}
 			}
