@@ -177,6 +177,7 @@
 				}
 			};
 
+			/** @type { new (_urls?: slime.jrunscript.native.java.net.URL[]) => any } */
 			var Classpath = function(_urls) {
 				var colon = String(Packages.java.io.File.pathSeparator);
 
@@ -247,14 +248,39 @@
 					}
 				})();
 
+				//	We basically override the normal library structure mechanism and no matter where we are told to look for the
+				//	library, we find it in the place we were told to find it and return it.
+				/** @type { (urls: slime.jrunscript.native.java.net.URL[]) => ReturnType<slime.jsh.internal.launcher.Libraries["rhino"]> } */
+				var SpecifiedLibrary = function(_urls) {
+					return {
+						download: function() { return _urls; },
+						local: function() { return _urls; }
+					}
+				}
+
 				var rhino = function(version) {
-					if (p.rhino) return p.rhino;
+					//	TODO	these first two cases may be redundant; the p.rhino may be passed because it's the value of\
+					//			jsh.engine.rhino.classpath
+					if (p.rhino) return SpecifiedLibrary(p.rhino);
 					if ($$api.slime.settings.get("jsh.engine.rhino.classpath")) {
-						return [new Packages.java.io.File($$api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()];
+						return SpecifiedLibrary(
+							[
+								new Packages.java.io.File($$api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()
+							]
+						);
 					} else if (setting && lib.file) {
-						var rhinoJar = new Packages.java.io.File(lib.file, "js.jar");
-						if (rhinoJar.exists()) {
-							return [rhinoJar.toURI().toURL()];
+						// var rhinoJar = new Packages.java.io.File(lib.file, "js.jar");
+						// if (rhinoJar.exists()) {
+						// 	return [rhinoJar.toURI().toURL()];
+						// }
+						var library = $$api.rhino.forJava(version);
+						return {
+							download: function() {
+								return library.download( new Packages.java.io.File(lib.file, "") )
+							},
+							local: function() {
+								return library.local( new Packages.java.io.File(lib.file, "") )
+							}
 						}
 					}
 				};
@@ -329,8 +355,7 @@
 							if (installationSpecifiedRhino) return installationSpecifiedRhino;
 
 							var target = (p.target) ? p.target : $$api.java.getMajorVersion();
-							var rhinoVersion = $$api.rhino.version(target);
-							return libraries.rhino(rhinoVersion);
+							return libraries.rhino(target).local();
 						}
 					)();
 
@@ -405,8 +430,7 @@
 								var rhino = (
 									function() {
 										var jdk = $$api.java.getMajorVersion();
-										var version = $$api.rhino.version(jdk);
-										return libraries.rhino(version);
+										return libraries.rhino(jdk).local();
 									}
 								)();
 
