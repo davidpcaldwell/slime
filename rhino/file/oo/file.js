@@ -115,26 +115,41 @@
 				}
 			);
 
-			var getFile = function () {
+			/** @type { slime.jrunscript.file.File } */
+			this.file = void(0);
+			var getFile = function() {
 				if (arguments.length > 0) {
 					throw new TypeError("No arguments expected to Pathname.getFile");
 				}
-				if (!parameters.provider.exists(_peer)) return null;
-				if (parameters.provider.isDirectory(_peer)) return null;
+				if (!$context.library.Location.file.exists.simple(location)) return null;
 				return new File(this, _peer);
 			}
-			this.file = void (0);
-			this.__defineGetter__("file", getFile);
+			Object.defineProperty(
+				this,
+				"file",
+				{
+					enumerable: true,
+					get: getFile.bind(this)
+				}
+			);
 
-			var getDirectory = function () {
-				if (!parameters.provider.exists(_peer)) return null;
-				if (!parameters.provider.isDirectory(_peer)) return null;
-				//	TODO	were we trying to make a copy of ourselves here? Is any of this mutable?
+			/** @type { slime.jrunscript.file.Directory } */
+			this.directory = void(0);
+			/** @type { () => slime.jrunscript.file.Directory } */
+			var getDirectory = function() {
+				if (!$context.library.Location.directory.exists.simple(location)) return null;
+				//	TODO	were we trying to make a copy of ourselves here? Is any of this mutable? Could this just be "this"?
 				var pathname = new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: parameters.pathname });
-				return new Directory(pathname, _peer);
+				return /** @type { slime.jrunscript.file.Directory } */(new Directory(pathname, _peer));
 			}
-			this.directory = void (0);
-			this.__defineGetter__("directory", getDirectory);
+			Object.defineProperty(
+				this,
+				"directory",
+				{
+					enumerable: true,
+					get: getDirectory.bind(this)
+				}
+			);
 
 			//	TODO	have some real work to do here getting type safety together with this heavy overloading
 			/** @type { slime.jrunscript.file.Pathname["write"] } */
