@@ -70,6 +70,10 @@
 				}
 			})();
 
+			function Internal(pathname) {
+				return new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: pathname });
+			}
+
 			var filesystem = parameters.filesystem;
 
 			var toString = $api.fp.Thunk.memoize(function () {
@@ -98,13 +102,11 @@
 				}
 			);
 
-			var _peer = parameters.provider.newPeer(parameters.pathname);
-
 			/** @type { slime.jrunscript.file.Pathname } */
 			this.parent = void(0);
 			var getParent = $api.fp.Thunk.memoize(function () {
 				var parent = $context.library.Location.parent()(location);
-				return (parent) ? new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: parent.pathname }) : null;
+				return (parent) ? Internal(parent.pathname) : null;
 			});
 			Object.defineProperty(
 				this,
@@ -114,6 +116,8 @@
 					get: getParent
 				}
 			);
+
+			var _peer = parameters.provider.newPeer(parameters.pathname);
 
 			/** @type { slime.jrunscript.file.File } */
 			this.file = void(0);
@@ -138,7 +142,8 @@
 			/** @type { () => slime.jrunscript.file.Directory } */
 			var getDirectory = function() {
 				if (!$context.library.Location.directory.exists.simple(location)) return null;
-				//	TODO	were we trying to make a copy of ourselves here? Is any of this mutable? Could this just be "this"?
+				//	TODO	the below appears to be a no-op, equivalent to new Directory(this, _peer), but tests fail without it;
+				//			need to investigate
 				var pathname = new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: parameters.pathname });
 				return /** @type { slime.jrunscript.file.Directory } */(new Directory(pathname, _peer));
 			}
@@ -165,7 +170,12 @@
 					$api.deprecate(mode, "overwrite");
 					//	TODO	Right now we can specify a file where we do not want to create its directory, and a file where we do want to
 					//			create it, but not one where we are willing to create its directory but not parent directories.  Is that OK?
-					if (parameters.provider.exists(_peer)) {
+
+					if ($context.library.Location.directory.exists.simple(location)) {
+						throw new Error("Cannot create file at " + toString() + "; a directory exists at that location. Remove it first.");
+					}
+
+					if ($context.library.Location.file.exists.simple(location)) {
 						var append = mode.append;
 						if (typeof (append) == "undefined") {
 							if (mode.overwrite) {
@@ -195,11 +205,16 @@
 				var poorResource = new $context.Resource({
 					read: void(0),
 					write: {
-						binary: function (mode) {
-							return parameters.provider.write.binary(_peer, Boolean(mode.append));
+						binary: function(/** @type { slime.jrunscript.runtime.old.resource.WriteMode } */mode) {
+							return $context.library.Location.file.write.open(location).simple({
+								append: mode.append,
+								//	TODO	could use argument here and remove code above, but for now we do this
+								recursive: false
+							});
 						}
 					}
 				});
+
 				return poorResource.write(dataOrType, mode);
 			}
 
@@ -208,11 +223,13 @@
 			/** @type { slime.jrunscript.file.Pathname["createDirectory"] } */
 			this.createDirectory = function (mode) {
 				if (!mode) mode = {};
-				var exists = (function (mode) {
+
+				var exists = (function(mode) {
 					if (mode.exists) return mode.exists;
 					if (mode.ifExists) return $api.deprecate(mode.ifExists);
 					return function () { throw new Error("Cannot create directory; already exists: " + toString()); };
 				})(mode);
+
 				if (parameters.provider.exists(_peer)) {
 					var getNode = function () {
 						if (parameters.provider.isDirectory(_peer)) return getDirectory();
@@ -236,16 +253,14 @@
 					}
 					parameters.provider.createDirectoryAt(_peer);
 				}
+
 				return getDirectory();
 			};
 
 			/** @type { slime.jrunscript.file.Pathname["os"] } */
 			this.os = {
 				adapt: function() {
-					return {
-						filesystem: $context.filesystems.os,
-						pathname: toString()
-					};
+					return location;
 				}
 			}
 
@@ -328,7 +343,7 @@
 							return new Error("Could not canonicalize " + pathname);
 						})
 					);
-					return new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: canonicalize(pathname.toString() + relativePathPrefix + pathString) });
+					return Internal(canonicalize(pathname.toString() + relativePathPrefix + pathString));
 				}
 				this.getRelativePath = getRelativePath;
 
@@ -567,13 +582,13 @@
 				this.directory = true;
 
 				this.getFile = function (name) {
-					return new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: this.getRelativePath(name).toString() }).file;
+					return Internal(this.getRelativePath(name).toString()).file;
 				}
 
 				this.getSubdirectory = function (name) {
 					if (typeof (name) == "string" && !name.length) return this;
 					if (!name) throw new TypeError("Missing: subdirectory name.");
-					return new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: this.getRelativePath(name).toString() }).directory;
+					return Internal(this.getRelativePath(name).toString()).directory;
 				}
 
 				var toFilter = function (regexp) {
@@ -663,7 +678,7 @@
 							/** @type { slime.jrunscript.file.Node[] } */
 							var rv = [];
 							for (var i = 0; i < peers.length; i++) {
-								var pathname = new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: String(peers[i].getScriptPath()) });
+								var pathname = Internal(String(peers[i].getScriptPath()));
 								if (pathname.directory) {
 									rv.push(pathname.directory);
 								} else if (pathname.file) {
@@ -696,7 +711,7 @@
 				if (parameters.provider.temporary) {
 					this.createTemporary = function(p) {
 						var _peer = parameters.provider.temporary(peer, p);
-						var pathname = new Pathname({ provider: parameters.provider, filesystem: filesystem, pathname: String(_peer.getScriptPath()) });
+						var pathname = Internal(String(_peer.getScriptPath()));
 						if (pathname.directory) return pathname.directory;
 						if (pathname.file) return pathname.file;
 						throw new Error();
