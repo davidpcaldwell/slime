@@ -232,7 +232,8 @@ install_jdk() {
 }
 
 
-#	Possible basis for supporting Rhino as bootstrap engine via JSR-223
+#	Possible basis for supporting Rhino as bootstrap engine via JSR-223, although this code is outdated and versions of rhino are
+#	available under lib/rhino/[version]
 #	JSH_BOOTSTRAP_RHINO="${JSH_SHELL_LIB}/js.jar"
 JSH_BOOTSTRAP_NASHORN="${JSH_SHELL_LIB}/nashorn.jar"
 # @notdry nashorn-dependencies

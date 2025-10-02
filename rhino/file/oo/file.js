@@ -98,14 +98,13 @@
 				}
 			);
 
-			var provider = parameters.provider;
 			var _peer = parameters.provider.newPeer(parameters.pathname);
 
 			/** @type { slime.jrunscript.file.Pathname } */
 			this.parent = void(0);
 			var getParent = $api.fp.Thunk.memoize(function () {
 				var parent = $context.library.Location.parent()(location);
-				return (parent) ? new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: parent.pathname }) : null;
+				return (parent) ? new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: parent.pathname }) : null;
 			});
 			Object.defineProperty(
 				this,
@@ -116,26 +115,41 @@
 				}
 			);
 
-			var getFile = function () {
+			/** @type { slime.jrunscript.file.File } */
+			this.file = void(0);
+			var getFile = function() {
 				if (arguments.length > 0) {
 					throw new TypeError("No arguments expected to Pathname.getFile");
 				}
-				if (!provider.exists(_peer)) return null;
-				if (provider.isDirectory(_peer)) return null;
+				if (!$context.library.Location.file.exists.simple(location)) return null;
 				return new File(this, _peer);
 			}
-			this.file = void (0);
-			this.__defineGetter__("file", getFile);
+			Object.defineProperty(
+				this,
+				"file",
+				{
+					enumerable: true,
+					get: getFile.bind(this)
+				}
+			);
 
-			var getDirectory = function () {
-				if (!provider.exists(_peer)) return null;
-				if (!provider.isDirectory(_peer)) return null;
-				//	TODO	were we trying to make a copy of ourselves here? Is any of this mutable?
-				var pathname = new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: parameters.pathname });
-				return new Directory(pathname, _peer);
+			/** @type { slime.jrunscript.file.Directory } */
+			this.directory = void(0);
+			/** @type { () => slime.jrunscript.file.Directory } */
+			var getDirectory = function() {
+				if (!$context.library.Location.directory.exists.simple(location)) return null;
+				//	TODO	were we trying to make a copy of ourselves here? Is any of this mutable? Could this just be "this"?
+				var pathname = new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: parameters.pathname });
+				return /** @type { slime.jrunscript.file.Directory } */(new Directory(pathname, _peer));
 			}
-			this.directory = void (0);
-			this.__defineGetter__("directory", getDirectory);
+			Object.defineProperty(
+				this,
+				"directory",
+				{
+					enumerable: true,
+					get: getDirectory.bind(this)
+				}
+			);
 
 			//	TODO	have some real work to do here getting type safety together with this heavy overloading
 			/** @type { slime.jrunscript.file.Pathname["write"] } */
@@ -151,7 +165,7 @@
 					$api.deprecate(mode, "overwrite");
 					//	TODO	Right now we can specify a file where we do not want to create its directory, and a file where we do want to
 					//			create it, but not one where we are willing to create its directory but not parent directories.  Is that OK?
-					if (provider.exists(_peer)) {
+					if (parameters.provider.exists(_peer)) {
 						var append = mode.append;
 						if (typeof (append) == "undefined") {
 							if (mode.overwrite) {
@@ -182,7 +196,7 @@
 					read: void(0),
 					write: {
 						binary: function (mode) {
-							return provider.write.binary(_peer, Boolean(mode.append));
+							return parameters.provider.write.binary(_peer, Boolean(mode.append));
 						}
 					}
 				});
@@ -199,9 +213,9 @@
 					if (mode.ifExists) return $api.deprecate(mode.ifExists);
 					return function () { throw new Error("Cannot create directory; already exists: " + toString()); };
 				})(mode);
-				if (provider.exists(_peer)) {
+				if (parameters.provider.exists(_peer)) {
 					var getNode = function () {
-						if (provider.isDirectory(_peer)) return getDirectory();
+						if (parameters.provider.isDirectory(_peer)) return getDirectory();
 						return getFile.call(this);
 					}
 					var proceed = exists(getNode.call(this));
@@ -215,12 +229,12 @@
 					if (!getParent().directory) {
 						getParent().createDirectory(mode);
 					}
-					provider.createDirectoryAt(_peer);
+					parameters.provider.createDirectoryAt(_peer);
 				} else {
 					if (!getParent().directory) {
 						throw new Error("Could not create: " + toString() + "; parent directory does not exist.");
 					}
-					provider.createDirectoryAt(_peer);
+					parameters.provider.createDirectoryAt(_peer);
 				}
 				return getDirectory();
 			};
@@ -282,11 +296,11 @@
 				this.__defineGetter__("parent", getParent);
 
 				var getLastModified = function () {
-					return provider.getLastModified(_peer);
+					return parameters.provider.getLastModified(_peer);
 				}
 
 				var setLastModified = function (date) {
-					provider.setLastModified(_peer, date);
+					parameters.provider.setLastModified(_peer, date);
 				}
 
 				Object.defineProperty(this, "modified", {
@@ -314,14 +328,14 @@
 							return new Error("Could not canonicalize " + pathname);
 						})
 					);
-					return new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: canonicalize(pathname.toString() + relativePathPrefix + pathString) });
+					return new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: canonicalize(pathname.toString() + relativePathPrefix + pathString) });
 				}
 				this.getRelativePath = getRelativePath;
 
 				this.remove = function () {
 					//	TODO	Should probably invalidate this object somehow
 					//	TODO	Should this return a value of some kind?
-					provider.remove(_peer);
+					parameters.provider.remove(_peer);
 				}
 
 				this.move = function (toPathname, mode) {
@@ -350,7 +364,7 @@
 					if (toPathname.java["invalidate"]) {
 						toPathname.java["invalidate"]();
 					}
-					provider.move(_peer, toPathname.java.getPeer());
+					parameters.provider.move(_peer, toPathname.java.getPeer());
 					if (toPathname.file) {
 						return toPathname.file;
 					} else if (toPathname.directory) {
@@ -484,13 +498,13 @@
 			}
 
 			var Link = function (pathname, peer) {
-				Node.call(this, pathname, provider.separators.pathname + ".." + provider.separators.pathname, peer);
+				Node.call(this, pathname, parameters.provider.separators.pathname + ".." + parameters.provider.separators.pathname, peer);
 
 				this.directory = null;
 			}
 
 			var File = function File(pathname, peer) {
-				Node.call(this, pathname, provider.separators.pathname + ".." + provider.separators.pathname);
+				Node.call(this, pathname, parameters.provider.separators.pathname + ".." + parameters.provider.separators.pathname);
 
 				this.directory = false;
 
@@ -498,10 +512,10 @@
 					name: pathname.toString(),
 					read: {
 						binary: function () {
-							return provider.read.binary(peer);
+							return parameters.provider.read.binary(peer);
 						},
 						text: function () {
-							return provider.read.character(peer);
+							return parameters.provider.read.character(peer);
 						}
 					}
 				};
@@ -542,7 +556,7 @@
 				this.move = void(0);
 				this.copy = void(0);
 				this.modified = void(0);
-				Node.call(this, pathname, provider.separators.pathname + "." + provider.separators.pathname);
+				Node.call(this, pathname, parameters.provider.separators.pathname + "." + parameters.provider.separators.pathname);
 
 				this.toString = (function (was) {
 					return function () {
@@ -553,13 +567,13 @@
 				this.directory = true;
 
 				this.getFile = function (name) {
-					return new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: this.getRelativePath(name).toString() }).file;
+					return new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: this.getRelativePath(name).toString() }).file;
 				}
 
 				this.getSubdirectory = function (name) {
 					if (typeof (name) == "string" && !name.length) return this;
 					if (!name) throw new TypeError("Missing: subdirectory name.");
-					return new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: this.getRelativePath(name).toString() }).directory;
+					return new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: this.getRelativePath(name).toString() }).directory;
 				}
 
 				var toFilter = function (regexp) {
@@ -649,7 +663,7 @@
 							/** @type { slime.jrunscript.file.Node[] } */
 							var rv = [];
 							for (var i = 0; i < peers.length; i++) {
-								var pathname = new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: String(peers[i].getScriptPath()) });
+								var pathname = new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: String(peers[i].getScriptPath()) });
 								if (pathname.directory) {
 									rv.push(pathname.directory);
 								} else if (pathname.file) {
@@ -662,7 +676,7 @@
 							}
 							return rv;
 						}
-						var peers = provider.list(peer);
+						var peers = parameters.provider.list(peer);
 						rv = createNodesFromPeers(peers);
 						rv = rv.filter(filter);
 						return toReturn(rv);
@@ -679,10 +693,10 @@
 					RESOURCE: $exports_list.RESOURCE
 				});
 
-				if (provider.temporary) {
-					this.createTemporary = function(parameters) {
-						var _peer = provider.temporary(peer, parameters);
-						var pathname = new Pathname({ provider: provider, filesystem: filesystem, pathname: String(_peer.getScriptPath()) });
+				if (parameters.provider.temporary) {
+					this.createTemporary = function(p) {
+						var _peer = parameters.provider.temporary(peer, p);
+						var pathname = new Pathname({ provider: parameters.provider, filesystem: filesystem, pathname: String(_peer.getScriptPath()) });
 						if (pathname.directory) return pathname.directory;
 						if (pathname.file) return pathname.file;
 						throw new Error();
