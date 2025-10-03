@@ -29,6 +29,7 @@
 
 		jsh.shell.console("Current shell: " + JSON.stringify(jsh.shell.jsh.Installation.from.current()));
 		jsh.shell.console("Building jsh with arguments [" + jsh.script.arguments.join(" ") + "]");
+
 		var parameters = jsh.script.getopts({
 			options: {
 				verbose: false,

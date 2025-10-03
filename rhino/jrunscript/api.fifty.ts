@@ -406,6 +406,7 @@ namespace slime.internal.jrunscript.bootstrap {
 	export interface Api<J> {
 		io: {
 			tmpdir: (p?: { prefix?: string, suffix?: string }) => slime.jrunscript.native.java.io.File
+
 			copy: (from: slime.jrunscript.native.java.io.InputStream, to: slime.jrunscript.native.java.io.OutputStream) => void
 
 			download: (p: {
