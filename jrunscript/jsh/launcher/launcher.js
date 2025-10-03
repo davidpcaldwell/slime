@@ -258,6 +258,7 @@
 					}
 				}
 
+				/** @type { slime.jsh.internal.launcher.Libraries["rhino"] } */
 				var rhino = function(version) {
 					//	TODO	these first two cases may be redundant; the p.rhino may be passed because it's the value of\
 					//			jsh.engine.rhino.classpath

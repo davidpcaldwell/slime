@@ -200,7 +200,7 @@
 				var isPresent = function() {
 					return JavaClasspath.nativeClass("org.mozilla.javascript.Context") != null;
 				};
-				var isRunning = function() {
+				var running = function() {
 					return JavaClasspath.liveconnect("org.mozilla.javascript.Context").getCurrentContext();
 				}
 				return {
@@ -212,7 +212,9 @@
 					 * If Rhino is executing the current script, the Rhino `org.mozilla.javascript.Context` in which this script is
 					 * executing.
 					 */
-					running: isRunning,
+					running: function() {
+						return (isPresent()) ? running() : null;
+					},
 					/**
 					 * If Rhino is on the classpath, the file from which it can be loaded.
 					 */
@@ -1624,6 +1626,7 @@
 							var out = new Packages.java.io.FileOutputStream(to);
 							$api.io.copy(data,out);
 						}
+
 						this.directory = function(path) {
 							new Packages.java.io.File(p.to._directory, path).mkdirs();
 						}
