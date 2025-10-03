@@ -386,10 +386,10 @@
 							}
 						},
 						api: {
-							simple: function(toMeans) {
+							simple: function(means) {
 								return {
-									wo: toMeans,
-									simple: $context.pipe(toMeans, world.Means.effect())
+									wo: means,
+									simple: $context.now(means, world.Means.effect())
 								}
 							}
 						}

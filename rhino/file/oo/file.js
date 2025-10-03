@@ -227,15 +227,16 @@
 				var exists = (function(mode) {
 					if (mode.exists) return mode.exists;
 					if (mode.ifExists) return $api.deprecate(mode.ifExists);
-					return function () { throw new Error("Cannot create directory; already exists: " + toString()); };
+					return function() { throw new Error("Cannot create directory; already exists: " + toString()); };
 				})(mode);
 
-				if (parameters.provider.exists(_peer)) {
-					var getNode = function () {
-						if (parameters.provider.isDirectory(_peer)) return getDirectory();
-						return getFile.call(this);
-					}
-					var proceed = exists(getNode.call(this));
+				if ($context.library.Location.file.exists.simple(location)) {
+					throw new Error("Cannot create directory at " + location.pathname + "; file exists at that location. Remove it first.");
+				}
+
+				if ($context.library.Location.directory.exists.simple(location)) {
+					var existing = getDirectory();
+					var proceed = exists(existing);
 					if (!proceed) {
 						//	We return null if a non-directory file exists but ifExists returns false (do not proceed with creating directory).
 						return getDirectory();
@@ -243,15 +244,20 @@
 				}
 
 				if (mode.recursive) {
+					//	TODO	possibly the first part is redundant
 					if (!getParent().directory) {
 						getParent().createDirectory(mode);
 					}
-					parameters.provider.createDirectoryAt(_peer);
+					$context.library.Location.directory.require(location).simple({
+						recursive: true
+					});
 				} else {
 					if (!getParent().directory) {
 						throw new Error("Could not create: " + toString() + "; parent directory does not exist.");
 					}
-					parameters.provider.createDirectoryAt(_peer);
+					$context.library.Location.directory.require(location).simple({
+						recursive: false
+					});
 				}
 
 				return getDirectory();
