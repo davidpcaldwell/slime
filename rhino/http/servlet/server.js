@@ -14,6 +14,11 @@
 	 * @param { slime.loader.Export<slime.servlet.internal.server.Exports> } $export
 	 */
 	function(Packages,$api,$context,$loader,$export) {
+		var servletApiPackage = (function() {
+			if ($context.api.java.getClass("javax.servlet.http.HttpServlet")) return Packages.javax.servlet;
+			if ($context.api.java.getClass("jakarta.servlet.http.HttpServlet")) return Packages.jakarta.servlet;
+		})();
+
 		var log = $context.api.java.log.named("rhino.http.servlet.server");
 
 		var debug = function(message) {
@@ -81,7 +86,7 @@
 					return rv;
 				})(
 					String(
-						Packages.javax.servlet.http.HttpUtils.getRequestURL(_request).toString()
+						_request.getRequestURL().toString()
 					)
 					+ (
 						(_request.getQueryString() != null)
@@ -234,11 +239,11 @@
 								//			Should we use setStatus and write some sort of error page normally?
 								//	TODO	log something
 								debugger;
-								_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Script returned undefined");
+								_response.sendError(servletApiPackage.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Script returned undefined");
 							} else if (response === null) {
 								//	TODO	log something
 								debugger;
-								_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_NOT_FOUND);
+								_response.sendError(servletApiPackage.http.HttpServletResponse.SC_NOT_FOUND);
 							} else if (typeof(response) == "object" && response.status && typeof(response.status.code) == "number") {
 								_response.setStatus(response.status.code);
 								if (response.headers) {
@@ -267,7 +272,7 @@
 									var ifModifiedSince = _request.getDateHeader("If-Modified-Since");
 									if (ifModifiedSince != -1) {
 										if (response.body["modified"].getTime() <= ifModifiedSince) {
-											_response.setStatus(Packages.javax.servlet.http.HttpServletResponse.SC_NOT_MODIFIED);
+											_response.setStatus(servletApiPackage.http.HttpServletResponse.SC_NOT_MODIFIED);
 											return;
 										}
 									}
@@ -293,7 +298,7 @@
 							}
 						} catch (e) {
 							debug("Error creating request peer: " + e + " stack " + e.stack);
-							_response.sendError(Packages.javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+							_response.sendError(servletApiPackage.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 						}
 					},
 
