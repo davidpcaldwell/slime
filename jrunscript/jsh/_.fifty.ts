@@ -20,7 +20,7 @@
  *
  * ## Execution models
  *
- * `jsh` supports three execution models:
+ * `jsh` supports four execution models:
  *
  * * an "unbuilt" shell executed directly from source
  * * a "built" shell in which `jsh` components are preprocessed and deployed to support faster startup
@@ -29,14 +29,20 @@
  *
  * ### Unbuilt shells
  *
- * Unbuilt shells can be executed from a source checkout (or over the internet, directly from GitHub). They are executed by
- * invoking the `bash` launcher at `./jsh` in the source tree. Currently, only macOS and Linux (including WSL2) are supported.
+ * Unbuilt shells can be executed from a source checkout (a special "remote" type of unbuilt shell can be executed even without
+ * cloning the source; see "Remote shells," below).
+ *
+ * Unbuilt shells are executed by invoking
+ * the unbuilt `bash` launcher at `./jsh` in the source tree. Currently, only macOS and Linux are supported; Windows is supported
+ * only via WSL2. The script searches for a Java installation, installs the default JDK if necessary, installs a bootstrap
+ * JavaScript engine if necessary, and then runs the script specified under the unbuilt shell.
  *
  * ### Built shells
  *
  * A built shell can be created by executing the `jrunscript/jsh/etc/build.jsh.js` script. They create an installation with a main
- * script at `./jsh.bash`, which can be executed similarly to the unbuilt launcher, and also requires `bash`, and therefore macOS
- * or Linux.
+ * script at `./jsh.bash` (whose source is at `jrunscript/jsh/launcher/jsh.bash`), which can be executed similarly to the unbuilt
+ * launcher, and also requires `bash`, and therefore macOS or Linux (or WSL2 on Windows). <!--- TODO talk about the native launcher.
+ * --->
  *
  * ### Packaged applications
  *
@@ -257,37 +263,30 @@ namespace slime.jsh {
 }
 
 /**
- * ## Invoking the `jsh` shell
+ * ## The `jsh` unbuilt/remote `bash` launcher
  *
- * There are various ways to invoke the `jsh` shell as of this writing.
+ * The `bash` launcher has two jobs:
  *
- * For unbuilt shells, we use the top-level `jsh` script provided with the repository. The script determines which Java needs to be
- * used, installing the default JDK if necessary, and then runs the unbuilt shell.
- *
- * For built shells with no native launcher, we use the `jsh.bash` script that is installed to the build directory. It ultimately
- * comes from `jrunscript/jsh/launcher/jsh.bash`.
- *
- * For built shells with a native launcher, we use the `jsh` program that is installed to the build directory.
+ * * Find or install a version of Java to use (currently the default is 21, though this might not work for remote shells; see #1617
+ * and comments in the `jsh` script referencing #1617),
+ * * Install a bootstrap JavaScript engine if necessary; currently, for Java 8-14, Nashorn is used, and for Java 15+, standalone
+ * Nashorn {@include ../../local/typedoc/dependencies.md#nashorn.standalone.version} is used.
  *
  * It then runs the `jsh` _launcher_.
  *
  * ## The `jsh` launcher
  *
- * The `jsh` launcher is responsible for executing a `jrunscript` script that starts an engine-specific Java program that is
- * capable of creating a `jsh` shell and executing the indicated script inside it. Upon execution, it configures and starts the
- * `jsh` _loader_ (see below).
+ * The `jsh` launcher is a set of `jrunscript` scripts that is responsible for three things:
  *
- * The launcher consists of the following components.
+ * * Installing the desired JavaScript engine configured via the `JSH_ENGINE` environment variable or `jsh.engine` system property,
+ * and
+ * * Building a command to execute the `jsh` _loader_ process.
+ * * Providing an API to `jsh` scripts that is used to accomplish the above two tasks, so they do not have to be rewritten into the
+ * `jsh` loader.
  *
- * ### Unbuilt shells only
- *
- * #### The `jsh` shell script
- *
- * ### Built shells only
- *
- * #### The `jsh.bash` shell script and `jsh` native launcher
- *
- * TODO
+ * It consists of several `jrunscript`-compatible scripts (all of which currently run on Nashorn, and crucially, cannot run on
+ * GraalJS, because they use JavaScript multithreading with Java synchronization; they may be able to run on Rhino but this is
+ * unsupported).
  *
  * ### `rhino/jrunscript/api.js`
  *
@@ -351,6 +350,9 @@ namespace slime.jsh {
  * * Invoke the launcher script.
  *
  * ## The `jsh` loader
+ *
+ * The `jsh` loader is implemented via an engine-specific Java program that is capable of creating a `jsh` shell and executing the
+ * indicated script inside it.
  *
  * The jsh _loader_ is a subsystem that can run in its own VM or within an isolated classloader, and which implements the execution
  * of a script.  It has two implementations: a Rhino implementation (`inonit.script.jsh.Rhino`) and a Nashorn implementation
