@@ -1781,13 +1781,14 @@
 							return SingleJarDownload(
 								"1.7.15",
 								"https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
-								"js"
+								//	We'll follow the 1.8.0 naming convention for the JAR file
+								"rhino-all"
 							);
 						}
 						return SingleJarDownload(
 							"1.8.0",
 							"https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.8.0/rhino-all-1.8.0.jar",
-							"js"
+							"rhino-all"
 						);
 					}
 				}
