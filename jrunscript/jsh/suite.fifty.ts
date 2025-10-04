@@ -282,6 +282,7 @@ namespace slime.jsh.test {
 					environment: function(base) {
 						return fifty.global.$api.Object.compose(
 							base,
+							{ JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base },
 							{ JSH_ENGINE: engine || null }
 						);
 					},
