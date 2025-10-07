@@ -239,14 +239,20 @@ namespace slime.jrunscript.file {
 						it.second.is(date.second);
 					});
 
-					verify(eastern.local(created()), "thirdCreated", function(it) {
-						it.year.is(date.year);
-						it.month.is(date.month);
-						it.day.is(date.day);
-						it.hour.is(date.hour - 1);
-						it.minute.is(date.minute);
-						it.second.is(date.second);
-					});
+					if (jsh.shell.os.name == "Mac OS X") {
+						verify(eastern.local(created()), "thirdCreated", function(it) {
+							it.year.is(date.year);
+							it.month.is(date.month);
+							it.day.is(date.day);
+							it.hour.is(date.hour - 1);
+							it.minute.is(date.minute);
+							it.second.is(date.second);
+						});
+					} else if (jsh.shell.os.name == "Linux") {
+						//	do nothing; cannot update created time so it will be the value given by the system clock
+					} else {
+						//	who knows
+					}
 
 					verify(eastern.local(accessed()), "thirdAccessed", function(it) {
 						it.year.is(date.year);
