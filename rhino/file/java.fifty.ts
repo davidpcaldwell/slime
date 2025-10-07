@@ -78,10 +78,6 @@ namespace slime.jrunscript.file.internal.java {
 			binary: (peer: Peer, append: boolean) => slime.jrunscript.runtime.io.OutputStream
 		}
 
-		getLastModified: (peer: Peer) => Date
-
-		setLastModified: (peer: Peer, date: Date) => void
-
 		remove: (peer: Peer) => void
 
 		move: (peer: Peer, to: Peer) => void

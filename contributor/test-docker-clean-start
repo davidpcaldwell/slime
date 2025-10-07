@@ -5,4 +5,4 @@
 #
 #	END LICENSE
 
-docker compose -f docker-compose.yaml -f docker-compose.clean.yaml up local
+docker compose -f docker-compose.yaml -f docker-compose.clean.yaml up --force-recreate --renew-anon-volumes local

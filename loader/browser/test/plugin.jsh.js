@@ -58,11 +58,22 @@
 							jsh.file.Location.file.size,
 							$api.fp.world.Sensor.mapping()
 						);
+						var modified = $api.fp.pipe(
+							jsh.file.Location.attributes,
+							function(attributes) {
+								return attributes.times.modified.get;
+							},
+							function(q) {
+								return $api.fp.world.Question.now({
+									question: q
+								});
+							}
+						)
 						/** @type { slime.servlet.response.Properties } */
 						var properties = $api.fp.now(
 							location,
 							$api.fp.Mapping.properties({
-								modified: $api.fp.pipe(jsh.file.Location.lastModified.simple, function(tv) { return new Date(tv); }),
+								modified: $api.fp.pipe(modified, function(tv) { return new Date(tv); }),
 								length: length,
 								type: $api.fp.pipe( jsh.file.Location.basename, $api.mime.Type.fromName )
 							})
