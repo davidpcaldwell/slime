@@ -132,7 +132,7 @@ namespace slime.jrunscript {
 					}
 
 					export namespace attribute {
-						export interface FileTime {
+						export interface FileTime extends slime.jrunscript.native.java.lang.Object {
 							toMillis: () => number
 						}
 
@@ -606,7 +606,16 @@ namespace slime.jrunscript {
 			}
 			nio: {
 				file: {
-					Files: any
+					Files: {
+						setAttribute(path: slime.jrunscript.native.java.nio.file.Path, attribute: string, value: slime.jrunscript.native.java.lang.Object)
+						getAttribute(path: slime.jrunscript.native.java.nio.file.Path, attribute: string): slime.jrunscript.native.java.lang.Object
+
+						getPosixFilePermissions(path: slime.jrunscript.native.java.nio.file.Path): slime.jrunscript.native.java.util.Set<slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission>
+						setPosixFilePermissions(path: slime.jrunscript.native.java.nio.file.Path, set: slime.jrunscript.native.java.util.Set<slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission>)
+
+						setLastModifiedTime(path: slime.jrunscript.native.java.nio.file.Path, time: slime.jrunscript.native.java.nio.file.attribute.FileTime)
+						getLastModifiedTime(path: slime.jrunscript.native.java.nio.file.Path): slime.jrunscript.native.java.nio.file.attribute.FileTime
+					}
 					FileSystems: any
 					attribute: {
 						FileTime: any

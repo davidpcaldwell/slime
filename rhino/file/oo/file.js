@@ -316,12 +316,26 @@
 
 				this.__defineGetter__("parent", getParent);
 
+				var attributes = $context.library.Location.attributes(location);
+
 				var getLastModified = function () {
-					return parameters.provider.getLastModified(_peer);
+					var f = $api.fp.now(
+						attributes.times.modified.get,
+						function(q) {
+							return function() {
+								return $api.fp.world.Question.now({ question: q })
+							}
+						}
+					);
+					return f();
 				}
 
-				var setLastModified = function (date) {
-					parameters.provider.setLastModified(_peer, date);
+				var setLastModified = function(date) {
+					var set = $api.fp.now(
+						parameters.filesystem.attributes.times.modified.set({ pathname: location.pathname }),
+						$api.fp.world.Means.effect()
+					)
+					set(date);
 				}
 
 				Object.defineProperty(this, "modified", {
