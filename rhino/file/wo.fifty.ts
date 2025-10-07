@@ -163,6 +163,7 @@ namespace slime.jrunscript.file {
 
 					jsh.file.Location.file.write.open(file).simple().pipe.simple($api.jrunscript.io.InputStream.string.default("hey"));
 
+					debugger;
 					verify(size()).is(3);
 
 					//	TODO	provide simple API for this
@@ -215,13 +216,18 @@ namespace slime.jrunscript.file {
 
 					var initialLastModified = lastModified();
 
-					jsh.java.Thread.sleep(100);
+					var major = jsh.internal.bootstrap.java.getMajorVersion();
+
+					//	Under JDK 8, filesystem timestamp resolution appears to be to the second (or two seconds?)
+					var GAP = (major == 8) ? 2000 : 100;
+
+					jsh.java.Thread.sleep(GAP);
 
 					jsh.file.Location.file.write.open(file).simple().pipe.simple($api.jrunscript.io.InputStream.string.default("now"));
 
 					var secondLastModified = lastModified();
 
-					verify(secondLastModified - initialLastModified >= 100).is(true);
+					verify(secondLastModified - initialLastModified >= GAP).is(true);
 
 					//	TODO	time API?
 					var HOUR = 60 * 60 * 1000;
