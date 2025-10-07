@@ -318,6 +318,7 @@
 
 				var attributes = $context.library.Location.attributes(location);
 
+				/** @type { () => Date } */
 				var getLastModified = function () {
 					var f = $api.fp.now(
 						attributes.times.modified.get,
@@ -327,15 +328,16 @@
 							}
 						}
 					);
-					return f();
+					return $api.fp.now(f(), function(tv) { return new Date(tv); });
 				}
 
+				/** @type { (date: Date) => void } */
 				var setLastModified = function(date) {
 					var set = $api.fp.now(
 						parameters.filesystem.attributes.times.modified.set({ pathname: location.pathname }),
 						$api.fp.world.Means.effect()
 					)
-					set(date);
+					set(date.getTime());
 				}
 
 				Object.defineProperty(this, "modified", {
