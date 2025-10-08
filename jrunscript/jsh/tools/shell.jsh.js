@@ -43,7 +43,10 @@
 				commands: {
 					build: $api.fp.pipe(
 						jsh.script.cli.option.pathname({ longname: "destination" }),
-						jsh.script.cli.option.pathname({ longname: "rhino" }),
+						jsh.script.cli.option.array({
+							longname: "engine",
+							value: $api.fp.identity
+						}),
 						jsh.script.cli.option.boolean({ longname: "executable" }),
 						function(p) {
 							var current = jsh.shell.jsh.Installation.from.current();
@@ -56,9 +59,10 @@
 										script: buildScript,
 										arguments: $api.Array.build(function(rv) {
 											rv.push(p.options.destination.toString());
-											rv.push("-notest");
-											rv.push("-nodoc");
-											if (p.options.rhino) rv.push("-rhino", p.options.rhino.toString());
+											rv.push("-norhino");
+											p.options.engine.forEach(function(engine) {
+												rv.push("-engine", engine);
+											});
 											if (p.options.executable) rv.push("-executable");
 										}),
 										stdio: {
