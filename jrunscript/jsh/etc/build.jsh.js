@@ -33,6 +33,7 @@
 		var parameters = jsh.script.getopts({
 			options: {
 				verbose: false,
+				engine: jsh.script.getopts.ARRAY(String),
 				rhino: jsh.file.Pathname,
 				norhino: false,
 				executable: false,
@@ -236,7 +237,35 @@
 		jsh.shell.console("Copying launcher scripts from " + JSON.stringify(jsh.shell.jsh.Installation.from.current()));
 		jsh.shell.jsh.tools.copyLauncherScripts(SLIME, destination);
 
-		if (build.rhino) {
+		parameters.options.engine.forEach(function(engine) {
+			if (engine == "rhino") {
+				//	TODO	can worry about version(s) as part of #1961
+				//	for now we will use the Rhino corresponding to the executing version of Java
+				var javaMajorVersion = jsh.internal.bootstrap.java.getMajorVersion();
+				var rhinoLibrary = jsh.internal.bootstrap.rhino.forJava(javaMajorVersion);
+				//	TODO	if we were super-smart we could, if it were installed into this shell, simply copy the local library to
+				//			the destination shell, but we don't have that flow implemented, so we'll let it get downloaded the
+				//			way it normally is
+				var _urls = rhinoLibrary.download( destination.shell.getRelativePath("lib").java.adapt() );
+				_urls.forEach(function(_url) {
+					jsh.shell.console(String(_url));
+				});
+
+				build.rhino = jsh.file.Searchpath(
+					_urls.map(function(_url) {
+						var _uri = _url.toURI();
+						var _file = new Packages.java.io.File(_uri);
+						return jsh.file.Pathname(String(_file.getAbsolutePath()));
+					})
+				);
+			} else {
+				jsh.shell.console("Unsupported engine specified via -engine: " + engine);
+				jsh.shell.exit(1);
+			}
+		});
+
+		//	old invocation: -rhino
+		if (parameters.options.engine.indexOf("rhino") == -1 && build.rhino) {
 			console("Copying Rhino libraries ...");
 			//	TODO	if multiple Rhino libraries and none named js.jar, built shell will not use Rhino
 			build.rhino.pathnames.forEach( function(pathname,index,array) {

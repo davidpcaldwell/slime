@@ -335,7 +335,7 @@ namespace slime.jsh.test {
 						"jrunscript/jsh/tools/shell.jsh.js",
 						"build",
 						"--destination", TMPDIR.pathname,
-						"--rhino", fifty.jsh.file.relative("../../local/jsh/lib/js.jar").pathname,
+						"--engine", "rhino",
 						"--executable"
 					]
 				});
