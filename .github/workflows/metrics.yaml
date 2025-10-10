@@ -17,7 +17,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Run the script
-        run: env JSH_LAUNCHER_JDK_HOME=JAVA_HOME_21_arm64 JSH_JAVA_HOME=JAVA_HOME_21_arm64 ./jsh tools/code/metrics.jsh.js jsapi
+        run: env JSH_LAUNCHER_JDK_HOME=${JAVA_HOME_21_arm64} JSH_JAVA_HOME=${JAVA_HOME_21_arm64} ./jsh tools/code/metrics.jsh.js jsapi
         shell: bash
   types:
     name: Coverage data for type annotations
@@ -26,7 +26,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Run the script
-        run: env JSH_LAUNCHER_JDK_HOME=JAVA_HOME_21_arm64 JSH_JAVA_HOME=JAVA_HOME_21_arm64 ./jsh tools/code/metrics.jsh.js types
+        run: env JSH_LAUNCHER_JDK_HOME=${JAVA_HOME_21_arm64} JSH_JAVA_HOME=${JAVA_HOME_21_arm64} ./jsh tools/code/metrics.jsh.js types
         shell: bash
   eslint:
     name: ESLint
@@ -35,10 +35,10 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Run ESLint's default command
-        run: env JSH_LAUNCHER_JDK_HOME=JAVA_HOME_21_arm64 JSH_JAVA_HOME=JAVA_HOME_21_arm64 ./jsh contributor/eslint.jsh.js
+        run: env JSH_LAUNCHER_JDK_HOME=${JAVA_HOME_21_arm64} JSH_JAVA_HOME=${JAVA_HOME_21_arm64} ./jsh contributor/eslint.jsh.js
         shell: bash
       - name: Run the ESLint warning report
-        run: env JSH_LAUNCHER_JDK_HOME=JAVA_HOME_21_arm64 JSH_JAVA_HOME=JAVA_HOME_21_arm64 ./jsh contributor/eslint-report.jsh.js
+        run: env JSH_LAUNCHER_JDK_HOME=${JAVA_HOME_21_arm64} JSH_JAVA_HOME=${JAVA_HOME_21_arm64} ./jsh contributor/eslint-report.jsh.js
         shell: bash
   size:
     name: List source files exceeding maximum number of lines
@@ -47,5 +47,5 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Run the script
-        run: env JJSH_LAUNCHER_JDK_HOME=JAVA_HOME_21_arm64 JSH_JAVA_HOME=JAVA_HOME_21_arm64 ./jsh tools/code/metrics.jsh.js size
+        run: env JSH_LAUNCHER_JDK_HOME=${JAVA_HOME_21_arm64} JSH_JAVA_HOME=${JAVA_HOME_21_arm64} ./jsh tools/code/metrics.jsh.js size
         shell: bash
