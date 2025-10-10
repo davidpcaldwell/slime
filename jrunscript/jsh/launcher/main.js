@@ -220,7 +220,7 @@
 
 		// TODO: delete Graal if it is not available
 
-var localRhino = function() {
+		var localRhino = function() {
 			return shell.libraries.rhino(jshLoaderJavaMajorVersion).local();
 		};
 

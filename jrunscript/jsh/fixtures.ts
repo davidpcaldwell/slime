@@ -220,7 +220,7 @@ namespace slime.jsh.test {
 												arguments: $api.Array.build(function(rv) {
 													rv.push("build");
 													rv.push("--destination", TMPDIR.pathname);
-													if (rhino.present) rv.push("--rhino", rhino.value.pathname);
+													if (rhino.present) rv.push("--engine", "rhino");
 													if (executable) rv.push("--executable");
 												}),
 												stdio: {

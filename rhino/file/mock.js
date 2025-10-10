@@ -150,6 +150,10 @@
 					}
 				},
 				fileSize: $api.TODO(),
+				attributes: {
+					size: void(0),
+					times: void(0)
+				},
 				fileLastModified: $api.TODO(),
 				listDirectory: function(p) {
 					return function(events) {

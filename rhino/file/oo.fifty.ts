@@ -276,7 +276,7 @@ namespace slime.jrunscript.file.internal.oo {
 				jsh.shell.console(String(nio));
 				Packages.java.nio.file.Files.setLastModifiedTime(nio, Packages.java.nio.file.attribute.FileTime.fromMillis(MODIFIED_TIME.unix));
 				var _modified = Packages.java.nio.file.Files.getLastModifiedTime(nio);
-				jsh.shell.console(_modified.toMillis());
+				jsh.shell.console(String(_modified.toMillis()));
 			}
 
 			fifty.tests.exports.navigate = function() {

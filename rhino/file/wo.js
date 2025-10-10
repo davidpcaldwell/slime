@@ -199,10 +199,6 @@
 		var Location = {
 			relative: Location_relative,
 			basename: Location_basename,
-			/** @type { slime.jrunscript.file.location.Exports["lastModified"] } */
-			lastModified: {
-				simple: lastModifiedSimple
-			},
 			file: {
 				exists: {
 					simple: $api.fp.world.mapping(Location_file_exists),
@@ -388,7 +384,6 @@
 					}
 				},
 				relative: $api.deprecate(parts.directory.relativePath),
-				lastModified: Location.lastModified,
 				parent: Location_parent,
 				basename: Location_basename,
 				canonicalize: function(location) {
@@ -400,6 +395,26 @@
 					}
 				},
 				Function: Location_Function,
+				attributes: function(location) {
+					/** @type { (world: slime.jrunscript.file.world.Attribute<number, true>) => slime.jrunscript.file.Attribute<number, true> } */
+					var fromWorldAttribute = function(world) {
+						return {
+							get: world.get({ pathname: location.pathname }),
+							set: world.set({ pathname: location.pathname })
+						}
+					}
+
+					return {
+						size: {
+							get: location.filesystem.attributes.size.get({ pathname: location.pathname })
+						},
+						times: {
+							modified: fromWorldAttribute(location.filesystem.attributes.times.modified),
+							created: fromWorldAttribute(location.filesystem.attributes.times.created),
+							accessed: fromWorldAttribute(location.filesystem.attributes.times.accessed)
+						}
+					}
+				},
 				posix: {
 					//	TODO	this implementation assumes the filesystem supports POSIX; all of those .posix properties below are
 					//			actually optional

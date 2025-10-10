@@ -97,6 +97,37 @@ namespace slime.jrunscript.file {
 			}
 		}
 
+		export type Attribute<T, Writable extends boolean> = {
+			get: slime.$api.fp.world.Sensor<{ pathname: string },void,T>;
+		} & (
+			Writable extends true
+			? {
+				set: (p: { pathname: string }) => slime.$api.fp.world.Means<T,void>
+			}
+			: {
+			}
+		);
+
+		export interface Attributes {
+			size: Attribute<number,false>
+			times: {
+				created: Attribute<slime.external.lib.es5.TimeValue,true>
+				modified: Attribute<slime.external.lib.es5.TimeValue,true>
+				accessed: Attribute<slime.external.lib.es5.TimeValue,true>
+			}
+		}
+
+		export interface Filesystem {
+			attributes: {
+				size: Attribute<number,false>
+				times: {
+					created: Attribute<slime.external.lib.es5.TimeValue,true>
+					modified: Attribute<slime.external.lib.es5.TimeValue,true>
+					accessed: Attribute<slime.external.lib.es5.TimeValue,true>
+				}
+			}
+		}
+
 		export interface Filesystem {
 			posix?: {
 				attributes: {

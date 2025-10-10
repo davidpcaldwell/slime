@@ -234,7 +234,6 @@ install_jdk() {
 
 #	Possible basis for supporting Rhino as bootstrap engine via JSR-223, although this code is outdated and versions of rhino are
 #	available under lib/rhino/[version]
-#	JSH_BOOTSTRAP_RHINO="${JSH_SHELL_LIB}/js.jar"
 JSH_BOOTSTRAP_NASHORN="${JSH_SHELL_LIB}/nashorn.jar"
 # @notdry nashorn-dependencies
 JSH_BOOTSTRAP_NASHORN_LIBRARIES_GROUP=org.ow2.asm
@@ -511,6 +510,7 @@ if test -n "${JRUNSCRIPT}" && test "$0" == "bash"; then
 	fi
 fi
 
+#	Won't this install JDK 21 even for remote shells? See reference to issue #1617 above.
 if [ -z "${JRUNSCRIPT}" ]; then
 	install_jdk ${JSH_LOCAL_JDKS}/default
 	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
