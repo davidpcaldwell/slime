@@ -154,7 +154,7 @@ namespace slime.time {
 			/**
 			 * Returns the current <dfn>time value</dfn>.
 			 */
-			now: slime.$api.fp.impure.External<number>
+			now: slime.$api.fp.impure.External<slime.external.lib.es5.TimeValue>
 		}
 
 		(

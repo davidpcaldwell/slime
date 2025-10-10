@@ -5,6 +5,13 @@
 //	END LICENSE
 
 namespace slime.jsh.wf.test {
+	/**
+	 * An instance of this type can be obtained by:
+	 *
+	 * 1. Loading the `tools/wf/test/fixtures.ts` {@link Script script}, which exports a function mapping a
+	 * {@link slime.fifty.test.Kit | Fifty test kit} to a {@link Fixtures}, and
+	 * 1. Invoking the exported function with the current kit.
+	 */
 	export interface Fixtures {
 		/**
 		 * "Clones" the repository given by p.src to a temporary directory, also copying the state of the working directory (if there

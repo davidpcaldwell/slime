@@ -98,15 +98,207 @@ namespace slime.jrunscript.file {
 			/** @deprecated Replaced by `directory.relativePath`. */
 			relative: (path: string) => (p: slime.jrunscript.file.Location) => slime.jrunscript.file.Location
 		}
+	}
 
-		export interface Exports {
-			/**
-			 * See {@link slime.jrunscript.file.world.Filesystem.fileLastModified} for the semantics of this number.
-			 */
-			lastModified: {
-				simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.external.lib.es5.TimeValue>
-			}
+	export type Attribute<T, Writable extends boolean> = {
+		get: slime.$api.fp.world.Question<void,T>;
+	} & (
+		Writable extends true
+		? {
+			set: slime.$api.fp.world.Means<T,void>
 		}
+		: {
+		}
+	);
+
+	export interface Attributes {
+		size: Attribute<number,false>
+		times: {
+			created: Attribute<slime.external.lib.es5.TimeValue,true>
+			modified: Attribute<slime.external.lib.es5.TimeValue,true>
+			accessed: Attribute<slime.external.lib.es5.TimeValue,true>
+		}
+	}
+
+	export namespace location {
+		export interface Exports {
+			attributes: (location: Location) => Attributes
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { jsh } = fifty.global;
+				const $api = fifty.global.$api as slime.$api.jrunscript.Global;
+				const { Location } = fifty.global.jsh.file;
+
+				fifty.tests.exports.Location.attributes = function() {
+					var date: slime.time.Datetime = {
+						year: 2021,
+						month: 1,
+						day: 20,
+						hour: 12,
+						minute: 0,
+						second: 0
+					};
+
+					var eastern = jsh.time.Timezone["America/New_York"];
+
+					var file = fifty.jsh.file.temporary.location();
+
+					var attributes = Location.attributes(file);
+
+					var size = $api.fp.now(
+						attributes.size.get,
+						function(q) {
+							return function() {
+								return $api.fp.world.Question.now({ question: q });
+							}
+						}
+					);
+
+					//	TODO	what if we call lastModified before file exists?
+
+					jsh.file.Location.file.write.open(file).simple().pipe.simple($api.jrunscript.io.InputStream.string.default("hey"));
+
+					debugger;
+					verify(size()).is(3);
+
+					//	TODO	provide simple API for this
+					var lastModified = $api.fp.now(
+						attributes.times.modified.get,
+						function(q) {
+							return function() {
+								return $api.fp.world.Question.now({ question: q })
+							}
+						}
+					);
+
+					//	TODO	provide simple API for this
+					var created = $api.fp.now(
+						attributes.times.created.get,
+						function(q) {
+							return function() {
+								return $api.fp.world.Question.now({ question: q })
+							}
+						}
+					);
+
+					//	TODO	provide simple API for this
+					var accessed = $api.fp.now(
+						attributes.times.accessed.get,
+						function(q) {
+							return function() {
+								return $api.fp.world.Question.now({ question: q })
+							}
+						}
+					);
+
+					//	TODO	provide simple API for this
+					var setLastModified = $api.fp.now(
+						attributes.times.modified.set,
+						$api.fp.world.Means.effect()
+					);
+
+					//	TODO	provide simple API for this
+					var setCreated = $api.fp.now(
+						attributes.times.created.set,
+						$api.fp.world.Means.effect()
+					);
+
+					//	TODO	provide simple API for this
+					var setAccessed = $api.fp.now(
+						attributes.times.accessed.set,
+						$api.fp.world.Means.effect()
+					);
+
+					var initialLastModified = lastModified();
+
+					var major = jsh.internal.bootstrap.java.getMajorVersion();
+
+					//	Under JDK 8, filesystem timestamp resolution appears to be to the second (or two seconds?)
+					var GAP = (major == 8) ? 2000 : 100;
+
+					jsh.java.Thread.sleep(GAP);
+
+					jsh.file.Location.file.write.open(file).simple().pipe.simple($api.jrunscript.io.InputStream.string.default("now"));
+
+					var secondLastModified = lastModified();
+
+					verify(secondLastModified - initialLastModified >= GAP).is(true);
+
+					//	TODO	time API?
+					var HOUR = 60 * 60 * 1000;
+
+					setLastModified(eastern.unix(date));
+					setCreated(eastern.unix(date) - HOUR);
+					setAccessed(eastern.unix(date) + HOUR);
+
+					verify(eastern.local(lastModified()), "thirdLastModified", function(it) {
+						it.year.is(date.year);
+						it.month.is(date.month);
+						it.day.is(date.day);
+						it.hour.is(date.hour);
+						it.minute.is(date.minute);
+						it.second.is(date.second);
+					});
+
+					if (jsh.shell.os.name == "Mac OS X") {
+						verify(eastern.local(created()), "thirdCreated", function(it) {
+							it.year.is(date.year);
+							it.month.is(date.month);
+							it.day.is(date.day);
+							it.hour.is(date.hour - 1);
+							it.minute.is(date.minute);
+							it.second.is(date.second);
+						});
+					} else if (jsh.shell.os.name == "Linux") {
+						//	do nothing; cannot update created time so it will be the value given by the system clock
+					} else {
+						//	who knows
+					}
+
+					verify(eastern.local(accessed()), "thirdAccessed", function(it) {
+						it.year.is(date.year);
+						it.month.is(date.month);
+						it.day.is(date.day);
+						it.hour.is(date.hour + 1);
+						it.minute.is(date.minute);
+						it.second.is(date.second);
+					});
+				}
+
+				fifty.tests.manual.Location = {};
+
+				fifty.tests.manual.Location.attributes = function() {
+					var target = fifty.jsh.file.relative("./wo.js");
+					var attributes = Location.attributes(target);
+					var size = $api.fp.now(
+						attributes.size.get,
+						function(q) {
+							return function() {
+								return $api.fp.world.Question.now({ question: q })
+							}
+						}
+					);
+					jsh.shell.console("size of " + target.pathname + " = " + size());
+
+					var lastModified = $api.fp.now(
+						attributes.times.modified.get,
+						function(q) {
+							return function() {
+								return $api.fp.world.Question.now({ question: q })
+							}
+						}
+					);
+
+					jsh.shell.console("lastModified of " + target.pathname + " = " + new Date(lastModified()));
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace posix {

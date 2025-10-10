@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.$api.jrunscript.Global } $api
 	 * @param { slime.jrunscript.file.internal.java.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.java.Exports> } $export
@@ -259,22 +259,6 @@
 					if (_array === null) return null;
 					return $context.api.java.Array.adapt(_array);
 				};
-
-				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["getLastModified"] } */
-				this.getLastModified = function(peer) {
-					//	TODO	use java.nio here
-					var modified = peer.getHostFile().lastModified();
-					if (typeof(modified) == "object") {
-						//	Nashorn treats it as object
-						modified = Number(String(modified));
-					}
-					return new Date( modified );
-				}
-
-				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["setLastModified"] } */
-				this.setLastModified = function(peer,date) {
-					peer.getHostFile().setLastModified( date.getTime() );
-				}
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["posix"] } */
 				this.posix = (_peer.isPosix())
@@ -733,6 +717,81 @@
 						java.remove(java.newPeer(p.pathname));
 					}
 				},
+				attributes: (
+					function() {
+						var _getFileAttribute = Packages.java.nio.file.Files.getAttribute;
+						var _setFileAttribute = Packages.java.nio.file.Files.setAttribute;
+
+						/** @type { (j: slime.jrunscript.native.java.lang.Number) => number } */
+						var asNumber = function(j) {
+							return Number(j);
+						};
+
+						// /** @type { slime.js.Cast<slime.jrunscript.native.java.nio.file.attribute.FileTime> } */
+						// var asFileTime = $api.fp.cast.unsafe;
+
+						/** @type { (j: slime.jrunscript.native.java.nio.file.attribute.FileTime) => number } */
+						var fromFileTime = function(value) {
+							return value.toMillis();
+						};
+
+						/** @type { (value: number) => slime.jrunscript.native.java.nio.file.attribute.FileTime } */
+						var toFileTime = function(value) {
+							return Packages.java.nio.file.attribute.FileTime.fromMillis(value);
+						};
+
+						/** @type { <T,J extends slime.jrunscript.native.java.lang.Object>(attributeName: string, adapt: (j: J) => T) => slime.$api.fp.world.Sensor<{ pathname: string }, void, T> } */
+						var get = function(attributeName,adapt) {
+							return function(p) {
+								return function(events) {
+									return $api.fp.now(
+										p,
+										function(p) { return java.newPeer(p.pathname); },
+										function(peer) { return peer.getHostFile().toPath() },
+										function(_path) { return _getFileAttribute(_path, attributeName) },
+										adapt
+									)
+								}
+							}
+						};
+
+						/** @type { <T,J extends slime.jrunscript.native.java.lang.Object>(attributeName: string, toJava: (t: T) => J ) => (p: { pathname: string }) => slime.$api.fp.world.Means<T,void> } */
+						var set = function(attributeName,toJava) {
+							return function(p) {
+								return function(value) {
+									return function(events) {
+										return $api.fp.now(
+											p,
+											function(p) { return java.newPeer(p.pathname); },
+											function(peer) {
+												_setFileAttribute(peer.getHostFile().toPath(), attributeName, toJava(value));
+											}
+										);
+									}
+								}
+							};
+						};
+
+						/** @type { (attributeName: string) => slime.jrunscript.file.world.Attribute<number,true> } */
+						var writableFileTime = function(attributeName) {
+							return {
+								get: get(attributeName, fromFileTime),
+								set: set(attributeName, toFileTime)
+							}
+						}
+
+						return {
+							size: {
+								get: get("size", asNumber)
+							},
+							times: {
+								modified: writableFileTime("lastModifiedTime"),
+								created: writableFileTime("creationTime"),
+								accessed: writableFileTime("lastAccessTime")
+							}
+						};
+					}
+				)(),
 				posix: (java.posix) ? {
 					attributes: {
 						get: function(p) {

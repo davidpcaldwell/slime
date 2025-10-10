@@ -11,6 +11,12 @@ namespace slime.jsh.test {
 			return script().shells(fifty);
 		//@ts-ignore
 		})(fifty);
+
+		export const clone = (function(fifty: slime.fifty.test.Kit) {
+			const script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
+			return script()(fifty).clone;
+		//@ts-ignore
+		})(fifty);
 	}
 
 	(
@@ -251,11 +257,65 @@ namespace slime.jsh.test {
 				}
 			}
 
+			fifty.tests.engineInstallation = fifty.test.Parent();
+
+			var testLauncherEngineInstallation = function(engine) {
+				var clean = fixtures.clone({
+					src: fifty.jsh.file.relative("../..")
+				});
+
+				var run = function(intention: slime.jrunscript.shell.run.Intention) {
+					return $api.fp.world.Sensor.now({
+						sensor: jsh.shell.subprocess.question,
+						subject: intention
+					})
+				};
+
+				var at = fifty.global.jsh.file.Location.directory.base(clean);
+
+				var result = run({
+					command: "bash",
+					arguments: $api.Array.build(function(rv) {
+						rv.push(at("jsh").pathname);
+						rv.push(at("jrunscript/jsh/test/jsh-data.jsh.js").pathname);
+					}),
+					environment: function(base) {
+						return fifty.global.$api.Object.compose(
+							base,
+							{ JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base },
+							{ JSH_ENGINE: engine || null }
+						);
+					},
+					stdio: {
+						output: "string"
+					}
+				});
+
+				fifty.global.jsh.shell.console("clean = " + clean.pathname);
+
+				fifty.verify(result).status.is(0);
+
+				var json = JSON.parse(result.stdio.output);
+
+				var expected = (engine) ? engine : "nashorn";
+
+				fifty.verify(json.engines.current.name).evaluate(String).is(expected);
+			}
+
+			fifty.tests.engineInstallation.negative = function() {
+				testLauncherEngineInstallation(null);
+			}
+
+			fifty.tests.engineInstallation.rhino = function() {
+				testLauncherEngineInstallation("rhino");
+			}
+
 			fifty.tests.suite = function() {
 				fifty.load("_.fifty.ts");
 				fifty.run(fifty.tests.nashornDeprecation);
 				fifty.run(fifty.tests.remote);
 				fifty.run(fifty.tests.executable);
+				fifty.run(fifty.tests.engineInstallation);
 			}
 
 			fifty.tests.manual = {};
@@ -275,7 +335,7 @@ namespace slime.jsh.test {
 						"jrunscript/jsh/tools/shell.jsh.js",
 						"build",
 						"--destination", TMPDIR.pathname,
-						"--rhino", fifty.jsh.file.relative("../../local/jsh/lib/js.jar").pathname,
+						"--engine", "rhino",
 						"--executable"
 					]
 				});

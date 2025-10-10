@@ -35,9 +35,9 @@ namespace slime.jrunscript.io.zip {
 	export type Entry = {
 		comment: slime.$api.fp.Maybe<string>
 		time: {
-			modified: slime.$api.fp.Maybe<number>
-			created: slime.$api.fp.Maybe<number>
-			accessed: slime.$api.fp.Maybe<number>
+			modified: slime.$api.fp.Maybe<slime.external.lib.es5.TimeValue>
+			created: slime.$api.fp.Maybe<slime.external.lib.es5.TimeValue>
+			accessed: slime.$api.fp.Maybe<slime.external.lib.es5.TimeValue>
 		}
 	}
 
