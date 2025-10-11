@@ -7,28 +7,38 @@
 //@ts-check
 (
 	/**
-	 *
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function($api,jsh) {
+	function(Packages,$api,jsh) {
 		jsh.script.cli.main(
 			$api.fp.pipe(
 				jsh.script.cli.option.boolean({ longname: "replace" }),
 				jsh.script.cli.option.string({ longname: "version" }),
 				function(p) {
-					$api.fp.world.Means.now({
-						means: jsh.shell.tools.rhino.require.world(),
-						order: {
-							replace: $api.fp.Mapping.from.value(p.options.replace),
-							version: p.options.version
-						},
-						handlers: {
-							console: function(e) {
-								jsh.shell.console(e.detail);
-							}
+					if (p.options.version) {
+						jsh.shell.console("--version not supported; current version of Java will be used.");
+						jsh.shell.exit(1);
+					}
+
+					var libraries = jsh.internal.bootstrap.jsh.current.installation.libraries;
+					//jsh.shell.console("Libraries: " + String(libraries));
+					var shellRhino = libraries.rhino(jsh.internal.bootstrap.java.getMajorVersion());
+					//jsh.shell.console("shellRhino: " + shellRhino);
+
+					if (p.options.replace) {
+						var local = shellRhino.local();
+						if (local) {
+							local.forEach(function(_url) {
+								var _file = new Packages.java.io.File(_url.toURI());
+								jsh.shell.console("Removing " + _file + " ...");
+							});
 						}
-					})
+					}
+
+					var ignore = shellRhino.download();
+					jsh.shell.console("Rhino installed at " + ignore);
 				}
 			)
 		);
@@ -50,4 +60,4 @@
 		// });
 	}
 //@ts-ignore
-)($api,jsh);
+)(Packages,$api,jsh);

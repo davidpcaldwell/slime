@@ -50,8 +50,6 @@ namespace slime.jsh.internal.launcher {
 	}
 
 	export interface Jsh {
-		shell: any
-
 		Packaged: any
 
 		Classpath: any
@@ -73,6 +71,16 @@ namespace slime.jsh.internal.launcher {
 		}
 
 		Built: (p: slime.jrunscript.native.java.io.File) => Installation
+
+		shell: {
+			packaged?: string
+			rhino: any
+			classpath: any
+		}
+
+		current?: {
+			installation?: Installation
+		}
 	}
 
 	interface Additions {

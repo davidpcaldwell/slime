@@ -112,12 +112,8 @@
 
 		$api.script.resolve("launcher.js").load();
 
-		if ($api.embed) {
-			return;
-		}
-
-		//	If we have a sibling named jsh.jar, we are a built shell
 		var shell = (function() {
+			//	If we have a sibling named jsh.jar, we are a built shell
 			var builtShellJar = $api.script.resolve("jsh.jar");
 			if (builtShellJar) {
 				$api.debug(
@@ -162,6 +158,10 @@
 		})();
 		$api.debug("shell detected = " + shell);
 
+		$api.jsh.current = {
+			installation: shell
+		};
+
 		if (!new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
 			$api.debug("Nashorn not detected via javax.script; removing.");
 			delete $api.jsh.engines.nashorn;
@@ -184,6 +184,10 @@
 				$api.debug("jdk.nashorn.internal.runtime.Context.getContext not accessible; removing Nashorn.")
 				delete $api.jsh.engines.nashorn;
 			}
+		}
+
+		if ($api.embed) {
+			return;
 		}
 
 		var command = new $api.java.Command();
