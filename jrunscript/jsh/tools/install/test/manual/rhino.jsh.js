@@ -4,8 +4,12 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				output: false,
@@ -14,7 +18,7 @@
 		});
 
 		if (parameters.options.require) {
-			$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
+			jsh.shell.tools.rhino.require.simple();
 		}
 
 		if (parameters.options.output) {
@@ -64,4 +68,5 @@
 		if (after.engine != "rhino") fail();
 		jsh.shell.console("Success.");
 	}
-)();
+//@ts-ignore
+)(jsh);
