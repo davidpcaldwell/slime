@@ -273,10 +273,6 @@
 							]
 						);
 					} else if (setting && lib.file) {
-						// var rhinoJar = new Packages.java.io.File(lib.file, "js.jar");
-						// if (rhinoJar.exists()) {
-						// 	return [rhinoJar.toURI().toURL()];
-						// }
 						var library = $$api.rhino.forJava(javaMajorVersion);
 						return {
 							download: function() {
