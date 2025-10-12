@@ -114,7 +114,13 @@
 
 		var shell = (function() {
 			//	If we have a sibling named jsh.jar, we are a built shell
+			$api.debug("Resolve jsh.jar from " + $api.script + " ...");
+			//	TODO	below is not a great expression, since jsh.jar is not a script. Perhaps need a clearer API for whether a
+			//			relative URL exists
 			var builtShellJar = $api.script.resolve("jsh.jar");
+			$api.debug("Resolved jsh.jar to " + builtShellJar);
+			var builtShellJarLocation = $api.script.jar;
+			$api.debug("builtShellJarLocation = " + builtShellJarLocation);
 			if (builtShellJar) {
 				$api.debug(
 					"script file: " + $api.script.file + " url: " + $api.script.url
@@ -122,10 +128,20 @@
 					+ " resolved url = " + $api.script.resolve("jsh.jar").url
 				);
 				return $api.jsh.Built($api.script.file.getParentFile());
+			} else if (builtShellJarLocation && new Packages.java.io.File(builtShellJarLocation.file.getParentFile().getParentFile(), "jsh.jar").exists()) {
+				return $api.jsh.Built(builtShellJarLocation.file.getParentFile().getParentFile());
 			} else {
 				//	TODO	much of this logic is reproduced in the launcher.js Libraries construct, and this should be removed
 				//			after merging in any differences from here and refining the implementation
-
+				if (!$api.slime.src) {
+					$api.debug("No src, but no jsh.jar in " + $api.script + " when resolving " + $api.script.resolve("jsh.jar"));
+					throw new Error(
+						"No src, but no jsh.jar in " + $api.script
+						+ " when resolving " + $api.script.resolve("jsh.jar")
+						+ " jar=" + $api.script.jar
+						+ " url=" + $api.script.url.toExternalForm()
+					);
+				}
 				$api.slime.settings.default(
 					"jsh.shell.lib",
 					$api.slime.src.getPath("local/jsh/lib")
