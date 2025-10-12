@@ -17,7 +17,6 @@
 	function($api,jsh,plugins,$loader,plugin) {
 		plugin({
 			load: function() {
-
 				/** @type { slime.jrunscript.bootstrap.Script } */
 				var jrunscriptBootstrap = $loader.script("embed.js");
 				var jrunscriptBootstrapApis = jrunscriptBootstrap({

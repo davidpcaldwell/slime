@@ -49,6 +49,10 @@
 			$api: jsh.internal.bootstrap
 		}
 
+		var toPathname = function(/** @type { slime.jrunscript.file.Location } */location) {
+			return jsh.file.Pathname(location.pathname);
+		}
+
 		/** @type { { rhino: slime.jrunscript.file.Searchpath } } */
 		var build = (function() {
 			var bothError = function(name) {
@@ -69,8 +73,15 @@
 			}
 
 			var downloadRhino = function(to) {
-				jsh.shell.tools.rhino.require.simple();
-				return jsh.file.Searchpath([jsh.shell.jsh.lib.getRelativePath("js.jar")]);
+				var rhino = $api.fp.now(
+					jsh.internal.bootstrap.rhino.forJava(
+						jsh.internal.bootstrap.java.getMajorVersion()
+					),
+					jsh.internal.api.Library
+				);
+				return jsh.file.Searchpath(
+					rhino.download(jsh.shell.jsh.lib.pathname.os.adapt()).map(toPathname)
+				)
 			};
 
 			if (jsh.script.url) {
@@ -241,22 +252,13 @@
 			if (engine == "rhino") {
 				//	TODO	can worry about version(s) as part of #1961
 				//	for now we will use the Rhino corresponding to the executing version of Java
-				var javaMajorVersion = jsh.internal.bootstrap.java.getMajorVersion();
-				var rhinoLibrary = jsh.internal.bootstrap.rhino.forJava(javaMajorVersion);
-				//	TODO	if we were super-smart we could, if it were installed into this shell, simply copy the local library to
-				//			the destination shell, but we don't have that flow implemented, so we'll let it get downloaded the
-				//			way it normally is
-				var _urls = rhinoLibrary.download( destination.shell.getRelativePath("lib").java.adapt() );
-				_urls.forEach(function(_url) {
-					jsh.shell.console(String(_url));
-				});
-
-				build.rhino = jsh.file.Searchpath(
-					_urls.map(function(_url) {
-						var _uri = _url.toURI();
-						var _file = new Packages.java.io.File(_uri);
-						return jsh.file.Pathname(String(_file.getAbsolutePath()));
-					})
+				build.rhino = $api.fp.Thunk.now(
+					jsh.internal.bootstrap.java.getMajorVersion,
+					jsh.internal.bootstrap.rhino.forJava,
+					jsh.internal.api.Library,
+					function(library) { return library.download(destination.shell.getRelativePath("lib").os.adapt() ); },
+					$api.fp.Array.map( toPathname ),
+					jsh.file.Searchpath
 				);
 			} else {
 				jsh.shell.console("Unsupported engine specified via -engine: " + engine);
@@ -267,10 +269,10 @@
 		//	old invocation: -rhino
 		if (parameters.options.engine.indexOf("rhino") == -1 && build.rhino) {
 			console("Copying Rhino libraries ...");
-			//	TODO	if multiple Rhino libraries and none named js.jar, built shell will not use Rhino
+			//	TODO	this isn't probably compatible with the direction we are going for libraries, but is likely to work at
+			//			present, but the -rhino option is going away anyway
 			build.rhino.pathnames.forEach( function(pathname,index,array) {
-				var name = (array.length == 1) ? "js.jar" : pathname.basename;
-				pathname.file.copy(destination.shell.getSubdirectory("lib").getRelativePath(name));
+				pathname.file.copy(destination.shell.getSubdirectory("lib").getRelativePath(pathname.basename));
 			});
 		} else {
 			console("Rhino libraries not present; building for Nashorn only.");
