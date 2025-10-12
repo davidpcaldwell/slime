@@ -82,6 +82,13 @@ sourceSets {
 		}
 	}
 
+	jshLauncher {
+		compileClasspath += sourceSets.main.output
+		java {
+			srcDir 'jrunscript/jsh/launcher/java'
+		}
+	}
+
 	jsh {
 		compileClasspath += sourceSets.main.output
 		java {

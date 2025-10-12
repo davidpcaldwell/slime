@@ -15,8 +15,8 @@ if [ -f "${SLIME}/local/jsh/lib/js.jar" ]; then
 fi
 
 if [ -n "${RHINO}" ]; then
-	>&2 echo "Installing Rhino: ${RHINO} ..."
-	"${SLIME}/jsh" "${SLIME}/jsh/tools/install/rhino.jsh.js" -version "${RHINO}"
+	>&2 echo "Installing Rhino ..."
+	"${SLIME}/jsh" "${SLIME}/jsh/tools/install/rhino.jsh.js"
 fi
 
 LOGS="${LOGS:-${SLIME}/local/test/jsh/launcher/install-jdk-default}"

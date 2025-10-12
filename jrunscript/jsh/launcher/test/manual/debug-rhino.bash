@@ -7,6 +7,6 @@
 
 SLIME="$(dirname $0)/../../../.."
 rm ${SLIME}/local/jsh/lib/js.jar 2>/dev/null
-${SLIME}/jsh ${SLIME}/jsh/tools/install/rhino.jsh.js -version mozilla/1.7.12 -replace
+${SLIME}/jsh ${SLIME}/jsh/tools/install/rhino.jsh.js --replace
 export JSH_DEBUG_SCRIPT=rhino
 ${SLIME}/jsh ${SLIME}/jsh/test/jsh-data.jsh.js
