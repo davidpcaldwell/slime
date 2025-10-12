@@ -190,6 +190,7 @@ public class Main {
 
 				{
 					try {
+						System.setProperty("jsh.shell.packaged", main.getCanonicalPath());
 						this.plugins = new Code.Loader[] { Code.Loader.create(createPackagedPluginsDirectory()) };
 					} catch (IOException e) {
 						throw new RuntimeException(e);

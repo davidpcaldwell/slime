@@ -130,6 +130,10 @@
 				return $api.jsh.Built($api.script.file.getParentFile());
 			} else if (builtShellJarLocation && new Packages.java.io.File(builtShellJarLocation.file.getParentFile().getParentFile(), "jsh.jar").exists()) {
 				return $api.jsh.Built(builtShellJarLocation.file.getParentFile().getParentFile());
+			} else if ($api.jsh.shell && $api.jsh.shell.packaged) {
+				return $api.jsh.shell.current;
+			} else if (Packages.java.lang.System.getProperty("jsh.shell.packaged")) {
+				return $api.jsh.Packaged(new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.shell.packaged")));
 			} else {
 				//	TODO	much of this logic is reproduced in the launcher.js Libraries construct, and this should be removed
 				//			after merging in any differences from here and refining the implementation
@@ -140,6 +144,8 @@
 						+ " when resolving " + $api.script.resolve("jsh.jar")
 						+ " jar=" + $api.script.jar
 						+ " url=" + $api.script.url.toExternalForm()
+						+ " system property=" + Packages.java.lang.System.getProperties().get("jsh.launcher.shell")
+						+ "\n" + "system properties=" + Packages.java.lang.System.getProperties()
 					);
 				}
 				$api.slime.settings.default(

@@ -547,19 +547,22 @@
 				}
 			};
 
+			/**
+			 * @type { slime.jsh.internal.launcher.Jsh["Packaged"] }
+			 */
 			$$api.jsh.Packaged = function(file) {
-				this.packaged = file;
-
-				//	TODO	test and enable (and document) if this works
-				if (false) this.profiler = (function() {
-					if ($$api.slime.settings.get("jsh.shell.profiler")) {
-						return new Packages.java.io.File($$api.slime.settings.get("jsh.shell.profiler"));
+				// //	TODO	test and enable (and document) if this works
+				// if (false) this.profiler = (function() {
+				// 	if ($$api.slime.settings.get("jsh.shell.profiler")) {
+				// 		return new Packages.java.io.File($$api.slime.settings.get("jsh.shell.profiler"));
+				// 	}
+				// })();
+				return {
+					packaged: file,
+					shellClasspath: function() {
+						return [file.toURI().toURL()]
 					}
-				})();
-
-				this.shellClasspath = function() {
-					return [file.toURI().toURL()];
-				};
+				}
 			};
 
 			//	This appears to deal solely with packaged shells, using the "magic system property" approach where the Java program
@@ -599,7 +602,7 @@
 					var shell = (function(peer) {
 						if (peer.getPackaged()) {
 							$$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
-							return new $$api.jsh.Packaged(peer.getPackaged());
+							return $$api.jsh.Packaged(peer.getPackaged());
 						} else {
 							throw new Error("No getPackaged() in " + peer);
 						}
@@ -610,6 +613,7 @@
 					}
 					if (shell.packaged) {
 						this.packaged = String(shell.packaged.getCanonicalPath());
+						this.current = shell;
 					}
 
 					this.rhino = (getRhinoClasspath()) ? getRhinoClasspath().local() : null;
