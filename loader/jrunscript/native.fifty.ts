@@ -5,9 +5,14 @@
 //	END LICENSE
 
 namespace slime.jrunscript {
+	/**
+	 * A native Java array.
+	 */
 	export interface Array<T = native.java.lang.Object> extends slime.jrunscript.native.java.lang.Object {
 		[i: number]: T
 		readonly length: number
+
+		getClass(): slime.jrunscript.native.java.lang.Class
 	}
 
 	export namespace native {

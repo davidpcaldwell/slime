@@ -118,7 +118,8 @@
 				$$api.log("Loaded slime.js: src=" + $$api.slime.src);
 			}
 
-			if ($$api.slime.setting("jsh.launcher.debug")) {
+			//	Might be redundant (this is set in main.js) or, per comment above, might be used in packaged scripts? Unknown.
+			if ($$api.slime.setting("jsh.launcher.debug") && !$$api.debug.on) {
 				$$api.debug.on = true;
 				$$api.debug("debugging enabled");
 			}
@@ -177,7 +178,9 @@
 				}
 			};
 
-			/** @type { new (_urls?: slime.jrunscript.native.java.net.URL[]) => any } */
+			//	Below structure supports both native Java and JavaScript arrays; might be able to simplify and
+			//	have callers convert argument to JavaScript
+			/** @type { new (_urls?: Omit<slime.jrunscript.Array<slime.jrunscript.native.java.net.URL>,"getClass"> ) => any } */
 			var Classpath = function(_urls) {
 				var colon = String(Packages.java.io.File.pathSeparator);
 
@@ -259,7 +262,7 @@
 				}
 
 				/** @type { slime.jsh.internal.launcher.Libraries["rhino"] } */
-				var rhino = function(version) {
+				var rhino = function(javaMajorVersion) {
 					//	TODO	these first two cases may be redundant; the p.rhino may be passed because it's the value of\
 					//			jsh.engine.rhino.classpath
 					if (p.rhino) return SpecifiedLibrary(p.rhino);
@@ -270,11 +273,7 @@
 							]
 						);
 					} else if (setting && lib.file) {
-						// var rhinoJar = new Packages.java.io.File(lib.file, "js.jar");
-						// if (rhinoJar.exists()) {
-						// 	return [rhinoJar.toURI().toURL()];
-						// }
-						var library = $$api.rhino.forJava(version);
+						var library = $$api.rhino.forJava(javaMajorVersion);
 						return {
 							download: function() {
 								return library.download( new Packages.java.io.File(lib.file, "") )
@@ -544,23 +543,32 @@
 				}
 			};
 
+			/**
+			 * @type { slime.jsh.internal.launcher.Jsh["Packaged"] }
+			 */
 			$$api.jsh.Packaged = function(file) {
-				this.packaged = file;
-
-				//	TODO	test and enable (and document) if this works
-				if (false) this.profiler = (function() {
-					if ($$api.slime.settings.get("jsh.shell.profiler")) {
-						return new Packages.java.io.File($$api.slime.settings.get("jsh.shell.profiler"));
+				// //	TODO	test and enable (and document) if this works
+				// if (false) this.profiler = (function() {
+				// 	if ($$api.slime.settings.get("jsh.shell.profiler")) {
+				// 		return new Packages.java.io.File($$api.slime.settings.get("jsh.shell.profiler"));
+				// 	}
+				// })();
+				return {
+					packaged: file,
+					shellClasspath: function() {
+						return [file.toURI().toURL()]
 					}
-				})();
-
-				this.shellClasspath = function() {
-					return [file.toURI().toURL()];
-				};
+				}
 			};
 
 			//	This appears to deal solely with packaged shells, using the "magic system property" approach where the Java program
 			//	stashes an object in the below system property for use here
+			//
+			//	However, it also seems possible that a built shell might use inonit.script.jsh.launcher.Main in a scenario without
+			//	bash, when being invoked via jsh.jar
+			//
+			//	As we tighten our definitions (see #2030), hopefully more of this will shake out.
+			//
 			//	TODO	it seems like the below should migrate to main.js where similar code is already present, and packaged applications
 			//			should launch that script
 			if (Packages.java.lang.System.getProperties().get("jsh.launcher.shell") && Packages.java.lang.System.getProperties().get("jsh.launcher.shell").getPackaged()) {
@@ -577,7 +585,7 @@
 					return $$api.engine.resolve(engines);
 				})();
 
-				$$api.jsh.shell = new (function(peer) {
+				$$api.jsh.shell = new (function(/** @type { slime.jrunscript.native.inonit.script.jsh.launcher.Shell } */peer) {
 					var getRhinoClasspath = function() {
 						var classpath = peer.getRhinoClasspath();
 						if (classpath) {
@@ -590,7 +598,7 @@
 					var shell = (function(peer) {
 						if (peer.getPackaged()) {
 							$$api.debug("Setting packaged shell: " + String(peer.getPackaged().getCanonicalPath()));
-							return new $$api.jsh.Packaged(peer.getPackaged());
+							return $$api.jsh.Packaged(peer.getPackaged());
 						} else {
 							throw new Error("No getPackaged() in " + peer);
 						}
@@ -601,6 +609,7 @@
 					}
 					if (shell.packaged) {
 						this.packaged = String(shell.packaged.getCanonicalPath());
+						this.current = shell;
 					}
 
 					this.rhino = (getRhinoClasspath()) ? getRhinoClasspath().local() : null;

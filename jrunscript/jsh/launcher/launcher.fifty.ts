@@ -20,10 +20,12 @@ namespace slime.jsh.internal.launcher {
 	export interface Installation {
 		toString: () => string
 
-		libraries: Libraries
+		libraries?: Libraries
+		packaged?: slime.jrunscript.native.java.io.File
+		home?: slime.jrunscript.native.java.io.File
 
 		graal?: slime.jrunscript.native.java.io.File
-		profiler: slime.jrunscript.native.java.io.File
+		profiler?: slime.jrunscript.native.java.io.File
 		shellClasspath: (p?: { source: number, target: number }) => slime.jrunscript.native.java.net.URL[]
 	}
 
@@ -50,10 +52,6 @@ namespace slime.jsh.internal.launcher {
 	}
 
 	export interface Jsh {
-		shell: any
-
-		Packaged: any
-
 		Classpath: any
 
 		Unbuilt: (p: {
@@ -73,6 +71,19 @@ namespace slime.jsh.internal.launcher {
 		}
 
 		Built: (p: slime.jrunscript.native.java.io.File) => Installation
+
+		Packaged: (p: slime.jrunscript.native.java.io.File) => Installation
+
+		shell: {
+			packaged?: string
+			rhino: any
+			classpath: any
+			current: Installation
+		}
+
+		current?: {
+			installation?: Installation
+		}
 	}
 
 	interface Additions {

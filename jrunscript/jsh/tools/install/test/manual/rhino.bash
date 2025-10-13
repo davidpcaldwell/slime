@@ -5,6 +5,6 @@
 #
 #	END LICENSE
 
-BASE=$(dirname $0)/../../../../..
-rm ${BASE}/local/jsh/lib/js.jar
+BASE=$(dirname $0)/../../../../../..
+"${BASE}/jsh" "$(dirname $0)/rhino.jsh.js" -initialize
 "${BASE}/jsh" "$(dirname $0)/rhino.jsh.js"

@@ -802,16 +802,35 @@
 		};
 
 		(function() {
-			var jarUrl = function(string) {
+			var toJarUrl = function(string) {
 				if (string.indexOf("!") != -1) {
 					var tokens = string.split("!");
 					if (tokens.length == 2) {
 						if (new Packages.java.io.File(tokens[0]).exists()) {
-							return "jar:file:" + tokens[0] + "!" + "/" + tokens[1];
+							return new Packages.java.net.URL("jar:file:" + tokens[0] + "!" + "/" + tokens[1]);
 						}
 					}
 				}
+			};
+
+			/**
+			 *
+			 * @param { string } string
+			 * @returns { { url: slime.jrunscript.native.java.net.URL, file: slime.jrunscript.native.java.io.File, path: string } }
+			 */
+			var jarUrl = function(string) {
+				//var pattern = /^jar\:file\:(.*)\!\/(.*)/
+				var pattern = /^jar\:file\:(.*)\!\/(.*)$/;
+				if (pattern.test(string)) {
+					var match = pattern.exec(string);
+					return {
+						url: new Packages.java.net.URL(string),
+						file: new Packages.java.io.File(match[1]),
+						path: match[2]
+					};
+				}
 			}
+
 			//	Given a string, returns either { file: absolute java.io.File } or { url: java.net.URL }
 			var interpret = function(string) {
 				if (new Packages.java.io.File(string).exists()) {
@@ -820,9 +839,9 @@
 					return {
 						file: file
 					};
-				} else if (jarUrl(string)) {
+				} else if (toJarUrl(string)) {
 					return {
-						url: new Packages.java.net.URL(jarUrl(string))
+						url: toJarUrl(string)
 					};
 				} else {
 					try {
@@ -1083,6 +1102,9 @@
 					} else if (p.url) {
 						this.toString = function() { return String(p.url.toExternalForm()); }
 						this.url = p.url;
+						if (jarUrl(String(p.url.toExternalForm()))) {
+							this.jar = jarUrl(String(p.url.toExternalForm()));
+						}
 						this.resolve = function(path) {
 							$api.debug("Resolving " + path + " from " + p.url + " ...");
 							var url = new Packages.java.net.URL(p.url, path);

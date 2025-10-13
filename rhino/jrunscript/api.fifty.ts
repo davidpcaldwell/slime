@@ -118,6 +118,13 @@ namespace slime.internal.jrunscript.bootstrap {
 		file?: slime.jrunscript.native.java.io.File
 
 		url?: slime.jrunscript.native.java.net.URL
+
+		jar?: {
+			url: slime.jrunscript.native.java.net.URL
+			file: slime.jrunscript.native.java.io.File
+			path: string
+		}
+
 		resolve: (path: string) => Script
 	}
 

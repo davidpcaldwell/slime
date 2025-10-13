@@ -425,7 +425,7 @@
 					arguments: [
 						$context.base.getRelativePath("jsh"),
 						$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
-						"-replace"
+						"--replace"
 					]
 				});
 
@@ -860,7 +860,7 @@
 					command: $context.base.getRelativePath("jsh.bash"),
 					arguments: [
 						$context.base.getRelativePath("jsh/tools/install/rhino.jsh.js"),
-						"-replace"
+						"--replace"
 					]
 				});
 				jsh.shell.console("Running tests with output to " + logs + " ...");
