@@ -195,7 +195,7 @@
 				 * @type { slime.jsh.httpd.Exports["tools"]["build"] }
 				 */
 				jsh.httpd.tools.build = Object.assign(
-					function(p) {
+					function(/** @type { slime.jsh.httpd.Build } */p) {
 						if (!p.destination.directory) {
 							p.destination.directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
 						}
@@ -203,22 +203,9 @@
 						WEBAPP.getRelativePath("WEB-INF").createDirectory();
 						if (p.rhino) {
 							(function() {
-								//	Get the path of Rhino in this shell, assume it is a file, and copy it to WEB-INF/lib
-								if (jsh.shell.rhino) {
-									if (jsh.shell.rhino.classpath.pathnames.length == 1) {
-										var rhino = jsh.shell.rhino.classpath.pathnames[0];
-										if (/\.jar$/.test(rhino.basename)) {
-											var destination = WEBAPP.getRelativePath("WEB-INF/lib").createDirectory();
-											rhino.file.copy(destination.getRelativePath("js.jar"));
-										} else {
-											throw new Error("Rhino not present; classpath=" + jsh.shell.rhino.classpath);
-										}
-									} else {
-										throw new Error("Could not locate Rhino in classpath " + jsh.shell.rhino.classpath);
-									}
-								} else {
-									throw new Error("Rhino not present.");
-								}
+								jsh.internal.bootstrap.rhino.forJava(
+									jsh.internal.bootstrap.java.getMajorVersion()
+								).download( WEBAPP.getRelativePath("WEB-INF/lib").createDirectory().pathname.java.adapt() )
 							})();
 						}
 						var lib = WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
@@ -242,6 +229,10 @@
 							var SERVLET = SLIME.getSubdirectory("rhino/http/servlet");
 							//	Compile the servlet to WEB-INF/classes
 							var classpath = jsh.file.Searchpath([]);
+							var rhino = jsh.internal.api.rhino.forCurrentJava().local( WEBAPP.getRelativePath("WEB-INF/lib").createDirectory().pathname.os.adapt() );
+							if (rhino) rhino.forEach(function(location) {
+								classpath.pathnames.push(jsh.file.Pathname(location.pathname));
+							});
 							classpath.pathnames.push(WEBAPP.getRelativePath("WEB-INF/lib/js.jar"));
 							var CATALINA_HOME;
 							if (jsh.shell.environment.CATALINA_HOME) CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
