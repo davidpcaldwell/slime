@@ -349,6 +349,10 @@ namespace slime.$api.fp {
 			a: Thunk<A>,
 			f: (a: A) => B
 		): B
+
+		<A>(
+			a: Thunk<A>
+		): A
 	}
 }
 
