@@ -253,9 +253,7 @@
 				//	TODO	can worry about version(s) as part of #1961
 				//	for now we will use the Rhino corresponding to the executing version of Java
 				build.rhino = $api.fp.Thunk.now(
-					jsh.internal.bootstrap.java.getMajorVersion,
-					jsh.internal.bootstrap.rhino.forJava,
-					jsh.internal.api.Library,
+					jsh.internal.api.rhino.forCurrentJava,
 					function(library) { return library.download(destination.shell.getRelativePath("lib").os.adapt() ); },
 					$api.fp.Array.map( toPathname ),
 					jsh.file.Searchpath

@@ -20,6 +20,10 @@ namespace slime.jsh {
 
 			api: {
 				Library: slime.$api.fp.Mapping<slime.internal.jrunscript.bootstrap.Library,slime.internal.jrunscript.bootstrap.api.Library>
+
+				rhino: {
+					forCurrentJava: slime.$api.fp.Thunk<slime.internal.jrunscript.bootstrap.api.Library>
+				}
 			}
 		}
 	}
