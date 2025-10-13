@@ -202,15 +202,10 @@ namespace slime.jsh.test {
 									var current = jsh.shell.jsh.Installation.from.current();
 
 									if (isUnbuilt(current)) {
-										var rhino: slime.$api.fp.Maybe<slime.jrunscript.file.Location> = $api.fp.now.invoke(
-											current,
-											$api.fp.property("src"),
-											jsh.file.Location.from.os,
-											jsh.file.Location.directory.relativePath("local/jsh/lib/js.jar"),
-											function(location) {
-												var exists = $api.fp.world.mapping(jsh.file.Location.file.exists.world())(location);
-												return (exists) ? $api.fp.Maybe.from.some(location) : $api.fp.Maybe.from.nothing();
-											}
+										var rhinoInstalled = Boolean(
+											jsh.internal.bootstrap.jsh.current.installation.libraries.rhino(
+												jsh.internal.bootstrap.java.getMajorVersion()
+											).local()
 										);
 
 										$api.fp.now.invoke(
@@ -220,7 +215,7 @@ namespace slime.jsh.test {
 												arguments: $api.Array.build(function(rv) {
 													rv.push("build");
 													rv.push("--destination", TMPDIR.pathname);
-													if (rhino.present) rv.push("--engine", "rhino");
+													if (rhinoInstalled) rv.push("--engine", "rhino");
 													if (executable) rv.push("--executable");
 												}),
 												stdio: {

@@ -4,17 +4,31 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
+				initialize: false,
 				output: false,
 				require: false
 			}
 		});
 
+		var installed = jsh.internal.api.rhino.forCurrentJava().local( jsh.shell.jsh.lib.pathname.os.adapt() );
+
+		if (parameters.options.initialize) {
+			if (installed) {
+				installed.forEach(jsh.file.Location.remove.simple);
+			}
+			jsh.shell.exit(0);
+		}
+
 		if (parameters.options.require) {
-			$api.fp.world.now.tell(jsh.shell.tools.rhino.require());
+			jsh.shell.tools.rhino.require.simple();
 		}
 
 		if (parameters.options.output) {
@@ -22,12 +36,6 @@
 				engine: jsh.shell.engine
 			}));
 			jsh.shell.exit(0);
-		}
-
-		//	First, remove Rhino
-		if (jsh.shell.jsh.lib.getFile("js.jar")) {
-			jsh.shell.console("Remove Rhino first.");
-			jsh.shell.exit(1);
 		}
 
 		var run = function(require) {
@@ -56,6 +64,12 @@
 			jsh.shell.exit(1);
 		}
 
+		//	Ensure Rhino not present at start of test
+		if (installed) {
+			jsh.shell.console("Remove Rhino first.");
+			jsh.shell.exit(1);
+		}
+
 		var before = run(false);
 		if (before.engine != "nashorn") fail();
 		var install = run(true);
@@ -64,4 +78,5 @@
 		if (after.engine != "rhino") fail();
 		jsh.shell.console("Success.");
 	}
-)();
+//@ts-ignore
+)(jsh);

@@ -12,8 +12,10 @@ repositories {
 	mavenCentral()
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+java {
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
+}
 
 configurations {
 	rhino
@@ -77,6 +79,13 @@ sourceSets {
 		compileClasspath += sourceSets.servlet.output
 		java {
 			srcDir 'rhino/http/servlet/rhino/java'
+		}
+	}
+
+	jshLauncher {
+		compileClasspath += sourceSets.main.output
+		java {
+			srcDir 'jrunscript/jsh/launcher/java'
 		}
 	}
 
