@@ -4,8 +4,14 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.jrunscript.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function(Packages,$api,jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				classes: jsh.file.Pathname,
@@ -27,7 +33,26 @@
 			});
 		}
 
-		var RHINO_LIBRARIES = (jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function") ? [jsh.shell.jsh.lib.getRelativePath("js.jar").java.adapt()] : null;
+		var RHINO_LIBRARIES = $api.fp.Thunk.now(
+			$api.fp.now(
+				/** @type { slime.$api.fp.Partial<void,slime.jrunscript.native.java.io.File[]> } */($api.fp.Partial.match({
+					if: function() { return typeof(Packages.org.mozilla.javascript.Context) != "function"; },
+					then: function() { return null; }
+				})),
+				$api.fp.Partial.else(
+					$api.fp.Thunk.map(
+						jsh.internal.api.rhino.forCurrentJava,
+						function(library) {
+							return library.local( jsh.shell.jsh.lib.pathname.os.adapt() );
+						},
+						function(locations) {
+							if (locations == null) return null;
+							return locations.map(jsh.file.Location.java.File.simple);
+						}
+					)
+				)
+			)
+		);
 
 		//	TODO	there is an undocumented API for this now
 		var LINE_SEPARATOR = String(Packages.java.lang.System.getProperty("line.separator"));
@@ -48,4 +73,5 @@
 			view: parameters.options.view
 		});
 	}
-)();
+//@ts-ignore
+)(Packages,$api,jsh);

@@ -315,7 +315,12 @@
 													"Thunk_now",
 													indexes(inputs.counts.thunk_value).map(function(n,index,array) {
 														return thunkNowDefinition(array.length-n);
-													})
+													}).concat([
+														//	TODO	seems like this could be pushed into thunkValueDefinition
+														"<A>(",
+														indent("a: Thunk<A>"),
+														"): A"
+													])
 												),
 											]
 										).join("\n"),
