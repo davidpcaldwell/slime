@@ -184,4 +184,5 @@
 			jsh.shell.exit(1);
 		}
 	}
-)();
+//@ts-ignore
+)(Packages,$api,jsh);
