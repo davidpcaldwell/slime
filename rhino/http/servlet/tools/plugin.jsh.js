@@ -229,7 +229,11 @@
 							var SERVLET = SLIME.getSubdirectory("rhino/http/servlet");
 							//	Compile the servlet to WEB-INF/classes
 							var classpath = jsh.file.Searchpath([]);
-							var rhino = jsh.internal.api.rhino.forCurrentJava().local( WEBAPP.getRelativePath("WEB-INF/lib").createDirectory().pathname.os.adapt() );
+							var rhino = jsh.internal.api.rhino.forCurrentJava().local(
+								WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
+									exists: function(dir) { return false; }
+								}).pathname.os.adapt()
+							);
 							if (rhino) rhino.forEach(function(location) {
 								classpath.pathnames.push(jsh.file.Pathname(location.pathname));
 							});
