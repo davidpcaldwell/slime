@@ -16,6 +16,10 @@
 			$api.fp.pipe(
 				jsh.script.cli.option.boolean({ longname: "replace" }),
 				jsh.script.cli.option.string({ longname: "version" }),
+
+				//	TODO	options below conflict; should think harder about this but adding --remove to deal with specific use
+				//			case while refactoring for #2092.
+				jsh.script.cli.option.boolean({ longname: "remove" }),
 				function(p) {
 					if (p.options.version) {
 						jsh.shell.console("--version not supported; current version of Java will be used.");
@@ -27,7 +31,7 @@
 					var shellRhino = libraries.rhino(jsh.internal.bootstrap.java.getMajorVersion());
 					//jsh.shell.console("shellRhino: " + shellRhino);
 
-					if (p.options.replace) {
+					if (p.options.replace || p.options.remove) {
 						var local = shellRhino.local();
 						if (local) {
 							local.forEach(function(_url) {
@@ -35,6 +39,10 @@
 								jsh.shell.console("Removing " + _file + " ...");
 							});
 						}
+					}
+
+					if (p.options.remove) {
+						return;
 					}
 
 					var ignore = shellRhino.download();

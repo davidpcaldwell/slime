@@ -10,8 +10,9 @@ COMMAND="${1:---install-jdk}"
 
 ${SLIME}/jsh ${COMMAND}
 
-if [ -f "${SLIME}/local/jsh/lib/js.jar" ]; then
-	rm "${SLIME}/local/jsh/lib/js.jar"
+if [ -n "${RHINO}" ]; then
+	>&2 echo "Removing Rhino ..."
+	"${SLIME}/jsh" "${SLIME}/jsh/tools/install/rhino.jsh.js" --remove
 fi
 
 if [ -n "${RHINO}" ]; then
