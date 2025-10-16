@@ -205,11 +205,24 @@ namespace slime.$api.fp {
 
 				const double = function(n: number): number { return n*2; };
 
+				var force = $api.fp.Thunk.now(one);
+				verify(force).is(1);
+
 				var a = $api.fp.Thunk.now(one, double);
 				verify(a).is(2);
 
 				var b = $api.fp.Thunk.now(one, double, double);
 				verify(b).is(4);
+
+				var partial: slime.$api.fp.Partial<void,number> = $api.fp.Partial.match({
+					if: function() { return true; },
+					then: function() { return 1; }
+				});
+
+				var p2 = $api.fp.Partial.match({
+					if: function() { return true; },
+					then: function() { return 1; }
+				});
 			};
 		}
 	//@ts-ignore
