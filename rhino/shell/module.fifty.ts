@@ -403,7 +403,8 @@ namespace slime.jrunscript.shell {
 				 */
 				jar: slime.jrunscript.file.File
 				arguments?: any
-				stdio: any
+				environment?: any
+				stdio?: any
 				evaluate: any
 			}): Result
 
