@@ -61,6 +61,7 @@
 				if (/\.gitignore$/.test(basename)) return true;
 				if (/\.dockerignore$/.test(basename)) return true;
 				if (/Dockerfile$/.test(basename)) return true;
+				if (/\.sh$/.test(basename)) return true;
 				if (/\.bashrc$/.test(basename)) return true;
 
 				if (basename == ".hgignore") return true;
