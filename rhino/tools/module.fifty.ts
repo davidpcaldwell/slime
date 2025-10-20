@@ -11,8 +11,12 @@ namespace slime.jrunscript.java.tools {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
+			bootstrap: {
+				jar: {
+					manifest: slime.internal.jrunscript.bootstrap.Api<{}>["jar"]["manifest"]
+				}
+			}
 		}
-		toScriptManifest: slime.internal.jrunscript.bootstrap.Api<{}>["jar"]["toScriptManifest"]
 	}
 
 	export namespace test {
@@ -25,9 +29,13 @@ namespace slime.jrunscript.java.tools {
 					io: jsh.io,
 					file: jsh.file,
 					java: jsh.java,
-					shell: jsh.shell
+					shell: jsh.shell,
+					bootstrap: {
+						jar: {
+							manifest: jsh.internal.bootstrap.jar.manifest
+						}
+					}
 				},
-				toScriptManifest: jsh.internal.bootstrap.jar.toScriptManifest
 			});
 		//@ts-ignore
 		})(fifty);
@@ -259,7 +267,7 @@ namespace slime.jrunscript.java.tools {
 					directory: fifty.jsh.file.object.getRelativePath("test").directory
 				});
 
-				var manifest = jsh.internal.bootstrap.jar.manifest(TMP.getRelativePath("foo.jar").java.adapt());
+				var manifest = jsh.internal.bootstrap.jar.manifest.of(TMP.getRelativePath("foo.jar").java.adapt());
 
 				verify(manifest).main.evaluate.property("Foo").is("bar");
 				verify(manifest).main.evaluate.property("Bar").is(void(0));

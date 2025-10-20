@@ -1803,10 +1803,17 @@
 					return rv;
 				}
 				return {
-					manifest: function(_file) {
-						return toScriptManifest(
-							new Packages.java.util.jar.JarFile(_file).getManifest()
-						)
+					manifest: {
+						of: function(_file) {
+							return toScriptManifest(
+								new Packages.java.util.jar.JarFile(_file).getManifest()
+							)
+						},
+						stream: function(_stream) {
+							var _manifest = new Packages.java.util.jar.Manifest();
+							_manifest.read(_stream);
+							return toScriptManifest(_manifest);
+						}
 					},
 					toScriptManifest: toScriptManifest
 				};
