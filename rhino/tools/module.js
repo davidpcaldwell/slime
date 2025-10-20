@@ -122,6 +122,14 @@
 		/**
 		 * @param { string } pathname
 		 */
+		var _javaFile = function(pathname) {
+			var location = $context.library.file.Location.from.os(pathname);
+			return new Packages.java.io.File(location.pathname);
+		}
+
+		/**
+		 * @param { string } pathname
+		 */
 		var _open = function(pathname) {
 			var location = $context.library.file.Location.from.os(pathname);
 			var _jarFile = new Packages.java.util.jar.JarFile(
@@ -132,16 +140,11 @@
 
 		/** @type { slime.jrunscript.java.tools.Exports["jar"] } */
 		var jar = (function() {
-			var toScriptManifest = $context.toScriptManifest;
-
 			var wo = {
 				/** @type { slime.jrunscript.java.tools.Exports["jar"]["manifest"]["world"] } */
 				manifest: function(o) {
 					return function(e) {
-						var _jarFile = _open(o.pathname);
-						var _manifest = _jarFile.getManifest();
-
-						return toScriptManifest(_manifest);
+						return $context.library.bootstrap.jar.manifest.of(_javaFile(o.pathname));
 					}
 				},
 				/** @type { slime.jrunscript.java.tools.Exports["jar"]["entries"]["world"] } */
@@ -193,9 +196,7 @@
 					from: {
 						string: function(string) {
 							var input = $context.library.io.InputStream.string.default(string);
-							var _manifest = new Packages.java.util.jar.Manifest();
-							_manifest.read(input.java.adapt());
-							return toScriptManifest(_manifest);
+							return $context.library.bootstrap.jar.manifest.stream(input.java.adapt());
 						}
 					}
 				},

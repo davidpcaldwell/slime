@@ -56,9 +56,13 @@
 						java: jsh.java,
 						io: jsh.io,
 						file: jsh.file,
-						shell: jsh.shell
-					},
-					toScriptManifest: jsh.internal.bootstrap.jar.toScriptManifest
+						shell: jsh.shell,
+						bootstrap: {
+							jar: {
+								manifest: jsh.internal.bootstrap.jar.manifest
+							}
+						}
+					}
 				}), { plugin: void(0) });
 			}
 		});

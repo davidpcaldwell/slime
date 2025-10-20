@@ -469,10 +469,10 @@ namespace slime.internal.jrunscript.bootstrap {
 
 	export interface Api<J> {
 		jar: {
-			manifest: (file: slime.jrunscript.native.java.io.File) => slime.internal.jrunscript.bootstrap.jar.Manifest
-
-			//	TODO	feels like this method is redundant and not needed, but will have to analyze use cases
-			toScriptManifest: (manifest: slime.jrunscript.native.java.util.jar.Manifest) => jar.Manifest
+			manifest: {
+				of: (file: slime.jrunscript.native.java.io.File) => jar.Manifest
+				stream: (stream: slime.jrunscript.native.java.io.InputStream) => jar.Manifest
+			}
 		}
 	}
 
