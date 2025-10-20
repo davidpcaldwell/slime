@@ -128,6 +128,7 @@
 			java: void(0),
 			io: void(0),
 			shell: void(0),
+			jar: void(0),
 			rhino: void(0),
 			nashorn: void(0),
 			embed: void(0)
@@ -1756,6 +1757,61 @@
 			});
 			return result;
 		};
+
+		$api.jar = (
+			function() {
+				/**
+				 *
+				 * @param { slime.jrunscript.native.java.util.jar.Manifest } _manifest
+				 */
+				var toScriptManifest = function(_manifest) {
+					//Packages.java.lang.System.err.println("toScriptManifest called with _manifest = " + _manifest);
+
+					/** @type { slime.internal.jrunscript.bootstrap.jar.Manifest } */
+					var rv = {
+						main: {},
+						entries: {}
+					};
+
+					/**
+					 *
+					 * @param { object } rv
+					 * @param { slime.jrunscript.native.java.util.jar.Attributes } _attributes
+					 */
+					var addManifestEntries = function(rv, _attributes) {
+						var _entries = _attributes.entrySet().iterator();
+						while(_entries.hasNext()) {
+							var _entry = _entries.next();
+							rv[String(_entry.getKey())] = String(_entry.getValue());
+						}
+					}
+
+					addManifestEntries(rv.main, _manifest.getMainAttributes());
+
+					var _entries = _manifest.getEntries();
+					var _entriesEntries = _entries.entrySet();
+					var _entriesIterator = _entriesEntries.iterator();
+					while(_entriesIterator.hasNext()) {
+						var _entriesEntry = _entriesIterator.next();
+						var _name = _entriesEntry.getKey();
+						/** @type { { [name: string]: string }} */
+						var section = {};
+						rv.entries[String(_name)] = section;
+						addManifestEntries(section, _entriesEntry.getValue());
+					}
+
+					return rv;
+				}
+				return {
+					manifest: function(_file) {
+						return toScriptManifest(
+							new Packages.java.util.jar.JarFile(_file).getManifest()
+						)
+					},
+					toScriptManifest: toScriptManifest
+				};
+			}
+		)();
 
 		$api.rhino = (
 			function() {

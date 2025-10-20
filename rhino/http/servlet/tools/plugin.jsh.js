@@ -201,6 +201,8 @@
 						}
 						var WEBAPP = p.destination.directory;
 						WEBAPP.getRelativePath("WEB-INF").createDirectory();
+						//	TODO	the handling of this is a bit disorganized, likely caused by refactoring this and the below code
+						//			a bit at a time. Should rethink and reassemble with test coverage.
 						if (p.rhino) {
 							(function() {
 								jsh.internal.bootstrap.rhino.forJava(
@@ -237,7 +239,6 @@
 							if (rhino) rhino.forEach(function(location) {
 								classpath.pathnames.push(jsh.file.Pathname(location.pathname));
 							});
-							classpath.pathnames.push(WEBAPP.getRelativePath("WEB-INF/lib/js.jar"));
 							var CATALINA_HOME;
 							if (jsh.shell.environment.CATALINA_HOME) CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
 							if (!CATALINA_HOME) CATALINA_HOME = jsh.shell.jsh.lib.getSubdirectory("tomcat");

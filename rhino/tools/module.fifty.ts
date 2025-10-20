@@ -12,6 +12,7 @@ namespace slime.jrunscript.java.tools {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
 		}
+		toScriptManifest: slime.internal.jrunscript.bootstrap.Api<{}>["jar"]["toScriptManifest"]
 	}
 
 	export namespace test {
@@ -25,7 +26,8 @@ namespace slime.jrunscript.java.tools {
 					file: jsh.file,
 					java: jsh.java,
 					shell: jsh.shell
-				}
+				},
+				toScriptManifest: jsh.internal.bootstrap.jar.toScriptManifest
 			});
 		//@ts-ignore
 		})(fifty);
@@ -174,16 +176,7 @@ namespace slime.jrunscript.java.tools {
 	)(Packages,fifty);
 
 	export namespace jar {
-		export interface Manifest {
-			main: {
-				[name: string]: string
-			}
-
-			entries: {
-				[name: string]: {
-					[name: string]: string
-				}
-			}
+		export interface Manifest extends slime.internal.jrunscript.bootstrap.jar.Manifest {
 		}
 
 		export interface AnyEntry {
@@ -266,14 +259,15 @@ namespace slime.jrunscript.java.tools {
 					directory: fifty.jsh.file.object.getRelativePath("test").directory
 				});
 
-				var manifest = $api.fp.world.now.ask(
-					test.subject.jar.manifest.world({
-						pathname: TMP.getRelativePath("foo.jar").toString()
-					})
-				);
+				var manifest = jsh.internal.bootstrap.jar.manifest(TMP.getRelativePath("foo.jar").java.adapt());
 
-				verify(manifest).main.evaluate.property("Foo").is("Bar");
-				verify(manifest).main.evaluate.property("Baz").is(void(0));
+				verify(manifest).main.evaluate.property("Foo").is("bar");
+				verify(manifest).main.evaluate.property("Bar").is(void(0));
+
+				verify(manifest).entries.evaluate.property("A").evaluate.property("Foo").is("baz");
+				verify(manifest).entries.evaluate.property("A").evaluate.property("Bar").is("bizzy");
+
+				verify(manifest).entries.evaluate.property("B").is(void(0));
 
 				var entries = $api.fp.world.now.ask(
 					test.subject.jar.entries.world({ pathname: TMP.getRelativePath("foo.jar").toString() })
