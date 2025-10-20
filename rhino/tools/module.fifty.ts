@@ -348,7 +348,7 @@ namespace slime.jrunscript.java.tools {
 
 				jsh.shell.console(JSON.stringify(file.manifest));
 
-				verify(file).manifest.main.evaluate.property("Foo").is("Bar");
+				verify(file).manifest.main.evaluate.property("Foo").is("bar");
 			}
 		}
 	//@ts-ignore
