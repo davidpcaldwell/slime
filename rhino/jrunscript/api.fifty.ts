@@ -453,6 +453,29 @@ namespace slime.internal.jrunscript.bootstrap {
 		local: (directory: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.net.URL[]
 	}
 
+	export namespace jar {
+		export interface Manifest {
+			main: {
+				[name: string]: string
+			}
+
+			entries: {
+				[name: string]: {
+					[name: string]: string
+				}
+			}
+		}
+	}
+
+	export interface Api<J> {
+		jar: {
+			manifest: (file: slime.jrunscript.native.java.io.File) => slime.internal.jrunscript.bootstrap.jar.Manifest
+
+			//	TODO	feels like this method is redundant and not needed, but will have to analyze use cases
+			toScriptManifest: (manifest: slime.jrunscript.native.java.util.jar.Manifest) => jar.Manifest
+		}
+	}
+
 	export interface Api<J> {
 		rhino: {
 			forJava: (jdkMajorVersion: number) => Library
