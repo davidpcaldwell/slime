@@ -21,6 +21,7 @@
 
 		var src = jsh.script.file.parent.parent.parent.parent.parent;
 
+		/** @type { slime.jrunscript.file.Directory } */
 		var classes = (parameters.options.classes) ? parameters.options.classes.directory : null;
 		if (!classes) {
 			// TODO: Not DRY; this code is also in jsh/loader/loader.api.html
