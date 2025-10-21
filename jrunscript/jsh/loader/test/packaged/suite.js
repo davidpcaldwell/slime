@@ -4,8 +4,18 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.jsh.Global } jsh
+	 * @param { string } LINE_SEPARATOR
+	 * @param { slime.jrunscript.file.Directory } src
+	 * @param { slime.jrunscript.native.java.io.File[] } RHINO_LIBRARIES
+	 * @param { () => slime.jrunscript.file.Directory } getClasses
+	 * @param { (value: any) => void } $set
+	 */
+	function(Packages,jsh,LINE_SEPARATOR,src,RHINO_LIBRARIES,getClasses,$set) {
 		//	this is a low-priority test -- it tests that an unbuilt shell can package applications,
 		//	but really just tests the jsh.test.requireBuiltShell process (which is mostly the build process) and then the packaging process,
 		//	and these two processes are already tested by the unit tests separately. And how important
@@ -81,8 +91,7 @@
 					jsh.shell.jsh.home.getSubdirectory("src").copy(location);
 					//	TODO	if using unbuilt shell, need to copy over libraries generally, not just Rhino, into local/jsh/lib
 					if (RHINO_LIBRARIES) {
-						//	TODO	probably should use *value* of RHINO_LIBRARIES
-						jsh.shell.jsh.lib.getFile("js.jar").copy(location.directory.getRelativePath("local/jsh/lib/js.jar"), { recursive: true });
+						var _ = jsh.internal.api.rhino.forCurrentJava().download(location.directory.getRelativePath("local/jsh/lib").os.adapt());
 					}
 					return location.directory;
 				})();
@@ -102,7 +111,8 @@
 					jar: to.file,
 					run: function(p) {
 						var argument = {
-							jar: to.file
+							jar: to.file,
+							evaluate: void(0)
 						};
 						if (p.json) {
 							argument.stdio = jsonOutput.stdio();
@@ -216,7 +226,8 @@
 									}, (/^Windows/.test(jsh.shell.os.name)) ? windows : {}),
 									stdio: {
 										output: String
-									}
+									},
+									evaluate: void(0)
 								});
 								verify(jsh.shell).environment.evaluate.property("JSH_PLUGINS").is.type("undefined");
 								check(verify,result);
@@ -231,7 +242,8 @@
 						});
 						var result = jsh.shell.java({
 							jar: jar.jar,
-							arguments: ["-classes",getClasses()]
+							arguments: ["-classes",getClasses()],
+							evaluate: void(0)
 						});
 						verify(result).status.is(0);
 					}
@@ -259,4 +271,5 @@
 		});
 
 	}
-)();
+//@ts-ignore
+)(Packages,jsh,LINE_SEPARATOR,src,RHINO_LIBRARIES,getClasses,$set);
