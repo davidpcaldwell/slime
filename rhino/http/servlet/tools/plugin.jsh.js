@@ -205,9 +205,8 @@
 						//			a bit at a time. Should rethink and reassemble with test coverage.
 						if (p.rhino) {
 							(function() {
-								jsh.internal.bootstrap.rhino.forJava(
-									jsh.internal.bootstrap.java.getMajorVersion()
-								).download( WEBAPP.getRelativePath("WEB-INF/lib").createDirectory().pathname.java.adapt() )
+								jsh.internal.bootstrap.rhino.compatible()
+									.download( WEBAPP.getRelativePath("WEB-INF/lib").createDirectory().pathname.java.adapt() )
 							})();
 						}
 						var lib = WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
@@ -231,7 +230,7 @@
 							var SERVLET = SLIME.getSubdirectory("rhino/http/servlet");
 							//	Compile the servlet to WEB-INF/classes
 							var classpath = jsh.file.Searchpath([]);
-							var rhino = jsh.internal.api.rhino.forCurrentJava().local(
+							var rhino = jsh.internal.api.rhino.compatible().local(
 								WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
 									exists: function(dir) { return false; }
 								}).pathname.os.adapt()

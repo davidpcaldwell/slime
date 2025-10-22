@@ -42,7 +42,7 @@
 				})),
 				$api.fp.Partial.else(
 					$api.fp.Thunk.map(
-						jsh.internal.api.rhino.forCurrentJava,
+						jsh.internal.api.rhino.compatible,
 						function(library) {
 							return library.local( jsh.shell.jsh.lib.pathname.os.adapt() );
 						},
