@@ -20,30 +20,36 @@
 				return Boolean(jsh.js && jsh.script && jsh.shell);
 			},
 			load: function() {
-				if (!jsh.test) jsh.test = {};
-				jsh.test.relaunchInDebugger = function(p) {
-					for (var i=0; i<jsh.script.arguments.length; i++) {
-						if (jsh.script.arguments[i] == p.argument) {
-							var args = Array.prototype.slice.call(jsh.script.arguments);
-							args.splice(i,1);
-							var shell = (function() {
-								if (jsh.shell.jsh.src) return jsh.shell.jsh.src;
-								throw new Error("Unimplemented: relaunchInDebugger for non-unbuilt shell.");
-							})();
-							jsh.shell.jsh({
-								shell: shell,
-								script: jsh.script.file,
-								arguments: args,
-								environment: jsh.js.Object.set({}, jsh.shell.environment, {
-									JSH_DEBUG_SCRIPT: "rhino"
-								}),
-								evaluate: function(result) {
-									jsh.shell.exit(result.status);
-								}
-							});
+				if (!jsh.test) jsh.test = {
+					relaunchInDebugger: function(p) {
+						for (var i=0; i<jsh.script.arguments.length; i++) {
+							if (jsh.script.arguments[i] == p.argument) {
+								var args = Array.prototype.slice.call(jsh.script.arguments);
+								args.splice(i,1);
+								var shell = (function() {
+									if (jsh.shell.jsh.src) return jsh.shell.jsh.src;
+									throw new Error("Unimplemented: relaunchInDebugger for non-unbuilt shell.");
+								})();
+								jsh.shell.jsh({
+									shell: shell,
+									script: jsh.script.file,
+									arguments: args,
+									environment: jsh.js.Object.set({}, jsh.shell.environment, {
+										JSH_DEBUG_SCRIPT: "rhino"
+									}),
+									evaluate: function(result) {
+										jsh.shell.exit(result.status);
+									}
+								});
+							}
 						}
-					}
-				}
+					},
+					Suite: void(0),
+					integration: void(0),
+					requireBuiltShell: void(0),
+					mock: void(0),
+					launcher: void(0)
+				};
 			}
 		})
 
@@ -52,7 +58,14 @@
 				return Boolean(jsh.js && jsh.io && jsh.shell && jsh.unit);
 			},
 			load: function() {
-				if (!jsh.test) jsh.test = {};
+				if (!jsh.test) jsh.test = {
+					relaunchInDebugger: void(0),
+					Suite: void(0),
+					integration: void(0),
+					requireBuiltShell: void(0),
+					mock: void(0),
+					launcher: void(0)
+				};
 
 				jsh.test.Suite = function(p) {
 					return new jsh.unit.Suite.Fork(jsh.js.Object.set({}, p, {
@@ -94,9 +107,19 @@
 				return Boolean(jsh.internal && jsh.internal.bootstrap && jsh.shell && jsh.script);
 			},
 			load: function() {
-				if (!jsh.test) jsh.test = {};
+				if (!jsh.test) jsh.test = {
+					relaunchInDebugger: void(0),
+					Suite: void(0),
+					integration: void(0),
+					requireBuiltShell: void(0),
+					mock: void(0),
+					launcher: void(0)
+				};
 				jsh.test.requireBuiltShell = function(p) {
-					if (!p) p = {};
+					if (!p) p = {
+						rhino: void(0),
+						src: void(0)
+					};
 					if (!jsh.shell.jsh.home) {
 						jsh.shell.console("Building shell in which to relaunch " + jsh.script.file + " ...");
 						//	TODO	this probably does not make sense; why do we require callers to have exactly these on the command line,
@@ -188,7 +211,14 @@
 				return Boolean(jsh.unit && jsh.unit.mock);
 			},
 			load: function() {
-				if (!jsh.test) jsh.test = {};
+				if (!jsh.test) jsh.test = {
+					relaunchInDebugger: void(0),
+					Suite: void(0),
+					integration: void(0),
+					requireBuiltShell: void(0),
+					mock: void(0),
+					launcher: void(0)
+				};
 				jsh.test.mock = jsh.unit.mock;
 				$api.deprecate(jsh.test,"mock");
 			}

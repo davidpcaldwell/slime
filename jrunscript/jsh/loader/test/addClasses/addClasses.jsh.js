@@ -104,7 +104,7 @@
 					arguments: (function(rv) {
 						rv.push("-script", jsh.script.file);
 						rv.push("-to", tmpfile);
-						var rhinoInstalled = jsh.internal.api.rhino.forCurrentJava().local( jsh.shell.jsh.lib.pathname.os.adapt() );
+						var rhinoInstalled = jsh.internal.api.rhino.compatible().local( jsh.shell.jsh.lib.pathname.os.adapt() );
 						if (!rhinoInstalled) {
 							rv.push("-norhino");
 						}

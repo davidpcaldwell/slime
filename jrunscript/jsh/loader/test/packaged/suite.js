@@ -91,7 +91,7 @@
 					jsh.shell.jsh.home.getSubdirectory("src").copy(location);
 					//	TODO	if using unbuilt shell, need to copy over libraries generally, not just Rhino, into local/jsh/lib
 					if (RHINO_LIBRARIES) {
-						var _ = jsh.internal.api.rhino.forCurrentJava().download(location.directory.getRelativePath("local/jsh/lib").os.adapt());
+						var _ = jsh.internal.api.rhino.compatible().download(location.directory.getRelativePath("local/jsh/lib").os.adapt());
 					}
 					return location.directory;
 				})();

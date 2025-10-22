@@ -478,6 +478,8 @@ namespace slime.internal.jrunscript.bootstrap {
 
 	export interface Api<J> {
 		rhino: {
+			compatible: () => Library
+
 			forJava: (jdkMajorVersion: number) => Library
 		}
 	}

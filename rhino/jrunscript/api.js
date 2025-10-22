@@ -1858,22 +1858,27 @@
 						download: get(true),
 						local: get(false)
 					}
-				}
+				};
 
-				return {
-					forJava: function(jdkVersion) {
-						if (jdkVersion < 11) {
-							return SingleJarDownload(
-								"1.7.15",
-								"https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
-								"js"
-							);
-						}
+				var forJava = function(jdkVersion) {
+					if (jdkVersion < 11) {
 						return SingleJarDownload(
-							"1.8.0",
-							"https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.8.0/rhino-all-1.8.0.jar",
+							"1.7.15",
+							"https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
 							"js"
 						);
+					}
+					return SingleJarDownload(
+						"1.8.0",
+						"https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.8.0/rhino-all-1.8.0.jar",
+						"js"
+					);
+				};
+
+				return {
+					forJava: forJava,
+					compatible: function() {
+						return forJava($api.java.getMajorVersion());
 					}
 				}
 			}
