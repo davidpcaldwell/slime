@@ -158,6 +158,8 @@
 			if (files[i].path == "typedoc.json") extension = "js";
 			if (files[i].path == "typedoc-tsconfig.json") extension = "js";
 			if (files[i].path == ".devcontainer/devcontainer.json") extension = "js";
+			if (files[i].path == "rhino/tools/github/cat") extension = "bash";
+			if (files[i].path == "rhino/tools/github/test/cat-hello.sh") extension = "bash";
 			if (files[i].path == "rhino/tools/github/tools/dtsgen.json") extension = "js";
 			if (files[i].path == "rhino/tools/docker/tools/dtsgen.json") extension = "js";
 			if (files[i].path == "tools/wf/test/data/plugin-standard/jsconfig.json") extension = "js";

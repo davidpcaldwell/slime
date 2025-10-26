@@ -1,0 +1,41 @@
+#!/bin/bash
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+#	Makes an API call to GitHub to retrieve the contents of a file in a repository.
+
+#	See https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content for the general API
+#	documentation for the underlying call.
+
+if [ "$#" -lt 2 ]; then
+	>&2 echo "Usage: $0 <repository> <file-path>"
+	exit 1
+fi
+
+REPOSITORY="$1"
+FILE="$2"
+
+#	Define this environment variable to specify a file from which a GitHub token can be read.
+if [ -n "${GITHUB_PAT_FILE}" ]; then
+	# Is there an easy way to strip a trailing newline if we find one?
+	PAT="$(cat "${GITHUB_PAT_FILE}")"
+	AUTHORIZATION_HEADER="Authorization: token ${PAT}"
+fi
+
+#	Define this environment variable to specify a specific GitHub reference (branch name, etc.)
+if [ -n "${GITHUB_REF}" ]; then
+	QUERY_PARAMETER="?ref=${GITHUB_REF}"
+fi
+
+if [ -n "${AUTHORIZATION_HEADER}" ]; then
+	CURL_AUTHORIZATION_ARGUMENT=(-H "${AUTHORIZATION_HEADER}")
+fi
+
+# TODO	allow ref query parameter specifying version to use
+curl -v \
+	"${CURL_AUTHORIZATION_ARGUMENT[@]}" \
+	-H "Accept: application/vnd.github.v3.raw" \
+	"https://api.github.com/repos/${REPOSITORY}/contents/${FILE}${QUERY_PARAMETER//\#/%23}"

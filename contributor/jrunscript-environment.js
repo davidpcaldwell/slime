@@ -65,7 +65,7 @@
 						"-notest",
 						"-nodoc"
 					].concat(
-						(jsh.shell.jsh.lib.getFile("js.jar")) ? ["-rhino", jsh.shell.jsh.lib.getFile("js.jar").pathname] : []
+						(jsh.internal.api.rhino.compatible()) ? ["-engine", "rhino"] : []
 					).concat(
 						(executable) ? ["-executable"] : []
 					),
@@ -124,7 +124,7 @@
 			this.jsh = new function() {
 				this.src = p.src;
 
-				var rhino = ((jsh.shell.jsh.lib.getFile("js.jar") && typeof(Packages.org.mozilla.javascript.Context) == "function")) ? jsh.shell.jsh.lib.getFile("js.jar") : null;
+				var rhino = (jsh.internal.api.rhino.compatible() && typeof(Packages.org.mozilla.javascript.Context) == "function") ? jsh.internal.api.rhino.compatible() : null;
 
 				if (!jsh.shell.environment.SLIME_UNIT_JSH_UNBUILT_ONLY) this.built = (
 					function() {

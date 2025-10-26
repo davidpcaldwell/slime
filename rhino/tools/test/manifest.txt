@@ -1,1 +1,5 @@
-Foo: Bar
+Foo: bar
+
+Name: A
+Foo: baz
+Bar: bizzy

@@ -453,8 +453,33 @@ namespace slime.internal.jrunscript.bootstrap {
 		local: (directory: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.net.URL[]
 	}
 
+	export namespace jar {
+		export interface Manifest {
+			main: {
+				[name: string]: string
+			}
+
+			entries: {
+				[name: string]: {
+					[name: string]: string
+				}
+			}
+		}
+	}
+
+	export interface Api<J> {
+		jar: {
+			manifest: {
+				of: (file: slime.jrunscript.native.java.io.File) => jar.Manifest
+				stream: (stream: slime.jrunscript.native.java.io.InputStream) => jar.Manifest
+			}
+		}
+	}
+
 	export interface Api<J> {
 		rhino: {
+			compatible: () => Library
+
 			forJava: (jdkMajorVersion: number) => Library
 		}
 	}

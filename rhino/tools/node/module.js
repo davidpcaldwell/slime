@@ -7,11 +7,12 @@
 //@ts-check
 (
 	/**
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param {slime.jrunscript.tools.node.Context} $context
 	 * @param {slime.jrunscript.tools.node.Exports} $exports
 	 */
-	function($api,$context,$exports) {
+	function(Packages,$api,$context,$exports) {
 		/** @type { (p: { version: string, os: string, arch: string }) => slime.$api.fp.Maybe<string> } */
 		var getDownloadUrl = function(p) {
 			var toNodeVersion = function(version) { return "v" + version; };
@@ -225,6 +226,8 @@
 					// 	}
 					// });
 
+					//Packages.java.lang.System.err.println("npm install ...");
+
 					(
 						function() {
 							var invocation = invokeNpm(
@@ -247,6 +250,8 @@
 							return result;
 						}
 					)();
+
+					//Packages.java.lang.System.err.println("npm ls ...");
 
 					var invocation = invokeNpm(
 						p.installation,
@@ -311,8 +316,11 @@
 			/** @type { slime.jrunscript.tools.node.modules.Exports["installed"] } */
 			var installed = function(name) {
 				return function(events) {
+					//Packages.java.lang.System.err.println("installed?");
 					var ask = list();
+					//Packages.java.lang.System.err.println("ask=" + ask);
 					var listing = ask(void(0));
+					//Packages.java.lang.System.err.println("listing=" + listing);
 					var found = listing.find(function(item) {
 						return item.name == name;
 					});
@@ -831,4 +839,4 @@
 		};
 	}
 	//@ts-ignore
-)($api,$context,$exports)
+)(Packages,$api,$context,$exports)

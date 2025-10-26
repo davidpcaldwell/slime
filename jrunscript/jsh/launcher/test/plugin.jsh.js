@@ -18,7 +18,14 @@
 				return Boolean(jsh.httpd && jsh.httpd.Tomcat && jsh.http && jsh.unit && jsh.unit.mock && jsh.unit.mock.Web);
 			},
 			load: function() {
-				if (!jsh.test) jsh.test = {};
+				if (!jsh.test) jsh.test = {
+					relaunchInDebugger: void(0),
+					Suite: void(0),
+					integration: void(0),
+					requireBuiltShell: void(0),
+					mock: void(0),
+					launcher: void(0)
+				};
 				if (!jsh.test.launcher) jsh.test.launcher = {};
 				jsh.test.launcher.MockRemote = function(o) {
 					var delegate = jsh.unit.mock.Web();

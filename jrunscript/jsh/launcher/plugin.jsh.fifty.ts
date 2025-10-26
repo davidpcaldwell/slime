@@ -22,7 +22,7 @@ namespace slime.jsh {
 				Library: slime.$api.fp.Mapping<slime.internal.jrunscript.bootstrap.Library,slime.internal.jrunscript.bootstrap.api.Library>
 
 				rhino: {
-					forCurrentJava: slime.$api.fp.Thunk<slime.internal.jrunscript.bootstrap.api.Library>
+					compatible: slime.$api.fp.Thunk<slime.internal.jrunscript.bootstrap.api.Library>
 				}
 			}
 		}
@@ -57,8 +57,7 @@ namespace slime.internal.jrunscript.bootstrap.api {
 
 			fifty.tests.manual.library = function() {
 				var rhino = $api.fp.now(
-					jsh.internal.bootstrap.java.getMajorVersion(),
-					jsh.internal.bootstrap.rhino.forJava,
+					jsh.internal.bootstrap.rhino.compatible(),
 					jsh.internal.api.Library
 				);
 				var local = rhino.local( fifty.jsh.file.relative("../../../local/jsh/lib") );

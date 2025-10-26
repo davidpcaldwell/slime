@@ -11,25 +11,31 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var isTypescriptInstalled = function() {
-			var installation = jsh.shell.tools.node.installation;
-			var nodeExists = $api.fp.world.input(
-				jsh.shell.tools.node.Installation.exists.wo(installation)
-			)();
-			if (!nodeExists) return false;
-			var typescript = jsh.shell.tools.node.Installation.modules(installation).installed("typescript");
-			var tsInstalled = $api.fp.world.Question.now({
-				question: typescript
-			});
-			//	TODO	this simply ensures that *some* version of TypeScript is installed.
-			return tsInstalled.present;
-		}
-
 		//	For debugging issue #896, which is now closed, but leaving the code in case it recurs
 		var debug896 = function(message) {
 			if (jsh.shell.environment.SLIME_DEBUG_ISSUE_896) jsh.shell.console(message);
 		}
 
+		var isTypescriptInstalled = function() {
+			debug896("isTypescriptInstalled: checking ...");
+			var installation = jsh.shell.tools.node.installation;
+			debug896("isTypescriptInstalled: checking ...");
+			var nodeExists = $api.fp.world.input(
+				jsh.shell.tools.node.Installation.exists.wo(installation)
+			)();
+			debug896("isTypescriptInstalled: nodeExists=" + nodeExists);
+			if (!nodeExists) return false;
+			var typescript = jsh.shell.tools.node.Installation.modules(installation).installed("typescript");
+			debug896("isTypescriptInstalled: typescript=" + typescript);
+			var tsInstalled = $api.fp.world.Question.now({
+				question: typescript
+			});
+			debug896("isTypescriptInstalled: tsInstalled=" + tsInstalled);
+			//	TODO	this simply ensures that *some* version of TypeScript is installed.
+			return tsInstalled.present;
+		}
+
+		debug896("Requiring TypeScript ...");
 		//	We need to use this method, which forks a new shell, because we need TypeScript in this running shell in order to load
 		//	the Fifty tests. May want to provide this as an API somewhere (currently there is one in jsh.wf, but it functions
 		//	slightly differently; a `jsh` script requiring TypeScript is very foreseeable, though). Could generalize to require a
@@ -46,8 +52,12 @@
 					debug896("[fifty tsc check] TypeScript installed? " + installed);
 				})
 			),
-			install: function() { jsh.wf.typescript.require(); }
+			install: function() {
+				debug896("Installing TypeScript ...");
+				jsh.wf.typescript.require();
+			}
 		}));
+		debug896("Required TypeScript.");
 
 		/** @type { slime.jsh.script.cli.Processor<any, { definition: slime.jrunscript.file.File, list: boolean, part: string, view: string }> } */
 		var processor = $api.fp.pipe(
@@ -223,6 +233,7 @@
 		}
 
 		if (!parameters.options.list) {
+			//jsh.shell.console("Executing in " + jsh.script.file + " ...");
 			var promise = execute(parameters.options.definition,parameters.options.part,views[parameters.options.view]);
 
 			promise.then(function(success) {

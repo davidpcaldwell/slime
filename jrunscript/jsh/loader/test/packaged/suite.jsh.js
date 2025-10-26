@@ -21,6 +21,7 @@
 
 		var src = jsh.script.file.parent.parent.parent.parent.parent;
 
+		/** @type { slime.jrunscript.file.Directory } */
 		var classes = (parameters.options.classes) ? parameters.options.classes.directory : null;
 		if (!classes) {
 			// TODO: Not DRY; this code is also in jsh/loader/loader.api.html
@@ -41,7 +42,7 @@
 				})),
 				$api.fp.Partial.else(
 					$api.fp.Thunk.map(
-						jsh.internal.api.rhino.forCurrentJava,
+						jsh.internal.api.rhino.compatible,
 						function(library) {
 							return library.local( jsh.shell.jsh.lib.pathname.os.adapt() );
 						},

@@ -11,6 +11,11 @@ namespace slime.jrunscript.java.tools {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
+			bootstrap: {
+				jar: {
+					manifest: slime.internal.jrunscript.bootstrap.Api<{}>["jar"]["manifest"]
+				}
+			}
 		}
 	}
 
@@ -24,8 +29,13 @@ namespace slime.jrunscript.java.tools {
 					io: jsh.io,
 					file: jsh.file,
 					java: jsh.java,
-					shell: jsh.shell
-				}
+					shell: jsh.shell,
+					bootstrap: {
+						jar: {
+							manifest: jsh.internal.bootstrap.jar.manifest
+						}
+					}
+				},
 			});
 		//@ts-ignore
 		})(fifty);
@@ -174,16 +184,7 @@ namespace slime.jrunscript.java.tools {
 	)(Packages,fifty);
 
 	export namespace jar {
-		export interface Manifest {
-			main: {
-				[name: string]: string
-			}
-
-			entries: {
-				[name: string]: {
-					[name: string]: string
-				}
-			}
+		export interface Manifest extends slime.internal.jrunscript.bootstrap.jar.Manifest {
 		}
 
 		export interface AnyEntry {
@@ -266,14 +267,15 @@ namespace slime.jrunscript.java.tools {
 					directory: fifty.jsh.file.object.getRelativePath("test").directory
 				});
 
-				var manifest = $api.fp.world.now.ask(
-					test.subject.jar.manifest.world({
-						pathname: TMP.getRelativePath("foo.jar").toString()
-					})
-				);
+				var manifest = jsh.internal.bootstrap.jar.manifest.of(TMP.getRelativePath("foo.jar").java.adapt());
 
-				verify(manifest).main.evaluate.property("Foo").is("Bar");
-				verify(manifest).main.evaluate.property("Baz").is(void(0));
+				verify(manifest).main.evaluate.property("Foo").is("bar");
+				verify(manifest).main.evaluate.property("Bar").is(void(0));
+
+				verify(manifest).entries.evaluate.property("A").evaluate.property("Foo").is("baz");
+				verify(manifest).entries.evaluate.property("A").evaluate.property("Bar").is("bizzy");
+
+				verify(manifest).entries.evaluate.property("B").is(void(0));
 
 				var entries = $api.fp.world.now.ask(
 					test.subject.jar.entries.world({ pathname: TMP.getRelativePath("foo.jar").toString() })
@@ -354,7 +356,7 @@ namespace slime.jrunscript.java.tools {
 
 				jsh.shell.console(JSON.stringify(file.manifest));
 
-				verify(file).manifest.main.evaluate.property("Foo").is("Bar");
+				verify(file).manifest.main.evaluate.property("Foo").is("bar");
 			}
 		}
 	//@ts-ignore

@@ -74,9 +74,7 @@
 
 			var downloadRhino = function(to) {
 				var rhino = $api.fp.now(
-					jsh.internal.bootstrap.rhino.forJava(
-						jsh.internal.bootstrap.java.getMajorVersion()
-					),
+					jsh.internal.bootstrap.rhino.compatible(),
 					jsh.internal.api.Library
 				);
 				return jsh.file.Searchpath(
@@ -253,7 +251,7 @@
 				//	TODO	can worry about version(s) as part of #1961
 				//	for now we will use the Rhino corresponding to the executing version of Java
 				build.rhino = $api.fp.Thunk.now(
-					jsh.internal.api.rhino.forCurrentJava,
+					jsh.internal.api.rhino.compatible,
 					function(library) { return library.download(destination.shell.getRelativePath("lib").os.adapt() ); },
 					$api.fp.Array.map( toPathname ),
 					jsh.file.Searchpath
