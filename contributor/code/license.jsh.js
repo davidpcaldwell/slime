@@ -175,6 +175,10 @@
 				if (files[i].path == "tools/wf/install") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/manual/engines") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/issue1254") extension = "bash";
+				if (files[i].path == ".devcontainer/find-desktop-novnc-port") extension = "bash";
+				if (files[i].path == ".devcontainer/initializeCommand") extension = "bash";
+				if (files[i].path == ".devcontainer/postCreateCommand") extension = "bash";
+				if (files[i].path == ".devcontainer/find-desktop-novnc-port") extension = "bash";
 				if (files[i].path == "contributor/test-docker-command") extension = "bash";
 				if (files[i].path == "contributor/test-docker-clean-run") extension = "bash";
 				if (files[i].path == "contributor/test-docker-clean-start") extension = "bash";

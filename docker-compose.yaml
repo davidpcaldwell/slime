@@ -61,7 +61,7 @@ services:
       - path: local/devcontainer/desktop.env
         required: false
     ports:
-      - 7902:8080
+      - 8080
 
 volumes:
   local:
