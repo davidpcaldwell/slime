@@ -43,5 +43,6 @@
 	"service": "local",
 	"runServices": ["local"],
 	"workspaceFolder": "/slime",
-	"postCreateCommand": "/bin/bash .devcontainer/post-create-command.bash"
+	"initializeCommand": ".devcontainer/initializeCommand",
+	"postCreateCommand": ".devcontainer/postCreateCommand"
 }
