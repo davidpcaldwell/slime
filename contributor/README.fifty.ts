@@ -7,7 +7,8 @@
 /**
  * ## `jsh` documentation
  *
- * Documentation about contributing to `jsh` can be browsed at the {@link slime.jsh.internal slime.jsh.internal} TypeScript namespace.
+ * Documentation about contributing to `jsh` can be browsed at the {@link slime.jsh.internal slime.jsh.internal} TypeScript
+ * namespace.
  *
  * ## Compatibility updates
  *
@@ -80,9 +81,21 @@
  *
  * ### Testing specific scenarios
  *
- * #### Creating fresh "clones" of the current source directory
+ * #### Creating fresh "clones" of the current source directory locally
  *
  * See {@link slime.jsh.wf.test.Fixtures}, specifically `clone()`, to set up mirrors of the current source code.
+ *
+ * #### Creating a fresh "clone" of the current source directory in Docker
+ *
+ * A new container hosting SLIME can be started via the following commands, with various configurations:
+ *
+ * * `test-docker-clean-run`: Starts a new container containing SLIME, with the source code mounted but excluding the `local`
+ * directory, and logs you into the `local` service.
+ * * `test-docker-clean-start`: Starts the SLIME development Docker Compose application, with the source code mounted in the
+ * `local` container but excluding the `local` directory.
+ * * `test-docker-clean-jsh <jdk-version> <script> [arguments]`: Creates a Docker image with the SLIME source code baked in (and an empty `local/` directory), as is
+ * done in the CI environment, and runs a `jsh` script using the specified JDK (specified by the `JDK_VERSION` environment variable)
+ * inside the container.
  *
  * ### Browser tests
  *

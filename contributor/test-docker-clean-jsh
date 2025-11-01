@@ -1,15 +1,17 @@
+#!/bin/bash
 #	LICENSE
 #	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
 #	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 #	END LICENSE
 
-#	Script takes one argument: the JDK version to use
+#	First argument is the JDK version to use
 if [ -z "$1" ]; then
-	>&2 echo "One argument required: JDK version to use."
+	>&2 echo "Required: JDK version to use."
 	exit 1
 fi
 
-#	TODO	should fail with multiple arguments
+export JDK_VERSION="$1"
+shift 1
 
-$(dirname $0)/test-docker-clean-command $1 /bin/bash /slime/wf check --docker
+$(dirname $0)/test-docker-clean-command $JDK_VERSION ./jsh "$@"

@@ -434,25 +434,6 @@ namespace slime.internal.jrunscript.bootstrap {
 		}
 	}
 
-	/**
-	 * A downloadable Java library, like Mozilla Rhino or GraalJS. A library is modeled as having a defined structure that fits into
-	 * a single directory, so the application can check whether it is there and download it if it is not.
-	 */
-	export interface Library {
-		version: string
-
-		/**
-		 * Downloads the library into the specified directory and returns the URLs of the JAR files that make up the library.
-		 */
-		download: (directory: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.net.URL[]
-
-		/**
-		 * Checks whether the specified library is already present in the specified directory and, if it is, returns the URLs of the
-		 * JAR files that make up the library; otherwise, returns `null`.
-		 */
-		local: (directory: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.net.URL[]
-	}
-
 	export namespace jar {
 		export interface Manifest {
 			main: {
@@ -474,6 +455,25 @@ namespace slime.internal.jrunscript.bootstrap {
 				stream: (stream: slime.jrunscript.native.java.io.InputStream) => jar.Manifest
 			}
 		}
+	}
+
+	/**
+	 * A downloadable Java library, like Mozilla Rhino or GraalJS. A library is modeled as having a defined structure that fits into
+	 * a single directory, so the application can check whether it is there and download it if it is not.
+	 */
+	export interface Library {
+		version: string
+
+		/**
+		 * Downloads the library into the specified directory and returns the URLs of the JAR files that make up the library.
+		 */
+		download: (directory: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.net.URL[]
+
+		/**
+		 * Checks whether the specified library is already present in the specified directory and, if it is, returns the URLs of the
+		 * JAR files that make up the library; otherwise, returns `null`.
+		 */
+		local: (directory: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.net.URL[]
 	}
 
 	export interface Api<J> {
