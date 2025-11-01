@@ -396,16 +396,6 @@
 					return rv;
 				};
 
-				this.getPropertyArguments = function() {
-					var rv = [];
-					for (var x in all) {
-						var value = this.get(x);
-						if (value) {
-							rv.push("-D" + x + "=" + value);
-						}
-					}
-					return rv;
-				};
 
 				this.sendPropertiesTo = function(f) {
 					if (typeof(f) == "object" && typeof(f.systemProperty) == "function") {
@@ -421,15 +411,26 @@
 							f(x,value);
 						}
 					}
-				}
+				};
 
-				this.environment = function(rv) {
-					for (var x in all) {
-						if (all[x].type.environment && all[x].value) {
-							rv[x] = String(all[x].value);
-						}
-					}
-				}
+				// this.getPropertyArguments = function() {
+				// 	var rv = [];
+				// 	for (var x in all) {
+				// 		var value = this.get(x);
+				// 		if (value) {
+				// 			rv.push("-D" + x + "=" + value);
+				// 		}
+				// 	}
+				// 	return rv;
+				// };
+
+				// this.environment = function(rv) {
+				// 	for (var x in all) {
+				// 		if (all[x].type.environment && all[x].value) {
+				// 			rv[x] = String(all[x].value);
+				// 		}
+				// 	}
+				// }
 			};
 
 			return rv;

@@ -30,4 +30,4 @@ docker compose -f docker-compose.yaml -f docker-compose.test.yaml \
 	-e JDK_VERSION \
 	-e SLIME_WF_BASH_DEBUG \
 	local \
-	/bin/bash -c './jsh --install-jdk-$JDK_VERSION; "$@"' -- "$@"
+	/bin/bash -c './jsh --install-jdk-$JDK_VERSION; ./jsh "$@"' -- "$@"
