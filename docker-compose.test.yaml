@@ -6,6 +6,5 @@
 
 services:
   local:
-    # In the test scenario, we do not want the named volume 'local' mounted; we want a clean install. We also do not want the user
-    # home directory to be bind-mounted
+    # In the test scenario, we expect the SLIME code to be baked into the image, and for the `local` directory not to exist.
     volumes: !reset []
