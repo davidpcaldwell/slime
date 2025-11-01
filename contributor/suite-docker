@@ -12,4 +12,4 @@ fi
 
 #	TODO	should fail with multiple arguments
 
-$(dirname $0)/test-docker-command $1 /bin/bash /slime/wf check --docker
+$(dirname $0)/test-docker-clean-command $1 /bin/bash /slime/wf check --docker
