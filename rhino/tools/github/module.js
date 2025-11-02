@@ -328,6 +328,12 @@
 				}
 			},
 			parseLinkHeader: parseLinkHeader,
+			urls: {
+				raw: function(p) {
+					var token = (p.token) ? p.token + "@" : "";
+					return "https://" + token + "raw.githubusercontent.com/" + p.owner + "/" + p.repo + "/" + p.branch + "/" + p.path;
+				}
+			},
 			request: request,
 			response: response,
 			operation: {

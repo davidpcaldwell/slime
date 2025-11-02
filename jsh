@@ -24,8 +24,6 @@ elif test "$0" == "bash"; then
 	rmdir ${JSH_LOCAL_JDKS}
 	JDK_USER_JDKS=/dev/null
 	JSH_SHELL_LIB="$(mktemp -d)"
-	JSH_LAUNCHER_GITHUB_PROTOCOL="${JSH_LAUNCHER_GITHUB_PROTOCOL:-https}"
-	JSH_LAUNCHER_GITHUB_BRANCH="${JSH_LAUNCHER_GITHUB_BRANCH:-main}"
 else
 	JSH_LOCAL_JDKS="${JSH_LOCAL_JDKS:-$(dirname $0)/local/jdk}"
 	JDK_USER_JDKS="${JSH_USER_JDKS:-${HOME}/.slime/jdk}"
@@ -516,19 +514,6 @@ if [ -z "${JRUNSCRIPT}" ]; then
 	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
 fi
 
-javaSystemPropertyArgument() {
-	if [ -n "$2" ]; then
-		echo "-D$1=$2"
-	fi
-}
-
-HTTP_PROXY_HOST_ARGUMENT=$(javaSystemPropertyArgument http.proxyHost ${JSH_HTTP_PROXY_HOST})
-HTTP_PROXY_PORT_ARGUMENT=$(javaSystemPropertyArgument http.proxyPort ${JSH_HTTP_PROXY_PORT})
-HTTPS_PROXY_HOST_ARGUMENT=$(javaSystemPropertyArgument https.proxyHost ${JSH_HTTPS_PROXY_HOST})
-HTTPS_PROXY_PORT_ARGUMENT=$(javaSystemPropertyArgument https.proxyPort ${JSH_HTTPS_PROXY_PORT})
-JSH_GITHUB_USER_ARGUMENT=$(javaSystemPropertyArgument jsh.github.user ${JSH_GITHUB_USER})
-JSH_GITHUB_PASSWORD_ARGUMENT=$(javaSystemPropertyArgument jsh.github.password ${JSH_GITHUB_PASSWORD})
-
 #	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
 #	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to
 #	be found with JDK 8. So we have to version-check the JDK to determine whether to supply the argument. This version test works
@@ -558,30 +543,26 @@ if [ "$1" == "--shell-configure" ]; then
 	return 0
 fi
 
+javaSystemPropertyArgument() {
+	if [ -n "$2" ]; then
+		echo "-D$1=$2"
+	fi
+}
+
 if [ "$0" == "bash" ]; then
-	#	TODO	below is an attempt to get this working with a private GitHub repository. There are many problems with this:
-	#			*	can't use the standard java.net.Authenticator because GitHub uses 404 rather than 401 when unauthorized
-	#			*	need to delve into sun.* classes to try to manipulate cached authentication data. May still be possible in
-	#				principle, but possibly more effort than it is worth given that repository will eventually be public.
-	#			If repository is made public, this may be removed; authorize.js can probably be removed.
-	get_authorization_script() {
-		SCRIPT=$1
-		if [ -n "${JSH_HTTP_PROXY_HOST}" ]; then
-			CURL_PROXY_ARGUMENTS="-x ${JSH_LAUNCHER_GITHUB_PROTOCOL}://${JSH_HTTP_PROXY_HOST}:${JSH_HTTP_PROXY_PORT}"
-		fi
-		if [ -n "${JSH_HTTPS_PROXY_HOST}" ]; then
-			CURL_PROXY_ARGUMENTS="${CURL_PROXY_ARGUMENTS} -x ${JSH_LAUNCHER_GITHUB_PROTOCOL}://${JSH_HTTPS_PROXY_HOST}:${JSH_HTTPS_PROXY_PORT}"
-		fi
-		AUTHORIZATION_SCRIPT_URL="${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/tools/github/${SCRIPT}"
-		echo $(curl -L ${CURL_PROXY_ARGUMENTS} -u ${JSH_GITHUB_USER}:${JSH_GITHUB_PASSWORD} ${AUTHORIZATION_SCRIPT_URL})
-	}
+	JSH_LAUNCHER_GITHUB_PROTOCOL="${JSH_LAUNCHER_GITHUB_PROTOCOL:-https}"
+	JSH_LAUNCHER_GITHUB_BRANCH="${JSH_LAUNCHER_GITHUB_BRANCH:-main}"
+
+	HTTP_PROXY_HOST_ARGUMENT=$(javaSystemPropertyArgument http.proxyHost ${JSH_HTTP_PROXY_HOST})
+	HTTP_PROXY_PORT_ARGUMENT=$(javaSystemPropertyArgument http.proxyPort ${JSH_HTTP_PROXY_PORT})
+	HTTPS_PROXY_HOST_ARGUMENT=$(javaSystemPropertyArgument https.proxyHost ${JSH_HTTPS_PROXY_HOST})
+	HTTPS_PROXY_PORT_ARGUMENT=$(javaSystemPropertyArgument https.proxyPort ${JSH_HTTPS_PROXY_PORT})
+	JSH_GITHUB_USER_ARGUMENT=$(javaSystemPropertyArgument jsh.github.user ${JSH_GITHUB_USER})
+	JSH_GITHUB_PASSWORD_ARGUMENT=$(javaSystemPropertyArgument jsh.github.password ${JSH_GITHUB_PASSWORD})
 
 	JSH_NETWORK_ARGUMENTS="${HTTP_PROXY_HOST_ARGUMENT} ${HTTP_PROXY_PORT_ARGUMENT} ${HTTPS_PROXY_HOST_ARGUMENT} ${HTTPS_PROXY_PORT_ARGUMENT} ${JSH_GITHUB_USER_ARGUMENT} ${JSH_GITHUB_PASSWORD_ARGUMENT}"
-	#	AUTHORIZATION_SCRIPT=$(get_authorization_script authorize.js)
-	#	echo ${AUTHORIZATION_SCRIPT}
-	AUTHORIZATION_SCRIPT="//  no-op"
 	export JSH_SHELL_LIB
-	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "${AUTHORIZATION_SCRIPT}" -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
+	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
 else
 	${JRUNSCRIPT} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
 fi
