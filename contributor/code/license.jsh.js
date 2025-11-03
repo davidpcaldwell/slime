@@ -158,6 +158,8 @@
 			if (files[i].path == "typedoc.json") extension = "js";
 			if (files[i].path == "typedoc-tsconfig.json") extension = "js";
 			if (files[i].path == ".devcontainer/devcontainer.json") extension = "js";
+			if (files[i].path == "rhino/tools/github/cat") extension = "bash";
+			if (files[i].path == "rhino/tools/github/test/cat-hello.sh") extension = "bash";
 			if (files[i].path == "rhino/tools/github/tools/dtsgen.json") extension = "js";
 			if (files[i].path == "rhino/tools/docker/tools/dtsgen.json") extension = "js";
 			if (files[i].path == "tools/wf/test/data/plugin-standard/jsconfig.json") extension = "js";
@@ -173,9 +175,13 @@
 				if (files[i].path == "tools/wf/install") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/manual/engines") extension = "bash";
 				if (files[i].path == "jrunscript/jsh/test/issue1254") extension = "bash";
-				if (files[i].path == "contributor/test-docker-command") extension = "bash";
+				if (files[i].path == ".devcontainer/find-desktop-novnc-port") extension = "bash";
+				if (files[i].path == ".devcontainer/initializeCommand") extension = "bash";
+				if (files[i].path == ".devcontainer/postCreateCommand") extension = "bash";
 				if (files[i].path == "contributor/test-docker-clean-run") extension = "bash";
 				if (files[i].path == "contributor/test-docker-clean-start") extension = "bash";
+				if (files[i].path == "contributor/test-docker-clean-command") extension = "bash";
+				if (files[i].path == "contributor/test-docker-clean-jsh") extension = "bash";
 				if (files[i].path == "contributor/suite-docker") extension = "bash";
 				if (files[i].path == "contributor/suite-macos") extension = "bash";
 				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";

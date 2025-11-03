@@ -1,10 +1,8 @@
+#!/bin/bash
 #	LICENSE
 #	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
 #	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 #	END LICENSE
 
-services:
-  local:
-    # In the test scenario, we expect the SLIME code to be baked into the image, and for the `local` directory not to exist.
-    volumes: !reset []
+>&2 echo "Hello, World!"

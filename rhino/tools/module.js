@@ -122,6 +122,14 @@
 		/**
 		 * @param { string } pathname
 		 */
+		var _javaFile = function(pathname) {
+			var location = $context.library.file.Location.from.os(pathname);
+			return new Packages.java.io.File(location.pathname);
+		}
+
+		/**
+		 * @param { string } pathname
+		 */
 		var _open = function(pathname) {
 			var location = $context.library.file.Location.from.os(pathname);
 			var _jarFile = new Packages.java.util.jar.JarFile(
@@ -132,51 +140,11 @@
 
 		/** @type { slime.jrunscript.java.tools.Exports["jar"] } */
 		var jar = (function() {
-			var toScriptManifest = function(_manifest) {
-				/** @type { slime.$api.fp.world.Reading<slime.jrunscript.java.tools.Exports["jar"]["manifest"]["world"]> } */
-				var rv = {
-					main: {},
-					entries: {}
-				};
-
-				/**
-				 *
-				 * @param { object } rv
-				 * @param { slime.jrunscript.native.java.util.jar.Attributes } _attributes
-				 */
-				var addManifestEntries = function(rv, _attributes) {
-					var _entries = _attributes.entrySet().iterator();
-					while(_entries.hasNext()) {
-						var _entry = _entries.next();
-						rv[String(_entry.getKey())] = String(_entry.getValue());
-					}
-				}
-
-				addManifestEntries(rv.main, _manifest.getMainAttributes());
-
-				var _entries = _manifest.getEntries();
-				var _entriesEntries = _entries.entrySet();
-				var _entriesIterator = _entriesEntries.iterator();
-				while(_entriesIterator.hasNext()) {
-					var _entriesEntry = _entriesIterator.next();
-					var _name = _entriesEntry.getKey();
-					/** @type { { [name: string]: string }} */
-					var section = {};
-					rv.entries[String(_name)] = section;
-					addManifestEntries(section, _entriesEntry.getValue());
-				}
-
-				return rv;
-			}
-
 			var wo = {
 				/** @type { slime.jrunscript.java.tools.Exports["jar"]["manifest"]["world"] } */
 				manifest: function(o) {
 					return function(e) {
-						var _jarFile = _open(o.pathname);
-						var _manifest = _jarFile.getManifest();
-
-						return toScriptManifest(_manifest);
+						return $context.library.bootstrap.jar.manifest.of(_javaFile(o.pathname));
 					}
 				},
 				/** @type { slime.jrunscript.java.tools.Exports["jar"]["entries"]["world"] } */
@@ -228,9 +196,7 @@
 					from: {
 						string: function(string) {
 							var input = $context.library.io.InputStream.string.default(string);
-							var _manifest = new Packages.java.util.jar.Manifest();
-							_manifest.read(input.java.adapt());
-							return toScriptManifest(_manifest);
+							return $context.library.bootstrap.jar.manifest.stream(input.java.adapt());
 						}
 					}
 				},

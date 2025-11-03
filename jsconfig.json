@@ -5,6 +5,11 @@
 //	END LICENSE
 
 {
+	"include": [
+		"**/*.ts",
+		"**/*.js",
+		"**/.devcontainer/**.js"
+	],
 	"exclude": [
 		"local",
 		"bin",

@@ -36,12 +36,17 @@
 			//	TODO	it does not make much sense to check for jsh.shell in .isReady() and then not pass it to the plugin. Is this
 			//			method of running the compiler obsolete?
 			isReady: function() {
-				return typeof(jsh.js) != "undefined" && typeof(jsh.java) != "undefined" && Boolean(jsh.io) && Boolean(jsh.file)
+				return (
+					typeof(jsh.js) != "undefined"
+					&& typeof(jsh.java) != "undefined"
+					&& Boolean(jsh.io)
+					&& Boolean(jsh.file)
+					&& Boolean(jsh.internal && jsh.internal.bootstrap)
 					&& (
 						Packages.javax.tools.ToolProvider.getSystemToolClassLoader() != null
 						|| Boolean(jsh.file && jsh.shell && jsh.shell.java && jsh.shell.java.home && jsh.file.Searchpath([ jsh.shell.java.home.getRelativePath("bin") ]).getCommand("javac"))
 					)
-				;
+				);
 			},
 			load: function() {
 				/** @type { slime.jrunscript.java.tools.Script } */
@@ -51,7 +56,12 @@
 						java: jsh.java,
 						io: jsh.io,
 						file: jsh.file,
-						shell: jsh.shell
+						shell: jsh.shell,
+						bootstrap: {
+							jar: {
+								manifest: jsh.internal.bootstrap.jar.manifest
+							}
+						}
 					}
 				}), { plugin: void(0) });
 			}

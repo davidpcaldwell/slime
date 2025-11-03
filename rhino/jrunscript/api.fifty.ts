@@ -453,6 +453,29 @@ namespace slime.internal.jrunscript.bootstrap {
 		}
 	}
 
+	export namespace jar {
+		export interface Manifest {
+			main: {
+				[name: string]: string
+			}
+
+			entries: {
+				[name: string]: {
+					[name: string]: string
+				}
+			}
+		}
+	}
+
+	export interface Api<J> {
+		jar: {
+			manifest: {
+				of: (file: slime.jrunscript.native.java.io.File) => jar.Manifest
+				stream: (stream: slime.jrunscript.native.java.io.InputStream) => jar.Manifest
+			}
+		}
+	}
+
 	/**
 	 * A downloadable Java library, like Mozilla Rhino or GraalJS. A library is modeled as having a defined structure that fits into
 	 * a single directory, so the application can check whether it is there and download it if it is not.
@@ -474,6 +497,8 @@ namespace slime.internal.jrunscript.bootstrap {
 
 	export interface Api<J> {
 		rhino: {
+			compatible: () => Library
+
 			forJava: (jdkMajorVersion: number) => Library
 		}
 	}

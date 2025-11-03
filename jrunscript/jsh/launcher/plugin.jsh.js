@@ -39,7 +39,7 @@
 				return Boolean(jsh.internal && jsh.internal.bootstrap && jsh.file);
 			},
 			load: function() {
-				var Library = function(bootstrap) {
+				var Library = function(/** @type { slime.internal.jrunscript.bootstrap.Library } */bootstrap) {
 					var javaUrlToLocation = $api.fp.pipe(
 						function(/** @type { slime.jrunscript.native.java.net.URL }*/_url) { return new Packages.java.io.File(_url.toURI() )},
 						jsh.file.Location.from.java.File
@@ -69,9 +69,8 @@
 				jsh.internal.api = {
 					Library: Library,
 					rhino: {
-						forCurrentJava: $api.fp.Thunk.map(
-							jsh.internal.bootstrap.java.getMajorVersion,
-							jsh.internal.bootstrap.rhino.forJava,
+						compatible: $api.fp.Thunk.map(
+							jsh.internal.bootstrap.rhino.compatible,
 							Library
 						)
 					}
