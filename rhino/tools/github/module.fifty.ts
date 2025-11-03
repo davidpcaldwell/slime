@@ -99,6 +99,15 @@ namespace slime.jrunscript.tools.github {
 		}
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
 	export interface Exports {
 		Session: (o: {
 			credentials: {
@@ -113,7 +122,57 @@ namespace slime.jrunscript.tools.github {
 		}) => (url: slime.web.Url) => boolean
 
 		parseLinkHeader: (value: string) => { [x: string]: string }
+	}
 
+	export interface Exports {
+		urls: {
+			raw: (p: {
+				owner: string
+				repo: string
+				branch: string
+				path: string
+				token?: string
+			}) => string
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.urls = function() {
+				const { jsh } = fifty.global;
+				var script: Script = fifty.$loader.script("module.js");
+				var subject = script({
+					library: {
+						web: jsh.web,
+						io: jsh.io,
+						http: jsh.http,
+						shell: jsh.shell
+					}
+				});
+				var exemplar = subject.urls.raw({
+					owner: "davidpcaldwell",
+					repo: "slime",
+					branch: "main",
+					path: "README.md"
+				});
+				fifty.verify(exemplar).is("https://raw.githubusercontent.com/davidpcaldwell/slime/main/README.md");
+
+				var withToken = subject.urls.raw({
+					owner: "davidpcaldwell",
+					repo: "slime",
+					branch: "main",
+					path: "README.md",
+					token: "token-value"
+				});
+				fifty.verify(withToken).is("https://token-value@raw.githubusercontent.com/davidpcaldwell/slime/main/README.md");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
 		request: {
 			get: <Q extends object>(path: string) => (q: Q) => rest.Request
 			delete: <Q extends object>(path: string) => (q: Q) => rest.Request
