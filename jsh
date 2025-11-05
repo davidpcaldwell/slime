@@ -562,7 +562,7 @@ if [ "$0" == "bash" ]; then
 
 	JSH_NETWORK_ARGUMENTS="${HTTP_PROXY_HOST_ARGUMENT} ${HTTP_PROXY_PORT_ARGUMENT} ${HTTPS_PROXY_HOST_ARGUMENT} ${HTTPS_PROXY_PORT_ARGUMENT} ${JSH_GITHUB_USER_ARGUMENT} ${JSH_GITHUB_PASSWORD_ARGUMENT}"
 	export JSH_SHELL_LIB
-	${JRUNSCRIPT} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
+	${JRUNSCRIPT} ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
 else
-	${JRUNSCRIPT} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
+	${JRUNSCRIPT} ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
 fi
