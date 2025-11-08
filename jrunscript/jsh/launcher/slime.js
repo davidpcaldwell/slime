@@ -253,6 +253,26 @@
 			};
 
 			rv.settings = new function() {
+				/** @typedef { { container: (value: string) => string[] } | {} } AllValueType */
+				/** @typedef { { default?: () => string } } AllValueDefault */
+				/** @typedef { ({ type: AllValueType } | { value: string }) & AllValueDefault } AllValue */
+
+				/** @type { (allValue: AllValue) => allValue is { type: AllValueType } & AllValueDefault } */
+				var isType = function(allValue) {
+					return typeof(allValue["type"]) === "object";
+				};
+
+				/** @type { (allValue: AllValue) => allValue is { value: string } & AllValueDefault } */
+				var isValue = function(allValue) {
+					return typeof(allValue["value"]) === "string";
+				};
+
+				/** @type { (type: AllValueType) => type is { container: (value: string) => string[] } } */
+				var isContainer = function(type) {
+					return typeof(type["container"]) === "function";
+				};
+
+				/** @type { Record<string, AllValue> } */
 				var all = {};
 
 				//	TODO	if these are actually indistinguishable, then below we are apparently using them as outdated documentation.
@@ -261,6 +281,11 @@
 				var LOADER = {};
 				var BOTH = {};
 
+				/**
+				 *
+				 * @param { string } name
+				 * @param { AllValueType } type
+				 */
 				var map = function(name,type) {
 					//	If 'type' has a container property, it will be invoked with the setting effective value to get an array of
 					//	string arguments to pass to the container/loader VM.
@@ -341,7 +366,7 @@
 
 				this.set = function(name,value) {
 					if (!all[name]) throw new Error("Not defined: " + name);
-					all[name].value = value;
+					all[name] = { value: value };
 				}
 
 				/**
@@ -349,14 +374,18 @@
 				 */
 				this.default = function(name,value) {
 					if (typeof(value) == "undefined") return;
+					/** @type { () => string } */
+					var getValue;
 					if (typeof(value) != "function") {
-						value = (function(rv) {
+						getValue = (function(rv) {
 							return function() {
 								return rv;
 							}
 						})(value);
+					} else {
+						getValue = value;
 					}
-					all[name].default = value;
+					all[name].default = getValue;
 				};
 
 				var get = function(name) {
@@ -364,6 +393,9 @@
 					return (value === null) ? void(0) : value;
 				};
 
+				/**
+				 * @type { slime.jsh.internal.launcher.Slime["settings"]["get"] }
+				 */
 				this.get = function(name) {
 					if (!all[name]) {
 						throw new Error("Cannot read: " + name);
@@ -372,11 +404,11 @@
 					if (typeof(specified) != "undefined") {
 						return specified;
 					}
-					if (all[name] && typeof(all[name].value) != "undefined") {
+					if (all[name] && isValue(all[name])) {
 						return all[name].value;
 					}
-					if (all[name] && all[name]["default"]) {
-						return all[name]["default"]();
+					if (all[name] && all[name].default) {
+						return all[name].default();
 					}
 				}
 
@@ -386,10 +418,19 @@
 					for (var x in all) {
 						var value = this.get(x);
 						if (value) {
-							if (all[x].type.container) {
-								rv = rv.concat(all[x].type.container(value));
+							var allX = all[x];
+							if (isType(allX)) {
+								var allXType = allX.type;
+								if (isContainer(allXType)) {
+									rv = rv.concat(allXType.container(value));
+								}
 							} else {
 								// rv.push("-D" + x + "=" + value);
+							}
+							if (isType(allX) && isContainer(allX.type)) {
+								rv = rv.concat(allX.type.container(value));
+							} else {
+								//	do nothing
 							}
 						}
 					}

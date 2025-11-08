@@ -53,8 +53,8 @@ namespace slime.jsh.internal.launcher {
 			 * Returns the effective value for a given setting.
 			 */
 			get: (name: string) => string
-			set: (name: string, value: any) => void
-			default: (name: string, value: any) => void
+			set: (name: string, value: string) => void
+			default: (name: string, value: string | (() => string)) => void
 
 			getContainerArguments: any
 			sendPropertiesTo: any
