@@ -388,9 +388,19 @@
 				//	We don't need this here, but the loader needs it to configure Rhino
 				Setting("jsh.engine.rhino.optimization", LOADER);
 
-				//	We pass this through to the loader; a caller specifying this should not be astonished by the loader not
-				//	respecting the setting provided to the launcher
-				Setting("java.io.tmpdir", LOADER);
+				//	TODO	we need to figure out a better solution if the caller sets `java.io.tmpdir` on the launcher; it would
+				//			seem a little counterintuitive that the loader would not respect it
+
+				//	BUT if we do simply pass through `java.io.tmpdir` and just share it between the two, then you cannot set it via
+				//	an environment variable (like JAVA_IO_TMPDIR) because the launcher VM will already have a default java.io.tmpdir
+				//	set by the JVM itself, so the environment variable will have no effect.
+
+				//	So for now we use a different property, and it will be used only by the loader
+
+				//	We pass this through to the loader as the loader temporary file location
+				Setting("jsh.shell.tmpdir", LOADER_VM(function(value) {
+					return ["-Djava.io.tmpdir=" + value];
+				})),
 
 				//	Sent from launcher to loader so that loader can locate the shell implementation
 				Setting("jsh.shell.src", LOADER);
