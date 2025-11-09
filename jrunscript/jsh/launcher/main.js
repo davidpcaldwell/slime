@@ -433,13 +433,14 @@
 		}
 
 		(function() {
-			var container = $api.slime.settings.getContainerArguments();
+			var container = $api.slime.settings.getLoaderVmArguments();
 			for (var i=0; i<container.length; i++) {
 				$api.debug("container " + container[i]);
 				// TODO: test whether this works for Graal
 				command.vm(container[i]);
 			}
 		})();
+
 		$api.slime.settings.sendPropertiesTo(command);
 
 		var compilerMajorVersion = (jshLoaderJavaMajorVersion < jshLauncherJavaMajorVersion) ? jshLoaderJavaMajorVersion : jshLauncherJavaMajorVersion;
@@ -490,7 +491,7 @@
 			command.argument($api.arguments[i]);
 		}
 
-		command.systemProperty("jsh.launcher.jrunscript", $api.java.install.jrunscript.getCanonicalPath());
+		command.systemProperty("jsh.launcher.jrunscript", String($api.java.install.jrunscript.getCanonicalPath()));
 
 		//	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch from GitHub
 		var passthrough = ["http.proxyHost","http.proxyPort","https.proxyHost","https.proxyPort","jsh.github.user","jsh.github.password"];
@@ -500,7 +501,7 @@
 			$api.debug("property = " + passthrough[i] + " value=" + Packages.java.lang.System.getProperty(passthrough[i]));
 			if (noProxy && passthrough[i].substring(0,"http.".length) == "http.") continue;
 			if (Packages.java.lang.System.getProperty(passthrough[i])) {
-				command.systemProperty(passthrough[i], Packages.java.lang.System.getProperty(passthrough[i]));
+				command.systemProperty(passthrough[i], String(Packages.java.lang.System.getProperty(passthrough[i])));
 			}
 		}
 
