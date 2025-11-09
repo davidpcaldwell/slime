@@ -336,7 +336,7 @@ namespace slime.jsh {
  * | `jsh.shell.src` | If this is an unbuilt shell, the launcher needs to know where the root directory of the SLIME source code is. |
  * | `jsh.engine` | If specified, will override the default mechanism for selecting a JavaScript engine and use the specified value. |
  * | `jsh.engine.rhino.classpath` | If specified, will override the default mechanism for locating Rhino. |
- * | `jsh.launcher.debug` | If this is present, and Rhino is used to execute the launcher script, then the launcher script will be executed in the Rhino debugger. |
+ * | `jsh.launcher.debug` | Turns on debugging output for the launcher script. ~~If this is present, and Rhino is used to execute the launcher script, then the launcher script will be executed in the Rhino debugger.~~ **This is not true at the moment, but may become true again with a future move to a Java-based launcher.** |
  *
  * #### Responsibilities
  *

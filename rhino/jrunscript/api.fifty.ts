@@ -395,7 +395,16 @@ namespace slime.internal.jrunscript.bootstrap {
 
 			getClass: (name: string) => slime.jrunscript.JavaClass
 			Array: any
-			Command: any
+			Command: new () => {
+				fork: () => void
+				home: (home: slime.internal.jrunscript.bootstrap.java.Install) => void
+				vm: (argument: string) => void
+				systemProperty: (name: string, value: string) => void
+				classpath: (url: slime.jrunscript.native.java.net.URL) => void
+				main: (className: string) => void
+				argument: (argument: string) => void
+				run: () => number
+			}
 
 			versions: {
 				getMajorVersion: {

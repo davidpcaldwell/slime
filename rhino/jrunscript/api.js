@@ -1413,20 +1413,28 @@
 					return $engine.newArray(p.type,p.length);
 				}
 				var Command = function() {
+					/** @type { string[] } */
 					var vmArguments = [];
+					/** @type { Record<string, string> } */
 					var properties = {};
+					/** @type { slime.jrunscript.native.java.net.URL[] } */
 					var classpath = [];
 					var main;
 					var mainArguments = [];
 
 					var launchers = {};
+					/**
+					 *
+					 * @param { slime.internal.jrunscript.bootstrap.java.Install } [home]
+					 * @returns
+					 */
 					launchers.Vm = function(home) {
 						if (!home) home = $api.java.install;
 						return function(mode) {
 							if (!mode) mode = {};
 							if (!mode.input) mode.input = Packages.java.lang.System["in"];
 							$api.debug("Invoking launcher: " + home.launcher);
-							var tokens = [home.launcher];
+							var tokens = [String(home.launcher)];
 							tokens.push.apply(tokens,vmArguments);
 							for (var x in properties) {
 								tokens.push("-D" + x + "=" + properties[x]);
@@ -1458,7 +1466,7 @@
 							return $api.engine.runCommand.apply(null,tokens);
 						}
 					};
-					launchers.ClassLoader = function(mode) {
+					launchers.ClassLoader = function() {
 						$api.debug("Running in ClassLoader ...");
 						for (var x in properties) {
 							if (properties[x]) {
@@ -1538,6 +1546,7 @@
 						].join(" ");
 					}
 
+					/** @type { InstanceType<slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Command"]>["fork"]} */
 					this.fork = function() {
 						if (launcher == launchers.ClassLoader) {
 							$api.debug("Running in VM because of fork() ...");
@@ -1545,11 +1554,13 @@
 						}
 					}
 
+					/** @type { InstanceType<slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Command"]>["home"]} */
 					this.home = function(home) {
 						$api.debug("Running in VM because of home() ...");
 						launcher = launchers.Vm(home);
 					}
 
+					/** @type { InstanceType<slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Command"]>["vm"]} */
 					this.vm = function(argument) {
 						if (launcher == launchers.ClassLoader) {
 							$api.debug("Running in VM because of VM argument " + argument + " ...");
@@ -1558,32 +1569,37 @@
 						vmArguments.push(argument);
 					}
 
+					/** @type { InstanceType<slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Command"]>["systemProperty"]} */
 					this.systemProperty = function(name,value) {
 						if (typeof(value) != "undefined") {
 							properties[name] = value;
 						}
 					}
 
+					/** @type { InstanceType<slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Command"]>["classpath"]} */
 					this.classpath = function(element) {
 						classpath.push(element);
 					}
 
+					/** @type { InstanceType<slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Command"]>["main"]} */
 					this.main = function(className) {
 						main = className;
 					}
 
+					/** @type { InstanceType<slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Command"]>["argument"]} */
 					this.argument = function() {
 						mainArguments.push(arguments[0]);
 					}
 
-					this.run = function(mode) {
+					/** @type { InstanceType<slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Command"]>["run"]} */
+					this.run = function() {
 						$api.debug("Running");
-						if (mode && launcher == launchers.ClassLoader) {
+						if (arguments[0] && launcher == launchers.ClassLoader) {
 							$api.debug("Running in VM because of run(mode) ...");
 							launcher = launchers.Vm();
 						}
 						$api.debug("running in launcher = " + launcher);
-						return launcher(mode);
+						return launcher();
 					}
 				}
 

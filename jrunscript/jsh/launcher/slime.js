@@ -49,7 +49,6 @@
 			var rv = {
 				launcher: void(0),
 				home: void(0),
-				setting: void(0),
 				settings: void(0),
 				Src: function(src) {
 					/** @type { Partial<slime.jsh.internal.launcher.Slime["src"]> } */
@@ -241,7 +240,15 @@
 				}
 			}
 
-			rv.setting = function(name) {
+			/**
+			 * Returns a string representing the explicit value of a named setting (for example, `foo.bar.baz`); uses first system
+			 * properties and then environment variables (for example, `FOO_BAR_BAZ`) to locate the value.
+			 *
+			 * @param name The period-delimited name of a setting.
+			 *
+			 * @returns The string value of the setting, or `null` if the setting was not explicitly provided.
+			 */
+			var explicit = function(name) {
 				if (Packages.java.lang.System.getProperty(name) !== null) {
 					return String(Packages.java.lang.System.getProperty(name));
 				}
@@ -253,7 +260,7 @@
 			};
 
 			rv.settings = new function() {
-				/** @typedef { { container: (value: string) => string[] } | {} } AllValueType */
+				/** @typedef { { loaderVmArguments: (value: string) => string[] } | {} } AllValueType */
 				/** @typedef { { default?: () => string } } AllValueDefault */
 				/** @typedef { ({ type: AllValueType } | { value: string }) & AllValueDefault } AllValue */
 
@@ -267,9 +274,9 @@
 					return typeof(allValue["value"]) === "string";
 				};
 
-				/** @type { (type: AllValueType) => type is { container: (value: string) => string[] } } */
-				var isContainer = function(type) {
-					return typeof(type["container"]) === "function";
+				/** @type { (type: AllValueType) => type is { loaderVmArguments: (value: string) => string[] } } */
+				var isLoaderVmArguments = function(type) {
+					return typeof(type["loaderVmArguments"]) === "function";
 				};
 
 				/** @type { Record<string, AllValue> } */
@@ -295,7 +302,7 @@
 				};
 
 				map("jsh.debug.jdwp", {
-					container: function(value) {
+					loaderVmArguments: function(value) {
 						if (value == "false") {
 							return [];
 						} else {
@@ -303,16 +310,17 @@
 						}
 					}
 				});
+
 				map("jsh.debug.script", LOADER);
 				map("jsh.profiler.script", LOADER);
 
 				map("jsh.jvm.options", {
-					container: function(value) {
+					loaderVmArguments: function(value) {
 						return value.split(" ");
 					}
 				});
 				map("jsh.log.java.properties", {
-					container: function(value) {
+					loaderVmArguments: function(value) {
 						return ["-Djava.util.logging.config.file=" + value];
 					}
 				});
@@ -325,7 +333,7 @@
 					launcher: function(value) {
 						return ["-Djava.io.tmpdir=" + value];
 					},
-					container: function(value) {
+					loaderVmArguments: function(value) {
 						return ["-Djava.io.tmpdir=" + value];
 					}
 				});
@@ -388,11 +396,6 @@
 					all[name].default = getValue;
 				};
 
-				var get = function(name) {
-					var value = rv.setting(name);
-					return (value === null) ? void(0) : value;
-				};
-
 				/**
 				 * @type { slime.jsh.internal.launcher.Slime["settings"]["get"] }
 				 */
@@ -400,8 +403,8 @@
 					if (!all[name]) {
 						throw new Error("Cannot read: " + name);
 					}
-					var specified = get(name);
-					if (typeof(specified) != "undefined") {
+					var specified = explicit(name);
+					if (specified !== null) {
 						return specified;
 					}
 					if (all[name] && isValue(all[name])) {
@@ -413,7 +416,7 @@
 				}
 
 				//	Added to VM arguments for loader VM
-				this.getContainerArguments = function() {
+				this.getLoaderVmArguments = function() {
 					var rv = [];
 					for (var x in all) {
 						var value = this.get(x);
@@ -421,14 +424,14 @@
 							var allX = all[x];
 							if (isType(allX)) {
 								var allXType = allX.type;
-								if (isContainer(allXType)) {
-									rv = rv.concat(allXType.container(value));
+								if (isLoaderVmArguments(allXType)) {
+									rv = rv.concat(allXType.loaderVmArguments(value));
 								}
 							} else {
 								// rv.push("-D" + x + "=" + value);
 							}
-							if (isType(allX) && isContainer(allX.type)) {
-								rv = rv.concat(allX.type.container(value));
+							if (isType(allX) && isLoaderVmArguments(allX.type)) {
+								rv = rv.concat(allX.type.loaderVmArguments(value));
 							} else {
 								//	do nothing
 							}
@@ -438,18 +441,14 @@
 				};
 
 
-				this.sendPropertiesTo = function(f) {
-					if (typeof(f) == "object" && typeof(f.systemProperty) == "function") {
-						f = (function(target) {
-							return function(name,value) {
-								target.systemProperty(name,value);
-							};
-						})(f);
-					}
+				/**
+				 * @type { slime.jsh.internal.launcher.Slime["settings"]["sendPropertiesTo"] }
+				 */
+				this.sendPropertiesTo = function(o) {
 					for (var x in all) {
 						var value = this.get(x);
 						if (value) {
-							f(x,value);
+							o.systemProperty(x,value);
 						}
 					}
 				};
