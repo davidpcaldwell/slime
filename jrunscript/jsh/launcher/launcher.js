@@ -105,7 +105,6 @@
 		//			}
 		//		}
 		//
-		//	TODO	Provide runtime access to plugin path, with jsh.shell.jsh.plugins?
 		var Packages = this.Packages;
 
 		try {

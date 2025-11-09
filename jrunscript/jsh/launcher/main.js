@@ -113,9 +113,6 @@
 			}
 		);
 
-		//	If SLIME source location not specified, and we can determine it, supply it to the shell
-		$api.slime.settings.default("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
-
 		$api.script.resolve("launcher.js").load();
 
 		var shell = (function() {
@@ -432,16 +429,7 @@
 			Packages.java.lang.System.exit(1);
 		}
 
-		(function() {
-			var container = $api.slime.settings.getLoaderVmArguments();
-			for (var i=0; i<container.length; i++) {
-				$api.debug("container " + container[i]);
-				// TODO: test whether this works for Graal
-				command.vm(container[i]);
-			}
-		})();
-
-		$api.slime.settings.sendPropertiesTo(command);
+		$api.slime.settings.applyTo(command);
 
 		var compilerMajorVersion = (jshLoaderJavaMajorVersion < jshLauncherJavaMajorVersion) ? jshLoaderJavaMajorVersion : jshLauncherJavaMajorVersion;
 		var _shellUrls = shell.shellClasspath({ source: compilerMajorVersion, target: compilerMajorVersion });
