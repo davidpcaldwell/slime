@@ -39,15 +39,19 @@ namespace slime.jsh.internal.launcher {
 		home: any
 
 		settings: {
+			set: (name: string, value: string) => void
+			default: (name: string, value: string | (() => string)) => void
+
 			/**
 			 * Returns the effective value for a given setting.
 			 */
 			get: (name: string) => string
-			set: (name: string, value: string) => void
-			default: (name: string, value: string | (() => string)) => void
 
-			getLoaderVmArguments: () => string[]
-			sendPropertiesTo: (recipient: { systemProperty: (key: string, value: string) => void }) => void
+			//	Probably redundant but currently appears to be used in packaged shells, where applyTo does not apply in the same
+			//	way given that there is no loader VM.
+			sendPropertiesTo: (recipient: slime.internal.jrunscript.bootstrap.JavaCommand) => void
+
+			applyTo: (recipient: slime.internal.jrunscript.bootstrap.JavaCommand) => void
 		}
 
 		Src: (p: {
