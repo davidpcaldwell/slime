@@ -451,6 +451,12 @@
 							user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
 						});
 					}
+					if ($context.HOME.getFile("Google Chrome.app/Contents/MacOS/Google Chrome")) {
+						return new Chrome({
+							program: $context.HOME.getFile("Google Chrome.app/Contents/MacOS/Google Chrome"),
+							user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
+						});
+					}
 				}
 
 				if ($context.os.name == "Linux") {
