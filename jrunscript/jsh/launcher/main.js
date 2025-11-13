@@ -105,10 +105,13 @@
 
 		//	If Rhino location not specified, and we are running this script inside Rhino, set that to be the default Rhino location for the
 		//	shell
-		$api.slime.settings.default("jsh.engine.rhino.classpath", $api.engine.rhino.classpath);
-
-		//	If SLIME source location not specified, and we can determine it, supply it to the shell
-		$api.slime.settings.default("jsh.shell.src", ($api.slime.src) ? String($api.slime.src) : null);
+		$api.slime.settings.default(
+			"jsh.engine.rhino.classpath",
+			function() {
+				var _file = $api.engine.rhino.classpath();
+				return (_file) ? String(_file) : null;
+			}
+		);
 
 		$api.script.resolve("launcher.js").load();
 
@@ -426,15 +429,7 @@
 			Packages.java.lang.System.exit(1);
 		}
 
-		(function() {
-			var container = $api.slime.settings.getContainerArguments();
-			for (var i=0; i<container.length; i++) {
-				$api.debug("container " + container[i]);
-				// TODO: test whether this works for Graal
-				command.vm(container[i]);
-			}
-		})();
-		$api.slime.settings.sendPropertiesTo(command);
+		$api.slime.settings.applyTo(command);
 
 		var compilerMajorVersion = (jshLoaderJavaMajorVersion < jshLauncherJavaMajorVersion) ? jshLoaderJavaMajorVersion : jshLauncherJavaMajorVersion;
 		var _shellUrls = shell.shellClasspath({ source: compilerMajorVersion, target: compilerMajorVersion });
@@ -484,7 +479,7 @@
 			command.argument($api.arguments[i]);
 		}
 
-		command.systemProperty("jsh.launcher.jrunscript", $api.java.install.jrunscript.getCanonicalPath());
+		command.systemProperty("jsh.launcher.jrunscript", String($api.java.install.jrunscript.getCanonicalPath()));
 
 		//	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch from GitHub
 		var passthrough = ["http.proxyHost","http.proxyPort","https.proxyHost","https.proxyPort","jsh.github.user","jsh.github.password"];
@@ -494,7 +489,7 @@
 			$api.debug("property = " + passthrough[i] + " value=" + Packages.java.lang.System.getProperty(passthrough[i]));
 			if (noProxy && passthrough[i].substring(0,"http.".length) == "http.") continue;
 			if (Packages.java.lang.System.getProperty(passthrough[i])) {
-				command.systemProperty(passthrough[i], Packages.java.lang.System.getProperty(passthrough[i]));
+				command.systemProperty(passthrough[i], String(Packages.java.lang.System.getProperty(passthrough[i])));
 			}
 		}
 
