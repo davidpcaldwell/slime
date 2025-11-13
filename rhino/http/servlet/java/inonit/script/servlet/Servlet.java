@@ -15,6 +15,7 @@ import javax.servlet.http.*;
 import inonit.script.engine.*;
 
 public class Servlet extends javax.servlet.http.HttpServlet {
+	//private Exception it = new UnsupportedClassVersionError();
 	private static final Logger LOG = Logger.getLogger(Servlet.class.getName());
 
 	static {

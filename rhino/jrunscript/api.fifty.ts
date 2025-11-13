@@ -226,6 +226,15 @@ namespace slime.internal.jrunscript.bootstrap {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace java {
+		export interface Install {
+			home: slime.jrunscript.native.java.io.File
+			launcher: slime.jrunscript.native.java.io.File
+			jrunscript: slime.jrunscript.native.java.io.File
+			toString: () => string
+		}
+	}
+
 	export interface Api<J> {
 		debug: {
 			(message: string): void
@@ -394,15 +403,25 @@ namespace slime.internal.jrunscript.bootstrap {
 
 	export interface Api<J> {
 		java: {
-			/**
-			 * @param home A directory containing a Java installation
-			 */
-			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
+			version: {
+				property: {
+					major: (javaVersionProperty: string) => number
+				}
+			}
 
 			/**
 			 * The Java installation used to run this script.
 			 */
-			install: java.Install
+			install: java.Install & {
+				version: {
+					major: () => number
+				}
+			}
+
+			/**
+			 * @param home A directory containing a Java installation
+			 */
+			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
 
 			getClass: (name: string) => slime.jrunscript.JavaClass
 			Array: any
@@ -673,22 +692,7 @@ namespace slime.internal.jrunscript.bootstrap {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
 
-				var configuration: slime.internal.jrunscript.bootstrap.Environment = {
-					Packages: Packages,
-					load: function() {
-						throw new Error("Implement.");
-					},
-					$api: {
-						debug: true
-					}
-				};
-				fifty.$loader.run("api.js", {}, configuration);
-				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as unknown as slime.internal.jrunscript.bootstrap.Global<{},{}>;
-				fifty.verify(global).is.type("object");
-				fifty.verify(global).$api.is.type("object");
-				fifty.verify(global).$api.script.is.type("object");
-
-				var subject = global.$api;
+				const subject = fifty.global.jsh.internal.bootstrap;
 
 				var interpret = function(string) {
 					return Object.assign(function(p): { url: string, file: string, zip: string } {

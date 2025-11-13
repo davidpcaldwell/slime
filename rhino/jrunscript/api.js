@@ -20,6 +20,36 @@
 	 * @this { slime.internal.jrunscript.bootstrap.Global<{}> }
 	 */
 	function() {
+		var ToObject = function(v) {
+			//	https://www.ecma-international.org/ecma-262/6.0/#sec-toobject
+			if (typeof(v) == "undefined" || v === null) throw new TypeError("ToObject() cannot be invoked with argument " + v);
+			if (typeof(v) == "boolean") return Boolean(v);
+			if (typeof(v) == "number") return Number(v);
+			if (typeof(v) == "string") return String(v);
+			return v;
+		}
+
+		//	TODO	duplicated in loader/polyfill.js
+		if (!Object.assign) {
+			//	https://www.ecma-international.org/ecma-262/6.0/#sec-object.assign
+			//	TODO	currently the basics can be tested manually with loader/test/test262.jsh.js -file local/test262/test/built-ins/Object/assign/Target-Object.js
+			Object.defineProperty(Object, "assign", {
+				value: function assign(target,firstSource /* to set function .length properly*/) {
+					var rv = ToObject(target);
+					if (arguments.length == 1) return rv;
+					for (var i=1; i<arguments.length; i++) {
+						var source = (typeof(arguments[i]) == "undefined" || arguments[i] === null) ? {} : ToObject(arguments[i]);
+						for (var x in source) {
+							rv[x] = source[x];
+						}
+					}
+					return rv;
+				},
+				writable: true,
+				configurable: true
+			});
+		}
+
 		var load = this.load;
 
 		//	TODO	seems to assume the presence of a global function called 'load' -- should handle this more like other global
@@ -1258,6 +1288,173 @@
 			}
 		})();
 
+// <<<<<<< HEAD
+// 		$api.java = {
+// 			version: {
+// 				property: {
+// 					major: function(javaVersionProperty) {
+// 						var oneDotPattern = /^1\.(.*)\./;
+// 						var majorVersionPattern = /^(\d+)\./;
+// 						if (oneDotPattern.test(javaVersionProperty)) {
+// 							return Number(oneDotPattern.exec(javaVersionProperty)[1]);
+// 						} else if (majorVersionPattern.test(javaVersionProperty)) {
+// 							return Number(majorVersionPattern.exec(javaVersionProperty)[1])
+// 						}
+// 					}
+// 				}
+// 			},
+// 			Install: void(0),
+// 			install: void(0),
+// 			getClass: void(0),
+// 			Array: void(0),
+// 			Command: void(0)
+// 		};
+
+// 		$api.java.Install = (
+// 			/**
+// 			 * @type { slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Install"] }
+// 			 */
+// 			function(home) {
+// 				var File = Packages.java.io.File;
+
+// 				/** @type { ReturnType<slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Install"]> } */
+// 				var basic = {
+// 					toString: function() {
+// 						return "Java home: " + home;
+// 					},
+// 					home: home,
+// 					launcher: (function() {
+// 						if (new File(home, "bin/java").exists()) return new File(home, "bin/java");
+// 						if (new File(home, "bin/java.exe").exists()) return new File(home, "bin/java.exe");
+// 					})(),
+// 					jrunscript: (function() {
+// 						if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
+// 						if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
+// 						if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
+// 						if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
+// 					})(),
+// 					compile: void(0)
+// 				};
+
+// 				(function addCompileMethod(rv) {
+// 					var implementation = function(args) {
+// 						var jarray = Packages.java.lang.reflect.Array.newInstance($api.java.getClass("java.lang.String"),args.length);
+// 						for (var i=0; i<jarray.length; i++) {
+// 							jarray[i] = new Packages.java.lang.String(args[i]);
+// 						}
+// 						var SUPPRESS_COMPILATION_OUTPUT = !$api.debug.on;
+// 						$api.debug("Suppress compilation output = " + SUPPRESS_COMPILATION_OUTPUT)
+// 						var NOWHERE = new JavaAdapter(
+// 							Packages.java.io.OutputStream,
+// 							new function() {
+// 								this.write = function(b){}
+// 							}
+// 						);
+// 						var status = compiler.run(
+// 							Packages.java.lang.System["in"],
+// 							Packages.java.lang.System.out,
+// 							(SUPPRESS_COMPILATION_OUTPUT) ? new Packages.java.io.PrintStream(NOWHERE) : Packages.java.lang.System.err,
+// 							jarray
+// 						);
+// 						if (status) {
+// 							var error = new Error("Compiler exited with status " + status + " with inputs " + args.join(" ")
+// 								+ " and java.class.path=" + Packages.java.lang.System.getProperty("java.class.path"));
+// 							Packages.java.lang.System.err.println(String(error));
+// 							Packages.java.lang.System.err.println(error.stack);
+// 							throw error;
+// 						}
+// 					};
+
+// 					var tried = false;
+// 					var compiler;
+
+// 					Object.defineProperty(rv, "compile", {
+// 						get: function() {
+// 							if (!tried) {
+// 								compiler = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+// 								tried = true;
+// 							}
+// 							if (compiler) {
+// 								return implementation;
+// 							}
+// 							return void(0);
+// 						}
+// 					});
+// 				})(basic);
+
+// 				return basic;
+// 			}
+// 		);
+
+// 		$api.java.install = Object.assign(
+// 			$api.java.Install(new Packages.java.io.File(Packages.java.lang.System.getProperty("java.home"))),
+// 			{
+// 				version: {
+// 					major: function() {
+// 						return $api.java.version.property.major(String(Packages.java.lang.System.getProperty("java.version")));
+// 					}
+// 				}
+// 			}
+// 		);
+
+// 		$api.java.getClass = function(name) {
+// 			return $engine.getClass(name);
+// 		}
+// 		$api.java.Array = function(p) {
+// 			return $engine.newArray(p.type,p.length);
+// 		}
+// 		$api.java.Command = function() {
+// 			var vmArguments = [];
+// 			var properties = {};
+// 			var classpath = [];
+// 			var main;
+// 			var mainArguments = [];
+
+// 			var launchers = {};
+// 			launchers.Vm = function(home) {
+// 				if (!home) home = $api.java.install;
+// 				return function(mode) {
+// 					if (!mode) mode = {};
+// 					if (!mode.input) mode.input = Packages.java.lang.System["in"];
+// 					$api.debug("Invoking launcher: " + home.launcher);
+// 					var tokens = [home.launcher];
+// 					tokens.push.apply(tokens,vmArguments);
+// 					for (var x in properties) {
+// 						tokens.push("-D" + x + "=" + properties[x]);
+// 					}
+// 					if (!classpath.map) {
+// 						Array.prototype.map = function(f,target) {
+// 							if (!target) target = {};
+// 							var rv = [];
+// 							for (var i=0; i<this.length; i++) {
+// 								rv[i] = f.call(target,this[i],i,this);
+// 							}
+// 							return rv;
+// 						}
+// 					}
+// 					tokens.push(
+// 						"-classpath",
+// 						classpath.map(function(_url) {
+// 							if (String(_url.getProtocol()) == "file") {
+// 								return String(new Packages.java.io.File(_url.toURI()).getCanonicalPath());
+// 							} else {
+// 								throw new Error("Cannot fork VM with remote URL in classpath.");
+// 							}
+// 						}).join(String(Packages.java.io.File.pathSeparator))
+// 					)
+// 					tokens.push(main);
+// 					tokens.push.apply(tokens,mainArguments);
+// 					tokens.push( (mode) ? mode : {} );
+// 					$api.debug("Invoking runCommand");
+// 					return $api.engine.runCommand.apply(null,tokens);
+// 				}
+// 			};
+// 			launchers.ClassLoader = function(mode) {
+// 				$api.debug("Running in ClassLoader ...");
+// 				for (var x in properties) {
+// 					if (properties[x]) {
+// 						Packages.java.lang.System.setProperty(x, properties[x]);
+// =======
 		$api.java = (
 			function() {
 				var getMajorVersion = (function() {
@@ -1399,8 +1596,6 @@
 					} else {
 						rv.compile = compile;
 					}
-
-
 
 					return rv;
 				};
@@ -1610,16 +1805,41 @@
 					}
 				};
 
+				var myMajor = function(javaVersionProperty) {
+					var oneDotPattern = /^1\.(.*)\./;
+					var majorVersionPattern = /^(\d+)\./;
+					if (oneDotPattern.test(javaVersionProperty)) {
+						return Number(oneDotPattern.exec(javaVersionProperty)[1]);
+					} else if (majorVersionPattern.test(javaVersionProperty)) {
+						return Number(majorVersionPattern.exec(javaVersionProperty)[1])
+					}
+				};
+
 				return {
 					Install: Install,
-					install: install,
+					install: Object.assign(
+						install,
+						{
+							version: {
+								major: function() {
+									return myMajor(String(Packages.java.lang.System.getProperty("java.version")));
+								}
+							}
+						}
+					),
 					getClass: getClass,
 					Array: Array,
 					Command: Command,
 					versions: versions,
 					getMajorVersion: function() {
 						return getMajorVersion(String(Packages.java.lang.System.getProperty("java.version")));
+					},
+					version: {
+						property: {
+							major: myMajor
+						}
 					}
+// // >>>>>>> origin/main
 				}
 			}
 		)();
