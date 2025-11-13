@@ -59,13 +59,15 @@
  * <table>
  * <thead>
  * <tr><th colspan="2">Setting name</th><th rowspan="2">Description</th></tr>
- * <tr><th>System environment variable</th><th>Java system property</th></tr>
+ * <tr><th>System environment variable</th><th>Launcher system property</th></tr>
  * </thead>
  * <tbody>
  * <tr><td><code>JSH_LAUNCHER_COMMAND_DEBUG</code></td><td>(none)</td><td>Enables debugging within the shell script or native system
  * portion of the <code>jsh</code> launcher</td></tr>
  * <tr><td><code>JSH_LAUNCHER_JDK_HOME</code></td><td>(none)</td><td>Specifies a Java Development Kit that <code>jsh</code> should
  * use to execute the Java-based portion of the <code>jsh</code> launcher</td></tr>
+ * <tr><td><strong>(experimental)</strong> <code>JSH_LAUNCHER_PROPERTY_ARGUMENTS</code></td><td>(none)</td><td>Specifies additional arguments to be passed to the <code>jsh</code> launcher command. Example: <code>-Dfoo=bar -Dbaz=bizzy</code> will set the system properties <code>foo</code> and <code>baz</code> to the values given.</td></tr>
+ * <tr><td><code>JSH_ENGINE</code></td><td><code>jsh.engine</code></td><td>Specifies the JavaScript engine to use for the loader process. Allowed values include <code>rhino</code> and <code>nashorn</code>.</td></tr>
  * </tbody>
  * </table>
  *
@@ -334,7 +336,7 @@ namespace slime.jsh {
  * | `jsh.shell.src` | If this is an unbuilt shell, the launcher needs to know where the root directory of the SLIME source code is. |
  * | `jsh.engine` | If specified, will override the default mechanism for selecting a JavaScript engine and use the specified value. |
  * | `jsh.engine.rhino.classpath` | If specified, will override the default mechanism for locating Rhino. |
- * | `jsh.launcher.debug` | If this is present, and Rhino is used to execute the launcher script, then the launcher script will be executed in the Rhino debugger. |
+ * | `jsh.launcher.debug` | Turns on debugging output for the launcher script. ~~If this is present, and Rhino is used to execute the launcher script, then the launcher script will be executed in the Rhino debugger.~~ **This is not true at the moment, but may become true again with a future move to a Java-based launcher.** |
  *
  * #### Responsibilities
  *

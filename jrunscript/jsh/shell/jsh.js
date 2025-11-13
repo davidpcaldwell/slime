@@ -940,10 +940,6 @@
 			return is;
 		})(module.run);
 
-		//if (String($exports.properties.object.jsh.plugins)) {
-		//	$exports.jsh.plugins = $context.api.file.filesystem.Searchpath.parse(String($exports.properties.object.jsh.plugins));
-		//}
-
 		// Packages.java.lang.System.err.println(String(Packages.java.lang.System.getProperties()));
 		// Packages.java.lang.System.err.println(JSON.stringify($exports.properties.object,void(0),"    "));
 		if (module.properties.object.jsh && module.properties.object.jsh.shell && module.properties.object.jsh.shell.home) {

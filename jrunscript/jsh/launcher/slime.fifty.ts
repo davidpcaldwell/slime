@@ -38,26 +38,20 @@ namespace slime.jsh.internal.launcher {
 
 		home: any
 
-		/**
-		 * Returns a string representing the explicit value of a named setting (for example, `foo.bar.baz`); uses first system
-		 * properties and then environment variables (for example, `FOO_BAR_BAZ`) to locate the value.
-		 *
-		 * @param name The period-delimited name of a setting.
-		 *
-		 * @returns The string value of the setting, or `null` if the setting was not explicitly provided.
-		 */
-		setting: (name: string) => string
-
 		settings: {
+			set: (name: string, value: string) => void
+			default: (name: string, value: string | (() => string)) => void
+
 			/**
 			 * Returns the effective value for a given setting.
 			 */
 			get: (name: string) => string
-			set: (name: string, value: any) => void
-			default: (name: string, value: any) => void
 
-			getContainerArguments: any
-			sendPropertiesTo: any
+			//	Probably redundant but currently appears to be used in packaged shells, where applyTo does not apply in the same
+			//	way given that there is no loader VM.
+			sendPropertiesTo: (recipient: slime.internal.jrunscript.bootstrap.JavaCommand) => void
+
+			applyTo: (recipient: slime.internal.jrunscript.bootstrap.JavaCommand) => void
 		}
 
 		Src: (p: {

@@ -105,7 +105,6 @@
 		//			}
 		//		}
 		//
-		//	TODO	Provide runtime access to plugin path, with jsh.shell.jsh.plugins?
 		var Packages = this.Packages;
 
 		try {
@@ -119,7 +118,7 @@
 			}
 
 			//	Might be redundant (this is set in main.js) or, per comment above, might be used in packaged scripts? Unknown.
-			if ($$api.slime.setting("jsh.launcher.debug") && !$$api.debug.on) {
+			if ($$api.slime.settings.get("jsh.launcher.debug") && !$$api.debug.on) {
 				$$api.debug.on = true;
 				$$api.debug("debugging enabled");
 			}

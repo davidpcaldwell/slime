@@ -49,7 +49,6 @@
 			var rv = {
 				launcher: void(0),
 				home: void(0),
-				setting: void(0),
 				settings: void(0),
 				Src: function(src) {
 					/** @type { Partial<slime.jsh.internal.launcher.Slime["src"]> } */
@@ -241,197 +240,306 @@
 				}
 			}
 
-			rv.setting = function(name) {
-				if (Packages.java.lang.System.getProperty(name) !== null) {
-					return String(Packages.java.lang.System.getProperty(name));
-				}
-				var ename = name.replace(/\./g, "_").toUpperCase();
-				if (Packages.java.lang.System.getenv(ename) !== null) {
-					return String(Packages.java.lang.System.getenv(ename));
-				}
-				return null;
-			};
+			rv.settings = (function() {
+				/** @typedef { { launcher: boolean, loader: boolean, loaderVmArguments?: (value: string) => string[] } } Definition */
 
-			rv.settings = new function() {
+				/** @typedef { { set: (value: string) => void, default: (f: () => string) => void, get: () => string, loaderVmArguments: () => string[], getLoaderProperty: () => string } } Setting */
+
+				/** @type { Record<string, Setting> } */
 				var all = {};
 
-				//	TODO	if these are actually indistinguishable, then below we are apparently using them as outdated documentation.
-				//			Refactor until it makes sense.
-				var LAUNCHER = {};
-				var LOADER = {};
-				var BOTH = {};
-
-				var map = function(name,type) {
-					//	If 'type' has a container property, it will be invoked with the setting effective value to get an array of
-					//	string arguments to pass to the container/loader VM.
-					all[name] = {
-						type: type
-					};
+				/**
+				 * Returns a string representing the explicit value of a named setting (for example, `foo.bar.baz`); uses first system
+				 * properties and then environment variables (for example, `FOO_BAR_BAZ`) to locate the value.
+				 *
+				 * @param name The period-delimited name of a setting.
+				 *
+				 * @returns The string value of the setting, or `null` if the setting was not explicitly provided.
+				 */
+				var explicit = function(name) {
+					if (Packages.java.lang.System.getProperty(name) !== null) {
+						return String(Packages.java.lang.System.getProperty(name));
+					}
+					var ename = name.replace(/\./g, "_").toUpperCase();
+					if (Packages.java.lang.System.getenv(ename) !== null) {
+						return String(Packages.java.lang.System.getenv(ename));
+					}
+					return null;
 				};
 
-				map("jsh.debug.jdwp", {
-					container: function(value) {
+				/**
+				 * @param { string } name
+				 * @param { Definition } definition
+				 * @returns { Setting }
+				 */
+				var Setting = function(name,definition) {
+					/** @type { string } */
+					var value;
+
+					/** @type { () => string } */
+					var getDefault;
+
+					/**
+					 * @type { () => string }
+					 */
+					var get = function() {
+						if (!all[name]) {
+							throw new Error("Cannot read: " + name);
+						}
+						var specified = explicit(name);
+						if (specified !== null) {
+							return specified;
+						}
+						if (value) {
+							return value;
+						}
+						if (getDefault) {
+							return getDefault();
+						}
+					}
+
+					var rv = {
+						set: function(v) {
+							value = v;
+						},
+						default: function(f) {
+							getDefault = f;
+						},
+						get: function() {
+							if (definition.launcher) return get();
+							return void(0);
+						},
+						loaderVmArguments: function() {
+							var loaderVmArguments = definition.loaderVmArguments || function(v) { return /** @type { string[] }*/([]); };
+							var value = get();
+							var args = loaderVmArguments(value);
+							return args;
+						},
+						getLoaderProperty: function() {
+							if (definition.loader) return get();
+							return void(0);
+						}
+					};
+
+					all[name] = rv;
+
+					return rv;
+				};
+
+				var LAUNCHER = {
+					launcher: true,
+					loader: false
+				};
+				var LOADER = {
+					launcher: false,
+					loader: true,
+				};
+				var BOTH = {
+					launcher: true,
+					loader: true
+				};
+				var LOADER_VM = function(f) {
+					return {
+						launcher: false,
+						loaderVmArguments: function(value) {
+							if (!value) return [];
+							return f(value);
+						},
+						loader: false
+					}
+				}
+
+				//	TODO	audit all environment variables and properties accessed in launcher and loader
+
+				Setting(
+					"jsh.debug.jdwp",
+					LOADER_VM(function(value) {
 						if (value == "false") {
 							return [];
 						} else {
 							return ["-agentlib:jdwp=" + value];
 						}
-					}
-				});
-				map("jsh.debug.script", LOADER);
-				map("jsh.profiler.script", LOADER);
+					})
+				);
 
-				map("jsh.jvm.options", {
-					container: function(value) {
+				//	Used by launcher to help decide on engine and also to launch profiler agent for Rhino profiler; used by loader
+				//	to configure script debugger
+				Setting("jsh.debug.script", BOTH);
+
+				Setting("jsh.jvm.options",
+					LOADER_VM(function(value) {
 						return value.split(" ");
-					}
-				});
-				map("jsh.log.java.properties", {
-					container: function(value) {
+					})
+				);
+
+				Setting("jsh.log.java.properties",
+					LOADER_VM(function(value) {
 						return ["-Djava.util.logging.config.file=" + value];
-					}
-				});
+					})
+				);
 
-				map("jsh.engine", BOTH);
-				map("jsh.engine.rhino.classpath", BOTH);
-				map("jsh.engine.rhino.optimization", BOTH);
+				//	Used in launcher for engine selection; we want this value to be available in the loader also
+				Setting("jsh.engine", BOTH);
 
-				map("jsh.shell.tmpdir", {
-					launcher: function(value) {
-						return ["-Djava.io.tmpdir=" + value];
-					},
-					container: function(value) {
-						return ["-Djava.io.tmpdir=" + value];
-					}
-				});
+				//	Used in launcher for engine selection; we want this value to be available in the loader also, particularly for
+				//	launching subshells
+				Setting("jsh.engine.rhino.classpath", BOTH);
 
-				//	Sent from launcher to loader
-				map("jsh.shell.src", BOTH);
-				map("jsh.shell.lib", BOTH);
-				// map("jsh.shell.home", BOTH);
-				// map("jsh.shell.packaged", BOTH);
-				// map("jsh.shell.packaged.plugins", BOTH);
+				//	We don't need this here, but the loader needs it to configure Rhino
+				Setting("jsh.engine.rhino.optimization", LOADER);
 
-				//	TODO	not settled on these names for plugins
-				map("jsh.shell.classes", BOTH);
-				map("jsh.shell.plugins", BOTH);
-				map("jsh.shell.classpath", BOTH);
-				map("jsh.shell.profiler", BOTH);
-				// map("jsh.user.plugins", BOTH);
+				//	TODO	we need to figure out a better solution if the caller sets `java.io.tmpdir` on the launcher; it would
+				//			seem a little counterintuitive that the loader would not respect it
 
-				//	Undocumented so far
-				map("jsh.launcher.script.api", BOTH);
-				map("jsh.launcher.script.main", BOTH);
+				//	BUT if we do simply pass through `java.io.tmpdir` and just share it between the two, then you cannot set it via
+				//	an environment variable (like JAVA_IO_TMPDIR) because the launcher VM will already have a default java.io.tmpdir
+				//	set by the JVM itself, so the environment variable will have no effect.
 
-				//	May not survive refactoring
-				map("jsh.launcher.debug", LAUNCHER);
-				map("jsh.shell.container", LAUNCHER);
+				//	So for now we use a different property, and it will be used only by the loader
 
-				map("jsh.plugins", LOADER);
+				//	We pass this through to the loader as the loader temporary file location
+				Setting("jsh.shell.tmpdir", LOADER_VM(function(value) {
+					return ["-Djava.io.tmpdir=" + value];
+				})),
 
-				//	TODO	should be treated as JVM-level variable
-				map("jsh.java.home", BOTH);
+				//	Sent from launcher to loader so that loader can locate the shell implementation
+				Setting("jsh.shell.src", LOADER);
 
-				map("jsh.loader.noproxy", BOTH);
-				map("jsh.github.api.protocol", BOTH);
+				//	Used by launcher to locate engine; used by loader to find shell tools like Node, also made available to scripts
+				Setting("jsh.shell.lib", BOTH);
 
-				//	TODO	Seem to be used in loader:
-				//	Main.java:
-				//	jsh.shell.packaged
+				//	This setting is calculated by the loader itself by examining the Java code source.
+				//	TODO	revisit this
+				// Setting("jsh.shell.home", BOTH);
 
-				this.set = function(name,value) {
-					if (!all[name]) throw new Error("Not defined: " + name);
-					all[name].value = value;
+				//	This setting is calculated by the loader itself by examining the system resources.
+				//	TODO	revisit this
+				//	TODO	but is the launcher even used by packaged applications?
+				// Setting("jsh.shell.packaged", BOTH);
+
+				//	Used by launcher to compile the shell and by loader to load the classes
+				Setting("jsh.shell.classes", BOTH);
+
+				//	Used to configure launcher in subshells, it appears, to that it does not have to recompile classes?
+				//	If that's right, both launcher and loader need it
+				//	TODO	figure this out
+				Setting("jsh.shell.classpath", BOTH);
+
+				//	Used to configure the profiler using a -javaagent: VM argument; logically might be possible to implement as
+				//	LOADER_VM, but the code is not organized that way yet
+				Setting("jsh.shell.profiler", LAUNCHER);
+
+				//	Determines whether the launcher emits debugging output.
+				//	TODO	could convert this to use standard Java logging configuration, though that would be much more verbose;
+				//			this could also be a shortcut for that mechanism, but it seems like the Java logging APIs don't make it
+				//			super-easy to install a configuration at runtime
+				Setting("jsh.launcher.debug", LAUNCHER);
+
+				//	Intended to be used to select configuration for loader, whether to use separate VM or not. Unclear whether it
+				//	is actually used currently
+				//	TODO	figure it out
+				Setting("jsh.shell.container", LAUNCHER);
+
+				//	Allows specification of the Java to use. Loader does not need this; can use `java.home`.
+				Setting("jsh.java.home", LAUNCHER);
+
+				//	Allows specifying to the launcher not to pass proxy-related properties through to the loader; otherwise
+				//	properties like http.proxyHost are passed through
+				//	TODO	should modify the above to use the mechanism we are already using here; if we specified http.proxyHost
+				//			as BOTH we could remove the code that is manually doing this, though we might need to support the
+				//			jsh.loader.noproxy use case with some kind of additional construct; possibly we could have the concept
+				//			of setting a property to `null` in the Setting implementation
+				Setting("jsh.loader.noproxy", BOTH);
+
+				//	Used to configure GitHub API access in the loader. May not be necessary now that we know how to run mock HTTPS
+				//	servers.
+				//	TODO	figure out whether this can be removed. Seems like yes, since no test code seems to set it, so it is
+				//			possibly unused
+				Setting("jsh.github.api.protocol", LOADER);
+
+				/**
+				 * @type { slime.jsh.internal.launcher.Slime["settings"]["set"] }
+				 */
+				var set = function(name,value) {
+					all[name].set(value);
 				}
 
 				/**
 				 * @type { slime.jsh.internal.launcher.Slime["settings"]["default"] }
 				 */
-				this.default = function(name,value) {
+				var setDefault = function(name,value) {
 					if (typeof(value) == "undefined") return;
+					/** @type { () => string } */
+					var getValue;
 					if (typeof(value) != "function") {
-						value = (function(rv) {
+						getValue = (function(rv) {
 							return function() {
 								return rv;
 							}
 						})(value);
+					} else {
+						getValue = value;
 					}
-					all[name].default = value;
+					if (!all[name]) throw new Error("Cannot set default for " + name);
+					all[name].default(getValue);
 				};
 
+				//	If SLIME source location not specified, and we can determine it, supply it to the shell
+				if (rv.src) setDefault("jsh.shell.src", String(rv.src));
+
+				/**
+				 * @type { slime.jsh.internal.launcher.Slime["settings"]["get"] }
+				 */
 				var get = function(name) {
-					var value = rv.setting(name);
-					return (value === null) ? void(0) : value;
-				};
-
-				this.get = function(name) {
 					if (!all[name]) {
 						throw new Error("Cannot read: " + name);
 					}
-					var specified = get(name);
-					if (typeof(specified) != "undefined") {
-						return specified;
-					}
-					if (all[name] && typeof(all[name].value) != "undefined") {
-						return all[name].value;
-					}
-					if (all[name] && all[name]["default"]) {
-						return all[name]["default"]();
-					}
+					return all[name].get();
 				}
 
 				//	Added to VM arguments for loader VM
-				this.getContainerArguments = function() {
+				/**
+				 * @type { () => string[] }
+				 */
+				var getLoaderVmArguments = function() {
+					/** @type { string[] } */
 					var rv = [];
 					for (var x in all) {
-						var value = this.get(x);
-						if (value) {
-							if (all[x].type.container) {
-								rv = rv.concat(all[x].type.container(value));
-							} else {
-								// rv.push("-D" + x + "=" + value);
-							}
-						}
+						rv = rv.concat(all[x].loaderVmArguments());
 					}
 					return rv;
 				};
 
-
-				this.sendPropertiesTo = function(f) {
-					if (typeof(f) == "object" && typeof(f.systemProperty) == "function") {
-						f = (function(target) {
-							return function(name,value) {
-								target.systemProperty(name,value);
-							};
-						})(f);
-					}
+				/**
+				 * @type { slime.jsh.internal.launcher.Slime["settings"]["sendPropertiesTo"] }
+				 */
+				var sendPropertiesTo = function(o) {
 					for (var x in all) {
-						var value = this.get(x);
+						var value = all[x].getLoaderProperty();
 						if (value) {
-							f(x,value);
+							o.systemProperty(x,value);
 						}
 					}
 				};
 
-				// this.getPropertyArguments = function() {
-				// 	var rv = [];
-				// 	for (var x in all) {
-				// 		var value = this.get(x);
-				// 		if (value) {
-				// 			rv.push("-D" + x + "=" + value);
-				// 		}
-				// 	}
-				// 	return rv;
-				// };
+				/**
+				 * @type { slime.jsh.internal.launcher.Slime["settings"]["applyTo"] }
+				 */
+				var applyTo = function(command) {
+					getLoaderVmArguments().forEach(function(arg) {
+						command.vm(arg);
+					});
+					sendPropertiesTo(command);
+				}
 
-				// this.environment = function(rv) {
-				// 	for (var x in all) {
-				// 		if (all[x].type.environment && all[x].value) {
-				// 			rv[x] = String(all[x].value);
-				// 		}
-				// 	}
-				// }
-			};
+				return {
+					set: set,
+					default: setDefault,
+					get: get,
+					sendPropertiesTo: sendPropertiesTo,
+					applyTo: applyTo
+				};
+			})();
 
 			return rv;
 		})(configuration);
