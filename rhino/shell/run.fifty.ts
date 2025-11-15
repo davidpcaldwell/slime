@@ -53,7 +53,7 @@ namespace slime.jrunscript.shell.internal.run {
 
 	export interface Exports {
 		exports: {
-			subprocess: slime.jrunscript.shell.exports.subprocess
+			subprocess: slime.jrunscript.shell.subprocess.Exports
 		}
 
 		test: {
