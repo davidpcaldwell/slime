@@ -17,118 +17,121 @@
 	 * @param { slime.Loader } $loader
 	 */
 	function(Packages,plugins,plugin,$slime,$api,jsh,$loader) {
-		var code = {
-			/** @type { slime.jsh.script.old.application.Script } */
-			Application: $loader.script("Application.js")
-		}
-		/**
-		 * @param { slime.jsh.script.internal.Context } $context
-		 * @returns { slime.jsh.script.Exports }
-		 */
-		var load = function($context) {
-			/** @type { Partial<slime.jsh.script.Exports> } */
-			var $exports = {};
+		// var code = {
+		// 	/** @type { slime.jsh.script.old.application.Script } */
+		// 	Application: $loader.script("Application.js")
+		// }
+		// /**
+		//  * @param { slime.jsh.script.internal.Context } $context
+		//  * @returns { slime.jsh.script.Exports }
+		//  */
+		// var load = function($context) {
+		// 	/** @type { Partial<slime.jsh.script.Exports> } */
+		// 	var $exports = {};
 
-			if ($context.file) {
-				$exports.file = $context.file;
-				$exports.script = $context.file;
+		// 	if ($context.file) {
+		// 		$exports.file = $context.file;
+		// 		$exports.script = $context.file;
 
-				$exports.pathname = $context.file.pathname;
-				$api.deprecate($exports,"pathname");
-				$exports.getRelativePath = function(path) {
-					return $context.file.parent.getRelativePath(path);
-				}
-				$api.deprecate($exports,"getRelativePath");
-			} else if ($context.packaged) {
-				$exports.file = $context.packaged.file;
-			} else if ($context.uri) {
-				$exports.url = $context.api.web.Url.parse($context.uri);
-			} else {
-			//	throw new Error("Unreachable.");
-			}
-			$exports.arguments = $context.arguments;
-			$exports.addClasses = $api.deprecate($context.api.addClasses);
+		// 		$exports.pathname = $context.file.pathname;
+		// 		$api.deprecate($exports,"pathname");
+		// 		$exports.getRelativePath = function(path) {
+		// 			return $context.file.parent.getRelativePath(path);
+		// 		}
+		// 		$api.deprecate($exports,"getRelativePath");
+		// 	} else if ($context.packaged) {
+		// 		$exports.file = $context.packaged.file;
+		// 	} else if ($context.uri) {
+		// 		$exports.url = $context.api.web.Url.parse($context.uri);
+		// 	} else {
+		// 	//	throw new Error("Unreachable.");
+		// 	}
+		// 	$exports.arguments = $context.arguments;
+		// 	$exports.addClasses = $api.deprecate($context.api.addClasses);
 
-			//	TODO	should jsh.script.loader support some sort of path structure?
-			if ($context.packaged) {
-				$exports.loader = $context.packaged.loader;
-			} else if ($context.file) {
-				$exports.loader = new $context.api.file.Loader({ directory: $context.file.parent });
-			} else if ($context.uri) {
-				Object.defineProperty($exports, "loader", new function() {
-					var value;
+		// 	//	TODO	should jsh.script.loader support some sort of path structure?
+		// 	if ($context.packaged) {
+		// 		$exports.loader = $context.packaged.loader;
+		// 	} else if ($context.file) {
+		// 		$exports.loader = new $context.api.file.Loader({ directory: $context.file.parent });
+		// 	} else if ($context.uri) {
+		// 		Object.defineProperty($exports, "loader", new function() {
+		// 			var value;
 
-					var get = function() {
-						var http = $context.api.http();
-						var client = new http.Client();
-						var base = $context.uri.split("/").slice(0,-1).join("/") + "/";
-						return new client.Loader(base);
-					};
+		// 			var get = function() {
+		// 				var http = $context.api.http();
+		// 				var client = new http.Client();
+		// 				var base = $context.uri.split("/").slice(0,-1).join("/") + "/";
+		// 				return new client.Loader(base);
+		// 			};
 
-					this.get = function() {
-						if (!value) {
-							value = get();
-						}
-						return value;
-					};
+		// 			this.get = function() {
+		// 				if (!value) {
+		// 					value = get();
+		// 				}
+		// 				return value;
+		// 			};
 
-					this.set = function(v) {
-						//	TODO	validate argument
-						value = v;
-					};
-				});
-			}
+		// 			this.set = function(v) {
+		// 				//	TODO	validate argument
+		// 				value = v;
+		// 			};
+		// 		});
+		// 	}
 
-			if ($context.file) {
-				$exports.Loader = function(path) {
-					var base = $context.file.parent.getRelativePath(path).directory;
-					return new $context.api.file.Loader({ directory: base });
-				};
-			} else if ($context.uri) {
-				var _uri = new Packages.java.net.URI($context.uri);
-				$exports.Loader = function(path) {
-					var _relative = _uri.resolve(path);
-					var base = _relative.toString();
-					var http = $context.api.http();
-					return new http.Client().Loader(base);
-				}
-			}
+		// 	if ($context.file) {
+		// 		$exports.Loader = function(path) {
+		// 			var base = $context.file.parent.getRelativePath(path).directory;
+		// 			return new $context.api.file.Loader({ directory: base });
+		// 		};
+		// 	} else if ($context.uri) {
+		// 		var _uri = new Packages.java.net.URI($context.uri);
+		// 		$exports.Loader = function(path) {
+		// 			var _relative = _uri.resolve(path);
+		// 			var base = _relative.toString();
+		// 			var http = $context.api.http();
+		// 			return new http.Client().Loader(base);
+		// 		}
+		// 	}
 
-			$exports.getopts = $loader.file("getopts.js", {
-				$arguments: $exports.arguments,
-				$Pathname: $context.api.file.Pathname,
-				parser: $context.api.parser
-			}).getopts;
+		// 	$exports.getopts = $loader.file("getopts.js", {
+		// 		$arguments: $exports.arguments,
+		// 		$Pathname: $context.api.file.Pathname,
+		// 		parser: $context.api.parser
+		// 	}).getopts;
 
-			$exports.Application = Object.assign(
-				code.Application({
-					getopts: $exports.getopts
-				}),
-				{
-					run: void(0)
-				}
-			);
+		// 	$exports.Application = Object.assign(
+		// 		code.Application({
+		// 			getopts: $exports.getopts
+		// 		}),
+		// 		{
+		// 			run: void(0)
+		// 		}
+		// 	);
 
-			//	TODO	think this through, what about packaged shells etc.?
-			$exports.world = ($context.file) ? {
-				file: {
-					filesystem: $context.api.file.world.filesystems.os,
-					pathname: $context.file.toString()
-				}
-			} : void(0)
+		// //	TODO	think this through, what about packaged shells etc.?
+		// $exports.world = ($context.file) ? {
+		// 	file: {
+		// 		filesystem: $context.api.file.world.filesystems.os,
+		// 		pathname: $context.file.toString()
+		// 	}
+		// } : void(0)
 
-			/** @returns {slime.jsh.script.Exports} */
-			var finished = function(partial) { return partial; }
+		// /** @returns {slime.jsh.script.Exports} */
+		// var finished = function(partial) { return partial; }
 
-			var rv = finished($exports);
-			return rv;
-		};
+		// var rv = finished($exports);
+		// return rv;
+		// };
 
 		plugin({
 			isReady: function() {
 				return Boolean(jsh.js && jsh.web && jsh.java && jsh.file && jsh.http && plugins.shell);
 			},
 			load: function() {
+				/** @type { slime.jsh.script.internal.Script } */
+				var implementation = $loader.script("implementation.js");
+
 				/** @type { slime.jsh.script.internal.Source } */
 				var source = (function() {
 					var _script = $slime.getInvocation().getScript();
@@ -187,7 +190,7 @@
 					}
 				})(jsh.file.filesystem, plugins.shell.PWD);
 
-				jsh.script = load(
+				jsh.script = implementation(
 					$api.Object.compose(
 						{
 							api: {
@@ -486,6 +489,7 @@
 											rv.arguments.push(p.arguments[i]);
 										}
 									}
+
 									return rv;
 								}
 							}
