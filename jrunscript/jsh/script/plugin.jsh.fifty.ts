@@ -1211,4 +1211,6 @@ namespace slime.jsh.script.internal {
 		directory: slime.jrunscript.file.Directory
 		arguments: string[]
 	}
+
+	export type Script = slime.$api.fp.Mapping<Context,slime.jsh.script.Exports>
 }
