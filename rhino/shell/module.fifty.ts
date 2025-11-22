@@ -182,16 +182,16 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
-		export interface subprocess {}
+	export namespace subprocess {
+		export interface Exports {}
 	}
 
 	export interface Exports {
-		subprocess: exports.subprocess
+		subprocess: subprocess.Exports
 	}
 
-	export namespace exports {
-		export interface subprocess {
+	export namespace subprocess {
+		export interface Exports {
 			action: slime.$api.fp.world.Means<run.Intention,run.TellEvents>
 			question: slime.$api.fp.world.Sensor<run.Intention,run.AskEvents,run.Exit>
 		}
@@ -852,7 +852,7 @@ namespace slime.jrunscript.shell {
 	export interface Exports {
 		rhino: any
 
-		/** @deprecated Replaced by the {@link slime.jrunscript.shell.exports.subprocess subprocess} APIs. */
+		/** @deprecated Replaced by the {@link slime.jrunscript.shell.subprocess.Exports subprocess} APIs. */
 		world: {
 			/**
 			 * @deprecated Replaced by the {@link Context} `world.subprocess` property, which allows a mock (or other) implementation to

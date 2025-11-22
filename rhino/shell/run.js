@@ -521,7 +521,7 @@
 							Invocation_from_intention
 						);
 
-						/** @type { slime.jrunscript.shell.exports.subprocess } */
+						/** @type { slime.jrunscript.shell.subprocess.Exports } */
 						var rv = {
 							action: function(p) {
 								return Invocation.action(
