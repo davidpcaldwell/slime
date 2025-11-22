@@ -19,7 +19,8 @@
 		plugin({
 			isReady: function() {
 				return Boolean(
-					jsh.js
+					jsh.internal && jsh.internal.bootstrap
+					&& jsh.js
 					&& jsh.web
 					&& jsh.java
 					&& jsh.ip

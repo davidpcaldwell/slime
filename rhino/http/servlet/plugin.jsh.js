@@ -187,22 +187,29 @@
 
 				//	TODO	allow system property in addition to environment variable?
 				var TOMCAT_CLASS = (function() {
-					var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
-					if (!TOMCAT_CLASS && CATALINA_HOME) {
-						[
-							"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
-							"lib/catalina.jar"
-							,"lib/annotations-api.jar"
-							//	below added for Tomcat 8
-							,"lib/tomcat-jni.jar"
-							,"lib/tomcat-util-scan.jar"
-							,"lib/jaspic-api.jar"
-						].forEach(function(path) {
-							jsh.loader.java.add(CATALINA_HOME.getRelativePath(path));
-						});
-						TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
+					try {
+						var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
+						if (!TOMCAT_CLASS && CATALINA_HOME) {
+							[
+								"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
+								"lib/catalina.jar"
+								,"lib/annotations-api.jar"
+								//	below added for Tomcat 8
+								,"lib/tomcat-jni.jar"
+								,"lib/tomcat-util-scan.jar"
+								,"lib/jaspic-api.jar"
+							].forEach(function(path) {
+								jsh.loader.java.add(CATALINA_HOME.getRelativePath(path));
+							});
+							debugger;
+							TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
+						}
+						return TOMCAT_CLASS;
+					} catch (e) {
+						debugger;
+						//	TODO	probably Tomcat version is too new
+						return null;
 					}
-					return TOMCAT_CLASS;
 				})();
 
 				jsh.java.log.named("jsh.httpd").CONFIG("When trying to load Tomcat: class = %s CATALINA_HOME = %s", TOMCAT_CLASS, CATALINA_HOME);
@@ -361,8 +368,13 @@
 							 */
 							var addServlet = function(context,resources,pattern,servletName,servletDeclaration) {
 								var servletImplementation = jsh.httpd.spi.servlet.inWebapp(resources,servletDeclaration);
+								//	TODO	repeated in rhino/http/servlet/server.js
+								var servletApiPackage = (function() {
+									if (jsh.java.getClass("javax.servlet.http.HttpServlet")) return Packages.javax.servlet;
+									if (jsh.java.getClass("jakarta.servlet.http.HttpServlet")) return Packages.jakarta.servlet;
+								})();
 								Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
-									Packages.javax.servlet.http.HttpServlet,
+									servletApiPackage.http.HttpServlet,
 									new function() {
 										//	TODO	could use jsh.io here
 										var servlet;
