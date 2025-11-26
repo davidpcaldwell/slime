@@ -123,56 +123,34 @@
 				$$api.debug("debugging enabled");
 			}
 
-			$$api.jsh = {
-				exit: void(0),
-				engines: void(0),
-				shell: void(0),
-				Built: void(0),
-				Unbuilt: void(0),
-				Packaged: void(0),
-				Classpath: void(0)
-			};
-
-			$$api.jsh.exit = $$api.engine.resolve({
-				rhino: function(status) {
-					var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
-					_field.setAccessible(true);
-					if (status === null) {
-						_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Engine.Rhino.NULL_EXIT_STATUS));
-					} else {
-						_field.set(null, new Packages.java.lang.Integer(status));
-					}
-				},
-				nashorn: function(status) {
-					if (status !== null) {
-						Packages.java.lang.System.exit(status);
-					}
-				},
-				//	TODO	the below is untested
-				graal: function(status) {
-					if (status !== null) {
-						Packages.java.lang.System.exit(status);
-					}
-				}
-			});
-
-			$$api.jsh.engines = {
+			var engines = {
 				rhino: {
 					main: "inonit.script.jsh.Rhino",
-					resolve: function(o) {
-						return o.rhino;
+					exit: function(status) {
+						var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
+						_field.setAccessible(true);
+						if (status === null) {
+							_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Engine.Rhino.NULL_EXIT_STATUS));
+						} else {
+							_field.set(null, new Packages.java.lang.Integer(status));
+						}
 					}
 				},
 				nashorn: {
 					main: "inonit.script.jsh.Nashorn",
-					resolve: function(o) {
-						return o.nashorn;
+					exit: function(status) {
+						if (status !== null) {
+							Packages.java.lang.System.exit(status);
+						}
 					}
 				},
 				graal: {
 					main: "inonit.script.jsh.Graal",
-					resolve: function(o) {
-						return o.graal;
+					//	TODO	the below is untested
+					exit: function(status) {
+						if (status !== null) {
+							Packages.java.lang.System.exit(status);
+						}
 					}
 				}
 			};
@@ -226,10 +204,19 @@
 				}
 			};
 
-			//	TODO	Merge below with above
-			$$api.jsh.Classpath = Classpath;
-
-			$$api.script.resolve("javac.js").load();
+			$$api.jsh = {
+				engines: engines,
+				exit: $$api.engine.resolve({
+					rhino: engines.rhino.exit,
+					nashorn: engines.nashorn.exit,
+					graal: engines.graal.exit
+				}),
+				Classpath: Classpath,
+				Unbuilt: void(0),
+				Built: void(0),
+				Packaged: void(0),
+				shell: void(0)
+			};
 
 			//	setting is a string representing the jsh.shell.lib property value
 			//	rhino is an explicitly-set classpath for Rhino, which we currently do only on unbuilt shells since that would be
@@ -308,6 +295,8 @@
 			 */
 			$$api.jsh.Unbuilt = function(p) {
 				if (!p) throw new TypeError("Required: arguments[0]");
+
+				$$api.script.resolve("javac.js").load();
 
 				var src = p.src || $$api.slime.src;
 
@@ -616,11 +605,13 @@
 					this.classpath = function() {
 						var rv = new Classpath();
 
-						$$api_jsh_engine.resolve({
+						$$api.engine.resolve({
 							rhino: function() {
 								rv.append(getRhinoClasspath());
 							},
 							nashorn: function() {
+							},
+							graal: function() {
 							}
 						})();
 

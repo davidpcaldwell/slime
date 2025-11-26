@@ -29,26 +29,19 @@ namespace slime.jsh.internal.launcher {
 		shellClasspath: (p?: { source: number, target: number }) => slime.jrunscript.native.java.net.URL[]
 	}
 
-	export interface Jsh {
-		exit: any
-	}
-
 	export interface Engine {
 		/**
 		 * The name of the `jsh` main class for this engine.
 		 */
 		main: string
-
-		resolve: <T>(engines: { [name: string]: T }) => T
 	}
 
 	export interface Jsh {
-		engines: {
-			rhino: Engine
-			nashorn: Engine
-			graal: Engine
-			[name: string]: Engine
-		}
+		engines: slime.internal.jrunscript.bootstrap.PerEngine<Engine>
+	}
+
+	export interface Jsh {
+		exit: any
 	}
 
 	export interface Jsh {
@@ -74,25 +67,25 @@ namespace slime.jsh.internal.launcher {
 
 		Packaged: (p: slime.jrunscript.native.java.io.File) => Installation
 
-		shell: {
+		shell?: {
 			packaged?: string
 			rhino: any
 			classpath: any
 			current: Installation
 		}
 
+		//	TODO: Set in main.js
 		current?: {
 			installation?: Installation
 		}
 	}
 
-	interface Additions {
+	export interface Additions {
 		slime: slime.jsh.internal.launcher.Slime
 		jsh: slime.jsh.internal.launcher.Jsh
 	}
 
-	interface JavaAdditions {
-		compile: slime.jsh.internal.launcher.javac.compile
+	export interface JavaAdditions {
 	}
 
 	export type Global = slime.internal.jrunscript.bootstrap.Global<Additions,JavaAdditions>

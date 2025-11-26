@@ -189,6 +189,7 @@
 					return complete(rv);
 				}
 			};
+
 			if (was && was.built) {
 				rv.launcher = new function() {
 					this.getClasses = function() {
@@ -330,14 +331,17 @@
 					launcher: true,
 					loader: false
 				};
+
 				var LOADER = {
 					launcher: false,
 					loader: true,
 				};
+
 				var BOTH = {
 					launcher: true,
 					loader: true
 				};
+
 				var LOADER_VM = function(f) {
 					return {
 						launcher: false,
@@ -347,7 +351,7 @@
 						},
 						loader: false
 					}
-				}
+				};
 
 				//	TODO	audit all environment variables and properties accessed in launcher and loader
 

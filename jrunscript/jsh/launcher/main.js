@@ -450,16 +450,18 @@
 
 		var classpath = new $api.jsh.Classpath(_urls);
 
-		var engine = $api.jsh.engines[$api.slime.settings.get("jsh.engine")];
+		var engineId = /** @type { keyof slime.internal.jrunscript.bootstrap.PerEngine } */($api.slime.settings.get("jsh.engine"));
 
-		if (!engine) throw new Error("Specified engine [" + $api.slime.settings.get("jsh.engine") + "]" + " not found;"
+		var engine = $api.jsh.engines[engineId];
+
+		if (!engine) throw new Error("Specified engine [" + engineId + "]" + " not found;"
 			+ " JSH_ENGINE=" + $api.shell.environment.JSH_ENGINE
 			+ " jsh.engine=" + Packages.java.lang.System.getProperty("jsh.engine")
 			+ " shell=" + shell
 		);
 
 		//	TODO	Are we really using classloader launch under Rhino?
-		var fork = engine.resolve({
+		var fork = $api.engine.resolve({
 			rhino: false,
 			nashorn: true,
 			graal: true

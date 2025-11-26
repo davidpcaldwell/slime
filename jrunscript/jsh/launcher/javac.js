@@ -11,6 +11,7 @@
 	 */
 	function() {
 		var Packages = this.Packages;
+		/** @type { Pick<typeof this.$api,"debug"|"engine"|"java"|"io"|"github"> } */
 		var $api = this.$api;
 		var JavaAdapter = this.JavaAdapter;
 
