@@ -1366,6 +1366,13 @@
 						return getMajorVersion(version);
 					};
 
+					var getJrunscript = function() {
+						if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
+						if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
+						if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
+						if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
+					}
+
 					var rv = {
 						toString: function() {
 							return "Java home: " + home;
@@ -1376,10 +1383,8 @@
 							if (new File(home, "bin/java.exe").exists()) return new File(home, "bin/java.exe");
 						})(),
 						jrunscript: (function() {
-							if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
-							if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
-							if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
-							if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
+							var it = getJrunscript();
+							return (it) ? it.getCanonicalFile() : void(0);
 						})(),
 						compile: void(0),
 						getMajorVersion: getMajorVersionForJdkViaJavaDashVersion
@@ -1623,6 +1628,19 @@
 				}
 			}
 		)();
+
+		//Packages.java.lang.System.err.println(String(Packages.java.lang.System.getProperties()));
+		// Packages.java.lang.System.getProperties().store(Packages.java.lang.System.err, "System properties");
+		// Packages.java.lang.System.err.println("jrunscript = " + $api.java.install.jrunscript);
+		// Packages.java.lang.System.err.println("sun.java.command = " + Packages.java.lang.System.getProperty("sun.java.command"));
+		// Packages.java.lang.System.err.println("$api.arguments = " + JSON.stringify($api.arguments));
+		// var global = (function() { return this; }).call(null);
+		// var javax_script_argv = [];
+		// for (var i=0; i<global["javax.script.argv"].length; i++) {
+		// 	javax_script_argv.push(String(global["javax.script.argv"][i]));
+		// }
+		// Packages.java.lang.System.err.println("javax.script.argv = " + JSON.stringify(javax_script_argv));
+		// Packages.java.lang.System.exit(1);
 
 		$api.io = {
 			copy: io.copy,

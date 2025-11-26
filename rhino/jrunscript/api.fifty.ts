@@ -226,6 +226,14 @@ namespace slime.internal.jrunscript.bootstrap {
 	//@ts-ignore
 	)(fifty);
 
+	export interface PerEngine<T> {
+		rhino: T
+		nashorn: T
+		graal: T
+
+		jdkrhino?: T
+	}
+
 	export interface Api<J> {
 		debug: {
 			(message: string): void
@@ -247,14 +255,7 @@ namespace slime.internal.jrunscript.bootstrap {
 			 *
 			 * @returns The value of the property representing the JavaScript engine which is running.
 			 */
-			resolve: <T>(option: {
-				rhino: T
-				nashorn: T
-				graal: T
-
-				//	legacy compatibility with pre-JDK 8 Rhino; now unsupported
-				jdkrhino?: T
-			}) => T
+			resolve: <T>(option: PerEngine<T>) => T
 
 			readUrl: Environment["readUrl"]
 
@@ -330,6 +331,9 @@ namespace slime.internal.jrunscript.bootstrap {
 			}
 		}
 
+		/**
+		 * The currently executing script.
+		 */
 		script: Script
 
 		arguments: string[]

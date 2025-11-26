@@ -521,12 +521,12 @@ fi
 #
 #	But it works with JDK 8, 11, 17, and 21, so it's better than nothing.
 JDK_MAJOR_VERSION=$(get_jrunscript_java_major_version ${JRUNSCRIPT})
-if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
+if [ "${JDK_MAJOR_VERSION}" -gt 8 ] && [ "${JDK_MAJOR_VERSION}" -lt 15 ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
 	JRUNSCRIPT="${JRUNSCRIPT} ${JSH_NASHORN_DEPRECATION_ARGUMENT}"
 fi
 
-if [ "${JDK_MAJOR_VERSION}" == "17" ] || [ "${JDK_MAJOR_VERSION}" == "21" ]; then
+if [ "${JDK_MAJOR_VERSION}" -ge 15 ]; then
 	#	Currently we know that we are not running a remote shell because we would download something other than Java 17 for that.
 	if [ ! -f "${JSH_BOOTSTRAP_NASHORN}" ]; then
 		install_nashorn
