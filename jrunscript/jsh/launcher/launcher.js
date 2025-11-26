@@ -605,11 +605,13 @@
 					this.classpath = function() {
 						var rv = new Classpath();
 
-						$$api_jsh_engine.resolve({
+						$$api.engine.resolve({
 							rhino: function() {
 								rv.append(getRhinoClasspath());
 							},
 							nashorn: function() {
+							},
+							graal: function() {
 							}
 						})();
 
