@@ -123,6 +123,7 @@
 				$$api.debug("debugging enabled");
 			}
 
+			/** @type { slime.jsh.internal.launcher.Jsh["engines"] } */
 			var engines = {
 				rhino: {
 					main: "inonit.script.jsh.Rhino",
@@ -157,23 +158,9 @@
 
 			//	Below structure supports both native Java and JavaScript arrays; might be able to simplify and
 			//	have callers convert argument to JavaScript
-			/** @type { new (_urls?: Omit<slime.jrunscript.Array<slime.jrunscript.native.java.net.URL>,"getClass"> ) => any } */
+			/** @type { slime.jsh.internal.launcher.Jsh["Classpath"] } */
 			var Classpath = function(_urls) {
 				var colon = String(Packages.java.io.File.pathSeparator);
-
-				this.append = function(classpath) {
-					this._urls.push.apply(this._urls,classpath._urls);
-				}
-
-				this._urls = (function(_urls) {
-					var rv = [];
-					if (_urls) {
-						for (var i=0; i<_urls.length; i++) {
-							rv.push(_urls[i]);
-						}
-					}
-					return rv;
-				})(_urls);
 
 				var files = function() {
 					var rv = [];
@@ -199,8 +186,22 @@
 					return rv;
 				};
 
-				this.local = function() {
-					return files.call(this).join(colon);
+				return {
+					append: function(classpath) {
+						this._urls.push.apply(this._urls,classpath._urls);
+					},
+					_urls: (function(_urls) {
+						var rv = [];
+						if (_urls) {
+							for (var i=0; i<_urls.length; i++) {
+								rv.push(_urls[i]);
+							}
+						}
+						return rv;
+					})(_urls),
+					local: function() {
+						return files.call(this).join(colon);
+					}
 				}
 			};
 
@@ -351,15 +352,15 @@
 					if (rhino && !rhino.length) rhino = null;
 
 					var isGraalCompatible = Boolean(p.source >= 17 && p.target >= 17)
-					var classpath = new Classpath();
-					if (rhino && rhino.length) classpath.append(new Classpath(rhino));
+					var classpath = Classpath();
+					if (rhino && rhino.length) classpath.append(Classpath(rhino));
 					if (graal && isGraalCompatible) {
 						var _polyglotLibraries = new Packages.java.io.File(graal, "lib/polyglot").listFiles();
 						var polyglotLibraries = [];
 						for (var i=0; i<_polyglotLibraries.length; i++) {
 							polyglotLibraries.push(_polyglotLibraries[i]);
 						}
-						classpath.append(new Classpath(polyglotLibraries.map(function(_file) { return _file.toURI().toURL(); })));
+						classpath.append(Classpath(polyglotLibraries.map(function(_file) { return _file.toURI().toURL(); })));
 					}
 					if (classpath._urls.length == 0) classpath = null;
 
@@ -422,7 +423,7 @@
 									}
 								)();
 
-								var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
+								var rhinoClasspath = (rhino && rhino.length) ? Classpath(rhino) : null;
 
 								$$api.log("Looking for loader source files under " + src + " ...");
 
@@ -577,7 +578,7 @@
 					var getRhinoClasspath = function() {
 						var classpath = peer.getRhinoClasspath();
 						if (classpath) {
-							return new Classpath(classpath);
+							return Classpath(classpath);
 						} else {
 							return null;
 						}
@@ -603,7 +604,7 @@
 					this.rhino = (getRhinoClasspath()) ? getRhinoClasspath().local() : null;
 
 					this.classpath = function() {
-						var rv = new Classpath();
+						var rv = Classpath();
 
 						$$api.engine.resolve({
 							rhino: function() {
@@ -615,7 +616,7 @@
 							}
 						})();
 
-						rv.append(new Classpath(shell.shellClasspath()));
+						rv.append(Classpath(shell.shellClasspath()));
 
 						return rv;
 					};
