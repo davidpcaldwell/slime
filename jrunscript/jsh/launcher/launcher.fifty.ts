@@ -34,6 +34,8 @@ namespace slime.jsh.internal.launcher {
 		 * The name of the `jsh` main class for this engine.
 		 */
 		main: string
+
+		exit: (status: number) => void
 	}
 
 	export interface Jsh {
@@ -41,11 +43,17 @@ namespace slime.jsh.internal.launcher {
 	}
 
 	export interface Jsh {
-		exit: any
+		exit: (status: number) => void
+	}
+
+	export interface Classpath {
+		_urls: slime.jrunscript.native.java.net.URL[]
+		append: (classpath: Classpath) => void
+		local: () => string
 	}
 
 	export interface Jsh {
-		Classpath: any
+		Classpath: (_urls?: Omit<slime.jrunscript.Array<slime.jrunscript.native.java.net.URL>,"getClass"> ) => Classpath
 
 		Unbuilt: (p: {
 			src?: Source

@@ -352,7 +352,7 @@
 
 		if (localRhino()) {
 			//	TODO	possibly redundant with some code in launcher.js; examine and think through
-			$api.slime.settings.set("jsh.engine.rhino.classpath", new $api.jsh.Classpath(localRhino()).local());
+			$api.slime.settings.set("jsh.engine.rhino.classpath", $api.jsh.Classpath(localRhino()).local());
 			for (var i=0; i<localRhino().length; i++) {
 				_urls.push(localRhino()[i]);
 			}
@@ -448,7 +448,7 @@
 		}
 		$api.debug("_urls = " + _urls);
 
-		var classpath = new $api.jsh.Classpath(_urls);
+		var classpath = $api.jsh.Classpath(_urls);
 
 		var engineId = /** @type { keyof slime.internal.jrunscript.bootstrap.PerEngine } */($api.slime.settings.get("jsh.engine"));
 
@@ -470,9 +470,7 @@
 
 		if (fork) command.fork();
 
-		for (var i=0; i<classpath._urls.length; i++) {
-			command.classpath(classpath._urls[i]);
-		}
+		classpath._urls.forEach(command.classpath);
 
 		command.main(engine.main);
 
