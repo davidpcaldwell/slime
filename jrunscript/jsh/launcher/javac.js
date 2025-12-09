@@ -220,7 +220,7 @@
 						 */
 						function(_urls) {
 							this.getClassLoader = function() {
-								var __urls = new $api.java.Array({ type: Packages.java.net.URL, length: p.classpath.length });
+								var __urls = $api.java.Array({ type: Packages.java.net.URL, length: p.classpath.length });
 								for (var i=0; i<_urls.length; i++) {
 									__urls[i] = p.classpath[i];
 								}

@@ -36,7 +36,7 @@ namespace slime.jrunscript {
 
 				export interface Byte extends Number {}
 
-				export interface Class {
+				export interface Class extends Object {
 					isInstance(object: any): boolean
 					getDeclaredField(name: string): reflect.Field
 					getDeclaredMethod(name: string, types?: slime.jrunscript.native.java.lang.Class[]): reflect.Method
@@ -44,6 +44,7 @@ namespace slime.jrunscript {
 					getSuperclass(): Class
 					getInterfaces(): Class[]
 					getProtectionDomain(): any
+					getModule?(): any
 				}
 
 				export interface ClassLoader {
@@ -185,7 +186,7 @@ namespace slime.jrunscript {
 					getHeaderField(i: number): slime.jrunscript.native.java.lang.String
 				}
 
-				export interface URL {
+				export interface URL extends slime.jrunscript.native.java.lang.Object {
 					getQuery(): slime.jrunscript.native.java.lang.String
 					getProtocol(): slime.jrunscript.native.java.lang.String
 					toExternalForm(): slime.jrunscript.native.java.lang.String
@@ -522,7 +523,9 @@ namespace slime.jrunscript {
 				ClassLoader: any
 				Boolean: any
 				Object: any
-				Class: any
+				Class: JavaClass<slime.jrunscript.native.java.lang.Class,{
+					forName: (name: string) => slime.jrunscript.native.java.lang.Class
+				}>
 				Void: any
 				Runtime: any
 				Integer: any
@@ -576,11 +579,7 @@ namespace slime.jrunscript {
 					}
 				}
 				URI: any
-				URL: {
-					new (base: slime.jrunscript.native.java.net.URL, relative: string): slime.jrunscript.native.java.net.URL
-					new (url: slime.jrunscript.native.java.lang.String): slime.jrunscript.native.java.net.URL
-					new (url: string): slime.jrunscript.native.java.net.URL
-				}
+				URL: JavaClass<slime.jrunscript.native.java.net.URL>
 				URLEncoder: any
 				URLDecoder: any
 				URLClassLoader: any
