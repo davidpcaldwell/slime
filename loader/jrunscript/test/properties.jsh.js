@@ -8,13 +8,17 @@
 (
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.$api.jrunscript.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {
-		jsh.shell.console("foo.bar = " + JSON.stringify(String(Packages.java.lang.System.getProperty("foo.bar"))));
-		jsh.shell.console("foo.baz = " + JSON.stringify(String(Packages.java.lang.System.getProperty("foo.baz"))));
-		jsh.shell.console("foo.bizzy = " + JSON.stringify(String(Packages.java.lang.System.getProperty("foo.bizzy"))));
+		jsh.shell.echo(
+			JSON.stringify({
+				"foo.bar": $api.jrunscript.properties.get("foo.bar"),
+				"foo.baz": $api.jrunscript.properties.get("foo.baz"),
+				"foo.bizzy": $api.jrunscript.properties.get("foo.bizzy")
+			})
+		);
 	}
 //@ts-ignore
 )(Packages,$api,jsh);

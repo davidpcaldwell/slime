@@ -37,12 +37,6 @@ namespace slime.jrunscript.shell {
 		 */
 		_environment?: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
 
-		/**
-		 * (optional: if omitted, the actual system properties will be used.) A set of properties representing Java system
-		 * properties.
-		 */
-		_properties?: slime.jrunscript.native.java.util.Properties
-
 		stdio: context.Stdio
 
 		kotlin: {
@@ -328,7 +322,6 @@ namespace slime.jrunscript.shell {
 						document: jsh.js.document,
 						xml: void(0)
 					},
-					_properties: void(0),
 					kotlin: void(0),
 					stdio: {
 						output: jsh.shell.stdio.output,
