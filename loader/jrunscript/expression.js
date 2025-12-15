@@ -177,6 +177,18 @@
 			}
 		);
 
+		var properties = (
+			function(/** @type { slime.jrunscript.native.java.util.Properties }*/_properties) {
+				return {
+					get: function(key) {
+						var _value = _properties.getProperty(key);
+						if (_value === null) return null;
+						return String(_value);
+					}
+				}
+			}
+		)(Packages.java.lang.System.getProperties());
+
 		var getTypeFromPath = function(path) {
 			return slime.$api.mime.Type.fromName(path);
 		}
@@ -1076,7 +1088,15 @@
 		};
 
 		/** @type { slime.jrunscript.runtime.Exports["$api"]} */
-		var $api = Object.assign(slime.$api, { jrunscript: { io: $exports_io } });
+		var $api = Object.assign(
+			slime.$api,
+			{
+				jrunscript: {
+					io: $exports_io,
+					properties: properties
+				}
+			}
+		);
 
 		return (
 			/** @returns { slime.jrunscript.runtime.Exports } */

@@ -42,7 +42,7 @@
 			 * @returns { slime.jrunscript.shell.Exports["properties"] & { set: any } }
 			 */
 			function() {
-				var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
+				var _properties = Packages.java.lang.System.getProperties();
 
 				return {
 					object: $context.api.java.Properties.adapt( _properties ),

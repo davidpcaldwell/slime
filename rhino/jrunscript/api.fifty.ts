@@ -383,17 +383,16 @@ namespace slime.internal.jrunscript.bootstrap {
 		//@ts-ignore
 		)(Packages,fifty);
 
-	}
-
-	export interface JavaCommand {
-		fork: () => void
-		home: (home: slime.internal.jrunscript.bootstrap.java.Install) => void
-		vm: (argument: string) => void
-		systemProperty: (name: string, value: string) => void
-		classpath: (url: slime.jrunscript.native.java.net.URL) => void
-		main: (className: string) => void
-		argument: (argument: string) => void
-		run: () => number
+		export interface Command {
+			fork: () => void
+			home: (home: slime.internal.jrunscript.bootstrap.java.Install) => void
+			vm: (argument: string) => void
+			systemProperty: (name: string, value: string) => void
+			classpath: (url: slime.jrunscript.native.java.net.URL) => void
+			main: (className: string) => void
+			argument: (argument: string) => void
+			run: () => number
+		}
 	}
 
 	export interface Api<J> {
@@ -409,9 +408,10 @@ namespace slime.internal.jrunscript.bootstrap {
 			install: java.Install
 
 			getClass: (name: string) => slime.jrunscript.JavaClass
-			Array: any
+			Array: <T extends slime.jrunscript.native.java.lang.Object,C>(p: { type: slime.jrunscript.JavaClass<T,C>, length: number })
+				=> slime.jrunscript.Array<T>
 
-			Command: new () => JavaCommand
+			Command: new () => java.Command
 
 			versions: {
 				getMajorVersion: {

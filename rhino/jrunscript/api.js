@@ -1414,6 +1414,7 @@
 				var getClass = function(name) {
 					return $engine.getClass(name);
 				}
+				/** @type { slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Array"] } */
 				var Array = function(p) {
 					return $engine.newArray(p.type,p.length);
 				}

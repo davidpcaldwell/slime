@@ -738,6 +738,9 @@ namespace slime.$api.jrunscript {
 	export interface Global extends slime.$api.Global {
 		jrunscript: {
 			io: slime.jrunscript.runtime.io.Exports
+			properties: {
+				get: (name: string) => string | null
+			}
 		}
 
 		/**
@@ -746,6 +749,42 @@ namespace slime.$api.jrunscript {
 		 */
 		mime: slime.$api.mime.Export
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.exports.$api = fifty.test.Parent();
+
+			fifty.tests.exports.$api.properties = function() {
+				var src = fifty.jsh.file.relative("../..");
+				var run = $api.fp.now(
+					jsh.shell.subprocess.question,
+					$api.fp.world.Sensor.mapping()
+				);
+				var result = run({
+					command: "bash",
+					arguments: [
+						$api.fp.now(src, jsh.file.Location.directory.relativePath("jsh")).pathname,
+						"-Dfoo.bar",
+						"-Dfoo.baz=bizzy",
+						$api.fp.now(src, jsh.file.Location.directory.relativePath("loader/jrunscript/test/properties.jsh.js")).pathname
+					],
+					stdio: {
+						output: "string"
+					}
+				});
+				var output: { "foo.bar": string, "foo.baz": string, "foo.bizzy": string | null } = JSON.parse(result.stdio.output);
+				verify(output["foo.bar"]).is("");
+				verify(output["foo.baz"]).is("bizzy");
+				verify(output["foo.bizzy"]).is(null);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 (

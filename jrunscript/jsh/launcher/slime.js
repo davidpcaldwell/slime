@@ -242,11 +242,11 @@
 			}
 
 			rv.settings = (function() {
-				/** @typedef { { launcher: boolean, loader: boolean, loaderVmArguments?: (value: string) => string[] } } Definition */
+				/** @typedef { slime.jsh.internal.launcher.settings.Definition } Definition */
 
-				/** @typedef { { set: (value: string) => void, default: (f: () => string) => void, get: () => string, loaderVmArguments: () => string[], getLoaderProperty: () => string } } Setting */
+				/** @typedef { { set: (value: string) => void, default: (f: () => string) => void, get: () => string, loaderVmArguments: () => string[], getLoaderProperty: () => string } } define */
 
-				/** @type { Record<string, Setting> } */
+				/** @type { Record<string, define> } */
 				var all = {};
 
 				/**
@@ -271,9 +271,8 @@
 				/**
 				 * @param { string } name
 				 * @param { Definition } definition
-				 * @returns { Setting }
 				 */
-				var Setting = function(name,definition) {
+				var define = function(name,definition) {
 					/** @type { string } */
 					var value;
 
@@ -323,8 +322,6 @@
 					};
 
 					all[name] = rv;
-
-					return rv;
 				};
 
 				var LAUNCHER = {
@@ -342,6 +339,11 @@
 					loader: true
 				};
 
+				/**
+				 *
+				 * @param { (value: string) => string[] } f
+				 * @returns { Definition }
+				 */
 				var LOADER_VM = function(f) {
 					return {
 						launcher: false,
@@ -355,7 +357,7 @@
 
 				//	TODO	audit all environment variables and properties accessed in launcher and loader
 
-				Setting(
+				define(
 					"jsh.debug.jdwp",
 					LOADER_VM(function(value) {
 						if (value == "false") {
@@ -368,29 +370,29 @@
 
 				//	Used by launcher to help decide on engine and also to launch profiler agent for Rhino profiler; used by loader
 				//	to configure script debugger
-				Setting("jsh.debug.script", BOTH);
+				define("jsh.debug.script", BOTH);
 
-				Setting("jsh.jvm.options",
+				define("jsh.jvm.options",
 					LOADER_VM(function(value) {
 						return value.split(" ");
 					})
 				);
 
-				Setting("jsh.log.java.properties",
+				define("jsh.log.java.properties",
 					LOADER_VM(function(value) {
 						return ["-Djava.util.logging.config.file=" + value];
 					})
 				);
 
 				//	Used in launcher for engine selection; we want this value to be available in the loader also
-				Setting("jsh.engine", BOTH);
+				define("jsh.engine", BOTH);
 
 				//	Used in launcher for engine selection; we want this value to be available in the loader also, particularly for
 				//	launching subshells
-				Setting("jsh.engine.rhino.classpath", BOTH);
+				define("jsh.engine.rhino.classpath", BOTH);
 
 				//	We don't need this here, but the loader needs it to configure Rhino
-				Setting("jsh.engine.rhino.optimization", LOADER);
+				define("jsh.engine.rhino.optimization", LOADER);
 
 				//	TODO	we need to figure out a better solution if the caller sets `java.io.tmpdir` on the launcher; it would
 				//			seem a little counterintuitive that the loader would not respect it
@@ -402,15 +404,15 @@
 				//	So for now we use a different property, and it will be used only by the loader
 
 				//	We pass this through to the loader as the loader temporary file location
-				Setting("jsh.shell.tmpdir", LOADER_VM(function(value) {
+				define("jsh.shell.tmpdir", LOADER_VM(function(value) {
 					return ["-Djava.io.tmpdir=" + value];
 				})),
 
 				//	Sent from launcher to loader so that loader can locate the shell implementation
-				Setting("jsh.shell.src", LOADER);
+				define("jsh.shell.src", LOADER);
 
 				//	Used by launcher to locate engine; used by loader to find shell tools like Node, also made available to scripts
-				Setting("jsh.shell.lib", BOTH);
+				define("jsh.shell.lib", BOTH);
 
 				//	This setting is calculated by the loader itself by examining the Java code source.
 				//	TODO	revisit this
@@ -422,30 +424,30 @@
 				// Setting("jsh.shell.packaged", BOTH);
 
 				//	Used by launcher to compile the shell and by loader to load the classes
-				Setting("jsh.shell.classes", BOTH);
+				define("jsh.shell.classes", BOTH);
 
 				//	Used to configure launcher in subshells, it appears, to that it does not have to recompile classes?
 				//	If that's right, both launcher and loader need it
 				//	TODO	figure this out
-				Setting("jsh.shell.classpath", BOTH);
+				define("jsh.shell.classpath", BOTH);
 
 				//	Used to configure the profiler using a -javaagent: VM argument; logically might be possible to implement as
 				//	LOADER_VM, but the code is not organized that way yet
-				Setting("jsh.shell.profiler", LAUNCHER);
+				define("jsh.shell.profiler", LAUNCHER);
 
 				//	Determines whether the launcher emits debugging output.
 				//	TODO	could convert this to use standard Java logging configuration, though that would be much more verbose;
 				//			this could also be a shortcut for that mechanism, but it seems like the Java logging APIs don't make it
 				//			super-easy to install a configuration at runtime
-				Setting("jsh.launcher.debug", LAUNCHER);
+				define("jsh.launcher.debug", LAUNCHER);
 
 				//	Intended to be used to select configuration for loader, whether to use separate VM or not. Unclear whether it
 				//	is actually used currently
 				//	TODO	figure it out
-				Setting("jsh.shell.container", LAUNCHER);
+				define("jsh.shell.container", LAUNCHER);
 
 				//	Allows specification of the Java to use. Loader does not need this; can use `java.home`.
-				Setting("jsh.java.home", LAUNCHER);
+				define("jsh.java.home", LAUNCHER);
 
 				//	Allows specifying to the launcher not to pass proxy-related properties through to the loader; otherwise
 				//	properties like http.proxyHost are passed through
@@ -453,13 +455,13 @@
 				//			as BOTH we could remove the code that is manually doing this, though we might need to support the
 				//			jsh.loader.noproxy use case with some kind of additional construct; possibly we could have the concept
 				//			of setting a property to `null` in the Setting implementation
-				Setting("jsh.loader.noproxy", BOTH);
+				define("jsh.loader.noproxy", BOTH);
 
 				//	Used to configure GitHub API access in the loader. May not be necessary now that we know how to run mock HTTPS
 				//	servers.
 				//	TODO	figure out whether this can be removed. Seems like yes, since no test code seems to set it, so it is
 				//			possibly unused
-				Setting("jsh.github.api.protocol", LOADER);
+				define("jsh.github.api.protocol", LOADER);
 
 				/**
 				 * @type { slime.jsh.internal.launcher.Slime["settings"]["set"] }
@@ -534,6 +536,76 @@
 						command.vm(arg);
 					});
 					sendPropertiesTo(command);
+				};
+
+				/** @type { slime.$api.fp.Mapping<slime.jsh.internal.launcher.settings.invocation.Input, slime.jsh.internal.launcher.settings.invocation.Output> } */
+				var invocation = function(input) {
+					var tokens = input.command.split(/\s+/);
+
+					/**
+					 *
+					 * @param { string } path
+					 * @returns { string }
+					 */
+					var toAbsolute = function(path) {
+						if (/^\//.test(path)) {
+							return path;
+						}
+						return String(
+							new Packages.java.io.File(
+								input.pwd,
+								path
+							).getCanonicalFile().toString()
+						);
+					};
+
+					/**
+					 *
+					 * @param { string } token
+					 * @returns { boolean }
+					 */
+					var isMain = function(token) {
+						if (/\/rhino\/jrunscript\/api\.js$/.test(token)) return true;
+						return false;
+					};
+
+					var rv = {
+						jrunscript: String(input.jrunscript.toString()),
+						classpath: [],
+						properties: {},
+						main: void(0)
+					}
+
+					var isJavaProperty = function(token) {
+						return /^-D/.test(token);
+					};
+
+					var parseJavaProperty = function(token) {
+						var eq = token.indexOf("=");
+						if (eq == -1) {
+							return {
+								name: token.substring(2),
+								value: ""
+							};
+						} else {
+							return {
+								name: token.substring(2, eq),
+								value: token.substring(eq + 1)
+							};
+						}
+					};
+
+					for (var i = 0; i < tokens.length; i++) {
+						if (isMain(tokens[i])) {
+							rv.main = toAbsolute(tokens[i]);
+						}
+						if (isJavaProperty(tokens[i])) {
+							var nv = parseJavaProperty(tokens[i]);
+							rv.properties[nv.name] = nv.value;
+						}
+					}
+
+					return rv;
 				}
 
 				return {
@@ -541,7 +613,10 @@
 					default: setDefault,
 					get: get,
 					sendPropertiesTo: sendPropertiesTo,
-					applyTo: applyTo
+					applyTo: applyTo,
+					test: {
+						invocation: invocation
+					}
 				};
 			})();
 
