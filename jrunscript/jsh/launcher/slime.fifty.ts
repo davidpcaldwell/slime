@@ -49,16 +49,15 @@ namespace slime.jsh.internal.launcher {
 
 			(
 				function(
-					Packages: slime.jrunscript.Packages,
 					fifty: slime.fifty.test.Kit
 				) {
 					const { verify } = fifty;
-					const { jsh } = fifty.global;
+					const { $api, jsh } = fifty.global as unknown as { $api: slime.$api.jrunscript.Global, jsh: slime.jsh.Global };
 
 					fifty.tests.invocation = fifty.test.Parent();
 
 					const jrunscript = jsh.internal.bootstrap.java.install.jrunscript;
-					const pwd = String(Packages.java.lang.System.getProperty("user.dir"));
+					const pwd = $api.jrunscript.properties.get("user.dir");
 					const main = jsh.file.os.directory.relativePath("rhino/jrunscript/api.js")(pwd);
 
 					const parse = function(command: string): Output {
@@ -128,7 +127,7 @@ namespace slime.jsh.internal.launcher {
 					};
 				}
 			//@ts-ignore
-			)(Packages,fifty);
+			)(fifty);
 		}
 	}
 
