@@ -131,6 +131,9 @@ namespace slime.jrunscript {
 				export namespace file {
 					export interface Path {
 						getFileSystem(): FileSystem
+						resolve: (other: Path) => Path
+						normalize: () => Path
+						toAbsolutePath: () => Path
 					}
 
 					export interface FileSystem {
@@ -619,6 +622,12 @@ namespace slime.jrunscript {
 
 						setLastModifiedTime(path: slime.jrunscript.native.java.nio.file.Path, time: slime.jrunscript.native.java.nio.file.attribute.FileTime)
 						getLastModifiedTime(path: slime.jrunscript.native.java.nio.file.Path): slime.jrunscript.native.java.nio.file.attribute.FileTime
+					}
+					Paths: {
+						get: {
+							(s: slime.jrunscript.native.java.lang.String): slime.jrunscript.native.java.nio.file.Path
+							(s: string): slime.jrunscript.native.java.nio.file.Path
+						}
 					}
 					FileSystems: any
 					attribute: {
