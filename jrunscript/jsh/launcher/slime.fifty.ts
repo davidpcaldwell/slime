@@ -125,9 +125,36 @@ namespace slime.jsh.internal.launcher {
 						check(output, [], {"nashorn.args": "--no-deprecation-warning"});
 						jsh.shell.console(JSON.stringify(output.properties));
 					};
+
+					fifty.tests.invocation.jdk17 = function() {
+						const output = parse("java.scripting/com.sun.tools.script.shell.Main -classpath ./local/jsh/lib/asm.jar:./local/jsh/lib/asm-commons.jar:./local/jsh/lib/asm-tree.jar:./local/jsh/lib/asm-util.jar:./local/jsh/lib/nashorn.jar ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
+						const relative = jsh.file.Location.directory.base( fifty.jsh.file.relative("../../..") );
+						check(output, ["local/jsh/lib/asm.jar","local/jsh/lib/asm-commons.jar","local/jsh/lib/asm-tree.jar","local/jsh/lib/asm-util.jar","local/jsh/lib/nashorn.jar"].map(relative).map($api.fp.property("pathname")), {});
+						jsh.shell.console(JSON.stringify(output,void(0),4));
+					}
+
+					fifty.tests.invocation.jdk21 = function() {
+						const output = parse("java.scripting/com.sun.tools.script.shell.Main -classpath ./local/jsh/lib/asm.jar:./local/jsh/lib/asm-commons.jar:./local/jsh/lib/asm-tree.jar:./local/jsh/lib/asm-util.jar:./local/jsh/lib/nashorn.jar ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
+						const relative = jsh.file.Location.directory.base( fifty.jsh.file.relative("../../..") );
+						check(output, ["local/jsh/lib/asm.jar","local/jsh/lib/asm-commons.jar","local/jsh/lib/asm-tree.jar","local/jsh/lib/asm-util.jar","local/jsh/lib/nashorn.jar"].map(relative).map($api.fp.property("pathname")), {});
+					}
+
+					fifty.tests.invocation.macos = function() {
+						const output = parse("java.scripting/com.sun.tools.script.shell.Main -classpath ./local/jsh/lib/asm.jar:./local/jsh/lib/asm-commons.jar:./local/jsh/lib/asm-tree.jar:./local/jsh/lib/asm-util.jar:./local/jsh/lib/nashorn.jar ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
+						const relative = jsh.file.Location.directory.base( fifty.jsh.file.relative("../../..") );
+						check(output, ["local/jsh/lib/asm.jar","local/jsh/lib/asm-commons.jar","local/jsh/lib/asm-tree.jar","local/jsh/lib/asm-util.jar","local/jsh/lib/nashorn.jar"].map(relative).map($api.fp.property("pathname")), {});
+					}
 				}
 			//@ts-ignore
 			)(fifty);
+		}
+
+		export interface Setting {
+			set: (value: string) => void
+			default: (f: () => string) => void
+			getLauncherProperty: () => string
+			loaderVmArguments: () => string[]
+			getLoaderProperty: () => string
 		}
 	}
 
@@ -160,13 +187,12 @@ namespace slime.jsh.internal.launcher {
 		home: any
 
 		settings: {
-			set: (name: string, value: string) => void
-			default: (name: string, value: string | (() => string)) => void
+			byName: (name: string) => settings.Setting
 
 			/**
-			 * Returns the effective value for a given setting.
+			 * Returns the effective value for a given setting in the context of the launcher process.
 			 */
-			get: (name: string) => string
+			getLauncherProperty: (name: string) => string
 
 			//	Probably redundant but currently appears to be used in packaged shells, where applyTo does not apply in the same
 			//	way given that there is no loader VM.

@@ -118,7 +118,7 @@
 			}
 
 			//	Might be redundant (this is set in main.js) or, per comment above, might be used in packaged scripts? Unknown.
-			if ($$api.slime.settings.get("jsh.launcher.debug") && !$$api.debug.on) {
+			if ($$api.slime.settings.getLauncherProperty("jsh.launcher.debug") && !$$api.debug.on) {
 				$$api.debug.on = true;
 				$$api.debug("debugging enabled");
 			}
@@ -253,10 +253,10 @@
 					//	TODO	these first two cases may be redundant; the p.rhino may be passed because it's the value of\
 					//			jsh.engine.rhino.classpath
 					if (p.rhino) return SpecifiedLibrary(p.rhino);
-					if ($$api.slime.settings.get("jsh.engine.rhino.classpath")) {
+					if ($$api.slime.settings.getLauncherProperty("jsh.engine.rhino.classpath")) {
 						return SpecifiedLibrary(
 							[
-								new Packages.java.io.File($$api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()
+								new Packages.java.io.File($$api.slime.settings.getLauncherProperty("jsh.engine.rhino.classpath")).toURI().toURL()
 							]
 						);
 					} else if (setting && lib.file) {
@@ -307,13 +307,14 @@
 					return "Unbuilt: src=" + src + " lib.url=" + ( p.lib ? p.lib.url : void(0) ) + "lib.file=" + (p.lib ? p.lib.file : void(0)) + " rhino=" + p.rhino;
 				}
 
-				$$api.slime.settings.default(
-					"jsh.shell.lib",
-					src.getPath("local/jsh/lib")
+				$$api.slime.settings.byName(
+					"jsh.shell.lib"
+				).default(
+					function() { return src.getPath("local/jsh/lib"); }
 				);
 
 				var libraries = Libraries({
-					setting: $$api.slime.settings.get("jsh.shell.lib"),
+					setting: $$api.slime.settings.getLauncherProperty("jsh.shell.lib"),
 					rhino: p.rhino
 				})
 
@@ -325,8 +326,8 @@
 				}
 
 				var profiler = (function() {
-					if ($$api.slime.settings.get("jsh.shell.profiler")) {
-						return new Packages.java.io.File($$api.slime.settings.get("jsh.shell.profiler"));
+					if ($$api.slime.settings.getLauncherProperty("jsh.shell.profiler")) {
+						return new Packages.java.io.File($$api.slime.settings.getLauncherProperty("jsh.shell.profiler"));
 					}
 				})();
 
@@ -399,7 +400,7 @@
 				/** @type { slime.jsh.internal.launcher.Installation["shellClasspath"] } */
 				var shellClasspath = function(p) {
 					if (!src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
-					var setting = $$api.slime.settings.get("jsh.shell.classes");
+					var setting = $$api.slime.settings.getLauncherProperty("jsh.shell.classes");
 					/** @type { slime.jrunscript.native.java.io.File } */
 					var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $$api.io.tmpdir();
 					if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
@@ -499,13 +500,14 @@
 					return "Built: home=" + home;
 				}
 
-				$$api.slime.settings.default(
-					"jsh.shell.lib",
-					String(new Packages.java.io.File(home, "lib").getCanonicalPath())
+				$$api.slime.settings.byName(
+					"jsh.shell.lib"
+				).default(
+					function() { return String(new Packages.java.io.File(home, "lib").getCanonicalPath()); }
 				);
 
 				var libraries = Libraries({
-					setting: $$api.slime.settings.get("jsh.shell.lib"),
+					setting: $$api.slime.settings.getLauncherProperty("jsh.shell.lib"),
 				});
 
 				//	TODO	should we allow Contents/Home here?
@@ -565,7 +567,7 @@
 				//	executing engine
 				var $$api_jsh_engine = (function() {
 					var engines = $$api.jsh.engines;
-					var specified = $$api.slime.settings.get("jsh.engine");
+					var specified = $$api.slime.settings.getLauncherProperty("jsh.engine");
 					if (specified) {
 						return (function(setting) {
 							return engines[setting];
@@ -639,7 +641,7 @@
 				var container = (function() {
 					//	TODO	test whether next line necessary
 					if ($$api.jsh.shell.packaged) return "jvm";
-					if ($$api.slime.settings.get("jsh.shell.container")) return $$api.slime.settings.get("jsh.shell.container");
+					if ($$api.slime.settings.getLauncherProperty("jsh.shell.container")) return $$api.slime.settings.getLauncherProperty("jsh.shell.container");
 					return "classloader";
 				})();
 				if (container == "jvm") {
@@ -658,7 +660,7 @@
 				})();
 
 				//	Describe the shell
-				if ($$api.jsh.shell.rhino) $$api.slime.settings.set("jsh.engine.rhino.classpath", $$api.jsh.shell.rhino);
+				if ($$api.jsh.shell.rhino) $$api.slime.settings.byName("jsh.engine.rhino.classpath").set($$api.jsh.shell.rhino);
 
 				$$api.slime.settings.sendPropertiesTo(command);
 

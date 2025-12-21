@@ -244,9 +244,9 @@
 			rv.settings = (function() {
 				/** @typedef { slime.jsh.internal.launcher.settings.Definition } Definition */
 
-				/** @typedef { { set: (value: string) => void, default: (f: () => string) => void, get: () => string, loaderVmArguments: () => string[], getLoaderProperty: () => string } } define */
+				/** @typedef { slime.jsh.internal.launcher.settings.Setting } Setting */
 
-				/** @type { Record<string, define> } */
+				/** @type { Record<string, Setting> } */
 				var all = {};
 
 				/**
@@ -269,10 +269,14 @@
 				};
 
 				/**
+				 * Defines a named setting intended to be set by SLIME invocations. These settings can be set either via a named
+				 * Java property passed to the launcher, like `foo.bar.baz`, or by a corresponding environment variable, like
+				 * `FOO_BAR_BAZ`.
+				 *
 				 * @param { string } name
 				 * @param { Definition } definition
 				 */
-				var define = function(name,definition) {
+				var Setting = function(name,definition) {
 					/** @type { string } */
 					var value;
 
@@ -305,7 +309,7 @@
 						default: function(f) {
 							getDefault = f;
 						},
-						get: function() {
+						getLauncherProperty: function() {
 							if (definition.launcher) return get();
 							return void(0);
 						},
@@ -357,7 +361,7 @@
 
 				//	TODO	audit all environment variables and properties accessed in launcher and loader
 
-				define(
+				Setting(
 					"jsh.debug.jdwp",
 					LOADER_VM(function(value) {
 						if (value == "false") {
@@ -370,29 +374,29 @@
 
 				//	Used by launcher to help decide on engine and also to launch profiler agent for Rhino profiler; used by loader
 				//	to configure script debugger
-				define("jsh.debug.script", BOTH);
+				Setting("jsh.debug.script", BOTH);
 
-				define("jsh.jvm.options",
+				Setting("jsh.jvm.options",
 					LOADER_VM(function(value) {
 						return value.split(" ");
 					})
 				);
 
-				define("jsh.log.java.properties",
+				Setting("jsh.log.java.properties",
 					LOADER_VM(function(value) {
 						return ["-Djava.util.logging.config.file=" + value];
 					})
 				);
 
 				//	Used in launcher for engine selection; we want this value to be available in the loader also
-				define("jsh.engine", BOTH);
+				Setting("jsh.engine", BOTH);
 
 				//	Used in launcher for engine selection; we want this value to be available in the loader also, particularly for
 				//	launching subshells
-				define("jsh.engine.rhino.classpath", BOTH);
+				Setting("jsh.engine.rhino.classpath", BOTH);
 
 				//	We don't need this here, but the loader needs it to configure Rhino
-				define("jsh.engine.rhino.optimization", LOADER);
+				Setting("jsh.engine.rhino.optimization", LOADER);
 
 				//	TODO	we need to figure out a better solution if the caller sets `java.io.tmpdir` on the launcher; it would
 				//			seem a little counterintuitive that the loader would not respect it
@@ -404,15 +408,15 @@
 				//	So for now we use a different property, and it will be used only by the loader
 
 				//	We pass this through to the loader as the loader temporary file location
-				define("jsh.shell.tmpdir", LOADER_VM(function(value) {
+				Setting("jsh.shell.tmpdir", LOADER_VM(function(value) {
 					return ["-Djava.io.tmpdir=" + value];
 				})),
 
 				//	Sent from launcher to loader so that loader can locate the shell implementation
-				define("jsh.shell.src", LOADER);
+				Setting("jsh.shell.src", LOADER);
 
 				//	Used by launcher to locate engine; used by loader to find shell tools like Node, also made available to scripts
-				define("jsh.shell.lib", BOTH);
+				Setting("jsh.shell.lib", BOTH);
 
 				//	This setting is calculated by the loader itself by examining the Java code source.
 				//	TODO	revisit this
@@ -424,30 +428,30 @@
 				// Setting("jsh.shell.packaged", BOTH);
 
 				//	Used by launcher to compile the shell and by loader to load the classes
-				define("jsh.shell.classes", BOTH);
+				Setting("jsh.shell.classes", BOTH);
 
 				//	Used to configure launcher in subshells, it appears, to that it does not have to recompile classes?
 				//	If that's right, both launcher and loader need it
 				//	TODO	figure this out
-				define("jsh.shell.classpath", BOTH);
+				Setting("jsh.shell.classpath", BOTH);
 
 				//	Used to configure the profiler using a -javaagent: VM argument; logically might be possible to implement as
 				//	LOADER_VM, but the code is not organized that way yet
-				define("jsh.shell.profiler", LAUNCHER);
+				Setting("jsh.shell.profiler", LAUNCHER);
 
 				//	Determines whether the launcher emits debugging output.
 				//	TODO	could convert this to use standard Java logging configuration, though that would be much more verbose;
 				//			this could also be a shortcut for that mechanism, but it seems like the Java logging APIs don't make it
 				//			super-easy to install a configuration at runtime
-				define("jsh.launcher.debug", LAUNCHER);
+				Setting("jsh.launcher.debug", LAUNCHER);
 
 				//	Intended to be used to select configuration for loader, whether to use separate VM or not. Unclear whether it
 				//	is actually used currently
 				//	TODO	figure it out
-				define("jsh.shell.container", LAUNCHER);
+				Setting("jsh.shell.container", LAUNCHER);
 
 				//	Allows specification of the Java to use. Loader does not need this; can use `java.home`.
-				define("jsh.java.home", LAUNCHER);
+				Setting("jsh.java.home", LAUNCHER);
 
 				//	Allows specifying to the launcher not to pass proxy-related properties through to the loader; otherwise
 				//	properties like http.proxyHost are passed through
@@ -455,52 +459,25 @@
 				//			as BOTH we could remove the code that is manually doing this, though we might need to support the
 				//			jsh.loader.noproxy use case with some kind of additional construct; possibly we could have the concept
 				//			of setting a property to `null` in the Setting implementation
-				define("jsh.loader.noproxy", BOTH);
+				Setting("jsh.loader.noproxy", BOTH);
 
 				//	Used to configure GitHub API access in the loader. May not be necessary now that we know how to run mock HTTPS
 				//	servers.
 				//	TODO	figure out whether this can be removed. Seems like yes, since no test code seems to set it, so it is
 				//			possibly unused
-				define("jsh.github.api.protocol", LOADER);
-
-				/**
-				 * @type { slime.jsh.internal.launcher.Slime["settings"]["set"] }
-				 */
-				var set = function(name,value) {
-					all[name].set(value);
-				}
-
-				/**
-				 * @type { slime.jsh.internal.launcher.Slime["settings"]["default"] }
-				 */
-				var setDefault = function(name,value) {
-					if (typeof(value) == "undefined") return;
-					/** @type { () => string } */
-					var getValue;
-					if (typeof(value) != "function") {
-						getValue = (function(rv) {
-							return function() {
-								return rv;
-							}
-						})(value);
-					} else {
-						getValue = value;
-					}
-					if (!all[name]) throw new Error("Cannot set default for " + name);
-					all[name].default(getValue);
-				};
+				Setting("jsh.github.api.protocol", LOADER);
 
 				//	If SLIME source location not specified, and we can determine it, supply it to the shell
-				if (rv.src) setDefault("jsh.shell.src", String(rv.src));
+				if (rv.src) all["jsh.shell.src"].default(function() { return String(rv.src); });
 
 				/**
-				 * @type { slime.jsh.internal.launcher.Slime["settings"]["get"] }
+				 * @type { slime.jsh.internal.launcher.Slime["settings"]["getLauncherProperty"] }
 				 */
 				var get = function(name) {
 					if (!all[name]) {
 						throw new Error("Cannot read: " + name);
 					}
-					return all[name].get();
+					return all[name].getLauncherProperty();
 				}
 
 				//	Added to VM arguments for loader VM
@@ -603,15 +580,40 @@
 							var nv = parseJavaProperty(tokens[i]);
 							rv.properties[nv.name] = nv.value;
 						}
+						if (tokens[i] == "-classpath") {
+							//	TODO	none of this will work, really, if there are spaces in the classpath. Is there a more robust
+							//			way?
+							var classpath = tokens[++i];
+							//	TODO	what is appropriate platform value for this separator?
+							var items = classpath.split(":");
+
+							rv.classpath = items.map(function(item) {
+								var _context = Packages.java.nio.file.Paths.get(
+									Packages.java.lang.System.getProperty("user.dir")
+								);
+								var _declared = Packages.java.nio.file.Paths.get(
+									item
+								);
+
+								//	TODO	toRealPath also available
+								var _result = _context.resolve(_declared).normalize().toAbsolutePath().toString();
+
+								return String(_result);
+							});
+						}
 					}
 
 					return rv;
 				}
 
 				return {
-					set: set,
-					default: setDefault,
-					get: get,
+					byName: function(name) {
+						var rv = all[name];
+						if (!rv) throw new Error("No setting: " + name);
+						return rv;
+					},
+					getLauncherProperty: get,
+
 					sendPropertiesTo: sendPropertiesTo,
 					applyTo: applyTo,
 					test: {
