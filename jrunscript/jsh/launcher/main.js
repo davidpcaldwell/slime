@@ -51,7 +51,7 @@
 			slimeScript.load();
 		}
 
-		$api.debug.on = Boolean($api.slime.settings.getLauncherProperty("jsh.launcher.debug"));
+		$api.debug.on = Boolean($api.slime.settings.byName("jsh.launcher.debug").getLauncherProperty());
 		$api.debug("Source: " + $api.slime.src);
 		$api.debug("Bootstrap script: " + $api.script);
 
@@ -158,25 +158,25 @@
 					function() { return $api.slime.src.getPath("local/jsh/lib"); }
 				);
 
-				$api.debug("jsh.shell.lib = " + $api.slime.settings.getLauncherProperty("jsh.shell.lib"));
+				$api.debug("jsh.shell.lib = " + $api.slime.settings.byName("jsh.shell.lib").getLauncherProperty());
 
 				// TODO: this same approach for locating the lib directory should be used in $$api.jsh.Built, no?
 				var lib = (function() {
-					var setting = $api.slime.settings.getLauncherProperty("jsh.shell.lib");
+					var setting = $api.slime.settings.byName("jsh.shell.lib").getLauncherProperty();
 					//	TODO	setting can be null because $$api.script.resolve() doesn't find local/jsh/lib online; should refactor
 					if (!setting) return null;
 					if (/^http/.test(setting)) {
 						return { url: setting }
 					} else {
-						var file = new Packages.java.io.File($api.slime.settings.getLauncherProperty("jsh.shell.lib"));
+						var file = new Packages.java.io.File($api.slime.settings.byName("jsh.shell.lib").getLauncherProperty());
 						if (!file.exists()) file.mkdirs();
 						return { file: file };
 					}
 				})();
 
 				var rhino = (function() {
-					if ($api.slime.settings.getLauncherProperty("jsh.engine.rhino.classpath")) {
-						return [new Packages.java.io.File($api.slime.settings.getLauncherProperty("jsh.engine.rhino.classpath")).toURI().toURL()];
+					if ($api.slime.settings.byName("jsh.engine.rhino.classpath").getLauncherProperty()) {
+						return [new Packages.java.io.File($api.slime.settings.byName("jsh.engine.rhino.classpath").getLauncherProperty()).toURI().toURL()];
 					}
 				})();
 
@@ -219,19 +219,19 @@
 
 		var command = new $api.java.Command();
 
-		if ($api.slime.settings.getLauncherProperty("jsh.java.home")) {
-			$api.debug("setting jsh.java.home = " + $api.slime.settings.getLauncherProperty("jsh.java.home"));
-			command.home($api.java.Install(new Packages.java.io.File($api.slime.settings.getLauncherProperty("jsh.java.home"))));
+		if ($api.slime.settings.byName("jsh.java.home").getLauncherProperty()) {
+			$api.debug("setting jsh.java.home = " + $api.slime.settings.byName("jsh.java.home").getLauncherProperty());
+			command.home($api.java.Install(new Packages.java.io.File($api.slime.settings.byName("jsh.java.home").getLauncherProperty())));
 		}
 
 		var jshLauncherJavaMajorVersion = $api.java.getMajorVersion();
 
 		var jshLoaderJavaMajorVersion = (
 			function() {
-				if ($api.slime.settings.getLauncherProperty("jsh.java.home")) {
+				if ($api.slime.settings.byName("jsh.java.home").getLauncherProperty()) {
 					var majorVersion = $api.java.Install(
 						new Packages.java.io.File(
-							$api.slime.settings.getLauncherProperty("jsh.java.home")
+							$api.slime.settings.byName("jsh.java.home").getLauncherProperty()
 						)
 					).getMajorVersion();
 					$api.debug("jsh.java.home major version detected: [" + majorVersion + "]");
@@ -286,13 +286,13 @@
 
 		$api.slime.settings.byName("jsh.engine").default(function() { return defaultEngine; });
 
-		if ($api.slime.settings.getLauncherProperty("jsh.engine") == "rhino") {
+		if ($api.slime.settings.byName("jsh.engine").getLauncherProperty() == "rhino") {
 			shell.libraries.rhino(jshLoaderJavaMajorVersion).download();
 		}
 
-		if ($api.slime.settings.getLauncherProperty("jsh.engine") == "graal") {
+		if ($api.slime.settings.byName("jsh.engine").getLauncherProperty() == "graal") {
 			$api.debug("Engine is Graal.js");
-			var lib = $api.slime.settings.getLauncherProperty("jsh.shell.lib");
+			var lib = $api.slime.settings.byName("jsh.shell.lib").getLauncherProperty();
 			if (new Packages.java.io.File(lib, "graal").exists()) {
 				//	TODO	this logic is duplicated in launcher.js
 				if (new Packages.java.io.File(lib, "graal/Contents/Home").exists()) {
@@ -314,7 +314,7 @@
 		//var loaderMajorVersion = jshLoaderJavaMajorVersion;
 
 		var jshLoaderJavaHasJavaPlatformModuleSystem = (function() {
-			if ($api.slime.settings.getLauncherProperty("jsh.java.home")) {
+			if ($api.slime.settings.byName("jsh.java.home").getLauncherProperty()) {
 				return jshLoaderJavaMajorVersion > 8;
 			} else {
 				var javaLangObjectClass = Packages.java.lang.Class.forName("java.lang.Object");
@@ -368,12 +368,12 @@
 			}
 		}
 
-		if ($api.slime.settings.getLauncherProperty("jsh.engine") == "graal") {
+		if ($api.slime.settings.byName("jsh.engine").getLauncherProperty() == "graal") {
 			if (jshLoaderJavaMajorVersion < 17) {
 				Packages.java.lang.System.err.println("GraalVM cannot be launched by a launcher running a pre-17 Java VM.");
 				Packages.java.lang.System.exit(1);
 			}
-			var lib = $api.slime.settings.getLauncherProperty("jsh.shell.lib");
+			var lib = $api.slime.settings.byName("jsh.shell.lib").getLauncherProperty();
 			var polyglotLib = new Packages.java.io.File(lib, "graal/lib/polyglot");
 			$api.debug("polyglotLib = " + polyglotLib);
 			var _polyglotLibraries = polyglotLib.listFiles();
@@ -388,12 +388,12 @@
 		}
 
 		// TODO: currently there is no strategy for handling these options jsh.engine and jsh.debug.script if they conflict
-		var scriptDebugger = $api.slime.settings.getLauncherProperty("jsh.debug.script");
+		var scriptDebugger = $api.slime.settings.byName("jsh.debug.script").getLauncherProperty();
 		var profilerMatcher =  /^profiler(?:\:(.*))?$/;
 		if ( profilerMatcher.test(scriptDebugger)) {
 			var profilerMatch = profilerMatcher.exec(scriptDebugger);
 			if (shell.profiler) {
-				if ($api.slime.settings.getLauncherProperty("jsh.engine") == "rhino") {
+				if ($api.slime.settings.byName("jsh.engine").getLauncherProperty() == "rhino") {
 					if (profilerMatch[1]) {
 						command.vm("-javaagent:" + shell.profiler + "=" + profilerMatch[1]);
 					} else {
@@ -442,8 +442,8 @@
 		$api.debug("_urls = " + _urls);
 
 		//	TODO	document, generalize
-		if ($api.slime.settings.getLauncherProperty("jsh.shell.classpath")) {
-			var files = $api.slime.settings.getLauncherProperty("jsh.shell.classpath").split(String(Packages.java.io.File.pathSeparator));
+		if ($api.slime.settings.byName("jsh.shell.classpath").getLauncherProperty()) {
+			var files = $api.slime.settings.byName("jsh.shell.classpath").getLauncherProperty().split(String(Packages.java.io.File.pathSeparator));
 			for (var i=0; i<files.length; i++) {
 				_urls.push(new Packages.java.io.File(files[i]).toURI().toURL());
 			}
@@ -452,7 +452,7 @@
 
 		var classpath = $api.jsh.Classpath(_urls);
 
-		var engineId = /** @type { keyof slime.internal.jrunscript.bootstrap.PerEngine } */($api.slime.settings.getLauncherProperty("jsh.engine"));
+		var engineId = /** @type { keyof slime.internal.jrunscript.bootstrap.PerEngine } */($api.slime.settings.byName("jsh.engine").getLauncherProperty());
 
 		var engine = $api.jsh.engines[engineId];
 
@@ -485,7 +485,7 @@
 
 		//	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch from GitHub
 		var passthrough = ["http.proxyHost","http.proxyPort","https.proxyHost","https.proxyPort","jsh.github.user","jsh.github.password"];
-		var noProxy = $api.slime.settings.getLauncherProperty("jsh.loader.noproxy");
+		var noProxy = $api.slime.settings.byName("jsh.loader.noproxy").getLauncherProperty();
 		$api.debug("noProxy = " + noProxy);
 		for (var i=0; i<passthrough.length; i++) {
 			$api.debug("property = " + passthrough[i] + " value=" + Packages.java.lang.System.getProperty(passthrough[i]));

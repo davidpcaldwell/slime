@@ -152,7 +152,12 @@ namespace slime.jsh.internal.launcher {
 		export interface Setting {
 			set: (value: string) => void
 			default: (f: () => string) => void
+
+			/**
+			 * Returns the effective value for a given setting in the context of the launcher process.
+			 */
 			getLauncherProperty: () => string
+
 			loaderVmArguments: () => string[]
 			getLoaderProperty: () => string
 		}
@@ -188,11 +193,6 @@ namespace slime.jsh.internal.launcher {
 
 		settings: {
 			byName: (name: string) => settings.Setting
-
-			/**
-			 * Returns the effective value for a given setting in the context of the launcher process.
-			 */
-			getLauncherProperty: (name: string) => string
 
 			//	Probably redundant but currently appears to be used in packaged shells, where applyTo does not apply in the same
 			//	way given that there is no loader VM.

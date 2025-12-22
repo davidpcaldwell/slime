@@ -470,15 +470,15 @@
 				//	If SLIME source location not specified, and we can determine it, supply it to the shell
 				if (rv.src) all["jsh.shell.src"].default(function() { return String(rv.src); });
 
-				/**
-				 * @type { slime.jsh.internal.launcher.Slime["settings"]["getLauncherProperty"] }
-				 */
-				var get = function(name) {
-					if (!all[name]) {
-						throw new Error("Cannot read: " + name);
-					}
-					return all[name].getLauncherProperty();
-				}
+				// /**
+				//  * @type { slime.jsh.internal.launcher.Slime["settings"]["getLauncherProperty"] }
+				//  */
+				// var get = function(name) {
+				// 	if (!all[name]) {
+				// 		throw new Error("Cannot read: " + name);
+				// 	}
+				// 	return all[name].getLauncherProperty();
+				// }
 
 				//	Added to VM arguments for loader VM
 				/**
@@ -612,7 +612,7 @@
 						if (!rv) throw new Error("No setting: " + name);
 						return rv;
 					},
-					getLauncherProperty: get,
+					// getLauncherProperty: get,
 
 					sendPropertiesTo: sendPropertiesTo,
 					applyTo: applyTo,
