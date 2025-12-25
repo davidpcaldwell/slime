@@ -57,7 +57,7 @@ namespace slime.jsh.internal.launcher {
 					fifty.tests.invocation = fifty.test.Parent();
 
 					const jrunscript = jsh.internal.bootstrap.java.install.jrunscript;
-					const pwd = $api.jrunscript.properties.get("user.dir");
+					const pwd = jsh.internal.bootstrap.properties.get("user.dir");
 					const main = jsh.file.os.directory.relativePath("rhino/jrunscript/api.js")(pwd);
 
 					const parse = function(command: string): Output {
@@ -130,7 +130,6 @@ namespace slime.jsh.internal.launcher {
 						const output = parse("java.scripting/com.sun.tools.script.shell.Main -classpath ./local/jsh/lib/asm.jar:./local/jsh/lib/asm-commons.jar:./local/jsh/lib/asm-tree.jar:./local/jsh/lib/asm-util.jar:./local/jsh/lib/nashorn.jar ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
 						const relative = jsh.file.Location.directory.base( fifty.jsh.file.relative("../../..") );
 						check(output, ["local/jsh/lib/asm.jar","local/jsh/lib/asm-commons.jar","local/jsh/lib/asm-tree.jar","local/jsh/lib/asm-util.jar","local/jsh/lib/nashorn.jar"].map(relative).map($api.fp.property("pathname")), {});
-						jsh.shell.console(JSON.stringify(output,void(0),4));
 					}
 
 					fifty.tests.invocation.jdk21 = function() {

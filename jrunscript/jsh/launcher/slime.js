@@ -612,8 +612,6 @@
 						if (!rv) throw new Error("No setting: " + name);
 						return rv;
 					},
-					// getLauncherProperty: get,
-
 					sendPropertiesTo: sendPropertiesTo,
 					applyTo: applyTo,
 					test: {

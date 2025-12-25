@@ -181,6 +181,7 @@
 			function(/** @type { slime.jrunscript.native.java.util.Properties }*/_properties) {
 				return {
 					get: function(key) {
+						//	TODO	Logic duplicated in rhino/jrunscript/api.js; unify
 						var _value = _properties.getProperty(key);
 						if (_value === null) return null;
 						return String(_value);

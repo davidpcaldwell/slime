@@ -244,6 +244,11 @@ namespace slime.internal.jrunscript.bootstrap {
 
 		log: any
 
+		properties: {
+			get: (name: string) => string
+			set: (name: string, value: string) => void
+		}
+
 		engine: {
 			toString: () => string
 
