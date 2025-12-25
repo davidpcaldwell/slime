@@ -79,6 +79,18 @@
 			}
 		)(this);
 
+		var properties = (function() {
+			return {
+				get: function(name) {
+					var _value = Packages.java.lang.System.getProperty(name);
+					return (_value != null) ? String(_value) : null;
+				},
+				set: function(name,value) {
+					Packages.java.lang.System.setProperty(name, value);
+				}
+			}
+		})();
+
 		//	The below would initialize the logging configuration to be empty, rather than the JDK default. The only logging done is for
 		//	remote shells, which otherwise would produce an uncomfortably long silence before the program started running. So they are
 		//	instead a little bit chatty. A user could configure this by configuring Java logging. Alternatively, I suppose we could
@@ -120,6 +132,7 @@
 			debug: void(0),
 			console: void(0),
 			log: void(0),
+			properties: void(0),
 			engine: void(0),
 			github: void(0),
 			Script: void(0),
@@ -483,6 +496,8 @@
 		if (configuration && configuration.engine && configuration.engine.script) {
 			$engine.script = configuration.engine.script;
 		}
+
+		$api.properties = properties;
 
 		$api.engine = (
 			function(global) {
