@@ -136,8 +136,8 @@
 				return $api.jsh.Built(builtShellJarLocation.file.getParentFile().getParentFile());
 			} else if ($api.jsh.shell && $api.jsh.shell.packaged) {
 				return $api.jsh.shell.current;
-			} else if (Packages.java.lang.System.getProperty("jsh.shell.packaged")) {
-				return $api.jsh.Packaged(new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.shell.packaged")));
+			} else if ($api.properties.get("jsh.shell.packaged")) {
+				return $api.jsh.Packaged(new Packages.java.io.File($api.properties.get("jsh.shell.packaged")));
 			} else {
 				//	TODO	much of this logic is reproduced in the launcher.js Libraries construct, and this should be removed
 				//			after merging in any differences from here and refining the implementation
@@ -242,7 +242,7 @@
 						return javaVersionProperty.split(".")[0];
 					}
 
-					var javaMajorVersion = Number(javaMajorVersionString(String(Packages.java.lang.System.getProperty("java.version"))));
+					var javaMajorVersion = Number(javaMajorVersionString($api.properties.get("java.version")));
 
 					return javaMajorVersion;
 				}
@@ -458,7 +458,7 @@
 
 		if (!engine) throw new Error("Specified engine [" + engineId + "]" + " not found;"
 			+ " JSH_ENGINE=" + $api.shell.environment.JSH_ENGINE
-			+ " jsh.engine=" + Packages.java.lang.System.getProperty("jsh.engine")
+			+ " jsh.engine=" + $api.properties.get("jsh.engine")
 			+ " shell=" + shell
 		);
 
@@ -481,17 +481,25 @@
 			command.argument($api.arguments[i]);
 		}
 
-		command.systemProperty("jsh.launcher.jrunscript", String($api.java.install.jrunscript.getCanonicalPath()));
+		var invocation = $api.jsh.invocation();
+		command.systemProperty("jsh.launcher.invocation.jrunscript", invocation.jrunscript);
+		for (var x in invocation.properties) {
+			command.systemProperty("jsh.launcher.invocation.properties." + x, invocation.properties[x]);
+		}
+		for (var i=0; i<invocation.classpath.length; i++) {
+			command.systemProperty("jsh.launcher.invocation.classpath." + i, invocation.classpath[i]);
+		}
+		command.systemProperty("jsh.launcher.invocation.main", invocation.main);
 
 		//	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch from GitHub
 		var passthrough = ["http.proxyHost","http.proxyPort","https.proxyHost","https.proxyPort","jsh.github.user","jsh.github.password"];
 		var noProxy = $api.slime.settings.byName("jsh.loader.noproxy").getLauncherProperty();
 		$api.debug("noProxy = " + noProxy);
 		for (var i=0; i<passthrough.length; i++) {
-			$api.debug("property = " + passthrough[i] + " value=" + Packages.java.lang.System.getProperty(passthrough[i]));
+			$api.debug("property = " + passthrough[i] + " value=" + $api.properties.get(passthrough[i]));
 			if (noProxy && passthrough[i].substring(0,"http.".length) == "http.") continue;
-			if (Packages.java.lang.System.getProperty(passthrough[i])) {
-				command.systemProperty(passthrough[i], String(Packages.java.lang.System.getProperty(passthrough[i])));
+			if ($api.properties.get(passthrough[i])) {
+				command.systemProperty(passthrough[i], $api.properties.get(passthrough[i]));
 			}
 		}
 

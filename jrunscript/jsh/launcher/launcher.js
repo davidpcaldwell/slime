@@ -156,6 +156,96 @@
 				}
 			};
 
+			/** @type { slime.$api.fp.Mapping<slime.jsh.internal.launcher.invocation.Input, slime.jsh.internal.launcher.invocation.Output> } */
+			var invocation = function(input) {
+				var tokens = input.command.split(/\s+/);
+
+				/**
+				 * @param { string } path
+				 * @returns { string }
+				 */
+				var toAbsolute = function(path) {
+					if (/^\//.test(path)) {
+						return path;
+					}
+					return String(
+						new Packages.java.io.File(
+							input.pwd,
+							path
+						).getCanonicalFile().toString()
+					);
+				};
+
+				/**
+				 *
+				 * @param { string } token
+				 * @returns { boolean }
+				 */
+				var isMain = function(token) {
+					if (/\/rhino\/jrunscript\/api\.js$/.test(token)) return true;
+					return false;
+				};
+
+				var rv = {
+					jrunscript: String(input.jrunscript.toString()),
+					classpath: [],
+					properties: {},
+					main: void(0)
+				}
+
+				var isJavaProperty = function(token) {
+					return /^-D/.test(token);
+				};
+
+				var parseJavaProperty = function(token) {
+					var eq = token.indexOf("=");
+					if (eq == -1) {
+						return {
+							name: token.substring(2),
+							value: ""
+						};
+					} else {
+						return {
+							name: token.substring(2, eq),
+							value: token.substring(eq + 1)
+						};
+					}
+				};
+
+				for (var i = 0; i < tokens.length; i++) {
+					if (isMain(tokens[i])) {
+						rv.main = toAbsolute(tokens[i]);
+					}
+					if (isJavaProperty(tokens[i])) {
+						var nv = parseJavaProperty(tokens[i]);
+						rv.properties[nv.name] = nv.value;
+					}
+					if (tokens[i] == "-classpath") {
+						//	TODO	none of this will work, really, if there are spaces in the classpath. Is there a more robust
+						//			way?
+						var classpath = tokens[++i];
+						//	TODO	what is appropriate platform value for this separator?
+						var items = classpath.split(":");
+
+						rv.classpath = items.map(function(item) {
+							var _context = Packages.java.nio.file.Paths.get(
+								$$api.properties.get("user.dir")
+							);
+							var _declared = Packages.java.nio.file.Paths.get(
+								item
+							);
+
+							//	TODO	toRealPath also available
+							var _result = _context.resolve(_declared).normalize().toAbsolutePath().toString();
+
+							return String(_result);
+						});
+					}
+				}
+
+				return rv;
+			};
+
 			//	Below structure supports both native Java and JavaScript arrays; might be able to simplify and
 			//	have callers convert argument to JavaScript
 			/** @type { slime.jsh.internal.launcher.Jsh["Classpath"] } */
@@ -216,7 +306,17 @@
 				Unbuilt: void(0),
 				Built: void(0),
 				Packaged: void(0),
-				shell: void(0)
+				shell: void(0),
+				invocation: function() {
+					return invocation({
+						command: $$api.properties.get("sun.java.command"),
+						jrunscript: $$api.java.install.jrunscript,
+						pwd: $$api.properties.get("user.dir")
+					});
+				},
+				test: {
+					invocation: invocation
+				}
 			};
 
 			//	setting is a string representing the jsh.shell.lib property value
@@ -632,7 +732,7 @@
 				}
 
 				$$api.debug("Launcher environment = " + JSON.stringify($$api.shell.environment, void(0), "    "));
-				$$api.debug("Launcher working directory = " + Packages.java.lang.System.getProperty("user.dir"));
+				$$api.debug("Launcher working directory = " + $$api.properties.get("user.dir"));
 				$$api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
 
 				$$api.debug("Creating command ...");

@@ -38,6 +38,10 @@ namespace slime.jsh.internal.launcher {
 				var data: { shellClasspath: string } = JSON.parse(result.stdio.output);
 
 				verify(data).shellClasspath.is(classpathUri);
+
+				fifty.load("launcher.fifty.ts");
+
+				fifty.load("test/suite.fifty.ts");
 			}
 
 			fifty.tests.manual = function() {

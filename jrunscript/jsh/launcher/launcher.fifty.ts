@@ -46,6 +46,121 @@ namespace slime.jsh.internal.launcher {
 		exit: (status: number) => void
 	}
 
+	export namespace invocation {
+		export interface Input {
+			jrunscript: slime.jrunscript.native.java.io.File
+			pwd: string
+			command: string
+		}
+
+		export interface Output {
+			jrunscript: string
+			classpath: string[]
+			properties: { [name: string]: string }
+			main: string
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global as unknown as { $api: slime.$api.jrunscript.Global, jsh: slime.jsh.Global };
+
+				fifty.tests.invocation = fifty.test.Parent();
+
+				const jrunscript = jsh.internal.bootstrap.java.install.jrunscript;
+				const pwd = jsh.internal.bootstrap.properties.get("user.dir");
+				const main = jsh.file.os.directory.relativePath("rhino/jrunscript/api.js")(pwd);
+
+				const parse = function(command: string): Output {
+					const input: Input = {
+						jrunscript: jrunscript,
+						pwd: pwd,
+						command: command
+					};
+
+					return jsh.internal.bootstrap.jsh.test.invocation(input);
+				};
+
+				const equalsArray = function(v: any[]): (p: any[]) => boolean {
+					const rv = function(p) {
+						if (v.length !== p.length) {
+							return false;
+						}
+						for (let i = 0; i < v.length; i++) {
+							if (v[i] !== p[i]) {
+								return false;
+							}
+						}
+						return true;
+					};
+					rv.toString = function() {
+						return "equalsArray(" + v.toString() + ")";
+					}
+					return rv;
+				};
+
+				const equalsObject = function(v: { [name: string]: any }): (p: { [name: string]: any }) => boolean {
+					const rv = function(p) {
+						const keys = Object.keys(v);
+						if (keys.length !== Object.keys(p).length) {
+							return false;
+						}
+						for (let i = 0; i < keys.length; i++) {
+							const key = keys[i];
+							if (v[key] !== p[key]) {
+								return false;
+							}
+						}
+						return true;
+					};
+					rv.toString = function() {
+						return "equalsObject(" + JSON.stringify(v) + ")";
+					}
+					return rv;
+				};
+
+				const check = function(output: Output, classpath: string[], properties: { [name: string]: string }) {
+					verify(output).jrunscript.is(String(jrunscript.toString()));
+					verify(output).classpath.evaluate(equalsArray(classpath)).is(true);
+					verify(output).properties.evaluate(equalsObject(properties)).is(true);
+					verify(output).main.is(main);
+				};
+
+				fifty.tests.invocation.jdk8 = function() {
+					const output = parse("com.sun.tools.script.shell.Main ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
+					check(output, [], {});
+				};
+
+				fifty.tests.invocation.jdk11 = function() {
+					const output = parse("java.scripting/com.sun.tools.script.shell.Main -Dnashorn.args=--no-deprecation-warning ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
+					check(output, [], {"nashorn.args": "--no-deprecation-warning"});
+					jsh.shell.console(JSON.stringify(output.properties));
+				};
+
+				fifty.tests.invocation.jdk17 = function() {
+					const output = parse("java.scripting/com.sun.tools.script.shell.Main -classpath ./local/jsh/lib/asm.jar:./local/jsh/lib/asm-commons.jar:./local/jsh/lib/asm-tree.jar:./local/jsh/lib/asm-util.jar:./local/jsh/lib/nashorn.jar ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
+					const relative = jsh.file.Location.directory.base( fifty.jsh.file.relative("../../..") );
+					check(output, ["local/jsh/lib/asm.jar","local/jsh/lib/asm-commons.jar","local/jsh/lib/asm-tree.jar","local/jsh/lib/asm-util.jar","local/jsh/lib/nashorn.jar"].map(relative).map($api.fp.property("pathname")), {});
+				}
+
+				fifty.tests.invocation.jdk21 = function() {
+					const output = parse("java.scripting/com.sun.tools.script.shell.Main -classpath ./local/jsh/lib/asm.jar:./local/jsh/lib/asm-commons.jar:./local/jsh/lib/asm-tree.jar:./local/jsh/lib/asm-util.jar:./local/jsh/lib/nashorn.jar ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
+					const relative = jsh.file.Location.directory.base( fifty.jsh.file.relative("../../..") );
+					check(output, ["local/jsh/lib/asm.jar","local/jsh/lib/asm-commons.jar","local/jsh/lib/asm-tree.jar","local/jsh/lib/asm-util.jar","local/jsh/lib/nashorn.jar"].map(relative).map($api.fp.property("pathname")), {});
+				}
+
+				fifty.tests.invocation.macos = function() {
+					const output = parse("java.scripting/com.sun.tools.script.shell.Main -classpath ./local/jsh/lib/asm.jar:./local/jsh/lib/asm-commons.jar:./local/jsh/lib/asm-tree.jar:./local/jsh/lib/asm-util.jar:./local/jsh/lib/nashorn.jar ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
+					const relative = jsh.file.Location.directory.base( fifty.jsh.file.relative("../../..") );
+					check(output, ["local/jsh/lib/asm.jar","local/jsh/lib/asm-commons.jar","local/jsh/lib/asm-tree.jar","local/jsh/lib/asm-util.jar","local/jsh/lib/nashorn.jar"].map(relative).map($api.fp.property("pathname")), {});
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export interface Classpath {
 		_urls: slime.jrunscript.native.java.net.URL[]
 		append: (classpath: Classpath) => void
@@ -86,6 +201,12 @@ namespace slime.jsh.internal.launcher {
 		current?: {
 			installation?: Installation
 		}
+
+		invocation: () => invocation.Output
+
+		test: {
+			invocation: slime.$api.fp.Mapping<invocation.Input,invocation.Output>
+		}
 	}
 
 	export interface Additions {
@@ -95,6 +216,17 @@ namespace slime.jsh.internal.launcher {
 
 	export interface JavaAdditions {
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.invocation);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export type Global = slime.internal.jrunscript.bootstrap.Global<Additions,JavaAdditions>
 }

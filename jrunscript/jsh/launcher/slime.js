@@ -37,10 +37,10 @@
 
 		//	TODO	not sure this makes any sense at all; why are we replacing the classpath from which Rhino can be loaded in this
 		//			circumstance? How is this used?
-		if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
+		if ($$api.properties.get("jsh.engine.rhino.classpath")) {
 			//	TODO	hard-coded assumption that this is file
 			$$api.engine.rhino.classpath = function() {
-				return new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"))
+				return new Packages.java.io.File($$api.properties.get("jsh.engine.rhino.classpath"))
 			};
 		}
 
@@ -258,8 +258,8 @@
 				 * @returns The string value of the setting, or `null` if the setting was not explicitly provided.
 				 */
 				var explicit = function(name) {
-					if (Packages.java.lang.System.getProperty(name) !== null) {
-						return String(Packages.java.lang.System.getProperty(name));
+					if ($$api.properties.get(name) !== null) {
+						return $$api.properties.get(name);
 					}
 					var ename = name.replace(/\./g, "_").toUpperCase();
 					if (Packages.java.lang.System.getenv(ename) !== null) {
@@ -515,97 +515,6 @@
 					sendPropertiesTo(command);
 				};
 
-				/** @type { slime.$api.fp.Mapping<slime.jsh.internal.launcher.settings.invocation.Input, slime.jsh.internal.launcher.settings.invocation.Output> } */
-				var invocation = function(input) {
-					var tokens = input.command.split(/\s+/);
-
-					/**
-					 *
-					 * @param { string } path
-					 * @returns { string }
-					 */
-					var toAbsolute = function(path) {
-						if (/^\//.test(path)) {
-							return path;
-						}
-						return String(
-							new Packages.java.io.File(
-								input.pwd,
-								path
-							).getCanonicalFile().toString()
-						);
-					};
-
-					/**
-					 *
-					 * @param { string } token
-					 * @returns { boolean }
-					 */
-					var isMain = function(token) {
-						if (/\/rhino\/jrunscript\/api\.js$/.test(token)) return true;
-						return false;
-					};
-
-					var rv = {
-						jrunscript: String(input.jrunscript.toString()),
-						classpath: [],
-						properties: {},
-						main: void(0)
-					}
-
-					var isJavaProperty = function(token) {
-						return /^-D/.test(token);
-					};
-
-					var parseJavaProperty = function(token) {
-						var eq = token.indexOf("=");
-						if (eq == -1) {
-							return {
-								name: token.substring(2),
-								value: ""
-							};
-						} else {
-							return {
-								name: token.substring(2, eq),
-								value: token.substring(eq + 1)
-							};
-						}
-					};
-
-					for (var i = 0; i < tokens.length; i++) {
-						if (isMain(tokens[i])) {
-							rv.main = toAbsolute(tokens[i]);
-						}
-						if (isJavaProperty(tokens[i])) {
-							var nv = parseJavaProperty(tokens[i]);
-							rv.properties[nv.name] = nv.value;
-						}
-						if (tokens[i] == "-classpath") {
-							//	TODO	none of this will work, really, if there are spaces in the classpath. Is there a more robust
-							//			way?
-							var classpath = tokens[++i];
-							//	TODO	what is appropriate platform value for this separator?
-							var items = classpath.split(":");
-
-							rv.classpath = items.map(function(item) {
-								var _context = Packages.java.nio.file.Paths.get(
-									Packages.java.lang.System.getProperty("user.dir")
-								);
-								var _declared = Packages.java.nio.file.Paths.get(
-									item
-								);
-
-								//	TODO	toRealPath also available
-								var _result = _context.resolve(_declared).normalize().toAbsolutePath().toString();
-
-								return String(_result);
-							});
-						}
-					}
-
-					return rv;
-				}
-
 				return {
 					byName: function(name) {
 						var rv = all[name];
@@ -613,10 +522,7 @@
 						return rv;
 					},
 					sendPropertiesTo: sendPropertiesTo,
-					applyTo: applyTo,
-					test: {
-						invocation: invocation
-					}
+					applyTo: applyTo
 				};
 			})();
 

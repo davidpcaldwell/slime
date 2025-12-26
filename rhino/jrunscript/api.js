@@ -83,7 +83,7 @@
 			return {
 				get: function(name) {
 					var _value = Packages.java.lang.System.getProperty(name);
-					return (_value != null) ? String(_value) : null;
+					return (_value !== null) ? String(_value) : null;
 				},
 				set: function(name,value) {
 					Packages.java.lang.System.setProperty(name, value);
