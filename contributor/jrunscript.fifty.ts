@@ -69,7 +69,6 @@
 			fifty.load("../rhino/tools/maven/module.fifty.ts");
 			fifty.load("../jrunscript/jsh/suite.fifty.ts");
 			fifty.load("../jrunscript/jsh/launcher/suite.fifty.ts");
-			fifty.load("../jrunscript/jsh/launcher/test/suite.fifty.ts");
 			if (isMkcertImplemented) fifty.load("../jrunscript/jsh/test/remote.fifty.ts");
 			fifty.load("../jrunscript/jsh/loader/jsh.fifty.ts");
 			fifty.load("../jrunscript/jsh/script/plugin.jsh.fifty.ts");

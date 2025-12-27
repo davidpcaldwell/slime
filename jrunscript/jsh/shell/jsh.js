@@ -669,7 +669,7 @@
 						$api.Object.compose(
 							jrunscriptForkConfiguration,
 							{
-								jrunscript: module.properties.file("jsh.launcher.jrunscript")
+								jrunscript: module.properties.file("jsh.launcher.invocation.jrunscript")
 							}
 						)
 					);
