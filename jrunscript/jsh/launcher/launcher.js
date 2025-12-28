@@ -307,13 +307,73 @@
 				Built: void(0),
 				Packaged: void(0),
 				shell: void(0),
-				invocation: function() {
-					return invocation({
-						command: $$api.properties.get("sun.java.command"),
-						jrunscript: $$api.java.install.jrunscript,
-						pwd: $$api.properties.get("user.dir")
-					});
-				},
+				invocation: (
+					function() {
+						var fromArray = function(prefix) {
+							var rv = [];
+							var index = 0;
+							var more = true;
+							do {
+								var next = $$api.properties.get(prefix + "." + index);
+								if (next) {
+									rv.push(next);
+									index++;
+								} else {
+									more = false;
+								}
+							} while (more);
+							return rv;
+						};
+
+						var fromProperties = function(prefix) {
+							var all = $$api.properties.list();
+							var matching = all.filter(function(property) {
+								return property.name.indexOf(prefix + ".") == 0;
+							}).map(function(property) {
+								return {
+									name: property.name.substring((prefix + ".").length),
+									value: property.value
+								};
+							});
+							return matching.reduce(function(rv,property) {
+								rv[property.name] = property.value;
+								return rv;
+							},{});
+						}
+
+						return {
+							toProperties: function() {
+								var output = invocation({
+									command: $$api.properties.get("sun.java.command"),
+									jrunscript: $$api.java.install.jrunscript,
+									pwd: $$api.properties.get("user.dir")
+								});
+								/** @type { { [name: string]: string } } */
+								var rv = {};
+								var set = function(name, value) {
+									rv[name] = value;
+								};
+								set("jsh.launcher.invocation.jrunscript", output.jrunscript);
+								for (var x in output.properties) {
+									set("jsh.launcher.invocation.properties." + x, output.properties[x]);
+								}
+								for (var i=0; i<output.classpath.length; i++) {
+									set("jsh.launcher.invocation.classpath." + i, output.classpath[i]);
+								}
+								set("jsh.launcher.invocation.main", output.main);
+								return rv;
+							},
+							fromSystemProperties: function() {
+								return {
+									jrunscript: $$api.properties.get("jsh.launcher.invocation.jrunscript"),
+									properties: fromProperties("jsh.launcher.invocation.properties"),
+									classpath: fromArray("jsh.launcher.invocation.classpath"),
+									main: $$api.properties.get("jsh.launcher.invocation.main")
+								};
+							}
+						}
+					}
+				)(),
 				test: {
 					invocation: invocation
 				}
