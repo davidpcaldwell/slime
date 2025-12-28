@@ -202,7 +202,10 @@ namespace slime.jsh.internal.launcher {
 			installation?: Installation
 		}
 
-		invocation: () => invocation.Output
+		invocation: {
+			toProperties: () => { [name: string]: string }
+			fromSystemProperties: () => invocation.Output
+		}
 
 		test: {
 			invocation: slime.$api.fp.Mapping<invocation.Input,invocation.Output>

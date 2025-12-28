@@ -481,15 +481,10 @@
 			command.argument($api.arguments[i]);
 		}
 
-		var invocation = $api.jsh.invocation();
-		command.systemProperty("jsh.launcher.invocation.jrunscript", invocation.jrunscript);
-		for (var x in invocation.properties) {
-			command.systemProperty("jsh.launcher.invocation.properties." + x, invocation.properties[x]);
+		var invocation = $api.jsh.invocation.toProperties();
+		for (var x in invocation) {
+			command.systemProperty(x, invocation[x]);
 		}
-		for (var i=0; i<invocation.classpath.length; i++) {
-			command.systemProperty("jsh.launcher.invocation.classpath." + i, invocation.classpath[i]);
-		}
-		command.systemProperty("jsh.launcher.invocation.main", invocation.main);
 
 		//	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch from GitHub
 		var passthrough = ["http.proxyHost","http.proxyPort","https.proxyHost","https.proxyPort","jsh.github.user","jsh.github.password"];

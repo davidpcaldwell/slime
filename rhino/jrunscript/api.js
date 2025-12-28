@@ -87,6 +87,17 @@
 				},
 				set: function(name,value) {
 					Packages.java.lang.System.setProperty(name, value);
+				},
+				list: function() {
+					var rv = [];
+					var _props = Packages.java.lang.System.getProperties();
+					var e = _props.propertyNames();
+					while (e.hasMoreElements()) {
+						var name = String(e.nextElement());
+						var value = String(_props.getProperty(name));
+						rv.push({ name: name, value: value });
+					}
+					return rv;
 				}
 			}
 		})();

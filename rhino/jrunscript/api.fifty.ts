@@ -243,12 +243,17 @@ namespace slime.internal.jrunscript.bootstrap {
 		console: any
 
 		log: any
+	}
 
+	export interface Api<J> {
 		properties: {
 			get: (name: string) => string
 			set: (name: string, value: string) => void
+			list: () => { name: string, value: string }[]
 		}
+	}
 
+	export interface Api<J> {
 		engine: {
 			toString: () => string
 
