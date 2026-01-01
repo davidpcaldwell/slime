@@ -115,6 +115,25 @@ namespace slime.jrunscript.shell.run {
 		readonly [name: string]: string
 	}
 
+	//	Possible future representation
+	// export interface Execution {
+	// 	configuration: {
+	// 		environment: Environment
+	// 		directory: string
+	// 	}
+
+	// 	command: [string, ...string[]]
+
+	// 	input: {
+	// 		stdin: slime.jrunscript.runtime.io.InputStream
+	// 	}
+
+	// 	output: (streams: {
+	// 		stdout: slime.jrunscript.runtime.io.InputStream
+	// 		stderr: slime.jrunscript.runtime.io.InputStream
+	// 	}) => void
+	// }
+
 	export namespace intention {
 		export type Input = string | slime.jrunscript.runtime.io.InputStream
 	}
