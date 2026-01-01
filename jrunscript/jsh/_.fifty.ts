@@ -267,24 +267,24 @@ namespace slime.jsh {
 /**
  * ## The `jsh` unbuilt/remote `bash` launcher
  *
- * The `bash` launcher has two jobs:
+ * The `bash` launcher has three jobs:
  *
  * * Find or install a version of Java to use (currently the default is 21, though this might not work for remote shells; see #1617
  * and comments in the `jsh` script referencing #1617),
- * * Install a bootstrap JavaScript engine if necessary; currently, for Java 8-14, Nashorn is used, and for Java 15+, standalone
- * Nashorn {@include ../../local/typedoc/dependencies.md#nashorn.standalone.version} is used.
+ * * Install a bootstrap JavaScript engine if necessary; currently, for Java 8-14, the JDK's built-in Nashorn is used, and for Java
+ * 15+, standalone Nashorn {@include ../../local/typedoc/dependencies.md#nashorn.standalone.version} is used.
+ * * Properly invoke `jrunscript` (possibly providing the engine on the `jrunscript` classpath and configuring system properties) to
+ * execute the SLIME launcher script with the `jsh` argument.
  *
- * It then runs the `jsh` _launcher_.
- *
- * ## The `jsh` launcher
+ * ## The `jsh` launcher: SLIME launcher script with `jsh` argument
  *
  * The `jsh` launcher is a set of `jrunscript` scripts that is responsible for three things:
  *
  * * Installing the desired JavaScript engine configured via the `JSH_ENGINE` environment variable or `jsh.engine` system property,
  * and
  * * Building a command to execute the `jsh` _loader_ process.
- * * Providing an API to `jsh` scripts that is used to accomplish the above two tasks, so they do not have to be rewritten into the
- * `jsh` loader.
+ * * Providing the building blocks used to implement the launcher itself to the jsh loader and `jsh` scripts as an API, so that
+ * operations used in both the launcher and loader both use (and that applications might use) do not have to be written twice.
  *
  * It consists of several `jrunscript`-compatible scripts (all of which currently run on Nashorn, and crucially, cannot run on
  * GraalJS, because they use JavaScript multithreading with Java synchronization; they may be able to run on Rhino but this is

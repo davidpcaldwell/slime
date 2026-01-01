@@ -330,7 +330,7 @@ namespace slime.jsh.test {
 									};
 								}
 							),
-							remote: $api.fp.impure.Input.memoized(remote)
+							remote: $api.fp.Thunk.memoize(remote)
 						}
 						fifty.global["jrunscript/jsh/fixtures.ts:shells"] = shells;
 					}

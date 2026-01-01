@@ -313,18 +313,27 @@ namespace slime.jsh.shell {
 	export type Installation = ExternalInstallation | PackagedInstallation
 
 	export type ExternalInstallationProgram = {
-		shell: ExternalInstallation,
+		shell: ExternalInstallation
 		script: string
 	}
 
+	/**
+	 * A _Program_ is somewhat analogous to an operating system executable in this context; it represents a complete specification
+	 * of an invocation of the script, including information about the associated shell. This program can still be executed with
+	 * arbitrary arguments, environment, working directory, system properties, and so forth.
+	 */
 	export type Program = ExternalInstallationProgram | PackagedInstallation
 
-	export type Intention = (
-		Program
-		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "directory">
+	export type ScriptInvocation = (
+		Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "directory">
 		& {
 			properties?: slime.jrunscript.java.Properties
 		}
+	)
+
+	export type Intention = (
+		Program
+		& ScriptInvocation
 		& Pick<slime.jrunscript.shell.run.Intention,"stdio">
 	)
 

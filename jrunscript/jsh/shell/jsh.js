@@ -505,6 +505,8 @@
 			},/** @type { string[] } */([]))
 		}
 
+		//	TODO	consider rewriting in terms of a partial execution of the jsh bash launcher followed by an invocation of
+		//			jrunscript using the new launcher-based types that describe classpath, properties, etc.
 		/** @type { (s: slime.jsh.shell.UnbuiltInstallation) => (p: slime.jsh.shell.Intention) => slime.jrunscript.shell.run.Intention } */
 		var unbuiltToShellIntention = function(s) {
 			return function(p) {
@@ -540,6 +542,9 @@
 				if (isUnbuilt(shell)) {
 					return unbuiltToShellIntention(shell)(p);
 				} else if (isBuilt(shell)) {
+					//	TODO	consider rewriting in terms of a partial execution of the jsh bash launcher followed by an invocation of
+					//			jrunscript using the new launcher-based types that describe classpath, properties, etc.
+
 					var getHomeBashLauncher = $api.fp.pipe(
 						asBuiltInstallation,
 						$api.fp.property("home"),
