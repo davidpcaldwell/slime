@@ -811,6 +811,11 @@ namespace slime.jrunscript {
 				}
 				jsh: {
 					Shell: any
+					Worker: {
+						Event: {
+							Listener: any
+						}
+					}
 					launcher: any
 				}
 				servlet: {

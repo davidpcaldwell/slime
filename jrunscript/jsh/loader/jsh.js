@@ -380,7 +380,7 @@
 													return rv;
 												})(),
 												new JavaAdapter(
-													Packages.inonit.script.jsh.Shell.Event.Listener,
+													Packages.inonit.script.jsh.Worker.Event.Listener,
 													{
 														on: function(e) {
 															p.onmessage(
@@ -415,7 +415,7 @@
 									onmessage: function(f) {
 										$jsh.onMessage(
 											new JavaAdapter(
-												Packages.inonit.script.jsh.Shell.Event.Listener,
+												Packages.inonit.script.jsh.Worker.Event.Listener,
 												{
 													on: function(event) {
 														//Packages.java.lang.System.err.println("Worker script onmessage got " + event);
