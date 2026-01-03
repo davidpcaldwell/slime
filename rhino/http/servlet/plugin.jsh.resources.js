@@ -118,9 +118,79 @@
 		};
 
 		/**
-		 * @param { Mapping[] } mapping
+		 * @type { new () => slime.jsh.httpd.Resources }
 		 */
-		var Resources = function(mapping) {
+		var Resources = function() {
+			/** @type { Mapping[] } */
+			var mapping = [];
+
+			/** @type { slime.jsh.httpd.Resources["add"] } */
+			this.add = function(m) {
+				mapping.push(new Mapping(m));
+			}
+
+			this.map = function(prefix,pathname) {
+				//	TODO	poor workaround on next line for attempt to map a directory rather than a correctly-structured object
+				if (pathname.directory === true) pathname = pathname.pathname;
+				if (pathname.directory) {
+					mapping.push(new Mapping({
+						prefix: prefix,
+						directory: pathname.directory
+					}));
+				} else if (pathname.loader) {
+					mapping.push(new Mapping({
+						prefix: prefix,
+						loader: pathname.loader
+					}));
+				}
+			};
+
+			/**
+			 * @type { slime.jsh.httpd.Resources["file"] }
+			 */
+			this.file = function(mappingFile,scope) {
+				if (!mappingFile) throw new TypeError("mappingFile must be defined.");
+				if (!scope) scope = {};
+
+				/** @type { (argument: slime.jsh.httpd.resources.Mapping) => argument is slime.jrunscript.file.File } */
+				var isFile = function(argument) {
+					return Boolean(argument["pathname"]);
+				}
+
+				/** @type { (argument: slime.jsh.httpd.resources.Mapping) => argument is slime.jsh.httpd.resources.LoaderMapping } */
+				var isLoaderMapping = function(argument) {
+					return Boolean(argument["loader"]);
+				}
+
+				/** @type { (argument: slime.jsh.httpd.resources.Mapping) => argument is slime.jsh.httpd.resources.CodeMapping } */
+				var isCodeMapping = function(argument) {
+					return Boolean(argument["name"]) && Boolean(argument["string"]);
+				}
+
+				//	Satisfy TypeScript
+				this.add = this.add;
+				this.map = this.map;
+
+				var rv = this;
+				/** @type { slime.jsh.httpd.resources.Scope } */
+				var api = $api.Object.compose({
+					$mapping: (isFile(mappingFile)) ? mappingFile : void(0),
+					map: function(prefix,pathname) {
+						rv.map(prefix,pathname);
+					}
+				}, (rv.add) ? { add: function(m) { rv.add(m); } } : {}, scope);
+				if (isLoaderMapping(mappingFile)) {
+					mappingFile.loader.run(mappingFile.path, api);
+				} else {
+					var toRun = (isCodeMapping(mappingFile)) ? mappingFile : {
+						name: mappingFile.pathname.basename,
+						type: "application/javascript",
+						string: mappingFile.read(String)
+					};
+					jsh.loader.run(toRun, api);
+				}
+			}
+
 			var loader = new function() {
 				this.get = function(path) {
 					for (var i=0; i<mapping.length; i++) {
@@ -176,8 +246,7 @@
 			};
 
 			/**
-			 * @param { { prefix?: string } & slime.old.loader.Source<{ prefix: string }> } [p]
-			 * @this { slime.old.Loader<any, slime.Resource> & { resource: any } }
+			 * @type { new (p?: { prefix?: string & slime.old.loader.Source<{ prefix: string }> }) => slime.old.Loader<any, slime.Resource> & { resource: any } }
 			 */
 			var NewLoader = function(p) {
 				if (!p) p = {};
@@ -214,6 +283,14 @@
 				p.child = function(path) {
 					return { prefix: p.prefix+path };
 				}
+				this.source = void(0);
+				this.toSynchronous = void(0);
+				this.factory = void(0);
+				this.script = void(0);
+				this.run = void(0);
+				this.value = void(0);
+				this.file = void(0);
+				this.module = void(0);
 				jsh.io.Loader.apply(this,[p]);
 				this.resource = function(path) {
 					return this.get(path);
@@ -231,52 +308,6 @@
 
 			this.loader = new NewLoader();
 
-			/**
-			 * @type { slime.jsh.httpd.Resources["file"] }
-			 */
-			this.file = function(mappingFile,scope) {
-				if (!mappingFile) throw new TypeError("mappingFile must be defined.");
-				if (!scope) scope = {};
-
-				/** @type { (argument: slime.jsh.httpd.resources.Mapping) => argument is slime.jrunscript.file.File } */
-				var isFile = function(argument) {
-					return Boolean(argument["pathname"]);
-				}
-
-				/** @type { (argument: slime.jsh.httpd.resources.Mapping) => argument is slime.jsh.httpd.resources.LoaderMapping } */
-				var isLoaderMapping = function(argument) {
-					return Boolean(argument["loader"]);
-				}
-
-				/** @type { (argument: slime.jsh.httpd.resources.Mapping) => argument is slime.jsh.httpd.resources.CodeMapping } */
-				var isCodeMapping = function(argument) {
-					return Boolean(argument["name"]) && Boolean(argument["string"]);
-				}
-
-				//	Satisfy TypeScript
-				this.add = this.add;
-				this.map = this.map;
-
-				var rv = this;
-				/** @type { slime.jsh.httpd.resources.Scope } */
-				var api = $api.Object.compose({
-					$mapping: (isFile(mappingFile)) ? mappingFile : void(0),
-					map: function(prefix,pathname) {
-						rv.map(prefix,pathname);
-					}
-				}, (rv.add) ? { add: function(m) { rv.add(m); } } : {}, scope);
-				if (isLoaderMapping(mappingFile)) {
-					mappingFile.loader.run(mappingFile.path, api);
-				} else {
-					var toRun = (isCodeMapping(mappingFile)) ? mappingFile : {
-						name: mappingFile.pathname.basename,
-						type: "application/javascript",
-						string: mappingFile.read(String)
-					};
-					jsh.loader.run(toRun, api);
-				}
-			}
-
 			this.build = function(WEBAPP) {
 				mapping.forEach(function(item) {
 					item.build(WEBAPP);
@@ -284,46 +315,12 @@
 			}
 		}
 
-		/**
-		 * @type { new () => slime.jsh.httpd.Resources }
-		 */
-		var NewResources = function() {
-			/** @type { Mapping[] } */
-			var mapping = [];
-
-			this.file = void(0);
-			this.loader = void(0);
-			this.build = void(0);
-			Resources.call(this,mapping);
-
-			/** @type { slime.jsh.httpd.Resources["add"] } */
-			this.add = function(m) {
-				mapping.push(new Mapping(m));
-			}
-
-			this.map = function(prefix,pathname) {
-				//	TODO	poor workaround on next line for attempt to map a directory rather than a correctly-structured object
-				if (pathname.directory === true) pathname = pathname.pathname;
-				if (pathname.directory) {
-					mapping.push(new Mapping({
-						prefix: prefix,
-						directory: pathname.directory
-					}));
-				} else if (pathname.loader) {
-					mapping.push(new Mapping({
-						prefix: prefix,
-						loader: pathname.loader
-					}));
-				}
-			};
-		};
-
 		var rv = (function() {
 			var rv = {
 				Old: void(0),
 				NoVcsDirectory: void(0),
 				script: void(0),
-				Constructor: NewResources
+				Constructor: Resources
 			};
 
 			rv.NoVcsDirectory = DirectoryWithoutVcsLoader;
@@ -340,7 +337,7 @@
 		}
 
 		rv.script = function(/* mapping files */) {
-			var resources = new NewResources();
+			var resources = new Resources();
 			return script(resources, Array.prototype.slice.call(arguments));
 		};
 

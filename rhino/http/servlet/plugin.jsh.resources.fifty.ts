@@ -5,6 +5,12 @@
 //	END LICENSE
 
 namespace slime.jsh.httpd {
+	/**
+	 * An object that is capable of loading resources, as well as enumerating all resources it can load so that they can be written
+	 * out (for example, to a webapp directory).
+	 *
+	 * Resources objects consist of an ordered list of *mappings* which are searched, in order, for a given resource.
+	 */
 	export interface Resources {
 		add: (m: { directory?: slime.jrunscript.file.Directory, loader?: slime.old.Loader, prefix: string }) => void
 
