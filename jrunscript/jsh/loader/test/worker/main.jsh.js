@@ -25,8 +25,6 @@
 		});
 		jsh.shell.console("Created worker: " + worker);
 		worker.postMessage(2);
-		//worker.terminate();
-		//jsh.shell.console("Terminated worker.");
 	}
 //@ts-ignore
 )(Packages,jsh)
