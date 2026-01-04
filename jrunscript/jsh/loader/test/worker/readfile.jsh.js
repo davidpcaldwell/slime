@@ -57,14 +57,17 @@
 					}
 				);
 			} else {
+				var lines = [];
 				var worker = jsh.loader.worker.create({
 					script: jsh.script.file,
 					arguments: ["worker", invocation.arguments[0]],
 					onmessage: function(e) {
 						if (e.detail.type == "event") {
 							//	TODO	only if type is line
+							lines.push(e.detail.value.detail);
 							jsh.shell.console("LINE: " + e.detail.value.detail);
 						} else if (e.detail.type == "fulfilled") {
+							jsh.shell.echo(JSON.stringify({ lines: lines }));
 							jsh.shell.console("END OF FILE");
 							worker.terminate();
 							jsh.shell.console("Worker terminated.");
