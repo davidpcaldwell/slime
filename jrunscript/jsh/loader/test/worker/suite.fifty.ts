@@ -16,20 +16,26 @@ namespace slime.jsh.loader.events {
 			if (!jsh.shell.jsh.Installation.is.unbuilt(shell)) throw new Error();
 			var unbuilt = shell;
 
-			fifty.tests.hello = function() {
+			var run = function(script: slime.jrunscript.file.Location, arguments: string[]): slime.jrunscript.shell.run.Exit {
 				var intention: slime.jsh.shell.Intention = {
 					shell: unbuilt,
-					script: fifty.jsh.file.relative("main.jsh.js").pathname,
+					script: script.pathname,
+					arguments: arguments,
 					stdio: {
 						output: "string"
 					}
 				};
 				var shellIntention = jsh.shell.jsh.Intention.toShellIntention(intention);
+				jsh.shell.console(JSON.stringify(shellIntention));
 				var result = $api.fp.world.now.question(
 					jsh.shell.subprocess.question,
 					shellIntention
 				);
-				jsh.shell.console(JSON.stringify(shellIntention));
+				return result;
+			}
+
+			fifty.tests.hello = function() {
+				var result = run(fifty.jsh.file.relative("main.jsh.js"), []);
 				verify(result.stdio.output.trim()).is("4");
 			};
 
@@ -39,20 +45,8 @@ namespace slime.jsh.loader.events {
 				var action = fifty.global.jsh.file.Location.file.write.old(tmp).string({ value: strings.join("\n") + "\n" });
 				var output = $api.fp.world.Action.process()(action);
 				output();
-				var intention: slime.jsh.shell.Intention = {
-					shell: unbuilt,
-					script: fifty.jsh.file.relative("readfile.jsh.js").pathname,
-					arguments: [tmp.pathname],
-					stdio: {
-						output: "string"
-					}
-				};
-				var shellIntention = jsh.shell.jsh.Intention.toShellIntention(intention);
-				var result = $api.fp.world.now.question(
-					jsh.shell.subprocess.question,
-					shellIntention
-				);
-				jsh.shell.console(JSON.stringify(shellIntention));
+
+				var result = run(fifty.jsh.file.relative("readfile.jsh.js"), [tmp.pathname]);
 
 				var json: { lines: string[] } = JSON.parse(result.stdio.output.trim());
 				verify(json.lines).length.is(strings.length+1);
