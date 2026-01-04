@@ -286,7 +286,7 @@ public abstract class Filesystem {
 
 			public Node[] list() throws IOException {
 				File[] files = this.canonicalizedAbsoluteFile.listFiles();
-				if (files == null) throw new RuntimeException("listing is null for " + this.canonicalizedAbsoluteFile);
+				if (files == null) return null;
 				Node[] rv = new Node[files.length];
 				for (int i=0; i<files.length; i++) {
 					rv[i] = new NodeImpl(files[i]);

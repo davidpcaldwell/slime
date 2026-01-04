@@ -694,6 +694,7 @@
 						var peer = java.newPeer(p.pathname);
 						if (!peer.exists()) return $api.fp.Maybe.from.nothing();
 						var list = peer.list();
+						if (list === null) return $api.fp.Maybe.from.nothing();
 						return $api.fp.Maybe.from.some(
 							$context.api.java.Array.adapt(list).map(
 								/** @type { slime.$api.fp.Mapping<slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node,string> } */
