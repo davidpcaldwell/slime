@@ -45,7 +45,7 @@
 		};
 
 		/**
-		 * @param { { directory?: slime.jrunscript.file.Directory, loader?: slime.old.Loader, prefix: string } } p
+		 * @type { new (p: { directory?: slime.jrunscript.file.Directory, loader?: slime.old.Loader, prefix: string }) => slime.jsh.httpd.internal.resources.Mapping }
 		 */
 		var Mapping = function(p) {
 			if (p.directory) {
@@ -121,7 +121,7 @@
 		 * @type { new () => slime.jsh.httpd.Resources }
 		 */
 		var Resources = function() {
-			/** @type { Mapping[] } */
+			/** @type { slime.jsh.httpd.internal.resources.Mapping[] } */
 			var mapping = [];
 
 			/** @type { slime.jsh.httpd.Resources["add"] } */
@@ -248,7 +248,7 @@
 			/**
 			 * @type { new (p?: { prefix?: string & slime.old.loader.Source<{ prefix: string }> }) => slime.old.Loader<any, slime.Resource> & { resource: any } }
 			 */
-			var NewLoader = function(p) {
+			var Loader = function(p) {
 				if (!p) p = {};
 				if (!p.prefix) p.prefix = "";
 				var get = function(path) {
@@ -306,7 +306,7 @@
 				// }
 			}
 
-			this.loader = new NewLoader();
+			this.loader = new Loader();
 
 			this.build = function(WEBAPP) {
 				mapping.forEach(function(item) {
