@@ -5,6 +5,15 @@
 //	END LICENSE
 
 namespace slime.jsh.httpd {
+	export namespace internal.resources {
+		export interface Mapping {
+			get: (path: string) => slime.resource.Descriptor
+			list: (path: string) => slime.old.loader.Entry[]
+			under: (path: string) => string
+			build: (webapp: slime.jrunscript.file.Directory) => void
+		}
+	}
+
 	/**
 	 * An object that is capable of loading resources, as well as enumerating all resources it can load so that they can be written
 	 * out (for example, to a webapp directory).
