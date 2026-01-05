@@ -771,7 +771,7 @@ namespace slime.jrunscript.file {
 			export interface Exports {
 				exists: {
 					simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,boolean>
-					world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, void, boolean>
+					world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
 				}
 
 				read: {

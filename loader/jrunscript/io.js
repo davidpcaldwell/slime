@@ -76,7 +76,7 @@
 		/** @typedef { slime.jrunscript.native.java.io.OutputStream } JavaOutputStream */
 		/** @typedef { slime.jrunscript.runtime.io.PipeEvents } PipeEvents */
 
-		/** @type { (i: JavaInputStream, o: JavaOutputStream, events: slime.$api.event.Emitter<PipeEvents> ) => void } */
+		/** @type { (i: JavaInputStream, o: JavaOutputStream, events: slime.$api.event.Producer<PipeEvents> ) => void } */
 		var pipe_all_native = function(i,o,events) {
 			//	TODO	do better error handling; this essentially swallows everything
 			var error = function(e) { throw new Error(); };
