@@ -73,9 +73,11 @@
 					url.value,
 					$api.fp.string.split("/"),
 					function(array) { return array[array.length-1]; },
-					$api.fp.string.match(/(.*)\.tar.gz$/),
+					$api.fp.RegExp.exec(/(.*)\.tar.gz$/),
 					function(match) {
-						return match[1];
+						if (!url.present) throw new Error("Unreachable; asserted outside pipeline.");
+						if (!match.present) throw new Error("Unexpected URL format: " + url.value);
+						return match.value[1];
 					}
 				)
 				return {

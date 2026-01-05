@@ -693,6 +693,13 @@
 						var copy = new RegExp(regexp.source);
 						return Maybe.from.value(copy.exec(string));
 					}
+				},
+				test: function(regexp) {
+					return function(string) {
+						//	We copy the RegExp to deal with possibilities of multithreaded access
+						var copy = new RegExp(regexp.source);
+						return copy.test(string);
+					}
 				}
 			},
 			now: Object.assign(now_map, {

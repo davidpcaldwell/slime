@@ -384,6 +384,7 @@
 					}
 				},
 				relative: $api.deprecate(parts.directory.relativePath),
+				pathname: $api.fp.property("pathname"),
 				parent: Location_parent,
 				basename: Location_basename,
 				canonicalize: function(location) {

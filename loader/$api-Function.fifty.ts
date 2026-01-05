@@ -444,7 +444,12 @@ namespace slime.$api.fp {
 			split: (delimiter: string) => (string: string) => string[]
 			repeat: (count: number) => (string: string) => string
 			toUpperCase: (string: string) => string
+
+			/**
+			 * @deprecated Replaced by `RegExp.exec`, which has slightly different semantics (uses `Maybe`).
+			 */
 			match: (pattern: RegExp) => (string: string) => RegExpMatchArray
+
 			trim: Transform<string>
 
 			startsWith: (searchString: string, startPosition?: number) => Predicate<string>
@@ -1391,6 +1396,8 @@ namespace slime.$api.fp {
 			modify: (modifier: (pattern: string) => string) => (original: RegExp) => RegExp
 
 			exec: (regexp: RegExp) => Partial<string,RegExpExecArray>
+
+			test: (regexp: RegExp) => Mapping<string,boolean>
 		}
 	}
 
@@ -1436,6 +1443,19 @@ namespace slime.$api.fp {
 
 				var two = matcher("ac");
 				verify(two).present.is(false);
+			}
+
+
+			fifty.tests.exports.RegExp.test = function() {
+				var pattern = /a(b+)c/;
+
+				var tester = subject.test(pattern);
+
+				var one = tester("abbc");
+				verify(one).is(true);
+
+				var two = tester("ac");
+				verify(two).is(false);
 			}
 		}
 	//@ts-ignore

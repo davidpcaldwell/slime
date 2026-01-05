@@ -49,6 +49,26 @@ namespace slime.jrunscript.file {
 
 	export namespace location {
 		export interface Exports {
+			pathname: (p: slime.jrunscript.file.Location) => string
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const subject = fifty.global.jsh.file;
+
+				fifty.tests.exports.Location.pathname = function() {
+					var pathname = "/a/b/c";
+					var location = subject.Location.from.os(pathname);
+					verify(location).evaluate(subject.Location.pathname).is(pathname);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			parent: () => (p: slime.jrunscript.file.Location) => slime.jrunscript.file.Location
 		}
 
