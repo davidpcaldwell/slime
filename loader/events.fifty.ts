@@ -280,7 +280,18 @@ namespace slime.$api {
 	)(fifty);
 
 	export namespace event {
-		export interface Emitter<D> {
+		export interface Producer<D> {
+			/**
+			 * Causes this object to fire an event to its listeners.
+			 *
+			 * @param type An event _type_.
+			 * @param detail An event _detail_, which can be any type, and will be used as the `detail` property of the created
+			 * event.
+			 */
+			fire: <K extends keyof D>(type: K, detail?: D[K]) => void
+		}
+
+		export interface Emitter<D> extends Producer<D> {
 			listeners: {
 				/**
 				 * Adds an event listener that will be notified about a particular <dfn>type</dfn> of events.
@@ -298,15 +309,6 @@ namespace slime.$api {
 				 */
 				remove: <K extends keyof D>(type: K, handler: event.Handler<D[K]>) => void
 			}
-
-			/**
-			 * Causes this object to fire an event to its listeners.
-			 *
-			 * @param type An event _type_.
-			 * @param detail An event _detail_, which can be any type, and will be used as the `detail` property of the created
-			 * event.
-			 */
-			fire: <K extends keyof D>(type: K, detail?: D[K]) => void
 		}
 	}
 

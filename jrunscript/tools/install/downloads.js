@@ -15,7 +15,7 @@
 	function($api,$context,$export) {
 		/**
 		 * @param { slime.jrunscript.http.client.spi.Implementation } client
-		 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events> } events
+		 * @param { slime.$api.event.Producer<slime.jrunscript.tools.install.download.Events> } events
 		 */
 		var fetcher = function(client,events) {
 			return $api.fp.world.Sensor.old.mapping({

@@ -25,7 +25,7 @@ namespace slime.jrunscript.tools.gcloud {
 
 		export type Configuration = <P,R>(command: Command<P,R>) => {
 			intention: (p: P) => slime.jrunscript.shell.run.Intention
-			handler: (events: slime.$api.event.Emitter<Events>) => slime.$api.event.Handlers<slime.jrunscript.shell.run.AskEvents>
+			handler: (events: slime.$api.event.Producer<Events>) => slime.$api.event.Handlers<slime.jrunscript.shell.run.AskEvents>
 			result: (result: slime.jrunscript.shell.run.Exit) => R
 		}
 
