@@ -686,7 +686,7 @@ namespace slime.$api.fp.world {
 	)
 
 	export type Question<E,R> = (events: slime.$api.event.Producer<E>) => R
-	export type Action<E> = (events: slime.$api.event.Emitter<E>) => void
+	export type Action<E> = (events: slime.$api.event.Producer<E>) => void
 
 	/** @deprecated */
 	export namespace old {
@@ -847,7 +847,7 @@ namespace slime.$api.fp.world {
 	export namespace means {
 		export interface Exports {
 			from: {
-				flat: <O,E>(f: (p: { order: O, events: slime.$api.event.Emitter<E> }) => void) => Means<O,E>
+				flat: <O,E>(f: (p: { order: O, events: slime.$api.event.Producer<E> }) => void) => Means<O,E>
 			}
 
 			map: <P,R,E>(p: {

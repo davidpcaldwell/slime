@@ -112,7 +112,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.Location } location
-		 * @param { slime.$api.event.Emitter<slime.jrunscript.file.world.events.FileOpenForWrite> } events
+		 * @param { slime.$api.event.Producer<slime.jrunscript.file.world.events.FileOpenForWrite> } events
 		 * @param { (to: slime.jrunscript.runtime.io.OutputStream) => void } write
 		 */
 		var Location_write = function(location,events,write) {

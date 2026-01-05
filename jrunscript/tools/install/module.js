@@ -173,7 +173,7 @@
 
 		/**
 		 *
-		 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events> } events
+		 * @param { slime.$api.event.Producer<slime.jrunscript.tools.install.download.Events> } events
 		 */
 		var createFetcher = function(events) {
 			return fetcher(DEFAULT_CLIENT, events);

@@ -595,7 +595,7 @@
 			 *
 			 * @param { string } source
 			 * @param { string } destination
-			 * @returns { slime.$api.fp.world.Action<void> }
+			 * @returns { slime.$api.fp.world.Action<{}> }
 			 */
 			function copy(source,destination) {
 				return function() {

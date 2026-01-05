@@ -36,7 +36,7 @@ namespace slime.jrunscript.file {
 
 			fileExists: slime.$api.fp.world.Sensor<{
 				pathname: string
-			},void,slime.$api.fp.Maybe<boolean>>
+			},{},slime.$api.fp.Maybe<boolean>>
 
 			fileSize: slime.$api.fp.world.Sensor<{
 				pathname: string
@@ -60,7 +60,7 @@ namespace slime.jrunscript.file {
 
 			directoryExists: slime.$api.fp.world.Sensor<{
 				pathname: string
-			},void,slime.$api.fp.Maybe<boolean>>
+			},{},slime.$api.fp.Maybe<boolean>>
 
 			createDirectory: slime.$api.fp.world.Means<{
 				pathname: string
@@ -75,12 +75,12 @@ namespace slime.jrunscript.file {
 			copy: slime.$api.fp.world.Means<{
 				from: string
 				to: string
-			},void>
+			},{}>
 
 			move: slime.$api.fp.world.Means<{
 				from: string
 				to: string
-			},void>
+			},{}>
 
 			remove: slime.$api.fp.world.Means<{
 				pathname: string

@@ -213,9 +213,9 @@ namespace slime.jrunscript.tools.node {
 		export interface Exports {
 			list: () => slime.$api.fp.world.Question<void, Module[]>
 
-			installed: (name: string) => slime.$api.fp.world.Question<void, slime.$api.fp.Maybe<Module>>
+			installed: (name: string) => slime.$api.fp.world.Question<{}, slime.$api.fp.Maybe<Module>>
 
-			install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<void>
+			install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<{}>
 
 			require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<
 				{

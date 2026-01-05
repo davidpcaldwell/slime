@@ -111,7 +111,7 @@ namespace slime.jrunscript.tools.install.downloads {
 		//	TODO	needed? now that we have find()?
 		finder: (
 			client: slime.jrunscript.http.client.spi.Implementation,
-			events: slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events>
+			events: slime.$api.event.Producer<slime.jrunscript.tools.install.download.Events>
 		) => slime.$api.fp.Mapping<slime.jrunscript.http.client.spi.Argument, slime.jrunscript.http.client.Response>
 
 		find: (c: {
