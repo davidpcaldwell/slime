@@ -33,11 +33,10 @@
 							detail: asData(event.detail)
 						}
 					});
-				},
-				listeners: void(0)
+				}
 			});
 			jsh.loader.worker.postMessage({ type: "fulfilled", value: rv });
-		}
+		};
 
 		jsh.script.cli.main(function(invocation) {
 			if (invocation.arguments.length == 2 && invocation.arguments[0] == "worker") {
@@ -57,24 +56,29 @@
 					}
 				);
 			} else {
-				var lines = [];
 				var worker = jsh.loader.worker.create({
 					script: jsh.script.file,
 					arguments: ["worker", invocation.arguments[0]],
-					onmessage: function(e) {
-						if (e.detail.type == "event") {
-							//	TODO	only if type is line
-							lines.push(e.detail.value.detail);
-							jsh.shell.console("LINE: " + e.detail.value.detail);
-						} else if (e.detail.type == "fulfilled") {
-							jsh.shell.echo(JSON.stringify({ lines: lines }));
-							jsh.shell.console("END OF FILE");
-							worker.terminate();
-							jsh.shell.console("Worker terminated.");
-						} else {
-							throw new Error();
+					onmessage: (
+						function() {
+							var lines = [];
+
+							return function(e) {
+								if (e.detail.type == "event") {
+									//	TODO	only if type is line
+									lines.push(e.detail.value.detail);
+									jsh.shell.console("LINE: " + e.detail.value.detail);
+								} else if (e.detail.type == "fulfilled") {
+									jsh.shell.echo(JSON.stringify({ lines: lines }));
+									jsh.shell.console("END OF FILE");
+									worker.terminate();
+									jsh.shell.console("Worker terminated.");
+								} else {
+									throw new Error();
+								}
+							}
 						}
-					}
+					)()
 				});
 				jsh.shell.console("Done with main script.");
 			}

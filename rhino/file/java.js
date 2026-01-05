@@ -353,7 +353,7 @@
 			/**
 			 *
 			 * @param { string } pathname
-			 * @param { slime.$api.event.Emitter<{ notFound: void }> } events
+			 * @param { slime.$api.event.Producer<{ notFound: void }> } events
 			 */
 			var openInputStream = function(pathname,events) {
 				var peer = java.newPeer(pathname);
@@ -389,7 +389,7 @@
 			/**
 			 *
 			 * @param { string } pathname
-			 * @param { slime.$api.event.Emitter<{ notFound: void }> } events
+			 * @param { slime.$api.event.Producer<{ notFound: void }> } events
 			 * @returns
 			 */
 			var maybeInputStream = function(pathname,events) {

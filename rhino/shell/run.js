@@ -57,7 +57,7 @@
 
 				/**
 				 *
-				 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
+				 * @param { slime.$api.event.Producer<slime.jrunscript.shell.run.TellEvents> } events
 				 * @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream
 				 */
 				var destinationFactory = function(events, stream) {
@@ -75,7 +75,7 @@
 					}
 
 					/**
-					 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
+					 * @param { slime.$api.event.Producer<slime.jrunscript.shell.run.TellEvents> } events
 					 * @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream
 					 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 					 */

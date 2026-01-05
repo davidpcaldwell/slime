@@ -685,7 +685,7 @@ namespace slime.$api.fp.world {
 		)
 	)
 
-	export type Question<E,R> = (events: slime.$api.event.Emitter<E>) => R
+	export type Question<E,R> = (events: slime.$api.event.Producer<E>) => R
 	export type Action<E> = (events: slime.$api.event.Emitter<E>) => void
 
 	/** @deprecated */
@@ -741,7 +741,7 @@ namespace slime.$api.fp.world {
 	export namespace sensor {
 		export interface Exports {
 			from: {
-				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.event.Emitter<E> }) => R) => Sensor<S,E,R>
+				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.event.Producer<E> }) => R) => Sensor<S,E,R>
 			}
 		}
 	}

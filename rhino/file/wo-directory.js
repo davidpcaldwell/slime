@@ -72,7 +72,7 @@
 					 *
 					 * @param { slime.jrunscript.file.Location } location
 					 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-					 * @param { slime.$api.event.Emitter<slime.jrunscript.file.location.directory.list.Events> } events
+					 * @param { slime.$api.event.Producer<slime.jrunscript.file.location.directory.list.Events> } events
 					 * @returns { slime.jrunscript.file.Location[] }
 					 */
 					var process = function(location,descend,events) {
