@@ -226,7 +226,7 @@
 							api: {
 								document: $context.api.document,
 								js: $context.api.js,
-								shell: x,
+								shell: exports,
 								xml: $context.api.xml
 							}
 						});
@@ -630,19 +630,17 @@
 			}
 		)();
 
-		var subprocess = scripts.run.exports.subprocess;
-
 		var ssh = code.ssh({
 			library: {
 				getEnvArguments: Environment.envArgs
 			},
 			world: {
-				subprocess: subprocess
+				subprocess: scripts.run.exports.subprocess
 			}
 		});
 
 		/** @type { slime.jrunscript.shell.Exports } */
-		var x = {
+		var exports = {
 			process: {
 				directory: {
 					get: function() {
@@ -653,7 +651,7 @@
 					}
 				}
 			},
-			subprocess: subprocess,
+			subprocess: scripts.run.exports.subprocess,
 			Environment: Environment,
 			bash: (
 				function() {
@@ -687,7 +685,7 @@
 									command: bash.command,
 									arguments: bash.arguments,
 									directory: bash.directory,
-									environment: x.Environment.run(bash.environment),
+									environment: exports.Environment.run(bash.environment),
 									stdio: p.stdio
 								}
 							}
@@ -729,7 +727,7 @@
 				httpd: function(module) {
 					/** @type { slime.jrunscript.shell.browser.Script } */
 					var script = $loader.script("browser/module.js");
-					var exports = script({
+					var browserExports = script({
 						os: $exports.os,
 						HOME: $exports.HOME,
 						TMPDIR: $exports.TMPDIR,
@@ -742,7 +740,7 @@
 							httpd: module
 						}
 					});
-					x.browser = exports;
+					exports.browser = browserExports;
 				}
 			},
 			test: {
@@ -750,9 +748,9 @@
 			}
 		}
 
-		if (!x.PATH) throw new Error("No PATH.");
+		if (!exports.PATH) throw new Error("No PATH.");
 		if (!$exports.system.apple.plist) throw new Error("No plist.");
-		$export(x);
+		$export(exports);
 	}
 //@ts-ignore
 )(Packages,$api,$context,$loader,$export);
