@@ -618,7 +618,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
-			 * @param { slime.$api.event.Emitter<{ created: string }> } events
+			 * @param { slime.$api.event.Producer<{ created: string }> } events
 			 */
 			var createAt = function(peer,events) {
 				java.createDirectoryAt(peer);
@@ -628,7 +628,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
-			 * @param { slime.$api.event.Emitter<{ created: string }> } events
+			 * @param { slime.$api.event.Producer<{ created: string }> } events
 			 */
 			var ensureParent = function(peer,events) {
 				var parent = java.getParent(peer);

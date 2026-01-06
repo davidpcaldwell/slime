@@ -291,6 +291,7 @@ namespace slime.$api {
 			fire: <K extends keyof D>(type: K, detail?: D[K]) => void
 		}
 
+		//	TODO	survey usages of this and replace them with Producer where possible
 		export interface Emitter<D> extends Producer<D> {
 			listeners: {
 				/**
