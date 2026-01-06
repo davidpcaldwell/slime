@@ -4,6 +4,44 @@
 //
 //	END LICENSE
 
+namespace slime.jrunscript.shell.subprocess {
+	export interface Exports {}
+
+	export interface Exports {
+		action: slime.$api.fp.world.Means<run.Intention,run.TellEvents>
+		question: slime.$api.fp.world.Sensor<run.Intention,run.AskEvents,run.Exit>
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			const subject = jsh.shell;
+
+			fifty.tests.manual.subprocess = {};
+
+			fifty.tests.manual.subprocess.question = $api.fp.impure.Process.create({
+				input: $api.fp.impure.Input.map(
+					$api.fp.impure.Input.value({
+						command: "ls",
+						stdio: {
+							output: "string"
+						}
+					} as slime.jrunscript.shell.run.Intention),
+					$api.fp.world.mapping(subject.subprocess.question)
+				),
+				output: $api.fp.pipe(
+					$api.fp.JSON.stringify({ space: 4 }),
+					jsh.shell.console
+				)
+			});
+		}
+	//@ts-ignore
+	)(fifty);
+}
+
 namespace slime.jrunscript.shell.context.subprocess {
 	export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 }
