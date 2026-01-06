@@ -16,6 +16,15 @@ namespace slime.jrunscript.shell.subprocess {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			fifty.tests.manual = {};
+		}
+	//@ts-ignore
+	)(fifty);
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
 			const { $api, jsh } = fifty.global;
 
 			const subject = jsh.shell;
@@ -47,15 +56,6 @@ namespace slime.jrunscript.shell.context.subprocess {
 }
 
 namespace slime.jrunscript.shell.internal.run {
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.manual = {};
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export interface Context {
 		library: {
 			java: slime.jrunscript.java.Exports
