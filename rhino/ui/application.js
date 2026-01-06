@@ -251,7 +251,7 @@
 
 		/**
 		 * @param { slime.jsh.ui.application.Argument } p
-		 * @param { slime.$api.event.Emitter } events
+		 * @param { slime.$api.event.Producer } events
 		 */
 		var Old = function(p,events) {
 			/** @type { (v: slime.jsh.ui.application.ServerSpecification) => v is slime.jsh.ui.application.ServerRunning } */
