@@ -45,17 +45,19 @@
 		};
 
 		/**
-		 * @type { new (p: { directory?: slime.jrunscript.file.Directory, loader?: slime.old.Loader, prefix: string }) => slime.jsh.httpd.internal.resources.Mapping }
+		 * @type { slime.jsh.httpd.internal.resources.MappingConstructor }
+		 * @param { Parameters<slime.jsh.httpd.internal.resources.MappingConstructor>[0] } p
 		 */
 		var Mapping = function(p) {
 			if (p.directory) {
 				p.loader = new DirectoryWithoutVcsLoader({ directory: p.directory });
 			}
-			this.toString = function() {
+
+			var toString = function() {
 				return p.prefix + " -> " + p.loader + " (dir=" + p.directory + ")";
 			}
 
-			this.get = function(path) {
+			var get = function(path) {
 				if (path.substring(0,p.prefix.length) == p.prefix) {
 					var subpath = path.substring(p.prefix.length);
 					return p.loader.source.get(subpath);
@@ -63,7 +65,7 @@
 				return null;
 			};
 
-			this.list = function(path) {
+			var list = function(path) {
 				if (path.substring(0,p.prefix.length) == p.prefix) {
 					var subpath = path.substring(p.prefix.length);
 					var loader = (subpath.length) ? p.loader.Child(subpath) : p.loader;
@@ -72,7 +74,7 @@
 				return null;
 			};
 
-			this.under = function(path) {
+			var under = function(path) {
 				if (p.prefix.substring(0,path.length) == path) {
 					var remaining = p.prefix.substring(path.length);
 					var add = remaining.split("/")[0] + "/";
@@ -80,8 +82,8 @@
 				}
 			};
 
-			this.build = function(WEBAPP) {
-				var build = function(prefix,loader) {
+			var build = function(WEBAPP) {
+				var impl = function(prefix,loader) {
 					var to = WEBAPP.getRelativePath(prefix);
 
 					var copy = function(loader,pathname) {
@@ -113,8 +115,16 @@
 					copy(loader,to);
 				}
 
-				build(p.prefix,p.loader);
+				impl(p.prefix,p.loader);
 			}
+
+			return {
+				toString: toString,
+				get: get,
+				list: list,
+				under: under,
+				build: build
+			};
 		};
 
 		/**
@@ -126,19 +136,19 @@
 
 			/** @type { slime.jsh.httpd.Resources["add"] } */
 			this.add = function(m) {
-				mapping.push(new Mapping(m));
+				mapping.push(Mapping(m));
 			}
 
 			this.map = function(prefix,pathname) {
 				//	TODO	poor workaround on next line for attempt to map a directory rather than a correctly-structured object
 				if (pathname.directory === true) pathname = pathname.pathname;
 				if (pathname.directory) {
-					mapping.push(new Mapping({
+					mapping.push(Mapping({
 						prefix: prefix,
 						directory: pathname.directory
 					}));
 				} else if (pathname.loader) {
-					mapping.push(new Mapping({
+					mapping.push(Mapping({
 						prefix: prefix,
 						loader: pathname.loader
 					}));

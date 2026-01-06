@@ -7,11 +7,21 @@
 namespace slime.jsh.httpd {
 	export namespace internal.resources {
 		export interface Mapping {
+			toString: () => string
+
 			get: (path: string) => slime.resource.Descriptor
 			list: (path: string) => slime.old.loader.Entry[]
 			under: (path: string) => string
 			build: (webapp: slime.jrunscript.file.Directory) => void
 		}
+
+		export type MappingConstructor = (
+			p: {
+				directory?: slime.jrunscript.file.Directory,
+				loader?: slime.old.Loader,
+				prefix: string
+			}
+		) => Mapping
 	}
 
 	/**
