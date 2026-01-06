@@ -223,7 +223,7 @@ namespace slime.runtime.document.internal.source {
 
 		export type Parser<T extends Parent> = (
 			state: State<T>,
-			events: slime.$api.event.Emitter<ParseEvents>,
+			events: slime.$api.event.Producer<ParseEvents>,
 			finished: (state: State<T>) => boolean
 		) => State<T>
 	}

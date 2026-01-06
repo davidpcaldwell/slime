@@ -109,7 +109,7 @@
 							/**
 							 *
 							 * @param { slime.jsh.shell.tools.rhino.OldInstallCommand } p
-							 * @param { slime.$api.event.Emitter<slime.jsh.shell.tools.rhino.OldInstallEvents> } events
+							 * @param { slime.$api.event.Producer<slime.jsh.shell.tools.rhino.OldInstallEvents> } events
 							 */
 							function(p,events) {
 								var lib = (p.mock) ? p.mock.lib.toString() : void(0);
@@ -843,7 +843,7 @@
 					managed.require = (function() {
 						/**
 						 *
-						 * @param { slime.$api.event.Emitter<slime.jsh.shell.tools.node.RequireEvents> } events
+						 * @param { slime.$api.event.Producer<slime.jsh.shell.tools.node.RequireEvents> } events
 						 */
 						var action = function(events) {
 							var VERSION = node.versions.default();

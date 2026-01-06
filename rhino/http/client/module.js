@@ -227,7 +227,7 @@
 			 *
 			 * @param { slime.web.Url } url
 			 * @param { slime.jrunscript.http.client.Proxies } proxy
-			 * @param { slime.$api.event.Emitter<slime.jrunscript.http.client.Events> } events
+			 * @param { slime.$api.event.Producer<slime.jrunscript.http.client.Events> } events
 			 * @returns
 			 */
 			var openUrlConnection = function(url,proxy,events) {
@@ -286,7 +286,7 @@
 			var execute = (
 				/**
 				 *
-				 * @param { slime.$api.event.Emitter<slime.jrunscript.http.client.Events> } e
+				 * @param { slime.$api.event.Producer<slime.jrunscript.http.client.Events> } e
 				 */
 				function(e) {
 					var url = p.request.url;

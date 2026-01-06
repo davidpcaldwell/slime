@@ -297,7 +297,7 @@
 			var killed = false;
 			return $api.fp.world.old.tell(
 				/**
-				 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
+				 * @param { slime.$api.event.Producer<slime.jrunscript.shell.run.TellEvents> } events
 				 */
 				function(events) {
 					events.fire("start", {
