@@ -49,8 +49,6 @@ namespace slime.jrunscript.shell {
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
 
-			//httpd: any
-
 			js: slime.$api.old.Exports
 
 			/**
@@ -296,23 +294,25 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	interface Result {
+		status: number
+
 		stdio?: {
 			output?: string
 		}
 	}
 
 	export namespace java {
-		export interface Exports {
-			//	TODO	The old comment stated that this argument was the same as the argument to `shell`, with classpath, jar, and
-			//			main added. This seems likely to be wrong but looking at the implementation may reveal whether the types
-			//			are related in the implementation.
-			/**
-			 * Launches a Java program.
-			 */
-			<R>(p: {
-				vmarguments?: any
-				properties?: any
+		export namespace invoke {
+			export interface Argument {
+				vmarguments?: string[]
+				properties?: Record<string,string>
+				arguments?: slime.jrunscript.shell.invocation.old.Token[]
+				environment?: slime.jrunscript.shell.invocation.Argument["environment"]
+				stdio?: slime.jrunscript.shell.older.Invocation["stdio"]
+				directory?: slime.jrunscript.file.Directory
+			}
 
+			export interface WithEvaluate<R> extends Argument {
 				/**
 				 * The classpath to pass to the Java process.
 				 */
@@ -323,44 +323,44 @@ namespace slime.jrunscript.shell {
 				 */
 				main: string
 
-				arguments?: any
-				environment?: any
-				stdio?: any
-				directory?: any
 				evaluate: (result: Result) => R
-			}): R
+			}
 
-			/**
-			 * Launches a Java program.
-			 */
-			(p: {
-				vmarguments?: any
-				properties?: any
+			export interface Basic extends Argument {
 				classpath: any
 				main: any
-				arguments?: any
-				environment?: any
-				stdio?: any
-				directory?: any
-			}): Result
+			}
 
-			/**
-			 * Launches a Java program.
-			 */
-			(p: {
-				vmarguments?: any
-				properties?: any
-
+			export interface Jar<R = Result> extends Argument {
 				/**
 				 * A JAR file to pass to `java -jar`.
 				 */
 				jar: slime.jrunscript.file.File
-				arguments?: any
-				environment?: any
-				stdio?: any
-				evaluate: any
-			}): Result
+				evaluate?: (result: Result) => R
+			}
+		}
 
+		export interface Invoke {
+			/**
+			 * Launches a Java program.
+			 */
+			<R>(p: invoke.WithEvaluate<R>): R
+
+			/**
+			 * Launches a Java program.
+			 */
+			(p: invoke.Basic): Result
+
+			/**
+			 * Launches a Java program.
+			 */
+			<R>(p: invoke.Jar<R>): R
+		}
+
+		export interface Exports extends Invoke{
+			//	TODO	The old comment stated that this argument was the same as the argument to `shell`, with classpath, jar, and
+			//			main added. This seems likely to be wrong but looking at the implementation may reveal whether the types
+			//			are related in the implementation.
 			version: string
 
 			keytool: any

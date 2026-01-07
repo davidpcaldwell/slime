@@ -254,6 +254,11 @@
 			})
 		);
 
+		/**
+		 *
+		 * @param { string[] } jargs
+		 * @param { Record<string, string> } properties
+		 */
 		var addPropertyArgumentsTo = function(jargs,properties) {
 			if (properties) {
 				for (var x in properties) {
@@ -266,6 +271,7 @@
 			function(p) {
 				//	TODO	check for both p.classpath and p.jar being defined and decide what to do
 				var launcher = $exports.java.launcher;
+				/** @type { slime.jrunscript.shell.run.old.Argument } */
 				var shell = {
 					command: launcher
 				};
