@@ -32,7 +32,7 @@ namespace slime.jrunscript.shell.java {
 		base: string
 	}
 
-	export interface Exports {
+	export interface Exports extends Invoke {
 		Jdk: {
 			from: {
 				javaHome: () => Jdk
