@@ -24,6 +24,10 @@
 			load: function() {
 				/** @type { slime.jrunscript.shell.Exports } */
 				var module = plugins.shell;
+
+				/** @type { slime.jrunscript.shell.context.Stdio } */
+				var stdio = plugins.stdio;
+
 				/**
 				 * @type { slime.jsh.shell.internal.Context }
 				 */
@@ -37,7 +41,7 @@
 						bootstrap: jsh.internal.bootstrap
 					},
 					PATH: module.PATH,
-					stdio: plugins.stdio,
+					stdio: stdio,
 					_getSystemProperties: function() {
 						return $slime.getSystemProperties();
 					},

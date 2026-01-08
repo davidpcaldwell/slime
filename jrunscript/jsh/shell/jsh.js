@@ -28,18 +28,33 @@
 
 		$exports.exit = $context.exit;
 
-		$exports.stdio = $context.stdio;
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.context.OutputStream } stream
+		 * @returns { slime.jrunscript.shell.context.Console }
+		 */
+		var toConsole = function(stream) {
+			return $api.Object.compose(
+				stream,
+				{
+					write: function(p) {
+						stream.character().write(p);
+					}
+				}
+			);
+		}
+
+		$exports.stdio = {
+			input: $context.stdio.input,
+			output: toConsole($context.stdio.output),
+			error: toConsole($context.stdio.error)
+		};
+
 		// TODO: Can these methods below be replaced by using a Resource created from the InputStream? Are they documented anywhere? Can
 		// they be eliminated? They are the last SLIME usage of the asXml() method
 		["readLines", "asString", "asXml"].forEach(function(method) {
 			$exports.stdio.input[method] = function(p) {
 				return this.character()[method].apply(this.character(), arguments);
-			}
-		});
-
-		["output","error"].forEach(function(name) {
-			$exports.stdio[name].write = function(p) {
-				$exports.stdio[name].character().write(p);
 			}
 		});
 

@@ -8,7 +8,9 @@ namespace slime.jsh.shell {
 	export namespace internal {
 		export interface Context {
 			exit: any
-			stdio: any
+
+			stdio: slime.jrunscript.shell.context.Stdio
+
 			_getSystemProperties: () => slime.jrunscript.native.java.util.Properties
 
 			/**

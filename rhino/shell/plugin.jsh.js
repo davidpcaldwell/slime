@@ -46,12 +46,14 @@
 					}
 				};
 
+				/** @type { slime.jrunscript.shell.context.Stdio } */
 				var stdio = {
 					input: jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput()),
 					output: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput())),
 					error: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardError()))
 				}
 
+				/** @type { slime.jrunscript.shell.Context } */
 				var mContext = {
 					api: {
 						bootstrap: jsh.internal.bootstrap,
@@ -60,13 +62,11 @@
 						io: jsh.io,
 						file: jsh.file,
 						document: jsh.js.document,
-						httpd: void(0),
 						xml: {
 							parseFile: function(file) {
 								return new jsh.document.Document({ string: file.read(String) });
 							}
-						},
-						ui: void(0)
+						}
 					},
 					_properties: $slime.getSystemProperties(),
 					_environment: $slime.getEnvironment(),

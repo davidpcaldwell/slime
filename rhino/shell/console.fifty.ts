@@ -12,34 +12,31 @@ namespace slime.jrunscript.shell {
 	 * or any other locations to which applications might wish to emit messages or logging to be immediately or later read.
 	 */
 	export type Console = slime.$api.fp.impure.Effect<string>;
+}
 
+namespace slime.jrunscript.shell.console {
 	export interface Exports {
-		/**
-		 * Functions pertaining to {@link Console}s.
-		 */
-		Console: {
-			from: {
-				/**
-				 * Creates a {@link Console} that writes strings to the given file location (overwriting the file if it exists, and
-				 * creating it if it does not), in order. Note that no delimiter is used between messages.
-				 *
-				 * @param p
-				 * @returns
-				 */
-				location: (p: {
-					location: slime.jrunscript.file.Location
-				}) => Console
-			}
-
+		from: {
 			/**
-			 * Creates a {@link Console} {@link slime.$api.fp.Transform Transform} that appends the given line separator to each
-			 * message written to the console.
+			 * Creates a {@link Console} that writes strings to the given file location (overwriting the file if it exists, and
+			 * creating it if it does not), in order. Note that no delimiter is used between messages.
 			 *
-			 * @param separator
+			 * @param p
 			 * @returns
 			 */
-			line: (separator: string) => slime.$api.fp.Transform<Console>
+			location: (p: {
+				location: slime.jrunscript.file.Location
+			}) => Console
 		}
+
+		/**
+		 * Creates a {@link Console} {@link slime.$api.fp.Transform Transform} that appends the given line separator to each
+		 * message written to the console.
+		 *
+		 * @param separator
+		 * @returns
+		 */
+		line: (separator: string) => slime.$api.fp.Transform<Console>
 	}
 }
 

@@ -19,14 +19,16 @@
 			throw new Error("Missing: $context.api.io");
 		}
 
+		var _environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
+
+		var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
+
 		/** @type { Pick<slime.jrunscript.shell.Exports,"TMPDIR"|"USER"|"HOME"|"PWD"|"PATH"|"os"|"invocation"|"user"|"system"|"java"|"jrunscript"|"rhino"|"kotlin"|"Invocation"|"world"|"Tell"|"environment"|"browser"> } */
 		var $exports = {};
 
 		var module = {
 			events: $api.events.emitter()
 		};
-
-		var environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
 		/**
 		 *
@@ -42,8 +44,6 @@
 			 * @returns { slime.jrunscript.shell.Exports["properties"] & { set: any } }
 			 */
 			function() {
-				var _properties = Packages.java.lang.System.getProperties();
-
 				return {
 					object: $context.api.java.Properties.adapt( _properties ),
 					get: function(name) {
@@ -82,11 +82,11 @@
 		var toLocalSearchpath = function(searchpath) {
 			return $context.api.file.Searchpath($context.api.file.filesystems.os.Searchpath.parse(searchpath).pathnames.map(toLocalPathname));
 		};
-		if (environment.PATH) {
-			$exports.PATH = toLocalSearchpath(environment.PATH);
-		} else if (environment.Path) {
+		if (_environment.PATH) {
+			$exports.PATH = toLocalSearchpath(_environment.PATH);
+		} else if (_environment.Path) {
 			//	Windows
-			$exports.PATH = toLocalSearchpath(environment.Path);
+			$exports.PATH = toLocalSearchpath(_environment.Path);
 		} else {
 			$exports.PATH = $context.api.file.Searchpath([]);
 		}
@@ -108,7 +108,7 @@
 			/** @type { slime.$api.fp.impure.Input<slime.jrunscript.shell.run.internal.Parent> } */
 			var Parent_from_process = function() {
 				return {
-					environment: environment,
+					environment: _environment,
 					stdio: {
 						output: $context.stdio.output,
 						error: $context.stdio.error
@@ -134,7 +134,7 @@
 						io: $context.api.io,
 						file: $context.api.file
 					},
-					environment: environment,
+					environment: _environment,
 					module: module,
 					os: {
 						name: function() {
@@ -183,7 +183,7 @@
 						TMPDIR: $exports.TMPDIR,
 						os: this,
 						run: scripts.run_old.run,
-						environment: environment,
+						environment: _environment,
 						api: {
 							js: $context.api.js,
 							io: $context.api.io,
@@ -544,7 +544,7 @@
 		/** @type { slime.jrunscript.shell.run.internal.Parent } */
 		var defaults = {
 			directory: $exports.PWD.toString(),
-			environment: environment,
+			environment: _environment,
 			stdio: {
 				output: $context.stdio.output,
 				error: $context.stdio.error
@@ -572,7 +572,7 @@
 			mock: scripts.run.internal.mock.tell
 		};
 
-		$exports.environment = environment;
+		$exports.environment = _environment;
 
 		/** @type { slime.jrunscript.shell.Exports["Environment"] & { envArgs: slime.jrunscript.shell.internal.GetEnvArguments } } */
 		var Environment = (
@@ -684,7 +684,7 @@
 								}
 							}
 						},
-						environment: environment,
+						environment: _environment,
 						run: function(p) {
 							return function(bash) {
 								return {
@@ -739,7 +739,7 @@
 						TMPDIR: $exports.TMPDIR,
 						USER: $exports.USER,
 						run: scripts.run_old.run,
-						environment: environment,
+						environment: _environment,
 						api: {
 							java: $context.api.java,
 							file: $context.api.file,
