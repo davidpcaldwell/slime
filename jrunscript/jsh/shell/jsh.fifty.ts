@@ -46,7 +46,23 @@ namespace slime.jsh.shell {
 		//@ts-ignore
 		})(fifty);
 	}
+}
 
+namespace slime.jrunscript.shell.context {
+	/**
+	 * Represents a process output stream to which bytes and characters can be written.
+	 */
+	export type Console = OutputStream & {
+		/**
+		 * Writes a string to the stream and then flushes the stream.
+		 *
+		 * @param string A string to write to this console.
+		 */
+		write: (string: string) => void
+	}
+}
+
+namespace slime.jsh.shell {
 	/**
 	 * An implementation of {@link slime.jrunscript.shell.Exports} that adds additional APIs that are available when running under
 	 * the `jsh` shell.

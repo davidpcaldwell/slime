@@ -11,18 +11,6 @@ namespace slime.jrunscript.shell {
 	export namespace context {
 		export type OutputStream = Omit<slime.jrunscript.runtime.io.OutputStream, "close">
 
-		/**
-		 * Represents a process output stream to which bytes and characters can be written.
-		 */
-		export type Console = OutputStream & {
-			/**
-			 * Writes a string to the stream and then flushes the stream.
-			 *
-			 * @param string A string to write to this console.
-			 */
-			write: (string: string) => void
-		}
-
 		export interface Stdio {
 			input?: slime.jrunscript.runtime.io.InputStream
 			output: OutputStream
