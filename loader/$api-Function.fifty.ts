@@ -606,7 +606,15 @@ namespace slime.$api.fp {
 					change: slime.$api.fp.Transform<T[K]>
 				}) => slime.$api.fp.Transform<T>
 
-				set: <T, K extends string, V>(p: { [k in K]: slime.$api.fp.Mapping<T,V> }) => (t: T) => (T & { [k in K]: V })
+				/**
+				 * @experimental Provides similar functionality to `Mapping.properties`; the only difference here is that we copy
+				 * existing properties automatically, which may have some use cases. Need to figure out best way to generalize.
+				 *
+				 * Given an object specifying functions that can be used to produce property values from an existing object, returns
+				 * a function that will take an existing object as an argument and return an augmented version of that object as
+				 * the result. Note that a new object will be returned; the argument will be treated as immutable.
+				 */
+				set: <T extends {}, R extends {}>(p: { [k in keyof R]: slime.$api.fp.Mapping<T,R[k]> }) => (t: T) => (T & { [k in keyof R]: R[k] })
 
 				maybe: {
 					<T,K extends keyof T>(k: K): (t: T) => slime.$api.fp.Maybe<T[K]>
@@ -630,88 +638,117 @@ namespace slime.$api.fp {
 
 			const subject = fifty.global.$api.fp.Object;
 
-			fifty.tests.Object = function() {
-				type X = { a: number, b: string };
-				type Y = { a: number, b: string, foo: () => number };
+			fifty.tests.Object = fifty.test.Parent();
 
-				run(function property_set() {
-					var before: X = { a: 1, b: "b" };
-					//	TODO	for some reason type inference doesn't work for this case
-					var after = $api.fp.now.map(
-						before,
-						subject.property.set({
-							c: function(t) {
-								return true;
-							}
-						})
-					);
+			type X = { a: number, b: string };
+			type Y = { a: number, b: string, foo: () => number };
 
-					verify(after).a.is(1);
-					verify(after).b.is("b");
-					verify(after).c.is(true);
-				});
+			fifty.tests.Object.property = fifty.test.Parent();
 
-				run(function property_update() {
-					var before: X = { a: 2, b: "hey" };
-					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
-					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
-					var disallowed: Y = { a: 2, b: "hey", foo: function() { return 3; }};
-					// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
-					// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
-				});
+			fifty.tests.Object.property.set = function() {
+				var before: X = { a: 1, b: "b" };
 
-				run(function fromEntries() {
-					var array = [ ["a", 2], ["b", 3] ];
-					var result: { a: number, b: number } = fifty.global.$api.fp.result(
-						array,
-						Object.fromEntries
-					) as { a: number, b: number };
-					verify(result).a.is(2);
-					verify(result).b.is(3);
-					verify(result).evaluate.property("b").is(3);
-					verify(result).evaluate.property("c").is(void(0));
-				});
-
-				run(function property_maybe() {
-					type T = { a?: { b?: number } };
-					var o: T[] = [
-						{},
-						{ a: {} },
-						{ a: { b: 0 } }
-					];
-
-					var cases = o.map(function(t) {
-						return {
-							a: $api.fp.now.map(t, subject.property.maybe("a")),
-							b1: $api.fp.now.map(t, subject.property.maybe("a"), $api.fp.Maybe.map(subject.property.maybe("b")),
-								function flatten(m) {
-									if (!m.present) return $api.fp.Maybe.from.nothing();
-									return m.value;
-								}
-							),
-							b2: $api.fp.now.map(t, subject.property.maybe("a", "b"))
+				var after = $api.fp.now(
+					before,
+					subject.property.set({
+						c: function(t) {
+							return true;
+						},
+						d: function(t) {
+							return String(t.a);
 						}
-					});
-					verify(cases)[0].a.present.is(false);
-					verify(cases)[0].b1.present.is(false);
-					verify(cases)[0].b2.present.is(false);
-					verify(cases)[1].a.present.is(true);
-					verify(cases)[1].b1.present.is(false);
-					verify(cases)[1].b2.present.is(false);
-					verify(cases)[2].a.present.is(true);
-					verify(cases)[2].b1.present.is(true);
-					verify(cases)[2].b2.present.is(true);
-					var two = {
-						b1: cases[2].b1,
-						b2: cases[2].b2
-					};
-					if (two.b1.present) {
-						verify(two.b1).value.is(0);
-					}
-					if (two.b2.present) {
-						verify(two.b2).value.is(0);
+					})
+				);
+
+				verify(after).a.is(1);
+				verify(after).b.is("b");
+				verify(after).c.is(true);
+				verify(after).d.is("1");
+			};
+
+			fifty.tests.Object.property.alternativeToSet = function() {
+				var before: X = { a: 1, b: "b" };
+
+				var after = $api.fp.now(
+					before,
+					$api.fp.Mapping.properties({
+						a: $api.fp.property("a"),
+						b: $api.fp.property("b"),
+						c: function(t) {
+							return true;
+						},
+						d: function(t) {
+							return String(t.a);
+						}
+					})
+				);
+
+				verify(after).a.is(1);
+				verify(after).b.is("b");
+				verify(after).c.is(true);
+				verify(after).d.is("1");
+			};
+
+			fifty.tests.Object.property.update = function() {
+				var before: X = { a: 2, b: "hey" };
+				verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+				verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+				var disallowed: Y = { a: 2, b: "hey", foo: function() { return 3; }};
+				// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+				// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+			};
+
+			fifty.tests.Object.property.maybe = function() {
+				type T = { a?: { b?: number } };
+				var o: T[] = [
+					{},
+					{ a: {} },
+					{ a: { b: 0 } }
+				];
+
+				var cases = o.map(function(t) {
+					return {
+						a: $api.fp.now.map(t, subject.property.maybe("a")),
+						b1: $api.fp.now.map(t, subject.property.maybe("a"), $api.fp.Maybe.map(subject.property.maybe("b")),
+							function flatten(m) {
+								if (!m.present) return $api.fp.Maybe.from.nothing();
+								return m.value;
+							}
+						),
+						b2: $api.fp.now.map(t, subject.property.maybe("a", "b"))
 					}
 				});
+				verify(cases)[0].a.present.is(false);
+				verify(cases)[0].b1.present.is(false);
+				verify(cases)[0].b2.present.is(false);
+				verify(cases)[1].a.present.is(true);
+				verify(cases)[1].b1.present.is(false);
+				verify(cases)[1].b2.present.is(false);
+				verify(cases)[2].a.present.is(true);
+				verify(cases)[2].b1.present.is(true);
+				verify(cases)[2].b2.present.is(true);
+				var two = {
+					b1: cases[2].b1,
+					b2: cases[2].b2
+				};
+				if (two.b1.present) {
+					verify(two.b1).value.is(0);
+				}
+				if (two.b2.present) {
+					verify(two.b2).value.is(0);
+				}
+			};
+
+			fifty.tests.Object.fromEntries = function() {
+				var array = [ ["a", 2], ["b", 3] ];
+				var result: { a: number, b: number } = fifty.global.$api.fp.now(
+					array,
+					Object.fromEntries
+				) as { a: number, b: number };
+				verify(result).a.is(2);
+				verify(result).b.is(3);
+				verify(result).evaluate.property("b").is(3);
+				verify(result).evaluate.property("c").is(void(0));
 			}
 		}
 	//@ts-ignore

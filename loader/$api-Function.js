@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.$api.fp.internal.Context } $context
-	 * @param { slime.loader.Export<slime.$api.fp.Exports> } $export
+	 * @param { slime.loader.Export<slime.$api.fp.internal.Exports> } $export
 	 */
 	function($context,$export) {
 		var code = {
@@ -474,14 +474,22 @@
 							return rv;
 						}
 					},
-					//@ts-ignore
+					/**
+					 * @template { {} } T
+					 * @template { {} } R
+					 * @param { { [k in keyof R]: slime.$api.fp.Mapping<T,R[k]> } } p
+					 */
 					set: function(p) {
+						/** @type { slime.js.Cast<T & { [k in keyof R]: R[k] }> } */
+						var asReturnType = function(p) { return p; };
+
 						return function(target) {
-							var rv = Object.assign({}, target);
+							var rv = asReturnType(Object.assign({}, target));
 							for (var x in p) {
-								var value = p[x](rv);
-								//@ts-ignore
-								rv[x] = value;
+								var k = /** @type { keyof R } */(x);
+								var value = p[k](rv);
+								//	TODO	is there something more eleegant than this?
+								rv[k] = /** @type {(T & { [k in keyof R]: R[k]; })[Extract<keyof R, string>]} */(value);
 							}
 							return rv;
 						}
