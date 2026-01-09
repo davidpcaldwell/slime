@@ -328,7 +328,13 @@ namespace slime.jrunscript.shell {
 						var argument: shell.invocation.Argument = {
 							command: "ls"
 						};
+
 						var invocation = fifty.global.jsh.shell.Invocation.from.argument(argument);
+
+						const toStream: (p: any) => Omit<slime.jrunscript.runtime.io.OutputStream, "close"> =
+							(p) => p as Omit<slime.jrunscript.runtime.io.OutputStream, "close">
+						;
+
 						fifty.verify(invocation, "invocation", function(its) {
 							its.configuration.command.is("ls");
 							its.configuration.arguments.is.type("object");
@@ -336,12 +342,8 @@ namespace slime.jrunscript.shell {
 							//	TODO	environment
 							its.context.directory.evaluate(isDirectory(fifty.global.jsh.shell.PWD)).is(true);
 							its.context.stdio.input.evaluate(it.is(null)).is(true);
-							//	TODO	appears to work in latest TypeScript
-							//@ts-ignore
-							its.context.stdio.output.evaluate(it.is(fifty.global.jsh.shell.stdio.output)).is(true);
-							//	TODO	appears to work in latest TypeScript
-							//@ts-ignore
-							its.context.stdio.error.evaluate(it.is(fifty.global.jsh.shell.stdio.error)).is(true);
+							its.context.stdio.output.evaluate(toStream).java.adapt().evaluate(it.is(fifty.global.jsh.shell.stdio.output.java.adapt())).is(true);
+							its.context.stdio.error.evaluate(toStream).java.adapt().evaluate(it.is(fifty.global.jsh.shell.stdio.error.java.adapt())).is(true);
 						});
 					});
 

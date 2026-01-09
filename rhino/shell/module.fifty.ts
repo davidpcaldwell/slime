@@ -11,18 +11,6 @@ namespace slime.jrunscript.shell {
 	export namespace context {
 		export type OutputStream = Omit<slime.jrunscript.runtime.io.OutputStream, "close">
 
-		/**
-		 * Represents a process output stream to which bytes and characters can be written.
-		 */
-		export type Console = OutputStream & {
-			/**
-			 * Writes a string to the stream and then flushes the stream.
-			 *
-			 * @param string A string to write to this console.
-			 */
-			write: (string: string) => void
-		}
-
 		export interface Stdio {
 			input?: slime.jrunscript.runtime.io.InputStream
 			output: OutputStream
@@ -36,6 +24,12 @@ namespace slime.jrunscript.shell {
 		 * environment.
 		 */
 		_environment?: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+
+		/**
+		 * (optional: if omitted, the actual Java system properties will be used.) An object representing the Java system
+		 * properties.
+		 */
+		_properties?: slime.jrunscript.native.java.util.Properties
 
 		stdio: context.Stdio
 
@@ -173,6 +167,65 @@ namespace slime.jrunscript.shell {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		process: {
+			directory: {
+				/**
+				 * Returns the pathname of the shell's current working directory.
+				 */
+				get: slime.$api.fp.impure.Input<string>
+
+				/**
+				 * Changes the working directory. Note that this only changes the value from the shell's point of view; it does not
+				 * change the working directory of the underlying operating system process.
+				 */
+				set: slime.$api.fp.impure.Output<string>
+			}
+		}
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.manual.process = {};
+
+			fifty.tests.manual.process.directory = function() {
+				jsh.shell.console( jsh.shell.process.directory.get() );
+
+				var ls = $api.fp.impure.Input.value(
+					{
+						command: "ls",
+						stdio: {
+							output: "string"
+						}
+					},
+					$api.fp.world.Sensor.old.mapping({ sensor: jsh.shell.subprocess.question }),
+					function(p) { return p; },
+					$api.fp.property("stdio"),
+					$api.fp.property("output")
+				);
+
+				jsh.shell.console("Before: " + ls());
+
+				jsh.shell.process.directory.set("/etc");
+
+				jsh.shell.console("After: " + ls());
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+	export interface Exports {
+		/**
+		 * Functions pertaining to {@link Console}s.
+		 */
+		Console: console.Exports
+	}
 
 	export interface Exports {
 		subprocess: subprocess.Exports
@@ -419,22 +472,6 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export interface Exports {
-		process: {
-			directory: {
-				/**
-				 * Returns the pathname of the current working directory.
-				 */
-				get: slime.$api.fp.impure.Input<string>
-
-				/**
-				 * Changes the working directory.
-				 */
-				set: slime.$api.fp.impure.Output<string>
-			}
-		}
-	}
-
-	export interface Exports {
 		/**
 		 * @deprecated Replaced by `process.directory`.
 		 *
@@ -442,41 +479,6 @@ namespace slime.jrunscript.shell {
 		 */
 		PWD: slime.jrunscript.file.Directory
 	}
-
-	(
-		function(
-			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.Kit
-		) {
-			const { $api, jsh } = fifty.global;
-
-			fifty.tests.manual.process = {};
-
-			fifty.tests.manual.process.directory = function() {
-				jsh.shell.console( jsh.shell.process.directory.get() );
-
-				var ls = $api.fp.impure.Input.value(
-					{
-						command: "ls",
-						stdio: {
-							output: "string"
-						}
-					},
-					$api.fp.world.Sensor.old.mapping({ sensor: jsh.shell.subprocess.question }),
-					function(p) { return p; },
-					$api.fp.property("stdio"),
-					$api.fp.property("output")
-				);
-
-				jsh.shell.console("Before: " + ls());
-
-				jsh.shell.process.directory.set("/etc");
-
-				jsh.shell.console("After: " + ls());
-			}
-		}
-	//@ts-ignore
-	)(Packages,fifty);
 
 	export interface Exports {
 		/**
