@@ -110,7 +110,7 @@ namespace slime.jsh.shell.tools.tomcat {
 						function(it) {
 							//	TODO	standard composition for this
 							jsh.shell.console("Removing: " + it.pathname);
-							jsh.file.Location.file.remove.simple(it);
+							jsh.file.Location.remove.simple(it);
 						}
 					)
 				);

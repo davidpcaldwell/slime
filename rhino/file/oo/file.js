@@ -291,7 +291,7 @@
 
 			/**
 			 *
-			 * @param { any } pathname
+			 * @param { Pathname } pathname
 			 * @param { string } relativePathPrefix
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } _peer
 			 */
@@ -372,7 +372,7 @@
 				this.remove = function () {
 					//	TODO	Should probably invalidate this object somehow
 					//	TODO	Should this return a value of some kind?
-					parameters.provider.remove(_peer);
+					$context.library.Location.remove.simple(pathname.os.adapt());
 				}
 
 				this.move = function (toPathname, mode) {
@@ -534,13 +534,23 @@
 				this.directory = void (0);
 			}
 
+			/**
+			 *
+			 * @param { Pathname } pathname
+			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
+			 */
 			var Link = function (pathname, peer) {
 				Node.call(this, pathname, parameters.provider.separators.pathname + ".." + parameters.provider.separators.pathname, peer);
 
 				this.directory = null;
 			}
 
-			var File = function File(pathname, peer) {
+			/**
+			 *
+			 * @param { Pathname } pathname
+			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } _peer
+			 */
+			var File = function File(pathname, _peer) {
 				Node.call(this, pathname, parameters.provider.separators.pathname + ".." + parameters.provider.separators.pathname);
 
 				this.directory = false;
@@ -549,10 +559,10 @@
 					name: pathname.toString(),
 					read: {
 						binary: function () {
-							return parameters.provider.read.binary(peer);
+							return parameters.provider.read.binary(_peer);
 						},
 						text: function () {
-							return parameters.provider.read.character(peer);
+							return parameters.provider.read.character(_peer);
 						}
 					}
 				};
@@ -583,6 +593,11 @@
 			}
 			// File.prototype = new Node(this,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 
+			/**
+			 *
+			 * @param { Pathname } pathname
+			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
+			 */
 			var Directory = function (pathname, peer) {
 				this.getRelativePath = void (0);
 				this.toString = void (0);
