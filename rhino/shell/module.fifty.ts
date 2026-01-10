@@ -18,6 +18,14 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
+	export interface World {
+		java?: {
+			properties?: slime.jrunscript.native.java.util.Properties
+		}
+
+		subprocess?: context.subprocess.World
+	}
+
 	export interface Context {
 		api: {
 			bootstrap: slime.internal.jrunscript.bootstrap.Global<{}>["$api"]
@@ -55,9 +63,7 @@ namespace slime.jrunscript.shell {
 
 		stdio: context.Stdio
 
-		world?: {
-			subprocess?: context.subprocess.World
-		}
+		world?: World
 	}
 
 	export namespace test {
@@ -149,6 +155,57 @@ namespace slime.jrunscript.shell {
 			return fixtures().load(context);
 		//@ts-ignore
 		})(Packages, fifty);
+
+		export const module = (function(fifty: slime.fifty.test.Kit) {
+			//	TODO	repeats a bunch of code from plugin; should clean that up if we get this working
+
+			const { jsh } = fifty.global;
+
+			var toShellContextOutputStream = function(outputStream: slime.jrunscript.runtime.io.OutputStream ): slime.jrunscript.shell.context.OutputStream {
+				return {
+					pipe: outputStream.pipe,
+					character: function() {
+						return outputStream.character();
+					},
+					java: {
+						adapt: function() {
+							return outputStream.java.adapt();
+						}
+					},
+					split: function(other) {
+						return outputStream.split(other);
+					}
+				}
+			};
+
+			return function(world?: World) {
+				const script: slime.jrunscript.shell.Script = fifty.$loader.script("module.js");
+				const $slime = jsh.unit.$slime;
+				return script({
+					api: {
+						bootstrap: jsh.internal.bootstrap,
+						java: jsh.java,
+						io: jsh.io,
+						file: jsh.file,
+						js: jsh.js,
+						document: jsh.js.document,
+						xml: {
+							parseFile: function(file) {
+								return new jsh.document.Document({ string: file.read(String) });
+							}
+						}
+					},
+					kotlin: null,
+					stdio: {
+						input: jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput()),
+						output: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput())),
+						error: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardError()))
+					},
+					world: world
+				});
+			}
+		//@ts-ignore
+		})(fifty);
 	}
 
 	/**
@@ -169,18 +226,64 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export interface Exports {
+	}
+
+	export interface Exports {
+		context: {
+			java: {
+				/**
+				 * The working directory, from the Java virtual machine's point of view (that is, the `user.dir` system property).
+				 */
+				directory: {
+					get: slime.$api.fp.impure.External<string>
+				}
+			}
+		}
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.context = fifty.test.Parent();
+
+			fifty.tests.exports.context.java = fifty.test.Parent();
+
+			fifty.tests.exports.context.java.directory = function() {
+				const { verify } = fifty;
+
+				var module = test.module({
+					java: {
+						properties: (
+							function() {
+								var rv = new Packages.java.util.Properties();
+								rv.setProperty("user.dir", "/tmp/testdir");
+								return rv;
+							}
+						)()
+					}
+				});
+
+				verify(module).context.java.directory.get().is("/tmp/testdir");
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+	export interface Exports {
+		/**
+		 * APIs for interacting with this shell's operating system process.
+		 */
 		process: {
 			directory: {
 				/**
+				 * @deprecated This doesn't really do what it says it does; it should be replaced by calls to
+				 * `context.java.directory.get()`.
+				 *
 				 * Returns the pathname of the shell's current working directory.
 				 */
-				get: slime.$api.fp.impure.Input<string>
-
-				/**
-				 * Changes the working directory. Note that this only changes the value from the shell's point of view; it does not
-				 * change the working directory of the underlying operating system process.
-				 */
-				set: slime.$api.fp.impure.Output<string>
+				get: slime.$api.fp.impure.External<string>
 			}
 		}
 	}
@@ -210,11 +313,7 @@ namespace slime.jrunscript.shell {
 					$api.fp.property("output")
 				);
 
-				jsh.shell.console("Before: " + ls());
-
-				jsh.shell.process.directory.set("/etc");
-
-				jsh.shell.console("After: " + ls());
+				jsh.shell.console("Contents: " + ls());
 			}
 		}
 	//@ts-ignore
@@ -228,20 +327,23 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Exports {
+		/**
+		 * APIs for launching subprocesses using {@link Intention}s and receiving events and exit information from the processes.
+		 */
 		subprocess: subprocess.Exports
 	}
 
 	export interface Exports {
 		/**
-		 * APIs that pertain to {@link Intention}s.
+		 * APIs that pertain to creating {@link Intention}s.
 		 */
-		Intention: exports.Intention
+		Intention: intention.Exports
 	}
 
-	export namespace exports {
-		export interface Intention {
+	export namespace intention {
+		export interface Exports {
 			/**
-			 * An empty object to which derivations of this module may add methods.
+			 * An empty object to which derivations of this module may add methods for creating {@link Intention}s.
 			 */
 			from: {
 			}
@@ -355,6 +457,29 @@ namespace slime.jrunscript.shell {
 	}
 
 	export namespace java {
+		export interface Exports extends Invoke {
+			//	TODO	The old comment stated that this argument was the same as the argument to `shell`, with classpath, jar, and
+			//			main added. This seems likely to be wrong but looking at the implementation may reveal whether the types
+			//			are related in the implementation.
+			version: string
+
+			keytool: any
+
+			/**
+			 * The Java launcher program, that is, the executable used to launch Java programs.
+			 */
+			launcher: slime.jrunscript.file.File
+
+			jrunscript: slime.jrunscript.file.File
+
+			/**
+			 * The home directory of the Java installation used to run this shell.
+			 */
+			home: slime.jrunscript.file.Directory
+		}
+	}
+
+	export namespace java {
 		export namespace invoke {
 			export interface Argument {
 				vmarguments?: string[]
@@ -408,27 +533,6 @@ namespace slime.jrunscript.shell {
 			 * Launches a Java program.
 			 */
 			<R>(p: invoke.Jar<R>): R
-		}
-
-		export interface Exports extends Invoke{
-			//	TODO	The old comment stated that this argument was the same as the argument to `shell`, with classpath, jar, and
-			//			main added. This seems likely to be wrong but looking at the implementation may reveal whether the types
-			//			are related in the implementation.
-			version: string
-
-			keytool: any
-
-			/**
-			 * The Java launcher program, that is, the executable used to launch Java programs.
-			 */
-			launcher: slime.jrunscript.file.File
-
-			jrunscript: slime.jrunscript.file.File
-
-			/**
-			 * The home directory of the Java installation used to run this shell.
-			 */
-			home: slime.jrunscript.file.Directory
 		}
 	}
 

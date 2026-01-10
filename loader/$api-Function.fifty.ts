@@ -645,6 +645,15 @@ namespace slime.$api.fp {
 
 			fifty.tests.Object.property = fifty.test.Parent();
 
+			fifty.tests.Object.property.update = function() {
+				var before: X = { a: 2, b: "hey" };
+				verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+				verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+				var disallowed: Y = { a: 2, b: "hey", foo: function() { return 3; }};
+				// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+				// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+			};
+
 			fifty.tests.Object.property.set = function() {
 				var before: X = { a: 1, b: "b" };
 
@@ -687,15 +696,6 @@ namespace slime.$api.fp {
 				verify(after).b.is("b");
 				verify(after).c.is(true);
 				verify(after).d.is("1");
-			};
-
-			fifty.tests.Object.property.update = function() {
-				var before: X = { a: 2, b: "hey" };
-				verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
-				verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
-				var disallowed: Y = { a: 2, b: "hey", foo: function() { return 3; }};
-				// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
-				// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
 			};
 
 			fifty.tests.Object.property.maybe = function() {

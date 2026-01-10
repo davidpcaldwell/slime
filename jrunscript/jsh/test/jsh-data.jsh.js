@@ -125,7 +125,7 @@
 			}),
 			environment: jsh.shell.environment,
 			properties: properties,
-			directory: jsh.shell.process.directory.get(),
+			directory: jsh.shell.context.java.directory.get(),
 			"shellClasspath": String(jsh.loader.java.getClass("inonit.script.jsh.Shell").getProtectionDomain().getCodeSource().getLocation().toString())
 		}, void(0), "    "));
 	}
