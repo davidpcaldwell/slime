@@ -409,7 +409,9 @@ namespace slime.jsh.shell.tools {
 	}
 
 	export interface Exports {
-		kotlin: any
+		kotlin: {
+			install: slime.$api.fp.world.Means<{ replace?: boolean }, { console: string }>
+		}
 	}
 
 	export namespace scala {

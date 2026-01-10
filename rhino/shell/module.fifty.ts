@@ -19,24 +19,6 @@ namespace slime.jrunscript.shell {
 	}
 
 	export interface Context {
-		/**
-		 * (optional: if omitted, the actual operating system environment will be used.) An object representing the operating system
-		 * environment.
-		 */
-		_environment?: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-
-		/**
-		 * (optional: if omitted, the actual Java system properties will be used.) An object representing the Java system
-		 * properties.
-		 */
-		_properties?: slime.jrunscript.native.java.util.Properties
-
-		stdio: context.Stdio
-
-		kotlin: {
-			compiler: slime.jrunscript.file.File
-		}
-
 		api: {
 			bootstrap: slime.internal.jrunscript.bootstrap.Global<{}>["$api"]
 			java: slime.jrunscript.java.Exports
@@ -54,6 +36,24 @@ namespace slime.jrunscript.shell {
 				parseFile: (file: slime.jrunscript.file.File) => slime.old.document.Document
 			}
 		}
+
+		kotlin?: {
+			compiler: slime.jrunscript.file.File
+		}
+
+		/**
+		 * (optional: if omitted, the actual operating system environment will be used.) An object representing the operating system
+		 * environment.
+		 */
+		_environment?: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+
+		/**
+		 * (optional: if omitted, the actual Java system properties will be used.) An object representing the Java system
+		 * properties.
+		 */
+		_properties?: slime.jrunscript.native.java.util.Properties
+
+		stdio: context.Stdio
 
 		world?: {
 			subprocess?: context.subprocess.World
@@ -767,22 +767,9 @@ namespace slime.jrunscript.shell {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			fifty.tests.manual.kotlin = function() {
-				if (!jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
-					var intention: slime.jsh.shell.Intention = {
-						shell: {
-							src: fifty.jsh.file.relative("../..").pathname
-						},
-						script: fifty.jsh.file.relative("../../jrunscript/jsh/tools/install/kotlin.jsh.js").pathname
-					};
-					var shellIntention = jsh.shell.jsh.Intention.toShellIntention(intention);
-					var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
-					run(shellIntention);
-				}
-			}
-
 			fifty.tests.exports.kotlin = function() {
 				if (jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
+					//	TODO	duplicative of test/kotlin.jsh.js; merge to be more DRY
 					var PATH = jsh.shell.PATH.pathnames;
 					PATH.unshift(jsh.shell.java.home.getRelativePath("bin"));
 					var result: { status: number, stdio: { error: string } } = jsh.shell.kotlin({
@@ -799,6 +786,40 @@ namespace slime.jrunscript.shell {
 				} else {
 					verify("No Kotlin.").is("No Kotlin.");
 				}
+			}
+
+			fifty.tests.manual.kotlin = function() {
+				if (jsh.shell.jsh.lib.getSubdirectory("kotline")) {
+					jsh.shell.console("Removing Kotlin installation ...");
+					jsh.shell.jsh.lib.getSubdirectory("kotlin").remove();
+					jsh.shell.console("Removed Kotlin installation.");
+				}
+				if (!jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
+					var installIntention: slime.jsh.shell.Intention = {
+						shell: {
+							src: fifty.jsh.file.relative("../..").pathname
+						},
+						script: fifty.jsh.file.relative("../../jrunscript/jsh/tools/install/kotlin.jsh.js").pathname
+					};
+					var shellIntention = jsh.shell.jsh.Intention.toShellIntention(installIntention);
+					var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+					run(shellIntention);
+				}
+
+				var fixtures: slime.jsh.test.Script = fifty.$loader.script("../../jrunscript/jsh/fixtures.ts");
+				var shells = fixtures().shells(fifty);
+				var unbuilt = shells.unbuilt();
+				var intention = unbuilt.invoke({
+					script: fifty.jsh.file.relative("test/kotlin.jsh.js").pathname,
+					stdio: {
+						output: "string"
+					}
+				});
+				var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+				var exit = run( intention );
+				var result: { status: number, stdio: { error: string } } = JSON.parse( exit.stdio.output );
+				verify(result).status.is(0);
+				verify(result).stdio.error.is("Hello from SLIME Kotlin!\n");
 			}
 		}
 	//@ts-ignore
