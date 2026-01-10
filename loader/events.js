@@ -215,6 +215,7 @@
 				}
 			},
 			handle: function(p) {
+				if (!p.implementation) throw new TypeError("Required: .implementation");
 				var receiver = ListenersInvocationReceiver(p.handlers);
 				receiver.attach();
 				try {
