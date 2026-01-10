@@ -7,7 +7,7 @@
 namespace slime.jrunscript.shell {
 	/**
 	 * A `Console` is a construct used to represent somewhere where an application might send text output. One implementation of
-	 * `Console` is {@link slime.jsh.shell.Exports.console jsh.shell.console}, which allows top-level `jsh` scripts to write text to
+	 * `Console` is {@link slime.jsh.shell.Exports["console"] jsh.shell.console}, which allows top-level `jsh` scripts to write text to
 	 * the standard error stream (and appends a trailing line separator to each message). Other implementations might include files
 	 * or any other locations to which applications might wish to emit messages or logging to be immediately or later read.
 	 */

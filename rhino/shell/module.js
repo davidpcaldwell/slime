@@ -19,6 +19,26 @@
 			throw new Error("Missing: $context.api.io");
 		}
 
+		var world = (
+			function(overrides) {
+				return {
+					java: {
+						properties: $api.fp.now(
+							overrides,
+							$api.fp.Maybe.from.value,
+							$api.fp.Maybe.map($api.fp.Object.property.maybe("java", "properties")),
+							//	TODO	move flatten to fp
+							function flatten(it) {
+								if (!it.present) return $api.fp.Maybe.from.nothing();
+								return it.value;
+							},
+							$api.fp.Maybe.else(function() { return Packages.java.lang.System.getProperties(); })
+						)
+					}
+				}
+			}
+		)($context.world);
+
 		var _environment = $context.api.java.Environment( ($context._environment) ? $context._environment : Packages.inonit.system.OperatingSystem.Environment.SYSTEM );
 
 		var _properties = ($context._properties) ? $context._properties : Packages.java.lang.System.getProperties();
@@ -647,13 +667,21 @@
 
 		/** @type { slime.jrunscript.shell.Exports } */
 		var exports = {
+			context: {
+				java: {
+					directory: {
+						get: function() {
+							var rv = world.java.properties.getProperty("user.dir");
+							if (rv === null) return null;
+							return String(rv);
+						}
+					}
+				}
+			},
 			process: {
 				directory: {
 					get: function() {
 						return properties.get("user.dir");
-					},
-					set: function(value) {
-						properties.set("user.dir", value);
 					}
 				}
 			},
