@@ -91,7 +91,6 @@ namespace slime.jrunscript.file {
 	//@ts-ignore
 	)(fifty);
 
-
 	export interface Pathname {
 		/**
 		 * The name of this file, excluding any path information; for example, `"ls"` if this Pathname represents `/bin/ls`.

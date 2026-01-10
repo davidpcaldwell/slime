@@ -10,6 +10,7 @@ namespace slime.jrunscript.file {
 		readonly pathname: string
 	}
 
+	//	TODO	move to module.fifty.ts
 	export interface Exports {
 		Location: location.Exports
 
@@ -46,6 +47,12 @@ namespace slime.jrunscript.file {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export namespace location {
+		export interface Exports {
+			from: From
+		}
+	}
 
 	export namespace location {
 		export interface Exports {
@@ -319,6 +326,14 @@ namespace slime.jrunscript.file {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
+
+	export namespace location {
+		export interface Exports {
+			remove: {
+				simple: slime.$api.fp.impure.Effect<slime.jrunscript.file.Location>
+			}
+		}
 	}
 
 	export namespace posix {
@@ -598,6 +613,7 @@ namespace slime.jrunscript.file {
 
 	export namespace location {
 		export namespace file {
+			//	TODO	redundant; we have Location.remove and should merge them
 			export interface Exports {
 				remove: {
 					simple: slime.$api.fp.impure.Output<slime.jrunscript.file.Location>
@@ -766,6 +782,100 @@ namespace slime.jrunscript.file {
 			}
 		//@ts-ignore
 		)(fifty);
+	}
+
+	export namespace location {
+		export interface From {
+			os: (pathname: string) => slime.jrunscript.file.Location
+
+			temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Sensor<
+				{
+					parent?: string
+					prefix?: string
+					suffix?: string
+					directory: boolean
+				},
+				void,
+				slime.jrunscript.file.Location
+			>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api, jsh } = fifty.global;
+				const { Location } = jsh.file;
+
+				fifty.tests.sandbox.filesystem.temporary = function() {
+					//	Really the only defined attribute of a "temporary" file is that after this method is called, it should
+					//	exist. So going to test for that, and test for files and directories.
+
+					var exists = {
+						file: $api.fp.world.mapping(Location.file.exists.world()),
+						directory: $api.fp.world.mapping(Location.directory.exists.world())
+					};
+
+					var os = jsh.file.world.filesystems.os;
+
+					var tmpfile = $api.fp.world.input(jsh.file.world.Location.from.temporary(os)({ directory: false }));
+					var tmpdir = $api.fp.world.input(jsh.file.world.Location.from.temporary(os)({ directory: true }));
+
+					var file = $api.fp.impure.Input.process(
+						tmpfile,
+						function(location) {
+							verify(location).evaluate(exists.file).is(true);
+						}
+					);
+
+					var directory = $api.fp.impure.Input.process(
+						tmpdir,
+						function(location) {
+							verify(location).evaluate(exists.directory).is(true);
+						}
+					);
+
+					$api.fp.impure.now.process(
+						$api.fp.impure.Process.compose([
+							file,
+							directory
+						])
+					);
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface os {
+			directory: {
+				relativePath: (path: string) => (base: string) => string
+			}
+
+			temporary: {
+				pathname: () => string
+				location: () => slime.jrunscript.file.Location
+				directory: () => string
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { $api, jsh } = fifty.global;
+
+				fifty.tests.manual.os = {};
+
+				fifty.tests.manual.os.relativePath = function() {
+					var here = fifty.jsh.file.relative(".");
+					jsh.shell.console(here.pathname);
+					var there = $api.fp.now(here.pathname, jsh.file.os.directory.relativePath("foo/bar"));
+					jsh.shell.console(there);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 
 		export namespace file {
 			export interface Exports {
@@ -872,118 +982,10 @@ namespace slime.jrunscript.file {
 			}
 		//@ts-ignore
 		)(fifty);
-	}
 
-	export namespace location {
 		export interface Exports {
 			directory: directory.Exports
 		}
-	}
-
-	export namespace location {
-		export interface Exports {
-			remove: {
-				simple: slime.$api.fp.impure.Output<slime.jrunscript.file.Location>
-			}
-		}
-	}
-
-	export namespace location {
-		export interface From {
-			os: (pathname: string) => slime.jrunscript.file.Location
-
-			temporary: (filesystem: world.Filesystem) => slime.$api.fp.world.Sensor<
-				{
-					parent?: string
-					prefix?: string
-					suffix?: string
-					directory: boolean
-				},
-				void,
-				slime.jrunscript.file.Location
-			>
-		}
-
-		export interface Exports {
-			from: From
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-				const { $api, jsh } = fifty.global;
-				const { Location } = jsh.file;
-
-				fifty.tests.sandbox.filesystem.temporary = function() {
-					//	Really the only defined attribute of a "temporary" file is that after this method is called, it should
-					//	exist. So going to test for that, and test for files and directories.
-
-					var exists = {
-						file: $api.fp.world.mapping(Location.file.exists.world()),
-						directory: $api.fp.world.mapping(Location.directory.exists.world())
-					};
-
-					var os = jsh.file.world.filesystems.os;
-
-					var tmpfile = $api.fp.world.input(jsh.file.world.Location.from.temporary(os)({ directory: false }));
-					var tmpdir = $api.fp.world.input(jsh.file.world.Location.from.temporary(os)({ directory: true }));
-
-					var file = $api.fp.impure.Input.process(
-						tmpfile,
-						function(location) {
-							verify(location).evaluate(exists.file).is(true);
-						}
-					);
-
-					var directory = $api.fp.impure.Input.process(
-						tmpdir,
-						function(location) {
-							verify(location).evaluate(exists.directory).is(true);
-						}
-					);
-
-					$api.fp.impure.now.process(
-						$api.fp.impure.Process.compose([
-							file,
-							directory
-						])
-					);
-				};
-			}
-		//@ts-ignore
-		)(fifty);
-
-		export interface os {
-			directory: {
-				relativePath: (path: string) => (base: string) => string
-			}
-
-			temporary: {
-				pathname: () => string
-				location: () => slime.jrunscript.file.Location
-				directory: () => string
-			}
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { $api, jsh } = fifty.global;
-
-				fifty.tests.manual.os = {};
-
-				fifty.tests.manual.os.relativePath = function() {
-					var here = fifty.jsh.file.relative(".");
-					jsh.shell.console(here.pathname);
-					var there = $api.fp.now(here.pathname, jsh.file.os.directory.relativePath("foo/bar"));
-					jsh.shell.console(there);
-				}
-			}
-		//@ts-ignore
-		)(fifty);
 
 		(
 			function(
