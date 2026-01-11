@@ -75,11 +75,15 @@ namespace slime.jrunscript.java {
 	}
 
 	export interface Exports {
-		Properties: exports.Properties
+		Properties: properties.Exports
 	}
 
-	export namespace exports {
-		export interface Properties {
+	export namespace properties {
+		export interface Exports {
+			get: (name: string) => (properties: slime.jrunscript.native.java.util.Properties) => slime.$api.fp.Maybe<string>
+		}
+
+		export interface Exports {
 			value: (name: string) => (properties: slime.jrunscript.java.Properties) => slime.$api.fp.Maybe<string>
 
 			/** @deprecated */
@@ -135,7 +139,7 @@ namespace slime.jrunscript.java {
 		//@ts-ignore
 		)(Packages,fifty);
 
-		export interface Properties {
+		export interface Exports {
 			from: {
 				/**
 				 * Parses a file in Java properties format and returns a JavaScript {@link Properties} object.
@@ -188,8 +192,8 @@ namespace slime.jrunscript.java {
 
 	export interface Exports {
 		vm: {
-			properties: slime.$api.fp.impure.Input<Properties>,
-			setProperty: (name: string) => slime.$api.fp.impure.Output<string>
+			properties: slime.$api.fp.impure.External<Properties>,
+			setProperty: (name: string) => slime.$api.fp.impure.Effect<string>
 		}
 	}
 

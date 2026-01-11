@@ -234,8 +234,11 @@ namespace slime.jrunscript.shell {
 				/**
 				 * The working directory, from the Java virtual machine's point of view (that is, the `user.dir` system property).
 				 */
-				directory: {
-					get: slime.$api.fp.impure.External<string>
+				directory: string
+
+				user: {
+					name: string
+					home: string
 				}
 			}
 		}
@@ -246,26 +249,47 @@ namespace slime.jrunscript.shell {
 			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
+
 			fifty.tests.exports.context = fifty.test.Parent();
 
 			fifty.tests.exports.context.java = fifty.test.Parent();
 
 			fifty.tests.exports.context.java.directory = function() {
-				const { verify } = fifty;
-
 				var module = test.module({
 					java: {
 						properties: (
 							function() {
 								var rv = new Packages.java.util.Properties();
 								rv.setProperty("user.dir", "/tmp/testdir");
+								rv.setProperty("user.name", "foo");
+								rv.setProperty("user.home", "/home/foo");
 								return rv;
 							}
 						)()
 					}
 				});
 
-				verify(module).context.java.directory.get().is("/tmp/testdir");
+				verify(module).context.java.directory.is("/tmp/testdir");
+			}
+
+			fifty.tests.exports.context.java.user = function() {
+				var module = test.module({
+					java: {
+						properties: (
+							function() {
+								var rv = new Packages.java.util.Properties();
+								rv.setProperty("user.dir", "/bin");
+								rv.setProperty("user.name", "foo");
+								rv.setProperty("user.home", "/home/foo");
+								return rv;
+							}
+						)()
+					}
+				});
+
+				verify(module).context.java.user.name.is("foo");
+				verify(module).context.java.user.home.is("/home/foo");
 			}
 		}
 	//@ts-ignore

@@ -194,6 +194,13 @@
 
 		/** @type { slime.jrunscript.java.Exports["Properties"] } */
 		$exports.Properties = {
+			get: function(name) {
+				return function(_properties) {
+					var _value = _properties.getProperty(name);
+					if (_value === null) return $api.fp.Maybe.from.nothing();
+					return $api.fp.Maybe.from.some(String(_value));
+				}
+			},
 			adapt: function($properties) {
 				return adaptProperties($properties);
 			},

@@ -911,7 +911,7 @@
 							({
 								arguments: $context.api.script.arguments,
 								environment: $api.fp.identity,
-								directory: $context.module.context.java.directory.get(),
+								directory: $context.module.context.java.directory,
 								properties: $context.api.java.vm.properties(),
 								stdio: void(0)
 							})
