@@ -11,7 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var src = $api.fp.now(jsh.shell.context.java.directory.get(), jsh.file.Location.from.os);
+		var src = $api.fp.now(jsh.shell.context.java.directory, jsh.file.Location.from.os);
 		var tmp = $api.fp.now(jsh.file.world.filesystems.os.temporary, $api.fp.world.Sensor.mapping())({ directory: true });
 		var m2 = $api.fp.now(jsh.file.world.filesystems.os.temporary, $api.fp.world.Sensor.mapping())({ directory: true });
 		/** @type { slime.jsh.shell.Intention } */

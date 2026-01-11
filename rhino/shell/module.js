@@ -669,12 +669,31 @@
 		var exports = {
 			context: {
 				java: {
-					directory: {
-						get: function() {
-							var rv = world.java.properties.getProperty("user.dir");
-							if (rv === null) return null;
-							return String(rv);
+					directory: $api.fp.now(
+						world.java.properties,
+						$context.api.java.Properties.get("user.dir"),
+						function(maybe) {
+							if (!maybe.present) throw new Error("user.dir is not defined.");
+							return maybe.value;
 						}
+					),
+					user: {
+						name: $api.fp.now(
+							world.java.properties,
+							$context.api.java.Properties.get("user.name"),
+							function(maybe) {
+								if (!maybe.present) throw new Error("user.name is not defined.");
+								return maybe.value;
+							}
+						),
+						home: $api.fp.now(
+							world.java.properties,
+							$context.api.java.Properties.get("user.home"),
+							function(maybe) {
+								if (!maybe.present) throw new Error("user.home is not defined.");
+								return maybe.value;
+							}
+						)
 					}
 				}
 			},
