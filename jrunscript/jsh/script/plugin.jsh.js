@@ -160,6 +160,7 @@
 				/** @type { slime.jsh.script.Exports["cli"]["parser"] } */
 				var parser = (function(filesystem,workingDirectory) {
 					var isAbsolute = function(string) {
+						if (typeof(string) == "undefined") throw new TypeError("Path string is undefined.");
 						//	Cover UNIX case, Windows network drive, UNIX network drive
 						var start = string.substring(0,1);
 						if (start == filesystem.$jsh.PATHNAME_SEPARATOR) return true;
@@ -183,6 +184,7 @@
 						 * @returns { slime.jrunscript.file.Pathname }
 						 */
 						pathname: function(value) {
+							if (typeof(value) == "undefined") throw new TypeError("'value' is undefined.");
 							if (isAbsolute(value)) {
 								return filesystem.Pathname(value);
 							} else {

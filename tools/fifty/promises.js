@@ -219,7 +219,7 @@
 					if (external.indexOf(it.promise) == -1) {
 						dependencies.push(e.detail);
 					} else {
-						debugger;
+						//debugger;
 					}
 				}
 				console.log("Needed in " + name, it, "now", dependencies.slice());
@@ -249,7 +249,6 @@
 				console.log("Settled", e.detail, "now", dependencies.slice());
 				if (dependencies.length == 0) {
 					console.log("All dependencies removed from registry " + name, e.detail, "resolving", controlled.promise);
-					debugger;
 					controlled.resolve(void(0));
 				} else {
 					console.log("still waiting in " + name, dependencies.slice());
