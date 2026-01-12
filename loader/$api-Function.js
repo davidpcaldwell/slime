@@ -133,6 +133,10 @@
 				for (var i=0; i<items.length; i++) {
 					//	If the pipeline function is called with no arguments, call the initial function with no arguments
 					//	TODO	what to do if the pipeline function is called with multiple arguments?
+					if (!items[i]) {
+						debugger;
+						throw new TypeError("Expected function: " + items[i]);
+					}
 					if (i == 0 && arguments.length == 0) {
 						rv = items[i].call(this);
 					} else {
@@ -245,6 +249,12 @@
 			});
 		})();
 
+		var optionalChain = function(name) {
+			return function(p) {
+				return (p == null) ? void(0) : p[name];
+			}
+		};
+
 		var impure = code.impure({
 			now: now_map,
 			Maybe: Maybe,
@@ -344,11 +354,7 @@
 				}
 			},
 			property: property,
-			optionalChain: function(name) {
-				return function(p) {
-					return (p == null) ? void(0) : p[name];
-				}
-			},
+			optionalChain: optionalChain,
 			curry: function(c) {
 				return function(f) {
 					return function(p) {
@@ -463,51 +469,70 @@
 				}
 			},
 			Object: {
-				property: {
-					update: function(p) {
-						return function(target) {
-							var rv = Object.assign(
-								{},
-								target
-							);
-							rv[p.property] = p.change(rv[p.property]);
-							return rv;
-						}
-					},
-					/**
-					 * @template { {} } T
-					 * @template { {} } R
-					 * @param { { [k in keyof R]: slime.$api.fp.Mapping<T,R[k]> } } p
-					 */
-					set: function(p) {
-						/** @type { slime.js.Cast<T & { [k in keyof R]: R[k] }> } */
-						var asReturnType = function(p) { return p; };
+				property: (
+					function() {
+						/** @type { slime.$api.fp.object.property.Exports["maybe"] } */
+						var maybe = function() {
+							var keys = arguments;
 
-						return function(target) {
-							var rv = asReturnType(Object.assign({}, target));
-							for (var x in p) {
-								var k = /** @type { keyof R } */(x);
-								var value = p[k](rv);
-								//	TODO	is there something more eleegant than this?
-								rv[k] = /** @type {(T & { [k in keyof R]: R[k]; })[Extract<keyof R, string>]} */(value);
+							//	Note that isNothing has the same semantics as the optional chaining operator, with null or undefined
+							//	resulting in `true` and other values resulting in `false`.
+							var isNothing = function(v) { return !Maybe.from.value(v).present };
+
+							return function(object) {
+								var rv = object;
+								for (var i=0; i<keys.length; i++) {
+									var value = rv[keys[i]];
+									if (isNothing(value)) return Maybe.from.nothing();
+									rv = value;
+								}
+								return isNothing(rv) ? Maybe.from.nothing() : Maybe.from.some(rv);
 							}
-							return rv;
-						}
-					},
-					maybe: function() {
-						var keys = arguments;
-						var isNothing = function(v) { return !Maybe.from.value(v).present };
-						return function(object) {
-							var rv = object;
-							for (var i=0; i<keys.length; i++) {
-								var value = rv[keys[i]];
-								if (isNothing(value)) return Maybe.from.nothing();
-								rv = value;
+						};
+
+						return {
+							update: function(p) {
+								return function(target) {
+									var rv = Object.assign(
+										{},
+										target
+									);
+									rv[p.property] = p.change(rv[p.property]);
+									return rv;
+								}
+							},
+							/**
+							 * @template { {} } T
+							 * @template { {} } R
+							 * @param { { [k in keyof R]: slime.$api.fp.Mapping<T,R[k]> } } p
+							 */
+							set: function(p) {
+								/** @type { slime.js.Cast<T & { [k in keyof R]: R[k] }> } */
+								var asReturnType = function(p) { return p; };
+
+								return function(target) {
+									var rv = asReturnType(Object.assign({}, target));
+									for (var x in p) {
+										var k = /** @type { keyof R } */(x);
+										var value = p[k](rv);
+										//	TODO	is there something more eleegant than this?
+										rv[k] = /** @type {(T & { [k in keyof R]: R[k]; })[Extract<keyof R, string>]} */(value);
+									}
+									return rv;
+								}
+							},
+							maybe: maybe,
+							get: function() {
+								var keys = arguments;
+								return function(object) {
+									var result = maybe.apply(this, keys)(object);
+									if (!result.present) return void(0);
+									return result.value;
+								}
 							}
-							return isNothing(rv) ? Maybe.from.nothing() : Maybe.from.some(rv);
-						}
+						};
 					}
-				},
+				)(),
 				entries: Object.entries,
 				fromEntries: Object.fromEntries
 			},

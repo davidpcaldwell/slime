@@ -345,7 +345,7 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		/**
-		 * Given a property key, creates a function that will operate on objects with the semantics of the optional chaining
+		 * Given a property key, creates a function that will operate on objects with the semantics of the [optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
 		 * operator (`?.`). If the value passed to the returned function is `null` or undefined, the returned function will return
 		 * undefined; if the value passed to the returned function is an object, the value of the property specified by the
 		 * given property key will be returned.
@@ -594,13 +594,18 @@ namespace slime.$api.fp {
 
 	export type Data = { [x: string]: Data } | string | number | boolean | null | Data[]
 
-	export interface Exports {
-		Object: {
-			/**
-			 * Given a property name and a function that transforms the value of that property, returns a function that transforms
-			 * the value of the containing object.
-			 */
-			property: {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.Object = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace object {
+		export namespace property {
+			export interface Exports {
 				update: <T, K extends keyof T>(p: {
 					property: K
 					change: slime.$api.fp.Transform<T[K]>
@@ -620,7 +625,147 @@ namespace slime.$api.fp {
 					<T,K extends keyof T>(k: K): (t: T) => slime.$api.fp.Maybe<T[K]>
 					<T,K extends keyof T,KK extends keyof T[K]>(k: K,kk: KK): (t: T) => slime.$api.fp.Maybe<T[K][KK]>
 				}
+
+				get: {
+					<T,K extends keyof T>(k: K): (t: T) => T[K]
+					<T,K extends keyof T,KK extends keyof T[K]>(k: K,kk: KK): (t: T) => T[K][KK]
+				}
 			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api } = fifty.global;
+					const subject = fifty.global.$api.fp.Object;
+
+					type X = { a: number, b: string };
+					type Y = { a: number, b: string, foo: () => number };
+
+					fifty.tests.Object.property = fifty.test.Parent();
+
+					fifty.tests.Object.property.update = function() {
+						var before: X = { a: 2, b: "hey" };
+						verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+						verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+						var disallowed: Y = { a: 2, b: "hey", foo: function() { return 3; }};
+						// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+						// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+					};
+
+					fifty.tests.Object.property.set = function() {
+						var before: X = { a: 1, b: "b" };
+
+						var after = $api.fp.now(
+							before,
+							subject.property.set({
+								c: function(t) {
+									return true;
+								},
+								d: function(t) {
+									return String(t.a);
+								}
+							})
+						);
+
+						verify(after).a.is(1);
+						verify(after).b.is("b");
+						verify(after).c.is(true);
+						verify(after).d.is("1");
+					};
+
+					fifty.tests.Object.property.alternativeToSet = function() {
+						var before: X = { a: 1, b: "b" };
+
+						var after = $api.fp.now(
+							before,
+							$api.fp.Mapping.properties({
+								a: $api.fp.property("a"),
+								b: $api.fp.property("b"),
+								c: function(t) {
+									return true;
+								},
+								d: function(t) {
+									return String(t.a);
+								}
+							})
+						);
+
+						verify(after).a.is(1);
+						verify(after).b.is("b");
+						verify(after).c.is(true);
+						verify(after).d.is("1");
+					};
+
+					type T = { a?: { b?: number } };
+					var o: T[] = [
+						{},
+						{ a: {} },
+						{ a: { b: 0 } }
+					];
+
+					fifty.tests.Object.property.maybe = function() {
+						var cases = o.map(function(t) {
+							return {
+								a: $api.fp.now(t, subject.property.maybe("a")),
+								b1: $api.fp.now(t, subject.property.maybe("a"), $api.fp.Maybe.map(subject.property.maybe("b")),
+									function flatten(m) {
+										if (!m.present) return $api.fp.Maybe.from.nothing();
+										return m.value;
+									}
+								),
+								b2: $api.fp.now(t, subject.property.maybe("a", "b"))
+							}
+						});
+						verify(cases)[0].a.present.is(false);
+						verify(cases)[0].b1.present.is(false);
+						verify(cases)[0].b2.present.is(false);
+						verify(cases)[1].a.present.is(true);
+						verify(cases)[1].b1.present.is(false);
+						verify(cases)[1].b2.present.is(false);
+						verify(cases)[2].a.present.is(true);
+						verify(cases)[2].b1.present.is(true);
+						verify(cases)[2].b2.present.is(true);
+						var two = {
+							b1: cases[2].b1,
+							b2: cases[2].b2
+						};
+						if (two.b1.present) {
+							verify(two.b1).value.is(0);
+						}
+						if (two.b2.present) {
+							verify(two.b2).value.is(0);
+						}
+					};
+
+					fifty.tests.Object.property.get = function() {
+						var cases = o.map(function(t) {
+							return {
+								a: $api.fp.now(t, subject.property.get("a")),
+								b: $api.fp.now(t, subject.property.get("a", "b"))
+							};
+						});
+						verify(cases)[0].a.is(void(0));
+						verify(cases)[0].b.is(void(0));
+						verify(cases)[1].a.is.type("object");
+						verify(cases)[1].b.is(void(0));
+						verify(cases)[2].a.is.type("object");
+						verify(cases)[2].b.is(0);
+					};
+				}
+			//@ts-ignore
+			)(fifty);
+		}
+	}
+
+	export interface Exports {
+		Object: {
+			/**
+			 * Given a property name and a function that transforms the value of that property, returns a function that transforms
+			 * the value of the containing object.
+			 */
+			property: slime.$api.fp.object.property.Exports
 
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.entries`. */
 			entries: ObjectConstructor["entries"]
@@ -633,111 +778,7 @@ namespace slime.$api.fp {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { verify, run } = fifty;
-			const { $api } = fifty.global;
-
-			const subject = fifty.global.$api.fp.Object;
-
-			fifty.tests.Object = fifty.test.Parent();
-
-			type X = { a: number, b: string };
-			type Y = { a: number, b: string, foo: () => number };
-
-			fifty.tests.Object.property = fifty.test.Parent();
-
-			fifty.tests.Object.property.update = function() {
-				var before: X = { a: 2, b: "hey" };
-				verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
-				verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
-				var disallowed: Y = { a: 2, b: "hey", foo: function() { return 3; }};
-				// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
-				// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
-			};
-
-			fifty.tests.Object.property.set = function() {
-				var before: X = { a: 1, b: "b" };
-
-				var after = $api.fp.now(
-					before,
-					subject.property.set({
-						c: function(t) {
-							return true;
-						},
-						d: function(t) {
-							return String(t.a);
-						}
-					})
-				);
-
-				verify(after).a.is(1);
-				verify(after).b.is("b");
-				verify(after).c.is(true);
-				verify(after).d.is("1");
-			};
-
-			fifty.tests.Object.property.alternativeToSet = function() {
-				var before: X = { a: 1, b: "b" };
-
-				var after = $api.fp.now(
-					before,
-					$api.fp.Mapping.properties({
-						a: $api.fp.property("a"),
-						b: $api.fp.property("b"),
-						c: function(t) {
-							return true;
-						},
-						d: function(t) {
-							return String(t.a);
-						}
-					})
-				);
-
-				verify(after).a.is(1);
-				verify(after).b.is("b");
-				verify(after).c.is(true);
-				verify(after).d.is("1");
-			};
-
-			fifty.tests.Object.property.maybe = function() {
-				type T = { a?: { b?: number } };
-				var o: T[] = [
-					{},
-					{ a: {} },
-					{ a: { b: 0 } }
-				];
-
-				var cases = o.map(function(t) {
-					return {
-						a: $api.fp.now.map(t, subject.property.maybe("a")),
-						b1: $api.fp.now.map(t, subject.property.maybe("a"), $api.fp.Maybe.map(subject.property.maybe("b")),
-							function flatten(m) {
-								if (!m.present) return $api.fp.Maybe.from.nothing();
-								return m.value;
-							}
-						),
-						b2: $api.fp.now.map(t, subject.property.maybe("a", "b"))
-					}
-				});
-				verify(cases)[0].a.present.is(false);
-				verify(cases)[0].b1.present.is(false);
-				verify(cases)[0].b2.present.is(false);
-				verify(cases)[1].a.present.is(true);
-				verify(cases)[1].b1.present.is(false);
-				verify(cases)[1].b2.present.is(false);
-				verify(cases)[2].a.present.is(true);
-				verify(cases)[2].b1.present.is(true);
-				verify(cases)[2].b2.present.is(true);
-				var two = {
-					b1: cases[2].b1,
-					b2: cases[2].b2
-				};
-				if (two.b1.present) {
-					verify(two.b1).value.is(0);
-				}
-				if (two.b2.present) {
-					verify(two.b2).value.is(0);
-				}
-			};
+			const { verify } = fifty;
 
 			fifty.tests.Object.fromEntries = function() {
 				var array = [ ["a", 2], ["b", 3] ];

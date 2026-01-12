@@ -247,7 +247,6 @@
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
 		var executeTestScope = function(ascope,name,execute) {
-			debugger;
 			if (ascope) ascope.test.log("async tests: starting scope", name, ascope.test.depth());
 			if (ascope) ascope.start();
 			if (ascope) ascope.test.setName(name);
@@ -314,7 +313,6 @@
 				// 		return Promise.resolve(after());
 				// 	}
 				// )
-				debugger;
 				rv = rv
 					.then(function done(done) {
 						$context.promises.console.log("async tests: computing after() for", name);
