@@ -51,23 +51,23 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.file.location.Exports["parent"] } */
-		var Location_parent = function() {
-			return Location_relative("..");
-		};
-
 		/** @type { slime.jrunscript.file.location.Exports["directory"]["relativePath"] } */
 		var Location_relative = function(path) {
-			return function(pathname) {
-				var absolute = pathname.pathname + pathname.filesystem.separator.pathname + path;
-				var canonical = canonicalize(pathname.filesystem)(absolute);
+			return function(location) {
+				var absolute = location.pathname + location.filesystem.separator.pathname + path;
+				var canonical = canonicalize(location.filesystem)(absolute);
 				if (canonical === null) return null;
 				return {
-					filesystem: pathname.filesystem,
+					filesystem: location.filesystem,
 					pathname: canonical
 				}
 			}
 		}
+
+		/** @type { slime.jrunscript.file.location.Exports["parent"] } */
+		var Location_parent = function() {
+			return Location_relative("..");
+		};
 
 		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }> } */
 		var ensureParent = function(location) {
