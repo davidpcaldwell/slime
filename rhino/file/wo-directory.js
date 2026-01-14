@@ -76,6 +76,7 @@
 					 * @returns { slime.jrunscript.file.Location[] }
 					 */
 					var process = function(location,descend,events) {
+						if (!location.filesystem) throw new TypeError("No filesystem for location " + location);
 						var listed = $api.fp.world.now.ask(
 							location.filesystem.listDirectory({ pathname: location.pathname })
 						);
