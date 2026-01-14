@@ -526,10 +526,27 @@ namespace slime.$api.fp {
 		)(fifty);
 
 		export interface String {
+			/**
+			 * A formatter inspired by JavaScript's template literal syntax, but supporting a functional style (and available in
+			 * environments that do not support template literals).
+			 *
+			 * The `format` function, given a mask and a set of functions that operate on a type `T` and return substitution values
+			 * based on that type, returns a function that can format an object of type `T` as a string.
+			 *
+			 * The `mask` property of the parameter is a string that can include `${name}` placeholders, where `name` is the name of
+			 * a substitution.
+			 *
+			 * The `values` property of the parameter is an object whose properties are functions that take an object of type `T`
+			 * and return a value to substitute when that property's name is encountered in the mask.
+			 *
+			 * @param p A set of parameters, including a mask and a values object with functions that produce named subsitution
+			 * values
+			 * @returns A function that can format an object of type `T` as a string using the parameters.
+			 */
 			format: <T>(p: {
 				mask: string
-				values: ((t: T) => string)[]
-			}) => (t: T) => string
+				values: { [key: string]: (t: T) => string }
+			}) => (p: T) => string
 		}
 
 		(
@@ -543,13 +560,18 @@ namespace slime.$api.fp {
 					var name = { first: "David", middle: "Paul", last: "Caldwell" };
 					var asName: slime.$api.fp.Identity<typeof name> = $api.fp.identity;
 					var mi = $api.fp.pipe(asName, $api.fp.property("middle"), function(s) { return s.substring(0,1) });
+					var variables = {
+						first: name.first,
+						last: $api.fp.now(name.last, $api.fp.string.toUpperCase),
+						mi: mi
+					};
 					var formatter: (t: typeof name) => string = $api.fp.string.format({
-						mask: "(), () ().",
-						values: [
-							$api.fp.pipe($api.fp.property("last"), $api.fp.string.toUpperCase),
-							$api.fp.property("first"),
-							mi
-						]
+						mask: "${last}, ${first} ${mi}.",
+						values: {
+							first: $api.fp.property("first"),
+							last: $api.fp.pipe($api.fp.property("last"), $api.fp.string.toUpperCase),
+							mi: mi
+						}
 					});
 					var formatted = formatter(name);
 					verify(formatted).is("CALDWELL, David P.");

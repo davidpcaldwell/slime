@@ -454,15 +454,13 @@
 					}
 				},
 				format: function(p) {
-					var content = p.mask.split("()");
-					if (content.length - 1 != p.values.length) throw new TypeError(
-						"Mask has " + String(content.length-1) + " placeholders, but " + p.values.length + " placeholders supplied."
-					);
+					var values = p.values;
+					var rv = p.mask;
 					return function(t) {
-						var rv = content[0];
-						for (var i=0; i<p.values.length; i++) {
-							rv += p.values[i](t);
-							rv += content[i+1];
+						for (var x in values) {
+							while(rv.indexOf("${" + x + "}") != -1) {
+								rv = rv.replace("${" + x + "}", values[x](t));
+							}
 						}
 						return rv;
 					}
