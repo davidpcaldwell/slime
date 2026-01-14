@@ -18,7 +18,9 @@
 						return false;
 					}
 				});
+
 				var to = local.getRelativePath("homebrew");
+
 				if (!to.directory) {
 					to.createDirectory();
 					jsh.shell.run({
@@ -33,6 +35,16 @@
 						}
 					})
 				}
+
+				var run = $api.fp.now(
+					jsh.shell.subprocess.question,
+					$api.fp.world.Sensor.mapping()
+				);
+
+				run({
+					command: "git",
+					arguments: ["config", "core.hooksPath", ".git/hooks"]
+				});
 
 				var homebrew = (function(directory) {
 					var program = directory.getFile("bin/brew");
@@ -84,14 +96,12 @@
 			}
 		)(jsh.script.file.parent.parent);
 
-		//	TODO	somehow the Homebrew update triggers a git update on the SLIME project directory, via an unknown mechanism. So
-		//			we skip this update and disable autoupdate in the Homebrew invocations above.
-		//	homebrew.update();
+		homebrew.update();
 		homebrew.install({
-			formula: "python@3.12"
+			formula: "python@3.14"
 		});
 		homebrew.upgrade({
-			formula: "python@3.12"
+			formula: "python@3.14"
 		});
 	}
 //@ts-ignore
