@@ -547,6 +547,7 @@
 					});
 				},
 				action: function(action, argument, handler) {
+					if (!action) throw new TypeError("Required: 'action' as argument 0");
 					$context.events.handle({
 						implementation: action(argument),
 						handlers: handler

@@ -685,19 +685,25 @@ namespace slime.jrunscript.file.location.directory {
 
 namespace slime.jrunscript.file.internal.wo.directory {
 	export interface Context {
+		filesystem: {
+			os: slime.jrunscript.file.world.Filesystem
+		}
+
 		Location: slime.jrunscript.file.internal.loader.Context["library"]["Location"]
 		Location_basename: slime.jrunscript.file.Exports["Location"]["basename"]
-		Location_relative: slime.jrunscript.file.location.Exports["directory"]["relativePath"]
-		Location_parent: slime.jrunscript.file.location.Exports["parent"]
-		Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]
 		Location_file_read_string: slime.jrunscript.file.Exports["Location"]["file"]["read"]["string"]
 		Location_file_write: slime.jrunscript.file.Exports["Location"]["file"]["write"]["old"]
-		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }>
 		remove: slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
 		Store: slime.runtime.loader.Exports["Store"]
 	}
 
-	export type Exports = slime.jrunscript.file.location.directory.Exports
+	export type Exports = slime.jrunscript.file.location.directory.Exports & {
+		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }>
+		Location_relative: slime.jrunscript.file.location.Exports["directory"]["relativePath"]
+		Location_parent: slime.jrunscript.file.location.Exports["parent"]
+		Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]
+		Location_relative_os: (path: string) => (location: string) => string
+	}
 
 	(
 		function(

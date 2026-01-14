@@ -15,6 +15,107 @@
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.wo.directory.Exports> } $export
 	 */
 	function($api,$platform,$context,$loader,$export) {
+		/** @type { (fs: slime.jrunscript.file.world.Filesystem) => slime.$api.fp.Transform<string> } */
+		var canonicalize = function(filesystem) {
+			return function(pathname) {
+				var terms = pathname.split(filesystem.separator.pathname);
+				var rv = [];
+				var RETURN_NULL = false;
+				terms.forEach(function(term) {
+					if (RETURN_NULL) return;
+					if (term == ".") {
+						return;
+					} else if (term == "..") {
+						//	TODO	This seems brittle but causes tests to pass on UNIX-like filesystems. Probably need to revisit.
+						if (rv.length == 1 && rv[0] === "") {
+							RETURN_NULL = true;
+							return;
+						} else {
+							rv.pop();
+						}
+					} else {
+						rv.push(term);
+					}
+				});
+				return (RETURN_NULL) ? null : rv.join(filesystem.separator.pathname);
+			}
+		};
+
+		/** @type { <T>(f: (location: slime.jrunscript.file.Location) => T) => (location: string) => T } */
+		var osParameter = function(f) {
+			return function(string) {
+				return f({
+					filesystem: $context.filesystem.os,
+					pathname: string
+				});
+			}
+		};
+
+		/**
+		 *
+		 * @type { <T>(f: (t: T) => slime.jrunscript.file.Location) => (t: T) => string } f
+		 */
+		var osResult = function(f) {
+			return function(t) {
+				var rv = f(t);
+				return rv.pathname;
+			};
+		};
+
+		/** @type { (path: string) => (location: slime.jrunscript.file.Location) => slime.jrunscript.file.Location } */
+		var Location_relative_location = function(path) {
+			return function(location) {
+				var absolute = location.pathname + location.filesystem.separator.pathname + path;
+				var canonical = canonicalize(location.filesystem)(absolute);
+				if (canonical === null) return null;
+				return {
+					filesystem: location.filesystem,
+					pathname: canonical
+				}
+			}
+		};
+
+		/** @type { slime.jrunscript.file.internal.wo.directory.Exports["Location_relative_os"] } */
+		var Location_relative_os = function(path) {
+			return osParameter(osResult(Location_relative_location(path)));
+		};
+
+		/** @type { slime.jrunscript.file.location.Exports["parent"] } */
+		var Location_parent = function() {
+			return Location_relative_location("..");
+		};
+
+		/** @type { ReturnType<slime.jrunscript.file.Exports["Location"]["directory"]["exists"]["world"]> } */
+		var Location_directory_exists = function(location) {
+			return function(events) {
+				var rv = location.filesystem.directoryExists({
+					pathname: location.pathname
+				})(events);
+				if (rv.present) return rv.value;
+				throw new Error("Error determining whether directory is present at " + location.pathname);
+			}
+		}
+
+		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }> } */
+		var ensureParent = function(location) {
+			var it = function(location,events) {
+				var parent = Location_relative_location("..")(location);
+				var exists = Location_directory_exists(parent)(events);
+				if (!exists) {
+					it(parent, events);
+					$api.fp.world.now.action(
+						location.filesystem.createDirectory,
+						{ pathname: parent.pathname }
+					);
+					events.fire("created", parent);
+				}
+			};
+
+			return function(events) {
+				it(location,events);
+			}
+		}
+
 		var code = {
 			// /** @type { slime.jrunscript.file.internal.java.Script } */
 			// java: $loader.script("java.js"),
@@ -33,10 +134,10 @@
 			navigation: {
 				base: function(location) {
 					return function(relative) {
-						return $context.Location_relative(relative)(location);
+						return Location_relative_location(relative)(location);
 					}
 				},
-				relativePath: $context.Location_relative,
+				relativePath: Location_relative_location,
 				relativeTo: function(target) {
 					/** @type { (reference: slime.jrunscript.file.Location, location: slime.jrunscript.file.Location) => string } */
 					var x = function recurse(reference,location) {
@@ -120,10 +221,8 @@
 		};
 
 		var directoryExists = {
-			simple: $context.Location_directory_exists.simple,
-			world: function() {
-				return $context.Location_directory_exists.world();
-			}
+			simple: $api.fp.world.Sensor.old.mapping({ sensor: Location_directory_exists }),
+			world: function() { return Location_directory_exists; }
 		};
 
 		/**
@@ -141,7 +240,7 @@
 					if (!exists.value) {
 						if (p && p.recursive) {
 							$api.fp.world.now.action(
-								$context.ensureParent,
+								ensureParent,
 								location,
 								{
 									created: function(e) {
@@ -192,7 +291,7 @@
 				get: function(path) {
 					var target = $api.fp.now(
 						root,
-						$context.Location_relative(path.join(separator))
+						Location_relative_location(path.join(separator))
 					);
 
 					var exists = $api.fp.now(
@@ -209,7 +308,7 @@
 				list: function(path) {
 					var target = $api.fp.now(
 						root,
-						$context.Location_relative(path.join(separator))
+						Location_relative_location(path.join(separator))
 					);
 
 					var targetExists = $api.fp.now(
@@ -244,7 +343,7 @@
 			return function(events) {
 				/** @type { (path: string[]) => void } */
 				var process = function(path) {
-					var destination = $context.Location_relative(path.join(p.to.filesystem.separator.pathname))(p.to);
+					var destination = Location_relative_location(path.join(p.to.filesystem.separator.pathname))(p.to);
 
 					var entries = p.index.list(path);
 					if (!entries.present) return;
@@ -252,9 +351,9 @@
 						if ($api.content.Entry.is.IndexEntry(entry)) {
 							process(path.concat([entry.name]));
 						} else {
-							var target = $context.Location_relative(entry.name)(destination);
-							var parent = $context.Location_parent()(target);
-							if (!$context.Location_directory_exists.simple(parent)) {
+							var target = Location_relative_location(entry.name)(destination);
+							var parent = Location_parent()(target);
+							if (!directoryExists.simple(parent)) {
 								$api.fp.world.Means.now({
 									means: require_old({ recursive: true }),
 									order: parent
@@ -380,7 +479,12 @@
 						}
 					})
 				}
-			}
+			},
+			ensureParent: ensureParent,
+			Location_relative: Location_relative_location,
+			Location_parent: Location_parent,
+			Location_directory_exists: directoryExists,
+			Location_relative_os: Location_relative_os
 		})
 	}
 //@ts-ignore
