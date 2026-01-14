@@ -34,7 +34,8 @@
 					},
 					{
 						"name": "JavaSE-21",
-						"path": "/slime/local/jdk/21"
+						"path": "/slime/local/jdk/21",
+						"default": true
 					}
 				]
 			}
