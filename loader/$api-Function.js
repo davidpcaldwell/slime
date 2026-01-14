@@ -454,9 +454,9 @@
 					}
 				},
 				format: function(p) {
-					var values = p.values;
-					var rv = p.mask;
 					return function(t) {
+						var rv = p.mask;
+						var values = p.values || { value: String };
 						for (var x in values) {
 							while(rv.indexOf("${" + x + "}") != -1) {
 								rv = rv.replace("${" + x + "}", values[x](t));
