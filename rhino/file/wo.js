@@ -51,8 +51,29 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.file.location.Exports["directory"]["relativePath"] } */
-		var Location_relative = function(path) {
+		/** @type { <T>(f: (location: slime.jrunscript.file.Location) => T) => (location: string) => T } */
+		var osParameter = function(f) {
+			return function(string) {
+				return f({
+					filesystem: $context.filesystem.os,
+					pathname: string
+				});
+			}
+		};
+
+		/**
+		 *
+		 * @type { <T>(f: (t: T) => slime.jrunscript.file.Location) => (t: T) => string } f
+		 */
+		var osResult = function(f) {
+			return function(t) {
+				var rv = f(t);
+				return rv.pathname;
+			};
+		};
+
+		/** @type { (path: string) => (location: slime.jrunscript.file.Location) => slime.jrunscript.file.Location } */
+		var Location_relative_location = function(path) {
 			return function(location) {
 				var absolute = location.pathname + location.filesystem.separator.pathname + path;
 				var canonical = canonicalize(location.filesystem)(absolute);
@@ -62,17 +83,22 @@
 					pathname: canonical
 				}
 			}
-		}
+		};
+
+		/** @type { (path: string) => (location: string) => string } */
+		var Location_relative_os = function(path) {
+			return osParameter(osResult(Location_relative_location(path)));
+		};
 
 		/** @type { slime.jrunscript.file.location.Exports["parent"] } */
 		var Location_parent = function() {
-			return Location_relative("..");
+			return Location_relative_location("..");
 		};
 
 		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }> } */
 		var ensureParent = function(location) {
 			var it = function(location,events) {
-				var parent = Location_relative("..")(location);
+				var parent = Location_relative_location("..")(location);
 				var exists = Location_directory_exists(parent)(events);
 				if (!exists) {
 					it(parent, events);
@@ -197,7 +223,7 @@
 		)
 
 		var Location = {
-			relative: Location_relative,
+			relative: Location_relative_location,
 			basename: Location_basename,
 			file: {
 				exists: {
@@ -338,7 +364,7 @@
 					simple: $api.fp.world.Sensor.old.mapping({ sensor: Location_directory_exists }),
 					world: function() { return Location_directory_exists; }
 				},
-				Location_relative: Location_relative,
+				Location_relative: Location_relative_location,
 				Location_file_write: Location_file_write_old,
 				Location_file_read_string: Location_file_read.string,
 				remove: remove,
@@ -593,16 +619,7 @@
 
 				return {
 					directory: {
-						relativePath: function(relative) {
-							return function(base) {
-								var f = parts.directory.relativePath(relative);
-								var location = {
-									filesystem: $context.filesystem.os,
-									pathname: base
-								};
-								return f(location).pathname;
-							}
-						}
+						relativePath: Location_relative_os
 					},
 					temporary: {
 						pathname: temporary({ directory: false, remove: true }),
