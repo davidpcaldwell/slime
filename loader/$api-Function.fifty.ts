@@ -537,7 +537,9 @@ namespace slime.$api.fp {
 			 * a substitution.
 			 *
 			 * The `values` property of the parameter is an object whose properties are functions that take an object of type `T`
-			 * and return a value to substitute when that property's name is encountered in the mask.
+			 * and return a value to substitute when that property's name is encountered in the mask. If the `values` property is
+			 * not present, the implementation will supply a `values` that provides the raw value of `t` as the substitution for
+			 * `value`, using the global `String` function to convert it to a string.
 			 *
 			 * @param p A set of parameters, including a mask and a values object with functions that produce named subsitution
 			 * values
@@ -545,7 +547,7 @@ namespace slime.$api.fp {
 			 */
 			format: <T>(p: {
 				mask: string
-				values: { [key: string]: (t: T) => string }
+				values?: { [key: string]: (t: T) => string }
 			}) => (p: T) => string
 		}
 
