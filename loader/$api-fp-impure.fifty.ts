@@ -812,21 +812,102 @@ namespace slime.$api.fp.world {
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(fifty)
 
 	export namespace sensor {
 		export interface Exports {
+			subject: <NS,S,E,R>(p: fp.Mapping<NS,S>) => (s: slime.$api.fp.world.Sensor<S,E,R>) => slime.$api.fp.world.Sensor<NS,E,R>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.world.Sensor.subject = function() {
+					var sensor = $api.fp.now(
+						test.fixtures.doubler,
+						$api.fp.world.Sensor.subject( function(n: string) { return Number(n); } )
+					);
+
+					var captor = fifty.$api.Events.Captor({
+						got: void(0),
+						returning: void(0)
+					});
+
+					var mapping = $api.fp.now(sensor, $api.fp.world.Sensor.mapping(captor.handler));
+
+					verify(captor).events.length.is(0);
+
+					var result = mapping("5");
+
+					verify(captor).events[0].type.is("got");
+					verify(captor).events[0].detail.evaluate( p => p as number ).is(5);
+					verify(captor).events[1].type.is("returning");
+					verify(captor).events[1].detail.evaluate( p => p as number).is(10);
+					verify(result).is(10);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			reading: <S,E,R,NR>(p: fp.Mapping<R,NR>) => (s: slime.$api.fp.world.Sensor<S,E,R>) => slime.$api.fp.world.Sensor<S,E,NR>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.world.Sensor.reading = function() {
+					var sensor = $api.fp.now(
+						test.fixtures.doubler,
+						$api.fp.world.Sensor.reading( function(n: number) { return "$" + n.toFixed(2); } )
+					);
+
+					var captor = fifty.$api.Events.Captor({
+						got: void(0),
+						returning: void(0)
+					});
+
+					var mapping = $api.fp.now(sensor, $api.fp.world.Sensor.mapping(captor.handler));
+
+					verify(captor).events.length.is(0);
+
+					var result = mapping(5);
+
+					verify(captor).events[0].type.is("got");
+					verify(captor).events[0].detail.evaluate( p => p as number ).is(5);
+					verify(captor).events[1].type.is("returning");
+					verify(captor).events[1].detail.evaluate( p => p as number).is(10);
+					verify(result).is("$10.00");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			/**
+			 * @deprecated Can be replaced by composing `subject` and `reading`.
+			 */
 			map: <NS,S,E,R,NR>(p: {
 				subject: slime.$api.fp.Mapping<NS,S>
 				sensor?: slime.$api.fp.world.Sensor<S,E,R>
 				reading?: slime.$api.fp.Mapping<R,NR>
 			}) => slime.$api.fp.world.Sensor<NS,E,NR>
+		}
 
+		export interface Exports {
 			input: <S,E,R>(p: {
 				sensor: slime.$api.fp.world.Sensor<S,E,R>
 				subject: S
 				handlers?: slime.$api.event.Handlers<E>
-			}) => slime.$api.fp.impure.Input<R>
+			}) => slime.$api.fp.impure.External<R>
 
 			now: <S,E,R>(p: {
 				sensor: slime.$api.fp.world.Sensor<S,E,R>

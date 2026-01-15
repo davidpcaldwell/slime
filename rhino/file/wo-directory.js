@@ -43,12 +43,7 @@
 
 		/** @type { <T>(f: (location: slime.jrunscript.file.Location) => T) => (location: string) => T } */
 		var osParameter = function(f) {
-			return function(string) {
-				return f({
-					filesystem: $context.filesystem.os,
-					pathname: string
-				});
-			}
+			return $api.fp.pipe($context.os.codec.encode, f);
 		};
 
 		/**
@@ -56,10 +51,7 @@
 		 * @type { <T>(f: (t: T) => slime.jrunscript.file.Location) => (t: T) => string } f
 		 */
 		var osResult = function(f) {
-			return function(t) {
-				var rv = f(t);
-				return rv.pathname;
-			};
+			return $api.fp.pipe(f, $context.os.codec.decode);
 		};
 
 		/** @type { (path: string) => (location: slime.jrunscript.file.Location) => slime.jrunscript.file.Location } */
@@ -375,6 +367,16 @@
 			$api.fp.flatten("target")
 		);
 
+		/** @type { slime.jrunscript.file.location.directory.Exports["list"]["stream"] } */
+		var list_stream = function(configuration) {
+			return $api.fp.world.Sensor.api.simple(function(location) {
+				return list_world({
+					target: location,
+					descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.from.value(false)
+				});
+			})
+		};
+
 		$export({
 			base: directory.navigation.base,
 			relativePath: directory.navigation.relativePath,
@@ -406,27 +408,7 @@
 						iterate: {
 							simple: list_iterate_simple
 						},
-						stream: {
-							world: function(configuration) {
-								return function(location) {
-									return list_world({
-										target: location,
-										descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.from.value(false)
-									});
-								}
-							},
-							simple: function(configuration) {
-								return function(location) {
-									return $api.fp.world.Sensor.now({
-										sensor: list_world,
-										subject: {
-											target: location,
-											descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.from.value(false)
-										}
-									});
-								}
-							}
-						}
+						stream: list_stream
 					}
 				}
 			)(),
@@ -477,7 +459,25 @@
 				}
 			},
 			os: {
-				relativePath: Location_relative_os
+				relativePath: Location_relative_os,
+				directory: {
+					list: {
+						stream: function(configuration) {
+							var locationConfiguration = (configuration) ? {
+								descend: function(location) {
+									return configuration.descend(location.pathname);
+								}
+							} : void(0);
+							var locationStreamApi = list_stream(locationConfiguration);
+							var osStreamApi = $api.fp.now(
+								locationStreamApi.wo,
+								$api.fp.world.Sensor.subject($context.os.codec.encode),
+								$api.fp.world.Sensor.reading($api.fp.Stream.map($context.os.codec.decode))
+							);
+							return $api.fp.world.Sensor.api.simple(osStreamApi);
+						}
+					}
+				}
 			},
 			ensureParent: ensureParent,
 			Location_relative: Location_relative_location,
