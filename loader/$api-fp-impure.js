@@ -308,6 +308,12 @@
 					}
 				},
 				api: {
+					simple: function(toSensor) {
+						return {
+							wo: toSensor,
+							simple: $context.now(toSensor, world.Sensor.mapping())
+						}
+					},
 					maybe: function(toSensor) {
 						return {
 							wo: toSensor,

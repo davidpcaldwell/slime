@@ -848,9 +848,7 @@ namespace slime.jrunscript.file {
 		)(fifty);
 
 		export interface os {
-			directory: {
-				relativePath: (path: string) => (base: string) => string
-			}
+			directory: slime.jrunscript.file.wo.directory.os
 
 			temporary: {
 				pathname: () => string

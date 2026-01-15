@@ -75,7 +75,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.file.internal.wo.directory.Exports["Location_relative_os"] } */
+		/** @type { slime.jrunscript.file.location.os["directory"]["relativePath"] } */
 		var Location_relative_os = function(path) {
 			return osParameter(osResult(Location_relative_location(path)));
 		};
@@ -165,58 +165,54 @@
 			}
 		};
 
-		var wo = {
-			directory: {
-				/** @type { slime.jrunscript.file.location.directory.Exports["list"]["world"] } */
-				list: function(p) {
-					/**
-					 *
-					 * @param { slime.jrunscript.file.Location } location
-					 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-					 * @param { slime.$api.event.Producer<slime.jrunscript.file.location.directory.list.Events> } events
-					 * @returns { slime.jrunscript.file.Location[] }
-					 */
-					var process = function(location,descend,events) {
-						if (!location.filesystem) throw new TypeError("No filesystem for location " + location);
-						var listed = $api.fp.world.now.ask(
-							location.filesystem.listDirectory({ pathname: location.pathname })
-						);
-						/** @type { slime.jrunscript.file.Location[] } */
-						var rv = [];
-						if (listed.present) {
-							listed.value.forEach(function(name) {
-								var it = {
-									filesystem: location.filesystem,
-									pathname: location.pathname + location.filesystem.separator.pathname + name
-								};
-								rv.push(it);
-								var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
-								if (isDirectory.present) {
-									if (isDirectory.value) {
-										if (descend(it)) {
-											var contents = process(it,descend,events);
-											rv = rv.concat(contents);
-										}
-									} else {
-										//	ordinary file, nothing to do
-									}
-								} else {
-									//	TODO	not exactly the same situation as failing to list the directory, but close enough
-									events.fire("failed", it);
+		/** @type { slime.jrunscript.file.location.directory.Exports["list"]["world"] } */
+		var list_world = function(p) {
+			/**
+			 *
+			 * @param { slime.jrunscript.file.Location } location
+			 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
+			 * @param { slime.$api.event.Producer<slime.jrunscript.file.location.directory.list.Events> } events
+			 * @returns { slime.jrunscript.file.Location[] }
+			 */
+			var process = function(location,descend,events) {
+				if (!location.filesystem) throw new TypeError("No filesystem for location " + location);
+				var listed = $api.fp.world.now.ask(
+					location.filesystem.listDirectory({ pathname: location.pathname })
+				);
+				/** @type { slime.jrunscript.file.Location[] } */
+				var rv = [];
+				if (listed.present) {
+					listed.value.forEach(function(name) {
+						var it = {
+							filesystem: location.filesystem,
+							pathname: location.pathname + location.filesystem.separator.pathname + name
+						};
+						rv.push(it);
+						var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
+						if (isDirectory.present) {
+							if (isDirectory.value) {
+								if (descend(it)) {
+									var contents = process(it,descend,events);
+									rv = rv.concat(contents);
 								}
-							});
+							} else {
+								//	ordinary file, nothing to do
+							}
 						} else {
-							events.fire("failed", location);
+							//	TODO	not exactly the same situation as failing to list the directory, but close enough
+							events.fire("failed", it);
 						}
-						return rv;
-					};
-
-					return function(events) {
-						var descend = (p && p.descend) ? p.descend : $api.fp.Mapping.all(false);
-						var array = process(p.target,descend,events);
-						return $api.fp.Stream.from.array(array);
-					}
+					});
+				} else {
+					events.fire("failed", location);
 				}
+				return rv;
+			};
+
+			return function(events) {
+				var descend = (p && p.descend) ? p.descend : $api.fp.Mapping.all(false);
+				var array = process(p.target,descend,events);
+				return $api.fp.Stream.from.array(array);
 			}
 		};
 
@@ -374,7 +370,7 @@
 		}
 
 		var list_iterate_simple = $api.fp.now(
-			$api.fp.world.Sensor.old.mapping({ sensor: wo.directory.list }),
+			$api.fp.world.Sensor.old.mapping({ sensor: list_world }),
 			$api.fp.curry({ descend: $api.fp.Mapping.all(false) }),
 			$api.fp.flatten("target")
 		);
@@ -406,26 +402,26 @@
 			list: (
 				function() {
 					return {
-						world: wo.directory.list,
+						world: list_world,
 						iterate: {
 							simple: list_iterate_simple
 						},
 						stream: {
 							world: function(configuration) {
 								return function(location) {
-									return wo.directory.list({
+									return list_world({
 										target: location,
-										descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.all(false)
+										descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.from.value(false)
 									});
 								}
 							},
 							simple: function(configuration) {
 								return function(location) {
 									return $api.fp.world.Sensor.now({
-										sensor: wo.directory.list,
+										sensor: list_world,
 										subject: {
 											target: location,
-											descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.all(false)
+											descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.from.value(false)
 										}
 									});
 								}
@@ -480,11 +476,13 @@
 					})
 				}
 			},
+			os: {
+				relativePath: Location_relative_os
+			},
 			ensureParent: ensureParent,
 			Location_relative: Location_relative_location,
 			Location_parent: Location_parent,
-			Location_directory_exists: directoryExists,
-			Location_relative_os: Location_relative_os
+			Location_directory_exists: directoryExists
 		})
 	}
 //@ts-ignore

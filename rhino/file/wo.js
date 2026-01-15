@@ -525,9 +525,7 @@
 				)
 
 				return {
-					directory: {
-						relativePath: parts.directory.Location_relative_os
-					},
+					directory: parts.directory.os,
 					temporary: {
 						pathname: temporary({ directory: false, remove: true }),
 						location: $api.fp.impure.Input.map(

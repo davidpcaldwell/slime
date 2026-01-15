@@ -609,6 +609,38 @@ namespace slime.$api.fp.impure {
 }
 
 namespace slime.$api.fp.world {
+	export namespace test {
+		export namespace fixtures {
+			export const doubler: Sensor<number, { got: number, argument: string, returning: number }, number> = function(p) {
+				return function(events) {
+					events.fire("got", p);
+					events.fire("argument", String(p));
+					const rv = p * 2;
+					events.fire("returning", rv);
+					return rv;
+				}
+			};
+
+			export const sqrt: Sensor<number, { got: number, argument: string, returning: number }, Maybe<number>> = function(p) {
+				return function(events) {
+					if (p < 0) {
+						return {
+							present: false
+						};
+					}
+					events.fire("got", p);
+					events.fire("argument", String(p));
+					const rv = Math.sqrt(p);
+					events.fire("returning", rv);
+					return {
+						present: true,
+						value: rv
+					};
+				}
+			};
+		}
+	}
+
 	export type Sensor<S,E,R> = (s: S) => Question<E,R>
 	export type Means<O,E> = (o: O) => Action<E>
 
@@ -718,17 +750,13 @@ namespace slime.$api.fp.world {
 			const { $api } = fifty.global;
 
 			fifty.tests.exports.world.mapping = function() {
-				var doubler: Sensor<number, { argument: string }, number> = function(p) {
-					return function(events) {
-						events.fire("argument", String(p));
-						return p * 2;
-					}
-				};
-
 				var captor = fifty.$api.Events.Captor({
 					argument: void(0)
 				});
-				var map = $api.fp.world.mapping(doubler, captor.handler);
+				var map = $api.fp.now(
+					test.fixtures.doubler,
+					$api.fp.world.Sensor.mapping(captor.handler)
+				);
 
 				verify(captor).events.length.is(0);
 				verify(2).evaluate(map).is(4);
@@ -769,17 +797,8 @@ namespace slime.$api.fp.world {
 					returning: void(0)
 				});
 
-				var doubler: Sensor<number,{ got: number, returning: number },number> = function(s) {
-					return function(events) {
-						events.fire("got", s);
-						var rv = s * 2;
-						events.fire("returning", rv);
-						return rv;
-					}
-				};
-
 				var mapping = $api.fp.world.Sensor.old.mapping({
-					sensor: doubler,
+					sensor: test.fixtures.doubler,
 					handlers: captor.handler
 				});
 
@@ -826,6 +845,11 @@ namespace slime.$api.fp.world {
 
 	export namespace sensor {
 		export namespace api {
+			export type Simple<S,E,R> = {
+				wo: Sensor<S,E,R>
+				simple: Mapping<S,R>
+			}
+
 			export type Maybe<S,E,R> = {
 				wo: Sensor<S,E,slime.$api.fp.Maybe<R>>
 				maybe: Partial<S,R>
@@ -835,9 +859,87 @@ namespace slime.$api.fp.world {
 
 		export interface Exports {
 			api: {
+				simple: <S,E,R>(p: Sensor<S,E,R>) => api.Simple<S,E,R>
 				maybe: <S,E,R>(p: Sensor<S,E,Maybe<R>>) => api.Maybe<S,E,R>
 			}
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				fifty.tests.exports.world.Sensor.api = fifty.test.Parent();
+
+				fifty.tests.exports.world.Sensor.api.simple = function() {
+					var api = $api.fp.world.Sensor.api.simple(test.fixtures.doubler);
+
+					var captor = fifty.$api.Events.Captor({
+						got: void(0),
+						returning: void(0)
+					});
+
+					var result = $api.fp.world.Sensor.now({
+						sensor: api.wo,
+						subject: 3,
+						handlers: captor.handler
+					});
+
+					verify(captor).events.length.is(2);
+					verify(captor).events[0].type.is("got");
+					verify(captor).events[0].detail.evaluate(Number).is(3);
+					verify(captor).events[1].type.is("returning");
+					verify(captor).events[1].detail.evaluate(Number).is(6);
+					verify(result).is(6);
+
+					verify(api).simple(4).is(8);
+				};
+
+				fifty.tests.exports.world.Sensor.api.maybe = function() {
+					var api = $api.fp.world.Sensor.api.maybe(test.fixtures.sqrt);
+
+					var captor = fifty.$api.Events.Captor({
+						got: void(0),
+						returning: void(0)
+					});
+
+					var result = $api.fp.world.Sensor.now({
+						sensor: api.wo,
+						subject: 9,
+						handlers: captor.handler
+					});
+
+					verify(captor).events.length.is(2);
+					verify(captor).events[0].type.is("got");
+					verify(captor).events[0].detail.evaluate(Number).is(9);
+					verify(captor).events[1].type.is("returning");
+					verify(captor).events[1].detail.evaluate(Number).is(3);
+					verify(result).present.is(true);
+					if (result.present) verify(result).value.is(3);
+
+					fifty.run(
+						function maybe() {
+							var negative = api.maybe(-4);
+							verify(negative).present.is(false);
+
+							var positive = api.maybe(16);
+							verify(positive).present.is(true);
+							if (positive.present) verify(positive).value.is(4);
+						}
+					);
+
+					fifty.run(
+						function simple() {
+							var positive = api.simple(25);
+							verify(positive).is(5);
+						}
+					);
+				};
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Exports {
