@@ -91,9 +91,9 @@ namespace slime.jsh.shell.tools.tomcat {
 				var pathnames = $api.fp.now(
 					jsh.shell.HOME.pathname.os.adapt(),
 					jsh.file.Location.directory.relativePath("Downloads"),
-					jsh.file.Location.directory.list.stream.simple({
+					jsh.file.Location.directory.list.stream({
 						descend: $api.fp.Thunk.value(false)
-					}),
+					}).simple,
 					$api.fp.Stream.filter(
 						$api.fp.pipe(
 							jsh.file.Location.basename,

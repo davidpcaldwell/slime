@@ -155,6 +155,19 @@
 			}
 		);
 
+		/** @type { slime.Codec<string,slime.jrunscript.file.Location> } */
+		var osCodec = {
+			encode: function(string) {
+				return {
+					filesystem: $context.filesystem.os,
+					pathname: string
+				}
+			},
+			decode: function(location) {
+				return location.pathname;
+			}
+		};
+
 		var parts = (
 			function() {
 				//	TODO	why is this redundant type declaration needed?
@@ -162,6 +175,9 @@
 				var directory = code.parts.directory({
 					filesystem: {
 						os: $context.filesystem.os
+					},
+					os: {
+						codec: osCodec
 					},
 					Location: Location,
 					Location_basename: Location_basename,

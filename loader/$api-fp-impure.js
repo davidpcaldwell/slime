@@ -272,6 +272,22 @@
 						}
 					}
 				},
+				subject: function(f) {
+					return function(sensor) {
+						return function(subject) {
+							return sensor(f(subject));
+						}
+					}
+				},
+				reading: function(f) {
+					return function(sensor) {
+						return function(subject) {
+							return function(events) {
+								return f(sensor(subject)(events));
+							}
+						}
+					}
+				},
 				map: function(p) {
 					var mapSubject = p.subject || identity;
 					var mapReading = p.reading || identity;

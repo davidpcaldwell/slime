@@ -93,7 +93,7 @@ namespace slime.jrunscript.file.archive {
 
 				var forList = $api.fp.now(
 					base(""),
-					jsh.file.Location.directory.list.stream.simple({ descend: location => true }),
+					jsh.file.Location.directory.list.stream({ descend: location => true }).simple,
 				);
 
 				jsh.shell.console(

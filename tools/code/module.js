@@ -717,9 +717,9 @@
 			Project: {
 				from: {
 					directory: function(p) {
-						var question = $context.library.file.Location.directory.list.stream.world({
+						var question = $context.library.file.Location.directory.list.stream({
 							descend: p.excludes.descend
-						});
+						}).wo;
 						var listing = $api.fp.world.now.question(question, p.root);
 						var files = $api.fp.now.invoke(
 							listing,

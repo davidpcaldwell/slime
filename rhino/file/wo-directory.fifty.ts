@@ -285,21 +285,20 @@ namespace slime.jrunscript.file.location.directory {
 				simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Stream<slime.jrunscript.file.Location>>
 			}
 
-			stream: {
-				world: (p?: {
+			stream: (
+				p?: {
 					/**
 					 * If provided, is invoked to decide whether the listing will descend into the given directory. By default,
 					 * no subdirectories will be traversed.
 					 */
 					descend: slime.$api.fp.Predicate<slime.jrunscript.file.Location>
-				}) => slime.$api.fp.world.Sensor<
-					slime.jrunscript.file.Location,
-					list.Events,
-					slime.$api.fp.Stream<slime.jrunscript.file.Location>
-				>,
-				simple: (p?: Parameters<Exports["list"]["stream"]["world"]>[0])
-					=> slime.$api.fp.world.Simple<ReturnType<Exports["list"]["stream"]["world"]>>
-			}
+				}
+			)
+			=> slime.$api.fp.world.sensor.api.Simple<
+				slime.jrunscript.file.Location,
+				list.Events,
+				slime.$api.fp.Stream<slime.jrunscript.file.Location>
+			>
 		}
 	}
 
@@ -341,18 +340,18 @@ namespace slime.jrunscript.file.location.directory {
 
 				var stream_iterate = $api.fp.Stream.collect(
 					$api.fp.world.Sensor.now({
-						sensor: subject.Location.directory.list.stream.world(),
+						sensor: subject.Location.directory.list.stream().wo,
 						subject: target
 					})
 				);
 
 				var stream_traverse = $api.fp.Stream.collect(
 					$api.fp.world.Sensor.now({
-						sensor: subject.Location.directory.list.stream.world({
+						sensor: subject.Location.directory.list.stream({
 							descend: function(into) {
 								return true;
 							}
-						}),
+						}).wo,
 						subject: target
 					})
 				);
@@ -397,7 +396,7 @@ namespace slime.jrunscript.file.location.directory {
 			fifty.tests.manual.issue1181 = function() {
 				var location = fifty.jsh.file.temporary.location();
 				var listing = $api.fp.world.now.question(
-					subject.Location.directory.list.stream.world(),
+					subject.Location.directory.list.stream().wo,
 					location,
 					{
 						failed: function(e) {
@@ -686,6 +685,25 @@ namespace slime.jrunscript.file.location.directory {
 namespace slime.jrunscript.file.wo.directory {
 	export type os = {
 		relativePath: (path: string) => (base: string) => string
+
+		directory: {
+			list: {
+				stream: (
+					p?: {
+						/**
+						 * If provided, is invoked to decide whether the listing will descend into the given directory. By default,
+						 * no subdirectories will be traversed.
+						 */
+						descend: slime.$api.fp.Predicate<string>
+					}
+				)
+				=> slime.$api.fp.world.sensor.api.Simple<
+					string,
+					slime.jrunscript.file.location.directory.list.Events,
+					slime.$api.fp.Stream<string>
+				>
+			}
+		}
 	}
 }
 
@@ -693,6 +711,10 @@ namespace slime.jrunscript.file.internal.wo.directory {
 	export interface Context {
 		filesystem: {
 			os: slime.jrunscript.file.world.Filesystem
+		}
+
+		os: {
+			codec: slime.Codec<string, slime.jrunscript.file.Location>
 		}
 
 		Location: slime.jrunscript.file.internal.loader.Context["library"]["Location"]
