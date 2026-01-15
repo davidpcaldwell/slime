@@ -686,23 +686,21 @@ namespace slime.jrunscript.file.wo.directory {
 	export type os = {
 		relativePath: (path: string) => (base: string) => string
 
-		directory: {
-			list: {
-				stream: (
-					p?: {
-						/**
-						 * If provided, is invoked to decide whether the listing will descend into the given directory. By default,
-						 * no subdirectories will be traversed.
-						 */
-						descend: slime.$api.fp.Predicate<string>
-					}
-				)
-				=> slime.$api.fp.world.sensor.api.Simple<
-					string,
-					slime.jrunscript.file.location.directory.list.Events,
-					slime.$api.fp.Stream<string>
-				>
-			}
+		list: {
+			stream: (
+				p?: {
+					/**
+					 * If provided, is invoked to decide whether the listing will descend into the given directory. By default,
+					 * no subdirectories will be traversed.
+					 */
+					descend: slime.$api.fp.Predicate<string>
+				}
+			)
+			=> slime.$api.fp.world.sensor.api.Simple<
+				string,
+				slime.jrunscript.file.location.directory.list.Events,
+				slime.$api.fp.Stream<string>
+			>
 		}
 	}
 }

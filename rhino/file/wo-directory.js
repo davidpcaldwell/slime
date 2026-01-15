@@ -460,22 +460,20 @@
 			},
 			os: {
 				relativePath: Location_relative_os,
-				directory: {
-					list: {
-						stream: function(configuration) {
-							var locationConfiguration = (configuration) ? {
-								descend: function(location) {
-									return configuration.descend(location.pathname);
-								}
-							} : void(0);
-							var locationStreamApi = list_stream(locationConfiguration);
-							var osStreamApi = $api.fp.now(
-								locationStreamApi.wo,
-								$api.fp.world.Sensor.subject($context.os.codec.encode),
-								$api.fp.world.Sensor.reading($api.fp.Stream.map($context.os.codec.decode))
-							);
-							return $api.fp.world.Sensor.api.simple(osStreamApi);
-						}
+				list: {
+					stream: function(configuration) {
+						var locationConfiguration = (configuration) ? {
+							descend: function(location) {
+								return configuration.descend(location.pathname);
+							}
+						} : void(0);
+						var locationStreamApi = list_stream(locationConfiguration);
+						var osStreamApi = $api.fp.now(
+							locationStreamApi.wo,
+							$api.fp.world.Sensor.subject($context.os.codec.encode),
+							$api.fp.world.Sensor.reading($api.fp.Stream.map($context.os.codec.decode))
+						);
+						return $api.fp.world.Sensor.api.simple(osStreamApi);
 					}
 				}
 			},
