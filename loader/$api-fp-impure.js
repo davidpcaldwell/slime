@@ -370,6 +370,17 @@
 								}
 							}
 						},
+						order: (
+							function() {
+								return function(mapping) {
+									return function(means) {
+										return function(order) {
+											return means(mapping(order));
+										};
+									}
+								};
+							}
+						)(),
 						map: function(p) {
 							return function(order) {
 								return function(events) {
@@ -396,15 +407,6 @@
 										handlers: handlers
 									});
 								}
-							}
-						},
-						order: {
-							process: function(p) {
-								return toProcess({
-									means: p.means,
-									order: p.order(),
-									handlers: p.handlers
-								});
 							}
 						},
 						api: {

@@ -265,28 +265,28 @@
 			};
 		};
 
-		/** @type { slime.$api.fp.Identity<slime.jrunscript.file.Location> } */
-		var asLocation = $api.fp.identity;
+		// /** @type { slime.$api.fp.Identity<slime.jrunscript.file.Location> } */
+		// var asLocation = $api.fp.identity;
 
-		var lastModifiedSimple = $api.fp.pipe(
-			asLocation,
-			$api.fp.Mapping.properties({
-				argument: function(p) { return { pathname: p.pathname }},
-				partial: $api.fp.pipe(
-					$api.fp.property("filesystem"),
-					$api.fp.property("fileLastModified"),
-					$api.fp.world.Sensor.mapping()
-				)
-			}),
-			$api.fp.Mapping.properties({
-				argument: $api.fp.property("argument"),
-				mapping: $api.fp.pipe(
-					$api.fp.property("partial"),
-					$api.fp.Partial.impure.exception( function(p) { return new Error("Could not obtain last modified date for " + p.pathname); })
-				)
-			}),
-			$api.fp.Mapping.invoke
-		)
+		// var lastModifiedSimple = $api.fp.pipe(
+		// 	asLocation,
+		// 	$api.fp.Mapping.properties({
+		// 		argument: function(p) { return { pathname: p.pathname }},
+		// 		partial: $api.fp.pipe(
+		// 			$api.fp.property("filesystem"),
+		// 			$api.fp.property("fileLastModified"),
+		// 			$api.fp.world.Sensor.mapping()
+		// 		)
+		// 	}),
+		// 	$api.fp.Mapping.properties({
+		// 		argument: $api.fp.property("argument"),
+		// 		mapping: $api.fp.pipe(
+		// 			$api.fp.property("partial"),
+		// 			$api.fp.Partial.impure.exception( function(p) { return new Error("Could not obtain last modified date for " + p.pathname); })
+		// 		)
+		// 	}),
+		// 	$api.fp.Mapping.invoke
+		// )
 
 		Location.relative = parts.directory.Location_relative;
 		Location.file = {
