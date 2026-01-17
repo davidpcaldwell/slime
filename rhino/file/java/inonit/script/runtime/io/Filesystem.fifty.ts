@@ -36,7 +36,7 @@ namespace slime.jrunscript.native {
 				writeText: (append: boolean) => slime.jrunscript.native.java.io.Writer
 
 				mkdir: () => void
-				delete: () => void
+				delete: (recursive: boolean, events: Filesystem.Node.DeleteEvents) => void
 				move: (to: Node) => void
 
 				list: () => slime.jrunscript.Array<Node>
@@ -46,6 +46,13 @@ namespace slime.jrunscript.native {
 
 				getPosixAttributes: () => slime.jrunscript.native.java.nio.file.attribute.PosixFileAttributes
 				setPosixAttributes: (owner: string, group: string, permissions: slime.jrunscript.native.java.util.Set<slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission>) => void
+			}
+
+			export namespace Node {
+				export interface DeleteEvents extends slime.jrunscript.native.java.lang.Object {
+					removing: (file: slime.jrunscript.native.java.io.File) => void
+					removed: (file: slime.jrunscript.native.java.io.File) => void
+				}
 			}
 		}
 	}
