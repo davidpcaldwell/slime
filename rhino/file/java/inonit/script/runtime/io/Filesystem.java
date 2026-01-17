@@ -135,7 +135,14 @@ public abstract class Filesystem {
 		public abstract Node getParent() throws IOException;
 
 		public abstract Node[] list() throws IOException;
-		public abstract void delete() throws IOException;
+
+		public static abstract class DeleteEvents {
+			public abstract void removing(File file);
+			public abstract void removed(File file);
+		}
+
+		public abstract void delete(boolean recursive, DeleteEvents events) throws IOException;
+
 		public abstract void move(Node to) throws IOException;
 		public abstract void mkdir() throws IOException;
 
@@ -294,37 +301,47 @@ public abstract class Filesystem {
 				return rv;
 			}
 
+			//	TODO	with nio APIs, there is probably a better way to detect symlinks
 			private boolean isSymlink(File file) throws IOException {
 				return !file.getCanonicalFile().getParentFile().equals(file.getParentFile().getCanonicalFile());
 			}
 
-			private boolean delete(File file) {
+			private boolean delete(File file, boolean recursive, DeleteEvents events) {
+				events.removing(file);
 				if (file.isDirectory()) {
 					File[] contents = file.listFiles();
-					//	Do not delete contents of this directory if this directory is a symbolic link
-					try {
-						if (!isSymlink(file)) {
-							//	delete contents
-							for (int i=0; i<contents.length; i++) {
-								boolean success = delete(contents[i]);
-								if (!success) {
-									LOG.log(Level.WARNING, "Failed to delete " + contents[i]);
-									return false;
+					if (recursive) {
+						//	Do not delete contents of this directory if this directory is a symbolic link
+						try {
+							if (!isSymlink(file)) {
+								//	delete contents
+								for (int i=0; i<contents.length; i++) {
+									boolean success = delete(contents[i], recursive, events);
+									if (!success) {
+										LOG.log(Level.WARNING, "Failed to delete " + contents[i]);
+										return false;
+									}
 								}
 							}
+						} catch (IOException e) {
+							LOG.log(Level.WARNING, "Error deleting file " + file, e);
+							return false;
 						}
-					} catch (IOException e) {
-						LOG.log(Level.WARNING, "Error deleting file " + file, e);
-						return false;
+					} else {
+						if (contents.length > 0) {
+							LOG.log(Level.WARNING, "Directory not empty: " + file);
+							return false;
+						}
 					}
 				}
 				boolean rv = file.delete();
 				if (!rv) LOG.log(Level.WARNING, "Failed to delete " + file);
+				if (rv) events.removed(file);
 				return rv;
 			}
 
-			public void delete() throws IOException {
-				boolean success = delete(this.canonicalizedAbsoluteFile);
+			public void delete(boolean recursive, DeleteEvents events) throws IOException {
+				boolean success = delete(this.canonicalizedAbsoluteFile, recursive, events);
 				if (!success) throw new IOException("Failed to delete: " + this.canonicalizedAbsoluteFile);
 			}
 

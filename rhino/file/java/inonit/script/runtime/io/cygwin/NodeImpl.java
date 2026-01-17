@@ -199,7 +199,9 @@ class NodeImpl extends Filesystem.Node {
 		}
 	}
 
-	public void delete() throws IOException {
+	public void delete(boolean recursive, DeleteEvents events) throws IOException {
+		//	TODO	probably none of this works
+		if (Integer.parseInt("1") == 1) throw new RuntimeException();
 		if (!exists()) {
 			throw new IOException("Does not exist: " + this);
 		} else {

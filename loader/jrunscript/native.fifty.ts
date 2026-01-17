@@ -776,6 +776,9 @@ namespace slime.jrunscript {
 						Filesystem: {
 							create: () => slime.jrunscript.native.inonit.script.runtime.io.Filesystem
 							Optimizations: any
+							Node: {
+								DeleteEvents: JavaClass<slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node.DeleteEvents>
+							}
 						}
 					}
 					Throwables: any
