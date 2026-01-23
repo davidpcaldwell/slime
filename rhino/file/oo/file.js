@@ -372,7 +372,9 @@
 				this.remove = function () {
 					//	TODO	Should probably invalidate this object somehow
 					//	TODO	Should this return a value of some kind?
-					$context.library.Location.remove.simple(pathname.os.adapt());
+					var remove = $context.library.Location.remove({ recursive: true }).maybe;
+					var maybe = remove(pathname.os.adapt());
+					if (!maybe.present) throw new Error("Could not remove " + this);
 				}
 
 				this.move = function (toPathname, mode) {

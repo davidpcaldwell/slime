@@ -36,7 +36,10 @@ namespace slime.jrunscript.native {
 				writeText: (append: boolean) => slime.jrunscript.native.java.io.Writer
 
 				mkdir: () => void
-				delete: (recursive: boolean, events: Filesystem.Node.DeleteEvents) => void
+
+				isSymlink: () => boolean
+				delete: (events: Node.DeleteEvents) => boolean
+
 				move: (to: Node) => void
 
 				list: () => slime.jrunscript.Array<Node>
@@ -50,8 +53,7 @@ namespace slime.jrunscript.native {
 
 			export namespace Node {
 				export interface DeleteEvents extends slime.jrunscript.native.java.lang.Object {
-					removing: (file: slime.jrunscript.native.java.io.File) => void
-					removed: (file: slime.jrunscript.native.java.io.File) => void
+					error: (message: slime.jrunscript.native.java.lang.String) => void
 				}
 			}
 		}

@@ -89,7 +89,7 @@
 		}
 
 		var existsDirectory = $api.fp.world.mapping(
-			$context.library.file.world.Location.directory.exists.world()
+			$context.library.file.world.Location.directory.exists.wo
 		);
 
 		/** @type { slime.tools.documentation.updater.Exports["Updater"] } */
@@ -116,11 +116,11 @@
 			);
 
 			var directoryExists = $api.fp.world.mapping(
-				$context.library.file.world.Location.directory.exists.world()
+				$context.library.file.world.Location.directory.exists.wo
 			);
 
 			var removeDirectory = $api.fp.world.output(
-				$context.library.file.world.Location.directory.remove.world()
+				$context.library.file.world.Location.directory.remove.wo
 			);
 
 			/**
@@ -146,7 +146,7 @@
 						})
 					},
 					documentation: function() {
-						var exists = $api.fp.world.Sensor.old.mapping({ sensor: $context.library.file.Location.directory.exists.world() });
+						var exists = $api.fp.world.Sensor.old.mapping({ sensor: $context.library.file.Location.directory.exists.wo });
 						if (!exists(documentation)) return $api.fp.Maybe.from.nothing();
 						var loader = $context.library.file.Location.directory.loader.synchronous({ root: documentation });
 						return $context.library.code.directory.lastModified({
@@ -233,7 +233,7 @@
 									process.kill();
 									var location = $context.library.file.world.Location.from.os(out);
 									$api.fp.world.now.action(
-										$context.library.file.world.Location.directory.remove.world(),
+										$context.library.file.world.Location.directory.remove.wo,
 										location
 									);
 								}

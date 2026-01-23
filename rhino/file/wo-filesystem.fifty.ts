@@ -66,7 +66,7 @@ namespace slime.jrunscript.file.filesystem {
 			);
 
 			var dExists = $api.fp.world.mapping(
-				jsh.file.world.Location.directory.exists.world()
+				jsh.file.world.Location.directory.exists.wo
 			)
 
 			fifty.tests.sandbox = fifty.test.Parent();

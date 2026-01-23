@@ -250,7 +250,7 @@
 												function(location) {
 													events.fire("removing", location);
 												},
-												Location.remove.simple
+												Location.remove().simple
 											]),
 											false: $api.fp.impure.Output.nothing()
 										})
@@ -421,7 +421,7 @@
 									function(location) {
 										events.fire("removing", location);
 									},
-									Location.remove.simple
+									Location.remove().simple
 								]),
 								false: $api.fp.impure.Output.nothing()
 							})

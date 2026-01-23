@@ -264,8 +264,8 @@
 						if (update) {
 							//	delete existing
 							$api.fp.world.now.action(
-								$context.library.file.world.Location.directory.remove.world(),
-								$context.library.file.world.Location.from.os(installation.base)
+								$context.library.file.Location.directory.remove.wo,
+								$context.library.file.Location.from.os(installation.base)
 							);
 							proceed = true;
 						} else {

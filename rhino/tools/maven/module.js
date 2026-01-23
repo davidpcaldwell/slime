@@ -491,7 +491,7 @@
 								$api.fp.now.map(
 									p.argument.installation.home,
 									$context.library.file.Location.from.os,
-									$context.library.file.Location.remove.simple
+									$context.library.file.Location.remove().simple
 								);
 							} else {
 								return;
