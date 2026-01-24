@@ -421,7 +421,10 @@
 									function(location) {
 										events.fire("removing", location);
 									},
-									Location.remove().simple
+									Location.remove({
+										recursive: true,
+										known: false
+									}).simple
 								]),
 								false: $api.fp.impure.Output.nothing()
 							})

@@ -380,12 +380,98 @@ namespace slime.jrunscript.tools.install {
 				const { $api, jsh } = fifty.global;
 				const { server, harness, load } = test.scope;
 
-				fifty.tests.exports.Distribution.install = function() {
-					var downloads = fifty.jsh.file.object.temporary.directory();
-					var subject = load({ downloads: downloads });
-					var url = "http://" + "127.0.0.1" + ":" + server.port + "/" + "directory.tar.gz";
-					jsh.shell.console("url = " + url);
+				var downloads = fifty.jsh.file.object.temporary.directory();
+				var subject = load({ downloads: downloads });
+				var url = "http://" + "127.0.0.1" + ":" + server.port + "/" + "directory.tar.gz";
+				jsh.shell.console("url = " + url);
 
+				fifty.tests.exports.Distribution.install = fifty.test.Parent();
+
+				fifty.tests.exports.Distribution.install.exists = fifty.test.Parent();
+
+				var download: install.Distribution = {
+					url: url,
+					format: subject.Distribution.Format.targz
+				};
+
+				fifty.tests.exports.Distribution.install.exists.error = function() {
+					var destination = fifty.jsh.file.object.temporary.location();
+					$api.fp.world.Means.now({
+						means: subject.Distribution.install.world,
+						order: { download: download, to: destination.toString() }
+					});
+					verify(destination).directory.getFile("file").is(null);
+					verify(destination).directory.getFile("directory/file").is.not(null);
+
+					var error: Error = null;
+					try {
+						$api.fp.world.Means.now({
+							means: subject.Distribution.install.world,
+							order: { download: download, to: destination.toString() }
+						});
+					} catch (e) {
+						error = e;
+						jsh.shell.console(String(error));
+					}
+					verify(error).is.not(null);
+					verify(destination).directory.getFile("file").is(null);
+					verify(destination).directory.getFile("directory/file").is.not(null);
+				};
+
+				fifty.tests.exports.Distribution.install.exists.overwrite = function() {
+					var destination = fifty.jsh.file.object.temporary.location();
+					$api.fp.world.Means.now({
+						means: subject.Distribution.install.world,
+						order: { download: download, to: destination.toString() }
+					});
+					destination.directory.getRelativePath("directory/a").write("");
+					verify(destination).directory.getFile("file").is(null);
+					verify(destination).directory.getFile("directory/file").is.not(null);
+					verify(destination).directory.getFile("directory/a").is.not(null);
+
+
+					var error: Error = null;
+					try {
+						$api.fp.world.Means.now({
+							means: subject.Distribution.install.world,
+							order: { download: download, to: destination.toString(), clean: false }
+						});
+					} catch (e) {
+						error = e;
+					}
+					verify(error).is(null);
+					verify(destination).directory.getFile("file").is(null);
+					verify(destination).directory.getFile("directory/file").is.not(null);
+					verify(destination).directory.getFile("directory/a").is.not(null);
+				}
+
+				fifty.tests.exports.Distribution.install.exists.clean = function() {
+					var destination = fifty.jsh.file.object.temporary.location();
+					$api.fp.world.Means.now({
+						means: subject.Distribution.install.world,
+						order: { download: download, to: destination.toString() }
+					});
+					destination.directory.getRelativePath("directory/a").write("");
+					verify(destination).directory.getFile("file").is(null);
+					verify(destination).directory.getFile("directory/file").is.not(null);
+					verify(destination).directory.getFile("directory/a").is.not(null);
+
+					var error: Error = null;
+					try {
+						$api.fp.world.Means.now({
+							means: subject.Distribution.install.world,
+							order: { download: download, to: destination.toString(), clean: true }
+						});
+					} catch (e) {
+						error = e;
+					}
+					verify(error).is(null);
+					verify(destination).directory.getFile("file").is(null);
+					verify(destination).directory.getFile("directory/file").is.not(null);
+					verify(destination).directory.getFile("directory/a").is(null);
+				}
+
+				fifty.tests.exports.Distribution.install.others = function() {
 					fifty.run(function unprefixed() {
 						var download: install.Distribution = {
 							url: url,
@@ -416,91 +502,6 @@ namespace slime.jrunscript.tools.install {
 						verify(destination).directory.getFile("file").is.not(null);
 						verify(destination).directory.getFile("directory/file").is(null);
 					});
-
-					fifty.run(function exists() {
-						var download: install.Distribution = {
-							url: url,
-							format: subject.Distribution.Format.targz
-						};
-
-						fifty.run(function error() {
-							var destination = fifty.jsh.file.object.temporary.location();
-							$api.fp.world.Means.now({
-								means: subject.Distribution.install.world,
-								order: { download: download, to: destination.toString() }
-							});
-							verify(destination).directory.getFile("file").is(null);
-							verify(destination).directory.getFile("directory/file").is.not(null);
-
-							var error: Error = null;
-							try {
-								$api.fp.world.Means.now({
-									means: subject.Distribution.install.world,
-									order: { download: download, to: destination.toString() }
-								});
-							} catch (e) {
-								error = e;
-								jsh.shell.console(String(error));
-							}
-							verify(error).is.not(null);
-							verify(destination).directory.getFile("file").is(null);
-							verify(destination).directory.getFile("directory/file").is.not(null);
-						});
-
-						fifty.run(function overwrite() {
-							var destination = fifty.jsh.file.object.temporary.location();
-							$api.fp.world.Means.now({
-								means: subject.Distribution.install.world,
-								order: { download: download, to: destination.toString() }
-							});
-							destination.directory.getRelativePath("directory/a").write("");
-							verify(destination).directory.getFile("file").is(null);
-							verify(destination).directory.getFile("directory/file").is.not(null);
-							verify(destination).directory.getFile("directory/a").is.not(null);
-
-
-							var error: Error = null;
-							try {
-								$api.fp.world.Means.now({
-									means: subject.Distribution.install.world,
-									order: { download: download, to: destination.toString(), clean: false }
-								});
-							} catch (e) {
-								error = e;
-							}
-							verify(error).is(null);
-							verify(destination).directory.getFile("file").is(null);
-							verify(destination).directory.getFile("directory/file").is.not(null);
-							verify(destination).directory.getFile("directory/a").is.not(null);
-						});
-
-						fifty.run(function clean() {
-							var destination = fifty.jsh.file.object.temporary.location();
-							$api.fp.world.Means.now({
-								means: subject.Distribution.install.world,
-								order: { download: download, to: destination.toString() }
-							});
-							destination.directory.getRelativePath("directory/a").write("");
-							verify(destination).directory.getFile("file").is(null);
-							verify(destination).directory.getFile("directory/file").is.not(null);
-							verify(destination).directory.getFile("directory/a").is.not(null);
-
-							var error: Error = null;
-							try {
-								$api.fp.world.Means.now({
-									means: subject.Distribution.install.world,
-									order: { download: download, to: destination.toString(), clean: true }
-								});
-							} catch (e) {
-								error = e;
-							}
-							verify(error).is(null);
-							verify(destination).directory.getFile("file").is(null);
-							verify(destination).directory.getFile("directory/file").is.not(null);
-							verify(destination).directory.getFile("directory/a").is(null);
-						});
-					});
-
 				}
 			}
 		//@ts-ignore
