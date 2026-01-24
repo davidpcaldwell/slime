@@ -22,7 +22,7 @@
 
 		if (parameters.options.initialize) {
 			if (installed) {
-				installed.forEach(jsh.file.Location.remove.simple);
+				installed.forEach(jsh.file.Location.remove().simple);
 			}
 			jsh.shell.exit(0);
 		}

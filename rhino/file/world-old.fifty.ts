@@ -52,21 +52,6 @@ namespace slime.jrunscript.file.world {
 				to: string
 			}) => slime.$api.fp.world.old.Tell<void>
 		}
-
-		/** @deprecated Use .pathname() to obtain a {@link Location}. */
-		Directory: {
-			/**
-			 * @deprecated Use .pathname() to obtain a {@link Location}.
-			 *
-			 * Removes the directory at the given location. If there is nothing at the given location, will fire the `notFound`
-			 * event and return.
-			 */
-			remove: (p: {
-				pathname: string
-			}) => slime.$api.fp.world.old.Tell<{
-				notFound: void
-			}>
-		}
 	}
 }
 namespace slime.jrunscript.file.world.object {
@@ -444,30 +429,6 @@ namespace slime.jrunscript.file.world.object {
 					verify(thisFileContents).is.type("string");
 					verify(doesNotExistContents).is.type("null");
 				});
-			}
-
-			fifty.tests.sandbox.filesystem.Directory = {};
-
-			fifty.tests.sandbox.filesystem.Directory.remove = function() {
-				var TMPDIR = jsh.shell.TMPDIR.createTemporary({ directory: true });
-				var location = f(TMPDIR.toString(), "toRemove");
-				var exists = function(location) {
-					return filesystem.Pathname.isDirectory(location);
-				}
-				verify(location).evaluate(exists).is(false);
-				$api.fp.world.now.action(filesystem.createDirectory, { pathname: location });
-				verify(location).evaluate(exists).is(true);
-				filesystem.Directory.remove({
-					pathname: location
-				})();
-				verify(location).evaluate(exists).is(false);
-
-				var doesNotExist = f(TMPDIR.toString(), "notThere");
-				verify(doesNotExist).evaluate(exists).is(false);
-				filesystem.Directory.remove({
-					pathname: doesNotExist
-				})();
-				verify(doesNotExist).evaluate(exists).is(false);
 			}
 		}
 	//@ts-ignore

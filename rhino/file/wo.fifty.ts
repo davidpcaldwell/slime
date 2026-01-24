@@ -330,9 +330,16 @@ namespace slime.jrunscript.file {
 
 	export namespace location {
 		export interface Exports {
-			remove: {
-				simple: slime.$api.fp.impure.Effect<slime.jrunscript.file.Location>
-			}
+			remove: (
+				p?: {
+					recursive?: boolean
+					known?: boolean
+				}
+			) => slime.$api.fp.world.sensor.api.Maybe<
+				slime.jrunscript.file.Location,
+				slime.jrunscript.file.location.directory.remove.Events,
+				void
+			>
 		}
 	}
 
@@ -615,10 +622,13 @@ namespace slime.jrunscript.file {
 		export namespace file {
 			//	TODO	redundant; we have Location.remove and should merge them
 			export interface Exports {
-				remove: {
-					simple: slime.$api.fp.impure.Output<slime.jrunscript.file.Location>
-					world: () => slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
-				}
+				remove: slime.$api.fp.world.sensor.api.Maybe<
+					slime.jrunscript.file.Location,
+					{
+						error: string
+					},
+					slime.$api.fp.Maybe<void>
+				>
 			}
 		}
 	}
@@ -653,7 +663,7 @@ namespace slime.jrunscript.file {
 
 					var exists = {
 						file: $api.fp.world.mapping(Location.file.exists.world()),
-						directory: $api.fp.world.mapping(Location.directory.exists.world())
+						directory: $api.fp.world.mapping(Location.directory.exists.wo)
 					};
 
 					var os = jsh.file.world.filesystems.os;

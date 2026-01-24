@@ -199,7 +199,7 @@ class NodeImpl extends Filesystem.Node {
 		}
 	}
 
-	public void delete(boolean recursive, DeleteEvents events) throws IOException {
+	public boolean delete(DeleteEvents events) throws IOException {
 		//	TODO	probably none of this works
 		if (Integer.parseInt("1") == 1) throw new RuntimeException();
 		if (!exists()) {
@@ -212,7 +212,9 @@ class NodeImpl extends Filesystem.Node {
 				throw new IOException(e);
 			} catch (Command.Result.Failure e) {
 				process(e.getResult());
+				return false;
 			}
+			return true;
 		}
 	}
 

@@ -78,8 +78,6 @@ namespace slime.jrunscript.file.internal.java {
 			binary: (peer: Peer, append: boolean) => slime.jrunscript.runtime.io.OutputStream
 		}
 
-		remove: (peer: Peer, events: slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node.DeleteEvents) => void
-
 		move: (peer: Peer, to: Peer) => void
 
 		list: (peer: Peer) => Peer[]

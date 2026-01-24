@@ -77,22 +77,11 @@
 			return Location_relative_location("..");
 		};
 
-		/** @type { ReturnType<slime.jrunscript.file.Exports["Location"]["directory"]["exists"]["world"]> } */
-		var Location_directory_exists = function(location) {
-			return function(events) {
-				var rv = location.filesystem.directoryExists({
-					pathname: location.pathname
-				})(events);
-				if (rv.present) return rv.value;
-				throw new Error("Error determining whether directory is present at " + location.pathname);
-			}
-		}
-
 		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }> } */
 		var ensureParent = function(location) {
 			var it = function(location,events) {
 				var parent = Location_relative_location("..")(location);
-				var exists = Location_directory_exists(parent)(events);
+				var exists = $context.Location_directory_exists(parent)(events);
 				if (!exists) {
 					it(parent, events);
 					$api.fp.world.now.action(
@@ -157,61 +146,7 @@
 			}
 		};
 
-		/** @type { slime.jrunscript.file.location.directory.Exports["list"]["world"] } */
-		var list_world = function(p) {
-			/**
-			 *
-			 * @param { slime.jrunscript.file.Location } location
-			 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-			 * @param { slime.$api.event.Producer<slime.jrunscript.file.location.directory.list.Events> } events
-			 * @returns { slime.jrunscript.file.Location[] }
-			 */
-			var process = function(location,descend,events) {
-				if (!location.filesystem) throw new TypeError("No filesystem for location " + location);
-				var listed = $api.fp.world.now.ask(
-					location.filesystem.listDirectory({ pathname: location.pathname })
-				);
-				/** @type { slime.jrunscript.file.Location[] } */
-				var rv = [];
-				if (listed.present) {
-					listed.value.forEach(function(name) {
-						var it = {
-							filesystem: location.filesystem,
-							pathname: location.pathname + location.filesystem.separator.pathname + name
-						};
-						rv.push(it);
-						var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
-						if (isDirectory.present) {
-							if (isDirectory.value) {
-								if (descend(it)) {
-									var contents = process(it,descend,events);
-									rv = rv.concat(contents);
-								}
-							} else {
-								//	ordinary file, nothing to do
-							}
-						} else {
-							//	TODO	not exactly the same situation as failing to list the directory, but close enough
-							events.fire("failed", it);
-						}
-					});
-				} else {
-					events.fire("failed", location);
-				}
-				return rv;
-			};
-
-			return function(events) {
-				var descend = (p && p.descend) ? p.descend : $api.fp.Mapping.all(false);
-				var array = process(p.target,descend,events);
-				return $api.fp.Stream.from.array(array);
-			}
-		};
-
-		var directoryExists = {
-			simple: $api.fp.world.Sensor.old.mapping({ sensor: Location_directory_exists }),
-			world: function() { return Location_directory_exists; }
-		};
+		var directoryExists = $api.fp.world.Sensor.api.simple($context.Location_directory_exists);
 
 		/**
 		 *
@@ -362,20 +297,10 @@
 		}
 
 		var list_iterate_simple = $api.fp.now(
-			$api.fp.world.Sensor.old.mapping({ sensor: list_world }),
+			$api.fp.world.Sensor.old.mapping({ sensor: $context.list_world }),
 			$api.fp.curry({ descend: $api.fp.Mapping.all(false) }),
 			$api.fp.flatten("target")
 		);
-
-		/** @type { slime.jrunscript.file.location.directory.Exports["list"]["stream"] } */
-		var list_stream = function(configuration) {
-			return $api.fp.world.Sensor.api.simple(function(location) {
-				return list_world({
-					target: location,
-					descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.from.value(false)
-				});
-			})
-		};
 
 		$export({
 			base: directory.navigation.base,
@@ -393,22 +318,15 @@
 				}
 			),
 			/** @type { slime.jrunscript.file.location.Exports["directory"]["remove"] } */
-			remove: {
-				world: function() {
-					return $context.remove;
-				},
-				simple: $api.fp.world.Means.output({
-					means: $context.remove
-				})
-			},
+			remove: $api.fp.world.Sensor.api.maybe($context.remove),
 			list: (
 				function() {
 					return {
-						world: list_world,
+						world: $context.list_world,
 						iterate: {
 							simple: list_iterate_simple
 						},
-						stream: list_stream
+						stream: $context.list_stream
 					}
 				}
 			)(),
@@ -467,7 +385,7 @@
 								return configuration.descend(location.pathname);
 							}
 						} : void(0);
-						var locationStreamApi = list_stream(locationConfiguration);
+						var locationStreamApi = $context.list_stream(locationConfiguration);
 						var osStreamApi = $api.fp.now(
 							locationStreamApi.wo,
 							$api.fp.world.Sensor.subject($context.os.codec.encode),

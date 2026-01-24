@@ -64,7 +64,7 @@
 			function(location) {
 				var gitRepositoryLocation = $api.fp.now.invoke(location, jsh.file.Location.directory.relativePath(".git"));
 				var existsDirectory = $api.fp.world.Sensor.old.mapping({
-					sensor: jsh.file.Location.directory.exists.world()
+					sensor: jsh.file.Location.directory.exists.wo
 				});
 				return {
 					root: location,

@@ -242,10 +242,10 @@
 					}
 				}
 
-				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["remove"] } */
-				this.remove = function(peer,events) {
-					peer["delete"](true,events);
-				}
+				// /** @type { slime.jrunscript.file.internal.java.FilesystemProvider["remove"] } */
+				// this.remove = function(peer,events) {
+				// 	peer["delete"](true,events);
+				// }
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["move"] } */
 				this.move = function(fromPeer,to) {
@@ -452,6 +452,35 @@
 							});
 						},
 						remove: function() {
+							function directory_remove_impure(p) {
+								return $api.fp.world.old.tell(function(events) {
+									var peer = java.newPeer(p.pathname);
+									peer.delete(
+										new JavaAdapter(
+											Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
+											{
+												error: function(file, message) {
+													events.fire("error", {
+														file: String(file.getScriptPath()),
+														message: String(message)
+													})
+												}
+											}
+										)
+									);
+									// peer.delete(
+									// 	true,
+									// 	new JavaAdapter(
+									// 		Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
+									// 		{
+									// 			removing: function(file) {},
+									// 			removed: function(file) {}
+									// 		}
+									// 	)
+									// );
+								});
+							}
+
 							return directory_remove_impure({
 								pathname: pathname
 							})
@@ -518,22 +547,6 @@
 					if (!peer.exists()) {
 						java.createDirectoryAt(peer);
 					}
-				});
-			}
-
-			function directory_remove_impure(p) {
-				return $api.fp.world.old.tell(function() {
-					var peer = java.newPeer(p.pathname);
-					peer.delete(
-						true,
-						new JavaAdapter(
-							Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
-							{
-								removing: function(file) {},
-								removed: function(file) {}
-							}
-						)
-					);
 				});
 			}
 
@@ -648,6 +661,39 @@
 				}
 			};
 
+			/**
+			 * @type { slime.jrunscript.file.world.Filesystem["remove"] }
+			 */
+			var remove = (
+				function() {
+					/** @type { slime.jrunscript.file.world.Filesystem["remove"]["file"] } */
+					var both = function(/** @type { { pathname: string } } */p) {
+						return function(events) {
+							var peer = java.newPeer(p.pathname);
+							var result = peer.delete(
+								new JavaAdapter(
+									Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
+									{
+										error: function(message) {
+											events.fire(
+												"error",
+												String(message)
+											);
+										}
+									}
+								)
+							);
+							return (result) ? $api.fp.Maybe.from.some(void(0)) : $api.fp.Maybe.from.nothing();
+						}
+					};
+
+					return {
+						file: both,
+						directory: both
+					};
+				}
+			)();
+
 			/** @type { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] } */
 			var filesystem = {
 				separator: {
@@ -723,19 +769,11 @@
 						java.move(java.newPeer(p.from), java.newPeer(p.to));
 					}
 				},
-				remove: function(p) {
+				remove: remove,
+				isSymlink: function(p) {
 					return function(events) {
-						java.remove(
-							java.newPeer(p.pathname),
-							//	TODO	This is not right
-							new JavaAdapter(
-								Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
-								{
-									removing: function(file) {},
-									removed: function(file) {}
-								}
-							)
-						);
+						var peer = java.newPeer(p.pathname);
+						return $api.fp.Maybe.from.some(peer.isSymlink());
 					}
 				},
 				attributes: (
@@ -867,22 +905,6 @@
 					},
 					copy: function(p) {
 						return copy_impure(p.from,p.to);
-					}
-				},
-				Directory: {
-					remove: function(p) {
-						return $api.fp.world.old.tell(function(e) {
-							var peer = java.newPeer(p.pathname);
-							if (!peer.exists()) e.fire("notFound");
-							if (peer.exists() && !peer.isDirectory()) throw new Error();
-							if (peer.exists() && peer.isDirectory()) java.remove(peer, new JavaAdapter(
-								Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
-								{
-									removing: function(file) {},
-									removed: function(file) {}
-								}
-							));
-						});
 					}
 				},
 				os: {
