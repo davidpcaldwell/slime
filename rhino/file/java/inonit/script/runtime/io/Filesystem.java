@@ -302,41 +302,15 @@ public abstract class Filesystem {
 			}
 
 			//	TODO	with nio APIs, there is probably a better way to detect symlinks
-			private boolean isSymlink(File file) throws IOException {
-				return !file.getCanonicalFile().getParentFile().equals(file.getParentFile().getCanonicalFile());
+			private boolean isSymlink(File file) {
+				return Files.isSymbolicLink(file.toPath());
 			}
 
-			public boolean isSymlink() throws IOException{
+			public boolean isSymlink() {
 				return isSymlink(this.canonicalizedAbsoluteFile);
 			}
 
 			private boolean delete(File file, DeleteEvents events) {
-				// if (file.isDirectory()) {
-				// 	File[] contents = file.listFiles();
-				// 	if (recursive) {
-				// 		//	Do not delete contents of this directory if this directory is a symbolic link
-				// 		try {
-				// 			if (!isSymlink(file)) {
-				// 				//	delete contents
-				// 				for (int i=0; i<contents.length; i++) {
-				// 					boolean success = delete(contents[i], recursive, events);
-				// 					if (!success) {
-				// 						LOG.log(Level.WARNING, "Failed to delete " + contents[i]);
-				// 						return false;
-				// 					}
-				// 				}
-				// 			}
-				// 		} catch (IOException e) {
-				// 			LOG.log(Level.WARNING, "Error deleting file " + file, e);
-				// 			return false;
-				// 		}
-				// 	} else {
-				// 		if (contents.length > 0) {
-				// 			LOG.log(Level.WARNING, "Directory not empty: " + file);
-				// 			return false;
-				// 		}
-				// 	}
-				// }
 				try {
 					java.nio.file.Files.delete(file.toPath());
 					return true;

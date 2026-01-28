@@ -169,10 +169,6 @@ namespace slime.jrunscript.file {
 		}
 
 		action: {
-			delete: (location: string) => slime.$api.fp.world.old.Operation<{
-				deleted: string
-			},void>
-
 			write: {
 				(p: {
 					location: string
@@ -332,25 +328,6 @@ namespace slime.jrunscript.file {
 					fifty.verify(action).evaluate(function(f) { return f(); }).threw.nothing();
 				});
 			}
-
-			fifty.tests.action.delete = function() {
-				var subject = fifty.global.jsh.file;
-
-				var dir = fifty.jsh.file.object.temporary.directory();
-				dir.getRelativePath("file").write("foo", { append: false });
-				fifty.verify(dir).getFile("file").is.type("object");
-				var d2 = subject.action.delete(dir.getRelativePath("file").toString());
-				fifty.verify(dir).getFile("file").is.type("object");
-				var events: slime.$api.Event<string>[] = [];
-				d2({
-					deleted: function(e) {
-						events.push(e);
-					}
-				});
-				fifty.verify(dir).getFile("file").is.type("null");
-				fifty.verify(events).length.is(1);
-				fifty.verify(events)[0].detail.is(dir.getRelativePath("file").toString());
-			}
 		}
 	//@ts-ignore
 	)(fifty);
@@ -361,7 +338,6 @@ namespace slime.jrunscript.file {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.state.list);
-				fifty.run(fifty.tests.action.delete);
 
 				fifty.load("world-old.fifty.ts");
 				fifty.load("mock.fifty.ts");

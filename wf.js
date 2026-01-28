@@ -902,49 +902,6 @@
 				//	TODO	add conditional push; see issue #166
 			}
 		)
-
-		/** @type { (p: slime.jrunscript.file.Directory) => void } */
-		var deleteContents = $api.fp.pipe(
-			function(dir) { return dir.pathname.toString() },
-			jsh.file.state.list,
-			function(f) {
-				return f();
-			},
-			$api.fp.Array.map($api.fp.property("absolute")),
-			$api.fp.Array.map(jsh.file.action.delete),
-			function(p) {
-				p.forEach(function(deletion) {
-					deletion({
-						deleted: function(e) {
-							jsh.shell.console("Deleted: " + e.detail);
-						}
-					})
-				})
-			}
-		)
-
-		/** @type { (p: string) => void } */
-		var deleteIfExists = $$api.Function.switch(
-			{
-				case: function(p) {
-					return Boolean($context.base.getSubdirectory(p));
-				},
-				use: function(p) {
-					deleteContents($context.base.getSubdirectory(p));
-				}
-			},
-			{
-				case: $api.fp.returning(true),
-				use: function(p) {
-					jsh.shell.console("Not found: " + $context.base.getRelativePath(p));
-				}
-			}
-		)
-
-		$exports.purge = function(p) {
-			deleteIfExists("local/wf/logs/commit");
-			deleteIfExists("local/wf/logs/test");
-		}
 	}
 //@ts-ignore
 )(Packages,$api,jsh,$context,$loader,$exports);

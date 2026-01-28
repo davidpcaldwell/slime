@@ -229,65 +229,9 @@ namespace slime.jrunscript.file.location.directory {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace remove {
-		export interface Events {
-			notFound: void
-			notEmpty: void
-			error: string
-			removing: slime.jrunscript.file.Location
-			removed: slime.jrunscript.file.Location
-		}
-	}
-
 	export interface Exports {
-		remove: slime.$api.fp.world.sensor.api.Maybe<
-			slime.jrunscript.file.Location,
-			{
-				error: string
-			},
-			slime.$api.fp.Maybe<void>
-		>
+		remove: slime.jrunscript.file.remove.Directory
 	}
-
-	export interface Exports {
-		// remove: slime.$api.fp.world.sensor. {
-		// 	simple: slime.$api.fp.impure.Effect<slime.jrunscript.file.Location>
-		// 	world: () => slime.$api.fp.world.Sensor<
-		// 		slime.jrunscript.file.Location,
-		// 		{
-		// 			notEmpty: void
-		// 			error: string
-		// 			removing: slime.jrunscript.file.Location
-		// 			removed: slime.jrunscript.file.Location
-		// 		},
-		// 		slime.$api.fp.Maybe<void>
-		// 	>
-		// }
-	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-			const { $api, jsh } = fifty.global;
-
-			const exists = {
-				directory: $api.fp.world.mapping(jsh.file.world.Location.directory.exists.wo)
-			};
-
-			fifty.tests.sandbox.locations.directory.remove = function() {
-				var tmp = fifty.jsh.file.temporary.directory();
-
-				verify(tmp).evaluate(exists.directory).is(true);
-
-				$api.fp.world.now.action(jsh.file.world.Location.directory.remove.wo, tmp);
-
-				verify(tmp).evaluate(exists.directory).is(false);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
 
 	export namespace list {
 		export interface Events {

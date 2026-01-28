@@ -666,30 +666,60 @@
 			 */
 			var remove = (
 				function() {
-					/** @type { slime.jrunscript.file.world.Filesystem["remove"]["file"] } */
-					var both = function(/** @type { { pathname: string } } */p) {
-						return function(events) {
-							var peer = java.newPeer(p.pathname);
-							var result = peer.delete(
-								new JavaAdapter(
-									Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
-									{
-										error: function(message) {
-											events.fire(
-												"error",
-												String(message)
-											);
-										}
+					/** @type { (forOrdinaryFile: boolean) => slime.jrunscript.file.world.Filesystem["remove"]["file"] } */
+					var both = function(forOrdinaryFile) {
+						return function(/** @type { { pathname: string } } */p) {
+							return function(events) {
+								var peer = java.newPeer(p.pathname);
+
+								if (!peer.isSymlink()) {
+									var exists = peer.exists();
+									if (!exists) {
+										events.fire(
+											"error",
+											"remove failed - does not exist: " + p.pathname
+										);
+										return $api.fp.Maybe.from.nothing();
 									}
-								)
-							);
-							return (result) ? $api.fp.Maybe.from.some(void(0)) : $api.fp.Maybe.from.nothing();
-						}
-					};
+									var isDirectory = peer.isDirectory();
+									if (forOrdinaryFile && isDirectory) {
+										events.fire(
+											"error",
+											"remove failed - expected file, was directory: " + p.pathname
+										);
+										return $api.fp.Maybe.from.nothing();
+									}
+									if (!forOrdinaryFile && !isDirectory) {
+										events.fire(
+											"error",
+											"remove failed - expected directory, was file: " + p.pathname
+										);
+										return $api.fp.Maybe.from.nothing();
+									}
+								}
+
+								var result = peer.delete(
+									new JavaAdapter(
+										Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
+										{
+											error: function(message) {
+												events.fire(
+													"error",
+													String(message)
+												);
+											}
+										}
+									)
+								);
+
+								return (result) ? $api.fp.Maybe.from.some(void(0)) : $api.fp.Maybe.from.nothing();
+							}
+						};
+					}
 
 					return {
-						file: both,
-						directory: both
+						file: both(true),
+						directory: both(false)
 					};
 				}
 			)();
