@@ -18,6 +18,8 @@
 			/** @type { slime.jrunscript.file.internal.java.Script } */
 			java: $loader.script("java.js"),
 			parts: {
+				/** @type { slime.jrunscript.file.remove.internal.Script } */
+				remove: $loader.script("wo-remove.js"),
 				/** @type { slime.jrunscript.file.internal.wo.directory.Script } */
 				directory: $loader.script("wo-directory.js"),
 				/** @type { slime.jrunscript.file.internal.wo.filesystem.Script } */
@@ -34,7 +36,7 @@
 				if (rv.present) return rv.value;
 				throw new Error("Error determining whether directory is present at " + location.pathname);
 			}
-		}
+		};
 
 		/** @type { ReturnType<slime.jrunscript.file.Exports["Location"]["file"]["exists"]["world"]> } */
 		var Location_file_exists = function(location) {
@@ -47,7 +49,79 @@
 					throw new Error("Error determining whether file is present at " + location.pathname);
 				}
 			}
+		};
+
+		var Location_is_symlink = function(location) {
+			return function(events) {
+				var ask = location.filesystem.isSymlink({ pathname: location.pathname });
+				var rv = ask(events);
+				if (rv.present) {
+					return rv.value;
+				} else {
+					throw new Error("Error determining whether symlink is present at " + location.pathname);
+				}
+			}
 		}
+
+		/** @type { slime.jrunscript.file.location.directory.Exports["list"]["world"] } */
+		var list_world = function(p) {
+			/**
+			 *
+			 * @param { slime.jrunscript.file.Location } location
+			 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
+			 * @param { slime.$api.event.Producer<slime.jrunscript.file.location.directory.list.Events> } events
+			 * @returns { slime.jrunscript.file.Location[] }
+			 */
+			var process = function(location,descend,events) {
+				if (!location.filesystem) throw new TypeError("No filesystem for location " + location);
+				var listed = $api.fp.world.now.ask(
+					location.filesystem.listDirectory({ pathname: location.pathname })
+				);
+				/** @type { slime.jrunscript.file.Location[] } */
+				var rv = [];
+				if (listed.present) {
+					listed.value.forEach(function(name) {
+						var it = {
+							filesystem: location.filesystem,
+							pathname: location.pathname + location.filesystem.separator.pathname + name
+						};
+						rv.push(it);
+						var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
+						if (isDirectory.present) {
+							if (isDirectory.value) {
+								if (descend(it)) {
+									var contents = process(it,descend,events);
+									rv = rv.concat(contents);
+								}
+							} else {
+								//	ordinary file, nothing to do
+							}
+						} else {
+							//	TODO	not exactly the same situation as failing to list the directory, but close enough
+							events.fire("failed", it);
+						}
+					});
+				} else {
+					events.fire("failed", location);
+				}
+				return rv;
+			};
+
+			return function(events) {
+				var descend = (p && p.descend) ? p.descend : $api.fp.Mapping.all(false);
+				var array = process(p.target,descend,events);
+				return $api.fp.Stream.from.array(array);
+			}
+		};
+
+		var list_stream = function(configuration) {
+			return $api.fp.world.Sensor.api.simple(function(location) {
+				return list_world({
+					target: location,
+					descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.from.value(false)
+				});
+			})
+		};
 
 		var Location_file_read = (
 			function() {
@@ -179,145 +253,23 @@
 			}
 		);
 
+		var remove = code.parts.remove({
+			list_stream: list_stream,
+			Location_directory_exists: Location_directory_exists,
+			Location_file_exists: Location_file_exists,
+			Location_is_symlink: Location_is_symlink
+		});
+
 		/** @type { slime.jrunscript.file.location.file.Exports["remove"]["wo"] } */
-		var Location_file_remove = function(p) {
-			return function(events) {
-				var success = p.filesystem.remove.file({ pathname: p.pathname })(events);
-				return (success) ? $api.fp.Maybe.from.some(void(0)) : $api.fp.Maybe.from.nothing();
-			}
-		}
+		var Location_file_remove = remove.file;
 
-		/** @type { slime.jrunscript.file.location.directory.Exports["list"]["world"] } */
-		var list_world = function(p) {
-			/**
-			 *
-			 * @param { slime.jrunscript.file.Location } location
-			 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-			 * @param { slime.$api.event.Producer<slime.jrunscript.file.location.directory.list.Events> } events
-			 * @returns { slime.jrunscript.file.Location[] }
-			 */
-			var process = function(location,descend,events) {
-				if (!location.filesystem) throw new TypeError("No filesystem for location " + location);
-				var listed = $api.fp.world.now.ask(
-					location.filesystem.listDirectory({ pathname: location.pathname })
-				);
-				/** @type { slime.jrunscript.file.Location[] } */
-				var rv = [];
-				if (listed.present) {
-					listed.value.forEach(function(name) {
-						var it = {
-							filesystem: location.filesystem,
-							pathname: location.pathname + location.filesystem.separator.pathname + name
-						};
-						rv.push(it);
-						var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
-						if (isDirectory.present) {
-							if (isDirectory.value) {
-								if (descend(it)) {
-									var contents = process(it,descend,events);
-									rv = rv.concat(contents);
-								}
-							} else {
-								//	ordinary file, nothing to do
-							}
-						} else {
-							//	TODO	not exactly the same situation as failing to list the directory, but close enough
-							events.fire("failed", it);
-						}
-					});
-				} else {
-					events.fire("failed", location);
-				}
-				return rv;
-			};
-
-			return function(events) {
-				var descend = (p && p.descend) ? p.descend : $api.fp.Mapping.all(false);
-				var array = process(p.target,descend,events);
-				return $api.fp.Stream.from.array(array);
-			}
-		};
-
-		var list_stream = function(configuration) {
-			return $api.fp.world.Sensor.api.simple(function(location) {
-				return list_world({
-					target: location,
-					descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.from.value(false)
-				});
-			})
-		};
+		/** @type { slime.jrunscript.file.location.directory.Exports["remove"]["wo"] } */
+		var Location_directory_remove = remove.directory;
 
 		/** @type { slime.jrunscript.file.location.Exports["remove"] } */
 		var Location_remove = function(settings) {
-			return $api.fp.world.Sensor.api.maybe(
-				function remove(location) {
-					var is = {
-						directory: $api.fp.now(Location_directory_exists, $api.fp.world.Sensor.mapping()),
-						file: $api.fp.now(Location_file_exists, $api.fp.world.Sensor.mapping())
-					};
-
-					var recursive = (settings && settings.recursive) ? settings.recursive : false;
-
-					var known = (function(given) {
-						if (typeof(given) == "undefined") return true;
-						if (typeof(given) == "boolean") return given;
-						throw new TypeError();
-					})( (settings || {}).known);
-
-					return function(events) {
-						if (!is.directory(location) && !is.file(location) && !known) {
-							events.fire("notFound");
-							return $api.fp.Maybe.from.nothing();
-						}
-
-						events.fire("removing", location);
-
-						if (is.directory(location)) {
-							var listing = $api.fp.now(
-								location,
-								list_stream().simple
-							);
-
-							var empty = $api.fp.now(
-								listing,
-								$api.fp.Stream.first,
-								$api.fp.now(
-									$api.fp.property("present"),
-									$api.fp.Predicate.not
-								)
-							);
-
-							if (!recursive) {
-								if (!empty) {
-									events.fire("notEmpty");
-									return $api.fp.Maybe.from.nothing();
-								}
-							} else {
-								var isSymlink = $api.fp.now(
-									location.filesystem.isSymlink,
-									$api.fp.world.Sensor.mapping()
-									//	TODO	Partial impure
-								)
-								var checkForSymlink = isSymlink(location);
-								if (!checkForSymlink.present) throw new Error("Could not determine whether " + location.pathname + " is a symlink");
-								if (!checkForSymlink.value) {
-									$api.fp.now(
-										listing,
-										$api.fp.impure.Stream.forEach(function(location) {
-											var success = remove(location)(events);
-											if (!success.present) return $api.fp.Maybe.from.nothing();
-										})
-									)
-								}
-							}
-						}
-
-						var success = location.filesystem.remove.directory({ pathname: location.pathname })(events);
-						if (success.present) { events.fire("removed", location); }
-						return (success) ? $api.fp.Maybe.from.some(void(0)) : $api.fp.Maybe.from.nothing();
-					};
-				}
-			);
+			var remover = remove.location(settings);
+			return $api.fp.world.Sensor.api.maybe(remover);
 		};
 
 		/** @type { slime.Codec<string,slime.jrunscript.file.Location> } */
@@ -350,7 +302,7 @@
 					Location_file_read_string: Location_file_read.string,
 					Store: $context.library.loader.Store,
 					Location_directory_exists: Location_directory_exists,
-					remove: Location_file_remove,
+					remove: Location_directory_remove,
 					list_world: list_world,
 					list_stream: list_stream
 				});

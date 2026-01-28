@@ -119,23 +119,24 @@
 				$context.library.file.world.Location.directory.exists.wo
 			);
 
-			var removeDirectory = $api.fp.world.output(
-				$context.library.file.world.Location.directory.remove.wo
-			);
+			var removeDirectory = $context.library.file.Location.remove({
+				recursive: true
+			}).simple;
 
 			/**
 			 *
 			 * @param { slime.jrunscript.file.Location } from
 			 */
 			var moveTypedocIntoPlace = function(from) {
-				$api.fp.world.now.action(
+				var effect = $api.fp.now(
 					$context.library.file.Filesystem.move,
-					{
-						filesystem: $context.library.file.world.filesystems.os,
-						from: from.pathname,
-						to: documentation.pathname
-					}
-				)
+					$api.fp.world.Means.effect()
+				);
+				effect({
+					filesystem: $context.library.file.world.filesystems.os,
+					from: from.pathname,
+					to: documentation.pathname
+				});
 			};
 
 			var world = {
@@ -255,10 +256,16 @@
 							if (directoryExists(documentation)) {
 								removeDirectory(documentation);
 							}
-							moveTypedocIntoPlace($context.library.file.Location.from.os(e.detail.out()));
-							delete state.updates[e.detail.out()];
-							state.typedocBasedOnSrcAt = e.detail.started();
-							events.fire("finished", { out: e.detail.out() });
+							try {
+								moveTypedocIntoPlace($context.library.file.Location.from.os(e.detail.out()));
+								delete state.updates[e.detail.out()];
+								state.typedocBasedOnSrcAt = e.detail.started();
+								events.fire("finished", { out: e.detail.out() });
+							} catch (e) {
+								//	TODO	add some kind of error handling
+								// Packages.java.lang.System.err.println("Failed to update documentation.");
+								// Packages.java.lang.System.err.println(e);
+							}
 						}
 					})();
 				},

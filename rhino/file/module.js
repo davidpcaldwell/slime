@@ -83,8 +83,10 @@
 			Filesystem: wo.Filesystem,
 			os: wo.os,
 
-			//	oo
+			//	obsolete wo
 			action: oo.action,
+
+			//	oo
 			filesystem: oo.filesystem,
 			filesystems: oo.filesystems,
 			list: oo.list,

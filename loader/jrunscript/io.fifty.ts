@@ -115,6 +115,8 @@ namespace slime.jrunscript.runtime.io {
 
 	export interface Exports {
 		InputStream: {
+			//	TODO	should the below APIs be under a .from() namespace? Or with this being stateful, maybe not
+
 			java: (p: slime.jrunscript.native.java.io.InputStream) => InputStream
 
 			/**

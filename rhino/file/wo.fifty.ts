@@ -330,16 +330,7 @@ namespace slime.jrunscript.file {
 
 	export namespace location {
 		export interface Exports {
-			remove: (
-				p?: {
-					recursive?: boolean
-					known?: boolean
-				}
-			) => slime.$api.fp.world.sensor.api.Maybe<
-				slime.jrunscript.file.Location,
-				slime.jrunscript.file.location.directory.remove.Events,
-				void
-			>
+			remove: remove.Location
 		}
 	}
 
@@ -620,15 +611,8 @@ namespace slime.jrunscript.file {
 
 	export namespace location {
 		export namespace file {
-			//	TODO	redundant; we have Location.remove and should merge them
 			export interface Exports {
-				remove: slime.$api.fp.world.sensor.api.Maybe<
-					slime.jrunscript.file.Location,
-					{
-						error: string
-					},
-					slime.$api.fp.Maybe<void>
-				>
+				remove: slime.jrunscript.file.remove.File
 			}
 		}
 	}
@@ -857,6 +841,7 @@ namespace slime.jrunscript.file {
 				fifty: slime.fifty.test.Kit
 			) {
 				fifty.tests.suite = function() {
+					fifty.load("wo-remove.fifty.ts");
 					fifty.load("wo-directory.fifty.ts");
 					fifty.load("wo-filesystem.fifty.ts");
 
