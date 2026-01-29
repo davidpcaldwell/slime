@@ -688,6 +688,8 @@ namespace slime.jrunscript.file {
 				location: () => slime.jrunscript.file.Location
 				directory: () => string
 			}
+
+			remove: slime.jrunscript.file.remove.os.Location
 		}
 
 		(
