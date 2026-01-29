@@ -157,18 +157,65 @@ namespace slime.jrunscript.file.remove {
 		void
 	>
 
+	export namespace os {
+		export interface Events {
+			notFound: void
+			notEmpty: void
+			error: string
+			removing: string
+			removed: string
+		}
+
+		export type Location = (
+			p?: Parameters<remove.Location>[0]
+		) => slime.$api.fp.world.sensor.api.Maybe<
+			string,
+			Events,
+			void
+		>
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.os = fifty.test.Parent();
+
+				fifty.tests.exports.os.directory = function() {
+					var tmpdir = fifty.jsh.file.temporary.directory();
+
+					var directoryExists = fifty.global.jsh.file.Location.directory.exists.simple;
+
+					verify(tmpdir).evaluate(directoryExists).is(true);
+
+					fifty.global.jsh.file.os.remove().simple(tmpdir.pathname);
+
+					verify(tmpdir).evaluate(directoryExists).is(false);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
 	export namespace internal {
 		export interface Context {
 			Location_directory_exists: slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
 			Location_file_exists: slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
 			Location_is_symlink: slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
 			list_stream: slime.jrunscript.file.location.directory.Exports["list"]["stream"]
+			os: {
+				codec: slime.Codec<string,slime.jrunscript.file.Location>
+			}
 		}
 
 		export interface Exports {
 			file: File["wo"]
 			directory: Directory["wo"]
 			location: (p: Parameters<Location>[0]) => ReturnType<Location>["wo"]
+			os: {
+				location: (p: Parameters<os.Location>[0]) => ReturnType<os.Location>["wo"]
+			}
 		}
 
 		export type Script = slime.loader.synchronous.Script<Context,Exports>

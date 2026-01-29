@@ -27,6 +27,19 @@
 			}
 		};
 
+		/** @type { slime.Codec<string,slime.jrunscript.file.Location> } */
+		var osCodec = {
+			encode: function(string) {
+				return {
+					filesystem: $context.filesystem.os,
+					pathname: string
+				}
+			},
+			decode: function(location) {
+				return location.pathname;
+			}
+		};
+
 		/** @type { slime.jrunscript.file.Exports["Location"]["directory"]["exists"]["wo"] } */
 		var Location_directory_exists = function(location) {
 			return function(events) {
@@ -257,7 +270,10 @@
 			list_stream: list_stream,
 			Location_directory_exists: Location_directory_exists,
 			Location_file_exists: Location_file_exists,
-			Location_is_symlink: Location_is_symlink
+			Location_is_symlink: Location_is_symlink,
+			os: {
+				codec: osCodec
+			}
 		});
 
 		/** @type { slime.jrunscript.file.location.file.Exports["remove"]["wo"] } */
@@ -270,19 +286,6 @@
 		var Location_remove = function(settings) {
 			var remover = remove.location(settings);
 			return $api.fp.world.Sensor.api.maybe(remover);
-		};
-
-		/** @type { slime.Codec<string,slime.jrunscript.file.Location> } */
-		var osCodec = {
-			encode: function(string) {
-				return {
-					filesystem: $context.filesystem.os,
-					pathname: string
-				}
-			},
-			decode: function(location) {
-				return location.pathname;
-			}
 		};
 
 		var parts = (
@@ -648,6 +651,10 @@
 							})
 						),
 						directory: temporary({ directory: true, remove: false })
+					},
+					remove: function(settings) {
+						var removeOsLocation = remove.os.location(settings);
+						return $api.fp.world.Sensor.api.maybe(removeOsLocation);
 					}
 				}
 			})($context.filesystem.os)
