@@ -538,112 +538,114 @@ namespace slime.jrunscript.file.location.directory {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		content: {
+	export namespace content {
+		export interface Exports {
 			Index: (root: slime.jrunscript.file.Location) => slime.runtime.content.Index<slime.jrunscript.file.Location>
+		}
 
+		export interface Exports {
 			mirror: <T>(p: {
 				index: slime.runtime.content.Index<T>
-				write: (p: {
-					file: T
-					api: ReturnType<slime.jrunscript.file.location.file.Exports["write"]["old"]>
-				}) => void
+
+				content: (t: T) => slime.jrunscript.runtime.io.InputStream
+
 				to: slime.jrunscript.file.Location
 			}) => slime.$api.fp.world.Action<{
 				mirrored: slime.jrunscript.file.Location
 			}>
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				const subject = fifty.global.jsh.file.Location.directory;
+
+				fifty.tests.exports.content = fifty.test.Parent();
+
+				fifty.tests.exports.content.Index = function() {
+					var root = fifty.jsh.file.relative(".");
+					var content = subject.content.Index(root);
+
+					verify(content).get(["loader.js"]).present.is(true);
+					verify(content).get(["foo"]).present.is(false);
+
+					var listing = content.list([]);
+					if (!listing.present) {
+						verify(true).is(false);
+					} else {
+						debugger;
+						var script = listing.value.find(function(entry) { return entry.name == "loader.js" });
+						var absent = listing.value.find(function(entry) { return entry.name == "foo" });
+						var folder = listing.value.find(function(entry) { return entry.name == "oo" });
+
+						verify(script).evaluate.property("value").is.type("object");
+						verify(script).evaluate.property("value").evaluate.property("pathname").is.type("string");
+						verify(script).evaluate.property("value").evaluate.property("get").is.type("undefined");
+
+						verify(absent).is(void(0));
+
+						verify(folder).evaluate.property("store").is.type("object");
+						verify(folder).evaluate.property("store").evaluate.property("pathname").is.type("undefined");
+						verify(folder).evaluate.property("store").evaluate.property("get").is.type("function");
+					}
+				}
+
+				fifty.tests.exports.content.mirror = function() {
+					const $$api = $api as slime.$api.jrunscript.Global;
+
+					const fixtures = (function() {
+						const script: slime.runtime.test.Script = fifty.$loader.script("../../loader/fixtures.ts");
+						return {
+							runtime: script()
+						}
+					})();
+
+					var content: slime.runtime.test.mock.Content<string> = fixtures.runtime.mock.content();
+					content.set("foo/bar", "bar!");
+					content.set("foo/baz", "baz!!");
+
+					var to = fifty.jsh.file.temporary.location();
+
+					var action = subject.content.mirror({
+						index: content.index,
+						content: function(p) {
+							return $$api.jrunscript.io.InputStream.string.default(p);
+						},
+						to: to
+					});
+
+					fifty.global.$api.fp.world.Action.now({
+						action: action
+					});
+
+					var bar = fifty.global.$api.fp.now(
+						to,
+						fifty.global.jsh.file.Location.directory.relativePath("foo/bar"),
+						fifty.global.jsh.file.Location.file.read.string.simple,
+					);
+
+					verify(bar).is("bar!");
+
+					var baz = fifty.global.$api.fp.now(
+						to,
+						fifty.global.jsh.file.Location.directory.relativePath("foo/baz"),
+						fifty.global.jsh.file.Location.file.read.string.simple,
+					);
+
+					verify(baz).is("baz!!");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			const fixtures = (function() {
-				const script: slime.runtime.test.Script = fifty.$loader.script("../../loader/fixtures.ts");
-				return {
-					runtime: script()
-				}
-			})();
-
-			const subject = fifty.global.jsh.file.Location.directory;
-
-			fifty.tests.exports.content = fifty.test.Parent();
-
-			fifty.tests.exports.content.Index = function() {
-				var root = fifty.jsh.file.relative(".");
-				var content = subject.content.Index(root);
-
-				verify(content).get(["loader.js"]).present.is(true);
-				verify(content).get(["foo"]).present.is(false);
-
-				var listing = content.list([]);
-				if (!listing.present) {
-					verify(true).is(false);
-				} else {
-					debugger;
-					var script = listing.value.find(function(entry) { return entry.name == "loader.js" });
-					var absent = listing.value.find(function(entry) { return entry.name == "foo" });
-					var folder = listing.value.find(function(entry) { return entry.name == "oo" });
-
-					verify(script).evaluate.property("value").is.type("object");
-					verify(script).evaluate.property("value").evaluate.property("pathname").is.type("string");
-					verify(script).evaluate.property("value").evaluate.property("get").is.type("undefined");
-
-					verify(absent).is(void(0));
-
-					verify(folder).evaluate.property("store").is.type("object");
-					verify(folder).evaluate.property("store").evaluate.property("pathname").is.type("undefined");
-					verify(folder).evaluate.property("store").evaluate.property("get").is.type("function");
-				}
-			}
-
-			fifty.tests.exports.content.mirror = function() {
-				var content: slime.runtime.test.mock.Content<string> = fixtures.runtime.mock.content();
-				content.set("foo/bar", "bar!");
-				content.set("foo/baz", "baz!!");
-
-				var to = fifty.jsh.file.temporary.location();
-
-				var action = subject.content.mirror({
-					index: content.index,
-					write: function(p) {
-						debugger;
-						fifty.global.$api.fp.world.Means.now({
-							means: p.api.string,
-							order: {
-								value: p.file
-							}
-						});
-					},
-					to: to
-				});
-
-				fifty.global.$api.fp.world.Action.now({
-					action: action
-				});
-
-				var bar = fifty.global.$api.fp.now(
-					to,
-					fifty.global.jsh.file.Location.directory.relativePath("foo/bar"),
-					fifty.global.jsh.file.Location.file.read.string.simple,
-				);
-
-				verify(bar).is("bar!");
-
-				var baz = fifty.global.$api.fp.now(
-					to,
-					fifty.global.jsh.file.Location.directory.relativePath("foo/baz"),
-					fifty.global.jsh.file.Location.file.read.string.simple,
-				);
-
-				verify(baz).is("baz!!");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
+	export interface Exports {
+		content: content.Exports
+	}
 
 	export interface Exports {
 		Loader: {

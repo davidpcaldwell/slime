@@ -272,6 +272,7 @@
 					if (!entries.present) return;
 					entries.value.forEach(function(entry) {
 						if ($api.content.Entry.is.IndexEntry(entry)) {
+							// TODO	create directory?
 							process(path.concat([entry.name]));
 						} else {
 							var target = Location_relative_location(entry.name)(destination);
@@ -283,9 +284,9 @@
 								});
 							}
 							var write = $context.Location_file_write(target);
-							p.write({
-								file: entry.value,
-								api: write
+							var pipe = $api.fp.now(write.stream, $api.fp.world.Means.effect());
+							pipe({
+								input: p.content(entry.value)
 							});
 							events.fire("mirrored", target);
 						}
