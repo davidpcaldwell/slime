@@ -289,6 +289,8 @@ namespace slime.jsh {
 
 			//	TODO	document the use of Location
 
+			//	TODO	note that this inplementation is split between here and the rhino/file module, which handles loading from
+			//			Location; should clean that up
 			/**
 			 * Loads `jsh` plugins from a specified source.
 			 *
