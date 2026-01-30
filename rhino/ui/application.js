@@ -289,7 +289,7 @@
 					}
 				})(p.browser);
 			}
-			if (p.browser.chrome) {
+			if (p.browser.chrome && Chrome) {
 				p.browser.create = Chrome(p.browser.chrome);
 			}
 			/** @type { slime.jrunscript.shell.browser.old.ProxyConfiguration } */

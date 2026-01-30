@@ -451,9 +451,9 @@
 							user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
 						});
 					}
-					if ($context.HOME.getFile("Google Chrome.app/Contents/MacOS/Google Chrome")) {
+					if ($context.HOME.getFile("Applications/Google Chrome.app/Contents/MacOS/Google Chrome")) {
 						return new Chrome({
-							program: $context.HOME.getFile("Google Chrome.app/Contents/MacOS/Google Chrome"),
+							program: $context.HOME.getFile("Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
 							user: $context.HOME.getSubdirectory("Library/Application Support/Google/Chrome")
 						});
 					}
