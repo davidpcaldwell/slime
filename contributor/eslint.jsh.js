@@ -27,9 +27,9 @@
 							found: function(e) {
 								var found = e.detail;
 								if (found.present) {
-									jsh.shell.console("Found: " + JSON.stringify(found.value));
+									jsh.shell.console("Found: ESLint " + JSON.stringify(found.value));
 								} else {
-									jsh.shell.console("Found: <not present>");
+									jsh.shell.console("ESLint not found.");
 								}
 							},
 							installed: function(e) {
