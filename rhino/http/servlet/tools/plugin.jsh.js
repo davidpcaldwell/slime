@@ -194,142 +194,140 @@
 				 *
 				 * @type { slime.jsh.httpd.Exports["tools"]["build"] }
 				 */
-				jsh.httpd.tools.build = Object.assign(
-					function(/** @type { slime.jsh.httpd.Build } */p) {
-						if (!p.destination.directory) {
-							p.destination.directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
-						}
-						var WEBAPP = p.destination.directory;
-						WEBAPP.getRelativePath("WEB-INF").createDirectory();
-						//	TODO	the handling of this is a bit disorganized, likely caused by refactoring this and the below code
-						//			a bit at a time. Should rethink and reassemble with test coverage.
-						if (p.rhino) {
-							(function() {
-								jsh.internal.bootstrap.rhino.compatible()
-									.download( WEBAPP.getRelativePath("WEB-INF/lib").createDirectory().pathname.java.adapt() )
-							})();
-						}
-						var lib = WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
-							ifExists: function(dir) {
-								return false;
-							}
-						});
-						if (p.libraries) {
-							for (var x in p.libraries) {
-								p.libraries[x].copy(lib.getRelativePath(x), { recursive: true });
-							}
-						}
-						var SLIME = jsh.shell.jsh.src;
-						if (!SLIME) {
-							SLIME = jsh.shell.jsh.home.getSubdirectory("src");
-						}
-
-						var compile = p.compile || [];
-
-						(function compileSlimeCodeToWebapp() {
-							var SERVLET = SLIME.getSubdirectory("rhino/http/servlet");
-							//	Compile the servlet to WEB-INF/classes
-							var classpath = jsh.file.Searchpath([]);
-							var rhino = jsh.internal.api.rhino.compatible().local(
-								WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
-									exists: function(dir) { return false; }
-								}).pathname.os.adapt()
-							);
-							if (rhino) rhino.forEach(function(location) {
-								classpath.pathnames.push(jsh.file.Pathname(location.pathname));
-							});
-							var CATALINA_HOME;
-							if (jsh.shell.environment.CATALINA_HOME) CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
-							if (!CATALINA_HOME) CATALINA_HOME = jsh.shell.jsh.lib.getSubdirectory("tomcat");
-							if (!CATALINA_HOME) {
-								throw new Error("Could not find Tomcat directory to locate servlet API");
-							}
-							jsh.shell.echo("CATALINA_HOME = " + CATALINA_HOME);
-							classpath.pathnames.push(CATALINA_HOME.getRelativePath("lib/servlet-api.jar"));
-							var sourcepath = jsh.file.Searchpath([]);
-							sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
-							sourcepath.pathnames.push(SLIME.getRelativePath("loader/jrunscript/java"));
-							sourcepath.pathnames.push(SLIME.getRelativePath("loader/jrunscript/rhino/java"));
-							sourcepath.pathnames.push(SLIME.getRelativePath("jrunscript/host/java"));
-							if (p.rhino) {
-								sourcepath.pathnames.push(SLIME.getRelativePath("jrunscript/host/rhino/java"));
-							}
-							sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/java"));
-							if (p.rhino) {
-								sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/rhino/java"));
-							}
-							var sources = [
-								SERVLET.getRelativePath("java/inonit/script/servlet/Servlet.java"),
-								SERVLET.getRelativePath("java/inonit/script/servlet/Nashorn.java")
-							];
-							if (p.rhino) {
-								//	this is not explicitly referenced from Rhino servlet but is required for httpd.java.Thread
-								sources.push(
-									SLIME.getRelativePath("jrunscript/host/rhino/java/inonit/script/runtime/Threads.java")
-								);
-								sources.push(
-									SERVLET.getRelativePath("rhino/java/inonit/script/servlet/Rhino.java")
-								);
-							}
-							var result = jsh.java.tools.javac({
-								destination: WEBAPP.getRelativePath("WEB-INF/classes"),
-								classpath: classpath,
-								sourcepath: sourcepath,
-								source: (p.java && p.java.version) ? p.java.version : null,
-								target: (p.java && p.java.version) ? p.java.version : null,
-								arguments: sources.concat(compile.map(function(node) { return node.pathname }))
-							});
-							//	TODO	seems like below should be changed to console, but not changing right now in the middle of
-							//			a large refactor
-							jsh.shell.echo("Exit status of javac: " + result.status);
-							if (result.status) {
-								jsh.shell.echo("Compilation failure for arguments: " + result.arguments.join(" "));
-							}
-						})();
-
-						(function copySlimeCodeToWebapp() {
-							SLIME.getSubdirectory("loader").list().forEach(function(node) {
-								//	TODO	dangerous as we move more code into the loader; was just expression.js and api.js
-								if (!node.directory) {
-									node.copy(WEBAPP.getRelativePath("WEB-INF/loader/" + node.pathname.basename), { recursive: true });
-								}
-							});
-							SLIME.getSubdirectory("loader/jrunscript").list().forEach(function(node) {
-								//	Was just expression.js
-								if (/\.js$/.test(node.pathname.basename)) {
-									node.copy(WEBAPP.getRelativePath("WEB-INF/loader/jrunscript/" + node.pathname.basename), { recursive: true });
-								}
-							});
-							SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
-							SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
-							SLIME.getFile("rhino/http/servlet/upload.js").copy(WEBAPP.getRelativePath("WEB-INF/upload.js"));
-
-							["js/debug","js/object","js/web","jrunscript/host","jrunscript/io","rhino/http/servlet/server"].forEach(function(path) {
-								SLIME.getSubdirectory(path).copy(WEBAPP.getRelativePath("WEB-INF/slime/" + path), { recursive: true });
-							});
-						})();
-
+				jsh.httpd.tools.build = function(/** @type { slime.jsh.httpd.Build } */p) {
+					if (!p.destination.directory) {
+						p.destination.directory = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					}
+					var WEBAPP = p.destination.directory;
+					WEBAPP.getRelativePath("WEB-INF").createDirectory();
+					//	TODO	the handling of this is a bit disorganized, likely caused by refactoring this and the below code
+					//			a bit at a time. Should rethink and reassemble with test coverage.
+					if (p.rhino) {
 						(function() {
-							var xml = getWebXml(p);
-							WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
+							jsh.internal.bootstrap.rhino.compatible()
+								.download( WEBAPP.getRelativePath("WEB-INF/lib").createDirectory().pathname.java.adapt() )
 						})();
-
-						// if (p.buildResources) {
-						// 	p.buildResources();
-						// } else if (p.Resources) {
-						var resources = new jsh.httpd.Resources.Constructor();
-						p.Resources.call(resources);
-						resources.build(WEBAPP);
-						// }
-
-						if (p.destination.war) {
-							jsh.file.zip({
-								from: p.destination.directory.pathname,
-								to: p.destination.war
-							});
+					}
+					var lib = WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
+						ifExists: function(dir) {
+							return false;
+						}
+					});
+					if (p.libraries) {
+						for (var x in p.libraries) {
+							p.libraries[x].copy(lib.getRelativePath(x), { recursive: true });
 						}
 					}
-				);
+					var SLIME = jsh.shell.jsh.src;
+					if (!SLIME) {
+						SLIME = jsh.shell.jsh.home.getSubdirectory("src");
+					}
+
+					var compile = p.compile || [];
+
+					(function compileSlimeCodeToWebapp() {
+						var SERVLET = SLIME.getSubdirectory("rhino/http/servlet");
+						//	Compile the servlet to WEB-INF/classes
+						var classpath = jsh.file.Searchpath([]);
+						var rhino = jsh.internal.api.rhino.compatible().local(
+							WEBAPP.getRelativePath("WEB-INF/lib").createDirectory({
+								exists: function(dir) { return false; }
+							}).pathname.os.adapt()
+						);
+						if (rhino) rhino.forEach(function(location) {
+							classpath.pathnames.push(jsh.file.Pathname(location.pathname));
+						});
+						var CATALINA_HOME;
+						if (jsh.shell.environment.CATALINA_HOME) CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+						if (!CATALINA_HOME) CATALINA_HOME = jsh.shell.jsh.lib.getSubdirectory("tomcat");
+						if (!CATALINA_HOME) {
+							throw new Error("Could not find Tomcat directory to locate servlet API");
+						}
+						jsh.shell.echo("CATALINA_HOME = " + CATALINA_HOME);
+						classpath.pathnames.push(CATALINA_HOME.getRelativePath("lib/servlet-api.jar"));
+						var sourcepath = jsh.file.Searchpath([]);
+						sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
+						sourcepath.pathnames.push(SLIME.getRelativePath("loader/jrunscript/java"));
+						sourcepath.pathnames.push(SLIME.getRelativePath("loader/jrunscript/rhino/java"));
+						sourcepath.pathnames.push(SLIME.getRelativePath("jrunscript/host/java"));
+						if (p.rhino) {
+							sourcepath.pathnames.push(SLIME.getRelativePath("jrunscript/host/rhino/java"));
+						}
+						sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/java"));
+						if (p.rhino) {
+							sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/rhino/java"));
+						}
+						var sources = [
+							SERVLET.getRelativePath("java/inonit/script/servlet/Servlet.java"),
+							SERVLET.getRelativePath("java/inonit/script/servlet/Nashorn.java")
+						];
+						if (p.rhino) {
+							//	this is not explicitly referenced from Rhino servlet but is required for httpd.java.Thread
+							sources.push(
+								SLIME.getRelativePath("jrunscript/host/rhino/java/inonit/script/runtime/Threads.java")
+							);
+							sources.push(
+								SERVLET.getRelativePath("rhino/java/inonit/script/servlet/Rhino.java")
+							);
+						}
+						var result = jsh.java.tools.javac({
+							destination: WEBAPP.getRelativePath("WEB-INF/classes"),
+							classpath: classpath,
+							sourcepath: sourcepath,
+							source: (p.java && p.java.version) ? p.java.version : null,
+							target: (p.java && p.java.version) ? p.java.version : null,
+							arguments: sources.concat(compile.map(function(node) { return node.pathname }))
+						});
+						//	TODO	seems like below should be changed to console, but not changing right now in the middle of
+						//			a large refactor
+						jsh.shell.echo("Exit status of javac: " + result.status);
+						if (result.status) {
+							jsh.shell.echo("Compilation failure for arguments: " + result.arguments.join(" "));
+						}
+					})();
+
+					(function copySlimeCodeToWebapp() {
+						SLIME.getSubdirectory("loader").list().forEach(function(node) {
+							//	TODO	dangerous as we move more code into the loader; was just expression.js and api.js
+							if (!node.directory) {
+								node.copy(WEBAPP.getRelativePath("WEB-INF/loader/" + node.pathname.basename), { recursive: true });
+							}
+						});
+						SLIME.getSubdirectory("loader/jrunscript").list().forEach(function(node) {
+							//	Was just expression.js
+							if (/\.js$/.test(node.pathname.basename)) {
+								node.copy(WEBAPP.getRelativePath("WEB-INF/loader/jrunscript/" + node.pathname.basename), { recursive: true });
+							}
+						});
+						SLIME.getFile("rhino/http/servlet/api.js").copy(WEBAPP.getRelativePath("WEB-INF/api.js"));
+						SLIME.getFile("rhino/http/servlet/server.js").copy(WEBAPP.getRelativePath("WEB-INF/server.js"));
+						SLIME.getFile("rhino/http/servlet/upload.js").copy(WEBAPP.getRelativePath("WEB-INF/upload.js"));
+
+						["js/debug","js/object","js/web","jrunscript/host","jrunscript/io","rhino/http/servlet/server"].forEach(function(path) {
+							SLIME.getSubdirectory(path).copy(WEBAPP.getRelativePath("WEB-INF/slime/" + path), { recursive: true });
+						});
+					})();
+
+					(function() {
+						var xml = getWebXml(p);
+						WEBAPP.getRelativePath("WEB-INF/web.xml").write(xml, { append: false });
+					})();
+
+					// if (p.buildResources) {
+					// 	p.buildResources();
+					// } else if (p.Resources) {
+					var resources = new jsh.httpd.Resources.Constructor();
+					p.Resources.call(resources);
+					resources.build(WEBAPP);
+					// }
+
+					if (p.destination.war) {
+						jsh.file.zip({
+							from: p.destination.directory.pathname,
+							to: p.destination.war
+						});
+					}
+				};
 
 				jsh.httpd.tools.getJavaSourceFiles = function(pathname) {
 					/** @type { (node: slime.jrunscript.file.Node) => node is slime.jrunscript.file.File } */
