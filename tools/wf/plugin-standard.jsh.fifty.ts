@@ -12,7 +12,7 @@ namespace slime.jsh.wf.standard {
 		}
 
 		jsh: {
-			shell: slime.jsh.shell.Exports
+			shell: slime.jsh.Global["shell"]
 			script: slime.jsh.script.Exports
 		}
 

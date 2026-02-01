@@ -36,7 +36,7 @@ namespace slime.jsh.shell {
 
 		export type Exports = Omit<slime.jsh.shell.Exports,"tools">
 
-		export type Script = slime.loader.Script<Context,slime.jsh.shell.Exports>
+		export type Script = slime.loader.Script<Context,slime.jrunscript.shell.Exports & slime.jsh.shell.Exports>
 	}
 
 	export namespace test {
@@ -64,7 +64,7 @@ namespace slime.jrunscript.shell.context {
 
 namespace slime.jsh.shell {
 	/**
-	 * An implementation of {@link slime.jrunscript.shell.Exports} that adds additional APIs that are available when running under
+	 * Builds upon {@link slime.jrunscript.shell.Exports}, providing additional APIs that are available when running under
 	 * the `jsh` shell.
 	 */
 	export interface Exports {}
@@ -80,14 +80,23 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
+		//	TODO	think this through, there are similar concepts elsewhere, for example, in the launcher, and this ought to be
+		//			possible to implement directly in the jrunscript.shell module
+		//
+		//			there is also related code in jsh-data.jsh.js that could be generalized
+		//
+		//			finally, this appears to have no callers, so we deprecate it.  Leaving in because it contains potentially useful
+		// 			code and is used in a manual test.
 		/**
+		 * @deprecated This API should be improved and moved to the jrunscript.shell module.
+		 *
 		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
 		 */
 		engine: string
 	}
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
 		/**
 		 * Exits from this shell. This ordinarily terminates the process, although some shells (for example, those launched by the
 		 * `jsh.shell.jsh` method) can sometimes be run in-process.
@@ -118,7 +127,7 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
 		/**
 		 * The standard I/O streams for this shell.
 		 */
@@ -137,7 +146,7 @@ namespace slime.jsh.shell {
 		stderr: Exports["stdio"]["error"]
 	}
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
 		/**
 		 * Writes a message to the shell's standard output stream, followed by a line terminator.
 		 */
@@ -247,7 +256,7 @@ namespace slime.jsh.shell {
 		export type Mode = Omit<old.shell.Argument<any>,"command"|"arguments">
 	}
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
 		/**
 		 * @deprecated Replaced by `run`.
 		 *
@@ -670,9 +679,9 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
-
 	export namespace oo {
+		type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
+
 		export interface EngineResult {
 			status: number
 
@@ -999,7 +1008,7 @@ namespace slime.jsh.shell {
 		debug: any
 	}
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
 		//	TODO	shell?
 		//	TODO	deprecate this after possibly creating, and then definitely pointing to some kind of replacement, probably
 		// 			based on jsh.internal.bootstrap
