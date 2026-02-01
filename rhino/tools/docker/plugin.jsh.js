@@ -62,7 +62,7 @@
 
 				/**
 				 *
-				 * @param { slime.jsh.shell.Exports } shell
+				 * @param { slime.jsh.Global["shell"] } shell
 				 * @returns { slime.jsh.Tools["kubectl"]["json"] }
 				 */
 				var jshFacade = function(shell) {

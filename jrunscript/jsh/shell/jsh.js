@@ -18,7 +18,7 @@
 	function(Packages,JavaAdapter,$api,$context,$export) {
 		var module = $context.module;
 
-		/** @type { Pick<slime.jsh.shell.Exports,"Intention"|"engine"|"exit"|"stdio"|"echo"|"console"|"println"|"rhino"|"shell"|"jsh"|"run"|"world"|"stdin"|"stdout"|"stderr"> } */
+		/** @type { Pick<slime.jrunscript.shell.Exports,"Intention"> & Pick<slime.jsh.shell.Exports,"engine"|"exit"|"stdio"|"echo"|"console"|"println"|"rhino"|"shell"|"jsh"|"run"|"world"|"stdin"|"stdout"|"stderr"> } */
 		var $exports = {};
 
 		//	TODO	would be nice to generalize this and push it back into the shell module itself

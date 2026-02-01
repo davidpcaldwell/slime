@@ -31,7 +31,7 @@ namespace slime.jrunscript.tools.maven {
 				document: any
 			}
 			io: slime.jrunscript.io.Exports
-			shell: slime.jsh.shell.Exports
+			shell: slime.jsh.Global["shell"]
 			document: slime.jsh.Global["document"]
 		}
 	}
