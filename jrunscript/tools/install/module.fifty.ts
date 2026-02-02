@@ -179,6 +179,14 @@ namespace slime.jrunscript.tools.install {
 				from: string
 				to: slime.jrunscript.file.Location
 			},download.Events>
+
+			get: slime.$api.fp.world.Sensor<
+				{
+					download: slime.jrunscript.tools.install.Distribution
+				},
+				download.Events & distribution.Events,
+				slime.$api.fp.Maybe<string>
+			>
 		}
 	}
 
