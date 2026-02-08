@@ -45,6 +45,59 @@
 		};
 
 		/**
+		 * @param { slime.jsh.httpd.internal.resources.MappingDescriptor } p
+		 * @param { string } path
+		 * @returns { string | undefined }
+		 */
+		var under = function(p,path) {
+			if (p.prefix.substring(0,path.length) == path) {
+				var remaining = p.prefix.substring(path.length);
+				var add = remaining.split("/")[0] + "/";
+				return add;
+			}
+		};
+
+		/**
+		 * @param { slime.jsh.httpd.internal.resources.MappingDescriptor } p
+		 * @param { slime.jrunscript.file.Directory } WEBAPP
+		 */
+		var build = function(p,WEBAPP) {
+			var impl = function(prefix,loader) {
+				var to = WEBAPP.getRelativePath(prefix);
+
+				var copy = function(loader,pathname) {
+					var recurse = arguments.callee;
+					var directory = pathname.createDirectory({
+						ifExists: function(dir) {
+							return false;
+						},
+						recursive: true
+					});
+					if (!loader.list) {
+						debugger;
+					}
+					var items = loader.list();
+					items.forEach(function(item) {
+						if (item.loader) {
+							recurse(item.loader, directory.getRelativePath(item.path));
+						} else {
+							// TODO: this used to be item.resource.read(jsh.io.Streams.binary); not sure which it should be right now.
+							// seems to be mismatch between Resource and Resource.source
+							var resource = item.resource;
+							directory.getRelativePath(item.path).write(resource.read(jsh.io.Streams.binary), {
+								append: false
+							});
+						}
+					});
+				}
+
+				copy(loader,to);
+			}
+
+			impl(p.prefix,p.loader);
+		}
+
+		/**
 		 * @type { slime.jsh.httpd.internal.resources.MappingConstructor }
 		 * @param { Parameters<slime.jsh.httpd.internal.resources.MappingConstructor>[0] } p
 		 */
@@ -74,56 +127,11 @@
 				return null;
 			};
 
-			var under = function(path) {
-				if (p.prefix.substring(0,path.length) == path) {
-					var remaining = p.prefix.substring(path.length);
-					var add = remaining.split("/")[0] + "/";
-					return add;
-				}
-			};
-
-			var build = function(WEBAPP) {
-				var impl = function(prefix,loader) {
-					var to = WEBAPP.getRelativePath(prefix);
-
-					var copy = function(loader,pathname) {
-						var recurse = arguments.callee;
-						var directory = pathname.createDirectory({
-							ifExists: function(dir) {
-								return false;
-							},
-							recursive: true
-						});
-						if (!loader.list) {
-							debugger;
-						}
-						var items = loader.list();
-						items.forEach(function(item) {
-							if (item.loader) {
-								recurse(item.loader, directory.getRelativePath(item.path));
-							} else {
-								// TODO: this used to be item.resource.read(jsh.io.Streams.binary); not sure which it should be right now.
-								// seems to be mismatch between Resource and Resource.source
-								var resource = item.resource;
-								directory.getRelativePath(item.path).write(resource.read(jsh.io.Streams.binary), {
-									append: false
-								});
-							}
-						});
-					}
-
-					copy(loader,to);
-				}
-
-				impl(p.prefix,p.loader);
-			}
-
 			return {
+				descriptor: p,
 				toString: toString,
 				get: get,
-				list: list,
-				under: under,
-				build: build
+				list: list
 			};
 		};
 
@@ -236,7 +244,7 @@
 					var rv = [];
 					for (var i=0; i<mapping.length; i++) {
 						var listed = mapping[i].list(path);
-						var under = mapping[i].under(path);
+						var under = under(mapping[i].descriptor,path);
 						if (listed) {
 							rv = rv.concat(listed);
 						} else if (under) {
@@ -320,7 +328,7 @@
 
 			this.build = function(WEBAPP) {
 				mapping.forEach(function(item) {
-					item.build(WEBAPP);
+					build(item.descriptor,WEBAPP);
 				});
 			}
 		}
