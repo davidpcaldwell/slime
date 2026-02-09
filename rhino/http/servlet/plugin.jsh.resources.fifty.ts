@@ -6,22 +6,50 @@
 
 namespace slime.jsh.httpd {
 	export namespace internal.resources {
+		export interface MappingDescriptor {
+			directory?: slime.jrunscript.file.Directory
+			loader?: slime.old.Loader
+			prefix: string
+		}
+
 		export interface Mapping {
+			descriptor: MappingDescriptor
 			toString: () => string
 
 			get: (path: string) => slime.resource.Descriptor
 			list: (path: string) => slime.old.loader.Entry[]
-			under: (path: string) => string
-			build: (webapp: slime.jrunscript.file.Directory) => void
 		}
 
-		export type MappingConstructor = (
-			p: {
-				directory?: slime.jrunscript.file.Directory,
-				loader?: slime.old.Loader,
-				prefix: string
+		export type MappingConstructor = (p: MappingDescriptor) => Mapping
+	}
+
+	export namespace resources {
+		export interface Builder {
+			add: (m: { directory?: slime.jrunscript.file.Directory, loader?: slime.old.Loader, prefix: string }) => void
+
+			/** @deprecated */
+			map: {
+				(prefix: string, pathname: slime.jrunscript.file.Pathname): void
+				/** @deprecated Use the string, Pathname version */
+				(prefix: string, pathname: slime.jrunscript.file.Directory): void
 			}
-		) => Mapping
+
+			/**
+			 * Allows the execution of mapping information stored in a separate file; Executes the given {@link resources.Mapping} with
+			 * a {@link resources.Scope} created by combining information
+			 * from the mapping with the given scope argument, if any.
+			 */
+			file: (
+				file: resources.Mapping,
+				scope?: { [x: string]: any }
+			) => void
+		}
+
+		export interface Index {
+			loader: slime.old.Loader<slime.old.loader.Source, slime.Resource> | slime.old.Loader<any, slime.Resource> & { resource: any }
+
+			build: (to: slime.jrunscript.file.Directory) => void
+		}
 	}
 
 	/**
@@ -30,29 +58,7 @@ namespace slime.jsh.httpd {
 	 *
 	 * Resources objects consist of an ordered list of *mappings* which are searched, in order, for a given resource.
 	 */
-	export interface Resources {
-		add: (m: { directory?: slime.jrunscript.file.Directory, loader?: slime.old.Loader, prefix: string }) => void
-
-		/** @deprecated */
-		map: {
-			(prefix: string, pathname: slime.jrunscript.file.Pathname): void
-			/** @deprecated Use the string, Pathname version */
-			(prefix: string, pathname: slime.jrunscript.file.Directory): void
-		}
-
-		/**
-		 * Allows the execution of mapping information stored in a separate file; Executes the given {@link resources.Mapping} with
-		 * a {@link resources.Scope} created by combining information
-		 * from the mapping with the given scope argument, if any.
-		 */
-		file: (
-			file: resources.Mapping,
-			scope?: { [x: string]: any }
-		) => void
-
-		loader: slime.old.Loader<slime.old.loader.Source, slime.Resource> | slime.old.Loader<any, slime.Resource> & { resource: any }
-
-		build: (to: slime.jrunscript.file.Directory) => void
+	export interface Resources extends resources.Builder, resources.Index {
 	}
 
 	export namespace resources {
@@ -73,8 +79,8 @@ namespace slime.jsh.httpd {
 		export interface Scope {
 			$mapping: slime.jrunscript.file.File
 			/** @deprecated */
-			map: Resources["map"]
-			add?: Resources["add"]
+			map: resources.Builder["map"]
+			add?: resources.Builder["add"]
 		}
 
 		export interface Exports {
