@@ -49,7 +49,7 @@
 		 * @param { string } path
 		 * @returns { string | undefined }
 		 */
-		var under = function(p,path) {
+		var portionUnder = function(p,path) {
 			if (p.prefix.substring(0,path.length) == path) {
 				var remaining = p.prefix.substring(path.length);
 				var add = remaining.split("/")[0] + "/";
@@ -244,7 +244,7 @@
 					var rv = [];
 					for (var i=0; i<mapping.length; i++) {
 						var listed = mapping[i].list(path);
-						var under = under(mapping[i].descriptor,path);
+						var under = portionUnder(mapping[i].descriptor,path);
 						if (listed) {
 							rv = rv.concat(listed);
 						} else if (under) {
