@@ -208,10 +208,7 @@
 							}
 						});
 						if (!rv.loader) {
-							throw new Error("rv.loader");
-						}
-						if (!rv.loader["resource"]) {
-							throw new Error("rv.loader.resource");
+							throw new Error("No rv.loader");
 						}
 						return rv.loader;
 					})()
