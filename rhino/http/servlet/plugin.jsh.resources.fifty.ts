@@ -5,27 +5,29 @@
 //	END LICENSE
 
 namespace slime.jsh.httpd {
-	export namespace internal.resources {
+	export namespace resources {
 		export interface MappingDescriptor {
 			directory?: slime.jrunscript.file.Directory
 			loader?: slime.old.Loader
 			prefix: string
 		}
+	}
 
+	export namespace resources.internal {
 		export interface Mapping {
-			descriptor: MappingDescriptor
+			descriptor: jsh.httpd.resources.MappingDescriptor
 			toString: () => string
 
 			get: (path: string) => slime.resource.Descriptor
 			list: (path: string) => slime.old.loader.Entry[]
 		}
 
-		export type MappingConstructor = (p: MappingDescriptor) => Mapping
+		export type MappingConstructor = (p: jsh.httpd.resources.MappingDescriptor) => Mapping
 	}
 
 	export namespace resources {
 		export interface Builder {
-			add: (m: { directory?: slime.jrunscript.file.Directory, loader?: slime.old.Loader, prefix: string }) => void
+			add: (m: jsh.httpd.resources.MappingDescriptor) => void
 
 			/** @deprecated */
 			map: {
@@ -46,7 +48,7 @@ namespace slime.jsh.httpd {
 		}
 
 		export interface Index {
-			loader: slime.old.Loader<slime.old.loader.Source, slime.Resource> | slime.old.Loader<any, slime.Resource> & { resource: any }
+			loader: slime.jsh.httpd.servlet.configuration.WebappServlet["resources"]
 
 			build: (to: slime.jrunscript.file.Directory) => void
 		}

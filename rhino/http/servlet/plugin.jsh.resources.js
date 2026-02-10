@@ -45,7 +45,7 @@
 		};
 
 		/**
-		 * @param { slime.jsh.httpd.internal.resources.MappingDescriptor } p
+		 * @param { slime.jsh.httpd.resources.MappingDescriptor } p
 		 * @param { string } path
 		 * @returns { string | undefined }
 		 */
@@ -58,7 +58,7 @@
 		};
 
 		/**
-		 * @param { slime.jsh.httpd.internal.resources.MappingDescriptor } p
+		 * @param { slime.jsh.httpd.resources.MappingDescriptor } p
 		 * @param { slime.jrunscript.file.Directory } WEBAPP
 		 */
 		var build = function(p,WEBAPP) {
@@ -98,8 +98,8 @@
 		}
 
 		/**
-		 * @type { slime.jsh.httpd.internal.resources.MappingConstructor }
-		 * @param { Parameters<slime.jsh.httpd.internal.resources.MappingConstructor>[0] } p
+		 * @type { slime.jsh.httpd.resources.internal.MappingConstructor }
+		 * @param { Parameters<slime.jsh.httpd.resources.internal.MappingConstructor>[0] } p
 		 */
 		var Mapping = function(p) {
 			if (p.directory) {
@@ -139,7 +139,7 @@
 		 * @type { new () => slime.jsh.httpd.Resources }
 		 */
 		var Resources = function() {
-			/** @type { slime.jsh.httpd.internal.resources.Mapping[] } */
+			/** @type { slime.jsh.httpd.resources.internal.Mapping[] } */
 			var mapping = [];
 
 			/** @type { slime.jsh.httpd.Resources["add"] } */
