@@ -30,6 +30,7 @@ namespace slime.jrunscript {
 					toCharArray(): any
 					getBytes(): any
 					endsWith(suffix: java.lang.String): boolean
+					substring(start: number, end?: number): java.lang.String
 				}
 
 				export interface Number extends Object {}
@@ -350,6 +351,19 @@ namespace slime.jrunscript {
 			}
 		}
 
+		export namespace javax.servlet {
+			export interface ServletContext {
+				getMimeType(file: string): slime.jrunscript.native.java.lang.String
+				getResourcePaths(path: string): slime.jrunscript.native.java.util.Set<slime.jrunscript.native.java.lang.String>
+				getResource(path: string): slime.jrunscript.native.java.net.URL
+			}
+
+			export interface ServletConfig {
+				getInitParameterNames(): slime.jrunscript.native.java.util.Enumeration<slime.jrunscript.native.java.lang.String>
+				getInitParameter(name: string): slime.jrunscript.native.java.lang.String
+			}
+		}
+
 		export namespace javax.mail {
 			export namespace internet {
 				export interface MimeMultipart {
@@ -420,7 +434,8 @@ namespace slime.jrunscript {
 					export interface HostObject {
 						register: (_script: slime.jrunscript.native.inonit.script.servlet.Servlet.Script) => void
 						getLoader: () => slime.jrunscript.native.inonit.script.engine.Loader
-						getServlet: () => slime.jrunscript.native.inonit.script.servlet.Servlet
+						getServletContext: () => slime.jrunscript.native.javax.servlet.ServletContext
+						getServletConfig: () => slime.jrunscript.native.javax.servlet.ServletConfig
 					}
 				}
 
