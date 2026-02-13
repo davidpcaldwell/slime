@@ -9,15 +9,26 @@
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
-	 * @param { slime.servlet.internal.$host } $host
+	 * @param { slime.servlet.internal.$host } $host An object of type `slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject`
+	 * provided by the SLIME servlet environment upon initialization, or directly by the `jsh` servlet plugin in the case of `jsh`.
 	 */
 	function(Packages,JavaAdapter,$host) {
-		/** @type { ($host: slime.servlet.internal.$host) => $host is slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */
+		/**
+		 * Whether the `$host` argument is a Java host object (as opposed to a script-provided one); used to determine whether
+		 * we're running in a Java servlet container or a script-provided environment such as `jsh`.
+		 *
+		 * @type { ($host: slime.servlet.internal.$host) => $host is slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject }
+		 */
 		var isJava = function($host) {
 			return $host["register"];
 		};
 
-		/** @type { ($host: slime.servlet.internal.$host) => $host is slime.jrunscript.native.inonit.script.servlet.Rhino.Host } */
+		/**
+		 * Whether the `$host` object is specifically a Rhino host object. We need to know this so that we can execute the Rhino
+		 * versions of jrunscript bootstrap scripts.
+		 *
+		 * @type { ($host: slime.servlet.internal.$host) => $host is slime.jrunscript.native.inonit.script.servlet.Rhino.Host }
+		 */
 		var isRhino = function($host) {
 			return isJava($host) && $host["getEngine"];
 		};
@@ -67,34 +78,41 @@
 			}
 		})();
 
+		/**
+		 * An object providing access to selected attributes of the servlet configuration and context. Not present if this is not a
+		 * "real" servlet environment (for example, if running within `jsh`).
+		 */
 		var $servlet = (function() {
 			if (isJava($host)) {
 				var rv = {};
 				//	TODO	Find a way to use _url version of loader/jrunscript/expression.js constructor to get access to this object, probably
 				//			via the created loader's .source property
-				rv.resources = Packages.inonit.script.engine.Code.Loader.create($host.getServlet().getServletConfig().getServletContext().getResource("/"));
-				rv.path = $host.getServlet().getServletConfig().getInitParameter("script");
+				rv.resources = Packages.inonit.script.engine.Code.Loader.create($host.getServletContext().getResource("/"));
+
+				rv.path = $host.getServletConfig().getInitParameter("script");
+
 				rv.parameters = (function() {
 					/** @type { { [x: string]: string }} */
 					var rv = {};
-					var _enumeration = $host.getServlet().getServletConfig().getInitParameterNames();
+					var _enumeration = $host.getServletConfig().getInitParameterNames();
 					while(_enumeration.hasMoreElements()) {
-						var _key = _enumeration.nextElement();
-						var key = String(_key);
-						rv[key] = String($host.getServlet().getServletConfig().getInitParameter(_key));
+						var key = String(_enumeration.nextElement());
+						rv[key] = String($host.getServletConfig().getInitParameter(key));
 					}
 					return rv;
 				})();
+
 				rv.getMimeType = function(path) {
-					return $host.getServlet().getServletConfig().getServletContext().getMimeType(path);
+					return $host.getServletContext().getMimeType(path);
 				};
+
 				/**
 				 *
 				 * @param { string } prefix
 				 * @returns { string[] }
 				 */
 				rv.getResourcePaths = function(prefix) {
-					var _set = $host.getServlet().getServletContext().getResourcePaths("/" + prefix);
+					var _set = $host.getServletContext().getResourcePaths("/" + prefix);
 					var rv = [];
 					var _i = _set.iterator();
 					while(_i.hasNext()) {

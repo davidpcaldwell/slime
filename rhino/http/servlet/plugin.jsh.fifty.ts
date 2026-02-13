@@ -93,7 +93,7 @@ namespace slime.jsh.httpd {
 				 * An object whose property names are interpreted as URL patterns and property values are interpreted as servlet
 				 * declarations.
 				 */
-				servlets?: { [pattern: string]: servlet.Descriptor }
+				servlets?: { [pattern: string]: Descriptor }
 			}
 
 			/**

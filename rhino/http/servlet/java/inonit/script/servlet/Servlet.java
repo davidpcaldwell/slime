@@ -10,6 +10,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.*;
 
+import javax.servlet.*;
 import javax.servlet.http.*;
 
 import inonit.script.engine.*;
@@ -185,8 +186,12 @@ public class Servlet extends javax.servlet.http.HttpServlet {
 			return this.loader;
 		}
 
-		public Servlet getServlet() {
-			return servlet;
+		public ServletContext getServletContext() {
+			return servlet.getServletContext();
+		}
+
+		public ServletConfig getServletConfig() {
+			return servlet.getServletConfig();
 		}
 	}
 }
