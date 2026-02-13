@@ -98,6 +98,9 @@ namespace slime.jrunscript.runtime.io {
 	}
 
 	export namespace text {
+		/**
+		 * A character encoding, which represents both a bytes-to-characters mapping (a {@link Charset}) and a line terminator.
+		 */
 		export interface Encoding {
 			charset: Charset
 			newline: string
@@ -152,7 +155,7 @@ namespace slime.jrunscript.runtime.io {
 					string: "foo"
 				});
 
-				var string = input.content.string.simple(utf8);
+				var string = input.read.string.simple(utf8);
 
 				verify(string).is("foo");
 			}
@@ -166,7 +169,7 @@ namespace slime.jrunscript.runtime.io {
 	export interface InputStream {
 		//	TODO	rename to read, we have overloaded content to represent a tree
 
-		content: {
+		read: {
 			string: {
 				simple: (charset: Charset) => string
 			}
@@ -175,11 +178,6 @@ namespace slime.jrunscript.runtime.io {
 				simple: () => ArrayBuffer
 			}
 		}
-
-		/**
-		 * Closes the underlying stream.
-		 */
-		close: () => void
 	}
 
 	(
@@ -207,7 +205,7 @@ namespace slime.jrunscript.runtime.io {
 					test.javaInputStreamOf(array)
 				);
 
-				var ab = inputStream.content.ArrayBuffer.simple();
+				var ab = inputStream.read.ArrayBuffer.simple();
 
 				verify(ab).evaluate($api.fp.property("byteLength")).is(len);
 
@@ -221,7 +219,7 @@ namespace slime.jrunscript.runtime.io {
 				var input = test.subject.InputStream.string.default("it");
 				input.close();
 				//	TODO	looks like test would fail under Nashorn, which propagates errors differently
-				verify(input).evaluate( function(i) { return i.content.string.simple(test.subject.Charset.standard.utf8); }).threw.type(Error);
+				verify(input).evaluate( function(i) { return i.read.string.simple(test.subject.Charset.standard.utf8); }).threw.type(Error);
 			}
 		}
 	//@ts-ignore
@@ -286,6 +284,13 @@ namespace slime.jrunscript.runtime.io {
 	)(Packages,fifty);
 
 	export interface InputStream {
+		/**
+		 * Closes the underlying stream.
+		 */
+		close: () => void
+	}
+
+	export interface InputStream {
 		/** Operations that bridge to Java constructs. */
 		java: {
 			/** Returns a Java `java.io.InputStream` equivalent to this stream. */
@@ -297,7 +302,9 @@ namespace slime.jrunscript.runtime.io {
 			//			callers can switch to that.
 			array: () => slime.jrunscript.Array<slime.jrunscript.native.java.lang.Byte>
 		}
+	}
 
+	export interface InputStream {
 		/**
 		 * @deprecated Use `Reader.stream` to create a `Reader` from an `InputStream`.
 		 *
@@ -339,7 +346,7 @@ namespace slime.jrunscript.runtime.io {
 			adapt: () => slime.jrunscript.native.java.io.OutputStream
 		}
 
-		//	Possibly unused
+		//	TODO	Possibly unused; hard to search for downstream usages because of String.prototype.split
 		split: (other: any) => OutputStream
 	}
 
@@ -660,7 +667,7 @@ namespace slime.jrunscript.runtime.io {
 				});
 				writer.write("bar!");
 				writer.close();
-				var string = b.readBinary().content.string.simple(utf8);
+				var string = b.readBinary().read.string.simple(utf8);
 				verify(string).is("bar!");
 			}
 		}
@@ -734,6 +741,7 @@ namespace slime.jrunscript.runtime.io {
 					var input = test.subject.InputStream.string.default(original);
 					var all: string = "";
 					var lines: string[] = [];
+					var doneCount = 0;
 					var processor = $api.fp.now(
 						test.subject.wo.text({
 							charset: test.subject.Charset.default,
@@ -746,21 +754,33 @@ namespace slime.jrunscript.runtime.io {
 							},
 							line: function(e) {
 								lines.push(e.detail);
+							},
+							done: function() {
+								doneCount++;
 							}
 						})
 					);
+
+					verify(doneCount).is(0);
+
 					processor(input);
+
 					verify(all).is(original);
+
 					verify(lines).length.is(3);
 					verify(lines)[0].is("foo");
 					verify(lines)[1].is("bar");
 					verify(lines)[2].is("baz");
+
+					verify(doneCount).is(1);
 				});
 
 				fifty.run(function terminator() {
 					var input = test.subject.InputStream.string.default(original + "\n");
+
 					var all: string = "";
 					var lines: string[] = [];
+
 					var processor = $api.fp.now(
 						test.subject.wo.text({
 							charset: test.subject.Charset.default,
@@ -776,9 +796,13 @@ namespace slime.jrunscript.runtime.io {
 							}
 						})
 					);
+
 					processor(input);
+
 					verify(all).is(original + "\n");
+
 					verify(lines).length.is(4);
+
 					verify(lines)[0].is("foo");
 					verify(lines)[1].is("bar");
 					verify(lines)[2].is("baz");

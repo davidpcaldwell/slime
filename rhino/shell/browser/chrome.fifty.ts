@@ -53,7 +53,7 @@ namespace slime.jrunscript.shell.browser {
 			exitOnClose?: boolean
 
 			on?: {
-				start?: (this: slime.jrunscript.shell.browser.object.RunArguments, p: slime.jrunscript.shell.run.old.events.Event & {
+				start?: (this: slime.jrunscript.shell.browser.object.RunArguments, p: slime.jrunscript.shell.run.minus2.events.Event & {
 					pid: number;
 					kill: () => void;
 				}) => void

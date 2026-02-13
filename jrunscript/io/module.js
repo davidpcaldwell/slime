@@ -58,7 +58,7 @@
 		var InputStream = {
 			string: function(stream) {
 				return function() {
-					return stream.content.string.simple($api.jrunscript.io.Charset.default);
+					return stream.read.string.simple($api.jrunscript.io.Charset.default);
 				};
 			},
 			from: {

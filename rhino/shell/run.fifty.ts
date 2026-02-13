@@ -52,7 +52,7 @@ namespace slime.jrunscript.shell.subprocess {
 }
 
 namespace slime.jrunscript.shell.context.subprocess {
-	export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
+	export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.minus1.Invocation, slime.jrunscript.shell.run.TellEvents>
 }
 
 namespace slime.jrunscript.shell.internal.run {
@@ -97,7 +97,7 @@ namespace slime.jrunscript.shell.internal.run {
 		test: {
 			Invocation: {
 				from: {
-					intention: (parent: shell.run.internal.Parent) => (plan: shell.run.Intention) => shell.run.Invocation
+					intention: (parent: shell.run.internal.Parent) => (plan: shell.run.Intention) => shell.run.minus1.Invocation
 				}
 			}
 
@@ -191,12 +191,31 @@ namespace slime.jrunscript.shell.run {
 		}
 	}
 
+	export namespace minus1 {
+		export interface Invocation {
+			environment: Environment
+			directory: Intention["directory"]
+			command: Intention["command"]
+			arguments: Intention["arguments"]
+
+			stdio: StdioConfiguration
+		}
+	}
+
 	export interface Invocation {
-		environment: Environment
-		directory: Intention["directory"]
-		stdio: StdioConfiguration
-		command: Intention["command"]
-		arguments: Intention["arguments"]
+		context: {
+			environment: Environment
+			directory: string
+		}
+
+		process: {
+			command: string
+			arguments: string[]
+		}
+
+		input: slime.jrunscript.runtime.io.InputStream
+
+
 	}
 
 	export namespace internal {
@@ -318,7 +337,7 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export namespace test {
-		export const ls: shell.run.old.Invocation = (function(fifty: slime.fifty.test.Kit) {
+		export const ls: shell.run.minus2.Invocation = (function(fifty: slime.fifty.test.Kit) {
 			return {
 				context: {
 					environment: fifty.global.jsh.shell.environment,
@@ -366,7 +385,7 @@ namespace slime.jrunscript.shell.internal.run {
 	)(fifty);
 
 	export interface Exports {
-		run: slime.$api.fp.world.old.Action<slime.jrunscript.shell.run.old.Invocation,slime.jrunscript.shell.run.TellEvents>
+		run: slime.$api.fp.world.old.Action<slime.jrunscript.shell.run.minus2.Invocation,slime.jrunscript.shell.run.TellEvents>
 	}
 
 	(
@@ -446,14 +465,14 @@ namespace slime.jrunscript.shell.internal.run {
 			 * @deprecated
 			 */
 			run: (
-				context: slime.jrunscript.shell.run.old.Context,
-				configuration: slime.jrunscript.shell.run.old.Configuration,
+				context: slime.jrunscript.shell.run.minus2.Context,
+				configuration: slime.jrunscript.shell.run.minus2.Configuration,
 				module: {
 					events: any
 				},
-				events: slime.jrunscript.shell.run.old.Events,
-				p: slime.jrunscript.shell.run.old.Argument,
-				invocation: slime.jrunscript.shell.run.old.Argument,
+				events: slime.jrunscript.shell.run.minus2.Events,
+				p: slime.jrunscript.shell.run.minus2.Argument,
+				invocation: slime.jrunscript.shell.run.minus2.Argument,
 				isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
 			) => slime.jrunscript.shell.run.Exit
 		}

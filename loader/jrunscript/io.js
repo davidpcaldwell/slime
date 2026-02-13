@@ -132,7 +132,7 @@
 			};
 
 			return {
-				content: {
+				read: {
 					string: {
 						simple: function(charset) {
 							var _reader = new Packages.java.io.InputStreamReader(peer, charset.java.adapt());

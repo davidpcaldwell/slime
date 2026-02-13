@@ -363,14 +363,14 @@
 
 		/**
 		 *
-		 * @param { (invocation: slime.jrunscript.shell.run.old.Invocation) => slime.jrunscript.shell.run.Mock } delegate
+		 * @param { (invocation: slime.jrunscript.shell.run.minus2.Invocation) => slime.jrunscript.shell.run.Mock } delegate
 		 * @returns
 		 */
 		var mockRun = function(delegate) {
 			return (
 				/**
 				 *
-				 * @param { slime.jrunscript.shell.run.old.Invocation } invocation
+				 * @param { slime.jrunscript.shell.run.minus2.Invocation } invocation
 				 * @returns
 				 */
 				function(invocation) {
@@ -386,10 +386,10 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.run.old.Invocation } old
-		 * @returns { slime.jrunscript.shell.run.Invocation }
+		 * @param { slime.jrunscript.shell.run.minus2.Invocation } old
+		 * @returns { slime.jrunscript.shell.run.minus1.Invocation }
 		 */
-		var modernize = function(old) {
+		var toMinus1 = function(old) {
 			return {
 				command: old.configuration.command,
 				arguments: old.configuration.arguments,
@@ -402,7 +402,7 @@
 		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
-			var action = world(modernize({ context: context, configuration: configuration }));
+			var action = world(toMinus1({ context: context, configuration: configuration }));
 			$api.fp.world.Action.now({
 				action: action,
 				handlers: {
@@ -540,7 +540,7 @@
 				)()
 			},
 			action: function(old) {
-				return world(modernize(old));
+				return world(toMinus1(old));
 			},
 			question: function(invocation) {
 				return function(events) {
@@ -548,7 +548,7 @@
 					var rv;
 					$api.fp.impure.now.process(
 						$api.fp.world.process(
-							world(modernize(invocation)),
+							world(toMinus1(invocation)),
 							{
 								start: function(e) {
 									events.fire("start", e.detail);
@@ -571,7 +571,7 @@
 			run: function(invocation) {
 				return function(handler) {
 					$api.fp.world.now.tell(
-						world(modernize(invocation)),
+						world(toMinus1(invocation)),
 						handler
 					);
 				}

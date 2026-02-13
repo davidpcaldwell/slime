@@ -278,4 +278,9 @@ class NodeImpl extends Filesystem.Node {
 	public void invalidate() {
 		uncache();
 	}
+
+	@Override
+	public boolean isSymlink() throws IOException {
+		throw new UnsupportedOperationException("Unimplemented method 'isSymlink'");
+	}
 }

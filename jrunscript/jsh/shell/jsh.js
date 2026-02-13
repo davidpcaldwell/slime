@@ -635,7 +635,7 @@
 
 		$exports.jsh = Object.assign(
 			/**
-			 * @type { slime.jsh.shell.JshInvoke }
+			 * @type { slime.jsh.shell.JshOldInvoke }
 			 */
 			function(p) {
 				//	Deal with old, two-argument form
