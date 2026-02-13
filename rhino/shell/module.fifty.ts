@@ -790,7 +790,7 @@ namespace slime.jrunscript.shell {
 
 	export namespace jrunscript {
 		export namespace old {
-			export type Invocation = Omit<slime.jrunscript.shell.run.old.Argument,"command"|"arguments"> & {
+			export type Invocation = Omit<slime.jrunscript.shell.run.minus2.Argument,"command"|"arguments"> & {
 				/**
 				 * Provides arguments to the script invocation (including the script as the first argument). These arguments
 				 * will be augmented by those indicated by the `vmarguments` and `properties` properties.
@@ -966,12 +966,12 @@ namespace slime.jrunscript.shell {
 			 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
 			 * the appropriate `Tell` and fire the appropriate events to the caller.
 			 */
-			mock: (delegate: (invocation: shell.run.old.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.old.Invocation,run.TellEvents>
+			mock: (delegate: (invocation: shell.run.minus2.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.minus2.Invocation,run.TellEvents>
 
 			/** @deprecated */
-			question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+			question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.minus2.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 			/** @deprecated */
-			action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
+			action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.minus2.Invocation, slime.jrunscript.shell.run.TellEvents>
 		}
 	}
 

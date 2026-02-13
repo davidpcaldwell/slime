@@ -241,13 +241,13 @@ namespace slime.jsh.shell {
 
 				workingDirectory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"]
 
-				evaluate?: slime.jrunscript.shell.run.old.evaluate<T>
+				evaluate?: slime.jrunscript.shell.run.minus2.evaluate<T>
 
 				/**
 				 * A callback function that will be invoked when the subprocess exits. The function will be invoked with an argument
 				 * containing information about the subprocess.
 				 */
-				onExit?: slime.jrunscript.shell.run.old.evaluate<T>
+				onExit?: slime.jrunscript.shell.run.minus2.evaluate<T>
 			}
 		}
 	}
@@ -719,7 +719,7 @@ namespace slime.jsh.shell {
 		// 	//			etc. and make sure everything was strictly encapsulated.
 		// 	stdio: Invocation["stdio"]
 		// }
-		export type ForkResult = slime.jrunscript.shell.run.old.Result & {
+		export type ForkResult = slime.jrunscript.shell.run.minus2.Result & {
 			/**
 			 * The operating system command invoked.
 			 */
@@ -779,7 +779,7 @@ namespace slime.jsh.shell {
 			 */
 			evaluate?: evaluate<Result,R>
 
-			on?: slime.jrunscript.shell.run.old.Argument["on"]
+			on?: slime.jrunscript.shell.run.minus2.Argument["on"]
 		}
 
 		export interface EngineInvocation<R = EngineResult> extends Invocation<R> {

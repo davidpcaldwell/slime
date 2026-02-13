@@ -318,7 +318,7 @@ namespace slime.jrunscript.tools.git {
 				 * An alternative implementation for the launching of the `git` subprocess. The most likely use case for
 				 * this is in mocking.
 				 */
-				run: (invocation: slime.jrunscript.shell.run.old.Invocation) => slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents>
+				run: (invocation: slime.jrunscript.shell.run.minus2.Invocation) => slime.$api.fp.world.old.Tell<slime.jrunscript.shell.run.TellEvents>
 			}
 		}
 	}
@@ -387,7 +387,7 @@ namespace slime.jrunscript.tools.git {
 		shell: (p: {
 			invocation: slime.jrunscript.tools.git.Invocation
 			stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
-		}) => shell.run.old.Invocation
+		}) => shell.run.minus2.Invocation
 
 		command: exports.command.Executor
 
@@ -448,10 +448,10 @@ namespace slime.jrunscript.tools.git {
 						.command(internal.subject.commands.status)
 						.argument()
 					;
-					var invocation: shell.run.old.Invocation;
+					var invocation: shell.run.minus2.Invocation;
 					executor.run({
 						world: {
-							run: function(created: shell.run.old.Invocation) {
+							run: function(created: shell.run.minus2.Invocation) {
 								invocation = created;
 								return fifty.global.$api.fp.world.old.tell(function(events) {
 									events.fire("exit", {
@@ -514,7 +514,7 @@ namespace slime.jrunscript.tools.git {
 						}
 					);
 
-					var invoked: shell.run.old.Invocation;
+					var invoked: shell.run.minus2.Invocation;
 					var stderr: string[] = [];
 					var stdout = [];
 					var output = internal.subject.program({ command: "boo" })
@@ -558,7 +558,7 @@ namespace slime.jrunscript.tools.git {
 				pathname?: string
 				invocation: slime.jrunscript.tools.git.Invocation
 				stdio: slime.jrunscript.shell.invocation.Argument["stdio"]
-			}) => shell.run.old.Invocation
+			}) => shell.run.minus2.Invocation
 		}
 	}
 
@@ -621,7 +621,7 @@ namespace slime.jrunscript.tools.git {
 			invocation: (p: {
 				client: Client,
 				invocation: Invocation
-			}) => slime.jrunscript.shell.run.old.Invocation
+			}) => slime.jrunscript.shell.run.minus2.Invocation
 		}
 	}
 

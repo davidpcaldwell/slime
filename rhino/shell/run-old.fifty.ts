@@ -432,7 +432,7 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace run.old {
+	export namespace run.minus2 {
 		/**
 		 * A function that will be invoked when the subprocess terminates, will be provided with information about the result, and
 		 * specifies the return value of `run`.
@@ -442,7 +442,7 @@ namespace slime.jrunscript.shell {
 		 *
 		 * @returns An arbitrary value to return as the return value of the subprocess.
 		 */
-		export type evaluate<T> = (p: run.old.Result) => T
+		export type evaluate<T> = (p: run.minus2.Result) => T
 	}
 
 	export namespace exports {
@@ -450,7 +450,7 @@ namespace slime.jrunscript.shell {
 			/** @deprecated */
 			from: {
 				/** @deprecated */
-				argument: (p: invocation.Argument) => run.old.Invocation
+				argument: (p: invocation.Argument) => run.minus2.Invocation
 			}
 
 			/** @deprecated Use `from.argument`. */
@@ -463,7 +463,7 @@ namespace slime.jrunscript.shell {
 			 * @param settings A set of `sudo` settings.
 			 * @returns An invocation that will run the given invocation under `sudo`.
 			 */
-			sudo: (settings: sudo.Settings) => slime.$api.fp.Transform<run.old.Invocation>
+			sudo: (settings: sudo.Settings) => slime.$api.fp.Transform<run.minus2.Invocation>
 
 			handler: {
 				stdio: {
@@ -592,14 +592,14 @@ namespace slime.jrunscript.shell {
 	}
 
 	export namespace run {
-		export namespace old {
+		export namespace minus2 {
 			export interface Argument extends invocation.old.Argument {
 				as?: {
 					user: string
 				}
 
 				on?: {
-					start: (data: old.events.Events["start"]) => void
+					start: (data: minus2.events.Events["start"]) => void
 				}
 
 				/** @deprecated */
@@ -705,20 +705,20 @@ namespace slime.jrunscript.shell {
 		 * @returns The value returned by the function given as the `evaluate` property of the argument, or by the default
 		 * implementation of `evaluate`.
 		 */
-		export type Run<P = run.old.Argument> = {
+		export type Run<P = run.minus2.Argument> = {
 			<T>(
 				p: P & {
-					evaluate: run.old.evaluate<T>
+					evaluate: run.minus2.evaluate<T>
 				},
-				events?: run.old.Handler
+				events?: run.minus2.Handler
 			): T
 
 			(
 				p: P,
-				events?: run.old.Handler
-			): run.old.Result
+				events?: run.minus2.Handler
+			): run.minus2.Result
 
-			(p: run.old.Argument, events?: run.old.Handler): run.old.Result
+			(p: run.minus2.Argument, events?: run.minus2.Handler): run.minus2.Result
 		}
 	}
 
@@ -780,7 +780,7 @@ namespace slime.jrunscript.shell {
 					start: void(0)
 				}
 
-				var argument: slime.jrunscript.shell.run.old.Argument = {
+				var argument: slime.jrunscript.shell.run.minus2.Argument = {
 					command: "ls",
 					directory: here,
 					on: {
@@ -790,7 +790,7 @@ namespace slime.jrunscript.shell {
 					}
 				};
 
-				var captured: run.old.events.Events = {
+				var captured: run.minus2.events.Events = {
 					start: void(0),
 					terminate: void(0)
 				};
@@ -922,7 +922,7 @@ namespace slime.jrunscript.shell {
 	}
 }
 
-namespace slime.jrunscript.shell.run.old {
+namespace slime.jrunscript.shell.run.minus2 {
 	export interface Context {
 		environment: slime.jrunscript.java.Environment
 		directory: string

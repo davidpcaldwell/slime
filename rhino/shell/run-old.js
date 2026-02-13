@@ -296,7 +296,7 @@
 		 * the deprecated `stdin`, `stdout`, and `stderr` if needed, and finelly returning an empty object. May return `null` if
 		 * the `stdio` property is `null`.
 		 *
-		 * @param { slime.jrunscript.shell.run.old.Argument } p
+		 * @param { slime.jrunscript.shell.run.minus2.Argument } p
 		 * @return { slime.jrunscript.shell.invocation.old.Argument["stdio"] }
 		 */
 		function extractStdioIncludingEmptyAndDeprecatedForms(p) {
@@ -350,7 +350,7 @@
 		 * @param { Pick<slime.jrunscript.shell.invocation.old.Argument, "stdio" | "environment" | "directory"> } p
 		 * @param { slime.jrunscript.java.Environment } parentEnvironment
 		 * @param { slime.jrunscript.shell.parent.Stdio } parentStdio
-		 * @returns { slime.jrunscript.shell.run.old.Context }
+		 * @returns { slime.jrunscript.shell.run.minus2.Context }
 		 */
 		var toContext = function(p, parentEnvironment, parentStdio) {
 
@@ -400,7 +400,7 @@
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 * @param { slime.jrunscript.shell.run.old.Events } events
+		 * @param { slime.jrunscript.shell.run.minus2.Events } events
 		 */
 		var run = function(p,events) {
 			var as;
@@ -510,7 +510,7 @@
 			var directory = (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory;
 
 			/**
-			 * @type { slime.jrunscript.shell.run.old.Argument }
+			 * @type { slime.jrunscript.shell.run.minus2.Argument }
 			 */
 			var input = {
 				command: invocation.result.command,

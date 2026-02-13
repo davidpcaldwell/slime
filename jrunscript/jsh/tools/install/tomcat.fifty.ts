@@ -433,7 +433,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 					lib: slime.jrunscript.file.world.Location
 				}
 				script: slime.jrunscript.file.world.Location
-			}): slime.jrunscript.shell.run.old.Invocation {
+			}): slime.jrunscript.shell.run.minus2.Invocation {
 				var invocation = jsh.shell.Invocation.from.argument({
 					command: "bash",
 					arguments: $api.Array.build(function(rv) {

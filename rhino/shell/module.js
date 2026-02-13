@@ -291,7 +291,7 @@
 			function(p) {
 				//	TODO	check for both p.classpath and p.jar being defined and decide what to do
 				var launcher = $exports.java.launcher;
-				/** @type { slime.jrunscript.shell.run.old.Argument } */
+				/** @type { slime.jrunscript.shell.run.minus2.Argument } */
 				var shell = {
 					command: launcher
 				};
