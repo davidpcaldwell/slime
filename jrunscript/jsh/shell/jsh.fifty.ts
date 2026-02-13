@@ -307,7 +307,7 @@ namespace slime.jsh.shell {
 	}
 
 	export interface Exports {
-		jsh: JshInvoke & JshShellJsh
+		jsh: JshOldInvoke & JshShellJsh
 	}
 
 	(
@@ -801,7 +801,7 @@ namespace slime.jsh.shell {
 
 	//	TODO	add tests for packaged shell
 	//	TODO	add tests for remote shell
-	export interface JshInvoke {
+	export interface JshOldInvoke {
 		<R>(p: oo.ForkInvocation<R>): R
 		<R>(p: oo.EngineInvocation<R>): R
 	}

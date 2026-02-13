@@ -194,9 +194,10 @@ namespace slime.jrunscript.shell.run {
 	export interface Invocation {
 		environment: Environment
 		directory: Intention["directory"]
-		stdio: StdioConfiguration
 		command: Intention["command"]
 		arguments: Intention["arguments"]
+
+		stdio: StdioConfiguration
 	}
 
 	export namespace internal {
