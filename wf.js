@@ -15,19 +15,6 @@
 	 * @param { slime.project.wf.Interface } $exports
 	 */
 	function(Packages,$api,jsh,$context,$loader,$exports) {
-		var $$api = {
-			Function: {
-				switch: function() {
-					var patterns = arguments;
-					return function() {
-						for (var i=0; i<patterns.length; i++) {
-							if (patterns[i].case.apply(this,arguments)) return patterns[i].use.apply(this,arguments);
-						}
-					}
-				}
-			}
-		}
-
 		function synchronizeEclipseSettings() {
 			//	copy project settings to Eclipse project if they differ from current settings
 			var changed = false;
