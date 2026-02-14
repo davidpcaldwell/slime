@@ -175,6 +175,22 @@ namespace slime.servlet {
 		}
 
 		export type $host = slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject | $host.jsh
+
+		export interface Context {
+			toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
+			context: httpd["context"]
+			loaders: Loaders
+			api: api
+			$slime: httpd["$slime"]
+			reload: httpd["$reload"]
+
+			//	TODO	jsh allows any type, not just string. Should consider how to deal with this.
+			parameters: { [x: string]: string }
+
+			loadServletScriptIntoScope: (scope: slime.servlet.Scope) => void
+			Servlet: (script: slime.servlet.Script) => slime.servlet.internal.server.Servlet
+			register: (servlet: slime.servlet.internal.server.Servlet) => void
+		}
 	}
 
 	(
