@@ -405,12 +405,6 @@
 														container: servletImplementation.resources
 													},
 
-													Loader: {
-														tools: {
-															toExportScope: jsh.io.old.loader.tools.toExportScope
-														}
-													},
-
 													loadServletScriptIntoScope: servletImplementation.servlet.load,
 
 													$slime: $slime,
