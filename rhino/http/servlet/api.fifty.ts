@@ -183,7 +183,10 @@ namespace slime.servlet {
 			api: api
 			$slime: httpd["$slime"]
 			reload: httpd["$reload"]
+
+			//	TODO	jsh allows any type, not just string. Should consider how to deal with this.
 			parameters: { [x: string]: string }
+
 			loadServletScriptIntoScope: (scope: slime.servlet.Scope) => void
 			Servlet: (script: slime.servlet.Script) => slime.servlet.internal.server.Servlet
 			register: (servlet: slime.servlet.internal.server.Servlet) => void

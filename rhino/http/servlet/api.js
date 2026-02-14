@@ -45,7 +45,6 @@
 				//	TODO	there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
 				//	Packages.java.lang.System.err.println("$host.getLoader = " + $host.getLoader + " $host.getEngine = " + $host.getEngine + " $host.getClasspath = " + $host.getClasspath);
 				if (isRhino($host)) {
-					debugger;
 					//	TODO	consider pushing these details back into inonit.script.servlet.Rhino.Host
 					//			would need to construct the two-property scope object below; rest should be straightforward.
 					//			Need also to identify test case
@@ -264,7 +263,6 @@
 						var path = String($servlet.path);
 						var tokens = path.split("/");
 						var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
-						Packages.java.lang.System.err.println("Creating application loader with prefix " + prefix);
 						var loader = Loader({
 							_source: $servlet.resources
 						});
@@ -366,7 +364,7 @@
 				servlet.destroy();
 				loadServletScriptIntoScope(scope);
 				servlet.reload(scope.$exports);
-			} : null;
+			} : void(0);
 
 			return {
 				toExportScope: toExportScope,
