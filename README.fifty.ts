@@ -142,7 +142,15 @@
  *
  * ### Bundled tools and examples
  *
- * SLIME has several potentially useful programs bundled in its distribution.
+ * SLIME has several development support tools and potentially useful programs bundled in its distribution.
+ *
+ * #### Profile a `jsh` script under Rhino
+ *
+ * SLIME provides a Rhino profiler that can run a given script under a profiler and emit timing data about a program.
+ *
+ * The profiler can be invokved using `./jsh jrunscript/jsh/tools/profile.jsh.js *script* [*args*]`, where `*script*` is a
+ * `jsh` to run under the profiler, and `*args*` are any arguments to pass to the script. The profiler can be configured with
+ * profiler-specific options; see the `profile.jsh.js` file for details.
  *
  * #### Serve a directory (and optionally open a Chrome browser to browse it)
  *
