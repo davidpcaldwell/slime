@@ -140,12 +140,6 @@ namespace slime.servlet {
 
 				loaders?: Loaders
 
-				Loader: {
-					tools: {
-						toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
-					}
-				}
-
 				/**
 				 * The set of parameters to provide to the servlet. Note that unlike native Java servlets, `jsh`-embedded servlets
 				 * may provide parameters of any type.
@@ -177,7 +171,6 @@ namespace slime.servlet {
 		export type $host = slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject | $host.jsh
 
 		export interface Context {
-			toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
 			context: httpd["context"]
 			loaders: Loaders
 			api: api

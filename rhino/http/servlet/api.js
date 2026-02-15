@@ -41,7 +41,7 @@
 			}
 
 			/** @type { slime.jrunscript.runtime.Exports } */
-			var $java = (function() {
+			var $slime = (function() {
 				//	TODO	there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
 				//	Packages.java.lang.System.err.println("$host.getLoader = " + $host.getLoader + " $host.getEngine = " + $host.getEngine + " $host.getClasspath = " + $host.getClasspath);
 				if (isRhino($host)) {
@@ -73,7 +73,7 @@
 					);
 					return rv;
 				} else if (isScript($host)) {
-					return void(0);
+					return $host.$slime;
 				} else {
 					throw new Error("Unreachable.");
 				}
@@ -125,67 +125,57 @@
 				}
 			})();
 
-			var toExportScope = (function() {
-				if ($java) return $java.old.loader.tools.toExportScope;
-				if (isScript($host)) {
-					return $host.Loader.tools.toExportScope;
-				}
-			})();
-
-			var bootstrap = (
-				/**
-				 *
-				 * @returns { slime.servlet.internal.api }
-				 */
-				function() {
-					if ($java && $servlet) {
-						var loader = new $java.Loader({
-							_source: $servlet.resources
-						});
-						var code = {
-							/** @type { slime.jrunscript.java.Script } */
-							java: loader.script("WEB-INF/slime/jrunscript/host/"),
-							/** @type { slime.jrunscript.io.Script } */
-							io: loader.script("WEB-INF/slime/jrunscript/io/"),
-							/** @type { slime.web.Script } */
-							web: loader.script("WEB-INF/slime/js/web/")
-						};
-						var rv = {};
-						rv.$api = $java.$api;
-						rv.js = loader.module("WEB-INF/slime/js/object/", {
-							globals: true
-						});
-						rv.java = code.java({
-							$slime: $java,
-							logging: {
-								prefix: "slime.servlet"
-							}
-						});
-						rv.io = code.io({
-							$slime: $java,
-							api: {
-								java: rv.java
-							},
-							nojavamail: false
-						});
-						rv.web = code.web(loader.file("WEB-INF/slime/js/web/context.java.js"));
-						rv.loader = {
-							paths: function(prefix) {
-								return $servlet.getResourcePaths(prefix);
-							}
-						}
-
-						rv.js.web = rv.web;
-						$java.$api.deprecate(rv.js, "web");
-
-						return rv;
-					}
-				}
-			)();
-
 			/** @type { slime.servlet.internal.api } */
 			var api = (function() {
-				if (bootstrap) {
+				if ($servlet) {
+					var bootstrap = (
+						/**
+						 *
+						 * @returns { slime.servlet.internal.api }
+						 */
+						function() {
+							var loader = new $slime.Loader({
+								_source: $servlet.resources
+							});
+							var code = {
+								/** @type { slime.jrunscript.java.Script } */
+								java: loader.script("WEB-INF/slime/jrunscript/host/"),
+								/** @type { slime.jrunscript.io.Script } */
+								io: loader.script("WEB-INF/slime/jrunscript/io/"),
+								/** @type { slime.web.Script } */
+								web: loader.script("WEB-INF/slime/js/web/")
+							};
+							var rv = {};
+							rv.$api = $slime.$api;
+							rv.js = loader.module("WEB-INF/slime/js/object/", {
+								globals: true
+							});
+							rv.java = code.java({
+								$slime: $slime,
+								logging: {
+									prefix: "slime.servlet"
+								}
+							});
+							rv.io = code.io({
+								$slime: $slime,
+								api: {
+									java: rv.java
+								},
+								nojavamail: false
+							});
+							rv.web = code.web(loader.file("WEB-INF/slime/js/web/context.java.js"));
+							rv.loader = {
+								paths: function(prefix) {
+									return $servlet.getResourcePaths(prefix);
+								}
+							}
+
+							rv.js.web = rv.web;
+							$slime.$api.deprecate(rv.js, "web");
+
+							return rv;
+						}
+					)();
 					return bootstrap;
 				} else if (isScript($host)) {
 					return $host.api;
@@ -197,66 +187,64 @@
 				 * @return { slime.servlet.internal.Loaders }
 				 */
 				function() {
-					if ($java && $servlet) {
+					if ($servlet) {
 						/**
 						 * @type { (p: any, prefix?: any) => slime.old.Loader }
 						 */
 						var Loader = (function() {
-							if (bootstrap) {
-								var Loader = function(p,prefix) {
-									/** @type { slime.old.loader.Source } */
-									var source = {
-										get: function(path) {
-											var pp = {};
-											pp._source = (prefix) ? p._source.child(prefix) : p._source;
-											pp.type = function(path) {
-												var _type = $servlet.getMimeType(path);
-												if (/\.css$/.test(path)) {
-													_type = new Packages.java.lang.String("text/css");
-												}
-												if (_type) return bootstrap.io.mime.Type.parse(String(_type));
-												return null;
-											};
+							var Loader = function(p,prefix) {
+								/** @type { slime.old.loader.Source } */
+								var source = {
+									get: function(path) {
+										var pp = {};
+										pp._source = (prefix) ? p._source.child(prefix) : p._source;
+										pp.type = function(path) {
+											var _type = $servlet.getMimeType(path);
+											if (/\.css$/.test(path)) {
+												_type = new Packages.java.lang.String("text/css");
+											}
+											if (_type) return api.io.mime.Type.parse(String(_type));
+											return null;
+										};
 
-											var delegate = new bootstrap.io.Loader(pp);
-											var delegated = delegate.source.get(path);
-											if (!delegated) return null;
-											return bootstrap.$api.Object.compose(delegated, {
-												type: pp.type(path)
-											});
-										},
-										list: function(path) {
-											var full = prefix + path;
-											return bootstrap.loader.paths(full).map(function(string) {
-												if (string.substring(string.length-1) == "/") {
-													return {
-														path: string.substring(0,string.length-1),
-														loader: true,
-														resource: false
-													}
-												} else {
-													return {
-														path: string,
-														loader: false,
-														resource: true
-													}
+										var delegate = new api.io.Loader(pp);
+										var delegated = delegate.source.get(path);
+										if (!delegated) return null;
+										return api.$api.Object.compose(delegated, {
+											type: pp.type(path)
+										});
+									},
+									list: function(path) {
+										var full = prefix + path;
+										return api.loader.paths(full).map(function(string) {
+											if (string.substring(string.length-1) == "/") {
+												return {
+													path: string.substring(0,string.length-1),
+													loader: true,
+													resource: false
 												}
-											});
-										}
+											} else {
+												return {
+													path: string,
+													loader: false,
+													resource: true
+												}
+											}
+										});
 									}
-									// var rv = new bootstrap.io.Loader(pp);
-									var rv = new bootstrap.io.Loader(source);
-									//	TODO	Below failed TypeScript and didn't seem to make sense; remove when safe
-									// rv.list = function(m) {
-									// 	var path = prefix + m.path;
-									// 	var rv = bootstrap.loader.paths(path);
-									// 	return rv;
-									// }
-									return rv;
 								}
-
-								return Loader;
+								// var rv = new bootstrap.io.Loader(pp);
+								var rv = new api.io.Loader(source);
+								//	TODO	Below failed TypeScript and didn't seem to make sense; remove when safe
+								// rv.list = function(m) {
+								// 	var path = prefix + m.path;
+								// 	var rv = bootstrap.loader.paths(path);
+								// 	return rv;
+								// }
+								return rv;
 							}
+
+							return Loader;
 						})();
 
 						//	servlet container, determine webapp path and load relative to that
@@ -278,7 +266,7 @@
 					} else if (isScript($host)) {
 						return $host.loaders;
 					} else {
-						throw new Error("Cannot instantiate loaders: $java = " + $java + " $servlet = " + $servlet + " $host = " + $host);
+						throw new Error("Cannot instantiate loaders: $slime = " + $slime + " $servlet = " + $servlet + " $host = " + $host);
 					}
 				}
 			)();
@@ -340,11 +328,6 @@
 				}
 			)();
 
-			var $slime = (function() {
-				if ($java && $servlet) return $java;
-				if (isScript($host)) return $host.$slime;
-			})();
-
 			/**
 			 * @type { slime.servlet.internal.server.Exports }
 			 */
@@ -367,7 +350,6 @@
 			} : void(0);
 
 			return {
-				toExportScope: toExportScope,
 				api: api,
 				loaders: loaders,
 				parameters: $parameters,
@@ -398,7 +380,7 @@
 		})($host);
 
 		/** @type { slime.servlet.Scope } */
-		var scope = $context.toExportScope({
+		var scope = $context.$slime.old.loader.tools.toExportScope({
 			httpd: (
 				function() {
 					var rv = {
