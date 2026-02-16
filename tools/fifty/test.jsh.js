@@ -99,25 +99,35 @@
 		/** @type { { console: slime.fifty.test.internal.Listener, jsapi: slime.fifty.test.internal.Listener } } */
 		var views = {
 			console: (function() {
+				/**
+				 *
+				 * @param { slime.fifty.test.internal.Scope } scope
+				 * @param { string } string
+				 */
 				var write = function(scope,string) {
 					var indent = (scope) ? scope.depth() + 1 : 0;
 					var prefix = new Array(indent + 1).join("  ")
 					jsh.shell.console(prefix + string);
 				};
 
+				var map = new Map();
+
 				/** @type { slime.fifty.test.internal.Listener } */
 				var rv = {
-					start: function(scope,name) {
-						write(scope, "Running: " + name);
+					start: function(event) {
+						write(event.source, "Running: " + event.detail.name);
+						map.set(event.source, new Date().getTime());
 					},
 
-					end: function(scope,name,result) {
-						var resultString = (result) ? "PASSED" : "FAILED"
-						write(scope, resultString + ": " + name);
+					end: function(event) {
+						var elapsed = new Date().getTime() - map.get(event.source);
+						var resultString = (event.detail.result) ? "PASSED" : "FAILED"
+						write(event.source, resultString + ": " + event.detail.name + " (" + elapsed + " ms)");
+						map.delete(event.source);
 					},
 
-					test: function(scope,message,result) {
-						write(scope, message);
+					test: function(event) {
+						write(event.source, event.detail.message);
 					}
 				};
 
@@ -128,41 +138,41 @@
 					jsh.shell.echo(JSON.stringify(v));
 				}
 
-				return {
-					start: function(scope, name) {
+				return /** @type { slime.fifty.test.internal.Listener } */({
+					start: function(event) {
 						output({
 							type: "scenario",
 							detail: {
 								start: {
-									name: name
+									name: event.detail.name
 								}
 							}
 						});
 					},
 
-					end: function(scope, name, result) {
+					end: function(event) {
 						output({
 							type: "scenario",
 							detail: {
 								end: {
-									name: name
+									name: event.detail.name
 								},
-								result: result
+								result: event.detail.result
 							}
 						});
 					},
 
-					test: function(scope, message, success) {
+					test: function(event) {
 						output({
 							type: "test",
 							detail: {
-								success: success,
-								message: message
+								success: event.detail.success,
+								message: event.detail.message
 								//	TODO	error
 							}
 						})
 					}
-				}
+				})
 			})()
 		};
 

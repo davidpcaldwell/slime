@@ -266,14 +266,16 @@ namespace slime.fifty.test.internal {
 		end: (name: string, result: boolean) => void
 	}
 
+	export interface Events {
+		start: { name: string }
+		test: { message: string, success: boolean }
+		end: { name: string, result: boolean }
+	}
+
 	/**
 	 * A destination to which test results and progress are sent.
 	 */
-	export interface Listener {
-		start: (scope: Scope, name: string) => void
-		test: (scope: Scope, message: string, result: boolean) => void
-		end: (scope: Scope, name: string, result: boolean) => void
-	}
+	export type Listener = slime.$api.event.Handlers<Events>
 
 	export type run = slime.fifty.test.internal.test.Exports["run"]
 }
@@ -296,6 +298,11 @@ namespace slime.fifty.test.internal.test {
 		}
 
 		promises?: slime.definition.test.promises.Export
+	}
+
+	export interface State {
+		scope: slime.fifty.test.internal.Scope
+		verify: slime.definition.verify.Verify
 	}
 
 	export type Result = {

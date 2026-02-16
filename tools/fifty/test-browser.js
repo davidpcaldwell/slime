@@ -128,7 +128,7 @@
 					var target;
 
 					return {
-						start: function(scope, name) {
+						start: function(e) {
 							if (!target) {
 								target = templates.scope();
 								document.body.appendChild(target);
@@ -137,17 +137,17 @@
 								target = templates.scope();
 								parent.children[1].appendChild(target);
 							}
-							scopes.start(target, name);
-							delegate.log("START", depth(scope), name);
+							scopes.start(target, e.detail.name);
+							delegate.log("START", depth(e.source), e.detail.name);
 						},
-						end: function(scope, name, result) {
-							scopes.end(target, name, result);
+						end: function(e) {
+							scopes.end(target, e.detail.name, e.detail.result);
 							target = target.parentElement.parentElement;
-							delegate.log("END", depth(scope), name, result);
+							delegate.log("END", depth(e.source), e.detail.name, e.detail.result);
 						},
-						test: function(scope, message, result) {
-							scopes.test(target, message, result);
-							delegate.log("TEST", depth(scope), message);
+						test: function(e) {
+							scopes.test(target, e.detail.message, e.detail.success);
+							delegate.log("TEST", depth(e.source), e.detail.message);
 						}
 					}
 				}
