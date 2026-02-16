@@ -13,7 +13,7 @@ namespace slime.runtime.internal.events {
 		/**
 		 * Implements the `$api.events` API.
 		 */
-		exports: slime.$api.exports.Events
+		exports: slime.$api.event.Exports
 
 		/**
 		 * Helper function, not exported to `$api`, which assists in implementing various wo constructs in `$api.fp.world`.
@@ -342,7 +342,7 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
+	export namespace event {
 		(
 			function(
 				fifty: slime.fifty.test.Kit
@@ -361,7 +361,7 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Events {
+		export interface Exports {
 			/**
 			 * Creates an {@link slime.$api.event.Emitter} that can be used to fire events to a set of listeners. Event emitters can be
 			 * arranged in a hierarchy.
@@ -462,7 +462,7 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Events {
+		export interface Exports {
 			Function: <P,E,R>(f: (p: P, events: slime.$api.event.Emitter<E>) => R, defaultListeners?: slime.$api.event.Handlers<E>) => (argument: P, receiver?: slime.$api.event.Function.Receiver<E>) => R
 		}
 
@@ -529,7 +529,7 @@ namespace slime.$api {
 		 */
 		export type Attached<D> = slime.$api.event.Emitter<D> & { [marker]: true }
 
-		export interface Events {
+		export interface Exports {
 			Handlers: {
 				/**
 				 * Allows a caller to create an {@link slime.$api.event.Emitter} given a {@link slime.$api.event.Handlers} and independently

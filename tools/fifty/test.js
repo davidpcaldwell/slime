@@ -46,13 +46,29 @@
 					return "Scope: " + this.depth();
 				}
 
+				/** @type { slime.$api.event.Emitter<slime.fifty.test.internal.Events> } */
+				var emitter = $api.events.emitter({
+					source: this,
+					on: {
+						start: function(e) {
+							console.start(e);
+						},
+						end: function(e) {
+							console.end(e);
+						},
+						test: function(e) {
+							console.test(e);
+						}
+					}
+				});
+
 				this.start = function(name) {
-					console.start(this, name);
-				}
+					emitter.fire("start", { name: name });
+				};
 
 				this.end = function(name,result) {
-					console.end(this, name, result);
-				}
+					emitter.fire("end", { name: name, result: result });
+				};
 
 				/** @type { slime.definition.verify.Context } */
 				this.test = function(f) {
@@ -75,25 +91,98 @@
 							error: e
 						}
 					}
-					console.test(this, result.message, result.success);
-				}
+					emitter.fire("test", { message: result.message, success: result.success });
+				};
 			}
 		}
 
-		/** @type { slime.fifty.test.internal.Scope } */
-		var scope;
-		/** @type { slime.definition.verify.Verify } */
-		var verify;
+		var state = (
+			function() {
+				/** @type { slime.fifty.test.internal.Scope } */
+				var scope;
 
-		/**
-		 *
-		 * @param { slime.fifty.test.internal.Scope } newScope
-		 * @param { slime.definition.verify.Verify } newVerify
-		 */
-		var setContext = function(newScope,newVerify) {
-			scope = newScope;
-			verify = newVerify;
-		}
+				/** @type { slime.definition.verify.Verify } */
+				var verify;
+
+				/**
+				 *
+				 * @param { slime.fifty.test.internal.Scope } newScope
+				 * @param { slime.definition.verify.Verify } newVerify
+				 */
+				var setContext = function(newScope,newVerify) {
+					scope = newScope;
+					verify = newVerify;
+				}
+
+				/**
+				 * @param { string } name
+				 */
+				var start = function(name) {
+					if (scope) {
+						scope.start(name);
+					} else {
+						console.start({
+							//	TODO	this shim is horrendous
+							source: null,
+							type: "start",
+							path: [],
+							timestamp: new Date().getTime(),
+							detail: {
+								name: name
+							}
+						});
+						// console.start(null, name);
+					}
+				};
+
+				/**
+				 * @param { string } name
+				 * @param { boolean } result
+				 */
+				var end = function(name,result) {
+					if (scope) {
+						scope.end(name,result);
+					} else {
+						console.end({
+							//	TODO	this shim is horrendous
+							source: null,
+							type: "end",
+							path: [],
+							timestamp: new Date().getTime(),
+							detail: {
+								name: name,
+								result: result
+							}
+						});
+					}
+				}
+
+				var state = {
+					set: setContext,
+					start: start,
+					end: end,
+					get: function() {
+						return /** @type { slime.fifty.test.internal.test.State } */ ({ scope: scope, verify: verify });
+					}
+				};
+
+				return state;
+			}
+		)();
+
+
+		// var scope;
+		// var verify;
+
+		// /**
+		//  *
+		//  * @param { slime.fifty.test.internal.Scope } newScope
+		//  * @param { slime.definition.verify.Verify } newVerify
+		//  */
+		// var setContext = function(newScope,newVerify) {
+		// 	scope = newScope;
+		// 	verify = newVerify;
+		// }
 
 		/**
 		 *
@@ -128,13 +217,16 @@
 			return name;
 		};
 
-		var start = function(name) {
-			if (scope) {
-				scope.start(name);
-			} else {
-				console.start(null, name);
-			}
-		};
+		// /**
+		//  * @param { string } name
+		//  */
+		// var start = function(name) {
+		// 	if (scope) {
+		// 		scope.start(name);
+		// 	} else {
+		// 		console.start(null, name);
+		// 	}
+		// };
 
 		/**
 		 *
@@ -251,28 +343,22 @@
 			if (ascope) ascope.start();
 			if (ascope) ascope.test.setName(name);
 
-			start(name);
-			var was = {
-				scope: scope,
-				verify: verify
-			};
-			var localscope = Scope({ parent: scope });
+			state.start(name);
+			var was = state.get();
+			var localscope = Scope({ parent: was.scope });
 			var localverify = $context.library.Verify(
 				function(f) {
-					scope.test(f);
+					//	Can we use was.scope?
+					state.get().scope.test(f);
 				}
 			);
-			setContext(localscope, localverify);
+			state.set(localscope, localverify);
 
 			function after() {
 				var result = localscope.success;
 				if (ascope) ascope.test.log("async tests: restoring scope and verify to", name, was.scope, was.verify);
-				setContext(was.scope, was.verify);
-				if (scope) {
-					scope.end(name,result);
-				} else {
-					console.end(null, name, result);
-				}
+				state.set(was.scope, was.verify);
+				state.end(name, result);
 				return result;
 			}
 
@@ -351,7 +437,7 @@
 						try {
 							callable(argument);
 						} catch (e) {
-							scope.test(function() {
+							state.get().scope.test(function() {
 								throw e;
 							});
 						}
@@ -400,7 +486,7 @@
 							}
 						}
 					}
-					verify(error.join("\n")).is("Successfully loaded tests");
+					state.get().verify(error.join("\n")).is("Successfully loaded tests");
 				}
 			)
 		}
@@ -634,7 +720,7 @@
 				},
 				tests: tests,
 				verify: function() {
-					return verify.apply(this,arguments);
+					return state.get().verify.apply(this,arguments);
 				},
 				jsh: void(0)
 			};

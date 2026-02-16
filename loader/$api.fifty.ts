@@ -1137,7 +1137,7 @@ namespace slime.$api {
 	}
 
 	export interface Global {
-		events: exports.Events
+		events: event.Exports
 
 		/**
 		 * All parts of this property are **deprecated**. See the individual declarations for details.

@@ -14,7 +14,7 @@
 	function($context,$export) {
 		/**
 		 * @constructor
-		 * @param { Parameters<slime.$api.exports.Events["emitter"]>[0] } [p]
+		 * @param { Parameters<slime.$api.event.Exports["emitter"]>[0] } [p]
 		 */
 		var Emitter = function(p) {
 			if (!p) p = {};
@@ -151,7 +151,7 @@
 			}
 		};
 
-		/** @type { slime.$api.exports.Events["Function"] } */
+		/** @type { slime.$api.event.Exports["Function"] } */
 		var Function = function(f,defaultOn) {
 			var EmitterInvocationReceiver = function(emitter) {
 				this.attach = function(){};
@@ -192,7 +192,7 @@
 					/** @template { any } D */
 					attached: function(handlers) {
 						//	TODO	would be nice if we had access to $api.fp.cast, but would require refactor
-						/** @type { (v: any) => slime.$api.exports.Attached<D> } */
+						/** @type { slime.js.Cast<slime.$api.event.Attached<D>> } */
 						var cast = function(v) { return v; };
 
 						var x = ListenersInvocationReceiver(handlers);
