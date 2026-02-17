@@ -215,7 +215,10 @@ namespace slime.jrunscript.shell.run {
 
 		input: slime.jrunscript.runtime.io.InputStream
 
-
+		output: (p: {
+			stdout: slime.jrunscript.runtime.io.InputStream
+			stderr: slime.jrunscript.runtime.io.InputStream
+		}) => void
 	}
 
 	export namespace internal {
