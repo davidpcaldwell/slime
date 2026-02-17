@@ -20,16 +20,12 @@
 		//	*	jsapi / jsh: loader/api/old/jsh/html.js
 		//	*	jsapi / browser: loader/browser/test/api.js
 
-		var console = $context.console;
-
 		/**
 		 *
-		 * @param { { parent?: slime.fifty.test.internal.Scope } } [p]
+		 * @param { { parent?: slime.fifty.test.internal.Scope, listener: slime.fifty.test.internal.Listener } } p
 		 * @returns { slime.fifty.test.internal.Scope }
 		 */
 		function Scope(p) {
-			if (!p) p = {};
-
 			return new function() {
 				this.success = true;
 
@@ -49,17 +45,7 @@
 				/** @type { slime.$api.event.Emitter<slime.fifty.test.internal.Events> } */
 				var emitter = $api.events.emitter({
 					source: this,
-					on: {
-						start: function(e) {
-							console.start(e);
-						},
-						end: function(e) {
-							console.end(e);
-						},
-						test: function(e) {
-							console.test(e);
-						}
-					}
+					on: p.listener
 				});
 
 				this.start = function(name) {
@@ -121,7 +107,7 @@
 					if (scope) {
 						scope.start(name);
 					} else {
-						console.start({
+						$context.console.start({
 							//	TODO	this shim is horrendous
 							source: null,
 							type: "start",
@@ -143,7 +129,7 @@
 					if (scope) {
 						scope.end(name,result);
 					} else {
-						console.end({
+						$context.console.end({
 							//	TODO	this shim is horrendous
 							source: null,
 							type: "end",
@@ -345,7 +331,7 @@
 
 			state.start(name);
 			var was = state.get();
-			var localscope = Scope({ parent: was.scope });
+			var localscope = Scope({ parent: was.scope, listener: $context.console });
 			var localverify = $context.library.Verify(
 				function(f) {
 					//	Can we use was.scope?
