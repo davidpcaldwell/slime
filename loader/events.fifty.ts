@@ -24,6 +24,12 @@ namespace slime.runtime.internal.events {
 		}) => T
 	}
 
+	export interface Receiver<D> {
+		attach: () => void
+		detach: () => void
+		emitter: slime.$api.event.Emitter<D>
+	}
+
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var code: Script = fifty.$loader.script("events.js");
@@ -520,6 +526,12 @@ namespace slime.$api {
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface Exports {
+			Managed: {
+				create: <D>(p: { source?: any, handlers: Handlers<D> }) => slime.runtime.internal.events.Receiver<D>
+			}
+		}
 
 		declare const marker: unique symbol;
 
