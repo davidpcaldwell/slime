@@ -72,19 +72,19 @@ namespace slime.jrunscript.file.archive {
 				const write = $api.fp.pipe(
 					$api.fp.identity as slime.$api.fp.Identity<{ path: string, content: string}>,
 					$api.fp.Mapping.properties({
-						effect: $api.fp.pipe(
+						effector: $api.fp.pipe(
 							$api.fp.property("path"),
 							base,
 							openFile,
 							$api.fp.property("pipe"),
 							$api.fp.property("simple")
 						),
-						argument: $api.fp.pipe(
+						command: $api.fp.pipe(
 							$api.fp.property("content"),
 							io.InputStream.string.default
 						)
 					}),
-					$api.fp.impure.Effect.invoke
+					$api.fp.impure.Effector.invoke
 				);
 
 				write({ path: "a", content: "aa" });

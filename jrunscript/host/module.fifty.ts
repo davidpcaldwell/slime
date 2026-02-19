@@ -193,7 +193,7 @@ namespace slime.jrunscript.java {
 	export interface Exports {
 		vm: {
 			properties: slime.$api.fp.impure.External<Properties>,
-			setProperty: (name: string) => slime.$api.fp.impure.Effect<string>
+			setProperty: (name: string) => slime.$api.fp.impure.Effector<string>
 		}
 	}
 

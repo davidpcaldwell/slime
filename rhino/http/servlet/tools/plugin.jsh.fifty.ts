@@ -113,7 +113,7 @@ namespace slime.jsh.httpd {
 		tools: {
 			getJavaSourceFiles: (p: slime.jrunscript.file.Pathname) => slime.jrunscript.file.File[]
 
-			build: slime.$api.fp.impure.Effect<Build>
+			build: slime.$api.fp.impure.Effector<Build>
 
 			proxy: slime.servlet.proxy.Exports
 

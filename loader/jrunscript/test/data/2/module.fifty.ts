@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.runtime.test.javac {
 	export interface Context {
-		echo: slime.$api.fp.impure.Effect<string>
+		echo: slime.$api.fp.impure.Effector<string>
 	}
 
 	export interface Exports {

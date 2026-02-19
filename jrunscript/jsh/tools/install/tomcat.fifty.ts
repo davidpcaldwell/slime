@@ -254,7 +254,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				}
 			}
 		}
-		console: slime.$api.fp.impure.Effect<string>
+		console: slime.$api.fp.impure.Effector<string>
 		jsh: {
 			loader: {
 				plugins: slime.jsh.Global["loader"]["plugins"]

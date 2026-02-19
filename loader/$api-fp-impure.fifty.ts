@@ -40,10 +40,10 @@ namespace slime.$api.fp.impure {
 	export type Input<T> = () => T
 
 	/**
-	 * An impure function, with side effects, that is capable of effecting some kind of external change. Its argument
-	 * represents the change to effect.
+	 * An impure function, with potential side effects, that is capable of effecting some kind of external outcome. Its argument
+	 * describes a command which specifies the desired effect.
 	 */
-	export type Effect<T> = (t: T) => void
+	export type Effector<C> = (command: C) => void
 
 	/** @deprecated Replaced by `Effect` and {@link slime.$api.oo.Modifier}. */
 	export type Output<T> = (t: T) => void
@@ -345,7 +345,7 @@ namespace slime.$api.fp.impure {
 	export namespace input {
 		export interface Store<T> {
 			get: () => Maybe<T>
-			set: impure.Effect<T>
+			set: impure.Effector<T>
 		}
 	}
 
@@ -443,14 +443,17 @@ namespace slime.$api.fp.impure {
 	)(fifty);
 
 	export interface Exports {
-		Effect: effect.Exports
+		Effector: effector.Exports
 	}
 
-	export namespace effect {
+	export namespace effector {
 		export interface Exports {
-			process: <P>(p: P) => (f: Effect<P>) => Process
-			now: <P>(p: P) => (f: Effect<P>) => void
-			invoke: <P>(p: { effect: Effect<P>, argument: P }) => void
+			invoke: <C>(p: { effector: Effector<C>, command: C }) => void
+		}
+
+		export interface Exports {
+			process: <P>(p: P) => (f: Effector<P>) => Process
+			now: <P>(p: P) => (f: Effector<P>) => void
 		}
 	}
 
@@ -1159,7 +1162,7 @@ namespace slime.$api.fp.world {
 			}) => impure.Output<O>
 
 			effect: <O,E>(events?: slime.$api.event.Handlers<E>)
-				=> (means: slime.$api.fp.world.Means<O,E>) => impure.Effect<O>
+				=> (means: slime.$api.fp.world.Means<O,E>) => impure.Effector<O>
 
 			process: <O,E>(p: {
 				means: slime.$api.fp.world.Means<O,E>
@@ -1252,7 +1255,7 @@ namespace slime.$api.fp.world {
 		export namespace api {
 			export type Simple<O,E> = {
 				wo: Means<O,E>
-				simple: slime.$api.fp.impure.Effect<O>
+				simple: slime.$api.fp.impure.Effector<O>
 			}
 		}
 
