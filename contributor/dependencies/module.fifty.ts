@@ -60,7 +60,7 @@ namespace slime.project.dependencies {
 			/**
 			 * Write the geneerated Markdown file for use in Typedoc `@include`s to the given location.
 			 */
-			generate: slime.$api.fp.impure.Effect<slime.jrunscript.file.Location>
+			generate: slime.$api.fp.impure.Effector<slime.jrunscript.file.Location>
 		}
 	}
 

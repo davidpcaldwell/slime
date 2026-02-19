@@ -148,7 +148,7 @@
 					}
 				}
 			},
-			Effect: {
+			Effector: {
 				process: function(p) {
 					return function(effect) {
 						return function() {
@@ -162,7 +162,7 @@
 					}
 				},
 				invoke: function(p) {
-					p.effect(p.argument);
+					p.effector(p.command);
 				}
 			},
 			Output: {
