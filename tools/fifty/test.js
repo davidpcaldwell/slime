@@ -322,16 +322,17 @@
 		 * @param { slime.fifty.test.internal.test.AsynchronousScope } ascope
 		 * @param { string } name
 		 * @param { () => void } execute
+		 * @param { slime.fifty.test.internal.Listener } listener
 		 * @returns { slime.fifty.test.internal.test.Result }
 		 */
-		var executeTestScope = function(ascope,name,execute) {
+		var executeTestScope = function(ascope,name,execute,listener) {
 			if (ascope) ascope.test.log("async tests: starting scope", name, ascope.test.depth());
 			if (ascope) ascope.start();
 			if (ascope) ascope.test.setName(name);
 
 			state.start(name);
 			var was = state.get();
-			var localscope = Scope({ parent: was.scope, listener: $context.console });
+			var localscope = Scope({ parent: was.scope, listener: listener });
 			var localverify = $context.library.Verify(
 				function(f) {
 					//	Can we use was.scope?
@@ -427,7 +428,8 @@
 								throw e;
 							});
 						}
-					}
+					},
+					$context.console
 				)
 			}
 			return rv;
@@ -473,7 +475,8 @@
 						}
 					}
 					state.get().verify(error.join("\n")).is("Successfully loaded tests");
-				}
+				},
+				$context.console
 			)
 		}
 
