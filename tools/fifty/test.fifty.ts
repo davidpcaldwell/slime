@@ -286,6 +286,9 @@ namespace slime.fifty.test.internal.test {
 			Verify: slime.definition.verify.Export
 		}
 
+		/**
+		 * @deprecated
+		 */
 		console: slime.fifty.test.internal.Listener
 
 		jsh?: {
